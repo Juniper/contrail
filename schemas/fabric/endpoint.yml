@@ -7,7 +7,7 @@ parents:
     operations: "CRUD"
     description: "Parent cluster to which this endpoint object belongs"
     presence: "optional"
-plural: proxies
+plural: endpoints
 prefix: /
 schema:
   properties:

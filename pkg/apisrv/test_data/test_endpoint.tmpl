@@ -1,0 +1,74 @@
+name: Endpoint Test
+description:  multi cluster/dynamic proxy endpoint test
+cleanup:
+    - path: /endpoint/endpoint_cluster_a_neutron_uuid
+    - path: /contrail-cluster/cluster_a_uuid
+    - path: /project/admin_project_uuid
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin"]
+    uuid: admin_project_uuid
+  cluster_a: &cluster_a
+    fq_name: ["default", "admin", "cluster_a"]
+    uuid: cluster_a_uuid
+    parent_type: project
+    parent_uuid: admin_project_uuid
+  endpoint_cluster_a_neutron: &endpoint_cluster_a_neutron
+    uuid: endpoint_cluster_a_neutron_uuid
+    fq_name: ["default", "admin", "endpoint_cluster_a_neutron"]
+    parent_type: contrail-cluster
+    parent_uuid: cluster_a_uuid
+    name: neutron
+    private_url: {{cluster_a_neutron_private_url}}
+    public_url: {{cluster_a_neutron_public_url}}
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        id: admin
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+- name: create contrail cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 201
+    data:
+      contrail-cluster: *cluster_a
+  expect:
+    contrail-cluster:
+      uuid: cluster_a_uuid
+      fq_name: ["default", "admin", "cluster_a"]
+      parent_type: project
+      parent_uuid: admin_project_uuid
+      perms2:
+        owner: admin
+- name: create a neutron endpoint for cluster_a
+  request:
+    path: /endpoints
+    method: POST
+    expected:
+    - 201
+    data:
+      endpoint: *endpoint_cluster_a_neutron
+  expect:
+    endpoint:
+      uuid: endpoint_cluster_a_neutron_uuid
+      fq_name: ["default", "admin", "endpoint_cluster_a_neutron"]
+      parent_type: contrail-cluster
+      parent_uuid: cluster_a_uuid
+      perms2:
+        owner: admin
