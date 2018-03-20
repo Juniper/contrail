@@ -3,10 +3,13 @@ package apisrv
 import (
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
@@ -103,6 +106,34 @@ func RunTest(t *testing.T, file string) {
 			break
 		}
 	}
+}
+
+func RunTestWithTemplate(t *testing.T, templateFile string, ctx map[string]interface{}) {
+	// create test data yaml from the template
+	template, err := pongo2.FromFile(templateFile)
+	assert.NoError(t, err, "failed to read test data template")
+
+	content, err := template.ExecuteBytes(ctx)
+	assert.NoError(t, err, "failed to apply test data template")
+
+	fileName := filepath.Base(templateFile)
+	var extension = filepath.Ext(fileName)
+	var prefix = fileName[0 : len(fileName)-len(extension)]
+	tmpfile, err := ioutil.TempFile("", prefix)
+	assert.NoError(t, err, "failed to create test data tempfile")
+
+	_, err = tmpfile.Write(content)
+	assert.NoError(t, err, "failed to write test data to tempfile")
+
+	err = tmpfile.Close()
+	assert.NoError(t, err, "failed to close tempfile")
+	testFile := tmpfile.Name() + ".yml"
+	err = os.Rename(tmpfile.Name(), testFile)
+	assert.NoError(t, err, "failed to rename test data file to yml file")
+	defer os.Remove(testFile) // remove tempfile after test
+
+	// run the test with the test data yaml
+	RunTest(t, testFile)
 }
 
 func LoadTest(file string) (*TestScenario, error) {
