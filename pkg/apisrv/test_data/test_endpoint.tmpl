@@ -1,0 +1,79 @@
+name: Endpoint Test
+description:  multi cluster/dynamic proxy endpoint test
+cleanup:
+    - path: /endpoint/endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
+    - path: /contrail-cluster/{{ cluster_name }}_uuid
+{%if extra_tasks %}
+    - path: /project/admin_project_uuid
+    - path: /endpoint/endpoint_clusterB_{{ endpoint_name }}_uuid
+{%endif%}
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin"]
+    uuid: admin_project_uuid
+  {{ cluster_name }}: &{{ cluster_name }}
+    fq_name: ["default", "admin", "{{ cluster_name }}"]
+    uuid: {{ cluster_name }}_uuid
+    parent_type: project
+    parent_uuid: admin_project_uuid
+  endpoint_{{ cluster_name }}_{{ endpoint_name }}: &endpoint_{{ cluster_name }}_{{ endpoint_name }}
+    uuid: endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
+    fq_name: ["default", "admin", "endpoint_{{ cluster_name }}_{{ endpoint_name }}"]
+    parent_type: contrail-cluster
+    parent_uuid: {{ cluster_name }}_uuid
+    name: {{ endpoint_name }}
+    private_url: {{private_url}}
+    public_url: {{public_url}}
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        id: admin
+workflow:
+{%if extra_tasks %}
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+{%endif%}
+- name: create contrail cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 201
+    data:
+      contrail-cluster: *{{ cluster_name }}
+  expect:
+    contrail-cluster:
+      uuid: {{ cluster_name }}_uuid
+      fq_name: ["default", "admin", "{{ cluster_name }}"]
+      parent_type: project
+      parent_uuid: admin_project_uuid
+      perms2:
+        owner: admin
+- name: create a {{ endpoint_name }} endpoint for {{ cluster_name }}
+  request:
+    path: /endpoints
+    method: POST
+    expected:
+    - 201
+    data:
+      endpoint: *endpoint_{{ cluster_name }}_{{ endpoint_name }}
+  expect:
+    endpoint:
+      uuid: endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
+      fq_name: ["default", "admin", "endpoint_{{ cluster_name }}_{{ endpoint_name }}"]
+      parent_type: contrail-cluster
+      parent_uuid: {{ cluster_name }}_uuid
+      perms2:
+        owner: admin
