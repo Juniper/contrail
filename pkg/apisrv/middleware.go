@@ -3,6 +3,7 @@ package apisrv
 import (
 	"context"
 	"crypto/tls"
+	"database/sql"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -25,19 +26,11 @@ func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
 	}
 }
 
-func noAuth(ctx context.Context) context.Context {
-	authContext := common.NewAuthContext(
-		"default-domain", "default-project", "admin", []string{"admin"})
-	var authKey interface{}
-	authKey = "auth"
-	return context.WithValue(ctx, authKey, authContext)
-}
-
 func noAuthMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
-			ctx := noAuth(r.Context())
+			ctx := common.NoAuth(r.Context())
 			newRequest := r.WithContext(ctx)
 			c.SetRequest(newRequest)
 			return next(c)
@@ -68,10 +61,19 @@ func proxyMiddleware(target string, insecure bool) func(next echo.HandlerFunc) e
 	}
 }
 
+func serveDynamicProxy(e *echo.Echo, endpointStore *common.EndpointStore, dbConn *sql.DB) {
+	p := proxyServer{
+		dbConn:        dbConn,
+		echoServer:    e,
+		endpointStore: endpointStore,
+	}
+	go p.serve()
+}
+
 func noAuthInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		newCtx := noAuth(ctx)
+		newCtx := common.NoAuth(ctx)
 		return handler(newCtx, req)
 	}
 }
