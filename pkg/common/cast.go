@@ -49,7 +49,8 @@ func InterfaceToInt64(i interface{}) int64 {
 func InterfaceToBool(i interface{}) bool {
 	switch t := i.(type) {
 	case []byte:
-		return len(t) == 1 && t[0] == 1
+		b, _ := strconv.ParseBool(string(t)) // nolint: gas
+		return b
 	case bool:
 		return t
 	case int64:
@@ -122,7 +123,8 @@ func InterfaceToFloat(i interface{}) float64 {
 	t, _ := i.(float64)
 	switch t := i.(type) {
 	case []byte:
-		return float64(t[0])
+		f, _ := strconv.ParseFloat(string(t), 64) // nolint: gas
+		return f
 	case int:
 		return float64(t)
 	case int64:
