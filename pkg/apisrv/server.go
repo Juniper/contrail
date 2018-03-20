@@ -119,12 +119,15 @@ func (s *Server) Init() error {
 		}
 	}
 	keystoneAuthURL := viper.GetString("keystone.authurl")
+	eps := MakeEndpointStore() // sync map to store the various auth endpoints
 	if keystoneAuthURL != "" {
 		e.Use(keystone.AuthMiddleware(keystoneAuthURL,
 			viper.GetBool("keystone.insecure"),
 			[]string{
 				"/v3/auth/tokens",
-				"/public"}))
+				"/public"}),
+			eps,
+			s.DB)
 	} else if viper.GetBool("no_auth") {
 		e.Use(noAuthMiddleware())
 	}

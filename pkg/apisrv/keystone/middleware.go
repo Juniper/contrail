@@ -3,6 +3,7 @@ package keystone
 import (
 	"context"
 	"crypto/tls"
+	"database/sql"
 	"net"
 	"net/http"
 	"strings"
@@ -65,7 +66,8 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 }
 
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
-func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.MiddlewareFunc {
+func AuthMiddleware(authURL string, insecure bool, skipPath []string,
+	eps *EndpointStore, dbConn *sql.DB) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		auth := newAuth(authURL, insecure)
 		return func(c echo.Context) error {
@@ -80,9 +82,27 @@ func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.Middl
 				return next(c)
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
-			ctx, err := authenticate(r.Context(), auth, tokenString)
+			// authenticate using cluster specific keystone endpoint
+			clusterID := r.Header.Get("X-ClusterID")
+			if clusterID == "" {
+				// Assuming there is only one cluster
+				clusterID = "any"
+			}
+			ce := clusterEndpoint{
+				dbConn:    dbConn,
+				eps:       eps,
+				clusterID: clusterID,
+				token:     tokenString,
+				ctx:       r.Context(),
+			}
+			var ctx context.Context
+			ctx, err := ce.authenticate()
 			if err != nil {
-				return common.ToHTTPError(err)
+				// authenticate using common local keystone
+				ctx, err = authenticate(r.Context(), auth, tokenString)
+				if err != nil {
+					return common.ToHTTPError(err)
+				}
 			}
 			newRequest := r.WithContext(ctx)
 			c.SetRequest(newRequest)
@@ -92,7 +112,7 @@ func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.Middl
 }
 
 //AuthInterceptor for Auth process for gRPC based apps.
-func AuthInterceptor(authURL string, insecure bool) grpc.UnaryServerInterceptor {
+func AuthInterceptor(authURL string, insecure bool, eps *EndpointStore, dbConn *sql.DB) grpc.UnaryServerInterceptor {
 	auth := newAuth(authURL, insecure)
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -104,9 +124,31 @@ func AuthInterceptor(authURL string, insecure bool) grpc.UnaryServerInterceptor 
 		if len(token) == 0 {
 			return nil, common.ErrorUnauthenticated
 		}
-		newCtx, err := authenticate(ctx, auth, token[0])
+		// authenticate using cluster specific keystone endpoint
+		c := md["x-clusterid"]
+		var clusterID string
+		if len(c) == 0 {
+			// Assuming there is only one cluster
+			clusterID = "any"
+		} else {
+			clusterID = c[0]
+
+		}
+		ce := clusterEndpoint{
+			dbConn:    dbConn,
+			eps:       eps,
+			clusterID: clusterID,
+			token:     token[0],
+			ctx:       ctx,
+		}
+		var newCtx context.Context
+		newCtx, err := ce.authenticate()
 		if err != nil {
-			return nil, err
+			// authenticate using common local keystone
+			newCtx, err = authenticate(ctx, auth, token[0])
+			if err != nil {
+				return nil, err
+			}
 		}
 		return handler(newCtx, req)
 	}
