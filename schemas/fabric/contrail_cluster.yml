@@ -209,6 +209,26 @@ schema:
       view:
       - create
       - detail
+    encap_priority:
+      description: Encapsulation priority
+      default: "MPLSoGRE,MPLSoUDP,VXLAN"
+      nullable: false
+      enum:
+      - "MPLSoGRE,MPLSoUDP,VXLAN"
+      - "MPLSoGRE,VXLAN,MPLSoUDP"
+      - "MPLSoUDP,VXLAN,MPLSoGRE"
+      - "MPLSoUDP,MPLSoGRE,VXLAN"
+      - "VXLAN,MPLSoUDP,MPLSoGRE"
+      - "VXLAN,MPLSoGRE,MPLSoUDP"
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Encapsulation Priority
+      type: string
+      view:
+      - create
+      - detail
   required: []
   type: object
 singular: contrail_cluster

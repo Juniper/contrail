@@ -1,5 +1,6 @@
 package cluster
 
+// TODO:(ijohnson) generate constant resources
 const (
 	defaultResource                       = "contrail-cluster"
 	defaultResourcePath                   = "/" + defaultResource
@@ -19,6 +20,8 @@ const (
 	defaultAnalyticsDBNodeResPath         = "/" + defaultAnalyticsDBNodeRes
 	defaultVrouterNodeRes                 = "contrail-vrouter-node"
 	defaultVrouterNodeResPath             = "/" + defaultVrouterNodeRes
+	defaultServiceNodeRes                 = "contrail-service-node"
+	defaultServiceNodeResPath             = "/" + defaultServiceNodeRes
 	defaultKubernetesNodeRes              = "kubernetes-node"
 	defaultKubernetesNodeResPath          = "/" + defaultKubernetesNodeRes
 	defaultKubernetesMasterNodeRes        = "kubernetes-master-node"
