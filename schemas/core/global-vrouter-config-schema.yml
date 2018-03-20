@@ -25,11 +25,22 @@
         presence: "optional"
         description: "Flow aging timeout per application (protocol, port) list."
         $ref: "types.json#/definitions/FlowAgingTimeoutList"
+      port_translation_pools: 
+        operations: "CRUD"
+        collectionType: "list"
+        presence: "optional"
+        description: "List of Ports to be reserved for providing underlay connectivity via Port translation."
+        $ref: "types.json#/definitions/PortTranslationPools"
       forwarding_mode: 
         operations: "CRUD"
         presence: "optional"
         description: "Packet forwarding mode for this system L2-only, L3-only OR L2-L3. L2-L3 is default."
         $ref: "types.json#/definitions/ForwardingModeType"
+      encryption_mode: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Enable encryption mode"
+        $ref: "types.json#/definitions/EncryptionMode"
       flow_export_rate: 
         operations: "CRUD"
         type: "integer"
@@ -45,6 +56,12 @@
         presence: "optional"
         description: "Ordered list of encapsulations that vrouter will use in priority order."
         $ref: "types.json#/definitions/EncapsulationPrioritiesType"
+      encryption_tunnel_endpoints: 
+        operations: "CRUD"
+        collectionType: "list"
+        presence: "optional"
+        description: "Encryption tunnel endpoints list"
+        $ref: "types.json#/definitions/EncryptionTunnelEndpointList"
       vxlan_network_identifier_mode: 
         operations: "CRUD"
         presence: "optional"

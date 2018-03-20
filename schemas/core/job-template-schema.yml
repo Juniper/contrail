@@ -1,0 +1,41 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: 
+    global_system_config: 
+      operations: "CRUD"
+      description: "List of job templates supported by the system."
+      presence: "optional"
+  plural: "job_templates"
+  id: "job_template"
+  schema: 
+    required: 
+      - "job_template_multi_device_job"
+      - "job_template_playbooks"
+    type: "object"
+    properties: 
+      job_template_playbooks: 
+        operations: "CRUD"
+        collectionType: "list"
+        presence: "required"
+        description: "List of vendor specific playbooks that achieve the same functionality on each vendor device. All the vendor specific playbooks listed here share the same input/output schema defined in the job template"
+        $ref: "types.json#/definitions/PlaybookInfoListType"
+      job_template_multi_device_job: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "if set to true, the \"/execute-job\" action url allows device list as additional parameter to run the job template on multiple device in one job"
+        presence: "required"
+      job_template_output_schema: 
+        operations: "CRUD"
+        type: "string"
+        description: "JSON schema of the job output that describes the output from the job and could be used by UI to render the output automatically. This property stores the JSON schema content as string."
+        presence: "optional"
+      job_template_input_schema: 
+        operations: "CRUD"
+        type: "string"
+        description: "JSON schema of the job input parameters which will be used to validate the job input json or generate UI form for user to enter the job parameters. This property stores the JSON schema content as string. Here is an example fo the image upgrade job template input schema:{    \"$schema\": \"http://json-schema.org/draft-06/schema#\",    \"title\": \"Image upgrade input\",    \"type\": \"object\",    \"properties\": {        \"image_uuid\": {            \"type\": \"string\"        }    },    \"required\": [\"image_uuid\"]}"
+        presence: "optional"
+

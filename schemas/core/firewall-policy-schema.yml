@@ -6,11 +6,12 @@
   references: 
     firewall_rule: 
       operations: "CRUD"
-      $ref: "types.json#/definitions/FirewallSequence"
+      $ref: "types.json#definitions/FirewallSequence"
       description: "Reference to firewall-rule attached to this firewall-policy"
       presence: "optional"
     security_logging_object: 
       operations: "CRUD"
+      $ref: "types.json#definitions/SloRateType"
       description: "Reference to security-logging-object attached to this firewall-policy"
       presence: "optional"
   parents: 
@@ -27,5 +28,11 @@
   schema: 
     required: []
     type: "object"
-    properties: {}
+    properties: 
+      pending_delete: 
+        default: false
+        operations: "R"
+        type: "boolean"
+        description: ""
+        presence: "optional"
 

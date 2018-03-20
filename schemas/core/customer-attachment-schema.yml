@@ -18,5 +18,10 @@
   schema: 
     required: []
     type: "object"
-    properties: {}
+    properties: 
+      attachment_address: 
+        operations: "CRUD"
+        presence: "optional"
+        description: ""
+        $ref: "types.json#/definitions/AttachmentAddressType"
 

@@ -1,5 +1,5 @@
 id: alice
 password: alice_password
 project_id: admin
-auth_url: http://localhost:9091/v3
+#auth_url: http://localhost:9091/v3
 endpoint: http://localhost:9091

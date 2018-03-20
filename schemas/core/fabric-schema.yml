@@ -1,0 +1,28 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    physical_router: 
+      operations: "CRUD"
+      description: "List of physical-routers that belongs to a fabric."
+      presence: "optional"
+  parents: 
+    global_system_config: 
+      operations: "CRUD"
+      description: "List of fabrics in the system. Each fabric is an administrative domain for all the network devices in one or multiple CLOS."
+      presence: "optional"
+  plural: "fabrics"
+  id: "fabric"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      fabric_credentials: 
+        operations: "CRUD"
+        collectionType: "list"
+        presence: "optional"
+        description: "List of device credentials to manage the network devices in the fabric."
+        $ref: "types.json#/definitions/DeviceCredentialList"
+
