@@ -2,14 +2,16 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/common"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	//Import mysql driver
 	_ "github.com/go-sql-driver/mysql"
+	//Import psql driver
+	_ "github.com/lib/pq"
 )
 
 var testDB *sql.DB
@@ -19,7 +21,6 @@ func TestMain(m *testing.M) {
 	common.InitConfig()
 	common.SetLogLevel()
 	var err error
-	fmt.Println("connected db")
 	testDB, err = ConnectDB()
 	if err != nil {
 		log.Fatal(err)
@@ -27,7 +28,7 @@ func TestMain(m *testing.M) {
 	defer testDB.Close()
 	db = &DB{
 		DB:      testDB,
-		Dialect: NewDialect("mysql"),
+		Dialect: NewDialect(viper.GetString("database.dialect")),
 	}
 	db.initQueryBuilders()
 

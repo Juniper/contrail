@@ -3,11 +3,17 @@ package db
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	MYSQL    = "mysql"
+	POSTGRES = "postgres"
 )
 
 //QueryBuilder builds list query.
@@ -58,48 +64,61 @@ func NewQueryBuilder(dialect Dialect, table string,
 //NewDialect creates NewDialect objects.
 func NewDialect(mode string) Dialect {
 	switch mode {
-	case "mysql":
+	case MYSQL:
 		return Dialect{
+			Name:             MYSQL,
 			QuoteRune:        "`",
 			JSONAggFuncStart: "group_concat(distinct JSON_OBJECT(",
 			JSONAggFuncEnd:   "))",
 			AnyValueString:   "ANY_VALUE(",
+			PlaceHolderIndex: false,
 		}
 	default:
 		return Dialect{
-			QuoteRune:        "\"",
+			Name:             POSTGRES,
+			QuoteRune:        `"`,
 			JSONAggFuncStart: "json_agg(json_build_object(",
 			JSONAggFuncEnd:   "))",
 			AnyValueString:   "",
+			PlaceHolderIndex: true,
 		}
 	}
 }
 
 //Dialect represents database dialect.
 type Dialect struct {
+	Name             string
 	QuoteRune        string
 	JSONAggFuncStart string
 	JSONAggFuncEnd   string
 	AnyValueString   string
+	PlaceHolderIndex bool
 }
 
 func (d *Dialect) quote(params ...string) string {
 	query := ""
 	l := len(params)
 	for i := 0; i < l-1; i++ {
-		query += d.QuoteRune + params[i] + d.QuoteRune + "."
+		query += d.QuoteRune + strings.ToLower(params[i]) + d.QuoteRune + "."
 	}
-	query += d.QuoteRune + params[l-1] + d.QuoteRune
+	query += d.QuoteRune + strings.ToLower(params[l-1]) + d.QuoteRune
 	return query
+}
+
+func (d *Dialect) placeholder(i int) string {
+	if d.PlaceHolderIndex {
+		return "$" + strconv.Itoa(i)
+	}
+	return "?"
 }
 
 func (d *Dialect) values(params ...string) string {
 	query := ""
 	l := len(params)
 	for i := 0; i < l-1; i++ {
-		query += "?,"
+		query += d.placeholder(i+1) + ","
 	}
-	query += "?"
+	query += d.placeholder(l)
 	return query
 }
 
@@ -107,15 +126,17 @@ func (d *Dialect) quoteSep(params ...string) string {
 	query := ""
 	l := len(params)
 	for i := 0; i < l-1; i++ {
-		query += d.QuoteRune + params[i] + d.QuoteRune + ","
+		query += d.QuoteRune + strings.ToLower(params[i]) + d.QuoteRune + ","
 	}
-	query += d.QuoteRune + params[l-1] + d.QuoteRune
+	query += d.QuoteRune + strings.ToLower(params[l-1]) + d.QuoteRune
 	return query
 }
 
 func (d *Dialect) jsonAgg(table string, params ...string) string {
+	if d.Name == POSTGRES {
+		return "json_agg(row_to_json(" + d.quote(table) + "))"
+	}
 	query := ""
-
 	l := len(params)
 	query += d.JSONAggFuncStart
 	for i := 0; i < l-1; i++ {
@@ -139,18 +160,18 @@ func (qb *QueryBuilder) buildFilterParts(ctx *queryContext, column string, filte
 	var where string
 	var err error
 	if len(filterValues) == 1 {
-		where = column + " = ?"
 		ctx.values = append(ctx.values, filterValues[0])
+		where = column + " = " + qb.placeholder(len(ctx.values))
 	} else {
 		var filterQuery bytes.Buffer
 		_, err = filterQuery.WriteString(column)
 		_, err = filterQuery.WriteString(" in (")
 		last := len(filterValues) - 1
 		for _, value := range filterValues[:last] {
-			_, err = filterQuery.WriteString("?,")
 			ctx.values = append(ctx.values, value)
+			_, err = filterQuery.WriteString(qb.placeholder(len(ctx.values)) + ",")
 		}
-		_, err = filterQuery.WriteString("?)")
+		_, err = filterQuery.WriteString(qb.placeholder(len(ctx.values)) + ")")
 
 		where = filterQuery.String()
 		ctx.values = append(ctx.values, filterValues[last])
@@ -204,16 +225,16 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 	where := []string{}
 
 	if !auth.IsAdmin() {
-		where = append(where, qb.quote(qb.Table, "owner")+" = ?")
 		ctx.values = append(ctx.values, auth.ProjectID())
+		where = append(where, qb.quote(qb.Table, "owner")+" = "+qb.placeholder(len(ctx.values)))
 	}
 	if spec.Shared {
 		shareTables := []string{"domain_share_" + qb.Table, "tenant_share_" + qb.Table}
-		for _, shareTable := range shareTables {
+		for i, shareTable := range shareTables {
 			ctx.joins = append(ctx.joins,
 				qb.join(shareTable, "uuid", qb.Table))
-			where = append(where, fmt.Sprintf("(%s.to = ? and %s.access >= 4)",
-				qb.quote(shareTable), qb.quote(shareTable)))
+			where = append(where, fmt.Sprintf("(%s.to = %s and %s.access >= 4)",
+				qb.quote(shareTable), qb.placeholder(len(ctx.values)+i+1), qb.quote(shareTable)))
 		}
 		ctx.values = append(ctx.values, auth.DomainID(), auth.ProjectID())
 	}
@@ -263,9 +284,9 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 		refFields = append(refFields, "from")
 		refFields = append(refFields, "to")
 		subQuery := "(select " +
-			qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")) +
-			" from " + qb.quote(refTable) + " where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(refTable, "from") +
-			" group by " + qb.quote(refTable, "from") + " )"
+			qb.as(qb.jsonAgg(refTable+"_t", refFields...), qb.quote(refTable+"_ref")) +
+			" from " + qb.as(qb.quote(refTable), refTable+"_t") + " where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(refTable+"_t", "from") +
+			" group by " + qb.quote(refTable+"_t", "from") + " )"
 		ctx.columnParts = append(
 			ctx.columnParts,
 			subQuery)
@@ -296,9 +317,9 @@ func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 	// use sub query if no backrefuuids
 	for refTable, refFields := range qb.BackRefFields {
 		subQuery := "(select " +
-			qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")) +
-			" from " + qb.quote(refTable) + " where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(refTable, "parent_uuid") +
-			" group by " + qb.quote(refTable, "parent_uuid") + " )"
+			qb.as(qb.jsonAgg(refTable+"_t", refFields...), qb.quote(refTable+"_ref")) +
+			" from " + qb.as(qb.quote(refTable), refTable+"_t") + " where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(refTable+"_t", "parent_uuid") +
+			" group by " + qb.quote(refTable+"_t", "parent_uuid") + " )"
 		ctx.columnParts = append(
 			ctx.columnParts,
 			subQuery)
@@ -363,8 +384,10 @@ func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *models.ListSpe
 
 //CreateQuery makes sql query.
 func (qb *QueryBuilder) CreateQuery() string {
-	return ("insert into " + qb.quote(qb.Table) + "(" +
+	query := ("insert into " + qb.quote(qb.Table) + "(" +
 		qb.quoteSep(qb.Fields...) + ") values (" + qb.values(qb.Fields...) + ")")
+	log.Debug(query)
+	return query
 }
 
 //CreateRefQuery makes references.
@@ -376,17 +399,17 @@ func (qb *QueryBuilder) CreateRefQuery(linkto string) string {
 
 //DeleteQuery makes sql query.
 func (qb *QueryBuilder) DeleteQuery() string {
-	return "delete from " + qb.quote(qb.Table) + " where uuid = ?"
+	return "delete from " + qb.quote(qb.Table) + " where uuid = " + qb.placeholder(1)
 }
 
 //DeleteRefQuery makes sql query.
 func (qb *QueryBuilder) DeleteRefQuery(linkto string) string {
-	return "delete from ref_" + qb.Table + "_" + linkto + " where " + qb.quote("from") + " = ?"
+	return "delete from ref_" + qb.Table + "_" + linkto + " where " + qb.quote("from") + " = " + qb.placeholder(1)
 }
 
 //SelectAuthQuery makes sql query.
 func (qb *QueryBuilder) SelectAuthQuery() string {
-	return "select count(uuid) from " + qb.quote(qb.Table) + " where uuid = ? "
+	return "select count(uuid) from " + qb.quote(qb.Table) + " where uuid = " + qb.placeholder(1)
 }
 
 //UpdateQuery makes sql query for update.
@@ -398,11 +421,40 @@ func (qb *QueryBuilder) UpdateQuery(columns []string) string {
 	query.WriteString("set ")
 	for i, column := range columns {
 		query.WriteString(qb.quote(column))
-		query.WriteString(" = ? ")
+		query.WriteString(" = ")
+		query.WriteString(qb.placeholder(i + 1))
 		if i < len(columns)-1 {
 			query.WriteString(", ")
 		}
 	}
-	query.WriteString("where uuid = ?;")
+	query.WriteString("where uuid = ")
+	query.WriteString(qb.placeholder(len(columns) + 1))
 	return query.String()
+}
+
+//LogQuery log sql query
+// nolint
+func LogQuery(command string, values ...interface{}) {
+	var output bytes.Buffer
+	query := command
+	valueIndex := 0
+	for _, c := range query {
+		if c != '?' {
+			output.WriteRune(c)
+			continue
+		}
+		v := values[valueIndex]
+		switch r := v.(type) {
+		case int:
+			output.WriteString(strconv.Itoa(r))
+		case bool:
+			output.WriteString(strconv.FormatBool(r))
+		case string:
+			output.WriteString("'")
+			output.WriteString(r)
+			output.WriteString("'")
+		}
+		valueIndex++
+	}
+	log.Debug(output.String())
 }
