@@ -13,6 +13,8 @@
       loop_control:
         label: "{{ item.name }}"
       with_items: # Insert tasks here
+        - name: show initial disk usage
+          command: df -h
         - name: Install deps
           command: make deps
         - name: install mysql client
@@ -39,3 +41,7 @@
         owner: "{{ ansible_env.USER }}"
       become: yes
       become_user: root
+
+    - name: show final disk usage
+      command: df -h
+
