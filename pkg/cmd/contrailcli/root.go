@@ -53,7 +53,7 @@ func getClient() (*apisrv.Client, error) {
 		viper.GetBool("insecure"),
 		&keystone.Scope{
 			Project: &keystone.Project{
-				ID: viper.GetString("project"),
+				ID: viper.GetString("project_id"),
 			},
 		},
 	)
