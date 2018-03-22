@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
@@ -35,25 +34,6 @@ func (c *Cluster) interfaceToKubernetesNode(kubernetesNodes interface{}) ([]*mod
 			return nil, errors.New("unable to get information of kubernetes node")
 		}
 		kubernetesNodeInfo = models.InterfaceToKubernetesNode(kubernetesNodeData)
-		// Expand node refs
-		if nodeRefs, ok := kubernetesNodeData["node_refs"]; ok {
-			var nodesData []*models.KubernetesNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.KubernetesNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			kubernetesNodeInfo.NodeRefs = nodesData
-		}
 		kubernetesNodesData = append(kubernetesNodesData, kubernetesNodeInfo)
 	}
 	return kubernetesNodesData, nil
@@ -69,25 +49,6 @@ func (c *Cluster) interfaceToKubernetesMasterNode(
 			return nil, errors.New("unable to get information of kubernetes master node")
 		}
 		kubernetesMasterNodeInfo = models.InterfaceToKubernetesMasterNode(kubernetesMasterNodeData)
-		// Expand node refs
-		if nodeRefs, ok := kubernetesMasterNodeData["node_refs"]; ok {
-			var nodesData []*models.KubernetesMasterNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.KubernetesMasterNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			kubernetesMasterNodeInfo.NodeRefs = nodesData
-		}
 		kubernetesMasterNodesData = append(kubernetesMasterNodesData, kubernetesMasterNodeInfo)
 	}
 	return kubernetesMasterNodesData, nil
@@ -103,25 +64,6 @@ func (c *Cluster) interfaceToOpenstackControlNode(
 			return nil, errors.New("unable to get information of openstack control node")
 		}
 		openstackControlNodeInfo = models.InterfaceToOpenstackControlNode(openstackControlNodeData)
-		// Expand node refs
-		if nodeRefs, ok := openstackControlNodeData["node_refs"]; ok {
-			var nodesData []*models.OpenstackControlNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.OpenstackControlNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			openstackControlNodeInfo.NodeRefs = nodesData
-		}
 		openstackControlNodesData = append(openstackControlNodesData, openstackControlNodeInfo)
 	}
 	return openstackControlNodesData, nil
@@ -140,25 +82,6 @@ func (c *Cluster) interfaceToOpenstackMonitoringNode(
 			return nil, errors.New("unable to get information of openstack monitoring node")
 		}
 		openstackMonitoringNodeInfo = models.InterfaceToOpenstackMonitoringNode(openstackMonitoringNodeData)
-		// Expand node refs
-		if nodeRefs, ok := openstackMonitoringNodeData["node_refs"]; ok {
-			var nodesData []*models.OpenstackMonitoringNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.OpenstackMonitoringNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			openstackMonitoringNodeInfo.NodeRefs = nodesData
-		}
 		openstackMonitoringNodesData = append(openstackMonitoringNodesData, openstackMonitoringNodeInfo)
 	}
 	return openstackMonitoringNodesData, nil
@@ -175,25 +98,6 @@ func (c *Cluster) interfaceToOpenstackNetworkNode(
 			return nil, errors.New("unable to get information of openstack_network node")
 		}
 		openstackNetworkNodeInfo = models.InterfaceToOpenstackNetworkNode(openstackNetworkNodeData)
-		// Expand node refs
-		if nodeRefs, ok := openstackNetworkNodeData["node_refs"]; ok {
-			var nodesData []*models.OpenstackNetworkNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.OpenstackNetworkNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			openstackNetworkNodeInfo.NodeRefs = nodesData
-		}
 		openstackNetworkNodesData = append(
 			openstackNetworkNodesData, openstackNetworkNodeInfo)
 	}
@@ -213,25 +117,6 @@ func (c *Cluster) interfaceToOpenstackStorageNode(
 			return nil, errors.New("unable to get information of openstack storage node")
 		}
 		openstackStorageNodeInfo = models.InterfaceToOpenstackStorageNode(openstackStorageNodeData)
-		// Expand node refs
-		if nodeRefs, ok := openstackStorageNodeData["node_refs"]; ok {
-			var nodesData []*models.OpenstackStorageNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.OpenstackStorageNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			openstackStorageNodeInfo.NodeRefs = nodesData
-		}
 		openstackStorageNodesData = append(
 			openstackStorageNodesData, openstackStorageNodeInfo)
 	}
@@ -251,25 +136,6 @@ func (c *Cluster) interfaceToOpenstackComputeNode(
 			return nil, errors.New("unable to get information of openstack_compute")
 		}
 		openstackComputeNodeInfo = models.InterfaceToOpenstackComputeNode(openstackComputeNodeData)
-		// Expand node refs
-		if nodeRefs, ok := openstackComputeNodeData["node_refs"]; ok {
-			var nodesData []*models.OpenstackComputeNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.OpenstackComputeNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			openstackComputeNodeInfo.NodeRefs = nodesData
-		}
 		openstackComputeNodesData = append(openstackComputeNodesData, openstackComputeNodeInfo)
 	}
 	return openstackComputeNodesData, nil
@@ -285,29 +151,26 @@ func (c *Cluster) interfaceToVrouterNode(vrouterNodes interface{}) ([]*models.Co
 			return nil, errors.New("unable to get information of vrouter node")
 		}
 		vrouterNodeInfo = models.InterfaceToContrailVrouterNode(vrouterNodeData)
-		// Expand node refs
-		if nodeRefs, ok := vrouterNodeData["node_refs"]; ok {
-			var nodesData []*models.ContrailVrouterNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.ContrailVrouterNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			vrouterNodeInfo.NodeRefs = nodesData
-		}
 		vrouterNodesData = append(vrouterNodesData, vrouterNodeInfo)
 	}
 	return vrouterNodesData, nil
 }
+
+func (c *Cluster) interfaceToServiceNode(serviceNodes interface{}) ([]*models.ContrailServiceNode, error) {
+	var serviceNodesData []*models.ContrailServiceNode
+	for _, serviceNode := range serviceNodes.([]interface{}) {
+		serviceNodeInfo := models.InterfaceToContrailServiceNode(serviceNode.(map[string]interface{}))
+		// Read contrail role node to get the node refs information
+		serviceNodeData, err := c.getResource(defaultServiceNodeResPath, serviceNodeInfo.UUID)
+		if err != nil {
+			return nil, errors.New("unable to get information of service node")
+		}
+		serviceNodeInfo = models.InterfaceToContrailServiceNode(serviceNodeData)
+		serviceNodesData = append(serviceNodesData, serviceNodeInfo)
+	}
+	return serviceNodesData, nil
+}
+
 func (c *Cluster) interfaceToAnalyticsDBNode(
 	analyticsDBNodes interface{}) ([]*models.ContrailAnalyticsDatabaseNode, error) {
 	var analyticsDBNodesData []*models.ContrailAnalyticsDatabaseNode
@@ -319,25 +182,6 @@ func (c *Cluster) interfaceToAnalyticsDBNode(
 			return nil, errors.New("unable to get information of analytics db node")
 		}
 		analyticsDBNodeInfo = models.InterfaceToContrailAnalyticsDatabaseNode(analyticsDBNodeData)
-		// Expand node refs
-		if nodeRefs, ok := analyticsDBNodeData["node_refs"]; ok {
-			var nodesData []*models.ContrailAnalyticsDatabaseNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.ContrailAnalyticsDatabaseNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			analyticsDBNodeInfo.NodeRefs = nodesData
-		}
 		analyticsDBNodesData = append(analyticsDBNodesData, analyticsDBNodeInfo)
 	}
 	return analyticsDBNodesData, nil
@@ -352,25 +196,6 @@ func (c *Cluster) interfaceToAnalyticsNode(analyticsNodes interface{}) ([]*model
 			return nil, errors.New("unable to get information of analytics node")
 		}
 		analyticsNodeInfo = models.InterfaceToContrailAnalyticsNode(analyticsNodeData)
-		// Expand node refs
-		if nodeRefs, ok := analyticsNodeData["node_refs"]; ok {
-			var nodesData []*models.ContrailAnalyticsNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.ContrailAnalyticsNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			analyticsNodeInfo.NodeRefs = nodesData
-		}
 		analyticsNodesData = append(analyticsNodesData, analyticsNodeInfo)
 	}
 	return analyticsNodesData, nil
@@ -386,25 +211,6 @@ func (c *Cluster) interfaceToWebuiNode(webuiNodes interface{}) ([]*models.Contra
 			return nil, errors.New("unable to get information of webui node")
 		}
 		webuiNodeInfo = models.InterfaceToContrailWebuiNode(webuiNodeData)
-		// Expand node refs
-		if nodeRefs, ok := webuiNodeData["node_refs"]; ok {
-			var nodesData []*models.ContrailWebuiNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.ContrailWebuiNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			webuiNodeInfo.NodeRefs = nodesData
-		}
 		webuiNodesData = append(webuiNodesData, webuiNodeInfo)
 	}
 	return webuiNodesData, nil
@@ -420,25 +226,6 @@ func (c *Cluster) interfaceToControlNode(controlNodes interface{}) ([]*models.Co
 			return nil, errors.New("unable to get information of control node")
 		}
 		controlNodeInfo = models.InterfaceToContrailControlNode(controlNodeData)
-		// Expand node refs
-		if nodeRefs, ok := controlNodeData["node_refs"]; ok {
-			var nodesData []*models.ContrailControlNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.ContrailControlNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			controlNodeInfo.NodeRefs = nodesData
-		}
 		controlNodesData = append(controlNodesData, controlNodeInfo)
 	}
 	return controlNodesData, nil
@@ -454,25 +241,6 @@ func (c *Cluster) interfaceToConfigDBNode(configDBNodes interface{}) ([]*models.
 			return nil, errors.New("unable to get information of config db node")
 		}
 		configDBNodeInfo = models.InterfaceToContrailConfigDatabaseNode(configDBNodeData)
-		// Expand node refs
-		if nodeRefs, ok := configDBNodeData["node_refs"]; ok {
-			var nodesData []*models.ContrailConfigDatabaseNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.ContrailConfigDatabaseNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			configDBNodeInfo.NodeRefs = nodesData
-		}
 		configDBNodesData = append(configDBNodesData, configDBNodeInfo)
 	}
 	return configDBNodesData, nil
@@ -488,25 +256,6 @@ func (c *Cluster) interfaceToConfigNode(configNodes interface{}) ([]*models.Cont
 			return nil, errors.New("unable to get information of config node")
 		}
 		configNodeInfo = models.InterfaceToContrailConfigNode(configNodeData)
-		// Expand node refs
-		if nodeRefs, ok := configNodeData["node_refs"]; ok {
-			var nodesData []*models.ContrailConfigNodeNodeRef
-			for _, nodeRef := range nodeRefs.([]interface{}) {
-				nodeRefMap, ok := nodeRef.(map[string]interface{})
-				if !ok {
-					return nil, errors.New("unable to get node refs")
-				}
-				nodeInfo := &models.ContrailConfigNodeNodeRef{}
-				if uuid, ok := nodeRefMap["uuid"]; ok {
-					nodeInfo.UUID = common.InterfaceToString(uuid)
-				}
-				if to, ok := nodeRefMap["to"]; ok {
-					nodeInfo.To = common.InterfaceToStringList(to)
-				}
-				nodesData = append(nodesData, nodeInfo)
-			}
-			configNodeInfo.NodeRefs = nodesData
-		}
 		configNodesData = append(configNodesData, configNodeInfo)
 	}
 	return configNodesData, nil
@@ -595,6 +344,17 @@ func (c *Cluster) getNodeDetails(clusterInfo *models.ContrailCluster) ([]*models
 		}
 	}
 	for _, node := range clusterInfo.ContrailVrouterNodes {
+		for _, nodeRef := range node.NodeRefs {
+			n, err := c.getNode(nodeRef.UUID, m)
+			if err != nil {
+				return nil, err
+			}
+			if n != nil {
+				nodesInfo = append(nodesInfo, n)
+			}
+		}
+	}
+	for _, node := range clusterInfo.ContrailServiceNodes {
 		for _, nodeRef := range node.NodeRefs {
 			n, err := c.getNode(nodeRef.UUID, m)
 			if err != nil {
@@ -747,6 +507,14 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 			return nil, err
 		}
 		clusterInfo.ContrailVrouterNodes = vrouterNodesInfo
+	}
+	// Expand csn node back ref
+	if csnNodes, ok := rData["contrail_service_nodes"]; ok {
+		csnNodesInfo, err := c.interfaceToServiceNode(csnNodes)
+		if err != nil {
+			return nil, err
+		}
+		clusterInfo.ContrailServiceNodes = csnNodesInfo
 	}
 
 	// Expand openstack_compute back ref
