@@ -7,47 +7,47 @@ create table metadata (
 create index fq_name_index on metadata ("fq_name");
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-create table "{{ schema.ID }}" (
+create table "{{ schema.ID | lower }}" (
     {% for column in schema.Columns %}"{{column.Column}}" {{column.Type}},
     {% endfor %} primary key("uuid"));
 
-create index {{ schema.ID }}_parent_uuid_index on "{{ schema.ID }}" ("parent_uuid");
+create index {{ schema.ID | lower }}_parent_uuid_index on "{{ schema.ID | lower }}" ("parent_uuid");
 {% endif %}
 {% endfor %}
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 {% for linkTo, reference in schema.References %}
-create table ref_{{ schema.ID }}_{{ linkTo }} (
+create table ref_{{ schema.ID | lower }}_{{ linkTo | lower }} (
     "from" varchar(255),
     "to" varchar(255),
     primary key ("from","to"),
     {% for column in reference.Columns %}"{{column.Column}}" {{column.Type}},
     {% endfor %} foreign key ("from") references "{{ schema.ID }}"(uuid) on delete cascade, 
-    foreign key ("to") references "{{ linkTo }}"(uuid));
+    foreign key ("to") references "{{ linkTo | lower }}"(uuid));
 
-create index index_{{ schema.ID }}_{{ linkTo }} on ref_{{ schema.ID }}_{{ linkTo }} ("from");
+create index index_{{ schema.ID | lower }}_{{ linkTo | lower }} on ref_{{ schema.ID | lower }}_{{ linkTo | lower }} ("from");
 {% endfor %}
 
-create table tenant_share_{{ schema.ID }} (
+create table tenant_share_{{ schema.ID | lower }} (
     "uuid" varchar(255),
     "to" varchar(255),
     primary key ("uuid","to"),
     "access" integer,
-    foreign key ("uuid") references "{{ schema.ID }}"(uuid) on delete cascade,
+    foreign key ("uuid") references "{{ schema.ID | lower }}"(uuid) on delete cascade,
     foreign key ("to") references project(uuid) on delete cascade);
 
-create index index_t_{{ schema.ID }}_id on tenant_share_{{ schema.ID }}("uuid");
-create index index_t_{{ schema.ID }}_to on tenant_share_{{ schema.ID }}("to");
+create index index_t_{{ schema.ID | lower }}_id on tenant_share_{{ schema.ID | lower }}("uuid");
+create index index_t_{{ schema.ID | lower }}_to on tenant_share_{{ schema.ID | lower }}("to");
 
-create table domain_share_{{ schema.ID }} (
+create table domain_share_{{ schema.ID | lower }} (
     "uuid" varchar(255),
     "to" varchar(255),
     primary key ("uuid","to"),
     "access" integer,
-    foreign key ("uuid") references "{{ schema.ID }}"(uuid) on delete cascade,
+    foreign key ("uuid") references "{{ schema.ID | lower }}"(uuid) on delete cascade,
     foreign key ("to") references domain(uuid) on delete cascade);
 
-create index index_d_{{ schema.ID }}_id on domain_share_{{ schema.ID }}("uuid");
-create index index_d_{{ schema.ID }}_to on domain_share_{{ schema.ID }}("to");
+create index index_d_{{ schema.ID | lower }}_id on domain_share_{{ schema.ID | lower }}("uuid");
+create index index_d_{{ schema.ID | lower }}_to on domain_share_{{ schema.ID | lower }}("to");
 
 {% endif %}
 {% endfor %}

@@ -94,7 +94,7 @@ func DoInTransaction(ctx context.Context, db *sql.DB, do func(context.Context) e
 func ConnectDB() (*sql.DB, error) {
 	databaseConnection := viper.GetString("database.connection")
 	maxConn := viper.GetInt("database.max_open_conn")
-	db, err := sql.Open("mysql", databaseConnection)
+	db, err := sql.Open(viper.GetString("database.type"), databaseConnection)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open db connection")
 	}
