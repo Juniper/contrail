@@ -2,6 +2,7 @@
 database:
     connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
     # Max Open Connections for MySQL Server
+    type: mysql
     max_open_conn: 100
     dialect: mysql
 

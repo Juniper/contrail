@@ -304,7 +304,7 @@ func (s *JSONSchema) resolveSQL(
 			GoType:       s.GoType,
 			Bind:         bind,
 			Type:         s.SQL,
-			Column:       columnName,
+			Column:       strings.ToLower(columnName),
 			ParentColumn: parentColumn,
 			GoPremitive:  s.GoPremitive,
 			Name:         columnName,
