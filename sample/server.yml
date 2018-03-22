@@ -1,9 +1,17 @@
-# Database configuration. Only MySQL supported
+# Database configuration. MySQL/PostgreSQL supported
 database:
+    # MySQL example
     connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
-    # Max Open Connections for MySQL Server
-    max_open_conn: 100
+    type: mysql 
     dialect: mysql
+
+    # Postgres example
+    # connection: "user=root dbname=contrail_test sslmode=disable"
+    # type: postgres
+    # dialect: postgres
+
+    # Max Open Connections for DB Server
+    max_open_conn: 100
 
 # Log Level
 log_level: debug

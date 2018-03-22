@@ -97,7 +97,7 @@ func (db *DB) create{{ schema.JSONSchema.GoName }}(
     return nil
 }
 
-func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
+func (db *DB) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
     m := models.Make{{ schema.JSONSchema.GoName }}()
     {% for column in schema.Columns %}
     if value, ok := values["{{ column.Column }}"]; ok {
@@ -116,9 +116,8 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
     {% endfor %}
     {% for linkTo, reference in schema.References %}
     if value, ok := values["ref_{{ linkTo }}"]; ok {
-        var references []interface{}
-        stringValue := common.InterfaceToString(value)
-        json.Unmarshal([]byte("[" + stringValue + "]"), &references )
+        qb := db.queryBuilders["{{ schema.ID }}"]
+        references := qb.scanResourceList(value)
         for _, reference := range references {
             referenceMap, ok := reference.(map[string]interface{})
             if !ok {
@@ -156,9 +155,8 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
     {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
     if value, ok := values["backref_{{ child.ID }}"]; ok {
-        var childResources []interface{}
-        stringValue := common.InterfaceToString(value)
-        json.Unmarshal([]byte("[" + stringValue + "]"), &childResources )
+        qb := db.queryBuilders["{{ schema.ID }}"]
+        childResources := qb.scanResourceList(value)
         for _, childResource := range childResources {
             childResourceMap, ok := childResource.(map[string]interface{})
             if !ok {
@@ -234,7 +232,7 @@ func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *m
                 val := valuesPointers[index].(*interface{})
                 valuesMap[column] = *val
             }
-            m, err := scan{{ schema.JSONSchema.GoName }}(valuesMap)
+            m, err := db.scan{{ schema.JSONSchema.GoName }}(valuesMap)
             if err != nil {
                 return nil, errors.Wrap(err, "scan row failed")
             }
@@ -301,13 +299,13 @@ func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
     uuid string) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
 
-    selectQuery := qb.SelectAuthQuery()
     var err error
     var count int
 
     tx := GetTransaction(ctx)
     auth := common.GetAuthCTX(ctx)
 
+    selectQuery := qb.SelectAuthQuery(auth.IsAdmin())
     if auth.IsAdmin() {
         row := tx.QueryRowContext(ctx, selectQuery, uuid)
         if err != nil {
@@ -318,7 +316,6 @@ func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
            return common.ErrorNotFound
         }
     }else{
-        selectQuery += " and owner = ?"
         row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
         if err != nil {
             return common.ErrorNotFound
@@ -344,14 +341,8 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
     }
     uuid := request.ID
     tx := GetTransaction(ctx)
-    auth := common.GetAuthCTX(ctx)
-
-    if auth.IsAdmin() {
-        _, err = tx.ExecContext(ctx, deleteQuery, uuid)
-    }else{
-        deleteQuery += " and owner = ?"
-        _, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID() )
-    }
+    
+    _, err = tx.ExecContext(ctx, deleteQuery, uuid)
 
     if err != nil {
         return errors.Wrap(err, "delete failed")

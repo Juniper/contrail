@@ -18,7 +18,7 @@ to community discussion.
 
 ## Development setup
 
-### Step1. Install Go
+### Step1. Install Go and docker
 
 https://golang.org/doc/install
 
@@ -31,15 +31,18 @@ go get -u github.com/Juniper/contrail/cmd/contrailutil
 Note that go get -u github.com/Juniper/contrail fails because we don't 
 commit genreated code.
 
-### Step3 Install dependency 
+### Step3 Install dependency and testenv
 
 ``` shell
 make deps
 ```
 
-### Step4 Install MySQL5.7 with password contrail123
+### Step4 Install Test DB
 
 ```
+# setup testenv using docker
+make testenv
+# you need wait db process up
 make reset_db
 ```
 
