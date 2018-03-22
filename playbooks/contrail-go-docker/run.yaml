@@ -15,14 +15,16 @@
       with_items: # Insert tasks here
         - name: Install deps
           command: make deps
-        - name: install mysql client
-          command: sudo apt install mysql-client
+        - name: install db client
+          command: sudo apt install mysql-client postgresql-client
         - name: make generate
           command: make generate
         - name: make lint
           command: make lint
         - name: reset db
           command: make reset_db
+        - name: reset db
+          command: make reset_db_psql
         - name: make test
           command: make test
         - name: Install packaging tools

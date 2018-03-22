@@ -12,6 +12,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	_ "github.com/go-sql-driver/mysql"
+	//Import psql driver
+	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -21,6 +23,17 @@ var server *Server
 func TestMain(m *testing.M) {
 	common.InitConfig()
 	common.SetLogLevel()
+	dbConfig := viper.GetStringMap("test_database")
+	for _, iConfig := range dbConfig {
+		config := common.InterfaceToInterfaceMap(iConfig)
+		viper.Set("database.type", config["type"])
+		viper.Set("database.connection", config["connection"])
+		viper.Set("database.dialect", config["dialect"])
+		RunTestForDB(m)
+	}
+}
+
+func RunTestForDB(m *testing.M) {
 	var err error
 	server, err = NewServer()
 	if err != nil {
@@ -41,7 +54,9 @@ func TestMain(m *testing.M) {
 	log.Info("starting test")
 	code := m.Run()
 	log.Info("finished test")
-	os.Exit(code)
+	if code != 0 {
+		os.Exit(code)
+	}
 }
 
 func RunTest(t *testing.T, file string) {
@@ -71,7 +86,10 @@ func RunTest(t *testing.T, file string) {
 		_, err := client.DoRequest(task.Request)
 		assert.NoError(t, err, fmt.Sprintf("task %v failed", task))
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
-		common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("task %v failed", task))
+		ok := common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("task %v failed", task))
+		if !ok {
+			break
+		}
 	}
 }
 

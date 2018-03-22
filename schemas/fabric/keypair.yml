@@ -19,7 +19,7 @@ schema:
       permission:
       - create
       - update
-      sql: tinytext
+      sql: text
       title: SSH public key
       type: string
       view:
