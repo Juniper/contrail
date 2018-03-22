@@ -1,5 +1,9 @@
 name: Sync test
 description: network sync test
+cleanup:
+- path: /project/admin_project_uuid_test_sync
+- path: /virtual-network/vn_blue_test_sync
+- path: /network-policy/network_policy_uuid_test_sync
 test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin_test_sync"]

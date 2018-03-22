@@ -22,7 +22,7 @@ var {{ schema.JSONSchema.GoName }}Fields = []string{
 // {{ schema.JSONSchema.GoName }}RefFields is db reference fields for {{ schema.JSONSchema.GoName }}
 var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
    {% for linkTo, reference in schema.References %}
-    "{{ linkTo }}": []string{
+    "{{ linkTo | lower }}": []string{
         // {{ reference.LinkTo }}
         {% for column in reference.Columns %}"{{ column.Column }}",
         {% endfor %}
@@ -34,7 +34,7 @@ var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
 var {{ schema.JSONSchema.GoName }}BackRefFields = map[string][]string{
    {% for backref in schema.Children %}
    {% set child = backref.LinkTo %}
-   "{{ child.ID }}": []string{
+   "{{ child.ID | lower }}": []string{
         {% for column in child.Columns %}"{{ column.Column }}",
         {% endfor %}
    },
@@ -71,7 +71,7 @@ func (db *DB) create{{ schema.JSONSchema.GoName }}(
            ref.Attr = &models.{{ reference.RefType }}{}
        }
        {% endif %}
-        _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+        _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
 	    if err != nil {
             return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
@@ -97,7 +97,7 @@ func (db *DB) create{{ schema.JSONSchema.GoName }}(
     return nil
 }
 
-func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
+func (db *DB) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
     m := models.Make{{ schema.JSONSchema.GoName }}()
     {% for column in schema.Columns %}
     if value, ok := values["{{ column.Column }}"]; ok {
@@ -115,10 +115,9 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
     }
     {% endfor %}
     {% for linkTo, reference in schema.References %}
-    if value, ok := values["ref_{{ linkTo }}"]; ok {
-        var references []interface{}
-        stringValue := common.InterfaceToString(value)
-        json.Unmarshal([]byte("[" + stringValue + "]"), &references )
+    if value, ok := values["ref_{{ linkTo | lower }}"]; ok {
+        qb := db.queryBuilders["{{ schema.ID }}"]
+        references := qb.scanResourceList(value)
         for _, reference := range references {
             referenceMap, ok := reference.(map[string]interface{})
             if !ok {
@@ -155,10 +154,9 @@ func scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models
     {% endfor %}
     {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
-    if value, ok := values["backref_{{ child.ID }}"]; ok {
-        var childResources []interface{}
-        stringValue := common.InterfaceToString(value)
-        json.Unmarshal([]byte("[" + stringValue + "]"), &childResources )
+    if value, ok := values["backref_{{ child.ID | lower }}"]; ok {
+        qb := db.queryBuilders["{{ schema.ID }}"]
+        childResources := qb.scanResourceList(value)
         for _, childResource := range childResources {
             childResourceMap, ok := childResource.(map[string]interface{})
             if !ok {
@@ -234,7 +232,7 @@ func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *m
                 val := valuesPointers[index].(*interface{})
                 valuesMap[column] = *val
             }
-            m, err := scan{{ schema.JSONSchema.GoName }}(valuesMap)
+            m, err := db.scan{{ schema.JSONSchema.GoName }}(valuesMap)
             if err != nil {
                 return nil, errors.Wrap(err, "scan row failed")
             }
@@ -270,8 +268,8 @@ func (db *DB) update{{ schema.JSONSchema.GoName }}(
                 values = append(values, {% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %} )
             {% endfor %}
             {% for linkTo, reference in schema.References %}
-            case "{{ linkTo }}_refs":
-                _, err = tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo }}"), model.UUID)
+            case "{{ linkTo | lower }}_refs":
+                _, err = tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo | lower }}"), model.UUID)
                 if err != nil {
                     return errors.Wrap(err,"{{ reference.GoName }}Refs update failed")
                 }
@@ -281,7 +279,7 @@ func (db *DB) update{{ schema.JSONSchema.GoName }}(
                         ref.Attr = &models.{{ reference.RefType }}{}
                     }
                     {% endif %}
-                    _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+                    _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
                 {% endif %}{% endfor %})
                     if err != nil {
                         return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
@@ -301,13 +299,13 @@ func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
     uuid string) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
 
-    selectQuery := qb.SelectAuthQuery()
     var err error
     var count int
 
     tx := GetTransaction(ctx)
     auth := common.GetAuthCTX(ctx)
 
+    selectQuery := qb.SelectAuthQuery(auth.IsAdmin())
     if auth.IsAdmin() {
         row := tx.QueryRowContext(ctx, selectQuery, uuid)
         if err != nil {
@@ -318,7 +316,6 @@ func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
            return common.ErrorNotFound
         }
     }else{
-        selectQuery += " and owner = ?"
         row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
         if err != nil {
             return common.ErrorNotFound
@@ -344,14 +341,8 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
     }
     uuid := request.ID
     tx := GetTransaction(ctx)
-    auth := common.GetAuthCTX(ctx)
-
-    if auth.IsAdmin() {
-        _, err = tx.ExecContext(ctx, deleteQuery, uuid)
-    }else{
-        deleteQuery += " and owner = ?"
-        _, err = tx.ExecContext(ctx, deleteQuery, uuid, auth.ProjectID() )
-    }
+    
+    _, err = tx.ExecContext(ctx, deleteQuery, uuid)
 
     if err != nil {
         return errors.Wrap(err, "delete failed")

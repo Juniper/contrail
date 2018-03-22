@@ -2,37 +2,48 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/common"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	//Import mysql driver
 	_ "github.com/go-sql-driver/mysql"
+	//Import psql driver
+	_ "github.com/lib/pq"
 )
 
 var testDB *sql.DB
 var db *DB
 
 func TestMain(m *testing.M) {
-	common.InitConfig()
+
+	viper.SetConfigName("server")
+	viper.AddConfigPath("../apisrv")
+	viper.ReadInConfig()
+
 	common.SetLogLevel()
 	var err error
-	fmt.Println("connected db")
-	testDB, err = ConnectDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer testDB.Close()
-	db = &DB{
-		DB:      testDB,
-		Dialect: NewDialect("mysql"),
-	}
-	db.initQueryBuilders()
+	dbConfig := viper.GetStringMap("test_database")
+	for _, iConfig := range dbConfig {
+		config := common.InterfaceToInterfaceMap(iConfig)
+		testDB, err = sql.Open(config["type"].(string), config["connection"].(string))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer testDB.Close()
+		db = &DB{
+			DB:      testDB,
+			Dialect: NewDialect(config["dialect"].(string)),
+		}
+		db.initQueryBuilders()
 
-	log.Info("starting test")
-	code := m.Run()
-	log.Info("finished test")
-	os.Exit(code)
+		log.Info("starting test")
+		code := m.Run()
+		log.Info("finished test")
+		if code != 0 {
+			os.Exit(code)
+		}
+	}
 }

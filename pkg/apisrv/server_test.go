@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/stretchr/testify/assert"
+	"github.com/twinj/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
@@ -56,8 +57,8 @@ func TestGRPC(t *testing.T) {
 	c := services.NewContrailServiceClient(conn)
 	assert.NoError(t, err)
 	project := models.MakeProject()
-	project.UUID = "test_project_grpc"
-	project.FQName = []string{"default-domain", "project", "test_project_grpc"}
+	project.UUID = uuid.NewV4().String()
+	project.FQName = []string{"default-domain", "project", project.UUID}
 	_, err = c.CreateProject(ctx, &models.CreateProjectRequest{
 		Project: project,
 	})

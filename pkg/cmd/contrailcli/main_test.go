@@ -18,7 +18,10 @@ var testServer *httptest.Server
 var server *apisrv.Server
 
 func TestMain(m *testing.M) {
-	common.InitConfig()
+	viper.SetConfigName("server")
+	viper.AddConfigPath(".")
+	viper.ReadInConfig()
+
 	common.SetLogLevel()
 	var err error
 	server, err = apisrv.NewServer()
