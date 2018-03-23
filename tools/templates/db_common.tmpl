@@ -6,7 +6,7 @@ func (db *DB) initQueryBuilders() {
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     queryBuilders["{{ schema.ID }}"] = NewQueryBuilder(db.Dialect,
-       "{{ schema.ID }}", {{ schema.JSONSchema.GoName }}Fields,
+       "{{ schema.ID | lower }}", {{ schema.JSONSchema.GoName }}Fields,
        {{ schema.JSONSchema.GoName }}RefFields,
        {{ schema.JSONSchema.GoName }}BackRefFields)
 {% endif%}{% endfor %}

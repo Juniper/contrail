@@ -26,12 +26,12 @@ func (db *DB) UpdateSharing(tx *sql.Tx, table string, uuid string, shares []inte
 		return nil
 	}
 	_, err := tx.Exec(
-		"delete from "+db.Dialect.quote("domain_share_"+table)+" where uuid = ?;", uuid)
+		"delete from "+db.Dialect.quote("domain_share_"+table)+" where uuid = "+db.Dialect.placeholder(1), uuid)
 	if err != nil {
 		return err
 	}
 	_, err = tx.Exec(
-		"delete from "+db.Dialect.quote("tenant_share_"+table)+" where uuid = ?;", uuid)
+		"delete from "+db.Dialect.quote("tenant_share_"+table)+" where uuid = ?"+db.Dialect.placeholder(1), uuid)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (db *DB) createSharingEntry(tx *sql.Tx, table string, uuid string, tenant s
 	}
 	to := resourceMetaData.UUID
 	_, err = tx.Exec(
-		"insert into "+db.Dialect.quote(shareType+"_share_"+table)+" (uuid, access, "+db.Dialect.quote("to")+") values (?,?,?);", // nolint
+		"insert into "+db.Dialect.quote(shareType+"_share_"+table)+" (uuid, access, "+db.Dialect.quote("to")+") values ("+db.Dialect.values("uuid", "access", "to")+");", // nolint
 		uuid, tenantAccess, to)
 	return err
 }

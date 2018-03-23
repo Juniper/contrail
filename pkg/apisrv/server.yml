@@ -4,6 +4,18 @@ database:
     # Max Open Connections for MySQL Server
     max_open_conn: 100
     dialect: mysql
+    type: mysql
+
+test_database:
+    mysql: 
+        connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
+        type: mysql
+        dialect: mysql
+    postgres:
+        type: postgres 
+        connection: "user=root dbname=contrail_test sslmode=disable"
+        dialect: postgres
+
 
 # Log Level
 log_level: debug
