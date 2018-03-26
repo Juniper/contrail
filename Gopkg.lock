@@ -8,6 +8,12 @@
   revision = "32f65b8d019ac3b77f9a893b7443aa3cc001d9da"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/ExpansiveWorlds/instrumentedsql"
+  packages = ["."]
+  revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
+
+[[projects]]
   name = "github.com/PuerkitoBio/purell"
   packages = ["."]
   revision = "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4"
@@ -150,6 +156,18 @@
   packages = ["."]
   revision = "027a6d1765d673d337e687394dbe780dd64e2a1e"
   version = "v2.3.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kr/pretty"
+  packages = ["."]
+  revision = "cfb55aafdaf3ec08f0db22699ab822c50091b1c4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kr/text"
+  packages = ["."]
+  revision = "7cafcd837844e784b526369c9bce262804aebc60"
 
 [[projects]]
   name = "github.com/labstack/echo"
@@ -429,6 +447,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "66f7f0241756f6eeed881dc4595dadbc55534310cc408789c2e6b4f20a658357"
+  inputs-digest = "6abb2c38e870bc835908a8a5598f983965310f4bb135ce027f236ada36075304"
   solver-name = "gps-cdcl"
   solver-version = 1

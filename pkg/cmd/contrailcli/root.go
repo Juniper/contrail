@@ -1,6 +1,8 @@
 package contrailcli
 
 import (
+	"strings"
+
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
@@ -19,6 +21,7 @@ func init() {
 	ContrailCLI.PersistentFlags().StringVarP(&configFile, "config", "c", "",
 		"Configuration File")
 	viper.SetEnvPrefix("contrail")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 }
 
