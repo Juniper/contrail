@@ -9,8 +9,6 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/pkg/errors"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // {{ schema.JSONSchema.GoName }}Fields is db columns for {{ schema.JSONSchema.GoName }}
@@ -59,9 +57,7 @@ func (db *DB) create{{ schema.JSONSchema.GoName }}(
     _, err := tx.ExecContext(ctx, qb.CreateQuery(), {% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
 	if err != nil {
-        log.WithFields(log.Fields{
-            "model": model,
-            "err": err}).Debug("create failed")
+        err = handleError(err)
         return errors.Wrap(err, "create failed")
 	}
     {% for linkTo, reference in schema.References %}
@@ -74,6 +70,7 @@ func (db *DB) create{{ schema.JSONSchema.GoName }}(
         _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
 	    if err != nil {
+            err = handleError(err)
             return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
         }
     }
@@ -91,9 +88,6 @@ func (db *DB) create{{ schema.JSONSchema.GoName }}(
     if err != nil {
         return err
     }
-    log.WithFields(log.Fields{
-        "model": model,
-    }).Debug("created")
     return nil
 }
 
@@ -211,11 +205,13 @@ func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *m
     query, columns, values := qb.ListQuery(auth, spec)
     rows, err = tx.QueryContext(ctx, query, values...)
     if err != nil {
+        err = handleError(err)
         return nil, errors.Wrap(err,"select query failed")
     }
     defer rows.Close()
     if err := rows.Err(); err != nil {
-            return nil, errors.Wrap(err, "row error")
+        err = handleError(err)
+        return nil, errors.Wrap(err, "row error")
     }
 
     for rows.Next() {
@@ -271,6 +267,7 @@ func (db *DB) update{{ schema.JSONSchema.GoName }}(
             case "{{ linkTo | lower }}_refs":
                 _, err = tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo | lower }}"), model.UUID)
                 if err != nil {
+                    err = handleError(err)
                     return errors.Wrap(err,"{{ reference.GoName }}Refs update failed")
                 }
                 for _, ref := range model.{{ reference.GoName }}Refs {
@@ -282,6 +279,7 @@ func (db *DB) update{{ schema.JSONSchema.GoName }}(
                     _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
                 {% endif %}{% endfor %})
                     if err != nil {
+                        err = handleError(err)
                         return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
                     }
                 }
@@ -290,7 +288,7 @@ func (db *DB) update{{ schema.JSONSchema.GoName }}(
     }
     values = append(values, model.UUID)
     _, err = tx.ExecContext(ctx, qb.UpdateQuery(columns), values...)
-    return err
+    return handleError(err)
 }
 
 //Check{{ schema.JSONSchema.GoName }}Policy check ownership of resources.
@@ -309,7 +307,7 @@ func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
     if auth.IsAdmin() {
         row := tx.QueryRowContext(ctx, selectQuery, uuid)
         if err != nil {
-            return errors.Wrap(err, "not found")
+            return handleError(err)
         }
         row.Scan(&count)
         if count == 0 {
@@ -318,7 +316,7 @@ func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
     }else{
         row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
         if err != nil {
-            return common.ErrorNotFound
+            return handleError(err)
         }
         row.Scan(&count)
         if count == 0 {
@@ -341,17 +339,15 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
     }
     uuid := request.ID
     tx := GetTransaction(ctx)
-    
+
     _, err = tx.ExecContext(ctx, deleteQuery, uuid)
 
     if err != nil {
+        err = handleError(err)
         return errors.Wrap(err, "delete failed")
     }
 
     err = db.DeleteMetaData(tx, uuid)
-    log.WithFields(log.Fields{
-        "uuid": uuid,
-    }).Debug("deleted")
     return err
 }
 
@@ -370,11 +366,7 @@ func (db *DB) Create{{ schema.JSONSchema.GoName }}(
         func (ctx context.Context) error {
             return db.create{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
-        log.WithFields(log.Fields{
-            "err": err,
-            "resource": "{{ schema.ID }}",
-        }).Debug("db create failed on create")
-       return nil, err 
+            return nil, err
     }
     return &models.Create{{ schema.JSONSchema.GoName }}Response{
         {{ schema.JSONSchema.GoName }}: request.{{ schema.JSONSchema.GoName }},
@@ -395,11 +387,7 @@ func (db *DB) Update{{ schema.JSONSchema.GoName }}(
         func (ctx context.Context) error {
             return db.update{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
-        log.WithFields(log.Fields{
-            "err": err,
-            "resource": "{{ schema.ID }}",
-        }).Debug("db update failed")
-        return nil, err 
+        return nil, err
     }
     return &models.Update{{ schema.JSONSchema.GoName }}Response{
         {{ schema.JSONSchema.GoName }}: model,
@@ -414,8 +402,7 @@ func (db *DB) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request 
         func (ctx context.Context) error {
             return db.delete{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
-            log.WithField("err", err).Debug("error deleting a resource")
-        return nil, err 
+        return nil, err
     }
     return &models.Delete{{ schema.JSONSchema.GoName }}Response{
         ID: request.ID,
@@ -468,8 +455,7 @@ func (db *DB) List{{ schema.JSONSchema.GoName }}(
             response, err = db.list{{ schema.JSONSchema.GoName }}(ctx, request)
             return err
         }); err != nil {
-        log.Debug(err)
-        return nil, common.ErrorInternal 
+        return nil, err
     }
     return response, nil
 }

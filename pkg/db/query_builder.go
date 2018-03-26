@@ -385,7 +385,6 @@ func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *models.ListSpe
 	qb.buildRefQuery(ctx)
 	qb.buildBackRefQuery(ctx)
 	qb.buildQuery(ctx)
-	log.Debug(ctx.query.String())
 	return ctx.query.String(), ctx.columns, ctx.values
 }
 
@@ -393,7 +392,6 @@ func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *models.ListSpe
 func (qb *QueryBuilder) CreateQuery() string {
 	query := ("insert into " + qb.quote(qb.Table) + "(" +
 		qb.quoteSep(qb.Fields...) + ") values (" + qb.values(qb.Fields...) + ")")
-	log.Debug(query)
 	return query
 }
 
@@ -446,6 +444,9 @@ func (qb *QueryBuilder) UpdateQuery(columns []string) string {
 func (qb *QueryBuilder) scanResourceList(value interface{}) []interface{} {
 	var resources []interface{}
 	stringValue := common.InterfaceToString(value)
+	if stringValue == "" {
+		return nil
+	}
 	switch qb.Dialect.Name {
 	case MYSQL:
 		err := json.Unmarshal([]byte("["+stringValue+"]"), &resources)
@@ -463,31 +464,4 @@ func (qb *QueryBuilder) scanResourceList(value interface{}) []interface{} {
 		log.Fatal("unsupported db dialect")
 	}
 	return resources
-}
-
-//LogQuery log sql query
-// nolint
-func LogQuery(command string, values ...interface{}) {
-	var output bytes.Buffer
-	query := command
-	valueIndex := 0
-	for _, c := range query {
-		if c != '?' {
-			output.WriteRune(c)
-			continue
-		}
-		v := values[valueIndex]
-		switch r := v.(type) {
-		case int:
-			output.WriteString(strconv.Itoa(r))
-		case bool:
-			output.WriteString(strconv.FormatBool(r))
-		case string:
-			output.WriteString("'")
-			output.WriteString(r)
-			output.WriteString("'")
-		}
-		valueIndex++
-	}
-	log.Debug(output.String())
 }
