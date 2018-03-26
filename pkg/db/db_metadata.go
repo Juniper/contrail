@@ -8,7 +8,6 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 //MetaData represents resource meta data.
@@ -29,6 +28,7 @@ func (db *DB) CreateMetaData(tx *sql.Tx, metaData *MetaData) error {
 		"insert into metadata (uuid,type,fq_name) values ("+
 			db.Dialect.values("uuid", "type", "fq_name")+");",
 		metaData.UUID, metaData.Type, FQNameToString(metaData.FQName))
+	err = handleError(err)
 	return errors.Wrap(err, "failed to create metadata")
 }
 
@@ -38,13 +38,11 @@ func (db *DB) GetMetaData(tx *sql.Tx, uuid string, fqName []string) (*MetaData, 
 	query.WriteString("select uuid,type,fq_name from metadata where ")
 	var row *sql.Row
 
-	log.Debug(fqName)
 	if uuid != "" {
 		query.WriteString("uuid = " + db.Dialect.placeholder(1))
 		row = tx.QueryRow(query.String(), uuid)
 	} else if fqName != nil {
 		query.WriteString("fq_name = " + db.Dialect.placeholder(1))
-		log.Debug(query.String())
 		row = tx.QueryRow(query.String(), FQNameToString(fqName))
 	} else {
 		return nil, fmt.Errorf("uuid and fqName unspecified ")
@@ -52,6 +50,7 @@ func (db *DB) GetMetaData(tx *sql.Tx, uuid string, fqName []string) (*MetaData, 
 	metaData := &MetaData{}
 	var fqNameString string
 	err := row.Scan(&metaData.UUID, &metaData.Type, &fqNameString)
+	err = handleError(err)
 	metaData.FQName = models.ParseFQName(fqNameString)
 	return metaData, errors.Wrap(err, "failed to get metadata")
 }
@@ -59,5 +58,6 @@ func (db *DB) GetMetaData(tx *sql.Tx, uuid string, fqName []string) (*MetaData, 
 //DeleteMetaData deltes metadata by uuid.
 func (db *DB) DeleteMetaData(tx *sql.Tx, uuid string) error {
 	_, err := tx.Exec("delete from metadata where uuid = "+db.Dialect.placeholder(1), uuid)
+	err = handleError(err)
 	return errors.Wrap(err, "failed to delete metadata")
 }

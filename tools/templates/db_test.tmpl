@@ -17,8 +17,6 @@ import (
 var _ = errors.New("")
 
 func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
-    //makt.Parallel()
-
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
 
@@ -65,10 +63,9 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
 
     //create project to which resource is shared
     projectModel := models.MakeProject()
-
-	projectModel.UUID = uuid.NewV4().String()
-	projectModel.FQName = []string{"default-domain-test", projectModel.UUID}
-	projectModel.Perms2.Owner = "admin"
+    projectModel.UUID = uuid.NewV4().String()
+    projectModel.FQName = []string{"default-domain-test", projectModel.UUID}
+    projectModel.Perms2.Owner = "admin"
 
     var createShare []*models.ShareType
     createShare = append(createShare, &models.ShareType{Tenant:"default-domain-test:" + projectModel.UUID, TenantAccess:7})
@@ -99,6 +96,13 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     assert.Equal(t, 1, len(response.{{ schema.JSONSchema.GoName }}s), "expected one element")
 
     model.DisplayName = "updated"
+    {% for linkTo, reference in schema.References %}
+    model.{{ reference.GoName }}Refs = []*models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
+        &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
+                UUID: {{ reference.GoName }}RefUUID1,
+                To: []string{"test", {{ reference.GoName }}RefUUID1}},
+    }
+    {% endfor %}
 
     _, err = db.Update{{ schema.JSONSchema.GoName }}(ctx,
             &models.Update{{ schema.JSONSchema.GoName }}Request{
@@ -107,7 +111,7 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
                     Paths: []string{
                         "display_name",
                     {% for linkTo, reference in schema.References %}
-                        "{{ linkTo }}_refs",
+                        "{{ linkTo | lower }}_refs",
                     {% endfor %}
                     },
                 },
@@ -116,8 +120,13 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
 
     getResponse, err := db.Get{{ schema.JSONSchema.GoName }}(ctx, &models.Get{{ schema.JSONSchema.GoName }}Request{
             ID: model.UUID})
+    updatedModel := getResponse.{{ schema.JSONSchema.GoName }}
     assert.NoError(t, err, "get response failed")
-    assert.Equal(t, model.DisplayName, getResponse.{{ schema.JSONSchema.GoName }}.DisplayName, "update failed")
+    assert.Equal(t, model.DisplayName, updatedModel.DisplayName, "update failed")
+
+    {% for linkTo, reference in schema.References %}
+    assert.Equal(t, {{ reference.GoName }}RefUUID1, updatedModel.{{ reference.GoName }}Refs[0].UUID, "update failed")
+    {% endfor %}
 
     ctxDemo := context.WithValue(ctx, "auth", common.NewAuthContext("default", "demo", "demo", []string{}))
     _, err = db.Delete{{ schema.JSONSchema.GoName }}(ctxDemo,

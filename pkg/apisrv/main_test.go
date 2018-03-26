@@ -11,9 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/common"
-	_ "github.com/go-sql-driver/mysql"
-	//Import psql driver
-	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 )
 

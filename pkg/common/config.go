@@ -1,6 +1,8 @@
 package common
 
 import (
+	"strings"
+
 	"github.com/spf13/viper"
 )
 
@@ -12,5 +14,8 @@ func InitConfig() error {
 	viper.AddConfigPath("../../sample")
 	viper.AddConfigPath("../sample")
 	viper.AddConfigPath("./sample")
+	viper.SetEnvPrefix("contrail")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
 	return viper.ReadInConfig()
 }

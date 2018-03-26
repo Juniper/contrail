@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ExpansiveWorlds/instrumentedsql"
 	"github.com/Juniper/contrail/pkg/serviceif"
+	"github.com/go-sql-driver/mysql"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -76,25 +79,48 @@ func DoInTransaction(ctx context.Context, db *sql.DB, do func(context.Context) e
 	newCTX := context.WithValue(ctx, Transaction, tx)
 	err = do(newCTX)
 	if err != nil {
-		log.Error(err)
+		err = handleError(err)
 		tx.Rollback()
 		return err
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		log.Error(err)
 		tx.Rollback()
+		err = handleError(err)
 		return err
 	}
 	return nil
 }
 
+//LogQuery log sql query
+// nolint
+func LogQuery(ctx context.Context, command string, args ...interface{}) {
+	log.Debug(command, args)
+}
+
+func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
+	if viper.GetBool("database.debug") {
+		logger := instrumentedsql.LoggerFunc(LogQuery)
+		switch dbType {
+		case MYSQL:
+			dbType = "instrumented-" + dbType
+			sql.Register(dbType, instrumentedsql.WrapDriver(&mysql.MySQLDriver{}, instrumentedsql.WithLogger(logger)))
+		case POSTGRES:
+			dbType = "instrumented-" + dbType
+			sql.Register(dbType, instrumentedsql.WrapDriver(&pq.Driver{}, instrumentedsql.WithLogger(logger)))
+		}
+	}
+
+	return sql.Open(dbType, databaseConnection)
+}
+
 //ConnectDB connect to the db based on viper configuration.
 func ConnectDB() (*sql.DB, error) {
+	dbType := viper.GetString("database.type")
 	databaseConnection := viper.GetString("database.connection")
 	maxConn := viper.GetInt("database.max_open_conn")
-	db, err := sql.Open(viper.GetString("database.type"), databaseConnection)
+	db, err := makeConnection(dbType, databaseConnection)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open db connection")
 	}

@@ -1,6 +1,8 @@
 package contrail
 
 import (
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -15,6 +17,7 @@ func init() {
 	Contrail.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuration File")
 	Contrail.PersistentFlags().StringVarP(&agentConfigFile, "agent", "a", "", "Agent Config File")
 	viper.SetEnvPrefix("contrail")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 }
 
