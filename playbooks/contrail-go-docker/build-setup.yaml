@@ -27,6 +27,7 @@
     command: sleep infinity
     volumes:
       - "{{ sourcedir }}:/go"
+      - "/var/run/docker.sock:/var/run/docker.sock"
   become: yes
   become_user: root
 

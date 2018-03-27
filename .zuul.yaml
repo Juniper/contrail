@@ -24,9 +24,11 @@
       docker:
         - image: circleci/golang:1.10
         - image: circleci/mysql:5.7
+          name: contrail_mysql
           environment:
             MYSQL_ROOT_PASSWORD: contrail123
         - image: circleci/postgres:10.3-alpine
+          name: contrail_postgres
           environment:
             POSTGRES_USER: root
             POSTGRES_DB: contrail123 

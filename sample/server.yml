@@ -68,4 +68,4 @@ proxy:
 
 # disable authentication with no_auth true and comment out keystone configuraion.
 
-# no_auth: true
+no_auth: true
