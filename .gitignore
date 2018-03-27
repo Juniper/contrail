@@ -34,3 +34,6 @@ proto/
 tools/init_mysql.sql
 tools/init_psql.sql
 tools/cleanup.sql
+docker/contrail_go/etc/*
+docker/contrail_go/contrail
+docker/contrail_go/contrailcli

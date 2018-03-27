@@ -25,12 +25,8 @@
           command: make reset_db
         - name: make test
           command: make test
-        - name: Install packaging tools
-          command: |
-            sudo apt-get install -y zip build-essential rpm rubygems ruby-dev curl;
-            sudo gem install --no-ri --no-rdoc fpm;
-        - name: Make package
-          command: make build binaries package
+        - name: Make docker
+          command: make docker 
 
     - name: Fix files ownerships
       file:
