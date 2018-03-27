@@ -24,6 +24,18 @@ schema:
       view:
       - create
       - detail
+    registry_private_insecure:
+      description: Insecure container registry
+      default: false
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Insecure Registery
+      type: "boolean"
+      view:
+      - create
+      - detail
     contrail_version:
       description: Version of contrail containers to be used.
       nullable: false
@@ -205,6 +217,18 @@ schema:
       - update
       sql: ""
       title: NTPServer
+      type: string
+      view:
+      - create
+      - detail
+    control_data_network_list:
+      description: Comma seperated control data network to use.
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Control Data Networks
       type: string
       view:
       - create
