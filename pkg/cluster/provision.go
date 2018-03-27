@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
@@ -72,6 +73,31 @@ func (p *provisionCommon) createWorkingDir() error {
 func (p *provisionCommon) deleteWorkingDir() error {
 	err := os.RemoveAll(p.getClusterHomeDir())
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *provisionCommon) execCmd(cmd string, args []string, dir string) error {
+	cmdline := exec.Command(cmd, args...)
+	if dir != "" {
+		cmdline.Dir = dir
+	}
+	stdout, err := cmdline.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	stderr, err := cmdline.StderrPipe()
+	if err != nil {
+		return err
+	}
+	if err := cmdline.Start(); err != nil {
+		return err
+	}
+	// Report progress log periodically to stdout/db
+	go p.reporter.reportLog(stdout)
+	go p.reporter.reportLog(stderr)
+	if err := cmdline.Wait(); err != nil {
 		return err
 	}
 	return nil

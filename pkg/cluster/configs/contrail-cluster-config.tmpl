@@ -9,3 +9,9 @@ insecure: {{ input.InSecure }}
 cluster_id: {{ resource.uuid }}
 cluster_action: {{ action }}
 log_level: debug
+
+# Optional ansible params for dev/test
+#ansible_sudo_pass: secret123
+#ansible_fetch_url: https://review.opencontrail.org/Juniper/contrail-ansible-deployer refs/changes/80/40780/20
+#ansible_cherry_pick_revision: FETCH_HEAD
+#ansible_deployer_revision: GIT_COMMIT_HASH
