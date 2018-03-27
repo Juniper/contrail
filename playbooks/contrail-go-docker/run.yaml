@@ -31,6 +31,8 @@
             sudo gem install --no-ri --no-rdoc fpm;
         - name: Make package
           command: make build binaries package
+        - name: Make docker
+          command: make docker
 
     - name: Fix files ownerships
       file:

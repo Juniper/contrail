@@ -1,4 +1,6 @@
-all: deps lint test build integration
+all: deps lint test build
+
+.PHONY: docker
 
 deps: ## Setup the go dependencies
 	./tools/deps.sh
@@ -55,7 +57,12 @@ reset_db: ## Reset Database with latest schema.
 
 binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
-	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
+	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailcli_{{.OS}}_{{.Arch}}" ./cmd/contrailcli
+
+docker: ## Generate docker files
+	gox -osarch="linux/amd64" --output "docker/contrail_go/contrail" ./cmd/contrail
+	cp -r sample docker/contrail_go/etc
+	docker build -t "contrail-go" docker/contrail_go
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
