@@ -33,6 +33,14 @@ type Config struct {
 	Action string `yaml:"cluster_action,omitempty"`
 	// Logging level
 	LogLevel string `yaml:"log_level"`
+	// Optional ansible sudo password
+	AnsibleSudoPass string `yaml:"ansible_sudo_pass"`
+	// Optional ansible deployer cherry pick url
+	AnsibleFetchURL string `yaml:"ansible_fetch_url"`
+	// Optional ansible deployer cherry pick revison(commit id)
+	AnsibleCherryPickRevision string `yaml:"ansible_cherry_pick_revision"`
+	// Optional ansible deployer revision(commit id)
+	AnsibleRevision string `yaml:"ansible_revision"`
 }
 
 // Cluster represents Cluster service.

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/flosch/pongo2"
+	"github.com/mattn/go-shellwords"
 )
 
 type ansibleProvisioner struct {
@@ -34,25 +35,55 @@ func (a *ansibleProvisioner) cloneAnsibleDeployer() error {
 	}
 	a.log.Infof("Cloning repo:%s into %s", defaultAnsibleRepoURL, repoDir)
 	args := []string{"clone", defaultAnsibleRepoURL, repoDir}
-	cmd := exec.Command("git", args...)
-	stdout, err := cmd.StdoutPipe()
+	err = a.execCmd("git", args, "")
 	if err != nil {
-		return err
-	}
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	// Report progress log periodically to stdout/db
-	go a.reporter.reportLog(stdout)
-	go a.reporter.reportLog(stderr)
-	if err := cmd.Wait(); err != nil {
 		return err
 	}
 	a.log.Info("Cloning completed")
+
+	return nil
+}
+
+func (a *ansibleProvisioner) fetchAnsibleDeployer() error {
+	repoDir := a.getAnsibleRepoDir()
+
+	a.log.Infof("Fetching :%s", a.cluster.config.AnsibleFetchURL)
+	args, err := shellwords.Parse(a.cluster.config.AnsibleFetchURL)
+	if err != nil {
+		return err
+	}
+	args = append([]string{"fetch"}, args...)
+	err = a.execCmd("git", args, repoDir)
+	if err != nil {
+		return err
+	}
+	a.log.Info("git fetch completed")
+
+	return nil
+}
+
+func (a *ansibleProvisioner) cherryPickAnsibleDeployer() error {
+	repoDir := a.getAnsibleRepoDir()
+	a.log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
+	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
+	err := a.execCmd("git", args, repoDir)
+	if err != nil {
+		return err
+	}
+	a.log.Info("Cherry-pick completed")
+
+	return nil
+}
+
+func (a *ansibleProvisioner) resetAnsibleDeployer() error {
+	repoDir := a.getAnsibleRepoDir()
+	a.log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
+	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
+	err := a.execCmd("git", args, repoDir)
+	if err != nil {
+		return err
+	}
+	a.log.Info("Git reset completed")
 
 	return nil
 }
@@ -80,8 +111,12 @@ func (a *ansibleProvisioner) playBook() error {
 	cmdline := "ansible-playbook"
 	args := []string{"-i", "inventory/", "-e",
 		"config_file=" + a.getInstanceFile(),
-		"-e orchestrator=" + a.clusterData.clusterInfo.Orchestrator,
-		defaultInstanceProvPlay}
+		"-e orchestrator=" + a.clusterData.clusterInfo.Orchestrator}
+	if a.cluster.config.AnsibleSudoPass != "" {
+		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
+		args = append(args, sudoArg)
+	}
+	args = append(args, defaultInstanceProvPlay)
 
 	a.log.Infof("Playing instance provisioning playbook: %s %s",
 		cmdline, strings.Join(args, " "))
@@ -178,6 +213,27 @@ func (a *ansibleProvisioner) createCluster() error {
 	if err != nil {
 		a.reporter.reportStatus("Failed")
 		return err
+	}
+	if a.cluster.config.AnsibleFetchURL != "" {
+		err = a.fetchAnsibleDeployer()
+		if err != nil {
+			a.reporter.reportStatus("Failed")
+			return err
+		}
+	}
+	if a.cluster.config.AnsibleCherryPickRevision != "" {
+		err = a.cherryPickAnsibleDeployer()
+		if err != nil {
+			a.reporter.reportStatus("Failed")
+			return err
+		}
+	}
+	if a.cluster.config.AnsibleRevision != "" {
+		err = a.resetAnsibleDeployer()
+		if err != nil {
+			a.reporter.reportStatus("Failed")
+			return err
+		}
 	}
 	err = a.createInventory()
 	if err != nil {
