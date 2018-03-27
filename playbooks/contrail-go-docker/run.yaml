@@ -15,8 +15,6 @@
       with_items: # Insert tasks here
         - name: Install deps
           command: make deps
-        - name: install db client
-          command: sudo apt install mysql-client postgresql-client
         - name: make generate
           command: make generate
         - name: make lint
