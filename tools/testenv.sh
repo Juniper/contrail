@@ -9,7 +9,7 @@ docker run -d --name contrail_postgres -p 5432:5432 -e "POSTGRES_USER=root" -e "
 docker run -d --name contrail_mysql -p 3306:3306  -e "MYSQL_ROOT_PASSWORD=$PASSWORD"  circleci/mysql:5.7
 
 echo "Waiting for mysql"
-until mysql -h 127.0.0.1 -uroot -p"$PASSWORD" -e "show status" &> /dev/null
+until docker exec contrail_mysql mysql -uroot -p"$PASSWORD" -e "show status" &> /dev/null
 do
   printf "."
   sleep 1
