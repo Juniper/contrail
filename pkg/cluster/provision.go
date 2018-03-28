@@ -25,6 +25,14 @@ type provisionCommon struct {
 	reporter    *Reporter
 }
 
+func (p *provisionCommon) isProvisioned() bool {
+	state := p.clusterData.clusterInfo.ProvisioningState
+	if p.action == "create" && (state != "NOSTATE" || state != "") {
+		p.log.Infof("Cluster %s already provisioned, STATE: %s", p.clusterID, state)
+		return true
+	}
+	return false
+}
 func (p *provisionCommon) getTemplateRoot() string {
 	return defaultTemplateRoot
 }
