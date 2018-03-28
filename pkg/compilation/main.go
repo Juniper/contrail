@@ -17,14 +17,13 @@ import (
 	"github.com/DavidCai1993/etcd-lock"
 	"github.com/Juniper/contrail/pkg/compilation/config"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
+	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/serviceif"
 	"github.com/labstack/echo"
 
 	etcl "github.com/Juniper/contrail/pkg/db/etcd"
 	log "github.com/sirupsen/logrus"
 )
-
-var gIntentCompilationSvc *IntentCompilationService
-var counter int
 
 // setMessageIndex(ctx context.Context, etcdcl *etcl.IntentEtcdClient,
 func setMessageIndex(ctx context.Context, etcdcl *etcl.IntentEtcdClient,
@@ -45,7 +44,11 @@ func checkMessageIndex(ctx context.Context, etcdcl *etcl.IntentEtcdClient,
 	storedIndexStr, err := etcdcl.Get(ctx, key)
 	if err == nil {
 		// compare with passed index
-		storedIndex, _ := strconv.ParseInt(storedIndexStr, 10, 64)
+		storedIndex, error := strconv.ParseInt(storedIndexStr, 10, 64)
+		if error != nil {
+			// ignore message
+			return false
+		}
 		if currIndex <= storedIndex {
 			// ignore message
 			log.Printf("storedIndex %d >= currIndex %d\n", storedIndex,
@@ -77,9 +80,17 @@ func HandleMessage(ctx context.Context, etcdcl *etcl.IntentEtcdClient,
 	log.Printf("Index: %d, oper: %d, Got Message %s: %s\n",
 		index, oper, key, newValue)
 
-	lock, err := etcdcl.AcquireLock(ctx, gIntentCompilationSvc.ELock,
-		gIntentCompilationSvc.Cfg.EtcdNotifierCfg.MsgIndexString,
-		gIntentCompilationSvc.Cfg.EtcdNotifierCfg.MsgQueueLockTime)
+	// Get Intent Compilation Handle from the context
+	val := ctx.Value(IntentCompilationHandle)
+	if val == nil {
+		log.Println("IntentCompilationHandle not found:")
+		return
+	}
+	ics := val.(*IntentCompilationService)
+
+	lock, err := etcdcl.AcquireLock(ctx, ics.ELock,
+		ics.Cfg.EtcdNotifierCfg.MsgIndexString,
+		ics.Cfg.EtcdNotifierCfg.MsgQueueLockTime)
 	if err != nil {
 		log.Printf("Acquire Lock failed")
 		return
@@ -89,14 +100,11 @@ func HandleMessage(ctx context.Context, etcdcl *etcl.IntentEtcdClient,
 	defer etcdcl.ReleaseLock(ctx, lock)
 
 	ret := checkMessageIndex(ctx, etcdcl,
-		gIntentCompilationSvc.Cfg.EtcdNotifierCfg.MsgIndexString, index)
+		ics.Cfg.EtcdNotifierCfg.MsgIndexString, index)
 	if ret {
 		setMessageIndex(ctx, etcdcl,
-			gIntentCompilationSvc.Cfg.EtcdNotifierCfg.MsgIndexString, index)
-		m := make(map[string]string)
-		m[key] = newValue
-		counter++
-		watch.AddJob(counter, m)
+			ics.Cfg.EtcdNotifierCfg.MsgIndexString, index)
+		watch.AddJob(ctx, index, oper, key, newValue)
 		time.Sleep(5 * time.Second)
 		log.Printf("#goroutines: %d\n", runtime.NumGoroutine())
 	}
@@ -104,12 +112,26 @@ func HandleMessage(ctx context.Context, etcdcl *etcl.IntentEtcdClient,
 	log.Printf("Released the lock!")
 }
 
+// HandleEtcdMessages handles callbacks from workers
+func HandleEtcdMessages(ctx context.Context, oper int32, key, value string) {
+	// Get Intent Compilation Handle from the context
+	val := ctx.Value(IntentCompilationHandle)
+	if val == nil {
+		log.Println("IntentCompilationHandle not found:")
+		return
+	}
+	ics := val.(*IntentCompilationService)
+	ics.Service.HandleEtcdMessages(ctx, oper, key, value)
+	return
+}
+
 //IntentCompilationService represents Intent Compilation Service.
 type IntentCompilationService struct {
-	Echo   *echo.Echo
-	Etcdcl *etcl.IntentEtcdClient
-	ELock  *etcdlock.Locker
-	Cfg    *config.Config
+	Echo    *echo.Echo
+	Etcdcl  *etcl.IntentEtcdClient
+	ELock   *etcdlock.Locker
+	Cfg     *config.Config
+	Service *compilationif.CompilationService
 }
 
 // NewIntentCompilationService makes a new Intent Compilation Service
@@ -118,8 +140,19 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		Echo: echo.New(),
 	}
 	log.Debug("Created New IntentCompilation Service")
-	gIntentCompilationSvc = ics
 	return ics, nil
+}
+
+//AddServices adds services to compilation chain
+func (ics *IntentCompilationService) AddServices() *compilationif.CompilationService {
+	var serviceChain []serviceif.Service
+
+	compilationService := compilationif.NewCompilationService()
+	serviceChain = append(serviceChain, compilationService)
+
+	serviceif.Chain(serviceChain)
+
+	return compilationService
 }
 
 //Init setup the IntentCompilationService.
@@ -132,7 +165,7 @@ func (ics *IntentCompilationService) Init(configFile string) error {
 	ics.Cfg = conf
 
 	watch.WatcherInit(conf.DefaultCfg.MaxJobQueueLen)
-	watch.InitDispatcher(conf.DefaultCfg.NumberOfWorkers)
+	watch.InitDispatcher(conf.DefaultCfg.NumberOfWorkers, HandleEtcdMessages)
 
 	etcdcl, err := etcl.Dial(conf.EtcdServersUrls)
 	if err != nil {
@@ -148,6 +181,8 @@ func (ics *IntentCompilationService) Init(configFile string) error {
 		return err
 	}
 	ics.ELock = locker
+
+	ics.Service = ics.AddServices()
 
 	log.Debug("Initialized Intent Compilation Service")
 	return nil
@@ -166,8 +201,11 @@ func (ics *IntentCompilationService) Run() error {
 		return err
 	}
 
+	// Store IntentCompilationService Handle in context
+	newCtx := context.WithValue(context.Background(), IntentCompilationHandle, ics)
+
 	// Watch the Configured etcd directory for messages
-	ics.Etcdcl.WatchRecursive(ctx, ics.Cfg.EtcdNotifierCfg.WatchPath, HandleMessage)
+	ics.Etcdcl.WatchRecursive(newCtx, ics.Cfg.EtcdNotifierCfg.WatchPath, HandleMessage)
 
 	return nil
 }

@@ -1,0 +1,89 @@
+// nolint
+package compilationif
+
+import (
+	"context"
+	"errors"
+	"log"
+
+	"github.com/Juniper/contrail/pkg/models"
+)
+
+func (service *CompilationService) Init() {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+	service.ObjsCache["{{ schema.ID }}"] = make(map[string]interface{})
+{% endif%}{% endfor %}
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+// Create{{ schema.JSONSchema.GoName }}
+func (service *CompilationService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+	// Check if request Object exists
+	obj := request.Get{{ schema.JSONSchema.GoName }}()
+	_, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
+		&models.Get{{ schema.JSONSchema.GoName }}Request{
+			ID: obj.UUID,
+		})
+	if err == nil {
+		return nil, nil
+	}
+
+	service.ObjsCache["{{ schema.ID }}"][obj.GetUUID()] = obj
+	log.Print("Create{{ schema.JSONSchema.GoName }}: ", service.ObjsCache["{{ schema.ID }}"])
+
+	if service.Next() == nil {
+		return nil, nil
+	}
+	return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+// Update{{ schema.JSONSchema.GoName }}
+func (service *CompilationService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+	// Check if request Object exists
+	obj := request.Get{{ schema.JSONSchema.GoName }}()
+	_, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
+		&models.Get{{ schema.JSONSchema.GoName }}Request{
+			ID: obj.UUID,
+		})
+	if err != nil {
+		return nil, nil
+	}
+
+	service.ObjsCache["{{ schema.ID }}"][obj.GetUUID()] = obj
+	log.Print("Update{{ schema.JSONSchema.GoName }}: ", service.ObjsCache["{{ schema.ID }}"])
+
+	if service.Next() == nil {
+		return nil, nil
+	}
+	return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+// Delete{{ schema.JSONSchema.GoName }}
+func (service *CompilationService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+	// Check if request Object exists
+	objUUID := request.GetID()
+	_, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
+		&models.Get{{ schema.JSONSchema.GoName }}Request{
+			ID: objUUID,
+		})
+	if err != nil {
+		return nil, nil
+	}
+
+	delete(service.ObjsCache["{{ schema.ID }}"], objUUID)
+	log.Print("Delete{{ schema.JSONSchema.GoName }}: ", service.ObjsCache["{{ schema.ID }}"])
+
+	if service.Next() == nil {
+		return nil, nil
+	}
+	return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+// Get{{ schema.JSONSchema.GoName }}
+func (service *CompilationService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (*models.Get{{ schema.JSONSchema.GoName }}Response, error) {
+	if _, ok := service.ObjsCache["{{ schema.ID }}"][request.GetID()]; !ok {
+		return nil, errors.New("{{ schema.ID }} get failed ")
+	}
+	response := &models.Get{{ schema.JSONSchema.GoName }}Response{
+		{{ schema.JSONSchema.GoName }}: service.ObjsCache["{{ schema.ID }}"][request.GetID()].(*models.{{ schema.JSONSchema.GoName }}),
+	}
+	return response, nil
+}
+{% endif%}{% endfor %}

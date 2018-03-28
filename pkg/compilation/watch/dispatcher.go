@@ -17,7 +17,7 @@ import (
 var WorkerQueue chan chan JobRequest
 
 // InitDispatcher initializes the dispatcher
-func InitDispatcher(numWorkers int) {
+func InitDispatcher(numWorkers int, callback Callback) {
 
 	// Initialize the WorkerQueue
 	WorkerQueue = make(chan chan JobRequest, numWorkers)
@@ -25,7 +25,7 @@ func InitDispatcher(numWorkers int) {
 	// Create the Workers and Run them
 	for idx := 0; idx < numWorkers; idx++ {
 
-		worker := CreateWorker(idx+1, WorkerQueue)
+		worker := CreateWorker(idx+1, WorkerQueue, callback)
 
 		worker.Run()
 
