@@ -289,6 +289,9 @@ func (a *ansibleProvisioner) deleteCluster() error {
 func (a *ansibleProvisioner) provision() error {
 	switch a.action {
 	case "create":
+		if a.isCreated() {
+			return nil
+		}
 		return a.createCluster()
 	case "update":
 		return a.updateCluster()

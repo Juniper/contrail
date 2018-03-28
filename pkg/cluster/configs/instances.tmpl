@@ -47,7 +47,7 @@ contrail_configuration:
   VROUTER_GATEWAY: {{ cluster.DefaultGateway }}
   {%if cluster.ControlDataNetworkList %}CONTROl_DATA_NET_LIST: {{cluster.ControlDataNetworkList}}{%else%}PHYSICAL_INTERFACE: {%if cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{%endif%}
   ENCAP_PRIORITY: {%if cluster.EncapPriority %}{{cluster.EncapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
-  TSN_NODES:{% for node in nodes %}{% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}{{ node.IPAddress }}{% endif %}{% endfor %}{% endfor %}{% endfor %}
+  TSN_NODES: {% for node in nodes %}{% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}{{ node.IPAddress }}{% endif %}{% endfor %}{% endfor %}{% endfor %}
 {% if cluster.Orchestrator == "openstack" %}
   AUTH_MODE: keystone
   KEYSTONE_AUTH_HOST: {%if cluster.OpenstackInternalVip %}{{cluster.OpenstackInternalVip}}{%else%}{% for node in nodes %}{%if cluster.OpenstackControlNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{% endif %}{% endfor %}{% endif %}
