@@ -70,7 +70,7 @@ func (service *EtcdNotifierService) Create{{ schema.JSONSchema.GoName }}(ctx con
 
     objUUID := obj{{ schema.JSONSchema.GoName }}.Get{{ schema.JSONSchema.GoName }}().UUID
     objKey, jsonStr := service.EtcdNotifierMarshal("{{ schema.ID }}", objUUID,
-        obj{{ schema.JSONSchema.GoName }})
+        obj{{ schema.JSONSchema.GoName }}.Get{{ schema.JSONSchema.GoName }}())
     if objKey == "" {
         return nil, common.ErrorInternal
     }
@@ -107,7 +107,7 @@ func (service *EtcdNotifierService) Update{{ schema.JSONSchema.GoName }}(ctx con
 
     objUUID := obj{{ schema.JSONSchema.GoName }}.Get{{ schema.JSONSchema.GoName }}().UUID
     objKey, jsonStr := service.EtcdNotifierMarshal("{{ schema.ID }}", objUUID,
-        obj{{ schema.JSONSchema.GoName }})
+        obj{{ schema.JSONSchema.GoName }}.Get{{ schema.JSONSchema.GoName }}())
     if objKey == "" {
         return nil, common.ErrorInternal
     }
@@ -142,7 +142,7 @@ func (service *EtcdNotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx con
 
     objUUID := obj{{ schema.JSONSchema.GoName }}.GetID()
     objKey, _ := service.EtcdNotifierMarshal("{{ schema.ID }}", objUUID,
-        obj{{ schema.JSONSchema.GoName }})
+        obj{{ schema.JSONSchema.GoName }}.GetID())
     if objKey == "" {
         return nil, common.ErrorInternal
     }

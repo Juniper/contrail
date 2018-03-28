@@ -9,13 +9,18 @@
 package watch
 
 import (
+	"context"
+
 	log "github.com/sirupsen/logrus"
 )
 
 // JobRequest hold the Job
 type JobRequest struct {
-	JobID int
-	Arg   interface{}
+	JobID     int64
+	context   context.Context
+	operation int32
+	key       string
+	value     string
 }
 
 // JobQueue : All jobs get queued here
@@ -32,20 +37,22 @@ func WatcherInit(numJobs int) {
 }
 
 // AddJob adds a Job to the worker queue
-func AddJob(id int, arg interface{}) {
+func AddJob(ctx context.Context, index int64, oper int32, key, value string) {
 	// Filter Job Requests, only interested ones get Queued
 
-	log.Printf("Before Job create, id: %d\n", id)
+	log.Printf("Before Job create, index: %d\n", index)
 	// Create the JobRequest
 	job := JobRequest{
-		JobID: id,
-		Arg:   arg,
+		JobID:     index,
+		context:   ctx,
+		operation: oper,
+		key:       key,
+		value:     value,
 	}
 
-	log.Printf("Before Job queued, id:%d\n", id)
 	// Push it to the JobQueue channel
 	JobQueue <- job
 
-	log.Printf("Job queued, id:%d\n", id)
+	log.Printf("Job queued, index:%d\n", index)
 	return
 }

@@ -1,16 +1,21 @@
 package watch
 
 import (
+	"context"
 	"runtime"
 	"testing"
 	"time"
 )
 
+func HandleTestMessages(ctx context.Context, oper int32, key, value string) {
+	return
+}
+
 // TestDispatcherJobsCreation
 func TestDispatcherJobsCreation(t *testing.T) {
 	numGoRoutinesBefore := runtime.NumGoroutine()
 	t.Logf("#goroutines before InitDispatcher(): %d\n", numGoRoutinesBefore)
-	InitDispatcher(3)
+	InitDispatcher(3, HandleTestMessages)
 	numGoRoutinesAfter := runtime.NumGoroutine()
 	t.Logf("#goroutines after InitDispatcher(): %d\n", numGoRoutinesAfter)
 	diffGoRoutines := numGoRoutinesAfter - numGoRoutinesBefore
@@ -21,7 +26,7 @@ func TestDispatcherJobsCreation(t *testing.T) {
 
 // TestAssignJobs
 func TestAssignJobs(t *testing.T) {
-	InitDispatcher(2)
+	InitDispatcher(2, HandleTestMessages)
 
 	job1 := JobRequest{JobID: 1}
 	job2 := JobRequest{JobID: 2}
@@ -34,10 +39,12 @@ func TestAssignJobs(t *testing.T) {
 
 // TestWatcher
 func TestWatcher(t *testing.T) {
+	ctx := context.Background()
+
 	WatcherInit(2)
 
-	AddJob(1, nil)
-	AddJob(2, nil)
+	AddJob(ctx, 1, 0, "test1", "test")
+	AddJob(ctx, 2, 0, "test2", "test2")
 
 	job1 := <-JobQueue
 	t.Logf("Created Job: %d\n", job1.JobID)

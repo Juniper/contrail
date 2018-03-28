@@ -9,10 +9,14 @@
 package watch
 
 import (
+	"context"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 )
+
+// Callback from Watch functions
+type Callback func(ctx context.Context, oper int32, key, newValue string)
 
 // Worker holds worker object
 type Worker struct {
@@ -20,19 +24,21 @@ type Worker struct {
 	JobChan     chan JobRequest
 	ExitChan    chan bool
 	WorkerQueue chan chan JobRequest
+	Callback    Callback
 }
 
 // CreateWorker creates a New Worker
 // - Create a JobRequest Channel to listen on
 // - Create an ExitChan to terminate
 // - Add self to the WorkerQueue so we get JobRequests
-func CreateWorker(id int, workerQueue chan chan JobRequest) Worker {
+func CreateWorker(id int, workerQueue chan chan JobRequest, callback Callback) Worker {
 
 	worker := Worker{
 		WorkerID:    id,
 		JobChan:     make(chan JobRequest),
 		WorkerQueue: workerQueue,
 		ExitChan:    make(chan bool),
+		Callback:    callback,
 	}
 
 	return worker
@@ -50,6 +56,9 @@ func (g *Worker) Run() {
 			case job := <-g.JobChan:
 				// Received a Job Request, process it
 				log.Printf("Worker: %d, Received job request %d\n", g.WorkerID, job.JobID)
+
+				g.Callback(job.context, job.operation, job.key, job.value)
+
 				time.Sleep(1 * time.Second)
 				log.Printf("Worker: %d, Slept for 1 seconds\n", g.WorkerID)
 
