@@ -25,10 +25,10 @@ instances:
       {% for analytics_node in cluster.ContrailAnalyticsNodes %}{% for node_ref in analytics_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics:{% endif %}{% endfor %}{% endfor %}
       {% for analyticsdb_node in cluster.ContrailAnalyticsDatabaseNodes %}{% for node_ref in analyticsdb_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics_database:{% endif %}{% endfor %}{% endfor %}
       {% for vrouter_node in cluster.ContrailVrouterNodes %}{% for node_ref in vrouter_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
-        {%if not cluster.ControlDataNetworkList %}PHYSICAL_INTERFACE: {%if node.InterfaceName %}{{node.InterfaceName}}{% elif cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{%endfor %}{% endfor %}
+        {%if cluster.ControlDataNetworkList == "" %}PHYSICAL_INTERFACE: {%if node.InterfaceName %}{{node.InterfaceName}}{% elif cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{%endfor %}{% endfor %}
       {% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
         TSN_EVPN_MODE: true
-        {%if not cluster.ControlDataNetworkList %}PHYSICAL_INTERFACE: {%if node.InterfaceName %}{{node.InterfaceName}}{% elif cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{% endfor %}{% endfor %}
+        {%if cluster.ControlDataNetworkList == "" %}PHYSICAL_INTERFACE: {%if node.InterfaceName %}{{node.InterfaceName}}{% elif cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{% endfor %}{% endfor %}
       {% for k8s_master_node in cluster.KubernetesMasterNodes %}{% for node_ref in k8s_master_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_master:{% endif %}{% endfor %}{% endfor %}
       {% for k8s_node in cluster.KubernetesNodes %}{% for node_ref in k8s_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_node:{% endif %}{% endfor %}{% endfor %}
       {% for openstack_control_node in cluster.OpenstackControlNodes %}{% for node_ref in openstack_control_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_control:
@@ -45,9 +45,9 @@ contrail_configuration:
   CLOUD_ORCHESTRATOR: {{ cluster.Orchestrator }}
   RABBITMQ_NODE_PORT: {%if cluster.RabbitMQPort %}{{ cluster.RabbitMQPort }}{%else%}5673{%endif%}
   VROUTER_GATEWAY: {{ cluster.DefaultGateway }}
-  {%if cluster.ControlDataNetworkList %}CONTROl_DATA_NET_LIST: {{cluster.ControlDataNetworkList}}{%else%}PHYSICAL_INTERFACE: {%if cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{%endif%}
+  {%if cluster.ControlDataNetworkList != "" %}CONTROl_DATA_NET_LIST: {{cluster.ControlDataNetworkList}}{%else%}PHYSICAL_INTERFACE: {%if cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{%endif%}
   ENCAP_PRIORITY: {%if cluster.EncapPriority %}{{cluster.EncapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
-  TSN_NODES:{% for node in nodes %}{% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}{{ node.IPAddress }}{% endif %}{% endfor %}{% endfor %}{% endfor %}
+  TSN_NODES: {% for node in nodes %}{% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}{{ node.IPAddress }}{% endif %}{% endfor %}{% endfor %}{% endfor %}
 {% if cluster.Orchestrator == "openstack" %}
   AUTH_MODE: keystone
   KEYSTONE_AUTH_HOST: {%if cluster.OpenstackInternalVip %}{{cluster.OpenstackInternalVip}}{%else%}{% for node in nodes %}{%if cluster.OpenstackControlNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{% endif %}{% endfor %}{% endif %}
@@ -59,7 +59,7 @@ kolla_config:
     kolla_internal_vip_address: {%if cluster.OpenstackInternalVip %}{{cluster.OpenstackInternalVip}}{%else%}{% for node in nodes %}{%if cluster.OpenstackControlNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{% endif %}{% endfor %}{% endif %}
     kolla_external_vip_address: {%if cluster.OpenstackExternalVip %}{{cluster.OpenstackExternalVip}}{%else%}{% for node in nodes %}{%if cluster.ContrailControlNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{% endif %}{% endfor %}{% endif %}
     contrail_api_interface_address: {%if cluster.ContrailAPIEndPoint %}{{cluster.ContrailAPIEndPoint}}{%else%}{% for node in nodes %}{%if cluster.ContrailConfigNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{% endif %}{% endfor %}{%endif%}
-    {%if not cluster.ControlDataNetworkList %}network_interface: {%if cluster.OpenstackNetworkInterface %}{{cluster.OpenstackNetworkInterface}}{%else%}enp2s0{%endif%}{%endif%}
+    {%if cluster.ControlDataNetworkList == "" %}network_interface: {%if cluster.OpenstackNetworkInterface %}{{cluster.OpenstackNetworkInterface}}{%else%}enp2s0{%endif%}{%endif%}
     kolla_external_vip_interface: {%if cluster.OpenstackExternalVipInterface %}{{cluster.OpenstackExternalVipInterface}}{%else%}enp2s0{%endif%}
     enable_haproxy: {%if cluster.OpenstackControlNodes|length > 1 %}yes{%else%}no{%endif%}
   kolla_passwords:

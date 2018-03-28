@@ -259,7 +259,12 @@ func (a *ansibleProvisioner) updateCluster() error {
 	status := map[string]interface{}{"provisioning_state": statusUpdateProgress}
 	a.reporter.reportStatus(status)
 
-	err := a.playBook()
+	err := a.createInventory()
+	if err != nil {
+		a.reporter.reportStatus(status)
+		return err
+	}
+	err = a.playBook()
 	if err != nil {
 		status["provisioning_state"] = statusUpdateFailed
 		a.reporter.reportStatus(status)
@@ -289,6 +294,9 @@ func (a *ansibleProvisioner) deleteCluster() error {
 func (a *ansibleProvisioner) provision() error {
 	switch a.action {
 	case "create":
+		if a.isCreated() {
+			return nil
+		}
 		return a.createCluster()
 	case "update":
 		return a.updateCluster()
