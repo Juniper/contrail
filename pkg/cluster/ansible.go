@@ -166,59 +166,65 @@ func (a *ansibleProvisioner) playBook() error {
 
 func (a *ansibleProvisioner) createCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
-	a.reporter.reportStatus("Intializing")
+	status := map[string]interface{}{"provisioning_state": statusCreateProgress}
+	a.reporter.reportStatus(status)
 
+	status["provisioning_state"] = statusCreateFailed
 	err := a.createWorkingDir()
 	if err != nil {
-		a.reporter.reportStatus("Failed")
+		a.reporter.reportStatus(status)
 		return err
 	}
 
 	err = a.cloneAnsibleDeployer()
 	if err != nil {
-		a.reporter.reportStatus("Failed")
+		a.reporter.reportStatus(status)
 		return err
 	}
 	err = a.createInventory()
 	if err != nil {
-		a.reporter.reportStatus("Failed")
+		a.reporter.reportStatus(status)
 		return err
 	}
 
-	a.reporter.reportStatus("create_progress")
 	err = a.playBook()
 	if err != nil {
-		a.reporter.reportStatus("Failed")
+		a.reporter.reportStatus(status)
 		return err
 	}
 
-	a.reporter.reportStatus("Created")
+	status["provisioning_state"] = statusCreated
+	a.reporter.reportStatus(status)
 	return nil
 }
 
 func (a *ansibleProvisioner) updateCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
-	a.reporter.reportStatus("update_progress")
+	status := map[string]interface{}{"provisioning_state": statusUpdateProgress}
+	a.reporter.reportStatus(status)
+
 	err := a.playBook()
 	if err != nil {
-		a.reporter.reportStatus("Failed")
+		status["provisioning_state"] = statusUpdateFailed
+		a.reporter.reportStatus(status)
 		return err
 	}
 
-	a.reporter.reportStatus("Updated")
+	status["provisioning_state"] = statusUpdated
+	a.reporter.reportStatus(status)
 	return nil
 }
 
 func (a *ansibleProvisioner) deleteCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	err := a.playBook()
+
 	if err != nil {
 		return err
 	}
 
 	err = a.deleteWorkingDir()
 	if err != nil {
-		a.reporter.reportStatus("Failed")
 		return err
 	}
 	return nil

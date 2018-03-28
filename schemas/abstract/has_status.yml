@@ -58,16 +58,18 @@ schema:
       - list
       - detail
     provisioning_state:
-      default: CREATED
+      default: NOSTATE
       description: Provisioning Status
       enum:
       - CREATED
-      - IN_CREATE_PROGRESS
+      - CREATE_IN_PROGRESS
+      - CREATE_FAILED
       - UPDATED
-      - IN_UPDATE_PROGRESS
+      - UPDATE_IN_PROGRESS
+      - UPDATE_FAILED
       - DELETED
-      - IN_DELETE_PROGRESS
-      - ERROR
+      - DELETE_IN_PROGRESS
+      - DELETE_FAILED
       nullable: false
       permission:
       - create
