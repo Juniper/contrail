@@ -64,6 +64,8 @@ binaries: ## Generate the contrail and contrailutil binaries
 docker: ## Generate docker files
 	gox -osarch="linux/amd64" --output "docker/contrail_go/contrail" ./cmd/contrail
 	cp -r sample docker/contrail_go/etc
+	cp tools/init_mysql.sql docker/contrail_go/etc
+	cp tools/init_psql.sql docker/contrail_go/etc
 	docker build -t "contrail-go" docker/contrail_go
 
 help:
