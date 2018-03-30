@@ -78,7 +78,9 @@ func (s *Server) Init() error {
 	}
 	s.DB = sqlDB
 	e := s.Echo
-	e.Use(middleware.Logger())
+	if viper.GetBool("server.log_api") {
+		e.Use(middleware.Logger())
+	}
 	//e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
 

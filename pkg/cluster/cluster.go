@@ -41,6 +41,8 @@ type Config struct {
 	AnsibleCherryPickRevision string `yaml:"ansible_cherry_pick_revision"`
 	// Optional ansible deployer revision(commit id)
 	AnsibleRevision string `yaml:"ansible_revision"`
+	// Template root directory
+	TemplateRoot string `yaml:"template_root"`
 }
 
 // Cluster represents Cluster service.

@@ -20,6 +20,7 @@ log_level: debug
 server:
     read_timeout: 10
     write_timeout: 5
+    log_api: true 
     proxy:
         # True for skip backend certificate check
         insecure: false

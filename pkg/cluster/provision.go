@@ -18,12 +18,13 @@ type provisioner interface {
 }
 
 type provisionCommon struct {
-	cluster     *Cluster
-	clusterID   string
-	action      string
-	clusterData *Data
-	log         *logrus.Entry
-	reporter    *Reporter
+	cluster      *Cluster
+	clusterID    string
+	action       string
+	clusterData  *Data
+	log          *logrus.Entry
+	reporter     *Reporter
+	templateRoot string
 }
 
 func (p *provisionCommon) isCreated() bool {
@@ -105,10 +106,7 @@ func (p *provisionCommon) execCmd(cmd string, args []string, dir string) error {
 	// Report progress log periodically to stdout/db
 	go p.reporter.reportLog(stdout)
 	go p.reporter.reportLog(stderr)
-	if err := cmdline.Wait(); err != nil {
-		return err
-	}
-	return nil
+	return cmdline.Wait()
 }
 
 func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
@@ -126,14 +124,19 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	logger = pkglog.NewLogger("ansible-provisioner")
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
+	templateRoot := cluster.config.TemplateRoot
+	if templateRoot == "" {
+		templateRoot = defaultTemplateRoot
+	}
 	var p provisioner
 	p = &ansibleProvisioner{provisionCommon{
-		cluster:     cluster,
-		clusterID:   clusterID,
-		action:      action,
-		clusterData: cData,
-		reporter:    r,
-		log:         logger,
+		cluster:      cluster,
+		clusterID:    clusterID,
+		action:       action,
+		clusterData:  cData,
+		reporter:     r,
+		log:          logger,
+		templateRoot: templateRoot,
 	}}
 	return p, nil
 }
@@ -153,14 +156,20 @@ func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action 
 	logger = pkglog.NewLogger("helm-provisioner")
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
+	templateRoot := cluster.config.TemplateRoot
+	if templateRoot == "" {
+		templateRoot = defaultTemplateRoot
+	}
+
 	var p provisioner
 	p = &helmProvisioner{provisionCommon{
-		cluster:     cluster,
-		clusterID:   clusterID,
-		action:      action,
-		clusterData: cData,
-		reporter:    r,
-		log:         logger,
+		cluster:      cluster,
+		clusterID:    clusterID,
+		action:       action,
+		clusterData:  cData,
+		reporter:     r,
+		log:          logger,
+		templateRoot: templateRoot,
 	}}
 	return p, nil
 }

@@ -16,11 +16,13 @@ import (
 )
 
 // Client represents a client.
+// nolint
 type Client struct {
 	ID         string `yaml:"id"`
 	Password   string `yaml:"password"`
 	AuthURL    string `yaml:"authurl"`
 	Endpoint   string `yaml:"endpoint"`
+	Debug      bool   `yaml:"debug"`
 	httpClient *http.Client
 	AuthToken  string          `yaml:"-"`
 	InSecure   bool            `yaml:"insecure"`
@@ -172,13 +174,14 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	if c.AuthToken != "" {
 		request.Header.Set("X-Auth-Token", c.AuthToken)
 	}
-
-	log.WithFields(log.Fields{
-		"method": request.Method,
-		"url":    request.URL,
-		"header": request.Header,
-		"data":   data,
-	}).Debug("Executing API Server request")
+	if c.Debug {
+		log.WithFields(log.Fields{
+			"method": request.Method,
+			"url":    request.URL,
+			"header": request.Header,
+			"data":   data,
+		}).Debug("Executing API Server request")
+	}
 	resp, err := c.httpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -197,9 +200,11 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	if err != nil {
 		return nil, err
 	}
-	log.WithFields(log.Fields{
-		"data": output,
-	}).Debug("API Server output")
+	if c.Debug {
+		log.WithFields(log.Fields{
+			"data": output,
+		}).Debug("API Server output")
+	}
 	return resp, err
 }
 
