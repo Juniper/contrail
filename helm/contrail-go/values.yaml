@@ -1,0 +1,191 @@
+# Default values for contrail-go.
+# This is a YAML-formatted file.
+# Declare name/value pairs to be passed into your templates.
+# name: value
+
+replicaCount: 1
+
+image: opencontrailnightly/contrail-go
+
+# TLS Configuration
+tls:
+    enabled: true 
+    key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEowIBAAKCAQEAvdXC9gZX8O3J1N3brMh+D7izXyxh550Awxf40LHlkmW0fAwy
+        ZWk72CD8hBQGKcTCngWsnpv4Cu04lTeuXIAMvmRG3DliMXwL7EF+nPaKedJqLEfy
+        pWLiqRPkyrMNSDdycoyxAJ7aS9d3ziwyMU5aq9tibcJQZumI+q8pYILIBnMrz496
+        VyfUidF4Bwvtk7OwWr01XeNA9vAkAP/OYQzh6toK6Jg6OU3LLHA9Vo3eo63U0SVf
+        GWlZlsl1KfUwTi1i6gaSbS38QXA0HoTm21SRIk55qkfjfdWmpE4mnkEhUmEGsTnk
+        pWd5v7Qhw83WbC7+uCfE5HriGthDIR2sFkjyuQIDAQABAoIBAB9ldjwoamz/du0M
+        0GMwOaEyBACOn5al4dViZpVlhrmCtqn5fnBFSk+BjSHvCeHol+N4vsbwtsJf34bW
+        UbEcwH7QqOONXg8fG/20C1O8dsSVJ1gxghEWXLRoBOP9Xwn9maEWYcPfge0fMsJX
+        jumWsupPe2T5yUBsCWqkg6xhlOFz62la821CtiGzOjw1vt1cKxjSS/T+VEmxCrAd
+        REnpHVcAEACa/yvMAmnDBzgHgL9GLXR4iQrlb325bArQG2xyklfD3PzO+G5hckPZ
+        dUWUzfR9oX7KP4urbAOxeyTAgw1m3x/x6WRA0Z8v+MQUFv6HFjXj+RkyIZCgIDZ5
+        apV6xO0CgYEA+Q4de55U811i8mEnICttzeCif5oxsdgB8L0G+hHraxIVIR2xbapG
+        +xbhFLqqJUPmuC34eifFEbMze4qWWXGcggzzhLDZdkdeDV+z7h31Ww16XxmQ7b1t
+        ar9g8GrT5rjwafFnA3wz+tTvFM+64v5hPLnJFhvFRAdXta1iVPeDLlcCgYEAwyDn
+        AXr2vydANTeMieE43DHYp5AarZCA7rif2WgP7vehA2ERRS7NCYeUGGfFMNdiGjB8
+        DRXEQEGo+EVPVwybHC9hNnw1CMp7kZaNrg6wNbJNYnkyYcKy7EAO8VL3JDYOLpLg
+        heU++i5yMsPrY2mxNZUrShI0XAt6rOXLO/AYHW8CgYA+FJakycLDJvQTFsR58Fle
+        iC/5PqZEfmN9bqDelLjp54f8yToA7ADldb6FPEJNJ6/LGSpmyKMG1nRuxwzTHs60
+        XCYXXT3XjdKT4tcm87DFEYb/TZAisqUjhrDTPM21JURIJDRZWgxa6djuhxk+m8oB
+        KQ5GxIVXf70NPDrWkxvP4QKBgDEyvov1APm5X8sLMnghPUDnoIS/JLrWUGvgSQ17
+        22iZLxO3Ca+z2Sap9IEiyOlDpQyNZPm3nz/ETmIqt5JvLzywBYbDUmvhAb73gsl8
+        Epm3VyOZA0b63DoM/LeD/6Q1rOW5Srr3ziUuSMTb+SGbqH6mGcAXTvRWQJwPZGq8
+        YpgpAoGBAITM2xubIGVE5U7HxPzF+om5z47nBRRFdNdOvlYWMeT7Mjd0QD8PKfhK
+        R4uhKOulceHFLpWYWiTHgkh1AC15M3i8NUS27bcL++SfG0xsjqxpiojZugHZj7vF
+        QsJEjLfD1WfdL9qe1opmraYtgS9RF8WNb9cT6QfwvXpTOMpy1c5D
+        -----END RSA PRIVATE KEY-----
+    cert: |
+        -----BEGIN CERTIFICATE-----
+        MIIDtTCCAp2gAwIBAgIJAPqWvsA//EFoMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+        BAYTAkFVMRMwEQYDVQQIEwpTb21lLVN0YXRlMSEwHwYDVQQKExhJbnRlcm5ldCBX
+        aWRnaXRzIFB0eSBMdGQwHhcNMTgwMTI2MjMyNDE1WhcNMjgwMTI0MjMyNDE1WjBF
+        MQswCQYDVQQGEwJBVTETMBEGA1UECBMKU29tZS1TdGF0ZTEhMB8GA1UEChMYSW50
+        ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+        CgKCAQEAvdXC9gZX8O3J1N3brMh+D7izXyxh550Awxf40LHlkmW0fAwyZWk72CD8
+        hBQGKcTCngWsnpv4Cu04lTeuXIAMvmRG3DliMXwL7EF+nPaKedJqLEfypWLiqRPk
+        yrMNSDdycoyxAJ7aS9d3ziwyMU5aq9tibcJQZumI+q8pYILIBnMrz496VyfUidF4
+        Bwvtk7OwWr01XeNA9vAkAP/OYQzh6toK6Jg6OU3LLHA9Vo3eo63U0SVfGWlZlsl1
+        KfUwTi1i6gaSbS38QXA0HoTm21SRIk55qkfjfdWmpE4mnkEhUmEGsTnkpWd5v7Qh
+        w83WbC7+uCfE5HriGthDIR2sFkjyuQIDAQABo4GnMIGkMB0GA1UdDgQWBBSKyJGI
+        VKjITdPjX17Hl8FQf2oeSTB1BgNVHSMEbjBsgBSKyJGIVKjITdPjX17Hl8FQf2oe
+        SaFJpEcwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgTClNvbWUtU3RhdGUxITAfBgNV
+        BAoTGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZIIJAPqWvsA//EFoMAwGA1UdEwQF
+        MAMBAf8wDQYJKoZIhvcNAQELBQADggEBAGoNdWpCQH8IBjjawK/od2HUf0VjMzhy
+        RiCMdp77zCMgNxtvISdKoYFq66PB2KT19t08n9NeMDym2cfZSASTcYzUJrqlE+F5
+        uQke3buWiVblXJyPDKjD25XzYGnTcrtrNsQXUMUer6nbH0NKe1mSJzV1RaLAFmpT
+        oh5gN9gLtA0/HqPp5wO9JGxfviw68dizlDdDp/9NRYXoU/ngN2SaMuwSw9bGAOVC
+        iWmfeMFgqlZvQVMRMxuVJRNQMX3Zf+U6kvflwDztmh9Pw7rQ1e3I2RdYUgbY8+Le
+        iXnlsJGVT5DRZkTAv1ysQlA8Mc0UIAemOB56ksja7/fmHGZL4ROeqRc=
+        -----END CERTIFICATE-----
+
+server: 
+    # Database configuration. MySQL/PostgreSQL supported
+    database:
+        # MySQL example
+        #connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
+        #type: mysql 
+        #dialect: mysql
+
+        # Postgres example
+        # connection: "user=root dbname=contrail sslmode=disable" # ignored if you neable postgres below
+        type: postgres
+        dialect: postgres
+
+        # Max Open Connections for DB Server
+        max_open_conn: 100
+
+    # Log Level
+    log_level: debug 
+
+    # Server configuration
+    server:
+        read_timeout: 10
+        write_timeout: 5
+        log_api: false 
+        proxy:
+            # True for skip backend certificate check
+            insecure: false
+    # Bind addresss
+    address: ":9091"
+
+    # ETCD notifier configuration
+    etcd_notifier:
+        enabled: false
+        servers: http://127.0.0.1:2379
+        path: contrail
+
+    # Static file config
+    # key: URL path
+    # value: file path. (absolute path recommended in production)
+    static_files:
+        /: /usr/share/contrail/public
+
+    # Enable GRPC or not
+    enable_grpc: false
+
+    # API Proxy configuration
+    # key: URL path
+    # value: String list of backend host
+    proxy:
+        /keystone:
+        - http://keystone:5000
+    
+    # Keystone configuration
+    #keystone:
+    #    local: true # Enable local keystone v3. This is only for testing now.
+    #    assignment:
+    #        type: static
+    #        file: sample/keystone.yml
+    #    store:
+    #        type: memory
+    #        expire: 3600
+    #    authurl: http://localhost:9091/v3
+    # disable authentication with no_auth true and comment out keystone configuraion.
+    no_auth: true
+    tls:
+        key_file: /etc/contrail/key.pem
+        cert_file: /etc/contrail/cert.pem
+
+agent:
+    endpoint: https://localhost:9091
+    insecure: true
+    backend: file
+    watcher: polling
+    schema_root: "/"
+    log_level: debug
+    tasks:
+    - schema_id: virtual_network 
+      common:
+      - vars:
+           dir: "./work/virtual_networks/"
+      on_create:
+      - command: mkdir -p "{{ dir }}"
+      - save:
+          dest: "{{ dir }}/{{ resource.uuid }}.yaml"
+          format: yaml
+      - command: echo created
+      on_update:
+      - command: "echo updated"
+      on_delete:
+      - command: "echo deleted"
+      - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
+
+# Dependency on Postgresql, configure here
+postgresql:
+    enabled: true
+    imageTag: latest
+    postgresHost: localhost
+    postgresUser: contrail
+    postgresPassword: contrail123    
+    postgresDatabase: contrail
+
+ingress:
+  ## Set to true to enable ingress record generation
+  enabled: false
+
+  ## The list of hostnames to be covered with this ingress record.
+  ## Most likely this will be just one host, but in the event more hosts are needed, this is an array
+  hosts:
+  - name: contrail.local
+
+    ## Ingress annotations done as key:value pairs
+    annotations:
+    #  kubernetes.io/ingress.class: nginx
+    #  kubernetes.io/tls-acme: true
+
+etcd:
+  enabled: true
+  endpoints: localhost:2379
+  # true for deploy etcd for testing purpose
+  deploy: true
+
+# Provistion keystone for test
+keystone:
+  enabled: false 
+  password: contrail123
+  # TODO: use kolla keystone
+  image: stephenhsu/keystone:9.1.0
