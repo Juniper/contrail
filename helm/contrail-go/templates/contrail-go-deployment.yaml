@@ -1,0 +1,84 @@
+apiVersion: "extensions/v1beta1"
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{.Values.replicaCount}}
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+    spec:
+      containers:
+      - name: contrail-go
+        image: "{{ .Values.image }}"
+        ports:
+        - containerPort: 9091
+        env:
+        {{- if .Values.postgresql.enabled }}
+        - name: CONTRAIL_DATABASE_CONNECTION
+          value: "host={{ template "postgres.fullname" . }} user={{ .Values.postgresql.postgresUser }} dbname={{ .Values.postgresql.postgresDatabase }} password={{ .Values.postgresql.postgresPassword }} sslmode=disable"
+        - name: CONTRAIL_DATABASE_TYPE
+          value: postgres
+        - name: CONTRAIL_DATABASE_DIALECT
+          value: postgres
+        {{- else }}
+        - name: CONTRAIL_DATABASE_CONNECTION
+          value: {{ .Values.database.connection }} 
+        - name: CONTRAIL_DATABASE_TYPE
+          value: {{ .Values.database.type }} 
+        - name: CONTRAIL_DATABASE_DIALECT
+          value: {{ .Values.database.dialect }} 
+        {{- end }}
+        - name: CONTRAIL_DATABASE_DEBUG
+          value: {{ .Values.database.debug }} 
+        - name: CONTRAIL_LOG_LEVEL
+          value: {{ .Values.log_level }}
+        - name: CONTRAIL_SERVER_READ_TIMEOUT
+          values: {{.Values.server.read_timeout }}
+        - name: CONTRAIL_SERVER_WRITE_TIMEOUT
+          values: {{.Values.server.write_timeout}}
+        - name: CONTRAIL_SERVER_LOG_API
+          values: {{.Values.server.log_api}}
+        - name: CONTRAIL_SERVER_PROXY_INSECURE
+          values: {{.Values.server.proxy.insecure}}
+        - name: CONTRAIL_ADDRESS
+          values: {{.Values.address}}
+        - name: CONTRAIL_ETCD_NOTIFIER_ENABLED
+          values: {{.Values.etcd_notifier.enabled}}
+        - name: CONTRAIL_ETCD_NOTIFIER_SERVERS
+          values: {{.Values.etcd_notifier.servers}}
+        - name: CONTRAIL_ETCD_NOTIFIER_PATH
+          values: {{.Values.etcd_notifier.path}}
+        - name: CONTRAIL_TLS_ENABLED
+          values: {{.Values.tls.enabled}}
+        - name: CONTRAIL_KEY_FILE
+          values: {{.Values.tls.key_file}}
+        - name: CONTRAIL_CERT_FILE
+          values: {{.Values.tls.cert_file}}
+        - name: CONTRAIL_ENABLE_GRPC
+          values: {{.Values.enable_grpc}}
+        - name: CONTRAIL_PROXY
+          values: {{.Values.proxy }}
+        {{- if .Values.keystone }}
+        - name: CONTRAIL_KEYSTONE_LOCAL
+          values: {{.Values.keystone.local }}
+        - name: CONTRAIL_KEYSTONE_ASSIGNMENT_TYPE
+          values: {{.Values.keystone.assignment.type }}
+        - name: CONTRAIL_KEYSTONE_ASSIGNMENT_FILE
+          values: {{.Values.keystone.assignment.file }}
+        - name: CONTRAIL_KEYSTONE_STORE_TYPE
+          values: {{.Values.keystone.store.type }}
+        - name: CONTRAIL_KEYSTONE_STORE_EXPIRE
+          values: {{.Values.keystone.store.expire }}
+        - name: CONTRAIL_KEYSTONE_AUTHURL
+          values: {{.Values.keystone.authurl }}
+        {{- end}}
+        - name: CONTRAIL_NO_AUTH
+          values: {{.Values.no_auth }}
+
