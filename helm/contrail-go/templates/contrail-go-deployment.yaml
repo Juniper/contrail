@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{.Release.Name}}
+  labels:
+spec:
+  replicas: {{.Values.replicaCount}}
+  template:
+    metadata:
+      labels:
+        app: "contrail-go"
+    spec:
+      containers:
+      - image: nati/contrail-go:latest
+        name: contrail-go
+        ports:
+        - containerPort: 9091
+        env:
+        - name: CONTRAIL_DATABASE_CONNECTION
+          value: {{ .Values.database.connection}} 
+        - name: CONTRAIL_DATABASE_TYPE
+          value: {{ .Values.database.type }} 
+        - name: CONTRAIL_DATABASE_DIALECT
+          value: {{ .Values.database.dialect }} 
+        - name: CONTRAIL_DATABASE_DEBUG
+          value: {{ .Values.database.debug }} 
+

@@ -1,0 +1,17 @@
+# Default values for contrail-go.
+# This is a YAML-formatted file.
+# Declare name/value pairs to be passed into your templates.
+# name: value
+
+replicaCount: 1
+
+database:
+    # MySQL example
+    #connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
+    #type: mysql 
+    #dialect: mysql
+
+    # Postgres example
+    connection: "user=root dbname=contrail_test sslmode=disable"
+    type: postgres
+    dialect: postgres
