@@ -1,0 +1,3 @@
+Contrail API Endpoint:
+
+{{ if .Values.tls.enabled }}https{{ else }}http{{ end }}://localhost:9091/
