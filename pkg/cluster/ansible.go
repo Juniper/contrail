@@ -277,14 +277,8 @@ func (a *ansibleProvisioner) updateCluster() error {
 }
 
 func (a *ansibleProvisioner) deleteCluster() error {
-	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
-	err := a.playBook()
-
-	if err != nil {
-		return err
-	}
-
-	err = a.deleteWorkingDir()
+	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.cluster.config.ClusterID)
+	err := a.deleteWorkingDir()
 	if err != nil {
 		return err
 	}

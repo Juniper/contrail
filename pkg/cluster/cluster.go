@@ -31,6 +31,8 @@ type Config struct {
 	ClusterID string `yaml:"cluster_id,omitempty"`
 	// Action to the performed with the cluster (values: create, update, delete).
 	Action string `yaml:"cluster_action,omitempty"`
+	// Provisioning tool used to provision the cluster (values: ansible, helm).
+	ProvisionerType string `yaml:"provisioner_type,omitempty"`
 	// Logging level
 	LogLevel string `yaml:"log_level"`
 	// Optional ansible sudo password

@@ -11,6 +11,19 @@ plural: contrail_clusters
 prefix: /
 schema:
   properties:
+    openstack_registry:
+      default: opencontrailnightly
+      description: Openstack Container registry to pull openstack containers
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack Container Registry
+      type: string
+      view:
+      - create
+      - detail
     container_registry:
       default: opencontrailnightly
       description: Container registry to pull contrail containers

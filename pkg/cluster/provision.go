@@ -180,11 +180,17 @@ func newProvisioner(cluster *Cluster) (provisioner, error) {
 }
 
 func newProvisionerByID(cluster *Cluster, clusterID string, action string) (provisioner, error) {
-	cData, err := cluster.getClusterDetails(clusterID)
+	var cData *Data
+	var err error
+	if action == "delete" {
+		cData = &Data{}
+	} else {
+		cData, err = cluster.getClusterDetails(clusterID)
+	}
 	if err != nil {
 		return nil, err
 	}
-	provisionerType := cData.clusterInfo.ProvisionerType
+	provisionerType := cluster.config.ProvisionerType
 	if provisionerType == "" {
 		provisionerType = defaultProvisioner
 	}
