@@ -1,0 +1,5 @@
+  cluster:
+    enabled: true
+
+  customResources:
+    createEtcdClusterCRD: true

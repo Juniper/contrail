@@ -1,0 +1,46 @@
+# keystone for testing
+{{- if .Values.keystone.enabled }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    keystone: {{ template "keystone.fullname" . }}
+  name: {{ template "keystone.fullname" . }}
+spec:
+  containers:
+  - image: {{ .Values.keystone.image }}
+    name: {{ template "keystone.fullname" . }}
+    env:
+    - name: KEYSTONE_ADMIN_PASSWORD
+      value: {{ .Values.keystone.password }}
+    ports:
+    - containerPort: 5000 
+      name: public
+      protocol: TCP
+    - containerPort: 35357
+      name: admin
+      protocol: TCP
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "keystone.fullname" . }}
+# TODO: use unique keystone service name
+# name: {{ template "keystone.fullname" . }}
+  name: keystone
+spec:
+  ports:
+  - name: public
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  - name: admin
+    port: 35357
+    protocol: TCP
+    targetPort: 35357
+  selector:
+    keystone: {{ template "keystone.fullname" . }}
+{{- end }}
