@@ -1,0 +1,9 @@
+- project:
+    name: Juniper/contrail
+    check:
+      jobs:
+        - contrail-go-docker
+    gate:
+      jobs:
+        - contrail-go-docker
+

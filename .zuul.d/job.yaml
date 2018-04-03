@@ -1,26 +1,18 @@
-- project:
-    name: Juniper/contrail
-    check:
-      jobs:
-        - contrail-go-docker
-    gate:
-      jobs:
-        - contrail-go-docker
-
 - job:
     name: contrail-go-docker
     description: |
       Job that builds and tests Juniper/contrail project.
     voting: True
-    parent: contrail-src-publish-package-el-base
+    parent: contrail-base2
     required-projects:
       - Juniper/contrail
-    run: playbooks/contrail-go-docker/run.yaml
+    run: .zuul.d/playbooks/contrail-go-docker/run.yaml
     nodeset:
       nodes:
         - name: builder
           label: centos-7-4-builder
     vars:
+      setup_docker_registry: true
       docker:
         - image: circleci/golang:1.10
         - image: circleci/mysql:5.7
@@ -32,3 +24,4 @@
           environment:
             POSTGRES_USER: root
             POSTGRES_DB: contrail123 
+
