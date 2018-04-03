@@ -1,6 +1,7 @@
 - hosts: builder
   name: Build and test Juniper/contrail
   roles:
+    - contrail-common-libs2
     - install-docker-daemon
   vars:
     workdir: /go/src/github.com/Juniper/contrail
@@ -33,3 +34,17 @@
         owner: "{{ ansible_env.USER }}"
       become: yes
       become_user: root
+
+    - name: Show built containers
+      shell: docker images
+      become: yes
+
+- hosts: builder
+  name: Publish containers to the internal registry
+  roles:
+    - publish-container-images:
+        registry: "{{ docker_registry }}"
+        tag: "{{ packaging.docker_version }}"
+        containers:
+          - { name: contrail-go, tag: latest }
+
