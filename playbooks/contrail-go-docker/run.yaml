@@ -1,7 +1,10 @@
 - hosts: builder
   name: Build and test Juniper/contrail
   roles:
+    - zuul-include-vars # include variables exported from trusted context
     - install-docker-daemon
+    - role: add-insecure-registry
+      new_registry: "{{ docker_registry.fqdn }}:{{ registry_port }}"
   vars:
     workdir: /go/src/github.com/Juniper/contrail
     sourcedir: "{{ ansible_env.HOME }}"
@@ -33,3 +36,13 @@
         owner: "{{ ansible_env.USER }}"
       become: yes
       become_user: root
+
+- hosts: builder
+  name: Publish containers to the internal registry
+  roles:
+    - role: publish-container-images
+      registry: "{{ docker_registry.fqdn }}:{{ registry_port }}"
+      tag: "{{ packaging.docker_version }}"
+      images:
+        - { name: contrail-go, tag: latest }
+
