@@ -34,7 +34,8 @@ instances:
       {% for openstack_control_node in cluster.OpenstackControlNodes %}{% for node_ref in openstack_control_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_control:
         {%if cluster.ControlDataNetworkList == "" %}network_interface: {%if node.InterfaceName %}{{node.InterfaceName}}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{% endfor %}{% endfor %}
       {% for openstack_network_node in cluster.OpenstackNetworkNodes %}{% for node_ref in openstack_network_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_network:{% endif %}{% endfor %}{% endfor %}
-      {% for openstack_storage_node in cluster.OpenstackStorageNodes %}{% for node_ref in openstack_storage_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_storage:{% endif %}{% endfor %}{% endfor %}
+      {% for openstack_storage_node in cluster.OpenstackStorageNodes %}{% for node_ref in openstack_storage_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_storage:
+        {%if node.DiskPartition != "" %}disk_partition: {{ node.DiskPartition }}{% endif %}{% endif %}{% endfor %}{% endfor %}
       {% for openstack_monitoring_node in cluster.OpenstackMonitoringNodes %}{% for node_ref in openstack_monitoring_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_monitoring:{% endif %}{% endfor %}{% endfor %}
       {% for openstack_compute_node in cluster.OpenstackComputeNodes %}{% for node_ref in openstack_compute_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_compute:
         {%if cluster.ControlDataNetworkList == "" %}network_interface: {%if node.InterfaceName %}{{node.InterfaceName}}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{% endfor %}{% endfor %}

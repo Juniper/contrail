@@ -117,6 +117,18 @@ schema:
       view:
       - create
       - detail
+    disk_partition:
+      description: Comma seperated disk partition to use.
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Disk Partition
+      type: string
+      view:
+      - create
+      - detail
     bms_info:
       presence: "optional"
       description: "Details of the baremetal server"
