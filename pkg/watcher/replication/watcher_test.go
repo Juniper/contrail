@@ -4,8 +4,47 @@ import (
 	"context"
 	"testing"
 
+	"github.com/jackc/pgx"
+	"github.com/kyleconroy/pgoutput"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestSubscriptionWatcherWatch(t *testing.T) {
+	started := false
+	s := mockStarter(func(ctx context.Context, c *pgx.ReplicationConn, h pgoutput.Handler) error {
+		started = true
+		return nil
+	})
+
+	w := NewSubscriptionWatcher(nil, s, NewPgoutputEventHandler(nil))
+
+	err := w.Watch(context.Background())
+
+	assert.NoError(t, err)
+
+	assert.True(t, started)
+	assert.NotNil(t, w.cancel)
+	w.cancel()
+}
+
+func TestSubscriptionWatcherClose(t *testing.T) {
+	canceled := false
+	cancel := func() {
+		canceled = true
+	}
+	w := NewSubscriptionWatcher(nil, nil, nil)
+	w.cancel = cancel
+
+	w.Close()
+
+	assert.True(t, canceled)
+}
+
+type mockStarter func(context.Context, *pgx.ReplicationConn, pgoutput.Handler) error
+
+func (s mockStarter) Start(ctx context.Context, c *pgx.ReplicationConn, h pgoutput.Handler) error {
+	return s(ctx, c, h)
+}
 
 func TestBinlogWatcherIsNoopByDefault(t *testing.T) {
 	w := givenBinlogWatcher(nil)

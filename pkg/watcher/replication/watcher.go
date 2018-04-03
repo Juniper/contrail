@@ -73,12 +73,12 @@ type SubscriptionWatcher struct {
 // NewSubscriptionWatcher returns new SubscriptionWatcher.
 func NewSubscriptionWatcher(
 	replicationConn *pgx.ReplicationConn,
-	slotName, publicationName string,
+	starter subscriptionStarter,
 	handler MessageHandler,
 ) *SubscriptionWatcher {
 	return &SubscriptionWatcher{
 		conn:    replicationConn,
-		starter: pgoutput.NewSubscription(slotName, publicationName), // TODO(Michal): Create own Subscription type
+		starter: starter,
 		handler: handler,
 		log:     pkglog.NewLogger("subscription-watcher"),
 	}

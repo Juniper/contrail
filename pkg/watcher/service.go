@@ -17,6 +17,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jackc/pgx"
 	_ "github.com/jackc/pgx/stdlib" // allows using of pgx sql driver
+	"github.com/kyleconroy/pgoutput"
 	"github.com/pkg/errors"
 	mysqlcanal "github.com/siddontang/go-mysql/canal"
 	"github.com/sirupsen/logrus"
@@ -198,8 +199,7 @@ func createPostgreSQLWatcher(c *Config, log *logrus.Entry, sink replication.Sink
 	handler := replication.NewPgoutputEventHandler(sink)
 	return replication.NewSubscriptionWatcher(
 		conn,
-		replication.PostgreSQLReplicationSlotName,
-		replication.PostgreSQLPublicationName,
+		pgoutput.NewSubscription(replication.PostgreSQLReplicationSlotName, replication.PostgreSQLPublicationName),
 		handler,
 	), nil
 }
