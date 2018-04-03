@@ -111,6 +111,10 @@ func (h *PgoutputEventHandler) handleDelete(relationID uint32, row []pgoutput.Tu
 func decodeRowData(relation pgoutput.Relation, row []pgoutput.Tuple) (string, map[string]interface{}, error) {
 	keys, data := []interface{}{}, map[string]interface{}{}
 
+	if t, c := len(row), len(relation.Columns); t != c {
+		return "", nil, fmt.Errorf("malformed message or relation columns, got %d values but relation has %d columns", t, c)
+	}
+
 	for i, tuple := range row {
 		col := relation.Columns[i]
 		decoder := col.Decoder()
@@ -304,7 +308,7 @@ func (h *CanalEventHandler) OnPosSynced(mysql.Position, bool) error {
 
 // String adds support for stringer interface.
 func (h *CanalEventHandler) String() string {
-	return "eventHandler"
+	return "canalEventHandler"
 }
 
 type noopSink struct{}
