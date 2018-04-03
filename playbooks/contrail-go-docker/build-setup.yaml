@@ -42,3 +42,19 @@
   become: yes
   become_user: root
 
+- name: Check if zuul overrode the registry port
+  stat:
+    path: "{{ zuul.executor.work_root }}/saved_vars.yaml"
+  register: varfile
+  delegate_to: localhost
+
+- name: Get the overridden registry port
+  include_vars:
+    file: "{{ zuul.executor.work_root }}/saved_vars.yaml"
+  when: varfile.stat.isreg is defined and varfile.stat.isreg
+
+- name: Set default registry port if not overridden
+  set_fact:
+    registry_port: "{{ docker_registry.port }}"
+  when: registry_port is not defined
+
