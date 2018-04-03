@@ -33,3 +33,8 @@
         owner: "{{ ansible_env.USER }}"
       become: yes
       become_user: root
+
+    - name: Show built containers
+      shell: docker ps
+      become: yes
+
