@@ -6,7 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"time"
@@ -21,8 +20,8 @@ import (
 	"github.com/pkg/errors"
 	mysqlcanal "github.com/siddontang/go-mysql/canal"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc/grpclog"
-	"gopkg.in/yaml.v2"
 )
 
 // Storage strategies
@@ -31,49 +30,16 @@ const (
 	StorageNested = "nested"
 )
 
+// Replication drivers
 const (
-	dbConnectionRetries = 60
-	dbRetryPeriod       = 1 * time.Second
-
-	dbDriverMySQL      = "mysql"
-	dbDriverPostgreSQL = "pgx"
-
-	dbDSNFormatMySQL      = "%s:%s@tcp(%s)/%s"
-	dbDSNFormatPostgreSQL = "user=%s password=%s host=%s dbname=%s"
-	defaultDialTimeoutS   = 60
+	DriverMySQL      = "mysql"
+	DriverPostgreSQL = "pgx"
 )
 
-// Config represents configuration of Watcher service.
-type Config struct {
-	// Database represents configuration of database.
-	Database DBConfig `yaml:"database"`
-	// Etcd represents configuration of etcd service.
-	Etcd EtcdConfig `yaml:"etcd"`
-	// Storage specifies strategy of storing data in etcd (nested, json).
-	Storage string `yaml:"storage"`
-	// LogLevel is minimal log level, f.e. "info" (default "debug")
-	LogLevel string `yaml:"log_level"`
-}
-
-// DBConfig represents configuration of source database.
-type DBConfig struct {
-	Host string `yaml:"host"`
-
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	Name     string `yaml:"name"`
-
-	Driver string `yaml:"driver"`
-}
-
-// EtcdConfig represents configuration of etcd service.
-type EtcdConfig struct {
-	Endpoints []string `yaml:"endpoints"`
-	Username  string   `yaml:"username"`
-	Password  string   `yaml:"password"`
-	// DialTimeoutMs is timeout for establishing connection in seconds (default 60).
-	DialTimeoutS uint `yaml:"dial_timeout_s"`
-}
+const (
+	dbDSNFormatMySQL      = "%s:%s@tcp(%s)/%s"
+	dbDSNFormatPostgreSQL = "user=%s password=%s host=%s dbname=%s"
+)
 
 type watchCloser interface {
 	Watch(context.Context) error
@@ -90,47 +56,40 @@ type Service struct {
 // NewServiceByFile creates Watcher service with configuration from file.
 // Close needs to be explicitly called on service teardown.
 func NewServiceByFile(configFilePath string) (*Service, error) {
-	c, err := loadConfig(configFilePath)
-	if err != nil {
+	viper.SetConfigFile(configFilePath)
+	if err := viper.MergeInConfig(); err != nil {
 		return nil, err
 	}
 
-	return NewService(c)
+	return NewService()
 }
 
-func loadConfig(configFilePath string) (*Config, error) {
-	data, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("read config file from path %s: %s", configFilePath, err)
-	}
-
-	var c Config
-	if err = yaml.UnmarshalStrict(data, &c); err != nil {
-		return nil, fmt.Errorf("unmarshal yaml data from config file: %s", err)
-	}
-
-	return &c, nil
+func setDefaults() {
+	viper.SetDefault("log_level", "debug")
+	viper.SetDefault("etcd.dial_timeout", "60s")
+	viper.SetDefault("database.retry_period", "1s")
+	viper.SetDefault("database.connection_retries", 10)
 }
 
 // NewService creates Watcher service with given configuration.
 // Close needs to be explicitly called on service teardown.
-func NewService(c *Config) (*Service, error) {
-	c = setDefaults(c)
+func NewService() (*Service, error) {
+	setDefaults()
 
 	// Logging
-	if err := pkglog.Configure(c.LogLevel); err != nil {
+	if err := pkglog.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
 	log := pkglog.NewLogger("watcher-service")
-	log.WithField("config", fmt.Sprintf("%+v", c)).Debug("Got configuration")
+	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Got configuration")
 
 	// Etcd client
 	clientv3.SetLogger(grpclog.NewLoggerV2(os.Stdout, os.Stdout, os.Stdout))
 	etcdClient, err := clientv3.New(clientv3.Config{
-		Endpoints:   c.Etcd.Endpoints,
-		Username:    c.Etcd.Username,
-		Password:    c.Etcd.Password,
-		DialTimeout: time.Duration(c.Etcd.DialTimeoutS) * time.Second,
+		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
+		Username:    viper.GetString("etcd.username"),
+		Password:    viper.GetString("etcd.password"),
+		DialTimeout: viper.GetDuration("etcd.dial_timeout"),
 	})
 	if err != nil {
 		return nil, err
@@ -138,7 +97,7 @@ func NewService(c *Config) (*Service, error) {
 
 	// Etcd sink
 	var sink replication.Sink
-	switch c.Storage {
+	switch viper.GetString("storage") {
 	case StorageJSON:
 		sink = etcd.NewJSONSink(clientv3.NewKV(etcdClient))
 	case StorageNested:
@@ -148,7 +107,7 @@ func NewService(c *Config) (*Service, error) {
 	}
 
 	// Replication
-	watcher, err := createWatcher(c, log, sink)
+	watcher, err := createWatcher(log, sink)
 	if err != nil {
 		return nil, err
 	}
@@ -160,36 +119,29 @@ func NewService(c *Config) (*Service, error) {
 	}, nil
 }
 
-func setDefaults(c *Config) *Config {
-	if c.LogLevel == "" {
-		c.LogLevel = "debug"
-	}
-	if c.Etcd.DialTimeoutS == 0 {
-		c.Etcd.DialTimeoutS = defaultDialTimeoutS
+func createWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
+	driver := viper.GetString("database.driver")
+
+	if err := awaitDB(log, driver); err != nil {
+		return nil, err
 	}
 
-	return c
-}
-
-func createWatcher(c *Config, log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
-	switch c.Database.Driver {
-	case dbDriverPostgreSQL:
-		return createPostgreSQLWatcher(c, log, sink)
-	case dbDriverMySQL:
-		return createMySQLWatcher(c, log, sink)
+	switch driver {
+	case DriverPostgreSQL:
+		return createPostgreSQLWatcher(log, sink)
+	case DriverMySQL:
+		return createMySQLWatcher(log, sink)
 	default:
 		return nil, errors.New("undefined database type")
 	}
 }
 
-func createPostgreSQLWatcher(c *Config, log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
-	if err := awaitDB(&c.Database, log, dbDSNFormatPostgreSQL); err != nil {
-		return nil, err
-	}
+func createPostgreSQLWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
 	config := pgx.ConnConfig{
-		Database: c.Database.Name,
-		User:     c.Database.User,
-		Password: c.Database.Password,
+		Host:     viper.GetString("database.host"),
+		Database: viper.GetString("database.name"),
+		User:     viper.GetString("database.user"),
+		Password: viper.GetString("database.password"),
 	}
 	conn, err := pgx.ReplicationConnect(config)
 	if err != nil {
@@ -204,11 +156,11 @@ func createPostgreSQLWatcher(c *Config, log *logrus.Entry, sink replication.Sink
 	), nil
 }
 
-func createMySQLWatcher(c *Config, log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
-	if err := awaitDB(&c.Database, log, dbDSNFormatMySQL); err != nil {
-		return nil, err
-	}
-	canal, err := mysqlcanal.NewCanal(canalConfig(&c.Database, log))
+func createMySQLWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
+	conf := canalConfig()
+	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got Canal config")
+
+	canal, err := mysqlcanal.NewCanal(conf)
 	if err != nil {
 		return nil, err
 	}
@@ -217,34 +169,51 @@ func createMySQLWatcher(c *Config, log *logrus.Entry, sink replication.Sink) (wa
 	return replication.NewBinlogWatcher(canal), nil
 }
 
-func awaitDB(c *DBConfig, log *logrus.Entry, dbDSNFormat string) error {
-	db, err := sql.Open(c.Driver, dataSourceName(c, dbDSNFormat))
+func awaitDB(log *logrus.Entry, driver string) error {
+	var dbDSNFormat string
+	switch driver {
+	case DriverPostgreSQL:
+		dbDSNFormat = dbDSNFormatPostgreSQL
+	case DriverMySQL:
+		dbDSNFormat = dbDSNFormatMySQL
+	default:
+		return errors.New("undefined database type")
+	}
+
+	dsn := fmt.Sprintf(
+		dbDSNFormat,
+		viper.GetString("database.user"),
+		viper.GetString("database.password"),
+		viper.GetString("database.host"),
+		viper.GetString("database.name"),
+	)
+
+	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		return fmt.Errorf("database connection: %s", err)
 	}
-	for i := 0; i < dbConnectionRetries; i++ {
+	defer db.Close()
+
+	retries, period := viper.GetInt("database.connection_retries"), viper.GetDuration("database.retry_period")
+
+	for i := 0; i < retries; i++ {
 		if err = db.Ping(); err == nil {
 			return nil
 		}
-		time.Sleep(dbRetryPeriod)
+		time.Sleep(period)
 		log.WithField("error", err).Debug("Cannot establish database connection, retrying")
 	}
 	return fmt.Errorf("reached database connection retry limit: %s", err)
 }
 
-func dataSourceName(c *DBConfig, format string) string {
-	return fmt.Sprintf(format, c.User, c.Password, c.Host, c.Name)
-}
-
-func canalConfig(db *DBConfig, log *logrus.Entry) *mysqlcanal.Config {
+func canalConfig() *mysqlcanal.Config {
 	c := mysqlcanal.NewDefaultConfig()
-	c.Addr = db.Host
-	c.User = db.User
-	c.Password = db.Password
-	c.Dump.Databases = []string{db.Name}
+	c.Addr = viper.GetString("host")
+	c.User = viper.GetString("user")
+	c.Password = viper.GetString("password")
+	c.Dump.Databases = []string{viper.GetString("name")}
 	c.Dump.DiscardErr = false
 	c.ServerID = randomServerID()
-	log.WithField("config", fmt.Sprintf("%+v", c)).Debug("Got Canal config")
 	return c
 }
 
