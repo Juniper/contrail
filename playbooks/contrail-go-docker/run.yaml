@@ -1,4 +1,12 @@
 - hosts: builder
+  tasks:
+  - name: Prepare contrail version variables
+    contrail_packaging:
+      zuul: "{{ zuul }}"
+      release_type: "{{ release_type }}"
+      build_number: "{{ build_number | default('unset_build_number') }}"
+
+- hosts: builder
   name: Build and test Juniper/contrail
   roles:
     - install-docker-daemon
@@ -33,3 +41,17 @@
         owner: "{{ ansible_env.USER }}"
       become: yes
       become_user: root
+
+    - name: Show built containers
+      shell: docker images
+      become: yes
+
+- hosts: builder
+  name: Publish containers to the internal registry
+  roles:
+    - publish-container-images:
+        registry: "{{ docker_registry }}"
+        tag: "{{ packaging.docker_version }}"
+        containers:
+          - { name: contrail-go, tag: latest }
+
