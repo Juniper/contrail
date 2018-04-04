@@ -6,7 +6,7 @@ endpoint: https://localhost:9091
 insecure: true
 backend: file
 watcher: polling
-schema_root: /public
+schema_root: /
 log_level: debug
 tasks:
 - schema_id: contrail_cluster
