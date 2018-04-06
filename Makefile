@@ -66,7 +66,8 @@ docker: ## Generate docker files
 	cp -r sample docker/contrail_go/etc
 	cp tools/init_mysql.sql docker/contrail_go/etc
 	cp tools/init_psql.sql docker/contrail_go/etc
-	docker build -t "contrail-go" docker/contrail_go
+	cp -r public docker/contrail_go/public
+	sudo docker build -t "contrail-go" docker/contrail_go
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
