@@ -64,10 +64,11 @@ binaries: ## Generate the contrail and contrailutil binaries
 docker: ## Generate docker files
 	gox -osarch="linux/amd64" --output "docker/contrail_go/contrail" ./cmd/contrail
 	cp -r sample docker/contrail_go/etc
+	mkdir -p docker/contrail_go/templates/ && cp pkg/cluster/configs/instances.tmpl docker/contrail_go/templates/
 	cp tools/init_mysql.sql docker/contrail_go/etc
 	cp tools/init_psql.sql docker/contrail_go/etc
 	cp -r public docker/contrail_go/public
-	sudo docker build -t "contrail-go" docker/contrail_go
+	docker build -t "contrail-go" docker/contrail_go
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
