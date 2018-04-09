@@ -57,7 +57,7 @@ contrail_configuration:
 kolla_config:
   kolla_globals:
     openstack_release: {%if cluster.OpenstackRelease %}{{cluster.OpenstackRelease}}{%else%}ocata{%endif%}
-    enable_haproxy: {%if cluster.OpenstackControlNodes|length > 1 %}yes{%else%}no{%endif%}
+    enable_haproxy: {%if cluster.OpenstackControlNodes|length > 1 || cluster.ControlDataNetworkList != "" %}yes{%else%}no{%endif%}
     contrail_api_interface_address: {%if cluster.ContrailAPIEndPoint %}{{cluster.ContrailAPIEndPoint}}{%else%}{% for node in nodes %}{%if cluster.ContrailConfigNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{% endif %}{% endfor %}{%endif%}
     kolla_internal_vip_address: {%if cluster.OpenstackInternalVip %}{{cluster.OpenstackInternalVip}}{%else%}{% for node in nodes %}{%if cluster.OpenstackControlNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{% endif %}{% endfor %}{% endif %}
     {%if cluster.ControlDataNetworkList == "" %}network_interface: {%if cluster.OpenstackNetworkInterface %}{{cluster.OpenstackNetworkInterface}}{%else%}{% for node in nodes %}{%if cluster.OpenstackControlNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.InterfaceName}}{%endif%}{%endfor%}{%else%}enp2s0{%endif%}{%endif%}
