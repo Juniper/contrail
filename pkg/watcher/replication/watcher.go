@@ -4,8 +4,6 @@ import (
 	"context"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/jackc/pgx"
-	"github.com/kyleconroy/pgoutput"
 	"github.com/sirupsen/logrus"
 )
 
@@ -50,21 +48,13 @@ func (w *BinlogWatcher) Close() {
 	w.canal.Close()
 }
 
-// MessageHandler handles pgoutput logical replication messages.
-type MessageHandler interface {
-	Handle(pgoutput.Message) error
-}
-
 type subscriptionStarter interface {
-	Start(context.Context, *pgx.ReplicationConn, pgoutput.Handler) error
+	Start(context.Context) error
 }
 
 // SubscriptionWatcher uses subscription to read PostgreSQL logical replciation messages.
 type SubscriptionWatcher struct {
-	conn    *pgx.ReplicationConn // TODO(Michal): Find a way to change this into interface
 	starter subscriptionStarter
-
-	handler MessageHandler
 	cancel  context.CancelFunc
 
 	log *logrus.Entry
@@ -72,14 +62,10 @@ type SubscriptionWatcher struct {
 
 // NewSubscriptionWatcher returns new SubscriptionWatcher.
 func NewSubscriptionWatcher(
-	replicationConn *pgx.ReplicationConn,
 	starter subscriptionStarter,
-	handler MessageHandler,
 ) *SubscriptionWatcher {
 	return &SubscriptionWatcher{
-		conn:    replicationConn,
 		starter: starter,
-		handler: handler,
 		log:     pkglog.NewLogger("subscription-watcher"),
 	}
 }
@@ -90,7 +76,7 @@ func (w *SubscriptionWatcher) Watch(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	w.cancel = cancel
 
-	return w.starter.Start(ctx, w.conn, w.handler.Handle)
+	return w.starter.Start(ctx)
 }
 
 // Close stops subscription by calling cancel function.
