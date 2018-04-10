@@ -54,8 +54,7 @@ func (s *JSONSink) putJSONEncodedProperties(resourceName, pk string, properties 
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), kvClientRequestTimeout)
-	resp, err := s.kvClient.Put(ctx, jsonKey(resourceName, pk), string(p))
-	fmt.Println(resp)
+	_, err = s.kvClient.Put(ctx, jsonKey(resourceName, pk), string(p))
 	cancel()
 	if err != nil {
 		return fmt.Errorf("put JSON-encoded resource to etcd: %s", err)
