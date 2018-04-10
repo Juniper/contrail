@@ -16,7 +16,6 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jackc/pgx"
 	_ "github.com/jackc/pgx/stdlib" // allows using of pgx sql driver
-	"github.com/kyleconroy/pgoutput"
 	"github.com/pkg/errors"
 	mysqlcanal "github.com/siddontang/go-mysql/canal"
 	"github.com/sirupsen/logrus"
@@ -69,6 +68,7 @@ func setDefaults() {
 	viper.SetDefault("etcd.dial_timeout", "60s")
 	viper.SetDefault("database.retry_period", "1s")
 	viper.SetDefault("database.connection_retries", 10)
+	viper.SetDefault("database.replication_status_timeout", "10s")
 }
 
 // NewService creates Watcher service with given configuration.
@@ -137,24 +137,34 @@ func createWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error
 }
 
 func createPostgreSQLWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
-	conf := pgx.ConnConfig{
+	connConf := pgx.ConnConfig{
 		Host:     viper.GetString("database.host"),
 		Database: viper.GetString("database.name"),
 		User:     viper.GetString("database.user"),
 		Password: viper.GetString("database.password"),
 	}
-	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got pgx config")
-	conn, err := pgx.ReplicationConnect(conf)
+	log.WithField("config", fmt.Sprintf("%+v", connConf)).Debug("Got pgx config")
+
+	conn, err := replication.NewConn(connConf)
 	if err != nil {
 		return nil, err
 	}
 
 	handler := replication.NewPgoutputEventHandler(sink)
-	return replication.NewSubscriptionWatcher(
+	conf := replication.SubConfig{
+		Name:          replication.PostgreSQLPublicationName,
+		Publication:   replication.PostgreSQLPublicationName,
+		StatusTimeout: viper.GetDuration("database.replication_status_timeout"),
+	}
+	sub, err := replication.NewSubscription(
+		conf,
 		conn,
-		pgoutput.NewSubscription(replication.PostgreSQLReplicationSlotName, replication.PostgreSQLPublicationName),
-		handler,
-	), nil
+		handler.Handle,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return replication.NewSubscriptionWatcher(sub), nil
 }
 
 func createMySQLWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
