@@ -39,7 +39,7 @@ func NewEtcdNotifierService(servers []string, path string) (*EtcdNotifierService
 
 // EtcdNotifierMarshal returns key/value string for given object
 func (service *EtcdNotifierService) EtcdNotifierMarshal(schemaID string, objUUID string, obj interface{}) (string, string) {
-    jsonBytes, err := json.Marshal(obj{{ schema.JSONSchema.GoName }})
+    jsonBytes, err := json.Marshal(obj)
     if err != nil {
         log.WithFields(log.Fields{
             "err": err,
