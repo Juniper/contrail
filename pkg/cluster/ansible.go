@@ -1,6 +1,8 @@
 package cluster
 
 import (
+	"bytes"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -88,7 +90,44 @@ func (a *ansibleProvisioner) resetAnsibleDeployer() error {
 	return nil
 }
 
+func (a *ansibleProvisioner) compareInventory() (bool, error) {
+	tmpfile, err := ioutil.TempFile("", "instances")
+	if err != nil {
+		return false, err
+	}
+	tmpFileName := tmpfile.Name()
+	defer os.Remove(tmpFileName) // nolint:  gas
+
+	a.log.Debugf("Creating temperory inventory %s", tmpfile)
+	err = a.createInstancesFile(tmpFileName)
+	if err != nil {
+		return false, err
+	}
+
+	newInventory, err := ioutil.ReadFile(tmpFileName)
+	if err != nil {
+		return false, err
+	}
+	oldInventory, err := ioutil.ReadFile(a.getInstanceFile())
+	if err != nil {
+		return false, err
+	}
+
+	if bytes.Equal(oldInventory, newInventory) {
+		return true, nil
+	}
+	return false, nil
+}
+
 func (a *ansibleProvisioner) createInventory() error {
+	err := a.createInstancesFile(a.getInstanceFile())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	a.log.Info("Creating instance.yml input file for ansible deployer")
 	context := pongo2.Context{
 		"cluster": a.clusterData.clusterInfo,
@@ -98,7 +137,7 @@ func (a *ansibleProvisioner) createInventory() error {
 	if err != nil {
 		return err
 	}
-	err = a.appendToFile(a.getInstanceFile(), content)
+	err = a.appendToFile(destination, content)
 	if err != nil {
 		return err
 	}
@@ -256,10 +295,22 @@ func (a *ansibleProvisioner) createCluster() error {
 
 func (a *ansibleProvisioner) updateCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
-	status := map[string]interface{}{"provisioning_state": statusUpdateProgress}
+	var status map[string]interface{}
+	ok, err := a.compareInventory()
+	if err != nil {
+		status["provisioning_state"] = statusUpdateFailed
+		a.reporter.reportStatus(status)
+		return err
+	}
+	if ok {
+		a.log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.clusterInfo.FQName)
+		return nil
+	}
+
+	status["provisioning_state"] = statusUpdateProgress
 	a.reporter.reportStatus(status)
 
-	err := a.createInventory()
+	err = a.createInventory()
 	if err != nil {
 		a.reporter.reportStatus(status)
 		return err
