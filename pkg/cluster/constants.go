@@ -49,6 +49,7 @@ const (
 	defaultInstanceConfPlay = "playbooks/configure_instances.yml"
 
 	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
+	statusField          = "provisioning_state"
 	statusCreated        = "CREATED"
 	statusCreateProgress = "CREATE_IN_PROGRESS"
 	statusCreateFailed   = "CREATE_FAILED"

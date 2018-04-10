@@ -1,6 +1,8 @@
 package cluster
 
 import (
+	"bytes"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,15 +16,15 @@ type ansibleProvisioner struct {
 	provisionCommon
 }
 
-func (a *ansibleProvisioner) getInstanceTemplate() string {
+func (a *ansibleProvisioner) getInstanceTemplate() (instanceTemplate string) {
 	return filepath.Join(a.getTemplateRoot(), defaultInstanceTemplate)
 }
 
-func (a *ansibleProvisioner) getInstanceFile() string {
+func (a *ansibleProvisioner) getInstanceFile() (instanceFile string) {
 	return filepath.Join(a.getWorkingDir(), defaultInstanceFile)
 }
 
-func (a *ansibleProvisioner) getAnsibleRepoDir() string {
+func (a *ansibleProvisioner) getAnsibleRepoDir() (ansibleRepoDir string) {
 	return filepath.Join(a.getWorkingDir(), defaultAnsibleRepo)
 }
 
@@ -88,7 +90,41 @@ func (a *ansibleProvisioner) resetAnsibleDeployer() error {
 	return nil
 }
 
+func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
+	tmpfile, err := ioutil.TempFile("", "instances")
+	if err != nil {
+		return false, err
+	}
+	tmpFileName := tmpfile.Name()
+	defer os.Remove(tmpFileName) // nolint:  gas
+
+	a.log.Debugf("Creating temperory inventory %s", tmpfile)
+	err = a.createInstancesFile(tmpFileName)
+	if err != nil {
+		return false, err
+	}
+
+	newInventory, err := ioutil.ReadFile(tmpFileName)
+	if err != nil {
+		return false, err
+	}
+	oldInventory, err := ioutil.ReadFile(a.getInstanceFile())
+	if err != nil {
+		return false, err
+	}
+
+	return bytes.Equal(oldInventory, newInventory), nil
+}
+
 func (a *ansibleProvisioner) createInventory() error {
+	err := a.createInstancesFile(a.getInstanceFile())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	a.log.Info("Creating instance.yml input file for ansible deployer")
 	context := pongo2.Context{
 		"cluster": a.clusterData.clusterInfo,
@@ -98,7 +134,7 @@ func (a *ansibleProvisioner) createInventory() error {
 	if err != nil {
 		return err
 	}
-	err = a.appendToFile(a.getInstanceFile(), content)
+	err = a.appendToFile(destination, content)
 	if err != nil {
 		return err
 	}
@@ -201,10 +237,10 @@ func (a *ansibleProvisioner) playBook() error {
 
 func (a *ansibleProvisioner) createCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
-	status := map[string]interface{}{"provisioning_state": statusCreateProgress}
+	status := map[string]interface{}{statusField: statusCreateProgress}
 	a.reporter.reportStatus(status)
 
-	status["provisioning_state"] = statusCreateFailed
+	status[statusField] = statusCreateFailed
 	err := a.createWorkingDir()
 	if err != nil {
 		a.reporter.reportStatus(status)
@@ -249,29 +285,41 @@ func (a *ansibleProvisioner) createCluster() error {
 		return err
 	}
 
-	status["provisioning_state"] = statusCreated
+	status[statusField] = statusCreated
 	a.reporter.reportStatus(status)
 	return nil
 }
 
 func (a *ansibleProvisioner) updateCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
-	status := map[string]interface{}{"provisioning_state": statusUpdateProgress}
+	var status map[string]interface{}
+	ok, err := a.compareInventory()
+	if err != nil {
+		status[statusField] = statusUpdateFailed
+		a.reporter.reportStatus(status)
+		return err
+	}
+	if ok {
+		a.log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.clusterInfo.FQName)
+		return nil
+	}
+
+	status[statusField] = statusUpdateProgress
 	a.reporter.reportStatus(status)
 
-	err := a.createInventory()
+	err = a.createInventory()
 	if err != nil {
 		a.reporter.reportStatus(status)
 		return err
 	}
 	err = a.playBook()
 	if err != nil {
-		status["provisioning_state"] = statusUpdateFailed
+		status[statusField] = statusUpdateFailed
 		a.reporter.reportStatus(status)
 		return err
 	}
 
-	status["provisioning_state"] = statusUpdated
+	status[statusField] = statusUpdated
 	a.reporter.reportStatus(status)
 	return nil
 }
