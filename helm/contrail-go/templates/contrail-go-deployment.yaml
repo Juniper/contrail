@@ -20,36 +20,39 @@ spec:
         ports:
         - containerPort: 9091
         env:
-        - name: CONTRAIL_ETCD_NOTIFIER_ENABLED
+        - name: CONTRAIL_ETCD_ENABLED
           value: "{{ .Values.etcd.enabled }}" 
         {{- if .Values.etcd.deploy }}
-        - name: CONTRAIL_ETCD_NOTIFIER_SERVERS
+        - name: CONTRAIL_ETCD_ENDPOINTS
           value: "{{ template "etcdclient.fullname" . }}:2379"
-        {{- else }}
-        - name: CONTRAIL_ETCD_NOTIFIER_SERVERS
-          value: "{{ .Values.etcd.endpoints }}"
         {{- end }}
         {{- if .Values.keystone.enabled }}
         - name: CONTRAIL_KEYSTONE_AUTH_URL
           value: "keystone:5000/v3"
         {{- end }}
-        - name: CONTRAIL_TLS_ENABLED
+        - name: CONTRAIL_SERVER_TLS_ENABLED
           value: "{{ .Values.tls.enabled }}"
-        - name: CONTRAIL_TLS_KEY_FILE
-          value: "{{ .Values.tls.key_file }}"
-        - name: CONTRAIL_TLS_CERT_FILE
-          value: "{{ .Values.tls.cert_file }}"
-        {{- if .Values.postgresql.enabled }}
-        - name: CONTRAIL_DATABASE_CONNECTION
-          value: "host={{ template "postgres.fullname" . }} user={{ .Values.postgresql.postgresUser }} dbname={{ .Values.postgresql.postgresDatabase }} password={{ .Values.postgresql.postgresPassword }} sslmode=disable"
-        {{- else }}
-        - name: CONTRAIL_DATABASE_CONNECTION
-          value: "host={{ .Values.postgresql.postgresHost }} user={{ .Values.postgresql.postgresUser }} dbname={{ .Values.postgresql.postgresDatabase }} password={{ .Values.postgresql.postgresPassword }} sslmode=disable"
+        - name: CONTRAIL_SERVER_TLS_KEY_FILE
+          value: "/etc/contrail/key.pem"
+        - name: CONTRAIL_SERVER_TLS_CERT_FILE
+          value: "/etc/contrail/cert.pem"
+        {{- if .Values.tls.enabled }}
+        - name: CONTRAIL_CLIENT_ENDPOINT
+          value: "https://localhost:9091"
         {{- end }}
-        - name: CONTRAIL_DATABASE_TYPE
-          value: postgres
-        - name: CONTRAIL_DATABASE_DIALECT
-          value: postgres
+        {{- if .Values.postgresql.enabled }}
+        - name: CONTRAIL_DATABASE_HOST
+          value: "{{ template "postgres.fullname" . }}"
+        - name: CONTRAIL_DATABASE_USER
+          value: "{{ .Values.postgresql.postgresUser }}"
+        - name: CONTRAIL_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "postgresql.fullname" . }}
+              key: postgres-password
+        - name: CONTRAIL_DATABASE_NAME
+          value: "{{ .Values.postgresql.postgresDatabase }}"
+        {{- end }}
         volumeMounts:
         - name: contrail-go-config
           mountPath: /etc/contrail

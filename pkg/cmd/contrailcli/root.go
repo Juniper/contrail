@@ -47,17 +47,17 @@ func initConfig() {
 }
 
 func getClient() (*apisrv.Client, error) {
-	authURL := viper.GetString("auth_url")
+	authURL := viper.GetString("keystone.auth_url")
 	client := apisrv.NewClient(
-		viper.GetString("endpoint"),
+		viper.GetString("client.endpoint"),
 		authURL,
-		viper.GetString("id"),
-		viper.GetString("password"),
-		viper.GetString("domain_id"),
+		viper.GetString("client.id"),
+		viper.GetString("client.password"),
+		viper.GetString("client.domain_id"),
 		viper.GetBool("insecure"),
 		&keystone.Scope{
 			Project: &keystone.Project{
-				Name: viper.GetString("project_id"),
+				ID: viper.GetString("client.project_id"),
 				Domain: &keystone.Domain{
 					ID: viper.GetString("domain_id"),
 				},
