@@ -4,7 +4,6 @@ import (
 	//	"io/ioutil"
 	//	"plugin"
 	"net/url"
-	"strings"
 
 	"github.com/spf13/viper"
 
@@ -20,7 +19,7 @@ type DefaultConfig struct {
 
 // EtcdNotifierConfig section in yml file
 type EtcdNotifierConfig struct {
-	EtcdServers      string
+	EtcdServers      []string
 	WatchPath        string
 	MsgQueueLockTime int
 	MsgIndexString   string
@@ -46,31 +45,26 @@ type Config struct {
 
 // ReadConfig reads the configuration file
 func (c *Config) ReadConfig() error {
-	err := viper.ReadInConfig()
-	if err != nil {
-		return err
-	}
-
 	c.DefaultCfg = &DefaultConfig{
-		PluginDirectory: viper.GetString("plugin_directory"),
-		NumberOfWorkers: viper.GetInt("number_of_workers"),
-		MaxJobQueueLen:  viper.GetInt("max_job_queue_len"),
+		PluginDirectory: viper.GetString("compilation.plugin_directory"),
+		NumberOfWorkers: viper.GetInt("compilation.number_of_workers"),
+		MaxJobQueueLen:  viper.GetInt("compilation.max_job_queue_len"),
 	}
 
 	c.EtcdNotifierCfg = &EtcdNotifierConfig{
-		EtcdServers:      viper.GetString("etcd_notifier.servers"),
-		WatchPath:        viper.GetString("etcd_notifier.watch_path"),
-		MsgQueueLockTime: viper.GetInt("etcd_notifier.msg_queue_lock_time"),
-		MsgIndexString:   viper.GetString("etcd_notifier.msg_index_string"),
-		ReadLockString:   viper.GetString("etcd_notifier.read_lock_string"),
-		MasterElection:   viper.GetBool("etcd_notifier.master_election"),
+		EtcdServers:      viper.GetStringSlice("etcd.endpoints"),
+		WatchPath:        viper.GetString("etcd.path"),
+		MsgQueueLockTime: viper.GetInt("compilation.msg_queue_lock_time"),
+		MsgIndexString:   viper.GetString("compilation.msg_index_string"),
+		ReadLockString:   viper.GetString("compilation.read_lock_string"),
+		MasterElection:   viper.GetBool("compilation.master_election"),
 	}
 
 	c.PluginCfg = &PluginConfig{
 		Handlers: viper.GetStringMap("plugin.handlers"),
 	}
 
-	c.EtcdServersUrls = strings.Split(c.EtcdNotifierCfg.EtcdServers, ",")
+	c.EtcdServersUrls = c.EtcdNotifierCfg.EtcdServers
 	for _, svr := range c.EtcdServersUrls {
 		u, err := url.Parse(svr)
 		if err != nil {

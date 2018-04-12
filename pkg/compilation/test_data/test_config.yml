@@ -1,20 +1,20 @@
-# Global configuration
-plugin_directory: 'etc/plugins/'
-number_of_workers: 3
-max_job_queue_len: 3
-
-# ETCD configuration
-etcd_notifier:
-    servers: 'http://10.0.0.1:2379,http://20.0.0.1:2379,http://30.0.0.1:2379'
-    watch_path: '/test'
+compilation:
+    plugin_directory: 'etc/plugins/'
+    number_of_workers: 3
+    max_job_queue_len: 3
     msg_queue_lock_time: 30
     msg_index_string: 'MsgIndex'
     read_lock_string: "MsgReadLock"
     master_election: true
-
-# Plugin configuration
-plugin:
-    handlers:
-        create_handler: 'TestHandleCreate'
-        update_handler: 'TestHandleUpdate'
-        delete_handler: 'TestHandleDelete'
+   
+    # Plugin configuration
+    plugin:
+        handlers:
+            create_handler: 'TestHandleCreate'
+            update_handler: 'TestHandleUpdate'
+            delete_handler: 'TestHandleDelete'
+ 
+# ETCD configuration
+etcd:
+    endpoints: 'http://10.0.0.1:2379,http://20.0.0.1:2379,http://30.0.0.1:2379'
+    path: '/test'
