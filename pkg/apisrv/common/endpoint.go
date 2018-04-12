@@ -57,6 +57,9 @@ func (t *TargetStore) Write(id string, endpoint *models.Endpoint) {
 //Next endpoint target from memory is read(roundrobin)
 func (t *TargetStore) Next(scope string) (endpointURL string) {
 	endpointURL = ""
+	if t.Data == nil {
+		return
+	}
 	t.Data.Range(func(id, endpoint interface{}) bool {
 		ids := id.(string)
 		if t.nextTarget == "" {

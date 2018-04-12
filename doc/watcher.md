@@ -66,18 +66,7 @@ by calling `make testenv`.
 Service reads configuration from YAML file on path specified `--config-file` flag.
 Required fields are defined in [source code](../pkg/watcher/service.go) as the `Config` structure.
 
-Example configuration can be found [here](../sample/watcher.yml).
+Example configuration can be found [here](../sample/contrail.yml).
 
 Available database driver options are: `pgx` and `mysql` named after database
 drivers used.
-
-
-## Running
-
-Start Watcher specifying configuration file path:
-
-	contrail watcher -c <config-file-path>
-
-or you can start watcher in server process:
-
-	contrail server -c <config-file-path> -w <watcher-config-file>
