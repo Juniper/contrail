@@ -15,7 +15,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: "{{.Release.Name}}"
+      name: "{{.Release.Name}}-setupdb"
       labels:
         heritage: {{.Release.Service | quote }}
         release: {{.Release.Name | quote }}

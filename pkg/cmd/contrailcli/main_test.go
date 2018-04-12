@@ -18,7 +18,7 @@ var testServer *httptest.Server
 var server *apisrv.Server
 
 func TestMain(m *testing.M) {
-	viper.SetConfigName("server")
+	viper.SetConfigName("contrail")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -51,10 +51,11 @@ func TestMain(m *testing.M) {
 
 func setupClient(testID string) {
 	apisrv.CreateTestProject(server, testID)
-	viper.SetDefault("id", testID)
-	viper.SetDefault("password", testID)
-	viper.SetDefault("project_id", testID)
-	viper.SetDefault("endpoint", testServer.URL)
-	viper.SetDefault("auth_url", testServer.URL+"/v3")
+	viper.SetDefault("client.id", testID)
+	viper.SetDefault("client.password", testID)
+	viper.SetDefault("client.project_id", testID)
+	viper.SetDefault("client.endpoint", testServer.URL)
+	viper.SetDefault("client.schema_root", "/public")
+	viper.SetDefault("keystone.auth_url", testServer.URL+"/v3")
 	viper.SetDefault("insecure", true)
 }

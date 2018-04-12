@@ -62,57 +62,62 @@ tls:
         iXnlsJGVT5DRZkTAv1ysQlA8Mc0UIAemOB56ksja7/fmHGZL4ROeqRc=
         -----END CERTIFICATE-----
 
-server: 
+config:
     # Database configuration. MySQL/PostgreSQL supported
     database:
-        # MySQL example
-        #connection: "root:contrail123@tcp(localhost:3306)/contrail_test"
-        #type: mysql 
-        #dialect: mysql
-
-        # Postgres example
-        # connection: "user=root dbname=contrail sslmode=disable" # ignored if you neable postgres below
-        type: postgres
+        type: postgres 
         dialect: postgres
+        # host: localhost
+        # user: root
+        # password: contrail123
+        # name: contrail_test
 
         # Max Open Connections for DB Server
         max_open_conn: 100
+        connection_retries: 10
+        retry_period: 3s
+
+    etcd:
+        endpoints:
+         - localhost:2379
+        username: ""
+        password: ""
+        path: contrail
 
     # Log Level
     log_level: debug 
 
     # Server configuration
     server:
+        enabled: true
         read_timeout: 10
         write_timeout: 5
-        log_api: false 
+        log_api: true 
+        address: ":9091"
+
+        # TLS Configuration
+        tls:
+            enabled: false
+            key_file: tools/server.key
+            cert_file: tools/server.crt
+
+        # Enable GRPC or not
+        enable_grpc: false
+
+        # Static file config
+        # key: URL path
+        # value: file path. (absolute path recommended in production)
+        static_files:
+            public: /usr/share/contrail/public
+
+        # API Proxy configuration
+        # key: URL path
+        # value: String list of backend host
         proxy:
-            # True for skip backend certificate check
-            insecure: false
-    # Bind addresss
-    address: ":9091"
+            /contrail:
+            - http://localhost:8082
 
-    # ETCD notifier configuration
-    etcd_notifier:
-        enabled: false
-        servers: http://127.0.0.1:2379
-        path: contrail
-
-    # Static file config
-    # key: URL path
-    # value: file path. (absolute path recommended in production)
-    static_files:
-        /: /usr/share/contrail/public
-
-    # Enable GRPC or not
-    enable_grpc: false
-
-    # API Proxy configuration
-    # key: URL path
-    # value: String list of backend host
-    proxy:
-        /keystone:
-        - http://keystone:5000
+        notify_etcd: true
     
     # Keystone configuration
     #keystone:
@@ -124,35 +129,68 @@ server:
     #        type: memory
     #        expire: 3600
     #    authurl: http://localhost:9091/v3
+
     # disable authentication with no_auth true and comment out keystone configuraion.
     no_auth: true
-    tls:
-        key_file: /etc/contrail/key.pem
-        cert_file: /etc/contrail/cert.pem
-
-agent:
-    endpoint: https://localhost:9091
     insecure: true
-    backend: file
-    watcher: polling
-    schema_root: "/"
-    log_level: debug
-    tasks:
-    - schema_id: virtual_network 
-      common:
-      - vars:
-           dir: "./work/virtual_networks/"
-      on_create:
-      - command: mkdir -p "{{ dir }}"
-      - save:
-          dest: "{{ dir }}/{{ resource.uuid }}.yaml"
-          format: yaml
-      - command: echo created
-      on_update:
-      - command: "echo updated"
-      on_delete:
-      - command: "echo deleted"
-      - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
+
+    watcher:
+        enabled: false
+        storage: json
+
+    client:
+        id: alice
+        password: alice_password
+        project_id: admin
+        schema_root: /public
+        endpoint: http://localhost:9091
+
+    agent:
+        enabled: true
+        backend: file
+        watcher: polling
+        tasks:
+        - schema_id: virtual_network 
+          common:
+          - vars:
+              dir: "./work/virtual_networks/"
+          on_create:
+          - command: mkdir -p "{{ dir }}"
+          - save:
+              dest: "{{ dir }}/{{ resource.uuid }}.yaml"
+              format: yaml
+              # - command: pwd
+              #   args:
+              #     chdir: "{{ dir }}"
+              # - command: date
+              # - template:
+              #     src: "./agent/cluster.tmpl"
+              #     dest: "{{ dir }}/cluster.txt"
+          - command: echo created
+              #  register: date
+          on_update:
+          - command: "echo updated"
+          on_delete:
+          - command: "echo deleted"
+          - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
+
+    compilation:
+        enabled: true
+        # Global configuration
+        plugin_directory: 'etc/plugins/'
+        number_of_workers: 4
+        max_job_queue_len: 5
+        msg_queue_lock_time: 30
+        msg_index_string: 'MsgIndex'
+        read_lock_string: "MsgReadLock"
+        master_election: true
+
+        # Plugin configuration
+        plugin:
+            handlers:
+                create_handler: 'HandleCreate'
+                update_handler: 'HandleUpdate'
+                delete_handler: 'HandleDelete'
 
 # Dependency on Postgresql, configure here
 postgresql:
@@ -179,7 +217,6 @@ ingress:
 
 etcd:
   enabled: true
-  endpoints: localhost:2379
   # true for deploy etcd for testing purpose
   deploy: true
 
