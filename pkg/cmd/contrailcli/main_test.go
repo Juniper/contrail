@@ -18,7 +18,7 @@ var testServer *httptest.Server
 var server *apisrv.Server
 
 func TestMain(m *testing.M) {
-	viper.SetConfigName("server")
+	viper.SetConfigName("contrail")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {

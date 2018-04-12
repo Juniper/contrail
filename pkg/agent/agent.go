@@ -2,7 +2,6 @@ package agent
 
 import (
 	"fmt"
-	"io/ioutil"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -17,6 +16,7 @@ import (
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/labstack/gommon/log"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
 
@@ -66,18 +66,24 @@ type Agent struct {
 	log     *logrus.Entry
 }
 
-// NewAgentByFile creates Agent reading configuration from given file.
-func NewAgentByFile(configPath string) (*Agent, error) {
-	data, err := ioutil.ReadFile(configPath)
+// NewAgentByConfig creates Agent reading configuration from viper config.
+func NewAgentByConfig() (*Agent, error) {
+
+	config := viper.Get("agent")
+	configYAML, err := yaml.Marshal(config)
 	if err != nil {
 		return nil, err
 	}
 
 	var c Config
-	err = yaml.UnmarshalStrict(data, &c)
+	err = yaml.UnmarshalStrict(configYAML, &c)
 	if err != nil {
 		return nil, err
 	}
+	c.ID = viper.GetString("client.id")
+	c.Password = viper.GetString("client.password")
+	c.AuthURL = viper.GetString("keystone.auth_url")
+	c.InSecure = viper.GetBool("insecure")
 
 	return NewAgent(&c)
 }
