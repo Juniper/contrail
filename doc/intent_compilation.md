@@ -20,11 +20,4 @@ Service reads configuration from YAML file on path specified `--config-file` fla
 Required fields are defined in [source code](../pkg/compilation/config/config.go)
 as the `Config` structure.
 
-Example configuration can be found [here](../sample/compilation.yml).
-
-## Running
-
-Start Intent Compilation specifying configuration file path:
-
-	contrail compilation -c <config-file-path>
-
+Example configuration can be found [here](../sample/contrail.yml).
