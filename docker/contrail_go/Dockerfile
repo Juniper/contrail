@@ -24,4 +24,4 @@ RUN apk update && apk add \
 
 EXPOSE 9091
 WORKDIR /etc/contrail
-ENTRYPOINT ["/bin/contrail", "-c","/etc/contrail/server.yml", "-a", "/etc/contrail/agent.yml", "server"]
+ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail.yml", "process"]
