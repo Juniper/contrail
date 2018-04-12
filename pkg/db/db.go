@@ -15,6 +15,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Replication drivers
+const (
+	DriverMySQL      = "mysql"
+	DriverPostgreSQL = "postgres"
+)
+
+const (
+	dbDSNFormatMySQL      = "%s:%s@tcp(%s:3306)/%s"
+	dbDSNFormatPostgreSQL = "user=%s password=%s host=%s dbname=%s sslmode=disable"
+)
+
 //DB service struct
 type DB struct {
 	serviceif.BaseService
@@ -41,11 +52,6 @@ func (db *DB) SetDB(sqlDB *sql.DB) {
 
 //Transaction is a context key for tx object.
 var Transaction interface{} = "transaction"
-
-const (
-	retryDB     = 10
-	retryDBWait = 10
-)
 
 //GetTransaction get a transaction from context.
 func GetTransaction(ctx context.Context) *sql.Tx {
@@ -117,22 +123,41 @@ func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
 
 //ConnectDB connect to the db based on viper configuration.
 func ConnectDB() (*sql.DB, error) {
-	dbType := viper.GetString("database.type")
-	databaseConnection := viper.GetString("database.connection")
+	driver := viper.GetString("database.type")
 	maxConn := viper.GetInt("database.max_open_conn")
-	db, err := makeConnection(dbType, databaseConnection)
+
+	var dbDSNFormat string
+	switch driver {
+	case DriverPostgreSQL:
+		dbDSNFormat = dbDSNFormatPostgreSQL
+	case DriverMySQL:
+		dbDSNFormat = dbDSNFormatMySQL
+	default:
+		return nil, errors.New("undefined database type")
+	}
+
+	dsn := fmt.Sprintf(
+		dbDSNFormat,
+		viper.GetString("database.user"),
+		viper.GetString("database.password"),
+		viper.GetString("database.host"),
+		viper.GetString("database.name"),
+	)
+	db, err := makeConnection(driver, dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open db connection")
 	}
 	db.SetMaxOpenConns(maxConn)
 	db.SetMaxIdleConns(maxConn)
-	for i := 0; i < retryDB; i++ {
+
+	retries, period := viper.GetInt("database.connection_retries"), viper.GetDuration("database.retry_period")
+	for i := 0; i < retries; i++ {
 		err = db.Ping()
 		if err == nil {
 			log.Info("connected to the database")
 			return db, nil
 		}
-		time.Sleep(retryDBWait * time.Second)
+		time.Sleep(period)
 		log.Printf("Retrying db connection... (%s)", err)
 	}
 	return nil, fmt.Errorf("failed to open db connection")
