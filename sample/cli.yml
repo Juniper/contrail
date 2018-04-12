@@ -1,6 +1,7 @@
-id: alice 
-password: alice_password
-project_id: admin
-domain_id: default
-#auth_url: http://localhost:9091/v3
-endpoint: http://localhost:9091
+client:
+  id: alice
+  password: alice_password
+  project_id: admin
+  schema_root: /public
+  domain_id: default
+  endpoint: http://localhost:9091
