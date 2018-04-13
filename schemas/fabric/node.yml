@@ -2,7 +2,11 @@ description: Node Resource
 extends:
 - base
 id: node
-parent: ""
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this node."
+    presence: "optional"
 references:
     credential:
       operations: "CRUD"
