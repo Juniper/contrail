@@ -228,8 +228,9 @@ func (p *proxyService) serve() {
 				// poll db for the endpoint resource
 				endpoints, err = p.readEndpoints()
 				if err != nil {
-					log.Error("not able to read endpoints")
-					log.Fatal(err)
+					// log and continue during DB read
+					log.Debug("Endpoints read failed")
+					log.Error(err)
 				}
 				if endpoints != nil {
 					// create/update/delete proxy endpoints in-memory
