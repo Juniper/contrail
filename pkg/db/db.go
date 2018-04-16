@@ -24,7 +24,7 @@ type DB struct {
 }
 
 //NewService makes a DB service.
-func NewService(db *sql.DB, dialect string) serviceif.Service {
+func NewService(db *sql.DB, dialect string) *DB {
 	dbService := &DB{
 		BaseService: serviceif.BaseService{},
 		DB:          db,
@@ -37,6 +37,11 @@ func NewService(db *sql.DB, dialect string) serviceif.Service {
 //SetDB sets db object.
 func (db *DB) SetDB(sqlDB *sql.DB) {
 	db.DB = sqlDB
+}
+
+// RowWriter processes rows
+type RowWriter interface {
+	WriteRow(schemaID, objUUID string, obj interface{}) error
 }
 
 //Transaction is a context key for tx object.
