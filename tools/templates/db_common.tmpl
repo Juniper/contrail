@@ -1,5 +1,11 @@
 package db
 
+import (
+    "context"
+
+    "github.com/Juniper/contrail/pkg/models"
+)
+
 func (db *DB) initQueryBuilders() {
     queryBuilders := map[string]*QueryBuilder{}
     db.queryBuilders = queryBuilders
@@ -10,4 +16,34 @@ func (db *DB) initQueryBuilders() {
        {{ schema.JSONSchema.GoName }}RefFields,
        {{ schema.JSONSchema.GoName }}BackRefFields)
 {% endif%}{% endfor %}
+}
+
+
+// Dump selects all data from every table and writes each row to RowWriter.
+//
+// Note that dumping the whole database using SELECT statements may take a lot
+// of time and memory, increasing both server and database load thus it should
+// be used as a first shot operation only.
+//
+// An example application of that function is loading initial database snapshot
+// in Watcher.
+func (db *DB) Dump(ctx context.Context, rw RowWriter) error {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    list{{ schema.JSONSchema.GoName }}Request := &models.List{{ schema.JSONSchema.GoName }}Request{&models.ListSpec{}}
+    list{{ schema.JSONSchema.GoName }}Response, err := db.list{{ schema.JSONSchema.GoName }}(
+        ctx,
+        list{{ schema.JSONSchema.GoName }}Request,
+    )
+    if err != nil {
+        return err
+    }
+
+    for _, item := range list{{ schema.JSONSchema.GoName }}Response.{{ schema.JSONSchema.GoName }}s {
+        if err = rw.WriteRow("{{ schema.ID }}", item.GetUUID(), item); err != nil {
+            return err
+        }
+    }
+{% endif%}{% endfor %}
+
+    return nil
 }
