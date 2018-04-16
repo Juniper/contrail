@@ -33,10 +33,11 @@ func TestGRPC(t *testing.T) {
 		testServer.URL+"/v3",
 		"TestGRPC",
 		"TestGRPC",
+		"default",
 		true,
 		&keystone.Scope{
 			Project: &keystone.Project{
-				ID: "TestGRPC",
+				Name: "TestGRPC",
 			},
 		},
 	)

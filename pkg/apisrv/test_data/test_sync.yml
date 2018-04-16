@@ -46,10 +46,11 @@ clients:
   default:
     id: TestSync 
     password: TestSync
+    domain: default
     insecure: true
     scope:
       project:
-        id: TestSync
+        name: TestSync
 workflow:
 - name: create project
   request:

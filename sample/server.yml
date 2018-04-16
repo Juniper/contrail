@@ -57,7 +57,7 @@ proxy:
     - http://localhost:8082
 
 # Keystone configuration
-#keystone:
+# keystone:
 #    local: true # Enable local keystone v3. This is only for testing now.
 #    assignment:
 #        type: static
@@ -69,4 +69,4 @@ proxy:
 
 # disable authentication with no_auth true and comment out keystone configuraion.
 
-no_auth: true
+no_auth: true 

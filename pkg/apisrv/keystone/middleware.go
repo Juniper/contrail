@@ -39,7 +39,7 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	}
 	validatedToken, err := auth.Validate(tokenString)
 	if err != nil {
-		return nil, echo.ErrUnauthorized
+		return nil, common.ErrorUnauthenticated
 	}
 	log.WithField("token", validatedToken).Debug("Authenticated")
 	roles := []string{}
@@ -49,15 +49,11 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	project := validatedToken.Project
 	if project == nil {
 		log.Debug("No project in a token")
-		return nil, echo.ErrUnauthorized
-	}
-	domain := validatedToken.Domain
-	if domain == nil {
-		log.Debug("No domain in a token")
 		return nil, common.ErrorUnauthenticated
 	}
+	domain := validatedToken.Project.Domain.ID
 	user := validatedToken.User
-	authContext := common.NewAuthContext(domain.ID, project.ID, user.ID, roles)
+	authContext := common.NewAuthContext(domain, project.ID, user.ID, roles)
 	var authKey interface{}
 	authKey = "auth"
 	newCtx := context.WithValue(ctx, authKey, authContext)

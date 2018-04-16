@@ -26,6 +26,7 @@ type Client struct {
 	httpClient *http.Client
 	AuthToken  string          `yaml:"-"`
 	InSecure   bool            `yaml:"insecure"`
+	Domain     string          `yaml:"domain"`
 	Scope      *keystone.Scope `yaml:"scope"`
 }
 
@@ -39,13 +40,14 @@ type Request struct {
 }
 
 // NewClient makes api srv client.
-func NewClient(endpoint, authURL, id, password string, insecure bool, scope *keystone.Scope) *Client {
+func NewClient(endpoint, authURL, id, password, domain string, insecure bool, scope *keystone.Scope) *Client {
 	c := &Client{
 		ID:       id,
 		Password: password,
 		AuthURL:  authURL,
 		Endpoint: endpoint,
 		Scope:    scope,
+		Domain:   domain,
 		InSecure: insecure,
 	}
 	c.Init()
@@ -82,6 +84,9 @@ func (c *Client) Login() error {
 					User: &keystone.User{
 						Name:     c.ID,
 						Password: c.Password,
+						Domain: &keystone.Domain{
+							ID: c.Domain,
+						},
 					},
 				},
 			},
@@ -100,7 +105,7 @@ func (c *Client) Login() error {
 		return err
 	}
 	defer resp.Body.Close()
-	err = checkStatusCode([]int{200}, resp.StatusCode)
+	err = checkStatusCode([]int{201}, resp.StatusCode)
 	if err != nil {
 		output, _ := httputil.DumpResponse(resp, true) // nolint: gas
 		log.Println(string(output))

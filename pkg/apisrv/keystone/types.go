@@ -20,33 +20,33 @@ type Auth struct {
 
 //Scope is used to limit scope of auth request.
 type Scope struct {
-	Domain  *Domain  `json:"domain"`
-	Project *Project `json:"project"`
+	Domain  *Domain  `json:"domain,omitempty"`
+	Project *Project `json:"project,omitempty"`
 }
 
 //Domain represents domain object.
 type Domain struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 //Project represents project object.
 type Project struct {
-	Domain *Domain `json:"domain"`
-	ID     string  `json:"id"`
-	Name   string  `json:"name"`
+	Domain *Domain `json:"domain,omitempty"`
+	ID     string  `json:"id,omitempty"`
+	Name   string  `json:"name,omitempty"`
 }
 
 //Identity represents a auth methods.
 type Identity struct {
 	Methods  []string  `json:"methods"`
-	Password *Password `json:"password"`
-	Token    *Token    `json:"token"`
+	Password *Password `json:"password,omitempty"`
+	Token    *Token    `json:"token,omitempty"`
 }
 
 //Password represents a password.
 type Password struct {
-	User *User `json:"user"`
+	User *User `json:"user,omitempty"`
 }
 
 //AuthResponse represents a authentication response.
@@ -79,7 +79,7 @@ type Role struct {
 
 //User reprenetns a user.
 type User struct {
-	Domain   *Domain `json:"domain"`
+	Domain   *Domain `json:"domain,omitempty"`
 	ID       string  `json:"id"`
 	Name     string  `json:"name"`
 	Password string  `json:"password"`

@@ -53,10 +53,14 @@ func getClient() (*apisrv.Client, error) {
 		authURL,
 		viper.GetString("id"),
 		viper.GetString("password"),
+		viper.GetString("domain_id"),
 		viper.GetBool("insecure"),
 		&keystone.Scope{
 			Project: &keystone.Project{
-				ID: viper.GetString("project_id"),
+				Name: viper.GetString("project_id"),
+				Domain: &keystone.Domain{
+					ID: viper.GetString("domain_id"),
+				},
 			},
 		},
 	)

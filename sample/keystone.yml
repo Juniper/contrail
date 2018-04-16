@@ -5,11 +5,11 @@ domains:
 projects:
   admin: &admin
     id: admin
-    name: Admin
+    name: admin
     domain: *default
   demo: &demo
     id: demo
-    name: Demo
+    name: demo
     domain: *default
 users:
   alice:
