@@ -28,10 +28,11 @@ clients:
   default:
     id: alice
     password: alice_password
+    domain: default
     insecure: true
     scope:
       project:
-        id: admin
+        name: admin
 workflow:
 {%if extra_tasks %}
 - name: create project

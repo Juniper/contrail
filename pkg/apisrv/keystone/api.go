@@ -58,8 +58,8 @@ func filterProject(user *User, scope *Scope) (*Project, error) {
 		return nil, nil
 	}
 	for _, role := range user.Roles {
-		if role.Project.ID == project.ID {
-			return project, nil
+		if role.Project.Name == project.Name {
+			return role.Project, nil
 		}
 	}
 	return nil, nil
@@ -94,7 +94,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 	authResponse := &AuthResponse{
 		Token: token,
 	}
-	return c.JSON(http.StatusOK, authResponse)
+	return c.JSON(http.StatusCreated, authResponse)
 }
 
 //ValidateTokenAPI is an API token for validating Token.

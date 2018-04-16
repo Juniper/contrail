@@ -13,7 +13,7 @@ test_database:
         dialect: mysql
     postgres:
         type: postgres 
-        connection: "user=root dbname=contrail_test sslmode=disable"
+        connection: "user=root dbname=contrail_test sslmode=disable password=contrail123"
         dialect: postgres
 
 
