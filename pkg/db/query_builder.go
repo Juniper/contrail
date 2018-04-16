@@ -270,8 +270,10 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 		_, err = query.WriteString(qb.quote(qb.Table, "uuid"))
 	}
 	_, err = query.WriteRune(' ')
-	pagenationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
-	_, err = query.WriteString(pagenationQuery)
+	if spec.Limit > 0 {
+		pagenationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
+		_, err = query.WriteString(pagenationQuery)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
