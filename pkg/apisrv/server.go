@@ -156,7 +156,6 @@ func (s *Server) Init() error {
 		}
 		s.Keystone = keystone
 	}
-
 	if viper.GetBool("enable_grpc") {
 		if !viper.GetBool("tls.enabled") {
 			log.Fatal("GRPC support requires TLS configuraion.")

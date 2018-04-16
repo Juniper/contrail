@@ -1,0 +1,21 @@
+# Contrail Go
+
+API Endpoint
+
+{{ if .Values.tls.enabled }}https{{ else }}http{{ end }}://localhost:9091/
+
+# Sample API Request
+
+curl -X POST -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8"\
+     -d '{"virtual-network": {"fq_name": ["default-domain", "admin", "vn-blue"]}}' \
+     https://localhost:9091/virtual-networks -k
+
+{{ if .Values.etcd.deploy }}
+# You can inspect access to etcd
+
+kubectl run --rm -i --tty --env ETCDCTL_API=3 --namespace {{ .Release.Namespace }} etcd-test --image quay.io/coreos/etcd --restart=Never -- /bin/sh
+
+# See data in etcd
+
+etcdctl --endpoints http://{{ template "etcdclient.fullname" . }}:2379 get --prefix /
+{{ end }}
