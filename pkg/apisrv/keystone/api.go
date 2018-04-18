@@ -38,8 +38,11 @@ func Init(e *echo.Echo) (*Keystone, error) {
 		expire := viper.GetInt64("keystone.store.expire")
 		keystone.Store = MakeInMemoryStore(time.Duration(expire) * time.Second)
 	}
+	e.POST("/keystone/v3/auth/tokens", keystone.CreateTokenAPI)
+	e.GET("/keystone/v3/auth/tokens", keystone.ValidateTokenAPI)
 	e.POST("/v3/auth/tokens", keystone.CreateTokenAPI)
 	e.GET("/v3/auth/tokens", keystone.ValidateTokenAPI)
+	e.GET("/keystone/v3/auth/projects", keystone.GetProjectAPI)
 	return keystone, nil
 }
 
@@ -65,6 +68,15 @@ func filterProject(user *User, scope *Scope) (*Project, error) {
 	return nil, nil
 }
 
+//GetProjectAPI is an API handler to list projects.
+func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
+	projects := keystone.Assignment.ListProjects()
+	projectsResponse := &ProjectListResponse{
+		Projects: projects,
+	}
+	return c.JSON(http.StatusOK, projectsResponse)
+}
+
 //CreateTokenAPI is an API handler for issuing new Token.
 func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 	var authRequest AuthRequest
@@ -72,17 +84,31 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 		log.WithField("error", err).Debug("Validation failed")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
-	user, err := keystone.Assignment.FetchUser(
-		authRequest.Auth.Identity.Password.User.Name,
-		authRequest.Auth.Identity.Password.User.Password,
-	)
-	if err != nil {
-		log.WithField("err", err).Debug("User not found")
-		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	var user *User
+	var err error
+	tokenID := ""
+	if authRequest.Auth.Identity.Token != nil {
+		tokenID = authRequest.Auth.Identity.Token.ID
 	}
-	if user == nil {
-		log.Debug("User not found")
-		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	if tokenID != "" { // user trying to get a token from token
+		token, err := keystone.Store.RetrieveToken(tokenID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusUnauthorized, err)
+		}
+		user = token.User
+	} else {
+		user, err = keystone.Assignment.FetchUser(
+			authRequest.Auth.Identity.Password.User.Name,
+			authRequest.Auth.Identity.Password.User.Password,
+		)
+		if err != nil {
+			log.WithField("err", err).Debug("User not found")
+			return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+		}
+		if user == nil {
+			log.Debug("User not found")
+			return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+		}
 	}
 	project, err := filterProject(user, authRequest.Auth.Scope)
 	if err != nil {

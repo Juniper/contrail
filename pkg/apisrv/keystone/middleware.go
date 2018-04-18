@@ -3,6 +3,7 @@ package keystone
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
@@ -11,9 +12,17 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	log "github.com/sirupsen/logrus"
+)
+
+const (
+	keystoneService = "keystone"
+	private         = apicommon.Private
+	pathSep         = "/"
 )
 
 func newAuth(authURL string, insecure bool) *keystone.Auth {
@@ -60,8 +69,32 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	return newCtx, nil
 }
 
+func getKeystoneEndpoint(endpoints *apicommon.EndpointStore) (authUrl string, err error) {
+	endpointCount := 0
+	authEndpoint := ""
+	endpoints.Data.Range(func(key, targets interface{}) bool {
+		keyString, _ := key.(string)
+		keyParts := strings.Split(keyString, pathSep)
+		if keyParts[3] != keystoneService || keyParts[4] != private {
+			return false // continue iterating the endpoints
+		}
+		endpointCount += 1
+		if endpointCount > 1 {
+			err = fmt.Errorf("Ambiguious, more than one cluster found")
+			return true
+		}
+		authEndpoints, _ := targets.(*apicommon.TargetStore)
+		authEndpoint = authEndpoints.Next(private)
+		return true
+
+	})
+
+	return authEndpoint, err
+}
+
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
-func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.MiddlewareFunc {
+func AuthMiddleware(authURL string, insecure bool, skipPath []string,
+	endpoints *apicommon.EndpointStore) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		auth := newAuth(authURL, insecure)
 		return func(c echo.Context) error {
@@ -74,6 +107,14 @@ func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.Middl
 			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
 				// Skip grpc
 				return next(c)
+			}
+			keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
+			if err != nil {
+				log.Error(err)
+				return common.ToHTTPError(common.ErrorUnauthenticated)
+			}
+			if keystoneEndpoint != "" {
+				auth = newAuth(keystoneEndpoint, insecure)
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
 			ctx, err := authenticate(r.Context(), auth, tokenString)
