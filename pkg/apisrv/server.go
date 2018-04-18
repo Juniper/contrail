@@ -71,9 +71,8 @@ func (s *Server) SetupService() serviceif.Service {
 	return service
 }
 
-func (s *Server) serveDynamicProxy() {
-	EndpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
-	s.Proxy = newProxyService(s.Echo, EndpointStore, s.dbService)
+func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
+	s.Proxy = newProxyService(s.Echo, endpointStore, s.dbService)
 	s.Proxy.serve()
 }
 
@@ -136,15 +135,19 @@ func (s *Server) Init() error {
 		}
 	}
 	// serve dynamic proxy based on configured endpoints
-	s.serveDynamicProxy()
+	endpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
+	s.serveDynamicProxy(endpointStore)
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	if keystoneAuthURL != "" {
 		e.Use(keystone.AuthMiddleware(keystoneAuthURL,
 			viper.GetBool("keystone.insecure"),
 			[]string{
+				"/keystone/v3/auth/tokens",
+				"/keystone/v3/auth/projects",
 				"/v3/auth/tokens",
-				"/public"}))
+				"/public"},
+			endpointStore))
 	} else if viper.GetBool("no_auth") {
 		e.Use(noAuthMiddleware())
 	}
