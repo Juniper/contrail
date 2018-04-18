@@ -7,11 +7,37 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"
 )
+
+const (
+	pathSep   = ":"
+	webSep    = "//"
+	protocol  = "http"
+	config    = "config"
+	analytics = "telemetry"
+	webui     = "nodejs"
+	identity  = "keystone"
+	nova      = "compute"
+	ironic    = "baremetal"
+	glance    = "glance"
+	swift     = "swift"
+)
+
+var portMap = map[string]string{
+	config:    "8082",
+	analytics: "8081",
+	webui:     "8143",
+	identity:  "5000",
+	nova:      "8774",
+	ironic:    "6385",
+	glance:    "9292",
+	swift:     "8080",
+}
 
 type provisioner interface {
 	provision() error
@@ -86,6 +112,104 @@ func (p *provisionCommon) deleteWorkingDir() error {
 	err := os.RemoveAll(p.getClusterHomeDir())
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (p *provisionCommon) endpointToURL(protocol, ip, port string) (endpointURL string) {
+	return strings.Join([]string{protocol, webSep + ip, port}, pathSep)
+}
+
+func (p *provisionCommon) createEndpoints() error {
+	p.log.Infof("Creating service endpoints for cluster: %s", p.clusterID)
+	privateURL := ""
+	for _, configNode := range p.clusterData.clusterInfo.ContrailConfigNodes {
+		for _, nodeRef := range configNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := p.endpointToURL(protocol, node.IPAddress, portMap[config])
+					p.cluster.createEndpoint(p.clusterID, config, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, analyticsNode := range p.clusterData.clusterInfo.ContrailAnalyticsNodes {
+		for _, nodeRef := range analyticsNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := p.endpointToURL(
+						protocol, node.IPAddress, portMap[analytics])
+					p.cluster.createEndpoint(p.clusterID, analytics, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, webuiNode := range p.clusterData.clusterInfo.ContrailWebuiNodes {
+		for _, nodeRef := range webuiNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := p.endpointToURL(
+						protocol, node.IPAddress, portMap[webui])
+					p.cluster.createEndpoint(p.clusterID, webui, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, openstackStorageNode := range p.clusterData.clusterInfo.OpenstackStorageNodes {
+		for _, nodeRef := range openstackStorageNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := p.endpointToURL(
+						protocol, node.IPAddress, portMap[swift])
+					p.cluster.createEndpoint(p.clusterID, swift, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, openstackControlNode := range p.clusterData.clusterInfo.OpenstackControlNodes {
+		for _, nodeRef := range openstackControlNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := p.endpointToURL(
+						protocol, node.IPAddress, portMap[nova])
+					p.cluster.createEndpoint(p.clusterID, nova, publicURL, privateURL)
+					publicURL = p.endpointToURL(
+						protocol, node.IPAddress, portMap[ironic])
+					p.cluster.createEndpoint(p.clusterID, ironic, publicURL, privateURL)
+					publicURL = p.endpointToURL(
+						protocol, node.IPAddress, portMap[glance])
+					p.cluster.createEndpoint(p.clusterID, glance, publicURL, privateURL)
+					publicURL = p.endpointToURL(
+						protocol, node.IPAddress, portMap[identity])
+					p.cluster.createEndpoint(p.clusterID, identity, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (p *provisionCommon) updateEndpoints() error {
+	p.log.Infof("Updating service endpoints for cluster: %s", p.clusterID)
+	endpoints, err := p.cluster.getEndpoints([]string{p.clusterID})
+	if err != nil {
+		return err
+	}
+	for _, endpoint := range endpoints {
+		p.cluster.deleteEndpoint(endpoint.UUID)
+	}
+	p.createEndpoints()
+	return nil
+}
+
+func (p *provisionCommon) deleteEndpoints() error {
+	p.log.Infof("Deleting service endpoints for cluster: %s", p.clusterID)
+	endpoints, err := p.cluster.getEndpoints([]string{p.clusterID})
+	if err != nil {
+		return err
+	}
+	for _, endpoint := range endpoints {
+		p.cluster.deleteEndpoint(endpoint.UUID)
 	}
 	return nil
 }
