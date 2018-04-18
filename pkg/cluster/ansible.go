@@ -336,11 +336,23 @@ func (a *ansibleProvisioner) provision() error {
 		if a.isCreated() {
 			return nil
 		}
-		return a.createCluster()
+		err := a.createCluster()
+		if err != nil {
+			return err
+		}
+		return a.createEndpoints()
 	case "update":
-		return a.updateCluster()
+		err := a.updateCluster()
+		if err != nil {
+			return err
+		}
+		return a.updateEndpoints()
 	case "delete":
-		return a.deleteCluster()
+		err := a.deleteCluster()
+		if err != nil {
+			return err
+		}
+		return a.deleteEndpoints()
 	}
 	return nil
 }

@@ -2,36 +2,24 @@ package keystone
 
 import (
 	"context"
-	"crypto/tls"
-	"net"
-	"net/http"
+	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	log "github.com/sirupsen/logrus"
 )
 
-func newAuth(authURL string, insecure bool) *keystone.Auth {
-	auth := keystone.New(authURL)
-	tr := &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: 5 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: 5 * time.Second,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure}, // nolint: gas
-	}
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   time.Second * 10,
-	}
-	auth.Client = client
-	return auth
-}
+const (
+	keystoneService = "keystone"
+	private         = apicommon.Private
+	pathSep         = "/"
+)
 
 func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
 	if tokenString == "" {
@@ -60,10 +48,34 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	return newCtx, nil
 }
 
+func getKeystoneEndpoint(endpoints *apicommon.EndpointStore) (authEndpoint string, err error) {
+	endpointCount := 0
+	authEndpoint = ""
+	endpoints.Data.Range(func(key, targets interface{}) bool {
+		keyString, _ := key.(string)
+		keyParts := strings.Split(keyString, pathSep)
+		if keyParts[3] != keystoneService || keyParts[4] != private {
+			return true // continue iterating the endpoints
+		}
+		endpointCount++
+		if endpointCount > 1 {
+			err = fmt.Errorf("Ambiguious, more than one cluster found")
+			return false
+		}
+		authEndpoints, _ := targets.(*apicommon.TargetStore)
+		authEndpoint = authEndpoints.Next(private)
+		return false
+
+	})
+
+	return authEndpoint, err
+}
+
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
-func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.MiddlewareFunc {
+func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
+	endpoints *apicommon.EndpointStore) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		auth := newAuth(authURL, insecure)
+		auth := keystoneClient.NewAuth()
 		return func(c echo.Context) error {
 			for _, path := range skipPath {
 				if strings.HasPrefix(c.Request().URL.Path, path) {
@@ -74,6 +86,15 @@ func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.Middl
 			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
 				// Skip grpc
 				return next(c)
+			}
+			keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
+			if err != nil {
+				log.Error(err)
+				return common.ToHTTPError(common.ErrorUnauthenticated)
+			}
+			if keystoneEndpoint != "" {
+				keystoneClient.SetAuthURL(keystoneEndpoint)
+				auth = keystoneClient.NewAuth()
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
 			ctx, err := authenticate(r.Context(), auth, tokenString)
@@ -88,8 +109,9 @@ func AuthMiddleware(authURL string, insecure bool, skipPath []string) echo.Middl
 }
 
 //AuthInterceptor for Auth process for gRPC based apps.
-func AuthInterceptor(authURL string, insecure bool) grpc.UnaryServerInterceptor {
-	auth := newAuth(authURL, insecure)
+func AuthInterceptor(keystoneClient *KeystoneClient,
+	endpoints *apicommon.EndpointStore) grpc.UnaryServerInterceptor {
+	auth := keystoneClient.NewAuth()
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		md, ok := metadata.FromIncomingContext(ctx)
@@ -99,6 +121,15 @@ func AuthInterceptor(authURL string, insecure bool) grpc.UnaryServerInterceptor 
 		token := md["x-auth-token"]
 		if len(token) == 0 {
 			return nil, common.ErrorUnauthenticated
+		}
+		keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
+		if err != nil {
+			log.Error(err)
+			return nil, common.ErrorUnauthenticated
+		}
+		if keystoneEndpoint != "" {
+			keystoneClient.SetAuthURL(keystoneEndpoint)
+			auth = keystoneClient.NewAuth()
 		}
 		newCtx, err := authenticate(ctx, auth, token[0])
 		if err != nil {
