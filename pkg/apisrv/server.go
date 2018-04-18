@@ -71,9 +71,8 @@ func (s *Server) SetupService() serviceif.Service {
 	return service
 }
 
-func (s *Server) serveDynamicProxy() {
-	EndpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
-	s.Proxy = newProxyService(s.Echo, EndpointStore, s.dbService)
+func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
+	s.Proxy = newProxyService(s.Echo, endpointStore, s.dbService)
 	s.Proxy.serve()
 }
 
@@ -132,15 +131,21 @@ func (s *Server) Init() error {
 		g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 	}
 	// serve dynamic proxy based on configured endpoints
-	s.serveDynamicProxy()
+	endpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
+	s.serveDynamicProxy(endpointStore)
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
+	var keystoneClient *keystone.KeystoneClient
 	if keystoneAuthURL != "" {
-		e.Use(keystone.AuthMiddleware(keystoneAuthURL,
-			viper.GetBool("keystone.insecure"),
+		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL,
+			viper.GetBool("keystone.insecure"))
+		e.Use(keystone.AuthMiddleware(keystoneClient,
 			[]string{
+				"/keystone/v3/auth/tokens",
+				"/keystone/v3/auth/projects",
 				"/v3/auth/tokens",
-				"/public"}))
+				"/public"},
+			endpointStore))
 	} else if viper.GetBool("no_auth") {
 		e.Use(noAuthMiddleware())
 	}
@@ -161,9 +166,7 @@ func (s *Server) Init() error {
 		if keystoneAuthURL != "" {
 			grpcServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
-					keystone.AuthInterceptor(
-						keystoneAuthURL,
-						viper.GetBool("keystone.insecure"))))
+					keystone.AuthInterceptor(keystoneClient, endpointStore)))
 		} else if viper.GetBool("no_auth") {
 			grpcServer = grpc.NewServer(
 				grpc.UnaryInterceptor(

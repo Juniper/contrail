@@ -55,6 +55,6 @@ func setupClient(testID string) {
 	viper.SetDefault("password", testID)
 	viper.SetDefault("project_id", testID)
 	viper.SetDefault("endpoint", testServer.URL)
-	viper.SetDefault("auth_url", testServer.URL+"/v3")
+	viper.SetDefault("auth_url", testServer.URL+"/keystone/v3")
 	viper.SetDefault("insecure", true)
 }
