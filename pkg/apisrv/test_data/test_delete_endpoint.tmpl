@@ -1,0 +1,19 @@
+name: Endpoint Delete Test
+description:  delete dynamic proxy endpoint test
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: delete {{ endpoint_name }} endpoint of {{ cluster_name }}
+  request:
+    path: /endpoint/endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
+    method: DELETE
+    expected:
+    - 204
+  expect: null

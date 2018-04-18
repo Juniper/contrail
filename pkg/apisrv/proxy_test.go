@@ -192,7 +192,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 
 	var testScenario TestScenario
 	err := LoadTestScenario(&testScenario, testFile)
-	assert.NoError(t, err, "failed to load test data")
+	assert.NoError(t, err, "failed to load endpoint create test data")
 	RunTestScenario(t, &testScenario)
 
 	// Wait a sec for the dynamic proxy to be created/updated
@@ -211,4 +211,13 @@ func TestKeystoneEndpoint(t *testing.T) {
 	if !ok {
 		return
 	}
+
+	// Delete endpoint test
+	testFile = GetTestFromTemplate(t, "./test_data/test_delete_endpoint.tmpl", context)
+	// remove tempfile after test
+	defer os.Remove(testFile) // nolint: errcheck
+
+	err = LoadTestScenario(&testScenario, testFile)
+	assert.NoError(t, err, "failed to load endpoint delete test data")
+	RunTestScenario(t, &testScenario)
 }
