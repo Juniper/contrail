@@ -1,6 +1,7 @@
 package keystone
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 type Store interface {
 	CreateToken(*User, *Project) (string, *Token)
 	ValidateToken(string) (*Token, bool)
+	RetrieveToken(string) (*Token, error)
 }
 
 //InMemoryStore is an implementation of Store based on in-memory synced map.
@@ -51,4 +53,15 @@ func (store *InMemoryStore) ValidateToken(tokenID string) (*Token, bool) {
 	}
 	token, ok := i.(*Token)
 	return token, ok
+}
+
+//RetrieveToken is used to retrive a token, and return a token body.
+func (store *InMemoryStore) RetrieveToken(tokenID string) (*Token, error) {
+	i, ok := store.store.Load(tokenID)
+	if !ok {
+		return nil, fmt.Errorf("Token not found")
+	}
+	token, _ := i.(*Token)
+
+	return token, nil
 }

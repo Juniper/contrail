@@ -5,6 +5,7 @@ import "fmt"
 //Assignment is used to manage domain, project and user information.
 type Assignment interface {
 	FetchUser(id, password string) (*User, error)
+	ListProjects() []*Project
 }
 
 //StaticAssignment is an implementation of Assignment based on static file.
@@ -21,4 +22,13 @@ func (assignment *StaticAssignment) FetchUser(name, password string) (*User, err
 		return nil, fmt.Errorf("User %s not found", name)
 	}
 	return user, nil
+}
+
+//ListProjects is used to list projects
+func (assignment *StaticAssignment) ListProjects() []*Project {
+	projects := []*Project{}
+	for _, project := range assignment.Projects {
+		projects = append(projects, project)
+	}
+	return projects
 }
