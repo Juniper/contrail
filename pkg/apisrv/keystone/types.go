@@ -39,9 +39,9 @@ type Project struct {
 
 //Identity represents a auth methods.
 type Identity struct {
-	Methods  []string  `json:"methods"`
-	Password *Password `json:"password,omitempty"`
-	Token    *Token    `json:"token,omitempty"`
+	Methods  []string   `json:"methods"`
+	Password *Password  `json:"password,omitempty"`
+	Token    *UserToken `json:"token,omitempty"`
 }
 
 //Password represents a password.
@@ -98,4 +98,15 @@ type Token struct {
 	IssuedAt  time.Time  `json:"issued_at"`
 	Methods   []string   `json:"methods"`
 	Roles     []*Role    `json:"roles"`
+}
+
+//UserToken represent a token object sent by user to get new token
+type UserToken struct {
+	ID string `json:"id"`
+	Token
+}
+
+//ProjectListResponse represents a project list response.
+type ProjectListResponse struct {
+	Projects []*Project `json:"projects"`
 }
