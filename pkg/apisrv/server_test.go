@@ -30,7 +30,7 @@ func TestGRPC(t *testing.T) {
 	CreateTestProject(server, "TestGRPC")
 	restClient := NewClient(
 		testServer.URL,
-		testServer.URL+"/v3",
+		testServer.URL+"/keystone/v3",
 		"TestGRPC",
 		"TestGRPC",
 		"default",
