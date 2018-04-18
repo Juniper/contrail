@@ -13,6 +13,28 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	protocol  = "http"
+	config    = "config"
+	analytics = "telemetry"
+	webui     = "nodejs"
+	keystone  = "keystone"
+	nova      = "compute"
+	ironic    = "baremetal"
+	glance    = "glance"
+	swift     = "swift"
+	portMap   = map[string]string{
+		config:    "8082",
+		analytics: "8081",
+		webui:     "8143",
+		keystone:  "5000",
+		nova:      "8774",
+		ironic:    "6385",
+		glance:    "9292",
+		swift:     "8080",
+	}
+)
+
 type provisioner interface {
 	provision() error
 }
@@ -88,6 +110,90 @@ func (p *provisionCommon) deleteWorkingDir() error {
 		return err
 	}
 	return nil
+}
+
+func (p *provisionCommon) syncEndpoints() error {
+	privateURL = ""
+	for _, configNode := range p.clusterData.clusterInfo.ContrailConfigNodes {
+		for _, nodeRef := range configNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := strings.Join(protocol, node.IPAddress, portMap[config])
+					p.cluster.syncEndpoint(p.clusterID, config, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, analyticsNode := range p.clusterData.clusterInfo.ContrailAnalyticsNodes {
+		for _, nodeRef := range analyticsNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := strings.Join(protocol, node.IPAddress, portMap[analytics])
+					p.cluster.syncEndpoint(p.clusterID, analytics, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, webuNode := range p.clusterData.clusterInfo.ContrailWebuiNodes {
+		for _, nodeRef := range webuiNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := strings.Join(protocol, node.IPAddress, portMap[webui])
+					p.cluster.syncEndpoint(p.clusterID, webui, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, webuiNode := range p.clusterData.clusterInfo.ContrailWebuiNodes {
+		for _, nodeRef := range webuiNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := strings.Join(protocol, node.IPAddress, portMap[webui])
+					p.cluster.syncEndpoint(p.clusterID, webui, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, openstackControlNode := range p.clusterData.clusterInfo.OpenstackControlNodes {
+		for _, nodeRef := range openstackControlNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := strings.Join(protocol, node.IPAddress, portMap[keystone])
+					p.cluster.syncEndpoint(p.clusterID, keystone, publicURL, privateURL)
+					publicURL = strings.Join(protocol, node.IPAddress, portMap[nova])
+					p.cluster.syncEndpoint(p.clusterID, nova, publicURL, privateURL)
+					publicURL = strings.Join(protocol, node.IPAddress, portMap[ironic])
+					p.cluster.syncEndpoint(p.clusterID, ironic, publicURL, privateURL)
+					publicURL = strings.Join(protocol, node.IPAddress, portMap[glance])
+					p.cluster.syncEndpoint(p.clusterID, glance, publicURL, privateURL)
+				}
+			}
+		}
+	}
+	for _, openstackStorageNode := range p.clusterData.clusterInfo.OpenstackStorageNodes {
+		for _, nodeRef := range openstackStorageNode.NodeRefs {
+			for _, node := range p.clusterData.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					publicURL := strings.Join(protocol, node.IPAddress, portMap[swift])
+					p.cluster.syncEndpoint(p.clusterID, swift, publicURL, privateURL)
+				}
+			}
+		}
+	}
+}
+
+func (p *provisionCommon) createEndpoints() error {
+	p.syncEndpoints()
+}
+
+func (p *provisionCommon) updateEndpoints() error {
+	p.syncEndpoints()
+}
+
+func (p *provisionCommon) deleteEndpoints() error {
+	for _, endpoint := range p.cluster.getEndpoints(p.clusterID) {
+		p.cluster.deleteEndpoint(endpoint.UUID)
+	}
 }
 
 func (p *provisionCommon) execCmd(cmd string, args []string, dir string) error {

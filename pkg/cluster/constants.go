@@ -4,6 +4,8 @@ package cluster
 const (
 	defaultResource                       = "contrail-cluster"
 	defaultResourcePath                   = "/" + defaultResource
+	defaultEndpointRes                    = "endpoint"
+	defaultEndpointResPath                = "/" + defaultEndpointRes
 	defaultNodeRes                        = "node"
 	defaultNodeResPath                    = "/" + defaultNodeRes
 	defaultConfigNodeRes                  = "contrail-config-node"
