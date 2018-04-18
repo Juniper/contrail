@@ -80,6 +80,10 @@ func (t *TargetStore) Next(scope string) (endpointURL string) {
 		case Private:
 			if ids == t.nextTarget {
 				endpointURL = endpoint.(*models.Endpoint).PrivateURL
+				if endpointURL == "" {
+					// no private url configured, use public url
+					endpointURL = endpoint.(*models.Endpoint).PublicURL
+				}
 				// let Range iterate till nextServer is identified
 				return true
 			}

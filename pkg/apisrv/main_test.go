@@ -48,7 +48,7 @@ func RunTestForDB(m *testing.M) {
 	testServer.StartTLS()
 	defer testServer.Close()
 
-	viper.Set("keystone.authurl", testServer.URL+"/v3")
+	viper.Set("keystone.authurl", testServer.URL+"/keystone/v3")
 	err = server.Init()
 	if err != nil {
 		log.Fatal(err)
@@ -80,7 +80,7 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 	for key, client := range testScenario.Clients {
 		//Rewrite endpoint for test server
 		client.Endpoint = testServer.URL
-		client.AuthURL = testServer.URL + "/v3"
+		client.AuthURL = testServer.URL + "/keystone/v3"
 		client.InSecure = true
 		client.Init()
 

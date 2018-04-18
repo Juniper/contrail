@@ -3,10 +3,54 @@ package cluster
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/models"
 )
+
+func (c *Cluster) createEndpoint(parentUUID, name, publicURL, privateURL string) error {
+	endpoint := map[string]string{
+		"parent_type": defaultResource,
+		"parent_uuid": parentUUID,
+		"name":        name,
+		"public_url":  publicURL,
+		"private_url": privateURL,
+	}
+	endpointData := map[string]map[string]string{"endpoint": endpoint}
+	c.log.Infof("Creating endpoint: %s, %s", name, publicURL)
+	var endpointResponse map[string]interface{}
+	resURI := fmt.Sprintf("%ss", defaultEndpointResPath)
+	_, err := c.APIServer.Create(resURI, &endpointData, &endpointResponse)
+	return err
+}
+
+func (c *Cluster) getEndpoints(parentUUIDs []string) (endpointIDs []string, err error) {
+	values := url.Values{
+		models.ParentUUIDsKey: parentUUIDs,
+		models.ParentTypeKey:  []string{defaultResource},
+	}
+	var endpointList map[string][]interface{}
+	resURI := fmt.Sprintf("%ss?%s", defaultEndpointResPath, values.Encode())
+	c.log.Infof("Reading endpoints: %s", resURI)
+	_, err = c.APIServer.Read(resURI, &endpointList)
+	if err != nil {
+		return nil, err
+	}
+	for _, rawEndpoint := range endpointList[defaultEndpointRes+"s"] {
+		endpointID := rawEndpoint.(map[string]interface{})["uuid"].(string)
+		endpointIDs = append(endpointIDs, endpointID)
+	}
+	return endpointIDs, nil
+}
+
+func (c *Cluster) deleteEndpoint(endpointUUID string) error {
+	var output map[string]interface{}
+	resURI := fmt.Sprintf("%s/%s", defaultEndpointResPath, endpointUUID)
+	c.log.Infof("Deleting endpoint: %s", resURI)
+	_, err := c.APIServer.Delete(resURI, &output)
+	return err
+}
 
 func (c *Cluster) getResource(resPath string, resID string) (map[string]interface{}, error) {
 	var rawResInfo map[string]interface{}

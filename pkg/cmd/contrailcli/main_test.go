@@ -36,7 +36,7 @@ func TestMain(m *testing.M) {
 	testServer.StartTLS()
 	defer testServer.Close()
 
-	viper.Set("keystone.authurl", testServer.URL+"/v3")
+	viper.Set("keystone.authurl", testServer.URL+"/keystone/v3")
 	err = server.Init()
 	if err != nil {
 		log.Fatal(err)
@@ -55,6 +55,6 @@ func setupClient(testID string) {
 	viper.SetDefault("password", testID)
 	viper.SetDefault("project_id", testID)
 	viper.SetDefault("endpoint", testServer.URL)
-	viper.SetDefault("auth_url", testServer.URL+"/v3")
+	viper.SetDefault("auth_url", testServer.URL+"/keystone/v3")
 	viper.SetDefault("insecure", true)
 }

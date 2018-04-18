@@ -61,4 +61,4 @@ keystone:
         type: memory
         expire: 3600
     insecure: true
-    authurl: https://localhost:9091/v3
+    authurl: https://localhost:9091/keystone/v3
