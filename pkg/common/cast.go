@@ -55,6 +55,8 @@ func InterfaceToBool(i interface{}) bool {
 		return t
 	case int64:
 		return t == 1
+	case float64:
+		return t == 1
 	}
 	return false
 }

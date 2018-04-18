@@ -61,6 +61,7 @@ schema:
       default: NOSTATE
       description: Provisioning Status
       enum:
+      - NOSTATE
       - CREATED
       - CREATE_IN_PROGRESS
       - CREATE_FAILED
