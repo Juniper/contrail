@@ -1,5 +1,4 @@
-// Package watcher contains functionality that supplies etcd with data from MySQL database.
-// It uses mysqldump and MySQL binlog replication protocol to achieve that.
+// Package watcher contains functionality that supplies etcd with data from PostgreSQL or MySQL database.
 package watcher
 
 import (
