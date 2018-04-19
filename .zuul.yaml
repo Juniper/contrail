@@ -13,6 +13,7 @@
       Job that builds and tests Juniper/contrail project.
     voting: True
     parent: contrail-base2
+    timeout: 3600
     required-projects:
       - Juniper/contrail
     run: playbooks/contrail-go-docker/run.yaml
