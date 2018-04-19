@@ -8,4 +8,4 @@ resources:
     display_name: vn1_update
     uuid: vn1
     network_policy_refs:
-    - network_policy1
+    - uuid: network_policy1
