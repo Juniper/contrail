@@ -176,6 +176,13 @@ func (s *Server) Init() error {
 		services.RegisterContrailServiceServer(grpcServer, service)
 		e.Use(gRPCMiddleware(grpcServer))
 	}
+
+	if viper.GetBool("recordapi") {
+		e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+			fmt.Printf("%s\n", reqBody)
+			fmt.Printf("%s\n", resBody)
+		}))
+	}
 	return nil
 }
 
