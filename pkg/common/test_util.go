@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -13,10 +14,106 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+const (
+	funcPrefix = "$"
+)
+
+//AssertFunction for macros in diff
+type AssertFunction func(path string, args, actual interface{}) error
+
+//AssertFunctions for additional test logic.
+var AssertFunctions = map[string]AssertFunction{
+	"any": func(path string, args, actual interface{}) error {
+		return nil
+	},
+	"null": func(path string, args, actual interface{}) error {
+		if actual != nil {
+			return fmt.Errorf("expecetd null but got %s on path %s", actual, path)
+		}
+		return nil
+	},
+	"int": func(path string, args, actual interface{}) error {
+		_, ok := actual.(int)
+		if !ok {
+			return fmt.Errorf("expecetd integer but got %s on path %s", actual, path)
+		}
+		return nil
+	},
+	"float": func(path string, args, actual interface{}) error {
+		_, ok := actual.(int)
+		if !ok {
+			return fmt.Errorf("expecetd float but got %s on path %s", actual, path)
+		}
+		return nil
+	},
+}
+
+func isStringFunction(key string) bool {
+	return strings.HasPrefix(key, funcPrefix)
+}
+
+func isFunction(expected interface{}) bool {
+	switch t := expected.(type) {
+	case map[string]interface{}:
+		for key := range t {
+			if isStringFunction(key) {
+				return true
+			}
+		}
+	case string:
+		return isStringFunction(t)
+	}
+	return false
+}
+
+func getAssertFunction(key string) (AssertFunction, error) {
+	assertName := strings.TrimPrefix(key, funcPrefix)
+	assert, ok := AssertFunctions[assertName]
+	if !ok {
+		return nil, fmt.Errorf("assert function %s not found", assertName)
+	}
+	return assert, nil
+}
+
+func runFunction(path string, expected, actual interface{}) (err error) {
+	switch t := expected.(type) {
+	case map[string]interface{}:
+		for key := range t {
+			if isStringFunction(key) {
+				for key, value := range t {
+					assert, err := getAssertFunction(key)
+					if err != nil {
+						return err
+					}
+					err = assert(path, value, actual)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	case string:
+		if isStringFunction(t) {
+			assert, err := getAssertFunction(t)
+			if err != nil {
+				return err
+			}
+			err = assert(path, nil, actual)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 //CheckDiff checks diff
 func CheckDiff(path string, expected, actual interface{}) error {
 	if expected == nil {
 		return nil
+	}
+	if isFunction(expected) {
+		return runFunction(path, expected, actual)
 	}
 	switch t := expected.(type) {
 	case map[string]interface{}:
