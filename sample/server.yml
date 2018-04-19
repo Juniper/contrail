@@ -70,3 +70,6 @@ proxy:
 # disable authentication with no_auth true and comment out keystone configuraion.
 
 no_auth: true 
+recorder: 
+    enabled: true
+    file: record.yml
