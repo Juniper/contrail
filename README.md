@@ -22,22 +22,13 @@ to community discussion.
 
 https://golang.org/doc/install
 
-### Step2. Go get contrailutil
-
-``` shell
-go get -u github.com/Juniper/contrail/cmd/contrailutil
-```
-
-Note that go get -u github.com/Juniper/contrail fails because we don't
-commit genreated code.
-
-### Step3 Install dependency and testenv
+### Step2. Install dependencies
 
 ``` shell
 make deps
 ```
 
-### Step4 Install Test DB
+### Step3. Install test environment
 
 ```
 # setup testenv using docker
@@ -46,13 +37,13 @@ make testenv
 make reset_db
 ```
 
-### Step5 Generate code
+### Step4. Generate code
 
 ``` shell
 make generate
 ```
 
-### Step6 Install code
+### Step5. Install code
 
 ``` shell
 make install
@@ -181,4 +172,4 @@ git review
 
 ## Document
 
-see [docs](./docs) folder
+see [docs](./doc) folder

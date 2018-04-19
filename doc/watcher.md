@@ -64,7 +64,7 @@ by calling `make testenv`.
 ## Configuration
 
 Service reads configuration from YAML file on path specified `--config-file` flag.
-Required fields are defined in [source code](../pkg/watcher/service.go) as the `Config` structure.
+Used configuration keys and their defaults can are defined [here](../pkg/watcher/service.go).
 
 Example configuration can be found [here](../sample/watcher.yml).
 
