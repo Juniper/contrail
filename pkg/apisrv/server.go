@@ -2,8 +2,10 @@ package apisrv
 
 import (
 	"database/sql"
+	"encoding/json"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo"
@@ -175,6 +177,33 @@ func (s *Server) Init() error {
 		}
 		services.RegisterContrailServiceServer(grpcServer, service)
 		e.Use(gRPCMiddleware(grpcServer))
+	}
+
+	if viper.GetBool("recorder.enabled") {
+		file := viper.GetString("recorder.file")
+		scenario := &TestScenario{
+			Workflow: []*Task{},
+		}
+		var mutex sync.Mutex
+		e.Use(middleware.BodyDump(func(c echo.Context, requestBody, responseBody []byte) {
+			var data interface{}
+			json.Unmarshal(requestBody, &data)
+			var expected interface{}
+			json.Unmarshal(responseBody, &expected)
+			task := &Task{
+				Request: &Request{
+					Method:   c.Request().Method,
+					Path:     c.Request().URL.Path,
+					Expected: []int{c.Response().Status},
+					Data:     data,
+				},
+				Expect: expected,
+			}
+			mutex.Lock()
+			defer mutex.Unlock()
+			scenario.Workflow = append(scenario.Workflow, task)
+			common.SaveFile(file, scenario)
+		}))
 	}
 	return nil
 }

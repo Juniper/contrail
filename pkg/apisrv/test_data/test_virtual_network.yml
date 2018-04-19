@@ -421,86 +421,86 @@ workflow:
     - uuid: network_policy_uuid2
       perms2:
         owner: demo
-# # - name: update virtual network blue
-# #   request:
-# #     path: /virtual-network/vn_blue
-# #     method: PUT
-# #     expected:
-# #     - 200
-# #     data:
-# #       virtual-network:
-# #         is_shared: true
-# #         route_target_list:
-# #           route_target: ["100:200", "11:333"]
-# #         virtual_network_network_id: 57
-# #   expect:
-# #     virtual-network:
-# #       uri: /virtual-network/vn_blue
-# #       uuid: vn_blue
-# # - name: get virtual network blue after update
-# #   request:
-# #     path: /virtual-networks?obj_uuids=vn_blue&detail=true
-# #     method: GET
-# #     expected:
-# #     - 200
-# #   expect:
-# #     virtual-networks:
-# #     - uuid: vn_blue
-# #       is_shared: true
-# #       virtual_network_network_id: 57
-# #       route_target_list:
-# #         route_target: ["100:200", "11:333"]
-# #       display_name: blue
-# #       network_policy_refs:
-# #       - uuid: network_policy_uuid
-# #       routing_instances:
-# #       - uuid: ri_uuid
-# #         parent_uuid: vn_blue
-# # - name: update network policy
-# #   request:
-# #     path: /network-policy/network_policy_uuid
-# #     method: PUT
-# #     expected:
-# #     - 200
-# #     data:
-# #       network-policy:
-# #         network_policy_entries:
-# #           policy_rule:
-# #             - direction: ">"
-# #               protocol: udp
-# #               rule_uuid: rule_uuid
-# #               ethertype: IPv4
-# #               rule_sequence:
-# #                 major: 10
-# #                 minor: 2
-# #   expect:
-# #     network-policy:
-# #       uri: /network-policy/network_policy_uuid
-# #       uuid: network_policy_uuid
-# # - name: get network policy after update
-# #   request:
-# #     path: /network-policys?obj_uuids=network_policy_uuid&detail=true
-# #     method: GET
-# #     expected:
-# #     - 200
-# #   expect:
-# #     virtual-networks:
-# #     network-policys:
-# #       - uuid: network_policy_uuid
-# #         fq_name: ["default", "admin", "policy1"]
-# #         network_policy_entries:
-# #           policy_rule:
-# #             - direction: ">"
-# #               protocol: udp
-# #               rule_uuid: rule_uuid
-# #               ethertype: IPv4
-# #               rule_sequence:
-# #                 major: 10
-# #                 minor: 2
-# #         parent_type: project
-# #         parent_uuid: admin_project_uuid
-# #         perms2:
-# #           owner: admin
+- name: update virtual network blue
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 200
+    data:
+      virtual-network:
+        is_shared: true
+        route_target_list:
+          route_target: ["100:200", "11:333"]
+        virtual_network_network_id: 57
+  expect:
+    virtual-network:
+      uri: /virtual-network/vn_blue
+      uuid: vn_blue
+- name: get virtual network blue after update
+  request:
+    path: /virtual-networks?obj_uuids=vn_blue&detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - uuid: vn_blue
+      is_shared: true
+      virtual_network_network_id: 57
+      route_target_list:
+        route_target: ["100:200", "11:333"]
+      display_name: blue
+      network_policy_refs:
+      - uuid: network_policy_uuid
+      routing_instances:
+      - uuid: ri_uuid
+        parent_uuid: vn_blue
+- name: update network policy
+  request:
+    path: /network-policy/network_policy_uuid
+    method: PUT
+    expected:
+    - 200
+    data:
+      network-policy:
+        network_policy_entries:
+          policy_rule:
+            - direction: ">"
+              protocol: udp
+              rule_uuid: rule_uuid
+              ethertype: IPv4
+              rule_sequence:
+                major: 10
+                minor: 2
+  expect:
+    network-policy:
+      uri: /network-policy/network_policy_uuid
+      uuid: network_policy_uuid
+- name: get network policy after update
+  request:
+    path: /network-policys?obj_uuids=network_policy_uuid&detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    network-policys:
+      - uuid: network_policy_uuid
+        fq_name: ["default", "admin", "policy1"]
+        network_policy_entries:
+          policy_rule:
+            - direction: ">"
+              protocol: udp
+              rule_uuid: rule_uuid
+              ethertype: IPv4
+              rule_sequence:
+                major: 10
+                minor: 2
+        parent_type: project
+        parent_uuid: admin_project_uuid
+        perms2:
+          owner: admin
 - name: delete virtual network
   request:
     path: /virtual-network/vn_blue
