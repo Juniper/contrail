@@ -23,7 +23,7 @@ jobs:
         command: dockerize -wait tcp://localhost:3306 -timeout 1m
     - run:
         name: Reset database
-        command: ./tools/reset_db.sh
+        command: ./tools/reset_db_mysql.sh
     - run:
         name: Run Tesc
         command: make test
@@ -47,7 +47,7 @@ jobs:
         command: dockerize -wait tcp://localhost:3306 -timeout 1m
     - run:
         name: Reset database
-        command: ./tools/reset_db.sh
+        command: ./tools/reset_db_mysql.sh
     - run:
         name: install packaging tools
         command: |

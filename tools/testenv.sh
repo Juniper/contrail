@@ -22,7 +22,7 @@ docker run -d --name contrail_mysql \
 docker run -d --name contrail_etcd \
     --net contrail \
     -p 2379:2379 \
-    gcr.io/etcd-development/etcd:v3.3.3 \
+    gcr.io/etcd-development/etcd:v3.3.2 \
     etcd --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379
 
 echo "Waiting for mysql"

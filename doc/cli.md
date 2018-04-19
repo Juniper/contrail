@@ -41,7 +41,7 @@ Show command shows data of specified resource.
 
 	contrailcli show virtual_network first-uuid 
 
-[Show command output](../pkg/cmd/contrailcli/testdata/virtual_networks_showed.yml)
+[Show command output](../pkg/cmd/contrailcli/testdata/virtual_network_showed.yml)
 
 Invoke command with empty schema identifier in order to show possible usages.
 
@@ -146,6 +146,6 @@ Delete removes resources specified in given YAML file.
 
 	contrailcli delete pkg/cmd/contrailcli/testdata/virtual_networks.yml
 	
-[Input file content](pkg/cmd/contrailcli/testdata/virtual_networks.yml)
+[Input file content](../pkg/cmd/contrailcli/testdata/virtual_networks.yml)
 
 Delete command returns no output.

@@ -2,13 +2,13 @@
 
 This repository holds Go implementation for Contrail projects.
 The goal of this project is
-to realize Go-based implemenation & etcd based such as Kubernetes
+to realize Go-based implementation & etcd based such as Kubernetes
 in order to improve performance, scale and ease operation.
 
 We are planning to add following sub components.
 
 - API Server ( python based VNC API Server equivalent)
-- Sync (ifmap, rabbitMQ realated code equivalent but depends on etcd)
+- Sync (ifmap, rabbitMQ related code equivalent but depends on etcd)
 - Agent (SchemaTransformer, Device Manager equivalent)
 - Code generation tool (generateDS equivalent)
 
@@ -29,15 +29,15 @@ go get -u github.com/Juniper/contrail/cmd/contrailutil
 ```
 
 Note that go get -u github.com/Juniper/contrail fails because we don't
-commit genreated code.
+commit generated code.
 
-### Step3 Install dependency and testenv
+### Step3. Install dependencies
 
 ``` shell
 make deps
 ```
 
-### Step4 Install Test DB
+### Step4. Install test environment
 
 ```
 # setup testenv using docker
@@ -46,13 +46,13 @@ make testenv
 make reset_db
 ```
 
-### Step5 Generate code
+### Step5. Generate code
 
 ``` shell
 make generate
 ```
 
-### Step6 Install code
+### Step6. Install code
 
 ``` shell
 make install
@@ -65,7 +65,7 @@ make install
 contrail -c sample/server.yml server
 ```
 
-Note that you can overwrite configuraion parameters using environment variable with
+Note that you can overwrite configuration parameters using environment variable with
 prefix "CONTRAIL_"
 
 For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
@@ -181,4 +181,4 @@ git review
 
 ## Document
 
-see [docs](./docs) folder
+see [docs](./doc) folder
