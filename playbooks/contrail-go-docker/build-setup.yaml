@@ -12,7 +12,7 @@
   become_user: root
 
 - name: Pretend we're using github
-  file: 
+  file:
     src: "review.opencontrail.org"
     path: "{{ sourcedir }}/src/github.com"
     state: link
@@ -38,6 +38,8 @@
     state: started
     env: "{{ item.environment|default(omit) }}"
     network_mode: host
+    volumes:
+      - "{{ sourcedir }}:/go"
   with_items: "{{ docker[1:] }}"
   become: yes
   become_user: root
