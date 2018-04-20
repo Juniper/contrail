@@ -38,6 +38,8 @@
     state: started
     env: "{{ item.environment|default(omit) }}"
     network_mode: host
+    volumes:
+      - "{{ sourcedir }}:/go"
   with_items: "{{ docker[1:] }}"
   become: yes
   become_user: root
