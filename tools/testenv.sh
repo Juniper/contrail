@@ -2,12 +2,15 @@
 
 set -e
 
+SOURCEDIR=`realpath $(dirname "$0")/../../../..`
+
 PASSWORD=contrail123
 docker network create contrail || echo > /dev/null
 docker rm -f contrail_postgres contrail_mysql contrail_etcd  || echo > /dev/null
 
 docker run -d --name contrail_postgres \
     --net contrail \
+    -v $SOURCEDIR:/go \
     -p 5432:5432 \
     -e "POSTGRES_USER=root" \
     -e "POSTGRES_PASSWORD=$PASSWORD" \
@@ -15,6 +18,7 @@ docker run -d --name contrail_postgres \
 
 docker run -d --name contrail_mysql \
     --net contrail \
+    -v $SOURCEDIR:/go \
     -p 3306:3306 \
     -e "MYSQL_ROOT_PASSWORD=$PASSWORD" \
     circleci/mysql:5.7
