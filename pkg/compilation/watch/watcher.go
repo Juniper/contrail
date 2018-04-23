@@ -28,12 +28,9 @@ var JobQueue chan JobRequest
 
 // WatcherInit intializes the Watcher
 func WatcherInit(numJobs int) {
-
 	// Initialize the Job-Q with configured number of Jobs permitted
 	JobQueue = make(chan JobRequest, numJobs)
 	log.Printf("Created JobQueue: %d\n", numJobs)
-
-	return
 }
 
 // AddJob adds a Job to the worker queue
@@ -54,5 +51,4 @@ func AddJob(ctx context.Context, index int64, oper int32, key, value string) {
 	JobQueue <- job
 
 	log.Printf("Job queued, index:%d\n", index)
-	return
 }

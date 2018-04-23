@@ -17,8 +17,8 @@ type TemplateConfig struct {
 	OutputPath   string `yaml:"output_path"`
 }
 
-func ensureDir(path string) {
-	os.MkdirAll(filepath.Dir(path), os.ModePerm)
+func ensureDir(path string) error {
+	return os.MkdirAll(filepath.Dir(path), os.ModePerm)
 }
 
 func (config *TemplateConfig) load(base string) (*pongo2.Template, error) {
@@ -35,7 +35,9 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 	if err != nil {
 		return err
 	}
-	ensureDir(config.OutputPath)
+	if err = ensureDir(config.OutputPath); err != nil {
+		return err
+	}
 	if config.TemplateType == "all" {
 		output, err :=
 			tpl.Execute(pongo2.Context{"schemas": api.Schemas, "types": api.Types})

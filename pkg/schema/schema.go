@@ -528,11 +528,7 @@ func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 	if err != nil {
 		return err
 	}
-	err = definition.resolveSQL([]string{}, "", "", "", "", &reference.Columns)
-	if err != nil {
-		return err
-	}
-	return nil
+	return definition.resolveSQL([]string{}, "", "", "", "", &reference.Columns)
 }
 
 func (api *API) resolveAllRelation() error {
@@ -655,6 +651,9 @@ func MakeAPI(dir string) (*API, error) {
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	err = api.resolveAllRef()
 	if err != nil {

@@ -52,7 +52,7 @@ func GetContent(url string) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() // nolint: errcheck
 		content, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err

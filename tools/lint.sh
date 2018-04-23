@@ -17,13 +17,8 @@ gometalinter \
 	--enable-all \
 	--exclude "Subprocess launching with variable.*\(gas\)$" \
 	--exclude "TLS InsecureSkipVerify.*\(gas\)$" \
-	--disable errcheck \
-	--disable deadcode \
-	--disable dupl \
 	--disable goconst \
 	--disable gocyclo \
-	--disable gosimple \
-	--disable ineffassign \
 	--disable megacheck \
 	--disable safesql \
 	--disable staticcheck \
@@ -34,7 +29,7 @@ gometalinter \
 	--aggregate \
 	--sort path \
 	--deadline 10m \
-	--concurrency 1 \
+	--concurrency 2 \
 	--line-length 120 \
 	--dupl-threshold=115 \
 	--vendor \
@@ -58,7 +53,7 @@ gometalinter \
 	--aggregate \
 	--sort path \
 	--deadline 10m \
-	--concurrency 1 \
+	--concurrency 2 \
 	--line-length 120 \
 	--dupl-threshold=115 \
 	--vendor \

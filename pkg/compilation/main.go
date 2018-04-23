@@ -97,7 +97,7 @@ func HandleMessage(ctx context.Context, etcdcl *etcl.IntentEtcdClient,
 	}
 
 	log.Printf("Acquired the lock!")
-	defer etcdcl.ReleaseLock(ctx, lock)
+	defer etcdcl.ReleaseLock(ctx, lock) // nolint: errcheck
 
 	ret := checkMessageIndex(ctx, etcdcl,
 		ics.Cfg.EtcdNotifierCfg.MsgIndexString, index)
@@ -122,7 +122,6 @@ func HandleEtcdMessages(ctx context.Context, oper int32, key, value string) {
 	}
 	ics := val.(*IntentCompilationService)
 	ics.Service.HandleEtcdMessages(ctx, oper, key, value)
-	return
 }
 
 //IntentCompilationService represents Intent Compilation Service.

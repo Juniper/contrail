@@ -21,7 +21,10 @@ var testServer *httptest.Server
 var server *Server
 
 func TestMain(m *testing.M) {
-	common.InitConfig()
+	err := common.InitConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	common.SetLogLevel()
 	dbConfig := viper.GetStringMap("test_database")
 	for _, iConfig := range dbConfig {
@@ -50,12 +53,18 @@ func RunTestForDB(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer server.Close()
+	defer logFatalIfErr(server.Close)
 	log.Info("starting test")
 	code := m.Run()
 	log.Info("finished test")
 	if code != 0 {
 		os.Exit(code)
+	}
+}
+
+func logFatalIfErr(f func() error) {
+	if err := f(); err != nil {
+		log.Fatal(err)
 	}
 }
 
