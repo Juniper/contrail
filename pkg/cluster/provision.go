@@ -75,19 +75,11 @@ func (p *provisionCommon) getWorkingDir() string {
 }
 
 func (p *provisionCommon) createWorkingDir() error {
-	err := os.MkdirAll(p.getWorkingDir(), os.ModePerm)
-	if err != nil {
-		return err
-	}
-	return nil
+	return os.MkdirAll(p.getWorkingDir(), os.ModePerm)
 }
 
 func (p *provisionCommon) deleteWorkingDir() error {
-	err := os.RemoveAll(p.getClusterHomeDir())
-	if err != nil {
-		return err
-	}
-	return nil
+	return os.RemoveAll(p.getClusterHomeDir())
 }
 
 func (p *provisionCommon) execCmd(cmd string, args []string, dir string) error {
@@ -127,16 +119,14 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	logger = pkglog.NewLogger("ansible-provisioner")
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
-	var p provisioner
-	p = &ansibleProvisioner{provisionCommon{
+	return &ansibleProvisioner{provisionCommon{
 		cluster:     cluster,
 		clusterID:   clusterID,
 		action:      action,
 		clusterData: cData,
 		reporter:    r,
 		log:         logger,
-	}}
-	return p, nil
+	}}, nil
 }
 
 func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
@@ -154,16 +144,14 @@ func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action 
 	logger = pkglog.NewLogger("helm-provisioner")
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
-	var p provisioner
-	p = &helmProvisioner{provisionCommon{
+	return &helmProvisioner{provisionCommon{
 		cluster:     cluster,
 		clusterID:   clusterID,
 		action:      action,
 		clusterData: cData,
 		reporter:    r,
 		log:         logger,
-	}}
-	return p, nil
+	}}, nil
 }
 
 // Creates new provisioner based on the type
