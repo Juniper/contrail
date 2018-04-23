@@ -10,6 +10,7 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/mattn/go-shellwords"
+	"github.com/siddontang/go/log"
 )
 
 type ansibleProvisioner struct {
@@ -96,7 +97,11 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 		return false, err
 	}
 	tmpFileName := tmpfile.Name()
-	defer os.Remove(tmpFileName) // nolint:  gas
+	defer func() {
+		if err := os.Remove(tmpFileName); err != nil { // nolint:  gas
+			log.Errorf("Error while deleting tmpfile: %s", err)
+		}
+	}()
 
 	a.log.Debugf("Creating temperory inventory %s", tmpfile)
 	err = a.createInstancesFile(tmpFileName)
@@ -117,11 +122,7 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 }
 
 func (a *ansibleProvisioner) createInventory() error {
-	err := a.createInstancesFile(a.getInstanceFile())
-	if err != nil {
-		return err
-	}
-	return nil
+	return a.createInstancesFile(a.getInstanceFile())
 }
 
 func (a *ansibleProvisioner) createInstancesFile(destination string) error {
@@ -326,11 +327,7 @@ func (a *ansibleProvisioner) updateCluster() error {
 
 func (a *ansibleProvisioner) deleteCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.cluster.config.ClusterID)
-	err := a.deleteWorkingDir()
-	if err != nil {
-		return err
-	}
-	return nil
+	return a.deleteWorkingDir()
 }
 
 func (a *ansibleProvisioner) provision() error {

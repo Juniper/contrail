@@ -55,12 +55,9 @@ func RunDispatcher() {
 
 	go func() {
 		// Run Forever
-		for {
-			select {
-			case job := <-JobQueue:
-				// Assign the Job to a Worker
-				go AssignJob(job)
-			}
+		for job := range JobQueue {
+			// Assign the Job to a Worker
+			go AssignJob(job)
 		}
 	}()
 

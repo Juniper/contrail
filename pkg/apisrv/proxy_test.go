@@ -98,7 +98,8 @@ func TestProxyEndpoint(t *testing.T) {
 	clusterAName := "clusterA"
 	testFile, testScenario, neutronPublic, neutronPrivate := runEndpointTest(
 		t, clusterAName, true)
-	defer os.Remove(testFile) // remove tempfile after test
+	// remove tempfile after test
+	defer os.Remove(testFile) // nolint: errcheck
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 
@@ -121,7 +122,8 @@ func TestProxyEndpoint(t *testing.T) {
 	clusterBName := "clusterB"
 	testFile, testScenario, neutronPublic, neutronPrivate = runEndpointTest(
 		t, clusterBName, false)
-	defer os.Remove(testFile) // remove tempfile after test
+	// remove tempfile after test
+	defer os.Remove(testFile) // nolint: errcheck
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 	// Wait a sec for the dynamic proxy to be created/updated
@@ -185,7 +187,8 @@ func TestKeystoneEndpoint(t *testing.T) {
 	}
 
 	testFile := GetTestFromTemplate(t, "./test_data/test_endpoint.tmpl", context)
-	defer os.Remove(testFile) // remove tempfile after test
+	// remove tempfile after test
+	defer os.Remove(testFile) // nolint: errcheck
 
 	var testScenario TestScenario
 	err := LoadTestScenario(&testScenario, testFile)
