@@ -23,11 +23,7 @@ func (o *oneShotManager) manage() error {
 	if err != nil {
 		return err
 	}
-	err = provisioner.provision()
-	if err != nil {
-		return err
-	}
-	return nil
+	return provisioner.provision()
 }
 
 func newOneShotManager(cluster *Cluster) (*oneShotManager, error) {

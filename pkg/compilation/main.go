@@ -122,7 +122,6 @@ func HandleEtcdMessages(ctx context.Context, oper int32, key, value string) {
 	}
 	ics := val.(*IntentCompilationService)
 	ics.Service.HandleEtcdMessages(ctx, oper, key, value)
-	return
 }
 
 //IntentCompilationService represents Intent Compilation Service.

@@ -117,11 +117,7 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 }
 
 func (a *ansibleProvisioner) createInventory() error {
-	err := a.createInstancesFile(a.getInstanceFile())
-	if err != nil {
-		return err
-	}
-	return nil
+	return a.createInstancesFile(a.getInstanceFile())
 }
 
 func (a *ansibleProvisioner) createInstancesFile(destination string) error {
@@ -326,11 +322,7 @@ func (a *ansibleProvisioner) updateCluster() error {
 
 func (a *ansibleProvisioner) deleteCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.cluster.config.ClusterID)
-	err := a.deleteWorkingDir()
-	if err != nil {
-		return err
-	}
-	return nil
+	return a.deleteWorkingDir()
 }
 
 func (a *ansibleProvisioner) provision() error {

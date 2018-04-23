@@ -7,9 +7,7 @@ import (
 	"time"
 )
 
-func HandleTestMessages(ctx context.Context, oper int32, key, value string) {
-	return
-}
+func HandleTestMessages(ctx context.Context, oper int32, key, value string) {}
 
 // TestDispatcherJobsCreation
 func TestDispatcherJobsCreation(t *testing.T) {

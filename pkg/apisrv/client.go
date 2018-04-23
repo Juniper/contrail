@@ -99,6 +99,9 @@ func (c *Client) Login() error {
 		return err
 	}
 	request, err := http.NewRequest("POST", authURL, bytes.NewBuffer(dataJSON))
+	if err != nil {
+		return err
+	}
 	request.Header.Set("Content-Type", "application/json")
 	resp, err := c.httpClient.Do(request)
 	if err != nil {
@@ -166,7 +169,8 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	if data == nil {
 		request, err = http.NewRequest(method, endpoint, nil)
 	} else {
-		dataJSON, err := json.Marshal(data)
+		var dataJSON []byte
+		dataJSON, err = json.Marshal(data)
 		if err != nil {
 			return nil, err
 		}
