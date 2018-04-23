@@ -51,7 +51,7 @@ func TestGRPC(t *testing.T) {
 	dial := strings.TrimPrefix(testServer.URL, "https://")
 	conn, err := grpc.Dial(dial, grpc.WithTransportCredentials(creds))
 	assert.NoError(t, err)
-	defer conn.Close()
+	defer logFatalIfErr(conn.Close)
 	md := metadata.Pairs("X-Auth-Token", restClient.AuthToken)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	// Contact the server and print out its response.

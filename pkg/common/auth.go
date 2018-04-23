@@ -71,7 +71,6 @@ func GetAuthCTX(ctx context.Context) *AuthContext {
 func NoAuth(ctx context.Context) context.Context {
 	authContext := NewAuthContext(
 		"default-domain", "default-project", "admin", []string{"admin"})
-	var authKey interface{}
-	authKey = "auth"
+	var authKey interface{} = "auth"
 	return context.WithValue(ctx, authKey, authContext)
 }

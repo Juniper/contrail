@@ -116,24 +116,20 @@ func (s *Server) Init() error {
 	}
 
 	staticPath := viper.GetStringMapString("static_files")
-	if staticPath != nil {
-		for prefix, root := range staticPath {
-			e.Static(prefix, root)
-		}
+	for prefix, root := range staticPath {
+		e.Static(prefix, root)
 	}
 
 	proxy := viper.GetStringMapStringSlice("proxy")
-	if proxy != nil {
-		for prefix, target := range proxy {
-			g := e.Group(prefix)
-			g.Use(removePathPrefixMiddleware(prefix))
+	for prefix, target := range proxy {
+		g := e.Group(prefix)
+		g.Use(removePathPrefixMiddleware(prefix))
 
-			t, err := url.Parse(target[0])
-			if err != nil {
-				return errors.Wrapf(err, "bad proxy target URL: %s", target[0])
-			}
-			g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
+		t, err := url.Parse(target[0])
+		if err != nil {
+			return errors.Wrapf(err, "bad proxy target URL: %s", target[0])
 		}
+		g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 	}
 	// serve dynamic proxy based on configured endpoints
 	s.serveDynamicProxy()
@@ -150,11 +146,11 @@ func (s *Server) Init() error {
 	}
 	localKeystone := viper.GetBool("keystone.local")
 	if localKeystone {
-		keystone, err := keystone.Init(e)
+		k, err := keystone.Init(e)
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
-		s.Keystone = keystone
+		s.Keystone = k
 	}
 	if viper.GetBool("enable_grpc") {
 		if !viper.GetBool("tls.enabled") {

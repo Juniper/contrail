@@ -46,6 +46,9 @@ func (t *TargetStore) Read(id string) *models.Endpoint {
 		return nil
 	}
 	endpoint, ok := ep.(*models.Endpoint)
+	if !ok {
+		return nil
+	}
 	return endpoint
 }
 

@@ -54,8 +54,8 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	domain := validatedToken.Project.Domain.ID
 	user := validatedToken.User
 	authContext := common.NewAuthContext(domain, project.ID, user.ID, roles)
-	var authKey interface{}
-	authKey = "auth"
+
+	var authKey interface{} = "auth"
 	newCtx := context.WithValue(ctx, authKey, authContext)
 	return newCtx, nil
 }
