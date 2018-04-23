@@ -31,7 +31,7 @@ instances:
       {% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
         TSN_EVPN_MODE: true
         {%if cluster.ControlDataNetworkList == "" %}PHYSICAL_INTERFACE: {%if node.InterfaceName %}{{node.InterfaceName}}{% elif cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{% endfor %}{% endfor %}
-        {%if vrouter_node.DefaultGateway !="" %}VROUTER_GATEWAY: {{ vrouter_node.DefaultGateway }}{%endif%}
+        {%if csn_node.DefaultGateway !="" %}VROUTER_GATEWAY: {{ csn_node.DefaultGateway }}{%endif%}
       {% for k8s_master_node in cluster.KubernetesMasterNodes %}{% for node_ref in k8s_master_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_master:{% endif %}{% endfor %}{% endfor %}
       {% for k8s_node in cluster.KubernetesNodes %}{% for node_ref in k8s_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_node:{% endif %}{% endfor %}{% endfor %}
       {% for openstack_control_node in cluster.OpenstackControlNodes %}{% for node_ref in openstack_control_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_control:
