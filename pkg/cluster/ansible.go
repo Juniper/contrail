@@ -103,7 +103,7 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 		}
 	}()
 
-	a.log.Debugf("Creating temperory inventory %s", tmpfile)
+	a.log.Debugf("Creating temperory inventory %s", tmpFileName)
 	err = a.createInstancesFile(tmpFileName)
 	if err != nil {
 		return false, err
@@ -293,22 +293,24 @@ func (a *ansibleProvisioner) createCluster() error {
 
 func (a *ansibleProvisioner) updateCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
-	var status map[string]interface{}
-	ok, err := a.compareInventory()
-	if err != nil {
-		status[statusField] = statusUpdateFailed
-		a.reporter.reportStatus(status)
-		return err
-	}
-	if ok {
-		a.log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.clusterInfo.FQName)
-		return nil
+	status := map[string]interface{}{}
+	if _, err := os.Stat(a.getInstanceFile()); err == nil {
+		ok, err := a.compareInventory()
+		if err != nil {
+			status[statusField] = statusUpdateFailed
+			a.reporter.reportStatus(status)
+			return err
+		}
+		if ok {
+			a.log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.clusterInfo.FQName)
+			return nil
+		}
 	}
 
 	status[statusField] = statusUpdateProgress
 	a.reporter.reportStatus(status)
 
-	err = a.createInventory()
+	err := a.createInventory()
 	if err != nil {
 		a.reporter.reportStatus(status)
 		return err

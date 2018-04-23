@@ -26,12 +26,12 @@ instances:
       {% for analytics_node in cluster.ContrailAnalyticsNodes %}{% for node_ref in analytics_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics:{% endif %}{% endfor %}{% endfor %}
       {% for analyticsdb_node in cluster.ContrailAnalyticsDatabaseNodes %}{% for node_ref in analyticsdb_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics_database:{% endif %}{% endfor %}{% endfor %}
       {% for vrouter_node in cluster.ContrailVrouterNodes %}{% for node_ref in vrouter_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
+        {%if vrouter_node.DefaultGateway != "" %}VROUTER_GATEWAY: {{ vrouter_node.DefaultGateway }}{%endif%}
         {%if cluster.ControlDataNetworkList == "" %}PHYSICAL_INTERFACE: {%if node.InterfaceName %}{{node.InterfaceName}}{% elif cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{%endfor %}{% endfor %}
-        {%if vrouter_node.DefaultGateway !="" %}VROUTER_GATEWAY: {{ vrouter_node.DefaultGateway }}{%endif%}
       {% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
         TSN_EVPN_MODE: true
+        {%if csn_node.DefaultGateway != "" %}VROUTER_GATEWAY: {{ csn_node.DefaultGateway }}{%endif%}
         {%if cluster.ControlDataNetworkList == "" %}PHYSICAL_INTERFACE: {%if node.InterfaceName %}{{node.InterfaceName}}{% elif cluster.DefaultVrouterInterface %}{{ cluster.DefaultVrouterInterface }}{%else%}enp2s0{%endif%}{% endif %}{% endif %}{% endfor %}{% endfor %}
-        {%if csn_node.DefaultGateway !="" %}VROUTER_GATEWAY: {{ csn_node.DefaultGateway }}{%endif%}
       {% for k8s_master_node in cluster.KubernetesMasterNodes %}{% for node_ref in k8s_master_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_master:{% endif %}{% endfor %}{% endfor %}
       {% for k8s_node in cluster.KubernetesNodes %}{% for node_ref in k8s_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_node:{% endif %}{% endfor %}{% endfor %}
       {% for openstack_control_node in cluster.OpenstackControlNodes %}{% for node_ref in openstack_control_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_control:

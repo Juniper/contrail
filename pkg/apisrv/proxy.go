@@ -236,6 +236,7 @@ func (p *proxyService) serve() {
 					// create/update/delete proxy endpoints in-memory
 					p.syncProxyEndpoints(endpoints)
 				}
+				time.Sleep(2 * time.Second)
 			}
 		}
 	}()
