@@ -87,7 +87,7 @@ func (p *proxyService) getProxyPrefixFromURL(urlPath string, scope string) (prox
 	return strings.Join(prefixes, pathSep)
 }
 
-func (p *proxyService) getReverseService(urlPath string) (
+func (p *proxyService) getReverseProxy(urlPath string) (
 	prefix string, server *httputil.ReverseProxy) {
 	var scope string
 	if strings.Contains(urlPath, private) {
@@ -118,7 +118,7 @@ func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
-			prefix, server := p.getReverseService(r.URL.Path)
+			prefix, server := p.getReverseProxy(r.URL.Path)
 			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 			w := c.Response()
 			server.ServeHTTP(w, r)
@@ -131,14 +131,14 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 	p.EndpointStore.Data.Range(func(prefix, proxy interface{}) bool {
 		s, ok := proxy.(*apicommon.TargetStore)
 		if !ok {
-			log.Fatalf("Unable to Read cluster(%s)'s proxy data from in-memory Write",
+			log.Fatalf("Unable to Read cluster(%s)'s proxy data from in-memory store",
 				prefix)
 			return true
 		}
 		s.Data.Range(func(id, endpoint interface{}) bool {
 			_, ok := endpoint.(*models.Endpoint)
 			if !ok {
-				log.Fatalf("Unable to Read endpoint(%s) data from in-memory Write",
+				log.Fatalf("Unable to Read endpoint(%s) data from in-memory store",
 					id)
 				return true
 			}
@@ -180,12 +180,12 @@ func (p *proxyService) manageProxyEndpoint(endpoint *models.Endpoint, scope stri
 	proxyPrefix := p.getProxyPrefix(endpoint, scope)
 	s := p.EndpointStore.Read(proxyPrefix)
 	if s == nil {
-		log.Fatalf("endpoint Write for %s is not found in-memory Write",
+		log.Fatalf("endpoint store for %s is not found in-memory store",
 			proxyPrefix)
 	}
 	e := s.Read(endpoint.UUID)
 	if e != endpoint {
-		// proxy endpoint not in memory Write or
+		// proxy endpoint not in memory store or
 		// proxy endpoint updated
 		s.Write(endpoint.UUID, endpoint)
 	}
@@ -236,6 +236,7 @@ func (p *proxyService) serve() {
 					// create/update/delete proxy endpoints in-memory
 					p.syncProxyEndpoints(endpoints)
 				}
+				time.Sleep(2 * time.Second)
 			}
 		}
 	}()

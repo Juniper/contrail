@@ -104,7 +104,7 @@ func TestProxyEndpoint(t *testing.T) {
 	defer neutronPublic.Close()
 
 	// Wait a sec for the dynamic proxy to be created/updated
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 
 	// verify proxies
 	ok := verifyProxy(t, testScenario,
@@ -127,7 +127,7 @@ func TestProxyEndpoint(t *testing.T) {
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 	// Wait a sec for the dynamic proxy to be created/updated
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 
 	// verify new proxies
 	ok = verifyProxy(t, testScenario,
@@ -196,7 +196,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	RunTestScenario(t, &testScenario)
 
 	// Wait a sec for the dynamic proxy to be created/updated
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 
 	// verify proxies
 	ok := verifyProxy(t, &testScenario,
