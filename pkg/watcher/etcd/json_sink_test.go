@@ -80,10 +80,10 @@ func TestJSONSinkUpdatePutsJSONEncodedResourceUnderOneEtcdKey(t *testing.T) {
 		"true-property":  true,
 	}
 	m := givenKVClientMock()
-	m.onPut("json/test-resource/test-pk", string(toJSON(t, resource))).Return(&clientv3.PutResponse{}, nil).Once()
+	m.onPut("json/test-resource/pk", string(toJSON(t, resource))).Return(&clientv3.PutResponse{}, nil).Once()
 	s := givenJSONSink(m)
 
-	err := s.Update("test-resource", "test-pk", resource)
+	err := s.Update("test-resource", "pk", resource)
 
 	assert.NoError(t, err)
 	m.AssertExpectations(t)
@@ -102,10 +102,10 @@ func TestJSONSinkDeleteFailsWhenKVClientFails(t *testing.T) {
 
 func TestJSONSinkDeleteRemovesEtcdKeyWithGivenResource(t *testing.T) {
 	m := givenKVClientMock()
-	m.onDelete("json/test-resource/test-pk").Return(&clientv3.DeleteResponse{}, nil).Once()
+	m.onDelete("json/test-resource/pk").Return(&clientv3.DeleteResponse{}, nil).Once()
 	s := givenJSONSink(m)
 
-	err := s.Delete("test-resource", "test-pk")
+	err := s.Delete("test-resource", "pk")
 
 	assert.NoError(t, err)
 	m.AssertExpectations(t)

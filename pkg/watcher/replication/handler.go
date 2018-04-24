@@ -15,8 +15,8 @@ import (
 
 // Sink represents service that handler transfers data to.
 type Sink interface {
-	Create(resourceName string, pk string, properties map[string]interface{}) error
-	Update(resourceName string, pk string, properties map[string]interface{}) error
+	Create(resourceName string, pk string, properties interface{}) error
+	Update(resourceName string, pk string, properties interface{}) error
 	Delete(resourceName string, pk string) error
 }
 
@@ -35,10 +35,6 @@ type PgoutputEventHandler struct {
 
 // NewPgoutputEventHandler creates new ReplicationEventHandler using sink provided as an argument.
 func NewPgoutputEventHandler(s Sink) *PgoutputEventHandler {
-	if s == nil {
-		s = &noopSink{}
-	}
-
 	return &PgoutputEventHandler{
 		sink:      s,
 		log:       pkglog.NewLogger("replication-event-handler"),
@@ -64,6 +60,11 @@ func (h *PgoutputEventHandler) Handle(msg pgoutput.Message) error {
 		return h.handleDelete(v.RelationID, v.Row)
 	}
 	return nil
+}
+
+// WriteRow handles row data received from database dump.
+func (h *PgoutputEventHandler) WriteRow(schemaID string, objUUID string, obj interface{}) error {
+	return h.sink.Create(schemaID, objUUID, obj)
 }
 
 func (h *PgoutputEventHandler) handleCreate(relationID uint32, row []pgoutput.Tuple) error {
@@ -145,10 +146,6 @@ type CanalEventHandler struct {
 
 // NewCanalEventHandler creates new CanalEventHandler with given sink.
 func NewCanalEventHandler(s Sink) *CanalEventHandler {
-	if s == nil {
-		s = &noopSink{}
-	}
-
 	return &CanalEventHandler{
 		sink: s,
 		log:  pkglog.NewLogger("canal-event-handler"),
@@ -310,15 +307,3 @@ func (h *CanalEventHandler) OnPosSynced(mysql.Position, bool) error {
 func (h *CanalEventHandler) String() string {
 	return "canalEventHandler"
 }
-
-type noopSink struct{}
-
-func (s *noopSink) Create(resourceName string, pk string, properties map[string]interface{}) error {
-	return nil
-}
-
-func (s *noopSink) Update(resourceName string, pk string, properties map[string]interface{}) error {
-	return nil
-}
-
-func (s *noopSink) Delete(resourceName string, pk string) error { return nil }

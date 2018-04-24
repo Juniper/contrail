@@ -138,16 +138,6 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 	}
 }
 
-func TestEventHandlerIsNoopByDefault(t *testing.T) {
-	for _, action := range []string{canal.InsertAction, canal.UpdateAction, canal.DeleteAction} {
-		t.Run(action, func(t *testing.T) {
-			h := NewCanalEventHandler(nil)
-			err := h.OnRow(givenRowsEvent(action))
-			assert.NoError(t, err)
-		})
-	}
-}
-
 func TestOnRowFailsWhenInvalidActionGiven(t *testing.T) {
 	h := NewCanalEventHandler(&sinkMock{})
 	err := h.OnRow(givenRowsEvent("invalid-action"))
@@ -379,12 +369,12 @@ func newSinkMock() *sinkMock {
 	return &sinkMock{}
 }
 
-func (m *sinkMock) Create(resourceName string, pk string, properties map[string]interface{}) error {
+func (m *sinkMock) Create(resourceName string, pk string, properties interface{}) error {
 	args := m.Called(resourceName, pk, properties)
 	return args.Error(0)
 }
 
-func (m *sinkMock) Update(resourceName string, pk string, properties map[string]interface{}) error {
+func (m *sinkMock) Update(resourceName string, pk string, properties interface{}) error {
 	args := m.Called(resourceName, pk, properties)
 	return args.Error(0)
 }

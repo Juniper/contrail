@@ -6,6 +6,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/db"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/jackc/pgx"
 	"github.com/kyleconroy/pgoutput"
@@ -45,8 +46,6 @@ func (w *MySQLWatcher) Close() {
 
 // PostgresSubscriptionConfig stores configuration for logical replication connection used for Subsctiption object.
 type PostgresSubscriptionConfig struct {
-	pgx.ConnConfig
-
 	Slot          string
 	Publication   string
 	StatusTimeout time.Duration
@@ -55,39 +54,48 @@ type PostgresSubscriptionConfig struct {
 type postgresWatcherConnection interface {
 	io.Closer
 	GetReplicationSlot(name string) (lastLSN uint64, snapshotName string, err error)
-	RenewPublication(name string) error
+	RenewPublication(ctx context.Context, name string) error
 	StartReplication(slot, publication string, startLSN uint64) error
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 	SendStatus(lastLSN uint64) error
+
+	DumpSnapshot(context.Context, db.RowWriter, string) error
 }
 
 // PostgresWatcher allows subscribing to Postgresql logical replication messages.
 type PostgresWatcher struct {
-	PostgresSubscriptionConfig
+	conf PostgresSubscriptionConfig
 
 	lastLSN uint64 // lastLSN holds max WAL LSN value processed by subscription.
 
 	cancel  context.CancelFunc
 	conn    postgresWatcherConnection
 	handler pgoutput.Handler
-	log     *logrus.Entry
+
+	dumpWriter db.RowWriter
+
+	log *logrus.Entry
 }
 
 // NewPostgresWatcher creates new watcher and initialises its connections.
 func NewPostgresWatcher(
 	config PostgresSubscriptionConfig,
+	dbs *db.DB,
+	replConn pgxReplicationConn,
 	handler pgoutput.Handler,
+	dumpWriter db.RowWriter,
 ) (*PostgresWatcher, error) {
-	conn, err := newPostgresReplicationConnection(config.ConnConfig)
+	conn, err := newPostgresReplicationConnection(dbs, replConn)
 	if err != nil {
 		return nil, err
 	}
 
 	return &PostgresWatcher{
-		PostgresSubscriptionConfig: config,
-		conn:    conn,
-		handler: handler,
-		log:     pkglog.NewLogger("postgres-watcher"),
+		conf:       config,
+		conn:       conn,
+		handler:    handler,
+		dumpWriter: dumpWriter,
+		log:        pkglog.NewLogger("postgres-watcher"),
 	}, nil
 }
 
@@ -98,7 +106,7 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	w.cancel = cancel
 
 	var snapshotName string
-	slotLSN, snapshotName, err := w.conn.GetReplicationSlot(w.Slot)
+	slotLSN, snapshotName, err := w.conn.GetReplicationSlot(w.conf.Slot)
 	if err != nil {
 		return fmt.Errorf("error getting replication slot: %v", err)
 	}
@@ -107,15 +115,17 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 
 	w.lastLSN = slotLSN // TODO(Michal): get lastLSN from etcd
 
-	err = w.conn.RenewPublication(w.Publication)
+	err = w.conn.RenewPublication(ctx, w.conf.Publication)
 	if err != nil {
 		return fmt.Errorf("failed to create publication: %s", err)
 	}
-	w.log.Debug("Created publication: ", w.Publication)
+	w.log.Debug("Created publication: ", w.conf.Publication)
 
-	_ = snapshotName // TODO(Michal): Use snapshotName to load initial database state
+	if err = w.conn.DumpSnapshot(ctx, w.dumpWriter, snapshotName); err != nil {
+		return fmt.Errorf("dumping snapshot failed: %v", err)
+	}
 
-	err = w.conn.StartReplication(w.Slot, w.Publication, 0)
+	err = w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0)
 	if err != nil {
 		return fmt.Errorf("failed to start replication: %s", err)
 	}
@@ -124,7 +134,7 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 }
 
 func (w *PostgresWatcher) loop(ctx context.Context) error {
-	tick := time.NewTicker(w.StatusTimeout).C
+	tick := time.NewTicker(w.conf.StatusTimeout).C
 	for {
 		select {
 		case <-ctx.Done():
@@ -135,7 +145,7 @@ func (w *PostgresWatcher) loop(ctx context.Context) error {
 				return err
 			}
 		default:
-			wctx, cancel := context.WithTimeout(ctx, w.StatusTimeout)
+			wctx, cancel := context.WithTimeout(ctx, w.conf.StatusTimeout)
 			message, err := w.conn.WaitForReplicationMessage(wctx)
 			cancel()
 			if err == context.DeadlineExceeded {

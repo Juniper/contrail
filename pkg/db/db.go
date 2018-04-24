@@ -44,6 +44,24 @@ type RowWriter interface {
 	WriteRow(schemaID, objUUID string, obj interface{}) error
 }
 
+// Dump selects all data from every table and writes each row to RowWriter.
+//
+// Note that dumping the whole database using SELECT statements may take a lot
+// of time and memory, increasing both server and database load thus it should
+// be used as a first shot operation only.
+//
+// An example application of that function is loading initial database snapshot
+// in Watcher.
+func (db *DB) Dump(ctx context.Context, rw RowWriter) error {
+	return DoInTransaction(
+		ctx,
+		db.DB,
+		func(ctx context.Context) error {
+			return db.dump(ctx, rw)
+		},
+	)
+}
+
 //Transaction is a context key for tx object.
 var Transaction interface{} = "transaction"
 

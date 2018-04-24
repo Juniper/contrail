@@ -3,12 +3,12 @@ package watcher
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"math/rand"
 	"os"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/db"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/watcher/etcd"
 	"github.com/Juniper/contrail/pkg/watcher/replication"
@@ -22,21 +22,10 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
-// Storage strategies
-const (
-	StorageJSON   = "json"
-	StorageNested = "nested"
-)
-
 // Replication drivers
 const (
 	DriverMySQL      = "mysql"
 	DriverPostgreSQL = "pgx"
-)
-
-const (
-	dbDSNFormatMySQL      = "%s:%s@tcp(%s)/%s"
-	dbDSNFormatPostgreSQL = "user=%s password=%s host=%s dbname=%s"
 )
 
 type watchCloser interface {
@@ -95,15 +84,7 @@ func NewService() (*Service, error) {
 	}
 
 	// Etcd sink
-	var sink replication.Sink
-	switch viper.GetString("storage") {
-	case StorageJSON:
-		sink = etcd.NewJSONSink(clientv3.NewKV(etcdClient))
-	case StorageNested:
-		sink = etcd.NewNestingSink(clientv3.NewKV(etcdClient))
-	default:
-		return nil, errors.New("undefined storage strategy")
-	}
+	sink := etcd.NewJSONSink(clientv3.NewKV(etcdClient))
 
 	// Replication
 	watcher, err := createWatcher(log, sink)
@@ -120,14 +101,19 @@ func NewService() (*Service, error) {
 
 func createWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
 	driver := viper.GetString("database.driver")
+	sqlDB, err := db.ConnectDB()
+	if err != nil {
+		return nil, err
+	}
 
-	if err := awaitDB(log, driver); err != nil {
+	dbService := db.NewService(sqlDB, viper.GetString("database.dialect"))
+	if err != nil {
 		return nil, err
 	}
 
 	switch driver {
 	case DriverPostgreSQL:
-		return createPostgreSQLWatcher(log, sink)
+		return createPostgreSQLWatcher(log, sink, dbService)
 	case DriverMySQL:
 		return createMySQLWatcher(log, sink)
 	default:
@@ -135,22 +121,29 @@ func createWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error
 	}
 }
 
-func createPostgreSQLWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
+func createPostgreSQLWatcher(log *logrus.Entry, sink replication.Sink, dbService *db.DB) (watchCloser, error) {
 	handler := replication.NewPgoutputEventHandler(sink)
+
+	connConfig := pgx.ConnConfig{
+		Host:     viper.GetString("database.host"),
+		Database: viper.GetString("database.name"),
+		User:     viper.GetString("database.user"),
+		Password: viper.GetString("database.password"),
+	}
+
+	replConn, err := pgx.ReplicationConnect(connConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	conf := replication.PostgresSubscriptionConfig{
-		ConnConfig: pgx.ConnConfig{
-			Host:     viper.GetString("database.host"),
-			Database: viper.GetString("database.name"),
-			User:     viper.GetString("database.user"),
-			Password: viper.GetString("database.password"),
-		},
 		Slot:          replication.PostgreSQLReplicationSlotName,
 		Publication:   replication.PostgreSQLPublicationName,
 		StatusTimeout: viper.GetDuration("database.replication_status_timeout"),
 	}
 	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got pgx config")
 
-	return replication.NewPostgresWatcher(conf, handler.Handle)
+	return replication.NewPostgresWatcher(conf, dbService, replConn, handler.Handle, handler)
 }
 
 func createMySQLWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
@@ -164,42 +157,6 @@ func createMySQLWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, 
 	canal.SetEventHandler(replication.NewCanalEventHandler(sink))
 
 	return replication.NewMySQLWatcher(canal), nil
-}
-
-func awaitDB(log *logrus.Entry, driver string) error {
-	var dbDSNFormat string
-	switch driver {
-	case DriverPostgreSQL:
-		dbDSNFormat = dbDSNFormatPostgreSQL
-	case DriverMySQL:
-		dbDSNFormat = dbDSNFormatMySQL
-	default:
-		return errors.New("undefined database type")
-	}
-
-	dsn := fmt.Sprintf(
-		dbDSNFormat,
-		viper.GetString("database.user"),
-		viper.GetString("database.password"),
-		viper.GetString("database.host"),
-		viper.GetString("database.name"),
-	)
-
-	db, err := sql.Open(driver, dsn)
-	if err != nil {
-		return fmt.Errorf("database connection: %s", err)
-	}
-
-	retries, period := viper.GetInt("database.connection_retries"), viper.GetDuration("database.retry_period")
-
-	for i := 0; i < retries; i++ {
-		if err = db.Ping(); err == nil {
-			return nil
-		}
-		time.Sleep(period)
-		log.WithField("error", err).Error("Cannot establish database connection, retrying")
-	}
-	return fmt.Errorf("reached database connection retry limit: %s", err)
 }
 
 func canalConfig() *mysqlcanal.Config {
