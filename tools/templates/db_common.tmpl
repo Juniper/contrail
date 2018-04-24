@@ -19,15 +19,7 @@ func (db *DB) initQueryBuilders() {
 }
 
 
-// Dump selects all data from every table and writes each row to RowWriter.
-//
-// Note that dumping the whole database using SELECT statements may take a lot
-// of time and memory, increasing both server and database load thus it should
-// be used as a first shot operation only.
-//
-// An example application of that function is loading initial database snapshot
-// in Watcher.
-func (db *DB) Dump(ctx context.Context, rw RowWriter) error {
+func (db *DB) dump(ctx context.Context, rw RowWriter) error {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     list{{ schema.JSONSchema.GoName }}Request := &models.List{{ schema.JSONSchema.GoName }}Request{&models.ListSpec{}}
     list{{ schema.JSONSchema.GoName }}Response, err := db.list{{ schema.JSONSchema.GoName }}(

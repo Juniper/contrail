@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/jackc/pgx"
 )
 
@@ -19,30 +20,13 @@ type pgxReplicationConn interface {
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 }
 
-type pgxConn interface {
-	io.Closer
-
-	Exec(sql string, args ...interface{}) (pgx.CommandTag, error)
-	BeginEx(ctx context.Context, txOptions *pgx.TxOptions) (*pgx.Tx, error)
-}
-
 type postgresReplicationConnection struct {
 	replConn pgxReplicationConn
-	conn     pgxConn
+	db       *db.DB
 }
 
-func newPostgresReplicationConnection(conf pgx.ConnConfig) (*postgresReplicationConnection, error) {
-	replConn, err := pgx.ReplicationConnect(conf)
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := pgx.Connect(conf)
-	if err != nil {
-		return nil, err
-	}
-
-	return &postgresReplicationConnection{replConn: replConn, conn: conn}, nil
+func newPostgresReplicationConnection(db *db.DB, replConn pgxReplicationConn) (*postgresReplicationConnection, error) {
+	return &postgresReplicationConnection{db: db, replConn: replConn}, nil
 }
 
 // GetReplicationSlot gets replication slot for replication.
@@ -68,13 +52,37 @@ func (c *postgresReplicationConnection) GetReplicationSlot(
 }
 
 // RenewPublication ensures that publication exists for all tables.
-func (c *postgresReplicationConnection) RenewPublication(name string) error {
-	_, _ = c.conn.Exec(fmt.Sprintf("DROP PUBLICATION %s", name))
-	_, err := c.conn.Exec(fmt.Sprintf("CREATE PUBLICATION %s FOR ALL TABLES", name))
-	if err != nil {
-		return fmt.Errorf("failed to create publication: %s", err)
-	}
-	return nil
+func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, name string) error {
+	return db.DoInTransaction(
+		ctx,
+		c.db.DB,
+		func(ctx context.Context) error {
+			_, err := c.db.DB.ExecContext(ctx, fmt.Sprintf("DROP PUBLICATION IF EXISTS %s", name))
+			if err != nil {
+				return fmt.Errorf("failed to drop publication: %s", err)
+			}
+			_, err = c.db.DB.ExecContext(ctx, fmt.Sprintf("CREATE PUBLICATION %s FOR ALL TABLES", name))
+			if err != nil {
+				return fmt.Errorf("failed to create publication: %s", err)
+			}
+			return err
+		},
+	)
+}
+
+func (c *postgresReplicationConnection) DumpSnapshot(ctx context.Context, rw db.RowWriter, snapshotName string) error {
+	return db.DoInTransaction(
+		ctx,
+		c.db.DB,
+		func(ctx context.Context) error {
+			_, err := c.db.DB.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+			if err != nil {
+				return err
+			}
+
+			return c.db.Dump(ctx, rw)
+		},
+	)
 }
 
 func pluginArgs(publication string) string {
@@ -109,7 +117,7 @@ func (c *postgresReplicationConnection) SendStatus(maxWal uint64) error {
 // Close closes underlying connections.
 func (c *postgresReplicationConnection) Close() error {
 	errs := []string{}
-	errs = append(errs, c.conn.Close().Error())
+	errs = append(errs, c.db.DB.Close().Error())
 	errs = append(errs, c.replConn.Close().Error())
 	if len(errs) > 0 {
 		return fmt.Errorf("errors while closing: %s", strings.Join(errs, "\n"))

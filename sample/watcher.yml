@@ -1,6 +1,9 @@
 # Configuration for Watcher service.
 database:
   driver: pgx
+  type: postgres
+  dialect: postgres
+  connection: "user=root dbname=contrail_test password=contrail123 sslmode=disable"
   host: localhost
   user: root
   password: contrail123
@@ -10,4 +13,3 @@ etcd:
     - localhost:2379
   username: ""
   password: ""
-storage: json

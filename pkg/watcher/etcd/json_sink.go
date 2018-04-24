@@ -33,21 +33,21 @@ func NewJSONSink(kv clientv3.KV) *JSONSink {
 }
 
 // Create puts JSON-encoded properties to etcd under "<resourceName>/json/<resourcePrimaryKey>" key.
-func (s *JSONSink) Create(resourceName string, pk string, properties map[string]interface{}) error {
+func (s *JSONSink) Create(resourceName string, pk string, properties interface{}) error {
 	s.log.WithFields(logrus.Fields{"key": jsonKey(resourceName, pk), "properties": properties}).Debug(
 		"Creating JSON-encoded resource in etcd")
 	return s.putJSONEncodedProperties(resourceName, pk, properties)
 }
 
 // Update puts JSON-encoded properties to etcd under "<resourceName>/json/<resourcePrimaryKey>" key.
-func (s *JSONSink) Update(resourceName string, pk string, properties map[string]interface{}) error {
+func (s *JSONSink) Update(resourceName string, pk string, properties interface{}) error {
 	s.log.WithFields(logrus.Fields{"key": jsonKey(resourceName, pk), "properties": properties}).Debug(
 		"Updating JSON-encoded resource in etcd")
 	// TODO(daniel): check if modifying only updated fields
 	return s.putJSONEncodedProperties(resourceName, pk, properties)
 }
 
-func (s *JSONSink) putJSONEncodedProperties(resourceName, pk string, properties map[string]interface{}) error {
+func (s *JSONSink) putJSONEncodedProperties(resourceName, pk string, properties interface{}) error {
 	p, err := json.Marshal(properties)
 	if err != nil {
 		return fmt.Errorf("encode properties to JSON: %s", err)

@@ -12,27 +12,28 @@ import (
 func TestNoopKVClient(t *testing.T) {
 	c := noopKVClient{}
 
-	pr, err := c.Put(nil, "", "")
+	ctx := context.Background()
+	pr, err := c.Put(ctx, "", "")
 	assert.Nil(t, pr)
 	assert.NoError(t, err)
 
-	gr, err := c.Get(nil, "")
+	gr, err := c.Get(ctx, "")
 	assert.Nil(t, gr)
 	assert.NoError(t, err)
 
-	dr, err := c.Delete(nil, "")
+	dr, err := c.Delete(ctx, "")
 	assert.Nil(t, dr)
 	assert.NoError(t, err)
 
-	cr, err := c.Compact(nil, 0)
+	cr, err := c.Compact(ctx, 0)
 	assert.Nil(t, cr)
 	assert.NoError(t, err)
 
-	or, err := c.Do(nil, clientv3.Op{})
+	or, err := c.Do(ctx, clientv3.Op{})
 	assert.Equal(t, clientv3.OpResponse{}, or)
 	assert.NoError(t, err)
 
-	tx := c.Txn(nil)
+	tx := c.Txn(ctx)
 	assert.Nil(t, tx)
 }
 
