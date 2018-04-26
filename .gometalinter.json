@@ -1,0 +1,29 @@
+{
+    "EnableAll": true,
+    "Exclude": [
+        "Subprocess launching with variable.*(gas)",
+        "TLS InsecureSkipVerify.*(gas)"
+    ],
+    "Disable": [
+        "megacheck",
+        "safesql",
+        "staticcheck",
+        "test",
+        "testify"
+    ],
+    "Test": true,
+    "Aggregate": true,
+    "Sort": ["path"],
+    "Deadline": "10m",
+    "Concurrency": 2,
+    "LineLength": 120,
+    "DuplThreshold": 115,
+    "Vendor": true,
+    "Skip": [
+        "pkg/services",
+        "pkg/serviceif",
+        "pkg/models",
+        "pkg/db",
+        "pkg/compilationif"
+    ]
+}

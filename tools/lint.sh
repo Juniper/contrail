@@ -14,47 +14,10 @@ set -o pipefail
 # Several tools for majority of the code are disabled.
 # TODO(daniel): run the same set of tools for all Go files
 gometalinter \
-	--enable-all \
-	--exclude "Subprocess launching with variable.*\(gas\)$" \
-	--exclude "TLS InsecureSkipVerify.*\(gas\)$" \
-	--disable goconst \
-	--disable gocyclo \
-	--disable megacheck \
-	--disable safesql \
-	--disable staticcheck \
-	--disable test \
-	--disable testify \
-	--disable vetshadow \
-	--tests \
-	--aggregate \
-	--sort path \
-	--deadline 10m \
-	--concurrency 2 \
-	--line-length 120 \
-	--dupl-threshold=115 \
-	--vendor \
-	--skip pkg/services \
-	--skip pkg/serviceif \
-	--skip pkg/models \
-	--skip pkg/db \
-	--skip pkg/compilationif \
-	./...
+    --config .gometalinter.json \
+    --disable gocyclo \
+    ./...
 
 gometalinter \
-	--enable-all \
-	--exclude "Subprocess launching with variable.*\(gas\)$" \
-	--exclude "TLS InsecureSkipVerify.*\(gas\)$" \
-	--disable megacheck \
-	--disable safesql \
-	--disable staticcheck \
-	--disable test \
-	--disable testify \
-	--tests \
-	--aggregate \
-	--sort path \
-	--deadline 10m \
-	--concurrency 2 \
-	--line-length 120 \
-	--dupl-threshold=115 \
-	--vendor \
+    --config .gometalinter.json \
 	./cmd/... ./pkg/cmd/... ./pkg/agent/... ./pkg/log/... ./pkg/watcher/...

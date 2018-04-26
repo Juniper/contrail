@@ -63,7 +63,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 			}
 		}
 		for _, schema := range api.Schemas {
-			if schema.Type == "abstract" || schema.ID == "" {
+			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
 			typeName := schema.JSONSchema.GoName
@@ -83,7 +83,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 		}
 	} else {
 		for _, schema := range api.Schemas {
-			if schema.Type == "abstract" || schema.ID == "" {
+			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
 			output, err :=
