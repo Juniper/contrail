@@ -20,7 +20,8 @@ to community discussion.
 
 ### Step1. Install Go and docker
 
-https://golang.org/doc/install
+- [golang.org/doc/install](https://golang.org/doc/install)
+- [docs.docker.com/install](https://docs.docker.com/install/)
 
 ### Step2. Go get contrailutil
 
@@ -28,7 +29,7 @@ https://golang.org/doc/install
 go get -u github.com/Juniper/contrail/cmd/contrailutil
 ```
 
-Note that go get -u github.com/Juniper/contrail fails because we don't
+Note that `go get -u github.com/Juniper/contrail` fails because we don't
 commit generated code.
 
 ### Step3. Install dependencies
@@ -37,65 +38,67 @@ commit generated code.
 make deps
 ```
 
-### Step4. Install test environment
-
-```
-# setup testenv using docker
-make testenv
-# you need wait db process up
-make reset_db
-```
-
-### Step5. Generate code
+### Step4. Generate code
 
 ``` shell
 make generate
 ```
 
-### Step6. Install code
+
+### Step5. Install code
 
 ``` shell
 make install
 ```
 
-### Try
+### Step6. Install test environment
+
+``` shell
+# setup testenv using docker
+make testenv
+# you need wait db process up
+make reset_db
+```
+Note that depending on your docker configuration you may need root permissions.
+
+## Try
 
 - Run Server
-```
-contrail -c sample/server.yml server
-```
+    ```
+    contrail -c sample/server.yml server
+    ```
 
-Note that you can overwrite configuration parameters using environment variable with
-prefix "CONTRAIL_"
+    Note that you can overwrite configuration parameters using environment variable with
+    prefix "CONTRAIL_"
 
-For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
-``` shell
-CONTRAIL_DATABASE_DEBUG=true contrail -c sample/server.yml server
-```
+    For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
+    ``` shell
+    CONTRAIL_DATABASE_DEBUG=true contrail -c sample/server.yml server
+    ```
 
 - Run CLI
 
-```
-export CONTRAIL_CONFIG=sample/cli.yml
-# Show Schema
-contrailcli schema virtual_network
-# Create resources
-contrailcli sync sample/sample_resource.yml
-# List resources
-contrailcli list virtual_network --detail
-# Delete resources
-contrailcli delete sample/sample_resource.yml
-```
+    ```
+    export CONTRAIL_CONFIG=sample/cli.yml
+    # Show Schema
+    contrailcli schema virtual_network
+    # Create resources
+    contrailcli sync sample/sample_resource.yml
+    # List resources
+    contrailcli list virtual_network --detail
+    # Delete resources
+    contrailcli delete sample/sample_resource.yml
+    ```
 
-For more cli command see [CLI Usage](doc/cli.md),
+    For more cli command see [CLI Usage](doc/cli.md),
 
 - Run Agent
 
-```
-contrail agent -c sample/agent.yml
-```
+    ```
+    contrail agent -c sample/agent.yml
+    ```
 
-For more agent command see [Agent Usage](doc/agent.md),
+    For more agent command see [Agent Usage](doc/agent.md),
 
 ## Schema Files
 
@@ -166,7 +169,7 @@ Setup gerrit account. Sign CLA.
 
 ### Step2.
 
-Install git-review
+Install git-review.
 
 ```
 pip install git-review
@@ -181,4 +184,4 @@ git review
 
 ## Document
 
-see [docs](./doc) folder
+See [docs](./doc) folder.

@@ -17,7 +17,6 @@ gometalinter \
 	--enable-all \
 	--exclude "Subprocess launching with variable.*\(gas\)$" \
 	--exclude "TLS InsecureSkipVerify.*\(gas\)$" \
-	--disable goconst \
 	--disable gocyclo \
 	--disable megacheck \
 	--disable safesql \

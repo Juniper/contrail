@@ -16,22 +16,33 @@ import (
 //Version is version for schema format.
 var Version = "1.0"
 
+// Available type values.
+const (
+	AbstractType = "abstract"
+	ObjectType   = "object"
+	IntegerType  = "integer"
+	ArrayType    = "array"
+	BooleanType  = "boolean"
+	NumberType   = "number"
+	StringType   = "string"
+)
+
 var sqlTypeMap = map[string]string{
-	"object":  "json",
-	"integer": "int",
-	"array":   "json",
-	"boolean": "bool",
-	"number":  "float",
-	"string":  "varchar(255)",
+	ObjectType:  "json",
+	IntegerType: "int",
+	ArrayType:   "json",
+	BooleanType: "bool",
+	NumberType:  "float",
+	StringType:  "varchar(255)",
 }
 
 var sqlBindMap = map[string]string{
-	"object":  "json",
-	"integer": "int",
-	"array":   "json",
-	"boolean": "bool",
-	"number":  "float",
-	"string":  "string",
+	ObjectType:  "json",
+	IntegerType: "int",
+	ArrayType:   "json",
+	BooleanType: "bool",
+	NumberType:  "float",
+	StringType:  "string",
 }
 
 //API object has schemas and types for API definition.
@@ -288,7 +299,7 @@ func (s *JSONSchema) resolveSQL(
 	if s == nil {
 		return nil
 	}
-	if len(s.Properties) == 0 || s.CollectionType != "" || s.Type == "array" {
+	if len(s.Properties) == 0 || s.CollectionType != "" || s.Type == ArrayType {
 		if s.SQL == "" {
 			s.SQL = sqlTypeMap[s.Type]
 		}
@@ -343,58 +354,45 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	s.GoPremitive = true
 	goType := ""
 	switch s.Type {
-	case "integer":
+	case IntegerType:
 		goType = "int64"
-	case "number":
+		protoType = "int64"
+	case NumberType:
 		goType = "float64"
-	case "string":
+		protoType = "float"
+	case StringType:
 		goType = "string"
-	case "boolean":
+		protoType = "string"
+	case BooleanType:
 		goType = "bool"
-	case "object":
+		protoType = "bool"
+	case ObjectType:
 		goType = s.getRefType()
 		if s.Properties == nil {
 			goType = "map[string]interface{}"
 		}
-	case "array":
-		err := s.Items.resolveGoName(name)
-		if err != nil {
-			return err
-		}
-		if s.Items == nil {
-			goType = "[]interface{}"
-		} else if s.Items.Type == "integer" || s.Items.Type == "number" || s.Items.Type == "boolean" ||
-			s.Items.Type == "string" {
-			goType = "[]" + s.Items.GoType
-		} else {
-			goType = "[]*" + s.Items.GoType
-		}
-	}
 
-	switch s.Type {
-	case "integer":
-		protoType = "int64"
-	case "number":
-		protoType = "float"
-	case "string":
-		protoType = "string"
-	case "boolean":
-		protoType = "bool"
-	case "object":
 		if goType != "" {
 			protoType = goType
 		}
 		if s.Properties == nil {
 			protoType = "bytes"
 		}
-	case "array":
+	case ArrayType:
 		err := s.Items.resolveGoName(name)
 		if err != nil {
 			return err
 		}
 		if s.Items == nil {
+			goType = "[]interface{}"
 			protoType = "repeated string"
 		} else {
+			if s.Items.Type == IntegerType || s.Items.Type == NumberType || s.Items.Type == BooleanType ||
+				s.Items.Type == StringType {
+				goType = "[]" + s.Items.GoType
+			} else {
+				goType = "[]*" + s.Items.GoType
+			}
 			protoType = "repeated " + s.Items.ProtoType
 		}
 	}
@@ -467,7 +465,7 @@ func (api *API) resolveRef(schema *JSONSchema) error {
 	if schema == nil {
 		return nil
 	}
-	if schema.Type == "array" {
+	if schema.Type == ArrayType {
 		err := api.resolveRef(schema.Items)
 		if err != nil {
 			return err
