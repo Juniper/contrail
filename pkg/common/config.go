@@ -8,7 +8,7 @@ import (
 
 //InitConfig initializes Viper config.
 func InitConfig() error {
-	viper.SetConfigName("server")
+	viper.SetConfigName("contrail")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("../../../sample")
 	viper.AddConfigPath("../../sample")

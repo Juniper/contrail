@@ -60,9 +60,9 @@ make install
 
 ### Try
 
-- Run Server
+- Run processes
 ```
-contrail -c sample/server.yml server
+contrail -c sample/contrail.yml process 
 ```
 
 Note that you can overwrite configuration parameters using environment variable with
@@ -70,7 +70,7 @@ prefix "CONTRAIL_"
 
 For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
 ``` shell
-CONTRAIL_DATABASE_DEBUG=true contrail -c sample/server.yml server
+CONTRAIL_DATABASE_DEBUG=true contrail -c sample/contrail.yml process
 ```
 
 - Run CLI
@@ -88,14 +88,6 @@ contrailcli delete sample/sample_resource.yml
 ```
 
 For more cli command see [CLI Usage](doc/cli.md),
-
-- Run Agent
-
-```
-contrail agent -c sample/agent.yml
-```
-
-For more agent command see [Agent Usage](doc/agent.md),
 
 ## Schema Files
 
