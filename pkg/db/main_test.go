@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -27,8 +28,24 @@ func TestMain(m *testing.M) {
 	dbConfig := viper.GetStringMap("test_database")
 	for _, iConfig := range dbConfig {
 		config := common.InterfaceToInterfaceMap(iConfig)
-		dbType := config["type"].(string)
-		testDB, err = makeConnection(dbType, config["connection"].(string))
+		driver := config["type"].(string)
+
+		var dbDSNFormat string
+		switch driver {
+		case DriverPostgreSQL:
+			dbDSNFormat = dbDSNFormatPostgreSQL
+		case DriverMySQL:
+			dbDSNFormat = dbDSNFormatMySQL
+		}
+		dsn := fmt.Sprintf(
+			dbDSNFormat,
+			config["user"].(string),
+			config["password"].(string),
+			config["host"].(string),
+			config["name"].(string),
+		)
+
+		testDB, err = makeConnection(driver, dsn)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -39,7 +56,7 @@ func TestMain(m *testing.M) {
 		}
 		db.initQueryBuilders()
 
-		log.Info("Running test for " + dbType)
+		log.Info("Running test for " + driver)
 		code := m.Run()
 		log.Info("finished")
 		if code != 0 {

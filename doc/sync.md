@@ -64,18 +64,7 @@ by calling `make testenv`.
 Service reads configuration from YAML file on path specified `--config-file` flag.
 Used configuration keys and their defaults can are defined [here](../pkg/sync/service.go).
 
-Example configuration can be found [here](../sample/sync.yml).
+Example configuration can be found [here](../sample/contrail.yml).
 
 Available database driver options are: `pgx` and `mysql` named after database
 drivers used.
-
-
-## Running
-
-Start Sync specifying configuration file path:
-
-	contrail sync -c <config-file-path>
-
-or you can start sync in server process:
-
-	contrail server -c <config-file-path> -s <sync-config-file>

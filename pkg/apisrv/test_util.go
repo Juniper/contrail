@@ -48,7 +48,10 @@ func SetupAndRunTest(m *testing.M) {
 	for _, iConfig := range dbConfig {
 		config := common.InterfaceToInterfaceMap(iConfig)
 		viper.Set("database.type", config["type"])
-		viper.Set("database.connection", config["connection"])
+		viper.Set("database.host", config["host"])
+		viper.Set("database.user", config["user"])
+		viper.Set("database.name", config["name"])
+		viper.Set("database.password", config["password"])
 		viper.Set("database.dialect", config["dialect"])
 		RunTestForDB(m)
 	}
