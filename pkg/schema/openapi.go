@@ -31,7 +31,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 		},
 	}
 	for _, apiSchema := range api.Schemas {
-		if apiSchema.Type == "abstract" {
+		if apiSchema.Type == AbstractType {
 			continue
 		}
 		d, err := apiSchema.JSONSchema.ToOpenAPI()
@@ -65,7 +65,8 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 					},
 				},
 			}
-			ref, err := spec.NewRef("#/definitions/" + reference.RefType)
+			var ref spec.Ref
+			ref, err = spec.NewRef("#/definitions/" + reference.RefType)
 			if err != nil {
 				return nil, err
 			}
@@ -80,7 +81,8 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 		}
 
 		for _, backref := range apiSchema.Children {
-			ref, err := spec.NewRef("#/definitions/" + backref.LinkTo.JSONSchema.GoName + "APIType")
+			var ref spec.Ref
+			ref, err = spec.NewRef("#/definitions/" + backref.LinkTo.JSONSchema.GoName + "APIType")
 			if err != nil {
 				return nil, err
 			}
@@ -522,7 +524,8 @@ func (s *JSONSchema) ToOpenAPI() (*spec.Schema, error) {
 	//properties
 	properties := map[string]spec.Schema{}
 	for key, property := range s.Properties {
-		p, err := property.ToOpenAPI()
+		var p *spec.Schema
+		p, err = property.ToOpenAPI()
 		if err != nil {
 			return nil, err
 		}
