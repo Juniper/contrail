@@ -2,7 +2,6 @@ package agent
 
 import (
 	"fmt"
-	"io/ioutil"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -17,7 +16,7 @@ import (
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/labstack/gommon/log"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	"github.com/spf13/viper"
 )
 
 // Agent constants.
@@ -30,6 +29,7 @@ const (
 )
 
 // Config represents Agent configuration.
+// nolint
 type Config struct {
 	// ID of Agent account.
 	ID string `yaml:"id"`
@@ -53,6 +53,8 @@ type Config struct {
 	Watcher string `yaml:"watcher"`
 	// List of tasks for Agent to perform on events that involve specified resources.
 	Tasks []*task `yaml:"tasks"`
+	// Enabled
+	Enabled bool `yaml:"enabled"`
 }
 
 // Agent represents Agent service.
@@ -66,18 +68,19 @@ type Agent struct {
 	log     *logrus.Entry
 }
 
-// NewAgentByFile creates Agent reading configuration from given file.
-func NewAgentByFile(configPath string) (*Agent, error) {
-	data, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return nil, err
-	}
-
+// NewAgentByConfig creates Agent reading configuration from viper config.
+func NewAgentByConfig() (*Agent, error) {
 	var c Config
-	err = yaml.UnmarshalStrict(data, &c)
+	err := common.LoadConfig("agent", &c)
 	if err != nil {
 		return nil, err
 	}
+	c.ID = viper.GetString("client.id")
+	c.Password = viper.GetString("client.password")
+	c.AuthURL = viper.GetString("keystone.auth_url")
+	c.InSecure = viper.GetBool("insecure")
+	c.SchemaRoot = viper.GetString("client.schema_root")
+	c.Endpoint = viper.GetString("client.endpoint")
 
 	return NewAgent(&c)
 }

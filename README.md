@@ -59,22 +59,25 @@ make testenv
 # you need wait db process up
 make reset_db
 ```
+
 Note that depending on your docker configuration you may need root permissions.
 
 ## Try
 
-- Run Server
-    ```
-    contrail -c sample/server.yml server
-    ```
+- Run processes
+
+  ```
+  contrail -c sample/contrail.yml run 
+  ```
 
     Note that you can overwrite configuration parameters using environment variable with
     prefix "CONTRAIL_"
 
-    For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
-    ``` shell
-    CONTRAIL_DATABASE_DEBUG=true contrail -c sample/server.yml server
-    ```
+  For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
+
+  ``` shell
+  CONTRAIL_DATABASE_DEBUG=true contrail -c sample/contrail.yml process
+  ```
 
 - Run CLI
 
@@ -91,14 +94,6 @@ Note that depending on your docker configuration you may need root permissions.
     ```
 
     For more cli command see [CLI Usage](doc/cli.md),
-
-- Run Agent
-
-    ```
-    contrail agent -c sample/agent.yml
-    ```
-
-    For more agent command see [Agent Usage](doc/agent.md),
 
 ## Schema Files
 

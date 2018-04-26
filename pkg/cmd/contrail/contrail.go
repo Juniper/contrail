@@ -10,14 +10,10 @@ import (
 )
 
 var configFile string
-var agentConfigFile string
-var watcherConfigFile string
 
 func init() {
 	cobra.OnInitialize(initConfig)
 	Contrail.PersistentFlags().StringVarP(&configFile, "config", "c", "", "Configuration File")
-	Contrail.PersistentFlags().StringVarP(&agentConfigFile, "agent", "a", "", "Agent Config File")
-	Contrail.PersistentFlags().StringVarP(&watcherConfigFile, "watcher", "w", "", "Watcher Config File")
 	viper.SetEnvPrefix("contrail")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
@@ -29,6 +25,7 @@ var Contrail = &cobra.Command{
 	Short: "Contrail command",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+
 	},
 }
 
