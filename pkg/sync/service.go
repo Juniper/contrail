@@ -164,10 +164,10 @@ func createMySQLWatcher(log *logrus.Entry, sink replication.RowSink) (watchClose
 
 func canalConfig() *mysqlcanal.Config {
 	c := mysqlcanal.NewDefaultConfig()
-	c.Addr = viper.GetString("host")
-	c.User = viper.GetString("user")
-	c.Password = viper.GetString("password")
-	c.Dump.Databases = []string{viper.GetString("name")}
+	c.Addr = viper.GetString("database.host")
+	c.User = viper.GetString("database.user")
+	c.Password = viper.GetString("database.password")
+	c.Dump.Databases = []string{viper.GetString("database.name")}
 	c.Dump.DiscardErr = false
 	c.ServerID = randomServerID()
 	return c
