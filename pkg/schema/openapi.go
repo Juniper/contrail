@@ -31,7 +31,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 		},
 	}
 	for _, apiSchema := range api.Schemas {
-		if apiSchema.Type == "abstract" {
+		if apiSchema.Type == AbstractType {
 			continue
 		}
 		d, err := apiSchema.JSONSchema.ToOpenAPI()
