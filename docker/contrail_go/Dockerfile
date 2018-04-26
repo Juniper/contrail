@@ -2,6 +2,7 @@ FROM alpine
 MAINTAINER Nachi Ueno nueno@juniper.net
 
 ADD ./contrail /bin/contrail
+ADD ./contrailcli /bin/contrailcli
 ADD ./etc /etc/contrail
 ADD ./etc/init_mysql.sql /usr/share/contrail/
 ADD ./etc/init_psql.sql /usr/share/contrail/
@@ -25,4 +26,4 @@ RUN apk update && apk add \
 
 EXPOSE 9091
 WORKDIR /etc/contrail
-ENTRYPOINT ["/bin/contrail", "-c","/etc/contrail/server.yml", "-a", "/etc/contrail/agent.yml", "server"]
+ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail.yml", "process"]

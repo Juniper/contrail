@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/pkg/errors"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/labstack/echo"
@@ -32,11 +31,10 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 	}
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {
-		filepath := viper.GetString("keystone.assignment.file")
 		var staticAssignment StaticAssignment
-		err := common.LoadFile(filepath, &staticAssignment)
+		err := common.LoadConfig("keystone.assignment.data", &staticAssignment)
 		if err != nil {
-			return nil, errors.Wrap(err, "Failed to load static assignment")
+			return nil, err
 		}
 		keystone.Assignment = &staticAssignment
 	}
