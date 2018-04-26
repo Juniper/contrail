@@ -42,7 +42,7 @@ type proxyService struct {
 
 func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
 	dbService serviceif.Service) *proxyService {
-	group := viper.GetString("proxy.group")
+	group := viper.GetString("server.dynamic_proxy_path")
 	if group == "" {
 		group = "proxy"
 	}

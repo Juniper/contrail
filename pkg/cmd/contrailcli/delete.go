@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/k0kubun/pp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -37,10 +36,6 @@ func deleteResources(dataPath string) (string, error) {
 	request, err := readResources(dataPath)
 	if err != nil {
 		return "", nil
-	}
-	_, err = pp.Println(request)
-	if err != nil {
-		fmt.Printf("Error printing request: %v", err)
 	}
 	for i := len(request.Resources) - 1; i >= 0; i-- {
 		resource := request.Resources[i]
