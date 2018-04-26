@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/url"
-	"strings"
 	"sync"
 	"time"
 
@@ -54,10 +53,9 @@ func (s *Server) SetupService() serviceif.Service {
 	serviceChain = append(serviceChain, service)
 	service.RegisterRESTAPI(s.Echo)
 
-	etcdNotifierEnabled := viper.GetBool("etcd_notifier.enabled")
-	if etcdNotifierEnabled {
-		etcdNotifierServers := strings.Split(viper.GetString("etcd_notifier.servers"), ",")
-		etcdNotifierPath := viper.GetString("etcd_notifier.path")
+	if viper.GetBool("server.notify_etcd") {
+		etcdNotifierServers := viper.GetStringSlice("etcd.endpoints")
+		etcdNotifierPath := viper.GetString("etcd.path")
 		etcdNotifierService, err := etcdclient.NewEtcdNotifierService(etcdNotifierServers, etcdNotifierPath)
 		if err == nil {
 			log.Println("Adding ETCD Notifier Service.")
@@ -101,7 +99,7 @@ func (s *Server) Init() error {
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second
 	e.Server.WriteTimeout = time.Duration(writeTimeout) * time.Second
 
-	cors := viper.GetString("cors")
+	cors := viper.GetString("server.cors")
 
 	if cors != "" {
 		log.Printf("Enabling CORS for %s", cors)
@@ -116,12 +114,12 @@ func (s *Server) Init() error {
 		}))
 	}
 
-	staticPath := viper.GetStringMapString("static_files")
+	staticPath := viper.GetStringMapString("server.static_files")
 	for prefix, root := range staticPath {
 		e.Static(prefix, root)
 	}
 
-	proxy := viper.GetStringMapStringSlice("proxy")
+	proxy := viper.GetStringMapStringSlice("server.proxy")
 	for prefix, target := range proxy {
 		g := e.Group(prefix)
 		g.Use(removePathPrefixMiddleware(prefix))
@@ -160,8 +158,9 @@ func (s *Server) Init() error {
 		}
 		s.Keystone = k
 	}
-	if viper.GetBool("enable_grpc") {
-		if !viper.GetBool("tls.enabled") {
+
+	if viper.GetBool("server.enable_grpc") {
+		if !viper.GetBool("server.tls.enabled") {
 			log.Fatal("GRPC support requires TLS configuraion.")
 		}
 		log.Debug("enabling grpc")
@@ -226,12 +225,12 @@ func (s *Server) Run() error {
 		}
 	}()
 	e := s.Echo
-	address := viper.GetString("address")
-	tlsEnabled := viper.GetBool("tls.enabled")
+	address := viper.GetString("server.address")
+	tlsEnabled := viper.GetBool("server.tls.enabled")
 	var keyFile, certFile string
 	if tlsEnabled {
-		keyFile = viper.GetString("tls.key_file")
-		certFile = viper.GetString("tls.cert_file")
+		keyFile = viper.GetString("server.tls.key_file")
+		certFile = viper.GetString("server.tls.cert_file")
 
 		e.Logger.Fatal(e.StartTLS(address, certFile, keyFile))
 	} else {

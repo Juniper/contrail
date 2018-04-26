@@ -11,9 +11,9 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-const serverSchemaRoot = "/public/"
 const serverSchemaFile = "schema.json"
 
 const schemaTemplate = `
@@ -23,6 +23,8 @@ const schemaTemplate = `
   data: {% for key, value in schema.JSONSchema.Properties %}
     {{ key }}: {{ value.Default }} # {{ value.Title }} ({{ value.Type }}) {% endfor %}
 {% endfor %}`
+
+const retryMax = 5
 
 func init() {
 	ContrailCLI.AddCommand(SchemaCmd)
@@ -55,6 +57,7 @@ func showHelp(schemaID string, template string) (string, error) {
 	if err != nil {
 		return "", nil
 	}
+	serverSchemaRoot := viper.GetString("client.schema_root")
 	serverSchema := filepath.Join(serverSchemaRoot, serverSchemaFile)
 	api, err := fetchServerAPI(client, serverSchema)
 	if err != nil {
@@ -81,7 +84,7 @@ func showHelp(schemaID string, template string) (string, error) {
 
 func fetchServerAPI(client *apisrv.Client, serverSchema string) (*schema.API, error) {
 	var api schema.API
-	for {
+	for i := 0; i < retryMax; i++ {
 		_, err := client.Read(serverSchema, &api)
 		if err == nil {
 			break

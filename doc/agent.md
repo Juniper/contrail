@@ -19,14 +19,4 @@ Depending on chosen operation mode it might be:
 Service reads configuration from YAML file on path specified `--config-file` flag.
 Required fields are defined in [source code](../pkg/agent/agent.go) as the `Config` structure.
 
-Example configuration can be found [here](../sample/agent.yml).
-
-## Running
-
-Start Agent specifying configuration file path:
-
-	contrail agent -c <config-file-path>
-
-or You can start agent in server process
-
-	contrail server -c <config-file-path> -a <agent-config-file>
+Example configuration can be found [here](../sample/contrail.yml).

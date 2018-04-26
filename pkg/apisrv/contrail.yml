@@ -1,0 +1,115 @@
+# Database configuration. Only MySQL supported
+database:
+    # MySQL example
+    type: mysql 
+    dialect: mysql
+    host: localhost
+    user: root
+    password: contrail123
+    name: contrail_test
+    # Postgres example
+    # connection: "user=root dbname=contrail_test sslmode=disable"
+    # type: pgx 
+    # dialect: postgres
+
+    # Max Open Connections for DB Server
+    max_open_conn: 100
+    connection_retries: 10
+    retry_period: 3
+
+test_database:
+    mysql: 
+        type: mysql
+        dialect: mysql
+        host: localhost
+        user: root
+        password: contrail123
+        name: contrail_test
+    postgres:
+        type: postgres 
+        dialect: postgres
+        host: localhost
+        user: root
+        password: contrail123
+        name: contrail_test
+
+
+# Log Level
+log_level: debug
+
+# Server configuration
+server:
+    read_timeout: 10
+    write_timeout: 5
+
+    # Bind addresss
+    address: ":9091"
+
+    # TLS Configuration
+    tls:
+        enabled: true
+        key_file: test_data/server.key
+        cert_file: test_data/server.crt
+
+    # Enable GRPC or not
+    enable_grpc: true
+
+    # Static file config
+    # key: URL path
+    # value: file path. (absolute path recommended in production)
+    static_files:
+        public: ../../public
+
+    dynamic_proxy_path: proxy
+    # API Proxy configuration
+    # key: URL path
+    # value: String list of backend host
+    proxy:
+        /contrail:
+        - http://localhost:8082
+
+# Keystone configuration
+keystone:
+    local: true # Enable local keystone v3. This is only for testing now.
+    assignment:
+        type: static
+        data:
+          domains:
+            default: &default
+              id: default
+              name: default
+          projects:
+            admin: &admin
+              id: admin
+              name: admin
+              domain: *default
+            demo: &demo
+              id: demo
+              name: demo
+              domain: *default
+          users:
+            alice:
+              id: alice
+              name: Alice
+              domain: *default
+              password: alice_password
+              email: alice@juniper.nets
+              roles:
+              - id: admin
+                name: Admin
+                project: *admin
+            bob:
+              id: bob
+              name: Bob
+              domain: *default
+              password: bob_password
+              email: bob@juniper.net
+              roles:
+              - id: Member
+                name: Member
+                project: *demo
+    store:
+        type: memory
+        expire: 3600
+    insecure: true
+    authurl: https://localhost:9091/keystone/v3
