@@ -454,124 +454,109 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 
 	// Expand config node back ref
 	if configNodes, ok := rData["contrail_config_nodes"]; ok {
-		configNodesInfo, err := c.interfaceToConfigNode(configNodes)
+		clusterInfo.ContrailConfigNodes, err = c.interfaceToConfigNode(configNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.ContrailConfigNodes = configNodesInfo
 	}
 	// Expand config database node back ref
 	if configDBNodes, ok := rData["contrail_config_database_nodes"]; ok {
-		configDBNodesInfo, err := c.interfaceToConfigDBNode(configDBNodes)
+		clusterInfo.ContrailConfigDatabaseNodes, err = c.interfaceToConfigDBNode(configDBNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.ContrailConfigDatabaseNodes = configDBNodesInfo
 	}
 	// Expand control node back ref
 	if controlNodes, ok := rData["contrail_control_nodes"]; ok {
-		controlNodesInfo, err := c.interfaceToControlNode(controlNodes)
+		clusterInfo.ContrailControlNodes, err = c.interfaceToControlNode(controlNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.ContrailControlNodes = controlNodesInfo
 	}
 	// Expand webui node back ref
 	if webuiNodes, ok := rData["contrail_webui_nodes"]; ok {
-		webuiNodesInfo, err := c.interfaceToWebuiNode(webuiNodes)
+		clusterInfo.ContrailWebuiNodes, err = c.interfaceToWebuiNode(webuiNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.ContrailWebuiNodes = webuiNodesInfo
 	}
 	// Expand analytics node back ref
 	if analyticsNodes, ok := rData["contrail_analytics_nodes"]; ok {
-		analyticsNodesInfo, err := c.interfaceToAnalyticsNode(analyticsNodes)
+		clusterInfo.ContrailAnalyticsNodes, err = c.interfaceToAnalyticsNode(analyticsNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.ContrailAnalyticsNodes = analyticsNodesInfo
 	}
 	// Expand analytics database node back ref
 	if analyticsDBNodes, ok := rData["contrail_analytics_database_nodes"]; ok {
-		analyticsDBNodesInfo, err := c.interfaceToAnalyticsDBNode(analyticsDBNodes)
+		clusterInfo.ContrailAnalyticsDatabaseNodes, err = c.interfaceToAnalyticsDBNode(analyticsDBNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.ContrailAnalyticsDatabaseNodes = analyticsDBNodesInfo
 	}
 	// Expand vouter node back ref
 	if vrouterNodes, ok := rData["contrail_vrouter_nodes"]; ok {
-		vrouterNodesInfo, err := c.interfaceToVrouterNode(vrouterNodes)
+		clusterInfo.ContrailVrouterNodes, err = c.interfaceToVrouterNode(vrouterNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.ContrailVrouterNodes = vrouterNodesInfo
 	}
 	// Expand csn node back ref
 	if csnNodes, ok := rData["contrail_service_nodes"]; ok {
-		csnNodesInfo, err := c.interfaceToServiceNode(csnNodes)
+		clusterInfo.ContrailServiceNodes, err = c.interfaceToServiceNode(csnNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.ContrailServiceNodes = csnNodesInfo
 	}
 
 	// Expand openstack_compute back ref
 	if openstackComputeNodes, ok := rData["openstack_compute_nodes"]; ok {
-		openstackComputeNodesInfo, err := c.interfaceToOpenstackComputeNode(openstackComputeNodes)
+		clusterInfo.OpenstackComputeNodes, err = c.interfaceToOpenstackComputeNode(openstackComputeNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.OpenstackComputeNodes = openstackComputeNodesInfo
 	}
 	// Expand openstack_storage node back ref
 	if openstackStorageNodes, ok := rData["openstack_storage_nodes"]; ok {
-		openstackStorageNodesInfo, err := c.interfaceToOpenstackStorageNode(openstackStorageNodes)
+		clusterInfo.OpenstackStorageNodes, err = c.interfaceToOpenstackStorageNode(openstackStorageNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.OpenstackStorageNodes = openstackStorageNodesInfo
 	}
 	// Expand openstack_network node back ref
 	if openstackNetworkNodes, ok := rData["openstack_network_nodes"]; ok {
-		openstackNetworkNodesInfo, err := c.interfaceToOpenstackNetworkNode(openstackNetworkNodes)
+		clusterInfo.OpenstackNetworkNodes, err = c.interfaceToOpenstackNetworkNode(openstackNetworkNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.OpenstackNetworkNodes = openstackNetworkNodesInfo
 	}
 	// Expand openstack_monitoring node back ref
 	if openstackMonitoringNodes, ok := rData["openstack_monitoring_nodes"]; ok {
-		openstackMonitoringNodesInfo, err := c.interfaceToOpenstackMonitoringNode(openstackMonitoringNodes)
+		clusterInfo.OpenstackMonitoringNodes, err = c.interfaceToOpenstackMonitoringNode(openstackMonitoringNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.OpenstackMonitoringNodes = openstackMonitoringNodesInfo
 	}
 	// Expand openstack_control node back ref
 	if openstackControlNodes, ok := rData["openstack_control_nodes"]; ok {
-		openstackControlNodesInfo, err := c.interfaceToOpenstackControlNode(openstackControlNodes)
+		clusterInfo.OpenstackControlNodes, err = c.interfaceToOpenstackControlNode(openstackControlNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.OpenstackControlNodes = openstackControlNodesInfo
 	}
 	// Expand kubernetes_master back ref
 	if kubernetesMasterNodes, ok := rData["kubernetes_master_nodes"]; ok {
-		kubernetesMasterNodesInfo, err := c.interfaceToKubernetesMasterNode(kubernetesMasterNodes)
+		clusterInfo.KubernetesMasterNodes, err = c.interfaceToKubernetesMasterNode(kubernetesMasterNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.KubernetesMasterNodes = kubernetesMasterNodesInfo
 	}
 	// Expand kubernetes node back ref
 	if kubernetesNodes, ok := rData["kubernetes_nodes"]; ok {
-		kubernetesNodesInfo, err := c.interfaceToKubernetesNode(kubernetesNodes)
+		clusterInfo.KubernetesNodes, err = c.interfaceToKubernetesNode(kubernetesNodes)
 		if err != nil {
 			return nil, err
 		}
-		clusterInfo.KubernetesNodes = kubernetesNodesInfo
 	}
 
 	// get all nodes information
