@@ -106,7 +106,6 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 	var user *User
-	var err error
 	tokenID := ""
 	if authRequest.Auth.Identity.Token != nil {
 		tokenID = authRequest.Auth.Identity.Token.ID
@@ -118,6 +117,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 		}
 		user = token.User
 	} else {
+		var err error
 		user, err = keystone.Assignment.FetchUser(
 			authRequest.Auth.Identity.Password.User.Name,
 			authRequest.Auth.Identity.Password.User.Password,
