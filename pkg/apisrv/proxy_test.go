@@ -8,26 +8,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 const (
-	key              = "name"
-	privatePortList  = "private_port_list"
-	publicPortList   = "public_port_list"
-	privateAuthToken = "private_auth_token"
-	publicAuthToken  = "public_auth_token"
+	key             = "name"
+	privatePortList = "private_port_list"
+	publicPortList  = "public_port_list"
 )
 
 type mockPortsResponse struct {
 	Name string `json:"name"`
-}
-
-type mockAuthTokenResponse struct {
-	Token string `json:"token"`
 }
 
 func mockServer(routes map[string]interface{}) *httptest.Server {
@@ -38,6 +36,25 @@ func mockServer(routes map[string]interface{}) *httptest.Server {
 	for route, handler := range routes {
 		e.GET(route, handler.(echo.HandlerFunc))
 	}
+	mockServer := httptest.NewServer(e)
+	return mockServer
+}
+
+func mockServerWithKeystone() *httptest.Server {
+	// Echo instance
+	e := echo.New()
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	keystoneClient := keystone.NewKeystoneClient(keystoneAuthURL, true)
+	endpointStore := apicommon.MakeEndpointStore()
+	k, err := keystone.Init(e, endpointStore, keystoneClient)
+	if err != nil {
+		return nil
+	}
+
+	// Routes
+	e.POST("/v3/auth/tokens", k.CreateTokenAPI)
+	e.GET("/v3/auth/tokens", k.ValidateTokenAPI)
+	e.GET("/v3/auth/projects", k.GetProjectAPI)
 	mockServer := httptest.NewServer(e)
 	return mockServer
 }
@@ -97,18 +114,15 @@ func verifyProxy(t *testing.T, testScenario *TestScenario, url string,
 	return true
 }
 
-func verifyKeystoneEndpoint(t *testing.T, testScenario *TestScenario,
-	url string) bool {
+func verifyKeystoneEndpoint(testScenario *TestScenario) error {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
-		_, err := client.Read(url, &response)
-		ok := assert.EqualError(t, err,
-			"Unexpeced return code expected [200], actual 401")
-		if !ok {
-			return ok
+		_, err := client.Read("/keystone/v3/auth/tokens", &response)
+		if err != nil {
+			return err
 		}
 	}
-	return true
+	return nil
 }
 
 func TestProxyEndpoint(t *testing.T) {
@@ -177,26 +191,13 @@ func TestProxyEndpoint(t *testing.T) {
 }
 
 func TestKeystoneEndpoint(t *testing.T) {
-	t.Skip("Skip keystone endpoint test")
-	clusterName := "clusterA"
-	routes := map[string]interface{}{
-		"/v3/auth/tokens": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&mockAuthTokenResponse{Token: clusterName + privateAuthToken})
-		}),
-	}
-	ksPrivate := mockServer(routes)
+	ksPrivate := mockServerWithKeystone()
 	defer ksPrivate.Close()
 
-	routes = map[string]interface{}{
-		"/v3/auth/tokens": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&mockAuthTokenResponse{Token: clusterName + publicAuthToken})
-		}),
-	}
-	ksPublic := mockServer(routes)
+	ksPublic := mockServerWithKeystone()
 	defer ksPublic.Close()
 
+	clusterName := "clusterA"
 	context := pongo2.Context{
 		"extra_tasks":   true,
 		"cluster_name":  clusterName,
@@ -217,24 +218,54 @@ func TestKeystoneEndpoint(t *testing.T) {
 	// Wait a sec for the dynamic proxy to be created/updated
 	time.Sleep(2 * time.Second)
 
-	// verify proxies
-	ok := verifyKeystoneEndpoint(t, &testScenario,
-		"/proxy/"+clusterName+"_uuid/keystone/v3/auth/tokens")
-	if !ok {
-		return
+	// Login to new remote keystone
+	for _, client := range testScenario.Clients {
+		err := client.Login()
+		assert.NoError(t, err, "client failed to login remote keystone")
 	}
-	ok = verifyKeystoneEndpoint(t, &testScenario,
-		"/proxy/"+clusterName+"_uuid/keystone/private/v3/auth/tokens")
-	if !ok {
-		return
-	}
+	// verify auth (remote keystone)
+	err = verifyKeystoneEndpoint(&testScenario)
+	assert.NoError(t, err,
+		"failed to validate token with remote keystone")
 
 	// Delete endpoint test
-	testFile = GetTestFromTemplate(t, "./test_data/test_delete_endpoint.tmpl", context)
-	// remove tempfile after test
-	defer os.Remove(testFile) // nolint: errcheck
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterName)
+		_, err = client.Delete(url, &response)
+		assert.NoError(t, err, "failed to delete keystone endpoint")
+		break
+	}
+	// Login to new local keystone
+	for _, client := range testScenario.Clients {
+		err = client.Login()
+		assert.NoError(t, err, "client failed to login local keystone")
+	}
+	// verify auth (local keystone)
+	err = verifyKeystoneEndpoint(&testScenario)
+	assert.NoError(t, err,
+		"failed to validate token with local keystone after endpoint delete")
 
+	// Recreate endpoint
 	err = LoadTestScenario(&testScenario, testFile)
-	assert.NoError(t, err, "failed to load endpoint delete test data")
+	assert.NoError(t, err, "failed to load endpoint create test data")
 	RunTestScenario(t, &testScenario)
+	// Login to new remote keystone
+	for _, client := range testScenario.Clients {
+		err = client.Login()
+		assert.NoError(t, err, "client failed to login remote keystone")
+	}
+	// verify auth (remote keystone)
+	err = verifyKeystoneEndpoint(&testScenario)
+	assert.NoError(t, err,
+		"failed to validate token with remote keystone after endpoint re-create")
+
+	// Cleanup endpoint test
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterName)
+		_, err = client.Delete(url, &response)
+		assert.NoError(t, err, "failed to delete keystone endpoint")
+		break
+	}
 }
