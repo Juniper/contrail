@@ -79,7 +79,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 		auth := keystoneClient.NewAuth()
 		return func(c echo.Context) error {
 			for _, path := range skipPath {
-				if strings.HasPrefix(c.Request().URL.Path, path) {
+				if strings.Contains(c.Request().URL.Path, path) {
 					return next(c)
 				}
 			}
