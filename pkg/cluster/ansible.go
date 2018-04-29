@@ -291,22 +291,26 @@ func (a *ansibleProvisioner) createCluster() error {
 	return nil
 }
 
-func (a *ansibleProvisioner) updateCluster() error {
-	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+func (a *ansibleProvisioner) isUpdated() (updated bool, err error) {
 	status := map[string]interface{}{}
 	if _, err := os.Stat(a.getInstanceFile()); err == nil {
 		ok, err := a.compareInventory()
 		if err != nil {
 			status[statusField] = statusUpdateFailed
 			a.reporter.reportStatus(status)
-			return err
+			return false, err
 		}
 		if ok {
 			a.log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.clusterInfo.FQName)
-			return nil
+			return true, nil
 		}
 	}
+	return false, nil
+}
 
+func (a *ansibleProvisioner) updateCluster() error {
+	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+	status := map[string]interface{}{}
 	status[statusField] = statusUpdateProgress
 	a.reporter.reportStatus(status)
 
@@ -344,7 +348,14 @@ func (a *ansibleProvisioner) provision() error {
 		}
 		return a.createEndpoints()
 	case "update":
-		err := a.updateCluster()
+		updated, err := a.isUpdated()
+		if err != nil {
+			return err
+		}
+		if updated {
+			return nil
+		}
+		err = a.updateCluster()
 		if err != nil {
 			return err
 		}

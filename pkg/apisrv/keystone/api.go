@@ -8,6 +8,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/pkg/errors"
 
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -17,12 +18,18 @@ import (
 type Keystone struct {
 	Store      Store
 	Assignment Assignment
+	Endpoints  *apicommon.EndpointStore
+	Client     *KeystoneClient
 }
 
 //Init is used to initialize echo with Kesytone capability.
 //This function reads config from viper.
-func Init(e *echo.Echo) (*Keystone, error) {
-	keystone := &Keystone{}
+func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
+	keystoneClient *KeystoneClient) (*Keystone, error) {
+	keystone := &Keystone{
+		Endpoints: endpoints,
+		Client:    keystoneClient,
+	}
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {
 		filepath := viper.GetString("keystone.assignment.file")
@@ -41,6 +48,7 @@ func Init(e *echo.Echo) (*Keystone, error) {
 	e.POST("/keystone/v3/auth/tokens", keystone.CreateTokenAPI)
 	e.GET("/keystone/v3/auth/tokens", keystone.ValidateTokenAPI)
 	e.GET("/keystone/v3/auth/projects", keystone.GetProjectAPI)
+
 	return keystone, nil
 }
 
@@ -74,6 +82,16 @@ func filterProject(user *User, scope *Scope) (*Project, error) {
 
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
+	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	if err != nil {
+		log.Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	if keystoneEndpoint != "" {
+		keystone.Client.SetAuthURL(keystoneEndpoint)
+		return keystone.Client.GetProjects(c)
+	}
+
 	tokenID := c.Request().Header.Get("X-Auth-Token")
 	if tokenID == "" {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
@@ -100,24 +118,33 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 
 //CreateTokenAPI is an API handler for issuing new Token.
 func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
+	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	if err != nil {
+		log.Error(err)
+		return echo.NewHTTPError(http.StatusUnauthorized, err)
+	}
+	if keystoneEndpoint != "" {
+		keystone.Client.SetAuthURL(keystoneEndpoint)
+		return keystone.Client.CreateToken(c)
+	}
 	var authRequest AuthRequest
-	if err := c.Bind(&authRequest); err != nil {
+	if err = c.Bind(&authRequest); err != nil {
 		log.WithField("error", err).Debug("Validation failed")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 	var user *User
+	var token *Token
 	tokenID := ""
 	if authRequest.Auth.Identity.Token != nil {
 		tokenID = authRequest.Auth.Identity.Token.ID
 	}
 	if tokenID != "" { // user trying to get a token from token
-		token, err := keystone.Store.RetrieveToken(tokenID)
+		token, err = keystone.Store.RetrieveToken(tokenID)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusUnauthorized, err)
 		}
 		user = token.User
 	} else {
-		var err error
 		user, err = keystone.Assignment.FetchUser(
 			authRequest.Auth.Identity.Password.User.Name,
 			authRequest.Auth.Identity.Password.User.Password,
@@ -136,7 +163,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 		log.WithField("err", err).Debug("filter project error")
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 	}
-	tokenID, token := keystone.Store.CreateToken(user, project)
+	tokenID, token = keystone.Store.CreateToken(user, project)
 	c.Response().Header().Set("X-Subject-Token", tokenID)
 	authResponse := &AuthResponse{
 		Token: token,
@@ -146,6 +173,16 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
+	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	if err != nil {
+		log.Error(err)
+		return echo.NewHTTPError(http.StatusUnauthorized, err)
+	}
+	if keystoneEndpoint != "" {
+		keystone.Client.SetAuthURL(keystoneEndpoint)
+		return keystone.Client.ValidateToken(c)
+	}
+
 	tokenID := c.Request().Header.Get("X-Auth-Token")
 	if tokenID == "" {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")

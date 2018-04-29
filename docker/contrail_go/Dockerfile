@@ -5,6 +5,7 @@ ADD ./contrail /bin/contrail
 ADD ./etc /etc/contrail
 ADD ./etc/init_mysql.sql /usr/share/contrail/
 ADD ./etc/init_psql.sql /usr/share/contrail/
+ADD ./etc/keystone.yml /usr/share/contrail/
 ADD ./public /usr/share/contrail/public
 ADD ./templates /usr/share/contrail/templates
 
