@@ -98,6 +98,9 @@ func (p *proxyService) getReverseProxy(urlPath string) (
 	proxyPrefix := p.getProxyPrefixFromURL(urlPath, scope)
 	proxyEndpoint := p.EndpointStore.Read(proxyPrefix)
 	target := proxyEndpoint.Next(scope)
+	if target == "" {
+		return strings.TrimSuffix(proxyPrefix, public), nil
+	}
 	insecure := true          //TODO:(ijohnson) add insecure to endpoint schema
 	u, _ := url.Parse(target) // nolint
 	server = httputil.NewSingleHostReverseProxy(u)
@@ -119,6 +122,10 @@ func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo
 		return func(c echo.Context) error {
 			r := c.Request()
 			prefix, server := p.getReverseProxy(r.URL.Path)
+			if server == nil {
+				return echo.NewHTTPError(http.StatusInternalServerError,
+					"Proxy endpoint not found in endpoint store")
+			}
 			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 			w := c.Response()
 			server.ServeHTTP(w, r)
