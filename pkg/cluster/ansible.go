@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/flosch/pongo2"
@@ -135,6 +136,11 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	if err != nil {
 		return err
 	}
+
+	// string empty lines in instances yml content
+	regex, _ := regexp.Compile("\n[ \r\n\t]*\n")
+	contentString := regex.ReplaceAllString(string(content), "\n")
+	content = []byte(contentString)
 	err = a.appendToFile(destination, content)
 	if err != nil {
 		return err
@@ -248,30 +254,32 @@ func (a *ansibleProvisioner) createCluster() error {
 		return err
 	}
 
-	err = a.cloneAnsibleDeployer()
-	if err != nil {
-		a.reporter.reportStatus(status)
-		return err
-	}
-	if a.cluster.config.AnsibleFetchURL != "" {
-		err = a.fetchAnsibleDeployer()
+	if !a.cluster.config.Test {
+		err = a.cloneAnsibleDeployer()
 		if err != nil {
 			a.reporter.reportStatus(status)
 			return err
 		}
-	}
-	if a.cluster.config.AnsibleCherryPickRevision != "" {
-		err = a.cherryPickAnsibleDeployer()
-		if err != nil {
-			a.reporter.reportStatus(status)
-			return err
+		if a.cluster.config.AnsibleFetchURL != "" {
+			err = a.fetchAnsibleDeployer()
+			if err != nil {
+				a.reporter.reportStatus(status)
+				return err
+			}
 		}
-	}
-	if a.cluster.config.AnsibleRevision != "" {
-		err = a.resetAnsibleDeployer()
-		if err != nil {
-			a.reporter.reportStatus(status)
-			return err
+		if a.cluster.config.AnsibleCherryPickRevision != "" {
+			err = a.cherryPickAnsibleDeployer()
+			if err != nil {
+				a.reporter.reportStatus(status)
+				return err
+			}
+		}
+		if a.cluster.config.AnsibleRevision != "" {
+			err = a.resetAnsibleDeployer()
+			if err != nil {
+				a.reporter.reportStatus(status)
+				return err
+			}
 		}
 	}
 	err = a.createInventory()
@@ -280,10 +288,12 @@ func (a *ansibleProvisioner) createCluster() error {
 		return err
 	}
 
-	err = a.playBook()
-	if err != nil {
-		a.reporter.reportStatus(status)
-		return err
+	if !a.cluster.config.Test {
+		err = a.playBook()
+		if err != nil {
+			a.reporter.reportStatus(status)
+			return err
+		}
 	}
 
 	status[statusField] = statusCreated
@@ -319,11 +329,13 @@ func (a *ansibleProvisioner) updateCluster() error {
 		a.reporter.reportStatus(status)
 		return err
 	}
-	err = a.playBook()
-	if err != nil {
-		status[statusField] = statusUpdateFailed
-		a.reporter.reportStatus(status)
-		return err
+	if !a.cluster.config.Test {
+		err = a.playBook()
+		if err != nil {
+			status[statusField] = statusUpdateFailed
+			a.reporter.reportStatus(status)
+			return err
+		}
 	}
 
 	status[statusField] = statusUpdated

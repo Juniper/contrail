@@ -1,0 +1,46 @@
+global_configuration:
+  CONTAINER_REGISTRY: test_registry
+  REGISTRY_PRIVATE_INSECURE: True
+provider_config:
+  bms:
+    ssh_user: root
+    ssh_pwd: c0ntrail123
+    ntp_server: 10.1.1.100
+instances:
+  all_in_one_node:
+    ip: 127.0.0.1
+    provider: bms
+    roles:
+      config:
+      config_database:
+      control:
+      webui:
+      analytics:
+      analytics_database:
+      vrouter:
+        PHYSICAL_INTERFACE: all_in_one_node_interface
+      openstack_control:
+        network_interface: all_in_one_node_interface
+      openstack_network:
+      openstack_storage:
+      openstack_monitoring:
+      openstack_compute:
+        network_interface: all_in_one_node_interface
+contrail_configuration:
+  CONTRAIL_VERSION: ocata-5.0-x
+  CLOUD_ORCHESTRATOR: openstack
+  RABBITMQ_NODE_PORT: 5673
+  VROUTER_GATEWAY: 127.0.0.254
+  PHYSICAL_INTERFACE: enp2s0
+  ENCAP_PRIORITY: VXLANMPLSoUDPMPLSoGRE
+  AUTH_MODE: keystone
+  KEYSTONE_AUTH_HOST: 127.0.0.1
+  KEYSTONE_AUTH_URL_VERSION: /v3
+kolla_config:
+  kolla_globals:
+    openstack_release: ocata-xyz
+    enable_haproxy: no
+    contrail_api_interface_address: 127.0.0.1
+    network_interface: all_in_one_node_interface
+  kolla_passwords:
+    keystone_admin_password: contrail123

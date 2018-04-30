@@ -35,6 +35,9 @@ type Config struct {
 	ProvisionerType string `yaml:"provisioner_type,omitempty"`
 	// Logging level
 	LogLevel string `yaml:"log_level"`
+	// Template root directory
+	TemplateRoot string `yaml:"template_root"`
+
 	// Optional ansible sudo password
 	AnsibleSudoPass string `yaml:"ansible_sudo_pass"`
 	// Optional ansible deployer cherry pick url
@@ -43,8 +46,8 @@ type Config struct {
 	AnsibleCherryPickRevision string `yaml:"ansible_cherry_pick_revision"`
 	// Optional ansible deployer revision(commit id)
 	AnsibleRevision string `yaml:"ansible_revision"`
-	// Template root directory
-	TemplateRoot string `yaml:"template_root"`
+	// Optional Test var to run cluster in test mode
+	Test bool `yaml:"test"`
 }
 
 // Cluster represents Cluster service.

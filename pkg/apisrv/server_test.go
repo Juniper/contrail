@@ -16,21 +16,21 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func TestServer(t *testing.T) {
-	CreateTestProject(server, "TestServer")
+func TestAPIServer(t *testing.T) {
+	CreateTestProject(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
 func TestSync(t *testing.T) {
-	CreateTestProject(server, "TestSync")
+	CreateTestProject(APIServer, "TestSync")
 	RunTest(t, "./test_data/test_sync.yml")
 }
 
 func TestGRPC(t *testing.T) {
-	CreateTestProject(server, "TestGRPC")
+	CreateTestProject(APIServer, "TestGRPC")
 	restClient := NewClient(
-		testServer.URL,
-		testServer.URL+"/keystone/v3",
+		TestServer.URL,
+		TestServer.URL+"/keystone/v3",
 		"TestGRPC",
 		"TestGRPC",
 		"default",
@@ -48,10 +48,10 @@ func TestGRPC(t *testing.T) {
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})
-	dial := strings.TrimPrefix(testServer.URL, "https://")
+	dial := strings.TrimPrefix(TestServer.URL, "https://")
 	conn, err := grpc.Dial(dial, grpc.WithTransportCredentials(creds))
 	assert.NoError(t, err)
-	defer logFatalIfErr(conn.Close)
+	defer LogFatalIfErr(conn.Close)
 	md := metadata.Pairs("X-Auth-Token", restClient.AuthToken)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 	// Contact the server and print out its response.
