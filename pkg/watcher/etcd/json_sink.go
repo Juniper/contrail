@@ -5,13 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/Juniper/contrail/pkg/log"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/sirupsen/logrus"
 )
 
-const jsonPrefix = "json"
+const (
+	jsonPrefix             = "json"
+	kvClientRequestTimeout = 60 * time.Second
+)
 
 // JSONSink creates, updates and deletes data in etcd.
 // It uses JSON strategy by creating one etcd key with JSON-encoded resource.
@@ -22,10 +26,6 @@ type JSONSink struct {
 
 // NewJSONSink is a constructor.
 func NewJSONSink(kv clientv3.KV) *JSONSink {
-	if kv == nil {
-		kv = &noopKVClient{}
-	}
-
 	return &JSONSink{
 		kvClient: kv,
 		log:      log.NewLogger("json-sink"),

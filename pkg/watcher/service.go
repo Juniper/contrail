@@ -4,6 +4,7 @@ package watcher
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"time"
@@ -72,7 +73,7 @@ func NewService() (*Service, error) {
 	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Got configuration")
 
 	// Etcd client
-	clientv3.SetLogger(grpclog.NewLoggerV2(os.Stdout, os.Stdout, os.Stdout))
+	clientv3.SetLogger(grpclog.NewLoggerV2(ioutil.Discard, os.Stdout, os.Stdout))
 	etcdClient, err := clientv3.New(clientv3.Config{
 		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
 		Username:    viper.GetString("etcd.username"),
