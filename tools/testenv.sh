@@ -2,7 +2,7 @@
 
 set -e
 
-SOURCEDIR=`realpath $(dirname "$0")/../../../../..`
+SOURCEDIR=$( cd "$(dirname "$0")/../../../../.." ; pwd -P )
 
 PASSWORD=contrail123
 docker network create contrail || echo > /dev/null
