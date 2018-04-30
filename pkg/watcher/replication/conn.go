@@ -70,7 +70,7 @@ func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, na
 	)
 }
 
-func (c *postgresReplicationConnection) DumpSnapshot(ctx context.Context, rw db.RowWriter, snapshotName string) error {
+func (c *postgresReplicationConnection) DumpSnapshot(ctx context.Context, ow db.ObjectWriter, snapshotName string) error {
 	return db.DoInTransaction(
 		ctx,
 		c.db.DB,
@@ -80,7 +80,7 @@ func (c *postgresReplicationConnection) DumpSnapshot(ctx context.Context, rw db.
 				return err
 			}
 
-			return c.db.Dump(ctx, rw)
+			return c.db.Dump(ctx, ow)
 		},
 	)
 }

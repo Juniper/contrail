@@ -59,7 +59,7 @@ type postgresWatcherConnection interface {
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 	SendStatus(lastLSN uint64) error
 
-	DumpSnapshot(context.Context, db.RowWriter, string) error
+	DumpSnapshot(context.Context, db.ObjectWriter, string) error
 }
 
 // PostgresWatcher allows subscribing to PostgreSQL logical replication messages.
@@ -72,7 +72,7 @@ type PostgresWatcher struct {
 	conn    postgresWatcherConnection
 	handler pgoutput.Handler
 
-	dumpWriter db.RowWriter
+	dumpWriter db.ObjectWriter
 
 	log *logrus.Entry
 }
@@ -83,7 +83,7 @@ func NewPostgresWatcher(
 	dbs *db.DB,
 	replConn pgxReplicationConn,
 	handler pgoutput.Handler,
-	dumpWriter db.RowWriter,
+	dumpWriter db.ObjectWriter,
 ) (*PostgresWatcher, error) {
 	conn, err := newPostgresReplicationConnection(dbs, replConn)
 	if err != nil {
@@ -157,7 +157,7 @@ func (w *PostgresWatcher) loop(ctx context.Context) error {
 			}
 
 			if err = w.handleMessage(message); err != nil {
-				return err
+				w.log.Error("Error while handling replication message: ", err)
 			}
 		}
 	}

@@ -108,9 +108,13 @@ func (db *DB) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} )
         {% endif %}
     }
     {% endfor %}
+
+    {% if  schema.References | length + schema.Children | length  > 0 %}
+    qb := db.queryBuilders["{{ schema.ID }}"]
+    {% endif %}
+
     {% for linkTo, reference in schema.References %}
     if value, ok := values["ref_{{ linkTo | lower }}"]; ok {
-        qb := db.queryBuilders["{{ schema.ID }}"]
         references := qb.scanResourceList(value)
         for _, reference := range references {
             referenceMap, ok := reference.(map[string]interface{})
@@ -149,7 +153,6 @@ func (db *DB) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} )
     {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
     if value, ok := values["backref_{{ child.ID | lower }}"]; ok {
-        qb := db.queryBuilders["{{ schema.ID }}"]
         childResources := qb.scanResourceList(value)
         for _, childResource := range childResources {
             childResourceMap, ok := childResource.(map[string]interface{})
