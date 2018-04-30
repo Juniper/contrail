@@ -14,6 +14,7 @@ func InitConfig() error {
 	viper.AddConfigPath("../../sample")
 	viper.AddConfigPath("../sample")
 	viper.AddConfigPath("./sample")
+	viper.AddConfigPath("./test_data")
 	viper.SetEnvPrefix("contrail")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()

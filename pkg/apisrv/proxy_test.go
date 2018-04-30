@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 )
 
@@ -36,25 +34,6 @@ func mockServer(routes map[string]interface{}) *httptest.Server {
 	for route, handler := range routes {
 		e.GET(route, handler.(echo.HandlerFunc))
 	}
-	mockServer := httptest.NewServer(e)
-	return mockServer
-}
-
-func mockServerWithKeystone() *httptest.Server {
-	// Echo instance
-	e := echo.New()
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	keystoneClient := keystone.NewKeystoneClient(keystoneAuthURL, true)
-	endpointStore := apicommon.MakeEndpointStore()
-	k, err := keystone.Init(e, endpointStore, keystoneClient)
-	if err != nil {
-		return nil
-	}
-
-	// Routes
-	e.POST("/v3/auth/tokens", k.CreateTokenAPI)
-	e.GET("/v3/auth/tokens", k.ValidateTokenAPI)
-	e.GET("/v3/auth/projects", k.GetProjectAPI)
 	mockServer := httptest.NewServer(e)
 	return mockServer
 }
@@ -191,10 +170,11 @@ func TestProxyEndpoint(t *testing.T) {
 }
 
 func TestKeystoneEndpoint(t *testing.T) {
-	ksPrivate := mockServerWithKeystone()
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	ksPrivate := MockServerWithKeystone("", keystoneAuthURL)
 	defer ksPrivate.Close()
 
-	ksPublic := mockServerWithKeystone()
+	ksPublic := MockServerWithKeystone("", keystoneAuthURL)
 	defer ksPublic.Close()
 
 	clusterName := "clusterA"
