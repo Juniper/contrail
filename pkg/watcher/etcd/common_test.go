@@ -1,41 +1,10 @@
 package etcd
 
 import (
-	"testing"
-
 	"github.com/coreos/etcd/clientv3"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/net/context"
 )
-
-func TestNoopKVClient(t *testing.T) {
-	c := noopKVClient{}
-
-	ctx := context.Background()
-	pr, err := c.Put(ctx, "", "")
-	assert.Nil(t, pr)
-	assert.NoError(t, err)
-
-	gr, err := c.Get(ctx, "")
-	assert.Nil(t, gr)
-	assert.NoError(t, err)
-
-	dr, err := c.Delete(ctx, "")
-	assert.Nil(t, dr)
-	assert.NoError(t, err)
-
-	cr, err := c.Compact(ctx, 0)
-	assert.Nil(t, cr)
-	assert.NoError(t, err)
-
-	or, err := c.Do(ctx, clientv3.Op{})
-	assert.Equal(t, clientv3.OpResponse{}, or)
-	assert.NoError(t, err)
-
-	tx := c.Txn(ctx)
-	assert.Nil(t, tx)
-}
 
 type kvClientMock struct {
 	mock.Mock

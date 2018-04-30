@@ -10,19 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestJSONSinkIsNoopByDefault(t *testing.T) {
-	s := givenJSONSink(nil)
-
-	err := s.Create("test-resource", "test-pk", map[string]interface{}{"property": "foo"})
-	assert.NoError(t, err)
-
-	err = s.Update("test-resource", "test-pk", map[string]interface{}{"property": 1337})
-	assert.NoError(t, err)
-
-	err = s.Delete("test-resource", "test-pk")
-	assert.NoError(t, err)
-}
-
 func TestJSONSinkCreateFailsWhenKVClientFails(t *testing.T) {
 	m := givenKVClientMock()
 	m.onPut("json/test-resource/test-pk", mock.AnythingOfType("string")).Return(nil, assert.AnError).Once()
