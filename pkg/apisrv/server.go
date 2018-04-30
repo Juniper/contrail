@@ -144,6 +144,7 @@ func (s *Server) Init() error {
 		e.Use(keystone.AuthMiddleware(keystoneClient,
 			[]string{
 				"/keystone/v3/auth/tokens",
+				"/proxy/keystone/v3/auth/tokens",
 				"/keystone/v3/auth/projects",
 				"/v3/auth/tokens",
 				"/public"},
@@ -153,7 +154,7 @@ func (s *Server) Init() error {
 	}
 	localKeystone := viper.GetBool("keystone.local")
 	if localKeystone {
-		k, err := keystone.Init(e)
+		k, err := keystone.Init(e, endpointStore, keystoneClient)
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}

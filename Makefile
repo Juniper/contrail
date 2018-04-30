@@ -62,11 +62,12 @@ binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailcli_{{.OS}}_{{.Arch}}" ./cmd/contrailcli
 
 docker: ## Generate docker files
-	gox -osarch="linux/amd64" --output "docker/contrail_go/contrail" ./cmd/contrail
+	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "docker/contrail_go/contrail" ./cmd/contrail
 	cp -r sample docker/contrail_go/etc
 	mkdir -p docker/contrail_go/templates/ && cp pkg/cluster/configs/instances.tmpl docker/contrail_go/templates/
 	cp tools/init_mysql.sql docker/contrail_go/etc
 	cp tools/init_psql.sql docker/contrail_go/etc
+	cp pkg/apisrv/test_data/keystone.yml docker/contrail_go/etc
 	cp -r public docker/contrail_go/public
 	docker build -t "contrail-go" docker/contrail_go
 
