@@ -13,13 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Sink represents service that handler transfers data to.
-type Sink interface {
-	Create(resourceName string, pk string, properties interface{}) error
-	Update(resourceName string, pk string, properties interface{}) error
-	Delete(resourceName string, pk string) error
-}
-
 type relationAddGetter interface {
 	Add(pgoutput.Relation)
 	Get(id uint32) (pgoutput.Relation, error)
@@ -27,14 +20,14 @@ type relationAddGetter interface {
 
 // PgoutputEventHandler handles replication messages by pushing it to sink.
 type PgoutputEventHandler struct {
-	sink Sink
+	sink RowSink
 	log  *logrus.Entry
 
 	relations relationAddGetter
 }
 
 // NewPgoutputEventHandler creates new ReplicationEventHandler using sink provided as an argument.
-func NewPgoutputEventHandler(s Sink) *PgoutputEventHandler {
+func NewPgoutputEventHandler(s RowSink) *PgoutputEventHandler {
 	return &PgoutputEventHandler{
 		sink:      s,
 		log:       pkglog.NewLogger("replication-event-handler"),
@@ -60,11 +53,6 @@ func (h *PgoutputEventHandler) Handle(msg pgoutput.Message) error {
 		return h.handleDelete(v.RelationID, v.Row)
 	}
 	return nil
-}
-
-// WriteRow handles row data received from database dump.
-func (h *PgoutputEventHandler) WriteRow(schemaID string, objUUID string, obj interface{}) error {
-	return h.sink.Create(schemaID, objUUID, obj)
 }
 
 func (h *PgoutputEventHandler) handleCreate(relationID uint32, row []pgoutput.Tuple) error {
@@ -109,7 +97,10 @@ func (h *PgoutputEventHandler) handleDelete(relationID uint32, row []pgoutput.Tu
 	return h.sink.Delete(relation.Name, pk)
 }
 
-func decodeRowData(relation pgoutput.Relation, row []pgoutput.Tuple) (string, map[string]interface{}, error) {
+func decodeRowData(
+	relation pgoutput.Relation,
+	row []pgoutput.Tuple,
+) (pk string, data map[string]interface{}, err error) {
 	keys, data := []interface{}{}, map[string]interface{}{}
 
 	if t, c := len(row), len(relation.Columns); t != c {
@@ -118,9 +109,9 @@ func decodeRowData(relation pgoutput.Relation, row []pgoutput.Tuple) (string, ma
 
 	for i, tuple := range row {
 		col := relation.Columns[i]
-		decoder := col.Decoder()
-		if err := decoder.DecodeText(nil, tuple.Value); err != nil {
-			return "", nil, fmt.Errorf("error decoding tuple %d: %s", i, err)
+		decoder := getDecoder(col)
+		if err = decoder.DecodeText(nil, tuple.Value); err != nil {
+			return "", nil, fmt.Errorf("error decoding column '%v': %s", col.Name, err)
 		}
 		value := decoder.Get()
 		data[col.Name] = value
@@ -130,7 +121,7 @@ func decodeRowData(relation pgoutput.Relation, row []pgoutput.Tuple) (string, ma
 
 	}
 
-	pk, err := primaryKeyToString(keys)
+	pk, err = primaryKeyToString(keys)
 	if err != nil {
 		return "", nil, fmt.Errorf("error creating PK: %v", err)
 	}
@@ -140,12 +131,12 @@ func decodeRowData(relation pgoutput.Relation, row []pgoutput.Tuple) (string, ma
 
 // CanalEventHandler handles canal events by pushing it to sink.
 type CanalEventHandler struct {
-	sink Sink
+	sink RowSink
 	log  *logrus.Entry
 }
 
 // NewCanalEventHandler creates new CanalEventHandler with given sink.
-func NewCanalEventHandler(s Sink) *CanalEventHandler {
+func NewCanalEventHandler(s RowSink) *CanalEventHandler {
 	return &CanalEventHandler{
 		sink: s,
 		log:  pkglog.NewLogger("canal-event-handler"),

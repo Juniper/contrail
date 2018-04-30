@@ -2,7 +2,9 @@ package db
 
 import (
     "context"
+    "fmt"
 
+    "github.com/gogo/protobuf/proto"
     "github.com/Juniper/contrail/pkg/models"
 )
 
@@ -19,7 +21,7 @@ func (db *DB) initQueryBuilders() {
 }
 
 
-func (db *DB) dump(ctx context.Context, rw RowWriter) error {
+func (db *DB) dump(ctx context.Context, ow ObjectWriter) error {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     list{{ schema.JSONSchema.GoName }}Request := &models.List{{ schema.JSONSchema.GoName }}Request{&models.ListSpec{}}
     list{{ schema.JSONSchema.GoName }}Response, err := db.list{{ schema.JSONSchema.GoName }}(
@@ -31,11 +33,20 @@ func (db *DB) dump(ctx context.Context, rw RowWriter) error {
     }
 
     for _, item := range list{{ schema.JSONSchema.GoName }}Response.{{ schema.JSONSchema.GoName }}s {
-        if err = rw.WriteRow("{{ schema.ID }}", item.GetUUID(), item); err != nil {
+        if err = ow.WriteObject("{{ schema.ID }}", item.GetUUID(), item); err != nil {
             return err
         }
     }
 {% endif%}{% endfor %}
-
     return nil
+}
+
+// ScanRow maps row from database table named schemaID into generated Go struct.
+func (db *DB) ScanRow(schemaID string, rowData map[string]interface{}) (proto.Message, error) {
+    switch schemaID { {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    case "{{ schema.ID }}":
+        return db.scan{{schema.JSONSchema.GoName}}(rowData){% endif%}{% endfor %}
+    }
+
+    return nil, fmt.Errorf("unknown schemaID: %v", schemaID)
 }

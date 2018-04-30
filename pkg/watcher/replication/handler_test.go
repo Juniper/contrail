@@ -38,7 +38,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		initMock     func(*sinkMock)
+		initMock     func(oner)
 		initialRels  relationAddGetter
 		message      pgoutput.Message
 		fails        bool
@@ -82,7 +82,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		},
 		{
 			name: "correct insert message",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Create", "test-resource", "foo", exampleRowData).Return(nil).Once()
 			},
 			initialRels: &relationSet{1: exampleRelation},
@@ -90,7 +90,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		},
 		{
 			name: "correct update message",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Update", "test-resource", "foo", exampleRowData).Return(nil).Once()
 			},
 			initialRels: &relationSet{1: exampleRelation},
@@ -98,7 +98,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		},
 		{
 			name: "correct delete message",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Delete", "test-resource", "foo").Return(nil).Once()
 			},
 			initialRels: &relationSet{1: exampleRelation},
@@ -109,7 +109,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
-			m := newSinkMock()
+			m := newRowSinkMock()
 			if tt.initMock != nil {
 				tt.initMock(m)
 			}
@@ -139,7 +139,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 }
 
 func TestOnRowFailsWhenInvalidActionGiven(t *testing.T) {
-	h := NewCanalEventHandler(&sinkMock{})
+	h := NewCanalEventHandler(&rowSinkMock{})
 	err := h.OnRow(givenRowsEvent("invalid-action"))
 	assert.Error(t, err)
 }
@@ -147,7 +147,7 @@ func TestOnRowFailsWhenInvalidActionGiven(t *testing.T) {
 func TestOnRowFailsWhenInvalidTablePrimaryKeyGiven(t *testing.T) {
 	for _, action := range []string{canal.InsertAction, canal.UpdateAction, canal.DeleteAction} {
 		t.Run(action, func(t *testing.T) {
-			h := NewCanalEventHandler(&sinkMock{})
+			h := NewCanalEventHandler(&rowSinkMock{})
 			e := givenRowsEvent(action)
 			e.Table.PKColumns = []int{}
 
@@ -161,7 +161,7 @@ func TestOnRowFailsWhenInvalidTablePrimaryKeyGiven(t *testing.T) {
 func TestOnRowFailsWhenTableWithMultiColumnPrimaryKeyGiven(t *testing.T) {
 	for _, action := range []string{canal.InsertAction, canal.UpdateAction, canal.DeleteAction} {
 		t.Run(action, func(t *testing.T) {
-			h := NewCanalEventHandler(&sinkMock{})
+			h := NewCanalEventHandler(&rowSinkMock{})
 			e := givenRowsEvent(action)
 			e.Table.PKColumns = []int{0, 1}
 
@@ -175,7 +175,7 @@ func TestOnRowFailsWhenTableWithMultiColumnPrimaryKeyGiven(t *testing.T) {
 func TestOnRowFailsWhenEmptyPrimaryKeyValueGiven(t *testing.T) {
 	for _, action := range []string{canal.InsertAction, canal.UpdateAction, canal.DeleteAction} {
 		t.Run(action, func(t *testing.T) {
-			h := NewCanalEventHandler(&sinkMock{})
+			h := NewCanalEventHandler(&rowSinkMock{})
 			e := givenRowsEvent(action)
 			e.Rows = [][]interface{}{{"", 1337, 1.337}}
 
@@ -200,7 +200,7 @@ func TestOnRowFailsWhenInvalidTableColumnTypeGiven(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprint(test.action, test.columnType), func(t *testing.T) {
-			h := NewCanalEventHandler(&sinkMock{})
+			h := NewCanalEventHandler(&rowSinkMock{})
 			e := givenRowsEvent(test.action)
 			e.Table.Columns = []schema.TableColumn{
 				{Name: "string-property", Type: schema.TYPE_STRING},
@@ -225,14 +225,14 @@ func TestOnRow(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		initMock func(*sinkMock)
+		initMock func(oner)
 		action   string
 		rows     [][]interface{}
 		fails    bool
 	}{
 		{
 			name: "sink create fails",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
 			},
 			action: canal.InsertAction,
@@ -240,7 +240,7 @@ func TestOnRow(t *testing.T) {
 		},
 		{
 			name: "insert 3 rows correctly",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Create", "test-resource", "foo", exampleRowsData[0]).Return(nil).Once()
 				m.On("Create", "test-resource", "bar", exampleRowsData[1]).Return(nil).Once()
 				m.On("Create", "test-resource", "baz", exampleRowsData[2]).Return(nil).Once()
@@ -250,7 +250,7 @@ func TestOnRow(t *testing.T) {
 		},
 		{
 			name: "sink update fails",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
 			},
 			action: canal.UpdateAction,
@@ -258,7 +258,7 @@ func TestOnRow(t *testing.T) {
 		},
 		{
 			name: "update 3 rows correctly",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Update", "test-resource", "foo", exampleRowsData[0]).Return(nil).Once()
 				m.On("Update", "test-resource", "bar", exampleRowsData[1]).Return(nil).Once()
 				m.On("Update", "test-resource", "baz", exampleRowsData[2]).Return(nil).Once()
@@ -268,7 +268,7 @@ func TestOnRow(t *testing.T) {
 		},
 		{
 			name: "sink delete fails",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
 			},
 			action: canal.DeleteAction,
@@ -276,7 +276,7 @@ func TestOnRow(t *testing.T) {
 		},
 		{
 			name: "delete 3 rows correctly",
-			initMock: func(m *sinkMock) {
+			initMock: func(m oner) {
 				m.On("Delete", "test-resource", "foo").Return(nil).Once()
 				m.On("Delete", "test-resource", "bar").Return(nil).Once()
 				m.On("Delete", "test-resource", "baz").Return(nil).Once()
@@ -288,7 +288,7 @@ func TestOnRow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := &sinkMock{}
+			m := &rowSinkMock{}
 			tt.initMock(m)
 			h := NewCanalEventHandler(m)
 
@@ -361,25 +361,25 @@ func TestStringerReturnsHandlerName(t *testing.T) {
 	assert.Equal(t, "canalEventHandler", h.String())
 }
 
-type sinkMock struct {
+type rowSinkMock struct {
 	mock.Mock
 }
 
-func newSinkMock() *sinkMock {
-	return &sinkMock{}
+func newRowSinkMock() *rowSinkMock {
+	return &rowSinkMock{}
 }
 
-func (m *sinkMock) Create(resourceName string, pk string, properties interface{}) error {
+func (m *rowSinkMock) Create(resourceName string, pk string, properties map[string]interface{}) error {
 	args := m.Called(resourceName, pk, properties)
 	return args.Error(0)
 }
 
-func (m *sinkMock) Update(resourceName string, pk string, properties interface{}) error {
+func (m *rowSinkMock) Update(resourceName string, pk string, properties map[string]interface{}) error {
 	args := m.Called(resourceName, pk, properties)
 	return args.Error(0)
 }
 
-func (m *sinkMock) Delete(resourceName string, pk string) error {
+func (m *rowSinkMock) Delete(resourceName string, pk string) error {
 	args := m.Called(resourceName, pk)
 	return args.Error(0)
 }
