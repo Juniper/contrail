@@ -9,6 +9,7 @@ import (
 	"github.com/ExpansiveWorlds/instrumentedsql"
 	"github.com/Juniper/contrail/pkg/serviceif"
 	"github.com/go-sql-driver/mysql"
+	"github.com/gogo/protobuf/proto"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -39,12 +40,15 @@ func (db *DB) SetDB(sqlDB *sql.DB) {
 	db.DB = sqlDB
 }
 
-// RowWriter processes rows
-type RowWriter interface {
-	WriteRow(schemaID, objUUID string, obj interface{}) error
+// Object is generic database model instance.
+type Object = proto.Message
+
+// ObjectWriter processes rows
+type ObjectWriter interface {
+	WriteObject(schemaID, objUUID string, obj Object) error
 }
 
-// Dump selects all data from every table and writes each row to RowWriter.
+// Dump selects all data from every table and writes each row to ObjectWriter.
 //
 // Note that dumping the whole database using SELECT statements may take a lot
 // of time and memory, increasing both server and database load thus it should
@@ -52,12 +56,12 @@ type RowWriter interface {
 //
 // An example application of that function is loading initial database snapshot
 // in Watcher.
-func (db *DB) Dump(ctx context.Context, rw RowWriter) error {
+func (db *DB) Dump(ctx context.Context, ow ObjectWriter) error {
 	return DoInTransaction(
 		ctx,
 		db.DB,
 		func(ctx context.Context) error {
-			return db.dump(ctx, rw)
+			return db.dump(ctx, ow)
 		},
 	)
 }

@@ -100,7 +100,7 @@ func NewService() (*Service, error) {
 	}, nil
 }
 
-func createWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
+func createWatcher(log *logrus.Entry, sink etcd.Sink) (watchCloser, error) {
 	driver := viper.GetString("database.driver")
 	sqlDB, err := db.ConnectDB()
 	if err != nil {
@@ -111,18 +111,20 @@ func createWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error
 	if err != nil {
 		return nil, err
 	}
+	rowSink := replication.NewObjectMappingAdapter(sink, dbService)
+	objectWriter := etcd.NewObjectWriter(sink)
 
 	switch driver {
 	case DriverPostgreSQL:
-		return createPostgreSQLWatcher(log, sink, dbService)
+		return createPostgreSQLWatcher(log, rowSink, dbService, objectWriter)
 	case DriverMySQL:
-		return createMySQLWatcher(log, sink)
+		return createMySQLWatcher(log, rowSink)
 	default:
 		return nil, errors.New("undefined database type")
 	}
 }
 
-func createPostgreSQLWatcher(log *logrus.Entry, sink replication.Sink, dbService *db.DB) (watchCloser, error) {
+func createPostgreSQLWatcher(log *logrus.Entry, sink replication.RowSink, dbService *db.DB, ow db.ObjectWriter) (watchCloser, error) {
 	handler := replication.NewPgoutputEventHandler(sink)
 
 	connConfig := pgx.ConnConfig{
@@ -144,10 +146,10 @@ func createPostgreSQLWatcher(log *logrus.Entry, sink replication.Sink, dbService
 	}
 	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got pgx config")
 
-	return replication.NewPostgresWatcher(conf, dbService, replConn, handler.Handle, handler)
+	return replication.NewPostgresWatcher(conf, dbService, replConn, handler.Handle, ow)
 }
 
-func createMySQLWatcher(log *logrus.Entry, sink replication.Sink) (watchCloser, error) {
+func createMySQLWatcher(log *logrus.Entry, sink replication.RowSink) (watchCloser, error) {
 	conf := canalConfig()
 	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got Canal config")
 
