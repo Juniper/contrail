@@ -5,7 +5,8 @@ docker rm -f \
     some-zookeeper \
     some-rabbit \
     some-keystone \
-    config-api #\
+    config-api \
+    schema-transformer
 #   some-redis \
 #   config-ui
 
@@ -69,6 +70,36 @@ docker run \
     -e KEYSTONE_AUTH_ADMIN_PORT=35357 \
     -e KEYSTONE_AUTH_PUBLIC_PORT=5000 \
     opencontrailnightly/contrail-controller-config-api
+
+docker run \
+    --name schema-transformer \
+    --link some-cassandra:cassandra \
+    --link some-zookeeper:zookeeper \
+    --link some-rabbit \
+    --link some-keystone \
+    --link config-api \
+    -d \
+    -e CONFIG_API_PORT=8082 \
+    -e CONFIG_API_INTROSPECT_PORT=8084 \
+    -e LOG_LEVEL=SYS_NOTICE \
+    -e log_local=true \
+    -e AUTH_MODE=keystone \
+    -e AAA_MODE=cloud-admin \
+    -e CONFIGDB_SERVERS=some-cassandra:9160 \
+    -e ZOOKEEPER_SERVERS=some-zookeeper \
+    -e RABBITMQ_SERVERS=some-rabbit \
+    -e CONFIG_NODES=config-api \
+    -e KEYSTONE_AUTH_ADMIN_USER=admin \
+    -e KEYSTONE_AUTH_ADMIN_TENANT=admin \
+    -e KEYSTONE_AUTH_ADMIN_PASSWORD=contrail123 \
+    -e KEYSTONE_AUTH_USER_DOMAIN_NAME=Default \
+    -e KEYSTONE_AUTH_PROJECT_DOMAIN_NAME=Default \
+    -e KEYSTONE_AUTH_URL_VERSION=/v3 \
+    -e KEYSTONE_AUTH_HOST=some-keystone \
+    -e KEYSTONE_AUTH_PROTO=http \
+    -e KEYSTONE_AUTH_ADMIN_PORT=35357 \
+    -e KEYSTONE_AUTH_PUBLIC_PORT=5000 \
+    opencontrailnightly/contrail-controller-config-schema
 
 # docker run \
 #     --name config-ui \
