@@ -15,17 +15,6 @@ type ContrailService struct {
     serviceif.BaseService
 }
 
-// nolint
-type RESTResource struct {
-    Kind string `json:"kind"`
-    Data interface{} `json:"data"`
-}
-
-// nolint
-type RESTSyncRequest struct {
-    Resources []*RESTResource `json:"resources"`
-}
-
 //RESTSync handle a bluk Create REST service.
 func (service *ContrailService) RESTSync(c echo.Context) error {
     requestData := &RESTSyncRequest{}
