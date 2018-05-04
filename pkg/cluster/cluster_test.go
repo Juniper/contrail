@@ -57,7 +57,7 @@ func runClusterTest(t *testing.T, testInput, expectedOutput string) {
 
 	// Create the cluster and related objects
 	var testScenario apisrv.TestScenario
-	err := apisrv.LoadTestScenario(&testScenario, testInput)
+	err := apisrv.LoadTestScenario(&testScenario, testInput, nil)
 	assert.NoError(t, err, "failed to load cluster test data")
 	apisrv.RunTestScenario(t, &testScenario)
 	// create cluster config

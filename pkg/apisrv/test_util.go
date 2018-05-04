@@ -3,18 +3,17 @@ package apisrv
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	yaml "gopkg.in/yaml.v2"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
@@ -83,20 +82,41 @@ func CreateTestProject(s *Server, testID string) {
 
 //Task has API request and expected response.
 type Task struct {
-	Name    string      `yaml:"name"`
-	Client  string      `yaml:"client"`
-	Request *Request    `yaml:"request"`
-	Expect  interface{} `yaml:"expect"`
+	Name    string      `yaml:"name,omitempty"`
+	Client  string      `yaml:"client,omitempty"`
+	Request *Request    `yaml:"request,omitempty"`
+	Expect  interface{} `yaml:"expect,omitempty"`
 }
 
 //TestScenario has a list of tasks.
 type TestScenario struct {
-	Name        string              `yaml:"name"`
-	Description string              `yaml:"description"`
-	Tables      []string            `yaml:"tables"`
-	Clients     map[string]*Client  `yaml:"clients"`
-	Cleanup     []map[string]string `yaml:"cleanup"`
-	Workflow    []*Task             `yaml:"workflow"`
+	Name        string              `yaml:"name,omitempty"`
+	Description string              `yaml:"description,omitempty"`
+	Tables      []string            `yaml:"tables,omitempty"`
+	Clients     map[string]*Client  `yaml:"clients,omitempty"`
+	Cleanup     []map[string]string `yaml:"cleanup,omitempty"`
+	Workflow    []*Task             `yaml:"workflow,omitempty"`
+}
+
+//LoadTest load testscenario.
+func LoadTest(file string, ctx map[string]interface{}) (*TestScenario, error) {
+	var testScenario TestScenario
+	err := LoadTestScenario(&testScenario, file, ctx)
+	return &testScenario, err
+}
+
+//LoadTestScenario load testscenario.
+func LoadTestScenario(testScenario *TestScenario, file string, ctx map[string]interface{}) error {
+	template, err := pongo2.FromFile(file)
+	if err != nil {
+		return errors.Wrap(err, "failed to read test data template")
+	}
+
+	content, err := template.ExecuteBytes(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to apply test data template")
+	}
+	return yaml.Unmarshal(content, testScenario)
 }
 
 // RunTestScenario runs test from loaded test scenario
@@ -145,38 +165,6 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 			break
 		}
 	}
-}
-
-// GetTestFromTemplate create test input file from template with given context
-func GetTestFromTemplate(t *testing.T, templateFile string, ctx map[string]interface{}) string {
-	// create test data yaml from the template
-	template, err := pongo2.FromFile(templateFile)
-	assert.NoError(t, err, "failed to read test data template")
-
-	content, err := template.ExecuteBytes(ctx)
-	assert.NoError(t, err, "failed to apply test data template")
-
-	fileName := filepath.Base(templateFile)
-	var extension = filepath.Ext(fileName)
-	var prefix = fileName[0 : len(fileName)-len(extension)]
-	tmpfile, err := ioutil.TempFile("", prefix)
-	assert.NoError(t, err, "failed to create test data tempfile")
-
-	_, err = tmpfile.Write(content)
-	assert.NoError(t, err, "failed to write test data to tempfile")
-
-	err = tmpfile.Close()
-	assert.NoError(t, err, "failed to close tempfile")
-	testFile := tmpfile.Name() + ".yml"
-	err = os.Rename(tmpfile.Name(), testFile)
-	assert.NoError(t, err, "failed to rename test data file to yml file")
-	return testFile
-}
-
-// LoadTestScenario loads test data from file
-func LoadTestScenario(testScenario *TestScenario, file string) error {
-	err := common.LoadFile(file, &testScenario)
-	return err
 }
 
 func newWellKnownListener(serve string) net.Listener {

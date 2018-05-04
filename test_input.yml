@@ -1,0 +1,86 @@
+name: Virtual Network Test
+description:  basic virtual network test
+test_data:
+  vn_blue: &vn_blue
+    fq_name: ["default-domain", "admin", "vnblue"]
+    parent_uuid: {{ project_uuid }}
+    parent_type: "project"
+    uuid: {{ blue_uuid }}
+    display_name: blue
+clients:
+  default:
+    id: admin
+    password: contrail123 
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+        domain: 
+          id: default
+workflow:
+- name: get project
+  request:
+    path: /project/{{ project_uuid }}
+    method: GET 
+    expected:
+    - 200
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+- name: list virtual networks with detail
+  request:
+    path: /virtual-networks?detail=true
+    method: GET
+    expected:
+    - 200
+- name: list virtual networks with share
+  request:
+    path: /virtual-networks?shared=true
+    method: GET
+    expected:
+    - 200
+- name: list virtual networks with filters
+  request:
+    path: "/virtual-networks?filters=display_name==blue"
+    method: GET
+    expected:
+    - 200
+- name: list virtual networks with parent_id
+  request:
+    path: "/virtual-networks?parent_id={{ project_uuid }}"
+    method: GET
+    expected:
+    - 200
+- name: list virtual networks with parent_fq_name_str
+  request:
+    path: "/virtual-networks?parent_fq_name_str=default:admin"
+    method: GET
+    expected:
+    - 200
+- name: list virtual networks with page limit
+  request:
+    path: "/virtual-networks?pageLimit=1&detail=true"
+    method: GET
+    expected:
+    - 200
+- name: list virtual networks with obj_uuids
+  request:
+    path: "/virtual-networks?obj_uuids={{ blue_uuid }}&detail=true"
+    method: GET
+    expected:
+    - 200
+- name: delete virtual network
+  request:
+    path: /virtual-network/{{ blue_uuid }}
+    method: DELETE
+    expected:
+    - 200
+  expect: null

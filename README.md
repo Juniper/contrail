@@ -129,6 +129,7 @@ Repository holds source code for following CLI applications:
 - `contrail` - contains API Server, [Agent](doc/agent.md), [Watcher](doc/watcher.md)
 and [API Server command line client][cli] 
 - `contrailcli` - contains [API Server command line client][cli]
+- `contrailschema` - code generator by schema definitions
 - `contrailutil` - contains development utilities
 
 Show possible commands of application:

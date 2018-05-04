@@ -1,4 +1,4 @@
-package contrailutil
+package contrailschema
 
 import (
 	"path/filepath"
@@ -16,7 +16,7 @@ var schemaOutputPath string
 var openapiOutputPath string
 
 func init() {
-	ContrailUtil.AddCommand(generateCmd)
+	ContrailSchema.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&schemasDir, "schemas", "s", "", "Schema Directory")
 	generateCmd.Flags().StringVarP(&templateConfPath, "templates", "t", "", "Template Configuration")
 	generateCmd.Flags().StringVarP(&schemaOutputPath, "schema-output", "", "", "Schema Output path")

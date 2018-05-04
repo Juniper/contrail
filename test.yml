@@ -1,0 +1,534 @@
+name: Virtual Network Test
+description: basic virtual network test
+clients:
+  default:
+    id: admin
+    password: contrail123
+    authurl: http://localhost:5000/v3
+    endpoint: http://localhost:8082
+    debug: false
+    insecure: true
+    domain: default
+    scope:
+      domain: null
+      project:
+        domain:
+          id: default
+          name: ""
+        id: ""
+        name: admin
+workflow:
+- name: get project
+  request:
+    method: GET
+    path: /project/c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+    expected:
+    - 200
+  expect:
+    project:
+      application_policy_set_refs:
+      - attr: null
+        href: http://localhost:8082/application-policy-set/e66014c7-ba57-42a1-a0d8-681f59054faa
+        to:
+        - default-domain
+        - admin
+        - default-application-policy-set
+        uuid: e66014c7-ba57-42a1-a0d8-681f59054faa
+      application_policy_sets:
+      - href: http://localhost:8082/application-policy-set/e66014c7-ba57-42a1-a0d8-681f59054faa
+        to:
+        - default-domain
+        - admin
+        - default-application-policy-set
+        uuid: e66014c7-ba57-42a1-a0d8-681f59054faa
+      display_name: admin
+      fq_name:
+      - default-domain
+      - admin
+      href: http://localhost:8082/project/c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+      id_perms:
+        created: 2018-05-02T20:44:14.868566
+        creator: null
+        description: null
+        enable: true
+        last_modified: 2018-05-02T20:45:19.645179
+        permissions:
+          group: admin
+          group_access: 7
+          other_access: 7
+          owner: admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: 1.1332902e+19
+          uuid_mslong: 1.4380275e+19
+      name: admin
+      parent_href: http://localhost:8082/domain/4a2c33ac-0b7d-41d3-aeab-5355b68b2080
+      parent_type: domain
+      parent_uuid: 4a2c33ac-0b7d-41d3-aeab-5355b68b2080
+      perms2:
+        global_access: 0
+        owner: c790ffb2d5524c2f9d468dbff75cbd4d
+        owner_access: 7
+        share: []
+      security_groups:
+      - href: http://localhost:8082/security-group/a3d81663-f1fd-4138-8478-62a34e40d4b3
+        to:
+        - default-domain
+        - admin
+        - default
+        uuid: a3d81663-f1fd-4138-8478-62a34e40d4b3
+      uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+- name: create virtual network blue
+  request:
+    method: POST
+    path: /virtual-networks
+    expected:
+    - 200
+    data:
+      virtual-network:
+        display_name: blue
+        fq_name:
+        - default-domain
+        - admin
+        - vnblue
+        parent_type: project
+        parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+        uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+  expect:
+    virtual-network:
+      fq_name:
+      - default-domain
+      - admin
+      - vnblue
+      href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+      name: vnblue
+      parent_href: http://localhost:8082/project/c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+      parent_type: project
+      parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+      uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+- name: list virtual networks with detail
+  request:
+    method: GET
+    path: /virtual-networks?detail=true
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - virtual-network:
+        fabric_snat: false
+        flood_unknown_unicast: false
+        fq_name:
+        - default-domain
+        - default-project
+        - ip-fabric
+        href: http://localhost:8082/virtual-network/b144ddb7-fd6e-4eb0-b7c8-d35225325382
+        id_perms:
+          created: 2018-05-02T20:42:15.578923
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:42:15.578923
+          permissions:
+            group: cloud-admin-group
+            group_access: 7
+            other_access: 7
+            owner: cloud-admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 1.3243067e+19
+            uuid_mslong: 1.2773579e+19
+        is_provider_network: true
+        layer2_control_word: false
+        mac_aging_time: 300
+        mac_learning_enabled: false
+        name: ip-fabric
+        parent_type: project
+        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
+        pbb_etree_enable: false
+        pbb_evpn_enable: false
+        perms2:
+          global_access: 0
+          owner: cloud-admin
+          owner_access: 7
+          share: []
+        port_security_enabled: true
+        uuid: b144ddb7-fd6e-4eb0-b7c8-d35225325382
+        virtual_network_network_id: 2
+    - virtual-network:
+        fabric_snat: false
+        flood_unknown_unicast: false
+        fq_name:
+        - default-domain
+        - default-project
+        - __link_local__
+        href: http://localhost:8082/virtual-network/1cdad896-9fe9-43ff-b612-661dfcf39ab6
+        id_perms:
+          created: 2018-05-02T20:42:15.638710
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:42:15.638710
+          permissions:
+            group: cloud-admin-group
+            group_access: 7
+            other_access: 7
+            owner: cloud-admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 1.3119661e+19
+            uuid_mslong: 2.0792124e+18
+        is_provider_network: false
+        layer2_control_word: false
+        mac_aging_time: 300
+        mac_learning_enabled: false
+        name: __link_local__
+        parent_type: project
+        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
+        pbb_etree_enable: false
+        pbb_evpn_enable: false
+        perms2:
+          global_access: 0
+          owner: cloud-admin
+          owner_access: 7
+          share: []
+        port_security_enabled: true
+        uuid: 1cdad896-9fe9-43ff-b612-661dfcf39ab6
+        virtual_network_network_id: 3
+    - virtual-network:
+        fq_name:
+        - default-domain
+        - default-project
+        - default-virtual-network
+        href: http://localhost:8082/virtual-network/f8584f6d-ef80-47bb-8955-3fcca9249074
+        id_perms:
+          created: 2018-05-02T20:42:15.502257
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:42:15.502257
+          permissions:
+            group: cloud-admin-group
+            group_access: 7
+            other_access: 7
+            owner: cloud-admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 9.895886e+18
+            uuid_mslong: 1.789514e+19
+        name: default-virtual-network
+        parent_type: project
+        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
+        perms2:
+          global_access: 0
+          owner: cloud-admin
+          owner_access: 7
+          share: []
+        uuid: f8584f6d-ef80-47bb-8955-3fcca9249074
+        virtual_network_network_id: 1
+    - virtual-network:
+        display_name: blue
+        fq_name:
+        - default-domain
+        - admin
+        - vnblue
+        href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+        id_perms:
+          created: 2018-05-02T20:45:19.676824
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:45:19.676824
+          permissions:
+            group: admin
+            group_access: 7
+            other_access: 7
+            owner: admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 1.0461782e+19
+            uuid_mslong: 9.479994e+17
+        name: vnblue
+        parent_type: project
+        parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+        perms2:
+          global_access: 0
+          owner: c790ffb2d5524c2f9d468dbff75cbd4d
+          owner_access: 7
+          share: []
+        uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+        virtual_network_network_id: 4
+- name: list virtual networks with share
+  request:
+    method: GET
+    path: /virtual-networks?shared=true
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - fq_name:
+      - default-domain
+      - admin
+      - vnblue
+      href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+      uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+    - fq_name:
+      - default-domain
+      - default-project
+      - ip-fabric
+      href: http://localhost:8082/virtual-network/b144ddb7-fd6e-4eb0-b7c8-d35225325382
+      uuid: b144ddb7-fd6e-4eb0-b7c8-d35225325382
+    - fq_name:
+      - default-domain
+      - default-project
+      - __link_local__
+      href: http://localhost:8082/virtual-network/1cdad896-9fe9-43ff-b612-661dfcf39ab6
+      uuid: 1cdad896-9fe9-43ff-b612-661dfcf39ab6
+    - fq_name:
+      - default-domain
+      - default-project
+      - default-virtual-network
+      href: http://localhost:8082/virtual-network/f8584f6d-ef80-47bb-8955-3fcca9249074
+      uuid: f8584f6d-ef80-47bb-8955-3fcca9249074
+- name: list virtual networks with filters
+  request:
+    method: GET
+    path: /virtual-networks?filters=display_name==blue
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - fq_name:
+      - default-domain
+      - admin
+      - vnblue
+      href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+      uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+- name: list virtual networks with parent_id
+  request:
+    method: GET
+    path: /virtual-networks?parent_id=c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - fq_name:
+      - default-domain
+      - admin
+      - vnblue
+      href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+      uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+- name: list virtual networks with parent_fq_name_str
+  request:
+    method: GET
+    path: /virtual-networks?parent_fq_name_str=default:admin
+    expected:
+    - 200
+  expect:
+    virtual-networks: []
+- name: list virtual networks with page limit
+  request:
+    method: GET
+    path: /virtual-networks?pageLimit=1&detail=true
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - virtual-network:
+        display_name: blue
+        fq_name:
+        - default-domain
+        - admin
+        - vnblue
+        href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+        id_perms:
+          created: 2018-05-02T20:45:19.676824
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:45:19.676824
+          permissions:
+            group: admin
+            group_access: 7
+            other_access: 7
+            owner: admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 1.0461782e+19
+            uuid_mslong: 9.479994e+17
+        name: vnblue
+        parent_type: project
+        parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+        perms2:
+          global_access: 0
+          owner: c790ffb2d5524c2f9d468dbff75cbd4d
+          owner_access: 7
+          share: []
+        uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+        virtual_network_network_id: 4
+    - virtual-network:
+        fabric_snat: false
+        flood_unknown_unicast: false
+        fq_name:
+        - default-domain
+        - default-project
+        - ip-fabric
+        href: http://localhost:8082/virtual-network/b144ddb7-fd6e-4eb0-b7c8-d35225325382
+        id_perms:
+          created: 2018-05-02T20:42:15.578923
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:42:15.578923
+          permissions:
+            group: cloud-admin-group
+            group_access: 7
+            other_access: 7
+            owner: cloud-admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 1.3243067e+19
+            uuid_mslong: 1.2773579e+19
+        is_provider_network: true
+        layer2_control_word: false
+        mac_aging_time: 300
+        mac_learning_enabled: false
+        name: ip-fabric
+        parent_type: project
+        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
+        pbb_etree_enable: false
+        pbb_evpn_enable: false
+        perms2:
+          global_access: 0
+          owner: cloud-admin
+          owner_access: 7
+          share: []
+        port_security_enabled: true
+        uuid: b144ddb7-fd6e-4eb0-b7c8-d35225325382
+        virtual_network_network_id: 2
+    - virtual-network:
+        fabric_snat: false
+        flood_unknown_unicast: false
+        fq_name:
+        - default-domain
+        - default-project
+        - __link_local__
+        href: http://localhost:8082/virtual-network/1cdad896-9fe9-43ff-b612-661dfcf39ab6
+        id_perms:
+          created: 2018-05-02T20:42:15.638710
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:42:15.638710
+          permissions:
+            group: cloud-admin-group
+            group_access: 7
+            other_access: 7
+            owner: cloud-admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 1.3119661e+19
+            uuid_mslong: 2.0792124e+18
+        is_provider_network: false
+        layer2_control_word: false
+        mac_aging_time: 300
+        mac_learning_enabled: false
+        name: __link_local__
+        parent_type: project
+        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
+        pbb_etree_enable: false
+        pbb_evpn_enable: false
+        perms2:
+          global_access: 0
+          owner: cloud-admin
+          owner_access: 7
+          share: []
+        port_security_enabled: true
+        uuid: 1cdad896-9fe9-43ff-b612-661dfcf39ab6
+        virtual_network_network_id: 3
+    - virtual-network:
+        fq_name:
+        - default-domain
+        - default-project
+        - default-virtual-network
+        href: http://localhost:8082/virtual-network/f8584f6d-ef80-47bb-8955-3fcca9249074
+        id_perms:
+          created: 2018-05-02T20:42:15.502257
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:42:15.502257
+          permissions:
+            group: cloud-admin-group
+            group_access: 7
+            other_access: 7
+            owner: cloud-admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 9.895886e+18
+            uuid_mslong: 1.789514e+19
+        name: default-virtual-network
+        parent_type: project
+        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
+        perms2:
+          global_access: 0
+          owner: cloud-admin
+          owner_access: 7
+          share: []
+        uuid: f8584f6d-ef80-47bb-8955-3fcca9249074
+        virtual_network_network_id: 1
+- name: list virtual networks with obj_uuids
+  request:
+    method: GET
+    path: /virtual-networks?obj_uuids=0d27f876-4d8e-11e8-912f-b7477ee7d4a0&detail=true
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - virtual-network:
+        display_name: blue
+        fq_name:
+        - default-domain
+        - admin
+        - vnblue
+        href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+        id_perms:
+          created: 2018-05-02T20:45:19.676824
+          creator: null
+          description: null
+          enable: true
+          last_modified: 2018-05-02T20:45:19.676824
+          permissions:
+            group: admin
+            group_access: 7
+            other_access: 7
+            owner: admin
+            owner_access: 7
+          user_visible: true
+          uuid:
+            uuid_lslong: 1.0461782e+19
+            uuid_mslong: 9.479994e+17
+        name: vnblue
+        parent_type: project
+        parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+        perms2:
+          global_access: 0
+          owner: c790ffb2d5524c2f9d468dbff75cbd4d
+          owner_access: 7
+          share: []
+        uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+        virtual_network_network_id: 4
+- name: delete virtual network
+  request:
+    method: DELETE
+    path: /virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
+    expected:
+    - 200

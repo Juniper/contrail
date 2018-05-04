@@ -40,14 +40,7 @@ func RunTestForDB(m *testing.M) {
 }
 
 func RunTest(t *testing.T, file string) {
-	testScenario, err := LoadTest(file)
+	testScenario, err := LoadTest(file, nil)
 	assert.NoError(t, err, "failed to load test data")
 	RunTestScenario(t, testScenario)
-}
-
-func LoadTest(file string) (*TestScenario, error) {
-	var testScenario TestScenario
-	err := LoadTestScenario(&testScenario, file)
-	return &testScenario, err
-
 }

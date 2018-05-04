@@ -1,0 +1,29 @@
+virtual_network:
+  vn_blue_test_sync:
+    annotations: {}
+    display_name: blue2
+    ecmp_hashing_include_fields: {}
+    export_route_target_list: {}
+    fq_name:
+    - default
+    - admin_test_sync
+    - vn_blue_test_sync
+    id_perms:
+      permissions: {}
+      uuid: {}
+    import_route_target_list: {}
+    mac_limit_control: {}
+    mac_move_control: {}
+    parent_type: project
+    parent_uuid: admin_project_uuid_test_sync
+    perms2:
+      owner: TestSync
+    provider_properties: {}
+    route_target_list:
+      route_target:
+      - 100:200
+    schema_id: virtual_network
+    uuid: vn_blue_test_sync
+    virtual_network_fat_flow_protocols: {}
+    virtual_network_network_id: 50
+    virtual_network_properties: {}

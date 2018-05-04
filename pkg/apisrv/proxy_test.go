@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
@@ -17,9 +16,10 @@ import (
 )
 
 const (
-	key             = "name"
-	privatePortList = "private_port_list"
-	publicPortList  = "public_port_list"
+	key              = "name"
+	privatePortList  = "private_port_list"
+	publicPortList   = "public_port_list"
+	testEndpointFile = "./test_data/test_endpoint.tmpl"
 )
 
 type mockPortsResponse struct {
@@ -39,7 +39,7 @@ func mockServer(routes map[string]interface{}) *httptest.Server {
 }
 
 func runEndpointTest(t *testing.T, clusterName string,
-	extraTasks bool) (string, *TestScenario, *httptest.Server, *httptest.Server) {
+	extraTasks bool) (*TestScenario, *httptest.Server, *httptest.Server) {
 	routes := map[string]interface{}{
 		"/ports": echo.HandlerFunc(func(c echo.Context) error {
 			return c.JSON(http.StatusOK,
@@ -63,14 +63,12 @@ func runEndpointTest(t *testing.T, clusterName string,
 		"public_url":    neutronPublic.URL,
 	}
 
-	testFile := GetTestFromTemplate(t, "./test_data/test_endpoint.tmpl", context)
-
 	var testScenario TestScenario
-	err := LoadTestScenario(&testScenario, testFile)
+	err := LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load test data")
 	RunTestScenario(t, &testScenario)
 
-	return testFile, &testScenario, neutronPublic, neutronPrivate
+	return &testScenario, neutronPublic, neutronPrivate
 }
 
 func verifyProxy(t *testing.T, testScenario *TestScenario, url string,
@@ -107,10 +105,9 @@ func verifyKeystoneEndpoint(testScenario *TestScenario) error {
 func TestProxyEndpoint(t *testing.T) {
 	// Create a cluster and its neutron endpoint
 	clusterAName := "clusterA"
-	testFile, testScenario, neutronPublic, neutronPrivate := runEndpointTest(
+	testScenario, neutronPublic, neutronPrivate := runEndpointTest(
 		t, clusterAName, true)
 	// remove tempfile after test
-	defer os.Remove(testFile) // nolint: errcheck
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 
@@ -131,10 +128,9 @@ func TestProxyEndpoint(t *testing.T) {
 
 	// create one more cluster/neutron endpoint for new cluster
 	clusterBName := "clusterB"
-	testFile, testScenario, neutronPublic, neutronPrivate = runEndpointTest(
+	testScenario, neutronPublic, neutronPrivate = runEndpointTest(
 		t, clusterBName, false)
 	// remove tempfile after test
-	defer os.Remove(testFile) // nolint: errcheck
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 	// Wait a sec for the dynamic proxy to be created/updated
@@ -186,12 +182,8 @@ func TestKeystoneEndpoint(t *testing.T) {
 		"public_url":    ksPublic.URL,
 	}
 
-	testFile := GetTestFromTemplate(t, "./test_data/test_endpoint.tmpl", context)
-	// remove tempfile after test
-	defer os.Remove(testFile) // nolint: errcheck
-
 	var testScenario TestScenario
-	err := LoadTestScenario(&testScenario, testFile)
+	err := LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load endpoint create test data")
 	RunTestScenario(t, &testScenario)
 
@@ -229,7 +221,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 		"failed to validate token with local keystone after endpoint delete")
 
 	// Recreate endpoint
-	err = LoadTestScenario(&testScenario, testFile)
+	err = LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load endpoint create test data")
 	RunTestScenario(t, &testScenario)
 	// Wait a sec for the dynamic proxy to be created

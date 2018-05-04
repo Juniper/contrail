@@ -33,10 +33,10 @@ type Client struct {
 // Request represents API request to the server
 type Request struct {
 	Method   string      `yaml:"method"`
-	Path     string      `yaml:"path"`
-	Expected []int       `yaml:"expected"`
-	Data     interface{} `yaml:"data"`
-	Output   interface{}
+	Path     string      `yaml:"path,omitempty"`
+	Expected []int       `yaml:"expected,omitempty"`
+	Data     interface{} `yaml:"data,omitempty"`
+	Output   interface{} `yaml:"output,omitempty"`
 }
 
 // NewClient makes api srv client.
