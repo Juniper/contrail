@@ -3,6 +3,7 @@ package cluster
 import (
 	"bytes"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +14,15 @@ import (
 	"github.com/mattn/go-shellwords"
 	"github.com/siddontang/go/log"
 )
+
+const (
+	enable  = "yes"
+	disable = "no"
+)
+
+type openstackVariables struct {
+	enableHaproxy string
+}
 
 type ansibleProvisioner struct {
 	provisionCommon
@@ -126,11 +136,54 @@ func (a *ansibleProvisioner) createInventory() error {
 	return a.createInstancesFile(a.getInstanceFile())
 }
 
+func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
+	openstackVars := openstackVariables{}
+	cluster := a.clusterData.clusterInfo
+	// Enable haproxy when multiple openstack control nodes present in cluster
+	if len(cluster.OpenstackControlNodes) > 1 {
+		openstackVars.enableHaproxy = enable
+		return &openstackVars
+	}
+	// get openstack control node ip when single node is present
+	if cluster.ControlDataNetworkList != "" {
+		openstackManagementIP := ""
+		for _, node := range a.clusterData.nodesInfo {
+			if node.UUID == cluster.OpenstackControlNodes[0].NodeRefs[0].UUID {
+				openstackManagementIP = node.IPAddress
+				break
+			}
+		}
+		openstackIP := net.ParseIP(openstackManagementIP)
+		if openstackIP == nil {
+			openstackVars.enableHaproxy = disable
+			return &openstackVars
+		}
+		controlDataNetworks := strings.Split(cluster.ControlDataNetworkList, ",")
+		for _, controlDataNetwork := range controlDataNetworks {
+			_, network, _ := net.ParseCIDR(controlDataNetwork)
+			// do not enable haproxy if openstack ip is in control data net list
+			// management network is specifed as control data network as well
+			// to make use of the ansible-deployers interface discovery feature.
+			if network.Contains(openstackIP) {
+				openstackVars.enableHaproxy = disable
+				return &openstackVars
+			}
+		}
+		// enable haproxy if openstack ip is not in control data net list
+		openstackVars.enableHaproxy = enable
+		return &openstackVars
+	}
+	// do not enable haproxy on single openstack control node and single interface setups
+	openstackVars.enableHaproxy = disable
+	return &openstackVars
+}
+
 func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	a.log.Info("Creating instance.yml input file for ansible deployer")
 	context := pongo2.Context{
-		"cluster": a.clusterData.clusterInfo,
-		"nodes":   a.clusterData.nodesInfo,
+		"cluster":   a.clusterData.clusterInfo,
+		"nodes":     a.clusterData.nodesInfo,
+		"openstack": a.getOpenstackDerivedVars(),
 	}
 	content, err := a.applyTemplate(a.getInstanceTemplate(), context)
 	if err != nil {
