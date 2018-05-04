@@ -7,17 +7,22 @@ import (
 	"os"
 	"testing"
 
+	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/common"
-	log "github.com/sirupsen/logrus"
+	//"github.com/Juniper/contrail/pkg/common"
+	//log "github.com/sirupsen/logrus"
 )
 
 const (
 	clusterID = "test_cluster_uuid"
 )
+
+func TestMain(m *testing.M) {
+	apisrv.SetupAndRunTest(m)
+}
 
 func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario) bool {
 	for _, client := range testScenario.Clients {
@@ -47,7 +52,8 @@ func compareInstances(t *testing.T, generated, expected string) bool {
 	return bytes.Equal(generatedInstances, expectedInstances)
 }
 
-func runClusterTest(t *testing.T, testInput, expectedOutput string) {
+func runClusterTest(t *testing.T, testInput, expectedOutput string,
+	context map[string]interface{}) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := apisrv.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
@@ -56,8 +62,10 @@ func runClusterTest(t *testing.T, testInput, expectedOutput string) {
 	defer ksPrivate.Close()
 
 	// Create the cluster and related objects
+	testFile := apisrv.GetTestFromTemplate(t, testInput, context)
+	defer os.Remove(testFile) // nolint: errcheck
 	var testScenario apisrv.TestScenario
-	err := apisrv.LoadTestScenario(&testScenario, testInput)
+	err := apisrv.LoadTestScenario(&testScenario, testFile)
 	assert.NoError(t, err, "failed to load cluster test data")
 	apisrv.RunTestScenario(t, &testScenario)
 	// create cluster config
@@ -81,7 +89,8 @@ func runClusterTest(t *testing.T, testInput, expectedOutput string) {
 	assert.NoError(t, err, "failed to manage(create) cluster")
 	// compare the instances.yml with expected
 	generatedFile := defaultWorkRoot + "/" + clusterID + "/instances.yml"
-	assert.True(t, compareInstances(t, generatedFile, expectedOutput))
+	assert.True(t, compareInstances(t, generatedFile, expectedOutput),
+		"Instance file created during cluster create is not as expected")
 	// delete cluster
 	config.Action = "delete"
 	clusterManager, err = NewCluster(config)
@@ -89,27 +98,36 @@ func runClusterTest(t *testing.T, testInput, expectedOutput string) {
 	err = clusterManager.Manage()
 	assert.NoError(t, err, "failed to manage(delete) cluster")
 	// make sure cluster is removed
-	assert.True(t, verifyClusterDeleted(t, &testScenario))
+	assert.True(t, verifyClusterDeleted(t, &testScenario),
+		"Instance file is not deleted during cluster delete")
 }
 
-func TestCluster(t *testing.T) {
-	err := common.InitConfig()
-	if err != nil {
-		log.Fatal(err)
+func TestAllInOneCluster(t *testing.T) {
+	context := pongo2.Context{
+		"control_data_network_list": "",
 	}
-	common.SetLogLevel()
-	dbConfig := viper.GetStringMap("test_database")
-	for _, iConfig := range dbConfig {
-		config := common.InterfaceToInterfaceMap(iConfig)
-		viper.Set("database.type", config["type"])
-		viper.Set("database.connection", config["connection"])
-		viper.Set("database.dialect", config["dialect"])
+	runClusterTest(t,
+		"./test_data/test_all_in_one_cluster.tmpl",
+		"./test_data/expected_all_in_one_instances.yml",
+		context)
+}
 
-		apisrv.APIServer, apisrv.TestServer = apisrv.LaunchTestAPIServer()
-		defer apisrv.TestServer.Close()
-		defer apisrv.LogFatalIfErr(apisrv.APIServer.Close)
-		runClusterTest(t,
-			"./test_data/test_all_in_one_cluster.yml",
-			"./test_data/expected_all_in_one_instances.yml")
+func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
+	context := pongo2.Context{
+		"control_data_network_list": "127.0.0.0/24",
 	}
+	runClusterTest(t,
+		"./test_data/test_all_in_one_cluster.tmpl",
+		"./test_data/expected_same_mgmt_ctrldata_net_instances.yml",
+		context)
+}
+
+func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
+	context := pongo2.Context{
+		"control_data_network_list": "10.1.0.0/24",
+	}
+	runClusterTest(t,
+		"./test_data/test_all_in_one_cluster.tmpl",
+		"./test_data/expected_multi_interface_instances.yml",
+		context)
 }
