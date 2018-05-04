@@ -11,8 +11,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/db"
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/sync/etcd"
 	"github.com/Juniper/contrail/pkg/sync/replication"
+	"github.com/Juniper/contrail/pkg/sync/sink"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jackc/pgx"
 	_ "github.com/jackc/pgx/stdlib" // allows using of pgx sql driver
@@ -85,10 +85,10 @@ func NewService() (*Service, error) {
 	}
 
 	// Etcd sink
-	sink := etcd.NewJSONSink(clientv3.NewKV(etcdClient))
+	s := sink.NewETCDSink(etcdClient, &sink.JSONCodec{})
 
 	// Replication
-	watcher, err := createWatcher(log, sink)
+	watcher, err := createWatcher(log, s)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func NewService() (*Service, error) {
 	}, nil
 }
 
-func createWatcher(log *logrus.Entry, sink etcd.Sink) (watchCloser, error) {
+func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
 	driver := viper.GetString("database.driver")
 	sqlDB, err := db.ConnectDB()
 	if err != nil {
@@ -111,8 +111,8 @@ func createWatcher(log *logrus.Entry, sink etcd.Sink) (watchCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	rowSink := replication.NewObjectMappingAdapter(sink, dbService)
-	objectWriter := etcd.NewObjectWriter(sink)
+	rowSink := replication.NewObjectMappingAdapter(s, dbService)
+	objectWriter := sink.NewObjectWriter(s)
 
 	switch driver {
 	case DriverPostgreSQL:
