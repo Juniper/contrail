@@ -91,12 +91,15 @@ func verifyProxy(t *testing.T, testScenario *TestScenario, url string,
 	return true
 }
 
-func verifyKeystoneEndpoint(testScenario *TestScenario) error {
+func verifyKeystoneEndpoint(testScenario *TestScenario, testInvalidUser bool) error {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
 		_, err := client.Read("/keystone/v3/auth/tokens", &response)
 		if err != nil {
 			return err
+		}
+		if !testInvalidUser {
+			break
 		}
 	}
 	return nil
@@ -196,7 +199,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "client failed to login remote keystone")
 	}
 	// verify auth (remote keystone)
-	err = verifyKeystoneEndpoint(&testScenario)
+	err = verifyKeystoneEndpoint(&testScenario, false)
 	assert.NoError(t, err,
 		"failed to validate token with remote keystone")
 
@@ -216,11 +219,17 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "client failed to login local keystone")
 	}
 	// verify auth (local keystone)
-	err = verifyKeystoneEndpoint(&testScenario)
+	err = verifyKeystoneEndpoint(&testScenario, false)
 	assert.NoError(t, err,
 		"failed to validate token with local keystone after endpoint delete")
 
 	// Recreate endpoint
+	context = pongo2.Context{
+		"extra_tasks":   true,
+		"cluster_name":  clusterName,
+		"endpoint_name": "keystone",
+		"public_url":    ksPublic.URL,
+	}
 	err = LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load endpoint create test data")
 	RunTestScenario(t, &testScenario)
@@ -232,7 +241,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "client failed to login remote keystone")
 	}
 	// verify auth (remote keystone)
-	err = verifyKeystoneEndpoint(&testScenario)
+	err = verifyKeystoneEndpoint(&testScenario, true)
 	assert.NoError(t, err,
 		"failed to validate token with remote keystone after endpoint re-create")
 

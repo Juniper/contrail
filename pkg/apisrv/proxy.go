@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -97,6 +98,9 @@ func (p *proxyService) getReverseProxy(urlPath string) (
 	}
 	proxyPrefix := p.getProxyPrefixFromURL(urlPath, scope)
 	proxyEndpoint := p.EndpointStore.Read(proxyPrefix)
+	if proxyEndpoint == nil {
+		log.Errorf("Endpoint targets not found for %s", proxyPrefix)
+	}
 	target := proxyEndpoint.Next(scope)
 	if target == "" {
 		return strings.TrimSuffix(proxyPrefix, public), nil
@@ -138,14 +142,14 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 	p.EndpointStore.Data.Range(func(prefix, proxy interface{}) bool {
 		s, ok := proxy.(*apicommon.TargetStore)
 		if !ok {
-			log.Fatalf("Unable to Read cluster(%s)'s proxy data from in-memory store",
+			log.Errorf("Unable to Read cluster(%s)'s proxy data from in-memory store",
 				prefix)
 			return true
 		}
 		s.Data.Range(func(id, endpoint interface{}) bool {
 			_, ok := endpoint.(*models.Endpoint)
 			if !ok {
-				log.Fatalf("Unable to Read endpoint(%s) data from in-memory store",
+				log.Errorf("Unable to Read endpoint(%s) data from in-memory store",
 					id)
 				return true
 			}
@@ -162,6 +166,9 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 }
 
 func (p *proxyService) getProxyPrefix(endpoint *models.Endpoint, scope string) (proxyPrefix string) {
+	if endpoint.ParentUUID == "" {
+		log.Errorf("Parent uuid missing for endpoint %s(%s)", endpoint.Name, endpoint.UUID)
+	}
 	prefixes := []string{"", p.group, endpoint.ParentUUID, endpoint.Name, scope}
 	return strings.Join(prefixes, pathSep)
 }
@@ -169,16 +176,16 @@ func (p *proxyService) getProxyPrefix(endpoint *models.Endpoint, scope string) (
 func (p *proxyService) initProxyTargetStore(endpoint *models.Endpoint) {
 	if endpoint.PublicURL != "" {
 		proxyPrefix := p.getProxyPrefix(endpoint, public)
-		_, ok := p.EndpointStore.Data.Load(proxyPrefix)
-		if !ok {
-			p.EndpointStore.Data.Store(proxyPrefix, apicommon.MakeTargetStore())
+		targetStore := p.EndpointStore.Read(proxyPrefix)
+		if targetStore == nil {
+			p.EndpointStore.Write(proxyPrefix, apicommon.MakeTargetStore())
 		}
 	}
 	if endpoint.PrivateURL != "" {
 		proxyPrefix := p.getProxyPrefix(endpoint, private)
-		_, ok := p.EndpointStore.Data.Load(proxyPrefix)
-		if !ok {
-			p.EndpointStore.Data.Store(proxyPrefix, apicommon.MakeTargetStore())
+		targetStore := p.EndpointStore.Read(proxyPrefix)
+		if targetStore == nil {
+			p.EndpointStore.Write(proxyPrefix, apicommon.MakeTargetStore())
 		}
 	}
 }
@@ -187,11 +194,11 @@ func (p *proxyService) manageProxyEndpoint(endpoint *models.Endpoint, scope stri
 	proxyPrefix := p.getProxyPrefix(endpoint, scope)
 	s := p.EndpointStore.Read(proxyPrefix)
 	if s == nil {
-		log.Fatalf("endpoint store for %s is not found in-memory store",
+		log.Errorf("endpoint store for %s is not found in-memory store",
 			proxyPrefix)
 	}
 	e := s.Read(endpoint.UUID)
-	if e != endpoint {
+	if !reflect.DeepEqual(e, endpoint) {
 		// proxy endpoint not in memory store or
 		// proxy endpoint updated
 		s.Write(endpoint.UUID, endpoint)

@@ -41,6 +41,7 @@ test_data:
     openstack_release: ocata-xyz
     ntp_server: 10.1.1.100
     encap_priority: VXLANMPLSoUDPMPLSoGRE
+    {% if control_data_network_list %}control_data_network_list: {{ control_data_network_list }}{%endif%}
   contrail_config_nodes: &contrail_config_nodes
     fq_name: ["default", "admin", "contrail_config_nodes"]
     uuid: contrail_config_nodes_uuid
