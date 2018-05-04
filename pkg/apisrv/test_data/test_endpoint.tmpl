@@ -22,7 +22,7 @@ test_data:
     parent_type: contrail-cluster
     parent_uuid: {{ cluster_name }}_uuid
     name: {{ endpoint_name }}
-    private_url: {{private_url}}
+    {%if private_url %}private_url: {{private_url}}{%endif%}
     public_url: {{public_url}}
 clients:
   default:
