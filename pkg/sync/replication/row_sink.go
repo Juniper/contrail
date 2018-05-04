@@ -3,7 +3,7 @@ package replication
 import (
 	"fmt"
 
-	"github.com/Juniper/contrail/pkg/sync/etcd"
+	"github.com/Juniper/contrail/pkg/sync/sink"
 	"github.com/gogo/protobuf/proto"
 )
 
@@ -19,13 +19,13 @@ type rowScanner interface {
 }
 
 type objectMappingAdapter struct {
-	etcd.Sink
+	sink.Sink
 	rs rowScanner
 }
 
 // NewObjectMappingAdapter creates adapter that maps row data into objects using
 // provided rowScanner and pushes that object to sink.
-func NewObjectMappingAdapter(s etcd.Sink, rs rowScanner) RowSink {
+func NewObjectMappingAdapter(s sink.Sink, rs rowScanner) RowSink {
 	return &objectMappingAdapter{Sink: s, rs: rs}
 }
 

@@ -3,6 +3,7 @@ package replication
 import (
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -91,12 +92,12 @@ type sinkMock struct {
 	mock.Mock
 }
 
-func (s *sinkMock) Create(resourceName string, pk string, obj interface{}) error {
+func (s *sinkMock) Create(resourceName string, pk string, obj db.Object) error {
 	args := s.MethodCalled("Create", resourceName, pk, obj)
 	return args.Error(0)
 }
 
-func (s *sinkMock) Update(resourceName string, pk string, obj interface{}) error {
+func (s *sinkMock) Update(resourceName string, pk string, obj db.Object) error {
 	args := s.MethodCalled("Update", resourceName, pk, obj)
 	return args.Error(0)
 }
