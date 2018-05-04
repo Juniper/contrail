@@ -2,6 +2,7 @@ package keystone
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"net"
 	"net/http"
 
@@ -57,32 +58,45 @@ func (k *KeystoneClient) NewAuth() *keystone.Auth {
 	return auth
 }
 
-func (k *KeystoneClient) tokenRequest(method string, c echo.Context) error {
+func (k *KeystoneClient) tokenRequest(method string, c echo.Context) (*http.Response, error) {
 	tokenURL := k.AuthURL + "/auth/tokens"
 	request, err := http.NewRequest(method, tokenURL, c.Request().Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	request.Header = c.Request().Header
+	request.ContentLength = c.Request().ContentLength
 	resp, err := k.httpClient.Do(request)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, err)
-	}
-	if method == echo.POST {
-		c.Response().Header().Set("X-Subject-Token",
-			resp.Header.Get("X-Subject-Token"))
-	}
-	return c.JSON(resp.StatusCode, resp.Body)
+
+	return resp, err
 }
 
 // CreateToken sends token create request to keystone endpoint.
 func (k *KeystoneClient) CreateToken(c echo.Context) error {
-	return k.tokenRequest(echo.POST, c)
+	resp, err := k.tokenRequest(echo.POST, c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	defer resp.Body.Close() // nolint: errcheck
+	c.Response().Header().Set("X-Subject-Token",
+		resp.Header.Get("X-Subject-Token"))
+	authResponse := &AuthResponse{}
+	_ = json.NewDecoder(resp.Body).Decode(authResponse)
+
+	return c.JSON(resp.StatusCode, authResponse)
 }
 
 // ValidateToken sends validate token request to keystone endpoint.
 func (k *KeystoneClient) ValidateToken(c echo.Context) error {
-	return k.tokenRequest(echo.GET, c)
+	resp, err := k.tokenRequest(echo.GET, c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	defer resp.Body.Close() // nolint: errcheck
+	validateTokenResponse := &ValidateTokenResponse{}
+	_ = json.NewDecoder(resp.Body).Decode(validateTokenResponse)
+
+	return c.JSON(resp.StatusCode, validateTokenResponse)
 }
 
 // GetProjects sends project get request to keystone endpoint.
@@ -97,5 +111,9 @@ func (k *KeystoneClient) GetProjects(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	return c.JSON(resp.StatusCode, resp.Body)
+	defer resp.Body.Close() // nolint: errcheck
+	projectsResponse := &ProjectListResponse{}
+	_ = json.NewDecoder(resp.Body).Decode(projectsResponse)
+
+	return c.JSON(resp.StatusCode, projectsResponse)
 }
