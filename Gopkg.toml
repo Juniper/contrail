@@ -60,3 +60,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/go-openapi/spec"
+
+[[constraint]]
+  name = "github.com/imdario/mergo"
+  version = "0.3.4"

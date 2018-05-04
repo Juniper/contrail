@@ -1,4 +1,4 @@
-package etcd
+package sink
 
 import "github.com/Juniper/contrail/pkg/db"
 
