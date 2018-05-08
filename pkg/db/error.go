@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
@@ -32,6 +34,9 @@ func handleError(err error) error {
 			return common.ErrorConflict
 		}
 		log.Debug("pq error:", err)
+	}
+	if err == sql.ErrNoRows {
+		return common.ErrorNotFound
 	}
 	return err
 }

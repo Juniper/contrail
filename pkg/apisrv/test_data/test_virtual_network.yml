@@ -41,7 +41,6 @@ test_data:
     parent_uuid: admin_project_uuid
     route_target_list:
        route_target: ["100:200"]
-    virtual_network_network_id: 50
     network_policy_refs:
     - uuid: network_policy_uuid
   vn_blue_with_detail: &vn_blue_with_detail
@@ -51,6 +50,7 @@ test_data:
     parent_uuid: admin_project_uuid
     network_policy_refs:
     - uuid: network_policy_uuid
+    virtual_network_network_id: $number
     routing_instances:
     - uuid: ri_uuid
       parent_uuid: vn_blue
