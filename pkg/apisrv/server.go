@@ -19,6 +19,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/serviceif"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/types"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
@@ -30,7 +31,7 @@ type Server struct {
 	Echo      *echo.Echo
 	DB        *sql.DB
 	Keystone  *keystone.Keystone
-	dbService serviceif.Service
+	dbService *db.Service
 	Proxy     *proxyService
 }
 
@@ -54,6 +55,10 @@ func (s *Server) SetupService() serviceif.Service {
 	serviceChain = append(serviceChain, service)
 	service.RegisterRESTAPI(s.Echo)
 
+	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
+		BaseService: serviceif.BaseService{},
+		DB:          s.dbService,
+	})
 	if viper.GetBool("server.notify_etcd") {
 		etcdNotifierServers := viper.GetStringSlice("etcd.endpoints")
 		etcdNotifierPath := viper.GetString("etcd.path")

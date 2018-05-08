@@ -28,7 +28,6 @@ test_data:
     parent_uuid: admin_project_uuid_test_sync
     route_target_list:
        route_target: ["100:200"]
-    virtual_network_network_id: 50
     network_policy_refs:
     - uuid: network_policy_uuid_test_sync
   vn_blue2: &vn_blue2
@@ -39,7 +38,6 @@ test_data:
     parent_uuid: admin_project_uuid_test_sync
     route_target_list:
        route_target: ["100:200"]
-    virtual_network_network_id: 50
     network_policy_refs:
     - uuid: network_policy_uuid_test_sync
 clients:
