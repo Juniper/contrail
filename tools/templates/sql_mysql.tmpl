@@ -8,6 +8,20 @@ create table metadata (
     index fq_name_index (`fq_name`)
  ) CHARACTER SET utf8mb4;
 
+create table int_pool (
+    `key` varchar(255),
+    `start` int,
+    `end` int
+);
+
+insert into int_pool (`key`, `start`, `end`) values ("virtual_network_id", 5, 65543);
+
+create table ipaddress_pool (
+    `key` varchar(255),
+    `start` binary(16),
+    `end` binary(16)
+);
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 create table {{schema.ID | lower  }} (
     {% for column in schema.Columns %}`{{column.Column}}` {{column.Type}},

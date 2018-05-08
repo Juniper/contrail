@@ -1,6 +1,9 @@
 package db
 
 import (
+	"database/sql"
+	"fmt"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
@@ -24,6 +27,7 @@ func handleError(err error) error {
 		case mysqlUniqueViolation, mysqlForeignKeyViolation:
 			return common.ErrorConflict
 		}
+		fmt.Println(err.Number)
 		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
 	}
 	if err, ok := err.(*pq.Error); ok {
@@ -31,7 +35,11 @@ func handleError(err error) error {
 		case pgUniqueViolation, pgForeignKeyViolation:
 			return common.ErrorConflict
 		}
+		fmt.Println(err.Code.Name())
 		log.Debug("pq error:", err)
+	}
+	if err == sql.ErrNoRows {
+		return common.ErrorNotFound
 	}
 	return err
 }
