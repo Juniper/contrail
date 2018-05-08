@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/apisrv/types"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/serviceif"
@@ -53,6 +54,10 @@ func (s *Server) SetupService() serviceif.Service {
 
 	serviceChain = append(serviceChain, service)
 	service.RegisterRESTAPI(s.Echo)
+
+	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
+		BaseService: serviceif.BaseService{},
+	})
 
 	etcdNotifierEnabled := viper.GetBool("etcd_notifier.enabled")
 	if etcdNotifierEnabled {

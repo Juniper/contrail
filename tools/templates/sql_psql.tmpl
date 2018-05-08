@@ -3,6 +3,19 @@ create table metadata (
     "type" varchar(255),
     "fq_name" varchar(255) unique,
     primary key ("uuid"));
+);
+
+create table int_pool (
+    "key" varchar(255),
+    "start" int,
+    "end" int
+);
+
+create table ipaddress_pool (
+    "key" varchar(255),
+    "start" inet,
+    "end" inet
+);
 
 create index fq_name_index on metadata ("fq_name");
 
