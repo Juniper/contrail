@@ -32,17 +32,10 @@ var AssertFunctions = map[string]AssertFunction{
 		}
 		return nil
 	},
-	"int": func(path string, args, actual interface{}) error {
-		_, ok := actual.(int)
+	"number": func(path string, args, actual interface{}) error {
+		_, ok := actual.(float64)
 		if !ok {
 			return fmt.Errorf("expecetd integer but got %s on path %s", actual, path)
-		}
-		return nil
-	},
-	"float": func(path string, args, actual interface{}) error {
-		_, ok := actual.(int)
-		if !ok {
-			return fmt.Errorf("expecetd float but got %s on path %s", actual, path)
 		}
 		return nil
 	},
@@ -94,11 +87,13 @@ func runFunction(path string, expected, actual interface{}) (err error) {
 		}
 	case string:
 		if isStringFunction(t) {
+			fmt.Println("string function", expected, actual)
 			assert, err := getAssertFunction(t)
 			if err != nil {
 				return err
 			}
 			err = assert(path, nil, actual)
+			fmt.Println("string function", err)
 			if err != nil {
 				return err
 			}
@@ -113,6 +108,7 @@ func CheckDiff(path string, expected, actual interface{}) error {
 		return nil
 	}
 	if isFunction(expected) {
+		fmt.Println("function", expected)
 		return runFunction(path, expected, actual)
 	}
 	switch t := expected.(type) {
