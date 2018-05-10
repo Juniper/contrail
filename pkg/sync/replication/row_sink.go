@@ -3,7 +3,7 @@ package replication
 import (
 	"fmt"
 
-	"github.com/Juniper/contrail/pkg/watcher/etcd"
+	"github.com/Juniper/contrail/pkg/sync/etcd"
 	"github.com/gogo/protobuf/proto"
 )
 

@@ -1,5 +1,5 @@
-// Package watcher contains functionality that supplies etcd with data from PostgreSQL or MySQL database.
-package watcher
+// Package sync contains functionality that supplies etcd with data from PostgreSQL or MySQL database.
+package sync
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/db"
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/watcher/etcd"
-	"github.com/Juniper/contrail/pkg/watcher/replication"
+	"github.com/Juniper/contrail/pkg/sync/etcd"
+	"github.com/Juniper/contrail/pkg/sync/replication"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jackc/pgx"
 	_ "github.com/jackc/pgx/stdlib" // allows using of pgx sql driver
@@ -34,14 +34,14 @@ type watchCloser interface {
 	Close()
 }
 
-// Service represents Watcher service.
+// Service represents Sync service.
 type Service struct {
 	etcdClient *clientv3.Client
 	watcher    watchCloser
 	log        *logrus.Entry
 }
 
-// NewServiceByFile creates Watcher service with configuration from file.
+// NewServiceByFile creates Sync service with configuration from file.
 // Close needs to be explicitly called on service teardown.
 func NewServiceByFile(configFilePath string) (*Service, error) {
 	viper.SetConfigFile(configFilePath)
@@ -60,7 +60,7 @@ func setDefaults() {
 	viper.SetDefault("database.replication_status_timeout", "10s")
 }
 
-// NewService creates Watcher service with given configuration.
+// NewService creates Sync service with given configuration.
 // Close needs to be explicitly called on service teardown.
 func NewService() (*Service, error) {
 	setDefaults()
@@ -69,7 +69,7 @@ func NewService() (*Service, error) {
 	if err := pkglog.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
-	log := pkglog.NewLogger("watcher-service")
+	log := pkglog.NewLogger("sync-service")
 	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Got configuration")
 
 	// Etcd client
@@ -178,15 +178,15 @@ func randomServerID() uint32 {
 	return uint32(rand.Intn(1000)) + 1001
 }
 
-// Run runs Watcher service.
+// Run runs Sync service.
 func (s *Service) Run() error {
-	s.log.Info("Running Watcher service")
+	s.log.Info("Running Sync service")
 	return s.watcher.Watch(context.Background())
 }
 
-// Close closes Watcher service.
+// Close closes Sync service.
 func (s *Service) Close() {
-	s.log.Info("Closing Watcher service")
+	s.log.Info("Closing Sync service")
 	s.watcher.Close()
 	if err := s.etcdClient.Close(); err != nil {
 		s.log.WithField("error", err).Error("Error closing etcd connection")

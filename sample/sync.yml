@@ -1,4 +1,4 @@
-# Configuration for Watcher service.
+# Configuration for Sync service.
 database:
   driver: pgx
   type: postgres
