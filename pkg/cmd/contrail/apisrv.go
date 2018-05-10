@@ -40,10 +40,10 @@ var apiServerCmd = &cobra.Command{
 				wg.Done()
 			}()
 		}
-		if watcherConfigFile != "" {
+		if syncConfigFile != "" {
 			wg.Add(1)
 			go func() {
-				startWatcher()
+				startSync()
 				wg.Done()
 			}()
 		}
