@@ -14,7 +14,11 @@ func keys(m map[string]interface{}, prefix string) []string {
 	for key, value := range m {
 		switch v := value.(type) {
 		case map[string]interface{}:
-			result = append(result, keys(v, key+".")...)
+			if prefix != "" {
+				result = append(result, keys(v, prefix+key+".")...)
+			} else {
+				result = append(result, keys(v, key+".")...)
+			}
 		default:
 			result = append(result, prefix+key)
 		}
