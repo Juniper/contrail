@@ -141,14 +141,20 @@ func (s *Server) Init() error {
 	if keystoneAuthURL != "" {
 		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL,
 			viper.GetBool("keystone.insecure"))
-		e.Use(keystone.AuthMiddleware(keystoneClient,
-			[]string{
-				"/keystone/v3/auth/tokens",
-				"/proxy/keystone/v3/auth/tokens",
-				"/keystone/v3/auth/projects",
-				"/v3/auth/tokens",
-				"/public"},
-			endpointStore))
+		skipPaths := []string{
+			"/keystone/v3/auth/tokens",
+			"/proxy/keystone/v3/auth/tokens",
+			"/keystone/v3/auth/projects",
+			"/v3/auth/tokens",
+		}
+		for root, _ := range viper.GetStringMap("static_files") {
+			if !strings.HasPrefix(root, "/") {
+				root = "/" + root
+			}
+			skipPaths = append(skipPaths, root)
+		}
+		e.Use(keystone.AuthMiddleware(
+			keystoneClient, skipPaths, endpointStore))
 	} else if viper.GetBool("no_auth") {
 		e.Use(noAuthMiddleware())
 	}
