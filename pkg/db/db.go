@@ -16,28 +16,33 @@ import (
 	"github.com/spf13/viper"
 )
 
-//DB service struct
-type DB struct {
+//Service service struct
+type Service struct {
 	serviceif.BaseService
-	DB            *sql.DB
+	db            *sql.DB
 	Dialect       Dialect
 	queryBuilders map[string]*QueryBuilder
 }
 
 //NewService makes a DB service.
-func NewService(db *sql.DB, dialect string) *DB {
-	dbService := &DB{
+func NewService(db *sql.DB, dialect string) *Service {
+	dbService := &Service{
 		BaseService: serviceif.BaseService{},
-		DB:          db,
+		db:          db,
 		Dialect:     NewDialect(dialect),
 	}
 	dbService.initQueryBuilders()
 	return dbService
 }
 
+//DB gets db object.
+func (db *Service) DB() *sql.DB {
+	return db.db
+}
+
 //SetDB sets db object.
-func (db *DB) SetDB(sqlDB *sql.DB) {
-	db.DB = sqlDB
+func (db *Service) SetDB(sqlDB *sql.DB) {
+	db.db = sqlDB
 }
 
 // Object is generic database model instance.
@@ -56,10 +61,10 @@ type ObjectWriter interface {
 //
 // An example application of that function is loading initial database snapshot
 // in Watcher.
-func (db *DB) Dump(ctx context.Context, ow ObjectWriter) error {
+func (db *Service) Dump(ctx context.Context, ow ObjectWriter) error {
 	return DoInTransaction(
 		ctx,
-		db.DB,
+		db.DB(),
 		func(ctx context.Context) error {
 			return db.dump(ctx, ow)
 		},

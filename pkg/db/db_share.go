@@ -10,7 +10,7 @@ import (
 )
 
 //CreateSharing creates sharing information in DB.
-func (db *DB) CreateSharing(tx *sql.Tx, table string, uuid string, shares []*models.ShareType) error {
+func (db *Service) CreateSharing(tx *sql.Tx, table string, uuid string, shares []*models.ShareType) error {
 	for _, share := range shares {
 		err := db.createSharingEntry(tx, table, uuid, share.Tenant, int(share.TenantAccess))
 		if err != nil {
@@ -21,7 +21,7 @@ func (db *DB) CreateSharing(tx *sql.Tx, table string, uuid string, shares []*mod
 }
 
 //UpdateSharing updates sharing data for a object by UUID.
-func (db *DB) UpdateSharing(tx *sql.Tx, table string, uuid string, shares []interface{}) error {
+func (db *Service) UpdateSharing(tx *sql.Tx, table string, uuid string, shares []interface{}) error {
 	if len(shares) == 0 {
 		return nil
 	}
@@ -45,7 +45,7 @@ func (db *DB) UpdateSharing(tx *sql.Tx, table string, uuid string, shares []inte
 	return nil
 }
 
-func (db *DB) createSharingEntry(tx *sql.Tx, table string, uuid string, tenant string, tenantAccess int) error {
+func (db *Service) createSharingEntry(tx *sql.Tx, table string, uuid string, tenant string, tenantAccess int) error {
 	shareParts := strings.Split(tenant, ":")
 	shareType := "domain"
 	if len(shareParts) > 1 {

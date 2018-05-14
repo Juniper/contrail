@@ -12,7 +12,7 @@ import (
 )
 
 var testDB *sql.DB
-var db *DB
+var db *Service
 
 func TestMain(m *testing.M) {
 	viper.SetConfigName("server")
@@ -33,8 +33,8 @@ func TestMain(m *testing.M) {
 			log.Fatal(err)
 		}
 		defer testDB.Close()
-		db = &DB{
-			DB:      testDB,
+		db = &Service{
+			db:      testDB,
 			Dialect: NewDialect(config["dialect"].(string)),
 		}
 		db.initQueryBuilders()
