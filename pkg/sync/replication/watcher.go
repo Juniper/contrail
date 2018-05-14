@@ -80,8 +80,7 @@ type PostgresWatcher struct {
 // NewPostgresWatcher creates new watcher and initialises its connections.
 func NewPostgresWatcher(
 	config PostgresSubscriptionConfig,
-	dbs *db.DB,
-	replConn pgxReplicationConn,
+	dbs *db.Service, replConn pgxReplicationConn,
 	handler pgoutput.Handler,
 	dumpWriter db.ObjectWriter,
 ) (*PostgresWatcher, error) {
@@ -115,18 +114,18 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 
 	w.lastLSN = slotLSN // TODO(Michal): get lastLSN from etcd
 
-	err = w.conn.RenewPublication(ctx, w.conf.Publication)
-	if err != nil {
+	if err := w.conn.RenewPublication(ctx, w.conf.Publication); err != nil {
 		return fmt.Errorf("failed to create publication: %s", err)
 	}
 	w.log.Debug("Created publication: ", w.conf.Publication)
 
-	if err = w.conn.DumpSnapshot(ctx, w.dumpWriter, snapshotName); err != nil {
+	w.log.Debug("Starting dump phase")
+	if err := w.conn.DumpSnapshot(ctx, w.dumpWriter, snapshotName); err != nil {
 		return fmt.Errorf("dumping snapshot failed: %v", err)
 	}
+	w.log.Debug("Dump phase finished - starting replication")
 
-	err = w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0)
-	if err != nil {
+	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
 		return fmt.Errorf("failed to start replication: %s", err)
 	}
 
@@ -145,47 +144,74 @@ func (w *PostgresWatcher) loop(ctx context.Context) error {
 				return err
 			}
 		default:
-			wctx, cancel := context.WithTimeout(ctx, w.conf.StatusTimeout)
-			message, err := w.conn.WaitForReplicationMessage(wctx)
-			cancel()
-			if err == context.DeadlineExceeded {
-				continue
-			} else if err == context.Canceled {
-				return nil
-			} else if err != nil {
-				return fmt.Errorf("replication failed: %s", err)
+			msg, err := w.waitForMessageWithTimeout(ctx)
+			if err != nil {
+				return err
 			}
 
-			if err = w.handleMessage(message); err != nil {
-				w.log.Error("Error while handling replication message: ", err)
+			if msg != nil {
+				if err = w.handleMessage(msg); err != nil {
+					w.log.Error("Error while handling replication message: ", err)
+				}
 			}
 		}
 	}
 }
 
+func (w *PostgresWatcher) waitForMessageWithTimeout(ctx context.Context) (*pgx.ReplicationMessage, error) {
+	wctx, cancel := context.WithTimeout(ctx, w.conf.StatusTimeout)
+	defer cancel()
+
+	msg, err := w.conn.WaitForReplicationMessage(wctx)
+
+	if err == context.DeadlineExceeded || err == context.Canceled {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("replication failed: %s", err)
+	}
+
+	return msg, nil
+}
+
 func (w *PostgresWatcher) handleMessage(msg *pgx.ReplicationMessage) error {
 	if msg.WalMessage != nil {
-		if msg.WalMessage.WalStart > w.lastLSN {
-			w.lastLSN = msg.WalMessage.WalStart
-		}
-		logmsg, err := pgoutput.Parse(msg.WalMessage.WalData)
-		if err != nil {
-			return fmt.Errorf("invalid pgoutput message: %s", err)
-		}
-		if err := w.handler(logmsg); err != nil {
-			return fmt.Errorf("error handling waldata: %s", err)
+		if err := w.handleWalMessage(msg.WalMessage); err != nil {
+			return err
 		}
 	}
 
 	if msg.ServerHeartbeat != nil {
-		if msg.ServerHeartbeat.ReplyRequested == 1 {
-			w.log.Info("Server requested reply, sending standby status with position: ", pgx.FormatLSN)
-			if err := w.conn.SendStatus(w.lastLSN); err != nil {
-				return err
-			}
+		if err := w.handleServerHeartbeat(msg.ServerHeartbeat); err != nil {
+			return err
 		}
 	}
 
+	return nil
+}
+
+func (w *PostgresWatcher) handleWalMessage(msg *pgx.WalMessage) error {
+	if msg.WalStart > w.lastLSN {
+		w.lastLSN = msg.WalStart
+	}
+
+	logmsg, err := pgoutput.Parse(msg.WalData)
+	if err != nil {
+		return fmt.Errorf("invalid pgoutput message: %s", err)
+	}
+
+	if err := w.handler(logmsg); err != nil {
+		return fmt.Errorf("error handling waldata: %s", err)
+	}
+
+	return nil
+}
+
+func (w *PostgresWatcher) handleServerHeartbeat(shb *pgx.ServerHeartbeat) error {
+	if shb.ReplyRequested == 1 {
+		w.log.Info("Server requested reply, sending standby status with position: ", pgx.FormatLSN)
+		return w.conn.SendStatus(w.lastLSN)
+	}
 	return nil
 }
 

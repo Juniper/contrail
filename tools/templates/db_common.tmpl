@@ -7,7 +7,7 @@ import (
     "github.com/Juniper/contrail/pkg/models"
 )
 
-func (db *DB) initQueryBuilders() {
+func (db *Service) initQueryBuilders() {
     queryBuilders := map[string]*QueryBuilder{}
     db.queryBuilders = queryBuilders
 
@@ -20,7 +20,7 @@ func (db *DB) initQueryBuilders() {
 }
 
 
-func (db *DB) dump(ctx context.Context, ow ObjectWriter) error {
+func (db *Service) dump(ctx context.Context, ow ObjectWriter) error {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     list{{ schema.JSONSchema.GoName }}Request := &models.List{{ schema.JSONSchema.GoName }}Request{&models.ListSpec{}}
     list{{ schema.JSONSchema.GoName }}Response, err := db.list{{ schema.JSONSchema.GoName }}(
@@ -41,7 +41,7 @@ func (db *DB) dump(ctx context.Context, ow ObjectWriter) error {
 }
 
 // ScanRow maps row from database table named schemaID into generated Go struct.
-func (db *DB) ScanRow(schemaID string, rowData map[string]interface{}) (Object, error) {
+func (db *Service) ScanRow(schemaID string, rowData map[string]interface{}) (Object, error) {
     switch schemaID { {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     case "{{ schema.ID }}":
         return db.scan{{schema.JSONSchema.GoName}}(rowData){% endif%}{% endfor %}

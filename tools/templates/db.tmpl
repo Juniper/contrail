@@ -48,7 +48,7 @@ var {{ schema.JSONSchema.GoName }}Parents = []string{
 
 // Create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
 // nolint
-func (db *DB) create{{ schema.JSONSchema.GoName }}(
+func (db *Service) create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Create{{ schema.JSONSchema.GoName }}Request) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
@@ -91,7 +91,7 @@ func (db *DB) create{{ schema.JSONSchema.GoName }}(
     return nil
 }
 
-func (db *DB) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
+func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
     m := models.Make{{ schema.JSONSchema.GoName }}()
     {% for column in schema.Columns %}
     if value, ok := values["{{ column.Column }}"]; ok {
@@ -188,7 +188,7 @@ func (db *DB) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} )
 }
 
 // List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
-func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
+func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
     var rows *sql.Rows
     tx := GetTransaction(ctx)
 
@@ -244,7 +244,7 @@ func (db *DB) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *m
 }
 
 // Update{{ schema.JSONSchema.GoName }} updates a resource
-func (db *DB) update{{ schema.JSONSchema.GoName }}(
+func (db *Service) update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Update{{ schema.JSONSchema.GoName }}Request,
     ) error {
@@ -295,7 +295,7 @@ func (db *DB) update{{ schema.JSONSchema.GoName }}(
 }
 
 //Check{{ schema.JSONSchema.GoName }}Policy check ownership of resources.
-func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
+func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
     ctx context.Context,
     uuid string) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
@@ -330,7 +330,7 @@ func (db *DB) Check{{ schema.JSONSchema.GoName }}Policy(
 }
 
 // Delete{{ schema.JSONSchema.GoName }} deletes a resource
-func (db *DB) delete{{ schema.JSONSchema.GoName }}(
+func (db *Service) delete{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Delete{{ schema.JSONSchema.GoName }}Request) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
@@ -356,7 +356,7 @@ func (db *DB) delete{{ schema.JSONSchema.GoName }}(
 
 //Create{{ schema.JSONSchema.GoName }} handle a Create API
 // nolint
-func (db *DB) Create{{ schema.JSONSchema.GoName }}(
+func (db *Service) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
@@ -365,7 +365,7 @@ func (db *DB) Create{{ schema.JSONSchema.GoName }}(
     }
     if err := DoInTransaction(
         ctx,
-        db.DB,
+        db.DB(),
         func (ctx context.Context) error {
             return db.create{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
@@ -377,7 +377,7 @@ func (db *DB) Create{{ schema.JSONSchema.GoName }}(
 }
 
 //Update{{ schema.JSONSchema.GoName }} handles a Update request.
-func (db *DB) Update{{ schema.JSONSchema.GoName }}(
+func (db *Service) Update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
@@ -386,7 +386,7 @@ func (db *DB) Update{{ schema.JSONSchema.GoName }}(
     }
     if err := DoInTransaction(
         ctx,
-        db.DB,
+        db.DB(),
         func (ctx context.Context) error {
             return db.update{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
@@ -398,10 +398,10 @@ func (db *DB) Update{{ schema.JSONSchema.GoName }}(
 }
 
 //Delete{{ schema.JSONSchema.GoName }} delete a resource.
-func (db *DB) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+func (db *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
     if err := DoInTransaction(
         ctx,
-        db.DB,
+        db.DB(),
         func (ctx context.Context) error {
             return db.delete{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
@@ -413,7 +413,7 @@ func (db *DB) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request 
 }
 
 //Get{{ schema.JSONSchema.GoName }} a Get request.
-func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (response *models.Get{{ schema.JSONSchema.GoName }}Response, err error) {
+func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (response *models.Get{{ schema.JSONSchema.GoName }}Response, err error) {
     spec := &models.ListSpec{
                 Limit: 1,
                 Detail: true,
@@ -430,7 +430,7 @@ func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *mo
     var result *models.List{{ schema.JSONSchema.GoName }}Response
     if err := DoInTransaction(
         ctx,
-        db.DB,
+        db.DB(),
         func (ctx context.Context) error {
             result, err = db.list{{ schema.JSONSchema.GoName }}(ctx, listRequest)
             return err
@@ -448,12 +448,12 @@ func (db *DB) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *mo
 
 //List{{ schema.JSONSchema.GoName }} handles a List service Request.
 // nolint
-func (db *DB) List{{ schema.JSONSchema.GoName }}(
+func (db *Service) List{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
     if err := DoInTransaction(
         ctx,
-        db.DB,
+        db.DB(),
         func (ctx context.Context) error {
             response, err = db.list{{ schema.JSONSchema.GoName }}(ctx, request)
             return err

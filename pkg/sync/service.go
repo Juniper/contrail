@@ -124,7 +124,7 @@ func createWatcher(log *logrus.Entry, sink etcd.Sink) (watchCloser, error) {
 	}
 }
 
-func createPostgreSQLWatcher(log *logrus.Entry, sink replication.RowSink, dbService *db.DB, ow db.ObjectWriter) (watchCloser, error) {
+func createPostgreSQLWatcher(log *logrus.Entry, sink replication.RowSink, dbService *db.Service, ow db.ObjectWriter) (watchCloser, error) {
 	handler := replication.NewPgoutputEventHandler(sink)
 
 	connConfig := pgx.ConnConfig{

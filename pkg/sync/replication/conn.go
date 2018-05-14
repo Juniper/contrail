@@ -2,6 +2,7 @@ package replication
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"io"
 	"strings"
@@ -20,12 +21,17 @@ type pgxReplicationConn interface {
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 }
 
-type postgresReplicationConnection struct {
-	replConn pgxReplicationConn
-	db       *db.DB
+type dbService interface {
+	DB() *sql.DB
+	Dump(context.Context, db.ObjectWriter) error
 }
 
-func newPostgresReplicationConnection(db *db.DB, replConn pgxReplicationConn) (*postgresReplicationConnection, error) {
+type postgresReplicationConnection struct {
+	replConn pgxReplicationConn
+	db       dbService
+}
+
+func newPostgresReplicationConnection(db dbService, replConn pgxReplicationConn) (*postgresReplicationConnection, error) {
 	return &postgresReplicationConnection{db: db, replConn: replConn}, nil
 }
 
@@ -55,13 +61,13 @@ func (c *postgresReplicationConnection) GetReplicationSlot(
 func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, name string) error {
 	return db.DoInTransaction(
 		ctx,
-		c.db.DB,
+		c.db.DB(),
 		func(ctx context.Context) error {
-			_, err := c.db.DB.ExecContext(ctx, fmt.Sprintf("DROP PUBLICATION IF EXISTS %s", name))
+			_, err := c.db.DB().ExecContext(ctx, fmt.Sprintf("DROP PUBLICATION IF EXISTS %s", name))
 			if err != nil {
 				return fmt.Errorf("failed to drop publication: %s", err)
 			}
-			_, err = c.db.DB.ExecContext(ctx, fmt.Sprintf("CREATE PUBLICATION %s FOR ALL TABLES", name))
+			_, err = c.db.DB().ExecContext(ctx, fmt.Sprintf("CREATE PUBLICATION %s FOR ALL TABLES", name))
 			if err != nil {
 				return fmt.Errorf("failed to create publication: %s", err)
 			}
@@ -73,9 +79,9 @@ func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, na
 func (c *postgresReplicationConnection) DumpSnapshot(ctx context.Context, ow db.ObjectWriter, snapshotName string) error {
 	return db.DoInTransaction(
 		ctx,
-		c.db.DB,
+		c.db.DB(),
 		func(ctx context.Context) error {
-			_, err := c.db.DB.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+			_, err := c.db.DB().ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
 			if err != nil {
 				return err
 			}
@@ -117,7 +123,7 @@ func (c *postgresReplicationConnection) SendStatus(maxWal uint64) error {
 // Close closes underlying connections.
 func (c *postgresReplicationConnection) Close() error {
 	errs := []string{}
-	errs = append(errs, c.db.DB.Close().Error())
+	errs = append(errs, c.db.DB().Close().Error())
 	errs = append(errs, c.replConn.Close().Error())
 	if len(errs) > 0 {
 		return fmt.Errorf("errors while closing: %s", strings.Join(errs, "\n"))
