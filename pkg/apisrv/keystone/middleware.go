@@ -3,11 +3,14 @@ package keystone
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
@@ -27,6 +30,7 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	}
 	validatedToken, err := auth.Validate(tokenString)
 	if err != nil {
+		log.Errorf("Invalid Token: %s", err)
 		return nil, common.ErrorUnauthenticated
 	}
 	log.WithField("token", validatedToken).Debug("Authenticated")
@@ -71,6 +75,32 @@ func getKeystoneEndpoint(endpoints *apicommon.EndpointStore) (authEndpoint strin
 	return authEndpoint, err
 }
 
+// GetAuthSkipPaths returns the list of paths which need not be authenticated.
+func GetAuthSkipPaths() []string {
+	skipPaths := []string{
+		"/keystone/v3/auth/tokens",
+		"/proxy/keystone/v3/auth/tokens",
+		"/keystone/v3/auth/projects",
+		"/v3/auth/tokens",
+	}
+	// skip auth for all the static files
+	for prefix, root := range viper.GetStringMap("server.static_files") {
+		if prefix == "/" {
+			staticFiles, err := ioutil.ReadDir(root.(string))
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, staticFile := range staticFiles {
+				skipPaths = append(skipPaths,
+					filepath.Join(prefix, staticFile.Name()))
+			}
+		} else {
+			skipPaths = append(skipPaths, prefix)
+		}
+	}
+	return skipPaths
+}
+
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
 func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 	endpoints *apicommon.EndpointStore) echo.MiddlewareFunc {
@@ -79,8 +109,13 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 		auth := keystoneClient.NewAuth()
 		return func(c echo.Context) error {
 			for _, path := range skipPath {
-				if strings.Contains(c.Request().URL.Path, path) {
+				switch c.Request().URL.Path {
+				case "/":
 					return next(c)
+				default:
+					if strings.Contains(c.Request().URL.Path, path) {
+						return next(c)
+					}
 				}
 			}
 			r := c.Request()
@@ -90,7 +125,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			}
 			keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
 			if err != nil {
-				log.Error(err)
+				log.Errorf("Unable to get keystone endpoint: %s", err)
 				return common.ToHTTPError(common.ErrorUnauthenticated)
 			}
 			if keystoneEndpoint != "" {
@@ -100,6 +135,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			tokenString := r.Header.Get("X-Auth-Token")
 			ctx, err := authenticate(r.Context(), auth, tokenString)
 			if err != nil {
+				log.Errorf("Authentication failure: %s", err)
 				return common.ToHTTPError(err)
 			}
 			newRequest := r.WithContext(ctx)
