@@ -32,6 +32,7 @@ generate: ## Run the source code generator
 	mockgen -destination=pkg/services/mock/gen_services_mock.go -package=servicesmock github.com/Juniper/contrail/pkg/services Service
 	mkdir -p pkg/types/ipam/mock
 	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock github.com/Juniper/contrail/pkg/types/ipam AddressManager
+	mockgen -destination=pkg/types/ipam/mock/gen_int_pool_allocator_mock.go -package=ipammock github.com/Juniper/contrail/pkg/types/ipam IntPoolAllocator
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
