@@ -22,8 +22,6 @@ const (
 	dbDSNFormatPostgreSQL = "sslmode=disable user=%s password=%s host=%s dbname=%s"
 )
 
-var testDB *sql.DB
-
 //TestDbService used outside of testutils package to access DB
 var TestDbService *db.Service
 
@@ -44,7 +42,6 @@ func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
 }
 
 //CreateTestDbService Create TestDB and DBService for Unit tests
-// nolint
 func CreateTestDbService(m *testing.M) {
 	viper.SetConfigName("contrail")
 	viper.AddConfigPath("../apisrv")
@@ -59,7 +56,6 @@ func CreateTestDbService(m *testing.M) {
 	common.SetLogLevel()
 	dbConfig := viper.GetStringMap("test_database")
 
-	var code int
 	for _, iConfig := range dbConfig {
 		config := common.InterfaceToInterfaceMap(iConfig)
 		driver := config["type"].(string)
@@ -79,7 +75,7 @@ func CreateTestDbService(m *testing.M) {
 			config["name"].(string),
 		)
 
-		testDB, err = makeConnection(driver, dsn)
+		testDB, err := makeConnection(driver, dsn)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -87,11 +83,10 @@ func CreateTestDbService(m *testing.M) {
 		TestDbService = db.NewService(testDB, config["dialect"].(string))
 
 		log.Info("Running test for " + driver)
-		code = m.Run()
+		code := m.Run()
 		log.Info("finished")
-		//if code != 0 {
-		//	os.Exit(code)
-		//}
+		if code != 0 {
+			os.Exit(code)
+		}
 	}
-	os.Exit(code)
 }
