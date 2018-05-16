@@ -41,7 +41,7 @@ list:
 - $any
 map:
   key1: $any
-number: $int
+number: $number
 bool: true
 nilValue: $null
 `
