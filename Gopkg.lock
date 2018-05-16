@@ -36,6 +36,7 @@
   packages = [
     "auth/authpb",
     "clientv3",
+    "clientv3/concurrency",
     "etcdserver/api/v3lock/v3lockpb",
     "etcdserver/api/v3rpc/rpctypes",
     "etcdserver/etcdserverpb",
@@ -167,6 +168,12 @@
     "json/token"
   ]
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
+
+[[projects]]
+  name = "github.com/imdario/mergo"
+  packages = ["."]
+  revision = "9d5f1277e9a8ed20c3684bda8fde67c05628518c"
+  version = "v0.3.4"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -544,6 +551,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8416d7f3c259893e2cb8591b242571f666f93c32336e911732567a3be40fbc69"
+  inputs-digest = "6ac28353c138445591b55b486c0aab2dced8e359ae53679de8fbf798c6655ef6"
   solver-name = "gps-cdcl"
   solver-version = 1
