@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -35,6 +36,24 @@ var ErrorInternal = grpc.Errorf(codes.Internal, "Internal Server Error")
 
 //ErrorConflict is for resource conflict error.
 var ErrorConflict = grpc.Errorf(codes.AlreadyExists, "Resource conflict")
+
+//ErrorForbiddenf makes forbidden error with format.
+func ErrorForbiddenf(format string, a ...interface{}) error {
+	return ErrorForbidden(fmt.Sprintf(format, a...))
+}
+
+//ErrorForbidden makes forbidden error.
+func ErrorForbidden(message string) error {
+	if message == "" {
+		message = "forbidden error."
+	}
+	return grpc.Errorf(codes.PermissionDenied, message)
+}
+
+//ErrorBadRequestf makes bad request error with format.
+func ErrorBadRequestf(format string, a ...interface{}) error {
+	return ErrorBadRequest(fmt.Sprintf(format, a...))
+}
 
 //ErrorBadRequest makes bad request error.
 func ErrorBadRequest(message string) error {
