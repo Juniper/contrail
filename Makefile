@@ -50,6 +50,7 @@ generate: ## Run the source code generator
 	mockgen -destination=pkg/services/mock/gen_service_mock.go -package=servicesmock -source pkg/services/gen_service_interface.go Service
 	mkdir -p pkg/types/ipam/mock
 	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock -source pkg/types/ipam/address_manager.go AddressManager
+	mockgen -destination=pkg/types/ipam/mock/gen_int_pool_allocator_mock.go -package=ipammock -source pkg/types/ipam/interface.go IntPoolAllocator
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package

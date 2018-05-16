@@ -10,12 +10,14 @@ import (
 )
 
 const (
-	flatSubnet = "flat-subnet"
+	UserDefinedSubnet = "user-defined-subnet"
+	AutoSubnet        = "auto-subnet"
+	FlatSubnet        = "flat-subnet"
 )
 
 // IsFlatSubnet checks if this is flat subnet.
 func (m *NetworkIpam) IsFlatSubnet() bool {
-	return m.IpamSubnetMethod == flatSubnet
+	return m.IpamSubnetMethod == FlatSubnet
 }
 
 // Net returns IPNet object for this subnet.

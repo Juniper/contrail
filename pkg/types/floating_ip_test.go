@@ -1,22 +1,22 @@
 package types
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/types/ipam"
-
-	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
-	ipammock "github.com/Juniper/contrail/pkg/types/ipam/mock"
-	typesmock "github.com/Juniper/contrail/pkg/types/mock"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/contrail/pkg/types/ipam"
+	"github.com/Juniper/contrail/pkg/types/ipam/mock"
 )
 
 type addrMgrSubnetExhausted int
@@ -28,51 +28,17 @@ func (e addrMgrSubnetExhausted) Error() string {
 	return ""
 }
 
-var mockCtrl *gomock.Controller
-var ipamMock *ipammock.MockAddressManager
-var dataServiceMock *servicesmock.MockService
-var logicService ContrailTypeLogicService
-var nextServiceMock *servicesmock.MockService
-var inTransationDoerMock *typesmock.MockInTransactionDoer
-
-func testSetup(t *testing.T) {
-	mockCtrl = gomock.NewController(t)
-	ipamMock = ipammock.NewMockAddressManager(mockCtrl)
-	nextServiceMock = servicesmock.NewMockService(mockCtrl)
-	dataServiceMock = servicesmock.NewMockService(mockCtrl)
-	inTransationDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
-	logicService = ContrailTypeLogicService{
-		BaseService:       services.BaseService{},
-		AddressManager:    ipamMock,
-		DataService:       dataServiceMock,
-		InTransactionDoer: inTransationDoerMock,
-	}
-	logicService.SetNext(nextServiceMock)
-
-	setupDBMocks()
-	setupIPAMMocks()
-	setupNextServiceMocks()
-}
-
-func testClean() {
-	mockCtrl.Finish()
-}
-
-func setupDBMocks() {
-	inTransationDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, do func(context.Context) error) error {
-			return do(ctx)
-		},
-	)
-
-	dataServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+func floatingIPSetupDataServiceMocks(s *ContrailTypeLogicService) {
+	dataService := s.DataService.(*servicesmock.MockService)
+	dataService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		&services.GetVirtualNetworkResponse{
 			VirtualNetwork: &models.VirtualNetwork{},
 		}, nil).AnyTimes()
 }
 
-func setupIPAMMocks() {
-	ipamMock.EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+func floatingIPSetupIPAMMocks(s *ContrailTypeLogicService) {
+	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager.EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(ctx context.Context, request *ipam.AllocateIPRequest) (address string, subnetUUID string, err error) {
 
 			if request.SubnetUUID == "uuid-1" {
@@ -93,16 +59,17 @@ func setupIPAMMocks() {
 			return "10.0.0.1", "uuid-1", nil
 		}).AnyTimes()
 
-	ipamMock.EXPECT().IsIPAllocated(gomock.Not(gomock.Nil()),
+	addressManager.EXPECT().IsIPAllocated(gomock.Not(gomock.Nil()),
 		&ipam.IsIPAllocatedRequest{
 			VirtualNetwork: &models.VirtualNetwork{},
 			IPAddress:      "10.0.0.2",
 		}).Return(true, nil).AnyTimes()
 }
 
-func setupNextServiceMocks() {
+func floatingIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
+	nextService := s.Next().(*servicesmock.MockService)
 	// CreateFloatingIP - response
-	nextServiceMock.EXPECT().CreateFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+	nextService.EXPECT().CreateFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(ctx context.Context, request *services.CreateFloatingIPRequest) (response *services.CreateFloatingIPResponse, err error) {
 			return &services.CreateFloatingIPResponse{
 				FloatingIP: request.FloatingIP,
@@ -110,7 +77,7 @@ func setupNextServiceMocks() {
 		}).AnyTimes()
 
 	// DeleteFloatingIP - response
-	nextServiceMock.EXPECT().DeleteFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+	nextService.EXPECT().DeleteFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(ctx context.Context, request *services.DeleteFloatingIPRequest) (response *services.DeleteFloatingIPResponse, err error) {
 			return &services.DeleteFloatingIPResponse{
 				ID: request.ID,
@@ -118,14 +85,15 @@ func setupNextServiceMocks() {
 		}).AnyTimes()
 }
 
-func prepareParent(floatingIPPool *models.FloatingIPPool) {
+func floatingIPPrepareParent(s *ContrailTypeLogicService, floatingIPPool *models.FloatingIPPool) {
+	dataService := s.DataService.(*servicesmock.MockService)
 	if floatingIPPool != nil {
-		dataServiceMock.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		dataService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			&services.GetFloatingIPPoolResponse{
 				FloatingIPPool: floatingIPPool,
 			}, nil).AnyTimes()
 	} else {
-		dataServiceMock.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		dataService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			nil, fmt.Errorf("DB error")).AnyTimes()
 	}
 }
@@ -226,11 +194,16 @@ func TestCreateFloatingIP(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testSetup(t)
-			defer testClean()
-			prepareParent(tt.floatingIPParent)
-			ctx := context.Background()
-			createFloatingIPResponse, err := logicService.CreateFloatingIP(ctx, &tt.createRequest)
+			mockCtrl := gomock.NewController(t)
+			service := makeMockedContrailTypeLogicService(t, mockCtrl)
+			floatingIPSetupDataServiceMocks(service)
+			floatingIPSetupIPAMMocks(service)
+			floatingIPSetupNextServiceMocks(service)
+
+			floatingIPPrepareParent(service, tt.floatingIPParent)
+			// Put an empty transaction into context so we could call DoInTransaction() without access to the real db
+			ctx := context.WithValue(nil, db.Transaction, &sql.Tx{})
+			createFloatingIPResponse, err := service.CreateFloatingIP(ctx, &tt.createRequest)
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -245,6 +218,7 @@ func TestCreateFloatingIP(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, createFloatingIPResponse)
 			assert.EqualValues(t, &tt.expectedResponse, createFloatingIPResponse)
+			mockCtrl.Finish()
 		})
 	}
 }
@@ -287,26 +261,32 @@ func TestDeleteFloatingIP(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testSetup(t)
-			defer testClean()
-			prepareParent(tt.floatingIPParent)
+			mockCtrl := gomock.NewController(t)
+			service := makeMockedContrailTypeLogicService(t, mockCtrl)
+			floatingIPSetupDataServiceMocks(service)
+			floatingIPSetupIPAMMocks(service)
+			floatingIPSetupNextServiceMocks(service)
+			floatingIPPrepareParent(service, tt.floatingIPParent)
 
+			dataService := service.DataService.(*servicesmock.MockService)
 			if tt.floatingIP != nil {
-				dataServiceMock.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+				dataService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.GetFloatingIPResponse{
 						FloatingIP: tt.floatingIP,
 					}, nil).AnyTimes()
 			} else {
-				dataServiceMock.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+				dataService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					nil, fmt.Errorf("Not found")).AnyTimes()
 			}
 
 			if tt.deallocatesIP {
-				ipamMock.EXPECT().DeallocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(nil)
+				addressManager := service.AddressManager.(*ipammock.MockAddressManager)
+				addressManager.EXPECT().DeallocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(nil)
 			}
 
-			ctx := context.Background()
-			deleteFloatingIPResponse, err := logicService.DeleteFloatingIP(ctx, tt.deleteRequest)
+			// Put an empty transaction into context so we could call DoInTransaction() without access to the real db
+			ctx := context.WithValue(nil, db.Transaction, &sql.Tx{})
+			deleteFloatingIPResponse, err := service.DeleteFloatingIP(ctx, tt.deleteRequest)
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -321,6 +301,7 @@ func TestDeleteFloatingIP(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, deleteFloatingIPResponse)
 			assert.EqualValues(t, tt.expectedResponse, deleteFloatingIPResponse)
+			mockCtrl.Finish()
 		})
 	}
 }
