@@ -1,6 +1,10 @@
 package keystone
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Juniper/contrail/pkg/common"
+)
 
 //Assignment is used to manage domain, project and user information.
 type Assignment interface {
@@ -20,6 +24,9 @@ func (assignment *StaticAssignment) FetchUser(name, password string) (*User, err
 	user, ok := assignment.Users[name]
 	if !ok {
 		return nil, fmt.Errorf("User %s not found", name)
+	}
+	if user.Password != "" && common.InterfaceToString(user.Password) != password {
+		return nil, fmt.Errorf("Invalid Credentials")
 	}
 	return user, nil
 }

@@ -77,7 +77,8 @@ func NewAgentByConfig() (*Agent, error) {
 	}
 	c.ID = viper.GetString("client.id")
 	c.Password = viper.GetString("client.password")
-	c.AuthURL = viper.GetString("keystone.auth_url")
+	c.ProjectID = viper.GetString("client.project_id")
+	c.AuthURL = viper.GetString("keystone.authurl")
 	c.InSecure = viper.GetBool("insecure")
 	c.SchemaRoot = viper.GetString("client.schema_root")
 	c.Endpoint = viper.GetString("client.endpoint")
