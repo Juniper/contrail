@@ -25,5 +25,5 @@ virtual_network:
     schema_id: virtual_network
     uuid: vn_blue_test_sync
     virtual_network_fat_flow_protocols: {}
-    virtual_network_network_id: 50
+    virtual_network_network_id: 5
     virtual_network_properties: {}

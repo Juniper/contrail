@@ -18,4 +18,5 @@ virtual_network:
     schema_id: virtual_network
     uuid: first-uuid
     virtual_network_fat_flow_protocols: {}
+    virtual_network_network_id: 6
     virtual_network_properties: {}

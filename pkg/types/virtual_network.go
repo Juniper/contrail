@@ -1,6 +1,8 @@
 package types
 
 import (
+	"net"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
@@ -8,6 +10,114 @@ import (
 )
 
 var errorMultiPolicyServiceChain = common.ErrorBadRequest("Multi policy service chains are not supported, with both import export external route targets")
+
+func isSubnetOverlap(subnet1, subnet2 *net.IPNet) bool {
+	return subnet1.Contains(subnet2.IP) || subnet2.Contains(subnet1.IP)
+}
+
+func appendSubnetIfNoOverlap(subnets []*net.IPNet, subnet *net.IPNet) ([]*net.IPNet, error) {
+	for _, existingSubnet := range subnets {
+		if isSubnetOverlap(subnet, existingSubnet) {
+			return nil, common.ErrorBadRequest(
+				"Overlapping addresses: " + subnet.String() + "," + existingSubnet.String())
+		}
+	}
+	return append(subnets, subnet), nil
+}
+
+func mergeSubnetIfNoOverlap(subnets []*net.IPNet, ipamSubnets []*models.IpamSubnetType) ([]*net.IPNet, error) {
+	for _, subnet := range ipamSubnets {
+		n, err := subnet.Subnet.Net()
+		if err != nil {
+			return nil, err
+		}
+		subnets, err = appendSubnetIfNoOverlap(subnets, n)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return subnets, nil
+}
+
+func (service *ContrailTypeLogicService) checkIpamNetworkSubnets(ctx context.Context, virtualNetwork *models.VirtualNetwork) error {
+	// check for each ipam references
+	ipamReferences := virtualNetwork.NetworkIpamRefs
+	// ip subnet must not overlap in a same network.
+	// so we create a list of subnet for overlap check.
+	subnets := []*net.IPNet{}
+	for _, ipamReference := range ipamReferences {
+		ipamResponse, err := service.DB.GetNetworkIpam(ctx, &models.GetNetworkIpamRequest{
+			ID: ipamReference.UUID,
+		})
+		if err != nil {
+			return err
+		}
+		var ipamSubnets []*models.IpamSubnetType
+		ipam := ipamResponse.NetworkIpam
+		vnSubnet := ipamReference.GetAttr()
+		if ipam.IsFlatSubnet() {
+			// network mode must be L3
+			if !virtualNetwork.IsL3Mode() {
+				return common.ErrorBadRequest("flat-subnet is allowed only with l3 network")
+			}
+			err := vnSubnet.ValidateFlatSubnet()
+			if err != nil {
+				return err
+			}
+			ipamSubnets = ipam.GetIpamSubnets().GetSubnets()
+		} else {
+			err := vnSubnet.ValidateUserDefined()
+			if err != nil {
+				return err
+			}
+			ipamSubnets = vnSubnet.GetIpamSubnets()
+		}
+		subnets, err = mergeSubnetIfNoOverlap(subnets, ipamSubnets)
+		if err != nil {
+			return err
+		}
+		//TODO: check network subnet quota
+	}
+	return nil
+}
+
+func (service *ContrailTypeLogicService) checkNetworkRefs(
+	ctx context.Context, virtualNetwork *models.VirtualNetwork) error {
+	// no further checks if not linked to a provider network
+	if len(virtualNetwork.VirtualNetworkRefs) == 0 {
+		return nil
+	}
+	if virtualNetwork.IsProviderNetwork {
+		// provider network can't connect to another provider vn.
+		for _, vnRef := range virtualNetwork.VirtualNetworkRefs {
+			refUUID := vnRef.UUID
+			//TODO (nati): optimize this by in query.
+			ok, err := service.isVirtualNetworkProviderNetwork(ctx, refUUID)
+			if err != nil {
+				return err
+			}
+			if ok {
+				return common.ErrorBadRequest("Provider VN (" + virtualNetwork.UUID + ") can not connect another " +
+					"provider VN" + refUUID + ")")
+			}
+		}
+	} else {
+		// non provider network can connect to only one provider network.
+		if len(virtualNetwork.VirtualNetworkRefs) > 1 {
+			return common.ErrorBadRequest("Non Provider VN (" + virtualNetwork.UUID + ") can connect to one provider VN but trying to connect to multiple VN")
+		}
+		refUUID := virtualNetwork.VirtualNetworkRefs[0].UUID
+		ok, err := service.isVirtualNetworkProviderNetwork(ctx, refUUID)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return common.ErrorBadRequest("Non Provider VN (" + virtualNetwork.UUID + ") can connect only " +
+				"to one provider VN but not (" + refUUID + ")")
+		}
+	}
+	return nil
+}
 
 //CreateVirtualNetwork do pre check for virtual network.
 func (service *ContrailTypeLogicService) CreateVirtualNetwork(
@@ -35,9 +145,13 @@ func (service *ContrailTypeLogicService) CreateVirtualNetwork(
 			if err != nil {
 				return err
 			}
-			//TODO: check ipam network subnets
-			//TODO: check route target
-			//TODO: check provider network property
+			//check ipam network subnets
+			err = service.checkIpamNetworkSubnets(ctx, virtualNetwork)
+			if err != nil {
+				return err
+			}
+			//TODO: check route target (depends on global system config)
+			err = service.checkNetworkRefs(ctx, virtualNetwork)
 			//TODO: check network support bgp vpn types
 			//TODO: check if we can reference the BGP VPNs
 			//TODO: process network ipam refs references
@@ -60,6 +174,17 @@ func (service *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context
 		return 0, err
 	}
 	return getResponse.VirtualNetwork.VirtualNetworkNetworkID, nil
+}
+
+func (service *ContrailTypeLogicService) isVirtualNetworkProviderNetwork(ctx context.Context, id string) (bool, error) {
+	var getResponse *models.GetVirtualNetworkResponse
+	getResponse, err := service.DB.GetVirtualNetwork(ctx, &models.GetVirtualNetworkRequest{
+		ID: id,
+	})
+	if err != nil {
+		return false, err
+	}
+	return getResponse.VirtualNetwork.IsProviderNetwork, nil
 }
 
 //DeleteVirtualNetwork do pre check for delete network.

@@ -1,5 +1,9 @@
 package models
 
+const (
+	l3Mode = "l3"
+)
+
 //MakeNeutronCompatible makes this resource data neutron compatible.
 func (m *VirtualNetwork) MakeNeutronCompatible() {
 	//  neutorn <-> vnc sharing
@@ -14,6 +18,11 @@ func (m *VirtualNetwork) MakeNeutronCompatible() {
 //HasVirtualNetworkID check if the resource has virtual network ID.
 func (m *VirtualNetwork) HasVirtualNetworkNetworkID() bool {
 	return m.VirtualNetworkNetworkID != 0
+}
+
+//IsL3Mode checks if this network is l3 mode
+func (m *VirtualNetwork) IsL3Mode() bool {
+	return m.VirtualNetworkProperties.ForwardingMode == l3Mode
 }
 
 //IsValidMultiPolicyServiceChainConfig checks if multi policy service chain config is valid or not.
