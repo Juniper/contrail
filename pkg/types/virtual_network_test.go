@@ -14,7 +14,7 @@ import (
 	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
-//Structure testVn is used to pass vn parameters during VrirualNetwork object creation
+//Structure testVn is used to pass vn parameters during VirtualNetwork object creation
 type testVn struct {
 	MultiPolicyServiceChainsEnabled bool
 	ImportRouteTargetList           string
@@ -47,39 +47,6 @@ func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 	vn.UUID = "test_vn_uuid"
 
 	return vn
-}
-
-func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
-	var tests = []struct {
-		name       string
-		testVnData *testVn
-		fails      bool
-	}{
-		{"check for rt",
-			&testVn{MultiPolicyServiceChainsEnabled: true,
-				ImportRouteTargetList: "100:101",
-				ExportRouteTargetList: "100:102"}, false},
-		{"check for rt",
-			&testVn{MultiPolicyServiceChainsEnabled: true,
-				ImportRouteTargetList: "100:101",
-				ExportRouteTargetList: "100:101"}, true},
-		{"check for MultiPolicyServiceChainsEnabled",
-			&testVn{MultiPolicyServiceChainsEnabled: false}, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			vn := createTestVn(tt.testVnData)
-
-			res := vn.IsValidMultiPolicyServiceChainConfig()
-
-			if tt.fails {
-				assert.Falsef(t, res, tt.name)
-			} else {
-				assert.Truef(t, res, tt.name)
-			}
-		})
-	}
 }
 
 func TestCreateVirtualNetwork(t *testing.T) {
