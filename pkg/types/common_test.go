@@ -15,6 +15,7 @@ func makeMockedContrailTypeLogicService(t *testing.T, controller *gomock.Control
 	service := &ContrailTypeLogicService{
 		AddressManager:    ipammock.NewMockAddressManager(controller),
 		DataService:       servicesmock.NewMockService(controller),
+		IntPoolAllocator:  ipammock.NewMockIntPoolAllocator(controller),
 		InTransactionDoer: typesmock.NewMockInTransactionDoer(controller),
 	}
 	service.SetNext(servicesmock.NewMockService(controller))
