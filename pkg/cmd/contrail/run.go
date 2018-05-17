@@ -47,10 +47,10 @@ var processCmd = &cobra.Command{
 				wg.Done()
 			}()
 		}
-		if viper.GetBool("watcher.enabled") {
+		if viper.GetBool("sync.enabled") {
 			wg.Add(1)
 			go func() {
-				startWatcher()
+				startSync()
 				wg.Done()
 			}()
 		}
@@ -66,7 +66,7 @@ var processCmd = &cobra.Command{
 	},
 }
 
-func startWatcher() {
+func startSync() {
 	s, err := syncp.NewService()
 	if err != nil {
 		log.Fatal(err)
