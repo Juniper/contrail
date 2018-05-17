@@ -120,19 +120,32 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	w.log.Debug("Created publication: ", w.conf.Publication)
 
 	w.log.Debug("Starting dump phase")
+	dumpStart := time.Now()
 	if err := w.conn.DumpSnapshot(ctx, w.dumpWriter, snapshotName); err != nil {
 		return fmt.Errorf("dumping snapshot failed: %v", err)
 	}
-	w.log.Debug("Dump phase finished - starting replication")
+	w.log.Debugf("Dump phase finished, took %s - starting replication", time.Since(dumpStart))
 
 	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
 		return fmt.Errorf("failed to start replication: %s", err)
 	}
 
-	return w.loop(ctx)
+	feed := make(chan *pgx.ReplicationMessage)
+	w.runMessageConsumer(feed)
+	return w.runMessageProducer(ctx, feed)
 }
 
-func (w *PostgresWatcher) loop(ctx context.Context) error {
+func (w *PostgresWatcher) runMessageConsumer(feed <-chan *pgx.ReplicationMessage) {
+	go func() {
+		for msg := range feed {
+			if err := w.handleMessage(msg); err != nil {
+				w.log.Error("Error while handling replication message: ", err)
+			}
+		}
+	}()
+}
+
+func (w *PostgresWatcher) runMessageProducer(ctx context.Context, feed chan<- *pgx.ReplicationMessage) error {
 	tick := time.NewTicker(w.conf.StatusTimeout).C
 	for {
 		select {
@@ -150,9 +163,7 @@ func (w *PostgresWatcher) loop(ctx context.Context) error {
 			}
 
 			if msg != nil {
-				if err = w.handleMessage(msg); err != nil {
-					w.log.Error("Error while handling replication message: ", err)
-				}
+				feed <- msg
 			}
 		}
 	}
