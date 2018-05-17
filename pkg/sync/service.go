@@ -15,7 +15,6 @@ import (
 	"github.com/Juniper/contrail/pkg/sync/sink"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jackc/pgx"
-	_ "github.com/jackc/pgx/stdlib" // allows using of pgx sql driver
 	"github.com/pkg/errors"
 	mysqlcanal "github.com/siddontang/go-mysql/canal"
 	"github.com/sirupsen/logrus"
@@ -23,10 +22,8 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
-// Replication drivers
 const (
-	DriverMySQL      = "mysql"
-	DriverPostgreSQL = "pgx"
+	mysqlDefaultPort = "3306"
 )
 
 type watchCloser interface {
@@ -101,7 +98,7 @@ func NewService() (*Service, error) {
 }
 
 func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
-	driver := viper.GetString("database.driver")
+	driver := viper.GetString("database.type")
 	sqlDB, err := db.ConnectDB()
 	if err != nil {
 		return nil, err
@@ -115,9 +112,9 @@ func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
 	objectWriter := sink.NewObjectWriter(s)
 
 	switch driver {
-	case DriverPostgreSQL:
+	case db.DriverPostgreSQL:
 		return createPostgreSQLWatcher(log, rowSink, dbService, objectWriter)
-	case DriverMySQL:
+	case db.DriverMySQL:
 		return createMySQLWatcher(log, rowSink)
 	default:
 		return nil, errors.New("undefined database type")
@@ -155,7 +152,7 @@ func createMySQLWatcher(log *logrus.Entry, sink replication.RowSink) (watchClose
 
 	canal, err := mysqlcanal.NewCanal(conf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating canal: %v", err)
 	}
 	canal.SetEventHandler(replication.NewCanalEventHandler(sink))
 
@@ -164,7 +161,7 @@ func createMySQLWatcher(log *logrus.Entry, sink replication.RowSink) (watchClose
 
 func canalConfig() *mysqlcanal.Config {
 	c := mysqlcanal.NewDefaultConfig()
-	c.Addr = viper.GetString("database.host")
+	c.Addr = viper.GetString("database.host") + ":" + mysqlDefaultPort
 	c.User = viper.GetString("database.user")
 	c.Password = viper.GetString("database.password")
 	c.Dump.Databases = []string{viper.GetString("database.name")}
