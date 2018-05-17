@@ -26,7 +26,7 @@ test_database:
         password: contrail123
         name: contrail_test
     postgres:
-        type: postgres 
+        type: pgx
         dialect: postgres
         host: localhost
         user: root

@@ -12,7 +12,7 @@ test_database:
         type: mysql
         dialect: mysql
     postgres:
-        type: postgres 
+        type: pgx
         connection: "user=root dbname=contrail_test sslmode=disable password=contrail123"
         dialect: postgres
 

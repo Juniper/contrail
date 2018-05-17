@@ -101,7 +101,7 @@ func NewService() (*Service, error) {
 }
 
 func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
-	driver := viper.GetString("database.driver")
+	driver := viper.GetString("database.type")
 	sqlDB, err := db.ConnectDB()
 	if err != nil {
 		return nil, err

@@ -19,7 +19,7 @@ import (
 // Replication drivers
 const (
 	DriverMySQL      = "mysql"
-	DriverPostgreSQL = "postgres"
+	DriverPostgreSQL = "pgx"
 )
 
 const (
