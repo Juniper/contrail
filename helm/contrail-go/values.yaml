@@ -134,7 +134,7 @@ config:
     no_auth: true
     insecure: true
 
-    watcher:
+    sync:
         enabled: false
         storage: json
 
