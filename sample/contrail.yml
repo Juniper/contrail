@@ -8,7 +8,6 @@ database:
     password: contrail123
     name: contrail_test
     # Postgres example
-    # connection: "user=root dbname=contrail_test sslmode=disable"
     # type: pgx 
     # dialect: postgres
 
@@ -109,7 +108,7 @@ server:
 no_auth: true
 insecure: true
 
-watcher:
+sync:
   enabled: false
   storage: json
 

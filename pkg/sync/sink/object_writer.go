@@ -13,6 +13,6 @@ func NewObjectWriter(s Sink) *ObjectWriter {
 }
 
 // WriteObject handles database object by writing it to Sink.
-func (s *ObjectWriter) WriteObject(schemaID string, objUUID string, obj db.Object) error {
-	return s.s.Create(schemaID, objUUID, obj)
+func (o *ObjectWriter) WriteObject(schemaID string, objUUID string, obj db.Object) error {
+	return o.s.Create(schemaID, objUUID, obj)
 }

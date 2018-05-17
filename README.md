@@ -23,13 +23,13 @@ to community discussion.
 - [golang.org/doc/install](https://golang.org/doc/install)
 - [docs.docker.com/install](https://docs.docker.com/install/)
 
-### Step2. Go get contrailutil
+### Step2. Go get contrail
 
 ``` shell
-go get -u github.com/Juniper/contrail/cmd/contrailutil
+go get -u github.com/Juniper/contrail
 ```
 
-Note that `go get -u github.com/Juniper/contrail` fails because we don't
+Note that `go get -u github.com/Juniper/contrail/cmd/contrailutil` fails because we don't
 commit generated code.
 
 ### Step3. Install dependencies
@@ -60,24 +60,29 @@ make testenv
 make reset_db
 ```
 
-Note that depending on your docker configuration you may need root permissions.
+Note that these commands use `docker` command and depending on your docker
+configuration they may require root permissions.
+See [Docker Documentation](https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
+for more info.
 
 ## Try
 
 - Run processes
 
-  ```
-  contrail -c sample/contrail.yml run 
-  ```
+    ```
+    contrail -c sample/contrail.yml run 
+    ```
 
     Note that you can overwrite configuration parameters using environment variable with
     prefix "CONTRAIL_"
 
-  For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
+    For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
 
-  ``` shell
-  CONTRAIL_DATABASE_DEBUG=true contrail -c sample/contrail.yml process
-  ```
+    ``` shell
+    CONTRAIL_DATABASE_DEBUG=true contrail -c sample/contrail.yml run
+    ```
+
+    Individual processes can be enabled or disabled using the configuration parameters.
 
 - Run CLI
 
@@ -121,8 +126,8 @@ CONTRAIL_DATABASE_DEBUG=true make test
 ## Commands
 
 Repository holds source code for following CLI applications:
-- `contrail` - contains API Server, [Agent](doc/agent.md), [Sync](doc/sync.md)
-and [API Server command line client][cli] 
+- `contrail` - contains API Server, [Agent](doc/agent.md) and [Sync](doc/sync.md)
+processes and [Cluster](doc/cluster.md) service
 - `contrailcli` - contains [API Server command line client][cli]
 - `contrailschema` - code generator by schema definitions
 - `contrailutil` - contains development utilities

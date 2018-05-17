@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Replication drivers
+// Database drivers
 const (
 	DriverMySQL      = "mysql"
 	DriverPostgreSQL = "postgres"
