@@ -1,4 +1,4 @@
-FROM alpine 
+FROM centos:7.4.1708
 MAINTAINER Nachi Ueno nueno@juniper.net
 
 ADD ./contrail /bin/contrail
@@ -9,18 +9,14 @@ ADD ./etc/init_psql.sql /usr/share/contrail/
 ADD ./public /usr/share/contrail/public
 ADD ./templates /usr/share/contrail/templates
 
-RUN apk update && apk add \
-        bash \
+RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  &&\
+        yum install -y \
         mysql-client \
         postgresql-client \
         git \
-        python \
-        linux-headers \
-        py-pip \
-        python-dev \
-        build-base \
         ansible \
         docker \
+        python-pip \
         && pip install --upgrade pip
 
 EXPOSE 9091

@@ -1,0 +1,28 @@
+description: Kubernetes Cluster
+extends:
+- base
+- ownable
+- has_status
+id: kubernetes_cluster
+metadata:
+  category: cluster
+parent: ""
+plural: kubernetes_clusters
+prefix: /
+schema:
+  properties:
+    ntp_server:
+      description: NTP server ip address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: NTPServer
+      type: string
+      view:
+      - create
+      - detail
+singular: kubernetes_cluster
+title: Kubernetes Cluster
+type: ""

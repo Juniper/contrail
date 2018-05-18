@@ -4,6 +4,10 @@ package cluster
 const (
 	defaultResource                       = "contrail-cluster"
 	defaultResourcePath                   = "/" + defaultResource
+	defaultK8sResource                    = "kubernetes-cluster"
+	defaultK8sResourcePath                = "/" + defaultK8sResource
+	defaultOpenstackResource              = "openstack-cluster"
+	defaultOpenstackResourcePath          = "/" + defaultOpenstackResource
 	defaultEndpointRes                    = "endpoint"
 	defaultEndpointResPath                = "/" + defaultEndpointRes
 	defaultNodeRes                        = "node"

@@ -11,7 +11,7 @@ references:
       description: "Reference to node object for this openstack_compute node."
       presence: "optional"
 parents:
-  contrail_cluster:
+  openstack_cluster:
     operations: "CRUD"
     description: "Parent of this openstack_compute node."
     presence: "optional"
