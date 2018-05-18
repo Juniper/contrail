@@ -9,9 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"
+
+	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 const (
@@ -50,6 +52,60 @@ type provisionCommon struct {
 	clusterData *Data
 	log         *logrus.Entry
 	reporter    *Reporter
+}
+
+func (p *provisionCommon) getK8sClusterData() *KubernetesData {
+	// One kubernetes cluster is the supported topology
+	if len(p.clusterData.kubernetesClusterData) > 0 {
+		return p.clusterData.kubernetesClusterData[0]
+	} else {
+		return nil
+	}
+}
+
+func (p *provisionCommon) getK8sClusterInfo() *models.KubernetesCluster {
+	if p.getK8sClusterData() != nil {
+		return p.getK8sClusterData().clusterInfo
+	}
+	return nil
+}
+
+func (p *provisionCommon) getOpenstackClusterData() *OpenstackData {
+	// One openstack cluster is the supported topology
+	if len(p.clusterData.openstackClusterData) > 0 {
+		return p.clusterData.openstackClusterData[0]
+	} else {
+		return nil
+	}
+}
+
+func (p *provisionCommon) getOpenstackClusterInfo() *models.OpenstackCluster {
+	if p.getOpenstackClusterData() != nil {
+		return p.getOpenstackClusterData().clusterInfo
+	}
+	return nil
+}
+
+func (p *provisionCommon) getAllNodesInfo() []*models.Node {
+	nodes := p.clusterData.nodesInfo
+	if p.getOpenstackClusterData() != nil {
+		nodes = append(nodes, p.getOpenstackClusterData().nodesInfo...)
+	}
+	if p.getK8sClusterData() != nil {
+		nodes = append(nodes, p.getK8sClusterData().nodesInfo...)
+	}
+
+	var uniqueNodes []*models.Node
+	m := make(map[string]bool)
+
+	for _, node := range nodes {
+		if _, ok := m[node.UUID]; !ok {
+			m[node.UUID] = true
+			uniqueNodes = append(uniqueNodes, node)
+		}
+	}
+
+	return uniqueNodes
 }
 
 func (p *provisionCommon) isCreated() bool {
@@ -114,7 +170,9 @@ func (p *provisionCommon) endpointToURL(protocol, ip, port string) (endpointURL 
 
 func (p *provisionCommon) createEndpoints() error {
 	p.log.Infof("Creating service endpoints for cluster: %s", p.clusterID)
-	for _, configNode := range p.clusterData.clusterInfo.ContrailConfigNodes {
+	contrailCluster := p.clusterData.clusterInfo
+	openstackCluster := p.getOpenstackClusterData().clusterInfo
+	for _, configNode := range contrailCluster.ContrailConfigNodes {
 		for _, nodeRef := range configNode.NodeRefs {
 			for _, node := range p.clusterData.nodesInfo {
 				if nodeRef.UUID == node.UUID {
@@ -128,7 +186,7 @@ func (p *provisionCommon) createEndpoints() error {
 			}
 		}
 	}
-	for _, analyticsNode := range p.clusterData.clusterInfo.ContrailAnalyticsNodes {
+	for _, analyticsNode := range contrailCluster.ContrailAnalyticsNodes {
 		for _, nodeRef := range analyticsNode.NodeRefs {
 			for _, node := range p.clusterData.nodesInfo {
 				if nodeRef.UUID == node.UUID {
@@ -143,7 +201,7 @@ func (p *provisionCommon) createEndpoints() error {
 			}
 		}
 	}
-	for _, webuiNode := range p.clusterData.clusterInfo.ContrailWebuiNodes {
+	for _, webuiNode := range contrailCluster.ContrailWebuiNodes {
 		for _, nodeRef := range webuiNode.NodeRefs {
 			for _, node := range p.clusterData.nodesInfo {
 				if nodeRef.UUID == node.UUID {
@@ -158,7 +216,7 @@ func (p *provisionCommon) createEndpoints() error {
 			}
 		}
 	}
-	for _, openstackStorageNode := range p.clusterData.clusterInfo.OpenstackStorageNodes {
+	for _, openstackStorageNode := range openstackCluster.OpenstackStorageNodes {
 		for _, nodeRef := range openstackStorageNode.NodeRefs {
 			for _, node := range p.clusterData.nodesInfo {
 				if nodeRef.UUID == node.UUID {
@@ -173,7 +231,7 @@ func (p *provisionCommon) createEndpoints() error {
 			}
 		}
 	}
-	for _, openstackControlNode := range p.clusterData.clusterInfo.OpenstackControlNodes {
+	for _, openstackControlNode := range openstackCluster.OpenstackControlNodes {
 		for _, nodeRef := range openstackControlNode.NodeRefs {
 			for _, node := range p.clusterData.nodesInfo {
 				if nodeRef.UUID == node.UUID {
