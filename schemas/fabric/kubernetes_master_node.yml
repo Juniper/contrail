@@ -11,7 +11,7 @@ references:
       description: "Reference to node object for this kubernetes master node."
       presence: "optional"
 parents:
-  contrail_cluster:
+  kubernetes_cluster:
     operations: "CRUD"
     description: "Parent of this kubernetes master node."
     presence: "optional"

@@ -15,6 +15,7 @@ cleanup:
 - path: /openstack-storage-node/openstack_storage_nodes_uuid
 - path: /openstack-compute-node/openstack_compute_nodes_uuid
 - path: /contrail-cluster/test_cluster_uuid
+- path: /openstack-cluster/test_openstack_cluster_uuid
 - path: /node/all_in_one_node_uuid
 test_data:
   admin_project: &admin_project
@@ -26,22 +27,74 @@ test_data:
     hostname: all_in_one_node
     interface_name: all_in_one_node_interface
     ip_address: 127.0.0.1
+  all_in_one_openstack_cluster: &all_in_one_openstack_cluster
+    fq_name: ["default", "admin", "all_in_one_openstack_cluster"]
+    uuid: test_openstack_cluster_uuid
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    openstack_registry: default
+    openstack_release: ocata-xyz
+    ntp_server: 10.1.1.100
+  openstack_control_nodes: &openstack_control_nodes
+    fq_name: ["default", "admin", "openstack_control_nodes"]
+    uuid: openstack_control_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  openstack_monitoring_nodes: &openstack_monitoring_nodes
+    fq_name: ["default", "admin", "openstack_monitoring_nodes"]
+    uuid: openstack_monitoring_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  openstack_network_nodes: &openstack_network_nodes
+    fq_name: ["default", "admin", "openstack_network_nodes"]
+    uuid: openstack_network_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  openstack_storage_nodes: &openstack_storage_nodes
+    fq_name: ["default", "admin", "openstack_storage_nodes"]
+    uuid: openstack_storage_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  openstack_compute_nodes: &openstack_compute_nodes
+    fq_name: ["default", "admin", "openstack_compute_nodes"]
+    uuid: openstack_compute_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
   all_in_one_cluster: &all_in_one_cluster
     fq_name: ["default", "admin", "all_in_one_cluster"]
     uuid: test_cluster_uuid
     parent_type: project
     parent_uuid: admin_project_uuid
-    openstack_registry: default
     container_registry: test_registry
     registry_private_insecure: true
     contrail_version: ocata-5.0-x
     provisioner_type: ansible
     orchestrator: openstack
     default_gateway: 127.0.0.254
-    openstack_release: ocata-xyz
     ntp_server: 10.1.1.100
     encap_priority: VXLANMPLSoUDPMPLSoGRE
-    {% if control_data_network_list %}control_data_network_list: {{ control_data_network_list }}{%endif%}
+    openstack_cluster_refs:
+      - uuid: test_openstack_cluster_uuid
+    {% if CONTROL_NODES %}
+    contrail_configuration:
+      key_value_pair:
+        - key: CONTROL_NODES
+          value: {{CONTROL_NODES}}
+        {% if OPENSTACK_NODES %}
+        - key: OPENSTACK_NODES
+          value: {{OPENSTACK_NODES}}
+        {%endif%}
+    {%endif%}
   contrail_config_nodes: &contrail_config_nodes
     fq_name: ["default", "admin", "contrail_config_nodes"]
     uuid: contrail_config_nodes_uuid
@@ -91,41 +144,6 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
-  openstack_control_nodes: &openstack_control_nodes
-    fq_name: ["default", "admin", "openstack_control_nodes"]
-    uuid: openstack_control_nodes_uuid
-    parent_type: contrail-cluster
-    parent_uuid: test_cluster_uuid
-    node_refs:
-      - uuid: all_in_one_node_uuid
-  openstack_monitoring_nodes: &openstack_monitoring_nodes
-    fq_name: ["default", "admin", "openstack_monitoring_nodes"]
-    uuid: openstack_monitoring_nodes_uuid
-    parent_type: contrail-cluster
-    parent_uuid: test_cluster_uuid
-    node_refs:
-      - uuid: all_in_one_node_uuid
-  openstack_network_nodes: &openstack_network_nodes
-    fq_name: ["default", "admin", "openstack_network_nodes"]
-    uuid: openstack_network_nodes_uuid
-    parent_type: contrail-cluster
-    parent_uuid: test_cluster_uuid
-    node_refs:
-      - uuid: all_in_one_node_uuid
-  openstack_storage_nodes: &openstack_storage_nodes
-    fq_name: ["default", "admin", "openstack_storage_nodes"]
-    uuid: openstack_storage_nodes_uuid
-    parent_type: contrail-cluster
-    parent_uuid: test_cluster_uuid
-    node_refs:
-      - uuid: all_in_one_node_uuid
-  openstack_compute_nodes: &openstack_compute_nodes
-    fq_name: ["default", "admin", "openstack_compute_nodes"]
-    uuid: openstack_compute_nodes_uuid
-    parent_type: contrail-cluster
-    parent_uuid: test_cluster_uuid
-    node_refs:
-      - uuid: all_in_one_node_uuid
 clients:
   default:
     id: alice
@@ -163,6 +181,25 @@ workflow:
       hostname: all_in_one_node
       interface_name: all_in_one_node_interface
       ip_address: 127.0.0.1
+- name: create openstack cluster
+  request:
+    path: /openstack-clusters
+    method: POST
+    expected:
+    - 201
+    data:
+      openstack-cluster: *all_in_one_openstack_cluster
+  expect:
+    openstack-cluster:
+      perms2:
+        owner: admin
+      parent_type: project
+      parent_uuid: admin_project_uuid
+      uuid: test_openstack_cluster_uuid
+      fq_name: ["default", "admin", "all_in_one_openstack_cluster"]
+      openstack_registry: default
+      openstack_release: ocata-xyz
+      ntp_server: 10.1.1.100
 - name: create cluster
   request:
     path: /contrail-clusters
@@ -173,19 +210,21 @@ workflow:
       contrail-cluster: *all_in_one_cluster
   expect:
     contrail-cluster:
+      perms2:
+        owner: admin
       parent_type: project
       parent_uuid: admin_project_uuid
       uuid: test_cluster_uuid
       fq_name: ["default", "admin", "all_in_one_cluster"]
-      openstack_registry: default
       container_registry: test_registry
       registry_private_insecure: true
       contrail_version: ocata-5.0-x
       provisioner_type: ansible
       orchestrator: openstack
       default_gateway: 127.0.0.254
-      openstack_release: ocata-xyz
       ntp_server: 10.1.1.100
+      openstack_cluster_refs:
+        - uuid: test_openstack_cluster_uuid
 
 - name: create config node
   request:
@@ -312,7 +351,7 @@ workflow:
         fq_name: ["default", "admin", "openstack_control_nodes"]
         uuid: openstack_control_nodes_uuid
         parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
+        parent_uuid: test_openstack_cluster_uuid
         node_refs:
           - uuid: all_in_one_node_uuid
 - name: create openstack monitoring node
@@ -328,7 +367,7 @@ workflow:
         fq_name: ["default", "admin", "openstack_monitoring_nodes"]
         uuid: openstack_monitoring_nodes_uuid
         parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
+        parent_uuid: test_openstack_cluster_uuid
         node_refs:
           - uuid: all_in_one_node_uuid
 - name: create openstack network node
@@ -344,7 +383,7 @@ workflow:
         fq_name: ["default", "admin", "openstack_network_nodes"]
         uuid: openstack_network_nodes_uuid
         parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
+        parent_uuid: test_openstack_cluster_uuid
         node_refs:
           - uuid: all_in_one_node_uuid
 - name: create openstack storage node
@@ -360,7 +399,7 @@ workflow:
         fq_name: ["default", "admin", "openstack_storage_nodes"]
         uuid: openstack_storage_nodes_uuid
         parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
+        parent_uuid: test_openstack_cluster_uuid
         node_refs:
           - uuid: all_in_one_node_uuid
 - name: create openstack compute node
@@ -376,6 +415,6 @@ workflow:
         fq_name: ["default", "admin", "openstack_compute_nodes"]
         uuid: openstack_compute_nodes_uuid
         parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
+        parent_uuid: test_openstack_cluster_uuid
         node_refs:
           - uuid: all_in_one_node_uuid

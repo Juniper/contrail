@@ -82,6 +82,7 @@ func (c *Cluster) interfaceToKubernetesNode(kubernetesNodes interface{}) ([]*mod
 	}
 	return kubernetesNodesData, nil
 }
+
 func (c *Cluster) interfaceToKubernetesMasterNode(
 	kubernetesMasterNodes interface{}) ([]*models.KubernetesMasterNode, error) {
 	var kubernetesMasterNodesData []*models.KubernetesMasterNode
@@ -97,6 +98,7 @@ func (c *Cluster) interfaceToKubernetesMasterNode(
 	}
 	return kubernetesMasterNodesData, nil
 }
+
 func (c *Cluster) interfaceToOpenstackControlNode(
 	openstackControlNodes interface{}) ([]*models.OpenstackControlNode, error) {
 	var openstackControlNodesData []*models.OpenstackControlNode
@@ -409,6 +411,12 @@ func (c *Cluster) getNodeDetails(clusterInfo *models.ContrailCluster) ([]*models
 			}
 		}
 	}
+	return nodesInfo, nil
+}
+
+func (c *Cluster) getK8sNodeDetails(clusterInfo *models.KubernetesCluster) ([]*models.Node, error) {
+	var nodesInfo []*models.Node
+	m := make(map[string]bool)
 	for _, node := range clusterInfo.KubernetesMasterNodes {
 		for _, nodeRef := range node.NodeRefs {
 			n, err := c.getNode(nodeRef.UUID, m)
@@ -431,6 +439,12 @@ func (c *Cluster) getNodeDetails(clusterInfo *models.ContrailCluster) ([]*models
 			}
 		}
 	}
+	return nodesInfo, nil
+}
+
+func (c *Cluster) getOpenstackNodeDetails(clusterInfo *models.OpenstackCluster) ([]*models.Node, error) {
+	var nodesInfo []*models.Node
+	m := make(map[string]bool)
 	for _, node := range clusterInfo.OpenstackControlNodes {
 		for _, nodeRef := range node.NodeRefs {
 			n, err := c.getNode(nodeRef.UUID, m)
@@ -552,6 +566,47 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 			return nil, err
 		}
 	}
+	// get all nodes information
+	nodesInfo, err := c.getNodeDetails(clusterInfo)
+	if err != nil {
+		return nil, err
+	}
+	clusterData := &Data{
+		clusterInfo: clusterInfo,
+		nodesInfo:   nodesInfo,
+	}
+
+	// get all referred openstack cluster information
+	var openstackClusterData []*OpenstackData
+	for _, openstackClusterRef := range clusterInfo.OpenstackClusterRefs {
+		openstackData, err := c.getOpenstackClusterDetails(openstackClusterRef.UUID)
+		if err != nil {
+			return nil, err
+		}
+		openstackClusterData = append(openstackClusterData, openstackData)
+	}
+	clusterData.openstackClusterData = openstackClusterData
+
+	// get all referred kubernetes cluster information
+	var kubernetesClusterData []*KubernetesData
+	for _, kubernetesClusterRef := range clusterInfo.KubernetesClusterRefs {
+		k8sData, err := c.getKubernetesClusterDetails(kubernetesClusterRef.UUID)
+		if err != nil {
+			return nil, err
+		}
+		kubernetesClusterData = append(kubernetesClusterData, k8sData)
+	}
+	clusterData.kubernetesClusterData = kubernetesClusterData
+
+	return clusterData, nil
+}
+
+func (c *Cluster) getOpenstackClusterDetails(clusterID string) (*OpenstackData, error) {
+	rData, err := c.getResource(defaultOpenstackResourcePath, clusterID)
+	if err != nil {
+		return nil, errors.New("unable to gather openstack cluster information")
+	}
+	clusterInfo := models.InterfaceToOpenstackCluster(rData)
 
 	// Expand openstack_compute back ref
 	if openstackComputeNodes, ok := rData["openstack_compute_nodes"]; ok {
@@ -588,6 +643,26 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 			return nil, err
 		}
 	}
+	// get all nodes information
+	nodesInfo, err := c.getOpenstackNodeDetails(clusterInfo)
+	if err != nil {
+		return nil, err
+	}
+	clusterData := &OpenstackData{
+		clusterInfo: clusterInfo,
+		nodesInfo:   nodesInfo,
+	}
+
+	return clusterData, nil
+}
+
+func (c *Cluster) getKubernetesClusterDetails(clusterID string) (*KubernetesData, error) {
+	rData, err := c.getResource(defaultK8sResourcePath, clusterID)
+	if err != nil {
+		return nil, errors.New("unable to gather k8s cluster information")
+	}
+	clusterInfo := models.InterfaceToKubernetesCluster(rData)
+
 	// Expand kubernetes_master back ref
 	if kubernetesMasterNodes, ok := rData["kubernetes_master_nodes"]; ok {
 		clusterInfo.KubernetesMasterNodes, err = c.interfaceToKubernetesMasterNode(kubernetesMasterNodes)
@@ -604,11 +679,11 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 	}
 
 	// get all nodes information
-	nodesInfo, err := c.getNodeDetails(clusterInfo)
+	nodesInfo, err := c.getK8sNodeDetails(clusterInfo)
 	if err != nil {
 		return nil, err
 	}
-	clusterData := &Data{
+	clusterData := &KubernetesData{
 		clusterInfo: clusterInfo,
 		nodesInfo:   nodesInfo,
 	}
