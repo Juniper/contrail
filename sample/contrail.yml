@@ -7,6 +7,7 @@ database:
     user: root
     password: contrail123
     name: contrail_test
+    #debug: true
     # Postgres example
     # type: pgx 
     # dialect: postgres

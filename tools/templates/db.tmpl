@@ -47,6 +47,59 @@ var {{ schema.JSONSchema.GoName }}Parents = []string{
    {% endfor %}
 }
 
+func (db *Service) create{{ schema.JSONSchema.GoName }}Reference(
+    ctx context.Context,
+    request *services.Create{{ schema.JSONSchema.GoName }}Request) error {
+    {% for linkTo, reference in schema.References %}
+    for _, ref := range request.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs {
+       qb := db.queryBuilders["{{ schema.ID }}"]
+       tx := GetTransaction(ctx)
+       model := request.{{ schema.JSONSchema.GoName }}
+       {% if reference.RefType  %}
+       if ref.Attr == nil {
+           ref.Attr = &models.{{ reference.RefType }}{}
+       }
+       {% endif %}
+        _, err := tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+    {% endif %}{% endfor %})
+	    if err != nil {
+            err = handleError(err)
+		  return errors.Wrapf(err,"{{ reference.GoName }}Refs create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
+        }
+    }
+    {% endfor %}
+    return nil
+}
+
+func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
+    ctx context.Context,
+    request *services.Create{{ schema.JSONSchema.GoName }}Request) (err error) {
+    {% if schema.HasParents %}
+    model := request.{{ schema.JSONSchema.GoName }}
+    switch model.ParentType {
+    {% for linkTo, reference in schema.Parents %}
+    case "{{ reference.LinkTo.Path }}":
+       qb := db.queryBuilders["{{ schema.ID }}"]
+       tx := GetTransaction(ctx)
+       _, err = tx.ExecContext(ctx, qb.CreateParentRefQuery("{{ linkTo | lower  }}"), model.UUID, model.ParentUUID)
+       if err == nil {
+           return nil
+       } else {
+        err = handleError(err)
+        return errors.Wrapf(err, "Create failed (DB insert) of resource {{ schema.JSONSchema.GoName }} with UUID '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
+        }
+    {% endfor %}
+    }
+        {% if schema.ParentOptional %}
+        return nil
+        {% else %}
+        return common.ErrorBadRequest("invalid parent type")
+        {% endif %}
+    {% else %}
+    return nil
+    {% endif %}
+}
+
 // Create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
 // nolint
 func (db *Service) create{{ schema.JSONSchema.GoName }}(
@@ -59,23 +112,19 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     {% endif %}{% endfor %})
 	if err != nil {
         err = handleError(err)
-	   return errors.Wrapf(err, "Create failed (DB insert) of resource {{ schema.JSONSchema.GoName }} with UUID '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
+        return errors.Wrap(err, "create failed")
 	}
-    {% for linkTo, reference in schema.References %}
-    for _, ref := range model.{{ reference.GoName }}Refs {
-       {% if reference.RefType  %}
-       if ref.Attr == nil {
-           ref.Attr = &models.{{ reference.RefType }}{}
-       }
-       {% endif %}
-        _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
-    {% endif %}{% endfor %})
-	    if err != nil {
-            err = handleError(err)
-		  return errors.Wrapf(err,"{{ reference.GoName }}Refs create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
-        }
+
+    err = db.create{{ schema.JSONSchema.GoName }}Reference(ctx, request)
+    if err != nil {
+        return err
     }
-    {% endfor %}
+
+    err = db.create{{ schema.JSONSchema.GoName }}ParentReference(ctx, request)
+    if err != nil {
+        return err
+    }
+
     metaData := &MetaData{
         UUID: model.UUID,
         Type: "{{ schema.ID }}",
@@ -418,6 +467,7 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
     spec := &services.ListSpec{
                 Limit: 1,
                 Detail: true,
+                Fields: request.Fields,
                 Filters: []*services.Filter{
                     &services.Filter{
                         Key: "uuid",

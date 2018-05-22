@@ -89,6 +89,7 @@ message List{{ schema.JSONSchema.GoName }}Response {
 
 message Get{{ schema.JSONSchema.GoName }}Request {
     string id = 1 [(gogoproto.customname) = "ID"];
+    repeated string fields = 13 [(gogoproto.customname) = "Fields"]; // limit displayed fields
 }
 
 message Get{{ schema.JSONSchema.GoName }}Response {
