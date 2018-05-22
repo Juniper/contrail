@@ -1,7 +1,6 @@
 name: All in one cluster test
 description: all-in-one cluster CRUD test
 cleanup:
-- path: /project/admin_project_uuid
 - path: /contrail-config-node/contrail_config_nodes_uuid
 - path: /contrail-config-database-node/contrail_config_database_nodes_uuid
 - path: /contrail-analytics-node/contrail_analytics_nodes_uuid
@@ -17,10 +16,13 @@ cleanup:
 - path: /contrail-cluster/test_cluster_uuid
 - path: /openstack-cluster/test_openstack_cluster_uuid
 - path: /node/all_in_one_node_uuid
+- path: /project/admin_project_uuid
 test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin"]
     uuid: admin_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
   all_in_one_node: &all_in_one_node
     fq_name: ["default", "admin", "all_in_one_node"]
     uuid: all_in_one_node_uuid

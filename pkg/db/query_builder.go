@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/services"
 	log "github.com/sirupsen/logrus"
 )
@@ -279,13 +280,29 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	}
 }
 
+func (qb *QueryBuilder) iSlinkToInField(ctx *queryContext, linkTo string) bool {
+	spec := ctx.spec
+	if len(spec.Fields) == 0 {
+		return true
+	}
+	for _, field := range spec.Fields {
+		if field == linkTo {
+			return true
+		}
+	}
+	return false
+}
+
 func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 	spec := ctx.spec
 	if !spec.Detail {
 		return
 	}
 	for linkTo, refFields := range qb.RefFields {
-		refTable := strings.ToLower("ref_" + qb.Table + "_" + linkTo)
+		if !qb.iSlinkToInField(ctx, linkTo+"_refs") {
+			continue
+		}
+		refTable := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
 		refFields = append(refFields, "from")
 		refFields = append(refFields, "to")
 		subQuery := "(select " +
@@ -323,6 +340,9 @@ func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 	}
 	// use sub query if no backrefuuids
 	for refTable, refFields := range qb.BackRefFields {
+		if !qb.iSlinkToInField(ctx, refTable+"_backrefs") {
+			continue
+		}
 		refTable = strings.ToLower(refTable)
 		subQuery := "(select " +
 			qb.as(qb.jsonAgg(refTable+"_t", refFields...), qb.quote(refTable+"_ref")) +
@@ -397,10 +417,19 @@ func (qb *QueryBuilder) CreateQuery() string {
 	return query
 }
 
-//CreateRefQuery makes references.
-func (qb *QueryBuilder) CreateRefQuery(linkto string) string {
-	fields := append([]string{"from", "to"}, qb.RefFields[linkto]...)
-	return ("insert into ref_" + qb.Table + "_" + linkto +
+//CreateRefQuery makes a reference.
+func (qb *QueryBuilder) CreateRefQuery(linkTo string) string {
+	fields := append([]string{"from", "to"}, qb.RefFields[linkTo]...)
+	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
+	return ("insert into " + table +
+		" (" + qb.quoteSep(fields...) + ") values (" + qb.values(fields...) + ")")
+}
+
+//CreateParentQuery makes a reference to parent object.
+func (qb *QueryBuilder) CreateParentRefQuery(linkTo string) string {
+	fields := []string{"from", "to"}
+	table := schema.ReferenceTableName(schema.ParentPrefix, qb.Table, linkTo)
+	return ("insert into " + table +
 		" (" + qb.quoteSep(fields...) + ") values (" + qb.values(fields...) + ")")
 }
 
@@ -410,8 +439,9 @@ func (qb *QueryBuilder) DeleteQuery() string {
 }
 
 //DeleteRefQuery makes sql query.
-func (qb *QueryBuilder) DeleteRefQuery(linkto string) string {
-	return "delete from ref_" + qb.Table + "_" + linkto + " where " + qb.quote("from") + " = " + qb.placeholder(1)
+func (qb *QueryBuilder) DeleteRefQuery(linkTo string) string {
+	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
+	return "delete from " + table + " where " + qb.quote("from") + " = " + qb.placeholder(1)
 }
 
 //SelectAuthQuery makes sql query.

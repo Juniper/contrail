@@ -16,9 +16,13 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func TestAPIServer(t *testing.T) {
+func TestVirtualNetwork(t *testing.T) {
 	CreateTestProject(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_virtual_network.yml")
+}
+
+func TestFloatingIP(t *testing.T) {
+	CreateTestProject(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_floating_ip.yml")
 }
 
@@ -61,6 +65,8 @@ func TestGRPC(t *testing.T) {
 	project := models.MakeProject()
 	project.UUID = uuid.NewV4().String()
 	project.FQName = []string{"default-domain", "project", project.UUID}
+	project.ParentType = "domain"
+	project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
 	_, err = c.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: project,
 	})
