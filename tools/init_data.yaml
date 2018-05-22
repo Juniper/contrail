@@ -29,7 +29,7 @@ resources:
       owner_access: 7
       share: []
     type: global_system_config
-    uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    uuid: beefbeef-beef-beef-beef-beefbeef0001
   operation: ""
 - kind: job_template
   data:
@@ -79,7 +79,7 @@ resources:
       playbook_uri: ./opt/contrail/fabric_ansible_playbooks/device_import.yml
       vendor: Juniper
     parent_type: global-system-config
-    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -113,10 +113,10 @@ resources:
       owner: cloud-admin
       owner_access: 7
       share:
-      - tenant: domain:4750f264-86b6-4345-87a8-c99b5f4a2cf8
+      - tenant: domain:beefbeef-beef-beef-beef-beefbeef0002
         tenant_access: 6
     type: domain
-    uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+    uuid: beefbeef-beef-beef-beef-beefbeef0002
   operation: ""
 - kind: project
   data:
@@ -140,7 +140,7 @@ resources:
         uuid_lslong: 1.317758e+19
         uuid_mslong: 1.762763e+19
     parent_type: domain
-    parent_uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -149,7 +149,7 @@ resources:
     quota:
       defaults: -1
     type: project
-    uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    uuid: beefbeef-beef-beef-beef-beefbeef0003
   operation: ""
 - kind: virtual_network
   data:
@@ -180,7 +180,7 @@ resources:
     mac_aging_time: 300
     mac_learning_enabled: false
     parent_type: project
-    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     pbb_etree_enable: false
     pbb_evpn_enable: false
     perms2:
@@ -377,7 +377,7 @@ resources:
         uuid_lslong: 1.06056e+19
         uuid_mslong: 1.5445577e+19
     parent_type: global-system-config
-    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -515,7 +515,7 @@ resources:
         uuid_lslong: 1.233877e+19
         uuid_mslong: 1.8214941e+19
     parent_type: global-system-config
-    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -523,6 +523,34 @@ resources:
       share: []
     type: global_vrouter_config
     uuid: fcc87877-5f76-49eb-ab3c-1e0cbfae05b4
+  operation: ""
+- kind: policy_management
+  data:
+    fq_name:
+    - default-policy-management
+    id_perms:
+      created: 2018-05-23T17:29:57.599107
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.599107
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3265124e+19
+        uuid_mslong: 8.2261826e+18
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: policy_management
+    uuid: 72294557-ca3e-4214-b817-30673270b185
   operation: ""
 - kind: application_policy_set
   data:
@@ -581,7 +609,7 @@ resources:
         uuid_lslong: 9.710396e+18
         uuid_mslong: 1.37022e+19
     parent_type: global-system-config
-    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -647,7 +675,7 @@ resources:
       subnet_name: null
       subnet_uuid: null
     parent_type: project
-    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -710,7 +738,7 @@ resources:
         uuid_lslong: 1.152987e+19
         uuid_mslong: 3.7627743e+18
     parent_type: project
-    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -748,34 +776,7 @@ resources:
     type: route_target
     uuid: 93f7252a-f770-4158-ac34-4759dba25754
   operation: ""
-- kind: policy_management
-  data:
-    fq_name:
-    - default-policy-management
-    id_perms:
-      created: 2018-05-23T17:29:57.599107
-      creator: null
-      description: null
-      enable: true
-      last_modified: 2018-05-23T17:29:57.599107
-      permissions:
-        group: cloud-admin-group
-        group_access: 7
-        other_access: 7
-        owner: cloud-admin
-        owner_access: 7
-      user_visible: true
-      uuid:
-        uuid_lslong: 1.3265124e+19
-        uuid_mslong: 8.2261826e+18
-    perms2:
-      global_access: 0
-      owner: cloud-admin
-      owner_access: 7
-      share: []
-    type: policy_management
-    uuid: 72294557-ca3e-4214-b817-30673270b185
-  operation: ""
+
 - kind: job_template
   data:
     fq_name:
@@ -880,7 +881,7 @@ resources:
       playbook_uri: ./opt/contrail/fabric_ansible_playbooks/discover_device.yml
       vendor: ""
     parent_type: global-system-config
-    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -918,7 +919,7 @@ resources:
     mac_aging_time: 300
     mac_learning_enabled: false
     parent_type: project
-    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     pbb_etree_enable: false
     pbb_evpn_enable: false
     perms2:
@@ -983,7 +984,7 @@ resources:
         uuid_lslong: 1.2697253e+19
         uuid_mslong: 1.5947502e+19
     parent_type: domain
-    parent_uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -1053,7 +1054,7 @@ resources:
         uuid_lslong: 1.3655262e+19
         uuid_mslong: 6.2782114e+18
     parent_type: project
-    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -1164,7 +1165,7 @@ resources:
         uuid_lslong: 1.3311391e+19
         uuid_mslong: 9.583336e+18
     parent_type: project
-    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     perms2:
       global_access: 5
       owner: cloud-admin
@@ -1306,7 +1307,7 @@ resources:
       playbook_uri: ./opt/contrail/fabric_ansible_playbooks/generate_underlay_config.yml
       vendor: Juniper
     parent_type: global-system-config
-    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     perms2:
       global_access: 0
       owner: cloud-admin
@@ -1371,7 +1372,7 @@ resources:
       playbook_uri: ./opt/contrail/fabric_ansible_playbooks/image_upgrade.yml
       vendor: Juniper
     parent_type: global-system-config
-    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     perms2:
       global_access: 0
       owner: cloud-admin

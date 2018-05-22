@@ -60,6 +60,8 @@ func TestGRPC(t *testing.T) {
 	project := models.MakeProject()
 	project.UUID = uuid.NewV4().String()
 	project.FQName = []string{"default-domain", "project", project.UUID}
+	project.ParentType = "domain"
+	project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
 	_, err = c.CreateProject(ctx, &models.CreateProjectRequest{
 		Project: project,
 	})

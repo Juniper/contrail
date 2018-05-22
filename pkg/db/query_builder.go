@@ -9,6 +9,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/schema"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -285,7 +286,7 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 		return
 	}
 	for linkTo, refFields := range qb.RefFields {
-		refTable := strings.ToLower("ref_" + qb.Table + "_" + linkTo)
+		refTable := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
 		refFields = append(refFields, "from")
 		refFields = append(refFields, "to")
 		subQuery := "(select " +
@@ -397,10 +398,19 @@ func (qb *QueryBuilder) CreateQuery() string {
 	return query
 }
 
-//CreateRefQuery makes references.
-func (qb *QueryBuilder) CreateRefQuery(linkto string) string {
-	fields := append([]string{"from", "to"}, qb.RefFields[linkto]...)
-	return ("insert into ref_" + qb.Table + "_" + linkto +
+//CreateRefQuery makes a reference.
+func (qb *QueryBuilder) CreateRefQuery(linkTo string) string {
+	fields := append([]string{"from", "to"}, qb.RefFields[linkTo]...)
+	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
+	return ("insert into " + table +
+		" (" + qb.quoteSep(fields...) + ") values (" + qb.values(fields...) + ")")
+}
+
+//CreateParentQuery makes a reference to parent object.
+func (qb *QueryBuilder) CreateParentRefQuery(linkTo string) string {
+	fields := []string{"from", "to"}
+	table := schema.ReferenceTableName(schema.ParentPrefix, qb.Table, linkTo)
+	return ("insert into " + table +
 		" (" + qb.quoteSep(fields...) + ") values (" + qb.values(fields...) + ")")
 }
 
@@ -410,8 +420,9 @@ func (qb *QueryBuilder) DeleteQuery() string {
 }
 
 //DeleteRefQuery makes sql query.
-func (qb *QueryBuilder) DeleteRefQuery(linkto string) string {
-	return "delete from ref_" + qb.Table + "_" + linkto + " where " + qb.quote("from") + " = " + qb.placeholder(1)
+func (qb *QueryBuilder) DeleteRefQuery(linkTo string) string {
+	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
+	return "delete from " + table + " where " + qb.quote("from") + " = " + qb.placeholder(1)
 }
 
 //SelectAuthQuery makes sql query.
