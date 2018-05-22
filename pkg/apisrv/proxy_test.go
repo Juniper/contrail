@@ -176,7 +176,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	ksPublic := MockServerWithKeystone("", keystoneAuthURL)
 	defer ksPublic.Close()
 
-	clusterName := "clusterA"
+	clusterName := "clusterC"
 	context := pongo2.Context{
 		"extra_tasks":   true,
 		"cluster_name":  clusterName,

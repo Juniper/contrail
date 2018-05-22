@@ -1,43 +1,44 @@
 name: Floating IP Test
 description:  basic floating ip test
 cleanup:
-- path: /project/admin_project_uuid
-- path: /virtual-network/vn_blue
-- path: /virtual-network/vn_test_ref
-- path: /network-ipam/test_ipam
-- path: /floating-ip/test_floating_ip
 - path: /floating-ip-pool/test_floating_ip_pool
-
+- path: /floating-ip/test_floating_ip
+- path: /virtual-network/vn_test_ref
+- path: /virtual-network/vn_floating_blue
+- path: /network-ipam/test_ipam
+- path: /project/admin_floating_project_uuid
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin"]
-    uuid: admin_project_uuid
+    fq_name: ["default", "admin_floating"]
+    uuid: admin_floating_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
 
-  vn_blue: &vn_blue
-    fq_name: ["default", "admin", "vn_blue"]
-    uuid: vn_blue
+  vn_floating_blue: &vn_floating_blue
+    fq_name: ["default", "admin_floating", "vn_floating_blue"]
+    uuid: vn_floating_blue
     display_name: blue
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: admin_floating_project_uuid
     route_target_list:
       route_target: ["100:200"]
 
   floating_ip_pool: &floating_ip_pool
-    fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool"]
+    fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool"]
     uuid: "test_floating_ip_pool"
     display_name: "test_floating_ip_pool"
     parent_type: "virtual-network"
-    parent_uuid: "vn_blue"
+    parent_uuid: "vn_floating_blue"
     floating_ip_pool_subnets:
       subnet_uuid:
         - "subnet1"
 
   floating_ip_pool_without_subnets: &floating_ip_pool_without_subnets
-    fq_name: ["default", "admin", "vn_blue", "floating_ip_pool_without_subnets"]
+    fq_name: ["default", "admin", "vn_floating_blue", "floating_ip_pool_without_subnets"]
     uuid: "test_floating_ip_pool_without_subnets"
     display_name: "test_floating_ip_pool_without_subnets"
     parent_type: "virtual-network"
-    parent_uuid: "vn_blue"
+    parent_uuid: "vn_floating_blue"
 
 clients:
   default:
@@ -68,9 +69,9 @@ workflow:
     expected:
     - 201
     data:
-      virtual-network: *vn_blue
+      virtual-network: *vn_floating_blue
   expect:
-    virtual-network: *vn_blue
+    virtual-network: *vn_floating_blue
 
 - name: create network ipam
   request:
@@ -110,7 +111,7 @@ workflow:
         uuid: "vn_test_ref"
         display_name: "vn_test_ref"
         parent_type: "project"
-        parent_uuid: "admin_project_uuid"
+        parent_uuid: "admin_floating_project_uuid"
         network_ipam_refs:
           - uuid: "test_ipam"
             to: ["domain","admin","test_ipam"]
@@ -149,7 +150,7 @@ workflow:
     - 201
     data:
       floating-ip:
-        fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool", "test_floating_ip"]
+        fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool", "test_floating_ip"]
         uuid: "test_floating_ip"
         display_name: "floating_ip_pool"
         parent_type: "floating-ip-pool"
@@ -157,7 +158,7 @@ workflow:
         floating_ip_address: "10.0.0.1"
   expect:
     floating-ip:
-      fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool", "test_floating_ip"]
+      fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool", "test_floating_ip"]
       uuid: "test_floating_ip"
       display_name: "floating_ip_pool"
       parent_type: "floating-ip-pool"
@@ -172,7 +173,7 @@ workflow:
     - 201
     data:
       floating-ip:
-        fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool", "test_floating_ip_without_subnets"]
+        fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool", "test_floating_ip_without_subnets"]
         uuid: "test_floating_ip_without_subnets"
         display_name: "floating_ip_pool"
         parent_type: "floating-ip-pool"
@@ -180,7 +181,7 @@ workflow:
         floating_ip_address: "10.0.0.2"
   expect:
     floating-ip:
-      fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool", "test_floating_ip_without_subnets"]
+      fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool", "test_floating_ip_without_subnets"]
       uuid: "test_floating_ip_without_subnets"
       display_name: "floating_ip_pool"
       parent_type: "floating-ip-pool"
@@ -237,7 +238,7 @@ workflow:
 
 - name: delete virtual network
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/vn_floating_blue
     method: DELETE
     expected:
     - 204

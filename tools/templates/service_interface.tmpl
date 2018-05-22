@@ -63,6 +63,7 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
         _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
             &Get{{ schema.JSONSchema.GoName }}Request{
                 ID: uuid,
+                Fields: []string{"uuid"},
         })
         if err == nil {
             model := request.{{ schema.JSONSchema.GoName }}
