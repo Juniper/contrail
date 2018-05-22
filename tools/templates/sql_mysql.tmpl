@@ -32,12 +32,23 @@ create table {{schema.ID | lower  }} (
 {% endfor %}
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 {% for linkTo, reference in schema.References %}
-create table ref_{{ schema.ID  | lower }}_{{ linkTo | lower  }} (
+
+create table {{ reference.Table | lower }} (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
     {% for column in reference.Columns %}`{{column.Column}}` {{column.Type}},
-    {% endfor %} foreign key (`from`) references {{ schema.ID | lower  }}(uuid) on delete cascade, 
+    {% endfor %} foreign key (`from`) references {{ schema.ID | lower  }}(uuid) on delete cascade,
+    foreign key (`to`) references {{ linkTo | lower  }}(uuid),
+    index from_index (`from`)) CHARACTER SET utf8mb4;
+{% endfor %}
+
+{% for linkTo, reference in schema.Parents %}
+create table {{ reference.Table | lower }} (
+    `from` varchar(255),
+    `to` varchar(255),
+    primary key (`from`,`to`),
+    foreign key (`from`) references {{ schema.ID | lower  }}(uuid) on delete cascade,
     foreign key (`to`) references {{ linkTo | lower  }}(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 {% endfor %}
