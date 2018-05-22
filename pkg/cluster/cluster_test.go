@@ -40,8 +40,7 @@ func verifyClusterDeleted(t *testing.T, testScenario *apisrv.TestScenario) bool 
 		// working dir not deleted
 		return false
 	}
-	// Make sure endpoints are deleted
-	return verifyEndpoints(t, testScenario)
+	return true
 }
 
 func compareInstances(t *testing.T, generated, expected string) bool {
@@ -102,7 +101,8 @@ func runClusterTest(t *testing.T, testInput, expectedOutput string,
 
 func TestAllInOneCluster(t *testing.T) {
 	context := pongo2.Context{
-		"control_data_network_list": "",
+		"CONTROL_NODES":   "",
+		"OPENSTACK_NODES": "",
 	}
 	runClusterTest(t,
 		"./test_data/test_all_in_one_cluster.tmpl",
@@ -112,7 +112,8 @@ func TestAllInOneCluster(t *testing.T) {
 
 func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 	context := pongo2.Context{
-		"control_data_network_list": "127.0.0.0/24",
+		"CONTROL_NODES":   "127.0.0.1",
+		"OPENSTACK_NODES": "127.0.0.1",
 	}
 	runClusterTest(t,
 		"./test_data/test_all_in_one_cluster.tmpl",
@@ -122,7 +123,8 @@ func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 
 func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 	context := pongo2.Context{
-		"control_data_network_list": "10.1.0.0/24",
+		"CONTROL_NODES":   "10.1.1.1",
+		"OPENSTACK_NODES": "10.1.1.1",
 	}
 	runClusterTest(t,
 		"./test_data/test_all_in_one_cluster.tmpl",

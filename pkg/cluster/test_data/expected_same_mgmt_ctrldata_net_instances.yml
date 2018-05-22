@@ -28,11 +28,12 @@ contrail_configuration:
   CLOUD_ORCHESTRATOR: openstack
   RABBITMQ_NODE_PORT: 5673
   VROUTER_GATEWAY: 127.0.0.254
-  CONTROL_DATA_NET_LIST: 127.0.0.0/24
   ENCAP_PRIORITY: VXLANMPLSoUDPMPLSoGRE
   AUTH_MODE: keystone
   KEYSTONE_AUTH_HOST: 127.0.0.1
   KEYSTONE_AUTH_URL_VERSION: /v3
+  CONTROL_NODES: 127.0.0.1
+  OPENSTACK_NODES: 127.0.0.1
 kolla_config:
   kolla_globals:
     openstack_release: ocata-xyz

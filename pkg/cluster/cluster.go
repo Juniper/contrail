@@ -58,10 +58,24 @@ type Cluster struct {
 	log         *logrus.Entry
 }
 
+// OpenstackData is the representation of openstack cluster details.
+type OpenstackData struct {
+	clusterInfo *models.OpenstackCluster
+	nodesInfo   []*models.Node
+}
+
+// KubernetesData is the representation of kubernetes cluster details.
+type KubernetesData struct {
+	clusterInfo *models.KubernetesCluster
+	nodesInfo   []*models.Node
+}
+
 // Data is the representation of cluster details.
 type Data struct {
-	clusterInfo *models.ContrailCluster
-	nodesInfo   []*models.Node
+	clusterInfo           *models.ContrailCluster
+	nodesInfo             []*models.Node
+	openstackClusterData  []*OpenstackData
+	kubernetesClusterData []*KubernetesData
 	// TODO (ijohnson): Add gce/aws/kvm info
 }
 

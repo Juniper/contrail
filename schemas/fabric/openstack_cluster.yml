@@ -1,0 +1,143 @@
+description: Openstack Cluster
+extends:
+- base
+- ownable
+- has_status
+id: openstack_cluster
+metadata:
+  category: cluster
+parent: ""
+plural: openstack_clusters
+prefix: /
+schema:
+  properties:
+    openstack_registry:
+      default: opencontrailnightly
+      description: Openstack Container registry to pull openstack containers
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack Container Registry
+      type: string
+      view:
+      - create
+      - detail
+    registry_private_insecure:
+      description: Insecure container registry
+      default: false
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Insecure Registery
+      type: "boolean"
+      view:
+      - create
+      - detail
+    openstack_release:
+      default: "ocata"
+      description: openstack release
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack Release
+      type: string
+      view:
+      - create
+      - detail
+    openstack_internal_vip:
+      description: VIP for openstack internal network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack Internal VIP
+      type: string
+      view:
+      - create
+      - detail
+    openstack_external_vip:
+      description: VIP for openstack external network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack External VIP
+      type: string
+      view:
+      - create
+      - detail
+    openstack_internal_vip_interface:
+      description: VIP for openstack internal network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack Internal VIP
+      type: string
+      view:
+      - create
+      - detail
+    openstack_external_vip_interface:
+      description: Interface to configure VIP for openstack external network
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Openstack External VIP Interface
+      type: string
+      view:
+      - create
+      - detail
+    ntp_server:
+      description: NTP server ip address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: NTPServer
+      type: string
+      view:
+      - create
+      - detail
+    keystone_admin_password:
+      description: Admin user password in keystone
+      presence: "optional"
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Keystone admin user password
+      type: string
+      view:
+      - create
+      - detail
+    contrail_api_endpoint:
+      description: contrail api endpoint ip address
+      presence: "optional"
+      permission:
+      - create
+      - update
+      sql: ""
+      title: contrail api endpoint
+      type: string
+      view:
+      - create
+      - detail
+    kolla_globals:
+      operations: "CRUD"
+      presence: "optional"
+      description: "Custom kolla global configurations. Specified as list of Key:Value pairs."
+      $ref: "types.json#/definitions/KeyValuePairs"
+singular: openstack_cluster
+title: Openstack Cluster
+type: ""
