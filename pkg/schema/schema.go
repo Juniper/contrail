@@ -27,6 +27,11 @@ const (
 	BooleanType  = "boolean"
 	NumberType   = "number"
 	StringType   = "string"
+	MaxColumnLen = 55
+	RefPrefix    = "ref"
+	ParentPrefix = "parent"
+	configRoot   = "config_root"
+	optional     = "optional"
 )
 
 var sqlTypeMap = map[string]string{
@@ -123,6 +128,8 @@ type Schema struct {
 	Path             string                    `yaml:"-" json:"-"`
 	PluralPath       string                    `yaml:"-" json:"-"`
 	Children         []*BackReference          `yaml:"-" json:"-"`
+	ParentOptional   bool                      `yaml:"-" json:"-"`
+	HasParents       bool                      `yaml:"-" json:"-"`
 }
 
 //JSONSchema is a standard JSONSchema representation plus data for code generation.
@@ -162,6 +169,7 @@ func (s *JSONSchema) String() string {
 //Reference object represents many to many relationships between resources.
 type Reference struct {
 	GoName      string        `yaml:"-" json:"-"`
+	Table       string        `yaml:"-" json:"-"`
 	Index       int           `yaml:"-" json:"-"`
 	Description string        `yaml:"description" json:"description,omitempty"`
 	Operations  string        `yaml:"operations" json:"operations,omitempty"`
@@ -344,6 +352,16 @@ func (s *JSONSchema) resolveSQL(
 	return nil
 }
 
+func makeShort(id string) string {
+	id = strings.Replace(id, "virtual", "v", -1)
+	id = strings.Replace(id, "network", "net", -1)
+	id = strings.Replace(id, "interface", "i", -1)
+	id = strings.Replace(id, "machine", "m", -1)
+	id = strings.Replace(id, "router", "r", -1)
+	id = strings.Replace(id, "structured_syslog", "log", -1)
+	return id
+}
+
 func (s *JSONSchema) resolveGoName(name string) error {
 	if s == nil {
 		return nil
@@ -442,7 +460,6 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 	}
 	definitions := api.definitionByFileName(schemaFile)
 	if definitions == nil {
-		log.Info("hoge!!!")
 		for _, d := range api.Definitions {
 			log.Info(d.FileName)
 		}
@@ -530,6 +547,15 @@ func (api *API) resolveRelation(linkToSchema *Schema, reference *Reference) erro
 	return definition.resolveSQL([]string{}, "", "", "", "", &reference.Columns)
 }
 
+//ReferenceTableName make reference table name.
+func ReferenceTableName(prefix, id, linkTo string) string {
+	table := prefix + "_" + id + "_" + linkTo
+	if len(table) < MaxColumnLen {
+		return table
+	}
+	return prefix + "_" + makeShort(id) + "_" + makeShort(linkTo)
+}
+
 func (api *API) resolveAllRelation() error {
 	for _, s := range api.Schemas {
 		if s.Type == AbstractType {
@@ -554,12 +580,21 @@ func (api *API) resolveAllRelation() error {
 			if err := api.resolveRelation(linkToSchema, reference); err != nil {
 				return err
 			}
+			reference.Table = ReferenceTableName(RefPrefix, s.ID, linkTo)
 		}
 		for _, m := range mapSlice(s.ParentsSlice) {
 			linkTo := m.Key.(string)
+			if linkTo == configRoot {
+				s.ParentOptional = true
+				continue
+			}
 			referenceMap := mapSlice(m.Value.(yaml.MapSlice))
 			reference := referenceMap.Reference()
+			if reference.Presence == optional {
+				s.ParentOptional = true
+			}
 			s.Parents[linkTo] = reference
+			reference.Table = ReferenceTableName(ParentPrefix, s.ID, linkTo)
 			parentSchema := api.SchemaByID(linkTo)
 			if parentSchema == nil {
 				return fmt.Errorf("Parent schema %s not found", linkTo)
@@ -569,6 +604,7 @@ func (api *API) resolveAllRelation() error {
 			}
 			parentSchema.Children = append(parentSchema.Children, &BackReference{LinkTo: s, Description: reference.Description})
 		}
+		s.HasParents = len(s.Parents) > 0
 	}
 	return nil
 }
