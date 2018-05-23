@@ -65,6 +65,12 @@
   version = "v3.1.0"
 
 [[projects]]
+  name = "github.com/fatih/structs"
+  packages = ["."]
+  revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
+  version = "v1.0"
+
+[[projects]]
   name = "github.com/flosch/pongo2"
   packages = ["."]
   revision = "5e81b817a0c48c1c57cdf1a9056cf76bdee02ca9"
@@ -544,6 +550,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cd3559c8bd3408e42bd8c2b51f623b17e13e30ae8e840506e2a464512e490ec1"
+  inputs-digest = "7f57a4abdf46e3584dae743400feab0afafe567f683468fc762ffe39b8f11a35"
   solver-name = "gps-cdcl"
   solver-version = 1
