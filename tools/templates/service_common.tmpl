@@ -1,102 +1,76 @@
 package services
 
 import (
-    "net/http"
+    "context"
     "github.com/Juniper/contrail/pkg/models"
     "github.com/labstack/echo"
     "github.com/Juniper/contrail/pkg/common"
     "github.com/Juniper/contrail/pkg/serviceif"
-
-	log "github.com/sirupsen/logrus"
 )
 
-const (
-    create = "CREATE"
-    update = "UPDATE"
-    delete = "DELETE"
-)
-
-// nolint
-type ContrailService struct {
-    serviceif.BaseService
-}
-
-//RESTSync handle a bluk Create REST service.
-func (service *ContrailService) RESTSync(c echo.Context) error {
-    requestData := &RESTSyncRequest{}
-    if err := c.Bind(requestData); err != nil {
-        log.WithFields(log.Fields{
-            "err": err,
-            "resource": "{{ schema.ID }}",
-        }).Debug("bind failed on create")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
-	}
-    ctx := c.Request().Context()
-    responses := []interface{}{}
-    for _, resource := range requestData.Resources {
-        switch(resource.Kind) {
-        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-        case "{{ schema.ID }}":
-            model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(resource.Data)
-            operation := resource.Operation
-            if operation == "" {
-                operation = create
-                if model.UUID != "" {
-                   _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
-                       &models.Get{{ schema.JSONSchema.GoName }}Request{
-                            ID: model.UUID,
-                   })
-                   if err == nil {
-                       operation = update
-                   }
+func (resource *ResourceEvent) Process(ctx context.Context, service serviceif.Service) (*ResourceEvent, error) {
+    switch(resource.Kind) {
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    case "{{ schema.ID }}":
+        model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(resource.Data)
+        operation := resource.Operation
+        if operation == "" {
+            operation = create
+            if model.UUID != "" {
+                _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
+                    &models.Get{{ schema.JSONSchema.GoName }}Request{
+                        ID: model.UUID,
+                })
+                if err == nil {
+                    operation = update
                 }
             }
-            switch(operation) {
-                 case create:
-                     request := &models.Create{{ schema.JSONSchema.GoName }}Request{
-                         {{ schema.JSONSchema.GoName }}: model,
-                     }
-                     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
-                     if err != nil {
-                         return common.ToHTTPError(err)
-                     }
-                     responses = append(responses, &RESTResource{
-                         Kind: resource.Kind,
-                         Data: response.{{ schema.JSONSchema.GoName }},
-                         Operation: operation,
-                     })
-                case update:
-                     request := &models.Update{{ schema.JSONSchema.GoName }}Request{
-                         {{ schema.JSONSchema.GoName }}: model,
-                         FieldMask: MapToFieldMask(resource.Data.(map[string]interface{})),
-                     }
-                     response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
-                     if err != nil {
-                         return common.ToHTTPError(err)
-                     }
-                     responses = append(responses, &RESTResource{
-                         Kind: resource.Kind,
-                         Data: response.{{ schema.JSONSchema.GoName }},
-                         Operation: operation,
-                     })
-                 case delete:
-                     request := &models.Delete{{ schema.JSONSchema.GoName }}Request{
-                         ID: model.UUID,
-                     }
-                     response, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
-                     if err != nil {
-                         return common.ToHTTPError(err)
-                     }
-                     responses = append(responses, &RESTResource{
-                         Kind: resource.Kind,
-                         Data: response.ID,
-                         Operation: operation,
-                     })
-                 }
-        {% endif%}{% endfor %}
         }
+        switch(operation) {
+            case create:
+                request := &models.Create{{ schema.JSONSchema.GoName }}Request{
+                    {{ schema.JSONSchema.GoName }}: model,
+                }
+                response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+                if err != nil {
+                    return nil, common.ToHTTPError(err)
+                }
+                return &ResourceEvent{
+                    Kind: resource.Kind,
+                    Data: response.{{ schema.JSONSchema.GoName }},
+                    Operation: operation,
+                }, nil
+            case update:
+                    request := &models.Update{{ schema.JSONSchema.GoName }}Request{
+                        {{ schema.JSONSchema.GoName }}: model,
+                        FieldMask: MapToFieldMask(resource.Data.(map[string]interface{})),
+                    }
+                    response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+                    if err != nil {
+                        return nil, common.ToHTTPError(err)
+                    }
+                    return &ResourceEvent{
+                        Kind: resource.Kind,
+                        Data: response.{{ schema.JSONSchema.GoName }},
+                        Operation: operation,
+                    }, nil
+            case delete:
+                request := &models.Delete{{ schema.JSONSchema.GoName }}Request{
+                    ID: model.UUID,
+                }
+                response, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+                if err != nil {
+                    return nil, common.ToHTTPError(err)
+                }
+                return &ResourceEvent{
+                    Kind: resource.Kind,
+                    Data: response.ID,
+                    Operation: operation,
+                }, nil
+        }
+    {% endif%}{% endfor %}
     }
-    return c.JSON(http.StatusCreated, responses)
+    return nil, nil
 }
 
 //RegisterRESTAPI register REST API service for path.
