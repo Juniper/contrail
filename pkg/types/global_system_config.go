@@ -4,6 +4,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 )
@@ -12,22 +13,22 @@ import (
 // GlobalSystemConfig can only be created by DBInit, never by user request
 func (sv *ContrailTypeLogicService) CreateGlobalSystemConfig(
 	ctx context.Context,
-	request *models.CreateGlobalSystemConfigRequest) (resp *models.CreateGlobalSystemConfigResponse, err error) {
+	request *services.CreateGlobalSystemConfigRequest) (resp *services.CreateGlobalSystemConfigResponse, err error) {
 	return nil, common.ErrorBadRequest("Trying to call create GlobalSystemConfig outside of DBInit")
 }
 
 // UpdateGlobalSystemConfig performs type specific checks for update.
 func (sv *ContrailTypeLogicService) UpdateGlobalSystemConfig(
 	ctx context.Context,
-	request *models.UpdateGlobalSystemConfigRequest) (*models.UpdateGlobalSystemConfigResponse, error) {
-	var resp *models.UpdateGlobalSystemConfigResponse
+	request *services.UpdateGlobalSystemConfigRequest) (*services.UpdateGlobalSystemConfigResponse, error) {
+	var resp *services.UpdateGlobalSystemConfigResponse
 
 	err := db.DoInTransaction(
 		ctx,
 		sv.DB.DB(),
 		func(ctx context.Context) (err error) {
 			// TODO(Jan Darowski) JBE-431 - Add proper uuid update when using draft object (enable_security_policy_draft).
-			oldObjResp, err := sv.DB.GetGlobalSystemConfig(ctx, &models.GetGlobalSystemConfigRequest{ID: request.GetGlobalSystemConfig().GetUUID()})
+			oldObjResp, err := sv.DB.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{ID: request.GetGlobalSystemConfig().GetUUID()})
 			updateObj := request.GlobalSystemConfig
 
 			if err != nil {
@@ -82,7 +83,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 		return nil
 	}
 
-	vnList, err := sv.DB.ListVirtualNetwork(ctx, &models.ListVirtualNetworkRequest{Spec: &models.ListSpec{Fields: []string{"route_target_list"}}})
+	vnList, err := sv.DB.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{Fields: []string{"route_target_list"}}})
 	if err != nil {
 		return err
 	}
@@ -124,7 +125,7 @@ func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, update
 		oldPortsRange = oldObj.BgpaasParameters
 	}
 
-	bgpaasList, err := sv.DB.ListBGPAsAService(ctx, &models.ListBGPAsAServiceRequest{Spec: &models.ListSpec{Count: true}})
+	bgpaasList, err := sv.DB.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{Spec: &services.ListSpec{Count: true}})
 
 	if err != nil {
 		return err

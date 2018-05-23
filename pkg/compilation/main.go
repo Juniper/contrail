@@ -18,7 +18,7 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/config"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/compilationif"
-	"github.com/Juniper/contrail/pkg/serviceif"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
 
 	etcl "github.com/Juniper/contrail/pkg/db/etcd"
@@ -144,12 +144,12 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 
 //AddServices adds services to compilation chain
 func (ics *IntentCompilationService) AddServices() *compilationif.CompilationService {
-	var serviceChain []serviceif.Service
+	var serviceChain []services.Service
 
 	compilationService := compilationif.NewCompilationService()
 	serviceChain = append(serviceChain, compilationService)
 
-	serviceif.Chain(serviceChain)
+	services.Chain(serviceChain)
 
 	return compilationService
 }

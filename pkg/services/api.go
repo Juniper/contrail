@@ -1,9 +1,10 @@
-package models
+package services
 
 import (
 	"strconv"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/labstack/echo"
 )
 
@@ -46,14 +47,6 @@ func parseStringList(query string) []string {
 	return strings.Split(query, ",")
 }
 
-//ParseFQName parse string representation of FQName.
-func ParseFQName(fqNameString string) []string {
-	if fqNameString == "" {
-		return nil
-	}
-	return strings.Split(fqNameString, ":")
-}
-
 //GetListSpec makes ListSpec from Query Parameters
 func GetListSpec(c echo.Context) *ListSpec {
 	filters := ParseFilter(c.QueryParam(FiltersKey))
@@ -64,7 +57,7 @@ func GetListSpec(c echo.Context) *ListSpec {
 	shared := parseBool(c.QueryParam(SharedKey))
 	excludeHrefs := parseBool(c.QueryParam(ExcludeHRefsKey))
 	parentType := c.QueryParam(ParentTypeKey)
-	parentFQName := ParseFQName(c.QueryParam(ParentFQNameKey))
+	parentFQName := models.ParseFQName(c.QueryParam(ParentFQNameKey))
 	parentUUIDs := parseStringList(c.QueryParam(ParentUUIDsKey))
 	backrefUUIDs := parseStringList(c.QueryParam(BackrefUUIDsKey))
 	objectUUIDs := parseStringList(c.QueryParam(ObjectUUIDsKey))

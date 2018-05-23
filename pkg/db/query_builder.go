@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,7 +36,7 @@ type queryContext struct {
 	where       []string
 	joins       []string
 	query       *bytes.Buffer
-	spec        *models.ListSpec
+	spec        *services.ListSpec
 }
 
 func newQueryContext() *queryContext {
@@ -198,10 +198,10 @@ func (qb *QueryBuilder) as(a, b string) string {
 func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 	spec := ctx.spec
 	filters := spec.Filters
-	filters = models.AppendFilter(filters, "uuid", spec.ObjectUUIDs...)
-	filters = models.AppendFilter(filters, "parent_uuid", spec.ParentUUIDs...)
+	filters = services.AppendFilter(filters, "uuid", spec.ObjectUUIDs...)
+	filters = services.AppendFilter(filters, "parent_uuid", spec.ParentUUIDs...)
 	if spec.ParentType != "" {
-		filters = models.AppendFilter(filters, "parent_type", spec.ParentType)
+		filters = services.AppendFilter(filters, "parent_type", spec.ParentType)
 	}
 	for _, filter := range filters {
 		if !qb.isValidField(filter.Key) {
@@ -377,7 +377,7 @@ func (qb *QueryBuilder) buildColumns(ctx *queryContext) {
 }
 
 //ListQuery makes sql query.
-func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *models.ListSpec) (string, Columns, []interface{}) {
+func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *services.ListSpec) (string, Columns, []interface{}) {
 	ctx := newQueryContext()
 	ctx.auth = auth
 	ctx.spec = spec

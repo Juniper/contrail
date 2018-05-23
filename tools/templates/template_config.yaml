@@ -1,6 +1,9 @@
 - type: type
   template_path: model.tmpl
   output_path: pkg/models/gen___resource__.go
+- type: all 
+  template_path: event_encoding.tmpl
+  output_path: pkg/services/gen_event_encoding.go
 - type: all
   template_path: sql_mysql.tmpl
   output_path: tools/init_mysql.sql
@@ -23,8 +26,8 @@
   template_path: service_common.tmpl
   output_path: pkg/services/gen_common.go
 - type: all
-  template_path: serviceif.tmpl
-  output_path: pkg/serviceif/gen_serviceif.go
+  template_path: service_interface.tmpl
+  output_path: pkg/services/gen_service_interface.go
 - type: all
   template_path: etcdserviceif.tmpl
   output_path: pkg/db/etcd/gen_etcd_notifier_service.go

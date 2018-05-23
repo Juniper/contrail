@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 const (
 	//PermsNone for no permission
 	PermsNone = iota
@@ -18,3 +20,16 @@ const (
 	//PermsRWX for all permission
 	PermsRWX
 )
+
+//ParseFQName parse string representation of FQName.
+func ParseFQName(fqNameString string) []string {
+	if fqNameString == "" {
+		return nil
+	}
+	return strings.Split(fqNameString, ":")
+}
+
+//FQNameToString returns string representation of FQName.
+func FQNameToString(fqName []string) string {
+	return strings.Join(fqName, ":")
+}

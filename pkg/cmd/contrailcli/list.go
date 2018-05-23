@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
 	log "github.com/sirupsen/logrus"
@@ -36,31 +35,31 @@ const listHelpTemplate = `List command possible usages:
 func init() {
 	ContrailCLI.AddCommand(ListCmd)
 
-	ListCmd.Flags().StringVarP(&filters, models.FiltersKey, "f", "",
+	ListCmd.Flags().StringVarP(&filters, services.FiltersKey, "f", "",
 		"Comma-separated filter parameters (e.g. check==a,check==b,name==Bob)")
-	ListCmd.Flags().IntVarP(&pageMarker, models.PageMarkerKey, "m", 0,
+	ListCmd.Flags().IntVarP(&pageMarker, services.PageMarkerKey, "m", 0,
 		"Page marker that returned resources start from (i.e. offset)")
-	ListCmd.Flags().IntVarP(&pageLimit, models.PageLimitKey, "l", 100,
+	ListCmd.Flags().IntVarP(&pageLimit, services.PageLimitKey, "l", 100,
 		"Limit number of returned resources")
-	ListCmd.Flags().BoolVarP(&detail, models.DetailKey, "d", false,
+	ListCmd.Flags().BoolVarP(&detail, services.DetailKey, "d", false,
 		"Detailed data in response")
-	ListCmd.Flags().BoolVar(&count, models.CountKey, false,
+	ListCmd.Flags().BoolVar(&count, services.CountKey, false,
 		"Return only resource count in response")
-	ListCmd.Flags().BoolVarP(&shared, models.SharedKey, "s", false,
+	ListCmd.Flags().BoolVarP(&shared, services.SharedKey, "s", false,
 		"Include shared object in response")
-	ListCmd.Flags().BoolVarP(&excludeHRefs, models.ExcludeHRefsKey, "e", false,
+	ListCmd.Flags().BoolVarP(&excludeHRefs, services.ExcludeHRefsKey, "e", false,
 		"Exclude hrefs from response")
-	ListCmd.Flags().StringVarP(&parentType, models.ParentTypeKey, "t", "",
+	ListCmd.Flags().StringVarP(&parentType, services.ParentTypeKey, "t", "",
 		"Parent's type")
-	ListCmd.Flags().StringVarP(&parentFQName, models.ParentFQNameKey, "n", "",
+	ListCmd.Flags().StringVarP(&parentFQName, services.ParentFQNameKey, "n", "",
 		"Colon-separated list of parents' fully-qualified names")
-	ListCmd.Flags().StringVarP(&parentUUIDs, models.ParentUUIDsKey, "u", "",
+	ListCmd.Flags().StringVarP(&parentUUIDs, services.ParentUUIDsKey, "u", "",
 		"Comma-separated list of parents' UUIDs")
-	ListCmd.Flags().StringVar(&backrefUUIDs, models.BackrefUUIDsKey, "",
+	ListCmd.Flags().StringVar(&backrefUUIDs, services.BackrefUUIDsKey, "",
 		"Comma-separated list of back references' UUIDs")
-	ListCmd.Flags().StringVar(&objectUUIDs, models.ObjectUUIDsKey, "",
+	ListCmd.Flags().StringVar(&objectUUIDs, services.ObjectUUIDsKey, "",
 		"Comma-separated list of objects' UUIDs")
-	ListCmd.Flags().StringVar(&fields, models.FieldsKey, "",
+	ListCmd.Flags().StringVar(&fields, services.FieldsKey, "",
 		"Comma-separated list of object fields returned in response")
 }
 
@@ -84,18 +83,18 @@ var ListCmd = &cobra.Command{
 
 func queryParameters() url.Values {
 	m := map[string]interface{}{
-		models.FiltersKey:      filters,
-		models.PageMarkerKey:   pageMarker,
-		models.PageLimitKey:    pageLimit,
-		models.DetailKey:       detail,
-		models.CountKey:        count,
-		models.SharedKey:       shared,
-		models.ExcludeHRefsKey: excludeHRefs,
-		models.ParentTypeKey:   parentType,
-		models.ParentFQNameKey: parentFQName,
-		models.ParentUUIDsKey:  parentUUIDs,
-		models.BackrefUUIDsKey: objectUUIDs,
-		models.FieldsKey:       fields,
+		services.FiltersKey:      filters,
+		services.PageMarkerKey:   pageMarker,
+		services.PageLimitKey:    pageLimit,
+		services.DetailKey:       detail,
+		services.CountKey:        count,
+		services.SharedKey:       shared,
+		services.ExcludeHRefsKey: excludeHRefs,
+		services.ParentTypeKey:   parentType,
+		services.ParentFQNameKey: parentFQName,
+		services.ParentUUIDsKey:  parentUUIDs,
+		services.BackrefUUIDsKey: objectUUIDs,
+		services.FieldsKey:       fields,
 	}
 
 	values := url.Values{}
@@ -130,8 +129,8 @@ func listResources(schemaID string) (string, error) {
 		return "", nil
 	}
 	//TODO support all schema
-	resources := &services.RESTSyncRequest{
-		Resources: []*services.RESTResource{},
+	events := &services.EventList{
+		Events: []*services.Event{},
 	}
 	var response map[string][]interface{}
 	_, err = client.Read(
@@ -142,15 +141,15 @@ func listResources(schemaID string) (string, error) {
 	}
 	for _, list := range response {
 		for _, d := range list {
-			resources.Resources = append(resources.Resources,
-				&services.RESTResource{
-					Kind: schemaID,
-					Data: d,
-				},
+			events.Events = append(events.Events,
+				services.InterfaceToEvent(map[string]interface{}{
+					"kind": schemaID,
+					"data": d,
+				}),
 			)
 		}
 	}
-	output, err := yaml.Marshal(resources)
+	output, err := yaml.Marshal(events)
 	if err != nil {
 		return "", err
 	}

@@ -7,14 +7,13 @@ import (
     "errors"
 
     "github.com/Juniper/contrail/pkg/common"
-    "github.com/Juniper/contrail/pkg/models"
-    "github.com/Juniper/contrail/pkg/serviceif"
+    "github.com/Juniper/contrail/pkg/services"
 
     log "github.com/sirupsen/logrus"
 )
 
 type EtcdNotifierService struct{
-    serviceif.BaseService
+    services.BaseService
     Path   string
     Etcdcl *IntentEtcdClient
 }
@@ -30,7 +29,7 @@ func NewEtcdNotifierService(servers []string, path string) (*EtcdNotifierService
         return nil, err
     }
     service := &EtcdNotifierService{
-        BaseService: serviceif.BaseService{},
+        BaseService: services.BaseService{},
         Path: path,
         Etcdcl: etcdcl,
     }
@@ -54,7 +53,7 @@ func (service *EtcdNotifierService) EtcdNotifierMarshal(schemaID string, objUUID
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-func (service *EtcdNotifierService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *EtcdNotifierService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }
@@ -91,7 +90,7 @@ func (service *EtcdNotifierService) Create{{ schema.JSONSchema.GoName }}(ctx con
     return obj{{ schema.JSONSchema.GoName }}, err
 }
 
-func (service *EtcdNotifierService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *EtcdNotifierService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }
@@ -128,7 +127,7 @@ func (service *EtcdNotifierService) Update{{ schema.JSONSchema.GoName }}(ctx con
     return obj{{ schema.JSONSchema.GoName }}, err
 }
 
-func (service *EtcdNotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *EtcdNotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }
@@ -163,14 +162,14 @@ func (service *EtcdNotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx con
     return obj{{ schema.JSONSchema.GoName }}, err
 }
 
-func (service *EtcdNotifierService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (*models.Get{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *EtcdNotifierService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (*services.Get{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }
     return service.Next().Get{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
-func (service *EtcdNotifierService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (*models.List{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *EtcdNotifierService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (*services.List{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }

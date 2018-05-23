@@ -1,0 +1,155 @@
+package services
+
+import (
+    "context"
+    "github.com/Juniper/contrail/pkg/common"
+)
+
+type Service interface {
+    Next() Service
+    SetNext(Service)
+ {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    Create{{ schema.JSONSchema.GoName }}(context.Context, *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error)
+    Update{{ schema.JSONSchema.GoName }}(context.Context, *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error)
+    Delete{{ schema.JSONSchema.GoName }}(context.Context, *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error)
+    Get{{ schema.JSONSchema.GoName }}(context.Context, *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error)
+    List{{ schema.JSONSchema.GoName }}(context.Context, *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error)
+{% endif%}{% endfor %}
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (service *BaseService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return &Create{{ schema.JSONSchema.GoName }}Response{
+            {{ schema.JSONSchema.GoName }}: request.Get{{ schema.JSONSchema.GoName }}(),
+        }, nil
+    }
+    return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return &Update{{ schema.JSONSchema.GoName }}Response{
+            {{ schema.JSONSchema.GoName }}: request.Get{{ schema.JSONSchema.GoName }}(),
+        }, nil
+    }
+    return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return &Delete{{ schema.JSONSchema.GoName }}Response{
+            ID: request.ID,
+        }, nil
+    }
+    return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().Get{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error) {
+    if service.next == nil {
+        return nil, nil
+    }
+    return service.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.Context, service Service) (*Event, error) {
+    request := e.Create{{ schema.JSONSchema.GoName }}Request
+    model := request.{{ schema.JSONSchema.GoName }}
+    uuid := model.GetUUID()
+    if uuid != "" {
+        _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
+            &Get{{ schema.JSONSchema.GoName }}Request{
+                ID: uuid,
+        })
+        if err == nil {
+            model := request.{{ schema.JSONSchema.GoName }}
+            response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
+                {{ schema.JSONSchema.GoName }}: model,
+                FieldMask: MapToFieldMask(model.ToMap()),
+            })
+            if err != nil {
+                return nil, err
+            }
+            return &Event{
+                Request: &Event_Update{{ schema.JSONSchema.GoName }}Request{
+                    Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+                        {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+                    },
+                },
+            }, nil 
+        }
+    }
+    response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        return nil, err
+    }
+    return &Event{
+        Request: &Event_Create{{ schema.JSONSchema.GoName }}Request{
+            Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
+                {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+            },
+        },
+    }, nil
+}
+
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) Process(ctx context.Context, service Service) (*Event, error) {
+    request := e.Update{{ schema.JSONSchema.GoName }}Request
+    response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        return nil, err
+    }
+    return &Event{
+        Request: &Event_Update{{ schema.JSONSchema.GoName }}Request{
+            Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+                {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+            },
+        },
+    }, nil
+}
+
+func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Process(ctx context.Context, service Service) (*Event, error) {
+    request := e.Delete{{ schema.JSONSchema.GoName }}Request
+    _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+    if err != nil {
+        return nil, err
+    }
+    return &Event{
+        Request: &Event_Delete{{ schema.JSONSchema.GoName }}Request{
+            Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
+                ID: request.ID,
+            },
+        },
+    }, nil
+}
+{% endif%}{% endfor %}
+
+//Dump dumps all service data.
+func Dump(ctx context.Context, service Service) (*EventList, error) {
+    response := []*Event{}
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    list{{ schema.JSONSchema.GoName }}, err := service.List{{ schema.JSONSchema.GoName }}(ctx,
+        &List{{ schema.JSONSchema.GoName }}Request{
+           &ListSpec{
+               Detail: true,
+           },
+        },
+    )
+    if err != nil {
+        return nil, common.ToHTTPError(err)
+    }
+    for _, resource := range list{{ schema.JSONSchema.GoName }}.{{ schema.JSONSchema.GoName }}s {
+        response = append(response, &Event{
+                    Request: &Event_Create{{ schema.JSONSchema.GoName }}Request{
+                        Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: resource,
+                        }}})
+    }
+    {% endif %}{% endfor %}
+    return &EventList{
+        Events: response,
+    }, nil
+}
+

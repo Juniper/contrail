@@ -50,15 +50,16 @@ func showResource(schemaID, uuid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resources := &services.RESTSyncRequest{
-		Resources: []*services.RESTResource{
-			{
-				Kind: schemaID,
-				Data: response,
-			},
+	fmt.Println(response)
+	eventList := &services.EventList{
+		Events: []*services.Event{
+			services.InterfaceToEvent(map[string]interface{}{
+				"kind": schemaID,
+				"data": response[dashedCase(schemaID)],
+			}),
 		},
 	}
-	output, err := yaml.Marshal(resources)
+	output, err := yaml.Marshal(eventList)
 	if err != nil {
 		return "", err
 	}

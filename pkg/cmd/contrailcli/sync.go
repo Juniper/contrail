@@ -39,13 +39,14 @@ func syncResources(dataPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	response := &services.RESTSyncRequest{}
-	_, err = client.Create("/sync", request, &response.Resources)
+	response := []*services.Event{}
+	_, err = client.Create("/sync", request, &response)
 	if err != nil {
 		fmt.Println(err)
 		return "", err
 	}
-	output, err := yaml.Marshal(&response)
+	output, err := yaml.Marshal(&services.EventList{
+		Events: response})
 	if err != nil {
 		return "", err
 	}
