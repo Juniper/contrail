@@ -16,7 +16,6 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/serviceif"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
 
@@ -28,7 +27,6 @@ import (
 //Server represents Intent API Server.
 type Server struct {
 	Echo      *echo.Echo
-	DB        *sql.DB
 	Keystone  *keystone.Keystone
 	dbService *db.Service
 	Proxy     *proxyService
@@ -45,17 +43,17 @@ func NewServer() (*Server, error) {
 //SetupService setup service.
 //Application with custom logics can embed server struct, and overwrite
 //this method.
-func (s *Server) SetupService() serviceif.Service {
-	var serviceChain []serviceif.Service
+func (s *Server) SetupService() services.Service {
+	var serviceChain []services.Service
 	service := &services.ContrailService{
-		BaseService: serviceif.BaseService{},
+		BaseService: services.BaseService{},
 	}
 
 	serviceChain = append(serviceChain, service)
 	service.RegisterRESTAPI(s.Echo)
 
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
-		BaseService:    serviceif.BaseService{},
+		BaseService:    services.BaseService{},
 		DB:             s.dbService,
 		AddressManager: s.dbService,
 	})
@@ -72,7 +70,7 @@ func (s *Server) SetupService() serviceif.Service {
 	// Put DB Service at the end
 	serviceChain = append(serviceChain, s.dbService)
 
-	serviceif.Chain(serviceChain)
+	services.Chain(serviceChain)
 
 	return service
 }
@@ -83,13 +81,9 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 }
 
 //Init setup the server.
-func (s *Server) Init() error {
+func (s *Server) Init() (err error) {
 	common.SetLogLevel()
-	sqlDB, err := db.ConnectDB()
-	if err != nil {
-		return errors.Wrap(err, "Init DB failed")
-	}
-	s.DB = sqlDB
+
 	e := s.Echo
 	if viper.GetBool("server.log_api") {
 		e.Use(middleware.Logger())
@@ -97,7 +91,11 @@ func (s *Server) Init() error {
 	//e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
 
-	s.dbService = db.NewService(s.DB, viper.GetString("database.dialect"))
+	s.dbService, err = db.NewServiceFromConfig()
+	if err != nil {
+		return err
+	}
+
 	service := s.SetupService()
 
 	readTimeout := viper.GetInt("server.read_timeout")
@@ -243,5 +241,10 @@ func (s *Server) Run() error {
 //Close closes server resources
 func (s *Server) Close() error {
 	s.Proxy.stop()
-	return s.DB.Close()
+	return s.dbService.Close()
+}
+
+//DB return db object.
+func (s *Server) DB() *sql.DB {
+	return s.dbService.DB()
 }

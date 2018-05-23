@@ -1,15 +1,16 @@
 package types
 
 import (
+	"testing"
+	"time"
+
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/serviceif"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/unittest"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
-	"testing"
-	"time"
 )
 
 //Structure testVn is used to pass vn parameters during VrirualNetwork object creation
@@ -21,15 +22,15 @@ type testVn struct {
 }
 
 func getService() *ContrailTypeLogicService {
-	var serviceChain []serviceif.Service
+	var serviceChain []services.Service
 	service := &ContrailTypeLogicService{
-		BaseService: serviceif.BaseService{},
+		BaseService: services.BaseService{},
 		DB:          unittest.TestDbService,
 	}
 	serviceChain = append(serviceChain, service)
 	serviceChain = append(serviceChain, unittest.TestDbService)
 
-	serviceif.Chain(serviceChain)
+	services.Chain(serviceChain)
 	return service
 }
 func TestMain(m *testing.M) {
@@ -106,7 +107,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			vn := createTestVn(tt.testVnData)
-			res, err := service.CreateVirtualNetwork(ctx, &models.CreateVirtualNetworkRequest{VirtualNetwork: vn})
+			res, err := service.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{VirtualNetwork: vn})
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
@@ -127,7 +128,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 	service := getService()
 
 	//Check missing VirtualNetwork in DB (negative)
-	_, err := service.DeleteVirtualNetwork(ctx, &models.DeleteVirtualNetworkRequest{ID: "nonexistent_uuid"})
+	_, err := service.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: "nonexistent_uuid"})
 	assert.Errorf(t, err, "MissigetVirtualNetworkID check for rt incorrect")
 
 	//Check DeleteVirtualNetwork (positive)
@@ -137,8 +138,8 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 		vn.VirtualNetworkNetworkID, _ = service.DB.AllocateInt(ctx, VirtualNetworkIDPoolKey)
 		return nil
 	})
-	vnReq := &models.CreateVirtualNetworkRequest{VirtualNetwork: vn}
+	vnReq := &services.CreateVirtualNetworkRequest{VirtualNetwork: vn}
 	service.DB.CreateVirtualNetwork(ctx, vnReq) // nolint: errcheck
-	_, err = service.DeleteVirtualNetwork(ctx, &models.DeleteVirtualNetworkRequest{ID: vn.UUID})
+	_, err = service.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: vn.UUID})
 	assert.NoErrorf(t, err, "DeleteVirtualNetwork Failed %v", err)
 }

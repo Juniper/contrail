@@ -1,6 +1,5 @@
 - kind: virtual_network
   data:
-    virtual-networks:
     - annotations: {}
       ecmp_hashing_include_fields: {}
       export_route_target_list: {}

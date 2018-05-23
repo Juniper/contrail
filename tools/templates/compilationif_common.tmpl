@@ -9,8 +9,8 @@ import (
 	"encoding/json"
 	"strings"
 
-        "github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/serviceif"
+    "github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	log "github.com/sirupsen/logrus"
 )
@@ -27,7 +27,7 @@ var functions = map[string]ObjCallback {
 // NewCompilationService makes a compilation service.
 func NewCompilationService() (*CompilationService) {
 	service := &CompilationService{
-		BaseService: serviceif.BaseService{},
+		BaseService: services.BaseService{},
 	}
 	service.Init()
 	return service
@@ -35,7 +35,7 @@ func NewCompilationService() (*CompilationService) {
 
 // CompilationService
 type CompilationService struct {
-	serviceif.BaseService
+	services.BaseService
 }
 
 // HandleEtcdMessages
@@ -72,14 +72,14 @@ func (service *CompilationService) Handle{{ schema.JSONSchema.GoName }}(ctx cont
 		}
 		update := false
 	        _, err = service.Get{{ schema.JSONSchema.GoName }}(ctx,
-			&models.Get{{ schema.JSONSchema.GoName }}Request{
+			&services.Get{{ schema.JSONSchema.GoName }}Request{
 				ID: uuid,
 			})
 		if err == nil {
 			update = true
 		}
 		if update {
-			request := &models.Update{{ schema.JSONSchema.GoName }}Request {
+			request := &services.Update{{ schema.JSONSchema.GoName }}Request {
 				{{ schema.JSONSchema.GoName }}: &obj,
 			}
 			_, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -92,7 +92,7 @@ func (service *CompilationService) Handle{{ schema.JSONSchema.GoName }}(ctx cont
 				return err
 			}
 		} else {
-			request := &models.Create{{ schema.JSONSchema.GoName }}Request {
+			request := &services.Create{{ schema.JSONSchema.GoName }}Request {
 				{{ schema.JSONSchema.GoName }}: &obj,
 			}
 			_, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -106,7 +106,7 @@ func (service *CompilationService) Handle{{ schema.JSONSchema.GoName }}(ctx cont
 			}
 		}
 	case int32(mvccpb.DELETE):
-		request := &models.Delete{{ schema.JSONSchema.GoName }}Request {
+		request := &services.Delete{{ schema.JSONSchema.GoName }}Request {
 			ID: uuid,
 		}
 		_, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)

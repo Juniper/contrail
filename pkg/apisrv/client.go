@@ -207,7 +207,7 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 		// token might be expired, refresh token and retry
 		// skip refresh token after last retry
 		if i < retryCount-1 {
-			resp.Body.Close() // nolint: errcheck
+			resp.Body.Close() // nolint
 			// refresh token
 			err = c.Login()
 			if err != nil {

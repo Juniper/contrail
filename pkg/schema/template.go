@@ -49,14 +49,14 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 			return err
 		}
 	} else if config.TemplateType == "type" {
-		for typeName, typeDef := range api.Types {
+		for goName, typeDef := range api.Types {
 			output, err :=
-				tpl.Execute(pongo2.Context{"type": typeDef, "name": typeName})
+				tpl.Execute(pongo2.Context{"type": typeDef, "name": goName})
 			if err != nil {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(config.OutputPath, "__resource__", common.CamelToSnake(typeName), 1),
+				strings.Replace(config.OutputPath, "__resource__", common.CamelToSnake(goName), 1),
 				[]byte(output), 0644)
 			if err != nil {
 				return err
@@ -76,7 +76,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(config.OutputPath, "__resource__", common.CamelToSnake(typeName), 1),
+				strings.Replace(config.OutputPath, "__resource__", common.CamelToSnake(goName), 1),
 				[]byte(output), 0644)
 			if err != nil {
 				return err

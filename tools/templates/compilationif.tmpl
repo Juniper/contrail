@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 var ObjsCache *sync.Map
@@ -33,11 +34,11 @@ func (service *CompilationService) Debug(objStr string, objValue *sync.Map) {
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 // Create{{ schema.JSONSchema.GoName }}
-func (service *CompilationService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *CompilationService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
 	// Check if request Object exists
 	obj := request.Get{{ schema.JSONSchema.GoName }}()
 	_, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
-		&models.Get{{ schema.JSONSchema.GoName }}Request{
+		&services.Get{{ schema.JSONSchema.GoName }}Request{
 			ID: obj.UUID,
 		})
 	if err == nil {
@@ -60,11 +61,11 @@ func (service *CompilationService) Create{{ schema.JSONSchema.GoName }}(ctx cont
 	return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 // Update{{ schema.JSONSchema.GoName }}
-func (service *CompilationService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *CompilationService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
 	// Check if request Object exists
 	obj := request.Get{{ schema.JSONSchema.GoName }}()
 	_, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
-		&models.Get{{ schema.JSONSchema.GoName }}Request{
+		&services.Get{{ schema.JSONSchema.GoName }}Request{
 			ID: obj.UUID,
 		})
 	if err != nil {
@@ -87,11 +88,11 @@ func (service *CompilationService) Update{{ schema.JSONSchema.GoName }}(ctx cont
 	return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 // Delete{{ schema.JSONSchema.GoName }}
-func (service *CompilationService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *CompilationService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
 	// Check if request Object exists
 	objUUID := request.GetID()
 	_, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
-		&models.Get{{ schema.JSONSchema.GoName }}Request{
+		&services.Get{{ schema.JSONSchema.GoName }}Request{
 			ID: objUUID,
 		})
 	if err != nil {
@@ -111,7 +112,7 @@ func (service *CompilationService) Delete{{ schema.JSONSchema.GoName }}(ctx cont
 	return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 // Get{{ schema.JSONSchema.GoName }}
-func (service *CompilationService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (*models.Get{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *CompilationService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (*services.Get{{ schema.JSONSchema.GoName }}Response, error) {
 	objMap, ok := ObjsCache.Load("{{ schema.ID }}")
 	if !ok {
 		return nil, errors.New("{{ schema.ID }} get failed ")
@@ -122,7 +123,7 @@ func (service *CompilationService) Get{{ schema.JSONSchema.GoName }}(ctx context
 		return nil, errors.New("{{ schema.ID }} get failed ")
 	}
 
-	response := &models.Get{{ schema.JSONSchema.GoName }}Response{
+	response := &services.Get{{ schema.JSONSchema.GoName }}Response{
 		{{ schema.JSONSchema.GoName }}: obj.(*models.{{ schema.JSONSchema.GoName }}),
 	}
 	return response, nil

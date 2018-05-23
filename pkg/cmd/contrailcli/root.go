@@ -72,12 +72,9 @@ func getClient() (*apisrv.Client, error) {
 }
 
 // readResources decodes single or array of input data from YAML.
-func readResources(file string) (*services.RESTSyncRequest, error) {
-	request := &services.RESTSyncRequest{}
+func readResources(file string) (*services.EventList, error) {
+	request := &services.EventList{}
 	err := common.LoadFile(file, request)
-	for _, resource := range request.Resources {
-		resource.Data = common.YAMLtoJSONCompat(resource.Data)
-	}
 	return request, err
 }
 

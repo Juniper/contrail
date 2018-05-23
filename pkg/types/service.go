@@ -3,7 +3,7 @@ package types
 import (
 	"database/sql"
 
-	"github.com/Juniper/contrail/pkg/serviceif"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"golang.org/x/net/context"
 )
@@ -15,7 +15,7 @@ const (
 
 //DBServiceInterface makes mocking DBService possible in type logic tests
 type DBServiceInterface interface {
-	serviceif.Service
+	services.Service
 	DB() *sql.DB
 	AllocateInt(context.Context, string) (int64, error)
 	DeallocateInt(context.Context, string, int64) error
@@ -23,7 +23,7 @@ type DBServiceInterface interface {
 
 //ContrailTypeLogicService is a service for implementing type specific logic
 type ContrailTypeLogicService struct {
-	serviceif.BaseService
+	services.BaseService
 	DB             DBServiceInterface
 	AddressManager ipam.AddressManager
 }

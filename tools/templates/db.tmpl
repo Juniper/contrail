@@ -8,6 +8,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 )
 
@@ -50,7 +51,7 @@ var {{ schema.JSONSchema.GoName }}Parents = []string{
 // nolint
 func (db *Service) create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Create{{ schema.JSONSchema.GoName }}Request) error {
+    request *services.Create{{ schema.JSONSchema.GoName }}Request) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
     tx := GetTransaction(ctx)
     model := request.{{ schema.JSONSchema.GoName }}
@@ -188,7 +189,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
 }
 
 // List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
-func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
+func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
     var rows *sql.Rows
     tx := GetTransaction(ctx)
 
@@ -203,7 +204,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
        if err != nil {
            return nil, errors.Wrap(err, "can't find parents")
        }
-       spec.Filters = models.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
+       spec.Filters = services.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
     }
     query, columns, values := qb.ListQuery(auth, spec)
     rows, err = tx.QueryContext(ctx, query, values...)
@@ -237,7 +238,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
             }
             result = append(result, m)
     }
-    response = &models.List{{ schema.JSONSchema.GoName }}Response{
+    response = &services.List{{ schema.JSONSchema.GoName }}Response{
        {{ schema.JSONSchema.GoName }}s: result,
     }
     return response, nil
@@ -246,7 +247,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
 // Update{{ schema.JSONSchema.GoName }} updates a resource
 func (db *Service) update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Update{{ schema.JSONSchema.GoName }}Request,
+    request *services.Update{{ schema.JSONSchema.GoName }}Request,
     ) error {
     tx := GetTransaction(ctx)
     qb := db.queryBuilders["{{ schema.ID }}"]
@@ -332,7 +333,7 @@ func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
 // Delete{{ schema.JSONSchema.GoName }} deletes a resource
 func (db *Service) delete{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Delete{{ schema.JSONSchema.GoName }}Request) error {
+    request *services.Delete{{ schema.JSONSchema.GoName }}Request) error {
     qb := db.queryBuilders["{{ schema.ID }}"]
 
     deleteQuery := qb.DeleteQuery()
@@ -358,7 +359,7 @@ func (db *Service) delete{{ schema.JSONSchema.GoName }}(
 // nolint
 func (db *Service) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
@@ -371,7 +372,7 @@ func (db *Service) Create{{ schema.JSONSchema.GoName }}(
         }); err != nil {
             return nil, err
     }
-    return &models.Create{{ schema.JSONSchema.GoName }}Response{
+    return &services.Create{{ schema.JSONSchema.GoName }}Response{
         {{ schema.JSONSchema.GoName }}: request.{{ schema.JSONSchema.GoName }},
     }, nil
 }
@@ -379,7 +380,7 @@ func (db *Service) Create{{ schema.JSONSchema.GoName }}(
 //Update{{ schema.JSONSchema.GoName }} handles a Update request.
 func (db *Service) Update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
@@ -392,13 +393,13 @@ func (db *Service) Update{{ schema.JSONSchema.GoName }}(
         }); err != nil {
         return nil, err
     }
-    return &models.Update{{ schema.JSONSchema.GoName }}Response{
+    return &services.Update{{ schema.JSONSchema.GoName }}Response{
         {{ schema.JSONSchema.GoName }}: model,
     }, nil
 }
 
 //Delete{{ schema.JSONSchema.GoName }} delete a resource.
-func (db *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Delete{{ schema.JSONSchema.GoName }}Request) (*models.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+func (db *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
     if err := DoInTransaction(
         ctx,
         db.DB(),
@@ -407,27 +408,27 @@ func (db *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, req
         }); err != nil {
         return nil, err
     }
-    return &models.Delete{{ schema.JSONSchema.GoName }}Response{
+    return &services.Delete{{ schema.JSONSchema.GoName }}Response{
         ID: request.ID,
     }, nil
 }
 
 //Get{{ schema.JSONSchema.GoName }} a Get request.
-func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (response *models.Get{{ schema.JSONSchema.GoName }}Response, err error) {
-    spec := &models.ListSpec{
+func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (response *services.Get{{ schema.JSONSchema.GoName }}Response, err error) {
+    spec := &services.ListSpec{
                 Limit: 1,
                 Detail: true,
-                Filters: []*models.Filter{
-                    &models.Filter{
+                Filters: []*services.Filter{
+                    &services.Filter{
                         Key: "uuid",
                         Values: []string{request.ID},
                     },
                 },
     }
-    listRequest := &models.List{{ schema.JSONSchema.GoName }}Request{
+    listRequest := &services.List{{ schema.JSONSchema.GoName }}Request{
         Spec: spec,
     }
-    var result *models.List{{ schema.JSONSchema.GoName }}Response
+    var result *services.List{{ schema.JSONSchema.GoName }}Response
     if err := DoInTransaction(
         ctx,
         db.DB(),
@@ -440,7 +441,7 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
     if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
         return nil, common.ErrorNotFound
     }
-    response = &models.Get{{ schema.JSONSchema.GoName }}Response{
+    response = &services.Get{{ schema.JSONSchema.GoName }}Response{
        {{ schema.JSONSchema.GoName }}: result.{{ schema.JSONSchema.GoName }}s[0],
     }
     return response, nil
@@ -450,7 +451,7 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 // nolint
 func (db *Service) List{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
-    request *models.List{{ schema.JSONSchema.GoName }}Request) (response *models.List{{ schema.JSONSchema.GoName }}Response, err error) {
+    request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
     if err := DoInTransaction(
         ctx,
         db.DB(),

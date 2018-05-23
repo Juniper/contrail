@@ -3,7 +3,7 @@ package types
 import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"golang.org/x/net/context"
 )
 
@@ -12,7 +12,7 @@ var errorMultiPolicyServiceChain = common.ErrorBadRequest("Multi policy service 
 //CreateVirtualNetwork do pre check for virtual network.
 func (service *ContrailTypeLogicService) CreateVirtualNetwork(
 	ctx context.Context,
-	request *models.CreateVirtualNetworkRequest) (response *models.CreateVirtualNetworkResponse, err error) {
+	request *services.CreateVirtualNetworkRequest) (response *services.CreateVirtualNetworkResponse, err error) {
 	virtualNetwork := request.VirtualNetwork
 	// check if multiple policy service chain supported
 	if !virtualNetwork.IsValidMultiPolicyServiceChainConfig() {
@@ -52,8 +52,8 @@ func (service *ContrailTypeLogicService) CreateVirtualNetwork(
 }
 
 func (service *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context, id string) (int64, error) {
-	var getResponse *models.GetVirtualNetworkResponse
-	getResponse, err := service.DB.GetVirtualNetwork(ctx, &models.GetVirtualNetworkRequest{
+	var getResponse *services.GetVirtualNetworkResponse
+	getResponse, err := service.DB.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
 		ID: id,
 	})
 	if err != nil {
@@ -65,7 +65,7 @@ func (service *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context
 //DeleteVirtualNetwork do pre check for delete network.
 func (service *ContrailTypeLogicService) DeleteVirtualNetwork(
 	ctx context.Context,
-	request *models.DeleteVirtualNetworkRequest) (response *models.DeleteVirtualNetworkResponse, err error) {
+	request *services.DeleteVirtualNetworkRequest) (response *services.DeleteVirtualNetworkResponse, err error) {
 	id := request.ID
 
 	err = db.DoInTransaction(

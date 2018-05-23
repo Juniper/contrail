@@ -6,15 +6,16 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
+
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
+	ipammock "github.com/Juniper/contrail/pkg/types/ipam/mock"
+	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/serviceif"
-	"github.com/Juniper/contrail/pkg/serviceif/mock"
-	"github.com/Juniper/contrail/pkg/types/ipam/mock"
-	"github.com/Juniper/contrail/pkg/types/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
@@ -33,15 +34,15 @@ var mockCtrl *gomock.Controller
 var ipamMock *ipammock.MockAddressManager
 var dbServiceMock *typesmock.MockDBServiceInterface
 var logicService ContrailTypeLogicService
-var nextServiceMock *serviceifmock.MockService
+var nextServiceMock *servicesmock.MockService
 
 func testSetup(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	ipamMock = ipammock.NewMockAddressManager(mockCtrl)
-	nextServiceMock = serviceifmock.NewMockService(mockCtrl)
+	nextServiceMock = servicesmock.NewMockService(mockCtrl)
 	dbServiceMock = typesmock.NewMockDBServiceInterface(mockCtrl)
 	logicService = ContrailTypeLogicService{
-		BaseService:    serviceif.BaseService{},
+		BaseService:    services.BaseService{},
 		AddressManager: ipamMock,
 		DB:             dbServiceMock,
 	}
@@ -59,7 +60,7 @@ func testClean() {
 func setupDBMocks() {
 	dbServiceMock.EXPECT().DB().AnyTimes()
 	dbServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		&models.GetVirtualNetworkResponse{
+		&services.GetVirtualNetworkResponse{
 			VirtualNetwork: &models.VirtualNetwork{},
 		}, nil).AnyTimes()
 }
@@ -96,16 +97,16 @@ func setupIPAMMocks() {
 func setupNextServiceMocks() {
 	// CreateFloatingIP - response
 	nextServiceMock.EXPECT().CreateFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *models.CreateFloatingIPRequest) (response *models.CreateFloatingIPResponse, err error) {
-			return &models.CreateFloatingIPResponse{
+		func(ctx context.Context, request *services.CreateFloatingIPRequest) (response *services.CreateFloatingIPResponse, err error) {
+			return &services.CreateFloatingIPResponse{
 				FloatingIP: request.FloatingIP,
 			}, nil
 		}).AnyTimes()
 
 	// DeleteFloatingIP - response
 	nextServiceMock.EXPECT().DeleteFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *models.DeleteFloatingIPRequest) (response *models.DeleteFloatingIPResponse, err error) {
-			return &models.DeleteFloatingIPResponse{
+		func(ctx context.Context, request *services.DeleteFloatingIPRequest) (response *services.DeleteFloatingIPResponse, err error) {
+			return &services.DeleteFloatingIPResponse{
 				ID: request.ID,
 			}, nil
 		}).AnyTimes()
@@ -114,7 +115,7 @@ func setupNextServiceMocks() {
 func prepareParent(floatingIPPool *models.FloatingIPPool) {
 	if floatingIPPool != nil {
 		dbServiceMock.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-			&models.GetFloatingIPPoolResponse{
+			&services.GetFloatingIPPoolResponse{
 				FloatingIPPool: floatingIPPool,
 			}, nil).AnyTimes()
 	} else {
@@ -127,29 +128,29 @@ func TestCreateFloatingIP(t *testing.T) {
 	tests := []struct {
 		name             string
 		floatingIPParent *models.FloatingIPPool
-		createRequest    models.CreateFloatingIPRequest
-		expectedResponse models.CreateFloatingIPResponse
+		createRequest    services.CreateFloatingIPRequest
+		expectedResponse services.CreateFloatingIPResponse
 		fails            bool
 		errorCode        codes.Code
 	}{
 		{
 			name:             "Create floating ip when parent type is instance-ip",
-			createRequest:    models.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{ParentType: "instance-ip"}},
+			createRequest:    services.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{ParentType: "instance-ip"}},
 			floatingIPParent: &models.FloatingIPPool{},
-			expectedResponse: models.CreateFloatingIPResponse{FloatingIP: &models.FloatingIP{ParentType: "instance-ip"}},
+			expectedResponse: services.CreateFloatingIPResponse{FloatingIP: &models.FloatingIP{ParentType: "instance-ip"}},
 		},
 		{
 			name:             "Create floating ip with a free ip address",
-			createRequest:    models.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{ParentType: "floating-ip-pool"}},
+			createRequest:    services.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{ParentType: "floating-ip-pool"}},
 			floatingIPParent: &models.FloatingIPPool{},
-			expectedResponse: models.CreateFloatingIPResponse{FloatingIP: &models.FloatingIP{
+			expectedResponse: services.CreateFloatingIPResponse{FloatingIP: &models.FloatingIP{
 				ParentType:        "floating-ip-pool",
 				FloatingIPAddress: "10.0.0.1",
 			}},
 		},
 		{
 			name: "Try to create floating ip with IP address which is already allocated",
-			createRequest: models.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
+			createRequest: services.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
 				ParentType:        "floating-ip-pool",
 				FloatingIPAddress: "10.0.0.2",
 			}},
@@ -159,18 +160,18 @@ func TestCreateFloatingIP(t *testing.T) {
 		},
 		{
 			name: "Create floating ip without IP address",
-			createRequest: models.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
+			createRequest: services.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
 				ParentType: "floating-ip-pool",
 			}},
 			floatingIPParent: &models.FloatingIPPool{},
-			expectedResponse: models.CreateFloatingIPResponse{FloatingIP: &models.FloatingIP{
+			expectedResponse: services.CreateFloatingIPResponse{FloatingIP: &models.FloatingIP{
 				ParentType:        "floating-ip-pool",
 				FloatingIPAddress: "10.0.0.1",
 			}},
 		},
 		{
 			name: "Create floating ip with subnets from floating ip pool",
-			createRequest: models.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
+			createRequest: services.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
 				ParentType: "floating-ip-pool",
 			}},
 			floatingIPParent: &models.FloatingIPPool{
@@ -178,14 +179,14 @@ func TestCreateFloatingIP(t *testing.T) {
 					SubnetUUID: []string{"uuid-2", "uuid-1"},
 				},
 			},
-			expectedResponse: models.CreateFloatingIPResponse{FloatingIP: &models.FloatingIP{
+			expectedResponse: services.CreateFloatingIPResponse{FloatingIP: &models.FloatingIP{
 				ParentType:        "floating-ip-pool",
 				FloatingIPAddress: "10.0.0.1",
 			}},
 		},
 		{
 			name: "Try to create floating ip with exhausted subnets from floating ip pool",
-			createRequest: models.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
+			createRequest: services.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
 				ParentType: "floating-ip-pool",
 			}},
 			floatingIPParent: &models.FloatingIPPool{
@@ -198,7 +199,7 @@ func TestCreateFloatingIP(t *testing.T) {
 		},
 		{
 			name: "Try to create floating ip with subnets from floating ip pool with generic error",
-			createRequest: models.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
+			createRequest: services.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
 				ParentType: "floating-ip-pool",
 			}},
 			floatingIPParent: &models.FloatingIPPool{
@@ -210,7 +211,7 @@ func TestCreateFloatingIP(t *testing.T) {
 		},
 		{
 			name: "Try to create floating ip when parent can't be get from DB ",
-			createRequest: models.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
+			createRequest: services.CreateFloatingIPRequest{FloatingIP: &models.FloatingIP{
 				ParentType: "floating-ip-pool",
 			}},
 			fails: true,
@@ -249,31 +250,31 @@ func TestDeleteFloatingIP(t *testing.T) {
 		name             string
 		floatingIPParent *models.FloatingIPPool
 		floatingIP       *models.FloatingIP
-		deleteRequest    *models.DeleteFloatingIPRequest
-		expectedResponse *models.DeleteFloatingIPResponse
+		deleteRequest    *services.DeleteFloatingIPRequest
+		expectedResponse *services.DeleteFloatingIPResponse
 		fails            bool
 		deallocatesIP    bool
 		errorCode        codes.Code
 	}{
 		{
 			name:             "Delete floating ip when parent type is instance-ip",
-			deleteRequest:    &models.DeleteFloatingIPRequest{ID: "uuid-1"},
+			deleteRequest:    &services.DeleteFloatingIPRequest{ID: "uuid-1"},
 			floatingIPParent: &models.FloatingIPPool{},
 			floatingIP:       &models.FloatingIP{UUID: "uuid-1", ParentType: "instance-ip"},
-			expectedResponse: &models.DeleteFloatingIPResponse{ID: "uuid-1"},
+			expectedResponse: &services.DeleteFloatingIPResponse{ID: "uuid-1"},
 			deallocatesIP:    false,
 		},
 		{
 			name:             "Delete floating ip when parent type is floating-ip-pool",
-			deleteRequest:    &models.DeleteFloatingIPRequest{ID: "uuid-1"},
+			deleteRequest:    &services.DeleteFloatingIPRequest{ID: "uuid-1"},
 			floatingIPParent: &models.FloatingIPPool{},
 			floatingIP:       &models.FloatingIP{UUID: "uuid-1", ParentType: "floating-ip-pool"},
-			expectedResponse: &models.DeleteFloatingIPResponse{ID: "uuid-1"},
+			expectedResponse: &services.DeleteFloatingIPResponse{ID: "uuid-1"},
 			deallocatesIP:    true,
 		},
 		{
 			name:          "Try to delete floating ip if it doesn't exist in DB",
-			deleteRequest: &models.DeleteFloatingIPRequest{ID: "uuid-1"},
+			deleteRequest: &services.DeleteFloatingIPRequest{ID: "uuid-1"},
 			deallocatesIP: false,
 			fails:         true,
 		},
@@ -287,7 +288,7 @@ func TestDeleteFloatingIP(t *testing.T) {
 
 			if tt.floatingIP != nil {
 				dbServiceMock.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-					&models.GetFloatingIPResponse{
+					&services.GetFloatingIPResponse{
 						FloatingIP: tt.floatingIP,
 					}, nil).AnyTimes()
 			} else {
