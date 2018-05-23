@@ -7,14 +7,16 @@ import (
 
 	"encoding/json"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gocql/gocql"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
 )
 
-var oldJSONFile, host, keyspace string
+var inType, inFile string
+var outType, outFile string
+var config string
 
 type contrailDBData struct {
 	Cassandra *cassandra `json:"cassandra"`
@@ -28,13 +30,12 @@ type cassandra struct {
 	ObjUUIDTable   map[string]object    `json:"obj_uuid_table"`
 }
 
-type table map[string]resource
-type resource map[string]interface{}
+type table map[string]map[string]interface{}
 
-func (t table) get(uuid string) resource {
+func (t table) get(uuid string) map[string]interface{} {
 	r, ok := t[uuid]
 	if !ok {
-		r = resource{}
+		r = map[string]interface{}{}
 		t[uuid] = r
 	}
 	return r
@@ -78,10 +79,14 @@ func (o object) GetString(key string) string {
 }
 
 func init() {
-	ContrailUtil.AddCommand(importCmd)
-	importCmd.Flags().StringVarP(&oldJSONFile, "input", "i", "", "Contrail old version dump file")
-	importCmd.Flags().StringVarP(&host, "host", "", "localhost", "Cassandra host")
-	importCmd.Flags().StringVarP(&keyspace, "keyspace", "k", "config_db_uuid", "Cassandra keyspace")
+	ContrailUtil.AddCommand(convertCmd)
+	convertCmd.Flags().StringVarP(&inType, "intype", "", "",
+		"input type: cassandra,cassandra_dump and yaml are supported")
+	convertCmd.Flags().StringVarP(&inFile, "in", "i", "", "Input file or Cassandra host")
+	convertCmd.Flags().StringVarP(&outType, "outtype", "", "",
+		"output type: rdbms and yaml are supported")
+	convertCmd.Flags().StringVarP(&outFile, "out", "o", "", "Output file")
+	convertCmd.Flags().StringVarP(&outFile, "config", "c", "", "Config file")
 }
 
 func parseProperty(data map[string]interface{}, property string, value interface{}) {
@@ -128,14 +133,14 @@ func (o object) convert(uuid string) map[string]interface{} {
 	return data
 }
 
-func importCassandraData() {
+func readCassandra() (*services.RESTSyncRequest, error) {
 	// connect to the cluster
-	cluster := gocql.NewCluster(host)
-	cluster.Keyspace = keyspace
+	cluster := gocql.NewCluster(inFile)
+	cluster.Keyspace = "config_db_uuid"
 	cluster.CQLVersion = "3.4.4"
 	session, err := cluster.CreateSession()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer session.Close()
 	t := table{}
@@ -147,30 +152,26 @@ func importCassandraData() {
 		var value interface{}
 		err = json.Unmarshal([]byte(valueJSON), &value)
 		if err != nil {
-			log.Warn(err)
+			return nil, err
 		}
 		parseProperty(r, column, value)
 	}
 	if err = iter.Close(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	output, err := yaml.Marshal(t.makeSyncResources())
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(output))
+	return t.makeSyncResources(), nil
 }
 
-func importJSONData() {
-	raw, err := ioutil.ReadFile(oldJSONFile)
+func readCassandraDump() (*services.RESTSyncRequest, error) {
+	raw, err := ioutil.ReadFile(inFile)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	t := table{}
 	var data contrailDBData
 	err = json.Unmarshal(raw, &data)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	for uuid, object := range data.Cassandra.ObjUUIDTable {
 		objectType := object.GetString("type")
@@ -178,22 +179,55 @@ func importJSONData() {
 			t[uuid] = object.convert(uuid)
 		}
 	}
-	output, err := yaml.Marshal(t.makeSyncResources())
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(output))
+	return t.makeSyncResources(), nil
 }
 
-var importCmd = &cobra.Command{
-	Use:   "import",
-	Short: "import old version server dump",
-	Long:  `This command imports json data by cassandra_to_json.rb`,
+func readYAML() (*services.RESTSyncRequest, error) {
+	var resources services.RESTSyncRequest
+	err := common.LoadFile(outFile, &resources)
+	return &resources, err
+
+}
+
+func writeYAML(resources *services.RESTSyncRequest) error {
+	err := resources.Sort()
+	if err != nil {
+		return err
+	}
+	return common.SaveFile(outFile, resources)
+}
+
+var convertCmd = &cobra.Command{
+	Use:   "convert",
+	Short: "convert data format",
+	Long:  `This command converts data formats from one to another`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if oldJSONFile != "" {
-			importJSONData()
-		} else {
-			importCassandraData()
+		var resources *services.RESTSyncRequest
+		var err error
+		switch inType {
+		case "cassandra":
+			resources, err = readCassandra()
+		case "cassandra_dump":
+			resources, err = readCassandraDump()
+		case "yaml":
+			resources, err = readYAML()
+		default:
+			err = fmt.Errorf("Unsupported input type %s", inType)
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		switch outType {
+		case "rdbms":
+			//writeRDMBS(resources)
+		case "yaml":
+			err = writeYAML(resources)
+		default:
+			err = fmt.Errorf("Unsupported input type %s", inType)
+			log.Fatal("Unsupported output type")
+		}
+		if err != nil {
+			log.Fatal(err)
 		}
 	},
 }

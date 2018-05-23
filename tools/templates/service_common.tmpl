@@ -1,6 +1,7 @@
 package services
 
 import (
+    "context"
     "net/http"
     "github.com/Juniper/contrail/pkg/models"
     "github.com/labstack/echo"
@@ -26,18 +27,26 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
     ctx := c.Request().Context()
-    responses := []interface{}{}
-    for _, resource := range requestData.Resources {
+    responses, err := requestData.Process(ctx, service)
+    if err != nil {
+        return err
+    }
+    return c.JSON(http.StatusCreated, responses)
+}
+
+func (request *RESTSyncRequest) Process(ctx context.Context, service serviceif.Service) ([]interface{}, error) {
+   responses := []interface{}{}
+   for _, resource := range request.Resources {
         switch(resource.Kind) {
         {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
         case "{{ schema.ID }}":
             model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(resource.Data)
             update := false
             if model.UUID != "" {
-               _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, 
+               _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
                    &models.Get{{ schema.JSONSchema.GoName }}Request{
-                        ID: model.UUID,        
-               }) 
+                        ID: model.UUID,
+               })
                if err == nil {
                    update = true
                }
@@ -49,7 +58,7 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
                  }
                  response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
                  if err != nil {
-                     return common.ToHTTPError(err)
+                     return nil, common.ToHTTPError(err)
                  }
                  responses = append(responses, &RESTResource{
                      Kind: resource.Kind,
@@ -61,17 +70,17 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
                  }
                  response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
                  if err != nil {
-                     return common.ToHTTPError(err)
+                     return nil, common.ToHTTPError(err)
                  }
                  responses = append(responses, &RESTResource{
                      Kind: resource.Kind,
                      Data: response.{{ schema.JSONSchema.GoName }},
-                 })    
+                 })
             }
         {% endif%}{% endfor %}
         }
     }
-    return c.JSON(http.StatusCreated, responses)
+    return responses, nil
 }
 
 //RegisterRESTAPI register REST API service for path.
