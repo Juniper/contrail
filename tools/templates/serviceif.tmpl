@@ -3,6 +3,8 @@ package serviceif
 import (
     "context"
     "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/common"
+	log "github.com/sirupsen/logrus"
 )
 
 type Service interface {
@@ -74,3 +76,119 @@ func (service *BaseService) List{{ schema.JSONSchema.GoName }}(ctx context.Conte
     return service.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 {% endif%}{% endfor %}
+
+//ProcessEvent dispatches resource event to call correcponding service functions.
+func ProcessEvent(ctx context.Context, service Service, event *models.Event) (*models.Event, error) {
+    switch requestEvent := event.Request.(type) {
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    case *models.Event_Create{{ schema.JSONSchema.GoName }}Request:
+        request := requestEvent.Create{{ schema.JSONSchema.GoName }}Request
+        model := request.{{ schema.JSONSchema.GoName }}
+        uuid := model.GetUUID()
+        if uuid != "" {
+            _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
+                &models.Get{{ schema.JSONSchema.GoName }}Request{
+                    ID: uuid,
+            })
+            if err == nil {
+                model := request.{{ schema.JSONSchema.GoName }}
+                response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &models.Update{{ schema.JSONSchema.GoName }}Request{
+                    {{ schema.JSONSchema.GoName }}: model,
+                    FieldMask: models.MapToFieldMask(model.ToMap()),
+                })
+                if err != nil {
+                    return nil, err
+                }
+                return &models.Event{
+                    Request: &models.Event_Update{{ schema.JSONSchema.GoName }}Request{
+                        Update{{ schema.JSONSchema.GoName }}Request: &models.Update{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+                        },
+                    },
+                }, nil 
+            }
+        }
+        response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+        if err != nil {
+            return nil, err
+        }
+        return &models.Event{
+            Request: &models.Event_Create{{ schema.JSONSchema.GoName }}Request{
+                Create{{ schema.JSONSchema.GoName }}Request: &models.Create{{ schema.JSONSchema.GoName }}Request{
+                    {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+                },
+            },
+        }, nil
+    case *models.Event_Update{{ schema.JSONSchema.GoName }}Request:
+        request := requestEvent.Update{{ schema.JSONSchema.GoName }}Request
+        response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+        if err != nil {
+            return nil, err
+        }
+        return &models.Event{
+            Request: &models.Event_Update{{ schema.JSONSchema.GoName }}Request{
+                Update{{ schema.JSONSchema.GoName }}Request: &models.Update{{ schema.JSONSchema.GoName }}Request{
+                    {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+                },
+            },
+        }, nil
+    case *models.Event_Delete{{ schema.JSONSchema.GoName }}Request:
+        request := requestEvent.Delete{{ schema.JSONSchema.GoName }}Request
+        _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+        if err != nil {
+            return nil, err
+        }
+        return &models.Event{
+            Request: &models.Event_Delete{{ schema.JSONSchema.GoName }}Request{
+                Delete{{ schema.JSONSchema.GoName }}Request: &models.Delete{{ schema.JSONSchema.GoName }}Request{
+                    ID: request.ID,
+                },
+            },
+        }, nil
+    {% endif%}{% endfor %}
+    }
+    return nil, nil
+}
+
+//Dump dumps all service data.
+func Dump(ctx context.Context, service Service) (*models.EventList, error) {
+    response := []*models.Event{}
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    list{{ schema.JSONSchema.GoName }}, err := service.List{{ schema.JSONSchema.GoName }}(ctx,
+        &models.List{{ schema.JSONSchema.GoName }}Request{
+           &models.ListSpec{
+               Detail: true,
+           },
+        },
+    )
+    if err != nil {
+        return nil, common.ToHTTPError(err)
+    }
+    for _, resource := range list{{ schema.JSONSchema.GoName }}.{{ schema.JSONSchema.GoName }}s {
+        response = append(response, &models.Event{
+                    Request: &models.Event_Create{{ schema.JSONSchema.GoName }}Request{
+                        Create{{ schema.JSONSchema.GoName }}Request: &models.Create{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: resource,
+                        }}})
+    }
+    {% endif %}{% endfor %}
+    return &models.EventList{
+        Events: response,
+    }, nil
+}
+
+//ProcessEvents process list of events.
+func ProcessEvents(ctx context.Context, service Service, eventList *models.EventList) (*models.EventList, error) {
+	responses := []*models.Event{}
+	for _, event := range eventList.Events {
+		response, err := ProcessEvent(ctx, service, event)
+		if err != nil {
+			log.Debug(response, err)
+			return nil, err
+		}
+		responses = append(responses, response)
+	}
+    return &models.EventList{
+        Events: responses,
+    }, nil
+}

@@ -4,6 +4,8 @@ import (
     "github.com/Juniper/contrail/pkg/common"
 )
 
+const Kind{{ name }} = "{{ id }}"
+
 //To skip import error.
 var _ = common.OPERATION
 
@@ -37,6 +39,14 @@ func Make{{ name }}() *{{name}}{
 // Make{{ name }} makes {{ name }}
 // nolint
 func InterfaceTo{{ name }}(i interface{}) *{{name}}{
+    p, ok := i.(*{{name}})
+    if ok {
+        return p
+    }
+    o, ok := i.({{name}})
+    if ok {
+        return &o
+    }
     m, ok := i.(map[string]interface{})
     _ = m
     if !ok {
@@ -68,8 +78,66 @@ func InterfaceTo{{ name }}(i interface{}) *{{name}}{
     }
 }
 
+// ToMap makes map representation of a resource.
+// nolint
+func (m *{{ name }}) ToMap() map[string]interface{} {
+    if m == nil {
+        return nil
+    }
+    return map[string]interface{}{
+    {% for property in type.OrderedProperties %}
+        {% if property.GoType == "string" || property.GoType == "[]string" || property.GoType == "[]interface" || property.GoType == "map[string]interface{}" || property.GoType == "map[string]string" || property.GoType == "bool" || property.GoType == "int64" || property.GoType == "float" || property.Type == "array" %} "{{ property.ID }}": m.{{ property.GoName}},
+        {% else %}"{{ property.ID }}": m.{{ property.GoName}}.ToMap(),
+    {% endif %}{% endfor %}
+    {% for linkTo, reference in references %}
+        "{{ linkTo }}_refs" : {{ name }}{{ reference.GoName }}RefsToMap(m.{{ reference.GoName }}Refs),
+    {% endfor %}
+    }
+}
+
+func (m *{{ name }}) Kind() string {
+    return Kind{{ name }}
+}
+
+func (m *{{ name }}) Depends() []string {
+    var depends []string
+    if m == nil {
+        return nil
+    }
+    {% for property in type.OrderedProperties %}
+    {% if property == "parent_uuid" %}
+    depends = append(depends, m.GetParentUUID())
+    {% endif %}
+    {% endfor %}
+    {% for linkTo, reference in references %}
+    for _, ref := range m.{{ reference.GoName }}Refs {
+        depends = append(depends, ref.GetUUID())
+    }
+    {% endfor %}
+    return depends
+}
+
 {% for linkTo, reference in references %}
-func InterfaceTo{{ type.GoName  }}{{ reference.GoName }}Refs(i interface{}) []*{{ name }}{{ reference.GoName }}Ref {
+
+func {{ name }}{{ reference.GoName }}RefsToMap(l []*{{ name }}{{ reference.GoName }}Ref) []interface{} {
+    var result []interface{}
+    for _, i := range l {
+        result = append(result, i.ToMap())
+    }
+    return result
+}
+
+func (r *{{ name }}{{ reference.GoName }}Ref) ToMap() map[string]interface{} {
+    return map[string]interface{}{
+        "uuid": r.UUID,
+        "to": r.To,
+        {% if reference.RefType %}
+        "attr": r.Attr.ToMap(),
+        {% endif %}
+    }
+}
+
+func InterfaceTo{{ name }}{{ reference.GoName }}Refs(i interface{}) []*{{ name }}{{ reference.GoName }}Ref {
     list, ok := i.([]interface{})
     if !ok {
         return nil
@@ -92,6 +160,7 @@ func InterfaceTo{{ type.GoName  }}{{ reference.GoName }}Refs(i interface{}) []*{
 
     return result
 }
+
 {% endfor %}
 
 // Make{{ name }}Slice() makes a slice of {{ name }}
