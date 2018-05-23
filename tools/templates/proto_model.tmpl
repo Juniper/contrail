@@ -43,15 +43,15 @@ message Filter {
 
 message {{ schema.JSONSchema.GoName }} {
 {% for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}{% endfor %}
 {% for linkTo, reference in schema.References %}
-    repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs"];// {{ reference.Description }} {% endfor %}
+    repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs", (gogoproto.moretags) = "yaml:\"{{ linkTo }}_refs\""];// {{ reference.Description }} {% endfor %}
 {% for _, backref in schema.BackReferences %}
     {% set linkTo = backref.LinkTo %}
-    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_backrefs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs"]; // {{ backref.Description }} {% endfor %}
+    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_backrefs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_backrefs\""]; // {{ backref.Description }} {% endfor %}
 {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
-    repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s"]; // {{ backref.Description }} {% endfor %}
+    repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s", (gogoproto.moretags) = "yaml:\"{{ child.Plural }}\""]; // {{ backref.Description }} {% endfor %}
 }
 
 {% for linkTo, reference in schema.References %}
@@ -111,7 +111,7 @@ message Get{{ schema.JSONSchema.GoName }}Response {
 {% if definition.Type == "object" %}
 message {{ type }} {
 {% for property in definition.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}{% endfor %}
 }
 {% endif %}
 {% endfor %}
