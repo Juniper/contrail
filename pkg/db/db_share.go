@@ -6,7 +6,6 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/pkg/errors"
 )
 
 //CreateSharing creates sharing information in DB.
@@ -47,17 +46,17 @@ func (db *Service) UpdateSharing(tx *sql.Tx, table string, uuid string, shares [
 
 func (db *Service) createSharingEntry(tx *sql.Tx, table string, uuid string, tenant string, tenantAccess int) error {
 	shareParts := strings.Split(tenant, ":")
-	shareType := "domain"
-	if len(shareParts) > 1 {
-		shareType = "tenant"
+	if len(shareParts) < 1 {
+		return common.ErrorBadRequest("invalid sharing entry")
 	}
-	resourceMetaData, err := db.GetMetaData(tx, "", shareParts)
-	if err != nil {
-		return errors.Wrap(err, "can't find resource")
-	}
-	to := resourceMetaData.UUID
-	_, err = tx.Exec(
-		"insert into "+db.Dialect.quote(shareType+"_share_"+table)+" (uuid, access, "+db.Dialect.quote("to")+") values ("+db.Dialect.values("uuid", "access", "to")+");", // nolint
+
+	shareType := shareParts[0]
+	to := shareParts[1]
+
+	_, err := tx.Exec(
+		"insert into "+
+			db.Dialect.quote(shareType+"_share_"+table)+" (uuid, access, "+
+			db.Dialect.quote("to")+") values ("+db.Dialect.values("uuid", "access", "to")+");", // nolint
 		uuid, tenantAccess, to)
 	return err
 }
