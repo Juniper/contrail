@@ -35,6 +35,15 @@ type Service struct {
 	queryBuilders map[string]*QueryBuilder
 }
 
+//NewServiceFromConfig makes db service from viper config.
+func NewServiceFromConfig() (*Service, error) {
+	sqlDB, err := ConnectDB()
+	if err != nil {
+		return nil, errors.Wrap(err, "Init DB failed")
+	}
+	return NewService(sqlDB, viper.GetString("database.dialect")), nil
+}
+
 //NewService makes a DB service.
 func NewService(db *sql.DB, dialect string) *Service {
 	dbService := &Service{
@@ -49,6 +58,11 @@ func NewService(db *sql.DB, dialect string) *Service {
 //DB gets db object.
 func (db *Service) DB() *sql.DB {
 	return db.db
+}
+
+//Close closes db.
+func (db *Service) Close() error {
+	return db.db.Close()
 }
 
 //SetDB sets db object.
