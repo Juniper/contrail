@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -130,8 +129,8 @@ func listResources(schemaID string) (string, error) {
 		return "", nil
 	}
 	//TODO support all schema
-	resources := &services.RESTSyncRequest{
-		Resources: []*services.RESTResource{},
+	events := &models.EventList{
+		Events: []*models.Event{},
 	}
 	var response map[string][]interface{}
 	_, err = client.Read(
@@ -142,15 +141,12 @@ func listResources(schemaID string) (string, error) {
 	}
 	for _, list := range response {
 		for _, d := range list {
-			resources.Resources = append(resources.Resources,
-				&services.RESTResource{
-					Kind: schemaID,
-					Data: d,
-				},
+			events.Events = append(events.Events,
+				models.InterfaceToEvent(d),
 			)
 		}
 	}
-	output, err := yaml.Marshal(resources)
+	output, err := yaml.Marshal(events)
 	if err != nil {
 		return "", err
 	}

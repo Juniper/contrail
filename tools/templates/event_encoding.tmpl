@@ -1,0 +1,209 @@
+package models
+
+import (
+    "encoding/json"
+	"github.com/Juniper/contrail/pkg/common"
+)
+
+//GetObject returns event on resource.
+func (e *Event) GetResource() Resource {
+	if e == nil {
+		return nil
+	}
+    switch t := e.Request.(type) {
+        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+        case *Event_Create{{ schema.JSONSchema.GoName }}Request:
+            return t.Create{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
+        case *Event_Update{{ schema.JSONSchema.GoName }}Request:
+            return t.Update{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
+        {% endif%}{% endfor %}  
+    }    
+    return nil
+}
+
+//InterfaceToEvent makes event from interface
+func InterfaceToEvent(i interface{}) *Event {
+    e := &Event{}
+    raw := i.(map[string]interface{})
+    kind := raw["kind"]
+    data := raw["data"]
+    uuid := raw["uuid"]
+    operation := raw["operation"].(string)
+    switch (kind) {
+        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+        case "{{ schema.ID }}":
+            switch (operation) {
+                case OperationCreate:
+                    e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
+                        Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: InterfaceTo{{ schema.JSONSchema.GoName }}(data),
+                        }}
+                case OperationUpdate:
+                    m := data.(map[string]interface{})
+                    e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
+                        Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: InterfaceTo{{ schema.JSONSchema.GoName }}(m),
+                            FieldMask: MapToFieldMask(m),
+                        }}
+                case OperationDelete:
+                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
+                        Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
+                            ID: uuid.(string),
+                        }}
+            }
+         {% endif%}{% endfor %}
+    }
+    return e 
+}
+
+//UnmarshalJSON unmarshal event.
+func (e *Event) UnmarshalJSON(data []byte) error {
+    raw := make(map[string]json.RawMessage)
+    err := json.Unmarshal(data, &raw)
+    if err != nil {
+        return err
+    }
+    t, ok := raw["kind"]
+    if !ok {
+        return nil
+    }
+    var kind string
+    err = json.Unmarshal(t, &kind) 
+    if err != nil {
+        return err
+    }
+    d, ok := raw["data"]
+    if !ok {
+        return nil
+    } 
+    o := raw["operation"]
+    var operation string
+    json.Unmarshal(o, &operation) 
+    if operation == "" {
+        operation = OperationCreate
+    }
+    switch (kind) {
+        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+        case "{{ schema.ID }}":
+            switch (operation) {
+                case OperationCreate:
+                    var m {{ schema.JSONSchema.GoName }}
+                    err = json.Unmarshal(d, &m)
+                    if err != nil {
+                        return err
+                    }
+                    e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
+                        Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: &m,
+                        },
+                    }
+                case OperationUpdate:
+                    m := map[string]interface{}{}
+                    err = json.Unmarshal(d, &m)
+                    if err != nil {
+                        return err
+                    }
+                    e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
+                        Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: InterfaceTo{{ schema.JSONSchema.GoName }}(m),
+                            FieldMask: MapToFieldMask(m),
+                        },
+                    }
+                case OperationDelete:
+                    m := map[string]interface{}{}
+                    err = json.Unmarshal(d, &m)
+                    if err != nil {
+                        return err
+                    }
+                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
+                        Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
+                            ID: m["uuid"].(string),
+                        },
+                    }
+            }
+         {% endif%}{% endfor %}
+    }
+    return nil
+}
+
+//ToMap translate event to map.
+func (e *Event) ToMap() map[string]interface{} {
+    m := map[string]interface{}{}
+    switch t := e.Request.(type) {
+        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+        case *Event_Create{{ schema.JSONSchema.GoName }}Request:
+            m["kind"] = "{{ schema.ID }}"
+            m["operation"] = OperationCreate
+            m["data"] = t.Create{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
+        case *Event_Update{{ schema.JSONSchema.GoName }}Request:
+            m["kind"] = "{{ schema.ID }}"
+            m["operation"] = OperationUpdate
+            m["data"] = t.Update{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
+        case *Event_Delete{{ schema.JSONSchema.GoName }}Request:
+            m["kind"] = "{{ schema.ID }}"
+            m["operation"] = OperationDelete
+            m["data"] = map[string]interface{}{
+                "uuid": t.Delete{{ schema.JSONSchema.GoName }}Request.ID,
+            }
+        {% endif%}{% endfor %}   
+    }
+    return m
+}
+
+//MarshalJSON marshal event.
+func (e *Event) MarshalJSON() ([]byte, error) {
+    return json.Marshal(e.ToMap())
+}
+
+//MarshalYAML marshal event to yaml.
+func (e *Event) MarshalYAML() (interface{}, error) {
+    return e.ToMap(), nil
+}
+
+//UnmarshalYAML unmarshal event.
+func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
+    var r interface{}
+    err := unmarshal(&r)
+    if err != nil {
+        return err
+    }
+    raw := r.(map[interface{}]interface{})
+    kind := raw["kind"]
+    data := common.YAMLtoJSONCompat(raw["data"])
+    operation := raw["operation"]
+    if operation == "" {
+        operation = OperationCreate
+    }
+    switch (kind) {
+        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+        case "{{ schema.ID }}":
+            switch (operation) {
+                case OperationCreate:
+                    m := InterfaceTo{{ schema.JSONSchema.GoName }}(data)
+                    if err != nil {
+                        return err
+                    }
+                    e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
+                        Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: m,
+                        },
+                    }
+                case OperationUpdate:
+                    e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
+                        Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+                            {{ schema.JSONSchema.GoName }}: InterfaceTo{{ schema.JSONSchema.GoName }}(data),
+                            FieldMask: MapToFieldMask(data.(map[string]interface{})),
+                        },
+                    }
+                case OperationDelete:
+                    m := data.(map[string]interface{})
+                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
+                        Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
+                            ID: m["uuid"].(string),
+                        },
+                    }
+            }
+         {% endif%}{% endfor %}
+    }
+    return nil
+}

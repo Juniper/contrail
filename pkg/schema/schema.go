@@ -31,7 +31,7 @@ const (
 
 var sqlTypeMap = map[string]string{
 	ObjectType:  "json",
-	IntegerType: "int",
+	IntegerType: "bigint",
 	ArrayType:   "json",
 	BooleanType: "bool",
 	NumberType:  "float",
@@ -123,6 +123,7 @@ type Schema struct {
 	Path             string                    `yaml:"-" json:"-"`
 	PluralPath       string                    `yaml:"-" json:"-"`
 	Children         []*BackReference          `yaml:"-" json:"-"`
+	Index            int                       `yaml:"-" json:"-"`
 }
 
 //JSONSchema is a standard JSONSchema representation plus data for code generation.
@@ -574,10 +575,13 @@ func (api *API) resolveAllRelation() error {
 }
 
 func (api *API) resolveIndex() error {
+	schemaIndex := 10
 	for _, s := range api.Schemas {
 		if s.Type == AbstractType {
 			continue
 		}
+		s.Index = schemaIndex
+		schemaIndex += 3
 		index := 1
 		for _, property := range s.JSONSchema.OrderedProperties {
 			property.Index = index

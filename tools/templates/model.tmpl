@@ -4,6 +4,8 @@ import (
     "github.com/Juniper/contrail/pkg/common"
 )
 
+const Kind{{ name }} = "{{ type.ID }}"
+
 //To skip import error.
 var _ = common.OPERATION
 
@@ -37,6 +39,14 @@ func Make{{ name }}() *{{name}}{
 // Make{{ name }} makes {{ name }}
 // nolint
 func InterfaceTo{{ name }}(i interface{}) *{{name}}{
+    p, ok := i.(*{{name}})
+    if ok {
+        return p
+    }
+    o, ok := i.({{name}})
+    if ok {
+        return &o
+    }
     m, ok := i.(map[string]interface{})
     _ = m
     if !ok {
@@ -68,7 +78,46 @@ func InterfaceTo{{ name }}(i interface{}) *{{name}}{
     }
 }
 
+// ToMap makes map representation of a resource.
+// nolint
+func (m *{{ name }}) ToMap() map[string]interface{} {
+    if m == nil {
+        return nil
+    }
+    return map[string]interface{}{
+    {% for property in type.OrderedProperties %}
+        "{{ property.ID }}": m.{{ property.GoName }},
+    {% endfor %}
+    {% for linkTo, reference in references %}
+        "{{ linkTo }}_refs" : m.{{ reference.GoName }}Refs,
+    {% endfor %}
+    }
+}
+
+func (m *{{ name }}) Kind() string {
+    return Kind{{ name }}
+}
+
+func (m *{{ name }}) Depends() []string {
+    var depends []string
+    if m == nil {
+        return nil
+    }
+    {% for property in type.OrderedProperties %}
+    {% if property == "parent_uuid" %}
+    depends = append(depends, m.GetParentUUID())
+    {% endif %}
+    {% endfor %}
+    {% for linkTo, reference in references %}
+    for _, ref := range m.{{ reference.GoName }}Refs {
+        depends = append(depends, ref.GetUUID())
+    }
+    {% endfor %} 
+    return depends
+}
+
 {% for linkTo, reference in references %}
+
 func InterfaceTo{{ type.GoName  }}{{ reference.GoName }}Refs(i interface{}) []*{{ name }}{{ reference.GoName }}Ref {
     list, ok := i.([]interface{})
     if !ok {
