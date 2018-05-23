@@ -50,8 +50,8 @@ func showResource(schemaID, uuid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resources := &services.RESTSyncRequest{
-		Resources: []*services.RESTResource{
+	resources := &services.ResourceList{
+		Resources: []*services.ResourceEvent{
 			{
 				Kind: schemaID,
 				Data: response,

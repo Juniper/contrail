@@ -31,7 +31,7 @@ const (
 
 var sqlTypeMap = map[string]string{
 	ObjectType:  "json",
-	IntegerType: "int",
+	IntegerType: "bigint",
 	ArrayType:   "json",
 	BooleanType: "bool",
 	NumberType:  "float",
