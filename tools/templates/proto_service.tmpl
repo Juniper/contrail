@@ -16,4 +16,5 @@ rpc Create{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models
 rpc Update{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Update{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Update{{ schema.JSONSchema.GoName }}Response);
 rpc Delete{{ schema.JSONSchema.GoName }} (github.com.Juniper.contrail.pkg.models.Delete{{ schema.JSONSchema.GoName }}Request) returns (github.com.Juniper.contrail.pkg.models.Delete{{ schema.JSONSchema.GoName }}Response);
 {% endif %}{% endfor %}
+rpc Watch(stream github.com.Juniper.contrail.pkg.models.WatchRequest) returns (stream github.com.Juniper.contrail.pkg.models.WatchResponse) {}
 }

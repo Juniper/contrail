@@ -1,534 +1,1548 @@
-name: Virtual Network Test
-description: basic virtual network test
-clients:
-  default:
-    id: admin
-    password: contrail123
-    authurl: http://localhost:5000/v3
-    endpoint: http://localhost:8082
-    debug: false
-    insecure: true
-    domain: default
-    scope:
-      domain: null
-      project:
-        domain:
-          id: default
-          name: ""
-        id: ""
-        name: admin
-workflow:
-- name: get project
-  request:
-    method: GET
-    path: /project/c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
-    expected:
-    - 200
-  expect:
-    project:
-      application_policy_set_refs:
-      - attr: null
-        href: http://localhost:8082/application-policy-set/e66014c7-ba57-42a1-a0d8-681f59054faa
-        to:
-        - default-domain
-        - admin
-        - default-application-policy-set
-        uuid: e66014c7-ba57-42a1-a0d8-681f59054faa
-      application_policy_sets:
-      - href: http://localhost:8082/application-policy-set/e66014c7-ba57-42a1-a0d8-681f59054faa
-        to:
-        - default-domain
-        - admin
-        - default-application-policy-set
-        uuid: e66014c7-ba57-42a1-a0d8-681f59054faa
-      display_name: admin
-      fq_name:
-      - default-domain
-      - admin
-      href: http://localhost:8082/project/c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+resources:
+- kind: global_system_config
+  data:
+    alarms:
+    - alarm_rules: {}
+      alarm_severity: 1
+      annotations: {}
       id_perms:
-        created: 2018-05-02T20:44:14.868566
-        creator: null
-        description: null
+        created: 2018-05-23T17:29:57.786883
         enable: true
-        last_modified: 2018-05-02T20:45:19.645179
+        last_modified: 2018-05-23T17:29:57.786883
         permissions:
-          group: admin
+          group: cloud-admin-group
           group_access: 7
           other_access: 7
-          owner: admin
+          owner: cloud-admin
           owner_access: 7
         user_visible: true
         uuid:
-          uuid_lslong: 1.1332902e+19
-          uuid_mslong: 1.4380275e+19
-      name: admin
-      parent_href: http://localhost:8082/domain/4a2c33ac-0b7d-41d3-aeab-5355b68b2080
-      parent_type: domain
-      parent_uuid: 4a2c33ac-0b7d-41d3-aeab-5355b68b2080
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      parent_type: global-system-config
+      parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
       perms2:
-        global_access: 0
-        owner: c790ffb2d5524c2f9d468dbff75cbd4d
+        owner: cloud-admin
         owner_access: 7
-        share: []
-      security_groups:
-      - href: http://localhost:8082/security-group/a3d81663-f1fd-4138-8478-62a34e40d4b3
-        to:
-        - default-domain
-        - admin
-        - default
-        uuid: a3d81663-f1fd-4138-8478-62a34e40d4b3
-      uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
-- name: create virtual network blue
-  request:
-    method: POST
-    path: /virtual-networks
-    expected:
-    - 200
-    data:
-      virtual-network:
-        display_name: blue
-        fq_name:
-        - default-domain
-        - admin
-        - vnblue
-        parent_type: project
-        parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
-        uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-  expect:
-    virtual-network:
-      fq_name:
-      - default-domain
-      - admin
-      - vnblue
-      href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-      name: vnblue
-      parent_href: http://localhost:8082/project/c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
+      uuid: d659b58e-988b-4f63-932e-a950769aef27
+      uve_keys: {}
+    annotations: {}
+    autonomous_system: 64512
+    bgpaas_parameters: {}
+    config_version: "1.0"
+    fq_name:
+    - default-global-system-config
+    global_qos_configs:
+    - annotations: {}
+      control_traffic_dscp: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.845891
+        enable: true
+        last_modified: 2018-05-23T17:29:57.845891
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      parent_type: global-system-config
+      parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
+    global_vrouter_configs:
+    - annotations: {}
+      ecmp_hashing_include_fields: {}
+      enable_security_logging: true
+      encapsulation_priorities: {}
+      encryption_mode: none
+      encryption_tunnel_endpoints: {}
+      flow_aging_timeout_list: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.460544
+        enable: true
+        last_modified: 2018-05-23T17:29:57.460544
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      linklocal_services: {}
+      parent_type: global-system-config
+      parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      port_translation_pools: {}
+      uuid: fcc87877-5f76-49eb-ab3c-1e0cbfae05b4
+    graceful_restart_parameters: {}
+    id_perms:
+      created: 2018-05-23T17:29:57.397227
+      enable: true
+      last_modified: 2018-05-23T17:29:57.397227
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 6.803452e+18
+    igmp_config: {}
+    ip_fabric_subnets: {}
+    job_templates:
+    - annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:58.172527
+        enable: true
+        last_modified: 2018-05-23T17:29:58.172527
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      job_template_multi_device_job: true
+      job_template_playbooks: {}
+      parent_type: global-system-config
+      parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: 8fb161e0-4f95-4a88-a8b9-acd3f6b34b80
+    - annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:58.268184
+        enable: true
+        last_modified: 2018-05-23T17:29:58.268184
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      job_template_multi_device_job: true
+      job_template_playbooks: {}
+      parent_type: global-system-config
+      parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: c0ece5c2-8d1b-4967-b2ea-c381c80716e6
+    - annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:58.227063
+        enable: true
+        last_modified: 2018-05-23T17:29:58.227063
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: 3.5666585e+18
+      job_template_playbooks: {}
+      parent_type: global-system-config
+      parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: 317f5118-7512-41de-9204-61869344fa10
+    - annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:58.294045
+        enable: true
+        last_modified: 2018-05-23T17:29:58.294045
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: 3.133601e+18
+      job_template_multi_device_job: true
+      job_template_playbooks: {}
+      parent_type: global-system-config
+      parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: 2b7cc98d-f029-47ee-96a4-fe26008e90d2
+    mac_aging_time: 300
+    mac_limit_control: {}
+    mac_move_control: {}
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    plugin_tuning: {}
+    supported_device_families: {}
+    supported_fabric_annotations: {}
+    user_defined_log_statistics: {}
+    uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+  operation: ""
+- kind: alarm
+  data:
+    alarm_rules: {}
+    alarm_severity: 1
+    annotations: {}
+    fq_name:
+    - default-global-system-config
+    - system-defined-bottle-request-size-limit
+    id_perms:
+      created: 2018-05-23T17:29:57.786883
+      enable: true
+      last_modified: 2018-05-23T17:29:57.786883
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: d659b58e-988b-4f63-932e-a950769aef27
+    uve_keys:
+      uve_key:
+      - config-node
+  operation: ""
+- kind: policy_management
+  data:
+    annotations: {}
+    application_policy_sets:
+    - all_applications: true
+      annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.619202
+        enable: true
+        last_modified: 2018-05-23T17:29:57.628877
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      parent_type: policy-management
+      parent_uuid: 72294557-ca3e-4214-b817-30673270b185
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: 8a05c096-09ed-4c4b-a763-cf1d5ba92a27
+    fq_name:
+    - default-policy-management
+    id_perms:
+      created: 2018-05-23T17:29:57.599107
+      enable: true
+      last_modified: 2018-05-23T17:29:57.599107
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 8.2261826e+18
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: 72294557-ca3e-4214-b817-30673270b185
+  operation: ""
+- kind: application_policy_set
+  data:
+    all_applications: true
+    annotations: {}
+    fq_name:
+    - default-policy-management
+    - default-application-policy-set
+    global_vrouter_config_refs:
+    - uuid: fcc87877-5f76-49eb-ab3c-1e0cbfae05b4
+    id_perms:
+      created: 2018-05-23T17:29:57.619202
+      enable: true
+      last_modified: 2018-05-23T17:29:57.628877
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    parent_type: policy-management
+    parent_uuid: 72294557-ca3e-4214-b817-30673270b185
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: 8a05c096-09ed-4c4b-a763-cf1d5ba92a27
+  operation: ""
+- kind: domain
+  data:
+    annotations: {}
+    domain_limits: {}
+    fq_name:
+    - default-domain
+    id_perms:
+      created: 2018-05-23T17:29:57.482383
+      enable: true
+      last_modified: 2018-05-23T17:29:57.996393
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 5.138874e+18
+    namespaces:
+    - annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.581575
+        enable: true
+        last_modified: 2018-05-23T17:29:57.581575
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      namespace_cidr: {}
+      parent_type: domain
+      parent_uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: dd50e8d7-7d7a-4649-b035-b3def92a430e
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+      share:
+      - tenant: domain:4750f264-86b6-4345-87a8-c99b5f4a2cf8
+        tenant_access: 6
+    projects:
+    - annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.500625
+        enable: true
+        last_modified: 2018-05-23T17:29:58.077633
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      parent_type: domain
+      parent_uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      quota:
+        defaults: -1
+      uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+  operation: ""
+- kind: project
+  data:
+    annotations: {}
+    application_policy_sets:
+    - all_applications: true
+      annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:58.037639
+        enable: true
+        last_modified: 2018-05-23T17:29:58.037639
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: 3.7627743e+18
       parent_type: project
-      parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
-      uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-- name: list virtual networks with detail
-  request:
-    method: GET
-    path: /virtual-networks?detail=true
-    expected:
-    - 200
-  expect:
-    virtual-networks:
-    - virtual-network:
-        fabric_snat: false
-        flood_unknown_unicast: false
-        fq_name:
-        - default-domain
-        - default-project
-        - ip-fabric
-        href: http://localhost:8082/virtual-network/b144ddb7-fd6e-4eb0-b7c8-d35225325382
-        id_perms:
-          created: 2018-05-02T20:42:15.578923
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:42:15.578923
-          permissions:
-            group: cloud-admin-group
-            group_access: 7
-            other_access: 7
-            owner: cloud-admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 1.3243067e+19
-            uuid_mslong: 1.2773579e+19
-        is_provider_network: true
-        layer2_control_word: false
-        mac_aging_time: 300
-        mac_learning_enabled: false
-        name: ip-fabric
-        parent_type: project
-        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
-        pbb_etree_enable: false
-        pbb_evpn_enable: false
-        perms2:
-          global_access: 0
+      parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: 34380f4d-db35-4e21-a002-547358181ae5
+    fq_name:
+    - default-domain
+    - default-project
+    id_perms:
+      created: 2018-05-23T17:29:57.500625
+      enable: true
+      last_modified: 2018-05-23T17:29:58.077633
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    network_ipams:
+    - annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.518119
+        enable: true
+        last_modified: 2018-05-23T17:29:58.104001
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
           owner: cloud-admin
           owner_access: 7
-          share: []
-        port_security_enabled: true
-        uuid: b144ddb7-fd6e-4eb0-b7c8-d35225325382
-        virtual_network_network_id: 2
-    - virtual-network:
-        fabric_snat: false
-        flood_unknown_unicast: false
-        fq_name:
-        - default-domain
-        - default-project
-        - __link_local__
-        href: http://localhost:8082/virtual-network/1cdad896-9fe9-43ff-b612-661dfcf39ab6
-        id_perms:
-          created: 2018-05-02T20:42:15.638710
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:42:15.638710
-          permissions:
-            group: cloud-admin-group
-            group_access: 7
-            other_access: 7
-            owner: cloud-admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 1.3119661e+19
-            uuid_mslong: 2.0792124e+18
-        is_provider_network: false
-        layer2_control_word: false
-        mac_aging_time: 300
-        mac_learning_enabled: false
-        name: __link_local__
-        parent_type: project
-        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
-        pbb_etree_enable: false
-        pbb_evpn_enable: false
-        perms2:
-          global_access: 0
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      ipam_subnets: {}
+      network_ipam_mgmt:
+        cidr_block: {}
+        dhcp_option_list: {}
+        host_routes: {}
+        ipam_dns_server:
+          tenant_dns_server_address: {}
+      parent_type: project
+      parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+      perms2:
+        global_access: 5
+        owner: cloud-admin
+        owner_access: 7
+      uuid: 84fed94d-03db-4492-b8bb-906248ae7bed
+    - annotations: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.865299
+        enable: true
+        last_modified: 2018-05-23T17:29:57.865299
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
           owner: cloud-admin
           owner_access: 7
-          share: []
-        port_security_enabled: true
-        uuid: 1cdad896-9fe9-43ff-b612-661dfcf39ab6
-        virtual_network_network_id: 3
-    - virtual-network:
-        fq_name:
-        - default-domain
-        - default-project
-        - default-virtual-network
-        href: http://localhost:8082/virtual-network/f8584f6d-ef80-47bb-8955-3fcca9249074
-        id_perms:
-          created: 2018-05-02T20:42:15.502257
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:42:15.502257
-          permissions:
-            group: cloud-admin-group
-            group_access: 7
-            other_access: 7
-            owner: cloud-admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 9.895886e+18
-            uuid_mslong: 1.789514e+19
-        name: default-virtual-network
-        parent_type: project
-        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
-        perms2:
-          global_access: 0
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: 2.6237302e+18
+      ipam_subnet_method: flat-subnet
+      ipam_subnets: {}
+      network_ipam_mgmt:
+        cidr_block: {}
+        dhcp_option_list: {}
+        host_routes: {}
+        ipam_dns_server:
+          tenant_dns_server_address: {}
+      parent_type: project
+      parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      uuid: 24695cb8-7067-4da5-9256-9584621ffd28
+    parent_type: domain
+    parent_uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    quota:
+      defaults: -1
+    uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    virtual_networks:
+    - annotations: {}
+      ecmp_hashing_include_fields: {}
+      export_route_target_list: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.559916
+        enable: true
+        last_modified: 2018-05-23T17:29:57.559916
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
           owner: cloud-admin
           owner_access: 7
-          share: []
-        uuid: f8584f6d-ef80-47bb-8955-3fcca9249074
-        virtual_network_network_id: 1
-    - virtual-network:
-        display_name: blue
-        fq_name:
-        - default-domain
-        - admin
-        - vnblue
-        href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-        id_perms:
-          created: 2018-05-02T20:45:19.676824
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:45:19.676824
-          permissions:
-            group: admin
-            group_access: 7
-            other_access: 7
-            owner: admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 1.0461782e+19
-            uuid_mslong: 9.479994e+17
-        name: vnblue
-        parent_type: project
-        parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
-        perms2:
-          global_access: 0
-          owner: c790ffb2d5524c2f9d468dbff75cbd4d
-          owner_access: 7
-          share: []
-        uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-        virtual_network_network_id: 4
-- name: list virtual networks with share
-  request:
-    method: GET
-    path: /virtual-networks?shared=true
-    expected:
-    - 200
-  expect:
-    virtual-networks:
-    - fq_name:
-      - default-domain
-      - admin
-      - vnblue
-      href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-      uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-    - fq_name:
-      - default-domain
-      - default-project
-      - ip-fabric
-      href: http://localhost:8082/virtual-network/b144ddb7-fd6e-4eb0-b7c8-d35225325382
-      uuid: b144ddb7-fd6e-4eb0-b7c8-d35225325382
-    - fq_name:
-      - default-domain
-      - default-project
-      - __link_local__
-      href: http://localhost:8082/virtual-network/1cdad896-9fe9-43ff-b612-661dfcf39ab6
-      uuid: 1cdad896-9fe9-43ff-b612-661dfcf39ab6
-    - fq_name:
-      - default-domain
-      - default-project
-      - default-virtual-network
-      href: http://localhost:8082/virtual-network/f8584f6d-ef80-47bb-8955-3fcca9249074
-      uuid: f8584f6d-ef80-47bb-8955-3fcca9249074
-- name: list virtual networks with filters
-  request:
-    method: GET
-    path: /virtual-networks?filters=display_name==blue
-    expected:
-    - 200
-  expect:
-    virtual-networks:
-    - fq_name:
-      - default-domain
-      - admin
-      - vnblue
-      href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-      uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-- name: list virtual networks with parent_id
-  request:
-    method: GET
-    path: /virtual-networks?parent_id=c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
-    expected:
-    - 200
-  expect:
-    virtual-networks:
-    - fq_name:
-      - default-domain
-      - admin
-      - vnblue
-      href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-      uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-- name: list virtual networks with parent_fq_name_str
-  request:
-    method: GET
-    path: /virtual-networks?parent_fq_name_str=default:admin
-    expected:
-    - 200
-  expect:
-    virtual-networks: []
-- name: list virtual networks with page limit
-  request:
-    method: GET
-    path: /virtual-networks?pageLimit=1&detail=true
-    expected:
-    - 200
-  expect:
-    virtual-networks:
-    - virtual-network:
-        display_name: blue
-        fq_name:
-        - default-domain
-        - admin
-        - vnblue
-        href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-        id_perms:
-          created: 2018-05-02T20:45:19.676824
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:45:19.676824
-          permissions:
-            group: admin
-            group_access: 7
-            other_access: 7
-            owner: admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 1.0461782e+19
-            uuid_mslong: 9.479994e+17
-        name: vnblue
-        parent_type: project
-        parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
-        perms2:
-          global_access: 0
-          owner: c790ffb2d5524c2f9d468dbff75cbd4d
-          owner_access: 7
-          share: []
-        uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-        virtual_network_network_id: 4
-    - virtual-network:
-        fabric_snat: false
-        flood_unknown_unicast: false
-        fq_name:
-        - default-domain
-        - default-project
-        - ip-fabric
-        href: http://localhost:8082/virtual-network/b144ddb7-fd6e-4eb0-b7c8-d35225325382
-        id_perms:
-          created: 2018-05-02T20:42:15.578923
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:42:15.578923
-          permissions:
-            group: cloud-admin-group
-            group_access: 7
-            other_access: 7
-            owner: cloud-admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 1.3243067e+19
-            uuid_mslong: 1.2773579e+19
-        is_provider_network: true
-        layer2_control_word: false
-        mac_aging_time: 300
-        mac_learning_enabled: false
-        name: ip-fabric
-        parent_type: project
-        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
-        pbb_etree_enable: false
-        pbb_evpn_enable: false
-        perms2:
-          global_access: 0
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: 6.2782114e+18
+      import_route_target_list: {}
+      mac_limit_control: {}
+      mac_move_control: {}
+      parent_type: project
+      parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      provider_properties: {}
+      route_target_list: {}
+      uuid: 5720afd0-d5a6-46ef-bd81-3be7f715cd27
+      virtual_network_fat_flow_protocols: {}
+      virtual_network_network_id: 1
+      virtual_network_properties: {}
+    - annotations: {}
+      ecmp_hashing_include_fields: {}
+      export_route_target_list: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.741820
+        enable: true
+        last_modified: 2018-05-23T17:29:57.741820
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
           owner: cloud-admin
           owner_access: 7
-          share: []
-        port_security_enabled: true
-        uuid: b144ddb7-fd6e-4eb0-b7c8-d35225325382
-        virtual_network_network_id: 2
-    - virtual-network:
-        fabric_snat: false
-        flood_unknown_unicast: false
-        fq_name:
-        - default-domain
-        - default-project
-        - __link_local__
-        href: http://localhost:8082/virtual-network/1cdad896-9fe9-43ff-b612-661dfcf39ab6
-        id_perms:
-          created: 2018-05-02T20:42:15.638710
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:42:15.638710
-          permissions:
-            group: cloud-admin-group
-            group_access: 7
-            other_access: 7
-            owner: cloud-admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 1.3119661e+19
-            uuid_mslong: 2.0792124e+18
-        is_provider_network: false
-        layer2_control_word: false
-        mac_aging_time: 300
-        mac_learning_enabled: false
-        name: __link_local__
-        parent_type: project
-        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
-        pbb_etree_enable: false
-        pbb_evpn_enable: false
-        perms2:
-          global_access: 0
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: 7.487359e+18
+      import_route_target_list: {}
+      mac_aging_time: 300
+      mac_limit_control: {}
+      mac_move_control: {}
+      parent_type: project
+      parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      port_security_enabled: true
+      provider_properties: {}
+      route_target_list: {}
+      uuid: 67e871b7-89b7-4c5e-a2d0-20c8d047b780
+      virtual_network_fat_flow_protocols: {}
+      virtual_network_network_id: 3
+      virtual_network_properties: {}
+    - annotations: {}
+      ecmp_hashing_include_fields: {}
+      export_route_target_list: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.663643
+        enable: true
+        last_modified: 2018-05-23T17:29:57.663643
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
           owner: cloud-admin
           owner_access: 7
-          share: []
-        port_security_enabled: true
-        uuid: 1cdad896-9fe9-43ff-b612-661dfcf39ab6
-        virtual_network_network_id: 3
-    - virtual-network:
-        fq_name:
-        - default-domain
-        - default-project
-        - default-virtual-network
-        href: http://localhost:8082/virtual-network/f8584f6d-ef80-47bb-8955-3fcca9249074
-        id_perms:
-          created: 2018-05-02T20:42:15.502257
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:42:15.502257
-          permissions:
-            group: cloud-admin-group
-            group_access: 7
-            other_access: 7
-            owner: cloud-admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 9.895886e+18
-            uuid_mslong: 1.789514e+19
-        name: default-virtual-network
-        parent_type: project
-        parent_uuid: bec8d661-b492-426f-99ba-267e0cf1cf55
-        perms2:
-          global_access: 0
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: 6.8376803e+18
+      import_route_target_list: {}
+      is_provider_network: true
+      mac_aging_time: 300
+      mac_limit_control: {}
+      mac_move_control: {}
+      parent_type: project
+      parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      port_security_enabled: true
+      provider_properties: {}
+      route_target_list: {}
+      uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+      virtual_network_fat_flow_protocols: {}
+      virtual_network_network_id: 2
+      virtual_network_properties: {}
+  operation: ""
+- kind: application_policy_set
+  data:
+    all_applications: true
+    annotations: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - default-application-policy-set
+    id_perms:
+      created: 2018-05-23T17:29:58.037639
+      enable: true
+      last_modified: 2018-05-23T17:29:58.037639
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 3.7627743e+18
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: 34380f4d-db35-4e21-a002-547358181ae5
+  operation: ""
+- kind: discovery_service_assignment
+  data:
+    annotations: {}
+    fq_name:
+    - default-discovery-service-assignment
+    id_perms:
+      created: 2018-05-23T17:29:57.825348
+      enable: true
+      last_modified: 2018-05-23T17:29:57.825348
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: ecb41c28-0013-4eee-ae30-7cc3444993d8
+  operation: ""
+- kind: global_qos_config
+  data:
+    annotations: {}
+    control_traffic_dscp: {}
+    fq_name:
+    - default-global-system-config
+    - default-global-qos-config
+    id_perms:
+      created: 2018-05-23T17:29:57.845891
+      enable: true
+      last_modified: 2018-05-23T17:29:57.845891
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
+  operation: ""
+- kind: global_vrouter_config
+  data:
+    annotations: {}
+    ecmp_hashing_include_fields: {}
+    enable_security_logging: true
+    encapsulation_priorities: {}
+    encryption_mode: none
+    encryption_tunnel_endpoints: {}
+    flow_aging_timeout_list: {}
+    fq_name:
+    - default-global-system-config
+    - default-global-vrouter-config
+    id_perms:
+      created: 2018-05-23T17:29:57.460544
+      enable: true
+      last_modified: 2018-05-23T17:29:57.460544
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    linklocal_services: {}
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    port_translation_pools: {}
+    uuid: fcc87877-5f76-49eb-ab3c-1e0cbfae05b4
+  operation: ""
+- kind: job_template
+  data:
+    annotations: {}
+    fq_name:
+    - default-global-system-config
+    - device_import_template
+    id_perms:
+      created: 2018-05-23T17:29:58.294045
+      enable: true
+      last_modified: 2018-05-23T17:29:58.294045
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 3.133601e+18
+    job_template_multi_device_job: true
+    job_template_playbooks: {}
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: 2b7cc98d-f029-47ee-96a4-fe26008e90d2
+  operation: ""
+- kind: job_template
+  data:
+    annotations: {}
+    fq_name:
+    - default-global-system-config
+    - discover_device_template
+    id_perms:
+      created: 2018-05-23T17:29:58.227063
+      enable: true
+      last_modified: 2018-05-23T17:29:58.227063
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 3.5666585e+18
+    job_template_playbooks: {}
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: 317f5118-7512-41de-9204-61869344fa10
+  operation: ""
+- kind: job_template
+  data:
+    annotations: {}
+    fq_name:
+    - default-global-system-config
+    - generate_underlay_template
+    id_perms:
+      created: 2018-05-23T17:29:58.268184
+      enable: true
+      last_modified: 2018-05-23T17:29:58.268184
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    job_template_multi_device_job: true
+    job_template_playbooks: {}
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: c0ece5c2-8d1b-4967-b2ea-c381c80716e6
+  operation: ""
+- kind: job_template
+  data:
+    annotations: {}
+    fq_name:
+    - default-global-system-config
+    - image_upgrade_template
+    id_perms:
+      created: 2018-05-23T17:29:58.172527
+      enable: true
+      last_modified: 2018-05-23T17:29:58.172527
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    job_template_multi_device_job: true
+    job_template_playbooks: {}
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: 8fb161e0-4f95-4a88-a8b9-acd3f6b34b80
+  operation: ""
+- kind: namespace
+  data:
+    annotations: {}
+    fq_name:
+    - default-domain
+    - default-namespace
+    id_perms:
+      created: 2018-05-23T17:29:57.581575
+      enable: true
+      last_modified: 2018-05-23T17:29:57.581575
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    namespace_cidr: {}
+    parent_type: domain
+    parent_uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: dd50e8d7-7d7a-4649-b035-b3def92a430e
+  operation: ""
+- kind: network_ipam
+  data:
+    annotations: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - service-chain-flat-ipam
+    id_perms:
+      created: 2018-05-23T17:29:57.865299
+      enable: true
+      last_modified: 2018-05-23T17:29:57.865299
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 2.6237302e+18
+    ipam_subnet_method: flat-subnet
+    ipam_subnets: {}
+    network_ipam_mgmt:
+      cidr_block: {}
+      dhcp_option_list: {}
+      host_routes: {}
+      ipam_dns_server:
+        tenant_dns_server_address: {}
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    uuid: 24695cb8-7067-4da5-9256-9584621ffd28
+  operation: ""
+- kind: network_ipam
+  data:
+    annotations: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - default-network-ipam
+    id_perms:
+      created: 2018-05-23T17:29:57.518119
+      enable: true
+      last_modified: 2018-05-23T17:29:58.104001
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    ipam_subnets: {}
+    network_ipam_mgmt:
+      cidr_block: {}
+      dhcp_option_list: {}
+      host_routes: {}
+      ipam_dns_server:
+        tenant_dns_server_address: {}
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      global_access: 5
+      owner: cloud-admin
+      owner_access: 7
+    uuid: 84fed94d-03db-4492-b8bb-906248ae7bed
+  operation: ""
+- kind: route_target
+  data:
+    annotations: {}
+    display_name: target:64512:8000001
+    fq_name:
+    - target:64512:8000001
+    id_perms:
+      created: 2018-05-23T17:30:11.517310
+      enable: true
+      last_modified: 2018-05-23T17:30:11.517310
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 5.894708e+17
+    perms2:
+      owner: e5dab7a4f3d04748b5d234a8756c6fb2
+      owner_access: 7
+    uuid: 082e3893-4157-48dc-b3f7-bf9362ee0d2f
+  operation: ""
+- kind: route_target
+  data:
+    annotations: {}
+    display_name: target:64512:8000000
+    fq_name:
+    - target:64512:8000000
+    id_perms:
+      created: 2018-05-23T17:30:11.450551
+      enable: true
+      last_modified: 2018-05-23T17:30:11.450551
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    perms2:
+      owner: e5dab7a4f3d04748b5d234a8756c6fb2
+      owner_access: 7
+    uuid: 93f7252a-f770-4158-ac34-4759dba25754
+  operation: ""
+- kind: routing_instance
+  data:
+    annotations: {}
+    default_ce_protocol:
+      bgp: {}
+      ospf: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - ip-fabric
+    - ip-fabric
+    id_perms:
+      created: 2018-05-23T17:29:57.684280
+      enable: true
+      last_modified: 2018-05-23T17:30:11.568629
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    ipv6_service_chain_information: {}
+    parent_type: virtual-network
+    parent_uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    route_target_refs:
+    - attr: {}
+      uuid: 082e3893-4157-48dc-b3f7-bf9362ee0d2f
+    routing_instance_is_default: true
+    service_chain_information: {}
+    static_route_entries: {}
+    uuid: f65f7f79-c43f-415f-8d63-336beaaa68e6
+  operation: ""
+- kind: virtual_network
+  data:
+    annotations: {}
+    ecmp_hashing_include_fields: {}
+    export_route_target_list: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - __link_local__
+    id_perms:
+      created: 2018-05-23T17:29:57.741820
+      enable: true
+      last_modified: 2018-05-23T17:29:57.741820
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 7.487359e+18
+    import_route_target_list: {}
+    mac_aging_time: 300
+    mac_limit_control: {}
+    mac_move_control: {}
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    port_security_enabled: true
+    provider_properties: {}
+    route_target_list: {}
+    routing_instances:
+    - annotations: {}
+      default_ce_protocol:
+        bgp: {}
+        ospf: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.762498
+        enable: true
+        last_modified: 2018-05-23T17:30:11.602470
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
           owner: cloud-admin
           owner_access: 7
-          share: []
-        uuid: f8584f6d-ef80-47bb-8955-3fcca9249074
-        virtual_network_network_id: 1
-- name: list virtual networks with obj_uuids
-  request:
-    method: GET
-    path: /virtual-networks?obj_uuids=0d27f876-4d8e-11e8-912f-b7477ee7d4a0&detail=true
-    expected:
-    - 200
-  expect:
-    virtual-networks:
-    - virtual-network:
-        display_name: blue
-        fq_name:
-        - default-domain
-        - admin
-        - vnblue
-        href: http://localhost:8082/virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-        id_perms:
-          created: 2018-05-02T20:45:19.676824
-          creator: null
-          description: null
-          enable: true
-          last_modified: 2018-05-02T20:45:19.676824
-          permissions:
-            group: admin
-            group_access: 7
-            other_access: 7
-            owner: admin
-            owner_access: 7
-          user_visible: true
-          uuid:
-            uuid_lslong: 1.0461782e+19
-            uuid_mslong: 9.479994e+17
-        name: vnblue
-        parent_type: project
-        parent_uuid: c790ffb2-d552-4c2f-9d46-8dbff75cbd4d
-        perms2:
-          global_access: 0
-          owner: c790ffb2d5524c2f9d468dbff75cbd4d
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: 4.5128779e+18
+      ipv6_service_chain_information: {}
+      parent_type: virtual-network
+      parent_uuid: 67e871b7-89b7-4c5e-a2d0-20c8d047b780
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      routing_instance_is_default: true
+      service_chain_information: {}
+      static_route_entries: {}
+      uuid: 3ea0f663-3092-4672-be4c-fc90f0334125
+    uuid: 67e871b7-89b7-4c5e-a2d0-20c8d047b780
+    virtual_network_fat_flow_protocols: {}
+    virtual_network_network_id: 3
+    virtual_network_properties: {}
+  operation: ""
+- kind: routing_instance
+  data:
+    annotations: {}
+    default_ce_protocol:
+      bgp: {}
+      ospf: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - __link_local__
+    - __link_local__
+    id_perms:
+      created: 2018-05-23T17:29:57.762498
+      enable: true
+      last_modified: 2018-05-23T17:30:11.602470
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 4.5128779e+18
+    ipv6_service_chain_information: {}
+    parent_type: virtual-network
+    parent_uuid: 67e871b7-89b7-4c5e-a2d0-20c8d047b780
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    routing_instance_is_default: true
+    service_chain_information: {}
+    static_route_entries: {}
+    uuid: 3ea0f663-3092-4672-be4c-fc90f0334125
+  operation: ""
+- kind: routing_instance
+  data:
+    annotations: {}
+    default_ce_protocol:
+      bgp: {}
+      ospf: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - default-virtual-network
+    - default-virtual-network
+    id_perms:
+      created: 2018-05-23T17:29:57.806747
+      enable: true
+      last_modified: 2018-05-23T17:30:11.484762
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    ipv6_service_chain_information: {}
+    parent_type: virtual-network
+    parent_uuid: 5720afd0-d5a6-46ef-bd81-3be7f715cd27
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    route_target_refs:
+    - attr: {}
+      uuid: 93f7252a-f770-4158-ac34-4759dba25754
+    routing_instance_is_default: true
+    service_chain_information: {}
+    static_route_entries: {}
+    uuid: d59c5934-1dbd-4865-b8e9-ff9d7f3f16d0
+  operation: ""
+- kind: virtual_network
+  data:
+    annotations: {}
+    ecmp_hashing_include_fields: {}
+    export_route_target_list: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - ip-fabric
+    id_perms:
+      created: 2018-05-23T17:29:57.663643
+      enable: true
+      last_modified: 2018-05-23T17:29:57.663643
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 6.8376803e+18
+    import_route_target_list: {}
+    is_provider_network: true
+    mac_aging_time: 300
+    mac_limit_control: {}
+    mac_move_control: {}
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    port_security_enabled: true
+    provider_properties: {}
+    route_target_list: {}
+    routing_instances:
+    - annotations: {}
+      default_ce_protocol:
+        bgp: {}
+        ospf: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.714803
+        enable: true
+        last_modified: 2018-05-23T17:29:57.714803
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
           owner_access: 7
-          share: []
-        uuid: 0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-        virtual_network_network_id: 4
-- name: delete virtual network
-  request:
-    method: DELETE
-    path: /virtual-network/0d27f876-4d8e-11e8-912f-b7477ee7d4a0
-    expected:
-    - 200
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      ipv6_service_chain_information: {}
+      parent_type: virtual-network
+      parent_uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      service_chain_information: {}
+      static_route_entries: {}
+      uuid: e72887bb-d956-4d52-b0a1-0af8754a3679
+    - annotations: {}
+      default_ce_protocol:
+        bgp: {}
+        ospf: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.684280
+        enable: true
+        last_modified: 2018-05-23T17:30:11.568629
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      ipv6_service_chain_information: {}
+      parent_type: virtual-network
+      parent_uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      routing_instance_is_default: true
+      service_chain_information: {}
+      static_route_entries: {}
+      uuid: f65f7f79-c43f-415f-8d63-336beaaa68e6
+    uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+    virtual_network_fat_flow_protocols: {}
+    virtual_network_network_id: 2
+    virtual_network_properties: {}
+  operation: ""
+- kind: routing_instance
+  data:
+    annotations: {}
+    default_ce_protocol:
+      bgp: {}
+      ospf: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - ip-fabric
+    - __default__
+    id_perms:
+      created: 2018-05-23T17:29:57.714803
+      enable: true
+      last_modified: 2018-05-23T17:29:57.714803
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    ipv6_service_chain_information: {}
+    parent_type: virtual-network
+    parent_uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    service_chain_information: {}
+    static_route_entries: {}
+    uuid: e72887bb-d956-4d52-b0a1-0af8754a3679
+  operation: ""
+- kind: tag_type
+  data:
+    annotations: {}
+    display_name: label
+    fq_name:
+    - label
+    id_perms:
+      created: 2018-05-23T17:29:57.943039
+      enable: true
+      last_modified: 2018-05-23T17:29:57.943039
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 8.6543236e+18
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    tag_type_id: "0x0000"
+    uuid: 781a55ae-a93f-4f79-b146-88fb92cde7d3
+  operation: ""
+- kind: tag
+  data:
+    annotations: {}
+    fq_name:
+    - label=fabric-as_number
+    id_perms:
+      created: 2018-05-23T17:29:58.405867
+      enable: true
+      last_modified: 2018-05-23T17:29:58.405867
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 7.219542e+17
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    tag_id: "0x00000001"
+    tag_type_name: label
+    tag_type_refs:
+    - uuid: 781a55ae-a93f-4f79-b146-88fb92cde7d3
+    tag_value: fabric-as_number
+    uuid: 0a04e57d-c2ad-4944-bb7c-182073cdbfde
+  operation: ""
+- kind: tag
+  data:
+    annotations: {}
+    fq_name:
+    - label=fabric-management_ip
+    id_perms:
+      created: 2018-05-23T17:29:58.369355
+      enable: true
+      last_modified: 2018-05-23T17:29:58.369355
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 6.806814e+18
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    tag_id: "0x00000000"
+    tag_type_name: label
+    tag_type_refs:
+    - uuid: 781a55ae-a93f-4f79-b146-88fb92cde7d3
+    tag_value: fabric-management_ip
+    uuid: 5e76a99f-5d21-4696-9c13-67fa07f530a1
+  operation: ""
+- kind: tag_type
+  data:
+    annotations: {}
+    display_name: deployment
+    fq_name:
+    - deployment
+    id_perms:
+      created: 2018-05-23T17:29:57.911769
+      enable: true
+      last_modified: 2018-05-23T17:29:57.911769
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 2.5158877e+18
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    tag_type_id: "0x0003"
+    uuid: 22ea3a84-2661-46b3-a507-cfb9abbc4c95
+  operation: ""
+- kind: tag_type
+  data:
+    annotations: {}
+    display_name: application
+    fq_name:
+    - application
+    id_perms:
+      created: 2018-05-23T17:29:57.896487
+      enable: true
+      last_modified: 2018-05-23T17:29:57.896487
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    tag_type_id: "0x0001"
+    uuid: ecabf122-5a23-4dcb-9ac2-e491a997acfc
+  operation: ""
+- kind: tag_type
+  data:
+    annotations: {}
+    display_name: site
+    fq_name:
+    - site
+    id_perms:
+      created: 2018-05-23T17:29:57.927456
+      enable: true
+      last_modified: 2018-05-23T17:29:57.927456
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    tag_type_id: "0x0004"
+    uuid: 961935ba-f183-4b1b-95bc-c68b620a1a2a
+  operation: ""
+- kind: tag_type
+  data:
+    annotations: {}
+    display_name: tier
+    fq_name:
+    - tier
+    id_perms:
+      created: 2018-05-23T17:29:57.881212
+      enable: true
+      last_modified: 2018-05-23T17:29:57.881212
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: -9.223372e+18
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    tag_type_id: "0x0002"
+    uuid: dd6c17bf-7111-41de-86b6-148b2541ad7f
+  operation: ""
+- kind: virtual_network
+  data:
+    annotations: {}
+    ecmp_hashing_include_fields: {}
+    export_route_target_list: {}
+    fq_name:
+    - default-domain
+    - default-project
+    - default-virtual-network
+    id_perms:
+      created: 2018-05-23T17:29:57.559916
+      enable: true
+      last_modified: 2018-05-23T17:29:57.559916
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: -9.223372e+18
+        uuid_mslong: 6.2782114e+18
+    import_route_target_list: {}
+    mac_limit_control: {}
+    mac_move_control: {}
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+    provider_properties: {}
+    route_target_list: {}
+    routing_instances:
+    - annotations: {}
+      default_ce_protocol:
+        bgp: {}
+        ospf: {}
+      id_perms:
+        created: 2018-05-23T17:29:57.806747
+        enable: true
+        last_modified: 2018-05-23T17:30:11.484762
+        permissions:
+          group: cloud-admin-group
+          group_access: 7
+          other_access: 7
+          owner: cloud-admin
+          owner_access: 7
+        user_visible: true
+        uuid:
+          uuid_lslong: -9.223372e+18
+          uuid_mslong: -9.223372e+18
+      ipv6_service_chain_information: {}
+      parent_type: virtual-network
+      parent_uuid: 5720afd0-d5a6-46ef-bd81-3be7f715cd27
+      perms2:
+        owner: cloud-admin
+        owner_access: 7
+      routing_instance_is_default: true
+      service_chain_information: {}
+      static_route_entries: {}
+      uuid: d59c5934-1dbd-4865-b8e9-ff9d7f3f16d0
+    uuid: 5720afd0-d5a6-46ef-bd81-3be7f715cd27
+    virtual_network_fat_flow_protocols: {}
+    virtual_network_network_id: 1
+    virtual_network_properties: {}
+  operation: ""

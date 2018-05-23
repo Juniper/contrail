@@ -43,15 +43,15 @@ message Filter {
 
 message {{ schema.JSONSchema.GoName }} {
 {% for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}{% endfor %}
 {% for linkTo, reference in schema.References %}
-    repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs"];// {{ reference.Description }} {% endfor %}
+    repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs", (gogoproto.moretags) = "yaml:\"{{ linkTo }}_refs\""];// {{ reference.Description }} {% endfor %}
 {% for _, backref in schema.BackReferences %}
     {% set linkTo = backref.LinkTo %}
-    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_backrefs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs"]; // {{ backref.Description }} {% endfor %}
+    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_backrefs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_backrefs\""]; // {{ backref.Description }} {% endfor %}
 {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
-    repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s"]; // {{ backref.Description }} {% endfor %}
+    repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s", (gogoproto.moretags) = "yaml:\"{{ child.Plural }}\""]; // {{ backref.Description }} {% endfor %}
 }
 
 {% for linkTo, reference in schema.References %}
@@ -111,7 +111,49 @@ message Get{{ schema.JSONSchema.GoName }}Response {
 {% if definition.Type == "object" %}
 message {{ type }} {
 {% for property in definition.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}{% endfor %}
 }
 {% endif %}
 {% endfor %}
+
+enum Operation {
+    create = 0;
+    update = 1;
+    delete = 2;
+}
+
+message Event {
+    Operation operation = 1; 
+    oneof resource {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+       {{ schema.JSONSchema.GoName }} {{ schema.ID }} = {{schema.Index}} [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}"];
+{% endif %}{% endfor %}
+    }
+
+}
+
+message WatchRequest {
+  // request_union is a request to either create a new watcher or cancel an existing watcher.
+  oneof request_union {
+    WatchCreateRequest create_request = 1;
+    WatchCancelRequest cancel_request = 2;
+  }
+}
+
+message WatchCreateRequest {
+    string schema_id = 1;
+    int64 watch_id = 2;
+    int64 start_revision = 3;
+}
+
+message WatchCancelRequest {
+  // watch_id is the watcher id to cancel so that no more events are transmitted.
+  int64 watch_id = 1;
+}
+
+message WatchResponse {
+    int64 watch_id = 1;
+    bool created = 3;
+    bool canceled = 4;
+    repeated Event events = 2;
+}
