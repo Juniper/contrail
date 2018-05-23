@@ -5,11 +5,15 @@ create table metadata (
     primary key ("uuid"));
 );
 
+create index fq_name_index on metadata ("fq_name");
+
 create table int_pool (
     "key" varchar(255),
     "start" int,
     "end" int
 );
+
+alter table int_pool replica identity full;
 
 insert into int_pool ("key", "start", "end") values ('virtual_network_id', 5, 65543);
 
@@ -19,7 +23,7 @@ create table ipaddress_pool (
     "end" inet
 );
 
-create index fq_name_index on metadata ("fq_name");
+alter table ipaddress_pool replica identity full;
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 create table "{{ schema.ID | lower }}" (
@@ -36,7 +40,7 @@ create table ref_{{ schema.ID | lower }}_{{ linkTo | lower }} (
     "to" varchar(255),
     primary key ("from","to"),
     {% for column in reference.Columns %}"{{column.Column}}" {{column.Type}},
-    {% endfor %} foreign key ("from") references "{{ schema.ID }}"(uuid) on delete cascade, 
+    {% endfor %} foreign key ("from") references "{{ schema.ID }}"(uuid) on delete cascade,
     foreign key ("to") references "{{ linkTo | lower }}"(uuid));
 
 create index index_{{ schema.ID | lower }}_{{ linkTo | lower }} on ref_{{ schema.ID | lower }}_{{ linkTo | lower }} ("from");
