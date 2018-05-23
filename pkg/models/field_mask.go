@@ -1,4 +1,4 @@
-package services
+package models
 
 import "github.com/gogo/protobuf/types"
 

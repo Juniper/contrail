@@ -28,7 +28,6 @@ import (
 //Server represents Intent API Server.
 type Server struct {
 	Echo      *echo.Echo
-	DB        *sql.DB
 	Keystone  *keystone.Keystone
 	dbService *db.Service
 	Proxy     *proxyService
@@ -83,13 +82,9 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 }
 
 //Init setup the server.
-func (s *Server) Init() error {
+func (s *Server) Init() (err error) {
 	common.SetLogLevel()
-	sqlDB, err := db.ConnectDB()
-	if err != nil {
-		return errors.Wrap(err, "Init DB failed")
-	}
-	s.DB = sqlDB
+
 	e := s.Echo
 	if viper.GetBool("server.log_api") {
 		e.Use(middleware.Logger())
@@ -97,7 +92,11 @@ func (s *Server) Init() error {
 	//e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
 
-	s.dbService = db.NewService(s.DB, viper.GetString("database.dialect"))
+	s.dbService, err = db.NewServiceFromConfig()
+	if err != nil {
+		return err
+	}
+
 	service := s.SetupService()
 
 	readTimeout := viper.GetInt("server.read_timeout")
@@ -243,5 +242,10 @@ func (s *Server) Run() error {
 //Close closes server resources
 func (s *Server) Close() error {
 	s.Proxy.stop()
-	return s.DB.Close()
+	return s.dbService.Close()
+}
+
+//DB return db object.
+func (s *Server) DB() *sql.DB {
+	return s.dbService.DB()
 }

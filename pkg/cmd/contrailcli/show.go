@@ -3,7 +3,7 @@ package contrailcli
 import (
 	"fmt"
 
-	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
@@ -50,15 +50,16 @@ func showResource(schemaID, uuid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resources := &services.RESTSyncRequest{
-		Resources: []*services.RESTResource{
-			{
-				Kind: schemaID,
-				Data: response,
-			},
+	fmt.Println(response)
+	eventList := &models.EventList{
+		Events: []*models.Event{
+			models.InterfaceToEvent(map[string]interface{}{
+				"kind": schemaID,
+				"data": response[dashedCase(schemaID)],
+			}),
 		},
 	}
-	output, err := yaml.Marshal(resources)
+	output, err := yaml.Marshal(eventList)
 	if err != nil {
 		return "", err
 	}
