@@ -156,9 +156,15 @@ workflow:
           uuid: admin_project_uuid_test_sync
         operation: DELETE
   expect:
-    - kind: network_policy
-      data: network_policy_uuid_test_sync
     - kind: virtual_network
-      data: vn_blue_test_sync
+      data:
+        uuid: vn_blue_test_sync
+      operation: DELETE
+    - kind: network_policy
+      data:
+        uuid: network_policy_uuid_test_sync
+      operation: DELETE
     - kind: project
-      data: admin_project_uuid_test_sync
+      data:
+        uuid: admin_project_uuid_test_sync
+      operation: DELETE

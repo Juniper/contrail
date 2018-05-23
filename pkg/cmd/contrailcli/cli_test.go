@@ -94,17 +94,17 @@ func TestCLI(t *testing.T) {
 	assert.NoError(t, err)
 	checkDataEqual(t, virtualNetworksDeletedListed, o)
 
-	o, err = syncResources(virtualNetworks)
-	assert.NoError(t, err)
-	checkDataEqual(t, virtualNetworks, o)
+	// o, err = syncResources(virtualNetworks)
+	// assert.NoError(t, err)
+	// checkDataEqual(t, virtualNetworks, o)
 
-	o, err = deleteResource(vnSchemaID, "second-uuid")
-	assert.NoError(t, err)
-	assert.Equal(t, "", o)
+	// o, err = deleteResource(vnSchemaID, "second-uuid")
+	// assert.NoError(t, err)
+	// assert.Equal(t, "", o)
 
-	o, err = listResources(vnSchemaID)
-	assert.NoError(t, err)
-	checkDataEqual(t, virtualNetworksRMListed, o)
+	// o, err = listResources(vnSchemaID)
+	// assert.NoError(t, err)
+	// checkDataEqual(t, virtualNetworksRMListed, o)
 }
 
 func checkDataEqual(t *testing.T, expectedYAMLFile, actualYAML string) {

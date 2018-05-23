@@ -69,7 +69,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 			typeName := schema.JSONSchema.GoName
 			typeDef := schema.JSONSchema
 			output, err :=
-				tpl.Execute(pongo2.Context{"type": typeDef, "name": typeName,
+				tpl.Execute(pongo2.Context{"type": typeDef, "name": typeName, "id": schema.ID,
 					"references": schema.References, "parents": schema.Parents, "children": schema.Children})
 			if err != nil {
 				return err
