@@ -1,0 +1,1481 @@
+resources:
+- kind: domain
+  data:
+    fq_name:
+    - default-domain
+    id_perms:
+      created: 2018-05-23T17:29:57.482383
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.996393
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 9.775285e+18
+        uuid_mslong: 5.138874e+18
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share:
+      - tenant: domain:4750f264-86b6-4345-87a8-c99b5f4a2cf8
+        tenant_access: 6
+    type: domain
+    uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+- kind: namespace
+  data:
+    fq_name:
+    - default-domain
+    - default-namespace
+    id_perms:
+      created: 2018-05-23T17:29:57.581575
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.581575
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.2697253e+19
+        uuid_mslong: 1.5947502e+19
+    parent_type: domain
+    parent_uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: namespace
+    uuid: dd50e8d7-7d7a-4649-b035-b3def92a430e
+- kind: global_system_config
+  data:
+    autonomous_system: 64512
+    config_version: "1.0"
+    enable_security_policy_draft: false
+    fq_name:
+    - default-global-system-config
+    id_perms:
+      created: 2018-05-23T17:29:57.397227
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.397227
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3193312e+19
+        uuid_mslong: 6.803452e+18
+    mac_aging_time: 300
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: global_system_config
+    uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+- kind: global_qos_config
+  data:
+    fq_name:
+    - default-global-system-config
+    - default-global-qos-config
+    id_perms:
+      created: 2018-05-23T17:29:57.845891
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.845891
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 9.710396e+18
+        uuid_mslong: 1.37022e+19
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: global_qos_config
+    uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
+- kind: route_target
+  data:
+    display_name: target:64512:8000001
+    fq_name:
+    - target:64512:8000001
+    id_perms:
+      created: 2018-05-23T17:30:11.517310
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:30:11.517310
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.2968045e+19
+        uuid_mslong: 5.894708e+17
+    perms2:
+      global_access: 0
+      owner: e5dab7a4f3d04748b5d234a8756c6fb2
+      owner_access: 7
+      share: []
+    type: route_target
+    uuid: 082e3893-4157-48dc-b3f7-bf9362ee0d2f
+- kind: project
+  data:
+    fq_name:
+    - default-domain
+    - default-project
+    id_perms:
+      created: 2018-05-23T17:29:57.500625
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.077633
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.317758e+19
+        uuid_mslong: 1.762763e+19
+    parent_type: domain
+    parent_uuid: 4750f264-86b6-4345-87a8-c99b5f4a2cf8
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    quota:
+      defaults: -1
+    type: project
+    uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+- kind: virtual_network
+  data:
+    fabric_snat: false
+    flood_unknown_unicast: false
+    fq_name:
+    - default-domain
+    - default-project
+    - __link_local__
+    id_perms:
+      created: 2018-05-23T17:29:57.741820
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.741820
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.1731913e+19
+        uuid_mslong: 7.487359e+18
+    is_provider_network: false
+    layer2_control_word: false
+    mac_aging_time: 300
+    mac_learning_enabled: false
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    pbb_etree_enable: false
+    pbb_evpn_enable: false
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    port_security_enabled: true
+    type: virtual_network
+    uuid: 67e871b7-89b7-4c5e-a2d0-20c8d047b780
+    virtual_network_network_id: 3
+- kind: routing_instance
+  data:
+    fq_name:
+    - default-domain
+    - default-project
+    - __link_local__
+    - __link_local__
+    id_perms:
+      created: 2018-05-23T17:29:57.762498
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:30:11.602470
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3712613e+19
+        uuid_mslong: 4.5128779e+18
+    parent_type: virtual-network
+    parent_uuid: 67e871b7-89b7-4c5e-a2d0-20c8d047b780
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    routing_instance_fabric_snat: false
+    routing_instance_has_pnf: false
+    routing_instance_is_default: true
+    static_route_entries:
+      route: []
+    type: routing_instance
+    uuid: 3ea0f663-3092-4672-be4c-fc90f0334125
+- kind: alarm
+  data:
+    alarm_rules:
+    - and_list:
+      - operand1: UveConfigReq.err_info.*.
+        operand2:
+          json_value: "True"
+        operation: ==
+    alarm_severity: 1
+    fq_name:
+    - default-global-system-config
+    - system-defined-bottle-request-size-limit
+    id_perms:
+      created: 2018-05-23T17:29:57.786883
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.786883
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.06056e+19
+        uuid_mslong: 1.5445577e+19
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: alarm
+    uuid: d659b58e-988b-4f63-932e-a950769aef27
+    uve_keys:
+      uve_key:
+      - config-node
+- kind: discovery_service_assignment
+  data:
+    fq_name:
+    - default-discovery-service-assignment
+    id_perms:
+      created: 2018-05-23T17:29:57.825348
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.825348
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.255167e+19
+        uuid_mslong: 1.7056288e+19
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: discovery_service_assignment
+    uuid: ecb41c28-0013-4eee-ae30-7cc3444993d8
+- kind: virtual_network
+  data:
+    fq_name:
+    - default-domain
+    - default-project
+    - default-virtual-network
+    id_perms:
+      created: 2018-05-23T17:29:57.559916
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.559916
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3655262e+19
+        uuid_mslong: 6.2782114e+18
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: virtual_network
+    uuid: 5720afd0-d5a6-46ef-bd81-3be7f715cd27
+    virtual_network_network_id: 1
+- kind: tag_type
+  data:
+    display_name: deployment
+    fq_name:
+    - deployment
+    id_perms:
+      created: 2018-05-23T17:29:57.911769
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.911769
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: false
+      uuid:
+        uuid_lslong: 1.1891702e+19
+        uuid_mslong: 2.5158877e+18
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    tag_type_id: "0x0003"
+    type: tag_type
+    uuid: 22ea3a84-2661-46b3-a507-cfb9abbc4c95
+- kind: virtual_network
+  data:
+    fabric_snat: false
+    flood_unknown_unicast: false
+    fq_name:
+    - default-domain
+    - default-project
+    - ip-fabric
+    id_perms:
+      created: 2018-05-23T17:29:57.663643
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.663643
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.303334e+19
+        uuid_mslong: 6.8376803e+18
+    is_provider_network: true
+    layer2_control_word: false
+    mac_aging_time: 300
+    mac_learning_enabled: false
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    pbb_etree_enable: false
+    pbb_evpn_enable: false
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    port_security_enabled: true
+    type: virtual_network
+    uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+    virtual_network_network_id: 2
+- kind: routing_instance
+  data:
+    fq_name:
+    - default-domain
+    - default-project
+    - ip-fabric
+    - ip-fabric
+    id_perms:
+      created: 2018-05-23T17:29:57.684280
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:30:11.568629
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.0188043e+19
+        uuid_mslong: 1.7753048e+19
+    parent_type: virtual-network
+    parent_uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    route_target_refs:
+    - attr:
+        import_export: null
+      uuid: 082e3893-4157-48dc-b3f7-bf9362ee0d2f
+    routing_instance_fabric_snat: false
+    routing_instance_has_pnf: false
+    routing_instance_is_default: true
+    static_route_entries:
+      route: []
+    type: routing_instance
+    uuid: f65f7f79-c43f-415f-8d63-336beaaa68e6
+- kind: tag_type
+  data:
+    display_name: site
+    fq_name:
+    - site
+    id_perms:
+      created: 2018-05-23T17:29:57.927456
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.927456
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: false
+      uuid:
+        uuid_lslong: 1.0789718e+19
+        uuid_mslong: 1.0815735e+19
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    tag_type_id: "0x0004"
+    type: tag_type
+    uuid: 961935ba-f183-4b1b-95bc-c68b620a1a2a
+- kind: tag_type
+  data:
+    display_name: label
+    fq_name:
+    - label
+    id_perms:
+      created: 2018-05-23T17:29:57.943039
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.943039
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: false
+      uuid:
+        uuid_lslong: 1.2774048e+19
+        uuid_mslong: 8.6543236e+18
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    tag_type_id: "0x0000"
+    type: tag_type
+    uuid: 781a55ae-a93f-4f79-b146-88fb92cde7d3
+- kind: tag
+  data:
+    fq_name:
+    - label=fabric-as_number
+    id_perms:
+      created: 2018-05-23T17:29:58.405867
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.405867
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3509699e+19
+        uuid_mslong: 7.219542e+17
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    tag_id: "0x00000001"
+    tag_type_name: label
+    tag_type_refs:
+    - attr: null
+      uuid: 781a55ae-a93f-4f79-b146-88fb92cde7d3
+    tag_value: fabric-as_number
+    type: tag
+    uuid: 0a04e57d-c2ad-4944-bb7c-182073cdbfde
+- kind: job_template
+  data:
+    fq_name:
+    - default-global-system-config
+    - device_import_template
+    id_perms:
+      created: 2018-05-23T17:29:58.294045
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.294045
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.085508e+19
+        uuid_mslong: 3.133601e+18
+    job_template_input_schema: {}
+    job_template_multi_device_job: true
+    job_template_output_schema:
+      $schema: http://json-schema.org/draft-06/schema#
+      properties:
+        message:
+          description: Should capture a summarized error message in case of Failures.
+          type: string
+        results:
+          description: JSON object holding the job specific output details
+          type: object
+        status:
+          description: Result status of the job
+          enum:
+          - Success
+          - Failure
+          - Timeout
+          type: string
+      required:
+      - status
+      title: Generic Job Output
+      type: object
+    job_template_playbooks:
+    - device_family: ""
+      playbook_uri: ./opt/contrail/fabric_ansible_playbooks/device_import.yml
+      vendor: Juniper
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: job_template
+    uuid: 2b7cc98d-f029-47ee-96a4-fe26008e90d2
+- kind: route_target
+  data:
+    display_name: target:64512:8000000
+    fq_name:
+    - target:64512:8000000
+    id_perms:
+      created: 2018-05-23T17:30:11.450551
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:30:11.450551
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.2408621e+19
+        uuid_mslong: 1.0662031e+19
+    perms2:
+      global_access: 0
+      owner: e5dab7a4f3d04748b5d234a8756c6fb2
+      owner_access: 7
+      share: []
+    type: route_target
+    uuid: 93f7252a-f770-4158-ac34-4759dba25754
+- kind: routing_instance
+  data:
+    fq_name:
+    - default-domain
+    - default-project
+    - default-virtual-network
+    - default-virtual-network
+    id_perms:
+      created: 2018-05-23T17:29:57.806747
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:30:11.484762
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3324462e+19
+        uuid_mslong: 1.5392275e+19
+    parent_type: virtual-network
+    parent_uuid: 5720afd0-d5a6-46ef-bd81-3be7f715cd27
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    route_target_refs:
+    - attr:
+        import_export: null
+      uuid: 93f7252a-f770-4158-ac34-4759dba25754
+    routing_instance_fabric_snat: false
+    routing_instance_has_pnf: false
+    routing_instance_is_default: true
+    static_route_entries:
+      route: []
+    type: routing_instance
+    uuid: d59c5934-1dbd-4865-b8e9-ff9d7f3f16d0
+- kind: routing_instance
+  data:
+    fq_name:
+    - default-domain
+    - default-project
+    - ip-fabric
+    - __default__
+    id_perms:
+      created: 2018-05-23T17:29:57.714803
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.714803
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.2727466e+19
+        uuid_mslong: 1.6656713e+19
+    parent_type: virtual-network
+    parent_uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    routing_instance_fabric_snat: false
+    routing_instance_has_pnf: false
+    routing_instance_is_default: false
+    type: routing_instance
+    uuid: e72887bb-d956-4d52-b0a1-0af8754a3679
+- kind: tag
+  data:
+    fq_name:
+    - label=fabric-management_ip
+    id_perms:
+      created: 2018-05-23T17:29:58.369355
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.369355
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.1246447e+19
+        uuid_mslong: 6.806814e+18
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    tag_id: "0x00000000"
+    tag_type_name: label
+    tag_type_refs:
+    - attr: null
+      uuid: 781a55ae-a93f-4f79-b146-88fb92cde7d3
+    tag_value: fabric-management_ip
+    type: tag
+    uuid: 5e76a99f-5d21-4696-9c13-67fa07f530a1
+- kind: policy_management
+  data:
+    fq_name:
+    - default-policy-management
+    id_perms:
+      created: 2018-05-23T17:29:57.599107
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.599107
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3265124e+19
+        uuid_mslong: 8.2261826e+18
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: policy_management
+    uuid: 72294557-ca3e-4214-b817-30673270b185
+- kind: application_policy_set
+  data:
+    all_applications: true
+    fq_name:
+    - default-policy-management
+    - default-application-policy-set
+    global_vrouter_config_refs:
+    - attr: null
+      uuid: fcc87877-5f76-49eb-ab3c-1e0cbfae05b4
+    id_perms:
+      created: 2018-05-23T17:29:57.619202
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.628877
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.2061712e+19
+        uuid_mslong: 9.945568e+18
+    parent_type: policy-management
+    parent_uuid: 72294557-ca3e-4214-b817-30673270b185
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: application_policy_set
+    uuid: 8a05c096-09ed-4c4b-a763-cf1d5ba92a27
+- kind: network_ipam
+  data:
+    fq_name:
+    - default-domain
+    - default-project
+    - service-chain-flat-ipam
+    id_perms:
+      created: 2018-05-23T17:29:57.865299
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.865299
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.054478e+19
+        uuid_mslong: 2.6237302e+18
+    ipam_subnet_method: flat-subnet
+    ipam_subnets:
+    - addr_from_start: null
+      alloc_unit: 1
+      allocation_pools: []
+      created: null
+      default_gateway: null
+      dhcp_option_list: null
+      dns_nameservers: []
+      dns_server_address: null
+      enable_dhcp: true
+      host_routes: null
+      last_modified: null
+      subnet:
+        ip_prefix: 0.0.0.0
+        ip_prefix_len: 8
+      subnet_name: null
+      subnet_uuid: null
+    - addr_from_start: null
+      alloc_unit: 1
+      allocation_pools: []
+      created: null
+      default_gateway: null
+      dhcp_option_list: null
+      dns_nameservers: []
+      dns_server_address: null
+      enable_dhcp: true
+      host_routes: null
+      last_modified: null
+      subnet:
+        ip_prefix: ::ffff
+        ip_prefix_len: 104
+      subnet_name: null
+      subnet_uuid: null
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: network_ipam
+    uuid: 24695cb8-7067-4da5-9256-9584621ffd28
+- kind: access_control_list
+  data:
+    access_control_list_entries:
+      acl_rule:
+      - action_list:
+          alert: false
+          apply_service: []
+          assign_routing_instance: null
+          gateway_name: null
+          log: false
+          mirror_to: null
+          qos_action: null
+          simple_action: pass
+        direction: null
+        match_condition:
+          dst_address:
+            network_policy: null
+            security_group: null
+            subnet: null
+            subnet_list: []
+            virtual_network: default-domain:default-project:ip-fabric
+          dst_port:
+            end_port: 65535
+            start_port: 0
+          ethertype: null
+          protocol: any
+          src_address:
+            network_policy: null
+            security_group: null
+            subnet: null
+            subnet_list: []
+            virtual_network: default-domain:default-project:ip-fabric
+          src_port:
+            end_port: 65535
+            start_port: 0
+        rule_uuid: 00000000-0000-0000-0000-100000000001
+      - action_list:
+          alert: false
+          apply_service: []
+          assign_routing_instance: null
+          gateway_name: null
+          log: false
+          mirror_to: null
+          qos_action: null
+          simple_action: deny
+        direction: <>
+        match_condition:
+          dst_address:
+            network_policy: null
+            security_group: null
+            subnet: null
+            subnet_list: []
+            virtual_network: any
+          dst_port:
+            end_port: 65535
+            start_port: 0
+          ethertype: null
+          protocol: any
+          src_address:
+            network_policy: null
+            security_group: null
+            subnet: null
+            subnet_list: []
+            virtual_network: default-domain:default-project:ip-fabric
+          src_port:
+            end_port: 65535
+            start_port: 0
+        rule_uuid: 00000000-0000-0000-0000-100000000002
+      - action_list:
+          alert: false
+          apply_service: []
+          assign_routing_instance: null
+          gateway_name: null
+          log: false
+          mirror_to: null
+          qos_action: null
+          simple_action: pass
+        direction: null
+        match_condition:
+          dst_address:
+            network_policy: null
+            security_group: null
+            subnet: null
+            subnet_list: []
+            virtual_network: any
+          dst_port:
+            end_port: 65535
+            start_port: 0
+          ethertype: null
+          protocol: any
+          src_address:
+            network_policy: null
+            security_group: null
+            subnet: null
+            subnet_list: []
+            virtual_network: any
+          src_port:
+            end_port: 65535
+            start_port: 0
+        rule_uuid: 00000000-0000-0000-0000-100000000001
+      dynamic: false
+    display_name: ip-fabric
+    fq_name:
+    - default-domain
+    - default-project
+    - ip-fabric
+    - ip-fabric
+    id_perms:
+      created: 2018-05-23T17:30:11.638394
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:30:11.638394
+      permissions:
+        group: admin
+        group_access: 7
+        other_access: 7
+        owner: admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3256739e+19
+        uuid_mslong: 1.5101142e+19
+    parent_type: virtual-network
+    parent_uuid: 5ee45236-c435-4006-b4df-ba3442c8a3ec
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: access_control_list
+    uuid: d19208f7-f734-475e-b7f9-66408fca4447
+- kind: job_template
+  data:
+    fq_name:
+    - default-global-system-config
+    - discover_device_template
+    id_perms:
+      created: 2018-05-23T17:29:58.227063
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.227063
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.0521642e+19
+        uuid_mslong: 3.5666585e+18
+    job_template_input_schema:
+      $schema: http://json-schema.org/draft-06/schema#
+      additionalProperties: false
+      definitions: {}
+      maxProperties: 1
+      minProperties: 1
+      properties:
+        input:
+          $id: /properties/input
+          additionalProperties: false
+          maxProperties: 1
+          minProperties: 1
+          properties:
+            fabric_fq_name:
+              $id: /properties/input/properties/fabric_fq_name
+              items:
+                $id: /properties/input/properties/fabric_fq_name/items
+                default: ""
+                description: FQNAME of the fabric object created
+                examples:
+                - default-global-system-config
+                - fabric01
+                title: The Fabric_fq_name Schema
+                type: string
+              type: array
+            fabric_uuid:
+              $id: /properties/input/properties/fabric_uuid
+              default: ""
+              description: UUID of the fabric object created
+              examples:
+              - "123456789"
+              format: uuid
+              title: The Fabric_uuid Schema
+              type: string
+          type: object
+      type: object
+    job_template_multi_device_job: false
+    job_template_output_schema:
+      $schema: http://json-schema.org/draft-06/schema#
+      definitions: {}
+      properties:
+        output:
+          $id: /properties/output
+          properties:
+            message:
+              $id: /properties/output/properties/message
+              default: ""
+              description: success/failure message about the playbook run
+              examples:
+              - Successfully ran playbook
+              title: The Message Schema
+              type: string
+            results:
+              $id: /properties/output/properties/results
+              properties:
+                device_uuid:
+                  $id: /properties/output/properties/results/properties/device_uuid
+                  items:
+                    $id: /properties/output/properties/results/properties/device_uuid/items
+                    default: ""
+                    description: objects returned from  the playbook to the job_manager
+                    examples:
+                    - "1234"
+                    format: uuid
+                    title: The Results Schema
+                    type: string
+                  type: array
+              type: object
+            status:
+              $id: /properties/output/properties/status
+              default: ""
+              description: Status of the plabybook run
+              examples:
+              - SUCCESS
+              title: The Status Schema
+              type: string
+          type: object
+      type: object
+    job_template_playbooks:
+    - device_family: ""
+      playbook_uri: ./opt/contrail/fabric_ansible_playbooks/discover_device.yml
+      vendor: ""
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: job_template
+    uuid: 317f5118-7512-41de-9204-61869344fa10
+- kind: application_policy_set
+  data:
+    all_applications: true
+    fq_name:
+    - default-domain
+    - default-project
+    - default-application-policy-set
+    id_perms:
+      created: 2018-05-23T17:29:58.037639
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.037639
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.152987e+19
+        uuid_mslong: 3.7627743e+18
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: application_policy_set
+    uuid: 34380f4d-db35-4e21-a002-547358181ae5
+- kind: network_ipam
+  data:
+    fq_name:
+    - default-domain
+    - default-project
+    - default-network-ipam
+    id_perms:
+      created: 2018-05-23T17:29:57.518119
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.104001
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3311391e+19
+        uuid_mslong: 9.583336e+18
+    parent_type: project
+    parent_uuid: f4a1ec70-1b64-4b82-b6e0-2b6b56e8936a
+    perms2:
+      global_access: 5
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: network_ipam
+    uuid: 84fed94d-03db-4492-b8bb-906248ae7bed
+- kind: tag_type
+  data:
+    display_name: application
+    fq_name:
+    - application
+    id_perms:
+      created: 2018-05-23T17:29:57.896487
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.896487
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: false
+      uuid:
+        uuid_lslong: 1.1151727e+19
+        uuid_mslong: 1.7053989e+19
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    tag_type_id: "0x0001"
+    type: tag_type
+    uuid: ecabf122-5a23-4dcb-9ac2-e491a997acfc
+- kind: global_vrouter_config
+  data:
+    enable_security_logging: true
+    encryption_mode: none
+    fq_name:
+    - default-global-system-config
+    - default-global-vrouter-config
+    id_perms:
+      created: 2018-05-23T17:29:57.460544
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.460544
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.233877e+19
+        uuid_mslong: 1.8214941e+19
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: global_vrouter_config
+    uuid: fcc87877-5f76-49eb-ab3c-1e0cbfae05b4
+- kind: job_template
+  data:
+    fq_name:
+    - default-global-system-config
+    - generate_underlay_template
+    id_perms:
+      created: 2018-05-23T17:29:58.268184
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.268184
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.2892332e+19
+        uuid_mslong: 1.3901739e+19
+    job_template_input_schema:
+      $id: http://example.com/example.json
+      properties:
+        ntp:
+          $id: /properties/ntp
+          properties:
+            ntp_boot_servers:
+              $id: /properties/ntp/properties/ntp_boot_servers
+              items:
+                $id: /properties/ntp/properties/ntp_boot_servers/items
+                default: ""
+                examples:
+                - 6.6.6.6
+                title: NTP Boot server
+                type: string
+              type: array
+            ntp_servers:
+              $id: /properties/ntp/properties/ntp_servers
+              items:
+                $id: /properties/ntp_servers/items
+                default: ""
+                examples:
+                - 8.8.8.8
+                title: NTP server
+                type: string
+              type: array
+            time_zone:
+              $id: /properties/ntp/properties/time_zone
+              default: ""
+              examples:
+              - America/Los_Angeles
+              title: Time Zone
+              type: string
+          type: object
+        snmp:
+          $id: /properties/snmp
+          properties:
+            snmp_communities:
+              $id: /properties/snmp/properties/snmp_communities
+              items:
+                $id: /properties/snmp/properties/snmp_communities/items
+                examples:
+                - community_A
+                - community_B
+                title: SNMP Community
+                type: string
+              type: array
+            snmp_contact:
+              $id: /properties/snmp/properties/snmp_contact
+              default: ""
+              examples:
+              - aakashr
+              title: SNMP Contact
+              type: string
+            snmp_location:
+              $id: /properties/snmp/properties/snmp_location
+              default: ""
+              examples:
+              - A.6.221
+              title: SNMP Location
+              type: string
+          type: object
+        static_routes:
+          $id: /properties/static_routes
+          items:
+            $id: /properties/static_routes/items
+            properties:
+              nexthop:
+                $id: /properties/static_routes/items/nexthop
+                examples:
+                - 10.1.1.254
+                title: Next hop IP
+                type: string
+              subnets:
+                $id: /properties/static_routes/items/subnets
+                items:
+                  $id: /properties/static_routes/items/subnets/items
+                  examples:
+                  - 10.1.1.0/24
+                  - 10.1.2.0/24
+                  title: Subnet
+                  type: string
+                type: array
+            type: object
+          type: array
+      type: object
+    job_template_multi_device_job: true
+    job_template_output_schema:
+      $schema: http://json-schema.org/draft-06/schema#
+      properties:
+        message:
+          description: Should capture a summarized error message in case of Failures.
+          type: string
+        results:
+          description: JSON object holding the job specific output details
+          type: object
+        status:
+          description: Result status of the job
+          enum:
+          - Success
+          - Failure
+          - Timeout
+          type: string
+      required:
+      - status
+      title: Generic Job Output
+      type: object
+    job_template_playbooks:
+    - device_family: ""
+      playbook_uri: ./opt/contrail/fabric_ansible_playbooks/generate_underlay_config.yml
+      vendor: Juniper
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: job_template
+    uuid: c0ece5c2-8d1b-4967-b2ea-c381c80716e6
+- kind: job_template
+  data:
+    fq_name:
+    - default-global-system-config
+    - image_upgrade_template
+    id_perms:
+      created: 2018-05-23T17:29:58.172527
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.172527
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.2157939e+19
+        uuid_mslong: 1.0354165e+19
+    job_template_input_schema:
+      $schema: http://json-schema.org/draft-06/schema#
+      properties:
+        image_uuid:
+          type: string
+      required:
+      - image_uuid
+      title: Image upgrade input
+      type: object
+    job_template_multi_device_job: true
+    job_template_output_schema:
+      $schema: http://json-schema.org/draft-06/schema#
+      properties:
+        message:
+          description: Should capture a summarized error message in case of Failures.
+          type: string
+        results:
+          description: JSON object holding the job specific output details
+          type: object
+        status:
+          description: Result status of the job
+          enum:
+          - Success
+          - Failure
+          - Timeout
+          type: string
+      required:
+      - status
+      title: Generic Job Output
+      type: object
+    job_template_playbooks:
+    - device_family: ""
+      playbook_uri: ./opt/contrail/fabric_ansible_playbooks/image_upgrade.yml
+      vendor: Juniper
+    parent_type: global-system-config
+    parent_uuid: 5e6ab777-ae70-410c-b718-0ec5684b96f2
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    type: job_template
+    uuid: 8fb161e0-4f95-4a88-a8b9-acd3f6b34b80
+- kind: tag_type
+  data:
+    display_name: tier
+    fq_name:
+    - tier
+    id_perms:
+      created: 2018-05-23T17:29:57.881212
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.881212
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: false
+      uuid:
+        uuid_lslong: 9.706969e+18
+        uuid_mslong: 1.5955154e+19
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    tag_type_id: "0x0002"
+    type: tag_type
+    uuid: dd6c17bf-7111-41de-86b6-148b2541ad7f

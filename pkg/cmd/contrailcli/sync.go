@@ -39,7 +39,7 @@ func syncResources(dataPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	response := &services.RESTSyncRequest{}
+	response := &services.ResourceList{}
 	_, err = client.Create("/sync", request, &response.Resources)
 	if err != nil {
 		fmt.Println(err)
