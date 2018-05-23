@@ -3,7 +3,7 @@ package contrailcli
 import (
 	"fmt"
 
-	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
@@ -39,13 +39,14 @@ func syncResources(dataPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	response := &services.RESTSyncRequest{}
-	_, err = client.Create("/sync", request, &response.Resources)
+	response := []*models.Event{}
+	_, err = client.Create("/sync", request, &response)
 	if err != nil {
 		fmt.Println(err)
 		return "", err
 	}
-	output, err := yaml.Marshal(&response)
+	output, err := yaml.Marshal(&models.EventList{
+		Events: response})
 	if err != nil {
 		return "", err
 	}

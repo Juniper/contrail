@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Juniper/contrail/pkg/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -37,14 +36,15 @@ func deleteResources(dataPath string) (string, error) {
 	if err != nil {
 		return "", nil
 	}
-	for i := len(request.Resources) - 1; i >= 0; i-- {
-		resource := request.Resources[i]
-		uuid, err := common.GetUUIDFromInterface(resource.Data)
+	for i := len(request.Events) - 1; i >= 0; i-- {
+		event := request.Events[i]
+		resource := event.GetResource()
+		uuid := resource.GetUUID()
 		if err != nil {
 			return "", err
 		}
 		var output interface{}
-		response, err := client.Delete(path(resource.Kind, uuid), &output)
+		response, err := client.Delete(path(resource.Kind(), uuid), &output)
 		if response.StatusCode != http.StatusNotFound && err != nil {
 			return "", err
 		}

@@ -1,6 +1,9 @@
 - type: type
   template_path: model.tmpl
   output_path: pkg/models/gen___resource__.go
+- type: all 
+  template_path: event_encoding.tmpl
+  output_path: pkg/models/gen_event_encoding.go
 - type: all
   template_path: sql_mysql.tmpl
   output_path: tools/init_mysql.sql

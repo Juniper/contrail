@@ -6,7 +6,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/models"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -72,12 +72,9 @@ func getClient() (*apisrv.Client, error) {
 }
 
 // readResources decodes single or array of input data from YAML.
-func readResources(file string) (*services.RESTSyncRequest, error) {
-	request := &services.RESTSyncRequest{}
+func readResources(file string) (*models.EventList, error) {
+	request := &models.EventList{}
 	err := common.LoadFile(file, request)
-	for _, resource := range request.Resources {
-		resource.Data = common.YAMLtoJSONCompat(resource.Data)
-	}
 	return request, err
 }
 
