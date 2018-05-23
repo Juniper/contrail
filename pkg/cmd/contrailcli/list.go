@@ -130,8 +130,8 @@ func listResources(schemaID string) (string, error) {
 		return "", nil
 	}
 	//TODO support all schema
-	resources := &services.RESTSyncRequest{
-		Resources: []*services.RESTResource{},
+	resources := &services.ResourceList{
+		Resources: []*services.Resource{},
 	}
 	var response map[string][]interface{}
 	_, err = client.Read(
@@ -143,7 +143,7 @@ func listResources(schemaID string) (string, error) {
 	for _, list := range response {
 		for _, d := range list {
 			resources.Resources = append(resources.Resources,
-				&services.RESTResource{
+				&services.Resource{
 					Kind: schemaID,
 					Data: d,
 				},
