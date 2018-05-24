@@ -3,7 +3,7 @@ extends:
 - base
 id: node
 parents:
-  contrail_cluster:
+  cloud_provider:
     operations: "CRUD"
     description: "Parent of this node."
     presence: "optional"

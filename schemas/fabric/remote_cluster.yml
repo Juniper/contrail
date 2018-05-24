@@ -1,0 +1,25 @@
+description: Remote Cluster
+extends:
+- base
+- ownable
+- has_status
+id: remote_cluster
+metadata:
+  category: cluster
+parent: ""
+plural: remote_clusters
+prefix: /
+references:
+    cloud_provider:
+      operations: "CRUD"
+      description: "Reference to cloud provider."
+      presence: "required"
+parent:
+    contrail_cluster:
+      operations: "CRUD"
+      description: "Reference to contrail cluster object for this remote cluster."
+      presence: "required"
+schema: {}
+singular: remote_cluster
+title: Remote Cluster
+type: ""

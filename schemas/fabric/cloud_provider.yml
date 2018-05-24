@@ -1,11 +1,11 @@
-description: Location
+description: cloud_provider
 extends:
 - base
 - has_status
-id: location 
+id: cloud_provider 
 metadata:
 parent: ""
-plural: locations 
+plural: cloud_providers 
 prefix: /
 schema:
   properties:
@@ -16,13 +16,14 @@ schema:
       - private
       - aws
       - gcp
+      - azure
       - openstack
       nullable: false
       permission:
       - create
       - update
       sql: ""
-      title: Location Type
+      title: Cloud Provider Type
       type: string
       view:
       - create
@@ -270,6 +271,6 @@ schema:
       type: string
   required: []
   type: object
-singular: location
-title: Location
+singular: cloud_provider
+title: Cloud Provider
 type: ""

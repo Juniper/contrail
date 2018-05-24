@@ -10,6 +10,10 @@ references:
       operations: "CRUD"
       description: "Reference to node object for this vrouter node."
       presence: "optional"
+    remote_cluster:
+      operations: "CRUD"
+      description: "Reference to remote cluster object for this openstack_compute node."
+      presence: "optional"
 parents:
   contrail_cluster:
     operations: "CRUD"
@@ -64,6 +68,7 @@ schema:
       - kernel
       - dpdk
       - smartNiC
+      - gateway
       nullable: false
       permission:
       - create

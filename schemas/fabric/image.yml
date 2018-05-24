@@ -23,7 +23,7 @@ schema:
     status:
       description: The image status
       type: string
-    location:
+    cloud_provider:
       description: The URL to access the image file from the external store
       nullable: false
       type: string
