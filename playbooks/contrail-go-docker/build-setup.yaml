@@ -11,11 +11,11 @@
   become: yes
   become_user: root
 
+- name: Test
+  command: pwd; ls; echo {{ sourcedir }}
+
 - name: Pretend we're using github
-  file:
-    src: "review.opencontrail.org"
-    path: "{{ sourcedir }}/src/github.com"
-    state: link
+  command: mv review.opencontrail.org {{ sourcedir }}/src/github.com
 
 - name: "Start runner docker container in background"
   docker_container:
