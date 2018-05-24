@@ -38,3 +38,5 @@ tools/cleanup.sql
 docker/contrail_go/etc/*
 docker/contrail_go/contrail
 docker/contrail_go/contrailcli
+
+pkg/types/mocks
