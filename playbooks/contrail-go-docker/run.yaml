@@ -20,6 +20,8 @@
           command: make deps
         - name: make generate
           command: make generate
+        - name: make check
+          command: make check
         - name: make lint
           command: make lint
         - name: reset db
