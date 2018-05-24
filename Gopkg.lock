@@ -130,6 +130,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  revision = "c34cdb4725f4c3844d095133c6e40e448b86589b"
+  version = "v1.1.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = [
@@ -189,8 +195,7 @@
     "internal/sanitize",
     "pgio",
     "pgproto3",
-    "pgtype",
-    "stdlib"
+    "pgtype"
   ]
   revision = "da3231b0b66e2e74cdb779f1d46c5e958ba8be27"
   version = "v3.1.0"
@@ -206,12 +211,6 @@
   name = "github.com/juju/errors"
   packages = ["."]
   revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
-
-[[projects]]
-  name = "github.com/k0kubun/pp"
-  packages = ["."]
-  revision = "027a6d1765d673d337e687394dbe780dd64e2a1e"
-  version = "v2.3.0"
 
 [[projects]]
   branch = "master"
@@ -551,6 +550,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6ac28353c138445591b55b486c0aab2dced8e359ae53679de8fbf798c6655ef6"
+  inputs-digest = "542a1f9d99f9dcbc60220d605c76361aee7d6f1ffdad2ec0fefe2c721157b0be"
   solver-name = "gps-cdcl"
   solver-version = 1
