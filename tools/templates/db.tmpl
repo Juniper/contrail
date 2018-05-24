@@ -21,7 +21,6 @@ var {{ schema.JSONSchema.GoName }}Fields = []string{
 var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
    {% for linkTo, reference in schema.References %}
     "{{ linkTo | lower }}": []string{
-        // {{ reference.LinkTo }}
         {% for column in reference.Columns %}"{{ column.Column }}",
         {% endfor %}
     },
@@ -91,7 +90,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     return nil
 }
 
-func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
+func (db *Service) Scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
     m := models.Make{{ schema.JSONSchema.GoName }}()
     {% for column in schema.Columns %}
     if value, ok := values["{{ column.Column }}"]; ok {
@@ -231,7 +230,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
                 val := valuesPointers[index].(*interface{})
                 valuesMap[column] = *val
             }
-            m, err := db.scan{{ schema.JSONSchema.GoName }}(valuesMap)
+            m, err := db.Scan{{ schema.JSONSchema.GoName }}(valuesMap)
             if err != nil {
                 return nil, errors.Wrap(err, "scan row failed")
             }

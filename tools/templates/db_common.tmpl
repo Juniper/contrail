@@ -19,7 +19,6 @@ func (db *Service) initQueryBuilders() {
 {% endif%}{% endfor %}
 }
 
-
 func (db *Service) dump(ctx context.Context, ow ObjectWriter) error {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     list{{ schema.JSONSchema.GoName }}Request := &models.List{{ schema.JSONSchema.GoName }}Request{&models.ListSpec{}}
@@ -44,7 +43,7 @@ func (db *Service) dump(ctx context.Context, ow ObjectWriter) error {
 func (db *Service) ScanRow(schemaID string, rowData map[string]interface{}) (Object, error) {
     switch schemaID { {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     case "{{ schema.ID }}":
-        return db.scan{{schema.JSONSchema.GoName}}(rowData){% endif%}{% endfor %}
+        return db.Scan{{schema.JSONSchema.GoName}}(rowData){% endif%}{% endfor %}
     }
 
     return nil, fmt.Errorf("unknown schemaID: %v", schemaID)
