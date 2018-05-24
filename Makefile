@@ -31,6 +31,10 @@ generate: ## Run the source code generator
 	go fmt github.com/Juniper/contrail/pkg/models
 	go fmt github.com/Juniper/contrail/pkg/services
 	go fmt github.com/Juniper/contrail/pkg/compilationif
+	rm -rf pkg/types/mocks
+	mkdir pkg/types/mocks
+	mockgen -destination=pkg/types/mocks/DBServiceInterface_mock.go github.com/Juniper/contrail/pkg/types DBServiceInterface
+
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
