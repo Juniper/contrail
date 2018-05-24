@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Juniper/contrail/pkg/db"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/kyleconroy/pgoutput"
 	"github.com/siddontang/go-mysql/canal"
@@ -16,6 +17,14 @@ import (
 type relationAddGetter interface {
 	Add(pgoutput.Relation)
 	Get(id uint32) (pgoutput.Relation, error)
+}
+
+type rowData map[string]interface{}
+type rowKey []interface{}
+
+func (r rowKey) String() string {
+	v := ([]interface{})(r)
+	return fmt.Sprint(v...)
 }
 
 // PgoutputEventHandler handles replication messages by pushing it to sink.
@@ -56,77 +65,86 @@ func (h *PgoutputEventHandler) Handle(msg pgoutput.Message) error {
 }
 
 func (h *PgoutputEventHandler) handleCreate(relationID uint32, row []pgoutput.Tuple) error {
-	relation, err := h.relations.Get(relationID)
+	tableName, pk, data, err := h.resolveRow(relationID, row)
 	if err != nil {
 		return err
 	}
 
-	pk, data, err := decodeRowData(relation, row)
-	if err != nil {
-		return fmt.Errorf("error decoding row: %v", err)
+	if from, to, ok := db.ResolveRefTables(tableName); ok {
+		if l := len(pk); l != 2 {
+			return fmt.Errorf("malformed ref row key, len(pk) == %v", l)
+		}
+		return h.sink.CreateRef(from, to, pk[0], pk[1])
 	}
 
-	return h.sink.Create(relation.Name, pk, data)
+	return h.sink.Create(tableName, pk.String(), data)
 }
 
 func (h *PgoutputEventHandler) handleUpdate(relationID uint32, row []pgoutput.Tuple) error {
-	relation, err := h.relations.Get(relationID)
+	tableName, pk, data, err := h.resolveRow(relationID, row)
 	if err != nil {
 		return err
 	}
 
-	pk, data, err := decodeRowData(relation, row)
-	if err != nil {
-		return fmt.Errorf("error decoding row: %v", err)
-	}
-
-	return h.sink.Update(relation.Name, pk, data)
+	return h.sink.Update(tableName, pk.String(), data)
 }
 
 func (h *PgoutputEventHandler) handleDelete(relationID uint32, row []pgoutput.Tuple) error {
-	relation, err := h.relations.Get(relationID)
+	tableName, pk, _, err := h.resolveRow(relationID, row)
 	if err != nil {
 		return err
 	}
 
-	pk, _, err := decodeRowData(relation, row)
+	return h.sink.Delete(tableName, pk.String())
+}
+
+func (h *PgoutputEventHandler) resolveRow(
+	relationID uint32,
+	row []pgoutput.Tuple,
+) (tableName string, pk rowKey, data rowData, err error) {
+	relation, err := h.relations.Get(relationID)
 	if err != nil {
-		return fmt.Errorf("error decoding row: %v", err)
+		return "", nil, nil, err
 	}
 
-	return h.sink.Delete(relation.Name, pk)
+	key, data, err := decodeRowData(relation, row)
+	if err != nil {
+		return "", nil, nil, fmt.Errorf("error decoding row: %v", err)
+	}
+
+	return relation.Name, key, data, nil
+
 }
 
 func decodeRowData(
 	relation pgoutput.Relation,
 	row []pgoutput.Tuple,
-) (pk string, data map[string]interface{}, err error) {
-	keys, data := []interface{}{}, map[string]interface{}{}
+) (key rowKey, data rowData, err error) {
+	key, data = rowKey{}, rowData{}
 
 	if t, c := len(row), len(relation.Columns); t != c {
-		return "", nil, fmt.Errorf("malformed message or relation columns, got %d values but relation has %d columns", t, c)
+		return nil, nil, fmt.Errorf("malformed message or relation columns, got %d values but relation has %d columns", t, c)
 	}
 
 	for i, tuple := range row {
 		col := relation.Columns[i]
 		decoder := getDecoder(col)
 		if err = decoder.DecodeText(nil, tuple.Value); err != nil {
-			return "", nil, fmt.Errorf("error decoding column '%v': %s", col.Name, err)
+			return nil, nil, fmt.Errorf("error decoding column '%v': %s", col.Name, err)
 		}
 		value := decoder.Get()
 		data[col.Name] = value
 		if col.Key {
-			keys = append(keys, value)
+			key = append(key, value)
 		}
 
 	}
 
-	pk, err = primaryKeyToString(keys)
-	if err != nil {
-		return "", nil, fmt.Errorf("error creating PK: %v", err)
+	if len(key) == 0 {
+		return nil, nil, errors.New("no key values provided")
 	}
 
-	return pk, data, nil
+	return key, data, nil
 }
 
 // CanalEventHandler handles canal events by pushing it to sink.
@@ -228,7 +246,7 @@ func getPrimaryKeyValue(row []interface{}, t *schema.Table) (string, error) {
 	return key, nil
 }
 
-func primaryKeyToString(keyValues []interface{}) (string, error) {
+func primaryKeyToString(keyValues rowKey) (string, error) {
 	if len(keyValues) == 0 {
 		return "", errors.New("no key values provided")
 	}
@@ -244,8 +262,8 @@ func primaryKeyToString(keyValues []interface{}) (string, error) {
 }
 
 // getKeyValues uses the fact that columns are in the same order as values in a row
-func getKeyValues(row []interface{}, columns []schema.TableColumn) (map[string]interface{}, error) {
-	kvs := make(map[string]interface{}, len(columns))
+func getKeyValues(row []interface{}, columns []schema.TableColumn) (rowData, error) {
+	kvs := make(rowData, len(columns))
 	for i, c := range columns {
 		v, err := getValue(row[i], c.Type)
 		if err != nil {
