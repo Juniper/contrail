@@ -14,5 +14,6 @@ func NewObjectWriter(s Sink) *ObjectWriter {
 
 // WriteObject handles database object by writing it to Sink.
 func (o *ObjectWriter) WriteObject(schemaID string, objUUID string, obj db.Object) error {
-	return o.s.Create(schemaID, objUUID, obj)
+	//return o.s.Create(schemaID, objUUID, obj)
+	return nil
 }

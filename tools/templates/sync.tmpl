@@ -1,0 +1,86 @@
+package sync
+
+import (
+    "context"
+
+	"github.com/Juniper/contrail/pkg/sync/sink"
+    "github.com/sirupsen/logrus"
+)
+
+type HandleRequest struct {
+    SchemaID string
+    PK string
+    Data map[string]interface{}
+}
+
+type tableCallback func(*Service, context.Context, HandleRequest) (error)
+
+var createFunctions = map[string]tableCallback {
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+	"{{ schema.ID }}": (*Service).Create{{ schema.JSONSchema.GoName }},{% endif%}{% endfor %}
+
+    // TODO ref table entries
+    // TODO share table entries
+}
+
+var updateFunctions = map[string]tableCallback {
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+	"{{ schema.ID }}": (*Service).Update{{ schema.JSONSchema.GoName }},{% endif%}{% endfor %}
+
+    // TODO ref table entries
+    // TODO share table entries
+}
+
+var deleteFunctions = map[string]tableCallback {
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+	"{{ schema.ID }}": (*Service).Delete{{ schema.JSONSchema.GoName }},{% endif%}{% endfor %}
+
+    // TODO ref table entries
+    // TODO share table entries
+}
+
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (s *Service) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request HandleRequest) (error) {
+    obj, err := s.dbService.Scan{{schema.JSONSchema.GoName}}(request.Data)
+    if err != nil {
+        return err
+    }
+
+    b, err := s.codec.Encode(obj)
+    if err != nil {
+        return err
+    }
+
+    key := sink.ResourceKey(s.codec, "{{ schema.ID }}", request.PK)
+
+    s.log.WithFields(logrus.Fields{"key": key, "value": obj}).Debug("Create {{ schema.JSONSchema.GoName }}")
+    return s.sink.Put(ctx, sink.ResourceKey(s.codec, "{{ schema.ID }}",  request.PK), b)
+}
+func (s *Service) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request HandleRequest) (error) {
+
+    updateObj, err := s.dbService.Scan{{schema.JSONSchema.GoName}}(request.Data)
+    if err != nil {
+        return err
+    }
+
+    key := sink.ResourceKey(s.codec, "{{ schema.ID }}", request.PK)
+    s.log.WithFields(logrus.Fields{"key": key}).Debug("Update {{ schema.JSONSchema.GoName }}")
+
+    return s.sink.InTransaction(ctx, func(txn sink.Txn) error {
+        oldData := txn.Get(key)
+        data, err := sink.UpdateResourceData(s.codec, oldData, updateObj)
+        if err != nil {
+            return err
+        }
+
+        txn.Put(key, data)
+        return nil
+    })
+}
+func (s *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request HandleRequest) (error) {
+    key := sink.ResourceKey(s.codec, "{{ schema.ID }}", request.PK)
+    s.log.WithFields(logrus.Fields{"key": key}).Debug("Delete {{ schema.JSONSchema.GoName }}")
+    return s.sink.Delete(ctx, key)
+}
+{% endif%}{% endfor %}
