@@ -121,7 +121,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel = context.WithCancel(context.Background())
 			var receivedMsg pgoutput.Message
-			h := func(m pgoutput.Message) error {
+			h := func(_ context.Context, m pgoutput.Message) error {
 				receivedMsg = m
 				return nil
 			}
@@ -196,8 +196,7 @@ func getBeginData(m pgoutput.Begin) []byte {
 func givenPostgresWatcher(
 	slot, publication string,
 	conn postgresWatcherConnection,
-	handler pgoutput.Handler,
-) *PostgresWatcher {
+	handler PgoutputHandler) *PostgresWatcher {
 	return &PostgresWatcher{
 		conf: PostgresSubscriptionConfig{
 			StatusTimeout: time.Second,

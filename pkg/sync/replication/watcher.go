@@ -62,6 +62,9 @@ type postgresWatcherConnection interface {
 	DumpSnapshot(context.Context, db.ObjectWriter, string) error
 }
 
+// PgoutputHandler is function that handles postgres replication message.
+type PgoutputHandler func(context.Context, pgoutput.Message) error
+
 // PostgresWatcher allows subscribing to PostgreSQL logical replication messages.
 type PostgresWatcher struct {
 	conf PostgresSubscriptionConfig
@@ -70,7 +73,7 @@ type PostgresWatcher struct {
 
 	cancel  context.CancelFunc
 	conn    postgresWatcherConnection
-	handler pgoutput.Handler
+	handler PgoutputHandler
 
 	dumpWriter db.ObjectWriter
 
@@ -81,8 +84,7 @@ type PostgresWatcher struct {
 func NewPostgresWatcher(
 	config PostgresSubscriptionConfig,
 	dbs *db.Service, replConn pgxReplicationConn,
-	handler pgoutput.Handler,
-	dumpWriter db.ObjectWriter,
+	handler PgoutputHandler, dumpWriter db.ObjectWriter,
 ) (*PostgresWatcher, error) {
 	conn, err := newPostgresReplicationConnection(dbs, replConn)
 	if err != nil {
@@ -131,18 +133,21 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	}
 
 	feed := make(chan *pgx.ReplicationMessage)
-	go w.runMessageConsumer(feed)
+	go w.runMessageConsumer(ctx, feed)
 	return w.runMessageProducer(ctx, feed)
 }
 
-func (w *PostgresWatcher) runMessageConsumer(feed <-chan *pgx.ReplicationMessage) {
-	func() {
-		for msg := range feed {
-			if err := w.handleMessage(msg); err != nil {
+func (w *PostgresWatcher) runMessageConsumer(ctx context.Context, feed <-chan *pgx.ReplicationMessage) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-feed:
+			if err := w.handleMessage(ctx, msg); err != nil {
 				w.log.Error("Error while handling replication message: ", err)
 			}
 		}
-	}()
+	}
 }
 
 func (w *PostgresWatcher) runMessageProducer(ctx context.Context, feed chan<- *pgx.ReplicationMessage) error {
@@ -185,9 +190,9 @@ func (w *PostgresWatcher) waitForMessageWithTimeout(ctx context.Context) (*pgx.R
 	return msg, nil
 }
 
-func (w *PostgresWatcher) handleMessage(msg *pgx.ReplicationMessage) error {
+func (w *PostgresWatcher) handleMessage(ctx context.Context, msg *pgx.ReplicationMessage) error {
 	if msg.WalMessage != nil {
-		if err := w.handleWalMessage(msg.WalMessage); err != nil {
+		if err := w.handleWalMessage(ctx, msg.WalMessage); err != nil {
 			return err
 		}
 	}
@@ -201,7 +206,7 @@ func (w *PostgresWatcher) handleMessage(msg *pgx.ReplicationMessage) error {
 	return nil
 }
 
-func (w *PostgresWatcher) handleWalMessage(msg *pgx.WalMessage) error {
+func (w *PostgresWatcher) handleWalMessage(ctx context.Context, msg *pgx.WalMessage) error {
 	if msg.WalStart > w.lastLSN {
 		w.lastLSN = msg.WalStart
 	}
@@ -211,8 +216,8 @@ func (w *PostgresWatcher) handleWalMessage(msg *pgx.WalMessage) error {
 		return errors.Wrap(err, "invalid pgoutput message")
 	}
 
-	if err := w.handler(logmsg); err != nil {
-		return errors.Wrap(err, "error handling waldata")
+	if err := w.handler(ctx, logmsg); err != nil {
+		return fmt.Wrap(err, "error handling waldata")
 	}
 
 	return nil
