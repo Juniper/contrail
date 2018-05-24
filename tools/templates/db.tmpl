@@ -21,7 +21,6 @@ var {{ schema.JSONSchema.GoName }}Fields = []string{
 var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
    {% for linkTo, reference in schema.References %}
     "{{ linkTo | lower }}": []string{
-        // {{ reference.LinkTo }}
         {% for column in reference.Columns %}"{{ column.Column }}",
         {% endfor %}
     },
