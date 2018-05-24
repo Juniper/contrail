@@ -1,0 +1,194 @@
+package sync
+
+import (
+    "context"
+    "errors"
+
+    "github.com/sirupsen/logrus"
+
+    "github.com/Juniper/contrail/pkg/db/etcd"
+    "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/sync/sink"
+)
+
+// HandleRequest TODO move
+type HandleRequest struct {
+    SchemaID string
+    PK string
+    Data map[string]interface{}
+}
+
+// RefPKs TODO move
+func (r HandleRequest) RefPKs() (from string, to string, err error) {
+    fromI, ok := r.Data["from"]
+    if !ok {
+        return "", "", errors.New("message data has no 'from' key")
+    }
+    if from, ok = fromI.(string); !ok {
+        return "", "", errors.New("'from' pk is not a string")
+    }
+
+    toI, ok := r.Data["to"]
+    if !ok {
+        return "", "", errors.New("message data has no 'to' key")
+    }
+    if to, ok = toI.(string); !ok {
+        return "", "", errors.New("'to' pk is not a string")
+    }
+
+    return from, to, nil
+}
+
+type tableCallback func(*Service, context.Context, HandleRequest) (error)
+
+var createFunctions = map[string]tableCallback {
+    // object tables
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    "{{ schema.ID }}": (*Service).Create{{ schema.JSONSchema.GoName }},{% endif%}{% endfor %}
+
+    // ref tables
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}{% for linkTo, reference in schema.References %}
+    "ref_{{ schema.ID | lower }}_{{ linkTo | lower }}": (*Service).Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,{% endfor %}{% endif %}{% endfor %}
+    // TODO share table entries
+}
+
+var updateFunctions = map[string]tableCallback {
+    // object tables
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    "{{ schema.ID }}": (*Service).Update{{ schema.JSONSchema.GoName }},{% endif%}{% endfor %}
+
+    // TODO share table entries
+}
+
+var deleteFunctions = map[string]tableCallback {
+    // object tables
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    "{{ schema.ID }}": (*Service).Delete{{ schema.JSONSchema.GoName }},{% endif%}{% endfor %}
+
+    // ref tables
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}{% for linkTo, reference in schema.References %}
+    "ref_{{ schema.ID | lower }}_{{ linkTo | lower }}": (*Service).Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,{% endfor %}{% endif %}{% endfor %}
+
+    // TODO share table entries
+}
+
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+// Create{{ schema.JSONSchema.GoName }} handles create replication message.
+func (s *Service) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request HandleRequest) (error) {
+    obj, err := s.dbService.Scan{{schema.JSONSchema.GoName}}(request.Data)
+    if err != nil {
+        return err
+    }
+
+    b, err := s.codec.Encode(obj)
+    if err != nil {
+        return err
+    }
+
+    key := sink.ResourceKey(s.codec, "{{ schema.ID }}", request.PK)
+
+    s.log.WithFields(logrus.Fields{"key": key, "value": obj}).Debug("Create {{ schema.JSONSchema.GoName }}")
+    return s.sink.Put(ctx, sink.ResourceKey(s.codec, "{{ schema.ID }}",  request.PK), b)
+}
+
+// Update{{ schema.JSONSchema.GoName }} handles update replication message.
+func (s *Service) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request HandleRequest) (error) {
+
+    updateObj, err := s.dbService.Scan{{schema.JSONSchema.GoName}}(request.Data)
+    if err != nil {
+        return err
+    }
+
+    key := sink.ResourceKey(s.codec, "{{ schema.ID }}", request.PK)
+    s.log.WithFields(logrus.Fields{"key": key}).Debug("Update {{ schema.JSONSchema.GoName }}")
+
+    return s.sink.InTransaction(ctx, func(ctx context.Context) error {
+        txn := etcd.GetTxn(ctx)
+        oldData := txn.Get(key)
+        data, err := sink.UpdateResourceData(s.codec, oldData, updateObj)
+        if err != nil {
+            return err
+        }
+
+        txn.Put(key, data)
+        return nil
+    })
+}
+
+// Delete{{ schema.JSONSchema.GoName }} handles delete replication message.
+func (s *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request HandleRequest) (error) {
+    key := sink.ResourceKey(s.codec, "{{ schema.ID }}", request.PK)
+    s.log.WithFields(logrus.Fields{"key": key}).Debug("Delete {{ schema.JSONSchema.GoName }}")
+    return s.sink.Delete(ctx, key)
+}
+{% endif%}{% endfor %}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}{% for linkTo, reference in schema.References %}
+// Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref handles create replication message on ref table.
+func (s *Service) Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx context.Context, request HandleRequest) error {
+    // TODO(Michal): handle backrefs?
+    from, to, err := request.RefPKs()
+    if err != nil {
+        return err
+    }
+
+    s.log.WithFields(logrus.Fields{"from": from, "to": to}).Debug("Create {{ schema.JSONSchema.GoName }} to {{ reference.GoName }} reference")
+
+    fromKey := sink.ResourceKey(s.codec, "{{ schema.ID }}", from)
+
+    return s.sink.InTransaction(ctx, func(ctx context.Context) error {
+        txn := etcd.GetTxn(ctx)
+        oldFromData := txn.Get(fromKey)
+
+        fromObj := &models.{{schema.JSONSchema.GoName}}{}
+        err = s.codec.Decode(oldFromData, fromObj)
+        if err != nil {
+            return err
+        }
+        fromObj.Add{{ reference.GoName }}Ref(to)
+
+        fromData, err := s.codec.Encode(fromObj)
+        if err != nil {
+            return err
+        }
+
+        txn.Put(fromKey, fromData)
+        return nil
+    })
+}
+
+// Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref handles delete replication message on ref table.
+func (s *Service) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx context.Context, request HandleRequest) error {
+    // TODO(Michal): handle backrefs?
+    from, to, err := request.RefPKs()
+    if err != nil {
+        return err
+    }
+
+    s.log.WithFields(logrus.Fields{"from": from, "to": to}).Debug("Delete {{ schema.JSONSchema.GoName }} to {{ reference.GoName }} reference")
+
+    fromKey := sink.ResourceKey(s.codec, "{{ schema.ID }}", from)
+
+    return s.sink.InTransaction(ctx, func(ctx context.Context) error {
+        txn := etcd.GetTxn(ctx)
+        oldFromData := txn.Get(fromKey)
+
+        fromObj := &models.{{schema.JSONSchema.GoName}}{}
+        err = s.codec.Decode(oldFromData, fromObj)
+        if err != nil {
+            return err
+        }
+
+        fromObj.Remove{{ reference.GoName }}Ref(to)
+
+        fromData, err := s.codec.Encode(fromObj)
+        if err != nil {
+            return err
+        }
+
+        txn.Put(fromKey, fromData)
+        return nil
+    })
+}
+{% endfor %}{% endif %}{% endfor %}
