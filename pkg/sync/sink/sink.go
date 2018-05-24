@@ -1,10 +1,22 @@
 package sink
 
-import "github.com/Juniper/contrail/pkg/db"
+import (
+	"context"
+)
 
 // Sink represents service that handler transfers data to.
 type Sink interface {
-	Create(resourceName string, pk string, obj db.Object) error
-	Update(resourceName string, pk string, obj db.Object) error
-	Delete(resourceName string, pk string) error
+	Put(ctx context.Context, key string, value []byte) error
+	Delete(ctx context.Context, key string) error
+}
+
+type Txn interface {
+	Get(key string) []byte
+	Put(key string, val []byte)
+}
+
+// TxnSink represents Sink with transaction support.
+type TxnSink interface {
+	Sink
+	InTransaction(ctx context.Context, do func(Txn) error) error
 }

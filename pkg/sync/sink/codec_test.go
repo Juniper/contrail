@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCodecUpdate(t *testing.T) {
+func TestUpdateResourceData(t *testing.T) {
 	codecs := []Codec{
-		&JSONCodec{},
+		JSONCodec,
 	}
 
 	tests := []struct {
@@ -59,7 +59,7 @@ func TestCodecUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, codec := range codecs {
 				t.Run(fmt.Sprintf("%T", codec), func(t *testing.T) {
-					result, err := codec.Update(tt.data, tt.obj)
+					result, err := UpdateResourceData(codec, tt.data, tt.obj)
 					if tt.fails {
 						assert.Error(t, err)
 					} else {
