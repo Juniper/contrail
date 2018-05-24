@@ -47,6 +47,7 @@ generate: ## Run the source code generator
 	go fmt github.com/Juniper/contrail/pkg/models
 	go fmt github.com/Juniper/contrail/pkg/services
 	go fmt github.com/Juniper/contrail/pkg/compilationif
+	go fmt github.com/Juniper/contrail/pkg/sync
 	mkdir -p pkg/types/mock
 	mockgen -destination=pkg/types/mock/gen_in_transaction_doer_mock.go -package=typesmock -source pkg/types/service.go InTransactionDoer
 	mkdir -p pkg/services/mock

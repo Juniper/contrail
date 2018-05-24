@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCodecUpdate(t *testing.T) {
+func TestUpdateResourceData(t *testing.T) {
 	codecs := []Codec{
-		&JSONCodec{},
+		JSONCodec,
 	}
 
 	tests := []struct {
@@ -22,7 +22,7 @@ func TestCodecUpdate(t *testing.T) {
 		expected []byte
 		fails    bool
 	}{
-		{name: "empty", fails: true},
+		{name: "empty"},
 		{name: "nil data", obj: models.MakeLogicalInterface(), fails: true},
 		{name: "malformed data", data: []byte("asd"), obj: models.MakeLogicalInterface(), fails: true},
 		{name: "empty data", data: []byte("{}"), obj: models.MakeLogicalInterface(),
@@ -55,11 +55,11 @@ func TestCodecUpdate(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for _, codec := range codecs {
-				t.Run(fmt.Sprintf("%T", codec), func(t *testing.T) {
-					result, err := codec.Update(tt.data, tt.obj)
+	for _, codec := range codecs {
+		t.Run(fmt.Sprintf("%T", codec), func(t *testing.T) {
+			for _, tt := range tests {
+				t.Run(tt.name, func(t *testing.T) {
+					result, err := UpdateResourceData(codec, tt.data, tt.obj)
 					if tt.fails {
 						assert.Error(t, err)
 					} else {

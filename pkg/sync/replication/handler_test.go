@@ -1,6 +1,7 @@
 package replication
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -83,7 +84,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		{
 			name: "correct insert message",
 			initMock: func(m oner) {
-				m.On("Create", "test-resource", "foo", exampleRowData).Return(nil).Once()
+				m.On("Create", mock.Anything, "test-resource", "foo", exampleRowData).Return(nil).Once()
 			},
 			initialRels: &relationSet{1: exampleRelation},
 			message:     pgoutput.Insert{RelationID: 1, Row: exampleRow},
@@ -91,7 +92,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		{
 			name: "correct update message",
 			initMock: func(m oner) {
-				m.On("Update", "test-resource", "foo", exampleRowData).Return(nil).Once()
+				m.On("Update", mock.Anything, "test-resource", "foo", exampleRowData).Return(nil).Once()
 			},
 			initialRels: &relationSet{1: exampleRelation},
 			message:     pgoutput.Update{RelationID: 1, Row: exampleRow},
@@ -99,7 +100,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		{
 			name: "correct delete message",
 			initMock: func(m oner) {
-				m.On("Delete", "test-resource", "foo").Return(nil).Once()
+				m.On("Delete", mock.Anything, "test-resource", "foo", exampleRowData).Return(nil).Once()
 			},
 			initialRels: &relationSet{1: exampleRelation},
 			message:     pgoutput.Delete{RelationID: 1, Row: exampleRow},
@@ -120,7 +121,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 			}
 
 			// when
-			err := h.Handle(tt.message)
+			err := h.Handle(context.Background(), tt.message)
 
 			// then
 			if tt.fails {
@@ -233,7 +234,7 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "sink create fails",
 			initMock: func(m oner) {
-				m.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
+				m.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
 			},
 			action: canal.InsertAction,
 			fails:  true,
@@ -241,9 +242,9 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "insert 3 rows correctly",
 			initMock: func(m oner) {
-				m.On("Create", "test-resource", "foo", exampleRowsData[0]).Return(nil).Once()
-				m.On("Create", "test-resource", "bar", exampleRowsData[1]).Return(nil).Once()
-				m.On("Create", "test-resource", "baz", exampleRowsData[2]).Return(nil).Once()
+				m.On("Create", mock.Anything, "test-resource", "foo", exampleRowsData[0]).Return(nil).Once()
+				m.On("Create", mock.Anything, "test-resource", "bar", exampleRowsData[1]).Return(nil).Once()
+				m.On("Create", mock.Anything, "test-resource", "baz", exampleRowsData[2]).Return(nil).Once()
 			},
 			action: canal.InsertAction,
 			rows:   exampleRows,
@@ -251,7 +252,7 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "sink update fails",
 			initMock: func(m oner) {
-				m.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
+				m.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
 			},
 			action: canal.UpdateAction,
 			fails:  true,
@@ -259,9 +260,9 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "update 3 rows correctly",
 			initMock: func(m oner) {
-				m.On("Update", "test-resource", "foo", exampleRowsData[0]).Return(nil).Once()
-				m.On("Update", "test-resource", "bar", exampleRowsData[1]).Return(nil).Once()
-				m.On("Update", "test-resource", "baz", exampleRowsData[2]).Return(nil).Once()
+				m.On("Update", mock.Anything, "test-resource", "foo", exampleRowsData[0]).Return(nil).Once()
+				m.On("Update", mock.Anything, "test-resource", "bar", exampleRowsData[1]).Return(nil).Once()
+				m.On("Update", mock.Anything, "test-resource", "baz", exampleRowsData[2]).Return(nil).Once()
 			},
 			action: canal.UpdateAction,
 			rows:   exampleRows,
@@ -269,7 +270,7 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "sink delete fails",
 			initMock: func(m oner) {
-				m.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
+				m.On("Delete", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
 			},
 			action: canal.DeleteAction,
 			fails:  true,
@@ -277,9 +278,9 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "delete 3 rows correctly",
 			initMock: func(m oner) {
-				m.On("Delete", "test-resource", "foo").Return(nil).Once()
-				m.On("Delete", "test-resource", "bar").Return(nil).Once()
-				m.On("Delete", "test-resource", "baz").Return(nil).Once()
+				m.On("Delete", mock.Anything, "test-resource", "foo", exampleRowsData[0]).Return(nil).Once()
+				m.On("Delete", mock.Anything, "test-resource", "bar", exampleRowsData[1]).Return(nil).Once()
+				m.On("Delete", mock.Anything, "test-resource", "baz", exampleRowsData[2]).Return(nil).Once()
 			},
 			action: canal.DeleteAction,
 			rows:   exampleRows,
@@ -369,17 +370,17 @@ func newRowSinkMock() *rowSinkMock {
 	return &rowSinkMock{}
 }
 
-func (m *rowSinkMock) Create(resourceName string, pk string, properties map[string]interface{}) error {
-	args := m.Called(resourceName, pk, properties)
+func (m *rowSinkMock) Create(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error {
+	args := m.Called(ctx, resourceName, pk, properties)
 	return args.Error(0)
 }
 
-func (m *rowSinkMock) Update(resourceName string, pk string, properties map[string]interface{}) error {
-	args := m.Called(resourceName, pk, properties)
+func (m *rowSinkMock) Update(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error {
+	args := m.Called(ctx, resourceName, pk, properties)
 	return args.Error(0)
 }
 
-func (m *rowSinkMock) Delete(resourceName string, pk string) error {
-	args := m.Called(resourceName, pk)
+func (m *rowSinkMock) Delete(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error {
+	args := m.Called(ctx, resourceName, pk, properties)
 	return args.Error(0)
 }

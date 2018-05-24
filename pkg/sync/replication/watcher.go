@@ -54,13 +54,15 @@ type PostgresSubscriptionConfig struct {
 type postgresWatcherConnection interface {
 	io.Closer
 	GetReplicationSlot(name string) (lastLSN uint64, snapshotName string, err error)
-	RenewPublication(ctx context.Context, name string) error
 	StartReplication(slot, publication string, startLSN uint64) error
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 	SendStatus(lastLSN uint64) error
 
 	DumpSnapshot(context.Context, db.ObjectWriter, string) error
 }
+
+// PgoutputHandler is function that handles postgres replication message.
+type PgoutputHandler func(context.Context, pgoutput.Message) error
 
 // PostgresWatcher allows subscribing to PostgreSQL logical replication messages.
 type PostgresWatcher struct {
@@ -70,7 +72,7 @@ type PostgresWatcher struct {
 
 	cancel  context.CancelFunc
 	conn    postgresWatcherConnection
-	handler pgoutput.Handler
+	handler PgoutputHandler
 
 	dumpWriter db.ObjectWriter
 
@@ -81,8 +83,7 @@ type PostgresWatcher struct {
 func NewPostgresWatcher(
 	config PostgresSubscriptionConfig,
 	dbs *db.Service, replConn pgxReplicationConn,
-	handler pgoutput.Handler,
-	dumpWriter db.ObjectWriter,
+	handler PgoutputHandler, dumpWriter db.ObjectWriter,
 ) (*PostgresWatcher, error) {
 	conn, err := newPostgresReplicationConnection(dbs, replConn)
 	if err != nil {
@@ -114,11 +115,6 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 
 	w.lastLSN = slotLSN // TODO(Michal): get lastLSN from etcd
 
-	if err := w.conn.RenewPublication(ctx, w.conf.Publication); err != nil {
-		return errors.Wrap(err, "failed to create publication")
-	}
-	w.log.Debug("Created publication: ", w.conf.Publication)
-
 	w.log.Debug("Starting dump phase")
 	dumpStart := time.Now()
 	if err := w.conn.DumpSnapshot(ctx, w.dumpWriter, snapshotName); err != nil {
@@ -131,18 +127,16 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	}
 
 	feed := make(chan *pgx.ReplicationMessage)
-	go w.runMessageConsumer(feed)
+	go w.runMessageConsumer(ctx, feed)
 	return w.runMessageProducer(ctx, feed)
 }
 
-func (w *PostgresWatcher) runMessageConsumer(feed <-chan *pgx.ReplicationMessage) {
-	func() {
-		for msg := range feed {
-			if err := w.handleMessage(msg); err != nil {
-				w.log.Error("Error while handling replication message: ", err)
-			}
+func (w *PostgresWatcher) runMessageConsumer(ctx context.Context, feed <-chan *pgx.ReplicationMessage) {
+	for msg := range feed {
+		if err := w.handleMessage(ctx, msg); err != nil {
+			w.log.Error("Error while handling replication message: ", err)
 		}
-	}()
+	}
 }
 
 func (w *PostgresWatcher) runMessageProducer(ctx context.Context, feed chan<- *pgx.ReplicationMessage) error {
@@ -150,6 +144,7 @@ func (w *PostgresWatcher) runMessageProducer(ctx context.Context, feed chan<- *p
 	for {
 		select {
 		case <-ctx.Done():
+			close(feed)
 			return w.conn.Close()
 		case <-tick:
 			w.log.Debug("Sending standby status with position: ", pgx.FormatLSN(w.lastLSN))
@@ -185,9 +180,9 @@ func (w *PostgresWatcher) waitForMessageWithTimeout(ctx context.Context) (*pgx.R
 	return msg, nil
 }
 
-func (w *PostgresWatcher) handleMessage(msg *pgx.ReplicationMessage) error {
+func (w *PostgresWatcher) handleMessage(ctx context.Context, msg *pgx.ReplicationMessage) error {
 	if msg.WalMessage != nil {
-		if err := w.handleWalMessage(msg.WalMessage); err != nil {
+		if err := w.handleWalMessage(ctx, msg.WalMessage); err != nil {
 			return err
 		}
 	}
@@ -201,7 +196,7 @@ func (w *PostgresWatcher) handleMessage(msg *pgx.ReplicationMessage) error {
 	return nil
 }
 
-func (w *PostgresWatcher) handleWalMessage(msg *pgx.WalMessage) error {
+func (w *PostgresWatcher) handleWalMessage(ctx context.Context, msg *pgx.WalMessage) error {
 	if msg.WalStart > w.lastLSN {
 		w.lastLSN = msg.WalStart
 	}
@@ -211,7 +206,7 @@ func (w *PostgresWatcher) handleWalMessage(msg *pgx.WalMessage) error {
 		return errors.Wrap(err, "invalid pgoutput message")
 	}
 
-	if err := w.handler(logmsg); err != nil {
+	if err := w.handler(ctx, logmsg); err != nil {
 		return errors.Wrap(err, "error handling waldata")
 	}
 

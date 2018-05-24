@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/etcd"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/sync/replication"
 	"github.com/Juniper/contrail/pkg/sync/sink"
@@ -35,7 +36,11 @@ type watchCloser interface {
 type Service struct {
 	etcdClient *clientv3.Client
 	watcher    watchCloser
-	log        *logrus.Entry
+	codec      sink.Codec
+	sink       sink.Sink
+	dbService  *db.Service
+
+	log *logrus.Entry
 }
 
 // NewServiceByFile creates Sync service with configuration from file.
@@ -71,34 +76,15 @@ func NewService() (*Service, error) {
 
 	// Etcd client
 	clientv3.SetLogger(grpclog.NewLoggerV2(ioutil.Discard, os.Stdout, os.Stdout))
-	etcdClient, err := clientv3.New(clientv3.Config{
-		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
-		Username:    viper.GetString("etcd.username"),
-		Password:    viper.GetString("etcd.password"),
-		DialTimeout: viper.GetDuration("etcd.dial_timeout"),
-	})
+	etcdClient, err := etcd.DialByConfig()
 	if err != nil {
 		return nil, err
 	}
 
 	// Etcd sink
-	s := sink.NewETCDSink(etcdClient, &sink.JSONCodec{})
+	codec := sink.JSONCodec
+	s := etcd.NewClient(etcdClient)
 
-	// Replication
-	watcher, err := createWatcher(log, s)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Service{
-		etcdClient: etcdClient,
-		watcher:    watcher,
-		log:        log,
-	}, nil
-}
-
-func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
-	driver := viper.GetString("database.type")
 	sqlDB, err := db.ConnectDB()
 	if err != nil {
 		return nil, err
@@ -108,14 +94,35 @@ func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	rowSink := replication.NewObjectMappingAdapter(s, dbService)
-	objectWriter := sink.NewObjectWriter(s)
 
+	service := &Service{
+		etcdClient: etcdClient,
+		codec:      codec,
+		sink:       s,
+		dbService:  dbService,
+		log:        log,
+	}
+
+	// Replication
+	watcher, err := service.createWatcher(log, s)
+	if err != nil {
+		return nil, err
+	}
+
+	service.watcher = watcher
+
+	return service, nil
+}
+
+func (s *Service) createWatcher(log *logrus.Entry, si sink.Sink) (watchCloser, error) {
+	objectWriter := sink.NewObjectWriter(si)
+
+	driver := viper.GetString("database.type")
 	switch driver {
 	case db.DriverPostgreSQL:
-		return createPostgreSQLWatcher(log, rowSink, dbService, objectWriter)
+		return createPostgreSQLWatcher(log, s, s.dbService, objectWriter)
 	case db.DriverMySQL:
-		return createMySQLWatcher(log, rowSink)
+		return createMySQLWatcher(log, s)
 	default:
 		return nil, errors.New("undefined database type")
 	}
@@ -188,4 +195,36 @@ func (s *Service) Close() {
 	if err := s.etcdClient.Close(); err != nil {
 		s.log.WithField("error", err).Error("Error closing etcd connection")
 	}
+}
+
+func (s *Service) handle(ctx context.Context, r HandleRequest, functions map[string]tableCallback) error {
+	callback, ok := functions[r.SchemaID]
+	if !ok {
+		return fmt.Errorf("invalid table name: %v", r.SchemaID)
+	}
+	return callback(s, ctx, r)
+}
+
+// Create handles INSERT replication message.
+func (s *Service) Create(ctx context.Context, schemaID string, pk string, data map[string]interface{}) error {
+	if err := s.handle(ctx, HandleRequest{SchemaID: schemaID, PK: pk, Data: data}, createFunctions); err != nil {
+		return fmt.Errorf("error handling Create: %v", err)
+	}
+	return nil
+}
+
+// Update handles UPDATE replication message.
+func (s *Service) Update(ctx context.Context, schemaID string, pk string, data map[string]interface{}) error {
+	if err := s.handle(ctx, HandleRequest{SchemaID: schemaID, PK: pk, Data: data}, updateFunctions); err != nil {
+		return fmt.Errorf("error handling Update: %v", err)
+	}
+	return nil
+}
+
+// Delete handles INSERT replication message.
+func (s *Service) Delete(ctx context.Context, schemaID string, pk string, data map[string]interface{}) error {
+	if err := s.handle(ctx, HandleRequest{SchemaID: schemaID, PK: pk, Data: data}, deleteFunctions); err != nil {
+		return fmt.Errorf("error handling Delete: %v", err)
+	}
+	return nil
 }
