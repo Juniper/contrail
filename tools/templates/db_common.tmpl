@@ -19,7 +19,6 @@ func (db *Service) initQueryBuilders() {
 {% endif%}{% endfor %}
 }
 
-
 func (db *Service) dump(ctx context.Context, ow ObjectWriter) error {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     list{{ schema.JSONSchema.GoName }}Request := &models.List{{ schema.JSONSchema.GoName }}Request{&models.ListSpec{}}
@@ -49,3 +48,10 @@ func (db *Service) ScanRow(schemaID string, rowData map[string]interface{}) (Obj
 
     return nil, fmt.Errorf("unknown schemaID: %v", schemaID)
 }
+
+var refTablesLookup = map[string][2]string{
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}{% for linkTo, reference in schema.References %}
+    "ref_{{ schema.ID | lower }}_{{ linkTo | lower }}": {"{{ schema.ID | lower }}", "{{ linkTo | lower }}"},
+{% endfor %}{% endif %}{% endfor %}
+}
+

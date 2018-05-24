@@ -9,9 +9,12 @@ import (
 
 // RowSink is data consumer capable of processing row data.
 type RowSink interface {
-	Create(resourceName string, pk string, properties map[string]interface{}) error
-	Update(resourceName string, pk string, properties map[string]interface{}) error
+	Create(resourceName string, pk string, properties map[string]interface{}) error // TODO change key to interface
+	Update(resourceName string, pk string, properties map[string]interface{}) error // TODO change key to interface
 	Delete(resourceName string, pk string) error
+
+	CreateRef(from, to string, pkFrom, pkTo interface{}) error
+	DeleteRef(from, to string, pkFrom, pkTo interface{}) error
 }
 
 type rowScanner interface {

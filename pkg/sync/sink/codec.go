@@ -14,6 +14,7 @@ import (
 // Codec can encode objects and update encoded data with new data object.
 type Codec interface {
 	Encode(obj db.Object) ([]byte, error)
+	Decode(data []byte) (map[string]interface{}, error)
 	Update(data []byte, obj db.Object) ([]byte, error)
 	Key() string
 }
@@ -24,6 +25,12 @@ type JSONCodec struct{}
 // Encode serializes data to JSON format.
 func (j *JSONCodec) Encode(obj db.Object) ([]byte, error) {
 	return json.Marshal(obj)
+}
+
+// Decode deserializes data to map[string]interface{}.
+func (j *JSONCodec) Decode(data []byte) (dict map[string]interface{}, err error) {
+	err = json.Unmarshal(data, &dict)
+	return dict, err
 }
 
 // Update updates JSON-encoded data with obj field values and returns serialized output.
@@ -54,6 +61,6 @@ func (j *JSONCodec) Key() string {
 	return "json"
 }
 
-func resourceKey(c Codec, resourceName, pk string) string {
-	return path.Join(c.Key(), resourceName, pk)
+func resourceKey(c Codec, resourceName, pk interface{}) string {
+	return path.Join(c.Key(), fmt.Sprint(resourceName), fmt.Sprint(pk))
 }

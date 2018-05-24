@@ -194,3 +194,11 @@ func ConnectDB() (*sql.DB, error) {
 	}
 	return nil, fmt.Errorf("failed to open db connection")
 }
+
+func ResolveRefTables(refSchemaID string) (from, to string, ok bool) {
+	tables, ok := refTablesLookup[refSchemaID]
+	if !ok {
+		return "", "", false
+	}
+	return tables[0], tables[1], ok
+}
