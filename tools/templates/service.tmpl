@@ -59,6 +59,11 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     model.Perms2 = &models.PermType2{}
     model.Perms2.Owner = auth.ProjectID()
 
+    err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
+    if err != nil{
+        return nil, echo.NewHTTPError(http.StatusBadRequest, err)
+    }
+
     return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 

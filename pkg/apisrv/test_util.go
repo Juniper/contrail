@@ -179,9 +179,9 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 		client := clients[clientID]
 		// delete existing resources.
 		log.Debug(cleanTask["path"])
-		_, err := client.Delete(cleanTask["path"], nil) // nolint
-		if err != nil {
-			log.Debug(err)
+		response, err := client.Delete(cleanTask["path"], nil) // nolint
+		if err != nil && response.StatusCode != 404 {
+			log.Debug("")
 		}
 	}
 	for _, task := range testScenario.Workflow {
