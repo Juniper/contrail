@@ -21,6 +21,9 @@ test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin"]
     uuid: admin_project_uuid
+    quota:
+      virtual_router: 1
+    parent_type: project
   all_in_one_node: &all_in_one_node
     fq_name: ["default", "admin", "all_in_one_node"]
     uuid: all_in_one_node_uuid
@@ -82,7 +85,7 @@ test_data:
     orchestrator: openstack
     default_gateway: 127.0.0.254
     ntp_server: 10.1.1.100
-    encap_priority: VXLANMPLSoUDPMPLSoGRE
+    encap_priority: VXLAN,MPLSoUDP,MPLSoGRE
     openstack_cluster_refs:
       - uuid: test_openstack_cluster_uuid
     {% if CONTROL_NODES %}

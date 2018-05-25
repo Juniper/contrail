@@ -16,6 +16,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/serviceif"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
@@ -48,7 +49,8 @@ func NewServer() (*Server, error) {
 func (s *Server) SetupService() serviceif.Service {
 	var serviceChain []serviceif.Service
 	service := &services.ContrailService{
-		BaseService: serviceif.BaseService{},
+		BaseService:   serviceif.BaseService{},
+		TypeValidator: models.TypeValidatorWithFormat(),
 	}
 
 	serviceChain = append(serviceChain, service)
