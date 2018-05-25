@@ -64,7 +64,6 @@ schema:
       - vhd
       - vhdx
       - vmdk
-      - raw
       - qcow2
       - vdi
       - ploop
