@@ -1,7 +1,10 @@
 - type: type
   template_path: model.tmpl
   output_path: pkg/models/gen___resource__.go
-- type: all 
+- type: all
+  template_path: type_validation.tmpl
+  output_path: pkg/models/gen_validation.go
+- type: all
   template_path: event_encoding.tmpl
   output_path: pkg/services/gen_event_encoding.go
 - type: all

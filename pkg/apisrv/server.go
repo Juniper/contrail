@@ -16,6 +16,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
 
@@ -43,10 +44,17 @@ func NewServer() (*Server, error) {
 //SetupService setup service.
 //Application with custom logics can embed server struct, and overwrite
 //this method.
-func (s *Server) SetupService() services.Service {
+func (s *Server) SetupService() (services.Service, error) {
 	var serviceChain []services.Service
+
+	tv, err := models.NewTypeValidatorWithFormat()
+	if err != nil {
+		return nil, err
+	}
+
 	service := &services.ContrailService{
-		BaseService: services.BaseService{},
+		BaseService:   services.BaseService{},
+		TypeValidator: tv,
 	}
 
 	serviceChain = append(serviceChain, service)
@@ -72,7 +80,7 @@ func (s *Server) SetupService() services.Service {
 
 	services.Chain(serviceChain)
 
-	return service
+	return service, nil
 }
 
 func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
@@ -96,7 +104,10 @@ func (s *Server) Init() (err error) {
 		return err
 	}
 
-	service := s.SetupService()
+	service, err := s.SetupService()
+	if err != nil {
+		return err
+	}
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
