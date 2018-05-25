@@ -8,6 +8,9 @@ test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin_test_sync"]
     uuid: admin_project_uuid_test_sync
+    quota:
+      virtual_router: 1
+    parent_type: project
   network_policy1: &network_policy1
     fq_name: ["default", "admin_test_sync", "policy1"]
     uuid: network_policy_uuid_test_sync
@@ -15,7 +18,7 @@ test_data:
     parent_uuid: admin_project_uuid_test_sync
     network_policy_entries:
       policy_rule:
-        - direction: "<"
+        - direction: ">"
           protocol: tcp
           rule_sequence:
             major: 4

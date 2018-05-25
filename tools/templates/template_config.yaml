@@ -23,6 +23,9 @@
   template_path: service_common.tmpl
   output_path: pkg/services/gen_common.go
 - type: all
+  template_path: type_validation.tmpl
+  output_path: pkg/models/gen_validation.go
+- type: all
   template_path: serviceif.tmpl
   output_path: pkg/serviceif/gen_serviceif.go
 - type: all
