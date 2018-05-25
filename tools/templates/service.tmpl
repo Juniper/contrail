@@ -59,7 +59,25 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     model.Perms2 = &models.PermType2{}
     model.Perms2.Owner = auth.ProjectID()
 
+    service.ValidateCreate{{ schema.JSONSchema.GoName }}(request)
+
     return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (service *ContrailService) ValidateCreate{{ schema.JSONSchema.GoName }} (request *models.Create{{ schema.JSONSchema.GoName }}Request) error {    
+    {# Validate properties #}
+
+    {% for name, pdef in schema.JSONSchema.Properties %}
+        {% if pdef.Presence == "required" %}
+        {
+            err := service.TypeValidator.Validate{{ pdef.GoName }}(request.{{ schema.JSONSchema.GoName }}.{{ pdef.GoName }})
+            if err != nil{
+                return err
+            }
+        }
+        {% endif %}
+    {% endfor %}
+    return nil
 }
 
 //RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST Update request.

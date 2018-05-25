@@ -6,6 +6,7 @@ import (
     "github.com/labstack/echo"
     "github.com/Juniper/contrail/pkg/common"
     "github.com/Juniper/contrail/pkg/serviceif"
+    "github.com/Juniper/contrail/pkg/models"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -13,6 +14,7 @@ import (
 // nolint
 type ContrailService struct {
     serviceif.BaseService
+    TypeValidator models.TypeValidator
 }
 
 //RESTSync handle a bluk Create REST service.
