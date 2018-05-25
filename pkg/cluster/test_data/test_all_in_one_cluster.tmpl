@@ -23,6 +23,7 @@ test_data:
     uuid: admin_project_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
   all_in_one_node: &all_in_one_node
     fq_name: ["default", "admin", "all_in_one_node"]
     uuid: all_in_one_node_uuid
@@ -87,7 +88,7 @@ test_data:
     orchestrator: openstack
     default_gateway: 127.0.0.254
     ntp_server: 10.1.1.100
-    encap_priority: VXLANMPLSoUDPMPLSoGRE
+    encap_priority: VXLAN,MPLSoUDP,MPLSoGRE
     openstack_cluster_refs:
       - uuid: test_openstack_cluster_uuid
     {% if CONTROL_NODES %}
