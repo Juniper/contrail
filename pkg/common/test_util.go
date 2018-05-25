@@ -153,13 +153,13 @@ func CheckDiff(path string, expected, actual interface{}) error {
 	return nil
 }
 
-func logDiff(expected, actual interface{}) {
+func logDiff(actual, expected interface{}) {
 	log.Debug("expected")
 	out, err := yaml.Marshal(expected)
-	log.Debug(string(out), err)
+	fmt.Print(string(out), err)
 	log.Debug("actual")
 	out, err = yaml.Marshal(actual)
-	log.Debug(string(out), err)
+	fmt.Print(string(out), err)
 }
 
 //AssertEqual test if it is correct

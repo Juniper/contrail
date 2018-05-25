@@ -88,7 +88,7 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 				continue
 			}
 			output, err :=
-				tpl.Execute(pongo2.Context{"schema": schema})
+				tpl.Execute(pongo2.Context{"schema": schema, "types": api.Types})
 			if err != nil {
 				return err
 			}

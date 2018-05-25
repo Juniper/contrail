@@ -135,15 +135,15 @@ type JSONSchema struct {
 	SQL               string                 `yaml:"sql" json:"-"`
 	Default           interface{}            `yaml:"default" json:"default,omitempty"`
 	Operation         string                 `yaml:"operation" json:"-"`
-	Presence          string                 `yaml:"presence" json:"-"`
+	Presence          string                 `yaml:"presence" json:"presence,omitempty"`
 	Type              string                 `yaml:"type" json:"type,omitempty"`
 	Permission        []string               `yaml:"permission" json:"permission,omitempty"`
 	Properties        map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
 	PropertiesOrder   []string               `yaml:"-" json:"propertiesOrder,omitempty"`
 	OrderedProperties []*JSONSchema          `yaml:"-" json:"-"`
 	Enum              []string               `yaml:"enum" json:"enum,omitempty"`
-	Minimum           interface{}            `yaml:"minimum" json:"minimum,omitempty"`
 	Maximum           interface{}            `yaml:"maximum" json:"maximum,omitempty"`
+	Minimum           interface{}            `yaml:"minimum" json:"minimum,omitempty"`
 	Ref               string                 `yaml:"$ref" json:"-"`
 	CollectionType    string                 `yaml:"-" json:"-"`
 	Items             *JSONSchema            `yaml:"items" json:"items,omitempty"`
@@ -152,6 +152,7 @@ type JSONSchema struct {
 	ProtoType         string                 `yaml:"-" json:"-"`
 	Required          []string               `yaml:"required" json:"-"`
 	GoPremitive       bool                   `yaml:"-" json:"-"`
+	Format            string                 `yaml:"format" json:"format,omitempty"`
 }
 
 //String makes string format for json schema
@@ -209,6 +210,7 @@ func (s *JSONSchema) Copy() *JSONSchema {
 		Ref:         s.Ref,
 		Permission:  s.Permission,
 		Operation:   s.Operation,
+		Format:      s.Format,
 		Type:        s.Type,
 		Presence:    s.Presence,
 		Required:    s.Required,
@@ -243,6 +245,9 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 	if s.Operation == "" {
 		s.Operation = s2.Operation
+	}
+	if s.Format == "" {
+		s.Format = s2.Format
 	}
 	if s.Presence == "" {
 		s.Presence = s2.Presence

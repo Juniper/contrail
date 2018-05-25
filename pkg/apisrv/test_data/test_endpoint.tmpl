@@ -11,6 +11,8 @@ test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin"]
     uuid: admin_project_uuid
+    quota: {}
+    parent_type: project
   {{ cluster_name }}: &{{ cluster_name }}
     fq_name: ["default", "admin", "{{ cluster_name }}"]
     uuid: {{ cluster_name }}_uuid
