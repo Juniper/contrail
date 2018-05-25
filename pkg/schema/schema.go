@@ -140,7 +140,7 @@ type JSONSchema struct {
 	SQL               string                 `yaml:"sql" json:"-"`
 	Default           interface{}            `yaml:"default" json:"default,omitempty"`
 	Operation         string                 `yaml:"operation" json:"-"`
-	Presence          string                 `yaml:"presence" json:"-"`
+	Presence          string                 `yaml:"presence" json:"presence,omitempty"`
 	Type              string                 `yaml:"type" json:"type,omitempty"`
 	Permission        []string               `yaml:"permission" json:"permission,omitempty"`
 	Properties        map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
@@ -157,6 +157,7 @@ type JSONSchema struct {
 	ProtoType         string                 `yaml:"-" json:"-"`
 	Required          []string               `yaml:"required" json:"-"`
 	GoPremitive       bool                   `yaml:"-" json:"-"`
+	Format            string                 `yaml:"format" json:"format,omitempty"`
 }
 
 //String makes string format for json schema
@@ -214,6 +215,7 @@ func (s *JSONSchema) Copy() *JSONSchema {
 		Ref:         s.Ref,
 		Permission:  s.Permission,
 		Operation:   s.Operation,
+		Format:      s.Format,
 		Type:        s.Type,
 		Presence:    s.Presence,
 		Required:    s.Required,
@@ -248,6 +250,9 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 	if s.Operation == "" {
 		s.Operation = s2.Operation
+	}
+	if s.Format == "" {
+		s.Format = s2.Format
 	}
 	if s.Presence == "" {
 		s.Presence = s2.Presence

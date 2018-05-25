@@ -3,6 +3,7 @@ package services
 import (
 	"net/http"
 
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 )
@@ -10,6 +11,7 @@ import (
 // nolint
 type ContrailService struct {
 	BaseService
+	TypeValidator *models.TypeValidator
 }
 
 //RESTSync handle a bluk Create REST service.
