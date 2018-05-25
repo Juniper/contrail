@@ -1,0 +1,124 @@
+package models
+
+import (
+    "fmt"
+    "strings"
+)
+
+//DefaultValidator implementing basic checks
+type DefaultValidator struct {
+
+}
+
+//TypeValidator embedding default validator
+type TypeValidator struct {
+    DefaultValidator
+}
+
+// Returns array of map keys
+func mapKeys(m map[string]struct{} ) (keys []string) {
+	for s := range m {
+		keys = append(keys, s)
+	}
+	return
+}
+
+{% macro checkRequired(id) %} {
+	return fmt.Errorf("{{id}} property is missing")
+}
+{% endmacro %}
+
+{% macro checkProperty(jsonSchema, variableName)%}
+	{% if jsonSchema.Type == "string" %}
+		{# Check format #}
+		{% if jsonSchema.Format != "" %}
+		// Format validation for value
+		fmt.Println({{variableName}})
+		{% endif %}
+
+		{# Create restrictions map #}
+		{% if jsonSchema.Enum|length > 0 %}
+		_, present := restrictions[{{variableName}}]
+
+		if !present {
+			return fmt.Errorf("{{jsonSchema.ID}}: value must be one of [%s]", strings.Join(mapKeys(restrictions), ", "))
+		}
+		{% endif %}
+	{% elif jsonSchema.Type == "integer" %}
+		{% if jsonSchema.Maximum != nil %}
+		if {{variableName}} > {{jsonSchema.Maximum}} {
+			return fmt.Errorf("{{jsonSchema.ID}}: value must be smaller or equal to {{jsonSchema.Maximum}}")
+		}
+		{% endif %}
+		{% if jsonSchema.Minimum != nil %}
+		if {{variableName}} < {{jsonSchema.Minimum}} {
+			return fmt.Errorf("{{jsonSchema.ID}}: value must be greater or equal to {{jsonSchema.Minimum}}")
+		}
+		{% endif %}
+	{% elif jsonSchema.Type == "object" %}
+		dv.Validate{{ jsonSchema.GoType }}({{variableName}})
+	{% endif %}
+{% endmacro %}
+
+{% for type, definition in types %}
+{% if definition.Type == "object" %}
+//Validate{{ type }} default validation
+// nolint
+func (dv * DefaultValidator) Validate{{ type }}( obj * {{ type }}) error {
+	{% for property, pdef in definition.Properties %}
+		{# Check required properties first. #}
+		{% if pdef.Presence == "required" or pdef.Presence == "true" %}
+			{% if pdef.Type == "string" %}
+				if obj.{{pdef.GoName}} == "" {{checkRequired(pdef.ID)}}
+			{% elif pdef.Type == "integer" or pdef.Type == "number" %}
+				if obj.{{pdef.GoName}} == 0 {{checkRequired(pdef.ID)}}
+			{% elif pdef.Type == "boolean" %}
+				if obj.{{pdef.GoName}} == false {{checkRequired(pdef.ID)}}
+			{% elif pdef.Type == "object" or pdef.Type == "array" %}
+				if obj.{{pdef.GoName}} == nil {{checkRequired(pdef.ID)}}
+			{% endif %}
+		{% endif %}
+
+		{# In case of array we need to know definitions of objects stored in this array #}
+		{% if pdef.Type == "array" %}
+			{% set jsonSchema = pdef.Items %}
+		{% else %}
+			{% set jsonSchema = pdef %}
+		{% endif %}
+
+		{# Here we checked whether validation is needed #}
+		{% if jsonSchema.Type == "string" and (jsonSchema.Enum|length > 0 or jsonSchema.Format != "") %}
+			{% set validateProperty = true %}
+		{% elif jsonSchema.Type == "integer" and (jsonSchema.Maximum != nil or jsonSchema.Minimum != nil) %}
+			{% set validateProperty = true %}
+		{% elif jsonSchema.Type == "object" %}
+			{% set validateProperty = true %}
+		{% else %}
+			{% set validateProperty = false %}
+		{% endif %}
+
+		{# Here validation occurs #}
+		{% if validateProperty %}
+		{
+			{# If the string has defined restrictions, create map for checking them #}
+			{% if jsonSchema.Type == "string" and jsonSchema.Enum|length > 0 %}
+				restrictions := map[string]struct {} {
+					{% for restriction in jsonSchema.Enum %}
+					"{{restriction}}": {},
+					{% endfor %}
+				}
+			{% endif %}
+
+			{% if pdef.Type == "array" %}
+				for _, value := range obj.{{pdef.GoName}} {
+					{{checkProperty(jsonSchema, "value")}}
+				}
+			{% else %}
+				{{checkProperty(jsonSchema, "obj."|add:pdef.GoName)}}
+			{% endif %}
+		}
+		{% endif %}
+	{% endfor %}
+	return nil
+}{% endif %}
+{% endfor %}
