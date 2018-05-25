@@ -1,0 +1,172 @@
+package models
+
+import (
+    "fmt"
+    "strings"
+	errors "github.com/pkg/errors"
+)
+
+{# This macro is used to improve readability as braces has to be in the same line as if statement #}
+{% macro reportMissingProperty(id) %} {
+	return fmt.Errorf("{{id}} property is missing")
+}
+{% endmacro %}
+
+{# Validates properties of type: #}
+{# - string (format, enum) #}
+{# - integer, number (minimum, maximum value) #}
+{# - complex types (calls proper Validate<typename> method) #}
+{% macro validateProperty(jsonSchema, variableName) %}
+	{# validate string property #}
+	{% if jsonSchema.Type == "string" %}
+		{# Check format #}
+		if {{variableName}} != "" {
+		{% if jsonSchema.Format != "" %}
+			fv, err := sv.getFormatValidator("{{jsonSchema.Format}}")
+			if err != nil {
+				return err
+			}
+			err = fv({{variableName}})
+			if err != nil {
+				return err
+			}
+		{% endif %}
+
+		{# Create restrictions map #}
+		{% if jsonSchema.Enum|length > 0 %}
+		_, present := restrictions[{{variableName}}]
+
+		if !present {
+			return fmt.Errorf("{{jsonSchema.ID}} value (%s) must be one of [%s]", {{variableName}}, strings.Join(mapKeys(restrictions), ", "))
+		}
+		{% endif %}
+		}
+	{# validate integer property #}
+	{% elif jsonSchema.Type == "integer" or jsonSchema.Type == "number" %}
+		{% if jsonSchema.Maximum != nil %}
+		if {{variableName}} > {{jsonSchema.Maximum}} {
+			return fmt.Errorf("{{jsonSchema.ID}} value (%f) must be smaller or equal to {{jsonSchema.Maximum}}", {{variableName}})
+		}
+		{% endif %}
+		{% if jsonSchema.Minimum != nil %}
+		if {{variableName}} < {{jsonSchema.Minimum}} {
+			return fmt.Errorf("{{jsonSchema.ID}} value (%f) must be greater or equal to {{jsonSchema.Minimum}}", {{variableName}})
+		}
+		{% endif %}
+	{% elif jsonSchema.Type == "object" %}
+		if {{variableName}} != nil {
+			err := sv.Validate{{ jsonSchema.GoType }}({{variableName}})
+
+			if err != nil {
+				return err
+			}
+		}
+	{% endif %}
+{% endmacro %}
+
+{% macro validateProperties(properties) %}
+	{% for property, pdef in properties %}
+		{# Check required properties first. #}
+		{% if pdef.Presence == "required" %}
+			{% if pdef.Type == "string" %}
+				if obj.{{pdef.GoName}} == "" {{reportMissingProperty(pdef.ID)}}
+			{% elif pdef.Type == "integer" or pdef.Type == "number" %}
+				if obj.{{pdef.GoName}} == 0 {{reportMissingProperty(pdef.ID)}}
+			{% elif pdef.Type == "boolean" %}
+				if obj.{{pdef.GoName}} == false {{reportMissingProperty(pdef.ID)}}
+			{% elif pdef.Type == "object" or pdef.Type == "array" %}
+				if obj.{{pdef.GoName}} == nil {{reportMissingProperty(pdef.ID)}}
+			{% endif %}
+		{% endif %}
+
+		{# In case of array we need to know definitions of objects stored in this array #}
+		{% if pdef.Type == "array" %}
+			{% set jsonSchema = pdef.Items %}
+		{% else %}
+			{% set jsonSchema = pdef %}
+		{% endif %}
+
+		{# Check whether validation is needed #}
+		{% if jsonSchema.Type == "string" and (jsonSchema.Enum|length > 0 or jsonSchema.Format != "") %}
+			{% set validationRequired = true %}
+		{% elif jsonSchema.Type == "integer" and (jsonSchema.Maximum != nil or jsonSchema.Minimum != nil) %}
+			{% set validationRequired = true %}
+		{% elif jsonSchema.Type == "object" %}
+			{% set validationRequired = true %}
+		{% else %}
+			{% set validationRequired = false %}
+		{% endif %}
+
+		{# Here validation occurs #}
+		{% if validationRequired %}
+		{
+			{# If the string has defined restrictions, create map for checking them #}
+			{% if jsonSchema.Type == "string" and jsonSchema.Enum|length > 0 %}
+				restrictions := map[string]struct {} {
+					{% for restriction in jsonSchema.Enum %}
+					{% autoescape off %}
+					"{{restriction}}": {},
+					{% endautoescape %}
+					{% endfor %}
+				}
+			{% endif %}
+
+			{% if pdef.Type == "array" %}
+				for _, value := range obj.{{pdef.GoName}} {
+					{{ validateProperty(jsonSchema, "value") }}
+				}
+			{% else %}
+				{{ validateProperty(jsonSchema, "obj."|add:pdef.GoName) }}
+			{% endif %}
+		}
+		{% endif %}
+	{% endfor %}
+{% endmacro %}
+
+{% for type, definition in types %}
+{% if definition.Type == "object" %}
+//Validate{{ type }} validation based on information in schema
+// nolint
+func (sv * SchemaValidator) Validate{{ type }}( obj * {{ type }}) error {
+	{{validateProperties(definition.Properties)}}
+	return nil
+}{% endif %}
+{% endfor %}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+//Validate{{ schema.JSONSchema.GoName }} validation based on information in schema
+// nolint
+func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ schema.JSONSchema.GoName }}) error {
+	//Validate Properties
+	{{validateProperties(schema.JSONSchema.Properties)}}
+	//Validate References
+	{% for linkTo, reference in schema.References %}
+		{% if reference.Presence == "required" %}
+			if len(obj.{{ reference.GoName }}Refs) == 0 {
+				return fmt.Errorf("reference to {{ linkTo }} is missing for {{schema.ID}}")
+			}
+		{% endif %}
+		{% if reference.RefType %}
+		for _, r := range obj.{{ reference.GoName }}Refs {
+			if r.Attr != nil {
+				err := sv.Validate{{reference.RefType}}(r.Attr)
+				if err != nil {
+					return errors.Wrapf(err, "Bad {{ linkTo }} reference attributes, reference UUID: %s", obj.UUID)
+				}
+			}
+		}
+		{% endif %}
+	{% endfor %}
+
+	// if client gave parent_type of config-root, ignore and remove
+	if obj.ParentType == "config-root" {
+		obj.ParentType = ""
+	}
+	// if obj.ParentType != "" {
+		// TODO verify parent exists
+	// }
+
+	// TODO Validate perms on references
+
+	return nil
+}{% endif %}{% endfor %}
