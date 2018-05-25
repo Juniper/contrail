@@ -2,8 +2,8 @@ resources:
 - type: project
   body:
     admin_project:
-    fq_name: ["default", "admin"]
-    uuid: admin_project_uuid
+      fq_name: ["default", "admin"]
+      uuid: admin_project_uuid
 - type: network-policy
   body:
     fq_name: ["default", "admin", "policy1"]
