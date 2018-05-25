@@ -36,6 +36,7 @@ func (s mapSlice) getString(key string) string {
 
 func (s mapSlice) getInt(key string) int {
 	i := s.get(key)
+
 	result, _ := i.(int)
 	return result
 }
@@ -73,14 +74,15 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 		SQL:             s.getString("sql"),
 		Default:         s.get("default"),
 		Enum:            s.getStringSlice("enum"),
-		Minimum:         s.getInt("minimum"),
-		Maximum:         s.getInt("maximum"),
+		Minimum:         s.get("minimum"),
+		Maximum:         s.get("maximum"),
 		Ref:             s.getString("$ref"),
 		Permission:      s.getStringSlice("permission"),
 		Operation:       s.getString("operation"),
 		Type:            s.getString("type"),
 		Presence:        s.getString("presence"),
 		Description:     s.getString("description"),
+		Format:          s.getString("format"),
 		Properties:      map[string]*JSONSchema{},
 		PropertiesOrder: properties.keys(),
 	}
