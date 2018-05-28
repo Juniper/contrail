@@ -27,7 +27,7 @@ test_data:
     fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool"]
     uuid: "test_floating_ip_pool"
     display_name: "test_floating_ip_pool"
-    parent_type: "virtual-network"
+    parent_type: "virtual_network"
     parent_uuid: "vn_floating_blue"
     floating_ip_pool_subnets:
       subnet_uuid:
@@ -37,7 +37,7 @@ test_data:
     fq_name: ["default", "admin", "vn_floating_blue", "floating_ip_pool_without_subnets"]
     uuid: "test_floating_ip_pool_without_subnets"
     display_name: "test_floating_ip_pool_without_subnets"
-    parent_type: "virtual-network"
+    parent_type: "virtual_network"
     parent_uuid: "vn_floating_blue"
 
 clients:
