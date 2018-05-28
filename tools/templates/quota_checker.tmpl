@@ -1,0 +1,88 @@
+{% autoescape off %}
+package services
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/Juniper/contrail/pkg/models"
+	//"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/serviceif"
+	log "github.com/sirupsen/logrus"
+)
+
+type QuotaCheckerService struct {
+	serviceif.BaseService
+	db serviceif.Service
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %} {% set ThisID = schema.ID %}
+{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
+{% if QuotaDef %}
+func (svc QuotaCheckerService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+	projectID, err := svc.GetResourceProject(ctx, request.{{ schema.JSONSchema.GoName }})
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving Project for {{ schema.JSONSchema.GoName }} with UUID %v: %v", request.{{ schema.JSONSchema.GoName }}.GetUUID(), err)
+	}
+	project, err := svc.db.GetProject(ctx, &models.GetProjectRequest{ ID: projectID })
+	log.Infof("[Create] Checking quota for {{ schema.JSONSchema.GoName }}(%v) in project %v", request.{{ schema.JSONSchema.GoName }}.GetUUID(), project.Project.DisplayName)
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving Project with UUID %v: %v", projectID, err)
+	}
+	// TODO (k.renczewski): Count create resources in project and check against quota
+	if svc.Next == nil {
+		return nil, nil
+	}
+	return svc.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (svc QuotaCheckerService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+	projectID, err := svc.GetResourceProject(ctx, request.{{ schema.JSONSchema.GoName }})
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving Project for {{ schema.JSONSchema.GoName }} with UUID %v: %v", request.{{ schema.JSONSchema.GoName }}.GetUUID(), err)
+	}
+	project, err := svc.db.GetProject(ctx, &models.GetProjectRequest{ ID: projectID })
+	log.Infof("[Update] Checking quota for {{ schema.JSONSchema.GoName }}(%v) in project %v", request.{{ schema.JSONSchema.GoName }}.GetUUID(), project.Project.DisplayName)
+	// TODO (k.renczewski): Count create resources in project and check against quota
+	return svc.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+
+	if svc.Next == nil {
+		return nil, nil
+	}
+	return svc.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+{% else %}// Type {{ schema.JSONSchema.GoName }} is not under quota{% endif %}
+
+{% endif %}{% endfor %}
+
+type ChildObject interface {
+	GetUUID() string
+	GetParentUUID() string
+}
+
+{# {% if parents %} #}
+// GetResourceProject retrieves project UUID for given object (if possible)
+func (svc QuotaCheckerService) GetResourceProject(ctx context.Context, obj ChildObject) (uuid string, err error) {
+	{% if name == "Project" %}return obj.GetUUID()
+	{% else %}{% for ptype, pdef in parents %}if obj.GetParentType() == "{{ ptype }}" {
+		{% if ptype == "project" %}return obj.GetParentUUID(), nil{% else %}parent := obj.GetParentUUID(){% endif %}
+		parentREsp, err := svc.db.Get{{ pdef.GoName }}(ctx, &Get{{ pdef.GoName }}Request{
+			ID: parent,
+		})
+		if err != nil {
+			return "", fmt.Errorf("Error retrieving parent for object {{ name }} with uuid %v: %v", obj.GetUUID(), err)
+		}
+		return svc.GetResourceProject(ctx, parentREsp.{{ pdef.GoName }})
+	}
+	{% endfor %}
+	return "", fmt.Errorf("No 'Project' for type {{ name }} for object with UUID: %v", obj.GetUUID()){%endif%}
+}
+{# {% else %} #}
+/*
+// GetResourceProject for object without parent returns always error
+func (obj {{ name }}) GetResourceProject(ctx context.Context, obj ChildObject) (uuid string, err error) {
+	return "", fmt.Errorf("Resource type {{ name }} is orphan - no Parent type")
+}*/
+{# {% endif %} #}
+
+{% endautoescape %}
