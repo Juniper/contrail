@@ -57,6 +57,8 @@ func (s *Server) SetupService() services.Service {
 		DB:             s.dbService,
 		AddressManager: s.dbService,
 	})
+	quotaService := services.NewQuotaCheckerService(s.dbService)
+	serviceChain = append(serviceChain, &quotaService)
 	if viper.GetBool("server.notify_etcd") {
 		etcdNotifierServers := viper.GetStringSlice("etcd.endpoints")
 		etcdNotifierPath := viper.GetString("etcd.path")
