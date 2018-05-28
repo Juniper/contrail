@@ -3,6 +3,7 @@ package types
 import (
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/serviceif"
+	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
 const (
@@ -13,5 +14,6 @@ const (
 //ContrailTypeLogicService is a service for implementing type specific logic
 type ContrailTypeLogicService struct {
 	serviceif.BaseService
-	DB *db.Service
+	DB             *db.Service
+	AddressManager ipam.AddressManager
 }
