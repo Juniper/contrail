@@ -16,6 +16,11 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+func TestQuotaChecking(t *testing.T) {
+	CreateTestProject(APIServer, "TestAPIServer")
+	RunTest(t, "./test_data/test_quota_checking.yml")
+}
+
 func TestVirtualNetwork(t *testing.T) {
 	CreateTestProject(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_virtual_network.yml")
