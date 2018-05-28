@@ -1,0 +1,122 @@
+name: Quota checking test
+description: checking for quota overflow for all resources managed by QuotaTye
+cleanup:
+  - path: /project/uuid_proj_blue
+  - path: /project/uuid_proj_green
+  - path: /virtual-network/uuid_vn_blue_spock1
+  - path: /virtual-network/uuid_vn_blue_spock2
+  - path: /virtual-network/uuid_vn_blue_spock3
+  - path: /virtual-network/uuid_vn_green_spock
+
+test_data:
+  proj_blue: &proj_blue
+    fq_name: ["default", "blue"]
+    uuid: uuid_proj_blue
+  proj_green: &proj_green
+    fq_name: ["default", "green"]
+    uuid: uuid_proj_green
+  spocknet_blue1: &spocknet_blue1
+    fq_name: ["default", "blue", "spocknet1"]
+    uuid: uuid_vn_blue_spock1
+  spocknet_blue2: &spocknet_blue2
+    fq_name: ["default", "blue", "spocknet2"]
+    uuid: uuid_vn_blue_spock2
+  spocknet_blue3: &spocknet_blue3
+    fq_name: ["default", "blue", "spocknet3"]
+    uuid: uuid_vn_blue_spock3
+  spocknet_green: &spocknet_green
+    fq_name: ["default", "green", "spocknet"]
+    uuid: uuid_vn_green_spock
+clients:
+  default:
+    id: spock
+    password: spockpass
+    domain: default
+    insecure: true
+    quota:
+    scope:
+      project:
+        name: blue
+  spock2:
+    id: spock2
+    password: spockpass2
+    domain: default
+    insecure: true
+    quota:
+    scope:
+      project:
+        name: blue
+  lizard:
+    id: lizard
+    password: lizarpass
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: green
+workflow:
+
+# First create all necessary object for single project and most simple test case (quota should be 0)
+  - name: create project blue
+    request:
+      path: /projects
+      method: POST
+      expected:
+        - 201
+      data:
+        project: *proj_blue
+    expect:
+      project: *proj_blue
+  - name: create virtual_network
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 201
+      data:
+        virtual-network: *spocknet_blue1
+    expect:
+      virtual-network: *spocknet_blue1
+  - name: delete virtual_network to start again with clean situation
+    request:
+      path: /virtual-network/uuid_vn_blue_spock1
+      method: DELETE
+      expected:
+        - 204
+    expect: null
+
+# Then set quota to 1 and create network again (first success, second fail)
+  - name: create quota for single virtual network (update blue)
+    request:
+      path: /project/uuid_proj_blue
+      method: PUT
+      expected:
+        - 200
+      data:
+        project:
+          fq_name: ["default", "blue"]
+          uuid: uuid_proj_blue
+          quota:
+            virtual_network: 1
+    expect: null
+  - name: create virtual_network
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 201
+      data:
+        virtual-network: *spocknet_blue1
+    expect:
+      virtual-network: *spocknet_blue1
+  - name: create virtual_network again
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 400
+        - 406
+      data:
+        virtual-network: *spocknet_blue2
+    expect: null
+
