@@ -67,6 +67,8 @@ func (s *Server) SetupService() (services.Service, error) {
 		AddressManager:   s.dbService,
 		IntPoolAllocator: s.dbService,
 	})
+	quotaService := services.NewQuotaCheckerService(s.dbService)
+	serviceChain = append(serviceChain, &quotaService)
 
 	// EtcdNotifier
 	if viper.GetBool("server.notify_etcd") {
