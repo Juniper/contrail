@@ -1,7 +1,11 @@
+{% autoescape off %}
 package models
 
 import (
-    "github.com/Juniper/contrail/pkg/common"
+	//"context"
+	//"fmt"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 //To skip import error.
@@ -116,3 +120,4 @@ func InterfaceTo{{ name }}Slice(i interface{}) []{% if type.Properties %}*{% end
 
 {% endif %}
 
+{% endautoescape %}

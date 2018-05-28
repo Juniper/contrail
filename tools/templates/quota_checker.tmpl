@@ -1,0 +1,89 @@
+{% autoescape off %}
+package services
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/Juniper/contrail/pkg/models"
+	//"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/serviceif"
+	log "github.com/sirupsen/logrus"
+)
+
+type BaseQuotaCheckerService struct {
+	serviceif.BaseService
+	db serviceif.Service
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %} {% set ThisID = schema.ID %}
+{% set name = schema.JSONSchema.GoName %}
+{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
+{% if QuotaDef %}
+
+func (svc BaseQuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *models.{{ name }}) error {
+	projectID, err := svc.GetProjectFor{{ name }}(ctx, obj)
+	if err != nil {
+		return fmt.Errorf("Error retrieving Project for {{ name }} with UUID %v: %v", obj.GetUUID(), err)
+	}
+	project, err := svc.db.GetProject(ctx, &models.GetProjectRequest{ ID: projectID })
+	log.Infof("[Create] Checking quota for {{ name }}(%v) in project %v", obj.GetUUID(), project.Project.DisplayName)
+	if err != nil {
+		return fmt.Errorf("Error retrieving Project with UUID %v: %v", projectID, err)
+	}
+	// TODO (k.renczewski): Count create resources in project and check against quota
+	count, err := svc.Count{{ name }}(ctx, obj, project.Project)
+
+	return nil
+}
+
+func (svc BaseQuotaCheckerService) Count{{ name }}(ctx context.Context, obj *models.{{ name }}, prj *models.Project) (int, error) {
+	return 0, nil
+}
+
+func (svc BaseQuotaCheckerService) Create{{ name }}(ctx context.Context, request *models.Create{{ name }}Request) (*models.Create{{ name }}Response, error) {
+	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
+		return nil, err
+	}
+	if svc.Next == nil {
+		return nil, nil
+	}
+	return svc.Next().Create{{ name }}(ctx, request)
+}
+
+func (svc BaseQuotaCheckerService) Update{{ name }}(ctx context.Context, request *models.Update{{ name }}Request) (*models.Update{{ name }}Response, error) {
+	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
+		return nil, err
+	}
+	if svc.Next == nil {
+		return nil, nil
+	}
+	return svc.Next().Update{{ name }}(ctx, request)
+}
+{% else %}// Type {{ name }} is not under quota{% endif %}
+
+{% if schema.Parents|length > 1 %}
+// GetProjectFor{{ name }} retrieves project UUID for given {{ name }} object (if possible) // Parents count: {{ schema.Parents|length }};
+func (svc BaseQuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
+	{% if name == "Project" %}return obj.GetUUID()
+	{% else %}{% for ptype, pdef in schema.Parents %}if obj.GetParentType() == "{{ ptype }}" {
+		{% if ptype == "project" %}return obj.GetParentUUID(), nil{% else %}parent := obj.GetParentUUID()
+		parentResp, err := svc.db.Get{{ pdef.GoName }}(ctx, &models.Get{{ pdef.GoName }}Request{ ID: parent, })
+		if err != nil {
+			return "", fmt.Errorf("Error retrieving parent for object {{ name }} with uuid %v: %v", obj.GetUUID(), err)
+		}
+		return svc.GetProjectFor{{ pdef.GoName }}(ctx, parentResp.{{ pdef.GoName }}){% endif %}
+	}
+	{% endfor %}
+	return "", fmt.Errorf("No 'Project' for type {{ name }} for object with UUID: %v", obj.GetUUID()){%endif%}
+}
+{% else %}
+// GetProjectFor{{ name }} for object without parent returns always error
+func (svc BaseQuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
+	return "", fmt.Errorf("Resource type {{ name }} is orphan - no Parent type")
+}
+{% endif %}
+
+{% endif %}{% endfor %}
+
+{% endautoescape %}
