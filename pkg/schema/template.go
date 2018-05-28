@@ -138,6 +138,18 @@ func LoadTemplates(path string) ([]*TemplateConfig, error) {
 
 //ApplyTemplates applies templates and generate codes.
 func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig) error {
+
+	// Make custom filters available for everyone
+
+	/* When called like this: {{ dict_value|dict_get_JSONSchema_by_string_key:key_var }}
+	then: dict_value is here as `in' variable and key_var is here as `param'
+	This is needed to obtain value from map with a key in variable (not as a hardcoded string)
+	*/
+	pongo2.RegisterFilter("dict_get_JSONSchema_by_string_key", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+		m := in.Interface().(map[string]*JSONSchema)
+		return pongo2.AsValue(m[param.String()]), nil
+	})
+
 	for _, templateConfig := range config {
 		err := templateConfig.apply(templateBase, api)
 		if err != nil {
