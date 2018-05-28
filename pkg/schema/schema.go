@@ -120,6 +120,7 @@ type Schema struct {
 	DefinitionsSlice map[string]yaml.MapSlice  `yaml:"definitions" json:"-"`
 	Extends          []string                  `yaml:"extends" json:"extends,omitempty"`
 	Columns          ColumnConfigs             `yaml:"-" json:"-"`
+	TypeName         string                    `yaml:"-" json:"-"`
 	Path             string                    `yaml:"-" json:"-"`
 	PluralPath       string                    `yaml:"-" json:"-"`
 	Children         []*BackReference          `yaml:"-" json:"-"`
@@ -657,7 +658,8 @@ func MakeAPI(dir string) (*API, error) {
 		for key, definitionSlice := range schema.DefinitionsSlice {
 			schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
 		}
-		schema.Path = strings.Replace(schema.ID, "_", "-", -1)
+		schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
+		schema.Path = schema.TypeName
 		schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
 		schema.BackReferences = map[string]*BackReference{}
 		if schema.ID != "" {
