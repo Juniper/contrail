@@ -27,8 +27,12 @@ check: ## Check vendored dependencies
 lint: ## Run gometalinter on the source code
 	./tools/lint.sh
 
+COVERPROFILE ?= "-coverprofile=profile.tmp"
+fasttest: COVERPROFILE = none
+fasttest: test
+
 test: ## Run go test with race and coverage args
-	./tools/test.sh
+	./tools/test.sh $(COVERPROFILE)
 
 build: ## Run go build
 	go build ./cmd/...

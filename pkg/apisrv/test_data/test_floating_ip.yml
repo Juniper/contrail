@@ -8,6 +8,7 @@ cleanup:
 - path: /network-ipam/test_ipam
 - path: /project/admin_floating_project_uuid
 - path: /network-ipam/test_ipam_blue
+- path: /floating-ip-pool/test_floating_ip_pool_without_subnets
 - path: /floating-ip/test_floating_ip
 - path: /floating-ip-pool/test_floating_ip_pool
 test_data:

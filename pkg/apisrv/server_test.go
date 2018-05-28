@@ -16,14 +16,19 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+func TestFloatingIP(t *testing.T) {
+	CreateTestProject(APIServer, "TestAPIServer")
+	RunTest(t, "./test_data/test_floating_ip.yml")
+}
+
 func TestVirtualNetwork(t *testing.T) {
 	CreateTestProject(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
-func TestFloatingIP(t *testing.T) {
+func TestQuotaChecking(t *testing.T) {
 	CreateTestProject(APIServer, "TestAPIServer")
-	RunTest(t, "./test_data/test_floating_ip.yml")
+	RunTest(t, "./test_data/test_quota_checking.yml")
 }
 
 func TestSync(t *testing.T) {

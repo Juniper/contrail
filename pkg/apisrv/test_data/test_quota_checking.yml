@@ -1,0 +1,235 @@
+name: Quota checking test
+description: Checking for quota overflow for all resources managed by QuotaTye
+cleanup:
+  - path: /project/uuid_proj_blue
+  - path: /project/uuid_proj_green
+  - path: /virtual-network/uuid_vn_blue_spock1
+  - path: /virtual-network/uuid_vn_blue_spock2
+  - path: /virtual-network/uuid_vn_blue_spock3
+  - path: /virtual-network/uuid_vn_green_spock
+  - path: /security-group/uuid_secgrp_blue1
+  - path: /security-group/uuid_secgrp_blue2
+  - path: /security-group/uuid_secgrp_green
+  - path: /network-ipam/uuid_ipam_magic
+
+test_data:
+  proj_blue: &proj_blue
+    fq_name: ["default", "blue"]
+    uuid: uuid_proj_blue
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+  proj_green: &proj_green
+    fq_name: ["default", "green"]
+    uuid: uuid_proj_green
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+  network_ipam_magic_blue: &network_ipam_magic_blue
+    uuid: uuid_ipam_magic_blue
+    parent_type: project
+    parent_uuid: uuid_proj_blue
+    fq_name: ["default", "blue", "magic"]
+  network_ipam_magic_green: &network_ipam_magic_green
+    uuid: uuid_ipam_magic_green
+    parent_type: project
+    parent_uuid: uuid_proj_green
+    fq_name: ["default", "green", "magic"]
+  spocknet_blue1: &spocknet_blue1
+    fq_name: ["default", "blue", "spocknet1"]
+    uuid: uuid_vn_blue_spock1
+    parent_type: project
+    parent_uuid: uuid_proj_blue
+    network_ipam_refs:
+      - uuid: uuid_ipam_magic_blue
+  spocknet_blue2: &spocknet_blue2
+    fq_name: ["default", "blue", "spocknet2"]
+    uuid: uuid_vn_blue_spock2
+    parent_type: project
+    parent_uuid: uuid_proj_blue
+    network_ipam_refs:
+      - uuid: uuid_ipam_magic_blue
+  spocknet_blue3: &spocknet_blue3
+    fq_name: ["default", "blue", "spocknet3"]
+    uuid: uuid_vn_blue_spock3
+    parent_type: project
+    parent_uuid: uuid_proj_blue
+    network_ipam_refs:
+      - uuid: uuid_ipam_magic_blue
+  spocknet_green: &spocknet_green
+    fq_name: ["default", "green", "spocknet"]
+    uuid: uuid_vn_green_spock
+    parent_type: project
+    parent_uuid: uuid_proj_green
+    network_ipam_refs:
+      - uuid: uuid_ipam_magic_green
+  secgrp_blue1: &secgrp_blue1
+    fq_name: ["default", "blue", "spockgrp1"]
+    uuid: uuid_secgrp_blue1
+    parent_type: project
+    parent_uuid: uuid_proj_blue
+    perms2:
+      owner: admin
+    security_group_id: 8000000
+    security_group_entries: {}
+  secgrp_blue2: &secgrp_blue2
+    fq_name: ["default", "blue", "spockgrp2"]
+    uuid: uuid_secgrp_blue2
+    parent_type: project
+    parent_uuid: uuid_proj_blue
+    perms2:
+      owner: admin
+    security_group_id: 8000001
+    security_group_entries: {}
+  secgrp_green: &secgrp_green
+    fq_name: ["default", "green", "spockgrp"]
+    uuid: uuid_secgrp_green
+    parent_type: project
+    parent_uuid: uuid_proj_green
+    perms2:
+      owner: admin
+    security_group_id: 8000002
+    security_group_entries: {}
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+
+# First create all necessary object for single project and most simple test case (quota should be 0)
+  - name: create project blue
+    request:
+      path: /projects
+      method: POST
+      expected:
+        - 201
+      data:
+        project: *proj_blue
+    expect:
+      project: *proj_blue
+  - name: create ipam blue
+    request:
+      path: /network-ipams
+      method: POST
+      expected:
+        - 201
+      data:
+        network-ipam: *network_ipam_magic_blue
+    expect:
+      network-ipam: *network_ipam_magic_blue
+  - name: create virtual_network blue
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 201
+      data:
+        virtual-network: *spocknet_blue1
+    expect:
+      virtual-network: *spocknet_blue1
+  - name: delete virtual_network to start again with clean situation
+    request:
+      path: /virtual-network/uuid_vn_blue_spock1
+      method: DELETE
+      expected:
+        - 204
+    expect: null
+
+# Then set quota to 1 and create network again (first success, second fail)
+  - name: create quota for single virtual network (update blue)
+    request:
+      path: /project/uuid_proj_blue
+      method: PUT
+      expected:
+        - 200
+      data:
+        project:
+          fq_name: ["default", "blue"]
+          uuid: uuid_proj_blue
+          quota:
+            virtual_network: 1
+    expect: null
+  - name: create virtual_network blue (again)
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 201
+      data:
+        virtual-network: *spocknet_blue1
+    expect:
+      virtual-network: *spocknet_blue1
+
+
+# Disabled due to missing backref from project to - waiting for patches
+#
+#  - name: create virtual_network blue2
+#    request:
+#      path: /virtual-networks
+#      method: POST
+#      expected:
+#        - 400
+#        - 406
+#      data:
+#        virtual-network: *spocknet_blue2
+#    expect: null
+#  - name: Verify virtal_network blue2 is not created
+#    request:
+#      path: /virtual-network/uuid_vn_blue_spock2
+#      method: GET
+#      expected: 404
+#    expect: null
+
+# Another set of tests for security group
+  - name: create security_group blue 1
+    request:
+      path: /security-groups
+      method: POST
+      expected:
+        - 201
+      data:
+        security-group: *secgrp_blue1
+    expect:
+      security-group: *secgrp_blue1
+  - name: update quota for security_group
+    request:
+      path: /project/uuid_proj_blue
+      method: PUT
+      expected:
+        - 200
+      data:
+        project:
+          uuid: uuid_proj_blue
+          quota:
+            security_group: 1
+    expect: null
+# Disabled due to missing backref from project to - waiting for patches
+#  - name: create security_group blue 2
+#    request:
+#      path: /security-groups
+#      method: POST
+#      expected:
+#        - 400
+#        - 406
+#      data:
+#        security-group: *secgrp_blue2
+#    expect:
+#      null
+
+# IPAM green not used yet
+#  - name: create ipam green
+#    request:
+#      path: /network-ipams
+#      method: POST
+#      expected:
+#        - 201
+#      data:
+#        network-ipam: *network_ipam_magic_green
+#    expect:
+#      network-ipam: *network_ipam_magic_green
