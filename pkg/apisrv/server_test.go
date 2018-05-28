@@ -19,6 +19,7 @@ import (
 func TestAPIServer(t *testing.T) {
 	CreateTestProject(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_virtual_network.yml")
+	RunTest(t, "./test_data/test_floating_ip.yml")
 }
 
 func TestSync(t *testing.T) {
