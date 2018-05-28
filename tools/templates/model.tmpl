@@ -114,5 +114,12 @@ func InterfaceTo{{ name }}Slice(i interface{}) []{% if type.Properties %}*{% end
     return result
 }
 
+{% if typename %}
+// TypeName returns name of resource type.
+func (m *{{ name }}) TypeName() string {
+	return "{{ typename }}"
+}
+{% endif %}
+
 {% endif %}
 

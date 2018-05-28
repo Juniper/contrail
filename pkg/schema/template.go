@@ -66,10 +66,11 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
-			typeName := schema.JSONSchema.GoName
+			goName := schema.JSONSchema.GoName
 			typeDef := schema.JSONSchema
+			typeName := schema.TypeName
 			output, err :=
-				tpl.Execute(pongo2.Context{"type": typeDef, "name": typeName,
+				tpl.Execute(pongo2.Context{"type": typeDef, "typename": typeName, "name": goName,
 					"references": schema.References, "parents": schema.Parents, "children": schema.Children})
 			if err != nil {
 				return err
