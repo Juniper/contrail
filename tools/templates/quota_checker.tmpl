@@ -1,0 +1,40 @@
+{% autoescape off %}
+package services
+
+import (
+	//"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/serviceif"
+	log "github.com/sirupsen/logrus"
+)
+
+type QuoteCheckerService struct {
+	base serviceif.BaseService
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %} {% set ThisID = schema.ID %}
+{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
+{% if QuotaDef %}
+func (service *BaseService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
+	projectID := request.{{ schema.JSONSchema.GoName }}.GetProject()
+	project, err := service.DB.GetProject(ctx, &models.GetProjectRequest{ ID: projectID })
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving Project with UUID %v: %v", projectID, err)
+	}
+	// TODO (k.renczewski): Count create resources in project and check against quota
+	if service.next == nil {
+		return nil, nil
+	}
+	return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *BaseService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Update{{ schema.JSONSchema.GoName }}Request) (*models.Update{{ schema.JSONSchema.GoName }}Response, error) {
+	if service.next == nil {
+		return nil, nil
+	}
+	// TODO (k.renczewski): Count create resources in project and check against quota
+	return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+{% else %}// Type {{ schema.JSONSchema.GoName }} is not under quota{% endif %}
+
+{% endif %}{% endfor %}
+{% endautoescape %}

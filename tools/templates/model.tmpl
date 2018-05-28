@@ -1,3 +1,4 @@
+{% autoescape off %}
 package models
 
 import (
@@ -114,5 +115,30 @@ func InterfaceTo{{ name }}Slice(i interface{}) []{% if type.Properties %}*{% end
     return result
 }
 
+{% if parents %}
+// GetProject retrieves project UUID for given object (if possible)
+func (obj {{ name }}) GetProject(ctx context.Context) (uuid string, err error) {
+	{% if name == "Project" %}return obj.GetUUID()
+	{% else %}{% for ptype, pdef in parents %}if obj.GetParentType() == "{{ ptype }}" {
+		{% if ptype == "project" %}return obj.GetParentUUID(), nil{% else %}parent := obj.GetParentUUID(){% endif %}
+		parentREsp, err := service.DB.Get{{ pdef.GoName }}(ctx, &models.Get{{ pdef.GoName }}Request{
+			ID: parent,
+		})
+		if err != nil {
+			return "", fmt.Errorf("Error retrieving parent for object {{ name }} with uuid %v: %v", obj.GetUUID(), err)
+		}
+		return parentREsp.{{ pdef.GoName }}.GetProject(ctx)
+	}
+	{% endfor %}
+	return "", fmt.Errorf("No 'Project' for type {{ name }} for object with UUID: %v", obj.GetUUID()){%endif%}
+}
+{% else %}
+// GetProject for object without parent returns always error
+func (obj {{ name }}) GetProject(ctx context.Context) (uuid string, err error) {
+	return "", fmt.Errorf("Resource type {{ name }} is orphan - no Parent type")
+}
 {% endif %}
 
+{% endif %}
+
+{% endautoescape %}
