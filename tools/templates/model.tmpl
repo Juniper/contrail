@@ -1,7 +1,11 @@
+{% autoescape off %}
 package models
 
 import (
-    "github.com/Juniper/contrail/pkg/common"
+	//"context"
+	//"fmt"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 {% for t in types %}
@@ -192,3 +196,4 @@ func InterfaceTo{{ name }}Slice(i interface{}) []{% if type.Properties %}*{% end
 {% endif %}
 
 {% endfor %}
+{% endautoescape %}
