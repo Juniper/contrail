@@ -1,7 +1,11 @@
+{% autoescape off %}
 package models
 
 import (
-    "github.com/Juniper/contrail/pkg/common"
+	//"context"
+	//"fmt"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 //To skip import error.
@@ -123,3 +127,4 @@ func (m *{{ name }}) TypeName() string {
 
 {% endif %}
 
+{% endautoescape %}
