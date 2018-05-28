@@ -1,0 +1,244 @@
+name: Floating IP Test
+description:  basic floating ip test
+cleanup:
+- path: /project/admin_project_uuid
+- path: /virtual-network/vn_blue
+- path: /virtual-network/vn_test_ref
+- path: /network-ipam/test_ipam
+- path: /floating-ip/test_floating_ip
+- path: /floating-ip-pool/test_floating_ip_pool
+
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin"]
+    uuid: admin_project_uuid
+
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin", "vn_blue"]
+    uuid: vn_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    route_target_list:
+      route_target: ["100:200"]
+
+  floating_ip_pool: &floating_ip_pool
+    fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool"]
+    uuid: "test_floating_ip_pool"
+    display_name: "test_floating_ip_pool"
+    parent_type: "virtual-network"
+    parent_uuid: "vn_blue"
+    floating_ip_pool_subnets:
+      subnet_uuid:
+        - "subnet1"
+
+  floating_ip_pool_without_subnets: &floating_ip_pool_without_subnets
+    fq_name: ["default", "admin", "vn_blue", "floating_ip_pool_without_subnets"]
+    uuid: "test_floating_ip_pool_without_subnets"
+    display_name: "test_floating_ip_pool_without_subnets"
+    parent_type: "virtual-network"
+    parent_uuid: "vn_blue"
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 201
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+
+- name: create network ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 201
+    data:
+      network-ipam:
+        network_ipam_mgmt:
+          host_routes:
+            route:
+              - prefix: "test_prefix"
+                next_hop: "1.2.3.5"
+        ipam_subnets:
+          subnets:
+            - subnet_uuid: subnet1
+              subnet:
+                ip_prefix: "10.0.0.0"
+                ip_prefix_len: 24
+        uuid: test_ipam
+        display_name: test_ipam
+        parent_type: project
+        parent_uuid: admin_project_uuid
+        fq_name: ["domain","admin","test_ipam"]
+  expect: null
+
+- name: create virtual network ref
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 201
+    data:
+      virtual-network:
+        fq_name: ["default", "admin", "vn_test_ref"]
+        uuid: "vn_test_ref"
+        display_name: "vn_test_ref"
+        parent_type: "project"
+        parent_uuid: "admin_project_uuid"
+        network_ipam_refs:
+          - uuid: "test_ipam"
+            to: ["domain","admin","test_ipam"]
+            attr:
+              host_routes:
+                route:
+                  - prefix: "test_prefix"
+                    next_hop: "1.2.3.5"
+  expect: null
+
+- name: create floating ip pool
+  request:
+    path: /floating-ip-pools
+    method: POST
+    expected:
+    - 201
+    data:
+      floating-ip-pool: *floating_ip_pool
+  expect: null
+
+- name: create floating ip pool without subnets
+  request:
+    path: /floating-ip-pools
+    method: POST
+    expected:
+    - 201
+    data:
+      floating-ip-pool: *floating_ip_pool_without_subnets
+  expect: null
+
+- name: create floating ip
+  request:
+    path: /floating-ips
+    method: POST
+    expected:
+    - 201
+    data:
+      floating-ip:
+        fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool", "test_floating_ip"]
+        uuid: "test_floating_ip"
+        display_name: "floating_ip_pool"
+        parent_type: "floating-ip-pool"
+        parent_uuid: "test_floating_ip_pool"
+        floating_ip_address: "10.0.0.1"
+  expect:
+    floating-ip:
+      fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool", "test_floating_ip"]
+      uuid: "test_floating_ip"
+      display_name: "floating_ip_pool"
+      parent_type: "floating-ip-pool"
+      parent_uuid: "test_floating_ip_pool"
+      floating_ip_address: "10.0.0.1"
+
+- name: create floating ip on pool without subnets
+  request:
+    path: /floating-ips
+    method: POST
+    expected:
+    - 201
+    data:
+      floating-ip:
+        fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool", "test_floating_ip_without_subnets"]
+        uuid: "test_floating_ip_without_subnets"
+        display_name: "floating_ip_pool"
+        parent_type: "floating-ip-pool"
+        parent_uuid: "test_floating_ip_pool_without_subnets"
+        floating_ip_address: "10.0.0.2"
+  expect:
+    floating-ip:
+      fq_name: ["default", "admin", "vn_blue", "test_floating_ip_pool", "test_floating_ip_without_subnets"]
+      uuid: "test_floating_ip_without_subnets"
+      display_name: "floating_ip_pool"
+      parent_type: "floating-ip-pool"
+      parent_uuid: "test_floating_ip_pool_without_subnets"
+      floating_ip_address: "10.0.0.2"
+
+- name: delete floating ip
+  request:
+    path: /floating-ip/test_floating_ip
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+
+- name: delete floating ip
+  request:
+    path: /floating-ip/test_floating_ip_without_subnets
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+
+- name: delete floating ip pool
+  request:
+    path: /floating-ip-pool/test_floating_ip_pool
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+
+- name: delete floating ip pool
+  request:
+    path: /floating-ip-pool/test_floating_ip_pool_without_subnets
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+
+- name: delete virtual network ref
+  request:
+    path: /virtual-network/vn_test_ref
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+
+- name: delete network ipam
+  request:
+    path: /network-ipam/test_ipam
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/vn_blue
+    method: DELETE
+    expected:
+    - 204
+  expect: null
