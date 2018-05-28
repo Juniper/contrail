@@ -9,6 +9,7 @@ cleanup:
 - path: /network-policy/network_policy_uuid2
   client: bob
 - path: /routing-instance/ri_uuid
+- path: /project/demo_project_uuid
 test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin"]
@@ -92,7 +93,7 @@ clients:
       project:
         name: demo
 workflow:
-- name: create project
+- name: create project admin
   request:
     path: /projects
     method: POST
@@ -102,7 +103,19 @@ workflow:
       project: *admin_project
   expect:
     project: *admin_project
-- name: create project
+- name: Cleanup project demo (just in case)
+  client: bob
+  request:
+    path: /prject/demo_project_uuid
+    method: DELETE
+    expected:
+      - 204
+    data:
+      project: *demo_project
+  expect:
+    null
+- name: create project demo
+  client: bob
   request:
     path: /projects
     method: POST
@@ -112,7 +125,7 @@ workflow:
       project: *demo_project
   expect:
     project: *demo_project
-- name: create network policy
+- name: create network policy 1
   request:
     path: /network-policys
     method: POST
@@ -128,7 +141,7 @@ workflow:
       parent_uuid: admin_project_uuid
       perms2:
         owner: admin
-- name: create network policy
+- name: create network policy 2
   client: bob
   request:
     path: /network-policys
