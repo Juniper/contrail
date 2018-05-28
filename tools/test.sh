@@ -14,6 +14,7 @@ do
     go test -parallel 1 -covermode=atomic -coverprofile=profile.tmp .
     result=$?
     if [ $result -ne 0 ]; then
+        rm -f ./profile.tmp
         echo "failed"
         exit $result
     fi

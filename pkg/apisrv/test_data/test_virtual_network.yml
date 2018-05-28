@@ -96,7 +96,7 @@ clients:
       project:
         name: demo
 workflow:
-- name: create project
+- name: create project admin
   request:
     path: /projects
     method: POST
@@ -106,7 +106,8 @@ workflow:
       project: *admin_project
   expect:
     project: *admin_project
-- name: create project
+- name: create project demo
+  client: bob
   request:
     path: /projects
     method: POST
@@ -116,7 +117,7 @@ workflow:
       project: *demo_project
   expect:
     project: *demo_project
-- name: create network policy
+- name: create network policy 1
   request:
     path: /network-policys
     method: POST
@@ -132,7 +133,7 @@ workflow:
       parent_uuid: admin_project_uuid
       perms2:
         owner: admin
-- name: create network policy
+- name: create network policy 2
   client: bob
   request:
     path: /network-policys

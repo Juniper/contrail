@@ -171,7 +171,7 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 		assert.NoError(t, err, "client failed to login")
 	}
 	for _, cleanTask := range testScenario.Cleanup {
-		fmt.Println(cleanTask)
+		log.Debugf("CLEAN TASK -> %v", cleanTask)
 		clientID := cleanTask["client"]
 		if clientID == "" {
 			clientID = "default"
@@ -184,6 +184,7 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 			log.Debug(err)
 		}
 	}
+	log.Info("CLEANUP COMPETE! Starting test sequence...")
 	for _, task := range testScenario.Workflow {
 		log.Debug("[Step] ", task.Name)
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
@@ -193,13 +194,15 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 		}
 		client := clients[clientID]
 		_, err := client.DoRequest(task.Request)
-		assert.NoError(t, err, fmt.Sprintf("task %v failed", task))
+		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
-		ok := common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("task %v failed", task))
+		ok := common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("In test scenaio '%v' task' %v' failed", testScenario.Name, task))
 		if !ok {
+			log.Errorf("Assertion error was: %+v", err)
 			break
 		}
 	}
+	log.Info("TEST SEQUENCE COMPLETE!")
 }
 
 func newWellKnownListener(serve string) net.Listener {
