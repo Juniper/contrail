@@ -98,7 +98,7 @@ workflow:
   expect:
     virtual-networks:
     - *vn_blue
-- name: create project
+- name: sync create project, policy, and network
   request:
     path: /sync
     method: POST
@@ -137,3 +137,28 @@ workflow:
   expect:
     virtual-networks:
     - *vn_blue2
+- name: sync delete network, policy and project
+  request:
+    path: /sync
+    method: POST
+    expected:
+    - 201
+    data:
+      resources:
+      - kind: virtual_network
+        data: *vn_blue2
+        operation: DELETE
+      - kind: network_policy
+        data: *network_policy1
+        operation: DELETE
+      - kind: project
+        data:
+          uuid: admin_project_uuid_test_sync
+        operation: DELETE
+  expect:
+    - kind: network_policy
+      data: network_policy_uuid_test_sync
+    - kind: virtual_network
+      data: vn_blue_test_sync
+    - kind: project
+      data: admin_project_uuid_test_sync
