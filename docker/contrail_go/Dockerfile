@@ -16,8 +16,7 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
         git \
         ansible \
         docker \
-        python-pip \
-        && pip install --upgrade pip
+        python-pip
 
 EXPOSE 9091
 WORKDIR /etc/contrail
