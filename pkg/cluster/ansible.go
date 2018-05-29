@@ -217,21 +217,11 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	return nil
 }
 
-func (a *ansibleProvisioner) playBook() error {
-	repoDir := a.getAnsibleRepoDir()
+func (a *ansibleProvisioner) play(ansibleArgs []string) error {
 	cmdline := "ansible-playbook"
-	args := []string{"-i", "inventory/", "-e",
-		"config_file=" + a.getInstanceFile(),
-		"-e orchestrator=" + a.clusterData.clusterInfo.Orchestrator}
-	if a.cluster.config.AnsibleSudoPass != "" {
-		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
-		args = append(args, sudoArg)
-	}
-	args = append(args, defaultInstanceProvPlay)
-
-	a.log.Infof("Playing instance provisioning playbook: %s %s",
-		cmdline, strings.Join(args, " "))
-	cmd := exec.Command(cmdline, args...)
+	a.log.Infof("Playing playbook: %s %s",
+		cmdline, strings.Join(ansibleAargs, " "))
+	cmd := exec.Command(cmdline, ansibleArgs...)
 	cmd.Dir = repoDir
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -252,61 +242,54 @@ func (a *ansibleProvisioner) playBook() error {
 	if err = cmd.Wait(); err != nil {
 		return err
 	}
-	a.log.Info("Instance provisioning play completed")
+	a.log.Infof("Finished playing playbook: %s %s",
+		cmdline, strings.Join(ansibleAargs, " "))
+}
 
+func (a *ansibleProvisioner) playBook() error {
+	repoDir := a.getAnsibleRepoDir()
+	args := []string{"-i", "inventory/", "-e",
+		"config_file=" + a.getInstanceFile(),
+		"-e orchestrator=" + a.clusterData.clusterInfo.Orchestrator}
+	if a.cluster.config.AnsibleSudoPass != "" {
+		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
+		args = append(args, sudoArg)
+	}
+	// play instances provisioning playbook
+	args = append(args, defaultInstanceProvPlay)
+	err := a.play(args)
+	if err != nil {
+		return err
+	}
+
+	// play instances configuration playbook
 	args = args[:len(args)-1]
 	args = append(args, defaultInstanceConfPlay)
-	a.log.Infof("Playing instance configuration playbook: %s %s",
-		cmdline, strings.Join(args, " "))
-	cmd = exec.Command(cmdline, args...)
-	cmd.Dir = repoDir
-	stdout, err = cmd.StdoutPipe()
+	err = a.play(args)
 	if err != nil {
 		return err
 	}
-	stderr, err = cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-	if err = cmd.Start(); err != nil {
-		return err
-	}
 
-	// Report progress log periodically to stdout/db
-	go a.reporter.reportLog(stdout)
-	go a.reporter.reportLog(stderr)
-
-	if err = cmd.Wait(); err != nil {
-		return err
-	}
-	a.log.Info("Instance configuration play completed")
-
+	// play orchestrator provisioning playbook
 	args = args[:len(args)-1]
-	args = append(args, defaultClusterProvPlay)
-	a.log.Infof("Playing contrail cluster provisioning playbook: %s %s",
-		cmdline, strings.Join(args, " "))
-	cmd = exec.Command(cmdline, args...)
-	cmd.Dir = repoDir
-	stdout, err = cmd.StdoutPipe()
+	switch a.clusterData.clusterInfo.Orchestrator {
+	case "openstack":
+		args = append(args, defaultOpenstackProvPlay)
+	case "kubernetes":
+		args = append(args, defaultKubernetesProvPlay)
+	}
+	err = a.play(args)
 	if err != nil {
 		return err
 	}
-	stderr, err = cmd.StderrPipe()
+
+	// play contrail provisioning playbook
+	args = args[:len(args)-1]
+	args = append(args, defaultContrailProvPlay)
+	err = a.play(args)
 	if err != nil {
 		return err
 	}
-	if err = cmd.Start(); err != nil {
-		return err
-	}
-
-	// Report progress log periodically to stdout/db
-	go a.reporter.reportLog(stdout)
-	go a.reporter.reportLog(stderr)
-
-	if err = cmd.Wait(); err != nil {
-		return err
-	}
-	a.log.Info("Instance configuration play completed")
 	return nil
 }
 
