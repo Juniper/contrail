@@ -46,6 +46,9 @@ message {{ schema.JSONSchema.GoName }} {
     {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}"]; // {{ property.Description }}{% endfor %}
 {% for linkTo, reference in schema.References %}
     repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs"];// {{ reference.Description }} {% endfor %}
+{% for _, backref in schema.BackReferences %}
+    {% set linkTo = backref.LinkTo %}
+    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_backrefs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs"]; // {{ backref.Description }} {% endfor %}
 {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
     repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s"]; // {{ backref.Description }} {% endfor %}

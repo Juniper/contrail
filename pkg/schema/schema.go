@@ -16,6 +16,8 @@ import (
 //Version is version for schema format.
 var Version = "1.0"
 
+var indexRange = 1000
+
 // Available type values.
 const (
 	AbstractType = "abstract"
@@ -100,26 +102,27 @@ func (c ColumnConfigs) shortenColumn() {
 
 //Schema represents a data model
 type Schema struct {
-	FileName         string                   `yaml:"-" json:"-"`
-	ID               string                   `yaml:"id" json:"id,omitempty"`
-	Plural           string                   `yaml:"plural" json:"plural,omitempty"`
-	Type             string                   `yaml:"type" json:"type,omitempty"`
-	Title            string                   `yaml:"title" json:"title,omitempty"`
-	Description      string                   `yaml:"description" json:"description,omitempty"`
-	Parents          map[string]*Reference    `yaml:"-" json:"parents,omitempty"`
-	ParentsSlice     yaml.MapSlice            `yaml:"parents" json:"-"`
-	References       map[string]*Reference    `yaml:"-" json:"references,omitempty"`
-	ReferencesSlice  yaml.MapSlice            `yaml:"references" json:"-"`
-	Prefix           string                   `yaml:"prefix" json:"prefix,omitempty"`
-	JSONSchema       *JSONSchema              `yaml:"-" json:"schema,omitempty"`
-	JSONSchemaSlice  yaml.MapSlice            `yaml:"schema" json:"-"`
-	Definitions      map[string]*JSONSchema   `yaml:"-" json:"-"`
-	DefinitionsSlice map[string]yaml.MapSlice `yaml:"definitions" json:"-"`
-	Extends          []string                 `yaml:"extends" json:"extends,omitempty"`
-	Columns          ColumnConfigs            `yaml:"-" json:"-"`
-	Path             string                   `yaml:"-" json:"-"`
-	PluralPath       string                   `yaml:"-" json:"-"`
-	Children         []*BackReference         `yaml:"-" json:"-"`
+	FileName         string                    `yaml:"-" json:"-"`
+	ID               string                    `yaml:"id" json:"id,omitempty"`
+	Plural           string                    `yaml:"plural" json:"plural,omitempty"`
+	Type             string                    `yaml:"type" json:"type,omitempty"`
+	Title            string                    `yaml:"title" json:"title,omitempty"`
+	Description      string                    `yaml:"description" json:"description,omitempty"`
+	Parents          map[string]*Reference     `yaml:"-" json:"parents,omitempty"`
+	ParentsSlice     yaml.MapSlice             `yaml:"parents" json:"-"`
+	References       map[string]*Reference     `yaml:"-" json:"references,omitempty"`
+	BackReferences   map[string]*BackReference `yaml:"-" json:"back_references,omitempty"`
+	ReferencesSlice  yaml.MapSlice             `yaml:"references" json:"-"`
+	Prefix           string                    `yaml:"prefix" json:"prefix,omitempty"`
+	JSONSchema       *JSONSchema               `yaml:"-" json:"schema,omitempty"`
+	JSONSchemaSlice  yaml.MapSlice             `yaml:"schema" json:"-"`
+	Definitions      map[string]*JSONSchema    `yaml:"-" json:"-"`
+	DefinitionsSlice map[string]yaml.MapSlice  `yaml:"definitions" json:"-"`
+	Extends          []string                  `yaml:"extends" json:"extends,omitempty"`
+	Columns          ColumnConfigs             `yaml:"-" json:"-"`
+	Path             string                    `yaml:"-" json:"-"`
+	PluralPath       string                    `yaml:"-" json:"-"`
+	Children         []*BackReference          `yaml:"-" json:"-"`
 }
 
 //JSONSchema is a standard JSONSchema representation plus data for code generation.
@@ -503,13 +506,11 @@ func (api *API) resolveAllSQL() error {
 	return nil
 }
 
-func (api *API) resolveRelation(linkTo string, reference *Reference) error {
+func (api *API) resolveRelation(linkToSchema *Schema, reference *Reference) error {
+	linkTo := linkToSchema.ID
 	reference.GoName = common.SnakeToCamel(linkTo)
 	reference.Attr = mapSlice(reference.AttrSlice).JSONSchema()
-	linkToSchema := api.SchemaByID(linkTo)
-	if linkToSchema == nil {
-		return fmt.Errorf("Can't find linked schema %s", linkTo)
-	}
+
 	reference.LinkTo = linkToSchema
 	ref := reference.Ref
 	if ref == "" {
@@ -531,17 +532,26 @@ func (api *API) resolveRelation(linkTo string, reference *Reference) error {
 
 func (api *API) resolveAllRelation() error {
 	for _, s := range api.Schemas {
-		if s.Type == "Abstract" {
+		if s.Type == AbstractType {
 			continue
 		}
 		s.References = map[string]*Reference{}
+
 		s.Parents = map[string]*Reference{}
 		for _, m := range mapSlice(s.ReferencesSlice) {
 			linkTo := m.Key.(string)
 			referenceMap := mapSlice(m.Value.(yaml.MapSlice))
 			reference := referenceMap.Reference()
 			s.References[linkTo] = reference
-			if err := api.resolveRelation(linkTo, reference); err != nil {
+			linkToSchema := api.SchemaByID(linkTo)
+			if linkToSchema == nil {
+				return fmt.Errorf("Can't find linked schema %s", linkTo)
+			}
+			linkToSchema.BackReferences[s.ID] = &BackReference{
+				LinkTo:      s,
+				Description: reference.Description,
+			}
+			if err := api.resolveRelation(linkToSchema, reference); err != nil {
 				return err
 			}
 		}
@@ -550,12 +560,12 @@ func (api *API) resolveAllRelation() error {
 			referenceMap := mapSlice(m.Value.(yaml.MapSlice))
 			reference := referenceMap.Reference()
 			s.Parents[linkTo] = reference
-			if err := api.resolveRelation(linkTo, reference); err != nil {
-				return err
-			}
 			parentSchema := api.SchemaByID(linkTo)
 			if parentSchema == nil {
 				return fmt.Errorf("Parent schema %s not found", linkTo)
+			}
+			if err := api.resolveRelation(parentSchema, reference); err != nil {
+				return err
 			}
 			parentSchema.Children = append(parentSchema.Children, &BackReference{LinkTo: s, Description: reference.Description})
 		}
@@ -565,19 +575,27 @@ func (api *API) resolveAllRelation() error {
 
 func (api *API) resolveIndex() error {
 	for _, s := range api.Schemas {
+		if s.Type == AbstractType {
+			continue
+		}
 		index := 1
 		for _, property := range s.JSONSchema.OrderedProperties {
 			property.Index = index
 			index++
 		}
-		index = index + 1000
+		index = index + indexRange
 		for _, key := range mapSlice(s.ReferencesSlice).keys() {
 			reference := s.References[key]
 			reference.Index = index
 			index++
 		}
-		index = index + 2000
+		index = index + indexRange
 		for _, backReference := range s.Children {
+			backReference.Index = index
+			index++
+		}
+		index = index + indexRange
+		for _, backReference := range s.BackReferences {
 			backReference.Index = index
 			index++
 		}
@@ -641,6 +659,7 @@ func MakeAPI(dir string) (*API, error) {
 		}
 		schema.Path = strings.Replace(schema.ID, "_", "-", -1)
 		schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
+		schema.BackReferences = map[string]*BackReference{}
 		if schema.ID != "" {
 			api.Schemas = append(api.Schemas, &schema)
 		}
