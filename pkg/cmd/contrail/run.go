@@ -54,7 +54,6 @@ var processCmd = &cobra.Command{
 				wg.Done()
 			}()
 		}
-		wg.Wait()
 		if viper.GetBool("compilation.enabled") {
 			wg.Add(1)
 			go func() {
