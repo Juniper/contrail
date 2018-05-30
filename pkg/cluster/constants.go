@@ -43,16 +43,18 @@ const (
 	defaultOpenstackComputeNodeRes        = "openstack-compute-node"
 	defaultOpenstackComputeNodeResPath    = "/" + defaultOpenstackComputeNodeRes
 
-	defaultWorkRoot         = "/var/tmp/contrail_cluster"
-	defaultTemplateRoot     = "./pkg/cluster/configs"
-	defaultInstanceTemplate = "instances.tmpl"
-	defaultInstanceFile     = "instances.yml"
-	defaultProvisioner      = "ansible"
-	defaultAnsibleRepo      = "contrail-ansible-deployer"
-	defaultAnsibleRepoURL   = "https://github.com/Juniper/" + defaultAnsibleRepo + ".git"
-	defaultClusterProvPlay  = "playbooks/install_contrail.yml"
-	defaultInstanceProvPlay = "playbooks/provision_instances.yml"
-	defaultInstanceConfPlay = "playbooks/configure_instances.yml"
+	defaultWorkRoot           = "/var/tmp/contrail_cluster"
+	defaultTemplateRoot       = "./pkg/cluster/configs"
+	defaultInstanceTemplate   = "instances.tmpl"
+	defaultInstanceFile       = "instances.yml"
+	defaultProvisioner        = "ansible"
+	defaultAnsibleRepo        = "contrail-ansible-deployer"
+	defaultAnsibleRepoURL     = "https://github.com/Juniper/" + defaultAnsibleRepo + ".git"
+	defaultContrailProvPlay   = "playbooks/install_contrail.yml"
+	defaultInstanceProvPlay   = "playbooks/provision_instances.yml"
+	defaultInstanceConfPlay   = "playbooks/configure_instances.yml"
+	defaultOpenstackProvPlay  = "playbooks/install_openstack.yml"
+	defaultKubernetesProvPlay = "playbooks/install_k8s.yml"
 
 	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
 	statusField          = "provisioning_state"
