@@ -8,7 +8,7 @@ provider_config:
     {%if cluster.SSHPublicKey %}ssh_public_key: {{ cluster.SSHPublicKey }}{%endif%}
     {%if cluster.SSHPrivateKey %}ssh_private_key: {{ cluster.SSHPrivateKey }}{%endif%}
     ntp_server: {{ cluster.NTPServer }}
-    {%if cluster.DomainSuffix %}domainsuffix: {{ cluster.DomainSuffix }}{%endif%}
+    domainsuffix: {%if cluster.DomainSuffix %}{{ cluster.DomainSuffix }}{%else%}local{%endif%}
 
 instances:
     {% for node in nodes %}

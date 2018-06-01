@@ -6,6 +6,7 @@ provider_config:
     ssh_user: root
     ssh_pwd: c0ntrail123
     ntp_server: 10.1.1.100
+    domainsuffix: local
 instances:
   all_in_one_node:
     ip: 127.0.0.1
