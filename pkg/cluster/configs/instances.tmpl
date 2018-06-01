@@ -50,7 +50,7 @@ contrail_configuration:
   ENCAP_PRIORITY: {%if cluster.EncapPriority %}{{cluster.EncapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
 {% if cluster.Orchestrator == "openstack" %}
   AUTH_MODE: keystone
-  KEYSTONE_AUTH_HOST: {%if openstackCluster.OpenstackInternalVip %}{{openstackCluster.OpenstackInternalVip}}{%else%}{% for node in nodes %}{%if openstackCluster.OpenstackControlNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{%endif%}{%endfor%}{%endif%}
+  {%if openstackCluster.OpenstackInternalVip %}KEYSTONE_AUTH_HOST:{{openstackCluster.OpenstackInternalVip}}{%else%}{% for node in nodes %}{%if !openstackCluster.OpenstackControlNodes|length_is:0 %}{%if !openstackCluster.OpenstackControlNodes.0.NodeRefs|length_is:0 %}{%if openstackCluster.OpenstackControlNodes.0.NodeRefs.0.UUID == node.UUID %}KEYSTONE_AUTH_HOST:{{node.IPAddress}}{%endif%}{%endif%}{%endif%}{%endfor%}{%endif%}
   KEYSTONE_AUTH_URL_VERSION: {%if cluster.KeystoneVersion %}/{{cluster.KeystoneVersion}}{%else%}/v3{%endif%}
   {% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
   {{key_value.Key}}: {{key_value.Value}}
@@ -60,7 +60,7 @@ kolla_config:
   kolla_globals:
     openstack_release: {%if openstackCluster.OpenstackRelease %}{{openstackCluster.OpenstackRelease}}{%else%}ocata{%endif%}
     enable_haproxy: {{openstack.enableHaproxy}}
-    contrail_api_interface_address: {%if openstackCluster.ContrailAPIEndpoint %}{{cluster.ContrailAPIEndPoint}}{%else%}{% for node in nodes %}{%if cluster.ContrailConfigNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{%endif%}{%endfor%}{%endif%}
+    {%if openstackCluster.ContrailAPIEndpoint %}contrail_api_interface_address: {{cluster.ContrailAPIEndPoint}}{%else%}{% for node in nodes %}{%if !cluster.ContrailConfigNodes|length_is:0 %}{%if !cluster.ContrailConfigNodes.0.NodeRefs|length_is:0 %}{%if cluster.ContrailConfigNodes.0.NodeRefs.0.UUID == node.UUID %}contrail_api_interface_address: {{node.IPAddress}}{%endif%}{%endif%}{%endif%}{%endfor%}{%endif%}
     {%if openstackCluster.OpenstackInternalVip %}kolla_internal_vip_address: {{openstackCluster.OpenstackInternalVip}}{%endif%}
     {%if openstackCluster.OpenstackNetworkInterface %}network_interface: {{openstackCluster.OpenstackNetworkInterface}}{%endif%}
     {% if openstackCluster.OpenstackRegistry && openstackCluster.OpenstackRegistry != "default" %}docker_registry: {{ openstackCluster.OpenstackRegistry }}{%endif%}

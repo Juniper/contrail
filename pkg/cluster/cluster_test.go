@@ -131,3 +131,15 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 		"./test_data/expected_multi_interface_instances.yml",
 		context)
 }
+
+// Negative test
+func TestNoRoleNodeCluster(t *testing.T) {
+	context := pongo2.Context{
+		"CONTROL_NODES":   "",
+		"OPENSTACK_NODES": "",
+	}
+	runClusterTest(t,
+		"./test_data/test_with_no_node_roles.tmpl",
+		"./test_data/expected_no_node_roles_instances.yml",
+		context)
+}

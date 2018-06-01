@@ -1,0 +1,107 @@
+name: All in one cluster test
+description: all-in-one cluster CRUD test
+cleanup:
+- path: /project/admin_project_uuid
+- path: /contrail-cluster/test_cluster_uuid
+- path: /openstack-cluster/test_openstack_cluster_uuid
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin"]
+    uuid: admin_project_uuid
+  all_in_one_openstack_cluster: &all_in_one_openstack_cluster
+    fq_name: ["default", "admin", "all_in_one_openstack_cluster"]
+    uuid: test_openstack_cluster_uuid
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    openstack_registry: default
+    openstack_release: ocata-xyz
+    ntp_server: 10.1.1.100
+  all_in_one_cluster: &all_in_one_cluster
+    fq_name: ["default", "admin", "all_in_one_cluster"]
+    uuid: test_cluster_uuid
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    container_registry: test_registry
+    registry_private_insecure: true
+    contrail_version: ocata-5.0-x
+    provisioner_type: ansible
+    orchestrator: openstack
+    default_gateway: 127.0.0.254
+    ntp_server: 10.1.1.100
+    encap_priority: VXLANMPLSoUDPMPLSoGRE
+    openstack_cluster_refs:
+      - uuid: test_openstack_cluster_uuid
+    {% if CONTROL_NODES %}
+    contrail_configuration:
+      key_value_pair:
+        - key: CONTROL_NODES
+          value: {{CONTROL_NODES}}
+        {% if OPENSTACK_NODES %}
+        - key: OPENSTACK_NODES
+          value: {{OPENSTACK_NODES}}
+        {%endif%}
+    {%endif%}
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+- name: create openstack cluster
+  request:
+    path: /openstack-clusters
+    method: POST
+    expected:
+    - 201
+    data:
+      openstack-cluster: *all_in_one_openstack_cluster
+  expect:
+    openstack-cluster:
+      perms2:
+        owner: admin
+      parent_type: project
+      parent_uuid: admin_project_uuid
+      uuid: test_openstack_cluster_uuid
+      fq_name: ["default", "admin", "all_in_one_openstack_cluster"]
+      openstack_registry: default
+      openstack_release: ocata-xyz
+      ntp_server: 10.1.1.100
+- name: create cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 201
+    data:
+      contrail-cluster: *all_in_one_cluster
+  expect:
+    contrail-cluster:
+      perms2:
+        owner: admin
+      parent_type: project
+      parent_uuid: admin_project_uuid
+      uuid: test_cluster_uuid
+      fq_name: ["default", "admin", "all_in_one_cluster"]
+      container_registry: test_registry
+      registry_private_insecure: true
+      contrail_version: ocata-5.0-x
+      provisioner_type: ansible
+      orchestrator: openstack
+      default_gateway: 127.0.0.254
+      ntp_server: 10.1.1.100
+      openstack_cluster_refs:
+        - uuid: test_openstack_cluster_uuid
