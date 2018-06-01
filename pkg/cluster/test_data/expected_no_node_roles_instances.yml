@@ -1,0 +1,23 @@
+global_configuration:
+  CONTAINER_REGISTRY: test_registry
+  REGISTRY_PRIVATE_INSECURE: True
+provider_config:
+  bms:
+    ssh_user: root
+    ssh_pwd: c0ntrail123
+    ntp_server: 10.1.1.100
+instances:
+contrail_configuration:
+  CONTRAIL_VERSION: ocata-5.0-x
+  CLOUD_ORCHESTRATOR: openstack
+  RABBITMQ_NODE_PORT: 5673
+  VROUTER_GATEWAY: 127.0.0.254
+  ENCAP_PRIORITY: VXLANMPLSoUDPMPLSoGRE
+  AUTH_MODE: keystone
+  KEYSTONE_AUTH_URL_VERSION: /v3
+kolla_config:
+  kolla_globals:
+    openstack_release: ocata-xyz
+    enable_haproxy: no
+  kolla_passwords:
+    keystone_admin_password: contrail123
