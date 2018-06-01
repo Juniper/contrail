@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	create = "CREATE"
-	update = "UPDATE"
-	delete = "DELETE"
+	EventCreate = "CREATE"
+	EventUpdate = "UPDATE"
+	EventDelete = "DELETE"
 )
 
 // nolint
@@ -38,11 +38,13 @@ func (resource ResourceEvent) data() map[string]interface{} {
 	return resource.Data.(map[string]interface{})
 }
 
-func (resource ResourceEvent) uuid() string {
+//UUID returns uuid of data
+func (resource ResourceEvent) UUID() string {
 	return (resource.data())["uuid"].(string)
 }
 
-func (resource ResourceEvent) depends() ([]string, error) {
+//Depends returns dependencies.
+func (resource ResourceEvent) Depends() ([]string, error) {
 	depends := []string{}
 	for key, value := range resource.data() {
 		if strings.HasSuffix(key, "_refs") {
@@ -91,7 +93,7 @@ func visitResource(uuid string, sorted []*ResourceEvent,
 	}
 	stateGraph[uuid] = temporaryVisited
 	resource := resourceMap[uuid]
-	depends, err := resource.depends()
+	depends, err := resource.Depends()
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +123,7 @@ func (request *ResourceList) Sort() (err error) {
 	for foundNotVisited {
 		foundNotVisited = false
 		for _, resource := range request.Resources {
-			uuid := resource.uuid()
+			uuid := resource.UUID()
 			state := stateGraph[uuid]
 			if state == notVisited {
 				sorted, err = visitResource(uuid, sorted, resourceMap, stateGraph)

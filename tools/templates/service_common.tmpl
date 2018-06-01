@@ -16,7 +16,7 @@ func (resource *ResourceEvent) Process(ctx context.Context, service serviceif.Se
         model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(resource.Data)
         operation := resource.Operation
         if operation == "" {
-            operation = create
+            operation = EventCreate
             if model.UUID != "" {
                 _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
                     &models.Get{{ schema.JSONSchema.GoName }}Request{
@@ -28,7 +28,7 @@ func (resource *ResourceEvent) Process(ctx context.Context, service serviceif.Se
             }
         }
         switch(operation) {
-            case create:
+            case EventCreate:
                 request := &models.Create{{ schema.JSONSchema.GoName }}Request{
                     {{ schema.JSONSchema.GoName }}: model,
                 }
@@ -41,7 +41,7 @@ func (resource *ResourceEvent) Process(ctx context.Context, service serviceif.Se
                     Data: response.{{ schema.JSONSchema.GoName }},
                     Operation: operation,
                 }, nil
-            case update:
+            case EventUpdate:
                     request := &models.Update{{ schema.JSONSchema.GoName }}Request{
                         {{ schema.JSONSchema.GoName }}: model,
                         FieldMask: MapToFieldMask(resource.Data.(map[string]interface{})),
@@ -55,7 +55,7 @@ func (resource *ResourceEvent) Process(ctx context.Context, service serviceif.Se
                         Data: response.{{ schema.JSONSchema.GoName }},
                         Operation: operation,
                     }, nil
-            case delete:
+            case EventDelete:
                 request := &models.Delete{{ schema.JSONSchema.GoName }}Request{
                     ID: model.UUID,
                 }
