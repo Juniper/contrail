@@ -91,6 +91,7 @@ workflow:
               subnet:
                 ip_prefix: "10.0.0.0"
                 ip_prefix_len: 24
+        ipam_subnet_method: flat-subnet
         uuid: test_ipam
         display_name: test_ipam
         parent_type: project
