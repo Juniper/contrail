@@ -12,24 +12,43 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
-	//"github.com/Juniper/contrail/pkg/common"
-	//log "github.com/sirupsen/logrus"
 )
 
 const (
 	clusterID = "test_cluster_uuid"
 )
 
+var expectedEndpoints = []string{
+	"config",
+	"nodejs",
+	"telemetry",
+	"baremetal",
+	"swift",
+	"glance",
+	"compute",
+	"keystone",
+}
+
 func TestMain(m *testing.M) {
 	apisrv.SetupAndRunTest(m)
 }
 
 func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario) bool {
+	createdEndpoints := map[string]string{}
 	for _, client := range testScenario.Clients {
-		var response map[string]interface{}
+		var response map[string][]interface{}
 		url := fmt.Sprintf("/endpoints?parent_uuid=%s", clusterID)
 		_, err := client.Read(url, &response)
 		assert.NoError(t, err, "Unable to list endpoints of the cluster")
+		for _, endpoint := range response["endpoints"] {
+			e := endpoint.(map[string]interface{})
+			createdEndpoints[e["name"].(string)] = e["public_url"].(string)
+		}
+	}
+	for _, e := range expectedEndpoints {
+		if _, ok := createdEndpoints[e]; !ok {
+			return false
+		}
 	}
 	return true
 }
@@ -88,6 +107,8 @@ func runClusterTest(t *testing.T, testInput, expectedOutput string,
 	generatedFile := defaultWorkRoot + "/" + clusterID + "/instances.yml"
 	assert.True(t, compareInstances(t, generatedFile, expectedOutput),
 		"Instance file created during cluster create is not as expected")
+	// make sure all endpoints are created
+	assert.True(t, verifyEndpoints(t, &testScenario), "Missing endpoints")
 	// delete cluster
 	config.Action = "delete"
 	clusterManager, err = NewCluster(config)

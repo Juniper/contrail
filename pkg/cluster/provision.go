@@ -17,17 +17,18 @@ import (
 )
 
 const (
-	pathSep   = ":"
-	webSep    = "//"
-	protocol  = "http"
-	config    = "config"
-	analytics = "telemetry"
-	webui     = "nodejs"
-	identity  = "keystone"
-	nova      = "compute"
-	ironic    = "baremetal"
-	glance    = "glance"
-	swift     = "swift"
+	pathSep        = ":"
+	webSep         = "//"
+	protocol       = "http"
+	secureProtocol = "https"
+	config         = "config"
+	analytics      = "telemetry"
+	webui          = "nodejs"
+	identity       = "keystone"
+	nova           = "compute"
+	ironic         = "baremetal"
+	glance         = "glance"
+	swift          = "swift"
 )
 
 var portMap = map[string]string{
@@ -169,7 +170,6 @@ func (p *provisionCommon) endpointToURL(protocol, ip, port string) (endpointURL 
 func (p *provisionCommon) createEndpoints() error {
 	p.log.Infof("Creating service endpoints for cluster: %s", p.clusterID)
 	contrailCluster := p.clusterData.clusterInfo
-	openstackCluster := p.getOpenstackClusterData().clusterInfo
 	for _, configNode := range contrailCluster.ContrailConfigNodes {
 		for _, nodeRef := range configNode.NodeRefs {
 			for _, node := range p.clusterData.nodesInfo {
@@ -204,7 +204,7 @@ func (p *provisionCommon) createEndpoints() error {
 			for _, node := range p.clusterData.nodesInfo {
 				if nodeRef.UUID == node.UUID {
 					publicURL := p.endpointToURL(
-						protocol, node.IPAddress, portMap[webui])
+						secureProtocol, node.IPAddress, portMap[webui])
 					privateURL := publicURL
 					err := p.cluster.createEndpoint(p.clusterID, webui, publicURL, privateURL)
 					if err != nil {
@@ -214,9 +214,13 @@ func (p *provisionCommon) createEndpoints() error {
 			}
 		}
 	}
+	// openstack endpoints
+	openstackClusterData := p.getOpenstackClusterData()
+	openstackCluster := openstackClusterData.clusterInfo
+	openstackNodes := openstackClusterData.nodesInfo
 	for _, openstackStorageNode := range openstackCluster.OpenstackStorageNodes {
 		for _, nodeRef := range openstackStorageNode.NodeRefs {
-			for _, node := range p.clusterData.nodesInfo {
+			for _, node := range openstackNodes {
 				if nodeRef.UUID == node.UUID {
 					publicURL := p.endpointToURL(
 						protocol, node.IPAddress, portMap[swift])
@@ -231,7 +235,7 @@ func (p *provisionCommon) createEndpoints() error {
 	}
 	for _, openstackControlNode := range openstackCluster.OpenstackControlNodes {
 		for _, nodeRef := range openstackControlNode.NodeRefs {
-			for _, node := range p.clusterData.nodesInfo {
+			for _, node := range openstackNodes {
 				if nodeRef.UUID == node.UUID {
 					publicURL := p.endpointToURL(
 						protocol, node.IPAddress, portMap[nova])
