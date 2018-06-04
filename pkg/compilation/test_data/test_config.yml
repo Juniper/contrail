@@ -17,7 +17,7 @@ compilation:
 # ETCD configuration
 etcd:
     endpoints: 
-    - http://10.0.0.1:2379
-    - http://20.0.0.1:2379
-    - http://30.0.0.1:2379
+    - 10.0.0.1:2379
+    - 20.0.0.1:2379
+    - 30.0.0.1:2379
     path: '/test'

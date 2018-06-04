@@ -166,7 +166,7 @@ func (ics *IntentCompilationService) Init(configFile string) error {
 	watch.WatcherInit(conf.DefaultCfg.MaxJobQueueLen)
 	watch.InitDispatcher(conf.DefaultCfg.NumberOfWorkers, HandleEtcdMessages)
 
-	etcdcl, err := etcl.Dial(conf.EtcdServersUrls)
+	etcdcl, err := etcl.Dial(conf.EtcdNotifierCfg.EtcdServers)
 	if err != nil {
 		log.Print("Error: ", err)
 		return err
@@ -174,7 +174,7 @@ func (ics *IntentCompilationService) Init(configFile string) error {
 	ics.Etcdcl = etcdcl
 
 	// Create Lock
-	locker, err := etcdcl.CreateLock(conf.EtcdServers[0])
+	locker, err := etcdcl.CreateLock(conf.EtcdNotifierCfg.EtcdServers[0])
 	if err != nil {
 		log.Fatal("Cannot Acquire Lock")
 		return err
@@ -204,7 +204,7 @@ func (ics *IntentCompilationService) Run() error {
 	newCtx := context.WithValue(context.Background(), IntentCompilationHandle, ics)
 
 	// Watch the Configured etcd directory for messages
-	ics.Etcdcl.WatchRecursive(newCtx, ics.Cfg.EtcdNotifierCfg.WatchPath, HandleMessage)
+	ics.Etcdcl.WatchRecursive(newCtx, "/"+ics.Cfg.EtcdNotifierCfg.WatchPath, HandleMessage)
 
 	return nil
 }

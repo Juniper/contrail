@@ -1,4 +1,6 @@
 // nolint
+// Generated Code, DO NOT EDIT.
+
 package compilationif
 
 import (
@@ -26,7 +28,6 @@ var functions = map[string]ObjCallback {
 func NewCompilationService() (*CompilationService) {
 	service := &CompilationService{
 		BaseService: serviceif.BaseService{},
-		ObjsCache: make(map[string]map[string]interface{}),
 	}
 	service.Init()
 	return service
@@ -35,7 +36,6 @@ func NewCompilationService() (*CompilationService) {
 // CompilationService
 type CompilationService struct {
 	serviceif.BaseService
-	ObjsCache map[string]map[string]interface{}
 }
 
 // HandleEtcdMessages

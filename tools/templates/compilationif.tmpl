@@ -1,18 +1,34 @@
 // nolint
+// Generated Code, DO NOT EDIT.
+
 package compilationif
 
 import (
 	"context"
 	"errors"
 	"log"
+	"sync"
 
 	"github.com/Juniper/contrail/pkg/models"
 )
 
+var ObjsCache *sync.Map
+
 func (service *CompilationService) Init() {
+	ObjsCache = &sync.Map{}
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-	service.ObjsCache["{{ schema.ID }}"] = make(map[string]interface{})
+	ObjsCache.Store("{{ schema.ID }}", &sync.Map{})
 {% endif%}{% endfor %}
+}
+
+func (service *CompilationService) Debug(objStr string, objValue *sync.Map) {
+	oMap := make(map[interface{}]interface{})
+	objValue.Range(func(k, v interface{}) bool {
+	        oMap[k] = v
+	        return true
+	})
+	log.Printf("%s: %v", objStr, oMap)
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -28,8 +44,15 @@ func (service *CompilationService) Create{{ schema.JSONSchema.GoName }}(ctx cont
 		return nil, nil
 	}
 
-	service.ObjsCache["{{ schema.ID }}"][obj.GetUUID()] = obj
-	log.Print("Create{{ schema.JSONSchema.GoName }}: ", service.ObjsCache["{{ schema.ID }}"])
+        if _, ok := ObjsCache.Load("{{ schema.ID }}"); !ok {
+                ObjsCache.Store("{{ schema.ID }}", &sync.Map{})
+        }
+        objMap, ok := ObjsCache.Load("{{ schema.ID }}")
+        if ok {
+                objMap.(*sync.Map).Store(obj.GetUUID(), obj)
+        }
+
+	service.Debug("Create{{ schema.JSONSchema.GoName }}", objMap.(*sync.Map))
 
 	if service.Next() == nil {
 		return nil, nil
@@ -48,8 +71,15 @@ func (service *CompilationService) Update{{ schema.JSONSchema.GoName }}(ctx cont
 		return nil, nil
 	}
 
-	service.ObjsCache["{{ schema.ID }}"][obj.GetUUID()] = obj
-	log.Print("Update{{ schema.JSONSchema.GoName }}: ", service.ObjsCache["{{ schema.ID }}"])
+        if _, ok := ObjsCache.Load("{{ schema.ID }}"); !ok {
+                ObjsCache.Store("{{ schema.ID }}", &sync.Map{})
+        }
+        objMap, ok := ObjsCache.Load("{{ schema.ID }}")
+        if ok {
+                objMap.(*sync.Map).Store(obj.GetUUID(), obj)
+        }
+
+	service.Debug("Update{{ schema.JSONSchema.GoName }}", objMap.(*sync.Map))
 
 	if service.Next() == nil {
 		return nil, nil
@@ -68,8 +98,12 @@ func (service *CompilationService) Delete{{ schema.JSONSchema.GoName }}(ctx cont
 		return nil, nil
 	}
 
-	delete(service.ObjsCache["{{ schema.ID }}"], objUUID)
-	log.Print("Delete{{ schema.JSONSchema.GoName }}: ", service.ObjsCache["{{ schema.ID }}"])
+        objMap, ok := ObjsCache.Load("{{ schema.ID }}")
+        if ok {
+		objMap.(*sync.Map).Delete(objUUID)
+        }
+
+	service.Debug("Delete{{ schema.JSONSchema.GoName }}", objMap.(*sync.Map))
 
 	if service.Next() == nil {
 		return nil, nil
@@ -78,11 +112,18 @@ func (service *CompilationService) Delete{{ schema.JSONSchema.GoName }}(ctx cont
 }
 // Get{{ schema.JSONSchema.GoName }}
 func (service *CompilationService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Get{{ schema.JSONSchema.GoName }}Request) (*models.Get{{ schema.JSONSchema.GoName }}Response, error) {
-	if _, ok := service.ObjsCache["{{ schema.ID }}"][request.GetID()]; !ok {
+	objMap, ok := ObjsCache.Load("{{ schema.ID }}")
+	if !ok {
 		return nil, errors.New("{{ schema.ID }} get failed ")
 	}
+
+	obj, ok := objMap.(*sync.Map).Load(request.GetID())
+	if !ok {
+		return nil, errors.New("{{ schema.ID }} get failed ")
+	}
+
 	response := &models.Get{{ schema.JSONSchema.GoName }}Response{
-		{{ schema.JSONSchema.GoName }}: service.ObjsCache["{{ schema.ID }}"][request.GetID()].(*models.{{ schema.JSONSchema.GoName }}),
+		{{ schema.JSONSchema.GoName }}: obj.(*models.{{ schema.JSONSchema.GoName }}),
 	}
 	return response, nil
 }
