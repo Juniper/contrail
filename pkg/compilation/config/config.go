@@ -1,10 +1,6 @@
 package config
 
 import (
-	//	"io/ioutil"
-	//	"plugin"
-	"net/url"
-
 	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
@@ -35,8 +31,6 @@ type PluginConfig struct {
 // Config Object
 type Config struct {
 	FileName        string
-	EtcdServersUrls []string
-	EtcdServers     []string
 	DefaultCfg      *DefaultConfig
 	EtcdNotifierCfg *EtcdNotifierConfig
 	PluginCfg       *PluginConfig
@@ -64,22 +58,12 @@ func (c *Config) ReadConfig() error {
 		Handlers: viper.GetStringMap("plugin.handlers"),
 	}
 
-	c.EtcdServersUrls = c.EtcdNotifierCfg.EtcdServers
-	for _, svr := range c.EtcdServersUrls {
-		u, err := url.Parse(svr)
-		if err != nil {
-			log.Fatal(err)
-		}
-		c.EtcdServers = append(c.EtcdServers, u.Hostname()+":"+u.Port())
-	}
-
 	log.Println("Plugin Directory:", c.DefaultCfg.PluginDirectory)
 	log.Println("Number of Workers:", c.DefaultCfg.NumberOfWorkers)
 	log.Println("Maximum Job Queue Len:", c.DefaultCfg.MaxJobQueueLen)
 
-	log.Println("ETCD Notifier Servers List:", c.EtcdServersUrls)
-	log.Println("ETCD Notifier Servers List:", c.EtcdServers)
-	log.Println("ETCD Notifier WatchPath :", c.EtcdNotifierCfg.WatchPath)
+	log.Println("ETCD Notifier Servers List:", c.EtcdNotifierCfg.EtcdServers)
+	log.Println("ETCD Notifier WatchPath :", "/"+c.EtcdNotifierCfg.WatchPath)
 	log.Println("ETCD Notifier MsgQueueLockTime:", c.EtcdNotifierCfg.MsgQueueLockTime)
 	log.Println("ETCD Notifier MsgIndexString:", c.EtcdNotifierCfg.MsgIndexString)
 	log.Println("ETCD Notifier ReadLockString:", c.EtcdNotifierCfg.ReadLockString)
