@@ -30,7 +30,6 @@ type PluginConfig struct {
 
 // Config Object
 type Config struct {
-	FileName        string
 	DefaultCfg      *DefaultConfig
 	EtcdNotifierCfg *EtcdNotifierConfig
 	PluginCfg       *PluginConfig
@@ -48,7 +47,7 @@ func (c *Config) ReadConfig() error {
 	c.EtcdNotifierCfg = &EtcdNotifierConfig{
 		EtcdServers:      viper.GetStringSlice("etcd.endpoints"),
 		WatchPath:        viper.GetString("etcd.path"),
-		MsgQueueLockTime: viper.GetInt("compilation.msg_queue_lock_time"),
+		MsgQueueLockTime: viper.GetInt("compilation.msg_queue_lock_time"), // TODO(Michal): Change to GetDuration
 		MsgIndexString:   viper.GetString("compilation.msg_index_string"),
 		ReadLockString:   viper.GetString("compilation.read_lock_string"),
 		MasterElection:   viper.GetBool("compilation.master_election"),
@@ -75,10 +74,8 @@ func (c *Config) ReadConfig() error {
 }
 
 // NewConfig creates the Config object
-func NewConfig(configFile string) (*Config, error) {
-	conf := &Config{
-		FileName: configFile,
-	}
+func NewConfig() (*Config, error) {
+	conf := &Config{}
 	err := conf.ReadConfig()
 	if err != nil {
 		return nil, err
