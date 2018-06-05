@@ -79,11 +79,8 @@ func startSync() {
 }
 
 func startCompilationService() {
-	server, err := compilation.NewIntentCompilationService()
+	server, err := compilation.NewIntentCompilationService(configFile)
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err = server.Init(configFile); err != nil {
 		log.Fatal(err)
 	}
 
