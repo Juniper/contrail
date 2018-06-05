@@ -191,9 +191,22 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 			"data":   data,
 		}).Debug("Executing API Server request")
 	}
-	resp, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, err
+	retryCount := 1
+	doRequest := true
+	var resp *http.Response
+	for doRequest {
+		resp, err = c.httpClient.Do(request)
+		if err != nil {
+			return nil, err
+		}
+		if resp.StatusCode == 401 && retryCount != 0 {
+			// token might be expired, refresh token and retry
+			// once if unauthenticated
+			c.Login()
+			retryCount -= 1
+		} else {
+			doRequest = false
+		}
 	}
 	defer resp.Body.Close() // nolint: errcheck
 	err = checkStatusCode(expected, resp.StatusCode)
