@@ -9,12 +9,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/DavidCai1993/etcd-lock"
-  packages = ["."]
-  revision = "32f65b8d019ac3b77f9a893b7443aa3cc001d9da"
-
-[[projects]]
-  branch = "master"
   name = "github.com/ExpansiveWorlds/instrumentedsql"
   packages = ["."]
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
@@ -37,7 +31,6 @@
     "auth/authpb",
     "clientv3",
     "clientv3/concurrency",
-    "etcdserver/api/v3lock/v3lockpb",
     "etcdserver/api/v3rpc/rpctypes",
     "etcdserver/etcdserverpb",
     "mvcc/mvccpb",
@@ -544,6 +537,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cd3559c8bd3408e42bd8c2b51f623b17e13e30ae8e840506e2a464512e490ec1"
+  inputs-digest = "f9144f7b8d4be61aaff15f0b2541f09a2f2cd0efe747f9479adc7a1e3bb9dbd7"
   solver-name = "gps-cdcl"
   solver-version = 1
