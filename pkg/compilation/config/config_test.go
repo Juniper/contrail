@@ -10,8 +10,7 @@ import (
 func TestConfig(t *testing.T) {
 	viper.AddConfigPath("../test_data/")
 	viper.SetConfigFile("test_config")
-	cfg, err := NewConfig("test_config")
-
+	cfg, err := NewConfig()
 	if err != nil {
 		t.Errorf("Cannot read Config file")
 	}

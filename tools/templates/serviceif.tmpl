@@ -17,31 +17,6 @@ type Service interface {
 {% endif%}{% endfor %}
 }
 
-//Chain setup chain of services.
-func Chain(services []Service) {
-    if len(services) < 2 {
-        return
-    }
-    previous := services[0]
-    for i := 1; i < len(services); i++ {
-        current := services[i]
-        previous.SetNext(current)
-        previous = current
-    }
-}
-
-type BaseService struct{
-    next Service
-}
-
-func (service *BaseService) Next() Service {
-    return service.next
-}
-
-func (service *BaseService) SetNext(next Service) {
-    service.next = next
-}
-
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 func (service *BaseService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *models.Create{{ schema.JSONSchema.GoName }}Request) (*models.Create{{ schema.JSONSchema.GoName }}Response, error) {
     if service.next == nil {
