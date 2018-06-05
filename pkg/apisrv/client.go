@@ -15,6 +15,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	retryCount = 2
+)
+
 // Client represents a client.
 // nolint
 type Client struct {
@@ -191,9 +195,21 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 			"data":   data,
 		}).Debug("Executing API Server request")
 	}
-	resp, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, err
+	var resp *http.Response
+	for i := 0; i < retryCount; i++ {
+		resp, err = c.httpClient.Do(request)
+		if err != nil {
+			return nil, err
+		}
+		if resp.StatusCode != 401 {
+			break
+		}
+		// token might be expired, refresh token and retry
+		err = c.Login()
+		if err != nil {
+			defer resp.Body.Close() // nolint: errcheck
+			return resp, err
+		}
 	}
 	defer resp.Body.Close() // nolint: errcheck
 	err = checkStatusCode(expected, resp.StatusCode)
