@@ -1,6 +1,9 @@
 package types
 
 import (
+	"testing"
+	"time"
+
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/serviceif"
@@ -8,8 +11,6 @@ import (
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
-	"testing"
-	"time"
 )
 
 //Structure testVn is used to pass vn parameters during VrirualNetwork object creation
@@ -21,15 +22,12 @@ type testVn struct {
 }
 
 func getService() *ContrailTypeLogicService {
-	var serviceChain []serviceif.Service
 	service := &ContrailTypeLogicService{
 		BaseService: serviceif.BaseService{},
 		DB:          unittest.TestDbService,
 	}
-	serviceChain = append(serviceChain, service)
-	serviceChain = append(serviceChain, unittest.TestDbService)
 
-	serviceif.Chain(serviceChain)
+	serviceif.Chain(service, unittest.TestDbService)
 	return service
 }
 func TestMain(m *testing.M) {
