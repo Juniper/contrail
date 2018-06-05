@@ -26,7 +26,6 @@ bin/
 pkg/**/gen_*
 pkg/**/generated.pb.go
 
-pkg/serviceif/serviceif.go
 doc/proto.md
 doc/proto_model.md
 doc/proto_service.md
