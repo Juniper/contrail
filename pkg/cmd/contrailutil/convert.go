@@ -232,9 +232,8 @@ func writeRDBMS(events *services.EventList) error {
 }
 
 func writeEtcd(events *services.EventList) error {
-	etcdNotifierServers := viper.GetStringSlice("etcd.endpoints")
 	etcdNotifierPath := viper.GetString("etcd.path")
-	etcdNotifierService, err := etcdclient.NewEtcdNotifierService(etcdNotifierServers, etcdNotifierPath)
+	etcdNotifierService, err := etcdclient.NewNotifierService(etcdNotifierPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect etcd")
 	}
