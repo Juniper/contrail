@@ -83,9 +83,6 @@ func startCompilationService() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = server.Init(configFile); err != nil {
-		log.Fatal(err)
-	}
 
 	if err = server.Run(); err != nil {
 		log.Fatal(err)
