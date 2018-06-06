@@ -167,6 +167,18 @@ schema:
       view:
       - create
       - detail
+    domain_suffix:
+      description: Domin suffix of the servers in this cluster
+      default: local
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Domain Suffix
+      type: string
+      view:
+      - create
+      - detail
     control_data_network_list:
       description: Comma seperated control data network to use.
       nullable: false
