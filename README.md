@@ -151,7 +151,7 @@ contrail <command> -h
 
 API Server supports Keystone V3 authentication and RBAC.
 API Server has minimal Keystone API V3 support for standalone use case.
-See a configuration [example](sample/server.yml)
+See a configuration [example](https://github.com/Juniper/contrail/blob/master/sample/contrail.yml#L61)
 
 ## How to contribute
 
