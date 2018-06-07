@@ -18,10 +18,7 @@ build: ## Run go build
 	go build ./cmd/...
 
 generate: ## Run the source code generator
-	rm -rf pkg/models/gen_*
-	rm -rf pkg/services/gen_*
-	rm -rf pkg/db/gen_*
-	rm -rf pkg/compilationif/gen_*
+	find pkg/ -name gen_* -delete
 	mkdir public || echo "ok"
 	go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
 	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
@@ -31,22 +28,18 @@ generate: ## Run the source code generator
 	go fmt github.com/Juniper/contrail/pkg/models
 	go fmt github.com/Juniper/contrail/pkg/services
 	go fmt github.com/Juniper/contrail/pkg/compilationif
+	go generate ./...
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
 
 reset_gen:
-	rm pkg/models/gen*
-	rm pkg/services/gen*
-	rm pkg/db/gen_*
-	rm doc/proto_model.md
-	rm doc/proto_service.md
+	find pkg/ -name gen_* -delete
 	rm -rf public/*
 	rm -rf proto/*
 	rm tools/init_mysql.sql
 	rm tools/init_psql.sql
 	rm tools/cleanup.sql
-	rm pkg/serviceif/serviceif.go
 
 install:
 	go install ./cmd/contrail
