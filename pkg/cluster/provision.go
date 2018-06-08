@@ -7,40 +7,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/models"
 )
-
-const (
-	pathSep        = ":"
-	webSep         = "//"
-	protocol       = "http"
-	secureProtocol = "https"
-	config         = "config"
-	analytics      = "telemetry"
-	webui          = "nodejs"
-	identity       = "keystone"
-	nova           = "compute"
-	ironic         = "baremetal"
-	glance         = "glance"
-	swift          = "swift"
-)
-
-var portMap = map[string]string{
-	config:    "8082",
-	analytics: "8081",
-	webui:     "8143",
-	identity:  "5000",
-	nova:      "8774",
-	ironic:    "6385",
-	glance:    "9292",
-	swift:     "8080",
-}
 
 type provisioner interface {
 	provision() error
@@ -53,58 +25,6 @@ type provisionCommon struct {
 	clusterData *Data
 	log         *logrus.Entry
 	reporter    *Reporter
-}
-
-func (p *provisionCommon) getK8sClusterData() *KubernetesData {
-	// One kubernetes cluster is the supported topology
-	if len(p.clusterData.kubernetesClusterData) > 0 {
-		return p.clusterData.kubernetesClusterData[0]
-	}
-	return nil
-}
-
-func (p *provisionCommon) getK8sClusterInfo() *models.KubernetesCluster {
-	if p.getK8sClusterData() != nil {
-		return p.getK8sClusterData().clusterInfo
-	}
-	return nil
-}
-
-func (p *provisionCommon) getOpenstackClusterData() *OpenstackData {
-	// One openstack cluster is the supported topology
-	if len(p.clusterData.openstackClusterData) > 0 {
-		return p.clusterData.openstackClusterData[0]
-	}
-	return nil
-}
-
-func (p *provisionCommon) getOpenstackClusterInfo() *models.OpenstackCluster {
-	if p.getOpenstackClusterData() != nil {
-		return p.getOpenstackClusterData().clusterInfo
-	}
-	return nil
-}
-
-func (p *provisionCommon) getAllNodesInfo() []*models.Node {
-	nodes := p.clusterData.nodesInfo
-	if p.getOpenstackClusterData() != nil {
-		nodes = append(nodes, p.getOpenstackClusterData().nodesInfo...)
-	}
-	if p.getK8sClusterData() != nil {
-		nodes = append(nodes, p.getK8sClusterData().nodesInfo...)
-	}
-
-	var uniqueNodes []*models.Node
-	m := make(map[string]bool)
-
-	for _, node := range nodes {
-		if _, ok := m[node.UUID]; !ok {
-			m[node.UUID] = true
-			uniqueNodes = append(uniqueNodes, node)
-		}
-	}
-
-	return uniqueNodes
 }
 
 func (p *provisionCommon) isCreated() bool {
@@ -163,144 +83,35 @@ func (p *provisionCommon) deleteWorkingDir() error {
 	return os.RemoveAll(p.getClusterHomeDir())
 }
 
-func (p *provisionCommon) endpointToURL(protocol, ip, port string) (endpointURL string) {
-	return strings.Join([]string{protocol, webSep + ip, port}, pathSep)
-}
-
 func (p *provisionCommon) createEndpoints() error {
-	p.log.Infof("Creating service endpoints for cluster: %s", p.clusterID)
-	contrailCluster := p.clusterData.clusterInfo
-	for _, configNode := range contrailCluster.ContrailConfigNodes {
-		for _, nodeRef := range configNode.NodeRefs {
-			for _, node := range p.clusterData.nodesInfo {
-				if nodeRef.UUID == node.UUID {
-					publicURL := p.endpointToURL(protocol, node.IPAddress, portMap[config])
-					privateURL := publicURL
-					err := p.cluster.createEndpoint(p.clusterID, config, publicURL, privateURL)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
+	e := &EndpointData{
+		clusterID:   p.clusterID,
+		cluster:     p.cluster,
+		clusterData: p.clusterData,
+		log:         p.log,
 	}
-	for _, analyticsNode := range contrailCluster.ContrailAnalyticsNodes {
-		for _, nodeRef := range analyticsNode.NodeRefs {
-			for _, node := range p.clusterData.nodesInfo {
-				if nodeRef.UUID == node.UUID {
-					publicURL := p.endpointToURL(
-						protocol, node.IPAddress, portMap[analytics])
-					privateURL := publicURL
-					err := p.cluster.createEndpoint(p.clusterID, analytics, publicURL, privateURL)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	for _, webuiNode := range contrailCluster.ContrailWebuiNodes {
-		for _, nodeRef := range webuiNode.NodeRefs {
-			for _, node := range p.clusterData.nodesInfo {
-				if nodeRef.UUID == node.UUID {
-					publicURL := p.endpointToURL(
-						secureProtocol, node.IPAddress, portMap[webui])
-					privateURL := publicURL
-					err := p.cluster.createEndpoint(p.clusterID, webui, publicURL, privateURL)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	// openstack endpoints
-	openstackClusterData := p.getOpenstackClusterData()
-	openstackCluster := openstackClusterData.clusterInfo
-	openstackNodes := openstackClusterData.nodesInfo
-	for _, openstackStorageNode := range openstackCluster.OpenstackStorageNodes {
-		for _, nodeRef := range openstackStorageNode.NodeRefs {
-			for _, node := range openstackNodes {
-				if nodeRef.UUID == node.UUID {
-					publicURL := p.endpointToURL(
-						protocol, node.IPAddress, portMap[swift])
-					privateURL := publicURL
-					err := p.cluster.createEndpoint(p.clusterID, swift, publicURL, privateURL)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	for _, openstackControlNode := range openstackCluster.OpenstackControlNodes {
-		for _, nodeRef := range openstackControlNode.NodeRefs {
-			for _, node := range openstackNodes {
-				if nodeRef.UUID == node.UUID {
-					publicURL := p.endpointToURL(
-						protocol, node.IPAddress, portMap[nova])
-					privateURL := publicURL
-					err := p.cluster.createEndpoint(p.clusterID, nova, publicURL, privateURL)
-					if err != nil {
-						return err
-					}
-					publicURL = p.endpointToURL(
-						protocol, node.IPAddress, portMap[ironic])
-					privateURL = publicURL
-					err = p.cluster.createEndpoint(p.clusterID, ironic, publicURL, privateURL)
-					if err != nil {
-						return err
-					}
-					publicURL = p.endpointToURL(
-						protocol, node.IPAddress, portMap[glance])
-					privateURL = publicURL
-					err = p.cluster.createEndpoint(p.clusterID, glance, publicURL, privateURL)
-					if err != nil {
-						return err
-					}
-					publicURL = p.endpointToURL(
-						protocol, node.IPAddress, portMap[identity])
-					privateURL = publicURL
-					err = p.cluster.createEndpoint(p.clusterID, identity, publicURL, privateURL)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	return nil
+
+	return e.create()
 }
 
 func (p *provisionCommon) updateEndpoints() error {
-	p.log.Infof("Updating service endpoints for cluster: %s", p.clusterID)
-	endpointIDs, err := p.cluster.getEndpoints([]string{p.clusterID})
-	if err != nil {
-		return err
+	e := &EndpointData{
+		clusterID: p.clusterID,
+		cluster:   p.cluster,
+		log:       p.log,
 	}
-	for _, endpointID := range endpointIDs {
-		err = p.cluster.deleteEndpoint(endpointID)
-		if err != nil {
-			return err
-		}
-	}
-	err = p.createEndpoints()
-	return err
+
+	return e.update()
 }
 
 func (p *provisionCommon) deleteEndpoints() error {
-	p.log.Infof("Deleting service endpoints for cluster: %s", p.clusterID)
-	endpointIDs, err := p.cluster.getEndpoints([]string{p.clusterID})
-	if err != nil {
-		return err
+	e := &EndpointData{
+		clusterID: p.clusterID,
+		cluster:   p.cluster,
+		log:       p.log,
 	}
-	for _, endpointID := range endpointIDs {
-		err = p.cluster.deleteEndpoint(endpointID)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+
+	return e.remove()
 }
 
 func (p *provisionCommon) execCmd(cmd string, args []string, dir string) error {

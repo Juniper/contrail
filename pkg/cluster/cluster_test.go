@@ -18,22 +18,12 @@ const (
 	clusterID = "test_cluster_uuid"
 )
 
-var expectedEndpoints = []string{
-	"config",
-	"nodejs",
-	"telemetry",
-	"baremetal",
-	"swift",
-	"glance",
-	"compute",
-	"keystone",
-}
-
 func TestMain(m *testing.M) {
 	apisrv.SetupAndRunTest(m)
 }
 
-func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario) bool {
+func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario,
+	expectedEndpoints map[string]string) error {
 	createdEndpoints := map[string]string{}
 	for _, client := range testScenario.Clients {
 		var response map[string][]interface{}
@@ -45,12 +35,16 @@ func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario) bool {
 			createdEndpoints[e["name"].(string)] = e["public_url"].(string)
 		}
 	}
-	for _, e := range expectedEndpoints {
-		if _, ok := createdEndpoints[e]; !ok {
-			return false
+	for k, e := range expectedEndpoints {
+		if v, ok := createdEndpoints[k]; ok {
+			if e != v {
+				return fmt.Errorf("Endpoint expected: %s, actual: %s for service %s", e, v, k)
+			}
+		} else {
+			return fmt.Errorf("Missing endpoint for service %s", k)
 		}
 	}
-	return true
+	return nil
 }
 
 func verifyClusterDeleted(t *testing.T, testScenario *apisrv.TestScenario) bool {
@@ -71,7 +65,7 @@ func compareInstances(t *testing.T, generated, expected string) bool {
 }
 
 func runClusterTest(t *testing.T, testInput, expectedOutput string,
-	context map[string]interface{}) {
+	context map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := apisrv.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
@@ -108,7 +102,10 @@ func runClusterTest(t *testing.T, testInput, expectedOutput string,
 	assert.True(t, compareInstances(t, generatedFile, expectedOutput),
 		"Instance file created during cluster create is not as expected")
 	// make sure all endpoints are created
-	assert.True(t, verifyEndpoints(t, &testScenario), "Missing endpoints")
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
 	// delete cluster
 	config.Action = "delete"
 	clusterManager, err = NewCluster(config)
@@ -125,10 +122,21 @@ func TestAllInOneCluster(t *testing.T) {
 		"CONTROL_NODES":   "",
 		"OPENSTACK_NODES": "",
 	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
+		"keystone":  "http://127.0.0.1:5000",
+	}
 	runClusterTest(t,
 		"./test_data/test_all_in_one_cluster.tmpl",
 		"./test_data/expected_all_in_one_instances.yml",
-		context)
+		context,
+		expectedEndpoints)
 }
 
 func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
@@ -136,19 +144,44 @@ func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 		"CONTROL_NODES":   "127.0.0.1",
 		"OPENSTACK_NODES": "127.0.0.1",
 	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
+		"keystone":  "http://127.0.0.1:5000",
+	}
 	runClusterTest(t,
 		"./test_data/test_all_in_one_cluster.tmpl",
 		"./test_data/expected_same_mgmt_ctrldata_net_instances.yml",
-		context)
+		context,
+		expectedEndpoints)
 }
 
 func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 	context := pongo2.Context{
-		"CONTROL_NODES":   "10.1.1.1",
-		"OPENSTACK_NODES": "10.1.1.1",
+		"CONTROL_NODES":          "10.1.1.1",
+		"CONTROLLER_NODES":       "10.1.1.1",
+		"OPENSTACK_NODES":        "10.1.1.1",
+		"OPENSTACK_INTERNAL_VIP": "127.0.0.1",
 	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://10.1.1.1:8082",
+		"nodejs":    "https://10.1.1.1:8143",
+		"telemetry": "http://10.1.1.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
+		"keystone":  "http://127.0.0.1:5000",
+	}
+
 	runClusterTest(t,
 		"./test_data/test_all_in_one_cluster.tmpl",
 		"./test_data/expected_multi_interface_instances.yml",
-		context)
+		context,
+		expectedEndpoints)
 }
