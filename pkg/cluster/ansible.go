@@ -138,7 +138,7 @@ func (a *ansibleProvisioner) createInventory() error {
 
 func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 	openstackVars := openstackVariables{}
-	cluster := a.getOpenstackClusterInfo()
+	cluster := a.clusterData.getOpenstackClusterInfo()
 	// Enable haproxy when multiple openstack control nodes present in cluster
 	if len(cluster.OpenstackControlNodes) > 1 {
 		openstackVars.enableHaproxy = enable
@@ -195,9 +195,9 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	a.log.Info("Creating instance.yml input file for ansible deployer")
 	context := pongo2.Context{
 		"cluster":          a.clusterData.clusterInfo,
-		"openstackCluster": a.getOpenstackClusterInfo(),
-		"k8sCluster":       a.getK8sClusterInfo(),
-		"nodes":            a.getAllNodesInfo(),
+		"openstackCluster": a.clusterData.getOpenstackClusterInfo(),
+		"k8sCluster":       a.clusterData.getK8sClusterInfo(),
+		"nodes":            a.clusterData.getAllNodesInfo(),
 		"openstack":        a.getOpenstackDerivedVars(),
 	}
 	content, err := a.applyTemplate(a.getInstanceTemplate(), context)

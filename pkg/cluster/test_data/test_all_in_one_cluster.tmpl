@@ -35,6 +35,9 @@ test_data:
     openstack_registry: default
     openstack_release: ocata-xyz
     ntp_server: 10.1.1.100
+    {% if OPENSTACK_INTERNAL_VIP %}
+    openstack_internal_vip: {{OPENSTACK_INTERNAL_VIP}}
+    {%endif%}
   openstack_control_nodes: &openstack_control_nodes
     fq_name: ["default", "admin", "openstack_control_nodes"]
     uuid: openstack_control_nodes_uuid
@@ -90,6 +93,10 @@ test_data:
       key_value_pair:
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}
+        {% if CONTROLLER_NODES %}
+        - key: CONTROLLER_NODES
+          value: {{CONTROLLER_NODES}}
+        {%endif%}
         {% if OPENSTACK_NODES %}
         - key: OPENSTACK_NODES
           value: {{OPENSTACK_NODES}}
