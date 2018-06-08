@@ -8,7 +8,6 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -56,27 +55,6 @@ type Cluster struct {
 	config      *Config
 	APIServer   *apisrv.Client
 	log         *logrus.Entry
-}
-
-// OpenstackData is the representation of openstack cluster details.
-type OpenstackData struct {
-	clusterInfo *models.OpenstackCluster
-	nodesInfo   []*models.Node
-}
-
-// KubernetesData is the representation of kubernetes cluster details.
-type KubernetesData struct {
-	clusterInfo *models.KubernetesCluster
-	nodesInfo   []*models.Node
-}
-
-// Data is the representation of cluster details.
-type Data struct {
-	clusterInfo           *models.ContrailCluster
-	nodesInfo             []*models.Node
-	openstackClusterData  []*OpenstackData
-	kubernetesClusterData []*KubernetesData
-	// TODO (ijohnson): Add gce/aws/kvm info
 }
 
 // NewClusterManager creates Cluster reading configuration from given file.

@@ -34,11 +34,13 @@ contrail_configuration:
   KEYSTONE_AUTH_HOST: 127.0.0.1
   KEYSTONE_AUTH_URL_VERSION: /v3
   CONTROL_NODES: 10.1.1.1
+  CONTROLLER_NODES: 10.1.1.1
   OPENSTACK_NODES: 10.1.1.1
 kolla_config:
   kolla_globals:
     openstack_release: ocata-xyz
     enable_haproxy: yes
     contrail_api_interface_address: 127.0.0.1
+    kolla_internal_vip_address: 127.0.0.1
   kolla_passwords:
     keystone_admin_password: contrail123
