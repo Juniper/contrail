@@ -34,10 +34,10 @@
     image: "{{ item.image }}"
     state: started
     env: "{{ item.environment|default(omit) }}"
+    command: "{{ item.command|default(omit) }}"
     network_mode: host
     volumes:
       - "{{ sourcedir }}:/go"
   with_items: "{{ docker[1:] }}"
   become: yes
   become_user: root
-
