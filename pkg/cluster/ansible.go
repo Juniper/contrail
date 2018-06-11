@@ -179,6 +179,8 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		"openstackCluster": a.clusterData.getOpenstackClusterInfo(),
 		"k8sCluster":       a.clusterData.getK8sClusterInfo(),
 		"nodes":            a.clusterData.getAllNodesInfo(),
+		"credentials":      a.clusterData.getAllCredsInfo(),
+		"keypairs":         a.clusterData.getAllKeypairsInfo(),
 		"openstack":        a.getOpenstackDerivedVars(),
 	}
 	content, err := a.applyTemplate(a.getInstanceTemplate(), context)

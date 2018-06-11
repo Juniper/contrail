@@ -3,10 +3,20 @@ global_configuration:
   REGISTRY_PRIVATE_INSECURE: {%if cluster.RegistryPrivateInsecure %}{{cluster.RegistryPrivateInsecure}}{%else%}false{%endif%}
 provider_config:
   bms:
+    {% set cred_provided = "" %}
+    {{ cred_provided }}{% for cred in credentials %}{% set cred_provided = cred %}{% for cred_ref in node.CredentialRefs %}{%if cred_ref.UUID == cred.UUID %}
+    ssh_user: {{ cred.SSHUser }}
+    ssh_pwd: {{ cred.SSHPassword }}
+    {% for key in keypairs %}{% for key_ref in cred.KeyPairs %}{%if key_ref.UUID == key.UUID %}
+    ssh_public_key: {{ key.SSHKey }}
+    {%endif%}{%endfor%}{%endfor%}
+    {%endif%}{%endfor%}{%endfor%}
+    {%if cred_provided == "" %}
     ssh_user: {%if cluster.SSHUser %}{{cluster.SSHUser}}{%else%}root{%endif%}
     ssh_pwd: {%if cluster.SSHPassword %}{{cluster.SSHPassword}}{%else%}c0ntrail123{%endif%}
     {%if cluster.SSHPublicKey %}ssh_public_key: {{ cluster.SSHPublicKey }}{%endif%}
     {%if cluster.SSHPrivateKey %}ssh_private_key: {{ cluster.SSHPrivateKey }}{%endif%}
+    {%endif%}
     ntpserver: {{ cluster.NTPServer }}
     domainsuffix: {%if cluster.DomainSuffix %}{{ cluster.DomainSuffix }}{%else%}local{%endif%}
 
@@ -14,9 +24,13 @@ instances:
     {% for node in nodes %}
   {{ node.Hostname }}:
     ip: {{ node.IPAddress }}
-    {%if node.Username %}ssh_user: {{ node.Username }}{%endif%}
-    {%if node.Password %}ssh_pwd: {{ node.Password }}{%endif%}
-    {%if node.SSHKey %}ssh_public_key: {{ node.SSHKey}}{%endif%}
+    {% for cred in credentials %}{% for cred_ref in node.CredentialRefs %}{%if cred_ref.UUID == cred.UUID %}
+    ssh_user: {{ cred.SSHUser }}
+    ssh_pwd: {{ cred.SSHPassword }}
+    {% for key in keypairs %}{% for key_ref in cred.KeyPairs %}{%if key_ref.UUID == key.UUID %}
+    ssh_public_key: {{ key.SSHKey }}
+    {%endif%}{%endfor%}{%endfor%}
+    {%endif%}{%endfor%}{%endfor%}
     provider: bms
     roles:
       {% for config_node in cluster.ContrailConfigNodes %}{% for node_ref in config_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}config:{%endif%}{%endfor%}{%endfor%}
