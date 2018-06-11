@@ -15,7 +15,7 @@ import (
 
 const (
 	etcdEndpoint = "localhost:2379"
-	dialTimeout  = 60 * time.Second
+	dialTimeout  = 10 * time.Second
 )
 
 // EtcdClient is etcd client extending etcd.clientv3 with test functionality and using etcd v3 API.
@@ -52,6 +52,24 @@ func (e *EtcdClient) GetAllWithPrefix(t *testing.T, prefix string) *clientv3.Get
 func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
 	gr := e.GetAllWithPrefix(t, key)
 	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
+}
+
+// WatchKey watches value changes for provided key and returns collect method that collect captured values.
+func (e *EtcdClient) WatchKey(t *testing.T, key string) (collect func() []string) {
+	var result []string
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		for val := range e.Client.Watch(ctx, key) {
+			result = append(result, string(val.Events[0].Kv.Value))
+		}
+	}()
+
+	return func() (vals []string) {
+		e.Client.Sync(context.Background())
+		cancel()
+		return result
+	}
 }
 
 // Close closes connection to etcd.
