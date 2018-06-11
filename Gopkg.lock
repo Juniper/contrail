@@ -32,6 +32,12 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/apparentlymart/go-cidr"
+  packages = ["cidr"]
+  revision = "2bd8b58cf4275aeb086ade613de226773e29e853"
+
+[[projects]]
   name = "github.com/coreos/etcd"
   packages = [
     "auth/authpb",
@@ -556,6 +562,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dd538b8cfaecab44c98c8d9f3766d68f9139df6c9e5e430b03d83a3162eca25c"
+  inputs-digest = "fdbb63e3fac09f8e097bfe372137bf16daf4e093036008b43ade256c46137dfd"
   solver-name = "gps-cdcl"
   solver-version = 1
