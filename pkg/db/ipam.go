@@ -23,3 +23,15 @@ func (db *Service) IsIPAllocated(ctx context.Context, request *ipam.IsIPAllocate
 	// TODO: Implement IPAM
 	return false, nil
 }
+
+// CreateIpamSubnet creates subnets in specific NetworkIpam
+func (db *Service) CreateIpamSubnet(ctx context.Context, request *ipam.CreateIpamSubnetRequest) (subnetUUID string, err error) {
+	// TODO: Implement IPAM
+	return request.IpamSubnet.SubnetUUID, nil
+}
+
+// DeleteIpamSubnet deletes subnets in specific NetworkIpam
+func (db *Service) DeleteIpamSubnet(ctx context.Context, request *ipam.DeleteIpamSubnetRequest) (err error) {
+	// TODO: Implement IPAM
+	return  nil
+}
