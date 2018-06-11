@@ -63,10 +63,12 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 
 	ics.Cfg = conf
 
-	ics.Etcd, err = etcd.DialByConfig()
+	e, err := etcd.DialByConfig()
 	if err != nil {
 		return nil, err
 	}
+
+	ics.Etcd = etcd.NewClient(e)
 
 	ics.locker, err = etcd.NewDistributedLocker()
 	if err != nil {

@@ -15,13 +15,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/coreos/etcd/clientv3"
 	conc "github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	"github.com/Juniper/contrail/pkg/log"
 )
 
 const (
@@ -38,7 +37,7 @@ type Client struct {
 }
 
 // DialByConfig connects to the etcd db based on viper configuration.
-func DialByConfig() (*Client, error) {
+func DialByConfig() (*clientv3.Client, error) {
 	cfg := clientv3.Config{
 		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
 		Username:    viper.GetString("etcd.username"),
@@ -46,14 +45,15 @@ func DialByConfig() (*Client, error) {
 		DialTimeout: viper.GetDuration("etcd.dial_timeout"),
 	}
 
-	l := log.NewLogger("etcd-client")
-
 	etcd, err := clientv3.New(cfg)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error connecting to ETCD: %s\n", cfg.Endpoints)
 	}
-	l.Info("Connected to the ETCD Server")
-	return &Client{Etcd: etcd, log: l}, nil
+	return etcd, nil
+}
+
+func NewClient(c *clientv3.Client) *Client {
+	return &Client{Etcd: c, log: log.NewLogger("etcd-client")}
 }
 
 // Get gets a value in Etcd
