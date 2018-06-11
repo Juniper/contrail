@@ -1380,3 +1380,36 @@ resources:
     type: job_template
     uuid: 8fb161e0-4f95-4a88-a8b9-acd3f6b34b80
   operation: ""
+- kind: credential
+  data:
+    name: default-credential
+    fq_name:
+    - default-global-system-config
+    - default-credential 
+    ssh_user: root
+    ssh_password: c0ntrail123
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    type: credential
+    uuid: d63854a9-5fe7-40c5-95c5-9f0281f6021a
+    id_perms:
+      created: 2018-08-09T17:29:57.397227
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-08-09T17:29:57.397227
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3193312e+19
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+  operation: ""
