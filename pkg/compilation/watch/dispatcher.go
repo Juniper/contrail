@@ -44,18 +44,19 @@ func AssignJob(job JobRequest) {
 	// Assign Worker the Job to work on
 	workerChan <- job
 
-	log.Printf("Assigned Job: %d to Worker\n", job.JobID)
+	log.Printf("Assigned Job: %d to Worker", job.JobID)
 
 }
 
 // RunDispatcher runs the dispatcher
 func RunDispatcher() {
+	queue := JobQueue
 
 	log.Println("Run Dispatcher")
 
 	go func() {
 		// Run Forever
-		for job := range JobQueue {
+		for job := range queue {
 			// Assign the Job to a Worker
 			go AssignJob(job)
 		}
