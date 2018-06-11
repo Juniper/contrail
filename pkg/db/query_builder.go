@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 
@@ -70,33 +71,51 @@ func NewDialect(mode string) Dialect {
 	switch mode {
 	case MYSQL:
 		return Dialect{
-			Name:             MYSQL,
-			QuoteRune:        "`",
-			JSONAggFuncStart: "group_concat(distinct JSON_OBJECT(",
-			JSONAggFuncEnd:   "))",
-			AnyValueString:   "ANY_VALUE(",
-			PlaceHolderIndex: false,
+			Name:               MYSQL,
+			QuoteRune:          "`",
+			JSONAggFuncStart:   "group_concat(distinct JSON_OBJECT(",
+			JSONAggFuncEnd:     "))",
+			AnyValueString:     "ANY_VALUE(",
+			PlaceHolderIndex:   false,
+			ComparableIpPrefix: "INET6_ATON('",
+			ComparableIpSufix:  "')",
+			InsertIpPrefix:     "INET6_ATON('",
+			InsertIpSufix:      "')",
+			SelectIpPrefix:     "INET6_NTOA(`",
+			SelectIpSufix:      "`)",
 		}
 	default:
 		return Dialect{
-			Name:             POSTGRES,
-			QuoteRune:        `"`,
-			JSONAggFuncStart: "json_agg(json_build_object(",
-			JSONAggFuncEnd:   "))",
-			AnyValueString:   "",
-			PlaceHolderIndex: true,
+			Name:               POSTGRES,
+			QuoteRune:          `"`,
+			JSONAggFuncStart:   "json_agg(json_build_object(",
+			JSONAggFuncEnd:     "))",
+			AnyValueString:     "",
+			PlaceHolderIndex:   true,
+			ComparableIpPrefix: "inet '",
+			ComparableIpSufix:  "'",
+			InsertIpPrefix:     "'",
+			InsertIpSufix:      "'",
+			SelectIpPrefix:     `"`,
+			SelectIpSufix:      `"`,
 		}
 	}
 }
 
 //Dialect represents database dialect.
 type Dialect struct {
-	Name             string
-	QuoteRune        string
-	JSONAggFuncStart string
-	JSONAggFuncEnd   string
-	AnyValueString   string
-	PlaceHolderIndex bool
+	Name               string
+	QuoteRune          string
+	JSONAggFuncStart   string
+	JSONAggFuncEnd     string
+	AnyValueString     string
+	PlaceHolderIndex   bool
+	ComparableIpPrefix string
+	ComparableIpSufix  string
+	InsertIpPrefix     string
+	InsertIpSufix      string
+	SelectIpPrefix     string
+	SelectIpSufix      string
 }
 
 func (d *Dialect) quote(params ...string) string {
@@ -155,6 +174,18 @@ func (d *Dialect) anyValue(params ...string) string {
 		return d.AnyValueString + d.quote(params...) + ")"
 	}
 	return d.quote(params...)
+}
+
+func (d *Dialect) comparableIp(ip net.IP) string {
+	return d.ComparableIpPrefix + StringIPv6(ip) + d.ComparableIpSufix
+}
+
+func (d *Dialect) insertIp(ip net.IP) string {
+	return d.InsertIpPrefix + StringIPv6(ip) + d.InsertIpSufix
+}
+
+func (d *Dialect) wrapSelectIp(columnName string) string {
+	return d.SelectIpPrefix + columnName + d.SelectIpSufix
 }
 
 //Columns represents column index.
@@ -496,4 +527,17 @@ func (qb *QueryBuilder) scanResourceList(value interface{}) []interface{} {
 		log.Fatal("unsupported db dialect")
 	}
 	return resources
+}
+
+// StringIPv6 serializes ip address, forces ipv6 format. Ugly hack but safe.
+func StringIPv6(ip net.IP) string {
+	if ip.To4() == nil {
+		return ip.String()
+	}
+
+	dup := make(net.IP, len(ip))
+	copy(dup, ip)
+	dup = dup.To16()
+	dup[1] = 1
+	return dup.String()[1:]
 }
