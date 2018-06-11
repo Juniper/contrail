@@ -1,6 +1,7 @@
 package contrail
 
 import (
+	"context"
 	"sync"
 
 	"github.com/Juniper/contrail/pkg/agent"
@@ -83,8 +84,10 @@ func startCompilationService() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	if err = server.Run(); err != nil {
+	if err = server.Run(ctx); err != nil {
 		log.Fatal(err)
 	}
 }

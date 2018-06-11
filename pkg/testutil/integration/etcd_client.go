@@ -15,7 +15,7 @@ import (
 
 const (
 	etcdEndpoint = "localhost:2379"
-	dialTimeout  = 60 * time.Second
+	dialTimeout  = 10 * time.Second
 )
 
 // EtcdClient is etcd client extending etcd.clientv3 with test functionality and using etcd v3 API.
@@ -52,6 +52,41 @@ func (e *EtcdClient) GetAllWithPrefix(t *testing.T, prefix string) *clientv3.Get
 func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
 	gr := e.GetAllWithPrefix(t, key)
 	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
+}
+
+// WatchKey watches value changes for provided key and returns collect method that collect captured values.
+func (e *EtcdClient) WatchKey(t *testing.T, key string) (collect func() []string) {
+	var result []string
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		for val := range e.Client.Watch(ctx, key) {
+			result = append(result, string(val.Events[0].Kv.Value))
+		}
+	}()
+
+	return func() (vals []string) {
+		e.Client.Sync(context.Background())
+		cancel()
+		return result
+	}
+}
+
+// GetString gets a string value in Etcd
+func (e *EtcdClient) GetString(t *testing.T, key string) (value string, revision int64) {
+	e.Client.Sync(context.Background())
+	kvHandle := clientv3.NewKV(e.Client)
+	response, err := kvHandle.Get(context.Background(), key)
+	require.NoError(t, err)
+	require.NotEmpty(t, response.Kvs)
+	return string(response.Kvs[0].Value), response.Header.Revision
+}
+
+// ExpectValue gets key and checks if value and revision match.
+func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revision int64) {
+	nextVal, nextRev := e.GetString(t, key)
+	assert.Equal(t, value, nextVal)
+	assert.Equal(t, revision, nextRev)
 }
 
 // Close closes connection to etcd.
