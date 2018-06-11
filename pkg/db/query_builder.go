@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 
@@ -76,6 +77,10 @@ func NewDialect(mode string) Dialect {
 			JSONAggFuncEnd:   "))",
 			AnyValueString:   "ANY_VALUE(",
 			PlaceHolderIndex: false,
+			IpLiteralPrefix:  "INET6_ATON('",
+			IpLiteralSufix:   "')",
+			SelectIpPrefix:   "INET6_NTOA(`",
+			SelectIpSufix:    "`)",
 		}
 	default:
 		return Dialect{
@@ -85,6 +90,10 @@ func NewDialect(mode string) Dialect {
 			JSONAggFuncEnd:   "))",
 			AnyValueString:   "",
 			PlaceHolderIndex: true,
+			IpLiteralPrefix:  "inet '",
+			IpLiteralSufix:   "'",
+			SelectIpPrefix:   `"`,
+			SelectIpSufix:    `"`,
 		}
 	}
 }
@@ -97,6 +106,10 @@ type Dialect struct {
 	JSONAggFuncEnd   string
 	AnyValueString   string
 	PlaceHolderIndex bool
+	IpLiteralPrefix  string
+	IpLiteralSufix   string
+	SelectIpPrefix   string
+	SelectIpSufix    string
 }
 
 func (d *Dialect) quote(params ...string) string {
@@ -155,6 +168,14 @@ func (d *Dialect) anyValue(params ...string) string {
 		return d.AnyValueString + d.quote(params...) + ")"
 	}
 	return d.quote(params...)
+}
+
+func (d *Dialect) literalIp(ip net.IP) string {
+	return d.IpLiteralPrefix + StringIPv6(ip) + d.IpLiteralSufix
+}
+
+func (d *Dialect) selectIp(columnName string) string {
+	return d.SelectIpPrefix + columnName + d.SelectIpSufix
 }
 
 //Columns represents column index.
@@ -496,4 +517,17 @@ func (qb *QueryBuilder) scanResourceList(value interface{}) []interface{} {
 		log.Fatal("unsupported db dialect")
 	}
 	return resources
+}
+
+// StringIPv6 serializes ip address, forces ipv6 format.
+func StringIPv6(ip net.IP) string {
+	if ip.To4() == nil {
+		return ip.String()
+	}
+
+	dup := make(net.IP, len(ip))
+	copy(dup, ip)
+	dup = dup.To16()
+	dup[1] = 1
+	return dup.String()[1:]
 }
