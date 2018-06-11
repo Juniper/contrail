@@ -84,43 +84,6 @@ schema:
       view:
       - create
       - detail
-    password:
-      default: ADMIN
-      description: UserPassword
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: UserPassword
-      type: string
-      view:
-      - create
-      - detail
-    ssh_key:
-      description: SSH Public Key
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: text
-      title: SSH public key
-      type: string
-      view:
-      - detail
-    username:
-      default: ADMIN
-      description: User Name
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: User Name
-      type: string
-      view:
-      - create
-      - detail
     disk_partition:
       description: Comma seperated disk partition to use.
       nullable: false
