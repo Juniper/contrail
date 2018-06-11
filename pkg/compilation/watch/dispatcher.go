@@ -44,7 +44,7 @@ func AssignJob(job JobRequest) {
 	// Assign Worker the Job to work on
 	workerChan <- job
 
-	log.Printf("Assigned Job: %d to Worker\n", job.JobID)
+	log.Printf("Assigned Job: %d to Worker", job.JobID)
 
 }
 

@@ -30,31 +30,31 @@ type PluginConfig struct {
 
 // Config Object
 type Config struct {
-	DefaultCfg      *DefaultConfig
-	EtcdNotifierCfg *EtcdNotifierConfig
-	PluginCfg       *PluginConfig
+	DefaultCfg      DefaultConfig
+	EtcdNotifierCfg EtcdNotifierConfig
+	PluginCfg       PluginConfig
 	PluginNames     []string
 }
 
 // ReadConfig reads the configuration file
-func (c *Config) ReadConfig() error {
-	c.DefaultCfg = &DefaultConfig{
-		PluginDirectory: viper.GetString("compilation.plugin_directory"),
-		NumberOfWorkers: viper.GetInt("compilation.number_of_workers"),
-		MaxJobQueueLen:  viper.GetInt("compilation.max_job_queue_len"),
-	}
-
-	c.EtcdNotifierCfg = &EtcdNotifierConfig{
-		EtcdServers:      viper.GetStringSlice("etcd.endpoints"),
-		WatchPath:        viper.GetString("etcd.path"),
-		MsgQueueLockTime: viper.GetInt("compilation.msg_queue_lock_time"), // TODO(Michal): Change to GetDuration
-		MsgIndexString:   viper.GetString("compilation.msg_index_string"),
-		ReadLockString:   viper.GetString("compilation.read_lock_string"),
-		MasterElection:   viper.GetBool("compilation.master_election"),
-	}
-
-	c.PluginCfg = &PluginConfig{
-		Handlers: viper.GetStringMap("plugin.handlers"),
+func ReadConfig() Config {
+	c := Config{
+		DefaultCfg: DefaultConfig{
+			PluginDirectory: viper.GetString("compilation.plugin_directory"),
+			NumberOfWorkers: viper.GetInt("compilation.number_of_workers"),
+			MaxJobQueueLen:  viper.GetInt("compilation.max_job_queue_len"),
+		},
+		EtcdNotifierCfg: EtcdNotifierConfig{
+			EtcdServers:      viper.GetStringSlice("etcd.endpoints"),
+			WatchPath:        viper.GetString("etcd.path"),
+			MsgQueueLockTime: viper.GetInt("compilation.msg_queue_lock_time"), // TODO(Michal): Change to GetDuration
+			MsgIndexString:   viper.GetString("compilation.msg_index_string"),
+			ReadLockString:   viper.GetString("compilation.read_lock_string"),
+			MasterElection:   viper.GetBool("compilation.master_election"),
+		},
+		PluginCfg: PluginConfig{
+			Handlers: viper.GetStringMap("plugin.handlers"),
+		},
 	}
 
 	log.Println("Plugin Directory:", c.DefaultCfg.PluginDirectory)
@@ -69,17 +69,5 @@ func (c *Config) ReadConfig() error {
 	log.Println("ETCD Notifier MasterElection:", c.EtcdNotifierCfg.MasterElection)
 
 	log.Println("Plugin Handlers:", c.PluginCfg.Handlers)
-
-	return nil
-}
-
-// NewConfig creates the Config object
-func NewConfig() (*Config, error) {
-	conf := &Config{}
-	err := conf.ReadConfig()
-	if err != nil {
-		return nil, err
-	}
-	log.Println("Config file Read")
-	return conf, nil
+	return c
 }

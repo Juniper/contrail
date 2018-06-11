@@ -26,7 +26,7 @@ func NewNotifierService(path string) (*NotifierService, error) {
 	service := &NotifierService{
 		BaseService: services.BaseService{},
 		Path:        path,
-		Client:      c,
+		Client:      NewClient(c),
 	}
 	return service, nil
 }

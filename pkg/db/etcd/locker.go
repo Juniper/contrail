@@ -12,7 +12,7 @@ import (
 
 // DistributedLocker allows securing critical sections using etcdlock.
 type DistributedLocker struct {
-	locker *etcdlock.Locker
+	*etcdlock.Locker
 }
 
 // NewDistributedLocker creates locker connected to the first etcd node from viper configuration.
@@ -34,7 +34,7 @@ func NewDistributedLocker() (*DistributedLocker, error) {
 		return nil, errors.Wrapf(err, "Error connecting to ETCD: %s\n", endpoints[0])
 	}
 
-	return &DistributedLocker{locker: l}, nil
+	return &DistributedLocker{Locker: l}, nil
 }
 
 // DoWithLock executes provided callback inside lock secured section.
@@ -48,7 +48,7 @@ func (l *DistributedLocker) DoWithLock(
 		return do(ctx)
 	}
 
-	lock, err := l.locker.Lock(ctx, key, lockTTL)
+	lock, err := l.Lock(ctx, key, lockTTL)
 	if err != nil {
 		return errors.Wrap(err, "cannot acquire lock")
 	}

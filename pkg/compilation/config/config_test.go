@@ -10,10 +10,7 @@ import (
 func TestConfig(t *testing.T) {
 	viper.AddConfigPath("../test_data/")
 	viper.SetConfigFile("test_config")
-	cfg, err := NewConfig()
-	if err != nil {
-		t.Errorf("Cannot read Config file")
-	}
+	cfg := ReadConfig()
 
 	if reflect.TypeOf(cfg.EtcdNotifierCfg.EtcdServers).Kind() != reflect.Slice {
 		t.Errorf("Error, Server Urls is not Right")
