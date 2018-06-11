@@ -174,12 +174,21 @@ func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 
 func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	a.log.Info("Creating instance.yml input file for ansible deployer")
+	SSHUser, SSHPassword, SSHKey, err := a.cluster.getDefaultCredential()
+	if err != nil {
+		return err
+	}
 	context := pongo2.Context{
-		"cluster":          a.clusterData.clusterInfo,
-		"openstackCluster": a.clusterData.getOpenstackClusterInfo(),
-		"k8sCluster":       a.clusterData.getK8sClusterInfo(),
-		"nodes":            a.clusterData.getAllNodesInfo(),
-		"openstack":        a.getOpenstackDerivedVars(),
+		"cluster":            a.clusterData.clusterInfo,
+		"openstackCluster":   a.clusterData.getOpenstackClusterInfo(),
+		"k8sCluster":         a.clusterData.getK8sClusterInfo(),
+		"nodes":              a.clusterData.getAllNodesInfo(),
+		"credentials":        a.clusterData.getAllCredsInfo(),
+		"keypairs":           a.clusterData.getAllKeypairsInfo(),
+		"openstack":          a.getOpenstackDerivedVars(),
+		"defaultSSHUser":     SSHUser,
+		"defaultSSHPassword": SSHPassword,
+		"defaultSSHKey":      SSHKey,
 	}
 	content, err := a.applyTemplate(a.getInstanceTemplate(), context)
 	if err != nil {
