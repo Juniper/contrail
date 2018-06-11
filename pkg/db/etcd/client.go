@@ -15,13 +15,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/coreos/etcd/clientv3"
 	conc "github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	"github.com/Juniper/contrail/pkg/log"
 )
 
 const (
@@ -38,7 +37,7 @@ type Client struct {
 }
 
 // DialByConfig connects to the etcd db based on viper configuration.
-func DialByConfig() (*Client, error) {
+func DialByConfig() (*clientv3.Client, error) {
 	cfg := clientv3.Config{
 		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
 		Username:    viper.GetString("etcd.username"),
@@ -46,14 +45,15 @@ func DialByConfig() (*Client, error) {
 		DialTimeout: viper.GetDuration("etcd.dial_timeout"),
 	}
 
-	l := log.NewLogger("etcd-client")
-
 	etcd, err := clientv3.New(cfg)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error connecting to ETCD: %s\n", cfg.Endpoints)
 	}
-	l.Info("Connected to the ETCD Server")
-	return &Client{Etcd: etcd, log: l}, nil
+	return etcd, nil
+}
+
+func NewClient(c *clientv3.Client) *Client {
+	return &Client{Etcd: c, log: log.NewLogger("etcd-client")}
 }
 
 // Get gets a value in Etcd
@@ -111,51 +111,64 @@ func (c *Client) Delete(ctx context.Context, key string) error {
 	return err
 }
 
-// WatchAfterIndex Watches a key pattern for changes After an Index
-func (c *Client) WatchAfterIndex(ctx context.Context,
-	afterIndex int64, keyPattern string, callback WatchCallback) {
+type Event struct {
+	Revision int64
+	Type     int32
+	Key      string
+	Value    []byte
+}
 
+// WatchRecursive Watches a key pattern for changes After an Index
+func (c *Client) WatchRecursive(
+	ctx context.Context, keyPattern string, afterIndex int64,
+) chan Event {
+	resultChan := make(chan Event)
 	rchan := c.Etcd.Watch(ctx, keyPattern,
 		clientv3.WithPrefix(), clientv3.WithRev(afterIndex))
-	for wresp := range rchan {
-		for _, ev := range wresp.Events {
-			afterIndex = wresp.Header.Revision
-			if callback == nil {
-				continue
+
+	go func() {
+		for wresp := range rchan {
+			for _, ev := range wresp.Events {
+				resultChan <- Event{
+					Revision: wresp.Header.Revision,
+					Type:     int32(ev.Type),
+					Key:      string(ev.Kv.Key),
+					Value:    ev.Kv.Value,
+				}
 			}
-			callback(ctx, wresp.Header.Revision, int32(ev.Type),
-				string(ev.Kv.Key), ev.Kv.Value)
 		}
-	}
+	}()
+
+	return resultChan
 }
 
 // WatchRecursive Recursively Watches a key pattern for changes
-func (c *Client) WatchRecursive(ctx context.Context,
-	keyPattern string, callback WatchCallback) {
-	afterIndex := int64(0)
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			c.WatchAfterIndex(ctx, afterIndex, keyPattern, callback)
-		}
-	}
-}
+//func (c *Client) WatchRecursive(ctx context.Context,
+//keyPattern string) {
+//afterIndex := int64(0)
+//for {
+//select {
+//case <-ctx.Done():
+//return
+//default:
+//c.WatchAfterIndex(ctx, afterIndex, keyPattern)
+//}
+//}
+//}
 
-// WatchRecursiveAfterIndex Recursively Watches a key pattern for changes
-// After an Index
-func (c *Client) WatchRecursiveAfterIndex(ctx context.Context,
-	afterIndex int64, keyPattern string, callback WatchCallback) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			c.WatchAfterIndex(ctx, afterIndex, keyPattern, callback)
-		}
-	}
-}
+//// WatchRecursiveAfterIndex Recursively Watches a key pattern for changes
+//// After an Index
+//func (c *Client) WatchRecursiveAfterIndex(ctx context.Context,
+//afterIndex int64, keyPattern string) {
+//for {
+//select {
+//case <-ctx.Done():
+//return
+//default:
+//c.WatchAfterIndex(ctx, afterIndex, keyPattern)
+//}
+//}
+//}
 
 // InTransaction wraps clientv3 transaction and wraps conc.STM with own Txn.
 func (c *Client) InTransaction(ctx context.Context, do func(context.Context) error) error {
