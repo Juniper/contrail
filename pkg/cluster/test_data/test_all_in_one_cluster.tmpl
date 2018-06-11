@@ -13,15 +13,38 @@ cleanup:
 - path: /openstack-network-node/openstack_network_nodes_uuid
 - path: /openstack-storage-node/openstack_storage_nodes_uuid
 - path: /openstack-compute-node/openstack_compute_nodes_uuid
+- path: /keypair/all_in_one_keypair_uuid
+- path: /credential/all_in_one_credential_uuid
 - path: /node/all_in_one_node_uuid
 - path: /contrail-cluster/test_cluster_uuid
 - path: /openstack-cluster/test_openstack_cluster_uuid
 test_data:
+  {% if CREDS %}
+  all_in_one_keypair: &all_in_one_keypair
+    name: all_in_one_keypair
+    uuid: all_in_one_keypair_uuid
+    ssh_public_key: test_ssh_key
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  all_in_one_credential: &all_in_one_credential
+    name: all_in_one_credential
+    uuid: all_in_one_credential_uuid
+    ssh_user: test_ssh_user
+    ssh_password: test_ssh_password
+    keypair_refs:
+      - uuid: all_in_one_keypair_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  {%endif%}
   all_in_one_node: &all_in_one_node
     uuid: all_in_one_node_uuid
     hostname: all_in_one_node
     interface_name: all_in_one_node_interface
     ip_address: {{MGMT_INT_IP}}
+    {% if CREDS %}
+    credential_refs:
+      - uuid: all_in_one_credential_uuid
+    {%endif%}
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
   all_in_one_openstack_cluster: &all_in_one_openstack_cluster
@@ -201,6 +224,45 @@ workflow:
       openstack_cluster_refs:
         - uuid: test_openstack_cluster_uuid
 
+{% if CREDS %}
+- name: create keypair
+  request:
+    path: /keypairs
+    method: POST
+    expected:
+    - 200
+    data:
+      keypair: *all_in_one_keypair
+  expect:
+    keypair:
+      perms2:
+        owner: admin
+      uuid: all_in_one_keypair_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      ssh_public_key: test_ssh_key
+
+- name: create credential
+  request:
+    path: /credentials
+    method: POST
+    expected:
+    - 200
+    data:
+      credential: *all_in_one_credential
+  expect:
+    credential:
+      perms2:
+        owner: admin
+      uuid: all_in_one_credential_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      ssh_user: test_ssh_user
+      ssh_password: test_ssh_password
+      keypair_refs:
+        - uuid: all_in_one_keypair_uuid
+{%endif%}
+
 - name: create node
   request:
     path: /nodes
@@ -219,6 +281,10 @@ workflow:
       hostname: all_in_one_node
       interface_name: all_in_one_node_interface
       ip_address: {{MGMT_INT_IP}}
+      {% if CREDS %}
+      credential_refs:
+        - uuid: all_in_one_credential_uuid
+      {%endif%}
 
 - name: create config node
   request:

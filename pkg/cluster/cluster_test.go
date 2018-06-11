@@ -351,3 +351,26 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 
 	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", context, expectedEndpoints)
 }
+
+func TestCredAllInOneClusterTest(t *testing.T) {
+	context := pongo2.Context{
+		"CREDS":           true,
+		"TYPE":            "",
+		"MGMT_INT_IP":     "127.0.0.1",
+		"CONTROL_NODES":   "",
+		"OPENSTACK_NODES": "",
+	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
+		"keystone":  "http://127.0.0.1:5000",
+	}
+	expectedInstances := "./test_data/expected_creds_all_in_one_instances.yml"
+
+	runClusterTest(t, expectedInstances, context, expectedEndpoints)
+}
