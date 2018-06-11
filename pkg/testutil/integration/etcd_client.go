@@ -14,10 +14,11 @@ import (
 	pkglog "github.com/Juniper/contrail/pkg/log"
 )
 
+// Integration test settings.
 const (
-	etcdEndpoint       = "localhost:2379"
-	etcdDialTimeout    = 60 * time.Second
-	etcdRequestTimeout = 60 * time.Second
+	EtcdEndpoint       = "localhost:2379"
+	EtcdDialTimeout    = 60 * time.Second
+	EtcdRequestTimeout = 60 * time.Second
 )
 
 // EtcdClient is etcd client extending etcd.clientv3 with test functionality and using etcd v3 API.
@@ -29,10 +30,10 @@ type EtcdClient struct {
 // NewEtcdClient is a constructor of etcd client.
 func NewEtcdClient(t *testing.T) *EtcdClient {
 	l := pkglog.NewLogger("etcd-client")
-	l.WithFields(logrus.Fields{"endpoint": etcdEndpoint, "dial-timeout": etcdDialTimeout}).Debug("Connecting")
+	l.WithFields(logrus.Fields{"endpoint": EtcdEndpoint, "dial-timeout": EtcdDialTimeout}).Debug("Connecting")
 	c, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{etcdEndpoint},
-		DialTimeout: etcdDialTimeout,
+		Endpoints:   []string{EtcdEndpoint},
+		DialTimeout: EtcdDialTimeout,
 	})
 	require.NoError(t, err, "connecting etcd failed")
 
@@ -44,7 +45,7 @@ func NewEtcdClient(t *testing.T) *EtcdClient {
 
 // GetKey gets etcd key.
 func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption) *clientv3.GetResponse {
-	ctx, cancel := context.WithTimeout(context.Background(), etcdRequestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), EtcdRequestTimeout)
 	defer cancel()
 
 	r, err := e.Get(ctx, key, opts...)
@@ -55,7 +56,7 @@ func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption)
 
 // DeleteKey deletes etcd key.
 func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOption) {
-	ctx, cancel := context.WithTimeout(context.Background(), etcdRequestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), EtcdRequestTimeout)
 	defer cancel()
 
 	r, err := e.Delete(ctx, key, opts...)
@@ -66,6 +67,41 @@ func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOpti
 func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
 	gr := e.GetKey(t, key, clientv3.WithPrefix())
 	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
+}
+
+// WatchKey watches value changes for provided key and returns collect method that collect captured values.
+func (e *EtcdClient) WatchKey(t *testing.T, key string) (collect func() []string) {
+	var result []string
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		for val := range e.Client.Watch(ctx, key) {
+			result = append(result, string(val.Events[0].Kv.Value))
+		}
+	}()
+
+	return func() (vals []string) {
+		e.Client.Sync(context.Background())
+		cancel()
+		return result
+	}
+}
+
+// GetString gets a string value in Etcd
+func (e *EtcdClient) GetString(t *testing.T, key string) (value string, revision int64) {
+	e.Client.Sync(context.Background())
+	kvHandle := clientv3.NewKV(e.Client)
+	response, err := kvHandle.Get(context.Background(), key)
+	require.NoError(t, err)
+	require.NotEmpty(t, response.Kvs)
+	return string(response.Kvs[0].Value), response.Header.Revision
+}
+
+// ExpectValue gets key and checks if value and revision match.
+func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revision int64) {
+	nextVal, nextRev := e.GetString(t, key)
+	assert.Equal(t, value, nextVal)
+	assert.Equal(t, revision, nextRev)
 }
 
 // Close closes connection to etcd.

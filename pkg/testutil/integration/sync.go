@@ -18,7 +18,7 @@ const pgQueryCanceledErrorCode = "57014"
 func RunSync(t *testing.T) (closeSync func()) {
 	setViperConfig(map[string]interface{}{
 		"database.debug": false,
-		"etcd.endpoints": []string{etcdEndpoint},
+		"etcd.endpoints": []string{EtcdEndpoint},
 	})
 
 	s, err := sync.NewService()
