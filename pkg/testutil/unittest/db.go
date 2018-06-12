@@ -3,7 +3,6 @@ package unittest
 import (
 	"database/sql"
 	"fmt"
-	"github.com/Juniper/contrail/pkg/db"
 	"os"
 	"strings"
 	"testing"
@@ -14,6 +13,8 @@ import (
 	"github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/db"
 )
 
 const (
@@ -47,13 +48,15 @@ func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
 func CreateTestDbService(m *testing.M) {
 	viper.SetConfigName("contrail")
 	viper.AddConfigPath("../apisrv")
-	viper.ReadInConfig() // nolint: errcheck
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	viper.SetEnvPrefix("contrail")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	common.SetLogLevel()
-	var err error
 	dbConfig := viper.GetStringMap("test_database")
 
 	var code int

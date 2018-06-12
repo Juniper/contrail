@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"strings"
@@ -12,19 +11,20 @@ import (
 	"github.com/spf13/viper"
 )
 
-var testDB *sql.DB
 var db *Service
 
 func TestMain(m *testing.M) {
-	viper.SetConfigName("server")
+	viper.SetConfigName("contrail")
 	viper.AddConfigPath("../apisrv")
-	viper.ReadInConfig()
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	viper.SetEnvPrefix("contrail")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	common.SetLogLevel()
-	var err error
 	dbConfig := viper.GetStringMap("test_database")
 	for _, iConfig := range dbConfig {
 		config := common.InterfaceToInterfaceMap(iConfig)
@@ -45,7 +45,7 @@ func TestMain(m *testing.M) {
 			config["name"].(string),
 		)
 
-		testDB, err = makeConnection(driver, dsn)
+		testDB, err := makeConnection(driver, dsn)
 		if err != nil {
 			log.Fatal(err)
 		}
