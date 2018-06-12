@@ -58,6 +58,7 @@ const (
 
 	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
 	statusField          = "provisioning_state"
+	statusNoState        = "NOSTATE"
 	statusCreated        = "CREATED"
 	statusCreateProgress = "CREATE_IN_PROGRESS"
 	statusCreateFailed   = "CREATE_FAILED"

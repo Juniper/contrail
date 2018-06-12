@@ -355,6 +355,9 @@ func (a *ansibleProvisioner) createCluster() error {
 }
 
 func (a *ansibleProvisioner) isUpdated() (updated bool, err error) {
+	if a.clusterData.clusterInfo.ProvisioningState != statusNoState {
+		return false, nil
+	}
 	status := map[string]interface{}{}
 	if _, err := os.Stat(a.getInstanceFile()); err == nil {
 		ok, err := a.compareInventory()
