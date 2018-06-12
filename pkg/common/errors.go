@@ -2,11 +2,24 @@ package common
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
+
+// MultiError implements errors with multiple causes
+type MultiError []error
+
+// Error implements default errors interface for MultiError.
+func (m MultiError) Error() string {
+	var msgs []string
+	for _, e := range m {
+		msgs = append(msgs, e.Error())
+	}
+	return strings.Join(msgs, "\n")
+}
 
 //ErrorNotFound for not found error.
 var ErrorNotFound = grpc.Errorf(codes.NotFound, "not found")
