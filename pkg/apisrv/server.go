@@ -53,9 +53,9 @@ func (s *Server) SetupService() services.Service {
 	service.RegisterRESTAPI(s.Echo)
 
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
-		BaseService:    services.BaseService{},
-		DB:             s.dbService,
-		AddressManager: s.dbService,
+		DB:               s.dbService,
+		AddressManager:   s.dbService,
+		IntPoolAllocator: s.dbService,
 	})
 	if viper.GetBool("server.notify_etcd") {
 		etcdNotifierServers := viper.GetStringSlice("etcd.endpoints")

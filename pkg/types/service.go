@@ -5,7 +5,6 @@ import (
 
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
-	"golang.org/x/net/context"
 )
 
 const (
@@ -17,13 +16,12 @@ const (
 type DBServiceInterface interface {
 	services.Service
 	DB() *sql.DB
-	AllocateInt(context.Context, string) (int64, error)
-	DeallocateInt(context.Context, string, int64) error
 }
 
 //ContrailTypeLogicService is a service for implementing type specific logic
 type ContrailTypeLogicService struct {
 	services.BaseService
-	DB             DBServiceInterface
-	AddressManager ipam.AddressManager
+	DB               DBServiceInterface
+	AddressManager   ipam.AddressManager
+	IntPoolAllocator ipam.IntPoolAllocator
 }
