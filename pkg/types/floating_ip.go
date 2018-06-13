@@ -54,11 +54,7 @@ func (sv *ContrailTypeLogicService) CreateFloatingIP(
 			floatingIP.FloatingIPAddress = floatingIPAddress
 
 			response, err = sv.Next().CreateFloatingIP(ctx, request)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return err
 		})
 
 	return response, err

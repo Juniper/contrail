@@ -1,15 +1,17 @@
 {
-    "EnableAll": true,
+    "Enable": [
+        "gofmt",
+        "misspell",
+        "gosimple",
+        "nakedret",
+        "unused"
+    ],
     "Exclude": [
         "Subprocess launching with variable.*(gas)",
         "TLS InsecureSkipVerify.*(gas)"
     ],
     "Disable": [
-        "megacheck",
-        "safesql",
-        "staticcheck",
-        "test",
-        "testify"
+        "megacheck"
     ],
     "Test": true,
     "Aggregate": true,

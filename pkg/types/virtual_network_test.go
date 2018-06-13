@@ -1,15 +1,17 @@
 package types
 
 import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/context"
+
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/serviceif"
 	"github.com/Juniper/contrail/pkg/testutil/unittest"
 	"github.com/Juniper/contrail/pkg/types/ipam"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
-	"testing"
-	"time"
 )
 
 //Structure testVn is used to pass vn parameters during VrirualNetwork object creation
