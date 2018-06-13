@@ -172,7 +172,7 @@ func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 		}
 		for _, openstackControlNode := range openstackControlNodes {
 			// user error
-			// do not enable haproxy if openstack ip is specifed
+			// do not enable haproxy if openstack ip is specified
 			// as openstack control nodes(OPENSTACK_NODES) as well
 			openstackControlNodeIP := net.ParseIP(openstackControlNode)
 			if bytes.Equal(openstackIP, openstackControlNodeIP) {

@@ -1,5 +1,8 @@
 {
-    "EnableAll": true,
+    "Enable": [
+        "gofmt",
+        "misspell"
+    ],
     "Exclude": [
         "Subprocess launching with variable.*(gas)",
         "TLS InsecureSkipVerify.*(gas)"
