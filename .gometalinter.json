@@ -13,7 +13,9 @@
     ],
     "Test": true,
     "Aggregate": true,
-    "Sort": ["path"],
+    "Sort": [
+        "path"
+    ],
     "Deadline": "10m",
     "Concurrency": 2,
     "LineLength": 120,
@@ -21,7 +23,6 @@
     "Vendor": true,
     "Skip": [
         "pkg/services",
-        "pkg/serviceif",
         "pkg/models",
         "pkg/db",
         "pkg/compilationif"

@@ -138,7 +138,7 @@ func (s *APIServer) URL() string {
 
 // Database returns database handle.
 func (s *APIServer) Database() *sql.DB {
-	return s.apiServer.DB
+	return s.apiServer.DB()
 }
 
 // Close closes server.

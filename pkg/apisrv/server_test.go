@@ -61,12 +61,12 @@ func TestGRPC(t *testing.T) {
 	project := models.MakeProject()
 	project.UUID = uuid.NewV4().String()
 	project.FQName = []string{"default-domain", "project", project.UUID}
-	_, err = c.CreateProject(ctx, &models.CreateProjectRequest{
+	_, err = c.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: project,
 	})
 	assert.NoError(t, err)
-	response, err := c.ListProject(ctx, &models.ListProjectRequest{
-		Spec: &models.ListSpec{
+	response, err := c.ListProject(ctx, &services.ListProjectRequest{
+		Spec: &services.ListSpec{
 			Limit: 1,
 		},
 	})
@@ -75,13 +75,13 @@ func TestGRPC(t *testing.T) {
 	}
 	assert.Equal(t, 1, len(response.Projects))
 
-	getResponse, err := c.GetProject(ctx, &models.GetProjectRequest{
+	getResponse, err := c.GetProject(ctx, &services.GetProjectRequest{
 		ID: project.UUID,
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, getResponse.Project)
 
-	_, err = c.DeleteProject(ctx, &models.DeleteProjectRequest{
+	_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
 		ID: project.UUID,
 	})
 	assert.NoError(t, err)

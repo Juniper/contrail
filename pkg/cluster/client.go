@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 func (c *Cluster) createEndpoint(parentUUID, name, publicURL, privateURL string) error {
@@ -27,8 +28,8 @@ func (c *Cluster) createEndpoint(parentUUID, name, publicURL, privateURL string)
 
 func (c *Cluster) getEndpoints(parentUUIDs []string) (endpointIDs []string, err error) {
 	values := url.Values{
-		models.ParentUUIDsKey: parentUUIDs,
-		models.ParentTypeKey:  []string{defaultResource},
+		services.ParentUUIDsKey: parentUUIDs,
+		services.ParentTypeKey:  []string{defaultResource},
 	}
 	var endpointList map[string][]interface{}
 	resURI := fmt.Sprintf("%ss?%s", defaultEndpointResPath, values.Encode())

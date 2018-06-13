@@ -20,7 +20,7 @@ generate: ## Run the source code generator
 	mkdir public || echo "ok"
 	go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
 	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
-	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
+	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
 	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto.md proto/github.com/Juniper/contrail/pkg/services/generated.proto proto/github.com/Juniper/contrail/pkg/models/generated.proto
 	go fmt github.com/Juniper/contrail/pkg/db
 	go fmt github.com/Juniper/contrail/pkg/models
@@ -28,8 +28,8 @@ generate: ## Run the source code generator
 	go fmt github.com/Juniper/contrail/pkg/compilationif
 	mkdir -p pkg/types/mock
 	mockgen -destination=pkg/types/mock/gen_db_service_mock.go -package=typesmock github.com/Juniper/contrail/pkg/types DBServiceInterface
-	mkdir -p pkg/serviceif/mock
-	mockgen -destination=pkg/serviceif/mock/gen_serviceif_mock.go -package=serviceifmock github.com/Juniper/contrail/pkg/serviceif Service
+	mkdir -p pkg/services/mock
+	mockgen -destination=pkg/services/mock/gen_services_mock.go -package=servicesmock github.com/Juniper/contrail/pkg/services Service
 	mkdir -p pkg/types/ipam/mock
 	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock github.com/Juniper/contrail/pkg/types/ipam AddressManager
 
@@ -45,7 +45,7 @@ reset_gen:
 	rm tools/init_psql.sql
 	rm tools/cleanup.sql
 	rm -rf pkg/types/mock
-	rm -rf pkg/serviceif/mock
+	rm -rf pkg/services/mock
 	rm -rf pkg/types/ipam/mock
 
 install:
@@ -58,7 +58,9 @@ testenv: ## Setup docker based test environment. (You need docker)
 
 reset_db: ## Reset Database with latest schema.
 	./tools/reset_db_mysql.sh
+	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 	./tools/reset_db_psql.sh
+	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail_postgres.yml
 
 binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail

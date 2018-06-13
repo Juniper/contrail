@@ -16,7 +16,11 @@ import (
 //Version is version for schema format.
 var Version = "1.0"
 
-var indexRange = 1000
+const (
+	schemaStartIndex    = 10
+	schemaIndexOffset   = 3
+	propertyIndexOffset = 1000
+)
 
 // Available type values.
 const (
@@ -31,7 +35,7 @@ const (
 
 var sqlTypeMap = map[string]string{
 	ObjectType:  "json",
-	IntegerType: "int",
+	IntegerType: "bigint",
 	ArrayType:   "json",
 	BooleanType: "bool",
 	NumberType:  "float",
@@ -124,6 +128,7 @@ type Schema struct {
 	Path             string                    `yaml:"-" json:"-"`
 	PluralPath       string                    `yaml:"-" json:"-"`
 	Children         []*BackReference          `yaml:"-" json:"-"`
+	Index            int                       `yaml:"-" json:"-"`
 }
 
 //JSONSchema is a standard JSONSchema representation plus data for code generation.
@@ -575,27 +580,30 @@ func (api *API) resolveAllRelation() error {
 }
 
 func (api *API) resolveIndex() error {
+	schemaIndex := schemaStartIndex
 	for _, s := range api.Schemas {
 		if s.Type == AbstractType {
 			continue
 		}
+		s.Index = schemaIndex
+		schemaIndex += schemaIndexOffset
 		index := 1
 		for _, property := range s.JSONSchema.OrderedProperties {
 			property.Index = index
 			index++
 		}
-		index = index + indexRange
+		index = index + propertyIndexOffset
 		for _, key := range mapSlice(s.ReferencesSlice).keys() {
 			reference := s.References[key]
 			reference.Index = index
 			index++
 		}
-		index = index + indexRange
+		index = index + propertyIndexOffset
 		for _, backReference := range s.Children {
 			backReference.Index = index
 			index++
 		}
-		index = index + indexRange
+		index = index + propertyIndexOffset
 		for _, backReference := range s.BackReferences {
 			backReference.Index = index
 			index++

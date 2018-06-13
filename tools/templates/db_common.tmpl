@@ -4,7 +4,7 @@ import (
     "context"
     "fmt"
 
-    "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/services"
 )
 
 func (db *Service) initQueryBuilders() {
@@ -22,7 +22,7 @@ func (db *Service) initQueryBuilders() {
 
 func (db *Service) dump(ctx context.Context, ow ObjectWriter) error {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-    list{{ schema.JSONSchema.GoName }}Request := &models.List{{ schema.JSONSchema.GoName }}Request{&models.ListSpec{}}
+    list{{ schema.JSONSchema.GoName }}Request := &services.List{{ schema.JSONSchema.GoName }}Request{&services.ListSpec{}}
     list{{ schema.JSONSchema.GoName }}Response, err := db.list{{ schema.JSONSchema.GoName }}(
         ctx,
         list{{ schema.JSONSchema.GoName }}Request,

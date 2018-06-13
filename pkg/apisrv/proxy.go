@@ -17,7 +17,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/serviceif"
+	"github.com/Juniper/contrail/pkg/services"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	log "github.com/sirupsen/logrus"
@@ -33,7 +33,7 @@ const (
 type proxyService struct {
 	group         string
 	echoServer    *echo.Echo
-	dbService     serviceif.Service
+	dbService     services.Service
 	EndpointStore *apicommon.EndpointStore
 	// context to stop servicing proxy endpoints
 	serviceContext     context.Context
@@ -42,7 +42,7 @@ type proxyService struct {
 }
 
 func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
-	dbService serviceif.Service) *proxyService {
+	dbService services.Service) *proxyService {
 	group := viper.GetString("server.dynamic_proxy_path")
 	if group == "" {
 		group = "proxy"
@@ -59,9 +59,9 @@ func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
 func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 	endpoints := make(map[string]*models.Endpoint)
 	ctx := common.NoAuth(context.Background())
-	spec := models.ListSpec{Limit: limit}
+	spec := services.ListSpec{Limit: limit}
 	for {
-		request := &models.ListEndpointRequest{Spec: &spec}
+		request := &services.ListEndpointRequest{Spec: &spec}
 		response, err := p.dbService.ListEndpoint(ctx, request)
 		if err != nil {
 			return nil, err

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ExpansiveWorlds/instrumentedsql"
-	"github.com/Juniper/contrail/pkg/serviceif"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/go-sql-driver/mysql"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lib/pq"
@@ -29,16 +29,25 @@ const (
 
 //Service struct
 type Service struct {
-	serviceif.BaseService
+	services.BaseService
 	db            *sql.DB
 	Dialect       Dialect
 	queryBuilders map[string]*QueryBuilder
 }
 
+//NewServiceFromConfig makes db service from viper config.
+func NewServiceFromConfig() (*Service, error) {
+	sqlDB, err := ConnectDB()
+	if err != nil {
+		return nil, errors.Wrap(err, "Init DB failed")
+	}
+	return NewService(sqlDB, viper.GetString("database.dialect")), nil
+}
+
 //NewService makes a DB service.
 func NewService(db *sql.DB, dialect string) *Service {
 	dbService := &Service{
-		BaseService: serviceif.BaseService{},
+		BaseService: services.BaseService{},
 		db:          db,
 		Dialect:     NewDialect(dialect),
 	}
@@ -49,6 +58,11 @@ func NewService(db *sql.DB, dialect string) *Service {
 //DB gets db object.
 func (db *Service) DB() *sql.DB {
 	return db.db
+}
+
+//Close closes db.
+func (db *Service) Close() error {
+	return db.db.Close()
 }
 
 //SetDB sets db object.
