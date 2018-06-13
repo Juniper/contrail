@@ -55,11 +55,8 @@ func (sv *ContrailTypeLogicService) UpdateGlobalSystemConfig(
 			}
 
 			resp, err = sv.Next().UpdateGlobalSystemConfig(ctx, request)
-			if err != nil {
-				return err
-			}
+			return err
 
-			return nil
 		})
 
 	if err != nil {

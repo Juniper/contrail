@@ -30,9 +30,5 @@ func LoadConfig(path string, dest interface{}) error {
 		return err
 	}
 
-	err = yaml.UnmarshalStrict(configYAML, dest)
-	if err != nil {
-		return err
-	}
-	return nil
+	return yaml.UnmarshalStrict(configYAML, dest)
 }
