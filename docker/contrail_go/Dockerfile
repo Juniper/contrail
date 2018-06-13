@@ -8,6 +8,7 @@ ADD ./etc/init_mysql.sql /usr/share/contrail/
 ADD ./etc/init_psql.sql /usr/share/contrail/
 ADD ./public /usr/share/contrail/public
 ADD ./templates /usr/share/contrail/templates
+COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
 
 RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  &&\
         yum install -y \
