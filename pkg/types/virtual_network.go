@@ -31,7 +31,7 @@ func (service *ContrailTypeLogicService) CreateVirtualNetwork(
 		service.DB.DB(),
 		func(ctx context.Context) error {
 			// allocate virtual network ID
-			virtualNetwork.VirtualNetworkNetworkID, err = service.DB.AllocateInt(ctx, VirtualNetworkIDPoolKey)
+			virtualNetwork.VirtualNetworkNetworkID, err = service.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
 			if err != nil {
 				return err
 			}
@@ -79,7 +79,7 @@ func (service *ContrailTypeLogicService) DeleteVirtualNetwork(
 				return err
 			}
 
-			err = service.DB.DeallocateInt(ctx, VirtualNetworkIDPoolKey, virtualNetworkID)
+			err = service.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, virtualNetworkID)
 			if err != nil {
 				return err
 			}

@@ -1,15 +1,17 @@
 package types
 
 import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/context"
+
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/serviceif"
 	"github.com/Juniper/contrail/pkg/testutil/unittest"
 	"github.com/Juniper/contrail/pkg/types/ipam"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
-	"testing"
-	"time"
 )
 
 //Structure testVn is used to pass vn parameters during VrirualNetwork object creation
@@ -23,8 +25,9 @@ type testVn struct {
 func getService() *ContrailTypeLogicService {
 	var serviceChain []serviceif.Service
 	service := &ContrailTypeLogicService{
-		BaseService: serviceif.BaseService{},
-		DB:          unittest.TestDbService,
+		BaseService:      serviceif.BaseService{},
+		DB:               unittest.TestDbService,
+		IntPoolAllocator: unittest.TestDbService,
 	}
 	serviceChain = append(serviceChain, service)
 	serviceChain = append(serviceChain, unittest.TestDbService)
@@ -132,13 +135,23 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 
 	//Check DeleteVirtualNetwork (positive)
 	vn := createTestVn(&testVn{})
-	db.DoInTransaction(ctx, service.DB.DB(), func(ctx context.Context) error { // nolint: errcheck
-		unittest.TestDbService.CreateIntPool(ctx, &ipam.IntPool{Key: VirtualNetworkIDPoolKey, Start: 0, End: 2}) // nolint: errcheck
-		vn.VirtualNetworkNetworkID, _ = service.DB.AllocateInt(ctx, VirtualNetworkIDPoolKey)
+	intPool := ipam.IntPool{Key: VirtualNetworkIDPoolKey, Start: 0, End: 2}
+	err = db.DoInTransaction(ctx, service.DB.DB(), func(ctx context.Context) error {
+		err = unittest.TestDbService.CreateIntPool(ctx, &intPool)
+		assert.NoError(t, err)
+		vn.VirtualNetworkNetworkID, err = service.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
+		assert.NoError(t, err)
 		return nil
 	})
+	assert.NoError(t, err)
 	vnReq := &models.CreateVirtualNetworkRequest{VirtualNetwork: vn}
 	service.DB.CreateVirtualNetwork(ctx, vnReq) // nolint: errcheck
 	_, err = service.DeleteVirtualNetwork(ctx, &models.DeleteVirtualNetworkRequest{ID: vn.UUID})
 	assert.NoErrorf(t, err, "DeleteVirtualNetwork Failed %v", err)
+	err = db.DoInTransaction(ctx, service.DB.DB(), func(ctx context.Context) error {
+		err = service.IntPoolAllocator.DeleteIntPools(ctx, &intPool)
+		assert.NoError(t, err)
+		return nil
+	})
+	assert.NoError(t, err)
 }
