@@ -7,7 +7,7 @@ provider_config:
     ssh_pwd: {%if cluster.SSHPassword %}{{cluster.SSHPassword}}{%else%}c0ntrail123{%endif%}
     {%if cluster.SSHPublicKey %}ssh_public_key: {{ cluster.SSHPublicKey }}{%endif%}
     {%if cluster.SSHPrivateKey %}ssh_private_key: {{ cluster.SSHPrivateKey }}{%endif%}
-    ntp_server: {{ cluster.NTPServer }}
+    ntpserver: {{ cluster.NTPServer }}
     domainsuffix: {%if cluster.DomainSuffix %}{{ cluster.DomainSuffix }}{%else%}local{%endif%}
 
 instances:
