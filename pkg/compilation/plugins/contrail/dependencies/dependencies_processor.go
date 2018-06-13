@@ -33,7 +33,7 @@ func NewDependencyProcessor(objCache map[string]map[string]interface{}) *Depende
 // DependencyProcessor stores resources dependency
 type DependencyProcessor struct {
 	resources *sync.Map
-	cache map[string]map[string]interface{}
+	cache     map[string]map[string]interface{}
 }
 
 // Init - initializes the dependency processor
@@ -91,7 +91,7 @@ func (d *DependencyProcessor) getUUID(obj interface{}) string {
 func (d *DependencyProcessor) canAdd(key string, obj interface{}) bool {
 	if objMap, ok := d.resources.Load(key); ok {
 		_, there := objMap.(*sync.Map).Load(d.getUUID(obj))
-		if there == true {
+		if there {
 			log.Infof("%s exists, not adding", d.getUUID(obj))
 		}
 		return !there
@@ -111,8 +111,8 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 	}
 	d.Add(objTypeStr, obj)
 
-	for _, refObjTypeStr := range(ReactionMap[objTypeStr][fromTypeStr]) {
-		fieldsToExtract := []string{refObjTypeStr+"Refs"}
+	for _, refObjTypeStr := range ReactionMap[objTypeStr][fromTypeStr] {
+		fieldsToExtract := []string{refObjTypeStr + "Refs"}
 		for _, fieldName := range fieldsToExtract {
 			refObjTypeValues, err := reflections.GetField(obj, fieldName)
 			if err != nil {
@@ -128,7 +128,7 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 				d.Evaluate(refObj, refObjTypeStr, objTypeStr)
 			}
 		}
-		fieldsToExtract = []string{refObjTypeStr+"BackRefs"}
+		fieldsToExtract = []string{refObjTypeStr + "BackRefs"}
 		for _, fieldName := range fieldsToExtract {
 			refObjTypeValues, err := reflections.GetField(obj, fieldName)
 			if err != nil {
@@ -144,4 +144,3 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 		}
 	}
 }
-

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	//VirtualNetworkIDPoolKey is a key for id pool for virutal network id.
+	//VirtualNetworkIDPoolKey is a key for id pool for virtual network id.
 	VirtualNetworkIDPoolKey = "virtual_network_id"
 )
 
