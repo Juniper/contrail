@@ -54,23 +54,20 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 		}
 	}
 	endpointNodes = make(map[string][]string)
-	if k != nil {
-		for _, keyValuePair := range k {
-			switch keyValuePair.Key {
-			case "openstack_external_vip":
-				endpointNodes[identity] = []string{keyValuePair.Value}
-				endpointNodes[nova] = []string{keyValuePair.Value}
-				endpointNodes[ironic] = []string{keyValuePair.Value}
-				endpointNodes[glance] = []string{keyValuePair.Value}
-				endpointNodes[swift] = []string{keyValuePair.Value}
-				break
-			case "openstack_internal_vip":
-				endpointNodes[identity] = []string{keyValuePair.Value}
-				endpointNodes[nova] = []string{keyValuePair.Value}
-				endpointNodes[ironic] = []string{keyValuePair.Value}
-				endpointNodes[glance] = []string{keyValuePair.Value}
-				endpointNodes[swift] = []string{keyValuePair.Value}
-			}
+	for _, keyValuePair := range k {
+		switch keyValuePair.Key {
+		case "openstack_external_vip":
+			endpointNodes[identity] = []string{keyValuePair.Value}
+			endpointNodes[nova] = []string{keyValuePair.Value}
+			endpointNodes[ironic] = []string{keyValuePair.Value}
+			endpointNodes[glance] = []string{keyValuePair.Value}
+			endpointNodes[swift] = []string{keyValuePair.Value}
+		case "openstack_internal_vip":
+			endpointNodes[identity] = []string{keyValuePair.Value}
+			endpointNodes[nova] = []string{keyValuePair.Value}
+			endpointNodes[ironic] = []string{keyValuePair.Value}
+			endpointNodes[glance] = []string{keyValuePair.Value}
+			endpointNodes[swift] = []string{keyValuePair.Value}
 		}
 	}
 	if _, ok := endpointNodes[identity]; !ok {
@@ -89,21 +86,19 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]string) {
 	endpointNodes = make(map[string][]string)
 	if c := e.clusterData.clusterInfo.GetContrailConfiguration(); c != nil {
-		if k := c.GetKeyValuePair(); k != nil {
-			for _, keyValuePair := range k {
-				IPAddresses := strings.Split(keyValuePair.Value, ",")
-				switch keyValuePair.Key {
-				case "CONTROLLER_NODES":
-					endpointNodes[config] = IPAddresses
-					endpointNodes[analytics] = IPAddresses
-					endpointNodes[webui] = IPAddresses
-				case "CONFIG_NODES":
-					endpointNodes[config] = IPAddresses
-				case "ANALYTICS_NODES":
-					endpointNodes[analytics] = IPAddresses
-				case "WEBUI_NODES":
-					endpointNodes[webui] = IPAddresses
-				}
+		for _, keyValuePair := range c.GetKeyValuePair() {
+			IPAddresses := strings.Split(keyValuePair.Value, ",")
+			switch keyValuePair.Key {
+			case "CONTROLLER_NODES":
+				endpointNodes[config] = IPAddresses
+				endpointNodes[analytics] = IPAddresses
+				endpointNodes[webui] = IPAddresses
+			case "CONFIG_NODES":
+				endpointNodes[config] = IPAddresses
+			case "ANALYTICS_NODES":
+				endpointNodes[analytics] = IPAddresses
+			case "WEBUI_NODES":
+				endpointNodes[webui] = IPAddresses
 			}
 		}
 	}

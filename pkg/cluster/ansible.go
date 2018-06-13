@@ -147,12 +147,10 @@ func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 	// get CONTROL_NODES from contrail configuration
 	openstackControlNodes := []string{}
 	if c := a.clusterData.clusterInfo.GetContrailConfiguration(); c != nil {
-		if k := c.GetKeyValuePair(); k != nil {
-			for _, keyValuePair := range k {
-				if keyValuePair.Key == "OPENSTACK_NODES" {
-					openstackControlNodes = strings.Split(keyValuePair.Value, ",")
-					break
-				}
+		for _, keyValuePair := range c.GetKeyValuePair() {
+			if keyValuePair.Key == "OPENSTACK_NODES" {
+				openstackControlNodes = strings.Split(keyValuePair.Value, ",")
+				break
 			}
 		}
 	}
@@ -172,7 +170,7 @@ func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 		}
 		for _, openstackControlNode := range openstackControlNodes {
 			// user error
-			// do not enable haproxy if openstack ip is specifed
+			// do not enable haproxy if openstack ip is specified
 			// as openstack control nodes(OPENSTACK_NODES) as well
 			openstackControlNodeIP := net.ParseIP(openstackControlNode)
 			if bytes.Equal(openstackIP, openstackControlNodeIP) {
@@ -289,10 +287,7 @@ func (a *ansibleProvisioner) playBook() error {
 	args = args[:len(args)-1]
 	args = append(args, defaultContrailProvPlay)
 	err = a.play(args)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (a *ansibleProvisioner) createCluster() error {
