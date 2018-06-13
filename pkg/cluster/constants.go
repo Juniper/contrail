@@ -49,6 +49,7 @@ const (
 	defaultInstanceFile       = "instances.yml"
 	defaultProvisioner        = "ansible"
 	defaultAnsibleRepo        = "contrail-ansible-deployer"
+	defaultAnsibleRepoDir     = "/usr/share/contrail/"
 	defaultAnsibleRepoURL     = "https://github.com/Juniper/" + defaultAnsibleRepo + ".git"
 	defaultContrailProvPlay   = "playbooks/install_contrail.yml"
 	defaultInstanceProvPlay   = "playbooks/provision_instances.yml"

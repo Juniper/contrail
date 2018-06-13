@@ -1,3 +1,16 @@
+ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
+ifdef ANSIBLE_DEPLOYER_BRANCH
+  export ANSIBLE_DEPLOYER_BRANCH
+else
+  export ANSIBLE_DEPLOYER_BRANCH := master
+endif
+
+ifdef ANSIBLE_DEPLOYER_REVISION
+  export ANSIBLE_DEPLOYER_REVISION
+else
+  export ANSIBLE_DEPLOYER_REVISION := HEAD
+endif
+
 all: check lint test build
 
 deps: ## Setup the go dependencies
@@ -75,6 +88,9 @@ docker: ## Generate docker files
 	cp tools/init_mysql.sql docker/contrail_go/etc
 	cp tools/init_psql.sql docker/contrail_go/etc
 	cp -r public docker/contrail_go/public
+	mkdir -p docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
+	git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git docker/contrail_go/contrail-ansible-deployer
+	cd docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && git checkout $(ANSIBLE_DEPLOYER_REVISION)
 	docker build -t "contrail-go" docker/contrail_go
 
 help: ## Display help message

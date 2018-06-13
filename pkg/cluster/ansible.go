@@ -37,25 +37,7 @@ func (a *ansibleProvisioner) getInstanceFile() (instanceFile string) {
 }
 
 func (a *ansibleProvisioner) getAnsibleRepoDir() (ansibleRepoDir string) {
-	return filepath.Join(a.getWorkingDir(), defaultAnsibleRepo)
-}
-
-func (a *ansibleProvisioner) cloneAnsibleDeployer() error {
-	a.log.Infof("Clean working dir to clone %s", defaultAnsibleRepo)
-	repoDir := a.getAnsibleRepoDir()
-	err := os.RemoveAll(repoDir)
-	if err != nil {
-		return err
-	}
-	a.log.Infof("Cloning repo:%s into %s", defaultAnsibleRepoURL, repoDir)
-	args := []string{"clone", defaultAnsibleRepoURL, repoDir}
-	err = a.execCmd("git", args, "")
-	if err != nil {
-		return err
-	}
-	a.log.Info("Cloning completed")
-
-	return nil
+	return filepath.Join(defaultAnsibleRepoDir, defaultAnsibleRepo)
 }
 
 func (a *ansibleProvisioner) fetchAnsibleDeployer() error {
@@ -308,11 +290,6 @@ func (a *ansibleProvisioner) createCluster() error {
 	}
 
 	if !a.cluster.config.Test {
-		err = a.cloneAnsibleDeployer()
-		if err != nil {
-			a.reporter.reportStatus(status)
-			return err
-		}
 		if a.cluster.config.AnsibleFetchURL != "" {
 			err = a.fetchAnsibleDeployer()
 			if err != nil {
