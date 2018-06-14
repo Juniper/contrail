@@ -15,6 +15,9 @@ import (
 
 //For skip import error.
 var _ = errors.New("")
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
 var default{{ schema.JSONSchema.GoName }}UUID = uuid.NewV4().String()
 
 func create{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, id string, createRef bool, share []*models.ShareType) *models.{{ schema.JSONSchema.GoName }} {
@@ -30,7 +33,7 @@ func create{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, id 
     model.FQName = []string{"default", "default-domain", model.UUID}
     model.Perms2.Owner = "admin"
     model.Perms2.Share = share
-    
+
     {% if schema.HasParents && !schema.ParentOptional %}
     parent := create{{ schema.DefaultParent.GoName }}(t, ctx, default{{ schema.DefaultParent.GoName }}UUID, false, share)
     model.ParentUUID = parent.UUID
@@ -79,18 +82,18 @@ func delete{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, uui
             &services.Delete{{ schema.JSONSchema.GoName }}Request{
                 ID: model.GetUUID()})
     //TODO(nati) fix dependency issue
-    // assert.NoError(t, err, "Delete failed") 
+    // assert.NoError(t, err, "Delete failed")
     if err != nil {
         return
     }
     {% for linkTo, reference in schema.References %}
     for _, ref := range model.{{ reference.GoName }}Refs {
         delete{{ reference.GoName }}(t, ctx, ref.UUID)
-    } 
+    }
 
     {% if schema.HasParents && !schema.ParentOptional %}
     delete{{ schema.DefaultParent.GoName }}(t, ctx, model.ParentUUID)
-    {% endif %} 
+    {% endif %}
 
     {% endfor %}
 }
@@ -99,7 +102,7 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     var err error
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
-    
+
     project := createProject(t, ctx, uuid.NewV4().String(), false, nil)
     defer deleteProject(t, ctx, project.UUID)
 
@@ -150,11 +153,14 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     {% for linkTo, reference in schema.References %}
     assert.Equal(t, 1, len(updatedModel.{{ reference.GoName }}Refs), "update failed")
     {% endfor %}
-    
+
     _, err = db.Create{{ schema.JSONSchema.GoName }}(ctx,
             &services.Create{{ schema.JSONSchema.GoName }}Request{
                 {{ schema.JSONSchema.GoName }}: model})
     assert.Error(t, err, "Raise Error On Duplicate Create failed")
-    
+
     return
 }
+
+{% endif %}
+{% endfor %}

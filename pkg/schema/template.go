@@ -82,6 +82,32 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 				return err
 			}
 		}
+	} else if config.TemplateType == "alltype" {
+		types := []interface{}{}
+		for goName, typeDef := range api.Types {
+			types = append(types,
+				pongo2.Context{"type": typeDef, "name": goName})
+		}
+		for _, schema := range api.Schemas {
+			if schema.Type == AbstractType || schema.ID == "" {
+				continue
+			}
+			goName := schema.JSONSchema.GoName
+			typeDef := schema.JSONSchema
+			typeName := schema.TypeName
+			types = append(types,
+				pongo2.Context{"type": typeDef, "typename": typeName, "name": goName,
+					"references": schema.References, "parents": schema.Parents, "children": schema.Children})
+		}
+		output, err :=
+			tpl.Execute(pongo2.Context{"types": types})
+		if err != nil {
+			return err
+		}
+		err = ioutil.WriteFile(config.OutputPath, []byte(output), 0644)
+		if err != nil {
+			return err
+		}
 	} else {
 		for _, schema := range api.Schemas {
 			if schema.Type == AbstractType || schema.ID == "" {

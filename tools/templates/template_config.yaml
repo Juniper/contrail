@@ -1,7 +1,7 @@
-- type: type
+- type: alltype
   template_path: model.tmpl
-  output_path: pkg/models/gen___resource__.go
-- type: all 
+  output_path: pkg/models/gen_models.go
+- type: all
   template_path: event_encoding.tmpl
   output_path: pkg/services/gen_event_encoding.go
 - type: all
@@ -13,12 +13,12 @@
 - type: all
   template_path: sql_cleanup.tmpl
   output_path: tools/cleanup.sql
-- type: resource
+- type: all
   template_path: db.tmpl
-  output_path: pkg/db/gen___resource__.go
-- type: resource
+  output_path: pkg/db/gen_db.go
+- type: all
   template_path: db_test.tmpl
-  output_path: pkg/db/gen___resource___test.go
+  output_path: pkg/db/gen_db_test.go
 - type: all
   template_path: db_common.tmpl
   output_path: pkg/db/gen_common.go
@@ -37,9 +37,9 @@
 - type: all
   template_path: compilationif.tmpl
   output_path: pkg/compilationif/gen_compilation.go
-- type: resource
+- type: all
   template_path: service.tmpl
-  output_path: pkg/services/gen___resource__.go
+  output_path: pkg/services/gen_service.go
 - type: all
   template_path: proto_model.tmpl
   output_path: proto/github.com/Juniper/contrail/pkg/models/generated.proto

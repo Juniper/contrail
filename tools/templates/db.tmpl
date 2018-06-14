@@ -12,6 +12,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
 // {{ schema.JSONSchema.GoName }}Fields is db columns for {{ schema.JSONSchema.GoName }}
 var {{ schema.JSONSchema.GoName }}Fields = []string{
    {% for column in schema.Columns %}"{{ column.Column }}",
@@ -513,3 +515,6 @@ func (db *Service) List{{ schema.JSONSchema.GoName }}(
     }
     return response, nil
 }
+
+{% endif %}
+{% endfor %}

@@ -4,10 +4,16 @@ import (
     "github.com/Juniper/contrail/pkg/common"
 )
 
-const Kind{{ name }} = "{{ typename }}"
+{% for t in types %}
 
-//To skip import error.
-var _ = common.OPERATION
+{% set type = t.type %}
+{% set name = t.name %}
+{% set typename = t.typename %}
+{% set references = t.references %}
+{% set parent = t.parents %}
+{% set children = t.children %}
+
+const Kind{{ name }} = "{{ typename }}"
 
 {% if type.Type == "object" %}
 // Make{{ name }} makes {{ name }}
@@ -113,7 +119,7 @@ func (m *{{ name }}) Depends() []string {
     for _, ref := range m.{{ reference.GoName }}Refs {
         depends = append(depends, ref.GetUUID())
     }
-    {% endfor %} 
+    {% endfor %}
     return depends
 }
 
@@ -185,3 +191,4 @@ func InterfaceTo{{ name }}Slice(i interface{}) []{% if type.Properties %}*{% end
 
 {% endif %}
 
+{% endfor %}
