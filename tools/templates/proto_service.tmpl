@@ -99,6 +99,7 @@ message Get{{ schema.JSONSchema.GoName }}Response {
 {% endif %}{% endfor %}
 
 message Event {
+    uint64 version = 1;
     oneof request {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
        Create{{ schema.JSONSchema.GoName }}Request create_{{ schema.ID }} = {{schema.Index }} [(gogoproto.customname) = "Create{{ schema.JSONSchema.GoName }}Request"];
@@ -106,4 +107,35 @@ message Event {
        Delete{{ schema.JSONSchema.GoName }}Request delete_{{ schema.ID }} = {{schema.Index + 2}} [(gogoproto.customname) = "Delete{{ schema.JSONSchema.GoName }}Request"];
 {% endif %}{% endfor %}
     }
+}
+
+service Watch {
+  rpc Watch(stream WatchRequest) returns (stream WatchResponse) {
+  }
+}
+
+message WatchRequest {
+  // request_union is a request to either create a new watcher or cancel an existing watcher.
+  oneof request_union {
+    WatchCreateRequest create_request = 1;
+    WatchCancelRequest cancel_request = 2;
+  }
+}
+
+message WatchCreateRequest {
+  string key = 1;
+  int64 start_revision = 3;
+  int64 watch_id = 7;
+}
+
+message WatchCancelRequest {
+  int64 watch_id = 1;
+}
+
+message WatchResponse {
+  int64 watch_id = 1;
+  bool created = 2;
+  bool canceled = 3;
+  string cancel_reason = 4;
+  repeated Event events = 5;
 }
