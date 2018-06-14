@@ -59,7 +59,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     {% endif %}{% endfor %})
 	if err != nil {
         err = handleError(err)
-        return errors.Wrap(err, "create failed")
+	   return errors.Wrapf(err, "Create failed (DB insert) of resource {{ schema.JSONSchema.GoName }} with UUID '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
 	}
     {% for linkTo, reference in schema.References %}
     for _, ref := range model.{{ reference.GoName }}Refs {
@@ -72,7 +72,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     {% endif %}{% endfor %})
 	    if err != nil {
             err = handleError(err)
-            return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
+		  return errors.Wrapf(err,"{{ reference.GoName }}Refs create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
         }
     }
     {% endfor %}
@@ -202,7 +202,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
     if spec.ParentFQName != nil {
        parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
        if err != nil {
-           return nil, errors.Wrap(err, "can't find parents")
+		  return nil, errors.Wrapf(err, "Can't find parents when listing {{ schema.JSONSchema.GoName }} with request data %v", request)
        }
        spec.Filters = services.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
     }
@@ -272,7 +272,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
                 _, err = tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo | lower }}"), model.UUID)
                 if err != nil {
                     err = handleError(err)
-                    return errors.Wrap(err,"{{ reference.GoName }}Refs update failed")
+		          return errors.Wrapf(err,"{{ reference.GoName }}Refs update failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
                 }
                 for _, ref := range model.{{ reference.GoName }}Refs {
                     {% if reference.RefType  %}
@@ -284,7 +284,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
                 {% endif %}{% endfor %})
                     if err != nil {
                         err = handleError(err)
-                        return errors.Wrap(err,"{{ reference.GoName }}Refs create failed")
+		              return errors.Wrapf(err,"{{ reference.GoName }}Refs create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
                     }
                 }
             {% endfor %}
@@ -348,7 +348,7 @@ func (db *Service) delete{{ schema.JSONSchema.GoName }}(
 
     if err != nil {
         err = handleError(err)
-        return errors.Wrap(err, "delete failed")
+	   return errors.Wrapf(err, "Delete failed (DB delete) of resource {{ schema.JSONSchema.GoName }} with UUID '%v': ", request.GetID())
     }
 
     err = db.DeleteMetaData(tx, uuid)
