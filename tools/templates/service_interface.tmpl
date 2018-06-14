@@ -55,6 +55,46 @@ func (service *BaseService) List{{ schema.JSONSchema.GoName }}(ctx context.Conte
     return service.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
+func (service *EventProcessorService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+    _, err := service.Processor.Process(
+        ctx,
+        &Event{
+            Request: &Event_Create{{ schema.JSONSchema.GoName }}Request{
+                Create{{ schema.JSONSchema.GoName }}Request: request,
+            },
+        }) 
+    if err != nil {
+        return nil, err
+    }
+    return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *EventProcessorService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+    _, err := service.Processor.Process(
+        ctx,
+        &Event{
+            Request: &Event_Update{{ schema.JSONSchema.GoName }}Request{
+                Update{{ schema.JSONSchema.GoName }}Request: request,
+            },
+        })
+    if err != nil {
+        return nil, err
+    }
+    return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (service *EventProcessorService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    _, err := service.Processor.Process(
+        ctx,
+        &Event{
+            Request: &Event_Delete{{ schema.JSONSchema.GoName }}Request{
+                Delete{{ schema.JSONSchema.GoName }}Request: request,
+            },
+        }) 
+    if err != nil {
+        return nil, err
+    }
+    return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
 func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.Context, service Service) (*Event, error) {
     request := e.Create{{ schema.JSONSchema.GoName }}Request
     model := request.{{ schema.JSONSchema.GoName }}

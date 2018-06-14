@@ -128,3 +128,15 @@ func (e *Event) GetResource() Resource {
 	}
 	return resourceEvent.GetResource()
 }
+
+//Operation returns operation type.
+func (e *Event) Operation() string {
+	if e == nil {
+		return ""
+	}
+	resourceEvent, ok := e.Request.(HasResource)
+	if !ok {
+		return ""
+	}
+	return resourceEvent.Operation()
+}

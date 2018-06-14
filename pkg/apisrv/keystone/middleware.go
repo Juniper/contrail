@@ -134,6 +134,9 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 				auth = keystoneClient.NewAuth()
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
+			if tokenString == "" {
+				tokenString = c.QueryParam("auth_token")
+			}
 			ctx, err := authenticate(r.Context(), auth, tokenString)
 			if err != nil {
 				log.Errorf("Authentication failure: %s", err)

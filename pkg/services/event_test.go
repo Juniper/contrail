@@ -35,7 +35,12 @@ func TestCreateEventJSONEncoding(t *testing.T) {
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 
-	d2 := InterfaceToEvent(i)
+	d2 := NewEvent(&EventOption{
+		UUID:     i["uuid"].(string),
+		Kind:     i["kind"].(string),
+		Operaion: i["operation"].(string),
+		Data:     i["data"].(map[string]interface{}),
+	})
 	request = d2.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 }
@@ -89,7 +94,13 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	assert.NoError(t, err, "unmarhsal event failed")
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
-	d2 := InterfaceToEvent(common.YAMLtoJSONCompat(i))
+	i = common.YAMLtoJSONCompat(i)
+	d2 := NewEvent(&EventOption{
+		UUID:     i["uuid"].(string),
+		Kind:     i["kind"].(string),
+		Operaion: i["operation"].(string),
+		Data:     i["data"].(map[string]interface{}),
+	})
 	request = d2.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 }
