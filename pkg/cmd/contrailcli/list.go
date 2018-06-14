@@ -141,10 +141,11 @@ func listResources(schemaID string) (string, error) {
 	}
 	for _, list := range response {
 		for _, d := range list {
+			m, _ := d.(map[string]interface{})
 			events.Events = append(events.Events,
-				services.InterfaceToEvent(map[string]interface{}{
-					"kind": schemaID,
-					"data": d,
+				services.NewEvent(&services.EventOption{
+					Kind: schemaID,
+					Data: m,
 				}),
 			)
 		}

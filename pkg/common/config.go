@@ -22,6 +22,10 @@ func InitConfig() error {
 	return viper.ReadInConfig()
 }
 
+func GetViper() *viper.Viper {
+	return viper.New()
+}
+
 //LoadConfig load data from data and bind to struct.
 func LoadConfig(path string, dest interface{}) error {
 	config := viper.Get(path)

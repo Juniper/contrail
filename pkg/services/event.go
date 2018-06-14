@@ -16,6 +16,18 @@ const (
 	OperationDelete = "DELETE"
 )
 
+type EventOption struct {
+	UUID      string
+	Operation string
+	Kind      string
+	Data      map[string]interface{}
+}
+
+type HasResource interface {
+	GetResource() Resource
+	Operation() string
+}
+
 //CanProcessService is interface for process service.
 type CanProcessService interface {
 	Process(ctx context.Context, service Service) (*Event, error)
@@ -127,4 +139,16 @@ func (e *Event) GetResource() Resource {
 		return nil
 	}
 	return resourceEvent.GetResource()
+}
+
+//Operation returns operation type.
+func (e *Event) Operation() string {
+	if e == nil {
+		return ""
+	}
+	resourceEvent, ok := e.Request.(HasResource)
+	if !ok {
+		return ""
+	}
+	return resourceEvent.Operation()
 }
