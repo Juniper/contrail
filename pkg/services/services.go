@@ -1,5 +1,11 @@
 package services
 
+import (
+	"time"
+
+	context "golang.org/x/net/context"
+)
+
 // Chain setup chain of services.
 func Chain(services ...Service) {
 	if len(services) < 2 {
@@ -26,4 +32,26 @@ func (service *BaseService) Next() Service {
 // SetNext sets next service in service chain.
 func (service *BaseService) SetNext(next Service) {
 	service.next = next
+}
+
+//EventProcesser can handle events on generic way.
+type EventProcessor interface {
+	Process(ctx context.Context, event *Event) (*Event, error)
+}
+
+//EventProducerService can dispatch method call for event processor.
+type EventProducerService struct {
+	BaseService
+	Processor EventProcessor
+	Timeout   time.Duration
+}
+
+//ServiceEventProcessor dispatch event to method call.
+type ServiceEventProcessor struct {
+	Service Service
+}
+
+//Process processes event.
+func (p *ServiceEventProcessor) Process(ctx context.Context, event *Event) (*Event, error) {
+	return event.Process(ctx, p.Service)
 }
