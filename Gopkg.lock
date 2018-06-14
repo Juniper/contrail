@@ -582,6 +582,21 @@
   version = "v2.6.0"
 
 [[projects]]
+  digest = "1:fa38725047df9c39ba3545f6c20df0d864a6523049195705850458425f413a44"
+  name = "github.com/yudai/gotty"
+  packages = [
+    "backend/localcommand",
+    "pkg/homedir",
+    "pkg/randomstring",
+    "server",
+    "utils",
+    "webtty",
+  ]
+  pruneopts = ""
+  revision = "a080c85cbc59226c94c6941ad8c395232d72d517"
+  version = "v2.0.0-alpha.3"
+
+[[projects]]
   branch = "master"
   digest = "1:69a5aaecae1c214699b08fc4498bb126200cae605a67a8a55ab62ff669748110"
   name = "golang.org/x/crypto"
@@ -755,6 +770,9 @@
     "github.com/stretchr/testify/require",
     "github.com/twinj/uuid",
     "github.com/volatiletech/sqlboiler/strmangle",
+    "github.com/yudai/gotty/backend/localcommand",
+    "github.com/yudai/gotty/server",
+    "github.com/yudai/gotty/utils",
     "golang.org/x/net/websocket",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",

@@ -36,7 +36,8 @@
         "pkg/compilationif",
         "pkg/services/mock",
         "pkg/types/mock",
-        "pkg/types/ipam/mock"
+        "pkg/types/ipam/mock",
+        "vendor/github.com/yudai/gotty/"
     ],
     "Test": true,
     "Vendor": true,
