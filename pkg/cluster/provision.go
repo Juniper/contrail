@@ -139,7 +139,7 @@ func (p *provisionCommon) execCmd(cmd string, args []string, dir string) error {
 
 func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
 	// create logger for reporter
-	logger := pkglog.NewLogger("reporter")
+	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	r := &Reporter{
@@ -149,7 +149,7 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	}
 
 	// create logger for ansible provisioner
-	logger = pkglog.NewLogger("ansible-provisioner")
+	logger = pkglog.NewFileLogger("ansible-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	return &ansibleProvisioner{provisionCommon{
@@ -164,7 +164,7 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 
 func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
 	// create logger for reporter
-	logger := pkglog.NewLogger("reporter")
+	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	r := &Reporter{
@@ -174,7 +174,7 @@ func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action 
 	}
 
 	// create logger for Helm provisioner
-	logger = pkglog.NewLogger("helm-provisioner")
+	logger = pkglog.NewFileLogger("helm-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	return &helmProvisioner{provisionCommon{

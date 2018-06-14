@@ -34,6 +34,8 @@ type Config struct { // nolint: maligned
 	ProvisionerType string `yaml:"provisioner_type,omitempty"`
 	// Logging level
 	LogLevel string `yaml:"log_level"`
+	// Logging  file
+	LogFile string `yaml:"log_file"`
 	// Template root directory
 	TemplateRoot string `yaml:"template_root"`
 
@@ -55,6 +57,7 @@ type Cluster struct {
 	config      *Config
 	APIServer   *apisrv.Client
 	log         *logrus.Entry
+	logServer   *pkglog.LogServer
 }
 
 // NewClusterManager creates Cluster reading configuration from given file.
@@ -102,20 +105,25 @@ func NewCluster(c *Config) (*Cluster, error) {
 	}
 
 	// create logger for cluster
-	logger := pkglog.NewLogger("cluster")
+	logger := pkglog.NewFileLogger("cluster", c.LogFile)
 	pkglog.SetLogLevel(logger, c.LogLevel)
+	logServer := pkglog.NewLogServer(c.LogFile)
 
 	return &Cluster{
 		managerType: t,
 		APIServer:   s,
 		config:      c,
 		log:         logger,
+		logServer:   logServer,
 	}, nil
 }
 
 // Manage starts managing the clusters.
 func (c *Cluster) Manage() error {
 	common.SetLogLevel()
+	// start log server
+	c.logServer.Serve()
+	defer c.logServer.Close()
 	c.log.Info("Start managing contrail clusters")
 	if c.config.AuthURL != "" {
 		err := c.APIServer.Login()

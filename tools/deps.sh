@@ -9,6 +9,7 @@ go get github.com/gogo/protobuf/protoc-gen-gogo
 go get -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 go get github.com/go-openapi/spec
 go install ./vendor/github.com/golang/mock/mockgen
+go get github.com/yudai/gotty
 
 if [ "$(uname)" == 'Darwin' ]; then
     wget https://github.com/google/protobuf/releases/download/v3.5.1/protoc-3.5.1-osx-x86_64.zip
