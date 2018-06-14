@@ -1,4 +1,9 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
+ifdef ANSIBLE_DEPLOYER_REPO_DIR
+  export ANSIBLE_DEPLOYER_REPO_DIR
+else
+  export ANSIBLE_DEPLOYER_REPO_DIR := ""
+endif
 ifdef ANSIBLE_DEPLOYER_BRANCH
   export ANSIBLE_DEPLOYER_BRANCH
 else
@@ -89,8 +94,12 @@ docker: ## Generate docker files
 	cp tools/init_psql.sql docker/contrail_go/etc
 	cp -r public docker/contrail_go/public
 	mkdir -p docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
-	git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git docker/contrail_go/contrail-ansible-deployer
-	cd docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && git checkout $(ANSIBLE_DEPLOYER_REVISION)
+ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
+		git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git docker/contrail_go/contrail-ansible-deployer
+		cd docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && git checkout $(ANSIBLE_DEPLOYER_REVISION)
+else
+		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
+endif
 	docker build -t "contrail-go" docker/contrail_go
 
 help: ## Display help message
