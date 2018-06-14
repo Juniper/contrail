@@ -1,9 +1,8 @@
 // nolint
-package etcdclient
+package etcd
 
 import (
     "context"
-    "encoding/json"
     "errors"
 
     "github.com/Juniper/contrail/pkg/common"
@@ -12,48 +11,8 @@ import (
     log "github.com/sirupsen/logrus"
 )
 
-type EtcdNotifierService struct{
-    services.BaseService
-    Path   string
-    Etcdcl *IntentEtcdClient
-}
-
-
-// NewEtcdNotifierService makes a etcdclient service.
-func NewEtcdNotifierService(servers []string, path string) (*EtcdNotifierService, error) {
-    etcdcl, err := Dial(servers)
-    if err != nil {
-        log.WithFields(log.Fields{
-            "err": err,
-        }).Debug("Cannot connect to ETCD server")
-        return nil, err
-    }
-    service := &EtcdNotifierService{
-        BaseService: services.BaseService{},
-        Path: path,
-        Etcdcl: etcdcl,
-    }
-    return service, nil
-}
-
-// EtcdNotifierMarshal returns key/value string for given object
-func (service *EtcdNotifierService) EtcdNotifierMarshal(schemaID string, objUUID string, obj interface{}) (string, string) {
-    jsonBytes, err := json.Marshal(obj)
-    if err != nil {
-        log.WithFields(log.Fields{
-            "err": err,
-            "resource": schemaID,
-        }).Debug("Create %s: Failed JSON Marshal", schemaID)
-        return "", ""
-    }
-
-    jsonStr := string(jsonBytes[:])
-    objKey := "/" + service.Path + "/" + schemaID + "/" + objUUID
-    return objKey, jsonStr
-}
-
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-func (service *EtcdNotifierService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *NotifierService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }
@@ -74,7 +33,7 @@ func (service *EtcdNotifierService) Create{{ schema.JSONSchema.GoName }}(ctx con
         return nil, common.ErrorInternal
     }
 
-    err = service.Etcdcl.Set(ctx, objKey, jsonStr)
+    err = service.Client.Put(ctx, objKey, jsonStr)
     if err != nil {
         log.WithFields(log.Fields{
             "err": err,
@@ -90,7 +49,7 @@ func (service *EtcdNotifierService) Create{{ schema.JSONSchema.GoName }}(ctx con
     return obj{{ schema.JSONSchema.GoName }}, err
 }
 
-func (service *EtcdNotifierService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *NotifierService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }
@@ -111,7 +70,7 @@ func (service *EtcdNotifierService) Update{{ schema.JSONSchema.GoName }}(ctx con
         return nil, common.ErrorInternal
     }
 
-    err = service.Etcdcl.Update(ctx, objKey, jsonStr)
+    err = service.Client.Put(ctx, objKey, jsonStr)
     if err != nil {
         log.WithFields(log.Fields{
             "err": err,
@@ -127,7 +86,7 @@ func (service *EtcdNotifierService) Update{{ schema.JSONSchema.GoName }}(ctx con
     return obj{{ schema.JSONSchema.GoName }}, err
 }
 
-func (service *EtcdNotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *NotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }
@@ -146,7 +105,7 @@ func (service *EtcdNotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx con
         return nil, common.ErrorInternal
     }
 
-    err = service.Etcdcl.Delete(ctx, objKey)
+    err = service.Client.Delete(ctx, objKey)
     if err != nil {
         log.WithFields(log.Fields{
             "err": err,
@@ -162,14 +121,14 @@ func (service *EtcdNotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx con
     return obj{{ schema.JSONSchema.GoName }}, err
 }
 
-func (service *EtcdNotifierService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (*services.Get{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *NotifierService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (*services.Get{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }
     return service.Next().Get{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
-func (service *EtcdNotifierService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (*services.List{{ schema.JSONSchema.GoName }}Response, error) {
+func (service *NotifierService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (*services.List{{ schema.JSONSchema.GoName }}Response, error) {
     if service.Next() == nil {
         return nil, nil
     }

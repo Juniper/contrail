@@ -45,22 +45,23 @@ func NewServer() (*Server, error) {
 //this method.
 func (s *Server) SetupService() services.Service {
 	var serviceChain []services.Service
-	service := &services.ContrailService{
-		BaseService: services.BaseService{},
-	}
 
-	serviceChain = append(serviceChain, service)
+	// ContrailService
+	service := &services.ContrailService{}
 	service.RegisterRESTAPI(s.Echo)
+	serviceChain = append(serviceChain, service)
 
+	// ContrailTypeLogicService
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		DB:               s.dbService,
 		AddressManager:   s.dbService,
 		IntPoolAllocator: s.dbService,
 	})
+
+	// EtcdNotifier
 	if viper.GetBool("server.notify_etcd") {
-		etcdNotifierServers := viper.GetStringSlice("etcd.endpoints")
 		etcdNotifierPath := viper.GetString("etcd.path")
-		etcdNotifierService, err := etcdclient.NewEtcdNotifierService(etcdNotifierServers, etcdNotifierPath)
+		etcdNotifierService, err := etcdclient.NewNotifierService(etcdNotifierPath)
 		if err == nil {
 			log.Println("Adding ETCD Notifier Service.")
 			serviceChain = append(serviceChain, etcdNotifierService)
@@ -70,7 +71,7 @@ func (s *Server) SetupService() services.Service {
 	// Put DB Service at the end
 	serviceChain = append(serviceChain, s.dbService)
 
-	services.Chain(serviceChain)
+	services.Chain(serviceChain...)
 
 	return service
 }

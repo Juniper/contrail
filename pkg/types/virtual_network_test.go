@@ -23,15 +23,12 @@ type testVn struct {
 }
 
 func getService() *ContrailTypeLogicService {
-	var serviceChain []services.Service
 	service := &ContrailTypeLogicService{
 		DB:               unittest.TestDbService,
 		IntPoolAllocator: unittest.TestDbService,
 	}
-	serviceChain = append(serviceChain, service)
-	serviceChain = append(serviceChain, unittest.TestDbService)
 
-	services.Chain(serviceChain)
+	services.Chain(service, unittest.TestDbService)
 	return service
 }
 func TestMain(m *testing.M) {
