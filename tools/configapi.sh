@@ -42,7 +42,7 @@ docker run --name some-cassandra \
 #     redis:4.0.2
 
 docker run --name some-zookeeper -d zookeeper:latest
-docker run --name some-rabbit -d rabbitmq:3.6.10
+docker run --name some-rabbit -p 5672:5672 -d rabbitmq:3.6.10
 
 docker run \
     --name config-api \

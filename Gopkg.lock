@@ -137,7 +137,10 @@
 
 [[projects]]
   name = "github.com/golang/mock"
-  packages = ["gomock"]
+  packages = [
+    "gomock",
+    "mockgen/model"
+  ]
   revision = "c34cdb4725f4c3844d095133c6e40e448b86589b"
   version = "v1.1.1"
 
@@ -407,6 +410,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/streadway/amqp"
+  packages = ["."]
+  revision = "e5adc2ada8b8efff032bf61173a233d143e9318e"
+
+[[projects]]
   name = "github.com/stretchr/objx"
   packages = ["."]
   revision = "facf9a85c22f48d2f52f2380e4efce1768749a89"
@@ -472,7 +481,8 @@
     "idna",
     "internal/timeseries",
     "lex/httplex",
-    "trace"
+    "trace",
+    "websocket"
   ]
   revision = "136a25c244d3019482a795d728110278d6ba09a4"
 
