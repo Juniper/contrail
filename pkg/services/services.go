@@ -1,5 +1,9 @@
 package services
 
+import (
+	"time"
+)
+
 // Chain setup chain of services.
 func Chain(services ...Service) {
 	if len(services) < 2 {
@@ -26,4 +30,16 @@ func (service *BaseService) Next() Service {
 // SetNext sets next service in service chain.
 func (service *BaseService) SetNext(next Service) {
 	service.next = next
+}
+
+//EventProcesser can handle events on generic way.
+type EventProcessor interface {
+	Process(event *Event, timeout time.Duration) error
+}
+
+//EventProcessorService can dispatch method call for event processor.
+type EventProcessorService struct {
+	BaseService
+	Processor EventProcessor
+	Timeout   time.Duration
 }

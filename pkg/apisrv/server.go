@@ -20,6 +20,7 @@ import (
 	"github.com/Juniper/contrail/pkg/types"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	"github.com/Juniper/contrail/pkg/db/cache"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 	log "github.com/sirupsen/logrus"
 )
@@ -30,6 +31,7 @@ type Server struct {
 	Keystone  *keystone.Keystone
 	dbService *db.Service
 	Proxy     *proxyService
+	Cache     *cache.DB
 }
 
 // NewServer makes a server
@@ -178,6 +180,8 @@ func (s *Server) Init() (err error) {
 		e.Use(gRPCMiddleware(grpcServer))
 	}
 
+	s.setupWatchAPI()
+
 	if viper.GetBool("recorder.enabled") {
 		file := viper.GetString("recorder.file")
 		scenario := &TestScenario{
@@ -214,6 +218,13 @@ func (s *Server) Init() (err error) {
 		}))
 	}
 	return nil
+}
+
+func (s *Server) setupWatchAPI() {
+	if !viper.GetBool("cache.enabled") {
+		return
+	}
+	s.Echo.GET("/watch", s.watchHandler)
 }
 
 // Run runs server.
