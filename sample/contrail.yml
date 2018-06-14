@@ -168,3 +168,15 @@ compilation:
           create_handler: 'HandleCreate'
           update_handler: 'HandleUpdate'
           delete_handler: 'HandleDelete'
+
+cache:
+    enabled: true
+    timeout: 10s
+    #how long revistion deleted event preserved.
+    max_history: 100000
+    cassandra:
+        enabled: true
+        host: localhost
+        amqp: amqp://guest:guest@localhost:5672/
+    etcd:
+        enabled: true
