@@ -117,7 +117,7 @@ func (c *cowHostList) remove(ip net.IP) bool {
 		return false
 	}
 
-	newL = newL[:size-1 : size-1]
+	newL = newL[: size-1 : size-1]
 	c.list.Store(&newL)
 	c.mu.Unlock()
 
@@ -790,6 +790,26 @@ func (d *dcAwareRR) Pick(q ExecutableQuery) NextHost {
 		return (*selectedHost)(host)
 	}
 }
+
+// ConvictionPolicy interface is used by gocql to determine if a host should be
+// marked as DOWN based on the error and host info
+type ConvictionPolicy interface {
+	// Implementations should return `true` if the host should be convicted, `false` otherwise.
+	AddFailure(error error, host *HostInfo) bool
+	//Implementations should clear out any convictions or state regarding the host.
+	Reset(host *HostInfo)
+}
+
+// SimpleConvictionPolicy implements a ConvictionPolicy which convicts all hosts
+// regardless of error
+type SimpleConvictionPolicy struct {
+}
+
+func (e *SimpleConvictionPolicy) AddFailure(error error, host *HostInfo) bool {
+	return true
+}
+
+func (e *SimpleConvictionPolicy) Reset(host *HostInfo) {}
 
 // ReconnectionPolicy interface is used by gocql to determine if reconnection
 // can be attempted after connection error. The interface allows gocql users

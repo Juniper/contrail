@@ -58,7 +58,8 @@ func setupTLSConfig(sslOpts *SslOptions) (*tls.Config, error) {
 
 	sslOpts.InsecureSkipVerify = !sslOpts.EnableHostVerification
 
-	return sslOpts.Config, nil
+	// return clone to avoid race
+	return sslOpts.Config.Clone(), nil
 }
 
 type policyConnPool struct {
@@ -420,7 +421,9 @@ func (pool *hostConnPool) fill() {
 
 			// this is call with the connection pool mutex held, this call will
 			// then recursively try to lock it again. FIXME
-			go pool.session.handleNodeDown(pool.host.ConnectAddress(), pool.port)
+			if pool.session.cfg.ConvictionPolicy.AddFailure(err, pool.host) {
+				go pool.session.handleNodeDown(pool.host.ConnectAddress(), pool.port)
+			}
 			return
 		}
 

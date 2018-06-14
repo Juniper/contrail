@@ -54,6 +54,7 @@ type ClusterConfig struct {
 	Compressor         Compressor         // compression algorithm (default: nil)
 	Authenticator      Authenticator      // authenticator (default: nil)
 	RetryPolicy        RetryPolicy        // Default retry policy to use for queries (default: 0)
+	ConvictionPolicy   ConvictionPolicy   // Decide whether to mark host as down based on the error and host info (default: SimpleConvictionPolicy)
 	ReconnectionPolicy ReconnectionPolicy // Default reconnection policy to use for reconnecting before trying to mark host as down (default: see below)
 	SocketKeepalive    time.Duration      // The keepalive period to use, enabled if > 0 (default: 0)
 	MaxPreparedStmts   int                // Sets the maximum cache size for prepared statements globally for gocql (default: 1000)
@@ -121,8 +122,19 @@ type ClusterConfig struct {
 	QueryObserver QueryObserver
 
 	// BatchObserver will set the provided batch observer on all queries created from this session.
-	// Use it to collect metrics / stats from batche queries by providing an implementation of BatchObserver.
+	// Use it to collect metrics / stats from batch queries by providing an implementation of BatchObserver.
 	BatchObserver BatchObserver
+
+	// ConnectObserver will set the provided connect observer on all queries
+	// created from this session.
+	ConnectObserver ConnectObserver
+
+	// FrameHeaderObserver will set the provided frame header observer on all frames' headers created from this session.
+	// Use it to collect metrics / stats from frames by providing an implementation of FrameHeaderObserver.
+	FrameHeaderObserver FrameHeaderObserver
+
+	// Default idempotence for queries
+	DefaultIdempotence bool
 
 	// internal config for testing
 	disableControlConn bool
@@ -152,6 +164,7 @@ func NewCluster(hosts ...string) *ClusterConfig {
 		DefaultTimestamp:       true,
 		MaxWaitSchemaAgreement: 60 * time.Second,
 		ReconnectInterval:      60 * time.Second,
+		ConvictionPolicy:       &SimpleConvictionPolicy{},
 		ReconnectionPolicy:     &ConstantReconnectionPolicy{MaxRetries: 3, Interval: 1 * time.Second},
 	}
 	return cfg

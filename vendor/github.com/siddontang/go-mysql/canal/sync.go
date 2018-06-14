@@ -10,18 +10,19 @@ import (
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 	"github.com/siddontang/go-mysql/schema"
-	log "github.com/sirupsen/logrus"
+	"gopkg.in/birkirb/loggers.v1/log"
 )
 
 var (
-	expCreateTable  = regexp.MustCompile("(?i)^CREATE\\sTABLE(\\sIF\\sNOT\\sEXISTS)?\\s`{0,1}(.*?)`{0,1}\\.{0,1}`{0,1}([^`\\.]+?)`{0,1}\\s.*")
+	expCreateTable = regexp.MustCompile("(?i)^CREATE\\sTABLE(\\sIF\\sNOT\\sEXISTS)?\\s`{0,1}(.*?)`{0,1}\\.{0,1}`{0,1}([^`\\.]+?)`{0,1}\\s.*")
 	expAlterTable  = regexp.MustCompile("(?i)^ALTER\\sTABLE\\s.*?`{0,1}(.*?)`{0,1}\\.{0,1}`{0,1}([^`\\.]+?)`{0,1}\\s.*")
 	expRenameTable = regexp.MustCompile("(?i)^RENAME\\sTABLE\\s.*?`{0,1}(.*?)`{0,1}\\.{0,1}`{0,1}([^`\\.]+?)`{0,1}\\s{1,}TO\\s.*?")
 	expDropTable   = regexp.MustCompile("(?i)^DROP\\sTABLE(\\sIF\\sEXISTS){0,1}\\s`{0,1}(.*?)`{0,1}\\.{0,1}`{0,1}([^`\\.]+?)`{0,1}(?:$|\\s)")
 )
 
 func (c *Canal) startSyncer() (*replication.BinlogStreamer, error) {
-	if !c.useGTID {
+	gtid := c.master.GTID()
+	if gtid == nil || gtid.String() == "" {
 		pos := c.master.Position()
 		s, err := c.syncer.StartSync(pos)
 		if err != nil {
@@ -30,12 +31,11 @@ func (c *Canal) startSyncer() (*replication.BinlogStreamer, error) {
 		log.Infof("start sync binlog at binlog file %v", pos)
 		return s, nil
 	} else {
-		gset := c.master.GTID()
-		s, err := c.syncer.StartSyncGTID(gset)
+		s, err := c.syncer.StartSyncGTID(gtid)
 		if err != nil {
-			return nil, errors.Errorf("start sync replication at GTID %v error %v", gset, err)
+			return nil, errors.Errorf("start sync replication at GTID %v error %v", gtid, err)
 		}
-		log.Infof("start sync binlog at GTID %v", gset)
+		log.Infof("start sync binlog at GTID %v", gtid)
 		return s, nil
 	}
 }
@@ -98,26 +98,30 @@ func (c *Canal) runSyncBinlog() error {
 			}
 		case *replication.MariadbGTIDEvent:
 			// try to save the GTID later
-			gtid := &e.GTID
+			gtid, err := mysql.ParseMariadbGTIDSet(e.GTID.String())
+			if err != nil {
+				return errors.Trace(err)
+			}
+
 			c.master.UpdateGTID(gtid)
 			if err := c.eventHandler.OnGTID(gtid); err != nil {
 				return errors.Trace(err)
 			}
 		case *replication.GTIDEvent:
 			u, _ := uuid.FromBytes(e.SID)
-			gset, err := mysql.ParseMysqlGTIDSet(fmt.Sprintf("%s:%d", u.String(), e.GNO))
+			gtid, err := mysql.ParseMysqlGTIDSet(fmt.Sprintf("%s:%d", u.String(), e.GNO))
 			if err != nil {
 				return errors.Trace(err)
 			}
-			c.master.UpdateGTID(gset)
-			if err := c.eventHandler.OnGTID(gset); err != nil {
+			c.master.UpdateGTID(gtid)
+			if err := c.eventHandler.OnGTID(gtid); err != nil {
 				return errors.Trace(err)
 			}
 		case *replication.QueryEvent:
 			var (
-				mb [][]byte
+				mb     [][]byte
 				schema []byte
-				table []byte
+				table  []byte
 			)
 			regexps := []regexp.Regexp{*expCreateTable, *expAlterTable, *expRenameTable, *expDropTable}
 			for _, reg := range regexps {
@@ -143,10 +147,14 @@ func (c *Canal) runSyncBinlog() error {
 			force = true
 			c.ClearTableCache(schema, table)
 			log.Infof("table structure changed, clear table cache: %s.%s\n", schema, table)
-			if err = c.eventHandler.OnDDL(pos, e); err != nil {
+			if err = c.eventHandler.OnTableChanged(string(schema), string(table)); err != nil {
 				return errors.Trace(err)
 			}
 
+			// Now we only handle Table Changed DDL, maybe we will support more later.
+			if err = c.eventHandler.OnDDL(pos, e); err != nil {
+				return errors.Trace(err)
+			}
 		default:
 			continue
 		}
@@ -182,7 +190,7 @@ func (c *Canal) handleRowsEvent(e *replication.BinlogEvent) error {
 	default:
 		return errors.Errorf("%s not supported now", e.Header.EventType)
 	}
-	events := newRowsEvent(t, action, ev.Rows)
+	events := newRowsEvent(t, action, ev.Rows, e.Header)
 	return c.eventHandler.OnRow(events)
 }
 

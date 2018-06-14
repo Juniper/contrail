@@ -38,7 +38,7 @@ func NewMySQLDriver(user, pass, dbname, host string, port int, sslmode string) *
 
 // MySQLBuildQueryString builds a query string for MySQL.
 func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
-	var config mysql.Config
+	config := mysql.NewConfig()
 
 	config.User = user
 	if len(pass) != 0 {
@@ -148,7 +148,7 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 				(select count(*) from information_schema.key_column_usage where table_schema = kcu.table_schema and table_name = tc.table_name and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ?;
+	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%';
 	`, tableName, schema)
 
 	if err != nil {
@@ -314,12 +314,12 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Float64"
 		case "boolean", "bool":
 			c.Type = "null.Bool"
-		case "date", "datetime", "timestamp", "time":
+		case "date", "datetime", "timestamp":
 			c.Type = "null.Time"
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "null.Bytes"
 		case "json":
-			c.Type = "types.JSON"
+			c.Type = "null.JSON"
 		default:
 			c.Type = "null.String"
 		}
@@ -364,7 +364,7 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "float64"
 		case "boolean", "bool":
 			c.Type = "bool"
-		case "date", "datetime", "timestamp", "time":
+		case "date", "datetime", "timestamp":
 			c.Type = "time.Time"
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "[]byte"

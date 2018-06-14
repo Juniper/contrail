@@ -584,6 +584,7 @@ func TestStream0(t *testing.T) {
 }
 
 func TestConnClosedBlocked(t *testing.T) {
+	t.Skip("FLAKE: skipping test flake see https://github.com/gocql/gocql/issues/1088")
 	// issue 664
 	const proto = 3
 
@@ -632,6 +633,60 @@ func TestContext_Timeout(t *testing.T) {
 	err = db.Query("timeout").WithContext(ctx).Exec()
 	if err != context.Canceled {
 		t.Fatalf("expected to get context cancel error: %v got %v", context.Canceled, err)
+	}
+}
+
+type recordingFrameHeaderObserver struct {
+	t      *testing.T
+	mu     sync.Mutex
+	frames []ObservedFrameHeader
+}
+
+func (r *recordingFrameHeaderObserver) ObserveFrameHeader(ctx context.Context, frm ObservedFrameHeader) {
+	r.mu.Lock()
+	r.frames = append(r.frames, frm)
+	r.mu.Unlock()
+}
+
+func (r *recordingFrameHeaderObserver) getFrames() []ObservedFrameHeader {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.frames
+}
+
+func TestFrameHeaderObserver(t *testing.T) {
+	srv := NewTestServer(t, defaultProto, context.Background())
+	defer srv.Stop()
+
+	cluster := testCluster(srv.Address, defaultProto)
+	cluster.NumConns = 1
+	observer := &recordingFrameHeaderObserver{t: t}
+	cluster.FrameHeaderObserver = observer
+
+	db, err := cluster.CreateSession()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := db.Query("void").Exec(); err != nil {
+		t.Fatal(err)
+	}
+
+	frames := observer.getFrames()
+
+	if len(frames) != 2 {
+		t.Fatalf("Expected to receive 2 frames, instead received %d", len(frames))
+	}
+	readyFrame := frames[0]
+	if readyFrame.Opcode != byte(opReady) {
+		t.Fatalf("Expected to receive ready frame, instead received frame of opcode %d", readyFrame.Opcode)
+	}
+	voidResultFrame := frames[1]
+	if voidResultFrame.Opcode != byte(opResult) {
+		t.Fatalf("Expected to receive result frame, instead received frame of opcode %d", voidResultFrame.Opcode)
+	}
+	if voidResultFrame.Length != int32(4) {
+		t.Fatalf("Expected to receive frame with body length 4, instead received body length %d", voidResultFrame.Length)
 	}
 }
 
