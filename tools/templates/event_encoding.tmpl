@@ -31,15 +31,20 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) GetResource() Resour
 
 {% endif%}{% endfor %}
 
+type EventOption struct {
+    Operation string
+    Data map[string]interface{} 
+    Kind string
+    UUID string
+}
 
-//InterfaceToEvent makes event from interface
-func InterfaceToEvent(i interface{}) *Event {
+//NewEvent makes event from interface
+func NewEvent(option *EventOption) *Event {
     e := &Event{}
-    raw := i.(map[string]interface{})
-    kind := raw["kind"]
-    data := raw["data"]
-    uuid := raw["uuid"]
-  	operation := common.InterfaceToString(raw["operation"])
+    kind := option.Kind
+    data := option.Data
+    uuid := option.UUID
+  	operation := option.Operation
     if operation == "" {
         operation = OperationCreate
     }
@@ -53,7 +58,7 @@ func InterfaceToEvent(i interface{}) *Event {
                             {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(data),
                         }}
                 case OperationUpdate:
-                    m := data.(map[string]interface{})
+                    m := data
                     e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
                         Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
                             {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(m),
@@ -62,7 +67,7 @@ func InterfaceToEvent(i interface{}) *Event {
                 case OperationDelete:
                     e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
                         Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
-                            ID: uuid.(string),
+                            ID: uuid,
                         }}
             }
          {% endif%}{% endfor %}
