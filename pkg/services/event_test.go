@@ -35,7 +35,11 @@ func TestCreateEventJSONEncoding(t *testing.T) {
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 
-	d2 := InterfaceToEvent(i)
+	d2 := NewEvent(&EventOption{
+		Kind:      i["kind"].(string),
+		Operation: i["operation"].(string),
+		Data:      i["data"].(map[string]interface{}),
+	})
 	request = d2.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 }
@@ -89,7 +93,12 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	assert.NoError(t, err, "unmarhsal event failed")
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
-	d2 := InterfaceToEvent(common.YAMLtoJSONCompat(i))
+	i = common.YAMLtoJSONCompat(i).(map[string]interface{})
+	d2 := NewEvent(&EventOption{
+		Kind:      i["kind"].(string),
+		Operation: i["operation"].(string),
+		Data:      i["data"].(map[string]interface{}),
+	})
 	request = d2.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 }
@@ -113,7 +122,7 @@ func TestReorderEventList(t *testing.T) {
 			},
 			&Event{
 				Request: &Event_CreateNetworkPolicyRequest{
-					CreateNetworkPolicyRequest: &models.CreateNetworkPolicyRequest{
+					CreateNetworkPolicyRequest: &CreateNetworkPolicyRequest{
 						NetworkPolicy: &models.NetworkPolicy{
 							UUID: "network_policy1",
 						},
