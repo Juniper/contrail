@@ -50,12 +50,12 @@ func showResource(schemaID, uuid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(response)
+	data, _ := response[dashedCase(schemaID)].(map[string]interface{})
 	eventList := &services.EventList{
 		Events: []*services.Event{
-			services.InterfaceToEvent(map[string]interface{}{
-				"kind": schemaID,
-				"data": response[dashedCase(schemaID)],
+			services.NewEvent(&services.EventOption{
+				Kind: schemaID,
+				Data: response[dashedCase(schemaID)].(map[string]interface{}),
 			}),
 		},
 	}
