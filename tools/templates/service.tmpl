@@ -11,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
 type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
     {{ schema.JSONSchema.GoName }} map[string]interface{} `json:"{{ schema.Path }}"`
 }
@@ -145,3 +147,6 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     }
     return c.JSON(http.StatusOK, response)
 }
+
+{% endif %}
+{% endfor %}
