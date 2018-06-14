@@ -29,7 +29,7 @@
         - name: make test
           command: make test
         - name: Make docker
-          command: make docker 
+          command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
 
     - name: Fix files ownerships
       file:
