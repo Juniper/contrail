@@ -3,6 +3,7 @@ package contrail
 import (
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -40,4 +41,5 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("Can't read config: ", err)
 	}
+	common.SetLogLevel()
 }
