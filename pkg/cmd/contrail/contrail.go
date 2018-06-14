@@ -3,10 +3,11 @@ package contrail
 import (
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 var configFile string
@@ -40,4 +41,5 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("Can't read config: ", err)
 	}
+	common.SetLogLevel()
 }
