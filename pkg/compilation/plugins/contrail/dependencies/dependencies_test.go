@@ -2,14 +2,15 @@ package dependencies
 
 import (
 	"testing"
+	"sync"
 
 	"github.com/Juniper/contrail/pkg/models"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestDependencies - test
 func TestDependencies(t *testing.T) {
-	t.Logf("Start of Dependencies Test\n")
-
 	ObjsCache := make(map[string]map[string]interface{})
 
 	ObjsCache["virtual_network"] = make(map[string]interface{})
@@ -49,9 +50,22 @@ func TestDependencies(t *testing.T) {
 
 	d := NewDependencyProcessor(ObjsCache)
 	d.Evaluate(Vn1, "VirtualNetwork", "Self")
-	t.Logf("Dependencies: %v", d.GetResourcesPretty())
+	resources := d.GetResources()
 
-	//t.Errorf("Unexpected number of go-subroutines %d", diffGoRoutines)
+	networks := mustLoad(t, resources, "VirtualNetwork")
+	mustLoad(t, networks, Vn1.UUID)
+	mustLoad(t, networks, Vn2.UUID)
 
-	t.Logf("End of Dependencies Test\n")
+	policies := mustLoad(t, resources, "NetworkPolicy")
+	mustLoad(t, policies, Np1.UUID)
+	mustLoad(t, policies, Np2.UUID)
+}
+
+func mustLoad(t *testing.T, rawSyncMap interface{}, key string) interface{} {
+	syncMap, ok := rawSyncMap.(*sync.Map)
+	assert.Truef(t, ok, "%v should be a sync.Map", rawSyncMap)
+
+	value, ok := syncMap.Load(key)
+	assert.Truef(t, ok, "The map should have a '%s' key", key)
+	return value
 }
