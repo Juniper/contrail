@@ -23,7 +23,7 @@ func (sv *ContrailTypeLogicService) CreateFloatingIP(
 	floatingIP := request.GetFloatingIP()
 	err := db.DoInTransaction(
 		ctx,
-		sv.DB.DB(),
+		sv.DBer.DB(),
 		func(ctx context.Context) error {
 			var err error
 			if sv.checkIfParentTypeIsInstanceIP(floatingIP) {
@@ -72,7 +72,7 @@ func (sv *ContrailTypeLogicService) DeleteFloatingIP(
 	id := request.GetID()
 	err := db.DoInTransaction(
 		ctx,
-		sv.DB.DB(),
+		sv.DBer.DB(),
 		func(ctx context.Context) error {
 			floatingIP, err := sv.getFloatingIP(ctx, id)
 			if err != nil {
@@ -186,7 +186,7 @@ func (sv *ContrailTypeLogicService) tryToAllocateIPAddress(ctx context.Context,
 func (sv *ContrailTypeLogicService) getVirtualNetwork(
 	ctx context.Context, floatingIP *models.FloatingIP) (*models.VirtualNetwork, error) {
 
-	floatingIPPoolResponse, err := sv.DB.GetFloatingIPPool(ctx,
+	floatingIPPoolResponse, err := sv.DataService.GetFloatingIPPool(ctx,
 		&services.GetFloatingIPPoolRequest{
 			ID: floatingIP.GetParentUUID(),
 		})
@@ -194,7 +194,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetwork(
 		return nil, err
 	}
 
-	virtualNetworkResponse, err := sv.DB.GetVirtualNetwork(ctx,
+	virtualNetworkResponse, err := sv.DataService.GetVirtualNetwork(ctx,
 		&services.GetVirtualNetworkRequest{
 			ID: floatingIPPoolResponse.GetFloatingIPPool().GetParentUUID(),
 		})
@@ -208,7 +208,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetwork(
 func (sv *ContrailTypeLogicService) getFloatingIP(
 	ctx context.Context, id string) (*models.FloatingIP, error) {
 
-	floatingIPResponse, err := sv.DB.GetFloatingIP(ctx,
+	floatingIPResponse, err := sv.DataService.GetFloatingIP(ctx,
 		&services.GetFloatingIPRequest{
 			ID: id,
 		})
@@ -224,7 +224,7 @@ func (sv *ContrailTypeLogicService) getFloatingIPPoolSubnets(
 	ctx context.Context,
 	floatingIP *models.FloatingIP) (*models.FloatingIpPoolSubnetType, error) {
 
-	floatingIPPoolResponse, err := sv.DB.GetFloatingIPPool(ctx,
+	floatingIPPoolResponse, err := sv.DataService.GetFloatingIPPool(ctx,
 		&services.GetFloatingIPPoolRequest{
 			ID: floatingIP.GetParentUUID(),
 		})

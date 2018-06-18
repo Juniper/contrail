@@ -24,7 +24,8 @@ type testVn struct {
 
 func getService() *ContrailTypeLogicService {
 	service := &ContrailTypeLogicService{
-		DB:               unittest.TestDbService,
+		DBer:             unittest.TestDbService,
+		DataService:      unittest.TestDbService,
 		IntPoolAllocator: unittest.TestDbService,
 	}
 
@@ -132,7 +133,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 	//Check DeleteVirtualNetwork (positive)
 	vn := createTestVn(&testVn{})
 	intPool := ipam.IntPool{Key: VirtualNetworkIDPoolKey, Start: 0, End: 2}
-	err = db.DoInTransaction(ctx, service.DB.DB(), func(ctx context.Context) error {
+	err = db.DoInTransaction(ctx, service.DBer.DB(), func(ctx context.Context) error {
 		err = unittest.TestDbService.CreateIntPool(ctx, &intPool)
 		assert.NoError(t, err)
 		vn.VirtualNetworkNetworkID, err = service.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
@@ -141,10 +142,10 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	vnReq := &services.CreateVirtualNetworkRequest{VirtualNetwork: vn}
-	service.DB.CreateVirtualNetwork(ctx, vnReq) // nolint: errcheck
+	service.DataService.CreateVirtualNetwork(ctx, vnReq) // nolint: errcheck
 	_, err = service.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: vn.UUID})
 	assert.NoErrorf(t, err, "DeleteVirtualNetwork Failed %v", err)
-	err = db.DoInTransaction(ctx, service.DB.DB(), func(ctx context.Context) error {
+	err = db.DoInTransaction(ctx, service.DBer.DB(), func(ctx context.Context) error {
 		err = service.IntPoolAllocator.DeleteIntPools(ctx, &intPool)
 		assert.NoError(t, err)
 		return nil

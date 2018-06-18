@@ -12,16 +12,16 @@ const (
 	VirtualNetworkIDPoolKey = "virtual_network_id"
 )
 
-//DBServiceInterface makes mocking DBService possible in type logic tests
-type DBServiceInterface interface {
-	services.Service
+//DBer makes mocking DB possible in type logic tests
+type DBer interface {
 	DB() *sql.DB
 }
 
 //ContrailTypeLogicService is a service for implementing type specific logic
 type ContrailTypeLogicService struct {
 	services.BaseService
-	DB               DBServiceInterface
+	DataService      services.Service
+	DBer             DBer
 	AddressManager   ipam.AddressManager
 	IntPoolAllocator ipam.IntPoolAllocator
 }

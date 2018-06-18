@@ -53,7 +53,8 @@ func (s *Server) SetupService() services.Service {
 
 	// ContrailTypeLogicService
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
-		DB:               s.dbService,
+		DataService:      s.dbService,
+		DBer:             s.dbService,
 		AddressManager:   s.dbService,
 		IntPoolAllocator: s.dbService,
 	})
