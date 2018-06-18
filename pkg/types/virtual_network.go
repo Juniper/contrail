@@ -53,7 +53,7 @@ func (service *ContrailTypeLogicService) CreateVirtualNetwork(
 
 func (service *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context, id string) (int64, error) {
 	var getResponse *services.GetVirtualNetworkResponse
-	getResponse, err := service.DB.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+	getResponse, err := service.DBService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
 		ID: id,
 	})
 	if err != nil {

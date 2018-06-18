@@ -28,7 +28,7 @@ func (sv *ContrailTypeLogicService) UpdateGlobalSystemConfig(
 		sv.DB.DB(),
 		func(ctx context.Context) (err error) {
 			// TODO(Jan Darowski) JBE-431 - Add proper uuid update when using draft object (enable_security_policy_draft).
-			oldObjResp, err := sv.DB.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{ID: request.GetGlobalSystemConfig().GetUUID()})
+			oldObjResp, err := sv.DBService.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{ID: request.GetGlobalSystemConfig().GetUUID()})
 			updateObj := request.GlobalSystemConfig
 
 			if err != nil {
@@ -80,7 +80,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 		return nil
 	}
 
-	vnList, err := sv.DB.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{Fields: []string{"route_target_list"}}})
+	vnList, err := sv.DBService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{Fields: []string{"route_target_list"}}})
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, update
 		oldPortsRange = oldObj.BgpaasParameters
 	}
 
-	bgpaasList, err := sv.DB.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{Spec: &services.ListSpec{Count: true}})
+	bgpaasList, err := sv.DBService.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{Spec: &services.ListSpec{Count: true}})
 
 	if err != nil {
 		return err

@@ -25,6 +25,7 @@ type testVn struct {
 func getService() *ContrailTypeLogicService {
 	service := &ContrailTypeLogicService{
 		DB:               unittest.TestDbService,
+		DBService:        unittest.TestDbService,
 		IntPoolAllocator: unittest.TestDbService,
 	}
 
@@ -141,7 +142,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	vnReq := &services.CreateVirtualNetworkRequest{VirtualNetwork: vn}
-	service.DB.CreateVirtualNetwork(ctx, vnReq) // nolint: errcheck
+	service.DBService.CreateVirtualNetwork(ctx, vnReq) // nolint: errcheck
 	_, err = service.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: vn.UUID})
 	assert.NoErrorf(t, err, "DeleteVirtualNetwork Failed %v", err)
 	err = db.DoInTransaction(ctx, service.DB.DB(), func(ctx context.Context) error {

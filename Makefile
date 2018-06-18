@@ -45,11 +45,11 @@ generate: ## Run the source code generator
 	go fmt github.com/Juniper/contrail/pkg/services
 	go fmt github.com/Juniper/contrail/pkg/compilationif
 	mkdir -p pkg/types/mock
-	mockgen -destination=pkg/types/mock/gen_db_service_mock.go -package=typesmock github.com/Juniper/contrail/pkg/types DBServiceInterface
+	mockgen -destination=pkg/types/mock/gen_db_interface_mock.go -package=typesmock -source pkg/types/service.go DBInterface
 	mkdir -p pkg/services/mock
-	mockgen -destination=pkg/services/mock/gen_services_mock.go -package=servicesmock github.com/Juniper/contrail/pkg/services Service
+	mockgen -destination=pkg/services/mock/gen_service_mock.go -package=servicesmock -source pkg/services/gen_service_interface.go Service
 	mkdir -p pkg/types/ipam/mock
-	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock github.com/Juniper/contrail/pkg/types/ipam AddressManager
+	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock -source pkg/types/ipam/address_manager.go AddressManager
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package

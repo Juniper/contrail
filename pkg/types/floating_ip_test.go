@@ -32,19 +32,22 @@ func (e addrMgrSubnetExhausted) Error() string {
 
 var mockCtrl *gomock.Controller
 var ipamMock *ipammock.MockAddressManager
-var dbServiceMock *typesmock.MockDBServiceInterface
+var dbServiceMock *servicesmock.MockService
 var logicService ContrailTypeLogicService
 var nextServiceMock *servicesmock.MockService
+var dbMock *typesmock.MockDBInterface
 
 func testSetup(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	ipamMock = ipammock.NewMockAddressManager(mockCtrl)
 	nextServiceMock = servicesmock.NewMockService(mockCtrl)
-	dbServiceMock = typesmock.NewMockDBServiceInterface(mockCtrl)
+	dbServiceMock = servicesmock.NewMockService(mockCtrl)
+	dbMock = typesmock.NewMockDBInterface(mockCtrl)
 	logicService = ContrailTypeLogicService{
 		BaseService:    services.BaseService{},
 		AddressManager: ipamMock,
-		DB:             dbServiceMock,
+		DBService:      dbServiceMock,
+		DB:             dbMock,
 	}
 	logicService.SetNext(nextServiceMock)
 
@@ -58,7 +61,7 @@ func testClean() {
 }
 
 func setupDBMocks() {
-	dbServiceMock.EXPECT().DB().AnyTimes()
+	dbMock.EXPECT().DB().AnyTimes()
 	dbServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		&services.GetVirtualNetworkResponse{
 			VirtualNetwork: &models.VirtualNetwork{},
