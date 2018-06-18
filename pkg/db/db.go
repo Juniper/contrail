@@ -87,9 +87,8 @@ type ObjectWriter interface {
 // An example application of that function is loading initial database snapshot
 // in Watcher.
 func (db *Service) Dump(ctx context.Context, ow ObjectWriter) error {
-	return DoInTransaction(
+	return db.DoInTransaction(
 		ctx,
-		db.DB(),
 		func(ctx context.Context) error {
 			return db.dump(ctx, ow)
 		},
@@ -107,13 +106,13 @@ func GetTransaction(ctx context.Context) *sql.Tx {
 }
 
 //DoInTransaction run a function inside of DB transaction
-func DoInTransaction(ctx context.Context, db *sql.DB, do func(context.Context) error) error {
+func (db *Service) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
 	var err error
 	tx := GetTransaction(ctx)
 	if tx != nil {
 		return do(ctx)
 	}
-	conn, err := db.Conn(ctx)
+	conn, err := db.DB().Conn(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to start transaction")
 	}

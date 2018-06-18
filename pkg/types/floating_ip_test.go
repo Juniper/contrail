@@ -1,11 +1,9 @@
 package types
 
 import (
-	"database/sql"
 	"fmt"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 
@@ -32,19 +30,22 @@ func (e addrMgrSubnetExhausted) Error() string {
 
 var mockCtrl *gomock.Controller
 var ipamMock *ipammock.MockAddressManager
-var dbServiceMock *typesmock.MockDBServiceInterface
+var dataServiceMock *servicesmock.MockService
 var logicService ContrailTypeLogicService
 var nextServiceMock *servicesmock.MockService
+var inTransationDoerMock *typesmock.MockInTransactionDoer
 
 func testSetup(t *testing.T) {
 	mockCtrl = gomock.NewController(t)
 	ipamMock = ipammock.NewMockAddressManager(mockCtrl)
 	nextServiceMock = servicesmock.NewMockService(mockCtrl)
-	dbServiceMock = typesmock.NewMockDBServiceInterface(mockCtrl)
+	dataServiceMock = servicesmock.NewMockService(mockCtrl)
+	inTransationDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
 	logicService = ContrailTypeLogicService{
-		BaseService:    services.BaseService{},
-		AddressManager: ipamMock,
-		DB:             dbServiceMock,
+		BaseService:       services.BaseService{},
+		AddressManager:    ipamMock,
+		DataService:       dataServiceMock,
+		InTransactionDoer: inTransationDoerMock,
 	}
 	logicService.SetNext(nextServiceMock)
 
@@ -58,8 +59,13 @@ func testClean() {
 }
 
 func setupDBMocks() {
-	dbServiceMock.EXPECT().DB().AnyTimes()
-	dbServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+	inTransationDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+		func(ctx context.Context, do func(context.Context) error) error {
+			return do(ctx)
+		},
+	)
+
+	dataServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		&services.GetVirtualNetworkResponse{
 			VirtualNetwork: &models.VirtualNetwork{},
 		}, nil).AnyTimes()
@@ -114,12 +120,12 @@ func setupNextServiceMocks() {
 
 func prepareParent(floatingIPPool *models.FloatingIPPool) {
 	if floatingIPPool != nil {
-		dbServiceMock.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		dataServiceMock.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			&services.GetFloatingIPPoolResponse{
 				FloatingIPPool: floatingIPPool,
 			}, nil).AnyTimes()
 	} else {
-		dbServiceMock.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		dataServiceMock.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			nil, fmt.Errorf("DB error")).AnyTimes()
 	}
 }
@@ -223,8 +229,7 @@ func TestCreateFloatingIP(t *testing.T) {
 			testSetup(t)
 			defer testClean()
 			prepareParent(tt.floatingIPParent)
-			// Put an empty transaction into context so we could call DoInTransaction() without access to the real db
-			ctx := context.WithValue(nil, db.Transaction, &sql.Tx{})
+			ctx := context.Background()
 			createFloatingIPResponse, err := logicService.CreateFloatingIP(ctx, &tt.createRequest)
 
 			if tt.fails {
@@ -287,12 +292,12 @@ func TestDeleteFloatingIP(t *testing.T) {
 			prepareParent(tt.floatingIPParent)
 
 			if tt.floatingIP != nil {
-				dbServiceMock.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+				dataServiceMock.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.GetFloatingIPResponse{
 						FloatingIP: tt.floatingIP,
 					}, nil).AnyTimes()
 			} else {
-				dbServiceMock.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+				dataServiceMock.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					nil, fmt.Errorf("Not found")).AnyTimes()
 			}
 
@@ -300,8 +305,7 @@ func TestDeleteFloatingIP(t *testing.T) {
 				ipamMock.EXPECT().DeallocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(nil)
 			}
 
-			// Put an empty transaction into context so we could call DoInTransaction() without access to the real db
-			ctx := context.WithValue(nil, db.Transaction, &sql.Tx{})
+			ctx := context.Background()
 			deleteFloatingIPResponse, err := logicService.DeleteFloatingIP(ctx, tt.deleteRequest)
 
 			if tt.fails {

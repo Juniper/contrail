@@ -63,9 +63,10 @@ func (s *Server) SetupService() (services.Service, error) {
 
 	// ContrailTypeLogicService
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
-		DB:               s.dbService,
-		AddressManager:   s.dbService,
-		IntPoolAllocator: s.dbService,
+		DataService:       s.dbService,
+		InTransactionDoer: s.dbService,
+		AddressManager:    s.dbService,
+		IntPoolAllocator:  s.dbService,
 	})
 
 	// EtcdNotifier

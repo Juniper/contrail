@@ -3,14 +3,14 @@ package types
 import (
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/types/ipam"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
 // CreateFloatingIP checks parent type and if parent type isn't instance-ip then this method tries to
@@ -21,9 +21,8 @@ func (sv *ContrailTypeLogicService) CreateFloatingIP(
 
 	var response *services.CreateFloatingIPResponse
 	floatingIP := request.GetFloatingIP()
-	err := db.DoInTransaction(
+	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
-		sv.DB.DB(),
 		func(ctx context.Context) error {
 			var err error
 			if sv.checkIfParentTypeIsInstanceIP(floatingIP) {
@@ -70,9 +69,8 @@ func (sv *ContrailTypeLogicService) DeleteFloatingIP(
 	var response *services.DeleteFloatingIPResponse
 
 	id := request.GetID()
-	err := db.DoInTransaction(
+	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
-		sv.DB.DB(),
 		func(ctx context.Context) error {
 			floatingIP, err := sv.getFloatingIP(ctx, id)
 			if err != nil {
@@ -186,7 +184,7 @@ func (sv *ContrailTypeLogicService) tryToAllocateIPAddress(ctx context.Context,
 func (sv *ContrailTypeLogicService) getVirtualNetwork(
 	ctx context.Context, floatingIP *models.FloatingIP) (*models.VirtualNetwork, error) {
 
-	floatingIPPoolResponse, err := sv.DB.GetFloatingIPPool(ctx,
+	floatingIPPoolResponse, err := sv.DataService.GetFloatingIPPool(ctx,
 		&services.GetFloatingIPPoolRequest{
 			ID: floatingIP.GetParentUUID(),
 		})
@@ -194,7 +192,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetwork(
 		return nil, err
 	}
 
-	virtualNetworkResponse, err := sv.DB.GetVirtualNetwork(ctx,
+	virtualNetworkResponse, err := sv.DataService.GetVirtualNetwork(ctx,
 		&services.GetVirtualNetworkRequest{
 			ID: floatingIPPoolResponse.GetFloatingIPPool().GetParentUUID(),
 		})
@@ -208,7 +206,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetwork(
 func (sv *ContrailTypeLogicService) getFloatingIP(
 	ctx context.Context, id string) (*models.FloatingIP, error) {
 
-	floatingIPResponse, err := sv.DB.GetFloatingIP(ctx,
+	floatingIPResponse, err := sv.DataService.GetFloatingIP(ctx,
 		&services.GetFloatingIPRequest{
 			ID: id,
 		})
@@ -224,7 +222,7 @@ func (sv *ContrailTypeLogicService) getFloatingIPPoolSubnets(
 	ctx context.Context,
 	floatingIP *models.FloatingIP) (*models.FloatingIpPoolSubnetType, error) {
 
-	floatingIPPoolResponse, err := sv.DB.GetFloatingIPPool(ctx,
+	floatingIPPoolResponse, err := sv.DataService.GetFloatingIPPool(ctx,
 		&services.GetFloatingIPPoolRequest{
 			ID: floatingIP.GetParentUUID(),
 		})

@@ -415,9 +415,8 @@ func (db *Service) Create{{ schema.JSONSchema.GoName }}(
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
     }
-    if err := DoInTransaction(
+    if err := db.DoInTransaction(
         ctx,
-        db.DB(),
         func (ctx context.Context) error {
             return db.create{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
@@ -436,9 +435,8 @@ func (db *Service) Update{{ schema.JSONSchema.GoName }}(
     if model == nil {
         return nil, common.ErrorBadRequest("Update body is empty")
     }
-    if err := DoInTransaction(
+    if err := db.DoInTransaction(
         ctx,
-        db.DB(),
         func (ctx context.Context) error {
             return db.update{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
@@ -451,9 +449,8 @@ func (db *Service) Update{{ schema.JSONSchema.GoName }}(
 
 //Delete{{ schema.JSONSchema.GoName }} delete a resource.
 func (db *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
-    if err := DoInTransaction(
+    if err := db.DoInTransaction(
         ctx,
-        db.DB(),
         func (ctx context.Context) error {
             return db.delete{{ schema.JSONSchema.GoName }}(ctx, request)
         }); err != nil {
@@ -481,9 +478,8 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
         Spec: spec,
     }
     var result *services.List{{ schema.JSONSchema.GoName }}Response
-    if err := DoInTransaction(
+    if err := db.DoInTransaction(
         ctx,
-        db.DB(),
         func (ctx context.Context) error {
             result, err = db.list{{ schema.JSONSchema.GoName }}(ctx, listRequest)
             return err
@@ -504,9 +500,8 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 func (db *Service) List{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
-    if err := DoInTransaction(
+    if err := db.DoInTransaction(
         ctx,
-        db.DB(),
         func (ctx context.Context) error {
             response, err = db.list{{ schema.JSONSchema.GoName }}(ctx, request)
             return err
