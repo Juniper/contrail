@@ -12,9 +12,8 @@ import (
 func TestIntPool(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	DoInTransaction(
+	db.DoInTransaction(
 		ctx,
-		db.DB(),
 		func(ctx context.Context) error {
 			poolKey := "testPool"
 			err := db.DeleteIntPools(ctx, &ipam.IntPool{
