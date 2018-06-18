@@ -2,7 +2,6 @@ package types
 
 import (
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/services"
 	"golang.org/x/net/context"
 )
@@ -26,9 +25,8 @@ func (service *ContrailTypeLogicService) CreateVirtualNetwork(
 		return nil, common.ErrorBadRequest("Cannot set the virtual network ID")
 	}
 
-	err = db.DoInTransaction(
+	err = service.DBService.DoInTransaction(
 		ctx,
-		service.DB.DB(),
 		func(ctx context.Context) error {
 			// allocate virtual network ID
 			virtualNetwork.VirtualNetworkNetworkID, err = service.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
@@ -53,7 +51,7 @@ func (service *ContrailTypeLogicService) CreateVirtualNetwork(
 
 func (service *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context, id string) (int64, error) {
 	var getResponse *services.GetVirtualNetworkResponse
-	getResponse, err := service.DB.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+	getResponse, err := service.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
 		ID: id,
 	})
 	if err != nil {
@@ -68,9 +66,8 @@ func (service *ContrailTypeLogicService) DeleteVirtualNetwork(
 	request *services.DeleteVirtualNetworkRequest) (response *services.DeleteVirtualNetworkResponse, err error) {
 	id := request.ID
 
-	err = db.DoInTransaction(
+	err = service.DBService.DoInTransaction(
 		ctx,
-		service.DB.DB(),
 		func(ctx context.Context) error {
 			// deallocate virtual network ID
 			var virtualNetworkID int64

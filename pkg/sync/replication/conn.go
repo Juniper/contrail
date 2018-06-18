@@ -23,6 +23,7 @@ type pgxReplicationConn interface {
 
 type dbService interface {
 	DB() *sql.DB
+	DoInTransaction(ctx context.Context, do func(context.Context) error) error
 	Dump(context.Context, db.ObjectWriter) error
 }
 
@@ -59,9 +60,8 @@ func (c *postgresReplicationConnection) GetReplicationSlot(
 
 // RenewPublication ensures that publication exists for all tables.
 func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, name string) error {
-	return db.DoInTransaction(
+	return c.db.DoInTransaction(
 		ctx,
-		c.db.DB(),
 		func(ctx context.Context) error {
 			_, err := c.db.DB().ExecContext(ctx, fmt.Sprintf("DROP PUBLICATION IF EXISTS %s", name))
 			if err != nil {
@@ -77,9 +77,8 @@ func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, na
 }
 
 func (c *postgresReplicationConnection) DumpSnapshot(ctx context.Context, ow db.ObjectWriter, snapshotName string) error {
-	return db.DoInTransaction(
+	return c.db.DoInTransaction(
 		ctx,
-		c.db.DB(),
 		func(ctx context.Context) error {
 			_, err := c.db.DB().ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
 			if err != nil {

@@ -1,10 +1,9 @@
 package types
 
 import (
-	"database/sql"
-
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
+	"golang.org/x/net/context"
 )
 
 const (
@@ -12,16 +11,16 @@ const (
 	VirtualNetworkIDPoolKey = "virtual_network_id"
 )
 
-//DBServiceInterface makes mocking DBService possible in type logic tests
-type DBServiceInterface interface {
-	services.Service
-	DB() *sql.DB
+//DBService makes mocking DB possible in type logic tests
+type DBService interface {
+	DoInTransaction(ctx context.Context, do func(context.Context) error) error
 }
 
 //ContrailTypeLogicService is a service for implementing type specific logic
 type ContrailTypeLogicService struct {
 	services.BaseService
-	DB               DBServiceInterface
+	DataService      services.Service
+	DBService        DBService
 	AddressManager   ipam.AddressManager
 	IntPoolAllocator ipam.IntPoolAllocator
 }

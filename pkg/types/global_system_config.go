@@ -2,7 +2,6 @@ package types
 
 import (
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
@@ -23,12 +22,11 @@ func (sv *ContrailTypeLogicService) UpdateGlobalSystemConfig(
 	request *services.UpdateGlobalSystemConfigRequest) (*services.UpdateGlobalSystemConfigResponse, error) {
 	var resp *services.UpdateGlobalSystemConfigResponse
 
-	err := db.DoInTransaction(
+	err := sv.DBService.DoInTransaction(
 		ctx,
-		sv.DB.DB(),
 		func(ctx context.Context) (err error) {
 			// TODO(Jan Darowski) JBE-431 - Add proper uuid update when using draft object (enable_security_policy_draft).
-			oldObjResp, err := sv.DB.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{ID: request.GetGlobalSystemConfig().GetUUID()})
+			oldObjResp, err := sv.DataService.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{ID: request.GetGlobalSystemConfig().GetUUID()})
 			updateObj := request.GlobalSystemConfig
 
 			if err != nil {
@@ -80,7 +78,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 		return nil
 	}
 
-	vnList, err := sv.DB.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{Fields: []string{"route_target_list"}}})
+	vnList, err := sv.DataService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{Fields: []string{"route_target_list"}}})
 	if err != nil {
 		return err
 	}
@@ -122,7 +120,7 @@ func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, update
 		oldPortsRange = oldObj.BgpaasParameters
 	}
 
-	bgpaasList, err := sv.DB.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{Spec: &services.ListSpec{Count: true}})
+	bgpaasList, err := sv.DataService.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{Spec: &services.ListSpec{Count: true}})
 
 	if err != nil {
 		return err
