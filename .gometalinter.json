@@ -1,19 +1,45 @@
 {
     "Enable": [
+        "deadcode",
+        "dupl",
+        "errcheck",
+        "gas",
+        "goconst",
+        "gocyclo",
         "gofmt",
-        "misspell",
+        "goimports",
+        "golint",
         "gosimple",
+        "gotype",
+        "gotypex",
+        "ineffassign",
+        "interfacer",
+        "lll",
+        "maligned",
+        "misspell",
         "nakedret",
-        "unused"
+        "structcheck",
+        "unconvert",
+        "unparam",
+        "unused",
+        "varcheck",
+        "vet",
+        "vetshadow"
     ],
     "Exclude": [
         "Subprocess launching with variable.*(gas)",
         "TLS InsecureSkipVerify.*(gas)"
     ],
-    "Disable": [
-        "megacheck"
+    "Skip": [
+        "pkg/types/mock",
+        "pkg/types/ipam/mock",
+        "pkg/compilationif",
+        "pkg/db",
+        "pkg/models",
+        "pkg/services"
     ],
     "Test": true,
+    "Vendor": true,
     "Aggregate": true,
     "Sort": [
         "path"
@@ -21,12 +47,5 @@
     "Deadline": "10m",
     "Concurrency": 2,
     "LineLength": 120,
-    "DuplThreshold": 115,
-    "Vendor": true,
-    "Skip": [
-        "pkg/services",
-        "pkg/models",
-        "pkg/db",
-        "pkg/compilationif"
-    ]
+    "DuplThreshold": 115
 }
