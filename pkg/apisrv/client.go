@@ -132,7 +132,7 @@ func checkStatusCode(expected []int, actual int) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Unexpeced return code expected %v, actual %d", expected, actual)
+	return errors.Errorf("unexpected return code: expected %v, actual %v", expected, actual)
 }
 
 // Create send a create API request.
@@ -167,26 +167,72 @@ func (c *Client) EnsureDeleted(path string, output interface{}) (*http.Response,
 
 // Do issue a API request.
 func (c *Client) Do(method, path string, data interface{}, output interface{}, expected []int) (*http.Response, error) {
+	request, err := c.prepareHTTPRequest(method, path, data)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating HTTP request failed")
+	}
+
+	resp, err := c.doHTTPRequestRetryingOn401(request, data)
+	defer resp.Body.Close()
+	if err != nil {
+		return resp, errors.Wrap(err, "issuing HTTP request failed")
+	}
+
+	err = checkStatusCode(expected, resp.StatusCode)
+	if err != nil {
+		output, _ := httputil.DumpResponse(resp, true)
+		log.Println(string(output))
+		return resp, err
+	}
+	if method == echo.DELETE {
+		return resp, nil
+	}
+	err = json.NewDecoder(resp.Body).Decode(&output)
+	if err != nil {
+		return nil, errors.Wrap(err, "decoding response body failed")
+	}
+	if c.Debug {
+		log.WithFields(log.Fields{
+			"resp":   resp,
+			"output": output,
+		}).Debug("API Server output")
+	}
+	return resp, err
+}
+
+func (c *Client) prepareHTTPRequest(method, path string, data interface{}) (*http.Request, error) {
 	var request *http.Request
-	var err error
-	endpoint := c.Endpoint + path
 	if data == nil {
-		request, err = http.NewRequest(method, endpoint, nil)
-	} else {
-		var dataJSON []byte
-		dataJSON, err = json.Marshal(data)
+		var err error
+		request, err = http.NewRequest(method, url(c.Endpoint, path), nil)
 		if err != nil {
 			return nil, err
 		}
-		request, err = http.NewRequest(method, endpoint, bytes.NewBuffer(dataJSON))
+	} else {
+		var dataJSON []byte
+		dataJSON, err := json.Marshal(data)
+		if err != nil {
+			return nil, err
+		}
+
+		request, err = http.NewRequest(method, url(c.Endpoint, path), bytes.NewBuffer(dataJSON))
+		if err != nil {
+			return nil, err
+		}
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	request.Header.Set("Content-Type", "application/json")
 	if c.AuthToken != "" {
 		request.Header.Set("X-Auth-Token", c.AuthToken)
 	}
+	return request, nil
+}
+
+func url(endpoint, path string) string {
+	return endpoint + path
+}
+
+func (c *Client) doHTTPRequestRetryingOn401(request *http.Request, data interface{}) (*http.Response, error) {
 	if c.Debug {
 		log.WithFields(log.Fields{
 			"method": request.Method,
@@ -197,7 +243,7 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	}
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
-		resp, err = c.httpClient.Do(request)
+		resp, err := c.httpClient.Do(request)
 		if err != nil {
 			return nil, err
 		}
@@ -215,26 +261,7 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 			}
 		}
 	}
-	defer resp.Body.Close() // nolint: errcheck
-	err = checkStatusCode(expected, resp.StatusCode)
-	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true) // nolint:  gas
-		log.Println(string(output))
-		return resp, err
-	}
-	if method == echo.DELETE {
-		return resp, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(&output)
-	if err != nil {
-		return nil, err
-	}
-	if c.Debug {
-		log.WithFields(log.Fields{
-			"data": output,
-		}).Debug("API Server output")
-	}
-	return resp, err
+	return resp, nil
 }
 
 // DoRequest requests based on reqest object.
