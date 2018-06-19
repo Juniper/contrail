@@ -97,7 +97,8 @@ func TestIntentCompilationSeviceConcurrency(t *testing.T) {
 	secondResp, err := etcdClient.Put(context.Background(), resourceKey, "another value")
 	require.NoError(t, err)
 
-	_, err = etcdClient.Put(context.Background(), resourceKey, "final irrelevant message that should be read but not handled")
+	_, err = etcdClient.Put(context.Background(), resourceKey,
+		"final irrelevant message that should be read but not handled")
 	require.NoError(t, err)
 
 	firstRevision, secondRevision := fmt.Sprint(firstResp.Header.Revision), fmt.Sprint(secondResp.Header.Revision)
@@ -163,7 +164,7 @@ func TestIntentCompilationSeviceConcurrency(t *testing.T) {
 	t.Log(jobs)
 }
 
-func runIntentCompiler(t *testing.T, b *blockingStore, name string) *IntentCompilationService {
+func runIntentCompiler(t *testing.T, b *blockingStore, name string) {
 	ics, err := NewIntentCompilationService()
 	require.NoError(t, err)
 
@@ -173,7 +174,6 @@ func runIntentCompiler(t *testing.T, b *blockingStore, name string) *IntentCompi
 		err = ics.Run(context.Background())
 		assert.NoError(t, err)
 	}()
-	return ics
 }
 
 func spyOnJobChannel() {

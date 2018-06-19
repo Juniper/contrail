@@ -19,10 +19,11 @@ const (
 
 func TestInTransactionEtcdDataRace(t *testing.T) {
 	e := integration.NewEtcdClient(t)
+	defer e.Close(t)
 
 	client := etcd.NewClient(e.Client)
 
-	collectKeyHistory := e.WatchKey(t, testResourceKey)
+	collectKeyHistory := e.WatchKey(testResourceKey)
 
 	// Set initial state
 	err := client.Put(context.Background(), testResourceKey, []byte(testResourceInitialValue))
@@ -35,7 +36,7 @@ func TestInTransactionEtcdDataRace(t *testing.T) {
 	interrupterProcess := func() error {
 		var value []byte
 
-		err := client.InTransaction(context.Background(), func(ctx context.Context) error {
+		err = client.InTransaction(context.Background(), func(ctx context.Context) error {
 			txn := etcd.GetTxn(ctx)
 			value = txn.Get(testResourceKey)
 
@@ -53,7 +54,7 @@ func TestInTransactionEtcdDataRace(t *testing.T) {
 	var once sync.Once
 	runInterrupterOnce := func() {
 		once.Do(func() {
-			err := interrupterProcess()
+			err = interrupterProcess()
 			assert.NoError(t, err)
 		})
 	}
@@ -61,7 +62,7 @@ func TestInTransactionEtcdDataRace(t *testing.T) {
 	// First process is etcd user who got interrupted by interrupter before updating value.
 	firstProcess := func() error {
 		var value []byte
-		err := client.InTransaction(context.Background(), func(ctx context.Context) error {
+		err = client.InTransaction(context.Background(), func(ctx context.Context) error {
 			txn := etcd.GetTxn(ctx)
 
 			value = txn.Get(testResourceKey)
@@ -83,13 +84,17 @@ func TestInTransactionEtcdDataRace(t *testing.T) {
 	err = firstProcess()
 	assert.NoError(t, err)
 
-	assert.Equal(t, []string{testResourceInitialValue}, interrupterProcessedKeys, "interrupter should process only initial value")
+	assert.Equal(t, []string{testResourceInitialValue}, interrupterProcessedKeys,
+		"interrupter should process only initial value")
 	assert.Equal(t, []string{interrupterValue}, firstProcessedKeys, "first should only process interrupter value")
 
-	e.Client.Sync(context.Background())
+	err = e.Client.Sync(context.Background())
+	assert.NoError(t, err)
+
 	keyHistory := collectKeyHistory()
 	assert.Equal(t, []string{testResourceInitialValue, interrupterValue, firstValue}, keyHistory)
 
 	// cleanup
-	client.Delete(context.Background(), testResourceKey)
+	err = client.Delete(context.Background(), testResourceKey)
+	assert.NoError(t, err)
 }

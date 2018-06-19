@@ -11,7 +11,8 @@ import (
 const vxlanConfigField = "VxlanRouting"
 
 // CreateProject do checks for create project.
-func (sv *ContrailTypeLogicService) CreateProject(ctx context.Context, request *services.CreateProjectRequest) (response *services.CreateProjectResponse, err error) {
+func (sv *ContrailTypeLogicService) CreateProject(ctx context.Context, request *services.CreateProjectRequest) (
+	response *services.CreateProjectResponse, err error) {
 
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
@@ -27,7 +28,8 @@ func (sv *ContrailTypeLogicService) CreateProject(ctx context.Context, request *
 }
 
 // UpdateProject do checks for update project.
-func (sv *ContrailTypeLogicService) UpdateProject(ctx context.Context, request *services.UpdateProjectRequest) (response *services.UpdateProjectResponse, err error) {
+func (sv *ContrailTypeLogicService) UpdateProject(ctx context.Context, request *services.UpdateProjectRequest) (
+	response *services.UpdateProjectResponse, err error) {
 	id := request.GetProject().GetUUID()
 
 	err = sv.InTransactionDoer.DoInTransaction(
@@ -51,7 +53,8 @@ func (sv *ContrailTypeLogicService) UpdateProject(ctx context.Context, request *
 }
 
 // DeleteProject do checks for delete project.
-func (sv *ContrailTypeLogicService) DeleteProject(ctx context.Context, request *services.DeleteProjectRequest) (response *services.DeleteProjectResponse, err error) {
+func (sv *ContrailTypeLogicService) DeleteProject(ctx context.Context, request *services.DeleteProjectRequest) (
+	response *services.DeleteProjectResponse, err error) {
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
@@ -70,7 +73,8 @@ func (sv *ContrailTypeLogicService) getProject(ctx context.Context, id string) (
 	return projectRes.GetProject(), err
 }
 
-func (sv *ContrailTypeLogicService) checkVxlanConfig(currentProject *models.Project, request *services.UpdateProjectRequest) error {
+func (sv *ContrailTypeLogicService) checkVxlanConfig(currentProject *models.Project,
+	request *services.UpdateProjectRequest) error {
 	requestedProject := request.GetProject()
 
 	fm := request.GetFieldMask()
