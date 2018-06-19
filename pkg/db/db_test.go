@@ -72,7 +72,9 @@ func TestDBScanRow(t *testing.T) {
 					},
 				},
 				DisplayName: "test display name",
-				Annotations: &models.KeyValuePairs{[]*models.KeyValuePair{{Value: "some value", Key: "some key"}}},
+				Annotations: &models.KeyValuePairs{
+					KeyValuePair: []*models.KeyValuePair{{Value: "some value", Key: "some key"}},
+				},
 				Perms2: &models.PermType2{
 					Owner:        "test owner",
 					OwnerAccess:  6,

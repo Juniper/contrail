@@ -7,7 +7,8 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-var errorMultiPolicyServiceChain = common.ErrorBadRequest("Multi policy service chains are not supported, with both import export external route targets")
+var errorMultiPolicyServiceChain = common.ErrorBadRequest(
+	"Multi policy service chains are not supported, with both import export external route targets")
 
 //CreateVirtualNetwork do pre check for virtual network.
 func (service *ContrailTypeLogicService) CreateVirtualNetwork(

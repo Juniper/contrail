@@ -64,7 +64,8 @@ func TestETCDSinkUpdatePutsJSONEncodedResourceUnderOneEtcdKey(t *testing.T) {
 	resource := models.MakeLogicalInterface()
 	stm := &mockSTM{}
 	stm.On("Get", []string{"json/test-resource/pk"}).Return("{}").Once()
-	stm.On("Put", "json/test-resource/pk", string(toJSON(t, resource)), mock.Anything).Return(&clientv3.PutResponse{}, nil).Once()
+	stm.On("Put", "json/test-resource/pk", string(toJSON(t, resource)), mock.Anything).Return(
+		&clientv3.PutResponse{}, nil).Once()
 	s := givenETCDSink(nil, stm, c)
 
 	err := s.Update("test-resource", "pk", resource)

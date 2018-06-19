@@ -95,6 +95,7 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 }
 
 //Init setup the server.
+// nolint: gocyclo
 func (s *Server) Init() (err error) {
 	common.SetLogLevel()
 

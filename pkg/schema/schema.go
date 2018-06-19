@@ -246,6 +246,7 @@ func (s *JSONSchema) Copy() *JSONSchema {
 }
 
 //Update merges two JSONSchema
+// nolint: gocyclo
 func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s2 == nil {
 		return
@@ -369,6 +370,7 @@ func (s *JSONSchema) resolveSQL(
 	return nil
 }
 
+// nolint: gocyclo
 func (s *JSONSchema) resolveGoName(name string) error {
 	if s == nil {
 		return nil
@@ -573,6 +575,7 @@ func ReferenceTableName(prefix, id, linkTo string) string {
 	return strings.ToLower(prefix + "_" + makeShort(id) + "_" + makeShort(linkTo))
 }
 
+// nolint: gocyclo
 func (api *API) resolveAllRelation() error {
 	for _, s := range api.Schemas {
 		if s.Type == AbstractType {
@@ -689,6 +692,7 @@ func (api *API) resolveExtend() error {
 }
 
 //MakeAPI load directory and generate API definitions.
+// nolint: gocyclo
 func MakeAPI(dir string) (*API, error) {
 	api := &API{
 		Schemas:     []*Schema{},

@@ -36,8 +36,7 @@ test: ## Run go test with race and coverage args
 build: ## Run go build
 	go build ./cmd/...
 
-generate: ## Run the source code generator
-	find pkg/ -name gen_* -delete
+generate: reset_gen ## Run the source code generator
 	mkdir -p public
 	go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
 	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
@@ -54,10 +53,7 @@ generate: ## Run the source code generator
 	mkdir -p pkg/types/ipam/mock
 	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock -source pkg/types/ipam/address_manager.go AddressManager
 
-package: ## Generate the packages
-	go run cmd/contrailutil/main.go package
-
-reset_gen:
+reset_gen: ## Remove genarated files
 	find pkg/ -name gen_* -delete
 	find pkg/ -name generated.pb.go -delete
 	rm -rf public/*
@@ -68,6 +64,9 @@ reset_gen:
 	rm -rf pkg/types/mock
 	rm -rf pkg/services/mock
 	rm -rf pkg/types/ipam/mock
+
+package: ## Generate the packages
+	go run cmd/contrailutil/main.go package
 
 install:
 	go install ./cmd/contrail

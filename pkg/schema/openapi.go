@@ -5,6 +5,7 @@ import (
 )
 
 //ToOpenAPI generates OpenAPI commands.
+// nolint: gocyclo
 func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 	definitions := spec.Definitions{}
 	paths := &spec.Paths{

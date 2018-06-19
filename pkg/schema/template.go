@@ -30,6 +30,7 @@ func (config *TemplateConfig) load(base string) (*pongo2.Template, error) {
 	return pongo2.FromString(string(templateCode))
 }
 
+// nolint: gocyclo
 func (config *TemplateConfig) apply(templateBase string, api *API) error {
 	tpl, err := config.load(templateBase)
 	if err != nil {
@@ -145,10 +146,11 @@ func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig) err
 	then: dict_value is here as `in' variable and key_var is here as `param'
 	This is needed to obtain value from map with a key in variable (not as a hardcoded string)
 	*/
-	pongo2.RegisterFilter("dict_get_JSONSchema_by_string_key", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
-		m := in.Interface().(map[string]*JSONSchema)
-		return pongo2.AsValue(m[param.String()]), nil
-	})
+	pongo2.RegisterFilter("dict_get_JSONSchema_by_string_key",
+		func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+			m := in.Interface().(map[string]*JSONSchema)
+			return pongo2.AsValue(m[param.String()]), nil
+		})
 
 	for _, templateConfig := range config {
 		err := templateConfig.apply(templateBase, api)

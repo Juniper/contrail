@@ -28,6 +28,7 @@ type EtcdClient struct {
 }
 
 // NewEtcdClient is a constructor of etcd client.
+// After usage Close() needs to be called to close underlying connections.
 func NewEtcdClient(t *testing.T) *EtcdClient {
 	l := pkglog.NewLogger("etcd-client")
 	l.WithFields(logrus.Fields{"endpoint": EtcdEndpoint, "dial-timeout": EtcdDialTimeout}).Debug("Connecting")
@@ -70,7 +71,7 @@ func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
 }
 
 // WatchKey watches value changes for provided key and returns collect method that collect captured values.
-func (e *EtcdClient) WatchKey(t *testing.T, key string) (collect func() []string) {
+func (e *EtcdClient) WatchKey(key string) (collect func() []string) {
 	var result []string
 	ctx, cancel := context.WithCancel(context.Background())
 	wchan := e.Client.Watch(ctx, key)
@@ -84,7 +85,6 @@ func (e *EtcdClient) WatchKey(t *testing.T, key string) (collect func() []string
 	}()
 
 	return func() (vals []string) {
-		e.Client.Watcher.Close()
 		cancel()
 		return result
 	}
@@ -92,7 +92,9 @@ func (e *EtcdClient) WatchKey(t *testing.T, key string) (collect func() []string
 
 // GetString gets a string value in Etcd
 func (e *EtcdClient) GetString(t *testing.T, key string) (value string, revision int64) {
-	e.Client.Sync(context.Background())
+	err := e.Client.Sync(context.Background())
+	assert.NoError(t, err)
+
 	kvHandle := clientv3.NewKV(e.Client)
 	response, err := kvHandle.Get(context.Background(), key)
 	require.NoError(t, err)
@@ -111,5 +113,5 @@ func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revisio
 // Close closes connection to etcd.
 func (e *EtcdClient) Close(t *testing.T) {
 	err := e.Client.Close()
-	assert.NoError(t, err, "closing etcd connection failed")
+	assert.NoError(t, err, "closing etcd.clientv3.Client failed")
 }
