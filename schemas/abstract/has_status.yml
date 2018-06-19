@@ -81,6 +81,22 @@ schema:
       view:
       - list
       - detail
+    provisioning_action:
+      description: Provisioning Action
+      default: "PROVISION"
+      nullable: false
+      enum:
+      - "PROVISION"
+      - "ADD_COMPUTE"
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Action
+      type: string
+      view:
+      - create
+      - detail
   propertiesOrder:
   - provisioning_state
   - provisioning_progress_stage
