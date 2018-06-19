@@ -39,7 +39,7 @@ func TestCodecUpdate(t *testing.T) {
 				UUID: "new uuid",
 				VirtualMachineInterfaceRefs: nil, // should be unchanged
 			},
-			expected: []byte(`{"uuid":"new uuid","fq_name":["should","persist"],"virtual_machine_interface_refs":[{"uuid":"some uuid"}]}`),
+			expected: []byte(`{"uuid":"new uuid","fq_name":["should","persist"],"virtual_machine_interface_refs":[{"uuid":"some uuid"}]}`), // nolint: lll
 		},
 		{
 			name: "refs and fq_name update",
@@ -71,5 +71,4 @@ func TestCodecUpdate(t *testing.T) {
 			}
 		})
 	}
-
 }

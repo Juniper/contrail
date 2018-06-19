@@ -23,18 +23,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	defaultClientID = "default"
+	defaultDomainID = "default"
+)
+
 // TestServer is httptest.Server instance
 var TestServer *httptest.Server
 
 // APIServer is test API Server instance
 var APIServer *Server
-
-// LogFatalIfErr logs the err during function call
-func LogFatalIfErr(f func() error) {
-	if err := f(); err != nil {
-		log.Fatal(err)
-	}
-}
 
 // SetupAndRunTest does test setup and run tests for
 // all supported db types.
@@ -94,13 +92,13 @@ func LaunchTestAPIServer() (*Server, *httptest.Server) {
 func CreateTestProject(s *Server, testID string) {
 	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment)
 	assignment.Projects[testID] = &keystone.Project{
-		Domain: assignment.Domains["default"],
+		Domain: assignment.Domains[defaultDomainID],
 		ID:     testID,
 		Name:   testID,
 	}
 
 	assignment.Users[testID] = &keystone.User{
-		Domain:   assignment.Domains["default"],
+		Domain:   assignment.Domains[defaultDomainID],
 		ID:       testID,
 		Name:     testID,
 		Password: testID,
@@ -165,7 +163,7 @@ func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 	log.Info("Running clean test scenario: %v", testScenario.Name)
 	clients := prepareClients(t, testScenario)
 	tracked := runTestScenario(t, testScenario, clients)
-	cleanupTrackedResources(t, tracked, clients)
+	cleanupTrackedResources(tracked, clients)
 }
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
@@ -174,12 +172,12 @@ func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario) func() {
 	clients := prepareClients(t, testScenario)
 	tracked := runTestScenario(t, testScenario, clients)
 	cleanupFunc := func() {
-		cleanupTrackedResources(t, tracked, clients)
+		cleanupTrackedResources(tracked, clients)
 	}
 	return cleanupFunc
 }
 
-func cleanupTrackedResources(t *testing.T, tracked []trackedResource, clients map[string]*Client) {
+func cleanupTrackedResources(tracked []trackedResource, clients map[string]*Client) {
 	log.Infof("There are %v resources to clean (in clean tests should be ZERO)", len(tracked))
 	for i, tr := range tracked {
 		log.Warnf("POST clean up resource %v / %v: %v {clien:t %v}", i+1, len(tracked), tr.Path, tr.Client)
@@ -217,7 +215,7 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 		log.Debugf("CLEAN TASK -> %v", cleanTask)
 		clientID := cleanTask["client"]
 		if clientID == "" {
-			clientID = "default"
+			clientID = defaultClientID
 		}
 		client := clients[clientID]
 		// delete existing resources.
@@ -231,7 +229,7 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 	for _, task := range testScenario.Workflow {
 		log.Debug("[Step] ", task.Name)
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
-		clientID := "default"
+		clientID := defaultClientID
 		if task.Client != "" {
 			clientID = task.Client
 		}
@@ -241,7 +239,8 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
 
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
-		ok := common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("In test scenaio '%v' task' %v' failed", testScenario.Name, task))
+		ok := common.AssertEqual(t, task.Expect, task.Request.Output,
+			fmt.Sprintf("In test scenaio '%v' task' %v' failed", testScenario.Name, task))
 		if !ok {
 			log.Errorf("Assertion error was: %+v", err)
 			break
@@ -272,7 +271,7 @@ func extractResourcePathFromJSON(data interface{}) (path string) {
 func extractSyncOperation(syncOp map[string]interface{}, client string) []trackedResource {
 	resources := []trackedResource{}
 	var operIf, kindIf interface{}
-	ok := true
+	var ok bool
 	if kindIf, ok = syncOp["kind"]; !ok {
 		return nil
 	}
@@ -300,27 +299,32 @@ func extractSyncOperation(syncOp map[string]interface{}, client string) []tracke
 
 func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResource) []trackedResource {
 	if task.Request.Output != nil && task.Request.Method == "POST" && code == 201 && rerr == nil {
-		clientID := "default"
+		clientID := defaultClientID
 		if task.Client != "" {
 			clientID = task.Client
 		}
-		switch respData := task.Request.Output.(type) {
-		case []interface{}:
-			log.Warn("Not handled SYNC request - yet!")
-			for _, syncOpIf := range respData {
-				if syncOp, ok := syncOpIf.(map[string]interface{}); ok {
-					tracked = append(tracked, extractSyncOperation(syncOp, clientID)...)
-				}
+		tracked = trackResponse(task.Request.Output, clientID, tracked)
+	}
+	log.Infof("Tracked requests: %+v", tracked)
+	return tracked
+}
+
+func trackResponse(respDataIf interface{}, clientID string, tracked []trackedResource) []trackedResource {
+	switch respData := respDataIf.(type) {
+	case []interface{}:
+		log.Warn("Not handled SYNC request - yet!")
+		for _, syncOpIf := range respData {
+			if syncOp, ok := syncOpIf.(map[string]interface{}); ok {
+				tracked = append(tracked, extractSyncOperation(syncOp, clientID)...)
 			}
-		case map[string]interface{}:
-			for k, v := range respData {
-				if path := extractResourcePathFromJSON(v); path != "" {
-					tracked = append(tracked, trackedResource{Path: "/" + k + path, Client: clientID})
-				}
+		}
+	case map[string]interface{}:
+		for k, v := range respData {
+			if path := extractResourcePathFromJSON(v); path != "" {
+				tracked = append(tracked, trackedResource{Path: "/" + k + path, Client: clientID})
 			}
 		}
 	}
-	log.Infof("Tracked requests: %+v", tracked)
 	return tracked
 }
 
@@ -367,4 +371,11 @@ func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
 	mockServer := NewWellKnownServer(serve, e)
 	mockServer.Start()
 	return mockServer
+}
+
+// LogFatalIfErr logs the err during function call
+func LogFatalIfErr(f func() error) {
+	if err := f(); err != nil {
+		log.Fatal(err)
+	}
 }

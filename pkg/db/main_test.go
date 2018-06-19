@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"strings"
@@ -50,7 +51,7 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer testDB.Close()
+		defer closeDB(testDB)
 		db = &Service{
 			db:      testDB,
 			Dialect: NewDialect(config["dialect"].(string)),
@@ -63,5 +64,11 @@ func TestMain(m *testing.M) {
 		if code != 0 {
 			os.Exit(code)
 		}
+	}
+}
+
+func closeDB(db *sql.DB) {
+	if err := db.Close(); err != nil {
+		log.WithError(err).Fatal("Closing test DB failed")
 	}
 }

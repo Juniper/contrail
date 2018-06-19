@@ -77,10 +77,10 @@ func NewDialect(mode string) Dialect {
 			JSONAggFuncEnd:   "))",
 			AnyValueString:   "ANY_VALUE(",
 			PlaceHolderIndex: false,
-			IpLiteralPrefix:  "INET6_ATON('",
-			IpLiteralSufix:   "')",
-			SelectIpPrefix:   "INET6_NTOA(`",
-			SelectIpSufix:    "`)",
+			IPLiteralPrefix:  "INET6_ATON('",
+			PpLiteralSuffix:  "')",
+			SelectIPPrefix:   "INET6_NTOA(`",
+			SelectIPSuffix:   "`)",
 		}
 	default:
 		return Dialect{
@@ -90,10 +90,10 @@ func NewDialect(mode string) Dialect {
 			JSONAggFuncEnd:   "))",
 			AnyValueString:   "",
 			PlaceHolderIndex: true,
-			IpLiteralPrefix:  "inet '",
-			IpLiteralSufix:   "'",
-			SelectIpPrefix:   `"`,
-			SelectIpSufix:    `"`,
+			IPLiteralPrefix:  "inet '",
+			PpLiteralSuffix:  "'",
+			SelectIPPrefix:   `"`,
+			SelectIPSuffix:   `"`,
 		}
 	}
 }
@@ -106,10 +106,10 @@ type Dialect struct {
 	JSONAggFuncEnd   string
 	AnyValueString   string
 	PlaceHolderIndex bool
-	IpLiteralPrefix  string
-	IpLiteralSufix   string
-	SelectIpPrefix   string
-	SelectIpSufix    string
+	IPLiteralPrefix  string
+	PpLiteralSuffix  string
+	SelectIPPrefix   string
+	SelectIPSuffix   string
 }
 
 func (d *Dialect) quote(params ...string) string {
@@ -170,12 +170,12 @@ func (d *Dialect) anyValue(params ...string) string {
 	return d.quote(params...)
 }
 
-func (d *Dialect) literalIp(ip net.IP) string {
-	return d.IpLiteralPrefix + StringIPv6(ip) + d.IpLiteralSufix
+func (d *Dialect) literalIP(ip net.IP) string {
+	return d.IPLiteralPrefix + StringIPv6(ip) + d.PpLiteralSuffix
 }
 
-func (d *Dialect) selectIp(columnName string) string {
-	return d.SelectIpPrefix + columnName + d.SelectIpSufix
+func (d *Dialect) selectIP(columnName string) string {
+	return d.SelectIPPrefix + columnName + d.SelectIPSuffix
 }
 
 //Columns represents column index.
@@ -183,26 +183,22 @@ type Columns map[string]int
 
 func (qb *QueryBuilder) buildFilterParts(ctx *queryContext, column string, filterValues []string) string {
 	var where string
-	var err error
 	if len(filterValues) == 1 {
 		ctx.values = append(ctx.values, filterValues[0])
 		where = column + " = " + qb.placeholder(len(ctx.values))
 	} else {
 		var filterQuery bytes.Buffer
-		_, err = filterQuery.WriteString(column)
-		_, err = filterQuery.WriteString(" in (")
+		writeStrings(&filterQuery, column, " in (")
+
 		last := len(filterValues) - 1
 		for _, value := range filterValues[:last] {
 			ctx.values = append(ctx.values, value)
-			_, err = filterQuery.WriteString(qb.placeholder(len(ctx.values)) + ",")
+			writeStrings(&filterQuery, qb.placeholder(len(ctx.values)), ",")
 		}
 		ctx.values = append(ctx.values, filterValues[last])
-		_, err = filterQuery.WriteString(qb.placeholder(len(ctx.values)) + ")")
+		writeStrings(&filterQuery, qb.placeholder(len(ctx.values)), ")")
 
 		where = filterQuery.String()
-	}
-	if err != nil {
-		log.Fatal(err)
 	}
 	return where
 }
@@ -271,33 +267,32 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	spec := ctx.spec
 	query := ctx.query
-	var err error
-	_, err = query.WriteString("select ")
+	writeString(query, "select ")
+
 	if len(ctx.columnParts) != len(ctx.columns) {
 		log.Fatal("unmatch")
 	}
-	_, err = query.WriteString(strings.Join(ctx.columnParts, ","))
-	_, err = query.WriteString(" from ")
-	_, err = query.WriteString(qb.Table)
-	_, err = query.WriteRune(' ')
+	writeStrings(query, strings.Join(ctx.columnParts, ","), " from ", qb.Table, " ")
+
 	if len(ctx.joins) > 0 {
-		_, err = query.WriteString(strings.Join(ctx.joins, " "))
+		writeString(query, strings.Join(ctx.joins, " "))
 	}
 	if len(ctx.where) > 0 {
-		_, err = query.WriteString(" where ")
-		_, err = query.WriteString(strings.Join(ctx.where, " and "))
+		writeStrings(query, " where ", strings.Join(ctx.where, " and "))
 	}
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
-		_, err = query.WriteString(" group by ")
-		_, err = query.WriteString(qb.quote(qb.Table, "uuid"))
+		writeStrings(query, " group by ", qb.quote(qb.Table, "uuid"))
 	}
-	_, err = query.WriteRune(' ')
+	writeString(query, " ")
 	if spec.Limit > 0 {
-		pagenationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
-		_, err = query.WriteString(pagenationQuery)
-	}
-	if err != nil {
-		log.Fatal(err)
+		writeStrings(
+			query,
+			" limit ",
+			strconv.FormatInt(spec.Limit, 10),
+			" offset ",
+			strconv.FormatInt(spec.Offset, 10),
+			" ",
+		)
 	}
 }
 
@@ -446,7 +441,7 @@ func (qb *QueryBuilder) CreateRefQuery(linkTo string) string {
 		" (" + qb.quoteSep(fields...) + ") values (" + qb.values(fields...) + ")")
 }
 
-//CreateParentQuery makes a reference to parent object.
+//CreateParentRefQuery makes a reference to parent object.
 func (qb *QueryBuilder) CreateParentRefQuery(linkTo string) string {
 	fields := []string{"from", "to"}
 	table := schema.ReferenceTableName(schema.ParentPrefix, qb.Table, linkTo)
@@ -475,22 +470,16 @@ func (qb *QueryBuilder) SelectAuthQuery(admin bool) string {
 }
 
 //UpdateQuery makes sql query for update.
-// nolint
 func (qb *QueryBuilder) UpdateQuery(columns []string) string {
 	var query bytes.Buffer
-	query.WriteString("update ")
-	query.WriteString(qb.quote(qb.Table))
-	query.WriteString("set ")
+	writeStrings(&query, "update ", qb.quote(qb.Table), "set ")
 	for i, column := range columns {
-		query.WriteString(qb.quote(column))
-		query.WriteString(" = ")
-		query.WriteString(qb.placeholder(i + 1))
+		writeStrings(&query, qb.quote(column), " = ", qb.placeholder(i+1))
 		if i < len(columns)-1 {
-			query.WriteString(", ")
+			writeString(&query, ", ")
 		}
 	}
-	query.WriteString(" where uuid = ")
-	query.WriteString(qb.placeholder(len(columns) + 1))
+	writeStrings(&query, " where uuid = ", qb.placeholder(len(columns)+1))
 	return query.String()
 }
 
@@ -533,4 +522,21 @@ func StringIPv6(ip net.IP) string {
 	res = res.To16()
 	res[1] = 1
 	return res.String()[1:]
+}
+
+// writeStrings writes multiple strings to given buffer.
+func writeStrings(b *bytes.Buffer, strings ...string) {
+	for _, s := range strings {
+		writeString(b, s)
+	}
+}
+
+// writeString calls bytes.Buffer.WriteString() and strips its signature from redundant error,
+// which  in current implementation is always nil.
+// See: https://golang.org/pkg/bytes/#Buffer.WriteString
+func writeString(b *bytes.Buffer, s string) {
+	_, err := b.WriteString(s)
+	if err != nil {
+		log.Fatalf("unexpected bytes.Buffer.WriteString() error: %v", err)
+	}
 }

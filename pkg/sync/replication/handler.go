@@ -165,7 +165,6 @@ func (h *CanalEventHandler) OnRow(e *canal.RowsEvent) error {
 }
 
 // TODO(daniel): remove duplication
-// nolint: dupl
 func (h *CanalEventHandler) handleCreate(rows [][]interface{}, t *schema.Table) error {
 	for _, row := range rows {
 		pk, err := getPrimaryKeyValue(row, t)
@@ -184,7 +183,6 @@ func (h *CanalEventHandler) handleCreate(rows [][]interface{}, t *schema.Table) 
 }
 
 // TODO(daniel): remove duplication
-// nolint: dupl
 func (h *CanalEventHandler) handleUpdate(rows [][]interface{}, t *schema.Table) error {
 	for _, row := range rows {
 		pk, err := getPrimaryKeyValue(row, t)
