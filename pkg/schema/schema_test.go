@@ -27,6 +27,9 @@ func TestSchema(t *testing.T) {
 }
 
 func TestReferenceTableName(t *testing.T) {
-	assert.Equal(t, "ref__v_net_i_v_net_i_v_net_i_v_net_i_v_net_i", ReferenceTableName("ref_", "virtual_network_interface_virtual_network_interface",
-		"virtual_network_interface_virtual_network_interface_virtual_network_interface"))
+	assert.Equal(
+		t,
+		"ref__v_net_i_v_net_i_v_net_i_v_net_i_v_net_i",
+		ReferenceTableName("ref_", "virtual_network_interface_virtual_network_interface",
+			"virtual_network_interface_virtual_network_interface_virtual_network_interface"))
 }

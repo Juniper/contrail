@@ -1,6 +1,7 @@
 package unittest
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -29,7 +30,7 @@ var TestDbService *db.Service
 
 func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
 	if viper.GetBool("database.debug") {
-		logger := instrumentedsql.LoggerFunc(db.LogQuery)
+		logger := instrumentedsql.LoggerFunc(logQuery)
 		switch dbType {
 		case db.MYSQL:
 			dbType = "instrumented-" + dbType
@@ -41,6 +42,10 @@ func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
 	}
 
 	return sql.Open(dbType, databaseConnection)
+}
+
+func logQuery(_ context.Context, command string, args ...interface{}) {
+	log.Debug(command, args)
 }
 
 //CreateTestDbService Create TestDB and DBService for Unit tests
