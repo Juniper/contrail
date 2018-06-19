@@ -6,7 +6,6 @@
  *
  */
 
-// TODO(Michal): Change file name to client since etcd/etcdclient.go is stuttered.
 // TODO(Michal): Add some logging to client methods.
 
 package etcd
@@ -119,7 +118,6 @@ func (c *Client) WatchAfterIndex(ctx context.Context,
 		clientv3.WithPrefix(), clientv3.WithRev(afterIndex))
 	for wresp := range rchan {
 		for _, ev := range wresp.Events {
-			afterIndex = wresp.Header.Revision
 			if callback == nil {
 				continue
 			}

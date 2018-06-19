@@ -153,7 +153,7 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 			return handleError(err)
 		}
 	} else {
-		// We need devide one pool to two.
+		// We need divide one pool to two.
 		_, err = tx.ExecContext(
 			ctx,
 			"insert into int_pool ("+d.quoteSep("key", "start", "end")+") values ("+
@@ -218,7 +218,7 @@ func (db *Service) DeallocateIntRange(ctx context.Context, target *ipam.IntPool)
 
 	// Clear overlapping int pols
 	if len(pools) > 0 {
-		err := db.DeleteIntPools(ctx, mergePool)
+		err = db.DeleteIntPools(ctx, mergePool)
 		if err != nil {
 			return err
 		}

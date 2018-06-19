@@ -88,7 +88,8 @@ func (ics *IntentCompilationService) HandleMessage(
 		index, oper, key, newValue)
 
 	messageIndexKey := ics.Cfg.EtcdNotifierCfg.MsgIndexString
-	lockTTL := time.Second * time.Duration(ics.Cfg.EtcdNotifierCfg.MsgQueueLockTime) // TODO(Michal): Change field type to time.Duration
+	// TODO(Michal): Change field type to time.Duration
+	lockTTL := time.Second * time.Duration(ics.Cfg.EtcdNotifierCfg.MsgQueueLockTime)
 
 	err := ics.locker.DoWithLock(ctx, messageIndexKey, lockTTL, func(ctx context.Context) error {
 		storedIndex, err := ics.getStoredIndex(ctx)

@@ -162,26 +162,23 @@ type Columns map[string]int
 
 func (qb *QueryBuilder) buildFilterParts(ctx *queryContext, column string, filterValues []string) string {
 	var where string
-	var err error
 	if len(filterValues) == 1 {
 		ctx.values = append(ctx.values, filterValues[0])
 		where = column + " = " + qb.placeholder(len(ctx.values))
 	} else {
 		var filterQuery bytes.Buffer
-		_, err = filterQuery.WriteString(column)
-		_, err = filterQuery.WriteString(" in (")
+		writeString(&filterQuery, column)
+		writeString(&filterQuery, " in (")
+
 		last := len(filterValues) - 1
 		for _, value := range filterValues[:last] {
 			ctx.values = append(ctx.values, value)
-			_, err = filterQuery.WriteString(qb.placeholder(len(ctx.values)) + ",")
+			writeString(&filterQuery, qb.placeholder(len(ctx.values))+",")
 		}
 		ctx.values = append(ctx.values, filterValues[last])
-		_, err = filterQuery.WriteString(qb.placeholder(len(ctx.values)) + ")")
+		writeString(&filterQuery, qb.placeholder(len(ctx.values))+")")
 
 		where = filterQuery.String()
-	}
-	if err != nil {
-		log.Fatal(err)
 	}
 	return where
 }
@@ -250,33 +247,31 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	spec := ctx.spec
 	query := ctx.query
-	var err error
-	_, err = query.WriteString("select ")
+	writeString(query, "select ")
+
 	if len(ctx.columnParts) != len(ctx.columns) {
 		log.Fatal("unmatch")
 	}
-	_, err = query.WriteString(strings.Join(ctx.columnParts, ","))
-	_, err = query.WriteString(" from ")
-	_, err = query.WriteString(qb.Table)
-	_, err = query.WriteRune(' ')
+	writeString(query, strings.Join(ctx.columnParts, ","))
+	writeString(query, " from ")
+	writeString(query, qb.Table)
+	writeRune(query, ' ')
+
 	if len(ctx.joins) > 0 {
-		_, err = query.WriteString(strings.Join(ctx.joins, " "))
+		writeString(query, strings.Join(ctx.joins, " "))
 	}
 	if len(ctx.where) > 0 {
-		_, err = query.WriteString(" where ")
-		_, err = query.WriteString(strings.Join(ctx.where, " and "))
+		writeString(query, " where ")
+		writeString(query, strings.Join(ctx.where, " and "))
 	}
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
-		_, err = query.WriteString(" group by ")
-		_, err = query.WriteString(qb.quote(qb.Table, "uuid"))
+		writeString(query, " group by ")
+		writeString(query, qb.quote(qb.Table, "uuid"))
 	}
-	_, err = query.WriteRune(' ')
+	writeRune(query, ' ')
 	if spec.Limit > 0 {
-		pagenationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
-		_, err = query.WriteString(pagenationQuery)
-	}
-	if err != nil {
-		log.Fatal(err)
+		paginationQuery := fmt.Sprintf(" limit %d offset %d ", spec.Limit, spec.Offset)
+		writeString(query, paginationQuery)
 	}
 }
 
@@ -454,22 +449,21 @@ func (qb *QueryBuilder) SelectAuthQuery(admin bool) string {
 }
 
 //UpdateQuery makes sql query for update.
-// nolint
 func (qb *QueryBuilder) UpdateQuery(columns []string) string {
 	var query bytes.Buffer
-	query.WriteString("update ")
-	query.WriteString(qb.quote(qb.Table))
-	query.WriteString("set ")
+	writeString(&query, "update ")
+	writeString(&query, qb.quote(qb.Table))
+	writeString(&query, "set ")
 	for i, column := range columns {
-		query.WriteString(qb.quote(column))
-		query.WriteString(" = ")
-		query.WriteString(qb.placeholder(i + 1))
+		writeString(&query, qb.quote(column))
+		writeString(&query, " = ")
+		writeString(&query, qb.placeholder(i+1))
 		if i < len(columns)-1 {
-			query.WriteString(", ")
+			writeString(&query, ", ")
 		}
 	}
-	query.WriteString(" where uuid = ")
-	query.WriteString(qb.placeholder(len(columns) + 1))
+	writeString(&query, " where uuid = ")
+	writeString(&query, qb.placeholder(len(columns)+1))
 	return query.String()
 }
 
@@ -496,4 +490,24 @@ func (qb *QueryBuilder) scanResourceList(value interface{}) []interface{} {
 		log.Fatal("unsupported db dialect")
 	}
 	return resources
+}
+
+// writeString calls bytes.Buffer.WriteString() and strips its signature from redundant error,
+// which is always nil.
+// See: https://golang.org/pkg/bytes/#Buffer.WriteString
+func writeString(b *bytes.Buffer, s string) int {
+	n, err := b.WriteString(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return n
+}
+
+// writeRune is analogous to writeString() for bytes.Buffer.WriteRune().
+func writeRune(b *bytes.Buffer, r rune) int {
+	n, err := b.WriteRune(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return n
 }
