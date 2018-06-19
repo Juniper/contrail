@@ -1,12 +1,18 @@
 package integration
 
 import (
+	"context"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/sync"
+	"github.com/lib/pq"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/sync"
 )
+
+const pgQueryCanceledErrorCode = "57014"
 
 // RunSync runs Sync process and returns function closing Sync.
 func RunSync(t *testing.T) (closeSync func()) {
@@ -25,6 +31,21 @@ func RunSync(t *testing.T) (closeSync func()) {
 
 	return func() {
 		s.Close()
-		assert.NoError(t, <-runError, "unexpected Sync runtime error")
+		err := <-runError
+		if !isContextCancellationError(err) {
+			assert.NoError(t, err, "unexpected Sync runtime error")
+		}
 	}
+}
+
+func isContextCancellationError(err error) bool {
+	if pqErr, ok := errors.Cause(err).(*pq.Error); ok {
+		if pqErr.Code == pgQueryCanceledErrorCode {
+			return true
+		}
+	}
+	if errors.Cause(err) == context.Canceled {
+		return true
+	}
+	return false
 }

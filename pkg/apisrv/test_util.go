@@ -1,7 +1,6 @@
 package apisrv
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -9,12 +8,13 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
@@ -23,10 +23,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// TestServer is http test server
+// TestServer is httptest.Server instance
 var TestServer *httptest.Server
 
-// APIServer is echo server
+// APIServer is test API Server instance
 var APIServer *Server
 
 // LogFatalIfErr logs the err during function call
@@ -44,8 +44,8 @@ func SetupAndRunTest(m *testing.M) {
 		log.Fatal(err)
 	}
 	common.SetLogLevel()
-	dbConfig := viper.GetStringMap("test_database")
-	for _, iConfig := range dbConfig {
+
+	for _, iConfig := range viper.GetStringMap("test_database") {
 		config := common.InterfaceToInterfaceMap(iConfig)
 		viper.Set("database.type", config["type"])
 		viper.Set("database.host", config["host"])
@@ -53,34 +53,33 @@ func SetupAndRunTest(m *testing.M) {
 		viper.Set("database.name", config["name"])
 		viper.Set("database.password", config["password"])
 		viper.Set("database.dialect", config["dialect"])
-		RunTestForDB(m)
+		RunTestForDB(m, viper.GetString("database.type"))
 	}
 }
 
 // RunTestForDB runs tests for all supported DB
-func RunTestForDB(m *testing.M) {
+func RunTestForDB(m *testing.M, dbType string) {
 	server, testServer := LaunchTestAPIServer()
 	defer testServer.Close()
 	defer LogFatalIfErr(server.Close)
-	log.Info("starting test")
+
+	log.WithField("dbType", dbType).Info("Starting tests for DB")
 	code := m.Run()
-	log.Info("finished test")
+	log.WithField("dbType", dbType).Info("Finished tests for DB")
 	if code != 0 {
 		os.Exit(code)
 	}
 }
 
-//LaunchTestAPIServer used to launch test api server
+//LaunchTestAPIServer used to launch test API Server.
 func LaunchTestAPIServer() (*Server, *httptest.Server) {
 	var err error
 	APIServer, err = NewServer()
 	if err != nil {
 		log.Fatal(err)
 	}
-	TestServer = httptest.NewUnstartedServer(APIServer.Echo)
-	TestServer.TLS = new(tls.Config)
-	TestServer.TLS.NextProtos = append(TestServer.TLS.NextProtos, "h2")
-	TestServer.StartTLS()
+
+	TestServer = testutil.NewTestHTTPServer(APIServer.Echo)
 
 	viper.Set("keystone.authurl", TestServer.URL+"/keystone/v3")
 	err = APIServer.Init()
