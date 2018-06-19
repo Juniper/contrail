@@ -237,11 +237,14 @@ func (a *ansibleProvisioner) playBook() error {
 		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
 		args = append(args, sudoArg)
 	}
-	// play instances provisioning playbook
-	args = append(args, defaultInstanceProvPlay)
-	err := a.play(args)
-	if err != nil {
-		return err
+	action := a.clusterData.clusterInfo.ProvisioningAction
+	if action == "PROVISION" || action == "" {
+		// play instances provisioning playbook
+		args = append(args, defaultInstanceProvPlay)
+		err := a.play(args)
+		if err != nil {
+			return err
+		}
 	}
 
 	// play instances configuration playbook
@@ -253,9 +256,15 @@ func (a *ansibleProvisioner) playBook() error {
 	}
 
 	// play orchestrator provisioning playbook
-	args = args[:len(args)-1]
+	stripArgsCount := 1
+	args = args[:len(args)-stripArgsCount]
 	switch a.clusterData.clusterInfo.Orchestrator {
 	case "openstack":
+		switch action {
+		case "ADD_COMPUTE":
+			args.append(args, "--tags nova")
+			stripArgsCount += 1
+		}
 		args = append(args, defaultOpenstackProvPlay)
 	case "kubernetes":
 		args = append(args, defaultKubernetesProvPlay)
@@ -266,7 +275,7 @@ func (a *ansibleProvisioner) playBook() error {
 	}
 
 	// play contrail provisioning playbook
-	args = args[:len(args)-1]
+	args = args[:len(args)-stripArgsCount]
 	args = append(args, defaultContrailProvPlay)
 	err = a.play(args)
 	return err
