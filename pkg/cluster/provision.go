@@ -96,9 +96,10 @@ func (p *provisionCommon) createEndpoints() error {
 
 func (p *provisionCommon) updateEndpoints() error {
 	e := &EndpointData{
-		clusterID: p.clusterID,
-		cluster:   p.cluster,
-		log:       p.log,
+		clusterID:   p.clusterID,
+		cluster:     p.cluster,
+		clusterData: p.clusterData,
+		log:         p.log,
 	}
 
 	return e.update()

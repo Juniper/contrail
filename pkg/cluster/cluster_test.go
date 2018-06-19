@@ -106,6 +106,28 @@ func runClusterTest(t *testing.T, testInput, expectedOutput string,
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
+
+	// update cluster
+	// remove instances.yml to trriger cluster update
+	err = os.Remove(generatedFile)
+	if err != nil {
+		assert.NoError(t, err, "failed to delete instances.yml")
+	}
+	config.Action = "update"
+	clusterManager, err = NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to update cluster")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(update) cluster")
+	// compare the instances.yml with expected
+	generatedFile = defaultWorkRoot + "/" + clusterID + "/instances.yml"
+	assert.True(t, compareInstances(t, generatedFile, expectedOutput),
+		"Instance file created during cluster update is not as expected")
+	// make sure all endpoints are recreated as part of update
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+
 	// delete cluster
 	config.Action = "delete"
 	clusterManager, err = NewCluster(config)
