@@ -76,11 +76,10 @@ func verifyProxy(t *testing.T, testScenario *TestScenario, url string,
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
 		_, err := client.Read(url, &response)
-		ok := assert.NoError(t, err, "failed to proxy %s", url)
-		if !ok {
-			return ok
+		if err != nil {
+			return false
 		}
-		ok = common.AssertEqual(t,
+		ok := common.AssertEqual(t,
 			map[string]interface{}{key: clusterName + expected},
 			response,
 			fmt.Sprintf("Unexpected Response: %s", response))
@@ -108,27 +107,23 @@ func verifyKeystoneEndpoint(testScenario *TestScenario, testInvalidUser bool) er
 func TestProxyEndpoint(t *testing.T) {
 	// Create a cluster and its neutron endpoint
 	clusterAName := "clusterA"
-	testScenario, neutronPublic, neutronPrivate, cleanup1 := runEndpointTest(
+	testScenario, clusterANeutronPublic, clusterANeutronPrivate, cleanup1 := runEndpointTest(
 		t, clusterAName, true)
 	defer cleanup1()
 	// remove tempfile after test
-	defer neutronPrivate.Close()
-	defer neutronPublic.Close()
+	defer clusterANeutronPrivate.Close()
+	defer clusterANeutronPublic.Close()
 
 	// Wait a sec for the dynamic proxy to be created/updated
 	time.Sleep(2 * time.Second)
 
 	// verify proxies
-	ok := verifyProxy(t, testScenario,
-		"/proxy/"+clusterAName+"_uuid/neutron/ports", clusterAName, publicPortList)
-	if !ok {
-		return
-	}
-	ok = verifyProxy(t, testScenario,
-		"/proxy/"+clusterAName+"_uuid/neutron/private/ports", clusterAName, privatePortList)
-	if !ok {
-		return
-	}
+	url := "/proxy/" + clusterAName + "_uuid/neutron/ports"
+	ok := verifyProxy(t, testScenario, url, clusterAName, publicPortList)
+	assert.True(t, ok, "failed to proxy %s", url)
+	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
+	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
+	assert.True(t, ok, "failed to proxy %s", url)
 
 	// create one more cluster/neutron endpoint for new cluster
 	clusterBName := "clusterB"
@@ -142,32 +137,83 @@ func TestProxyEndpoint(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	// verify new proxies
-	ok = verifyProxy(t, testScenario,
-		"/proxy/"+clusterBName+"_uuid/neutron/ports",
-		clusterBName, publicPortList)
-	if !ok {
-		return
-	}
-	ok = verifyProxy(t, testScenario,
-		"/proxy/"+clusterBName+"_uuid/neutron/private/ports",
-		clusterBName, privatePortList)
-	if !ok {
-		return
-	}
+	url = "/proxy/" + clusterBName + "_uuid/neutron/ports"
+	ok = verifyProxy(t, testScenario, url, clusterBName, publicPortList)
+	assert.True(t, ok, "failed to proxy %s", url)
+	url = "/proxy/" + clusterBName + "_uuid/neutron/private/ports"
+	ok = verifyProxy(t, testScenario, url, clusterBName, privatePortList)
+	assert.True(t, ok, "failed to proxy %s", url)
 
 	// verify existing proxies, make sure the proxy prefix is updated with cluster id
-	ok = verifyProxy(t, testScenario,
-		"/proxy/"+clusterAName+"_uuid/neutron/ports",
-		clusterAName, publicPortList)
-	if !ok {
-		return
+	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
+	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
+	assert.True(t, ok, "failed to proxy %s", url)
+	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
+	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
+	assert.True(t, ok, "failed to proxy %s", url)
+
+	// Update endpoint with incorrect port
+	var data interface{}
+	endpointUUID := fmt.Sprintf("endpoint_%s_neutron_uuid", clusterAName)
+	endpoint := map[string]interface{}{"uuid": endpointUUID,
+		"public_url":  "http://127.0.0.1",
+		"private_url": "http://127.0.0.1",
 	}
-	ok = verifyProxy(t, testScenario,
-		"/proxy/"+clusterAName+"_uuid/neutron/private/ports",
-		clusterAName, privatePortList)
-	if !ok {
-		return
+	data = map[string]interface{}{"endpoint": endpoint}
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		url := fmt.Sprintf("/endpoint/endpoint_%s_neutron_uuid", clusterAName)
+		_, err := client.Update(url, &data, &response)
+		assert.NoError(t, err, "failed to update neutron endpoint port")
+		break
 	}
+
+	// Wait 2 sec for the dynamic proxy to update endpointstore
+	time.Sleep(2 * time.Second)
+	// verify proxy (expected to fail as the port is incorrect)
+	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
+	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
+	assert.False(t, ok, "proxy %s expected to fail", url)
+	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
+	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
+	assert.False(t, ok, "proxy %s expected to fail", url)
+
+	// Delete the neutron endpoint
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		url := fmt.Sprintf("/endpoint/endpoint_%s_neutron_uuid", clusterAName)
+		_, err := client.Delete(url, &response)
+		assert.NoError(t, err, "failed to delete neutron endpoint")
+		break
+	}
+	// Wait a sec for the dynamic proxy to be created/updated
+	time.Sleep(2 * time.Second)
+
+	// Re create the neutron endpoint
+	endpoint = map[string]interface{}{"uuid": endpointUUID,
+		"public_url":  clusterANeutronPublic.URL,
+		"private_url": clusterANeutronPrivate.URL,
+		"parent_type": "contrail-cluster",
+		"parent_uuid": clusterAName + "_uuid",
+		"name":        "neutron",
+	}
+	data = map[string]interface{}{"endpoint": endpoint}
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		url := fmt.Sprintf("/endpoints")
+		_, err := client.Create(url, &data, &response)
+		assert.NoError(t, err, "failed to re-create neutron endpoint port")
+		break
+	}
+	// Wait a sec for the dynamic proxy to be created/updated
+	time.Sleep(2 * time.Second)
+	// verify proxy
+	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
+	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
+	assert.True(t, ok, "failed to proxy %s", url)
+	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
+	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
+	assert.True(t, ok, "failed to proxy %s", url)
 }
 
 func TestKeystoneEndpoint(t *testing.T) {

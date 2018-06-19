@@ -157,7 +157,7 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 			ids := id.(string)
 			_, ok = endpoints[ids]
 			if !ok {
-				s.Data.Delete(id)
+				s.Remove(ids)
 				log.Debugf("deleting dynamic proxy endpoint for id: %s", ids)
 			}
 			return true
