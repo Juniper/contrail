@@ -16,6 +16,7 @@ const (
 	OperationDelete = "DELETE"
 )
 
+// EventOption contains options for Event.
 type EventOption struct {
 	UUID      string
 	Operation string
@@ -23,6 +24,7 @@ type EventOption struct {
 	Data      map[string]interface{}
 }
 
+// HasResource defines methods that might be implemented by Event.Resource.
 type HasResource interface {
 	GetResource() Resource
 	Operation() string

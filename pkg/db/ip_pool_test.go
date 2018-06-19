@@ -32,8 +32,6 @@ func TestCreateIpPool(t *testing.T) {
 		poolKey         string
 		ipPoolsToCreate []ipPool
 		expectedPools   int
-
-		fails bool
 	}{
 		{
 			name: "Create one IP Pool for each key",
@@ -171,7 +169,7 @@ func TestAllocateIp(t *testing.T) {
 		poolKey string
 		ipPools []ipPool
 
-		expectedIp net.IP
+		expectedIP net.IP
 		fails      bool
 	}{
 		{
@@ -189,7 +187,7 @@ func TestAllocateIp(t *testing.T) {
 				},
 			},
 			poolKey:    "subnet-uuid-1",
-			expectedIp: net.ParseIP("10.0.0.1"),
+			expectedIP: net.ParseIP("10.0.0.1"),
 			fails:      false,
 		},
 		{
@@ -207,7 +205,7 @@ func TestAllocateIp(t *testing.T) {
 				},
 			},
 			poolKey:    "subnet-uuid-1",
-			expectedIp: net.ParseIP("10.0.0.1"),
+			expectedIP: net.ParseIP("10.0.0.1"),
 			fails:      false,
 		},
 		{
@@ -234,7 +232,7 @@ func TestAllocateIp(t *testing.T) {
 								assert.Error(t, err)
 							} else {
 								assert.NoError(t, err)
-								assert.Equal(t, customIP(tt.expectedIp, ts.firstByte), ipReceived.To16())
+								assert.Equal(t, customIP(tt.expectedIP, ts.firstByte), ipReceived.To16())
 							}
 
 							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
@@ -378,14 +376,14 @@ func TestDeleteIpPools(t *testing.T) {
 								assert.NoError(t, err, "create pool failed")
 							}
 
-							pools, err := db.getIPPools(ctx, &ipPool{key: tt.poolKey})
+							_, err := db.getIPPools(ctx, &ipPool{key: tt.poolKey})
 							assert.NoError(t, err)
 
 							delPool := customPool(tt.deletePool, ts.firstByte)
 							err = db.deleteIPPools(ctx, &delPool)
 							assert.NoError(t, err)
 
-							pools, err = db.getIPPools(ctx, &ipPool{key: tt.poolKey})
+							pools, err := db.getIPPools(ctx, &ipPool{key: tt.poolKey})
 							assert.NoError(t, err)
 							assert.Equal(t, tt.expectedCount, len(pools))
 
@@ -421,7 +419,7 @@ func TestSetIp(t *testing.T) {
 		name         string
 		poolKey      string
 		startPool    ipPool
-		setIpRequest net.IP
+		setIPRequest net.IP
 
 		expectedPools []ipPool
 		fails         bool
@@ -434,7 +432,7 @@ func TestSetIp(t *testing.T) {
 				start: net.ParseIP("10.0.0.1"),
 				end:   net.ParseIP("10.0.0.10"),
 			},
-			setIpRequest: net.ParseIP("10.0.0.12"),
+			setIPRequest: net.ParseIP("10.0.0.12"),
 			expectedPools: []ipPool{
 				{
 					key:   "subnet-uuid-1",
@@ -452,7 +450,7 @@ func TestSetIp(t *testing.T) {
 				start: net.ParseIP("10.0.0.1"),
 				end:   net.ParseIP("10.0.0.10"),
 			},
-			setIpRequest: net.ParseIP("10.0.0.1"),
+			setIPRequest: net.ParseIP("10.0.0.1"),
 			expectedPools: []ipPool{
 				{
 					key:   "subnet-uuid-1",
@@ -470,7 +468,7 @@ func TestSetIp(t *testing.T) {
 				start: net.ParseIP("10.0.0.1"),
 				end:   net.ParseIP("10.0.0.10"),
 			},
-			setIpRequest: net.ParseIP("10.0.0.9"),
+			setIPRequest: net.ParseIP("10.0.0.9"),
 			expectedPools: []ipPool{
 				{
 					key:   "subnet-uuid-1",
@@ -488,7 +486,7 @@ func TestSetIp(t *testing.T) {
 				start: net.ParseIP("10.0.0.1"),
 				end:   net.ParseIP("10.0.0.10"),
 			},
-			setIpRequest: net.ParseIP("10.0.0.5"),
+			setIPRequest: net.ParseIP("10.0.0.5"),
 			expectedPools: []ipPool{
 				{
 					key:   "subnet-uuid-1",
@@ -515,7 +513,7 @@ func TestSetIp(t *testing.T) {
 							err := db.createIPPool(ctx, &tmp)
 							assert.NoError(t, err, "create pool failed")
 
-							err = db.setIP(ctx, tt.poolKey, customIP(tt.setIpRequest, ts.firstByte))
+							err = db.setIP(ctx, tt.poolKey, customIP(tt.setIPRequest, ts.firstByte))
 
 							if tt.fails {
 								assert.Error(t, err)

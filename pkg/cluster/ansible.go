@@ -118,6 +118,7 @@ func (a *ansibleProvisioner) createInventory() error {
 	return a.createInstancesFile(a.getInstanceFile())
 }
 
+// nolint: gocyclo
 func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 	openstackVars := openstackVariables{}
 	cluster := a.clusterData.getOpenstackClusterInfo()
@@ -263,7 +264,7 @@ func (a *ansibleProvisioner) playBook() error {
 		switch action {
 		case "ADD_COMPUTE":
 			args = append(args, "--tags nova")
-			stripArgsCount += 1
+			stripArgsCount++
 		}
 		args = append(args, defaultOpenstackProvPlay)
 	case "kubernetes":
@@ -281,6 +282,7 @@ func (a *ansibleProvisioner) playBook() error {
 	return err
 }
 
+// nolint: gocyclo
 func (a *ansibleProvisioner) createCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	status := map[string]interface{}{statusField: statusCreateProgress}

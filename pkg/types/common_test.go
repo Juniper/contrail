@@ -1,8 +1,6 @@
 package types
 
 import (
-	"testing"
-
 	"github.com/golang/mock/gomock"
 	"golang.org/x/net/context"
 
@@ -11,7 +9,7 @@ import (
 	"github.com/Juniper/contrail/pkg/types/mock"
 )
 
-func makeMockedContrailTypeLogicService(t *testing.T, controller *gomock.Controller) *ContrailTypeLogicService {
+func makeMockedContrailTypeLogicService(controller *gomock.Controller) *ContrailTypeLogicService {
 	service := &ContrailTypeLogicService{
 		AddressManager:    ipammock.NewMockAddressManager(controller),
 		DataService:       servicesmock.NewMockService(controller),

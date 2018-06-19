@@ -37,7 +37,7 @@ var processCmd = &cobra.Command{
 		ctx := context.Background()
 		if viper.GetBool("cache.enabled") {
 			log.Debug("cache service enabled")
-			cacheDB = cache.New(ctx, uint64(viper.GetInt64("cache.max_history")))
+			cacheDB = cache.New(uint64(viper.GetInt64("cache.max_history")))
 			if viper.GetBool("cache.cassandra.enabled") {
 				log.Debug("cassandra watcher enabled for cache")
 				processor := cassandra.NewEventProducer(

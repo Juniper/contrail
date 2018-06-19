@@ -1,5 +1,6 @@
 package models
 
+// Virtual network forwarding modes.
 const (
 	L3Mode   = "l3"
 	L2L3Mode = "l2_l3"
@@ -11,7 +12,7 @@ func (m *VirtualNetwork) MakeNeutronCompatible() {
 	if m.Perms2.GlobalAccess == PermsRWX {
 		m.IsShared = true
 	}
-	if m.IsShared == true {
+	if m.IsShared {
 		m.Perms2.GlobalAccess = PermsRWX
 	}
 }

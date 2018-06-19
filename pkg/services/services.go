@@ -34,7 +34,7 @@ func (service *BaseService) SetNext(next Service) {
 	service.next = next
 }
 
-//EventProcesser can handle events on generic way.
+//EventProcessor can handle events on generic way.
 type EventProcessor interface {
 	Process(ctx context.Context, event *Event) (*Event, error)
 }

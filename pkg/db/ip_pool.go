@@ -30,17 +30,36 @@ func (db *Service) getIPPools(ctx context.Context, target *ipPool) ([]*ipPool, e
 	var query bytes.Buffer
 	d := db.Dialect
 	tx := GetTransaction(ctx)
-	query.WriteString("select " + db.Dialect.selectIp("start") + ", " + db.Dialect.selectIp("end") + " from ipaddress_pool where ")
-	query.WriteString(db.Dialect.quote("key") + " = " + db.Dialect.placeholder(1))
+	writeStrings(
+		&query,
+		"select ",
+		db.Dialect.selectIP("start"),
+		", ",
+		db.Dialect.selectIP("end"),
+		" from ipaddress_pool where ",
+		db.Dialect.quote("key"),
+		" = ",
+		db.Dialect.placeholder(1),
+	)
+
 	var rows *sql.Rows
 	var err error
-
 	if target.end.Equal(net.IP{}) {
-		query.WriteString(" order by start for update ")
+		writeString(&query, " order by start for update ")
 		rows, err = tx.QueryContext(ctx, query.String(), target.key)
 	} else {
-		query.WriteString(" and " + d.literalIp(target.start) + " < " + d.quote("end") + " and " +
-			d.quote("start") + " < " + d.literalIp(target.end) + " order by start for update ")
+		writeStrings(
+			&query,
+			" and ",
+			d.literalIP(target.start),
+			" < ",
+			d.quote("end"),
+			" and ",
+			d.quote("start"),
+			" < ",
+			d.literalIP(target.end),
+			" order by start for update ",
+		)
 		rows, err = tx.QueryContext(ctx, query.String(), target.key)
 	}
 	pools := []*ipPool{}
@@ -65,7 +84,8 @@ func (db *Service) getIPPools(ctx context.Context, target *ipPool) ([]*ipPool, e
 	return pools, nil
 }
 
-// deleteIPPools deletes ip pool that overlaps target range. delete all if target.End is zero. Whole pools are removed, not only overlapping parts.
+// deleteIPPools deletes ip pool that overlaps target range. delete all if target.End is zero.
+// Whole pools are removed, not only overlapping parts.
 func (db *Service) deleteIPPools(ctx context.Context, target *ipPool) error {
 	tx := GetTransaction(ctx)
 	d := db.Dialect
@@ -77,8 +97,8 @@ func (db *Service) deleteIPPools(ctx context.Context, target *ipPool) error {
 	} else {
 		query := "delete from ipaddress_pool where " +
 			db.Dialect.quote("key") + " = " + db.Dialect.placeholder(1) + " and " +
-			d.literalIp(target.start) + " < " + d.quote("end") + " and " +
-			d.quote("start") + " < " + d.literalIp(target.end)
+			d.literalIP(target.start) + " < " + d.quote("end") + " and " +
+			d.quote("start") + " < " + d.literalIP(target.end)
 		_, err = tx.ExecContext(ctx, query, target.key)
 	}
 	return errors.Wrap(handleError(err), "failed to delete ip pools")
@@ -88,7 +108,7 @@ func (db *Service) deleteIPPools(ctx context.Context, target *ipPool) error {
 func (db *Service) allocateIP(ctx context.Context, key string) (net.IP, error) {
 	tx := GetTransaction(ctx)
 	d := db.Dialect
-	query := "select " + db.Dialect.selectIp("start") + ", " + db.Dialect.selectIp("end") +
+	query := "select " + db.Dialect.selectIP("start") + ", " + db.Dialect.selectIP("end") +
 		" from ipaddress_pool where " +
 		d.quote("key") + " = " + db.Dialect.placeholder(1) + " limit 1 for update"
 	row := tx.QueryRowContext(ctx, query, key)
@@ -107,12 +127,13 @@ func (db *Service) allocateIP(ctx context.Context, key string) (net.IP, error) {
 
 	if bytes.Compare(updatedStart.To16(), end.To16()) < 0 {
 		_, err = tx.ExecContext(ctx,
-			"update ipaddress_pool set "+d.quote("start")+" = "+d.literalIp(updatedStart)+
-				" where "+d.quote("key")+" = "+db.Dialect.placeholder(1)+" and "+d.quote("start")+" = "+d.literalIp(start), key)
+			"update ipaddress_pool set "+d.quote("start")+" = "+d.literalIP(updatedStart)+
+				" where "+d.quote("key")+" = "+db.Dialect.placeholder(1)+" and "+d.quote("start")+
+				" = "+d.literalIP(start), key)
 	} else {
 		_, err = tx.ExecContext(ctx,
 			"delete from ipaddress_pool where "+d.quote("key")+" = "+db.Dialect.placeholder(1)+" and "+
-				d.quote("start")+" = "+d.literalIp(start), key)
+				d.quote("start")+" = "+d.literalIP(start), key)
 	}
 	if err != nil {
 		return nil, handleError(err)
@@ -147,14 +168,17 @@ func (db *Service) setIP(ctx context.Context, key string, ip net.IP) error {
 	if pool.start.Equal(ip) {
 		_, err = tx.ExecContext(
 			ctx,
-			"insert into ipaddress_pool ("+d.quoteSep("key", "start", "end")+") values ( "+db.Dialect.placeholder(1)+", "+d.literalIp(cidr.Inc(pool.start))+", "+d.literalIp(pool.end)+")", key)
+			"insert into ipaddress_pool ("+d.quoteSep("key", "start", "end")+
+				") values ( "+db.Dialect.placeholder(1)+", "+d.literalIP(cidr.Inc(pool.start))+", "+
+				d.literalIP(pool.end)+")", key)
 		if err != nil {
 			return handleError(err)
 		}
 	} else if cidr.Dec(pool.end).Equal(ip) {
 		_, err = tx.ExecContext(
 			ctx,
-			"insert into ipaddress_pool ("+d.quoteSep("key", "start", "end")+") values ( "+db.Dialect.placeholder(1)+", "+d.literalIp(pool.start)+", "+d.literalIp(cidr.Dec(pool.end))+")", key)
+			"insert into ipaddress_pool ("+d.quoteSep("key", "start", "end")+") values ( "+
+				db.Dialect.placeholder(1)+", "+d.literalIP(pool.start)+", "+d.literalIP(cidr.Dec(pool.end))+")", key)
 		if err != nil {
 			return handleError(err)
 		}
@@ -162,13 +186,15 @@ func (db *Service) setIP(ctx context.Context, key string, ip net.IP) error {
 		// We need divide one pool to two.
 		_, err = tx.ExecContext(
 			ctx,
-			"insert into ipaddress_pool ("+d.quoteSep("key", "start", "end")+") values ( "+db.Dialect.placeholder(1)+", "+d.literalIp(pool.start)+", "+d.literalIp(ip)+")", key)
+			"insert into ipaddress_pool ("+d.quoteSep("key", "start", "end")+") values ( "+
+				db.Dialect.placeholder(1)+", "+d.literalIP(pool.start)+", "+d.literalIP(ip)+")", key)
 		if err != nil {
 			return handleError(err)
 		}
 		_, err = tx.ExecContext(
 			ctx,
-			"insert into ipaddress_pool ("+d.quoteSep("key", "start", "end")+") values ( "+db.Dialect.placeholder(1)+", "+d.literalIp(cidr.Inc(ip))+", "+d.literalIp(pool.end)+")", key)
+			"insert into ipaddress_pool ("+d.quoteSep("key", "start", "end")+") values ( "+
+				db.Dialect.placeholder(1)+", "+d.literalIP(cidr.Inc(ip))+", "+d.literalIP(pool.end)+")", key)
 		if err != nil {
 			return handleError(err)
 		}
@@ -177,6 +203,7 @@ func (db *Service) setIP(ctx context.Context, key string, ip net.IP) error {
 }
 
 //deallocateIP deallocates ip.
+//nolint: unused
 func (db *Service) deallocateIP(ctx context.Context, key string, ip net.IP) error {
 	return db.deallocateIPRange(ctx, &ipPool{
 		key:   key,
@@ -207,7 +234,7 @@ func (db *Service) deallocateIPRange(ctx context.Context, target *ipPool) error 
 
 	// Clear overlapping ip pools
 	if len(pools) > 0 {
-		err := db.deleteIPPools(ctx, mergePool)
+		err = db.deleteIPPools(ctx, mergePool)
 		if err != nil {
 			return err
 		}
@@ -215,7 +242,8 @@ func (db *Service) deallocateIPRange(ctx context.Context, target *ipPool) error 
 		start = ipMin(start, pools[0].start)
 		end = ipMax(end, pools[len(pools)-1].end)
 	}
-	q := "insert into ipaddress_pool (" + d.quoteSep("key", "start", "end") + ") values ( " + db.Dialect.placeholder(1) + ", " + d.literalIp(start) + ", " + d.literalIp(end) + ")"
+	q := "insert into ipaddress_pool (" + d.quoteSep("key", "start", "end") + ") values ( " +
+		db.Dialect.placeholder(1) + ", " + d.literalIP(start) + ", " + d.literalIP(end) + ")"
 
 	_, err = tx.ExecContext(ctx, q, target.key)
 	return handleError(err)

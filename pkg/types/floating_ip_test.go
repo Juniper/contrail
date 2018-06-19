@@ -37,7 +37,7 @@ func floatingIPSetupDataServiceMocks(s *ContrailTypeLogicService) {
 func floatingIPSetupIPAMMocks(s *ContrailTypeLogicService) {
 	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
 	addressManager.EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *ipam.AllocateIPRequest) (address string, subnetUUID string, err error) {
+		func(_ context.Context, request *ipam.AllocateIPRequest) (address string, subnetUUID string, err error) {
 
 			if request.SubnetUUID == "uuid-1" {
 				return "10.0.0.1", "uuid-1", nil
@@ -68,7 +68,9 @@ func floatingIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
 	nextService := s.Next().(*servicesmock.MockService)
 	// CreateFloatingIP - response
 	nextService.EXPECT().CreateFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *services.CreateFloatingIPRequest) (response *services.CreateFloatingIPResponse, err error) {
+		func(
+			_ context.Context, request *services.CreateFloatingIPRequest,
+		) (response *services.CreateFloatingIPResponse, err error) {
 			return &services.CreateFloatingIPResponse{
 				FloatingIP: request.FloatingIP,
 			}, nil
@@ -76,7 +78,8 @@ func floatingIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
 
 	// DeleteFloatingIP - response
 	nextService.EXPECT().DeleteFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *services.DeleteFloatingIPRequest) (response *services.DeleteFloatingIPResponse, err error) {
+		func(_ context.Context, request *services.DeleteFloatingIPRequest,
+		) (response *services.DeleteFloatingIPResponse, err error) {
 			return &services.DeleteFloatingIPResponse{
 				ID: request.ID,
 			}, nil
@@ -194,7 +197,7 @@ func TestCreateFloatingIP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
-			service := makeMockedContrailTypeLogicService(t, mockCtrl)
+			service := makeMockedContrailTypeLogicService(mockCtrl)
 			floatingIPSetupDataServiceMocks(service)
 			floatingIPSetupIPAMMocks(service)
 			floatingIPSetupNextServiceMocks(service)
@@ -260,7 +263,7 @@ func TestDeleteFloatingIP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
-			service := makeMockedContrailTypeLogicService(t, mockCtrl)
+			service := makeMockedContrailTypeLogicService(mockCtrl)
 			floatingIPSetupDataServiceMocks(service)
 			floatingIPSetupIPAMMocks(service)
 			floatingIPSetupNextServiceMocks(service)

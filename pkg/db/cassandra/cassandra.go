@@ -194,30 +194,39 @@ type EventProducer struct {
 }
 
 //NewEventProducer makes new event processor for cassandra.
-func NewEventProducer(processor services.EventProcessor, queueName, cassandraHost string, cassandraPort int, cassandraTimeout time.Duration, rabbitMQHost string) *EventProducer {
+func NewEventProducer(
+	processor services.EventProcessor,
+	queueName string,
+	cassandraHost string,
+	cassandraPort int,
+	cassandraTimeout time.Duration,
+	rabbitMQHost string,
+) *EventProducer {
 	return &EventProducer{
-		cassandraHost: cassandraHost,
-		cassandraPort: cassandraPort,
-		queueName:     queueName,
-		rabbitMQHost:  rabbitMQHost,
-		Processor:     processor,
+		cassandraHost:    cassandraHost,
+		cassandraPort:    cassandraPort,
+		cassandraTimeout: cassandraTimeout,
+		queueName:        queueName,
+		rabbitMQHost:     rabbitMQHost,
+		Processor:        processor,
 	}
 }
 
 //WatchAMQP watches AMQP.
+//nolint: gocyclo
 func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 	log.Debug("starting watch amqp")
 	conn, err := amqp.Dial(p.rabbitMQHost)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer conn.Close() // nolint: errcheck
 
 	ch, err := conn.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer ch.Close() // nolint: errcheck
 
 	q, err := ch.QueueDeclare(
 		p.queueName,
@@ -278,7 +287,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 				log.Warn("invalid event %v", data)
 				continue
 			}
-			p.Processor.Process(ctx, e)
+			p.Processor.Process(ctx, e) // nolint: errcheck
 		case <-ctx.Done():
 			log.Debug("AQMP watcher canncelled by context")
 			return nil
@@ -292,9 +301,9 @@ func (p *EventProducer) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	events.Sort()
+	events.Sort() // nolint: errcheck
 	for _, e := range events.Events {
-		p.Processor.Process(ctx, e)
+		p.Processor.Process(ctx, e) // nolint: errcheck
 	}
 	return p.WatchAMQP(ctx)
 }

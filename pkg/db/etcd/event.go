@@ -75,7 +75,7 @@ func (p *EventProducer) HandleMessage(
 		log.Warn("invalid event %v", data)
 		return
 	}
-	p.Processor.Process(ctx, e)
+	p.Processor.Process(ctx, e) // nolint: errcheck
 }
 
 //Start watch etcd.
@@ -93,5 +93,4 @@ func (p *EventProducer) Start(ctx context.Context) error {
 			p.HandleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)
 		}
 	}
-	return nil
 }

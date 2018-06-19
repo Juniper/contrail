@@ -38,7 +38,7 @@ func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB) {
 	}()
 }
 
-func notifyEvent(t *testing.T, cache *DB, version uint64) {
+func notifyEvent(cache *DB, version uint64) {
 	event := &services.Event{
 		Version: version,
 		Request: &services.Event_CreateVirtualNetworkRequest{
@@ -49,10 +49,11 @@ func notifyEvent(t *testing.T, cache *DB, version uint64) {
 			},
 		},
 	}
-	cache.Process(context.Background(), event)
+	cache.Process(context.Background(), event) // nolint: errcheck
 }
 
-func notifyDelete(t *testing.T, cache *DB, version uint64) {
+// nolint: unused
+func notifyDelete(cache *DB, version uint64) {
 	event := &services.Event{
 		Version: version,
 		Request: &services.Event_DeleteVirtualNetworkRequest{
@@ -61,35 +62,35 @@ func notifyDelete(t *testing.T, cache *DB, version uint64) {
 			},
 		},
 	}
-	cache.Process(context.Background(), event)
+	cache.Process(context.Background(), event) // nolint: errcheck
 }
 
 func TestCache(t *testing.T) {
 	log.SetLevel(logrus.DebugLevel)
-	cache := New(context.Background(), 1)
+	cache := New(1)
 	wg := &sync.WaitGroup{}
 
 	addWatcher(t, wg, cache)
 	addWatcher(t, wg, cache)
 
-	notifyEvent(t, cache, 0)
-	notifyEvent(t, cache, 1)
+	notifyEvent(cache, 0)
+	notifyEvent(cache, 1)
 
 	addWatcher(t, wg, cache)
 	addWatcher(t, wg, cache)
 	// test cancelation of channel.
 	// expect no panic or blocking.
 	ctx2, cancel := context.WithCancel(context.Background())
-	cache.AddWatcher(ctx2, 0)
+	cache.AddWatcher(ctx2, 0) // nolint: errcheck
 	cancel()
 
 	//timeout watcher
 	//Don't actually receiving events.
 	ctx3 := context.Background()
-	cache.AddWatcher(ctx3, 0)
+	cache.AddWatcher(ctx3, 0) // nolint: errcheck
 
-	notifyEvent(t, cache, 2)
-	notifyEvent(t, cache, 3)
+	notifyEvent(cache, 2)
+	notifyEvent(cache, 3)
 
 	addWatcher(t, wg, cache)
 

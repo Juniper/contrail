@@ -347,7 +347,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
-			service := makeMockedContrailTypeLogicService(t, mockCtrl)
+			service := makeMockedContrailTypeLogicService(mockCtrl)
 
 			virtualNetworkSetupDataServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
@@ -362,7 +362,9 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			if !tt.fails {
 				nextService := service.Next().(*servicesmock.MockService)
 				nextService.EXPECT().CreateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-					func(ctx context.Context, request *services.CreateVirtualNetworkRequest) (*services.CreateVirtualNetworkResponse, error) {
+					func(
+						_ context.Context, request *services.CreateVirtualNetworkRequest,
+					) (*services.CreateVirtualNetworkResponse, error) {
 						return &services.CreateVirtualNetworkResponse{
 							VirtualNetwork: request.VirtualNetwork,
 						}, nil
@@ -410,7 +412,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
-			service := makeMockedContrailTypeLogicService(t, mockCtrl)
+			service := makeMockedContrailTypeLogicService(mockCtrl)
 			virtualNetworkSetupDataServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
 
@@ -419,7 +421,9 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 			if !tt.fails {
 				nextService := service.Next().(*servicesmock.MockService)
 				nextService.EXPECT().DeleteVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-					func(ctx context.Context, request *services.DeleteVirtualNetworkRequest) (*services.DeleteVirtualNetworkResponse, error) {
+					func(
+						_ context.Context, request *services.DeleteVirtualNetworkRequest,
+					) (*services.DeleteVirtualNetworkResponse, error) {
 						return &services.DeleteVirtualNetworkResponse{
 							ID: request.ID,
 						}, nil

@@ -19,14 +19,16 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	virtualNetwork := request.VirtualNetwork
 	// check if multiple policy service chain supported
 	if !virtualNetwork.IsValidMultiPolicyServiceChainConfig() {
-		return nil, common.ErrorBadRequest("Multi policy service chains are not supported, with both import export external route targets")
+		return nil, common.ErrorBadRequest(
+			"Multi policy service chains are not supported, with both import export external route targets")
 	}
 	//  neutron <-> vnc sharing
 	virtualNetwork.MakeNeutronCompatible()
 	// Does not authorize to set the virtual network ID as it's allocated
 	// by the vnc server
 	if virtualNetwork.HasVirtualNetworkNetworkID() {
-		return nil, common.ErrorForbidden("Cannot set the virtual network ID, it's allocated by the server")
+		return nil, common.ErrorForbidden(
+			"Cannot set the virtual network ID, it's allocated by the server")
 	}
 
 	err = sv.InTransactionDoer.DoInTransaction(
@@ -110,7 +112,9 @@ func mergeIpamSubnetsIfNoOverlap(subnets []*net.IPNet, ipamSubnets []*models.Ipa
 	return subnets, nil
 }
 
-func validateIpamSubnets(virtualNetwork *models.VirtualNetwork, ipam *models.NetworkIpam, vnSubnets *models.VnSubnetsType) error {
+func validateIpamSubnets(
+	virtualNetwork *models.VirtualNetwork, ipam *models.NetworkIpam, vnSubnets *models.VnSubnetsType,
+) error {
 	if !ipam.IsFlatSubnet() {
 		return vnSubnets.ValidateUserDefined()
 	}
@@ -130,7 +134,9 @@ func extractIpamSubnets(ipam *models.NetworkIpam, vnSubnets *models.VnSubnetsTyp
 	return vnSubnets.GetIpamSubnets()
 }
 
-func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(ctx context.Context, virtualNetwork *models.VirtualNetwork) error {
+func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
+	ctx context.Context, virtualNetwork *models.VirtualNetwork,
+) error {
 	// check for each ipam references
 	ipamReferences := virtualNetwork.NetworkIpamRefs
 	// ip subnet must not overlap in a same network.
@@ -140,18 +146,21 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(ctx context.Contex
 		ipamResponse, err := sv.DataService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
 			ID: ipamReference.UUID,
 		})
+		if err != nil {
+			return common.ErrorBadRequestf("Getting IPAM subnets failed: %v", err)
+		}
 
 		ipam := ipamResponse.NetworkIpam
 		vnSubnet := ipamReference.GetAttr()
 		err = validateIpamSubnets(virtualNetwork, ipam, vnSubnet)
 		if err != nil {
-			return common.ErrorBadRequestf("Couldn't process ipam subnets: %v", err)
+			return common.ErrorBadRequestf("Validation of IPAM subnets failed: %v", err)
 		}
 
 		ipamSubnets := extractIpamSubnets(ipam, vnSubnet)
 		subnets, err = mergeIpamSubnetsIfNoOverlap(subnets, ipamSubnets)
 		if err != nil {
-			return common.ErrorBadRequestf("Couldn't process ipam subnets: %v", err)
+			return common.ErrorBadRequestf("Merging of IPAM subnets failed: %v", err)
 		}
 		//TODO: check network subnet quota
 	}
@@ -162,8 +171,8 @@ func (sv *ContrailTypeLogicService) checkProviderNetwork(
 	ctx context.Context, virtualNetwork *models.VirtualNetwork) error {
 
 	if virtualNetwork.IsProviderNetwork {
-		return common.ErrorBadRequestf("Non provider VN (%v) can not be configured with is_provider_network = True",
-			virtualNetwork.UUID)
+		return common.ErrorBadRequestf(
+			"Non provider VN (%v) can not be configured with is_provider_network = True", virtualNetwork.UUID)
 	}
 
 	// no further checks if not linked to a provider network
@@ -173,8 +182,10 @@ func (sv *ContrailTypeLogicService) checkProviderNetwork(
 
 	// non provider network can connect to only one provider network.
 	if len(virtualNetwork.VirtualNetworkRefs) > 1 {
-		return common.ErrorBadRequestf("Non Provider VN (%v) can connect to one provider VN but trying to connect to multiple VN",
-			virtualNetwork.UUID)
+		return common.ErrorBadRequestf(
+			"Non Provider VN (%v) can connect to one provider VN but trying to connect to multiple VN",
+			virtualNetwork.UUID,
+		)
 	}
 	refUUID := virtualNetwork.VirtualNetworkRefs[0].UUID
 	ok, err := sv.isVirtualNetworkProviderNetwork(ctx, refUUID)
@@ -199,8 +210,12 @@ func (sv *ContrailTypeLogicService) checkNetworkSupportBGPTypes(
 			return err
 		}
 		if vpnType != virtualNetwork.VirtualNetworkProperties.ForwardingMode {
-			return common.ErrorBadRequestf("BGP types check failed: cannot associate bgpvpn type '%v' with a virtual network in forwarding mode '%v'",
-				vpnType, virtualNetwork.VirtualNetworkProperties.ForwardingMode)
+			return common.ErrorBadRequestf(
+				"BGP types check failed: cannot associate bgpvpn type '%v' "+
+					"with a virtual network in forwarding mode '%v'",
+				vpnType,
+				virtualNetwork.VirtualNetworkProperties.ForwardingMode,
+			)
 		}
 	}
 	return nil
@@ -218,7 +233,10 @@ func (sv *ContrailTypeLogicService) checkBGPVPNRefs(
 
 	for _, logicalRouterUUID := range virtualNetwork.LogicalRouterRefs {
 		refUUID := logicalRouterUUID.UUID
-		logicalRouterResponse, err := sv.DataService.GetLogicalRouter(ctx, &services.GetLogicalRouterRequest{ID: refUUID})
+		logicalRouterResponse, err := sv.DataService.GetLogicalRouter(
+			ctx,
+			&services.GetLogicalRouterRequest{ID: refUUID},
+		)
 		if err != nil {
 			return err
 		}
@@ -229,8 +247,12 @@ func (sv *ContrailTypeLogicService) checkBGPVPNRefs(
 			for _, vpnRef := range vpnRefs {
 				vpnUUIDs = append(vpnUUIDs, vpnRef.UUID)
 			}
-			return common.ErrorBadRequestf("BGP VPN check failed: network %v is linked to a logical router which is associated to bgpvpn(s) %v",
-				virtualNetwork.UUID, strings.Join(vpnUUIDs, ","))
+			return common.ErrorBadRequestf(
+				"BGP VPN check failed: network %v is linked to a logical router "+
+					"which is associated to bgpvpn(s) %v",
+				virtualNetwork.UUID,
+				strings.Join(vpnUUIDs, ","),
+			)
 		}
 	}
 	return nil

@@ -42,6 +42,7 @@ func (w *Watcher) Chan() chan *services.Event {
 	return w.ch
 }
 
+//nolint: gocyclo
 func (w *Watcher) watch(ctx context.Context, db *DB) {
 	defer func() {
 		log.Debugf("[Watcher %d] watch stopped", w.id)
@@ -98,7 +99,7 @@ func (w *Watcher) watch(ctx context.Context, db *DB) {
 }
 
 //New makes cache db.
-func New(ctx context.Context, maxHistory uint64) *DB {
+func New(maxHistory uint64) *DB {
 	//TODO(nati) db dump
 	db := &DB{
 		versionMap:   map[uint64]*node{},
@@ -134,7 +135,7 @@ func (db *DB) AddWatcher(ctx context.Context, versionID uint64) (*Watcher, error
 	return watcher, nil
 }
 
-func (db *DB) update(event *services.Event) error {
+func (db *DB) update(event *services.Event) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 	n := &node{
@@ -179,7 +180,6 @@ func (db *DB) update(event *services.Event) error {
 	db.last.setNext(n)
 	db.last = n
 	log.Debugf("node %v updated", n.version)
-	return nil
 }
 
 //Process updates cache data.

@@ -15,13 +15,15 @@ func (s *Server) watchHandler(c echo.Context) error {
 		return common.ErrorPermissionDenied
 	}
 	websocket.Handler(func(ws *websocket.Conn) {
-		defer ws.Close()
+		defer closeConnection(ws, c.Logger())
 		watcher, err := s.Cache.AddWatcher(ctx, 0)
 		if err != nil {
 			errorJSON, _ := json.Marshal(map[string]interface{}{
 				"error": err,
 			})
-			websocket.Message.Send(ws, string(errorJSON))
+			if sErr := websocket.Message.Send(ws, string(errorJSON)); sErr != nil {
+				c.Logger().Errorf("Sending websocket error message (%v) failed: %v", err, sErr)
+			}
 			return
 		}
 		for {
@@ -41,4 +43,10 @@ func (s *Server) watchHandler(c echo.Context) error {
 		}
 	}).ServeHTTP(c.Response(), c.Request())
 	return nil
+}
+
+func closeConnection(ws *websocket.Conn, l echo.Logger) { // nolint: interfacer
+	if err := ws.Close(); err != nil {
+		l.Errorf("Closing websocket connection failed: %v", err)
+	}
 }

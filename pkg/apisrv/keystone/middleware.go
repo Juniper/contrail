@@ -103,6 +103,7 @@ func GetAuthSkipPaths() []string {
 }
 
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
+//nolint: gocyclo
 func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 	endpoints *apicommon.EndpointStore) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {

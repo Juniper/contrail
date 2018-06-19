@@ -9,6 +9,7 @@ import (
 	"github.com/twinj/uuid"
 )
 
+// IPAM subnet methods.
 const (
 	UserDefinedSubnet = "user-defined-subnet"
 	AutoSubnet        = "auto-subnet"
@@ -29,11 +30,11 @@ func (m *SubnetType) Net() (*net.IPNet, error) {
 
 // IsInSubnet validates allocation pool is in specific subnet.
 func (m *AllocationPoolType) IsInSubnet(subnet *net.IPNet) error {
-	err := isIpInSubnet(subnet, m.Start)
+	err := isIPInSubnet(subnet, m.Start)
 	if err != nil {
 		return common.ErrorBadRequest("allocation pool start " + err.Error())
 	}
-	err = isIpInSubnet(subnet, m.End)
+	err = isIPInSubnet(subnet, m.End)
 	if err != nil {
 		return common.ErrorBadRequest("allocation pool end " + err.Error())
 	}
@@ -48,7 +49,7 @@ func parseIpfromString(ipString string) (net.IP, error) {
 	return ip, nil
 }
 
-func isIpInSubnet(subnet *net.IPNet, ipString string) error {
+func isIPInSubnet(subnet *net.IPNet, ipString string) error {
 	ip, err := parseIpfromString(ipString)
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func isIpInSubnet(subnet *net.IPNet, ipString string) error {
 	return nil
 }
 
-// IsValid validates ipam subnet configuraion.
+// Validate validates ipam subnet configuration.
 func (m *IpamSubnetType) Validate() error {
 	_, err := uuid.Parse(m.SubnetUUID)
 	if err != nil {
@@ -83,13 +84,13 @@ func (m *IpamSubnetType) CheckIfSubnetParamsAreValid() error {
 		}
 	}
 	if m.DefaultGateway != "" {
-		err = isIpInSubnet(subnet, m.DefaultGateway)
+		err = isIPInSubnet(subnet, m.DefaultGateway)
 		if err != nil {
 			return common.ErrorBadRequest("default gateway " + err.Error())
 		}
 	}
 	if m.DNSServerAddress != "" {
-		err = isIpInSubnet(subnet, m.DNSServerAddress)
+		err = isIPInSubnet(subnet, m.DNSServerAddress)
 		if err != nil {
 			return common.ErrorBadRequest("DNS server " + err.Error())
 		}
