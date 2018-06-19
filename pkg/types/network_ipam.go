@@ -74,9 +74,9 @@ func (sv *ContrailTypeLogicService) CreateNetworkIpam(
 
 			ipamUUID := networkIpam.GetUUID()
 			for _, ipamSubnet := range ipamSubnets.GetSubnets() {
-				subnetUUID, err := sv.createIpamSubnet(ctx, ipamSubnet, ipamUUID)
-				if err != nil {
-					return err
+				subnetUUID, cErr := sv.createIpamSubnet(ctx, ipamSubnet, ipamUUID)
+				if cErr != nil {
+					return cErr
 				}
 				ipamSubnet.SubnetUUID = subnetUUID
 			}
@@ -105,7 +105,7 @@ func (sv *ContrailTypeLogicService) DeleteNetworkIpam(
 			ipamSubnets := networkIpam.GetIpamSubnets()
 			if networkIpam != nil && networkIpam.IsFlatSubnet() && ipamSubnets != nil {
 				for _, ipamSubnet := range ipamSubnets.GetSubnets() {
-					err := sv.deleteIpamSubnet(ctx, ipamSubnet.GetSubnetUUID())
+					err = sv.deleteIpamSubnet(ctx, ipamSubnet.GetSubnetUUID())
 					if err != nil {
 						return err
 					}

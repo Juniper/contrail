@@ -26,8 +26,11 @@ func (sv *ContrailTypeLogicService) UpdateGlobalSystemConfig(
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) (err error) {
-			// TODO(Jan Darowski) JBE-431 - Add proper uuid update when using draft object (enable_security_policy_draft).
-			oldObjResp, err := sv.DataService.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{ID: request.GetGlobalSystemConfig().GetUUID()})
+			// TODO(Jan Darowski) JBE-431 - Add proper uuid update when using draft object
+			// (enable_security_policy_draft)
+			oldObjResp, err := sv.DataService.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{
+				ID: request.GetGlobalSystemConfig().GetUUID(),
+			})
 			updateObj := request.GlobalSystemConfig
 
 			if err != nil {
@@ -79,7 +82,9 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 		return nil
 	}
 
-	vnList, err := sv.DataService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{Fields: []string{"route_target_list"}}})
+	vnList, err := sv.DataService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{
+		Fields: []string{"route_target_list"}},
+	})
 	if err != nil {
 		return err
 	}
@@ -93,18 +98,21 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 				return err
 			}
 			if !userDefined {
-				multiError = append(multiError, errors.Errorf("\t- %s (%s) have route target %s configured\n", vn.FQName, vn.UUID, rt))
+				multiError = append(multiError, errors.Errorf("\t- %s (%s) have route target %s configured\n",
+					vn.FQName, vn.UUID, rt))
 			}
 		}
 	}
 
 	if multiError != nil {
-		return errors.Wrapf(multiError, "Virtual networks are configured with a route target with this ASN %d and route target value in the same range as used by automatically allocated route targets:\n", globalAsn)
+		return errors.Wrapf(multiError, "Virtual networks are configured with a route target with this ASN %d "+
+			"and route target value in the same range as used by automatically allocated route targets:\n", globalAsn)
 	}
 	return nil
 }
 
-func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, updateObj *models.GlobalSystemConfig, oldObj *models.GlobalSystemConfig) (err error) {
+func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, updateObj *models.GlobalSystemConfig,
+	oldObj *models.GlobalSystemConfig) (err error) {
 	if updateObj.BgpaasParameters == nil {
 		return nil
 	}
@@ -121,7 +129,9 @@ func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, update
 		oldPortsRange = oldObj.BgpaasParameters
 	}
 
-	bgpaasList, err := sv.DataService.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{Spec: &services.ListSpec{Count: true}})
+	bgpaasList, err := sv.DataService.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{
+		Spec: &services.ListSpec{Count: true},
+	})
 
 	if err != nil {
 		return err

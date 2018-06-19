@@ -15,10 +15,10 @@ const (
 	funcPrefix = "$"
 )
 
-//AssertFunction for macros in diff
+// AssertFunction for macros in diff
 type AssertFunction func(path string, args, actual interface{}) error
 
-//AssertFunctions for additional test logic.
+// AssertFunctions for additional test logic.
 var AssertFunctions = map[string]AssertFunction{
 	"any": func(path string, args, actual interface{}) error {
 		return nil
@@ -65,6 +65,7 @@ func getAssertFunction(key string) (AssertFunction, error) {
 	return assert, nil
 }
 
+// nolint: gocyclo
 func runFunction(path string, expected, actual interface{}) (err error) {
 	switch t := expected.(type) {
 	case map[string]interface{}:
@@ -97,7 +98,8 @@ func runFunction(path string, expected, actual interface{}) (err error) {
 	return nil
 }
 
-//CheckDiff checks diff
+// CheckDiff checks diff
+// nolint: gocyclo
 func CheckDiff(path string, expected, actual interface{}) error {
 	if expected == nil {
 		return nil
@@ -159,7 +161,7 @@ func logDiff(expected, actual interface{}) {
 	fmt.Println(string(out), err)
 }
 
-//AssertEqual test if it is correct
+// AssertEqual test if it is correct
 func AssertEqual(t *testing.T, expected, actual interface{}, message string) bool {
 	expected = YAMLtoJSONCompat(expected)
 	actual = YAMLtoJSONCompat(actual)

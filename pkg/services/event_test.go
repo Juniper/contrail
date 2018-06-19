@@ -98,13 +98,13 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 func TestReorderEventList(t *testing.T) {
 	eventList := &EventList{
 		Events: []*Event{
-			&Event{
+			{
 				Request: &Event_CreateVirtualNetworkRequest{
 					&CreateVirtualNetworkRequest{
 						VirtualNetwork: &models.VirtualNetwork{
 							UUID: "vn1",
 							NetworkPolicyRefs: []*models.VirtualNetworkNetworkPolicyRef{
-								&models.VirtualNetworkNetworkPolicyRef{
+								{
 									UUID: "network_policy1",
 								},
 							},
@@ -112,7 +112,7 @@ func TestReorderEventList(t *testing.T) {
 					},
 				},
 			},
-			&Event{
+			{
 				Request: &Event_CreateNetworkPolicyRequest{
 					CreateNetworkPolicyRequest: &CreateNetworkPolicyRequest{
 						NetworkPolicy: &models.NetworkPolicy{
@@ -135,13 +135,13 @@ func TestReorderEventList(t *testing.T) {
 func TestReorderLoopedList(t *testing.T) {
 	eventList := &EventList{
 		Events: []*Event{
-			&Event{
+			{
 				Request: &Event_CreateVirtualNetworkRequest{
 					&CreateVirtualNetworkRequest{
 						VirtualNetwork: &models.VirtualNetwork{
 							UUID: "vn1",
 							VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
-								&models.VirtualNetworkVirtualNetworkRef{
+								{
 									UUID: "vn2",
 								},
 							},
@@ -149,13 +149,13 @@ func TestReorderLoopedList(t *testing.T) {
 					},
 				},
 			},
-			&Event{
+			{
 				Request: &Event_CreateVirtualNetworkRequest{
 					&CreateVirtualNetworkRequest{
 						VirtualNetwork: &models.VirtualNetwork{
 							UUID: "vn2",
 							VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
-								&models.VirtualNetworkVirtualNetworkRef{
+								{
 									UUID: "vn1",
 								},
 							},

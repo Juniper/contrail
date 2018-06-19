@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// BGP constants.
 const (
 	DefaultPortRangeStart = 50000
 	DefaultPortRangeEnd   = 50512
