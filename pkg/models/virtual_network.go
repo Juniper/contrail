@@ -6,12 +6,12 @@ func (m *VirtualNetwork) MakeNeutronCompatible() {
 	if m.Perms2.GlobalAccess == PermsRWX {
 		m.IsShared = true
 	}
-	if m.IsShared == true {
+	if m.IsShared {
 		m.Perms2.GlobalAccess = PermsRWX
 	}
 }
 
-//HasVirtualNetworkID check if the resource has virtual network ID.
+//HasVirtualNetworkNetworkID check if the resource has virtual network ID.
 func (m *VirtualNetwork) HasVirtualNetworkNetworkID() bool {
 	return m.VirtualNetworkNetworkID != 0
 }

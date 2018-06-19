@@ -263,7 +263,7 @@ func (a *ansibleProvisioner) playBook() error {
 		switch action {
 		case "ADD_COMPUTE":
 			args = append(args, "--tags nova")
-			stripArgsCount += 1
+			stripArgsCount++
 		}
 		args = append(args, defaultOpenstackProvPlay)
 	case "kubernetes":
