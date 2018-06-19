@@ -9,11 +9,8 @@ import (
 )
 
 const (
-	BgpRtgtMinId = 8000000
-)
-
-const (
-	RouteTargetPrefix = "target"
+	bgpRouteTargetMinID = 8000000
+	routeTargetPrefix   = "target"
 )
 
 // IsUserDefined checks if route target was defined by user.
@@ -37,7 +34,7 @@ func IsRouteTargetUserDefined(routeTarget []string, globalAsn int64) (bool, erro
 	if ip != nil {
 		return true, nil
 	}
-	if int64(asn) == globalAsn && target >= BgpRtgtMinId {
+	if int64(asn) == globalAsn && target >= bgpRouteTargetMinID {
 		return false, nil
 	}
 
@@ -46,20 +43,23 @@ func IsRouteTargetUserDefined(routeTarget []string, globalAsn int64) (bool, erro
 
 func parseRouteTarget(routeTarget []string) (ip net.IP, asn int, target int, err error) {
 
-	if len(routeTarget) != 3 || routeTarget[0] != RouteTargetPrefix {
-		return nil, 0, 0, errors.Errorf("Invalid RouteTarget specified: %v \nRoute target must be of the format 'target:<asn>:<number>' or 'target:<ip>:<number>'", routeTarget)
+	if len(routeTarget) != 3 || routeTarget[0] != routeTargetPrefix {
+		return nil, 0, 0, errors.Errorf("invalid RouteTarget specified: %v \n"+
+			"Route target must be of the format 'target:<asn>:<number>' or 'target:<ip>:<number>'", routeTarget)
 	}
 
 	ip = net.ParseIP(routeTarget[1])
 	if ip == nil {
 		asn, err = strconv.Atoi(routeTarget[1])
 		if err != nil {
-			return nil, 0, 0, errors.Errorf("Invalid RouteTarget specified: %v \nInvalid asn (should be ip or int) %v", routeTarget, err)
+			return nil, 0, 0, errors.Errorf("invalid RouteTarget specified: %v \n"+
+				"Invalid asn (should be ip or int) %v", routeTarget, err)
 		}
 	}
 	target, err = strconv.Atoi(routeTarget[2])
 	if err != nil {
-		return nil, 0, 0, errors.Errorf("Invalid RouteTarget specified: %v \nInvalid target id (should be int) %v", routeTarget, err)
+		return nil, 0, 0, errors.Errorf("invalid RouteTarget specified: %v \n"+
+			"Invalid target id (should be int) %v", routeTarget, err)
 	}
 
 	return ip, asn, target, nil

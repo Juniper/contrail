@@ -132,7 +132,7 @@ func checkStatusCode(expected []int, actual int) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Unexpeced return code expected %v, actual %d", expected, actual)
+	return errors.Errorf("unexpected return code: expected %v, actual %v", expected, actual)
 }
 
 // Create send a create API request.
@@ -165,28 +165,74 @@ func (c *Client) EnsureDeleted(path string, output interface{}) (*http.Response,
 	return c.Do(echo.DELETE, path, nil, output, expected)
 }
 
-// Do issue a API request.
+// Do issues an API request.
 func (c *Client) Do(method, path string, data interface{}, output interface{}, expected []int) (*http.Response, error) {
-	var request *http.Request
-	var err error
-	endpoint := c.Endpoint + path
-	if data == nil {
-		request, err = http.NewRequest(method, endpoint, nil)
-	} else {
-		var dataJSON []byte
-		dataJSON, err = json.Marshal(data)
-		if err != nil {
-			return nil, err
-		}
-		request, err = http.NewRequest(method, endpoint, bytes.NewBuffer(dataJSON))
-	}
+	request, err := c.prepareHTTPRequest(method, path, data)
 	if err != nil {
 		return nil, err
 	}
+
+	resp, err := c.doHTTPRequestRetryingOn401(request, data)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close() // nolint: errcheck
+
+	err = checkStatusCode(expected, resp.StatusCode)
+	if err != nil {
+		output, _ := httputil.DumpResponse(resp, true) // nolint:  gas
+		log.Println(string(output))
+		return resp, err
+	}
+	if method == echo.DELETE {
+		return resp, nil
+	}
+	err = json.NewDecoder(resp.Body).Decode(&output)
+	if err != nil {
+		return resp, errors.Wrap(err, "decoding response body failed")
+	}
+	if c.Debug {
+		log.WithFields(log.Fields{
+			"response": resp,
+			"output":   output,
+		}).Debug("API Server response")
+	}
+	return resp, err
+}
+
+func (c *Client) prepareHTTPRequest(method, path string, data interface{}) (*http.Request, error) {
+	var request *http.Request
+	if data == nil {
+		var err error
+		request, err = http.NewRequest(method, getURL(c.Endpoint, path), nil)
+		if err != nil {
+			return nil, errors.Wrap(err, "creating HTTP request failed")
+		}
+	} else {
+		var dataJSON []byte
+		dataJSON, err := json.Marshal(data)
+		if err != nil {
+			return nil, errors.Wrap(err, "encoding request data failed")
+		}
+
+		request, err = http.NewRequest(method, getURL(c.Endpoint, path), bytes.NewBuffer(dataJSON))
+		if err != nil {
+			return nil, errors.Wrap(err, "creating HTTP request failed")
+		}
+	}
+
 	request.Header.Set("Content-Type", "application/json")
 	if c.AuthToken != "" {
 		request.Header.Set("X-Auth-Token", c.AuthToken)
 	}
+	return request, nil
+}
+
+func getURL(endpoint, path string) string {
+	return endpoint + path
+}
+
+func (c *Client) doHTTPRequestRetryingOn401(request *http.Request, data interface{}) (*http.Response, error) {
 	if c.Debug {
 		log.WithFields(log.Fields{
 			"method": request.Method,
@@ -197,9 +243,10 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	}
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
+		var err error
 		resp, err = c.httpClient.Do(request)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "issuing HTTP request failed")
 		}
 		if resp.StatusCode != 401 {
 			break
@@ -207,34 +254,18 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 		// token might be expired, refresh token and retry
 		// skip refresh token after last retry
 		if i < retryCount-1 {
-			resp.Body.Close() // nolint
-			// refresh token
-			err = c.Login()
+			err = resp.Body.Close()
+			if err != nil {
+				return nil, errors.Wrap(err, "closing response body failed")
+			}
+
+			err = c.Login() // refresh token
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-	defer resp.Body.Close() // nolint: errcheck
-	err = checkStatusCode(expected, resp.StatusCode)
-	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true) // nolint:  gas
-		log.Println(string(output))
-		return resp, err
-	}
-	if method == echo.DELETE {
-		return resp, err
-	}
-	err = json.NewDecoder(resp.Body).Decode(&output)
-	if err != nil {
-		return nil, err
-	}
-	if c.Debug {
-		log.WithFields(log.Fields{
-			"data": output,
-		}).Debug("API Server output")
-	}
-	return resp, err
+	return resp, nil
 }
 
 // DoRequest requests based on reqest object.

@@ -195,7 +195,8 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 		_, err := client.DoRequest(task.Request)
 		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
-		ok := common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("In test scenaio '%v' task' %v' failed", testScenario.Name, task))
+		ok := common.AssertEqual(t, task.Expect, task.Request.Output,
+			fmt.Sprintf("In test scenaio '%v' task' %v' failed", testScenario.Name, task))
 		if !ok {
 			log.Errorf("Assertion error was: %+v", err)
 			break

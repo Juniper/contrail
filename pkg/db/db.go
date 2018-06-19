@@ -105,54 +105,52 @@ func GetTransaction(ctx context.Context) *sql.Tx {
 	return tx
 }
 
-//DoInTransaction run a function inside of DB transaction
+//DoInTransaction runs a function inside of DB transaction.
 func (db *Service) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
-	var err error
 	tx := GetTransaction(ctx)
 	if tx != nil {
 		return do(ctx)
 	}
+
 	conn, err := db.DB().Conn(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to start transaction")
+		return errors.Wrap(err, "failed to retrieve DB connection")
 	}
+	defer conn.Close() // nolint: errcheck
+
 	tx, err = conn.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to start transaction")
+		return errors.Wrap(err, "failed to start DB transaction")
 	}
-	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
-			panic(p)
-		}
-		conn.Close()
-	}()
-	newCTX := context.WithValue(ctx, Transaction, tx)
-	err = do(newCTX)
+	defer rollbackOnPanic(tx)
+
+	err = do(context.WithValue(ctx, Transaction, tx))
 	if err != nil {
-		err = handleError(err)
-		tx.Rollback()
-		return err
+		tx.Rollback() // nolint: errcheck
+		return handleError(err)
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		tx.Rollback()
-		err = handleError(err)
-		return err
+		tx.Rollback() // nolint: errcheck
+		return handleError(err)
 	}
 	return nil
 }
 
-//LogQuery log sql query
-// nolint
-func LogQuery(ctx context.Context, command string, args ...interface{}) {
-	log.Debug(command, args)
+func rollbackOnPanic(tx *sql.Tx) {
+	if p := recover(); p != nil {
+		err := tx.Rollback()
+		if err != nil {
+			panic(fmt.Sprintf("%v; also transaction rollback failed: %v", p, err))
+		}
+		panic(p)
+	}
 }
 
 func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
 	if viper.GetBool("database.debug") {
-		logger := instrumentedsql.LoggerFunc(LogQuery)
+		logger := instrumentedsql.LoggerFunc(logQuery)
 		switch dbType {
 		case MYSQL:
 			dbType = "instrumented-" + dbType
@@ -164,6 +162,10 @@ func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
 	}
 
 	return sql.Open(dbType, databaseConnection)
+}
+
+func logQuery(_ context.Context, command string, args ...interface{}) {
+	log.Debug(command, args)
 }
 
 //ConnectDB connect to the db based on viper configuration.

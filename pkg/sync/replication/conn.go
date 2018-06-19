@@ -32,7 +32,9 @@ type postgresReplicationConnection struct {
 	db       dbService
 }
 
-func newPostgresReplicationConnection(db dbService, replConn pgxReplicationConn) (*postgresReplicationConnection, error) {
+func newPostgresReplicationConnection(
+	db dbService, replConn pgxReplicationConn,
+) (*postgresReplicationConnection, error) {
 	return &postgresReplicationConnection{db: db, replConn: replConn}, nil
 }
 
@@ -76,7 +78,9 @@ func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, na
 	)
 }
 
-func (c *postgresReplicationConnection) DumpSnapshot(ctx context.Context, ow db.ObjectWriter, snapshotName string) error {
+func (c *postgresReplicationConnection) DumpSnapshot(
+	ctx context.Context, ow db.ObjectWriter, snapshotName string,
+) error {
 	return c.db.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {

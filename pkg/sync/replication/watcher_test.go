@@ -251,7 +251,9 @@ func (m *mockPostgresWatcherConnection) SendStatus(lastLSN uint64) error {
 	return args.Error(0)
 }
 
-func (m *mockPostgresWatcherConnection) DumpSnapshot(ctx context.Context, ow db.ObjectWriter, snapshotName string) error {
+func (m *mockPostgresWatcherConnection) DumpSnapshot(
+	ctx context.Context, ow db.ObjectWriter, snapshotName string,
+) error {
 	args := m.MethodCalled("DumpSnapshot", ctx, ow, snapshotName)
 	return args.Error(0)
 }

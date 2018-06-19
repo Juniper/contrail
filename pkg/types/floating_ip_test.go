@@ -73,7 +73,7 @@ func setupDBMocks() {
 
 func setupIPAMMocks() {
 	ipamMock.EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *ipam.AllocateIPRequest) (address string, subnetUUID string, err error) {
+		func(_ context.Context, request *ipam.AllocateIPRequest) (address string, subnetUUID string, err error) {
 
 			if request.SubnetUUID == "uuid-1" {
 				return "10.0.0.1", "uuid-1", nil
@@ -103,7 +103,9 @@ func setupIPAMMocks() {
 func setupNextServiceMocks() {
 	// CreateFloatingIP - response
 	nextServiceMock.EXPECT().CreateFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *services.CreateFloatingIPRequest) (response *services.CreateFloatingIPResponse, err error) {
+		func(
+			_ context.Context, request *services.CreateFloatingIPRequest,
+		) (response *services.CreateFloatingIPResponse, err error) {
 			return &services.CreateFloatingIPResponse{
 				FloatingIP: request.FloatingIP,
 			}, nil
@@ -111,7 +113,9 @@ func setupNextServiceMocks() {
 
 	// DeleteFloatingIP - response
 	nextServiceMock.EXPECT().DeleteFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *services.DeleteFloatingIPRequest) (response *services.DeleteFloatingIPResponse, err error) {
+		func(
+			_ context.Context, request *services.DeleteFloatingIPRequest,
+		) (response *services.DeleteFloatingIPResponse, err error) {
 			return &services.DeleteFloatingIPResponse{
 				ID: request.ID,
 			}, nil

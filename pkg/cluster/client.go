@@ -321,6 +321,7 @@ func (c *Cluster) getNode(nodeID string, m map[string]bool) (*models.Node, error
 	return nil, nil
 }
 
+// nolint: gocyclo
 func (c *Cluster) getNodeDetails(clusterInfo *models.ContrailCluster) ([]*models.Node, error) {
 	var nodesInfo []*models.Node
 	m := make(map[string]bool)
@@ -443,6 +444,7 @@ func (c *Cluster) getK8sNodeDetails(clusterInfo *models.KubernetesCluster) ([]*m
 	return nodesInfo, nil
 }
 
+// nolint: gocyclo
 func (c *Cluster) getOpenstackNodeDetails(clusterInfo *models.OpenstackCluster) ([]*models.Node, error) {
 	var nodesInfo []*models.Node
 	m := make(map[string]bool)
@@ -504,6 +506,7 @@ func (c *Cluster) getOpenstackNodeDetails(clusterInfo *models.OpenstackCluster) 
 	return nodesInfo, nil
 }
 
+// nolint: gocyclo
 func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 	rData, err := c.getResource(defaultResourcePath, clusterID)
 	if err != nil {
@@ -602,6 +605,7 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 	return clusterData, nil
 }
 
+// nolint: gocyclo
 func (c *Cluster) getOpenstackClusterDetails(clusterID string) (*OpenstackData, error) {
 	rData, err := c.getResource(defaultOpenstackResourcePath, clusterID)
 	if err != nil {

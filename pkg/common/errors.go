@@ -45,6 +45,7 @@ func ErrorBadRequest(message string) error {
 }
 
 // HTTPStatusFromCode converts a gRPC error code into the corresponding HTTP response status.
+// nolint: gocyclo
 func HTTPStatusFromCode(code codes.Code) int {
 	switch code {
 	case codes.OK:
