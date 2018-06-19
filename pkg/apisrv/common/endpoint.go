@@ -93,6 +93,15 @@ func (t *TargetStore) Next(scope string) (endpointURL string) {
 	return endpointURL
 }
 
+//Remove endpoint target from memory
+func (t *TargetStore) Remove(endpointKey string) {
+	if endpointKey == t.nextTarget {
+		// Reset the next target before deleting the endpoint
+		t.nextTarget = ""
+	}
+	t.Data.Delete(endpointKey)
+}
+
 //Read endpoint targets store from memory
 func (e *EndpointStore) Read(endpointKey string) *TargetStore {
 	p, ok := e.Data.Load(endpointKey)
