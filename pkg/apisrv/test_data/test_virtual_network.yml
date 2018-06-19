@@ -2,6 +2,10 @@ name: Virtual Network Test
 description:  basic virtual network test
 cleanup:
 - path: /routing-instance/ri_uuid
+- path: /project/admin_project_uuid
+- path: /project/demo_project_uuid
+- path: /network-ipam/test_ipam_blue
+- path: /network-ipam/test_ipam_red
 - path: /virtual-network/vn_blue
 - path: /virtual-network/vn_red
 - path: /network-policy/network_policy_uuid
@@ -15,11 +19,13 @@ test_data:
     uuid: admin_project_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
   demo_project: &demo_project
     fq_name: ["default", "demo"]
     uuid: demo_project_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
   network_policy1: &network_policy1
     fq_name: ["default", "admin", "policy1"]
     uuid: network_policy_uuid
@@ -27,7 +33,7 @@ test_data:
     parent_uuid: admin_project_uuid
     network_policy_entries:
       policy_rule:
-        - direction: "<"
+        - direction: ">"
           protocol: tcp
           rule_sequence:
             major: 4
@@ -37,6 +43,35 @@ test_data:
     uuid: network_policy_uuid2
     parent_type: project
     parent_uuid: demo_project_uuid
+    network_policy_entries:
+      policy_rule:
+        - direction: ">"
+          protocol: tcp
+          rule_sequence:
+            major: 4
+            minor: 1
+  network_ipam_blue: &network_ipam_blue
+    network_ipam_mgmt:
+      host_routes:
+        route:
+          - prefix: "test_prefix"
+            next_hop: "1.2.3.5"
+    uuid: test_ipam_blue
+    display_name: test_ipam_blue
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    fq_name: ["domain","admin","test_ipam_blue"]
+  network_ipam_red: &network_ipam_red
+    network_ipam_mgmt:
+      host_routes:
+        route:
+          - prefix: "test_prefix"
+            next_hop: "1.2.3.5"
+    uuid: test_ipam_red
+    display_name: test_ipam_red
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    fq_name: ["domain","admin","test_ipam_red"]
   vn_blue: &vn_blue
     fq_name: ["default", "admin", "vn_blue"]
     uuid: vn_blue
@@ -47,6 +82,8 @@ test_data:
        route_target: ["100:200"]
     network_policy_refs:
     - uuid: network_policy_uuid
+    network_ipam_refs:
+    - uuid: test_ipam_blue
   vn_blue_with_detail: &vn_blue_with_detail
     uuid: vn_blue
     display_name: blue
@@ -54,6 +91,8 @@ test_data:
     parent_uuid: admin_project_uuid
     network_policy_refs:
     - uuid: network_policy_uuid
+    network_ipam_refs:
+    - uuid: test_ipam_blue
     virtual_network_network_id: $number
     routing_instances:
     - uuid: ri_uuid
@@ -66,6 +105,18 @@ test_data:
     parent_uuid: admin_project_uuid
     network_policy_refs:
     - uuid: network_policy_uuid
+    network_ipam_refs:
+    - uuid: test_ipam_red
+  vn_red_with_detail: &vn_red_with_detail
+    uuid: vn_red
+    display_name: red
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    network_policy_refs:
+    - uuid: network_policy_uuid
+    network_ipam_refs:
+    - uuid: test_ipam_red
+    virtual_network_network_id: $number
   vn_blue_simple: &vn_blue_simple
     fq_name: ["default", "admin", "vn_blue"]
     uuid: vn_blue
@@ -149,6 +200,16 @@ workflow:
       parent_uuid: demo_project_uuid
       perms2:
         owner: demo
+- name: create network ipam blue
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 201
+    data:
+      network-ipam: *network_ipam_blue
+  expect:
+    network-ipam: *network_ipam_blue
 - name: create virtual network blue
   request:
     path: /virtual-networks
@@ -298,6 +359,16 @@ workflow:
     expected:
     - 204
   expect: null
+- name: create network ipam red
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 201
+    data:
+      network-ipam: *network_ipam_red
+  expect:
+    network-ipam: *network_ipam_red
 - name: create virtual network red
   request:
     path: /virtual-networks
@@ -335,7 +406,7 @@ workflow:
   expect:
     virtual-networks:
     - *vn_blue_with_detail
-    - *vn_red
+    - *vn_red_with_detail
 - name: list virtual networks with share
   request:
     path: /virtual-networks?shared=true
@@ -439,9 +510,23 @@ workflow:
     expected:
     - 204
   expect: null
+- name: delete network ipam blue
+  request:
+    path: /network-ipam/test_ipam_blue
+    method: DELETE
+    expected:
+    - 204
+  expect: null
 - name: delete virtual network
   request:
     path: /virtual-network/vn_red
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+- name: delete network ipam red
+  request:
+    path: /network-ipam/test_ipam_red
     method: DELETE
     expected:
     - 204

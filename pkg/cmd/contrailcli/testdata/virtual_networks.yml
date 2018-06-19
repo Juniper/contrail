@@ -1,4 +1,17 @@
 resources:
+- kind: network_ipam
+  data:
+    network_ipam_mgmt:
+      host_routes:
+        route:
+          - prefix: "test_prefix"
+            next_hop: "1.2.3.5"
+    uuid: test_ipam
+    display_name: test_ipam
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    fq_name:
+    - test_ipam
 - kind: virtual_network
   data:
     fq_name:
@@ -6,6 +19,8 @@ resources:
     perms2:
       owner: TestCLI
     uuid: first-uuid
+    network_ipam_refs:
+    - uuid: test_ipam
 - kind: virtual_network
   data:
     external_ipam: true
@@ -23,3 +38,5 @@ resources:
     port_security_enabled: true
     router_external: true
     uuid: second-uuid
+    network_ipam_refs:
+    - uuid: test_ipam
