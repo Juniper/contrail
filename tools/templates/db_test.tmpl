@@ -30,7 +30,7 @@ func create{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, id 
 
     model := models.Make{{ schema.JSONSchema.GoName }}()
     model.UUID = id
-    model.FQName = []string{"default", "default-domain", model.UUID}
+    model.FQName = []string{"default", default{{ schema.DefaultParent.GoName }}UUID, model.UUID}
     model.Perms2.Owner = "admin"
     model.Perms2.Share = share
 
