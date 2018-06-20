@@ -54,7 +54,7 @@
         $ref: "types.json#/definitions/PermType2"
       configuration_version:
         operations: "CRUD"
-        presence: "true"
+        presence: "optional"
         description: "Configuration Version for the object."
         type: integer
         sql: bigint
