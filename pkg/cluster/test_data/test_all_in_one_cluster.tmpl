@@ -44,35 +44,35 @@ test_data:
   openstack_control_nodes: &openstack_control_nodes
     fq_name: ["default", "admin", "openstack_control_nodes"]
     uuid: openstack_control_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   openstack_monitoring_nodes: &openstack_monitoring_nodes
     fq_name: ["default", "admin", "openstack_monitoring_nodes"]
     uuid: openstack_monitoring_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   openstack_network_nodes: &openstack_network_nodes
     fq_name: ["default", "admin", "openstack_network_nodes"]
     uuid: openstack_network_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   openstack_storage_nodes: &openstack_storage_nodes
     fq_name: ["default", "admin", "openstack_storage_nodes"]
     uuid: openstack_storage_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   openstack_compute_nodes: &openstack_compute_nodes
     fq_name: ["default", "admin", "openstack_compute_nodes"]
     uuid: openstack_compute_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid

@@ -24,11 +24,17 @@ func TestVirtualNetwork(t *testing.T) {
 func TestFloatingIP(t *testing.T) {
 	CreateTestProject(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_floating_ip.yml")
+
 }
 
 func TestSync(t *testing.T) {
 	CreateTestProject(APIServer, "TestSync")
 	RunTest(t, "./test_data/test_sync.yml")
+}
+
+func TestValidation(t *testing.T) {
+	CreateTestProject(APIServer, "TestValidation")
+	RunTest(t, "./test_data/test_validation.yml")
 }
 
 func TestGRPC(t *testing.T) {
