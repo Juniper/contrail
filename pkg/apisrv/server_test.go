@@ -36,6 +36,11 @@ func TestSync(t *testing.T) {
 	RunTest(t, "./test_data/test_sync.yml")
 }
 
+func TestValidation(t *testing.T) {
+	CreateTestProject(APIServer, "TestValidation")
+	RunTest(t, "./test_data/test_validation.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	CreateTestProject(APIServer, "TestGRPC")
 	restClient := NewClient(
@@ -72,6 +77,7 @@ func TestGRPC(t *testing.T) {
 	project.FQName = []string{"default-domain", "project", project.UUID}
 	project.ParentType = "domain"
 	project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
+	project.ConfigurationVersion = 1
 	_, err = c.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: project,
 	})

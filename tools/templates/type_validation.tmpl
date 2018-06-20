@@ -6,8 +6,8 @@ import (
 )
 
 {# This macro is used to improve readability as braces has to be in the same line as if statement #}
-{% macro reportMissingProperty(id) %} {
-	return errors.Errorf("{{id}} property is missing")
+{% macro reportMissingProperty(id, resourceType) %} {
+	return errors.Errorf("{{id}} property is missing for resource {{resourceType}}")
 }
 {% endmacro %}
 
@@ -63,18 +63,20 @@ import (
 	{% endif %}
 {% endmacro %}
 
-{% macro validateProperties(properties) %}
+{% macro validateProperties(resource, properties) %}
 	{% for property, pdef in properties %}
 		{# Check required properties first. #}
-		{% if pdef.Presence == "required" %}
+		{% if pdef.Presence == "required" or pdef.Presence == "true" %}
 			{% if pdef.Type == "string" %}
-				if obj.{{pdef.GoName}} == "" {{reportMissingProperty(pdef.ID)}}
+				if obj.{{pdef.GoName}} == "" {{reportMissingProperty(pdef.ID, resource)}}
 			{% elif pdef.Type == "integer" or pdef.Type == "number" %}
-				if obj.{{pdef.GoName}} == 0 {{reportMissingProperty(pdef.ID)}}
+				if obj.{{pdef.GoName}} == 0 {{reportMissingProperty(pdef.ID, resource)}}
 			{% elif pdef.Type == "boolean" %}
-				if obj.{{pdef.GoName}} == false {{reportMissingProperty(pdef.ID)}}
-			{% elif pdef.Type == "object" or pdef.Type == "array" %}
-				if obj.{{pdef.GoName}} == nil {{reportMissingProperty(pdef.ID)}}
+				if obj.{{pdef.GoName}} == false {{reportMissingProperty(pdef.ID, resource)}}
+			{% elif pdef.Type == "object" %}
+				if obj.{{pdef.GoName}} == nil {{reportMissingProperty(pdef.ID, resource)}}
+			{% elif pdef.Type == "array" %}
+				if len(obj.{{pdef.GoName}}) == 0 {{reportMissingProperty(pdef.ID, resource)}}
 			{% endif %}
 		{% endif %}
 
@@ -127,7 +129,7 @@ import (
 //Validate{{ type }} validation based on information in schema
 // nolint
 func (sv * SchemaValidator) Validate{{ type }}( obj * {{ type }}) error {
-	{{validateProperties(definition.Properties)}}
+	{{validateProperties(type, definition.Properties)}}
 	return nil
 }{% endif %}
 {% endfor %}
@@ -137,10 +139,10 @@ func (sv * SchemaValidator) Validate{{ type }}( obj * {{ type }}) error {
 // nolint
 func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ schema.JSONSchema.GoName }}) error {
 	//Validate Properties
-	{{validateProperties(schema.JSONSchema.Properties)}}
+	{{validateProperties(schema.ID, schema.JSONSchema.Properties)}}
 	//Validate References
 	{% for linkTo, reference in schema.References %}
-		{% if reference.Presence == "required" %}
+		{% if reference.Presence == "required" or reference.Presence == "true" %}
 			if len(obj.{{ reference.GoName }}Refs) == 0 {
 				return errors.Errorf("reference to {{ linkTo }} is missing for {{schema.ID}}")
 			}
@@ -161,11 +163,25 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 	if obj.ParentType == "config-root" {
 		obj.ParentType = ""
 	}
-	// if obj.ParentType != "" {
-		// TODO verify parent exists
-	// }
 
-	// TODO Validate perms on references
+	{% if schema.Parents|length > 0 %}
+
+	restrictions := map[string]struct {} {
+		{% for parent, definition in schema.Parents %}
+		{% autoescape off %}
+		"{{definition.LinkTo.Path}}": {},
+		{% endautoescape %}
+		{% endfor %}
+	}
+
+	if obj.ParentType != "" {
+		_, present := restrictions[obj.ParentType]
+
+		if !present {
+			return errors.Errorf("parent_type (%s) of {{schema.ID}} must be one of [%s]", obj.ParentType, strings.Join(mapKeys(restrictions), ", "))
+		}
+	}
+	{% endif %}
 
 	return nil
 }{% endif %}{% endfor %}

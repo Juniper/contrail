@@ -17,19 +17,19 @@ cleanup:
   client: bob
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin"]
+    fq_name: ["default", "admin_project_uuid"]
     uuid: admin_project_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   demo_project: &demo_project
-    fq_name: ["default", "demo"]
+    fq_name: ["default", "demo_project_uuid"]
     uuid: demo_project_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   network_policy1: &network_policy1
-    fq_name: ["default", "admin", "policy1"]
+    fq_name: ["default", "admin_project_uuid", "policy1"]
     uuid: network_policy_uuid
     parent_type: project
     parent_uuid: admin_project_uuid
@@ -48,7 +48,7 @@ test_data:
           action_list:
             simple_action: pass
   network_policy2: &network_policy2
-    fq_name: ["default", "demo", "policy2"]
+    fq_name: ["default", "demo_project_uuid", "policy2"]
     uuid: network_policy_uuid2
     parent_type: project
     parent_uuid: demo_project_uuid
@@ -76,7 +76,7 @@ test_data:
     display_name: test_ipam_blue
     parent_type: project
     parent_uuid: admin_project_uuid
-    fq_name: ["domain","admin","test_ipam_blue"]
+    fq_name: ["domain","admin_project_uuid","test_ipam_blue"]
   network_ipam_red: &network_ipam_red
     network_ipam_mgmt:
       host_routes:
@@ -87,9 +87,9 @@ test_data:
     display_name: test_ipam_red
     parent_type: project
     parent_uuid: admin_project_uuid
-    fq_name: ["domain","admin","test_ipam_red"]
+    fq_name: ["domain","admin_project_uuid","test_ipam_red"]
   vn_blue: &vn_blue
-    fq_name: ["default", "admin", "vn_blue"]
+    fq_name: ["default", "admin_project_uuid", "vn_blue"]
     uuid: vn_blue
     display_name: blue
     parent_type: project
@@ -115,7 +115,7 @@ test_data:
   vn_red: &vn_red
     uuid: vn_red
     display_name: red
-    fq_name: ["default", "admin", "vn_red"]
+    fq_name: ["default", "admin_project_uuid", "vn_red"]
     parent_type: project
     parent_uuid: admin_project_uuid
     network_policy_refs:
@@ -132,7 +132,7 @@ test_data:
     network_ipam_refs:
     - uuid: test_ipam_red
   vn_blue_simple: &vn_blue_simple
-    fq_name: ["default", "admin", "vn_blue"]
+    fq_name: ["default", "admin_project_uuid", "vn_blue"]
     uuid: vn_blue
     display_name: blue
     parent_type: project
@@ -140,7 +140,7 @@ test_data:
   vn_red_simple: &vn_red_simple
     uuid: vn_red
     display_name: red
-    fq_name: ["default", "admin", "vn_red"]
+    fq_name: ["default", "admin_project_uuid", "vn_red"]
     parent_type: project
     parent_uuid: admin_project_uuid
 clients:
@@ -193,7 +193,7 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid
-      fq_name: ["default", "admin", "policy1"]
+      fq_name: ["default", "admin_project_uuid", "policy1"]
       parent_type: project
       parent_uuid: admin_project_uuid
       perms2:
@@ -210,7 +210,7 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid2
-      fq_name: ["default", "demo", "policy2"]
+      fq_name: ["default", "demo_project_uuid", "policy2"]
       parent_type: project
       parent_uuid: demo_project_uuid
       perms2:
@@ -252,14 +252,14 @@ workflow:
         display_name: test_ipam1
         parent_type: project
         parent_uuid: admin_project_uuid
-        fq_name: ["domain","admin","test_ipam1"]
+        fq_name: ["domain","admin_project_uuid","test_ipam1"]
   expect:
     network-ipam:
       uuid: test_ipam1
       display_name: test_ipam1
       parent_type: project
       parent_uuid: admin_project_uuid
-      fq_name: ["domain","admin","test_ipam1"]
+      fq_name: ["domain","admin_project_uuid","test_ipam1"]
 - name: create network ipam2
   request:
     path: /network-ipams
@@ -277,14 +277,14 @@ workflow:
         display_name: test_ipam2
         parent_type: project
         parent_uuid: admin_project_uuid
-        fq_name: ["domain","admin","test_ipam2"]
+        fq_name: ["domain","admin_project_uuid","test_ipam2"]
   expect:
     network-ipam:
       uuid: test_ipam2
       display_name: test_ipam2
       parent_type: project
       parent_uuid: admin_project_uuid
-      fq_name: ["domain","admin","test_ipam2"]
+      fq_name: ["domain","admin_project_uuid","test_ipam2"]
 - name: create virtual network ref
   request:
     path: /virtual-networks
@@ -293,14 +293,14 @@ workflow:
     - 201
     data:
       virtual-network:
-        fq_name: ["default", "admin", "vn_test_ref"]
+        fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
         uuid: "vn_test_ref"
         display_name: "vn_test_ref"
         parent_type: "project"
         parent_uuid: "admin_project_uuid"
         network_ipam_refs:
           - uuid: "test_ipam1"
-            to: ["domain","admin","test_ipam1"]
+            to: ["domain","admin_project_uuid","test_ipam1"]
             attr:
               host_routes:
                 route:
@@ -308,7 +308,7 @@ workflow:
                     next_hop: "1.2.3.5"
   expect:
     virtual-network:
-      fq_name: ["default", "admin", "vn_test_ref"]
+      fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
       uuid: vn_test_ref
       display_name: vn_test_ref
       parent_type: project
@@ -321,7 +321,7 @@ workflow:
     - 200
     data:
       virtual-network:
-        fq_name: ["default", "admin", "vn_test_ref"]
+        fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
         uuid: "vn_test_ref"
         display_name: "vn_test_ref"
         parent_type: "project"
@@ -332,9 +332,9 @@ workflow:
               tenant_access: 7
         network_ipam_refs:
           - uuid: "test_ipam1"
-            to: ["domain","admin","test_ipam1"]
+            to: ["domain","admin_project_uuid","test_ipam1"]
           - uuid: "test_ipam2"
-            to: ["domain","admin","test_ipam2"]
+            to: ["domain","admin_project_uuid","test_ipam2"]
             attr:
               host_routes:
                 route:
@@ -345,9 +345,9 @@ workflow:
       uuid: vn_test_ref
       network_ipam_refs:
         - uuid: "test_ipam1"
-          to: ["domain","admin","test_ipam1"]
+          to: ["domain","admin_project_uuid","test_ipam1"]
         - uuid: "test_ipam2"
-          to: ["domain","admin","test_ipam2"]
+          to: ["domain","admin_project_uuid","test_ipam2"]
           attr:
             host_routes:
               route:
@@ -403,18 +403,19 @@ workflow:
     data:
       routing-instance:
         uuid: ri_uuid
-        fq_name: ["default", "admin", "ri1"]
+        fq_name: ["default", "admin_project_uuid", "ri1"]
         parent_type: virtual-network
         parent_uuid: vn_blue
   expect:
     routing-instance:
       uuid: ri_uuid
-      fq_name: ["default", "admin", "ri1"]
+      fq_name: ["default", "admin_project_uuid", "ri1"]
       parent_type: virtual-network
       parent_uuid: vn_blue
 - name: list virtual networks with detail
   request:
-    path: /virtual-networks?detail=true
+    # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
+    path: /virtual-networks?detail=true&parent_id=admin_project_uuid
     method: GET
     expected:
     - 200
@@ -424,7 +425,8 @@ workflow:
     - *vn_red_with_detail
 - name: list virtual networks with share
   request:
-    path: /virtual-networks?shared=true
+    # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
+    path: /virtual-networks?shared=true&parent_id=admin_project_uuid
     method: GET
     expected:
     - 200
@@ -462,7 +464,7 @@ workflow:
     - *vn_red_simple
 - name: list virtual networks with parent_fq_name_str
   request:
-    path: "/virtual-networks?parent_fq_name_str=default:admin"
+    path: "/virtual-networks?parent_fq_name_str=default:admin_project_uuid"
     method: GET
     expected:
     - 200
@@ -472,7 +474,8 @@ workflow:
     - *vn_red_simple
 - name: list virtual networks with page limit
   request:
-    path: "/virtual-networks?pageLimit=1&detail=true"
+    # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
+    path: /virtual-networks?pageLimit=1&detail=true&parent_id=admin_project_uuid
     method: GET
     expected:
     - 200
@@ -490,15 +493,14 @@ workflow:
     - *vn_blue_with_detail
 - name: list network policy
   request:
-    path: /network-policys
+    # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
+    path: /network-policys?parent_id=admin_project_uuid
     method: GET
     expected:
     - 200
   expect:
     network-policys:
-    - uuid: network_policy_uuid
-      perms2:
-        owner: admin
+    - *network_policy1
 - name: list network policy by user bob
   client: bob
   request:
@@ -508,9 +510,7 @@ workflow:
     - 200
   expect:
     network-policys:
-    - uuid: network_policy_uuid2
-      perms2:
-        owner: demo
+    - *network_policy2
 - name: delete routing instance
   request:
     path: /routing-instance/ri_uuid
