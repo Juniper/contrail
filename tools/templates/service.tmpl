@@ -44,6 +44,9 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
+    if model == nil {
+        return nil, common.ErrorBadRequest("Create body is empty")
+    }
     if model.UUID == "" {
         model.UUID = uuid.NewV4().String()
     }
@@ -63,10 +66,10 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     model.Perms2.Owner = auth.ProjectID()
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
-    if err != nil{
+    if err != nil {
         validationError := errors.Wrapf(err, "Validation failed for resource with UUID: %s", request.{{ schema.JSONSchema.GoName }}.UUID)
         log.Error(validationError)
-        return nil, echo.NewHTTPError(http.StatusBadRequest, validationError)
+        return nil, common.ErrorBadRequestf("%v", validationError)
     }
 
     return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)

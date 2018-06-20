@@ -29,7 +29,6 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   network_policy1: &network_policy1
-    fq_name: ["default", "admin", "policy1"]
     uuid: network_policy_uuid
     parent_type: project
     parent_uuid: admin_project_uuid
@@ -48,7 +47,6 @@ test_data:
           action_list:
             simple_action: pass
   network_policy2: &network_policy2
-    fq_name: ["default", "demo", "policy2"]
     uuid: network_policy_uuid2
     parent_type: project
     parent_uuid: demo_project_uuid
@@ -193,7 +191,6 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid
-      fq_name: ["default", "admin", "policy1"]
       parent_type: project
       parent_uuid: admin_project_uuid
       perms2:
@@ -210,7 +207,6 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid2
-      fq_name: ["default", "demo", "policy2"]
       parent_type: project
       parent_uuid: demo_project_uuid
       perms2:

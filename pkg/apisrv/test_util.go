@@ -219,7 +219,7 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 		}
 		client := clients[clientID]
 		// delete existing resources.
-		log.Debug(cleanTask["path"])
+		log.Debugf("[Clean task] Path: %s, TestScenario: %s\n", cleanTask["path"], testScenario.Name)
 		response, err := client.EnsureDeleted(cleanTask["path"], nil) // nolint
 		if err != nil && response.StatusCode != 404 {
 			log.Debug(err)
@@ -227,7 +227,7 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 	}
 	log.Info("CLEANUP COMPETE! Starting test sequence...")
 	for _, task := range testScenario.Workflow {
-		log.Debug("[Step] ", task.Name)
+		log.Debugf("[Task] Name: %s, TestScenario: %s\n", task.Name, testScenario.Name)
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
 		clientID := defaultClientID
 		if task.Client != "" {
