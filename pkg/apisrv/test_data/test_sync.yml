@@ -1,10 +1,10 @@
 name: Sync test
 description: network sync test
 cleanup:
-- path: /project/admin_project_uuid_test_sync
 - path: /virtual-network/vn_blue_test_sync
 - path: /network-ipam/test_ipam_blue_uuid_test_sync
 - path: /network-policy/network_policy_uuid_test_sync
+- path: /project/admin_project_uuid_test_sync
 test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin_project_uuid_test_sync"]
@@ -24,6 +24,13 @@ test_data:
           rule_sequence:
             major: 4
             minor: 1
+          src_ports: [{}]
+          dst_ports: [{}]
+          ethertype: IPv4
+          src_addresses: [{}]
+          dst_addresses: [{}]
+          action_list:
+            simple_action: pass
   network_ipam_blue: &network_ipam_blue
     network_ipam_mgmt:
       host_routes:
@@ -56,7 +63,6 @@ test_data:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
     - uuid: test_ipam_blue_uuid_test_sync
-    virtual_network_network_id: $number
   vn_blue2: &vn_blue2
     fq_name: ["default", "admin_project_uuid_test_sync", "vn_blue_test_sync"]
     uuid: vn_blue_test_sync

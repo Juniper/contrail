@@ -2626,6 +2626,7 @@
         service_chain_address:
           $ref: "types.json#/definitions/IpAddress"
     ServiceInterfaceType:
+      format: "service_interface_type_format"
       type: "string"
     UserCredentials:
       type: "object"
