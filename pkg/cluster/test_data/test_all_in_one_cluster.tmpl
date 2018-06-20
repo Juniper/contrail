@@ -13,28 +13,27 @@ cleanup:
 - path: /openstack-network-node/openstack_network_nodes_uuid
 - path: /openstack-storage-node/openstack_storage_nodes_uuid
 - path: /openstack-compute-node/openstack_compute_nodes_uuid
+- path: /node/all_in_one_node_uuid
 - path: /contrail-cluster/test_cluster_uuid
 - path: /openstack-cluster/test_openstack_cluster_uuid
-- path: /node/all_in_one_node_uuid
-- path: /project/admin_project_uuid
+- path: /project/admin_project_cluster_test_uuid
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin"]
-    uuid: admin_project_uuid
+    uuid: admin_project_cluster_test_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   all_in_one_node: &all_in_one_node
-    fq_name: ["default", "admin", "all_in_one_node"]
     uuid: all_in_one_node_uuid
     hostname: all_in_one_node
     interface_name: all_in_one_node_interface
     ip_address: {{MGMT_INT_IP}}
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
   all_in_one_openstack_cluster: &all_in_one_openstack_cluster
-    fq_name: ["default", "admin", "all_in_one_openstack_cluster"]
     uuid: test_openstack_cluster_uuid
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: admin_project_cluster_test_uuid
     openstack_registry: default
     openstack_release: ocata-xyz
     ntp_server: 10.1.1.100
@@ -42,45 +41,39 @@ test_data:
     openstack_internal_vip: {{OPENSTACK_INTERNAL_VIP}}
     {%endif%}
   openstack_control_nodes: &openstack_control_nodes
-    fq_name: ["default", "admin", "openstack_control_nodes"]
     uuid: openstack_control_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   openstack_monitoring_nodes: &openstack_monitoring_nodes
-    fq_name: ["default", "admin", "openstack_monitoring_nodes"]
     uuid: openstack_monitoring_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   openstack_network_nodes: &openstack_network_nodes
-    fq_name: ["default", "admin", "openstack_network_nodes"]
     uuid: openstack_network_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   openstack_storage_nodes: &openstack_storage_nodes
-    fq_name: ["default", "admin", "openstack_storage_nodes"]
     uuid: openstack_storage_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   openstack_compute_nodes: &openstack_compute_nodes
-    fq_name: ["default", "admin", "openstack_compute_nodes"]
     uuid: openstack_compute_nodes_uuid
-    parent_type: contrail-cluster
+    parent_type: openstack-cluster
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   all_in_one_cluster: &all_in_one_cluster
-    fq_name: ["default", "admin", "all_in_one_cluster"]
     uuid: test_cluster_uuid
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: admin_project_cluster_test_uuid
     container_registry: test_registry
     registry_private_insecure: true
     contrail_version: ocata-5.0-x
@@ -106,49 +99,42 @@ test_data:
         {%endif%}
     {%endif%}
   contrail_config_nodes: &contrail_config_nodes
-    fq_name: ["default", "admin", "contrail_config_nodes"]
     uuid: contrail_config_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   contrail_config_database_nodes: &contrail_config_database_nodes
-    fq_name: ["default", "admin", "contrail_config_database_nodes"]
     uuid: contrail_config_database_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   contrail_analytics_nodes: &contrail_analytics_nodes
-    fq_name: ["default", "admin", "contrail_analytics_nodes"]
     uuid: contrail_analytics_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   contrail_analytics_database_nodes: &contrail_analytics_database_nodes
-    fq_name: ["default", "admin", "contrail_analytics_database_nodes"]
     uuid: contrail_analytics_database_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   contrail_webui_nodes: &contrail_webui_nodes
-    fq_name: ["default", "admin", "contrail_webui_nodes"]
     uuid: contrail_webui_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   contrail_control_nodes: &contrail_control_nodes
-    fq_name: ["default", "admin", "contrail_control_nodes"]
     uuid: contrail_control_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
   contrail_vrouter_nodes: &contrail_vrouter_nodes
-    fq_name: ["default", "admin", "contrail_vrouter_nodes"]
     uuid: contrail_vrouter_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
@@ -174,23 +160,6 @@ workflow:
       project: *admin_project
   expect:
     project: *admin_project
-- name: create node
-  request:
-    path: /nodes
-    method: POST
-    expected:
-    - 201
-    data:
-      node: *all_in_one_node
-  expect:
-    node:
-      perms2:
-        owner: admin
-      uuid: all_in_one_node_uuid
-      fq_name: ["default", "admin", "all_in_one_node"]
-      hostname: all_in_one_node
-      interface_name: all_in_one_node_interface
-      ip_address: {{MGMT_INT_IP}}
 - name: create openstack cluster
   request:
     path: /openstack-clusters
@@ -204,12 +173,12 @@ workflow:
       perms2:
         owner: admin
       parent_type: project
-      parent_uuid: admin_project_uuid
+      parent_uuid: admin_project_cluster_test_uuid
       uuid: test_openstack_cluster_uuid
-      fq_name: ["default", "admin", "all_in_one_openstack_cluster"]
       openstack_registry: default
       openstack_release: ocata-xyz
       ntp_server: 10.1.1.100
+
 - name: create cluster
   request:
     path: /contrail-clusters
@@ -223,9 +192,8 @@ workflow:
       perms2:
         owner: admin
       parent_type: project
-      parent_uuid: admin_project_uuid
+      parent_uuid: admin_project_cluster_test_uuid
       uuid: test_cluster_uuid
-      fq_name: ["default", "admin", "all_in_one_cluster"]
       container_registry: test_registry
       registry_private_insecure: true
       contrail_version: ocata-5.0-x
@@ -235,6 +203,23 @@ workflow:
       ntp_server: 10.1.1.100
       openstack_cluster_refs:
         - uuid: test_openstack_cluster_uuid
+
+- name: create node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 201
+    data:
+      node: *all_in_one_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: all_in_one_node_uuid
+      hostname: all_in_one_node
+      interface_name: all_in_one_node_interface
+      ip_address: {{MGMT_INT_IP}}
 
 - name: create config node
   request:
@@ -246,7 +231,6 @@ workflow:
       contrail-config-node: *contrail_config_nodes
     expect:
       contrail-config-node:
-        fq_name: ["default", "admin", "contrail_config_nodes"]
         uuid: contrail_config_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_cluster_uuid
@@ -262,7 +246,6 @@ workflow:
       contrail-config-database-node: *contrail_config_database_nodes
     expect:
       contrail-config-database-node:
-        fq_name: ["default", "admin", "contrail_config_database_nodes"]
         uuid: contrail_config_database_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_cluster_uuid
@@ -278,7 +261,6 @@ workflow:
       contrail-analytics-node: *contrail_analytics_nodes
     expect:
       contrail-analytics-node:
-        fq_name: ["default", "admin", "contrail_analytics_nodes"]
         uuid: contrail_analytics_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_cluster_uuid
@@ -294,7 +276,6 @@ workflow:
       contrail-analytics-database-node: *contrail_analytics_database_nodes
     expect:
       contrail-analytics-database-node:
-        fq_name: ["default", "admin", "contrail_analytics_database_nodes"]
         uuid: contrail_analytics_database_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_cluster_uuid
@@ -310,7 +291,6 @@ workflow:
       contrail-webui-node: *contrail_webui_nodes
     expect:
       contrail-webui-node:
-        fq_name: ["default", "admin", "contrail_webui_nodes"]
         uuid: contrail_webui_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_cluster_uuid
@@ -326,7 +306,6 @@ workflow:
       contrail-control-node: *contrail_control_nodes
     expect:
       contrail-control-node:
-        fq_name: ["default", "admin", "contrail_control_nodes"]
         uuid: contrail_control_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_cluster_uuid
@@ -342,7 +321,6 @@ workflow:
       contrail-vrouter-node: *contrail_vrouter_nodes
     expect:
       contrail-vrouter-node:
-        fq_name: ["default", "admin", "contrail_vrouter_nodes"]
         uuid: contrail_vrouter_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_cluster_uuid
@@ -358,7 +336,6 @@ workflow:
       openstack-control-node: *openstack_control_nodes
     expect:
       contrail-control-node:
-        fq_name: ["default", "admin", "openstack_control_nodes"]
         uuid: openstack_control_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_openstack_cluster_uuid
@@ -374,7 +351,6 @@ workflow:
       openstack-monitoring-node: *openstack_monitoring_nodes
     expect:
       openstack-monitoring-node:
-        fq_name: ["default", "admin", "openstack_monitoring_nodes"]
         uuid: openstack_monitoring_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_openstack_cluster_uuid
@@ -390,7 +366,6 @@ workflow:
       openstack-network-node: *openstack_network_nodes
     expect:
       openstack-network-node:
-        fq_name: ["default", "admin", "openstack_network_nodes"]
         uuid: openstack_network_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_openstack_cluster_uuid
@@ -406,7 +381,6 @@ workflow:
       openstack-storage-node: *openstack_storage_nodes
     expect:
       openstack-storage-node:
-        fq_name: ["default", "admin", "openstack_storage_nodes"]
         uuid: openstack_storage_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_openstack_cluster_uuid
@@ -422,7 +396,6 @@ workflow:
       openstack-compute-node: *openstack_compute_nodes
     expect:
       openstack-compute-node:
-        fq_name: ["default", "admin", "openstack_compute_nodes"]
         uuid: openstack_compute_nodes_uuid
         parent_type: contrail-cluster
         parent_uuid: test_openstack_cluster_uuid

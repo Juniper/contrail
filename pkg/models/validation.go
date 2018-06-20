@@ -1,6 +1,8 @@
 package models
 
-import fmt "fmt"
+import (
+	fmt "fmt"
+)
 
 //NewTypeValidatorWithFormat creates new TypeValidator with format validators
 func NewTypeValidatorWithFormat() (*TypeValidator, error) {
