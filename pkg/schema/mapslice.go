@@ -56,6 +56,11 @@ func (s mapSlice) getStringSlice(key string) []string {
 	return result
 }
 
+var overridenTypes = map[string]struct{}{
+	"types.json#/definitions/AccessType": {},
+	"types.json#/definitions/L4PortType": {},
+}
+
 //Copy copies a json schema
 func (s mapSlice) JSONSchema() *JSONSchema {
 	if s == nil {
@@ -90,6 +95,17 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 			log.Fatal(fmt.Sprintf("Property is null on key %s", key))
 		}
 		propertySchema := mapSlice(property.Value.(yaml.MapSlice)).JSONSchema()
+
+		// TODO: remove this workaround when schema is updated for zero-value required properties
+		_, present := overridenTypes[propertySchema.Ref]
+
+		if (present || propertySchema.Type == "boolean") &&
+			(propertySchema.Presence == "required" || propertySchema.Presence == "true") {
+			log.Warnf("property %s should be optional as it may have zero-value. Update schema.", key)
+			log.Warnf("JSONSCHEMA: %v", propertySchema)
+			propertySchema.Presence = "optional"
+		}
+
 		propertySchema.ID = key
 		schema.Properties[key] = propertySchema
 		schema.OrderedProperties = append(schema.OrderedProperties, propertySchema)
