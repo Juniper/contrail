@@ -3,25 +3,25 @@ description:  multi cluster/dynamic proxy endpoint test
 cleanup:
     - path: /endpoint/endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
     - path: /contrail-cluster/{{ cluster_name }}_uuid
-{%if extra_tasks %}
     - path: /endpoint/endpoint_clusterB_{{ endpoint_name }}_uuid
-    - path: /project/admin_project_uuid
+{%if extra_tasks %}
+    - path: /project/admin_project_endpoint_uuid
 {%endif%}
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin"]
-    uuid: admin_project_uuid
+    fq_name: ["default", "admin_endpoint"]
+    uuid: admin_project_endpoint_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   {{ cluster_name }}: &{{ cluster_name }}
-    fq_name: ["default", "admin", "{{ cluster_name }}"]
+    fq_name: ["default", "admin_endpoint", "{{ cluster_name }}"]
     uuid: {{ cluster_name }}_uuid
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: admin_project_endpoint_uuid
   endpoint_{{ cluster_name }}_{{ endpoint_name }}: &endpoint_{{ cluster_name }}_{{ endpoint_name }}
     uuid: endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
-    fq_name: ["default", "admin", "endpoint_{{ cluster_name }}_{{ endpoint_name }}"]
+    fq_name: ["default", "admin_endpoint", "endpoint_{{ cluster_name }}_{{ endpoint_name }}"]
     parent_type: contrail-cluster
     parent_uuid: {{ cluster_name }}_uuid
     name: {{ endpoint_name }}
@@ -60,9 +60,9 @@ workflow:
   expect:
     contrail-cluster:
       uuid: {{ cluster_name }}_uuid
-      fq_name: ["default", "admin", "{{ cluster_name }}"]
+      fq_name: ["default", "admin_endpoint", "{{ cluster_name }}"]
       parent_type: project
-      parent_uuid: admin_project_uuid
+      parent_uuid: admin_project_endpoint_uuid
       perms2:
         owner: admin
 - name: create a {{ endpoint_name }} endpoint for {{ cluster_name }}
@@ -76,7 +76,7 @@ workflow:
   expect:
     endpoint:
       uuid: endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
-      fq_name: ["default", "admin", "endpoint_{{ cluster_name }}_{{ endpoint_name }}"]
+      fq_name: ["default", "admin_endpoint", "endpoint_{{ cluster_name }}_{{ endpoint_name }}"]
       parent_type: contrail-cluster
       parent_uuid: {{ cluster_name }}_uuid
       perms2:
