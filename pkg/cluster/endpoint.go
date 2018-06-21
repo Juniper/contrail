@@ -48,7 +48,7 @@ func (e *EndpointData) endpointToURL(protocol, ip, port string) (endpointURL str
 
 func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]string) {
 	var k []*models.KeyValuePair
-	if o := e.clusterData.getOpenstackClusterInfo(); o == nil {
+	if o := e.clusterData.getOpenstackClusterInfo(); o != nil {
 		if g := o.GetKollaGlobals(); g != nil {
 			k = g.GetKeyValuePair()
 		}
@@ -71,14 +71,31 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 		}
 	}
 	if _, ok := endpointNodes[identity]; !ok {
-		openstackControlNodes := e.clusterData.getOpenstackClusterData().getControlNodeIPs()
+		o := e.clusterData.getOpenstackClusterData()
+		var openstackControlNodes []string
+		if o.clusterInfo.OpenstackExternalVip != "" {
+			openstackControlNodes = []string{o.clusterInfo.OpenstackExternalVip}
+		} else if o.clusterInfo.OpenstackInternalVip != "" {
+			openstackControlNodes = []string{o.clusterInfo.OpenstackInternalVip}
+		} else {
+			openstackControlNodes = o.getControlNodeIPs()
+		}
 		endpointNodes[identity] = openstackControlNodes
 		endpointNodes[nova] = openstackControlNodes
 		endpointNodes[ironic] = openstackControlNodes
 		endpointNodes[glance] = openstackControlNodes
 	}
 	if _, ok := endpointNodes[swift]; !ok {
-		endpointNodes[swift] = e.clusterData.getOpenstackClusterData().getStorageNodeIPs()
+		o := e.clusterData.getOpenstackClusterData()
+		var openstackStorageNodes []string
+		if o.clusterInfo.OpenstackExternalVip != "" {
+			openstackStorageNodes = []string{o.clusterInfo.OpenstackExternalVip}
+		} else if o.clusterInfo.OpenstackInternalVip != "" {
+			openstackStorageNodes = []string{o.clusterInfo.OpenstackInternalVip}
+		} else {
+			openstackStorageNodes = o.getStorageNodeIPs()
+		}
+		endpointNodes[swift] = openstackStorageNodes
 	}
 	return endpointNodes
 }

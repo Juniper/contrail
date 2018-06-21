@@ -39,6 +39,5 @@ kolla_config:
   kolla_globals:
     openstack_release: ocata-xyz
     enable_haproxy: no
-    contrail_api_interface_address: 127.0.0.1
   kolla_passwords:
     keystone_admin_password: contrail123
