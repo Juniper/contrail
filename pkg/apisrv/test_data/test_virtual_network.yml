@@ -1,18 +1,20 @@
 name: Virtual Network Test
 description:  basic virtual network test
 cleanup:
-- path: /routing-instance/ri_uuid
-- path: /project/admin_project_uuid
-- path: /project/demo_project_uuid
-- path: /network-ipam/test_ipam_blue
-- path: /network-ipam/test_ipam_red
-- path: /virtual-network/vn_blue
-- path: /virtual-network/vn_red
-- path: /network-policy/network_policy_uuid
-- path: /network-policy/network_policy_uuid2
-  client: bob
-- path: /project/admin_project_uuid
-- path: /project/demo_project_uuid
+  - path: /routing-instance/ri_uuid
+  - path: /virtual-network/vn_blue
+  - path: /virtual-network/vn_red
+  - path: /virtual-network/vn_test_ref
+  - path: /network-ipam/test_ipam_blue
+  - path: /network-ipam/test_ipam_red
+  - path: /network-ipam/test_ipam1
+  - path: /network-ipam/test_ipam2
+  - path: /network-policy/network_policy_uuid
+  - path: /network-policy/network_policy_uuid2
+    client: bob
+  - path: /project/admin_project_uuid
+  - path: /project/demo_project_uuid
+    client: bob
 test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin"]
