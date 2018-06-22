@@ -8,7 +8,7 @@ COVERMODE='-covermode=atomic'
 [ ! -z "$COVERPROFILE" ] && echo "mode: count" > "$TOP/profile.cov"
 
 for dir in $(go list -f '{{if .TestGoFiles}}{{.Dir}}{{end}}' ./... | \
-	grep -v -e 'pkg/cmd' -e 'pkg/services')
+	grep -v -e 'pkg/cmd')
 do
 	cd "$TOP"
 
