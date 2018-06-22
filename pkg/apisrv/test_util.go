@@ -153,6 +153,11 @@ func LoadTestScenario(testScenario *TestScenario, file string, ctx map[string]in
 	return yaml.Unmarshal(content, testScenario)
 }
 
+type trackedResource struct {
+	Path   string
+	Client string
+}
+
 // RunTestScenario runs test from loaded test scenario
 func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 	clients := map[string]*Client{}
@@ -184,6 +189,7 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 		}
 	}
 	log.Info("CLEANUP COMPETE! Starting test sequence...")
+	var trackedRequests []trackedResource // Slice of url paths to delete
 	for _, task := range testScenario.Workflow {
 		log.Debug("[Step] ", task.Name)
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
@@ -192,8 +198,10 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 			clientID = task.Client
 		}
 		client := clients[clientID]
-		_, err := client.DoRequest(task.Request)
+		response, err := client.DoRequest(task.Request)
+		trackedRequests = handleTestResponse(task, response.StatusCode, err, trackedRequests)
 		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
+
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
 		ok := common.AssertEqual(t, task.Expect, task.Request.Output, fmt.Sprintf("In test scenaio '%v' task' %v' failed", testScenario.Name, task))
 		if !ok {
@@ -202,6 +210,85 @@ func RunTestScenario(t *testing.T, testScenario *TestScenario) {
 		}
 	}
 	log.Info("TEST SEQUENCE COMPLETE!")
+	for _, tr := range trackedRequests {
+		response, err := clients[tr.Client].Delete(tr.Path, nil)
+		if err != nil {
+			log.Errorf("Error checking dirty resources: %v, for url path '%v' with client %v", err, tr.Path, tr.Client)
+			continue // It is desired to loop over all resources even with errors
+		}
+		if response.StatusCode != 404 {
+			log.Warnf("DIRTY test scenario: left resource with path '%v'", tr.Path)
+		}
+	}
+}
+
+func extractResourcePathFromJSON(data interface{}) (path string) {
+	if data, ok := data.(map[string]interface{}); ok {
+		var uuid interface{}
+		if uuid, ok = data["uuid"]; !ok {
+			return path
+		}
+		if suuid, ok := uuid.(string); ok {
+			path = "/" + suuid
+		}
+	}
+	return path
+}
+
+func extractSyncOperation(syncOp map[string]interface{}, client string) []trackedResource {
+	resources := []trackedResource{}
+	var operIf, kindIf interface{}
+	ok := true
+	if kindIf, ok = syncOp["kind"]; !ok {
+		return nil
+	}
+	if operIf, ok = syncOp["operation"]; !ok {
+		return nil
+	}
+	var oper, kind string
+	if oper, ok = operIf.(string); !ok {
+		return nil
+	}
+	if oper != "CREATE" {
+		return nil
+	}
+	if kind, ok = kindIf.(string); !ok {
+		return nil
+	}
+	if dataIf, ok := syncOp["data"]; ok {
+		if path := extractResourcePathFromJSON(dataIf); path != "" {
+			return append(resources, trackedResource{Path: "/" + kind + path, Client: client})
+		}
+	}
+
+	return resources
+}
+
+func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResource) []trackedResource {
+	if task.Request.Output != nil && task.Request.Method == "POST" && code == 201 && rerr == nil {
+		log.Infof("#### ---- ##### ---- #### RESPONSE: {%T} %+v", task.Request.Output, task.Request.Output)
+		clientID := "default"
+		if task.Client != "" {
+			clientID = task.Client
+		}
+		switch respData := task.Request.Output.(type) {
+		case []interface{}:
+			log.Warn("Not handled SYNC request - yet!")
+			for _, syncOpIf := range respData {
+				if syncOp, ok := syncOpIf.(map[string]interface{}); ok {
+					tracked = append(tracked, extractSyncOperation(syncOp, clientID)...)
+				}
+			}
+		case map[string]interface{}:
+			for k, v := range respData {
+				if path := extractResourcePathFromJSON(v); path != "" {
+					tracked = append(tracked, trackedResource{Path: "/" + k + path, Client: clientID})
+				}
+			}
+		}
+	}
+	log.Infof("#### ---- ### Clean data is: %v", tracked)
+	return tracked
 }
 
 func newWellKnownListener(serve string) net.Listener {
