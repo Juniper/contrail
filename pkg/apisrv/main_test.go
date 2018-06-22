@@ -13,5 +13,5 @@ func TestMain(m *testing.M) {
 func RunTest(t *testing.T, file string) {
 	testScenario, err := LoadTest(file, nil)
 	assert.NoError(t, err, "failed to load test data")
-	RunTestScenario(t, testScenario)
+	RunCleanTestScenario(t, testScenario)
 }

@@ -3,8 +3,8 @@ description:  multi cluster/dynamic proxy endpoint test
 cleanup:
     - path: /endpoint/endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
     - path: /contrail-cluster/{{ cluster_name }}_uuid
-{%if extra_tasks %}
     - path: /endpoint/endpoint_clusterB_{{ endpoint_name }}_uuid
+{%if extra_tasks %}
     - path: /project/admin_project_uuid
 {%endif%}
 test_data:
