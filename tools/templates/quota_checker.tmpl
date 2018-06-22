@@ -59,7 +59,7 @@ func (svc *BaseQuotaCheckerService) Create{{ name }}(ctx context.Context, reques
 	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
 		return nil, err
 	}
-	if svc.Next == nil {
+	if svc.next == nil {
 		return nil, nil
 	}
 	return svc.Next().Create{{ name }}(ctx, request)
@@ -70,7 +70,7 @@ func (svc *BaseQuotaCheckerService) Update{{ name }}(ctx context.Context, reques
 	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
 		return nil, err
 	}
-	if svc.Next == nil {
+	if svc.next == nil {
 		return nil, nil
 	}
 	return svc.Next().Update{{ name }}(ctx, request)
