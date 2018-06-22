@@ -6,16 +6,15 @@ cleanup:
 - path: /virtual-network/vn_test_ref
 - path: /virtual-network/vn_floating_blue
 - path: /network-ipam/test_ipam
-- path: /project/admin_floating_project_uuid
 - path: /network-ipam/test_ipam_blue
 - path: /floating-ip-pool/test_floating_ip_pool_without_subnets
 - path: /floating-ip/test_floating_ip
 - path: /floating-ip-pool/test_floating_ip_pool
+- path: /project/admin_project_uuid
 test_data:
 
   admin_project: &admin_project
-    fq_name: ["default", "admin_floating"]
-    uuid: admin_floating_project_uuid
+    uuid: admin_project_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -37,14 +36,14 @@ test_data:
     uuid: vn_floating_blue
     display_name: blue
     parent_type: project
-    parent_uuid: admin_floating_project_uuid
+    parent_uuid: admin_project_uuid
     route_target_list:
       route_target: ["100:200"]
     network_ipam_refs:
     - uuid: test_ipam_blue
 
   floating_ip_pool: &floating_ip_pool
-    fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool"]
+#fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool"]
     uuid: "test_floating_ip_pool"
     display_name: "test_floating_ip_pool"
     parent_type: "virtual-network"
@@ -54,7 +53,7 @@ test_data:
         - "subnet1"
 
   floating_ip_pool_without_subnets: &floating_ip_pool_without_subnets
-    fq_name: ["default", "admin", "vn_floating_blue", "floating_ip_pool_without_subnets"]
+  #    fq_name: ["default", "admin", "vn_floating_blue", "floating_ip_pool_without_subnets"]
     uuid: "test_floating_ip_pool_without_subnets"
     display_name: "test_floating_ip_pool_without_subnets"
     parent_type: "virtual-network"
@@ -143,7 +142,7 @@ workflow:
         uuid: "vn_test_ref"
         display_name: "vn_test_ref"
         parent_type: "project"
-        parent_uuid: "admin_floating_project_uuid"
+        parent_uuid: admin_project_uuid
         network_ipam_refs:
           - uuid: "test_ipam"
             to: ["domain","admin","test_ipam"]

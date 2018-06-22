@@ -2,17 +2,19 @@ name: Virtual Network Test
 description:  basic virtual network test
 cleanup:
 - path: /routing-instance/ri_uuid
-- path: /project/admin_project_uuid
-- path: /project/demo_project_uuid
-- path: /network-ipam/test_ipam_blue
-- path: /network-ipam/test_ipam_red
 - path: /virtual-network/vn_blue
 - path: /virtual-network/vn_red
+- path: /virtual-network/vn_test_ref
+- path: /network-ipam/test_ipam_blue
+- path: /network-ipam/test_ipam_red
+- path: /network-ipam/test_ipam1
+- path: /network-ipam/test_ipam2
 - path: /network-policy/network_policy_uuid
 - path: /network-policy/network_policy_uuid2
   client: bob
 - path: /project/admin_project_uuid
 - path: /project/demo_project_uuid
+  client: bob
 test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin"]
@@ -27,7 +29,6 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   network_policy1: &network_policy1
-    fq_name: ["default", "admin", "policy1"]
     uuid: network_policy_uuid
     parent_type: project
     parent_uuid: admin_project_uuid
@@ -38,8 +39,14 @@ test_data:
           rule_sequence:
             major: 4
             minor: 1
+          src_ports: [{}]
+          dst_ports: [{}]
+          ethertype: IPv4
+          src_addresses: [{}]
+          dst_addresses: [{}]
+          action_list:
+            simple_action: pass
   network_policy2: &network_policy2
-    fq_name: ["default", "demo", "policy2"]
     uuid: network_policy_uuid2
     parent_type: project
     parent_uuid: demo_project_uuid
@@ -50,6 +57,13 @@ test_data:
           rule_sequence:
             major: 4
             minor: 1
+          src_ports: [{}]
+          dst_ports: [{}]
+          ethertype: IPv4
+          src_addresses: [{}]
+          dst_addresses: [{}]
+          action_list:
+            simple_action: pass
   network_ipam_blue: &network_ipam_blue
     network_ipam_mgmt:
       host_routes:
@@ -93,7 +107,6 @@ test_data:
     - uuid: network_policy_uuid
     network_ipam_refs:
     - uuid: test_ipam_blue
-    virtual_network_network_id: $number
     routing_instances:
     - uuid: ri_uuid
       parent_uuid: vn_blue
@@ -116,7 +129,6 @@ test_data:
     - uuid: network_policy_uuid
     network_ipam_refs:
     - uuid: test_ipam_red
-    virtual_network_network_id: $number
   vn_blue_simple: &vn_blue_simple
     fq_name: ["default", "admin", "vn_blue"]
     uuid: vn_blue
@@ -179,7 +191,6 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid
-      fq_name: ["default", "admin", "policy1"]
       parent_type: project
       parent_uuid: admin_project_uuid
       perms2:
@@ -196,7 +207,6 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid2
-      fq_name: ["default", "demo", "policy2"]
       parent_type: project
       parent_uuid: demo_project_uuid
       perms2:
@@ -485,7 +495,7 @@ workflow:
     - uuid: network_policy_uuid
       perms2:
         owner: admin
-- name: list network policy
+- name: list network policy by user bob
   client: bob
   request:
     path: /network-policys
