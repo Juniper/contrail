@@ -1,8 +1,6 @@
 name: Quota checking test
 description: Checking for quota overflow for all resources managed by QuotaTye
 cleanup:
-  - path: /project/uuid_proj_blue
-  - path: /project/uuid_proj_green
   - path: /virtual-network/uuid_vn_blue_spock1
   - path: /virtual-network/uuid_vn_blue_spock2
   - path: /virtual-network/uuid_vn_blue_spock3
@@ -11,6 +9,9 @@ cleanup:
   - path: /security-group/uuid_secgrp_blue2
   - path: /security-group/uuid_secgrp_green
   - path: /network-ipam/uuid_ipam_magic
+  - path: /network-ipam/uuid_ipam_magic_blue
+  - path: /project/uuid_proj_blue
+  - path: /project/uuid_proj_green
 
 test_data:
   proj_blue: &proj_blue

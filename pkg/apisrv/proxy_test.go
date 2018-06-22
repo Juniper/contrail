@@ -39,7 +39,7 @@ func mockServer(routes map[string]interface{}) *httptest.Server {
 }
 
 func runEndpointTest(t *testing.T, clusterName string,
-	extraTasks bool) (*TestScenario, *httptest.Server, *httptest.Server) {
+	extraTasks bool) (*TestScenario, *httptest.Server, *httptest.Server, func()) {
 	routes := map[string]interface{}{
 		"/ports": echo.HandlerFunc(func(c echo.Context) error {
 			return c.JSON(http.StatusOK,
@@ -66,9 +66,9 @@ func runEndpointTest(t *testing.T, clusterName string,
 	var testScenario TestScenario
 	err := LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load test data")
-	RunTestScenario(t, &testScenario)
+	cleanup := RunDirtyTestScenario(t, &testScenario)
 
-	return &testScenario, neutronPublic, neutronPrivate
+	return &testScenario, neutronPublic, neutronPrivate, cleanup
 }
 
 func verifyProxy(t *testing.T, testScenario *TestScenario, url string,
@@ -108,8 +108,9 @@ func verifyKeystoneEndpoint(testScenario *TestScenario, testInvalidUser bool) er
 func TestProxyEndpoint(t *testing.T) {
 	// Create a cluster and its neutron endpoint
 	clusterAName := "clusterA"
-	testScenario, neutronPublic, neutronPrivate := runEndpointTest(
+	testScenario, neutronPublic, neutronPrivate, cleanup1 := runEndpointTest(
 		t, clusterAName, true)
+	defer cleanup1()
 	// remove tempfile after test
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
@@ -131,8 +132,9 @@ func TestProxyEndpoint(t *testing.T) {
 
 	// create one more cluster/neutron endpoint for new cluster
 	clusterBName := "clusterB"
-	testScenario, neutronPublic, neutronPrivate = runEndpointTest(
+	testScenario, neutronPublic, neutronPrivate, cleanup2 := runEndpointTest(
 		t, clusterBName, false)
+	defer cleanup2()
 	// remove tempfile after test
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
@@ -188,7 +190,8 @@ func TestKeystoneEndpoint(t *testing.T) {
 	var testScenario TestScenario
 	err := LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	RunTestScenario(t, &testScenario)
+	cleanup := RunDirtyTestScenario(t, &testScenario)
+	defer cleanup()
 
 	// Wait a sec for the dynamic proxy to be created/updated
 	time.Sleep(2 * time.Second)
@@ -232,7 +235,8 @@ func TestKeystoneEndpoint(t *testing.T) {
 	}
 	err = LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	RunTestScenario(t, &testScenario)
+	cleanup = RunDirtyTestScenario(t, &testScenario)
+	defer cleanup()
 	// Wait a sec for the dynamic proxy to be created
 	time.Sleep(2 * time.Second)
 	// Login to new remote keystone

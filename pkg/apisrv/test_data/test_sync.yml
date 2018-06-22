@@ -56,7 +56,6 @@ test_data:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
     - uuid: test_ipam_blue_uuid_test_sync
-    virtual_network_network_id: $number
   vn_blue2: &vn_blue2
     fq_name: ["default", "admin_project_uuid_test_sync", "vn_blue_test_sync"]
     uuid: vn_blue_test_sync
