@@ -46,9 +46,21 @@ func (e *EndpointData) endpointToURL(protocol, ip, port string) (endpointURL str
 	return strings.Join([]string{protocol, webSep + ip, port}, pathSep)
 }
 
+func (e *EndpointData) getOpenstackPublicVip() (vip string) {
+	vip = ""
+	o := e.clusterData.getOpenstackClusterData()
+	if o.clusterInfo.OpenstackExternalVip != "" {
+		vip = o.clusterInfo.OpenstackExternalVip
+	} else if o.clusterInfo.OpenstackInternalVip != "" {
+		vip = o.clusterInfo.OpenstackInternalVip
+	}
+
+	return vip
+}
+
 func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]string) {
 	var k []*models.KeyValuePair
-	if o := e.clusterData.getOpenstackClusterInfo(); o == nil {
+	if o := e.clusterData.getOpenstackClusterInfo(); o != nil {
 		if g := o.GetKollaGlobals(); g != nil {
 			k = g.GetKeyValuePair()
 		}
@@ -71,14 +83,29 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 		}
 	}
 	if _, ok := endpointNodes[identity]; !ok {
-		openstackControlNodes := e.clusterData.getOpenstackClusterData().getControlNodeIPs()
+		var openstackControlNodes []string
+		vip := e.getOpenstackPublicVip()
+		if vip != "" {
+			openstackControlNodes = []string{vip}
+		} else {
+			o := e.clusterData.getOpenstackClusterData()
+			openstackControlNodes = o.getControlNodeIPs()
+		}
 		endpointNodes[identity] = openstackControlNodes
 		endpointNodes[nova] = openstackControlNodes
 		endpointNodes[ironic] = openstackControlNodes
 		endpointNodes[glance] = openstackControlNodes
 	}
 	if _, ok := endpointNodes[swift]; !ok {
-		endpointNodes[swift] = e.clusterData.getOpenstackClusterData().getStorageNodeIPs()
+		var openstackStorageNodes []string
+		vip := e.getOpenstackPublicVip()
+		if vip != "" {
+			openstackStorageNodes = []string{vip}
+		} else {
+			o := e.clusterData.getOpenstackClusterData()
+			openstackStorageNodes = o.getStorageNodeIPs()
+		}
+		endpointNodes[swift] = openstackStorageNodes
 	}
 	return endpointNodes
 }

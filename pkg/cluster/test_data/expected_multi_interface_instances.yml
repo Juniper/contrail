@@ -9,7 +9,7 @@ provider_config:
     domainsuffix: local
 instances:
   all_in_one_node:
-    ip: 127.0.0.1
+    ip: 10.1.1.1
     provider: bms
     roles:
       config:
@@ -33,14 +33,13 @@ contrail_configuration:
   AUTH_MODE: keystone
   KEYSTONE_AUTH_HOST: 127.0.0.1
   KEYSTONE_AUTH_URL_VERSION: /v3
-  CONTROL_NODES: 10.1.1.1
-  CONTROLLER_NODES: 10.1.1.1
-  OPENSTACK_NODES: 10.1.1.1
+  CONTROL_NODES: 127.0.0.1
+  CONTROLLER_NODES: 127.0.0.1
+  OPENSTACK_NODES: 127.0.0.1
 kolla_config:
   kolla_globals:
     openstack_release: ocata-xyz
     enable_haproxy: yes
-    contrail_api_interface_address: 127.0.0.1
     kolla_internal_vip_address: 127.0.0.1
   kolla_passwords:
     keystone_admin_password: contrail123

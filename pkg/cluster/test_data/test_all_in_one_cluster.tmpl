@@ -29,7 +29,7 @@ test_data:
     uuid: all_in_one_node_uuid
     hostname: all_in_one_node
     interface_name: all_in_one_node_interface
-    ip_address: 127.0.0.1
+    ip_address: {{MGMT_INT_IP}}
   all_in_one_openstack_cluster: &all_in_one_openstack_cluster
     fq_name: ["default", "admin", "all_in_one_openstack_cluster"]
     uuid: test_openstack_cluster_uuid
@@ -190,7 +190,7 @@ workflow:
       fq_name: ["default", "admin", "all_in_one_node"]
       hostname: all_in_one_node
       interface_name: all_in_one_node_interface
-      ip_address: 127.0.0.1
+      ip_address: {{MGMT_INT_IP}}
 - name: create openstack cluster
   request:
     path: /openstack-clusters
