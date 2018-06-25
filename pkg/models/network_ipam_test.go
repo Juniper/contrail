@@ -33,13 +33,13 @@ func TestIsIpInSubnet(t *testing.T) {
 
 	t.Run("Validate ip from provided subnet", func(t *testing.T) {
 		ip := "10.0.0.1"
-		err := isIPInSubnet(&subnet, ip)
+		err := IsIpInSubnet(&subnet, ip)
 		assert.NoError(t, err)
 	})
 
 	t.Run("Validate ip which is not from provided subnet", func(t *testing.T) {
 		ip := "11.0.0.1"
-		err := isIPInSubnet(&subnet, ip)
+		err := IsIpInSubnet(&subnet, ip)
 		assert.Error(t, err)
 	})
 }

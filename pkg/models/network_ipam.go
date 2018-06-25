@@ -30,18 +30,18 @@ func (m *SubnetType) Net() (*net.IPNet, error) {
 
 // IsInSubnet validates allocation pool is in specific subnet.
 func (m *AllocationPoolType) IsInSubnet(subnet *net.IPNet) error {
-	err := isIPInSubnet(subnet, m.Start)
+	err := IsIpInSubnet(subnet, m.Start)
 	if err != nil {
 		return common.ErrorBadRequest("allocation pool start " + err.Error())
 	}
-	err = isIPInSubnet(subnet, m.End)
+	err = IsIpInSubnet(subnet, m.End)
 	if err != nil {
 		return common.ErrorBadRequest("allocation pool end " + err.Error())
 	}
 	return nil
 }
 
-func parseIpfromString(ipString string) (net.IP, error) {
+func ParseIpfromString(ipString string) (net.IP, error) {
 	ip := net.ParseIP(ipString)
 	if ip == nil {
 		return nil, errors.Errorf("invalid address: " + ipString)
@@ -49,8 +49,8 @@ func parseIpfromString(ipString string) (net.IP, error) {
 	return ip, nil
 }
 
-func isIPInSubnet(subnet *net.IPNet, ipString string) error {
-	ip, err := parseIpfromString(ipString)
+func IsIpInSubnet(subnet *net.IPNet, ipString string) error {
+	ip, err := ParseIpfromString(ipString)
 	if err != nil {
 		return err
 	}
@@ -84,13 +84,13 @@ func (m *IpamSubnetType) CheckIfSubnetParamsAreValid() error {
 		}
 	}
 	if m.DefaultGateway != "" {
-		err = isIPInSubnet(subnet, m.DefaultGateway)
+		err = IsIpInSubnet(subnet, m.DefaultGateway)
 		if err != nil {
 			return common.ErrorBadRequest("default gateway " + err.Error())
 		}
 	}
 	if m.DNSServerAddress != "" {
-		err = isIPInSubnet(subnet, m.DNSServerAddress)
+		err = IsIpInSubnet(subnet, m.DNSServerAddress)
 		if err != nil {
 			return common.ErrorBadRequest("DNS server " + err.Error())
 		}
