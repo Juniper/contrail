@@ -123,14 +123,57 @@ func (sv *ContrailTypeLogicService) UpdateNetworkIpam(
 	ctx context.Context,
 	request *services.UpdateNetworkIpamRequest) (response *services.UpdateNetworkIpamResponse, err error) {
 
-	//networkIpam := request.GetNetworkIpam()
+	newNetworkIpam := request.GetNetworkIpam()
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			//TODO ipam_mgmt check
-			//TODO check new subnet method
-			//TODO check flat-subnet
-			//TODO rest of update checks
+			oldNetworkIpam, err := sv.getNetworkIpam(ctx, newNetworkIpam.GetUUID())
+			if err != nil {
+				return err
+			}
+
+			if oldNetworkIpam == nil {
+				return errors.Errorf("no NetworkIpam found to update")
+			}
+
+			fieldMask := request.GetFieldMask()
+			err = sv.checkNetworkIpamMGMT(ctx, oldNetworkIpam, newNetworkIpam, fieldMask.GetPaths())
+			if err != nil {
+				return common.ErrorBadRequest(err.Error())
+			}
+
+			err = sv.checkSubnetMethod(oldNetworkIpam, newNetworkIpam, fieldMask.GetPaths())
+			if err != nil {
+				return common.ErrorBadRequest(err.Error())
+			}
+
+			err = sv.checkIpamSubnets(ctx, oldNetworkIpam, newNetworkIpam, fieldMask.GetPaths())
+			if err != nil {
+				return err
+			}
+
+			for _, ipamSubnet := range newNetworkIpam.GetIpamSubnets().GetSubnets() {
+				err = ipamSubnet.CheckIfSubnetParamsAreValid()
+				if err != nil {
+					return err
+				}
+			}
+
+			err = sv.checkSubnetDelete(oldNetworkIpam, newNetworkIpam, fieldMask.GetPaths())
+			if err != nil {
+				return common.ErrorBadRequest(err.Error())
+			}
+
+			err = sv.validateSubnetUpdate(oldNetworkIpam, newNetworkIpam)
+			if err != nil {
+				return common.ErrorBadRequest(err.Error())
+			}
+
+			err = sv.processIpamUpdate(ctx, oldNetworkIpam, newNetworkIpam, fieldMask.GetPaths())
+			if err != nil {
+				return common.ErrorBadRequest(err.Error())
+			}
+
 			response, err = sv.BaseService.UpdateNetworkIpam(ctx, request)
 			return err
 		})
@@ -166,4 +209,306 @@ func (sv *ContrailTypeLogicService) deleteIpamSubnet(
 		SubnetUUID: subnetUUID,
 	}
 	return sv.AddressManager.DeleteIpamSubnet(ctx, deleteIpamSubnetParams)
+}
+
+func (sv *ContrailTypeLogicService) checkNetworkIpamMGMT(
+	ctx context.Context,
+	oldIpam *models.NetworkIpam,
+	newIpam *models.NetworkIpam,
+	fieldMask []string) error {
+	if common.ContainsString(fieldMask, models.NetworkIpamPropertyIDNetworkIpamMGMT) {
+		if oldIpam.GetNetworkIpamMGMT() == nil || newIpam.GetNetworkIpamMGMT() == nil {
+			return nil
+		}
+		isChangeAllowed := sv.isChangeAllowed(ctx, oldIpam, newIpam)
+		if !isChangeAllowed {
+			return errors.Errorf("Cannot change DNS method with active VMs referring to the IPAM")
+		}
+	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) isChangeAllowed(
+	ctx context.Context,
+	oldIpam *models.NetworkIpam,
+	newIpam *models.NetworkIpam) bool {
+	isActiveVMPresent := sv.isActiveVMPresent(ctx, oldIpam)
+	if isActiveVMPresent {
+		oldDNSMethod := oldIpam.GetNetworkIpamMGMT().GetIpamDNSMethod()
+		newDNSMethod := newIpam.GetNetworkIpamMGMT().GetIpamDNSMethod()
+		if oldDNSMethod == "default-dns-server" || oldDNSMethod == "virtual-dns-server" {
+			if newDNSMethod == "" || newDNSMethod == "tenant-dns-server" {
+				return false
+			}
+		}
+		if oldDNSMethod == "tenant-dns-server" && oldDNSMethod != newDNSMethod {
+			return false
+		}
+		if oldDNSMethod != "" && oldDNSMethod != newDNSMethod {
+			return false
+		}
+	}
+	return true
+}
+
+// check old ipam here
+func (sv *ContrailTypeLogicService) isActiveVMPresent(
+	ctx context.Context,
+	networkIpam *models.NetworkIpam) bool {
+	for _, vn := range networkIpam.GetVirtualNetworkBackRefs() {
+		if len(vn.GetVirtualMachineInterfaceBackRefs()) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (sv *ContrailTypeLogicService) checkSubnetMethod(
+	oldIpam *models.NetworkIpam,
+	newIpam *models.NetworkIpam,
+	fieldMask []string) error {
+	if common.ContainsString(fieldMask, models.NetworkIpamPropertyIDIpamSubnetMethod) {
+		if oldIpam.GetIpamSubnetMethod() != newIpam.GetIpamSubnetMethod() {
+			return errors.Errorf("Subnet method cannot be changed")
+		}
+	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkIpamSubnets(
+	ctx context.Context,
+	oldIpam *models.NetworkIpam,
+	newIpam *models.NetworkIpam,
+	fieldMask []string) error {
+	if common.ContainsString(fieldMask, models.NetworkIpamPropertyIDIpamSubnets) {
+		if oldIpam.GetIpamSubnetMethod() != "flat-subnet" {
+			return common.ErrorBadRequest("Ipam subnets are only allowed with flat subnet")
+		}
+
+		ipamSubnets := newIpam.GetIpamSubnets().GetSubnets()
+		err := checkSubnetsOverlap(ipamSubnets)
+		if err != nil {
+			return common.ErrorBadRequest(err.Error())
+		}
+
+		var refIpamUUIDList []string
+		var refSubnetsList []*models.IpamSubnetType
+		for _, vn := range newIpam.GetVirtualNetworkBackRefs() {
+			for _, ipamRef := range vn.GetNetworkIpamRefs() {
+				if ipamRef.GetUUID() == oldIpam.GetUUID() || common.ContainsString(refIpamUUIDList, ipamRef.GetUUID()) {
+					continue
+				}
+
+				vnIpamSubnets := ipamRef.GetAttr().GetIpamSubnets()
+				if len(vnIpamSubnets) == 1 {
+					refIpamSubnet := vnIpamSubnets[0]
+					if refIpamSubnet.GetSubnet().IPPrefix != "" {
+						refIpamUUIDList = append(refIpamUUIDList, ipamRef.GetUUID())
+					}
+				}
+				refSubnetsList = append(refSubnetsList, vnIpamSubnets...)
+			}
+		}
+		for _, ipamUUID := range refIpamUUIDList {
+			networkIpam, err := sv.DataService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{ID: ipamUUID})
+			if err != nil {
+				return err
+			}
+			refIpamSubnets := networkIpam.GetNetworkIpam().GetIpamSubnets().GetSubnets()
+			refSubnetsList = append(refSubnetsList, refIpamSubnets...)
+		}
+
+		err = checkSubnetsOverlap(refSubnetsList)
+		if err != nil {
+			return common.ErrorBadRequest(err.Error())
+		}
+	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkSubnetDelete(
+	oldIpam *models.NetworkIpam,
+	newIpam *models.NetworkIpam,
+	fieldMask []string) error {
+	if common.ContainsString(fieldMask, models.NetworkIpamPropertyIDIpamSubnets) {
+		if len(oldIpam.GetIpamSubnets().GetSubnets()) == 0 {
+			return nil
+		}
+		if oldIpam.GetIpamSubnetMethod() != "flat-subnet" {
+			return nil
+		}
+		subnetsToDelete, err := sv.findIpamSubnetsToDelete(oldIpam, newIpam)
+		if err != nil {
+			return err
+		}
+		if len(subnetsToDelete) == 0 {
+			return nil
+		}
+
+		for _, vn := range oldIpam.GetVirtualNetworkBackRefs() {
+			err := sv.checkSubnetToDelete(subnetsToDelete, vn)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) findIpamSubnetsToDelete(
+	oldIpam *models.NetworkIpam,
+	newIpam *models.NetworkIpam) (subnetsToDelete []*models.IpamSubnetType, err error) {
+	oldIpamSubnets := oldIpam.GetIpamSubnets().GetSubnets()
+	newIpamSubnets := newIpam.GetIpamSubnets().GetSubnets()
+	for _, oldSubnet := range oldIpamSubnets {
+		oldSn, err := oldSubnet.GetSubnet().Net()
+		if err != nil {
+			return nil, err
+		}
+		for _, newSubnet := range newIpamSubnets {
+			newSn, err := newSubnet.GetSubnet().Net()
+			if err != nil {
+				return nil, err
+			}
+			if newSn != oldSn {
+				subnetsToDelete = append(subnetsToDelete, oldSubnet)
+			}
+		}
+	}
+	return subnetsToDelete, nil
+}
+
+func (sv *ContrailTypeLogicService) checkSubnetToDelete(
+	subnetsSet []*models.IpamSubnetType,
+	vn *models.VirtualNetwork) error {
+	for _, instanceIP := range vn.GetInstanceIPBackRefs() {
+		err := checkIfSubnetsSetIncludeIP(subnetsSet, instanceIP.GetInstanceIPAddress())
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, floatingIPPool := range vn.GetFloatingIPPools() {
+		for _, floatingIP := range floatingIPPool.GetFloatingIPs() {
+			err := checkIfSubnetsSetIncludeIP(subnetsSet, floatingIP.GetFloatingIPAddress())
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	for _, aliasIPPools := range vn.GetAliasIPPools() {
+		for _, aliasIP := range aliasIPPools.GetAliasIPs() {
+			err := checkIfSubnetsSetIncludeIP(subnetsSet, aliasIP.GetAliasIPAddress())
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func checkIfSubnetsSetIncludeIP(
+	subnetsSet []*models.IpamSubnetType,
+	ipString string) error {
+	for _, ipamSubnet := range subnetsSet {
+		subnet, err := ipamSubnet.GetSubnet().Net()
+		if err != nil {
+			return err
+		}
+		err = ckeckIpInSubnet(subnet, ipString)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) validateSubnetUpdate(
+	oldIpam *models.NetworkIpam,
+	newIpam *models.NetworkIpam) error {
+	oldSubnetsSet := oldIpam.GetIpamSubnets()
+	newSubnetsSet := newIpam.GetIpamSubnets()
+	if oldSubnetsSet == nil || newSubnetsSet == nil {
+		return nil
+	}
+	err := sv.validateSubnetChanges(oldSubnetsSet.GetSubnets(), newSubnetsSet.GetSubnets())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) validateSubnetChanges(
+	oldSubnetsSet []*models.IpamSubnetType,
+	newSubnetsSet []*models.IpamSubnetType) error {
+
+	//TODO handle changes in default gateway
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) processIpamUpdate(
+	ctx context.Context,
+	oldIpam *models.NetworkIpam,
+	newIpam *models.NetworkIpam,
+	fieldMask []string) error {
+	if common.ContainsString(fieldMask, models.NetworkIpamPropertyIDIpamSubnets) {
+		subnetsToDelete, err := sv.findIpamSubnetsToDelete(oldIpam, newIpam)
+		if err != nil {
+			return err
+		}
+		for _, subnet := range subnetsToDelete {
+			err := sv.deleteIpamSubnet(ctx, subnet.GetSubnetUUID())
+			if err != nil {
+				return err
+			}
+		}
+		newIpamSubnets := newIpam.GetIpamSubnets().GetSubnets()
+		oldIpamSubnets := oldIpam.GetIpamSubnets().GetSubnets()
+		for _, newIpamSubnet := range newIpamSubnets {
+			for _, oldIpamSubnet := range oldIpamSubnets {
+				if oldIpamSubnet.GetSubnetName() == newIpamSubnet.GetSubnetName() {
+					if newIpamSubnet.GetDefaultGateway() != "" && newIpamSubnet.GetDefaultGateway() != oldIpamSubnet.GetDefaultGateway() {
+						return errors.Errorf("Cannot change default gateway")
+					}
+					newIpamSubnet.DNSServerAddress = oldIpamSubnet.GetDNSServerAddress()
+					err = sv.checkSubnetAllocPools(newIpamSubnet, oldIpamSubnet)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+		//TODO create new ipam subnets
+		ipamUUID := oldIpam.GetUUID()
+		for _, ipamSubnet := range newIpamSubnets {
+			subnetUUID, err := sv.createIpamSubnet(ctx, ipamSubnet, ipamUUID)
+			if err != nil {
+				return err
+			}
+			ipamSubnet.SubnetUUID = subnetUUID
+		}
+	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkSubnetAllocPools(
+	oldSubnet *models.IpamSubnetType,
+	newSubnet *models.IpamSubnetType) error {
+		//TODO check changes in allocPools
+	//newAllocPools := newSubnet.GetAllocationPools()
+	//oldAllocPools := oldSubnet.GetAllocationPools()
+	return nil
+}
+
+func ckeckIpInSubnet(subnet *net.IPNet, ipString string) error {
+	ip, err := models.ParseIpfromString(ipString)
+	if err != nil {
+		return err
+	}
+	if subnet.Contains(ip) {
+		return errors.Errorf("subnet %s contains address %s", subnet.String(), ipString)
+	}
+	return nil
 }
