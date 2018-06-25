@@ -134,7 +134,7 @@ func TestCheckIfSubnetParamsAreValid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ipamSubnet := createTestIpamSubnet(tt.testParams)
-			err := ipamSubnet.CheckIfSubnetParamsAreValid()
+			err := ipamSubnet.ValidateSubnetParams()
 			if tt.fails {
 				assert.Error(t, err)
 				return

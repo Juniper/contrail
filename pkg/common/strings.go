@@ -2,8 +2,10 @@ package common
 
 import (
 	"bytes"
+	"strings"
 	"unicode"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
@@ -37,4 +39,10 @@ func ContainsString(list []string, a string) bool {
 		}
 	}
 	return false
+}
+
+//CheckPath check if fieldMask includes provided path
+func CheckPath(fieldMask *types.FieldMask, path []string) bool {
+	genPath := strings.Join(path, ".")
+	return ContainsString(fieldMask.GetPaths(), genPath)
 }
