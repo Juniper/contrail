@@ -25,3 +25,12 @@ func (m *VnSubnetsType) ValidateUserDefined() error {
 	}
 	return nil
 }
+
+// IsFlatSubnet checks if linked ipam subnet is flat
+func (m *VnSubnetsType) IsFlatSubnet() bool {
+	vnIpamSubnets := m.GetIpamSubnets()
+	if len(vnIpamSubnets) != 1 || vnIpamSubnets[0].GetSubnet().GetIPPrefix() != "" {
+		return false
+	}
+	return true
+}
