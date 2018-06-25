@@ -3,7 +3,9 @@ package common
 import (
 	"testing"
 
+	"github.com/gogo/protobuf/types"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCamelToSnake(t *testing.T) {
@@ -24,5 +26,26 @@ func TestCamelToSnake(t *testing.T) {
 		if snakeToCamel != testData[0] {
 			t.Fatal("SnakeToCamel failed expected", testData[0], " got ", snakeToCamel)
 		}
+	}
+}
+
+func TestCheckPath(t *testing.T) {
+	testDataCorrect := [][]string{
+		{"first", "test"},
+		{"second", "test"},
+		{"third"},
+		{"last", "more", "complex"},
+	}
+	testDataIncorrect := [][]string{
+		{"bad", "test"},
+		{"fail"},
+		{"it", "should", "fail"},
+	}
+	fieldMask := types.FieldMask{Paths: []string{"first.test", "second.test", "third", "last.more.complex"}}
+	for _, testData := range testDataCorrect {
+		assert.True(t, CheckPath(&fieldMask, testData))
+	}
+	for _, testData := range testDataIncorrect {
+		assert.False(t, CheckPath(&fieldMask, testData))
 	}
 }
