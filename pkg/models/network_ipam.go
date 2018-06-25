@@ -41,7 +41,8 @@ func (m *AllocationPoolType) IsInSubnet(subnet *net.IPNet) error {
 	return nil
 }
 
-func parseIpfromString(ipString string) (net.IP, error) {
+// ParseIPFromString parses ip and return more concrete error
+func ParseIPFromString(ipString string) (net.IP, error) {
 	ip := net.ParseIP(ipString)
 	if ip == nil {
 		return nil, errors.Errorf("invalid address: " + ipString)
@@ -50,7 +51,7 @@ func parseIpfromString(ipString string) (net.IP, error) {
 }
 
 func isIPInSubnet(subnet *net.IPNet, ipString string) error {
-	ip, err := parseIpfromString(ipString)
+	ip, err := ParseIPFromString(ipString)
 	if err != nil {
 		return err
 	}
