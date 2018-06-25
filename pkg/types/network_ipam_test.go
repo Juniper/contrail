@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -14,12 +15,15 @@ import (
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/Juniper/contrail/pkg/types/ipam/mock"
+	"google.golang.org/grpc"
 )
 
 type testNetIpamParams struct {
-	uuid             string
-	ipamSubnetMethod string
-	ipamSubnets      *models.IpamSubnets
+	uuid                   string
+	ipamSubnetMethod       string
+	ipamSubnets            *models.IpamSubnets
+	networkIpamMGMT        *models.IpamType
+	virtualNetworkBackRefs []*models.VirtualNetwork
 }
 
 func createTestNetworkIpam(testParams *testNetIpamParams) *models.NetworkIpam {
@@ -27,10 +31,14 @@ func createTestNetworkIpam(testParams *testNetIpamParams) *models.NetworkIpam {
 	networkIpam.UUID = testParams.uuid
 	networkIpam.IpamSubnetMethod = testParams.ipamSubnetMethod
 	networkIpam.IpamSubnets = testParams.ipamSubnets
+	networkIpam.NetworkIpamMGMT = testParams.networkIpamMGMT
+	if len(testParams.virtualNetworkBackRefs) > 0 {
+		networkIpam.VirtualNetworkBackRefs = testParams.virtualNetworkBackRefs
+	}
 	return networkIpam
 }
 
-func networkIpamNextServMocks(service *ContrailTypeLogicService) {
+func networkIpamIPAMMocks(service *ContrailTypeLogicService) {
 	ipamMock := service.AddressManager.(*ipammock.MockAddressManager)
 	ipamMock.EXPECT().CreateIpamSubnet(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, request *ipam.CreateIpamSubnetRequest) (subnetUUID string, err error) {
@@ -40,7 +48,7 @@ func networkIpamNextServMocks(service *ContrailTypeLogicService) {
 
 }
 
-func networkIpamIPAMMocks(service *ContrailTypeLogicService) {
+func networkIpamNextServMocks(service *ContrailTypeLogicService) {
 	nextServiceMock := service.Next().(*servicesmock.MockService)
 	nextServiceMock.EXPECT().CreateNetworkIpam(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(
@@ -54,14 +62,18 @@ func networkIpamIPAMMocks(service *ContrailTypeLogicService) {
 		) (response *services.DeleteNetworkIpamResponse, err error) {
 			return &services.DeleteNetworkIpamResponse{ID: request.ID}, nil
 		}).AnyTimes()
-
+	nextServiceMock.EXPECT().UpdateNetworkIpam(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(
+			_ context.Context, request *services.UpdateNetworkIpamRequest,
+		) (response *services.UpdateNetworkIpamResponse, err error) {
+			return &services.UpdateNetworkIpamResponse{NetworkIpam: request.NetworkIpam}, nil
+		}).AnyTimes()
 }
 
 func TestCreateNetworkIpam(t *testing.T) {
 	tests := []struct {
 		name              string
 		testNetIpamParams *testNetIpamParams
-		fails             bool
 		changedSubnetUUID bool
 		errorCode         codes.Code
 	}{
@@ -71,7 +83,6 @@ func TestCreateNetworkIpam(t *testing.T) {
 				uuid:             "uuid",
 				ipamSubnetMethod: "notFlat",
 			},
-			fails:             false,
 			changedSubnetUUID: false,
 		},
 		{
@@ -81,7 +92,6 @@ func TestCreateNetworkIpam(t *testing.T) {
 				ipamSubnetMethod: "flat-subnet",
 				ipamSubnets:      &models.IpamSubnets{},
 			},
-			fails:             false,
 			changedSubnetUUID: false,
 		},
 		{
@@ -91,7 +101,6 @@ func TestCreateNetworkIpam(t *testing.T) {
 				ipamSubnetMethod: "notFlat",
 				ipamSubnets:      &models.IpamSubnets{},
 			},
-			fails:             true,
 			errorCode:         codes.InvalidArgument,
 			changedSubnetUUID: false,
 		},
@@ -104,7 +113,6 @@ func TestCreateNetworkIpam(t *testing.T) {
 					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24},
 				}}},
 			},
-			fails:             false,
 			changedSubnetUUID: true,
 		},
 	}
@@ -122,15 +130,13 @@ func TestCreateNetworkIpam(t *testing.T) {
 			createNetworkIpamRequest := &services.CreateNetworkIpamRequest{NetworkIpam: networkIpam}
 			createNetworkIpamResponse, err := service.CreateNetworkIpam(ctx, createNetworkIpamRequest)
 
-			if tt.fails {
+			if tt.errorCode != codes.OK {
 				assert.Error(t, err, "create succeeded but shouldn't")
 				assert.Nil(t, createNetworkIpamResponse)
 
-				if tt.errorCode != codes.OK {
-					status, ok := status.FromError(err)
-					assert.True(t, ok)
-					assert.Equal(t, tt.errorCode, status.Code())
-				}
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, createNetworkIpamResponse)
@@ -194,6 +200,313 @@ func TestDeleteNetworkIpam(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.NotNil(t, deleteNetworkIpamResponse)
+			mockCtrl.Finish()
+		})
+	}
+}
+
+func TestUpdateNetworkIpam(t *testing.T) {
+	updateIpamDBMock := func(service *ContrailTypeLogicService, getNetworkIpamResponse *services.GetNetworkIpamResponse) {
+		dataService := service.DataService.(*servicesmock.MockService)
+		dataService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).DoAndReturn(
+			func(
+				_ context.Context, _ *services.GetNetworkIpamRequest,
+			) (response *services.GetNetworkIpamResponse, err error) {
+				if getNetworkIpamResponse.GetNetworkIpam() == nil {
+					return nil, grpc.Errorf(codes.NotFound, "ipam not found")
+				}
+				return getNetworkIpamResponse, nil
+			})
+
+		dataService.EXPECT().GetVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
+			func(
+				_ context.Context, _ *services.GetVirtualNetworkRequest,
+			) (response *services.GetVirtualNetworkResponse, err error) {
+				if getNetworkIpamResponse.GetNetworkIpam() == nil {
+					return nil, grpc.Errorf(codes.NotFound, "vn not found")
+				}
+				vn := getNetworkIpamResponse.GetNetworkIpam().VirtualNetworkBackRefs[0]
+				return &services.GetVirtualNetworkResponse{VirtualNetwork: vn}, nil
+			}).AnyTimes()
+
+		dataService.EXPECT().GetFloatingIPPool(gomock.Any(), gomock.Any()).DoAndReturn(
+			func(
+				_ context.Context, _ *services.GetFloatingIPPoolRequest,
+			) (response *services.GetFloatingIPPoolResponse, err error) {
+				if getNetworkIpamResponse.GetNetworkIpam() == nil {
+					return nil, grpc.Errorf(codes.NotFound, "fipp not found")
+				}
+				vn := getNetworkIpamResponse.GetNetworkIpam().VirtualNetworkBackRefs[0]
+				fipp := vn.GetFloatingIPPools()[0]
+				return &services.GetFloatingIPPoolResponse{FloatingIPPool: fipp}, nil
+			}).AnyTimes()
+
+		dataService.EXPECT().GetAliasIPPool(gomock.Any(), gomock.Any()).DoAndReturn(
+			func(
+				_ context.Context, _ *services.GetAliasIPPoolRequest,
+			) (response *services.GetAliasIPPoolResponse, err error) {
+				if getNetworkIpamResponse.GetNetworkIpam() == nil {
+					return nil, grpc.Errorf(codes.NotFound, "aipp not found")
+				}
+				vn := getNetworkIpamResponse.GetNetworkIpam().VirtualNetworkBackRefs[0]
+				aipp := vn.GetAliasIPPools()[0]
+				return &services.GetAliasIPPoolResponse{AliasIPPool: aipp}, nil
+			}).AnyTimes()
+
+		dataService.EXPECT().GetInstanceIP(gomock.Any(), gomock.Any()).DoAndReturn(
+			func(
+				_ context.Context, _ *services.GetInstanceIPRequest,
+			) (response *services.GetInstanceIPResponse, err error) {
+				if getNetworkIpamResponse.GetNetworkIpam() == nil {
+					return nil, grpc.Errorf(codes.NotFound, "ipp not found")
+				}
+				vn := getNetworkIpamResponse.GetNetworkIpam().VirtualNetworkBackRefs[0]
+				ipp := vn.GetInstanceIPBackRefs()[0]
+				return &services.GetInstanceIPResponse{InstanceIP: ipp}, nil
+			}).AnyTimes()
+	}
+
+	tests := []struct {
+		name                 string
+		oldNetworkIpamParams *testNetIpamParams
+		newNetworkIpamParams *testNetIpamParams
+		errorCode            codes.Code
+	}{
+		{
+			name: "Update network ipam which does not exist",
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid: "uuid-1",
+			},
+			errorCode: codes.NotFound,
+		},
+		{
+			name: "Update network ipam subnet method",
+			oldNetworkIpamParams: &testNetIpamParams{
+				ipamSubnetMethod: "flat-subnet",
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				ipamSubnetMethod: "user-defined",
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
+			name: "Update network ipam where dns method is changed from default",
+			oldNetworkIpamParams: &testNetIpamParams{
+				networkIpamMGMT: &models.IpamType{IpamDNSMethod: "default-dns-server"},
+				virtualNetworkBackRefs: []*models.VirtualNetwork{{UUID: "vnUUID",
+					VirtualMachineInterfaceBackRefs: []*models.VirtualMachineInterface{{UUID: "vmUUID"}}}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				networkIpamMGMT: &models.IpamType{IpamDNSMethod: "tenant-dns-server"},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
+			name: "Update network ipam where dns method is changed from virtual",
+			oldNetworkIpamParams: &testNetIpamParams{
+				networkIpamMGMT: &models.IpamType{IpamDNSMethod: "virtual-dns-server"},
+				virtualNetworkBackRefs: []*models.VirtualNetwork{{UUID: "vnUUID",
+					VirtualMachineInterfaceBackRefs: []*models.VirtualMachineInterface{{UUID: "vmUUID"}}}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				networkIpamMGMT: &models.IpamType{IpamDNSMethod: "tenant-dns-server"},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
+			name: "Update network ipam where dns method is changed from tenant",
+			oldNetworkIpamParams: &testNetIpamParams{
+				networkIpamMGMT: &models.IpamType{IpamDNSMethod: "tenant-dns-server"},
+				virtualNetworkBackRefs: []*models.VirtualNetwork{{UUID: "vnUUID",
+					VirtualMachineInterfaceBackRefs: []*models.VirtualMachineInterface{{UUID: "vmUUID"}}}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				networkIpamMGMT: &models.IpamType{IpamDNSMethod: "virtual-dns-server"},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
+			name: "Update network ipam where dns method is changed but there was no mgmt before",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid: "ipamUUID",
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid:            "ipamUUID",
+				networkIpamMGMT: &models.IpamType{IpamDNSMethod: "tenant-dns-server"},
+			},
+		},
+		{
+			name: "Update network ipam where ipam subnet method is not flat subnet",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "user-defined",
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "user-defined",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
+			name: "Update network ipam with overlapping subnets",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}},
+					{Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
+			name: "Update network ipam with new ipam subnets",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "11.0.0.0", IPPrefixLen: 24}}}},
+			},
+		},
+		{
+			name: "Update network ipam with new ipam subnets when one vnref includes instance ip",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+				virtualNetworkBackRefs: []*models.VirtualNetwork{{
+					InstanceIPBackRefs: []*models.InstanceIP{{InstanceIPAddress: "10.0.0.5"}}}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "11.0.0.0", IPPrefixLen: 24}}}},
+			},
+			errorCode: codes.Aborted,
+		},
+		{
+			name: "Update network ipam with new ipam subnets when one vn ref includes floating ip",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+				virtualNetworkBackRefs: []*models.VirtualNetwork{{FloatingIPPools: []*models.FloatingIPPool{{
+					FloatingIPs: []*models.FloatingIP{{FloatingIPAddress: "10.0.0.5"}}}}}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "11.0.0.0", IPPrefixLen: 24}}}},
+			},
+			errorCode: codes.Aborted,
+		},
+		{
+			name: "Update network ipam with new ipam subnets when one vn ref includes alias ip",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+				virtualNetworkBackRefs: []*models.VirtualNetwork{{AliasIPPools: []*models.AliasIPPool{{
+					AliasIPs: []*models.AliasIP{{AliasIPAddress: "10.0.0.5"}}}}}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "11.0.0.0", IPPrefixLen: 24}}}},
+			},
+			errorCode: codes.Aborted,
+		},
+		{
+			name: "Update network ipam with ref to vn with subnet which overlaps with new ipam_subnet",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				virtualNetworkBackRefs: []*models.VirtualNetwork{{UUID: "vnUUID",
+					NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{{UUID: "testIpam",
+						Attr: &models.VnSubnetsType{IpamSubnets: []*models.IpamSubnetType{{
+							Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}},
+						}}},
+				}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid: "ipamUUID",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
+			name: "Update network ipam by changing default gateway to none in subnet",
+			oldNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					SubnetName:     "test",
+					DefaultGateway: "10.0.0.1",
+					Subnet:         &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+			},
+			newNetworkIpamParams: &testNetIpamParams{
+				uuid:             "ipamUUID",
+				ipamSubnetMethod: "flat-subnet",
+				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
+					SubnetName: "test",
+					Subnet:     &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}}}},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+			networkIpamIPAMMocks(service)
+			networkIpamNextServMocks(service)
+
+			ctx := context.Background()
+			var fMask types.FieldMask
+			var oldNetworkIpam, newNetworkIpam *models.NetworkIpam
+			if tt.oldNetworkIpamParams != nil {
+				oldNetworkIpam = createTestNetworkIpam(tt.oldNetworkIpamParams)
+			}
+			if tt.newNetworkIpamParams != nil {
+				newNetworkIpam = createTestNetworkIpam(tt.newNetworkIpamParams)
+				fMask = services.MapToFieldMask(newNetworkIpam.ToMap())
+			}
+
+			getNetworkIpamResponse := &services.GetNetworkIpamResponse{NetworkIpam: oldNetworkIpam}
+			updateIpamDBMock(service, getNetworkIpamResponse)
+			updateNetworkIpamRequest := &services.UpdateNetworkIpamRequest{NetworkIpam: newNetworkIpam, FieldMask: fMask}
+			updateNetworkIpamResponse, err := service.UpdateNetworkIpam(ctx, updateNetworkIpamRequest)
+
+			if tt.errorCode != codes.OK {
+				assert.Error(t, err, "update succeeded but shouldn't")
+				assert.Nil(t, updateNetworkIpamResponse)
+
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, updateNetworkIpamResponse)
+			}
+
 			mockCtrl.Finish()
 		})
 	}

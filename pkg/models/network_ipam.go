@@ -41,18 +41,10 @@ func (m *AllocationPoolType) IsInSubnet(subnet *net.IPNet) error {
 	return nil
 }
 
-func parseIpfromString(ipString string) (net.IP, error) {
+func isIPInSubnet(subnet *net.IPNet, ipString string) error {
 	ip := net.ParseIP(ipString)
 	if ip == nil {
-		return nil, errors.Errorf("invalid address: " + ipString)
-	}
-	return ip, nil
-}
-
-func isIPInSubnet(subnet *net.IPNet, ipString string) error {
-	ip, err := parseIpfromString(ipString)
-	if err != nil {
-		return err
+		return errors.Errorf("invalid address: " + ipString)
 	}
 	if !subnet.Contains(ip) {
 		return errors.Errorf("address is out of cidr: " + subnet.String())
@@ -67,11 +59,11 @@ func (m *IpamSubnetType) Validate() error {
 		return common.ErrorBadRequest("invalid subnet uuid")
 	}
 
-	return m.CheckIfSubnetParamsAreValid()
+	return m.ValidateSubnetParams()
 }
 
-// CheckIfSubnetParamsAreValid validates ipam subnet params.
-func (m *IpamSubnetType) CheckIfSubnetParamsAreValid() error {
+// ValidateSubnetParams validates ipam subnet params.
+func (m *IpamSubnetType) ValidateSubnetParams() error {
 	subnet, err := m.Subnet.Net()
 	if err != nil {
 		return common.ErrorBadRequest("invalid subnet")

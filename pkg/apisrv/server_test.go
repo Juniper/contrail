@@ -22,6 +22,11 @@ func TestFloatingIP(t *testing.T) {
 	RunTest(t, "./test_data/test_floating_ip.yml")
 }
 
+func TestNetworkIpam(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
+	RunTest(t, "./test_data/test_network_ipam.yml")
+}
+
 func TestVirtualNetwork(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_virtual_network.yml")
