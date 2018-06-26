@@ -353,6 +353,7 @@ workflow:
               route:
                 - prefix: "test_prefix"
                   next_hop: "1.2.3.5"
+
 - name: delete virtual network
   request:
     path: /virtual-network/vn_test_ref
@@ -511,6 +512,28 @@ workflow:
     - uuid: network_policy_uuid2
       perms2:
         owner: demo
+- name: try to update virtual network provider state
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 400
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        is_provider_network: true
+- name: try to update virtual network with non-provider network
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 400
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        virtual_network_refs:
+          - uuid: "vn_red"
+          - to: "vn_blue"
 - name: delete routing instance
   request:
     path: /routing-instance/ri_uuid

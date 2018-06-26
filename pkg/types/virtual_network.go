@@ -4,6 +4,7 @@ import (
 	"net"
 	"strings"
 
+	protobuf "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 
@@ -43,7 +44,12 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			}
 			//TODO: check route target (depends on global system config)
 			//TODO: check provider details
-			err = sv.checkProviderNetwork(ctx, virtualNetwork)
+			err = sv.checkIsProviderNetwork(ctx, virtualNetwork, nil, nil)
+			if err != nil {
+				return err
+			}
+
+			err = sv.checkProviderNetwork(ctx, virtualNetwork, nil, nil)
 			if err != nil {
 				return err
 			}
@@ -66,7 +72,57 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	return response, err
 }
 
-//DeleteVirtualNetwork do pre check for delete network.
+// UpdateVirtualNetwork do pre check for delete network.
+func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
+	ctx context.Context,
+	request *services.UpdateVirtualNetworkRequest) (response *services.UpdateVirtualNetworkResponse, err error) {
+
+	virtualNetworkUpdate := request.VirtualNetwork
+
+	// Does not authorize to set the virtual network ID as it's allocated
+	// by the vnc server
+	if virtualNetworkUpdate.HasVirtualNetworkNetworkID() {
+		return nil, common.ErrorForbidden("Cannot update the virtual network ID, it's allocated by the server")
+	}
+
+	err = sv.InTransactionDoer.DoInTransaction(
+		ctx,
+		func(ctx context.Context) error {
+			virtualNetworkResponse, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+				ID: virtualNetworkUpdate.UUID,
+			})
+			if err != nil {
+				return common.ErrorBadRequestf("Couldn't get virtual network (%v) for an update: %v", virtualNetworkUpdate.UUID, err)
+			}
+
+			virtualNetworkDB := virtualNetworkResponse.GetVirtualNetwork()
+
+			//TODO: process ipam network subnets
+			//TODO: check route target (depends on global system config)
+			//TODO: check provider details
+
+			err = sv.checkIsProviderNetwork(ctx, virtualNetworkUpdate, virtualNetworkDB, &request.FieldMask)
+			if err != nil {
+				return err
+			}
+
+			err = sv.checkProviderNetwork(ctx, virtualNetworkUpdate, virtualNetworkDB, &request.FieldMask)
+			if err != nil {
+				return err
+			}
+
+			//TODO: check procider network
+			//TODO: check network support BGP types
+			//TODO: check BGPVPN Refs
+
+			response, err = sv.Next().UpdateVirtualNetwork(ctx, request)
+			return err
+		})
+
+	return response, err
+}
+
+// DeleteVirtualNetwork do pre check for delete network.
 func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 	ctx context.Context,
 	request *services.DeleteVirtualNetworkRequest) (response *services.DeleteVirtualNetworkResponse, err error) {
@@ -158,33 +214,69 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(ctx context.Contex
 	return nil
 }
 
-func (sv *ContrailTypeLogicService) checkProviderNetwork(
-	ctx context.Context, virtualNetwork *models.VirtualNetwork) error {
+func (sv *ContrailTypeLogicService) checkIsProviderNetwork(
+	ctx context.Context, virtualNetworkReq *models.VirtualNetwork, virtualNetworkDB *models.VirtualNetwork,
+	fieldMask *protobuf.FieldMask) error {
 
-	if virtualNetwork.IsProviderNetwork {
-		return common.ErrorBadRequestf("Non provider VN (%v) can not be configured with is_provider_network = True",
-			virtualNetwork.UUID)
-	}
-
-	// no further checks if not linked to a provider network
-	if len(virtualNetwork.VirtualNetworkRefs) == 0 {
+	if fieldMask != nil && !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkPropertyIDIsProviderNetwork) {
 		return nil
 	}
 
-	// non provider network can connect to only one provider network.
-	if len(virtualNetwork.VirtualNetworkRefs) > 1 {
-		return common.ErrorBadRequestf("Non Provider VN (%v) can connect to one provider VN but trying to connect to multiple VN",
-			virtualNetwork.UUID)
+	if virtualNetworkDB != nil && virtualNetworkDB.IsProviderNetwork != virtualNetworkReq.IsProviderNetwork {
+		return common.ErrorBadRequestf("Update %v property of VN (%v) is not allowed",
+			models.VirtualNetworkPropertyIDIsProviderNetwork, virtualNetworkReq.UUID)
 	}
-	refUUID := virtualNetwork.VirtualNetworkRefs[0].UUID
-	ok, err := sv.isVirtualNetworkProviderNetwork(ctx, refUUID)
+
+	if virtualNetworkDB == nil && virtualNetworkReq.IsProviderNetwork {
+		return common.ErrorBadRequestf("Non provider VN (%v) can not be configured with %v = True",
+			virtualNetworkReq.UUID, models.VirtualNetworkPropertyIDIsProviderNetwork)
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkProviderNetwork(
+	ctx context.Context, virtualNetworkReq *models.VirtualNetwork, virtualNetworkDB *models.VirtualNetwork,
+	fieldMask *protobuf.FieldMask) error {
+
+	// No further checks if not linked to a provider network.
+	if len(virtualNetworkReq.VirtualNetworkRefs) == 0 {
+		return nil
+	}
+
+	isProviderNetwork := virtualNetworkReq.IsProviderNetwork
+	if fieldMask != nil && !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkPropertyIDIsProviderNetwork) {
+		isProviderNetwork = virtualNetworkDB.IsProviderNetwork
+	}
+
+	// Non-provider network can connect to only one provider network.
+	if !isProviderNetwork && len(virtualNetworkReq.VirtualNetworkRefs) > 1 {
+		return common.ErrorBadRequestf("Non-provider VN (%v) can be connected to one provider VN but trying to connect to multiple VN: %v",
+			virtualNetworkReq.UUID, func() (vnUUIDs []string) {
+				for _, vnRef := range virtualNetworkReq.VirtualNetworkRefs {
+					vnUUIDs = append(vnUUIDs, vnRef.GetUUID())
+				}
+				return vnUUIDs
+			}())
+	}
+
+	linkedProviderVirtualNetworkUUIDs, err := sv.getLinkedProviderVirtualNetworks(ctx, virtualNetworkReq)
 	if err != nil {
 		return err
 	}
-	if !ok {
-		return common.ErrorBadRequestf("Non Provider VN (%v) can connect only "+
-			"to one provider VN but not (%v)", virtualNetwork.UUID, refUUID)
+
+	// Provider VN can not connect to another provider VN.
+	if isProviderNetwork && len(linkedProviderVirtualNetworkUUIDs) > 0 {
+		return common.ErrorBadRequestf("Provider VN (%v) cannot be connected to another provider VN (%v)",
+			virtualNetworkReq.UUID, linkedProviderVirtualNetworkUUIDs)
 	}
+
+	// Non-provider network can connect to only one provider network.
+	if !isProviderNetwork && len(linkedProviderVirtualNetworkUUIDs) != 1 {
+		return common.ErrorBadRequestf("Non Provider VN (%v) can be connected to one provider VN but not to (%v)",
+			virtualNetworkReq.UUID, linkedProviderVirtualNetworkUUIDs)
+	}
+
 	return nil
 }
 
@@ -256,12 +348,21 @@ func (sv *ContrailTypeLogicService) getBGPVPNType(ctx context.Context, id string
 	return getResponse.BGPVPN.BGPVPNType, nil
 }
 
-func (sv *ContrailTypeLogicService) isVirtualNetworkProviderNetwork(ctx context.Context, id string) (bool, error) {
-	getResponse, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
-		ID: id,
-	})
-	if err != nil {
-		return false, err
+func (sv *ContrailTypeLogicService) getLinkedProviderVirtualNetworks(
+	ctx context.Context, virtualNetwork *models.VirtualNetwork) ([]string, error) {
+
+	var linkedProviderVirtualNetworkUUIDs []string
+	for _, vnRef := range virtualNetwork.GetVirtualNetworkRefs() {
+		getResponse, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+			ID: vnRef.GetUUID(),
+		})
+		if err != nil {
+			return nil, err
+		}
+		linkedVirtualNetwork := getResponse.GetVirtualNetwork()
+		if linkedVirtualNetwork.GetIsProviderNetwork() {
+			linkedProviderVirtualNetworkUUIDs = append(linkedProviderVirtualNetworkUUIDs, linkedVirtualNetwork.GetUUID())
+		}
 	}
-	return getResponse.VirtualNetwork.IsProviderNetwork, nil
+	return linkedProviderVirtualNetworkUUIDs, nil
 }

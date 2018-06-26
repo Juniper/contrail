@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,7 @@ import (
 
 //Structure testVn is used to pass vn parameters during VirtualNetwork object creation
 type testVn struct {
+	isProviderNetwork               bool
 	multiPolicyServiceChainsEnabled bool
 	importRouteTargetList           string
 	exportRouteTargetList           string
@@ -27,6 +29,156 @@ type testVn struct {
 	bgpVPNRefs                      []*models.VirtualNetworkBGPVPNRef
 	logicalRouterRefs               []*models.VirtualNetworkLogicalRouterRef
 	virtualNetworkRefs              []*models.VirtualNetworkVirtualNetworkRef
+}
+
+func TestUpdateVirtualNetwork(t *testing.T) {
+	ipamSubnetUserDefined := models.MakeIpamSubnetType()
+	ipamSubnetUserDefined.Subnet = &models.SubnetType{
+		IPPrefix:    "10.0.0.0",
+		IPPrefixLen: 24,
+	}
+	ipamSubnetUserDefined.AllocationPools = []*models.AllocationPoolType{
+		{
+			Start: "10.0.0.5",
+			End:   "10.0.0.20",
+		},
+	}
+	ipamSubnetUserDefined.SubnetUUID = "5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3"
+
+	var tests = []struct {
+		name                  string
+		testVnData            *testVn
+		updateRequest         *services.UpdateVirtualNetworkRequest
+		ipamSubnetMethod      string
+		fails                 bool
+		expectedHTTPErrorCode int
+	}{
+		{
+			name:  "check is_provider_network update",
+			fails: true,
+			expectedHTTPErrorCode: http.StatusBadRequest,
+			testVnData:            &testVn{},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID:              "test_vn_uuid",
+					IsProviderNetwork: true,
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.VirtualNetworkPropertyIDIsProviderNetwork,
+					},
+				},
+			},
+		},
+		{
+			name:       "check is_provider_network update",
+			fails:      false,
+			testVnData: &testVn{},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID:              "test_vn_uuid",
+					IsProviderNetwork: false,
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.VirtualNetworkPropertyIDIsProviderNetwork,
+					},
+				},
+			},
+		},
+		{
+			name:  "check if provider network can be linked to provider network",
+			fails: true,
+			expectedHTTPErrorCode: http.StatusBadRequest,
+			testVnData: &testVn{
+				isProviderNetwork: true,
+			},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID: "test_vn_uuid",
+					VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
+						{
+							UUID: "test_provider_vn_uuid",
+							To:   []string{"test_vn_uuid"},
+						},
+						{
+							UUID: "test_non_provider_vn_uuid",
+							To:   []string{"test_vn_uuid"},
+						},
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{},
+				},
+			},
+		},
+		{
+			name:  "check if provider network can be linked to non-provider networks",
+			fails: false,
+			expectedHTTPErrorCode: http.StatusBadRequest,
+			testVnData: &testVn{
+				isProviderNetwork: true,
+			},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID: "test_vn_uuid",
+					VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
+						{
+							UUID: "test_non_provider_vn_uuid",
+							To:   []string{"test_vn_uuid"},
+						},
+						{
+							UUID: "test_non_provider_vn_uuid",
+							To:   []string{"test_vn_uuid"},
+						},
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			service := makeMockedContrailTypeLogicService(t, mockCtrl)
+
+			vn := createTestVn(tt.testVnData)
+			mockedDataServiceAddVirtualNetwork(service, vn)
+
+			virtualNetworkSetupDataServiceMocks(service)
+			virtualNetworkSetupNetworkIpam(service, tt.ipamSubnetMethod)
+
+			ctx := context.Background()
+			// In case of successful flow UpdateVirtualNetwork should be called once on next service
+			if !tt.fails {
+				nextService := service.Next().(*servicesmock.MockService)
+				nextService.EXPECT().UpdateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+					func(ctx context.Context, request *services.UpdateVirtualNetworkRequest) (*services.UpdateVirtualNetworkResponse, error) {
+						return &services.UpdateVirtualNetworkResponse{
+							VirtualNetwork: request.VirtualNetwork,
+						}, nil
+					}).Times(1)
+			}
+
+			_, err := service.UpdateVirtualNetwork(ctx, tt.updateRequest)
+
+			if tt.fails {
+				assert.Error(t, err)
+				if tt.expectedHTTPErrorCode != 0 {
+					httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+					assert.True(t, ok, "Expected http error")
+					assert.Equal(t, tt.expectedHTTPErrorCode, httpError.Code, "Expected different http status")
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+
 }
 
 func TestCreateVirtualNetwork(t *testing.T) {
@@ -72,6 +224,13 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			name: "check for MultiPolicyServiceChainsEnabled",
 			testVnData: &testVn{
 				multiPolicyServiceChainsEnabled: false,
+			},
+		},
+		{
+			name:  "check for is provider network",
+			fails: true,
+			testVnData: &testVn{
+				isProviderNetwork: true,
 			},
 		},
 		{
@@ -349,6 +508,10 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(t, mockCtrl)
 
+			virtualNetwork := models.MakeVirtualNetwork()
+			virtualNetwork.UUID = "test_vn_uuid"
+			mockedDataServiceAddVirtualNetwork(service, virtualNetwork)
+
 			virtualNetworkSetupDataServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
 			virtualNetworkSetupNetworkIpam(service, tt.ipamSubnetMethod)
@@ -411,6 +574,11 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(t, mockCtrl)
+
+			virtualNetwork := models.MakeVirtualNetwork()
+			virtualNetwork.UUID = "test_vn_uuid"
+			mockedDataServiceAddVirtualNetwork(service, virtualNetwork)
+
 			virtualNetworkSetupDataServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
 
@@ -443,6 +611,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 
 func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 	vn := models.MakeVirtualNetwork()
+	vn.IsProviderNetwork = testVnData.isProviderNetwork
 	vn.MultiPolicyServiceChainsEnabled = testVnData.multiPolicyServiceChainsEnabled
 	vn.ImportRouteTargetList = &models.RouteTargetList{RouteTarget: []string{testVnData.importRouteTargetList}}
 	vn.ExportRouteTargetList = &models.RouteTargetList{RouteTarget: []string{testVnData.exportRouteTargetList}}
@@ -472,24 +641,14 @@ func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 func virtualNetworkSetupDataServiceMocks(s *ContrailTypeLogicService) {
 	dataServiceMock := s.DataService.(*servicesmock.MockService)
 
-	// Virtual Networks
-	dataServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
-		&services.GetVirtualNetworkRequest{
-			ID: "test_vn_uuid",
-		}).Return(
-		&services.GetVirtualNetworkResponse{
-			VirtualNetwork: models.MakeVirtualNetwork(),
-		}, nil).AnyTimes()
+	virtualNetwork := models.MakeVirtualNetwork()
+	virtualNetwork.UUID = "test_provider_vn_uuid"
+	virtualNetwork.IsProviderNetwork = true
+	mockedDataServiceAddVirtualNetwork(s, virtualNetwork)
 
-	providerNetwork := models.MakeVirtualNetwork()
-	providerNetwork.IsProviderNetwork = true
-	dataServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
-		&services.GetVirtualNetworkRequest{
-			ID: "test_provider_vn_uuid",
-		}).Return(
-		&services.GetVirtualNetworkResponse{
-			VirtualNetwork: providerNetwork,
-		}, nil).AnyTimes()
+	virtualNetwork = models.MakeVirtualNetwork()
+	virtualNetwork.UUID = "test_non_provider_vn_uuid"
+	mockedDataServiceAddVirtualNetwork(s, virtualNetwork)
 
 	dataServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound).AnyTimes()
