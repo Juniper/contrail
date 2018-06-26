@@ -259,7 +259,11 @@ func (c *Client) doHTTPRequestRetryingOn401(request *http.Request, data interfac
 				return nil, errors.Wrap(err, "closing response body failed")
 			}
 
-			err = c.Login() // refresh token
+			// refresh token and use the new token in request header
+			err = c.Login()
+			if c.AuthToken != "" {
+				request.Header.Set("X-Auth-Token", c.AuthToken)
+			}
 			if err != nil {
 				return nil, err
 			}
