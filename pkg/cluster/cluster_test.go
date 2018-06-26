@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
@@ -105,6 +106,8 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to manage(create) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster create is not as expected")
+	// Wait for the in-memory endpoint cache to get updated
+	time.Sleep(2 * time.Second)
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -124,6 +127,8 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to manage(update) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster update is not as expected")
+	// Wait for the in-memory endpoint cache to get updated
+	time.Sleep(2 * time.Second)
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -179,7 +184,6 @@ func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 }
 
 func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
-	t.Skip("Skipping test until #LP:1778623 is fixed")
 	context := pongo2.Context{
 		"MGMT_INT_IP":            "10.1.1.1",
 		"CONTROL_NODES":          "127.0.0.1",
