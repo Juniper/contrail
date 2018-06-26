@@ -186,6 +186,7 @@ func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 }
 
 func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
+	t.Skip("Skipping test until #LP:1778623 is fixed")
 	context := pongo2.Context{
 		"MGMT_INT_IP":            "10.1.1.1",
 		"CONTROL_NODES":          "127.0.0.1",
