@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
@@ -112,6 +113,8 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	}
 
 	// update cluster
+	// Wait for the in-memory endpoint cache to updated
+	time.Sleep(2 * time.Second)
 	// remove instances.yml to trriger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
@@ -131,6 +134,8 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	}
 
 	// delete cluster
+	// Wait for the in-memory endpoint cache to updated
+	time.Sleep(2 * time.Second)
 	config.Action = "delete"
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
@@ -179,7 +184,6 @@ func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 }
 
 func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
-	t.Skip("Skipping test until #LP:1778623 is fixed")
 	context := pongo2.Context{
 		"MGMT_INT_IP":            "10.1.1.1",
 		"CONTROL_NODES":          "127.0.0.1",

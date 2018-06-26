@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -182,6 +183,8 @@ func (e *EndpointData) update() error {
 	if err != nil {
 		return err
 	}
+	// Wait for the in-memory endpoint cache to cleared
+	time.Sleep(2 * time.Second)
 	err = e.create()
 	return err
 }
