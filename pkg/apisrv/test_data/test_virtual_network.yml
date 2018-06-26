@@ -511,6 +511,28 @@ workflow:
     - uuid: network_policy_uuid2
       perms2:
         owner: demo
+- name: try to update vn_blue by changing is_provider_network
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 400
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        is_provider_network: true
+- name: try to update vn_blue by linking it with non-provider network
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 400
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        virtual_network_refs:
+          - uuid: "vn_red"
+          - to: "vn_blue"
 - name: delete routing instance
   request:
     path: /routing-instance/ri_uuid
