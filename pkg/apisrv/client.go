@@ -112,10 +112,8 @@ func (c *Client) Login() error {
 		return err
 	}
 	defer resp.Body.Close() // nolint: errcheck
-	err = checkStatusCode([]int{201}, resp.StatusCode)
+	err = checkStatusCode([]int{201}, resp)
 	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true) // nolint: gas
-		log.Println(string(output))
 		return err
 	}
 	err = json.NewDecoder(resp.Body).Decode(&authResponse)
@@ -126,13 +124,14 @@ func (c *Client) Login() error {
 	return nil
 }
 
-func checkStatusCode(expected []int, actual int) error {
+func checkStatusCode(expected []int, resp *http.Response) error {
 	for _, expected := range expected {
-		if expected == actual {
+		if expected == resp.StatusCode {
 			return nil
 		}
 	}
-	return errors.Errorf("unexpected return code: expected %v, actual %v", expected, actual)
+	reason, _ := httputil.DumpResponse(resp, true) // nolint:  gas
+	return fmt.Errorf("unexpected return code expected %v, actual %d\n%v", expected, resp.StatusCode, string(reason))
 }
 
 // Create send a create API request.
@@ -178,10 +177,8 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	err = checkStatusCode(expected, resp.StatusCode)
+	err = checkStatusCode(expected, resp)
 	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true) // nolint:  gas
-		log.Println(string(output))
 		return resp, err
 	}
 	if method == echo.DELETE {
