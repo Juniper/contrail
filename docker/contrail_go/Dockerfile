@@ -3,6 +3,7 @@ MAINTAINER Nachi Ueno nueno@juniper.net
 
 ADD ./contrail /bin/contrail
 ADD ./contrailcli /bin/contrailcli
+ADD ./contrailutil /bin/contrailutil
 ADD ./etc /etc/contrail
 ADD ./etc/init_mysql.sql /usr/share/contrail/
 ADD ./etc/init_psql.sql /usr/share/contrail/
