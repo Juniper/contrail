@@ -17,6 +17,12 @@ import (
 const Kind{{ name }} = "{{ typename }}"
 
 {% if type.Type == "object" %}
+
+const (
+    {% for property in type.OrderedProperties %}{{ name }}PropertyID{{ property.GoName }} = "{{ property.ID }}"
+    {% endfor %}
+)
+
 // Make{{ name }} makes {{ name }}
 // nolint
 func Make{{ name }}() *{{name}}{

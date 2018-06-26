@@ -1,7 +1,6 @@
 package types
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/models"
@@ -12,11 +11,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-func TestVxlanConfigField(t *testing.T) {
-	_, ok := reflect.TypeOf(models.Project{}).FieldByName(vxlanConfigField)
-	assert.True(t, ok, "models.Project should have vxlanConfigFiled property")
-}
 
 func TestCheckVxlanConfig(t *testing.T) {
 	tests := []struct {
@@ -39,7 +33,7 @@ func TestCheckVxlanConfig(t *testing.T) {
 		{
 			name: "Vxlan will not change",
 			updateRequest: &services.UpdateProjectRequest{
-				FieldMask: types.FieldMask{Paths: []string{vxlanConfigField}},
+				FieldMask: types.FieldMask{Paths: []string{models.ProjectPropertyIDVxlanRouting}},
 				Project:   &models.Project{VxlanRouting: true},
 			},
 			currentProject: &models.Project{
@@ -50,7 +44,7 @@ func TestCheckVxlanConfig(t *testing.T) {
 		{
 			name: "No vxlan routers attached",
 			updateRequest: &services.UpdateProjectRequest{
-				FieldMask: types.FieldMask{Paths: []string{vxlanConfigField}},
+				FieldMask: types.FieldMask{Paths: []string{models.ProjectPropertyIDVxlanRouting}},
 				Project:   &models.Project{VxlanRouting: false},
 			},
 			currentProject: &models.Project{
@@ -61,7 +55,7 @@ func TestCheckVxlanConfig(t *testing.T) {
 		{
 			name: "Vxlan routers already attached",
 			updateRequest: &services.UpdateProjectRequest{
-				FieldMask: types.FieldMask{Paths: []string{vxlanConfigField}},
+				FieldMask: types.FieldMask{Paths: []string{models.ProjectPropertyIDVxlanRouting}},
 				Project:   &models.Project{VxlanRouting: false},
 			},
 			currentProject: &models.Project{

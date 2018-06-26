@@ -8,8 +8,6 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-const vxlanConfigField = "VxlanRouting"
-
 // CreateProject do checks for create project.
 func (sv *ContrailTypeLogicService) CreateProject(ctx context.Context, request *services.CreateProjectRequest) (response *services.CreateProjectResponse, err error) {
 
@@ -74,7 +72,7 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(currentProject *models.Proj
 	requestedProject := request.GetProject()
 
 	fm := request.GetFieldMask()
-	isVxlanChangeRequested := common.ContainsString(fm.GetPaths(), vxlanConfigField)
+	isVxlanChangeRequested := common.ContainsString(fm.GetPaths(), models.ProjectPropertyIDVxlanRouting)
 	if !isVxlanChangeRequested {
 		return nil
 	}
