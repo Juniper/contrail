@@ -49,3 +49,33 @@ func (m *VirtualNetwork) IsValidMultiPolicyServiceChainConfig() bool {
 	}
 	return true
 }
+
+// GetSubnetUUIDs returns list of subnetUUIDs for all subnets
+func (m *VirtualNetwork) GetSubnetUUIDs() []string {
+	var result []string
+	for _, subnet := range m.GetSubnets() {
+		result = append(result, subnet.SubnetUUID)
+	}
+
+	return result
+}
+
+// GetSubnets returns list of subnets
+func (m *VirtualNetwork) GetSubnets() []*IpamSubnetType {
+	var result []*IpamSubnetType
+	// Take attr subnets
+	for _, networkIpam := range m.GetNetworkIpamRefs() {
+		result = append(result, networkIpam.GetAttr().GetIpamSubnets()...)
+	}
+	return result
+}
+
+// GetAddressAllocationMethod returns address allocation method
+func (m *VirtualNetwork) GetAddressAllocationMethod() string {
+	// TODO: Enums strings should be generated from schema
+	allocationMethod := "user-defined-subnet-preferred"
+	if m.GetAddressAllocationMode() != "" {
+		allocationMethod = m.GetAddressAllocationMode()
+	}
+	return allocationMethod
+}

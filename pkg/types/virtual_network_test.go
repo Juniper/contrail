@@ -14,6 +14,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/Juniper/contrail/pkg/types/ipam/mock"
 )
 
@@ -32,23 +33,12 @@ type testVn struct {
 }
 
 func TestCreateVirtualNetwork(t *testing.T) {
-	ipamSubnetUserDefined := models.MakeIpamSubnetType()
-	ipamSubnetUserDefined.Subnet = &models.SubnetType{
-		IPPrefix:    "10.0.0.0",
-		IPPrefixLen: 24,
-	}
-	ipamSubnetUserDefined.AllocationPools = []*models.AllocationPoolType{
-		{
-			Start: "10.0.0.5",
-			End:   "10.0.0.20",
-		},
-	}
-	ipamSubnetUserDefined.SubnetUUID = "5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3"
-
+	ipamSubnetUserDefined := virtualNetworkMakeUserDefinedSubnet()
 	var tests = []struct {
 		name                  string
 		testVnData            *testVn
 		ipamSubnetMethod      string
+		createsSubnet         bool
 		fails                 bool
 		expectedHTTPErrorCode int
 	}{
@@ -182,6 +172,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 				},
 			},
 			ipamSubnetMethod: models.UserDefinedSubnet,
+			createsSubnet:    true,
 		},
 		{
 			name: "check for flat subnet",
@@ -200,6 +191,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 				},
 			},
 			ipamSubnetMethod: models.FlatSubnet,
+			createsSubnet:    true,
 		},
 		{
 			name:  "check for flat subnet with user defined subnet",
@@ -382,6 +374,10 @@ func TestCreateVirtualNetwork(t *testing.T) {
 							VirtualNetwork: request.VirtualNetwork,
 						}, nil
 					}).Times(1)
+			}
+
+			if tt.createsSubnet {
+				virtualNetworkMustCreateSubnet(service)
 			}
 
 			res, err := service.CreateVirtualNetwork(ctx,
@@ -571,20 +567,34 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 }
 
 func TestDeleteVirtualNetwork(t *testing.T) {
+	ipamSubnetUserDefined := virtualNetworkMakeUserDefinedSubnet()
 	var tests = []struct {
-		name  string
-		UUID  string
-		fails bool
+		name          string
+		UUID          string
+		testVnData    *testVn
+		fails         bool
+		deletesSubnet bool
 	}{
 		{
 			name:  "check missing VirtualNetwork in DB",
 			fails: true,
 			UUID:  "nonexistent_uuid",
 		},
-
 		{
 			name: "check DeleteVirtualNetwork",
 			UUID: "test_vn_uuid",
+			testVnData: &testVn{
+				networkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+					{
+						Attr: &models.VnSubnetsType{
+							IpamSubnets: []*models.IpamSubnetType{
+								ipamSubnetUserDefined,
+							},
+						},
+					},
+				},
+			},
+			deletesSubnet: true,
 		},
 	}
 
@@ -594,12 +604,18 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 
-			virtualNetwork := models.MakeVirtualNetwork()
-			virtualNetwork.UUID = "test_vn_uuid"
-			mockedDataServiceAddVirtualNetwork(service, virtualNetwork)
+			if tt.testVnData != nil {
+				virtualNetwork := createTestVn(tt.testVnData)
+				virtualNetwork.UUID = tt.UUID
+				mockedDataServiceAddVirtualNetwork(service, virtualNetwork)
+			}
 
 			virtualNetworkSetupDataServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
+
+			if tt.deletesSubnet {
+				virtualNetworkMustDeleteSubnet(service)
+			}
 
 			ctx := context.Background()
 			// In case of successful flow DeleteVirtualNetwork should be called once on next service
@@ -775,4 +791,33 @@ func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
 		int64(13), nil).AnyTimes()
 	intPoolAllocator.EXPECT().DeallocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(0)).Return(
 		nil).AnyTimes()
+}
+
+func virtualNetworkMustCreateSubnet(s *ContrailTypeLogicService) {
+	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager.EXPECT().CreateIpamSubnet(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+		func(_ context.Context, request *ipam.CreateIpamSubnetRequest) (subnetUUID string, err error) {
+			return request.IpamSubnet.GetSubnetUUID(), nil
+		}).Times(1)
+}
+
+func virtualNetworkMustDeleteSubnet(s *ContrailTypeLogicService) {
+	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager.EXPECT().DeleteIpamSubnet(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+}
+
+func virtualNetworkMakeUserDefinedSubnet() *models.IpamSubnetType {
+	ipamSubnetUserDefined := models.MakeIpamSubnetType()
+	ipamSubnetUserDefined.Subnet = &models.SubnetType{
+		IPPrefix:    "10.0.0.0",
+		IPPrefixLen: 24,
+	}
+	ipamSubnetUserDefined.AllocationPools = []*models.AllocationPoolType{
+		{
+			Start: "10.0.0.5",
+			End:   "10.0.0.20",
+		},
+	}
+	ipamSubnetUserDefined.SubnetUUID = "5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3"
+	return ipamSubnetUserDefined
 }
