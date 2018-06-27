@@ -137,7 +137,7 @@ func (c *HTTPAPIClient) GetResource(t *testing.T, path string, responseData inte
 
 // DeleteResource deletes resource.
 func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
-	r, err := c.Delete(path, nil)
+	r, err := c.EnsureDeleted(path, nil)
 	c.log.WithField("response", r).Debug("Got Delete response")
 	assert.NoError(t, err, "deleting resource failed\n response: %+v", r)
 }

@@ -22,7 +22,7 @@ const (
 	etcdWatchTimeout = 10 * time.Second
 )
 
-func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
+func TestSyncSynchronizesPostgresChangesToEtcd(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, "../../..")
 	defer s.Close(t)
 	hc := integration.NewHTTPAPIClient(t, s.URL())
@@ -55,26 +55,56 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	defer hc.DeleteNetworkIPAM(t, networkIPAMUUID)
 	defer ec.DeleteKey(t, networkIPAMEtcdKey(networkIPAMUUID))
 
-	hc.CreateVirtualNetwork(t, virtualNetworkRed(vnRedUUID, projectUUID, networkIPAMUUID))
-	hc.CreateVirtualNetwork(t, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
-	hc.CreateVirtualNetwork(t, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
-	defer deleteVirtualNetworksFromAPIServer(t, hc, vnUUIDs)
-	defer ec.DeleteKey(t, virtualNetworkEtcdKey(testID), clientv3.WithPrefix()) // delete all VNs
+	t.Run("dumps already existing data", func(t *testing.T) {
+		hc.CreateVirtualNetwork(t, virtualNetworkRed(vnRedUUID, projectUUID, networkIPAMUUID))
+		hc.CreateVirtualNetwork(t, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
+		hc.CreateVirtualNetwork(t, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
+		defer deleteVirtualNetworksFromAPIServer(t, hc, vnUUIDs)
+		defer ec.DeleteKey(t, virtualNetworkEtcdKey(testID), clientv3.WithPrefix()) // delete all VNs
 
-	vnRed := hc.GetVirtualNetwork(t, vnRedUUID)
-	vnGreen := hc.GetVirtualNetwork(t, vnGreenUUID)
-	vnBlue := hc.GetVirtualNetwork(t, vnBlueUUID)
+		vnRed := hc.GetVirtualNetwork(t, vnRedUUID)
+		vnGreen := hc.GetVirtualNetwork(t, vnGreenUUID)
+		vnBlue := hc.GetVirtualNetwork(t, vnBlueUUID)
 
-	closeSync := integration.RunSync(t)
-	defer closeSync()
+		closeSync := integration.RunSync(t)
+		defer closeSync()
 
-	wrRed := retrieveEtcdCreateEvent(redCtx, t, vnRedWatch)
-	wrGreen := retrieveEtcdCreateEvent(greenCtx, t, vnGreenWatch)
-	wrBlue := retrieveEtcdCreateEvent(blueCtx, t, vnBlueWatch)
+		wrRed := retrieveEtcdCreateEvent(redCtx, t, vnRedWatch)
+		wrGreen := retrieveEtcdCreateEvent(greenCtx, t, vnGreenWatch)
+		wrBlue := retrieveEtcdCreateEvent(blueCtx, t, vnBlueWatch)
 
-	checkSyncedVirtualNetwork(t, wrRed, vnRed)
-	checkSyncedVirtualNetwork(t, wrGreen, vnGreen)
-	checkSyncedVirtualNetwork(t, wrBlue, vnBlue)
+		checkSyncedVirtualNetwork(t, wrRed, vnRed)
+		checkSyncedVirtualNetwork(t, wrGreen, vnGreen)
+		checkSyncedVirtualNetwork(t, wrBlue, vnBlue)
+	})
+
+	t.Run("new create/update/delete events", func(t *testing.T) {
+		closeSync := integration.RunSync(t)
+		defer closeSync()
+
+		// TODO: wait for vn dump and only then create new resources
+		hc.CreateVirtualNetwork(t, virtualNetworkRed(vnRedUUID, projectUUID, networkIPAMUUID))
+		hc.CreateVirtualNetwork(t, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
+		hc.CreateVirtualNetwork(t, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
+		defer deleteVirtualNetworksFromAPIServer(t, hc, vnUUIDs)
+		defer ec.DeleteKey(t, virtualNetworkEtcdKey(testID), clientv3.WithPrefix()) // delete all VNs
+
+		vnRed := hc.GetVirtualNetwork(t, vnRedUUID)
+		vnGreen := hc.GetVirtualNetwork(t, vnGreenUUID)
+		vnBlue := hc.GetVirtualNetwork(t, vnBlueUUID)
+
+		wrRed := retrieveEtcdCreateEvent(redCtx, t, vnRedWatch)
+		wrGreen := retrieveEtcdCreateEvent(greenCtx, t, vnGreenWatch)
+		wrBlue := retrieveEtcdCreateEvent(blueCtx, t, vnBlueWatch)
+
+		checkSyncedVirtualNetwork(t, wrRed, vnRed)
+		checkSyncedVirtualNetwork(t, wrGreen, vnGreen)
+		checkSyncedVirtualNetwork(t, wrBlue, vnBlue)
+
+		// test update sync
+
+		// test delete sync
+	})
 }
 
 // generateTestID creates pseudo-random string and is used to create resources with
