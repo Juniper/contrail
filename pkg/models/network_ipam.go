@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"net"
 	"strconv"
 
@@ -25,7 +26,7 @@ func (m *NetworkIpam) IsFlatSubnet() bool {
 func (m *SubnetType) Net() (*net.IPNet, error) {
 	cidr := m.IPPrefix + "/" + strconv.Itoa(int(m.IPPrefixLen))
 	_, n, err := net.ParseCIDR(cidr)
-	return n, err
+	return n, errors.Wrap(err, "couldn't parse cidr")
 }
 
 // IsInSubnet validates allocation pool is in specific subnet.
@@ -41,6 +42,24 @@ func (m *AllocationPoolType) IsInSubnet(subnet *net.IPNet) error {
 	return nil
 }
 
+// Contains checks if ip address belongs to allocation pool
+func (m *AllocationPoolType) Contains(ip net.IP) (bool, error) {
+	startIP := net.ParseIP(m.Start)
+	if startIP == nil {
+		return false, errors.Errorf("couldn't parse start ip address: %v", m.Start)
+	}
+
+	endIP := net.ParseIP(m.End)
+	if endIP == nil {
+		return false, errors.Errorf("couldn't parse end ip address: %v", m.End)
+	}
+
+	if bytes.Compare(startIP.To16(), ip.To16()) <= 0 && bytes.Compare(ip.To16(), endIP.To16()) <= 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
 func isIPInSubnet(subnet *net.IPNet, ipString string) error {
 	ip := net.ParseIP(ipString)
 	if ip == nil {
@@ -54,9 +73,10 @@ func isIPInSubnet(subnet *net.IPNet, ipString string) error {
 
 // Validate validates ipam subnet configuration.
 func (m *IpamSubnetType) Validate() error {
-	_, err := uuid.Parse(m.SubnetUUID)
-	if err != nil {
-		return common.ErrorBadRequest("invalid subnet uuid")
+	if m.SubnetUUID != "" {
+		if _, err := uuid.Parse(m.SubnetUUID); err != nil {
+			return common.ErrorBadRequestf("invalid subnet uuid: %v", err)
+		}
 	}
 
 	return m.ValidateSubnetParams()
@@ -88,4 +108,32 @@ func (m *IpamSubnetType) ValidateSubnetParams() error {
 		}
 	}
 	return nil
+}
+
+// Contains checks if IpamSubnet's AllocationsPools contain provided ip
+func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
+	subnet, err := m.Subnet.Net()
+	if err != nil {
+		return false, errors.New("invalid subnet")
+	}
+
+	if !subnet.Contains(ip) {
+		return false, nil
+	}
+
+	if len(m.GetAllocationPools()) == 0 {
+		return true, nil
+	}
+
+	for _, pool := range m.GetAllocationPools() {
+		contains, err := pool.Contains(ip)
+		if err != nil {
+			return false, err
+		}
+		if contains {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

@@ -43,7 +43,7 @@ func (sv *ContrailTypeLogicService) CreateFloatingIP(
 					return err
 				}
 				if isAllocated {
-					return grpc.Errorf(codes.AlreadyExists, "Ip address already in use")
+					return grpc.Errorf(codes.AlreadyExists, "Ip address %v already in use", ipAddress)
 				}
 			}
 
