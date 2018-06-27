@@ -164,7 +164,7 @@ func TestCreateIpPool(t *testing.T) {
 							assert.NoError(t, err)
 							assert.Equal(t, tt.expectedPools, len(pools))
 
-							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+							err = clearIPAddressPool(ctx)
 							assert.NoError(t, err)
 							return nil
 						})
@@ -263,7 +263,7 @@ func TestAllocateIp(t *testing.T) {
 								assert.Equal(t, customIP(tt.expectedIP, ts.firstByte), ipReceived.To16())
 							}
 
-							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+							err = clearIPAddressPool(ctx)
 							assert.NoError(t, err)
 							return nil
 						})
@@ -415,7 +415,7 @@ func TestDeleteIpPools(t *testing.T) {
 							assert.NoError(t, err)
 							assert.Equal(t, tt.expectedCount, len(pools))
 
-							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+							err = clearIPAddressPool(ctx)
 							assert.NoError(t, err)
 							return nil
 						})
@@ -556,7 +556,7 @@ func TestSetIp(t *testing.T) {
 								assert.Equal(t, customPool(tt.expectedPools[i], ts.firstByte), *resultPool)
 							}
 
-							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+							err = clearIPAddressPool(ctx)
 							assert.NoError(t, err)
 							return err
 						})
@@ -566,6 +566,11 @@ func TestSetIp(t *testing.T) {
 			}
 		})
 	}
+}
+
+func clearIPAddressPool(ctx context.Context) error {
+	_, err := GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+	return err
 }
 
 func customIP(ip net.IP, val byte) net.IP {

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"net"
 	"strconv"
 
@@ -62,9 +63,11 @@ func isIPInSubnet(subnet *net.IPNet, ipString string) error {
 
 // Validate validates ipam subnet configuration.
 func (m *IpamSubnetType) Validate() error {
-	_, err := uuid.Parse(m.SubnetUUID)
-	if err != nil {
-		return common.ErrorBadRequest("invalid subnet uuid")
+	if m.SubnetUUID != "" {
+		_, err := uuid.Parse(m.SubnetUUID)
+		if err != nil {
+			return common.ErrorBadRequest("invalid subnet uuid")
+		}
 	}
 
 	return m.CheckIfSubnetParamsAreValid()
@@ -96,4 +99,24 @@ func (m *IpamSubnetType) CheckIfSubnetParamsAreValid() error {
 		}
 	}
 	return nil
+}
+
+// Contains checks if IpamSubnet's AllocationsPools contain provided ip
+func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
+	for _, pool := range m.GetAllocationPools() {
+		startIP, err := parseIpfromString(pool.Start)
+		if err != nil {
+			return false, err
+		}
+		endIP, err := parseIpfromString(pool.End)
+		if err != nil {
+			return false, err
+		}
+
+		if bytes.Compare(startIP.To16(), ip.To16()) <= 0 && bytes.Compare(ip.To16(), endIP.To16()) <= 0 {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

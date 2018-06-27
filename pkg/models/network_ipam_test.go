@@ -171,3 +171,146 @@ func TestIpamSubnetValidate(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestIpamSubnetTypeContains(t *testing.T) {
+	type fields struct {
+		AllocationPools []*AllocationPoolType
+	}
+	type args struct {
+		ip net.IP
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "IP in allocation pool",
+			fields: fields{
+				AllocationPools: []*AllocationPoolType{
+					{
+						Start: "10.0.0.0",
+						End:   "10.0.0.255",
+					},
+				},
+			},
+			args: args{
+				ip: net.ParseIP("10.0.0.1"),
+			},
+			want: true,
+		},
+		{
+			name: "IP in allocation pool (begin)",
+			fields: fields{
+				AllocationPools: []*AllocationPoolType{
+					{
+						Start: "10.0.0.0",
+						End:   "10.0.0.255",
+					},
+				},
+			},
+			args: args{
+				ip: net.ParseIP("10.0.0.0"),
+			},
+			want: true,
+		},
+		{
+			name: "IP in allocation pool (end)",
+			fields: fields{
+				AllocationPools: []*AllocationPoolType{
+					{
+						Start: "10.0.0.0",
+						End:   "10.0.0.255",
+					},
+				},
+			},
+			args: args{
+				ip: net.ParseIP("10.0.0.255"),
+			},
+			want: true,
+		},
+		{
+			name: "IP outside allocation pool",
+			fields: fields{
+				AllocationPools: []*AllocationPoolType{
+					{
+						Start: "10.0.0.0",
+						End:   "10.0.0.255",
+					},
+				},
+			},
+			args: args{
+				ip: net.ParseIP("127.0.0.1"),
+			},
+		},
+		{
+			name: "IP in second allocation pool",
+			fields: fields{
+				AllocationPools: []*AllocationPoolType{
+					{
+						Start: "10.0.0.0",
+						End:   "10.0.0.125",
+					},
+					{
+						Start: "10.0.0.130",
+						End:   "10.0.0.255",
+					},
+				},
+			},
+			args: args{
+				ip: net.ParseIP("10.0.0.131"),
+			},
+			want: true,
+		},
+		{
+			name: "IP between allocation pools",
+			fields: fields{
+				AllocationPools: []*AllocationPoolType{
+					{
+						Start: "10.0.0.0",
+						End:   "10.0.0.125",
+					},
+					{
+						Start: "10.0.0.130",
+						End:   "10.0.0.255",
+					},
+				},
+			},
+			args: args{
+				ip: net.ParseIP("10.0.0.127"),
+			},
+		},
+		{
+			name: "Invalid data",
+			fields: fields{
+				AllocationPools: []*AllocationPoolType{
+					{
+						Start: "10.0.0.0",
+						End:   "dead-beaf",
+					},
+				},
+			},
+			args: args{
+				ip: net.ParseIP("127.0.0.1"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &IpamSubnetType{
+				AllocationPools: tt.fields.AllocationPools,
+			}
+			got, err := m.Contains(tt.args.ip)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("IpamSubnetType.Contains() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("IpamSubnetType.Contains() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
