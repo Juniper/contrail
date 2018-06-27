@@ -7,9 +7,9 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
 func isSubnetOverlap(subnet1, subnet2 *net.IPNet) bool {
@@ -152,7 +152,7 @@ func (sv *ContrailTypeLogicService) createIpamSubnet(
 	ctx context.Context,
 	ipamSubnet *models.IpamSubnetType,
 	ipamUUID string) (subnetUUID string, err error) {
-	createIpamSubnetParams := &ipam.CreateIpamSubnetRequest{
+	createIpamSubnetParams := &db.CreateIpamSubnetRequest{
 		IpamSubnet:      ipamSubnet,
 		NetworkIpamUUID: ipamUUID,
 	}
@@ -162,7 +162,7 @@ func (sv *ContrailTypeLogicService) createIpamSubnet(
 func (sv *ContrailTypeLogicService) deleteIpamSubnet(
 	ctx context.Context,
 	subnetUUID string) error {
-	deleteIpamSubnetParams := &ipam.DeleteIpamSubnetRequest{
+	deleteIpamSubnetParams := &db.DeleteIpamSubnetRequest{
 		SubnetUUID: subnetUUID,
 	}
 	return sv.AddressManager.DeleteIpamSubnet(ctx, deleteIpamSubnetParams)

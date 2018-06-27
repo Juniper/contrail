@@ -7,10 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/unittest"
-	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
 //Structure testVn is used to pass vn parameters during VrirualNetwork object creation
@@ -131,7 +131,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 
 	//Check DeleteVirtualNetwork (positive)
 	vn := createTestVn(&testVn{})
-	intPool := ipam.IntPool{Key: VirtualNetworkIDPoolKey, Start: 0, End: 2}
+	intPool := db.IntPool{Key: VirtualNetworkIDPoolKey, Start: 0, End: 2}
 	err = service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		err = unittest.TestDbService.CreateIntPool(ctx, &intPool)
 		assert.NoError(t, err)

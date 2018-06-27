@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/mock"
-	"github.com/Juniper/contrail/pkg/types/ipam"
-	"github.com/Juniper/contrail/pkg/types/ipam/mock"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
+	ipammock "github.com/Juniper/contrail/pkg/types/ipam/mock"
 )
 
 type testNetIpamParams struct {
@@ -33,7 +33,7 @@ func createTestNetworkIpam(testParams *testNetIpamParams) *models.NetworkIpam {
 func networkIpamNextServMocks(service *ContrailTypeLogicService) {
 	ipamMock := service.AddressManager.(*ipammock.MockAddressManager)
 	ipamMock.EXPECT().CreateIpamSubnet(gomock.Any(), gomock.Any()).DoAndReturn(
-		func(ctx context.Context, request *ipam.CreateIpamSubnetRequest) (subnetUUID string, err error) {
+		func(ctx context.Context, request *db.CreateIpamSubnetRequest) (subnetUUID string, err error) {
 			return "uuuu-uuuu-iiii-dddd", nil
 		}).AnyTimes()
 	ipamMock.EXPECT().DeleteIpamSubnet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()

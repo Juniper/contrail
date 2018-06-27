@@ -3,52 +3,17 @@ package ipam
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/db"
 )
-
-// ErrSubnetExhausted signals that address cannot be allocated since subnet is exhausted
-type ErrSubnetExhausted interface {
-	SubnetExhausted()
-}
-
-// AllocateIPRequest arguments for AllocateIP methods.
-type AllocateIPRequest struct {
-	VirtualNetwork *models.VirtualNetwork
-	SubnetUUID     string
-	IPAddress      string
-}
-
-// DeallocateIPRequest arguments for DeallocateIP methods.
-type DeallocateIPRequest struct {
-	VirtualNetwork *models.VirtualNetwork
-	IPAddress      string
-}
-
-// IsIPAllocatedRequest arguments for IsIPAllocated methods.
-type IsIPAllocatedRequest struct {
-	VirtualNetwork *models.VirtualNetwork
-	IPAddress      string
-}
-
-// CreateIpamSubnetRequest arguments for CreateIpamSubnet methods.
-type CreateIpamSubnetRequest struct {
-	IpamSubnet      *models.IpamSubnetType
-	NetworkIpamUUID string
-}
-
-// DeleteIpamSubnetRequest arguments for DeleteIpamSubnet methods.
-type DeleteIpamSubnetRequest struct {
-	SubnetUUID string
-}
 
 // AddressManager address manager interface for virtual network
 type AddressManager interface {
 	// TODO: extend this interface with additional methods if necessary.
 	//		Most likely following methods are going to be required:
 	//			- network create/delete
-	AllocateIP(context.Context, *AllocateIPRequest) (address string, subnetUUID string, err error)
-	DeallocateIP(context.Context, *DeallocateIPRequest) (err error)
-	IsIPAllocated(context.Context, *IsIPAllocatedRequest) (isAllocated bool, err error)
-	CreateIpamSubnet(context.Context, *CreateIpamSubnetRequest) (subnetUUID string, err error)
-	DeleteIpamSubnet(context.Context, *DeleteIpamSubnetRequest) (err error)
+	AllocateIP(context.Context, *db.AllocateIPRequest) (address string, err error)
+	DeallocateIP(context.Context, *db.DeallocateIPRequest) (err error)
+	IsIPAllocated(context.Context, *db.IsIPAllocatedRequest) (isAllocated bool, err error)
+	CreateIpamSubnet(context.Context, *db.CreateIpamSubnetRequest) (subnetUUID string, err error)
+	DeleteIpamSubnet(context.Context, *db.DeleteIpamSubnetRequest) (err error)
 }

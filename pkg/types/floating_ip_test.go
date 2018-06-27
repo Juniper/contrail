@@ -5,14 +5,13 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/types/ipam"
-
-	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
-	ipammock "github.com/Juniper/contrail/pkg/types/ipam/mock"
-	typesmock "github.com/Juniper/contrail/pkg/types/mock"
+	"github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/contrail/pkg/types/ipam/mock"
+	"github.com/Juniper/contrail/pkg/types/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -73,7 +72,7 @@ func setupDBMocks() {
 
 func setupIPAMMocks() {
 	ipamMock.EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(ctx context.Context, request *ipam.AllocateIPRequest) (address string, subnetUUID string, err error) {
+		func(ctx context.Context, request *db.AllocateIPRequest) (address string, subnetUUID string, err error) {
 
 			if request.SubnetUUID == "uuid-1" {
 				return "10.0.0.1", "uuid-1", nil
@@ -94,7 +93,7 @@ func setupIPAMMocks() {
 		}).AnyTimes()
 
 	ipamMock.EXPECT().IsIPAllocated(gomock.Not(gomock.Nil()),
-		&ipam.IsIPAllocatedRequest{
+		&db.IsIPAllocatedRequest{
 			VirtualNetwork: &models.VirtualNetwork{},
 			IPAddress:      "10.0.0.2",
 		}).Return(true, nil).AnyTimes()

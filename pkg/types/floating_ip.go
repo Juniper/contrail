@@ -8,9 +8,9 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
 // CreateFloatingIP checks parent type and if parent type isn't instance-ip then this method tries to
@@ -100,7 +100,7 @@ func (sv *ContrailTypeLogicService) DeleteFloatingIP(
 func (sv *ContrailTypeLogicService) deallocateIPAddress(ctx context.Context, virtualNetwork *models.VirtualNetwork,
 	floatingIP *models.FloatingIP) error {
 
-	deallocateIPParams := &ipam.DeallocateIPRequest{
+	deallocateIPParams := &db.DeallocateIPRequest{
 		VirtualNetwork: virtualNetwork,
 		IPAddress:      floatingIP.GetFloatingIPAddress(),
 	}
@@ -115,7 +115,7 @@ func (sv *ContrailTypeLogicService) checkIfParentTypeIsInstanceIP(floatingIP *mo
 func (sv *ContrailTypeLogicService) checkIfRequestedIPAddressIsFree(ctx context.Context,
 	virtualNetwork *models.VirtualNetwork, ipAddress string) (bool, error) {
 
-	isIPAllocatedRequest := &ipam.IsIPAllocatedRequest{
+	isIPAllocatedRequest := &db.IsIPAllocatedRequest{
 		VirtualNetwork: virtualNetwork,
 		IPAddress:      ipAddress,
 	}
@@ -140,8 +140,8 @@ func (sv *ContrailTypeLogicService) tryToAllocateIPAddress(ctx context.Context,
 		// Subnet specification was not found on the floating-ip-pool.
 		// Proceed to allocated floating-ip from any of the subnets
 		// on the virtual-network.
-		floatingIPAddress, _, err = sv.AddressManager.AllocateIP(
-			ctx, &ipam.AllocateIPRequest{
+		floatingIPAddress, err = sv.AddressManager.AllocateIP(
+			ctx, &db.AllocateIPRequest{
 				VirtualNetwork: virtualNetwork,
 				IPAddress:      floatingIP.GetFloatingIPAddress(),
 			})
@@ -155,14 +155,14 @@ func (sv *ContrailTypeLogicService) tryToAllocateIPAddress(ctx context.Context,
 		// Record the subnets that we try to allocate from.
 		subnetsTried = append(subnetsTried, floatingIPPoolSubnetUUID)
 
-		allocateIPParams := &ipam.AllocateIPRequest{
+		allocateIPParams := &db.AllocateIPRequest{
 			VirtualNetwork: virtualNetwork,
 			IPAddress:      floatingIP.GetFloatingIPAddress(),
 			SubnetUUID:     floatingIPPoolSubnetUUID,
 		}
 
-		floatingIPAddress, _, err = sv.AddressManager.AllocateIP(ctx, allocateIPParams)
-		if _, ok := err.(ipam.ErrSubnetExhausted); ok {
+		floatingIPAddress, err = sv.AddressManager.AllocateIP(ctx, allocateIPParams)
+		if _, ok := err.(db.ErrSubnetExhausted); ok {
 			// This subnet is exhausted. Try next subnet.
 			continue
 		}
