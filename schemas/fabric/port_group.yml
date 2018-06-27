@@ -1,0 +1,39 @@
+description: Port Groups of node
+extends:
+- base
+id: port_group
+parents:
+  node:
+    operations: "CRUD"
+    description: "Parent of this port group."
+    presence: "optional"
+references:
+    port:
+      operations: "CRUD"
+      description: "Reference to port object which are part of this port group."
+      presence: "optional"
+plural: port_groups
+prefix: /
+schema:
+  properties:
+    name:
+      description: Name of the port group
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Port Group Name
+      type: string
+      view:
+      - create
+      - detail
+    bms_port_group_info:
+      presence: "optional"
+      description: "Details of the baremetal server port group"
+      $ref: "fabric_types.json#/definitions/BaremetalPortGroupInfo"
+  required: []
+  type: object
+singular: port_group
+title: Node Port Group
+type: "object" 

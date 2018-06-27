@@ -127,3 +127,59 @@
           presence: "true"
           description: "The Port binding profile"
           $ref: "fabric_types.json#/definitions/LocalLinkConnection"
+    BaremetalPortGroupInfo:
+      type: "object"
+      properties:
+        address:
+          description: Mac Address of the NIC in Node
+          type: string
+          format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+          nullable: false
+          permission:
+          - create
+          - detail
+        node_uuid:
+          description: UUID of the parent node where this port is connected
+          type: string
+        standalone_ports_supported:
+          description: Indicates whether ports that are members of this portgroup can be used as stand-alone ports.
+          type: boolean
+          default: true
+        mode:
+          description: Mode of the port group
+          type: string
+          enum:
+          - balance-rr
+          - active-backup
+          - balance-xor
+          - broadcast
+          - balance-tlb
+          - balance-alb
+          - 802.3ad
+          default: 802.3ad
+          nullable: false
+          permission:
+          - create
+          - detail
+        properties:
+          presence: "optional"
+          description: "Key/value properties related to the port group’s configuration."
+          $ref: "fabric_types.json#/definitions/PortGroupProperties"
+    PortGroupProperties:
+      type: "object"
+      properties:
+        miimon:
+          description: Specifies the MII link monitoring frequency in milliseconds.
+          type: integer
+          default: 100
+        xmit_hash_policy:
+          description: Transmit hash policy to use for slave selection in balance-xor, 802.3ad, and tlb modes.
+          type: string
+          enum:
+          - "layer2"
+          - "layer2+3"
+          - "layer3+4"
+          - "encap2+3"
+          - "encap3+4"
+          default: "layer2+3"
+
