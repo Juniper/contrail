@@ -62,9 +62,11 @@ func isIPInSubnet(subnet *net.IPNet, ipString string) error {
 
 // Validate validates ipam subnet configuration.
 func (m *IpamSubnetType) Validate() error {
-	_, err := uuid.Parse(m.SubnetUUID)
-	if err != nil {
-		return common.ErrorBadRequest("invalid subnet uuid")
+	if m.SubnetUUID != "" {
+		_, err := uuid.Parse(m.SubnetUUID)
+		if err != nil {
+			return common.ErrorBadRequest("invalid subnet uuid")
+		}
 	}
 
 	return m.CheckIfSubnetParamsAreValid()
