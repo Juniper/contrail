@@ -13,6 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/Juniper/contrail/pkg/types/ipam/mock"
 )
 
@@ -352,6 +353,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			virtualNetworkSetupDataServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
 			virtualNetworkSetupNetworkIpam(service, tt.ipamSubnetMethod)
+			virtualNetworkSetupIPAMMocks(service)
 
 			vn := createTestVn(tt.testVnData)
 			resultingVn := createTestVn(tt.testVnData)
@@ -415,6 +417,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			virtualNetworkSetupDataServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
+			virtualNetworkSetupIPAMMocks(service)
 
 			ctx := context.Background()
 			// In case of successful flow DeleteVirtualNetwork should be called once on next service
@@ -599,4 +602,14 @@ func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
 		int64(13), nil).AnyTimes()
 	intPoolAllocator.EXPECT().DeallocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(0)).Return(
 		nil).AnyTimes()
+}
+
+func virtualNetworkSetupIPAMMocks(s *ContrailTypeLogicService) {
+	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager.EXPECT().CreateIpamSubnet(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+		func(ctx context.Context, request *ipam.CreateIpamSubnetRequest) (subnetUUID string, err error) {
+			return "uuuu-uuuu-iiii-dddd", nil
+		}).AnyTimes()
+
+	addressManager.EXPECT().DeleteIpamSubnet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 }

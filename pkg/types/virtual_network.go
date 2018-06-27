@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
 //CreateVirtualNetwork do pre check for virtual network.
@@ -56,7 +57,11 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			if err != nil {
 				return err
 			}
-			//TODO: process network ipam refs references
+			err = sv.handleVnSubnetsInAddrMgmt(ctx, virtualNetwork, true)
+			if err != nil {
+				return err
+			}
+
 			response, err = sv.BaseService.CreateVirtualNetwork(ctx, request)
 
 			//TODO: create native/vn-default routing instance
@@ -71,21 +76,31 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 	ctx context.Context,
 	request *services.DeleteVirtualNetworkRequest) (response *services.DeleteVirtualNetworkResponse, err error) {
-	id := request.ID
+	uuid := request.ID
 
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			// Deallocate virtual network ID
-			var virtualNetworkID int64
-			virtualNetworkID, err = sv.getVirtualNetworkID(ctx, id)
+			var virtualNetworkResponse *services.GetVirtualNetworkResponse
+			virtualNetworkResponse, err = sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+				ID: uuid,
+			})
 			if err != nil {
-				return err
+				return common.ErrorBadRequestf("Couldn't get virtual network (%v) for a delete: %v", uuid, err)
+			}
+			virtualNetwork := virtualNetworkResponse.GetVirtualNetwork()
+
+			// Deallocate virtual network ID
+			err = sv.IntPoolAllocator.DeallocateInt(ctx,
+				VirtualNetworkIDPoolKey, virtualNetwork.VirtualNetworkNetworkID)
+			if err != nil {
+				return common.ErrorBadRequestf("Couldn't deallocate virtual network (%v) id(%v): %v",
+					uuid, virtualNetwork.VirtualNetworkNetworkID, err)
 			}
 
-			err = sv.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, virtualNetworkID)
+			err = sv.handleVnSubnetsInAddrMgmt(ctx, virtualNetwork, false)
 			if err != nil {
-				return err
+				return common.ErrorBadRequestf("Couldn't remove Virtual network subnet objects: %v:", err)
 			}
 
 			response, err = sv.BaseService.DeleteVirtualNetwork(ctx, request)
@@ -160,6 +175,7 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 		}
 
 		ipamSubnets := extractIpamSubnets(ipam, vnSubnet)
+
 		subnets, err = mergeIpamSubnetsIfNoOverlap(subnets, ipamSubnets)
 		if err != nil {
 			return common.ErrorBadRequestf(
@@ -168,6 +184,63 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 		}
 		//TODO: check network subnet quota
 	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) allocateVnSubnet(
+	ctx context.Context, ipamUUID string, vnSubnet *models.IpamSubnetType) (err error) {
+
+	if vnSubnet.GetSubnetUUID() == "" {
+		return nil
+	}
+
+	vnSubnet.SubnetUUID, err = sv.AddressManager.CreateIpamSubnet(ctx, &ipam.CreateIpamSubnetRequest{
+		IpamSubnet:      vnSubnet,
+		NetworkIpamUUID: ipamUUID,
+	})
+
+	if err != nil {
+		return common.ErrorBadRequestf("Couldn't allocate ipam subnet: %v", err)
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) deallocateVnSubnet(
+	ctx context.Context, vnSubnet *models.IpamSubnetType) (err error) {
+	if vnSubnet.GetSubnetUUID() != "" {
+		return nil
+	}
+
+	err = sv.AddressManager.DeleteIpamSubnet(ctx, &ipam.DeleteIpamSubnetRequest{
+		SubnetUUID: vnSubnet.GetSubnetUUID(),
+	})
+
+	if err != nil {
+		return common.ErrorBadRequestf("Couldn't deallocate ipam subnet: %v", err)
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) handleVnSubnetsInAddrMgmt(
+	ctx context.Context, virtualNetwork *models.VirtualNetwork, create bool,
+) (err error) {
+
+	ipamReferences := virtualNetwork.GetNetworkIpamRefs()
+	for _, ipamReference := range ipamReferences {
+		for _, vnSubnet := range ipamReference.GetAttr().GetIpamSubnets() {
+			if create {
+				err = sv.allocateVnSubnet(ctx, ipamReference.GetUUID(), vnSubnet)
+			} else {
+				err = sv.deallocateVnSubnet(ctx, vnSubnet)
+			}
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -260,16 +333,6 @@ func (sv *ContrailTypeLogicService) checkBGPVPNRefs(
 		}
 	}
 	return nil
-}
-
-func (sv *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context, id string) (int64, error) {
-	getResponse, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
-		ID: id,
-	})
-	if err != nil {
-		return 0, err
-	}
-	return getResponse.VirtualNetwork.VirtualNetworkNetworkID, nil
 }
 
 func (sv *ContrailTypeLogicService) getBGPVPNType(ctx context.Context, id string) (string, error) {
