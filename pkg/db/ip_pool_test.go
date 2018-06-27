@@ -164,7 +164,7 @@ func TestCreateIpPool(t *testing.T) {
 							assert.NoError(t, err)
 							assert.Equal(t, tt.expectedPools, len(pools))
 
-							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+							err = clearIPAddressPool(ctx)
 							assert.NoError(t, err)
 							return nil
 						})
@@ -197,8 +197,8 @@ func TestAllocateIp(t *testing.T) {
 		poolKey string
 		ipPools []ipPool
 
-		expectedIP net.IP
-		fails      bool
+		expectedIPs []net.IP
+		fails       bool
 	}{
 		{
 			name: "Simple example, one pool with correct key",
@@ -214,9 +214,9 @@ func TestAllocateIp(t *testing.T) {
 					end:   net.ParseIP("9.0.0.10"),
 				},
 			},
-			poolKey:    "subnet-uuid-1",
-			expectedIP: net.ParseIP("10.0.0.1"),
-			fails:      false,
+			poolKey:     "subnet-uuid-1",
+			expectedIPs: []net.IP{net.ParseIP("10.0.0.1")},
+			fails:       false,
 		},
 		{
 			name: "Several pools",
@@ -232,14 +232,50 @@ func TestAllocateIp(t *testing.T) {
 					end:   net.ParseIP("20.0.0.10"),
 				},
 			},
-			poolKey:    "subnet-uuid-1",
-			expectedIP: net.ParseIP("10.0.0.1"),
-			fails:      false,
+			poolKey:     "subnet-uuid-1",
+			expectedIPs: []net.IP{net.ParseIP("10.0.0.1")},
+			fails:       false,
 		},
 		{
-			name:    "Empty pool",
+			name: "Full subnet allocation",
+			ipPools: []ipPool{
+				{
+					key:   "subnet-uuid-1",
+					start: net.ParseIP("10.0.0.0"),
+					end:   net.ParseIP("10.0.0.2"),
+				},
+			},
 			poolKey: "subnet-uuid-1",
-			fails:   true,
+			expectedIPs: []net.IP{
+				net.ParseIP("10.0.0.0"),
+				net.ParseIP("10.0.0.1"),
+				net.ParseIP("10.0.0.2"),
+			},
+			fails: false,
+		},
+		{
+			name: "Exhaust subnet",
+			ipPools: []ipPool{
+				{
+					key:   "subnet-uuid-1",
+					start: net.ParseIP("10.0.0.0"),
+					end:   net.ParseIP("10.0.0.2"),
+				},
+			},
+			poolKey: "subnet-uuid-1",
+			expectedIPs: []net.IP{
+				net.ParseIP("10.0.0.0"),
+				net.ParseIP("10.0.0.1"),
+				net.ParseIP("10.0.0.2"),
+				net.ParseIP(""),
+			},
+			fails: true,
+		},
+		{
+			name:        "Empty pool",
+			poolKey:     "subnet-uuid-1",
+			expectedIPs: []net.IP{net.ParseIP("")},
+			fails:       true,
 		},
 	}
 	for _, ts := range testSets {
@@ -254,16 +290,22 @@ func TestAllocateIp(t *testing.T) {
 								err := db.createIPPool(ctx, &tmpPool)
 								assert.NoError(t, err, "create pool failed")
 							}
-
-							ipReceived, err := db.allocateIP(ctx, tt.poolKey)
+							var err error
+							for _, expectedIP := range tt.expectedIPs {
+								var ipReceived net.IP
+								ipReceived, err = db.allocateIP(ctx, tt.poolKey)
+								assert.Equal(t, customIP(expectedIP, ts.firstByte), ipReceived.To16())
+								if err != nil {
+									break
+								}
+							}
 							if tt.fails {
 								assert.Error(t, err)
 							} else {
 								assert.NoError(t, err)
-								assert.Equal(t, customIP(tt.expectedIP, ts.firstByte), ipReceived.To16())
 							}
 
-							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+							err = clearIPAddressPool(ctx)
 							assert.NoError(t, err)
 							return nil
 						})
@@ -415,7 +457,7 @@ func TestDeleteIpPools(t *testing.T) {
 							assert.NoError(t, err)
 							assert.Equal(t, tt.expectedCount, len(pools))
 
-							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+							err = clearIPAddressPool(ctx)
 							assert.NoError(t, err)
 							return nil
 						})
@@ -556,7 +598,7 @@ func TestSetIp(t *testing.T) {
 								assert.Equal(t, customPool(tt.expectedPools[i], ts.firstByte), *resultPool)
 							}
 
-							_, err = GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+							err = clearIPAddressPool(ctx)
 							assert.NoError(t, err)
 							return err
 						})
@@ -566,6 +608,11 @@ func TestSetIp(t *testing.T) {
 			}
 		})
 	}
+}
+
+func clearIPAddressPool(ctx context.Context) error {
+	_, err := GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+	return err
 }
 
 func customIP(ip net.IP, val byte) net.IP {

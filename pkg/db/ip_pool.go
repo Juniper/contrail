@@ -116,16 +116,15 @@ func (db *Service) allocateIP(ctx context.Context, key string) (net.IP, error) {
 	var start, end net.IP
 	var startString, endString string
 	err := row.Scan(&startString, &endString)
-
-	start = stringToIP(startString)
-	end = stringToIP(endString)
-
 	if err != nil {
 		return nil, handleError(err)
 	}
+
+	start = stringToIP(startString)
+	end = stringToIP(endString)
 	updatedStart := cidr.Inc(start)
 
-	if bytes.Compare(updatedStart.To16(), end.To16()) < 0 {
+	if bytes.Compare(updatedStart.To16(), end.To16()) <= 0 {
 		_, err = tx.ExecContext(ctx,
 			"update ipaddress_pool set "+d.quote("start")+" = "+d.literalIP(updatedStart)+
 				" where "+d.quote("key")+" = "+db.Dialect.placeholder(1)+" and "+d.quote("start")+
