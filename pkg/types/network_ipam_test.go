@@ -11,9 +11,9 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/mock"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/types/ipam"
-	"github.com/Juniper/contrail/pkg/types/ipam/mock"
+	ipammock "github.com/Juniper/contrail/pkg/types/ipam/mock"
 )
 
 type testNetIpamParams struct {

@@ -95,14 +95,16 @@ func (db *Service) allocateIP(ctx context.Context, key string) (net.IP, error) {
 
 	var start, end net.IP
 	var startString, endString string
-	err := row.Scan(&startString, &endString)
 
-	start = stringToIP(startString)
-	end = stringToIP(endString)
+	err := row.Scan(&startString, &endString)
 
 	if err != nil {
 		return nil, handleError(err)
 	}
+
+	start = stringToIP(startString)
+	end = stringToIP(endString)
+
 	updatedStart := cidr.Inc(start)
 
 	if bytes.Compare(updatedStart.To16(), end.To16()) < 0 {

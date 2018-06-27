@@ -140,7 +140,7 @@ func (sv *ContrailTypeLogicService) tryToAllocateIPAddress(ctx context.Context,
 		// Subnet specification was not found on the floating-ip-pool.
 		// Proceed to allocated floating-ip from any of the subnets
 		// on the virtual-network.
-		floatingIPAddress, _, err = sv.AddressManager.AllocateIP(
+		floatingIPAddress, err = sv.AddressManager.AllocateIP(
 			ctx, &ipam.AllocateIPRequest{
 				VirtualNetwork: virtualNetwork,
 				IPAddress:      floatingIP.GetFloatingIPAddress(),
@@ -161,7 +161,7 @@ func (sv *ContrailTypeLogicService) tryToAllocateIPAddress(ctx context.Context,
 			SubnetUUID:     floatingIPPoolSubnetUUID,
 		}
 
-		floatingIPAddress, _, err = sv.AddressManager.AllocateIP(ctx, allocateIPParams)
+		floatingIPAddress, err = sv.AddressManager.AllocateIP(ctx, allocateIPParams)
 		if _, ok := err.(ipam.ErrSubnetExhausted); ok {
 			// This subnet is exhausted. Try next subnet.
 			continue
