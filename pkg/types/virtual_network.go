@@ -11,6 +11,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
 //CreateVirtualNetwork do pre check and post setup for virtual network.
@@ -18,19 +19,13 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	ctx context.Context,
 	request *services.CreateVirtualNetworkRequest) (response *services.CreateVirtualNetworkResponse, err error) {
 	virtualNetwork := request.VirtualNetwork
-	// check if multiple policy service chain supported
-	if !virtualNetwork.IsValidMultiPolicyServiceChainConfig() {
-		return nil, common.ErrorBadRequest(
-			"multi policy service chains are not supported, with both import export external route targets")
-	}
-	//  neutron <-> vnc sharing
-	virtualNetwork.MakeNeutronCompatible()
-	// Does not authorize to set the virtual network ID as it's allocated
-	// by the vnc server
-	err = sv.checkVirtualNetworkID(nil, virtualNetwork, nil)
-	if err != nil {
+
+	if err = sv.prevalidateVirtualNetwork(virtualNetwork); err != nil {
 		return nil, err
 	}
+
+	// neutron <-> vnc sharing
+	virtualNetwork.MakeNeutronCompatible()
 
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
@@ -61,9 +56,12 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			if err != nil {
 				return err
 			}
-			//TODO: process network ipam refs references
-			response, err = sv.BaseService.CreateVirtualNetwork(ctx, request)
+			err = sv.handleVnSubnetsInAddrMgmt(ctx, virtualNetwork, true)
+			if err != nil {
+				return err
+			}
 
+			response, err = sv.BaseService.CreateVirtualNetwork(ctx, request)
 			if err != nil {
 				return err
 			}
@@ -123,30 +121,36 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 	ctx context.Context,
 	request *services.DeleteVirtualNetworkRequest) (response *services.DeleteVirtualNetworkResponse, err error) {
-	id := request.ID
+	uuid := request.ID
 
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
 			var virtualNetworkResponse *services.GetVirtualNetworkResponse
 			virtualNetworkResponse, err = sv.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
-				ID: id,
+				ID: uuid,
 			})
 			if err != nil {
-				return common.ErrorBadRequestf("couldn't get virtual network (%v) for delete: %v", id, err)
+				return common.ErrorBadRequestf("couldn't get virtual network (%v) for a delete: %v", uuid, err)
 			}
-
-			vn := virtualNetworkResponse.VirtualNetwork
+			vn := virtualNetworkResponse.GetVirtualNetwork()
 
 			// Deallocate virtual network ID
-			err = sv.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, vn.VirtualNetworkNetworkID)
+			err = sv.IntPoolAllocator.DeallocateInt(ctx,
+				VirtualNetworkIDPoolKey, vn.VirtualNetworkNetworkID)
 			if err != nil {
-				return err
+				return common.ErrorBadRequestf("couldn't deallocate virtual network (%v) id(%v): %v",
+					uuid, vn.VirtualNetworkNetworkID, err)
 			}
 
 			err = sv.deleteDefaultRoutingInstance(ctx, vn)
 			if err != nil {
 				return err
+			}
+
+			err = sv.handleVnSubnetsInAddrMgmt(ctx, vn, false)
+			if err != nil {
+				return common.ErrorBadRequestf("couldn't remove virtual network subnet objects: %v", err)
 			}
 
 			response, err = sv.BaseService.DeleteVirtualNetwork(ctx, request)
@@ -155,6 +159,18 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 		})
 
 	return response, err
+}
+
+func (sv *ContrailTypeLogicService) prevalidateVirtualNetwork(vn *models.VirtualNetwork) error {
+	// check if multiple policy service chain supported
+	if !vn.IsValidMultiPolicyServiceChainConfig() {
+		return common.ErrorBadRequest(
+			"multi policy service chains are not supported, with both import export external route targets")
+	}
+
+	// Does not authorize to set the virtual network ID as it's allocated
+	// by the vnc server
+	return sv.checkVirtualNetworkID(nil, vn, nil)
 }
 
 func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
@@ -272,6 +288,54 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 		}
 		//TODO: check network subnet quota
 	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) allocateVnSubnet(
+	ctx context.Context, ipamUUID string, vnSubnet *models.IpamSubnetType) (err error) {
+	vnSubnet.SubnetUUID, err = sv.AddressManager.CreateIpamSubnet(ctx, &ipam.CreateIpamSubnetRequest{
+		IpamSubnet:      vnSubnet,
+		NetworkIpamUUID: ipamUUID,
+	})
+
+	if err != nil {
+		return common.ErrorBadRequestf("couldn't allocate ipam subnet %v: %v", vnSubnet.SubnetUUID, err)
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) deallocateVnSubnet(
+	ctx context.Context, vnSubnet *models.IpamSubnetType) (err error) {
+	err = sv.AddressManager.DeleteIpamSubnet(ctx, &ipam.DeleteIpamSubnetRequest{
+		SubnetUUID: vnSubnet.GetSubnetUUID(),
+	})
+
+	if err != nil {
+		return common.ErrorBadRequestf("couldn't deallocate ipam subnet %v: %v", vnSubnet.SubnetUUID, err)
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) handleVnSubnetsInAddrMgmt(
+	ctx context.Context, virtualNetwork *models.VirtualNetwork, create bool,
+) (err error) {
+
+	ipamReferences := virtualNetwork.GetNetworkIpamRefs()
+	for _, ipamReference := range ipamReferences {
+		for _, vnSubnet := range ipamReference.GetAttr().GetIpamSubnets() {
+			if create {
+				err = sv.allocateVnSubnet(ctx, ipamReference.GetUUID(), vnSubnet)
+			} else {
+				err = sv.deallocateVnSubnet(ctx, vnSubnet)
+			}
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
