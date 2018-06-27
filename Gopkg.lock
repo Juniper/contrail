@@ -161,6 +161,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/graph-gophers/graphql-go"
+  packages = ["errors"]
+  revision = "bb9738501bd42a6536227b96068349b814379d6e"
+
+[[projects]]
+  branch = "master"
   name = "github.com/hailocab/go-hostpool"
   packages = ["."]
   revision = "e80d13ce29ede4452c43dea11e79b9bc8a15b478"
@@ -572,6 +578,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6a5d321e8c44b5760caf63277f85901538d76e5bba6572351b5abe341a620913"
+  inputs-digest = "6d09a20db08f7558dccbe1d5fda9020d11bceabbe7e040980561de002434c182"
   solver-name = "gps-cdcl"
   solver-version = 1
