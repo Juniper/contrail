@@ -78,18 +78,25 @@ func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, na
 	)
 }
 
-func (c *postgresReplicationConnection) DumpSnapshot(
-	ctx context.Context, ow db.ObjectWriter, snapshotName string,
+func (c *postgresReplicationConnection) DoInTransactionSnapshot(
+	ctx context.Context,
+	snapshotName string,
+	do func(context.Context) error,
 ) error {
 	return c.db.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			_, err := c.db.DB().ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+			tx := db.GetTransaction(ctx)
+			_, err := tx.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+			if err != nil {
+				return err
+			}
+			_, err = tx.ExecContext(ctx, fmt.Sprintf("SET TRANSACTION SNAPSHOT '%s'", snapshotName))
 			if err != nil {
 				return err
 			}
 
-			return c.db.Dump(ctx, ow)
+			return do(ctx)
 		},
 	)
 }

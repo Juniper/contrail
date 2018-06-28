@@ -11,6 +11,7 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/models"
@@ -23,6 +24,7 @@ const (
 )
 
 func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
+	viper.Set("etcd.path", etcdJSONPrefix)
 	s := integration.NewRunningAPIServer(t, "../../..")
 	defer s.Close(t)
 	hc := integration.NewHTTPAPIClient(t, s.URL())
@@ -104,15 +106,15 @@ func watchVirtualNetworkInEtcd(ec *integration.EtcdClient, uuid string) (clientv
 }
 
 func projectEtcdKey(uuid string) string {
-	return path.Join(etcdJSONPrefix, integration.ProjectSchemaID, uuid)
+	return path.Join("/", etcdJSONPrefix, integration.ProjectSchemaID, uuid)
 }
 
 func networkIPAMEtcdKey(uuid string) string {
-	return path.Join(etcdJSONPrefix, integration.NetworkIPAMSchemaID, uuid)
+	return path.Join("/", etcdJSONPrefix, integration.NetworkIPAMSchemaID, uuid)
 }
 
 func virtualNetworkEtcdKey(uuid string) string {
-	return path.Join(etcdJSONPrefix, integration.VirtualNetworkSchemaID, uuid)
+	return path.Join("/", etcdJSONPrefix, integration.VirtualNetworkSchemaID, uuid)
 }
 
 func project(uuid string) *models.Project {
