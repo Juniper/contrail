@@ -1,6 +1,7 @@
 package replication
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -36,7 +37,7 @@ func NewPgoutputEventHandler(s RowSink) *PgoutputEventHandler {
 }
 
 // Handle handles provided message by passing its contents to sink or returns an error
-func (h *PgoutputEventHandler) Handle(msg pgoutput.Message) error {
+func (h *PgoutputEventHandler) Handle(ctx context.Context, msg pgoutput.Message) error {
 
 	switch v := msg.(type) {
 	case pgoutput.Relation:
@@ -44,18 +45,18 @@ func (h *PgoutputEventHandler) Handle(msg pgoutput.Message) error {
 		h.relations.Add(v)
 	case pgoutput.Insert:
 		h.log.Debug("received INSERT message")
-		return h.handleCreate(v.RelationID, v.Row)
+		return h.handleCreate(ctx, v.RelationID, v.Row)
 	case pgoutput.Update:
 		h.log.Debug("received UPDATE message")
-		return h.handleUpdate(v.RelationID, v.Row)
+		return h.handleUpdate(ctx, v.RelationID, v.Row)
 	case pgoutput.Delete:
 		h.log.Debug("received DELETE message")
-		return h.handleDelete(v.RelationID, v.Row)
+		return h.handleDelete(ctx, v.RelationID, v.Row)
 	}
 	return nil
 }
 
-func (h *PgoutputEventHandler) handleCreate(relationID uint32, row []pgoutput.Tuple) error {
+func (h *PgoutputEventHandler) handleCreate(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
 	relation, err := h.relations.Get(relationID)
 	if err != nil {
 		return err
@@ -66,10 +67,10 @@ func (h *PgoutputEventHandler) handleCreate(relationID uint32, row []pgoutput.Tu
 		return fmt.Errorf("error decoding row: %v", err)
 	}
 
-	return h.sink.Create(relation.Name, pk, data)
+	return h.sink.Create(ctx, relation.Name, pk, data)
 }
 
-func (h *PgoutputEventHandler) handleUpdate(relationID uint32, row []pgoutput.Tuple) error {
+func (h *PgoutputEventHandler) handleUpdate(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
 	relation, err := h.relations.Get(relationID)
 	if err != nil {
 		return err
@@ -80,10 +81,10 @@ func (h *PgoutputEventHandler) handleUpdate(relationID uint32, row []pgoutput.Tu
 		return fmt.Errorf("error decoding row: %v", err)
 	}
 
-	return h.sink.Update(relation.Name, pk, data)
+	return h.sink.Update(ctx, relation.Name, pk, data)
 }
 
-func (h *PgoutputEventHandler) handleDelete(relationID uint32, row []pgoutput.Tuple) error {
+func (h *PgoutputEventHandler) handleDelete(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
 	relation, err := h.relations.Get(relationID)
 	if err != nil {
 		return err
@@ -94,7 +95,7 @@ func (h *PgoutputEventHandler) handleDelete(relationID uint32, row []pgoutput.Tu
 		return fmt.Errorf("error decoding row: %v", err)
 	}
 
-	return h.sink.Delete(relation.Name, pk)
+	return h.sink.Delete(ctx, relation.Name, pk)
 }
 
 func decodeRowData(
@@ -152,20 +153,22 @@ func (h *CanalEventHandler) OnRow(e *canal.RowsEvent) error {
 		"columns": fmt.Sprintf("%+v", e.Table.Columns), // verbose logging for development phase
 	}).Debug("Received OnRow event")
 
+	ctx := context.TODO()
 	switch e.Action {
 	case canal.InsertAction:
-		return h.handleCreate(e.Rows, e.Table)
+		return h.handleCreate(ctx, e.Rows, e.Table)
 	case canal.UpdateAction:
-		return h.handleUpdate(e.Rows, e.Table)
+		return h.handleUpdate(ctx, e.Rows, e.Table)
 	case canal.DeleteAction:
-		return h.handleDelete(e.Rows, e.Table)
+		return h.handleDelete(ctx, e.Rows, e.Table)
 	default:
 		return fmt.Errorf("invalid ROW event action: %s", e.Action)
 	}
 }
 
 // TODO(daniel): remove duplication
-func (h *CanalEventHandler) handleCreate(rows [][]interface{}, t *schema.Table) error {
+// nolint: dupl
+func (h *CanalEventHandler) handleCreate(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
 	for _, row := range rows {
 		pk, err := getPrimaryKeyValue(row, t)
 		if err != nil {
@@ -175,7 +178,7 @@ func (h *CanalEventHandler) handleCreate(rows [][]interface{}, t *schema.Table) 
 		if err != nil {
 			return fmt.Errorf("table %s error: %s", t, err)
 		}
-		if err := h.sink.Create(t.Name, pk, kvs); err != nil {
+		if err := h.sink.Create(ctx, t.Name, pk, kvs); err != nil {
 			return err
 		}
 	}
@@ -183,7 +186,8 @@ func (h *CanalEventHandler) handleCreate(rows [][]interface{}, t *schema.Table) 
 }
 
 // TODO(daniel): remove duplication
-func (h *CanalEventHandler) handleUpdate(rows [][]interface{}, t *schema.Table) error {
+// nolint: dupl
+func (h *CanalEventHandler) handleUpdate(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
 	for _, row := range rows {
 		pk, err := getPrimaryKeyValue(row, t)
 		if err != nil {
@@ -193,21 +197,21 @@ func (h *CanalEventHandler) handleUpdate(rows [][]interface{}, t *schema.Table) 
 		if err != nil {
 			return fmt.Errorf("table %s error: %s", t, err)
 		}
-		if err := h.sink.Update(t.Name, pk, kvs); err != nil {
+		if err := h.sink.Update(ctx, t.Name, pk, kvs); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (h *CanalEventHandler) handleDelete(rows [][]interface{}, t *schema.Table) error {
+func (h *CanalEventHandler) handleDelete(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
 	for _, row := range rows {
 		pk, err := getPrimaryKeyValue(row, t)
 		if err != nil {
 			return err
 		}
 
-		if err := h.sink.Delete(t.Name, pk); err != nil {
+		if err := h.sink.Delete(ctx, t.Name, pk); err != nil {
 			return err
 		}
 	}
