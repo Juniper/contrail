@@ -1,10 +1,10 @@
 package replication
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -55,7 +55,7 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 
 			a := NewObjectMappingAdapter(sMock, (*rowScannerMock)(rsMock))
 
-			err := a.Create(resourceName, pk, props)
+			err := a.Create(context.Background(), resourceName, pk, props)
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -76,33 +76,34 @@ func (d *dummyMessage) String() string {
 	return "dummy"
 }
 
-func (d *dummyMessage) ProtoMessage() {}
+func (d *dummyMessage) ProtoMessage()                 {}
+func (d *dummyMessage) ToMap() map[string]interface{} { return nil }
 
 type rowScannerMock mock.Mock
 
-func (m *rowScannerMock) ScanRow(schemaID string, rowData map[string]interface{}) (proto.Message, error) {
+func (m *rowScannerMock) ScanRow(schemaID string, rowData map[string]interface{}) (db.Object, error) {
 	args := (*mock.Mock)(m).MethodCalled("ScanRow", schemaID, rowData)
 	if args.Error(1) != nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(proto.Message), nil
+	return args.Get(0).(db.Object), nil
 }
 
 type sinkMock struct {
 	mock.Mock
 }
 
-func (s *sinkMock) Create(resourceName string, pk string, obj db.Object) error {
+func (s *sinkMock) Create(ctx context.Context, resourceName string, pk string, obj db.Object) error {
 	args := s.MethodCalled("Create", resourceName, pk, obj)
 	return args.Error(0)
 }
 
-func (s *sinkMock) Update(resourceName string, pk string, obj db.Object) error {
+func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, obj db.Object) error {
 	args := s.MethodCalled("Update", resourceName, pk, obj)
 	return args.Error(0)
 }
 
-func (s *sinkMock) Delete(resourceName string, pk string) error {
+func (s *sinkMock) Delete(ctx context.Context, resourceName string, pk string) error {
 	args := s.MethodCalled("Delete", resourceName, pk)
 	return args.Error(0)
 }

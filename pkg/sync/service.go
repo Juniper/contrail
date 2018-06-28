@@ -9,10 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/db"
-	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/sync/replication"
-	"github.com/Juniper/contrail/pkg/sync/sink"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
@@ -20,6 +16,13 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc/grpclog"
+
+	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/sync/replication"
+	"github.com/Juniper/contrail/pkg/sync/sink"
 )
 
 const (
@@ -63,10 +66,10 @@ func NewService() (*Service, error) {
 	setDefaults()
 
 	// Logging
-	if err := pkglog.Configure(viper.GetString("log_level")); err != nil {
+	if err := log.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
-	log := pkglog.NewLogger("sync-service")
+	log := log.NewLogger("sync-service")
 	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Got configuration")
 
 	// Etcd client
@@ -82,10 +85,14 @@ func NewService() (*Service, error) {
 	}
 
 	// Etcd sink
-	s := sink.NewETCDSink(etcdClient, &sink.JSONCodec{})
+	etcdNotifierService, err := etcd.NewNotifierService(viper.GetString("etcd.path"))
+	if err != nil {
+		return nil, err
+	}
+	processor := &services.ServiceEventProcessor{Service: etcdNotifierService}
 
 	// Replication
-	watcher, err := createWatcher(log, s)
+	watcher, err := createWatcher(log, processor)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +104,7 @@ func NewService() (*Service, error) {
 	}, nil
 }
 
-func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
+func createWatcher(log *logrus.Entry, processor services.EventProcessor) (watchCloser, error) {
 	driver := viper.GetString("database.type")
 	sqlDB, err := db.ConnectDB()
 	if err != nil {
@@ -108,12 +115,13 @@ func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	s := &sink.EventProcessorSink{EventProcessor: processor}
 	rowSink := replication.NewObjectMappingAdapter(s, dbService)
-	objectWriter := sink.NewObjectWriter(s)
 
 	switch driver {
 	case db.DriverPostgreSQL:
-		return createPostgreSQLWatcher(log, rowSink, dbService, objectWriter)
+		return createPostgreSQLWatcher(log, rowSink, dbService, processor)
 	case db.DriverMySQL:
 		return createMySQLWatcher(log, rowSink)
 	default:
@@ -122,7 +130,7 @@ func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
 }
 
 func createPostgreSQLWatcher(
-	log *logrus.Entry, sink replication.RowSink, dbService *db.Service, ow db.ObjectWriter,
+	log *logrus.Entry, sink replication.RowSink, dbService *db.Service, processor services.EventProcessor,
 ) (watchCloser, error) {
 	handler := replication.NewPgoutputEventHandler(sink)
 
@@ -145,7 +153,7 @@ func createPostgreSQLWatcher(
 	}
 	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got pgx config")
 
-	return replication.NewPostgresWatcher(conf, dbService, replConn, handler.Handle, ow)
+	return replication.NewPostgresWatcher(conf, dbService, replConn, handler.Handle, processor)
 }
 
 func createMySQLWatcher(log *logrus.Entry, sink replication.RowSink) (watchCloser, error) {
