@@ -1,21 +1,22 @@
 package replication
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/sync/sink"
-	"github.com/gogo/protobuf/proto"
 )
 
 // RowSink is data consumer capable of processing row data.
 type RowSink interface {
-	Create(resourceName string, pk string, properties map[string]interface{}) error
-	Update(resourceName string, pk string, properties map[string]interface{}) error
-	Delete(resourceName string, pk string) error
+	Create(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error
+	Update(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error
+	Delete(ctx context.Context, resourceName string, pk string) error
 }
 
 type rowScanner interface {
-	ScanRow(schemaID string, rowData map[string]interface{}) (proto.Message, error)
+	ScanRow(schemaID string, rowData map[string]interface{}) (db.Object, error)
 }
 
 type objectMappingAdapter struct {
@@ -29,18 +30,18 @@ func NewObjectMappingAdapter(s sink.Sink, rs rowScanner) RowSink {
 	return &objectMappingAdapter{Sink: s, rs: rs}
 }
 
-func (o *objectMappingAdapter) Create(resourceName string, pk string, properties map[string]interface{}) error {
+func (o *objectMappingAdapter) Create(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error {
 	obj, err := o.rs.ScanRow(resourceName, properties)
 	if err != nil {
 		return fmt.Errorf("error scanning row: %v", err)
 	}
-	return o.Sink.Create(resourceName, pk, obj)
+	return o.Sink.Create(ctx, resourceName, pk, obj)
 }
 
-func (o *objectMappingAdapter) Update(resourceName string, pk string, properties map[string]interface{}) error {
+func (o *objectMappingAdapter) Update(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error {
 	obj, err := o.rs.ScanRow(resourceName, properties)
 	if err != nil {
 		return fmt.Errorf("error scanning row: %v", err)
 	}
-	return o.Sink.Update(resourceName, pk, obj)
+	return o.Sink.Update(ctx, resourceName, pk, obj)
 }

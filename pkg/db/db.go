@@ -71,7 +71,10 @@ func (db *Service) SetDB(sqlDB *sql.DB) {
 }
 
 // Object is generic database model instance.
-type Object = proto.Message
+type Object interface {
+	proto.Message
+	ToMap() map[string]interface{}
+}
 
 // ObjectWriter processes rows
 type ObjectWriter interface {
