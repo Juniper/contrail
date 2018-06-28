@@ -13,7 +13,7 @@ import (
 
 // Codec can encode objects and update encoded data with new data object.
 type Codec interface {
-	Encode(obj db.Object) ([]byte, error)
+	Encode(obj interface{}) ([]byte, error)
 	Update(data []byte, obj db.Object) ([]byte, error)
 	Key() string
 }
@@ -22,7 +22,7 @@ type Codec interface {
 type JSONCodec struct{}
 
 // Encode serializes data to JSON format.
-func (j *JSONCodec) Encode(obj db.Object) ([]byte, error) {
+func (j *JSONCodec) Encode(obj interface{}) ([]byte, error) {
 	return json.Marshal(obj)
 }
 
