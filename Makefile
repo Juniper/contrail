@@ -59,7 +59,7 @@ generate: reset_gen ## Run the source code generator
 reset_gen: ## Remove genarated files
 	find pkg/ -name gen_* -delete
 	find pkg/ -name generated.pb.go -delete
-	rm -rf public/*
+	rm -rf public/[^watch.html]*
 	rm -rf proto/*
 	rm -f tools/init_mysql.sql
 	rm -f tools/init_psql.sql
