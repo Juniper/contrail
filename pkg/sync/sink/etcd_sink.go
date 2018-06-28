@@ -40,7 +40,7 @@ func NewETCDSink(client *clientv3.Client, codec Codec) *ETCDSink {
 }
 
 // Create puts JSON-encoded object to etcd under "<resourceName>/json/<resourcePrimaryKey>" key.
-func (s *ETCDSink) Create(resourceName string, pk string, object db.Object) error {
+func (s *ETCDSink) Create(ctx context.Context, resourceName string, pk string, object db.Object) error {
 	s.log.WithFields(logrus.Fields{"key": resourceKey(s.codec, resourceName, pk), "object": object}).Debugf(
 		"Creating %s-encoded resource in etcd", s.codec.Key())
 
@@ -49,7 +49,7 @@ func (s *ETCDSink) Create(resourceName string, pk string, object db.Object) erro
 		return fmt.Errorf("encode object to %s: %s", s.codec.Key(), err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), kvClientRequestTimeout)
+	ctx, cancel := context.WithTimeout(ctx, kvClientRequestTimeout)
 	defer cancel()
 	_, err = s.kvClient.Put(ctx, resourceKey(s.codec, resourceName, pk), string(p))
 	if err != nil {
@@ -59,12 +59,12 @@ func (s *ETCDSink) Create(resourceName string, pk string, object db.Object) erro
 }
 
 // Update puts JSON-encoded object to etcd under "<resourceName>/json/<resourcePrimaryKey>" key.
-func (s *ETCDSink) Update(resourceName string, pk string, object db.Object) error {
+func (s *ETCDSink) Update(ctx context.Context, resourceName string, pk string, object db.Object) error {
 	key := resourceKey(s.codec, resourceName, pk)
 	s.log.WithFields(logrus.Fields{"key": key, "object": object}).Debugf(
 		"Updating %s-encoded resource in etcd", s.codec.Key())
 
-	ctx, cancel := context.WithTimeout(context.Background(), kvClientRequestTimeout)
+	ctx, cancel := context.WithTimeout(ctx, kvClientRequestTimeout)
 	defer cancel()
 
 	err := s.inTransaction(ctx, func(stm conc.STM) error {
@@ -81,10 +81,10 @@ func (s *ETCDSink) Update(resourceName string, pk string, object db.Object) erro
 }
 
 // Delete removes from etcd "<resourceName>/json/<resourcePrimaryKey>" key.
-func (s *ETCDSink) Delete(resourceName string, pk string) error {
+func (s *ETCDSink) Delete(ctx context.Context, resourceName string, pk string) error {
 	s.log.WithFields(logrus.Fields{"key": resourceKey(s.codec, resourceName, pk)}).Debugf(
 		"Deleting %s-encoded resource from etcd", s.codec.Key())
-	ctx, cancel := context.WithTimeout(context.Background(), kvClientRequestTimeout)
+	ctx, cancel := context.WithTimeout(ctx, kvClientRequestTimeout)
 	defer cancel()
 
 	_, err := s.kvClient.Delete(ctx, resourceKey(s.codec, resourceName, pk))

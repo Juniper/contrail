@@ -21,7 +21,7 @@ func TestETCDSinkCreateFailsWhenKVClientFails(t *testing.T) {
 	m.onPut("json/test-resource/test-pk", mock.AnythingOfType("string")).Return(nil, assert.AnError).Once()
 	s := givenETCDSink(m, nil, c)
 
-	err := s.Create("test-resource", "test-pk", models.MakeLogicalInterface())
+	err := s.Create(context.Background(), "test-resource", "test-pk", models.MakeLogicalInterface())
 
 	assert.Error(t, err)
 	m.AssertExpectations(t)
@@ -30,7 +30,7 @@ func TestETCDSinkCreateFailsWhenKVClientFails(t *testing.T) {
 func TestETCDSinkCreateFailsWhenPropertiesEncodingFails(t *testing.T) {
 	s := givenETCDSink(nil, nil, c)
 
-	err := s.Create("test-resource", "test-pk", &errorObject{})
+	err := s.Create(context.Background(), "test-resource", "test-pk", &errorObject{})
 
 	assert.Error(t, err)
 }
@@ -42,7 +42,7 @@ func TestETCDSinkCreatePutsJSONEncodedResourceUnderOneEtcdKey(t *testing.T) {
 	stm := &mockSTM{}
 	s := givenETCDSink(m, stm, c)
 
-	err := s.Create("test-resource", "test-pk", resource)
+	err := s.Create(context.Background(), "test-resource", "test-pk", resource)
 
 	assert.NoError(t, err)
 	m.AssertExpectations(t)
@@ -55,7 +55,7 @@ func TestETCDSinkUpdateFailsWhenKVClientFails(t *testing.T) {
 		return assert.AnError
 	}
 
-	err := s.Update("test-resource", "test-pk", models.MakeLogicalInterface())
+	err := s.Update(context.Background(), "test-resource", "test-pk", models.MakeLogicalInterface())
 
 	assert.Error(t, err)
 }
@@ -68,7 +68,7 @@ func TestETCDSinkUpdatePutsJSONEncodedResourceUnderOneEtcdKey(t *testing.T) {
 		&clientv3.PutResponse{}, nil).Once()
 	s := givenETCDSink(nil, stm, c)
 
-	err := s.Update("test-resource", "pk", resource)
+	err := s.Update(context.Background(), "test-resource", "pk", resource)
 
 	assert.NoError(t, err)
 	stm.AssertExpectations(t)
@@ -79,7 +79,7 @@ func TestETCDSinkDeleteFailsWhenKVClientFails(t *testing.T) {
 	m.onDelete("json/test-resource/test-pk").Return(nil, assert.AnError).Once()
 	s := givenETCDSink(m, nil, c)
 
-	err := s.Delete("test-resource", "test-pk")
+	err := s.Delete(context.Background(), "test-resource", "test-pk")
 
 	assert.Error(t, err)
 	m.AssertExpectations(t)
@@ -90,7 +90,7 @@ func TestETCDSinkDeleteRemovesEtcdKeyWithGivenResource(t *testing.T) {
 	m.onDelete("json/test-resource/pk").Return(&clientv3.DeleteResponse{}, nil).Once()
 	s := givenETCDSink(m, nil, c)
 
-	err := s.Delete("test-resource", "pk")
+	err := s.Delete(context.Background(), "test-resource", "pk")
 
 	assert.NoError(t, err)
 	m.AssertExpectations(t)
@@ -139,8 +139,9 @@ func (m *mockSTM) Del(key string) {
 
 type errorObject struct{}
 
-func (e *errorObject) Reset()                       {}
-func (e *errorObject) String() string               { return "" }
-func (e *errorObject) ProtoMessage()                {}
-func (e *errorObject) UnmarshalJSON([]byte) error   { return assert.AnError }
-func (e *errorObject) MarshalJSON() ([]byte, error) { return nil, assert.AnError }
+func (e *errorObject) Reset()                        {}
+func (e *errorObject) String() string                { return "" }
+func (e *errorObject) ProtoMessage()                 {}
+func (e *errorObject) UnmarshalJSON([]byte) error    { return assert.AnError }
+func (e *errorObject) MarshalJSON() ([]byte, error)  { return nil, assert.AnError }
+func (e *errorObject) ToMap() map[string]interface{} { return nil }
