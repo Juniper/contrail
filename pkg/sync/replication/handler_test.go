@@ -1,6 +1,7 @@
 package replication
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -120,7 +121,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 			}
 
 			// when
-			err := h.Handle(tt.message)
+			err := h.Handle(context.Background(), tt.message)
 
 			// then
 			if tt.fails {
@@ -369,17 +370,23 @@ func newRowSinkMock() *rowSinkMock {
 	return &rowSinkMock{}
 }
 
-func (m *rowSinkMock) Create(resourceName string, pk string, properties map[string]interface{}) error {
+func (m *rowSinkMock) Create(
+	ctx context.Context, resourceName string, pk string, properties map[string]interface{},
+) error {
 	args := m.Called(resourceName, pk, properties)
 	return args.Error(0)
 }
 
-func (m *rowSinkMock) Update(resourceName string, pk string, properties map[string]interface{}) error {
+func (m *rowSinkMock) Update(
+	ctx context.Context, resourceName string, pk string, properties map[string]interface{},
+) error {
 	args := m.Called(resourceName, pk, properties)
 	return args.Error(0)
 }
 
-func (m *rowSinkMock) Delete(resourceName string, pk string) error {
+func (m *rowSinkMock) Delete(
+	ctx context.Context, resourceName string, pk string,
+) error {
 	args := m.Called(resourceName, pk)
 	return args.Error(0)
 }
