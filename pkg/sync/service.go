@@ -11,6 +11,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/db"
 	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync/replication"
 	"github.com/Juniper/contrail/pkg/sync/sink"
 	"github.com/coreos/etcd/clientv3"
@@ -109,11 +110,10 @@ func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
 		return nil, err
 	}
 	rowSink := replication.NewObjectMappingAdapter(s, dbService)
-	objectWriter := sink.NewObjectWriter(s)
 
 	switch driver {
 	case db.DriverPostgreSQL:
-		return createPostgreSQLWatcher(log, rowSink, dbService, objectWriter)
+		return createPostgreSQLWatcher(log, rowSink, dbService)
 	case db.DriverMySQL:
 		return createMySQLWatcher(log, rowSink)
 	default:
@@ -122,7 +122,7 @@ func createWatcher(log *logrus.Entry, s sink.Sink) (watchCloser, error) {
 }
 
 func createPostgreSQLWatcher(
-	log *logrus.Entry, sink replication.RowSink, dbService *db.Service, ow db.ObjectWriter,
+	log *logrus.Entry, sink replication.RowSink, dbService *db.Service,
 ) (watchCloser, error) {
 	handler := replication.NewPgoutputEventHandler(sink)
 
@@ -145,7 +145,9 @@ func createPostgreSQLWatcher(
 	}
 	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got pgx config")
 
-	return replication.NewPostgresWatcher(conf, dbService, replConn, handler.Handle, ow)
+	return replication.NewPostgresWatcher(conf, dbService, replConn, handler.Handle,
+		&services.ServiceEventProcessor{&services.BaseService{}})
+	// TODO(Michal): replace with ETCD event processor
 }
 
 func createMySQLWatcher(log *logrus.Entry, sink replication.RowSink) (watchCloser, error) {
