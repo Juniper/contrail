@@ -121,6 +121,7 @@ func project(uuid string) *models.Project {
 		ParentType: integration.DomainType,
 		ParentUUID: integration.DefaultDomainUUID,
 		FQName:     []string{integration.DefaultDomainID, integration.AdminProjectID, uuid + "-fq-name"},
+		Quota:      &models.QuotaType{},
 	}
 }
 

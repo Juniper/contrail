@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 TOP=$(cd "$(dirname "$0")" && cd ../ && pwd)
 
 COVERPROFILE=${1:--coverprofile=profile.tmp}
@@ -7,8 +11,13 @@ COVERMODE='-covermode=atomic'
 [ "$COVERPROFILE" = "none" ] && { COVERPROFILE=''; COVERMODE=''; }
 [ ! -z "$COVERPROFILE" ] && echo "mode: count" > "$TOP/profile.cov"
 
-for dir in $(go list -f '{{if .TestGoFiles}}{{.Dir}}{{end}}' ./... | \
-	grep -v -e 'pkg/cmd')
+# test_directories lists directories that contain _test.go files
+# either inside Go package (.TestGoFiles) or outside Go package (.XTestGoFiles, e.g. in "foo_test" package).
+function test_directories {
+	go list -f '{{if (or .TestGoFiles .XTestGoFiles)}}{{.Dir}}{{end}}' ./...
+}
+
+for dir in $(test_directories | grep -v -e 'pkg/cmd')
 do
 	cd "$TOP"
 
