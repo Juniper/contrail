@@ -6,7 +6,11 @@ extends:
 id: kubernetes_cluster
 metadata:
   category: cluster
-parent: ""
+parents:
+  global_system_config:
+    operations: "CRUD"
+    description: "Parent of this node resource."
+    presence: "optional"
 plural: kubernetes_clusters
 prefix: /
 schema:
