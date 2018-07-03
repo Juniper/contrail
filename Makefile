@@ -16,6 +16,8 @@ else
   export ANSIBLE_DEPLOYER_REVISION := HEAD
 endif
 
+GOPATH ?= `go env GOPATH`
+
 all: check lint test build
 
 deps: ## Setup the go dependencies
