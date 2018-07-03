@@ -124,7 +124,7 @@
           description: Indicates whether PXE is enabled or disabled on the Port.
           type: boolean
         local_link_connection:
-          presence: "true"
+          presence: "optional"
           description: "The Port binding profile"
           $ref: "fabric_types.json#/definitions/LocalLinkConnection"
     BaremetalPortGroupInfo:
