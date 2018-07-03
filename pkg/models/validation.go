@@ -35,6 +35,11 @@ func NewTypeValidatorWithFormat() (*TypeValidator, error) {
 		return nil, err
 	}
 
+	err = tv.addIPv4FormatValidator()
+	if err != nil {
+		return nil, err
+	}
+
 	err = tv.addMacAddressFormatValidator()
 	if err != nil {
 		return nil, err
@@ -78,6 +83,27 @@ func (tv *TypeValidator) addHostnameFormatValidator() error {
 			return errors.Errorf("Invalid hostname format.")
 		}
 
+		return nil
+	})
+	return nil
+}
+
+func (tv *TypeValidator) addIPv4FormatValidator() error {
+	validator := "ipv4"
+	ipv4Format := `^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$`
+	regex, err := regexp.Compile(ipv4Format)
+	if err != nil {
+		return err
+	}
+
+	tv.SchemaValidator.addFormatValidator(validator, func(value string) error {
+		ip := net.ParseIP(value)
+		if ip == nil {
+			return errors.Errorf("\"%s\" is an invalid IPv4 value", value)
+		}
+		if !regex.MatchString(value) {
+			return errors.Errorf("Invalid IPv4 format. It should match \"%s\"", ipv4Format)
+		}
 		return nil
 	})
 	return nil

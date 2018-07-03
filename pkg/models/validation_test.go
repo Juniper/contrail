@@ -55,6 +55,30 @@ func TestFormatValidation(t *testing.T) {
 			format:     "hostname",
 			fails:      true,
 		},
+		{
+			name:       "Valid ipv4 address",
+			testString: "10.1.1.10",
+			format:     "ipv4",
+			fails:      false,
+		},
+		{
+			name:       "Invalid ipv4 address",
+			testString: "10.1.1.256",
+			format:     "ipv4",
+			fails:      true,
+		},
+		{
+			name:       "Invalid ipv4 address format",
+			testString: "10.1.1-10",
+			format:     "ipv4",
+			fails:      true,
+		},
+		{
+			name:       "Valid ipv6 address - fail",
+			testString: "0:0:0:0:0:0:0:1",
+			format:     "ipv4",
+			fails:      true,
+		},
 	}
 
 	tv, err := NewTypeValidatorWithFormat()
