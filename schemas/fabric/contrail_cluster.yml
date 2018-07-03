@@ -6,7 +6,11 @@ extends:
 id: contrail_cluster
 metadata:
   category: cluster
-parent: ""
+parents:
+  global_system_config:
+    operations: "CRUD"
+    description: "Parent of this node resource."
+    presence: "optional"
 plural: contrail_clusters
 prefix: /
 references:

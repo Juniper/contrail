@@ -37,8 +37,8 @@ func mockServer(routes map[string]interface{}) *httptest.Server {
 	return mockServer
 }
 
-func runEndpointTest(t *testing.T, clusterName string,
-	extraTasks bool) (*TestScenario, *httptest.Server, *httptest.Server, func()) {
+func runEndpointTest(t *testing.T, clusterName string) (*TestScenario,
+	*httptest.Server, *httptest.Server, func()) {
 	routes := map[string]interface{}{
 		"/ports": echo.HandlerFunc(func(c echo.Context) error {
 			return c.JSON(http.StatusOK,
@@ -55,7 +55,6 @@ func runEndpointTest(t *testing.T, clusterName string,
 	neutronPublic := mockServer(routes)
 
 	context := pongo2.Context{
-		"extra_tasks":   extraTasks,
 		"cluster_name":  clusterName,
 		"endpoint_name": "neutron",
 		"private_url":   neutronPrivate.URL,
@@ -108,7 +107,7 @@ func TestProxyEndpoint(t *testing.T) {
 	// Create a cluster and its neutron endpoint
 	clusterAName := "clusterA"
 	testScenario, clusterANeutronPublic, clusterANeutronPrivate, cleanup1 := runEndpointTest(
-		t, clusterAName, true)
+		t, clusterAName)
 	defer cleanup1()
 	// remove tempfile after test
 	defer clusterANeutronPrivate.Close()
@@ -128,7 +127,7 @@ func TestProxyEndpoint(t *testing.T) {
 	// create one more cluster/neutron endpoint for new cluster
 	clusterBName := "clusterB"
 	testScenario, neutronPublic, neutronPrivate, cleanup2 := runEndpointTest(
-		t, clusterBName, false)
+		t, clusterBName)
 	defer cleanup2()
 	// remove tempfile after test
 	defer neutronPrivate.Close()
@@ -226,7 +225,6 @@ func TestKeystoneEndpoint(t *testing.T) {
 
 	clusterName := "clusterC"
 	context := pongo2.Context{
-		"extra_tasks":   true,
 		"cluster_name":  clusterName,
 		"endpoint_name": "keystone",
 		"private_url":   ksPrivate.URL,
@@ -274,7 +272,6 @@ func TestKeystoneEndpoint(t *testing.T) {
 
 	// Recreate endpoint
 	context = pongo2.Context{
-		"extra_tasks":   true,
 		"cluster_name":  clusterName,
 		"endpoint_name": "keystone",
 		"public_url":    ksPublic.URL,
