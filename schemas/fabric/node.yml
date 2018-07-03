@@ -3,9 +3,9 @@ extends:
 - base
 id: node
 parents:
-  contrail_cluster:
+  global_system_config:
     operations: "CRUD"
-    description: "Parent of this node."
+    description: "Parent of this node resource."
     presence: "optional"
 references:
     credential:
