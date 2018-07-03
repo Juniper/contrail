@@ -2,14 +2,15 @@ package sink
 
 import (
 	"context"
-	"fmt"
 	"time"
+
+	"github.com/coreos/etcd/clientv3"
+	conc "github.com/coreos/etcd/clientv3/concurrency"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/log"
-	"github.com/coreos/etcd/clientv3"
-	conc "github.com/coreos/etcd/clientv3/concurrency"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -32,7 +33,7 @@ func NewETCDSink(client *clientv3.Client, codec Codec) *ETCDSink {
 		kvClient: clientv3.NewKV(client),
 		inTransaction: func(ctx context.Context, apply func(conc.STM) error) error {
 			_, err := conc.NewSTM(client, apply, conc.WithAbortContext(ctx))
-			return err
+			return errors.WithStack(err)
 		},
 		codec: codec,
 		log:   log.NewLogger("etcd-sink"),
@@ -46,14 +47,14 @@ func (s *ETCDSink) Create(resourceName string, pk string, object db.Object) erro
 
 	p, err := s.codec.Encode(object)
 	if err != nil {
-		return fmt.Errorf("encode object to %s: %s", s.codec.Key(), err)
+		return errors.Wrapf(err, "encode object to %s", s.codec.Key())
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), kvClientRequestTimeout)
 	defer cancel()
 	_, err = s.kvClient.Put(ctx, resourceKey(s.codec, resourceName, pk), string(p))
 	if err != nil {
-		return fmt.Errorf("put %s-encoded resource to etcd: %s", s.codec.Key(), err)
+		return errors.Wrapf(err, "put %s-encoded resource to etcd", s.codec.Key())
 	}
 	return nil
 }
@@ -89,7 +90,7 @@ func (s *ETCDSink) Delete(resourceName string, pk string) error {
 
 	_, err := s.kvClient.Delete(ctx, resourceKey(s.codec, resourceName, pk))
 	if err != nil {
-		return fmt.Errorf("delete JSON-encoded resource in etcd: %s", err)
+		return errors.Wrapf(err, "delete %s-encoded resource in etcd", s.codec.Key())
 	}
 	return nil
 }

@@ -100,7 +100,7 @@ func NewPostgresWatcher(
 
 // Watch starts subscription and store context cancel function.
 func (w *PostgresWatcher) Watch(ctx context.Context) error {
-	w.log.Debug("Watching events on PostgreSQL replication slot")
+	w.log.Debug("Starting Watch")
 	ctx, cancel := context.WithCancel(ctx)
 	w.cancel = cancel
 
