@@ -2,6 +2,11 @@ description: SSH KeyPairs
 extends:
 - base
 id: keypair
+parent:
+  global_system_config:
+    operations: "CRUD"
+    description: "Parent of this key-pair resource."
+    presence: "optional"
 plural: keypairs
 prefix: /
 schema:
