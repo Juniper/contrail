@@ -27,6 +27,7 @@ type QueryBuilder struct {
 	Fields        []string
 	Table         string
 	RefFields     map[string][]string
+	ChildFields   map[string][]string
 	BackRefFields map[string][]string
 }
 
@@ -54,14 +55,16 @@ func newQueryContext() *queryContext {
 }
 
 //NewQueryBuilder makes a query builder.
-func NewQueryBuilder(dialect Dialect, table string,
-	fields []string, refFields map[string][]string,
-	backRefFields map[string][]string) *QueryBuilder {
+func NewQueryBuilder(
+	dialect Dialect, table string, fields []string, refFields map[string][]string,
+	childFields map[string][]string, backRefFields map[string][]string,
+) *QueryBuilder {
 	qb := &QueryBuilder{}
 	qb.Dialect = dialect
 	qb.Table = table
 	qb.Fields = fields
 	qb.RefFields = refFields
+	qb.ChildFields = childFields
 	qb.BackRefFields = backRefFields
 	return qb
 }
@@ -229,15 +232,16 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 		where := qb.buildFilterParts(ctx, column, filter.Values)
 		ctx.where = append(ctx.where, where)
 	}
-	if len(spec.BackRefUUIDs) > 0 {
-		where := []string{}
-		for refTable := range qb.BackRefFields {
-			column := qb.quote(refTable, "uuid")
-			wherePart := qb.buildFilterParts(ctx, column, spec.BackRefUUIDs)
-			where = append(where, wherePart)
-		}
-		ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
-	}
+	// TODO: This will be reenabled later when back references will be supported
+	// if len(spec.BackRefUUIDs) > 0 {
+	// 	where := []string{}
+	// 	for refTable := range qb.BackRefFields {
+	// 		column := qb.quote(refTable, "uuid")
+	// 		wherePart := qb.buildFilterParts(ctx, column, spec.BackRefUUIDs)
+	// 		where = append(where, wherePart)
+	// 	}
+	// 	ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
+	// }
 }
 
 func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
@@ -333,30 +337,13 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 	}
 }
 
-func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
+func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 	spec := ctx.spec
-	// use join if backrefuuids
-	if len(spec.BackRefUUIDs) > 0 {
-		for refTable, refFields := range qb.BackRefFields {
-			refTable = strings.ToLower(refTable)
-			if spec.Detail {
-				ctx.columnParts = append(
-					ctx.columnParts,
-					qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")),
-				)
-				ctx.columns["backref_"+refTable] = len(ctx.columns)
-			}
-			ctx.joins = append(ctx.joins,
-				qb.join(refTable, "parent_uuid", qb.Table))
-		}
-		return
-	}
 	if !spec.Detail {
 		return
 	}
-	// use sub query if no backrefuuids
-	for refTable, refFields := range qb.BackRefFields {
-		if !qb.islinkToInField(ctx, refTable+"_backrefs") {
+	for refTable, refFields := range qb.ChildFields {
+		if !qb.islinkToInField(ctx, refTable+"s") {
 			continue
 		}
 		refTable = strings.ToLower(refTable)
@@ -368,7 +355,7 @@ func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 		ctx.columnParts = append(
 			ctx.columnParts,
 			subQuery)
-		ctx.columns["backref_"+refTable] = len(ctx.columns)
+		ctx.columns[schema.ChildColumnName(refTable, qb.Table)] = len(ctx.columns)
 	}
 }
 
@@ -421,7 +408,7 @@ func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *services.ListS
 	qb.buildFilterQuery(ctx)
 	qb.buildAuthQuery(ctx)
 	qb.buildRefQuery(ctx)
-	qb.buildBackRefQuery(ctx)
+	qb.buildChildQuery(ctx)
 	qb.buildQuery(ctx)
 	return ctx.query.String(), ctx.columns, ctx.values
 }
