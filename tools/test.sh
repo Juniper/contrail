@@ -17,7 +17,7 @@ function test_directories {
 	go list -f '{{if (or .TestGoFiles .XTestGoFiles)}}{{.Dir}}{{end}}' ./...
 }
 
-for dir in $(test_directories | grep -v -e 'pkg/cmd')
+for dir in $(test_directories)
 do
 	cd "$TOP"
 

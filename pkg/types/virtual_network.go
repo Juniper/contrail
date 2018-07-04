@@ -20,7 +20,7 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	// check if multiple policy service chain supported
 	if !virtualNetwork.IsValidMultiPolicyServiceChainConfig() {
 		return nil, common.ErrorBadRequest(
-			"Multi policy service chains are not supported, with both import export external route targets")
+			"multi policy service chains are not supported, with both import export external route targets")
 	}
 	//  neutron <-> vnc sharing
 	virtualNetwork.MakeNeutronCompatible()
@@ -28,13 +28,12 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	// by the vnc server
 	if virtualNetwork.HasVirtualNetworkNetworkID() {
 		return nil, common.ErrorForbidden(
-			"Cannot set the virtual network ID, it's allocated by the server")
+			"cannot set the virtual network ID, it's allocated by the server")
 	}
 
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			// Allocate virtual network ID
 			virtualNetwork.VirtualNetworkNetworkID, err = sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
 			if err != nil {
 				return err
@@ -147,20 +146,25 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 			ID: ipamReference.UUID,
 		})
 		if err != nil {
-			return common.ErrorBadRequestf("Getting IPAM subnets failed: %v", err)
+			return common.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
+				ipamReference.UUID, err)
 		}
 
 		ipam := ipamResponse.NetworkIpam
 		vnSubnet := ipamReference.GetAttr()
 		err = validateIpamSubnets(virtualNetwork, ipam, vnSubnet)
 		if err != nil {
-			return common.ErrorBadRequestf("Validation of IPAM subnets failed: %v", err)
+			return common.ErrorBadRequestf(
+				"validation of IPAM subnets of referenced network IPAM with UUID %s failed: %v",
+				ipamReference.UUID, err)
 		}
 
 		ipamSubnets := extractIpamSubnets(ipam, vnSubnet)
 		subnets, err = mergeIpamSubnetsIfNoOverlap(subnets, ipamSubnets)
 		if err != nil {
-			return common.ErrorBadRequestf("Merging of IPAM subnets failed: %v", err)
+			return common.ErrorBadRequestf(
+				"merging of IPAM subnets of referenced network IPAM with UUID %s failed: %v",
+				ipamReference.UUID, err)
 		}
 		//TODO: check network subnet quota
 	}
@@ -172,7 +176,7 @@ func (sv *ContrailTypeLogicService) checkProviderNetwork(
 
 	if virtualNetwork.IsProviderNetwork {
 		return common.ErrorBadRequestf(
-			"Non provider VN (%v) can not be configured with is_provider_network = True", virtualNetwork.UUID)
+			"non provider VN (%v) can not be configured with is_provider_network = True", virtualNetwork.UUID)
 	}
 
 	// no further checks if not linked to a provider network
@@ -183,7 +187,7 @@ func (sv *ContrailTypeLogicService) checkProviderNetwork(
 	// non provider network can connect to only one provider network.
 	if len(virtualNetwork.VirtualNetworkRefs) > 1 {
 		return common.ErrorBadRequestf(
-			"Non Provider VN (%v) can connect to one provider VN but trying to connect to multiple VN",
+			"non Provider VN (%v) can connect to one provider VN but trying to connect to multiple VN",
 			virtualNetwork.UUID,
 		)
 	}
@@ -193,7 +197,7 @@ func (sv *ContrailTypeLogicService) checkProviderNetwork(
 		return err
 	}
 	if !ok {
-		return common.ErrorBadRequestf("Non Provider VN (%v) can connect only "+
+		return common.ErrorBadRequestf("non Provider VN (%v) can connect only "+
 			"to one provider VN but not (%v)", virtualNetwork.UUID, refUUID)
 	}
 	return nil

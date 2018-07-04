@@ -88,8 +88,8 @@ func LaunchTestAPIServer() (*Server, *httptest.Server) {
 	return APIServer, TestServer
 }
 
-//CreateTestProject in keystone.
-func CreateTestProject(s *Server, testID string) {
+//AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
+func AddKeystoneProjectAndUser(s *Server, testID string) {
 	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment)
 	assignment.Projects[testID] = &keystone.Project{
 		Domain: assignment.Domains[defaultDomainID],

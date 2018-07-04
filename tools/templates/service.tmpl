@@ -67,7 +67,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
-        validationError := errors.Wrapf(err, "Validation failed for resource with UUID: %s", request.{{ schema.JSONSchema.GoName }}.UUID)
+        validationError := errors.Wrapf(err, "Validation failed for resource with UUID %s", request.{{ schema.JSONSchema.GoName }}.UUID)
         log.Error(validationError)
         return nil, common.ErrorBadRequestf("%v", validationError)
     }
