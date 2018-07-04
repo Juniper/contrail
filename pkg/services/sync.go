@@ -3,6 +3,7 @@ package services
 import (
 	"net/http"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -14,7 +15,7 @@ type ContrailService struct {
 	TypeValidator *models.TypeValidator
 }
 
-//RESTSync handle a bluk Create REST service.
+//RESTSync handles a bulk create request.
 func (service *ContrailService) RESTSync(c echo.Context) error {
 	events := &EventList{}
 	if err := c.Bind(events); err != nil {
@@ -26,7 +27,7 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 	ctx := c.Request().Context()
 	responses, err := events.Process(ctx, service)
 	if err != nil {
-		return err
+		return common.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusCreated, responses.Events)
 }

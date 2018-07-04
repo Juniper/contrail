@@ -17,32 +17,32 @@ import (
 )
 
 func TestFloatingIP(t *testing.T) {
-	CreateTestProject(APIServer, "TestAPIServer")
+	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_floating_ip.yml")
 }
 
 func TestVirtualNetwork(t *testing.T) {
-	CreateTestProject(APIServer, "TestAPIServer")
+	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
 func TestQuotaChecking(t *testing.T) {
-	CreateTestProject(APIServer, "TestAPIServer")
+	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_quota_checking.yml")
 }
 
 func TestSync(t *testing.T) {
-	CreateTestProject(APIServer, "TestSync")
+	AddKeystoneProjectAndUser(APIServer, "TestSync")
 	RunTest(t, "./test_data/test_sync.yml")
 }
 
 func TestValidation(t *testing.T) {
-	CreateTestProject(APIServer, "TestValidation")
+	AddKeystoneProjectAndUser(APIServer, "TestValidation")
 	RunTest(t, "./test_data/test_validation.yml")
 }
 
 func TestGRPC(t *testing.T) {
-	CreateTestProject(APIServer, "TestGRPC")
+	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
 	restClient := NewClient(
 		TestServer.URL,
 		TestServer.URL+"/keystone/v3",
