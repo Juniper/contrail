@@ -575,6 +575,11 @@ func ReferenceTableName(prefix, id, linkTo string) string {
 	return strings.ToLower(prefix + "_" + makeShort(id) + "_" + makeShort(linkTo))
 }
 
+// ChildColumnName makes child column name.
+func ChildColumnName(childSchemaID, schemaID string) string {
+	return strings.ToLower("child_" + childSchemaID + "_" + schemaID)
+}
+
 // nolint: gocyclo
 func (api *API) resolveAllRelation() error {
 	for _, s := range api.Schemas {
