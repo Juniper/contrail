@@ -215,7 +215,7 @@ func (tv *TypeValidator) ValidateCommunityAttributes(obj *CommunityAttributes) e
 		}
 
 		if asn0 > 65535 {
-			return errors.Errorf("Out of range ASN value %s. ASN values cannot exceed 65535.", asn0)
+			return errors.Errorf("Out of range ASN value %v. ASN values cannot exceed 65535.", asn0)
 
 		}
 	}

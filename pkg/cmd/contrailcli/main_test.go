@@ -48,13 +48,12 @@ func TestMain(m *testing.M) {
 }
 
 func setupClient(testID string) {
-	apisrv.CreateTestProject(server, testID)
+	apisrv.AddKeystoneProjectAndUser(server, testID)
 	viper.SetDefault("client.id", testID)
 	viper.SetDefault("client.password", testID)
 	viper.SetDefault("client.project_id", testID)
-	viper.SetDefault("client.endpoint", testServer.URL)
 	viper.SetDefault("client.domain_id", "default")
+	viper.SetDefault("client.endpoint", testServer.URL)
 	viper.SetDefault("client.schema_root", "/public")
-	viper.SetDefault("keystone.auth_url", testServer.URL+"/keystone/v3")
 	viper.SetDefault("insecure", true)
 }
