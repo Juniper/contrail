@@ -47,6 +47,13 @@ test_data:
           dst_addresses: [{}]
           action_list:
             simple_action: pass
+  admin_project_with_network_policy1: &admin_project_with_network_policy1
+    uuid: admin_project_uuid
+    quota: {}
+    network_policys:
+    - uuid: network_policy_uuid
+      parent_type: project
+      parent_uuid: admin_project_uuid
   network_policy2: &network_policy2
     fq_name: ["default", "demo_project_uuid", "policy2"]
     uuid: network_policy_uuid2
@@ -191,13 +198,15 @@ workflow:
     data:
       network-policy: *network_policy1
   expect:
-    network-policy:
-      uuid: network_policy_uuid
-      fq_name: ["default", "admin_project_uuid", "policy1"]
-      parent_type: project
-      parent_uuid: admin_project_uuid
-      perms2:
-        owner: admin
+    network-policy: *network_policy1
+- name: get project with network policy 1
+  request:
+    path: /project/admin_project_uuid
+    method: GET
+    expected:
+    - 200
+  expect:
+    project: *admin_project_with_network_policy1
 - name: create network policy 2
   client: bob
   request:
@@ -443,15 +452,16 @@ workflow:
   expect:
     virtual-networks:
     - *vn_blue_simple
-- name: list virtual networks with back_ref_id
-  request:
-    path: "/virtual-networks?back_ref_id=ri_uuid"
-    method: GET
-    expected:
-    - 200
-  expect:
-    virtual-networks:
-    - *vn_blue_simple
+# This test is incorrect. Virtual network has no back reference to routing instance. 
+# - name: list virtual networks with back_ref_id
+#   request:
+#     path: "/virtual-networks?back_ref_id=ri_uuid"
+#     method: GET
+#     expected:
+#     - 200
+#   expect:
+#     virtual-networks:
+#     - *vn_blue_simple
 - name: list virtual networks with parent_id
   request:
     path: "/virtual-networks?parent_id=admin_project_uuid"

@@ -24,17 +24,27 @@ var {{ schema.JSONSchema.GoName }}Fields = []string{
 var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
    {% for linkTo, reference in schema.References %}
     "{{ linkTo | lower }}": []string{
-        // {{ reference.LinkTo }}
         {% for column in reference.Columns %}"{{ column.Column }}",
         {% endfor %}
     },
    {% endfor %}
 }
 
-// {{ schema.JSONSchema.GoName }}BackRefFields is db back reference fields for {{ schema.JSONSchema.GoName }}
-var {{ schema.JSONSchema.GoName }}BackRefFields = map[string][]string{
+// {{ schema.JSONSchema.GoName }}ChildFields is db child fields for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}ChildFields = map[string][]string{
    {% for backref in schema.Children %}
    {% set child = backref.LinkTo %}
+   "{{ child.ID | lower }}": []string{
+        {% for column in child.Columns %}"{{ column.Column }}",
+        {% endfor %}
+   },
+   {% endfor %}
+}
+
+// {{ schema.JSONSchema.GoName }}BackRefFields is db back reference fields for {{ schema.JSONSchema.GoName }}
+var {{ schema.JSONSchema.GoName }}BackRefFields = map[string][]string{
+   {% for backref, definition in schema.BackReferences %}
+   {% set child = definition.LinkTo %}
    "{{ child.ID | lower }}": []string{
         {% for column in child.Columns %}"{{ column.Column }}",
         {% endfor %}
@@ -204,7 +214,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
     {% endfor %}
     {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
-    if value, ok := values["backref_{{ child.ID | lower }}"]; ok {
+    if value, ok := values["child_{{ child.ID | lower }}_{{schema.ID}}"]; ok {
         childResources := qb.scanResourceList(value)
         for _, childResource := range childResources {
             childResourceMap, ok := childResource.(map[string]interface{})
