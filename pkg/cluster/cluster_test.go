@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
@@ -107,7 +106,8 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster create is not as expected")
 	// Wait for the in-memory endpoint cache to get updated
-	time.Sleep(2 * time.Second)
+	err = apisrv.APIServer.ProxyForceUpdate()
+	assert.NoError(t, err)
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -128,7 +128,8 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster update is not as expected")
 	// Wait for the in-memory endpoint cache to get updated
-	time.Sleep(2 * time.Second)
+	err = apisrv.APIServer.ProxyForceUpdate()
+	assert.NoError(t, err)
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {

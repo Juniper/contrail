@@ -112,6 +112,11 @@ func CreateTestProject(s *Server, testID string) {
 	}
 }
 
+//ProxyForceUpdate is a test helper that makes forceUpdate method public.
+func (s *Server) ProxyForceUpdate() error {
+	return s.Proxy.forceUpdate()
+}
+
 //Task has API request and expected response.
 type Task struct {
 	Name    string      `yaml:"name,omitempty"`
