@@ -39,6 +39,9 @@ type proxyService struct {
 	serviceContext     context.Context
 	stopServiceContext context.CancelFunc
 	serviceWaitGroup   *sync.WaitGroup
+	// channels required by forceUpdate to ignore Sleep
+	forceUpdateChan   chan struct{}
+	waitForUpdateChan chan struct{}
 }
 
 func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
@@ -73,7 +76,7 @@ func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 			// less than 100 records present in DB
 			break
 		}
-		// more than 100 records present in DB, continue to read
+		// more than 100 records present in DB, continue to r	ead
 		offset := int64(len(endpoints) + 1)
 		spec.Offset = offset
 	}
@@ -217,10 +220,19 @@ func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint)
 	}
 }
 
+func (p *proxyService) forceUdpate() {
+	p.forceUpdateChan <- struct{}{}
+	p.waitForUpdateChan <- struct{}{}
+}
+
 func (p *proxyService) serve() {
 	// add dynamic proxy middleware
 	g := p.echoServer.Group(p.group)
 	g.Use(p.dynamicProxyMiddleware())
+
+	// alloc channels required by forceUpdate
+	p.forceUpdateChan = make(chan struct{})
+	p.waitForUpdateChan = make(chan struct{})
 
 	p.serviceContext, p.stopServiceContext = context.WithCancel(context.Background())
 	p.serviceWaitGroup = &sync.WaitGroup{}
@@ -228,29 +240,37 @@ func (p *proxyService) serve() {
 	go func() {
 		// serve forever
 		defer p.serviceWaitGroup.Done()
-		var err error
-		var endpoints map[string]*models.Endpoint
 		for {
+			timer := time.NewTimer(2 * time.Second)
 			select {
 			case <-p.serviceContext.Done():
 				log.Info("stopping dynamic proxy server")
+				// close channel that allows forceUpdate
+				close(p.forceUpdateChan)
+				close(p.waitForUpdateChan)
 				return
-			default:
-				// poll db for the endpoint resource
-				endpoints, err = p.readEndpoints()
-				if err != nil {
-					// log and continue during DB read
-					log.Debug("Endpoints read failed")
-					log.Error(err)
-				}
-				if endpoints != nil {
-					// create/update/delete proxy endpoints in-memory
-					p.syncProxyEndpoints(endpoints)
-				}
-				time.Sleep(2 * time.Second)
+			case <-p.forceUpdateChan:
+				p.updateEndpoints()
+				<-p.waitForUpdateChan
+			case <-timer.C:
+				p.updateEndpoints()
 			}
 		}
 	}()
+}
+
+func (p *proxyService) updateEndpoints() {
+	// poll db for the endpoint resource
+	endpoints, err := p.readEndpoints()
+	if err != nil {
+		// log and continue during DB read
+		log.Debug("Endpoints read failed")
+		log.Error(err)
+	}
+	if endpoints != nil {
+		// create/update/delete proxy endpoints in-memory
+		p.syncProxyEndpoints(endpoints)
+	}
 }
 
 func (p *proxyService) stop() {
