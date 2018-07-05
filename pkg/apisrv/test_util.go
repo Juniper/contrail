@@ -112,6 +112,11 @@ func CreateTestProject(s *Server, testID string) {
 	}
 }
 
+// ForceProxyUpdate is a public method that updates endpoints without Sleep.
+func (s *Server) ForceProxyUpdate() error {
+	return s.Proxy.forceUpdate()
+}
+
 //Task has API request and expected response.
 type Task struct {
 	Name    string      `yaml:"name,omitempty"`
