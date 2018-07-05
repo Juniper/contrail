@@ -13,14 +13,14 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -39,6 +39,8 @@ type proxyService struct {
 	serviceContext     context.Context
 	stopServiceContext context.CancelFunc
 	serviceWaitGroup   *sync.WaitGroup
+	// channel required by forceUpdate to ignore Sleep
+	forceUpdateChan chan chan struct{}
 }
 
 func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
@@ -73,7 +75,7 @@ func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 			// less than 100 records present in DB
 			break
 		}
-		// more than 100 records present in DB, continue to read
+		// more than 100 records present in DB, continue to r	ead
 		offset := int64(len(endpoints) + 1)
 		spec.Offset = offset
 	}
@@ -217,10 +219,21 @@ func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint)
 	}
 }
 
+func (p *proxyService) forceUpdate() error {
+	if c := <-p.forceUpdateChan; c != nil {
+		c <- struct{}{}
+		return nil
+	}
+	return errors.New("forceUpdateChannel is already closed")
+}
+
 func (p *proxyService) serve() {
 	// add dynamic proxy middleware
 	g := p.echoServer.Group(p.group)
 	g.Use(p.dynamicProxyMiddleware())
+
+	// alloc channel required by forceUpdate
+	p.forceUpdateChan = make(chan chan struct{})
 
 	p.serviceContext, p.stopServiceContext = context.WithCancel(context.Background())
 	p.serviceWaitGroup = &sync.WaitGroup{}
@@ -228,29 +241,35 @@ func (p *proxyService) serve() {
 	go func() {
 		// serve forever
 		defer p.serviceWaitGroup.Done()
-		var err error
-		var endpoints map[string]*models.Endpoint
+		timer := time.NewTimer(2 * time.Second)
+		defer timer.Stop()
 		for {
+			c := make(chan struct{})
 			select {
 			case <-p.serviceContext.Done():
 				log.Info("stopping dynamic proxy server")
 				return
-			default:
-				// poll db for the endpoint resource
-				endpoints, err = p.readEndpoints()
-				if err != nil {
-					// log and continue during DB read
-					log.Debug("Endpoints read failed")
-					log.Error(err)
-				}
-				if endpoints != nil {
-					// create/update/delete proxy endpoints in-memory
-					p.syncProxyEndpoints(endpoints)
-				}
-				time.Sleep(2 * time.Second)
+			case p.forceUpdateChan <- c:
+				p.updateEndpoints()
+				<-c
+			case <-timer.C:
+				p.updateEndpoints()
 			}
 		}
 	}()
+}
+
+func (p *proxyService) updateEndpoints() {
+	// poll db for the endpoint resource
+	endpoints, err := p.readEndpoints()
+	if err != nil {
+		// log and continue during DB read
+		log.WithError(err).Error("Endpoints read failed")
+	}
+	if endpoints != nil {
+		// create/update/delete proxy endpoints in-memory
+		p.syncProxyEndpoints(endpoints)
+	}
 }
 
 func (p *proxyService) stop() {
@@ -258,4 +277,6 @@ func (p *proxyService) stop() {
 	p.stopServiceContext()
 	// wait for the proxy server poll to complete
 	p.serviceWaitGroup.Wait()
+	// close channel that allows forceUpdate
+	close(p.forceUpdateChan)
 }
