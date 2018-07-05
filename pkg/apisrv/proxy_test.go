@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
@@ -115,8 +114,8 @@ func TestProxyEndpoint(t *testing.T) {
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 
-	// Wait a sec for the dynamic proxy to be created/updated
-	time.Sleep(2 * time.Second)
+	err := APIServer.Proxy.forceUpdate()
+	assert.NoError(t, err)
 
 	// verify proxies
 	ok := verifyProxy(t, testScenario,
@@ -138,8 +137,9 @@ func TestProxyEndpoint(t *testing.T) {
 	// remove tempfile after test
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
-	// Wait a sec for the dynamic proxy to be created/updated
-	time.Sleep(2 * time.Second)
+
+	err = APIServer.Proxy.forceUpdate()
+	assert.NoError(t, err)
 
 	// verify new proxies
 	ok = verifyProxy(t, testScenario,
@@ -193,8 +193,8 @@ func TestKeystoneEndpoint(t *testing.T) {
 	cleanup := RunDirtyTestScenario(t, &testScenario)
 	defer cleanup()
 
-	// Wait a sec for the dynamic proxy to be created/updated
-	time.Sleep(2 * time.Second)
+	err = APIServer.Proxy.forceUpdate()
+	assert.NoError(t, err)
 
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
@@ -214,8 +214,8 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
 	}
-	// Wait a sec for the dynamic proxy to be deleted
-	time.Sleep(2 * time.Second)
+	err = APIServer.Proxy.forceUpdate()
+	assert.NoError(t, err)
 	// Login to new local keystone
 	for _, client := range testScenario.Clients {
 		err = client.Login()
@@ -237,8 +237,9 @@ func TestKeystoneEndpoint(t *testing.T) {
 	assert.NoError(t, err, "failed to load endpoint create test data")
 	cleanup = RunDirtyTestScenario(t, &testScenario)
 	defer cleanup()
-	// Wait a sec for the dynamic proxy to be created
-	time.Sleep(2 * time.Second)
+
+	err = APIServer.Proxy.forceUpdate()
+	assert.NoError(t, err)
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
 		err = client.Login()
@@ -257,6 +258,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
 	}
-	// Wait a sec for the dynamic proxy to be deleted
-	time.Sleep(2 * time.Second)
+
+	err = APIServer.Proxy.forceUpdate()
+	assert.NoError(t, err)
 }
