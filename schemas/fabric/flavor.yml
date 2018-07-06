@@ -6,10 +6,6 @@ plural: flavors
 prefix: /openstack
 schema:
   properties:
-    name:
-      description: The display name of a flavor
-      type: string
-      nullable: false
     disk:
       description: The size of the root disk that will be created in GiB
       type: integer

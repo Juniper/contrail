@@ -6,10 +6,6 @@ plural: os_images
 prefix: /openstack
 schema:
   properties:
-    name:
-      description: Name of the image to be created/updated
-      nullable: false
-      type: string
     owner:
       description: An identifier for the owner of the image
       type: string
