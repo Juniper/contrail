@@ -111,17 +111,31 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     model := create{{ schema.JSONSchema.GoName }}(t, ctx, uuid.NewV4().String(), true, share)
     defer delete{{ schema.JSONSchema.GoName }}(t, ctx, model.UUID)
 
-    response, err := db.List{{ schema.JSONSchema.GoName }}(ctx, &services.List{{ schema.JSONSchema.GoName }}Request{
-            Spec: &services.ListSpec{Limit: 1,
-                    Filters: []*services.Filter{
-                        &services.Filter{
-                            Key: "uuid",
-                            Values: []string{model.UUID},
-                        },
-                    },
-    }})
+
+    listSpec := &services.ListSpec{Limit: 1,
+        Filters: []*services.Filter{
+            &services.Filter{
+                Key: "uuid",
+                Values: []string{model.UUID},
+            },
+        },
+    }
+    response, err := db.List{{ schema.JSONSchema.GoName }}(ctx,
+        &services.List{{ schema.JSONSchema.GoName }}Request{
+            Spec: listSpec,
+    })
     assert.NoError(t, err, "list failed")
     assert.Equal(t, 1, len(response.{{ schema.JSONSchema.GoName }}s), "expected one element")
+    assert.Equal(t, int64(1), response.{{ schema.JSONSchema.GoName }}Count, "expected count = 1")
+
+    listSpec.Count = true
+    response, err = db.List{{ schema.JSONSchema.GoName }}(ctx,
+        &services.List{{ schema.JSONSchema.GoName }}Request{
+            Spec: listSpec,
+    })
+    assert.NoError(t, err, "list count failed")
+    assert.Equal(t, ([]*models.{{ schema.JSONSchema.GoName }})(nil), response.{{ schema.JSONSchema.GoName }}s, "expected nil list")
+    assert.Equal(t, int64(1), response.{{ schema.JSONSchema.GoName }}Count, "expected count = 1")
 
     model.DisplayName = "updated"
     {% for linkTo, reference in schema.References %}
