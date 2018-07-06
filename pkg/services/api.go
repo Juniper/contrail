@@ -14,7 +14,7 @@ const (
 	PageMarkerKey   = "pageMarker"
 	PageLimitKey    = "pageLimit"
 	DetailKey       = "detail"
-	CountKey        = "is_count"
+	CountKey        = "count"
 	SharedKey       = "shared"
 	ExcludeHRefsKey = "exclude_hrefs"
 	ParentTypeKey   = "parent_type"
