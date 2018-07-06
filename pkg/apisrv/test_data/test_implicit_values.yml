@@ -1,0 +1,83 @@
+name: Implicit values test
+cleanup:
+- path: /openserverserver/srv_blue
+- path: /openserverserver/srv_red
+- path: /project/admin_project_implicit_values_uuid
+test_data:
+  admin_project: &admin_project_implicit_values
+    uuid: admin_project_implicit_values_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  srv_minimal: &srv_minimal_implicit_values
+    uuid: srv_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_project_implicit_values_uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project: *admin_project_implicit_values
+  expect:
+    project: *admin_project_implicit_values
+
+- name: create server without providing name
+  request:
+    path: /openserverservers
+    method: POST
+    expected:
+    - 201
+    data:
+      server: *srv_minimal_implicit_values
+  expect:
+    server:
+      <<: *srv_minimal_implicit_values
+      name: default-server
+
+# TODO implement uniqueness constraint
+#- name: create server with same name
+#  request:
+#    path: /openserverservers
+#    method: POST
+#    expected:
+#    - 409
+#    data:
+#      server:
+#        name: default-server
+#        uuid: srv_red
+#        display_name: red
+#        parent_type: project
+#        parent_uuid: admin_project_implicit_values_uuid
+#  expect: null
+
+- name: delete server
+  request:
+    path: /openserverserver/srv_blue
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+- name: delete project
+  request:
+    path: /project/admin_project_implicit_values_uuid
+    method: DELETE
+    expected:
+    - 204
+  expect: null

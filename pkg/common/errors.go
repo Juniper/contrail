@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -105,8 +106,9 @@ func HTTPStatusFromCode(code codes.Code) int {
 	return http.StatusInternalServerError
 }
 
-//ToHTTPError translates grpc error to error.
+// ToHTTPError translates grpc error to error.
 func ToHTTPError(err error) error {
-	code := HTTPStatusFromCode(grpc.Code(err))
-	return echo.NewHTTPError(code, grpc.ErrorDesc(err))
+	cause := errors.Cause(err)
+	code := HTTPStatusFromCode(grpc.Code(cause))
+	return echo.NewHTTPError(code, grpc.ErrorDesc(cause))
 }
