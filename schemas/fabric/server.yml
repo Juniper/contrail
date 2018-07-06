@@ -15,9 +15,6 @@ schema:
     id:
       description: The UUID of the server
       type: string
-    name:
-      description: The UUID of the server
-      type: string
     image:
       presence: "optional"
       description: The UUID and links for the image for your server instance

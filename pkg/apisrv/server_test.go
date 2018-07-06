@@ -41,6 +41,11 @@ func TestValidation(t *testing.T) {
 	RunTest(t, "./test_data/test_validation.yml")
 }
 
+func TestImplicitValues(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, "TestImplicitValues")
+	RunTest(t, "./test_data/test_implicit_values.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
 	restClient := NewClient(

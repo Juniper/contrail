@@ -115,7 +115,7 @@ func (c *Client) Login() error {
 	err = checkStatusCode([]int{201}, resp.StatusCode)
 	if err != nil {
 		output, _ := httputil.DumpResponse(resp, true) // nolint: gas
-		log.Println(string(output))
+		log.WithError(err).WithField("output", string(output)).Error("Unexpected status code")
 		return err
 	}
 	err = json.NewDecoder(resp.Body).Decode(&authResponse)
@@ -181,7 +181,7 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	err = checkStatusCode(expected, resp.StatusCode)
 	if err != nil {
 		output, _ := httputil.DumpResponse(resp, true) // nolint:  gas
-		log.Println(string(output))
+		log.WithError(err).WithField("output", string(output)).Error("Unexpected status code")
 		return resp, err
 	}
 	if method == echo.DELETE {

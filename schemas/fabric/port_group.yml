@@ -16,18 +16,6 @@ plural: port_groups
 prefix: /
 schema:
   properties:
-    name:
-      description: Name of the port group
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Port Group Name
-      type: string
-      view:
-      - create
-      - detail
     bms_port_group_info:
       presence: "optional"
       description: "Details of the baremetal server port group"
