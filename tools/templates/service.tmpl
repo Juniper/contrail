@@ -47,12 +47,15 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     if model == nil {
         return nil, common.ErrorBadRequest("Create body is empty")
     }
-    if model.UUID == "" {
-        model.UUID = uuid.NewV4().String()
-    }
     auth := common.GetAuthCTX(ctx)
     if auth == nil {
         return nil, common.ErrorUnauthenticated
+    }
+    if model.UUID == "" {
+        model.UUID = uuid.NewV4().String()
+    }
+    if model.Name == "" {
+        model.Name = "default-{{ schema.ID }}"
     }
 
     if model.FQName == nil {
@@ -124,7 +127,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return common.ToHTTPError(err)
     }
-    return c.JSON(http.StatusNoContent, nil)
+    return c.NoContent(http.StatusNoContent)
 }
 
 

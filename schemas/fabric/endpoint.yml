@@ -11,18 +11,6 @@ plural: endpoints
 prefix: /
 schema:
   properties:
-    name:
-      description: endpoint name of a service in the cluster
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Endpoint Name
-      type: string
-      view:
-      - create
-      - detail
     private_url:
       default: ""
       description: Private endpoint URL
