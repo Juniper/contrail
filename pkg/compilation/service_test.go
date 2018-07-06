@@ -6,12 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/compilation/watch"
+	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 const (
