@@ -6,13 +6,6 @@ plural: baremetal_nodes
 prefix: /openstack
 schema:
   properties:
-    name:
-      description: Name of the nodename to easily identify Baremetal
-      type: string
-      nullable: false
-      permission:
-      - create
-      - detail
     driver_info:
       presence: "optional"
       description: "Details of the driver for power management"

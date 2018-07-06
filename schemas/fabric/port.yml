@@ -11,18 +11,6 @@ plural: ports
 prefix: /
 schema:
   properties:
-    name:
-      description: Name of the port
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Port Name
-      type: string
-      view:
-      - create
-      - detail
     ip_address:
       default: ""
       description: IP Address

@@ -6,13 +6,6 @@ plural: keypairs
 prefix: /
 schema:
   properties:
-
-    name:
-      description: A name for the keypair which will be used to reference it later
-      type: string
-      nullable: false
-      permission:
-      - create
     ssh_public_key:
       description: SSH Public Key
       nullable: false
