@@ -6,12 +6,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/coreos/etcd/mvcc/mvccpb"
+	"github.com/golang/mock/gomock"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/compilation/watch"
+	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 const (
@@ -174,6 +181,35 @@ func runIntentCompiler(t *testing.T, b *blockingStore, name string) {
 		err = ics.Run(context.Background())
 		assert.NoError(t, err)
 	}()
+}
+
+func TestIntentCompilerRunsNextService(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	compiler := compilationif.NewCompilationService()
+	mockService := servicesmock.NewMockService(mockCtrl)
+	services.Chain(compiler, mockService)
+
+	mockService.EXPECT().CreateVirtualNetwork(gomock.Not(gomock.Nil()), &services.CreateVirtualNetworkRequest{
+		VirtualNetwork: &models.VirtualNetwork{},
+	}).Return(&services.CreateVirtualNetworkResponse{}, nil)
+
+	err := compiler.HandleResource(context.Background(), int32(mvccpb.PUT), "virtual_network",
+		"test_uuid", "{}")
+	assert.NoError(t, err)
+}
+
+func TestIntentCompilerFailsForBadJSON(t *testing.T) {
+	compiler := compilationif.NewCompilationService()
+	err := compiler.HandleResource(context.Background(), int32(mvccpb.PUT), "virtual_network", "test_uuid", "")
+	assert.Error(t, err)
+}
+
+func TestIntentCompilerFailsForUnknownResource(t *testing.T) {
+	compiler := compilationif.NewCompilationService()
+	err := compiler.HandleResource(context.Background(), int32(mvccpb.PUT), "anything", "", "")
+	assert.Error(t, err)
 }
 
 func spyOnJobChannel() {
