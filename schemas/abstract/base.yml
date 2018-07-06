@@ -14,23 +14,28 @@
     type: "object"
     properties:
       uuid:
-          presence: "true"
-          description: "UUID of the object, system automatically allocates one if not provided"
-          type: "string"
+        presence: "true"
+        description: "UUID of the object, system automatically allocates one if not provided"
+        type: "string"
+      name:
+        presence: "true"
+        description: "Name of the object, defaults to 'default-<resource-type>'"
+        type: "string"
+        nullable: false
       parent_uuid:
-          presence: "true"
-          description: "UUID of the parent object"
-          type: "string"
+        presence: "true"
+        description: "UUID of the parent object"
+        type: "string"
       parent_type:
-          presence: "true"
-          description: "Parent resource type"
-          type: "string"
+        presence: "true"
+        description: "Parent resource type"
+        type: "string"
       fq_name:
-          presence: "true"
-          description: "FQ Name of the object"
-          type: "array"
-          items:
-            type: "string"
+        presence: "true"
+        description: "FQ Name of the object"
+        type: "array"
+        items:
+          type: "string"
       id_perms:
         operations: "R"
         presence: "system-only"
