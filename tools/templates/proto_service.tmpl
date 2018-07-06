@@ -84,7 +84,8 @@ message List{{ schema.JSONSchema.GoName }}Request {
 }
 
 message List{{ schema.JSONSchema.GoName }}Response {
-    repeated github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s", (gogoproto.jsontag) = "{{ schema.PluralPath }}"];
+    repeated github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s"];
+    int64 {{ schema.ID }}_count = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}Count"];
 }
 
 message Get{{ schema.JSONSchema.GoName }}Request {
