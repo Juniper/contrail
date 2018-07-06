@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"encoding/json"
-	"strings"
 
     "github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -22,38 +21,6 @@ var functions = map[string]ObjCallback {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 	"{{ schema.ID }}": (*CompilationService).Handle{{ schema.JSONSchema.GoName }},
 {% endif%}{% endfor %}
-}
-
-// NewCompilationService makes a compilation service.
-func NewCompilationService() (*CompilationService) {
-	service := &CompilationService{
-		BaseService: services.BaseService{},
-	}
-	service.Init()
-	return service
-}
-
-// CompilationService
-type CompilationService struct {
-	services.BaseService
-}
-
-// HandleEtcdMessages
-func (service *CompilationService)HandleEtcdMessages(ctx context.Context, oper int32, key, value string) {
-	log.Printf("HandleEtcdMessages: Got Msg: Oper-%d, Key-%s, Value-%s", oper, key, value)
-	subkeys := strings.Split(key, "/")
-	if len(subkeys) != 4 {
-		log.Errorf("HandleEtcdMessages: Malformed Key: %s", key)
-		return
-	}
-
-	err := functions[subkeys[2]](service, ctx, oper, subkeys[3], value)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-			"resource": "{{ schema.ID }}",
-		}).Debug("HandleEtcdMessages: Error Handling Etcd Message")
-	}
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
