@@ -8,6 +8,9 @@
   template_path: event_encoding.tmpl
   output_path: pkg/services/gen_event_encoding.go
 - type: all
+  template_path: listresponse_encoding.tmpl
+  output_path: pkg/services/gen_listresponse_encoding.go
+- type: all
   template_path: sql_mysql.tmpl
   output_path: tools/init_mysql.sql
 - type: all

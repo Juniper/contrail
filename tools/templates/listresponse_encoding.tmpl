@@ -1,0 +1,78 @@
+package services
+
+import (
+    "encoding/json"
+    "fmt"
+    "github.com/Juniper/contrail/pkg/models"
+)
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% set name = schema.JSONSchema.GoName %}
+{% set plural = schema.PluralPath %}
+
+func (r *List{{ name }}Response) MarshalJSON() ([]byte, error) {
+    return json.Marshal(r.toMap())
+}
+
+func (r *List{{ name }}Response) UnmarshalJSON(data []byte) error {
+    return r.unmarshalWith(func(dest interface{}) error {
+        return json.Unmarshal(data, dest)
+    })
+}
+
+func (r *List{{ name }}Response) MarshalYAML() (interface{}, error) {
+    return r.toMap(), nil
+}
+
+func (r *List{{ name }}Response) UnmarshalYAML(unmarshal func(interface{}) error) error {
+    return r.unmarshalWith(unmarshal)
+}
+
+func (r *List{{ name }}Response) unmarshalWith(unmarshal func(interface{}) error) error {
+    var listResponse struct {
+        Resources []*models.{{ name }} `json:"{{ plural }}" yaml:"{{ plural }}"`
+    }
+    err := unmarshal(&listResponse)
+    if err == nil {
+        list := listResponse.Resources
+        *r = List{{ name }}Response{
+            {{ name }}s:     list,
+            {{ name }}Count: int64(len(list)),
+        }
+        return nil
+    }
+
+    // err != nil is not necessarily an error: the response could be a count response
+    var countResponse struct {
+        Resources struct {
+            Count int64 `json:"count"`
+        } `json:"{{ plural }}" yaml:"{{ plural }}"`
+    }
+    errCount := unmarshal(&countResponse)
+    if errCount != nil {
+        return fmt.Errorf("%s\n%s", err, errCount)
+    }
+
+    *r = List{{ name }}Response{
+        {{ name }}s:     nil,
+        {{ name }}Count: countResponse.Resources.Count,
+    }
+    return nil
+}
+
+func (r *List{{ name }}Response) toMap() map[string]interface{} {
+    if r.{{ name }}s == nil {
+        return map[string]interface{}{
+            "{{ plural }}": map[string]interface{}{
+                "count": r.{{ name }}Count,
+            },
+        }
+    } else {
+        return map[string]interface{}{
+            "{{ plural }}": r.{{ name }}s,
+        }
+    }
+
+}
+
+{% endif %}{% endfor %}
