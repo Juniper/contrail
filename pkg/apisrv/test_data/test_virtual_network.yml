@@ -503,6 +503,24 @@ workflow:
   expect:
     virtual-networks:
     - *vn_blue_with_detail
+- name: count virtual networks
+  request:
+    path: "/virtual-networks?parent_id=admin_project_uuid&count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 2
+- name: count virtual networks with filters
+  request:
+    path: "/virtual-networks?filters=display_name==blue&count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 1
 - name: list network policy
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
@@ -523,6 +541,16 @@ workflow:
   expect:
     network-policys:
     - *network_policy2
+- name: count network policies
+  request:
+    # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
+    path: "/network-policys?parent_id=admin_project_uuid&count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-policys:
+      count: 1
 - name: try to update vn_blue by changing is_provider_network
   request:
     path: /virtual-network/vn_blue
@@ -587,3 +615,20 @@ workflow:
     expected:
     - 204
   expect: null
+- name: list virtual networks after deletes
+  request:
+    path: "/virtual-networks?parent_id=admin_project_uuid"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks: []
+- name: count virtual networks after deletes
+  request:
+    path: "/virtual-networks?parent_id=admin_project_uuid&count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 0
