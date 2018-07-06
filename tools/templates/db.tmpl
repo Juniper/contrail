@@ -300,9 +300,18 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
             }
             result = append(result, m)
     }
-    response = &services.List{{ schema.JSONSchema.GoName }}Response{
-       {{ schema.JSONSchema.GoName }}s: result,
+
+    // TODO (Kamil): should use COUNT SQL query
+    count := int64(len(result))
+    if spec.Count {
+        result = nil
     }
+
+    response = &services.List{{ schema.JSONSchema.GoName }}Response{
+        {{ schema.JSONSchema.GoName }}s: result,
+        {{ schema.JSONSchema.GoName }}Count: count,
+    }
+
     return response, nil
 }
 
