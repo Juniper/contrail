@@ -31,14 +31,18 @@ func (c *Cluster) getEndpoints(parentUUIDs []string) (endpointIDs []string, err 
 		services.ParentUUIDsKey: parentUUIDs,
 		services.ParentTypeKey:  []string{defaultResource},
 	}
-	var endpointList map[string][]interface{}
+	var endpointListResponse map[string]interface{}
 	resURI := fmt.Sprintf("%ss?%s", defaultEndpointResPath, values.Encode())
 	c.log.Infof("Reading endpoints: %s", resURI)
-	_, err = c.APIServer.Read(resURI, &endpointList)
+	_, err = c.APIServer.Read(resURI, &endpointListResponse)
 	if err != nil {
 		return nil, err
 	}
-	for _, rawEndpoint := range endpointList[defaultEndpointRes+"s"] {
+	endpointList, ok := endpointListResponse[defaultEndpointRes+"s"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("the %q field under %q URI should be a list", defaultEndpointRes+"s", resURI)
+	}
+	for _, rawEndpoint := range endpointList {
 		endpointID := rawEndpoint.(map[string]interface{})["uuid"].(string)
 		endpointIDs = append(endpointIDs, endpointID)
 	}

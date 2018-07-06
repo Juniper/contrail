@@ -28,11 +28,18 @@ func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario,
 	expectedEndpoints map[string]string) error {
 	createdEndpoints := map[string]string{}
 	for _, client := range testScenario.Clients {
-		var response map[string][]interface{}
+		var response map[string]interface{}
+		var endpointList []interface{}
 		url := fmt.Sprintf("/endpoints?parent_uuid=%s", clusterID)
 		_, err := client.Read(url, &response)
+		if err == nil {
+			var ok bool
+			if endpointList, ok = response["endpoints"].([]interface{}); !ok {
+				err = fmt.Errorf("Could not cast value under \"endpoints\" key to a list")
+			}
+		}
 		assert.NoError(t, err, "Unable to list endpoints of the cluster")
-		for _, endpoint := range response["endpoints"] {
+		for _, endpoint := range endpointList {
 			e := endpoint.(map[string]interface{})
 			createdEndpoints[e["name"].(string)] = e["public_url"].(string)
 		}
