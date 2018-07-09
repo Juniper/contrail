@@ -24,7 +24,7 @@ create table ipaddress_pool (
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 create table {{schema.ID | lower  }} (
-    {% for column in schema.Columns %}`{{column.Column}}` {{column.Type}},
+    {% for column in schema.Columns %}`{{column.Column}}` {{column.Type}}{% if column.Unique %} unique{% endif %},
     {% endfor %} primary key(`uuid`),
     index parent_uuid_index (`parent_uuid`)
     ) CHARACTER SET utf8mb4;

@@ -13,6 +13,7 @@
           presence: "true"
           description: "UUID of the object, system automatically allocates one if not provided"
           type: "string"
+          unique: true
       display_name:
         operations: "CRUD"
         type: "string"
