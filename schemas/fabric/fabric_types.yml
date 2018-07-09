@@ -11,6 +11,14 @@
           permission:
           - create
           - update
+        ipmi_port":
+          description: "remote IPMI RMCP port. Optional.",
+          type: string
+          default: 623
+          nullable: false
+          permission:
+          - create
+          - update
         ipmi_username:
           description: Username to access IPMI
           type: string
