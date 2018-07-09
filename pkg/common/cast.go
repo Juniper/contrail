@@ -27,6 +27,25 @@ func InterfaceToInt(i interface{}) int {
 }
 
 //InterfaceToInt64 makes an int64 from interface
+func InterfaceToFloat64(i interface{}) float64 {
+	if i == nil {
+		return 0
+	}
+	switch t := i.(type) {
+	case []byte:
+		i, _ := strconv.ParseFloat(string(t), 64) // nolint: gas
+		return i
+	case int:
+		return float64(t)
+	case int64:
+		return float64(t)
+	case float64:
+		return t
+	}
+	return 0
+}
+
+//InterfaceToInt64 makes an int64 from interface
 func InterfaceToInt64(i interface{}) int64 {
 	if i == nil {
 		return 0
@@ -87,7 +106,7 @@ func InterfaceToStringList(i interface{}) []string {
 	return nil
 }
 
-//InterfaceToInt64List makes a string list from interface
+//InterfaceToInt64List makes a int64 list from interface
 func InterfaceToInt64List(i interface{}) []int64 {
 	switch t := i.(type) {
 	case []int64:
@@ -96,6 +115,21 @@ func InterfaceToInt64List(i interface{}) []int64 {
 		result := []int64{}
 		for _, s := range t {
 			result = append(result, InterfaceToInt64(s))
+		}
+		return result
+	}
+	return nil
+}
+
+//InterfaceToFloat64List makes a float64 list from interface
+func InterfaceToFloat64List(i interface{}) []float64 {
+	switch t := i.(type) {
+	case []float64:
+		return t
+	case []interface{}:
+		result := []float64{}
+		for _, s := range t {
+			result = append(result, InterfaceToFloat64(s))
 		}
 		return result
 	}

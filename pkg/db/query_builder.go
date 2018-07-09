@@ -26,6 +26,7 @@ type QueryBuilder struct {
 	Dialect
 	Fields        []string
 	Table         string
+	TableAlias    string
 	RefFields     map[string][]string
 	ChildFields   map[string][]string
 	BackRefFields map[string][]string
@@ -59,14 +60,15 @@ func NewQueryBuilder(
 	dialect Dialect, table string, fields []string, refFields map[string][]string,
 	childFields map[string][]string, backRefFields map[string][]string,
 ) *QueryBuilder {
-	qb := &QueryBuilder{}
-	qb.Dialect = dialect
-	qb.Table = table
-	qb.Fields = fields
-	qb.RefFields = refFields
-	qb.ChildFields = childFields
-	qb.BackRefFields = backRefFields
-	return qb
+	return &QueryBuilder{
+		Dialect:       dialect,
+		Table:         table,
+		TableAlias:    table + "_t",
+		Fields:        fields,
+		RefFields:     refFields,
+		ChildFields:   childFields,
+		BackRefFields: backRefFields,
+	}
 }
 
 //NewDialect creates NewDialect objects.
@@ -206,10 +208,22 @@ func (qb *QueryBuilder) buildFilterParts(ctx *queryContext, column string, filte
 	return where
 }
 
-func (qb *QueryBuilder) join(fromTable, fromProperty, toTable string) string {
-	return "left join " + qb.quote(
-		fromTable) + " on " + qb.quote(
-		toTable, "uuid") + " = " + qb.quote(fromTable, fromProperty)
+func (qb *QueryBuilder) leftJoin(fromTable, fromAlias, fromProperty, toTable, toProperty string) string {
+	return " left join " + qb.as(qb.quote(fromTable), fromAlias) +
+		" on " + qb.quote(fromAlias, fromProperty) + " = " + qb.quote(toTable, "uuid")
+}
+
+func (qb *QueryBuilder) innerJoin(fromTable, fromAlias, fromProperty, toTable, toProperty string) string {
+	return " inner join " + qb.quote(fromTable) +
+		" on " + qb.quote(fromAlias, fromProperty) + " = " + qb.quote(toTable, "uuid")
+}
+
+func (qb *QueryBuilder) aliast(tableName string) string {
+	return qb.alias(tableName, "t")
+}
+
+func (qb *QueryBuilder) alias(tableName, suffix string) string {
+	return tableName + "_" + suffix
 }
 
 func (qb *QueryBuilder) as(a, b string) string {
@@ -228,7 +242,7 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 		if !qb.isValidField(filter.Key) {
 			continue
 		}
-		column := qb.quote(qb.Table, filter.Key)
+		column := qb.quote(qb.TableAlias, filter.Key)
 		where := qb.buildFilterParts(ctx, column, filter.Values)
 		ctx.where = append(ctx.where, where)
 	}
@@ -251,13 +265,13 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 
 	if !auth.IsAdmin() {
 		ctx.values = append(ctx.values, auth.ProjectID())
-		where = append(where, qb.quote(qb.Table, "owner")+" = "+qb.placeholder(len(ctx.values)))
+		where = append(where, qb.quote(qb.TableAlias, "owner")+" = "+qb.placeholder(len(ctx.values)))
 	}
 	if spec.Shared {
 		shareTables := []string{"domain_share_" + qb.Table, "tenant_share_" + qb.Table}
 		for i, shareTable := range shareTables {
 			ctx.joins = append(ctx.joins,
-				qb.join(shareTable, "uuid", qb.Table))
+				qb.leftJoin(shareTable, shareTable, "uuid", qb.TableAlias, "uuid"))
 			where = append(where, fmt.Sprintf("(%s.to = %s and %s.access >= 4)",
 				qb.quote(shareTable), qb.placeholder(len(ctx.values)+i+1), qb.quote(shareTable)))
 		}
@@ -276,7 +290,7 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	if len(ctx.columnParts) != len(ctx.columns) {
 		log.Fatal("unmatch")
 	}
-	writeStrings(query, strings.Join(ctx.columnParts, ","), " from ", qb.Table, " ")
+	writeStrings(query, strings.Join(ctx.columnParts, ","), " from ", qb.as(qb.Table, qb.TableAlias), " ")
 
 	if len(ctx.joins) > 0 {
 		writeString(query, strings.Join(ctx.joins, " "))
@@ -285,7 +299,7 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 		writeStrings(query, " where ", strings.Join(ctx.where, " and "))
 	}
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
-		writeStrings(query, " group by ", qb.quote(qb.Table, "uuid"))
+		writeStrings(query, " group by ", qb.quote(qb.TableAlias, "uuid"))
 	}
 	writeString(query, " ")
 	if spec.Limit > 0 {
@@ -328,7 +342,7 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 		subQuery := "(select " +
 			qb.as(qb.jsonAgg(refTable+"_t", refFields...), qb.quote(refTable+"_ref")) +
 			" from " + qb.as(qb.quote(refTable), refTable+"_t") +
-			" where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(refTable+"_t", "from") +
+			" where " + qb.quote(qb.TableAlias, "uuid") + " = " + qb.quote(refTable+"_t", "from") +
 			" group by " + qb.quote(refTable+"_t", "from") + " )"
 		ctx.columnParts = append(
 			ctx.columnParts,
@@ -350,12 +364,52 @@ func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 		subQuery := "(select " +
 			qb.as(qb.jsonAgg(child+"_t", childFields...), qb.quote(child+"_ref")) +
 			" from " + qb.as(qb.quote(child), child+"_t") +
-			" where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(child+"_t", "parent_uuid") +
+			" where " + qb.quote(qb.TableAlias, "uuid") + " = " + qb.quote(child+"_t", "parent_uuid") +
 			" group by " + qb.quote(child+"_t", "parent_uuid") + " )"
 		ctx.columnParts = append(
 			ctx.columnParts,
 			subQuery)
 		ctx.columns[schema.ChildColumnName(child, qb.Table)] = len(ctx.columns)
+	}
+}
+
+func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
+	spec := ctx.spec
+	// TODO:(jwoloch) enable back_ref_id filter
+	// // use join if backrefuuids
+	// if len(spec.BackRefUUIDs) > 0 {
+	// 	for refTable, refFields := range qb.BackRefFields {
+	// 		refTable = strings.ToLower(refTable)
+	// 		if spec.Detail {
+	// 			ctx.columnParts = append(
+	// 				ctx.columnParts,
+	// 				qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")),
+	// 			)
+	// 			ctx.columns["backref_"+refTable] = len(ctx.columns)
+	// 		}
+	// 		ctx.joins = append(ctx.joins,
+	// 			qb.leftJoin(refTable, "parent_uuid", qb.Table))
+	// 	}
+	// 	return
+	// }
+	if !spec.Detail {
+		return
+	}
+	for backrefTable, backrefFields := range qb.BackRefFields {
+		if !qb.islinkToInField(ctx, backrefTable+"backrefs") {
+			continue
+		}
+		refTable := schema.ReferenceTableName(schema.RefPrefix, backrefTable, qb.Table)
+		backrefTable = strings.ToLower(backrefTable)
+		subQuery := "(select " +
+			qb.as(qb.jsonAgg(qb.aliast(backrefTable), backrefFields...), qb.quote(qb.alias(refTable, "backref"))) +
+			" from " + qb.as(qb.quote(backrefTable), qb.aliast(backrefTable)) +
+			qb.innerJoin(refTable, qb.aliast(refTable), "from", qb.aliast(backrefTable), "uuid") +
+			" where " + qb.quote(qb.aliast(refTable), "to") + " = " + qb.quote(qb.TableAlias, "uuid") + " )"
+		ctx.columnParts = append(
+			ctx.columnParts,
+			subQuery)
+		ctx.columns[schema.BackRefColumnName(backrefTable, qb.Table)] = len(ctx.columns)
 	}
 }
 
@@ -389,12 +443,12 @@ func (qb *QueryBuilder) buildColumns(ctx *queryContext) {
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
 		for _, column := range fields {
 			ctx.columns[column] = len(ctx.columns)
-			ctx.columnParts = append(ctx.columnParts, qb.anyValue(qb.Table, column))
+			ctx.columnParts = append(ctx.columnParts, qb.anyValue(qb.TableAlias, column))
 		}
 	} else {
 		for _, column := range fields {
 			ctx.columns[column] = len(ctx.columns)
-			ctx.columnParts = append(ctx.columnParts, qb.quote(qb.Table, column))
+			ctx.columnParts = append(ctx.columnParts, qb.quote(qb.TableAlias, column))
 		}
 	}
 }
@@ -409,6 +463,7 @@ func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *services.ListS
 	qb.buildAuthQuery(ctx)
 	qb.buildRefQuery(ctx)
 	qb.buildChildQuery(ctx)
+	qb.buildBackRefQuery(ctx)
 	qb.buildQuery(ctx)
 	return ctx.query.String(), ctx.columns, ctx.values
 }
