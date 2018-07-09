@@ -34,6 +34,12 @@ func (s mapSlice) getString(key string) string {
 	return result
 }
 
+func (s mapSlice) getBool(key string) bool {
+	i := s.get(key)
+	result, _ := i.(bool)
+	return result
+}
+
 func (s mapSlice) getMapSlice(key string) mapSlice {
 	i := s.get(key)
 	if i == nil {
@@ -84,6 +90,7 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 		Required:        s.getStringSlice("required"),
 		Properties:      map[string]*JSONSchema{},
 		PropertiesOrder: properties.keys(),
+		Unique:          s.getBool("unique"),
 	}
 	if properties == nil {
 		schema.Properties = nil

@@ -217,36 +217,23 @@ func (s *JSONSchema) getRefType() string {
 	return goType
 }
 
-//Copy copies a json schema
-func (s *JSONSchema) Copy() *JSONSchema {
-	copied := &JSONSchema{
-		ID:          s.ID,
-		Title:       s.Title,
-		SQL:         s.SQL,
-		Default:     s.Default,
-		Enum:        s.Enum,
-		Minimum:     s.Minimum,
-		Maximum:     s.Maximum,
-		Ref:         s.Ref,
-		Permission:  s.Permission,
-		Operation:   s.Operation,
-		Format:      s.Format,
-		Type:        s.Type,
-		Presence:    s.Presence,
-		Required:    s.Required,
-		Description: s.Description,
-		Properties:  map[string]*JSONSchema{},
-	}
+// Copy copies a json schema.
+//
+// Note that non pointer receiver is used to copy the object.
+func (s JSONSchema) Copy() *JSONSchema {
+	properties := map[string]*JSONSchema{}
 	for name, property := range s.Properties {
-		copied.Properties[name] = property.Copy()
+		properties[name] = property.Copy()
 	}
+	s.Properties = properties
+
 	if s.Items != nil {
-		copied.Items = s.Items.Copy()
+		s.Items = s.Items.Copy()
 	}
-	return copied
+	return &s
 }
 
-//Update merges two JSONSchema
+// Update merges two JSONSchema
 // nolint: gocyclo
 func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s2 == nil {

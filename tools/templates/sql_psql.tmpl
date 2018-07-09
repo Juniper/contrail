@@ -26,7 +26,7 @@ alter table ipaddress_pool replica identity full;
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 create table "{{ schema.ID | lower }}" (
-    {% for column in schema.Columns %}"{{column.Column}}" {{column.Type}},
+    {% for column in schema.Columns %}"{{column.Column}}" {{column.Type}}{% if column.Unique %} unique{% endif %},
     {% endfor %} primary key("uuid"));
 
 create index {{ schema.ID | lower }}_parent_uuid_index on "{{ schema.ID | lower }}" ("parent_uuid");
