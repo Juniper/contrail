@@ -80,6 +80,7 @@ type ColumnConfig struct {
 	ParentColumn []string
 	Name         string
 	GoPremitive  bool
+	Unique       bool
 }
 
 //ColumnConfigs is for list of columns
@@ -171,6 +172,7 @@ type JSONSchema struct {
 	Required          []string               `yaml:"required" json:"-"`
 	GoPremitive       bool                   `yaml:"-" json:"-"`
 	Format            string                 `yaml:"format" json:"format,omitempty"`
+	Unique            bool                   `yaml:"unique" json:"unique,omitempty"`
 }
 
 //String makes string format for json schema
@@ -217,32 +219,17 @@ func (s *JSONSchema) getRefType() string {
 }
 
 //Copy copies a json schema
-func (s *JSONSchema) Copy() *JSONSchema {
-	copied := &JSONSchema{
-		ID:          s.ID,
-		Title:       s.Title,
-		SQL:         s.SQL,
-		Default:     s.Default,
-		Enum:        s.Enum,
-		Minimum:     s.Minimum,
-		Maximum:     s.Maximum,
-		Ref:         s.Ref,
-		Permission:  s.Permission,
-		Operation:   s.Operation,
-		Format:      s.Format,
-		Type:        s.Type,
-		Presence:    s.Presence,
-		Required:    s.Required,
-		Description: s.Description,
-		Properties:  map[string]*JSONSchema{},
-	}
+func (s JSONSchema) Copy() *JSONSchema {
+	properties := map[string]*JSONSchema{}
 	for name, property := range s.Properties {
-		copied.Properties[name] = property.Copy()
+		properties[name] = property.Copy()
 	}
+	s.Properties = properties
+
 	if s.Items != nil {
-		copied.Items = s.Items.Copy()
+		s.Items = s.Items.Copy()
 	}
-	return copied
+	return &s
 }
 
 //Update merges two JSONSchema
@@ -299,6 +286,7 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s.Maximum == nil {
 		s.Maximum = s2.Maximum
 	}
+	s.Unique = s.Unique || s2.Unique
 }
 
 //Walk apply one function for json schema recursively.
@@ -348,6 +336,7 @@ func (s *JSONSchema) resolveSQL(
 			ParentColumn: parentColumn,
 			GoPremitive:  s.GoPremitive,
 			Name:         columnName,
+			Unique:       s.Unique,
 		})
 		return nil
 	}

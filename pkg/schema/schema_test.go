@@ -11,6 +11,10 @@ func TestSchema(t *testing.T) {
 	assert.Nil(t, err, "API reading failed")
 	assert.Equal(t, 4, len(api.Types))
 	assert.Equal(t, 4, len(api.Schemas))
+
+	base := api.SchemaByID("base")
+	assert.True(t, base.JSONSchema.Properties["uuid"].Unique, "unique property not set")
+
 	project := api.SchemaByID("project")
 
 	assert.Equal(t, 2, len(project.JSONSchema.Properties))

@@ -61,14 +61,18 @@ func readRDBMS() (*services.EventList, error) {
 }
 
 func writeRDBMS(events *services.EventList) error {
+	service := &services.ContrailService{
+		BaseService: services.BaseService{},
+	}
 	dbService, err := db.NewServiceFromConfig()
 	if err != nil {
 		return errors.Wrap(err, "failed to connect DB")
 	}
-	ctx := context.Background()
+	services.Chain(service, dbService)
+	ctx := common.NoAuth(context.Background())
 	err = dbService.DoInTransaction(ctx,
 		func(ctx context.Context) error {
-			_, err = events.Process(ctx, dbService)
+			_, err = events.Process(ctx, service)
 			return err
 		})
 	return err
