@@ -194,10 +194,16 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             {% if reference.RefType %}
             attr := models.Make{{reference.RefType}}()
             referenceModel.Attr = attr
-            {% for column in reference.Colums %}
-                if refAttrValue, ok := referenceMap[column]; ok && refAttrValue != nil {
-                {% if column.Bind == "json" %}
-                    json.Unmarshal(common.InterfaceToBytes(refAttrValue), &attr{{ column.Path }})
+            {% for column in reference.Columns %}
+                if refAttrValue, ok := referenceMap["{{ column.Column }}"]; ok && refAttrValue != nil {
+                {% if column.JSONSchema.Type == "array" %}
+                    {% if column.JSONSchema.Items.Type == "string" %}
+                        attr{{ column.Path }} = common.InterfaceToStringList(refAttrValue)
+                    {% elif column.JSONSchema.Items.Type == "integer"%}
+                        attr{{ column.Path }} = common.InterfaceToInt64List(refAttrValue)
+                    {% elif column.JSONSchema.Items.Type == "object"  %}
+                        attr{{ column.Path }} = models.InterfaceTo{{ column.JSONSchema.Items.GoType }}Slice(refAttrValue)
+                    {% endif %}
                 {% else %}
                     {% if column.Bind == "int" %}
                         attr{{ column.Path }} = common.InterfaceToInt64(refAttrValue)
