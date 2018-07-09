@@ -139,7 +139,6 @@ test_data:
     network_ipam_refs:
     - uuid: test_ipam_red
   vn_blue_simple: &vn_blue_simple
-    fq_name: ["default", "admin_project_uuid", "vn_blue"]
     uuid: vn_blue
     display_name: blue
     parent_type: project
@@ -421,6 +420,17 @@ workflow:
       fq_name: ["default", "admin_project_uuid", "ri1"]
       parent_type: virtual-network
       parent_uuid: vn_blue
+- name: get network ipam with back reference to virtual network
+  request:
+    path: /network-ipam/test_ipam_blue?detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-ipam:
+      <<: *network_ipam_blue
+      virtual_network_backrefs:
+      - *vn_blue_simple
 - name: list virtual networks with detail
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
