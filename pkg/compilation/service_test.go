@@ -2,11 +2,13 @@ package compilation
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/coreos/etcd/mvcc/mvccpb"
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -181,6 +183,46 @@ func runIntentCompiler(t *testing.T, b *blockingStore, name string) {
 		err = ics.Run(context.Background())
 		assert.NoError(t, err)
 	}()
+}
+
+func TestIntentCompilerHandlesDependentResources(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	compiler := compilationif.NewCompilationService()
+	mockService := servicesmock.NewMockService(mockCtrl)
+	services.Chain(compiler, mockService)
+
+	network := &models.VirtualNetwork{
+		UUID: "Virtual-Network-1",
+	}
+	policy := &models.NetworkPolicy{
+		UUID: "Network-policy-1",
+	}
+
+	ref := &models.VirtualNetworkNetworkPolicyRef{
+		UUID: policy.UUID,
+		To:   []string{"default-domain", "default-project", network.UUID},
+	}
+	network.NetworkPolicyRefs = append(network.NetworkPolicyRefs, ref)
+	policy.VirtualNetworkBackRefs = append(policy.VirtualNetworkBackRefs, network)
+
+	mockService.EXPECT().CreateVirtualNetwork(gomock.Not(gomock.Nil()),
+		&services.CreateVirtualNetworkRequest{network},
+	).Return(&services.CreateVirtualNetworkResponse{network}, nil)
+
+	mockService.EXPECT().UpdateNetworkPolicy(gomock.Not(gomock.Nil()),
+		&services.UpdateNetworkPolicyRequest{
+			NetworkPolicy: policy,
+			FieldMask:     types.FieldMask{Paths: []string{}},
+		}).Return(&services.UpdateNetworkPolicyResponse{policy}, nil)
+
+	networkJSON, err := json.Marshal(network)
+	require.NoError(t, err, "Marshaling the network should succeed")
+
+	err = compiler.HandleResource(context.Background(), int32(mvccpb.PUT), "virtual_network",
+		network.UUID, string(networkJSON))
+	assert.NoError(t, err)
 }
 
 func TestIntentCompilerRunsNextService(t *testing.T) {
