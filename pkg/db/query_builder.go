@@ -359,6 +359,52 @@ func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 	}
 }
 
+func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
+	spec := ctx.spec
+	// TODO:(jwoloch) enable back_ref_id filter
+	// // use join if backrefuuids
+	// if len(spec.BackRefUUIDs) > 0 {
+	// 	for refTable, refFields := range qb.BackRefFields {
+	// 		refTable = strings.ToLower(refTable)
+	// 		if spec.Detail {
+	// 			ctx.columnParts = append(
+	// 				ctx.columnParts,
+	// 				qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")),
+	// 			)
+	// 			ctx.columns["backref_"+refTable] = len(ctx.columns)
+	// 		}
+	// 		ctx.joins = append(ctx.joins,
+	// 			qb.join(refTable, "parent_uuid", qb.Table))
+	// 	}
+	// 	return
+	// }
+	if !spec.Detail {
+		return
+	}
+	for backrefTable, backrefFields := range qb.BackRefFields {
+		if !qb.islinkToInField(ctx, backrefTable+"backrefs") {
+			continue
+		}
+		refTable := schema.ReferenceTableName(schema.RefPrefix, backrefTable, qb.Table)
+		refSubQuery := "(select " + qb.quote(refTable, "to") + ", " + qb.quote(refTable, "from") +
+			" from " + qb.quote(refTable) + " )"
+
+		backrefTable = strings.ToLower(backrefTable)
+
+		subQuery := "(select " +
+			qb.as(qb.jsonAgg(backrefTable+"_t", backrefFields...), qb.quote(refTable+"_backref")) +
+			" from " + qb.as(qb.quote(backrefTable), backrefTable+"_t") +
+			" inner join " + qb.as(refSubQuery, refTable+"_t") +
+			" on " + qb.quote(refTable+"_t", "from") + " = " + qb.quote(backrefTable+"_t", "uuid") +
+			" where " + qb.quote(qb.Table, "uuid") + " = " + qb.quote(refTable+"_t", "to") +
+			" group by " + qb.quote(backrefTable+"_t", "uuid") + " )"
+		ctx.columnParts = append(
+			ctx.columnParts,
+			subQuery)
+		ctx.columns[schema.BackRefColumnName(backrefTable, qb.Table)] = len(ctx.columns)
+	}
+}
+
 func (qb *QueryBuilder) isValidField(requestedField string) bool {
 	for _, field := range qb.Fields {
 		if field == requestedField {
@@ -409,6 +455,7 @@ func (qb *QueryBuilder) ListQuery(auth *common.AuthContext, spec *services.ListS
 	qb.buildAuthQuery(ctx)
 	qb.buildRefQuery(ctx)
 	qb.buildChildQuery(ctx)
+	qb.buildBackRefQuery(ctx)
 	qb.buildQuery(ctx)
 	return ctx.query.String(), ctx.columns, ctx.values
 }
