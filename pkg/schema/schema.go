@@ -73,13 +73,11 @@ type ColumnConfig struct {
 	Path         string
 	GetPath      string
 	UpdatePath   string
-	Type         string
-	GoType       string
 	Bind         string
 	Column       string
 	ParentColumn []string
 	Name         string
-	GoPremitive  bool
+	JSONSchema   *JSONSchema
 }
 
 //ColumnConfigs is for list of columns
@@ -341,13 +339,11 @@ func (s *JSONSchema) resolveSQL(
 			Path:         goPath,
 			GetPath:      getPath,
 			UpdatePath:   updatePath,
-			GoType:       s.GoType,
 			Bind:         bind,
-			Type:         s.SQL,
 			Column:       strings.ToLower(columnName),
 			ParentColumn: parentColumn,
-			GoPremitive:  s.GoPremitive,
 			Name:         columnName,
+			JSONSchema:   s,
 		})
 		return nil
 	}
@@ -578,6 +574,11 @@ func ReferenceTableName(prefix, id, linkTo string) string {
 // ChildColumnName makes child column name.
 func ChildColumnName(childSchemaID, schemaID string) string {
 	return strings.ToLower("child_" + childSchemaID + "_" + schemaID)
+}
+
+// ChildColumnName makes child column name.
+func BackRefColumnName(fromID, toID string) string {
+	return strings.ToLower("backref_" + fromID + "_" + toID)
 }
 
 // nolint: gocyclo

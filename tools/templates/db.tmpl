@@ -172,7 +172,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
     }
     {% endfor %}
 
-    {% if  schema.References | length + schema.Children | length  > 0 %}
+    {% if  schema.References | length + schema.Children | length + schema.BackReferences | length  > 0 %}
     qb := db.queryBuilders["{{ schema.ID }}"]
     {% endif %}
 
@@ -232,6 +232,41 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             {% for column in child.Columns %}
                 if propertyValue, ok := childResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
                 {% if column.Bind == "json" %}
+                    json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
+                {% else %}
+                    {% if column.Bind == "int" %}
+                        childModel{{ column.Path }} = common.InterfaceToInt64(propertyValue)
+                    {% elif column.Bind == "bool" %}
+                        childModel{{ column.Path }} = common.InterfaceToBool(propertyValue)
+                    {% elif column.Bind == "string" %}
+                        childModel{{ column.Path }} = common.InterfaceToString(propertyValue)
+                    {% endif %}
+                {% endif %}
+                }
+            {% endfor %}
+        }
+    }
+    {% endfor %}
+    {% for _, definition in schema.BackReferences %}
+    {% set backref = definition.LinkTo %}
+    if value, ok := values[schema.BackRefColumnName("{{ backref.ID}}", "{{schema.ID}}")]; ok {
+        childResources := qb.scanResourceList(value)
+        for _, childResource := range childResources {
+            childResourceMap, ok := childResource.(map[string]interface{})
+            if !ok {
+                continue
+            }
+            uuid := common.InterfaceToString(childResourceMap["uuid"])
+            if uuid == "" {
+                continue
+            }
+            childModel := models.Make{{ backref.JSONSchema.GoName }}()
+            m.{{ backref.JSONSchema.GoName }}BackRefs = append(m.{{ backref.JSONSchema.GoName }}BackRefs, childModel)
+
+            {% for column in backref.Columns %}
+                if propertyValue, ok := childResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
+                {% if column.Bind == "json" %}
+                    //json.Unmarshal(propertyValue.([]byte), &childModel{{ column.Path }})
                     json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
                 {% else %}
                     {% if column.Bind == "int" %}
