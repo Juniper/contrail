@@ -26,7 +26,7 @@ alter table ipaddress_pool replica identity full;
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 create table "{{ schema.ID | lower }}" (
-    {% for column in schema.Columns %}"{{column.Column}}" {{column.Type}},
+    {% for column in schema.Columns %}"{{column.Column}}" {{column.JSONSchema.SQL}},
     {% endfor %} primary key("uuid"));
 
 create index {{ schema.ID | lower }}_parent_uuid_index on "{{ schema.ID | lower }}" ("parent_uuid");
@@ -39,7 +39,7 @@ create table {{ reference.Table }} (
     "from" varchar(255),
     "to" varchar(255),
     primary key ("from","to"),
-    {% for column in reference.Columns %}"{{column.Column}}" {{column.Type}},
+    {% for column in reference.Columns %}"{{column.Column}}" {{column.JSONSchema.SQL}},
     {% endfor %} foreign key ("from") references "{{ schema.ID | lower }}"(uuid) on delete cascade,
     foreign key ("to") references "{{ linkTo | lower }}"(uuid));
 
