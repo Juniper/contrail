@@ -181,7 +181,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             referenceModel.UUID = uuid
             m.{{ reference.GoName }}Refs = append(m.{{ reference.GoName }}Refs, referenceModel)
             {% if reference.RefType %}
-            attr := models.Make{{reference.RefType}}()
+            attr := models.InterfaceTo{{reference.RefType}}(referenceMap)
             referenceModel.Attr = attr
             {% for column in reference.Colums %}
                 if refAttrValue, ok := referenceMap[column]; ok && refAttrValue != nil {
