@@ -28,12 +28,13 @@ func handleError(err error) error {
 		}
 		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
 	}
+	log.Debugf("pq error: %#+v", err)
 	if err, ok := err.(*pq.Error); ok {
 		switch err.Code.Name() {
 		case pgUniqueViolation, pgForeignKeyViolation:
 			return common.ErrorConflict
 		}
-		log.Debug("pq error:", err)
+		log.Debugf("pq error: %#+v", err)
 	}
 	if err == sql.ErrNoRows {
 		return common.ErrorNotFound
