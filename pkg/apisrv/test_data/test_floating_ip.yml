@@ -38,8 +38,14 @@ test_data:
     route_target_list:
       route_target: ["100:200"]
     network_ipam_refs:
-    - uuid: test_ipam_floating_blue
-
+      - uuid: test_ipam_floating_blue
+        attr:
+          ipam_subnets:
+            - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+              subnet:
+                ip_prefix: "10.0.0.0"
+                ip_prefix_len: 24
+                
   floating_ip_pool: &floating_ip_pool
     fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool"]
     uuid: "test_floating_ip_pool"
@@ -48,7 +54,7 @@ test_data:
     parent_uuid: "vn_floating_blue"
     floating_ip_pool_subnets:
       subnet_uuid:
-        - "subnet1"
+        - "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
   floating_ip_pool_without_subnets: &floating_ip_pool_without_subnets
     fq_name: ["default", "admin", "vn_floating_blue", "floating_ip_pool_without_subnets"]
     uuid: "test_floating_ip_pool_without_subnets"
@@ -115,7 +121,7 @@ workflow:
                 next_hop: "1.2.3.5"
         ipam_subnets:
           subnets:
-            - subnet_uuid: subnet1
+            - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
               subnet:
                 ip_prefix: "10.0.0.0"
                 ip_prefix_len: 24
