@@ -154,6 +154,30 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     return nil
 }
 
+{% macro scanJSONObject(JSONSchema, path, arg) %}
+    {% if JSONSchema.Type == "array" %}
+        {% if JSONSchema.Items.Type == "string" %}
+            {{ path }} = common.InterfaceToStringList({{arg}})
+        {% elif JSONSchema.Items.Type == "integer" %}
+            {{ path }} = common.InterfaceToInt64List({{arg}})
+        {% elif JSONSchema.Items.Type == "boolean" %}
+            {{ path }} = common.InterfaceToBoolList({{arg}})
+        {% elif JSONSchema.Items.Type == "object" %}
+            {{ path }} = models.InterfaceTo{{ JSONSchema.Items.GoType }}Slice({{arg}})
+        {% endif %}
+    {% else %}
+        {% if JSONSchema.Type == "string" %}
+            {{ path }} = common.InterfaceToString({{arg}})
+        {% elif JSONSchema.Type == "integer" %}
+            {{ path }} = common.InterfaceToInt64({{arg}})
+        {% elif JSONSchema.Type == "boolean" %}
+            {{ path }} = common.InterfaceToBool({{arg}})
+        {% elif JSONSchema.Type == "object" %}
+            {{ path }} = models.InterfaceTo{{ JSONSchema.Items.GoType }}({{arg}})
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
 func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
     m := models.Make{{ schema.JSONSchema.GoName }}()
     {% for column in schema.Columns %}
@@ -194,19 +218,9 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             {% if reference.RefType %}
             attr := models.Make{{reference.RefType}}()
             referenceModel.Attr = attr
-            {% for column in reference.Colums %}
-                if refAttrValue, ok := referenceMap[column]; ok && refAttrValue != nil {
-                {% if column.Bind == "json" %}
-                    json.Unmarshal(common.InterfaceToBytes(refAttrValue), &attr{{ column.Path }})
-                {% else %}
-                    {% if column.Bind == "int" %}
-                        attr{{ column.Path }} = common.InterfaceToInt64(refAttrValue)
-                    {% elif column.Bind == "bool" %}
-                        attr{{ column.Path }} = common.InterfaceToBool(refAttrValue)
-                    {% elif column.Bind == "string" %}
-                        attr{{ column.Path }} = common.InterfaceToString(refAttrValue)
-                    {% endif %}
-                {% endif %}
+            {% for column in reference.Columns %}
+                if refAttrValue, ok := referenceMap["{{column.Column}}"]; ok && refAttrValue != nil {
+                    {{scanJSONObject(column.JSONSchema, "attr"|add:column.Path, "refAttrValue")}}
                 }
             {% endfor %}
             {% endif %}
@@ -231,17 +245,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
 
             {% for column in child.Columns %}
                 if propertyValue, ok := childResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
-                {% if column.Bind == "json" %}
-                    json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
-                {% else %}
-                    {% if column.Bind == "int" %}
-                        childModel{{ column.Path }} = common.InterfaceToInt64(propertyValue)
-                    {% elif column.Bind == "bool" %}
-                        childModel{{ column.Path }} = common.InterfaceToBool(propertyValue)
-                    {% elif column.Bind == "string" %}
-                        childModel{{ column.Path }} = common.InterfaceToString(propertyValue)
-                    {% endif %}
-                {% endif %}
+                {{scanJSONObject(column.JSONSchema, "childModel"|add:column.Path, "propertyValue")}}
                 }
             {% endfor %}
         }
@@ -250,33 +254,22 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
     {% for _, definition in schema.BackReferences %}
     {% set backref = definition.LinkTo %}
     if value, ok := values[schema.BackRefColumnName("{{ backref.ID}}", "{{schema.ID}}")]; ok {
-        childResources := qb.scanResourceList(value)
-        for _, childResource := range childResources {
-            childResourceMap, ok := childResource.(map[string]interface{})
+        backrefResources := qb.scanResourceList(value)
+        for _, childResource := range backrefResources {
+            backrefResourceMap, ok := childResource.(map[string]interface{})
             if !ok {
                 continue
             }
-            uuid := common.InterfaceToString(childResourceMap["uuid"])
+            uuid := common.InterfaceToString(backrefResourceMap["uuid"])
             if uuid == "" {
                 continue
             }
-            childModel := models.Make{{ backref.JSONSchema.GoName }}()
-            m.{{ backref.JSONSchema.GoName }}BackRefs = append(m.{{ backref.JSONSchema.GoName }}BackRefs, childModel)
+            backrefModel := models.Make{{ backref.JSONSchema.GoName }}()
+            m.{{ backref.JSONSchema.GoName }}BackRefs = append(m.{{ backref.JSONSchema.GoName }}BackRefs, backrefModel)
 
             {% for column in backref.Columns %}
-                if propertyValue, ok := childResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
-                {% if column.Bind == "json" %}
-                    //json.Unmarshal(propertyValue.([]byte), &childModel{{ column.Path }})
-                    json.Unmarshal(common.InterfaceToBytes(propertyValue), &childModel{{ column.Path }})
-                {% else %}
-                    {% if column.Bind == "int" %}
-                        childModel{{ column.Path }} = common.InterfaceToInt64(propertyValue)
-                    {% elif column.Bind == "bool" %}
-                        childModel{{ column.Path }} = common.InterfaceToBool(propertyValue)
-                    {% elif column.Bind == "string" %}
-                        childModel{{ column.Path }} = common.InterfaceToString(propertyValue)
-                    {% endif %}
-                {% endif %}
+                if propertyValue, ok := backrefResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
+                {{scanJSONObject(column.JSONSchema, "backrefModel"|add:column.Path, "propertyValue")}}
                 }
             {% endfor %}
         }

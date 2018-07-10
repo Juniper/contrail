@@ -48,12 +48,9 @@ test_data:
           action_list:
             simple_action: pass
   admin_project_with_network_policy1: &admin_project_with_network_policy1
-    uuid: admin_project_uuid
-    quota: {}
+    <<: *admin_project
     network_policys:
-    - uuid: network_policy_uuid
-      parent_type: project
-      parent_uuid: admin_project_uuid
+    - <<: *network_policy1
   network_policy2: &network_policy2
     fq_name: ["default", "demo_project_uuid", "policy2"]
     uuid: network_policy_uuid2
@@ -254,8 +251,8 @@ workflow:
         network_ipam_mgmt:
           host_routes:
             route:
-              - prefix: "test_prefix"
-                next_hop: "1.2.3.5"
+            - prefix: "test_prefix"
+              next_hop: "1.2.3.5"
         uuid: test_ipam1
         display_name: test_ipam1
         parent_type: project
@@ -279,8 +276,8 @@ workflow:
         network_ipam_mgmt:
           host_routes:
             route:
-              - prefix: "test_prefix"
-                next_hop: "1.2.3.5"
+            - prefix: "test_prefix"
+              next_hop: "1.2.3.5"
         uuid: test_ipam2
         display_name: test_ipam2
         parent_type: project
@@ -312,8 +309,8 @@ workflow:
             attr:
               host_routes:
                 route:
-                  - prefix: "test_prefix"
-                    next_hop: "1.2.3.5"
+                - prefix: "test_prefix"
+                  next_hop: "1.2.3.5"
   expect:
     virtual-network:
       fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
