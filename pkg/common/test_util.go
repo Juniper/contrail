@@ -111,7 +111,7 @@ func CheckDiff(path string, expected, actual interface{}) error {
 	case map[string]interface{}:
 		actualMap, ok := actual.(map[string]interface{})
 		if !ok {
-			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
+			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
 		}
 		for key, value := range t {
 			err := CheckDiff(path+"."+key, value, actualMap[key])
@@ -122,10 +122,10 @@ func CheckDiff(path string, expected, actual interface{}) error {
 	case []interface{}:
 		actualList, ok := actual.([]interface{})
 		if !ok {
-			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
+			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
 		}
 		if len(t) != len(actualList) {
-			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
+			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
 		}
 		for i, value := range t {
 			found := false
@@ -146,7 +146,7 @@ func CheckDiff(path string, expected, actual interface{}) error {
 		}
 	default:
 		if t != actual {
-			return fmt.Errorf("expected %s but actually we got %s for path %s", t, actual, path)
+			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
 		}
 	}
 	return nil

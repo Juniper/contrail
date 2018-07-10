@@ -11,8 +11,9 @@ cleanup:
 - path: /project/admin_floating_project_uuid
 test_data:
 
-  admin_project: &admin_project
+  admin_project: &admin_project_floating_ip
     uuid: admin_floating_project_uuid
+    name: admin_floating_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -74,9 +75,9 @@ workflow:
     expected:
     - 201
     data:
-      project: *admin_project
+      project: *admin_project_floating_ip
   expect:
-    project: *admin_project
+    project: *admin_project_floating_ip
 
 - name: create network ipam blue
   request:

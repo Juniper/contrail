@@ -159,25 +159,18 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 		{% endif %}
 	{% endfor %}
 
-	// if client gave parent_type of config-root, ignore and remove
-	if obj.ParentType == "config-root" {
-		obj.ParentType = ""
-	}
-
 	{% if schema.Parents|length > 0 %}
 
-	restrictions := map[string]struct {} {
-		{% for parent, definition in schema.Parents %}
-		{% autoescape off %}
-		"{{definition.LinkTo.Path}}": {},
-		{% endautoescape %}
-		{% endfor %}
-	}
-
 	if obj.ParentType != "" {
-		_, present := restrictions[obj.ParentType]
+        restrictions := map[string]struct {} {
+            {% for parent, definition in schema.Parents %}
+            {% autoescape off %}
+            "{{definition.LinkTo.Path}}": {},
+            {% endautoescape %}
+            {% endfor %}
+        }
 
-		if !present {
+		if _, present := restrictions[obj.ParentType]; !present {
 			return errors.Errorf("parent_type (%s) of {{schema.ID}} must be one of [%s]", obj.ParentType, strings.Join(mapKeys(restrictions), ", "))
 		}
 	}
