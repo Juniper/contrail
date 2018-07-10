@@ -13,7 +13,6 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/db"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/testutil"
 )
@@ -47,14 +46,14 @@ type APIServer struct {
 
 // NewRunningAPIServer creates new running test API Server.
 // Call Close() method to release its resources.
-func NewRunningAPIServer(t *testing.T, repoRootPath string) *APIServer {
+func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string) *APIServer {
 	setViperConfig(map[string]interface{}{
-		"database.type":               db.DriverPostgreSQL,
+		"database.type":               dbDriver,
 		"database.host":               "localhost",
 		"database.user":               dbUser,
 		"database.name":               dbName,
 		"database.password":           dbPassword,
-		"database.dialect":            db.DriverPostgreSQL,
+		"database.dialect":            dbDriver,
 		"database.max_open_conn":      100,
 		"database.connection_retries": 10,
 		"database.retry_period":       3,

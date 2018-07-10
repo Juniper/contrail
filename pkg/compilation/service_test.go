@@ -31,7 +31,7 @@ func setTestConfig() {
 	viper.Set("compilation.msg_queue_lock_time", 100)
 }
 
-func TestIntentCompilationSeviceHandlesMessage(t *testing.T) {
+func TestIntentCompilationServiceHandlesMessage(t *testing.T) {
 	etcdClient := integration.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
@@ -69,7 +69,7 @@ func TestIntentCompilationSeviceHandlesMessage(t *testing.T) {
 	}
 }
 
-func TestIntentCompilationSeviceConcurrency(t *testing.T) {
+func TestIntentCompilationServiceConcurrency(t *testing.T) {
 	etcdClient := integration.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
