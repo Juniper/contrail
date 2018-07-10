@@ -190,4 +190,81 @@
           - "encap2+3"
           - "encap3+4"
           default: "layer2+3"
-
+    DpdkInfo:
+      type: "object"
+      properties:
+        cpu_core_mask:
+          description: CPU Core Mask
+          default: 0xff
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: CPU Core Mask
+          type: string
+          view:
+          - detail
+        dpdk_uio_driver:
+          description: UIO Driver
+          default:  vfio-pci
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: UIO Driver
+          type: string
+          view:
+          - detail
+        huge_pages:
+          description: Hugepages Size
+          default: 64000
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Hugepages
+          type: integer
+          view:
+          - detail
+    SriovInfo:
+      type: "object"
+      properties:
+        sriov_vf:
+          description: SRIOV Virtual Function
+          default: ""
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: SRIOV Virtual Function
+          type: integer
+          view:
+          - detail
+        sriov_physical_interface:
+          description: SRIOV Physical Interface
+          default: ""
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: SRIOV Physical Interface
+          type: string
+          view:
+          - detail
+        sriov_physical_net:
+          description: SRIOV Physical Network
+          default: ""
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: SRIOV Physical Network
+          type: string
+          view:
+          - detail
