@@ -134,6 +134,21 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
+    {% if TYPE == "dpdk" %}
+    type: dpdk
+    dpdk_info:
+      cpu_core_mask: "0xff"
+      dpdk_uio_driver: vfio-pci
+      huge_pages: 64000
+      agent_mode: dpdk
+    {% elif TYPE == "sriov" %}
+    type: sriov
+    sriov_info:
+      sriov: true
+      sriov_vf: 10
+      sriov_physical_interface: enp129s0f1
+      sriov_physical_net: physnet1
+    {%endif%}
 clients:
   default:
     id: alice
@@ -312,6 +327,20 @@ workflow:
         parent_uuid: test_cluster_uuid
         node_refs:
           - uuid: all_in_one_node_uuid
+        {% if TYPE == "dpdk" %}
+        dpdk_info:
+          cpu_core_mask: 0xff
+          dpdk_uio_driver: vfio-pci
+          huge_pages: 64000
+          agent_mode: dpdk
+        {%endif%}
+        {% if TYPE == "sriov" %}
+        sriov_info:
+          sriov: true
+          sriov_vf: 10
+          sriov_physical_interface: enp129s0f1
+          sriov_physical_net: physnet1
+        {%endif%}
 - name: create openstack control node
   request:
     path: /openstack-control-nodes

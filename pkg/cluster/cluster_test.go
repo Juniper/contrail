@@ -259,8 +259,9 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
 
-func TestAllInOneCluster(t *testing.T) {
+func runAllInOneClusterTest(t *testing.T, computeType string) {
 	context := pongo2.Context{
+		"TYPE":            computeType,
 		"MGMT_INT_IP":     "127.0.0.1",
 		"CONTROL_NODES":   "",
 		"OPENSTACK_NODES": "",
@@ -275,7 +276,26 @@ func TestAllInOneCluster(t *testing.T) {
 		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
 	}
-	runClusterTest(t, "./test_data/expected_all_in_one_instances.yml", context, expectedEndpoints)
+	expectedInstances := "./test_data/expected_all_in_one_instances.yml"
+	switch computeType {
+	case "dpdk":
+		expectedInstances = "./test_data/expected_all_in_one_dpdk_instances.yml"
+	case "sriov":
+		expectedInstances = "./test_data/expected_all_in_one_sriov_instances.yml"
+	}
+
+	runClusterTest(t, expectedInstances, context, expectedEndpoints)
+}
+
+func TestAllInOneCluster(t *testing.T) {
+	runAllInOneClusterTest(t, "kernel")
+}
+func TestAllInOneDpdkCluster(t *testing.T) {
+	runAllInOneClusterTest(t, "dpdk")
+}
+
+func TestAllInOneSriovCluster(t *testing.T) {
+	runAllInOneClusterTest(t, "sriov")
 }
 
 func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {

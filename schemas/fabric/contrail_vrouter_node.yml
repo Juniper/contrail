@@ -31,39 +31,13 @@ schema:
       type: string
       view:
       - detail
-    vrouter_bond_interface:
-      default: bond0
-      description: vRouter Bond Interface
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: vRouter Bond Interface
-      type: string
-      view:
-      - create
-      - detail
-    vrouter_bond_interface_members:
-      default: ens7f0,ens7f1
-      description: vRouter Bond Interface Members
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: vRouter Bond Interface Members
-      type: string
-      view:
-      - create
-      - detail
-    vrouter_type:
+    type:
       default: kernel
-      description: ""
+      description: "Type of vrouter"
       enum:
       - kernel
       - dpdk
-      - smartNiC
+      - sriov
       nullable: false
       permission:
       - create
@@ -74,8 +48,16 @@ schema:
       view:
       - create
       - detail
-  required: []
-  type: object
+    dpdk_info:
+      presence: "optional"
+      description: "Details of the DPDK vrouter."
+      $ref: "fabric_types.json#/definitions/DpdkInfo"
+    sriov_info:
+      presence: "optional"
+      description: "Details of the SRIOV vrouter."
+      $ref: "fabric_types.json#/definitions/SriovInfo"
+required: []
+type: object
 singular: contrail_vrouter_node
 title: Contrail Vrouter Node
 type: ""

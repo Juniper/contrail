@@ -27,6 +27,17 @@ instances:
       {% for analyticsdb_node in cluster.ContrailAnalyticsDatabaseNodes %}{% for node_ref in analyticsdb_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics_database:{%endif%}{%endfor%}{%endfor%}
       {% for vrouter_node in cluster.ContrailVrouterNodes %}{% for node_ref in vrouter_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
         {%if vrouter_node.DefaultGateway != "" %}VROUTER_GATEWAY: {{ vrouter_node.DefaultGateway }}{%endif%}
+        {%if vrouter_node.Type == "dpdk" %}
+        CPU_CORE_MASK: {{ vrouter_node.DPDKInfo.CPUCoreMask }}
+        DPDK_UIO_DRIVER: {{ vrouter_node.DPDKInfo.DPDKUioDriver }}
+        HUGE_PAGES: {{ vrouter_node.DPDKInfo.HugePages }}
+        AGENT_MODE: dpdk
+        {%elif vrouter_node.Type == "sriov" %}
+        SRIOV: true
+        SRIOV_VF: {{ vrouter_node.SriovInfo.SriovVF }}
+        SRIOV_PHYSICAL_INTERFACE: {{ vrouter_node.SriovInfo.SriovPhysicalInterface }}
+        SRIOV_PHYS_NET: {{ vrouter_node.SriovInfo.SriovPhysicalNet }}
+        {%endif%}
         {%endif%}{%endfor %}{%endfor%}
       {% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
         TSN_EVPN_MODE: true
