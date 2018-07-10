@@ -25,11 +25,11 @@ type BaseQuotaCheckerService struct {
 func (svc *BaseQuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *models.{{ name }}) error {
 	projectID, err := svc.GetProjectFor{{ name }}(ctx, obj)
 	if err != nil || projectID == "" {
-		return errors.Errorf("Error searching Project for {{ name }} with UUID %v (got '%v' Project UUID): %v", obj.GetUUID(), projectID, err)
+		return errors.Wrapf(err, "error searching Project for {{ name }} with UUID %v (got '%v' Project UUID)", obj.GetUUID(), projectID)
 	}
 	project, err := svc.db.GetProject(ctx, &GetProjectRequest{ ID: projectID })
 	if err != nil {
-		return errors.Errorf("Error (when hadling {{ name }}) retrieving Project with UUID %v: %v", projectID, err)
+		return errors.Wrapf(err, "error (when handling {{ name }}) retrieving Project with UUID %v", projectID)
 	}
 
 	limit := project.Project.Quota.{{ name }}
@@ -42,7 +42,7 @@ func (svc *BaseQuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *m
 	log.Infof("Quota limit for {{ name }} is %v, count is %v (in project %v)", limit, count, project.Project.GetUUID())
 	if count >= limit {
 		log.Warn("Wrong return code for quota checking - need to implements once Project backrefs are working")
-		return errors.Errorf("Quota exceeded for resource {{ name }}; under project %s (%v) there are already %v resources count", project.Project.DisplayName, project.Project.GetUUID(), count)
+		return errors.Errorf("quota exceeded for resource {{ name }}; under project %s (%v) there are already %v resources count", project.Project.DisplayName, project.Project.GetUUID(), count)
 	}
 
 	return nil
@@ -98,18 +98,18 @@ func (svc *BaseQuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context,
 		parent := obj.GetParentUUID()
 		parentResp, err := svc.db.Get{{ pdef.GoName }}(ctx, &Get{{ pdef.GoName }}Request{ ID: parent, })
 		if err != nil {
-			return "", errors.Errorf("Error retrieving parent for object {{ name }} with uuid %v: %v", obj.GetUUID(), err)
+			return "", errors.Wrapf(err, "error retrieving parent for object {{ name }} with uuid %v", obj.GetUUID())
 		}
 		return svc.GetProjectFor{{ pdef.GoName }}(ctx, parentResp.{{ pdef.GoName }}){% endif %}
 	}
 	{% endfor %}
-	return "", errors.Errorf("No parent specified for type {{ name }} in object with UUID: %v", obj.GetUUID()){%endif%}
+	return "", errors.Errorf("no parent specified for type {{ name }} in object with UUID: %v", obj.GetUUID()){%endif%}
 }
 {% else %}
 // GetProjectFor{{ name }} for object without parent returns always error
 func (svc *BaseQuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
 	debug.PrintStack()
-	return "", errors.WithStack(errors.Errorf("Resource type {{ name }} is orphan - no Parent type"))
+	return "", errors.Errorf("resource type {{ name }} is orphan - no Parent type")
 }
 {% endif %}
 

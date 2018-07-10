@@ -1,20 +1,9 @@
 name: Implicit values test
 cleanup:
-- path: /openserverserver/srv_blue
-- path: /openserverserver/srv_red
-- path: /project/admin_project_implicit_values_uuid
+- path: /fabrics/fabric_blue
 test_data:
-  admin_project: &admin_project_implicit_values
-    uuid: admin_project_implicit_values_uuid
-    parent_type: domain
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
-    quota: {}
-
-  srv_minimal: &srv_minimal_implicit_values
-    uuid: srv_blue
-    display_name: blue
-    parent_type: project
-    parent_uuid: admin_project_implicit_values_uuid
+  fabric_minimal: &fabric_minimal_implicit_values
+    uuid: fabric_blue
 
 clients:
   default:
@@ -27,57 +16,61 @@ clients:
         name: admin
 
 workflow:
-- name: create project
+- name: create fabric without parent_uuid and fq_name
   request:
-    path: /projects
+    path: /fabrics
     method: POST
-    expected:
-    - 201
+    expected: [404]
     data:
-      project: *admin_project_implicit_values
-  expect:
-    project: *admin_project_implicit_values
-
-- name: create server without providing name
-  request:
-    path: /openserverservers
-    method: POST
-    expected:
-    - 201
-    data:
-      server: *srv_minimal_implicit_values
-  expect:
-    server:
-      <<: *srv_minimal_implicit_values
-      name: default-server
-
-# TODO implement uniqueness constraint
-#- name: create server with same name
-#  request:
-#    path: /openserverservers
-#    method: POST
-#    expected:
-#    - 409
-#    data:
-#      server:
-#        name: default-server
-#        uuid: srv_red
-#        display_name: red
-#        parent_type: project
-#        parent_uuid: admin_project_implicit_values_uuid
-#  expect: null
-
-- name: delete server
-  request:
-    path: /openserverserver/srv_blue
-    method: DELETE
-    expected:
-    - 204
+      fabric:
+        <<: *fabric_minimal_implicit_values
   expect: null
-- name: delete project
+
+- name: create fabric with parent_uuid
   request:
-    path: /project/admin_project_implicit_values_uuid
+    path: /fabrics
+    method: POST
+    expected: [201]
+    data:
+      fabric:
+        <<: *fabric_minimal_implicit_values
+        parent_uuid: beefbeef-beef-beef-beef-beefbeef0001 # default global-system-config uuid
+  expect:
+    fabric:
+      <<: *fabric_minimal_implicit_values
+      name: default-fabric                # default name is filled
+      display_name: default-fabric        # display_name defaults to name
+      parent_type: global-system-config   # parent_type filled - gsc is only possible parent for fabric
+      fq_name: [default-global-system-config, default-fabric]
+
+- name: delete fabric
+  request:
+    path: /fabric/fabric_blue
     method: DELETE
-    expected:
-    - 204
+    expected: [204]
+  expect: null
+
+
+- name: create fabric with fq_name
+  request:
+    path: /fabrics
+    method: POST
+    expected: [201]
+    data:
+      fabric:
+        <<: *fabric_minimal_implicit_values
+        fq_name: [default-global-system-config, my-fabric]
+  expect:
+    fabric:
+      <<: *fabric_minimal_implicit_values
+      name: my-fabric                # default name is filled
+      display_name: my-fabric        # display_name defaults to name
+      parent_type: global-system-config   # parent_type filled - gsc is only possible parent for fabric
+      fq_name: [default-global-system-config, my-fabric]
+
+- name: delete fabric
+  request:
+    path: /fabric/fabric_blue
+    method: DELETE
+    expected: [204]
   expect: null
