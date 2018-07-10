@@ -1,0 +1,97 @@
+uuid: 950b2912-a742-47c8-acdb-ab361f173867
+parent_uuid: 2e63da28-0b48-4853-b641-8c3505b109f8
+parent_type: domain
+fq_name:
+- default-domain
+- project-blue
+id_perms:
+  enable: true
+  description: ''
+  creator: ''
+  user_visible: true
+  permissions:
+    owner: cloud-admin
+    owner_access: 7
+    other_access: 7
+    group: cloud-admin-group
+    group_access: 7
+  uuid:
+    uuid_mslong: -9223372036854776000
+    uuid_lslong: -9223372036854776000
+display_name: project-blue
+annotations: null
+perms2:
+  owner: 950b2912a74247c8acdbab361f173867
+  owner_access: 7
+  global_access: 0
+  share: []
+configuration_version: 0
+vxlan_routing: false
+alarm_enable: false
+quota:
+  virtual_router: 0
+  network_policy: 0
+  loadbalancer_pool: 0
+  route_table: 0
+  subnet: -1
+  network_ipam: 0
+  virtual_DNS_record: 0
+  logical_router: -1
+  security_group_rule: -1
+  virtual_DNS: 0
+  service_instance: 0
+  service_template: 0
+  bgp_router: 0
+  floating_ip: -1
+  floating_ip_pool: 0
+  loadbalancer_member: 0
+  access_control_list: 0
+  virtual_machine_interface: -1
+  instance_ip: 0
+  global_vrouter_config: 0
+  security_logging_object: 0
+  loadbalancer_healthmonitor: 0
+  virtual_ip: 0
+  defaults: 0
+  security_group: -1
+  virtual_network: -1
+enable_security_policy_draft: false
+floating_ip_pool_refs: []
+alias_ip_pool_refs: []
+namespace_refs: []
+application_policy_set_refs:
+- uuid: 6fc384e6-5335-41b5-9ee0-47e8dee055c6
+  to: []
+alias_ip_backrefs: []
+floating_ip_backrefs: []
+address_groups: []
+alarms: []
+api_access_lists: []
+application_policy_sets: []
+bgp_as_a_services: []
+bgpvpns: []
+firewall_policys: []
+firewall_rules: []
+interface_route_tables: []
+loadbalancer_healthmonitors: []
+loadbalancer_listeners: []
+loadbalancer_pools: []
+loadbalancers: []
+logical_routers: []
+network_ipams: []
+network_policys: []
+policy_managements: []
+qos_configs: []
+route_aggregates: []
+route_tables: []
+routing_policys: []
+security_groups: []
+security_logging_objects: []
+service_groups: []
+service_health_checks: []
+service_instances: []
+structured_syslog_configs: []
+tags: []
+virtual_ips: []
+virtual_machine_interfaces: []
+virtual_networks: []
