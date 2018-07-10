@@ -10,6 +10,34 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestStringIPv6(t *testing.T) {
+	tests := []struct {
+		ip     net.IP
+		output string
+	}{
+		{
+			ip:     net.ParseIP("10.0.0.1"),
+			output: "::ffff:a00:1",
+		},
+		{
+			ip:     net.ParseIP("0.0.1.1"),
+			output: "::ffff:0:101",
+		},
+		{
+			ip:     net.ParseIP("2001:db8:ac10:fe01::"),
+			output: "2001:db8:ac10:fe01::",
+		},
+		{
+			ip:     net.IP{},
+			output: "",
+		},
+	}
+
+	for _, tt := range tests {
+		assert.Equal(t, StringIPv6(tt.ip), tt.output)
+	}
+}
+
 func TestCreateIpPool(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
