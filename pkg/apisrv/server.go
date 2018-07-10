@@ -71,8 +71,6 @@ func (s *Server) SetupService() (services.Service, error) {
 		AddressManager:    s.dbService,
 		IntPoolAllocator:  s.dbService,
 	})
-
-	// QuotaCheckerService
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService))
 
 	// EtcdNotifier
