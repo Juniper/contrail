@@ -254,8 +254,8 @@ workflow:
         network_ipam_mgmt:
           host_routes:
             route:
-              - prefix: "test_prefix"
-                next_hop: "1.2.3.5"
+            - prefix: "test_prefix"
+              next_hop: "1.2.3.5"
         uuid: test_ipam1
         display_name: test_ipam1
         parent_type: project
@@ -279,8 +279,8 @@ workflow:
         network_ipam_mgmt:
           host_routes:
             route:
-              - prefix: "test_prefix"
-                next_hop: "1.2.3.5"
+            - prefix: "test_prefix"
+              next_hop: "1.2.3.5"
         uuid: test_ipam2
         display_name: test_ipam2
         parent_type: project
@@ -312,8 +312,8 @@ workflow:
             attr:
               host_routes:
                 route:
-                  - prefix: "test_prefix"
-                    next_hop: "1.2.3.5"
+                - prefix: "test_prefix"
+                  next_hop: "1.2.3.5"
   expect:
     virtual-network:
       fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
