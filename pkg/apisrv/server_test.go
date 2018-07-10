@@ -41,8 +41,13 @@ func TestValidation(t *testing.T) {
 	RunTest(t, "./test_data/test_validation.yml")
 }
 
+func TestNameUnique(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_name_unique.yml")
+}
+
 func TestImplicitValues(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestImplicitValues")
+	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_implicit_values.yml")
 }
 
