@@ -1,7 +1,7 @@
 # Database configuration. MySQL/PostgreSQL supported
 database:
-    type: postgres 
-    dialect: postgres 
+    type: postgres
+    dialect: postgres
     host: localhost
     user: root
     password: contrail123
@@ -18,8 +18,8 @@ etcd:
   username: ""
   password: ""
   path: contrail
+  grpc_insecure: true
 
-# Log Level
 log_level: debug
 
 # Server configuration
@@ -27,7 +27,7 @@ server:
   enabled: true
   read_timeout: 10
   write_timeout: 5
-  log_api: false 
+  log_api: false
   address: ":9091"
 
   # TLS Configuration
@@ -54,52 +54,6 @@ server:
 
   notify_etcd: true
 
-# Keystone configuration
-# keystone:
-#     local: true # Enable local keystone v3. This is only for testing now.
-#     assignment:
-#         type: static
-#         data:
-#           domains:
-#             default: &default
-#               id: default
-#               name: default
-#           projects:
-#             admin: &admin
-#               id: admin
-#               name: admin
-#               domain: *default
-#             demo: &demo
-#               id: demo
-#               name: demo
-#               domain: *default
-#           users:
-#             alice:
-#               id: alice
-#               name: Alice
-#               domain: *default
-#               password: alice_password
-#               email: alice@juniper.nets
-#               roles:
-#               - id: admin
-#                 name: Admin
-#                 project: *admin
-#             bob:
-#               id: bob
-#               name: Bob
-#               domain: *default
-#               password: bob_password
-#               email: bob@juniper.net
-#               roles:
-#               - id: Member
-#                 name: Member
-#                 project: *demo
-#     store:
-#         type: memory
-#         expire: 3600
-#     insecure: true
-#     authurl: https://localhost:9091/keystone/v3
-
 # disable authentication with no_auth true and comment out keystone configuraion.
 no_auth: true
 insecure: true
@@ -121,7 +75,7 @@ agent:
   backend: file
   watcher: polling
   tasks:
-  - schema_id: virtual_network 
+  - schema_id: virtual_network
     common:
     - vars:
         dir: "./work/virtual_networks/"
@@ -162,3 +116,17 @@ compilation:
           create_handler: 'HandleCreate'
           update_handler: 'HandleUpdate'
           delete_handler: 'HandleDelete'
+
+cache:
+    enabled: true
+    timeout: 10s
+    #how long revistion deleted event preserved.
+    max_history: 100000
+    cassandra:
+        enabled: true
+        host: localhost
+        port: 9042
+        timeout: 3600s
+        amqp: amqp://guest:guest@localhost:5672/
+    etcd:
+        enabled: true

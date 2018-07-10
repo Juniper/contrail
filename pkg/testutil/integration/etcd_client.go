@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"path"
 	"testing"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 // Integration test settings.
 const (
 	EtcdEndpoint       = "localhost:2379"
+	EtcdJSONPrefix     = "json"
 	EtcdDialTimeout    = 60 * time.Second
 	EtcdRequestTimeout = 60 * time.Second
 )
@@ -44,6 +46,22 @@ func NewEtcdClient(t *testing.T) *EtcdClient {
 	}
 }
 
+// Close closes connection to etcd.
+func (e *EtcdClient) Close(t *testing.T) {
+	err := e.Client.Close()
+	assert.NoError(t, err, "closing etcd.clientv3.Client failed")
+}
+
+// DeleteProject deletes Project resource.
+func (e *EtcdClient) DeleteProject(t *testing.T, uuid string, opts ...clientv3.OpOption) {
+	e.DeleteKey(t, JSONEtcdKey(ProjectSchemaID, uuid), opts...)
+}
+
+// DeleteNetworkIPAM deletes NetworkIPAM resource.
+func (e *EtcdClient) DeleteNetworkIPAM(t *testing.T, uuid string, opts ...clientv3.OpOption) {
+	e.DeleteKey(t, JSONEtcdKey(NetworkIPAMSchemaID, uuid), opts...)
+}
+
 // GetKey gets etcd key.
 func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption) *clientv3.GetResponse {
 	ctx, cancel := context.WithTimeout(context.Background(), EtcdRequestTimeout)
@@ -62,12 +80,6 @@ func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOpti
 
 	r, err := e.Delete(ctx, key, opts...)
 	assert.NoError(t, err, fmt.Sprintf("deleting etcd resource from etcd failed\n response: %+v", r))
-}
-
-// CheckKeyDoesNotExist checks that there is no value on given key.
-func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
-	gr := e.GetKey(t, key, clientv3.WithPrefix())
-	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
 }
 
 // WatchKey watches value changes for provided key and returns collect method that collect captured values.
@@ -90,6 +102,12 @@ func (e *EtcdClient) WatchKey(key string) (collect func() []string) {
 	}
 }
 
+// CheckKeyDoesNotExist checks that there is no value on given key.
+func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
+	gr := e.GetKey(t, key, clientv3.WithPrefix())
+	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
+}
+
 // GetString gets a string value in Etcd
 func (e *EtcdClient) GetString(t *testing.T, key string) (value string, revision int64) {
 	err := e.Client.Sync(context.Background())
@@ -110,8 +128,7 @@ func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revisio
 	assert.Equal(t, revision, nextRev)
 }
 
-// Close closes connection to etcd.
-func (e *EtcdClient) Close(t *testing.T) {
-	err := e.Client.Close()
-	assert.NoError(t, err, "closing etcd.clientv3.Client failed")
+// JSONEtcdKey returns etcd key of JSON-encoded resource.
+func JSONEtcdKey(schemaID, uuid string) string {
+	return path.Join("/", EtcdJSONPrefix, schemaID, uuid)
 }

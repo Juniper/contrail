@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/coreos/etcd/clientv3"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/models"
@@ -19,13 +19,11 @@ import (
 )
 
 const (
-	etcdJSONPrefix   = "json"
 	etcdWatchTimeout = 10 * time.Second
 )
 
 func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
-	viper.Set("etcd.path", etcdJSONPrefix)
-	s := integration.NewRunningAPIServer(t, "../../..")
+	s := integration.NewRunningAPIServer(t, "../../..", db.DriverPostgreSQL)
 	defer s.Close(t)
 	hc := integration.NewHTTPAPIClient(t, s.URL())
 	ec := integration.NewEtcdClient(t)
@@ -51,23 +49,24 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 
 	hc.CreateProject(t, project(projectUUID))
 	defer hc.DeleteProject(t, projectUUID)
-	defer ec.DeleteKey(t, projectEtcdKey(projectUUID))
+	defer ec.DeleteProject(t, projectUUID)
 
 	hc.CreateNetworkIPAM(t, networkIPAM(networkIPAMUUID, projectUUID))
 	defer hc.DeleteNetworkIPAM(t, networkIPAMUUID)
-	defer ec.DeleteKey(t, networkIPAMEtcdKey(networkIPAMUUID))
+	defer ec.DeleteNetworkIPAM(t, networkIPAMUUID)
 
 	hc.CreateVirtualNetwork(t, virtualNetworkRed(vnRedUUID, projectUUID, networkIPAMUUID))
 	hc.CreateVirtualNetwork(t, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
 	hc.CreateVirtualNetwork(t, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
 	defer deleteVirtualNetworksFromAPIServer(t, hc, vnUUIDs)
-	defer ec.DeleteKey(t, virtualNetworkEtcdKey(testID), clientv3.WithPrefix()) // delete all VNs
+	defer ec.DeleteKey(t, integration.JSONEtcdKey(integration.VirtualNetworkSchemaID, ""),
+		clientv3.WithPrefix()) // delete all VNs
 
 	vnRed := hc.GetVirtualNetwork(t, vnRedUUID)
 	vnGreen := hc.GetVirtualNetwork(t, vnGreenUUID)
 	vnBlue := hc.GetVirtualNetwork(t, vnBlueUUID)
 
-	closeSync := integration.RunSync(t)
+	closeSync := integration.RunSyncService(t)
 	defer closeSync()
 
 	wrRed := retrieveEtcdCreateEvent(redCtx, t, vnRedWatch)
@@ -94,27 +93,15 @@ func checkNoSuchVirtualNetworksInAPIServer(t *testing.T, hc *integration.HTTPAPI
 
 func checkNoSuchVirtualNetworksInEtcd(t *testing.T, ec *integration.EtcdClient, uuids []string) {
 	for _, uuid := range uuids {
-		ec.CheckKeyDoesNotExist(t, virtualNetworkEtcdKey(uuid))
+		ec.CheckKeyDoesNotExist(t, integration.JSONEtcdKey(integration.VirtualNetworkSchemaID, uuid))
 	}
 }
 
 func watchVirtualNetworkInEtcd(ec *integration.EtcdClient, uuid string) (clientv3.WatchChan, context.Context,
 	context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(context.Background(), etcdWatchTimeout)
-	w := ec.Watch(ctx, virtualNetworkEtcdKey(uuid))
+	w := ec.Watch(ctx, integration.JSONEtcdKey(integration.VirtualNetworkSchemaID, uuid))
 	return w, ctx, cancel
-}
-
-func projectEtcdKey(uuid string) string {
-	return path.Join("/", etcdJSONPrefix, integration.ProjectSchemaID, uuid)
-}
-
-func networkIPAMEtcdKey(uuid string) string {
-	return path.Join("/", etcdJSONPrefix, integration.NetworkIPAMSchemaID, uuid)
-}
-
-func virtualNetworkEtcdKey(uuid string) string {
-	return path.Join("/", etcdJSONPrefix, integration.VirtualNetworkSchemaID, uuid)
 }
 
 func project(uuid string) *models.Project {
