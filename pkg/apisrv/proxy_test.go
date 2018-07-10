@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
@@ -114,8 +115,7 @@ func TestProxyEndpoint(t *testing.T) {
 	defer clusterANeutronPrivate.Close()
 	defer clusterANeutronPublic.Close()
 
-	err := APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	time.Sleep(2 * time.Second)
 
 	// verify proxies
 	url := "/proxy/" + clusterAName + "_uuid/neutron/ports"
@@ -134,8 +134,7 @@ func TestProxyEndpoint(t *testing.T) {
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 
-	err = APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	APIServer.ForceProxyUpdate()
 
 	// verify new proxies
 	url = "/proxy/" + clusterBName + "_uuid/neutron/ports"
@@ -164,13 +163,13 @@ func TestProxyEndpoint(t *testing.T) {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
 		url = fmt.Sprintf("/endpoint/endpoint_%s_neutron_uuid", clusterAName)
-		_, err = client.Update(url, &data, &response)
+		_, err := client.Update(url, &data, &response)
 		assert.NoError(t, err, "failed to update neutron endpoint port")
 		break
 	}
 
-	err = APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	APIServer.ForceProxyUpdate()
+
 	// verify proxy (expected to fail as the port is incorrect)
 	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
 	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
@@ -183,7 +182,7 @@ func TestProxyEndpoint(t *testing.T) {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
 		url = fmt.Sprintf("/endpoint/endpoint_%s_neutron_uuid", clusterAName)
-		_, err = client.Delete(url, &response)
+		_, err := client.Delete(url, &response)
 		assert.NoError(t, err, "failed to delete neutron endpoint")
 		break
 	}
@@ -200,13 +199,13 @@ func TestProxyEndpoint(t *testing.T) {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
 		url = fmt.Sprintf("/endpoints")
-		_, err = client.Create(url, &data, &response)
+		_, err := client.Create(url, &data, &response)
 		assert.NoError(t, err, "failed to re-create neutron endpoint port")
 		break
 	}
 
-	err = APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	APIServer.ForceProxyUpdate()
+
 	// verify proxy
 	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
 	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
@@ -239,8 +238,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	cleanup := RunDirtyTestScenario(t, &testScenario)
 	defer cleanup()
 
-	err = APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	APIServer.ForceProxyUpdate()
 
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
@@ -260,8 +258,8 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
 	}
-	err = APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	APIServer.ForceProxyUpdate()
+
 	// Login to new local keystone
 	for _, client := range testScenario.Clients {
 		err = client.Login()
@@ -284,8 +282,8 @@ func TestKeystoneEndpoint(t *testing.T) {
 	cleanup = RunDirtyTestScenario(t, &testScenario)
 	defer cleanup()
 
-	err = APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	APIServer.ForceProxyUpdate()
+
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
 		err = client.Login()
@@ -305,6 +303,5 @@ func TestKeystoneEndpoint(t *testing.T) {
 		break
 	}
 
-	err = APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	APIServer.ForceProxyUpdate()
 }
