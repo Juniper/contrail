@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -40,28 +39,36 @@ var ErrorConflict = grpc.Errorf(codes.AlreadyExists, "Resource conflict")
 
 //ErrorForbiddenf makes forbidden error with format.
 func ErrorForbiddenf(format string, a ...interface{}) error {
-	return ErrorForbidden(fmt.Sprintf(format, a...))
+	return grpc.Errorf(codes.PermissionDenied, format, a)
 }
 
 //ErrorForbidden makes forbidden error.
 func ErrorForbidden(message string) error {
 	if message == "" {
-		message = "forbidden error."
+		message = "forbidden error"
 	}
-	return grpc.Errorf(codes.PermissionDenied, message)
+	return ErrorForbiddenf(message)
 }
 
 //ErrorBadRequestf makes bad request error with format.
 func ErrorBadRequestf(format string, a ...interface{}) error {
-	return ErrorBadRequest(fmt.Sprintf(format, a...))
+	return grpc.Errorf(codes.InvalidArgument, format, a)
 }
 
 //ErrorBadRequest makes bad request error.
 func ErrorBadRequest(message string) error {
 	if message == "" {
-		message = "bad request error."
+		message = "bad request error"
 	}
-	return grpc.Errorf(codes.InvalidArgument, message)
+	return ErrorBadRequestf(message)
+}
+
+//ErrorNotFoundf makes not found error.
+func ErrorNotFoundf(message string, a ...interface{}) error {
+	if message == "" {
+		message = "not found"
+	}
+	return grpc.Errorf(codes.NotFound, message, a...)
 }
 
 // HTTPStatusFromCode converts a gRPC error code into the corresponding HTTP response status.

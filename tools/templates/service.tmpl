@@ -2,14 +2,16 @@ package services
 
 import (
     "context"
+    "fmt"
     "net/http"
-    "github.com/Juniper/contrail/pkg/models"
-    "github.com/satori/go.uuid"
-    "github.com/labstack/echo"
-    "github.com/Juniper/contrail/pkg/common"
 
-	log "github.com/sirupsen/logrus"
+    "github.com/labstack/echo"
     errors "github.com/pkg/errors"
+    "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
+
+    "github.com/Juniper/contrail/pkg/common"
+    "github.com/Juniper/contrail/pkg/models"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -55,16 +57,52 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
         model.UUID = uuid.NewV4().String()
     }
     if model.Name == "" {
-        model.Name = "default-{{ schema.ID }}"
-    }
-
-    if model.FQName == nil {
-        if model.DisplayName != "" {
-            model.FQName = []string{auth.DomainID(), auth.ProjectID(), model.DisplayName}
+        if fqName := model.FQName; len(fqName) > 0 {
+            model.Name = fqName[len(fqName)-1]
         } else {
-            model.FQName = []string{auth.DomainID(), auth.ProjectID(), model.UUID}
+            model.Name = "default-{{ schema.TypeName }}"
         }
     }
+    if model.DisplayName == "" {
+        model.DisplayName = model.Name
+    }
+
+{% if schema.Parents | length == 1 %}{# There is only one parent, so "for" will extract him #}
+    if model.ParentType == "" { {% for key, reference in schema.Parents %}
+        model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}
+    }{% endif %}
+
+    if model.FQName == nil {
+{% if schema.Parents | length == 0 %}
+        model.FQName = []string{model.Name}
+{% else %}
+        if model.ParentUUID != "" {
+            // fqName is empty but parentUUID is not - get parent fqName
+            metadata, err := service.MetadataGetter.GetMetaData(ctx, model.ParentUUID, nil)
+            if err != nil {
+                return nil, err
+            }
+            model.FQName = append(metadata.FQName, model.Name)
+        } else if model.ParentType != "" {
+            // assign default fqName
+            model.FQName = []string{auth.DomainID(), fmt.Sprintf("default-%s", model.ParentType), model.Name}
+        }
+{% endif %}
+    }
+
+    if model.ParentUUID == "" {
+        // fqName must be have at least 2 elements to contain parent fqName
+        if l := len(model.FQName); l > 1 {
+            // get parentUUID by parent fqName
+            parentFQName := model.FQName[:l-1]
+            metadata, err := service.MetadataGetter.GetMetaData(ctx, "", parentFQName)
+            if err != nil {
+                return nil, err
+            }
+            model.ParentUUID = metadata.UUID
+        }
+    }
+
     model.Perms2 = &models.PermType2{}
     model.Perms2.Owner = auth.ProjectID()
 

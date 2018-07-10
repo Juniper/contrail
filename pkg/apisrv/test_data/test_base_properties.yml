@@ -1,0 +1,75 @@
+name: Implicit values test
+cleanup:
+- path: /fabrics/fabric_blue
+test_data:
+  fabric_minimal: &fabric_minimal_implicit_values
+    uuid: fabric_blue
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create fabric without parent_uuid and fq_name
+  request:
+    path: /fabrics
+    method: POST
+    expected: [404]
+    data:
+      fabric: *fabric_minimal_implicit_values
+  expect: null
+
+- name: create fabric with parent_uuid
+  request:
+    path: /fabrics
+    method: POST
+    expected: [201]
+    data:
+      fabric:
+        <<: *fabric_minimal_implicit_values
+        parent_uuid: beefbeef-beef-beef-beef-beefbeef0001 # default global-system-config uuid
+  expect:
+    fabric:
+      <<: *fabric_minimal_implicit_values
+      name: default-fabric                # default name is filled
+      display_name: default-fabric        # display_name defaults to name
+      parent_type: global-system-config   # parent_type filled - gsc is only possible parent for fabric
+      fq_name: [default-global-system-config, default-fabric]
+
+- name: delete fabric
+  request:
+    path: /fabric/fabric_blue
+    method: DELETE
+    expected: [204]
+  expect: null
+
+
+- name: create fabric with fq_name
+  request:
+    path: /fabrics
+    method: POST
+    expected: [201]
+    data:
+      fabric:
+        <<: *fabric_minimal_implicit_values
+        fq_name: [default-global-system-config, my-fabric]
+  expect:
+    fabric:
+      <<: *fabric_minimal_implicit_values
+      name: my-fabric                     # default name is extracted from fqName
+      display_name: my-fabric             # display_name defaults to name
+      parent_type: global-system-config   # parent_type filled - gsc is only possible parent for fabric
+      fq_name: [default-global-system-config, my-fabric]
+
+- name: delete fabric
+  request:
+    path: /fabric/fabric_blue
+    method: DELETE
+    expected: [204]
+  expect: null

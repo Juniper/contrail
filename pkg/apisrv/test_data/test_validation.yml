@@ -8,6 +8,7 @@ test_data:
 
   admin_project: &admin_project_validation_test
     uuid: admin_project_validation_test_uuid
+    name: admin_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
