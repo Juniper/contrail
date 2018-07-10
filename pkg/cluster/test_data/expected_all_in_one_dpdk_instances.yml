@@ -1,0 +1,45 @@
+global_configuration:
+  CONTAINER_REGISTRY: test_registry
+  REGISTRY_PRIVATE_INSECURE: True
+provider_config:
+  bms:
+    ssh_user: root
+    ssh_pwd: c0ntrail123
+    ntpserver: 10.1.1.100
+    domainsuffix: local
+instances:
+  all_in_one_node:
+    ip: 127.0.0.1
+    provider: bms
+    roles:
+      config:
+      config_database:
+      control:
+      webui:
+      analytics:
+      analytics_database:
+      vrouter:
+        CPU_CORE_MASK: 0xff
+        DPDK_UIO_DRIVER: vfio-pci
+        HUGE_PAGES: 64000
+        AGENT_MODE: dpdk
+      openstack_control:
+      openstack_network:
+      openstack_storage:
+      openstack_monitoring:
+      openstack_compute:
+contrail_configuration:
+  CONTRAIL_VERSION: ocata-5.0-x
+  CLOUD_ORCHESTRATOR: openstack
+  RABBITMQ_NODE_PORT: 5673
+  VROUTER_GATEWAY: 127.0.0.254
+  ENCAP_PRIORITY: VXLAN,MPLSoUDP,MPLSoGRE
+  AUTH_MODE: keystone
+  KEYSTONE_AUTH_HOST: 127.0.0.1
+  KEYSTONE_AUTH_URL_VERSION: /v3
+kolla_config:
+  kolla_globals:
+    openstack_release: ocata-xyz
+    enable_haproxy: no
+  kolla_passwords:
+    keystone_admin_password: contrail123
