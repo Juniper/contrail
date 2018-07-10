@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -218,12 +217,10 @@ func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint)
 	}
 }
 
-func (p *proxyService) forceUpdate() error {
-	if c := <-p.forceUpdateChan; c != nil {
-		c <- struct{}{}
-		return nil
-	}
-	return errors.New("forceUpdateChannel is already closed")
+func (p *proxyService) forceUpdate() {
+	wait := make(chan struct{})
+	p.forceUpdateChan <- wait
+	<-wait
 }
 
 func (p *proxyService) serve() {
@@ -236,18 +233,17 @@ func (p *proxyService) serve() {
 	p.serviceWaitGroup.Add(1)
 	go func() {
 		defer p.serviceWaitGroup.Done()
-		timer := time.NewTimer(2 * time.Second)
-		defer timer.Stop()
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
 		for {
-			c := make(chan struct{})
 			select {
 			case <-p.serviceContext.Done():
 				log.Info("stopping dynamic proxy server")
 				return
-			case p.forceUpdateChan <- c:
+			case wait := <-p.forceUpdateChan:
 				p.updateEndpoints()
-				<-c
-			case <-timer.C:
+				close(wait)
+			case <-ticker.C:
 				p.updateEndpoints()
 			}
 		}
@@ -268,5 +264,4 @@ func (p *proxyService) stop() {
 	p.stopServiceContext()
 	// wait for the proxy server poll to complete
 	p.serviceWaitGroup.Wait()
-	close(p.forceUpdateChan)
 }
