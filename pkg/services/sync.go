@@ -3,16 +3,31 @@ package services
 import (
 	"net/http"
 
-	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	context "golang.org/x/net/context"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models"
 )
+
+// MetaData represents resource meta data.
+type MetaData struct {
+	UUID   string
+	FQName []string
+	Type   string
+}
+
+type metadataGetter interface {
+	GetMetaData(ctx context.Context, uuid string, fqName []string) (*MetaData, error)
+}
 
 // nolint
 type ContrailService struct {
 	BaseService
-	TypeValidator *models.TypeValidator
+
+	MetadataGetter metadataGetter
+	TypeValidator  *models.TypeValidator
 }
 
 //RESTSync handles a bulk create request.
