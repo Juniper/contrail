@@ -16,11 +16,13 @@ cleanup:
 test_data:
   proj_blue: &proj_blue
     uuid: uuid_proj_blue
+    name: project_blue
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   proj_green: &proj_green
     uuid: uuid_proj_green
+    name: project_green
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
