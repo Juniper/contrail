@@ -8,13 +8,21 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
-type BaseQuotaCheckerService struct {
+type QuotaCheckerService struct {
 	BaseService
 	db Service
+	quotaCounter QuotaCheckerCounter
 }
+
+type QuotaCheckerCounter interface {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}{% set ThisID = schema.ID %}{% set name = schema.JSONSchema.GoName %}{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}{% if QuotaDef %}Count{{ name }}(ctx context.Context, obj *models.{{ name }}, prj *models.Project) (int64, error)
+{% endif %}{% endif %}{% endfor %}
+}
+
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %} {% set ThisID = schema.ID %}
 {% set name = schema.JSONSchema.GoName %}
@@ -22,7 +30,7 @@ type BaseQuotaCheckerService struct {
 {% if QuotaDef %}
 
 // Handle{{ name }} retrieves project for handled resource and counts all the resources of this type, then verify quota values
-func (svc *BaseQuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *models.{{ name }}) error {
+func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *models.{{ name }}) error {
 	projectID, err := svc.GetProjectFor{{ name }}(ctx, obj)
 	if err != nil || projectID == "" {
 		return errors.Errorf("Error searching Project for {{ name }} with UUID %v (got '%v' Project UUID): %v", obj.GetUUID(), projectID, err)
@@ -38,23 +46,18 @@ func (svc *BaseQuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *m
 		return nil
 	}
 	log.Infof("[Create] Checking quota for {{ name }}(%v) in project %v", obj.GetUUID(), project.Project.GetUUID())
-	count, err := svc.Count{{ name }}(ctx, obj, project.Project)
+	count, err := svc.quotaCounter.Count{{ name }}(ctx, obj, project.Project)
 	log.Infof("Quota limit for {{ name }} is %v, count is %v (in project %v)", limit, count, project.Project.GetUUID())
 	if count >= limit {
-		log.Warn("Wrong return code for quota checking - need to implements once Project backrefs are working")
-		return errors.Errorf("Quota exceeded for resource {{ name }}; under project %s (%v) there are already %v resources count", project.Project.DisplayName, project.Project.GetUUID(), count)
+		return common.ErrorBadRequestf("Quota exceeded for resource {{ name }}; under project %s (%v) there are already %v resources count", project.Project.DisplayName, project.Project.GetUUID(), count)
+		// return errors.Errorf("Quota exceeded for resource {{ name }}; under project %s (%v) there are already %v resources count", project.Project.DisplayName, project.Project.GetUUID(), count)
 	}
 
 	return nil
 }
 
-// Count{{ name }} is a resource counting function, should be implemented elsewhere for all resources specified in QuotaType resource
-func (svc *BaseQuotaCheckerService) Count{{ name }}(ctx context.Context, obj *models.{{ name }}, prj *models.Project) (int64, error) {
-	return 0, errors.New("This is a bug! This function should be implemented in specific quota counter class!")
-}
-
 // Create{{ name }} is an implementation of handling quota verificatin during object creation
-func (svc *BaseQuotaCheckerService) Create{{ name }}(ctx context.Context, request *Create{{ name }}Request) (*Create{{ name }}Response, error) {
+func (svc *QuotaCheckerService) Create{{ name }}(ctx context.Context, request *Create{{ name }}Request) (*Create{{ name }}Response, error) {
 	log.Debugf("Create{{ name }} request = %+v;", request)
 	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
 		return nil, err
@@ -66,7 +69,7 @@ func (svc *BaseQuotaCheckerService) Create{{ name }}(ctx context.Context, reques
 }
 
 /* TODO might be not needed
-func (svc *BaseQuotaCheckerService) Update{{ name }}(ctx context.Context, request *Update{{ name }}Request) (*Update{{ name }}Response, error) {
+func (svc *QuotaCheckerService) Update{{ name }}(ctx context.Context, request *Update{{ name }}Request) (*Update{{ name }}Response, error) {
 	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
 		return nil, err
 	}
@@ -80,7 +83,7 @@ func (svc *BaseQuotaCheckerService) Update{{ name }}(ctx context.Context, reques
 
 {% if schema.Parents|length >= 1 %}
 // GetProjectFor{{ name }} retrieves project UUID for given {{ name }} object (if possible) // Parents count: {{ schema.Parents|length }};
-func (svc *BaseQuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
+func (svc *QuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
 	log.Debugf("GetProject lookup on {{ name }} with UUID: %v -> %v, %v", obj.GetUUID(), obj.GetParentType(), obj.GetParentUUID())
 	{% if name == "Project" %}
 	log.Debugf("GetProject returns Project with UUID: %v", obj.GetUUID())
@@ -107,7 +110,7 @@ func (svc *BaseQuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context,
 }
 {% else %}
 // GetProjectFor{{ name }} for object without parent returns always error
-func (svc *BaseQuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
+func (svc *QuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
 	debug.PrintStack()
 	return "", errors.WithStack(errors.Errorf("Resource type {{ name }} is orphan - no Parent type"))
 }
