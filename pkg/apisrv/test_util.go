@@ -113,8 +113,8 @@ func AddKeystoneProjectAndUser(s *Server, testID string) {
 }
 
 // ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
-func (s *Server) ForceProxyUpdate() error {
-	return s.Proxy.forceUpdate()
+func (s *Server) ForceProxyUpdate() {
+	s.Proxy.forceUpdate()
 }
 
 //Task has API request and expected response.
