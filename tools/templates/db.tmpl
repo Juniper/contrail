@@ -124,8 +124,8 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     _, err := tx.ExecContext(ctx, qb.CreateQuery(), {% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
 	if err != nil {
-        err = handleError(err)
-	   return errors.Wrap(err, "Resource create faild for {{ schema.JSONSchema.GoName }}")
+       err = handleError(err)
+	   return errors.Wrap(err, "Resource create failed for {{ schema.JSONSchema.GoName }}")
 	}
 
     err = db.create{{ schema.JSONSchema.GoName }}Reference(ctx, request)
@@ -143,7 +143,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
         Type: "{{ schema.ID }}",
         FQName: model.FQName,
     }
-    err = db.CreateMetaData(tx, metaData)
+    err = db.CreateMetaData(ctx, metaData)
     if err != nil {
 	    return errors.Wrap(err, "Creating meta-data for {{ schema.JSONSchema.GoName }} failed")
     }
@@ -262,7 +262,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
     result := []*models.{{ schema.JSONSchema.GoName }}{}
 
     if spec.ParentFQName != nil {
-       parentMetaData, err := db.GetMetaData(tx, "", spec.ParentFQName)
+       parentMetaData, err := db.GetMetaData(ctx, "", spec.ParentFQName)
        if err != nil {
 		  return nil, errors.Wrapf(err, "Can't find parents when listing {{ schema.JSONSchema.GoName }} with request data %v", request)
        }
@@ -413,7 +413,7 @@ func (db *Service) delete{{ schema.JSONSchema.GoName }}(
 	   return errors.Wrapf(err, "Delete failed (DB delete) of resource {{ schema.JSONSchema.GoName }} with UUID '%v': ", request.GetID())
     }
 
-    err = db.DeleteMetaData(tx, uuid)
+    err = db.DeleteMetaData(ctx, uuid)
     return err
 }
 

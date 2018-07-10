@@ -46,7 +46,7 @@ func ErrorForbiddenf(format string, a ...interface{}) error {
 //ErrorForbidden makes forbidden error.
 func ErrorForbidden(message string) error {
 	if message == "" {
-		message = "forbidden error."
+		message = "forbidden error"
 	}
 	return grpc.Errorf(codes.PermissionDenied, message)
 }
@@ -59,9 +59,17 @@ func ErrorBadRequestf(format string, a ...interface{}) error {
 //ErrorBadRequest makes bad request error.
 func ErrorBadRequest(message string) error {
 	if message == "" {
-		message = "bad request error."
+		message = "bad request error"
 	}
 	return grpc.Errorf(codes.InvalidArgument, message)
+}
+
+//ErrorNotFoundf makes bad request error.
+func ErrorNotFoundf(message string, a ...interface{}) error {
+	if message == "" {
+		message = "not found"
+	}
+	return grpc.Errorf(codes.NotFound, message, a...)
 }
 
 // HTTPStatusFromCode converts a gRPC error code into the corresponding HTTP response status.
