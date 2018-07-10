@@ -106,8 +106,7 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster create is not as expected")
 	// Wait for the in-memory endpoint cache to get updated
-	err = apisrv.APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	apisrv.APIServer.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -128,8 +127,7 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster update is not as expected")
 	// Wait for the in-memory endpoint cache to get updated
-	err = apisrv.APIServer.ForceProxyUpdate()
-	assert.NoError(t, err)
+	apisrv.APIServer.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
