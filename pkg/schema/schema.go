@@ -80,6 +80,7 @@ type ColumnConfig struct {
 	ParentColumn []string
 	Name         string
 	GoPremitive  bool
+	JSONSchema   *JSONSchema
 }
 
 //ColumnConfigs is for list of columns
@@ -348,6 +349,7 @@ func (s *JSONSchema) resolveSQL(
 			ParentColumn: parentColumn,
 			GoPremitive:  s.GoPremitive,
 			Name:         columnName,
+			JSONSchema:   s,
 		})
 		return nil
 	}
