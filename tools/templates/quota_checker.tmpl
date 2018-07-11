@@ -36,6 +36,7 @@ Count{{ name }}(ctx context.Context, obj *models.{{ name }}, prj *models.Project
 
 // Handle{{ name }} retrieves project for handled resource and counts all the resources of this type, then verify quota values
 func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *models.{{ name }}) error {
+	{% if name != "InstanceIP" %}
 	projectID, err := svc.GetProjectFor{{ name }}(ctx, obj)
 	if err != nil || projectID == "" {
 		return errors.Wrapf(err, "error searching Project for {{ name }} with UUID %v (got '%v' Project UUID)", obj.GetUUID(), projectID)
@@ -56,7 +57,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 	if count >= limit {
 		return common.ErrorBadRequestf("Quota exceeded for resource {{ name }}; under project %s (%v) there are already %v resources count", project.Project.DisplayName, project.Project.GetUUID(), count)
 	}
-
+	{% endif %}
 	return nil
 }
 

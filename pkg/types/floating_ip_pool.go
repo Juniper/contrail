@@ -49,7 +49,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkFromFloatingIPPool(
 			ID: floatingIPPool.GetParentUUID(),
 		})
 	if err != nil {
-		return nil, common.ErrorBadRequestf("Missing virtual-network with uuid %s: : %v",
+		return nil, common.ErrorBadRequestf("Missing virtual-network with uuid %s: %v",
 			floatingIPPool.GetParentUUID(), err)
 	}
 

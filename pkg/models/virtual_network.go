@@ -1,5 +1,9 @@
 package models
 
+import (
+	"github.com/Juniper/contrail/pkg/common"
+)
+
 // Virtual network forwarding modes.
 const (
 	L3Mode   = "l3"
@@ -48,4 +52,13 @@ func (m *VirtualNetwork) IsValidMultiPolicyServiceChainConfig() bool {
 		}
 	}
 	return true
+}
+
+//ShouldIgnoreAllocation checks if there is ip-fabric or link-local address allocation
+func (m *VirtualNetwork) ShouldIgnoreAllocation() bool {
+	fqName := m.GetFQName()
+	if common.ContainsString(fqName, "ip-fabric") || common.ContainsString(fqName, "__link_local__") {
+		return true
+	}
+	return false
 }

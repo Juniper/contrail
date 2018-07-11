@@ -5,30 +5,31 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/gogo/protobuf/types"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/Juniper/contrail/pkg/types/ipam/mock"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func instanceIDPrepareVirtualNetwork(s *ContrailTypeLogicService) {
+func instanceIPPrepareVirtualNetwork(s *ContrailTypeLogicService) {
 	readService := s.ReadService.(*servicesmock.MockReadService)
 
-	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
-		&services.GetVirtualNetworkRequest{
-			ID: "virtual-network-uuid-1",
-		}).Return(
-		&services.GetVirtualNetworkResponse{
-			VirtualNetwork: &models.VirtualNetwork{
-				FQName: []string{"default", "ip-fabric", "__link_local__"},
-			},
-		}, nil).AnyTimes()
+	virtualNetworks := []*models.VirtualNetwork{models.MakeVirtualNetwork(), models.MakeVirtualNetwork()}
+	virtualNetworks[0].UUID = "virtual-network-uuid-1"
+	virtualNetworks[0].FQName = []string{"default", "ip-fabric", "__link_local__"}
+	virtualNetworks[1].UUID = "virtual-network-uuid-2"
+	virtualNetworks[1].FQName = []string{"default"}
+
+	mockedReadServiceAddVirtualNetwork(s, virtualNetworks[0])
+	mockedReadServiceAddVirtualNetwork(s, virtualNetworks[1])
 
 	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound).AnyTimes()
@@ -48,7 +49,7 @@ func instanceIPPrepareReadService(s *ContrailTypeLogicService, instanceIP *model
 	}
 }
 
-func instanceIDPrepareVirtualRouter(s *ContrailTypeLogicService) {
+func instanceIPPrepareVirtualRouter(s *ContrailTypeLogicService) {
 	readService := s.ReadService.(*servicesmock.MockReadService)
 
 	readService.EXPECT().GetVirtualRouter(gomock.Not(gomock.Nil()),
@@ -80,27 +81,30 @@ func instanceIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
 		func(_ context.Context, request *services.CreateInstanceIPRequest,
 		) (response *services.CreateInstanceIPResponse, err error) {
 			return &services.CreateInstanceIPResponse{InstanceIP: request.InstanceIP}, nil
-		}).AnyTimes()
+		}).MaxTimes(1)
 
 	nextService.EXPECT().UpdateInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(_ context.Context, request *services.UpdateInstanceIPRequest,
 		) (response *services.UpdateInstanceIPResponse, err error) {
 			return &services.UpdateInstanceIPResponse{InstanceIP: request.InstanceIP}, nil
-		}).AnyTimes()
+		}).MaxTimes(1)
 
 	nextService.EXPECT().DeleteInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(_ context.Context, request *services.DeleteInstanceIPRequest,
 		) (response *services.DeleteInstanceIPResponse, err error) {
 			return &services.DeleteInstanceIPResponse{ID: request.ID}, nil
-		}).AnyTimes()
+		}).MaxTimes(1)
 }
 
 func instanceIPSetupIPAMMocks(s *ContrailTypeLogicService) {
 	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
-	addressManager.EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
-		func(_ context.Context, request *ipam.AllocateIPRequest) (address string, subnetUUID string, err error) {
-			return "10.10.10.20", "uuid-1", nil
-		}).AnyTimes()
+	virtualNetwork := models.MakeVirtualNetwork()
+	virtualNetwork.UUID = "virtual-network-uuid-2"
+	virtualNetwork.FQName = []string{"default"}
+
+	addressManager.EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		"10.10.10.20", "uuid-1", nil,
+	).AnyTimes()
 
 	addressManager.EXPECT().DeallocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(_ context.Context, request *ipam.DeallocateIPRequest) error {
@@ -114,7 +118,8 @@ func instanceIPSetupIPAMMocks(s *ContrailTypeLogicService) {
 
 	addressManager.EXPECT().IsIPAllocated(gomock.Not(gomock.Nil()),
 		&ipam.IsIPAllocatedRequest{
-			IPAddress: "10.10.10.11",
+			VirtualNetwork: virtualNetwork,
+			IPAddress:      "10.10.10.11",
 		}).Return(false, common.ErrorNotFound).AnyTimes()
 }
 
@@ -165,27 +170,45 @@ func TestCreateInstanceIP(t *testing.T) {
 			paramInstanceIP: models.InstanceIP{
 				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
 					{
-						UUID: "virtual-network-uuid-2",
+						UUID: "virtual-network-uuid-3",
 					},
 				},
 			},
 			fails: true,
 		},
 		{
+			name: "Try to create instance-ip when should ignore ip allocation",
+			paramInstanceIP: models.InstanceIP{
+				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid-1",
+					},
+				},
+			},
+			expectedInstanceIP: models.InstanceIP{
+				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid-1",
+					},
+				},
+			},
+		},
+		{
 			name: "Try to create instance-ip when checking if ip-address is allocated returns error",
 			paramInstanceIP: models.InstanceIP{
+				InstanceIPAddress: "10.10.10.11",
 				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
 					{
 						UUID: "virtual-network-uuid-2",
 					},
 				},
-				InstanceIPAddress: "10.10.10.11",
 			},
 			fails: true,
 		},
 		{
 			name: "Try to create instance-ip when refers to multiple vrouters",
 			paramInstanceIP: models.InstanceIP{
+				InstanceIPAddress: "10.10.10.10",
 				VirtualRouterRefs: []*models.InstanceIPVirtualRouterRef{
 					{
 						UUID: "virtual-router-uuid-1",
@@ -194,7 +217,6 @@ func TestCreateInstanceIP(t *testing.T) {
 						UUID: "virtual-router-uuid-2",
 					},
 				},
-				InstanceIPAddress: "10.10.10.10",
 			},
 			fails:     true,
 			errorCode: codes.InvalidArgument,
@@ -252,8 +274,8 @@ func TestCreateInstanceIP(t *testing.T) {
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			instanceIPSetupNextServiceMocks(service)
 			instanceIPSetupIPAMMocks(service)
-			instanceIDPrepareVirtualNetwork(service)
-			instanceIDPrepareVirtualRouter(service)
+			instanceIPPrepareVirtualNetwork(service)
+			instanceIPPrepareVirtualRouter(service)
 
 			ctx := context.Background()
 
@@ -280,7 +302,7 @@ func TestCreateInstanceIP(t *testing.T) {
 func TestUpdateInstanceIP(t *testing.T) {
 	tests := []struct {
 		name               string
-		requestInstanceIP  *models.InstanceIP
+		request            *services.UpdateInstanceIPRequest
 		databaseInstanceIP *models.InstanceIP
 		expectedInstanceIP *models.InstanceIP
 		fails              bool
@@ -288,15 +310,19 @@ func TestUpdateInstanceIP(t *testing.T) {
 	}{
 		{
 			name: "Try to update instance-ip when cannot get instance-ip from database",
-			requestInstanceIP: &models.InstanceIP{
-				UUID: "instance-ip-uuid",
+			request: &services.UpdateInstanceIPRequest{
+				InstanceIP: &models.InstanceIP{
+					UUID: "instance-ip-uuid",
+				},
 			},
 			fails: true,
 		},
 		{
 			name: "Try to update instance-ip when instance-ip does not have virtual-network refs",
-			requestInstanceIP: &models.InstanceIP{
-				UUID: "instance-ip-uuid",
+			request: &services.UpdateInstanceIPRequest{
+				InstanceIP: &models.InstanceIP{
+					UUID: "instance-ip-uuid",
+				},
 			},
 			databaseInstanceIP: &models.InstanceIP{
 				UUID: "instance-ip-uuid",
@@ -307,14 +333,16 @@ func TestUpdateInstanceIP(t *testing.T) {
 		},
 		{
 			name: "Try to update instance-ip when cannot get virtual-network from database",
-			requestInstanceIP: &models.InstanceIP{
-				UUID: "instance-ip-uuid",
+			request: &services.UpdateInstanceIPRequest{
+				InstanceIP: &models.InstanceIP{
+					UUID: "instance-ip-uuid",
+				},
 			},
 			databaseInstanceIP: &models.InstanceIP{
 				UUID: "instance-ip-uuid",
 				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
 					{
-						UUID: "virtual-network-uuid-2",
+						UUID: "virtual-network-uuid-3",
 					},
 				},
 			},
@@ -322,16 +350,21 @@ func TestUpdateInstanceIP(t *testing.T) {
 		},
 		{
 			name: "Try to update instance-ip ip-address",
-			requestInstanceIP: &models.InstanceIP{
-				UUID:              "instance-ip-uuid",
-				InstanceIPAddress: "10.10.10.10",
+			request: &services.UpdateInstanceIPRequest{
+				InstanceIP: &models.InstanceIP{
+					UUID:              "instance-ip-uuid",
+					InstanceIPAddress: "10.10.10.10",
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{models.InstanceIPFieldInstanceIPAddress},
+				},
 			},
 			databaseInstanceIP: &models.InstanceIP{
 				UUID:              "instance-ip-uuid",
 				InstanceIPAddress: "10.10.10.20",
 				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
 					{
-						UUID: "virtual-network-uuid-1",
+						UUID: "virtual-network-uuid-2",
 					},
 				},
 			},
@@ -340,8 +373,10 @@ func TestUpdateInstanceIP(t *testing.T) {
 		},
 		{
 			name: "Try to update instance-ip when fq-name is ip-fablic or link-local",
-			requestInstanceIP: &models.InstanceIP{
-				UUID: "instance-ip-uuid",
+			request: &services.UpdateInstanceIPRequest{
+				InstanceIP: &models.InstanceIP{
+					UUID: "instance-ip-uuid",
+				},
 			},
 			databaseInstanceIP: &models.InstanceIP{
 				UUID: "instance-ip-uuid",
@@ -357,14 +392,16 @@ func TestUpdateInstanceIP(t *testing.T) {
 		},
 		{
 			name: "Try to update instance-ip",
-			requestInstanceIP: &models.InstanceIP{
-				UUID: "instance-ip-uuid",
+			request: &services.UpdateInstanceIPRequest{
+				InstanceIP: &models.InstanceIP{
+					UUID: "instance-ip-uuid",
+				},
 			},
 			databaseInstanceIP: &models.InstanceIP{
 				UUID: "instance-ip-uuid",
 				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
 					{
-						UUID: "virtual-network-uuid-1",
+						UUID: "virtual-network-uuid-2",
 					},
 				},
 			},
@@ -380,14 +417,13 @@ func TestUpdateInstanceIP(t *testing.T) {
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			instanceIPSetupNextServiceMocks(service)
-			instanceIDPrepareVirtualNetwork(service)
+			instanceIPPrepareVirtualNetwork(service)
 			instanceIPPrepareReadService(service, tt.databaseInstanceIP)
 
 			ctx := context.Background()
 
-			paramRequest := services.UpdateInstanceIPRequest{InstanceIP: tt.requestInstanceIP}
 			expectedResponse := services.UpdateInstanceIPResponse{InstanceIP: tt.expectedInstanceIP}
-			createInstanceIPResponse, err := service.UpdateInstanceIP(ctx, &paramRequest)
+			createInstanceIPResponse, err := service.UpdateInstanceIP(ctx, tt.request)
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -448,7 +484,7 @@ func TestDeleteInstanceIP(t *testing.T) {
 			instanceIP: &models.InstanceIP{
 				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
 					{
-						UUID: "virtual-network-uuid-2",
+						UUID: "virtual-network-uuid-3",
 					},
 				},
 				InstanceIPAddress: "10.10.10.10",
@@ -461,7 +497,7 @@ func TestDeleteInstanceIP(t *testing.T) {
 			instanceIP: &models.InstanceIP{
 				VirtualNetworkRefs: []*models.InstanceIPVirtualNetworkRef{
 					{
-						UUID: "virtual-network-uuid-1",
+						UUID: "virtual-network-uuid-2",
 					},
 				},
 				InstanceIPAddress: "10.10.10.10",
@@ -476,7 +512,7 @@ func TestDeleteInstanceIP(t *testing.T) {
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			instanceIPSetupIPAMMocks(service)
 			instanceIPSetupNextServiceMocks(service)
-			instanceIDPrepareVirtualNetwork(service)
+			instanceIPPrepareVirtualNetwork(service)
 			instanceIPPrepareReadService(service, tt.instanceIP)
 
 			ctx := context.Background()
