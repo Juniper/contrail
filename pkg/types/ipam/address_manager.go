@@ -13,15 +13,19 @@ type ErrSubnetExhausted interface {
 
 // AllocateIPRequest arguments for AllocateIP methods.
 type AllocateIPRequest struct {
-	VirtualNetwork *models.VirtualNetwork
-	SubnetUUID     string
-	IPAddress      string
+	VirtualNetwork  *models.VirtualNetwork
+	SubnetUUID      string
+	IPAddress       string
+	IPFamily        string
+	IpamRefs        []*models.VirtualRouterNetworkIpamRef
+	AllocationPools []*models.AllocationPoolType
 }
 
 // DeallocateIPRequest arguments for DeallocateIP methods.
 type DeallocateIPRequest struct {
 	VirtualNetwork *models.VirtualNetwork
 	IPAddress      string
+	IpamRefs       []*models.InstanceIPNetworkIpamRef
 }
 
 // IsIPAllocatedRequest arguments for IsIPAllocated methods.

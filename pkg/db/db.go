@@ -212,3 +212,8 @@ func ConnectDB() (*sql.DB, error) {
 	}
 	return nil, fmt.Errorf("failed to open db connection")
 }
+
+// TranslateBetweenFQNameUUID translates given fq-name to corresponding uuid and vice versa
+func (db *Service) TranslateBetweenFQNameUUID(ctx context.Context, uuid string, fqName []string) (*MetaData, error) {
+	return db.GetMetaData(ctx, uuid, fqName)
+}
