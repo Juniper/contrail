@@ -23,11 +23,11 @@
         type: "string"
         nullable: false
       parent_uuid:
-        presence: "true"
+        presence: "optional"
         description: "UUID of the parent object"
         type: "string"
       parent_type:
-        presence: "true"
+        presence: "optional"
         description: "Parent resource type"
         type: "string"
       fq_name:
