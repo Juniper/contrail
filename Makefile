@@ -99,6 +99,7 @@ docker: ## Generate docker files
 	mkdir -p docker/contrail_go/templates/ && cp pkg/cluster/configs/instances.tmpl docker/contrail_go/templates/
 	cp tools/init_mysql.sql docker/contrail_go/etc
 	cp tools/init_psql.sql docker/contrail_go/etc
+	cp tools/init_data.yaml docker/contrail_go/etc
 	cp -r public docker/contrail_go/public
 	mkdir -p docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
 ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")

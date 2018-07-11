@@ -7,6 +7,7 @@ ADD ./contrailutil /bin/contrailutil
 ADD ./etc /etc/contrail
 ADD ./etc/init_mysql.sql /usr/share/contrail/
 ADD ./etc/init_psql.sql /usr/share/contrail/
+ADD ./etc/init_data.yaml /usr/share/contrail/
 ADD ./public /usr/share/contrail/public
 ADD ./templates /usr/share/contrail/templates
 COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
