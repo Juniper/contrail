@@ -36,6 +36,7 @@ Count{{ name }}(ctx context.Context, obj *models.{{ name }}, prj *models.Project
 
 // Handle{{ name }} retrieves project for handled resource and counts all the resources of this type, then verify quota values
 func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *models.{{ name }}) error {
+	{% if name != "InstanceIP"%}
 	projectID, err := svc.GetProjectFor{{ name }}(ctx, obj)
 	if err != nil || projectID == "" {
 		return errors.Wrapf(err, "error searching Project for {{ name }} with UUID %v (got '%v' Project UUID)", obj.GetUUID(), projectID)
@@ -56,7 +57,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 	if count >= limit {
 		return common.ErrorBadRequestf("Quota exceeded for resource {{ name }}; under project %s (%v) there are already %v resources count", project.Project.DisplayName, project.Project.GetUUID(), count)
 	}
-
+	{% endif %}
 	return nil
 }
 
@@ -89,7 +90,7 @@ func (svc *QuotaCheckerService) Update{{ name }}(ctx context.Context, request *U
 // GetProjectFor{{ name }} retrieves project UUID for given {{ name }} object (if possible) // Parents count: {{ schema.Parents|length }};
 func (svc *QuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
 	log.Debugf("GetProject lookup on {{ name }} with UUID: %v -> %v, %v", obj.GetUUID(), obj.GetParentType(), obj.GetParentUUID())
-	{% if name == "Project" %}
+	{% if name == "Project"%}
 	log.Debugf("GetProject returns Project with UUID: %v", obj.GetUUID())
 	return obj.GetUUID(), nil
 	{% else %}{% for _, pdef in schema.Parents %}{% set ptype = pdef.LinkTo.TypeName %}

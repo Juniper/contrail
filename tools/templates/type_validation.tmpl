@@ -161,19 +161,22 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 
 	{% if schema.Parents|length > 0 %}
 
-	if obj.ParentType != "" {
-        restrictions := map[string]struct {} {
-            {% for parent, definition in schema.Parents %}
-            {% autoescape off %}
-            "{{definition.LinkTo.Path}}": {},
-            {% endautoescape %}
-            {% endfor %}
-        }
-
-		if _, present := restrictions[obj.ParentType]; !present {
-			return errors.Errorf("parent_type (%s) of {{schema.ID}} must be one of [%s]", obj.ParentType, strings.Join(mapKeys(restrictions), ", "))
-		}
+	if obj.ParentUUID == "" {
+		return errors.Errorf("parent_uuid is required for {{schema.ID}} ")
 	}
+
+    restrictions := map[string]struct {} {
+        {% for parent, definition in schema.Parents %}
+        {% autoescape off %}
+        "{{definition.LinkTo.Path}}": {},
+        {% endautoescape %}
+        {% endfor %}
+    }
+
+	if _, present := restrictions[obj.ParentType]; !present {
+		return errors.Errorf("parent_type (%s) of {{schema.ID}} must be one of [%s]", obj.ParentType, strings.Join(mapKeys(restrictions), ", "))
+	}
+
 	{% endif %}
 
 	return nil

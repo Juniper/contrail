@@ -58,6 +58,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }
     log.Debugf("UUID: %v", model.UUID)
 
+
     if model.Name == "" {
         if fqName := model.FQName; len(fqName) > 0 {
             model.Name = fqName[len(fqName)-1]
@@ -98,6 +99,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }
     log.Debugf("FQName: %v", model.FQName)
 
+{% if schema.Parents | length != 0 %}
     if model.ParentUUID == "" {
         // fqName must be have at least 2 elements to contain parent fqName
         if l := len(model.FQName); l > 1 {
@@ -110,6 +112,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
             model.ParentUUID = metadata.UUID
         }
     }
+{% endif %}
 
     log.Debugf("ParentUUID: %v", model.ParentUUID)
 

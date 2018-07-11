@@ -26,11 +26,11 @@ func (sv *ContrailTypeLogicService) CreateInstanceIP(
 			networkIpamRefs := instanceIP.GetNetworkIpamRefs()
 
 			if len(virtualRouterRefs) > 0 && len(networkIpamRefs) > 0 {
-				return common.ErrorBadRequestf("virtual_router_refs and network_ipam_refs are not allowed")
+				return common.ErrorBadRequest("virtual_router_refs and network_ipam_refs are not allowed")
 			}
 
 			if len(virtualRouterRefs) > 0 && len(virtualNetworkRefs) > 0 {
-				return common.ErrorBadRequestf("virtual_router_refs and virtual_network_refs are not allowed")
+				return common.ErrorBadRequest("virtual_router_refs and virtual_network_refs are not allowed")
 			}
 
 			virtualNetwork, err := sv.getVNFromVirtualNetworkRefs(ctx, virtualNetworkRefs)
@@ -38,7 +38,7 @@ func (sv *ContrailTypeLogicService) CreateInstanceIP(
 				return err
 			}
 
-			if sv.shouldIgnoreAllocation(virtualNetwork) {
+			if virtualNetwork.ShouldIgnoreAllocation() {
 				response, err = sv.BaseService.CreateInstanceIP(ctx, request)
 				return err
 			}
@@ -48,12 +48,12 @@ func (sv *ContrailTypeLogicService) CreateInstanceIP(
 				return err
 			}
 
-			floatingIPAddress, subnetUUID, err := sv.allocateIPAddress(ctx, virtualNetwork, instanceIP)
+			ipAddress, subnetUUID, err := sv.allocateIPAddress(ctx, virtualNetwork, instanceIP)
 			if err != nil {
 				return err
 			}
 
-			instanceIP.InstanceIPAddress = floatingIPAddress
+			instanceIP.InstanceIPAddress = ipAddress
 			instanceIP.SubnetUUID = subnetUUID
 
 			response, err = sv.BaseService.CreateInstanceIP(ctx, request)
@@ -83,9 +83,7 @@ func (sv *ContrailTypeLogicService) UpdateInstanceIP(
 			if len(virtualNetworkRefs) == 0 {
 				var error error
 				response, error = sv.BaseService.UpdateInstanceIP(ctx, request)
-				if error != nil {
-					return err
-				}
+				return error
 			}
 
 			virtualNetwork, err := sv.getVNFromVirtualNetworkRefs(ctx, virtualNetworkRefs)
@@ -93,19 +91,14 @@ func (sv *ContrailTypeLogicService) UpdateInstanceIP(
 				return err
 			}
 
-			if sv.shouldIgnoreAllocation(virtualNetwork) {
+			if virtualNetwork.ShouldIgnoreAllocation() {
 				var error error
 				response, error = sv.BaseService.UpdateInstanceIP(ctx, request)
-				if error != nil {
-					return error
-				}
+				return error
 			}
 
-			requestIPAddress := requestInstanceIP.GetInstanceIPAddress()
-			databaseIPAddress := databaseInstanceIP.GetInstanceIPAddress()
-
-			if requestIPAddress != "" && requestIPAddress != databaseIPAddress {
-				return common.ErrorBadRequestf("Instance-ip address can not be changed")
+			if sv.checkIfIPAddressUpdate(request, requestInstanceIP, databaseInstanceIP) {
+				return common.ErrorBadRequest("Instance-ip address can not be changed")
 			}
 
 			//TODO Gateway IP check
@@ -159,7 +152,7 @@ func (sv *ContrailTypeLogicService) DeleteInstanceIP(
 				return err
 			}
 
-			if sv.shouldIgnoreAllocation(virtualNetwork) {
+			if virtualNetwork.ShouldIgnoreAllocation() {
 				return nil
 			}
 
@@ -168,18 +161,6 @@ func (sv *ContrailTypeLogicService) DeleteInstanceIP(
 		})
 
 	return response, err
-}
-
-func (sv *ContrailTypeLogicService) shouldIgnoreAllocation(
-	virtualNetwork *models.VirtualNetwork) bool {
-
-	for _, fqName := range virtualNetwork.GetFQName() {
-		if fqName == "ip-fabric" || fqName == "__link_local__" {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (sv *ContrailTypeLogicService) getVNFromVirtualNetworkRefs(
@@ -208,7 +189,7 @@ func (sv *ContrailTypeLogicService) getIpamRefsFromVirtualRouterRefs(
 	case len(virtualRouterRefs) == 0:
 		return nil, nil
 	case len(virtualRouterRefs) > 1:
-		return nil, common.ErrorBadRequestf("Instance-ip can not refer to multiple vrouters")
+		return nil, common.ErrorBadRequest("Instance-ip can not refer to multiple vrouters")
 	}
 
 	virtualRouterResponse, err := sv.ReadService.GetVirtualRouter(ctx,
@@ -226,16 +207,18 @@ func (sv *ContrailTypeLogicService) alreadyAllocatedIPGatewayCheck(ctx context.C
 	virtualNetwork *models.VirtualNetwork, instanceIP *models.InstanceIP) error {
 
 	ipAddress := instanceIP.GetInstanceIPAddress()
-	if len(ipAddress) > 0 {
-		isAllocated, err := sv.checkIfRequestedIPAddressIsFree(ctx, virtualNetwork, ipAddress)
-		if err != nil {
-			return err
-		}
+	if len(ipAddress) == 0 {
+		return nil
+	}
 
-		if isAllocated {
-			//TODO Gateway IP check
-			return nil
-		}
+	isAllocated, err := sv.checkIfRequestedIPAddressIsFree(ctx, virtualNetwork, ipAddress)
+	if err != nil {
+		return err
+	}
+
+	if isAllocated {
+		//TODO Gateway IP check
+		return nil
 	}
 
 	return nil
@@ -255,20 +238,18 @@ func (sv *ContrailTypeLogicService) allocateIPAddress(ctx context.Context,
 	}
 
 	if subnetUUID != "" && len(virtualRouterRefs) > 0 {
-		return "", "", common.ErrorBadRequestf("Subnet uuid based allocation not supported with vrouter")
+		return "", "", common.ErrorBadRequest("Subnet uuid based allocation not supported with vrouter")
 	}
 
 	if len(ipamRefs) > 0 && ipAddress != "" {
-		return "", "", common.ErrorBadRequestf("Allocation for requested ip from a network_ipam is not supported")
+		return "", "", common.ErrorBadRequest("Allocation for requested ip from a network_ipam is not supported")
 	}
 
 	var allocationPools []*models.AllocationPoolType
 
 	for _, ipamRef := range ipamRefs {
 		ipamRefAttr := ipamRef.GetAttr()
-		if ipamRefAttr != nil {
-			allocationPools = append(allocationPools, ipamRefAttr.GetAllocationPools()...)
-		}
+		allocationPools = append(allocationPools, ipamRefAttr.GetAllocationPools()...)
 	}
 
 	allocateIPParams := &ipam.AllocateIPRequest{
@@ -306,4 +287,17 @@ func (sv *ContrailTypeLogicService) deallocIPAddress(ctx context.Context,
 	}
 
 	return sv.AddressManager.DeallocateIP(ctx, deallocateIPParams)
+}
+
+func (sv *ContrailTypeLogicService) checkIfIPAddressUpdate(request *services.UpdateInstanceIPRequest,
+	requestInstanceIP *models.InstanceIP, databaseInstanceIP *models.InstanceIP) bool {
+	requestIPAddress := requestInstanceIP.GetInstanceIPAddress()
+	databaseIPAddress := databaseInstanceIP.GetInstanceIPAddress()
+	fieldMask := request.GetFieldMask()
+
+	if common.ContainsString(fieldMask.GetPaths(), models.InstanceIPPropertyIDInstanceIPAddress) &&
+		requestIPAddress != "" && requestIPAddress != databaseIPAddress {
+		return true
+	}
+	return false
 }
