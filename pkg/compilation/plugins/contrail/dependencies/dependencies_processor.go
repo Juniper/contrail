@@ -24,7 +24,7 @@ import (
 )
 
 // NewDependencyProcessor - creates new instance
-func NewDependencyProcessor(objCache map[string]map[string]interface{}) *DependencyProcessor {
+func NewDependencyProcessor(objCache *sync.Map) *DependencyProcessor {
 	d := &DependencyProcessor{cache: objCache}
 	d.Init()
 	return d
@@ -33,7 +33,7 @@ func NewDependencyProcessor(objCache map[string]map[string]interface{}) *Depende
 // DependencyProcessor stores resources dependency
 type DependencyProcessor struct {
 	resources *sync.Map
-	cache     map[string]map[string]interface{}
+	cache     *sync.Map
 }
 
 // Init - initializes the dependency processor
@@ -123,7 +123,8 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 			for i := 0; i < objValues.Len(); i++ {
 				interfaceObj := objValues.Index(i).Elem().Interface()
 				uuid, _ := reflections.GetField(interfaceObj, "UUID")
-				refObj := d.cache[refObjTypeStr][uuid.(string)]
+				// TODO Check ok
+				refObj, _ := d.getFromCache(refObjTypeStr, uuid.(string))
 				log.Infof("Evaluating: Object: %s %s(%s) From: %s", fieldName, refObjTypeStr, uuid.(string), objTypeStr)
 				d.Evaluate(refObj, refObjTypeStr, objTypeStr)
 			}
@@ -143,4 +144,17 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 			}
 		}
 	}
+}
+
+func (d *DependencyProcessor) getFromCache(kind string, uuid string) (interface{}, bool) {
+	rawResourceMap, ok := d.cache.Load(kind)
+	if !ok {
+		return nil, false
+	}
+	resourceMap, ok := rawResourceMap.(*sync.Map)
+	if !ok {
+		return nil, false
+	}
+
+	return resourceMap.Load(uuid)
 }
