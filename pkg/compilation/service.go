@@ -25,8 +25,8 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-// SetupService setups all required services and chains them.
-func SetupService() *compilationif.CompilationService {
+// setupService setups all required services and chains them.
+func setupService() *compilationif.CompilationService {
 	// create services
 	compilationService := compilationif.NewCompilationService()
 
@@ -43,7 +43,8 @@ type locker interface {
 	DoWithLock(context.Context, string, time.Duration, func(ctx context.Context) error) error
 }
 
-type store interface {
+// Store represents data store that is source of events.
+type Store interface {
 	Create(context.Context, string, []byte) error
 	Put(context.Context, string, []byte) error
 	Get(context.Context, string) ([]byte, error)
@@ -54,9 +55,9 @@ type store interface {
 
 //IntentCompilationService represents Intent Compilation Service.
 type IntentCompilationService struct {
-	Store   store
-	Cfg     *config.Config
-	Service *compilationif.CompilationService
+	config  *config.Config
+	Store   Store
+	service *compilationif.CompilationService
 	locker  locker
 
 	log logrus.FieldLogger
@@ -64,7 +65,7 @@ type IntentCompilationService struct {
 
 // NewIntentCompilationService makes a new Intent Compilation Service
 func NewIntentCompilationService() (*IntentCompilationService, error) {
-	conf := config.ReadConfig()
+	c := config.ReadConfig()
 
 	e, err := etcd.DialByConfig()
 	if err != nil {
@@ -77,16 +78,16 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 	}
 
 	return &IntentCompilationService{
-		Service: SetupService(),
+		service: setupService(),
 		Store:   etcd.NewClient(e),
 		locker:  l,
-		Cfg:     &conf,
-		log:     log.NewLogger("intent-compilation"),
+		config:  &c,
+		log:     log.NewLogger(c.DefaultCfg.ServiceName),
 	}, nil
 }
 
-// HandleMessage handles message received from etcd pubsub.
-func (ics *IntentCompilationService) HandleMessage(
+// handleMessage handles message received from etcd pubsub.
+func (ics *IntentCompilationService) handleMessage(
 	ctx context.Context, index int64, oper int32, key string, newValue []byte,
 ) {
 
@@ -124,7 +125,7 @@ func (ics *IntentCompilationService) HandleMessage(
 
 func (ics *IntentCompilationService) getStoredIndex(ctx context.Context) (int64, error) {
 	txn := etcd.GetTxn(ctx)
-	messageIndexKey := ics.Cfg.EtcdNotifierCfg.MsgIndexString
+	messageIndexKey := ics.config.EtcdNotifierCfg.MsgIndexString
 
 	storedIndexData := txn.Get(messageIndexKey)
 
@@ -138,7 +139,7 @@ func (ics *IntentCompilationService) getStoredIndex(ctx context.Context) (int64,
 
 func (ics *IntentCompilationService) putStoredIndex(ctx context.Context, index int64) {
 	txn := etcd.GetTxn(ctx)
-	messageIndexKey := ics.Cfg.EtcdNotifierCfg.MsgIndexString
+	messageIndexKey := ics.config.EtcdNotifierCfg.MsgIndexString
 
 	newIndexStr := strconv.FormatInt(index, 10)
 	txn.Put(messageIndexKey, []byte(newIndexStr))
@@ -148,18 +149,18 @@ func (ics *IntentCompilationService) putStoredIndex(ctx context.Context, index i
 func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	ics.log.Debug("Running Service")
 
-	watch.WatcherInit(ics.Cfg.DefaultCfg.MaxJobQueueLen)
-	watch.InitDispatcher(ics.Cfg.DefaultCfg.NumberOfWorkers, ics.Service.HandleEtcdMessages)
+	watch.WatcherInit(ics.config.DefaultCfg.MaxJobQueueLen)
+	watch.InitDispatcher(ics.config.DefaultCfg.NumberOfWorkers, ics.service.HandleEtcdMessages)
 
 	ics.log.Debug("Setting MessageIndex to 0 (if not exists)")
-	err := ics.Store.Create(ctx, ics.Cfg.EtcdNotifierCfg.MsgIndexString, []byte("0"))
+	err := ics.Store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0"))
 	if err != nil {
 		ics.log.Println("Cannot Set MessageIndex")
 		return err
 	}
 
 	// Init watching channel
-	watchPath := ics.Cfg.EtcdNotifierCfg.WatchPath
+	watchPath := ics.config.EtcdNotifierCfg.WatchPath
 	ics.log.WithField("watchPath", watchPath).Debug("Starting recursive watch")
 	eventChan := ics.Store.WatchRecursive(ctx, "/"+watchPath, int64(0))
 
@@ -174,7 +175,7 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 			if !ok {
 				return errors.New("event channel unsuspectingly closed")
 			}
-			ics.HandleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)
+			ics.handleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)
 		}
 	}
 }
