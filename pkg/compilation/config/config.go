@@ -6,14 +6,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// DefaultConfig section in yml file
+// DefaultConfig section.
 type DefaultConfig struct {
+	ServiceName     string
 	PluginDirectory string
 	NumberOfWorkers int
 	MaxJobQueueLen  int
 }
 
-// EtcdNotifierConfig section in yml file
+// EtcdNotifierConfig section.
 type EtcdNotifierConfig struct {
 	EtcdServers      []string
 	WatchPath        string
@@ -23,12 +24,12 @@ type EtcdNotifierConfig struct {
 	MasterElection   bool
 }
 
-// PluginConfig section in yml file
+// PluginConfig section.
 type PluginConfig struct {
 	Handlers map[string]interface{}
 }
 
-// Config Object
+// Config object.
 type Config struct {
 	DefaultCfg      DefaultConfig
 	EtcdNotifierCfg EtcdNotifierConfig
@@ -36,10 +37,13 @@ type Config struct {
 	PluginNames     []string
 }
 
-// ReadConfig reads the configuration file
+// ReadConfig gets configuration from Viper and logs its values.
 func ReadConfig() Config {
+	viper.SetDefault("compilation.service_name", "intent-compilation-service")
+
 	c := Config{
 		DefaultCfg: DefaultConfig{
+			ServiceName:     viper.GetString("compilation.service_name"),
 			PluginDirectory: viper.GetString("compilation.plugin_directory"),
 			NumberOfWorkers: viper.GetInt("compilation.number_of_workers"),
 			MaxJobQueueLen:  viper.GetInt("compilation.max_job_queue_len"),
@@ -57,6 +61,7 @@ func ReadConfig() Config {
 		},
 	}
 
+	log.Println("Intent compilation service name:", c.DefaultCfg.ServiceName)
 	log.Println("Plugin Directory:", c.DefaultCfg.PluginDirectory)
 	log.Println("Number of Workers:", c.DefaultCfg.NumberOfWorkers)
 	log.Println("Maximum Job Queue Len:", c.DefaultCfg.MaxJobQueueLen)
