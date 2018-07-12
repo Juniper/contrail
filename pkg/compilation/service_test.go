@@ -1,4 +1,4 @@
-package compilation
+package compilation_test
 
 import (
 	"context"
@@ -6,12 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/compilation"
+	"github.com/Juniper/contrail/pkg/compilation/watch"
+	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 const (
@@ -31,7 +33,7 @@ func setTestConfig() {
 	viper.Set("compilation.msg_queue_lock_time", 100)
 }
 
-func TestIntentCompilationSeviceHandlesMessage(t *testing.T) {
+func TestIntentCompilationServiceHandlesMessage(t *testing.T) {
 	etcdClient := integration.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
@@ -40,7 +42,8 @@ func TestIntentCompilationSeviceHandlesMessage(t *testing.T) {
 
 	// create intent compiler
 	routineOne := newBlockingStore()
-	runIntentCompiler(t, routineOne, "one")
+	closeIC := runIntentCompiler(t, routineOne, "intent-compilation-service-one")
+	defer closeIC()
 
 	<-routineOne.StartedWatch
 
@@ -69,7 +72,7 @@ func TestIntentCompilationSeviceHandlesMessage(t *testing.T) {
 	}
 }
 
-func TestIntentCompilationSeviceConcurrency(t *testing.T) {
+func TestIntentCompilationServiceConcurrency(t *testing.T) {
 	etcdClient := integration.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
@@ -78,10 +81,12 @@ func TestIntentCompilationSeviceConcurrency(t *testing.T) {
 
 	// create two intent compilers
 	routineOne := newBlockingStore()
-	runIntentCompiler(t, routineOne, "one")
+	closeICOne := runIntentCompiler(t, routineOne, "intent-compilation-service-one")
+	defer closeICOne()
 
 	routineTwo := newBlockingStore()
-	runIntentCompiler(t, routineTwo, "two")
+	closeICTwo := runIntentCompiler(t, routineTwo, "intent-compilation-service-two")
+	defer closeICTwo()
 
 	// wait for them to initialize
 	<-routineOne.StartedWatch
@@ -164,16 +169,22 @@ func TestIntentCompilationSeviceConcurrency(t *testing.T) {
 	t.Log(jobs)
 }
 
-func runIntentCompiler(t *testing.T, b *blockingStore, name string) {
-	ics, err := NewIntentCompilationService()
+func runIntentCompiler(t *testing.T, b *blockingStore, icName string) (closeIntentCompilation func()) {
+	viper.Set("compilation.service_name", icName)
+	ics, err := compilation.NewIntentCompilationService()
 	require.NoError(t, err)
 
 	b.RegisterIn(ics)
-	ics.log = ics.log.WithField("routine", name)
+
+	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		err = ics.Run(context.Background())
+		err = ics.Run(ctx)
 		assert.NoError(t, err)
 	}()
+
+	return func() {
+		cancel()
+	}
 }
 
 func spyOnJobChannel() {
@@ -193,7 +204,7 @@ func collectJobs() (result []watch.JobRequest) {
 }
 
 type blockingStore struct {
-	store
+	compilation.Store
 
 	StartedWatch chan struct{}
 
@@ -233,15 +244,15 @@ func (s *blockingStore) WaitForTransaction() {
 	<-s.TransactionInProgress
 }
 
-func (s *blockingStore) RegisterIn(ics *IntentCompilationService) {
-	s.store = ics.Store
+func (s *blockingStore) RegisterIn(ics *compilation.IntentCompilationService) {
+	s.Store = ics.Store
 	ics.Store = s
 }
 
 func (s *blockingStore) WatchRecursive(
 	ctx context.Context, keyPattern string, afterIndex int64,
 ) chan etcd.Event {
-	c := s.store.WatchRecursive(ctx, keyPattern, afterIndex)
+	c := s.Store.WatchRecursive(ctx, keyPattern, afterIndex)
 	close(s.StartedWatch)
 	return c
 }
@@ -260,7 +271,7 @@ func (s *blockingStore) InTransaction(ctx context.Context, do func(ctx context.C
 		return do(ctx)
 	}
 
-	err := s.store.InTransaction(ctx, wrappedDo)
+	err := s.Store.InTransaction(ctx, wrappedDo)
 	close(s.TransactionInProgress)
 	return err
 }
