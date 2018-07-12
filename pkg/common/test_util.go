@@ -8,18 +8,18 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 const (
 	funcPrefix = "$"
 )
 
-// AssertFunction for macros in diff
-type AssertFunction func(path string, args, actual interface{}) error
+// assertFunction for macros in diff.
+type assertFunction func(path string, args, actual interface{}) error
 
-// AssertFunctions for additional test logic.
-var AssertFunctions = map[string]AssertFunction{
+// assertFunctions for additional test logic.
+var assertFunctions = map[string]assertFunction{
 	"any": func(path string, args, actual interface{}) error {
 		return nil
 	},
@@ -56,9 +56,9 @@ func isFunction(expected interface{}) bool {
 	return false
 }
 
-func getAssertFunction(key string) (AssertFunction, error) {
+func getAssertFunction(key string) (assertFunction, error) {
 	assertName := strings.TrimPrefix(key, funcPrefix)
-	assert, ok := AssertFunctions[assertName]
+	assert, ok := assertFunctions[assertName]
 	if !ok {
 		return nil, fmt.Errorf("assert function %s not found", assertName)
 	}
@@ -98,9 +98,8 @@ func runFunction(path string, expected, actual interface{}) (err error) {
 	return nil
 }
 
-// CheckDiff checks diff
 // nolint: gocyclo
-func CheckDiff(path string, expected, actual interface{}) error {
+func checkDiff(path string, expected, actual interface{}) error {
 	if expected == nil {
 		return nil
 	}
@@ -114,7 +113,7 @@ func CheckDiff(path string, expected, actual interface{}) error {
 			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
 		}
 		for key, value := range t {
-			err := CheckDiff(path+"."+key, value, actualMap[key])
+			err := checkDiff(path+"."+key, value, actualMap[key])
 			if err != nil {
 				return err
 			}
@@ -130,7 +129,7 @@ func CheckDiff(path string, expected, actual interface{}) error {
 		for i, value := range t {
 			found := false
 			for _, actualValue := range actualList {
-				err := CheckDiff(path+"."+strconv.Itoa(i), value, actualValue)
+				err := checkDiff(path+"."+strconv.Itoa(i), value, actualValue)
 				if err == nil {
 					found = true
 					break
@@ -152,22 +151,33 @@ func CheckDiff(path string, expected, actual interface{}) error {
 	return nil
 }
 
-func logDiff(expected, actual interface{}) {
-	log.Debug("expected")
+func logObjects(expected, actual interface{}) {
+	log.Debug("Expected object:")
 	out, err := yaml.Marshal(expected)
 	fmt.Println(string(out), err)
-	log.Debug("actual")
+
+	log.Debug("Actual object:")
 	out, err = yaml.Marshal(actual)
 	fmt.Println(string(out), err)
 }
 
-// AssertEqual test if it is correct
-func AssertEqual(t *testing.T, expected, actual interface{}, message string) bool {
+// AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
+// For lists and maps, it iterates over expected values, ignoring additional values in actual object.
+func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
 	expected = YAMLtoJSONCompat(expected)
 	actual = YAMLtoJSONCompat(actual)
-	err := CheckDiff("", expected, actual)
+
+	err := checkDiff("", expected, actual)
 	if err != nil {
-		logDiff(expected, actual)
+		logObjects(expected, actual)
 	}
-	return assert.NoError(t, err, message)
+
+	return assert.NoError(
+		t,
+		err,
+		append(
+			msgAndArgs,
+			fmt.Sprintf("objects not equal:\n expected: %+v\n actual: %+v", expected, actual),
+		)...,
+	)
 }

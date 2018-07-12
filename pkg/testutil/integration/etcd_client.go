@@ -3,10 +3,12 @@ package integration
 import (
 	"context"
 	"fmt"
+	"path"
 	"testing"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,8 +19,10 @@ import (
 // Integration test settings.
 const (
 	EtcdEndpoint       = "localhost:2379"
-	EtcdDialTimeout    = 60 * time.Second
-	EtcdRequestTimeout = 60 * time.Second
+	EtcdJSONPrefix     = "json"
+	etcdDialTimeout    = 10 * time.Second
+	etcdRequestTimeout = 10 * time.Second
+	etcdWatchTimeout   = 10 * time.Second
 )
 
 // EtcdClient is etcd client extending etcd.clientv3 with test functionality and using etcd v3 API.
@@ -31,10 +35,10 @@ type EtcdClient struct {
 // After usage Close() needs to be called to close underlying connections.
 func NewEtcdClient(t *testing.T) *EtcdClient {
 	l := pkglog.NewLogger("etcd-client")
-	l.WithFields(logrus.Fields{"endpoint": EtcdEndpoint, "dial-timeout": EtcdDialTimeout}).Debug("Connecting")
+	l.WithFields(logrus.Fields{"endpoint": EtcdEndpoint, "dial-timeout": etcdDialTimeout}).Debug("Connecting")
 	c, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{EtcdEndpoint},
-		DialTimeout: EtcdDialTimeout,
+		DialTimeout: etcdDialTimeout,
 	})
 	require.NoError(t, err, "connecting etcd failed")
 
@@ -44,9 +48,25 @@ func NewEtcdClient(t *testing.T) *EtcdClient {
 	}
 }
 
+// Close closes connection to etcd.
+func (e *EtcdClient) Close(t *testing.T) {
+	err := e.Client.Close()
+	assert.NoError(t, err, "closing etcd.clientv3.Client failed")
+}
+
+// DeleteProject deletes Project resource.
+func (e *EtcdClient) DeleteProject(t *testing.T, uuid string, opts ...clientv3.OpOption) {
+	e.DeleteKey(t, JSONEtcdKey(ProjectSchemaID, uuid), opts...)
+}
+
+// DeleteNetworkIPAM deletes NetworkIPAM resource.
+func (e *EtcdClient) DeleteNetworkIPAM(t *testing.T, uuid string, opts ...clientv3.OpOption) {
+	e.DeleteKey(t, JSONEtcdKey(NetworkIPAMSchemaID, uuid), opts...)
+}
+
 // GetKey gets etcd key.
 func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption) *clientv3.GetResponse {
-	ctx, cancel := context.WithTimeout(context.Background(), EtcdRequestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), etcdRequestTimeout)
 	defer cancel()
 
 	r, err := e.Get(ctx, key, opts...)
@@ -57,17 +77,11 @@ func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption)
 
 // DeleteKey deletes etcd key.
 func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOption) {
-	ctx, cancel := context.WithTimeout(context.Background(), EtcdRequestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), etcdRequestTimeout)
 	defer cancel()
 
 	r, err := e.Delete(ctx, key, opts...)
 	assert.NoError(t, err, fmt.Sprintf("deleting etcd resource from etcd failed\n response: %+v", r))
-}
-
-// CheckKeyDoesNotExist checks that there is no value on given key.
-func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
-	gr := e.GetKey(t, key, clientv3.WithPrefix())
-	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
 }
 
 // WatchKey watches value changes for provided key and returns collect method that collect captured values.
@@ -90,6 +104,19 @@ func (e *EtcdClient) WatchKey(key string) (collect func() []string) {
 	}
 }
 
+// WatchResource spawns a watch on specified resource.
+func (e *EtcdClient) WatchResource(schemaID, uuid string) (clientv3.WatchChan, context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithTimeout(context.Background(), etcdWatchTimeout)
+	w := e.Watch(ctx, JSONEtcdKey(schemaID, uuid))
+	return w, ctx, cancel
+}
+
+// CheckKeyDoesNotExist checks that there is no value on given key.
+func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
+	gr := e.GetKey(t, key, clientv3.WithPrefix())
+	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
+}
+
 // GetString gets a string value in Etcd
 func (e *EtcdClient) GetString(t *testing.T, key string) (value string, revision int64) {
 	err := e.Client.Sync(context.Background())
@@ -110,8 +137,20 @@ func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revisio
 	assert.Equal(t, revision, nextRev)
 }
 
-// Close closes connection to etcd.
-func (e *EtcdClient) Close(t *testing.T) {
-	err := e.Client.Close()
-	assert.NoError(t, err, "closing etcd.clientv3.Client failed")
+// JSONEtcdKey returns etcd key of JSON-encoded resource.
+func JSONEtcdKey(schemaID, uuid string) string {
+	return path.Join("/", EtcdJSONPrefix, schemaID, uuid)
+}
+
+// RetrieveCreateEvent blocks and retrieves create Event from given watch channel.
+func RetrieveCreateEvent(ctx context.Context, t *testing.T, watch clientv3.WatchChan) *clientv3.Event {
+	wr := <-watch
+	assert.NoError(t, wr.Err(), "watching etcd key failed")
+	if errors.Cause(ctx.Err()) == context.DeadlineExceeded {
+		assert.Fail(t, "watching etcd key timed out")
+	}
+	if assert.Equal(t, 1, len(wr.Events)) {
+		assert.True(t, wr.Events[0].IsCreate())
+	}
+	return wr.Events[0]
 }
