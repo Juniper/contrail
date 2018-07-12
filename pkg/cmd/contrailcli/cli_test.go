@@ -1,7 +1,6 @@
 package contrailcli
 
 import (
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -121,10 +120,6 @@ func checkDataEqual(t *testing.T, expectedYAMLFile, actualYAML string) {
 	var actual interface{}
 	err = yaml.Unmarshal([]byte(actualYAML), &actual)
 	require.NoError(t, err, "cannot parse actual data")
-	if !common.AssertEqual(t, expected, actual, "") {
-		fmt.Println("expected ")
-		fmt.Println(string(expectedBytes))
-		fmt.Println("actual ")
-		fmt.Println(string(actualYAML))
-	}
+
+	common.AssertEqual(t, expected, actual)
 }
