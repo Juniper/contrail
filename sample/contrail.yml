@@ -1,16 +1,11 @@
 # Database configuration. MySQL/PostgreSQL supported
 database:
-    # MySQL example
     type: mysql
     dialect: mysql
     host: localhost
     user: root
     password: contrail123
     name: contrail_test
-    #debug: true
-    # Postgres example
-    # type: postgres
-    # dialect: postgres
 
     # Max Open Connections for DB Server
     max_open_conn: 100
@@ -25,7 +20,6 @@ etcd:
   path: contrail
   grpc_insecure: true
 
-# Log Level
 log_level: debug
 
 # Server configuration
@@ -59,52 +53,6 @@ server:
       - http://localhost:8082
 
   notify_etcd: true
-
-# Keystone configuration
-# keystone:
-#     local: true # Enable local keystone v3. This is only for testing now.
-#     assignment:
-#         type: static
-#         data:
-#           domains:
-#             default: &default
-#               id: default
-#               name: default
-#           projects:
-#             admin: &admin
-#               id: admin
-#               name: admin
-#               domain: *default
-#             demo: &demo
-#               id: demo
-#               name: demo
-#               domain: *default
-#           users:
-#             alice:
-#               id: alice
-#               name: Alice
-#               domain: *default
-#               password: alice_password
-#               email: alice@juniper.nets
-#               roles:
-#               - id: admin
-#                 name: Admin
-#                 project: *admin
-#             bob:
-#               id: bob
-#               name: Bob
-#               domain: *default
-#               password: bob_password
-#               email: bob@juniper.net
-#               roles:
-#               - id: Member
-#                 name: Member
-#                 project: *demo
-#     store:
-#         type: memory
-#         expire: 3600
-#     insecure: true
-#     authurl: https://localhost:9091/keystone/v3
 
 # disable authentication with no_auth true and comment out keystone configuraion.
 no_auth: true

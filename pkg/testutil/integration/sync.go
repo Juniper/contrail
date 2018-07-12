@@ -14,8 +14,8 @@ import (
 
 const pgQueryCanceledErrorCode = "57014"
 
-// RunSync runs Sync process and returns function closing Sync.
-func RunSync(t *testing.T) (closeSync func()) {
+// RunSyncService runs Sync process and returns function closing it.
+func RunSyncService(t *testing.T) (closeSync func()) {
 	setViperConfig(map[string]interface{}{
 		"database.debug": false,
 		"etcd.endpoints": []string{EtcdEndpoint},
