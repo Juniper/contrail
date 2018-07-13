@@ -55,7 +55,7 @@ workflow:
       <<: *srv_minimal_name_unique
       name: default-server
 
-- name: create server with same name
+- name: create server with same name, but different uuid and display_name
   request:
     path: /openserverservers
     method: POST
@@ -63,11 +63,10 @@ workflow:
     - 409
     data:
       server:
+        <<: *srv_minimal_name_unique
         name: default-server
         uuid: srv_red
         display_name: red
-        parent_type: project
-        parent_uuid: admin_project_name_unique_uuid
   expect: null
 
 - name: delete server
