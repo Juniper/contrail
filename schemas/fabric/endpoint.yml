@@ -11,6 +11,19 @@ plural: endpoints
 prefix: /
 schema:
   properties:
+    prefix:
+      default: ""
+      description: Proxy prefix
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Proxy Prefix
+      type: string
+      view:
+      - create
+      - detail
     private_url:
       default: ""
       description: Private endpoint URL
