@@ -70,6 +70,7 @@ func (s *Server) SetupService() (services.Service, error) {
 		InTransactionDoer: s.dbService,
 		AddressManager:    s.dbService,
 		IntPoolAllocator:  s.dbService,
+		APIService:        serviceChain[0],
 	})
 
 	// QuotaCheckerService
