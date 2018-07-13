@@ -285,7 +285,7 @@ func (sv *ContrailTypeLogicService) checkVirtualNetworkID(
 		return nil
 	}
 
-	if !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkPropertyIDVirtualNetworkNetworkID) {
+	if !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldVirtualNetworkNetworkID) {
 		return nil
 	}
 
@@ -303,18 +303,18 @@ func (sv *ContrailTypeLogicService) checkIsProviderNetwork(
 	if currentVN == nil {
 		if requestedVN.IsProviderNetwork {
 			return common.ErrorBadRequestf("non-provider VN (%v) can not be configured with %v = True",
-				requestedVN.UUID, models.VirtualNetworkPropertyIDIsProviderNetwork)
+				requestedVN.UUID, models.VirtualNetworkFieldIsProviderNetwork)
 		}
 		return nil
 	}
 
-	if !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkPropertyIDIsProviderNetwork) {
+	if !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldIsProviderNetwork) {
 		return nil
 	}
 
 	if currentVN.IsProviderNetwork != requestedVN.IsProviderNetwork {
 		return common.ErrorBadRequestf("update %v property of VN (%v) is not allowed",
-			models.VirtualNetworkPropertyIDIsProviderNetwork, requestedVN.UUID)
+			models.VirtualNetworkFieldIsProviderNetwork, requestedVN.UUID)
 	}
 
 	return nil
@@ -324,7 +324,7 @@ func (sv *ContrailTypeLogicService) isProviderNetwork(
 	currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork,
 	fieldMask *protobuf.FieldMask) bool {
 	isProviderNetwork := requestedVN.IsProviderNetwork
-	if currentVN != nil && !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkPropertyIDIsProviderNetwork) {
+	if currentVN != nil && !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldIsProviderNetwork) {
 		isProviderNetwork = currentVN.IsProviderNetwork
 	}
 	return isProviderNetwork

@@ -19,7 +19,9 @@ const Kind{{ name }} = "{{ typename }}"
 {% if type.Type == "object" %}
 
 const (
-    {% for property in type.OrderedProperties %}{{ name }}PropertyID{{ property.GoName }} = "{{ property.ID }}"
+    {% for property in type.OrderedProperties %}{{ name }}Field{{ property.GoName }} = "{{ property.ID }}"
+    {% endfor %}
+    {% for linkTo, reference in references %}{{ name }}Field{{ reference.GoName }}Refs = "{{ linkTo }}_refs"
     {% endfor %}
 )
 
@@ -46,10 +48,13 @@ func Make{{ name }}() *{{name}}{
             {% endif %}
         {% else %}{{ property.GoName }}: Make{{ property.GoType }}(),
         {% endif %}{% endfor %}
+
+        {% for linkTo, reference in references %}{% if reference.Presence == "required" or reference.Presence == "true" %}
+            {{ reference.GoName }}Refs: []*{{ name }}{{ reference.GoName }}Ref{},{% endif %}{% endfor %}
     }
 }
 
-// Make{{ name }} makes {{ name }}
+// InterfaceTo{{ name }} converts interface to {{ name }}
 // nolint
 func InterfaceTo{{ name }}(i interface{}) *{{name}}{
     p, ok := i.(*{{name}})
@@ -108,6 +113,7 @@ func (m *{{ name }}) ToMap() map[string]interface{} {
     }
 }
 
+// Kind returns kind of an resource.
 func (m *{{ name }}) Kind() string {
     return Kind{{ name }}
 }
