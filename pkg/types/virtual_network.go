@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-//CreateVirtualNetwork do pre check for virtual network.
+//CreateVirtualNetwork do pre check and post setup for virtual network.
 func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	ctx context.Context,
 	request *services.CreateVirtualNetworkRequest) (response *services.CreateVirtualNetworkResponse, err error) {
@@ -64,9 +64,24 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			//TODO: process network ipam refs references
 			response, err = sv.BaseService.CreateVirtualNetwork(ctx, request)
 
-			//TODO: create native/vn-default routing instance
+			if err != nil {
+				return err
+			}
 
-			return err
+			virtualNetwork = response.VirtualNetwork
+
+			nativeRoutingInstanceRequest := &services.CreateRoutingInstanceRequest{
+				RoutingInstance: &models.RoutingInstance{
+					Name:                      virtualNetwork.GetName(),
+					ParentUUID:                virtualNetwork.GetUUID(),
+					RoutingInstanceIsDefault:  true,
+					RoutingInstanceFabricSnat: virtualNetwork.GetFabricSnat(),
+				},
+			}
+
+			sv.APIService.CreateRoutingInstance(ctx, nativeRoutingInstanceRequest)
+
+			return nil
 		})
 
 	return response, err
@@ -115,7 +130,7 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 	return response, err
 }
 
-// DeleteVirtualNetwork do pre check for delete network.
+// DeleteVirtualNetwork do pre check and post teardown for delete network.
 func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 	ctx context.Context,
 	request *services.DeleteVirtualNetworkRequest) (response *services.DeleteVirtualNetworkResponse, err error) {
