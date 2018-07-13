@@ -37,6 +37,11 @@ func FQNameToString(fqName []string) string {
 	return strings.Join(fqName, ":")
 }
 
+// FQNameEqualsString checks if an FQName equals another FQName represented as a string.
+func FQNameEqualsString(first []string, second string) bool {
+	return FQNameToString(first) == second
+}
+
 // DefaultNameForKind constructs the default name for an object of the given kind.
 func DefaultNameForKind(kind string) string {
 	return fmt.Sprintf("default-%s", kind)
