@@ -87,7 +87,7 @@ func InterfaceToStringList(i interface{}) []string {
 	return nil
 }
 
-//InterfaceToInt64List makes a string list from interface
+//InterfaceToInt64List makes a int64 list from interface
 func InterfaceToInt64List(i interface{}) []int64 {
 	switch t := i.(type) {
 	case []int64:
