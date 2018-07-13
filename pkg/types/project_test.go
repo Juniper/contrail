@@ -3,13 +3,17 @@ package types
 import (
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
-
 	"github.com/gogo/protobuf/types"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/mock"
 )
 
 func TestCheckVxlanConfig(t *testing.T) {
@@ -77,6 +81,48 @@ func TestCheckVxlanConfig(t *testing.T) {
 				assert.Equal(t, tt.errorCode, status.Code())
 			} else {
 				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestEnsureDefaultApplicationPolicySet(t *testing.T) {
+	tests := []struct {
+		name      string
+		project   models.Project
+		initMocks func(*ContrailTypeLogicService)
+		fails     bool
+	}{
+		{
+			name:    "empty project",
+			project: models.Project{},
+			initMocks: func(s *ContrailTypeLogicService) {
+				dataServiceMock := s.DataService.(*servicesmock.MockService)
+
+				dataServiceMock.EXPECT().CreateApplicationPolicySet(
+					gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+				).Return(nil, common.ErrorNotFound).Times(1)
+			},
+			fails: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+			if tt.initMocks != nil {
+				tt.initMocks(service)
+			}
+
+			err := service.ensureDefaultApplicationPolicySet(context.Background(), &tt.project)
+			if tt.fails {
+				t.Log(err)
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
