@@ -1,0 +1,57 @@
+name: Test project
+description: |
+  Integration test for project creation.
+cleanup:
+- path: /project/project_blue_project_uuid
+test_data:
+  project_blue: &project_blue_project
+    uuid: project_blue_project_uuid
+    name: project_blue_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: ensure no application policy set exists
+  request:
+    path: /projects
+    method: GET
+    expected: [200]
+  expect:
+    projects: []
+- name: ensure no project exists
+  request:
+    path: /application-policy-sets
+    method: GET
+    expected: [200]
+  expect:
+    application-policy-sets: []
+
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 201
+    data:
+      project: *project_blue_project
+  expect:
+    project: *project_blue_project
+
+- name: delete project
+  request:
+    path: /project/project_blue_project_uuid
+    method: DELETE
+    expected:
+    - 204
+  expect: null
