@@ -22,18 +22,18 @@ func handleError(err error) error {
 		return nil
 	}
 	if err, ok := err.(*mysql.MySQLError); ok {
+		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
 		switch err.Number {
 		case mysqlUniqueViolation, mysqlForeignKeyViolation:
 			return common.ErrorConflict
 		}
-		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
 	}
 	if err, ok := err.(*pq.Error); ok {
+		log.Debug("pq error:", err)
 		switch err.Code.Name() {
 		case pgUniqueViolation, pgForeignKeyViolation:
 			return common.ErrorConflict
 		}
-		log.Debug("pq error:", err)
 	}
 	if err == sql.ErrNoRows {
 		return common.ErrorNotFound
