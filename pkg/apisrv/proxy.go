@@ -167,10 +167,17 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 }
 
 func (p *proxyService) getProxyPrefix(endpoint *models.Endpoint, scope string) (proxyPrefix string) {
-	if endpoint.ParentUUID == "" {
-		log.Errorf("Parent uuid missing for endpoint %s(%s)", endpoint.Name, endpoint.UUID)
+	prefix := endpoint.Prefix
+	// TODO(ijohnson) remove using DisplayName as prefix
+	// once UI takes prefix as input.
+	if prefix == "" {
+		prefix = endpoint.DisplayName
 	}
-	prefixes := []string{"", p.group, endpoint.ParentUUID, endpoint.Name, scope}
+
+	if endpoint.ParentUUID == "" {
+		log.Errorf("Parent uuid missing for endpoint %s(%s)", prefix, endpoint.UUID)
+	}
+	prefixes := []string{"", p.group, endpoint.ParentUUID, prefix, scope}
 	return strings.Join(prefixes, pathSep)
 }
 
