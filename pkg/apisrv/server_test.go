@@ -51,6 +51,11 @@ func TestBaseProperties(t *testing.T) {
 	RunTest(t, "./test_data/test_base_properties.yml")
 }
 
+func TestProject(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_project.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
 	restClient := NewClient(
