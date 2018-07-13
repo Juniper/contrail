@@ -215,7 +215,7 @@ func (sv *ContrailTypeLogicService) checkNetworkIpamMGMT(
 	newIpam *models.NetworkIpam,
 	fieldMask *types.FieldMask,
 ) error {
-	dnsMethodPath := []string{models.NetworkIpamPropertyIDNetworkIpamMGMT, models.IpamTypePropertyIDIpamDNSMethod}
+	dnsMethodPath := []string{models.NetworkIpamFieldNetworkIpamMGMT, models.IpamTypeFieldIpamDNSMethod}
 	if !common.CheckPath(fieldMask, dnsMethodPath) {
 		return nil
 	}
@@ -262,7 +262,7 @@ func (sv *ContrailTypeLogicService) checkSubnetMethod(
 	newIpam *models.NetworkIpam,
 	fieldMask *types.FieldMask,
 ) error {
-	if common.CheckPath(fieldMask, []string{models.NetworkIpamPropertyIDIpamSubnetMethod}) {
+	if common.CheckPath(fieldMask, []string{models.NetworkIpamFieldIpamSubnetMethod}) {
 		if oldIpam.GetIpamSubnetMethod() != newIpam.GetIpamSubnetMethod() {
 			return errors.Errorf("Subnet method cannot be changed")
 		}
@@ -276,7 +276,7 @@ func (sv *ContrailTypeLogicService) checkIpamSubnets(
 	newIpam *models.NetworkIpam,
 	fieldMask *types.FieldMask,
 ) error {
-	ipamSubnetsPath := []string{models.NetworkIpamPropertyIDIpamSubnets, models.IpamSubnetsPropertyIDSubnets}
+	ipamSubnetsPath := []string{models.NetworkIpamFieldIpamSubnets, models.IpamSubnetsFieldSubnets}
 	if common.CheckPath(fieldMask, ipamSubnetsPath) {
 		ipamSubnets := newIpam.GetIpamSubnets().GetSubnets()
 		if len(ipamSubnets) == 0 {
@@ -401,7 +401,7 @@ func (sv *ContrailTypeLogicService) checkSubnetDelete(
 	newIpam *models.NetworkIpam,
 	fieldMask *types.FieldMask,
 ) error {
-	ipamSubnetsPath := []string{models.NetworkIpamPropertyIDIpamSubnets, models.IpamSubnetsPropertyIDSubnets}
+	ipamSubnetsPath := []string{models.NetworkIpamFieldIpamSubnets, models.IpamSubnetsFieldSubnets}
 	if !common.CheckPath(fieldMask, ipamSubnetsPath) {
 		return nil
 	}
@@ -577,7 +577,7 @@ func (sv *ContrailTypeLogicService) processIpamUpdate(
 	newIpam *models.NetworkIpam,
 	fieldMask *types.FieldMask,
 ) error {
-	ipamSubnetsPath := []string{models.NetworkIpamPropertyIDIpamSubnets, models.IpamSubnetsPropertyIDSubnets}
+	ipamSubnetsPath := []string{models.NetworkIpamFieldIpamSubnets, models.IpamSubnetsFieldSubnets}
 	if common.CheckPath(fieldMask, ipamSubnetsPath) {
 		subnetsToDelete, err := sv.findSubnetsToDelete(oldIpam, newIpam)
 		if err != nil {

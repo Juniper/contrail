@@ -62,6 +62,11 @@ func TestBasePropsTwoParents(t *testing.T) {
 	RunTest(t, "./test_data/test_base_props_two_parents.yml")
 }
 
+func TestProject(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_project.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
 	restClient := client.NewHTTP(
