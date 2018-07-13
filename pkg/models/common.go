@@ -1,6 +1,9 @@
 package models
 
-import "strings"
+import (
+	fmt "fmt"
+	"strings"
+)
 
 const (
 	//PermsNone for no permission
@@ -21,7 +24,7 @@ const (
 	PermsRWX
 )
 
-//ParseFQName parse string representation of FQName.
+// ParseFQName parse string representation of FQName.
 func ParseFQName(fqNameString string) []string {
 	if fqNameString == "" {
 		return nil
@@ -29,7 +32,12 @@ func ParseFQName(fqNameString string) []string {
 	return strings.Split(fqNameString, ":")
 }
 
-//FQNameToString returns string representation of FQName.
+// FQNameToString returns string representation of FQName.
 func FQNameToString(fqName []string) string {
 	return strings.Join(fqName, ":")
+}
+
+// DefaultNameForKind constructs default name for object of given kind.
+func DefaultNameForKind(kind string) string {
+	return fmt.Sprintf("default-%s", kind)
 }

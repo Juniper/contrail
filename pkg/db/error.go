@@ -23,15 +23,19 @@ func handleError(err error) error {
 	}
 	if err, ok := err.(*mysql.MySQLError); ok {
 		switch err.Number {
-		case mysqlUniqueViolation, mysqlForeignKeyViolation:
-			return common.ErrorConflict
+		case mysqlUniqueViolation:
+			return common.ErrorConflictf("Resource conflict: unique constraint validation")
+		case mysqlForeignKeyViolation:
+			return common.ErrorConflictf("Resource conflict: foreign key constraint validation")
 		}
 		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
 	}
 	if err, ok := err.(*pq.Error); ok {
 		switch err.Code.Name() {
-		case pgUniqueViolation, pgForeignKeyViolation:
-			return common.ErrorConflict
+		case pgUniqueViolation:
+			return common.ErrorConflictf("Resource conflict: unique constraint validation")
+		case pgForeignKeyViolation:
+			return common.ErrorConflictf("Resource conflict: foreign key constraint validation")
 		}
 		log.Debug("pq error:", err)
 	}
