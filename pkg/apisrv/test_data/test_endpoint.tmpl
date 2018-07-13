@@ -1,20 +1,23 @@
 name: Endpoint Test
 description:  multi cluster/dynamic proxy endpoint test
 cleanup:
-    - path: /endpoint/endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
+    - path: /endpoint/endpoint_{{ endpoint_name }}_uuid
+    {%if manage_parent %}
+    - path: /endpoint/endpoint_{{ cluster_name }}_neutron2_uuid
     - path: /contrail-cluster/{{ cluster_name }}_uuid
-    - path: /endpoint/endpoint_clusterB_{{ endpoint_name }}_uuid
+    {%endif%}
 test_data:
   {{ cluster_name }}: &{{ cluster_name }}
     fq_name: ["default-global-system-config", "{{ cluster_name }}"]
     uuid: {{ cluster_name }}_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-  endpoint_{{ cluster_name }}_{{ endpoint_name }}: &endpoint_{{ cluster_name }}_{{ endpoint_name }}
-    uuid: endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
-    fq_name: ["default-global-system-config", {{ cluster_name }}, "endpoint_{{ cluster_name }}_{{ endpoint_name }}"]
+  endpoint_{{ endpoint_name }}: &endpoint_{{ endpoint_name }}
+    uuid: endpoint_{{ endpoint_name }}_uuid
+    fq_name: ["default-global-system-config", {{ cluster_name }}, {{ endpoint_name }}]
     parent_type: contrail-cluster
     name: {{ endpoint_name }}
+    prefix: {{ endpoint_prefix }}
     {%if private_url %}private_url: {{private_url}}{%endif%}
     public_url: {{public_url}}
 clients:
@@ -27,6 +30,7 @@ clients:
       project:
         name: admin
 workflow:
+{%if manage_parent %}
 - name: create contrail cluster
   request:
     path: /contrail-clusters
@@ -43,6 +47,7 @@ workflow:
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
       perms2:
         owner: admin
+{%endif%}
 - name: create a {{ endpoint_name }} endpoint for {{ cluster_name }}
   request:
     path: /endpoints
@@ -50,11 +55,11 @@ workflow:
     expected:
     - 201
     data:
-      endpoint: *endpoint_{{ cluster_name }}_{{ endpoint_name }}
+      endpoint: *endpoint_{{ endpoint_name }}
   expect:
     endpoint:
-      uuid: endpoint_{{ cluster_name }}_{{ endpoint_name }}_uuid
-      fq_name: ["default-global-system-config", {{ cluster_name }}, "endpoint_{{ cluster_name }}_{{ endpoint_name }}"]
+      uuid: endpoint_{{ endpoint_name }}_uuid
+      fq_name: ["default-global-system-config", {{ cluster_name }}, {{ endpoint_name }}]
       parent_type: contrail-cluster
       parent_uuid: {{ cluster_name }}_uuid
       perms2:
