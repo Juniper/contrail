@@ -371,15 +371,26 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			resultingVn.VirtualNetworkNetworkID = 13
 
 			ctx := context.Background()
-			// In case of successful flow CreateVirtualNetwork should be called once on next service
+			// In case of successful flow:
+			// CreateVirtualNetwork should be called once on next service
+			// CreateRoutingInstance should be called once on the API service
 			if !tt.fails {
-				nextService := service.Next().(*servicesmock.MockService)
-				nextService.EXPECT().CreateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+				service.Next().(*servicesmock.MockService).
+					EXPECT().CreateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 					func(
 						_ context.Context, request *services.CreateVirtualNetworkRequest,
 					) (*services.CreateVirtualNetworkResponse, error) {
 						return &services.CreateVirtualNetworkResponse{
 							VirtualNetwork: request.VirtualNetwork,
+						}, nil
+					}).Times(1)
+				service.APIService.(*servicesmock.MockService).
+					EXPECT().CreateRoutingInstance(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+					func(
+						_ context.Context, request *services.CreateRoutingInstanceRequest,
+					) (*services.CreateRoutingInstanceResponse, error) {
+						return &services.CreateRoutingInstanceResponse{
+							RoutingInstance: request.RoutingInstance,
 						}, nil
 					}).Times(1)
 			}
