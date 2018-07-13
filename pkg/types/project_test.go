@@ -3,13 +3,17 @@ package types
 import (
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
-
 	"github.com/gogo/protobuf/types"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/mock"
 )
 
 func TestCheckVxlanConfig(t *testing.T) {
@@ -77,6 +81,72 @@ func TestCheckVxlanConfig(t *testing.T) {
 				assert.Equal(t, tt.errorCode, status.Code())
 			} else {
 				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestEnsureDefaultApplicationPolicySet(t *testing.T) {
+	tests := []struct {
+		name      string
+		project   models.Project
+		initMocks func(*ContrailTypeLogicService)
+		fails     bool
+	}{
+		{
+			name: "create returns internal",
+			initMocks: func(s *ContrailTypeLogicService) {
+				m := s.APIService.(*servicesmock.MockService)
+
+				m.EXPECT().CreateApplicationPolicySet(
+					gomock.Not(gomock.Nil()),
+					gomock.Not(gomock.Nil()),
+				).Return(nil, common.ErrorInternal).Times(1)
+			},
+			fails: true,
+		},
+		{
+			name: "create returns conflict",
+			initMocks: func(s *ContrailTypeLogicService) {
+				m := s.APIService.(*servicesmock.MockService)
+
+				m.EXPECT().CreateApplicationPolicySet(
+					gomock.Not(gomock.Nil()),
+					gomock.Not(gomock.Nil()),
+				).Return(nil, common.ErrorConflict).Times(1)
+			},
+		},
+		{
+			name: "create returns ApplicationPolicySet object",
+			initMocks: func(s *ContrailTypeLogicService) {
+				m := s.APIService.(*servicesmock.MockService)
+
+				m.EXPECT().CreateApplicationPolicySet(
+					gomock.Not(gomock.Nil()),
+					gomock.Not(gomock.Nil()),
+				).Return(
+					&services.CreateApplicationPolicySetResponse{ApplicationPolicySet: models.MakeApplicationPolicySet()}, nil,
+				).Times(1)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+			if tt.initMocks != nil {
+				tt.initMocks(service)
+			}
+
+			err := service.ensureDefaultApplicationPolicySet(context.Background(), &tt.project)
+			if tt.fails {
+				t.Log(err)
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}

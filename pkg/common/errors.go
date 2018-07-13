@@ -37,6 +37,11 @@ var ErrorInternal = grpc.Errorf(codes.Internal, "Internal Server Error")
 //ErrorConflict is for resource conflict error.
 var ErrorConflict = grpc.Errorf(codes.AlreadyExists, "Resource conflict")
 
+// IsConflict returns true if error is of Conflict type.
+func IsConflict(err error) bool {
+	return grpc.Code(errors.Cause(err)) == codes.AlreadyExists
+}
+
 //ErrorForbiddenf makes forbidden error with format.
 func ErrorForbiddenf(format string, a ...interface{}) error {
 	return grpc.Errorf(codes.PermissionDenied, format, a)
