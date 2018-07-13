@@ -18,9 +18,9 @@ import (
 )
 
 func instanceIDPrepareVirtualNetwork(s *ContrailTypeLogicService) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	readService := s.ReadService.(*servicesmock.MockReadService)
 
-	dataService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
+	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
 		&services.GetVirtualNetworkRequest{
 			ID: "virtual-network-uuid-1",
 		}).Return(
@@ -30,28 +30,28 @@ func instanceIDPrepareVirtualNetwork(s *ContrailTypeLogicService) {
 			},
 		}, nil).AnyTimes()
 
-	dataService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound).AnyTimes()
 }
 
-func instanceIPPrepareDataService(s *ContrailTypeLogicService, instanceIP *models.InstanceIP) {
-	dataService := s.DataService.(*servicesmock.MockService)
+func instanceIPPrepareReadService(s *ContrailTypeLogicService, instanceIP *models.InstanceIP) {
+	readService := s.ReadService.(*servicesmock.MockReadService)
 
 	if instanceIP != nil {
-		dataService.EXPECT().GetInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		readService.EXPECT().GetInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			&services.GetInstanceIPResponse{
 				InstanceIP: instanceIP,
 			}, nil).AnyTimes()
 	} else {
-		dataService.EXPECT().GetInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		readService.EXPECT().GetInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			nil, fmt.Errorf("Not found")).AnyTimes()
 	}
 }
 
 func instanceIDPrepareVirtualRouter(s *ContrailTypeLogicService) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	readService := s.ReadService.(*servicesmock.MockReadService)
 
-	dataService.EXPECT().GetVirtualRouter(gomock.Not(gomock.Nil()),
+	readService.EXPECT().GetVirtualRouter(gomock.Not(gomock.Nil()),
 		&services.GetVirtualRouterRequest{
 			ID: "virtual-router-uuid-1",
 		}).Return(
@@ -70,7 +70,7 @@ func instanceIDPrepareVirtualRouter(s *ContrailTypeLogicService) {
 			},
 		}, nil).AnyTimes()
 
-	dataService.EXPECT().GetVirtualRouter(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+	readService.EXPECT().GetVirtualRouter(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound).AnyTimes()
 }
 
@@ -381,7 +381,7 @@ func TestUpdateInstanceIP(t *testing.T) {
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			instanceIPSetupNextServiceMocks(service)
 			instanceIDPrepareVirtualNetwork(service)
-			instanceIPPrepareDataService(service, tt.databaseInstanceIP)
+			instanceIPPrepareReadService(service, tt.databaseInstanceIP)
 
 			ctx := context.Background()
 
@@ -477,7 +477,7 @@ func TestDeleteInstanceIP(t *testing.T) {
 			instanceIPSetupIPAMMocks(service)
 			instanceIPSetupNextServiceMocks(service)
 			instanceIDPrepareVirtualNetwork(service)
-			instanceIPPrepareDataService(service, tt.instanceIP)
+			instanceIPPrepareReadService(service, tt.instanceIP)
 
 			ctx := context.Background()
 

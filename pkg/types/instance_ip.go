@@ -189,7 +189,7 @@ func (sv *ContrailTypeLogicService) getVNFromVirtualNetworkRefs(
 		return nil, nil
 	}
 
-	virtualNetworkResponse, err := sv.DataService.GetVirtualNetwork(ctx,
+	virtualNetworkResponse, err := sv.ReadService.GetVirtualNetwork(ctx,
 		&services.GetVirtualNetworkRequest{
 			ID: virtualNetworkRefs[0].GetUUID(),
 		})
@@ -211,7 +211,7 @@ func (sv *ContrailTypeLogicService) getIpamRefsFromVirtualRouterRefs(
 		return nil, common.ErrorBadRequestf("Instance-ip can not refer to multiple vrouters")
 	}
 
-	virtualRouterResponse, err := sv.DataService.GetVirtualRouter(ctx,
+	virtualRouterResponse, err := sv.ReadService.GetVirtualRouter(ctx,
 		&services.GetVirtualRouterRequest{
 			ID: virtualRouterRefs[0].GetUUID(),
 		})
@@ -286,7 +286,7 @@ func (sv *ContrailTypeLogicService) allocateIPAddress(ctx context.Context,
 func (sv *ContrailTypeLogicService) getInstanceIP(
 	ctx context.Context, id string) (*models.InstanceIP, error) {
 
-	instanceIPResponse, err := sv.DataService.GetInstanceIP(ctx,
+	instanceIPResponse, err := sv.ReadService.GetInstanceIP(ctx,
 		&services.GetInstanceIPRequest{
 			ID: id,
 		})

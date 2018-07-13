@@ -27,7 +27,7 @@ func TestGlobalSystemConfigUdc(t *testing.T) {
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       dataServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)
@@ -47,7 +47,8 @@ func TestGlobalSystemConfigUdc(t *testing.T) {
 				resp := services.GetGlobalSystemConfigResponse{GlobalSystemConfig: &originalObj}
 				return &resp, nil
 			}).AnyTimes()
-		dataServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
+		logicService.Next().(*servicesmock.MockService).
+			EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
 	}
 
 	testClean := func() {
@@ -100,7 +101,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       dataServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)
@@ -112,7 +113,8 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 		)
 
 		// Prepare mock expects
-		dataServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
+		logicService.Next().(*servicesmock.MockService).
+			EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
 	}
 
 	testClean := func() {
@@ -279,7 +281,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       dataServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)
@@ -299,7 +301,8 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 				resp := services.GetGlobalSystemConfigResponse{GlobalSystemConfig: &originalObj}
 				return &resp, nil
 			}).AnyTimes()
-		dataServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
+		logicService.Next().(*servicesmock.MockService).
+			EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
 	}
 
 	testClean := func() {

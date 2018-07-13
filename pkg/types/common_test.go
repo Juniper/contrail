@@ -15,9 +15,10 @@ import (
 func makeMockedContrailTypeLogicService(controller *gomock.Controller) *ContrailTypeLogicService {
 	service := &ContrailTypeLogicService{
 		AddressManager:    ipammock.NewMockAddressManager(controller),
-		DataService:       servicesmock.NewMockService(controller),
+		ReadService:       servicesmock.NewMockReadService(controller),
 		IntPoolAllocator:  ipammock.NewMockIntPoolAllocator(controller),
 		InTransactionDoer: typesmock.NewMockInTransactionDoer(controller),
+		WriteService:      servicesmock.NewMockWriteService(controller),
 	}
 	service.SetNext(servicesmock.NewMockService(controller))
 
@@ -31,10 +32,10 @@ func makeMockedContrailTypeLogicService(controller *gomock.Controller) *Contrail
 	return service
 }
 
-func mockedDataServiceAddVirtualNetwork(s *ContrailTypeLogicService, virtualNetwork *models.VirtualNetwork) {
-	dataServiceMock := s.DataService.(*servicesmock.MockService)
+func mockedReadServiceAddVirtualNetwork(s *ContrailTypeLogicService, virtualNetwork *models.VirtualNetwork) {
+	readServiceMock := s.ReadService.(*servicesmock.MockReadService)
 
-	dataServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
+	readServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
 		&services.GetVirtualNetworkRequest{
 			ID: virtualNetwork.UUID,
 		}).Return(

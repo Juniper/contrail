@@ -68,7 +68,7 @@ func (sv *ContrailTypeLogicService) DeleteProject(
 }
 
 func (sv *ContrailTypeLogicService) getProject(ctx context.Context, id string) (*models.Project, error) {
-	projectRes, err := sv.DataService.GetProject(ctx, &services.GetProjectRequest{
+	projectRes, err := sv.ReadService.GetProject(ctx, &services.GetProjectRequest{
 		ID: id,
 	})
 	return projectRes.GetProject(), err
