@@ -20,8 +20,9 @@ type InTransactionDoer interface {
 // ContrailTypeLogicService is a service for implementing type specific logic
 type ContrailTypeLogicService struct {
 	services.BaseService
-	DataService       services.Service
+	ReadService       services.ReadService
 	InTransactionDoer InTransactionDoer
 	AddressManager    ipam.AddressManager
 	IntPoolAllocator  ipam.IntPoolAllocator
+	WriteService      services.WriteService
 }

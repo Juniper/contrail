@@ -58,9 +58,9 @@ func createTestVirtualNetwork() *models.VirtualNetwork {
 }
 
 func floatingIPPoolPrepareNetwork(s *ContrailTypeLogicService, virtualNetwork *models.VirtualNetwork) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	readService := s.ReadService.(*servicesmock.MockService)
 
-	dataService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
+	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
 		&services.GetVirtualNetworkRequest{
 			ID: virtualNetwork.GetUUID(),
 		}).Return(
@@ -68,7 +68,7 @@ func floatingIPPoolPrepareNetwork(s *ContrailTypeLogicService, virtualNetwork *m
 			VirtualNetwork: virtualNetwork,
 		}, nil).AnyTimes()
 
-	dataService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound).AnyTimes()
 }
 

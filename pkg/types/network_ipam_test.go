@@ -154,8 +154,8 @@ func TestCreateNetworkIpam(t *testing.T) {
 
 func TestDeleteNetworkIpam(t *testing.T) {
 	deleteIpamDBMock := func(service *ContrailTypeLogicService, getNetworkIpamResponse *services.GetNetworkIpamResponse) {
-		dataService := service.DataService.(*servicesmock.MockService)
-		dataService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).Return(getNetworkIpamResponse, nil)
+		readService := service.ReadService.(*servicesmock.MockService)
+		readService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).Return(getNetworkIpamResponse, nil)
 	}
 
 	tests := []struct {
@@ -207,8 +207,8 @@ func TestDeleteNetworkIpam(t *testing.T) {
 
 func TestUpdateNetworkIpam(t *testing.T) {
 	updateIpamDBMock := func(service *ContrailTypeLogicService, getNetworkIpamResponse *services.GetNetworkIpamResponse) {
-		dataService := service.DataService.(*servicesmock.MockService)
-		dataService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).DoAndReturn(
+		readService := service.ReadService.(*servicesmock.MockService)
+		readService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetNetworkIpamRequest,
 			) (response *services.GetNetworkIpamResponse, err error) {
@@ -218,7 +218,7 @@ func TestUpdateNetworkIpam(t *testing.T) {
 				return getNetworkIpamResponse, nil
 			})
 
-		dataService.EXPECT().GetVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
+		readService.EXPECT().GetVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetVirtualNetworkRequest,
 			) (response *services.GetVirtualNetworkResponse, err error) {
@@ -229,7 +229,7 @@ func TestUpdateNetworkIpam(t *testing.T) {
 				return &services.GetVirtualNetworkResponse{VirtualNetwork: vn}, nil
 			}).AnyTimes()
 
-		dataService.EXPECT().GetFloatingIPPool(gomock.Any(), gomock.Any()).DoAndReturn(
+		readService.EXPECT().GetFloatingIPPool(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetFloatingIPPoolRequest,
 			) (response *services.GetFloatingIPPoolResponse, err error) {
@@ -241,7 +241,7 @@ func TestUpdateNetworkIpam(t *testing.T) {
 				return &services.GetFloatingIPPoolResponse{FloatingIPPool: fipp}, nil
 			}).AnyTimes()
 
-		dataService.EXPECT().GetAliasIPPool(gomock.Any(), gomock.Any()).DoAndReturn(
+		readService.EXPECT().GetAliasIPPool(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetAliasIPPoolRequest,
 			) (response *services.GetAliasIPPoolResponse, err error) {
@@ -253,7 +253,7 @@ func TestUpdateNetworkIpam(t *testing.T) {
 				return &services.GetAliasIPPoolResponse{AliasIPPool: aipp}, nil
 			}).AnyTimes()
 
-		dataService.EXPECT().GetInstanceIP(gomock.Any(), gomock.Any()).DoAndReturn(
+		readService.EXPECT().GetInstanceIP(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetInstanceIPRequest,
 			) (response *services.GetInstanceIPResponse, err error) {
