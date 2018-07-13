@@ -27,7 +27,7 @@ func TestGlobalSystemConfigUdc(t *testing.T) {
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       dataServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)
@@ -100,7 +100,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       dataServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)
@@ -279,7 +279,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 		dataServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       dataServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
 		logicService.SetNext(dataServiceMock)

@@ -29,7 +29,7 @@ func (sv *ContrailTypeLogicService) UpdateGlobalSystemConfig(
 		func(ctx context.Context) (err error) {
 			// TODO(Jan Darowski) JBE-431 - Add proper uuid update when using draft object
 			// (enable_security_policy_draft)
-			oldObjResp, err := sv.DataService.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{
+			oldObjResp, err := sv.ReadService.GetGlobalSystemConfig(ctx, &services.GetGlobalSystemConfigRequest{
 				ID: request.GetGlobalSystemConfig().GetUUID(),
 			})
 			updateObj := request.GlobalSystemConfig
@@ -83,7 +83,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 		return nil
 	}
 
-	vnList, err := sv.DataService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{
+	vnList, err := sv.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{
 		Fields: []string{"route_target_list"}},
 	})
 	if err != nil {
@@ -130,7 +130,7 @@ func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, update
 		oldPortsRange = oldObj.BgpaasParameters
 	}
 
-	bgpaasList, err := sv.DataService.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{
+	bgpaasList, err := sv.ReadService.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{
 		Spec: &services.ListSpec{Count: true},
 	})
 

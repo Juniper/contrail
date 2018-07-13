@@ -154,7 +154,7 @@ func TestCreateNetworkIpam(t *testing.T) {
 
 func TestDeleteNetworkIpam(t *testing.T) {
 	deleteIpamDBMock := func(service *ContrailTypeLogicService, getNetworkIpamResponse *services.GetNetworkIpamResponse) {
-		dataService := service.DataService.(*servicesmock.MockService)
+		dataService := service.ReadService.(*servicesmock.MockService)
 		dataService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).Return(getNetworkIpamResponse, nil)
 	}
 
@@ -207,7 +207,7 @@ func TestDeleteNetworkIpam(t *testing.T) {
 
 func TestUpdateNetworkIpam(t *testing.T) {
 	updateIpamDBMock := func(service *ContrailTypeLogicService, getNetworkIpamResponse *services.GetNetworkIpamResponse) {
-		dataService := service.DataService.(*servicesmock.MockService)
+		dataService := service.ReadService.(*servicesmock.MockService)
 		dataService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetNetworkIpamRequest,

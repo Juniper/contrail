@@ -660,7 +660,7 @@ func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 }
 
 func virtualNetworkSetupDataServiceMocks(s *ContrailTypeLogicService) {
-	dataServiceMock := s.DataService.(*servicesmock.MockService)
+	dataServiceMock := s.ReadService.(*servicesmock.MockService)
 
 	virtualNetwork := models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "test_provider_vn_uuid"
@@ -725,7 +725,7 @@ func virtualNetworkSetupDataServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMethod string) {
-	dataServiceMock := s.DataService.(*servicesmock.MockService)
+	dataServiceMock := s.ReadService.(*servicesmock.MockService)
 
 	ipamSubnetA := models.MakeIpamSubnetType()
 	ipamSubnetA.Subnet = &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}

@@ -83,7 +83,7 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 		ctx,
 		func(ctx context.Context) error {
 			var virtualNetworkResponse *services.GetVirtualNetworkResponse
-			virtualNetworkResponse, err = sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+			virtualNetworkResponse, err = sv.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
 				ID: requestedVN.UUID,
 			})
 			if err != nil {
@@ -190,7 +190,7 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 	// so we create a list of subnet for overlap check.
 	subnets := []*net.IPNet{}
 	for _, ipamReference := range ipamReferences {
-		ipamResponse, err := sv.DataService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
+		ipamResponse, err := sv.ReadService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
 			ID: ipamReference.UUID,
 		})
 		if err != nil {
@@ -351,7 +351,7 @@ func (sv *ContrailTypeLogicService) checkBGPVPNRefs(
 
 	for _, logicalRouterUUID := range virtualNetwork.LogicalRouterRefs {
 		refUUID := logicalRouterUUID.UUID
-		logicalRouterResponse, err := sv.DataService.GetLogicalRouter(
+		logicalRouterResponse, err := sv.ReadService.GetLogicalRouter(
 			ctx,
 			&services.GetLogicalRouterRequest{ID: refUUID},
 		)
@@ -377,7 +377,7 @@ func (sv *ContrailTypeLogicService) checkBGPVPNRefs(
 }
 
 func (sv *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context, id string) (int64, error) {
-	getResponse, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+	getResponse, err := sv.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
 		ID: id,
 	})
 	if err != nil {
@@ -387,7 +387,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context, id 
 }
 
 func (sv *ContrailTypeLogicService) getBGPVPNType(ctx context.Context, id string) (string, error) {
-	getResponse, err := sv.DataService.GetBGPVPN(ctx, &services.GetBGPVPNRequest{
+	getResponse, err := sv.ReadService.GetBGPVPN(ctx, &services.GetBGPVPNRequest{
 		ID: id,
 	})
 	if err != nil {
@@ -401,7 +401,7 @@ func (sv *ContrailTypeLogicService) getLinkedProviderVirtualNetworks(
 
 	var linkedProviderVirtualNetworkUUIDs []string
 	for _, vnRef := range virtualNetwork.GetVirtualNetworkRefs() {
-		getResponse, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+		getResponse, err := sv.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
 			ID: vnRef.GetUUID(),
 		})
 		if err != nil {

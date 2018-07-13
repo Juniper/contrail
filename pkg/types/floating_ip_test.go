@@ -27,7 +27,7 @@ func (e addrMgrSubnetExhausted) Error() string {
 }
 
 func floatingIPSetupDataServiceMocks(s *ContrailTypeLogicService) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	dataService := s.ReadService.(*servicesmock.MockService)
 	dataService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		&services.GetVirtualNetworkResponse{
 			VirtualNetwork: &models.VirtualNetwork{},
@@ -87,7 +87,7 @@ func floatingIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func floatingIPPrepareParent(s *ContrailTypeLogicService, floatingIPPool *models.FloatingIPPool) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	dataService := s.ReadService.(*servicesmock.MockService)
 	if floatingIPPool != nil {
 		dataService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			&services.GetFloatingIPPoolResponse{
@@ -269,7 +269,7 @@ func TestDeleteFloatingIP(t *testing.T) {
 			floatingIPSetupNextServiceMocks(service)
 			floatingIPPrepareParent(service, tt.floatingIPParent)
 
-			dataService := service.DataService.(*servicesmock.MockService)
+			dataService := service.ReadService.(*servicesmock.MockService)
 			if tt.floatingIP != nil {
 				dataService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.GetFloatingIPResponse{

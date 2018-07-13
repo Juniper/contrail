@@ -18,7 +18,7 @@ import (
 )
 
 func instanceIDPrepareVirtualNetwork(s *ContrailTypeLogicService) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	dataService := s.ReadService.(*servicesmock.MockService)
 
 	dataService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
 		&services.GetVirtualNetworkRequest{
@@ -35,7 +35,7 @@ func instanceIDPrepareVirtualNetwork(s *ContrailTypeLogicService) {
 }
 
 func instanceIPPrepareDataService(s *ContrailTypeLogicService, instanceIP *models.InstanceIP) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	dataService := s.ReadService.(*servicesmock.MockService)
 
 	if instanceIP != nil {
 		dataService.EXPECT().GetInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
@@ -49,7 +49,7 @@ func instanceIPPrepareDataService(s *ContrailTypeLogicService, instanceIP *model
 }
 
 func instanceIDPrepareVirtualRouter(s *ContrailTypeLogicService) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	dataService := s.ReadService.(*servicesmock.MockService)
 
 	dataService.EXPECT().GetVirtualRouter(gomock.Not(gomock.Nil()),
 		&services.GetVirtualRouterRequest{
