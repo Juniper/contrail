@@ -44,7 +44,7 @@ func (sv *ContrailTypeLogicService) CreateFloatingIPPool(
 func (sv *ContrailTypeLogicService) getVirtualNetworkFromFloatingIPPool(
 	ctx context.Context, floatingIPPool *models.FloatingIPPool) (*models.VirtualNetwork, error) {
 
-	virtualNetworkResponse, err := sv.DataService.GetVirtualNetwork(ctx,
+	virtualNetworkResponse, err := sv.ReadService.GetVirtualNetwork(ctx,
 		&services.GetVirtualNetworkRequest{
 			ID: floatingIPPool.GetParentUUID(),
 		})

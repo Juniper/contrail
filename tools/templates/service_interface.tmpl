@@ -8,10 +8,21 @@ import (
 type Service interface {
     Next() Service
     SetNext(Service)
- {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+    WriteService
+    ReadService
+}
+
+type WriteService interface {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     Create{{ schema.JSONSchema.GoName }}(context.Context, *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error)
     Update{{ schema.JSONSchema.GoName }}(context.Context, *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error)
     Delete{{ schema.JSONSchema.GoName }}(context.Context, *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error)
+{% endif%}{% endfor %}
+}
+
+type ReadService interface{
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     Get{{ schema.JSONSchema.GoName }}(context.Context, *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error)
     List{{ schema.JSONSchema.GoName }}(context.Context, *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error)
 {% endif%}{% endfor %}
