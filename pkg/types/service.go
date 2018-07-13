@@ -24,4 +24,5 @@ type ContrailTypeLogicService struct {
 	InTransactionDoer InTransactionDoer
 	AddressManager    ipam.AddressManager
 	IntPoolAllocator  ipam.IntPoolAllocator
+	ApiService        services.Service
 }
