@@ -503,11 +503,14 @@ func (qb *QueryBuilder) SelectAuthQuery(admin bool) string {
 //UpdateQuery makes sql query for update.
 func (qb *QueryBuilder) UpdateQuery(columns []string) string {
 	var query bytes.Buffer
-	writeStrings(&query, "update ", qb.quote(qb.Table), "set ")
-	for i, column := range columns {
-		writeStrings(&query, qb.quote(column), " = ", qb.placeholder(i+1))
-		if i < len(columns)-1 {
-			writeString(&query, ", ")
+	writeStrings(&query, "update ", qb.quote(qb.Table))
+	if len(columns) > 0 {
+		query.WriteString(" set ")
+		for i, column := range columns {
+			writeStrings(&query, qb.quote(column), " = ", qb.placeholder(i+1))
+			if i < len(columns)-1 {
+				writeString(&query, ", ")
+			}
 		}
 	}
 	writeStrings(&query, " where uuid = ", qb.placeholder(len(columns)+1))

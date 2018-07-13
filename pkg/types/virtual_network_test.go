@@ -437,7 +437,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						models.VirtualNetworkPropertyIDVirtualNetworkNetworkID,
+						models.VirtualNetworkFieldVirtualNetworkNetworkID,
 					},
 				},
 			},
@@ -456,7 +456,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						models.VirtualNetworkPropertyIDVirtualNetworkNetworkID,
+						models.VirtualNetworkFieldVirtualNetworkNetworkID,
 					},
 				},
 			},
@@ -473,7 +473,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						models.VirtualNetworkPropertyIDIsProviderNetwork,
+						models.VirtualNetworkFieldIsProviderNetwork,
 					},
 				},
 			},
@@ -487,7 +487,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 				},
 				FieldMask: types.FieldMask{
 					Paths: []string{
-						models.VirtualNetworkPropertyIDIsProviderNetwork,
+						models.VirtualNetworkFieldIsProviderNetwork,
 					},
 				},
 			},

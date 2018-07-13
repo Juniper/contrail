@@ -390,6 +390,9 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
         }
     }
     values = append(values, model.UUID)
+    if len(columns) == 0 {
+        return nil
+    }
     _, err = tx.ExecContext(ctx, qb.UpdateQuery(columns), values...)
     return handleError(err)
 }

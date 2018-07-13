@@ -3,12 +3,15 @@ package types
 import (
 	"context"
 
+	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-// CreateProject do checks for create project.
+// CreateProject creates a project and ensures a default application policy set for it.
 func (sv *ContrailTypeLogicService) CreateProject(
 	ctx context.Context, request *services.CreateProjectRequest,
 ) (response *services.CreateProjectResponse, err error) {
@@ -16,17 +19,18 @@ func (sv *ContrailTypeLogicService) CreateProject(
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-
 			response, err = sv.Next().CreateProject(ctx, request)
-			//TODO: ensure default application policy set
+			if err != nil {
+				return err
+			}
 
-			return err
+			return sv.ensureDefaultApplicationPolicySet(ctx, request.Project)
 		})
 
 	return response, err
 }
 
-// UpdateProject do checks for update project.
+// UpdateProject validates the request and updates the project.
 func (sv *ContrailTypeLogicService) UpdateProject(
 	ctx context.Context, request *services.UpdateProjectRequest,
 ) (response *services.UpdateProjectResponse, err error) {
@@ -52,14 +56,25 @@ func (sv *ContrailTypeLogicService) UpdateProject(
 	return response, err
 }
 
-// DeleteProject do checks for delete project.
+// DeleteProject deletes the project with its default application policy set.
 func (sv *ContrailTypeLogicService) DeleteProject(
 	ctx context.Context, request *services.DeleteProjectRequest,
-) (response *services.DeleteProjectResponse, err error) {
-	err = sv.InTransactionDoer.DoInTransaction(
+) (*services.DeleteProjectResponse, error) {
+	var response *services.DeleteProjectResponse
+
+	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
 			//TODO: pre dbe delete
+			project, err := sv.getProject(ctx, request.GetID())
+			if err != nil {
+				return err
+			}
+
+			if err = sv.deleteDefaultApplicationPolicySet(ctx, project); err != nil {
+				return err
+			}
+
 			response, err = sv.Next().DeleteProject(ctx, request)
 			return err
 		})
@@ -80,7 +95,7 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(
 	requestedProject := request.GetProject()
 
 	fm := request.GetFieldMask()
-	isVxlanChangeRequested := common.ContainsString(fm.GetPaths(), models.ProjectPropertyIDVxlanRouting)
+	isVxlanChangeRequested := common.ContainsString(fm.GetPaths(), models.ProjectFieldVxlanRouting)
 	if !isVxlanChangeRequested {
 		return nil
 	}
@@ -96,5 +111,66 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(
 			" cannot be done when Logical Routers are configured")
 	}
 
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) ensureDefaultApplicationPolicySet(
+	ctx context.Context, project *models.Project,
+) error {
+	apsName := models.DefaultNameForKind(models.KindApplicationPolicySet)
+
+	aps := models.MakeApplicationPolicySet()
+	aps.FQName = models.ChildFQName(project.GetFQName(), apsName)
+	aps.ParentType = project.Kind()
+	aps.ParentUUID = project.GetUUID()
+	aps.Name = apsName
+	aps.DisplayName = apsName
+	aps.AllApplications = true
+
+	response, err := sv.WriteService.CreateApplicationPolicySet(ctx, &services.CreateApplicationPolicySetRequest{
+		ApplicationPolicySet: aps,
+	})
+	if common.IsConflict(err) {
+		return nil // object already exists - do nothing
+	} else if err != nil {
+		return errors.Wrap(err, "failed to create default application policy set for project")
+	}
+
+	project.ApplicationPolicySetRefs = append(
+		project.ApplicationPolicySetRefs,
+		&models.ProjectApplicationPolicySetRef{UUID: response.GetApplicationPolicySet().GetUUID()},
+	)
+	_, err = sv.WriteService.UpdateProject(ctx, &services.UpdateProjectRequest{
+		Project:   project,
+		FieldMask: types.FieldMask{Paths: []string{models.ProjectFieldApplicationPolicySetRefs}},
+	})
+
+	return err
+}
+
+func (sv *ContrailTypeLogicService) deleteDefaultApplicationPolicySet(
+	ctx context.Context, project *models.Project,
+) error {
+	// delete aps refs to make default application policy set deletion possible
+	project.ApplicationPolicySetRefs = project.ApplicationPolicySetRefs[:0]
+	_, err := sv.WriteService.UpdateProject(ctx, &services.UpdateProjectRequest{
+		Project:   project,
+		FieldMask: types.FieldMask{Paths: []string{models.ProjectFieldApplicationPolicySetRefs}},
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to delete application policy set refs")
+	}
+
+	defaultAPSName := models.DefaultNameForKind(models.KindApplicationPolicySet)
+
+	for _, aps := range project.GetApplicationPolicySets() {
+		if aps.GetName() == defaultAPSName {
+			_, err := sv.WriteService.DeleteApplicationPolicySet(ctx, &services.DeleteApplicationPolicySetRequest{ID: aps.UUID})
+			if err != nil {
+				return errors.Wrap(err, "failed to delete child application policy set")
+			}
+			return nil
+		}
+	}
 	return nil
 }
