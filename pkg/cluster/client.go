@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strings"
 
+	uuid "github.com/satori/go.uuid"
+
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -14,7 +16,8 @@ func (c *Cluster) createEndpoint(parentUUID, name, publicURL, privateURL string)
 	endpoint := map[string]string{
 		"parent_type": defaultResource,
 		"parent_uuid": parentUUID,
-		"name":        name,
+		"name":        fmt.Sprintf("%s-%s", name, uuid.NewV4().String()),
+		"DisplayName": name,
 		"public_url":  publicURL,
 		"private_url": privateURL,
 	}
