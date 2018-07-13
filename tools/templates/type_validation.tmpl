@@ -143,8 +143,8 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 	//Validate References
 	{% for linkTo, reference in schema.References %}
 		{% if reference.Presence == "required" or reference.Presence == "true" %}
-			if len(obj.{{ reference.GoName }}Refs) == 0 {
-				return errors.Errorf("reference to {{ linkTo }} is missing for {{schema.ID}}")
+			if obj.{{ reference.GoName }}Refs == nil {
+				return errors.Errorf("references to {{ linkTo }} not provided for {{schema.ID}}")
 			}
 		{% endif %}
 		{% if reference.RefType %}
