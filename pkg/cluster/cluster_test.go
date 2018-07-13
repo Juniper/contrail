@@ -33,7 +33,13 @@ func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario,
 		assert.NoError(t, err, "Unable to list endpoints of the cluster")
 		for _, endpoint := range response["endpoints"] {
 			e := endpoint.(map[string]interface{})
-			createdEndpoints[e["name"].(string)] = e["public_url"].(string)
+			// TODO(ijohnson) remove using DisplayName as prefix
+			// once UI takes prefix as input.
+			var prefix = e["display_name"]
+			if v, ok := e["prefix"]; ok {
+				prefix = v
+			}
+			createdEndpoints[prefix.(string)] = e["public_url"].(string)
 		}
 	}
 	for k, e := range expectedEndpoints {
