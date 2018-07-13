@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
@@ -117,12 +116,7 @@ func TestProxyEndpoint(t *testing.T) {
 	APIServer.ForceProxyUpdate()
 
 	// verify proxies
-	url := "/proxy/" + clusterAName + "_uuid/neutron/ports"
-	ok := verifyProxy(t, testScenario, url, clusterAName, publicPortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
-	assert.True(t, ok, "failed to proxy %s", url)
+	verifyProxyAndTestIt(t, testScenario, clusterAName, true)
 
 	// create one more cluster/neutron endpoint for new cluster
 	clusterBName := "clusterB"
@@ -136,20 +130,10 @@ func TestProxyEndpoint(t *testing.T) {
 	APIServer.ForceProxyUpdate()
 
 	// verify new proxies
-	url = "/proxy/" + clusterBName + "_uuid/neutron/ports"
-	ok = verifyProxy(t, testScenario, url, clusterBName, publicPortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-	url = "/proxy/" + clusterBName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(t, testScenario, url, clusterBName, privatePortList)
-	assert.True(t, ok, "failed to proxy %s", url)
+	verifyProxyAndTestIt(t, testScenario, clusterBName, true)
 
 	// verify existing proxies, make sure the proxy prefix is updated with cluster id
-	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
-	assert.True(t, ok, "failed to proxy %s", url)
+	verifyProxyAndTestIt(t, testScenario, clusterAName, true)
 
 	// Update endpoint with incorrect port
 	var data interface{}
@@ -161,7 +145,7 @@ func TestProxyEndpoint(t *testing.T) {
 	data = map[string]interface{}{"endpoint": endpoint}
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
-		url = fmt.Sprintf("/endpoint/endpoint_%s_neutron_uuid", clusterAName)
+		url := fmt.Sprintf("/endpoint/endpoint_%s_neutron_uuid", clusterAName)
 		_, err := client.Update(url, &data, &response)
 		assert.NoError(t, err, "failed to update neutron endpoint port")
 		break
@@ -170,17 +154,12 @@ func TestProxyEndpoint(t *testing.T) {
 	APIServer.ForceProxyUpdate()
 
 	// verify proxy (expected to fail as the port is incorrect)
-	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
-	assert.False(t, ok, "proxy %s expected to fail", url)
-	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
-	assert.False(t, ok, "proxy %s expected to fail", url)
+	verifyProxyAndTestIt(t, testScenario, clusterAName, false)
 
 	// Delete the neutron endpoint
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
-		url = fmt.Sprintf("/endpoint/endpoint_%s_neutron_uuid", clusterAName)
+		url := fmt.Sprintf("/endpoint/endpoint_%s_neutron_uuid", clusterAName)
 		_, err := client.Delete(url, &response)
 		assert.NoError(t, err, "failed to delete neutron endpoint")
 		break
@@ -197,7 +176,7 @@ func TestProxyEndpoint(t *testing.T) {
 	data = map[string]interface{}{"endpoint": endpoint}
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
-		url = fmt.Sprintf("/endpoints")
+		url := fmt.Sprintf("/endpoints")
 		_, err := client.Create(url, &data, &response)
 		assert.NoError(t, err, "failed to re-create neutron endpoint port")
 		break
@@ -206,63 +185,23 @@ func TestProxyEndpoint(t *testing.T) {
 	APIServer.ForceProxyUpdate()
 
 	// verify proxy
-	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
-	assert.True(t, ok, "failed to proxy %s", url)
+	verifyProxyAndTestIt(t, testScenario, clusterAName, true)
 }
 
-// TestProxyEndpointWithSleep tests the first part of TestProxyEndpoint,
-// but verifies that endpoint updates are triggered every 2 seconds.
-// TODO: Remove this test when proxyService switches to using events instead of Ticker.
-func TestProxyEndpointWithSleep(t *testing.T) {
-	// Create a cluster and its neutron endpoint
-	clusterAName := "clusterA"
-	testScenario, clusterANeutronPublic, clusterANeutronPrivate, cleanup1 := runEndpointTest(
-		t, clusterAName)
-	defer cleanup1()
-	// remove tempfile after test
-	defer clusterANeutronPrivate.Close()
-	defer clusterANeutronPublic.Close()
+func verifyProxyAndTestIt(t *testing.T, scenario *TestScenario, clusterName string, expectTrueAssertion bool) {
+	urlPub := "/proxy/" + clusterName + "_uuid/neutron/ports"
+	okPub := verifyProxy(t, scenario, urlPub, clusterName, publicPortList)
 
-	time.Sleep(2 * time.Second)
+	urlPriv := "/proxy/" + clusterName + "_uuid/neutron/private/ports"
+	okPriv := verifyProxy(t, scenario, urlPriv, clusterName, privatePortList)
 
-	// verify proxies
-	url := "/proxy/" + clusterAName + "_uuid/neutron/ports"
-	ok := verifyProxy(t, testScenario, url, clusterAName, publicPortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-
-	// create one more cluster/neutron endpoint for new cluster
-	clusterBName := "clusterB"
-	testScenario, neutronPublic, neutronPrivate, cleanup2 := runEndpointTest(
-		t, clusterBName)
-	defer cleanup2()
-	// remove tempfile after test
-	defer neutronPrivate.Close()
-	defer neutronPublic.Close()
-
-	time.Sleep(2 * time.Second)
-
-	// verify new proxies
-	url = "/proxy/" + clusterBName + "_uuid/neutron/ports"
-	ok = verifyProxy(t, testScenario, url, clusterBName, publicPortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-	url = "/proxy/" + clusterBName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(t, testScenario, url, clusterBName, privatePortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-
-	// verify existing proxies, make sure the proxy prefix is updated with cluster id
-	url = "/proxy/" + clusterAName + "_uuid/neutron/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, publicPortList)
-	assert.True(t, ok, "failed to proxy %s", url)
-	url = "/proxy/" + clusterAName + "_uuid/neutron/private/ports"
-	ok = verifyProxy(t, testScenario, url, clusterAName, privatePortList)
-	assert.True(t, ok, "failed to proxy %s", url)
+	if expectTrueAssertion {
+		assert.True(t, okPub, "failed to proxy %s", urlPub)
+		assert.True(t, okPriv, "failed to proxy %s", urlPriv)
+	} else {
+		assert.False(t, okPub, "proxy %s expected to fail", urlPub)
+		assert.False(t, okPriv, "proxy %s expected to fail", urlPriv)
+	}
 }
 
 func TestKeystoneEndpoint(t *testing.T) {
