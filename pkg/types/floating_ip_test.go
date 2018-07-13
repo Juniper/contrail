@@ -26,9 +26,9 @@ func (e addrMgrSubnetExhausted) Error() string {
 	return ""
 }
 
-func floatingIPSetupDataServiceMocks(s *ContrailTypeLogicService) {
-	dataService := s.DataService.(*servicesmock.MockService)
-	dataService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+func floatingIPSetupReadServiceMocks(s *ContrailTypeLogicService) {
+	readService := s.ReadService.(*servicesmock.MockService)
+	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		&services.GetVirtualNetworkResponse{
 			VirtualNetwork: &models.VirtualNetwork{},
 		}, nil).AnyTimes()
@@ -87,14 +87,14 @@ func floatingIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func floatingIPPrepareParent(s *ContrailTypeLogicService, floatingIPPool *models.FloatingIPPool) {
-	dataService := s.DataService.(*servicesmock.MockService)
+	readService := s.ReadService.(*servicesmock.MockService)
 	if floatingIPPool != nil {
-		dataService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		readService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			&services.GetFloatingIPPoolResponse{
 				FloatingIPPool: floatingIPPool,
 			}, nil).AnyTimes()
 	} else {
-		dataService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		readService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			nil, fmt.Errorf("DB error")).AnyTimes()
 	}
 }
@@ -198,7 +198,7 @@ func TestCreateFloatingIP(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
-			floatingIPSetupDataServiceMocks(service)
+			floatingIPSetupReadServiceMocks(service)
 			floatingIPSetupIPAMMocks(service)
 			floatingIPSetupNextServiceMocks(service)
 
@@ -264,19 +264,19 @@ func TestDeleteFloatingIP(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
-			floatingIPSetupDataServiceMocks(service)
+			floatingIPSetupReadServiceMocks(service)
 			floatingIPSetupIPAMMocks(service)
 			floatingIPSetupNextServiceMocks(service)
 			floatingIPPrepareParent(service, tt.floatingIPParent)
 
-			dataService := service.DataService.(*servicesmock.MockService)
+			readService := service.ReadService.(*servicesmock.MockService)
 			if tt.floatingIP != nil {
-				dataService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+				readService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.GetFloatingIPResponse{
 						FloatingIP: tt.floatingIP,
 					}, nil).AnyTimes()
 			} else {
-				dataService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+				readService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					nil, fmt.Errorf("Not found")).AnyTimes()
 			}
 

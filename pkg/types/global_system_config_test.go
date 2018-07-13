@@ -18,19 +18,19 @@ import (
 func TestGlobalSystemConfigUdc(t *testing.T) {
 	var mockCtrl *gomock.Controller
 	var inTransationDoerMock *typesmock.MockInTransactionDoer
-	var dataServiceMock *servicesmock.MockService
+	var readServiceMock *servicesmock.MockService
 	var logicService ContrailTypeLogicService
 
 	testSetup := func(t *testing.T) {
 		mockCtrl = gomock.NewController(t)
 		inTransationDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
-		dataServiceMock = servicesmock.NewMockService(mockCtrl)
+		readServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       readServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
-		logicService.SetNext(dataServiceMock)
+		logicService.SetNext(readServiceMock)
 
 		inTransationDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 			func(ctx context.Context, do func(context.Context) error) error {
@@ -39,7 +39,7 @@ func TestGlobalSystemConfigUdc(t *testing.T) {
 		)
 
 		// Prepare mock expects
-		dataServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetGlobalSystemConfigRequest,
 			) (*services.GetGlobalSystemConfigResponse, error) {
@@ -47,7 +47,7 @@ func TestGlobalSystemConfigUdc(t *testing.T) {
 				resp := services.GetGlobalSystemConfigResponse{GlobalSystemConfig: &originalObj}
 				return &resp, nil
 			}).AnyTimes()
-		dataServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
+		readServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
 	}
 
 	testClean := func() {
@@ -91,19 +91,19 @@ func TestGlobalSystemConfigUdc(t *testing.T) {
 func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 	var mockCtrl *gomock.Controller
 	var inTransationDoerMock *typesmock.MockInTransactionDoer
-	var dataServiceMock *servicesmock.MockService
+	var readServiceMock *servicesmock.MockService
 	var logicService ContrailTypeLogicService
 
 	testSetup := func(t *testing.T) {
 		mockCtrl = gomock.NewController(t)
 		inTransationDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
-		dataServiceMock = servicesmock.NewMockService(mockCtrl)
+		readServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       readServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
-		logicService.SetNext(dataServiceMock)
+		logicService.SetNext(readServiceMock)
 
 		inTransationDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 			func(ctx context.Context, do func(context.Context) error) error {
@@ -112,7 +112,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 		)
 
 		// Prepare mock expects
-		dataServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
+		readServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
 	}
 
 	testClean := func() {
@@ -122,7 +122,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 	ctx := context.Background()
 	t.Run("UpdateFail - no global config", func(t *testing.T) {
 		testSetup(t)
-		dataServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetGlobalSystemConfigRequest,
 			) (*services.GetGlobalSystemConfigResponse, error) {
@@ -141,7 +141,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 
 	t.Run("UpdateSuccess", func(t *testing.T) {
 		testSetup(t)
-		dataServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetGlobalSystemConfigRequest,
 			) (*services.GetGlobalSystemConfigResponse, error) {
@@ -162,7 +162,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 
 	t.Run("UpdateFail - wrong port range, too small value", func(t *testing.T) {
 		testSetup(t)
-		dataServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetGlobalSystemConfigRequest,
 			) (*services.GetGlobalSystemConfigResponse, error) {
@@ -184,7 +184,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 
 	t.Run("UpdateFail - wrong port range, too big value", func(t *testing.T) {
 		testSetup(t)
-		dataServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetGlobalSystemConfigRequest,
 			) (*services.GetGlobalSystemConfigResponse, error) {
@@ -206,7 +206,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 
 	t.Run("UpdateFail - shrinking ports", func(t *testing.T) {
 		testSetup(t)
-		dataServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetGlobalSystemConfigRequest,
 			) (*services.GetGlobalSystemConfigResponse, error) {
@@ -215,7 +215,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 				resp := services.GetGlobalSystemConfigResponse{GlobalSystemConfig: &originalObj}
 				return &resp, nil
 			}).AnyTimes()
-		dataServiceMock.EXPECT().ListBGPAsAService(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().ListBGPAsAService(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.ListBGPAsAServiceRequest,
 			) (*services.ListBGPAsAServiceResponse, error) {
@@ -237,7 +237,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 
 	t.Run("UpdateSuccess - ports updated", func(t *testing.T) {
 		testSetup(t)
-		dataServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetGlobalSystemConfigRequest,
 			) (*services.GetGlobalSystemConfigResponse, error) {
@@ -246,7 +246,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 				resp := services.GetGlobalSystemConfigResponse{GlobalSystemConfig: &originalObj}
 				return &resp, nil
 			}).AnyTimes()
-		dataServiceMock.EXPECT().ListBGPAsAService(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().ListBGPAsAService(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.ListBGPAsAServiceRequest,
 			) (*services.ListBGPAsAServiceResponse, error) {
@@ -270,19 +270,19 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 func TestGlobalSystemConfigAsn(t *testing.T) {
 	var mockCtrl *gomock.Controller
 	var inTransationDoerMock *typesmock.MockInTransactionDoer
-	var dataServiceMock *servicesmock.MockService
+	var readServiceMock *servicesmock.MockService
 	var logicService ContrailTypeLogicService
 
 	testSetup := func(t *testing.T) {
 		mockCtrl = gomock.NewController(t)
 		inTransationDoerMock = typesmock.NewMockInTransactionDoer(mockCtrl)
-		dataServiceMock = servicesmock.NewMockService(mockCtrl)
+		readServiceMock = servicesmock.NewMockService(mockCtrl)
 		logicService = ContrailTypeLogicService{
 			BaseService:       services.BaseService{},
-			DataService:       dataServiceMock,
+			ReadService:       readServiceMock,
 			InTransactionDoer: inTransationDoerMock,
 		}
-		logicService.SetNext(dataServiceMock)
+		logicService.SetNext(readServiceMock)
 
 		inTransationDoerMock.EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 			func(ctx context.Context, do func(context.Context) error) error {
@@ -291,7 +291,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 		)
 
 		// Prepare mock expects
-		dataServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().GetGlobalSystemConfig(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetGlobalSystemConfigRequest,
 			) (*services.GetGlobalSystemConfigResponse, error) {
@@ -299,7 +299,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 				resp := services.GetGlobalSystemConfigResponse{GlobalSystemConfig: &originalObj}
 				return &resp, nil
 			}).AnyTimes()
-		dataServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
+		readServiceMock.EXPECT().UpdateGlobalSystemConfig(gomock.Any(), gomock.Any()).AnyTimes()
 	}
 
 	testClean := func() {
@@ -310,7 +310,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 	t.Run("UpdateSuccess - Empty VN list", func(t *testing.T) {
 		testSetup(t)
 
-		dataServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.ListVirtualNetworkRequest,
 			) (*services.ListVirtualNetworkResponse, error) {
@@ -332,7 +332,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 	t.Run("UpdateFail - VN has no user defined route targets", func(t *testing.T) {
 		testSetup(t)
 
-		dataServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.ListVirtualNetworkRequest,
 			) (*services.ListVirtualNetworkResponse, error) {
@@ -356,7 +356,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 	t.Run("UpdateSuccess - VN has user defined route targets with ip", func(t *testing.T) {
 		testSetup(t)
 
-		dataServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.ListVirtualNetworkRequest,
 			) (*services.ListVirtualNetworkResponse, error) {
@@ -380,7 +380,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 	t.Run("UpdateSuccess - VN has user defined route targets with small target id", func(t *testing.T) {
 		testSetup(t)
 
-		dataServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.ListVirtualNetworkRequest,
 			) (*services.ListVirtualNetworkResponse, error) {
@@ -404,7 +404,7 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 	t.Run("UpdateFail - invalid Route Target format", func(t *testing.T) {
 		testSetup(t)
 
-		dataServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
+		readServiceMock.EXPECT().ListVirtualNetwork(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.ListVirtualNetworkRequest,
 			) (*services.ListVirtualNetworkResponse, error) {

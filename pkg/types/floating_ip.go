@@ -184,7 +184,7 @@ func (sv *ContrailTypeLogicService) tryToAllocateIPAddress(ctx context.Context,
 func (sv *ContrailTypeLogicService) getVirtualNetwork(
 	ctx context.Context, floatingIP *models.FloatingIP) (*models.VirtualNetwork, error) {
 
-	floatingIPPoolResponse, err := sv.DataService.GetFloatingIPPool(ctx,
+	floatingIPPoolResponse, err := sv.ReadService.GetFloatingIPPool(ctx,
 		&services.GetFloatingIPPoolRequest{
 			ID: floatingIP.GetParentUUID(),
 		})
@@ -192,7 +192,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetwork(
 		return nil, err
 	}
 
-	virtualNetworkResponse, err := sv.DataService.GetVirtualNetwork(ctx,
+	virtualNetworkResponse, err := sv.ReadService.GetVirtualNetwork(ctx,
 		&services.GetVirtualNetworkRequest{
 			ID: floatingIPPoolResponse.GetFloatingIPPool().GetParentUUID(),
 		})
@@ -206,7 +206,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetwork(
 func (sv *ContrailTypeLogicService) getFloatingIP(
 	ctx context.Context, id string) (*models.FloatingIP, error) {
 
-	floatingIPResponse, err := sv.DataService.GetFloatingIP(ctx,
+	floatingIPResponse, err := sv.ReadService.GetFloatingIP(ctx,
 		&services.GetFloatingIPRequest{
 			ID: id,
 		})
@@ -222,7 +222,7 @@ func (sv *ContrailTypeLogicService) getFloatingIPPoolSubnets(
 	ctx context.Context,
 	floatingIP *models.FloatingIP) (*models.FloatingIpPoolSubnetType, error) {
 
-	floatingIPPoolResponse, err := sv.DataService.GetFloatingIPPool(ctx,
+	floatingIPPoolResponse, err := sv.ReadService.GetFloatingIPPool(ctx,
 		&services.GetFloatingIPPoolRequest{
 			ID: floatingIP.GetParentUUID(),
 		})

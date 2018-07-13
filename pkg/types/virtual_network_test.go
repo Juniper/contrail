@@ -360,9 +360,9 @@ func TestCreateVirtualNetwork(t *testing.T) {
 
 			virtualNetwork := models.MakeVirtualNetwork()
 			virtualNetwork.UUID = "test_vn_red_uuid"
-			mockedDataServiceAddVirtualNetwork(service, virtualNetwork)
+			mockedReadServiceAddVirtualNetwork(service, virtualNetwork)
 
-			virtualNetworkSetupDataServiceMocks(service)
+			virtualNetworkSetupReadServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
 			virtualNetworkSetupNetworkIpam(service, tt.ipamSubnetMethod)
 
@@ -537,8 +537,8 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 
 			vn := createTestVn(tt.testVnData)
-			mockedDataServiceAddVirtualNetwork(service, vn)
-			virtualNetworkSetupDataServiceMocks(service)
+			mockedReadServiceAddVirtualNetwork(service, vn)
+			virtualNetworkSetupReadServiceMocks(service)
 
 			ctx := context.Background()
 			// In case of successful flow UpdateVirtualNetwork should be called once on next service
@@ -596,9 +596,9 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 
 			virtualNetwork := models.MakeVirtualNetwork()
 			virtualNetwork.UUID = "test_vn_uuid"
-			mockedDataServiceAddVirtualNetwork(service, virtualNetwork)
+			mockedReadServiceAddVirtualNetwork(service, virtualNetwork)
 
-			virtualNetworkSetupDataServiceMocks(service)
+			virtualNetworkSetupReadServiceMocks(service)
 			virtualNetworkSetupIntPoolAllocatorMocks(service)
 
 			ctx := context.Background()
@@ -659,25 +659,25 @@ func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 	return vn
 }
 
-func virtualNetworkSetupDataServiceMocks(s *ContrailTypeLogicService) {
-	dataServiceMock := s.DataService.(*servicesmock.MockService)
+func virtualNetworkSetupReadServiceMocks(s *ContrailTypeLogicService) {
+	readServiceMock := s.ReadService.(*servicesmock.MockService)
 
 	virtualNetwork := models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "test_provider_vn_uuid"
 	virtualNetwork.IsProviderNetwork = true
-	mockedDataServiceAddVirtualNetwork(s, virtualNetwork)
+	mockedReadServiceAddVirtualNetwork(s, virtualNetwork)
 
 	virtualNetwork = models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "test_non_provider_vn_uuid"
-	mockedDataServiceAddVirtualNetwork(s, virtualNetwork)
+	mockedReadServiceAddVirtualNetwork(s, virtualNetwork)
 
-	dataServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+	readServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound).AnyTimes()
 
 	// BGPVPN
 	bgpVPNL3 := models.MakeBGPVPN()
 	bgpVPNL3.BGPVPNType = models.L3Mode
-	dataServiceMock.EXPECT().GetBGPVPN(gomock.Not(gomock.Nil()),
+	readServiceMock.EXPECT().GetBGPVPN(gomock.Not(gomock.Nil()),
 		&services.GetBGPVPNRequest{
 			ID: "bgpvpn_uuid_l3",
 		}).Return(
@@ -687,7 +687,7 @@ func virtualNetworkSetupDataServiceMocks(s *ContrailTypeLogicService) {
 
 	bgpVPNAny := models.MakeBGPVPN()
 	bgpVPNAny.BGPVPNType = models.L2L3Mode
-	dataServiceMock.EXPECT().GetBGPVPN(gomock.Not(gomock.Nil()),
+	readServiceMock.EXPECT().GetBGPVPN(gomock.Not(gomock.Nil()),
 		&services.GetBGPVPNRequest{
 			ID: "bgpvpn_uuid_any",
 		}).Return(
@@ -695,12 +695,12 @@ func virtualNetworkSetupDataServiceMocks(s *ContrailTypeLogicService) {
 			BGPVPN: bgpVPNAny,
 		}, nil).AnyTimes()
 
-	dataServiceMock.EXPECT().GetBGPVPN(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(nil,
+	readServiceMock.EXPECT().GetBGPVPN(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(nil,
 		common.ErrorNotFound).AnyTimes()
 
 	// Logical Routers
 	logicalRouter := models.MakeLogicalRouter()
-	dataServiceMock.EXPECT().GetLogicalRouter(gomock.Not(gomock.Nil()),
+	readServiceMock.EXPECT().GetLogicalRouter(gomock.Not(gomock.Nil()),
 		&services.GetLogicalRouterRequest{
 			ID: "logical_router_uuid",
 		}).Return(
@@ -715,7 +715,7 @@ func virtualNetworkSetupDataServiceMocks(s *ContrailTypeLogicService) {
 			To:   []string{"logical_router_with_bgpvpn_uuid"},
 		},
 	}
-	dataServiceMock.EXPECT().GetLogicalRouter(gomock.Not(gomock.Nil()),
+	readServiceMock.EXPECT().GetLogicalRouter(gomock.Not(gomock.Nil()),
 		&services.GetLogicalRouterRequest{
 			ID: "logical_router_with_bgpvpn_uuid",
 		}).Return(
@@ -725,7 +725,7 @@ func virtualNetworkSetupDataServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMethod string) {
-	dataServiceMock := s.DataService.(*servicesmock.MockService)
+	readServiceMock := s.ReadService.(*servicesmock.MockService)
 
 	ipamSubnetA := models.MakeIpamSubnetType()
 	ipamSubnetA.Subnet = &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}
@@ -743,7 +743,7 @@ func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMetho
 		ipamSubnetB,
 	}
 
-	dataServiceMock.EXPECT().GetNetworkIpam(gomock.Not(gomock.Nil()),
+	readServiceMock.EXPECT().GetNetworkIpam(gomock.Not(gomock.Nil()),
 		&services.GetNetworkIpamRequest{
 			ID: "network_ipam_a",
 		}).Return(
@@ -757,7 +757,7 @@ func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMetho
 		ipamSubnetA,
 	}
 
-	dataServiceMock.EXPECT().GetNetworkIpam(gomock.Not(gomock.Nil()),
+	readServiceMock.EXPECT().GetNetworkIpam(gomock.Not(gomock.Nil()),
 		&services.GetNetworkIpamRequest{
 			ID: "network_ipam_b",
 		}).Return(
@@ -765,7 +765,7 @@ func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMetho
 			NetworkIpam: networkIpamB,
 		}, nil).AnyTimes()
 
-	dataServiceMock.EXPECT().GetNetworkIpam(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+	readServiceMock.EXPECT().GetNetworkIpam(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound).AnyTimes()
 }
 
