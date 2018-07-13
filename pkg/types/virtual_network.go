@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-//CreateVirtualNetwork do pre check for virtual network.
+//CreateVirtualNetwork do pre check and post setup for virtual network.
 func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	ctx context.Context,
 	request *services.CreateVirtualNetworkRequest) (response *services.CreateVirtualNetworkResponse, err error) {
@@ -64,9 +64,11 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			//TODO: process network ipam refs references
 			response, err = sv.BaseService.CreateVirtualNetwork(ctx, request)
 
-			//TODO: create native/vn-default routing instance
+			if err != nil {
+				return err
+			}
 
-			return err
+			return sv.createDefaultRoutingInstance(ctx, response.VirtualNetwork)
 		})
 
 	return response, err
@@ -109,13 +111,15 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 			//TODO: check BGPVPN Refs
 
 			response, err = sv.Next().UpdateVirtualNetwork(ctx, request)
+
+			//TODO: update native/default-VN routing instance
 			return err
 		})
 
 	return response, err
 }
 
-// DeleteVirtualNetwork do pre check for delete network.
+// DeleteVirtualNetwork do pre/post check/teardown for delete network.
 func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 	ctx context.Context,
 	request *services.DeleteVirtualNetworkRequest) (response *services.DeleteVirtualNetworkResponse, err error) {
@@ -124,25 +128,75 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
+			var virtualNetworkResponse *services.GetVirtualNetworkResponse
+			virtualNetworkResponse, err = sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+				ID: id,
+			})
+			if err != nil {
+				return common.ErrorBadRequestf("couldn't get virtual network (%v) for delete: %v", id, err)
+			}
+
+			vn := virtualNetworkResponse.VirtualNetwork
+
 			// Deallocate virtual network ID
-			var virtualNetworkID int64
-			virtualNetworkID, err = sv.getVirtualNetworkID(ctx, id)
+			err = sv.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, vn.VirtualNetworkNetworkID)
 			if err != nil {
 				return err
 			}
 
-			err = sv.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, virtualNetworkID)
+			err = sv.deleteDefaultRoutingInstance(ctx, vn)
 			if err != nil {
 				return err
 			}
 
 			response, err = sv.BaseService.DeleteVirtualNetwork(ctx, request)
 
-			// TODO: Delete native/vn-default routing instance
 			return err
 		})
 
 	return response, err
+}
+
+func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
+	ctx context.Context, vn *models.VirtualNetwork,
+) error {
+	_, err := sv.APIService.CreateRoutingInstance(ctx, &services.CreateRoutingInstanceRequest{
+		RoutingInstance: &models.RoutingInstance{
+			Name:                      vn.Name,
+			ParentUUID:                vn.UUID,
+			RoutingInstanceIsDefault:  true,
+			RoutingInstanceFabricSnat: vn.FabricSnat,
+		},
+	})
+
+	if err != nil {
+		return errors.Errorf("could not create default routing instance for VN: %v", err)
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
+	ctx context.Context, vn *models.VirtualNetwork,
+) error {
+	// Delete native/VN-default routing instance if it hasn't been deleted by the user
+	for _, ri := range vn.RoutingInstances {
+		if ri.GetRoutingInstanceIsDefault() {
+			// TODO: delete children of the default routing instance
+			_, err := sv.APIService.DeleteRoutingInstance(ctx, &services.DeleteRoutingInstanceRequest{
+				ID: ri.UUID,
+			})
+
+			if err != nil {
+				return errors.Errorf(
+					"couldn't delete default routing instance (uuid: %v) of VN (%v): %v", ri.UUID, vn.UUID, err)
+			}
+
+			return nil
+		}
+	}
+
+	return nil
 }
 
 func mergeIpamSubnetsIfNoOverlap(subnets []*net.IPNet, ipamSubnets []*models.IpamSubnetType) ([]*net.IPNet, error) {
@@ -374,16 +428,6 @@ func (sv *ContrailTypeLogicService) checkBGPVPNRefs(
 		}
 	}
 	return nil
-}
-
-func (sv *ContrailTypeLogicService) getVirtualNetworkID(ctx context.Context, id string) (int64, error) {
-	getResponse, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
-		ID: id,
-	})
-	if err != nil {
-		return 0, err
-	}
-	return getResponse.VirtualNetwork.VirtualNetworkNetworkID, nil
 }
 
 func (sv *ContrailTypeLogicService) getBGPVPNType(ctx context.Context, id string) (string, error) {
