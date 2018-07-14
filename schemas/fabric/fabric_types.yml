@@ -107,7 +107,7 @@
         switch_id:
           description: Switch hostname
           type: string
-          format: hostname
+          format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
         port_id:
           description: Port ID of switch where Baremetal is connected
           type: string
