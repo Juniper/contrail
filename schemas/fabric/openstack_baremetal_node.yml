@@ -1,0 +1,26 @@
+description: Openstack Baremetal Node
+extends:
+- base
+id: openstack_baremetal_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this openstack_baremetal node."
+      presence: "optional"
+parents:
+  openstack_cluster:
+    operations: "CRUD"
+    description: "Parent of this openstack_baremetal node."
+    presence: "optional"
+plural: openstack_baremetal_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: openstack_baremetal_node
+title: openstack_baremetal Node
+type: ""
