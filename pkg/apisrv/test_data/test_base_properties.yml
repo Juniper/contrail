@@ -1,8 +1,8 @@
-name: Implicit values test
+name: Base poperties filling up tests
 cleanup:
 - path: /fabrics/fabric_blue
 test_data:
-  fabric_minimal: &fabric_minimal_implicit_values
+  fabric_minimal: &fabric_minimal_base_props
     uuid: fabric_blue
 
 clients:
@@ -20,9 +20,9 @@ workflow:
   request:
     path: /fabrics
     method: POST
-    expected: [404]
+    expected: [400]
     data:
-      fabric: *fabric_minimal_implicit_values
+      fabric: *fabric_minimal_base_props
   expect: null
 
 - name: create fabric with parent_uuid
@@ -32,11 +32,11 @@ workflow:
     expected: [201]
     data:
       fabric:
-        <<: *fabric_minimal_implicit_values
+        <<: *fabric_minimal_base_props
         parent_uuid: beefbeef-beef-beef-beef-beefbeef0001 # default global-system-config uuid
   expect:
     fabric:
-      <<: *fabric_minimal_implicit_values
+      <<: *fabric_minimal_base_props
       name: default-fabric                # default name is filled
       display_name: default-fabric        # display_name defaults to name
       parent_type: global-system-config   # parent_type filled - gsc is only possible parent for fabric
@@ -49,7 +49,6 @@ workflow:
     expected: [204]
   expect: null
 
-
 - name: create fabric with fq_name
   request:
     path: /fabrics
@@ -57,15 +56,17 @@ workflow:
     expected: [201]
     data:
       fabric:
-        <<: *fabric_minimal_implicit_values
+        <<: *fabric_minimal_base_props
         fq_name: [default-global-system-config, my-fabric]
   expect:
     fabric:
-      <<: *fabric_minimal_implicit_values
-      name: my-fabric                     # default name is extracted from fqName
-      display_name: my-fabric             # display_name defaults to name
-      parent_type: global-system-config   # parent_type filled - gsc is only possible parent for fabric
+      <<: *fabric_minimal_base_props
+      name: my-fabric                                    # default name is extracted from fqName
+      display_name: my-fabric                            # display_name defaults to name
+      parent_type: global-system-config                  # parent_type filled - gsc is only possible parent for fabric
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001  # parent_uuid filled using fq_name
       fq_name: [default-global-system-config, my-fabric]
+
 
 - name: delete fabric
   request:
