@@ -39,6 +39,13 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 		}).Debug("bind failed on sync")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
+	err = events.Sort()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Debug("sorting request by dependency failed")
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
 	ctx := c.Request().Context()
 	responses, err := events.Process(ctx, service)
 	if err != nil {
