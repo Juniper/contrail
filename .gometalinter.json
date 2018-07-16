@@ -45,7 +45,7 @@
         "path",
         "line"
     ],
-    "Deadline": "5m",
+    "Deadline": "10m",
     "Concurrency": 2,
     "LineLength": 120
 }
