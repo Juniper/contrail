@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Following static analysis tools are disabled:
 # * dupl which consumes too much RAM and is too slow
+# * gotype and gotypex which perform redundant type-checks
 # * megacheck which uses staticcheck which consumes too much RAM
 # * safesql which does not omit skipped directories
 # * staticcheck which consumes too much RAM

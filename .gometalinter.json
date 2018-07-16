@@ -9,8 +9,6 @@
         "goimports",
         "golint",
         "gosimple",
-        "gotype",
-        "gotypex",
         "ineffassign",
         "interfacer",
         "lll",
