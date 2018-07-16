@@ -16,20 +16,22 @@
       loop_control:
         label: "{{ item.name }}"
       with_items: # Insert tasks here
+        - name: Debug
+          command: go version; echo $PWD
         - name: Install deps
           command: make deps
         - name: make generate
           command: make generate
         - name: make check
           command: make check
-        - name: make lint
-          command: make lint
         - name: reset db
           command: make reset_db
         - name: make test
           command: make test
         - name: Make docker
           command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
+        - name: make lint
+          command: make lint
 
     - name: Fix files ownerships
       file:

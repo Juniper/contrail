@@ -44,10 +44,10 @@ generate: reset_gen ## Run the source code generator
 	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
 	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
 	./bin/protoc -I $(GOPATH)/src/ -I $(GOPATH)/src/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto.md proto/github.com/Juniper/contrail/pkg/services/generated.proto proto/github.com/Juniper/contrail/pkg/models/generated.proto
-	go fmt github.com/Juniper/contrail/pkg/db
-	go fmt github.com/Juniper/contrail/pkg/models
-	go fmt github.com/Juniper/contrail/pkg/services
-	go fmt github.com/Juniper/contrail/pkg/compilationif
+#	go fmt github.com/Juniper/contrail/pkg/db
+#	go fmt github.com/Juniper/contrail/pkg/models
+#	go fmt github.com/Juniper/contrail/pkg/services
+#	go fmt github.com/Juniper/contrail/pkg/compilationif
 	mkdir -p pkg/types/mock
 	mockgen -destination=pkg/types/mock/gen_in_transaction_doer_mock.go -package=typesmock -source pkg/types/service.go InTransactionDoer
 	mkdir -p pkg/services/mock
