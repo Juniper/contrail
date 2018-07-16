@@ -65,18 +65,18 @@ func visitResource(uuid string, sorted []*Event,
 	if stateGraph[uuid] == visited {
 		return sorted, nil
 	}
-	stateGraph[uuid] = temporaryVisited
-	event := eventMap[uuid]
-	depends := event.GetResource().Depends()
-	for _, refUUID := range depends {
-		sorted, err = visitResource(refUUID, sorted, eventMap, stateGraph)
-		if err != nil {
-			return nil, err
+	if event, ok := eventMap[uuid]; ok {
+		stateGraph[uuid] = temporaryVisited
+		depends := event.GetResource().Depends()
+		for _, refUUID := range depends {
+			sorted, err = visitResource(refUUID, sorted, eventMap, stateGraph)
+			if err != nil {
+				return nil, err
+			}
 		}
-		break
+		stateGraph[uuid] = visited
+		sorted = append(sorted, event)
 	}
-	stateGraph[uuid] = visited
-	sorted = append(sorted, event)
 	return sorted, nil
 }
 
