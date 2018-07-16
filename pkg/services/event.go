@@ -76,7 +76,11 @@ func visitResource(uuid string, sorted []*Event,
 		break
 	}
 	stateGraph[uuid] = visited
-	sorted = append(sorted, event)
+	if event.Operation() == OperationDelete {
+		sorted = append([]*Event{event}, sorted...)
+	} else {
+		sorted = append(sorted, event)
+	}
 	return sorted, nil
 }
 
