@@ -46,7 +46,7 @@ type APIServer struct {
 
 // NewRunningAPIServer creates new running test API Server.
 // Call Close() method to release its resources.
-func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string) *APIServer {
+func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string, enableEtcdNotifier bool) *APIServer {
 	setViperConfig(map[string]interface{}{
 		"database.type":               dbDriver,
 		"database.host":               "localhost",
@@ -66,6 +66,7 @@ func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string) *APIServer
 		"keystone.store.expire":       3600,
 		"keystone.insecure":           true,
 		"log_level":                   "debug",
+		"server.notify_etcd":          enableEtcdNotifier,
 		"server.read_timeout":         10,
 		"server.write_timeout":        5,
 		"server.log_api":              true,
@@ -79,9 +80,12 @@ func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string) *APIServer
 	s, err := apisrv.NewServer()
 	require.NoError(t, err, "creating API Server failed")
 
-	ts := testutil.NewTestHTTPServer(s.Echo)
+	// TODO: instrumented-mysql driver used with database.debug cannot be registered twice
+	viper.Set("database.debug", false)
 
+	ts := testutil.NewTestHTTPServer(s.Echo)
 	viper.Set("keystone.authurl", ts.URL+authEndpointSuffix)
+
 	err = s.Init()
 	require.NoError(t, err, "initialization of test API Server failed")
 
