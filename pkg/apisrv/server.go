@@ -10,20 +10,20 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/cache"
+	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
-
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
-	"github.com/Juniper/contrail/pkg/db/cache"
-	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
-	log "github.com/sirupsen/logrus"
 )
 
 //Server represents Intent API Server.
@@ -217,7 +217,7 @@ func (s *Server) Init() (err error) {
 				log.Debug("malformed json response")
 			}
 			task := &Task{
-				Request: &Request{
+				Request: &client.Request{
 					Method:   c.Request().Method,
 					Path:     c.Request().URL.Path,
 					Expected: []int{c.Response().Status},

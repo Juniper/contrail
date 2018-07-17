@@ -5,11 +5,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/services"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
+
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 var (

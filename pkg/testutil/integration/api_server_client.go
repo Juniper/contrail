@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
@@ -36,7 +36,7 @@ const (
 
 // HTTPAPIClient is API Server client for tests purposes.
 type HTTPAPIClient struct {
-	*apisrv.Client
+	*client.HTTP
 	log *logrus.Entry
 }
 
@@ -44,7 +44,7 @@ type HTTPAPIClient struct {
 func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	l := pkglog.NewLogger("http-api-client")
 	l.WithFields(logrus.Fields{"endpoint": apiServerURL}).Debug("Connecting to API Server")
-	c := apisrv.NewClient(
+	c := client.NewHTTP(
 		apiServerURL,
 		apiServerURL+authEndpointSuffix,
 		AdminUserID,
@@ -67,8 +67,8 @@ func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	require.NoError(t, err, "connecting API Server failed")
 
 	return &HTTPAPIClient{
-		Client: c,
-		log:    l,
+		HTTP: c,
+		log:  l,
 	}
 }
 

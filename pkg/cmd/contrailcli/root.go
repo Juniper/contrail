@@ -3,15 +3,14 @@ package contrailcli
 import (
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/services"
-
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-
-	"github.com/spf13/cobra"
 )
 
 var configFile string
@@ -46,9 +45,9 @@ func initConfig() {
 
 }
 
-func getClient() (*apisrv.Client, error) {
+func getClient() (*client.HTTP, error) {
 	authURL := viper.GetString("keystone.auth_url")
-	client := apisrv.NewClient(
+	client := client.NewHTTP(
 		viper.GetString("client.endpoint"),
 		authURL,
 		viper.GetString("client.id"),

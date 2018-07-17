@@ -3,11 +3,12 @@ package contrailutil
 import (
 	"fmt"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/common"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 var inputPath string
@@ -43,7 +44,7 @@ func recordTest() {
 
 	testScenario, err := apisrv.LoadTest(inputPath, vars)
 	assertError(err, "failed to load test scenario")
-	clients := map[string]*apisrv.Client{}
+	clients := map[string]*client.HTTP{}
 
 	for key, client := range testScenario.Clients {
 		//Rewrite endpoint for test server

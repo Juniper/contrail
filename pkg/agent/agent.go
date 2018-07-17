@@ -9,14 +9,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/labstack/gommon/log"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/schema"
-	"github.com/labstack/gommon/log"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 // Agent constants.
@@ -61,7 +62,7 @@ type Config struct {
 type Agent struct {
 	config    *Config
 	backend   backend
-	APIServer *apisrv.Client
+	APIServer *client.HTTP
 	serverAPI *schema.API
 	// schemas map schema IDs to API Server schemas.
 	schemas map[string]*schema.Schema
@@ -88,7 +89,7 @@ func NewAgentByConfig() (*Agent, error) {
 
 // NewAgent creates Agent with given configuration.
 func NewAgent(c *Config) (*Agent, error) {
-	s := &apisrv.Client{
+	s := &client.HTTP{
 		Endpoint: c.Endpoint,
 		InSecure: c.InSecure,
 	}
@@ -132,7 +133,7 @@ func NewAgent(c *Config) (*Agent, error) {
 	}, nil
 }
 
-func fetchServerAPI(server *apisrv.Client, serverSchema string) (*schema.API, error) {
+func fetchServerAPI(server *client.HTTP, serverSchema string) (*schema.API, error) {
 	var api schema.API
 	for {
 		_, err := server.Read(serverSchema, &api)
