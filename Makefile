@@ -26,7 +26,7 @@ deps: ## Setup the go dependencies
 check: ## Check vendored dependencies
 	./tools/check.sh
 
-lint: ## Run gometalinter on the source code
+lint: ## Run linters on the source code
 	./tools/lint.sh
 
 nocovtest: COVERPROFILE = none
@@ -44,6 +44,7 @@ generate: reset_gen ## Run the source code generator
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto.md proto/github.com/Juniper/contrail/pkg/services/generated.proto proto/github.com/Juniper/contrail/pkg/models/generated.proto
+	go tool fix ./pkg/services/generated.pb.go
 	go fmt github.com/Juniper/contrail/pkg/db
 	go fmt github.com/Juniper/contrail/pkg/models
 	go fmt github.com/Juniper/contrail/pkg/services

@@ -12,4 +12,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+[[ -z `go tool fix --diff ./pkg/` ]]
+
 gometalinter --config .gometalinter.json ./...
