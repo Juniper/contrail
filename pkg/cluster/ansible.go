@@ -186,11 +186,11 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		return err
 	}
 
-	// string empty lines in instances yml content
+	// strip empty lines in instances yml content
 	regex, _ := regexp.Compile("\n[ \r\n\t]*\n")
 	contentString := regex.ReplaceAllString(string(content), "\n")
 	content = []byte(contentString)
-	err = a.appendToFile(destination, content)
+	err = a.writeToFile(destination, content)
 	if err != nil {
 		return err
 	}
@@ -198,7 +198,25 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	return nil
 }
 
+func (a *ansibleProvisioner) mockPlay(ansibleArgs []string) error {
+	playBookIndex := len(ansibleArgs) - 1
+	context := pongo2.Context{
+		"playBook":    ansibleArgs[playBookIndex],
+		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
+	}
+	content, err := a.applyTemplate("./test_data/test_ansible_playbook.tmpl", context)
+	if err != nil {
+		return err
+	}
+	destination := filepath.Join(a.getWorkingDir(), "executed_ansible_playbook.yml")
+	err = a.appendToFile(destination, content)
+	return err
+}
+
 func (a *ansibleProvisioner) play(ansibleArgs []string) error {
+	if a.cluster.config.Test {
+		return a.mockPlay(ansibleArgs)
+	}
 	repoDir := a.getAnsibleRepoDir()
 	cmdline := "ansible-playbook"
 	a.log.Infof("Playing playbook: %s %s",
@@ -230,6 +248,44 @@ func (a *ansibleProvisioner) play(ansibleArgs []string) error {
 	return nil
 }
 
+func (a *ansibleProvisioner) playInstancesProvision(ansibleArgs []string) error {
+	// play instances provisioning playbook
+	ansibleArgs = append(ansibleArgs, defaultInstanceProvPlay)
+	err := a.play(ansibleArgs)
+	return err
+}
+
+func (a *ansibleProvisioner) playInstancesConfig(ansibleArgs []string) error {
+	// play instances configuration playbook
+	ansibleArgs = append(ansibleArgs, defaultInstanceConfPlay)
+	err := a.play(ansibleArgs)
+	return err
+}
+
+func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) error {
+	// play orchestrator provisioning playbook
+	switch a.clusterData.clusterInfo.Orchestrator {
+	case "openstack":
+		switch a.clusterData.clusterInfo.ProvisioningAction {
+		case "ADD_COMPUTE":
+			ansibleArgs = append(ansibleArgs, "--tags nova")
+		}
+		ansibleArgs = append(ansibleArgs, defaultOpenstackProvPlay)
+	case "kubernetes":
+		ansibleArgs = append(ansibleArgs, defaultKubernetesProvPlay)
+	}
+	err := a.play(ansibleArgs)
+	return err
+}
+
+func (a *ansibleProvisioner) playContrailProvision(ansibleArgs []string) error {
+	// play contrail provisioning playbook
+	ansibleArgs = append(ansibleArgs, defaultContrailProvPlay)
+	err := a.play(ansibleArgs)
+	return err
+}
+
+// nolint: gocyclo
 func (a *ansibleProvisioner) playBook() error {
 	args := []string{"-i", "inventory/", "-e",
 		"config_file=" + a.getInstanceFile(),
@@ -238,48 +294,36 @@ func (a *ansibleProvisioner) playBook() error {
 		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
 		args = append(args, sudoArg)
 	}
-	action := a.clusterData.clusterInfo.ProvisioningAction
-	if action == "PROVISION" || action == "" {
-		// play instances provisioning playbook
-		args = append(args, defaultInstanceProvPlay)
-		err := a.play(args)
-		if err != nil {
+	switch a.clusterData.clusterInfo.ProvisioningAction {
+	case "PROVISION", "":
+		if err := a.playInstancesProvision(args); err != nil {
+			return err
+		}
+		if err := a.playInstancesConfig(args); err != nil {
+			return err
+		}
+		if err := a.playOrchestratorProvision(args); err != nil {
+			return err
+		}
+		if err := a.playContrailProvision(args); err != nil {
+			return err
+		}
+	case "UPGRADE":
+		if err := a.playContrailProvision(args); err != nil {
+			return err
+		}
+	case "ADD_COMPUTE":
+		if err := a.playInstancesConfig(args); err != nil {
+			return err
+		}
+		if err := a.playOrchestratorProvision(args); err != nil {
+			return err
+		}
+		if err := a.playContrailProvision(args); err != nil {
 			return err
 		}
 	}
-
-	// play instances configuration playbook
-	args = args[:len(args)-1]
-	args = append(args, defaultInstanceConfPlay)
-	err := a.play(args)
-	if err != nil {
-		return err
-	}
-
-	// play orchestrator provisioning playbook
-	stripArgsCount := 1
-	args = args[:len(args)-stripArgsCount]
-	switch a.clusterData.clusterInfo.Orchestrator {
-	case "openstack":
-		switch action {
-		case "ADD_COMPUTE":
-			args = append(args, "--tags nova")
-			stripArgsCount++
-		}
-		args = append(args, defaultOpenstackProvPlay)
-	case "kubernetes":
-		args = append(args, defaultKubernetesProvPlay)
-	}
-	err = a.play(args)
-	if err != nil {
-		return err
-	}
-
-	// play contrail provisioning playbook
-	args = args[:len(args)-stripArgsCount]
-	args = append(args, defaultContrailProvPlay)
-	err = a.play(args)
-	return err
+	return nil
 }
 
 // nolint: gocyclo
@@ -324,12 +368,10 @@ func (a *ansibleProvisioner) createCluster() error {
 		return err
 	}
 
-	if !a.cluster.config.Test {
-		err = a.playBook()
-		if err != nil {
-			a.reporter.reportStatus(status)
-			return err
-		}
+	err = a.playBook()
+	if err != nil {
+		a.reporter.reportStatus(status)
+		return err
 	}
 
 	status[statusField] = statusCreated
@@ -368,13 +410,11 @@ func (a *ansibleProvisioner) updateCluster() error {
 		a.reporter.reportStatus(status)
 		return err
 	}
-	if !a.cluster.config.Test {
-		err = a.playBook()
-		if err != nil {
-			status[statusField] = statusUpdateFailed
-			a.reporter.reportStatus(status)
-			return err
-		}
+	err = a.playBook()
+	if err != nil {
+		status[statusField] = statusUpdateFailed
+		a.reporter.reportStatus(status)
+		return err
 	}
 
 	status[statusField] = statusUpdated
