@@ -17,7 +17,7 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
         mysql-client \
         postgresql-client \
         git \
-        ansible \
+        ansible-2.4.2.0\
         docker \
         python-pip
 
