@@ -1,12 +1,12 @@
 package types
 
 import (
+	"context"
 	"net"
 	"strings"
 
 	protobuf "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"

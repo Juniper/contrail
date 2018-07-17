@@ -1,6 +1,7 @@
 package types
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"

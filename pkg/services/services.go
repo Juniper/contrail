@@ -1,9 +1,8 @@
 package services
 
 import (
+	"context"
 	"time"
-
-	context "golang.org/x/net/context"
 )
 
 // Chain setup chain of services.

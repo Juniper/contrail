@@ -1,11 +1,11 @@
 package services
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
-	context "golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"

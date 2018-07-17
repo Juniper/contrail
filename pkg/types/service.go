@@ -1,7 +1,7 @@
 package types
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"

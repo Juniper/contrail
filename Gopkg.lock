@@ -755,7 +755,6 @@
     "github.com/stretchr/testify/require",
     "github.com/twinj/uuid",
     "github.com/volatiletech/sqlboiler/strmangle",
-    "golang.org/x/net/context",
     "golang.org/x/net/websocket",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
