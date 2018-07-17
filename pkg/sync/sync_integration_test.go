@@ -58,8 +58,7 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	hc.CreateVirtualNetwork(t, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
 	hc.CreateVirtualNetwork(t, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
 	defer deleteVirtualNetworksFromAPIServer(t, hc, vnUUIDs)
-	defer ec.DeleteKey(t, integration.JSONEtcdKey(integration.VirtualNetworkSchemaID, ""),
-		clientv3.WithPrefix()) // delete all VNs
+	defer ec.DeleteVirtualNetwork(t, "", clientv3.WithPrefix()) // delete all VNs
 
 	vnRed := hc.GetVirtualNetwork(t, vnRedUUID)
 	vnGreen := hc.GetVirtualNetwork(t, vnGreenUUID)

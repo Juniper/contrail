@@ -69,6 +69,11 @@ func (e *EtcdClient) DeleteSecurityGroup(t *testing.T, uuid string, opts ...clie
 	e.DeleteKey(t, JSONEtcdKey(SecurityGroupSchemaID, uuid), opts...)
 }
 
+// DeleteVirtualNetwork deletes VirtualNetwork resource.
+func (e *EtcdClient) DeleteVirtualNetwork(t *testing.T, uuid string, opts ...clientv3.OpOption) {
+	e.DeleteKey(t, JSONEtcdKey(VirtualNetworkSchemaID, uuid), opts...)
+}
+
 // GetKey gets etcd key.
 func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption) *clientv3.GetResponse {
 	ctx, cancel := context.WithTimeout(context.Background(), etcdRequestTimeout)
