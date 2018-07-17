@@ -1,0 +1,149 @@
+# TODO: change
+#uuid: 3dfbd820-e4fc-414f-b1d9-d720ebe93cd8
+parent_uuid: 950b2912-a742-47c8-acdb-ab361f173867
+parent_type: project
+fq_name:
+- default-domain
+- project-blue
+- default
+id_perms:
+  enable: true
+  description: Default security group
+  creator: ''
+  user_visible: true
+  permissions:
+    owner: cloud-admin
+    owner_access: 7
+    other_access: 7
+    group: cloud-admin-group
+    group_access: 7
+  uuid:
+    uuid_mslong: 4466401091260269000
+    uuid_lslong: -9223372036854776000
+display_name: default
+annotations: null
+perms2:
+  owner: 950b2912-a742-47c8-acdb-ab361f173867
+  owner_access: 7
+  global_access: 0
+  share: []
+configuration_version: 0
+security_group_entries:
+  policy_rule:
+  - direction: '>'
+    protocol: any
+    dst_addresses:
+    - security_group: local
+      subnet: null
+      network_policy: ''
+      subnet_list: []
+      virtual_network: ''
+    action_list: null
+    created: ''
+    rule_uuid: bdf042c0-d2c2-4241-ba15-1c702c896e03
+    dst_ports:
+    - end_port: 65535
+      start_port: 0
+    application: []
+    last_modified: ''
+    ethertype: IPv4
+    src_addresses:
+    - security_group: default-domain:project-blue:default
+      subnet: null
+      network_policy: ''
+      subnet_list: []
+      virtual_network: ''
+    rule_sequence: null
+    src_ports:
+    - end_port: 65535
+      start_port: 0
+  - direction: '>'
+    protocol: any
+    dst_addresses:
+    - security_group: local
+      subnet: null
+      network_policy: ''
+      subnet_list: []
+      virtual_network: ''
+    action_list: null
+    created: ''
+    rule_uuid: 1f77914a-0863-4f0d-888a-aee6a1988f6a
+    dst_ports:
+    - end_port: 65535
+      start_port: 0
+    application: []
+    last_modified: ''
+    ethertype: IPv6
+    src_addresses:
+    - security_group: default-domain:project-blue:default
+      subnet: null
+      network_policy: ''
+      subnet_list: []
+      virtual_network: ''
+    rule_sequence: null
+    src_ports:
+    - end_port: 65535
+      start_port: 0
+  - direction: '>'
+    protocol: any
+    dst_addresses:
+    - security_group: ''
+      subnet:
+        ip_prefix: 0.0.0.0
+        ip_prefix_len: 0
+      network_policy: ''
+      subnet_list: []
+      virtual_network: ''
+    action_list: null
+    created: ''
+    rule_uuid: b7c07625-e03e-43b9-a9fc-d11a6c863cc6
+    dst_ports:
+    - end_port: 65535
+      start_port: 0
+    application: []
+    last_modified: ''
+    ethertype: IPv4
+    src_addresses:
+    - security_group: local
+      subnet: null
+      network_policy: ''
+      subnet_list: []
+      virtual_network: ''
+    rule_sequence: null
+    src_ports:
+    - end_port: 65535
+      start_port: 0
+  - direction: '>'
+    protocol: any
+    dst_addresses:
+    - security_group: ''
+      subnet:
+        ip_prefix: '::'
+        ip_prefix_len: 0
+      network_policy: ''
+      subnet_list: []
+      virtual_network: ''
+    action_list: null
+    created: ''
+    rule_uuid: 6a5f3026-02bc-4ba1-abde-39abafd21f47
+    dst_ports:
+    - end_port: 65535
+      start_port: 0
+    application: []
+    last_modified: ''
+    ethertype: IPv6
+    src_addresses:
+    - security_group: local
+      subnet: null
+      network_policy: ''
+      subnet_list: []
+      virtual_network: ''
+    rule_sequence: null
+    src_ports:
+    - end_port: 65535
+      start_port: 0
+configured_security_group_id: 0
+security_group_id: 8000002
+security_logging_object_backrefs: []
+virtual_machine_interface_backrefs: []
+access_control_lists: []
