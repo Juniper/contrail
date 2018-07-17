@@ -1,0 +1,102 @@
+#uuid: ecfcd62d-1b7c-482e-9fdb-951b33e6acdf
+#parent_uuid: 3dfbd820-e4fc-414f-b1d9-d720ebe93cd8
+parent_type: security-group
+fq_name:
+- default-domain
+- project-blue
+- default
+- egress-access-control-list
+id_perms:
+  enable: true
+  description: ''
+  creator: ''
+  user_visible: true
+  permissions:
+    owner: cloud-admin
+    owner_access: 7
+    other_access: 7
+    group: cloud-admin-group
+    group_access: 7
+  uuid:
+    uuid_mslong: -9223372036854776000
+    uuid_lslong: -9223372036854776000
+display_name: egress-access-control-list
+annotations: null
+perms2:
+  owner: 950b2912-a742-47c8-acdb-ab361f173867
+  owner_access: 7
+  global_access: 0
+  share: []
+configuration_version: 0
+access_control_list_hash: 0
+access_control_list_entries:
+  dynamic: false
+  acl_rule:
+  #- rule_uuid: b7c07625-e03e-43b9-a9fc-d11a6c863cc6
+  - match_condition:
+      src_port:
+        end_port: 65535
+        start_port: 0
+      src_address:
+        security_group: ''
+        subnet: null
+        network_policy: ''
+        subnet_list: []
+        virtual_network: ''
+      ethertype: IPv4
+      dst_address:
+        security_group: ''
+        subnet:
+          ip_prefix: 0.0.0.0
+          ip_prefix_len: 0
+        network_policy: ''
+        subnet_list: []
+        virtual_network: ''
+      dst_port:
+        end_port: 65535
+        start_port: 0
+      protocol: any
+    direction: ''
+    action_list:
+      gateway_name: ''
+      log: false
+      alert: false
+      qos_action: ''
+      assign_routing_instance: ''
+      mirror_to: null
+      simple_action: pass
+      apply_service: []
+  #- rule_uuid: 6a5f3026-02bc-4ba1-abde-39abafd21f47
+  -  match_condition:
+      src_port:
+        end_port: 65535
+        start_port: 0
+      src_address:
+        security_group: ''
+        subnet: null
+        network_policy: ''
+        subnet_list: []
+        virtual_network: ''
+      ethertype: IPv6
+      dst_address:
+        security_group: ''
+        subnet:
+          ip_prefix: '::'
+          ip_prefix_len: 0
+        network_policy: ''
+        subnet_list: []
+        virtual_network: ''
+      dst_port:
+        end_port: 65535
+        start_port: 0
+      protocol: any
+    direction: ''
+    action_list:
+      gateway_name: ''
+      log: false
+      alert: false
+      qos_action: ''
+      assign_routing_instance: ''
+      mirror_to: null
+      simple_action: pass
+      apply_service: []

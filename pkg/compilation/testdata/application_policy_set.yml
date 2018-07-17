@@ -1,0 +1,34 @@
+#uuid: 6fc384e6-5335-41b5-9ee0-47e8dee055c6
+parent_uuid: 950b2912-a742-47c8-acdb-ab361f173867
+parent_type: project
+fq_name:
+- default-domain
+- project-blue
+- default-application-policy-set
+id_perms:
+  enable: true
+  description: ''
+  creator: ''
+  user_visible: true
+  permissions:
+    owner: contrail-api
+    owner_access: 7
+    other_access: 7
+    group: admin
+    group_access: 7
+  uuid:
+    uuid_mslong: 8053426683441922000
+    uuid_lslong: -9223372036854776000
+display_name: default-application-policy-set
+annotations: null
+perms2:
+  owner: 950b2912a74247c8acdbab361f173867
+  owner_access: 7
+  global_access: 0
+  share: []
+configuration_version: 0
+all_applications: true
+pending_delete: false
+firewall_policy_refs: []
+global_vrouter_config_refs: []
+project_backrefs: []
