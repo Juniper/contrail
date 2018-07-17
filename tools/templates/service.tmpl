@@ -56,6 +56,8 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     if model.UUID == "" {
         model.UUID = uuid.NewV4().String()
     }
+    log.Debugf("UUID: %v", model.UUID)
+
     if model.Name == "" {
         if fqName := model.FQName; len(fqName) > 0 {
             model.Name = fqName[len(fqName)-1]
@@ -63,14 +65,19 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
             model.Name = "default-{{ schema.TypeName }}"
         }
     }
+    log.Debugf("Name: %v", model.Name)
+
     if model.DisplayName == "" {
         model.DisplayName = model.Name
     }
+
+    log.Debugf("DisplayName: %v", model.DisplayName)
 
 {% if schema.Parents | length == 1 %}{# There is only one parent, so "for" will extract him #}
     if model.ParentType == "" { {% for key, reference in schema.Parents %}
         model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}
     }{% endif %}
+    log.Debugf("ParentType: %v", model.ParentType)
 
     if model.FQName == nil {
 {% if schema.Parents | length == 0 %}
@@ -80,7 +87,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
             // fqName is empty but parentUUID is not - get parent fqName
             metadata, err := service.MetadataGetter.GetMetaData(ctx, model.ParentUUID, nil)
             if err != nil {
-                return nil, err
+                return nil, common.ErrorBadRequest("Please provide correct ParentUUID or FQName")
             }
             model.FQName = append(metadata.FQName, model.Name)
         } else if model.ParentType != "" {
@@ -89,6 +96,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
         }
 {% endif %}
     }
+    log.Debugf("FQName: %v", model.FQName)
 
     if model.ParentUUID == "" {
         // fqName must be have at least 2 elements to contain parent fqName
@@ -97,11 +105,13 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
             parentFQName := model.FQName[:l-1]
             metadata, err := service.MetadataGetter.GetMetaData(ctx, "", parentFQName)
             if err != nil {
-                return nil, err
+                return nil, common.ErrorBadRequest("Please provide correct FQName or ParentUUID")
             }
             model.ParentUUID = metadata.UUID
         }
     }
+
+    log.Debugf("ParentUUID: %v", model.ParentUUID)
 
     model.Perms2 = &models.PermType2{}
     model.Perms2.Owner = auth.ProjectID()
@@ -112,6 +122,8 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
         log.Error(validationError)
         return nil, common.ErrorBadRequestf("%v", validationError)
     }
+
+    log.Debug("Type Validation passed")
 
     return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
 }
