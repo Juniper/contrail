@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -53,7 +54,7 @@ func TestBaseProperties(t *testing.T) {
 
 func TestGRPC(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
-	restClient := NewClient(
+	restClient := client.NewHTTP(
 		TestServer.URL,
 		TestServer.URL+"/keystone/v3",
 		"TestGRPC",

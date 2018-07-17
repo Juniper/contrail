@@ -1,10 +1,10 @@
-package common
+package testutil
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 var actualYAML = `
@@ -47,7 +47,6 @@ nilValue: $null
 `
 
 func TestAssertEquals(t *testing.T) {
-
 	var actualData interface{}
 	err := yaml.Unmarshal([]byte(actualYAML), &actualData)
 	assert.NoError(t, err, "no error expected")

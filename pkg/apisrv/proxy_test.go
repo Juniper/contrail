@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/testutil"
 )
 
 const (
@@ -85,7 +85,7 @@ func verifyProxy(t *testing.T, testScenario *TestScenario, url string,
 			fmt.Printf("Reading: %s, Response: %s", url, err)
 			return false
 		}
-		ok := common.AssertEqual(t,
+		ok := testutil.AssertEqual(t,
 			map[string]interface{}{key: clusterName + expected},
 			response,
 			fmt.Sprintf("Unexpected Response: %s", response))

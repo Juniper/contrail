@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
+
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 // Config represents Cluster configuration.
@@ -53,7 +54,7 @@ type Config struct { // nolint: maligned
 type Cluster struct {
 	managerType string
 	config      *Config
-	APIServer   *apisrv.Client
+	APIServer   *client.HTTP
 	log         *logrus.Entry
 }
 
@@ -75,7 +76,7 @@ func NewClusterManager(configPath string) (*Cluster, error) {
 
 // NewCluster creates Cluster with given configuration.
 func NewCluster(c *Config) (*Cluster, error) {
-	s := &apisrv.Client{
+	s := &client.HTTP{
 		Endpoint: c.Endpoint,
 		InSecure: c.InSecure,
 	}

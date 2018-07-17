@@ -8,9 +8,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 //Version is version for schema format.

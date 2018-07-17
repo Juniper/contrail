@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -16,10 +16,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/testutil"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,7 +38,7 @@ var APIServer *Server
 // SetupAndRunTest does test setup and run tests for
 // all supported db types.
 func SetupAndRunTest(m *testing.M) {
-	err := common.InitConfig()
+	err := initViperConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,6 +54,20 @@ func SetupAndRunTest(m *testing.M) {
 		viper.Set("database.dialect", config["dialect"])
 		RunTestForDB(m, viper.GetString("database.type"))
 	}
+}
+
+func initViperConfig() error {
+	viper.SetConfigName("contrail")
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("../../../sample")
+	viper.AddConfigPath("../../sample")
+	viper.AddConfigPath("../sample")
+	viper.AddConfigPath("./sample")
+	viper.AddConfigPath("./test_data")
+	viper.SetEnvPrefix("contrail")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+	return viper.ReadInConfig()
 }
 
 // RunTestForDB runs tests for all supported DB
@@ -119,20 +134,20 @@ func (s *Server) ForceProxyUpdate() {
 
 //Task has API request and expected response.
 type Task struct {
-	Name    string      `yaml:"name,omitempty"`
-	Client  string      `yaml:"client,omitempty"`
-	Request *Request    `yaml:"request,omitempty"`
-	Expect  interface{} `yaml:"expect,omitempty"`
+	Name    string          `yaml:"name,omitempty"`
+	Client  string          `yaml:"client,omitempty"`
+	Request *client.Request `yaml:"request,omitempty"`
+	Expect  interface{}     `yaml:"expect,omitempty"`
 }
 
 //TestScenario has a list of tasks.
 type TestScenario struct {
-	Name        string              `yaml:"name,omitempty"`
-	Description string              `yaml:"description,omitempty"`
-	Tables      []string            `yaml:"tables,omitempty"`
-	Clients     map[string]*Client  `yaml:"clients,omitempty"`
-	Cleanup     []map[string]string `yaml:"cleanup,omitempty"`
-	Workflow    []*Task             `yaml:"workflow,omitempty"`
+	Name        string                  `yaml:"name,omitempty"`
+	Description string                  `yaml:"description,omitempty"`
+	Tables      []string                `yaml:"tables,omitempty"`
+	Clients     map[string]*client.HTTP `yaml:"clients,omitempty"`
+	Cleanup     []map[string]string     `yaml:"cleanup,omitempty"`
+	Workflow    []*Task                 `yaml:"workflow,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -161,7 +176,7 @@ type trackedResource struct {
 	Client string
 }
 
-type clientsList map[string]*Client
+type clientsList map[string]*client.HTTP
 
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
 func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
@@ -182,7 +197,7 @@ func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario) func() {
 	return cleanupFunc
 }
 
-func cleanupTrackedResources(tracked []trackedResource, clients map[string]*Client) {
+func cleanupTrackedResources(tracked []trackedResource, clients map[string]*client.HTTP) {
 	log.Infof("There are %v resources to clean (in clean tests should be ZERO)", len(tracked))
 	for i, tr := range tracked {
 		log.Warnf("POST clean up resource %v / %v: %v {clien:t %v}", i+1, len(tracked), tr.Path, tr.Client)
@@ -244,7 +259,7 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
 
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
-		ok := common.AssertEqual(t, task.Expect, task.Request.Output,
+		ok := testutil.AssertEqual(t, task.Expect, task.Request.Output,
 			fmt.Sprintf("In test scenario '%v' task' %v' failed", testScenario.Name, task))
 		if !ok {
 			log.Errorf("Assertion error was: %+v", err)
