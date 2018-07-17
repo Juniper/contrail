@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	pkglog "github.com/Juniper/contrail/pkg/log"
@@ -20,24 +21,32 @@ import (
 
 // Resource constants
 const (
-	DomainType                 = "domain"
-	DefaultDomainUUID          = "beefbeef-beef-beef-beef-beefbeef0002"
-	ProjectType                = "project"
-	ProjectSchemaID            = "project"
-	ProjectSingularPath        = "/project"
-	ProjectPluralPath          = "/projects"
-	NetworkIPAMSchemaID        = "network_ipam"
-	NetworkIpamSingularPath    = "/network-ipam"
-	NetworkIpamPluralPath      = "/network-ipams"
-	VirtualNetworkSchemaID     = "virtual_network"
-	VirtualNetworkSingularPath = "/virtual-network"
-	VirtualNetworkPluralPath   = "/virtual-networks"
+	AccessControlListSchemaID    = "access-control-list"
+	ApplicationPolicySetSchemaID = "application-policy-set"
+	DomainType                   = "domain"
+	DefaultDomainUUID            = "beefbeef-beef-beef-beef-beefbeef0002"
+	NetworkIPAMSchemaID          = "network_ipam"
+	NetworkIpamSingularPath      = "/network-ipam"
+	NetworkIpamPluralPath        = "/network-ipams"
+	ProjectType                  = "project"
+	ProjectSchemaID              = "project"
+	ProjectSingularPath          = "/project"
+	ProjectPluralPath            = "/projects"
+	SecurityGroupSchemaID        = "security_group"
+	SecurityGroupSingularPath    = "/security-group"
+	SecurityGroupPluralPath      = "/security-groups"
+	VirtualNetworkSchemaID       = "virtual_network"
+	VirtualNetworkSingularPath   = "/virtual-network"
+	VirtualNetworkPluralPath     = "/virtual-networks"
+)
+
+const (
+	fqNameToIDPath = "/fqname-to-id"
 )
 
 // HTTPAPIClient is API Server client for tests purposes.
 type HTTPAPIClient struct {
 	*client.HTTP
-	log *logrus.Entry
 }
 
 // NewHTTPAPIClient creates HTTP client of API Server.
@@ -68,8 +77,40 @@ func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 
 	return &HTTPAPIClient{
 		HTTP: c,
-		log:  l,
 	}
+}
+
+type fqNameToIDLegacyRequest struct {
+	FQName []string `json:"fq_name"`
+	Type   string   `json:"type"`
+}
+
+// FQNameToID performs FQName to ID request.
+func (c *HTTPAPIClient) FQNameToID(t *testing.T, fqName []string, resourceType string) (uuid string) {
+	var responseData apisrv.FqNameToIDResponse
+	r, err := c.Do(
+		echo.POST,
+		fqNameToIDPath,
+		&fqNameToIDLegacyRequest{
+			FQName: fqName,
+			Type:   resourceType,
+		},
+		&responseData,
+		[]int{http.StatusOK},
+	)
+	assert.NoError(t, err, "getting resource failed\n response: %+v\n responseData: %+v", r, responseData)
+
+	return responseData.UUID
+}
+
+// CreateNetworkIPAM creates NetworkIPAM resource.
+func (c *HTTPAPIClient) CreateNetworkIPAM(t *testing.T, ni *models.NetworkIpam) {
+	c.CreateResource(t, NetworkIpamPluralPath, &services.CreateNetworkIpamRequest{NetworkIpam: ni})
+}
+
+// DeleteNetworkIPAM deletes NetworkIPAM resource.
+func (c *HTTPAPIClient) DeleteNetworkIPAM(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(NetworkIpamSingularPath, uuid))
 }
 
 // CreateProject creates Project resource.
@@ -82,14 +123,14 @@ func (c *HTTPAPIClient) DeleteProject(t *testing.T, uuid string) {
 	c.DeleteResource(t, path.Join(ProjectSingularPath, uuid))
 }
 
-// CreateNetworkIPAM creates NetworkIPAM resource.
-func (c *HTTPAPIClient) CreateNetworkIPAM(t *testing.T, ni *models.NetworkIpam) {
-	c.CreateResource(t, NetworkIpamPluralPath, &services.CreateNetworkIpamRequest{NetworkIpam: ni})
+// CreateSecurityGroup creates SecurityGroup resource.
+func (c *HTTPAPIClient) CreateSecurityGroup(t *testing.T, p *models.SecurityGroup) {
+	c.CreateResource(t, SecurityGroupPluralPath, &services.CreateSecurityGroupRequest{SecurityGroup: p})
 }
 
-// DeleteNetworkIPAM deletes NetworkIPAM resource.
-func (c *HTTPAPIClient) DeleteNetworkIPAM(t *testing.T, uuid string) {
-	c.DeleteResource(t, path.Join(NetworkIpamSingularPath, uuid))
+// DeleteSecurityGroup deletes SecurityGroup resource.
+func (c *HTTPAPIClient) DeleteSecurityGroup(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(SecurityGroupSingularPath, uuid))
 }
 
 // CreateVirtualNetwork creates VirtualNetwork resource.
@@ -117,39 +158,40 @@ func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData in
 		requestData,
 		&responseData,
 	)
-	c.log.WithFields(logrus.Fields{
-		"requestData":  requestData,
-		"response":     r,
-		"responseData": responseData,
-	}).Debug("Got Create response")
-	assert.NoError(t, err, fmt.Sprintf("creating resource failed\n requestData: %v\n response: %+v", requestData, r))
+	assert.NoError(
+		t,
+		err,
+		fmt.Sprintf("creating resource failed\n requestData: %+v\n "+
+			"response: %+v\n responseData: %+v", requestData, r, responseData),
+	)
 }
 
 // GetResource gets resource.
 func (c *HTTPAPIClient) GetResource(t *testing.T, path string, responseData interface{}) {
 	r, err := c.Read(path, &responseData)
-	c.log.WithFields(logrus.Fields{
-		"response":     r,
-		"responseData": responseData,
-	}).Debug("Got Get response")
-	assert.NoError(t, err, fmt.Sprintf("getting resource failed\n response: %+v", r))
+	assert.NoError(
+		t,
+		err,
+		fmt.Sprintf("getting resource failed\n response: %+v\n responseData: %+v", r, responseData),
+	)
 }
 
 // DeleteResource deletes resource.
 func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
-	r, err := c.Delete(path, nil)
-	c.log.WithField("response", r).Debug("Got Delete response")
-	assert.NoError(t, err, "deleting resource failed\n response: %+v", r)
+	var responseData interface{}
+	r, err := c.Delete(path, &responseData)
+	assert.NoError(t, err, "deleting resource failed\n response: %+v\n responseData: %+v", r, responseData)
 }
 
 // CheckResourceDoesNotExist checks that there is no resource with given path.
 func (c *HTTPAPIClient) CheckResourceDoesNotExist(t *testing.T, path string) {
+	var responseData interface{}
 	r, err := c.Do(
 		echo.GET,
 		path,
 		nil,
-		nil,
+		&responseData,
 		[]int{http.StatusNotFound},
 	)
-	assert.NoError(t, err, "getting resource failed\n response: %+v", r)
+	assert.NoError(t, err, "getting resource failed\n response: %+v\n responseData: %+v", r, responseData)
 }
