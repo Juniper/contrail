@@ -55,13 +55,27 @@ func (p *provisionCommon) applyTemplate(templateSrc string, context map[string]i
 	return output, nil
 }
 
-func (p *provisionCommon) appendToFile(path string, content []byte) error {
+func (p *provisionCommon) writeToFile(path string, content []byte) error {
 	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
 	err = ioutil.WriteFile(path, content, os.FileMode(0600))
+	return err
+}
+
+func (p *provisionCommon) appendToFile(path string, content []byte) error {
+	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(content)
 	return err
 }
 
