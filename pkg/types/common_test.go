@@ -1,8 +1,9 @@
 package types
 
 import (
+	"context"
+
 	"github.com/golang/mock/gomock"
-	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"

@@ -1,17 +1,17 @@
 package cassandra
 
 import (
+	"context"
+	"encoding/json"
 	"io/ioutil"
 	"strings"
 	"time"
 
-	"encoding/json"
-
-	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gocql/gocql"
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
-	"golang.org/x/net/context"
+
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (

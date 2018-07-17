@@ -1,10 +1,10 @@
 package types
 
 import (
+	"context"
 	"net"
 
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"

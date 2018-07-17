@@ -5,3 +5,5 @@ set -o nounset
 set -o pipefail
 
 dep ensure -dry-run -no-vendor
+
+[[ -z `go tool fix --diff ./pkg/` ]]

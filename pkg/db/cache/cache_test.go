@@ -1,30 +1,30 @@
 package cache
 
 import (
+	"context"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 )
 
 const numEvent = 4
 const timeOut = 10 * time.Second
 
 func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB) {
-	ctx, _ := context.WithTimeout(context.Background(), timeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	watcher, _ := cache.AddWatcher(ctx, 0)
 
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
+		defer cancel()
 		for i := 0; i < numEvent; i++ {
 			select {
 			case <-ctx.Done():
@@ -66,7 +66,7 @@ func notifyDelete(cache *DB, version uint64) {
 }
 
 func TestCache(t *testing.T) {
-	log.SetLevel(logrus.DebugLevel)
+	log.SetLevel(log.DebugLevel)
 	cache := New(1)
 	wg := &sync.WaitGroup{}
 
