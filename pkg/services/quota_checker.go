@@ -1,8 +1,9 @@
 package services
 
 import (
+	"context"
+
 	log "github.com/sirupsen/logrus"
-	context "golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/models"
 )

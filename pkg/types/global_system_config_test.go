@@ -1,13 +1,13 @@
 package types
 
 import (
+	"context"
 	"math"
 	"testing"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"

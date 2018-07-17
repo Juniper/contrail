@@ -1,7 +1,7 @@
 package types
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
