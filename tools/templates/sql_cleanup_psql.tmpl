@@ -1,0 +1,5 @@
+truncate table metadata int_pool ipaddress_pool cascade;
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+truncate table {{ schema.ID | lower }} cascade;
+{% endif %}{% endfor %}

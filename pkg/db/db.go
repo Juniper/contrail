@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/ExpansiveWorlds/instrumentedsql"
-	"github.com/Juniper/contrail/pkg/services"
 	"github.com/go-sql-driver/mysql"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 // Database drivers
@@ -151,52 +152,21 @@ func rollbackOnPanic(tx *sql.Tx) {
 	}
 }
 
-func makeConnection(dbType, databaseConnection string) (*sql.DB, error) {
-	if viper.GetBool("database.debug") {
-		logger := instrumentedsql.LoggerFunc(logQuery)
-		switch dbType {
-		case MYSQL:
-			dbType = "instrumented-" + dbType
-			sql.Register(dbType, instrumentedsql.WrapDriver(&mysql.MySQLDriver{}, instrumentedsql.WithLogger(logger)))
-		case POSTGRES:
-			dbType = "instrumented-" + dbType
-			sql.Register(dbType, instrumentedsql.WrapDriver(&pq.Driver{}, instrumentedsql.WithLogger(logger)))
-		}
-	}
-
-	return sql.Open(dbType, databaseConnection)
-}
-
-func logQuery(_ context.Context, command string, args ...interface{}) {
-	log.Debug(command, args)
-}
-
 //ConnectDB connect to the db based on viper configuration.
 func ConnectDB() (*sql.DB, error) {
-	driver := viper.GetString("database.type")
-	maxConn := viper.GetInt("database.max_open_conn")
-
-	var dbDSNFormat string
-	switch driver {
-	case DriverPostgreSQL:
-		dbDSNFormat = dbDSNFormatPostgreSQL
-	case DriverMySQL:
-		dbDSNFormat = dbDSNFormatMySQL
-	default:
-		return nil, errors.New("undefined database type")
-	}
-
-	dsn := fmt.Sprintf(
-		dbDSNFormat,
-		viper.GetString("database.user"),
-		viper.GetString("database.password"),
-		viper.GetString("database.host"),
-		viper.GetString("database.name"),
-	)
-	db, err := makeConnection(driver, dsn)
+	db, err := OpenConnection(ConnectionConfig{
+		Driver:   viper.GetString("database.type"),
+		User:     viper.GetString("database.user"),
+		Password: viper.GetString("database.password"),
+		Host:     viper.GetString("database.host"),
+		Name:     viper.GetString("database.name"),
+		Debug:    viper.GetBool("database.debug"),
+	})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open db connection")
+		return nil, err
 	}
+
+	maxConn := viper.GetInt("database.max_open_conn")
 	db.SetMaxOpenConns(maxConn)
 	db.SetMaxIdleConns(maxConn)
 
@@ -211,4 +181,76 @@ func ConnectDB() (*sql.DB, error) {
 		log.Printf("Retrying db connection... (%s)", err)
 	}
 	return nil, fmt.Errorf("failed to open db connection")
+}
+
+// ConnectionConfig holds DB connection configuration.
+type ConnectionConfig struct {
+	Driver   string
+	User     string
+	Password string
+	Host     string
+	Name     string
+	Debug    bool
+}
+
+// OpenConnection opens DB connection.
+func OpenConnection(c ConnectionConfig) (*sql.DB, error) {
+	if c.Debug {
+		c.Driver = wrapDriver(c.Driver)
+	}
+
+	dsn, err := dataSourceName(&c)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := sql.Open(c.Driver, dsn)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open DB connection")
+	}
+	return db, nil
+}
+
+func logQuery(_ context.Context, command string, args ...interface{}) {
+	log.Debug(command, args)
+}
+
+func wrapDriver(driver string) string {
+	switch driver {
+	case MYSQL:
+		driver = "instrumented-" + driver
+		sql.Register(driver, instrumentedsql.WrapDriver(
+			&mysql.MySQLDriver{},
+			instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery))),
+		)
+		return driver
+	case POSTGRES:
+		driver = "instrumented-" + driver
+		sql.Register(driver, instrumentedsql.WrapDriver(
+			&pq.Driver{},
+			instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery))),
+		)
+		return driver
+	}
+	return driver
+}
+
+func dataSourceName(c *ConnectionConfig) (string, error) {
+	f, err := getDSNFormat(c.Driver)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Name), nil
+}
+
+func getDSNFormat(driver string) (string, error) {
+	switch driver {
+	case DriverPostgreSQL:
+		return dbDSNFormatPostgreSQL, nil
+	case DriverMySQL:
+		return dbDSNFormatMySQL, nil
+	default:
+		return "", errors.Errorf("undefined database driver: %v", driver)
+	}
 }

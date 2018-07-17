@@ -1,0 +1,22 @@
+SET FOREIGN_KEY_CHECKS=0;
+
+truncate table metadata;
+truncate table int_pool;
+truncate table ipaddress_pool;
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+truncate table {{ schema.ID | lower }};
+truncate table tenant_share_{{ schema.ID | lower }};
+truncate table domain_share_{{ schema.ID | lower }};
+
+{% for linkTo, reference in schema.References %}
+truncate table {{ reference.Table }};
+{% endfor %}
+
+{% for linkTo, reference in schema.Parents %}
+truncate table {{ reference.Table }};
+{% endfor %}
+
+{% endif %}{% endfor %}
+
+SET FOREIGN_KEY_CHECKS=1;
