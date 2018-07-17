@@ -125,17 +125,17 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     {% endif %}{% endfor %})
     if err != nil {
         err = handleError(err)
-        return errors.Wrap(err, "Resource create failed for {{ schema.JSONSchema.GoName }}")
+        return errors.Wrap(err, "Creating {{ schema.JSONSchema.GoName }} failed")
     }
 
     err = db.create{{ schema.JSONSchema.GoName }}Reference(ctx, request)
     if err != nil {
-	    return errors.Wrap(err, "Creating refs for {{ schema.JSONSchema.GoName }} failed")
+	    return errors.Wrap(err, "Creating references for {{ schema.JSONSchema.GoName }} failed")
     }
 
     err = db.create{{ schema.JSONSchema.GoName }}ParentReference(ctx, request)
     if err != nil {
-	    return errors.Wrap(err, "Creating parent reference failed for {{ schema.JSONSchema.GoName }} failed")
+	    return errors.Wrap(err, "Creating parent reference for {{ schema.JSONSchema.GoName }} failed")
     }
 
     metaData := &MetaData{
@@ -149,7 +149,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     }
     err = db.CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.GetPerms2().GetShare())
     if err != nil {
-	    return errors.Wrap(err, "Creating share perms2 failed for {{ schema.JSONSchema.GoName }} failed")
+	    return errors.Wrap(err, "Creating share perms2 for {{ schema.JSONSchema.GoName }} failed")
     }
     return nil
 }
