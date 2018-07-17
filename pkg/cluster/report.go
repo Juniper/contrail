@@ -5,13 +5,14 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 )
 
 // Reporter reports provisioing status and log
 type Reporter struct {
-	api      *apisrv.Client
+	api      *client.HTTP
 	resource string
 	log      *logrus.Entry
 }

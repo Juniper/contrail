@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/testutil"
 )
 
 const (
@@ -121,5 +121,5 @@ func checkDataEqual(t *testing.T, expectedYAMLFile, actualYAML string) {
 	err = yaml.Unmarshal([]byte(actualYAML), &actual)
 	require.NoError(t, err, "cannot parse actual data")
 
-	common.AssertEqual(t, expected, actual)
+	testutil.AssertEqual(t, expected, actual)
 }

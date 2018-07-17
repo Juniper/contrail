@@ -1,4 +1,4 @@
-package apisrv
+package client
 
 import (
 	"bytes"
@@ -9,32 +9,33 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 )
 
 const (
 	retryCount = 2
 )
 
-// Client represents a client.
-// nolint
-type Client struct {
-	ID         string `yaml:"id"`
-	Password   string `yaml:"password"`
-	AuthURL    string `yaml:"authurl"`
-	Endpoint   string `yaml:"endpoint"`
-	Debug      bool   `yaml:"debug"`
+// HTTP represents API Server HTTP client.
+type HTTP struct {
 	httpClient *http.Client
-	AuthToken  string          `yaml:"-"`
-	InSecure   bool            `yaml:"insecure"`
-	Domain     string          `yaml:"domain"`
-	Scope      *keystone.Scope `yaml:"scope"`
+
+	ID        string          `yaml:"id"`
+	Password  string          `yaml:"password"`
+	AuthURL   string          `yaml:"authurl"`
+	Endpoint  string          `yaml:"endpoint"`
+	AuthToken string          `yaml:"-"`
+	Domain    string          `yaml:"domain"`
+	InSecure  bool            `yaml:"insecure"`
+	Debug     bool            `yaml:"debug"`
+	Scope     *keystone.Scope `yaml:"scope"`
 }
 
-// Request represents API request to the server
+// Request represents API request to the server.
 type Request struct {
 	Method   string      `yaml:"method"`
 	Path     string      `yaml:"path,omitempty"`
@@ -43,9 +44,9 @@ type Request struct {
 	Output   interface{} `yaml:"output,omitempty"`
 }
 
-// NewClient makes api srv client.
-func NewClient(endpoint, authURL, id, password, domain string, insecure bool, scope *keystone.Scope) *Client {
-	c := &Client{
+// NewHTTP makes API Server HTTP client.
+func NewHTTP(endpoint, authURL, id, password, domain string, insecure bool, scope *keystone.Scope) *HTTP {
+	c := &HTTP{
 		ID:       id,
 		Password: password,
 		AuthURL:  authURL,
@@ -59,42 +60,42 @@ func NewClient(endpoint, authURL, id, password, domain string, insecure bool, sc
 }
 
 //Init is used to initialize a client.
-func (c *Client) Init() {
+func (h *HTTP) Init() {
 	tr := &http.Transport{
 		Dial: (&net.Dialer{
 			//Timeout: 5 * time.Second,
 		}).Dial,
 		//TLSHandshakeTimeout: 5 * time.Second,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: c.InSecure},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
 	}
 	client := &http.Client{
 		Transport: tr,
 		//Timeout:   time.Second * 10,
 	}
-	c.httpClient = client
+	h.httpClient = client
 }
 
-// Login refreshes authentication token
-func (c *Client) Login() error {
-	if c.AuthURL == "" {
+// Login refreshes authentication token.
+func (h *HTTP) Login() error {
+	if h.AuthURL == "" {
 		return nil
 	}
-	authURL := c.AuthURL + "/auth/tokens"
+	authURL := h.AuthURL + "/auth/tokens"
 	authRequest := &keystone.AuthRequest{
 		Auth: &keystone.Auth{
 			Identity: &keystone.Identity{
 				Methods: []string{"password"},
 				Password: &keystone.Password{
 					User: &keystone.User{
-						Name:     c.ID,
-						Password: c.Password,
+						Name:     h.ID,
+						Password: h.Password,
 						Domain: &keystone.Domain{
-							ID: c.Domain,
+							ID: h.Domain,
 						},
 					},
 				},
 			},
-			Scope: c.Scope,
+			Scope: h.Scope,
 		},
 	}
 	authResponse := &keystone.AuthResponse{}
@@ -107,7 +108,7 @@ func (c *Client) Login() error {
 		return err
 	}
 	request.Header.Set("Content-Type", "application/json")
-	resp, err := c.httpClient.Do(request)
+	resp, err := h.httpClient.Do(request)
 	if err != nil {
 		return err
 	}
@@ -122,7 +123,7 @@ func (c *Client) Login() error {
 	if err != nil {
 		return err
 	}
-	c.AuthToken = resp.Header.Get("X-Subject-Token")
+	h.AuthToken = resp.Header.Get("X-Subject-Token")
 	return nil
 }
 
@@ -136,43 +137,43 @@ func checkStatusCode(expected []int, actual int) error {
 }
 
 // Create send a create API request.
-func (c *Client) Create(path string, data interface{}, output interface{}) (*http.Response, error) {
+func (h *HTTP) Create(path string, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusCreated}
-	return c.Do(echo.POST, path, data, output, expected)
+	return h.Do(echo.POST, path, data, output, expected)
 }
 
 // Read send a create API request.
-func (c *Client) Read(path string, output interface{}) (*http.Response, error) {
+func (h *HTTP) Read(path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return c.Do(echo.GET, path, nil, output, expected)
+	return h.Do(echo.GET, path, nil, output, expected)
 }
 
 // Update send an update API request.
-func (c *Client) Update(path string, data interface{}, output interface{}) (*http.Response, error) {
+func (h *HTTP) Update(path string, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return c.Do(echo.PUT, path, data, output, expected)
+	return h.Do(echo.PUT, path, data, output, expected)
 }
 
 // Delete send a delete API request.
-func (c *Client) Delete(path string, output interface{}) (*http.Response, error) {
+func (h *HTTP) Delete(path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusNoContent}
-	return c.Do(echo.DELETE, path, nil, output, expected)
+	return h.Do(echo.DELETE, path, nil, output, expected)
 }
 
 // EnsureDeleted send a delete API request.
-func (c *Client) EnsureDeleted(path string, output interface{}) (*http.Response, error) {
+func (h *HTTP) EnsureDeleted(path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusNoContent, http.StatusNotFound}
-	return c.Do(echo.DELETE, path, nil, output, expected)
+	return h.Do(echo.DELETE, path, nil, output, expected)
 }
 
 // Do issues an API request.
-func (c *Client) Do(method, path string, data interface{}, output interface{}, expected []int) (*http.Response, error) {
-	request, err := c.prepareHTTPRequest(method, path, data)
+func (h *HTTP) Do(method, path string, data interface{}, output interface{}, expected []int) (*http.Response, error) {
+	request, err := h.prepareHTTPRequest(method, path, data)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.doHTTPRequestRetryingOn401(request, data)
+	resp, err := h.doHTTPRequestRetryingOn401(request, data)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +192,7 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	if err != nil {
 		return resp, errors.Wrap(err, "decoding response body failed")
 	}
-	if c.Debug {
+	if h.Debug {
 		log.WithFields(log.Fields{
 			"response": resp,
 			"output":   output,
@@ -200,11 +201,11 @@ func (c *Client) Do(method, path string, data interface{}, output interface{}, e
 	return resp, err
 }
 
-func (c *Client) prepareHTTPRequest(method, path string, data interface{}) (*http.Request, error) {
+func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}) (*http.Request, error) {
 	var request *http.Request
 	if data == nil {
 		var err error
-		request, err = http.NewRequest(method, getURL(c.Endpoint, path), nil)
+		request, err = http.NewRequest(method, getURL(h.Endpoint, path), nil)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
@@ -215,15 +216,15 @@ func (c *Client) prepareHTTPRequest(method, path string, data interface{}) (*htt
 			return nil, errors.Wrap(err, "encoding request data failed")
 		}
 
-		request, err = http.NewRequest(method, getURL(c.Endpoint, path), bytes.NewBuffer(dataJSON))
+		request, err = http.NewRequest(method, getURL(h.Endpoint, path), bytes.NewBuffer(dataJSON))
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	if c.AuthToken != "" {
-		request.Header.Set("X-Auth-Token", c.AuthToken)
+	if h.AuthToken != "" {
+		request.Header.Set("X-Auth-Token", h.AuthToken)
 	}
 	return request, nil
 }
@@ -232,8 +233,8 @@ func getURL(endpoint, path string) string {
 	return endpoint + path
 }
 
-func (c *Client) doHTTPRequestRetryingOn401(request *http.Request, data interface{}) (*http.Response, error) {
-	if c.Debug {
+func (h *HTTP) doHTTPRequestRetryingOn401(request *http.Request, data interface{}) (*http.Response, error) {
+	if h.Debug {
 		log.WithFields(log.Fields{
 			"method": request.Method,
 			"url":    request.URL,
@@ -244,7 +245,7 @@ func (c *Client) doHTTPRequestRetryingOn401(request *http.Request, data interfac
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error
-		resp, err = c.httpClient.Do(request)
+		resp, err = h.httpClient.Do(request)
 		if err != nil {
 			return nil, errors.Wrap(err, "issuing HTTP request failed")
 		}
@@ -260,27 +261,27 @@ func (c *Client) doHTTPRequestRetryingOn401(request *http.Request, data interfac
 			}
 
 			// refresh token and use the new token in request header
-			err = c.Login()
+			err = h.Login()
 			if err != nil {
 				return nil, err
 			}
-			if c.AuthToken != "" {
-				request.Header.Set("X-Auth-Token", c.AuthToken)
+			if h.AuthToken != "" {
+				request.Header.Set("X-Auth-Token", h.AuthToken)
 			}
 		}
 	}
 	return resp, nil
 }
 
-// DoRequest requests based on reqest object.
-func (c *Client) DoRequest(request *Request) (*http.Response, error) {
-	return c.Do(request.Method, request.Path, request.Data, &request.Output, request.Expected)
+// DoRequest requests based on request object.
+func (h *HTTP) DoRequest(request *Request) (*http.Response, error) {
+	return h.Do(request.Method, request.Path, request.Data, &request.Output, request.Expected)
 }
 
 // Batch execution.
-func (c *Client) Batch(requests []*Request) error {
+func (h *HTTP) Batch(requests []*Request) error {
 	for i, request := range requests {
-		_, err := c.DoRequest(request)
+		_, err := h.DoRequest(request)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("%dth request failed.", i))
 		}

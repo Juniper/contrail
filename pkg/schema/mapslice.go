@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type mapSlice yaml.MapSlice

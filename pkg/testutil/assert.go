@@ -1,4 +1,4 @@
-package common
+package testutil
 
 import (
 	"fmt"
@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -38,64 +40,25 @@ var assertFunctions = map[string]assertFunction{
 	},
 }
 
-func isStringFunction(key string) bool {
-	return strings.HasPrefix(key, funcPrefix)
-}
+// AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
+// For lists and maps, it iterates over expected values, ignoring additional values in actual object.
+func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
+	expected = common.YAMLtoJSONCompat(expected)
+	actual = common.YAMLtoJSONCompat(actual)
 
-func isFunction(expected interface{}) bool {
-	switch t := expected.(type) {
-	case map[string]interface{}:
-		for key := range t {
-			if isStringFunction(key) {
-				return true
-			}
-		}
-	case string:
-		return isStringFunction(t)
+	err := checkDiff("", expected, actual)
+	if err != nil {
+		logObjects(expected, actual)
 	}
-	return false
-}
 
-func getAssertFunction(key string) (assertFunction, error) {
-	assertName := strings.TrimPrefix(key, funcPrefix)
-	assert, ok := assertFunctions[assertName]
-	if !ok {
-		return nil, fmt.Errorf("assert function %s not found", assertName)
-	}
-	return assert, nil
-}
-
-// nolint: gocyclo
-func runFunction(path string, expected, actual interface{}) (err error) {
-	switch t := expected.(type) {
-	case map[string]interface{}:
-		for key := range t {
-			if isStringFunction(key) {
-				for key, value := range t {
-					assert, err := getAssertFunction(key)
-					if err != nil {
-						return err
-					}
-					err = assert(path, value, actual)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-	case string:
-		if isStringFunction(t) {
-			assert, err := getAssertFunction(t)
-			if err != nil {
-				return err
-			}
-			err = assert(path, nil, actual)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	return assert.NoError(
+		t,
+		err,
+		append(
+			msgAndArgs,
+			fmt.Sprintf("objects not equal:\n expected: %+v\n actual: %+v", expected, actual),
+		)...,
+	)
 }
 
 // nolint: gocyclo
@@ -140,7 +103,7 @@ func checkDiff(path string, expected, actual interface{}) error {
 			}
 		}
 	case int:
-		if float64(t) != InterfaceToFloat(actual) {
+		if float64(t) != common.InterfaceToFloat(actual) {
 			return fmt.Errorf("ffff expected %d but actually we got %f for path %s", t, actual, path)
 		}
 	default:
@@ -151,6 +114,66 @@ func checkDiff(path string, expected, actual interface{}) error {
 	return nil
 }
 
+func isFunction(expected interface{}) bool {
+	switch t := expected.(type) {
+	case map[string]interface{}:
+		for key := range t {
+			if isStringFunction(key) {
+				return true
+			}
+		}
+	case string:
+		return isStringFunction(t)
+	}
+	return false
+}
+
+func isStringFunction(key string) bool {
+	return strings.HasPrefix(key, funcPrefix)
+}
+
+// nolint: gocyclo
+func runFunction(path string, expected, actual interface{}) (err error) {
+	switch t := expected.(type) {
+	case map[string]interface{}:
+		for key := range t {
+			if isStringFunction(key) {
+				for key, value := range t {
+					assert, err := getAssertFunction(key)
+					if err != nil {
+						return err
+					}
+					err = assert(path, value, actual)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	case string:
+		if isStringFunction(t) {
+			assert, err := getAssertFunction(t)
+			if err != nil {
+				return err
+			}
+			err = assert(path, nil, actual)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func getAssertFunction(key string) (assertFunction, error) {
+	assertName := strings.TrimPrefix(key, funcPrefix)
+	assert, ok := assertFunctions[assertName]
+	if !ok {
+		return nil, fmt.Errorf("assert function %s not found", assertName)
+	}
+	return assert, nil
+}
+
 func logObjects(expected, actual interface{}) {
 	log.Debug("Expected object:")
 	out, err := yaml.Marshal(expected)
@@ -159,25 +182,4 @@ func logObjects(expected, actual interface{}) {
 	log.Debug("Actual object:")
 	out, err = yaml.Marshal(actual)
 	fmt.Println(string(out), err)
-}
-
-// AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
-// For lists and maps, it iterates over expected values, ignoring additional values in actual object.
-func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
-	expected = YAMLtoJSONCompat(expected)
-	actual = YAMLtoJSONCompat(actual)
-
-	err := checkDiff("", expected, actual)
-	if err != nil {
-		logObjects(expected, actual)
-	}
-
-	return assert.NoError(
-		t,
-		err,
-		append(
-			msgAndArgs,
-			fmt.Sprintf("objects not equal:\n expected: %+v\n actual: %+v", expected, actual),
-		)...,
-	)
 }

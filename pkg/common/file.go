@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 //SaveFile saves object to file. suffix of filepath will be

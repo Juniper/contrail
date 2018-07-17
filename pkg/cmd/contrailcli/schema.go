@@ -5,13 +5,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/flosch/pongo2"
 	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/schema"
 )
 
 const serverSchemaFile = "schema.json"
@@ -82,7 +82,7 @@ func showHelp(schemaID string, template string) (string, error) {
 	return o, nil
 }
 
-func fetchServerAPI(client *apisrv.Client, serverSchema string) (*schema.API, error) {
+func fetchServerAPI(client *client.HTTP, serverSchema string) (*schema.API, error) {
 	var api schema.API
 	for i := 0; i < retryMax; i++ {
 		_, err := client.Read(serverSchema, &api)
