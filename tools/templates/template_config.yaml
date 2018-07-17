@@ -17,8 +17,11 @@
   template_path: sql_psql.tmpl
   output_path: tools/init_psql.sql
 - type: all
-  template_path: sql_cleanup.tmpl
-  output_path: tools/cleanup.sql
+  template_path: sql_cleanup_mysql.tmpl
+  output_path: tools/cleanup_mysql.sql
+- type: all
+  template_path: sql_cleanup_psql.tmpl
+  output_path: tools/cleanup_psql.sql
 - type: all
   template_path: db.tmpl
   output_path: pkg/db/gen_db.go

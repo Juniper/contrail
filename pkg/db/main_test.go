@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -27,40 +26,29 @@ func TestMain(m *testing.M) {
 	viper.AutomaticEnv()
 
 	common.SetLogLevel()
-	dbConfig := viper.GetStringMap("test_database")
-	for _, iConfig := range dbConfig {
+	for _, iConfig := range viper.GetStringMap("test_database") {
 		config := common.InterfaceToInterfaceMap(iConfig)
-		driver := config["type"].(string)
-
-		var dbDSNFormat string
-		switch driver {
-		case DriverPostgreSQL:
-			dbDSNFormat = dbDSNFormatPostgreSQL
-		case DriverMySQL:
-			dbDSNFormat = dbDSNFormatMySQL
-		}
-		dsn := fmt.Sprintf(
-			dbDSNFormat,
-			config["user"].(string),
-			config["password"].(string),
-			config["host"].(string),
-			config["name"].(string),
-		)
-
-		testDB, err := makeConnection(driver, dsn)
-		if err != nil {
-			log.Fatal(err)
+		testDB, cErr := OpenConnection(ConnectionConfig{
+			Driver:   config["type"].(string),
+			User:     config["user"].(string),
+			Password: config["password"].(string),
+			Host:     config["host"].(string),
+			Name:     config["name"].(string),
+		})
+		if cErr != nil {
+			log.Fatal(cErr)
 		}
 		defer closeDB(testDB)
+
 		db = &Service{
 			db:      testDB,
 			Dialect: NewDialect(config["dialect"].(string)),
 		}
 		db.initQueryBuilders()
 
-		log.Info("Running test for " + driver)
+		log.WithField("dbType", config["type"]).Info("Starting tests for DB")
 		code := m.Run()
-		log.Info("finished")
+		log.WithField("dbType", config["type"]).Info("Finished tests for DB")
 		if code != 0 {
 			os.Exit(code)
 		}
