@@ -54,14 +54,19 @@ func (e *EtcdClient) Close(t *testing.T) {
 	assert.NoError(t, err, "closing etcd.clientv3.Client failed")
 }
 
+// DeleteNetworkIPAM deletes NetworkIPAM resource.
+func (e *EtcdClient) DeleteNetworkIPAM(t *testing.T, uuid string, opts ...clientv3.OpOption) {
+	e.DeleteKey(t, JSONEtcdKey(NetworkIPAMSchemaID, uuid), opts...)
+}
+
 // DeleteProject deletes Project resource.
 func (e *EtcdClient) DeleteProject(t *testing.T, uuid string, opts ...clientv3.OpOption) {
 	e.DeleteKey(t, JSONEtcdKey(ProjectSchemaID, uuid), opts...)
 }
 
-// DeleteNetworkIPAM deletes NetworkIPAM resource.
-func (e *EtcdClient) DeleteNetworkIPAM(t *testing.T, uuid string, opts ...clientv3.OpOption) {
-	e.DeleteKey(t, JSONEtcdKey(NetworkIPAMSchemaID, uuid), opts...)
+// DeleteSecurityGroup deletes SecurityGroup resource.
+func (e *EtcdClient) DeleteSecurityGroup(t *testing.T, uuid string, opts ...clientv3.OpOption) {
+	e.DeleteKey(t, JSONEtcdKey(SecurityGroupSchemaID, uuid), opts...)
 }
 
 // GetKey gets etcd key.
@@ -105,9 +110,11 @@ func (e *EtcdClient) WatchKey(key string) (collect func() []string) {
 }
 
 // WatchResource spawns a watch on specified resource.
-func (e *EtcdClient) WatchResource(schemaID, uuid string) (clientv3.WatchChan, context.Context, context.CancelFunc) {
+func (e *EtcdClient) WatchResource(
+	schemaID, uuid string, opts ...clientv3.OpOption,
+) (clientv3.WatchChan, context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(context.Background(), etcdWatchTimeout)
-	w := e.Watch(ctx, JSONEtcdKey(schemaID, uuid))
+	w := e.Watch(ctx, JSONEtcdKey(schemaID, uuid), opts...)
 	return w, ctx, cancel
 }
 
@@ -144,13 +151,21 @@ func JSONEtcdKey(schemaID, uuid string) string {
 
 // RetrieveCreateEvent blocks and retrieves create Event from given watch channel.
 func RetrieveCreateEvent(ctx context.Context, t *testing.T, watch clientv3.WatchChan) *clientv3.Event {
+	events := RetrieveWatchEvents(ctx, t, watch)
+	if assert.Equal(t, 1, len(events)) {
+		assert.True(t, events[0].IsCreate())
+		return events[0]
+	}
+	return nil
+}
+
+// RetrieveWatchEvents blocks and retrieves events from given watch channel.
+func RetrieveWatchEvents(ctx context.Context, t *testing.T, watch clientv3.WatchChan) []*clientv3.Event {
 	wr := <-watch
 	assert.NoError(t, wr.Err(), "watching etcd key failed")
 	if errors.Cause(ctx.Err()) == context.DeadlineExceeded {
 		assert.Fail(t, "watching etcd key timed out")
 	}
-	if assert.Equal(t, 1, len(wr.Events)) {
-		assert.True(t, wr.Events[0].IsCreate())
-	}
-	return wr.Events[0]
+
+	return wr.Events
 }
