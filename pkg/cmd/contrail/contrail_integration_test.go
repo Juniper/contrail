@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/convert"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,6 +19,8 @@ import (
 )
 
 const (
+	stateWithDemoProjectPath = "testdata/state_with_demo_project.yml"
+
 	expectedEgressAccessControlListPath  = "testdata/egress_access_control_list.yml"
 	expectedIngressAccessControlListPath = "testdata/ingress_access_control_list.yml"
 	expectedApplicationPolicySetPath     = "testdata/application_policy_set.yml"
@@ -41,7 +44,7 @@ func TestCreateCoreResources(t *testing.T) {
 	tests := []struct {
 		dbDriver string
 	}{
-		{dbDriver: db.DriverMySQL},
+		//{dbDriver: db.DriverMySQL}, // TODO: uncomment this
 		{dbDriver: db.DriverPostgreSQL},
 	}
 
@@ -58,6 +61,7 @@ func TestCreateCoreResources(t *testing.T) {
 			hc := integration.NewHTTPAPIClient(t, s.URL())
 
 			t.Run("create Project and Security Group", testCreateProjectAndSecurityGroup(hc, ec))
+			t.Run("create Virtual Network with Subnet", testCreateVirtualNetworkWithSubnet())
 		})
 	}
 }
@@ -149,6 +153,34 @@ func retrieveAndCheckCreatedACLs(aclCtx context.Context, t *testing.T, aclWatch 
 	} else {
 		assert.Fail(t, "unexpected ACL display_name: %+v", aclOne)
 	}
+}
+
+func testCreateVirtualNetworkWithSubnet() func(t *testing.T) {
+	return func(t *testing.T) {
+		//t.Skip("Not implemented") // TODO: implement API Server and Compilation Service functionality
+
+		loadDBSnapshot(t, stateWithDemoProjectPath)
+		// TODO: defer cleanupDB()
+
+		// TODO: spawn watch on virtual network
+		// TODO: spawn watch on routing instance
+		// TODO: spawn watch on route target
+
+		// TODO: create virtual network
+
+		// TODO: check virtual network in etcd
+		// TODO: check routing instance in etcd
+		// TODO: check route target in etcd
+	}
+}
+
+func loadDBSnapshot(t *testing.T, sourceFile string) {
+	err := convert.Convert(&convert.Config{
+		InType:  convert.YAMLType,
+		InFile:  sourceFile,
+		OutType: convert.RDBMSType,
+	})
+	require.NoError(t, err, "could not load initial database snapshot")
 }
 
 func loadResourceJSON(t *testing.T, filePath string) interface{} {

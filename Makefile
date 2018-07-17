@@ -67,7 +67,8 @@ reset_gen: ## Remove genarated files
 	rm -rf proto/*
 	rm -f tools/init_mysql.sql
 	rm -f tools/init_psql.sql
-	rm -f tools/cleanup.sql
+	rm -f tools/cleanup_mysql.sql
+	rm -f tools/cleanup_psql.sql
 	rm -rf pkg/types/mock
 	rm -rf pkg/services/mock
 	rm -rf pkg/types/ipam/mock
