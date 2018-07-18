@@ -14,7 +14,12 @@ type Service interface {
     Delete{{ schema.JSONSchema.GoName }}(context.Context, *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error)
     Get{{ schema.JSONSchema.GoName }}(context.Context, *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error)
     List{{ schema.JSONSchema.GoName }}(context.Context, *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error)
-{% endif%}{% endfor %}
+
+{% for _, reference in schema.References %}
+    Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(context.Context, *Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error)
+    Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(context.Context, *Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error)
+{% endfor %}
+{% endif %}{% endfor %}
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -55,6 +60,28 @@ func (service *BaseService) List{{ schema.JSONSchema.GoName }}(ctx context.Conte
     return service.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
+{% for _, reference in schema.References %}
+func (service *BaseService) Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error) {
+    if service.next == nil {
+        return &Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse{
+            ID: request.ID,
+            {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref: request.Get{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(),
+        }, nil
+    }
+    return service.Next().Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request)
+}
+
+func (service *BaseService) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error) {
+    if service.next == nil {
+        return &Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse{
+            ID: request.ID,
+            {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref: request.Get{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(),
+        }, nil
+    }
+    return service.Next().Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request)
+}
+{% endfor %}
+
 func (service *EventProducerService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
     _, err := service.Processor.Process(
         ctx,
@@ -94,6 +121,36 @@ func (service *EventProducerService) Delete{{ schema.JSONSchema.GoName }}(ctx co
     }
     return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 }
+
+{% for _, reference in schema.References %}
+func (service *EventProducerService) Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error) {
+    _, err := service.Processor.Process(
+        ctx,
+        &Event{
+            Request: &Event_Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest: request,
+            },
+        }) 
+    if err != nil {
+        return nil, err
+    }
+    return service.Next().Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request)
+}
+
+func (service *EventProducerService) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error) {
+    _, err := service.Processor.Process(
+        ctx,
+        &Event{
+            Request: &Event_Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest: request,
+            },
+        }) 
+    if err != nil {
+        return nil, err
+    }
+    return service.Next().Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request)
+}
+{% endfor %}
 
 func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.Context, service Service) (*Event, error) {
     request := e.Create{{ schema.JSONSchema.GoName }}Request
@@ -165,6 +222,31 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
         },
     }, nil
 }
+
+{% for _, reference in schema.References %}
+func (e *Event_Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) Process(ctx context.Context, service Service) (*Event, error) {
+    request := e.Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest
+    _, err := service.Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request)
+    if err != nil {
+        return nil, err
+    }
+    return &Event{Request: &Event_Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+        Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest: request,
+    }}, nil
+}
+
+func (e *Event_Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) Process(ctx context.Context, service Service) (*Event, error) {
+    request := e.Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest
+    _, err := service.Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request)
+    if err != nil {
+        return nil, err
+    }
+    return &Event{Request: &Event_Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+        Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest: request,
+    }}, nil
+}
+{% endfor %}
+
 {% endif%}{% endfor %}
 
 //Dump dumps all service data.
