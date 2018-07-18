@@ -65,24 +65,57 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}Reference(
     request *services.Create{{ schema.JSONSchema.GoName }}Request) error {
     {% for linkTo, reference in schema.References %}
     for _, ref := range request.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs {
-       qb := db.queryBuilders["{{ schema.ID }}"]
-       tx := GetTransaction(ctx)
-       model := request.{{ schema.JSONSchema.GoName }}
-       {% if reference.RefType  %}
-       if ref.Attr == nil {
-           ref.Attr = &models.{{ reference.RefType }}{}
-       }
-       {% endif %}
-        _, err := tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
-    {% endif %}{% endfor %})
-	    if err != nil {
-            err = handleError(err)
-		  return errors.Wrapf(err,"{{ reference.GoName }}Refs create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v' and ref UUID '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID(), ref.UUID)
+        if err := db.create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request.{{ schema.JSONSchema.GoName }}.UUID, ref); err != nil {
+            return err
         }
     }
     {% endfor %}
     return nil
 }
+
+{% for linkTo, reference in schema.References %}
+func (db *Service) create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(
+    ctx context.Context,
+    fromID string,
+    ref *models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,
+) error {
+    qb := db.queryBuilders["{{ schema.ID }}"]
+    tx := GetTransaction(ctx)
+
+    {% if reference.RefType  %}
+    if ref.Attr == nil {
+        ref.Attr = &models.{{ reference.RefType }}{}
+    }{% endif %}
+
+    _, err := tx.ExecContext(
+        ctx,
+        qb.CreateRefQuery("{{ linkTo | lower }}"),
+        fromID,
+        ref.UUID,
+        {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+{% endif %}{% endfor %})
+    if err != nil {
+        err = handleError(err)
+        return errors.Wrapf(err,"{{ reference.GoName }}Ref create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v' and ref UUID '%v': ", fromID, ref.UUID)
+    }
+    return nil
+}
+
+func (db *Service) delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(
+    ctx context.Context,
+    fromID string,
+    ref *models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,
+) error {
+    qb := db.queryBuilders["{{ schema.ID }}"]
+    tx := GetTransaction(ctx)
+
+    _, err := tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo | lower }}"), fromID, ref.UUID)
+    if err != nil {
+        err = handleError(err)
+        return errors.Wrapf(err,"{{ reference.GoName }}Ref create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v' and ref UUID '%v': ", fromID, ref.UUID)
+    }
+    return nil
+}{% endfor %}
 
 func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
     ctx context.Context,
@@ -113,7 +146,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
     {% endif %}
 }
 
-// Create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
+// create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
 // nolint
 func (db *Service) create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
@@ -368,7 +401,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
             {% endfor %}
             {% for linkTo, reference in schema.References %}
             case "{{ linkTo | lower }}_refs":
-                _, err = tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo | lower }}"), model.UUID)
+                _, err = tx.ExecContext(ctx, qb.DeleteRefsQuery("{{ linkTo | lower }}"), model.UUID)
                 if err != nil {
                     err = handleError(err)
 		          return errors.Wrapf(err,"{{ reference.GoName }}Refs update failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
@@ -508,6 +541,56 @@ func (db *Service) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, req
         ID: request.ID,
     }, nil
 }
+
+{% for _, reference in schema.References %}
+// Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref handles ref create.
+func (db *Service) Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(
+    ctx context.Context,
+    request *services.Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*services.Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error) {
+    ref := request.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
+    if request.ID == "" {
+        return nil, common.ErrorBadRequest("reference from ID is missing")
+    }
+    if ref == nil {
+        return nil, common.ErrorBadRequest("reference data is missing")
+    }
+    if err := db.DoInTransaction(
+        ctx,
+        func (ctx context.Context) error {
+            return db.create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request.ID, ref)
+        }); err != nil {
+        return nil, err
+    }
+    return &services.Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse{
+        ID: request.ID,
+        {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref: request.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,
+    }, nil
+}
+
+// Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref handles ref delete.
+func (db *Service) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(
+    ctx context.Context,
+    request *services.Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*services.Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error) {
+    ref := request.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
+    if request.ID == "" {
+        return nil, common.ErrorBadRequest("reference from ID is missing")
+    }
+    if ref == nil {
+        return nil, common.ErrorBadRequest("reference data is missing")
+    }
+    if err := db.DoInTransaction(
+        ctx,
+        func (ctx context.Context) error {
+            return db.delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref(ctx, request.ID, ref)
+        }); err != nil {
+        return nil, err
+    }
+    return &services.Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse{
+        ID: request.ID,
+        {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref: request.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,
+    }, nil
+}
+{% endfor %}
 
 //Get{{ schema.JSONSchema.GoName }} a Get request.
 func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (response *services.Get{{ schema.JSONSchema.GoName }}Response, err error) {
