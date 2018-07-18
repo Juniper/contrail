@@ -28,6 +28,10 @@ rpc List{{ schema.JSONSchema.GoName }} (List{{ schema.JSONSchema.GoName }}Reques
 rpc Create{{ schema.JSONSchema.GoName }} (Create{{ schema.JSONSchema.GoName }}Request) returns (Create{{ schema.JSONSchema.GoName }}Response);
 rpc Update{{ schema.JSONSchema.GoName }} (Update{{ schema.JSONSchema.GoName }}Request) returns (Update{{ schema.JSONSchema.GoName }}Response);
 rpc Delete{{ schema.JSONSchema.GoName }} (Delete{{ schema.JSONSchema.GoName }}Request) returns (Delete{{ schema.JSONSchema.GoName }}Response);
+{% for _, reference in schema.References %}
+rpc Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref (Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) returns (Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse);
+rpc Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref (Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) returns (Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse);
+{% endfor %}
 {% endif %}{% endfor %}
 }
 
@@ -96,6 +100,26 @@ message Get{{ schema.JSONSchema.GoName }}Response {
     github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}", (gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
+{% for linkTo, reference in schema.References %}
+message Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest {
+    string id = 1 [(gogoproto.customname) = "ID"];
+    github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+}
+
+message Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse {
+    string id = 1 [(gogoproto.customname) = "ID"];
+    github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+}
+
+message Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest {
+    string id = 1 [(gogoproto.customname) = "ID"];
+    github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+}
+
+message Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse {
+    string id = 1 [(gogoproto.customname) = "ID"];
+    github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+}{% endfor %}
 {% endif %}{% endfor %}
 
 message Event {
