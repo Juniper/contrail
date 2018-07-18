@@ -199,6 +199,7 @@ func (s *Server) Init() (err error) {
 	}
 
 	s.setupWatchAPI()
+	s.setupActionResources()
 
 	if viper.GetBool("recorder.enabled") {
 		file := viper.GetString("recorder.file")
@@ -243,6 +244,10 @@ func (s *Server) setupWatchAPI() {
 		return
 	}
 	s.Echo.GET("/watch", s.watchHandler)
+}
+
+func (s *Server) setupActionResources() {
+	s.Echo.POST("/fqname-to-id", s.fqNameToUUIDHandler)
 }
 
 // Run runs server.
