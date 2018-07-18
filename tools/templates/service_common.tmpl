@@ -7,12 +7,28 @@ import (
 //RegisterRESTAPI register REST API service for path.
 // nolint
 func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
- {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-   e.POST("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTCreate{{ schema.JSONSchema.GoName }})
-   e.GET("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTList{{ schema.JSONSchema.GoName }})
-   e.PUT("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTUpdate{{ schema.JSONSchema.GoName }})
-   e.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTGet{{ schema.JSONSchema.GoName }})
-   e.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    e.POST("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTCreate{{ schema.JSONSchema.GoName }})
+    e.GET("{{ schema.Prefix }}{{ schema.PluralPath }}", service.RESTList{{ schema.JSONSchema.GoName }})
+    e.PUT("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTUpdate{{ schema.JSONSchema.GoName }})
+    e.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTGet{{ schema.JSONSchema.GoName }})
+    e.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
 {% endif%}{% endfor %}
-  e.POST("sync", service.RESTSync)
+    e.POST("sync", service.RESTSync)
+}
+
+type registerFunc func(path string, name string)
+
+//RegisterSingularPaths registers singular paths of resources for discovery.
+func RegisterSingularPaths (register registerFunc) {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    register("{{ schema.Prefix }}{{ schema.Path }}", "{{ schema.Path }}")
+{% endif %}{% endfor %}
+}
+
+// RegisterPluralPaths registers plural paths of resources for discovery.
+func RegisterPluralPaths (register registerFunc) {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    register("{{ schema.Prefix }}{{ schema.PluralPath }}", "{{ schema.Path }}")
+{% endif %}{% endfor %}
 }

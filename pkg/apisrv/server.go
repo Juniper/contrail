@@ -16,6 +16,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
@@ -197,6 +198,7 @@ func (s *Server) Init() (err error) {
 		e.Use(gRPCMiddleware(grpcServer))
 	}
 
+	s.setupHomepage()
 	s.setupWatchAPI()
 
 	if viper.GetBool("recorder.enabled") {
@@ -235,6 +237,27 @@ func (s *Server) Init() (err error) {
 		}))
 	}
 	return nil
+}
+
+func (s *Server) setupHomepage() {
+	dh := discovery.NewHandler(viper.GetString("server.address"))
+
+	services.RegisterSingularPaths(func(path string, name string) {
+		dh.Register(path, "", name, "resource-base")
+	})
+	services.RegisterPluralPaths(func(path string, name string) {
+		dh.Register(path, "", name, "collection")
+	})
+
+	// TODO action resources
+	// TODO documentation
+	// TODO VN IP alloc
+	// TODO VN IP free
+	// TODO subnet IP count
+	// TODO set tag
+	// TODO security policy draft
+
+	s.Echo.GET("/", dh.Handle)
 }
 
 func (s *Server) setupWatchAPI() {
