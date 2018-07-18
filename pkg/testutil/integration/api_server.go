@@ -32,9 +32,9 @@ const (
 	AdminProjectName  = "AdminProject"
 	AdminRoleID       = "admin"
 	AdminRoleName     = "AdminRole"
-	AdminUserID       = "admin"
-	AdminUserName     = "adminUser"
-	AdminUserPassword = "adminPassword"
+	AdminUserID       = "alice"
+	AdminUserName     = "Alice"
+	AdminUserPassword = "alice_password"
 )
 
 // APIServer is embedded API Server for testing purposes.
