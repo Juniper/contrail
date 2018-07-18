@@ -485,10 +485,17 @@ func (qb *QueryBuilder) DeleteQuery() string {
 	return "delete from " + qb.quote(qb.Table) + " where uuid = " + qb.placeholder(1)
 }
 
-//DeleteRefQuery makes sql query.
-func (qb *QueryBuilder) DeleteRefQuery(linkTo string) string {
+// DeleteRefsQuery makes sql query deleting refs to specified type from single object.
+func (qb *QueryBuilder) DeleteRefsQuery(linkTo string) string {
 	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
 	return "delete from " + table + " where " + qb.quote("from") + " = " + qb.placeholder(1)
+}
+
+// DeleteRefQuery makes sql query deleting single ref entry.
+func (qb *QueryBuilder) DeleteRefQuery(linkTo string) string {
+	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
+	return fmt.Sprintf("delete from %s where %s = %s and %s = %s",
+		table, qb.quote("from"), qb.placeholder(1), qb.quote("to"), qb.placeholder(2))
 }
 
 //SelectAuthQuery makes sql query.

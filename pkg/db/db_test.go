@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 )
@@ -86,6 +87,29 @@ func TestDBScanRow(t *testing.T) {
 				LogicalInterfaceType:        "test type",
 				VirtualMachineInterfaceRefs: nil,
 			}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := db.ScanRow(tt.schemaID, tt.row)
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestDBCreateRef(t *testing.T) {
+	tests := []struct {
+		name     string
+		request  services.CreateAccessControlListRequest
+		fails    bool
+		expected proto.Message
+	}{
+		{name: "empty", fails: true},
 	}
 
 	for _, tt := range tests {
