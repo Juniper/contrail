@@ -253,13 +253,17 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 		if task.Client != "" {
 			clientID = task.Client
 		}
-		client := clients[clientID]
+		client, ok := clients[clientID]
+		if !assert.True(t, ok,
+			"Client '%v' not defined in test scenario '%v' task '%v'", clientID, testScenario.Name, task) {
+			break
+		}
 		response, err := client.DoRequest(task.Request)
 		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
 		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
 
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
-		ok := testutil.AssertEqual(t, task.Expect, task.Request.Output,
+		ok = testutil.AssertEqual(t, task.Expect, task.Request.Output,
 			fmt.Sprintf("In test scenario '%v' task' %v' failed", testScenario.Name, task))
 		if !ok {
 			log.Errorf("Assertion error was: %+v", err)
