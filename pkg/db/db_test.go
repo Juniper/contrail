@@ -100,3 +100,20 @@ func TestDBScanRow(t *testing.T) {
 		})
 	}
 }
+
+func TestDBCreateRef(t *testing.T) {
+	tests := []struct {
+		name string
+		//request  services.CreateAccessControlListRequest
+		fails    bool
+		expected proto.Message
+	}{
+		{name: "empty", fails: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// TODO(Michał)
+		})
+	}
+}
