@@ -197,7 +197,7 @@ func (s *Server) Init() (err error) {
 		e.Use(gRPCMiddleware(grpcServer))
 	}
 
-	s.setupWatchAPI()
+	s.setupHandlers()
 
 	if viper.GetBool("recorder.enabled") {
 		file := viper.GetString("recorder.file")
@@ -237,11 +237,12 @@ func (s *Server) Init() (err error) {
 	return nil
 }
 
-func (s *Server) setupWatchAPI() {
-	if !viper.GetBool("cache.enabled") {
-		return
+func (s *Server) setupHandlers() {
+	if viper.GetBool("cache.enabled") {
+		s.Echo.GET("/watch", s.watchHandler)
 	}
-	s.Echo.GET("/watch", s.watchHandler)
+
+	s.Echo.POST("/fqname-to-id", s.fqNameToIDHandler)
 }
 
 // Run runs server.
