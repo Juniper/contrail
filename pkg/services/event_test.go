@@ -142,34 +142,6 @@ func TestReorderEventList(t *testing.T) {
 	assert.Equal(t, "vn1", virtualNetwork.GetUUID())
 }
 
-func TestNoReorderDeleteEventList(t *testing.T) {
-	eventList := &EventList{
-		Events: []*Event{
-			{
-				Request: &Event_DeleteVirtualNetworkRequest{
-					&DeleteVirtualNetworkRequest{
-						ID: "vn1",
-					},
-				},
-			},
-			{
-				Request: &Event_DeleteNetworkPolicyRequest{
-					DeleteNetworkPolicyRequest: &DeleteNetworkPolicyRequest{
-						ID: "network_policy1",
-					},
-				},
-			},
-		},
-	}
-
-	err := eventList.Sort()
-	assert.NoError(t, err)
-	uuid := eventList.Events[0].GetDeleteVirtualNetworkRequest().ID
-	assert.Equal(t, "vn1", uuid)
-	uuid = eventList.Events[1].GetDeleteNetworkPolicyRequest().ID
-	assert.Equal(t, "network_policy1", uuid)
-}
-
 func TestReorderLoopedList(t *testing.T) {
 	eventList := &EventList{
 		Events: []*Event{
