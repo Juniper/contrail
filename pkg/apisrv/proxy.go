@@ -23,10 +23,12 @@ import (
 )
 
 const (
-	public  = apicommon.Public
-	private = apicommon.Private
-	pathSep = "/"
-	limit   = 100
+	// DefaultDynamicProxyPath default value for server.dynamic_proxy_path
+	DefaultDynamicProxyPath = "proxy"
+	public                  = apicommon.Public
+	private                 = apicommon.Private
+	pathSep                 = "/"
+	limit                   = 100
 )
 
 type proxyService struct {
@@ -45,7 +47,7 @@ func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
 	dbService services.Service) *proxyService {
 	group := viper.GetString("server.dynamic_proxy_path")
 	if group == "" {
-		group = "proxy"
+		group = DefaultDynamicProxyPath
 	}
 	p := &proxyService{
 		group:         group,
