@@ -3,6 +3,8 @@ package contrailcli
 import (
 	"fmt"
 
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -41,7 +43,7 @@ func syncResources(dataPath string) (string, error) {
 		return "", err
 	}
 	response := []*services.Event{}
-	_, err = client.Create("/sync", request, &response)
+	_, err = client.Create(context.Background(), "/sync", request, &response) //nolint
 	if err != nil {
 		fmt.Println(err)
 		return "", err
