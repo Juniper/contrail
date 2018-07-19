@@ -63,18 +63,31 @@ func verifyClusterDeleted() bool {
 	return true
 }
 
+func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
+	generatedData, err := ioutil.ReadFile(generatedFile)
+	assert.NoErrorf(t, err, "Unable to read generated: %s", generatedFile)
+	expectedData, err := ioutil.ReadFile(expectedFile)
+	assert.NoErrorf(t, err, "Unable to read expected: %s", expectedFile)
+	return bytes.Equal(generatedData, expectedData)
+
+}
 func compareGeneratedInstances(t *testing.T, expected string) bool {
-	generatedInstances, err := ioutil.ReadFile(generatedInstancesPath())
-	assert.NoError(t, err, "Unable to read generated instances.yml")
-	expectedInstances, err := ioutil.ReadFile(expected)
-	assert.NoError(t, err, "Unable to read expected instances.yml")
-	return bytes.Equal(generatedInstances, expectedInstances)
+	return compareFiles(t, expected, generatedInstancesPath())
+}
+
+func verifyPlaybooks(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, executedPlaybooksPath())
 }
 
 func generatedInstancesPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/instances.yml"
 }
 
+func executedPlaybooksPath() string {
+	return defaultWorkRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
+}
+
+// nolint: gocyclo
 func runClusterTest(t *testing.T, expectedOutput string,
 	context map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
@@ -105,12 +118,21 @@ func runClusterTest(t *testing.T, expectedOutput string,
 		Test:         true,
 	}
 	// create cluster
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup old executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
 	clusterManager, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	err = clusterManager.Manage()
 	assert.NoError(t, err, "failed to manage(create) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster create is not as expected")
+	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook.yml"),
+		"Expected list of create playbooks are not executed")
 	// Wait for the in-memory endpoint cache to get updated
 	apisrv.APIServer.ForceProxyUpdate()
 	// make sure all endpoints are created
@@ -120,18 +142,68 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	}
 
 	// update cluster
+	config.Action = "update"
 	// remove instances.yml to trriger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
 		assert.NoError(t, err, "failed to delete instances.yml")
 	}
-	config.Action = "update"
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
 	err = clusterManager.Manage()
 	assert.NoError(t, err, "failed to manage(update) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster update is not as expected")
+	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook.yml"),
+		"Expected list of update playbooks are not executed")
+	// Wait for the in-memory endpoint cache to get updated
+	apisrv.APIServer.ForceProxyUpdate()
+	// make sure all endpoints are recreated as part of update
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+
+	// upgrade cluster
+	config.Action = "update"
+	// remove old instances.yml
+	err = os.Remove(generatedInstancesPath())
+	// set upgrade action in the contrail-cluster resource
+	var data interface{}
+	cluster := map[string]interface{}{"uuid": clusterID,
+		"provisioning_state":  "NOSTATE",
+		"provisioning_action": "UPGRADE",
+	}
+	data = map[string]interface{}{"contrail-cluster": cluster}
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		url := fmt.Sprintf("/contrail-cluster/%s", clusterID)
+		_, err = client.Update(url, &data, &response)
+		assert.NoError(t, err, "failed to set upgrade action in contrail cluster")
+		break
+	}
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	clusterManager, err = NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to update cluster")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(upgrade) cluster")
+	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+		"Instance file created during cluster upgrade is not as expected")
+	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_upgrade_playbook.yml"),
+		"Expected list of upgrade playbooks are not executed")
 	// Wait for the in-memory endpoint cache to get updated
 	apisrv.APIServer.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
@@ -142,6 +214,13 @@ func runClusterTest(t *testing.T, expectedOutput string,
 
 	// delete cluster
 	config.Action = "delete"
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	err = clusterManager.Manage()
