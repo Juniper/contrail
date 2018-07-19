@@ -181,7 +181,7 @@ func (sv *ContrailTypeLogicService) getNetworkIpam(
 	id string,
 ) (*models.NetworkIpam, error) {
 
-	networkIpamRes, err := sv.DataService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{ID: id})
+	networkIpamRes, err := sv.ReadService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{ID: id})
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +356,7 @@ func (sv *ContrailTypeLogicService) findFlatSubnetIpams(
 	ipamUUID := networkIpam.GetUUID()
 	var refIpamUUIDList []string
 	for _, vnRef := range networkIpam.GetVirtualNetworkBackRefs() {
-		vn, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnRef.GetUUID()})
+		vn, err := sv.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnRef.GetUUID()})
 		if err != nil {
 			return nil, err
 		}
@@ -380,7 +380,7 @@ func (sv *ContrailTypeLogicService) extractSubnetsFromVNRefs(
 ) ([]*models.IpamSubnetType, error) {
 	var refSubnetsList []*models.IpamSubnetType
 	for _, vnRef := range networkIpam.GetVirtualNetworkBackRefs() {
-		vn, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnRef.GetUUID()})
+		vn, err := sv.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnRef.GetUUID()})
 		if err != nil {
 			return nil, err
 		}
@@ -421,7 +421,7 @@ func (sv *ContrailTypeLogicService) checkSubnetDelete(
 	}
 
 	for _, vnRef := range oldIpam.GetVirtualNetworkBackRefs() {
-		vn, err := sv.DataService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnRef.GetUUID()})
+		vn, err := sv.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnRef.GetUUID()})
 		if err != nil {
 			return err
 		}
@@ -490,7 +490,7 @@ func (sv *ContrailTypeLogicService) checkInstanceIP(
 	instanceIPBackRef *models.InstanceIP,
 	subnetsSet []*models.IpamSubnetType,
 ) error {
-	instanceIP, err := sv.DataService.GetInstanceIP(ctx, &services.GetInstanceIPRequest{
+	instanceIP, err := sv.ReadService.GetInstanceIP(ctx, &services.GetInstanceIPRequest{
 		ID: instanceIPBackRef.GetUUID()})
 	if err != nil {
 		return err
@@ -503,7 +503,7 @@ func (sv *ContrailTypeLogicService) checkFloatingIPPool(
 	floatingIPPoolRef *models.FloatingIPPool,
 	subnetsSet []*models.IpamSubnetType,
 ) error {
-	floatingIPPool, err := sv.DataService.GetFloatingIPPool(ctx, &services.GetFloatingIPPoolRequest{
+	floatingIPPool, err := sv.ReadService.GetFloatingIPPool(ctx, &services.GetFloatingIPPoolRequest{
 		ID: floatingIPPoolRef.GetUUID()})
 	if err != nil {
 		return err
@@ -522,7 +522,7 @@ func (sv *ContrailTypeLogicService) checkAliasIPPool(
 	aliasIPPoolRef *models.AliasIPPool,
 	subnetsSet []*models.IpamSubnetType,
 ) error {
-	aliasIPPool, err := sv.DataService.GetAliasIPPool(ctx, &services.GetAliasIPPoolRequest{
+	aliasIPPool, err := sv.ReadService.GetAliasIPPool(ctx, &services.GetAliasIPPoolRequest{
 		ID: aliasIPPoolRef.GetUUID()})
 	if err != nil {
 		return err
