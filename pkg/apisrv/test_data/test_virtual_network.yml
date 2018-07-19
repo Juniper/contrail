@@ -104,6 +104,15 @@ test_data:
     - uuid: network_policy_uuid
     network_ipam_refs:
     - uuid: test_ipam_blue
+  vn_blue_ri1: &vn_blue_ri1
+    uuid: ri_uuid
+    fq_name: ["default", "admin_project_uuid", "ri1"]
+    parent_type: virtual-network
+    parent_uuid: vn_blue
+  vn_blue_ri_default: &vn_blue_ri_default
+    fq_name: ["default", "admin_project_uuid", "vn_blue", "vn_blue"]
+    parent_type: virtual-network
+    parent_uuid: vn_blue
   vn_blue_with_detail: &vn_blue_with_detail
     uuid: vn_blue
     display_name: blue
@@ -114,8 +123,8 @@ test_data:
     network_ipam_refs:
     - uuid: test_ipam_blue
     routing_instances:
-    - uuid: ri_uuid
-      parent_uuid: vn_blue
+    - *vn_blue_ri1
+    - *vn_blue_ri_default
   vn_red: &vn_red
     uuid: vn_red
     display_name: red
@@ -406,17 +415,9 @@ workflow:
     expected:
     - 201
     data:
-      routing-instance:
-        uuid: ri_uuid
-        fq_name: ["default", "admin_project_uuid", "ri1"]
-        parent_type: virtual-network
-        parent_uuid: vn_blue
+      routing-instance: *vn_blue_ri1
   expect:
-    routing-instance:
-      uuid: ri_uuid
-      fq_name: ["default", "admin_project_uuid", "ri1"]
-      parent_type: virtual-network
-      parent_uuid: vn_blue
+    routing-instance: *vn_blue_ri1
 - name: get network ipam with back reference to virtual network
   request:
     path: /network-ipam/test_ipam_blue?detail=true
@@ -580,6 +581,13 @@ workflow:
         virtual_network_refs:
           - uuid: "vn_red"
           - to: ["default", "admin_project_uuid", "vn_red"]
+- name: fail to delete virtual network with non-default routing instance
+  request:
+    path: /virtual-network/vn_blue
+    method: DELETE
+    expected:
+    - 409
+  expect: null
 - name: delete routing instance
   request:
     path: /routing-instance/ri_uuid
@@ -587,6 +595,15 @@ workflow:
     expected:
     - 204
   expect: null
+- name: show default routing instance for vn_blue
+  request:
+    path: /routing-instances?parent_id=vn_blue
+    method: GET
+    expected:
+    - 200
+  expect:
+    routing-instances:
+    - &vn_blue_ri_default
 - name: delete virtual network
   request:
     path: /virtual-network/vn_blue
@@ -594,6 +611,14 @@ workflow:
     expected:
     - 204
   expect: null
+- name: show routing instances for vn_blue after deleting vn_blue
+  request:
+    path: /routing-instances?parent_id=vn_blue
+    method: GET
+    expected:
+    - 200
+  expect:
+    routing-instances: []
 - name: delete network ipam blue
   request:
     path: /network-ipam/test_ipam_blue

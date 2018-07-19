@@ -371,15 +371,26 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			resultingVn.VirtualNetworkNetworkID = 13
 
 			ctx := context.Background()
-			// In case of successful flow CreateVirtualNetwork should be called once on next service
+			// In case of successful flow:
+			// CreateVirtualNetwork should be called once on next service
+			// CreateRoutingInstance should be called once on the Write service
 			if !tt.fails {
-				nextService := service.Next().(*servicesmock.MockService)
-				nextService.EXPECT().CreateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+				service.Next().(*servicesmock.MockService).
+					EXPECT().CreateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 					func(
 						_ context.Context, request *services.CreateVirtualNetworkRequest,
 					) (*services.CreateVirtualNetworkResponse, error) {
 						return &services.CreateVirtualNetworkResponse{
 							VirtualNetwork: request.VirtualNetwork,
+						}, nil
+					}).Times(1)
+				service.WriteService.(*servicesmock.MockWriteService).
+					EXPECT().CreateRoutingInstance(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+					func(
+						_ context.Context, request *services.CreateRoutingInstanceRequest,
+					) (*services.CreateRoutingInstanceResponse, error) {
+						return &services.CreateRoutingInstanceResponse{
+							RoutingInstance: request.RoutingInstance,
 						}, nil
 					}).Times(1)
 			}
@@ -626,6 +637,71 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, res.GetID(), tt.UUID)
 			}
+		})
+	}
+}
+
+func TestDeleteDefaultRoutingInstance(t *testing.T) {
+	tests := []struct {
+		name                     string
+		routingInstances         []*models.RoutingInstance
+		shouldDelete             bool
+		defaultRoutingInstanceID string
+	}{
+		{
+			name: "check if default routing instance is deleted",
+			routingInstances: []*models.RoutingInstance{
+				{UUID: "ri_def_uuid", RoutingInstanceIsDefault: true},
+				{UUID: "ri_some_uuid"},
+			},
+			shouldDelete:             true,
+			defaultRoutingInstanceID: "ri_def_uuid",
+		},
+		{
+			name: "check if no routing instances are deleted other than default",
+			routingInstances: []*models.RoutingInstance{
+				{UUID: "ri_some_uuid"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+
+			virtualNetwork := models.MakeVirtualNetwork()
+			virtualNetwork.UUID = "test_vn_red_uuid"
+			virtualNetwork.RoutingInstances = tt.routingInstances
+			service.ReadService.(*servicesmock.MockReadService).EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
+				&services.GetVirtualNetworkRequest{
+					ID: virtualNetwork.UUID,
+				}).Return(&services.GetVirtualNetworkResponse{VirtualNetwork: virtualNetwork}, nil).Times(1)
+
+			virtualNetworkSetupIntPoolAllocatorMocks(service)
+
+			ctx := context.Background()
+
+			expectedDeletes := 0
+			if tt.shouldDelete {
+				expectedDeletes = 1
+			}
+			service.WriteService.(*servicesmock.MockWriteService).
+				EXPECT().DeleteRoutingInstance(gomock.Not(gomock.Nil()),
+				&services.DeleteRoutingInstanceRequest{
+					ID: tt.defaultRoutingInstanceID,
+				}).Return(&services.DeleteRoutingInstanceResponse{}, nil).Times(expectedDeletes)
+
+			service.Next().(*servicesmock.MockService).
+				EXPECT().DeleteVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).
+				Return(&services.DeleteVirtualNetworkResponse{}, nil).Times(1)
+
+			_, err := service.DeleteVirtualNetwork(ctx,
+				&services.DeleteVirtualNetworkRequest{
+					ID: virtualNetwork.UUID,
+				})
+
+			assert.NoError(t, err)
 		})
 	}
 }
