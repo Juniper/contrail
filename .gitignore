@@ -24,6 +24,7 @@ bin/
 # ignore generated code
 
 pkg/**/gen_*
+pkg/**/**/gen_*
 pkg/**/generated.pb.go
 
 doc/proto.md

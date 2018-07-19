@@ -1,0 +1,41 @@
+package client 
+
+import (
+    "context"
+    "github.com/Juniper/contrail/pkg/services"
+)
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (h *HTTP) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    response := &services.Create{{ schema.JSONSchema.GoName }}Response{}
+    _, err := h.Create("{{ schema.Prefix }}{{ schema.PluralPath }}",  request, &response)
+    return response, err
+}
+
+func (h *HTTP) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    response := &services.Update{{ schema.JSONSchema.GoName }}Response{}
+    _, err := h.Update("{{ schema.Prefix }}{{ schema.Path }}/" + request.{{ schema.JSONSchema.GoName }}.UUID, 
+        request, &response)
+    return response, err
+}
+
+func (h *HTTP) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    response := &services.Delete{{ schema.JSONSchema.GoName }}Response{}
+    _, err := h.Delete("{{ schema.Prefix }}{{ schema.Path }}/" + request.ID, nil)
+    return response, err
+}
+
+func (h *HTTP) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (*services.Get{{ schema.JSONSchema.GoName }}Response, error) {
+    response := &services.Get{{ schema.JSONSchema.GoName }}Response{}
+    _, err := h.Read("{{ schema.Prefix }}{{ schema.Path }}/" + request.ID, &response)
+    return response, err
+}
+
+func (h *HTTP) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (*services.List{{ schema.JSONSchema.GoName }}Response, error) {
+    //TODO(nati) support encoding list spec for query param.
+    response := &services.List{{ schema.JSONSchema.GoName }}Response{}
+    _, err := h.Read("{{ schema.Prefix }}{{ schema.PluralPath }}", &response)
+    return response, err 
+}
+
+{% endif%}{% endfor %}
