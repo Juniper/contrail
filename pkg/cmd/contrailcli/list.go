@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"strings"
 
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -134,7 +136,8 @@ func listResources(schemaID string) (string, error) {
 	}
 	var response map[string][]interface{}
 	_, err = client.Read(
-		fmt.Sprintf("%s?%s", pluralPath(schemaID), params.Encode()), &response)
+		context.Background(),
+		fmt.Sprintf("%s?%s", pluralPath(schemaID), params.Encode()), &response) //nolint
 	if err != nil {
 		fmt.Println(err)
 		return "", err

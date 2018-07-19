@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"path"
@@ -63,7 +64,7 @@ func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	)
 	c.Debug = true
 
-	err := c.Login()
+	err := c.Login(context.Background())
 	require.NoError(t, err, "connecting API Server failed")
 
 	return &HTTPAPIClient{
@@ -113,6 +114,7 @@ func (c *HTTPAPIClient) DeleteVirtualNetwork(t *testing.T, uuid string) {
 func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData interface{}) {
 	var responseData interface{}
 	r, err := c.Create(
+		context.Background(),
 		path,
 		requestData,
 		&responseData,
@@ -127,7 +129,7 @@ func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData in
 
 // GetResource gets resource.
 func (c *HTTPAPIClient) GetResource(t *testing.T, path string, responseData interface{}) {
-	r, err := c.Read(path, &responseData)
+	r, err := c.Read(context.Background(), path, &responseData)
 	c.log.WithFields(logrus.Fields{
 		"response":     r,
 		"responseData": responseData,
@@ -137,7 +139,7 @@ func (c *HTTPAPIClient) GetResource(t *testing.T, path string, responseData inte
 
 // DeleteResource deletes resource.
 func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
-	r, err := c.Delete(path, nil)
+	r, err := c.Delete(context.Background(), path, nil)
 	c.log.WithField("response", r).Debug("Got Delete response")
 	assert.NoError(t, err, "deleting resource failed\n response: %+v", r)
 }
@@ -145,6 +147,7 @@ func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
 // CheckResourceDoesNotExist checks that there is no resource with given path.
 func (c *HTTPAPIClient) CheckResourceDoesNotExist(t *testing.T, path string) {
 	r, err := c.Do(
+		context.Background(),
 		echo.GET,
 		path,
 		nil,

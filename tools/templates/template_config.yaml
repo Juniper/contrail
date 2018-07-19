@@ -52,3 +52,6 @@
 - type: all
   template_path: proto_service.tmpl
   output_path: proto/github.com/Juniper/contrail/pkg/services/generated.proto
+- type: all
+  template_path: client.tmpl
+  output_path: pkg/apisrv/client/gen_http.go

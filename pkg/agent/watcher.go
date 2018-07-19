@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"context"
+
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/sirupsen/logrus"
 )
@@ -18,7 +20,7 @@ const (
 )
 
 type watcher interface {
-	watch()
+	watch(ctx context.Context)
 }
 
 type pollingWatcher struct {
@@ -34,13 +36,13 @@ func (w *pollingWatcher) Action(actionType string, resource map[string]interface
 }
 
 // nolint: gocyclo
-func (w *pollingWatcher) Sync() error {
+func (w *pollingWatcher) Sync(ctx context.Context) error {
 	resources := w.resources
 	//TODO(nati) Proper stop support using channel
 	var list map[string][]interface{}
 	w.log.Debug("Polling data")
 	resourcePath := w.agent.schemas[w.SchemaID].PluralPath
-	_, err := w.agent.APIServer.Read(resourcePath, &list)
+	_, err := w.agent.APIServer.Read(ctx, resourcePath, &list)
 	if err != nil {
 		return err
 	}
@@ -92,14 +94,14 @@ func (w *pollingWatcher) Sync() error {
 	return nil
 }
 
-func (w *pollingWatcher) watch() {
+func (w *pollingWatcher) watch(ctx context.Context) {
 	//TODO(nati) proper error handing
 	//TODO(nati) support parallel execution and lock
 	for {
 		time.Sleep(time.Second)
-		err := w.Sync()
+		err := w.Sync(ctx)
 		if err != nil {
-			w.agent.APIServer.Login() // nolint: errcheck
+			w.agent.APIServer.Login(ctx) // nolint: errcheck
 		}
 	}
 }
