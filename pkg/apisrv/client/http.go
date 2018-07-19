@@ -142,7 +142,7 @@ func (h *HTTP) Create(path string, data interface{}, output interface{}) (*http.
 	return h.Do(echo.POST, path, data, output, expected)
 }
 
-// Read send a create API request.
+// Read send a get API request.
 func (h *HTTP) Read(path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
 	return h.Do(echo.GET, path, nil, output, expected)
