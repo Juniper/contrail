@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -127,7 +128,7 @@ func (c *Cluster) Manage() error {
 	defer c.streamServer.Close()
 	c.log.Info("Start managing contrail clusters")
 	if c.config.AuthURL != "" {
-		err := c.APIServer.Login()
+		err := c.APIServer.Login(context.Background())
 		if err != nil {
 			return fmt.Errorf("login to API Server failed: %s", err)
 		}

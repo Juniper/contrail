@@ -6,6 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 )
 
 func init() {
@@ -44,7 +45,7 @@ func deleteResources(dataPath string) (string, error) {
 			return "", err
 		}
 		var output interface{}
-		response, err := client.Delete(path(resource.Kind(), uuid), &output)
+		response, err := client.Delete(context.Background(), path(resource.Kind(), uuid), &output)
 		if response.StatusCode != http.StatusNotFound && err != nil {
 			return "", err
 		}

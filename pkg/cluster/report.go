@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 )
@@ -20,7 +21,7 @@ type Reporter struct {
 func (r *Reporter) reportStatus(status map[string]interface{}) {
 	data := map[string]map[string]interface{}{defaultResource: status}
 	var response interface{}
-	_, err := r.api.Update(r.resource, data, &response)
+	_, err := r.api.Update(context.Background(), r.resource, data, &response)
 	if err != nil {
 		r.log.Infof("update cluster status failed: %s", err)
 	}

@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
@@ -65,7 +66,7 @@ func getClient() (*client.HTTP, error) {
 	)
 	var err error
 	if authURL != "" {
-		err = client.Login()
+		err = client.Login(context.Background())
 	}
 	return client, err
 }

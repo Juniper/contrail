@@ -5,6 +5,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/services"
@@ -47,7 +48,7 @@ func showResource(schemaID, uuid string) (string, error) {
 		return "", nil
 	}
 	var response map[string]interface{}
-	_, err = client.Read(path(schemaID, uuid), &response)
+	_, err = client.Read(context.Background(), path(schemaID, uuid), &response)
 	if err != nil {
 		return "", err
 	}

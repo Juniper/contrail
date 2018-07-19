@@ -5,6 +5,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -56,7 +57,7 @@ func setResourceParameter(schemaID, uuid, yamlString string) (string, error) {
 	}
 
 	data["uuid"] = uuid
-	_, err = client.Update(path(schemaID, uuid), map[string]interface{}{
+	_, err = client.Update(context.Background(), path(schemaID, uuid), map[string]interface{}{
 		dashedCase(schemaID): common.YAMLtoJSONCompat(data),
 	}, nil)
 	if err != nil {

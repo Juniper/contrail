@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	uuid "github.com/satori/go.uuid"
+	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -26,7 +27,7 @@ func (c *Cluster) createEndpoint(parentUUID, name, publicURL, privateURL string)
 	c.log.Infof("Creating endpoint: %s, %s", name, publicURL)
 	var endpointResponse map[string]interface{}
 	resURI := fmt.Sprintf("%ss", defaultEndpointResPath)
-	_, err := c.APIServer.Create(resURI, &endpointData, &endpointResponse)
+	_, err := c.APIServer.Create(context.Background(), resURI, &endpointData, &endpointResponse)
 	return err
 }
 
@@ -38,7 +39,7 @@ func (c *Cluster) getEndpoints(parentUUIDs []string) (endpointIDs []string, err 
 	var endpointList map[string][]interface{}
 	resURI := fmt.Sprintf("%ss?%s", defaultEndpointResPath, values.Encode())
 	c.log.Infof("Reading endpoints: %s", resURI)
-	_, err = c.APIServer.Read(resURI, &endpointList)
+	_, err = c.APIServer.Read(context.Background(), resURI, &endpointList)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +54,7 @@ func (c *Cluster) deleteEndpoint(endpointUUID string) error {
 	var output map[string]interface{}
 	resURI := fmt.Sprintf("%s/%s", defaultEndpointResPath, endpointUUID)
 	c.log.Infof("Deleting endpoint: %s", resURI)
-	_, err := c.APIServer.Delete(resURI, &output)
+	_, err := c.APIServer.Delete(context.Background(), resURI, &output)
 	return err
 }
 
@@ -61,7 +62,8 @@ func (c *Cluster) getResource(resPath string, resID string) (map[string]interfac
 	var rawResInfo map[string]interface{}
 	resURI := fmt.Sprintf("%s/%s", resPath, resID)
 	c.log.Infof("Reading: %s", resURI)
-	_, err := c.APIServer.Read(resURI, &rawResInfo)
+	//TODO(nati) add context in argument
+	_, err := c.APIServer.Read(context.Background(), resURI, &rawResInfo)
 	if err != nil {
 		return nil, err
 	}

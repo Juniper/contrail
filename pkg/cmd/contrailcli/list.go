@@ -7,6 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/context"
 	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/services"
@@ -134,6 +135,7 @@ func listResources(schemaID string) (string, error) {
 	}
 	var response map[string][]interface{}
 	_, err = client.Read(
+		context.Background(),
 		fmt.Sprintf("%s?%s", pluralPath(schemaID), params.Encode()), &response)
 	if err != nil {
 		fmt.Println(err)

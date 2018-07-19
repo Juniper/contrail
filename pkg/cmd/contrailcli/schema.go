@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/net/context"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/schema"
@@ -85,7 +86,7 @@ func showHelp(schemaID string, template string) (string, error) {
 func fetchServerAPI(client *client.HTTP, serverSchema string) (*schema.API, error) {
 	var api schema.API
 	for i := 0; i < retryMax; i++ {
-		_, err := client.Read(serverSchema, &api)
+		_, err := client.Read(context.Background(), serverSchema, &api)
 		if err == nil {
 			break
 		}
