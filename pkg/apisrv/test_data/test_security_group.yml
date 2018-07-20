@@ -1,0 +1,125 @@
+name: Security Group Test
+cleanup:
+  - path: /security-group/security_group_uuid
+  - path: /project/admin_project_uuid
+
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin_project_uuid"]
+    uuid: admin_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  security_group: &security_group
+    uuid: security_group_uuid
+    parent_uuid: admin_project_uuid
+    parent_type: project
+    display_name: default
+    security_group_entries:
+      policy_rule:
+      - direction: '>'
+        protocol: any
+        dst_addresses:
+        - security_group: local
+        action_list: {simple_action: pass}
+        rule_uuid: bdf042c0-d2c2-4241-ba15-1c702c896e03
+        dst_ports:
+        - end_port: 65535
+        ethertype: IPv4
+        src_addresses:
+        - security_group: default-domain:default-project:default
+        src_ports:
+        - end_port: 65535
+      - direction: '>'
+        protocol: any
+        dst_addresses:
+        - security_group: local
+        action_list: {simple_action: pass}
+        rule_uuid: 1f77914a-0863-4f0d-888a-aee6a1988f6a
+        dst_ports:
+        - end_port: 65535
+        ethertype: IPv6
+        src_addresses:
+        - security_group: default-domain:default-project:default
+        src_ports:
+        - end_port: 65535
+      - direction: '>'
+        protocol: any
+        dst_addresses:
+        - subnet:
+            ip_prefix: 0.0.0.0
+        action_list: {simple_action: pass}
+        rule_uuid: b7c07625-e03e-43b9-a9fc-d11a6c863cc6
+        dst_ports:
+        - end_port: 65535
+        ethertype: IPv4
+        src_addresses:
+        - security_group: local
+        src_ports:
+        - end_port: 65535
+      - direction: '>'
+        protocol: any
+        dst_addresses:
+        - subnet:
+            ip_prefix: '::'
+        action_list: {simple_action: pass}
+        rule_uuid: 6a5f3026-02bc-4ba1-abde-39abafd21f47
+        dst_ports:
+        - end_port: 65535
+        ethertype: IPv6
+        src_addresses:
+        - security_group: local
+        src_ports:
+        - end_port: 65535
+    security_group_id: 8000002
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+
+- name: create project admin
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+
+- name: create security group
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 200
+    data:
+      security-group: *security_group
+  expect:
+    security-group: *security_group
+
+- name: delete security group
+  request:
+    path: /security-group/security_group_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete admin project
+  request:
+    path: /project/admin_project_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
