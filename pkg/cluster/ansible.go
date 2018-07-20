@@ -322,6 +322,13 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailProvision(args); err != nil {
 			return err
 		}
+	case "ADD_CSN":
+		if err := a.playInstancesConfig(args); err != nil {
+			return err
+		}
+		if err := a.playContrailProvision(args); err != nil {
+			return err
+		}
 	}
 	return nil
 }
