@@ -1,6 +1,8 @@
 package logic
 
-import "github.com/Juniper/contrail/pkg/services"
+import (
+	"github.com/Juniper/contrail/pkg/services"
+)
 
 // Service implementing Intent Compiler's type-specific logic.
 type Service struct {
