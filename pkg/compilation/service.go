@@ -17,7 +17,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/compilation/config"
+	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/compilationif"
 	"github.com/Juniper/contrail/pkg/db/etcd"
@@ -25,14 +27,16 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-// setupService setups all required services and chains them.
-func setupService() *compilationif.CompilationService {
+// SetupService setups all required services and chains them.
+func SetupService(apiService services.WriteService) *compilationif.CompilationService {
 	// create services
 	compilationService := compilationif.NewCompilationService()
+	logicService := logic.NewService(apiService)
 
 	// chain them
 	services.Chain(
 		compilationService,
+		logicService,
 	)
 
 	// return entry service
@@ -55,10 +59,11 @@ type Store interface {
 
 //IntentCompilationService represents Intent Compilation Service.
 type IntentCompilationService struct {
-	config  *config.Config
-	Store   Store
-	service *compilationif.CompilationService
-	locker  locker
+	config    *config.Config
+	Store     Store
+	locker    locker
+	service   *compilationif.CompilationService
+	apiClient *client.HTTP
 
 	log logrus.FieldLogger
 }
@@ -77,12 +82,15 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		return nil, err
 	}
 
+	apiClient := newAPIClient(c)
+
 	return &IntentCompilationService{
-		service: setupService(),
-		Store:   etcd.NewClient(e),
-		locker:  l,
-		config:  &c,
-		log:     log.NewLogger(c.DefaultCfg.ServiceName),
+		service:   SetupService(apiClient),
+		apiClient: apiClient,
+		Store:     etcd.NewClient(e),
+		locker:    l,
+		config:    &c,
+		log:       log.NewLogger(c.DefaultCfg.ServiceName),
 	}, nil
 }
 
@@ -149,11 +157,16 @@ func (ics *IntentCompilationService) putStoredIndex(ctx context.Context, index i
 func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	ics.log.Debug("Running Service")
 
+	err := ics.apiClient.Login(ctx)
+	if err != nil {
+		return err
+	}
+
 	watch.WatcherInit(ics.config.DefaultCfg.MaxJobQueueLen)
 	watch.InitDispatcher(ics.config.DefaultCfg.NumberOfWorkers, ics.service.HandleEtcdMessage)
 
 	ics.log.Debug("Setting MessageIndex to 0 (if not exists)")
-	err := ics.Store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0"))
+	err = ics.Store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0"))
 	if err != nil {
 		ics.log.Println("Cannot Set MessageIndex")
 		return err

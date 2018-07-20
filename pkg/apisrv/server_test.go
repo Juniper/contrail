@@ -40,7 +40,7 @@ func TestVirtualNetwork(t *testing.T) {
 }
 
 func TestSecurityGroup(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
+	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_security_group.yml")
 }
 
