@@ -78,7 +78,7 @@ func NewDialect(mode string) Dialect {
 		return Dialect{
 			Name:             MYSQL,
 			QuoteRune:        "`",
-			JSONAggFuncStart: "group_concat(distinct JSON_OBJECT(",
+			JSONAggFuncStart: "group_concat(JSON_OBJECT(",
 			JSONAggFuncEnd:   "))",
 			AnyValueString:   "ANY_VALUE(",
 			PlaceHolderIndex: false,
