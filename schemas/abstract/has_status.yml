@@ -88,6 +88,7 @@ schema:
       enum:
       - "PROVISION"
       - "ADD_COMPUTE"
+      - "ADD_CSN"
       - "UPGRADE"
       permission:
       - create
