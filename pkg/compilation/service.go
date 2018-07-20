@@ -15,9 +15,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/config"
+	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/compilationif"
 	"github.com/Juniper/contrail/pkg/db/etcd"
@@ -25,14 +27,17 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-// setupService setups all required services and chains them.
-func setupService() *compilationif.CompilationService {
+// SetupService setups all required services and chains them.
+// TODO Make apiService a Service
+func SetupService(apiService *client.HTTP) *compilationif.CompilationService {
 	// create services
 	compilationService := compilationif.NewCompilationService()
+	logicService := logic.NewService(apiService)
 
 	// chain them
 	services.Chain(
 		compilationService,
+		logicService,
 	)
 
 	// return entry service
@@ -77,8 +82,13 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		return nil, err
 	}
 
+	apiService, err := dialAPIServer(c)
+	if err != nil {
+		return nil, err
+	}
+
 	return &IntentCompilationService{
-		service: setupService(),
+		service: SetupService(apiService),
 		Store:   etcd.NewClient(e),
 		locker:  l,
 		config:  &c,
