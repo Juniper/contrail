@@ -460,17 +460,23 @@ workflow:
   expect:
     virtual-networks:
     - *vn_blue_simple
-# TODO: change ri_uuid to uuid of network_ipam which has reference to vn once backrefs are supported
-# This test is incorrect. Virtual network has no back reference to routing instance.
-# - name: list virtual networks with back_ref_id
-#   request:
-#     path: "/virtual-networks?back_ref_id=ri_uuid"
-#     method: GET
-#     expected:
-#     - 200
-#   expect:
-#     virtual-networks:
-#     - *vn_blue_simple
+- name: list network ipams with back_ref_id filter
+  request:
+    path: "/network-ipams?back_ref_id=vn_blue"
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-ipams:
+    - *network_ipam_blue
+- name: list network ipams with back_ref_id filter (invalid uuid, empty result)
+  request:
+    path: "/network-ipams?back_ref_id=hogehoge"
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-ipams: null
 - name: list virtual networks with parent_id
   request:
     path: "/virtual-networks?parent_id=admin_project_uuid"

@@ -1,5 +1,7 @@
 package db
 
+// TODO: replace this file with some ORM framework
+
 import (
 	"bytes"
 	"encoding/json"
@@ -209,9 +211,8 @@ func (qb *QueryBuilder) buildFilterParts(ctx *queryContext, column string, filte
 }
 
 func (qb *QueryBuilder) join(fromTable, fromProperty, toTable string) string {
-	return "left join " + qb.quote(
-		fromTable) + " on " + qb.quote(
-		toTable, "uuid") + " = " + qb.quote(fromTable, fromProperty)
+	return "left join " + qb.quote(fromTable) + " on " +
+		qb.quote(toTable, "uuid") + " = " + qb.quote(fromTable, fromProperty)
 }
 
 func (qb *QueryBuilder) as(a, b string) string {
@@ -234,16 +235,17 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 		where := qb.buildFilterParts(ctx, column, filter.Values)
 		ctx.where = append(ctx.where, where)
 	}
-	// TODO: This will be reenabled later when back references will be supported
-	// if len(spec.BackRefUUIDs) > 0 {
-	// 	where := []string{}
-	// 	for refTable := range qb.BackRefFields {
-	// 		column := qb.quote(refTable, "uuid")
-	// 		wherePart := qb.buildFilterParts(ctx, column, spec.BackRefUUIDs)
-	// 		where = append(where, wherePart)
-	// 	}
-	// 	ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
-	// }
+	// use join if backrefuuids
+	if len(spec.BackRefUUIDs) > 0 {
+		where := []string{}
+		for backrefTable := range qb.BackRefFields {
+			refTable := schema.ReferenceTableName(schema.RefPrefix, backrefTable, qb.Table)
+			ctx.joins = append(ctx.joins, qb.join(refTable, "to", qb.TableAlias))
+			wherePart := qb.buildFilterParts(ctx, qb.quote(refTable, "from"), spec.BackRefUUIDs)
+			where = append(where, wherePart)
+		}
+		ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
+	}
 }
 
 func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
@@ -363,23 +365,6 @@ func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 
 func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 	spec := ctx.spec
-	// TODO:(jwoloch) enable back_ref_id filter
-	// // use join if backrefuuids
-	// if len(spec.BackRefUUIDs) > 0 {
-	// 	for refTable, refFields := range qb.BackRefFields {
-	// 		refTable = strings.ToLower(refTable)
-	// 		if spec.Detail {
-	// 			ctx.columnParts = append(
-	// 				ctx.columnParts,
-	// 				qb.as(qb.jsonAgg(refTable, refFields...), qb.quote(refTable+"_ref")),
-	// 			)
-	// 			ctx.columns["backref_"+refTable] = len(ctx.columns)
-	// 		}
-	// 		ctx.joins = append(ctx.joins,
-	// 			qb.join(refTable, "parent_uuid", qb.Table))
-	// 	}
-	// 	return
-	// }
 	if !spec.Detail {
 		return
 	}
