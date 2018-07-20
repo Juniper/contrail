@@ -1,18 +1,13 @@
 package logic
 
 import (
-	"context"
-	"testing"
-
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/testutil"
 )
 
+/*
 func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	allPermissions := &models.PermType{
 		Owner:       "cloud-admin",
@@ -201,6 +196,7 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	})
 	assert.NoError(t, err)
 }
+*/
 
 func expectCreateACL(mockAPIService *servicesmock.MockWriteService, expectedACL *models.AccessControlList) {
 	mockAPIService.EXPECT().CreateAccessControlList(testutil.NotNil(), &services.CreateAccessControlListRequest{
