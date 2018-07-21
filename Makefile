@@ -1,4 +1,7 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
+BUILD_DIR := ../build
+SRC_DIRS := cmd pkg vendor
+DB_FILES := init_mysql.sql init_psql.sql init_data.yaml
 ifdef ANSIBLE_DEPLOYER_REPO_DIR
   export ANSIBLE_DEPLOYER_REPO_DIR
 else
@@ -93,23 +96,24 @@ binaries: ## Generate the contrail and contrailutil binaries
 
 .PHONY: docker
 docker: ## Generate docker files
-	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "docker/contrail_go/contrail" ./cmd/contrail
-	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "docker/contrail_go/contrailcli" ./cmd/contrailcli
-	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "docker/contrail_go/contrailutil" ./cmd/contrailutil
-	cp -r sample docker/contrail_go/etc
-	mkdir -p docker/contrail_go/templates/ && cp pkg/cluster/configs/instances.tmpl docker/contrail_go/templates/
-	cp tools/init_mysql.sql docker/contrail_go/etc
-	cp tools/init_psql.sql docker/contrail_go/etc
-	cp tools/init_data.yaml docker/contrail_go/etc
-	cp -r public docker/contrail_go/public
-	mkdir -p docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
+	rm -rf $(BUILD_DIR) && mkdir -p $(BUILD_DIR)/contrail
+	cp -r docker $(BUILD_DIR)
+	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrail" ./cmd/contrail
+	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrailcli" ./cmd/contrailcli
+	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrailutil" ./cmd/contrailutil
+	cp -r sample $(BUILD_DIR)/docker/contrail_go/etc
+	$(foreach db_file, $(DB_FILES), cp tools/$(db_file) $(BUILD_DIR)/docker/contrail_go/etc;)
+	cp -r public $(BUILD_DIR)/docker/contrail_go/public
+	$(foreach src, $(SRC_DIRS), cp -r ../contrail/$(src) $(BUILD_DIR)/contrail;)
+	mkdir -p $(BUILD_DIR)/docker/contrail_go/templates/ && cp pkg/cluster/configs/instances.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
+	mkdir -p $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
 ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
-		git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git docker/contrail_go/contrail-ansible-deployer
+		git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git $(BUILD_DIR)/docker/contrail_go/contrail-ansible-deployer
 		cd docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && git checkout $(ANSIBLE_DEPLOYER_REVISION)
 else
-		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
+		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
 endif
-	docker build -t "contrail-go" docker/contrail_go
+	docker build -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
