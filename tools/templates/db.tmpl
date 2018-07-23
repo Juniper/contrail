@@ -132,7 +132,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
            return nil
        } else {
         err = handleError(err)
-        return errors.Wrapf(err, "Create failed (DB insert) of resource {{ schema.JSONSchema.GoName }} with UUID '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
+        return errors.Wrapf(err, "creating resource {{ schema.JSONSchema.GoName }} with UUID '%v' in DB failed", request.{{ schema.JSONSchema.GoName }}.GetUUID())
         }
     {% endfor %}
     }
@@ -158,17 +158,17 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     {% endif %}{% endfor %})
     if err != nil {
         err = handleError(err)
-        return errors.Wrap(err, "Resource create failed for {{ schema.JSONSchema.GoName }}")
+        return errors.Wrap(err, "creating {{ schema.JSONSchema.GoName }} failed")
     }
 
     err = db.create{{ schema.JSONSchema.GoName }}Reference(ctx, request)
     if err != nil {
-	    return errors.Wrap(err, "Creating refs for {{ schema.JSONSchema.GoName }} failed")
+	    return errors.Wrap(err, "creating references for {{ schema.JSONSchema.GoName }} failed")
     }
 
     err = db.create{{ schema.JSONSchema.GoName }}ParentReference(ctx, request)
     if err != nil {
-	    return errors.Wrap(err, "Creating parent reference failed for {{ schema.JSONSchema.GoName }} failed")
+	    return errors.Wrap(err, "creating parent reference for {{ schema.JSONSchema.GoName }} failed")
     }
 
     metaData := &models.MetaData{
@@ -178,11 +178,11 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     }
     err = db.CreateMetaData(ctx, metaData)
     if err != nil {
-	    return errors.Wrap(err, "Creating meta-data for {{ schema.JSONSchema.GoName }} failed")
+	    return errors.Wrap(err, "creating meta-data for {{ schema.JSONSchema.GoName }} failed")
     }
     err = db.CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.GetPerms2().GetShare())
     if err != nil {
-	    return errors.Wrap(err, "Creating share perms2 failed for {{ schema.JSONSchema.GoName }} failed")
+	    return errors.Wrap(err, "creating share perms2 for {{ schema.JSONSchema.GoName }} failed")
     }
     return nil
 }
@@ -325,7 +325,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
     if spec.ParentFQName != nil {
        parentMetaData, err := db.GetMetaData(ctx, "", spec.ParentFQName)
        if err != nil {
-		  return nil, errors.Wrapf(err, "Can't find parents when listing {{ schema.JSONSchema.GoName }} with request data %v", request)
+		  return nil, errors.Wrapf(err, "cannot find parents when listing {{ schema.JSONSchema.GoName }} with request data %v", request)
        }
        spec.Filters = services.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
     }
@@ -333,7 +333,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
     rows, err = tx.QueryContext(ctx, query, values...)
     if err != nil {
         err = handleError(err)
-        return nil, errors.Wrap(err,"select query failed")
+        return nil, errors.Wrap(err, "select query failed")
     }
     defer rows.Close()
     if err := rows.Err(); err != nil {
@@ -483,7 +483,7 @@ func (db *Service) delete{{ schema.JSONSchema.GoName }}(
 
     if err != nil {
         err = handleError(err)
-	   return errors.Wrapf(err, "Delete failed (DB delete) of resource {{ schema.JSONSchema.GoName }} with UUID '%v': ", request.GetID())
+	   return errors.Wrapf(err, "deleting resource {{ schema.JSONSchema.GoName }} with UUID '%v' from DB failed", request.GetID())
     }
 
     err = db.DeleteMetaData(ctx, uuid)
@@ -497,7 +497,7 @@ func (db *Service) Create{{ schema.JSONSchema.GoName }}(
     request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
-        return nil, common.ErrorBadRequest("Update body is empty")
+        return nil, common.ErrorBadRequest("update body is empty")
     }
     if err := db.DoInTransaction(
         ctx,
@@ -517,7 +517,7 @@ func (db *Service) Update{{ schema.JSONSchema.GoName }}(
     request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
-        return nil, common.ErrorBadRequest("Update body is empty")
+        return nil, common.ErrorBadRequest("update body is empty")
     }
     if err := db.DoInTransaction(
         ctx,

@@ -30,7 +30,6 @@
         "parameter .* always receives.*(unparam)"
     ],
     "Skip": [
-        "pkg/compilationif",
         "pkg/services/mock",
         "pkg/types/mock",
         "pkg/types/ipam/mock"
