@@ -4,16 +4,24 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Juniper/contrail/pkg/convert"
 )
 
-func TestConvert(t *testing.T) {
-	inFile = "../../../tools/init_data.yaml"
-	configFile = "../../../sample/contrail.yml"
+const (
+	contrailConfigFile = "../../../sample/contrail.yml"
+	initDataFile       = "../../../tools/init_data.yaml"
+)
+
+func TestConvertYAMLToRDBMS(t *testing.T) {
+	configFile = contrailConfigFile
 	initConfig()
-	resources, err := readYAML()
-	assert.NoError(t, err, "read yaml failed")
-	err = resources.Sort()
-	assert.NoError(t, err, "dependency error")
-	err = writeRDBMS(resources)
-	assert.NoError(t, err, "write rdbms failed")
+
+	err := convert.Convert(&convert.Config{
+		InType:  convert.YAMLType,
+		InFile:  initDataFile,
+		OutType: convert.RDBMSType,
+	})
+
+	assert.NoError(t, err)
 }
