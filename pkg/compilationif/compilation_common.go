@@ -19,12 +19,12 @@ func NewCompilationService() *CompilationService {
 	return service
 }
 
-// CompilationService
+// CompilationService implements Intent Compilation layer.
 type CompilationService struct {
 	services.BaseService
 }
 
-// HandleEtcdMessages
+// HandleEtcdMessages handles messages received from etcd.
 func (service *CompilationService) HandleEtcdMessages(ctx context.Context, oper int32, key, value string) {
 	messageFields := log.Fields{
 		"operation": oper,
