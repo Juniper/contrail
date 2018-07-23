@@ -105,76 +105,138 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 }
 
-func TestReorderEventList(t *testing.T) {
-	eventList := &EventList{
-		Events: []*Event{
-			{
-				Request: &Event_CreateVirtualNetworkRequest{
-					&CreateVirtualNetworkRequest{
-						VirtualNetwork: &models.VirtualNetwork{
-							UUID: "vn1",
-							NetworkPolicyRefs: []*models.VirtualNetworkNetworkPolicyRef{
-								{
-									UUID: "network_policy1",
+func TestSortEventListByDependency(t *testing.T) {
+	tests := []struct {
+		name        string
+		events      []*Event
+		sortedOrder []string
+		fails       bool
+	}{
+		{
+			name:        "no events",
+			events:      []*Event{},
+			sortedOrder: []string{},
+		},
+		{
+			name: "single event",
+			events: []*Event{
+				{
+					Request: &Event_CreateVirtualNetworkRequest{
+						&CreateVirtualNetworkRequest{
+							VirtualNetwork: &models.VirtualNetwork{
+								UUID: "vn-uuid",
+							},
+						},
+					},
+				},
+			},
+			sortedOrder: []string{"vn-uuid"},
+		},
+		{
+			name: "reference dependency",
+			events: []*Event{
+				{
+					Request: &Event_CreateVirtualNetworkRequest{
+						&CreateVirtualNetworkRequest{
+							VirtualNetwork: &models.VirtualNetwork{
+								UUID: "vn-uuid",
+								NetworkPolicyRefs: []*models.VirtualNetworkNetworkPolicyRef{
+									{
+										UUID: "network-policy-uuid",
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Request: &Event_CreateNetworkPolicyRequest{
+						CreateNetworkPolicyRequest: &CreateNetworkPolicyRequest{
+							NetworkPolicy: &models.NetworkPolicy{
+								UUID: "network-policy-uuid",
+							},
+						},
+					},
+				},
+			},
+			sortedOrder: []string{"network-policy-uuid", "vn-uuid"},
+		},
+		{
+			name: "parent-child dependency",
+			events: []*Event{
+				{
+					Request: &Event_CreateAccessControlListRequest{
+						&CreateAccessControlListRequest{
+							AccessControlList: &models.AccessControlList{
+								UUID:       "egress-access-control-list-uuid",
+								ParentType: "security-group",
+								ParentUUID: "security-group-uuid",
+							},
+						},
+					},
+				},
+				{
+					Request: &Event_CreateSecurityGroupRequest{
+						&CreateSecurityGroupRequest{
+							SecurityGroup: &models.SecurityGroup{
+								UUID: "security-group-uuid",
+							},
+						},
+					},
+				},
+			},
+			sortedOrder: []string{"egress-access-control-list-uuid", "security-group-uuid"},
+		},
+		{
+			name: "circular dependency",
+			events: []*Event{
+				{
+					Request: &Event_CreateVirtualNetworkRequest{
+						&CreateVirtualNetworkRequest{
+							VirtualNetwork: &models.VirtualNetwork{
+								UUID: "vn-one-uuid",
+								VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
+									{
+										UUID: "vn-two-uuid",
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Request: &Event_CreateVirtualNetworkRequest{
+						&CreateVirtualNetworkRequest{
+							VirtualNetwork: &models.VirtualNetwork{
+								UUID: "vn-two-uuid",
+								VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
+									{
+										UUID: "vn-one-uuid",
+									},
 								},
 							},
 						},
 					},
 				},
 			},
-			{
-				Request: &Event_CreateNetworkPolicyRequest{
-					CreateNetworkPolicyRequest: &CreateNetworkPolicyRequest{
-						NetworkPolicy: &models.NetworkPolicy{
-							UUID: "network_policy1",
-						},
-					},
-				},
-			},
+			fails: true,
 		},
 	}
 
-	err := eventList.Sort()
-	assert.NoError(t, err)
-	networkPolicy := eventList.Events[0].GetCreateNetworkPolicyRequest().GetNetworkPolicy()
-	assert.Equal(t, "network_policy1", networkPolicy.GetUUID())
-	virtualNetwork := eventList.Events[1].GetCreateVirtualNetworkRequest().GetVirtualNetwork()
-	assert.Equal(t, "vn1", virtualNetwork.GetUUID())
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			eventList := EventList{tt.events}
 
-func TestReorderLoopedList(t *testing.T) {
-	eventList := &EventList{
-		Events: []*Event{
-			{
-				Request: &Event_CreateVirtualNetworkRequest{
-					&CreateVirtualNetworkRequest{
-						VirtualNetwork: &models.VirtualNetwork{
-							UUID: "vn1",
-							VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
-								{
-									UUID: "vn2",
-								},
-							},
-						},
-					},
-				},
-			},
-			{
-				Request: &Event_CreateVirtualNetworkRequest{
-					&CreateVirtualNetworkRequest{
-						VirtualNetwork: &models.VirtualNetwork{
-							UUID: "vn2",
-							VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
-								{
-									UUID: "vn1",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+			err := eventList.Sort()
+
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				for i, e := range eventList.Events {
+					assert.Equal(t, tt.sortedOrder[i], e.GetResource().GetUUID())
+				}
+			}
+		})
 	}
-	err := eventList.Sort()
-	assert.Error(t, err)
 }
