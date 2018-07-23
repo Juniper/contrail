@@ -2,21 +2,20 @@ package services
 
 import (
 	"context"
-	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 )
 
 const (
-	//OperationCreate for create operaion.
+	//OperationCreate for create operation.
 	OperationCreate = "CREATE"
-	//OperationUpdate for update operaion.
+	//OperationUpdate for update operation.
 	OperationUpdate = "UPDATE"
-	//OperationDelete for delete operaion.
+	//OperationDelete for delete operation.
 	OperationDelete = "DELETE"
 )
 
-// EventOption contains options for Event.
+//EventOption contains options for Event.
 type EventOption struct {
 	UUID      string
 	Operation string
@@ -24,7 +23,7 @@ type EventOption struct {
 	Data      map[string]interface{}
 }
 
-// HasResource defines methods that might be implemented by Event.Resource.
+//HasResource defines methods that might be implemented by Event.
 type HasResource interface {
 	GetResource() Resource
 	Operation() string
@@ -56,11 +55,12 @@ const (
 	temporaryVisited
 )
 
-//reorder request using Tarjan's algorithm
-func visitResource(uuid string, sorted []*Event,
-	eventMap map[string]*Event, stateGraph map[string]state) (sortedList []*Event, err error) {
+//visitResource returns list of Events sorted by resource dependencies using Tarjan's algorithm.
+func visitResource(
+	uuid string, sorted []*Event, eventMap map[string]*Event, stateGraph map[string]state,
+) (sortedList []*Event, err error) {
 	if stateGraph[uuid] == temporaryVisited {
-		return nil, fmt.Errorf("dependency loop found in sync request")
+		return nil, errors.New("dependency loop found in sync request")
 	}
 	if stateGraph[uuid] == visited {
 		return sorted, nil
@@ -80,9 +80,10 @@ func visitResource(uuid string, sorted []*Event,
 	return sorted, nil
 }
 
-//Sort sorts request by dependency using Tarjan's algorithm
+//Sort sorts Events by dependency using Tarjan's algorithm.
+//TODO: support parent-child relationship while checking dependencies.
 func (e *EventList) Sort() (err error) {
-	sorted := []*Event{}
+	var sorted []*Event
 	stateGraph := map[string]state{}
 	eventMap := map[string]*Event{}
 	for _, event := range e.Events {
@@ -110,18 +111,17 @@ func (e *EventList) Sort() (err error) {
 	return nil
 }
 
-//Process dispatches resource event to call correcponding service functions.
+//Process dispatches resource event to call corresponding service functions.
 func (e *Event) Process(ctx context.Context, service Service) (*Event, error) {
 	return e.Request.(CanProcessService).Process(ctx, service)
 }
 
 //Process process list of events.
 func (e *EventList) Process(ctx context.Context, service Service) (*EventList, error) {
-	responses := []*Event{}
+	var responses []*Event
 	for _, event := range e.Events {
 		response, err := event.Process(ctx, service)
 		if err != nil {
-			log.Debug(response, err)
 			return nil, err
 		}
 		responses = append(responses, response)
