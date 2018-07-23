@@ -1,5 +1,5 @@
 global_configuration:
-  CONTAINER_REGISTRY: {{ cluster.ContainerRegistry }}
+  CONTAINER_REGISTRY: {%if cluster.ContainerRegistry %}{{ cluster.ContainerRegistry }}{%else%}opencontrailnightly{%endif%}
   REGISTRY_PRIVATE_INSECURE: {%if cluster.RegistryPrivateInsecure %}{{cluster.RegistryPrivateInsecure}}{%else%}false{%endif%}
 provider_config:
   bms:
