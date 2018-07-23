@@ -75,6 +75,11 @@ func TestInstanceIP(t *testing.T) {
 	RunTest(t, "./test_data/test_instance_ip.yml")
 }
 
+func TestDefault(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_default.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
 	restClient := client.NewHTTP(

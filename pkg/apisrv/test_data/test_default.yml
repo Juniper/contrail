@@ -1,0 +1,48 @@
+name: TestDefault property 
+description:  Test default value set
+cleanup:
+- path: /node/node_uuid
+test_data:
+  node: &node
+    fq_name: ["default", "TestDefault", "node_uuid"]
+    uuid: node_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+clients:
+  default:
+    id: TestDefault 
+    password: TestDefault
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: TestDefault 
+workflow:
+- name: create node 
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 201
+    data:
+      node: *node
+  expect:
+    node: *node
+- name: get node 
+  request:
+    path: /node/node_uuid
+    method: GET
+    expected:
+    - 200
+    data:
+      node: *node
+  expect:
+    node: 
+      interface_name: eth0
+- name: delete node 
+  request:
+    path: /node/node_uuid
+    method: DELETE
+    expected:
+    - 204
+  expect: null
