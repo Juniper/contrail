@@ -87,6 +87,59 @@ func executedPlaybooksPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
 }
 
+func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
+	config *Config, action, expectedInstance, expectedPlaybook string,
+	expectedEndpoints map[string]string) {
+	// upgrade cluster
+	config.Action = "update"
+	// set action field in the contrail-cluster resource
+	var err error
+	var data interface{}
+	cluster := map[string]interface{}{"uuid": clusterID,
+		"provisioning_action": action,
+	}
+	switch action {
+	case "UPGRADE":
+		cluster["provisioning_state"] = "NOSTATE"
+	case "ADD_COMPUTE", "ADD_CSN":
+		// remove instances.yml to mock trriger cluster update
+		err = os.Remove(generatedInstancesPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete instances.yml")
+		}
+	}
+	data = map[string]interface{}{"contrail-cluster": cluster}
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		url := fmt.Sprintf("/contrail-cluster/%s", clusterID)
+		_, err = client.Update(url, &data, &response)
+		assert.NoErrorf(t, err, "failed to set %s action in contrail cluster", action)
+		break
+	}
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	clusterManager, err := NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to update cluster")
+	err = clusterManager.Manage()
+	assert.NoErrorf(t, err, "failed to manage(%s) cluster", action)
+	assert.True(t, compareGeneratedInstances(t, expectedInstance),
+		fmt.Sprintf("Instance file created during cluster %s is not as expected", action))
+	assert.True(t, verifyPlaybooks(t, expectedPlaybook),
+		fmt.Sprintf("Expected list of %s playbooks are not executed", action))
+	// Wait for the in-memory endpoint cache to get updated
+	apisrv.APIServer.ForceProxyUpdate()
+	// make sure all endpoints are recreated as part of update
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+}
+
 // nolint: gocyclo
 func runClusterTest(t *testing.T, expectedOutput string,
 	context map[string]interface{}, expectedEndpoints map[string]string) {
@@ -171,46 +224,23 @@ func runClusterTest(t *testing.T, expectedOutput string,
 		assert.NoError(t, err, err.Error())
 	}
 
-	// upgrade cluster
-	config.Action = "update"
-	// remove old instances.yml
-	err = os.Remove(generatedInstancesPath())
-	// set upgrade action in the contrail-cluster resource
-	var data interface{}
-	cluster := map[string]interface{}{"uuid": clusterID,
-		"provisioning_state":  "NOSTATE",
-		"provisioning_action": "UPGRADE",
-	}
-	data = map[string]interface{}{"contrail-cluster": cluster}
-	for _, client := range testScenario.Clients {
-		var response map[string]interface{}
-		url := fmt.Sprintf("/contrail-cluster/%s", clusterID)
-		_, err = client.Update(url, &data, &response)
-		assert.NoError(t, err, "failed to set upgrade action in contrail cluster")
-		break
-	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
-	clusterManager, err = NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to update cluster")
-	err = clusterManager.Manage()
-	assert.NoError(t, err, "failed to manage(upgrade) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
-		"Instance file created during cluster upgrade is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_upgrade_playbook.yml"),
-		"Expected list of upgrade playbooks are not executed")
-	// Wait for the in-memory endpoint cache to get updated
-	apisrv.APIServer.ForceProxyUpdate()
-	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
+	// UPGRADE test
+	runClusterActionTest(t, testScenario, config,
+		"UPGRADE", expectedOutput,
+		"./test_data/expected_ansible_upgrade_playbook.yml",
+		expectedEndpoints)
+
+	// ADD_COMPUTE  test
+	runClusterActionTest(t, testScenario, config,
+		"ADD_COMPUTE", expectedOutput,
+		"./test_data/expected_ansible_add_compute_playbook.yml",
+		expectedEndpoints)
+
+	// ADD_CSN  test
+	runClusterActionTest(t, testScenario, config,
+		"ADD_CSN", expectedOutput,
+		"./test_data/expected_ansible_add_csn_playbook.yml",
+		expectedEndpoints)
 
 	// delete cluster
 	config.Action = "delete"
