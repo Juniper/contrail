@@ -10,6 +10,8 @@ provider_config:
 instances:
   third_ha_node:
     ip: 127.0.0.3
+    ssh_user: root
+    ssh_pwd: c0ntrail123
     provider: bms
     roles:
       config:
@@ -26,6 +28,8 @@ instances:
       openstack_compute:
   second_ha_node:
     ip: 127.0.0.2
+    ssh_user: root
+    ssh_pwd: c0ntrail123
     provider: bms
     roles:
       config:
@@ -42,6 +46,8 @@ instances:
       openstack_compute:
   first_ha_node:
     ip: 127.0.0.1
+    ssh_user: root
+    ssh_pwd: c0ntrail123
     provider: bms
     roles:
       config:

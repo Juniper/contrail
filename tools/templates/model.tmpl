@@ -29,15 +29,14 @@ const (
 // nolint
 func Make{{ name }}() *{{name}}{
     return &{{name}}{
-    //TODO(nati): Apply default
-    {% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: "",
+    {% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: "{{ property.Default }}",
         {% elif property.GoType == "[]string" %}{{ property.GoName }}: []string{},
         {% elif property.GoType == "[]interface" %}{{ property.GoName }}: []interface{},
         {% elif property.GoType == "map[string]string" %}{{ property.GoName }}: map[string]string{},
         {% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: map[string]interface{}{},
-        {% elif property.GoType == "bool" %}{{ property.GoName }}: false,
-        {% elif property.GoType == "int64" %}{{ property.GoName }}: 0,
-        {% elif property.GoType == "float" %}{{ property.GoName }}: 0,
+        {% elif property.GoType == "bool" %}{{ property.GoName }}: {% if property.Default %}true{% else %}false{% endif %},
+        {% elif property.GoType == "int64" %}{{ property.GoName }}: {% if property.Default %}{{ property.Default }}{% else %}0{% endif %},
+        {% elif property.GoType == "float" %}{{ property.GoName }}: {% if property.Default %}{{ property.Default }}{% else %}0{% endif %},
         {% elif property.Type == "array"%}
             {% if property.Items.Type == "string" %}
                 {{ property.GoName }}: []string{},
@@ -51,6 +50,18 @@ func Make{{ name }}() *{{name}}{
 
         {% for linkTo, reference in references %}{% if reference.Presence == "required" or reference.Presence == "true" %}
             {{ reference.GoName }}Refs: []*{{ name }}{{ reference.GoName }}Ref{},{% endif %}{% endfor %}
+    }
+}
+
+// MakeFlat{{ name }} default {{ name }} value.
+// nolint
+func MakeFlat{{ name }}() *{{name}}{
+    return &{{name}}{
+    {% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: "{{ property.Default }}",
+        {% elif property.GoType == "bool" %}{{ property.GoName }}: {% if property.Default %}true{% else %}false{% endif %},
+        {% elif property.GoType == "int64" %}{{ property.GoName }}: {% if property.Default %}{{ property.Default }}{% else %}0{% endif %},
+        {% elif property.GoType == "float" %}{{ property.GoName }}: {% if property.Default %}{{ property.Default }}{% else %}0{% endif %},
+        {% endif %}{% endfor %}
     }
 }
 
