@@ -14,5 +14,5 @@ func (service *ContrailService) RegisterRESTAPI(e *echo.Echo) {
    e.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTGet{{ schema.JSONSchema.GoName }})
    e.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
 {% endif%}{% endfor %}
-  e.POST("sync", service.RESTSync)
+  e.POST("sync", service.restSync)
 }
