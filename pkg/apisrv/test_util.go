@@ -180,7 +180,7 @@ type clientsList map[string]*client.HTTP
 
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
 func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
-	log.Info("Running clean test scenario: %v", testScenario.Name)
+	log.Info("Running clean test scenario: ", testScenario.Name)
 	clients := prepareClients(t, testScenario)
 	tracked := runTestScenario(t, testScenario, clients)
 	cleanupTrackedResources(tracked, clients)
@@ -188,7 +188,7 @@ func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
 func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario) func() {
-	log.Info("Running *DIRTY* test scenario: %v", testScenario.Name)
+	log.Info("Running *DIRTY* test scenario: ", testScenario.Name)
 	clients := prepareClients(t, testScenario)
 	tracked := runTestScenario(t, testScenario, clients)
 	cleanupFunc := func() {

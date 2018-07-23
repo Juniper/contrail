@@ -23,15 +23,19 @@ func handleError(err error) error {
 	}
 	if err, ok := err.(*mysql.MySQLError); ok {
 		switch err.Number {
-		case mysqlUniqueViolation, mysqlForeignKeyViolation:
-			return common.ErrorConflict
+		case mysqlUniqueViolation:
+			return uniqueConstraintViolation()
+		case mysqlForeignKeyViolation:
+			return foreignKeyConstraintViolation()
 		}
 		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
 	}
 	if err, ok := err.(*pq.Error); ok {
 		switch err.Code.Name() {
-		case pgUniqueViolation, pgForeignKeyViolation:
-			return common.ErrorConflict
+		case pgUniqueViolation:
+			return uniqueConstraintViolation()
+		case pgForeignKeyViolation:
+			return foreignKeyConstraintViolation()
 		}
 		log.Debug("pq error:", err)
 	}
@@ -39,4 +43,12 @@ func handleError(err error) error {
 		return common.ErrorNotFound
 	}
 	return err
+}
+
+func uniqueConstraintViolation() error {
+	return common.ErrorConflictf("Resource conflict: unique constraint validation")
+}
+
+func foreignKeyConstraintViolation() error {
+	return common.ErrorConflictf("Resource conflict: foreign key constraint validation")
 }
