@@ -28,7 +28,7 @@ func TestIntentCompilerRunsNextService(t *testing.T) {
 	}
 	mockService.EXPECT().CreateVirtualNetwork(gomock.Not(gomock.Nil()), &services.CreateVirtualNetworkRequest{
 		VirtualNetwork: network,
-	}).Return(&services.CreateVirtualNetworkResponse{network}, nil)
+	}).Return(&services.CreateVirtualNetworkResponse{VirtualNetwork: network}, nil)
 
 	networkJSON, err := json.Marshal(network)
 	require.NoError(t, err)
