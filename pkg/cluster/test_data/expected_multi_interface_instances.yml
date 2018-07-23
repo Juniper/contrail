@@ -10,6 +10,8 @@ provider_config:
 instances:
   all_in_one_node:
     ip: 10.1.1.1
+    ssh_user: root
+    ssh_pwd: c0ntrail123
     provider: bms
     roles:
       config:

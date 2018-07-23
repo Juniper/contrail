@@ -16,7 +16,7 @@ prefix: /
 schema:
   properties:
     openstack_registry:
-      default: opencontrailnightly
+      default: default
       description: Openstack Container registry to pull openstack containers
       nullable: false
       permission:
