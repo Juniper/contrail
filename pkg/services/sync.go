@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
@@ -22,7 +22,7 @@ type metadataGetter interface {
 	GetMetaData(ctx context.Context, uuid string, fqName []string) (*MetaData, error)
 }
 
-// nolint
+// ContrailService handles API requests.
 type ContrailService struct {
 	BaseService
 
@@ -30,17 +30,16 @@ type ContrailService struct {
 	TypeValidator  *models.TypeValidator
 }
 
-//RESTSync handles a bulk create request.
+// RESTSync handles Sync API request.
 func (service *ContrailService) RESTSync(c echo.Context) error {
 	events := &EventList{}
 	if err := c.Bind(events); err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Debug("bind failed on sync")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
 	}
-	ctx := c.Request().Context()
-	responses, err := events.Process(ctx, service)
+
+	// TODO: Call events.Sort()
+
+	responses, err := events.Process(c.Request().Context(), service)
 	if err != nil {
 		return common.ToHTTPError(err)
 	}
