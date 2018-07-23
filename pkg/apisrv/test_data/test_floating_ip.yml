@@ -14,6 +14,7 @@ test_data:
   admin_project: &admin_project_floating_ip
     uuid: admin_floating_project_uuid
     name: admin_floating_project
+    fq_name: ["default-domain", "admin_floating_project"]
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}

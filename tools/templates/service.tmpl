@@ -24,6 +24,7 @@ type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
 // nolint
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     requestData := &Create{{ schema.JSONSchema.GoName }}Request{
+        {{ schema.JSONSchema.GoName }}: models.Make{{ schema.JSONSchema.GoName }}(),
     }
     if err := c.Bind(requestData); err != nil {
         log.WithFields(log.Fields{
