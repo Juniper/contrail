@@ -85,7 +85,7 @@ schema:
       - create
       - detail
     password:
-      default: ADMIN
+      default: c0ntrail123
       description: UserPassword
       nullable: false
       permission:
@@ -109,7 +109,7 @@ schema:
       view:
       - detail
     username:
-      default: ADMIN
+      default: root
       description: User Name
       nullable: false
       permission:
