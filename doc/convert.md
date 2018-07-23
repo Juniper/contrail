@@ -1,7 +1,7 @@
 # Convert command
 
-You can import/export configuraion data using contrailutil convert command.
-This command can be used for backup, database migraion and testing.
+You can import/export configuration data using contrailutil convert command.
+This command can be used for backup, database migration and testing.
 
 Here is a supported input type list.
 
@@ -38,7 +38,7 @@ Global Flags:
 
 # Example usage
 
-Cassandra -> File (database migraion from cassandra to new DB)
+Cassandra -> File (database migration from Cassandra to new DB)
 
 ``` shell
 contrailutil convert --intype cassandra --in localhost --outtype yaml --out dbdata.yaml
