@@ -22,6 +22,7 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
 {% endif%}{% endfor %}
 	r.POST("sync", service.RESTSync)
+	r.POST("ref-update", service.RESTRefUpdate)
 }
 
 type registerFunc func(path string, name string)
