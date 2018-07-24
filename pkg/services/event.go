@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	//OperationCreate for create operaion.
+	//OperationCreate for create operation.
 	OperationCreate = "CREATE"
-	//OperationUpdate for update operaion.
+	//OperationUpdate for update operation.
 	OperationUpdate = "UPDATE"
-	//OperationDelete for delete operaion.
+	//OperationDelete for delete operation.
 	OperationDelete = "DELETE"
 )
 

@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	mysqlUniqueViolation     = 1062
-	mysqlForeignKeyViolation = 1451
+	mysqlUniqueViolation = 1062
+	mysqlRowIsReferenced = 1451
+	mysqlNoReferencedRow = 1452
 
 	pgUniqueViolation     = "unique_violation"
 	pgForeignKeyViolation = "foreign_key_violation"
@@ -25,7 +26,9 @@ func handleError(err error) error {
 		switch err.Number {
 		case mysqlUniqueViolation:
 			return uniqueConstraintViolation()
-		case mysqlForeignKeyViolation:
+		case mysqlRowIsReferenced:
+			return foreignKeyConstraintViolation()
+		case mysqlNoReferencedRow:
 			return foreignKeyConstraintViolation()
 		}
 		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
@@ -46,9 +49,9 @@ func handleError(err error) error {
 }
 
 func uniqueConstraintViolation() error {
-	return common.ErrorConflictf("Resource conflict: unique constraint validation")
+	return common.ErrorConflictf("Resource conflict: unique constraint violation")
 }
 
 func foreignKeyConstraintViolation() error {
-	return common.ErrorConflictf("Resource conflict: foreign key constraint validation")
+	return common.ErrorConflictf("Resource conflict: foreign key constraint violation")
 }

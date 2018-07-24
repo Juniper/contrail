@@ -1,0 +1,362 @@
+name: Test ref-update endpoint
+description: |
+  Integration test for ref-update endpoint which allows creating
+  and deleting references for specified objects.
+cleanup:
+- path: /route-target/route_target_ref_update_uuid
+- path: /routing-instance/routing_instance_ref_update_uuid
+- path: /virtual-network/virtual_network_ref_update_uuid
+- path: /project/project_blue_ref_update_uuid
+test_data:
+  project_blue: &project_blue_ref_update
+    uuid: project_blue_ref_update_uuid
+    name: project_blue_ref_update
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  virtual_network: &virtual_network_ref_update
+    uuid: virtual_network_ref_update_uuid
+    parent_type: project
+    parent_uuid: project_blue_ref_update_uuid
+
+  routing_instance: &routing_instance_ref_update
+    uuid: routing_instance_ref_update_uuid
+    parent_type: virtual-network
+    parent_uuid: virtual_network_ref_update_uuid
+
+  route_target: &route_target_ref_update
+    uuid: route_target_ref_update_uuid
+    fq_name: ["target:100:200"]
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+# Setup
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [201]
+    data:
+      project: *project_blue_ref_update
+  expect:
+    project: *project_blue_ref_update
+
+- name: create virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [201]
+    data:
+      virtual-network: *virtual_network_ref_update
+  expect:
+    virtual-network: *virtual_network_ref_update
+
+- name: create routing instance
+  request:
+    path: /routing-instances
+    method: POST
+    expected: [201]
+    data:
+      routing-instance: *routing_instance_ref_update
+  expect:
+    routing-instance: *routing_instance_ref_update
+
+- name: create route target
+  request:
+    path: /route-targets
+    method: POST
+    expected: [201]
+    data:
+      route-target: *route_target_ref_update
+  expect:
+    route-target: *route_target_ref_update
+
+# Scenario
+
+- name: create ref using ref-update with ref-uuid provided
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: ADD
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    uuid: routing_instance_ref_update_uuid
+
+- name: check if the ref from routing-instance to route-target was created
+  request:
+    path: /routing-instance/routing_instance_ref_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    routing-instance:
+      route_target_refs:
+      - uuid: route_target_ref_update_uuid
+        attr: {}
+
+- name: delete ref using ref-update with ref-fq-name provided
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: DELETE
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-fq-name: ["target:100:200"]
+  expect:
+    uuid: routing_instance_ref_update_uuid
+
+- name: check if the ref from routing-instance to route-target was deleted
+  request:
+    path: /routing-instance/routing_instance_ref_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    routing-instance:
+      route_target_refs: null
+
+- name: create ref using ref-update with ref-fq-name provided
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: ADD
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-fq-name: ["target:100:200"]
+  expect:
+    uuid: routing_instance_ref_update_uuid
+
+- name: check if the ref from routing-instance to route-target was created again
+  request:
+    path: /routing-instance/routing_instance_ref_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    routing-instance:
+      route_target_refs:
+      - uuid: route_target_ref_update_uuid
+        attr: {}
+
+- name: delete ref using ref-update with ref-uuid provided
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: DELETE
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    uuid: routing_instance_ref_update_uuid
+
+- name: check if the ref from routing-instance to route-target was deleted again
+  request:
+    path: /routing-instance/routing_instance_ref_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    routing-instance:
+      route_target_refs: null
+
+- name: try to delete ref that exist no more
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: DELETE
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    uuid: routing_instance_ref_update_uuid
+
+- name: create ref using ref-update with attrs
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: ADD
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+      attr:
+        import_export: import
+  expect:
+    uuid: routing_instance_ref_update_uuid
+
+- name: check if the ref from routing-instance to route-target was with attrs
+  request:
+    path: /routing-instance/routing_instance_ref_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    routing-instance:
+      route_target_refs:
+      - uuid: route_target_ref_update_uuid
+        attr:
+          import_export: import
+
+- name: delete ref using ref-update with ref-uuid provided
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: DELETE
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    uuid: routing_instance_ref_update_uuid
+
+# Errors
+
+- name: try to create ref with some bad type
+  request:
+    path: /ref-update
+    method: POST
+    expected: [400]
+    data:
+      operation: ADD
+      type: does-not-exist
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    message: 'ref from type does-not-exist to type route-target does not exist'
+
+- name: send bad operation value
+  request:
+    path: /ref-update
+    method: POST
+    expected: [400]
+    data:
+      operation: BAD
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    message: 'operation should be ADD or DELETE, was BAD'
+
+- name: send empty operation value
+  request:
+    path: /ref-update
+    method: POST
+    expected: [400]
+    data:
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    message: 'uuid/type/ref-type/operation is null: routing_instance_ref_update_uuid, routing-instance, route-target, '
+
+- name: try to create with bad attr data
+  request:
+    path: /ref-update
+    method: POST
+    expected: [400]
+    data:
+      operation: ADD
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+      attr: bad data
+  expect:
+    message: 'bad attr data: json: cannot unmarshal string into Go value of type models.InstanceTargetType'
+
+- name: try to create without UUID
+  request:
+    path: /ref-update
+    method: POST
+    expected: [400]
+    data:
+      operation: ADD
+      type: routing-instance
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    message: 'uuid/type/ref-type/operation is null: , routing-instance, route-target, ADD'
+
+- name: try to create with bad UUID
+  request:
+    path: /ref-update
+    method: POST
+    expected: [409]
+    data:
+      operation: ADD
+      type: routing-instance
+      uuid: bad-uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    message: 'Resource conflict: foreign key constraint violation'
+
+- name: try to create without ref UUID
+  request:
+    path: /ref-update
+    method: POST
+    expected: [400]
+    data:
+      operation: ADD
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+  expect:
+    message: 'error resolving ref-uuid using ref-fq-name: uuid and fqName unspecified'
+
+- name: delete routing instance
+  request:
+    path: /route-target/route_target_ref_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete route target
+  request:
+    path: /routing-instance/routing_instance_ref_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/virtual_network_ref_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete project
+  request:
+    path: /project/project_blue_ref_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null
