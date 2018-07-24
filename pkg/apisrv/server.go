@@ -255,6 +255,7 @@ func (s *Server) setupHomepage() {
 	})
 
 	dh.Register("/fqname-to-id", "POST", "name-to-id", "action")
+	dh.Register("/ref-update", "POST", "ref-update", "action")
 
 	// TODO: register sync?
 
