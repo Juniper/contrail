@@ -199,7 +199,10 @@ func (s *Server) Init() (err error) {
 		e.Use(gRPCMiddleware(grpcServer))
 	}
 
-	s.setupHomepage()
+	if viper.GetBool("homepage.enabled") {
+		s.setupHomepage()
+	}
+
 	s.setupWatchAPI()
 
 	if viper.GetBool("recorder.enabled") {

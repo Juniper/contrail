@@ -22,6 +22,9 @@ etcd:
 
 log_level: debug
 
+homepage:
+    enabled: true
+
 # Server configuration
 server:
   enabled: true
