@@ -33,3 +33,38 @@ func TestChildFQName(t *testing.T) {
 		})
 	}
 }
+
+func TestFQNameEqualsForDiffLen(t *testing.T) {
+	fqNameA := []string{"a", "b", "c"}
+	fqNameB := []string{"a", "b", "c", "d"}
+	statement := FQNameEquals(fqNameA, fqNameB)
+	assert.Equal(t, false, statement)
+}
+
+func TestFQNameEqualsForDiffValues(t *testing.T) {
+	fqNameA := []string{"a", "b", "c"}
+	fqNameB := []string{"a", "b", "d"}
+	statement := FQNameEquals(fqNameA, fqNameB)
+	assert.Equal(t, false, statement)
+}
+
+func TestFQNameEqualsForSameValuesButDiffOrder(t *testing.T) {
+	fqNameA := []string{"a", "b", "c"}
+	fqNameB := []string{"c", "b", "a"}
+	statement := FQNameEquals(fqNameA, fqNameB)
+	assert.Equal(t, false, statement)
+}
+
+func TestFQNameEqualsForEqualSlices(t *testing.T) {
+	fqNameA := []string{"a", "b", "c"}
+	fqNameB := []string{"a", "b", "c"}
+	statement := FQNameEquals(fqNameA, fqNameB)
+	assert.Equal(t, true, statement)
+}
+
+func TestFQNameEqualsForEmptySlices(t *testing.T) {
+	fqNameA := []string{}
+	fqNameB := []string{}
+	statement := FQNameEquals(fqNameA, fqNameB)
+	assert.Equal(t, true, statement)
+}
