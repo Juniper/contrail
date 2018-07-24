@@ -49,7 +49,7 @@ func IsConflict(err error) bool {
 
 //ErrorForbiddenf makes forbidden error with format.
 func ErrorForbiddenf(format string, a ...interface{}) error {
-	return grpc.Errorf(codes.PermissionDenied, format, a)
+	return grpc.Errorf(codes.PermissionDenied, format, a...)
 }
 
 //ErrorForbidden makes forbidden error.
@@ -62,7 +62,7 @@ func ErrorForbidden(message string) error {
 
 //ErrorBadRequestf makes bad request error with format.
 func ErrorBadRequestf(format string, a ...interface{}) error {
-	return grpc.Errorf(codes.InvalidArgument, format, a)
+	return grpc.Errorf(codes.InvalidArgument, format, a...)
 }
 
 //ErrorBadRequest makes bad request error.
