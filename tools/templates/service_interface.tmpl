@@ -2,8 +2,16 @@ package services
 
 import (
     "context"
+
+    "github.com/gogo/protobuf/types"
+
     "github.com/Juniper/contrail/pkg/common"
+    "github.com/Juniper/contrail/pkg/services/baseservices"
+    "{{ option.PackagePath }}/pkg/models"
 )
+
+//This is needed to prevent an import error.
+var _ = types.AnyMessageName
 
 type Service interface {
     Next() Service
@@ -35,6 +43,9 @@ type ReadService interface{
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+type {{ schema.JSONSchema.GoName }} = models.{{ schema.JSONSchema.GoName }}
+
 func (service *BaseService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
     if service.next == nil {
         return &Create{{ schema.JSONSchema.GoName }}Response{
@@ -92,6 +103,60 @@ func (service *BaseService) Delete{{ refType }}(ctx context.Context, request *De
         }, nil
     }
     return service.Next().Delete{{ refType }}(ctx, request)
+}
+
+func (s *RefUpdateToUpdateService) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
+    refField := models.{{ schema.JSONSchema.GoName }}Field{{ reference.GoName }}Refs
+    if err := s.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+        objResp, err := s.ReadService.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{
+            ID: request.ID,
+            Fields: []string{refField},
+        })
+        if err != nil {
+            return err
+        }
+        obj := objResp.{{ schema.JSONSchema.GoName }}
+        obj.Add{{ reference.GoName }}Ref(request.{{ refType }})
+
+        _, err = s.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
+            {{ schema.JSONSchema.GoName }}: obj,
+            FieldMask: types.FieldMask{Paths: []string{refField}},
+        })
+        return err
+    }); err != nil {
+        return nil, err
+    }
+    return &Create{{ refType }}Response{
+        ID: request.ID,
+        {{ refType }}: request.Get{{ refType }}(),
+    }, nil
+}
+
+func (s *RefUpdateToUpdateService) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
+    refField := models.{{ schema.JSONSchema.GoName }}Field{{ reference.GoName }}Refs
+    if err := s.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+        objResp, err := s.ReadService.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{
+            ID: request.ID,
+            Fields: []string{refField},
+        })
+        if err != nil {
+            return err
+        }
+        obj := objResp.{{ schema.JSONSchema.GoName }}
+        obj.Remove{{ reference.GoName }}Ref(request.{{ refType }})
+
+        _, err = s.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
+            {{ schema.JSONSchema.GoName }}: obj,
+            FieldMask: types.FieldMask{Paths: []string{refField}},
+        })
+        return err
+    }); err != nil {
+        return nil, err
+    }
+    return &Delete{{ refType }}Response{
+        ID: request.ID,
+        {{ refType }}: request.Get{{ refType }}(),
+    }, nil
 }
 {% endfor %}
 
@@ -178,7 +243,7 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
             model := request.{{ schema.JSONSchema.GoName }}
             response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
                 {{ schema.JSONSchema.GoName }}: model,
-                FieldMask: MapToFieldMask(model.ToMap()),
+                FieldMask: baseservices.MapToFieldMask(model.ToMap()),
             })
             if err != nil {
                 return nil, err
@@ -266,7 +331,7 @@ func Dump(ctx context.Context, service Service) (*EventList, error) {
     {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     list{{ schema.JSONSchema.GoName }}, err := service.List{{ schema.JSONSchema.GoName }}(ctx,
         &List{{ schema.JSONSchema.GoName }}Request{
-           &ListSpec{
+           &baseservices.ListSpec{
                Detail: true,
            },
         },

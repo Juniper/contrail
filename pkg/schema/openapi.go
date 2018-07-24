@@ -162,7 +162,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Responses: &spec.Responses{
 							ResponsesProps: spec.ResponsesProps{
 								StatusCodeResponses: map[int]spec.Response{
-									204: {
+									200: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Delete a resource",
 										},
@@ -273,7 +273,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Responses: &spec.Responses{
 							ResponsesProps: spec.ResponsesProps{
 								StatusCodeResponses: map[int]spec.Response{
-									201: {
+									200: {
 										ResponseProps: spec.ResponseProps{
 											Description: "Create a resource",
 											Schema: &spec.Schema{

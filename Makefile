@@ -23,7 +23,7 @@ GOPATH ?= `go env GOPATH`
 
 all: check lint test build
 
-deps: ## Setup the go dependencies
+deps: ## Install development dependencies
 	./tools/deps.sh
 
 check: ## Check vendored dependencies
@@ -35,23 +35,21 @@ lint: ## Run linters on the source code
 nocovtest: COVERPROFILE = none
 nocovtest: test
 
-test: ## Run go test with race and coverage args
+test: ## Run tests with coverage
 	./tools/test.sh $(COVERPROFILE)
 
-build: ## Run go build
+build: ## Build all binaries without producing output
 	go build ./cmd/...
 
 generate: reset_gen ## Run the source code generator
 	mkdir -p public
 	go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
+	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/baseservices/base.proto
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto.md proto/github.com/Juniper/contrail/pkg/services/generated.proto proto/github.com/Juniper/contrail/pkg/models/generated.proto
 	go tool fix ./pkg/services/generated.pb.go
-	go fmt github.com/Juniper/contrail/pkg/db
-	go fmt github.com/Juniper/contrail/pkg/models
-	go fmt github.com/Juniper/contrail/pkg/services
-	go fmt github.com/Juniper/contrail/pkg/compilationif
+	go fmt $(PACKAGE_PATH)/pkg/...
 	mkdir -p pkg/types/mock
 	mockgen -destination=pkg/types/mock/gen_in_transaction_doer_mock.go -package=typesmock -source pkg/types/service.go InTransactionDoer
 	mkdir -p pkg/services/mock
@@ -59,18 +57,21 @@ generate: reset_gen ## Run the source code generator
 	mkdir -p pkg/types/ipam/mock
 	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock -source pkg/types/ipam/address_manager.go AddressManager
 	mockgen -destination=pkg/types/ipam/mock/gen_int_pool_allocator_mock.go -package=ipammock -source pkg/types/ipam/interface.go IntPoolAllocator
+	cd extension && $(MAKE) generate
 
 reset_gen: ## Remove genarated files
 	find pkg/ -name gen_* -delete
 	find pkg/ -name generated.pb.go -delete
+	find proto/ -name generated.proto -delete
 	rm -rf public/[^watch.html]*
-	rm -rf proto/*
 	rm -f tools/init_mysql.sql
 	rm -f tools/init_psql.sql
-	rm -f tools/cleanup.sql
+	rm -f tools/cleanup_mysql.sql
+	rm -f tools/cleanup_psql.sql
 	rm -rf pkg/types/mock
 	rm -rf pkg/services/mock
 	rm -rf pkg/types/ipam/mock
+	cd extension && $(MAKE) reset_gen
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
@@ -80,13 +81,21 @@ install:
 	go install ./cmd/contrailcli
 	go install ./cmd/contrailutil
 
-testenv: ## Setup docker based test environment. (You need docker)
+testenv: ## Setup docker based test environment
 	./tools/testenv.sh
 
-reset_db: ## Reset Database with latest schema.
+reset_db: ## Reset databases with latest schema and load initial data
 	./tools/reset_db_mysql.sh
-	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 	./tools/reset_db_psql.sh
+	make init_db
+
+clean_db: ## Truncate all database tables and load initial data
+	docker exec -i contrail_mysql mysql -uroot -pcontrail123 contrail_test < tools/cleanup_mysql.sql
+	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/cleanup_psql.sql
+	make init_db
+
+init_db: ## Load initial data to databases
+	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail_postgres.yml
 
 binaries: ## Generate the contrail and contrailutil binaries
@@ -95,7 +104,7 @@ binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
 
 .PHONY: docker
-docker: ## Generate docker files
+docker: ## Generate Docker files
 	rm -rf $(BUILD_DIR) && mkdir -p $(BUILD_DIR)/contrail
 	cp -r docker $(BUILD_DIR)
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrail" ./cmd/contrail

@@ -8,11 +8,16 @@ import (
     "github.com/labstack/echo"
     errors "github.com/pkg/errors"
     "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+    log "github.com/sirupsen/logrus"
 
     "github.com/Juniper/contrail/pkg/common"
-    "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/services/baseservices"
+    "github.com/Juniper/contrail/pkg/models/basemodels"
+    "{{ option.PackagePath }}/pkg/models"
 )
+
+//This is needed to prevent an import error.
+var _ = fmt.Println
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
@@ -30,14 +35,14 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
             "err": err,
             "resource": "{{ schema.ID }}",
         }).Debug("bind failed on create")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
-	}
+        return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+    }
     ctx := c.Request().Context()
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
     if err != nil {
         return common.ToHTTPError(err)
     }
-    return c.JSON(http.StatusCreated, response)
+    return c.JSON(http.StatusOK, response)
 }
 
 //Create{{ schema.JSONSchema.GoName }} handle a Create API
@@ -67,19 +72,13 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }
     log.Debugf("Name: %v", model.Name)
 
-    if model.DisplayName == "" {
-        model.DisplayName = model.Name
-    }
-
-    log.Debugf("DisplayName: %v", model.DisplayName)
-
 {% if schema.Parents | length == 1 %}{# There is only one parent, so "for" will extract him #}
     if model.ParentType == "" { {% for key, reference in schema.Parents %}
         model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}
     }{% endif %}
     log.Debugf("ParentType: %v", model.ParentType)
 
-    if model.FQName == nil {
+    if len(model.FQName) == 0 {
 {% if schema.Parents | length == 0 %}
         model.FQName = []string{model.Name}
 {% else %}
@@ -115,8 +114,18 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     log.Debugf("ParentUUID: %v", model.ParentUUID)
 
-    model.Perms2 = &models.PermType2{}
+    model.Perms2 = &models.PermType2{
+        OwnerAccess: basemodels.PermsRWX,
+    }
     model.Perms2.Owner = auth.ProjectID()
+
+    if model.IDPerms == nil {
+        model.IDPerms = models.NewIDPerms(model.UUID)
+    }
+
+    if model.IDPerms.UUID == nil {
+        model.IDPerms.UUID = models.NewUUIDType(model.UUID)
+    }
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
@@ -147,7 +156,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     model.UUID = id
     response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
         {{ schema.JSONSchema.GoName }}: model,
-        FieldMask: MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
+        FieldMask: baseservices.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
     })
     if err != nil {
         return common.ToHTTPError(err)
@@ -179,7 +188,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return common.ToHTTPError(err)
     }
-    return c.NoContent(http.StatusNoContent)
+    return c.NoContent(http.StatusOK)
 }
 
 
@@ -202,7 +211,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 // nolint
 func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
     var err error
-    spec := GetListSpec(c)
+    spec := baseservices.GetListSpec(c)
     request := &List{{ schema.JSONSchema.GoName }}Request{
         Spec: spec,
     }

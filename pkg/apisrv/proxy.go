@@ -20,6 +20,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 const (
@@ -61,7 +62,7 @@ func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
 func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 	endpoints := make(map[string]*models.Endpoint)
 	ctx := common.NoAuth(context.Background())
-	spec := services.ListSpec{Limit: limit}
+	spec := baseservices.ListSpec{Limit: limit}
 	for {
 		request := &services.ListEndpointRequest{Spec: &spec}
 		response, err := p.dbService.ListEndpoint(ctx, request)

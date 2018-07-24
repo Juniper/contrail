@@ -8,6 +8,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 // CreateGlobalSystemConfig by design should never be called.
@@ -83,7 +84,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 		return nil
 	}
 
-	vnList, err := sv.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &services.ListSpec{
+	vnList, err := sv.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &baseservices.ListSpec{
 		Fields: []string{"route_target_list"}},
 	})
 	if err != nil {
@@ -94,7 +95,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 	for _, vn := range vnList.VirtualNetworks {
 		rtList := vn.RouteTargetList
 		for _, rt := range rtList.RouteTarget {
-			userDefined, err := models.IsStringRouteTargetUserDefined(rt, globalAsn)
+			userDefined, err := models.IsRouteTargetUserDefined(rt, globalAsn)
 			if err != nil {
 				return err
 			}
@@ -131,7 +132,7 @@ func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, update
 	}
 
 	bgpaasList, err := sv.ReadService.ListBGPAsAService(ctx, &services.ListBGPAsAServiceRequest{
-		Spec: &services.ListSpec{Count: true},
+		Spec: &baseservices.ListSpec{Count: true},
 	})
 
 	if err != nil {

@@ -1,6 +1,8 @@
 package models
 
-import "github.com/Juniper/contrail/pkg/common"
+import (
+	"github.com/Juniper/contrail/pkg/common"
+)
 
 // IsParentTypeVirtualNetwork checks if parent's type is virtual network
 func (fipp *FloatingIPPool) IsParentTypeVirtualNetwork() bool {
@@ -34,4 +36,20 @@ func (fipp *FloatingIPPool) CheckAreSubnetsInVirtualNetworkSubnets(vn *VirtualNe
 		}
 	}
 	return nil
+}
+
+// GetIPsInSubnets returns list of floating ips which belong to provided ipam subnets
+func (fipp *FloatingIPPool) GetIPsInSubnets(ipamSubnets *IpamSubnets) ([]string, error) {
+	var ipsInSubnets []string
+	for _, floatingIP := range fipp.GetFloatingIPs() {
+		contains, err := ipamSubnets.Contains(floatingIP.GetFloatingIPAddress())
+		if err != nil {
+			return nil, err
+		}
+		if contains {
+			ipsInSubnets = append(ipsInSubnets, floatingIP.GetFloatingIPAddress())
+		}
+	}
+
+	return ipsInSubnets, nil
 }

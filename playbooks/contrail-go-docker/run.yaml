@@ -15,20 +15,20 @@
       include: build-step.yaml
       loop_control:
         label: "{{ item.name }}"
-      with_items: # Insert tasks here
-        - name: Install deps
+      with_items:
+        - name: Install development dependencies
           command: make deps
-        - name: make generate
-          command: make generate
-        - name: make check
+        - name: Check vendored dependencies
           command: make check
-        - name: make lint
-          command: make lint
-        - name: reset db
+        - name: Run the source code generator
+          command: make generate
+        - name: Reset databases with latest schema and load initial data
           command: make reset_db
-        - name: make test
+        - name: Run tests with coverage
           command: make test
-        - name: Make docker
+        - name: Run linters on the source code
+          command: make lint
+        - name: Generate Docker files
           command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
 
     - name: Fix files ownerships

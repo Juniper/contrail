@@ -98,8 +98,8 @@ func (w *Watcher) watch(ctx context.Context, db *DB) {
 	}
 }
 
-//New makes cache db.
-func New(maxHistory uint64) *DB {
+//NewDB makes cache db.
+func NewDB(maxHistory uint64) *DB {
 	//TODO(nati) db dump
 	db := &DB{
 		versionMap:   map[uint64]*node{},
@@ -118,7 +118,7 @@ func (db *DB) AddWatcher(ctx context.Context, versionID uint64) (*Watcher, error
 	watcherID := uint64(len(db.watchers))
 	node := db.getNodeByVersion(versionID)
 	if versionID != 0 && node == nil {
-		return nil, common.ErrorBadRequest("requeted version is compacted.")
+		return nil, common.ErrorBadRequest("requested version is compacted.")
 	}
 	watcher := &Watcher{
 		id:       watcherID,
@@ -144,25 +144,49 @@ func (db *DB) update(event *services.Event) {
 	}
 	resource := event.GetResource()
 
-	db.versionMap[db.lastIndex] = n
-	n.version = db.lastIndex
-	db.lastIndex++
-
+	db.updateDBVersion(n)
+	var oldResource services.Resource
 	existingNode, ok := db.idMap[resource.GetUUID()]
 	if ok {
-		log.Debugf("compact existing map for event %d", event.Version)
+		oldResource = existingNode.event.GetResource()
+		log.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
 		if existingNode == db.first {
 			db.first = existingNode.getNext()
 		}
-		existingNode.pop()
+		delete(db.idMap, existingNode.event.GetResource().GetUUID())
 		delete(db.versionMap, existingNode.version)
+		existingNode.pop()
 	}
 
 	if event.Operation() == services.OperationDelete {
 		db.deleted = append(db.deleted, n)
 	}
 
-	//pop too old deleted data.
+	db.removeTooOldNodesIfNeeded()
+	db.idMap[resource.GetUUID()] = n
+
+	db.append(n)
+	db.updateDependentNodes(event, oldResource)
+
+	log.Debugf("node %v updated", n.version)
+}
+
+func (db *DB) updateDBVersion(n *node) {
+	db.versionMap[db.lastIndex] = n
+	n.version = db.lastIndex
+	db.lastIndex++
+}
+
+func (db *DB) append(n *node) {
+	if db.first == nil {
+		db.first = n
+	}
+	db.last.setNext(n)
+	n.setPrev(db.last)
+	db.last = n
+}
+
+func (db *DB) removeTooOldNodesIfNeeded() {
 	if len(db.deleted) > 0 && db.lastIndex-db.deleted[0].version > db.maxHistory {
 		compactedNode := db.deleted[0]
 		db.deleted = db.deleted[1:]
@@ -170,16 +194,43 @@ func (db *DB) update(event *services.Event) {
 		delete(db.versionMap, compactedNode.version)
 		compactedNode.pop()
 	}
+}
 
-	db.idMap[resource.GetUUID()] = n
-
-	if db.first == nil {
-		db.first = n
+func (db *DB) addDependencies(resource services.Resource) {
+	dependencies := resource.Depends()
+	for _, dependencyID := range dependencies {
+		dependentNode, ok := db.idMap[dependencyID]
+		if ok {
+			dependentNode.event.GetResource().AddDependency(resource)
+			dependentNode.pop()
+			db.append(dependentNode)
+		}
 	}
+}
 
-	db.last.setNext(n)
-	db.last = n
-	log.Debugf("node %v updated", n.version)
+func (db *DB) removeDependencies(resource services.Resource) {
+	dependencies := resource.Depends()
+	for _, dependencyID := range dependencies {
+		dependentNode, ok := db.idMap[dependencyID]
+		if ok {
+			dependentNode.event.GetResource().RemoveDependency(resource)
+			dependentNode.pop()
+			db.append(dependentNode)
+		}
+	}
+}
+
+func (db *DB) updateDependentNodes(event services.HasResource, oldResource services.Resource) {
+	resource := event.GetResource()
+	switch event.Operation() {
+	case services.OperationCreate:
+		db.addDependencies(resource)
+	case services.OperationUpdate:
+		db.removeDependencies(oldResource)
+		db.addDependencies(resource)
+	case services.OperationDelete:
+		db.removeDependencies(oldResource)
+	}
 }
 
 //Process updates cache data.
@@ -199,7 +250,7 @@ func (db *DB) getFirst() *node {
 	return db.first
 }
 
-//Get returns a resource for id.
+//Get returns a resource by id.
 func (db *DB) Get(id string) *services.Event {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
@@ -246,17 +297,15 @@ func (n *node) getNext() *node {
 }
 
 func (n *node) setPrev(p *node) {
-	if n == nil {
-		return
+	if n != nil {
+		n.prev = p
 	}
-	n.prev = p
 }
 
 func (n *node) setNext(next *node) {
-	if n == nil {
-		return
+	if n != nil {
+		n.next = next
 	}
-	n.next = next
 }
 
 func (n *node) getPrev() *node {
@@ -271,4 +320,6 @@ func (n *node) pop() {
 	next := n.getNext()
 	prev.setNext(next)
 	next.setPrev(prev)
+	n.next = nil
+	n.prev = nil
 }

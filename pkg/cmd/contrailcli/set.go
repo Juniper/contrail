@@ -3,6 +3,8 @@ package contrailcli
 import (
 	"fmt"
 
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -56,9 +58,9 @@ func setResourceParameter(schemaID, uuid, yamlString string) (string, error) {
 	}
 
 	data["uuid"] = uuid
-	_, err = client.Update(path(schemaID, uuid), map[string]interface{}{
+	_, err = client.Update(context.Background(), path(schemaID, uuid), map[string]interface{}{
 		dashedCase(schemaID): common.YAMLtoJSONCompat(data),
-	}, nil)
+	}, nil) //nolint
 	if err != nil {
 		return "", err
 	}

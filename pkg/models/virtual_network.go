@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 // Virtual network forwarding modes.
@@ -19,11 +20,11 @@ const (
 //MakeNeutronCompatible makes this resource data neutron compatible.
 func (m *VirtualNetwork) MakeNeutronCompatible() {
 	//  neutorn <-> vnc sharing
-	if m.Perms2.GlobalAccess == PermsRWX {
+	if m.Perms2.GlobalAccess == basemodels.PermsRWX {
 		m.IsShared = true
 	}
 	if m.IsShared {
-		m.Perms2.GlobalAccess = PermsRWX
+		m.Perms2.GlobalAccess = basemodels.PermsRWX
 	}
 }
 
@@ -72,21 +73,23 @@ func (m *VirtualNetwork) ShouldIgnoreAllocation() bool {
 // GetSubnetUUIDs returns list of subnetUUIDs for all subnets
 func (m *VirtualNetwork) GetSubnetUUIDs() []string {
 	var result []string
-	for _, subnet := range m.GetSubnets() {
+	for _, subnet := range m.GetIpamSubnets().GetSubnets() {
 		result = append(result, subnet.SubnetUUID)
 	}
 
 	return result
 }
 
-// GetSubnets returns list of subnets
-func (m *VirtualNetwork) GetSubnets() []*IpamSubnetType {
-	var result []*IpamSubnetType
+// GetIpamSubnets returns list of subnets
+func (m *VirtualNetwork) GetIpamSubnets() *IpamSubnets {
+	var subnets []*IpamSubnetType
 	// Take attr subnets
 	for _, networkIpam := range m.GetNetworkIpamRefs() {
-		result = append(result, networkIpam.GetAttr().GetIpamSubnets()...)
+		subnets = append(subnets, networkIpam.GetAttr().GetIpamSubnets()...)
 	}
-	return result
+	return &IpamSubnets{
+		Subnets: subnets,
+	}
 }
 
 // GetAddressAllocationMethod returns address allocation method

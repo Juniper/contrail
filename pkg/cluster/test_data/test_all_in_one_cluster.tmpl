@@ -189,7 +189,7 @@ workflow:
     path: /openstack-clusters
     method: POST
     expected:
-    - 201
+    - 200
     data:
       openstack-cluster: *all_in_one_openstack_cluster
   expect:
@@ -208,7 +208,7 @@ workflow:
     path: /contrail-clusters
     method: POST
     expected:
-    - 201
+    - 200
     data:
       contrail-cluster: *all_in_one_cluster
   expect:
@@ -272,7 +272,7 @@ workflow:
     path: /nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       node: *all_in_one_node
   expect:
@@ -295,7 +295,7 @@ workflow:
     path: /contrail-config-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       contrail-config-node: *contrail_config_nodes
     expect:
@@ -310,7 +310,7 @@ workflow:
     path: /contrail-config-database-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       contrail-config-database-node: *contrail_config_database_nodes
     expect:
@@ -325,7 +325,7 @@ workflow:
     path: /contrail-analytics-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       contrail-analytics-node: *contrail_analytics_nodes
     expect:
@@ -340,7 +340,7 @@ workflow:
     path: /contrail-analytics-database-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       contrail-analytics-database-node: *contrail_analytics_database_nodes
     expect:
@@ -355,7 +355,7 @@ workflow:
     path: /contrail-webui-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       contrail-webui-node: *contrail_webui_nodes
     expect:
@@ -370,7 +370,7 @@ workflow:
     path: /contrail-control-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       contrail-control-node: *contrail_control_nodes
     expect:
@@ -385,7 +385,7 @@ workflow:
     path: /contrail-vrouter-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       contrail-vrouter-node: *contrail_vrouter_nodes
     expect:
@@ -412,7 +412,7 @@ workflow:
     path: /openstack-control-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       openstack-control-node: *openstack_control_nodes
     expect:
@@ -427,7 +427,7 @@ workflow:
     path: /openstack-monitoring-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       openstack-monitoring-node: *openstack_monitoring_nodes
     expect:
@@ -442,7 +442,7 @@ workflow:
     path: /openstack-network-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       openstack-network-node: *openstack_network_nodes
     expect:
@@ -457,7 +457,7 @@ workflow:
     path: /openstack-storage-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       openstack-storage-node: *openstack_storage_nodes
     expect:
@@ -472,7 +472,7 @@ workflow:
     path: /openstack-compute-nodes
     method: POST
     expected:
-    - 201
+    - 200
     data:
       openstack-compute-node: *openstack_compute_nodes
     expect:

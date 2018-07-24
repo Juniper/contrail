@@ -41,13 +41,19 @@ func NewEventProducer(processor services.EventProcessor) (p *EventProducer, err 
 func (p *EventProducer) HandleMessage(
 	ctx context.Context, index int64, oper int32, key string, newValue []byte,
 ) {
-	log.Debug("Index: %d, oper: %d, Got Message %s: %s",
+	log.Debugf("Index: %d, oper: %d, Got Message %s: %s",
 		index, oper, key, newValue)
+
 	event, err := ParseEvent(oper, key, newValue)
 	if err != nil {
 		log.WithError(err).Error("Failed to parse event")
+		return
 	}
-	p.Processor.Process(ctx, event) // nolint: errcheck
+
+	_, err = p.Processor.Process(ctx, event)
+	if err != nil {
+		log.WithError(err).Error("Failed to process event")
+	}
 }
 
 // ParseEvent returns an Event corresponding to a change in ETCD.
@@ -55,7 +61,10 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 
 	//TODO(nati) use sync.Codec
 
-	kind, uuid := parseKey(key)
+	kind, uuid, err := parseKey(key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse kind and UUID from etcd key: %s", key)
+	}
 
 	operation, err := parseOperation(oper)
 	if err != nil {
@@ -82,9 +91,15 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 	return event, nil
 }
 
-func parseKey(key string) (string, string) {
+func parseKey(key string) (kind string, uuid string, err error) {
 	subkeys := strings.Split(key, "/")
-	return subkeys[2], subkeys[3]
+
+	if len(subkeys) < 4 {
+		return "", "", errors.New("Key has too few fields")
+	}
+	kind = subkeys[2]
+	uuid = subkeys[3]
+	return kind, uuid, nil
 }
 
 func parseOperation(etcdOperation int32) (string, error) {
