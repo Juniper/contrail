@@ -25,7 +25,7 @@ func IsStringRouteTargetUserDefined(routeTarget string, globalAsn int64) (bool, 
 
 // IsRouteTargetUserDefined checks if route target represented as a slice was user defined.
 func IsRouteTargetUserDefined(routeTarget []string, globalAsn int64) (bool, error) {
-	ip, asn, target, err := parseRouteTarget(routeTarget)
+	ip, asn, target, err := ParseRouteTarget(routeTarget)
 	if err != nil {
 		return false, err
 	}
@@ -41,7 +41,8 @@ func IsRouteTargetUserDefined(routeTarget []string, globalAsn int64) (bool, erro
 	return true, nil
 }
 
-func parseRouteTarget(routeTarget []string) (ip net.IP, asn int, target int, err error) {
+// ParseRouteTarget parses route target name and validates format of the name
+func ParseRouteTarget(routeTarget []string) (ip net.IP, asn int, target int, err error) {
 
 	if len(routeTarget) != 3 || routeTarget[0] != routeTargetPrefix {
 		return nil, 0, 0, errors.Errorf("invalid RouteTarget specified: %v \n"+
