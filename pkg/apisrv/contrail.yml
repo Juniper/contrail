@@ -1,7 +1,7 @@
 # Database configuration. Only MySQL supported
 database:
     # MySQL example
-    type: mysql 
+    type: mysql
     dialect: mysql
     host: localhost
     user: root
@@ -9,7 +9,7 @@ database:
     name: contrail_test
     # Postgres example
     # connection: "user=root dbname=contrail_test sslmode=disable"
-    # type: pgx 
+    # type: pgx
     # dialect: postgres
 
     # Max Open Connections for DB Server
@@ -18,7 +18,7 @@ database:
     retry_period: 3
 
 test_database:
-    mysql: 
+    mysql:
         type: mysql
         dialect: mysql
         host: localhost
@@ -26,7 +26,7 @@ test_database:
         password: contrail123
         name: contrail_test
     postgres:
-        type: postgres 
+        type: postgres
         dialect: postgres
         host: localhost
         user: root
@@ -67,6 +67,9 @@ server:
     proxy:
         /contrail:
         - http://localhost:8082
+
+homepage:
+    enabled: true
 
 # Keystone configuration
 keystone:
