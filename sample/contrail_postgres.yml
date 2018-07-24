@@ -11,6 +11,7 @@ database:
     max_open_conn: 100
     connection_retries: 10
     retry_period: 3s
+    replication_status_timeout: 10s
 
 etcd:
   endpoints:
@@ -105,7 +106,7 @@ no_auth: true
 insecure: true
 
 sync:
-  enabled: false
+  enabled: false 
   storage: json
 
 client:
@@ -169,10 +170,12 @@ cache:
     #how long revistion deleted event preserved.
     max_history: 100000
     cassandra:
-        enabled: true
+        enabled: false 
         host: localhost
         port: 9042
         timeout: 3600s
         amqp: amqp://guest:guest@localhost:5672/
     etcd:
+        enabled: false
+    rdbms:
         enabled: true
