@@ -7,19 +7,11 @@ import (
 	"fmt"
 
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 )
 
-// MetaData represents resource meta data.
-//
-// TODO(Michal): services.ContrailService relying on this struct caused circular
-// 	dependency. Move MetaData definition to db package after extracting metadata
-// 	dependent code from service package.
-type MetaData = services.MetaData
-
 // CreateMetaData creates fqname, uuid pair with type.
-func (db *Service) CreateMetaData(ctx context.Context, metaData *MetaData) error {
+func (db *Service) CreateMetaData(ctx context.Context, metaData *models.MetaData) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
 		_, err := tx.Exec(
@@ -32,7 +24,7 @@ func (db *Service) CreateMetaData(ctx context.Context, metaData *MetaData) error
 }
 
 // GetMetaData gets metadata from database.
-func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string) (*MetaData, error) {
+func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string) (*models.MetaData, error) {
 	var uuidString, typeString, fqNameString string
 
 	if err := db.DoInTransaction(ctx, func(ctx context.Context) error {
@@ -50,11 +42,11 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 			query.WriteString(where)
 			row = tx.QueryRow(query.String(), models.FQNameToString(fqName))
 		} else {
-			return fmt.Errorf("uuid and fqName unspecified ")
+			return fmt.Errorf("uuid and fqName unspecified")
 		}
 		err := row.Scan(&uuidString, &typeString, &fqNameString)
 		if err != nil {
-			return errors.Wrapf(handleError(err), "failed to get metadata (%v")
+			return errors.Wrapf(handleError(err), "failed to get metadata")
 		}
 
 		return nil
@@ -62,7 +54,7 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 		return nil, err
 	}
 
-	return &MetaData{
+	return &models.MetaData{
 		UUID:   uuidString,
 		FQName: models.ParseFQName(fqNameString),
 		Type:   typeString,

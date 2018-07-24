@@ -2,6 +2,10 @@ package services
 
 import (
     "encoding/json"
+    "fmt"
+
+    "github.com/pkg/errors"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 )
@@ -73,11 +77,59 @@ func NewEvent(option *EventOption) *Event {
                         Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
                             ID: uuid,
                         }}
-            }
-         {% endif%}{% endfor %}
+            }{% endif%}{% endfor %}
     }
-    return e 
+    return e
 }
+
+// NewEventFromRefUpdate creates ref create or delete event from RefUpdate object.
+func NewEventFromRefUpdate(refUpdate *RefUpdate) (*Event, error) {
+    e := &Event{}
+    kind := fmt.Sprintf("%s-%s", refUpdate.Type, refUpdate.RefType)
+    operation := refUpdate.Operation
+    if operation == "" {
+        operation = RefOperationAdd
+    }
+    switch (kind) {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% for _, reference in schema.References %}
+{% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+        case "{{ schema.TypeName }}-{{ reference.LinkTo.TypeName }}":
+            switch (operation) {
+                case RefOperationAdd:
+                    request := &Event_Create{{ refType }}Request{
+                        Create{{ refType }}Request: &Create{{ refType }}Request{
+                                ID: refUpdate.UUID,
+                                {{ refType }}: &models.{{ refType }}{
+                                    UUID: refUpdate.RefUUID,
+                                },
+                            },
+                    }
+                    {% if reference.RefType %}
+                    if len(refUpdate.Attr) > 0 {
+                    err := json.Unmarshal(refUpdate.Attr, &request.Create{{ refType }}Request.{{ refType }}.Attr)
+                        if err != nil {
+                            return nil, errors.Wrap(err, "bad attr data")
+                        }
+                    }
+                    {% endif %}
+                    e.Request = request
+                case RefOperationDelete:
+                    e.Request = &Event_Delete{{ refType }}Request{
+                        Delete{{ refType }}Request: &Delete{{ refType }}Request{
+                                ID: refUpdate.UUID,
+                                {{ refType }}: &models.{{ refType }}{
+                                    UUID: refUpdate.RefUUID,
+                                },
+                            },
+                    }
+            }{% endfor %}{% endif%}{% endfor %}
+        default:
+            return nil, errors.Errorf("ref from type %s to type %s does not exist", refUpdate.Type, refUpdate.RefType)
+    }
+    return e, nil
+}
+
 
 //UnmarshalJSON unmarshal event.
 func (e *Event) UnmarshalJSON(data []byte) error {
