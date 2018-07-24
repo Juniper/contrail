@@ -50,11 +50,11 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 			query.WriteString(where)
 			row = tx.QueryRow(query.String(), models.FQNameToString(fqName))
 		} else {
-			return fmt.Errorf("uuid and fqName unspecified ")
+			return fmt.Errorf("uuid and fqName unspecified")
 		}
 		err := row.Scan(&uuidString, &typeString, &fqNameString)
 		if err != nil {
-			return errors.Wrapf(handleError(err), "failed to get metadata (%v")
+			return errors.Wrapf(handleError(err), "failed to get metadata")
 		}
 
 		return nil
