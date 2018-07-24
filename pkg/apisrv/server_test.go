@@ -67,6 +67,11 @@ func TestProject(t *testing.T) {
 	RunTest(t, "./test_data/test_project.yml")
 }
 
+func TestRefUpdate(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_ref_update.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
 	restClient := client.NewHTTP(
