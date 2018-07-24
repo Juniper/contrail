@@ -1,0 +1,140 @@
+name: Test ref-update endpoint
+description: |
+  Integration test for ref-update endpoint which allows creating
+  and deleting references for specified objects.
+cleanup:
+- path: /project/project_blue_ref_update_uuid
+- path: /virtual_network/virtual_network_ref_update_uuid
+- path: /routing_instance/routing_instance_ref_update_uuid
+- path: /route_target/routing_instance_ref_update_uuid
+test_data:
+  project_blue: &project_blue_ref_update
+    uuid: project_blue_ref_update_uuid
+    name: project_blue_ref_update
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  virtual_network: &virtual_network_ref_update
+    uuid: virtual_network_ref_update_uuid
+    parent_type: project
+    parent_uuid: project_blue_ref_update_uuid
+    network_ipam_refs: []
+
+  routing_instance: &routing_instance_ref_update
+    uuid: routing_instance_ref_update_uuid
+    parent_type: virtual-network
+    parent_uuid: virtual_network_ref_update_uuid
+
+  route_target: &route_target_ref_update
+    uuid: route_target_ref_update_uuid
+    fq_name: ["100:200"]
+    parent_type: "hoge"
+    parent_uuid: "hoge"
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [201]
+    data:
+      project: *project_blue_ref_update
+  expect:
+    project: *project_blue_ref_update
+
+- name: create virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [201]
+    data:
+      virtual-network: *virtual_network_ref_update
+  expect:
+    virtual-network:
+      <<: *virtual_network_ref_update
+      network_ipam_refs: null
+
+- name: create routing instance
+  request:
+    path: /routing-instances
+    method: POST
+    expected: [201]
+    data:
+      routing-instance: *routing_instance_ref_update
+  expect:
+    routing-instance: *routing_instance_ref_update
+
+- name: create route target
+  request:
+    path: /route-targets
+    method: POST
+    expected: [201]
+    data:
+      route-target: *route_target_ref_update
+  expect:
+    route-target: *route_target_ref_update
+
+- name: create ref using ref-update with ref-uuid provided
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: ADD
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+      #ref-fq-name: ["100:200"]
+      #attr:
+        #import_export: null
+#- name: check if the ref from the project to the set was created
+  #request:
+    #path: /project/project_blue_ref_update_uuid
+    #method: GET
+    #expected: [200]
+  #expect:
+    #project:
+      #application_policy_set_refs:
+        #- {}
+      #application_policy_sets:
+        #- fq_name: [default-domain, project_blue_ref_update, default-application-policy-set]
+
+- name: delete routing instance
+  request:
+    path: /route-target/route_target_ref_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete route target
+  request:
+    path: /routing-instance/routing_instance_ref_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/virtual_network_ref_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete project
+  request:
+    path: /project/project_blue_ref_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null

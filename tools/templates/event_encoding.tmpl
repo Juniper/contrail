@@ -76,8 +76,53 @@ func NewEvent(option *EventOption) *Event {
             }
          {% endif%}{% endfor %}
     }
-    return e 
+    return e
 }
+
+// NewEventFromRefUpdate creates ref create or delete event from RefUpdate object.
+func NewEventFromRefUpdate(refUpdate *RefUpdate) *Event {
+    e := &Event{}
+    kind := refUpdate.Type + refUpdate.RefType
+  	operation := refUpdate.Operation
+    if operation == "" {
+        operation = OperationAdd
+    }
+    switch (kind) {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% for linkTo, reference in schema.References %}
+        case "{{ schema.ID }}{{ linkTo }}":
+            switch (operation) {
+                case OperationAdd:
+                    request := &Event_Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                        Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest: &Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                            ID: refUpdate.UUID,
+                            {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref: &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
+                                UUID: refUpdate.RefUUID,
+                            },
+                        },
+                    }
+                    {% if reference.RefType %}
+                    err := json.Unmarshal(refUpdate.Attr, request)
+                    if err != nil {
+                        return nil
+                    }
+                    {% endif %}
+                    e.Request = request
+                case OperationDelete:
+                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                        Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest: &Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                            ID: refUpdate.UUID,
+                            {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref: &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
+                                UUID: refUpdate.RefUUID,
+                            },
+                        },
+                    }
+            }
+            {% endfor %}{% endif%}{% endfor %}
+    }
+    return e
+}
+
 
 //UnmarshalJSON unmarshal event.
 func (e *Event) UnmarshalJSON(data []byte) error {
