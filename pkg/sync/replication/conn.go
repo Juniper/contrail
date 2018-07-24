@@ -42,7 +42,7 @@ func newPostgresReplicationConnection(
 func (c *postgresReplicationConnection) GetReplicationSlot(
 	name string,
 ) (maxWal uint64, snapshotName string, err error) {
-	_ = c.replConn.DropReplicationSlot(name) // nolint: gas
+	_ = c.replConn.DropReplicationSlot(name) // nolint: gosec
 
 	// If creating the replication slot fails with code 42710, this means
 	// the replication slot already exists.

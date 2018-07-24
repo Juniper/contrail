@@ -287,7 +287,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 				log.Warn("invalid event %v", data)
 				continue
 			}
-			p.Processor.Process(ctx, e) // nolint: errcheck, gas
+			p.Processor.Process(ctx, e) // nolint: errcheck, gosec
 		case <-ctx.Done():
 			log.Debug("AQMP watcher canncelled by context")
 			return nil
@@ -301,9 +301,9 @@ func (p *EventProducer) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	events.Sort() // nolint: errcheck, gas
+	events.Sort() // nolint: errcheck, gosec
 	for _, e := range events.Events {
-		p.Processor.Process(ctx, e) // nolint: errcheck, gas
+		p.Processor.Process(ctx, e) // nolint: errcheck, gosec
 	}
 	return p.WatchAMQP(ctx)
 }

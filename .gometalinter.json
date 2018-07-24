@@ -2,12 +2,12 @@
     "Enable": [
         "deadcode",
         "errcheck",
-        "gas",
         "goconst",
         "gocyclo",
         "gofmt",
         "goimports",
         "golint",
+        "gosec",
         "gosimple",
         "gotype",
         "gotypex",
@@ -28,8 +28,8 @@
     "Exclude": [
         "gen_.*.go",
         "generated.pb.go",
-        "Subprocess launching with variable.*(gas)",
-        "TLS InsecureSkipVerify.*(gas)",
+        "Subprocess launching with variable.*(gosec)",
+        "TLS InsecureSkipVerify.*(gosec)",
         "parameter .* always receives.*(unparam)"
     ],
     "Skip": [

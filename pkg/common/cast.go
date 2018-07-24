@@ -14,7 +14,7 @@ func InterfaceToInt(i interface{}) int {
 	}
 	switch t := i.(type) {
 	case []byte:
-		i, _ := strconv.Atoi(string(t)) // nolint: gas
+		i, _ := strconv.Atoi(string(t)) // nolint: gosec
 		return i
 	case int:
 		return t
@@ -33,7 +33,7 @@ func InterfaceToInt64(i interface{}) int64 {
 	}
 	switch t := i.(type) {
 	case []byte:
-		i, _ := strconv.ParseInt(string(t), 10, 64) // nolint: gas
+		i, _ := strconv.ParseInt(string(t), 10, 64) // nolint: gosec
 		return i
 	case int:
 		return int64(t)
@@ -49,7 +49,7 @@ func InterfaceToInt64(i interface{}) int64 {
 func InterfaceToBool(i interface{}) bool {
 	switch t := i.(type) {
 	case []byte:
-		b, _ := strconv.ParseBool(string(t)) // nolint: gas
+		b, _ := strconv.ParseBool(string(t)) // nolint: gosec
 		return b
 	case bool:
 		return t
@@ -125,7 +125,7 @@ func InterfaceToFloat(i interface{}) float64 {
 	t, _ := i.(float64)
 	switch t := i.(type) {
 	case []byte:
-		f, _ := strconv.ParseFloat(string(t), 64) // nolint: gas
+		f, _ := strconv.ParseFloat(string(t), 64) // nolint: gosec
 		return f
 	case int:
 		return float64(t)

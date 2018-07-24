@@ -174,7 +174,7 @@ type JSONSchema struct {
 
 //String makes string format for json schema
 func (s *JSONSchema) String() string {
-	data, _ := json.Marshal(s) // nolint: gas
+	data, _ := json.Marshal(s) // nolint: gosec
 	return string(data)
 }
 
