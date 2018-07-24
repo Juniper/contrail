@@ -13,18 +13,14 @@ const (
 	routeTargetPrefix   = "target"
 )
 
-// IsUserDefined checks if route target was defined by user.
-func (rt *RouteTarget) IsUserDefined(globalAsn int64) (bool, error) {
-	return IsRouteTargetUserDefined(rt.FQName, globalAsn)
+// ValidateName validates format of the Route Target name
+func (rt *RouteTarget) ValidateName() error {
+	_, _, _, err := parseRouteTarget(rt.GetName())
+	return err
 }
 
-// IsStringRouteTargetUserDefined checks if route target represented as a string was user defined.
-func IsStringRouteTargetUserDefined(routeTarget string, globalAsn int64) (bool, error) {
-	return IsRouteTargetUserDefined(strings.Split(routeTarget, ":"), globalAsn)
-}
-
-// IsRouteTargetUserDefined checks if route target represented as a slice was user defined.
-func IsRouteTargetUserDefined(routeTarget []string, globalAsn int64) (bool, error) {
+// IsRouteTargetUserDefined checks if route target was user defined.
+func IsRouteTargetUserDefined(routeTarget string, globalAsn int64) (bool, error) {
 	ip, asn, target, err := parseRouteTarget(routeTarget)
 	if err != nil {
 		return false, err
@@ -41,8 +37,9 @@ func IsRouteTargetUserDefined(routeTarget []string, globalAsn int64) (bool, erro
 	return true, nil
 }
 
-func parseRouteTarget(routeTarget []string) (ip net.IP, asn int, target int, err error) {
-
+// parseRouteTarget parses route target name and validates format of the name
+func parseRouteTarget(rtName string) (ip net.IP, asn int, target int, err error) {
+	routeTarget := strings.Split(rtName, ":")
 	if len(routeTarget) != 3 || routeTarget[0] != routeTargetPrefix {
 		return nil, 0, 0, errors.Errorf("invalid RouteTarget specified: %v \n"+
 			"Route target must be of the format 'target:<asn>:<number>' or 'target:<ip>:<number>'", routeTarget)

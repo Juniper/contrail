@@ -94,7 +94,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 	for _, vn := range vnList.VirtualNetworks {
 		rtList := vn.RouteTargetList
 		for _, rt := range rtList.RouteTarget {
-			userDefined, err := models.IsStringRouteTargetUserDefined(rt, globalAsn)
+			userDefined, err := models.IsRouteTargetUserDefined(rt, globalAsn)
 			if err != nil {
 				return err
 			}
