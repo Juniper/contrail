@@ -51,3 +51,17 @@ func ChildFQName(parentFQName []string, childName string) []string {
 	}
 	return result
 }
+
+// FQNameEquals checks if fqName slices have the same lenght and values
+func FQNameEquals(fqNameA, fqNameB []string) bool {
+	if len(fqNameA) != len(fqNameB) {
+		return false
+	}
+	size := len(fqNameA)
+	for i := 0; i < size; i++ {
+		if fqNameA[i] != fqNameB[i] {
+			return false
+		}
+	}
+	return true
+}
