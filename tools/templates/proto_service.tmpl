@@ -28,6 +28,10 @@ rpc List{{ schema.JSONSchema.GoName }} (List{{ schema.JSONSchema.GoName }}Reques
 rpc Create{{ schema.JSONSchema.GoName }} (Create{{ schema.JSONSchema.GoName }}Request) returns (Create{{ schema.JSONSchema.GoName }}Response);
 rpc Update{{ schema.JSONSchema.GoName }} (Update{{ schema.JSONSchema.GoName }}Request) returns (Update{{ schema.JSONSchema.GoName }}Response);
 rpc Delete{{ schema.JSONSchema.GoName }} (Delete{{ schema.JSONSchema.GoName }}Request) returns (Delete{{ schema.JSONSchema.GoName }}Response);
+{% for _, reference in schema.References %}
+rpc Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref (Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) returns (Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse);
+rpc Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref (Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) returns (Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse);
+{% endfor %}
 {% endif %}{% endfor %}
 }
 
@@ -97,15 +101,40 @@ message Get{{ schema.JSONSchema.GoName }}Response {
     github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}", (gogoproto.jsontag) = "{{ schema.Path }}"];
 }
 
+{% for linkTo, reference in schema.References %}
+message Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest {
+    string id = 1 [(gogoproto.customname) = "ID"];
+    github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+}
+
+message Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse {
+    string id = 1 [(gogoproto.customname) = "ID"];
+    github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+}
+
+message Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest {
+    string id = 1 [(gogoproto.customname) = "ID"];
+    github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+}
+
+message Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse {
+    string id = 1 [(gogoproto.customname) = "ID"];
+    github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ schema.ID }} = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref",(gogoproto.jsontag) = "{{ schema.Path }}_{{ linkTo }}_ref"];
+}{% endfor %}
 {% endif %}{% endfor %}
 
 message Event {
     uint64 version = 1;
-    oneof request {
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-       Create{{ schema.JSONSchema.GoName }}Request create_{{ schema.ID }} = {{schema.Index }} [(gogoproto.customname) = "Create{{ schema.JSONSchema.GoName }}Request"];
-       Update{{ schema.JSONSchema.GoName }}Request update_{{ schema.ID }} = {{schema.Index + 1}} [(gogoproto.customname) = "Update{{ schema.JSONSchema.GoName }}Request"];
-       Delete{{ schema.JSONSchema.GoName }}Request delete_{{ schema.ID }} = {{schema.Index + 2}} [(gogoproto.customname) = "Delete{{ schema.JSONSchema.GoName }}Request"];
+    oneof request { {% set index = 2 %}{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+        Create{{ schema.JSONSchema.GoName }}Request create_{{ schema.ID }} = {{ index }} [(gogoproto.customname) = "Create{{ schema.JSONSchema.GoName }}Request"];
+        Update{{ schema.JSONSchema.GoName }}Request update_{{ schema.ID }} = {{ index+1 }} [(gogoproto.customname) = "Update{{ schema.JSONSchema.GoName }}Request"];
+        Delete{{ schema.JSONSchema.GoName }}Request delete_{{ schema.ID }} = {{ index+2 }} [(gogoproto.customname) = "Delete{{ schema.JSONSchema.GoName }}Request"];
+{% set index = index + 3 %}{% for linkTo, reference in schema.References %}
+{% set offset = forloop.Counter0 * 2 %}
+        Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest create_{{ schema.ID }}_{{ linkTo }}_ref = {{ index + offset }} [(gogoproto.customname) = "Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest"];
+        Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest delete_{{ schema.ID }}_{{ linkTo }}_ref = {{ index + offset + 1 }} [(gogoproto.customname) = "Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest"];
+{% endfor %}
+{% set index = index + 2 * (schema.References|length)%}{# pongo2 variables are scoped so we need to add offset #}
 {% endif %}{% endfor %}
     }
 }
