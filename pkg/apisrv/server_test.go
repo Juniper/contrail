@@ -61,10 +61,13 @@ func TestBasePropsTwoParents(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_base_props_two_parents.yml")
 }
-
 func TestProject(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_project.yml")
+}
+func TestEndpoints(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_fqname_to_id.yml")
 }
 
 func TestInstanceIP(t *testing.T) {
