@@ -115,7 +115,7 @@ func (h *HTTP) Login() error {
 	defer resp.Body.Close() // nolint: errcheck
 	err = checkStatusCode([]int{201}, resp.StatusCode)
 	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true) // nolint: gosec
+		output, _ := httputil.DumpResponse(resp, true)
 		log.WithError(err).WithField("output", string(output)).Error("Unexpected status code")
 		return err
 	}
@@ -181,7 +181,7 @@ func (h *HTTP) Do(method, path string, data interface{}, output interface{}, exp
 
 	err = checkStatusCode(expected, resp.StatusCode)
 	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true) // nolint: gosec
+		output, _ := httputil.DumpResponse(resp, true)
 		log.WithError(err).WithField("output", string(output)).Error("Unexpected status code")
 		return resp, err
 	}

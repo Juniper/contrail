@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Following static analysis tools are disabled:
 # * dupl which consumes too much RAM and is too slow
+# * gosec which consumes too much RAM and is too slow
 # * megacheck which uses staticcheck which consumes too much RAM
 # * safesql which does not omit skipped directories
 # * staticcheck which consumes too much RAM
@@ -14,4 +15,4 @@ set -o pipefail
 
 [[ -z `go tool fix --diff ./pkg/` ]]
 
-gometalinter --deadline 20m --config .gometalinter.json ./...
+gometalinter --config .gometalinter.json ./...
