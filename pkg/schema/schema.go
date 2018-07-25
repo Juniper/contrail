@@ -172,9 +172,12 @@ type JSONSchema struct {
 	Format            string                 `yaml:"format" json:"format,omitempty"`
 }
 
-//String makes string format for json schema
+//String makes string format for json schema.
 func (s *JSONSchema) String() string {
-	data, _ := json.Marshal(s) // nolint: gosec
+	data, err := json.Marshal(s)
+	if err != nil {
+		log.WithError(err).Debug("Could not stringify JSONSchema")
+	}
 	return string(data)
 }
 

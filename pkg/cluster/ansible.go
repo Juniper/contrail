@@ -91,7 +91,7 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 	}
 	tmpFileName := tmpfile.Name()
 	defer func() {
-		if err = os.Remove(tmpFileName); err != nil { // nolint: gosec
+		if err = os.Remove(tmpFileName); err != nil {
 			log.Errorf("Error while deleting tmpfile: %s", err)
 		}
 	}()

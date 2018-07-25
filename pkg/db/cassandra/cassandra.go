@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/gocql/gocql"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
+	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -72,7 +73,7 @@ func (o object) Get(key string) interface{} {
 	var response interface{}
 	err := json.Unmarshal([]byte(data[0].(string)), &response)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	return response
 }
@@ -129,7 +130,7 @@ func (o object) convert(uuid string) map[string]interface{} {
 
 //DumpCassandra load all existing cassandra data.
 func DumpCassandra(host string, port int, timeout time.Duration) (*services.EventList, error) {
-	log.Debug("Dumping data from cassandra")
+	logrus.Debug("Dumping data from cassandra")
 	// connect to the cluster
 	cluster := gocql.NewCluster(host)
 	if port != 0 {
@@ -185,12 +186,15 @@ func ReadCassandraDump(inFile string) (*services.EventList, error) {
 
 //EventProducer send db update for processor.
 type EventProducer struct {
+	Processor services.EventProcessor
+
 	cassandraHost    string
 	cassandraPort    int
 	cassandraTimeout time.Duration
 	rabbitMQHost     string
 	queueName        string
-	Processor        services.EventProcessor
+
+	log *logrus.Entry
 }
 
 //NewEventProducer makes new event processor for cassandra.
@@ -209,13 +213,14 @@ func NewEventProducer(
 		queueName:        queueName,
 		rabbitMQHost:     rabbitMQHost,
 		Processor:        processor,
+		log:              pkglog.NewLogger("cassandra-event-producer"),
 	}
 }
 
 //WatchAMQP watches AMQP.
 //nolint: gocyclo
 func (p *EventProducer) WatchAMQP(ctx context.Context) error {
-	log.Debug("starting watch amqp")
+	p.log.Debug("Starting watch on AMQP")
 	conn, err := amqp.Dial(p.rabbitMQHost)
 	if err != nil {
 		return err
@@ -270,7 +275,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 			var data map[string]interface{}
 			err := json.Unmarshal(d.Body, &data)
 			if err != nil {
-				log.Warnf("decode error for %s", string(d.Body))
+				p.log.WithError(err).WithField("data", string(d.Body)).Warn("Decoding failed - ignoring")
 				continue
 			}
 			operation, _ := data["oper"].(string)
@@ -284,12 +289,18 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 				UUID:      uuid,
 			})
 			if e == nil {
-				log.Warn("invalid event %v", data)
+				p.log.WithField("data", data).Warn("Got invalid event - ignoring")
 				continue
 			}
-			p.Processor.Process(ctx, e) // nolint: errcheck, gosec
+
+			if _, err = p.Processor.Process(ctx, e); err != nil {
+				p.log.WithError(err).WithFields(logrus.Fields{
+					"context": ctx,
+					"event":   e,
+				}).Warn("Processing event failed - ignoring")
+			}
 		case <-ctx.Done():
-			log.Debug("AQMP watcher canncelled by context")
+			p.log.Debug("AQMP watcher cancelled by context")
 			return nil
 		}
 	}
@@ -301,9 +312,18 @@ func (p *EventProducer) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	events.Sort() // nolint: errcheck, gosec
+
+	if err = events.Sort(); err != nil {
+		p.log.WithError(err).Warn("Sorting events failed - ignoring")
+	}
+
 	for _, e := range events.Events {
-		p.Processor.Process(ctx, e) // nolint: errcheck, gosec
+		if _, err = p.Processor.Process(ctx, e); err != nil {
+			p.log.WithError(err).WithFields(logrus.Fields{
+				"context": ctx,
+				"event":   e,
+			}).Warn("Processing event failed - ignoring")
+		}
 	}
 	return p.WatchAMQP(ctx)
 }
