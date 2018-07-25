@@ -135,6 +135,7 @@ func (db *DB) AddWatcher(ctx context.Context, versionID uint64) (*Watcher, error
 	return watcher, nil
 }
 
+//nolint: gocyclo
 func (db *DB) update(event *services.Event) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -150,16 +151,12 @@ func (db *DB) update(event *services.Event) {
 
 	existingNode, ok := db.idMap[resource.GetUUID()]
 	if ok {
-		log.Debugf("compact existing map for event %d", event.Version)
+		log.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
 		if existingNode == db.first {
 			db.first = existingNode.getNext()
 		}
 		existingNode.pop()
 		delete(db.versionMap, existingNode.version)
-	}
-
-	if event.Operation() == services.OperationDelete {
-		db.deleted = append(db.deleted, n)
 	}
 
 	//pop too old deleted data.
@@ -173,13 +170,43 @@ func (db *DB) update(event *services.Event) {
 
 	db.idMap[resource.GetUUID()] = n
 
+	db.append(n)
+
+	//update backrefs
+	switch event.Operation() {
+	case services.OperationCreate, services.OperationUpdate:
+		dependencies := resource.Depends()
+		for _, dependencyID := range dependencies {
+			dependentNode, ok := db.idMap[dependencyID]
+			if ok {
+				dependentNode.event.GetResource().AddDependency(resource)
+				dependentNode.pop()
+				db.append(dependentNode)
+			}
+		}
+	case services.OperationDelete:
+		db.deleted = append(db.deleted, n)
+		backRefIDs := resource.Depends()
+		for _, backRefID := range backRefIDs {
+			dependentNode, ok := db.idMap[backRefID]
+			if ok {
+				dependentNode.event.GetResource().RemoveDependency(resource)
+				dependentNode.pop()
+				db.append(dependentNode)
+			}
+		}
+	}
+
+	log.Debugf("node %v updated", n.version)
+}
+
+func (db *DB) append(n *node) {
 	if db.first == nil {
 		db.first = n
 	}
-
 	db.last.setNext(n)
+	n.setPrev(db.last)
 	db.last = n
-	log.Debugf("node %v updated", n.version)
 }
 
 //Process updates cache data.
@@ -199,7 +226,7 @@ func (db *DB) getFirst() *node {
 	return db.first
 }
 
-//Get returns a resource for id.
+//Get returns a resource by id.
 func (db *DB) Get(id string) *services.Event {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
@@ -271,4 +298,6 @@ func (n *node) pop() {
 	next := n.getNext()
 	prev.setNext(next)
 	next.setPrev(prev)
+	n.next = nil
+	n.prev = nil
 }

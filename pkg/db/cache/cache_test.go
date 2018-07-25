@@ -104,3 +104,99 @@ func TestCache(t *testing.T) {
 	// _, ok := cache.idMap["vn0"]
 	// assert.Equal(t, false, ok, "compaction failed")
 }
+
+func TestDependencyResolution(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	cache := New(3)
+
+	vn := models.MakeVirtualNetwork()
+	vn.UUID = "vn_blue"
+
+	event1, err := cache.Process(context.Background(), &services.Event{
+		Version: 0,
+		Request: &services.Event_CreateVirtualNetworkRequest{
+			CreateVirtualNetworkRequest: &services.CreateVirtualNetworkRequest{
+				VirtualNetwork: vn,
+			},
+		},
+	})
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, "vn_blue", vn.UUID)
+	e := cache.Get("vn_blue")
+	assert.Equal(t, e, event1)
+	assert.Equal(t, e.GetResource().GetParentUUID(), "")
+
+	vn.ParentUUID = "hoge"
+	event2, err := cache.Process(context.Background(), &services.Event{
+		Version: 1,
+		Request: &services.Event_UpdateVirtualNetworkRequest{
+			UpdateVirtualNetworkRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: vn,
+			},
+		},
+	})
+	assert.Equal(t, e.GetResource().GetParentUUID(), "hoge")
+
+	e = cache.Get("vn_blue")
+	assert.Equal(t, e, event2)
+	assert.NotEqual(t, event1, event2)
+
+	ri := models.MakeRoutingInstance()
+	ri.UUID = "ri_uuid1"
+	ri.ParentUUID = vn.UUID
+
+	_, err = cache.Process(context.Background(), &services.Event{
+		Version: 2,
+		Request: &services.Event_CreateRoutingInstanceRequest{
+			CreateRoutingInstanceRequest: &services.CreateRoutingInstanceRequest{
+				RoutingInstance: ri,
+			},
+		},
+	})
+
+	e = cache.Get("vn_blue")
+
+	vn = e.GetUpdateVirtualNetworkRequest().GetVirtualNetwork()
+	assert.Len(t, vn.RoutingInstances, 1)
+	assert.Equal(t, vn.RoutingInstances[0].UUID, "ri_uuid1")
+
+	ri = models.MakeRoutingInstance()
+	ri.UUID = "ri_uuid2"
+	ri.ParentUUID = vn.UUID
+	ri.RoutingInstanceRefs = append(ri.RoutingInstanceRefs, &models.RoutingInstanceRoutingInstanceRef{UUID: "ri_uuid1"})
+
+	_, err = cache.Process(context.Background(), &services.Event{
+		Version: 2,
+		Request: &services.Event_CreateRoutingInstanceRequest{
+			CreateRoutingInstanceRequest: &services.CreateRoutingInstanceRequest{
+				RoutingInstance: ri,
+			},
+		},
+	})
+	e = cache.Get("vn_blue")
+	vn = e.GetUpdateVirtualNetworkRequest().GetVirtualNetwork()
+	assert.Len(t, vn.RoutingInstances, 2)
+	assert.Equal(t, vn.RoutingInstances[1].UUID, "ri_uuid2")
+
+	e = cache.Get("ri_uuid1")
+	ri = e.GetCreateRoutingInstanceRequest().GetRoutingInstance()
+	assert.Len(t, ri.RoutingInstanceBackRefs, 1)
+	assert.Equal(t, ri.RoutingInstanceBackRefs[0].UUID, "ri_uuid2")
+
+	event4, err := cache.Process(context.Background(), &services.Event{
+		Version: 3,
+		Request: &services.Event_DeleteVirtualNetworkRequest{
+			DeleteVirtualNetworkRequest: &services.DeleteVirtualNetworkRequest{
+				ID: "vn_blue",
+			},
+		},
+	})
+
+	e = cache.Get("vn_blue")
+	r := e.GetResource()
+	assert.Equal(t, e, event4)
+	assert.True(t, services.OperationDelete == e.Operation())
+	assert.NotEqual(t, r.GetParentUUID(), vn.ParentUUID)
+}

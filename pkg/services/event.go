@@ -38,9 +38,15 @@ type CanProcessService interface {
 //Resource is a generic resource interface.
 type Resource interface {
 	GetUUID() string
+	GetParentUUID() string
 	Kind() string
+	// Depends Returns UUIDs of children anc back references
 	Depends() []string
 	ToMap() map[string]interface{}
+	// AddDependency adds child/backref to model
+	AddDependency(i interface{})
+	// RemoveDependency removes child/backref to model
+	RemoveDependency(i interface{})
 }
 
 //EventList has multiple rest requests.
@@ -58,7 +64,8 @@ const (
 
 //reorder request using Tarjan's algorithm
 func visitResource(uuid string, sorted []*Event,
-	eventMap map[string]*Event, stateGraph map[string]state) (sortedList []*Event, err error) {
+	eventMap map[string]*Event, stateGraph map[string]state,
+) (sortedList []*Event, err error) {
 	if stateGraph[uuid] == temporaryVisited {
 		return nil, fmt.Errorf("dependency loop found in sync request")
 	}
@@ -66,7 +73,10 @@ func visitResource(uuid string, sorted []*Event,
 		return sorted, nil
 	}
 	stateGraph[uuid] = temporaryVisited
-	event := eventMap[uuid]
+	event, found := eventMap[uuid]
+	if !found {
+		return nil, fmt.Errorf("Resource with uuid: %s not found in eventMap", uuid)
+	}
 	depends := event.GetResource().Depends()
 	for _, refUUID := range depends {
 		sorted, err = visitResource(refUUID, sorted, eventMap, stateGraph)
