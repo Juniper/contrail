@@ -8,7 +8,9 @@ import (
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/db"
+	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/jackc/pgx"
+	"github.com/sirupsen/logrus"
 )
 
 type pgxReplicationConn interface {
@@ -30,19 +32,26 @@ type dbService interface {
 type postgresReplicationConnection struct {
 	replConn pgxReplicationConn
 	db       dbService
+	log      *logrus.Entry
 }
 
 func newPostgresReplicationConnection(
 	db dbService, replConn pgxReplicationConn,
 ) (*postgresReplicationConnection, error) {
-	return &postgresReplicationConnection{db: db, replConn: replConn}, nil
+	return &postgresReplicationConnection{
+		db:       db,
+		replConn: replConn,
+		log:      pkglog.NewLogger("postgres-replication-connection"),
+	}, nil
 }
 
 // GetReplicationSlot gets replication slot for replication.
 func (c *postgresReplicationConnection) GetReplicationSlot(
 	name string,
 ) (maxWal uint64, snapshotName string, err error) {
-	_ = c.replConn.DropReplicationSlot(name) // nolint: gosec
+	if dropErr := c.replConn.DropReplicationSlot(name); err != nil {
+		c.log.WithError(dropErr).Info("Could not drop replication slot just before getting new one - safely ignoring")
+	}
 
 	// If creating the replication slot fails with code 42710, this means
 	// the replication slot already exists.

@@ -80,8 +80,8 @@ func (h *HTTP) Login() error {
 	if h.AuthURL == "" {
 		return nil
 	}
-	authURL := h.AuthURL + "/auth/tokens"
-	authRequest := &keystone.AuthRequest{
+
+	dataJSON, err := json.Marshal(&keystone.AuthRequest{
 		Auth: &keystone.Auth{
 			Identity: &keystone.Identity{
 				Methods: []string{"password"},
@@ -97,43 +97,39 @@ func (h *HTTP) Login() error {
 			},
 			Scope: h.Scope,
 		},
-	}
-	authResponse := &keystone.AuthResponse{}
-	dataJSON, err := json.Marshal(authRequest)
+	})
 	if err != nil {
 		return err
 	}
-	request, err := http.NewRequest("POST", authURL, bytes.NewBuffer(dataJSON))
+
+	request, err := http.NewRequest("POST", h.AuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
 	if err != nil {
 		return err
 	}
 	request.Header.Set("Content-Type", "application/json")
+
 	resp, err := h.httpClient.Do(request)
 	if err != nil {
+		logErrorAndResponse(err, resp)
 		return err
 	}
 	defer resp.Body.Close() // nolint: errcheck
+
 	err = checkStatusCode([]int{201}, resp.StatusCode)
 	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true) // nolint: gosec
-		log.WithError(err).WithField("output", string(output)).Error("Unexpected status code")
+		logErrorAndResponse(err, resp)
 		return err
 	}
+
+	var authResponse keystone.AuthResponse
 	err = json.NewDecoder(resp.Body).Decode(&authResponse)
 	if err != nil {
+		logErrorAndResponse(err, resp)
 		return err
 	}
+
 	h.AuthToken = resp.Header.Get("X-Subject-Token")
 	return nil
-}
-
-func checkStatusCode(expected []int, actual int) error {
-	for _, expected := range expected {
-		if expected == actual {
-			return nil
-		}
-	}
-	return errors.Errorf("unexpected return code: expected %v, actual %v", expected, actual)
 }
 
 // Create send a create API request.
@@ -175,30 +171,34 @@ func (h *HTTP) Do(method, path string, data interface{}, output interface{}, exp
 
 	resp, err := h.doHTTPRequestRetryingOn401(request, data)
 	if err != nil {
+		logErrorAndResponse(err, resp)
 		return nil, err
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
 	err = checkStatusCode(expected, resp.StatusCode)
 	if err != nil {
-		output, _ := httputil.DumpResponse(resp, true) // nolint: gosec
-		log.WithError(err).WithField("output", string(output)).Error("Unexpected status code")
+		logErrorAndResponse(err, resp)
 		return resp, err
 	}
+
 	if method == echo.DELETE {
 		return resp, nil
 	}
+
 	err = json.NewDecoder(resp.Body).Decode(&output)
 	if err != nil {
+		logErrorAndResponse(err, resp)
 		return resp, errors.Wrap(err, "decoding response body failed")
 	}
+
 	if h.Debug {
 		log.WithFields(log.Fields{
 			"response": resp,
 			"output":   output,
 		}).Debug("API Server response")
 	}
-	return resp, err
+	return resp, nil
 }
 
 func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}) (*http.Request, error) {
@@ -271,6 +271,26 @@ func (h *HTTP) doHTTPRequestRetryingOn401(request *http.Request, data interface{
 		}
 	}
 	return resp, nil
+}
+
+func checkStatusCode(expected []int, actual int) error {
+	for _, e := range expected {
+		if e == actual {
+			return nil
+		}
+	}
+	return errors.Errorf("unexpected return code: expected %v, actual %v", expected, actual)
+}
+
+func logErrorAndResponse(err error, response *http.Response) {
+	if err != nil {
+		r, dErr := httputil.DumpResponse(response, true)
+		if dErr != nil {
+			log.WithError(err).WithField("response", "error dumping response").Info("Request failed")
+		} else {
+			log.WithError(err).WithField("response", string(r)).Info("Request failed")
+		}
+	}
 }
 
 // DoRequest requests based on request object.

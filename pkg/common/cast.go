@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +16,10 @@ func InterfaceToInt(i interface{}) int {
 	}
 	switch t := i.(type) {
 	case []byte:
-		i, _ := strconv.Atoi(string(t)) // nolint: gosec
+		i, err := strconv.Atoi(string(t))
+		if err != nil {
+			log.WithError(err).Debugf("Could not convert %#v to int", t)
+		}
 		return i
 	case int:
 		return t
@@ -33,7 +38,10 @@ func InterfaceToInt64(i interface{}) int64 {
 	}
 	switch t := i.(type) {
 	case []byte:
-		i, _ := strconv.ParseInt(string(t), 10, 64) // nolint: gosec
+		i, err := strconv.ParseInt(string(t), 10, 64)
+		if err != nil {
+			log.WithError(err).Debugf("Could not convert %#v to int64", t)
+		}
 		return i
 	case int:
 		return int64(t)
@@ -49,7 +57,10 @@ func InterfaceToInt64(i interface{}) int64 {
 func InterfaceToBool(i interface{}) bool {
 	switch t := i.(type) {
 	case []byte:
-		b, _ := strconv.ParseBool(string(t)) // nolint: gosec
+		b, err := strconv.ParseBool(string(t))
+		if err != nil {
+			log.WithError(err).Debugf("Could not convert %#v to bool", t)
+		}
 		return b
 	case bool:
 		return t
@@ -125,7 +136,10 @@ func InterfaceToFloat(i interface{}) float64 {
 	t, _ := i.(float64)
 	switch t := i.(type) {
 	case []byte:
-		f, _ := strconv.ParseFloat(string(t), 64) // nolint: gosec
+		f, err := strconv.ParseFloat(string(t), 64)
+		if err != nil {
+			log.WithError(err).Debugf("Could not convert %#v to float ", t)
+		}
 		return f
 	case int:
 		return float64(t)
