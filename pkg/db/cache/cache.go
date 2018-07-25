@@ -158,10 +158,6 @@ func (db *DB) update(event *services.Event) {
 		delete(db.versionMap, existingNode.version)
 	}
 
-	if event.Operation() == services.OperationDelete {
-		db.deleted = append(db.deleted, n)
-	}
-
 	//pop too old deleted data.
 	if len(db.deleted) > 0 && db.lastIndex-db.deleted[0].version > db.maxHistory {
 		compactedNode := db.deleted[0]
@@ -173,13 +169,42 @@ func (db *DB) update(event *services.Event) {
 
 	db.idMap[resource.GetUUID()] = n
 
+	db.append(n)
+
+	//update backrefs
+	switch event.Operation() {
+	case services.OperationCreate:
+		backRefIDs := resource.Depends()
+		for _, backRefID := range backRefIDs {
+			backRefNode, ok := db.idMap[backRefID]
+			if ok {
+				backRefNode.event.GetResource().AddBackRef(resource)
+				backRefNode.pop()
+				db.append(backRefNode)
+			}
+		}
+	case services.OperationDelete:
+		db.deleted = append(db.deleted, n)
+		backRefIDs := resource.Depends()
+		for _, backRefID := range backRefIDs {
+			backRefNode, ok := db.idMap[backRefID]
+			if ok {
+				backRefNode.event.GetResource().RemoveBackRef(resource)
+				backRefNode.pop()
+				db.append(backRefNode)
+			}
+		}
+	}
+
+	log.Debugf("node %v updated", n.version)
+}
+
+func (db *DB) append(n *node) {
 	if db.first == nil {
 		db.first = n
 	}
-
 	db.last.setNext(n)
 	db.last = n
-	log.Debugf("node %v updated", n.version)
 }
 
 //Process updates cache data.
@@ -271,4 +296,6 @@ func (n *node) pop() {
 	next := n.getNext()
 	prev.setNext(next)
 	next.setPrev(prev)
+	n.next = nil
+	n.prev = nil
 }

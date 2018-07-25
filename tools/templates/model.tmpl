@@ -11,6 +11,7 @@ import (
 {% set name = t.name %}
 {% set typename = t.typename %}
 {% set references = t.references %}
+{% set back_references = t.back_references %}
 {% set parent = t.parents %}
 {% set children = t.children %}
 
@@ -134,6 +135,50 @@ func (m *{{ name }}) Depends() []string {
     }
     {% endfor %}
     return depends
+}
+
+func (m *{{ name }}) AddBackRef(i interface{}) {
+   switch resource := i.(type) {
+   {% for _, backref in back_references %}
+   {% set linkTo = backref.LinkTo %}
+   case *{{ linkTo.JSONSchema.GoName }}:
+        m.{{ linkTo.JSONSchema.GoName }}BackRefs = append(m.{{ linkTo.JSONSchema.GoName }}BackRefs, resource)
+   {% endfor %}
+   {% for backref in children %}
+   {% set linkTo = backref.LinkTo %}
+   case *{{ linkTo.JSONSchema.GoName }}:
+        m.{{ linkTo.JSONSchema.GoName }}s = append(m.{{ linkTo.JSONSchema.GoName }}s, resource)
+   {% endfor %}
+   } 
+}
+
+func (m *{{ name }}) RemoveBackRef(i interface{}) {
+   switch resource := i.(type) {
+   {% for _, backref in back_references %}
+   {% set linkTo = backref.LinkTo %}
+   case *{{ linkTo.JSONSchema.GoName }}:
+        l := []*{{ linkTo.JSONSchema.GoName }}{}
+        for _, backref := range m.{{ linkTo.JSONSchema.GoName }}BackRefs {
+            if backref.GetUUID() == resource.GetUUID() {
+                continue
+            }
+            l = append(l, resource)
+        } 
+        m.{{ linkTo.JSONSchema.GoName }}BackRefs = l 
+   {% endfor %}
+   {% for backref in children %}
+   {% set linkTo = backref.LinkTo %}
+   case *{{ linkTo.JSONSchema.GoName }}:
+        l := []*{{ linkTo.JSONSchema.GoName }}{}
+        for _, backref := range m.{{ linkTo.JSONSchema.GoName }}s {
+            if backref.GetUUID() == reference.GetUUID() {
+                continue
+            }
+            l = append(l, resource)
+        } 
+        m.{{ linkTo.JSONSchema.GoName }}s = l 
+   {% endfor %}
+   } 
 }
 
 {% for linkTo, reference in references %}

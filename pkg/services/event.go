@@ -38,9 +38,12 @@ type CanProcessService interface {
 //Resource is a generic resource interface.
 type Resource interface {
 	GetUUID() string
+	GetParentUUID() string
 	Kind() string
 	Depends() []string
 	ToMap() map[string]interface{}
+	AddBackRef(i interface{})
+	RemoveBackRef(i interface{})
 }
 
 //EventList has multiple rest requests.
