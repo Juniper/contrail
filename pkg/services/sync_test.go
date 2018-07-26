@@ -26,13 +26,13 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 		{
 			name: "parent uuid and type provided",
 			model: models.AccessControlList{
-				UUID:       "foo-uuid",
+				UUID:       "4789f49b-a6df-4744-1ecf-60b0958e45e6",
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 			},
 			metadata: MetaData{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
 			want: models.AccessControlList{
-				UUID:       "foo-uuid",
+				UUID:       "4789f49b-a6df-4744-1ecf-60b0958e45e6",
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 				// Default filled fields below
@@ -41,12 +41,19 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				FQName: []string{
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
 				Perms2: &models.PermType2{Owner: "default-project"},
+				IDPerms: &models.IdPermsType{
+					Enable: true,
+					UUID: &models.UuidType{
+						UUIDMslong: 5154920197859002180,
+						UUIDLslong: 2220099452856583654,
+					},
+				},
 			},
 		},
 		{
 			name: "fill default display name",
 			model: models.AccessControlList{
-				UUID:       "foo-uuid",
+				UUID:       "4789f49b-a6df-4744-1ecf-60b0958e45e6",
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 				Name:       "some-name",
@@ -55,7 +62,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				Perms2: &models.PermType2{Owner: "default-project"},
 			},
 			want: models.AccessControlList{
-				UUID:       "foo-uuid",
+				UUID:       "4789f49b-a6df-4744-1ecf-60b0958e45e6",
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 				Name:       "some-name",
@@ -64,6 +71,13 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				Perms2: &models.PermType2{Owner: "default-project"},
 				// Default filled fields below
 				DisplayName: "some-name",
+				IDPerms: &models.IdPermsType{
+					Enable: true,
+					UUID: &models.UuidType{
+						UUIDMslong: 5154920197859002180,
+						UUIDLslong: 2220099452856583654,
+					},
+				},
 			},
 		},
 	}
