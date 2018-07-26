@@ -4,6 +4,8 @@ import (
     "context"
     "fmt"
     "net/http"
+    "math/rand"
+    "time"
 
     "github.com/labstack/echo"
     errors "github.com/pkg/errors"
@@ -117,6 +119,20 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     model.Perms2 = &models.PermType2{}
     model.Perms2.Owner = auth.ProjectID()
+
+    if model.IDPerms != nil {
+        if model.IDPerms.UUID == nil {
+            rand.Seed(time.Now().UnixNano())
+		    uuid := &models.UuidType{
+			    UUIDMslong: rand.Int63(),
+			    UUIDLslong: rand.Int63(),
+		    }
+		    model.IDPerms.UUID = uuid
+	    }
+
+        log.Debugf("IDPerms UUIDMslong: %d", model.IDPerms.UUID.UUIDMslong)
+	    log.Debugf("IDPerms UUIDLslong: %d", model.IDPerms.UUID.UUIDLslong)
+    }
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
