@@ -9,6 +9,7 @@ cleanup:
 - path: /network-ipam/test_ipam_red
 - path: /network-ipam/test_ipam1
 - path: /network-ipam/test_ipam2
+- path: /instance-ip/test_instance_ip
 - path: /network-policy/network_policy_uuid
 - path: /network-policy/network_policy_uuid2
   client: bob
@@ -565,6 +566,95 @@ workflow:
   expect:
     network-policys:
       count: 1
+
+- name: update vn_blue with user-defined subnet
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 200
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        network_ipam_refs:
+          - uuid: test_ipam_blue
+            attr:
+              ipam_subnets:
+                - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+                  subnet:
+                    ip_prefix: "10.0.0.0"
+                    ip_prefix_len: 24
+  expect:
+    virtual-network:
+      network_ipam_refs:
+        - uuid: test_ipam_blue
+          attr:
+            ipam_subnets:
+              - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+                subnet:
+                  ip_prefix: "10.0.0.0"
+                  ip_prefix_len: 24
+
+- name: create instance ip
+  request:
+    path: /instance-ips
+    method: POST
+    expected:
+    - 201
+    data:
+      instance-ip:
+        uuid: "test_instance_ip"
+        subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+        instance_ip_address: "10.0.0.1"
+        network_ipam_refs:
+        - uuid: test_ipam_blue
+        virtual_network_refs:
+        - uuid: vn_blue
+
+- name: try update vn_blue with different subnet
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 409
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        network_ipam_refs:
+          - uuid: test_ipam_blue
+            attr:
+              ipam_subnets:
+                - subnet_uuid: "16ee1b2f-caa3-4465-ab2f-b0941da44d43"
+                  subnet:
+                    ip_prefix: "10.0.0.0"
+                    ip_prefix_len: 24
+
+- name: delete instance ip
+  request:
+    path: /instance-ip/test_instance_ip
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+
+- name: update vn_blue with different subnet
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 200
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        network_ipam_refs:
+          - uuid: test_ipam_blue
+            attr:
+              ipam_subnets:
+                - subnet_uuid: "16ee1b2f-caa3-4465-ab2f-b0941da44d43"
+                  subnet:
+                    ip_prefix: "10.0.0.0"
+                    ip_prefix_len: 24
+
 - name: try to update vn_blue by changing is_provider_network
   request:
     path: /virtual-network/vn_blue
