@@ -137,3 +137,48 @@ func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
 
 	return false, nil
 }
+
+// Contains checks if IpamSubnets contain provided ip address
+func (m *IpamSubnets) Contains(
+	ipString string,
+) (bool, error) {
+	for _, ipamSubnet := range m.GetSubnets() {
+		ip := net.ParseIP(ipString)
+		if ip == nil {
+			return false, errors.Errorf("invalid address: " + ipString)
+		}
+
+		contains, err := ipamSubnet.Contains(ip)
+		if err != nil {
+			return false, err
+		}
+
+		if contains {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// Subtract subtracts right set from ipam subnets set and returns the result
+func (m *IpamSubnets) Subtract(rightSet *IpamSubnets) *IpamSubnets {
+	if m == nil {
+		return nil
+	}
+
+	var subnets []*IpamSubnetType
+	rightMap := make(map[string]bool)
+	for _, r := range rightSet.GetSubnets() {
+		rightMap[r.SubnetUUID] = true
+	}
+
+	for _, l := range m.GetSubnets() {
+		if !rightMap[l.SubnetUUID] {
+			subnets = append(subnets, l)
+		}
+	}
+
+	return &IpamSubnets{
+		Subnets: subnets,
+	}
+}

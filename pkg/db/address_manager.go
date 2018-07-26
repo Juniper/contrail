@@ -54,6 +54,19 @@ func (db *Service) CreateIpamSubnet(
 	return subnetUUID, err
 }
 
+// CheckIfIpamSubnetExists checks if subnet with provided subnet UUID already exists
+func (db *Service) CheckIfIpamSubnetExists(ctx context.Context, subnetUUID string) (bool, error) {
+	if subnetUUID == "" {
+		return false, nil
+	}
+
+	res, err := db.getIPPools(ctx, &ipPool{
+		key: subnetUUID,
+	})
+
+	return len(res) != 0, err
+}
+
 // DeleteIpamSubnet deletes IPAM subnet
 func (db *Service) DeleteIpamSubnet(ctx context.Context, request *ipam.DeleteIpamSubnetRequest) (err error) {
 	if request.SubnetUUID == "" {
@@ -100,7 +113,7 @@ func (db *Service) DeallocateIP(ctx context.Context, request *ipam.DeallocateIPR
 		return nil
 	}
 
-	for _, subnet := range request.VirtualNetwork.GetSubnets() {
+	for _, subnet := range request.VirtualNetwork.GetIpamSubnets().GetSubnets() {
 		hit, err := subnet.Contains(net.ParseIP(request.IPAddress))
 		if err != nil {
 			return err
@@ -124,7 +137,7 @@ func (db *Service) IsIPAllocated(
 		return false, nil
 	}
 
-	for _, subnet := range request.VirtualNetwork.GetSubnets() {
+	for _, subnet := range request.VirtualNetwork.GetIpamSubnets().GetSubnets() {
 		hit, err := subnet.Contains(net.ParseIP(request.IPAddress))
 		if err != nil {
 			return false, err
