@@ -35,13 +35,6 @@ test_data:
     address_allocation_mode: "flat-subnet-preferred"
     mac_limit_control: *mac_limit_control
 
-  vn_validation_test_fail_missing_reference: &vn_validation_test_fail_missing_reference
-    uuid: vn_validation_test_uuid
-    display_name: blue
-    parent_type: project
-    parent_uuid: admin_project_validation_test_uuid
-    mac_limit_control: *mac_limit_control
-
   vn_validation_test_fail_number_too_small: &vn_validation_test_fail_number_too_small
     uuid: vn_validation_test_uuid
     display_name: blue
@@ -147,16 +140,6 @@ workflow:
     method: DELETE
     expected:
     - 204
-  expect: null
-
-- name: create virtual network fail - missing reference
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 400
-    data:
-      virtual-network: *vn_validation_test_fail_missing_reference
   expect: null
 
 - name: create virtual network fail - number property too small
