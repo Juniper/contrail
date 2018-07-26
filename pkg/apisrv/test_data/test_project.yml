@@ -84,9 +84,7 @@ workflow:
     method: POST
     expected: [201]
     data:
-      application-policy-set:
-        <<: *user_made_application_policy_set_project
-        firewall_policy_refs: []
+      application-policy-set: *user_made_application_policy_set_project
   expect:
     application-policy-set: *user_made_application_policy_set_project
 
