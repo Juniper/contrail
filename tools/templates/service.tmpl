@@ -4,6 +4,10 @@ import (
     "context"
     "fmt"
     "net/http"
+    "strings"
+    "strconv"
+    "math/rand"
+    "time"
 
     "github.com/labstack/echo"
     errors "github.com/pkg/errors"
@@ -117,6 +121,28 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     model.Perms2 = &models.PermType2{}
     model.Perms2.Owner = auth.ProjectID()
+
+    if model.IDPerms == nil {
+        model.IDPerms = &models.IdPermsType{
+            Enable: true,
+        }
+    }
+
+    if model.IDPerms.UUID == nil {
+        uuid := strings.Replace(model.UUID, "-", "", 4)
+        uuidHigh, err1 := strconv.ParseInt(uuid[:len(uuid)/2], 16, 64)
+        uuidLow, err2 := strconv.ParseInt(uuid[len(uuid)/2:], 16, 64)
+        if len(uuid) != 32 || err1 != nil || err2 != nil {
+            random := rand.New(rand.NewSource(time.Now().UnixNano()))
+            uuidHigh = random.Int63()
+            uuidLow = random.Int63()
+        }
+
+	    model.IDPerms.UUID = &models.UuidType{
+            UUIDMslong: uuidHigh,
+            UUIDLslong: uuidLow,
+		}
+    }
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
