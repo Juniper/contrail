@@ -362,3 +362,102 @@ func TestIpamSubnetTypeContains(t *testing.T) {
 		})
 	}
 }
+
+func TestIpamSubnetSetsSubtract(t *testing.T) {
+	type args struct {
+		leftSet  []*IpamSubnetType
+		rightSet []*IpamSubnetType
+	}
+	tests := []struct {
+		name string
+		args args
+		want []*IpamSubnetType
+	}{
+		{
+			name: "Simple subtraction",
+			args: args{
+				leftSet: []*IpamSubnetType{
+					{
+						SubnetUUID: "uuid-1",
+					},
+					{
+						SubnetUUID: "uuid-2",
+					},
+				},
+				rightSet: []*IpamSubnetType{
+					{
+						SubnetUUID: "uuid-1",
+					},
+				},
+			},
+			want: []*IpamSubnetType{
+				{
+					SubnetUUID: "uuid-2",
+				},
+			},
+		},
+		{
+			name: "Equal sets subtraction",
+			args: args{
+				leftSet: []*IpamSubnetType{
+					{
+						SubnetUUID: "uuid-1",
+					},
+				},
+				rightSet: []*IpamSubnetType{
+					{
+						SubnetUUID: "uuid-1",
+					},
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "Bigger set subtraction",
+			args: args{
+				leftSet: []*IpamSubnetType{
+					{
+						SubnetUUID: "uuid-1",
+					},
+				},
+				rightSet: []*IpamSubnetType{
+					{
+						SubnetUUID: "uuid-1",
+					},
+					{
+						SubnetUUID: "uuid-2",
+					},
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "Subtract empty set",
+			args: args{
+				leftSet: []*IpamSubnetType{
+					{
+						SubnetUUID: "uuid-1",
+					},
+					{
+						SubnetUUID: "uuid-2",
+					},
+				},
+				rightSet: []*IpamSubnetType{},
+			},
+			want: []*IpamSubnetType{
+				{
+					SubnetUUID: "uuid-1",
+				},
+				{
+					SubnetUUID: "uuid-2",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := IpamSubnetSetsSubtract(tt.args.leftSet, tt.args.rightSet)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
