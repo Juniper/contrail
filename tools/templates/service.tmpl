@@ -8,7 +8,7 @@ import (
     "github.com/labstack/echo"
     errors "github.com/pkg/errors"
     "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+    log "github.com/sirupsen/logrus"
 
     "github.com/Juniper/contrail/pkg/common"
     "github.com/Juniper/contrail/pkg/models"
@@ -30,8 +30,8 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
             "err": err,
             "resource": "{{ schema.ID }}",
         }).Debug("bind failed on create")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
-	}
+        return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+    }
     ctx := c.Request().Context()
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
     if err != nil {
@@ -117,6 +117,14 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     model.Perms2 = &models.PermType2{}
     model.Perms2.Owner = auth.ProjectID()
+
+    if model.IDPerms == nil {
+        model.IDPerms = models.NewIDPerms(model.UUID)
+    }
+
+    if model.IDPerms.UUID == nil {
+        model.IDPerms.UUID = models.NewUUIDType(model.UUID)
+    }
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
