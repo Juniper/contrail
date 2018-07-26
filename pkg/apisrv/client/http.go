@@ -283,13 +283,20 @@ func checkStatusCode(expected []int, actual int) error {
 }
 
 func logErrorAndResponse(err error, response *http.Response) {
-	if err != nil {
-		r, dErr := httputil.DumpResponse(response, true)
-		if dErr != nil {
-			log.WithError(err).WithField("response", "error dumping response").Info("Request failed")
-		} else {
-			log.WithError(err).WithField("response", string(r)).Info("Request failed")
-		}
+	if err == nil {
+		return
+	}
+
+	if response == nil {
+		log.WithError(err).WithField("response", "nil response").Info("Request failed")
+		return
+	}
+
+	r, dErr := httputil.DumpResponse(response, true)
+	if dErr != nil {
+		log.WithError(err).WithField("response", "error dumping response").Info("Request failed")
+	} else {
+		log.WithError(err).WithField("response", string(r)).Info("Request failed")
 	}
 }
 
