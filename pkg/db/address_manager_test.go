@@ -364,6 +364,62 @@ func TestAddressManagerAllocateIP(t *testing.T) {
 	}
 }
 
+func TestAddressManagerIsIpamSubnetCreated(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		ipamSubnet *models.IpamSubnetType
+		subnetUUID string
+		expects    bool
+	}{
+		{
+			name: "Check existing subnet",
+			ipamSubnet: &models.IpamSubnetType{
+				SubnetUUID: "uuid-1",
+				Subnet: &models.SubnetType{
+					IPPrefix:    "10.0.0.0",
+					IPPrefixLen: 24,
+				},
+			},
+			subnetUUID: "uuid-1",
+			expects:    true,
+		},
+		{
+			name: "Check non-existing subnet",
+			ipamSubnet: &models.IpamSubnetType{
+				SubnetUUID: "uuid-1",
+				Subnet: &models.SubnetType{
+					IPPrefix:    "10.0.0.0",
+					IPPrefixLen: 24,
+				},
+			},
+			subnetUUID: "non-existing-uuid",
+			expects:    false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			err := db.DoInTransaction(ctx,
+				func(ctx context.Context) error {
+					_, err := db.CreateIpamSubnet(ctx, &ipam.CreateIpamSubnetRequest{
+						IpamSubnet: tt.ipamSubnet,
+					})
+					assert.NoError(t, err)
+					res, err := db.IsIpamSubnetCreated(ctx, tt.subnetUUID)
+					assert.NoError(t, err)
+					assert.Equal(t, tt.expects, res)
+
+					err = clearIPAddressPool(ctx)
+					assert.NoError(t, err)
+					return nil
+				})
+			assert.NoError(t, err)
+		})
+	}
+}
+
 func makeVirtualNetworkWithSubnets(ipamSubnets []*models.IpamSubnetType) *models.VirtualNetwork {
 	virtualNetwork := models.MakeVirtualNetwork()
 	vnSubnet := models.MakeVnSubnetsType()

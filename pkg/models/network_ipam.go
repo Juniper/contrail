@@ -137,3 +137,20 @@ func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
 
 	return false, nil
 }
+
+func IpamSubnetsSubstract(left []*IpamSubnetType, right []*IpamSubnetType) []*IpamSubnetType {
+	var res []*IpamSubnetType
+
+	rightMap := make(map[string]bool)
+	for _, r := range right {
+		rightMap[r.SubnetUUID] = true
+	}
+
+	for _, l := range left {
+		if !rightMap[l.SubnetUUID] {
+			res = append(res, l)
+		}
+	}
+
+	return res
+}

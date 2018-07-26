@@ -33,7 +33,7 @@ type testVn struct {
 }
 
 func TestCreateVirtualNetwork(t *testing.T) {
-	ipamSubnetUserDefined := virtualNetworkMakeUserDefinedSubnet()
+	ipamSubnetUserDefined := virtualNetworkMakeUserDefinedSubnet("5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3")
 	var tests = []struct {
 		name                  string
 		testVnData            *testVn
@@ -417,6 +417,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 		updateRequest         *services.UpdateVirtualNetworkRequest
 		ipamSubnetMethod      string
 		fails                 bool
+		addressMangerSetup    func(s *ContrailTypeLogicService)
 		expectedHTTPErrorCode int
 	}{
 		{
@@ -535,6 +536,111 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 				FieldMask: types.FieldMask{},
 			},
 		},
+		{
+			name: "Add a new subnet to virtual network",
+			expectedHTTPErrorCode: http.StatusBadRequest,
+			testVnData: &testVn{
+				isProviderNetwork: true,
+			},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID: "test_vn_uuid",
+					NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+						{
+							UUID: "network_ipam_a",
+							To:   []string{"test_vn_uuid"},
+							Attr: &models.VnSubnetsType{
+								IpamSubnets: []*models.IpamSubnetType{
+									virtualNetworkMakeUserDefinedSubnet("5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3"),
+								},
+							},
+						},
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.VirtualNetworkFieldNetworkIpamRefs,
+					},
+				},
+			},
+			addressMangerSetup: func(s *ContrailTypeLogicService) {
+				virtualNetworkMustCreateSubnet(s)
+			},
+		},
+		{
+			name: "Delete subnet on virtual network update",
+			expectedHTTPErrorCode: http.StatusBadRequest,
+			testVnData: &testVn{
+				isProviderNetwork: true,
+				networkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+					{
+						UUID: "network_ipam_a",
+						To:   []string{"test_vn_uuid"},
+						Attr: &models.VnSubnetsType{
+							IpamSubnets: []*models.IpamSubnetType{
+								virtualNetworkMakeUserDefinedSubnet("5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3"),
+							},
+						},
+					},
+				},
+			},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID: "test_vn_uuid",
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.VirtualNetworkFieldNetworkIpamRefs,
+					},
+				},
+			},
+			addressMangerSetup: func(s *ContrailTypeLogicService) {
+				virtualNetworkMustDeleteSubnet(s)
+			},
+		},
+		{
+			name: "Delete and add subnet on virtual network update",
+			expectedHTTPErrorCode: http.StatusBadRequest,
+			testVnData: &testVn{
+				isProviderNetwork: true,
+				networkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+					{
+						UUID: "network_ipam_a",
+						To:   []string{"test_vn_uuid"},
+						Attr: &models.VnSubnetsType{
+							IpamSubnets: []*models.IpamSubnetType{
+								virtualNetworkMakeUserDefinedSubnet("5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3"),
+							},
+						},
+					},
+				},
+			},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID: "test_vn_uuid",
+					NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+						{
+							UUID: "network_ipam_a",
+							To:   []string{"test_vn_uuid"},
+							Attr: &models.VnSubnetsType{
+								IpamSubnets: []*models.IpamSubnetType{
+									virtualNetworkMakeUserDefinedSubnet("df0fc1fd-9a56-492c-b04b-ae4917c3543d"),
+								},
+							},
+						},
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.VirtualNetworkFieldNetworkIpamRefs,
+					},
+				},
+			},
+			addressMangerSetup: func(s *ContrailTypeLogicService) {
+				virtualNetworkMustCreateSubnet(s)
+				virtualNetworkMustDeleteSubnet(s)
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -560,6 +666,10 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 					}).Times(1)
 			}
 
+			if tt.addressMangerSetup != nil {
+				tt.addressMangerSetup(service)
+			}
+
 			res, err := service.UpdateVirtualNetwork(ctx, tt.updateRequest)
 
 			if tt.fails {
@@ -578,7 +688,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 }
 
 func TestDeleteVirtualNetwork(t *testing.T) {
-	ipamSubnetUserDefined := virtualNetworkMakeUserDefinedSubnet()
+	ipamSubnetUserDefined := virtualNetworkMakeUserDefinedSubnet("5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3")
 	var tests = []struct {
 		name          string
 		UUID          string
@@ -871,6 +981,10 @@ func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
 
 func virtualNetworkMustCreateSubnet(s *ContrailTypeLogicService) {
 	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager.EXPECT().IsIpamSubnetCreated(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		false, nil,
+	).AnyTimes()
+
 	addressManager.EXPECT().CreateIpamSubnet(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(_ context.Context, request *ipam.CreateIpamSubnetRequest) (subnetUUID string, err error) {
 			return request.IpamSubnet.GetSubnetUUID(), nil
@@ -882,7 +996,7 @@ func virtualNetworkMustDeleteSubnet(s *ContrailTypeLogicService) {
 	addressManager.EXPECT().DeleteIpamSubnet(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 }
 
-func virtualNetworkMakeUserDefinedSubnet() *models.IpamSubnetType {
+func virtualNetworkMakeUserDefinedSubnet(subnetUUID string) *models.IpamSubnetType {
 	ipamSubnetUserDefined := models.MakeIpamSubnetType()
 	ipamSubnetUserDefined.Subnet = &models.SubnetType{
 		IPPrefix:    "10.0.0.0",
@@ -894,6 +1008,6 @@ func virtualNetworkMakeUserDefinedSubnet() *models.IpamSubnetType {
 			End:   "10.0.0.20",
 		},
 	}
-	ipamSubnetUserDefined.SubnetUUID = "5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3"
+	ipamSubnetUserDefined.SubnetUUID = subnetUUID
 	return ipamSubnetUserDefined
 }

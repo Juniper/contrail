@@ -194,8 +194,7 @@ func (sv *ContrailTypeLogicService) createIpamSubnet(
 	ipamUUID string,
 ) (subnetUUID string, err error) {
 	createIpamSubnetParams := &ipam.CreateIpamSubnetRequest{
-		IpamSubnet:      ipamSubnet,
-		NetworkIpamUUID: ipamUUID,
+		IpamSubnet: ipamSubnet,
 	}
 	return sv.AddressManager.CreateIpamSubnet(ctx, createIpamSubnetParams)
 }

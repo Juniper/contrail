@@ -56,7 +56,7 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			if err != nil {
 				return err
 			}
-			err = sv.handleVnSubnetsInAddrMgmt(ctx, virtualNetwork, true)
+			err = sv.allocateVnSubnetsInAddrMgmt(ctx, virtualNetwork.GetSubnets())
 			if err != nil {
 				return err
 			}
@@ -107,6 +107,10 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 			}
 			//TODO: check network support BGP types
 			//TODO: check BGPVPN Refs
+			err = sv.updateVnSubnetsInAddrMgmt(ctx, currentVN, requestedVN)
+			if err != nil {
+				return err
+			}
 
 			response, err = sv.Next().UpdateVirtualNetwork(ctx, request)
 
@@ -148,7 +152,7 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 				return err
 			}
 
-			err = sv.handleVnSubnetsInAddrMgmt(ctx, vn, false)
+			err = sv.deallocateVnSubnetsInAddrMgmt(ctx, vn.GetSubnets())
 			if err != nil {
 				return common.ErrorBadRequestf("couldn't remove virtual network subnet objects: %v", err)
 			}
@@ -292,10 +296,19 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 }
 
 func (sv *ContrailTypeLogicService) allocateVnSubnet(
-	ctx context.Context, ipamUUID string, vnSubnet *models.IpamSubnetType) (err error) {
+	ctx context.Context, vnSubnet *models.IpamSubnetType) error {
+
+	subnetAlreadyCreated, err := sv.AddressManager.IsIpamSubnetCreated(ctx, vnSubnet.SubnetUUID)
+	if err != nil {
+		return common.ErrorBadRequestf("couldn't allocate ipam subnet %v: %v", vnSubnet.SubnetUUID, err)
+	}
+
+	if subnetAlreadyCreated {
+		return nil
+	}
+
 	vnSubnet.SubnetUUID, err = sv.AddressManager.CreateIpamSubnet(ctx, &ipam.CreateIpamSubnetRequest{
-		IpamSubnet:      vnSubnet,
-		NetworkIpamUUID: ipamUUID,
+		IpamSubnet: vnSubnet,
 	})
 
 	if err != nil {
@@ -318,21 +331,46 @@ func (sv *ContrailTypeLogicService) deallocateVnSubnet(
 	return nil
 }
 
-func (sv *ContrailTypeLogicService) handleVnSubnetsInAddrMgmt(
-	ctx context.Context, virtualNetwork *models.VirtualNetwork, create bool,
-) (err error) {
+func (sv *ContrailTypeLogicService) updateVnSubnetsInAddrMgmt(
+	ctx context.Context, currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork,
+) error {
 
-	ipamReferences := virtualNetwork.GetNetworkIpamRefs()
-	for _, ipamReference := range ipamReferences {
-		for _, vnSubnet := range ipamReference.GetAttr().GetIpamSubnets() {
-			if create {
-				err = sv.allocateVnSubnet(ctx, ipamReference.GetUUID(), vnSubnet)
-			} else {
-				err = sv.deallocateVnSubnet(ctx, vnSubnet)
-			}
-			if err != nil {
-				return err
-			}
+	vnSubnetsToDelete := models.IpamSubnetsSubstract(currentVN.GetSubnets(), requestedVN.GetSubnets())
+	// TODO: check if subnets can be deleted
+	err := sv.deallocateVnSubnetsInAddrMgmt(ctx, vnSubnetsToDelete)
+	if err != nil {
+		return err
+	}
+
+	// TODO: update existing subnets
+	err = sv.allocateVnSubnetsInAddrMgmt(ctx, requestedVN.GetSubnets())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) allocateVnSubnetsInAddrMgmt(
+	ctx context.Context, vnSubnets []*models.IpamSubnetType,
+) error {
+	for _, vnSubnet := range vnSubnets {
+		err := sv.allocateVnSubnet(ctx, vnSubnet)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) deallocateVnSubnetsInAddrMgmt(
+	ctx context.Context, vnSubnets []*models.IpamSubnetType,
+) error {
+	for _, vnSubnet := range vnSubnets {
+		err := sv.deallocateVnSubnet(ctx, vnSubnet)
+		if err != nil {
+			return err
 		}
 	}
 

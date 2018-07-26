@@ -54,6 +54,19 @@ func (db *Service) CreateIpamSubnet(
 	return subnetUUID, err
 }
 
+func (db *Service) IsIpamSubnetCreated(ctx context.Context, subnetUUID string) (bool, error) {
+
+	if subnetUUID == "" {
+		return false, nil
+	}
+
+	res, err := db.getIPPools(ctx, &ipPool{
+		key: subnetUUID,
+	})
+
+	return len(res) != 0, err
+}
+
 // DeleteIpamSubnet deletes IPAM subnet
 func (db *Service) DeleteIpamSubnet(ctx context.Context, request *ipam.DeleteIpamSubnetRequest) (err error) {
 	if request.SubnetUUID == "" {

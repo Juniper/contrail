@@ -36,8 +36,7 @@ type IsIPAllocatedRequest struct {
 
 // CreateIpamSubnetRequest arguments for CreateIpamSubnet methods.
 type CreateIpamSubnetRequest struct {
-	IpamSubnet      *models.IpamSubnetType
-	NetworkIpamUUID string
+	IpamSubnet *models.IpamSubnetType
 }
 
 // DeleteIpamSubnetRequest arguments for DeleteIpamSubnet methods.
@@ -54,5 +53,6 @@ type AddressManager interface {
 	DeallocateIP(context.Context, *DeallocateIPRequest) (err error)
 	IsIPAllocated(context.Context, *IsIPAllocatedRequest) (isAllocated bool, err error)
 	CreateIpamSubnet(context.Context, *CreateIpamSubnetRequest) (subnetUUID string, err error)
+	IsIpamSubnetCreated(ctx context.Context, subnetUUID string) (bool, error)
 	DeleteIpamSubnet(context.Context, *DeleteIpamSubnetRequest) (err error)
 }
