@@ -2,6 +2,9 @@ package services
 
 import (
     "context"
+
+	"github.com/gogo/protobuf/types"
+
     "github.com/Juniper/contrail/pkg/common"
 )
 
@@ -92,6 +95,48 @@ func (service *BaseService) Delete{{ refType }}(ctx context.Context, request *De
         }, nil
     }
     return service.Next().Delete{{ refType }}(ctx, request)
+}
+
+func (service *RefUpdateToUpdateService) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
+    if err := service.InTransactionDoer(ctx, do func(ctx context.Context) error {
+        objResp, err := service.ReadService.Get{{ schema.JSONSchema.GoName }}(ctx, Get{{ schema.JSONSchema.GoName }}Request{
+            ID: request.ID,
+        })
+        objResp.{{ reference.GoName }}Refs = append(objResp.{{ reference.GoName }}Refs, request.{{ refType }})
+
+        _, err = service.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, Update{{ schema.JSONSchema.GoName }}Request{
+            {{ schema.JSONSchema.GoName }}: objResp,
+            FieldMask: types.FieldMask{Paths: []string{models.{{ schema.JSONSchema.GoName }}Field{{ reference.GoName }}Refs}},
+        })
+        return err
+    }); err != nil {
+        return nil, err
+    }
+    return &Create{{ refType }}Response{
+        ID: request.ID,
+        {{ refType }}: request.Get{{ refType }}(),
+    }, nil
+}
+
+func (service *RefUpdateToUpdateService) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
+    if err := service.InTransactionDoer(ctx, do func(ctx context.Context) error {
+        objResp, err := service.ReadService.Get{{ schema.JSONSchema.GoName }}(ctx, Get{{ schema.JSONSchema.GoName }}Request{
+            ID: request.ID,
+        })
+        // TODO(Michał): Delete ref here
+
+        _, err = service.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, Update{{ schema.JSONSchema.GoName }}Request{
+            {{ schema.JSONSchema.GoName }}: objResp,
+            FieldMask: types.FieldMask{Paths: []string{models.{{ schema.JSONSchema.GoName }}Field{{ reference.GoName }}Refs}},
+        })
+        return err
+    }); err != nil {
+        return nil, err
+    }
+    return &Delete{{ refType }}Response{
+        ID: request.ID,
+        {{ refType }}: request.Get{{ refType }}(),
+    }, nil
 }
 {% endfor %}
 
