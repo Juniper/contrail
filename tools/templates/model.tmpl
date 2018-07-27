@@ -7,177 +7,227 @@ import (
 
 {% for t in types %}
 
-{% set type = t.type %}
-{% set name = t.name %}
-{% set typename = t.typename %}
-{% set references = t.references %}
-{% set parent = t.parents %}
-{% set children = t.children %}
+{% set type = t.JSONSchema %}
+{% set name = type.GoName %}
 
-const Kind{{ name }} = "{{ typename }}"
+const Kind{{ name }} = "{{ t.TypeName }}"
 
 {% if type.Type == "object" %}
 
 const (
-    {% for property in type.OrderedProperties %}{{ name }}Field{{ property.GoName }} = "{{ property.ID }}"
-    {% endfor %}
-    {% for linkTo, reference in references %}{{ name }}Field{{ reference.GoName }}Refs = "{{ linkTo }}_refs"
-    {% endfor %}
+	{% for property in type.OrderedProperties %}{{ name }}Field{{ property.GoName }} = "{{ property.ID }}"
+	{% endfor %}
+	{% for linkTo, reference in t.References %}{{ name }}Field{{ reference.GoName }}Refs = "{{ linkTo }}_refs"
+	{% endfor %}
 )
 
 // Make{{ name }} makes {{ name }}
 // nolint
 func Make{{ name }}() *{{name}}{
-    return &{{name}}{
-    //TODO(nati): Apply default
-    {% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: "",
-        {% elif property.GoType == "[]string" %}{{ property.GoName }}: []string{},
-        {% elif property.GoType == "[]interface" %}{{ property.GoName }}: []interface{},
-        {% elif property.GoType == "map[string]string" %}{{ property.GoName }}: map[string]string{},
-        {% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: map[string]interface{}{},
-        {% elif property.GoType == "bool" %}{{ property.GoName }}: false,
-        {% elif property.GoType == "int64" %}{{ property.GoName }}: 0,
-        {% elif property.GoType == "float" %}{{ property.GoName }}: 0,
-        {% elif property.Type == "array"%}
-            {% if property.Items.Type == "string" %}
-                {{ property.GoName }}: []string{},
-            {% elif property.Items.Type == "integer"%}
-                {{ property.GoName }}: []int64{},
-            {% elif property.Items.GoType %}
-                {{ property.GoName }}:  Make{{ property.Items.GoType }}Slice(),
-            {% endif %}
-        {% else %}{{ property.GoName }}: Make{{ property.GoType }}(),
-        {% endif %}{% endfor %}
+	return &{{name}}{
+	//TODO(nati): Apply default
+	{% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: "",
+		{% elif property.GoType == "[]string" %}{{ property.GoName }}: []string{},
+		{% elif property.GoType == "[]interface" %}{{ property.GoName }}: []interface{},
+		{% elif property.GoType == "map[string]string" %}{{ property.GoName }}: map[string]string{},
+		{% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: map[string]interface{}{},
+		{% elif property.GoType == "bool" %}{{ property.GoName }}: false,
+		{% elif property.GoType == "int64" %}{{ property.GoName }}: 0,
+		{% elif property.GoType == "float" %}{{ property.GoName }}: 0,
+		{% elif property.Type == "array"%}
+			{% if property.Items.Type == "string" %}
+				{{ property.GoName }}: []string{},
+			{% elif property.Items.Type == "integer"%}
+				{{ property.GoName }}: []int64{},
+			{% elif property.Items.GoType %}
+				{{ property.GoName }}: Make{{ property.Items.GoType }}Slice(),
+			{% endif %}
+		{% else %}{{ property.GoName }}: Make{{ property.GoType }}(),
+		{% endif %}{% endfor %}
 
-        {% for linkTo, reference in references %}{% if reference.Presence == "required" or reference.Presence == "true" %}
-            {{ reference.GoName }}Refs: []*{{ name }}{{ reference.GoName }}Ref{},{% endif %}{% endfor %}
-    }
+		{% for linkTo, reference in t.References %}{% if reference.Presence == "required" or reference.Presence == "true" %}
+			{{ reference.GoName }}Refs: []*{{ name }}{{ reference.GoName }}Ref{},{% endif %}{% endfor %}
+	}
 }
 
 // InterfaceTo{{ name }} converts interface to {{ name }}
 // nolint
 func InterfaceTo{{ name }}(i interface{}) *{{name}}{
-    p, ok := i.(*{{name}})
-    if ok {
-        return p
-    }
-    o, ok := i.({{name}})
-    if ok {
-        return &o
-    }
-    m, ok := i.(map[string]interface{})
-    _ = m
-    if !ok {
-        return nil
-    }
-    return &{{name}}{
-    //TODO(nati): Apply default
-    {% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: common.InterfaceToString(m["{{ property.ID }}"]),
-        {% elif property.GoType == "[]string" %}{{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
-        {% elif property.GoType == "[]interface" %}{{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
-        {% elif property.GoType == "map[string]string" %}{{ property.GoName }}: common.InterfaceToStringMap(m["{{ property.ID }}"]),
-        {% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: common.InterfaceToInterfaceMap(m["{{ property.ID }}"]),
-        {% elif property.GoType == "bool" %}{{ property.GoName }}: common.InterfaceToBool(m["{{ property.ID }}"]),
-        {% elif property.GoType == "int64" %}{{ property.GoName }}: common.InterfaceToInt64(m["{{ property.ID }}"]),
-        {% elif property.GoType == "float" %}{{ property.GoName }}: common.InterfaceToFloat(m["{{ property.ID }}"]),,
-        {% elif property.Type == "array"%}
-            {% if property.Items.Type == "string" %}
-                {{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
-            {% elif property.Items.Type == "integer"%}
-                {{ property.GoName }}: common.InterfaceToInt64List(m["{{ property.ID }}"]),
-            {% elif property.Items.GoType %}
-                {{ property.GoName }}:  InterfaceTo{{ property.Items.GoType }}Slice(m["{{ property.ID }}"]),
-            {% endif %}
-        {% else %}{{ property.GoName }}: InterfaceTo{{ property.GoType }}(m["{{ property.ID }}"]),
-        {% endif %}{% endfor %}
-        {% for linkTo, reference in references %}
-            {{ reference.GoName }}Refs : InterfaceTo{{ type.GoName }}{{ reference.GoName }}Refs(m["{{ linkTo }}_refs"]),
-        {% endfor %}
-    }
+	p, ok := i.(*{{name}})
+	if ok {
+		return p
+	}
+	o, ok := i.({{name}})
+	if ok {
+		return &o
+	}
+	m, ok := i.(map[string]interface{})
+	_ = m
+	if !ok {
+		return nil
+	}
+	return &{{name}}{
+	//TODO(nati): Apply default
+	{% for property in type.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: common.InterfaceToString(m["{{ property.ID }}"]),
+		{% elif property.GoType == "[]string" %}{{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
+		{% elif property.GoType == "[]interface" %}{{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
+		{% elif property.GoType == "map[string]string" %}{{ property.GoName }}: common.InterfaceToStringMap(m["{{ property.ID }}"]),
+		{% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: common.InterfaceToInterfaceMap(m["{{ property.ID }}"]),
+		{% elif property.GoType == "bool" %}{{ property.GoName }}: common.InterfaceToBool(m["{{ property.ID }}"]),
+		{% elif property.GoType == "int64" %}{{ property.GoName }}: common.InterfaceToInt64(m["{{ property.ID }}"]),
+		{% elif property.GoType == "float" %}{{ property.GoName }}: common.InterfaceToFloat(m["{{ property.ID }}"]),,
+		{% elif property.Type == "array"%}
+			{% if property.Items.Type == "string" %}
+				{{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
+			{% elif property.Items.Type == "integer"%}
+				{{ property.GoName }}: common.InterfaceToInt64List(m["{{ property.ID }}"]),
+			{% elif property.Items.GoType %}
+				{{ property.GoName }}: InterfaceTo{{ property.Items.GoType }}Slice(m["{{ property.ID }}"]),
+			{% endif %}
+		{% else %}{{ property.GoName }}: InterfaceTo{{ property.GoType }}(m["{{ property.ID }}"]),
+		{% endif %}{% endfor %}
+		{% for linkTo, reference in t.References %}
+			{{ reference.GoName }}Refs : InterfaceTo{{ type.GoName }}{{ reference.GoName }}Refs(m["{{ linkTo }}_refs"]),
+		{% endfor %}
+	}
 }
 
 // ToMap makes map representation of a resource.
 // nolint
 func (m *{{ name }}) ToMap() map[string]interface{} {
-    if m == nil {
-        return nil
-    }
-    return map[string]interface{}{
-    {% for property in type.OrderedProperties %}
-        {% if property.GoType == "string" || property.GoType == "[]string" || property.GoType == "[]interface" || property.GoType == "map[string]interface{}" || property.GoType == "map[string]string" || property.GoType == "bool" || property.GoType == "int64" || property.GoType == "float" || property.Type == "array" %} "{{ property.ID }}": m.{{ property.GoName}},
-        {% else %}"{{ property.ID }}": m.{{ property.GoName}}.ToMap(),
-    {% endif %}{% endfor %}
-    {% for linkTo, reference in references %}
-        "{{ linkTo }}_refs" : {{ name }}{{ reference.GoName }}RefsToMap(m.{{ reference.GoName }}Refs),
-    {% endfor %}
-    }
+	if m == nil {
+		return nil
+	}
+	return map[string]interface{}{
+	{% for property in type.OrderedProperties %}
+		{% if property.GoType == "string" || property.GoType == "[]string" || property.GoType == "[]interface" || property.GoType == "map[string]interface{}" || property.GoType == "map[string]string" || property.GoType == "bool" || property.GoType == "int64" || property.GoType == "float" || property.Type == "array" %} "{{ property.ID }}": m.{{ property.GoName}},
+		{% else %}"{{ property.ID }}": m.{{ property.GoName}}.ToMap(),
+	{% endif %}{% endfor %}
+	{% for linkTo, reference in t.References %}
+		"{{ linkTo }}_refs" : {{ name }}{{ reference.GoName }}RefsToMap(m.{{ reference.GoName }}Refs),
+	{% endfor %}
+	}
 }
 
 // Kind returns kind of an resource.
 func (m *{{ name }}) Kind() string {
-    return Kind{{ name }}
+	return Kind{{ name }}
 }
 
 func (m *{{ name }}) Depends() []string {
-    var depends []string
-    if m == nil {
-        return nil
-    }
-    {% for property in type.OrderedProperties %}
-    {% if property == "parent_uuid" %}
-    depends = append(depends, m.GetParentUUID())
-    {% endif %}
-    {% endfor %}
-    {% for linkTo, reference in references %}
-    for _, ref := range m.{{ reference.GoName }}Refs {
-        depends = append(depends, ref.GetUUID())
-    }
-    {% endfor %}
-    return depends
+	var depends []string
+	if m == nil {
+		return nil
+	}
+	{% if t.Parents|length > 0 %}
+	if m.GetParentUUID() != "" {
+	depends = append(depends, m.GetParentUUID())
+	}
+	{% endif %}
+	{% for linkTo, reference in t.References %}
+	for _, ref := range m.{{ reference.GoName }}Refs {
+		depends = append(depends, ref.GetUUID())
+	}
+	{% endfor %}
+	return depends
 }
 
-{% for linkTo, reference in references %}
+func (m *{{ name }}) AddDependency(i interface{}) {
+    {% if t.BackReferences|length > 0 %}
+	switch resource := i.(type) {
+	{% for _, backref in t.BackReferences %}
+	{% set linkTo = backref.LinkTo %}
+	case *{{ linkTo.JSONSchema.GoName }}:
+		m.{{ linkTo.JSONSchema.GoName }}BackRefs = append(m.{{ linkTo.JSONSchema.GoName }}BackRefs, resource)
+	{% endfor %}
+    }
+    {% endif %}
+    {% if t.Children|length > 0 %}
+    switch resource := i.(type) {
+	{% for child in t.Children %}
+	{% set linkTo = child.LinkTo %}
+	case *{{ linkTo.JSONSchema.GoName }}:
+		m.{{ linkTo.JSONSchema.GoName }}s = append(m.{{ linkTo.JSONSchema.GoName }}s, resource)
+	{% endfor %}
+    }
+    {% endif %}
+}
+
+func (m *{{ name }}) RemoveDependency(i interface{}) {
+    {% if t.BackReferences|length > 0 %}
+	switch resource := i.(type) {
+	{% for _, backref in t.BackReferences %}
+	{% set linkTo = backref.LinkTo %}
+	case *{{ linkTo.JSONSchema.GoName }}:
+		l := []*{{ linkTo.JSONSchema.GoName }}{}
+		for _, backref := range m.{{ linkTo.JSONSchema.GoName }}BackRefs {
+			if backref.GetUUID() != resource.GetUUID() {
+				l = append(l, resource)
+			}
+		}
+		m.{{ linkTo.JSONSchema.GoName }}BackRefs = l
+	{% endfor %}
+    }
+    {% endif %}
+    {% if t.Children|length > 0 %}
+    switch resource := i.(type) {
+	{% for child in t.Children %}
+	{% set linkTo = child.LinkTo %}
+	case *{{ linkTo.JSONSchema.GoName }}:
+		l := []*{{ linkTo.JSONSchema.GoName }}{}
+		for _, child := range m.{{ linkTo.JSONSchema.GoName }}s {
+			if child.GetUUID() != resource.GetUUID() {
+				l = append(l, resource)
+			}
+		}
+		m.{{ linkTo.JSONSchema.GoName }}s = l
+	{% endfor %}
+	}
+    {% endif %}
+}
+
+{% for linkTo, reference in t.References %}
 
 func {{ name }}{{ reference.GoName }}RefsToMap(l []*{{ name }}{{ reference.GoName }}Ref) []interface{} {
-    var result []interface{}
-    for _, i := range l {
-        result = append(result, i.ToMap())
-    }
-    return result
+	var result []interface{}
+	for _, i := range l {
+		result = append(result, i.ToMap())
+	}
+	return result
 }
 
 func (r *{{ name }}{{ reference.GoName }}Ref) ToMap() map[string]interface{} {
-    return map[string]interface{}{
-        "uuid": r.UUID,
-        "to": r.To,
-        {% if reference.RefType %}
-        "attr": r.Attr.ToMap(),
-        {% endif %}
-    }
+	return map[string]interface{}{
+		"uuid": r.UUID,
+		"to": r.To,
+		{% if reference.RefType %}
+		"attr": r.Attr.ToMap(),
+		{% endif %}
+	}
 }
 
 func InterfaceTo{{ name }}{{ reference.GoName }}Refs(i interface{}) []*{{ name }}{{ reference.GoName }}Ref {
-    list, ok := i.([]interface{})
-    if !ok {
-        return nil
-    }
-    result := []*{{ type.GoName  }}{{ reference.GoName }}Ref{}
-    for _, item := range list {
-        m, ok := item.(map[string]interface{})
-        _ = m
-        if !ok {
-            return nil
-        }
-        result = append(result, &{{ type.GoName  }}{{ reference.GoName }}Ref{
-            UUID: common.InterfaceToString(m["uuid"]),
-            To: common.InterfaceToStringList(m["to"]),
-            {% if reference.RefType %}
-            Attr: InterfaceTo{{ reference.RefType }}(m["attr"]),
-            {% endif %}
-        })
-    }
+	list, ok := i.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := []*{{ type.GoName }}{{ reference.GoName }}Ref{}
+	for _, item := range list {
+		m, ok := item.(map[string]interface{})
+		_ = m
+		if !ok {
+			return nil
+		}
+		result = append(result, &{{ type.GoName }}{{ reference.GoName }}Ref{
+			UUID: common.InterfaceToString(m["uuid"]),
+			To: common.InterfaceToStringList(m["to"]),
+			{% if reference.RefType %}
+			Attr: InterfaceTo{{ reference.RefType }}(m["attr"]),
+			{% endif %}
+		})
+	}
 
-    return result
+	return result
 }
 
 {% endfor %}
@@ -185,21 +235,21 @@ func InterfaceTo{{ name }}{{ reference.GoName }}Refs(i interface{}) []*{{ name }
 // Make{{ name }}Slice() makes a slice of {{ name }}
 // nolint
 func Make{{ name }}Slice() []{% if type.Properties %}*{% endif %}{{ name }} {
-    return []{% if type.Properties %}*{% endif %}{{ name }}{}
+	return []{% if type.Properties %}*{% endif %}{{ name }}{}
 }
 
 // InterfaceTo{{ name }}Slice() makes a slice of {{ name }}
 // nolint
 func InterfaceTo{{ name }}Slice(i interface{}) []{% if type.Properties %}*{% endif %}{{ name }} {
-    list := common.InterfaceToInterfaceList(i)
-    if list == nil {
-        return nil
-    }
-    result := []{% if type.Properties %}*{% endif %}{{ name }}{}
-    for _, item := range list {
-        result = append(result, InterfaceTo{{ name }}(item) )
-    }
-    return result
+	list := common.InterfaceToInterfaceList(i)
+	if list == nil {
+		return nil
+	}
+	result := []{% if type.Properties %}*{% endif %}{{ name }}{}
+	for _, item := range list {
+		result = append(result, InterfaceTo{{ name }}(item) )
+	}
+	return result
 }
 
 {% endif %}
