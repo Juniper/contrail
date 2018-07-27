@@ -143,3 +143,142 @@ func TestMakeNeutronCompatible(t *testing.T) {
 		})
 	}
 }
+
+var sampleVNNetworkIpamRefAttrs = &VnSubnetsType{HostRoutes: &RouteTableType{Route: []*RouteType{{Prefix: "prefix"}}}}
+
+func TestVirtualNetworkAddNetworkIpamRef(t *testing.T) {
+	var tests = []struct {
+		name           string
+		virtualNetwork VirtualNetwork
+		toAdd          *VirtualNetworkNetworkIpamRef
+		expected       VirtualNetwork
+	}{
+		{name: "empty"},
+		{
+			name:  "add new ref",
+			toAdd: &VirtualNetworkNetworkIpamRef{UUID: "new-ref"},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "new-ref"}},
+			},
+		},
+		{
+			name: "add new ref with attrs",
+			toAdd: &VirtualNetworkNetworkIpamRef{
+				UUID: "new-ref",
+				Attr: sampleVNNetworkIpamRefAttrs,
+			},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{
+					UUID: "new-ref",
+					Attr: sampleVNNetworkIpamRefAttrs,
+				}},
+			},
+		},
+		{
+			name: "add new ref with old ref existing",
+			virtualNetwork: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "old-ref"}},
+			},
+			toAdd: &VirtualNetworkNetworkIpamRef{UUID: "new-ref"},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "old-ref"}, {UUID: "new-ref"}},
+			},
+		},
+		{
+			name: "update ref with same UUID",
+			virtualNetwork: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "new-ref"}},
+			},
+			toAdd: &VirtualNetworkNetworkIpamRef{UUID: "new-ref"},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "new-ref"}},
+			},
+		},
+		{
+			name: "update ref with same UUID and update attr",
+			virtualNetwork: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "old-ref"}, {UUID: "new-ref"}},
+			},
+			toAdd: &VirtualNetworkNetworkIpamRef{
+				UUID: "new-ref",
+				Attr: sampleVNNetworkIpamRefAttrs,
+			},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{
+					{UUID: "old-ref"},
+					{UUID: "new-ref", Attr: sampleVNNetworkIpamRefAttrs},
+				},
+			},
+		},
+		{
+			name: "remove attr by updating ref",
+			virtualNetwork: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{
+					UUID: "new-ref",
+					Attr: sampleVNNetworkIpamRefAttrs,
+				}},
+			},
+			toAdd: &VirtualNetworkNetworkIpamRef{UUID: "new-ref"},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "new-ref"}},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.virtualNetwork.AddNetworkIpamRef(tt.toAdd)
+			assert.Equal(t, tt.virtualNetwork.NetworkIpamRefs, tt.expected.NetworkIpamRefs)
+			assert.Equal(t, tt.virtualNetwork, tt.expected)
+		})
+	}
+}
+
+func TestVirtualNetworkRemoveNetworkIpamRef(t *testing.T) {
+	var tests = []struct {
+		name           string
+		virtualNetwork VirtualNetwork
+		toRemove       *VirtualNetworkNetworkIpamRef
+		expected       VirtualNetwork
+	}{
+		{name: "empty"},
+		{
+			name: "delete ref",
+			virtualNetwork: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "to-delete-ref"}},
+			},
+			toRemove: &VirtualNetworkNetworkIpamRef{UUID: "to-delete-ref"},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{},
+			},
+		},
+		{
+			name: "try to delete non existing ref",
+			virtualNetwork: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "still-alive"}},
+			},
+			toRemove: &VirtualNetworkNetworkIpamRef{UUID: "to-delete-ref"},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "still-alive"}},
+			},
+		},
+		{
+			name: "delete ref when multiple exist",
+			virtualNetwork: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "still-alive"}, {UUID: "to-delete-ref"}},
+			},
+			toRemove: &VirtualNetworkNetworkIpamRef{UUID: "to-delete-ref"},
+			expected: VirtualNetwork{
+				NetworkIpamRefs: []*VirtualNetworkNetworkIpamRef{{UUID: "still-alive"}},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.virtualNetwork.RemoveNetworkIpamRef(tt.toRemove)
+			assert.Equal(t, tt.virtualNetwork.NetworkIpamRefs, tt.expected.NetworkIpamRefs)
+			assert.Equal(t, tt.virtualNetwork, tt.expected)
+		})
+	}
+}

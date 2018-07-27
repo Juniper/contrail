@@ -33,6 +33,21 @@ func (service *BaseService) SetNext(next Service) {
 	service.next = next
 }
 
+// InTransactionDoer executes do function atomically.
+type InTransactionDoer interface {
+	DoInTransaction(ctx context.Context, do func(context.Context) error) error
+}
+
+// RefUpdateToUpdateService is a service that promotes CreateRef and DeleteRef
+// methods to Update method by fetching the object and updating reference
+// field with fieldmask applied.
+type RefUpdateToUpdateService struct {
+	BaseService
+
+	ReadService       ReadService
+	InTransactionDoer InTransactionDoer
+}
+
 //EventProcessor can handle events on generic way.
 type EventProcessor interface {
 	Process(ctx context.Context, event *Event) (*Event, error)
