@@ -35,6 +35,8 @@ type Config struct { // nolint: maligned
 	ProvisionerType string `yaml:"provisioner_type,omitempty"`
 	// Logging level
 	LogLevel string `yaml:"log_level"`
+	// Logging  file
+	LogFile string `yaml:"log_file"`
 	// Template root directory
 	TemplateRoot string `yaml:"template_root"`
 
@@ -52,10 +54,11 @@ type Config struct { // nolint: maligned
 
 // Cluster represents Cluster service.
 type Cluster struct {
-	managerType string
-	config      *Config
-	APIServer   *client.HTTP
-	log         *logrus.Entry
+	managerType  string
+	config       *Config
+	APIServer    *client.HTTP
+	log          *logrus.Entry
+	streamServer *pkglog.StreamServer
 }
 
 // NewClusterManager creates Cluster reading configuration from given file.
@@ -103,20 +106,25 @@ func NewCluster(c *Config) (*Cluster, error) {
 	}
 
 	// create logger for cluster
-	logger := pkglog.NewLogger("cluster")
+	logger := pkglog.NewFileLogger("cluster", c.LogFile)
 	pkglog.SetLogLevel(logger, c.LogLevel)
+	streamServer := pkglog.NewStreamServer(c.LogFile)
 
 	return &Cluster{
-		managerType: t,
-		APIServer:   s,
-		config:      c,
-		log:         logger,
+		managerType:  t,
+		APIServer:    s,
+		config:       c,
+		log:          logger,
+		streamServer: streamServer,
 	}, nil
 }
 
 // Manage starts managing the clusters.
 func (c *Cluster) Manage() error {
 	common.SetLogLevel()
+	// start log server
+	c.streamServer.Serve()
+	defer c.streamServer.Close()
 	c.log.Info("Start managing contrail clusters")
 	if c.config.AuthURL != "" {
 		err := c.APIServer.Login()

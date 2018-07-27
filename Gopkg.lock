@@ -26,6 +26,14 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
+  digest = "1:b0fe84bcee1d0c3579d855029ccd3a76deea187412da2976985e4946289dbb2c"
+  name = "github.com/NYTimes/gziphandler"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2600fb119af974220d3916a5916d6e31176aac1b"
+  version = "v1.0.1"
+
+[[projects]]
   digest = "1:1080c443bebc98b1c25665b46b321dc02f8a4d384fe544379dcba1e651f59321"
   name = "github.com/PuerkitoBio/purell"
   packages = ["."]
@@ -48,6 +56,14 @@
   packages = ["cidr"]
   pruneopts = ""
   revision = "2bd8b58cf4275aeb086ade613de226773e29e853"
+
+[[projects]]
+  digest = "1:4e3dde60e6be4a3fc63e7cbfb77ad061cbf412ac8e17f344bc71568785cd76e8"
+  name = "github.com/codegangsta/cli"
+  packages = ["."]
+  pruneopts = ""
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
 
 [[projects]]
   digest = "1:f46f08835a8ce73888724469a1a01e7b390447d74dbda7a9b54915d333bf5bd2"
@@ -89,6 +105,22 @@
   pruneopts = ""
   revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
   version = "v3.1.0"
+
+[[projects]]
+  digest = "1:044b2f1eea2f5cfb0d3678baf60892734f59d5c2ea3932cb6ed894a97ccba15c"
+  name = "github.com/elazarl/go-bindata-assetfs"
+  packages = ["."]
+  pruneopts = ""
+  revision = "30f82fa23fd844bd5bb1e5f216db87fd77b5eb43"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:55848e643a99a9dfceb19e090ce67111328fbb1780f34c62a0430994ff85fb90"
+  name = "github.com/fatih/structs"
+  packages = ["."]
+  pruneopts = ""
+  revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
+  version = "v1.0"
 
 [[projects]]
   digest = "1:3699cea667a2a0182996158401f1e3a638bdedbd60259208f9ced58a828e5209"
@@ -204,12 +236,36 @@
   revision = "553a641470496b2327abcac10b36396bd98e45c9"
 
 [[projects]]
+  digest = "1:fe1b4d4cbe48c0d55507c55f8663aa4185576cc58fa0c8be03bb8f19dfe17a9c"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = ""
+  revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
+  version = "v1.2.0"
+
+[[projects]]
   branch = "master"
   digest = "1:60b7bc5e043a11213472ae05252527287d20e0a6ccc18f6ae67fad88e41004de"
   name = "github.com/hailocab/go-hostpool"
   packages = ["."]
   pruneopts = ""
   revision = "e80d13ce29ede4452c43dea11e79b9bc8a15b478"
+
+[[projects]]
+  branch = "master"
+  digest = "1:4fe55793760295fbef367890352b720784243e0ad19b5ee242519a4682bb9ef8"
+  name = "github.com/hashicorp/errwrap"
+  packages = ["."]
+  pruneopts = ""
+  revision = "d6c0cd88035724dd42e0f335ae30161c20575ecc"
+
+[[projects]]
+  branch = "master"
+  digest = "1:deaebb4a98ca748bbad7eb653f3a675749500020823a086448ffcd7ba6b8b02d"
+  name = "github.com/hashicorp/go-multierror"
+  packages = ["."]
+  pruneopts = ""
+  revision = "3d5d8f294aa03d8e98859feac328afbdf1ae0703"
 
 [[projects]]
   branch = "master"
@@ -283,6 +339,14 @@
   packages = ["."]
   pruneopts = ""
   revision = "cfb55aafdaf3ec08f0db22699ab822c50091b1c4"
+
+[[projects]]
+  digest = "1:094e04c4742b596bce4455eb535d4e4365016b44016db76f8593211406d77299"
+  name = "github.com/kr/pty"
+  packages = ["."]
+  pruneopts = ""
+  revision = "fa756f09eeb418bf1cc6268c66ceaad9bb98f598"
+  version = "v1.1.2"
 
 [[projects]]
   branch = "master"
@@ -582,6 +646,33 @@
   version = "v2.6.0"
 
 [[projects]]
+  digest = "1:fa38725047df9c39ba3545f6c20df0d864a6523049195705850458425f413a44"
+  name = "github.com/yudai/gotty"
+  packages = [
+    "backend/localcommand",
+    "pkg/homedir",
+    "pkg/randomstring",
+    "server",
+    "utils",
+    "webtty",
+  ]
+  pruneopts = ""
+  revision = "a080c85cbc59226c94c6941ad8c395232d72d517"
+  version = "v2.0.0-alpha.3"
+
+[[projects]]
+  branch = "master"
+  digest = "1:4c6c8e22dc2931f9eab500708b9a8d365527108b7771b2a0038cec76dc71d665"
+  name = "github.com/yudai/hcl"
+  packages = [
+    ".",
+    "hcl",
+    "json",
+  ]
+  pruneopts = ""
+  revision = "5fa2393b3552119bf33a69adb1402a1160cba23d"
+
+[[projects]]
   branch = "master"
   digest = "1:69a5aaecae1c214699b08fc4498bb126200cae605a67a8a55ab62ff669748110"
   name = "golang.org/x/crypto"
@@ -755,6 +846,9 @@
     "github.com/stretchr/testify/require",
     "github.com/twinj/uuid",
     "github.com/volatiletech/sqlboiler/strmangle",
+    "github.com/yudai/gotty/backend/localcommand",
+    "github.com/yudai/gotty/server",
+    "github.com/yudai/gotty/utils",
     "golang.org/x/net/websocket",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
