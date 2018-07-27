@@ -12,7 +12,7 @@ const (
 	VirtualNetworkIDPoolKey = "virtual_network_id"
 )
 
-// InTransactionDoer makes transaction mocking possible in type logic tests
+// InTransactionDoer executes do function atomically.
 type InTransactionDoer interface {
 	DoInTransaction(ctx context.Context, do func(context.Context) error) error
 }
