@@ -65,6 +65,12 @@ func (s *Server) SetupService() (services.Service, error) {
 	service.RegisterRESTAPI(s.Echo)
 	serviceChain = append(serviceChain, service)
 
+	// RefUpdateToUpdateService
+	serviceChain = append(serviceChain, &services.RefUpdateToUpdateService{
+		ReadService:       s.dbService,
+		InTransactionDoer: s.dbService,
+	})
+
 	// ContrailTypeLogicService
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.dbService,
