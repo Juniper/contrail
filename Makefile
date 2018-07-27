@@ -45,6 +45,7 @@ generate: reset_gen ## Run the source code generator
 	mkdir -p public
 	go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
+	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/baseservices/base.proto
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto.md proto/github.com/Juniper/contrail/pkg/services/generated.proto proto/github.com/Juniper/contrail/pkg/models/generated.proto
 	go tool fix ./pkg/services/generated.pb.go
@@ -63,8 +64,8 @@ generate: reset_gen ## Run the source code generator
 reset_gen: ## Remove genarated files
 	find pkg/ -name gen_* -delete
 	find pkg/ -name generated.pb.go -delete
+	find proto/ -name generated.proto -delete
 	rm -rf public/[^watch.html]*
-	rm -rf proto/*
 	rm -f tools/init_mysql.sql
 	rm -f tools/init_psql.sql
 	rm -f tools/cleanup.sql

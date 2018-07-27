@@ -14,7 +14,7 @@ func (h *HTTP) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request
 
 func (h *HTTP) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
     response := &services.Update{{ schema.JSONSchema.GoName }}Response{}
-    _, err := h.Update(ctx, "{{ schema.Prefix }}{{ schema.Path }}/" + request.{{ schema.JSONSchema.GoName }}.UUID, 
+    _, err := h.Update(ctx, "{{ schema.Prefix }}{{ schema.Path }}/" + request.{{ schema.JSONSchema.GoName }}.UUID,
         request, &response)
     return response, err
 }
