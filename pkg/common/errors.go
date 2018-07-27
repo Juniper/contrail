@@ -135,5 +135,5 @@ func HTTPStatusFromCode(code codes.Code) int {
 func ToHTTPError(err error) error {
 	cause := errors.Cause(err)
 	code := HTTPStatusFromCode(grpc.Code(cause))
-	return echo.NewHTTPError(code, grpc.ErrorDesc(cause))
+	return echo.NewHTTPError(code, grpc.ErrorDesc(err))
 }

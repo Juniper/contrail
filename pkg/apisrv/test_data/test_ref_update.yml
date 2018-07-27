@@ -310,7 +310,7 @@ workflow:
   request:
     path: /ref-update
     method: POST
-    expected: [409]
+    expected: [404]
     data:
       operation: ADD
       type: routing-instance
@@ -318,7 +318,7 @@ workflow:
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
   expect:
-    message: 'Resource conflict: foreign key constraint violation'
+    message: 'No routing-instance: bad-uuid'
 
 - name: try to create without ref UUID
   request:
@@ -332,6 +332,20 @@ workflow:
       ref-type: route-target
   expect:
     message: 'error resolving ref-uuid using ref-fq-name: uuid and fqName unspecified'
+
+- name: try to link vn with with non-provider network using ref-update (trigger type logic error)
+  request:
+    path: /ref-update
+    method: POST
+    expected: [400]
+    data:
+      operation: ADD
+      type: virtual-network
+      uuid: virtual_network_ref_update_uuid
+      ref-type: virtual-network
+      ref-uuid: virtual_network_ref_update_uuid
+  expect:
+    message: 'non-provider VN (virtual_network_ref_update_uuid) can be connected to one provider VN but not to ([])'
 
 - name: delete routing instance
   request:

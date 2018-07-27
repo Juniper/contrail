@@ -180,7 +180,37 @@ func InterfaceTo{{ name }}{{ reference.GoName }}Refs(i interface{}) []*{{ name }
     return result
 }
 
-{% endfor %}
+func (m *{{ name }}) Add{{ reference.GoName }}Ref(toAdd *{{ type.GoName }}{{ reference.GoName }}Ref) {
+    if toAdd == nil {
+        return
+    }
+    updated := false
+    refs := m.{{ reference.GoName }}Refs
+    for i, ref := range refs {
+        if ref.UUID == toAdd.GetUUID() {
+            refs[i] = toAdd
+            updated = true
+        }
+    }
+    if !updated {
+        refs = append(refs, toAdd)
+    }
+    m.{{ reference.GoName }}Refs = refs
+}
+
+func (m *{{ name }}) Remove{{ reference.GoName }}Ref(toRemove *{{ type.GoName }}{{ reference.GoName }}Ref) {
+    if toRemove == nil {
+        return
+    }
+    refs := m.{{ reference.GoName }}Refs
+    result := make([]*{{ type.GoName }}{{ reference.GoName }}Ref, 0, len(refs))
+    for _, ref := range refs {
+        if ref.UUID != toRemove.GetUUID() {
+            result = append(result, ref)
+        }
+    }
+    m.{{ reference.GoName }}Refs = result
+}{% endfor %}
 
 // Make{{ name }}Slice() makes a slice of {{ name }}
 // nolint

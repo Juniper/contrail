@@ -621,7 +621,7 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
         return nil, common.ErrorInternal
     }
     if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
-        return nil, common.ErrorNotFound
+        return nil, common.ErrorNotFoundf("No {{ schema.TypeName }}: %s", request.ID)
     }
     response = &services.Get{{ schema.JSONSchema.GoName }}Response{
        {{ schema.JSONSchema.GoName }}: result.{{ schema.JSONSchema.GoName }}s[0],
