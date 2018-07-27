@@ -5,6 +5,8 @@ import (
 	errors "github.com/pkg/errors"
 )
 
+var _ = strings.Count
+
 {# This macro is used to improve readability as braces has to be in the same line as if statement #}
 {% macro reportMissingProperty(id, resourceType) %} {
 	return errors.Errorf("{{id}} property is missing for resource {{resourceType}}")

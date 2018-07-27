@@ -27,12 +27,17 @@ const (
 	dbDSNFormatPostgreSQL = "sslmode=disable user=%s password=%s host=%s dbname=%s"
 )
 
-//Service struct
-type Service struct {
-	services.BaseService
+//BaseDB struct for base function.
+type BaseDB struct {
 	db            *sql.DB
 	Dialect       Dialect
-	queryBuilders map[string]*QueryBuilder
+	QueryBuilders map[string]*QueryBuilder
+}
+
+//Service for DB.
+type Service struct {
+	services.BaseService
+	BaseDB
 }
 
 //NewServiceFromConfig makes db service from viper config.
@@ -48,25 +53,32 @@ func NewServiceFromConfig() (*Service, error) {
 func NewService(db *sql.DB, dialect string) *Service {
 	dbService := &Service{
 		BaseService: services.BaseService{},
-		db:          db,
-		Dialect:     NewDialect(dialect),
+		BaseDB:      NewBaseDB(db, dialect),
 	}
 	dbService.initQueryBuilders()
 	return dbService
 }
 
+//NewBaseDB makes new base db instance.
+func NewBaseDB(db *sql.DB, dialect string) BaseDB {
+	return BaseDB{
+		db:      db,
+		Dialect: NewDialect(dialect),
+	}
+}
+
 //DB gets db object.
-func (db *Service) DB() *sql.DB {
+func (db *BaseDB) DB() *sql.DB {
 	return db.db
 }
 
 //Close closes db.
-func (db *Service) Close() error {
+func (db *BaseDB) Close() error {
 	return db.db.Close()
 }
 
 //SetDB sets db object.
-func (db *Service) SetDB(sqlDB *sql.DB) {
+func (db *BaseDB) SetDB(sqlDB *sql.DB) {
 	db.db = sqlDB
 }
 
@@ -109,7 +121,7 @@ func GetTransaction(ctx context.Context) *sql.Tx {
 }
 
 //DoInTransaction runs a function inside of DB transaction.
-func (db *Service) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
+func (db *BaseDB) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
 	tx := GetTransaction(ctx)
 	if tx != nil {
 		return do(ctx)

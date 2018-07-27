@@ -7,7 +7,7 @@ import (
     "github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/models"
+	"{{ option.PackagePath }}/pkg/models"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -143,7 +143,7 @@ func (e *Event) UnmarshalJSON(data []byte) error {
         return nil
     }
     var kind string
-    err = json.Unmarshal(t, &kind) 
+    err = json.Unmarshal(t, &kind)
     if err != nil {
         return err
     }
@@ -220,7 +220,7 @@ func (e *Event) ToMap() map[string]interface{} {
             m["data"] = map[string]interface{}{
                 "uuid": t.Delete{{ schema.JSONSchema.GoName }}Request.ID,
             }
-        {% endif%}{% endfor %}   
+        {% endif%}{% endfor %}
     }
     return m
 }

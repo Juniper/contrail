@@ -8,10 +8,12 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/schema"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+	"{{ option.PackagePath }}/pkg/models"
+	"{{ option.PackagePath }}/pkg/services"
 	"github.com/pkg/errors"
 )
+
+var _ = schema.Version
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
@@ -79,7 +81,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
     fromID string,
     ref *models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,
 ) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
     tx := GetTransaction(ctx)
 
     {% if reference.RefType  %}
@@ -106,7 +108,7 @@ func (db *Service) delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
     fromID string,
     ref *models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,
 ) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
     tx := GetTransaction(ctx)
 
     _, err := tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo | lower }}"), fromID, ref.UUID)
@@ -125,7 +127,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
     switch model.ParentType {
     {% for linkTo, reference in schema.Parents %}
     case "{{ reference.LinkTo.Path }}":
-       qb := db.queryBuilders["{{ schema.ID }}"]
+       qb := db.QueryBuilders["{{ schema.ID }}"]
        tx := GetTransaction(ctx)
        _, err = tx.ExecContext(ctx, qb.CreateParentRefQuery("{{ linkTo | lower  }}"), model.UUID, model.ParentUUID)
        if err == nil {
@@ -151,7 +153,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
 func (db *Service) create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.Create{{ schema.JSONSchema.GoName }}Request) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
     tx := GetTransaction(ctx)
     model := request.{{ schema.JSONSchema.GoName }}
     _, err := tx.ExecContext(ctx, qb.CreateQuery(), {% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
@@ -230,7 +232,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
     {% endfor %}
 
     {% if  schema.References | length + schema.Children | length + schema.BackReferences | length  > 0 %}
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
     {% endif %}
 
     {% for linkTo, reference in schema.References %}
@@ -316,7 +318,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
     var rows *sql.Rows
     tx := GetTransaction(ctx)
 
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
 
     auth := common.GetAuthCTX(ctx)
     spec := request.Spec
@@ -382,7 +384,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
     request *services.Update{{ schema.JSONSchema.GoName }}Request,
     ) error {
     tx := GetTransaction(ctx)
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
     model := request.{{ schema.JSONSchema.GoName }}
 
     err := db.Check{{ schema.JSONSchema.GoName }}Policy(ctx, model.UUID)
@@ -434,7 +436,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
 func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
     ctx context.Context,
     uuid string) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
 
     var err error
     var count int
@@ -469,7 +471,7 @@ func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
 func (db *Service) delete{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.Delete{{ schema.JSONSchema.GoName }}Request) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
 
     deleteQuery := qb.DeleteQuery()
     err := db.Check{{ schema.JSONSchema.GoName }}Policy(ctx, request.ID)

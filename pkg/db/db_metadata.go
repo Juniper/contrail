@@ -11,7 +11,7 @@ import (
 )
 
 // CreateMetaData creates fqname, uuid pair with type.
-func (db *Service) CreateMetaData(ctx context.Context, metaData *models.MetaData) error {
+func (db *BaseDB) CreateMetaData(ctx context.Context, metaData *models.MetaData) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
 		_, err := tx.Exec(
@@ -24,7 +24,7 @@ func (db *Service) CreateMetaData(ctx context.Context, metaData *models.MetaData
 }
 
 // GetMetaData gets metadata from database.
-func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string) (*models.MetaData, error) {
+func (db *BaseDB) GetMetaData(ctx context.Context, uuid string, fqName []string) (*models.MetaData, error) {
 	var uuidString, typeString, fqNameString string
 
 	if err := db.DoInTransaction(ctx, func(ctx context.Context) error {
@@ -62,7 +62,7 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 }
 
 // DeleteMetaData deletes metadata by uuid.
-func (db *Service) DeleteMetaData(ctx context.Context, uuid string) error {
+func (db *BaseDB) DeleteMetaData(ctx context.Context, uuid string) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
 		_, err := tx.Exec("delete from metadata where uuid = "+db.Dialect.placeholder(1), uuid)

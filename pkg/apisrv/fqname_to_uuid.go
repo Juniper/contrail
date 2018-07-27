@@ -27,7 +27,7 @@ func (s *Server) fqNameToUUIDHandler(c echo.Context) error {
 	}
 
 	fqName := fqNameToIDRequest.FQName
-	metadata, err := s.dbService.GetMetaData(ctx, "", fqName)
+	metadata, err := s.DBService.GetMetaData(ctx, "", fqName)
 	if err != nil {
 		//TODO adding Project
 		return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Name %s not found", models.FQNameToString(fqName)))

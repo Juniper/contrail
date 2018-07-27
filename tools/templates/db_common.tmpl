@@ -4,12 +4,12 @@ import (
     "context"
     "fmt"
 
-    "github.com/Juniper/contrail/pkg/services"
+    "{{ option.PackagePath }}/pkg/services"
 )
 
 func (db *Service) initQueryBuilders() {
     queryBuilders := map[string]*QueryBuilder{}
-    db.queryBuilders = queryBuilders
+    db.QueryBuilders = queryBuilders
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     queryBuilders["{{ schema.ID }}"] = NewQueryBuilder(db.Dialect,

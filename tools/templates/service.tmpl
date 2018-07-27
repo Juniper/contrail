@@ -11,8 +11,10 @@ import (
 	log "github.com/sirupsen/logrus"
 
     "github.com/Juniper/contrail/pkg/common"
-    "github.com/Juniper/contrail/pkg/models"
+    "{{ option.PackagePath }}/pkg/models"
 )
+
+var _ = fmt.Println
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 

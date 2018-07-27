@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,20 +8,16 @@ import (
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/extention/pkg/models"
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
-
-//MetadataGetter provides getter for metadata.
-type MetadataGetter interface {
-	GetMetaData(ctx context.Context, uuid string, fqName []string) (*models.MetaData, error)
-}
 
 // nolint
 type ContrailService struct {
 	BaseService
 
-	MetadataGetter MetadataGetter
+	MetadataGetter services.MetadataGetter
 	TypeValidator  *models.TypeValidator
 }
 

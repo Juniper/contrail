@@ -6,8 +6,11 @@ import (
     "github.com/gogo/protobuf/types"
 
     "github.com/Juniper/contrail/pkg/common"
-    "github.com/Juniper/contrail/pkg/models"
+    "{{ option.PackagePath }}/pkg/models"
 )
+
+var _ = types.AnyMessageName
+var _ = models.PermsNone
 
 type Service interface {
     Next() Service
