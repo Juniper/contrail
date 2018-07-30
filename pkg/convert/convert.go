@@ -56,10 +56,11 @@ func readData(c *Config) (*services.EventList, error) {
 	switch c.InType {
 	case CassandraType:
 		return cassandra.DumpCassandra(
-			c.InFile,
-			c.CassandraPort,
-			time.Duration(c.CassandraTimeout)*time.Second,
-		)
+			cassandra.Config{
+				Host:    c.InFile,
+				Port:    c.CassandraPort,
+				Timeout: time.Duration(c.CassandraTimeout)*time.Second,
+			})
 	case CassandraDumpType:
 		return cassandra.ReadCassandraDump(c.InFile)
 	case YAMLType:
