@@ -96,7 +96,11 @@ var convertCmd = &cobra.Command{
 		switch inType {
 		case cassandraType:
 			events, err = cassandra.DumpCassandra(
-				inFile, cassandraPort, time.Duration(cassandraTimeout)*time.Second)
+				cassandra.Config{
+					Host: inFile,
+					Port: cassandraPort,
+					Timeout: time.Duration(cassandraTimeout)*time.Second,
+				})
 		case cassandraDumpType:
 			events, err = cassandra.ReadCassandraDump(inFile)
 		case yamlType:

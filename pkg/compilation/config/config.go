@@ -29,7 +29,7 @@ type PluginConfig struct {
 	Handlers map[string]interface{}
 }
 
-// Config object.
+// config object.
 type Config struct {
 	DefaultCfg      DefaultConfig
 	EtcdNotifierCfg EtcdNotifierConfig

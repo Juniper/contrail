@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gocql/gocql"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
@@ -21,6 +23,13 @@ const (
 
 	exchangeName = "vnc_config.object-update"
 )
+
+// Config fields for cassandra
+type Config struct {
+	Host    string
+	Port    int
+	Timeout time.Duration
+}
 
 type contrailDBData struct {
 	Cassandra *cassandra `json:"cassandra"`
@@ -129,16 +138,10 @@ func (o object) convert(uuid string) map[string]interface{} {
 }
 
 //DumpCassandra load all existing cassandra data.
-func DumpCassandra(host string, port int, timeout time.Duration) (*services.EventList, error) {
+func DumpCassandra(cfg Config) (*services.EventList, error) {
 	logrus.Debug("Dumping data from cassandra")
 	// connect to the cluster
-	cluster := gocql.NewCluster(host)
-	if port != 0 {
-		cluster.Port = port
-	}
-	cluster.Timeout = timeout
-	cluster.Keyspace = defaultCassandraKeyspace
-	cluster.CQLVersion = defaultCassandraVersion
+	cluster := getCluster(cfg)
 	session, err := cluster.CreateSession()
 	if err != nil {
 		return nil, err
@@ -184,15 +187,23 @@ func ReadCassandraDump(inFile string) (*services.EventList, error) {
 	return t.makeEventList(), nil
 }
 
+// AmqpConfig groups config fields for AMQP
+type AmqpConfig struct {
+	host      string
+	queueName string
+}
+
+func getQueueName() string {
+	name, _ := os.Hostname() // nolint: noerror
+	return "contrail_process_" + name
+}
+
 //EventProducer send db update for processor.
 type EventProducer struct {
 	Processor services.EventProcessor
 
-	cassandraHost    string
-	cassandraPort    int
-	cassandraTimeout time.Duration
-	rabbitMQHost     string
-	queueName        string
+	cassandraConfig Config
+	amqpConfig      AmqpConfig
 
 	log *logrus.Entry
 }
@@ -200,20 +211,19 @@ type EventProducer struct {
 //NewEventProducer makes new event processor for cassandra.
 func NewEventProducer(
 	processor services.EventProcessor,
-	queueName string,
-	cassandraHost string,
-	cassandraPort int,
-	cassandraTimeout time.Duration,
-	rabbitMQHost string,
 ) *EventProducer {
 	return &EventProducer{
-		cassandraHost:    cassandraHost,
-		cassandraPort:    cassandraPort,
-		cassandraTimeout: cassandraTimeout,
-		queueName:        queueName,
-		rabbitMQHost:     rabbitMQHost,
-		Processor:        processor,
-		log:              pkglog.NewLogger("cassandra-event-producer"),
+		cassandraConfig: Config{
+			Host:    viper.GetString("cassandra.host"),
+			Port:    viper.GetInt("cassandra.port"),
+			Timeout: viper.GetDuration("cassandra.timeout"),
+		},
+		amqpConfig: AmqpConfig{
+			host:      viper.GetString("cache.cassandra.amqp"),
+			queueName: getQueueName(),
+		},
+		Processor: processor,
+		log:       pkglog.NewLogger("cassandra-event-producer"),
 	}
 }
 
@@ -221,7 +231,7 @@ func NewEventProducer(
 //nolint: gocyclo
 func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 	p.log.Debug("Starting watch on AMQP")
-	conn, err := amqp.Dial(p.rabbitMQHost)
+	conn, err := amqp.Dial(p.amqpConfig.host)
 	if err != nil {
 		return err
 	}
@@ -234,7 +244,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 	defer ch.Close() // nolint: errcheck
 
 	q, err := ch.QueueDeclare(
-		p.queueName,
+		p.amqpConfig.queueName,
 		false, // durable
 		false, // delete when usused
 		false, // exclusive
@@ -308,7 +318,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 
 //Start starts event processor for cassandra.
 func (p *EventProducer) Start(ctx context.Context) error {
-	events, err := DumpCassandra(p.cassandraHost, p.cassandraPort, p.cassandraTimeout)
+	events, err := DumpCassandra(p.cassandraConfig)
 	if err != nil {
 		return err
 	}
@@ -326,4 +336,71 @@ func (p *EventProducer) Start(ctx context.Context) error {
 		}
 	}
 	return p.WatchAMQP(ctx)
+}
+
+// EventProcessor writes events to cassandra and implements service.EventProcessor interface
+type EventProcessor struct {
+	config Config
+}
+
+// NewEventProcessor returns new cassandra.EventProcessor
+func NewEventProcessor() *EventProcessor {
+	return &EventProcessor{
+		config: Config{
+			Host:    viper.GetString("cassandra.host"),
+			Port:    viper.GetInt("cassandra.port"),
+			Timeout: viper.GetDuration("cassandra.timeout"),
+		}}
+}
+
+func getCluster(cfg Config) *gocql.ClusterConfig {
+	cluster := gocql.NewCluster(cfg.Host)
+	if cfg.Port != 0 {
+		cluster.Port = cfg.Port
+	}
+	cluster.Timeout = cfg.Timeout
+	cluster.Keyspace = defaultCassandraKeyspace
+	cluster.CQLVersion = defaultCassandraVersion
+	return cluster
+}
+
+// Process is a method needed to implement service.EventProcessor interface
+func (p *EventProcessor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
+	logrus.Debug("Processing enevt for cassandra")
+	// connect to the cluster
+	cluster := getCluster(p.config)
+	session, err := cluster.CreateSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	logrus.Warnf("event %+v", event)
+	rsrc := event.GetResource()
+	var qry *gocql.Query
+	switch event.Operation() {
+	case services.OperationCreate:
+		rsrcJSON, err := json.Marshal(rsrc.ToMap())
+		if err != nil {
+			return nil, err
+		}
+		qry = session.Query(
+			"INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)",
+			rsrc.GetUUID(),
+			rsrc.Kind(),
+			rsrcJSON,
+		)
+	case services.OperationDelete:
+		qry = session.Query(
+			"DELETE FROM obj_uuid_table WHERE key=? and column1=?",
+			rsrc.GetUUID(),
+			rsrc.Kind(),
+		)
+	}
+
+	if qry.Exec(); err != nil {
+		return nil, err
+	}
+
+	return event, nil
 }
