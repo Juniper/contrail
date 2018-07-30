@@ -2,7 +2,6 @@ package contrail
 
 import (
 	"context"
-	"os"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -24,11 +23,6 @@ func init() {
 	Contrail.AddCommand(processCmd)
 }
 
-func getQueueName() string {
-	name, _ := os.Hostname() // nolint: noerror
-	return "contrail_process_" + name
-}
-
 var processCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Start Contrail Processes",
@@ -42,6 +36,7 @@ var processCmd = &cobra.Command{
 
 //StartProcesses starts processes based on config.
 func StartProcesses(wg *sync.WaitGroup) {
+	MaybeStart("replication", startReplicationService, wg)
 	MaybeStart("cache", startCacheService, wg)
 	MaybeStart("server", startServer, wg)
 	MaybeStart("agent", startAgent, wg)
@@ -61,6 +56,20 @@ func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGro
 	}()
 }
 
+func startReplicationService(wg *sync.WaitGroup) {
+	ctx := context.Background()
+	log.Debug("replication service enabled")
+	cassandraProcessor := cassandra.NewCassandraEventProcessor()
+	processor, err := etcd.NewEventProducer(cassandraProcessor)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = processor.Start(ctx)
+	if err != nil {
+		log.Warn(err)
+	}
+}
+
 func startCacheService(wg *sync.WaitGroup) {
 	log.Debug("cache service enabled")
 	cacheDB = cache.New(uint64(viper.GetInt64("cache.max_history")))
@@ -72,14 +81,7 @@ func startCacheService(wg *sync.WaitGroup) {
 func startCassandraWatcher(wg *sync.WaitGroup) {
 	ctx := context.Background()
 	log.Debug("cassandra watcher enabled for cache")
-	processor := cassandra.NewEventProducer(
-		cacheDB,
-		getQueueName(),
-		viper.GetString("cache.cassandra.host"),
-		viper.GetInt("cache.cassandra.port"),
-		viper.GetDuration("cache.cassandra.timeout"),
-		viper.GetString("cache.cassandra.amqp"),
-	)
+	processor := cassandra.NewEventProducer(cacheDB)
 	err := processor.Start(ctx)
 	if err != nil {
 		log.Warn(err)
