@@ -79,7 +79,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }{% endif %}
     log.Debugf("ParentType: %v", model.ParentType)
 
-    if model.FQName == nil {
+    if len(model.FQName) == 0 {
 {% if schema.Parents | length == 0 %}
         model.FQName = []string{model.Name}
 {% else %}
