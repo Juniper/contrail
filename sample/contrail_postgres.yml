@@ -171,11 +171,18 @@ cache:
     max_history: 100000
     cassandra:
         enabled: false 
-        host: localhost
-        port: 9042
-        timeout: 3600s
         amqp: amqp://guest:guest@localhost:5672/
     etcd:
         enabled: false
     rdbms:
         enabled: true
+
+replication:
+    enabled: true
+    cassandra:
+        enabled: true
+
+cassandra:
+    host: localhost
+    port: 9042
+    timeout: 3600s
