@@ -13,6 +13,11 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
 
+  project_validation_test_empty_fq_name: &project_validation_test_empty_fq_name
+    uuid: project_validation_test_empty_fq_name_uuid
+    fq_name: []
+    quota: {}
+
   network_ipam_validation_test: &network_ipam_validation_test
     network_ipam_mgmt:
       host_routes:
@@ -112,6 +117,17 @@ workflow:
       project: *admin_project_validation_test
   expect:
     project: *admin_project_validation_test
+
+- name: create project failed - empty fq_name
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 400
+    data:
+      project: *project_validation_test_empty_fq_name
+  expect: null
+
 - name: create network ipam
   request:
     path: /network-ipams
