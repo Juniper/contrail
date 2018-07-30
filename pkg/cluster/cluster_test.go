@@ -87,17 +87,17 @@ func executedPlaybooksPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
 }
 
+// nolint: gocyclo
 func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 	config *Config, action, expectedInstance, expectedPlaybook string,
 	expectedEndpoints map[string]string) {
-	// upgrade cluster
-	config.Action = "update"
 	// set action field in the contrail-cluster resource
 	var err error
 	var data interface{}
 	cluster := map[string]interface{}{"uuid": clusterID,
 		"provisioning_action": action,
 	}
+	config.Action = "update"
 	switch action {
 	case "UPGRADE":
 		cluster["provisioning_state"] = "NOSTATE"
@@ -107,6 +107,9 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 		if err != nil {
 			assert.NoError(t, err, "failed to delete instances.yml")
 		}
+	case "IMPORT":
+		config.Action = "create"
+		cluster["provisioning_action"] = ""
 	}
 	data = map[string]interface{}{"contrail-cluster": cluster}
 	for _, client := range testScenario.Clients {
@@ -124,13 +127,17 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 		}
 	}
 	clusterManager, err := NewCluster(config)
-	assert.NoError(t, err, "failed to create cluster manager to update cluster")
+	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", config.Action)
 	err = clusterManager.Manage()
 	assert.NoErrorf(t, err, "failed to manage(%s) cluster", action)
-	assert.True(t, compareGeneratedInstances(t, expectedInstance),
-		fmt.Sprintf("Instance file created during cluster %s is not as expected", action))
-	assert.True(t, verifyPlaybooks(t, expectedPlaybook),
-		fmt.Sprintf("Expected list of %s playbooks are not executed", action))
+	if expectedInstance != "" {
+		assert.True(t, compareGeneratedInstances(t, expectedInstance),
+			fmt.Sprintf("Instance file created during cluster %s is not as expected", action))
+	}
+	if expectedPlaybook != "" {
+		assert.True(t, verifyPlaybooks(t, expectedPlaybook),
+			fmt.Sprintf("Expected list of %s playbooks are not executed", action))
+	}
 	// Wait for the in-memory endpoint cache to get updated
 	apisrv.APIServer.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
@@ -241,6 +248,10 @@ func runClusterTest(t *testing.T, expectedOutput string,
 		"ADD_CSN", expectedOutput,
 		"./test_data/expected_ansible_add_csn_playbook.yml",
 		expectedEndpoints)
+
+	// IMPORT test (expected to create endpoints withtout triggering playbooks)
+	runClusterActionTest(t, testScenario, config,
+		"IMPORT", "", "", expectedEndpoints)
 
 	// delete cluster
 	config.Action = "delete"
