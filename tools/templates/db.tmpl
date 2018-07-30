@@ -171,7 +171,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 	    return errors.Wrap(err, "Creating parent reference failed for {{ schema.JSONSchema.GoName }} failed")
     }
 
-    metaData := &MetaData{
+    metaData := &models.MetaData{
         UUID: model.UUID,
         Type: "{{ schema.ID }}",
         FQName: model.FQName,

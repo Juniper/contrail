@@ -13,7 +13,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 	tests := []struct {
 		name     string
 		model    models.AccessControlList
-		metadata MetaData
+		metadata models.MetaData
 		want     models.AccessControlList
 		fails    bool
 	}{
@@ -30,7 +30,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 			},
-			metadata: MetaData{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
+			metadata: models.MetaData{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
 			want: models.AccessControlList{
 				UUID:       "foo-uuid",
 				ParentUUID: "parent-uuid",
@@ -92,10 +92,10 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 	}
 }
 
-type mockMetadataGetter MetaData
+type mockMetadataGetter models.MetaData
 
-func (m *mockMetadataGetter) GetMetaData(_ context.Context, _ string, _ []string) (*MetaData, error) {
-	return (*MetaData)(m), nil
+func (m *mockMetadataGetter) GetMetaData(_ context.Context, _ string, _ []string) (*models.MetaData, error) {
+	return (*models.MetaData)(m), nil
 }
 
 type serviceSpy struct {
