@@ -22,7 +22,7 @@ type EventProducer struct {
 	Timeout   time.Duration
 }
 
-//NewEventProducer makes a event processor.
+//NewEventProducer makes a event producer and couple it with processor.
 func NewEventProducer(processor services.EventProcessor) (p *EventProducer, err error) {
 	p = &EventProducer{
 		Processor: processor,
@@ -46,13 +46,13 @@ func (p *EventProducer) HandleMessage(
 
 	event, err := ParseEvent(oper, key, newValue)
 	if err != nil {
-		log.WithError(err).Error("Failed to parse event")
+		log.WithError(err).Error("Failed to parse etcd event")
 		return
 	}
 
 	_, err = p.Processor.Process(ctx, event)
 	if err != nil {
-		log.WithError(err).Error("Failed to process event")
+		log.WithError(err).Error("Failed to process etcd event")
 	}
 }
 
