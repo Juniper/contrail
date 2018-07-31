@@ -439,7 +439,7 @@ func (a *ansibleProvisioner) provision() error {
 	switch a.action {
 	case "create":
 		if a.isCreated() {
-			return nil
+			return a.updateEndpoints()
 		}
 		err := a.createCluster()
 		if err != nil {
