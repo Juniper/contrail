@@ -158,6 +158,12 @@ func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*ht
 	return h.Do(ctx, echo.DELETE, path, nil, output, expected)
 }
 
+// RefUpdate sends a create/update API request/
+func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
+	expected := []int{http.StatusOK}
+	return h.Do(ctx, echo.POST, "/ref-update", data, output, expected)
+}
+
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusNoContent, http.StatusNotFound}
