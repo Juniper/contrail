@@ -43,7 +43,7 @@ workflow:
   request:
     path: /projects
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       project: *project_blue_project
   expect:
@@ -82,7 +82,7 @@ workflow:
   request:
     path: /application-policy-sets
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       application-policy-set: *user_made_application_policy_set_project
   expect:

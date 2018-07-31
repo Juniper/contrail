@@ -78,6 +78,7 @@ func (s *Server) SetupService() (services.Service, error) {
 		AddressManager:    s.dbService,
 		IntPoolAllocator:  s.dbService,
 		WriteService:      serviceChain[0],
+		MetadataGetter:    s.dbService,
 	})
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService))
 
@@ -262,6 +263,8 @@ func (s *Server) setupHomepage() {
 
 	dh.Register("/fqname-to-id", "POST", "name-to-id", "action")
 	dh.Register("/ref-update", "POST", "ref-update", "action")
+	dh.Register("/ref-relax-for-delete", "POST", "ref-relax-for-delete", "action")
+	dh.Register("/prop-collection-update", "POST", "prop-collection-update", "action")
 
 	// TODO: register sync?
 

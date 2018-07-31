@@ -134,7 +134,7 @@ func (h *HTTP) Login() error {
 
 // Create send a create API request.
 func (h *HTTP) Create(path string, data interface{}, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusCreated}
+	expected := []int{http.StatusOK}
 	return h.Do(echo.POST, path, data, output, expected)
 }
 
@@ -185,11 +185,12 @@ func (h *HTTP) Do(method, path string, data interface{}, output interface{}, exp
 	if method == echo.DELETE {
 		return resp, nil
 	}
-
-	err = json.NewDecoder(resp.Body).Decode(&output)
-	if err != nil {
-		logErrorAndResponse(err, resp)
-		return resp, errors.Wrap(err, "decoding response body failed")
+	if resp.ContentLength != 0 {
+		err = json.NewDecoder(resp.Body).Decode(&output)
+		if err != nil {
+			logErrorAndResponse(err, resp)
+			return resp, errors.Wrap(err, "decoding response body failed")
+		}
 	}
 
 	if h.Debug {

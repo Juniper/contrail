@@ -1,0 +1,517 @@
+name: Test k8s integration
+description: |
+  Integration test for k8s
+cleanup:
+- path: /application-policy-set/k8s-aps-uuid
+- path: /network-ipam/k8s-ip-fabric-ipam-uuid
+- path: /network-ipam/k8s-pod-ipam-uuid
+- path: /network-ipam/k8s-service-ipam-uuid
+- path: /virtual-network/k8s-default-pod-network-uuid
+- path: /virtual-network/k8s-default-service-network-uuid
+- path: /firewall-policys/k8s-denyall-uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project:
+        parent_type: domain
+        fq_name: ["default-domain", "k8s-default"]
+        uuid: k8s-default
+
+- name: try to create policy-management
+  request:
+    path: /policy-managements
+    method: POST
+    expected: [409]
+    data:
+      policy-management:
+        fq_name:
+        - default-policy-management
+        uuid: default-policy-management
+
+- name: get default policy management uuid from fqname
+  request:
+    path: /fqname-to-id
+    method: POST
+    expected: [200]
+    data:
+      fq_name: ["default-policy-management"]
+      type: policy-management
+
+- name: create application-policys-sets
+  request:
+    path: /application-policy-sets
+    method: POST
+    expected: [200]
+    data:
+      application-policy-set:
+        parent_type: policy-management
+        fq_name:
+        - default-policy-management
+        - k8s
+        uuid: k8s-aps-uuid
+
+- name: get default global vrouter config uuid from fqname
+  request:
+    path: /fqname-to-id
+    method: POST
+    expected: [200]
+    data:
+      fq_name: ["default-global-system-config", "default-global-vrouter-config"]
+      type: global-vrouter-config
+
+- name: get ip fabric network
+  request:
+    path: /fqname-to-id
+    method: POST
+    expected: [200]
+    data:
+      fq_name: ["default-domain", "default-project", "ip-fabric"]
+      type: virtual-network
+
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project:
+        parent_type: domain
+        fq_name:
+        - default-domain
+        - k8s-kube-system
+        uuid: k8s-kube-system-uuid
+
+- name: create network ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected: [200]
+    data:
+      network-ipam:
+        parent_type: project
+        ipam_subnets:
+          subnets:
+          - subnet:
+              ip_prefix: 10.64.0.0
+              ip_prefix_len: 12
+            dns_server_address: 
+            enable_dhcp: true
+            created: 
+            default_gateway: 
+            dns_nameservers: []
+            dhcp_option_list: 
+            subnet_uuid: 
+            alloc_unit: 1
+            last_modified: 
+            host_routes: 
+            subscriber_tag: 
+            addr_from_start: 
+            subnet_name: 
+            allocation_pools: []
+        ipam_subnet_method: flat-subnet
+        fq_name: ["default-domain", "k8s-default", "k8s-ip-fabric-ipam"]
+        uuid: k8s-ip-fabric-ipam-uuid
+  expect: 
+    network-ipam:
+      parent_uuid: k8s-default
+
+- name: create network ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected: [200]
+    data:
+      network-ipam:
+        parent_type: project
+        ipam_subnets:
+          subnets:
+          - subnet:
+              ip_prefix: 10.32.0.0
+              ip_prefix_len: 12
+            dns_server_address: 
+            enable_dhcp: true
+            created: 
+            default_gateway: 
+            dns_nameservers: []
+            dhcp_option_list: 
+            subnet_uuid: 
+            alloc_unit: 1
+            last_modified: 
+            host_routes: 
+            subscriber_tag: 
+            addr_from_start: 
+            subnet_name: 
+            allocation_pools: []
+        ipam_subnet_method: flat-subnet
+        fq_name: ["default-domain", "k8s-default", "k8s-pod-ipam"]
+        uuid: k8s-pod-ipam-uuid
+  expect: 
+    network-ipam:
+      parent_uuid: k8s-default
+
+- name: try to get pod network
+  request:
+    path: /fqname-to-id
+    method: POST
+    expected: [404]
+    data:
+      fq_name: ["default-domain", "k8s-default", "k8s-default-pod-network"]
+      type: virtual-network
+
+- name: create default pod network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [200]
+    data:
+      virtual-network:
+        virtual_network_properties:
+          forwarding_mode: l3
+          allow_transit: 
+          network_id: 
+          max_flow_rate: 
+          mirror_destination: false
+          vxlan_network_identifier: 
+          max_flows: 
+          rpf: 
+        fq_name: ["default-domain", "k8s-default", "k8s-default-pod-network"]
+        uuid: k8s-default-pod-network-uuid
+        address_allocation_mode: flat-subnet-only
+        parent_type: project
+        network_ipam_refs:
+        - to: ["default-domain", "k8s-default", "k8s-pod-ipam"]
+          attr:
+            ipam_subnets: []
+            host_routes: 
+          uuid: k8s-pod-ipam-uuid
+        fabric_snat: false
+
+- name: get pod network uuid
+  request:
+    path: /fqname-to-id
+    method: POST
+    expected: [200]
+    data:
+      fq_name: ["default-domain", "k8s-default", "k8s-default-pod-network"]
+      type: virtual-network
+  expect:
+    uuid: k8s-default-pod-network-uuid
+
+- name: get pod network
+  request:
+    path: /virtual-network/k8s-default-pod-network-uuid
+    method: GET
+    expected: [200]
+  expect:
+    virtual-network:
+      uuid: k8s-default-pod-network-uuid
+      name: k8s-default-pod-network
+      parent_uuid: k8s-default
+      parent_type: project
+      fq_name:
+      - default-domain
+      - k8s-default
+      - k8s-default-pod-network
+      display_name: k8s-default-pod-network
+      address_allocation_mode: flat-subnet-only
+      virtual_network_properties:
+        forwarding_mode: l3
+      network_ipam_refs:
+      - uuid: k8s-pod-ipam-uuid
+        to:
+        - default-domain
+        - k8s-default
+        - k8s-pod-ipam
+        attr:
+          host_routes: {}
+      routing_instances:
+      - name: k8s-default-pod-network
+        parent_uuid: k8s-default-pod-network-uuid
+        parent_type: virtual-network
+        fq_name:
+        - default-domain
+        - k8s-default
+        - k8s-default-pod-network
+        - k8s-default-pod-network
+        display_name: k8s-default-pod-network
+
+- name: create k8s-service-ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected: [200]
+    data:
+      network-ipam:
+        parent_type: project
+        ipam_subnets:
+          subnets:
+          - subnet:
+              ip_prefix: 10.96.0.0
+              ip_prefix_len: 12
+            dns_server_address: 
+            enable_dhcp: true
+            created: 
+            default_gateway: 
+            dns_nameservers: []
+            dhcp_option_list: 
+            subnet_uuid: 
+            alloc_unit: 1
+            last_modified: 
+            host_routes: 
+            subscriber_tag: 
+            addr_from_start: 
+            subnet_name: 
+            allocation_pools: []
+        ipam_subnet_method: flat-subnet
+        fq_name:
+        - default-domain
+        - k8s-default
+        - k8s-service-ipam
+        uuid: k8s-service-ipam-uuid
+  expect: 
+    network-ipam:
+      parent_uuid: k8s-default
+
+- name: create default service network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [200]
+    data:
+      virtual-network:
+        virtual_network_properties:
+          forwarding_mode: l3
+          allow_transit: 
+          network_id: 
+          max_flow_rate: 
+          mirror_destination: false
+          vxlan_network_identifier: 
+          max_flows: 
+          rpf: 
+        fq_name:
+        - default-domain
+        - k8s-default
+        - k8s-default-service-network
+        uuid: k8s-default-service-network-uuid
+        address_allocation_mode: flat-subnet-only
+        parent_type: project
+        network_ipam_refs:
+        - to:
+          - default-domain
+          - k8s-default
+          - k8s-service-ipam
+          attr:
+            ipam_subnets: []
+            host_routes: 
+          uuid: k8s-service-ipam-uuid
+        fabric_snat: false
+
+- name: get service network
+  request:
+    path: /virtual-network/k8s-default-service-network-uuid
+    method: GET
+    expected: [200]
+  expect:
+    virtual-network:
+      uuid: k8s-default-service-network-uuid
+      name: k8s-default-service-network
+      parent_uuid: k8s-default
+      parent_type: project
+      fq_name:
+      - default-domain
+      - k8s-default
+      - k8s-default-service-network
+      display_name: k8s-default-service-network
+      address_allocation_mode: flat-subnet-only
+      virtual_network_properties:
+        forwarding_mode: l3
+      network_ipam_refs:
+      - uuid: k8s-service-ipam-uuid
+        to:
+        - default-domain
+        - k8s-default
+        - k8s-service-ipam
+      routing_instances:
+      - name: k8s-default-service-network
+        parent_uuid: k8s-default-service-network-uuid
+        parent_type: virtual-network
+        fq_name:
+        - default-domain
+        - k8s-default
+        - k8s-default-service-network
+        - k8s-default-service-network
+        display_name: k8s-default-service-network
+
+- name: create firewall policys
+  request:
+    path: /firewall-policys
+    method: POST
+    expected: [200]
+    data:
+      firewall-policy:
+        parent_type: policy-management
+        fq_name:
+        - default-policy-management
+        - k8s-denyall
+        uuid: k8s-denyall-uuid
+  expect:
+    firewall-policy:
+      uuid: k8s-denyall-uuid
+
+- name: update firewall policys
+  request:
+    path: /prop-collection-update
+    method: POST
+    expected: [200]
+    data:
+      uuid: k8s-denyall-uuid
+      updates:
+      - field: annotations
+        operation: set
+        value:
+          value: 
+          key: project
+        position: project
+      - field: annotations
+        operation: set
+        value:
+          value: k8s
+          key: cluster
+        position: cluster
+      - field: annotations
+        operation: set
+        value:
+          value: VncSecurityPolicy
+          key: kind
+        position: kind
+      - field: annotations
+        operation: set
+        value:
+          value: denyall
+          key: name
+        position: name
+      - field: annotations
+        operation: set
+        value:
+          value: k8s
+          key: owner
+        position: owner
+      - field: annotations
+        operation: set
+        value:
+          value: 
+          key: namespace
+        position: namespace
+      - field: annotations
+        operation: set
+        value:
+          value: 'True'
+          key: tail
+        position: tail
+      - field: annotations
+        operation: set
+        value:
+          value: 'null'
+          key: spec
+        position: spec
+  expect: null
+
+- name: update application policy set
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      ref-type: firewall-policy
+      uuid: k8s-aps-uuid
+      ref-fq-name:
+      - default-policy-management
+      - k8s-denyall
+      ref-uuid: k8s-denyall-uuid
+      operation: ADD
+      type: application-policy-set
+      attr:
+        sequence: '00001.0'
+
+- name: get application policy set
+  request:
+    path: /application-policy-set/k8s-aps-uuid
+    method: GET
+    expected: [200]
+  expect:
+    application-policy-set:
+      uuid: k8s-aps-uuid
+      name: k8s
+      parent_type: policy-management
+      fq_name:
+      - default-policy-management
+      - k8s
+      display_name: k8s
+      firewall_policy_refs:
+      - uuid: k8s-denyall-uuid
+        attr:
+          sequence: '00001.0'
+
+- name: delete default service network
+  request:
+    path: /virtual-network/k8s-default-service-network-uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete k8s-service-ipam
+  request:
+    path: /network-ipam/k8s-service-ipam-uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete default pod network
+  request:
+    path: /virtual-network/k8s-default-pod-network-uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete pod ipam
+  request:
+    path: /network-ipam/k8s-pod-ipam-uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete ip fabric ipam
+  request:
+    path: /network-ipam/k8s-ip-fabric-ipam-uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete application policy set
+  request:
+    path: /application-policy-set/k8s-aps-uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete firewall policys
+  request:
+    path: /firewall-policy/k8s-denyall-uuid
+    method: DELETE
+    expected: [204]
+  expect: null
