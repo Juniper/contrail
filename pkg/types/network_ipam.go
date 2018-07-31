@@ -76,9 +76,8 @@ func (sv *ContrailTypeLogicService) CreateNetworkIpam(
 				}
 			}
 
-			ipamUUID := networkIpam.GetUUID()
 			for _, ipamSubnet := range ipamSubnets.GetSubnets() {
-				subnetUUID, cErr := sv.createIpamSubnet(ctx, ipamSubnet, ipamUUID)
+				subnetUUID, cErr := sv.createIpamSubnet(ctx, ipamSubnet)
 				if cErr != nil {
 					return cErr
 				}
@@ -191,11 +190,9 @@ func (sv *ContrailTypeLogicService) getNetworkIpam(
 func (sv *ContrailTypeLogicService) createIpamSubnet(
 	ctx context.Context,
 	ipamSubnet *models.IpamSubnetType,
-	ipamUUID string,
 ) (subnetUUID string, err error) {
 	createIpamSubnetParams := &ipam.CreateIpamSubnetRequest{
-		IpamSubnet:      ipamSubnet,
-		NetworkIpamUUID: ipamUUID,
+		IpamSubnet: ipamSubnet,
 	}
 	return sv.AddressManager.CreateIpamSubnet(ctx, createIpamSubnetParams)
 }
@@ -425,7 +422,7 @@ func (sv *ContrailTypeLogicService) checkSubnetDelete(
 		if err != nil {
 			return err
 		}
-		err = sv.canSubnetsBeDeleted(ctx, subnetsToDelete, vn.GetVirtualNetwork())
+		err = sv.canSubnetsBeDeleted(ctx, vn.GetVirtualNetwork(), &models.IpamSubnets{Subnets: subnetsToDelete})
 		if err != nil {
 			return err
 		}
@@ -455,102 +452,6 @@ func (sv *ContrailTypeLogicService) findSubnetsToDelete(
 		}
 	}
 	return subnetsToDelete, nil
-}
-
-func (sv *ContrailTypeLogicService) canSubnetsBeDeleted(
-	ctx context.Context,
-	subnetsSet []*models.IpamSubnetType,
-	vn *models.VirtualNetwork,
-) error {
-	for _, instanceIPBackRef := range vn.GetInstanceIPBackRefs() {
-		err := sv.checkInstanceIP(ctx, instanceIPBackRef, subnetsSet)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, floatingIPPoolRef := range vn.GetFloatingIPPools() {
-		err := sv.checkFloatingIPPool(ctx, floatingIPPoolRef, subnetsSet)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, aliasIPPoolRef := range vn.GetAliasIPPools() {
-		err := sv.checkAliasIPPool(ctx, aliasIPPoolRef, subnetsSet)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (sv *ContrailTypeLogicService) checkInstanceIP(
-	ctx context.Context,
-	instanceIPBackRef *models.InstanceIP,
-	subnetsSet []*models.IpamSubnetType,
-) error {
-	instanceIP, err := sv.ReadService.GetInstanceIP(ctx, &services.GetInstanceIPRequest{
-		ID: instanceIPBackRef.GetUUID()})
-	if err != nil {
-		return err
-	}
-	return checkIfSubnetsSetIncludeIP(subnetsSet, instanceIP.GetInstanceIP().GetInstanceIPAddress())
-}
-
-func (sv *ContrailTypeLogicService) checkFloatingIPPool(
-	ctx context.Context,
-	floatingIPPoolRef *models.FloatingIPPool,
-	subnetsSet []*models.IpamSubnetType,
-) error {
-	floatingIPPool, err := sv.ReadService.GetFloatingIPPool(ctx, &services.GetFloatingIPPoolRequest{
-		ID: floatingIPPoolRef.GetUUID()})
-	if err != nil {
-		return err
-	}
-	for _, floatingIP := range floatingIPPool.GetFloatingIPPool().GetFloatingIPs() {
-		err = checkIfSubnetsSetIncludeIP(subnetsSet, floatingIP.GetFloatingIPAddress())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (sv *ContrailTypeLogicService) checkAliasIPPool(
-	ctx context.Context,
-	aliasIPPoolRef *models.AliasIPPool,
-	subnetsSet []*models.IpamSubnetType,
-) error {
-	aliasIPPool, err := sv.ReadService.GetAliasIPPool(ctx, &services.GetAliasIPPoolRequest{
-		ID: aliasIPPoolRef.GetUUID()})
-	if err != nil {
-		return err
-	}
-	for _, aliasIP := range aliasIPPool.GetAliasIPPool().GetAliasIPs() {
-		err = checkIfSubnetsSetIncludeIP(subnetsSet, aliasIP.GetAliasIPAddress())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func checkIfSubnetsSetIncludeIP(
-	subnetsSet []*models.IpamSubnetType,
-	ipString string,
-) error {
-	for _, ipamSubnet := range subnetsSet {
-		subnet, err := ipamSubnet.GetSubnet().Net()
-		if err != nil {
-			return err
-		}
-		err = ckeckIPInSubnet(subnet, ipString)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (sv *ContrailTypeLogicService) validateSubnetUpdate(
@@ -596,9 +497,8 @@ func (sv *ContrailTypeLogicService) processIpamUpdate(
 			return err
 		}
 
-		ipamUUID := oldIpam.GetUUID()
 		for _, ipamSubnet := range newIpamSubnets {
-			subnetUUID, err := sv.createIpamSubnet(ctx, ipamSubnet, ipamUUID)
+			subnetUUID, err := sv.createIpamSubnet(ctx, ipamSubnet)
 			if err != nil {
 				return err
 			}
@@ -639,16 +539,5 @@ func (sv *ContrailTypeLogicService) checkSubnetAllocPools(
 	newSubnet *models.IpamSubnetType,
 ) error {
 	//TODO check changes in allocPools
-	return nil
-}
-
-func ckeckIPInSubnet(subnet *net.IPNet, ipString string) error {
-	ip := net.ParseIP(ipString)
-	if ip == nil {
-		return errors.Errorf("invalid address: " + ipString)
-	}
-	if subnet.Contains(ip) {
-		return errors.Errorf("subnet %s contains address %s", subnet.String(), ipString)
-	}
 	return nil
 }

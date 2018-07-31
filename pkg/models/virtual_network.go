@@ -72,21 +72,23 @@ func (m *VirtualNetwork) ShouldIgnoreAllocation() bool {
 // GetSubnetUUIDs returns list of subnetUUIDs for all subnets
 func (m *VirtualNetwork) GetSubnetUUIDs() []string {
 	var result []string
-	for _, subnet := range m.GetSubnets() {
+	for _, subnet := range m.GetIpamSubnets().GetSubnets() {
 		result = append(result, subnet.SubnetUUID)
 	}
 
 	return result
 }
 
-// GetSubnets returns list of subnets
-func (m *VirtualNetwork) GetSubnets() []*IpamSubnetType {
-	var result []*IpamSubnetType
+// GetIpamSubnets returns list of subnets
+func (m *VirtualNetwork) GetIpamSubnets() *IpamSubnets {
+	var subnets []*IpamSubnetType
 	// Take attr subnets
 	for _, networkIpam := range m.GetNetworkIpamRefs() {
-		result = append(result, networkIpam.GetAttr().GetIpamSubnets()...)
+		subnets = append(subnets, networkIpam.GetAttr().GetIpamSubnets()...)
 	}
-	return result
+	return &IpamSubnets{
+		Subnets: subnets,
+	}
 }
 
 // GetAddressAllocationMethod returns address allocation method
