@@ -266,6 +266,7 @@ func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) err
 	// play orchestrator provisioning playbook
 	switch a.clusterData.clusterInfo.Orchestrator {
 	case "openstack":
+		ansibleArgs = append(ansibleArgs, "-e force_checkout=yes")
 		switch a.clusterData.clusterInfo.ProvisioningAction {
 		case "ADD_COMPUTE":
 			ansibleArgs = append(ansibleArgs, "--tags nova")
