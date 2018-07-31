@@ -21,18 +21,24 @@ import (
 
 // Resource constants
 const (
-	DomainType                 = "domain"
-	DefaultDomainUUID          = "beefbeef-beef-beef-beef-beefbeef0002"
-	ProjectType                = "project"
-	ProjectSchemaID            = "project"
-	ProjectSingularPath        = "/project"
-	ProjectPluralPath          = "/projects"
-	NetworkIPAMSchemaID        = "network_ipam"
-	NetworkIpamSingularPath    = "/network-ipam"
-	NetworkIpamPluralPath      = "/network-ipams"
-	VirtualNetworkSchemaID     = "virtual_network"
-	VirtualNetworkSingularPath = "/virtual-network"
-	VirtualNetworkPluralPath   = "/virtual-networks"
+	DomainType                  = "domain"
+	DefaultDomainUUID           = "beefbeef-beef-beef-beef-beefbeef0002"
+	ProjectType                 = "project"
+	ProjectSchemaID             = "project"
+	ProjectSingularPath         = "/project"
+	ProjectPluralPath           = "/projects"
+	NetworkIPAMSchemaID         = "network_ipam"
+	NetworkIpamSingularPath     = "/network-ipam"
+	NetworkIpamPluralPath       = "/network-ipams"
+	VirtualNetworkSchemaID      = "virtual_network"
+	VirtualNetworkSingularPath  = "/virtual-network"
+	VirtualNetworkPluralPath    = "/virtual-networks"
+	RouteTargetSchemaID         = "route_target"
+	RouteTargetSingularPath     = "/route-target"
+	RouteTargetPluralPath       = "/route-targets"
+	RoutingInstanceSchemaID     = "routing_instance"
+	RoutingInstanceSingularPath = "/routing-instance"
+	RoutingInstancePluralPath   = "/routing-instances"
 )
 
 // HTTPAPIClient is API Server client for tests purposes.
@@ -108,6 +114,40 @@ func (c *HTTPAPIClient) GetVirtualNetwork(t *testing.T, uuid string) *models.Vir
 // DeleteVirtualNetwork deletes VirtualNetwork resource.
 func (c *HTTPAPIClient) DeleteVirtualNetwork(t *testing.T, uuid string) {
 	c.DeleteResource(t, path.Join(VirtualNetworkSingularPath, uuid))
+}
+
+// CreateRouteTarget creates RouteTarget resource.
+func (c *HTTPAPIClient) CreateRouteTarget(t *testing.T, rt *models.RouteTarget) {
+	c.CreateResource(t, RouteTargetPluralPath, &services.CreateRouteTargetRequest{RouteTarget: rt})
+}
+
+// GetRouteTarget gets RouteTarget resource.
+func (c *HTTPAPIClient) GetRouteTarget(t *testing.T, uuid string) *models.RouteTarget {
+	var responseData services.GetRouteTargetResponse
+	c.GetResource(t, path.Join(RouteTargetSingularPath, uuid), &responseData)
+	return responseData.RouteTarget
+}
+
+// DeleteRouteTarget deletes RouteTarget resource.
+func (c *HTTPAPIClient) DeleteRouteTarget(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(RouteTargetSingularPath, uuid))
+}
+
+// CreateRoutingInstance creates RoutingInstance resource.
+func (c *HTTPAPIClient) CreateRoutingInstance(t *testing.T, ri *models.RoutingInstance) {
+	c.CreateResource(t, RoutingInstancePluralPath, &services.CreateRoutingInstanceRequest{RoutingInstance: ri})
+}
+
+// GetRoutingInstance gets RoutingInstance resource.
+func (c *HTTPAPIClient) GetRoutingInstance(t *testing.T, uuid string) *models.RoutingInstance {
+	var responseData services.GetRoutingInstanceResponse
+	c.GetResource(t, path.Join(RoutingInstanceSingularPath, uuid), &responseData)
+	return responseData.RoutingInstance
+}
+
+// DeleteRoutingInstance deletes RoutingInstance resource.
+func (c *HTTPAPIClient) DeleteRoutingInstance(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(RoutingInstanceSingularPath, uuid))
 }
 
 // CreateResource creates resource.
