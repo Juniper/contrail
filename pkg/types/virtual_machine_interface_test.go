@@ -74,9 +74,9 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 			errorCode: codes.InvalidArgument,
 		},
 		{
-			name: "Create virtual machine interface with valid virtual network ref",
+			name: "Create virtual machine interface with no mac address",
 			paramVMI: models.VirtualMachineInterface{
-				UUID: "uuid",
+				UUID: "bbee32a1-1ccc-4bac-a006-646993303e67",
 				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
 					{
 						UUID: "virtual-network-uuid",
@@ -84,11 +84,64 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 				},
 			},
 			expectedVMI: models.VirtualMachineInterface{
-				UUID: "uuid",
+				UUID: "bbee32a1-1ccc-4bac-a006-646993303e67",
 				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
 					{
 						UUID: "virtual-network-uuid",
 					},
+				},
+				VirtualMachineInterfaceMacAddresses: &models.MacAddressesType{
+					MacAddress: []string{"02:bb:ee:32:a1:1c"},
+				},
+			},
+		},
+		{
+			name: "Create virtual machine interface with valid virtual network ref and mac address",
+			paramVMI: models.VirtualMachineInterface{
+				UUID: "vmi-uuid",
+				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid",
+					},
+				},
+				VirtualMachineInterfaceMacAddresses: &models.MacAddressesType{
+					MacAddress: []string{"01-23-45-67-89-10"},
+				},
+			},
+			expectedVMI: models.VirtualMachineInterface{
+				UUID: "vmi-uuid",
+				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid",
+					},
+				},
+				VirtualMachineInterfaceMacAddresses: &models.MacAddressesType{
+					MacAddress: []string{"01:23:45:67:89:10"},
+				},
+			},
+		},
+		{
+			name: "Create virtual machine interface with different mac address format",
+			paramVMI: models.VirtualMachineInterface{
+				UUID: "vmi-uuid",
+				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid",
+					},
+				},
+				VirtualMachineInterfaceMacAddresses: &models.MacAddressesType{
+					MacAddress: []string{"01:23:45:67:89:10"},
+				},
+			},
+			expectedVMI: models.VirtualMachineInterface{
+				UUID: "vmi-uuid",
+				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid",
+					},
+				},
+				VirtualMachineInterfaceMacAddresses: &models.MacAddressesType{
+					MacAddress: []string{"01:23:45:67:89:10"},
 				},
 			},
 		},
