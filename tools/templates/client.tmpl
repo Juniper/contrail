@@ -2,19 +2,23 @@ package client
 
 import (
     "context"
+
+    "github.com/labstack/echo"
+
     "github.com/Juniper/contrail/pkg/services"
+    "github.com/Juniper/contrail/pkg/models"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 func (h *HTTP) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
     response := &services.Create{{ schema.JSONSchema.GoName }}Response{}
-    _, err := h.Create(ctx, "{{ schema.Prefix }}{{ schema.PluralPath }}",  request, response)
+    _, err := h.Create(ctx, "{{ schema.Prefix }}{{ schema.PluralPath }}", request, response)
     return response, err
 }
 
 func (h *HTTP) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
     response := &services.Update{{ schema.JSONSchema.GoName }}Response{}
-    _, err := h.Update(ctx, "{{ schema.Prefix }}{{ schema.Path }}/" + request.{{ schema.JSONSchema.GoName }}.UUID, 
+    _, err := h.Update(ctx, "{{ schema.Prefix }}{{ schema.Path }}/" + request.{{ schema.JSONSchema.GoName }}.UUID,
         request, &response)
     return response, err
 }
@@ -38,4 +42,52 @@ func (h *HTTP) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *
     return response, err
 }
 
+{% for _, reference in schema.References %}
+{% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+func (h *HTTP) Create{{ refType }}(
+    ctx context.Context, request *services.Create{{ refType }}Request,
+) (*services.Create{{ refType }}Response, error) {
+    response := echo.HTTPError{}
+    data := h.getRefUpdateFromRequest{{ refType }} (request, services.RefOperationAdd)
+    _, err := h.UpdateRef(ctx, data, response)
+    return (*services.Create{{ refType }}Response)(request), err
+}
+
+func (h *HTTP) Delete{{ refType }}(ctx context.Context, request *services.Delete{{ refType }}Request) (*services.Delete{{ refType }}Response, error) {
+    response := echo.HTTPError{}
+    data := h.getRefUpdateFromRequest{{ refType }} ((*services.Create{{ refType }}Request)(request), services.RefOperationDelete)
+    _, err := h.UpdateRef(ctx, data, response)
+    return (*services.Delete{{ refType }}Response)(request), err
+}
+
+func (h *HTTP) getRefUpdateFromRequest{{ refType }} (request *services.Create{{ refType }}Request, operation services.RefOperation) services.RefUpdate{
+    id := request.GetID()
+    reference := request.Get{{ refType }}()
+    {% if reference.RefType  %}
+    data := struct{
+        services.RefUpdate
+        Attr *models.{{reference.RefType}} `json:"attr"`
+    }{
+        services.RefUpdate{
+            Operation: operation,
+            Type: "{{ schema.Path }}",
+            UUID: id,
+            RefType: "{{ reference.LinkTo.Path }}",
+            RefUUID: reference.GetUUID(),
+        },
+        reference.GetAttr(),
+    }
+    return data.RefUpdate
+    {% else %}
+    data := services.RefUpdate{
+        Operation: operation,
+        Type: "{{ schema.Path }}",
+        UUID: id,
+        RefType: "{{ reference.LinkTo.Path }}",
+        RefUUID: reference.GetUUID(),
+    }
+    return data
+    {% endif %}
+}
+{% endfor %}
 {% endif%}{% endfor %}
