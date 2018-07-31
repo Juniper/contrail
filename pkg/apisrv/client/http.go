@@ -158,6 +158,18 @@ func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*ht
 	return h.Do(ctx, echo.DELETE, path, nil, output, expected)
 }
 
+// CreateRef sends a create API request.
+func (h *HTTP) CreateRef(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
+	expected := []int{http.StatusOK}
+	return h.Do(ctx, echo.POST, "/ref-update", data, output, expected)
+}
+
+// DeleteRef sends a detete API request.
+func (h *HTTP) DeleteRef(ctx context.Context, data interface{}) (*http.Response, error) {
+	expected := []int{http.StatusOK}
+	return h.Do(ctx, echo.POST, "/ref-update", data, nil, expected)
+}
+
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusNoContent, http.StatusNotFound}
