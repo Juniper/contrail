@@ -26,7 +26,8 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 			}
 
 			//TODO further validation
-			//mac-address allocation
+
+			virtualMachineInterface.CheckMacAddress()
 
 			response, err = sv.BaseService.CreateVirtualMachineInterface(ctx, request)
 			return err
