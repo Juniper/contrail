@@ -3,6 +3,7 @@ package cassandra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -96,8 +97,7 @@ func parseProperty(data map[string]interface{}, property string, value interface
 				m = map[string]interface{}{}
 				data[propertyList[1]] = m
 			}
-			mValue, _ := value.(map[string]interface{})
-			m[propertyList[2]] = mValue["value"]
+			CassandraToMapProperty(m, propertyList[1], value)
 		case "propl":
 			l, _ := data[propertyList[1]].([]interface{})
 			data[propertyList[1]] = append(l, value)
@@ -115,6 +115,42 @@ func parseProperty(data map[string]interface{}, property string, value interface
 	} else {
 		data[property] = value
 	}
+}
+
+// DbToMapProp adds a single value from Cassandra to a property of type "map"
+func DbToMapProp(propMap map[string]interface{}, propName string, value interface{}) {
+	// TODO (Kamil): temporary solution; this code should be generated from schema
+	if propName == "virtual_machine_interface_bindings" {
+		kvps, _ := propMap["key_value_pair"].([]interface{})
+		kvps = append(kvps, value)
+		propMap["key_value_pair"] = kvps
+	}
+
+	// TODO: other properties
+}
+
+// MapPropToDb turns a property of type "map" to a list of (property, value) pairs for Cassandra
+func MapPropToDb(propMap map[string]interface{}, propName string) (result []struct {
+	Property string
+	Value    interface{}
+}) {
+	// TODO (Kamil): temporary solution; this code should be generated from schema
+	if propName == "virtual_machine_interface_bindings" {
+		kvps, _ := propMap["key_value_pair"].([]interface{})
+		for _, kvp := range kvps {
+			key := kvp.(map[string]interface{})["key"]
+			result = append(result, struct {
+				Property string
+				Value    interface{}
+			}{
+				Property: fmt.Sprintf("propm:%v:%v", propName, key),
+				Value:    kvp,
+			})
+		}
+	}
+
+	// TODO other properties
+	return result
 }
 
 func (o object) convert(uuid string) map[string]interface{} {
