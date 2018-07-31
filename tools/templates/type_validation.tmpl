@@ -69,15 +69,13 @@ var _ = strings.Count
 {% macro validateProperties(resource, properties) %}
 	{% for property, pdef in properties %}
 		{# Check required properties first. #}
-		{% if pdef.Presence == "required" or pdef.Presence == "true" %}
+		{% if pdef.Presence == "required" %}
 			{% if pdef.Type == "string" %}
 				if obj.{{pdef.GoName}} == "" {{reportMissingProperty(pdef.ID, resource)}}
 			{% elif pdef.Type == "integer" or pdef.Type == "number" %}
 				if obj.{{pdef.GoName}} == 0 {{reportMissingProperty(pdef.ID, resource)}}
 			{% elif pdef.Type == "boolean" %}
 				if obj.{{pdef.GoName}} == false {{reportMissingProperty(pdef.ID, resource)}}
-			{% elif pdef.Type == "object" %}
-				if obj.{{pdef.GoName}} == nil {{reportMissingProperty(pdef.ID, resource)}}
 			{% elif pdef.Type == "array" %}
 				if len(obj.{{pdef.GoName}}) == 0 {{reportMissingProperty(pdef.ID, resource)}}
 			{% endif %}
@@ -160,7 +158,7 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 	{% if schema.Parents|length > 0 %}
 	{% if !schema.IsConfigRootInParents %}
 	if obj.ParentUUID == "" {
-		return errors.Errorf("parent_uuid is required for {{schema.ID}} ")
+		return nil
 	}
 	{% endif %}
 	restrictions := map[string]struct {} {

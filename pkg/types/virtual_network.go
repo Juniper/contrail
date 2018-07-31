@@ -272,6 +272,12 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 	// so we create a list of subnet for overlap check.
 	subnets := []*net.IPNet{}
 	for _, ipamReference := range ipamReferences {
+
+		if ipamReference.UUID == "" {
+			metadata, _ := sv.MetadataGetter.GetMetaData(ctx, "", ipamReference.To)
+			ipamReference.UUID = metadata.UUID
+		}
+
 		ipamResponse, err := sv.ReadService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
 			ID: ipamReference.UUID,
 		})
@@ -658,4 +664,17 @@ func (sv *ContrailTypeLogicService) checkIfAliasIPsAreNotUsedInSubnets(
 	}
 
 	return nil
+}
+
+func (sv *ContrailTypeLogicService) GetVirtualNetwork(ctx context.Context,
+	request *services.GetVirtualNetworkRequest,
+) (response *services.GetVirtualNetworkResponse, err error) {
+
+	response, err = sv.BaseService.GetVirtualNetwork(ctx, request)
+
+	for _, ipamRef := range response.GetVirtualNetwork().GetNetworkIpamRefs() {
+		meta, _ := sv.MetadataGetter.GetMetaData(ctx, ipamRef.GetUUID(), nil)
+		ipamRef.To = meta.FQName
+	}
+	return
 }
