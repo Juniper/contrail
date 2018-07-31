@@ -20,6 +20,12 @@ const (
 	defaultCassandraKeyspace = "config_db_uuid"
 
 	exchangeName = "vnc_config.object-update"
+
+	propertyPrefix       = "prop"
+	propertyMapPrefix    = "propm"
+	propertyListPrefix   = "propl"
+	propertyParentPrefix = "parent"
+	propertyRefPrefix    = "ref"
 )
 
 type contrailDBData struct {
@@ -88,22 +94,21 @@ func parseProperty(data map[string]interface{}, property string, value interface
 	if strings.Contains(property, ":") {
 		propertyList := strings.Split(property, ":")
 		switch propertyList[0] {
-		case "prop":
+		case propertyPrefix:
 			data[propertyList[1]] = value
-		case "propm":
+		case propertyMapPrefix:
 			m, _ := data[propertyList[1]].(map[string]interface{})
 			if m == nil {
 				m = map[string]interface{}{}
 				data[propertyList[1]] = m
 			}
-			mValue, _ := value.(map[string]interface{})
-			m[propertyList[2]] = mValue["value"]
-		case "propl":
+			parseMapProperty(m, propertyList[1], value)
+		case propertyListPrefix:
 			l, _ := data[propertyList[1]].([]interface{})
 			data[propertyList[1]] = append(l, value)
-		case "parent":
+		case propertyParentPrefix:
 			data["parent_uuid"] = propertyList[2]
-		case "ref":
+		case propertyRefPrefix:
 			refProperty := propertyList[1] + "_refs"
 			list, _ := data[refProperty].([]interface{})
 			m, _ := value.(map[string]interface{})
@@ -115,6 +120,18 @@ func parseProperty(data map[string]interface{}, property string, value interface
 	} else {
 		data[property] = value
 	}
+}
+
+// parseMapProperty adds a single value from Cassandra to a property of type "map"
+func parseMapProperty(propertyMap map[string]interface{}, propertyName string, value interface{}) {
+	// TODO (Kamil): temporary solution; this code should be generated from schema
+	if propertyName == "virtual_machine_interface_bindings" {
+		kvps, _ := propertyMap["key_value_pair"].([]interface{})
+		kvps = append(kvps, value)
+		propertyMap["key_value_pair"] = kvps
+	}
+
+	// TODO: other properties
 }
 
 func (o object) convert(uuid string) map[string]interface{} {
