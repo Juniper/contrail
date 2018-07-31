@@ -134,7 +134,7 @@ func (h *HTTP) Login() error {
 
 // Create send a create API request.
 func (h *HTTP) Create(path string, data interface{}, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusCreated}
+	expected := []int{http.StatusOK}
 	return h.Do(echo.POST, path, data, output, expected)
 }
 

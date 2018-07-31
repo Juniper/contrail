@@ -1810,7 +1810,7 @@
         - "InternalVirtualNetwork"
       type: "string"
     VxlanNetworkIdentifierType:
-      minimum: 1
+      minimum: 0
       type: "integer"
       maximum: 16777215
     FatFlowProtocols:

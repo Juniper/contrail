@@ -262,6 +262,12 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 	// so we create a list of subnet for overlap check.
 	subnets := []*net.IPNet{}
 	for _, ipamReference := range ipamReferences {
+
+		if ipamReference.UUID == "" {
+			metadata, _ := sv.MetadataGetter.GetMetaData(ctx, "", ipamReference.To)
+			ipamReference.UUID = metadata.UUID
+		}
+
 		ipamResponse, err := sv.ReadService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
 			ID: ipamReference.UUID,
 		})

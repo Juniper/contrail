@@ -23,7 +23,7 @@ workflow:
   request:
     path: /physical-routers
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       physical-router:
         uuid: physical_router_blue_uuid
@@ -38,7 +38,7 @@ workflow:
   request:
     path: /physical-interfaces
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       physical-interface:
         uuid: physical_interface_blue_uuid
@@ -61,7 +61,7 @@ workflow:
   request:
     path: /logical-interfaces
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       logical-interface:
         <<: *logical_interface_minimal_base_props
@@ -86,7 +86,7 @@ workflow:
   request:
     path: /logical-interfaces
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       logical-interface:
         <<: *logical_interface_minimal_base_props
@@ -104,7 +104,7 @@ workflow:
   request:
     path: /logical-interfaces
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       logical-interface:
         uuid: logical_interface_blue2

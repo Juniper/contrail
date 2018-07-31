@@ -45,7 +45,7 @@ workflow:
   request:
     path: /projects
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       project: *project_blue_ref_update
   expect:
@@ -55,7 +55,7 @@ workflow:
   request:
     path: /virtual-networks
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       virtual-network: *virtual_network_ref_update
   expect:
@@ -65,7 +65,7 @@ workflow:
   request:
     path: /routing-instances
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       routing-instance: *routing_instance_ref_update
   expect:
@@ -75,7 +75,7 @@ workflow:
   request:
     path: /route-targets
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       route-target: *route_target_ref_update
   expect:

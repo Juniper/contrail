@@ -133,7 +133,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project_network_ipam
   expect:
@@ -144,7 +144,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_blue
   expect:
@@ -165,7 +165,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *virtual_network_blue
   expect: null
@@ -175,7 +175,7 @@ workflow:
     path: /floating-ip-pools
     method: POST
     expected:
-    - 201
+    - 200
     data:
       floating-ip-pool: *floating_ip_pool
   expect: null
@@ -185,7 +185,7 @@ workflow:
     path: /floating-ips
     method: POST
     expected:
-    - 201
+    - 200
     data:
       floating-ip: *floating_ip
   expect: null

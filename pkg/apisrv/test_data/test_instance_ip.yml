@@ -67,7 +67,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project_instance_ip
   expect:
@@ -78,7 +78,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_blue
   expect:
@@ -89,7 +89,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *vn_instance_ip_blue
   expect:
@@ -100,7 +100,7 @@ workflow:
     path: /instance-ips
     method: POST
     expected:
-    - 201
+    - 200
     data:
       instance-ip:
         fq_name: ["test_instance_ip"]
