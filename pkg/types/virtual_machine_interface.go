@@ -17,37 +17,48 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 	request *services.CreateVirtualMachineInterfaceRequest) (*services.CreateVirtualMachineInterfaceResponse, error) {
 
 	var response *services.CreateVirtualMachineInterfaceResponse
-	virtualMachineInterface := request.GetVirtualMachineInterface()
+	vmi := request.GetVirtualMachineInterface()
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
 
-			_, err := sv.getVirtualNetworkFromVirtualMachineInterface(ctx, virtualMachineInterface)
+			vn, err := sv.getVirtualNetworkFromVirtualMachineInterface(ctx, vmi)
 			if err != nil {
 				return err
 			}
 
 			//TODO further validation
 
-			calculateMacAddresses(virtualMachineInterface)
+			vmi.VirtualMachineInterfaceMacAddresses, err = calculateMacAddresses(vmi)
+			if err != nil {
+				return err
+			}
 
 			response, err = sv.BaseService.CreateVirtualMachineInterface(ctx, request)
-			return err
+			if err != nil {
+				return err
+			}
+
+			ri := getDefaultRoutingInstance(vn)
+			if ri == nil {
+				return common.ErrorBadRequestf("could not get default routing instance for VN (%v)", vn.UUID)
+			}
+
+			return sv.createRoutingInstanceRefForVirtualMachineInterface(ctx, vmi, ri)
 		})
 
 	return response, err
 }
 
-//nolint TODO has to be removed when vn is used
 func (sv *ContrailTypeLogicService) getVirtualNetworkFromVirtualMachineInterface(
-	ctx context.Context, virtualMachineInterface *models.VirtualMachineInterface) (*models.VirtualNetwork, error) {
+	ctx context.Context, vmi *models.VirtualMachineInterface) (*models.VirtualNetwork, error) {
 
-	if len(virtualMachineInterface.GetVirtualNetworkRefs()) == 0 {
+	if len(vmi.GetVirtualNetworkRefs()) == 0 {
 		return nil, common.ErrorBadRequest("virtual_network_refs are not defined")
 	}
 
-	uuid := virtualMachineInterface.GetVirtualNetworkRefs()[0].GetUUID()
-	virtualNetworkResponse, err := sv.ReadService.GetVirtualNetwork(
+	uuid := vmi.GetVirtualNetworkRefs()[0].GetUUID()
+	response, err := sv.ReadService.GetVirtualNetwork(
 		ctx,
 		&services.GetVirtualNetworkRequest{
 			ID: uuid,
@@ -57,22 +68,50 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkFromVirtualMachineInterface
 		return nil, common.ErrorBadRequestf("missing virtual-network with uuid %s: %v", uuid, err)
 	}
 
-	return virtualNetworkResponse.GetVirtualNetwork(), nil
+	return response.GetVirtualNetwork(), nil
 }
 
-func calculateMacAddresses(vmi *models.VirtualMachineInterface) {
-	switch len(vmi.GetVirtualMachineInterfaceMacAddresses().GetMacAddress()) {
-	case 0:
-		uuid := vmi.GetUUID()
-		macAddress := fmt.Sprintf("02:%s:%s:%s:%s:%s", uuid[0:2], uuid[2:4], uuid[4:6], uuid[6:8], uuid[9:11])
-		vmi.VirtualMachineInterfaceMacAddresses = &models.MacAddressesType{
-			MacAddress: []string{macAddress},
-		}
-	case 1:
+func calculateMacAddresses(vmi *models.VirtualMachineInterface) (*models.MacAddressesType, error) {
+	addrs := len(vmi.GetVirtualMachineInterfaceMacAddresses().GetMacAddress())
+
+	if addrs == 1 {
 		oldMacAddress := vmi.VirtualMachineInterfaceMacAddresses.GetMacAddress()[0]
 		newMacAddress := strings.Replace(oldMacAddress, "-", ":", -1)
-		vmi.VirtualMachineInterfaceMacAddresses = &models.MacAddressesType{
+		return &models.MacAddressesType{
 			MacAddress: []string{newMacAddress},
-		}
+		}, nil
 	}
+
+	uuid := vmi.GetUUID()
+	if len(uuid) < 11 {
+		return nil, common.ErrorBadRequestf("could not generate mac address: vn uuid (%v) too short", uuid)
+	}
+
+	macAddress := fmt.Sprintf("02:%s:%s:%s:%s:%s", uuid[0:2], uuid[2:4], uuid[4:6], uuid[6:8], uuid[9:11])
+	return &models.MacAddressesType{
+		MacAddress: []string{macAddress},
+	}, nil
+}
+
+func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInterface(
+	ctx context.Context, vmi *models.VirtualMachineInterface, routingInstance *models.RoutingInstance) error {
+
+	_, err := sv.WriteService.CreateVirtualMachineInterfaceRoutingInstanceRef(
+		ctx,
+		&services.CreateVirtualMachineInterfaceRoutingInstanceRefRequest{
+			ID: vmi.GetUUID(),
+			VirtualMachineInterfaceRoutingInstanceRef: &models.VirtualMachineInterfaceRoutingInstanceRef{
+				UUID: routingInstance.UUID,
+				Attr: &models.PolicyBasedForwardingRuleType{
+					Direction: "both",
+				},
+			},
+		},
+	)
+
+	if err != nil {
+		return common.ErrorBadRequestf("cannot add routing-instance ref to virtual-machine-interface: %v", err)
+	}
+
+	return nil
 }
