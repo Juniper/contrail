@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
@@ -20,7 +21,7 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 		ctx,
 		func(ctx context.Context) error {
 
-			_, err := sv.getVirtualNetworkFromVirtualMachineInterface(ctx, virtualMachineInterface)
+			virtualNetwork, err := sv.getVirtualNetworkFromVirtualMachineInterface(ctx, virtualMachineInterface)
 			if err != nil {
 				return err
 			}
@@ -29,13 +30,21 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 			//mac-address allocation
 
 			response, err = sv.BaseService.CreateVirtualMachineInterface(ctx, request)
-			return err
+			if err != nil {
+				return err
+			}
+
+			routingInstance, err := sv.getRoutingInstanceFromVirtualNetwork(ctx, virtualNetwork)
+			if err != nil {
+				return err
+			}
+
+			return sv.createRoutingInstanceRefForVirtualMachineInterface(ctx, virtualMachineInterface, routingInstance)
 		})
 
 	return response, err
 }
 
-//nolint TODO has to be removed when vn is used
 func (sv *ContrailTypeLogicService) getVirtualNetworkFromVirtualMachineInterface(
 	ctx context.Context, virtualMachineInterface *models.VirtualMachineInterface) (*models.VirtualNetwork, error) {
 
@@ -55,4 +64,52 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkFromVirtualMachineInterface
 	}
 
 	return virtualNetworkResponse.GetVirtualNetwork(), nil
+}
+
+func (sv *ContrailTypeLogicService) getRoutingInstanceFromVirtualNetwork(
+	ctx context.Context, vn *models.VirtualNetwork) (*models.RoutingInstance, error) {
+
+	vnFqName := vn.GetFQName()
+	routingInstanceFqName := append(vnFqName, vnFqName[len(vnFqName)-1])
+
+	metadata, err := sv.FQNameUUIDTranslator.TranslateBetweenFQNameUUID(ctx, "", routingInstanceFqName)
+	if err != nil {
+		return nil, common.ErrorBadRequestf(
+			"missing routing-instance with fq-name [%s]: %v", strings.Join(routingInstanceFqName, "."), err)
+	}
+
+	routingInstanceResponse, err := sv.ReadService.GetRoutingInstance(
+		ctx,
+		&services.GetRoutingInstanceRequest{
+			ID: metadata.UUID,
+		},
+	)
+	if err != nil {
+		return nil, common.ErrorBadRequestf("missing routing-instance with uuid %s: %v", metadata.UUID, err)
+	}
+
+	return routingInstanceResponse.GetRoutingInstance(), nil
+}
+
+func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInterface(
+	ctx context.Context, vmi *models.VirtualMachineInterface, routingInstance *models.RoutingInstance) error {
+
+	_, err := sv.WriteService.CreateVirtualMachineInterfaceRoutingInstanceRef(
+		ctx,
+		&services.CreateVirtualMachineInterfaceRoutingInstanceRefRequest{
+			ID: vmi.GetUUID(),
+			VirtualMachineInterfaceRoutingInstanceRef: &models.VirtualMachineInterfaceRoutingInstanceRef{
+				UUID: routingInstance.UUID,
+				To:   routingInstance.FQName,
+				Attr: &models.PolicyBasedForwardingRuleType{
+					Direction: "both",
+				},
+			},
+		},
+	)
+	if err != nil {
+		return common.ErrorBadRequestf("cannot add routing-instance ref to virtual-machine-interface: %v", err)
+	}
+
+	return nil
 }
