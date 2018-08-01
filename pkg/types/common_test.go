@@ -18,6 +18,7 @@ func makeMockedContrailTypeLogicService(controller *gomock.Controller) *Contrail
 		ReadService:       servicesmock.NewMockReadService(controller),
 		IntPoolAllocator:  ipammock.NewMockIntPoolAllocator(controller),
 		InTransactionDoer: typesmock.NewMockInTransactionDoer(controller),
+		MetaDataGetter:    typesmock.NewMockMetaDataGetter(controller),
 		WriteService:      servicesmock.NewMockWriteService(controller),
 	}
 	service.SetNext(servicesmock.NewMockService(controller))
