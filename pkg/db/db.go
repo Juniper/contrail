@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ExpansiveWorlds/instrumentedsql"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/go-sql-driver/mysql"
 	"github.com/gogo/protobuf/proto"
@@ -211,4 +212,12 @@ func ConnectDB() (*sql.DB, error) {
 		log.Printf("Retrying db connection... (%s)", err)
 	}
 	return nil, fmt.Errorf("failed to open db connection")
+}
+
+// TranslateBetweenFQNameUUID translates given fq-name to corresponding uuid and vice versa
+func (db *Service) TranslateBetweenFQNameUUID(
+	ctx context.Context, uuid string, fqName []string,
+) (*models.MetaData, error) {
+
+	return db.GetMetaData(ctx, uuid, fqName)
 }
