@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/types/mock"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -32,6 +34,7 @@ func virtualMachineInterfacePrepareNetwork(s *ContrailTypeLogicService) {
 	readService := s.ReadService.(*servicesmock.MockReadService)
 	virtualNetwork := models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "virtual-network-uuid"
+	virtualNetwork.FQName = []string{"default", "test-virtual-network"}
 
 	readService.EXPECT().GetVirtualNetwork(
 		gomock.Not(gomock.Nil()),
@@ -43,6 +46,54 @@ func virtualMachineInterfacePrepareNetwork(s *ContrailTypeLogicService) {
 	).AnyTimes()
 
 	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+		nil, common.ErrorNotFound,
+	).AnyTimes()
+}
+
+func virtualMachineInterfacePrepareMetadata(s *ContrailTypeLogicService, mockCtrl *gomock.Controller) {
+	fqNameUUIDTranslator := typesmock.NewMockFQNameUUIDTranslator(mockCtrl)
+
+	fqNameUUIDTranslator.EXPECT().TranslateBetweenFQNameUUID(
+		gomock.Not(gomock.Nil()),
+		"",
+		[]string{"default", "test-virtual-network", "test-virtual-network"},
+	).Return(
+		&models.MetaData{
+			UUID:   "routing-instance-uuid",
+			FQName: []string{"default", "test-virtual-network", "test-virtual-network"},
+		},
+		nil,
+	).AnyTimes()
+
+	fqNameUUIDTranslator.EXPECT().TranslateBetweenFQNameUUID(
+		gomock.Not(gomock.Nil()),
+		gomock.Not(gomock.Nil()),
+		gomock.Not(gomock.Nil()),
+	).Return(
+		&models.MetaData{
+			UUID:   "routing-instance-uuid",
+			FQName: []string{"default", "test-virtual-network", "test-virtual-network"},
+		},
+		nil,
+	).AnyTimes()
+}
+
+func virtualMachineInterfacePrepareRoutingInstance(s *ContrailTypeLogicService) {
+	readService := s.ReadService.(*servicesmock.MockReadService)
+	routingInstance := models.MakeRoutingInstance()
+	routingInstance.UUID = "routing-instance-uuid"
+	routingInstance.FQName = []string{"default", "test-virtual-network", "test-virtual-network"}
+
+	readService.EXPECT().GetRoutingInstance(
+		gomock.Not(gomock.Nil()),
+		&services.GetRoutingInstanceRequest{
+			ID: "routing-instance-uuid",
+		},
+	).Return(
+		&services.GetRoutingInstanceResponse{RoutingInstance: routingInstance}, nil,
+	).AnyTimes()
+
+	readService.EXPECT().GetRoutingInstance(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound,
 	).AnyTimes()
 }
@@ -129,6 +180,8 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			virtualMachineInterfaceSetupNextServiceMocks(service)
 			virtualMachineInterfacePrepareNetwork(service)
+			virtualMachineInterfacePrepareMetadata(service, mockCtrl)
+			virtualMachineInterfacePrepareRoutingInstance(service)
 
 			ctx := context.Background()
 
