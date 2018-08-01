@@ -353,6 +353,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 
 			virtualNetwork := models.MakeVirtualNetwork()
 			virtualNetwork.UUID = "test_vn_red_uuid"
+			virtualNetwork.FQName = []string{"test_vn_red"}
 			mockedReadServiceAddVirtualNetwork(service, virtualNetwork)
 
 			virtualNetworkSetupReadServiceMocks(service)
@@ -906,11 +907,13 @@ func virtualNetworkSetupReadServiceMocks(s *ContrailTypeLogicService) {
 
 	virtualNetwork := models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "test_provider_vn_uuid"
+	virtualNetwork.FQName = []string{"test_provider_vn"}
 	virtualNetwork.IsProviderNetwork = true
 	mockedReadServiceAddVirtualNetwork(s, virtualNetwork)
 
 	virtualNetwork = models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "test_non_provider_vn_uuid"
+	virtualNetwork.FQName = []string{"test_non_provider_vn"}
 	mockedReadServiceAddVirtualNetwork(s, virtualNetwork)
 
 	readServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
