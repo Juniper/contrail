@@ -175,11 +175,17 @@ func getAssertFunction(key string) (assertFunction, error) {
 }
 
 func logObjects(expected, actual interface{}) {
+	expectedYAML, err := yaml.Marshal(expected)
 	log.Debug("Expected object:")
-	out, err := yaml.Marshal(expected)
-	fmt.Println(string(out), err)
+	fmt.Println(string(expectedYAML))
+	if err != nil {
+		log.WithError(err).Debug("Failed to marshal expected object")
+	}
 
+	actualYAML, err := yaml.Marshal(actual)
 	log.Debug("Actual object:")
-	out, err = yaml.Marshal(actual)
-	fmt.Println(string(out), err)
+	fmt.Println(string(actualYAML))
+	if err != nil {
+		log.WithError(err).Debug("Failed to marshal actual object")
+	}
 }
