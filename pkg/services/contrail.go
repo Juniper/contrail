@@ -109,3 +109,36 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
 }
+
+// RefRelax represents ref-relax-for-delete input data.
+type RefRelax struct {
+	UUID    string `json:"uuid"`
+	RefUUID string `json:"ref-uuid"`
+}
+
+func (r *RefRelax) validate() error {
+	if r.UUID == "" || r.RefUUID == "" {
+		return common.ErrorBadRequestf("uuid/ref-uuid is null: %s, %s", r.UUID, r.RefUUID)
+	}
+
+	return nil
+}
+
+// RESTRefRelaxForDelete handles a ref-relax-for-delete request.
+func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
+	var data RefRelax
+	if err := c.Bind(&data); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Debug("bind failed on ref-relax-for-delete")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+
+	if err := data.validate(); err != nil {
+		return comon.ToHTTPError(err)
+	}
+
+	// TODO (Kamil): implement ref-relax logic
+
+	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
+}

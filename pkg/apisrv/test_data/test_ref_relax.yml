@@ -1,0 +1,30 @@
+name: Test ref-relax-for-delete endpoint
+description: |
+    Integration test for ref-relax-for-delete endpoint which allows to prepare
+    some references which are originally not possible to be deleted for deletion.
+test_data:
+  ref_relax_data: &ref_relax_data
+    uuid: hogehoge
+    ref-uuid: hogehoge_ref
+  ref_relax_response: &ref_relax_response
+    uuid: hogehoge
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: check response
+  request:
+    path: /ref-relax-for-delete
+    method: POST
+    expected: [200]
+    data: *ref_relax_data
+  expect: *ref_relax_response
+
