@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -72,33 +72,42 @@ type dummyMessage struct{}
 
 func (d *dummyMessage) Reset() {}
 
-func (d *dummyMessage) String() string {
-	return "dummy"
-}
+func (d *dummyMessage) String() string { return "dummy" }
 
-func (d *dummyMessage) ProtoMessage()                 {}
+func (d *dummyMessage) ProtoMessage() {}
+
 func (d *dummyMessage) ToMap() map[string]interface{} { return nil }
+
+func (d *dummyMessage) Kind() string { return "" }
+
+func (d *dummyMessage) Depends() []string { return nil }
+
+func (d *dummyMessage) ApplyPropCollectionUpdate(
+	*basemodels.PropCollectionUpdate,
+) (updated map[string]interface{}, err error) {
+	return nil, nil
+}
 
 type rowScannerMock mock.Mock
 
-func (m *rowScannerMock) ScanRow(schemaID string, rowData map[string]interface{}) (basedb.Object, error) {
+func (m *rowScannerMock) ScanRow(schemaID string, rowData map[string]interface{}) (basemodels.Object, error) {
 	args := (*mock.Mock)(m).MethodCalled("ScanRow", schemaID, rowData)
 	if args.Error(1) != nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(basedb.Object), nil
+	return args.Get(0).(basemodels.Object), nil
 }
 
 type sinkMock struct {
 	mock.Mock
 }
 
-func (s *sinkMock) Create(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
+func (s *sinkMock) Create(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
 	args := s.MethodCalled("Create", resourceName, pk, obj)
 	return args.Error(0)
 }
 
-func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
+func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
 	args := s.MethodCalled("Update", resourceName, pk, obj)
 	return args.Error(0)
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/sync/sink"
 )
 
@@ -16,7 +16,7 @@ type RowSink interface {
 }
 
 type rowScanner interface {
-	ScanRow(schemaID string, rowData map[string]interface{}) (basedb.Object, error)
+	ScanRow(schemaID string, rowData map[string]interface{}) (basemodels.Object, error)
 }
 
 type objectMappingAdapter struct {

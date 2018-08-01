@@ -3,7 +3,7 @@ package sink
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -13,7 +13,7 @@ type EventProcessorSink struct {
 }
 
 // Create dispatches OperationCreate event to processor.
-func (e *EventProcessorSink) Create(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
+func (e *EventProcessorSink) Create(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
 	ev := services.NewEvent(&services.EventOption{
 		UUID:      pk,
 		Kind:      resourceName,
@@ -24,7 +24,7 @@ func (e *EventProcessorSink) Create(ctx context.Context, resourceName string, pk
 }
 
 // Update dispatches OperationUpdate event to processor.
-func (e *EventProcessorSink) Update(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
+func (e *EventProcessorSink) Update(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
 	ev := services.NewEvent(&services.EventOption{
 		UUID:      pk,
 		Kind:      resourceName,
