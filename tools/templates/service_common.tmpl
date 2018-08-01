@@ -23,6 +23,7 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 {% endif%}{% endfor %}
 	r.POST("sync", service.RESTSync)
 	r.POST("ref-update", service.RESTRefUpdate)
+	r.POST("ref-relax-for-delete", service.RESTRefRelaxForDelete)
 }
 
 type registerFunc func(path string, name string)
