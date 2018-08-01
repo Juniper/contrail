@@ -57,9 +57,10 @@ func (s *Server) SetupService() (services.Service, error) {
 
 	// ContrailService
 	service := &services.ContrailService{
-		BaseService:    services.BaseService{},
-		TypeValidator:  tv,
-		MetadataGetter: s.dbService,
+		BaseService:       services.BaseService{},
+		TypeValidator:     tv,
+		MetadataGetter:    s.dbService,
+		InTransactionDoer: s.dbService,
 	}
 
 	service.RegisterRESTAPI(s.Echo)
@@ -262,6 +263,7 @@ func (s *Server) setupHomepage() {
 
 	dh.Register("/fqname-to-id", "POST", "name-to-id", "action")
 	dh.Register("/ref-update", "POST", "ref-update", "action")
+	dh.Register("/prop-collection-update", "POST", "prop-collection-update", "action")
 	dh.Register("/ref-relax-for-delete", "POST", "ref-relax-for-delete", "action")
 
 	// TODO: register sync?

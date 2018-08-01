@@ -162,7 +162,7 @@ type JSONSchema struct {
 	Minimum           interface{}            `yaml:"minimum" json:"minimum,omitempty"`
 	Maximum           interface{}            `yaml:"maximum" json:"maximum,omitempty"`
 	Ref               string                 `yaml:"$ref" json:"-"`
-	CollectionType    string                 `yaml:"-" json:"-"`
+	CollectionType    string                 `yaml:"collectionType" json:"collectionType,omitempty"`
 	Items             *JSONSchema            `yaml:"items" json:"items,omitempty"`
 	GoName            string                 `yaml:"-" json:"-"`
 	GoType            string                 `yaml:"-" json:"-"`
@@ -170,6 +170,9 @@ type JSONSchema struct {
 	Required          []string               `yaml:"required" json:"-"`
 	GoPremitive       bool                   `yaml:"-" json:"-"`
 	Format            string                 `yaml:"format" json:"format,omitempty"`
+	// Properties relevant for map properties (with CollectionType == "map")
+	KeyProperty   *JSONSchema `yaml:"keyProperty" json:"keyProperty,omitempty"`
+	ValueProperty *JSONSchema `yaml:"valueProperty" json:"valueProperty,omitempty"`
 }
 
 //String makes string format for json schema.
@@ -218,33 +221,20 @@ func (s *JSONSchema) getRefType() string {
 	return goType
 }
 
-//Copy copies a json schema
-func (s *JSONSchema) Copy() *JSONSchema {
-	copied := &JSONSchema{
-		ID:          s.ID,
-		Title:       s.Title,
-		SQL:         s.SQL,
-		Default:     s.Default,
-		Enum:        s.Enum,
-		Minimum:     s.Minimum,
-		Maximum:     s.Maximum,
-		Ref:         s.Ref,
-		Permission:  s.Permission,
-		Operation:   s.Operation,
-		Format:      s.Format,
-		Type:        s.Type,
-		Presence:    s.Presence,
-		Required:    s.Required,
-		Description: s.Description,
-		Properties:  map[string]*JSONSchema{},
-	}
+// Copy copies a json schema.
+//
+// Note that non pointer receiver is used to copy the object.
+func (s JSONSchema) Copy() *JSONSchema {
+	properties := map[string]*JSONSchema{}
 	for name, property := range s.Properties {
-		copied.Properties[name] = property.Copy()
+		properties[name] = property.Copy()
 	}
+	s.Properties = properties
+
 	if s.Items != nil {
-		copied.Items = s.Items.Copy()
+		s.Items = s.Items.Copy()
 	}
-	return copied
+	return &s
 }
 
 //Update merges two JSONSchema
@@ -330,7 +320,7 @@ func (s *JSONSchema) resolveSQL(
 	if s == nil {
 		return nil
 	}
-	if len(s.Properties) == 0 || s.CollectionType != "" || s.Type == ArrayType {
+	if len(s.Properties) == 0 || s.Type == ArrayType {
 		if s.SQL == "" {
 			s.SQL = sqlTypeMap[s.Type]
 		}
@@ -701,6 +691,56 @@ func (api *API) resolveExtend() error {
 	return nil
 }
 
+func (api *API) resolveCollectionTypes() error {
+	for _, s := range api.Schemas {
+		for _, property := range s.JSONSchema.Properties {
+			if property.CollectionType != "" {
+				propertyType := api.Types[property.ProtoType]
+				if propertyType.CollectionType != "" {
+					if propertyType.CollectionType == property.CollectionType {
+						continue
+					} else {
+						// TODO: remove log.Fatal()
+						log.Fatalf(
+							"Type %s is used as multiple collection types - %s and %s",
+							property.ProtoType, propertyType.CollectionType, property.CollectionType,
+						)
+					}
+				}
+				propertyType.CollectionType = property.CollectionType
+				if propertyType.CollectionType == "map" {
+					itemType := propertyType.OrderedProperties[0].Items
+					keyProp := keyPropertyOfMapProperty(property, itemType)
+					propertyType.KeyProperty = keyProp
+					for _, prop := range itemType.Properties {
+						if prop != keyProp {
+							propertyType.ValueProperty = prop
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// keyPropertyOfMapProperty gets key property of given map property (with CollectionType == "map").
+// TODO: get information about key property of map property (with CollectionType == "map") from schema
+func keyPropertyOfMapProperty(property, itemType *JSONSchema) *JSONSchema {
+	keyProp, ok := itemType.Properties["key"]
+	if !ok {
+		keyProp, ok = itemType.Properties["name"]
+		if !ok {
+			// TODO: remove log.Fatal()
+			log.Fatalf(
+				"Type %s is used as 'map' collection type, but has neither 'key' nor 'name' properties",
+				property.ProtoType,
+			)
+		}
+	}
+	return keyProp
+}
+
 //MakeAPI load directory and generate API definitions.
 // nolint: gocyclo
 func MakeAPI(dir string) (*API, error) {
@@ -765,6 +805,10 @@ func MakeAPI(dir string) (*API, error) {
 		return nil, err
 	}
 	err = api.resolveIndex()
+	if err != nil {
+		return nil, err
+	}
+	err = api.resolveCollectionTypes()
 	if err != nil {
 		return nil, err
 	}
