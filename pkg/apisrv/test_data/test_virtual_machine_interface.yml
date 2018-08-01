@@ -70,6 +70,26 @@ workflow:
   expect:
     virtual-network: *vn_vmi_blue
 
+- name: create routing instance blue
+  request:
+    path: /routing-instances
+    method: POST
+    expected:
+    - 201
+    data:
+      routing-instance:
+        uuid: "routing-instance-uuid"
+        fq_name: ["default-domain", "admin_vmi_project", "vn_vmi_blue", "vn_vmi_blue"]
+        parent_type: "virtual-network"
+        parent_uuid: "vn_vmi_blue"
+  expect:
+    routing-instance:
+      uuid: "routing-instance-uuid"
+      fq_name: ["default-domain", "admin_vmi_project", "vn_vmi_blue", "vn_vmi_blue"]
+      parent_type: "virtual-network"
+      parent_uuid: "vn_vmi_blue"
+
+
 - name: create virtual machine interface
   request:
     path: /virtual-machine-interfaces
@@ -104,6 +124,14 @@ workflow:
 - name: delete virtual machine interface
   request:
     path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
+    method: DELETE
+    expected:
+    - 204
+  expect: null
+
+- name: delete routing instance
+  request:
+    path: /routing-instance/routing-instance-uuid
     method: DELETE
     expected:
     - 204

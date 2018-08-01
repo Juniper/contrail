@@ -73,11 +73,12 @@ func (s *Server) SetupService() (services.Service, error) {
 
 	// ContrailTypeLogicService
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
-		ReadService:       s.dbService,
-		InTransactionDoer: s.dbService,
-		AddressManager:    s.dbService,
-		IntPoolAllocator:  s.dbService,
-		WriteService:      serviceChain[0],
+		ReadService:          s.dbService,
+		InTransactionDoer:    s.dbService,
+		AddressManager:       s.dbService,
+		IntPoolAllocator:     s.dbService,
+		FQNameUUIDTranslator: s.dbService,
+		WriteService:         serviceChain[0],
 	})
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService))
 
