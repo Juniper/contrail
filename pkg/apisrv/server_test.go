@@ -85,6 +85,11 @@ func TestVirtualMachineInterface(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_machine_interface.yml")
 }
 
+func TestPropCollectionUpdate(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_prop_collection_update.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	ctx := context.Background()
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")

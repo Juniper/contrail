@@ -84,6 +84,7 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 		Required:        s.getStringSlice("required"),
 		Properties:      map[string]*JSONSchema{},
 		PropertiesOrder: properties.keys(),
+		CollectionType:  s.getString("collectionType"),
 	}
 	if properties == nil {
 		schema.Properties = nil
