@@ -84,6 +84,10 @@ func TestVirtualMachineInterface(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_virtual_machine_interface.yml")
 }
+func TestRefRelaxForDelete(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_ref_relax.yml")
+}
 
 func TestGRPC(t *testing.T) {
 	ctx := context.Background()
