@@ -191,7 +191,7 @@ func (h *HTTP) Do(ctx context.Context,
 		return resp, err
 	}
 
-	if method == echo.DELETE {
+	if resp.ContentLength == 0 {
 		return resp, nil
 	}
 

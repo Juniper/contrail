@@ -1,23 +1,36 @@
 package services
 
-import "github.com/gogo/protobuf/types"
+import (
+	"github.com/gogo/protobuf/types"
+)
 
 //MapToFieldMask returns updated fields masks.
-func MapToFieldMask(request map[string]interface{}) types.FieldMask {
-	mask := types.FieldMask{}
-	mask.Paths = keys(request, "")
+func MapToFieldMask(data map[string]interface{}) types.FieldMask {
+	var mask types.FieldMask
+	mask.Paths = paths(data, "")
 	return mask
 }
 
-func keys(m map[string]interface{}, prefix string) []string {
-	result := []string{}
-	for key, value := range m {
+type toMapper interface {
+	ToMap() map[string]interface{}
+}
+
+func paths(data map[string]interface{}, prefix string) []string {
+	var result []string
+	for key, value := range data {
 		switch v := value.(type) {
 		case map[string]interface{}:
 			if prefix != "" {
-				result = append(result, keys(v, prefix+key+".")...)
+				result = append(result, paths(v, prefix+key+".")...)
 			} else {
-				result = append(result, keys(v, key+".")...)
+				result = append(result, paths(v, key+".")...)
+			}
+		case toMapper:
+			m := v.ToMap()
+			if prefix != "" {
+				result = append(result, paths(m, prefix+key+".")...)
+			} else {
+				result = append(result, paths(m, key+".")...)
 			}
 		default:
 			result = append(result, prefix+key)

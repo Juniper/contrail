@@ -1,8 +1,31 @@
 package services
 
 import (
+	"context"
+
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/models"
 )
+
+const (
+	SyncPath                 = "/sync"
+	RefUpdatePath            = "/ref-update"
+	PropCollectionUpdatePath = "/prop-collection-update"
+	RefRelaxForDeletePath    = "/ref-relax-for-delete"
+)
+
+func getObject(ctx context.Context, rs ReadService, schemaID, uuid string) (models.Object, error) {
+	switch (schemaID) {
+	{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+	case "{{ schema.ID }}":
+		resp, err := rs.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{ID: uuid})
+		return resp.Get{{ schema.JSONSchema.GoName }}(), err
+	{% endif %}{% endfor %}
+	}
+	return nil, errors.Errorf("unknown type provided: %v", schemaID)
+}
 
 type routeRegistry interface {
 	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
@@ -21,9 +44,10 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.GET("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTGet{{ schema.JSONSchema.GoName }})
 	r.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
 {% endif%}{% endfor %}
-	r.POST("sync", service.RESTSync)
-	r.POST("ref-update", service.RESTRefUpdate)
-	r.POST("ref-relax-for-delete", service.RESTRefRelaxForDelete)
+	r.POST(SyncPath, service.RESTSync)
+	r.POST(RefUpdatePath, service.RESTRefUpdate)
+	r.POST(PropCollectionUpdatePath, service.RESTPropCollectionUpdate)
+	r.POST(RefRelaxForDeletePath, service.RESTRefRelaxForDelete)
 }
 
 type registerFunc func(path string, name string)

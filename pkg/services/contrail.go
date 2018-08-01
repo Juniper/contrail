@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
@@ -21,8 +21,9 @@ type metadataGetter interface {
 type ContrailService struct {
 	BaseService
 
-	MetadataGetter metadataGetter
-	TypeValidator  *models.TypeValidator
+	MetadataGetter    metadataGetter
+	TypeValidator     *models.TypeValidator
+	InTransactionDoer InTransactionDoer
 }
 
 // RESTSync handles Sync API request.
@@ -80,10 +81,7 @@ func (r *RefUpdate) validate() error {
 func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 	var data RefUpdate
 	if err := c.Bind(&data); err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Debug("bind failed on ref-update")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON format")
 	}
 
 	if err := data.validate(); err != nil {
@@ -110,6 +108,68 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
 }
 
+// PropCollectionUpdateRequest is input request for /prop-collection-update endpoint.
+type PropCollectionUpdateRequest struct {
+	UUID    string                        `json:"uuid"`
+	Updates []models.PropCollectionUpdate `json:"updates"`
+}
+
+func (p *PropCollectionUpdateRequest) validate() error {
+	if p.UUID == "" {
+		return common.ErrorBadRequest("prop_collection_update needs object uuid")
+	}
+	return nil
+}
+
+// RESTPropCollectionUpdate handles a prop-collection-update request.
+func (service *ContrailService) RESTPropCollectionUpdate(c echo.Context) error {
+	var data PropCollectionUpdateRequest
+	if err := c.Bind(&data); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON format")
+	}
+
+	if err := data.validate(); err != nil {
+		return common.ToHTTPError(err)
+	}
+
+	if err := service.InTransactionDoer.DoInTransaction(c.Request().Context(), func(ctx context.Context) error {
+		m, err := service.MetadataGetter.GetMetaData(ctx, data.UUID, nil)
+		if err != nil {
+			return errors.Wrap(err, "error getting metadata for provided uuid: %v")
+		}
+
+		obj, err := GetObject(ctx, service.Next(), m.Type, data.UUID)
+		if err != nil {
+			return errors.Wrapf(err, "error getting %v with uuid = %v", m.Type, data.UUID)
+		}
+
+		updateMap := map[string]interface{}{}
+		for _, update := range data.Updates {
+			var updated map[string]interface{}
+			updated, err = obj.ApplyPropCollectionUpdate(&update)
+			if err != nil {
+				return common.ToHTTPError(err)
+			}
+			for key, value := range updated {
+				updateMap[key] = value
+			}
+		}
+		e := NewEvent(&EventOption{
+			Data:      updateMap,
+			Kind:      m.Type,
+			UUID:      data.UUID,
+			Operation: OperationUpdate,
+		})
+
+		_, err = e.Process(ctx, service)
+		return err
+	}); err != nil {
+		return common.ToHTTPError(err)
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
 // RefRelax represents ref-relax-for-delete input data.
 type RefRelax struct {
 	UUID    string `json:"uuid"`
@@ -119,7 +179,7 @@ type RefRelax struct {
 func (r *RefRelax) validate() error {
 	if r.UUID == "" || r.RefUUID == "" {
 		return common.ErrorBadRequestf(
-			"Bad Request: Both uuid and ref-uuid should be specified: %s, %s", r.UUID, r.RefUUID)
+			"bad request: both uuid and ref-uuid should be specified: %s, %s", r.UUID, r.RefUUID)
 	}
 
 	return nil
@@ -129,10 +189,7 @@ func (r *RefRelax) validate() error {
 func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
 	var data RefRelax
 	if err := c.Bind(&data); err != nil {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Debug("bind failed on ref-relax-for-delete")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON format")
 	}
 
 	if err := data.validate(); err != nil {

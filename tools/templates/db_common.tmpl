@@ -4,6 +4,7 @@ import (
     "context"
     "fmt"
 
+    "github.com/Juniper/contrail/pkg/models"
     "github.com/Juniper/contrail/pkg/services"
 )
 
@@ -46,7 +47,7 @@ func (db *Service) dump(ctx context.Context, ow ObjectWriter) error {
 }
 
 // ScanRow maps row from database table named schemaID into generated Go struct.
-func (db *Service) ScanRow(schemaID string, rowData map[string]interface{}) (Object, error) {
+func (db *Service) ScanRow(schemaID string, rowData map[string]interface{}) (models.Object, error) {
     switch schemaID { {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     case "{{ schema.ID }}":
         return db.scan{{schema.JSONSchema.GoName}}(rowData){% endif%}{% endfor %}
