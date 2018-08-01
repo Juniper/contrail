@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
+	errors "github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -108,4 +109,68 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
+}
+
+// PropCollectionUpdateRequest is input request for /prop-collection-update endpoint.
+type PropCollectionUpdateRequest struct {
+	UUID    string                        `json:"uuid"`
+	Updates []models.PropCollectionUpdate `json:"updates"`
+}
+
+func (p *PropCollectionUpdateRequest) validate() error {
+	if p.UUID == "" {
+		return common.ErrorBadRequest("Error: prop_collection_update needs obj_uuid")
+	}
+	return nil
+}
+
+// RESTPropCollectionUpdate handles a ref-update request.
+func (service *ContrailService) RESTPropCollectionUpdate(c echo.Context) error {
+	var data PropCollectionUpdateRequest
+	if err := c.Bind(&data); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Debug("bind failed on ref-update")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+
+	if err := data.validate(); err != nil {
+		return common.ToHTTPError(err)
+	}
+	ctx := c.Request().Context()
+
+	// TODO(Michał): Transaction!
+	m, err := service.MetadataGetter.GetMetaData(ctx, data.UUID, nil)
+	if err != nil {
+		return common.ToHTTPError(errors.Wrap(err, "error getting metadata for provided uuid: %v"))
+	}
+
+	obj, err := GetObject(ctx, service.Next(), m.Type, data.UUID)
+	if err != nil {
+		return common.ToHTTPError(errors.Wrapf(err, "error getting %v with uuid = %v", m.Type, data.UUID))
+	}
+
+	updateMap := map[string]interface{}{}
+
+	for _, update := range data.Updates {
+		updated, err := obj.ApplyPropCollectionUpdate(&update)
+		if err != nil {
+			return common.ToHTTPError(err)
+		}
+		for key, value := range updated {
+			updateMap[key] = value
+		}
+	}
+	e := NewEvent(&EventOption{
+		Data:      updateMap,
+		Kind:      m.Type,
+		UUID:      data.UUID,
+		Operation: OperationUpdate,
+	})
+
+	if _, err = e.Process(ctx, service); err != nil {
+		return common.ToHTTPError(err)
+	}
+
+	return c.NoContent(http.StatusOK)
 }

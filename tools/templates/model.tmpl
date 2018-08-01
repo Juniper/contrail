@@ -2,7 +2,13 @@
 package models
 
 import (
-	"github.com/Juniper/contrail/pkg/common"
+    "encoding/json"
+    "fmt"
+    "strings"
+
+    "github.com/pkg/errors"
+
+    "github.com/Juniper/contrail/pkg/common"
 )
 
 {% for t in types %}
@@ -113,6 +119,7 @@ func (m *{{ name }}) ToMap() map[string]interface{} {
     }
 }
 
+
 // Kind returns kind of an resource.
 func (m *{{ name }}) Kind() string {
     return Kind{{ name }}
@@ -135,9 +142,110 @@ func (m *{{ name }}) Depends() []string {
     {% endfor %}
     return depends
 }
+{% if typename %}
+func (m *{{ name }}) ApplyPropCollectionUpdate(u *PropCollectionUpdate) (map[string]interface{}, error) {
+    switch (u.Field) { {% for property in type.OrderedProperties %}{% if property.CollectionType %}
+{% set listType = property.OrderedProperties | first %}{% set itemType = listType.Items.GoType %}
+{% if property.CollectionType == "list" %}
+    case {{ name }}Field{{ property.GoName }}:
+        pos, err := u.positionForList()
+        if err != nil {
+            return nil, err
+        }
+        switch strings.ToLower(u.Operation) {
+        case PropCollectionUpdateOperationAdd:
+            var value {{ itemType }}
+            err := json.Unmarshal(u.Value, &value)
+            if err != nil {
+                return nil, errors.Wrap(err, "malformed value field")
+            }
+            m.{{property.GoName}}.AddInList({% if itemType != "string" %}&{% endif %}value)
+        case PropCollectionUpdateOperationModify:
+            var value {{ itemType }}
+            err := json.Unmarshal(u.Value, &value)
+            if err != nil {
+                return nil, errors.Wrap(err, "malformed value field")
+            }
+            m.{{property.GoName}}.ModifyInList({% if itemType != "string" %}&{% endif %}value, pos)
+        case PropCollectionUpdateOperationDelete:
+            m.{{property.GoName}}.DeleteInList(pos)
+        }
+        return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
+{% elif property.CollectionType == "map" %}
+    case {{ name }}Field{{ property.GoName }}:
+        err := u.validateForMap()
+        if err != nil {
+            return nil, err
+        }
+        switch strings.ToLower(u.Operation) {
+        case PropCollectionUpdateOperationSet:
+            var value {{ itemType }}
+            err := json.Unmarshal(u.Value, &value)
+            if err != nil {
+                return nil, errors.Wrap(err, "malformed value field")
+            }
+            m.{{property.GoName}}.SetInMap({% if itemType != "string" %}&{% endif %}value)
+        case PropCollectionUpdateOperationDelete:
+            m.{{property.GoName}}.DeleteInMap(u.Position)
+        }
+        return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
+{% endif %}{% endif %}{% endfor %}
+    default:
+        return nil, errors.Errorf("type {{ typename }} has no prop collection field named: %s", u.Field)
+    }
+}{% endif %}
+{% if t.type.CollectionType == "map" %}
+{% set kvsType = type.OrderedProperties | first %}{% set keyType = type.KeyProperty.GoName %}
+func (m *{{name}}) SetInMap(value *{{kvsType.Items.GoType}}) {
+    for i, kv := range m.{{ kvsType.GoName }} {
+        if kv.{{ keyType }} == value.{{ keyType }} {
+            // key found - replace
+            m.{{ kvsType.GoName }}[i] = value
+            return
+        }
+    }
+    // key not found - append
+    m.{{ kvsType.GoName }} = append(m.{{ kvsType.GoName }}, value)
+}
+
+func (m *{{name}}) DeleteInMap(position string) {
+    kvs := m.{{ kvsType.GoName }}
+    for i, kv := range kvs {
+        if fmt.Sprint(kv.{{ keyType }}) == position {
+            // key found - delete
+            m.{{ kvsType.GoName }} = append(kvs[:i], kvs[i+1:]...)
+            return
+        }
+    }
+}{% elif type.CollectionType == "list" %}
+{% set listType = type.OrderedProperties | first %}{% set itemType = listType.Items.GoType %}
+func (m *{{name}}) AddInList(value {% if itemType == "string"%}{{ itemType }}{% else %}*{{ itemType }}{% endif %}) {
+    m.{{ listType.GoName }} = append(m.{{ listType.GoName }}, value)
+}
+
+func (m *{{name}}) ModifyInList(value {% if itemType == "string"%}{{ itemType }}{% else %}*{{ itemType }}{% endif %}, position int) {
+    list := m.{{ listType.GoName }}
+    if position >= len(list) {
+        return
+    }
+    for i := range list {
+        if i == position {
+            // key found - replace
+            m.{{ listType.GoName }}[i] = value
+            return
+        }
+    }
+}
+
+func (m *{{name}}) DeleteInList(position int) {
+    list := m.{{ listType.GoName }}
+    if position >= len(list) {
+        return
+    }
+    m.{{ listType.GoName }} = append(list[:position], list[position+1:]...)
+}{% endif %}
 
 {% for linkTo, reference in references %}
-
 func {{ name }}{{ reference.GoName }}RefsToMap(l []*{{ name }}{{ reference.GoName }}Ref) []interface{} {
     var result []interface{}
     for _, i := range l {

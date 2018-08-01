@@ -1,0 +1,182 @@
+name: Test prop collection update
+description: |
+  Integration test for /prop-collection-update endpoint which allows modifying
+  data stored in List and Map properties of object.
+cleanup:
+- path: /virtual-network/virtual_network_blue_prop_collection_update_uuid
+- path: /project/project_blue_prop_collection_update_uuid
+test_data:
+  project_blue: &project_blue_prop_collection_update
+    uuid: project_blue_prop_collection_update_uuid
+    name: project_blue_prop_collection_update
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  virtual_network: &virtual_network_prop_collection_update
+    uuid: virtual_network_prop_collection_update_uuid
+    name: virtual_network_prop_collection_update
+    parent_type: project
+    parent_uuid: project_blue_prop_collection_update_uuid
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [201]
+    data:
+      project: *project_blue_prop_collection_update
+  expect:
+    project: *project_blue_prop_collection_update
+
+- name: add key value pair to annotations
+  request:
+    path: /prop-collection-update
+    method: POST
+    expected: [200]
+    data:
+      uuid: project_blue_prop_collection_update_uuid
+      updates:
+        - field: annotations
+          operation: set
+          value: {key: "some-key", value: "some value"}
+        - field: annotations
+          operation: set
+          value: {key: "another-key", value: "another value"}
+  expect: null
+
+- name: verify key value pair was added
+  request:
+    path: /project/project_blue_prop_collection_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    project:
+      <<: *project_blue_prop_collection_update
+      annotations:
+        key_value_pair:
+          - key: some-key
+            value: some value
+          - key: another-key
+            value: another value
+
+- name: delete key value pair from annotations
+  request:
+    path: /prop-collection-update
+    method: POST
+    expected: [200]
+    data:
+      uuid: project_blue_prop_collection_update_uuid
+      updates:
+        - field: annotations
+          operation: delete
+          position: some-key
+  expect: null
+
+- name: verify key value pair was removed and another was not
+  request:
+    path: /project/project_blue_prop_collection_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    project:
+      <<: *project_blue_prop_collection_update
+      annotations:
+        key_value_pair:
+          - key: another-key
+            value: another value
+
+- name: create virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [201]
+    data:
+      virtual-network: *virtual_network_prop_collection_update
+  expect:
+    virtual-network: *virtual_network_prop_collection_update
+
+- name: add key value pair to annotations
+  request:
+    path: /prop-collection-update
+    method: POST
+    expected: [200]
+    data:
+      uuid: virtual_network_prop_collection_update_uuid
+      updates:
+        - field: virtual_network_fat_flow_protocols
+          operation: add
+          value: {ignore_address: "ignored", port: 8000}
+        - field: virtual_network_fat_flow_protocols
+          operation: add
+          value: {ignore_address: "another one", port: 9000}
+  expect: null
+
+- name: verify fat flow protocols were created
+  request:
+    path: /virtual-network/virtual_network_prop_collection_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    virtual-network:
+      <<: *virtual_network_prop_collection_update
+      virtual_network_fat_flow_protocols:
+        fat_flow_protocol:
+          - ignore_address: ignored
+            port: 8000
+          - ignore_address: "another one"
+            port: 9000
+
+- name: add key value pair to annotations
+  request:
+    path: /prop-collection-update
+    method: POST
+    expected: [200]
+    data:
+      uuid: virtual_network_prop_collection_update_uuid
+      updates:
+        - field: virtual_network_fat_flow_protocols
+          operation: delete
+          position: "1"
+        - field: virtual_network_fat_flow_protocols
+          operation: modify
+          value: {ignore_address: "modified", port: 7000}
+          position: "0"
+  expect: null
+
+- name: verify fat flow protocols were deleted and modified
+  request:
+    path: /virtual-network/virtual_network_prop_collection_update_uuid
+    method: GET
+    expected: [200]
+  expect:
+    virtual-network:
+      <<: *virtual_network_prop_collection_update
+      virtual_network_fat_flow_protocols:
+        fat_flow_protocol:
+          - ignore_address: modified
+            port: 7000
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/virtual_network_prop_collection_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null
+
+- name: delete project
+  request:
+    path: /project/project_blue_prop_collection_update_uuid
+    method: DELETE
+    expected: [204]
+  expect: null

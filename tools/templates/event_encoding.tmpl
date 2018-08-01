@@ -62,14 +62,22 @@ func NewEvent(option *EventOption) *Event {
         case "{{ schema.ID }}":
             switch (operation) {
                 case OperationCreate:
+                    obj := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
+                    if uuid != "" {
+                        obj.UUID = uuid
+                    }
                     e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
                         Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(data),
+                            {{ schema.JSONSchema.GoName }}: obj,
                         }}
                 case OperationUpdate:
+                    obj := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
+                    if uuid != "" {
+                        obj.UUID = uuid
+                    }
                     e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
                         Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(data),
+                            {{ schema.JSONSchema.GoName }}: obj,
                             FieldMask: MapToFieldMask(data),
                         }}
                 case OperationDelete:
