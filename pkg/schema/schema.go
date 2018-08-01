@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
@@ -162,7 +163,6 @@ type JSONSchema struct {
 	Minimum           interface{}            `yaml:"minimum" json:"minimum,omitempty"`
 	Maximum           interface{}            `yaml:"maximum" json:"maximum,omitempty"`
 	Ref               string                 `yaml:"$ref" json:"-"`
-	CollectionType    string                 `yaml:"-" json:"-"`
 	Items             *JSONSchema            `yaml:"items" json:"items,omitempty"`
 	GoName            string                 `yaml:"-" json:"-"`
 	GoType            string                 `yaml:"-" json:"-"`
@@ -170,6 +170,12 @@ type JSONSchema struct {
 	Required          []string               `yaml:"required" json:"-"`
 	GoPremitive       bool                   `yaml:"-" json:"-"`
 	Format            string                 `yaml:"format" json:"format,omitempty"`
+
+	// Properties relevant for collection types (with CollectionType == "map" or "list"):
+	CollectionType string `yaml:"collectionType" json:"collectionType,omitempty"`
+	// MapKey is name of MapKeyProperty.
+	MapKey         string      `yaml:"mapKey" json:"mapKey,omitempty"`
+	MapKeyProperty *JSONSchema `yaml:"mapKeyProperty" json:"mapKeyProperty,omitempty"`
 }
 
 //String makes string format for json schema.
@@ -218,33 +224,20 @@ func (s *JSONSchema) getRefType() string {
 	return goType
 }
 
-//Copy copies a json schema
-func (s *JSONSchema) Copy() *JSONSchema {
-	copied := &JSONSchema{
-		ID:          s.ID,
-		Title:       s.Title,
-		SQL:         s.SQL,
-		Default:     s.Default,
-		Enum:        s.Enum,
-		Minimum:     s.Minimum,
-		Maximum:     s.Maximum,
-		Ref:         s.Ref,
-		Permission:  s.Permission,
-		Operation:   s.Operation,
-		Format:      s.Format,
-		Type:        s.Type,
-		Presence:    s.Presence,
-		Required:    s.Required,
-		Description: s.Description,
-		Properties:  map[string]*JSONSchema{},
-	}
+// Copy copies a json schema.
+//
+// Note that non pointer receiver is used to copy the object.
+func (s JSONSchema) Copy() *JSONSchema {
+	properties := map[string]*JSONSchema{}
 	for name, property := range s.Properties {
-		copied.Properties[name] = property.Copy()
+		properties[name] = property.Copy()
 	}
+	s.Properties = properties
+
 	if s.Items != nil {
-		copied.Items = s.Items.Copy()
+		s.Items = s.Items.Copy()
 	}
-	return copied
+	return &s
 }
 
 //Update merges two JSONSchema
@@ -330,7 +323,7 @@ func (s *JSONSchema) resolveSQL(
 	if s == nil {
 		return nil
 	}
-	if len(s.Properties) == 0 || s.CollectionType != "" || s.Type == ArrayType {
+	if len(s.Properties) == 0 || s.Type == ArrayType {
 		if s.SQL == "" {
 			s.SQL = sqlTypeMap[s.Type]
 		}
@@ -427,12 +420,6 @@ func (s *JSONSchema) resolveGoName(name string) error {
 		}
 	}
 
-	// if s.CollectionType == "list" {
-	// 	goType = "[]string"
-	// }
-	// if s.CollectionType == "map" {
-	// 	goType = "map[string]string"
-	// }
 	s.GoType = goType
 	s.ProtoType = protoType
 	for name, property := range s.Properties {
@@ -701,6 +688,72 @@ func (api *API) resolveExtend() error {
 	return nil
 }
 
+func (api *API) resolveCollectionTypes() error {
+	for _, s := range api.Schemas {
+		for _, property := range s.JSONSchema.Properties {
+			if property.CollectionType != "" {
+				propertyType := api.Types[property.ProtoType]
+
+				if err := checkCollectionTypes(property, propertyType); err != nil {
+					return err
+				}
+				propertyType.CollectionType = property.CollectionType
+
+				if propertyType.CollectionType == "map" {
+					if err := resolveMapCollectionType(property, propertyType); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func checkCollectionTypes(property, propertyType *JSONSchema) error {
+	if propertyType.CollectionType != "" {
+		if propertyType.CollectionType != property.CollectionType {
+			return errors.Errorf(
+				"type %v is used as multiple collection types - %v and %v",
+				property.ProtoType, property.CollectionType, propertyType.CollectionType,
+			)
+		}
+	}
+	return nil
+}
+
+func resolveMapCollectionType(property, propertyType *JSONSchema) error {
+	itemType := propertyType.OrderedProperties[0].Items
+
+	if property.MapKey != "" {
+		log.Warn("Remove inferMapKeyProperty workaround now!")
+		propertyType.MapKeyProperty = itemType.Properties[property.MapKey]
+	} else {
+		var err error
+		propertyType.MapKeyProperty, err = inferMapKeyProperty(property, itemType)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// inferMapKeyProperty gets key property of given map property (with CollectionType == "map").
+// TODO: get information about key property of map property (with CollectionType == "map") from schema
+func inferMapKeyProperty(property, itemType *JSONSchema) (*JSONSchema, error) {
+	mapKeyProperty, ok := itemType.Properties["key"]
+	if !ok {
+		mapKeyProperty, ok = itemType.Properties["name"]
+		if !ok {
+			return nil, errors.Errorf(
+				"type %s is used as 'map' collection type, but has neither 'key' nor 'name' properties",
+				property.ProtoType,
+			)
+		}
+	}
+	return mapKeyProperty, nil
+}
+
 //MakeAPI load directory and generate API definitions.
 // nolint: gocyclo
 func MakeAPI(dir string) (*API, error) {
@@ -765,6 +818,10 @@ func MakeAPI(dir string) (*API, error) {
 		return nil, err
 	}
 	err = api.resolveIndex()
+	if err != nil {
+		return nil, err
+	}
+	err = api.resolveCollectionTypes()
 	if err != nil {
 		return nil, err
 	}
