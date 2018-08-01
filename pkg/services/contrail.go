@@ -109,3 +109,9 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
 }
+
+// RESTRefRelaxForDelete handles a ref-relax-for-delete request.
+func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
+	// TODO (Kamil): implement this endpoint
+	return c.NoContent(http.StatusOK)
+}
