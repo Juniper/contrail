@@ -187,9 +187,12 @@ func (sv *ContrailTypeLogicService) prevalidateVirtualNetwork(vn *models.Virtual
 func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	ctx context.Context, vn *models.VirtualNetwork,
 ) error {
+	fqName := vn.FQName
+	new := append(fqName, fqName[len(fqName)-1])
 	_, err := sv.WriteService.CreateRoutingInstance(ctx, &services.CreateRoutingInstanceRequest{
 		RoutingInstance: &models.RoutingInstance{
 			Name:                      vn.Name,
+			FQName:                    new,
 			ParentUUID:                vn.UUID,
 			RoutingInstanceIsDefault:  true,
 			RoutingInstanceFabricSnat: vn.FabricSnat,
