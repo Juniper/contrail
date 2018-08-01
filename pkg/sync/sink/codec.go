@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/gogo/protobuf/proto"
 	"github.com/imdario/mergo"
+
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 // Codec can encode objects and update encoded data with new data object.
 type Codec interface {
 	Encode(obj interface{}) ([]byte, error)
-	Update(data []byte, obj db.Object) ([]byte, error)
+	Update(data []byte, obj models.Object) ([]byte, error)
 	Key() string
 }
 
@@ -27,9 +28,9 @@ func (j *JSONCodec) Encode(obj interface{}) ([]byte, error) {
 }
 
 // Update updates JSON-encoded data with obj field values and returns serialized output.
-func (j *JSONCodec) Update(data []byte, obj db.Object) ([]byte, error) {
+func (j *JSONCodec) Update(data []byte, obj models.Object) ([]byte, error) {
 	if obj == nil {
-		return nil, errors.New("got nil db.Object")
+		return nil, errors.New("got nil models.Object")
 	}
 	// Get new instance of the same type as obj.
 	dst := proto.Clone(obj)

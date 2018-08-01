@@ -27,6 +27,8 @@ import (
 	"github.com/Juniper/contrail/pkg/types"
 )
 
+const fqNameToIDPath = "/fqname-to-id"
+
 //Server represents Intent API Server.
 type Server struct {
 	Echo      *echo.Echo
@@ -57,9 +59,10 @@ func (s *Server) SetupService() (services.Service, error) {
 
 	// ContrailService
 	service := &services.ContrailService{
-		BaseService:    services.BaseService{},
-		TypeValidator:  tv,
-		MetadataGetter: s.dbService,
+		BaseService:       services.BaseService{},
+		TypeValidator:     tv,
+		MetadataGetter:    s.dbService,
+		InTransactionDoer: s.dbService,
 	}
 
 	service.RegisterRESTAPI(s.Echo)
@@ -260,9 +263,10 @@ func (s *Server) setupHomepage() {
 		dh.Register(path, "", name, "collection")
 	})
 
-	dh.Register("/fqname-to-id", "POST", "name-to-id", "action")
-	dh.Register("/ref-update", "POST", "ref-update", "action")
-	dh.Register("/ref-relax-for-delete", "POST", "ref-relax-for-delete", "action")
+	dh.Register(fqNameToIDPath, "POST", "name-to-id", "action")
+	dh.Register(services.RefUpdatePath, "POST", "ref-update", "action")
+	dh.Register(services.PropCollectionUpdatePath, "POST", "prop-collection-update", "action")
+	dh.Register(services.RefRelaxForDeletePath, "POST", "ref-relax-for-delete", "action")
 
 	// TODO: register sync?
 
@@ -285,7 +289,7 @@ func (s *Server) setupWatchAPI() {
 }
 
 func (s *Server) setupActionResources() {
-	s.Echo.POST("/fqname-to-id", s.fqNameToUUIDHandler)
+	s.Echo.POST(fqNameToIDPath, s.fqNameToUUIDHandler)
 	//TODO handle gRPC
 }
 
