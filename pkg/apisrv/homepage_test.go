@@ -100,7 +100,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 		contrailService.RegisterRESTAPI(&routes)
 	}
 
-	routes.add("/fqname-to-id")
+	routes.add("fqname-to-id")
 
 	for _, route := range apisrv.APIServer.Echo.Routes() {
 		assert.Truef(t, routes.contains(route.Path),

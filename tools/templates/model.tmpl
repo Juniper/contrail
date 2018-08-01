@@ -2,10 +2,14 @@
 package models
 
 import (
+	"encoding/json"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/common"
@@ -165,28 +169,28 @@ func (m *{{ schema.JSONSchema.GoName }}) Depends() []string {
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) AddDependency(i interface{}) {
-    {% if schema.BackReferences|length > 0 %}
+	{% if schema.BackReferences|length > 0 %}
 	switch resource := i.(type) {
 		{% for _, backref in schema.BackReferences %}
 			{% set linkTo = backref.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.{{ linkTo.JSONSchema.GoName }}BackRefs = append(m.{{ linkTo.JSONSchema.GoName }}BackRefs, resource)
 		{% endfor %}
-    }
-    {% endif %}
-    {% if schema.Children|length > 0 %}
-    switch resource := i.(type) {
+	}
+	{% endif %}
+	{% if schema.Children|length > 0 %}
+	switch resource := i.(type) {
 		{% for child in schema.Children %}
 			{% set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.{{ linkTo.JSONSchema.GoName }}s = append(m.{{ linkTo.JSONSchema.GoName }}s, resource)
 		{% endfor %}
-    }
-    {% endif %}
+	}
+	{% endif %}
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) RemoveDependency(i interface{}) {
-    {% if schema.BackReferences|length > 0 %}
+	{% if schema.BackReferences|length > 0 %}
 	switch resource := i.(type) {
 		{% for _, backref in schema.BackReferences %}
 			{% set linkTo = backref.LinkTo %}
@@ -199,10 +203,10 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveDependency(i interface{}) {
 				}
 				m.{{ linkTo.JSONSchema.GoName }}BackRefs = l
 		{% endfor %}
-    }
-    {% endif %}
-    {% if schema.Children|length > 0 %}
-    switch resource := i.(type) {
+	}
+	{% endif %}
+	{% if schema.Children|length > 0 %}
+	switch resource := i.(type) {
 		{% for child in schema.Children %}
 			{% set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
@@ -215,8 +219,119 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveDependency(i interface{}) {
 				m.{{ linkTo.JSONSchema.GoName }}s = l
 		{% endfor %}
 	}
-    {% endif %}
+	{% endif %}
 }
+
+{% if schema.TypeName %}
+func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels.PropCollectionUpdate) (map[string]interface{}, error) {
+	switch (u.Field) { {% for property in schema.JSONSchema.OrderedProperties %}{% if property.CollectionType %}
+{% set listType = property.OrderedProperties | first %}{% set itemType = listType.Items.GoType %}
+{% if property.CollectionType == "list" %}
+	case {{ schema.JSONSchema.GoName }}Field{{ property.GoName }}:
+		pos, err := u.PositionForList()
+		if err != nil {
+			return nil, err
+		}
+		switch strings.ToLower(u.Operation) {
+		case basemodels.PropCollectionUpdateOperationAdd:
+			var value {{ itemType }}
+			err := json.Unmarshal(u.Value, &value)
+			if err != nil {
+				return nil, errors.Wrap(err, "malformed value field")
+			}
+			m.{{property.GoName}}.AddInList({% if itemType != "string" %}&{% endif %}value)
+		case basemodels.PropCollectionUpdateOperationModify:
+			var value {{ itemType }}
+			err := json.Unmarshal(u.Value, &value)
+			if err != nil {
+				return nil, errors.Wrap(err, "malformed value field")
+			}
+			m.{{property.GoName}}.ModifyInList({% if itemType != "string" %}&{% endif %}value, pos)
+		case basemodels.PropCollectionUpdateOperationDelete:
+			m.{{property.GoName}}.DeleteInList(pos)
+		}
+		return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
+{% elif property.CollectionType == "map" %}
+	case {{ schema.JSONSchema.GoName }}Field{{ property.GoName }}:
+		err := u.ValidateForMap()
+		if err != nil {
+			return nil, err
+		}
+		switch strings.ToLower(u.Operation) {
+		case basemodels.PropCollectionUpdateOperationSet:
+			var value {{ itemType }}
+			err := json.Unmarshal(u.Value, &value)
+			if err != nil {
+				return nil, errors.Wrap(err, "malformed value field")
+			}
+			m.{{property.GoName}}.SetInMap({% if itemType != "string" %}&{% endif %}value)
+		case basemodels.PropCollectionUpdateOperationDelete:
+			m.{{property.GoName}}.DeleteInMap(u.Position)
+		}
+		return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
+{% endif %}{% endif %}{% endfor %}
+	default:
+		return nil, errors.Errorf("type {{ schema.TypeName }} has no prop collection field named: %s", u.Field)
+	}
+}
+{% endif %}
+
+{% if schema.JSONSchema.CollectionType == "map" %}
+
+{% set kvsType = schema.JSONSchema.OrderedProperties | first %}
+func (m *{{ schema.JSONSchema.GoName }}) SetInMap(value *{{kvsType.Items.GoType}}) {
+	for i, kv := range m.{{ kvsType.GoName }} {
+		if kv.{{ schema.JSONSchema.MapKeyProperty.GoName }} == value.{{ schema.JSONSchema.MapKeyProperty.GoName }} {
+			// key found - replace
+			m.{{ kvsType.GoName }}[i] = value
+			return
+		}
+	}
+	// key not found - append
+	m.{{ kvsType.GoName }} = append(m.{{ kvsType.GoName }}, value)
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) DeleteInMap(position string) {
+	kvs := m.{{ kvsType.GoName }}
+	for i, kv := range kvs {
+		if fmt.Sprint(kv.{{ schema.JSONSchema.MapKeyProperty.GoName }}) == position {
+			// key found - delete
+			m.{{ kvsType.GoName }} = append(kvs[:i], kvs[i+1:]...)
+			return
+		}
+	}
+}
+
+{% elif schema.JSONSchema.CollectionType == "list" %}
+
+{% set listType = schema.JSONSchema.OrderedProperties | first %}{% set itemType = listType.Items.GoType %}
+func (m *{{ schema.JSONSchema.GoName }}) AddInList(value {% if itemType == "string"%}{{ itemType }}{% else %}*{{ itemType }}{% endif %}) {
+	m.{{ listType.GoName }} = append(m.{{ listType.GoName }}, value)
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) ModifyInList(value {% if itemType == "string"%}{{ itemType }}{% else %}*{{ itemType }}{% endif %}, position int) {
+	list := m.{{ listType.GoName }}
+	if position >= len(list) {
+		return
+	}
+	for i := range list {
+		if i == position {
+			// key found - replace
+			m.{{ listType.GoName }}[i] = value
+			return
+		}
+	}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) DeleteInList(position int) {
+	list := m.{{ listType.GoName }}
+	if position >= len(list) {
+		return
+	}
+	m.{{ listType.GoName }} = append(list[:position], list[position+1:]...)
+}
+
+{% endif %}
 
 {% if schema.References | length != 0%}
 func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []basemodels.Reference {
@@ -231,6 +346,7 @@ func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []basemodels.Reference 
 {% endif %}
 
 {% for linkTo, reference in schema.References %}
+
 func {{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsToMap(l []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) []interface{} {
 	var result []interface{}
 	for _, i := range l {
@@ -286,35 +402,35 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(i inter
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) Add{{ reference.GoName }}Ref(toAdd *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) {
-    if toAdd == nil {
-        return
-    }
-    updated := false
-    refs := m.{{ reference.GoName }}Refs
-    for i, ref := range refs {
-        if ref.UUID == toAdd.GetUUID() {
-            refs[i] = toAdd
-            updated = true
-        }
-    }
-    if !updated {
-        refs = append(refs, toAdd)
-    }
-    m.{{ reference.GoName }}Refs = refs
+	if toAdd == nil {
+		return
+	}
+	updated := false
+	refs := m.{{ reference.GoName }}Refs
+	for i, ref := range refs {
+		if ref.UUID == toAdd.GetUUID() {
+			refs[i] = toAdd
+			updated = true
+		}
+	}
+	if !updated {
+		refs = append(refs, toAdd)
+	}
+	m.{{ reference.GoName }}Refs = refs
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) Remove{{ reference.GoName }}Ref(toRemove *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) {
-    if toRemove == nil {
-        return
-    }
-    refs := m.{{ reference.GoName }}Refs
-    result := refs[:0]
-    for _, ref := range refs {
-        if ref.UUID != toRemove.GetUUID() {
-            result = append(result, ref)
-        }
-    }
-    m.{{ reference.GoName }}Refs = result
+	if toRemove == nil {
+		return
+	}
+	refs := m.{{ reference.GoName }}Refs
+	result := refs[:0]
+	for _, ref := range refs {
+		if ref.UUID != toRemove.GetUUID() {
+			result = append(result, ref)
+		}
+	}
+	m.{{ reference.GoName }}Refs = result
 }{% endfor %}
 
 // Make{{ schema.JSONSchema.GoName }}Slice() makes a slice of {{ schema.JSONSchema.GoName }}

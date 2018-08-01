@@ -27,6 +27,11 @@ import (
 	"github.com/Juniper/contrail/pkg/types"
 )
 
+const (
+	fqNameToIDPath = "fqname-to-id"
+	watchPath      = "watch"
+)
+
 //TODO(nati) use parameter
 var extensions = []func(server *Server) error{}
 
@@ -67,9 +72,10 @@ func (s *Server) SetupService() (services.Service, error) {
 
 	// ContrailService
 	service := &services.ContrailService{
-		BaseService:    services.BaseService{},
-		TypeValidator:  tv,
-		MetadataGetter: s.dbService,
+		BaseService:       services.BaseService{},
+		TypeValidator:     tv,
+		MetadataGetter:    s.dbService,
+		InTransactionDoer: s.dbService,
 	}
 
 	service.RegisterRESTAPI(s.Echo)
@@ -285,10 +291,11 @@ func (s *Server) setupHomepage() {
 		dh.Register(path, "", name, "collection")
 	})
 
-	dh.Register("/fqname-to-id", "POST", "name-to-id", "action")
-	dh.Register("/ref-update", "POST", "ref-update", "action")
-	dh.Register("/ref-relax-for-delete", "POST", "ref-relax-for-delete", "action")
-	dh.Register("/set-tag", "POST", "set-tag", "action")
+	dh.Register(fqNameToIDPath, "POST", "name-to-id", "action")
+	dh.Register(services.RefUpdatePath, "POST", services.RefUpdatePath, "action")
+	dh.Register(services.RefRelaxForDeletePath, "POST", services.RefRelaxForDeletePath, "action")
+	dh.Register(services.PropCollectionUpdatePath, "POST", services.PropCollectionUpdatePath, "action")
+	dh.Register(services.SetTagPath, "POST", services.SetTagPath, "action")
 
 	// TODO: register sync?
 
@@ -307,11 +314,11 @@ func (s *Server) setupWatchAPI() {
 	if !viper.GetBool("cache.enabled") {
 		return
 	}
-	s.Echo.GET("/watch", s.watchHandler)
+	s.Echo.GET(watchPath, s.watchHandler)
 }
 
 func (s *Server) setupActionResources() {
-	s.Echo.POST("/fqname-to-id", s.fqNameToUUIDHandler)
+	s.Echo.POST(fqNameToIDPath, s.fqNameToUUIDHandler)
 	//TODO handle gRPC
 }
 

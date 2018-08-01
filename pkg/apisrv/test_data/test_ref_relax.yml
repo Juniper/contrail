@@ -37,4 +37,4 @@ workflow:
     expected: [400]
     data: *ref_relax_data_missing
   expect:
-      message: 'Bad Request: Both uuid and ref-uuid should be specified: hogehoge, '
+      message: 'bad request: both uuid and ref-uuid should be specified: hogehoge, '
