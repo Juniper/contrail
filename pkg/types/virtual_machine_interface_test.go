@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/types/mock"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -32,6 +34,7 @@ func virtualMachineInterfacePrepareNetwork(s *ContrailTypeLogicService) {
 	readService := s.ReadService.(*servicesmock.MockReadService)
 	virtualNetwork := models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "virtual-network-uuid"
+	virtualNetwork.FQName = []string{"default", "test-virtual-network"}
 
 	readService.EXPECT().GetVirtualNetwork(
 		gomock.Not(gomock.Nil()),
@@ -45,6 +48,62 @@ func virtualMachineInterfacePrepareNetwork(s *ContrailTypeLogicService) {
 	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound,
 	).AnyTimes()
+}
+
+func virtualMachineInterfacePrepareMetadata(s *ContrailTypeLogicService) {
+	fqNameUUIDTranslator := s.FQNameUUIDTranslator.(*typesmock.MockFQNameUUIDTranslator)
+
+	fqNameUUIDTranslator.EXPECT().TranslateBetweenFQNameUUID(
+		gomock.Not(gomock.Nil()),
+		"",
+		[]string{"default", "test-virtual-network", "test-virtual-network"},
+	).Return(
+		&models.MetaData{
+			UUID:   "routing-instance-uuid",
+			FQName: []string{"default", "test-virtual-network", "test-virtual-network"},
+		},
+		nil,
+	).AnyTimes()
+}
+
+func virtualMachineInterfacePrepareRoutingInstance(s *ContrailTypeLogicService) {
+	readService := s.ReadService.(*servicesmock.MockReadService)
+	writeService := s.WriteService.(*servicesmock.MockWriteService)
+	routingInstance := models.MakeRoutingInstance()
+	routingInstance.UUID = "routing-instance-uuid"
+	routingInstance.FQName = []string{"default", "test-virtual-network", "test-virtual-network"}
+
+	readService.EXPECT().GetRoutingInstance(
+		gomock.Not(gomock.Nil()),
+		&services.GetRoutingInstanceRequest{
+			ID: "routing-instance-uuid",
+		},
+	).Return(
+		&services.GetRoutingInstanceResponse{RoutingInstance: routingInstance}, nil,
+	).AnyTimes()
+
+	writeService.EXPECT().CreateVirtualMachineInterfaceRoutingInstanceRef(
+		gomock.Not(gomock.Nil()),
+		&services.CreateVirtualMachineInterfaceRoutingInstanceRefRequest{
+			ID: "bbee32a1-1ccc-4bac-a006-646993303e67",
+			VirtualMachineInterfaceRoutingInstanceRef: &models.VirtualMachineInterfaceRoutingInstanceRef{
+				UUID: "routing-instance-uuid",
+				To:   []string{"default", "test-virtual-network", "test-virtual-network"},
+				Attr: &models.PolicyBasedForwardingRuleType{
+					Direction: "both",
+				},
+			},
+		},
+	).Return(
+		nil, nil,
+	).AnyTimes()
+
+	writeService.EXPECT().CreateVirtualMachineInterfaceRoutingInstanceRef(
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+	).Return(
+		nil, common.ErrorNotFound,
+	).AnyTimes()
+
 }
 
 func TestCreateVirtualMachineInterface(t *testing.T) {
@@ -98,7 +157,7 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 		{
 			name: "Create virtual machine interface with valid virtual network ref and mac address",
 			paramVMI: models.VirtualMachineInterface{
-				UUID: "vmi-uuid",
+				UUID: "bbee32a1-1ccc-4bac-a006-646993303e67",
 				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
 					{
 						UUID: "virtual-network-uuid",
@@ -109,7 +168,7 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 				},
 			},
 			expectedVMI: models.VirtualMachineInterface{
-				UUID: "vmi-uuid",
+				UUID: "bbee32a1-1ccc-4bac-a006-646993303e67",
 				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
 					{
 						UUID: "virtual-network-uuid",
@@ -154,6 +213,8 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			virtualMachineInterfaceSetupNextServiceMocks(service)
 			virtualMachineInterfacePrepareNetwork(service)
+			virtualMachineInterfacePrepareMetadata(service)
+			virtualMachineInterfacePrepareRoutingInstance(service)
 
 			ctx := context.Background()
 
