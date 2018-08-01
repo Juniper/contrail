@@ -1,0 +1,87 @@
+// nolint
+package contrailplugin
+
+import (
+	"context"
+	"sync"
+
+	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
+	"github.com/Juniper/contrail/pkg/services"
+
+	log "github.com/sirupsen/logrus"
+)
+
+// NewPluginService instantiates a plugin service.
+func NewPluginService(name string) (*PluginService) {
+	service := &PluginService{
+		BaseService: services.BaseService{},
+		Name:        name,
+	}
+	service.Init()
+	return service
+}
+
+// PluginService
+type PluginService struct {
+	services.BaseService
+	Name string
+}
+
+type Resource interface {
+	Evaluate(ctx context.Context)
+}
+
+// Init initializes the plugin service
+func (service *PluginService) Init() {
+	// Write Plugin initialization code here
+	log.Printf("PluginService(%s): initialized\n", service.Name)
+	return
+}
+
+func (service *PluginService) Debug(objStr string, objValue *sync.Map) {
+	oMap := make(map[interface{}]interface{})
+	objValue.Range(func(k, v interface{}) bool {
+		oMap[k] = v
+		return true
+	})
+	log.Printf("%s: %v", objStr, oMap)
+}
+
+// EvaluateDependencies evaluates the dependencies upon object change
+func (service *PluginService) EvaluateDependencies(ctx context.Context, obj services.Resource, resource_name string) {
+	log.Printf("EvaluateDependencies called for (%s): \n", resource_name)
+	d := dependencies.NewDependencyProcessor(compilationif.ObjsCache)
+	d.Evaluate(obj, resource_name, "Self")
+	objMap := d.GetResources()
+
+	for objTypeKey, objList := range objMap { 
+		log.Printf("Processing ObjType[%s] \n", objTypeKey)
+		for objUuid, objVal := range objList { 
+			log.Printf("Processing ObjUuid[%s] \n", objUuid)
+			log.Printf("Processing Object[%v] \n", objVal)
+
+			// Look up Intent object by objUuid
+			objs, ok := compilationif.ObjsCache.Load(objTypeKey+"Intent")
+			if !ok {
+				continue
+			}
+			log.Printf("ObjMap [%v] \n", objs)
+
+			intentObj, ok := objs.(*sync.Map).Load(objUuid)
+			if !ok {
+				continue
+			}
+			log.Printf("Intent Object[%v] \n", intentObj)
+
+			switch intentObj.(type) {
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+			case {{ schema.JSONSchema.GoName }}Intent:
+			rObj := intentObj.({{ schema.JSONSchema.GoName }}Intent)
+			rObj.Evaluate(ctx)
+{% endif%}{% endfor %}
+			}
+		}
+	}
+}
+

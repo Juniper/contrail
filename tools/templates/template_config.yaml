@@ -55,3 +55,12 @@
 - type: all
   template_path: client.tmpl
   output_path: pkg/apisrv/client/gen_http.go
+- type: all
+  template_path: contrailplugin_common.tmpl
+  output_path: pkg/contrailplugin/gen_contrailplugin_common.go
+- type: all
+  template_path: contrailplugin.tmpl
+  output_path: pkg/contrailplugin/gen_contrailplugin.go
+- type: all
+  template_path: contrailplugin_evaluate.tmpl
+  output_path: pkg/contrailplugin/contrailplugin_evaluate.go
