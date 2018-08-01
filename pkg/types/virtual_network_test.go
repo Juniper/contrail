@@ -353,6 +353,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 
 			virtualNetwork := models.MakeVirtualNetwork()
 			virtualNetwork.UUID = "test_vn_red_uuid"
+			virtualNetwork.FQName = []string{"test_vn_red"}
 			mockedReadServiceAddVirtualNetwork(service, virtualNetwork)
 
 			virtualNetworkSetupReadServiceMocks(service)

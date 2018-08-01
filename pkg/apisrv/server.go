@@ -77,6 +77,7 @@ func (s *Server) SetupService() (services.Service, error) {
 		InTransactionDoer: s.dbService,
 		AddressManager:    s.dbService,
 		IntPoolAllocator:  s.dbService,
+		MetaDataGetter:    s.dbService,
 		WriteService:      serviceChain[0],
 	})
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService))
