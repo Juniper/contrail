@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"time"
+
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 // Chain setup chain of services.
@@ -15,6 +17,11 @@ func Chain(services ...Service) {
 		previous.SetNext(current)
 		previous = current
 	}
+}
+
+// GetObject retrieves object dynamically from ReadService by typename and uuid.
+func GetObject(ctx context.Context, rs ReadService, typename, uuid string) (models.Object, error) {
+	return getObject(ctx, rs, typename, uuid)
 }
 
 // BaseService is a service that is a link in service chain and has implemented

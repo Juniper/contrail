@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/ExpansiveWorlds/instrumentedsql"
-	"github.com/Juniper/contrail/pkg/services"
 	"github.com/go-sql-driver/mysql"
-	"github.com/gogo/protobuf/proto"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 // Database drivers
@@ -70,15 +71,9 @@ func (db *Service) SetDB(sqlDB *sql.DB) {
 	db.db = sqlDB
 }
 
-// Object is generic database model instance.
-type Object interface {
-	proto.Message
-	ToMap() map[string]interface{}
-}
-
 // ObjectWriter processes rows
 type ObjectWriter interface {
-	WriteObject(schemaID, objUUID string, obj Object) error
+	WriteObject(schemaID, objUUID string, obj models.Object) error
 }
 
 // Dump selects all data from every table and writes each row to ObjectWriter.
