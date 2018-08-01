@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +16,7 @@ func TestCodecUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 		data []byte
-		obj  db.Object
+		obj  models.Object
 
 		expected []byte
 		fails    bool
