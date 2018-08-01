@@ -14,11 +14,12 @@ import (
 
 func makeMockedContrailTypeLogicService(controller *gomock.Controller) *ContrailTypeLogicService {
 	service := &ContrailTypeLogicService{
-		AddressManager:    ipammock.NewMockAddressManager(controller),
-		ReadService:       servicesmock.NewMockReadService(controller),
-		IntPoolAllocator:  ipammock.NewMockIntPoolAllocator(controller),
-		InTransactionDoer: typesmock.NewMockInTransactionDoer(controller),
-		WriteService:      servicesmock.NewMockWriteService(controller),
+		AddressManager:       ipammock.NewMockAddressManager(controller),
+		ReadService:          servicesmock.NewMockReadService(controller),
+		IntPoolAllocator:     ipammock.NewMockIntPoolAllocator(controller),
+		InTransactionDoer:    typesmock.NewMockInTransactionDoer(controller),
+		FQNameUUIDTranslator: typesmock.NewMockFQNameUUIDTranslator(controller),
+		WriteService:         servicesmock.NewMockWriteService(controller),
 	}
 	service.SetNext(servicesmock.NewMockService(controller))
 
