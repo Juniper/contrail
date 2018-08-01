@@ -20,7 +20,7 @@ test_data:
 
   vn_vmi_blue: &vn_vmi_blue
     uuid: vn_vmi_blue
-    display_name: blue
+    name: vn_blue
     parent_type: project
     parent_uuid: admin_vmi_project_uuid
     network_ipam_refs:
@@ -83,7 +83,7 @@ workflow:
         parent_type: project
         virtual_network_refs:
           - uuid: vn_vmi_blue
-            to: ["default-domain", "admin_vmi_project", "vn_vmi_blue"]
+            to: ["default-domain", "admin_vmi_project", "vn_blue"]
         virtual_machine_interface_mac_addresses:
           mac_address: []
         port_security_enabled: true
@@ -95,11 +95,21 @@ workflow:
       parent_type: project
       virtual_network_refs:
         - uuid: vn_vmi_blue
-          to: ["default-domain", "admin_vmi_project", "vn_vmi_blue"]
+          to: ["default-domain", "admin_vmi_project", "vn_blue"]
       virtual_machine_interface_mac_addresses:
         mac_address: ["02:e8:44:a5:3b:91"]
       port_security_enabled: true
       display_name: vmi_blue
+
+- name: check if routing instance ref for vmi was created
+  request:
+    path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
+    method: GET
+    expected: [200]
+  expect:
+    virtual-machine-interface:
+      routing_instance_refs:
+        - to: ["default-domain", "admin_vmi_project", "vn_blue", "vn_blue"]
 
 - name: delete virtual machine interface
   request:

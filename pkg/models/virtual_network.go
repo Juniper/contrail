@@ -99,3 +99,14 @@ func (m *VirtualNetwork) GetAddressAllocationMethod() string {
 	}
 	return allocationMethod
 }
+
+// GetDefaultRoutingInstance returns the default routing instance of VN or nil if it doesn't exist
+func (m *VirtualNetwork) GetDefaultRoutingInstance() *RoutingInstance {
+	for _, ri := range m.RoutingInstances {
+		if ri.GetRoutingInstanceIsDefault() {
+			return ri
+		}
+	}
+
+	return nil
+}
