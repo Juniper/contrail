@@ -30,8 +30,14 @@ func virtualMachineInterfaceSetupNextServiceMocks(s *ContrailTypeLogicService) {
 
 func virtualMachineInterfacePrepareNetwork(s *ContrailTypeLogicService) {
 	readService := s.ReadService.(*servicesmock.MockReadService)
+
+	defaultRoutingInstance := models.MakeRoutingInstance()
+	defaultRoutingInstance.UUID = "routing-instance-uuid"
+	defaultRoutingInstance.RoutingInstanceIsDefault = true
+
 	virtualNetwork := models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "virtual-network-uuid"
+	virtualNetwork.RoutingInstances = []*models.RoutingInstance{defaultRoutingInstance}
 
 	readService.EXPECT().GetVirtualNetwork(
 		gomock.Not(gomock.Nil()),
@@ -45,6 +51,30 @@ func virtualMachineInterfacePrepareNetwork(s *ContrailTypeLogicService) {
 	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		nil, common.ErrorNotFound,
 	).AnyTimes()
+}
+
+func virtualMachineInterfacePrepareRoutingInstanceRef(s *ContrailTypeLogicService, shouldCreate bool, vmiID string) {
+	writeService := s.WriteService.(*servicesmock.MockWriteService)
+
+	times := 0
+	if shouldCreate {
+		times = 1
+	}
+
+	writeService.EXPECT().CreateVirtualMachineInterfaceRoutingInstanceRef(
+		gomock.Not(gomock.Nil()),
+		&services.CreateVirtualMachineInterfaceRoutingInstanceRefRequest{
+			ID: vmiID,
+			VirtualMachineInterfaceRoutingInstanceRef: &models.VirtualMachineInterfaceRoutingInstanceRef{
+				UUID: "routing-instance-uuid",
+				Attr: &models.PolicyBasedForwardingRuleType{
+					Direction: "both",
+				},
+			},
+		},
+	).Return(
+		nil, nil,
+	).Times(times)
 }
 
 func TestCreateVirtualMachineInterface(t *testing.T) {
@@ -74,9 +104,21 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 			errorCode: codes.InvalidArgument,
 		},
 		{
+			name: "Try to create virtual machine interface with no mac address and too short uuid",
+			paramVMI: models.VirtualMachineInterface{
+				UUID: "deadbeefho",
+				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+					{
+						UUID: "virtual-network",
+					},
+				},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
 			name: "Create virtual machine interface with no mac address",
 			paramVMI: models.VirtualMachineInterface{
-				UUID: "bbee32a1-1ccc-4bac-a006-646993303e67",
+				UUID: "deadbeefhog",
 				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
 					{
 						UUID: "virtual-network-uuid",
@@ -84,14 +126,14 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 				},
 			},
 			expectedVMI: models.VirtualMachineInterface{
-				UUID: "bbee32a1-1ccc-4bac-a006-646993303e67",
+				UUID: "deadbeefhog",
 				VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
 					{
 						UUID: "virtual-network-uuid",
 					},
 				},
 				VirtualMachineInterfaceMacAddresses: &models.MacAddressesType{
-					MacAddress: []string{"02:bb:ee:32:a1:1c"},
+					MacAddress: []string{"02:de:ad:be:ef:og"},
 				},
 			},
 		},
@@ -154,6 +196,7 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			virtualMachineInterfaceSetupNextServiceMocks(service)
 			virtualMachineInterfacePrepareNetwork(service)
+			virtualMachineInterfacePrepareRoutingInstanceRef(service, tt.errorCode == codes.OK, tt.paramVMI.UUID)
 
 			ctx := context.Background()
 

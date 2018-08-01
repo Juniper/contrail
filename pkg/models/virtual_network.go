@@ -99,3 +99,13 @@ func (m *VirtualNetwork) GetAddressAllocationMethod() string {
 	}
 	return allocationMethod
 }
+
+func (m *VirtualNetwork) GetDefaultRoutingInstance() *RoutingInstance {
+	for _, ri := range m.RoutingInstances {
+		if ri.GetRoutingInstanceIsDefault() {
+			return ri
+		}
+	}
+
+	return nil
+}
