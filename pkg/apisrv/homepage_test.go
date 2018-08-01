@@ -100,9 +100,11 @@ func TestRoutesAreRegistered(t *testing.T) {
 		contrailService.RegisterRESTAPI(&routes)
 	}
 
-	// Action resources are registered in server.go:setupActionResources().
-	routes.add("/fqname-to-id")
-	routes.add("/useragent-kv")
+	// Action resources are registered in server.go:setupActionResources()
+	// and in service_common.tmpl:RegisterRESTAPI().
+	routes.add(apisrv.FQNameToIDPath)
+	routes.add(apisrv.UserAgentKVPath)
+	routes.add(services.PropCollectionUpdatePath)
 
 	for _, route := range apisrv.APIServer.Echo.Routes() {
 		assert.Truef(t, routes.contains(route.Path),
@@ -117,11 +119,11 @@ type routeSet struct {
 }
 
 func (r *routeSet) add(path string) {
-	r.set[path] = struct{}{}
+	r.set[resolve(path)] = struct{}{}
 }
 
 func (r *routeSet) contains(path string) bool {
-	_, result := r.set[path]
+	_, result := r.set[resolve(path)]
 	return result
 }
 
