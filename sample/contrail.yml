@@ -120,7 +120,7 @@ client:
   endpoint: http://localhost:9091
 
 agent:
-  enabled: true
+  enabled: false
   backend: file
   watcher: polling
   tasks:
@@ -149,7 +149,7 @@ agent:
     - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
 
 compilation:
-  enabled: false
+  enabled: true
   # Global configuration
   plugin_directory: 'etc/plugins/'
   number_of_workers: 4

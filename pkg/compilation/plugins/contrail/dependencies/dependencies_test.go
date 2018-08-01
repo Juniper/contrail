@@ -3,6 +3,7 @@ package dependencies
 import (
 	"sync"
 	"testing"
+	"sync"
 
 	"github.com/Juniper/contrail/pkg/models"
 
@@ -10,25 +11,27 @@ import (
 )
 
 func TestReturnsRefs(t *testing.T) {
-	ObjsCache := make(map[string]map[string]interface{})
+	ObjsCache := &sync.Map{}
 
-	ObjsCache["virtual_network"] = make(map[string]interface{})
+	// Create VirtualNetworks in the Cache
+	VnObjMap := &sync.Map{}
 	Vn1 := models.VirtualNetwork{}
 	Vn1.UUID = "Virtual-Network-1"
-	ObjsCache["virtual_network"][Vn1.UUID] = &Vn1
-
+	VnObjMap.Store(Vn1.UUID, &Vn1)
 	Vn2 := models.VirtualNetwork{}
 	Vn2.UUID = "Virtual-Network-2"
-	ObjsCache["virtual_network"][Vn2.UUID] = &Vn2
+	VnObjMap.Store(Vn2.UUID, &Vn2)
+	ObjsCache.Store("VirtualNetwork", VnObjMap)
 
-	ObjsCache["NetworkPolicy"] = make(map[string]interface{})
+	// Create NetworkPolicys in the Cache
+	NpObjMap := &sync.Map{}
 	Np1 := models.NetworkPolicy{}
 	Np1.UUID = "Network-policy-1"
-	ObjsCache["NetworkPolicy"][Np1.UUID] = &Np1
-
+	NpObjMap.Store(Np1.UUID, &Np1)
 	Np2 := models.NetworkPolicy{}
 	Np2.UUID = "Network-policy-2"
-	ObjsCache["NetworkPolicy"][Np2.UUID] = &Np2
+	NpObjMap.Store(Np2.UUID, &Np2)
+	ObjsCache.Store("NetworkPolicy", NpObjMap)
 
 	Np1Ref := models.VirtualNetworkNetworkPolicyRef{}
 	Np1Ref.UUID = Np1.UUID
