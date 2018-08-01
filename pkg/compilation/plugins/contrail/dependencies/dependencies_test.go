@@ -5,30 +5,31 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/models"
-
 	"github.com/stretchr/testify/assert"
 )
 
 func TestReturnsRefs(t *testing.T) {
-	ObjsCache := make(map[string]map[string]interface{})
+	ObjsCache := &sync.Map{}
 
-	ObjsCache["virtual_network"] = make(map[string]interface{})
+	// Create VirtualNetworks in the Cache
+	VnObjMap := &sync.Map{}
 	Vn1 := models.VirtualNetwork{}
 	Vn1.UUID = "Virtual-Network-1"
-	ObjsCache["virtual_network"][Vn1.UUID] = &Vn1
-
+	VnObjMap.Store(Vn1.UUID, &Vn1)
 	Vn2 := models.VirtualNetwork{}
 	Vn2.UUID = "Virtual-Network-2"
-	ObjsCache["virtual_network"][Vn2.UUID] = &Vn2
+	VnObjMap.Store(Vn2.UUID, &Vn2)
+	ObjsCache.Store("VirtualNetwork", VnObjMap)
 
-	ObjsCache["NetworkPolicy"] = make(map[string]interface{})
+	// Create NetworkPolicys in the Cache
+	NpObjMap := &sync.Map{}
 	Np1 := models.NetworkPolicy{}
 	Np1.UUID = "Network-policy-1"
-	ObjsCache["NetworkPolicy"][Np1.UUID] = &Np1
-
+	NpObjMap.Store(Np1.UUID, &Np1)
 	Np2 := models.NetworkPolicy{}
 	Np2.UUID = "Network-policy-2"
-	ObjsCache["NetworkPolicy"][Np2.UUID] = &Np2
+	NpObjMap.Store(Np2.UUID, &Np2)
+	ObjsCache.Store("NetworkPolicy", NpObjMap)
 
 	Np1Ref := models.VirtualNetworkNetworkPolicyRef{}
 	Np1Ref.UUID = Np1.UUID
@@ -48,33 +49,38 @@ func TestReturnsRefs(t *testing.T) {
 	Np2.VirtualNetworkBackRefs = append(Np1.VirtualNetworkBackRefs, &Vn2)
 
 	d := NewDependencyProcessor(ObjsCache)
-	d.Evaluate(Vn1, "VirtualNetwork", "Self")
-	resources := d.GetResources()
+	if d != nil {
+		d.Evaluate(Vn1, "VirtualNetwork", "Self")
+		resources := d.GetResources()
 
-	networks := mustLoad(t, resources, "VirtualNetwork")
-	mustLoad(t, networks, Vn1.UUID)
-	mustLoad(t, networks, Vn2.UUID)
+		networks := mustLoad(t, resources, "VirtualNetwork")
+		mustLoad(t, networks, Vn1.UUID)
+		mustLoad(t, networks, Vn2.UUID)
 
-	policies := mustLoad(t, resources, "NetworkPolicy")
-	mustLoad(t, policies, Np1.UUID)
-	mustLoad(t, policies, Np2.UUID)
+		policies := mustLoad(t, resources, "NetworkPolicy")
+		mustLoad(t, policies, Np1.UUID)
+		mustLoad(t, policies, Np2.UUID)
+	}
 }
 
 func TestReturnsSelf(t *testing.T) {
-	ObjsCache := make(map[string]map[string]interface{})
+	ObjsCache := &sync.Map{}
 
-	ObjsCache["virtual_network"] = make(map[string]interface{})
+	VnObjMap := &sync.Map{}
 	Vn1 := models.VirtualNetwork{
 		UUID: "Virtual-Network-1",
 	}
-	ObjsCache["virtual_network"][Vn1.UUID] = &Vn1
+	VnObjMap.Store(Vn1.UUID, &Vn1)
+	ObjsCache.Store("VirtualNetwork", VnObjMap)
 
 	d := NewDependencyProcessor(ObjsCache)
-	d.Evaluate(Vn1, "VirtualNetwork", "Self")
-	resources := d.GetResources()
+	if d != nil {
+		d.Evaluate(Vn1, "VirtualNetwork", "Self")
+		resources := d.GetResources()
 
-	networks := mustLoad(t, resources, "VirtualNetwork")
-	mustLoad(t, networks, Vn1.UUID)
+		networks := mustLoad(t, resources, "VirtualNetwork")
+		mustLoad(t, networks, Vn1.UUID)
+	}
 }
 
 func mustLoad(t *testing.T, rawSyncMap interface{}, key string) interface{} {

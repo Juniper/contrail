@@ -244,7 +244,7 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
             return &Event{
                 Request: &Event_Update{{ schema.JSONSchema.GoName }}Request{
                     Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-                        {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+                        {{ schema.JSONSchema.GoName }}: response.Get{{ schema.JSONSchema.GoName }}(),
                     },
                 },
             }, nil
@@ -257,7 +257,7 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
     return &Event{
         Request: &Event_Create{{ schema.JSONSchema.GoName }}Request{
             Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-                {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+                {{ schema.JSONSchema.GoName }}: response.Get{{ schema.JSONSchema.GoName }}(),
             },
         },
     }, nil
@@ -272,7 +272,7 @@ func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
     return &Event{
         Request: &Event_Update{{ schema.JSONSchema.GoName }}Request{
             Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-                {{ schema.JSONSchema.GoName }}: response.{{ schema.JSONSchema.GoName }},
+                {{ schema.JSONSchema.GoName }}: response.Get{{ schema.JSONSchema.GoName }}(),
             },
         },
     }, nil
