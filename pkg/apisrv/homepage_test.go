@@ -101,8 +101,9 @@ func TestRoutesAreRegistered(t *testing.T) {
 	}
 
 	// Action resources are registered in server.go:setupActionResources().
-	routes.add("/fqname-to-id")
-	routes.add("/useragent-kv")
+	routes.add("fqname-to-id")
+	routes.add("useragent-kv")
+	routes.add("prop-collection-update")
 
 	for _, route := range apisrv.APIServer.Echo.Routes() {
 		assert.Truef(t, routes.contains(route.Path),
