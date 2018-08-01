@@ -190,6 +190,7 @@ func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	_, err := sv.WriteService.CreateRoutingInstance(ctx, &services.CreateRoutingInstanceRequest{
 		RoutingInstance: &models.RoutingInstance{
 			Name:                      vn.Name,
+			FQName:                    makeDefaultRoutingInstaceFQName(vn),
 			ParentUUID:                vn.UUID,
 			RoutingInstanceIsDefault:  true,
 			RoutingInstanceFabricSnat: vn.FabricSnat,
@@ -203,15 +204,15 @@ func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	return nil
 }
 
+func makeDefaultRoutingInstaceFQName(vn *models.VirtualNetwork) []string {
+	return append(vn.FQName, vn.FQName[len(vn.FQName)-1])
+}
+
 func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
 	ctx context.Context, vn *models.VirtualNetwork,
 ) error {
 	// Delete native/VN-default routing instance if it hasn't been deleted by the user
-	for _, ri := range vn.RoutingInstances {
-		if !ri.GetRoutingInstanceIsDefault() {
-			continue
-		}
-
+	if ri := vn.GetDefaultRoutingInstance(); ri != nil {
 		// TODO: delete children of the default routing instance
 		_, err := sv.WriteService.DeleteRoutingInstance(ctx, &services.DeleteRoutingInstanceRequest{
 			ID: ri.UUID,
@@ -221,8 +222,6 @@ func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
 			return errors.Wrapf(err,
 				"could not delete default routing instance (uuid: %v) for VN (%v)", ri.UUID, vn.UUID)
 		}
-
-		return nil
 	}
 
 	return nil
