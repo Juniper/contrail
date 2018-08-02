@@ -71,6 +71,11 @@ func (s *Server) SetupService() (services.Service, error) {
 		InTransactionDoer: s.dbService,
 	})
 
+	// SanitizerService
+	serviceChain = append(serviceChain, &services.SanitizerService{
+		MetadataGetter: s.dbService,
+	})
+
 	// ContrailTypeLogicService
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.dbService,

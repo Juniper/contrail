@@ -1,0 +1,54 @@
+package services
+
+import (
+    "context"
+
+    "github.com/pkg/errors"
+)
+
+type SanitizerService struct {
+    BaseService
+    MetadataGetter metadataGetter
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID and schema.References | length != 0 %}
+func (sv *SanitizerService) Create{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
+) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+    m := request.Get{{ schema.JSONSchema.GoName }}()
+{% for _, reference in schema.References %}
+    for _, ref := range m.Get{{ reference.GoName }}Refs() {
+        if ref.UUID != "" {
+            continue
+        }
+        // TODO: get metadata for all references in one query
+        metadata, err := sv.MetadataGetter.GetMetaData(ctx, "", ref.To)
+        if err != nil {
+            return nil, errors.Wrapf(err, "couldn't get uuid for ref {{ schema.JSONSchema.GoName }}: %v to: %v", m.GetUUID(), ref.To)
+        }
+        ref.UUID = metadata.UUID
+    }
+{% endfor %}
+    return sv.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (sv *SanitizerService) Update{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
+) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+    m := request.Get{{ schema.JSONSchema.GoName }}()
+{% for _, reference in schema.References %}
+    for _, ref := range m.Get{{ reference.GoName }}Refs() {
+        if ref.UUID != "" {
+            continue
+        }
+        // TODO: get metadata for all references in one query
+        metadata, err := sv.MetadataGetter.GetMetaData(ctx, "", ref.To)
+        if err != nil {
+            return nil, errors.Wrapf(err, "couldn't get uuid for ref {{ schema.JSONSchema.GoName }}: %v to: %v", m.GetUUID(), ref.To)
+        }
+        ref.UUID = metadata.UUID
+    }
+{% endfor %}
+    return sv.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+{% endif %}{% endfor %}
