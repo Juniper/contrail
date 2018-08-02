@@ -32,6 +32,7 @@ const (
 	BooleanType  = "boolean"
 	NumberType   = "number"
 	StringType   = "string"
+	Base64Type   = "base64"
 )
 
 const (
@@ -51,6 +52,7 @@ var sqlTypeMap = map[string]string{
 	BooleanType: "bool",
 	NumberType:  "float",
 	StringType:  "varchar(255)",
+	Base64Type:  "varchar(255)",
 }
 
 var sqlBindMap = map[string]string{
@@ -60,6 +62,7 @@ var sqlBindMap = map[string]string{
 	BooleanType: "bool",
 	NumberType:  "float",
 	StringType:  "string",
+	Base64Type:  "string",
 }
 
 //API object has schemas and types for API definition.
@@ -392,6 +395,9 @@ func (s *JSONSchema) resolveGoName(name string) error {
 		protoType = "float"
 	case StringType:
 		goType = "string"
+		protoType = "string"
+	case Base64Type:
+		goType = "base64"
 		protoType = "string"
 	case BooleanType:
 		goType = "bool"
