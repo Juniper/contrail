@@ -79,6 +79,18 @@ func TestFormatValidation(t *testing.T) {
 			format:     "ipv4",
 			fails:      true,
 		},
+		{
+			name:       "Valid base64 encoded string",
+			testString: "VmFsaWQgc3RyaW5nCg==",
+			format:     "base64",
+			fails:      false,
+		},
+		{
+			name:       "Invalid base64 encoded string",
+			testString: "Invalid string",
+			format:     "base64",
+			fails:      true,
+		},
 	}
 
 	tv, err := NewTypeValidatorWithFormat()
