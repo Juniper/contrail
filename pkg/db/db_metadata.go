@@ -17,7 +17,7 @@ func (db *Service) CreateMetaData(ctx context.Context, metaData *models.MetaData
 		_, err := tx.Exec(
 			"insert into metadata (uuid,type,fq_name) values ("+
 				db.Dialect.values("uuid", "type", "fq_name")+");",
-			metaData.UUID, metaData.Type, models.FQNameToString(metaData.FQName))
+			metaData.UUID, metaData.Type, fqNameToString(metaData.FQName))
 		err = handleError(err)
 		return errors.Wrap(err, "failed to create metadata")
 	})
@@ -40,7 +40,7 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 		} else if fqName != nil {
 			where = "fq_name = " + db.Dialect.placeholder(1)
 			query.WriteString(where)
-			row = tx.QueryRow(query.String(), models.FQNameToString(fqName))
+			row = tx.QueryRow(query.String(), fqNameToString(fqName))
 		} else {
 			return fmt.Errorf("uuid and fqName unspecified")
 		}
@@ -56,7 +56,7 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 
 	return &models.MetaData{
 		UUID:   uuidString,
-		FQName: models.ParseFQName(fqNameString),
+		FQName: parseFQName(fqNameString),
 		Type:   typeString,
 	}, nil
 }
