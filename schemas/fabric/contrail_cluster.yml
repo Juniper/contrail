@@ -215,6 +215,18 @@ schema:
       view:
       - create
       - detail
+    datapath_encryption:
+      description: Enable Contrail Datapath Encryption
+      default: false
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Contrail Datapath Encryption
+      type: "boolean"
+      view:
+      - create
+      - detail
     contrail_configuration:
       operations: "CRUD"
       presence: "optional"

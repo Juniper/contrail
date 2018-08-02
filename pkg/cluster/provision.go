@@ -52,7 +52,10 @@ func (p *provisionCommon) applyTemplate(templateSrc string, context map[string]i
 	if err != nil {
 		return nil, err
 	}
-	return output, nil
+	// strip empty lines in output content
+	regex, _ := regexp.Compile("\n[ \r\n\t]*\n")
+	outputString := regex.ReplaceAllString(string(output), "\n")
+	return []byte(outputString), nil
 }
 
 func (p *provisionCommon) writeToFile(path string, content []byte) error {
