@@ -86,6 +86,7 @@ func TestVirtualMachineInterface(t *testing.T) {
 }
 
 func TestGRPC(t *testing.T) {
+	ctx := context.Background()
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
 	restClient := client.NewHTTP(
 		TestServer.URL,
@@ -102,7 +103,7 @@ func TestGRPC(t *testing.T) {
 	)
 	restClient.InSecure = true
 	restClient.Init()
-	err := restClient.Login()
+	err := restClient.Login(ctx)
 	assert.NoError(t, err)
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
@@ -112,7 +113,7 @@ func TestGRPC(t *testing.T) {
 	assert.NoError(t, err)
 	defer LogFatalIfErr(conn.Close)
 	md := metadata.Pairs("X-Auth-Token", restClient.AuthToken)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 	// Contact the server and print out its response.
 	c := services.NewContrailServiceClient(conn)
 	assert.NoError(t, err)
@@ -143,6 +144,61 @@ func TestGRPC(t *testing.T) {
 	assert.NotNil(t, getResponse.Project)
 
 	_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
+		ID: project.UUID,
+	})
+	assert.NoError(t, err)
+}
+
+func TestRESTClient(t *testing.T) {
+	ctx := context.Background()
+	testName := "TestRESTClient"
+	AddKeystoneProjectAndUser(APIServer, testName)
+	restClient := client.NewHTTP(
+		TestServer.URL,
+		TestServer.URL+"/keystone/v3",
+		testName,
+		testName,
+		"default",
+		true,
+		&keystone.Scope{
+			Project: &keystone.Project{
+				Name: testName,
+			},
+		},
+	)
+	restClient.InSecure = true
+	restClient.Init()
+	err := restClient.Login(ctx)
+	// Contact the server and print out its response.
+	assert.NoError(t, err)
+	project := models.MakeProject()
+	project.UUID = uuid.NewV4().String()
+	project.FQName = []string{"default-domain", "project", project.UUID}
+	project.ParentType = "domain"
+	project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
+	project.ConfigurationVersion = 1
+	_, err = restClient.CreateProject(ctx, &services.CreateProjectRequest{
+		Project: project,
+	})
+	assert.NoError(t, err)
+	response, err := restClient.ListProject(ctx, &services.ListProjectRequest{
+		Spec: &services.ListSpec{
+			Limit: 1,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, 1, len(response.Projects))
+
+	getResponse, err := restClient.GetProject(ctx, &services.GetProjectRequest{
+		ID: project.UUID,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, getResponse.Project)
+	assert.Equal(t, project.UUID, getResponse.Project.UUID)
+
+	_, err = restClient.DeleteProject(ctx, &services.DeleteProjectRequest{
 		ID: project.UUID,
 	})
 	assert.NoError(t, err)

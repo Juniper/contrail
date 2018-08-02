@@ -159,7 +159,7 @@ func startAgent(wg *sync.WaitGroup) {
 		log.Fatal(err)
 	}
 	for {
-		if err := a.Watch(); err != nil {
+		if err := a.Watch(context.Background()); err != nil {
 			log.Warn(err)
 		}
 	}

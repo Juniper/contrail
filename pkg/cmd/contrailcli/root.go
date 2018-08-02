@@ -3,6 +3,8 @@ package contrailcli
 import (
 	"strings"
 
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -65,7 +67,7 @@ func getClient() (*client.HTTP, error) {
 	)
 	var err error
 	if authURL != "" {
-		err = client.Login()
+		err = client.Login(context.Background()) //nolint
 	}
 	return client, err
 }
