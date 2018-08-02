@@ -14,10 +14,14 @@ import (
 func (db *Service) CreateMetaData(ctx context.Context, metaData *models.MetaData) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		_, err := tx.Exec(
+		fqNameStr, err := fqNameToString(metaData.FQName)
+		if err != nil {
+			return errors.Wrap(err, "failed to stringify fq_name")
+		}
+		_, err = tx.Exec(
 			"insert into metadata (uuid,type,fq_name) values ("+
 				db.Dialect.values("uuid", "type", "fq_name")+");",
-			metaData.UUID, metaData.Type, models.FQNameToString(metaData.FQName))
+			metaData.UUID, metaData.Type, fqNameStr)
 		err = handleError(err)
 		return errors.Wrap(err, "failed to create metadata")
 	})
@@ -38,9 +42,13 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 			query.WriteString(where)
 			row = tx.QueryRow(query.String(), uuid)
 		} else if fqName != nil {
+			fqNameStr, err := fqNameToString(fqName)
+			if err != nil {
+				return errors.Wrapf(err, "failed to stringify fq_name")
+			}
 			where = "fq_name = " + db.Dialect.placeholder(1)
 			query.WriteString(where)
-			row = tx.QueryRow(query.String(), models.FQNameToString(fqName))
+			row = tx.QueryRow(query.String(), fqNameStr)
 		} else {
 			return fmt.Errorf("uuid and fqName unspecified")
 		}
@@ -54,9 +62,14 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 		return nil, err
 	}
 
+	fqName, err := parseFQName(fqNameString)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse fq_name")
+	}
+
 	return &models.MetaData{
 		UUID:   uuidString,
-		FQName: models.ParseFQName(fqNameString),
+		FQName: fqName,
 		Type:   typeString,
 	}, nil
 }
