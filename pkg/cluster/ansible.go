@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/flosch/pongo2"
@@ -36,12 +35,24 @@ func (a *ansibleProvisioner) getInstanceFile() (instanceFile string) {
 	return filepath.Join(a.getWorkingDir(), defaultInstanceFile)
 }
 
-func (a *ansibleProvisioner) getAnsibleRepoDir() (ansibleRepoDir string) {
+func (a *ansibleProvisioner) getInventoryTemplate() (inventoryTemplate string) {
+	return filepath.Join(a.getTemplateRoot(), defaultInventoryTemplate)
+}
+
+func (a *ansibleProvisioner) getInventoryFile() (inventoryFile string) {
+	return filepath.Join(a.getWorkingDir(), defaultInventoryFile)
+}
+
+func (a *ansibleProvisioner) getAnsibleDeployerRepoDir() (ansibleRepoDir string) {
 	return filepath.Join(defaultAnsibleRepoDir, defaultAnsibleRepo)
 }
 
+func (a *ansibleProvisioner) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
+	return filepath.Join(defaultAnsibleRepoDir, defaultAnsibleDatapathEncryptionRepo)
+}
+
 func (a *ansibleProvisioner) fetchAnsibleDeployer() error {
-	repoDir := a.getAnsibleRepoDir()
+	repoDir := a.getAnsibleDeployerRepoDir()
 
 	a.log.Infof("Fetching :%s", a.cluster.config.AnsibleFetchURL)
 	args, err := shellwords.Parse(a.cluster.config.AnsibleFetchURL)
@@ -59,7 +70,7 @@ func (a *ansibleProvisioner) fetchAnsibleDeployer() error {
 }
 
 func (a *ansibleProvisioner) cherryPickAnsibleDeployer() error {
-	repoDir := a.getAnsibleRepoDir()
+	repoDir := a.getAnsibleDeployerRepoDir()
 	a.log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
 	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
 	err := a.execCmd("git", args, repoDir)
@@ -72,7 +83,7 @@ func (a *ansibleProvisioner) cherryPickAnsibleDeployer() error {
 }
 
 func (a *ansibleProvisioner) resetAnsibleDeployer() error {
-	repoDir := a.getAnsibleRepoDir()
+	repoDir := a.getAnsibleDeployerRepoDir()
 	a.log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
 	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
 	err := a.execCmd("git", args, repoDir)
@@ -115,7 +126,13 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 }
 
 func (a *ansibleProvisioner) createInventory() error {
-	return a.createInstancesFile(a.getInstanceFile())
+	if err := a.createInstancesFile(a.getInstanceFile()); err != nil {
+		return err
+	}
+	if a.clusterData.clusterInfo.DatapathEncryption {
+		return a.createDatapathEncryptionInventory(a.getInventoryFile())
+	}
+	return nil
 }
 
 // nolint: gocyclo
@@ -186,15 +203,29 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		return err
 	}
 
-	// strip empty lines in instances yml content
-	regex, _ := regexp.Compile("\n[ \r\n\t]*\n")
-	contentString := regex.ReplaceAllString(string(content), "\n")
-	content = []byte(contentString)
 	err = a.writeToFile(destination, content)
 	if err != nil {
 		return err
 	}
 	a.log.Info("Created instance.yml input file for ansible deployer")
+	return nil
+}
+
+func (a *ansibleProvisioner) createDatapathEncryptionInventory(destination string) error {
+	a.log.Info("Creating inventory.yml input file for datapath encryption ansible deployer")
+	context := pongo2.Context{
+		"cluster": a.clusterData.clusterInfo,
+		"nodes":   a.clusterData.getAllNodesInfo(),
+	}
+	content, err := a.applyTemplate(a.getInventoryTemplate(), context)
+	if err != nil {
+		return err
+	}
+	err = a.writeToFile(destination, content)
+	if err != nil {
+		return err
+	}
+	a.log.Info("Created inventory.yml input file for datapath encryption ansible deployer")
 	return nil
 }
 
@@ -214,10 +245,15 @@ func (a *ansibleProvisioner) mockPlay(ansibleArgs []string) error {
 }
 
 func (a *ansibleProvisioner) play(ansibleArgs []string) error {
+	repoDir := a.getAnsibleDeployerRepoDir()
+	return a.playFromDir(repoDir, ansibleArgs)
+}
+
+func (a *ansibleProvisioner) playFromDir(
+	repoDir string, ansibleArgs []string) error {
 	if a.cluster.config.Test {
 		return a.mockPlay(ansibleArgs)
 	}
-	repoDir := a.getAnsibleRepoDir()
 	cmdline := "ansible-playbook"
 	a.log.Infof("Playing playbook: %s %s",
 		cmdline, strings.Join(ansibleArgs, " "))
@@ -251,15 +287,13 @@ func (a *ansibleProvisioner) play(ansibleArgs []string) error {
 func (a *ansibleProvisioner) playInstancesProvision(ansibleArgs []string) error {
 	// play instances provisioning playbook
 	ansibleArgs = append(ansibleArgs, defaultInstanceProvPlay)
-	err := a.play(ansibleArgs)
-	return err
+	return a.play(ansibleArgs)
 }
 
 func (a *ansibleProvisioner) playInstancesConfig(ansibleArgs []string) error {
 	// play instances configuration playbook
 	ansibleArgs = append(ansibleArgs, defaultInstanceConfPlay)
-	err := a.play(ansibleArgs)
-	return err
+	return a.play(ansibleArgs)
 }
 
 func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) error {
@@ -275,15 +309,22 @@ func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) err
 	case "kubernetes":
 		ansibleArgs = append(ansibleArgs, defaultKubernetesProvPlay)
 	}
-	err := a.play(ansibleArgs)
-	return err
+	return a.play(ansibleArgs)
 }
 
 func (a *ansibleProvisioner) playContrailProvision(ansibleArgs []string) error {
 	// play contrail provisioning playbook
 	ansibleArgs = append(ansibleArgs, defaultContrailProvPlay)
-	err := a.play(ansibleArgs)
-	return err
+	return a.play(ansibleArgs)
+}
+
+func (a *ansibleProvisioner) playContrailDatapathEncryption() error {
+	if a.clusterData.clusterInfo.DatapathEncryption {
+		inventory := filepath.Join(a.getWorkingDir(), "inventory.yml")
+		ansibleArgs := []string{"-i", inventory, defaultContrailDatapathEncryptionPlay}
+		return a.playFromDir(a.getAnsibleDatapathEncryptionRepoDir(), ansibleArgs)
+	}
+	return nil
 }
 
 // nolint: gocyclo
@@ -309,8 +350,14 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailProvision(args); err != nil {
 			return err
 		}
+		if err := a.playContrailDatapathEncryption(); err != nil {
+			return err
+		}
 	case "UPGRADE":
 		if err := a.playContrailProvision(args); err != nil {
+			return err
+		}
+		if err := a.playContrailDatapathEncryption(); err != nil {
 			return err
 		}
 	case "ADD_COMPUTE":
@@ -321,6 +368,9 @@ func (a *ansibleProvisioner) playBook() error {
 			return err
 		}
 		if err := a.playContrailProvision(args); err != nil {
+			return err
+		}
+		if err := a.playContrailDatapathEncryption(); err != nil {
 			return err
 		}
 	case "ADD_CSN":
