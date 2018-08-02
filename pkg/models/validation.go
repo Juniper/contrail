@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/base64"
 	fmt "fmt"
 	"regexp"
 	"strconv"
@@ -55,7 +56,27 @@ func NewTypeValidatorWithFormat() (*TypeValidator, error) {
 		return nil, err
 	}
 
+	err = tv.addBase64TypeFormatValidator()
+	if err != nil {
+		return nil, err
+	}
+
 	return tv, nil
+}
+
+func (tv *TypeValidator) addBase64TypeFormatValidator() error {
+	validator := "base64"
+
+	tv.SchemaValidator.addFormatValidator(validator, func(value string) error {
+		// Validate base64 encoding
+		_, err := base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return errors.Wrapf(err,
+				"Invalid format. Expected: %s encoded string", validator)
+		}
+		return nil
+	})
+	return nil
 }
 
 func (tv *TypeValidator) addHostnameFormatValidator() error {
