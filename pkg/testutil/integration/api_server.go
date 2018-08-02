@@ -46,7 +46,7 @@ type APIServer struct {
 
 // NewRunningAPIServer creates new running test API Server.
 // Call Close() method to release its resources.
-func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string) *APIServer {
+func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string, dbDebug bool) *APIServer {
 	setViperConfig(map[string]interface{}{
 		"database.type":               dbDriver,
 		"database.host":               "localhost",
@@ -57,7 +57,7 @@ func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string) *APIServer
 		"database.max_open_conn":      100,
 		"database.connection_retries": 10,
 		"database.retry_period":       3,
-		"database.debug":              true,
+		"database.debug":              dbDebug,
 		"etcd.path":                   EtcdJSONPrefix,
 		"keystone.local":              true,
 		"keystone.assignment.type":    "static",
