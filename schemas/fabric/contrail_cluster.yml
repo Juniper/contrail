@@ -226,6 +226,7 @@ schema:
       enum:
       - openstack
       - kubernetes
+      - vcenter
       permission:
       - create
       - update
