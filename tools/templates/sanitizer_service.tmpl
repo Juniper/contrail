@@ -15,24 +15,38 @@ type SanitizerService struct {
 	BaseService
 	MetadataGetter metadataGetter
 }
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID and schema.References | length != 0 %}
-func (sv *SanitizerService) sanitize{{ schema.JSONSchema.GoName }}Refs(ctx context.Context, m *models.{{ schema.JSONSchema.GoName }}) error {
-{% for _, reference in schema.References %}
-	for _, ref := range m.Get{{ reference.GoName }}Refs() {
-		if ref.UUID != "" {
+
+func (sv *SanitizerService) sanitizeRefs(ctx context.Context, refs []models.Reference) error {
+	fqNameToRef:= make(map[string] models.Reference)
+	var fqNameUUIDPairs []*models.FQNameUUIDPair
+	for _, ref := range refs {
+		if ref.GetUUID() != "" {
 			continue
 		}
-		// TODO: get metadata for all references in one query
-		metadata, err := sv.MetadataGetter.GetMetaData(ctx, "", ref.To)
-		if err != nil {
-			return errors.Wrapf(err, "couldn't get uuid for a ref from {{ schema.JSONSchema.GoName }} %v to %v", m.GetUUID(), ref.To)
-		}
-		ref.UUID = metadata.UUID
+		fqNameToRef[models.FQNameToString(ref.GetTo())] = ref
+		fqNameUUIDPairs = append(fqNameUUIDPairs, &models.FQNameUUIDPair{FQName: ref.GetTo()})
 	}
-{% endfor %}
+
+	if len(fqNameUUIDPairs) == 0 {
+		return nil
+	}
+
+	metadatas, err := sv.MetadataGetter.ListMetadata(ctx, fqNameUUIDPairs)
+	if err != nil {
+		return err
+	}
+
+	if len(metadatas) != len(fqNameUUIDPairs) {
+		return common.ErrorBadRequest("couldn't get metadatas for all references")
+	}
+
+	for _, metadata := range metadatas {
+		fqNameToRef[models.FQNameToString(metadata.FQName)].SetUUID(metadata.UUID)
+	}
 	return nil
 }
 
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 func (sv *SanitizerService) sanitize{{ schema.JSONSchema.GoName }}DisplayName(ctx context.Context, m *models.{{ schema.JSONSchema.GoName }}) {
 	if m.DisplayName == "" {
 		m.DisplayName = m.Name
@@ -44,10 +58,11 @@ func (sv *SanitizerService) Create{{ schema.JSONSchema.GoName }}(
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
 	m := request.Get{{ schema.JSONSchema.GoName }}()
 	sv.sanitize{{ schema.JSONSchema.GoName }}DisplayName(ctx, m)
-	err := sv.sanitize{{ schema.JSONSchema.GoName }}Refs(ctx, m)
-	if err != nil {
-		return nil, common.ErrorBadRequestf("couldn't sanitize refs of object %v: %v", m.GetUUID(), err)
+	{% if schema.References | length != 0 %}
+	if err := sv.sanitizeRefs(ctx, m.GetReferences()); err != nil {
+		return nil, common.ErrorBadRequestf("couldn't sanitize refs of {{ schema.JSONSchema.GoName }} %v: %v", m.GetUUID(), err)
 	}
+	{% endif %}
 
 	return sv.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
 }
@@ -55,12 +70,12 @@ func (sv *SanitizerService) Create{{ schema.JSONSchema.GoName }}(
 func (sv *SanitizerService) Update{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+	{% if schema.References | length != 0 %}
 	m := request.Get{{ schema.JSONSchema.GoName }}()
-	err := sv.sanitize{{ schema.JSONSchema.GoName }}Refs(ctx, m)
-	if err != nil {
-		return nil, common.ErrorBadRequestf("couldn't sanitize refs of object %v: %v", m.GetUUID(), err)
+	if err := sv.sanitizeRefs(ctx, m.GetReferences()); err != nil {
+		return nil, common.ErrorBadRequestf("couldn't sanitize refs of {{ schema.JSONSchema.GoName }} %v: %v", m.GetUUID(), err)
 	}
-
+	{% endif %}
 	return sv.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 {% endif %}{% endfor %}

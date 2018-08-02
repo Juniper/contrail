@@ -186,14 +186,39 @@ func (m *{{ name }}) RemoveDependency(i interface{}) {
     {% endif %}
 }
 
-{% for linkTo, reference in t.References %}
+{% if t.References | length != 0%}
+func (m *{{ name }}) GetReferences() []Reference {
+    var references []Reference
+    {% for linkTo, reference in t.References %}
+    for _, ref := range m.{{ reference.GoName }}Refs {
+        references = append(references, ref)
+    }
+    {% endfor %}
+    return references
+}
+{% endif %}
 
+{% for linkTo, reference in t.References %}
 func {{ name }}{{ reference.GoName }}RefsToMap(l []*{{ name }}{{ reference.GoName }}Ref) []interface{} {
 	var result []interface{}
 	for _, i := range l {
 		result = append(result, i.ToMap())
 	}
 	return result
+}
+
+func (r *{{ name }}{{ reference.GoName }}Ref) SetUUID(uuid string) {
+    if r == nil {
+        return
+    }
+    r.UUID = uuid
+}
+
+func (r *{{ name }}{{ reference.GoName }}Ref) SetTo(to []string) {
+    if r == nil {
+        return
+    }
+    r.To = to
 }
 
 func (r *{{ name }}{{ reference.GoName }}Ref) ToMap() map[string]interface{} {
