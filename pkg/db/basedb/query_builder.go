@@ -158,20 +158,6 @@ func (d *Dialect) QuoteSep(params ...string) string {
 	return query
 }
 
-func (d *Dialect) jsonAgg(table string, params ...string) string {
-	if d.Name == POSTGRES {
-		return "json_agg(row_to_json(" + d.Quote(table) + "))"
-	}
-	query := ""
-	l := len(params)
-	query += d.JSONAggFuncStart
-	for i := 0; i < l-1; i++ {
-		query += "'" + params[i] + "'" + "," + d.Quote(table, params[i]) + ","
-	}
-	query += "'" + params[l-1] + "'" + "," + d.Quote(table, params[l-1]) + d.JSONAggFuncEnd
-	return query
-}
-
 func (d *Dialect) anyValue(params ...string) string {
 	if d.AnyValueString != "" {
 		return d.AnyValueString + d.Quote(params...) + ")"
@@ -334,8 +320,10 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 		refFields = append(refFields, "from")
 		refFields = append(refFields, "to")
 		subQuery := "(select " +
-			qb.as(qb.jsonAgg(refTable+"_t", refFields...), qb.Quote(refTable+"_ref")) +
+			qb.as(qb.jsonAggRef(refTable+"_t", refFields...), qb.Quote(refTable+"_ref")) +
 			" from " + qb.as(qb.Quote(refTable), refTable+"_t") +
+			" left join " + "metadata" +
+			" on " + qb.Quote(refTable+"_t", "to") + " = " + qb.Quote("metadata", "uuid") +
 			" where " + qb.Quote(qb.TableAlias, "uuid") + " = " + qb.Quote(refTable+"_t", "from") +
 			" group by " + qb.Quote(refTable+"_t", "from") + " )"
 		ctx.columnParts = append(
@@ -343,6 +331,38 @@ func (qb *QueryBuilder) buildRefQuery(ctx *queryContext) {
 			subQuery)
 		ctx.columns["ref_"+linkTo] = len(ctx.columns)
 	}
+}
+
+func (d *Dialect) jsonAggBase(table string, params ...string) string {
+	if d.Name == POSTGRES {
+		return "row_to_json(" + d.Quote(table) + ")"
+	}
+
+	query := ""
+	l := len(params)
+	for i := 0; i < l-1; i++ {
+		query += "'" + params[i] + "'" + "," + d.Quote(table, params[i]) + ","
+	}
+	query += "'" + params[l-1] + "'" + "," + d.Quote(table, params[l-1])
+	return query
+}
+
+func (d *Dialect) jsonAgg(table string, params ...string) string {
+	if d.Name == POSTGRES {
+		return "json_agg(" + d.jsonAggBase(table, params...) + ")"
+	}
+	return d.JSONAggFuncStart + d.jsonAggBase(table, params...) + d.JSONAggFuncEnd
+}
+
+func (d *Dialect) jsonAggRef(table string, params ...string) string {
+	if d.Name == POSTGRES {
+		fqNameJSON := "json_build_object('fq_name', metadata.fq_name)"
+		return "json_agg((" + d.jsonAggBase(table, params...) + ")::jsonb || " + fqNameJSON + "::jsonb)"
+	}
+
+	query := d.JSONAggFuncStart + d.jsonAggBase(table, params...)
+	query += ",'fq_name'," + d.Quote("metadata", "fq_name") + d.JSONAggFuncEnd
+	return query
 }
 
 func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {

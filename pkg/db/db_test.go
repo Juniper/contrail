@@ -119,7 +119,8 @@ var exampleRI = &models.RoutingInstance{
 }
 
 var exampleRT = &models.RouteTarget{
-	UUID: "rt_uuid",
+	UUID:   "rt_uuid",
+	FQName: []string{"default-domain", "default-project", "vn-db-create-ref", "rt-db-create-ref"},
 }
 
 func TestDBCreateRef(t *testing.T) {
@@ -152,13 +153,17 @@ func TestDBCreateRef(t *testing.T) {
 			name: "valid ID valid ref UUID",
 			request: services.CreateRoutingInstanceRouteTargetRefRequest{
 				ID: riUUID,
-				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: rtUUID},
+				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
+					UUID: rtUUID,
+					To:   []string{"default-domain", "default-project", "vn-db-create-ref", "ri-db-create-ref"},
+				},
 			},
 			expected: &services.CreateRoutingInstanceRouteTargetRefResponse{
 				ID: riUUID,
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
 					UUID: rtUUID,
 					Attr: &models.InstanceTargetType{},
+					To:   []string{"default-domain", "default-project", "vn-db-create-ref", "ri-db-create-ref"},
 				},
 			},
 		},
@@ -169,6 +174,7 @@ func TestDBCreateRef(t *testing.T) {
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
 					UUID: rtUUID,
 					Attr: &models.InstanceTargetType{ImportExport: "import:export"},
+					To:   []string{"default-domain", "default-project", "vn-db-create-ref", "ri-db-create-ref"},
 				},
 			},
 			expected: &services.CreateRoutingInstanceRouteTargetRefResponse{
@@ -176,6 +182,7 @@ func TestDBCreateRef(t *testing.T) {
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
 					UUID: rtUUID,
 					Attr: &models.InstanceTargetType{ImportExport: "import:export"},
+					To:   []string{"default-domain", "default-project", "vn-db-create-ref", "ri-db-create-ref"},
 				},
 			},
 		},
@@ -277,7 +284,7 @@ func TestDBDeleteRef(t *testing.T) {
 		_, err = db.CreateRouteTarget(ctx, &services.CreateRouteTargetRequest{RouteTarget: exampleRT})
 		require.NoError(t, err)
 
-		// create routing instance with ref to rout target
+		// create routing instance with ref to route target
 		ri := *exampleRI
 		ri.RouteTargetRefs = []*models.RoutingInstanceRouteTargetRef{{UUID: rtUUID}}
 		_, err = db.CreateRoutingInstance(ctx, &services.CreateRoutingInstanceRequest{RoutingInstance: &ri})

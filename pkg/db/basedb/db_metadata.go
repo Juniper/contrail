@@ -14,10 +14,14 @@ import (
 func (db *BaseDB) CreateMetaData(ctx context.Context, metaData *basemodels.MetaData) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		_, err := tx.Exec(
+		fqNameStr, err := fqNameToString(metaData.FQName)
+		if err != nil {
+			return errors.Wrap(err, "failed to stringify fq_name")
+		}
+		_, err = tx.Exec(
 			"insert into metadata (uuid,type,fq_name) values ("+
 				db.Dialect.Values("uuid", "type", "fq_name")+");",
-			metaData.UUID, metaData.Type, basemodels.FQNameToString(metaData.FQName))
+			metaData.UUID, metaData.Type, fqNameStr)
 		err = FormatDBError(err)
 		return errors.Wrap(err, "failed to create metadata")
 	})
@@ -38,9 +42,13 @@ func (db *BaseDB) GetMetaData(ctx context.Context, uuid string, fqName []string)
 			query.WriteString(where)
 			row = tx.QueryRow(query.String(), uuid)
 		} else if fqName != nil {
+			fqNameStr, err := fqNameToString(fqName)
+			if err != nil {
+				return errors.Wrapf(err, "failed to stringify fq_name")
+			}
 			where = "fq_name = " + db.Dialect.Placeholder(1)
 			query.WriteString(where)
-			row = tx.QueryRow(query.String(), basemodels.FQNameToString(fqName))
+			row = tx.QueryRow(query.String(), fqNameStr)
 		} else {
 			return fmt.Errorf("uuid and fqName unspecified")
 		}
@@ -54,9 +62,14 @@ func (db *BaseDB) GetMetaData(ctx context.Context, uuid string, fqName []string)
 		return nil, err
 	}
 
+	fqName, err := ParseFQName(fqNameString)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse fq_name")
+	}
+
 	return &basemodels.MetaData{
 		UUID:   uuidString,
-		FQName: basemodels.ParseFQName(fqNameString),
+		FQName: fqName,
 		Type:   typeString,
 	}, nil
 }
