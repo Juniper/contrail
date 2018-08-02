@@ -2,6 +2,8 @@ package types
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
@@ -26,7 +28,8 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 			}
 
 			//TODO further validation
-			//mac-address allocation
+
+			calculateMacAddresses(virtualMachineInterface)
 
 			response, err = sv.BaseService.CreateVirtualMachineInterface(ctx, request)
 			return err
@@ -55,4 +58,21 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkFromVirtualMachineInterface
 	}
 
 	return virtualNetworkResponse.GetVirtualNetwork(), nil
+}
+
+func calculateMacAddresses(vmi *models.VirtualMachineInterface) {
+	switch len(vmi.GetVirtualMachineInterfaceMacAddresses().GetMacAddress()) {
+	case 0:
+		uuid := vmi.GetUUID()
+		macAddress := fmt.Sprintf("02:%s:%s:%s:%s:%s", uuid[0:2], uuid[2:4], uuid[4:6], uuid[6:8], uuid[9:11])
+		vmi.VirtualMachineInterfaceMacAddresses = &models.MacAddressesType{
+			MacAddress: []string{macAddress},
+		}
+	case 1:
+		oldMacAddress := vmi.VirtualMachineInterfaceMacAddresses.GetMacAddress()[0]
+		newMacAddress := strings.Replace(oldMacAddress, "-", ":", -1)
+		vmi.VirtualMachineInterfaceMacAddresses = &models.MacAddressesType{
+			MacAddress: []string{newMacAddress},
+		}
+	}
 }
