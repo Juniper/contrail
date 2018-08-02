@@ -15,6 +15,7 @@ import (
 
 type metadataGetter interface {
 	GetMetaData(ctx context.Context, uuid string, fqName []string) (*models.MetaData, error)
+	ListMetadata(ctx context.Context, fqNameUUIDPairs []*models.FQNameUUIDPair) ([]*models.MetaData, error)
 }
 
 // nolint
