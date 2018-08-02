@@ -135,13 +135,18 @@ func (d *Dialect) placeholder(i int) string {
 }
 
 func (d *Dialect) values(params ...string) string {
-	query := ""
-	l := len(params)
-	for i := 0; i < l-1; i++ {
-		query += d.placeholder(i+1) + ","
-	}
-	query += d.placeholder(l)
+	query, _ := d.valuesWithIndex(0, params...)
 	return query
+}
+
+func (d *Dialect) valuesWithIndex(index int, params ...string) (string, int) {
+	query := ""
+	lastIndex := index + len(params)
+	for ; index < lastIndex-1; index++ {
+		query += d.placeholder(index+1) + ","
+	}
+	query += d.placeholder(lastIndex)
+	return query, lastIndex
 }
 
 func (d *Dialect) quoteSep(params ...string) string {
