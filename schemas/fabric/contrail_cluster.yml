@@ -215,6 +215,30 @@ schema:
       view:
       - create
       - detail
+    datapath_encryption:
+      description: Enable Contrail Datapath Encryption
+      default: false
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Contrail Datapath Encryption
+      type: "boolean"
+      view:
+      - create
+      - detail
+    pre_shared_key:
+      description: Node to Node psk
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Node To Node PSK
+      type: string
+      view:
+      - create
+      - detail
     contrail_configuration:
       operations: "CRUD"
       presence: "optional"

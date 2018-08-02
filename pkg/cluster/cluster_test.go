@@ -73,8 +73,13 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	return bytes.Equal(generatedData, expectedData)
 
 }
+
 func compareGeneratedInstances(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedInstancesPath())
+}
+
+func compareGeneratedInventory(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedInventoryPath())
 }
 
 func verifyPlaybooks(t *testing.T, expected string) bool {
@@ -83,6 +88,10 @@ func verifyPlaybooks(t *testing.T, expected string) bool {
 
 func generatedInstancesPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/instances.yml"
+}
+
+func generatedInventoryPath() string {
+	return defaultWorkRoot + "/" + clusterID + "/inventory.yml"
 }
 
 func executedPlaybooksPath() string {
@@ -150,7 +159,7 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 }
 
 // nolint: gocyclo
-func runClusterTest(t *testing.T, expectedOutput string,
+func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	context map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
@@ -191,8 +200,12 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	err = clusterManager.Manage()
 	assert.NoError(t, err, "failed to manage(create) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+	assert.True(t, compareGeneratedInstances(t, expectedInstance),
 		"Instance file created during cluster create is not as expected")
+	if expectedInventory != "" {
+		assert.True(t, compareGeneratedInventory(t, expectedInventory),
+			"Inventory file created during cluster create is not as expected")
+	}
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook.yml"),
 		"Expected list of create playbooks are not executed")
 	// Wait for the in-memory endpoint cache to get updated
@@ -221,7 +234,7 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
 	err = clusterManager.Manage()
 	assert.NoError(t, err, "failed to manage(update) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+	assert.True(t, compareGeneratedInstances(t, expectedInstance),
 		"Instance file created during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook.yml"),
 		"Expected list of update playbooks are not executed")
@@ -235,19 +248,19 @@ func runClusterTest(t *testing.T, expectedOutput string,
 
 	// UPGRADE test
 	runClusterActionTest(t, testScenario, config,
-		"UPGRADE", expectedOutput,
+		"UPGRADE", expectedInstance,
 		"./test_data/expected_ansible_upgrade_playbook.yml",
 		expectedEndpoints)
 
 	// ADD_COMPUTE  test
 	runClusterActionTest(t, testScenario, config,
-		"ADD_COMPUTE", expectedOutput,
+		"ADD_COMPUTE", expectedInstance,
 		"./test_data/expected_ansible_add_compute_playbook.yml",
 		expectedEndpoints)
 
 	// ADD_CSN  test
 	runClusterActionTest(t, testScenario, config,
-		"ADD_CSN", expectedOutput,
+		"ADD_CSN", expectedInstance,
 		"./test_data/expected_ansible_add_csn_playbook.yml",
 		expectedEndpoints)
 
@@ -297,7 +310,7 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 		expectedInstances = "./test_data/expected_all_in_one_sriov_instances.yml"
 	}
 
-	runClusterTest(t, expectedInstances, context, expectedEndpoints)
+	runClusterTest(t, expectedInstances, "", context, expectedEndpoints)
 }
 
 func TestAllInOneCluster(t *testing.T) {
@@ -309,6 +322,27 @@ func TestAllInOneDpdkCluster(t *testing.T) {
 
 func TestAllInOneSriovCluster(t *testing.T) {
 	runAllInOneClusterTest(t, "sriov")
+}
+
+func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
+	context := pongo2.Context{
+		"DATAPATH_ENCRYPT": true,
+		"MGMT_INT_IP":      "127.0.0.1",
+		"CONTROL_NODES":    "",
+		"OPENSTACK_NODES":  "",
+	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
+		"keystone":  "http://127.0.0.1:5000",
+	}
+	runClusterTest(t, "./test_data/expected_all_in_one_instances.yml",
+		"./test_data/expected_all_in_one_inventory.yml", context, expectedEndpoints)
 }
 
 func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
@@ -327,7 +361,7 @@ func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
 	}
-	runClusterTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", context, expectedEndpoints)
+	runClusterTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", "", context, expectedEndpoints)
 }
 
 func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
@@ -349,5 +383,5 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 		"keystone":  "http://127.0.0.1:5000",
 	}
 
-	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", context, expectedEndpoints)
+	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", "", context, expectedEndpoints)
 }
