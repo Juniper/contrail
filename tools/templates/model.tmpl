@@ -180,14 +180,37 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveDependency(i interface{}) {
     {% endif %}
 }
 
-{% for linkTo, reference in schema.References %}
+{% if schema.References | length != 0%}
+func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []Reference {
+	var references []Reference
+	{% for linkTo, reference in schema.References %}
+	for _, ref := range m.{{ reference.GoName }}Refs {
+		references = append(references, ref)
+	}
+	{% endfor %}
+	return references
+}
+{% endif %}
 
+{% for linkTo, reference in schema.References %}
 func {{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsToMap(l []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) []interface{} {
 	var result []interface{}
 	for _, i := range l {
 		result = append(result, i.ToMap())
 	}
 	return result
+}
+
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetUUID(uuid string) {
+	r.UUID = uuid
+}
+
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetTo(to []string) {
+	r.To = to
+}
+
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetReferredKind() string {
+	return Kind{{ reference.GoName }}
 }
 
 func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) ToMap() map[string]interface{} {
