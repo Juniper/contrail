@@ -314,8 +314,7 @@ workflow:
         parent_type: "project"
         parent_uuid: "admin_project_uuid"
         network_ipam_refs:
-          - uuid: "test_ipam1"
-            to: ["domain","admin_project_uuid","test_ipam1"]
+          - to: ["domain","admin_project_uuid","test_ipam1"]
             attr:
               host_routes:
                 route:
@@ -328,6 +327,9 @@ workflow:
       display_name: vn_test_ref
       parent_type: project
       parent_uuid: admin_project_uuid
+      network_ipam_refs:
+        - uuid: "test_ipam1"
+          to: ["domain","admin_project_uuid","test_ipam1"]
 - name: update virtual network ref
   request:
     path: /virtual-network/vn_test_ref
@@ -346,8 +348,7 @@ workflow:
             - tenant: "default:demo"
               tenant_access: 7
         network_ipam_refs:
-          - uuid: "test_ipam1"
-            to: ["domain","admin_project_uuid","test_ipam1"]
+          - to: ["domain","admin_project_uuid","test_ipam1"]
           - uuid: "test_ipam2"
             to: ["domain","admin_project_uuid","test_ipam2"]
             attr:
@@ -577,7 +578,7 @@ workflow:
       virtual-network:
         uuid: "vn_blue"
         network_ipam_refs:
-          - uuid: test_ipam_blue
+          - to: ["domain","admin_project_uuid","test_ipam_blue"]
             attr:
               ipam_subnets:
                 - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
@@ -588,6 +589,7 @@ workflow:
     virtual-network:
       network_ipam_refs:
         - uuid: test_ipam_blue
+          to: ["domain","admin_project_uuid","test_ipam_blue"]
           attr:
             ipam_subnets:
               - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
@@ -607,9 +609,17 @@ workflow:
         subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
         instance_ip_address: "10.0.0.1"
         network_ipam_refs:
-        - uuid: test_ipam_blue
+        - to: ["domain","admin_project_uuid","test_ipam_blue"]
         virtual_network_refs:
-        - uuid: vn_blue
+        - to: ["default", "admin_project_uuid", "vn_blue"]
+  expect:
+    instance-ip:
+      network_ipam_refs:
+      - uuid: test_ipam_blue
+        to: ["domain","admin_project_uuid","test_ipam_blue"]
+      virtual_network_refs:
+      - uuid: vn_blue
+        to: ["default", "admin_project_uuid", "vn_blue"]
 
 # Virtual Network can't be updated since there is an instance IP attached to it
 - name: try update vn_blue with different subnet

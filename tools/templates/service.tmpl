@@ -67,12 +67,6 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }
     log.Debugf("Name: %v", model.Name)
 
-    if model.DisplayName == "" {
-        model.DisplayName = model.Name
-    }
-
-    log.Debugf("DisplayName: %v", model.DisplayName)
-
 {% if schema.Parents | length == 1 %}{# There is only one parent, so "for" will extract him #}
     if model.ParentType == "" { {% for key, reference in schema.Parents %}
         model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}

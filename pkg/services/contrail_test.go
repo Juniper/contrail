@@ -36,8 +36,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 				// Default filled fields below
-				Name:        "default-access-control-list",
-				DisplayName: "default-access-control-list",
+				Name: "default-access-control-list",
 				FQName: []string{
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
 				Perms2: &models.PermType2{Owner: "default-project"},
@@ -70,7 +69,6 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
 				Perms2: &models.PermType2{Owner: "default-project"},
 				// Default filled fields below
-				DisplayName: "some-name",
 				IDPerms: &models.IdPermsType{
 					Enable: true,
 					UUID: &models.UuidType{
