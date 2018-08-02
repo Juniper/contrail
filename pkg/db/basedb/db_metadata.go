@@ -14,10 +14,14 @@ import (
 func (db *BaseDB) CreateMetaData(ctx context.Context, metaData *basemodels.MetaData) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		_, err := tx.Exec(
+		fqNameStr, err := fqNameToString(metaData.FQName)
+		if err != nil {
+			return errors.Wrap(err, "failed to stringify fq_name")
+		}
+		_, err = tx.Exec(
 			"insert into metadata (uuid,type,fq_name) values ("+
 				db.Dialect.Values("uuid", "type", "fq_name")+");",
-			metaData.UUID, metaData.Type, basemodels.FQNameToString(metaData.FQName))
+			metaData.UUID, metaData.Type, fqNameStr)
 		err = FormatDBError(err)
 		return errors.Wrap(err, "failed to create metadata")
 	})
@@ -53,7 +57,7 @@ func (db *BaseDB) buildFilter(columns []string, filterValues ...[]string) string
 		if len(filterValues[i]) > 0 {
 			WriteStrings(&filterQuery, " or ")
 			WriteStrings(&filterQuery, column, " in (")
-			valuesQuery := ""
+			var valuesQuery string
 			values := filterValues[i]
 			valuesQuery, index = db.Dialect.ValuesWithIndex(index, values...)
 			WriteStrings(&filterQuery, valuesQuery)
@@ -88,7 +92,11 @@ func (db *BaseDB) ListMetadata(
 
 		for _, pair := range fqNameUUIDPairs {
 			if len(pair.FQName) > 0 {
-				fqNames = append(fqNames, basemodels.FQNameToString(pair.FQName))
+				fqNameStr, err := fqNameToString(pair.FQName)
+				if err != nil {
+					return errors.Wrapf(err, "failed to stringify fq_name")
+				}
+				fqNames = append(fqNames, fqNameStr)
 			}
 			if pair.UUID != "" {
 				uuids = append(uuids, pair.UUID)
@@ -114,7 +122,11 @@ func (db *BaseDB) ListMetadata(
 			if err != nil {
 				return errors.Wrap(err, "couldn't get metadatas")
 			}
-			metadata.FQName = basemodels.ParseFQName(fqNameString)
+			fqName, err := ParseFQName(fqNameString)
+			if err != nil {
+				return err
+			}
+			metadata.FQName = fqName
 			metadatas = append(metadatas, metadata)
 		}
 

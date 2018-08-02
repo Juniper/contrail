@@ -103,6 +103,7 @@ test_data:
        route_target: ["100:200"]
     network_policy_refs:
     - uuid: network_policy_uuid
+      to: ["default", "admin_project_uuid", "policy1"]
     network_ipam_refs:
     - uuid: test_ipam_blue
   vn_blue_ri1: &vn_blue_ri1
