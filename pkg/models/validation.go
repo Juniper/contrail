@@ -55,7 +55,29 @@ func NewTypeValidatorWithFormat() (*TypeValidator, error) {
 		return nil, err
 	}
 
+	err = tv.addBase64FormatValidator()
+	if err != nil {
+		return nil, err
+	}
+
 	return tv, nil
+}
+
+func (tv *TypeValidator) addBase64FormatValidator() error {
+	validator := "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+	regex, err := regexp.Compile(validator)
+	if err != nil {
+		return err
+	}
+
+	tv.SchemaValidator.addFormatValidator(validator, func(value string) error {
+
+		if !regex.MatchString(value) {
+			return errors.Errorf("Invalid base64 string). It should match \"%s\"", validator)
+		}
+		return nil
+	})
+	return nil
 }
 
 func (tv *TypeValidator) addHostnameFormatValidator() error {

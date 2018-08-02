@@ -99,6 +99,10 @@ test_data:
     default_gateway: 127.0.0.254
     ntp_server: 10.1.1.100
     encap_priority: VXLAN,MPLSoUDP,MPLSoGRE
+    {% if DATAPATH_ENCRYPT %}
+    datapath_encryption: true
+    pre_shared_key: test_psk
+    {%endif%}
     openstack_cluster_refs:
       - uuid: test_openstack_cluster_uuid
     {% if CONTROL_NODES %}
