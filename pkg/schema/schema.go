@@ -22,6 +22,7 @@ const (
 	schemaStartIndex    = 10
 	schemaIndexOffset   = 3
 	propertyIndexOffset = 1000
+	stringType          = "string"
 )
 
 // Available type values.
@@ -32,7 +33,8 @@ const (
 	ArrayType    = "array"
 	BooleanType  = "boolean"
 	NumberType   = "number"
-	StringType   = "string"
+	StringType   = stringType
+	Base64Type   = "base64"
 )
 
 const (
@@ -52,6 +54,7 @@ var sqlTypeMap = map[string]string{
 	BooleanType: "bool",
 	NumberType:  "float",
 	StringType:  "varchar(255)",
+	Base64Type:  "varchar(255)",
 }
 
 var sqlBindMap = map[string]string{
@@ -60,7 +63,8 @@ var sqlBindMap = map[string]string{
 	ArrayType:   "json",
 	BooleanType: "bool",
 	NumberType:  "float",
-	StringType:  "string",
+	StringType:  stringType,
+	Base64Type:  stringType,
 }
 
 //API object has schemas and types for API definition.
@@ -385,8 +389,11 @@ func (s *JSONSchema) resolveGoName(name string) error {
 		goType = "float64"
 		protoType = "float"
 	case StringType:
-		goType = "string"
-		protoType = "string"
+		goType = stringType
+		protoType = stringType
+	case Base64Type:
+		goType = "base64"
+		protoType = stringType
 	case BooleanType:
 		goType = "bool"
 		protoType = "bool"
