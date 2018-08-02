@@ -16,6 +16,15 @@ import (
 
 const (
 	allInOneClusterTemplatePath = "./test_data/test_all_in_one_cluster.tmpl"
+	createPlaybooks             = "./test_data/expected_ansible_create_playbook.yml"
+	updatePlaybooks             = "./test_data/expected_ansible_update_playbook.yml"
+	upgradePlaybooks            = "./test_data/expected_ansible_upgrade_playbook.yml"
+	addComputePlaybooks         = "./test_data/expected_ansible_add_compute_playbook.yml"
+	addCSNPlaybooks             = "./test_data/expected_ansible_add_csn_playbook.yml"
+	createEncryptPlaybooks      = "./test_data/expected_ansible_create_encrypt_playbook.yml"
+	updateEncryptPlaybooks      = "./test_data/expected_ansible_update_encrypt_playbook.yml"
+	upgradeEncryptPlaybooks     = "./test_data/expected_ansible_upgrade_encrypt_playbook.yml"
+	addComputeEncryptPlaybooks  = "./test_data/expected_ansible_add_compute_encrypt_playbook.yml"
 	clusterID                   = "test_cluster_uuid"
 )
 
@@ -71,8 +80,13 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	return bytes.Equal(generatedData, expectedData)
 
 }
+
 func compareGeneratedInstances(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedInstancesPath())
+}
+
+func compareGeneratedInventory(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedInventoryPath())
 }
 
 func verifyPlaybooks(t *testing.T, expected string) bool {
@@ -83,16 +97,21 @@ func generatedInstancesPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/instances.yml"
 }
 
+func generatedInventoryPath() string {
+	return defaultWorkRoot + "/" + clusterID + "/inventory.yml"
+}
+
 func executedPlaybooksPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
 }
 
 // nolint: gocyclo
 func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
-	config *Config, action, expectedInstance, expectedPlaybook string,
+	config *Config, action, expectedInstance, expectedInventory string,
 	expectedEndpoints map[string]string) {
 	// set action field in the contrail-cluster resource
 	var err error
+	var expectedPlaybooks string
 	var data interface{}
 	cluster := map[string]interface{}{"uuid": clusterID,
 		"provisioning_action": action,
@@ -101,12 +120,27 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 	switch action {
 	case "UPGRADE":
 		cluster["provisioning_state"] = "NOSTATE"
-	case "ADD_COMPUTE", "ADD_CSN":
+		expectedPlaybooks = upgradePlaybooks
+		if expectedInventory != "" {
+			expectedPlaybooks = upgradeEncryptPlaybooks
+		}
+	case "ADD_COMPUTE":
 		// remove instances.yml to mock trriger cluster update
 		err = os.Remove(generatedInstancesPath())
 		if err != nil {
 			assert.NoError(t, err, "failed to delete instances.yml")
 		}
+		expectedPlaybooks = addComputePlaybooks
+		if expectedInventory != "" {
+			expectedPlaybooks = addComputeEncryptPlaybooks
+		}
+	case "ADD_CSN":
+		// remove instances.yml to mock trriger cluster update
+		err = os.Remove(generatedInstancesPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete instances.yml")
+		}
+		expectedPlaybooks = addCSNPlaybooks
 	case "IMPORT":
 		config.Action = "create"
 		cluster["provisioning_action"] = ""
@@ -134,8 +168,8 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 		assert.True(t, compareGeneratedInstances(t, expectedInstance),
 			fmt.Sprintf("Instance file created during cluster %s is not as expected", action))
 	}
-	if expectedPlaybook != "" {
-		assert.True(t, verifyPlaybooks(t, expectedPlaybook),
+	if expectedPlaybooks != "" {
+		assert.True(t, verifyPlaybooks(t, expectedPlaybooks),
 			fmt.Sprintf("Expected list of %s playbooks are not executed", action))
 	}
 	// Wait for the in-memory endpoint cache to get updated
@@ -148,7 +182,7 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 }
 
 // nolint: gocyclo
-func runClusterTest(t *testing.T, expectedOutput string,
+func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	context map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
@@ -189,10 +223,17 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	err = clusterManager.Manage()
 	assert.NoError(t, err, "failed to manage(create) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+	assert.True(t, compareGeneratedInstances(t, expectedInstance),
 		"Instance file created during cluster create is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook.yml"),
-		"Expected list of create playbooks are not executed")
+	if expectedInventory != "" {
+		assert.True(t, compareGeneratedInventory(t, expectedInventory),
+			"Inventory file created during cluster create is not as expected")
+		assert.True(t, verifyPlaybooks(t, createEncryptPlaybooks),
+			"Expected list of create playbooks are not executed")
+	} else {
+		assert.True(t, verifyPlaybooks(t, createPlaybooks),
+			"Expected list of create playbooks are not executed")
+	}
 	// Wait for the in-memory endpoint cache to get updated
 	apisrv.APIServer.ForceProxyUpdate()
 	// make sure all endpoints are created
@@ -219,10 +260,17 @@ func runClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
 	err = clusterManager.Manage()
 	assert.NoError(t, err, "failed to manage(update) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+	assert.True(t, compareGeneratedInstances(t, expectedInstance),
 		"Instance file created during cluster update is not as expected")
-	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook.yml"),
-		"Expected list of update playbooks are not executed")
+	if expectedInventory != "" {
+		assert.True(t, compareGeneratedInventory(t, expectedInventory),
+			"Inventory file created during cluster update is not as expected")
+		assert.True(t, verifyPlaybooks(t, updateEncryptPlaybooks),
+			"Expected list of update playbooks are not executed")
+	} else {
+		assert.True(t, verifyPlaybooks(t, updatePlaybooks),
+			"Expected list of update playbooks are not executed")
+	}
 	// Wait for the in-memory endpoint cache to get updated
 	apisrv.APIServer.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
@@ -233,23 +281,20 @@ func runClusterTest(t *testing.T, expectedOutput string,
 
 	// UPGRADE test
 	runClusterActionTest(t, testScenario, config,
-		"UPGRADE", expectedOutput,
-		"./test_data/expected_ansible_upgrade_playbook.yml",
+		"UPGRADE", expectedInstance, expectedInventory,
 		expectedEndpoints)
 
 	// ADD_COMPUTE  test
 	runClusterActionTest(t, testScenario, config,
-		"ADD_COMPUTE", expectedOutput,
-		"./test_data/expected_ansible_add_compute_playbook.yml",
+		"ADD_COMPUTE", expectedInstance, expectedInventory,
 		expectedEndpoints)
 
 	// ADD_CSN  test
 	runClusterActionTest(t, testScenario, config,
-		"ADD_CSN", expectedOutput,
-		"./test_data/expected_ansible_add_csn_playbook.yml",
+		"ADD_CSN", expectedInstance, expectedInventory,
 		expectedEndpoints)
 
-	// IMPORT test (expected to create endpoints withtout triggering playbooks)
+	// IMPORT test (expected to create endpoints without triggering playbooks)
 	runClusterActionTest(t, testScenario, config,
 		"IMPORT", "", "", expectedEndpoints)
 
@@ -295,7 +340,7 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 		expectedInstances = "./test_data/expected_all_in_one_sriov_instances.yml"
 	}
 
-	runClusterTest(t, expectedInstances, context, expectedEndpoints)
+	runClusterTest(t, expectedInstances, "", context, expectedEndpoints)
 }
 
 func TestAllInOneCluster(t *testing.T) {
@@ -307,6 +352,27 @@ func TestAllInOneDpdkCluster(t *testing.T) {
 
 func TestAllInOneSriovCluster(t *testing.T) {
 	runAllInOneClusterTest(t, "sriov")
+}
+
+func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
+	context := pongo2.Context{
+		"DATAPATH_ENCRYPT": true,
+		"MGMT_INT_IP":      "127.0.0.1",
+		"CONTROL_NODES":    "",
+		"OPENSTACK_NODES":  "",
+	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
+		"keystone":  "http://127.0.0.1:5000",
+	}
+	runClusterTest(t, "./test_data/expected_all_in_one_instances.yml",
+		"./test_data/expected_all_in_one_inventory.yml", context, expectedEndpoints)
 }
 
 func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
@@ -325,7 +391,7 @@ func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
 	}
-	runClusterTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", context, expectedEndpoints)
+	runClusterTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", "", context, expectedEndpoints)
 }
 
 func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
@@ -347,7 +413,7 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 		"keystone":  "http://127.0.0.1:5000",
 	}
 
-	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", context, expectedEndpoints)
+	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", "", context, expectedEndpoints)
 }
 
 func TestCredAllInOneClusterTest(t *testing.T) {
