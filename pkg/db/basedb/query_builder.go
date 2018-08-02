@@ -138,13 +138,19 @@ func (d *Dialect) Placeholder(i int) string {
 
 // Values makes list of place holders.
 func (d *Dialect) Values(params ...string) string {
-	query := ""
-	l := len(params)
-	for i := 0; i < l-1; i++ {
-		query += d.Placeholder(i+1) + ","
-	}
-	query += d.Placeholder(l)
+	query, _ := d.ValuesWithIndex(0, params...)
 	return query
+}
+
+// ValuesWithIndex makes list of place holders from provided index
+func (d *Dialect) ValuesWithIndex(index int, params ...string) (string, int) {
+	query := ""
+	lastIndex := index + len(params)
+	for ; index < lastIndex-1; index++ {
+		query += d.Placeholder(index+1) + ","
+	}
+	query += d.Placeholder(lastIndex)
+	return query, lastIndex
 }
 
 // QuoteSep quotes with separator.

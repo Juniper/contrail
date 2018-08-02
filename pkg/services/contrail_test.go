@@ -111,6 +111,12 @@ func (m *mockMetadataGetter) GetMetaData(_ context.Context, _ string, _ []string
 	return (*basemodels.MetaData)(m), nil
 }
 
+func (m *mockMetadataGetter) ListMetadata(
+	ctx context.Context, fqNameUUIDPairs []*basemodels.FQNameUUIDPair,
+) ([]*basemodels.MetaData, error) {
+	return []*basemodels.MetaData{(*basemodels.MetaData)(m)}, nil
+}
+
 type serviceSpy struct {
 	BaseService
 	acl *models.AccessControlList

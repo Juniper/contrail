@@ -3,9 +3,9 @@ package basedb
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"fmt"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/pkg/errors"
 )
@@ -25,28 +25,97 @@ func (db *BaseDB) CreateMetaData(ctx context.Context, metaData *basemodels.MetaD
 
 // GetMetaData gets metadata from database.
 func (db *BaseDB) GetMetaData(ctx context.Context, uuid string, fqName []string) (*basemodels.MetaData, error) {
-	var uuidString, typeString, fqNameString string
+	if uuid == "" && len(fqName) == 0 {
+		return nil, fmt.Errorf("uuid and fqName unspecified")
+	}
+
+	metadatas, err := db.ListMetadata(ctx, []*basemodels.FQNameUUIDPair{
+		{FQName: fqName, UUID: uuid},
+	})
+
+	if err != nil {
+		return nil, errors.Wrapf(FormatDBError(err), "failed to get metadata")
+	}
+
+	if len(metadatas) == 1 {
+		return metadatas[0], nil
+	}
+
+	return nil, common.ErrorNotFound
+}
+
+func (db *BaseDB) buildFilter(columns []string, filterValues ...[]string) string {
+	var where string
+	var filterQuery bytes.Buffer
+	index := 0
+	WriteStrings(&filterQuery, " false")
+	for i, column := range columns {
+		if len(filterValues[i]) > 0 {
+			WriteStrings(&filterQuery, " or ")
+			WriteStrings(&filterQuery, column, " in (")
+			valuesQuery := ""
+			values := filterValues[i]
+			valuesQuery, index = db.Dialect.ValuesWithIndex(index, values...)
+			WriteStrings(&filterQuery, valuesQuery)
+			WriteStrings(&filterQuery, ")")
+		}
+	}
+	where = filterQuery.String()
+
+	return where
+}
+
+func (db *BaseDB) stringsToValues(strings []string) []interface{} {
+	var values []interface{}
+	for _, s := range strings {
+		values = append(values, s)
+	}
+	return values
+}
+
+// ListMetadata gets metadata from database.
+func (db *BaseDB) ListMetadata(
+	ctx context.Context, fqNameUUIDPairs []*basemodels.FQNameUUIDPair,
+) ([]*basemodels.MetaData, error) {
+	var metadatas []*basemodels.MetaData
 
 	if err := db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
 		var query bytes.Buffer
 		query.WriteString("select uuid,type, fq_name from metadata where ")
-		var row *sql.Row
-		var where string
-		if uuid != "" {
-			where = "uuid = " + db.Dialect.Placeholder(1)
-			query.WriteString(where)
-			row = tx.QueryRow(query.String(), uuid)
-		} else if fqName != nil {
-			where = "fq_name = " + db.Dialect.Placeholder(1)
-			query.WriteString(where)
-			row = tx.QueryRow(query.String(), basemodels.FQNameToString(fqName))
-		} else {
-			return fmt.Errorf("uuid and fqName unspecified")
+		var fqNames []string
+		var uuids []string
+
+		for _, pair := range fqNameUUIDPairs {
+			if len(pair.FQName) > 0 {
+				fqNames = append(fqNames, basemodels.FQNameToString(pair.FQName))
+			}
+			if pair.UUID != "" {
+				uuids = append(uuids, pair.UUID)
+			}
 		}
-		err := row.Scan(&uuidString, &typeString, &fqNameString)
+
+		where := db.buildFilter([]string{"fq_name", "uuid"}, fqNames, uuids)
+		query.WriteString(where)
+		var values []interface{}
+		values = append(values, db.stringsToValues(fqNames)...)
+		values = append(values, db.stringsToValues(uuids)...)
+
+		rows, err := tx.QueryContext(ctx, query.String(), values...)
 		if err != nil {
-			return errors.Wrapf(FormatDBError(err), "failed to get metadata")
+			return err
+		}
+
+		for rows.Next() {
+			metadata := &basemodels.MetaData{}
+			fqNameString := ""
+			err := rows.Scan(&metadata.UUID, &metadata.Type, &fqNameString)
+			err = FormatDBError(err)
+			if err != nil {
+				return errors.Wrap(err, "couldn't get metadatas")
+			}
+			metadata.FQName = basemodels.ParseFQName(fqNameString)
+			metadatas = append(metadatas, metadata)
 		}
 
 		return nil
@@ -54,11 +123,7 @@ func (db *BaseDB) GetMetaData(ctx context.Context, uuid string, fqName []string)
 		return nil, err
 	}
 
-	return &basemodels.MetaData{
-		UUID:   uuidString,
-		FQName: basemodels.ParseFQName(fqNameString),
-		Type:   typeString,
-	}, nil
+	return metadatas, nil
 }
 
 // DeleteMetaData deletes metadata by uuid.
