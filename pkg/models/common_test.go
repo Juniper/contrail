@@ -33,3 +33,50 @@ func TestChildFQName(t *testing.T) {
 		})
 	}
 }
+
+func TestFQNameEquals(t *testing.T) {
+	tests := []struct {
+		name     string
+		fqNameA  []string
+		fqNameB  []string
+		areEqual bool
+	}{
+		{
+			name:     "Check if two FQNames (slices) with different length are equal",
+			fqNameA:  []string{"a", "b", "c"},
+			fqNameB:  []string{"a", "b", "c", "d"},
+			areEqual: false,
+		},
+		{
+			name:     "Check if two FQNames (slices) with the same length but diff values are equal",
+			fqNameA:  []string{"a", "b", "c"},
+			fqNameB:  []string{"a", "b", "d"},
+			areEqual: false,
+		},
+		{
+			name:     "Check if two FQNames (slices) with the same length and values but in diff order are equal",
+			fqNameA:  []string{"a", "b", "c"},
+			fqNameB:  []string{"c", "b", "a"},
+			areEqual: false,
+		},
+		{
+			name:     "Check if two FQNames (slices) with the same length, values and order are equal",
+			fqNameA:  []string{"a", "b", "c"},
+			fqNameB:  []string{"a", "b", "c"},
+			areEqual: true,
+		},
+		{
+			name:     "Check if two empty FQNames (slices) are equal",
+			fqNameA:  []string{},
+			fqNameB:  []string{},
+			areEqual: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FQNameEquals(tt.fqNameA, tt.fqNameB)
+			assert.Equal(t, tt.areEqual, got)
+		})
+	}
+}
