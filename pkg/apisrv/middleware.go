@@ -16,6 +16,27 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 )
 
+func vncLibCompatibilityMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if c.Request().Header.Get("X-Contrail-Useragent") == "" {
+				return next(c)
+			}
+
+			response := c.Response()
+			response.Writer = PreWriteHeader(response.Writer, func(statusCode int, next func(int)) {
+				if statusCode == http.StatusCreated {
+					statusCode = http.StatusOK
+				}
+
+				next(statusCode)
+			})
+
+			return next(c)
+		}
+	}
+}
+
 func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -82,5 +103,33 @@ func gRPCMiddleware(grpcServer http.Handler) func(next echo.HandlerFunc) echo.Ha
 			}
 			return nil
 		}
+	}
+}
+
+type responseWriterWrapper struct {
+	HeaderFunc      func() http.Header
+	WriteFunc       func([]byte) (int, error)
+	WriteHeaderFunc func(statusCode int)
+}
+
+func (w *responseWriterWrapper) Header() http.Header {
+	return w.HeaderFunc()
+}
+
+func (w *responseWriterWrapper) Write(data []byte) (int, error) {
+	return w.WriteFunc(data)
+}
+
+func (w *responseWriterWrapper) WriteHeader(statusCode int) {
+	w.WriteHeaderFunc(statusCode)
+}
+
+func PreWriteHeader(w http.ResponseWriter, f func(statusCode int, next func(int))) http.ResponseWriter {
+	return &responseWriterWrapper{
+		HeaderFunc: w.Header,
+		WriteFunc:  w.Write,
+		WriteHeaderFunc: func(statusCode int) {
+			f(statusCode, w.WriteHeader)
+		},
 	}
 }

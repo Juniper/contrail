@@ -18,7 +18,7 @@ import (
 )
 
 func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
-	s := integration.NewRunningAPIServer(t, "../../..", db.DriverPostgreSQL)
+	s := integration.NewRunningAPIServer(t, "../../..", db.DriverPostgreSQL, true)
 	defer s.Close(t)
 	hc := integration.NewHTTPAPIClient(t, s.URL())
 	ec := integration.NewEtcdClient(t)

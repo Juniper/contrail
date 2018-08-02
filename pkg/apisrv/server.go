@@ -247,6 +247,9 @@ func (s *Server) Init() (err error) {
 			}
 		}))
 	}
+
+	e.Use(vncLibCompatibilityMiddleware())
+
 	return nil
 }
 
