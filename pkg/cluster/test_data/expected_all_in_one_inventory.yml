@@ -1,0 +1,12 @@
+all:
+  hosts:
+    # List of computes for VR-VR encrytpion
+    127.0.0.1: {}
+  vars:
+    PATH_STRONGSWAN_CONFIG: '/etc/contrail/vrouter/strongswan'
+    #secret must be encoded by base64 string
+    NODE2NODE_PSK: MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTAo=
+    mark: 15
+    DOCKER_REPOSITORY: test_registry
+    ansible_user: root
+    ansible_password: c0ntrail123

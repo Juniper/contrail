@@ -1,0 +1,20 @@
+all:
+  hosts:
+    # List of computes for VR-VR encrytpion
+    {% for vrouter_node in cluster.ContrailVrouterNodes %}
+    {% for node_ref in vrouter_node.NodeRefs %}
+    {% for node in nodes %}
+    {%if node_ref.UUID == node.UUID %}
+    {{ node.IPAddress }}: {}
+    {%endif%}
+    {%endfor %}
+    {%endfor%}
+    {%endfor%}
+  vars:
+    PATH_STRONGSWAN_CONFIG: '/etc/contrail/vrouter/strongswan'
+    #secret must be encoded by base64 string
+    NODE2NODE_PSK: {{ cluster.PreSharedKey }}
+    mark: 15
+    DOCKER_REPOSITORY: {%if cluster.ContainerRegistry %}{{ cluster.ContainerRegistry }}{%else%}opencontrailnightly{%endif%}
+    ansible_user: {%if cluster.SSHUser %}{{cluster.SSHUser}}{%else%}root{%endif%}
+    ansible_password: {%if cluster.SSHPassword %}{{cluster.SSHPassword}}{%else%}c0ntrail123{%endif%}
