@@ -1,8 +1,12 @@
 package models
 
-// MetaData represents resource meta data.
-type MetaData struct {
+type FQNameUUIDPair struct {
 	UUID   string
 	FQName []string
-	Type   string
+}
+
+// MetaData represents resource meta data.
+type MetaData struct {
+	FQNameUUIDPair
+	Type string
 }

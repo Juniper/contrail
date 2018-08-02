@@ -61,6 +61,12 @@ func (db *Service) GetMetaData(ctx context.Context, uuid string, fqName []string
 	}, nil
 }
 
+// ListMetadata gets metadata from database.
+func (db *Service) ListMetadata(ctx context.Context, fqNameUUIDPairs []*models.FQNameUUIDPair) ([]*models.MetaData, error) {
+	//TODO: List metadata in one query
+	return nil, errors.New("Not implemented")
+}
+
 // DeleteMetaData deletes metadata by uuid.
 func (db *Service) DeleteMetaData(ctx context.Context, uuid string) error {
 	return db.DoInTransaction(ctx, func(ctx context.Context) error {
