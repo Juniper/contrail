@@ -27,13 +27,23 @@ import (
 	"github.com/Juniper/contrail/pkg/types"
 )
 
+//TODO(nati) use parameter
+var extensions = []func(server *Server) error{}
+
+//RegisterExtension registers extension callback.
+func RegisterExtension(f func(server *Server) error) {
+	extensions = append(extensions, f)
+}
+
 //Server represents Intent API Server.
 type Server struct {
-	Echo      *echo.Echo
-	Keystone  *keystone.Keystone
-	dbService *db.Service
-	Proxy     *proxyService
-	Cache     *cache.DB
+	Echo       *echo.Echo
+	GRPCServer *grpc.Server
+	Keystone   *keystone.Keystone
+	dbService  *db.Service
+	Proxy      *proxyService
+	Service    services.Service
+	Cache      *cache.DB
 }
 
 // NewServer makes a server
@@ -126,7 +136,7 @@ func (s *Server) Init() (err error) {
 		return err
 	}
 
-	service, err := s.SetupService()
+	s.Service, err = s.SetupService()
 	if err != nil {
 		return err
 	}
@@ -196,18 +206,17 @@ func (s *Server) Init() (err error) {
 			log.Fatal("GRPC support requires TLS configuraion.")
 		}
 		log.Debug("enabling grpc")
-		var grpcServer *grpc.Server
 		if keystoneAuthURL != "" {
-			grpcServer = grpc.NewServer(
+			s.GRPCServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
 					keystone.AuthInterceptor(keystoneClient, endpointStore)))
 		} else if viper.GetBool("no_auth") {
-			grpcServer = grpc.NewServer(
+			s.GRPCServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
 					noAuthInterceptor()))
 		}
-		services.RegisterContrailServiceServer(grpcServer, service)
-		e.Use(gRPCMiddleware(grpcServer))
+		services.RegisterContrailServiceServer(s.GRPCServer, s.Service)
+		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 
 	if viper.GetBool("homepage.enabled") {
@@ -251,6 +260,14 @@ func (s *Server) Init() (err error) {
 				log.Warn(err)
 			}
 		}))
+	}
+
+	// apply extensions
+	for _, extension := range extensions {
+		err := extension(s)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
