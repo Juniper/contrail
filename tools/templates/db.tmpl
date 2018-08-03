@@ -7,11 +7,17 @@ import (
 	"encoding/json"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/schema"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"{{ option.PackagePath }}/pkg/models"
+	"{{ option.PackagePath }}/pkg/services"
 	"github.com/pkg/errors"
 )
+
+//This is needed to prevent an import error.
+var _ = schema.Version
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
@@ -79,8 +85,8 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
     fromID string,
     ref *models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,
 ) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
-    tx := GetTransaction(ctx)
+    qb := db.QueryBuilders["{{ schema.ID }}"]
+    tx := basedb.GetTransaction(ctx)
 
     {% if reference.RefType  %}
     if ref.Attr == nil {
@@ -95,7 +101,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
         {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
 {% endif %}{% endfor %})
     if err != nil {
-        err = handleError(err)
+        err = basedb.FormatDBError(err)
         return errors.Wrapf(err,"{{ reference.GoName }}Ref create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v' and ref UUID '%v': ", fromID, ref.UUID)
     }
     return nil
@@ -106,12 +112,12 @@ func (db *Service) delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
     fromID string,
     ref *models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref,
 ) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
-    tx := GetTransaction(ctx)
+    qb := db.QueryBuilders["{{ schema.ID }}"]
+    tx := basedb.GetTransaction(ctx)
 
     _, err := tx.ExecContext(ctx, qb.DeleteRefQuery("{{ linkTo | lower }}"), fromID, ref.UUID)
     if err != nil {
-        err = handleError(err)
+        err = basedb.FormatDBError(err)
         return errors.Wrapf(err,"{{ reference.GoName }}Ref create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v' and ref UUID '%v': ", fromID, ref.UUID)
     }
     return nil
@@ -125,13 +131,13 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
     switch model.ParentType {
     {% for linkTo, reference in schema.Parents %}
     case "{{ reference.LinkTo.Path }}":
-       qb := db.queryBuilders["{{ schema.ID }}"]
-       tx := GetTransaction(ctx)
+       qb := db.QueryBuilders["{{ schema.ID }}"]
+       tx := basedb.GetTransaction(ctx)
        _, err = tx.ExecContext(ctx, qb.CreateParentRefQuery("{{ linkTo | lower  }}"), model.UUID, model.ParentUUID)
        if err == nil {
            return nil
        } else {
-        err = handleError(err)
+        err = basedb.FormatDBError(err)
         return errors.Wrapf(err, "creating resource {{ schema.JSONSchema.GoName }} with UUID '%v' in DB failed", request.{{ schema.JSONSchema.GoName }}.GetUUID())
         }
     {% endfor %}
@@ -151,13 +157,13 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
 func (db *Service) create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.Create{{ schema.JSONSchema.GoName }}Request) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
-    tx := GetTransaction(ctx)
+    qb := db.QueryBuilders["{{ schema.ID }}"]
+    tx := basedb.GetTransaction(ctx)
     model := request.{{ schema.JSONSchema.GoName }}
     _, err := tx.ExecContext(ctx, qb.CreateQuery(), {% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
     if err != nil {
-        err = handleError(err)
+        err = basedb.FormatDBError(err)
         return errors.Wrap(err, "creating {{ schema.JSONSchema.GoName }} failed")
     }
 
@@ -171,7 +177,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 	    return errors.Wrap(err, "creating parent reference for {{ schema.JSONSchema.GoName }} failed")
     }
 
-    metaData := &models.MetaData{
+    metaData := &basemodels.MetaData{
         UUID: model.UUID,
         Type: "{{ schema.ID }}",
         FQName: model.FQName,
@@ -180,9 +186,11 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     if err != nil {
 	    return errors.Wrap(err, "creating meta-data for {{ schema.JSONSchema.GoName }} failed")
     }
-    err = db.CreateSharing(tx, "{{ schema.ID }}", model.UUID, model.GetPerms2().GetShare())
-    if err != nil {
-	    return errors.Wrap(err, "creating share perms2 for {{ schema.JSONSchema.GoName }} failed")
+    for _, share := range model.GetPerms2().GetShare() {
+        err = db.CreateSharing(tx, "{{ schema.ID }}", model.UUID, share)
+        if err != nil {
+            return errors.Wrap(err, "creating share perms2 for {{ schema.JSONSchema.GoName }} failed")
+        }
     }
     return nil
 }
@@ -230,12 +238,12 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
     {% endfor %}
 
     {% if  schema.References | length + schema.Children | length + schema.BackReferences | length  > 0 %}
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
     {% endif %}
 
     {% for linkTo, reference in schema.References %}
     if value, ok := values["ref_{{ linkTo | lower }}"]; ok {
-        references := qb.scanResourceList(value)
+        references := qb.ScanResourceList(value)
         for _, reference := range references {
             referenceMap, ok := reference.(map[string]interface{})
             if !ok {
@@ -263,7 +271,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
     {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
     if value, ok := values[schema.ChildColumnName("{{ child.ID}}", "{{schema.ID}}")]; ok {
-        childResources := qb.scanResourceList(value)
+        childResources := qb.ScanResourceList(value)
         for _, childResource := range childResources {
             childResourceMap, ok := childResource.(map[string]interface{})
             if !ok {
@@ -287,7 +295,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
     {% for _, definition in schema.BackReferences %}
     {% set backref = definition.LinkTo %}
     if value, ok := values[schema.BackRefColumnName("{{ backref.ID}}", "{{schema.ID}}")]; ok {
-        backrefResources := qb.scanResourceList(value)
+        backrefResources := qb.ScanResourceList(value)
         for _, childResource := range backrefResources {
             backrefResourceMap, ok := childResource.(map[string]interface{})
             if !ok {
@@ -314,9 +322,9 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
 // List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
 func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
     var rows *sql.Rows
-    tx := GetTransaction(ctx)
+    tx := basedb.GetTransaction(ctx)
 
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
 
     auth := common.GetAuthCTX(ctx)
     spec := request.Spec
@@ -327,17 +335,17 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
        if err != nil {
 		  return nil, errors.Wrapf(err, "cannot find parents when listing {{ schema.JSONSchema.GoName }} with request data %v", request)
        }
-       spec.Filters = services.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
+       spec.Filters = baseservices.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
     }
     query, columns, values := qb.ListQuery(auth, spec)
     rows, err = tx.QueryContext(ctx, query, values...)
     if err != nil {
-        err = handleError(err)
+        err = basedb.FormatDBError(err)
         return nil, errors.Wrap(err, "select query failed")
     }
     defer rows.Close()
     if err := rows.Err(); err != nil {
-        err = handleError(err)
+        err = basedb.FormatDBError(err)
         return nil, errors.Wrap(err, "row error")
     }
 
@@ -381,8 +389,8 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.Update{{ schema.JSONSchema.GoName }}Request,
     ) error {
-    tx := GetTransaction(ctx)
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    tx := basedb.GetTransaction(ctx)
+    qb := db.QueryBuilders["{{ schema.ID }}"]
     model := request.{{ schema.JSONSchema.GoName }}
 
     err := db.Check{{ schema.JSONSchema.GoName }}Policy(ctx, model.UUID)
@@ -403,7 +411,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
             case "{{ linkTo | lower }}_refs":
                 _, err = tx.ExecContext(ctx, qb.DeleteRefsQuery("{{ linkTo | lower }}"), model.UUID)
                 if err != nil {
-                    err = handleError(err)
+                    err = basedb.FormatDBError(err)
 		          return errors.Wrapf(err,"{{ reference.GoName }}Refs update failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
                 }
                 for _, ref := range model.{{ reference.GoName }}Refs {
@@ -415,7 +423,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
                     _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
                 {% endif %}{% endfor %})
                     if err != nil {
-                        err = handleError(err)
+                        err = basedb.FormatDBError(err)
 		              return errors.Wrapf(err,"{{ reference.GoName }}Refs create failed for object {{ schema.JSONSchema.GoName }} with UUID: '%v': ", request.{{ schema.JSONSchema.GoName }}.GetUUID())
                     }
                 }
@@ -427,26 +435,26 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
         return nil
     }
     _, err = tx.ExecContext(ctx, qb.UpdateQuery(columns), values...)
-    return handleError(err)
+    return basedb.FormatDBError(err)
 }
 
 //Check{{ schema.JSONSchema.GoName }}Policy check ownership of resources.
 func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
     ctx context.Context,
     uuid string) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
 
     var err error
     var count int
 
-    tx := GetTransaction(ctx)
+    tx := basedb.GetTransaction(ctx)
     auth := common.GetAuthCTX(ctx)
 
     selectQuery := qb.SelectAuthQuery(auth.IsAdmin())
     if auth.IsAdmin() {
         row := tx.QueryRowContext(ctx, selectQuery, uuid)
         if err != nil {
-            return handleError(err)
+            return basedb.FormatDBError(err)
         }
         row.Scan(&count)
         if count == 0 {
@@ -455,7 +463,7 @@ func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
     }else{
         row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
         if err != nil {
-            return handleError(err)
+            return basedb.FormatDBError(err)
         }
         row.Scan(&count)
         if count == 0 {
@@ -469,7 +477,7 @@ func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
 func (db *Service) delete{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.Delete{{ schema.JSONSchema.GoName }}Request) error {
-    qb := db.queryBuilders["{{ schema.ID }}"]
+    qb := db.QueryBuilders["{{ schema.ID }}"]
 
     deleteQuery := qb.DeleteQuery()
     err := db.Check{{ schema.JSONSchema.GoName }}Policy(ctx, request.ID)
@@ -477,12 +485,12 @@ func (db *Service) delete{{ schema.JSONSchema.GoName }}(
         return err
     }
     uuid := request.ID
-    tx := GetTransaction(ctx)
+    tx := basedb.GetTransaction(ctx)
 
     _, err = tx.ExecContext(ctx, deleteQuery, uuid)
 
     if err != nil {
-        err = handleError(err)
+        err = basedb.FormatDBError(err)
 	   return errors.Wrapf(err, "deleting resource {{ schema.JSONSchema.GoName }} with UUID '%v' from DB failed", request.GetID())
     }
 
@@ -597,12 +605,12 @@ func (db *Service) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
 
 //Get{{ schema.JSONSchema.GoName }} a Get request.
 func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (response *services.Get{{ schema.JSONSchema.GoName }}Response, err error) {
-    spec := &services.ListSpec{
+    spec := &baseservices.ListSpec{
                 Limit: 1,
                 Detail: true,
                 Fields: request.Fields,
-                Filters: []*services.Filter{
-                    &services.Filter{
+                Filters: []*baseservices.Filter{
+                    &baseservices.Filter{
                         Key: "uuid",
                         Values: []string{request.ID},
                     },

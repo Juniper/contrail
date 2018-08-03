@@ -12,14 +12,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		DBDriver:           db.DriverPostgreSQL,
+		DBDriver:           basedb.DriverPostgreSQL,
 		EnableEtcdNotifier: false,
 		RepoRootPath:       "../../..",
 	})

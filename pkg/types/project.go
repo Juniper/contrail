@@ -8,6 +8,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -117,10 +118,10 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(
 func (sv *ContrailTypeLogicService) ensureDefaultApplicationPolicySet(
 	ctx context.Context, project *models.Project,
 ) error {
-	apsName := models.DefaultNameForKind(models.KindApplicationPolicySet)
+	apsName := basemodels.DefaultNameForKind(models.KindApplicationPolicySet)
 
 	aps := models.MakeApplicationPolicySet()
-	aps.FQName = models.ChildFQName(project.GetFQName(), apsName)
+	aps.FQName = basemodels.ChildFQName(project.GetFQName(), apsName)
 	aps.ParentType = project.Kind()
 	aps.ParentUUID = project.GetUUID()
 	aps.Name = apsName
@@ -161,7 +162,7 @@ func (sv *ContrailTypeLogicService) deleteDefaultApplicationPolicySet(
 		return errors.Wrap(err, "failed to delete application policy set refs")
 	}
 
-	defaultAPSName := models.DefaultNameForKind(models.KindApplicationPolicySet)
+	defaultAPSName := basemodels.DefaultNameForKind(models.KindApplicationPolicySet)
 
 	for _, aps := range project.GetApplicationPolicySets() {
 		if aps.GetName() == defaultAPSName {

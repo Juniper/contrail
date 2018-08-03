@@ -6,16 +6,25 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
+
+	"{{ option.PackagePath }}/pkg/models"
 )
+
+//This is needed to prevent an import error.
+var _ = context.Background
+var _ = errors.New
+var _ = common.ErrorNotFound
+var _ = models.Version
 
 // SanitizerService fills up missing properties based on resources logic and metadata
 // TODO: Move logic from ContrailService when validation will be a separate service
 type SanitizerService struct {
 	BaseService
-	MetadataGetter metadataGetter
+	MetadataGetter baseservices.MetadataGetter
 }
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID and schema.References | length != 0 %}
+
 func (sv *SanitizerService) sanitize{{ schema.JSONSchema.GoName }}Refs(ctx context.Context, m *models.{{ schema.JSONSchema.GoName }}) error {
 {% for _, reference in schema.References %}
 	for _, ref := range m.Get{{ reference.GoName }}Refs() {
