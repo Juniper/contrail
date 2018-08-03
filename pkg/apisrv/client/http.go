@@ -117,7 +117,7 @@ func (h *HTTP) Login(ctx context.Context) error {
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	err = checkStatusCode([]int{201}, resp.StatusCode)
+	err = checkStatusCode([]int{200}, resp.StatusCode)
 	if err != nil {
 		logErrorAndResponse(err, resp)
 		return err
@@ -136,7 +136,7 @@ func (h *HTTP) Login(ctx context.Context) error {
 
 // Create send a create API request.
 func (h *HTTP) Create(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusCreated}
+	expected := []int{http.StatusOK}
 	return h.Do(ctx, echo.POST, path, data, output, expected)
 }
 
@@ -154,13 +154,13 @@ func (h *HTTP) Update(ctx context.Context, path string, data interface{}, output
 
 // Delete send a delete API request.
 func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusNoContent}
+	expected := []int{http.StatusOK}
 	return h.Do(ctx, echo.DELETE, path, nil, output, expected)
 }
 
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusNoContent, http.StatusNotFound}
+	expected := []int{http.StatusOK, http.StatusNotFound}
 	return h.Do(ctx, echo.DELETE, path, nil, output, expected)
 }
 

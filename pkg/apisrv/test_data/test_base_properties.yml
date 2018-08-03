@@ -44,7 +44,7 @@ workflow:
   request:
     path: /fabrics
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       fabric:
         <<: *fabric_minimal_base_props
@@ -61,14 +61,14 @@ workflow:
   request:
     path: /fabric/fabric_blue
     method: DELETE
-    expected: [204]
+    expected: [200]
   expect: null
 
 - name: create fabric with fq_name
   request:
     path: /fabrics
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       fabric:
         <<: *fabric_minimal_base_props
@@ -86,7 +86,7 @@ workflow:
   request:
     path: /fabric/fabric_blue
     method: DELETE
-    expected: [204]
+    expected: [200]
   expect: null
 
 - name: create project admin
@@ -94,7 +94,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project
   expect:
@@ -105,7 +105,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         <<: *network_ipam_blue
@@ -127,7 +127,7 @@ workflow:
     path: /network-ipam/f774ea9e-fc59-4730-8bcf-8ef4f69a812e
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 
 - name: create ipam with proper uuid but without id_perms uuid
@@ -135,7 +135,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         <<: *network_ipam_blue
@@ -153,5 +153,5 @@ workflow:
     path: /network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
