@@ -11,17 +11,19 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
-type metadataGetter interface {
-	GetMetaData(ctx context.Context, uuid string, fqName []string) (*models.MetaData, error)
+//MetadataGetter provides getter for metadata.
+type MetadataGetter interface {
+	GetMetaData(ctx context.Context, uuid string, fqName []string) (*basemodels.MetaData, error)
 }
 
 // nolint
 type ContrailService struct {
 	BaseService
 
-	MetadataGetter metadataGetter
+	MetadataGetter MetadataGetter
 	TypeValidator  *models.TypeValidator
 }
 

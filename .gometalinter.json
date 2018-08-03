@@ -27,6 +27,7 @@
     "Exclude": [
         "gen_.*.go",
         "generated.pb.go",
+        "base.pb.go",
         "parameter .* always receives.*(unparam)"
     ],
     "Skip": [

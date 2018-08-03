@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 )
 
 var db *Service
@@ -34,10 +35,10 @@ func TestMain(m *testing.M) {
 
 		var dbDSNFormat string
 		switch driver {
-		case DriverPostgreSQL:
-			dbDSNFormat = dbDSNFormatPostgreSQL
-		case DriverMySQL:
-			dbDSNFormat = dbDSNFormatMySQL
+		case basedb.DriverPostgreSQL:
+			dbDSNFormat = basedb.DSNFormatPostgreSQL
+		case basedb.DriverMySQL:
+			dbDSNFormat = basedb.DSNFormatMySQL
 		}
 		dsn := fmt.Sprintf(
 			dbDSNFormat,
@@ -47,14 +48,13 @@ func TestMain(m *testing.M) {
 			config["name"].(string),
 		)
 
-		testDB, err := makeConnection(driver, dsn)
+		testDB, err := basedb.MakeConnection(driver, dsn)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer closeDB(testDB)
 		db = &Service{
-			db:      testDB,
-			Dialect: NewDialect(config["dialect"].(string)),
+			BaseDB: basedb.NewBaseDB(testDB, config["dialect"].(string)),
 		}
 		db.initQueryBuilders()
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/gogo/protobuf/proto"
 	"github.com/imdario/mergo"
 )
@@ -14,7 +14,7 @@ import (
 // Codec can encode objects and update encoded data with new data object.
 type Codec interface {
 	Encode(obj interface{}) ([]byte, error)
-	Update(data []byte, obj db.Object) ([]byte, error)
+	Update(data []byte, obj basedb.Object) ([]byte, error)
 	Key() string
 }
 
@@ -27,7 +27,7 @@ func (j *JSONCodec) Encode(obj interface{}) ([]byte, error) {
 }
 
 // Update updates JSON-encoded data with obj field values and returns serialized output.
-func (j *JSONCodec) Update(data []byte, obj db.Object) ([]byte, error) {
+func (j *JSONCodec) Update(data []byte, obj basedb.Object) ([]byte, error) {
 	if obj == nil {
 		return nil, errors.New("got nil db.Object")
 	}
