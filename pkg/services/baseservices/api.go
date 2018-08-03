@@ -1,10 +1,10 @@
-package services
+package baseservices
 
 import (
 	"strconv"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/labstack/echo"
 )
 
@@ -57,7 +57,7 @@ func GetListSpec(c echo.Context) *ListSpec {
 	shared := parseBool(c.QueryParam(SharedKey))
 	excludeHrefs := parseBool(c.QueryParam(ExcludeHRefsKey))
 	parentType := c.QueryParam(ParentTypeKey)
-	parentFQName := models.ParseFQName(c.QueryParam(ParentFQNameKey))
+	parentFQName := basemodels.ParseFQName(c.QueryParam(ParentFQNameKey))
 	parentUUIDs := parseStringList(c.QueryParam(ParentUUIDsKey))
 	backrefUUIDs := parseStringList(c.QueryParam(BackrefUUIDsKey))
 	objectUUIDs := parseStringList(c.QueryParam(ObjectUUIDsKey))

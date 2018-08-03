@@ -3,41 +3,26 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"time"
 
 	"github.com/ExpansiveWorlds/instrumentedsql"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/go-sql-driver/mysql"
 	"github.com/gogo/protobuf/proto"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
-// Database drivers
-const (
-	DriverMySQL      = "mysql"
-	DriverPostgreSQL = "postgres"
-)
-
-const (
-	dbDSNFormatMySQL      = "%s:%s@tcp(%s:3306)/%s"
-	dbDSNFormatPostgreSQL = "sslmode=disable user=%s password=%s host=%s dbname=%s"
-)
-
-//Service struct
+//Service for DB.
 type Service struct {
 	services.BaseService
-	db            *sql.DB
-	Dialect       Dialect
-	queryBuilders map[string]*QueryBuilder
+	basedb.BaseDB
 }
 
 //NewServiceFromConfig makes db service from viper config.
 func NewServiceFromConfig() (*Service, error) {
-	sqlDB, err := ConnectDB()
+	sqlDB, err := basedb.ConnectDB()
 	if err != nil {
 		return nil, errors.Wrap(err, "Init DB failed")
 	}
@@ -48,37 +33,10 @@ func NewServiceFromConfig() (*Service, error) {
 func NewService(db *sql.DB, dialect string) *Service {
 	dbService := &Service{
 		BaseService: services.BaseService{},
-		db:          db,
-		Dialect:     NewDialect(dialect),
+		BaseDB:      basedb.NewBaseDB(db, dialect),
 	}
 	dbService.initQueryBuilders()
 	return dbService
-}
-
-//DB gets db object.
-func (db *Service) DB() *sql.DB {
-	return db.db
-}
-
-//Close closes db.
-func (db *Service) Close() error {
-	return db.db.Close()
-}
-
-//SetDB sets db object.
-func (db *Service) SetDB(sqlDB *sql.DB) {
-	db.db = sqlDB
-}
-
-// Object is generic database model instance.
-type Object interface {
-	proto.Message
-	ToMap() map[string]interface{}
-}
-
-// ObjectWriter processes rows
-type ObjectWriter interface {
-	WriteObject(schemaID, objUUID string, obj Object) error
 }
 
 // Dump selects all data from every table and writes each row to ObjectWriter.
@@ -89,7 +47,7 @@ type ObjectWriter interface {
 //
 // An example application of that function is loading initial database snapshot
 // in Watcher.
-func (db *Service) Dump(ctx context.Context, ow ObjectWriter) error {
+func (db *Service) Dump(ctx context.Context, ow basedb.ObjectWriter) error {
 	return db.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {

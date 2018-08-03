@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 )
 
 var db *Service
@@ -53,8 +54,7 @@ func TestMain(m *testing.M) {
 		}
 		defer closeDB(testDB)
 		db = &Service{
-			db:      testDB,
-			Dialect: NewDialect(config["dialect"].(string)),
+			BaseDB: basedb.NewBaseDB(testDB, config["dialect"].(string)),
 		}
 		db.initQueryBuilders()
 

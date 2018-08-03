@@ -3,6 +3,7 @@ package models
 import (
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -70,7 +71,7 @@ func TestMakeNeutronCompatible(t *testing.T) {
 			expected: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: PermsRWX,
+					GlobalAccess: basemodels.PermsRWX,
 				},
 			},
 		},
@@ -79,13 +80,13 @@ func TestMakeNeutronCompatible(t *testing.T) {
 			virtualNetwork: &VirtualNetwork{
 				IsShared: false,
 				Perms2: &PermType2{
-					GlobalAccess: PermsRWX,
+					GlobalAccess: basemodels.PermsRWX,
 				},
 			},
 			expected: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: PermsRWX,
+					GlobalAccess: basemodels.PermsRWX,
 				},
 			},
 		},
@@ -94,13 +95,13 @@ func TestMakeNeutronCompatible(t *testing.T) {
 			virtualNetwork: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: PermsRWX,
+					GlobalAccess: basemodels.PermsRWX,
 				},
 			},
 			expected: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: PermsRWX,
+					GlobalAccess: basemodels.PermsRWX,
 				},
 			},
 		},
@@ -109,28 +110,28 @@ func TestMakeNeutronCompatible(t *testing.T) {
 			virtualNetwork: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: PermsW,
+					GlobalAccess: basemodels.PermsW,
 				},
 			},
 			expected: &VirtualNetwork{
 				IsShared: true,
 				Perms2: &PermType2{
-					GlobalAccess: PermsRWX,
+					GlobalAccess: basemodels.PermsRWX,
 				},
 			},
 		},
 		{
-			name: "check for PermsW global access ",
+			name: "check for basemodels.PermsW global access ",
 			virtualNetwork: &VirtualNetwork{
 				IsShared: false,
 				Perms2: &PermType2{
-					GlobalAccess: PermsW,
+					GlobalAccess: basemodels.PermsW,
 				},
 			},
 			expected: &VirtualNetwork{
 				IsShared: false,
 				Perms2: &PermType2{
-					GlobalAccess: PermsW,
+					GlobalAccess: basemodels.PermsW,
 				},
 			},
 		},

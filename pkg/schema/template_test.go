@@ -9,11 +9,11 @@ import (
 )
 
 func TestTemplate(t *testing.T) {
-	api, err := MakeAPI("test_data/schema")
+	api, err := MakeAPI([]string{"test_data/schema"})
 	assert.Nil(t, err, "no error expected")
 	templateConf, err := LoadTemplates("test_data/templates/template_config.yaml")
 	assert.Nil(t, err, "no error expected")
-	err = ApplyTemplates(api, filepath.Dir("test_data/templates"), templateConf)
+	err = ApplyTemplates(api, filepath.Dir("test_data/templates"), templateConf, &TemplateOption{})
 	assert.Nil(t, err, "no error expected")
 	var schemas []string
 	err = common.LoadFile("test_output/all.yml", &schemas)

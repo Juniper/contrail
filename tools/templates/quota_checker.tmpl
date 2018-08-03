@@ -9,8 +9,12 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/models"
+	"{{ option.PackagePath }}/pkg/models"
 )
+
+//preventing import error
+var _ = log.Debug
+var _ = common.ErrorNotFound
 
 type QuotaCheckerService struct {
 	BaseService

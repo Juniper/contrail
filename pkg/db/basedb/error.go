@@ -1,4 +1,4 @@
-package db
+package basedb
 
 import (
 	"database/sql"
@@ -17,7 +17,8 @@ const (
 	pgForeignKeyViolation = "foreign_key_violation"
 )
 
-func handleError(err error) error {
+//FormatDBError converts DB specific error.
+func FormatDBError(err error) error {
 	if err == nil {
 		return nil
 	}

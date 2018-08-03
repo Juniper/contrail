@@ -12,6 +12,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/Juniper/contrail/pkg/types/ipam/mock"
@@ -487,7 +488,7 @@ func TestUpdateNetworkIpam(t *testing.T) {
 			}
 			if tt.newNetworkIpamParams != nil {
 				newNetworkIpam = createTestNetworkIpam(tt.newNetworkIpamParams)
-				fMask = services.MapToFieldMask(newNetworkIpam.ToMap())
+				fMask = baseservices.MapToFieldMask(newNetworkIpam.ToMap())
 			}
 
 			getNetworkIpamResponse := &services.GetNetworkIpamResponse{NetworkIpam: oldNetworkIpam}

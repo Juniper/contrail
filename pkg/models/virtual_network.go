@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 // Virtual network forwarding modes.
@@ -19,11 +20,11 @@ const (
 //MakeNeutronCompatible makes this resource data neutron compatible.
 func (m *VirtualNetwork) MakeNeutronCompatible() {
 	//  neutorn <-> vnc sharing
-	if m.Perms2.GlobalAccess == PermsRWX {
+	if m.Perms2.GlobalAccess == basemodels.PermsRWX {
 		m.IsShared = true
 	}
 	if m.IsShared {
-		m.Perms2.GlobalAccess = PermsRWX
+		m.Perms2.GlobalAccess = basemodels.PermsRWX
 	}
 }
 
