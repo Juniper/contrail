@@ -227,6 +227,8 @@ schema:
       - openstack
       - kubernetes
       - vcenter
+      - openshift
+      - helm
       permission:
       - create
       - update
