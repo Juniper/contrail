@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/jackc/pgx"
 	"github.com/sirupsen/logrus"
@@ -26,7 +26,7 @@ type pgxReplicationConn interface {
 type dbService interface {
 	DB() *sql.DB
 	DoInTransaction(ctx context.Context, do func(context.Context) error) error
-	Dump(context.Context, db.ObjectWriter) error
+	Dump(context.Context, basedb.ObjectWriter) error
 }
 
 type postgresReplicationConnection struct {
@@ -95,7 +95,7 @@ func (c *postgresReplicationConnection) DoInTransactionSnapshot(
 	return c.db.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			tx := db.GetTransaction(ctx)
+			tx := basedb.GetTransaction(ctx)
 			_, err := tx.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
 			if err != nil {
 				return err

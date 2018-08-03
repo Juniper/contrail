@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -43,8 +43,8 @@ func TestCreateCoreResources(t *testing.T) {
 	tests := []struct {
 		dbDriver string
 	}{
-		{dbDriver: db.DriverMySQL},
-		{dbDriver: db.DriverPostgreSQL},
+		{dbDriver: basedb.DriverMySQL},
+		{dbDriver: basedb.DriverPostgreSQL},
 	}
 
 	for _, tt := range tests {

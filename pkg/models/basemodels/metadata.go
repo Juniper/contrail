@@ -1,4 +1,4 @@
-package models
+package basemodels
 
 // MetaData represents resource meta data.
 type MetaData struct {

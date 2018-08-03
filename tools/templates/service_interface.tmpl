@@ -6,8 +6,12 @@ import (
     "github.com/gogo/protobuf/types"
 
     "github.com/Juniper/contrail/pkg/common"
-    "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/services/baseservices"
+    "{{ option.PackagePath }}/pkg/models"
 )
+
+//This is needed to prevent an import error.
+var _ = types.AnyMessageName
 
 type Service interface {
     Next() Service
@@ -39,6 +43,9 @@ type ReadService interface{
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+type {{ schema.JSONSchema.GoName }} = models.{{ schema.JSONSchema.GoName }}
+
 func (service *BaseService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
     if service.next == nil {
         return &Create{{ schema.JSONSchema.GoName }}Response{
@@ -236,7 +243,7 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
             model := request.{{ schema.JSONSchema.GoName }}
             response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
                 {{ schema.JSONSchema.GoName }}: model,
-                FieldMask: MapToFieldMask(model.ToMap()),
+                FieldMask: baseservices.MapToFieldMask(model.ToMap()),
             })
             if err != nil {
                 return nil, err
@@ -324,7 +331,7 @@ func Dump(ctx context.Context, service Service) (*EventList, error) {
     {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     list{{ schema.JSONSchema.GoName }}, err := service.List{{ schema.JSONSchema.GoName }}(ctx,
         &List{{ schema.JSONSchema.GoName }}Request{
-           &ListSpec{
+           &baseservices.ListSpec{
                Detail: true,
            },
         },

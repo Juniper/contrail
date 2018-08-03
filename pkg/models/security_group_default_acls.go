@@ -3,6 +3,7 @@ package models
 import (
 	"strconv"
 
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/sirupsen/logrus"
 )
 
@@ -73,7 +74,7 @@ func (m *SecurityGroup) securityGroupNameToID(name string) string {
 	switch {
 	case name == "local" || name == "":
 		return ""
-	case FQNameToString(m.GetFQName()) == name:
+	case basemodels.FQNameToString(m.GetFQName()) == name:
 		return strconv.FormatInt(m.GetSecurityGroupID(), 10)
 	default:
 		// TODO: Handle name == "any".
