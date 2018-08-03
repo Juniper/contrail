@@ -99,7 +99,7 @@ func TestFormatValidation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fv, err := tv.getFormatValidator(tt.format)
+			fv, err := tv.GetFormatValidator(tt.format)
 			assert.NoError(t, err)
 			err = fv(tt.testString)
 			if tt.fails {

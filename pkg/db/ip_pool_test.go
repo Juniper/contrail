@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +35,7 @@ func TestStringIPv6(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		assert.Equal(t, StringIPv6(tt.ip), tt.output)
+		assert.Equal(t, basedb.StringIPv6(tt.ip), tt.output)
 	}
 }
 
@@ -611,7 +612,7 @@ func TestSetIp(t *testing.T) {
 }
 
 func clearIPAddressPool(ctx context.Context) error {
-	_, err := GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
+	_, err := basedb.GetTransaction(ctx).ExecContext(ctx, "delete from ipaddress_pool")
 	return err
 }
 

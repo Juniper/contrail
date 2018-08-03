@@ -15,6 +15,8 @@
 .LSOverride
 
 # Project specific paths
+<<<<<<< HEAD
+base.pb.go
 dist/
 profile.cov
 tmp/
@@ -33,9 +35,17 @@ public/
 proto/
 tools/init_mysql.sql
 tools/init_psql.sql
+<<<<<<< HEAD
 tools/cleanup.sql
 docker/contrail_go/etc/*
 docker/contrail_go/contrail
 docker/contrail_go/contrailcli
 
 pkg/types/mocks
+=======
+tools/cleanup_mysql.sql
+tools/cleanup_psql.sql
+
+extension/pkg/**/gen_*
+extension/pkg/**/generated.pb.go
+>>>>>>> d997463... Support plugin architecture

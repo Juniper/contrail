@@ -6,6 +6,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +14,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 	tests := []struct {
 		name     string
 		model    models.AccessControlList
-		metadata MetaData
+		metadata basemodels.MetaData
 		want     models.AccessControlList
 		fails    bool
 	}{
@@ -30,7 +31,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 			},
-			metadata: MetaData{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
+			metadata: basemodels.MetaData{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
 			want: models.AccessControlList{
 				UUID:       "foo-uuid",
 				ParentUUID: "parent-uuid",
@@ -61,7 +62,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				Name:       "some-name",
 				FQName: []string{
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
-				Perms2: &models.PermType2{Owner: "default-project"},
+				Perms2: &models.PermType2{Owner: "default-project", OwnerAccess: basemodels.PermsRWX},
 				// Default filled fields below
 				DisplayName: "some-name",
 			},
@@ -92,10 +93,10 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 	}
 }
 
-type mockMetadataGetter MetaData
+type mockMetadataGetter basemodels.MetaData
 
-func (m *mockMetadataGetter) GetMetaData(_ context.Context, _ string, _ []string) (*MetaData, error) {
-	return (*MetaData)(m), nil
+func (m *mockMetadataGetter) GetMetaData(_ context.Context, _ string, _ []string) (*basemodels.MetaData, error) {
+	return (*basemodels.MetaData)(m), nil
 }
 
 type serviceSpy struct {
