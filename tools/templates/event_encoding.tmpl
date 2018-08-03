@@ -7,7 +7,8 @@ import (
     "github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"{{ option.PackagePath }}/pkg/models"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -70,7 +71,7 @@ func NewEvent(option *EventOption) *Event {
                     e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
                         Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
                             {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(data),
-                            FieldMask: MapToFieldMask(data),
+                            FieldMask: baseservices.MapToFieldMask(data),
                         }}
                 case OperationDelete:
                     e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
@@ -143,7 +144,7 @@ func (e *Event) UnmarshalJSON(data []byte) error {
         return nil
     }
     var kind string
-    err = json.Unmarshal(t, &kind) 
+    err = json.Unmarshal(t, &kind)
     if err != nil {
         return err
     }
@@ -181,7 +182,7 @@ func (e *Event) UnmarshalJSON(data []byte) error {
                     e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
                         Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
                             {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(m),
-                            FieldMask: MapToFieldMask(m),
+                            FieldMask: baseservices.MapToFieldMask(m),
                         },
                     }
                 case OperationDelete:
@@ -220,7 +221,7 @@ func (e *Event) ToMap() map[string]interface{} {
             m["data"] = map[string]interface{}{
                 "uuid": t.Delete{{ schema.JSONSchema.GoName }}Request.ID,
             }
-        {% endif%}{% endfor %}   
+        {% endif%}{% endfor %}
     }
     return m
 }
@@ -267,7 +268,7 @@ func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
                     e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
                         Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
                             {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(data),
-                            FieldMask: MapToFieldMask(data.(map[string]interface{})),
+                            FieldMask: baseservices.MapToFieldMask(data.(map[string]interface{})),
                         },
                     }
                 case OperationDelete:

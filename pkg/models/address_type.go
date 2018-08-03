@@ -19,4 +19,3 @@ func AllIPv6Addresses() *AddressType {
 		},
 	}
 }
-

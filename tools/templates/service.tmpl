@@ -11,8 +11,12 @@ import (
     log "github.com/sirupsen/logrus"
 
     "github.com/Juniper/contrail/pkg/common"
-    "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/services/baseservices"
+    "github.com/Juniper/contrail/pkg/models/basemodels"
+    "{{ option.PackagePath }}/pkg/models"
 )
+
+var _ = fmt.Println
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
@@ -115,7 +119,9 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     log.Debugf("ParentUUID: %v", model.ParentUUID)
 
-    model.Perms2 = &models.PermType2{}
+    model.Perms2 = &models.PermType2{
+        OwnerAccess: basemodels.PermsRWX,
+    }
     model.Perms2.Owner = auth.ProjectID()
 
     if model.IDPerms == nil {
@@ -155,7 +161,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     model.UUID = id
     response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
         {{ schema.JSONSchema.GoName }}: model,
-        FieldMask: MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
+        FieldMask: baseservices.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
     })
     if err != nil {
         return common.ToHTTPError(err)
@@ -210,7 +216,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 // nolint
 func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
     var err error
-    spec := GetListSpec(c)
+    spec := baseservices.GetListSpec(c)
     request := &List{{ schema.JSONSchema.GoName }}Request{
         Spec: spec,
     }
