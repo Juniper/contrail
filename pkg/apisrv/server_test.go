@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/stretchr/testify/assert"
 	"github.com/twinj/uuid"
 	"google.golang.org/grpc"
@@ -117,7 +118,7 @@ func TestGRPC(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	response, err := c.ListProject(ctx, &services.ListProjectRequest{
-		Spec: &services.ListSpec{
+		Spec: &baseservices.ListSpec{
 			Limit: 1,
 		},
 	})

@@ -1,56 +1,31 @@
 package models
 
 import (
-	fmt "fmt"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"net"
 
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	errors "github.com/pkg/errors"
 )
 
 //NewTypeValidatorWithFormat creates new TypeValidator with format validators
 func NewTypeValidatorWithFormat() (*TypeValidator, error) {
-	tv := &TypeValidator{}
-	tv.SchemaValidator = SchemaValidator{}
-
-	tv.SchemaValidator.validators = map[string]func(string) error{}
-
-	// Initialize TypeValidator
+	base, err := basemodels.NewBaseValidatorWithFormat()
+	if err != nil {
+		return nil, err
+	}
+	tv := &TypeValidator{
+		SchemaValidator: SchemaValidator{
+			BaseValidator: base,
+		},
+	}
 
 	// Create regex used while validating CommunityAttributes
 	tv.communityAttributeRegexStr = "^[0-9]+:[0-9]+$"
 	r, err := regexp.Compile(tv.communityAttributeRegexStr)
-	if err != nil {
-		return nil, err
-	}
-	tv.communityAttributeRegex = r
-
-	// Register all format validators
-	err = tv.addHostnameFormatValidator()
-	if err != nil {
-		return nil, err
-	}
-
-	err = tv.addIPv4FormatValidator()
-	if err != nil {
-		return nil, err
-	}
-
-	err = tv.addMacAddressFormatValidator()
-	if err != nil {
-		return nil, err
-	}
-
-	err = tv.addDateTimeFormatValidator()
-	if err != nil {
-		return nil, err
-	}
-
-	err = tv.addServiceInterfaceTypeFormatValidator()
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +175,7 @@ func (tv *TypeValidator) addServiceInterfaceTypeFormatValidator() error {
 
 //SchemaValidator implementing basic checks based on information in schema
 type SchemaValidator struct {
-	validators map[string]func(string) error
+	*basemodels.BaseValidator
 }
 
 //TypeValidator embedding SchemaValidator validator. It enables defining custom validation for each type
@@ -270,21 +245,6 @@ func (tv *TypeValidator) ValidateCommunityAttributes(obj *CommunityAttributes) e
 	}
 
 	return nil
-}
-
-func (sv *SchemaValidator) addFormatValidator(format string, validator func(string) error) {
-	_, present := sv.validators[format]
-	if !present {
-		sv.validators[format] = validator
-	}
-}
-
-func (sv *SchemaValidator) getFormatValidator(format string) (func(string) error, error) {
-	validator, present := sv.validators[format]
-	if !present {
-		return nil, fmt.Errorf("%s format validator not found", format)
-	}
-	return validator, nil
 }
 
 // Returns array of map keys

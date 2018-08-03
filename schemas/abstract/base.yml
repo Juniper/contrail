@@ -40,7 +40,7 @@
         operations: "R"
         presence: "system-only"
         description: "System maintained identity, time  and permissions data."
-        $ref: "types.json#/definitions/IdPermsType"
+        $ref: "base_types.json#/definitions/IdPermsType"
       display_name:
         operations: "CRUD"
         type: "string"
@@ -51,12 +51,12 @@
         collectionType: "map"
         presence: "optional"
         description: "Dictionary of arbitrary (key, value) on a resource."
-        $ref: "types.json#/definitions/KeyValuePairs"
+        $ref: "base_types.json#/definitions/KeyValuePairs"
       perms2:
         operations: "R"
         presence: "system-only"
         description: "Permissions data for role based access."
-        $ref: "types.json#/definitions/PermType2"
+        $ref: "base_types.json#/definitions/PermType2"
       configuration_version:
         operations: "CRUD"
         presence: "optional"
