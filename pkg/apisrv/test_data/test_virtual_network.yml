@@ -179,7 +179,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project
   expect:
@@ -190,7 +190,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *demo_project
   expect:
@@ -200,7 +200,7 @@ workflow:
     path: /network-policys
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-policy: *network_policy1
   expect:
@@ -219,7 +219,7 @@ workflow:
     path: /network-policys
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-policy: *network_policy2
   expect:
@@ -235,7 +235,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_blue
   expect:
@@ -245,7 +245,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *vn_blue
   expect:
@@ -255,7 +255,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         network_ipam_mgmt:
@@ -280,7 +280,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         network_ipam_mgmt:
@@ -305,7 +305,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network:
         fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
@@ -394,7 +394,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_red
   expect:
@@ -404,7 +404,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *vn_red
   expect:
@@ -414,7 +414,7 @@ workflow:
     path: /routing-instances
     method: POST
     expected:
-    - 201
+    - 200
     data:
       routing-instance: *vn_blue_ri1
   expect:
@@ -600,7 +600,7 @@ workflow:
     path: /instance-ips
     method: POST
     expected:
-    - 201
+    - 200
     data:
       instance-ip:
         uuid: "test_instance_ip"

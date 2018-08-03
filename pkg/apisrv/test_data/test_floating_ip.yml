@@ -84,7 +84,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project_floating_ip
   expect:
@@ -95,7 +95,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_blue
   expect:
@@ -106,7 +106,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *vn_floating_blue
   expect:
@@ -117,7 +117,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         network_ipam_mgmt:
@@ -146,7 +146,7 @@ workflow:
     path: /floating-ip-pools
     method: POST
     expected:
-    - 201
+    - 200
     data:
       floating-ip-pool: *floating_ip_pool
   expect: null
@@ -156,7 +156,7 @@ workflow:
     path: /floating-ip-pools
     method: POST
     expected:
-    - 201
+    - 200
     data:
       floating-ip-pool: *floating_ip_pool_without_subnets
   expect: null
@@ -166,7 +166,7 @@ workflow:
     path: /floating-ips
     method: POST
     expected:
-    - 201
+    - 200
     data:
       floating-ip:
         fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool", "test_floating_ip"]
@@ -210,7 +210,7 @@ workflow:
     path: /floating-ips
     method: POST
     expected:
-    - 201
+    - 200
     data:
       floating-ip:
         fq_name: ["default", "admin", "vn_floating_blue", "test_floating_ip_pool", "test_floating_ip_without_subnets"]

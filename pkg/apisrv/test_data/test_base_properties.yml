@@ -44,7 +44,7 @@ workflow:
   request:
     path: /fabrics
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       fabric:
         <<: *fabric_minimal_base_props
@@ -68,7 +68,7 @@ workflow:
   request:
     path: /fabrics
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       fabric:
         <<: *fabric_minimal_base_props
@@ -94,7 +94,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project
   expect:
@@ -105,7 +105,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         <<: *network_ipam_blue
@@ -135,7 +135,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         <<: *network_ipam_blue

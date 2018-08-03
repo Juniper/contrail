@@ -99,7 +99,7 @@ workflow:
     path: /sync
     method: POST
     expected:
-    - 201
+    - 200
     data:
       resources:
       - kind: project
@@ -151,7 +151,7 @@ workflow:
     path: /sync
     method: POST
     expected:
-    - 201
+    - 200
     data:
       resources:
       # TODO: Uncoment it once sync create is fixed (updating fields with zero-value)
@@ -196,7 +196,7 @@ workflow:
     path: /sync
     method: POST
     expected:
-    - 201
+    - 200
     data:
       resources:
       - kind: virtual_network
