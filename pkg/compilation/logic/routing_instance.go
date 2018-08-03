@@ -2,13 +2,19 @@ package logic
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-// CreateRoutingInstance creates default Route Target.
+// TODO: get_autonomous_system method and int pool allocator endpoint
+const (
+	autonomousSystem        = 64512
+	genFromIntPoolAllocator = 8000002
+)
+
+// CreateRoutingInstance may create default Route Target.
 func (s *Service) CreateRoutingInstance(
 	ctx context.Context, request *services.CreateRoutingInstanceRequest,
 ) (*services.CreateRoutingInstanceResponse, error) {
@@ -28,17 +34,13 @@ func (s *Service) CreateRoutingInstance(
 		// and creating non default route targets
 	}
 
-	return &services.CreateRoutingInstanceResponse{RoutingInstance: request.RoutingInstance}, nil
+	return &services.CreateRoutingInstanceResponse{RoutingInstance: ri}, nil
 }
 
 func (s *Service) createDefaultRouteTarget(
 	ctx context.Context, request *services.CreateRoutingInstanceRequest,
 ) error {
-	// TODO: get_autonomous_system method and int pool allocator endpoint
-	autonomousSystem := 64512
-	genFromIntPoolAllocator := 8000002
-
-	rtKey := "target:" + strconv.Itoa(autonomousSystem) + ":" + strconv.Itoa(genFromIntPoolAllocator)
+	rtKey := fmt.Sprintf("target:%v:%v", autonomousSystem, genFromIntPoolAllocator)
 
 	rtResponse, err := s.WriteService.CreateRouteTarget(ctx, &services.CreateRouteTargetRequest{
 		RouteTarget: &models.RouteTarget{
