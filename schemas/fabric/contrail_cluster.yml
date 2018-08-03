@@ -222,11 +222,12 @@ schema:
       $ref: "types.json#/definitions/KeyValuePairs"
     orchestrator:
       default: ""
-      description: Orchestrator to use with contrrail
+      description: Orchestrator to use with contrail
       enum:
       - openstack
       - kubernetes
       - vcenter
+      - openshift
       permission:
       - create
       - update
