@@ -20,9 +20,9 @@ type metadataGetter interface {
 // nolint
 type ContrailService struct {
 	BaseService
-
-	MetadataGetter metadataGetter
-	TypeValidator  *models.TypeValidator
+	InTransactionDoer InTransactionDoer
+	MetadataGetter    metadataGetter
+	TypeValidator     *models.TypeValidator
 }
 
 // RESTSync handles Sync API request.
@@ -33,8 +33,12 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 	}
 
 	// TODO: Call events.Sort()
-
-	responses, err := events.Process(c.Request().Context(), service)
+	ctx := c.Request().Context()
+	var responses *EventList
+	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) (err error) {
+		responses, err = events.Process(ctx, service)
+		return err
+	})
 	if err != nil {
 		return common.ToHTTPError(err)
 	}

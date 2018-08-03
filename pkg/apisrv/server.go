@@ -57,9 +57,10 @@ func (s *Server) SetupService() (services.Service, error) {
 
 	// ContrailService
 	service := &services.ContrailService{
-		BaseService:    services.BaseService{},
-		TypeValidator:  tv,
-		MetadataGetter: s.dbService,
+		BaseService:       services.BaseService{},
+		InTransactionDoer: s.dbService,
+		TypeValidator:     tv,
+		MetadataGetter:    s.dbService,
 	}
 
 	service.RegisterRESTAPI(s.Echo)
