@@ -6,6 +6,7 @@ import (
 	"database/sql"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/pkg/errors"
 )
@@ -20,21 +21,21 @@ func (db *Service) CreateIntPool(ctx context.Context, target *ipam.IntPool) erro
 func (db *Service) GetIntPools(ctx context.Context, target *ipam.IntPool) ([]*ipam.IntPool, error) {
 	var query bytes.Buffer
 	d := db.Dialect
-	tx := GetTransaction(ctx)
-	query.WriteString("select " + db.Dialect.quoteSep("start", "end") + "from int_pool where ")
-	query.WriteString(db.Dialect.quote("key") + " = " + db.Dialect.placeholder(1))
+	tx := basedb.GetTransaction(ctx)
+	query.WriteString("select " + db.Dialect.QuoteSep("start", "end") + "from int_pool where ")
+	query.WriteString(db.Dialect.Quote("key") + " = " + db.Dialect.Placeholder(1))
 	var rows *sql.Rows
 	var err error
 	if target.End == 0 {
 		query.WriteString(" order by start for update ")
 		rows, err = tx.QueryContext(ctx, query.String(), target.Key)
 	} else {
-		query.WriteString(" and " + d.placeholder(2) + "<" + d.quote("end") + " and " +
-			d.quote("start") + " < " + d.placeholder(3) + " order by start for update")
+		query.WriteString(" and " + d.Placeholder(2) + "<" + d.Quote("end") + " and " +
+			d.Quote("start") + " < " + d.Placeholder(3) + " order by start for update")
 		rows, err = tx.QueryContext(ctx, query.String(), target.Key, target.Start, target.End)
 	}
 	pools := []*ipam.IntPool{}
-	err = handleError(err)
+	err = basedb.HandleError(err)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get int pool")
 	}
@@ -43,7 +44,7 @@ func (db *Service) GetIntPools(ctx context.Context, target *ipam.IntPool) ([]*ip
 			Key: target.Key,
 		}
 		err := rows.Scan(&pool.Start, &pool.End)
-		err = handleError(err)
+		err = basedb.HandleError(err)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get int pool")
 		}
@@ -54,68 +55,68 @@ func (db *Service) GetIntPools(ctx context.Context, target *ipam.IntPool) ([]*ip
 
 //DeleteIntPools deletes int pool overlap with target range. delete all if target.End is zero.
 func (db *Service) DeleteIntPools(ctx context.Context, target *ipam.IntPool) error {
-	tx := GetTransaction(ctx)
+	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	var err error
 	if target.End == 0 {
 		_, err = tx.ExecContext(ctx, "delete from int_pool where "+
-			db.Dialect.quote("key")+" = "+db.Dialect.placeholder(1)+";", target.Key)
+			db.Dialect.Quote("key")+" = "+db.Dialect.Placeholder(1)+";", target.Key)
 	} else {
 		_, err = tx.ExecContext(ctx, "delete from int_pool where "+
-			db.Dialect.quote("key")+" = "+db.Dialect.placeholder(1)+" and "+
-			d.placeholder(2)+"<"+d.quote("end")+" and "+
-			d.quote("start")+" < "+d.placeholder(3),
+			db.Dialect.Quote("key")+" = "+db.Dialect.Placeholder(1)+" and "+
+			d.Placeholder(2)+"<"+d.Quote("end")+" and "+
+			d.Quote("start")+" < "+d.Placeholder(3),
 			target.Key,
 			target.Start,
 			target.End,
 		)
 	}
-	return errors.Wrap(handleError(err), "failed to delete int pools")
+	return errors.Wrap(basedb.HandleError(err), "failed to delete int pools")
 }
 
 //AllocateInt allocates integer.
 func (db *Service) AllocateInt(ctx context.Context, key string) (int64, error) {
-	tx := GetTransaction(ctx)
+	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	query := "select " +
-		d.quoteSep("start", "end") +
+		d.QuoteSep("start", "end") +
 		" from int_pool where " +
-		d.quote("key") + " = " + d.placeholder(1) +
-		" order by " + d.quote("start") +
+		d.Quote("key") + " = " + d.Placeholder(1) +
+		" order by " + d.Quote("start") +
 		" limit 1 for update"
 	row := tx.QueryRowContext(ctx, query, key)
 	var start, end int64
 	err := row.Scan(&start, &end)
 	if err != nil {
-		return 0, handleError(err)
+		return 0, basedb.HandleError(err)
 	}
 	updatedStart := start + 1
 	if updatedStart < end {
 		_, err = tx.ExecContext(ctx,
-			"update int_pool set "+d.quote("start")+" = "+d.placeholder(1)+
-				" where "+d.quote("key")+" = "+d.placeholder(2)+" and "+
-				d.quote("start")+" = "+d.placeholder(3),
+			"update int_pool set "+d.Quote("start")+" = "+d.Placeholder(1)+
+				" where "+d.Quote("key")+" = "+d.Placeholder(2)+" and "+
+				d.Quote("start")+" = "+d.Placeholder(3),
 			updatedStart,
 			key,
 			start,
 		)
 	} else {
 		_, err = tx.ExecContext(ctx,
-			"delete from int_pool where "+d.quote("key")+" = "+d.placeholder(1)+" and "+
-				d.quote("start")+" = "+d.placeholder(2),
+			"delete from int_pool where "+d.Quote("key")+" = "+d.Placeholder(1)+" and "+
+				d.Quote("start")+" = "+d.Placeholder(2),
 			key,
 			start,
 		)
 	}
 	if err != nil {
-		return 0, handleError(err)
+		return 0, basedb.HandleError(err)
 	}
 	return start, nil
 }
 
 //SetInt set a id for allocation pool.
 func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
-	tx := GetTransaction(ctx)
+	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	rangePool := &ipam.IntPool{
 		Key:   key,
@@ -137,38 +138,38 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 	if pool.Start == id {
 		_, err = tx.ExecContext(
 			ctx,
-			"insert into int_pool ("+d.quoteSep("key", "start", "end")+") values ("+
-				d.values("key", "start", "end")+");",
+			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
+				d.Values("key", "start", "end")+");",
 			key, pool.Start+1, pool.End)
 		if err != nil {
-			return handleError(err)
+			return basedb.HandleError(err)
 		}
 	} else if pool.End-1 == id {
 		_, err = tx.ExecContext(
 			ctx,
-			"insert into int_pool ("+d.quoteSep("key", "start", "end")+") values ("+
-				d.values("key", "start", "end")+");",
+			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
+				d.Values("key", "start", "end")+");",
 			key, pool.Start, pool.End-1)
 		if err != nil {
-			return handleError(err)
+			return basedb.HandleError(err)
 		}
 	} else {
 		// We need divide one pool to two.
 		_, err = tx.ExecContext(
 			ctx,
-			"insert into int_pool ("+d.quoteSep("key", "start", "end")+") values ("+
-				d.values("key", "start", "end")+");",
+			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
+				d.Values("key", "start", "end")+");",
 			key, pool.Start, id)
 		if err != nil {
-			return handleError(err)
+			return basedb.HandleError(err)
 		}
 		_, err = tx.ExecContext(
 			ctx,
-			"insert into int_pool ("+d.quoteSep("key", "start", "end")+") values ("+
-				d.values("key", "start", "end")+");",
+			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
+				d.Values("key", "start", "end")+");",
 			key, id+1, pool.End)
 		if err != nil {
-			return handleError(err)
+			return basedb.HandleError(err)
 		}
 	}
 	return nil
@@ -199,7 +200,7 @@ func intMin(a, b int64) int64 {
 
 //DeallocateIntRange deallocate integer range
 func (db *Service) DeallocateIntRange(ctx context.Context, target *ipam.IntPool) error {
-	tx := GetTransaction(ctx)
+	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	// range for pool we want to merge.
 	// We need enlarge range so that we can merge pools on the next.
@@ -228,25 +229,25 @@ func (db *Service) DeallocateIntRange(ctx context.Context, target *ipam.IntPool)
 	}
 	_, err = tx.ExecContext(
 		ctx,
-		"insert into int_pool ("+d.quoteSep("key", "start", "end")+") values ("+
-			d.values("key", "start", "end")+");",
+		"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
+			d.Values("key", "start", "end")+");",
 		target.Key, start, end)
-	return handleError(err)
+	return basedb.HandleError(err)
 }
 
 //SizeIntPool returns size of a int pool.
 func (db *Service) SizeIntPool(ctx context.Context, key string) (int, error) {
-	tx := GetTransaction(ctx)
+	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	query := "select sum( " +
-		d.quote("end") + " - " + d.quote("start") + " ) as size" +
+		d.Quote("end") + " - " + d.Quote("start") + " ) as size" +
 		" from int_pool where " +
-		d.quote("key") + " = " + d.placeholder(1)
+		d.Quote("key") + " = " + d.Placeholder(1)
 	row := tx.QueryRowContext(ctx, query, key)
 	var size int
 	err := row.Scan(&size)
 	if err != nil {
-		return 0, handleError(err)
+		return 0, basedb.HandleError(err)
 	}
 	return size, nil
 }

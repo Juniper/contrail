@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 )
 
 var db *Service
@@ -28,21 +29,21 @@ func TestMain(m *testing.M) {
 	common.SetLogLevel()
 	for _, iConfig := range viper.GetStringMap("test_database") {
 		config := common.InterfaceToInterfaceMap(iConfig)
-		testDB, cErr := OpenConnection(ConnectionConfig{
-			Driver:   config["type"].(string),
+		driver := config["type"].(string)
+		testDB, err := basedb.OpenConnection(basedb.ConnectionConfig{
+			Driver:   driver,
 			User:     config["user"].(string),
 			Password: config["password"].(string),
 			Host:     config["host"].(string),
 			Name:     config["name"].(string),
 		})
-		if cErr != nil {
-			log.Fatal(cErr)
+		if err != nil {
+			log.Fatal(err)
 		}
 		defer closeDB(testDB)
 
 		db = &Service{
-			db:      testDB,
-			Dialect: NewDialect(config["dialect"].(string)),
+			BaseDB: basedb.NewBaseDB(testDB, config["dialect"].(string)),
 		}
 		db.initQueryBuilders()
 

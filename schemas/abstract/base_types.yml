@@ -1,0 +1,109 @@
+---
+  definitions:
+    IdPermsType:
+      type: "object"
+      properties:
+        enable:
+          type: "boolean"
+          description: "Administratively Enable/Disable this object"
+          presence: "true"
+        description:
+          type: "string"
+          description: "User provided text"
+          presence: "optional"
+        created:
+          presence: "system-only"
+          type: "string"
+          description: "Time when this object was created"
+          format: "date-time"
+        creator:
+          type: "string"
+          description: "Id of tenant who created this object"
+          presence: "system-only"
+        user_visible:
+          type: "boolean"
+          description: "System created internal objects will have this flag set and will not be visible"
+          presence: "system-only"
+        last_modified:
+          presence: "system-only"
+          type: "string"
+          description: "Time when this object was created"
+          format: "date-time"
+        permissions:
+          presence: "optional"
+          description: "No longer used, will be removed"
+          $ref: "base_types.json#/definitions/PermType"
+        uuid:
+          presence: "true"
+          description: "UUID of the object, system automatically allocates one if not provided"
+          $ref: "base_types.json#/definitions/UuidType"
+    PermType2:
+      type: "object"
+      properties:
+        owner:
+          type: "string"
+          description: "Owner tenant of the object"
+          presence: "true"
+        owner_access:
+          presence: "true"
+          description: "Owner permissions of the object"
+          $ref: "base_types.json#/definitions/AccessType"
+        global_access:
+          presence: "optional"
+          description: "Globally(others) shared object and permissions for others of the object"
+          $ref: "base_types.json#/definitions/AccessType"
+        share:
+          items:
+            $ref: "base_types.json#/definitions/ShareType"
+          type: "array"
+          description: "Selectively shared object, List of (tenant, permissions)"
+          presence: "optional"
+    PermType:
+      type: "object"
+      properties:
+        owner:
+          type: "string"
+        owner_access:
+          $ref: "base_types.json#/definitions/AccessType"
+        other_access:
+          $ref: "base_types.json#/definitions/AccessType"
+        group:
+          type: "string"
+        group_access:
+          $ref: "base_types.json#/definitions/AccessType"
+    AccessType:
+      minimum: 0
+      type: "integer"
+      maximum: 7
+    ShareType:
+      type: "object"
+      properties:
+        tenant_access:
+          presence: "true"
+          description: "Allowed permissions in sharing"
+          $ref: "base_types.json#/definitions/AccessType"
+        tenant:
+          type: "string"
+          description: "Name of tenant with whom the object is shared"
+          presence: "true"
+    KeyValuePairs:
+      type: "object"
+      properties:
+        key_value_pair:
+          items:
+            $ref: "base_types.json#/definitions/KeyValuePair"
+          type: "array"
+    KeyValuePair:
+      type: "object"
+      properties:
+        value:
+          type: "string"
+        key:
+          type: "string"
+    UuidType:
+      type: "object"
+      properties:
+        uuid_mslong:
+          type: "integer"
+        uuid_lslong:
+          type: "integer"

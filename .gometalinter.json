@@ -25,6 +25,7 @@
         "vetshadow"
     ],
     "Exclude": [
+        "base.pb.go",
         "gen_.*.go",
         "generated.pb.go",
         "parameter .* always receives.*(unparam)"
