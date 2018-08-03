@@ -2,6 +2,7 @@ package contrailschema
 
 import (
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -10,35 +11,37 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var schemasDir string
-var templateConfPath string
-var schemaOutputPath string
-var openapiOutputPath string
+var option = &schema.TemplateOption{}
 
 func init() {
 	ContrailSchema.AddCommand(generateCmd)
-	generateCmd.Flags().StringVarP(&schemasDir, "schemas", "s", "", "Schema Directory")
-	generateCmd.Flags().StringVarP(&templateConfPath, "templates", "t", "", "Template Configuration")
-	generateCmd.Flags().StringVarP(&schemaOutputPath, "schema-output", "", "", "Schema Output path")
-	generateCmd.Flags().StringVarP(&openapiOutputPath, "openapi-output", "", "", "OpenAPI Output path")
+	generateCmd.Flags().StringVarP(&option.SchemasDir, "schemas", "s", "", "Schema Directory")
+	generateCmd.Flags().StringVarP(&option.TemplateConfPath, "templates", "t", "", "Template Configuration")
+	generateCmd.Flags().StringVarP(&option.PackagePath, "package-path", "p", "github.com/Juniper/contrail", "Package name")
+	generateCmd.Flags().StringVarP(
+		&option.ProtoPackage, "proto-package", "",
+		"github.com.Juniper.contrail", "Protoc package base")
+	generateCmd.Flags().StringVarP(&option.OutputDir, "output-dir", "", "./", "output dir")
+	generateCmd.Flags().StringVarP(&option.SchemaOutputPath, "schema-output", "", "", "Schema Output path")
+	generateCmd.Flags().StringVarP(&option.OpenapiOutputPath, "openapi-output", "", "", "OpenAPI Output path")
 }
 
 func generateCode() {
 	log.Info("Generating source code from schema")
-	api, err := schema.MakeAPI(schemasDir)
+	api, err := schema.MakeAPI(strings.Split(option.SchemasDir, ","))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	templateConf, err := schema.LoadTemplates(templateConfPath)
+	templateConf, err := schema.LoadTemplates(option.TemplateConfPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = schema.ApplyTemplates(api, filepath.Dir(templateConfPath), templateConf); err != nil {
+	if err = schema.ApplyTemplates(api, filepath.Dir(option.TemplateConfPath), templateConf, option); err != nil {
 		log.Fatal(err)
 	}
 
-	if err = common.SaveFile(schemaOutputPath, api); err != nil {
+	if err = common.SaveFile(option.SchemaOutputPath, api); err != nil {
 		log.Fatal(err)
 	}
 
@@ -47,7 +50,7 @@ func generateCode() {
 		log.Fatal(err)
 	}
 
-	if err = common.SaveFile(openapiOutputPath, openapi); err != nil {
+	if err = common.SaveFile(option.OpenapiOutputPath, openapi); err != nil {
 		log.Fatal(err)
 	}
 }

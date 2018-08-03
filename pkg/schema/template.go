@@ -17,6 +17,17 @@ type TemplateConfig struct {
 	OutputPath   string `yaml:"output_path"`
 }
 
+//TemplateOption for template
+type TemplateOption struct {
+	SchemasDir        string
+	TemplateConfPath  string
+	SchemaOutputPath  string
+	OpenapiOutputPath string
+	PackagePath       string
+	ProtoPackage      string
+	OutputDir         string
+}
+
 func ensureDir(path string) error {
 	return os.MkdirAll(filepath.Dir(path), os.ModePerm)
 }
@@ -30,32 +41,41 @@ func (tc *TemplateConfig) load(base string) (*pongo2.Template, error) {
 	return pongo2.FromString(string(templateCode))
 }
 
+func (tc *TemplateConfig) outputPath(goName string, option *TemplateOption) string {
+	path := strings.Replace(tc.OutputPath, "__resource__", common.CamelToSnake(goName), 1)
+	path = strings.Replace(path, "__package__", option.PackagePath, 1)
+	return path
+}
+
 // nolint: gocyclo
-func (tc *TemplateConfig) apply(templateBase string, api *API) error {
+func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateOption) error {
 	tpl, err := tc.load(templateBase)
 	if err != nil {
 		return err
 	}
-	if err = ensureDir(tc.OutputPath); err != nil {
+	if err = ensureDir(tc.outputPath("", option)); err != nil {
 		return err
 	}
 	if tc.TemplateType == "all" {
-		output, err := tpl.Execute(pongo2.Context{"schemas": api.Schemas, "types": api.Types})
+		output, err := tpl.Execute(pongo2.Context{"schemas": api.Schemas, "types": api.Types,
+			"option": option,
+		})
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(tc.OutputPath, []byte(output), 0644)
+		err = ioutil.WriteFile(tc.outputPath("", option), []byte(output), 0644)
 		if err != nil {
 			return err
 		}
 	} else if tc.TemplateType == "type" {
 		for goName, typeJSONSchema := range api.Types {
-			output, err := tpl.Execute(pongo2.Context{"type": typeJSONSchema, "name": goName})
+			output, err := tpl.Execute(pongo2.Context{
+				"type": typeJSONSchema, "name": goName, "option": option})
 			if err != nil {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(tc.OutputPath, "__resource__", common.CamelToSnake(goName), 1),
+				tc.outputPath(goName, option),
 				[]byte(output), 0644)
 			if err != nil {
 				return err
@@ -65,6 +85,7 @@ func (tc *TemplateConfig) apply(templateBase string, api *API) error {
 			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
+
 			output, err := tpl.Execute(pongo2.Context{
 				"type":            schema.JSONSchema,
 				"typename":        schema.TypeName,
@@ -73,12 +94,13 @@ func (tc *TemplateConfig) apply(templateBase string, api *API) error {
 				"back_references": schema.BackReferences,
 				"parents":         schema.Parents,
 				"children":        schema.Children,
+				"option":          option,
 			})
 			if err != nil {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(tc.OutputPath, "__resource__", common.CamelToSnake(schema.JSONSchema.GoName), 1),
+				tc.outputPath(schema.JSONSchema.GoName, option),
 				[]byte(output), 0644)
 			if err != nil {
 				return err
@@ -100,11 +122,11 @@ func (tc *TemplateConfig) apply(templateBase string, api *API) error {
 			}
 			schemas = append(schemas, schema)
 		}
-		output, err := tpl.Execute(pongo2.Context{"schemas": schemas})
+		output, err := tpl.Execute(pongo2.Context{"schemas": schemas, "option": option})
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(tc.OutputPath, []byte(output), 0644)
+		err = ioutil.WriteFile(tc.outputPath("", option), []byte(output), 0644)
 		if err != nil {
 			return err
 		}
@@ -113,15 +135,13 @@ func (tc *TemplateConfig) apply(templateBase string, api *API) error {
 			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
-			output, err := tpl.Execute(pongo2.Context{"schema": schema, "types": api.Types})
+			output, err := tpl.Execute(pongo2.Context{"schema": schema, "types": api.Types, "option": option})
 			if err != nil {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(tc.OutputPath, "__resource__", schema.ID, 1),
-				[]byte(output),
-				0644,
-			)
+				tc.outputPath(schema.ID, option),
+				[]byte(output), 0644)
 			if err != nil {
 				return err
 			}
@@ -138,7 +158,7 @@ func LoadTemplates(path string) ([]*TemplateConfig, error) {
 }
 
 //ApplyTemplates applies templates and generate codes.
-func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig) error {
+func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig, option *TemplateOption) error {
 
 	// Make custom filters available for everyone
 
@@ -148,7 +168,7 @@ func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig) err
 	*/
 	err := pongo2.RegisterFilter("dict_get_JSONSchema_by_string_key",
 		func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
-			m := in.Interface().(map[string]*JSONSchema)
+			m, _ := in.Interface().(map[string]*JSONSchema)
 			return pongo2.AsValue(m[param.String()]), nil
 		})
 	if err != nil {
@@ -156,7 +176,7 @@ func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig) err
 	}
 
 	for _, templateConfig := range config {
-		err := templateConfig.apply(templateBase, api)
+		err := templateConfig.apply(templateBase, api, option)
 		if err != nil {
 			return err
 		}

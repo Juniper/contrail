@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 var (
@@ -37,31 +38,31 @@ const listHelpTemplate = `List command possible usages:
 func init() {
 	ContrailCLI.AddCommand(ListCmd)
 
-	ListCmd.Flags().StringVarP(&filters, services.FiltersKey, "f", "",
+	ListCmd.Flags().StringVarP(&filters, baseservices.FiltersKey, "f", "",
 		"Comma-separated filter parameters (e.g. check==a,check==b,name==Bob)")
-	ListCmd.Flags().IntVarP(&pageMarker, services.PageMarkerKey, "m", 0,
+	ListCmd.Flags().IntVarP(&pageMarker, baseservices.PageMarkerKey, "m", 0,
 		"Page marker that returned resources start from (i.e. offset)")
-	ListCmd.Flags().IntVarP(&pageLimit, services.PageLimitKey, "l", 100,
+	ListCmd.Flags().IntVarP(&pageLimit, baseservices.PageLimitKey, "l", 100,
 		"Limit number of returned resources")
-	ListCmd.Flags().BoolVarP(&detail, services.DetailKey, "d", false,
+	ListCmd.Flags().BoolVarP(&detail, baseservices.DetailKey, "d", false,
 		"Detailed data in response")
-	ListCmd.Flags().BoolVar(&count, services.CountKey, false,
+	ListCmd.Flags().BoolVar(&count, baseservices.CountKey, false,
 		"Return only resource count in response")
-	ListCmd.Flags().BoolVarP(&shared, services.SharedKey, "s", false,
+	ListCmd.Flags().BoolVarP(&shared, baseservices.SharedKey, "s", false,
 		"Include shared object in response")
-	ListCmd.Flags().BoolVarP(&excludeHRefs, services.ExcludeHRefsKey, "e", false,
+	ListCmd.Flags().BoolVarP(&excludeHRefs, baseservices.ExcludeHRefsKey, "e", false,
 		"Exclude hrefs from response")
-	ListCmd.Flags().StringVarP(&parentType, services.ParentTypeKey, "t", "",
+	ListCmd.Flags().StringVarP(&parentType, baseservices.ParentTypeKey, "t", "",
 		"Parent's type")
-	ListCmd.Flags().StringVarP(&parentFQName, services.ParentFQNameKey, "n", "",
+	ListCmd.Flags().StringVarP(&parentFQName, baseservices.ParentFQNameKey, "n", "",
 		"Colon-separated list of parents' fully-qualified names")
-	ListCmd.Flags().StringVarP(&parentUUIDs, services.ParentUUIDsKey, "u", "",
+	ListCmd.Flags().StringVarP(&parentUUIDs, baseservices.ParentUUIDsKey, "u", "",
 		"Comma-separated list of parents' UUIDs")
-	ListCmd.Flags().StringVar(&backrefUUIDs, services.BackrefUUIDsKey, "",
+	ListCmd.Flags().StringVar(&backrefUUIDs, baseservices.BackrefUUIDsKey, "",
 		"Comma-separated list of back references' UUIDs")
-	ListCmd.Flags().StringVar(&objectUUIDs, services.ObjectUUIDsKey, "",
+	ListCmd.Flags().StringVar(&objectUUIDs, baseservices.ObjectUUIDsKey, "",
 		"Comma-separated list of objects' UUIDs")
-	ListCmd.Flags().StringVar(&fields, services.FieldsKey, "",
+	ListCmd.Flags().StringVar(&fields, baseservices.FieldsKey, "",
 		"Comma-separated list of object fields returned in response")
 }
 
@@ -85,18 +86,18 @@ var ListCmd = &cobra.Command{
 
 func queryParameters() url.Values {
 	m := map[string]interface{}{
-		services.FiltersKey:      filters,
-		services.PageMarkerKey:   pageMarker,
-		services.PageLimitKey:    pageLimit,
-		services.DetailKey:       detail,
-		services.CountKey:        count,
-		services.SharedKey:       shared,
-		services.ExcludeHRefsKey: excludeHRefs,
-		services.ParentTypeKey:   parentType,
-		services.ParentFQNameKey: parentFQName,
-		services.ParentUUIDsKey:  parentUUIDs,
-		services.BackrefUUIDsKey: objectUUIDs,
-		services.FieldsKey:       fields,
+		baseservices.FiltersKey:      filters,
+		baseservices.PageMarkerKey:   pageMarker,
+		baseservices.PageLimitKey:    pageLimit,
+		baseservices.DetailKey:       detail,
+		baseservices.CountKey:        count,
+		baseservices.SharedKey:       shared,
+		baseservices.ExcludeHRefsKey: excludeHRefs,
+		baseservices.ParentTypeKey:   parentType,
+		baseservices.ParentFQNameKey: parentFQName,
+		baseservices.ParentUUIDsKey:  parentUUIDs,
+		baseservices.BackrefUUIDsKey: objectUUIDs,
+		baseservices.FieldsKey:       fields,
 	}
 
 	values := url.Values{}

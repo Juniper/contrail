@@ -759,27 +759,6 @@
           presence: "true"
           description: "Protocol used to monitor health, currently only HTTP, ICMP(ping), and BFD are supported"
           $ref: "types.json#/definitions/HealthCheckProtocolType"
-    PermType2:
-      type: "object"
-      properties:
-        owner:
-          type: "string"
-          description: "Owner tenant of the object"
-          presence: "true"
-        owner_access:
-          presence: "true"
-          description: "Owner permissions of the object"
-          $ref: "types.json#/definitions/AccessType"
-        global_access:
-          presence: "optional"
-          description: "Globally(others) shared object and permissions for others of the object"
-          $ref: "types.json#/definitions/AccessType"
-        share:
-          items:
-            $ref: "types.json#/definitions/ShareType"
-          type: "array"
-          description: "Selectively shared object, List of (tenant, permissions)"
-          presence: "optional"
     IpAddressFamilyType:
       enum:
         - "v4"
@@ -1875,19 +1854,6 @@
       minimum: 0
       type: "integer"
       maximum: 86400
-    PermType:
-      type: "object"
-      properties:
-        owner:
-          type: "string"
-        owner_access:
-          $ref: "types.json#/definitions/AccessType"
-        other_access:
-          $ref: "types.json#/definitions/AccessType"
-        group:
-          type: "string"
-        group_access:
-          $ref: "types.json#/definitions/AccessType"
     ConfiguredSecurityGroupIdType:
       default: "0"
       minimum: 0
