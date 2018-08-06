@@ -1,0 +1,14 @@
+{% macro schemaName(schema) export %}{{ schema.JSONSchema.GoName }}{% endmacro %}
+{% macro schemaTypeNameString(schema) export %}"{{ schema.TypeName }}"{% endmacro %}
+{% macro schemaPlural(schema) export %}{{ schemaName(schema) }}s{% endmacro %}
+{% macro resourceCount(schema) export %}{{ schemaName(schema) }}Count{% endmacro %}
+
+{% macro getResource(schema) export %}Get{{ schemaName(schema) }}{% endmacro %}
+{% macro getRequest(schema) export %}Get{{ schemaName(schema) }}Request{% endmacro %}
+{% macro getCreateRequest(schema) export %}GetCreate{{ schemaName(schema) }}Request(){% endmacro %}
+{% macro getResponse(schema) export %}Get{{ schemaName(schema) }}Response{% endmacro %}
+
+{% macro listResource(schema) export %}List{{ schemaName(schema) }}{% endmacro %}
+{% macro listRequest(schema) export %}List{{ schemaName(schema) }}Request{% endmacro %}
+{% macro getListRequest(schema) export %}GetList{{ schemaName(schema) }}Request(){% endmacro %}
+{% macro listResponse(schema) export %}List{{ schemaName(schema) }}Response{% endmacro %}
