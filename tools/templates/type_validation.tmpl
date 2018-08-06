@@ -5,6 +5,10 @@ import (
 	errors "github.com/pkg/errors"
 )
 
+const (
+    configRootPath = "config-root"
+)
+
 {# This macro is used to improve readability as braces has to be in the same line as if statement #}
 {% macro reportMissingProperty(id, resourceType) %} {
 	return errors.Errorf("{{id}} property is missing for resource {{resourceType}}")
@@ -154,7 +158,7 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 		{% endif %}
 	{% endfor %}
 
-	{% if schema.Parents|length > 0 %}
+	{% if schema.Parents|length > 0 and !schema.ParentOptional %}
 
 	if obj.ParentUUID == "" {
 		return errors.Errorf("parent_uuid is required for {{schema.ID}} ")
