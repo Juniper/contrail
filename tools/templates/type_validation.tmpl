@@ -154,7 +154,7 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 		{% endif %}
 	{% endfor %}
 
-	{% if schema.Parents|length > 0 %}
+	{% if schema.Parents|length > 0 and !schema.ParentOptional %}
 
 	if obj.ParentUUID == "" {
 		return errors.Errorf("parent_uuid is required for {{schema.ID}} ")
