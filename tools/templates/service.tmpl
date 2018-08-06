@@ -14,6 +14,12 @@ import (
     "github.com/Juniper/contrail/pkg/models"
 )
 
+const (
+    configRootPath = "config-root"
+)
+
+{% set configRootName = "config_root" %}
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
 type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
@@ -76,14 +82,24 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 {% if schema.Parents | length == 1 %}{# There is only one parent, so "for" will extract him #}
     if model.ParentType == "" { {% for key, reference in schema.Parents %}
         model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}
-    }{% endif %}
+    }
+{% endif %}
+
+{% for parent in schema.ParentsSlice %}
+{% if parent.Key == configRootName %}
+    model.ParentType = configRootPath
+{% endif %}
+{% endfor %}
+
     log.Debugf("ParentType: %v", model.ParentType)
 
     if len(model.FQName) == 0 {
 {% if schema.Parents | length == 0 %}
         model.FQName = []string{model.Name}
 {% else %}
-        if model.ParentUUID != "" {
+        if model.ParentType == configRootPath {
+            model.FQName = []string{model.Name}
+        } else if model.ParentUUID != "" {
             // fqName is empty but parentUUID is not - get parent fqName
             metadata, err := service.MetadataGetter.GetMetaData(ctx, model.ParentUUID, nil)
             if err != nil {
