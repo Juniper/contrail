@@ -139,6 +139,7 @@ type Schema struct {
 	Children         []*BackReference          `yaml:"-" json:"-"`
 	Index            int                       `yaml:"-" json:"-"`
 	ParentOptional   bool                      `yaml:"-" json:"-"`
+	HasConfigRoot    bool                      `yaml:"-" json:"-"`
 	HasParents       bool                      `yaml:"-" json:"-"`
 	DefaultParent    *Reference                `yaml:"-" json:"-"`
 }
@@ -612,9 +613,11 @@ func (api *API) resolveAllRelation() error {
 			}
 			reference.Table = ReferenceTableName(RefPrefix, s.ID, linkTo)
 		}
+		s.HasConfigRoot = false
 		for _, m := range mapSlice(s.ParentsSlice) {
 			linkTo := m.Key.(string)
 			if linkTo == configRoot {
+				s.HasConfigRoot = true
 				s.ParentOptional = true
 				continue
 			}
