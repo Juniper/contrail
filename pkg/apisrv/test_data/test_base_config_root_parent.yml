@@ -1,0 +1,74 @@
+name: Base poperties tests for objects which contain Config Root as parent
+cleanup:
+- path: /policy-management/policy-management-test
+- path: /domain/domain-test
+
+# Objects that may have Config Root as parent are allowed to be created
+# without passing parentUUID or parentType while other objects are not.
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+# Test for object with multiple parents including ConfigRoot
+- name: create policy_management without passing parentType or UUID.
+  request:
+    path: /policy-managements
+    method: POST
+    expected: [200]
+    data:
+      policy-management:
+        uuid: policy-management-test
+        name: pol-man-test
+  expect:
+    policy-management:
+        uuid: policy-management-test
+        name: pol-man-test
+
+- name: delete policy management
+  request:
+    path: /policy-management/policy-management-test
+    method: DELETE
+    expected: [200]
+  expect: null
+
+# Test for object with ConfigRoot as the only parent
+- name: create domain without passing parentType or UUID
+  request:
+    path: /domains
+    method: POST
+    expected: [200]
+    data:
+      domain:
+        uuid: domain-test
+        name: dom-test
+  expect:
+    domain:
+      uuid: domain-test
+      name: dom-test
+
+- name: delete domain
+  request:
+    path: /domain/domain-test
+    method: DELETE
+    expected: [200]
+  expect: null
+
+# Test for object with multiple parents without ConfigRoot
+- name: create access_control_list without passing parentType or UUID
+  request:
+    path: /access-control-lists
+    method: POST
+    expected: [400]
+    data:
+      access_control_list:
+        uuid: access-control-list-test
+        name: acl-test
+  expect: null
