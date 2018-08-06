@@ -61,10 +61,12 @@ func TestBasePropsTwoParents(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_base_props_two_parents.yml")
 }
+
 func TestProject(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_project.yml")
 }
+
 func TestEndpoints(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_fqname_to_id.yml")
@@ -83,6 +85,11 @@ func TestRefUpdate(t *testing.T) {
 func TestVirtualMachineInterface(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_virtual_machine_interface.yml")
+}
+
+func TestRefRelaxForDelete(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_ref_relax.yml")
 }
 
 func TestGRPC(t *testing.T) {
