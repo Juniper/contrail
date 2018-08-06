@@ -73,28 +73,22 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     log.Debugf("DisplayName: %v", model.DisplayName)
 
-{% if schema.Parents | length == 1 %}{# There is only one parent, so "for" will extract him #}
+{% if schema.IsConfigRootInParents %}
+    if model.ParentType == models.KindConfigRoot {
+        model.ParentType = ""
+    }
+{% endif %}
+
+{% if schema.Parents | length == 1 and !schema.IsConfigRootInParents %}{# There is only one parent, so "for" will extract him #}
     if model.ParentType == "" { {% for key, reference in schema.Parents %}
         model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}
-    }{% endif %}
+    }
+{% endif %}
+
     log.Debugf("ParentType: %v", model.ParentType)
 
-    if model.FQName == nil {
-{% if schema.Parents | length == 0 %}
-        model.FQName = []string{model.Name}
-{% else %}
-        if model.ParentUUID != "" {
-            // fqName is empty but parentUUID is not - get parent fqName
-            metadata, err := service.MetadataGetter.GetMetaData(ctx, model.ParentUUID, nil)
-            if err != nil {
-                return nil, common.ErrorBadRequest("Please provide correct ParentUUID or FQName")
-            }
-            model.FQName = append(metadata.FQName, model.Name)
-        } else if model.ParentType != "" {
-            // assign default fqName
-            model.FQName = []string{auth.DomainID(), fmt.Sprintf("default-%s", model.ParentType), model.Name}
-        }
-{% endif %}
+    if err := service.sanitizeFQNameFor{{ schema.JSONSchema.GoName }}(ctx, request); err != nil {
+        return nil, err
     }
     log.Debugf("FQName: %v", model.FQName)
 
@@ -128,6 +122,41 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     log.Debug("Type Validation passed")
 
     return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} (
+    ctx context.Context,
+    request *Create{{ schema.JSONSchema.GoName }}Request,
+) error {
+    model := request.{{ schema.JSONSchema.GoName }}
+    if len(model.FQName) != 0 {
+        return nil
+    }
+{% if schema.Parents | length == 0 %}
+    model.FQName = []string{model.Name}
+{% else %}
+    {% if schema.IsConfigRootInParents %}
+    if model.ParentUUID == "" && model.ParentType == "" {
+        model.FQName = []string{model.Name}
+        return nil
+    }
+    {% endif %}
+    if model.ParentUUID != "" {
+        // fqName is empty but parentUUID is not - get parent fqName
+        metadata, err := service.MetadataGetter.GetMetaData(ctx, model.ParentUUID, nil)
+        if err != nil {
+            return common.ErrorBadRequestf("Failed to generate FQName: %v", err)
+        }
+        model.FQName = append(metadata.FQName, model.Name)
+        return nil
+    }
+    if model.ParentType != "" {
+        // assign default fqName
+        auth := common.GetAuthCTX(ctx)
+        model.FQName = []string{auth.DomainID(), fmt.Sprintf("default-%s", model.ParentType), model.Name}
+    }
+{% endif %}
+    return nil
 }
 
 //RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST Update request.

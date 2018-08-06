@@ -60,6 +60,12 @@ func TestBasePropsTwoParents(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_base_props_two_parents.yml")
 }
+
+func TestBaseWithConfigRootInParents(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_base_config_root_parent.yml")
+}
+
 func TestProject(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_project.yml")
