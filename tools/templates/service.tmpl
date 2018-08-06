@@ -67,14 +67,22 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }
     log.Debugf("Name: %v", model.Name)
 
-{% if schema.Parents | length == 1 %}{# There is only one parent, so "for" will extract him #}
+    if model.DisplayName == "" {
+        model.DisplayName = model.Name
+    }
+
+    log.Debugf("DisplayName: %v", model.DisplayName)
+
+{% if schema.Parents | length == 1 and !schema.HasConfigRoot %}{# There is only one parent, so "for" will extract him #}
     if model.ParentType == "" { {% for key, reference in schema.Parents %}
         model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}
-    }{% endif %}
+    }
+{% endif %}
+
     log.Debugf("ParentType: %v", model.ParentType)
 
     if len(model.FQName) == 0 {
-{% if schema.Parents | length == 0 %}
+{% if schema.Parents | length == 0 or schema.HasConfigRoot %}
         model.FQName = []string{model.Name}
 {% else %}
         if model.ParentUUID != "" {
