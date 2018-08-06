@@ -67,17 +67,25 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }
     log.Debugf("Name: %v", model.Name)
 
-{% if schema.Parents | length == 1 %}{# There is only one parent, so "for" will extract him #}
+{% if schema.Parents | length == 1 and !schema.IsConfigRootInParents %}{# There is only one parent, so "for" will extract him #}
     if model.ParentType == "" { {% for key, reference in schema.Parents %}
         model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}
-    }{% endif %}
+    }
+{% endif %}
+
     log.Debugf("ParentType: %v", model.ParentType)
 
     if len(model.FQName) == 0 {
 {% if schema.Parents | length == 0 %}
         model.FQName = []string{model.Name}
 {% else %}
+        {% if schema.IsConfigRootInParents %}
+        if model.ParentUUID == "" && model.ParentType == "" {
+            model.FQName = []string{model.Name}
+        } else if model.ParentUUID != "" {
+        {% else %}
         if model.ParentUUID != "" {
+        {% endif %}
             // fqName is empty but parentUUID is not - get parent fqName
             metadata, err := service.MetadataGetter.GetMetaData(ctx, model.ParentUUID, nil)
             if err != nil {
