@@ -67,7 +67,8 @@ reset_gen: ## Remove genarated files
 	rm -rf proto/*
 	rm -f tools/init_mysql.sql
 	rm -f tools/init_psql.sql
-	rm -f tools/cleanup.sql
+	rm -f tools/cleanup_mysql.sql
+	rm -f tools/cleanup_psql.sql
 	rm -rf pkg/types/mock
 	rm -rf pkg/services/mock
 	rm -rf pkg/types/ipam/mock
@@ -83,10 +84,18 @@ install:
 testenv: ## Setup docker based test environment. (You need docker)
 	./tools/testenv.sh
 
-reset_db: ## Reset Database with latest schema.
+reset_db: ## Reset databases with latest schema and load initial data
 	./tools/reset_db_mysql.sh
-	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 	./tools/reset_db_psql.sh
+	make init_db
+
+clean_db: ## Truncate all database tables and load initial data
+	docker exec -i contrail_mysql mysql -uroot -pcontrail123 contrail_test < tools/cleanup_mysql.sql
+	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/cleanup_psql.sql
+	make init_db
+
+init_db: ## Load initial data to databases
+	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail_postgres.yml
 
 binaries: ## Generate the contrail and contrailutil binaries
