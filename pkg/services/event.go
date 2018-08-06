@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	fmt "fmt"
 
 	"github.com/pkg/errors"
 )
@@ -37,9 +38,15 @@ type CanProcessService interface {
 // Resource is a generic resource interface.
 type Resource interface {
 	GetUUID() string
+	GetParentUUID() string
 	Kind() string
+	// Depends Returns UUIDs of children and back references
 	Depends() []string
 	ToMap() map[string]interface{}
+	// AddDependency adds child/backref to model
+	AddDependency(i interface{})
+	// RemoveDependency removes child/backref from model
+	RemoveDependency(i interface{})
 }
 
 // EventList has multiple rest requests.
@@ -55,9 +62,9 @@ const (
 	temporaryVisited
 )
 
-// visitResource returns list of Events sorted by resource dependencies using Tarjan's algorithm.
-func visitResource(
-	uuid string, sorted []*Event, eventMap map[string]*Event, stateGraph map[string]state,
+//reorder request using Tarjan's algorithm
+func visitResource(uuid string, sorted []*Event,
+	eventMap map[string]*Event, stateGraph map[string]state,
 ) (sortedList []*Event, err error) {
 	if stateGraph[uuid] == temporaryVisited {
 		return nil, errors.New("dependency loop found in sync request")
@@ -66,7 +73,10 @@ func visitResource(
 		return sorted, nil
 	}
 	stateGraph[uuid] = temporaryVisited
-	event := eventMap[uuid]
+	event, found := eventMap[uuid]
+	if !found {
+		return nil, fmt.Errorf("Resource with uuid: %s not found in eventMap", uuid)
+	}
 	depends := event.GetResource().Depends()
 	for _, refUUID := range depends {
 		sorted, err = visitResource(refUUID, sorted, eventMap, stateGraph)
