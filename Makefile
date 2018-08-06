@@ -49,6 +49,7 @@ generate: reset_gen ## Run the source code generator
 	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto.md proto/github.com/Juniper/contrail/pkg/services/generated.proto proto/github.com/Juniper/contrail/pkg/models/generated.proto
 	go tool fix ./pkg/services/generated.pb.go
 	go fmt github.com/Juniper/contrail/pkg/db
+	go fmt github.com/Juniper/contrail/pkg/db/cache
 	go fmt github.com/Juniper/contrail/pkg/models
 	go fmt github.com/Juniper/contrail/pkg/services
 	go fmt github.com/Juniper/contrail/pkg/compilationif
