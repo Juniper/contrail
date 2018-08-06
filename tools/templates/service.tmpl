@@ -37,7 +37,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return common.ToHTTPError(err)
     }
-    return c.JSON(http.StatusCreated, response)
+    return c.JSON(http.StatusOK, response)
 }
 
 //Create{{ schema.JSONSchema.GoName }} handle a Create API
@@ -187,7 +187,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return common.ToHTTPError(err)
     }
-    return c.NoContent(http.StatusNoContent)
+    return c.NoContent(http.StatusOK)
 }
 
 

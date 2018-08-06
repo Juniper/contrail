@@ -326,7 +326,7 @@ func extractSyncOperation(syncOp map[string]interface{}, client string) []tracke
 }
 
 func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResource) []trackedResource {
-	if task.Request.Output != nil && task.Request.Method == "POST" && code == 201 && rerr == nil {
+	if task.Request.Output != nil && task.Request.Method == "POST" && code == 200 && rerr == nil {
 		clientID := defaultClientID
 		if task.Client != "" {
 			clientID = task.Client

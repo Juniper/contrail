@@ -42,7 +42,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project_vmi
   expect:
@@ -53,7 +53,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_blue
   expect:
@@ -64,7 +64,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *vn_vmi_blue
   expect:
@@ -75,7 +75,7 @@ workflow:
     path: /virtual-machine-interfaces
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-machine-interface:
         uuid: e844a53b-9113-4b28-b484-3a7bce34320a
@@ -106,7 +106,7 @@ workflow:
     path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 
 - name: delete virtual network
@@ -114,7 +114,7 @@ workflow:
     path: /virtual-network/vn_vmi_blue
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 
 - name: delete network ipam blue
@@ -122,5 +122,5 @@ workflow:
     path: /network-ipam/test_ipam_vmi_blue
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null

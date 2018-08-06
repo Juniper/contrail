@@ -38,7 +38,7 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 	if err != nil {
 		return common.ToHTTPError(err)
 	}
-	return c.JSON(http.StatusCreated, responses.Events)
+	return c.JSON(http.StatusOK, responses.Events)
 }
 
 // RefOperation is enum type for ref-update operation.
