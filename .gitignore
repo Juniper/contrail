@@ -15,28 +15,20 @@
 .LSOverride
 
 # Project specific paths
-dist/
-profile.cov
-tmp/
-test_output/
 bin/
-
-# ignore generated code
-
-pkg/**/gen_*
-pkg/**/**/gen_*
-pkg/**/generated.pb.go
-
+dist/
 doc/proto.md
-doc/proto_model.md
-doc/proto_service.md
-public/
-proto/
-tools/init_mysql.sql
-tools/init_psql.sql
-tools/cleanup.sql
 docker/contrail_go/etc/*
 docker/contrail_go/contrail
 docker/contrail_go/contrailcli
-
-pkg/types/mocks
+pkg/**/gen_*
+pkg/**/**/gen_*
+pkg/**/generated.pb.go
+profile.cov
+proto/
+public/
+test_output/
+tools/init_mysql.sql
+tools/init_psql.sql
+tools/cleanup_mysql.sql
+tools/cleanup_psql.sql
