@@ -22,6 +22,7 @@ const (
 	authEndpointSuffix = "/keystone/v3"
 	dbUser             = "root"
 	dbPassword         = "contrail123"
+	dbHost             = "localhost"
 	dbName             = "contrail_test"
 )
 
@@ -58,7 +59,7 @@ type APIServerConfig struct {
 func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 	setViperConfig(map[string]interface{}{
 		"database.type":               c.DBDriver,
-		"database.host":               "localhost",
+		"database.host":               dbHost,
 		"database.user":               dbUser,
 		"database.name":               dbName,
 		"database.password":           dbPassword,
