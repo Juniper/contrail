@@ -18,7 +18,7 @@ import (
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
-var cacheDB *cache.DB
+var cacheDB *cache.CacheDB
 
 func init() {
 	Contrail.AddCommand(processCmd)
@@ -63,7 +63,7 @@ func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGro
 
 func startCacheService(wg *sync.WaitGroup) {
 	log.Debug("cache service enabled")
-	cacheDB = cache.New(uint64(viper.GetInt64("cache.max_history")))
+	cacheDB = cache.NewDBCache(uint64(viper.GetInt64("cache.max_history")))
 	MaybeStart("cache.cassandra", startCassandraWatcher, wg)
 	MaybeStart("cache.etcd", startEtcdWatcher, wg)
 	MaybeStart("cache.rdbms", startRDBMSWatcher, wg)

@@ -33,7 +33,7 @@ type Server struct {
 	Keystone  *keystone.Keystone
 	dbService *db.Service
 	Proxy     *proxyService
-	Cache     *cache.DB
+	Cache     *cache.CacheDB
 }
 
 // NewServer makes a server

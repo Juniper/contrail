@@ -9,12 +9,12 @@ import (
 
 //EventProducer processes cached events.
 type EventProducer struct {
-	cache     *DB
+	cache     *CacheDB
 	Processor services.EventProcessor
 }
 
 //NewEventProducer makes an event processor for cache db.
-func (cache *DB) NewEventProducer(process services.EventProcessor) *EventProducer {
+func (cache *CacheDB) NewEventProducer(process services.EventProcessor) *EventProducer {
 	return &EventProducer{
 		cache:     cache,
 		Processor: process,
