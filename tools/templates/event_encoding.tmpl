@@ -44,10 +44,11 @@ type CanProcessService interface {
 type Resource interface {
 	GetUUID() string
 	GetParentUUID() string
-	Kind() string
-	// Depends Returns UUIDs of children and back references
-	Depends() []string
 	ToMap() map[string]interface{}
+	// Kind returns id of schema. For non resource objects it returns empty string
+	Kind() string
+	// Depends returns UUIDs of children and back references
+	Depends() []string
 	// AddDependency adds child/backref to model
 	AddDependency(i interface{})
 	// RemoveDependency removes child/backref from model
