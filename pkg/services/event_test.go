@@ -149,8 +149,8 @@ func TestSortEventListByDependency(t *testing.T) {
 				})),
 				projectCreateEvent(project("project-uuid")),
 			},
-			// order should be reversed when implementation is fixed
-			sortedOrder: []string{"vn-uuid", "project-uuid"},
+
+			sortedOrder: []string{"project-uuid", "vn-uuid"},
 		},
 		{
 			name: "circular dependency",
