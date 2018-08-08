@@ -41,6 +41,9 @@
   template_path: quota_checker.tmpl
   output_path: pkg/services/gen_quota_checker.go
 - type: all
+  template_path: sanitizer_service.tmpl
+  output_path: pkg/services/gen_sanitizer.go
+- type: all
   template_path: etcdserviceif.tmpl
   output_path: pkg/db/etcd/gen_etcd_notifier_service.go
 - type: all
