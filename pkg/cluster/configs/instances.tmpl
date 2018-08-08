@@ -1,6 +1,8 @@
 global_configuration:
   CONTAINER_REGISTRY: {%if cluster.ContainerRegistry %}{{ cluster.ContainerRegistry }}{%else%}opencontrailnightly{%endif%}
   REGISTRY_PRIVATE_INSECURE: {%if cluster.RegistryPrivateInsecure %}{{cluster.RegistryPrivateInsecure}}{%else%}false{%endif%}
+  {%if cluster.ContainerRegistryUsername %}CONTAINER_REGISTRY_USERNAME: {{ cluster.ContainerRegistryUsername }}{%endif%}
+  {%if cluster.ContainerRegistryPassword %}CONTAINER_REGISTRY_PASSWORD: {{ cluster.ContainerRegistryPassword }}{%endif%}
 provider_config:
   bms:
     ssh_user: {%if cluster.SSHUser %}{{cluster.SSHUser}}{%else%}root{%endif%}
