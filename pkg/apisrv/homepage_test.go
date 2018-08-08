@@ -100,7 +100,9 @@ func TestRoutesAreRegistered(t *testing.T) {
 		contrailService.RegisterRESTAPI(&routes)
 	}
 
+	// Action resources are registered in server.go:setupActionResources().
 	routes.add("/fqname-to-id")
+	routes.add("/useragent-kv")
 
 	for _, route := range apisrv.APIServer.Echo.Routes() {
 		assert.Truef(t, routes.contains(route.Path),

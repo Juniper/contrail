@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -191,12 +192,10 @@ func (h *HTTP) Do(ctx context.Context,
 		return resp, err
 	}
 
-	if method == echo.DELETE {
-		return resp, nil
-	}
-
 	err = json.NewDecoder(resp.Body).Decode(&output)
-	if err != nil {
+	if err == io.EOF {
+		return resp, nil
+	} else if err != nil {
 		logErrorAndResponse(err, resp)
 		return resp, errors.Wrap(err, "decoding response body failed")
 	}
