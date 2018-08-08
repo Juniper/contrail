@@ -22,6 +22,12 @@ create table ipaddress_pool (
     `end` binary(16)
 );
 
+create table kv_store (
+	`key` varchar(255),
+	`value` varchar(255),
+	primary key (`key`)
+);
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 create table {{schema.ID | lower  }} (
     {% for column in schema.Columns %}`{{column.Column}}` {{column.JSONSchema.SQL}},
