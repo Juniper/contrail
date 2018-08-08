@@ -49,6 +49,32 @@ schema:
       view:
       - create
       - detail
+    container_registry_username:
+      default: ""
+      description: Username of secure container registry
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Container Registry Username
+      type: string
+      view:
+      - create
+      - detail
+    container_registry_password:
+      default: ""
+      description: Password of secure container registry
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Container Registry Password
+      type: string
+      view:
+      - create
+      - detail
     contrail_version:
       description: Version of contrail containers to be used.
       nullable: false
