@@ -21,8 +21,8 @@ func ensureDir(path string) error {
 	return os.MkdirAll(filepath.Dir(path), os.ModePerm)
 }
 
-func (config *TemplateConfig) load(base string) (*pongo2.Template, error) {
-	path := filepath.Join(base, config.TemplatePath)
+func (tc *TemplateConfig) load(base string) (*pongo2.Template, error) {
+	path := filepath.Join(base, tc.TemplatePath)
 	templateCode, err := common.GetContent(path)
 	if err != nil {
 		return nil, err
@@ -31,33 +31,31 @@ func (config *TemplateConfig) load(base string) (*pongo2.Template, error) {
 }
 
 // nolint: gocyclo
-func (config *TemplateConfig) apply(templateBase string, api *API) error {
-	tpl, err := config.load(templateBase)
+func (tc *TemplateConfig) apply(templateBase string, api *API) error {
+	tpl, err := tc.load(templateBase)
 	if err != nil {
 		return err
 	}
-	if err = ensureDir(config.OutputPath); err != nil {
+	if err = ensureDir(tc.OutputPath); err != nil {
 		return err
 	}
-	if config.TemplateType == "all" {
-		output, err :=
-			tpl.Execute(pongo2.Context{"schemas": api.Schemas, "types": api.Types})
+	if tc.TemplateType == "all" {
+		output, err := tpl.Execute(pongo2.Context{"schemas": api.Schemas, "types": api.Types})
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(config.OutputPath, []byte(output), 0644)
+		err = ioutil.WriteFile(tc.OutputPath, []byte(output), 0644)
 		if err != nil {
 			return err
 		}
-	} else if config.TemplateType == "type" {
-		for goName, typeDef := range api.Types {
-			output, err :=
-				tpl.Execute(pongo2.Context{"type": typeDef, "name": goName})
+	} else if tc.TemplateType == "type" {
+		for goName, typeJSONSchema := range api.Types {
+			output, err := tpl.Execute(pongo2.Context{"type": typeJSONSchema, "name": goName})
 			if err != nil {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(config.OutputPath, "__resource__", common.CamelToSnake(goName), 1),
+				strings.Replace(tc.OutputPath, "__resource__", common.CamelToSnake(goName), 1),
 				[]byte(output), 0644)
 			if err != nil {
 				return err
@@ -67,47 +65,46 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
-			goName := schema.JSONSchema.GoName
-			typeDef := schema.JSONSchema
-			typeName := schema.TypeName
-			output, err :=
-				tpl.Execute(pongo2.Context{"type": typeDef, "typename": typeName, "name": goName,
-					"references":      schema.References,
-					"back_references": schema.BackReferences,
-					"parents":         schema.Parents, "children": schema.Children})
+			output, err := tpl.Execute(pongo2.Context{
+				"type":            schema.JSONSchema,
+				"typename":        schema.TypeName,
+				"name":            schema.JSONSchema.GoName,
+				"references":      schema.References,
+				"back_references": schema.BackReferences,
+				"parents":         schema.Parents,
+				"children":        schema.Children,
+			})
 			if err != nil {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(config.OutputPath, "__resource__", common.CamelToSnake(goName), 1),
+				strings.Replace(tc.OutputPath, "__resource__", common.CamelToSnake(schema.JSONSchema.GoName), 1),
 				[]byte(output), 0644)
 			if err != nil {
 				return err
 			}
 		}
-	} else if config.TemplateType == "alltype" {
-		types := []*Schema{}
-		for typeName, typeDef := range api.Types {
-			typeDef.GoName = typeName
-			types = append(types,
-				&Schema{
-					JSONSchema:     typeDef,
-					Children:       []*BackReference{},
-					BackReferences: map[string]*BackReference{},
-				})
+	} else if tc.TemplateType == "alltype" {
+		var schemas []*Schema
+		for typeName, typeJSONSchema := range api.Types {
+			typeJSONSchema.GoName = typeName
+			schemas = append(schemas, &Schema{
+				JSONSchema:     typeJSONSchema,
+				Children:       []*BackReference{},
+				BackReferences: map[string]*BackReference{},
+			})
 		}
 		for _, schema := range api.Schemas {
 			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
-			types = append(types, schema)
+			schemas = append(schemas, schema)
 		}
-		output, err :=
-			tpl.Execute(pongo2.Context{"types": types})
+		output, err := tpl.Execute(pongo2.Context{"schemas": schemas})
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(config.OutputPath, []byte(output), 0644)
+		err = ioutil.WriteFile(tc.OutputPath, []byte(output), 0644)
 		if err != nil {
 			return err
 		}
@@ -116,14 +113,15 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
-			output, err :=
-				tpl.Execute(pongo2.Context{"schema": schema, "types": api.Types})
+			output, err := tpl.Execute(pongo2.Context{"schema": schema, "types": api.Types})
 			if err != nil {
 				return err
 			}
 			err = ioutil.WriteFile(
-				strings.Replace(config.OutputPath, "__resource__", schema.ID, 1),
-				[]byte(output), 0644)
+				strings.Replace(tc.OutputPath, "__resource__", schema.ID, 1),
+				[]byte(output),
+				0644,
+			)
 			if err != nil {
 				return err
 			}
