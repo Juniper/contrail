@@ -86,10 +86,10 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 			}
 		}
 	} else if config.TemplateType == "alltype" {
-		types := []*Schema{}
+		var schemas []*Schema
 		for typeName, typeDef := range api.Types {
 			typeDef.GoName = typeName
-			types = append(types,
+			schemas = append(schemas,
 				&Schema{
 					JSONSchema:     typeDef,
 					Children:       []*BackReference{},
@@ -100,10 +100,9 @@ func (config *TemplateConfig) apply(templateBase string, api *API) error {
 			if schema.Type == AbstractType || schema.ID == "" {
 				continue
 			}
-			types = append(types, schema)
+			schemas = append(schemas, schema)
 		}
-		output, err :=
-			tpl.Execute(pongo2.Context{"types": types})
+		output, err := tpl.Execute(pongo2.Context{"schemas": schemas})
 		if err != nil {
 			return err
 		}
