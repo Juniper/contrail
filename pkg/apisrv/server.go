@@ -263,6 +263,7 @@ func (s *Server) setupHomepage() {
 	dh.Register("/fqname-to-id", "POST", "name-to-id", "action")
 	dh.Register("/ref-update", "POST", "ref-update", "action")
 	dh.Register("/ref-relax-for-delete", "POST", "ref-relax-for-delete", "action")
+	dh.Register("/useragent-kv", "POST", "useragent-kv", "action")
 
 	// TODO: register sync?
 
@@ -287,6 +288,8 @@ func (s *Server) setupWatchAPI() {
 func (s *Server) setupActionResources() {
 	s.Echo.POST("/fqname-to-id", s.fqNameToUUIDHandler)
 	//TODO handle gRPC
+
+	s.Echo.POST("/useragent-kv", s.useragentKVHandler)
 }
 
 // Run runs server.
