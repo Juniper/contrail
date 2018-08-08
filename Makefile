@@ -23,7 +23,7 @@ GOPATH ?= `go env GOPATH`
 
 all: check lint test build
 
-deps: ## Setup the go dependencies
+deps: ## Install development dependencies
 	./tools/deps.sh
 
 check: ## Check vendored dependencies
@@ -35,10 +35,10 @@ lint: ## Run linters on the source code
 nocovtest: COVERPROFILE = none
 nocovtest: test
 
-test: ## Run go test with race and coverage args
+test: ## Run tests with coverage
 	./tools/test.sh $(COVERPROFILE)
 
-build: ## Run go build
+build: ## Build all binaries without producing output
 	go build ./cmd/...
 
 generate: reset_gen ## Run the source code generator
@@ -80,10 +80,10 @@ install:
 	go install ./cmd/contrailcli
 	go install ./cmd/contrailutil
 
-testenv: ## Setup docker based test environment. (You need docker)
+testenv: ## Setup docker based test environment
 	./tools/testenv.sh
 
-reset_db: ## Reset Database with latest schema.
+reset_db: ## Reset databases with latest schema and load initial data
 	./tools/reset_db_mysql.sh
 	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 	./tools/reset_db_psql.sh
@@ -95,7 +95,7 @@ binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
 
 .PHONY: docker
-docker: ## Generate docker files
+docker: ## Generate Docker files
 	rm -rf $(BUILD_DIR) && mkdir -p $(BUILD_DIR)/contrail
 	cp -r docker $(BUILD_DIR)
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrail" ./cmd/contrail
