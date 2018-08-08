@@ -18,6 +18,11 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+func TestKVStore(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, "TestKVStore")
+	RunTest(t, "./test_data/test_kv_store.yml")
+}
+
 func TestFloatingIP(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_floating_ip.yml")
