@@ -143,3 +143,63 @@ func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
 }
+
+// Application is a part of set-tag input data. TODO: Investigate it
+type Application struct {
+	IsGlobal bool   `json:"is_global"`
+	Value    string `json:"value"`
+}
+
+// SetTag represents set-tag input data.
+type SetTag struct {
+	App     Application `json:"application"`
+	ObjUUID string      `json:"obj_uuid"`
+	ObjType string      `json:"obj_type"`
+}
+
+func (a *Application) validate() bool {
+	return a.Value != ""
+}
+
+func (t *SetTag) validate() error {
+	if t.ObjUUID == "" || t.ObjType == "" {
+		return common.ErrorBadRequestf(
+			"both obj_uuid and obj_type should be specified but got uuid: '%s' and type: '%s",
+			t.ObjUUID, t.ObjType,
+		)
+	}
+	if !t.App.validate() {
+		return common.ErrorBadRequestf(
+			"set-tag requires specified application value (uuid: %s type: %s)", t.ObjUUID, t.ObjType,
+		)
+	}
+	return nil
+}
+
+// RESTSetTag handles set-tag request.
+func (service *ContrailService) RESTSetTag(c echo.Context) error {
+	var data SetTag
+
+	if err := c.Bind(&data); err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Debug("bind failed on set-tag")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+
+	if err := data.validate(); err != nil {
+		return common.ToHTTPError(err)
+	}
+
+	// TODO (Ignacy): implement set-tag logic
+
+	return c.JSON(http.StatusOK, map[string]interface{}{})
+}
+
+// Returns array of map keys
+func mapKeys(m map[string]struct{}) (keys []string) {
+	for s := range m {
+		keys = append(keys, s)
+	}
+	return keys
+}
