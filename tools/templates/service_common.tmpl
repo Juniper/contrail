@@ -24,6 +24,7 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.POST("sync", service.RESTSync)
 	r.POST("ref-update", service.RESTRefUpdate)
 	r.POST("ref-relax-for-delete", service.RESTRefRelaxForDelete)
+	r.POST("set-tag", service.RESTSetTag)
 }
 
 type registerFunc func(path string, name string)
