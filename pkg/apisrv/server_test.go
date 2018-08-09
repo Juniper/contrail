@@ -92,6 +92,11 @@ func TestRefRelaxForDelete(t *testing.T) {
 	RunTest(t, "./test_data/test_ref_relax.yml")
 }
 
+func TestSetTag(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_set_tag.yml")
+}
+
 func TestSanitizing(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_sanitizing.yml")
