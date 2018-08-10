@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,18 +16,18 @@ func TestIntPool(t *testing.T) {
 		func(ctx context.Context) error {
 			poolKey := "testPool"
 
-			err := db.DeleteIntPools(ctx, &ipam.IntPool{
+			err := db.DeleteIntPools(ctx, &IntPool{
 				Key: poolKey,
 			})
 			assert.NoError(t, err, "clear pool failed")
 
-			err = db.CreateIntPool(ctx, &ipam.IntPool{Key: poolKey, Start: 0, End: 2})
+			err = db.CreateIntPool(ctx, &IntPool{Key: poolKey, Start: 0, End: 2})
 			assert.NoError(t, err, "create pool failed")
 
-			err = db.CreateIntPool(ctx, &ipam.IntPool{Key: poolKey, Start: 3, End: 5})
+			err = db.CreateIntPool(ctx, &IntPool{Key: poolKey, Start: 3, End: 5})
 			assert.NoError(t, err, "create pool failed")
 
-			pools, err := db.GetIntPools(ctx, &ipam.IntPool{Key: poolKey})
+			pools, err := db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
 			assert.Equal(t, 2, len(pools), "get pool failed")
 
@@ -52,7 +51,7 @@ func TestIntPool(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, 1, size, "size pool failed")
 
-			pools, err = db.GetIntPools(ctx, &ipam.IntPool{Key: poolKey})
+			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
 			assert.Equal(t, 1, len(pools), "get pool failed")
 
@@ -62,7 +61,7 @@ func TestIntPool(t *testing.T) {
 			err = db.DeallocateInt(ctx, poolKey, 3)
 			assert.NoError(t, err, "deallocate failed")
 
-			pools, err = db.GetIntPools(ctx, &ipam.IntPool{Key: poolKey})
+			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
 			assert.Equal(t, 2, len(pools), "get pool failed")
 
@@ -73,7 +72,7 @@ func TestIntPool(t *testing.T) {
 			err = db.SetInt(ctx, poolKey, 4)
 			assert.NoError(t, err, "set failed")
 
-			pools, err = db.GetIntPools(ctx, &ipam.IntPool{Key: poolKey})
+			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
 			assert.Equal(t, 2, len(pools), "get pool failed")
 
@@ -81,10 +80,10 @@ func TestIntPool(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, 2, size, "size pool failed")
 
-			err = db.DeleteIntPools(ctx, &ipam.IntPool{Key: poolKey})
+			err = db.DeleteIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err, "delete pool failed")
 
-			pools, err = db.GetIntPools(ctx, &ipam.IntPool{Key: poolKey})
+			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
 			assert.Equal(t, 0, len(pools), "get pool failed")
 			return nil

@@ -7,18 +7,24 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/pkg/errors"
 )
 
+// IntPool represents the half-open integer range [Start, End) in the set of integers identified by Key.
+type IntPool struct {
+	Key   string
+	Start int64
+	End   int64
+}
+
 //CreateIntPool creates int pool.
-func (db *Service) CreateIntPool(ctx context.Context, target *ipam.IntPool) error {
+func (db *Service) CreateIntPool(ctx context.Context, target *IntPool) error {
 	return db.DeallocateIntRange(ctx, target)
 }
 
 //GetIntPools gets int pools overlaps in given the range.
 //return all if target.End is zero.
-func (db *Service) GetIntPools(ctx context.Context, target *ipam.IntPool) ([]*ipam.IntPool, error) {
+func (db *Service) GetIntPools(ctx context.Context, target *IntPool) ([]*IntPool, error) {
 	var query bytes.Buffer
 	d := db.Dialect
 	tx := basedb.GetTransaction(ctx)
@@ -34,13 +40,13 @@ func (db *Service) GetIntPools(ctx context.Context, target *ipam.IntPool) ([]*ip
 			d.Quote("start") + " < " + d.Placeholder(3) + " order by start for update")
 		rows, err = tx.QueryContext(ctx, query.String(), target.Key, target.Start, target.End)
 	}
-	pools := []*ipam.IntPool{}
+	pools := []*IntPool{}
 	err = basedb.FormatDBError(err)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get int pool")
 	}
 	for rows.Next() {
-		pool := &ipam.IntPool{
+		pool := &IntPool{
 			Key: target.Key,
 		}
 		err := rows.Scan(&pool.Start, &pool.End)
@@ -54,7 +60,7 @@ func (db *Service) GetIntPools(ctx context.Context, target *ipam.IntPool) ([]*ip
 }
 
 //DeleteIntPools deletes int pool overlap with target range. delete all if target.End is zero.
-func (db *Service) DeleteIntPools(ctx context.Context, target *ipam.IntPool) error {
+func (db *Service) DeleteIntPools(ctx context.Context, target *IntPool) error {
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	var err error
@@ -118,7 +124,7 @@ func (db *Service) AllocateInt(ctx context.Context, key string) (int64, error) {
 func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
-	rangePool := &ipam.IntPool{
+	rangePool := &IntPool{
 		Key:   key,
 		Start: id,
 		End:   id + 1,
@@ -177,7 +183,7 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 
 //DeallocateInt deallocate integer.
 func (db *Service) DeallocateInt(ctx context.Context, key string, id int64) error {
-	return db.DeallocateIntRange(ctx, &ipam.IntPool{
+	return db.DeallocateIntRange(ctx, &IntPool{
 		Key:   key,
 		Start: id,
 		End:   id + 1,
@@ -199,12 +205,12 @@ func intMin(a, b int64) int64 {
 }
 
 //DeallocateIntRange deallocate integer range
-func (db *Service) DeallocateIntRange(ctx context.Context, target *ipam.IntPool) error {
+func (db *Service) DeallocateIntRange(ctx context.Context, target *IntPool) error {
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	// range for pool we want to merge.
 	// We need enlarge range so that we can merge pools on the next.
-	mergePool := &ipam.IntPool{
+	mergePool := &IntPool{
 		Key:   target.Key,
 		Start: target.Start - 1,
 		End:   target.End + 1,
