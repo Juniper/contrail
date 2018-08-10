@@ -44,13 +44,14 @@ var _ = strings.Count
 		{% endif %}
 		}
 	{# validate integer property #}
+	{# TODO: this validation should be moved past type logic service #}
 	{% elif jsonSchema.Type == "integer" or jsonSchema.Type == "number" %}
 		{% if jsonSchema.Maximum != nil %}
 		if {{variableName}} > {{jsonSchema.Maximum}} {
 			return errors.Errorf("{{jsonSchema.ID}} value (%v) must be smaller or equal to {{jsonSchema.Maximum}}", {{variableName}})
 		}
 		{% endif %}
-		{% if jsonSchema.Minimum != nil %}
+		{% if jsonSchema.Minimum != nil and jsonSchema.ID != "security_group_id" %} {# TODO: temporary fix until validation is refactored #}
 		if {{variableName}} < {{jsonSchema.Minimum}} {
 			return errors.Errorf("{{jsonSchema.ID}} value (%v) must be greater or equal to {{jsonSchema.Minimum}}", {{variableName}})
 		}
@@ -69,7 +70,7 @@ var _ = strings.Count
 {% macro validateProperties(resource, properties) %}
 	{% for property, pdef in properties %}
 		{# Check required properties first. #}
-		{% if pdef.Presence == "required" or pdef.Presence == "true" %}
+		{% if pdef.Presence == "required" %}
 			{% if pdef.Type == "string" %}
 				if obj.{{pdef.GoName}} == "" {{reportMissingProperty(pdef.ID, resource)}}
 			{% elif pdef.Type == "integer" or pdef.Type == "number" %}
