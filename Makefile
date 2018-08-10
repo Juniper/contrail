@@ -53,12 +53,11 @@ generate: reset_gen ## Run the source code generator
 	go fmt github.com/Juniper/contrail/pkg/services
 	go fmt github.com/Juniper/contrail/pkg/compilationif
 	mkdir -p pkg/types/mock
-	mockgen -destination=pkg/types/mock/gen_in_transaction_doer_mock.go -package=typesmock -source pkg/types/service.go InTransactionDoer
+	mockgen -destination=pkg/types/mock/gen_types_mock.go -package=typesmock -source pkg/types/service.go
 	mkdir -p pkg/services/mock
 	mockgen -destination=pkg/services/mock/gen_service_mock.go -package=servicesmock -source pkg/services/gen_service_interface.go Service
 	mkdir -p pkg/types/ipam/mock
 	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock -source pkg/types/ipam/address_manager.go AddressManager
-	mockgen -destination=pkg/types/ipam/mock/gen_int_pool_allocator_mock.go -package=ipammock -source pkg/types/ipam/interface.go IntPoolAllocator
 
 reset_gen: ## Remove genarated files
 	find pkg/ -name gen_* -delete
