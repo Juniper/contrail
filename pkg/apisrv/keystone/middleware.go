@@ -102,6 +102,20 @@ func GetAuthSkipPaths() []string {
 	return skipPaths
 }
 
+func getTokenFromCookie(cookieString string) (cookie string) {
+	if cookieString != "" {
+		cookies := strings.Split(cookieString, ";")
+		for _, cookie := range cookies {
+			cookiekeyValue := strings.Split(cookie, "=")
+			if cookiekeyValue[0] == "x-auth-token" {
+				tokenString := cookiekeyValue[1]
+				return tokenString
+			}
+		}
+	}
+	return ""
+}
+
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
 //nolint: gocyclo
 func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
@@ -136,7 +150,10 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
 			if tokenString == "" {
-				tokenString = c.QueryParam("auth_token")
+				tokenString = getTokenFromCookie(r.Header.Get("Cookie"))
+				if tokenString == "" {
+					tokenString = c.QueryParam("auth_token")
+				}
 			}
 			ctx, err := authenticate(r.Context(), auth, tokenString)
 			if err != nil {
