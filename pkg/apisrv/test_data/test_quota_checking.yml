@@ -213,7 +213,6 @@ test_data:
     parent_uuid: uuid_proj_blue
     perms2:
       owner: admin
-    security_group_id: 8000000
     security_group_entries:
       policy_rule:
         - direction: ">"
@@ -235,7 +234,6 @@ test_data:
     parent_uuid: uuid_proj_blue
     perms2:
       owner: admin
-    security_group_id: 8000001
     security_group_entries:
       policy_rule:
         - direction: ">"
@@ -257,7 +255,6 @@ test_data:
     parent_uuid: uuid_proj_blue
     perms2:
       owner: admin
-    security_group_id: 8000002
     security_group_entries: {}
   secgrp_green: &secgrp_green
     uuid: uuid_secgrp_green
@@ -266,7 +263,6 @@ test_data:
     parent_uuid: uuid_proj_green
     perms2:
       owner: admin
-    security_group_id: 8000003
     security_group_entries: {}
   security_logging_object_blue1: &security_logging_object_blue1
     uuid: uuid_seclogobj_blue1
