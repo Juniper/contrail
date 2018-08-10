@@ -43,6 +43,9 @@ func NewUUIDType(uuid string) *UuidType {
 	}
 }
 
+// SecurityGroupIDMinAlloc is the minimal integer used for security group IDs that are automatically allocated.
+const SecurityGroupIDMinAlloc = int64({{ types.SecurityGroupIdType.Minimum }}) // the cast prevents template generation error
+
 {% for schema in schemas %}
 
 const Kind{{ schema.JSONSchema.GoName }} = "{{ schema.TypeName }}"
