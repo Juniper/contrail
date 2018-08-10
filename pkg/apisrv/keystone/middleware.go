@@ -136,7 +136,10 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
 			if tokenString == "" {
-				tokenString = c.QueryParam("auth_token")
+				tokenString = r.Cookie("x-auth-token")
+				if tokenString == "" {
+					tokenString = c.QueryParam("auth_token")
+				}
 			}
 			ctx, err := authenticate(r.Context(), auth, tokenString)
 			if err != nil {
