@@ -124,6 +124,11 @@ else
 endif
 	docker build -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
+## This target creates Atom docker that is able to work as a drop-in replacement to original config-api; It depends on 'docker' target to inherit all the necesary steps with minimal changes
+.PHONY: docker-atomizer
+docker-atomizer: docker
+	docker build -t "contrail-atom" -f docker/contrail_go/Dockerfile-atomizer $(BUILD_DIR)docker/contrail_go
+
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
