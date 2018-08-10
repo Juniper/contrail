@@ -103,8 +103,8 @@ binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailcli_{{.OS}}_{{.Arch}}" ./cmd/contrailcli
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
 
-.PHONY: docker
-docker: ## Generate Docker files
+.PHONY: prepare_docker
+prepare_docker: ## Generate Docker files
 	rm -rf $(BUILD_DIR) && mkdir -p $(BUILD_DIR)/contrail
 	cp -r docker $(BUILD_DIR)
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrail" ./cmd/contrail
@@ -122,7 +122,18 @@ ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
 else
 		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
 endif
+
+.PHONY: docker
+## Generate Docker files
+docker: prepare_docker
 	docker build -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
+
+## This target creates Atom docker that is able to work as a drop-in replacement to original config-api; It depends on 'docker' target to inherit all the necesary steps with minimal changes
+.PHONY: docker-atomizer
+docker-atomizer: prepare_docker
+	## Copy dockerfile because it must be in a build context dir
+	cp -f docker/contrail_go/Dockerfile-atomizer $(BUILD_DIR)/docker/contrail_go
+	docker build -t "contrail-atom" -f $(BUILD_DIR)/docker/contrail_go/Dockerfile-atomizer $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
