@@ -51,12 +51,11 @@ generate: reset_gen ## Run the source code generator
 	go tool fix ./pkg/services/generated.pb.go
 	go fmt $(PACKAGE_PATH)/pkg/...
 	mkdir -p pkg/types/mock
-	mockgen -destination=pkg/types/mock/gen_in_transaction_doer_mock.go -package=typesmock -source pkg/types/service.go InTransactionDoer
+	mockgen -destination=pkg/types/mock/gen_types_mock.go -package=typesmock -source pkg/types/service.go
 	mkdir -p pkg/services/mock
 	mockgen -destination=pkg/services/mock/gen_service_mock.go -package=servicesmock -source pkg/services/gen_service_interface.go Service
 	mkdir -p pkg/types/ipam/mock
 	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock -source pkg/types/ipam/address_manager.go AddressManager
-	mockgen -destination=pkg/types/ipam/mock/gen_int_pool_allocator_mock.go -package=ipammock -source pkg/types/ipam/interface.go IntPoolAllocator
 	cd extension && $(MAKE) generate
 
 reset_gen: ## Remove genarated files

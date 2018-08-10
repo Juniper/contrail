@@ -122,7 +122,7 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 			}
 			schemas = append(schemas, schema)
 		}
-		output, err := tpl.Execute(pongo2.Context{"schemas": schemas, "option": option})
+		output, err := tpl.Execute(pongo2.Context{"schemas": schemas, "types": api.Types, "option": option})
 		if err != nil {
 			return err
 		}
