@@ -5,6 +5,9 @@ import (
 	errors "github.com/pkg/errors"
 )
 
+//This is needed to prevent an import error.
+var _ = strings.Count
+
 {# This macro is used to improve readability as braces has to be in the same line as if statement #}
 {% macro reportMissingProperty(id, resourceType) %} {
 	return errors.Errorf("{{id}} property is missing for resource {{resourceType}}")
@@ -21,7 +24,7 @@ import (
 		{# Check format #}
 		if {{variableName}} != "" {
 		{% if jsonSchema.Format != "" %}
-			fv, err := sv.getFormatValidator("{{jsonSchema.Format}}")
+			fv, err := sv.GetFormatValidator("{{jsonSchema.Format}}")
 			if err != nil {
 				return err
 			}

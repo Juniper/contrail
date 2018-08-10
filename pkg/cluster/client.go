@@ -11,7 +11,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 func (c *Cluster) createEndpoint(parentUUID, name, publicURL, privateURL string) error {
@@ -62,8 +62,8 @@ func (c *Cluster) getDefaultCredential() (user, password, keypair string, err er
 
 func (c *Cluster) getEndpoints(parentUUIDs []string) (endpointIDs []string, err error) {
 	values := url.Values{
-		services.ParentUUIDsKey: parentUUIDs,
-		services.ParentTypeKey:  []string{defaultResource},
+		baseservices.ParentUUIDsKey: parentUUIDs,
+		baseservices.ParentTypeKey:  []string{defaultResource},
 	}
 	var endpointList map[string][]interface{}
 	resURI := fmt.Sprintf("%ss?%s", defaultEndpointResPath, values.Encode())
