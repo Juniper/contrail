@@ -1,51 +1,50 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    structured_syslog_config: 
-      operations: "CRUD"
-      description: "List of          structured-syslog-hostname-record that are applicable to objects          anchored under structured-syslog-config."
-      presence: "optional"
-  plural: "structured_syslog_hostname_records"
-  id: "structured_syslog_hostname_record"
-  schema: 
-    required: 
-      - "structured_syslog_hostaddr"
-      - "structured_syslog_tenant"
-      - "structured_syslog_location"
-    type: "object"
-    properties: 
-      structured_syslog_hostaddr: 
-        operations: "CRUD"
-        type: "string"
-        description: "The host address"
-        presence: "required"
-      structured_syslog_device: 
-        operations: "CRUD"
-        type: "string"
-        description: "device id"
-        presence: "optional"
-      structured_syslog_linkmap: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "overlay to                                   underlay mapping"
-        $ref: "types.json#/definitions/StructuredSyslogLinkmap"
-      structured_syslog_location: 
-        operations: "CRUD"
-        type: "string"
-        description: "location details"
-        presence: "required"
-      structured_syslog_hostname_tags: 
-        operations: "CRUD"
-        type: "string"
-        description: "tags                                   corresponding to the host"
-        presence: "optional"
-      structured_syslog_tenant: 
-        operations: "CRUD"
-        type: "string"
-        description: "The tenant name"
-        presence: "required"
-
+api_style: contrail
+extends:
+- base
+id: structured_syslog_hostname_record
+parents:
+  structured_syslog_config:
+    description: List of          structured-syslog-hostname-record that are applicable
+      to objects          anchored under structured-syslog-config.
+    operations: CRUD
+    presence: optional
+plural: structured_syslog_hostname_records
+prefix: /
+references: {}
+schema:
+  properties:
+    structured_syslog_device:
+      description: device id
+      operations: CRUD
+      presence: optional
+      type: string
+    structured_syslog_hostaddr:
+      description: The host address
+      operations: CRUD
+      presence: required
+      type: string
+    structured_syslog_hostname_tags:
+      description: tags                                   corresponding to the host
+      operations: CRUD
+      presence: optional
+      type: string
+    structured_syslog_linkmap:
+      $ref: types.json#/definitions/StructuredSyslogLinkmap
+      description: overlay to                                   underlay mapping
+      operations: CRUD
+      presence: optional
+    structured_syslog_location:
+      description: location details
+      operations: CRUD
+      presence: required
+      type: string
+    structured_syslog_tenant:
+      description: The tenant name
+      operations: CRUD
+      presence: required
+      type: string
+  required:
+  - structured_syslog_hostaddr
+  - structured_syslog_tenant
+  - structured_syslog_location
+  type: object

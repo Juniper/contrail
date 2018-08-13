@@ -1,28 +1,21 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    project: 
-      operations: "CRUD"
-      description: "Project level policy-management object re-grouping project policy resources"
-      presence: "optional"
-    config_root: 
-      operations: "CRUD"
-      description: "Global level policy-management object re-grouping global policy resources."
-      presence: "optional"
-  plural: "policy_managements"
-  id: "policy_management"
-  schema: 
-    required: []
-    type: "object"
-    properties: 
-      enable_security_policy_draft: 
-        default: false
-        operations: "CRUD"
-        type: "boolean"
-        description: ""
-        presence: "optional"
-
+api_style: contrail
+extends:
+- base
+id: policy_management
+parents:
+  config_root:
+    description: Global level policy-management object re-grouping global policy resources.
+    operations: CRUD
+    presence: optional
+  project:
+    description: Project level policy-management object re-grouping project policy
+      resources
+    operations: CRUD
+    presence: optional
+plural: policy_managements
+prefix: /
+references: {}
+schema:
+  properties: {}
+  required: []
+  type: object

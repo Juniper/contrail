@@ -1,84 +1,103 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: 
-    network_ipam: 
-      operations: "CRUD"
-      description: "Reference to network ipam of this instance ip."
-      presence: "required"
-    virtual_network: 
-      operations: "CRUD"
-      description: "Reference to virtual network of this instance ip."
-      presence: "required"
-    virtual_machine_interface: 
-      operations: "CRUD"
-      description: "Reference to virtual machine interface to which this instance ip is attached."
-      presence: "optional"
-    physical_router: 
-      operations: "CRUD"
-      description: "This instance ip is used as IRB address on the referenced physical router (e.g.MX), In case of OVSDB TOR usecase this address will be used as default gateway for Host behind the TOR."
-      presence: "optional"
-    virtual_router: 
-      operations: "CRUD"
-      description: "Reference to virtual router of this instance ip."
-      presence: "optional"
-  parents: {}
-  plural: "instance_ips"
-  id: "instance_ip"
-  schema: 
-    required: 
-      - "instance_ip_address"
-    type: "object"
-    properties: 
-      service_health_check_ip: 
-        default: false
-        operations: "CRUD"
-        type: "boolean"
-        description: "This instance ip is used as service health check source ip"
-        presence: "system-only"
-      secondary_ip_tracking_ip: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "When this instance ip is secondary ip, it can track activeness of another ip."
-        $ref: "types.json#/definitions/SubnetType"
-      instance_ip_address: 
-        operations: "CR"
-        presence: "required"
-        description: "Ip address value for instance ip."
-        $ref: "types.json#/definitions/IpAddressType"
-      instance_ip_mode: 
-        operations: "CR"
-        presence: "optional"
-        description: "Ip address HA mode in case this instance ip is used in more than one interface, active-Active or active-Standby."
-        $ref: "types.json#/definitions/AddressMode"
-      subnet_uuid: 
-        operations: "CR"
-        type: "string"
-        description: "This instance ip was allocated from this Subnet(UUID)."
-        presence: "optional"
-      instance_ip_family: 
-        operations: "CR"
-        presence: "optional"
-        description: "Ip address family for instance ip, IPv4(v4) or IPv6(v6)."
-        $ref: "types.json#/definitions/IpAddressFamilyType"
-      service_instance_ip: 
-        default: false
-        operations: "CRUD"
-        type: "boolean"
-        description: "This instance ip is used as service chain next hop"
-        presence: "system-only"
-      instance_ip_local_ip: 
-        default: false
-        operations: "CRUD"
-        type: "boolean"
-        description: "This instance ip is local to compute and will not be exported to other nodes."
-        presence: "optional"
-      instance_ip_secondary: 
-        default: false
-        operations: "CRUD"
-        type: "boolean"
-        description: "This instance ip is secondary ip of the interface."
-        presence: "optional"
-
+api_style: contrail
+extends:
+- base
+id: instance_ip
+parents: {}
+plural: instance_ips
+prefix: /
+references:
+  logical_interface:
+    description: Reference to the logical interface that this instance ip is assigned
+      to.
+    operations: CRUD
+    presence: optional
+  network_ipam:
+    description: Reference to network ipam of this instance ip.
+    operations: CRUD
+    presence: required
+  physical_router:
+    description: This instance ip is used as IRB address on the referenced physical
+      router (e.g.MX), In case of OVSDB TOR usecase this address will be used as default
+      gateway for Host behind the TOR.
+    operations: CRUD
+    presence: optional
+  virtual_machine_interface:
+    description: Reference to virtual machine interface to which this instance ip
+      is attached.
+    operations: CRUD
+    presence: optional
+  virtual_network:
+    description: Reference to virtual network of this instance ip.
+    operations: CRUD
+    presence: required
+  virtual_router:
+    description: Reference to virtual router of this instance ip.
+    operations: CRUD
+    presence: optional
+schema:
+  properties:
+    instance_ip_address:
+      $ref: types.json#/definitions/IpAddressType
+      description: Ip address value for instance ip.
+      operations: CR
+      presence: required
+    instance_ip_family:
+      $ref: types.json#/definitions/IpAddressFamilyType
+      description: Ip address family for instance ip, IPv4(v4) or IPv6(v6).
+      operations: CR
+      presence: optional
+    instance_ip_local_ip:
+      default: false
+      description: This instance ip is local to compute and will not be exported to
+        other nodes.
+      operations: CRUD
+      presence: optional
+      type: boolean
+    instance_ip_mode:
+      $ref: types.json#/definitions/AddressMode
+      description: Ip address HA mode in case this instance ip is used in more than
+        one interface, active-Active or active-Standby.
+      operations: CR
+      presence: optional
+    instance_ip_secondary:
+      default: false
+      description: This instance ip is secondary ip of the interface.
+      operations: CRUD
+      presence: optional
+      type: boolean
+    instance_ip_subnet:
+      $ref: types.json#/definitions/SubnetType
+      description: Ip prefix/length of the subnet where instance-ip belongs.
+      operations: CRUD
+      presence: optional
+    instance_ip_subscriber_tag:
+      description: This instance ip belongs to one of the subscribers in the subscriber-tag.
+      operations: CR
+      presence: optional
+      type: string
+    secondary_ip_tracking_ip:
+      $ref: types.json#/definitions/SubnetType
+      description: When this instance ip is secondary ip, it can track activeness
+        of another ip.
+      operations: CRUD
+      presence: optional
+    service_health_check_ip:
+      default: false
+      description: This instance ip is used as service health check source ip
+      operations: CRUD
+      presence: system-only
+      type: boolean
+    service_instance_ip:
+      default: false
+      description: This instance ip is used as service chain next hop
+      operations: CRUD
+      presence: system-only
+      type: boolean
+    subnet_uuid:
+      description: This instance ip was allocated from this Subnet(UUID).
+      operations: CR
+      presence: optional
+      type: string
+  required:
+  - instance_ip_address
+  type: object

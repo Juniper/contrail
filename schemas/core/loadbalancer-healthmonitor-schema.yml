@@ -1,24 +1,24 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    project: 
-      operations: "CRUD"
-      description: "Health monitor objects is configuration to monitor health of individual pool members."
-      presence: "optional"
-  plural: "loadbalancer_healthmonitors"
-  id: "loadbalancer_healthmonitor"
-  schema: 
-    required: 
-      - "loadbalancer_healthmonitor_properties"
-    type: "object"
-    properties: 
-      loadbalancer_healthmonitor_properties: 
-        operations: "CRUD"
-        presence: "required"
-        description: "Configuration parameters for health monitor like type, method, retries etc."
-        $ref: "types.json#/definitions/LoadbalancerHealthmonitorType"
-
+api_style: contrail
+extends:
+- base
+id: loadbalancer_healthmonitor
+parents:
+  project:
+    description: Health monitor objects is configuration to monitor health of individual
+      pool members.
+    operations: CRUD
+    presence: optional
+plural: loadbalancer_healthmonitors
+prefix: /
+references: {}
+schema:
+  properties:
+    loadbalancer_healthmonitor_properties:
+      $ref: types.json#/definitions/LoadbalancerHealthmonitorType
+      description: Configuration parameters for health monitor like type, method,
+        retries etc.
+      operations: CRUD
+      presence: required
+  required:
+  - loadbalancer_healthmonitor_properties
+  type: object

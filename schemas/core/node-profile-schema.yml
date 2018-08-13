@@ -1,0 +1,47 @@
+api_style: contrail
+extends:
+- base
+id: node_profile
+parents:
+  global_system_config:
+    description: list of node profiles supported by the system.
+    operations: CRUD
+    presence: optional
+plural: node_profiles
+prefix: /
+references:
+  hardware:
+    description: Hardware info defined in a node profile that are used to categorize
+      the devices
+    operations: CRUD
+    presence: optional
+schema:
+  properties:
+    node_profile_device_family:
+      description: Device family name that this node profile can be used to match.
+      operations: CRUD
+      presence: required
+      type: string
+    node_profile_physical_roles:
+      $ref: types.json#/definitions/PhysicalRolesType
+      description: List of capable physical roles supported by the devices that matches
+        one of the hardware list defined in this node profile.
+      operations: CRUD
+      presence: required
+    node_profile_routing_bridging_roles:
+      $ref: types.json#/definitions/RoutingBridgingRolesType
+      description: List of capable routing/bridging roles supported by the devices
+        that matches one of the hardware list defined in this node profile.
+      operations: CRUD
+      presence: required
+    node_profile_vendor:
+      description: Vendor name (e.g. Juniper) that this node profile can be used for.
+      operations: CRUD
+      presence: required
+      type: string
+  required:
+  - node_profile_vendor
+  - node_profile_device_family
+  - node_profile_physical_roles
+  - node_profile_routing_bridging_roles
+  type: object
