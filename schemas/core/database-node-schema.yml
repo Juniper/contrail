@@ -1,24 +1,23 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    global_system_config: 
-      operations: "CRUD"
-      description: "Database node is object representing a logical node in system which host Cassandra DB and Zookeeper."
-      presence: "required"
-  plural: "database_nodes"
-  id: "database_node"
-  schema: 
-    required: 
-      - "database_node_ip_address"
-    type: "object"
-    properties: 
-      database_node_ip_address: 
-        operations: "CRUD"
-        presence: "required"
-        description: "Ip address of the database node, set while provisioning."
-        $ref: "types.json#/definitions/IpAddressType"
-
+api_style: contrail
+extends:
+- base
+id: database_node
+parents:
+  global_system_config:
+    description: Database node is object representing a logical node in system which
+      host Cassandra DB and Zookeeper.
+    operations: CRUD
+    presence: required
+plural: database_nodes
+prefix: /
+references: {}
+schema:
+  properties:
+    database_node_ip_address:
+      $ref: types.json#/definitions/IpAddressType
+      description: Ip address of the database node, set while provisioning.
+      operations: CRUD
+      presence: required
+  required:
+  - database_node_ip_address
+  type: object

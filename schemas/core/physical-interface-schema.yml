@@ -1,37 +1,45 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: 
-    physical_interface: 
-      operations: "CRUD"
-      description: "Reference to the other physical interface that is connected to this  physical interface."
-      presence: "optional"
-  parents: 
-    physical_router: 
-      operations: "CRUD"
-      description: "Physical interfaces on physical routers."
-      presence: "optional"
-  plural: "physical_interfaces"
-  id: "physical_interface"
-  schema: 
-    required: []
-    type: "object"
-    properties: 
-      ethernet_segment_identifier: 
-        operations: "CRUD"
-        type: "string"
-        description: "Ethernet Segment Id configured for the Physical Interface. In a multihomed environment, user should configure the peer Physical interface with the same ESI."
-        presence: "optional"
-      physical_interface_type: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "Physical interface type that can be either regular physical interface or LAG interface."
-        $ref: "types.json#/definitions/PhysicalInterfaceType"
-      physical_interface_mac_addresses: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "MAC addresses on this physical interface."
-        $ref: "types.json#/definitions/MacAddressesType"
-
+api_style: contrail
+extends:
+- base
+id: physical_interface
+parents:
+  physical_router:
+    description: Physical interfaces on physical routers.
+    operations: CRUD
+    presence: optional
+plural: physical_interfaces
+prefix: /
+references:
+  physical_interface:
+    description: Reference to the other physical interface that is connected to this  physical
+      interface.
+    operations: CRUD
+    presence: optional
+schema:
+  properties:
+    ethernet_segment_identifier:
+      description: Ethernet Segment Id configured for the Physical Interface. In a
+        multihomed environment, user should configure the peer Physical interface
+        with the same ESI.
+      operations: CRUD
+      presence: optional
+      type: string
+    physical_interface_mac_addresses:
+      $ref: types.json#/definitions/MacAddressesType
+      description: MAC addresses on this physical interface.
+      operations: CRUD
+      presence: optional
+    physical_interface_port_id:
+      description: port id of this physical interface. This port id is used in LLDP
+        to identify a physical port on the peering device
+      operations: CRUD
+      presence: optional
+      type: string
+    physical_interface_type:
+      $ref: types.json#/definitions/PhysicalInterfaceType
+      description: Physical interface type that can be either regular physical interface
+        or LAG interface.
+      operations: CRUD
+      presence: optional
+  required: []
+  type: object

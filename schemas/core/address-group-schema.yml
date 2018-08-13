@@ -1,34 +1,32 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    project: 
-      operations: "CRUD"
-      description: "Project level address Group object"
-      presence: "optional"
-    policy_management: 
-      operations: "CRUD"
-      description: "Address Group object"
-      presence: "optional"
-  plural: "address_groups"
-  id: "address_group"
-  schema: 
-    required: []
-    type: "object"
-    properties: 
-      pending_delete: 
-        default: false
-        operations: "R"
-        type: "boolean"
-        description: ""
-        presence: "optional"
-      address_group_prefix: 
-        operations: "CRUD"
-        collectionType: "list"
-        presence: "optional"
-        description: "List of IP prefix"
-        $ref: "types.json#/definitions/SubnetListType"
-
+api_style: contrail
+extends:
+- base
+id: address_group
+parents:
+  policy_management:
+    description: Address Group object
+    operations: CRUD
+    presence: optional
+  project:
+    description: Project level address Group object
+    operations: CRUD
+    presence: optional
+plural: address_groups
+prefix: /
+references: {}
+schema:
+  properties:
+    address_group_prefix:
+      $ref: types.json#/definitions/SubnetListType
+      collectionType: list
+      description: List of IP prefix
+      operations: CRUD
+      presence: optional
+      wrapper: true
+    draft_mode_state:
+      $ref: types.json#/definitions/DraftModeState
+      description: ''
+      operations: R
+      presence: optional
+  required: []
+  type: object

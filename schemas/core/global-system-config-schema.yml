@@ -1,109 +1,141 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: 
-    bgp_router: 
-      operations: "R"
-      description: "List of references to all bgp routers in systems."
-      presence: "required"
-  parents: 
-    config_root: 
-      operations: "R"
-      description: "Global system config is object where all global system configuration is present."
-      presence: "required"
-  plural: "global_system_configs"
-  id: "global_system_config"
-  schema: 
-    required: 
-      - "autonomous_system"
-    type: "object"
-    properties: 
-      config_version: 
-        operations: "R"
-        type: "string"
-        description: "Version of OpenContrail software that generated this config."
-        presence: "system-only"
-      bgpaas_parameters: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "BGP As A Service Parameters configuration"
-        $ref: "types.json#/definitions/BGPaaServiceParametersType"
-      supported_device_families: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "List of all supported physical router device family names. Used by UI to show pick list."
-        $ref: "types.json#/definitions/DeviceFamilyListType"
-      mac_move_control: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "MAC move control on the network"
-        $ref: "types.json#/definitions/MACMoveLimitControlType"
-      igmp_config: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "Global IGMP parameters"
-        $ref: "types.json#/definitions/IgmpConfigType"
-      plugin_tuning: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "Various Orchestration system plugin(interface) parameters, like Openstack Neutron plugin."
-        $ref: "types.json#/definitions/PluginProperties"
-      alarm_enable: 
-        operations: "CRUD"
-        type: "boolean"
-        description: "Flag to enable/disable alarms configured under global-system-config. True, if not set."
-        presence: "optional"
-      ibgp_auto_mesh: 
-        operations: "CRUD"
-        type: "boolean"
-        description: "When true, system will automatically create BGP peering mesh with all control-nodes that have same BGP AS number as global AS number."
-        presence: "optional"
-      mac_aging_time: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "MAC aging time on the network"
-        $ref: "types.json#/definitions/MACAgingTime"
-      bgp_always_compare_med: 
-        operations: "CRUD"
-        type: "boolean"
-        description: "Always compare MED even if paths are received from different ASes."
-        presence: "optional"
-      user_defined_log_statistics: 
-        operations: "CRUD"
-        collectionType: "map"
-        presence: "optional"
-        description: "stats name and patterns"
-        $ref: "types.json#/definitions/UserDefinedLogStatList"
-      graceful_restart_parameters: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "Graceful Restart parameters"
-        $ref: "types.json#/definitions/GracefulRestartParametersType"
-      rd_cluster_seed: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "Used to create collision-free route distinguishers."
-        $ref: "types.json#/definitions/RdClusterSeedType"
-      supported_fabric_annotations: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "List of supported annotations that can be used to annotate a Contrail Fabric. These annoations are used as directives, or hints to assign resources defined in namespaces to the network devices. For example, `igp-protocol: ospf` attribute could be used by the underlay provisioning playbook to choose which IGP protocol to use for the IP fabric."
-        $ref: "types.json#/definitions/KeyValuePairs"
-      ip_fabric_subnets: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "List of all subnets in which vrouter ip address exist. Used by Device manager to configure dynamic GRE tunnels on the SDN gateway."
-        $ref: "types.json#/definitions/SubnetListType"
-      autonomous_system: 
-        operations: "CRUD"
-        presence: "required"
-        description: "16 bit BGP Autonomous System number for the cluster."
-        $ref: "types.json#/definitions/AutonomousSystemType"
-      mac_limit_control: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "MAC limit control on the network"
-        $ref: "types.json#/definitions/MACLimitControlType"
-
+api_style: contrail
+extends:
+- base
+id: global_system_config
+parents:
+  config_root:
+    description: Global system config is object where all global system configuration
+      is present.
+    operations: R
+    presence: required
+plural: global_system_configs
+prefix: /
+references:
+  bgp_router:
+    description: List of references to all bgp routers in systems.
+    operations: R
+    presence: required
+schema:
+  properties:
+    alarm_enable:
+      description: Flag to enable/disable alarms configured under global-system-config.
+        True, if not set.
+      operations: CRUD
+      presence: optional
+      type: boolean
+    autonomous_system:
+      $ref: types.json#/definitions/AutonomousSystemType
+      description: 16 bit BGP Autonomous System number for the cluster.
+      operations: CRUD
+      presence: required
+    bgp_always_compare_med:
+      description: Always compare MED even if paths are received from different ASes.
+      operations: CRUD
+      presence: optional
+      type: boolean
+    bgpaas_parameters:
+      $ref: types.json#/definitions/BGPaaServiceParametersType
+      description: BGP As A Service Parameters configuration
+      operations: CRUD
+      presence: optional
+    config_version:
+      description: Version of OpenContrail software that generated this config.
+      operations: R
+      presence: system-only
+      type: string
+    enable_security_policy_draft:
+      default: false
+      description: ''
+      operations: CRUD
+      presence: optional
+      type: boolean
+    fabric_ztp:
+      description: This attribute to indicate if the fabric is zero-touch provisioned
+        or not. If this attribute is set to "True", user should not be allowed to
+        remove any existing namespaces from the fabric as they may be used to provision
+        the devices.
+      operations: CRUD
+      presence: optional
+      type: boolean
+    graceful_restart_parameters:
+      $ref: types.json#/definitions/GracefulRestartParametersType
+      description: Graceful Restart parameters
+      operations: CRUD
+      presence: optional
+    ibgp_auto_mesh:
+      default: true
+      description: When true, system will automatically create BGP peering mesh with
+        all control-nodes that have same BGP AS number as global AS number.
+      operations: CRUD
+      presence: optional
+      type: boolean
+    igmp_enable:
+      default: false
+      description: IGMP mode at Global level.
+      operations: CRUD
+      presence: optional
+      type: boolean
+    ip_fabric_subnets:
+      $ref: types.json#/definitions/SubnetListType
+      description: List of all subnets in which vrouter ip address exist. Used by
+        Device manager to configure dynamic GRE tunnels on the SDN gateway.
+      operations: CRUD
+      presence: optional
+    mac_aging_time:
+      $ref: types.json#/definitions/MACAgingTime
+      description: MAC aging time on the network
+      operations: CRUD
+      presence: optional
+    mac_limit_control:
+      $ref: types.json#/definitions/MACLimitControlType
+      description: MAC limit control on the network
+      operations: CRUD
+      presence: optional
+    mac_move_control:
+      $ref: types.json#/definitions/MACMoveLimitControlType
+      description: MAC move control on the network
+      operations: CRUD
+      presence: optional
+    plugin_tuning:
+      $ref: types.json#/definitions/PluginProperties
+      description: Various Orchestration system plugin(interface) parameters, like
+        Openstack Neutron plugin.
+      operations: CRUD
+      presence: optional
+    rd_cluster_seed:
+      $ref: types.json#/definitions/RdClusterSeedType
+      description: Used to create collision-free route distinguishers.
+      operations: CRUD
+      presence: optional
+    supported_device_families:
+      $ref: types.json#/definitions/DeviceFamilyListType
+      description: List of all supported physical router device family names. Used
+        by UI to show pick list.
+      operations: CRUD
+      presence: optional
+    supported_fabric_annotations:
+      $ref: types.json#/definitions/KeyValuePairs
+      description: 'List of supported annotations that can be used to annotate a Contrail
+        Fabric. These annoations are used as directives, or hints to assign resources
+        defined in namespaces to the network devices. For example, `igp-protocol:
+        ospf` attribute could be used by the underlay provisioning playbook to choose
+        which IGP protocol to use for the IP fabric.'
+      operations: CRUD
+      presence: optional
+    supported_vendor_hardwares:
+      $ref: types.json#/definitions/VendorHardwaresType
+      description: List of all supported vendor hardware platforms by the system.
+        Used by UI to show pick list.
+      operations: CRUD
+      presence: optional
+    user_defined_log_statistics:
+      $ref: types.json#/definitions/UserDefinedLogStatList
+      collectionType: map
+      description: stats name and patterns
+      mapKey: name
+      operations: CRUD
+      presence: optional
+      wrapper: true
+  required:
+  - autonomous_system
+  type: object

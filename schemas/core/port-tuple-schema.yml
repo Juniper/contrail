@@ -1,18 +1,16 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    service_instance: 
-      operations: "CRUD"
-      description: ""
-      presence: "optional"
-  plural: "port_tuples"
-  id: "port_tuple"
-  schema: 
-    required: []
-    type: "object"
-    properties: {}
-
+api_style: contrail
+extends:
+- base
+id: port_tuple
+parents:
+  service_instance:
+    description: ''
+    operations: CRUD
+    presence: optional
+plural: port_tuples
+prefix: /
+references: {}
+schema:
+  properties: {}
+  required: []
+  type: object

@@ -1,14 +1,12 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: {}
-  plural: "discovery_service_assignments"
-  id: "discovery_service_assignment"
-  schema: 
-    required: []
-    type: "object"
-    properties: {}
-
+api_style: contrail
+extends:
+- base
+id: discovery_service_assignment
+parents: {}
+plural: discovery_service_assignments
+prefix: /
+references: {}
+schema:
+  properties: {}
+  required: []
+  type: object
