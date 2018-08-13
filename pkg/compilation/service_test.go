@@ -243,8 +243,8 @@ func (s *blockingStore) WaitForTransaction() {
 }
 
 func (s *blockingStore) RegisterIn(ics *compilation.IntentCompilationService) {
-	s.Store = ics.Store
-	ics.Store = s
+	s.Store = ics.Store()
+	ics.SetStore(s)
 }
 
 func (s *blockingStore) WatchRecursive(
