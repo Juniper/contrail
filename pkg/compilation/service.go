@@ -60,7 +60,7 @@ type Store interface {
 //IntentCompilationService represents Intent Compilation Service.
 type IntentCompilationService struct {
 	config    *config.Config
-	Store     Store
+	store     Store
 	locker    locker
 	service   *compilationif.CompilationService
 	apiClient *client.HTTP
@@ -87,7 +87,7 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 	return &IntentCompilationService{
 		service:   SetupService(apiClient),
 		apiClient: apiClient,
-		Store:     etcd.NewClient(e),
+		store:     etcd.NewClient(e),
 		locker:    l,
 		config:    &c,
 		log:       log.NewLogger(c.DefaultCfg.ServiceName),
@@ -103,7 +103,7 @@ func (ics *IntentCompilationService) handleMessage(
 		index, oper, key, newValue)
 
 	var skipMessage bool
-	if err := ics.Store.InTransaction(ctx, func(ctx context.Context) error {
+	if err := ics.store.InTransaction(ctx, func(ctx context.Context) error {
 		skipMessage = true
 		storedIndex, err := ics.getStoredIndex(ctx)
 		if err != nil {
@@ -166,7 +166,7 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	watch.InitDispatcher(ics.config.DefaultCfg.NumberOfWorkers, ics.service.HandleEtcdMessage)
 
 	ics.log.Debug("Setting MessageIndex to 0 (if not exists)")
-	err = ics.Store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0"))
+	err = ics.store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0"))
 	if err != nil {
 		ics.log.Println("Cannot Set MessageIndex")
 		return err
@@ -175,7 +175,7 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	// Init watching channel
 	watchPath := ics.config.EtcdNotifierCfg.WatchPath
 	ics.log.WithField("watchPath", watchPath).Debug("Starting recursive watch")
-	eventChan := ics.Store.WatchRecursive(ctx, "/"+watchPath, int64(0))
+	eventChan := ics.store.WatchRecursive(ctx, "/"+watchPath, int64(0))
 
 	watch.RunDispatcher()
 

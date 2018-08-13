@@ -243,8 +243,11 @@ func (s *blockingStore) WaitForTransaction() {
 }
 
 func (s *blockingStore) RegisterIn(ics *compilation.IntentCompilationService) {
-	s.Store = ics.Store
-	ics.Store = s
+	// gotypex doesn't see symbols from export_test.go: https://github.com/golang/go/issues/22030
+	// nolint: gotypex
+	s.Store = ics.Store()
+	// nolint: gotypex
+	ics.SetStore(s)
 }
 
 func (s *blockingStore) WatchRecursive(
