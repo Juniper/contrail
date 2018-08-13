@@ -34,4 +34,9 @@
         presence: "optional"
         description: "MAC addresses on this physical interface."
         $ref: "types.json#/definitions/MacAddressesType"
+      physical_interface_port_id: 
+        operations: "CRUD"
+        type: "string"
+        description: "port id of this physical interface. This port id is used in LLDP to identify a physical port on the peering device"
+        presence: "optional"
 

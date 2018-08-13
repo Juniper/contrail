@@ -28,8 +28,10 @@
       service_instance_bindings: 
         operations: "CRUD"
         collectionType: "map"
-        presence: "optional"
         description: "Opaque key value pair for generating config for the service instance."
+        presence: "optional"
+        wrapper: true
+        mapKey: "key"
         $ref: "types.json#/definitions/KeyValuePairs"
       service_instance_properties: 
         operations: "CRUD"

@@ -105,9 +105,17 @@
       virtual_machine_interface_bindings: 
         operations: "CRUD"
         collectionType: "map"
-        presence: "optional"
         description: "Dictionary of arbitrary (key, value) for this interface. Neutron port bindings use this."
+        presence: "optional"
+        wrapper: true
+        mapKey: "key"
         $ref: "types.json#/definitions/KeyValuePairs"
+      igmp_enable: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "IGMP mode at Global level."
+        presence: "optional"
       virtual_machine_interface_disable_policy: 
         default: false
         operations: "CRUD"
@@ -122,14 +130,10 @@
       virtual_machine_interface_fat_flow_protocols: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "optional"
         description: "List of (protocol, port number), for flows to interface with (protocol, destination port number), vrouter will ignore source port while setting up flow and ignore it as source port in reverse flow. Hence many flows will map to single flow."
-        $ref: "types.json#/definitions/FatFlowProtocols"
-      igmp_config: 
-        operations: "CRUD"
         presence: "optional"
-        description: "Global IGMP parameters"
-        $ref: "types.json#/definitions/IgmpConfigType"
+        wrapper: true
+        $ref: "types.json#/definitions/FatFlowProtocols"
       vlan_tag_based_bridge_domain: 
         default: false
         operations: "CRUD"

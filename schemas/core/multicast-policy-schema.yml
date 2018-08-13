@@ -1,0 +1,21 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: {}
+  plural: "multicast_policys"
+  id: "multicast_policy"
+  schema: 
+    required: []
+    type: "object"
+    properties: 
+      multicast_source_groups: 
+        operations: "CRUD"
+        collectionType: "list"
+        description: "List of Multicast (S,G) Addresses."
+        presence: "optional"
+        wrapper: true
+        $ref: "types.json#/definitions/MulticastSourceGroups"
+

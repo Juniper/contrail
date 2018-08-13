@@ -9,9 +9,9 @@
       $ref: "types.json#definitions/RoutingPolicyType"
       description: "List of references of routing policy objects. imported by user."
       presence: "optional"
-    multicast_group: 
+    multicast_policy: 
       operations: "CRUD"
-      description: "Reference to multicast group. Multicast group further refers to list of <S,G>          supported."
+      description: "Reference to multicast policy. Each multicast policy has a list of           (S,G) Addresses."
       presence: "optional"
     network_ipam: 
       operations: "CRUD"
@@ -63,11 +63,18 @@
         presence: "optional"
         description: "Address allocation mode for virtual network."
         $ref: "types.json#/definitions/AddressAllocationModeType"
+      igmp_enable: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "IGMP mode at Global level."
+        presence: "optional"
       virtual_network_fat_flow_protocols: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "optional"
         description: "Fat flow configuration which is a list, will be applied to all the interfaces in the specified virtual-network"
+        presence: "optional"
+        wrapper: true
         $ref: "types.json#/definitions/FatFlowProtocols"
       route_target_list: 
         operations: "CRUD"

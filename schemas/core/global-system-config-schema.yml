@@ -40,25 +40,43 @@
         presence: "optional"
         description: "MAC move control on the network"
         $ref: "types.json#/definitions/MACMoveLimitControlType"
-      igmp_config: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "Global IGMP parameters"
-        $ref: "types.json#/definitions/IgmpConfigType"
-      plugin_tuning: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "Various Orchestration system plugin(interface) parameters, like Openstack Neutron plugin."
-        $ref: "types.json#/definitions/PluginProperties"
       alarm_enable: 
         operations: "CRUD"
         type: "boolean"
         description: "Flag to enable/disable alarms configured under global-system-config. True, if not set."
         presence: "optional"
+      igmp_enable: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: "IGMP mode at Global level."
+        presence: "optional"
+      plugin_tuning: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Various Orchestration system plugin(interface) parameters, like Openstack Neutron plugin."
+        $ref: "types.json#/definitions/PluginProperties"
+      fabric_ztp: 
+        operations: "CRUD"
+        type: "boolean"
+        description: "This attribute to indicate if the fabric is zero-touch provisioned or not. If this attribute is set to \"True\", user should not be allowed to remove any existing namespaces from the fabric as they may be used to provision the devices."
+        presence: "optional"
+      supported_vendor_hardwares: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "List of all supported vendor hardware platforms by the system. Used by UI to show pick list."
+        $ref: "types.json#/definitions/VendorHardwaresType"
       ibgp_auto_mesh: 
+        default: true
         operations: "CRUD"
         type: "boolean"
         description: "When true, system will automatically create BGP peering mesh with all control-nodes that have same BGP AS number as global AS number."
+        presence: "optional"
+      enable_security_policy_draft: 
+        default: false
+        operations: "CRUD"
+        type: "boolean"
+        description: ""
         presence: "optional"
       mac_aging_time: 
         operations: "CRUD"
@@ -73,8 +91,10 @@
       user_defined_log_statistics: 
         operations: "CRUD"
         collectionType: "map"
-        presence: "optional"
         description: "stats name and patterns"
+        presence: "optional"
+        wrapper: true
+        mapKey: "name"
         $ref: "types.json#/definitions/UserDefinedLogStatList"
       graceful_restart_parameters: 
         operations: "CRUD"

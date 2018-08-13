@@ -4,13 +4,13 @@
   extends: 
     - "base"
   references: 
-    device_image: 
+    node_profile: 
       operations: "CRUD"
-      description: "Intended device image for this PRouter. Each PRouter can have one and only one device image assigned. If this image is successfully installed on the PRouter, the PRouterUVE.os_version should match the os-version property of the image"
+      description: "Node profile assigned to the physical router during device discovery/onboarding."
       presence: "optional"
-    virtual_network: 
+    fabric: 
       operations: "CRUD"
-      description: "Reference to virtual network, whose VRF is present on this physical router, Applicable when only VRF is present with no physical interfaces from this physical vrouter. Generally used when using device manager and option A+B for this virtual network in L3VPN use case."
+      description: "Fabric that this physical-router belongs to."
       presence: "optional"
     bgp_router: 
       operations: "CRUD"
@@ -19,6 +19,14 @@
     virtual_router: 
       operations: "CRUD"
       description: "Reference to vrouter responsible for this physical router. Currently only applicable for vrouters that are TOR agents."
+      presence: "optional"
+    device_image: 
+      operations: "CRUD"
+      description: "Intended device image for this PRouter. Each PRouter can have one and only one device image assigned. If this image is successfully installed on the PRouter, the PRouterUVE.os_version should match the os-version property of the image"
+      presence: "optional"
+    virtual_network: 
+      operations: "CRUD"
+      description: "Reference to virtual network, whose VRF is present on this physical router, Applicable when only VRF is present with no physical interfaces from this physical vrouter. Generally used when using device manager and option A+B for this virtual network in L3VPN use case."
       presence: "optional"
   parents: 
     global_system_config: 
@@ -80,6 +88,11 @@
         type: "boolean"
         description: "LLDP support on this router"
         presence: "optional"
+      routing_bridging_roles: 
+        operations: "CRUD"
+        presence: "optional"
+        description: "Routing-bridging role (e.g. CRB, ERB, etc.), used by the device manager to provision physical router, for e.g device manager may choose to configure physical router based on its role."
+        $ref: "types.json#/definitions/RoutingBridgingRolesType"
       physical_router_loopback_ip: 
         operations: "CRUD"
         presence: "optional"
