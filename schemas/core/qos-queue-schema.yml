@@ -1,36 +1,34 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    global_qos_config: 
-      operations: "CRUD"
-      description: "QOS queue config object in this project."
-      presence: "optional"
-  plural: "qos_queues"
-  id: "qos_queue"
-  schema: 
-    required: 
-      - "min_bandwidth"
-      - "max_bandwidth"
-      - "qos_queue_identifier"
-    type: "object"
-    properties: 
-      qos_queue_identifier: 
-        operations: "CRUD"
-        type: "integer"
-        description: "Unique id for this queue."
-        presence: "required"
-      max_bandwidth: 
-        operations: "CRUD"
-        type: "integer"
-        description: "Maximum bandwidth for this queue."
-        presence: "required"
-      min_bandwidth: 
-        operations: "CRUD"
-        type: "integer"
-        description: "Minimum bandwidth for this queue."
-        presence: "required"
-
+api_style: contrail
+extends:
+- base
+id: qos_queue
+parents:
+  global_qos_config:
+    description: QOS queue config object in this project.
+    operations: CRUD
+    presence: optional
+plural: qos_queues
+prefix: /
+references: {}
+schema:
+  properties:
+    max_bandwidth:
+      description: Maximum bandwidth for this queue.
+      operations: CRUD
+      presence: required
+      type: integer
+    min_bandwidth:
+      description: Minimum bandwidth for this queue.
+      operations: CRUD
+      presence: required
+      type: integer
+    qos_queue_identifier:
+      description: Unique id for this queue.
+      operations: CRUD
+      presence: required
+      type: integer
+  required:
+  - min_bandwidth
+  - max_bandwidth
+  - qos_queue_identifier
+  type: object

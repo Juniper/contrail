@@ -1,24 +1,22 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: 
-    service_instance: 
-      operations: "CRUD"
-      derived: true
-      description: "Reference to the service instance of this virtual machine."
-      presence: "system-only"
-  parents: {}
-  plural: "virtual_machines"
-  id: "virtual_machine"
-  schema: 
-    required: []
-    type: "object"
-    properties: 
-      server_type: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "An enumeration value specifying the server type."
-        $ref: "types.json#/definitions/ServerType"
-
+api_style: contrail
+extends:
+- base
+id: virtual_machine
+parents: {}
+plural: virtual_machines
+prefix: /
+references:
+  service_instance:
+    derived: true
+    description: Reference to the service instance of this virtual machine.
+    operations: CRUD
+    presence: system-only
+schema:
+  properties:
+    server_type:
+      $ref: types.json#/definitions/ServerType
+      description: An enumeration value specifying the server type.
+      operations: CRUD
+      presence: optional
+  required: []
+  type: object

@@ -1,20 +1,18 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: {}
-  plural: "sub_clusters"
-  id: "sub_cluster"
-  schema: 
-    required: 
-      - "sub_cluster_asn"
-    type: "object"
-    properties: 
-      sub_cluster_asn: 
-        operations: "CRUD"
-        presence: "required"
-        description: "AS number of that cluster."
-        $ref: "types.json#/definitions/AutonomousSystemType"
-
+api_style: contrail
+extends:
+- base
+id: sub_cluster
+parents: {}
+plural: sub_clusters
+prefix: /
+references: {}
+schema:
+  properties:
+    sub_cluster_asn:
+      $ref: types.json#/definitions/AutonomousSystemType
+      description: AS number of that cluster.
+      operations: CRUD
+      presence: required
+  required:
+  - sub_cluster_asn
+  type: object
