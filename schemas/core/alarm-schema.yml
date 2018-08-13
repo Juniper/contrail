@@ -24,8 +24,9 @@
       alarm_rules: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "optional"
         description: "Rules based on the UVE attributes specified as OR-of-ANDs of AlarmExpression template. Example: \"alarm_rules\": {\"or_list\": [{\"and_list\": [{AlarmExpression1}, {AlarmExpression2}, ...]}, {\"and_list\": [{AlarmExpression3}, {AlarmExpression4}, ...]}]}"
+        presence: "optional"
+        wrapper: true
         $ref: "types.json#/definitions/AlarmOrList"
       uve_keys: 
         operations: "CRUD"

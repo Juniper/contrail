@@ -4,9 +4,15 @@
   extends: 
     - "base"
   references: 
-    physical_router: 
+    virtual_network: 
       operations: "CRUD"
-      description: "List of physical-routers that belongs to a fabric."
+      $ref: "types.json#definitions/FabricNetworkTag"
+      description: "Similar to using virtual-machine to model the bare metal server, we are using virtual-network to model various underlay networks such as the management network and IP fabric network. This would allow us the re-use the same IPAM data model and code base to manage the IP auto-assignments for the underlay physical networks."
+      presence: "optional"
+    node_profile: 
+      operations: "CRUD"
+      $ref: "types.json#definitions/SerialNumListType"
+      description: "node profiles assignd to the fabric. The serial number list on the link is used to auto assign node-profile during ZTP so that port channelization could be bootstrapped based on the hardware spec in the node profile."
       presence: "optional"
   parents: 
     global_system_config: 
@@ -22,7 +28,8 @@
       fabric_credentials: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "optional"
         description: "List of device credentials to manage the network devices in the fabric."
+        presence: "optional"
+        wrapper: true
         $ref: "types.json#/definitions/DeviceCredentialList"
 

@@ -29,10 +29,9 @@
     required: []
     type: "object"
     properties: 
-      pending_delete: 
-        default: false
+      draft_mode_state: 
         operations: "R"
-        type: "boolean"
-        description: ""
         presence: "optional"
+        description: ""
+        $ref: "types.json#/definitions/DraftModeState"
 

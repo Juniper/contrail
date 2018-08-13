@@ -1,0 +1,14 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: {}
+  parents: {}
+  plural: "cards"
+  id: "card"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

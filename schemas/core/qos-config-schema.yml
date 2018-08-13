@@ -33,14 +33,18 @@
       mpls_exp_entries: 
         operations: "CRUD"
         collectionType: "map"
-        presence: "optional"
         description: "Map of MPLS EXP values to applicable forwarding class for packet."
+        presence: "optional"
+        wrapper: true
+        mapKey: "key"
         $ref: "types.json#/definitions/QosIdForwardingClassPairs"
       vlan_priority_entries: 
         operations: "CRUD"
         collectionType: "map"
-        presence: "optional"
         description: "Map of .1p priority code to applicable forwarding class for packet."
+        presence: "optional"
+        wrapper: true
+        mapKey: "key"
         $ref: "types.json#/definitions/QosIdForwardingClassPairs"
       default_forwarding_class_id: 
         operations: "CRUD"
@@ -50,7 +54,9 @@
       dscp_entries: 
         operations: "CRUD"
         collectionType: "map"
-        presence: "optional"
         description: "Map of DSCP match condition and applicable forwarding class for packet."
+        presence: "optional"
+        wrapper: true
+        mapKey: "key"
         $ref: "types.json#/definitions/QosIdForwardingClassPairs"
 

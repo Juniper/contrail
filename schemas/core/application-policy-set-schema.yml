@@ -34,10 +34,9 @@
         type: "boolean"
         description: "If set, indicates application policy set to be applied to all application tags"
         presence: "optional"
-      pending_delete: 
-        default: false
+      draft_mode_state: 
         operations: "R"
-        type: "boolean"
-        description: ""
         presence: "optional"
+        description: ""
+        $ref: "types.json#/definitions/DraftModeState"
 

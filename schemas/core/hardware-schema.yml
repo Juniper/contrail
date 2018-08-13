@@ -1,0 +1,18 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    card: 
+      operations: "CRUD"
+      description: "List of installed interface cards in a specific hardware platform."
+      presence: "optional"
+  parents: {}
+  plural: "hardwares"
+  id: "hardware"
+  schema: 
+    required: []
+    type: "object"
+    properties: {}
+

@@ -52,12 +52,6 @@
         presence: "required"
         description: "match condition for traffic destination"
         $ref: "types.json#/definitions/FirewallRuleEndpointType"
-      pending_delete: 
-        default: false
-        operations: "R"
-        type: "boolean"
-        description: ""
-        presence: "optional"
       action_list: 
         operations: "CRUD"
         presence: "required"
@@ -73,6 +67,11 @@
         presence: "required"
         description: "Direction in the rule"
         $ref: "types.json#/definitions/FirewallRuleDirectionType"
+      draft_mode_state: 
+        operations: "R"
+        presence: "optional"
+        description: ""
+        $ref: "types.json#/definitions/DraftModeState"
       match_tag_types: 
         operations: "R"
         presence: "required"
@@ -81,7 +80,8 @@
       match_tags: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "required"
         description: "matching tags for source and destination endpoints"
+        presence: "required"
+        wrapper: true
         $ref: "types.json#/definitions/FirewallRuleMatchTagsType"
 

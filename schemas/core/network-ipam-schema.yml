@@ -19,6 +19,11 @@
     required: []
     type: "object"
     properties: 
+      ipam_subnetting: 
+        operations: "CRD"
+        type: "boolean"
+        description: "This flag indicates if ipam subnets are carved out from a big subnet, default behavior is False."
+        presence: "optional"
       network_ipam_mgmt: 
         operations: "CRUD"
         presence: "optional"
@@ -27,8 +32,9 @@
       ipam_subnets: 
         operations: "CRD"
         collectionType: "list"
-        presence: "optional"
         description: "List of subnets for this ipam."
+        presence: "optional"
+        wrapper: true
         $ref: "types.json#/definitions/IpamSubnets"
       ipam_subnet_method: 
         operations: "CRD"

@@ -1,0 +1,28 @@
+---
+  prefix: "/"
+  api_style: "contrail"
+  extends: 
+    - "base"
+  references: 
+    job_template: 
+      operations: "CRUD"
+      description: "This reference associates the role config to a job-template that contains a playbook that generates device              specific role config and deploys it to the device. The role-config.config attribtue value must be in JSON              format and conform to the input_schema defined in the job-template."
+      presence: "optional"
+  parents: 
+    node_profile: 
+      operations: "CRUD"
+      description: "list of role configs for those physical or routing/bridging roles defined in the node-profile."
+      presence: "optional"
+  plural: "role_configs"
+  id: "role_config"
+  schema: 
+    required: 
+      - "role_config_config"
+    type: "object"
+    properties: 
+      role_config_config: 
+        operations: "CRUD"
+        type: "string"
+        description: "role config in JSON format. This JSON config must conform to the input-schema of the job template for the role provisioning."
+        presence: "required"
+

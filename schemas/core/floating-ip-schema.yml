@@ -36,8 +36,9 @@
       floating_ip_port_mappings: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "optional"
         description: "List of PortMaps for this floating-ip."
+        presence: "optional"
+        wrapper: true
         $ref: "types.json#/definitions/PortMappings"
       floating_ip_is_virtual_ip: 
         operations: "CRUD"

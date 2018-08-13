@@ -28,8 +28,9 @@
       port_translation_pools: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "optional"
         description: "List of Ports to be reserved for providing underlay connectivity via Port translation."
+        presence: "optional"
+        wrapper: true
         $ref: "types.json#/definitions/PortTranslationPools"
       forwarding_mode: 
         operations: "CRUD"
@@ -59,8 +60,9 @@
       encryption_tunnel_endpoints: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "optional"
         description: "Encryption tunnel endpoints list"
+        presence: "optional"
+        wrapper: true
         $ref: "types.json#/definitions/EncryptionTunnelEndpointList"
       vxlan_network_identifier_mode: 
         operations: "CRUD"

@@ -14,25 +14,38 @@
   schema: 
     required: 
       - "job_template_multi_device_job"
+      - "job_template_synchronous_job"
+      - "job_template_concurrency_level"
       - "job_template_playbooks"
     type: "object"
     properties: 
+      job_template_concurrency_level: 
+        operations: "CRUD"
+        presence: "required"
+        description: "This attribute controls the number concurrent job execution against the same fabric. When this attribute set to \"fabric\", there could only one job execution per fabric When this attribute set to \"device\", there could be only one playbook execution running against the same device at the time. "
+        $ref: "types.json#/definitions/JobConcurrencyLevelType"
+      job_template_output_schema: 
+        operations: "CRUD"
+        type: "string"
+        description: "JSON schema of the job output that describes the output from the job and could be used by UI to render the output automatically. This property stores the JSON schema content as string."
+        presence: "optional"
       job_template_playbooks: 
         operations: "CRUD"
         collectionType: "list"
-        presence: "required"
         description: "List of vendor specific playbooks that achieve the same functionality on each vendor device. All the vendor specific playbooks listed here share the same input/output schema defined in the job template"
+        presence: "required"
+        wrapper: true
         $ref: "types.json#/definitions/PlaybookInfoListType"
       job_template_multi_device_job: 
         operations: "CRUD"
         type: "boolean"
         description: "if set to true, the \"/execute-job\" action url allows device list as additional parameter to run the job template on multiple device in one job"
         presence: "required"
-      job_template_output_schema: 
+      job_template_synchronous_job: 
         operations: "CRUD"
-        type: "string"
-        description: "JSON schema of the job output that describes the output from the job and could be used by UI to render the output automatically. This property stores the JSON schema content as string."
-        presence: "optional"
+        type: "boolean"
+        description: "if set to true, the \"/execute-job\" action simply executes the playbook directly and wait until the playbook finishes. So the playbook in the synchronous job should not take long to execute. There will no job log or job uve being created for synchronous job. This is an optional field. If not set, the default value is \"false\"."
+        presence: "required"
       job_template_input_schema: 
         operations: "CRUD"
         type: "string"
