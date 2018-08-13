@@ -20,6 +20,7 @@ type DB struct {
 	deleted      []*node
 	versionMap   map[uint64]*node
 	idMap        map[string]*node
+	resources    map[string]map[string]*node
 	watchers     map[uint64]*Watcher
 	mutex        sync.RWMutex
 	watcherMutex sync.RWMutex
@@ -31,6 +32,13 @@ type Watcher struct {
 	updateCh chan bool
 	id       uint64
 	node     *node
+}
+
+type node struct {
+	prev    *node
+	version uint64
+	event   *services.Event
+	next    *node
 }
 
 func (w *Watcher) notify() {
@@ -109,6 +117,7 @@ func NewDB(maxHistory uint64) *DB {
 		mutex:        sync.RWMutex{},
 		watcherMutex: sync.RWMutex{},
 		maxHistory:   maxHistory,
+		resources:    map[string]map[string]*node{},
 	}
 	return db
 }
@@ -144,11 +153,11 @@ func (db *DB) update(event *services.Event) {
 	}
 	resource := event.GetResource()
 
-	db.updateDBVersion(n)
-	var oldResource services.Resource
 	existingNode, ok := db.idMap[resource.GetUUID()]
 	if ok {
-		oldResource = existingNode.event.GetResource()
+		// We should consider throwing error if operation is create here
+		oldResource := existingNode.event.GetResource()
+		db.removeDependencies(oldResource)
 		log.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
 		if existingNode == db.first {
 			db.first = existingNode.getNext()
@@ -162,11 +171,15 @@ func (db *DB) update(event *services.Event) {
 		db.deleted = append(db.deleted, n)
 	}
 
+	db.append(n)
+	// first update version so that in case of maxHistory exceeded we remove that version
+	db.updateDBVersion(n)
 	db.removeTooOldNodesIfNeeded()
+	// This is done after removing too old objects as the uuid is same regardless of operation type
 	db.idMap[resource.GetUUID()] = n
 
-	db.append(n)
-	db.updateDependentNodes(event, oldResource)
+	db.updateDependentNodes(event)
+	db.handleNode(n)
 
 	log.Debugf("node %v updated", n.version)
 }
@@ -220,16 +233,9 @@ func (db *DB) removeDependencies(resource services.Resource) {
 	}
 }
 
-func (db *DB) updateDependentNodes(event services.HasResource, oldResource services.Resource) {
-	resource := event.GetResource()
-	switch event.Operation() {
-	case services.OperationCreate:
-		db.addDependencies(resource)
-	case services.OperationUpdate:
-		db.removeDependencies(oldResource)
-		db.addDependencies(resource)
-	case services.OperationDelete:
-		db.removeDependencies(oldResource)
+func (db *DB) updateDependentNodes(event services.HasResource) {
+	if event.Operation() == services.OperationCreate || event.Operation() == services.OperationUpdate {
+		db.addDependencies(event.GetResource())
 	}
 }
 
@@ -277,13 +283,6 @@ func (db *DB) getNodeByVersion(version uint64) *node {
 	return node
 }
 
-type node struct {
-	prev    *node
-	version uint64
-	event   *services.Event
-	next    *node
-}
-
 //String for loggging.
 func (n *node) String() string {
 	return fmt.Sprintf("[node %d]", n.version)
@@ -322,4 +321,21 @@ func (n *node) pop() {
 	next.setPrev(prev)
 	n.next = nil
 	n.prev = nil
+}
+
+func (db *DB) handleNode(n *node) {
+	e := n.event
+	r := e.GetResource()
+	k := r.Kind()
+	uuid := r.GetUUID()
+
+	switch e.Operation() {
+	case services.OperationCreate, services.OperationUpdate:
+		if db.resources[k] == nil {
+			db.resources[k] = map[string]*node{}
+		}
+		db.resources[k][uuid] = n
+	case services.OperationDelete:
+		delete(db.resources[k], uuid)
+	}
 }

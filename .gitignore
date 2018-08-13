@@ -29,10 +29,10 @@ profile.cov
 proto/
 public/
 test_output/
-tools/init_mysql.sql
-tools/init_psql.sql
-tools/cleanup_mysql.sql
-tools/cleanup_psql.sql
+**/tools/init_mysql.sql
+**/tools/init_psql.sql
+**/tools/cleanup_mysql.sql
+**/tools/cleanup_psql.sql
 
 extension/pkg/**/gen_*
 extension/pkg/**/generated.pb.go
