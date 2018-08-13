@@ -1,20 +1,21 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: {}
-  plural: "tag_types"
-  id: "tag_type"
-  schema: 
-    required: 
-      - "tag_type_id"
-    type: "object"
-    properties: 
-      tag_type_id: 
-        operations: "R"
-        presence: "required"
-        description: "Internal Tag type ID                  coded on 16 bits where the first 255 IDs are reserved                  and pre-defined. Users (principally cloud admin) can define                  arbitrary types but its automatically shared to all project as                  it is a global resource."
-        $ref: "types.json#/definitions/U16BitHexInt"
-
+api_style: contrail
+extends:
+- base
+id: tag_type
+parents: {}
+plural: tag_types
+prefix: /
+references: {}
+schema:
+  properties:
+    tag_type_id:
+      $ref: types.json#/definitions/U16BitHexInt
+      description: Internal Tag type ID                  coded on 16 bits where the
+        first 255 IDs are reserved                  and pre-defined. Users (principally
+        cloud admin) can define                  arbitrary types but its automatically
+        shared to all project as                  it is a global resource.
+      operations: R
+      presence: required
+  required:
+  - tag_type_id
+  type: object

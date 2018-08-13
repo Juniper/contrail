@@ -1,13 +1,13 @@
 api_style: contrail
 extends:
 - base
-id: config_root
+id: hardware
 parents: {}
-plural: config_roots
+plural: hardwares
 prefix: /
 references:
-  tag:
-    description: Attribute attached to objects - has a type and value
+  card:
+    description: List of installed interface cards in a specific hardware platform.
     operations: CRUD
     presence: optional
 schema:
