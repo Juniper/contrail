@@ -1,23 +1,21 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    config_root: 
-      operations: "CRUD"
-      description: "Domain is authentication namespace, a collection of projects."
-      presence: "system-only"
-  plural: "domains"
-  id: "domain"
-  schema: 
-    required: []
-    type: "object"
-    properties: 
-      domain_limits: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "Domain level quota, not currently implemented"
-        $ref: "types.json#/definitions/DomainLimitsType"
-
+api_style: contrail
+extends:
+- base
+id: domain
+parents:
+  config_root:
+    description: Domain is authentication namespace, a collection of projects.
+    operations: CRUD
+    presence: system-only
+plural: domains
+prefix: /
+references: {}
+schema:
+  properties:
+    domain_limits:
+      $ref: types.json#/definitions/DomainLimitsType
+      description: Domain level quota, not currently implemented
+      operations: CRUD
+      presence: optional
+  required: []
+  type: object

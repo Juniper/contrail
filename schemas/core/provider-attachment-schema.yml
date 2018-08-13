@@ -1,18 +1,16 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: 
-    virtual_router: 
-      operations: "CRUD"
-      description: "Not in Use."
-      presence: "optional"
-  parents: {}
-  plural: "provider_attachments"
-  id: "provider_attachment"
-  schema: 
-    required: []
-    type: "object"
-    properties: {}
-
+api_style: contrail
+extends:
+- base
+id: provider_attachment
+parents: {}
+plural: provider_attachments
+prefix: /
+references:
+  virtual_router:
+    description: Not in Use.
+    operations: CRUD
+    presence: optional
+schema:
+  properties: {}
+  required: []
+  type: object
