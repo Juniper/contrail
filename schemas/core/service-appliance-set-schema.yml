@@ -1,33 +1,33 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    global_system_config: 
-      operations: "CRUD"
-      description: ""
-      presence: "optional"
-  plural: "service_appliance_sets"
-  id: "service_appliance_set"
-  schema: 
-    required: []
-    type: "object"
-    properties: 
-      service_appliance_set_properties: 
-        operations: "CRUD"
-        presence: "optional"
-        description: "List of Key:Value pairs that are used by the provider driver and opaque to system."
-        $ref: "types.json#/definitions/KeyValuePairs"
-      service_appliance_ha_mode: 
-        operations: "CRUD"
-        type: "string"
-        description: "High availability mode for the service appliance set, active-active or active-backup."
-        presence: "optional"
-      service_appliance_driver: 
-        operations: "CRUD"
-        type: "string"
-        description: "Name of the provider driver for this service appliance set."
-        presence: "optional"
-
+api_style: contrail
+extends:
+- base
+id: service_appliance_set
+parents:
+  global_system_config:
+    description: ''
+    operations: CRUD
+    presence: optional
+plural: service_appliance_sets
+prefix: /
+references: {}
+schema:
+  properties:
+    service_appliance_driver:
+      description: Name of the provider driver for this service appliance set.
+      operations: CRUD
+      presence: optional
+      type: string
+    service_appliance_ha_mode:
+      description: High availability mode for the service appliance set, active-active
+        or active-backup.
+      operations: CRUD
+      presence: optional
+      type: string
+    service_appliance_set_properties:
+      $ref: types.json#/definitions/KeyValuePairs
+      description: List of Key:Value pairs that are used by the provider driver and
+        opaque to system.
+      operations: CRUD
+      presence: optional
+  required: []
+  type: object

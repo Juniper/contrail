@@ -1,24 +1,23 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: 
-    loadbalancer_pool: 
-      operations: "CRUD"
-      description: "Configuration object representing each member of load balancer pool."
-      presence: "optional"
-  plural: "loadbalancer_members"
-  id: "loadbalancer_member"
-  schema: 
-    required: 
-      - "loadbalancer_member_properties"
-    type: "object"
-    properties: 
-      loadbalancer_member_properties: 
-        operations: "CRUD"
-        presence: "required"
-        description: "Member configuration like ip address, destination port, weight etc."
-        $ref: "types.json#/definitions/LoadbalancerMemberType"
-
+api_style: contrail
+extends:
+- base
+id: loadbalancer_member
+parents:
+  loadbalancer_pool:
+    description: Configuration object representing each member of load balancer pool.
+    operations: CRUD
+    presence: optional
+plural: loadbalancer_members
+prefix: /
+references: {}
+schema:
+  properties:
+    loadbalancer_member_properties:
+      $ref: types.json#/definitions/LoadbalancerMemberType
+      description: Member configuration like ip address, destination port, weight
+        etc.
+      operations: CRUD
+      presence: required
+  required:
+  - loadbalancer_member_properties
+  type: object

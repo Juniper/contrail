@@ -1,14 +1,12 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: {}
-  parents: {}
-  plural: "route_targets"
-  id: "route_target"
-  schema: 
-    required: []
-    type: "object"
-    properties: {}
-
+api_style: contrail
+extends:
+- base
+id: route_target
+parents: {}
+plural: route_targets
+prefix: /
+references: {}
+schema:
+  properties: {}
+  required: []
+  type: object

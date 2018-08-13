@@ -1,43 +1,42 @@
----
-  prefix: "/"
-  api_style: "contrail"
-  extends: 
-    - "base"
-  references: 
-    tag_type: 
-      operations: "CRUD"
-      description: "Tag type reference which is limited to one"
-      presence: "optional"
-  parents: 
-    project: 
-      operations: "CRUD"
-      description: "Attribute attached to objects - has a type and value"
-      presence: "optional"
-    config_root: 
-      operations: "CRUD"
-      description: "Attribute attached to objects - has a type and value"
-      presence: "optional"
-  plural: "tags"
-  id: "tag"
-  schema: 
-    required: 
-      - "tag_type_name"
-      - "tag_value"
-    type: "object"
-    properties: 
-      tag_type_name: 
-        operations: "CR"
-        type: "string"
-        description: "Tag type string representation"
-        presence: "required"
-      tag_id: 
-        operations: "R"
-        presence: "optional"
-        description: "Internal Tag ID encapsulating tag type and value in                  hexadecimal fomat: 0xTTTTVVVV (T: type, V: value)"
-        $ref: "types.json#/definitions/U32BitHexInt"
-      tag_value: 
-        operations: "CR"
-        type: "string"
-        description: "Tag value string representation"
-        presence: "required"
-
+api_style: contrail
+extends:
+- base
+id: tag
+parents:
+  config_root:
+    description: Attribute attached to objects - has a type and value
+    operations: CRUD
+    presence: optional
+  project:
+    description: Attribute attached to objects - has a type and value
+    operations: CRUD
+    presence: optional
+plural: tags
+prefix: /
+references:
+  tag_type:
+    description: Tag type reference which is limited to one
+    operations: CRUD
+    presence: optional
+schema:
+  properties:
+    tag_id:
+      $ref: types.json#/definitions/U32BitHexInt
+      description: 'Internal Tag ID encapsulating tag type and value in                  hexadecimal
+        fomat: 0xTTTTVVVV (T: type, V: value)'
+      operations: R
+      presence: optional
+    tag_type_name:
+      description: Tag type string representation
+      operations: CR
+      presence: required
+      type: string
+    tag_value:
+      description: Tag value string representation
+      operations: CR
+      presence: required
+      type: string
+  required:
+  - tag_type_name
+  - tag_value
+  type: object

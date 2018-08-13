@@ -1,9 +1,9 @@
 api_style: contrail
 extends:
 - base
-id: service_object
+id: card
 parents: {}
-plural: service_objects
+plural: cards
 prefix: /
 references: {}
 schema:

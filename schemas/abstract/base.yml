@@ -50,6 +50,8 @@
         operations: "CRUD"
         collectionType: "map"
         presence: "optional"
+        wrapper: true
+        mapKey: key
         description: "Dictionary of arbitrary (key, value) on a resource."
         $ref: "base_types.json#/definitions/KeyValuePairs"
       perms2:
