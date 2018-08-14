@@ -198,8 +198,9 @@ func TestAllocateIp(t *testing.T) {
 		poolKey string
 		ipPools []ipPool
 
-		expectedIPs []net.IP
-		fails       bool
+		expectedIPs   []net.IP
+		expectedOneOf []net.IP
+		fails         bool
 	}{
 		{
 			name: "Simple example, one pool with correct key",
@@ -233,9 +234,9 @@ func TestAllocateIp(t *testing.T) {
 					end:   net.ParseIP("20.0.0.10"),
 				},
 			},
-			poolKey:     "subnet-uuid-1",
-			expectedIPs: []net.IP{net.ParseIP("10.0.0.1")},
-			fails:       false,
+			poolKey:       "subnet-uuid-1",
+			expectedOneOf: []net.IP{net.ParseIP("10.0.0.1"), net.ParseIP("20.0.0.1")},
+			fails:         false,
 		},
 		{
 			name: "Full subnet allocation",
@@ -299,6 +300,15 @@ func TestAllocateIp(t *testing.T) {
 								if err != nil {
 									break
 								}
+							}
+							if tt.expectedOneOf != nil {
+								var customExpectedIPs []net.IP
+								for _, expectedIP := range tt.expectedOneOf {
+									customExpectedIPs = append(customExpectedIPs, customIP(expectedIP, ts.firstByte))
+								}
+								var ipReceived net.IP
+								ipReceived, err = db.allocateIP(ctx, tt.poolKey)
+								assert.Contains(t, customExpectedIPs, ipReceived.To16())
 							}
 							if tt.fails {
 								assert.Error(t, err)
