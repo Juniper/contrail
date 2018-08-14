@@ -73,7 +73,6 @@ func visitResource(uuid string, sorted []*Event,
 		if err != nil {
 			return nil, err
 		}
-		break
 	}
 	stateGraph[uuid] = visited
 	sorted = append(sorted, event)

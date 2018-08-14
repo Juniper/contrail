@@ -124,8 +124,11 @@ func (m *{{ name }}) Depends() []string {
         return nil
     }
     {% for property in type.OrderedProperties %}
-    {% if property == "parent_uuid" %}
-    depends = append(depends, m.GetParentUUID())
+    {% if property.ID == "parent_uuid" %}
+    parentUUID := m.GetParentUUID()
+    if parentUUID != "" {
+        depends = append(depends, parentUUID)
+    }
     {% endif %}
     {% endfor %}
     {% for linkTo, reference in references %}
