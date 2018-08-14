@@ -57,8 +57,9 @@ func (s mapSlice) getStringSlice(key string) []string {
 }
 
 var overridenTypes = map[string]struct{}{
-	"types.json#/definitions/AccessType": {},
-	"types.json#/definitions/L4PortType": {},
+	"types.json#/definitions/AccessType":    {},
+	"types.json#/definitions/L4PortType":    {},
+	"types.json#/definitions/IpAddressType": {},
 }
 
 //Copy copies a json schema

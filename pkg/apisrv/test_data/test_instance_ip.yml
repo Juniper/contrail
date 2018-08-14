@@ -34,16 +34,6 @@ test_data:
       route_target: ["100:200"]
     network_ipam_refs:
       - uuid: test_ipam_instance_ip_blue
-        attr:
-          ipam_subnets:
-            - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
-              subnet:
-                ip_prefix: "10.0.0.0"
-                ip_prefix_len: 24
-            - subnet_uuid: "e76ab7ff-c47d-4faf-aec4-80dcc3658f0b"
-              subnet:
-                ip_prefix: "20.0.0.0"
-                ip_prefix_len: 24
 
   virtual_router: &virtual_router_blue
     fq_name: ["default-global-system-config", "test_virtual_router_blue"]
@@ -105,8 +95,6 @@ workflow:
       instance-ip:
         fq_name: ["test_instance_ip"]
         uuid: "test_instance_ip"
-        subnet_uuid: "e76ab7ff-c47d-4faf-aec4-80dcc3658f0b"
-        instance_ip_address: "10.10.10.10"
         network_ipam_refs:
         - uuid: test_ipam_instance_ip_blue
         virtual_network_refs:
@@ -115,7 +103,6 @@ workflow:
     instance-ip:
       fq_name: ["test_instance_ip"]
       uuid: "test_instance_ip"
-      instance_ip_address: "10.10.10.10"
       network_ipam_refs:
       - uuid: test_ipam_instance_ip_blue
       virtual_network_refs:

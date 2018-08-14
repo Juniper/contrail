@@ -38,17 +38,21 @@ func (sv *ContrailTypeLogicService) CreateInstanceIP(
 				return err
 			}
 
-			if virtualNetwork.ShouldIgnoreAllocation() {
+			if virtualNetwork != nil && virtualNetwork.ShouldIgnoreAllocation() {
 				response, err = sv.BaseService.CreateInstanceIP(ctx, request)
 				return err
 			}
 
-			err = sv.alreadyAllocatedIPGatewayCheck(ctx, virtualNetwork, instanceIP)
+			virtualRouterNetworkIpamRefs, instanceIPNetworkIpamRefs, err := sv.setIpamRefs(
+				ctx, virtualNetwork, instanceIP,
+			)
 			if err != nil {
 				return err
 			}
 
-			ipAddress, subnetUUID, err := sv.allocateIPAddress(ctx, virtualNetwork, instanceIP)
+			ipAddress, subnetUUID, err := sv.allocateIPAddress(
+				ctx, virtualNetwork, instanceIP, virtualRouterNetworkIpamRefs, instanceIPNetworkIpamRefs,
+			)
 			if err != nil {
 				return err
 			}
@@ -185,10 +189,7 @@ func (sv *ContrailTypeLogicService) getIpamRefsFromVirtualRouterRefs(
 	ctx context.Context, virtualRouterRefs []*models.InstanceIPVirtualRouterRef,
 ) ([]*models.VirtualRouterNetworkIpamRef, error) {
 
-	switch {
-	case len(virtualRouterRefs) == 0:
-		return nil, nil
-	case len(virtualRouterRefs) > 1:
+	if len(virtualRouterRefs) > 1 {
 		return nil, common.ErrorBadRequest("Instance-ip can not refer to multiple vrouters")
 	}
 
@@ -201,6 +202,32 @@ func (sv *ContrailTypeLogicService) getIpamRefsFromVirtualRouterRefs(
 	}
 
 	return virtualRouterResponse.GetVirtualRouter().GetNetworkIpamRefs(), nil
+}
+
+func (sv *ContrailTypeLogicService) setIpamRefs(
+	ctx context.Context, virtualNetwork *models.VirtualNetwork, instanceIP *models.InstanceIP,
+) ([]*models.VirtualRouterNetworkIpamRef, []*models.InstanceIPNetworkIpamRef, error) {
+
+	if virtualNetwork != nil {
+		err := sv.alreadyAllocatedIPGatewayCheck(ctx, virtualNetwork, instanceIP)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return nil, nil, nil
+	}
+
+	virtualRouterRefs := instanceIP.GetVirtualRouterRefs()
+	if len(virtualRouterRefs) > 0 {
+		virtualRouterNetworkIpamRefs, err := sv.getIpamRefsFromVirtualRouterRefs(ctx, virtualRouterRefs)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return virtualRouterNetworkIpamRefs, nil, nil
+	}
+
+	return nil, instanceIP.GetNetworkIpamRefs(), nil
 }
 
 func (sv *ContrailTypeLogicService) alreadyAllocatedIPGatewayCheck(ctx context.Context,
@@ -224,41 +251,34 @@ func (sv *ContrailTypeLogicService) alreadyAllocatedIPGatewayCheck(ctx context.C
 	return nil
 }
 
-func (sv *ContrailTypeLogicService) allocateIPAddress(ctx context.Context,
-	virtualNetwork *models.VirtualNetwork, instanceIP *models.InstanceIP) (string, string, error) {
+func (sv *ContrailTypeLogicService) allocateIPAddress(
+	ctx context.Context,
+	virtualNetwork *models.VirtualNetwork,
+	instanceIP *models.InstanceIP,
+	virtualRouterNetworkIpamRefs []*models.VirtualRouterNetworkIpamRef,
+	instanceIPNetworkIpamRefs []*models.InstanceIPNetworkIpamRef,
+) (string, string, error) {
 
 	virtualRouterRefs := instanceIP.GetVirtualRouterRefs()
 	subnetUUID := instanceIP.GetSubnetUUID()
 	ipAddress := instanceIP.GetInstanceIPAddress()
 	ipFamily := instanceIP.GetInstanceIPFamily()
 
-	ipamRefs, err := sv.getIpamRefsFromVirtualRouterRefs(ctx, virtualRouterRefs)
-	if err != nil {
-		return "", "", err
-	}
-
 	if subnetUUID != "" && len(virtualRouterRefs) > 0 {
 		return "", "", common.ErrorBadRequest("Subnet uuid based allocation not supported with vrouter")
 	}
 
-	if len(ipamRefs) > 0 && ipAddress != "" {
+	if (len(virtualRouterNetworkIpamRefs) > 0 || len(instanceIPNetworkIpamRefs) > 0) && ipAddress != "" {
 		return "", "", common.ErrorBadRequest("Allocation for requested IP from a network_ipam is not supported")
 	}
 
-	var allocationPools []*models.AllocationPoolType
-
-	for _, ipamRef := range ipamRefs {
-		ipamRefAttr := ipamRef.GetAttr()
-		allocationPools = append(allocationPools, ipamRefAttr.GetAllocationPools()...)
-	}
-
 	allocateIPParams := &ipam.AllocateIPRequest{
-		VirtualNetwork:  virtualNetwork,
-		IPAddress:       ipAddress,
-		IPFamily:        ipFamily,
-		SubnetUUID:      subnetUUID,
-		IpamRefs:        ipamRefs,
-		AllocationPools: allocationPools,
+		VirtualNetwork:               virtualNetwork,
+		IPAddress:                    ipAddress,
+		IPFamily:                     ipFamily,
+		SubnetUUID:                   subnetUUID,
+		VirtualRouterNetworkIpamRefs: virtualRouterNetworkIpamRefs,
+		InstanceIPNetworkIpamRefs:    instanceIPNetworkIpamRefs,
 	}
 
 	return sv.AddressManager.AllocateIP(ctx, allocateIPParams)

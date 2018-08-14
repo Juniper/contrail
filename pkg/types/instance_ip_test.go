@@ -2,7 +2,6 @@ package types
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/gogo/protobuf/types"
@@ -45,7 +44,7 @@ func instanceIPPrepareReadService(s *ContrailTypeLogicService, instanceIP *model
 			}, nil).AnyTimes()
 	} else {
 		readService.EXPECT().GetInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-			nil, fmt.Errorf("Not found")).AnyTimes()
+			nil, common.ErrorNotFound).AnyTimes()
 	}
 }
 
@@ -128,7 +127,6 @@ func TestCreateInstanceIP(t *testing.T) {
 		name               string
 		paramInstanceIP    models.InstanceIP
 		expectedInstanceIP models.InstanceIP
-		fails              bool
 		errorCode          codes.Code
 	}{
 		{
@@ -145,7 +143,6 @@ func TestCreateInstanceIP(t *testing.T) {
 					},
 				},
 			},
-			fails:     true,
 			errorCode: codes.InvalidArgument,
 		},
 		{
@@ -162,7 +159,6 @@ func TestCreateInstanceIP(t *testing.T) {
 					},
 				},
 			},
-			fails:     true,
 			errorCode: codes.InvalidArgument,
 		},
 		{
@@ -174,7 +170,7 @@ func TestCreateInstanceIP(t *testing.T) {
 					},
 				},
 			},
-			fails: true,
+			errorCode: codes.NotFound,
 		},
 		{
 			name: "Try to create instance-ip when should ignore ip allocation",
@@ -203,7 +199,7 @@ func TestCreateInstanceIP(t *testing.T) {
 					},
 				},
 			},
-			fails: true,
+			errorCode: codes.NotFound,
 		},
 		{
 			name: "Try to create instance-ip when refers to multiple vrouters",
@@ -218,7 +214,6 @@ func TestCreateInstanceIP(t *testing.T) {
 					},
 				},
 			},
-			fails:     true,
 			errorCode: codes.InvalidArgument,
 		},
 		{
@@ -231,7 +226,7 @@ func TestCreateInstanceIP(t *testing.T) {
 				},
 				InstanceIPAddress: "10.10.10.10",
 			},
-			fails: true,
+			errorCode: codes.NotFound,
 		},
 		{
 			name: "Try to create instance-ip when allocation for requested ip from a network-ipam",
@@ -243,7 +238,6 @@ func TestCreateInstanceIP(t *testing.T) {
 				},
 				InstanceIPAddress: "10.10.10.10",
 			},
-			fails:     true,
 			errorCode: codes.InvalidArgument,
 		},
 		{
@@ -283,29 +277,25 @@ func TestCreateInstanceIP(t *testing.T) {
 			expectedResponse := services.CreateInstanceIPResponse{InstanceIP: &tt.expectedInstanceIP}
 			createInstanceIPResponse, err := service.CreateInstanceIP(ctx, &paramRequest)
 
-			if tt.fails {
+			if tt.errorCode != codes.OK {
 				assert.Error(t, err)
-				if tt.errorCode != codes.OK {
-					status, ok := status.FromError(err)
-					assert.True(t, ok)
-					assert.Equal(t, tt.errorCode, status.Code())
-				}
-				return
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, &expectedResponse, createInstanceIPResponse)
 			}
-
-			assert.NoError(t, err)
-			assert.NotNil(t, createInstanceIPResponse)
-			assert.EqualValues(t, &expectedResponse, createInstanceIPResponse)
 		})
 	}
 }
+
 func TestUpdateInstanceIP(t *testing.T) {
 	tests := []struct {
 		name               string
 		request            *services.UpdateInstanceIPRequest
 		databaseInstanceIP *models.InstanceIP
 		expectedInstanceIP *models.InstanceIP
-		fails              bool
 		errorCode          codes.Code
 	}{
 		{
@@ -315,7 +305,7 @@ func TestUpdateInstanceIP(t *testing.T) {
 					UUID: "instance-ip-uuid",
 				},
 			},
-			fails: true,
+			errorCode: codes.NotFound,
 		},
 		{
 			name: "Try to update instance-ip when instance-ip does not have virtual-network refs",
@@ -346,7 +336,7 @@ func TestUpdateInstanceIP(t *testing.T) {
 					},
 				},
 			},
-			fails: true,
+			errorCode: codes.NotFound,
 		},
 		{
 			name: "Try to update instance-ip ip-address",
@@ -368,7 +358,6 @@ func TestUpdateInstanceIP(t *testing.T) {
 					},
 				},
 			},
-			fails:     true,
 			errorCode: codes.InvalidArgument,
 		},
 		{
@@ -425,19 +414,15 @@ func TestUpdateInstanceIP(t *testing.T) {
 			expectedResponse := services.UpdateInstanceIPResponse{InstanceIP: tt.expectedInstanceIP}
 			createInstanceIPResponse, err := service.UpdateInstanceIP(ctx, tt.request)
 
-			if tt.fails {
+			if tt.errorCode != codes.OK {
 				assert.Error(t, err)
-				if tt.errorCode != codes.OK {
-					status, ok := status.FromError(err)
-					assert.True(t, ok)
-					assert.Equal(t, tt.errorCode, status.Code())
-				}
-				return
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, &expectedResponse, createInstanceIPResponse)
 			}
-
-			assert.NoError(t, err)
-			assert.NotNil(t, createInstanceIPResponse)
-			assert.EqualValues(t, &expectedResponse, createInstanceIPResponse)
 		})
 	}
 }
@@ -447,13 +432,12 @@ func TestDeleteInstanceIP(t *testing.T) {
 		name       string
 		paramID    string
 		instanceIP *models.InstanceIP
-		fails      bool
 		errorCode  codes.Code
 	}{
 		{
-			name:    "Try to delete instance-ip when cannot find instance-ip with param id",
-			paramID: "instance-ip-id",
-			fails:   true,
+			name:      "Try to delete instance-ip when cannot find instance-ip with param id",
+			paramID:   "instance-ip-id",
+			errorCode: codes.NotFound,
 		},
 		{
 			name:       "Try to delete instance-ip when ip-address is not defined",
@@ -489,7 +473,7 @@ func TestDeleteInstanceIP(t *testing.T) {
 				},
 				InstanceIPAddress: "10.10.10.10",
 			},
-			fails: true,
+			errorCode: codes.NotFound,
 		},
 		{
 			name:    "Try to delete instance-ip when virtual-network was found",
@@ -521,19 +505,15 @@ func TestDeleteInstanceIP(t *testing.T) {
 			expectedResponse := services.DeleteInstanceIPResponse{ID: tt.paramID}
 			createInstanceIPResponse, err := service.DeleteInstanceIP(ctx, &paramRequest)
 
-			if tt.fails {
+			if tt.errorCode != codes.OK {
 				assert.Error(t, err)
-				if tt.errorCode != codes.OK {
-					status, ok := status.FromError(err)
-					assert.True(t, ok)
-					assert.Equal(t, tt.errorCode, status.Code())
-				}
-				return
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, &expectedResponse, createInstanceIPResponse)
 			}
-
-			assert.NoError(t, err)
-			assert.NotNil(t, createInstanceIPResponse)
-			assert.EqualValues(t, &expectedResponse, createInstanceIPResponse)
 		})
 	}
 }
