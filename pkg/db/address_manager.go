@@ -97,8 +97,9 @@ func (db *Service) AllocateIP(
 
 	// This is a simple Virtual network based ip allocation from user-defined subnet
 
+	// TODO: virtual network can be absent in the request
 	virtualNetwork := request.VirtualNetwork
-	if virtualNetwork.GetAddressAllocationMethod() == models.UserDefinedSubnetOnly {
+	if virtualNetwork != nil && virtualNetwork.GetAddressAllocationMethod() == models.UserDefinedSubnetOnly {
 		return db.performNetworkBasedIPAllocation(ctx, request)
 	}
 
