@@ -118,6 +118,11 @@ func TestReorderEventList(t *testing.T) {
 									UUID: "network_policy1",
 								},
 							},
+							QosConfigRefs: []*models.VirtualNetworkQosConfigRef{
+								{
+									UUID: "qos_config1",
+								},
+							},
 						},
 					},
 				},
@@ -131,14 +136,33 @@ func TestReorderEventList(t *testing.T) {
 					},
 				},
 			},
+			{
+				Request: &Event_CreateQosConfigRequest{
+					CreateQosConfigRequest: &CreateQosConfigRequest{
+						QosConfig: &models.QosConfig{
+							UUID: "qos_config1",
+						},
+					},
+				},
+			},
 		},
 	}
 
 	err := eventList.Sort()
 	assert.NoError(t, err)
 	networkPolicy := eventList.Events[0].GetCreateNetworkPolicyRequest().GetNetworkPolicy()
-	assert.Equal(t, "network_policy1", networkPolicy.GetUUID())
-	virtualNetwork := eventList.Events[1].GetCreateVirtualNetworkRequest().GetVirtualNetwork()
+	if networkPolicy != nil {
+		assert.Equal(t, "network_policy1", networkPolicy.GetUUID())
+		qosConfig := eventList.Events[1].GetCreateQosConfigRequest().GetQosConfig()
+		assert.Equal(t, "qos_config1", qosConfig.GetUUID())
+	}
+	qosConfig := eventList.Events[0].GetCreateQosConfigRequest().GetQosConfig()
+	if qosConfig != nil {
+		assert.Equal(t, "qos_config1", qosConfig.GetUUID())
+		networkPolicy := eventList.Events[1].GetCreateNetworkPolicyRequest().GetNetworkPolicy()
+		assert.Equal(t, "network_policy1", networkPolicy.GetUUID())
+	}
+	virtualNetwork := eventList.Events[2].GetCreateVirtualNetworkRequest().GetVirtualNetwork()
 	assert.Equal(t, "vn1", virtualNetwork.GetUUID())
 }
 
