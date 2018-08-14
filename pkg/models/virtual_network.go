@@ -15,6 +15,7 @@ const (
 const (
 	UserDefinedSubnetOnly      = "user-defined-subnet-only"
 	UserDefinedSubnetPreferred = "user-defined-subnet-preferred"
+	FlatSubnetOnly             = "flat-subnet-only"
 )
 
 //MakeNeutronCompatible makes this resource data neutron compatible.

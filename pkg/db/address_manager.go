@@ -99,7 +99,7 @@ func (db *Service) AllocateIP(
 
 	// TODO: virtual network can be absent in the request
 	virtualNetwork := request.VirtualNetwork
-	if virtualNetwork != nil && virtualNetwork.GetAddressAllocationMethod() == models.UserDefinedSubnetOnly {
+	if virtualNetwork != nil && (virtualNetwork.GetAddressAllocationMethod() == models.UserDefinedSubnetOnly || virtualNetwork.GetAddressAllocationMethod() == models.FlatSubnetOnly) {
 		return db.performNetworkBasedIPAllocation(ctx, request)
 	}
 
@@ -134,7 +134,7 @@ func (db *Service) IsIPAllocated(
 	ctx context.Context, request *ipam.IsIPAllocatedRequest,
 ) (isAllocated bool, err error) {
 	// TODO: Implement other allocation methods
-	if request.VirtualNetwork.GetAddressAllocationMethod() != models.UserDefinedSubnetOnly {
+	if request.VirtualNetwork.GetAddressAllocationMethod() != models.UserDefinedSubnetOnly && request.VirtualNetwork.GetAddressAllocationMethod() != models.FlatSubnetOnly {
 		return false, nil
 	}
 
@@ -161,6 +161,36 @@ func (db *Service) IsIPAllocated(
 
 // performNetworkBasedIPAllocation performs virtual network based ip allocation in a user-defined subnet
 func (db *Service) performNetworkBasedIPAllocation(
+	ctx context.Context, request *ipam.AllocateIPRequest,
+) (address string, subnetUUID string, err error) {
+	virtualNetwork := request.VirtualNetwork
+	subnetUUIDs := virtualNetwork.GetSubnetUUIDs()
+	if request.SubnetUUID != "" {
+		if !common.ContainsString(subnetUUIDs, request.SubnetUUID) {
+			return "", "", errors.Errorf("could not find subnet %s in in virtual network %v", request.SubnetUUID,
+				virtualNetwork.GetUUID())
+		}
+		subnetUUIDs = []string{request.SubnetUUID}
+	}
+
+	for _, subnetUUID := range subnetUUIDs {
+		addr, err := db.allocateIPForSubnetUUID(ctx, subnetUUID, request.IPAddress)
+		if common.IsNotFound(err) {
+			continue
+		}
+		if err != nil {
+			return "", "", err
+		}
+
+		return addr, subnetUUID, nil
+	}
+
+	return "", "", errors.Errorf("could not allocate address %s in any available subnets in virtual network %v",
+		request.IPAddress, virtualNetwork.GetUUID())
+}
+
+// performNetworkBasedIPAllocation performs virtual network based ip allocation in a user-defined subnet
+func (db *Service) performIpamBasedIPAllocation(
 	ctx context.Context, request *ipam.AllocateIPRequest,
 ) (address string, subnetUUID string, err error) {
 	virtualNetwork := request.VirtualNetwork

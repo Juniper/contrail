@@ -75,7 +75,6 @@ func TestCreateNetworkIpam(t *testing.T) {
 	tests := []struct {
 		name              string
 		testNetIpamParams *testNetIpamParams
-		changedSubnetUUID bool
 		errorCode         codes.Code
 	}{
 		{
@@ -84,7 +83,6 @@ func TestCreateNetworkIpam(t *testing.T) {
 				uuid:             "uuid",
 				ipamSubnetMethod: "notFlat",
 			},
-			changedSubnetUUID: false,
 		},
 		{
 			name: "Try to create network ipam with empty flat subnet",
@@ -93,7 +91,6 @@ func TestCreateNetworkIpam(t *testing.T) {
 				ipamSubnetMethod: "flat-subnet",
 				ipamSubnets:      &models.IpamSubnets{},
 			},
-			changedSubnetUUID: false,
 		},
 		{
 			name: "Try to create network ipam with non-empty ipam_subnets list and not flat subnet",
@@ -102,8 +99,7 @@ func TestCreateNetworkIpam(t *testing.T) {
 				ipamSubnetMethod: "notFlat",
 				ipamSubnets:      &models.IpamSubnets{},
 			},
-			errorCode:         codes.InvalidArgument,
-			changedSubnetUUID: false,
+			errorCode: codes.InvalidArgument,
 		},
 		{
 			name: "Try to create network ipam with specific ipam_subnets",
@@ -114,7 +110,6 @@ func TestCreateNetworkIpam(t *testing.T) {
 					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24},
 				}}},
 			},
-			changedSubnetUUID: true,
 		},
 	}
 
@@ -143,67 +138,10 @@ func TestCreateNetworkIpam(t *testing.T) {
 				assert.NotNil(t, createNetworkIpamResponse)
 			}
 
-			if tt.changedSubnetUUID {
-				receivedUUID := createNetworkIpamResponse.NetworkIpam.IpamSubnets.Subnets[0].SubnetUUID
-				assert.Equal(t, "uuuu-uuuu-iiii-dddd", receivedUUID)
-			}
 			mockCtrl.Finish()
 		})
 	}
 
-}
-
-func TestDeleteNetworkIpam(t *testing.T) {
-	deleteIpamDBMock := func(service *ContrailTypeLogicService, getNetworkIpamResponse *services.GetNetworkIpamResponse) {
-		readService := service.ReadService.(*servicesmock.MockReadService)
-		readService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).Return(getNetworkIpamResponse, nil)
-	}
-
-	tests := []struct {
-		name              string
-		testNetIpamParams *testNetIpamParams
-	}{
-		{
-			name: "Delete network ipam without ipam_subnets",
-			testNetIpamParams: &testNetIpamParams{
-				uuid:             "uuid",
-				ipamSubnetMethod: "notFlat",
-			},
-		},
-		{
-			name: "Delete network ipam with non-empty ipam_subnets list",
-			testNetIpamParams: &testNetIpamParams{
-				uuid:             "uuid",
-				ipamSubnetMethod: "flat-subnet",
-				ipamSubnets: &models.IpamSubnets{Subnets: []*models.IpamSubnetType{{
-					Subnet: &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24},
-				}}},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockCtrl := gomock.NewController(t)
-			service := makeMockedContrailTypeLogicService(mockCtrl)
-			networkIpamIPAMMocks(service)
-			networkIpamNextServMocks(service)
-
-			ctx := context.Background()
-
-			networkIpam := createTestNetworkIpam(tt.testNetIpamParams)
-			getNetworkIpamResponse := &services.GetNetworkIpamResponse{NetworkIpam: networkIpam}
-			deleteIpamDBMock(service, getNetworkIpamResponse)
-			deleteNetworkIpamRequest := &services.DeleteNetworkIpamRequest{
-				ID: getNetworkIpamResponse.GetNetworkIpam().GetUUID(),
-			}
-			deleteNetworkIpamResponse, err := service.DeleteNetworkIpam(ctx, deleteNetworkIpamRequest)
-
-			assert.NoError(t, err)
-			assert.NotNil(t, deleteNetworkIpamResponse)
-			mockCtrl.Finish()
-		})
-	}
 }
 
 func TestUpdateNetworkIpam(t *testing.T) {
