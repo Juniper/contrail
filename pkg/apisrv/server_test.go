@@ -124,6 +124,11 @@ func TestSetTag(t *testing.T) {
 	RunTest(t, "./test_data/test_set_tag.yml")
 }
 
+func TestK8sInstanceIP(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_k8s_instance_ip_alloc.yml")
+}
+
 func TestSanitizing(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_sanitizing.yml")

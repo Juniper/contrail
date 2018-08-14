@@ -56,7 +56,8 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			if err != nil {
 				return err
 			}
-			err = sv.allocateVnSubnetsInAddrMgmt(ctx, virtualNetwork.GetIpamSubnets())
+
+			err = sv.allocateRefSubnets(ctx, virtualNetwork)
 			if err != nil {
 				return err
 			}
@@ -159,7 +160,13 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 				return err
 			}
 
-			err = sv.deallocateVnSubnetsInAddrMgmt(ctx, vn, vn.GetIpamSubnets())
+			var subnetsToDelete *models.IpamSubnets
+			subnetsToDelete, err = sv.getRefSubnets(ctx, vn)
+			if err != nil {
+				return err
+			}
+
+			err = sv.deallocateVnSubnetsInAddrMgmt(ctx, vn, subnetsToDelete)
 			if err != nil {
 				return common.ErrorBadRequestf("couldn't remove virtual network subnet objects: %v", err)
 			}
@@ -302,35 +309,36 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 }
 
 func (sv *ContrailTypeLogicService) allocateVnSubnet(
-	ctx context.Context, vnSubnet *models.IpamSubnetType) error {
-	subnetAlreadyCreated, err := sv.AddressManager.CheckIfIpamSubnetExists(ctx, vnSubnet.SubnetUUID)
+	ctx context.Context, vnSubnet *models.IpamSubnetType) (subnetUUID string, err error) {
+	var subnetAlreadyCreated bool
+	subnetAlreadyCreated, err = sv.AddressManager.CheckIfIpamSubnetExists(ctx, vnSubnet.SubnetUUID)
 	if err != nil {
-		return common.ErrorBadRequestf("couldn't check if ipam subnet with UUID %v exists: %v", vnSubnet.SubnetUUID, err)
+		return "", common.ErrorBadRequestf("couldn't check if ipam subnet with UUID %v exists: %v", vnSubnet.SubnetUUID, err)
 	}
 
 	if subnetAlreadyCreated {
-		return nil
+		return vnSubnet.SubnetUUID, nil
 	}
 
-	vnSubnet.SubnetUUID, err = sv.AddressManager.CreateIpamSubnet(ctx, &ipam.CreateIpamSubnetRequest{
+	subnetUUID, err = sv.AddressManager.CreateIpamSubnet(ctx, &ipam.CreateIpamSubnetRequest{
 		IpamSubnet: vnSubnet,
 	})
 
 	if err != nil {
-		return common.ErrorBadRequestf("couldn't allocate ipam subnet %v: %v", vnSubnet.SubnetUUID, err)
+		return "", common.ErrorBadRequestf("couldn't allocate ipam subnet %v: %v", vnSubnet.SubnetUUID, err)
 	}
 
-	return nil
+	return subnetUUID, nil
 }
 
 func (sv *ContrailTypeLogicService) deallocateVnSubnet(
-	ctx context.Context, vnSubnet *models.IpamSubnetType) (err error) {
+	ctx context.Context, subnetUUID string) (err error) {
 	err = sv.AddressManager.DeleteIpamSubnet(ctx, &ipam.DeleteIpamSubnetRequest{
-		SubnetUUID: vnSubnet.GetSubnetUUID(),
+		SubnetUUID: subnetUUID,
 	})
 
 	if err != nil {
-		return common.ErrorBadRequestf("couldn't deallocate ipam subnet %v: %v", vnSubnet.SubnetUUID, err)
+		return common.ErrorBadRequestf("couldn't deallocate ipam subnet %v: %v", subnetUUID, err)
 	}
 
 	return nil
@@ -346,33 +354,67 @@ func (sv *ContrailTypeLogicService) updateVnSubnetsInAddrMgmt(
 	}
 
 	// TODO: update existing subnets
-	return sv.allocateVnSubnetsInAddrMgmt(ctx, requestedVN.GetIpamSubnets())
+	return sv.allocateRefSubnets(ctx, requestedVN)
 }
 
+//TODO handle multiple subnet in ipam refs
 func (sv *ContrailTypeLogicService) allocateVnSubnetsInAddrMgmt(
-	ctx context.Context, vnSubnets *models.IpamSubnets,
+	ctx context.Context, ipamRef *models.VirtualNetworkNetworkIpamRef,
 ) error {
-	for _, vnSubnet := range vnSubnets.GetSubnets() {
-		err := sv.allocateVnSubnet(ctx, vnSubnet)
-		if err != nil {
+	if ipamRef.GetAttr() != nil {
+		if len(ipamRef.GetAttr().GetIpamSubnets()) > 0 {
+			linkedIpamSubnets := ipamRef.GetAttr().GetIpamSubnets()
+			for _, vnSubnet := range linkedIpamSubnets {
+				subnetUUID, err := sv.allocateVnSubnet(ctx, vnSubnet)
+				if err != nil {
+					return err
+				}
+				vnSubnet.SubnetUUID = subnetUUID
+			}
+		} else {
+			ipamResponse, err := sv.ReadService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
+				ID: ipamRef.GetUUID(),
+			})
+			if err != nil {
+				return common.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
+					ipamRef.GetUUID(), err)
+			}
+
+			linkedIpamSubnets := ipamResponse.GetNetworkIpam().GetIpamSubnets().GetSubnets()
+			for _, vnSubnet := range linkedIpamSubnets {
+				subnetUUID, err := sv.allocateVnSubnet(ctx, vnSubnet)
+				if err != nil {
+					return err
+				}
+				ipamRef.Attr.IpamSubnets = append(ipamRef.Attr.IpamSubnets, &models.IpamSubnetType{
+					SubnetUUID: subnetUUID})
+			}
+		}
+	}
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) allocateRefSubnets(
+	ctx context.Context, vn *models.VirtualNetwork,
+) error {
+	for _, netIpamRef := range vn.GetNetworkIpamRefs() {
+		if err := sv.allocateVnSubnetsInAddrMgmt(ctx, netIpamRef); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
 func (sv *ContrailTypeLogicService) deallocateVnSubnetsInAddrMgmt(
 	ctx context.Context, vn *models.VirtualNetwork, vnSubnets *models.IpamSubnets,
 ) error {
-
 	err := sv.canSubnetsBeDeleted(ctx, vn, vnSubnets)
 	if err != nil {
 		return common.ErrorConflictf("subnets from virtual network %v cannot be deleted: %v", vn.GetUUID(), err)
 	}
 
-	for _, vnSubnet := range vnSubnets.GetSubnets() {
-		err := sv.deallocateVnSubnet(ctx, vnSubnet)
+	for _, subnetUUID := range vn.GetSubnetUUIDs() {
+		err := sv.deallocateVnSubnet(ctx, subnetUUID)
 		if err != nil {
 			return err
 		}
@@ -572,6 +614,7 @@ func (sv *ContrailTypeLogicService) canSubnetsBeDeleted(
 	vn *models.VirtualNetwork,
 	vnSubnets *models.IpamSubnets,
 ) error {
+
 	err := sv.checkIfInstanceIPsAreNotUsedInSubnets(ctx, vn, vnSubnets)
 	if err != nil {
 		return err
@@ -658,4 +701,31 @@ func (sv *ContrailTypeLogicService) checkIfAliasIPsAreNotUsedInSubnets(
 	}
 
 	return nil
+}
+
+func (sv *ContrailTypeLogicService) getRefSubnets(
+	ctx context.Context,
+	vn *models.VirtualNetwork,
+) (*models.IpamSubnets, error) {
+
+	if vn.GetAddressAllocationMethod() == models.UserDefinedSubnetOnly {
+		return vn.GetIpamSubnets(), nil
+	} else if vn.GetAddressAllocationMethod() == models.FlatSubnetOnly {
+		var subnets []*models.IpamSubnetType
+		for _, ipamRef := range vn.GetNetworkIpamRefs() {
+			ipamResponse, err := sv.ReadService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
+				ID: ipamRef.GetUUID(),
+			})
+			if err != nil {
+				return nil, common.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
+					ipamRef.GetUUID(), err)
+			}
+
+			subnets = append(subnets, ipamResponse.GetNetworkIpam().GetIpamSubnets().GetSubnets()...)
+			return &models.IpamSubnets{
+				Subnets: subnets,
+			}, nil
+		}
+	}
+	return nil, nil
 }
