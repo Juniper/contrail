@@ -15,6 +15,7 @@ const (
 const (
 	UserDefinedSubnetOnly      = "user-defined-subnet-only"
 	UserDefinedSubnetPreferred = "user-defined-subnet-preferred"
+	FlatSubnetOnly             = "flat-subnet-only"
 )
 
 //MakeNeutronCompatible makes this resource data neutron compatible.
@@ -110,4 +111,9 @@ func (m *VirtualNetwork) GetDefaultRoutingInstance() *RoutingInstance {
 	}
 
 	return nil
+}
+
+// HasNetworkBasedAllocationMethod checks if allocation method is userdefined or flat subnet only
+func (m *VirtualNetwork) HasNetworkBasedAllocationMethod() bool {
+	return m.GetAddressAllocationMethod() == UserDefinedSubnetOnly || m.GetAddressAllocationMethod() == FlatSubnetOnly
 }

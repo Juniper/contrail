@@ -10,6 +10,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
@@ -99,7 +100,7 @@ func (db *Service) AllocateIP(
 
 	// TODO: virtual network can be absent in the request
 	virtualNetwork := request.VirtualNetwork
-	if virtualNetwork != nil && virtualNetwork.GetAddressAllocationMethod() == models.UserDefinedSubnetOnly {
+	if virtualNetwork != nil && virtualNetwork.HasNetworkBasedAllocationMethod() {
 		return db.performNetworkBasedIPAllocation(ctx, request)
 	}
 
@@ -110,11 +111,16 @@ func (db *Service) AllocateIP(
 // DeallocateIP deallocates ip
 func (db *Service) DeallocateIP(ctx context.Context, request *ipam.DeallocateIPRequest) (err error) {
 	// TODO: Implement other allocation methods
-	if request.VirtualNetwork.GetAddressAllocationMethod() != models.UserDefinedSubnetOnly {
+	if !request.VirtualNetwork.HasNetworkBasedAllocationMethod() {
 		return nil
 	}
 
-	for _, subnet := range request.VirtualNetwork.GetIpamSubnets().GetSubnets() {
+	subnets, err := db.getRefSubnets(ctx, request.VirtualNetwork)
+	if err != nil {
+		return err
+	}
+
+	for _, subnet := range subnets {
 		hit, err := subnet.Contains(net.ParseIP(request.IPAddress))
 		if err != nil {
 			return err
@@ -129,16 +135,41 @@ func (db *Service) DeallocateIP(ctx context.Context, request *ipam.DeallocateIPR
 		request.IPAddress, request.VirtualNetwork.GetUUID())
 }
 
+func (db *Service) getRefSubnets(ctx context.Context, vn *models.VirtualNetwork) ([]*models.IpamSubnetType, error) {
+	var subnets []*models.IpamSubnetType
+	if vn.GetAddressAllocationMethod() == models.UserDefinedSubnetOnly {
+		subnets = vn.GetIpamSubnets().GetSubnets()
+	} else if vn.GetAddressAllocationMethod() == models.FlatSubnetOnly {
+
+		for _, ipamRef := range vn.GetNetworkIpamRefs() {
+			ipamResponse, err := db.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
+				ID: ipamRef.GetUUID(),
+			})
+			if err != nil {
+				return nil, common.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
+					ipamRef.GetUUID(), err)
+			}
+			subnets = append(subnets, ipamResponse.GetNetworkIpam().GetIpamSubnets().GetSubnets()...)
+		}
+	}
+	return subnets, nil
+}
+
 // IsIPAllocated checks if ip is allocated
 func (db *Service) IsIPAllocated(
 	ctx context.Context, request *ipam.IsIPAllocatedRequest,
 ) (isAllocated bool, err error) {
 	// TODO: Implement other allocation methods
-	if request.VirtualNetwork.GetAddressAllocationMethod() != models.UserDefinedSubnetOnly {
+	if !request.VirtualNetwork.HasNetworkBasedAllocationMethod() {
 		return false, nil
 	}
 
-	for _, subnet := range request.VirtualNetwork.GetIpamSubnets().GetSubnets() {
+	subnets, err := db.getRefSubnets(ctx, request.VirtualNetwork)
+	if err != nil {
+		return false, err
+	}
+
+	for _, subnet := range subnets {
 		hit, err := subnet.Contains(net.ParseIP(request.IPAddress))
 		if err != nil {
 			return false, err
