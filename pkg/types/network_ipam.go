@@ -11,7 +11,6 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/gogo/protobuf/types"
 )
 
@@ -76,47 +75,7 @@ func (sv *ContrailTypeLogicService) CreateNetworkIpam(
 				}
 			}
 
-			for _, ipamSubnet := range ipamSubnets.GetSubnets() {
-				subnetUUID, cErr := sv.createIpamSubnet(ctx, ipamSubnet)
-				if cErr != nil {
-					return cErr
-				}
-				ipamSubnet.SubnetUUID = subnetUUID
-			}
-
 			response, err = sv.BaseService.CreateNetworkIpam(ctx, request)
-			return err
-		})
-	return response, err
-}
-
-// DeleteNetworkIpam do pre check for network ipam deletion
-func (sv *ContrailTypeLogicService) DeleteNetworkIpam(
-	ctx context.Context,
-	request *services.DeleteNetworkIpamRequest,
-) (response *services.DeleteNetworkIpamResponse, err error) {
-
-	id := request.GetID()
-	err = sv.InTransactionDoer.DoInTransaction(
-		ctx,
-		func(ctx context.Context) error {
-			var networkIpam *models.NetworkIpam
-			networkIpam, err = sv.getNetworkIpam(ctx, id)
-			if err != nil {
-				return err
-			}
-
-			ipamSubnets := networkIpam.GetIpamSubnets()
-			if networkIpam != nil && networkIpam.IsFlatSubnet() && ipamSubnets != nil {
-				for _, ipamSubnet := range ipamSubnets.GetSubnets() {
-					err = sv.deleteIpamSubnet(ctx, ipamSubnet.GetSubnetUUID())
-					if err != nil {
-						return err
-					}
-				}
-			}
-
-			response, err = sv.BaseService.DeleteNetworkIpam(ctx, request)
 			return err
 		})
 	return response, err
@@ -185,26 +144,6 @@ func (sv *ContrailTypeLogicService) getNetworkIpam(
 		return nil, err
 	}
 	return networkIpamRes.GetNetworkIpam(), err
-}
-
-func (sv *ContrailTypeLogicService) createIpamSubnet(
-	ctx context.Context,
-	ipamSubnet *models.IpamSubnetType,
-) (subnetUUID string, err error) {
-	createIpamSubnetParams := &ipam.CreateIpamSubnetRequest{
-		IpamSubnet: ipamSubnet,
-	}
-	return sv.AddressManager.CreateIpamSubnet(ctx, createIpamSubnetParams)
-}
-
-func (sv *ContrailTypeLogicService) deleteIpamSubnet(
-	ctx context.Context,
-	subnetUUID string,
-) error {
-	deleteIpamSubnetParams := &ipam.DeleteIpamSubnetRequest{
-		SubnetUUID: subnetUUID,
-	}
-	return sv.AddressManager.DeleteIpamSubnet(ctx, deleteIpamSubnetParams)
 }
 
 func (sv *ContrailTypeLogicService) checkNetworkIpamMGMT(
@@ -480,29 +419,11 @@ func (sv *ContrailTypeLogicService) processIpamUpdate(
 ) error {
 	ipamSubnetsPath := []string{models.NetworkIpamFieldIpamSubnets, models.IpamSubnetsFieldSubnets}
 	if common.CheckPath(fieldMask, ipamSubnetsPath) {
-		subnetsToDelete, err := sv.findSubnetsToDelete(oldIpam, newIpam)
-		if err != nil {
-			return err
-		}
-		for _, subnet := range subnetsToDelete {
-			err = sv.deleteIpamSubnet(ctx, subnet.GetSubnetUUID())
-			if err != nil {
-				return err
-			}
-		}
 		newIpamSubnets := newIpam.GetIpamSubnets().GetSubnets()
 		oldIpamSubnets := oldIpam.GetIpamSubnets().GetSubnets()
-		err = sv.validateSubnetChanges(oldIpamSubnets, newIpamSubnets)
+		err := sv.validateSubnetChanges(oldIpamSubnets, newIpamSubnets)
 		if err != nil {
 			return err
-		}
-
-		for _, ipamSubnet := range newIpamSubnets {
-			subnetUUID, err := sv.createIpamSubnet(ctx, ipamSubnet)
-			if err != nil {
-				return err
-			}
-			ipamSubnet.SubnetUUID = subnetUUID
 		}
 	}
 	return nil
