@@ -134,10 +134,16 @@ func TestSortEventListByDependency(t *testing.T) {
 							UUID: "network-policy-uuid",
 						},
 					},
+					qosConfigRefs: []*models.VirtualNetworkQosConfigRef{
+						{
+							UUID: "qos-config-uuid",
+						},
+					},
 				})),
 				networkPolicyCreateEvent(networkPolicy("network-policy-uuid")),
+				qosConfigCreateEvent(qosConfig("qos-config-uuid")),
 			},
-			sortedOrder: []string{"network-policy-uuid", "vn-uuid"},
+			sortedOrder: []string{"qos-config-uuid", "network-policy-uuid", "vn-uuid"},
 		},
 		{
 			name: "parent-child dependency",
@@ -224,6 +230,16 @@ func networkPolicyCreateEvent(np *models.NetworkPolicy) *Event {
 	}
 }
 
+func qosConfigCreateEvent(qc *models.QosConfig) *Event {
+	return &Event{
+		Request: &Event_CreateQosConfigRequest{
+			CreateQosConfigRequest: &CreateQosConfigRequest{
+				QosConfig: qc,
+			},
+		},
+	}
+}
+
 func project(uuid string) *models.Project {
 	p := models.MakeProject()
 	p.UUID = uuid
@@ -235,6 +251,7 @@ type vnParameters struct {
 	parentUUID         string
 	parentType         string
 	networkPolicyRefs  []*models.VirtualNetworkNetworkPolicyRef
+	qosConfigRefs      []*models.VirtualNetworkQosConfigRef
 	virtualNetworkRefs []*models.VirtualNetworkVirtualNetworkRef
 }
 
@@ -246,6 +263,9 @@ func virtualNetwork(p *vnParameters) *models.VirtualNetwork {
 	if len(p.networkPolicyRefs) > 0 {
 		vn.NetworkPolicyRefs = p.networkPolicyRefs
 	}
+	if len(p.qosConfigRefs) > 0 {
+		vn.QosConfigRefs = p.qosConfigRefs
+	}
 	if len(p.virtualNetworkRefs) > 0 {
 		vn.VirtualNetworkRefs = p.virtualNetworkRefs
 	}
@@ -256,4 +276,10 @@ func networkPolicy(uuid string) *models.NetworkPolicy {
 	np := models.MakeNetworkPolicy()
 	np.UUID = uuid
 	return np
+}
+
+func qosConfig(uuid string) *models.QosConfig {
+	qc := models.MakeQosConfig()
+	qc.UUID = uuid
+	return qc
 }
