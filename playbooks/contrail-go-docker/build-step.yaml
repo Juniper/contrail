@@ -4,3 +4,6 @@
     "cd {{ workdir }}; {{ item.command }}"
   become: yes
   become_user: root
+  retries: "{{ item.retries|default(omit) }}"
+  register: build_task
+  until: build_task.rc == 0

@@ -18,8 +18,10 @@
       with_items:
         - name: Install development dependencies
           command: make deps
+          retries: 5
         - name: Check vendored dependencies
           command: make check
+          retries: 5
         - name: Run the source code generator
           command: make generate
         - name: Reset databases with latest schema and load initial data
@@ -30,6 +32,7 @@
           command: make lint
         - name: Generate Docker files
           command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
+          retries: 5
 
     - name: Fix files ownerships
       file:
