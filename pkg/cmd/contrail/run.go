@@ -63,7 +63,7 @@ func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGro
 
 func startCacheService(wg *sync.WaitGroup) {
 	log.Debug("cache service enabled")
-	cacheDB = cache.New(uint64(viper.GetInt64("cache.max_history")))
+	cacheDB = cache.NewDB(uint64(viper.GetInt64("cache.max_history")))
 	MaybeStart("cache.cassandra", startCassandraWatcher, wg)
 	MaybeStart("cache.etcd", startEtcdWatcher, wg)
 	MaybeStart("cache.rdbms", startRDBMSWatcher, wg)
@@ -159,7 +159,7 @@ func startAgent(wg *sync.WaitGroup) {
 		log.Fatal(err)
 	}
 	for {
-		if err := a.Watch(); err != nil {
+		if err := a.Watch(context.Background()); err != nil {
 			log.Warn(err)
 		}
 	}

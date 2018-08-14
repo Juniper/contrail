@@ -13,6 +13,11 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
 
+  project_validation_test_empty_fq_name: &project_validation_test_empty_fq_name
+    uuid: project_validation_test_empty_fq_name_uuid
+    fq_name: []
+    quota: {}
+
   network_ipam_validation_test: &network_ipam_validation_test
     network_ipam_mgmt:
       host_routes:
@@ -33,13 +38,6 @@ test_data:
     - uuid: test_ipam_validation_uuid
     mac_aging_time: 0
     address_allocation_mode: "flat-subnet-preferred"
-    mac_limit_control: *mac_limit_control
-
-  vn_validation_test_fail_missing_reference: &vn_validation_test_fail_missing_reference
-    uuid: vn_validation_test_uuid
-    display_name: blue
-    parent_type: project
-    parent_uuid: admin_project_validation_test_uuid
     mac_limit_control: *mac_limit_control
 
   vn_validation_test_fail_number_too_small: &vn_validation_test_fail_number_too_small
@@ -114,17 +112,28 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project_validation_test
   expect:
     project: *admin_project_validation_test
+
+- name: create project failed - empty fq_name
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 400
+    data:
+      project: *project_validation_test_empty_fq_name
+  expect: null
+
 - name: create network ipam
   request:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_validation_test
   expect:
@@ -135,7 +144,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *vn_validation_test_pass
   expect:
@@ -146,17 +155,7 @@ workflow:
     path: /virtual-network/vn_validation_test_uuid
     method: DELETE
     expected:
-    - 204
-  expect: null
-
-- name: create virtual network fail - missing reference
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 400
-    data:
-      virtual-network: *vn_validation_test_fail_missing_reference
+    - 200
   expect: null
 
 - name: create virtual network fail - number property too small

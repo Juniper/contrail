@@ -43,7 +43,7 @@ workflow:
   request:
     path: /projects
     method: POST
-    expected: [201]
+    expected: [200]
     data:
       project: *project_blue_project
   expect:
@@ -82,11 +82,9 @@ workflow:
   request:
     path: /application-policy-sets
     method: POST
-    expected: [201]
+    expected: [200]
     data:
-      application-policy-set:
-        <<: *user_made_application_policy_set_project
-        firewall_policy_refs: []
+      application-policy-set: *user_made_application_policy_set_project
   expect:
     application-policy-set: *user_made_application_policy_set_project
 
@@ -101,14 +99,14 @@ workflow:
   request:
     path: /application-policy-set/my_custom_application_policy_set_uuid
     method: DELETE
-    expected: [204]
+    expected: [200]
   expect: null
 
 - name: delete project
   request:
     path: /project/project_blue_project_uuid
     method: DELETE
-    expected: [204]
+    expected: [200]
   expect: null
 
 - name: ensure default application policy set is deleted too

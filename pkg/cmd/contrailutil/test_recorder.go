@@ -1,6 +1,7 @@
 package contrailutil
 
 import (
+	"context"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
@@ -33,6 +34,7 @@ func assertError(err error, message string) {
 }
 
 func recordTest() {
+	ctx := context.Background()
 	log.Info("Recording API beheivior")
 	var vars map[string]interface{}
 	if variablePath != "" {
@@ -55,7 +57,7 @@ func recordTest() {
 
 		clients[key] = client
 
-		err = clients[key].Login()
+		err = clients[key].Login(ctx)
 		assertError(err, "client can't login")
 	}
 
@@ -67,7 +69,7 @@ func recordTest() {
 			clientID = task.Client
 		}
 		client := clients[clientID]
-		_, err = client.DoRequest(task.Request)
+		_, err = client.DoRequest(ctx, task.Request)
 		assertError(err, fmt.Sprintf("Task %s failed", task.Name))
 		task.Expect = task.Request.Output
 		task.Request.Output = nil

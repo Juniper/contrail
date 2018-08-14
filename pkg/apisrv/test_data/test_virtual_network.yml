@@ -9,6 +9,7 @@ cleanup:
 - path: /network-ipam/test_ipam_red
 - path: /network-ipam/test_ipam1
 - path: /network-ipam/test_ipam2
+- path: /instance-ip/test_instance_ip
 - path: /network-policy/network_policy_uuid
 - path: /network-policy/network_policy_uuid2
   client: bob
@@ -178,7 +179,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project
   expect:
@@ -189,7 +190,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *demo_project
   expect:
@@ -199,7 +200,7 @@ workflow:
     path: /network-policys
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-policy: *network_policy1
   expect:
@@ -218,7 +219,7 @@ workflow:
     path: /network-policys
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-policy: *network_policy2
   expect:
@@ -234,7 +235,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_blue
   expect:
@@ -244,7 +245,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *vn_blue
   expect:
@@ -254,7 +255,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         network_ipam_mgmt:
@@ -279,7 +280,7 @@ workflow:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam:
         network_ipam_mgmt:
@@ -304,7 +305,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network:
         fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
@@ -313,8 +314,7 @@ workflow:
         parent_type: "project"
         parent_uuid: "admin_project_uuid"
         network_ipam_refs:
-          - uuid: "test_ipam1"
-            to: ["domain","admin_project_uuid","test_ipam1"]
+          - to: ["domain","admin_project_uuid","test_ipam1"]
             attr:
               host_routes:
                 route:
@@ -327,6 +327,9 @@ workflow:
       display_name: vn_test_ref
       parent_type: project
       parent_uuid: admin_project_uuid
+      network_ipam_refs:
+        - uuid: "test_ipam1"
+          to: ["domain","admin_project_uuid","test_ipam1"]
 - name: update virtual network ref
   request:
     path: /virtual-network/vn_test_ref
@@ -345,8 +348,7 @@ workflow:
             - tenant: "default:demo"
               tenant_access: 7
         network_ipam_refs:
-          - uuid: "test_ipam1"
-            to: ["domain","admin_project_uuid","test_ipam1"]
+          - to: ["domain","admin_project_uuid","test_ipam1"]
           - uuid: "test_ipam2"
             to: ["domain","admin_project_uuid","test_ipam2"]
             attr:
@@ -372,28 +374,28 @@ workflow:
     path: /virtual-network/vn_test_ref
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: delete network ipam
   request:
     path: /network-ipam/test_ipam1
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: delete network ipam
   request:
     path: /network-ipam/test_ipam2
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: create network ipam red
   request:
     path: /network-ipams
     method: POST
     expected:
-    - 201
+    - 200
     data:
       network-ipam: *network_ipam_red
   expect:
@@ -403,7 +405,7 @@ workflow:
     path: /virtual-networks
     method: POST
     expected:
-    - 201
+    - 200
     data:
       virtual-network: *vn_red
   expect:
@@ -413,7 +415,7 @@ workflow:
     path: /routing-instances
     method: POST
     expected:
-    - 201
+    - 200
     data:
       routing-instance: *vn_blue_ri1
   expect:
@@ -565,6 +567,105 @@ workflow:
   expect:
     network-policys:
       count: 1
+
+- name: update vn_blue with user-defined subnet
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 200
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        network_ipam_refs:
+          - to: ["domain","admin_project_uuid","test_ipam_blue"]
+            attr:
+              ipam_subnets:
+                - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+                  subnet:
+                    ip_prefix: "10.0.0.0"
+                    ip_prefix_len: 24
+  expect:
+    virtual-network:
+      network_ipam_refs:
+        - uuid: test_ipam_blue
+          to: ["domain","admin_project_uuid","test_ipam_blue"]
+          attr:
+            ipam_subnets:
+              - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+                subnet:
+                  ip_prefix: "10.0.0.0"
+                  ip_prefix_len: 24
+
+- name: create instance ip
+  request:
+    path: /instance-ips
+    method: POST
+    expected:
+    - 200
+    data:
+      instance-ip:
+        uuid: "test_instance_ip"
+        subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+        instance_ip_address: "10.0.0.1"
+        network_ipam_refs:
+        - to: ["domain","admin_project_uuid","test_ipam_blue"]
+        virtual_network_refs:
+        - to: ["default", "admin_project_uuid", "vn_blue"]
+  expect:
+    instance-ip:
+      network_ipam_refs:
+      - uuid: test_ipam_blue
+        to: ["domain","admin_project_uuid","test_ipam_blue"]
+      virtual_network_refs:
+      - uuid: vn_blue
+        to: ["default", "admin_project_uuid", "vn_blue"]
+
+# Virtual Network can't be updated since there is an instance IP attached to it
+- name: try update vn_blue with different subnet
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 409
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        network_ipam_refs:
+          - uuid: test_ipam_blue
+            attr:
+              ipam_subnets:
+                - subnet_uuid: "16ee1b2f-caa3-4465-ab2f-b0941da44d43"
+                  subnet:
+                    ip_prefix: "10.0.0.0"
+                    ip_prefix_len: 24
+
+- name: delete instance ip
+  request:
+    path: /instance-ip/test_instance_ip
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: update vn_blue with different subnet
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 200
+    data:
+      virtual-network:
+        uuid: "vn_blue"
+        network_ipam_refs:
+          - uuid: test_ipam_blue
+            attr:
+              ipam_subnets:
+                - subnet_uuid: "16ee1b2f-caa3-4465-ab2f-b0941da44d43"
+                  subnet:
+                    ip_prefix: "10.0.0.0"
+                    ip_prefix_len: 24
+
 - name: try to update vn_blue by changing is_provider_network
   request:
     path: /virtual-network/vn_blue
@@ -599,7 +700,7 @@ workflow:
     path: /routing-instance/ri_uuid
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: show default routing instance for vn_blue
   request:
@@ -615,7 +716,7 @@ workflow:
     path: /virtual-network/vn_blue
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: show routing instances for vn_blue after deleting vn_blue
   request:
@@ -630,28 +731,28 @@ workflow:
     path: /network-ipam/test_ipam_blue
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: delete virtual network
   request:
     path: /virtual-network/vn_red
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: delete network ipam red
   request:
     path: /network-ipam/test_ipam_red
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: delete network policy
   request:
     path: /network-policy/network_policy_uuid
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: list virtual networks after deletes
   request:

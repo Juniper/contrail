@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -76,7 +77,7 @@ func (h *HTTP) Init() {
 }
 
 // Login refreshes authentication token.
-func (h *HTTP) Login() error {
+func (h *HTTP) Login(ctx context.Context) error {
 	if h.AuthURL == "" {
 		return nil
 	}
@@ -103,6 +104,7 @@ func (h *HTTP) Login() error {
 	}
 
 	request, err := http.NewRequest("POST", h.AuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
+	request = request.WithContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -115,7 +117,7 @@ func (h *HTTP) Login() error {
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	err = checkStatusCode([]int{201}, resp.StatusCode)
+	err = checkStatusCode([]int{200}, resp.StatusCode)
 	if err != nil {
 		logErrorAndResponse(err, resp)
 		return err
@@ -133,43 +135,50 @@ func (h *HTTP) Login() error {
 }
 
 // Create send a create API request.
-func (h *HTTP) Create(path string, data interface{}, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusCreated}
-	return h.Do(echo.POST, path, data, output, expected)
+func (h *HTTP) Create(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
+	expected := []int{http.StatusOK}
+	return h.Do(ctx, echo.POST, path, data, output, expected)
 }
 
 // Read send a get API request.
-func (h *HTTP) Read(path string, output interface{}) (*http.Response, error) {
+func (h *HTTP) Read(ctx context.Context, path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(echo.GET, path, nil, output, expected)
+	return h.Do(ctx, echo.GET, path, nil, output, expected)
 }
 
 // Update send an update API request.
-func (h *HTTP) Update(path string, data interface{}, output interface{}) (*http.Response, error) {
+func (h *HTTP) Update(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(echo.PUT, path, data, output, expected)
+	return h.Do(ctx, echo.PUT, path, data, output, expected)
 }
 
 // Delete send a delete API request.
-func (h *HTTP) Delete(path string, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusNoContent}
-	return h.Do(echo.DELETE, path, nil, output, expected)
+func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*http.Response, error) {
+	expected := []int{http.StatusOK}
+	return h.Do(ctx, echo.DELETE, path, nil, output, expected)
+}
+
+// RefUpdate sends a create/update API request/
+func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
+	expected := []int{http.StatusOK}
+	return h.Do(ctx, echo.POST, "/ref-update", data, output, expected)
 }
 
 // EnsureDeleted send a delete API request.
-func (h *HTTP) EnsureDeleted(path string, output interface{}) (*http.Response, error) {
-	expected := []int{http.StatusNoContent, http.StatusNotFound}
-	return h.Do(echo.DELETE, path, nil, output, expected)
+func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
+	expected := []int{http.StatusOK, http.StatusNotFound}
+	return h.Do(ctx, echo.DELETE, path, nil, output, expected)
 }
 
 // Do issues an API request.
-func (h *HTTP) Do(method, path string, data interface{}, output interface{}, expected []int) (*http.Response, error) {
+func (h *HTTP) Do(ctx context.Context,
+	method, path string, data interface{}, output interface{}, expected []int) (*http.Response, error) {
 	request, err := h.prepareHTTPRequest(method, path, data)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := h.doHTTPRequestRetryingOn401(request, data)
+	resp, err := h.doHTTPRequestRetryingOn401(ctx, request, data)
 	if err != nil {
 		logErrorAndResponse(err, resp)
 		return nil, err
@@ -233,7 +242,9 @@ func getURL(endpoint, path string) string {
 	return endpoint + path
 }
 
-func (h *HTTP) doHTTPRequestRetryingOn401(request *http.Request, data interface{}) (*http.Response, error) {
+func (h *HTTP) doHTTPRequestRetryingOn401(
+	ctx context.Context,
+	request *http.Request, data interface{}) (*http.Response, error) {
 	if h.Debug {
 		log.WithFields(log.Fields{
 			"method": request.Method,
@@ -242,6 +253,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(request *http.Request, data interface{
 			"data":   data,
 		}).Debug("Executing API Server request")
 	}
+	request = request.WithContext(ctx)
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error
@@ -261,7 +273,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(request *http.Request, data interface{
 			}
 
 			// refresh token and use the new token in request header
-			err = h.Login()
+			err = h.Login(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -301,14 +313,14 @@ func logErrorAndResponse(err error, response *http.Response) {
 }
 
 // DoRequest requests based on request object.
-func (h *HTTP) DoRequest(request *Request) (*http.Response, error) {
-	return h.Do(request.Method, request.Path, request.Data, &request.Output, request.Expected)
+func (h *HTTP) DoRequest(ctx context.Context, request *Request) (*http.Response, error) {
+	return h.Do(ctx, request.Method, request.Path, request.Data, &request.Output, request.Expected)
 }
 
 // Batch execution.
-func (h *HTTP) Batch(requests []*Request) error {
+func (h *HTTP) Batch(ctx context.Context, requests []*Request) error {
 	for i, request := range requests {
-		_, err := h.DoRequest(request)
+		_, err := h.DoRequest(ctx, request)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("%dth request failed.", i))
 		}

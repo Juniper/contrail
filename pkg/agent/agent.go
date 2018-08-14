@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"context"
+
 	"github.com/labstack/gommon/log"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -109,7 +111,7 @@ func NewAgent(c *Config) (*Agent, error) {
 	if c.SchemaRoot != "" {
 		serverSchema = filepath.Join(c.SchemaRoot, serverSchemaFile)
 	}
-	api, err := fetchServerAPI(s, serverSchema)
+	api, err := fetchServerAPI(context.Background(), s, serverSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -133,10 +135,10 @@ func NewAgent(c *Config) (*Agent, error) {
 	}, nil
 }
 
-func fetchServerAPI(server *client.HTTP, serverSchema string) (*schema.API, error) {
+func fetchServerAPI(ctx context.Context, server *client.HTTP, serverSchema string) (*schema.API, error) {
 	var api schema.API
 	for {
-		_, err := server.Read(serverSchema, &api)
+		_, err := server.Read(ctx, serverSchema, &api)
 		if err == nil {
 			break
 		}
@@ -159,13 +161,13 @@ func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
 }
 
 // Watch starts watching for events on API Server resources.
-func (a *Agent) Watch() error {
+func (a *Agent) Watch(ctx context.Context) error {
 	// configure global log level
 	common.SetLogLevel()
 
 	a.log.Info("Starting watching for events")
 	if a.config.AuthURL != "" {
-		err := a.APIServer.Login()
+		err := a.APIServer.Login(ctx)
 		if err != nil {
 			return fmt.Errorf("login to API Server failed: %s", err)
 		}
@@ -194,7 +196,7 @@ func (a *Agent) Watch() error {
 
 			go func() {
 				defer wg.Done()
-				watcher.watch()
+				watcher.watch(ctx)
 			}()
 		}
 	}

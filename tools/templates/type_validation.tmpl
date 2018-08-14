@@ -5,6 +5,9 @@ import (
 	errors "github.com/pkg/errors"
 )
 
+//This is needed to prevent an import error.
+var _ = strings.Count
+
 {# This macro is used to improve readability as braces has to be in the same line as if statement #}
 {% macro reportMissingProperty(id, resourceType) %} {
 	return errors.Errorf("{{id}} property is missing for resource {{resourceType}}")
@@ -21,7 +24,7 @@ import (
 		{# Check format #}
 		if {{variableName}} != "" {
 		{% if jsonSchema.Format != "" %}
-			fv, err := sv.getFormatValidator("{{jsonSchema.Format}}")
+			fv, err := sv.GetFormatValidator("{{jsonSchema.Format}}")
 			if err != nil {
 				return err
 			}
@@ -142,11 +145,6 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 	{{validateProperties(schema.ID, schema.JSONSchema.Properties)}}
 	//Validate References
 	{% for linkTo, reference in schema.References %}
-		{% if reference.Presence == "required" or reference.Presence == "true" %}
-			if obj.{{ reference.GoName }}Refs == nil {
-				return errors.Errorf("{{ linkTo }}_refs not provided for {{schema.ID}}")
-			}
-		{% endif %}
 		{% if reference.RefType %}
 		for _, r := range obj.{{ reference.GoName }}Refs {
 			if r.Attr != nil {

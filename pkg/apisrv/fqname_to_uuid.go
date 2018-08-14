@@ -5,7 +5,7 @@ import (
 
 	"net/http"
 
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/labstack/echo"
 )
 
@@ -13,7 +13,8 @@ type fqNameToIDRequest struct {
 	FQName []string `json:"fq_name"`
 }
 
-type fqNameToIDResponse struct {
+// FQNameToIDResponse defines FqNameToID response format.
+type FQNameToIDResponse struct {
 	UUID string `json:"uuid"`
 }
 
@@ -30,12 +31,12 @@ func (s *Server) fqNameToUUIDHandler(c echo.Context) error {
 	metadata, err := s.dbService.GetMetaData(ctx, "", fqName)
 	if err != nil {
 		//TODO adding Project
-		return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Name %s not found", models.FQNameToString(fqName)))
+		return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Name %s not found", basemodels.FQNameToString(fqName)))
 	}
 
 	//TODO permissions check
 
-	fqNameToIDResponse := &fqNameToIDResponse{
+	fqNameToIDResponse := &FQNameToIDResponse{
 		UUID: metadata.UUID,
 	}
 	return c.JSON(http.StatusOK, fqNameToIDResponse)

@@ -36,7 +36,7 @@ workflow:
     path: /projects
     method: POST
     expected:
-    - 201
+    - 200
     data:
       project: *admin_project_name_unique
   expect:
@@ -47,7 +47,7 @@ workflow:
     path: /openserverservers
     method: POST
     expected:
-    - 201
+    - 200
     data:
       server: *srv_minimal_name_unique
   expect:
@@ -74,12 +74,12 @@ workflow:
     path: /openserverserver/srv_blue
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null
 - name: delete project
   request:
     path: /project/admin_project_name_unique_uuid
     method: DELETE
     expected:
-    - 204
+    - 200
   expect: null

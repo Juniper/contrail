@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
@@ -106,7 +107,7 @@ func NewService() (*Service, error) {
 
 func createWatcher(log *logrus.Entry, processor services.EventProcessor) (watchCloser, error) {
 	driver := viper.GetString("database.type")
-	sqlDB, err := db.ConnectDB()
+	sqlDB, err := basedb.ConnectDB()
 	if err != nil {
 		return nil, err
 	}
@@ -120,9 +121,9 @@ func createWatcher(log *logrus.Entry, processor services.EventProcessor) (watchC
 	rowSink := replication.NewObjectMappingAdapter(s, dbService)
 
 	switch driver {
-	case db.DriverPostgreSQL:
+	case basedb.DriverPostgreSQL:
 		return createPostgreSQLWatcher(log, rowSink, dbService, processor)
-	case db.DriverMySQL:
+	case basedb.DriverMySQL:
 		return createMySQLWatcher(log, rowSink)
 	default:
 		return nil, errors.New("undefined database type")

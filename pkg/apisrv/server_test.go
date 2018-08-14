@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/stretchr/testify/assert"
 	"github.com/twinj/uuid"
 	"google.golang.org/grpc"
@@ -61,10 +62,12 @@ func TestBasePropsTwoParents(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_base_props_two_parents.yml")
 }
+
 func TestProject(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_project.yml")
 }
+
 func TestEndpoints(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_fqname_to_id.yml")
@@ -75,7 +78,28 @@ func TestInstanceIP(t *testing.T) {
 	RunTest(t, "./test_data/test_instance_ip.yml")
 }
 
+func TestRefUpdate(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_ref_update.yml")
+}
+
+func TestVirtualMachineInterface(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_virtual_machine_interface.yml")
+}
+
+func TestRefRelaxForDelete(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_ref_relax.yml")
+}
+
+func TestSanitizing(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_sanitizing.yml")
+}
+
 func TestGRPC(t *testing.T) {
+	ctx := context.Background()
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
 	restClient := client.NewHTTP(
 		TestServer.URL,
@@ -92,7 +116,7 @@ func TestGRPC(t *testing.T) {
 	)
 	restClient.InSecure = true
 	restClient.Init()
-	err := restClient.Login()
+	err := restClient.Login(ctx)
 	assert.NoError(t, err)
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
@@ -102,7 +126,7 @@ func TestGRPC(t *testing.T) {
 	assert.NoError(t, err)
 	defer LogFatalIfErr(conn.Close)
 	md := metadata.Pairs("X-Auth-Token", restClient.AuthToken)
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 	// Contact the server and print out its response.
 	c := services.NewContrailServiceClient(conn)
 	assert.NoError(t, err)
@@ -117,7 +141,7 @@ func TestGRPC(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	response, err := c.ListProject(ctx, &services.ListProjectRequest{
-		Spec: &services.ListSpec{
+		Spec: &baseservices.ListSpec{
 			Limit: 1,
 		},
 	})
@@ -133,6 +157,61 @@ func TestGRPC(t *testing.T) {
 	assert.NotNil(t, getResponse.Project)
 
 	_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
+		ID: project.UUID,
+	})
+	assert.NoError(t, err)
+}
+
+func TestRESTClient(t *testing.T) {
+	ctx := context.Background()
+	testName := "TestRESTClient"
+	AddKeystoneProjectAndUser(APIServer, testName)
+	restClient := client.NewHTTP(
+		TestServer.URL,
+		TestServer.URL+"/keystone/v3",
+		testName,
+		testName,
+		"default",
+		true,
+		&keystone.Scope{
+			Project: &keystone.Project{
+				Name: testName,
+			},
+		},
+	)
+	restClient.InSecure = true
+	restClient.Init()
+	err := restClient.Login(ctx)
+	// Contact the server and print out its response.
+	assert.NoError(t, err)
+	project := models.MakeProject()
+	project.UUID = uuid.NewV4().String()
+	project.FQName = []string{"default-domain", "project", project.UUID}
+	project.ParentType = "domain"
+	project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
+	project.ConfigurationVersion = 1
+	_, err = restClient.CreateProject(ctx, &services.CreateProjectRequest{
+		Project: project,
+	})
+	assert.NoError(t, err)
+	response, err := restClient.ListProject(ctx, &services.ListProjectRequest{
+		Spec: &baseservices.ListSpec{
+			Limit: 1,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, 1, len(response.Projects))
+
+	getResponse, err := restClient.GetProject(ctx, &services.GetProjectRequest{
+		ID: project.UUID,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, getResponse.Project)
+	assert.Equal(t, project.UUID, getResponse.Project.UUID)
+
+	_, err = restClient.DeleteProject(ctx, &services.DeleteProjectRequest{
 		ID: project.UUID,
 	})
 	assert.NoError(t, err)

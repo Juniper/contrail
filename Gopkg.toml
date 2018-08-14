@@ -21,7 +21,7 @@
 
 [[constraint]]
   name = "github.com/flosch/pongo2"
-  version = "3.0.0"
+  revision = "67f4ff8560dfa2b00920118f228c0a2f68760631"
 
 [[constraint]]
   name = "github.com/go-sql-driver/mysql"

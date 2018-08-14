@@ -56,7 +56,7 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 			if err != nil {
 				return err
 			}
-			err = sv.handleVnSubnetsInAddrMgmt(ctx, virtualNetwork, true)
+			err = sv.allocateVnSubnetsInAddrMgmt(ctx, virtualNetwork.GetIpamSubnets())
 			if err != nil {
 				return err
 			}
@@ -93,7 +93,14 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 			currentVN := virtualNetworkResponse.GetVirtualNetwork()
 
 			//TODO: check VirtualNetworkID
-			//TODO: process ipam network subnets
+			//TODO: check changes in virtual_network_properties
+			//      we need to read ipam_refs from db and for any ipam
+			//      if subnet_method is flat-subnet, network_mode should be l3
+
+			err = sv.processIpamNetworkSubnets(ctx, requestedVN)
+			if err != nil {
+				return err
+			}
 			//TODO: check route target (depends on global system config)
 			//TODO: check provider details
 
@@ -107,6 +114,10 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 			}
 			//TODO: check network support BGP types
 			//TODO: check BGPVPN Refs
+			err = sv.updateVnSubnetsInAddrMgmt(ctx, currentVN, requestedVN)
+			if err != nil {
+				return err
+			}
 
 			response, err = sv.Next().UpdateVirtualNetwork(ctx, request)
 
@@ -148,7 +159,7 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 				return err
 			}
 
-			err = sv.handleVnSubnetsInAddrMgmt(ctx, vn, false)
+			err = sv.deallocateVnSubnetsInAddrMgmt(ctx, vn, vn.GetIpamSubnets())
 			if err != nil {
 				return common.ErrorBadRequestf("couldn't remove virtual network subnet objects: %v", err)
 			}
@@ -292,10 +303,18 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 }
 
 func (sv *ContrailTypeLogicService) allocateVnSubnet(
-	ctx context.Context, ipamUUID string, vnSubnet *models.IpamSubnetType) (err error) {
+	ctx context.Context, vnSubnet *models.IpamSubnetType) error {
+	subnetAlreadyCreated, err := sv.AddressManager.CheckIfIpamSubnetExists(ctx, vnSubnet.SubnetUUID)
+	if err != nil {
+		return common.ErrorBadRequestf("couldn't check if ipam subnet with UUID %v exists: %v", vnSubnet.SubnetUUID, err)
+	}
+
+	if subnetAlreadyCreated {
+		return nil
+	}
+
 	vnSubnet.SubnetUUID, err = sv.AddressManager.CreateIpamSubnet(ctx, &ipam.CreateIpamSubnetRequest{
-		IpamSubnet:      vnSubnet,
-		NetworkIpamUUID: ipamUUID,
+		IpamSubnet: vnSubnet,
 	})
 
 	if err != nil {
@@ -318,21 +337,45 @@ func (sv *ContrailTypeLogicService) deallocateVnSubnet(
 	return nil
 }
 
-func (sv *ContrailTypeLogicService) handleVnSubnetsInAddrMgmt(
-	ctx context.Context, virtualNetwork *models.VirtualNetwork, create bool,
-) (err error) {
+func (sv *ContrailTypeLogicService) updateVnSubnetsInAddrMgmt(
+	ctx context.Context, currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork,
+) error {
+	vnSubnetsToDelete := currentVN.GetIpamSubnets().Subtract(requestedVN.GetIpamSubnets())
+	err := sv.deallocateVnSubnetsInAddrMgmt(ctx, currentVN, vnSubnetsToDelete)
+	if err != nil {
+		return err
+	}
 
-	ipamReferences := virtualNetwork.GetNetworkIpamRefs()
-	for _, ipamReference := range ipamReferences {
-		for _, vnSubnet := range ipamReference.GetAttr().GetIpamSubnets() {
-			if create {
-				err = sv.allocateVnSubnet(ctx, ipamReference.GetUUID(), vnSubnet)
-			} else {
-				err = sv.deallocateVnSubnet(ctx, vnSubnet)
-			}
-			if err != nil {
-				return err
-			}
+	// TODO: update existing subnets
+	return sv.allocateVnSubnetsInAddrMgmt(ctx, requestedVN.GetIpamSubnets())
+}
+
+func (sv *ContrailTypeLogicService) allocateVnSubnetsInAddrMgmt(
+	ctx context.Context, vnSubnets *models.IpamSubnets,
+) error {
+	for _, vnSubnet := range vnSubnets.GetSubnets() {
+		err := sv.allocateVnSubnet(ctx, vnSubnet)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) deallocateVnSubnetsInAddrMgmt(
+	ctx context.Context, vn *models.VirtualNetwork, vnSubnets *models.IpamSubnets,
+) error {
+
+	err := sv.canSubnetsBeDeleted(ctx, vn, vnSubnets)
+	if err != nil {
+		return common.ErrorConflictf("subnets from virtual network %v cannot be deleted: %v", vn.GetUUID(), err)
+	}
+
+	for _, vnSubnet := range vnSubnets.GetSubnets() {
+		err := sv.deallocateVnSubnet(ctx, vnSubnet)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -523,4 +566,97 @@ func (sv *ContrailTypeLogicService) getLinkedProviderVirtualNetworks(
 		}
 	}
 	return linkedProviderVirtualNetworkUUIDs, nil
+}
+
+func (sv *ContrailTypeLogicService) canSubnetsBeDeleted(
+	ctx context.Context,
+	vn *models.VirtualNetwork,
+	vnSubnets *models.IpamSubnets,
+) error {
+	err := sv.checkIfInstanceIPsAreNotUsedInSubnets(ctx, vn, vnSubnets)
+	if err != nil {
+		return err
+	}
+
+	err = sv.checkIfFloatingIPsAreNotUsedInSubnets(ctx, vn, vnSubnets)
+	if err != nil {
+		return err
+	}
+
+	return sv.checkIfAliasIPsAreNotUsedInSubnets(ctx, vn, vnSubnets)
+}
+
+func (sv *ContrailTypeLogicService) checkIfInstanceIPsAreNotUsedInSubnets(
+	ctx context.Context,
+	vn *models.VirtualNetwork,
+	vnSubnets *models.IpamSubnets,
+) error {
+	for _, instanceIPBackRef := range vn.GetInstanceIPBackRefs() {
+		instanceIPRes, err := sv.ReadService.GetInstanceIP(ctx, &services.GetInstanceIPRequest{
+			ID: instanceIPBackRef.GetUUID()})
+		if err != nil {
+			return err
+		}
+		instanceIP := instanceIPRes.GetInstanceIP()
+		contains, err := vnSubnets.Contains(instanceIP.GetInstanceIPAddress())
+		if err != nil {
+			return err
+		}
+
+		if contains {
+			return errors.Errorf("cannot delete IP block, ip(%v) is in use", instanceIP.GetInstanceIPAddress())
+		}
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkIfFloatingIPsAreNotUsedInSubnets(
+	ctx context.Context,
+	vn *models.VirtualNetwork,
+	vnSubnets *models.IpamSubnets,
+) error {
+	for _, floatingIPPoolRef := range vn.GetFloatingIPPools() {
+		floatingIPPoolRes, err := sv.ReadService.GetFloatingIPPool(ctx, &services.GetFloatingIPPoolRequest{
+			ID: floatingIPPoolRef.GetUUID()})
+		if err != nil {
+			return err
+		}
+		ipAddresses, err := floatingIPPoolRes.GetFloatingIPPool().GetIPsInSubnets(vnSubnets)
+		if err != nil {
+			return err
+		}
+
+		if len(ipAddresses) > 0 {
+			return errors.Errorf("cannot delete IP block, floating ip addresses (%v) are in use", ipAddresses)
+		}
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkIfAliasIPsAreNotUsedInSubnets(
+	ctx context.Context,
+	vn *models.VirtualNetwork,
+	vnSubnets *models.IpamSubnets,
+) error {
+
+	for _, aliasIPPoolRef := range vn.GetAliasIPPools() {
+		aliasIPPoolRes, err := sv.ReadService.GetAliasIPPool(ctx, &services.GetAliasIPPoolRequest{
+			ID: aliasIPPoolRef.GetUUID()})
+		if err != nil {
+			return err
+		}
+
+		ipAddresses, err := aliasIPPoolRes.GetAliasIPPool().GetIPsInSubnets(vnSubnets)
+		if err != nil {
+			return err
+		}
+
+		if len(ipAddresses) > 0 {
+			return errors.Errorf("cannot delete IP block, alias ip addresses (%v) are in use", ipAddresses)
+		}
+	}
+
+	return nil
 }

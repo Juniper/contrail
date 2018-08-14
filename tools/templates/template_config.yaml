@@ -17,8 +17,11 @@
   template_path: sql_psql.tmpl
   output_path: tools/init_psql.sql
 - type: all
-  template_path: sql_cleanup.tmpl
-  output_path: tools/cleanup.sql
+  template_path: sql_cleanup_mysql.tmpl
+  output_path: tools/cleanup_mysql.sql
+- type: all
+  template_path: sql_cleanup_psql.tmpl
+  output_path: tools/cleanup_psql.sql
 - type: all
   template_path: db.tmpl
   output_path: pkg/db/gen_db.go
@@ -38,6 +41,9 @@
   template_path: quota_checker.tmpl
   output_path: pkg/services/gen_quota_checker.go
 - type: all
+  template_path: sanitizer_service.tmpl
+  output_path: pkg/services/gen_sanitizer.go
+- type: all
   template_path: etcdserviceif.tmpl
   output_path: pkg/db/etcd/gen_etcd_notifier_service.go
 - type: all
@@ -48,7 +54,10 @@
   output_path: pkg/services/gen_service.go
 - type: all
   template_path: proto_model.tmpl
-  output_path: proto/github.com/Juniper/contrail/pkg/models/generated.proto
+  output_path: proto/__package__/pkg/models/generated.proto
 - type: all
   template_path: proto_service.tmpl
-  output_path: proto/github.com/Juniper/contrail/pkg/services/generated.proto
+  output_path: proto/__package__/pkg/services/generated.proto
+- type: all
+  template_path: client.tmpl
+  output_path: pkg/apisrv/client/gen_http.go

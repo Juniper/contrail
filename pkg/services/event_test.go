@@ -105,100 +105,181 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 }
 
-func TestReorderEventList(t *testing.T) {
-	eventList := &EventList{
-		Events: []*Event{
-			{
-				Request: &Event_CreateVirtualNetworkRequest{
-					&CreateVirtualNetworkRequest{
-						VirtualNetwork: &models.VirtualNetwork{
-							UUID: "vn1",
-							NetworkPolicyRefs: []*models.VirtualNetworkNetworkPolicyRef{
-								{
-									UUID: "network_policy1",
-								},
-							},
-							QosConfigRefs: []*models.VirtualNetworkQosConfigRef{
-								{
-									UUID: "qos_config1",
-								},
-							},
+func TestSortEventListByDependency(t *testing.T) {
+	tests := []struct {
+		name        string
+		events      []*Event
+		sortedOrder []string
+		fails       bool
+	}{
+		{
+			name:        "no events",
+			events:      []*Event{},
+			sortedOrder: []string{},
+		},
+		{
+			name: "single event",
+			events: []*Event{
+				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{uuid: "vn-uuid"})),
+			},
+			sortedOrder: []string{"vn-uuid"},
+		},
+		{
+			name: "reference dependency",
+			events: []*Event{
+				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{
+					uuid: "vn-uuid",
+					networkPolicyRefs: []*models.VirtualNetworkNetworkPolicyRef{
+						{
+							UUID: "network-policy-uuid",
 						},
 					},
-				},
-			},
-			{
-				Request: &Event_CreateNetworkPolicyRequest{
-					CreateNetworkPolicyRequest: &CreateNetworkPolicyRequest{
-						NetworkPolicy: &models.NetworkPolicy{
-							UUID: "network_policy1",
+					qosConfigRefs: []*models.VirtualNetworkQosConfigRef{
+						{
+							UUID: "qos-config-uuid",
 						},
 					},
-				},
+				})),
+				networkPolicyCreateEvent(networkPolicy("network-policy-uuid")),
+				qosConfigCreateEvent(qosConfig("qos-config-uuid")),
 			},
-			{
-				Request: &Event_CreateQosConfigRequest{
-					CreateQosConfigRequest: &CreateQosConfigRequest{
-						QosConfig: &models.QosConfig{
-							UUID: "qos_config1",
+			sortedOrder: []string{"network-policy-uuid", "qos-config-uuid", "vn-uuid"},
+		},
+		{
+			name: "parent-child dependency",
+			events: []*Event{
+				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{
+					uuid:       "vn-uuid",
+					parentUUID: "project-uuid",
+					parentType: "project",
+				})),
+				projectCreateEvent(project("project-uuid")),
+			},
+
+			sortedOrder: []string{"project-uuid", "vn-uuid"},
+		},
+		{
+			name: "circular dependency",
+			events: []*Event{
+				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{
+					uuid: "vn-one-uuid",
+					virtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
+						{
+							UUID: "vn-two-uuid",
 						},
 					},
-				},
+				})),
+				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{
+					uuid: "vn-two-uuid",
+					virtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
+						{
+							UUID: "vn-one-uuid",
+						},
+					},
+				})),
 			},
+			fails: true,
 		},
 	}
 
-	err := eventList.Sort()
-	assert.NoError(t, err)
-	networkPolicy := eventList.Events[0].GetCreateNetworkPolicyRequest().GetNetworkPolicy()
-	if networkPolicy != nil {
-		assert.Equal(t, "network_policy1", networkPolicy.GetUUID())
-		qosConfig := eventList.Events[1].GetCreateQosConfigRequest().GetQosConfig()
-		assert.Equal(t, "qos_config1", qosConfig.GetUUID())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			eventList := EventList{tt.events}
+
+			err := eventList.Sort()
+
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				for i, e := range eventList.Events {
+					assert.Equal(t, tt.sortedOrder[i], e.GetResource().GetUUID())
+				}
+			}
+		})
 	}
-	qosConfig := eventList.Events[0].GetCreateQosConfigRequest().GetQosConfig()
-	if qosConfig != nil {
-		assert.Equal(t, "qos_config1", qosConfig.GetUUID())
-		networkPolicy := eventList.Events[1].GetCreateNetworkPolicyRequest().GetNetworkPolicy()
-		assert.Equal(t, "network_policy1", networkPolicy.GetUUID())
-	}
-	virtualNetwork := eventList.Events[2].GetCreateVirtualNetworkRequest().GetVirtualNetwork()
-	assert.Equal(t, "vn1", virtualNetwork.GetUUID())
 }
 
-func TestReorderLoopedList(t *testing.T) {
-	eventList := &EventList{
-		Events: []*Event{
-			{
-				Request: &Event_CreateVirtualNetworkRequest{
-					&CreateVirtualNetworkRequest{
-						VirtualNetwork: &models.VirtualNetwork{
-							UUID: "vn1",
-							VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
-								{
-									UUID: "vn2",
-								},
-							},
-						},
-					},
-				},
-			},
-			{
-				Request: &Event_CreateVirtualNetworkRequest{
-					&CreateVirtualNetworkRequest{
-						VirtualNetwork: &models.VirtualNetwork{
-							UUID: "vn2",
-							VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
-								{
-									UUID: "vn1",
-								},
-							},
-						},
-					},
-				},
+func projectCreateEvent(p *models.Project) *Event {
+	return &Event{
+		Request: &Event_CreateProjectRequest{
+			&CreateProjectRequest{
+				Project: p,
 			},
 		},
 	}
-	err := eventList.Sort()
-	assert.Error(t, err)
+}
+
+func virtualNetworkCreateEvent(vn *models.VirtualNetwork) *Event {
+	return &Event{
+		Request: &Event_CreateVirtualNetworkRequest{
+			&CreateVirtualNetworkRequest{
+				VirtualNetwork: vn,
+			},
+		},
+	}
+}
+
+func networkPolicyCreateEvent(np *models.NetworkPolicy) *Event {
+	return &Event{
+		Request: &Event_CreateNetworkPolicyRequest{
+			CreateNetworkPolicyRequest: &CreateNetworkPolicyRequest{
+				NetworkPolicy: np,
+			},
+		},
+	}
+}
+
+func qosConfigCreateEvent(qc *models.QosConfig) *Event {
+	return &Event{
+		Request: &Event_CreateQosConfigRequest{
+			CreateQosConfigRequest: &CreateQosConfigRequest{
+				QosConfig: qc,
+			},
+		},
+	}
+}
+
+func project(uuid string) *models.Project {
+	p := models.MakeProject()
+	p.UUID = uuid
+	return p
+}
+
+type vnParameters struct {
+	uuid               string
+	parentUUID         string
+	parentType         string
+	networkPolicyRefs  []*models.VirtualNetworkNetworkPolicyRef
+	qosConfigRefs      []*models.VirtualNetworkQosConfigRef
+	virtualNetworkRefs []*models.VirtualNetworkVirtualNetworkRef
+}
+
+func virtualNetwork(p *vnParameters) *models.VirtualNetwork {
+	vn := models.MakeVirtualNetwork()
+	vn.UUID = p.uuid
+	vn.ParentUUID = p.parentUUID
+	vn.ParentType = p.parentType
+	if len(p.networkPolicyRefs) > 0 {
+		vn.NetworkPolicyRefs = p.networkPolicyRefs
+	}
+	if len(p.qosConfigRefs) > 0 {
+		vn.QosConfigRefs = p.qosConfigRefs
+	}
+	if len(p.virtualNetworkRefs) > 0 {
+		vn.VirtualNetworkRefs = p.virtualNetworkRefs
+	}
+	return vn
+}
+
+func networkPolicy(uuid string) *models.NetworkPolicy {
+	np := models.MakeNetworkPolicy()
+	np.UUID = uuid
+	return np
+}
+
+func qosConfig(uuid string) *models.QosConfig {
+	qc := models.MakeQosConfig()
+	qc.UUID = uuid
+	return qc
 }

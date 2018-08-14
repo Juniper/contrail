@@ -5,6 +5,8 @@ import (
 	"bytes"
 	"io"
 
+	"context"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -20,7 +22,8 @@ type Reporter struct {
 func (r *Reporter) reportStatus(status map[string]interface{}) {
 	data := map[string]map[string]interface{}{defaultResource: status}
 	var response interface{}
-	_, err := r.api.Update(r.resource, data, &response)
+	//TODO(nati) fixed context
+	_, err := r.api.Update(context.Background(), r.resource, data, &response) //nolint
 	if err != nil {
 		r.log.Infof("update cluster status failed: %s", err)
 	}
