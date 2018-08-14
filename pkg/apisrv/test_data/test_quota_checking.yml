@@ -327,7 +327,7 @@ workflow:
       path: /projects
       method: POST
       expected:
-        - 201
+        - 200
       data:
         project: *project_blue
     expect:
@@ -339,7 +339,7 @@ workflow:
       path: /network-ipams
       method: POST
       expected:
-        - 201
+        - 200
       data:
         network-ipam: *network_ipam_magic_blue1
     expect:
@@ -395,7 +395,7 @@ workflow:
       path: /network-ipams
       method: POST
       expected:
-        - 201
+        - 200
       data:
         network-ipam: *network_ipam_magic_blue2
     expect:
@@ -406,7 +406,7 @@ workflow:
       path: /network-ipam/uuid_ipam_magic_blue2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete network_ipam blue 1
@@ -414,7 +414,7 @@ workflow:
       path: /network-ipam/uuid_ipam_magic_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # Check quota for virtual_network
@@ -423,7 +423,7 @@ workflow:
       path: /network-ipams
       method: POST
       expected:
-        - 201
+        - 200
       data:
         network-ipam: *network_ipam_magic_blue1
     expect:
@@ -434,7 +434,7 @@ workflow:
       path: /virtual-networks
       method: POST
       expected:
-        - 201
+        - 200
       data:
         virtual-network: *spocknet_blue1
     expect:
@@ -490,7 +490,7 @@ workflow:
       path: /virtual-networks
       method: POST
       expected:
-        - 201
+        - 200
       data:
         virtual-network: *spocknet_blue2
     expect:
@@ -501,7 +501,7 @@ workflow:
       path: /virtual-network/uuid_vn_blue_spock2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete virtual_network blue 1
@@ -509,7 +509,7 @@ workflow:
       path: /virtual-network/uuid_vn_blue_spock1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete network_ipam blue 1
@@ -517,7 +517,7 @@ workflow:
       path: /network-ipam/uuid_ipam_magic_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # Check quota for Security Group
@@ -526,7 +526,7 @@ workflow:
       path: /security-groups
       method: POST
       expected:
-        - 201
+        - 200
       data:
         security-group: *secgrp_blue1
     expect:
@@ -582,7 +582,7 @@ workflow:
       path: /security-groups
       method: POST
       expected:
-        - 201
+        - 200
       data:
         security-group: *secgrp_blue2
     expect:
@@ -594,7 +594,7 @@ workflow:
 #      path: /network-ipams
 #      method: POST
 #      expected:
-#        - 201
+#        - 200
 #      data:
 #        network-ipam: *network_ipam_magic_green
 #    expect:
@@ -605,7 +605,7 @@ workflow:
       path: /security-group/uuid_secgrp_blue2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete security_group blue 1
@@ -613,7 +613,7 @@ workflow:
       path: /security-group/uuid_secgrp_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # Check Quota for Logical Routers
@@ -622,7 +622,7 @@ workflow:
       path: /logical-routers
       method: POST
       expected:
-        - 201
+        - 200
       data:
         logical-router: *logical_router_blue1
     expect:
@@ -678,7 +678,7 @@ workflow:
       path: /logical-routers
       method: POST
       expected:
-        - 201
+        - 200
       data:
         logical-router: *logical_router_blue2
     expect:
@@ -689,7 +689,7 @@ workflow:
       path: /logical-router/uuid_logrout_blue2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete logical_router blue 1
@@ -697,7 +697,7 @@ workflow:
       path: /logical-router/uuid_logrout_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # Check quota for Loadbalancer Healthmonitor
@@ -707,7 +707,7 @@ workflow:
       path: /loadbalancer-healthmonitors
       method: POST
       expected:
-        - 201
+        - 200
       data:
         loadbalancer-healthmonitor: *loadbalancer_healthmonitor_blue1
     expect:
@@ -763,7 +763,7 @@ workflow:
       path: /loadbalancer-healthmonitors
       method: POST
       expected:
-        - 201
+        - 200
       data:
         loadbalancer-healthmonitor: *loadbalancer_healthmonitor_blue2
     expect:
@@ -774,7 +774,7 @@ workflow:
       path: /loadbalancer-healthmonitor/uuid_lb_hm_blue2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete loadbalancer_healthmonitor blue 1
@@ -782,7 +782,7 @@ workflow:
       path: /loadbalancer-healthmonitor/uuid_lb_hm_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # Check quota for LoadBalancer Pool
@@ -792,7 +792,7 @@ workflow:
       path: /loadbalancer-pools
       method: POST
       expected:
-        - 201
+        - 200
       data:
         loadbalancer-pool: *loadbalancer_pool_blue1
     expect:
@@ -848,7 +848,7 @@ workflow:
       path: /loadbalancer-pools
       method: POST
       expected:
-        - 201
+        - 200
       data:
         loadbalancer-pool: *loadbalancer_pool_blue2
     expect:
@@ -859,7 +859,7 @@ workflow:
       path: /loadbalancer-pool/uuid_lb_p_blue2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete loadbalancer_pool blue 1
@@ -867,7 +867,7 @@ workflow:
       path: /loadbalancer-pool/uuid_lb_p_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # Check quota for Network Policy
@@ -877,7 +877,7 @@ workflow:
       path: /network-policys
       method: POST
       expected:
-        - 201
+        - 200
       data:
         network-policy: *network_policy_blue1
     expect:
@@ -933,7 +933,7 @@ workflow:
       path: /network-policys
       method: POST
       expected:
-        - 201
+        - 200
       data:
         network-policy: *network_policy_blue2
     expect:
@@ -944,7 +944,7 @@ workflow:
       path: /network-policy/uuid_netpol_blue2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete network_policy blue 1
@@ -952,7 +952,7 @@ workflow:
       path: /network-policy/uuid_netpol_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # Check quota for Route Table
@@ -962,7 +962,7 @@ workflow:
       path: /route-tables
       method: POST
       expected:
-        - 201
+        - 200
       data:
         route-table: *route_table_blue1
     expect:
@@ -1018,7 +1018,7 @@ workflow:
       path: /route-tables
       method: POST
       expected:
-        - 201
+        - 200
       data:
         route-table: *route_table_blue2
     expect:
@@ -1029,7 +1029,7 @@ workflow:
       path: /route-table/uuid_rtab_blue2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete route_table blue 1
@@ -1037,7 +1037,7 @@ workflow:
       path: /route-table/uuid_rtab_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # Check quota for Security Logging Object
@@ -1047,7 +1047,7 @@ workflow:
       path: /security-logging-objects
       method: POST
       expected:
-        - 201
+        - 200
       data:
         security-logging-object: *security_logging_object_blue1
     expect:
@@ -1103,7 +1103,7 @@ workflow:
       path: /security-logging-objects
       method: POST
       expected:
-        - 201
+        - 200
       data:
         security-logging-object: *security_logging_object_blue2
     expect:
@@ -1114,7 +1114,7 @@ workflow:
       path: /security-logging-object/uuid_seclogobj_blue2
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
   - name: Delete security_logging_object blue 1
@@ -1122,7 +1122,7 @@ workflow:
       path: /security-logging-object/uuid_seclogobj_blue1
       method: DELETE
       expected:
-        - 204
+        - 200
     expect: null
 
 # TODO: Check quota for Service Instance
@@ -1133,7 +1133,7 @@ workflow:
 #      path: /service-templates
 #      method: POST
 #      expected:
-#        - 201
+#        - 200
 #      data:
 #        service-template: *service_template
 #    expect:
@@ -1144,7 +1144,7 @@ workflow:
 #      path: /service-instances
 #      method: POST
 #      expected:
-#        - 201
+#        - 200
 #      data:
 #        service-instance: *service_instance_blue1
 #    expect:
@@ -1200,7 +1200,7 @@ workflow:
 #      path: /service-instances
 #      method: POST
 #      expected:
-#        - 201
+#        - 200
 #      data:
 #        service-instance: *service_instance_blue2
 #    expect:
@@ -1211,7 +1211,7 @@ workflow:
 #      path: /service-instance/uuid_servinst_blue2
 #      method: DELETE
 #      expected:
-#        - 204
+#        - 200
 #    expect: null
 #
 #  - name: Delete service_instance blue 1
@@ -1219,7 +1219,7 @@ workflow:
 #      path: /service-instance/uuid_servinst_blue1
 #      method: DELETE
 #      expected:
-#        - 204
+#        - 200
 #    expect: null
 #
 #  - name: Delete service_template
@@ -1227,7 +1227,7 @@ workflow:
 #      path: /service-template/uuid_servtmpl
 #      method: DELETE
 #      expected:
-#        - 204
+#        - 200
 #    expect: null
 
 

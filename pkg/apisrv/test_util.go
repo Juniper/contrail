@@ -1,6 +1,7 @@
 package apisrv
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -181,27 +182,29 @@ type clientsList map[string]*client.HTTP
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
 func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 	log.Info("Running clean test scenario: ", testScenario.Name)
-	clients := prepareClients(t, testScenario)
-	tracked := runTestScenario(t, testScenario, clients)
-	cleanupTrackedResources(tracked, clients)
+	ctx := context.Background()
+	clients := prepareClients(ctx, t, testScenario)
+	tracked := runTestScenario(ctx, t, testScenario, clients)
+	cleanupTrackedResources(ctx, tracked, clients)
 }
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
 func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario) func() {
 	log.Info("Running *DIRTY* test scenario: ", testScenario.Name)
-	clients := prepareClients(t, testScenario)
-	tracked := runTestScenario(t, testScenario, clients)
+	ctx := context.Background()
+	clients := prepareClients(ctx, t, testScenario)
+	tracked := runTestScenario(ctx, t, testScenario, clients)
 	cleanupFunc := func() {
-		cleanupTrackedResources(tracked, clients)
+		cleanupTrackedResources(ctx, tracked, clients)
 	}
 	return cleanupFunc
 }
 
-func cleanupTrackedResources(tracked []trackedResource, clients map[string]*client.HTTP) {
+func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, clients map[string]*client.HTTP) {
 	log.Infof("There are %v resources to clean (in clean tests should be ZERO)", len(tracked))
 	for i, tr := range tracked {
 		log.Warnf("POST clean up resource %v / %v: %v {clien:t %v}", i+1, len(tracked), tr.Path, tr.Client)
-		response, err := clients[tr.Client].EnsureDeleted(tr.Path, nil)
+		response, err := clients[tr.Client].EnsureDeleted(ctx, tr.Path, nil)
 		if err != nil {
 			log.Errorf("Error deleting dirty resource: %v, for url path '%v' with client %v", err, tr.Path, tr.Client)
 			continue // It is desired to loop over all resources even with errors
@@ -212,7 +215,7 @@ func cleanupTrackedResources(tracked []trackedResource, clients map[string]*clie
 	}
 }
 
-func prepareClients(t *testing.T, testScenario *TestScenario) clientsList {
+func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario) clientsList {
 	clients := clientsList{}
 
 	for key, client := range testScenario.Clients {
@@ -224,13 +227,14 @@ func prepareClients(t *testing.T, testScenario *TestScenario) clientsList {
 
 		clients[key] = client
 
-		err := clients[key].Login()
+		err := clients[key].Login(ctx)
 		assert.NoError(t, err, "client failed to login")
 	}
 	return clients
 }
 
-func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsList) (tracked []trackedResource) {
+func runTestScenario(ctx context.Context,
+	t *testing.T, testScenario *TestScenario, clients clientsList) (tracked []trackedResource) {
 	for _, cleanTask := range testScenario.Cleanup {
 		log.Debugf("CLEAN TASK -> %v", cleanTask)
 		clientID := cleanTask["client"]
@@ -240,7 +244,7 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 		client := clients[clientID]
 		// delete existing resources.
 		log.Debugf("[Clean task] Path: %s, TestScenario: %s\n", cleanTask["path"], testScenario.Name)
-		response, err := client.EnsureDeleted(cleanTask["path"], nil) // nolint
+		response, err := client.EnsureDeleted(ctx, cleanTask["path"], nil) // nolint
 		if err != nil && response.StatusCode != 404 {
 			log.Debug(err)
 		}
@@ -258,9 +262,9 @@ func runTestScenario(t *testing.T, testScenario *TestScenario, clients clientsLi
 			"Client '%v' not defined in test scenario '%v' task '%v'", clientID, testScenario.Name, task) {
 			break
 		}
-		response, err := client.DoRequest(task.Request)
-		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
+		response, err := client.DoRequest(ctx, task.Request)
 		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
+		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
 
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
 		ok = testutil.AssertEqual(t, task.Expect, task.Request.Output,
@@ -322,7 +326,7 @@ func extractSyncOperation(syncOp map[string]interface{}, client string) []tracke
 }
 
 func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResource) []trackedResource {
-	if task.Request.Output != nil && task.Request.Method == "POST" && code == 201 && rerr == nil {
+	if task.Request.Output != nil && task.Request.Method == "POST" && code == 200 && rerr == nil {
 		clientID := defaultClientID
 		if task.Client != "" {
 			clientID = task.Client

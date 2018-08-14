@@ -710,48 +710,50 @@ func (api *API) resolveExtend() error {
 
 //MakeAPI load directory and generate API definitions.
 // nolint: gocyclo
-func MakeAPI(dir string) (*API, error) {
+func MakeAPI(dirs []string) (*API, error) {
 	api := &API{
 		Schemas:     []*Schema{},
 		Definitions: []*Schema{},
 		Types:       map[string]*JSONSchema{},
 	}
-	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
-		if f.IsDir() {
+	for _, dir := range dirs {
+		err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+			if f.IsDir() {
+				return nil
+			}
+			var schema Schema
+			err = common.LoadFile(path, &schema)
+			if err != nil {
+				log.Warn(fmt.Sprintf("[%s] %s", path, err))
+				return nil
+			}
+			if &schema == nil {
+				return nil
+			}
+			schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
+			schema.JSONSchema = mapSlice(schema.JSONSchemaSlice).JSONSchema()
+			schema.Definitions = map[string]*JSONSchema{}
+			for key, definitionSlice := range schema.DefinitionsSlice {
+				schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
+			}
+			schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
+			schema.Path = schema.TypeName
+			schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
+			schema.BackReferences = map[string]*BackReference{}
+			if schema.ID != "" {
+				api.Schemas = append(api.Schemas, &schema)
+			}
+			if len(schema.Definitions) > 0 {
+				api.Definitions = append(api.Definitions, &schema)
+			}
 			return nil
-		}
-		var schema Schema
-		err = common.LoadFile(path, &schema)
+		})
 		if err != nil {
-			log.Warn(fmt.Sprintf("[%s] %s", path, err))
-			return nil
+			return nil, err
 		}
-		if &schema == nil {
-			return nil
-		}
-		schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
-		schema.JSONSchema = mapSlice(schema.JSONSchemaSlice).JSONSchema()
-		schema.Definitions = map[string]*JSONSchema{}
-		for key, definitionSlice := range schema.DefinitionsSlice {
-			schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
-		}
-		schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
-		schema.Path = schema.TypeName
-		schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
-		schema.BackReferences = map[string]*BackReference{}
-		if schema.ID != "" {
-			api.Schemas = append(api.Schemas, &schema)
-		}
-		if len(schema.Definitions) > 0 {
-			api.Definitions = append(api.Definitions, &schema)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
 	}
 
-	err = api.resolveAllRef()
+	err := api.resolveAllRef()
 	if err != nil {
 		return nil, err
 	}

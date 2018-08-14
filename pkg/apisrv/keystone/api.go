@@ -166,7 +166,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 	authResponse := &AuthResponse{
 		Token: token,
 	}
-	return c.JSON(http.StatusCreated, authResponse)
+	return c.JSON(http.StatusOK, authResponse)
 }
 
 //ValidateTokenAPI is an API token for validating Token.

@@ -1,0 +1,75 @@
+package services
+
+import (
+	"context"
+
+	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
+
+	"{{ option.PackagePath }}/pkg/models"
+)
+
+//This is needed to prevent an import error.
+var _ = context.Background
+var _ = errors.New
+var _ = common.ErrorNotFound
+var _ = models.Version
+
+// SanitizerService fills up missing properties based on resources logic and metadata
+// TODO: Move logic from ContrailService when validation will be a separate service
+type SanitizerService struct {
+	BaseService
+	MetadataGetter baseservices.MetadataGetter
+}
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID and schema.References | length != 0 %}
+
+func (sv *SanitizerService) sanitize{{ schema.JSONSchema.GoName }}Refs(ctx context.Context, m *models.{{ schema.JSONSchema.GoName }}) error {
+{% for _, reference in schema.References %}
+	for _, ref := range m.Get{{ reference.GoName }}Refs() {
+		if ref.UUID != "" {
+			continue
+		}
+		// TODO: get metadata for all references in one query
+		metadata, err := sv.MetadataGetter.GetMetaData(ctx, "", ref.To)
+		if err != nil {
+			return errors.Wrapf(err, "couldn't get uuid for a ref from {{ schema.JSONSchema.GoName }} %v to %v", m.GetUUID(), ref.To)
+		}
+		ref.UUID = metadata.UUID
+	}
+{% endfor %}
+	return nil
+}
+
+func (sv *SanitizerService) sanitize{{ schema.JSONSchema.GoName }}DisplayName(ctx context.Context, m *models.{{ schema.JSONSchema.GoName }}) {
+	if m.DisplayName == "" {
+		m.DisplayName = m.Name
+	}
+}
+
+func (sv *SanitizerService) Create{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
+) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+	m := request.Get{{ schema.JSONSchema.GoName }}()
+	sv.sanitize{{ schema.JSONSchema.GoName }}DisplayName(ctx, m)
+	err := sv.sanitize{{ schema.JSONSchema.GoName }}Refs(ctx, m)
+	if err != nil {
+		return nil, common.ErrorBadRequestf("couldn't sanitize refs of object %v: %v", m.GetUUID(), err)
+	}
+
+	return sv.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (sv *SanitizerService) Update{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
+) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+	m := request.Get{{ schema.JSONSchema.GoName }}()
+	err := sv.sanitize{{ schema.JSONSchema.GoName }}Refs(ctx, m)
+	if err != nil {
+		return nil, common.ErrorBadRequestf("couldn't sanitize refs of object %v: %v", m.GetUUID(), err)
+	}
+
+	return sv.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+{% endif %}{% endfor %}

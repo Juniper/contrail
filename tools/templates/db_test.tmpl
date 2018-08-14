@@ -8,8 +8,9 @@ import (
         "github.com/stretchr/testify/assert"
         "github.com/satori/go.uuid"
         "github.com/gogo/protobuf/types"
-        "github.com/Juniper/contrail/pkg/models"
-        "github.com/Juniper/contrail/pkg/services"
+        "github.com/Juniper/contrail/pkg/services/baseservices"
+        "{{ option.PackagePath }}/pkg/models"
+        "{{ option.PackagePath }}/pkg/services"
         "github.com/pkg/errors"
         )
 
@@ -112,10 +113,10 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     defer delete{{ schema.JSONSchema.GoName }}(t, ctx, model.UUID)
 
 
-    listSpec := &services.ListSpec{
+    listSpec := &baseservices.ListSpec{
         Limit: 1,
-        Filters: []*services.Filter{
-            &services.Filter{
+        Filters: []*baseservices.Filter{
+            &baseservices.Filter{
                 Key: "uuid",
                 Values: []string{model.UUID},
             },

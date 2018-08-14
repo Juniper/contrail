@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"context"
+
 	"github.com/flosch/pongo2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -84,8 +86,9 @@ func showHelp(schemaID string, template string) (string, error) {
 
 func fetchServerAPI(client *client.HTTP, serverSchema string) (*schema.API, error) {
 	var api schema.API
+	ctx := context.Background()
 	for i := 0; i < retryMax; i++ {
-		_, err := client.Read(serverSchema, &api)
+		_, err := client.Read(ctx, serverSchema, &api)
 		if err == nil {
 			break
 		}

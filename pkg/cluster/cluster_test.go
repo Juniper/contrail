@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 
+	"context"
+
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +40,7 @@ func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario,
 	for _, client := range testScenario.Clients {
 		var response map[string][]interface{}
 		url := fmt.Sprintf("/endpoints?parent_uuid=%s", clusterID)
-		_, err := client.Read(url, &response)
+		_, err := client.Read(context.Background(), url, &response)
 		assert.NoError(t, err, "Unable to list endpoints of the cluster")
 		for _, endpoint := range response["endpoints"] {
 			e := endpoint.(map[string]interface{})
@@ -149,7 +151,7 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
 		url := fmt.Sprintf("/contrail-cluster/%s", clusterID)
-		_, err = client.Update(url, &data, &response)
+		_, err = client.Update(context.Background(), url, &data, &response)
 		assert.NoErrorf(t, err, "failed to set %s action in contrail cluster", action)
 		break
 	}

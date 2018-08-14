@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"context"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +46,7 @@ func deleteResources(dataPath string) (string, error) {
 			return "", err
 		}
 		var output interface{}
-		response, err := client.Delete(path(resource.Kind(), uuid), &output)
+		response, err := client.Delete(context.Background(), path(resource.Kind(), uuid), &output) //nolint
 		if response.StatusCode != http.StatusNotFound && err != nil {
 			return "", err
 		}
