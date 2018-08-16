@@ -13,9 +13,9 @@ type QuotaCheckerCounter struct {
 }
 
 // NewQuotaCheckerService creates QuotaCheckerService.
-func NewQuotaCheckerService(db Service) *QuotaCheckerService {
+func NewQuotaCheckerService(rs Service) *QuotaCheckerService {
 	return &QuotaCheckerService{
-		db:           db,
+		ReadService:  rs,
 		quotaCounter: &QuotaCheckerCounter{},
 	}
 }

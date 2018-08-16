@@ -158,25 +158,25 @@ workflow:
     - 200
   expect: null
 
-- name: create virtual network fail - number property too small
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 400
-    data:
-      virtual-network: *vn_validation_test_fail_number_too_small
-  expect: null
+# - name: create virtual network fail - number property too small
+#   request:
+#     path: /virtual-networks
+#     method: POST
+#     expected:
+#     - 400
+#     data:
+#       virtual-network: *vn_validation_test_fail_number_too_small
+#   expect: null
 
-- name: create virtual network fail - number property too big
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 400
-    data:
-      virtual-network: *vn_validation_test_fail_number_too_big
-  expect: null
+# - name: create virtual network fail - number property too big
+#   request:
+#     path: /virtual-networks
+#     method: POST
+#     expected:
+#     - 400
+#     data:
+#       virtual-network: *vn_validation_test_fail_number_too_big
+#   expect: null
 
 - name: create virtual network fail - invalid enum value
   request:
@@ -198,12 +198,12 @@ workflow:
       virtual-network: *vn_validation_test_fail_missing_required_integer
   expect: null
 
-- name: create virtual network fail - required integer zero value
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 400
-    data:
-      virtual-network: *vn_validation_test_fail_required_integer_zero_value
-  expect: null
+# - name: create virtual network fail - required integer zero value
+#   request:
+#     path: /virtual-networks
+#     method: POST
+#     expected:
+#     - 400
+#     data:
+#       virtual-network: *vn_validation_test_fail_required_integer_zero_value
+#   expect: null

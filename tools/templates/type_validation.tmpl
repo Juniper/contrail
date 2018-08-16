@@ -7,12 +7,7 @@ import (
 
 //This is needed to prevent an import error.
 var _ = strings.Count
-
-{# This macro is used to improve readability as braces has to be in the same line as if statement #}
-{% macro reportMissingProperty(id, resourceType) %} {
-	return errors.Errorf("{{id}} property is missing for resource {{resourceType}}")
-}
-{% endmacro %}
+var _ = errors.New
 
 {# Validates properties of type: #}
 {# - string (format, enum) #}
@@ -44,7 +39,7 @@ var _ = strings.Count
 		{% endif %}
 		}
 	{# validate integer property #}
-	{% elif jsonSchema.Type == "integer" or jsonSchema.Type == "number" %}
+	{% elif (jsonSchema.Type == "integer" or jsonSchema.Type == "number") and jsonSchema.Presence == "required" %}
 		{% if jsonSchema.Maximum != nil %}
 		if {{variableName}} > {{jsonSchema.Maximum}} {
 			return errors.Errorf("{{jsonSchema.ID}} value (%v) must be smaller or equal to {{jsonSchema.Maximum}}", {{variableName}})
@@ -68,21 +63,7 @@ var _ = strings.Count
 
 {% macro validateProperties(resource, properties) %}
 	{% for property, pdef in properties %}
-		{# Check required properties first. #}
-		{% if pdef.Presence == "required" or pdef.Presence == "true" %}
-			{% if pdef.Type == "string" %}
-				if obj.{{pdef.GoName}} == "" {{reportMissingProperty(pdef.ID, resource)}}
-			{% elif pdef.Type == "integer" or pdef.Type == "number" %}
-				if obj.{{pdef.GoName}} == 0 {{reportMissingProperty(pdef.ID, resource)}}
-			{% elif pdef.Type == "boolean" %}
-				if obj.{{pdef.GoName}} == false {{reportMissingProperty(pdef.ID, resource)}}
-			{% elif pdef.Type == "object" %}
-				if obj.{{pdef.GoName}} == nil {{reportMissingProperty(pdef.ID, resource)}}
-			{% elif pdef.Type == "array" %}
-				if len(obj.{{pdef.GoName}}) == 0 {{reportMissingProperty(pdef.ID, resource)}}
-			{% endif %}
-		{% endif %}
-
+		{# TODO: handle presence #}
 		{# In case of array we need to know definitions of objects stored in this array #}
 		{% if pdef.Type == "array" %}
 			{% set jsonSchema = pdef.Items %}
@@ -93,7 +74,7 @@ var _ = strings.Count
 		{# Check whether validation is needed #}
 		{% if jsonSchema.Type == "string" and (jsonSchema.Enum|length > 0 or jsonSchema.Format != "") %}
 			{% set validationRequired = true %}
-		{% elif jsonSchema.Type == "integer" and (jsonSchema.Maximum != nil or jsonSchema.Minimum != nil) %}
+		{% elif jsonSchema.Type == "integer" and (jsonSchema.Maximum != nil or jsonSchema.Minimum != nil) and jsonSchema.Presence == "required" %}
 			{% set validationRequired = true %}
 		{% elif jsonSchema.Type == "object" %}
 			{% set validationRequired = true %}
