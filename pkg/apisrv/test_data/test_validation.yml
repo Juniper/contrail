@@ -40,21 +40,19 @@ test_data:
     address_allocation_mode: "flat-subnet-preferred"
     mac_limit_control: *mac_limit_control
 
-  vn_validation_test_fail_number_too_small: &vn_validation_test_fail_number_too_small
-    uuid: vn_validation_test_uuid
-    display_name: blue
+  alarm_validation_test_fail_number_too_small: &alarm_validation_test_fail_number_too_small
+    uuid: alarm_validation_test_uuid
+    display_name: alarm
     parent_type: project
     parent_uuid: admin_project_validation_test_uuid
-    mac_aging_time: -1
-    mac_limit_control: *mac_limit_control
+    alarm_severity: -1
 
-  vn_validation_test_fail_number_too_big: &vn_validation_test_fail_number_too_big
-    uuid: vn_validation_test_uuid
-    display_name: blue
+  vn_validation_test_fail_number_too_big: &alarm_validation_test_fail_number_too_big
+    uuid: alarm_validation_test_uuid
+    display_name: alarm
     parent_type: project
     parent_uuid: admin_project_validation_test_uuid
-    mac_aging_time: 86401
-    mac_limit_control: *mac_limit_control
+    alarm_severity: 3
 
   vn_validation_test_fail_invalid_enum_value: &vn_validation_test_fail_invalid_enum_value
     uuid: vn_validation_test_uuid
@@ -158,24 +156,24 @@ workflow:
     - 200
   expect: null
 
-- name: create virtual network fail - number property too small
+- name: create alarm fail - number property too small
   request:
-    path: /virtual-networks
+    path: /alarms
     method: POST
     expected:
     - 400
     data:
-      virtual-network: *vn_validation_test_fail_number_too_small
+      alarm: *alarm_validation_test_fail_number_too_small
   expect: null
 
-- name: create virtual network fail - number property too big
+- name: create alarm fail - number property too big
   request:
     path: /virtual-networks
     method: POST
     expected:
     - 400
     data:
-      virtual-network: *vn_validation_test_fail_number_too_big
+      alarm: *alarm_validation_test_fail_number_too_small
   expect: null
 
 - name: create virtual network fail - invalid enum value
@@ -196,14 +194,4 @@ workflow:
     - 400
     data:
       virtual-network: *vn_validation_test_fail_missing_required_integer
-  expect: null
-
-- name: create virtual network fail - required integer zero value
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 400
-    data:
-      virtual-network: *vn_validation_test_fail_required_integer_zero_value
   expect: null
