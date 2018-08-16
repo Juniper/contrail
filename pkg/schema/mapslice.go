@@ -61,7 +61,7 @@ var overridenTypes = map[string]struct{}{
 	"types.json#/definitions/L4PortType": {},
 }
 
-//Copy copies a json schema
+// JSONSchema creates JSONSchema using mapSlice data.
 func (s mapSlice) JSONSchema() *JSONSchema {
 	if s == nil {
 		return nil
@@ -84,6 +84,8 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 		Required:        s.getStringSlice("required"),
 		Properties:      map[string]*JSONSchema{},
 		PropertiesOrder: properties.keys(),
+		CollectionType:  s.getString("collectionType"),
+		MapKey:          s.getString("mapKey"),
 	}
 	if properties == nil {
 		schema.Properties = nil
