@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gocql/gocql"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
@@ -52,12 +52,17 @@ func (t table) makeEventList() *services.EventList {
 	for uuid, data := range t {
 		kind := data["type"].(string)
 		data["uuid"] = uuid
-		events.Events = append(events.Events,
-			services.NewEvent(&services.EventOption{
-				Kind: kind,
-				Data: data,
-				UUID: uuid,
-			}))
+		event := services.NewEvent(&services.EventOption{
+			Kind: kind,
+			Data: data,
+			UUID: uuid,
+		})
+
+		if event.GetResource() == nil {
+			log.Warnf("Type not in schema: %s", kind)
+		} else {
+			events.Events = append(events.Events, event)
+		}
 	}
 	return events
 }
@@ -73,7 +78,7 @@ func (o object) Get(key string) interface{} {
 	var response interface{}
 	err := json.Unmarshal([]byte(data[0].(string)), &response)
 	if err != nil {
-		logrus.Fatal(err)
+		log.Fatal(err)
 	}
 	return response
 }
@@ -90,15 +95,8 @@ func parseProperty(data map[string]interface{}, property string, value interface
 		switch propertyList[0] {
 		case "prop":
 			data[propertyList[1]] = value
-		case "propm":
-			m, _ := data[propertyList[1]].(map[string]interface{})
-			if m == nil {
-				m = map[string]interface{}{}
-				data[propertyList[1]] = m
-			}
-			mValue, _ := value.(map[string]interface{})
-			m[propertyList[2]] = mValue["value"]
-		case "propl":
+		case "propl", "propm":
+			// TODO: preserve order in case of propl
 			l, _ := data[propertyList[1]].([]interface{})
 			data[propertyList[1]] = append(l, value)
 		case "parent":
@@ -130,7 +128,7 @@ func (o object) convert(uuid string) map[string]interface{} {
 
 //DumpCassandra load all existing cassandra data.
 func DumpCassandra(host string, port int, timeout time.Duration) (*services.EventList, error) {
-	logrus.Debug("Dumping data from cassandra")
+	log.Debug("Dumping data from cassandra")
 	// connect to the cluster
 	cluster := gocql.NewCluster(host)
 	if port != 0 {
@@ -194,7 +192,7 @@ type EventProducer struct {
 	rabbitMQHost     string
 	queueName        string
 
-	log *logrus.Entry
+	log *log.Entry
 }
 
 //NewEventProducer makes new event processor for cassandra.
@@ -294,7 +292,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 			}
 
 			if _, err = p.Processor.Process(ctx, e); err != nil {
-				p.log.WithError(err).WithFields(logrus.Fields{
+				p.log.WithError(err).WithFields(log.Fields{
 					"context": ctx,
 					"event":   e,
 				}).Warn("Processing event failed - ignoring")
@@ -319,7 +317,7 @@ func (p *EventProducer) Start(ctx context.Context) error {
 
 	for _, e := range events.Events {
 		if _, err = p.Processor.Process(ctx, e); err != nil {
-			p.log.WithError(err).WithFields(logrus.Fields{
+			p.log.WithError(err).WithFields(log.Fields{
 				"context": ctx,
 				"event":   e,
 			}).Warn("Processing event failed - ignoring")
