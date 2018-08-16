@@ -1,0 +1,49 @@
+package cassandra
+
+import (
+	"encoding/json"
+
+	"{{ option.PackagePath }}/pkg/models"
+	"github.com/pkg/errors"
+)
+
+{% for schema in schemas -%}
+{% if schema.Type != "abstract" and schema.ID %}
+// 
+func {{ schema.JSONSchema.GoName }}ToCassandraMap(obj *{{ schema.JSONSchema.GoName }}) map[string]string {
+    var b []byte
+    var err error
+    m := map[string]string{}
+    {% for property in schema.JSONSchema.OrderedProperties %}
+        {%- if property.CollectionType == "map" -%}
+        {%- set kvsType = property.OrderedProperties | first -%}
+    kvMap := map[string]string
+    for i, kv := range obj.{{ property.GoName}}.{{ kvsType.GoName }} {
+        kv
+
+        if b, err = json.Marshall(kv); err != nil {
+            return errors.Wrap(err, "error marshalling property {{property.GoName}}")
+        }
+        {{ property.MapKeyProperty.GoName }}
+    }
+        {%- elif property.CollectionType == "list" -%}
+    {% set listType = property.OrderedProperties | first %}
+    {% set itemType = listType.Items.GoType %}
+    for i, v := range obj.{{ property.GoName}}.{{listType.GoName}} {
+        if b, err = json.Marshall(v); err != nil {
+            return errors.Wrap(err, "error marshalling property {{property.GoName}}")
+        }
+        m[fmt.Sprintf("propl:{{property.ID}}:%d", i)] = string(b)
+    }
+        {%- else -%}
+    if b, err = json.Marshall(obj.{{ property.GoName}}); err != nil {
+        return errors.Wrap(err, "error marshalling property {{property.GoName}}")
+    }
+    m["prop:{{property.ID}}"] = string(b)
+        {%- endif %}
+    
+    {% endfor %}
+    return m
+}
+{% endif %}
+{% endfor %}
