@@ -16,20 +16,17 @@ import (
 var _ = log.Debug
 var _ = common.ErrorNotFound
 
-type QuotaCheckerService struct {
-	BaseService
-	db Service
-	quotaCounter QuotaCounter
-}
-
 type QuotaCounter interface {
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}{% set ThisID = schema.ID %}
-{% set name = schema.JSONSchema.GoName %}
-{% set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID %}
-{% if QuotaDef %}
-Count{{ name }}(ctx context.Context, obj *models.{{ name }}, prj *models.Project) (int64, error)
-{% endif %}
-{% endif %}{% endfor %}
+{%- for schema in schemas -%}
+{%- if schema.Type != "abstract" and schema.ID -%}
+{%- set ThisID = schema.ID -%}
+{%- set name = schema.JSONSchema.GoName -%}
+{%- set QuotaDef = types.QuotaType.Properties|dict_get_JSONSchema_by_string_key:ThisID -%}
+{%- if QuotaDef %}
+	Count{{ name }}(ctx context.Context, obj *models.{{ name }}, prj *models.Project) (int64, error)
+{%- endif -%}
+{%- endif -%}
+{%- endfor %}
 }
 
 
@@ -45,7 +42,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 	if err != nil || projectID == "" {
 		return errors.Wrapf(err, "error searching Project for {{ name }} with UUID %v (got '%v' Project UUID)", obj.GetUUID(), projectID)
 	}
-	project, err := svc.db.GetProject(ctx, &GetProjectRequest{ ID: projectID })
+	project, err := svc.ReadService.GetProject(ctx, &GetProjectRequest{ ID: projectID })
 	if err != nil {
 		return errors.Wrapf(err, "error (when handling {{ name }}) retrieving Project with UUID %v", projectID)
 	}
@@ -108,7 +105,7 @@ func (svc *QuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj
 		return parentUUID, nil
 		{% else %}
 		parent := obj.GetParentUUID()
-		parentResp, err := svc.db.Get{{ pdef.GoName }}(ctx, &Get{{ pdef.GoName }}Request{ ID: parent, })
+		parentResp, err := svc.ReadService.Get{{ pdef.GoName }}(ctx, &Get{{ pdef.GoName }}Request{ ID: parent, })
 		if err != nil {
 			return "", errors.Wrapf(err, "error retrieving parent for object {{ name }} with uuid %v", obj.GetUUID())
 		}
