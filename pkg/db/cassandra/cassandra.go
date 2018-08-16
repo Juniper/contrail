@@ -52,12 +52,14 @@ func (t table) makeEventList() *services.EventList {
 	for uuid, data := range t {
 		kind := data["type"].(string)
 		data["uuid"] = uuid
-		events.Events = append(events.Events,
-			services.NewEvent(&services.EventOption{
-				Kind: kind,
-				Data: data,
-				UUID: uuid,
-			}))
+		event := services.NewEvent(&services.EventOption{
+			Kind: kind,
+			Data: data,
+			UUID: uuid,
+		})
+		if event != nil && event.GetResource() != nil {
+			events.Events = append(events.Events, event)
+		}
 	}
 	return events
 }
@@ -90,15 +92,7 @@ func parseProperty(data map[string]interface{}, property string, value interface
 		switch propertyList[0] {
 		case "prop":
 			data[propertyList[1]] = value
-		case "propm":
-			m, _ := data[propertyList[1]].(map[string]interface{})
-			if m == nil {
-				m = map[string]interface{}{}
-				data[propertyList[1]] = m
-			}
-			mValue, _ := value.(map[string]interface{})
-			m[propertyList[2]] = mValue["value"]
-		case "propl":
+		case "propl", "propm":
 			l, _ := data[propertyList[1]].([]interface{})
 			data[propertyList[1]] = append(l, value)
 		case "parent":
