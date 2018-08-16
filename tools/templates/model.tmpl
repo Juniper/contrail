@@ -86,42 +86,51 @@ func Make{{ schema.JSONSchema.GoName }}() *{{ schema.JSONSchema.GoName }}{
 
 // InterfaceTo{{ schema.JSONSchema.GoName }} converts interface to {{ schema.JSONSchema.GoName }}
 func InterfaceTo{{ schema.JSONSchema.GoName }}(i interface{}) *{{ schema.JSONSchema.GoName }}{
-	p, ok := i.(*{{ schema.JSONSchema.GoName }})
-	if ok {
-		return p
-	}
-	o, ok := i.({{ schema.JSONSchema.GoName }})
-	if ok {
+	switch o := i.(type) {
+	case *{{ schema.JSONSchema.GoName }}:
+		return o
+	case {{ schema.JSONSchema.GoName }}:
 		return &o
-	}
-	m, ok := i.(map[string]interface{})
-	_ = m
-	if !ok {
-		return nil
-	}
-	return &{{ schema.JSONSchema.GoName }}{
-	//TODO(nati): Apply default
-	{% for property in schema.JSONSchema.OrderedProperties %}{% if property.GoType == "string" %}{{ property.GoName }}: common.InterfaceToString(m["{{ property.ID }}"]),
-		{% elif property.GoType == "[]string" %}{{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
-		{% elif property.GoType == "[]interface" %}{{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
-		{% elif property.GoType == "map[string]string" %}{{ property.GoName }}: common.InterfaceToStringMap(m["{{ property.ID }}"]),
-		{% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: common.InterfaceToInterfaceMap(m["{{ property.ID }}"]),
-		{% elif property.GoType == "bool" %}{{ property.GoName }}: common.InterfaceToBool(m["{{ property.ID }}"]),
-		{% elif property.GoType == "int64" %}{{ property.GoName }}: common.InterfaceToInt64(m["{{ property.ID }}"]),
-		{% elif property.GoType == "float" %}{{ property.GoName }}: common.InterfaceToFloat(m["{{ property.ID }}"]),,
-		{% elif property.Type == "array"%}
-			{% if property.Items.Type == "string" %}
-				{{ property.GoName }}: common.InterfaceToStringList(m["{{ property.ID }}"]),
-			{% elif property.Items.Type == "integer"%}
-				{{ property.GoName }}: common.InterfaceToInt64List(m["{{ property.ID }}"]),
-			{% elif property.Items.GoType %}
-				{{ property.GoName }}: InterfaceTo{{ property.Items.GoType }}Slice(m["{{ property.ID }}"]),
+	case map[string]interface{}:
+		return &{{ schema.JSONSchema.GoName }}{
+		//TODO(nati): Apply default
+		{% for property in schema.JSONSchema.OrderedProperties %}
+			{% if property.GoType == "string" %}{{ property.GoName }}: common.InterfaceToString(o["{{ property.ID }}"]),
+			{% elif property.GoType == "[]string" %}{{ property.GoName }}: common.InterfaceToStringList(o["{{ property.ID }}"]),
+			{% elif property.GoType == "[]interface" %}{{ property.GoName }}: common.InterfaceToStringList(o["{{ property.ID }}"]),
+			{% elif property.GoType == "map[string]string" %}{{ property.GoName }}: common.InterfaceToStringMap(o["{{ property.ID }}"]),
+			{% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: common.InterfaceToInterfaceMap(o["{{ property.ID }}"]),
+			{% elif property.GoType == "bool" %}{{ property.GoName }}: common.InterfaceToBool(o["{{ property.ID }}"]),
+			{% elif property.GoType == "int64" %}{{ property.GoName }}: common.InterfaceToInt64(o["{{ property.ID }}"]),
+			{% elif property.GoType == "float" %}{{ property.GoName }}: common.InterfaceToFloat(o["{{ property.ID }}"]),,
+			{% elif property.Type == "array"%}
+				{% if property.Items.Type == "string" %}
+					{{ property.GoName }}: common.InterfaceToStringList(o["{{ property.ID }}"]),
+				{% elif property.Items.Type == "integer"%}
+					{{ property.GoName }}: common.InterfaceToInt64List(o["{{ property.ID }}"]),
+				{% elif property.Items.GoType %}
+					{{ property.GoName }}: InterfaceTo{{ property.Items.GoType }}Slice(o["{{ property.ID }}"]),
+				{% endif %}
+			{% else %}{{ property.GoName }}: InterfaceTo{{ property.GoType }}(o["{{ property.ID }}"]),
 			{% endif %}
-		{% else %}{{ property.GoName }}: InterfaceTo{{ property.GoType }}(m["{{ property.ID }}"]),
-		{% endif %}{% endfor %}
-		{% for linkTo, reference in schema.References %}
-			{{ reference.GoName }}Refs : InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(m["{{ linkTo }}_refs"]),
 		{% endfor %}
+		{% for linkTo, reference in schema.References %}
+			{{ reference.GoName }}Refs : InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(o["{{ linkTo }}_refs"]),
+		{% endfor %}
+		}
+	{% if schema.JSONSchema.CollectionType %}
+	{% set subtype = schema.JSONSchema.OrderedProperties | first %}
+	case []interface{}:
+		return &{{ schema.JSONSchema.GoName }}{
+		{% if subtype.Items.Type == "string" %}
+			{{ subtype.GoName }}: common.InterfaceToStringList(o),
+		{% elif subtype.Items.GoType %}
+			{{ subtype.GoName }}: InterfaceTo{{ subtype.Items.GoType }}Slice(o),
+		{% endif %}
+		}
+	{% endif %}
+	default:
+		return nil
 	}
 }
 
