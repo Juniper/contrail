@@ -19,7 +19,7 @@ func (service *CompilationService) Init() {
 	ObjsCache = &sync.Map{}
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-	ObjsCache.Store("{{ schema.JSONSchema.GoName }}", &sync.Map{})
+	ObjsCache.Store("{{ schema.ID }}", &sync.Map{})
 {% endif%}{% endfor %}
 }
 
@@ -45,10 +45,10 @@ func (service *CompilationService) Create{{ schema.JSONSchema.GoName }}(ctx cont
 		return nil, nil
 	}
 
-        if _, ok := ObjsCache.Load("{{ schema.JSONSchema.GoName }}"); !ok {
-                ObjsCache.Store("{{ schema.JSONSchema.GoName }}", &sync.Map{})
+        if _, ok := ObjsCache.Load("{{ schema.ID }}"); !ok {
+                ObjsCache.Store("{{ schema.ID }}", &sync.Map{})
         }
-        objMap, ok := ObjsCache.Load("{{ schema.JSONSchema.GoName }}")
+        objMap, ok := ObjsCache.Load("{{ schema.ID }}")
         if ok {
                 objMap.(*sync.Map).Store(obj.GetUUID(), obj)
         }
@@ -72,10 +72,10 @@ func (service *CompilationService) Update{{ schema.JSONSchema.GoName }}(ctx cont
 		return nil, nil
 	}
 
-        if _, ok := ObjsCache.Load("{{ schema.JSONSchema.GoName }}"); !ok {
-                ObjsCache.Store("{{ schema.JSONSchema.GoName }}", &sync.Map{})
+        if _, ok := ObjsCache.Load("{{ schema.ID }}"); !ok {
+                ObjsCache.Store("{{ schema.ID }}", &sync.Map{})
         }
-        objMap, ok := ObjsCache.Load("{{ schema.JSONSchema.GoName }}")
+        objMap, ok := ObjsCache.Load("{{ schema.ID }}")
         if ok {
                 objMap.(*sync.Map).Store(obj.GetUUID(), obj)
         }
@@ -99,7 +99,7 @@ func (service *CompilationService) Delete{{ schema.JSONSchema.GoName }}(ctx cont
 		return nil, nil
 	}
 
-        objMap, ok := ObjsCache.Load("{{ schema.JSONSchema.GoName }}")
+        objMap, ok := ObjsCache.Load("{{ schema.ID }}")
         if ok {
 		objMap.(*sync.Map).Delete(objUUID)
         }
@@ -113,14 +113,14 @@ func (service *CompilationService) Delete{{ schema.JSONSchema.GoName }}(ctx cont
 }
 // Get{{ schema.JSONSchema.GoName }}
 func (service *CompilationService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (*services.Get{{ schema.JSONSchema.GoName }}Response, error) {
-	objMap, ok := ObjsCache.Load("{{ schema.JSONSchema.GoName }}")
+	objMap, ok := ObjsCache.Load("{{ schema.ID }}")
 	if !ok {
-		return nil, errors.New("{{ schema.JSONSchema.GoName }} get failed ")
+		return nil, errors.New("{{ schema.ID }} get failed ")
 	}
 
 	obj, ok := objMap.(*sync.Map).Load(request.GetID())
 	if !ok {
-		return nil, errors.New("{{ schema.JSONSchema.GoName }} get failed ")
+		return nil, errors.New("{{ schema.ID }} get failed ")
 	}
 
 	response := &services.Get{{ schema.JSONSchema.GoName }}Response{
