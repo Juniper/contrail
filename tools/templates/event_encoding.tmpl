@@ -43,6 +43,7 @@ type CanProcessService interface {
 // Resource is a generic resource interface.
 type Resource interface {
 	GetUUID() string
+	GetFQName() []string
 	GetParentUUID() string
 	ToMap() map[string]interface{}
 	// Kind returns id of schema. For non resource objects it returns empty string
