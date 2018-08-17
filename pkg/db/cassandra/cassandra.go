@@ -413,3 +413,108 @@ func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, 
 	}
 	return qry, nil
 }
+
+type AmqpEventProcessor struct {
+	config AmqpConfig
+}
+
+func NewAmqpEventProcessor() *AmqpEventProcessor {
+	return &AmqpEventProcessor{
+		config: AmqpConfig{
+			host: viper.GetString("cache.cassandra.amqp"),
+			queueName: getQueueName(),
+		},
+	}
+}
+
+type AmqpMessage struct {
+	RequestId string `json:"request_id"`
+	Oper string `json:"oper"`
+	Type string `json:"type"`
+	Uuid string `json:"uuid"`
+	//FqName string `json:"fq_name"`
+}
+
+func (p *AmqpEventProcessor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
+	logrus.Debugf("Processing event %+v for amqp", event)
+
+	conn, err := amqp.Dial(p.config.host)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close() // nolint: errcheck
+
+	logrus.Warning("connection")
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, err
+	}
+	defer ch.Close() // nolint: errcheck
+
+	logrus.Warning("channel craeted")
+
+	q, err := ch.QueueDeclare(
+		p.config.queueName,
+		false, // durable
+		false, // delete when usused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	logrus.Warningf("Queue declared: %v", p.config.queueName)
+
+	//err = ch.ExchangeBind(
+	//	p.config.queueName,       // queue name
+	//	"",           // routing key
+	//	exchangeName, // exchange
+	//	false,
+	//	nil,
+	//)
+	//if err != nil {
+	//	return err
+	//}
+
+	rsrc := event.GetResource()
+
+	logrus.Warning("RSRC")
+
+	msg := AmqpMessage{
+		RequestId: "1",
+		Oper: event.Operation(),
+		Type: rsrc.Kind(),
+		Uuid: rsrc.GetUUID(),
+		//FqName: rsrc.GetFQName(),
+	}
+
+	logrus.Warning("Created")
+
+	msgJson, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	logrus.Warning("Marshaled")
+
+	err = ch.Publish(
+		exchangeName,
+		q.Name,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body: msgJson,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	logrus.Warning("Published")
+
+	return event, nil
+}
