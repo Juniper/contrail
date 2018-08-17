@@ -20,7 +20,6 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/config"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/compilationif"
-	"github.com/Juniper/contrail/pkg/contrailplugin"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
@@ -31,12 +30,9 @@ func setupService() *compilationif.CompilationService {
 	// create services
 	compilationService := compilationif.NewCompilationService()
 
-	pluginService := contrailplugin.NewPluginService("contrail")
-
 	// chain them
 	services.Chain(
 		compilationService,
-		pluginService,
 	)
 
 	// return entry service
