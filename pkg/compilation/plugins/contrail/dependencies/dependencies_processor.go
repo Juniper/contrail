@@ -14,6 +14,7 @@
 package dependencies
 
 import (
+	"encoding/json"
 	"reflect"
 	"sync"
 
@@ -23,7 +24,7 @@ import (
 )
 
 // NewDependencyProcessor - creates new instance
-func NewDependencyProcessor(objCache *sync.Map) *DependencyProcessor {
+func NewDependencyProcessor(objCache map[string]map[string]interface{}) *DependencyProcessor {
 	d := &DependencyProcessor{cache: objCache}
 	d.Init()
 	return d
@@ -31,13 +32,8 @@ func NewDependencyProcessor(objCache *sync.Map) *DependencyProcessor {
 
 // DependencyProcessor stores resources dependency
 type DependencyProcessor struct {
-	// A list of resources which the Dependency Tracker keeps
-	// when it is invoked with a resource CRUD
 	resources *sync.Map
-
-	// Local Cache to maintained by Intent compiler.
-	// Dependency Tracker  uses this cache to find dependent resources.
-	cache *sync.Map
+	cache     map[string]map[string]interface{}
 }
 
 // Init - initializes the dependency processor
@@ -61,6 +57,27 @@ func (d *DependencyProcessor) GetResources() *sync.Map {
 	return d.resources
 }
 
+// GetResourcesPretty - Get Resources from the dependency processor list
+func (d *DependencyProcessor) GetResourcesPretty() string {
+	tmpMap := make(map[string]map[string]interface{})
+	d.resources.Range(func(k, v interface{}) bool {
+		key := k.(string)
+		value := v.(*sync.Map)
+		tmpMap[key] = make(map[string]interface{})
+		value.Range(func(k1, v1 interface{}) bool {
+			tmpMap[key][k1.(string)] = v1
+			return true
+		})
+		return true
+	})
+
+	b, err := json.MarshalIndent(tmpMap, "", "  ")
+	if err != nil {
+		log.Errorf("error marshalling: %v", err)
+	}
+	return string(b)
+}
+
 // getUUID gets the uuid string from the interface{} object
 func (d *DependencyProcessor) getUUID(obj interface{}) string {
 	uuid, err := reflections.GetField(obj, "UUID")
@@ -82,19 +99,8 @@ func (d *DependencyProcessor) canAdd(key string, obj interface{}) bool {
 	return true
 }
 
-// getCachedObject gets the cached object
-func (d *DependencyProcessor) getCachedObject(objTypeStr, uuid string) interface{} {
-	if objMap, ok := d.cache.Load(objTypeStr); ok {
-		if obj, present := objMap.(*sync.Map).Load(uuid); present {
-			return obj
-		}
-		return nil
-	}
-	return nil
-}
-
 // Evaluate - Evaluates object dependency based on the ReactionMap
-func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr string) { // nolint: gocyclo
+func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr string) {
 	if _, ok := ReactionMap[objTypeStr]; !ok {
 		return
 	}
@@ -110,17 +116,14 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 		for _, fieldName := range fieldsToExtract {
 			refObjTypeValues, err := reflections.GetField(obj, fieldName)
 			if err != nil {
-				// Refs dont exist, ignore
+				// Refs dont exit, ignore
 				continue
 			}
 			objValues := reflect.ValueOf(refObjTypeValues)
 			for i := 0; i < objValues.Len(); i++ {
 				interfaceObj := objValues.Index(i).Elem().Interface()
 				uuid, _ := reflections.GetField(interfaceObj, "UUID")
-				refObj := d.getCachedObject(refObjTypeStr, uuid.(string))
-				if refObj == nil {
-					continue
-				}
+				refObj := d.cache[refObjTypeStr][uuid.(string)]
 				log.Infof("Evaluating: Object: %s %s(%s) From: %s", fieldName, refObjTypeStr, uuid.(string), objTypeStr)
 				d.Evaluate(refObj, refObjTypeStr, objTypeStr)
 			}
@@ -129,7 +132,7 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 		for _, fieldName := range fieldsToExtract {
 			refObjTypeValues, err := reflections.GetField(obj, fieldName)
 			if err != nil {
-				// BackRefs dont exist, ignore
+				// BackRefs dont exit, ignore
 				continue
 			}
 			objValues := reflect.ValueOf(refObjTypeValues)
