@@ -73,20 +73,20 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 
 	var data map[string]interface{}
 	if operation == services.OperationCreate {
-		err := json.Unmarshal(newValue, &data)
+		err = json.Unmarshal(newValue, &data)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to decode %s", string(newValue))
 		}
 	}
 
-	event := services.NewEvent(&services.EventOption{
+	event, err := services.NewEvent(&services.EventOption{
 		UUID:      uuid,
 		Kind:      kind,
 		Operation: operation,
 		Data:      data,
 	})
-	if event == nil {
-		return nil, errors.Errorf("invalid event %v", data)
+	if err != nil {
+		return nil, errors.Errorf("failed to create event from data: %v, reason: %v", data, err)
 	}
 	return event, nil
 }

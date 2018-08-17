@@ -146,12 +146,15 @@ func listResources(schemaID string) (string, error) {
 	for _, list := range response {
 		for _, d := range list {
 			m, _ := d.(map[string]interface{})
-			events.Events = append(events.Events,
-				services.NewEvent(&services.EventOption{
-					Kind: schemaID,
-					Data: m,
-				}),
-			)
+			var event *services.Event
+			if event, err = services.NewEvent(&services.EventOption{
+				Kind: schemaID,
+				Data: m,
+			}); err == nil {
+				events.Events = append(events.Events, event)
+			} else {
+				log.Errorf("failed to create event: %v", err)
+			}
 		}
 	}
 	output, err := yaml.Marshal(events)
