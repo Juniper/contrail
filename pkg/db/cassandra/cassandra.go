@@ -3,12 +3,14 @@ package cassandra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/gocql/gocql"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
@@ -413,4 +415,71 @@ func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, 
 		)
 	}
 	return qry, nil
+}
+
+type AmqpEventProcessor struct {
+	config AmqpConfig
+}
+
+func NewAmqpEventProcessor() *AmqpEventProcessor {
+	return &AmqpEventProcessor{
+		config: AmqpConfig{
+			host:      viper.GetString("cache.cassandra.amqp"),
+			queueName: getQueueName(),
+		},
+	}
+}
+
+type AmqpMessage struct {
+	RequestId string   `json:"request_id"`
+	Oper      string   `json:"oper"`
+	Type      string   `json:"type"`
+	Uuid      string   `json:"uuid"`
+	FqName    []string `json:"fq_name"`
+}
+
+func (p *AmqpEventProcessor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
+	logrus.Debugf("Processing event %+v for amqp", event)
+
+	conn, err := amqp.Dial(p.config.host)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close() // nolint: errcheck
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, err
+	}
+	defer ch.Close() // nolint: errcheck
+
+	rsrc := event.GetResource()
+
+	msg := AmqpMessage{
+		RequestId: fmt.Sprintf("req-%s", uuid.NewV4().String()),
+		Oper:      event.Operation(),
+		Type:      rsrc.Kind(),
+		Uuid:      rsrc.GetUUID(),
+		FqName:    rsrc.GetFQName(),
+	}
+
+	msgJson, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ch.Publish(
+		exchangeName,
+		"",
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        msgJson,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return event, nil
 }

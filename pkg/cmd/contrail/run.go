@@ -36,7 +36,8 @@ var processCmd = &cobra.Command{
 
 //StartProcesses starts processes based on config.
 func StartProcesses(wg *sync.WaitGroup) {
-	MaybeStart("replication", startReplicationService, wg)
+	//MaybeStart("replication", startReplicationService, wg)
+	MaybeStart("replication", startReplication2Service, wg)
 	MaybeStart("cache", startCacheService, wg)
 	MaybeStart("server", startServer, wg)
 	MaybeStart("agent", startAgent, wg)
@@ -61,6 +62,20 @@ func startReplicationService(wg *sync.WaitGroup) {
 	log.Debug("replication service enabled")
 	cassandraProcessor := cassandra.NewEventProcessor()
 	producer, err := etcd.NewEventProducer(cassandraProcessor)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = producer.Start(ctx)
+	if err != nil {
+		log.Warn(err)
+	}
+}
+
+func startReplication2Service(wg *sync.WaitGroup) {
+	ctx := context.Background()
+	log.Debug("replication2 service enabled")
+	amqpProcessor := cassandra.NewAmqpEventProcessor()
+	producer, err := etcd.NewEventProducer(amqpProcessor)
 	if err != nil {
 		log.Fatal(err)
 	}
