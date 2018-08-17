@@ -54,14 +54,14 @@ func showResource(schemaID, uuid string) (string, error) {
 		return "", err
 	}
 	data, _ := response[dashedCase(schemaID)].(map[string]interface{})
-	eventList := &services.EventList{
-		Events: []*services.Event{
-			services.NewEvent(&services.EventOption{
-				Kind: schemaID,
-				Data: data,
-			}),
-		},
+	event, err := services.NewEvent(&services.EventOption{
+		Kind: schemaID,
+		Data: data,
+	})
+	if err != nil {
+		return "", err
 	}
+	eventList := &services.EventList{Events: []*services.Event{event}}
 	output, err := yaml.Marshal(eventList)
 	if err != nil {
 		return "", err

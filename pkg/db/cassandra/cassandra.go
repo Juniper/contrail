@@ -52,12 +52,13 @@ func (t table) makeEventList() *services.EventList {
 	for uuid, data := range t {
 		kind := data["type"].(string)
 		data["uuid"] = uuid
-		events.Events = append(events.Events,
-			services.NewEvent(&services.EventOption{
-				Kind: kind,
-				Data: data,
-				UUID: uuid,
-			}))
+		if event, err := services.NewEvent(&services.EventOption{
+			Kind: kind,
+			Data: data,
+			UUID: uuid,
+		}); err == nil {
+			events.Events = append(event.Events, event)
+		}
 	}
 	return events
 }
