@@ -209,7 +209,7 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
 
 
 //NewEvent makes event from interface
-func NewEvent(option *EventOption) *Event {
+func NewEvent(option *EventOption) (*Event, error) {
     e := &Event{}
     kind := option.Kind
     data := option.Data
@@ -239,8 +239,10 @@ func NewEvent(option *EventOption) *Event {
                             ID: uuid,
                         }}
             }{% endif%}{% endfor %}
+        default:
+            return nil, errors.Errorf("type %s does not exist", kind)
     }
-    return e
+    return e, nil
 }
 
 // NewEventFromRefUpdate creates ref create or delete event from RefUpdate object.
