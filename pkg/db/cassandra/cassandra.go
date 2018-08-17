@@ -52,12 +52,13 @@ func (t table) makeEventList() *services.EventList {
 	for uuid, data := range t {
 		kind := data["type"].(string)
 		data["uuid"] = uuid
-		events.Events = append(events.Events,
-			services.NewEvent(&services.EventOption{
-				Kind: kind,
-				Data: data,
-				UUID: uuid,
-			}))
+		if event, err := services.NewEvent(&services.EventOption{
+			Kind: kind,
+			Data: data,
+			UUID: uuid,
+		}); err == nil {
+			events.Events = append(events.Events, event)
+		}
 	}
 	return events
 }
@@ -273,8 +274,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 		select {
 		case d := <-msgs:
 			var data map[string]interface{}
-			err := json.Unmarshal(d.Body, &data)
-			if err != nil {
+			if err := json.Unmarshal(d.Body, &data); err != nil {
 				p.log.WithError(err).WithField("data", string(d.Body)).Warn("Decoding failed - ignoring")
 				continue
 			}
@@ -282,21 +282,21 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 			kind, _ := data["type"].(string)
 			uuid, _ := data["uuid"].(string)
 			obj, _ := data["obj_dict"].(map[string]interface{})
-			e := services.NewEvent(&services.EventOption{
+			event, err := services.NewEvent(&services.EventOption{
 				Operation: operation,
 				Data:      obj,
 				Kind:      kind,
 				UUID:      uuid,
 			})
-			if e == nil {
-				p.log.WithField("data", data).Warn("Got invalid event - ignoring")
+			if err != nil {
+				p.log.WithField("data", data).Warnf("Failed to create event - ignoring: %v", err)
 				continue
 			}
 
-			if _, err = p.Processor.Process(ctx, e); err != nil {
+			if _, err = p.Processor.Process(ctx, event); err != nil {
 				p.log.WithError(err).WithFields(logrus.Fields{
 					"context": ctx,
-					"event":   e,
+					"event":   event,
 				}).Warn("Processing event failed - ignoring")
 			}
 		case <-ctx.Done():
