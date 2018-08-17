@@ -16,6 +16,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 	"github.com/Juniper/contrail/pkg/types/ipam/mock"
+	"github.com/Juniper/contrail/pkg/types/mock"
 )
 
 //Structure testVn is used to pass vn parameters during VirtualNetwork object creation
@@ -1026,7 +1027,7 @@ func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMetho
 }
 
 func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
-	intPoolAllocator := s.IntPoolAllocator.(*ipammock.MockIntPoolAllocator)
+	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator)
 	intPoolAllocator.EXPECT().AllocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		int64(13), nil).AnyTimes()
 	intPoolAllocator.EXPECT().DeallocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(0)).Return(

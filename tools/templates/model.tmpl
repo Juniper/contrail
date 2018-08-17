@@ -43,6 +43,14 @@ func NewUUIDType(uuid string) *UuidType {
 	}
 }
 
+const (
+{% for schema in schemas %}
+{% if schema.JSONSchema.Type == "integer" and schema.JSONSchema.Minimum %}
+	{{ schema.JSONSchema.GoName }}Minimum = {{ schema.JSONSchema.Minimum }}
+{% endif %}
+{% endfor %}
+)
+
 {% for schema in schemas %}
 
 const Kind{{ schema.JSONSchema.GoName }} = "{{ schema.TypeName }}"

@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"testing"
 
 	"github.com/golang/mock/gomock"
 
@@ -16,7 +17,7 @@ func makeMockedContrailTypeLogicService(controller *gomock.Controller) *Contrail
 	service := &ContrailTypeLogicService{
 		AddressManager:    ipammock.NewMockAddressManager(controller),
 		ReadService:       servicesmock.NewMockReadService(controller),
-		IntPoolAllocator:  ipammock.NewMockIntPoolAllocator(controller),
+		IntPoolAllocator:  typesmock.NewMockIntPoolAllocator(controller),
 		InTransactionDoer: typesmock.NewMockInTransactionDoer(controller),
 		WriteService:      servicesmock.NewMockWriteService(controller),
 	}
@@ -42,4 +43,14 @@ func mockedReadServiceAddVirtualNetwork(s *ContrailTypeLogicService, virtualNetw
 		&services.GetVirtualNetworkResponse{
 			VirtualNetwork: virtualNetwork,
 		}, nil).AnyTimes()
+}
+
+func runTest(t *testing.T, name string, test func(t *testing.T, sv *ContrailTypeLogicService)) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	sv := makeMockedContrailTypeLogicService(ctrl)
+
+	t.Run(name, func(t *testing.T) {
+		test(t, sv)
+	})
 }
