@@ -125,6 +125,8 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}(i interface{}) *{{ schema.JSONSch
 	}
 }
 
+
+
 // ToMap makes map representation of a resource.
 func (m *{{ schema.JSONSchema.GoName }}) ToMap() map[string]interface{} {
 	if m == nil {

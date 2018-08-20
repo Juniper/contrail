@@ -1,0 +1,77 @@
+package cassandra
+
+import (
+	"fmt"
+	"encoding/json"
+
+	"{{ option.PackagePath }}/pkg/models"
+	"github.com/pkg/errors"
+)
+
+{% for schema in schemas -%}
+{% if schema.Type != "abstract" and schema.ID %}
+// {{ schema.JSONSchema.GoName }}ToCassandraMap returns cassandra map
+func {{ schema.JSONSchema.GoName }}ToCassandraMap(obj *models.{{ schema.JSONSchema.GoName }}) (map[string]string, error) {
+	var b []byte
+	var err error
+	m := map[string]string{}
+	m["META:latest_col_ts"] = ""
+	if obj.ParentUUID != "" && obj.ParentType != "" {
+		m[fmt.Sprintf("parent:%s:%s",obj.ParentType, obj.ParentUUID)] = ""
+		m["parent_type"] = fmt.Sprintf("\"%s\"", obj.ParentType)
+	}
+    m["type"] = "\"{{schema.ID}}\""
+	{% for property in schema.JSONSchema.OrderedProperties %}
+    {% if property.ID != "fq_name" and property.ID != "parent_uuid" and property.ID != "parent_type" and property.ID != "uuid" %}
+		{%- if property.CollectionType == "map" -%}
+		{%- set kvsType = property.OrderedProperties | first -%}
+	for _, kv := range obj.{{ property.GoName}}.{{ kvsType.GoName }} {
+		if b, err = json.Marshal(kv); err != nil {
+			return m, errors.Wrap(err, "error marshaling property {{property.GoName}}")
+		}
+		if s := string(b); s != "" {
+			m[fmt.Sprintf("propm:{{property.ID}}:%s",string(kv.{{property.MapKeyProperty.GoName}}))] = s
+		}
+	}
+		{%- elif property.CollectionType == "list" -%}
+	{% set listType = property.OrderedProperties | first %}
+	{% set itemType = listType.Items.GoType %}
+	for i, v := range obj.{{ property.GoName}}.{{listType.GoName}} {
+		if b, err = json.Marshal(v); err != nil {
+			return m, errors.Wrap(err, "error marshaling property {{property.GoName}}")
+		}
+		if s := string(b); s != "" {
+			m[fmt.Sprintf("propl:{{property.ID}}:%d", i)] = s
+		}
+	}
+		{%- else -%}
+	if b, err = json.Marshal(obj.{{ property.GoName}}); err != nil {
+		return m, errors.Wrap(err, "error marshaling property {{property.GoName}}")
+	}
+	if s := string(b); s != "" {
+		m["prop:{{property.ID}}"] = s
+	}
+		{%- endif %}
+	{%- endif -%}
+	{% endfor %}
+	{% for linkTo, reference in schema.References %}
+	for _, ref := range obj.{{ reference.GoName }}Refs {
+		a := map[string]interface{}{}
+		{% if reference.RefType %}
+		a["attr"] = ref.Attr
+		{% else %}
+		a["attr"] = nil
+		{% endif %}
+		if b, err = json.Marshal(a); err != nil {
+			return m, errors.Wrap(err, "error marshaling property {{property.GoName}}")
+		}
+		if s := string(b); s != "" {
+			m[fmt.Sprintf("ref:{{linkTo}}:%s", ref.GetUUID())] = s
+		}
+	}
+	{% endfor %}
+
+	return m, nil
+}
+{% endif %}
+{% endfor %}
