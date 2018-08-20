@@ -3,6 +3,7 @@ package apisrv
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"net/url"
 	"sync"
 	"time"
@@ -111,6 +112,15 @@ func (s *Server) SetupService() (services.Service, error) {
 		if err == nil {
 			log.Println("Adding ETCD Notifier Service.")
 			serviceChain = append(serviceChain, etcdNotifierService)
+		}
+	}
+
+	// CassandraNotifier
+	if viper.GetBool("server.notify_cassandra") {
+		cassandraNotifierService, err := cassandra.NewNotifierService()
+		if err == nil {
+			log.Println("Adding Cassandra Notifier Service.")
+			serviceChain = append(serviceChain, cassandraNotifierService)
 		}
 	}
 
