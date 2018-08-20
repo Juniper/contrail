@@ -3,14 +3,9 @@ package cassandra
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
-	"time"
 
-	"github.com/gocql/gocql"
-	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
@@ -18,31 +13,6 @@ import (
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
 )
-
-const (
-	defaultCassandraVersion  = "3.4.4"
-	defaultCassandraKeyspace = "config_db_uuid"
-
-	exchangeName = "vnc_config.object-update"
-)
-
-// Config fields for cassandra
-type Config struct {
-	Host           string
-	Port           int
-	Timeout        time.Duration
-	ConnectTimeout time.Duration
-}
-
-//GetConfig returns cassandra Config filled with data from config file.
-func GetConfig() Config {
-	return Config{
-		Host:           viper.GetString("cassandra.host"),
-		Port:           viper.GetInt("cassandra.port"),
-		Timeout:        viper.GetDuration("cassandra.timeout"),
-		ConnectTimeout: viper.GetDuration("cassandra.connect_timeout"),
-	}
-}
 
 type contrailDBData struct {
 	Cassandra *cassandra `json:"cassandra"`
@@ -199,17 +169,6 @@ func ReadCassandraDump(inFile string) (*services.EventList, error) {
 	return t.makeEventList(), nil
 }
 
-// AmqpConfig groups config fields for AMQP
-type AmqpConfig struct {
-	host      string
-	queueName string
-}
-
-func getQueueName() string {
-	name, _ := os.Hostname() // nolint: noerror
-	return "contrail_process_" + name
-}
-
 //EventProducer send db update for processor.
 //Event will be harvest from cassandra db and from amqp later on.
 type EventProducer struct {
@@ -345,152 +304,4 @@ func (p *EventProducer) Start(ctx context.Context) error {
 		}
 	}
 	return p.WatchAMQP(ctx)
-}
-
-// EventProcessor writes events to cassandra and implements service.EventProcessor interface
-type EventProcessor struct {
-	config Config
-}
-
-// NewEventProcessor returns new cassandra.EventProcessor
-func NewEventProcessor() *EventProcessor {
-	cfg := GetConfig()
-	return &EventProcessor{
-		config: cfg}
-}
-
-func getCluster(cfg Config) *gocql.ClusterConfig {
-	cluster := gocql.NewCluster(cfg.Host)
-	if cfg.Port != 0 {
-		cluster.Port = cfg.Port
-	}
-	cluster.Timeout = cfg.Timeout
-	cluster.ConnectTimeout = cfg.ConnectTimeout
-	cluster.Keyspace = defaultCassandraKeyspace
-	cluster.CQLVersion = defaultCassandraVersion
-	return cluster
-}
-
-// Process is a method needed to implement service.EventProcessor interface
-func (p *EventProcessor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
-	log.Debugf("Processing event %+v for cassandra", event)
-	// connect to the cluster
-	cluster := getCluster(p.config)
-	session, err := cluster.CreateSession()
-	if err != nil {
-		return nil, err
-	}
-	defer session.Close()
-
-	qry, err := getQuery(session, event)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := qry.Exec(); err != nil {
-		return nil, err
-	}
-
-	return event, nil
-}
-
-func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, err error) { // nolint: interfacer
-	rsrc := event.GetResource()
-	switch event.Operation() {
-	case services.OperationCreate, services.OperationUpdate:
-		rsrcJSON, err := json.Marshal(rsrc.ToMap())
-		if err != nil {
-			return nil, err
-		}
-		qry = session.Query(
-			"INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)",
-			rsrc.GetUUID(),
-			rsrc.Kind(),
-			rsrcJSON,
-		)
-	case services.OperationDelete:
-		qry = session.Query(
-			"DELETE FROM obj_uuid_table WHERE key=? and column1=?",
-			rsrc.GetUUID(),
-			rsrc.Kind(),
-		)
-	}
-	return qry, nil
-}
-
-//AmqpEventProcessor implements EventProcessor
-type AmqpEventProcessor struct {
-	config AmqpConfig
-}
-
-//NewAmqpEventProcessor return Amqp event processor
-func NewAmqpEventProcessor() *AmqpEventProcessor {
-	return &AmqpEventProcessor{
-		config: AmqpConfig{
-			host:      viper.GetString("amqp.url"),
-			queueName: getQueueName(),
-		},
-	}
-}
-
-//AmqpMessage type
-type AmqpMessage struct {
-	RequestID string   `json:"request_id"`
-	Oper      string   `json:"oper"`
-	Type      string   `json:"type"`
-	UUID      string   `json:"uuid"`
-	FqName    []string `json:"fq_name"`
-	Data      json.RawMessage   `json:"obj_dict"`
-}
-
-//Process sends msg to amqp exchange
-func (p *AmqpEventProcessor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
-	log.Debugf("Processing event %+v for amqp", event)
-
-	conn, err := amqp.Dial(p.config.host)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close() // nolint: errcheck
-
-	ch, err := conn.Channel()
-	if err != nil {
-		return nil, err
-	}
-	defer ch.Close() // nolint: errcheck
-
-	rsrc := event.GetResource()
-	data, err := json.Marshal(rsrc.ToMap())
-	if err != nil {
-		return nil, err
-	}
-
-	msg := AmqpMessage{
-		RequestID: fmt.Sprintf("req-%s", uuid.NewV4().String()),
-		Oper:      event.Operation(),
-		Type:      rsrc.Kind(),
-		UUID:      rsrc.GetUUID(),
-		FqName:    rsrc.GetFQName(),
-		Data:      json.RawMessage(data),
-	}
-
-	msgJSON, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	err = ch.Publish(
-		exchangeName,
-		"",
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        msgJSON,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return event, nil
 }

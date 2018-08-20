@@ -723,7 +723,17 @@ func checkCollectionTypes(property, propertyType *JSONSchema) error {
 
 func resolveMapCollectionType(property, propertyType *JSONSchema) {
 	itemType := propertyType.OrderedProperties[0].Items
+<<<<<<< HEAD
 	propertyType.MapKeyProperty = itemType.Properties[property.MapKey]
+=======
+	if property.MapKey == "" {
+		return errors.Errorf("MapKey property missing for type %s", property.ID)
+	}
+	// TODO: temporary solution
+	property.MapKeyProperty = itemType.Properties[property.MapKey]
+	propertyType.MapKeyProperty = itemType.Properties[property.MapKey]
+	return nil
+>>>>>>> e44d899e... [WIP] Cassandra event processor.
 }
 
 //MakeAPI load directory and generate API definitions.

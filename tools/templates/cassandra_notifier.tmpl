@@ -1,0 +1,101 @@
+package cassandra
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/gocql/gocql"
+
+	services "github.com/Juniper/contrail/pkg/services"
+)
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (s *NotifierService) Create{{ schema.JSONSchema.GoName }}(
+	_ context.Context,
+	request *services.Create{{ schema.JSONSchema.GoName }}Request,
+) (*services.Create{{ schema.JSONSchema.GoName }}Response, error){
+	cluster := getCluster(s.config)
+	session, err := cluster.CreateSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	rsrc := request.Get{{ schema.JSONSchema.GoName }}()
+
+	cassandraMap, err := {{ schema.JSONSchema.GoName }}ToCassandraMap(rsrc)
+	if err != nil {
+		return nil, err
+	}
+
+	updateIdPermsOnCreate(rsrc)
+
+	// select the object's children and backrefs from cassandra and update our object map
+	iter := session.Query(selectResource, rsrc.GetUUID()).Iter()
+	var uuid, column1, value string
+	for iter.Scan(&uuid, &column1, &value) {
+		if _, ok := cassandraMap[column1]; isRefRow(column1) && !ok {
+			// This is a symmetric ref's backref, leave it intact
+			cassandraMap[column1] = value
+		}
+
+		if isChildrenRow(column1) || isBackrefRow(column1) {
+			cassandraMap[column1] = value
+		}
+		fmt.Println(uuid, column1, value)
+	}
+
+	batch := gocql.NewBatch(gocql.LoggedBatch)
+
+	// delete the old object from cassandra
+	withTimestamp(batch, deleteResource, rsrc.GetUUID())
+
+	// insert the new version
+	for column1, value := range cassandraMap {
+		withTimestamp(batch, insertQuery, rsrc.GetUUID(), column1, value)
+	}
+
+	// if the object has a parent, update the parent's children
+	if parentUUID := rsrc.GetParentUUID(); parentUUID != "" {
+		updateChildRow(batch, rsrc)
+	}
+
+	// update backrefs in the referred objects
+	for column1, value := range cassandraMap {
+		if !isRefRow(column1) {
+			continue
+		}
+
+		data := strings.Split(column1, ":")
+		referredType, referredColumn1 := data[1], data[2]
+		updateBackref(batch, rsrc, referredType, referredColumn1, value)
+	}
+
+	updateFQNameToUUIDRow(batch, rsrc)
+	if err = session.ExecuteBatch(batch); err != nil {
+		return nil, err
+	}
+	return &services.Create{{ schema.JSONSchema.GoName }}Response{
+		{{ schema.JSONSchema.GoName }}: rsrc,
+	}, nil
+}
+
+func (s *NotifierService) Update{{ schema.JSONSchema.GoName }}(
+	_ context.Context,
+	request *services.Update{{ schema.JSONSchema.GoName }}Request,
+) (*services.Update{{ schema.JSONSchema.GoName }}Response, error){
+	return &services.Update{{ schema.JSONSchema.GoName }}Response{
+		{{ schema.JSONSchema.GoName }}: request.Get{{ schema.JSONSchema.GoName }}(),
+	}, nil
+}
+
+func (s *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
+	_ context.Context,
+	request *services.Delete{{ schema.JSONSchema.GoName }}Request,
+) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error){
+	return &services.Delete{{ schema.JSONSchema.GoName }}Response{
+		ID: request.ID,
+	}, nil
+}
+{% endif%}{% endfor %}

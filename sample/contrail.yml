@@ -56,6 +56,7 @@ server:
       - http://localhost:8082
 
   notify_etcd: true
+  notify_cassandra: false
 
 # Keystone configuration
 # keystone:
@@ -172,7 +173,12 @@ cache:
     #how long revistion deleted event preserved.
     max_history: 100000
     cassandra:
+<<<<<<< HEAD
         enabled: true
+=======
+        enabled: false
+        amqp: amqp://guest:guest@localhost:5672/
+>>>>>>> e44d899e... [WIP] Cassandra event processor.
     etcd:
         enabled: true
 
