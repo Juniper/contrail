@@ -108,6 +108,8 @@ func parseOperation(etcdOperation int32) (string, error) {
 		return services.OperationCreate, nil
 	case int32(mvccpb.DELETE):
 		return services.OperationDelete, nil
+	case int32(2):
+		return services.OperationUpdate, nil
 	default:
 		return "", errors.Errorf("unsupported ETCD operation: %v", etcdOperation)
 	}

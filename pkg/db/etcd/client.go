@@ -127,12 +127,16 @@ func (c *Client) WatchRecursive(
 	go func() {
 		for wresp := range rchan {
 			for _, ev := range wresp.Events {
-				resultChan <- Event{
+				event := Event{
 					Revision: wresp.Header.Revision,
 					Type:     int32(ev.Type),
 					Key:      string(ev.Kv.Key),
 					Value:    ev.Kv.Value,
 				}
+				if ev.Kv.Version > 1 {
+					event.Type = int32(2)
+				}
+				resultChan <- event
 			}
 		}
 		close(resultChan)
