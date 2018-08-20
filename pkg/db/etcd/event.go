@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -104,9 +103,11 @@ func parseKey(key string) (kind string, uuid string, err error) {
 
 func parseOperation(etcdOperation int32) (string, error) {
 	switch etcdOperation {
-	case int32(mvccpb.PUT):
+	case MessageCreate:
 		return services.OperationCreate, nil
-	case int32(mvccpb.DELETE):
+	case MessageModify:
+		return services.OperationUpdate, nil
+	case MessageDelete:
 		return services.OperationDelete, nil
 	default:
 		return "", errors.Errorf("unsupported ETCD operation: %v", etcdOperation)

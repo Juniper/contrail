@@ -24,21 +24,17 @@ type CompilationService struct {
 	services.BaseService
 }
 
-// HandleEtcdMessages handles messages received from etcd.
-func (service *CompilationService) HandleEtcdMessages(ctx context.Context, oper int32, key, value string) {
-	messageFields := log.Fields{
-		"operation": oper,
-		"key":       key,
-		"value":     value,
-	}
+// HandleEtcdMessage handles messages received from etcd.
+func (service *CompilationService) HandleEtcdMessage(ctx context.Context, oper int32, key, value string) {
+	messageFields := log.Fields{"operation": oper, "key": key, "value": value}
 	log.WithFields(messageFields).Print("HandleEtcdMessages: Got a message")
-	err := service.handleEtcdMessages(ctx, oper, key, value)
+	err := service.handleEtcdMessage(ctx, oper, key, value)
 	if err != nil {
 		log.WithFields(messageFields).WithError(err).Error("Failed to handle etcd message")
 	}
 }
 
-func (service *CompilationService) handleEtcdMessages(ctx context.Context, oper int32, key, value string) error {
+func (service *CompilationService) handleEtcdMessage(ctx context.Context, oper int32, key, value string) error {
 	processor := &services.ServiceEventProcessor{Service: service}
 	event, err := etcd.ParseEvent(oper, key, []byte(value))
 	if err != nil {

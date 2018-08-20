@@ -108,31 +108,18 @@ func (c *Client) Delete(ctx context.Context, key string) error {
 	return err
 }
 
-// Event contains message data reveived from WatchRecursive.
-type Event struct {
-	Revision int64
-	Type     int32
-	Key      string
-	Value    []byte
-}
-
 // WatchRecursive Watches a key pattern for changes After an Index
 func (c *Client) WatchRecursive(
 	ctx context.Context, keyPattern string, afterIndex int64,
-) chan Event {
-	resultChan := make(chan Event)
+) chan Message {
+	resultChan := make(chan Message)
 	rchan := c.Etcd.Watch(ctx, keyPattern,
 		clientv3.WithPrefix(), clientv3.WithRev(afterIndex))
 
 	go func() {
 		for wresp := range rchan {
 			for _, ev := range wresp.Events {
-				resultChan <- Event{
-					Revision: wresp.Header.Revision,
-					Type:     int32(ev.Type),
-					Key:      string(ev.Kv.Key),
-					Value:    ev.Kv.Value,
-				}
+				resultChan <- NewMessage(ev)
 			}
 		}
 		close(resultChan)
