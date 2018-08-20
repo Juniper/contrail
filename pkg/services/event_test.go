@@ -36,13 +36,15 @@ func TestCreateEventJSONEncoding(t *testing.T) {
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 
-	d2 := NewEvent(&EventOption{
+	d2, err := NewEvent(&EventOption{
 		Kind:      i["kind"].(string),
 		Operation: i["operation"].(string),
 		Data:      i["data"].(map[string]interface{}),
 	})
-	request = d2.GetCreateVirtualNetworkRequest()
-	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
+	if assert.NoError(t, err) {
+		request = d2.GetCreateVirtualNetworkRequest()
+		assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
+	}
 }
 
 func TestDeleteEventJSONEncoding(t *testing.T) {
@@ -96,13 +98,15 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 	i = common.YAMLtoJSONCompat(i).(map[string]interface{})
-	d2 := NewEvent(&EventOption{
+	d2, err := NewEvent(&EventOption{
 		Kind:      i["kind"].(string),
 		Operation: i["operation"].(string),
 		Data:      i["data"].(map[string]interface{}),
 	})
-	request = d2.GetCreateVirtualNetworkRequest()
-	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
+	if assert.NoError(t, err) {
+		request = d2.GetCreateVirtualNetworkRequest()
+		assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
+	}
 }
 
 func TestSortEventListByDependency(t *testing.T) {
