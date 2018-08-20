@@ -64,7 +64,7 @@ func (r *List{{ name }}Response) unmarshalWith(unmarshal func(interface{}) error
 	errs := common.MultiError{err}
 	var countResponse struct {
 		Resources struct {
-			Count int64 `json:"count" yaml="count"`
+			Count int64 `json:"count" yaml:"count"`
 		} `json:"{{ plural }}" yaml:"{{ plural }}"`
 	}
 	if err = unmarshal(&countResponse); err != nil {
