@@ -105,6 +105,14 @@ func (db *BaseDB) DoInTransaction(ctx context.Context, do func(context.Context) 
 	return nil
 }
 
+func (db *BaseDB) DisableConstraints() error {
+	return nil
+}
+
+func (db *BaseDB) EnableConstraints() error {
+	return nil
+}
+
 func rollbackOnPanic(tx *sql.Tx) {
 	if p := recover(); p != nil {
 		err := tx.Rollback()

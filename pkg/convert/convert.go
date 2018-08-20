@@ -112,7 +112,9 @@ func writeRDBMS(events *services.EventList) error {
 	return dbService.DoInTransaction(
 		context.Background(),
 		func(ctx context.Context) error {
+			dbService.DisableConstraints()
 			_, err = events.Process(ctx, dbService)
+			dbService.EnableConstraints()
 			return err
 		},
 	)
