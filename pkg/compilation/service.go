@@ -52,7 +52,7 @@ type Store interface {
 	Create(context.Context, string, []byte) error
 	Put(context.Context, string, []byte) error
 	Get(context.Context, string) ([]byte, error)
-	WatchRecursive(context.Context, string, int64) chan etcd.Event
+	WatchRecursive(context.Context, string, int64) chan etcd.Message
 	InTransaction(ctx context.Context, do func(context.Context) error) error
 	Close() error
 }
@@ -154,7 +154,7 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	ics.log.Debug("Running Service")
 
 	watch.WatcherInit(ics.config.DefaultCfg.MaxJobQueueLen)
-	watch.InitDispatcher(ics.config.DefaultCfg.NumberOfWorkers, ics.service.HandleEtcdMessages)
+	watch.InitDispatcher(ics.config.DefaultCfg.NumberOfWorkers, ics.service.HandleEtcdMessage)
 
 	ics.log.Debug("Setting MessageIndex to 0 (if not exists)")
 	err := ics.Store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0"))

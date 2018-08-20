@@ -249,7 +249,7 @@ func (s *blockingStore) RegisterIn(ics *compilation.IntentCompilationService) {
 
 func (s *blockingStore) WatchRecursive(
 	ctx context.Context, keyPattern string, afterIndex int64,
-) chan etcd.Event {
+) chan etcd.Message {
 	c := s.Store.WatchRecursive(ctx, keyPattern, afterIndex)
 	close(s.StartedWatch)
 	return c
