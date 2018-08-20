@@ -105,6 +105,18 @@ func (db *BaseDB) DoInTransaction(ctx context.Context, do func(context.Context) 
 	return nil
 }
 
+// DisableConstraints globally disables constraints checking in DB - USE WITH CAUTION!
+func (db *BaseDB) DisableConstraints() error {
+	_, err := db.DB().Exec(db.Dialect.DisableConstraints())
+	return errors.Wrapf(err, "Disabling constraints checking (%s): ", db.Dialect.DisableConstraints())
+}
+
+// EnableConstraints globally enables constraints checking - reverts behavior of DisableConstraints()
+func (db *BaseDB) EnableConstraints() error {
+	_, err := db.DB().Exec(db.Dialect.EnableConstraints())
+	return errors.Wrapf(err, "Enabling constraints checking (%s): ", db.Dialect.EnableConstraints())
+}
+
 func rollbackOnPanic(tx *sql.Tx) {
 	if p := recover(); p != nil {
 		err := tx.Rollback()
