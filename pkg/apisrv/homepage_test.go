@@ -105,7 +105,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	routes.add("/useragent-kv")
 
 	for _, route := range apisrv.APIServer.Echo.Routes() {
-		assert.Truef(t, routes.contains(route.Path),
+		assert.Truef(t, routes.contains(resolve(route.Path)),
 			"Route %s has no corresponding link in homepage discovery."+
 				" Register it in APIServer setup code and add it to the set of excluded routes in the test.",
 			route.Path)
@@ -117,7 +117,7 @@ type routeSet struct {
 }
 
 func (r *routeSet) add(path string) {
-	r.set[path] = struct{}{}
+	r.set[resolve(path)] = struct{}{}
 }
 
 func (r *routeSet) contains(path string) bool {
