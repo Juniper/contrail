@@ -354,7 +354,8 @@ type EventProcessor struct {
 func NewEventProcessor() *EventProcessor {
 	cfg := GetConfig()
 	return &EventProcessor{
-		config: cfg}
+		config: cfg,
+	}
 }
 
 func getCluster(cfg Config) *gocql.ClusterConfig {
