@@ -1,0 +1,35 @@
+resources:
+- kind: project
+  data:
+    fq_name:
+    - sample-domain
+    - sample-project
+    id_perms:
+      created: 2018-05-23T17:29:57.500625
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.077633
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.317758e+19
+        uuid_mslong: 1.762763e+19
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    quota:
+      defaults: -1
+    type: project
+    uuid: beefbeef-beef-beef-beef-beefbeef0003
+
+    

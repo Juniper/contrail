@@ -703,7 +703,10 @@ func (api *API) resolveCollectionTypes() error {
 				propertyType.CollectionType = property.CollectionType
 
 				if propertyType.CollectionType == "map" {
-					resolveMapCollectionType(property, propertyType)
+					err := resolveMapCollectionType(property, propertyType)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
@@ -721,9 +724,15 @@ func checkCollectionTypes(property, propertyType *JSONSchema) error {
 	return nil
 }
 
-func resolveMapCollectionType(property, propertyType *JSONSchema) {
+func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 	itemType := propertyType.OrderedProperties[0].Items
+	if property.MapKey == "" {
+		return errors.Errorf("MapKey property missing for type %s", property.ID)
+	}
+	// TODO: temporary solution
+	property.MapKeyProperty = itemType.Properties[property.MapKey]
 	propertyType.MapKeyProperty = itemType.Properties[property.MapKey]
+	return nil
 }
 
 //MakeAPI load directory and generate API definitions.
