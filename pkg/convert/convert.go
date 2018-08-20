@@ -40,6 +40,14 @@ func Convert(c *Config) error {
 		return errors.Wrapf(err, "reading events from %v failed", c.InType)
 	}
 
+	l := []*services.Event{}
+
+	for _, e := range events.Events {
+		if e.GetResource() != nil {
+			l = append(l, e)
+		}
+	}
+	events.Events = l
 	err = events.Sort()
 	if err != nil {
 		return errors.Wrap(err, "sorting events failed")

@@ -3,6 +3,7 @@ package cassandra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -354,7 +355,8 @@ type EventProcessor struct {
 func NewEventProcessor() *EventProcessor {
 	cfg := GetConfig()
 	return &EventProcessor{
-		config: cfg}
+		config: cfg,
+	}
 }
 
 func getCluster(cfg Config) *gocql.ClusterConfig {
@@ -391,20 +393,28 @@ func (p *EventProcessor) Process(ctx context.Context, event *services.Event) (*s
 	return event, nil
 }
 
+const insertQuery = "INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?); "
+
 func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, err error) { // nolint: interfacer
 	rsrc := event.GetResource()
 	switch event.Operation() {
 	case services.OperationCreate, services.OperationUpdate:
-		rsrcJSON, err := json.Marshal(rsrc.ToMap())
+		cassandraMap, err := resourceToCassandraMap(rsrc)
 		if err != nil {
 			return nil, err
 		}
-		qry = session.Query(
-			"INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)",
-			rsrc.GetUUID(),
-			rsrc.Kind(),
-			rsrcJSON,
-		)
+		queryString := ""
+		var values []interface{}
+		for column1, value := range cassandraMap {
+			queryString += insertQuery
+			values = append(values, []interface{}{rsrc.GetUUID(), column1, value})
+		}
+		if rsrc.GetParentUUID() != "" {
+			queryString += insertQuery
+			childType := strings.Replace(rsrc.Kind(), "_", "-", -1)
+			values = append(values, []interface{}{rsrc.GetParentUUID(), fmt.Sprintf("children:%s:%s", childType, rsrc.GetUUID()), nil})
+		}
+		qry = session.Query(queryString, values...)
 	case services.OperationDelete:
 		qry = session.Query(
 			"DELETE FROM obj_uuid_table WHERE key=? and column1=?",
