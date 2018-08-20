@@ -76,45 +76,61 @@ func NewDialect(mode string) Dialect {
 	switch mode {
 	case MYSQL:
 		return Dialect{
-			Name:             MYSQL,
-			QuoteRune:        "`",
-			JSONAggFuncStart: "group_concat(JSON_OBJECT(",
-			JSONAggFuncEnd:   "))",
-			AnyValueString:   "ANY_VALUE(",
-			PlaceHolderIndex: false,
-			IPLiteralPrefix:  "INET6_ATON('",
-			PpLiteralSuffix:  "')",
-			SelectIPPrefix:   "INET6_NTOA(`",
-			SelectIPSuffix:   "`)",
+			Name:               MYSQL,
+			QuoteRune:          "`",
+			JSONAggFuncStart:   "group_concat(JSON_OBJECT(",
+			JSONAggFuncEnd:     "))",
+			AnyValueString:     "ANY_VALUE(",
+			PlaceHolderIndex:   false,
+			IPLiteralPrefix:    "INET6_ATON('",
+			PpLiteralSuffix:    "')",
+			SelectIPPrefix:     "INET6_NTOA(`",
+			SelectIPSuffix:     "`)",
+			ConstraintsDisable: "SET GLOBAL FOREIGN_KEY_CHECKS=0;",
+			ConstraintsEnable:  "SET GLOBAL FOREIGN_KEY_CHECKS=1;",
 		}
 	default:
 		return Dialect{
-			Name:             POSTGRES,
-			QuoteRune:        `"`,
-			JSONAggFuncStart: "json_agg(json_build_object(",
-			JSONAggFuncEnd:   "))",
-			AnyValueString:   "",
-			PlaceHolderIndex: true,
-			IPLiteralPrefix:  "inet '",
-			PpLiteralSuffix:  "'",
-			SelectIPPrefix:   `"`,
-			SelectIPSuffix:   `"`,
+			Name:               POSTGRES,
+			QuoteRune:          `"`,
+			JSONAggFuncStart:   "json_agg(json_build_object(",
+			JSONAggFuncEnd:     "))",
+			AnyValueString:     "",
+			PlaceHolderIndex:   true,
+			IPLiteralPrefix:    "inet '",
+			PpLiteralSuffix:    "'",
+			SelectIPPrefix:     `"`,
+			SelectIPSuffix:     `"`,
+			ConstraintsDisable: "SET session_replication_role = replica;",
+			ConstraintsEnable:  "SET session_replication_role = DEFAULT;",
 		}
 	}
 }
 
 // Dialect represents database dialect.
 type Dialect struct {
-	Name             string
-	QuoteRune        string
-	JSONAggFuncStart string
-	JSONAggFuncEnd   string
-	AnyValueString   string
-	PlaceHolderIndex bool
-	IPLiteralPrefix  string
-	PpLiteralSuffix  string
-	SelectIPPrefix   string
-	SelectIPSuffix   string
+	Name               string
+	QuoteRune          string
+	JSONAggFuncStart   string
+	JSONAggFuncEnd     string
+	AnyValueString     string
+	PlaceHolderIndex   bool
+	IPLiteralPrefix    string
+	PpLiteralSuffix    string
+	SelectIPPrefix     string
+	SelectIPSuffix     string
+	ConstraintsDisable string
+	ConstraintsEnable  string
+}
+
+// DisableConstraints gives statement for disabling constraint checking (use with caution!)
+func (d *Dialect) DisableConstraints() string {
+	return d.ConstraintsDisable
+}
+
+// EnableConstraints gives statement that enables constraint checking - reverse behavior of DisableConstraints
+func (d *Dialect) EnableConstraints() string {
+	return d.ConstraintsEnable
 }
 
 // Quote quote with DB specific way.
