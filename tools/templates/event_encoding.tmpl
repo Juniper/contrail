@@ -45,6 +45,7 @@ type Resource interface {
 	GetUUID() string
 	GetFQName() []string
 	GetParentUUID() string
+	GetParentType() string
 	ToMap() map[string]interface{}
 	// Kind returns id of schema. For non resource objects it returns empty string
 	Kind() string

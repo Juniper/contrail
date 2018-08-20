@@ -1,0 +1,30 @@
+resources:
+- kind: domain
+  data:
+    fq_name:
+    - default-domain
+    id_perms:
+      created: 2018-05-23T17:29:57.482383
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:57.996393
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 9.775285e+18
+        uuid_mslong: 5.138874e+18
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share:
+      - tenant: domain:beefbeef-beef-beef-beef-beefbeef0002
+        tenant_access: 6
+    type: domain
+    uuid: beefbeef-beef-beef-beef-beefbeef0002

@@ -172,7 +172,7 @@ cache:
     #how long revistion deleted event preserved.
     max_history: 100000
     cassandra:
-        enabled: true
+        enabled: false
         amqp: amqp://guest:guest@localhost:5672/
     etcd:
         enabled: true
