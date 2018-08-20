@@ -3,6 +3,7 @@ package cassandra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
 
@@ -359,7 +361,8 @@ type EventProcessor struct {
 func NewEventProcessor() *EventProcessor {
 	cfg := GetConfig()
 	return &EventProcessor{
-		config: cfg}
+		config: cfg,
+	}
 }
 
 func getCluster(cfg Config) *gocql.ClusterConfig {
@@ -384,38 +387,64 @@ func (p *EventProcessor) Process(ctx context.Context, event *services.Event) (*s
 	}
 	defer session.Close()
 
-	qry, err := getQuery(session, event)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := qry.Exec(); err != nil {
+	if err = handleEvent(session, event); err != nil {
 		return nil, err
 	}
 
 	return event, nil
 }
 
-func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, err error) { // nolint: interfacer
+const selectResource = "SELECT key, column1, value FROM obj_uuid_table where key = ?"
+const insertQuery = "INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)"
+
+// const deleteResourceRow = "DELETE FROM obj_uuid_table WHERE key=? and column1=?"
+const deleteResource = "DELETE FROM obj_uuid_table WHERE key=?"
+
+func handleEvent(session *gocql.Session, event *services.Event) error { // nolint: interfacer
 	rsrc := event.GetResource()
 	switch event.Operation() {
 	case services.OperationCreate, services.OperationUpdate:
-		rsrcJSON, err := json.Marshal(rsrc.ToMap())
-		if err != nil {
-			return nil, err
+		// select whole object from cassandra
+		iter := session.Query(selectResource, rsrc.GetUUID()).Iter()
+		var uuid, column1, value string
+		for iter.Scan(&uuid, &column1, &value) {
+			fmt.Println(uuid, column1, value)
 		}
-		qry = session.Query(
-			"INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)",
+		err := session.Query(
+			deleteResource,
 			rsrc.GetUUID(),
-			rsrc.Kind(),
-			rsrcJSON,
-		)
+		).Exec()
+		if err != nil {
+			return err
+		}
+		cassandraMap, err := resourceToCassandraMap(rsrc)
+		if err != nil {
+			return err
+		}
+		batch := gocql.NewBatch(gocql.LoggedBatch)
+		for column1, value := range cassandraMap {
+			batch.Query(insertQuery, rsrc.GetUUID(), column1, value)
+		}
+		if rsrc.GetParentUUID() != "" {
+			childType := strings.Replace(rsrc.Kind(), "_", "-", -1)
+			batch.Query(
+				insertQuery,
+				rsrc.GetParentUUID(),
+				fmt.Sprintf("children:%s:%s", childType, rsrc.GetUUID()),
+				nil)
+		}
+		err = session.ExecuteBatch(batch)
+		if err != nil {
+			return err
+		}
 	case services.OperationDelete:
-		qry = session.Query(
-			"DELETE FROM obj_uuid_table WHERE key=? and column1=?",
+		err := session.Query(
+			deleteResource,
 			rsrc.GetUUID(),
-			rsrc.Kind(),
-		)
+		).Exec()
+		if err != nil {
+			return err
+		}
 	}
-	return qry, nil
+	return nil
 }
