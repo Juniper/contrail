@@ -206,7 +206,7 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 		log.Warnf("POST clean up resource %v / %v: %v {clien:t %v}", i+1, len(tracked), tr.Path, tr.Client)
 		response, err := clients[tr.Client].EnsureDeleted(ctx, tr.Path, nil)
 		if err != nil {
-			log.Errorf("Error deleting dirty resource: %v, for url path '%v' with client %v", err, tr.Path, tr.Client)
+			log.Errorf("Ignored Error deleting dirty resource: %v, for url path '%v' with client %v", err, tr.Path, tr.Client)
 			continue // It is desired to loop over all resources even with errors
 		}
 		if response.StatusCode != 404 {
@@ -279,7 +279,11 @@ func runTestScenario(ctx context.Context,
 	for left, right := 0, len(tracked)-1; left < right; left, right = left+1, right-1 {
 		tracked[left], tracked[right] = tracked[right], tracked[left]
 	}
-	log.Info("TEST SEQUENCE COMPLETE!")
+	msg := "<SUCCESS>"
+	if t.Failed() {
+		msg = "<<<< FAILED >>>>"
+	}
+	log.Infof("TEST SEQUENCE COMPLETE! %v", msg)
 	return tracked
 }
 
