@@ -725,34 +725,13 @@ func checkCollectionTypes(property, propertyType *JSONSchema) error {
 
 func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 	itemType := propertyType.OrderedProperties[0].Items
-
-	if property.MapKey != "" {
-		log.Warn("Remove inferMapKeyProperty workaround now!")
-		propertyType.MapKeyProperty = itemType.Properties[property.MapKey]
-	} else {
-		var err error
-		propertyType.MapKeyProperty, err = inferMapKeyProperty(property, itemType)
-		if err != nil {
-			return err
-		}
+	if property.MapKey == "" {
+		return errors.Errorf("MapKey property missing for type %s", property.ID)
 	}
+	// TODO: temporary solution
+	property.MapKeyProperty = itemType.Properties[property.MapKey]
+	propertyType.MapKeyProperty = itemType.Properties[property.MapKey]
 	return nil
-}
-
-// inferMapKeyProperty gets key property of given map property (with CollectionType == "map").
-// TODO: get information about key property of map property (with CollectionType == "map") from schema
-func inferMapKeyProperty(property, itemType *JSONSchema) (*JSONSchema, error) {
-	mapKeyProperty, ok := itemType.Properties["key"]
-	if !ok {
-		mapKeyProperty, ok = itemType.Properties["name"]
-		if !ok {
-			return nil, errors.Errorf(
-				"type %s is used as 'map' collection type, but has neither 'key' nor 'name' properties",
-				property.ProtoType,
-			)
-		}
-	}
-	return mapKeyProperty, nil
 }
 
 //MakeAPI load directory and generate API definitions.

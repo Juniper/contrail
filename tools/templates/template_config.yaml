@@ -2,6 +2,9 @@
   template_path: model.tmpl
   output_path: pkg/models/gen_models.go
 - type: all
+  template_path: db_cassandra.tmpl
+  output_path: pkg/db/cassandra/gen_cassandra.go
+- type: all
   template_path: type_validation.tmpl
   output_path: pkg/models/gen_validation.go
 - type: all
