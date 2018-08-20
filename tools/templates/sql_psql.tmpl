@@ -1,7 +1,8 @@
 create table metadata (
     "uuid" varchar(255),
     "type" varchar(255),
-    "fq_name" varchar(255) unique,
+    "fq_name" varchar(255),
+    unique("type", "fq_name"),
     primary key ("uuid"));
 
 create index fq_name_index on metadata ("fq_name");
