@@ -3,6 +3,7 @@ package cassandra
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -352,7 +353,8 @@ type EventProcessor struct {
 func NewEventProcessor() *EventProcessor {
 	cfg := GetConfig()
 	return &EventProcessor{
-		config: cfg}
+		config: cfg,
+	}
 }
 
 func getCluster(cfg Config) *gocql.ClusterConfig {
@@ -377,38 +379,86 @@ func (p *EventProcessor) Process(ctx context.Context, event *services.Event) (*s
 	}
 	defer session.Close()
 
-	qry, err := getQuery(session, event)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := qry.Exec(); err != nil {
+	if err = handleEvent(session, event); err != nil {
 		return nil, err
 	}
 
 	return event, nil
 }
 
-func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, err error) { // nolint: interfacer
+const selectResource = "SELECT key, column1, value FROM obj_uuid_table WHERE key = ?"
+const insertQuery = "INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)"
+const deleteRowByColumn1 = "DELETE FROM obj_uuid_table WHERE key=? and column1=?"
+const deleteResource = "DELETE FROM obj_uuid_table WHERE key=?"
+
+func handleEvent(session *gocql.Session, event *services.Event) error { // nolint: interfacer
 	rsrc := event.GetResource()
 	switch event.Operation() {
 	case services.OperationCreate, services.OperationUpdate:
-		rsrcJSON, err := json.Marshal(rsrc.ToMap())
+		cassandraMap, err := resourceToCassandraMap(rsrc)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		qry = session.Query(
-			"INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)",
-			rsrc.GetUUID(),
-			rsrc.Kind(),
-			rsrcJSON,
-		)
+
+		// select the object's children from cassandra and update our object map
+		iter := session.Query(selectResource, rsrc.GetUUID()).Iter()
+		var uuid, column1, value string
+		for iter.Scan(&uuid, &column1, &value) {
+			if strings.HasPrefix(column1, "children") {
+				cassandraMap[column1] = value
+			}
+			fmt.Println(uuid, column1, value)
+		}
+
+		batch := gocql.NewBatch(gocql.LoggedBatch)
+
+		// delete the old object from cassandra
+		withTimestamp(batch, deleteResource, rsrc.GetUUID())
+
+		// insert the new version
+		for column1, value := range cassandraMap {
+			withTimestamp(batch, insertQuery, rsrc.GetUUID(), column1, value)
+		}
+
+		// if the object has a parent, update the parent's children
+		if parentUUID := rsrc.GetParentUUID(); parentUUID != "" {
+			updateChild(batch, rsrc)
+		}
+
+		if err = session.ExecuteBatch(batch); err != nil {
+			return err
+		}
 	case services.OperationDelete:
-		qry = session.Query(
-			"DELETE FROM obj_uuid_table WHERE key=? and column1=?",
-			rsrc.GetUUID(),
-			rsrc.Kind(),
-		)
+		batch := gocql.NewBatch(gocql.LoggedBatch)
+		deleteChild(batch, rsrc)
+		withTimestamp(batch, deleteResource, rsrc.GetUUID())
+		if err := session.ExecuteBatch(batch); err != nil {
+			return err
+		}
 	}
-	return qry, nil
+	return nil
+}
+
+func withTimestamp(b *gocql.Batch, stmt string, args ...interface{}) {
+	strs := strings.Split(stmt, " WHERE")
+	stmt = strings.Join([]string{strs[0], " USING TIMESTAMP ", fmt.Sprint(time.Now().UnixNano())}, "")
+	if len(strs) > 1 {
+		stmt += " WHERE" + strs[1]
+	}
+	log.Warn(stmt)
+	b.Query(stmt, args...)
+}
+
+func childColumn1(r services.Resource) string {
+	childType := strings.Replace(r.Kind(), "_", "-", -1)
+	return fmt.Sprintf("children:%s:%s", childType, r.GetUUID())
+}
+
+func deleteChild(b *gocql.Batch, r services.Resource) {
+	withTimestamp(b, deleteRowByColumn1, r.GetParentUUID(), childColumn1(r))
+}
+
+func updateChild(b *gocql.Batch, r services.Resource) {
+	withTimestamp(b, deleteRowByColumn1, r.GetParentUUID(), childColumn1(r))
+	withTimestamp(b, insertQuery, r.GetParentUUID(), childColumn1(r), "null")
 }
