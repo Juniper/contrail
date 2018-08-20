@@ -22,6 +22,14 @@ func (m MultiError) Error() string {
 	return strings.Join(msgs, "\n")
 }
 
+// Cause returns the first error.
+func (m MultiError) Cause() error {
+	if len(m) < 1 {
+		return nil
+	}
+	return m[0]
+}
+
 //ErrorNotFound for not found error.
 var ErrorNotFound = grpc.Errorf(codes.NotFound, "not found")
 
