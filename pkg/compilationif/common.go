@@ -15,7 +15,7 @@ func NewCompilationService() *CompilationService {
 	service := &CompilationService{
 		BaseService: services.BaseService{},
 	}
-	service.Init()
+	Init()
 	return service
 }
 

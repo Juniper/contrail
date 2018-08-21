@@ -15,7 +15,7 @@ import (
 
 var ObjsCache *sync.Map
 
-func (service *CompilationService) Init() {
+func Init() {
 	ObjsCache = &sync.Map{}
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
