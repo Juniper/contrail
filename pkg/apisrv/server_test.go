@@ -6,16 +6,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/stretchr/testify/assert"
 	"github.com/twinj/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 func TestKVStore(t *testing.T) {
@@ -83,19 +84,9 @@ func TestProject(t *testing.T) {
 	RunTest(t, "./test_data/test_project.yml")
 }
 
-func TestEndpoints(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
-	RunTest(t, "./test_data/test_fqname_to_id.yml")
-}
-
 func TestInstanceIP(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_instance_ip.yml")
-}
-
-func TestRefUpdate(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
-	RunTest(t, "./test_data/test_ref_update.yml")
 }
 
 func TestVirtualMachineInterface(t *testing.T) {
@@ -103,9 +94,29 @@ func TestVirtualMachineInterface(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_machine_interface.yml")
 }
 
+func TestFQNameToID(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_fqname_to_id.yml")
+}
+
+func TestRefRead(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_ref_read.yml")
+}
+
+func TestRefUpdate(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_ref_update.yml")
+}
+
 func TestRefRelaxForDelete(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_ref_relax.yml")
+}
+
+func TestPropCollectionUpdate(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_prop_collection_update.yml")
 }
 
 func TestSetTag(t *testing.T) {
@@ -116,11 +127,6 @@ func TestSetTag(t *testing.T) {
 func TestSanitizing(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_sanitizing.yml")
-}
-
-func TestRefRead(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
-	RunTest(t, "./test_data/test_ref_read.yml")
 }
 
 func TestGRPC(t *testing.T) {
