@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Juniper/contrail/pkg/compilationif"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -206,6 +207,7 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	expectCreateACL(mockAPIService, expectedIngressACL)
 	expectCreateACL(mockAPIService, expectedEgressACL)
 
+	compilationif.Init()
 	_, err := service.CreateSecurityGroup(context.Background(), &services.CreateSecurityGroupRequest{
 		SecurityGroup: securityGroup,
 	})
