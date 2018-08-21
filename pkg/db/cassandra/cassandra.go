@@ -26,17 +26,19 @@ const (
 
 // Config fields for cassandra
 type Config struct {
-	Host    string
-	Port    int
-	Timeout time.Duration
+	Host           string
+	Port           int
+	Timeout        time.Duration
+	ConnectTimeout time.Duration
 }
 
 //GetConfig returns cassandra Config filled with data from config file.
 func GetConfig() Config {
 	return Config{
-		Host:    viper.GetString("cassandra.host"),
-		Port:    viper.GetInt("cassandra.port"),
-		Timeout: viper.GetDuration("cassandra.timeout"),
+		Host:           viper.GetString("cassandra.host"),
+		Port:           viper.GetInt("cassandra.port"),
+		Timeout:        viper.GetDuration("cassandra.timeout"),
+		ConnectTimeout: viper.GetDuration("cassandra.connect_timeout"),
 	}
 }
 
@@ -361,6 +363,7 @@ func getCluster(cfg Config) *gocql.ClusterConfig {
 		cluster.Port = cfg.Port
 	}
 	cluster.Timeout = cfg.Timeout
+	cluster.ConnectTimeout = cfg.ConnectTimeout
 	cluster.Keyspace = defaultCassandraKeyspace
 	cluster.CQLVersion = defaultCassandraVersion
 	return cluster
