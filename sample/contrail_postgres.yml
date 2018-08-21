@@ -186,3 +186,4 @@ cassandra:
     host: localhost
     port: 9042
     timeout: 3600s
+    connect_timeout: 600ms

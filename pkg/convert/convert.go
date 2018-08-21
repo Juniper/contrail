@@ -24,13 +24,14 @@ const (
 
 // Config for Convert command.
 type Config struct {
-	InType           string
-	InFile           string
-	OutType          string
-	OutFile          string
-	CassandraPort    int
-	CassandraTimeout int
-	EtcdNotifierPath string
+	InType                  string
+	InFile                  string
+	OutType                 string
+	OutFile                 string
+	CassandraPort           int
+	CassandraTimeout        int
+	CassandraConnectTimeout int
+	EtcdNotifierPath        string
 }
 
 // Convert converts data from one format to another.
@@ -57,9 +58,10 @@ func readData(c *Config) (*services.EventList, error) {
 	case CassandraType:
 		return cassandra.DumpCassandra(
 			cassandra.Config{
-				Host:    c.InFile,
-				Port:    c.CassandraPort,
-				Timeout: time.Duration(c.CassandraTimeout) * time.Second,
+				Host:           c.InFile,
+				Port:           c.CassandraPort,
+				Timeout:        time.Duration(c.CassandraTimeout) * time.Second,
+				ConnectTimeout: time.Duration(c.CassandraConnectTimeout) * time.Millisecond,
 			})
 	case CassandraDumpType:
 		return cassandra.ReadCassandraDump(c.InFile)
