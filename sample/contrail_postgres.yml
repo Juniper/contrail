@@ -55,6 +55,10 @@ server:
 
   notify_etcd: true
 
+  vnc_api_notifier:
+    enabled: false
+    endpoint: http://172.17.12.55:8082
+
 # Keystone configuration
 # keystone:
 #     local: true # Enable local keystone v3. This is only for testing now.
@@ -106,7 +110,7 @@ no_auth: true
 insecure: true
 
 sync:
-  enabled: false 
+  enabled: false
   storage: json
 
 client:
@@ -170,7 +174,7 @@ cache:
     #how long revistion deleted event preserved.
     max_history: 100000
     cassandra:
-        enabled: false 
+        enabled: false
         host: localhost
         port: 9042
         timeout: 3600s
