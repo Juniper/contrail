@@ -71,7 +71,7 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 	}
 
 	var data map[string]interface{}
-	if operation == services.OperationCreate {
+	if operation == services.OperationCreate || operation == services.OperationUpdate {
 		err = json.Unmarshal(newValue, &data)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to decode %s", string(newValue))
