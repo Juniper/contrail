@@ -229,7 +229,7 @@ func NewEventProducer(
 	return &EventProducer{
 		cassandraConfig: cfg,
 		amqpConfig: AmqpConfig{
-			host:      viper.GetString("cache.cassandra.amqp"),
+			host:      viper.GetString("amqp.url"),
 			queueName: getQueueName(),
 		},
 		Processor: processor,
@@ -427,7 +427,7 @@ type AmqpEventProcessor struct {
 func NewAmqpEventProcessor() *AmqpEventProcessor {
 	return &AmqpEventProcessor{
 		config: AmqpConfig{
-			host:      viper.GetString("cache.cassandra.amqp"),
+			host:      viper.GetString("amqp.url"),
 			queueName: getQueueName(),
 		},
 	}
