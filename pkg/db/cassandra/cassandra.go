@@ -440,7 +440,7 @@ type AmqpMessage struct {
 	Type      string   `json:"type"`
 	UUID      string   `json:"uuid"`
 	FqName    []string `json:"fq_name"`
-	Data      []byte   `json:"obj_dict"`
+	Data      json.RawMessage   `json:"obj_dict"`
 }
 
 //Process sends msg to amqp exchange
@@ -471,7 +471,7 @@ func (p *AmqpEventProcessor) Process(ctx context.Context, event *services.Event)
 		Type:      rsrc.Kind(),
 		UUID:      rsrc.GetUUID(),
 		FqName:    rsrc.GetFQName(),
-		Data:      data,
+		Data:      json.RawMessage(data),
 	}
 
 	msgJSON, err := json.Marshal(msg)
