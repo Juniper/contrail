@@ -18,8 +18,8 @@ func TestCreateRefMethod(t *testing.T) {
 		EnableEtcdNotifier: false,
 		RepoRootPath:       "../../..",
 	})
-	defer s.Close(t)
-	hc := integration.NewHTTPAPIClient(t, s.URL())
+	defer s.CloseT(t)
+	hc := integration.NewTestingHTTPClient(t, s.URL())
 
 	testID := "test"
 	projectUUID := testID + "_project"
