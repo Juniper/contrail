@@ -130,8 +130,10 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 //Init setup the server.
 // nolint: gocyclo
 func (s *Server) Init() (err error) {
+	// TODO............. refactor logging
 	common.SetLogLevel()
 
+	// TODO: integrate Echo's logger with logrus
 	e := s.Echo
 	if viper.GetBool("server.log_api") {
 		e.Use(middleware.Logger())
