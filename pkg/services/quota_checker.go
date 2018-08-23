@@ -13,10 +13,11 @@ type QuotaCheckerCounter struct {
 }
 
 // NewQuotaCheckerService creates QuotaCheckerService.
-func NewQuotaCheckerService(rs Service) *QuotaCheckerService {
+func NewQuotaCheckerService(rs Service, d dialect) *QuotaCheckerService {
 	return &QuotaCheckerService{
 		ReadService:  rs,
 		quotaCounter: &QuotaCheckerCounter{},
+		Dialect:      d,
 	}
 }
 

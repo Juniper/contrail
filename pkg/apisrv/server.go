@@ -102,7 +102,7 @@ func (s *Server) SetupService() (services.Service, error) {
 		IntPoolAllocator:  s.dbService,
 		WriteService:      serviceChain[0],
 	})
-	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService))
+	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService, &s.dbService.Dialect))
 
 	// EtcdNotifier
 	if viper.GetBool("server.notify_etcd") {
@@ -130,8 +130,10 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 //Init setup the server.
 // nolint: gocyclo
 func (s *Server) Init() (err error) {
+	// TODO............. refactor logging
 	common.SetLogLevel()
 
+	// TODO: integrate Echo's logger with logrus
 	e := s.Echo
 	if viper.GetBool("server.log_api") {
 		e.Use(middleware.Logger())
