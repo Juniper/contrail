@@ -36,8 +36,8 @@ var processCmd = &cobra.Command{
 
 //StartProcesses starts processes based on config.
 func StartProcesses(wg *sync.WaitGroup) {
-	MaybeStart("replication", startCassandraReplicator, wg)
-	MaybeStart("replication", startAmqpReplicator, wg)
+	MaybeStart("replication.cassandra", startCassandraReplicator, wg)
+	MaybeStart("replication.amqp", startAmqpReplicator, wg)
 	MaybeStart("cache", startCacheService, wg)
 	MaybeStart("server", startServer, wg)
 	MaybeStart("agent", startAgent, wg)

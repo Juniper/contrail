@@ -173,13 +173,13 @@ cache:
     max_history: 100000
     cassandra:
         enabled: true
-        amqp: amqp://guest:guest@localhost:5672/
     etcd:
         enabled: true
 
 replication:
-    enabled: true
     cassandra:
+        enabled: true
+    amqp:
         enabled: true
 
 cassandra:
@@ -187,3 +187,6 @@ cassandra:
     port: 9042
     timeout: 3600s
     connect_timeout: 600ms
+
+amqp:
+    url: amqp://guest:guest@localhost:5672/
