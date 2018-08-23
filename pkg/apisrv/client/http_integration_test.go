@@ -19,7 +19,7 @@ func TestCreateRefMethod(t *testing.T) {
 		RepoRootPath:       "../../..",
 	})
 	defer s.Close(t)
-	hc := integration.NewHTTPAPIClient(t, s.URL())
+	hc := integration.NewTestingHTTPClient(t, s.URL())
 
 	testID := "test"
 	projectUUID := testID + "_project"

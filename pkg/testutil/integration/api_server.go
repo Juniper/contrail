@@ -6,6 +6,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -51,11 +52,57 @@ type APIServerConfig struct {
 	EnableEtcdNotifier bool
 	RepoRootPath       string
 	CacheDB            *cache.DB
+	DisableLogAPI      bool
+	LogLevel           string
 }
 
-// NewRunningAPIServer creates new running test API Server.
+// NewRunningAPIServer creates new running test API Server for testing purposes.
 // Call Close() method to release its resources.
 func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
+	if c.LogLevel == "" {
+		c.LogLevel = "debug"
+	}
+
+	s, err := NewRunningServer(c)
+	require.NoError(t, err)
+
+	return s
+}
+
+// NewRunningServer creates new running API server with default testing configuration.
+// Call Close() method to release its resources.
+func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
+	setDefaultViperConfig(c)
+
+	log := pkglog.NewLogger("api-server")
+	pkglog.SetLogLevel(log, c.LogLevel)
+
+	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Creating API Server")
+
+	s, err := apisrv.NewServer()
+	if err != nil {
+		return nil, errors.Wrapf(err, "creating API Server failed")
+	}
+	s.Cache = c.CacheDB
+
+	// TODO: instrumented-mysql driver used with database.debug cannot be registered twice
+	viper.Set("database.debug", false)
+
+	ts := testutil.NewTestHTTPServer(s.Echo)
+	viper.Set("keystone.authurl", ts.URL+authEndpointSuffix)
+
+	if err = s.Init(); err != nil {
+		return nil, errors.Wrapf(err, "initialization of test API Server failed")
+	}
+
+	return &APIServer{
+		apiServer:  s,
+		testServer: ts,
+		log:        log,
+	}, nil
+}
+
+func setDefaultViperConfig(c *APIServerConfig) {
 	setViperConfig(map[string]interface{}{
 		"database.type":               c.DBDriver,
 		"database.host":               "localhost",
@@ -74,36 +121,14 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 		"keystone.store.type":         "memory",
 		"keystone.store.expire":       3600,
 		"keystone.insecure":           true,
-		"log_level":                   "debug",
+		"log_level":                   c.LogLevel,
 		"server.notify_etcd":          c.EnableEtcdNotifier,
 		"server.read_timeout":         10,
 		"server.write_timeout":        5,
-		"server.log_api":              true,
+		"server.log_api":              !c.DisableLogAPI,
 		"static_files.public":         path.Join(c.RepoRootPath, "public"),
 		"tls.enabled":                 false,
 	})
-	configureDebugLogging(t)
-
-	log := pkglog.NewLogger("api-server")
-	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Creating API Server")
-	s, err := apisrv.NewServer()
-	require.NoError(t, err, "creating API Server failed")
-	s.Cache = c.CacheDB
-
-	// TODO: instrumented-mysql driver used with database.debug cannot be registered twice
-	viper.Set("database.debug", false)
-
-	ts := testutil.NewTestHTTPServer(s.Echo)
-	viper.Set("keystone.authurl", ts.URL+authEndpointSuffix)
-
-	err = s.Init()
-	require.NoError(t, err, "initialization of test API Server failed")
-
-	return &APIServer{
-		apiServer:  s,
-		testServer: ts,
-		log:        log,
-	}
 }
 
 func keystoneAssignment() *keystone.StaticAssignment {
@@ -144,11 +169,6 @@ func setViperConfig(config map[string]interface{}) {
 	}
 }
 
-func configureDebugLogging(t *testing.T) {
-	err := pkglog.Configure("debug")
-	assert.NoError(t, err, "configuring logging failed")
-}
-
 // URL returns server base URL.
 func (s *APIServer) URL() string {
 	return s.testServer.URL
@@ -157,8 +177,13 @@ func (s *APIServer) URL() string {
 // Close closes server.
 func (s *APIServer) Close(t *testing.T) {
 	s.log.Debug("Closing test API server")
-	err := s.apiServer.Close()
+	err := s.CloseNoT()
 	assert.NoError(t, err, "closing API Server failed")
 
+}
+
+// CloseNoT closes server.
+func (s *APIServer) CloseNoT() error {
 	s.testServer.Close()
+	return s.apiServer.Close()
 }

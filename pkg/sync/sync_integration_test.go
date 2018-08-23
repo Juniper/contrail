@@ -24,7 +24,7 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 		RepoRootPath:       "../../..",
 	})
 	defer s.Close(t)
-	hc := integration.NewHTTPAPIClient(t, s.URL())
+	hc := integration.NewTestingHTTPClient(t, s.URL())
 	ec := integration.NewEtcdClient(t)
 	defer ec.Close(t)
 
