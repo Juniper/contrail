@@ -23,30 +23,54 @@ func FormatDBError(err error) error {
 	if err == nil {
 		return nil
 	}
-	if err, ok := err.(*mysql.MySQLError); ok {
-		switch err.Number {
-		case mysqlUniqueViolation:
-			return uniqueConstraintViolation()
-		case mysqlRowIsReferenced:
-			return foreignKeyConstraintViolation()
-		case mysqlNoReferencedRow:
-			return foreignKeyConstraintViolation()
-		}
-		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
+
+	if publicErr := getPublicError(err); publicErr != nil {
+		log.Debugf("Database error: %v. Returning: %v", err, publicErr)
+		return publicErr
 	}
-	if err, ok := err.(*pq.Error); ok {
-		switch err.Code.Name() {
-		case pgUniqueViolation:
-			return uniqueConstraintViolation()
-		case pgForeignKeyViolation:
-			return foreignKeyConstraintViolation()
-		}
-		log.Debug("pq error:", err)
-	}
+	log.Error("Unknown database error:", err)
+	return err
+}
+
+// getPublicError returns an error with an API error code and a high-level error message.
+// If err is not recognized, nil is returned.
+func getPublicError(err error) error {
 	if err == sql.ErrNoRows {
 		return common.ErrorNotFound
 	}
-	return err
+
+	switch err.(type) {
+	case *mysql.MySQLError:
+		return getPublicMySQLError(err.(*mysql.MySQLError))
+	case *pq.Error:
+		return getPublicPGError(err.(*pq.Error))
+	default:
+		return nil
+	}
+}
+
+func getPublicMySQLError(err *mysql.MySQLError) error {
+	switch err.Number {
+	case mysqlUniqueViolation:
+		return uniqueConstraintViolation()
+	case mysqlRowIsReferenced:
+		return foreignKeyConstraintViolation()
+	case mysqlNoReferencedRow:
+		return foreignKeyConstraintViolation()
+	default:
+		return nil
+	}
+}
+
+func getPublicPGError(err *pq.Error) error {
+	switch err.Code.Name() {
+	case pgUniqueViolation:
+		return uniqueConstraintViolation()
+	case pgForeignKeyViolation:
+		return foreignKeyConstraintViolation()
+	default:
+		return nil
+	}
 }
 
 func uniqueConstraintViolation() error {
