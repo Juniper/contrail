@@ -24,29 +24,49 @@ func FormatDBError(err error) error {
 		return nil
 	}
 	if err, ok := err.(*mysql.MySQLError); ok {
-		switch err.Number {
-		case mysqlUniqueViolation:
-			return uniqueConstraintViolation()
-		case mysqlRowIsReferenced:
-			return foreignKeyConstraintViolation()
-		case mysqlNoReferencedRow:
-			return foreignKeyConstraintViolation()
+		publicErr, ok := convertMySQLError(err)
+		if ok {
+			log.Debugf("MySQL error: [%d] %s. Returning: %v", err.Number, err.Message, publicErr)
+			return publicErr
 		}
-		log.Debugf("mysql error: [%d] %s", err.Number, err.Message)
+		log.Errorf("Unknown MySQL error: [%d] %s", err.Number, err.Message)
 	}
 	if err, ok := err.(*pq.Error); ok {
-		switch err.Code.Name() {
-		case pgUniqueViolation:
-			return uniqueConstraintViolation()
-		case pgForeignKeyViolation:
-			return foreignKeyConstraintViolation()
+		publicErr, ok := convertPGError(err)
+		if ok {
+			log.Debugf("PostgreSQL error: %v. Returning: %v", err, publicErr)
+			return publicErr
 		}
-		log.Debug("pq error:", err)
+		log.Error("Unknown PostgreSQL error:", err)
 	}
 	if err == sql.ErrNoRows {
 		return common.ErrorNotFound
 	}
 	return err
+}
+
+func convertMySQLError(err *mysql.MySQLError) (error, bool) {
+	switch err.Number {
+	case mysqlUniqueViolation:
+		return uniqueConstraintViolation(), true
+	case mysqlRowIsReferenced:
+		return foreignKeyConstraintViolation(), true
+	case mysqlNoReferencedRow:
+		return foreignKeyConstraintViolation(), true
+	default:
+		return nil, false
+	}
+}
+
+func convertPGError(err *pq.Error) (error, bool) {
+	switch err.Code.Name() {
+	case pgUniqueViolation:
+		return uniqueConstraintViolation(), true
+	case pgForeignKeyViolation:
+		return foreignKeyConstraintViolation(), true
+	default:
+		return nil, false
+	}
 }
 
 func uniqueConstraintViolation() error {

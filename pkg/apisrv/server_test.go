@@ -84,6 +84,11 @@ func TestProject(t *testing.T) {
 	RunTest(t, "./test_data/test_project.yml")
 }
 
+func TestProjectConflict(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_project_conflict.yml")
+}
+
 func TestInstanceIP(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_instance_ip.yml")
