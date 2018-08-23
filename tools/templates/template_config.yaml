@@ -41,8 +41,14 @@
   template_path: service_interface.tmpl
   output_path: pkg/services/gen_service_interface.go
 - type: all
-  template_path: quota_checker.tmpl
-  output_path: pkg/services/gen_quota_checker.go
+  template_path: quota_checker_service.tmpl
+  output_path: pkg/services/gen_quota_checker_service.go
+- type: all
+  template_path: base_quota_counter.tmpl
+  output_path: pkg/services/gen_base_quota_counter.go
+- type: all
+  template_path: base_quota_getter.tmpl
+  output_path: pkg/services/gen_base_quota_getter.go
 - type: all
   template_path: sanitizer_service.tmpl
   output_path: pkg/services/gen_sanitizer.go

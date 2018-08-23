@@ -3,7 +3,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -326,36 +325,25 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
     return m, nil
 }
 
-// List{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
+// list{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
 func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
-    var rows *sql.Rows
-    tx := basedb.GetTransaction(ctx)
-
     qb := db.QueryBuilders["{{ schema.ID }}"]
+    query, columns, values := qb.ListQuery(common.GetAuthCTX(ctx), request.Spec)
 
-    auth := common.GetAuthCTX(ctx)
-    spec := request.Spec
-    result := []*models.{{ schema.JSONSchema.GoName }}{}
-
-    if spec.ParentFQName != nil {
-       parentMetaData, err := db.GetMetaData(ctx, "", spec.ParentFQName)
-       if err != nil {
-		  return nil, errors.Wrapf(err, "cannot find parents when listing {{ schema.JSONSchema.GoName }} with request data %v", request)
-       }
-       spec.Filters = baseservices.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
-    }
-    query, columns, values := qb.ListQuery(auth, spec)
-    rows, err = tx.QueryContext(ctx, query, values...)
+    tx := basedb.GetTransaction(ctx)
+    rows, err := tx.QueryContext(ctx, query, values...)
     if err != nil {
         err = basedb.FormatDBError(err)
         return nil, errors.Wrap(err, "select query failed")
     }
+
     defer rows.Close()
+
     if err := rows.Err(); err != nil {
-        err = basedb.FormatDBError(err)
-        return nil, errors.Wrap(err, "row error")
+        return nil, errors.Wrap(basedb.FormatDBError(err), "row error")
     }
 
+    result := []*models.{{ schema.JSONSchema.GoName }}{}
     for rows.Next() {
             valuesMap := map[string]interface{}{}
             values := make([]interface{}, len(columns))
@@ -377,18 +365,32 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
             result = append(result, m)
     }
 
-    // TODO (Kamil): should use COUNT SQL query
-    count := int64(len(result))
-    if spec.Count {
-        result = nil
-    }
-
     response = &services.List{{ schema.JSONSchema.GoName }}Response{
         {{ schema.JSONSchema.GoName }}s: result,
-        {{ schema.JSONSchema.GoName }}Count: count,
+        {{ schema.JSONSchema.GoName }}Count: int64(len(result)),
     }
 
     return response, nil
+}
+
+// count {{ schema.JSONSchema.GoName }} counts {{ schema.JSONSchema.GoName }}s using the givne list spec.
+func (db *Service) count{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
+	qb := db.QueryBuilders["{{ schema.ID }}"]
+	query, values := qb.CountQuery(common.GetAuthCTX(ctx), request.Spec)
+
+	tx := basedb.GetTransaction(ctx)
+	row := tx.QueryRowContext(ctx, query, values...)
+
+	var count int64
+	if err = row.Scan(&count); err != nil {
+		return nil, errors.Wrap(basedb.FormatDBError(err), "count query failed")
+	}
+
+	response = &services.List{{ schema.JSONSchema.GoName }}Response{
+		{{ schema.JSONSchema.GoName }}Count: count,
+	}
+
+	return response, nil
 }
 
 // Update{{ schema.JSONSchema.GoName }} updates a resource
@@ -649,10 +651,24 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 func (db *Service) List{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
+	spec := request.Spec
     if err := db.DoInTransaction(
         ctx,
         func (ctx context.Context) error {
-            response, err = db.list{{ schema.JSONSchema.GoName }}(ctx, request)
+			if spec.ParentFQName != nil {
+			   parentMetaData, err := db.GetMetaData(ctx, "", spec.ParentFQName)
+			   if err != nil {
+				  return errors.Wrapf(err, "cannot find parents when listing {{ schema.JSONSchema.GoName }} with request data %v", request)
+			   }
+			   spec.Filters = baseservices.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
+			}
+
+			if spec.Count {
+				response, err = db.count{{ schema.JSONSchema.GoName }}(ctx, request)
+			} else {
+				response, err = db.list{{ schema.JSONSchema.GoName }}(ctx, request)
+			}
+
             return err
         }); err != nil {
         return nil, err
