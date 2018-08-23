@@ -57,9 +57,10 @@ func (s mapSlice) getStringSlice(key string) []string {
 }
 
 var overridenTypes = map[string]struct{}{
-	"types.json#/definitions/AccessType":    {},
-	"types.json#/definitions/L4PortType":    {},
-	"types.json#/definitions/IpAddressType": {},
+	"types.json#/definitions/AccessType":       {},
+	"types.json#/definitions/L4PortType":       {},
+	"types.json#/definitions/IpAddressType":    {},
+	"types.json#/definitions/MacAddressesType": {},
 }
 
 // JSONSchema creates JSONSchema using mapSlice data.
