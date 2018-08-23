@@ -139,7 +139,10 @@ func (sv *ContrailTypeLogicService) ensureDefaultApplicationPolicySet(
 
 	project.ApplicationPolicySetRefs = append(
 		project.ApplicationPolicySetRefs,
-		&models.ProjectApplicationPolicySetRef{UUID: response.GetApplicationPolicySet().GetUUID()},
+		&models.ProjectApplicationPolicySetRef{
+			UUID: response.GetApplicationPolicySet().GetUUID(),
+			To:   response.GetApplicationPolicySet().GetFQName(),
+		},
 	)
 	_, err = sv.WriteService.UpdateProject(ctx, &services.UpdateProjectRequest{
 		Project:   project,

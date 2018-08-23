@@ -67,34 +67,21 @@ func NewServer() (*Server, error) {
 func (s *Server) SetupService() (services.Service, error) {
 	var serviceChain []services.Service
 
-	tv, err := models.NewTypeValidatorWithFormat()
+	cs, err := s.contrailService(serviceChain)
 	if err != nil {
 		return nil, err
 	}
+	serviceChain = append(serviceChain, cs)
 
-	// ContrailService
-	service := &services.ContrailService{
-		BaseService:       services.BaseService{},
-		TypeValidator:     tv,
-		MetadataGetter:    s.dbService,
-		InTransactionDoer: s.dbService,
-	}
-
-	service.RegisterRESTAPI(s.Echo)
-	serviceChain = append(serviceChain, service)
-
-	// RefUpdateToUpdateService
 	serviceChain = append(serviceChain, &services.RefUpdateToUpdateService{
 		ReadService:       s.dbService,
 		InTransactionDoer: s.dbService,
 	})
 
-	// SanitizerService
 	serviceChain = append(serviceChain, &services.SanitizerService{
 		MetadataGetter: s.dbService,
 	})
 
-	// ContrailTypeLogicService
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.dbService,
 		InTransactionDoer: s.dbService,
@@ -102,24 +89,46 @@ func (s *Server) SetupService() (services.Service, error) {
 		IntPoolAllocator:  s.dbService,
 		WriteService:      serviceChain[0],
 	})
+
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService))
 
-	// EtcdNotifier
 	if viper.GetBool("server.notify_etcd") {
-		etcdNotifierPath := viper.GetString("etcd.path")
-		etcdNotifierService, err := etcdclient.NewNotifierService(etcdNotifierPath)
-		if err == nil {
-			log.Println("Adding ETCD Notifier Service.")
-			serviceChain = append(serviceChain, etcdNotifierService)
+		en := etcdNotifier()
+		if en != nil {
+			serviceChain = append(serviceChain, en)
 		}
 	}
 
-	// Put DB Service at the end
 	serviceChain = append(serviceChain, s.dbService)
 
 	services.Chain(serviceChain...)
+	return cs, nil
+}
 
-	return service, nil
+func (s *Server) contrailService() (services.Service, error) {
+	tv, err := models.NewTypeValidatorWithFormat()
+	if err != nil {
+		return nil, err
+	}
+
+	cs := &services.ContrailService{
+		BaseService:       services.BaseService{},
+		TypeValidator:     tv,
+		MetadataGetter:    s.dbService,
+		InTransactionDoer: s.dbService,
+	}
+
+	cs.RegisterRESTAPI(s.Echo)
+	return cs, nil
+}
+
+func etcdNotifier() services.Service {
+	en, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"))
+	if err != nil {
+		log.WithError(err).Error("Failed to add ETCD Notifier Service - ignoring")
+		return nil
+	}
+	return en
 }
 
 func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
