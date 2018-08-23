@@ -55,9 +55,9 @@ func TestCreateCoreResources(t *testing.T) {
 				RepoRootPath:       "../../..",
 				CacheDB:            cacheDB,
 			})
-			defer s.Close(t)
+			defer s.CloseT(t)
 
-			hc := integration.NewHTTPAPIClient(t, s.URL())
+			hc := integration.NewTestingHTTPClient(t, s.URL())
 
 			t.Run("create Project and Security Group", testCreateProjectAndSecurityGroup(hc, ec))
 		})

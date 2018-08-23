@@ -43,15 +43,16 @@ type queryContext struct {
 	spec        *baseservices.ListSpec
 }
 
-func newQueryContext() *queryContext {
-	var query bytes.Buffer
+func newQueryContext(auth *common.AuthContext, spec *baseservices.ListSpec) *queryContext {
 	return &queryContext{
-		query:       &query,
+		auth:        auth,
+		query:       &bytes.Buffer{},
 		columns:     Columns{},
 		columnParts: []string{},
 		values:      []interface{}{},
 		where:       []string{},
 		joins:       []string{},
+		spec:        spec,
 	}
 }
 
@@ -300,6 +301,8 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	if len(ctx.where) > 0 {
 		WriteStrings(query, " where ", strings.Join(ctx.where, " and "))
 	}
+	// We use 'group by' to eliminate duplicates arising from using joins.
+	// TODO (Kamil): we should consider a perhaps more efficient "WHERE EXISTS" query instead of using joins.
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
 		WriteStrings(query, " group by ", qb.Quote(qb.TableAlias, "uuid"))
 	}
@@ -477,9 +480,7 @@ func (qb *QueryBuilder) buildColumns(ctx *queryContext) {
 func (qb *QueryBuilder) ListQuery(
 	auth *common.AuthContext,
 	spec *baseservices.ListSpec) (string, Columns, []interface{}) {
-	ctx := newQueryContext()
-	ctx.auth = auth
-	ctx.spec = spec
+	ctx := newQueryContext(auth, spec)
 	qb.buildColumns(ctx)
 	qb.buildFilterQuery(ctx)
 	qb.buildAuthQuery(ctx)
@@ -488,6 +489,33 @@ func (qb *QueryBuilder) ListQuery(
 	qb.buildBackRefQuery(ctx)
 	qb.buildQuery(ctx)
 	return ctx.query.String(), ctx.columns, ctx.values
+}
+
+// CountQuery makes an SQL query which counts the number of specified resources.
+func (qb *QueryBuilder) CountQuery(auth *common.AuthContext, spec *baseservices.ListSpec) (string, []interface{}) {
+	ctx := newQueryContext(auth, spec)
+
+	qb.buildFilterQuery(ctx)
+	qb.buildAuthQuery(ctx)
+
+	query := ctx.query
+
+	// We use 'distinct' to eliminate duplicates arising from using joins.
+	// TODO (Kamil): consider using 'COUNT(*)' when no joins are used.
+	// More tests should be performed to check if it causes any significant performance changes.
+	WriteStrings(query, "select count(distinct ", qb.Quote(qb.TableAlias, "uuid"), ") from ",
+		qb.as(qb.Table, qb.TableAlias), " ")
+
+	if len(ctx.joins) > 0 {
+		writeString(query, strings.Join(ctx.joins, " "))
+	}
+	if len(ctx.where) > 0 {
+		WriteStrings(query, " where ", strings.Join(ctx.where, " and "))
+	}
+
+	// TODO (Kamil): should we handle Limit in count?
+
+	return ctx.query.String(), ctx.values
 }
 
 //CreateQuery makes sql query.
