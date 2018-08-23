@@ -84,8 +84,6 @@ workflow:
         virtual_network_refs:
           - uuid: vn_vmi_blue
             to: ["default-domain", "admin_vmi_project", "vn_blue"]
-        virtual_machine_interface_mac_addresses:
-          mac_address: []
         port_security_enabled: true
         display_name: vmi_blue
   expect:
