@@ -1,10 +1,13 @@
 package echo
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -27,9 +30,31 @@ type (
 	}
 )
 
+func deleteSurroundingNumberQuotes(r io.ReadCloser) io.ReadCloser {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(r)
+	str := buf.String()
+	splitStr := strings.Split(str, "\"")
+	newStr := ""
+	for i, v := range splitStr {
+		if i != len(splitStr)-1 {
+			if _, err := strconv.Atoi(v); err == nil {
+				newStr = newStr[:len(newStr)-1] + v
+			} else {
+				newStr += v + "\""
+			}
+		} else {
+			newStr += v
+		}
+	}
+	newR := ioutil.NopCloser(bytes.NewReader([]byte(newStr)))
+	return newR
+}
+
 // Bind implements the `Binder#Bind` function.
 func (b *DefaultBinder) Bind(i interface{}, c Context) (err error) {
 	req := c.Request()
+	req.Body = deleteSurroundingNumberQuotes(req.Body)
 	if req.ContentLength == 0 {
 		if req.Method == GET || req.Method == DELETE {
 			if err = b.bindData(i, c.QueryParams(), "query"); err != nil {

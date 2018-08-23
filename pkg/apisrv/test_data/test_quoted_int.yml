@@ -1,0 +1,78 @@
+name: Quoted int
+description: Checking quoted int
+cleanup:
+  - path: /project/uuid_proj
+  - path: /project/uuid_proj2
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create Project with quoted int
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project:
+        uuid: uuid_proj
+        name: projecto
+        parent_type: domain
+        parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+        configuration_version: "10"
+        quota: {}
+  expect:
+    project:
+      uuid: uuid_proj
+      name: projecto
+      parent_type: domain
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+      configuration_version: 10
+      quota: {}
+
+- name: create Project with normal int
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project:
+        uuid: uuid_proj2
+        name: projecto2
+        parent_type: domain
+        parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+        configuration_version: 33
+        quota: {}
+  expect:
+    project:
+      uuid: uuid_proj2
+      name: projecto2
+      parent_type: domain
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+      configuration_version: 33
+      quota: {}
+
+- name: create Project with string
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 400
+    data:
+      project:
+        uuid: uuid_proj2
+        name: projecto2
+        parent_type: domain
+        parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+        configuration_version: "3notANumber3"
+        quota: {}
+  expect: null

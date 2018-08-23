@@ -49,6 +49,11 @@ func TestQuotaChecking(t *testing.T) {
 	RunTest(t, "./test_data/test_quota_checking.yml")
 }
 
+func TestQuotedInt(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
+	RunTest(t, "./test_data/test_quoted_int.yml")
+}
+
 func TestSync(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, "TestSync")
 	RunTest(t, "./test_data/test_sync.yml")
