@@ -104,22 +104,26 @@ func (s *Server) SetupService() (services.Service, error) {
 	})
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService))
 
-	// EtcdNotifier
-	if viper.GetBool("server.notify_etcd") {
-		etcdNotifierPath := viper.GetString("etcd.path")
-		etcdNotifierService, err := etcdclient.NewNotifierService(etcdNotifierPath)
-		if err == nil {
-			log.Println("Adding ETCD Notifier Service.")
-			serviceChain = append(serviceChain, etcdNotifierService)
-		}
-	}
+	serviceChain = withOptionalEtcdNotifier(serviceChain)
 
 	// Put DB Service at the end
 	serviceChain = append(serviceChain, s.dbService)
 
 	services.Chain(serviceChain...)
-
 	return service, nil
+}
+
+func withOptionalEtcdNotifier(serviceChain []services.Service) []services.Service {
+	if viper.GetBool("server.notify_etcd") {
+		s, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"))
+		if err != nil {
+			log.WithError(err).Error("Failed to add ETCD Notifier Service - ignoring")
+			return serviceChain
+		}
+		serviceChain = append(serviceChain, s)
+		log.Debug("Added ETCD Notifier Service to API Server service chain")
+	}
+	return serviceChain
 }
 
 func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
