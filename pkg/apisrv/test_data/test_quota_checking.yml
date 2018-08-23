@@ -264,16 +264,6 @@ test_data:
     perms2:
       owner: admin
     security_group_entries: {}
-  security_logging_object_blue1: &security_logging_object_blue1
-    uuid: uuid_seclogobj_blue1
-    name: uuid_seclogobj_blue1
-    parent_type: project
-    parent_uuid: uuid_proj_blue
-  security_logging_object_blue2: &security_logging_object_blue2
-    uuid: uuid_seclogobj_blue2
-    name: uuid_seclogobj_blue2
-    parent_type: project
-    parent_uuid: uuid_proj_blue
 # TODO: Disabled because ServiceTemplate cannot be created yet (JBE-439)
 #  service_template: &service_template
 #    uuid: uuid_servtmpl
@@ -1031,91 +1021,6 @@ workflow:
   - name: Delete route_table blue 1
     request:
       path: /route-table/uuid_rtab_blue1
-      method: DELETE
-      expected:
-        - 200
-    expect: null
-
-# Check quota for Security Logging Object
-
-  - name: Create security_logging_object blue 1
-    request:
-      path: /security-logging-objects
-      method: POST
-      expected:
-        - 200
-      data:
-        security-logging-object: *security_logging_object_blue1
-    expect:
-      security-logging-object: *security_logging_object_blue1
-
-  - name: Set quota for security_logging_object to disallow second
-    request:
-      path: /project/uuid_proj_blue
-      method: PUT
-      expected:
-        - 200
-      data:
-        project:
-          uuid: uuid_proj_blue
-          quota:
-            security_logging_object: 1
-    expect: null
-
-  - name: Create security_logging_object blue 2
-    request:
-      path: /security-logging-objects
-      method: POST
-      expected:
-        - 400
-        - 406
-      data:
-        security-logging-object: *security_logging_object_blue2
-    expect: null
-
-  - name: Re-verify security_logging_object is not created
-    request:
-      path: /security-logging-object/uuid_seclogobj_blue2
-      method: GET
-      expected:
-       - 404
-    expect: null
-
-  - name: Set quota for security_logging_object to allow second
-    request:
-      path: /project/uuid_proj_blue
-      method: PUT
-      expected:
-        - 200
-      data:
-        project:
-          uuid: uuid_proj_blue
-          quota:
-            security_logging_object: 2
-    expect: null
-
-  - name: Create security_logging_object blue 2 (again)
-    request:
-      path: /security-logging-objects
-      method: POST
-      expected:
-        - 200
-      data:
-        security-logging-object: *security_logging_object_blue2
-    expect:
-      security-logging-object: *security_logging_object_blue2
-
-  - name: Delete security_logging_object blue 2
-    request:
-      path: /security-logging-object/uuid_seclogobj_blue2
-      method: DELETE
-      expected:
-        - 200
-    expect: null
-
-  - name: Delete security_logging_object blue 1
-    request:
-      path: /security-logging-object/uuid_seclogobj_blue1
       method: DELETE
       expected:
         - 200

@@ -23,8 +23,8 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 		EnableEtcdNotifier: false,
 		RepoRootPath:       "../../..",
 	})
-	defer s.Close(t)
-	hc := integration.NewHTTPAPIClient(t, s.URL())
+	defer s.CloseT(t)
+	hc := integration.NewTestingHTTPClient(t, s.URL())
 	ec := integration.NewEtcdClient(t)
 	defer ec.Close(t)
 

@@ -538,6 +538,34 @@ workflow:
   expect:
     virtual-networks:
       count: 1
+- name: count virtual networks with share
+  request:
+    # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
+    path: "/virtual-networks?shared=true&parent_id=admin_project_uuid&count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 2
+- name: count network ipams with back_ref_id filter
+  request:
+    path: "/network-ipams?back_ref_id=vn_blue&count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-ipams:
+      count: 1
+- name: count network ipams with back_ref_id filter (invalid uuid, empty result)
+  request:
+    path: "/network-ipams?back_ref_id=hogehoge&count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-ipams:
+      count: 0
 - name: list network policy
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.

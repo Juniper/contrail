@@ -46,15 +46,28 @@ const (
 	fqNameToIDPath = "/fqname-to-id"
 )
 
-// HTTPAPIClient is API Server client for tests purposes.
+// HTTPAPIClient is API Server client for testing purposes.
 type HTTPAPIClient struct {
 	*client.HTTP
+	log *logrus.Entry
 }
 
-// NewHTTPAPIClient creates HTTP client of API Server.
-func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
+// NewTestingHTTPClient creates HTTP client of API Server with testing capabilities.
+func NewTestingHTTPClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	l := pkglog.NewLogger("http-api-client")
 	l.WithFields(logrus.Fields{"endpoint": apiServerURL}).Debug("Connecting to API Server")
+
+	c, err := NewHTTPClient(apiServerURL)
+	require.NoError(t, err, "connecting to API Server failed")
+
+	return &HTTPAPIClient{
+		HTTP: c,
+		log:  l,
+	}
+}
+
+// NewHTTPClient creates HTTP client of API Server using default testing configuration.
+func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 	c := client.NewHTTP(
 		apiServerURL,
 		apiServerURL+authEndpointSuffix,
@@ -74,12 +87,7 @@ func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	)
 	c.Debug = true
 
-	err := c.Login(context.Background())
-	require.NoError(t, err, "connecting API Server failed")
-
-	return &HTTPAPIClient{
-		HTTP: c,
-	}
+	return c, c.Login(context.Background())
 }
 
 type fqNameToIDLegacyRequest struct {
