@@ -317,7 +317,7 @@ clients:
 
 workflow:
 
-# First create all necessary object for single project and most simple test case (quota should be 0)
+# First create all necessary object for single project and most simple test case (quota should be -1)
   - name: create Project blue
     request:
       path: /projects
@@ -328,8 +328,53 @@ workflow:
         project: *project_blue
     expect:
       project: *project_blue
-      
+
 # Check quota for network_ipam
+  - name: Set quota to not allow ANY network_ipam
+    request:
+      path: /project/uuid_proj_blue
+      method: PUT
+      expected:
+        - 200
+      data:
+        project:
+          uuid: uuid_proj_blue
+          quota:
+            network_ipam: 0
+    expect: null
+
+  - name: Create network_ipam blue 1
+    request:
+      path: /network-ipams
+      method: POST
+      expected:
+        - 400
+        - 406
+      data:
+        network-ipam: *network_ipam_magic_blue2
+    expect: null
+
+  - name: Re-verify network_ipam blue 1 is not created
+    request:
+      path: /network-ipam/uuid_ipam_magic_blue1
+      method: GET
+      expected:
+       - 404
+    expect: null
+
+  - name: Set quota back to default for network_ipam and proceed rest of tests
+    request:
+      path: /project/uuid_proj_blue
+      method: PUT
+      expected:
+        - 200
+      data:
+        project:
+          uuid: uuid_proj_blue
+          quota:
+            network_ipam: -1
+    expect: null
+
   - name: Create network_ipam blue 1
     request:
       path: /network-ipams
@@ -353,7 +398,7 @@ workflow:
           quota:
             network_ipam: 1
     expect: null
-      
+
   - name: Create network_ipam blue 2
     request:
       path: /network-ipams
