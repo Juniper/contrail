@@ -302,7 +302,7 @@ type Application struct {
 
 // SetTag represents set-tag input data.
 type SetTag struct {
-	App     Application `json:"application"`
+	App     *Application `json:"application"`
 	ObjUUID string      `json:"obj_uuid"`
 	ObjType string      `json:"obj_type"`
 }
@@ -318,7 +318,7 @@ func (t *SetTag) validate() error {
 			t.ObjUUID, t.ObjType,
 		)
 	}
-	if !t.App.validate() {
+	if t.App != nil && !t.App.validate() {
 		return common.ErrorBadRequestf(
 			"set-tag requires specified application value (uuid: %s type: %s)", t.ObjUUID, t.ObjType,
 		)
