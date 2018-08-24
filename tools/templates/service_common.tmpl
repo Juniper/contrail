@@ -294,21 +294,17 @@ func createUpdateMap(
 	return updateMap, nil
 }
 
-// Application is a part of set-tag input data. TODO: Investigate it
-type Application struct {
+//TagAttr is a part of set-tag input data. TODO: Investigate it
+type TagAttr struct {
 	IsGlobal bool   `json:"is_global"`
 	Value    string `json:"value"`
 }
 
 // SetTag represents set-tag input data.
 type SetTag struct {
-	App     Application `json:"application"`
-	ObjUUID string      `json:"obj_uuid"`
-	ObjType string      `json:"obj_type"`
-}
-
-func (a *Application) validate() bool {
-	return a.Value != ""
+	ObjUUID string          `json:"obj_uuid"`
+	ObjType string          `json:"obj_type"`
+	Tags    map[string]TagAttr
 }
 
 func (t *SetTag) validate() error {
@@ -318,11 +314,7 @@ func (t *SetTag) validate() error {
 			t.ObjUUID, t.ObjType,
 		)
 	}
-	if !t.App.validate() {
-		return common.ErrorBadRequestf(
-			"set-tag requires specified application value (uuid: %s type: %s)", t.ObjUUID, t.ObjType,
-		)
-	}
+	//TODO additional validation
 	return nil
 }
 
