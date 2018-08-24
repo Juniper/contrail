@@ -2,32 +2,31 @@ name: Test set-tag endpoint
 
 test_data:
   set_tag_correct: &set_tag_correct
-    obj_uuid: test1
-    obj_type: project
-    application:
+    obj_uuid: test_uuid
+    obj_type: virtual_machine_interface
+    namespace:
       is_global: true
-      value: very_convenient_value
+      value: kube-system
+    k8s-app:
+      is_global: true
+      value: kube-dns
+    pod-template-hash:
+      is_global: true
+      value: template-hash
 
   set_tag_without_uuid: &set_tag_without_uuid
     obj_uuid: ""
     obj_type: project
     application:
       is_global: true
-      value: very_convenient_value
+      value: k8s
 
   set_tag_without_type: &set_tag_without_type
-    obj_uuid: test3
+    obj_uuid: test_uuid
     obj_type: ""
     application:
       is_global: true
-      value: very_convenient_value
-
-  set_tag_without_app_value: &set_tag_without_app_value
-    obj_uuid: test4
-    obj_type: project
-    application:
-      is_global: true
-      value: ""
+      value: k8s
 
 clients:
   default:
@@ -62,12 +61,4 @@ workflow:
     method: POST
     expected: [400]
     data: *set_tag_without_type
-  expect: null
-
-- name: check set-tag without application value
-  request:
-    path: /set-tag
-    method: POST
-    expected: [400]
-    data: *set_tag_without_app_value
   expect: null
