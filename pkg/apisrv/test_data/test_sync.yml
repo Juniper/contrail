@@ -11,7 +11,11 @@ test_data:
     uuid: admin_project_uuid_test_sync
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
-    quota: {}
+    # TODO: Set default quota for resources created by sync
+    quota:
+      network_policy: -1
+      network_ipam: -1
+      virtual_network: -1
   network_policy1: &network_policy1
     fq_name: ["default", "admin_project_uuid_test_sync", "policy1"]
     uuid: network_policy_uuid_test_sync
