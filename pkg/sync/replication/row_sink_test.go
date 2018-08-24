@@ -88,6 +88,8 @@ func (d *dummyMessage) ApplyPropCollectionUpdate(
 	return nil, nil
 }
 
+func (d *dummyMessage) ApplyMap(_ map[string]interface{}) {}
+
 type rowScannerMock mock.Mock
 
 func (m *rowScannerMock) ScanRow(schemaID string, rowData map[string]interface{}) (basemodels.Object, error) {
