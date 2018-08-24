@@ -175,7 +175,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     model.UUID = id
     response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
         {{ schema.JSONSchema.GoName }}: model,
-        FieldMask: baseservices.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
+        FieldMask: basemodels.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
     })
     if err != nil {
         return common.ToHTTPError(err)

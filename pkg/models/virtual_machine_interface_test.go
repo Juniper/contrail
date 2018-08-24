@@ -45,6 +45,15 @@ func TestInterfaceToVirtualMachineInterface(t *testing.T) {
 			},
 		},
 		{
+			name: "annotations as object",
+			input: map[string]interface{}{
+				"annotations": &KeyValuePairs{KeyValuePair: []*KeyValuePair{{Value: "v", Key: "k"}}},
+			},
+			want: &VirtualMachineInterface{
+				Annotations: &KeyValuePairs{KeyValuePair: []*KeyValuePair{{Value: "v", Key: "k"}}},
+			},
+		},
+		{
 			name: "fat flow protocols provided as list of objects",
 			input: map[string]interface{}{
 				"virtual_machine_interface_fat_flow_protocols": []interface{}{
@@ -77,6 +86,34 @@ func TestInterfaceToVirtualMachineInterface(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := InterfaceToVirtualMachineInterface(tt.input)
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestVirtualMachineInterfaceApplyMap(t *testing.T) {
+	tests := []struct {
+		name  string
+		obj   *VirtualMachineInterface
+		input map[string]interface{}
+		want  *VirtualMachineInterface
+	}{
+		{name: "nil"},
+		{name: "nil obj", input: map[string]interface{}{"uuid": "value"}},
+		{name: "nil map", obj: &VirtualMachineInterface{}, want: &VirtualMachineInterface{}},
+		{name: "empty map", obj: &VirtualMachineInterface{}, input: map[string]interface{}{}, want: &VirtualMachineInterface{}},
+		{
+			name: "simple props",
+			obj:  &VirtualMachineInterface{UUID: "old-uuid", Name: "some-name"},
+			input: map[string]interface{}{
+				"uuid": "some-uuid",
+			},
+			want: &VirtualMachineInterface{UUID: "some-uuid", Name: "some-name"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.obj.ApplyMap(tt.input)
+			assert.Equal(t, tt.want, tt.obj)
 		})
 	}
 }

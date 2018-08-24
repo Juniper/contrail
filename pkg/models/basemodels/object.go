@@ -11,4 +11,5 @@ type Object interface {
 	Kind() string
 	Depends() []string
 	ApplyPropCollectionUpdate(*PropCollectionUpdate) (updated map[string]interface{}, err error)
+	ApplyMap(map[string]interface{})
 }
