@@ -1,5 +1,7 @@
 package sink
 
+// TODO(Michał): Remove this and migrate to models.Codec
+
 import (
 	"encoding/json"
 	"errors"

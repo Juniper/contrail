@@ -80,3 +80,31 @@ func TestInterfaceToVirtualMachineInterface(t *testing.T) {
 		})
 	}
 }
+
+func TestVirtualMachineInterfaceApplyMap(t *testing.T) {
+	tests := []struct {
+		name  string
+		obj   *VirtualMachineInterface
+		input map[string]interface{}
+		want  *VirtualMachineInterface
+	}{
+		{name: "nil"},
+		{name: "nil obj", input: map[string]interface{}{"uuid": "value"}},
+		{name: "nil map", obj: &VirtualMachineInterface{}, want: &VirtualMachineInterface{}},
+		{name: "empty map", obj: &VirtualMachineInterface{}, input: map[string]interface{}{}, want: &VirtualMachineInterface{}},
+		{
+			name: "simple props",
+			obj:  &VirtualMachineInterface{UUID: "old-uuid", Name: "some-name"},
+			input: map[string]interface{}{
+				"uuid": "some-uuid",
+			},
+			want: &VirtualMachineInterface{UUID: "some-uuid", Name: "some-name"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.obj.ApplyMap(tt.input)
+			assert.Equal(t, tt.want, tt.obj)
+		})
+	}
+}
