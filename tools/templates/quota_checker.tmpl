@@ -54,7 +54,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 	}
 
 	limit := project.Project.Quota.{{ name }}
-	if limit == 0 {
+	if limit == -1 {
 		log.Infof("[Create] Quota for {{ name }}(%v) in project %v is not set - continue", obj.GetUUID(), project.Project.GetUUID())
 		return nil
 	}

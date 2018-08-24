@@ -13,6 +13,7 @@ cleanup:
   - path: /network-policy/uuid_netpol_blue1
   - path: /network-policy/uuid_netpol_blue2
   - path: /project/uuid_proj_blue
+  - path: /project/uuid_proj_temp
   - path: /project/uuid_proj_green
   - path: /route-tables/uuid_rtab_blue1
   - path: /route-tables/uuid_rtab_blue2
@@ -317,7 +318,7 @@ clients:
 
 workflow:
 
-# First create all necessary object for single project and most simple test case (quota should be 0)
+# First create all necessary object for single project and most simple test case (quota should be -1)
   - name: create Project blue
     request:
       path: /projects
@@ -327,9 +328,90 @@ workflow:
       data:
         project: *project_blue
     expect:
-      project: *project_blue
-      
+      project:
+        uuid: uuid_proj_blue
+        name: project_blue
+        parent_type: domain
+        parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+        quota:
+          network_ipam: -1
+
+# Create other project to verify passing quota values and verifying default values
+  - name: create project with passed quotas
+    request:
+      path: /projects
+      method: POST
+      expected:
+        - 200
+      data:
+        project:
+          uuid: uuid_proj_temp
+          name: project_temp
+          parent_type: domain
+          parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+          quota:
+            network_ipam: 1
+            virtual_network: 0
+    expect:
+      project:
+        quota:
+          network_ipam: 1
+          virtual_network: 0
+          security_group: -1
+
+  - name: Delete previously created project
+    request:
+      path: /project/uuid_proj_temp
+      method: DELETE
+      expected:
+        - 200
+    expect: null
+
 # Check quota for network_ipam
+  - name: Set quota to not allow ANY network_ipam
+    request:
+      path: /project/uuid_proj_blue
+      method: PUT
+      expected:
+        - 200
+      data:
+        project:
+          uuid: uuid_proj_blue
+          quota:
+            network_ipam: 0
+    expect: null
+
+  - name: Create network_ipam blue 1
+    request:
+      path: /network-ipams
+      method: POST
+      expected:
+        - 400
+      data:
+        network-ipam: *network_ipam_magic_blue1
+    expect: null
+
+  - name: Re-verify network_ipam blue 1 is not created
+    request:
+      path: /network-ipam/uuid_ipam_magic_blue1
+      method: GET
+      expected:
+       - 404
+    expect: null
+
+  - name: Set quota back to default for network_ipam
+    request:
+      path: /project/uuid_proj_blue
+      method: PUT
+      expected:
+        - 200
+      data:
+        project:
+          uuid: uuid_proj_blue
+          quota:
+            network_ipam: -1
+    expect: null
+
   - name: Create network_ipam blue 1
     request:
       path: /network-ipams
@@ -353,14 +435,13 @@ workflow:
           quota:
             network_ipam: 1
     expect: null
-      
+
   - name: Create network_ipam blue 2
     request:
       path: /network-ipams
       method: POST
       expected:
         - 400
-        - 406
       data:
         network-ipam: *network_ipam_magic_blue2
     expect: null
@@ -372,7 +453,7 @@ workflow:
       expected:
        - 404
     expect: null
-    
+
   - name: Set quota for network_ipam to allow second
     request:
       path: /project/uuid_proj_blue
@@ -455,7 +536,6 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
       data:
         virtual-network: *spocknet_blue2
     expect: null
@@ -547,7 +627,6 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
       data:
         security-group: *secgrp_blue2
     expect: null
@@ -637,13 +716,12 @@ workflow:
             logical_router: 1
     expect: null
 
-  - name: Create logical_router blue 2  
+  - name: Create logical_router blue 2
     request:
       path: /logical-routers
       method: POST
       expected:
         - 400
-        - 406
       data:
         logical-router: *logical_router_blue2
     expect: null
@@ -728,7 +806,6 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
       data:
         loadbalancer-healthmonitor: *loadbalancer_healthmonitor_blue2
     expect: null
@@ -740,7 +817,7 @@ workflow:
       expected:
        - 404
     expect: null
-    
+
   - name: Set quota for loadbalancer_healthmonitor to allow second
     request:
       path: /project/uuid_proj_blue
@@ -813,7 +890,6 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
       data:
         loadbalancer-pool: *loadbalancer_pool_blue2
     expect: null
@@ -898,7 +974,6 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
       data:
         network-policy: *network_policy_blue2
     expect: null
@@ -983,7 +1058,6 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
       data:
         route-table: *route_table_blue2
     expect: null
@@ -1068,7 +1142,6 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
       data:
         security-logging-object: *security_logging_object_blue2
     expect: null
@@ -1165,7 +1238,6 @@ workflow:
 #      method: POST
 #      expected:
 #        - 400
-#        - 406
 #      data:
 #        service-instance: *service_instance_blue2
 #    expect: null
