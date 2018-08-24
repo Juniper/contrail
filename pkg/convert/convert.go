@@ -112,12 +112,12 @@ func writeRDBMS(events *services.EventList) error {
 		return errors.Wrap(err, "failed to connect to DB")
 	}
 
-	return dbService.DoInTransaction(
-		context.Background(),
-		func(ctx context.Context) error {
+	return dbService.DoWithoutConstraints(context.Background(), func(ctx context.Context) error {
+		return dbService.DoInTransaction(ctx, func(ctx context.Context) error {
 			_, err = events.Process(ctx, dbService)
 			return err
-		},
+		})
+	},
 	)
 }
 
