@@ -6,6 +6,7 @@ import (
     "github.com/gogo/protobuf/types"
 
     "github.com/Juniper/contrail/pkg/common"
+    "github.com/Juniper/contrail/pkg/models/basemodels"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "{{ option.PackagePath }}/pkg/models"
 )
@@ -243,7 +244,7 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
             model := request.{{ schema.JSONSchema.GoName }}
             response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
                 {{ schema.JSONSchema.GoName }}: model,
-                FieldMask: baseservices.MapToFieldMask(model.ToMap()),
+                FieldMask: basemodels.MapToFieldMask(model.ToMap()),
             })
             if err != nil {
                 return nil, err
