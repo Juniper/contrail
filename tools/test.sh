@@ -14,13 +14,12 @@ COVERMODE='-covermode=atomic'
 # test_directories lists directories that contain _test.go files
 # either inside Go package (.TestGoFiles) or outside Go package (.XTestGoFiles, e.g. in "foo_test" package).
 function test_directories {
+	cd "$TOP"
 	go list -f '{{if (or .TestGoFiles .XTestGoFiles)}}{{.Dir}}{{end}}' ./...
 }
 
 for dir in $(test_directories)
 do
-	cd "$TOP"
-
 	cd "$dir"
 	go test -parallel 1 ${COVERMODE} ${COVERPROFILE} .
 	result=$?
