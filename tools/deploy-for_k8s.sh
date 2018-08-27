@@ -64,9 +64,10 @@ make install
 "$ThisDir/testenv.sh" -n host postgres
 
 KubemanagerDir='/etc/contrail/kubemanager'
-#Stop kubemanager
+#Stop kubemanager and original config-node
 cd "$KubemanagerDir"
 docker-compose down
+docker-compose -f /etc/contrail/config/docker-compose.yaml down
 cd "$RootDir"
 
 Dumpfile="$HOME/dump-$$.yaml"
@@ -85,6 +86,9 @@ GoConfigIP='127.0.0.1' # networking mode 'host'
 
 # Convert cassandra data to etcd and feed etcd
 contrailutil convert --intype yaml --in "$Dumpfile" --outtype rdbms -c docker/contrail_go/etc/contrail-atomizer.yml
+
+# Run vnc-db-proxy
+./tools/vncdbproxy.sh --net host
 
 # Modify k8s config (subst contrail-go-config IP address as config-node) and restart if needed
 ModifyKubeConfig=1
