@@ -57,6 +57,10 @@ server:
 
   notify_etcd: true
 
+  vnc_api_notifier:
+    enabled: false
+    endpoint: http://localhost:8091
+
 # Keystone configuration
 # keystone:
 #     local: true # Enable local keystone v3. This is only for testing now.
