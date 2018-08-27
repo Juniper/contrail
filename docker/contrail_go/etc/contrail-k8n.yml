@@ -14,7 +14,7 @@ database:
 
 etcd:
   endpoints:
-    - etcd:2379
+    - localhost:2379
   username: ""
   password: ""
   path: contrail
