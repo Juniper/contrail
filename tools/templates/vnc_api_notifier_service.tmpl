@@ -1,0 +1,103 @@
+package vncapi
+
+import (
+	"context"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
+
+	"{{ option.PackagePath }}/pkg/services"
+)
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+// Create{{ schema.JSONSchema.GoName }} creates {{ schema.JSONSchema.GoName }} in VNC API.
+func (ns *NotifierService) Create{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request,
+) (response *services.Create{{ schema.JSONSchema.GoName }}Response, err error) {
+	err = ns.inTransactionDoer.DoInTransaction(
+		ctx,
+		func(ctx context.Context) error {
+			response, err = ns.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+			if err != nil {
+				return err
+			}
+
+			if _, err := ns.client.Create{{ schema.JSONSchema.GoName }}(ctx, &services.Create{{ schema.JSONSchema.GoName }}Request{
+				{{ schema.JSONSchema.GoName }}: response.Get{{ schema.JSONSchema.GoName }}(),
+			}); err != nil {
+				return errors.Wrapf(err, "failed to create {{ schema.JSONSchema.GoName }} with UUID %q in VNC API",
+					response.Get{{ schema.JSONSchema.GoName }}().UUID)
+			}
+
+			ns.log.WithFields(log.Fields{
+				"uuid": response.Get{{ schema.JSONSchema.GoName }}().UUID,
+			}).Debug("{{ schema.JSONSchema.GoName }} created in VNC API")
+
+			return nil
+		},
+	)
+
+	return response, err
+}
+
+// Update{{ schema.JSONSchema.GoName }} updates {{ schema.JSONSchema.GoName }} in VNC API.
+func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request,
+) (response *services.Update{{ schema.JSONSchema.GoName }}Response, err error) {
+	err = ns.inTransactionDoer.DoInTransaction(
+		ctx,
+		func(ctx context.Context) error {
+			response, err = ns.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+			if err != nil {
+				return err
+			}
+
+			if _, err := ns.client.Update{{ schema.JSONSchema.GoName }}(ctx, &services.Update{{ schema.JSONSchema.GoName }}Request{
+				{{ schema.JSONSchema.GoName }}: response.Get{{ schema.JSONSchema.GoName }}(),
+			}); err != nil {
+				return errors.Wrapf(err, "failed to update {{ schema.JSONSchema.GoName }} with UUID %q in VNC API",
+					response.Get{{ schema.JSONSchema.GoName }}().UUID)
+			}
+
+			ns.log.WithFields(log.Fields{
+				"uuid": response.Get{{ schema.JSONSchema.GoName }}().UUID,
+			}).Debug("{{ schema.JSONSchema.GoName }} updated in VNC API")
+
+			return nil
+		},
+	)
+
+	return response, err
+}
+
+// Delete{{ schema.JSONSchema.GoName }} deletes {{ schema.JSONSchema.GoName }} in VNC API.
+func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request,
+) (response *services.Delete{{ schema.JSONSchema.GoName }}Response, err error) {
+	err = ns.inTransactionDoer.DoInTransaction(
+		ctx,
+		func(ctx context.Context) error {
+			response, err = ns.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+			if err != nil {
+				return err
+			}
+
+			if _, err := ns.client.Delete{{ schema.JSONSchema.GoName }}(ctx, &services.Delete{{ schema.JSONSchema.GoName }}Request{
+				ID: response.ID,
+			}); err != nil {
+				return errors.Wrapf(err, "failed to delete {{ schema.JSONSchema.GoName }} with UUID %q in VNC API", response.ID)
+			}
+
+			ns.log.WithFields(log.Fields{
+				"uuid": response.ID,
+			}).Debug("{{ schema.JSONSchema.GoName }} deleted in VNC API")
+
+			return nil
+		},
+	)
+
+	return response, err
+}
+
+{% endif %}{% endfor %}
