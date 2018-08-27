@@ -25,6 +25,7 @@ RealPath()
 ThisDir=$(RealPath "$(dirname "$0")")
 RootDir=$(RealPath "$ThisDir/..")
 PORT=8082
+ThisIP=$(ip route get 8.8.8.8 | sed '1 ! d; s/ *$//; s/.* //')
 
 build_docker()
 {
@@ -42,6 +43,7 @@ install_golang()
 	cd /tmp
 	curl -o go.tar.gz https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz
 	sudo tar --overwrite -C /usr -xzf go.tar.gz
+	sudo yum install -y wget unzip
 	export PATH="$PATH:/usr/go/bin"
 	hash -r
 	go env
@@ -64,9 +66,10 @@ make install
 "$ThisDir/testenv.sh" -n host postgres
 
 KubemanagerDir='/etc/contrail/kubemanager'
-#Stop kubemanager
+#Stop kubemanager and original config-node
 cd "$KubemanagerDir"
 docker-compose down
+docker-compose -f /etc/contrail/config/docker-compose.yaml down
 cd "$RootDir"
 
 Dumpfile="$HOME/dump-$$.yaml"
@@ -76,7 +79,7 @@ contrailutil convert -i 127.0.0.1 -p 9041 --intype cassandra --outtype yaml -o "
 # Build and run contrail-go2 docker
 build_docker
 AtomizerDocker='contrail-go-config-node'
-[ "$(docker ps -a -f "name=$AtomizerDocker" --format '{{.ID}}' | wc -l)" -ne 0 ] && docker rm "$AtomizerDocker"
+[ "$(docker ps -a -f "name=$AtomizerDocker" --format '{{.ID}}' | wc -l)" -ne 0 ] && docker rm -f "$AtomizerDocker"
 docker run -d --name "$AtomizerDocker" -p "$PORT:$PORT" --net host contrail-go-config
 GoConfigIP='127.0.0.1' # networking mode 'host'
 
@@ -85,6 +88,9 @@ GoConfigIP='127.0.0.1' # networking mode 'host'
 
 # Convert cassandra data to etcd and feed etcd
 contrailutil convert --intype yaml --in "$Dumpfile" --outtype rdbms -c docker/contrail_go/etc/contrail-atomizer.yml
+
+# Run vnc-db-proxy
+./tools/vncdbproxy.sh "$ThisIP"
 
 # Modify k8s config (subst contrail-go-config IP address as config-node) and restart if needed
 ModifyKubeConfig=1
