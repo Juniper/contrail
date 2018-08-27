@@ -81,7 +81,7 @@ func verifyProxy(ctx context.Context, t *testing.T, testScenario *TestScenario, 
 	clusterName string, expected string) bool {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
-		_, err := client.Read(ctx, url, &response)
+		_, err := client.Read(ctx, url, nil, &response)
 		if err != nil {
 			fmt.Printf("Reading: %s, Response: %s", url, err)
 			return false
@@ -100,7 +100,7 @@ func verifyProxy(ctx context.Context, t *testing.T, testScenario *TestScenario, 
 func verifyKeystoneEndpoint(ctx context.Context, testScenario *TestScenario, testInvalidUser bool) error {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
-		_, err := client.Read(ctx, "/keystone/v3/auth/tokens", &response)
+		_, err := client.Read(ctx, "/keystone/v3/auth/tokens", nil, &response)
 		if err != nil {
 			return err
 		}

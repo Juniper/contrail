@@ -94,6 +94,7 @@ func (c *HTTPAPIClient) FQNameToID(t *testing.T, fqName []string, resourceType s
 		context.Background(),
 		echo.POST,
 		fqNameToIDPath,
+		nil,
 		&fqNameToIDLegacyRequest{
 			FQName: fqName,
 			Type:   resourceType,
@@ -118,6 +119,7 @@ func (c *HTTPAPIClient) Chown(t *testing.T, owner, uuid string) {
 		context.Background(),
 		echo.POST,
 		chownPath,
+		nil,
 		&chownRequest{
 			Owner: owner,
 			UUID:  uuid,
@@ -194,7 +196,7 @@ func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData in
 
 // GetResource gets resource.
 func (c *HTTPAPIClient) GetResource(t *testing.T, path string, responseData interface{}) {
-	r, err := c.Read(context.Background(), path, &responseData)
+	r, err := c.Read(context.Background(), path, nil, &responseData)
 	assert.NoError(
 		t,
 		err,
@@ -224,6 +226,6 @@ func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
 // CheckResourceDoesNotExist checks that there is no resource with given path.
 func (c *HTTPAPIClient) CheckResourceDoesNotExist(t *testing.T, path string) {
 	var responseData interface{}
-	r, err := c.Do(context.Background(), echo.GET, path, nil, &responseData, []int{http.StatusNotFound})
+	r, err := c.Do(context.Background(), echo.GET, path, nil, nil, &responseData, []int{http.StatusNotFound})
 	assert.NoError(t, err, "getting resource failed\n response: %+v\n responseData: %+v", r, responseData)
 }

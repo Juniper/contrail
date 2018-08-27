@@ -138,7 +138,7 @@ func NewAgent(c *Config) (*Agent, error) {
 func fetchServerAPI(ctx context.Context, server *client.HTTP, serverSchema string) (*schema.API, error) {
 	var api schema.API
 	for {
-		_, err := server.Read(ctx, serverSchema, &api)
+		_, err := server.Read(ctx, serverSchema, nil, &api)
 		if err == nil {
 			break
 		}

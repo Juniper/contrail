@@ -49,7 +49,7 @@ func showResource(schemaID, uuid string) (string, error) {
 		return "", nil
 	}
 	var response map[string]interface{}
-	_, err = client.Read(context.Background(), path(schemaID, uuid), &response) //nolint
+	_, err = client.Read(context.Background(), path(schemaID, uuid), nil, &response) //nolint
 	if err != nil {
 		return "", err
 	}

@@ -20,7 +20,7 @@ func TestHomepageResources(t *testing.T) {
 	c := integration.NewHTTPAPIClient(t, apisrv.TestServer.URL)
 
 	var response map[string]interface{}
-	r, err := c.Read(context.Background(), "/", &response)
+	r, err := c.Read(context.Background(), "/", nil, &response)
 	assert.NoError(t, err, fmt.Sprintf("GET failed\n response: %+v", r))
 
 	addr := resolve(viper.GetString("server.address"))
@@ -57,7 +57,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	c := integration.NewHTTPAPIClient(t, apisrv.TestServer.URL)
 
 	var response map[string]interface{}
-	r, err := c.Read(context.Background(), "/", &response)
+	r, err := c.Read(context.Background(), "/", nil, &response)
 	assert.NoError(t, err, fmt.Sprintf("GET failed\n response: %+v", r))
 
 	routes := routeSet{

@@ -29,14 +29,14 @@ func (h *HTTP) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request
 
 func (h *HTTP) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (*services.Get{{ schema.JSONSchema.GoName }}Response, error) {
     response := &services.Get{{ schema.JSONSchema.GoName }}Response{}
-    _, err := h.Read(ctx, "{{ schema.Prefix }}{{ schema.Path }}/" + request.ID, response)
+    _, err := h.Read(ctx, "{{ schema.Prefix }}{{ schema.Path }}/" + request.ID, nil, response)
     return response, err
 }
 
 func (h *HTTP) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (*services.List{{ schema.JSONSchema.GoName }}Response, error) {
     //TODO(nati) support encoding list spec for query param.
     response := &services.List{{ schema.JSONSchema.GoName }}Response{}
-    _, err := h.Read(ctx, "{{ schema.Prefix }}{{ schema.PluralPath }}", response)
+    _, err := h.Read(ctx, "{{ schema.Prefix }}{{ schema.PluralPath }}", request.GetSpec().URLQuery(), response)
     return response, err
 }
 

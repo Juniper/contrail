@@ -88,7 +88,7 @@ func fetchServerAPI(client *client.HTTP, serverSchema string) (*schema.API, erro
 	var api schema.API
 	ctx := context.Background()
 	for i := 0; i < retryMax; i++ {
-		_, err := client.Read(ctx, serverSchema, &api)
+		_, err := client.Read(ctx, serverSchema, nil, &api)
 		if err == nil {
 			break
 		}

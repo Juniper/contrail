@@ -138,7 +138,8 @@ func listResources(schemaID string) (string, error) {
 	var response map[string][]interface{}
 	_, err = client.Read(
 		context.Background(),
-		fmt.Sprintf("%s?%s", pluralPath(schemaID), params.Encode()), &response) //nolint
+		pluralPath(schemaID),
+		params, &response) //nolint
 	if err != nil {
 		fmt.Println(err)
 		return "", err

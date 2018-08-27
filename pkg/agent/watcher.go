@@ -42,7 +42,7 @@ func (w *pollingWatcher) Sync(ctx context.Context) error {
 	var list map[string][]interface{}
 	w.log.Debug("Polling data")
 	resourcePath := w.agent.schemas[w.SchemaID].PluralPath
-	_, err := w.agent.APIServer.Read(ctx, resourcePath, &list)
+	_, err := w.agent.APIServer.Read(ctx, resourcePath, nil, &list)
 	if err != nil {
 		return err
 	}

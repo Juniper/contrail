@@ -1,11 +1,18 @@
 package baseservices
 
 import (
+	"bytes"
+	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/labstack/echo"
+)
+
+//Default values
+const (
+	DefaultPageLimit = 100
 )
 
 // Block of constants consumed by client code.
@@ -79,6 +86,44 @@ func GetListSpec(c echo.Context) *ListSpec {
 	}
 }
 
+//URLQuery returns URL query strings.
+func (s *ListSpec) URLQuery() url.Values {
+	if s == nil {
+		return nil
+	}
+	query := url.Values{}
+	addQuery(query, FiltersKey, EncodeFilter(s.Filters))
+	if s.Offset > 0 {
+		addQuery(query, PageMarkerKey, strconv.FormatInt(s.Offset, 10))
+	}
+	if s.Limit > 0 {
+		addQuery(query, PageLimitKey, strconv.FormatInt(s.Limit, 10))
+	}
+	addQueryBool(query, DetailKey, s.Detail)
+	addQueryBool(query, CountKey, s.Count)
+	addQueryBool(query, SharedKey, s.Shared)
+	addQueryBool(query, ExcludeHRefsKey, s.ExcludeHrefs)
+	addQuery(query, ParentTypeKey, s.ParentType)
+	addQuery(query, ParentFQNameKey, basemodels.FQNameToString(s.ParentFQName))
+	addQuery(query, ParentUUIDsKey, encodeStringList(s.ParentUUIDs))
+	addQuery(query, BackrefUUIDsKey, encodeStringList(s.BackRefUUIDs))
+	addQuery(query, ObjectUUIDsKey, encodeStringList(s.ObjectUUIDs))
+	addQuery(query, FieldsKey, encodeStringList(s.Fields))
+	return query
+}
+
+func addQuery(query url.Values, key, value string) {
+	if value != "" {
+		query.Add(key, value)
+	}
+}
+
+func addQueryBool(query url.Values, key string, value bool) {
+	if value {
+		query.Add(key, strconv.FormatBool(value))
+	}
+}
+
 //AppendFilter return a filter for specific key.
 func AppendFilter(filters []*Filter, key string, values ...string) []*Filter {
 	var filter *Filter
@@ -120,4 +165,27 @@ func ParseFilter(filterString string) []*Filter {
 		filters = AppendFilter(filters, key, value)
 	}
 	return filters
+}
+
+//EncodeFilter encodes filter to string.
+func EncodeFilter(filters []*Filter) string {
+	var buffer bytes.Buffer
+	for _, filter := range filters {
+		for _, value := range filter.Values {
+			buffer.WriteString(filter.Key) // nolint
+			buffer.WriteString("==")       // nolint
+			buffer.WriteString(value)      // nolint
+			buffer.WriteRune(',')          // nolint
+		}
+	}
+	filterString := buffer.String()
+	// remove traiting comma
+	if len(filterString) > 0 {
+		return filterString[:len(filterString)-1]
+	}
+	return ""
+}
+
+func encodeStringList(s []string) string {
+	return strings.Join(s, ",")
 }

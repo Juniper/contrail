@@ -31,7 +31,7 @@ func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario,
 	for _, client := range testScenario.Clients {
 		var response map[string][]interface{}
 		url := fmt.Sprintf("/endpoints?parent_uuid=%s", clusterID)
-		_, err := client.Read(context.Background(), url, &response)
+		_, err := client.Read(context.Background(), url, nil, &response)
 		assert.NoError(t, err, "Unable to list endpoints of the cluster")
 		for _, endpoint := range response["endpoints"] {
 			e := endpoint.(map[string]interface{})

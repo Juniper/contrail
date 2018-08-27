@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -138,43 +139,43 @@ func (h *HTTP) Login(ctx context.Context) error {
 // Create send a create API request.
 func (h *HTTP) Create(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.POST, path, data, output, expected)
+	return h.Do(ctx, echo.POST, path, nil, data, output, expected)
 }
 
 // Read send a get API request.
-func (h *HTTP) Read(ctx context.Context, path string, output interface{}) (*http.Response, error) {
+func (h *HTTP) Read(ctx context.Context, path string, query url.Values, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.GET, path, nil, output, expected)
+	return h.Do(ctx, echo.GET, path, query, nil, output, expected)
 }
 
 // Update send an update API request.
 func (h *HTTP) Update(ctx context.Context, path string, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.PUT, path, data, output, expected)
+	return h.Do(ctx, echo.PUT, path, nil, data, output, expected)
 }
 
 // Delete send a delete API request.
 func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.DELETE, path, nil, output, expected)
+	return h.Do(ctx, echo.DELETE, path, nil, nil, output, expected)
 }
 
 // RefUpdate sends a create/update API request/
 func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.POST, "/ref-update", data, output, expected)
+	return h.Do(ctx, echo.POST, "/ref-update", nil, data, output, expected)
 }
 
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK, http.StatusNotFound}
-	return h.Do(ctx, echo.DELETE, path, nil, output, expected)
+	return h.Do(ctx, echo.DELETE, path, nil, nil, output, expected)
 }
 
 // Do issues an API request.
 func (h *HTTP) Do(ctx context.Context,
-	method, path string, data interface{}, output interface{}, expected []int) (*http.Response, error) {
-	request, err := h.prepareHTTPRequest(method, path, data)
+	method, path string, query url.Values, data interface{}, output interface{}, expected []int) (*http.Response, error) {
+	request, err := h.prepareHTTPRequest(method, path, data, query)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +210,7 @@ func (h *HTTP) Do(ctx context.Context,
 	return resp, nil
 }
 
-func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}) (*http.Request, error) {
+func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query url.Values) (*http.Request, error) {
 	var request *http.Request
 	if data == nil {
 		var err error
@@ -228,6 +229,10 @@ func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}) (*http.
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
+	}
+
+	if len(query) > 0 {
+		request.URL.RawQuery = query.Encode()
 	}
 
 	request.Header.Set("Content-Type", "application/json")
@@ -313,7 +318,7 @@ func logErrorAndResponse(err error, response *http.Response) {
 
 // DoRequest requests based on request object.
 func (h *HTTP) DoRequest(ctx context.Context, request *Request) (*http.Response, error) {
-	return h.Do(ctx, request.Method, request.Path, request.Data, &request.Output, request.Expected)
+	return h.Do(ctx, request.Method, request.Path, nil, request.Data, &request.Output, request.Expected)
 }
 
 // Batch execution.

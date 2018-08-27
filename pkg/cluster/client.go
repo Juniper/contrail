@@ -36,7 +36,7 @@ func (c *Cluster) getDefaultCredential() (user, password, keypair string, err er
 	var credList map[string][]interface{}
 	resURI := fmt.Sprintf("%ss", defaultCredentialResPath)
 	c.log.Infof("Reading credential: %s", resURI)
-	_, err = c.APIServer.Read(context.Background(), resURI, &credList)
+	_, err = c.APIServer.Read(context.Background(), resURI, nil, &credList)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -68,7 +68,7 @@ func (c *Cluster) getEndpoints(parentUUIDs []string) (endpointIDs []string, err 
 	var endpointList map[string][]interface{}
 	resURI := fmt.Sprintf("%ss?%s", defaultEndpointResPath, values.Encode())
 	c.log.Infof("Reading endpoints: %s", resURI)
-	_, err = c.APIServer.Read(context.Background(), resURI, &endpointList)
+	_, err = c.APIServer.Read(context.Background(), resURI, nil, &endpointList)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (c *Cluster) getResource(resPath string, resID string) (map[string]interfac
 	var rawResInfo map[string]interface{}
 	resURI := fmt.Sprintf("%s/%s", resPath, resID)
 	c.log.Infof("Reading: %s", resURI)
-	_, err := c.APIServer.Read(context.Background(), resURI, &rawResInfo)
+	_, err := c.APIServer.Read(context.Background(), resURI, nil, &rawResInfo)
 	if err != nil {
 		return nil, err
 	}
