@@ -24,6 +24,7 @@ import (
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/vncapi"
 	"github.com/Juniper/contrail/pkg/types"
 )
 
@@ -114,12 +115,25 @@ func (s *Server) SetupService() (services.Service, error) {
 		}
 	}
 
+	if viper.GetBool("server.vnc_api_notifier.enabled") {
+		serviceChain = withVNCAPINotifier(serviceChain, s.dbService)
+	}
+
 	// Put DB Service at the end
 	serviceChain = append(serviceChain, s.dbService)
 
 	services.Chain(serviceChain...)
 
 	return service, nil
+}
+
+func withVNCAPINotifier(serviceChain []services.Service, dbService services.InTransactionDoer) []services.Service {
+	serviceChain = append(serviceChain, vncapi.NewNotifierService(&vncapi.Config{
+		Endpoint:          viper.GetString("server.vnc_api_notifier.endpoint"),
+		InTransactionDoer: dbService,
+	}))
+	log.Debug("Added VNC API Notifier Service to API Server service chain")
+	return serviceChain
 }
 
 func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
