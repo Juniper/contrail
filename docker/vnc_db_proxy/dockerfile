@@ -1,0 +1,8 @@
+FROM opencontrailnightly/contrail-controller-config-api:master-251
+MAINTAINER Pawel Marchewka pawel.marchewka@codilime.com
+
+RUN rpm -ihv http://mirror.centos.org/centos/7/os/x86_64/Packages/patch-2.7.1-8.el7.x86_64.rpm
+COPY ./files/vnc_db_proxy.patch /tmp/vnc_db_proxy.patch
+WORKDIR /lib/python2.7/site-packages/
+RUN patch -p1 < /tmp/vnc_db_proxy.patch
+WORKDIR /etc/contrail
