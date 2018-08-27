@@ -693,7 +693,7 @@ func (api *API) resolveExtend() error {
 
 func (api *API) resolveCollectionTypes() error {
 	for _, s := range api.Schemas {
-		for _, property := range s.JSONSchema.Properties {
+		for propertyName, property := range s.JSONSchema.Properties {
 			if property.CollectionType != "" {
 				propertyType := api.Types[property.ProtoType]
 
@@ -703,7 +703,9 @@ func (api *API) resolveCollectionTypes() error {
 				propertyType.CollectionType = property.CollectionType
 
 				if propertyType.CollectionType == "map" {
-					resolveMapCollectionType(property, propertyType)
+					if err := resolveMapCollectionType(property, propertyType); err != nil {
+						return errors.Wrapf(err, "invalid %q property of %q schema", propertyName, s.ID)
+					}
 				}
 			}
 		}
@@ -721,9 +723,13 @@ func checkCollectionTypes(property, propertyType *JSONSchema) error {
 	return nil
 }
 
-func resolveMapCollectionType(property, propertyType *JSONSchema) {
-	itemType := propertyType.OrderedProperties[0].Items
-	propertyType.MapKeyProperty = itemType.Properties[property.MapKey]
+func resolveMapCollectionType(property, propertyType *JSONSchema) error {
+	if property.MapKey == "" {
+		return errors.New("empty mapKey field")
+	}
+
+	propertyType.MapKeyProperty = propertyType.OrderedProperties[0].Items.Properties[property.MapKey]
+	return nil
 }
 
 //MakeAPI load directory and generate API definitions.
