@@ -1,6 +1,7 @@
 package baseservices
 
 import (
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -47,7 +48,7 @@ func parseStringList(query string) []string {
 	return strings.Split(query, ",")
 }
 
-//GetListSpec makes ListSpec from Query Parameters
+// GetListSpec makes ListSpec from Query Parameters
 func GetListSpec(c echo.Context) *ListSpec {
 	filters := ParseFilter(c.QueryParam(FiltersKey))
 	pageMarker := parsePositiveNumber(c.QueryParam(PageMarkerKey), 0)
@@ -79,7 +80,45 @@ func GetListSpec(c echo.Context) *ListSpec {
 	}
 }
 
-//AppendFilter return a filter for specific key.
+// URLQuery returns URL query strings.
+func (s *ListSpec) URLQuery() url.Values {
+	if s == nil {
+		return nil
+	}
+	query := url.Values{}
+	addQuery(query, FiltersKey, EncodeFilter(s.Filters))
+	if s.Offset > 0 {
+		addQuery(query, PageMarkerKey, strconv.FormatInt(s.Offset, 10))
+	}
+	if s.Limit > 0 {
+		addQuery(query, PageLimitKey, strconv.FormatInt(s.Limit, 10))
+	}
+	addQueryBool(query, DetailKey, s.Detail)
+	addQueryBool(query, CountKey, s.Count)
+	addQueryBool(query, SharedKey, s.Shared)
+	addQueryBool(query, ExcludeHRefsKey, s.ExcludeHrefs)
+	addQuery(query, ParentTypeKey, s.ParentType)
+	addQuery(query, ParentFQNameKey, basemodels.FQNameToString(s.ParentFQName))
+	addQuery(query, ParentUUIDsKey, encodeStringList(s.ParentUUIDs))
+	addQuery(query, BackrefUUIDsKey, encodeStringList(s.BackRefUUIDs))
+	addQuery(query, ObjectUUIDsKey, encodeStringList(s.ObjectUUIDs))
+	addQuery(query, FieldsKey, encodeStringList(s.Fields))
+	return query
+}
+
+func addQuery(query url.Values, key, value string) {
+	if value != "" {
+		query.Add(key, value)
+	}
+}
+
+func addQueryBool(query url.Values, key string, value bool) {
+	if value {
+		query.Add(key, strconv.FormatBool(value))
+	}
+}
+
+// AppendFilter return a filter for specific key.
 func AppendFilter(filters []*Filter, key string, values ...string) []*Filter {
 	var filter *Filter
 	if len(values) == 0 {
@@ -102,8 +141,17 @@ func AppendFilter(filters []*Filter, key string, values ...string) []*Filter {
 	return filters
 }
 
-//ParseFilter makes Filter from comma separated string.
-//Eg. check==a,check==b,name==Bob
+// QueryString returns string for query string.
+func (f *Filter) QueryString() string {
+	sl := []string{}
+	for _, value := range f.Values {
+		sl = append(sl, f.Key+"=="+value)
+	}
+	return encodeStringList(sl)
+}
+
+// ParseFilter makes Filter from comma separated string.
+// Eg. check==a,check==b,name==Bob
 func ParseFilter(filterString string) []*Filter {
 	filters := []*Filter{}
 	if filterString == "" {
@@ -120,4 +168,17 @@ func ParseFilter(filterString string) []*Filter {
 		filters = AppendFilter(filters, key, value)
 	}
 	return filters
+}
+
+//EncodeFilter encodes filter to string.
+func EncodeFilter(filters []*Filter) string {
+	sl := []string{}
+	for _, filter := range filters {
+		sl = append(sl, filter.QueryString())
+	}
+	return encodeStringList(sl)
+}
+
+func encodeStringList(s []string) string {
+	return strings.Join(s, ",")
 }
