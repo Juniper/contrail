@@ -83,18 +83,31 @@ install:
 testenv: ## Setup docker based test environment
 	./tools/testenv.sh
 
-reset_db: ## Reset databases with latest schema and load initial data
+reset_db: zero_db init_db ## Reset databases with latest schema and load initial data
+
+reset_mysql: zero_mysql init_mysql
+
+reset_psql: zero_psql init_psql
+
+zero_db: zero_mysql zero_psql
+
+zero_mysql:
 	./tools/reset_db_mysql.sh
+
+zero_psql:
 	./tools/reset_db_psql.sh
-	make init_db
 
 clean_db: ## Truncate all database tables and load initial data
 	docker exec -i contrail_mysql mysql -uroot -pcontrail123 contrail_test < tools/cleanup_mysql.sql
 	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/cleanup_psql.sql
 	make init_db
 
-init_db: ## Load initial data to databases
+init_db: init_mysql init_psql ## Load initial data to databases
+
+init_mysql:
 	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
+
+init_psql:
 	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail_postgres.yml
 
 binaries: ## Generate the contrail and contrailutil binaries
