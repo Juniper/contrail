@@ -1,91 +1,81 @@
-// nolint
 package etcd
 
 import (
     "context"
 
-	"github.com/pkg/errors"
-    log "github.com/sirupsen/logrus"
+    "github.com/pkg/errors"
 
     "{{ option.PackagePath }}/pkg/services"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-func (service *NotifierService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
-    response, err := service.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+
+func (ns *NotifierService) Create{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request,
+) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
+    response, err := ns.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
-        log.WithError(err).WithField("resource", "{{ schema.ID }}").Debug("Create {{ schema.JSONSchema.GoName }} failed")
         return nil, err
     }
 
-    obj := response.Get{{ schema.JSONSchema.GoName }}()
-    key, jsonStr := service.EtcdNotifierMarshal("{{ schema.ID }}", obj.UUID, obj)
+    o := response.Get{{ schema.JSONSchema.GoName }}()
+    key, jsonStr := ns.EtcdNotifierMarshal("{{ schema.ID }}", o.UUID, o)
     if key == "" {
         return nil, errors.New("etcd object key is empty")
     }
 
-    err = service.Client.Put(ctx, key, jsonStr)
+    err = ns.Client.Put(ctx, key, jsonStr)
     if err != nil {
-        log.WithError(err).WithField("resource", "{{ schema.ID }}").Debug(
-            "Create {{ schema.JSONSchema.GoName }}[%s]: Failed to Write to ETCD", obj.UUID)
-        return nil, err
+        return nil, errors.Wrapf(err, "failed to create {{ schema.JSONSchema.GoName }} with UUID %q in etcd", o.UUID)
     }
 
-    log.WithField("resource", "{{ schema.ID }}").Debugf(
-        "Create {{ schema.JSONSchema.GoName }}[%s]: Write to ETCD successful", obj.UUID)
-
+    ns.log.WithField("uuid", o.UUID).Debug("Created {{ schema.JSONSchema.GoName }} in etcd")
     return response, nil
 }
 
-func (service *NotifierService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
-    response, err := service.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, request *services.Update{{ schema.JSONSchema.GoName }}Request,
+) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
+    response, err := ns.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
-        log.WithError(err).WithField("resource", "{{ schema.ID }}").Debug("Update {{ schema.JSONSchema.GoName }} failed")
         return nil, err
     }
 
-    obj := response.Get{{ schema.JSONSchema.GoName }}()
-    key, jsonStr := service.EtcdNotifierMarshal("{{ schema.ID }}", obj.UUID, obj)
+    o := response.Get{{ schema.JSONSchema.GoName }}()
+    key, jsonStr := ns.EtcdNotifierMarshal("{{ schema.ID }}", o.UUID, o)
     if key == "" {
         return nil, errors.New("etcd object key is empty")
     }
 
-    err = service.Client.Put(ctx, key, jsonStr)
+    err = ns.Client.Put(ctx, key, jsonStr)
     if err != nil {
-        log.WithError(err).WithField("resource", "{{ schema.ID }}").Debug(
-            "Update {{ schema.JSONSchema.GoName }}[%s]: Failed to Write to ETCD", obj.UUID)
-        return nil, err
+        return nil, errors.Wrapf(err, "failed to update {{ schema.JSONSchema.GoName }} with UUID %q in etcd", o.UUID)
     }
 
-    log.WithError(err).WithField("resource", "{{ schema.ID }}").Debugf(
-        "Update {{ schema.JSONSchema.GoName }}[%s]: Write to ETCD successful", obj.UUID)
-
+    ns.log.WithField("uuid", o.UUID).Debug("Updated {{ schema.JSONSchema.GoName }} in etcd")
     return response, nil
 }
 
-func (service *NotifierService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
-    response, err := service.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request,
+) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    response, err := ns.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
-        log.WithError(err).WithField("resource", "{{ schema.ID }}").Debug("Delete {{ schema.JSONSchema.GoName }} failed")
         return nil, err
     }
 
-    UUID := response.GetID()
-    key, _ := service.EtcdNotifierMarshal("{{ schema.ID }}", UUID, nil)
+    key, _ := ns.EtcdNotifierMarshal("{{ schema.ID }}", response.GetID(), nil)
     if key == "" {
         return nil, errors.New("etcd object key is empty")
     }
 
-    err = service.Client.Delete(ctx, key)
+    err = ns.Client.Delete(ctx, key)
     if err != nil {
-        log.WithError(err).WithField("resource", "{{ schema.ID }}").Debug(
-            "Delete {{ schema.JSONSchema.GoName }}[%s]: Failed to Write to ETCD", UUID)
-        return nil, err
+        return nil, errors.Wrapf(err, "failed to delete {{ schema.JSONSchema.GoName }} with UUID %q in etcd", response.GetID())
     }
 
-    log.WithField("resource", "{{ schema.ID }}").Debugf(
-        "Delete {{ schema.JSONSchema.GoName }}[%s]: Write to ETCD successful", UUID)
-
+    ns.log.WithField("uuid", response.GetID()).Debug("Deleted {{ schema.JSONSchema.GoName }} in etcd")
     return response, nil
 }
-{% endif%}{% endfor %}
+
+{% endif %}{% endfor %}
