@@ -112,6 +112,10 @@ func (m *IpamSubnetType) ValidateSubnetParams() error {
 
 // Contains checks if IpamSubnet contains provided ip
 func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
+	if m.Subnet == nil {
+		return false, nil
+	}
+
 	subnet, err := m.Subnet.Net()
 	if err != nil {
 		return false, errors.New("invalid subnet")
