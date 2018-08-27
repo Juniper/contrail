@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TOP=$(cd "$(dirname "$0")" && cd ../ && pwd)
+TOP="$(dirname "$(dirname "$0")")"
 
 COVERPROFILE=${1:--coverprofile=profile.tmp}
 COVERMODE='-covermode=atomic'
