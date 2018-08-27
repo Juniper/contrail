@@ -1,18 +1,29 @@
 #!/bin/bash
 
+TOP=$(cd "$(dirname "$0")" && cd ../ && pwd)
+
+RemoveDockers=1
+Network='bridge' # This is default for `docker run` if no `--net` param is specified
+while :; do
+	case "$1" in
+		'-n') Network="$2"; shift 2;;
+		'-k') RemoveDockers=0; shift;;
+		'-h') Usage; exit 0;;
+		*) break;;
+	esac
+done
+
 if [ "$1" == "" ]; then
-    echo "Usage: vncdbproxy.sh <CONFIGDBSERVER_IP>"
+    echo "Usage: vncdbproxy.sh [-k] [-n <NetworkMode>] [CONFIGDBSERVER_IP]"
     exit 1
 fi
 
-TOP=$(cd "$(dirname "$0")" && cd ../ && pwd)
-
-docker rm -f vncdbproxy
-
+[ $RemoveDockers -eq 1 ] && docker rm -f vncdbproxy
 docker build "$TOP/docker/vnc_db_proxy/" -t vncdbproxy
 
 docker run \
     --name vncdbproxy \
+    --net "$Network" \
     -p 8091:8082 \
     -d \
     -e CONFIG_API_PORT=8082 \
@@ -21,7 +32,7 @@ docker run \
     -e log_local=true \
     -e AUTH_MODE=none \
     -e AAA_MODE=cloud-admin \
-    -e ZOOKEEPER_SERVERS="$1":2181 \
-    -e CONFIGDB_SERVERS="$1":9161 \
-    -e RABBITMQ_SERVERS="$1":5673 \
+    -e ZOOKEEPER_SERVERS="$1:2181" \
+    -e CONFIGDB_SERVERS="$1:9161" \
+    -e RABBITMQ_SERVERS="$1:5673" \
     vncdbproxy
