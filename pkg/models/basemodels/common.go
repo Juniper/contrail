@@ -3,6 +3,9 @@ package basemodels
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/gogo/protobuf/types"
 )
 
 const (
@@ -63,4 +66,9 @@ func FQNameEquals(fqNameA, fqNameB []string) bool {
 		}
 	}
 	return true
+}
+
+//FieldMaskContains checks if given field mask contains requested string
+func FieldMaskContains(fm types.FieldMask, field string) bool {
+	return common.ContainsString(fm.GetPaths(), field)
 }
