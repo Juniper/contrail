@@ -3,46 +3,89 @@ package logic
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"sync"
+	"time"
 
+	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/compilationif"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
+
+// RoutingInstanceIntent contains Intent Compiler state for RoutingInstance
+type RoutingInstanceIntent struct {
+	BaseIntent
+	*models.RoutingInstance
+}
 
 // TODO: get_autonomous_system method and int pool allocator endpoint
 const (
 	defaultAutonomousSystem = 64512
 	// This number should be generated from int pool allocator.
-	defaultRoutingTargetNumber = 8000002
+	minimumRoutingTargetNumber = 8000002
 )
 
-// CreateRoutingInstance may create default Route Target.
+// CreateRoutingInstance evaluates RoutingInstance dependencies
 func (s *Service) CreateRoutingInstance(
 	ctx context.Context, request *services.CreateRoutingInstanceRequest,
 ) (*services.CreateRoutingInstanceResponse, error) {
 
-	ri := request.GetRoutingInstance()
+	obj := request.GetRoutingInstance()
 
-	if ri.GetRoutingInstanceIsDefault() {
-		if ri.IsIPFabric() || ri.IsLinkLocal() {
-			return &services.CreateRoutingInstanceResponse{RoutingInstance: ri}, nil
+	intent := &RoutingInstanceIntent{
+		RoutingInstance: obj,
+	}
+
+	if _, ok := compilationif.ObjsCache.Load("RoutingInstanceIntent"); !ok {
+		compilationif.ObjsCache.Store("RoutingInstanceIntent", &sync.Map{})
+	}
+
+	objMap, ok := compilationif.ObjsCache.Load("RoutingInstanceIntent")
+	if ok {
+		objMap.(*sync.Map).Store(obj.GetUUID(), intent)
+	}
+
+	ec := &EvaluateContext{
+		WriteService: s.WriteService,
+	}
+	err := EvaluateDependencies(ctx, ec, obj, "RoutingInstance")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to evaluate Routing Instance dependencies")
+	}
+
+	return s.BaseService.CreateRoutingInstance(ctx, request)
+}
+
+// Evaluate may create default Route Target.
+func (s *RoutingInstanceIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
+	if s.GetRoutingInstanceIsDefault() {
+		if s.IsIPFabric() || s.IsLinkLocal() {
+			return nil
 		}
-		if err := s.createDefaultRouteTarget(ctx, request); err != nil {
-			return nil, err
+		if err := s.createDefaultRouteTarget(ctx, evaluateContext); err != nil {
+			return err
 		}
 	} else {
 		// TODO: handle the situation in case if it's not default Routing Instance
 		// and creating non default route targets
 	}
 
-	return &services.CreateRoutingInstanceResponse{RoutingInstance: ri}, nil
+	return nil
 }
 
-func (s *Service) createDefaultRouteTarget(
-	ctx context.Context, request *services.CreateRoutingInstanceRequest,
-) error {
-	rtKey := fmt.Sprintf("target:%v:%v", defaultAutonomousSystem, defaultRoutingTargetNumber)
+// TODO Temporary way to generate route target number
+// until allocate route target is implemented
+func generateRandomRouteTargetNumber() int {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return minimumRoutingTargetNumber + rand.Intn(10)
+}
 
-	rtResponse, err := s.WriteService.CreateRouteTarget(
+func (s *RoutingInstanceIntent) createDefaultRouteTarget(ctx context.Context, evaluateContext *EvaluateContext) error {
+	rtKey := fmt.Sprintf("target:%v:%v", defaultAutonomousSystem, generateRandomRouteTargetNumber())
+
+	rtResponse, err := evaluateContext.WriteService.CreateRouteTarget(
 		ctx,
 		&services.CreateRouteTargetRequest{
 			RouteTarget: &models.RouteTarget{
@@ -56,10 +99,10 @@ func (s *Service) createDefaultRouteTarget(
 		return err
 	}
 
-	_, err = s.WriteService.CreateRoutingInstanceRouteTargetRef(
+	_, err = evaluateContext.WriteService.CreateRoutingInstanceRouteTargetRef(
 		ctx,
 		&services.CreateRoutingInstanceRouteTargetRefRequest{
-			ID: request.RoutingInstance.GetUUID(),
+			ID: s.GetUUID(),
 			RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
 				UUID: rtResponse.RouteTarget.GetUUID(),
 			},
