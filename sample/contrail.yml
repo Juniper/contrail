@@ -59,7 +59,7 @@ server:
 
   vnc_api_notifier:
     enabled: false
-    endpoint: http://localhost:8091
+    endpoint: http://localhost:9082
 
 # Keystone configuration
 # keystone:
