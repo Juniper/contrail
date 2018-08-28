@@ -259,6 +259,7 @@ func prepareIPPools(ipamSubnet *models.IpamSubnetType, subnetUUID string) ([]*ip
 			key: subnetUUID,
 		}
 		ipPool.start, ipPool.end = cidr.AddressRange(net)
+		ipPool.start = cidr.Inc(ipPool.start)
 		ipPools = append(ipPools, ipPool)
 	}
 

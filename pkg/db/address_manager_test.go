@@ -32,7 +32,7 @@ func TestAddressManagerAllocations(t *testing.T) {
 			},
 			allocationMode: models.UserDefinedSubnetOnly,
 			expectedValidIPs: []string{
-				"10.0.0.0",
+				"10.0.0.1",
 				"10.0.0.127",
 				"10.0.0.254",
 			},
