@@ -117,3 +117,39 @@ func (m *VirtualNetwork) GetDefaultRoutingInstance() *RoutingInstance {
 func (m *VirtualNetwork) HasNetworkBasedAllocationMethod() bool {
 	return m.GetAddressAllocationMethod() == UserDefinedSubnetOnly || m.GetAddressAllocationMethod() == FlatSubnetOnly
 }
+
+// MakeDefaultRoutingInstance returns the default routing instance for the network.
+func (m *VirtualNetwork) MakeDefaultRoutingInstance() *RoutingInstance {
+	return &RoutingInstance{
+		Name:                      m.Name,
+		FQName:                    m.DefaultRoutingInstanceFQName(),
+		ParentUUID:                m.UUID,
+		RoutingInstanceIsDefault:  true,
+		RoutingInstanceFabricSnat: m.FabricSnat,
+		RouteTargetRefs:           m.MakeImportExportRouteTargetRefs(),
+	}
+}
+
+// DefaultRoutingInstanceFQName returns the FQName of the network's default RoutingInstance.
+func (m *VirtualNetwork) DefaultRoutingInstanceFQName() []string {
+	return basemodels.ChildFQName(m.FQName, m.FQName[len(m.FQName)-1])
+}
+
+// MakeImportExportRouteTargetRefs returns refs to RouteTarget's from import and export lists.
+func (m *VirtualNetwork) MakeImportExportRouteTargetRefs() []*RoutingInstanceRouteTargetRef {
+	return append(
+		m.GetImportRouteTargetList().AsRefs(&InstanceTargetType{ImportExport: "import"}),
+		m.GetExportRouteTargetList().AsRefs(&InstanceTargetType{ImportExport: "export"})...,
+	)
+}
+
+// AsRefs returns refs with instanceTargetType from a RoutingInstance to route targets in the list.
+func (m *RouteTargetList) AsRefs(instanceTargetType *InstanceTargetType) (refs []*RoutingInstanceRouteTargetRef) {
+	for _, rt := range m.GetRouteTarget() {
+		refs = append(refs, &RoutingInstanceRouteTargetRef{
+			To:   []string{rt},
+			Attr: instanceTargetType,
+		})
+	}
+	return refs
+}
