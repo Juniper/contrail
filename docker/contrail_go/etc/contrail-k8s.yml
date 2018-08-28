@@ -22,6 +22,9 @@ etcd:
 
 log_level: debug
 
+homepage:
+    enabled: true
+
 # Server configuration
 server:
   enabled: true
@@ -52,12 +55,16 @@ server:
 
   notify_etcd: true
 
+  vnc_api_notifier:
+    enabled: true
+    endpoint: http://localhost:8091
+
 # disable authentication with no_auth true and comment out keystone configuraion.
 no_auth: true
 insecure: true
 
 sync:
-  enabled: true
+  enabled: false
   storage: json
 
 client:
@@ -69,7 +76,7 @@ client:
   endpoint: http://localhost:8082
 
 agent:
-  enabled: true
+  enabled: false
   backend: file
   watcher: polling
   tasks:
@@ -98,7 +105,7 @@ agent:
     - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
 
 compilation:
-  enabled: false
+  enabled: true
   # Global configuration
   plugin_directory: 'etc/plugins/'
   number_of_workers: 4
@@ -122,9 +129,14 @@ cache:
     max_history: 100000
     cassandra:
         enabled: true
-        host: localhost
-        port: 9042
-        timeout: 3600s
-        amqp: amqp://guest:guest@localhost:5672/
     etcd:
         enabled: true
+
+cassandra:
+    host: localhost
+    port: 9042
+    timeout: 3600s
+    connect_timeout: 600ms
+
+amqp:
+    url: amqp://guest:guest@localhost:5672/
