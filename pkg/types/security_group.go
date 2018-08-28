@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -115,7 +116,7 @@ func (sv *ContrailTypeLogicService) disallowManualSecurityGroupID(
 		return common.ErrorForbidden("cannot set the security group ID, it's allocated by the server")
 	}
 
-	if !common.ContainsString(fieldMask.GetPaths(), models.SecurityGroupFieldSecurityGroupID) {
+	if !basemodels.FieldMaskContains(*fieldMask, models.SecurityGroupFieldSecurityGroupID) {
 		return nil
 	}
 

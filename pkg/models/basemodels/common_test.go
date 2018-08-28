@@ -3,6 +3,7 @@ package basemodels
 import (
 	"testing"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,6 +78,41 @@ func TestFQNameEquals(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := FQNameEquals(tt.fqNameA, tt.fqNameB)
 			assert.Equal(t, tt.areEqual, got)
+		})
+	}
+}
+
+func TestFieldMaskContains(t *testing.T) {
+	tests := []struct {
+		name             string
+		requestedFM      types.FieldMask
+		requestedField   string
+		expectedResponse bool
+	}{
+		{
+			name:             "field mask contrains requested field",
+			requestedFM:      types.FieldMask{Paths: []string{"first", "second"}},
+			requestedField:   "first",
+			expectedResponse: true,
+		},
+		{
+			name:             "field mask doesn't contrain requested field",
+			requestedFM:      types.FieldMask{Paths: []string{"first", "second"}},
+			requestedField:   "third",
+			expectedResponse: false,
+		},
+		{
+			name:             "field mask is empty",
+			requestedFM:      types.FieldMask{Paths: []string{}},
+			requestedField:   "first",
+			expectedResponse: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			contains := FieldMaskContains(tt.requestedFM, tt.requestedField)
+			assert.Equal(t, contains, tt.expectedResponse)
 		})
 	}
 }
