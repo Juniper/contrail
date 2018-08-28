@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -122,7 +123,7 @@ func writeRDBMS(events *services.EventList) error {
 }
 
 func writeEtcd(events *services.EventList, etcdNotifierPath string) error {
-	etcdNotifierService, err := etcd.NewNotifierService(etcdNotifierPath)
+	etcdNotifierService, err := etcd.NewNotifierService(etcdNotifierPath, models.JSONCodec)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to etcd")
 	}
