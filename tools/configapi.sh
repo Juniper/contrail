@@ -65,7 +65,7 @@ run_docker_redis()
 
 run_docker_zookeeper()
 {
-	docker run --name some-zookeeper -d zookeeper:latest
+	docker run --name some-zookeeper -p 2181:2181 -d zookeeper:latest
 }
 
 run_docker_rabbitmq()
