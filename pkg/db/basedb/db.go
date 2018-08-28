@@ -89,14 +89,14 @@ func (db *BaseDB) DoInTransaction(ctx context.Context, do func(context.Context) 
 
 	tx, err = conn.BeginTx(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to start DB transaction")
+		return errors.Wrap(FormatDBError(err), "failed to start DB transaction")
 	}
 	defer rollbackOnPanic(tx)
 
 	err = do(context.WithValue(ctx, Transaction, tx))
 	if err != nil {
 		tx.Rollback() // nolint: errcheck
-		return FormatDBError(err)
+		return err
 	}
 
 	err = tx.Commit()

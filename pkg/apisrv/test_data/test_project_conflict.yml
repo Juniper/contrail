@@ -1,0 +1,51 @@
+name: Test project
+description: |
+  Test that creating the same project twice fails with the expected code
+  and no extra information is returned.
+cleanup:
+- path: /project/project_blue_project_uuid
+test_data:
+  project_blue: &project_blue_project
+    uuid: project_blue_project_uuid
+    name: project_blue_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project_blue_project
+  expect:
+    project: *project_blue_project
+
+- name: try to create the same project again
+  request:
+    path: /projects
+    method: POST
+    expected: [409]
+    data:
+      project: *project_blue_project
+  expect:
+    message: "Resource conflict: unique constraint violation"
+
+- name: delete project
+  request:
+    path: /project/project_blue_project_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
