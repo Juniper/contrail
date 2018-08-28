@@ -117,3 +117,37 @@ func (m *VirtualNetwork) GetDefaultRoutingInstance() *RoutingInstance {
 func (m *VirtualNetwork) HasNetworkBasedAllocationMethod() bool {
 	return m.GetAddressAllocationMethod() == UserDefinedSubnetOnly || m.GetAddressAllocationMethod() == FlatSubnetOnly
 }
+
+// DefaultRoutingInstance returns the default routing instance for the network.
+func (m *VirtualNetwork) DefaultRoutingInstance() *RoutingInstance {
+	return &RoutingInstance{
+		Name:                      m.Name,
+		FQName:                    m.DefaultRoutingInstanceFQName(),
+		ParentUUID:                m.UUID,
+		RoutingInstanceIsDefault:  true,
+		RoutingInstanceFabricSnat: m.FabricSnat,
+		RouteTargetRefs:           m.MakeImportExportRouteTargetRefs(),
+	}
+}
+
+// DefaultRoutingInstanceFQName returns the FQName of the network's default RoutingInstance.
+func (m *VirtualNetwork) DefaultRoutingInstanceFQName() []string {
+	return append(m.FQName, m.FQName[len(m.FQName)-1])
+}
+
+// MakeImportExportRouteTargetRefs returns refs to RouteTarget's from import and export lists.
+func (m *VirtualNetwork) MakeImportExportRouteTargetRefs() (refs []*RoutingInstanceRouteTargetRef) {
+	for _, rt := range m.GetImportRouteTargetList().GetRouteTarget() {
+		refs = append(refs, &RoutingInstanceRouteTargetRef{
+			To:   []string{rt},
+			Attr: &InstanceTargetType{ImportExport: "import"},
+		})
+	}
+	for _, rt := range m.GetExportRouteTargetList().GetRouteTarget() {
+		refs = append(refs, &RoutingInstanceRouteTargetRef{
+			To:   []string{rt},
+			Attr: &InstanceTargetType{ImportExport: "export"},
+		})
+	}
+	return refs
+}
