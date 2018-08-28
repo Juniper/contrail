@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Juniper/contrail/pkg/compilationif"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -39,6 +40,7 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 
 	expectCreateRT(mockAPIService, expectedRT)
 
+	compilationif.Init()
 	_, err := service.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{
 		RoutingInstance: routingInstance,
 	})
@@ -47,11 +49,10 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 }
 
 func expectCreateRT(mockAPIService *servicesmock.MockWriteService, expectedRT *models.RouteTarget) {
-	mockAPIService.EXPECT().CreateRouteTarget(testutil.NotNil(), &services.CreateRouteTargetRequest{
-		RouteTarget: expectedRT,
-	}).Return(&services.CreateRouteTargetResponse{
-		RouteTarget: expectedRT,
-	}, nil).Times(1)
+	// TODO Revisit code below when route target is allocated properly.
+	mockAPIService.EXPECT().CreateRouteTarget(
+		testutil.NotNil(), testutil.NotNil()).Return(&services.CreateRouteTargetResponse{
+		RouteTarget: expectedRT}, nil).Times(1)
 
 	mockAPIService.EXPECT().CreateRoutingInstanceRouteTargetRef(
 		testutil.NotNil(), testutil.NotNil(),
