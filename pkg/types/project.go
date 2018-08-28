@@ -96,7 +96,7 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(
 	requestedProject := request.GetProject()
 
 	fm := request.GetFieldMask()
-	isVxlanChangeRequested := common.ContainsString(fm.GetPaths(), models.ProjectFieldVxlanRouting)
+	isVxlanChangeRequested := basemodels.FieldMaskContains(&fm, models.ProjectFieldVxlanRouting)
 	if !isVxlanChangeRequested {
 		return nil
 	}
