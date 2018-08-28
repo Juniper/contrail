@@ -1,6 +1,6 @@
-diff -Naur -x '*.pyc' -x '*.orig' site-packages/cfgm_common/vnc_cassandra.py site-packages_patched/cfgm_common/vnc_cassandra.py
---- site-packages/cfgm_common/vnc_cassandra.py	2018-08-23 09:02:10.000000000 +0200
-+++ site-packages_patched/cfgm_common/vnc_cassandra.py	2018-08-24 14:50:31.000000000 +0200
+diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/cfgm_common/vnc_cassandra.py site-packages/cfgm_common/vnc_cassandra.py
+--- site-packages_orig/cfgm_common/vnc_cassandra.py	2018-08-23 09:02:10.000000000 +0200
++++ site-packages/cfgm_common/vnc_cassandra.py	2018-08-27 18:05:16.000000000 +0200
 @@ -729,7 +729,7 @@
              if prop_field in obj_class.prop_list_fields:
                  # store list elements in list order
@@ -19,26 +19,22 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/cfgm_common/vnc_cassandra.py sit
                      wrapper_field = field.keys()[0]
                      map_coll = field[wrapper_field]
                  else:
-diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_server.py site-packages_patched/vnc_cfg_api_server/vnc_cfg_api_server.py
---- site-packages/vnc_cfg_api_server/vnc_cfg_api_server.py	2018-08-23 09:02:10.000000000 +0200
-+++ site-packages_patched/vnc_cfg_api_server/vnc_cfg_api_server.py	2018-08-24 14:50:31.000000000 +0200
-@@ -901,38 +901,38 @@
+diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_api_server.py site-packages/vnc_cfg_api_server/vnc_cfg_api_server.py
+--- site-packages_orig/vnc_cfg_api_server/vnc_cfg_api_server.py	2018-08-23 09:02:10.000000000 +0200
++++ site-packages/vnc_cfg_api_server/vnc_cfg_api_server.py	2018-08-31 13:11:45.634711660 +0200
+@@ -899,72 +899,7 @@
+     def http_resource_create(self, obj_type):
+         resource_type, r_class = self._validate_resource_type(obj_type)
          obj_dict = get_request().json[resource_type]
- 
-         # check visibility
+-
+-        # check visibility
 -        user_visible = (obj_dict.get('id_perms') or {}).get('user_visible', True)
 -        if not user_visible and not self.is_admin_request():
 -            result = 'This object is not visible by users'
 -            self.config_object_error(None, None, obj_type, 'http_post', result)
 -            raise cfgm_common.exceptions.HttpError(400, result)
-+      #  user_visible = (obj_dict.get('id_perms') or {}).get('user_visible', True)
-+       # if not user_visible and not self.is_admin_request():
-+        #    result = 'This object is not visible by users'
-+         #   self.config_object_error(None, None, obj_type, 'http_post', result)
-+          #  raise cfgm_common.exceptions.HttpError(400, result)
- 
+-
 -        self._post_validate(obj_type, obj_dict=obj_dict)
-+        #self._post_validate(obj_type, obj_dict=obj_dict)
          fq_name = obj_dict['fq_name']
 -        try:
 -            self._extension_mgrs['resourceApi'].map_method(
@@ -51,70 +47,62 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                      %(obj_type, obj_dict)
 -            err_msg += cfgm_common.utils.detailed_traceback()
 -            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
-+        #try:
-+         #   self._extension_mgrs['resourceApi'].map_method(
-+         #        'pre_%s_create' %(obj_type), obj_dict)
-+        #except RuntimeError:
-+        #    # lack of registered extension leads to RuntimeError
-+        #    pass
-+        #except Exception as e:
-+        #    err_msg = 'In pre_%s_create an extension had error for %s' \
-+        #              %(obj_type, obj_dict)
-+        #    err_msg += cfgm_common.utils.detailed_traceback()
-+        #    self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
- 
-         # properties validator
+-
+-        # properties validator
 -        ok, result = self._validate_props_in_request(r_class,
 -                     obj_dict, operation='CREATE')
 -        if not ok:
 -            result = 'Bad property in create: ' + result
 -            raise cfgm_common.exceptions.HttpError(400, result)
-+        #ok, result = self._validate_props_in_request(r_class,
-+        #             obj_dict, operation='CREATE')
-+        #f not ok:
-+        #    result = 'Bad property in create: ' + result
-+        #    raise cfgm_common.exceptions.HttpError(400, result)
- 
-         # references validator
+-
+-        # references validator
 -        ok, result = self._validate_refs_in_request(r_class, obj_dict)
 -        if not ok:
 -            result = 'Bad reference in create: ' + result
 -            raise cfgm_common.exceptions.HttpError(400, result)
-+        #ok, result = self._validate_refs_in_request(r_class, obj_dict)
-+        #if not ok:
-+        #    result = 'Bad reference in create: ' + result
-+        #    raise cfgm_common.exceptions.HttpError(400, result)
- 
-         # Can abort resource creation and retrun 202 status code
-         get_context().set_state('PENDING_DBE_CREATE')
-@@ -940,7 +940,7 @@
-         if not ok:
-             code, msg = result
-             raise cfgm_common.exceptions.HttpError(code, msg)
+-
+-        # Can abort resource creation and retrun 202 status code
+-        get_context().set_state('PENDING_DBE_CREATE')
+-        ok, result = r_class.pending_dbe_create(obj_dict)
+-        if not ok:
+-            code, msg = result
+-            raise cfgm_common.exceptions.HttpError(code, msg)
 -        if ok and isinstance(result, tuple) and result[0] == 202:
-+        if False and ok and isinstance(result, tuple) and result[0] == 202:
-             # Creation accepted but not applied, pending delete return 202 HTTP
-             # OK code to aware clients
-             pending_obj_dict = result[1]
-@@ -959,10 +959,10 @@
- 
-         get_context().set_state('PRE_DBE_ALLOC')
-         # type-specific hook
+-            # Creation accepted but not applied, pending delete return 202 HTTP
+-            # OK code to aware clients
+-            pending_obj_dict = result[1]
+-            bottle.response.status = 202
+-            rsp_body = {}
+-            rsp_body['fq_name'] = pending_obj_dict['fq_name']
+-            rsp_body['uuid'] = pending_obj_dict['uuid']
+-            rsp_body['name'] = pending_obj_dict['fq_name'][-1]
+-            rsp_body['href'] = self.generate_url(resource_type,
+-                                                 pending_obj_dict['uuid'])
+-            rsp_body['parent_type'] = pending_obj_dict['parent_type']
+-            rsp_body['parent_uuid'] = pending_obj_dict['parent_uuid']
+-            rsp_body['parent_href'] = self.generate_url(
+-                pending_obj_dict['parent_type'],pending_obj_dict['parent_uuid'])
+-            return {resource_type: rsp_body}
+-
+-        get_context().set_state('PRE_DBE_ALLOC')
+-        # type-specific hook
 -        ok, result = r_class.pre_dbe_alloc(obj_dict)
 -        if not ok:
 -            code, msg = result
 -            raise cfgm_common.exceptions.HttpError(code, msg)
-+        #ok, result = r_class.pre_dbe_alloc(obj_dict)
-+        #if not ok:
-+        #    code, msg = result
-+        #    raise cfgm_common.exceptions.HttpError(code, msg)
- 
-         # common handling for all resource create
+-
+-        # common handling for all resource create
          (ok, result) = self._post_common(obj_type, obj_dict)
-@@ -979,40 +979,40 @@
+         if not ok:
+             (code, msg) = result
+@@ -975,123 +910,20 @@
+         uuid_in_req = result
+         name = obj_dict['fq_name'][-1]
+         fq_name = obj_dict['fq_name']
+-
          db_conn = self._db_conn
  
-         # if client gave parent_type of config-root, ignore and remove
+-        # if client gave parent_type of config-root, ignore and remove
 -        if 'parent_type' in obj_dict and obj_dict['parent_type'] == 'config-root':
 -            del obj_dict['parent_type']
 -
@@ -142,76 +130,50 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                fq_name_str = ':'.join(parent_fq_name)
 -                self.config_object_error(None, fq_name_str, obj_type, 'http_post', err_msg)
 -                raise cfgm_common.exceptions.HttpError(400, err_msg)
-+        #if 'parent_type' in obj_dict and obj_dict['parent_type'] == 'config-root':
-+        #    del obj_dict['parent_type']
-+#
-+        #parent_class = None
-+        #if 'parent_type' in obj_dict:
-+        #    # non config-root child, verify parent exists
-+        #    parent_res_type, parent_class = self._validate_resource_type(
-+        #         obj_dict['parent_type'])
-+        #    parent_obj_type = parent_class.object_type
-+        #    parent_res_type = parent_class.resource_type
-+        #    parent_fq_name = obj_dict['fq_name'][:-1]
-+        #    try:
-+        #        parent_uuid = self._db_conn.fq_name_to_uuid(parent_obj_type,
-+        #                                                    parent_fq_name)
-+        #        (ok, status) = self._permissions.check_perms_write(
-+        #            get_request(), parent_uuid)
-+        #        if not ok:
-+        #            (code, err_msg) = status
-+        #            raise cfgm_common.exceptions.HttpError(code, err_msg)
-+        #        self._permissions.set_user_role(get_request(), obj_dict)
-+        #        obj_dict['parent_uuid'] = parent_uuid
-+        #    except NoIdError:
-+        #        err_msg = 'Parent %s type %s does not exist' % (
-+        #            pformat(parent_fq_name), parent_res_type)
-+        #        fq_name_str = ':'.join(parent_fq_name)
-+        #        self.config_object_error(None, fq_name_str, obj_type, 'http_post', err_msg)
-+        #        raise cfgm_common.exceptions.HttpError(400, err_msg)
- 
-         # Validate perms on references
+-
+-        # Validate perms on references
 -        try:
 -            self._validate_perms_in_request(r_class, obj_type, obj_dict)
 -        except NoIdError:
 -            raise cfgm_common.exceptions.HttpError(
 -                400, 'Unknown reference in resource create %s.' %(obj_dict))
-+        #try:
-+        #    self._validate_perms_in_request(r_class, obj_type, obj_dict)
-+        #except NoIdError:
-+        #    raise cfgm_common.exceptions.HttpError(
-+        #        400, 'Unknown reference in resource create %s.' %(obj_dict))
- 
-         # State modification starts from here. Ensure that cleanup is done for all state changes
-         cleanup_on_failure = []
-@@ -1033,64 +1033,64 @@
- 
-             get_context().set_state('PRE_DBE_CREATE')
-             # type-specific hook
+-
+-        # State modification starts from here. Ensure that cleanup is done for all state changes
+-        cleanup_on_failure = []
+-        quota_counter = []
+-
+         def stateful_create():
+-            get_context().set_state('DBE_ALLOC')
+             # Alloc and Store id-mappings before creating entry on pubsub store.
+             # Else a subscriber can ask for an id mapping before we have stored it
+             (ok, result) = db_conn.dbe_alloc(obj_type, obj_dict, uuid_in_req)
+             if not ok:
+                 return (ok, result)
+             get_context().push_undo(db_conn.dbe_release, obj_type, fq_name)
+-
+             obj_id = result
+-            env = get_request().headers.environ
+-            tenant_name = env.get(hdr_server_tenant()) or 'default-project'
+-
+-            get_context().set_state('PRE_DBE_CREATE')
+-            # type-specific hook
 -            (ok, result) = r_class.pre_dbe_create(
 -                    tenant_name, obj_dict, db_conn)
--            if not ok:
--                return (ok, result)
-+            #(ok, result) = r_class.pre_dbe_create(
-+            #        tenant_name, obj_dict, db_conn)
-+            #if not ok:
-+            #    return (ok, result)
++            (ok, result) = db_conn.dbe_create(obj_type, obj_id, obj_dict)
+             if not ok:
+                 return (ok, result)
  
-             callable = getattr(r_class, 'http_post_collection_fail', None)
-             if callable:
-                 cleanup_on_failure.append((callable, [tenant_name, obj_dict, db_conn]))
- 
+-            callable = getattr(r_class, 'http_post_collection_fail', None)
+-            if callable:
+-                cleanup_on_failure.append((callable, [tenant_name, obj_dict, db_conn]))
+-
 -            ok, quota_limit, proj_uuid = r_class.get_quota_for_resource(obj_type,
 -                                                                        obj_dict, db_conn)
 -            if not ok:
 -                return ok, quota_limit
-+            #ok, quota_limit, proj_uuid = r_class.get_quota_for_resource(obj_type,
-+            #                                                            obj_dict, db_conn)
-+            #if not ok:
-+            #    return ok, quota_limit
- 
-             get_context().set_state('DBE_CREATE')
- 
+-
+-            get_context().set_state('DBE_CREATE')
+-
 -            if quota_limit >= 0:
 -                path = self._path_prefix + proj_uuid + "/" + obj_type
 -                if not self.quota_counter.get(path):
@@ -235,39 +197,13 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                    # To be used for reverting back count when undo() is called
 -                    quota_counter.append(self.quota_counter[path])
 -            else:
-+            #if quota_limit >= 0:
-+            #    path = self._path_prefix + proj_uuid + "/" + obj_type
-+            #    if not self.quota_counter.get(path):
-+            #        # Init quota counter
-+            #        path_prefix = self._path_prefix + proj_uuid
-+            #        try:
-+            #            QuotaHelper._zk_quota_counter_init(
-+            #                       path_prefix, {obj_type: quota_limit}, proj_uuid,
-+            #                       self._db_conn, self.quota_counter)
-+            #        except NoIdError:
-+            #            msg = "Error in initializing quota "\
-+            #                  "Internal error : Failed to read resource count"
-+            #            return (False, (404, msg))
-+#
-+            #    (ok, result) = QuotaHelper.verify_quota_and_create_resource(
-+            #                              db_conn, obj_dict, obj_type, obj_id,
-+            #                              quota_limit, self.quota_counter[path])
-+            #    if not ok:
-+            #        return (ok, result)
-+            #    else:
-+            #        # To be used for reverting back count when undo() is called
-+            #        quota_counter.append(self.quota_counter[path])
-+            #else:
-                 #normal execution
+-                #normal execution
 -                (ok, result) = db_conn.dbe_create(obj_type, obj_id, obj_dict)
 -                if not ok:
 -                    return (ok, result)
-+            (ok, result) = db_conn.dbe_create(obj_type, obj_id, obj_dict)
-+            if not ok:
-+                return (ok, result)
- 
-             get_context().set_state('POST_DBE_CREATE')
-             # type-specific hook
+-
+-            get_context().set_state('POST_DBE_CREATE')
+-            # type-specific hook
 -            try:
 -                ok, result = r_class.post_dbe_create(tenant_name, obj_dict, db_conn)
 -            except Exception as e:
@@ -280,25 +216,20 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -            if not ok:
 -                # Create is done, log to system, no point in informing user
 -                self.config_log(result[1], level=SandeshLevel.SYS_ERR)
-+            #try:
-+            #    ok, result = r_class.post_dbe_create(tenant_name, obj_dict, db_conn)
-+            #except Exception as e:
-+            #    ok = False
-+            #    msg = ("%s:%s post_dbe_create had an exception: %s\n%s" %
-+            #           (obj_type, obj_id, str(e),
-+            #            cfgm_common.utils.detailed_traceback()))
-+            #    result = (None, msg)
-+#
-+            #if not ok:
-+            #    # Create is done, log to system, no point in informing user
-+            #    self.config_log(result[1], level=SandeshLevel.SYS_ERR)
- 
+-
              return True, obj_id
          # end stateful_create
-@@ -1109,42 +1109,42 @@
+ 
+@@ -1104,47 +936,14 @@
+         if not ok:
+             fq_name_str = ':'.join(fq_name)
+             self.undo(result, obj_type, fq_name=fq_name_str,
+-                      counter=quota_counter, value=-1)
++                      counter=None, value=-1)
+             code, msg = result
              raise cfgm_common.exceptions.HttpError(code, msg)
  
-         # Initialize quota counter if resource is project
+-        # Initialize quota counter if resource is project
 -        if resource_type == 'project' and 'quota' in obj_dict:
 -            proj_id = obj_dict['uuid']
 -            quota_dict = obj_dict.get('quota')
@@ -311,19 +242,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                    err_msg = "Error in initializing quota "\
 -                              "Internal error : Failed to read resource count"
 -                    self.config_log(err_msg, level=SandeshLevel.SYS_ERR)
-+        #if resource_type == 'project' and 'quota' in obj_dict:
-+        #    proj_id = obj_dict['uuid']
-+        #    quota_dict = obj_dict.get('quota')
-+        #    path_prefix = self._path_prefix + proj_id
-+        #    if quota_dict:
-+        #        try:
-+        #            QuotaHelper._zk_quota_counter_init(path_prefix, quota_dict,
-+        #                                  proj_id, db_conn, self.quota_counter)
-+        #        except NoIdError:
-+        #            err_msg = "Error in initializing quota "\
-+        #                      "Internal error : Failed to read resource count"
-+        #            self.config_log(err_msg, level=SandeshLevel.SYS_ERR)
- 
+-
          rsp_body = {}
          rsp_body['name'] = name
          rsp_body['fq_name'] = fq_name
@@ -347,47 +266,29 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                      %(obj_type, obj_dict)
 -            err_msg += cfgm_common.utils.detailed_traceback()
 -            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
-+        #rsp_body['href'] = self.generate_url(resource_type, result)
-+        #if parent_class:
-+        #    # non config-root child, send back parent uuid/href
-+        #    rsp_body['parent_type'] = obj_dict['parent_type']
-+        #    rsp_body['parent_uuid'] = parent_uuid
-+        #    #rsp_body['parent_href'] = self.generate_url(parent_res_type,
-+        #                                                parent_uuid)
-+
-+        #try:
-+        #    self._extension_mgrs['resourceApi'].map_method(
-+        #        'post_%s_create' %(obj_type), obj_dict)
-+        #except RuntimeError:
-+        #    # lack of registered extension leads to RuntimeError
-+        #    pass
-+        #except Exception as e:
-+        #    err_msg = 'In post_%s_create an extension had error for %s' \
-+        #              %(obj_type, obj_dict)
-+        #    err_msg += cfgm_common.utils.detailed_traceback()
-+        #    self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
  
          return {resource_type: rsp_body}
      # end http_resource_create
-@@ -1288,10 +1288,10 @@
+@@ -1287,12 +1086,6 @@
+             return
  
          obj_dict = get_request().json[resource_type]
- 
+-
 -        if 'perms2' in obj_dict:
 -            if 'owner' not in obj_dict['perms2']:
 -                raise cfgm_common.exceptions.HttpError(400,
 -                                    'owner in perms2 must be present')
-+        #if 'perms2' in obj_dict:
-+        #    if 'owner' not in obj_dict['perms2']:
-+        #        raise cfgm_common.exceptions.HttpError(400,
-+        #                            'owner in perms2 must be present')
- 
+-
          fields = r_class.prop_fields | r_class.ref_fields
          try:
-@@ -1306,24 +1306,24 @@
- 
-         # Look if the resource have a pending version, if yes use it as resource
-         # to update
+             ok, result = self._db_conn.dbe_read(obj_type, id, fields)
+@@ -1303,27 +1096,9 @@
+                                      result[1])
+             raise cfgm_common.exceptions.HttpError(result[0], result[1])
+         db_obj_dict = result
+-
+-        # Look if the resource have a pending version, if yes use it as resource
+-        # to update
 -        if hasattr(r_class, 'get_pending_resource'):
 -            ok, result = r_class.get_pending_resource(db_obj_dict, fields)
 -            if ok and isinstance(result, dict):
@@ -403,21 +304,6 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -        else:
 -            old_quota_dict = None
 -
-+        #if hasattr(r_class, 'get_pending_resource'):
-+        #    ok, result = r_class.get_pending_resource(db_obj_dict, fields)
-+        #    if ok and isinstance(result, dict):
-+        #        db_obj_dict = result
-+        #        id = obj_dict['uuid'] = db_obj_dict['uuid']
-+        #    if not ok and result[0] != 404:
-+        #        self.config_object_error(
-+        #            id, None, obj_type, 'http_resource_update', result[1])
-+        #        raise cfgm_common.exceptions.HttpError(result[0], result[1])
-+
-+        #if resource_type == 'project' and 'quota' in db_obj_dict:
-+        #    old_quota_dict = db_obj_dict['quota']
-+        #else:
-+        #    old_quota_dict = None
-+#
          self._put_common(
              'http_put', obj_type, id, db_obj_dict, req_obj_dict=obj_dict,
 -            quota_dict=old_quota_dict)
@@ -425,14 +311,199 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
  
          rsp_body = {}
          rsp_body['uuid'] = id
-@@ -4107,127 +4107,127 @@
+@@ -1348,18 +1123,6 @@
+             raise cfgm_common.exceptions.HttpError(
+                 404, 'ID %s does not exist' %(id))
+ 
+-        try:
+-            self._extension_mgrs['resourceApi'].map_method(
+-                'pre_%s_delete' %(obj_type), id)
+-        except RuntimeError:
+-            # lack of registered extension leads to RuntimeError
+-            pass
+-        except Exception as e:
+-            err_msg = 'In pre_%s_delete an extension had error for %s' \
+-                      %(obj_type, id)
+-            err_msg += cfgm_common.utils.detailed_traceback()
+-            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
+-
+         # read in obj from db (accepting error) to get details of it
+         try:
+             (read_ok, read_result) = db_conn.dbe_read(obj_type, id)
+@@ -1370,13 +1133,6 @@
+                 id, None, obj_type, 'http_delete', read_result)
+             # proceed down to delete the resource
+ 
+-        # check visibility
+-        if (not read_result['id_perms'].get('user_visible', True) and
+-            not self.is_admin_request()):
+-            result = 'This object is not visible by users: %s' % id
+-            self.config_object_error(id, None, obj_type, 'http_delete', result)
+-            raise cfgm_common.exceptions.HttpError(404, result)
+-
+         # common handling for all resource delete
+         parent_uuid = read_result.get('parent_uuid')
+         (ok, del_result) = self._delete_common(
+@@ -1386,134 +1142,14 @@
+             self.config_object_error(id, None, obj_type, 'http_delete', msg)
+             raise cfgm_common.exceptions.HttpError(code, msg)
+ 
+-        # Permit abort resource deletion and retrun 202 status code
+-        get_context().set_state('PENDING_DBE_DELETE')
+-        ok, result = r_class.pending_dbe_delete(read_result)
+-        if (not ok and isinstance(result, tuple) and result[0] == 409 and
+-                isinstance(result[1], set)):
+-            # Found back reference to existing enforced or draft resource
+-            exist_hrefs = [self.generate_url(type, uuid)
+-                           for type, uuid in result[1]]
+-            msg = "Delete when resource still referred: %s" % exist_hrefs
+-            self.config_object_error(id, None, obj_type, 'http_delete', msg)
+-            raise cfgm_common.exceptions.HttpError(409, msg)
+-        elif ok and isinstance(result, tuple) and result[0] == 202:
+-            # Deletion accepted but not applied, pending delete
+-            # return 202 HTTP OK code to aware clients
+-            bottle.response.status = 202
+-            return
+-        elif not ok:
+-            code, msg = result
+-            raise cfgm_common.exceptions.HttpError(code, msg)
+-
+-        # fail if non-default children or non-derived backrefs exist
+-        for child_field in r_class.children_fields:
+-            child_type, is_derived = r_class.children_field_types[child_field]
+-            if is_derived:
+-                continue
+-            child_cls = self.get_resource_class(child_type)
+-            default_child_name = 'default-%s' %(
+-                child_cls(parent_type=obj_type).get_type())
+-            exist_hrefs = []
+-            for child in read_result.get(child_field, []):
+-                if child['to'][-1] in [default_child_name,
+-                        POLICY_MANAGEMENT_NAME_FOR_SECURITY_DRAFT]:
+-                    continue
+-                exist_hrefs.append(
+-                    self.generate_url(child_type, child['uuid']))
+-            if exist_hrefs:
+-                err_msg = 'Delete when children still present: %s' %(
+-                    exist_hrefs)
+-                self.config_object_error(
+-                    id, None, obj_type, 'http_delete', err_msg)
+-                raise cfgm_common.exceptions.HttpError(409, err_msg)
+-
+-        relaxed_refs = set(db_conn.dbe_get_relaxed_refs(id))
+-        for backref_field in r_class.backref_fields:
+-            backref_type, _, is_derived = \
+-                r_class.backref_field_types[backref_field]
+-            if is_derived:
+-                continue
+-            exist_hrefs = [self.generate_url(backref_type, backref['uuid'])
+-                           for backref in read_result.get(backref_field, [])
+-                               if backref['uuid'] not in relaxed_refs]
+-            if exist_hrefs:
+-                err_msg = 'Delete when resource still referred: %s' %(
+-                    exist_hrefs)
+-                self.config_object_error(
+-                    id, None, obj_type, 'http_delete', err_msg)
+-                raise cfgm_common.exceptions.HttpError(409, err_msg)
+-
+         # State modification starts from here. Ensure that cleanup is done for all state changes
+         cleanup_on_failure = []
+         quota_counter = []
+         def stateful_delete():
+-            get_context().set_state('PRE_DBE_DELETE')
+-
+-            proj_id = r_class.get_project_id_for_resource(read_result, obj_type,
+-                                                          db_conn)
+-            (ok, del_result) = r_class.pre_dbe_delete(
+-                    id, read_result, db_conn)
+-            if not ok:
+-                return (ok, del_result)
+-
+-            # Delete default children first
+-            for child_field in r_class.children_fields:
+-                child_type, is_derived = r_class.children_field_types[child_field]
+-                if is_derived:
+-                    continue
+-                if child_field in self._GENERATE_DEFAULT_INSTANCE:
+-                    self.delete_default_children(child_type, read_result)
+-
+-            callable = getattr(r_class, 'http_delete_fail', None)
+-            if callable:
+-                cleanup_on_failure.append((callable, [id, read_result, db_conn]))
+-
+-            get_context().set_state('DBE_DELETE')
+             (ok, del_result) = db_conn.dbe_delete(obj_type, id, read_result)
+             if not ok:
+                 return (ok, del_result)
+ 
+-            if proj_id:
+-                (ok, proj_dict) = QuotaHelper.get_project_dict_for_quota(
+-                                      proj_id, db_conn)
+-                if not ok:
+-                    return ok, proj_dict
+-                quota_limit = QuotaHelper.get_quota_limit(proj_dict, obj_type)
+-                path = self._path_prefix + proj_id + "/" + obj_type
+-                if quota_limit > 0:
+-                    if self.quota_counter.get(path):
+-                        self.quota_counter[path] -= 1
+-                    else:
+-                        # quota counter obj not initialized
+-                        # in this api-server, Init counter
+-                        path_prefix = self._path_prefix + proj_id
+-                        QuotaHelper._zk_quota_counter_init(
+-                            path_prefix, {obj_type : quota_limit},
+-                            proj_id, db_conn, self.quota_counter)
+-                        if db_conn._zk_db.quota_counter_exists(path):
+-                            self.quota_counter[path] -= 1
+-                    quota_counter.append(self.quota_counter.get(path))
+-                elif self.quota_counter.get(path):
+-                    # quota limit is modified to unlimited
+-                    # delete counter object
+-                    del self.quota_counter[path]
+-
+-            # type-specific hook
+-            get_context().set_state('POST_DBE_DELETE')
+-            try:
+-                ok, result = r_class.post_dbe_delete(id, read_result, db_conn)
+-            except Exception as e:
+-                ok = False
+-                msg = ("%s:%s post_dbe_delete had an exception: %s\n%s" %
+-                       (obj_type, id, str(e),
+-                        cfgm_common.utils.detailed_traceback()))
+-                result = (None, msg)
+-
+-            if not ok:
+-                # Delete is done, log to system, no point in informing user
+-                self.config_log(result[1], level=SandeshLevel.SYS_ERR)
+-
+             return (True, '')
+         # end stateful_delete
+ 
+@@ -1531,17 +1167,6 @@
+             code, msg = result
+             raise cfgm_common.exceptions.HttpError(code, msg)
+ 
+-        try:
+-            self._extension_mgrs['resourceApi'].map_method(
+-                'post_%s_delete' %(obj_type), id, read_result)
+-        except RuntimeError:
+-            # lack of registered extension leads to RuntimeError
+-            pass
+-        except Exception as e:
+-            err_msg = 'In pre_%s_delete an extension had error for %s' \
+-                      %(obj_type, id)
+-            err_msg += cfgm_common.utils.detailed_traceback()
+-            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
+     # end http_resource_delete
+ 
+     @log_api_stats
+@@ -4107,186 +3732,20 @@
  
          obj_fq_name = db_obj_dict.get('fq_name', 'missing-fq-name')
          # ZK and rabbitmq should be functional
 -        self._ensure_services_conn(
 -            api_name, obj_type, obj_uuid, obj_fq_name)
-+        #self._ensure_services_conn(
-+        #    api_name, obj_type, obj_uuid, obj_fq_name)
++        self._ensure_services_conn(api_name, obj_type, obj_uuid, obj_fq_name)
  
          resource_type, r_class = self._validate_resource_type(obj_type)
 -        try:
@@ -446,59 +517,32 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                      %(obj_type, req_obj_dict)
 -            err_msg += cfgm_common.utils.detailed_traceback()
 -            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
-+        #try:
-+        #    self._extension_mgrs['resourceApi'].map_method(
-+        #        'pre_%s_update' %(obj_type), obj_uuid, req_obj_dict)
-+        #except RuntimeError:
-+        #    # lack of registered extension leads to RuntimeError
-+        #    pass
-+        #except Exception as e:
-+        #    err_msg = 'In pre_%s_update an extension had error for %s' \
-+        #              %(obj_type, req_obj_dict)
-+        #    err_msg += cfgm_common.utils.detailed_traceback()
-+        #    self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
- 
+-
          db_conn = self._db_conn
- 
-         # check visibility
+-
+-        # check visibility
 -        if (not db_obj_dict['id_perms'].get('user_visible', True) and
 -            not self.is_admin_request()):
 -            result = 'This object is not visible by users: %s' % obj_uuid
 -            self.config_object_error(obj_uuid, None, obj_type, api_name, result)
 -            raise cfgm_common.exceptions.HttpError(404, result)
-+        #if (not db_obj_dict['id_perms'].get('user_visible', True) and
-+        #    not self.is_admin_request()):
-+        #    result = 'This object is not visible by users: %s' % obj_uuid
-+        #    self.config_object_error(obj_uuid, None, obj_type, api_name, result)
-+        #    raise cfgm_common.exceptions.HttpError(404, result)
- 
-         # properties validator (for collections validation in caller)
+-
+-        # properties validator (for collections validation in caller)
 -        if req_obj_dict is not None:
 -            ok, result = self._validate_props_in_request(r_class,
 -                         req_obj_dict, operation='UPDATE')
 -            if not ok:
 -                result = 'Bad property in %s: %s' %(api_name, result)
 -                raise cfgm_common.exceptions.HttpError(400, result)
-+        #if req_obj_dict is not None:
-+        #    ok, result = self._validate_props_in_request(r_class,
-+        #                 req_obj_dict, operation='UPDATE')
-+        #    if not ok:
-+        #        result = 'Bad property in %s: %s' %(api_name, result)
-+        #        raise cfgm_common.exceptions.HttpError(400, result)
- 
-         # references validator
+-
+-        # references validator
 -        if req_obj_dict is not None:
 -            ok, result = self._validate_refs_in_request(r_class, req_obj_dict)
 -            if not ok:
 -                result = 'Bad reference in %s: %s' %(api_name, result)
 -                raise cfgm_common.exceptions.HttpError(400, result)
-+        #if req_obj_dict is not None:
-+        #    ok, result = self._validate_refs_in_request(r_class, req_obj_dict)
-+        #    if not ok:
-+        #        result = 'Bad reference in %s: %s' %(api_name, result)
-+        #        raise cfgm_common.exceptions.HttpError(400, result)
- 
-         # common handling for all resource put
+-
+-        # common handling for all resource put
          request = get_request()
          fq_name_str = ":".join(obj_fq_name or [])
 -        if req_obj_dict:
@@ -538,45 +582,8 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                self.config_object_error(
 -                    obj_uuid, fq_name_str, obj_type, api_name, msg)
 -                raise cfgm_common.exceptions.HttpError(code, msg)
-+        #if req_obj_dict:
-+        #    if ('id_perms' in req_obj_dict and
-+        #            req_obj_dict['id_perms'].get('uuid')):
-+        #        if not self._db_conn.match_uuid(req_obj_dict, obj_uuid):
-+        #            msg = (
-+        #                "UUID mismatch from %s:%s" %
-+        #                (request.environ.get('REMOTE_ADDR',
-+        #                                     "Remote address not found"),
-+        #                 request.environ.get('HTTP_USER_AGENT',
-+        #                                     "User agent not found"))
-+        #            )
-+        #            self.config_object_error(
-+        #                obj_uuid, fq_name_str, obj_type, 'put', msg)
-+        #            self._db_conn.set_uuid(obj_type, req_obj_dict,
-+        #                                   uuid.UUID(obj_uuid),
-+        #                                   do_lock=False)
-+#
-+        #    # Ensure object has at least default permissions set
-+        self._ensure_id_perms_present(obj_uuid, req_obj_dict)
-+
-+        #apiConfig = VncApiCommon()
-+        #apiConfig.object_type = obj_type
-+        #apiConfig.identifier_name = fq_name_str
-+        #apiConfig.identifier_uuid = obj_uuid
-+        #apiConfig.operation = api_name
-+        #self._set_api_audit_info(apiConfig)
-+        #log = VncApiConfigLog(api_log=apiConfig,
-+        #        sandesh=self._sandesh)
-+        #log.send(sandesh=self._sandesh)
-+#
-+        #if self.is_auth_needed():
-+        #    ok, result = self._permissions.check_perms_write(request, obj_uuid)
-+        #    if not ok:
-+        #        (code, msg) = result
-+        #        self.config_object_error(
-+        #            obj_uuid, fq_name_str, obj_type, api_name, msg)
-+        #        raise cfgm_common.exceptions.HttpError(code, msg)
- 
-         # Validate perms on references
+-
+-        # Validate perms on references
 -        if req_obj_dict is not None:
 -            try:
 -                self._validate_perms_in_request(
@@ -587,22 +594,13 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                    %(obj_type, req_obj_dict))
 -
 -        # State modification starts from here. Ensure that cleanup is done for all state changes
-+        #if req_obj_dict is not None:
-+        #    try:
-+        #        self._validate_perms_in_request(
-+        #            r_class, obj_type, req_obj_dict)
-+        #    except NoIdError:
-+        #        raise cfgm_common.exceptions.HttpError(400,
-+        #            'Unknown reference in resource update %s %s.'
-+        #            %(obj_type, req_obj_dict))
-+#
-+        ## State modification starts from here. Ensure that cleanup is done for all state changes
++        self._ensure_id_perms_present(obj_uuid, req_obj_dict)
          cleanup_on_failure = []
          if req_obj_dict is not None:
              req_obj_dict['uuid'] = obj_uuid
  
-         # Permit abort resource update and retrun 202 status code
-         get_context().set_state('PENDING_DBE_UPDATE')
+-        # Permit abort resource update and retrun 202 status code
+-        get_context().set_state('PENDING_DBE_UPDATE')
 -        ok, result = r_class.pending_dbe_update(db_obj_dict, req_obj_dict,
 -                                                req_prop_coll_updates)
 -        if not ok:
@@ -614,44 +612,46 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -            bottle.response.status = 202
 -            return True, ''
 -
-+        #ok, result = r_class.pending_dbe_update(db_obj_dict, req_obj_dict,
-+        #                                        req_prop_coll_updates)
-+        #if not ok:
-+        #    code, msg = result
-+        #    raise cfgm_common.exceptions.HttpError(code, msg)
-+        #if ok and isinstance(result, tuple) and result[0] == 202:
-+        #    # Modifications accepted but not applied, pending update
-+        #    # returns 202 HTTP OK code to aware clients
-+        #    bottle.response.status = 202
-+        #    return True, ''
-+#
          def stateful_update():
-             get_context().set_state('PRE_DBE_UPDATE')
-             # type-specific hook
+-            get_context().set_state('PRE_DBE_UPDATE')
+-            # type-specific hook
 -            (ok, result) = r_class.pre_dbe_update(
 -                obj_uuid, obj_fq_name, req_obj_dict or {}, self._db_conn,
 -                prop_collection_updates=req_prop_coll_updates)
 -            if not ok:
 -                return (ok, result)
-+            #(ok, result) = r_class.pre_dbe_update(
-+            #    obj_uuid, obj_fq_name, req_obj_dict or {}, self._db_conn,
-+            #    prop_collection_updates=req_prop_coll_updates)
-+            #if not ok:
-+            #    return (ok, result)
              attr_to_publish = None
 -            if isinstance(result, dict):
 -                attr_to_publish = result
 -
-+            #if isinstance(result, dict):
-+            #    attr_to_publish = result
-+#
-             get_context().set_state('DBE_UPDATE')
-             if api_name == 'ref-update':
-                 # read ref_update args
-@@ -4256,18 +4256,18 @@
-                     attr_to_publish=attr_to_publish,
-                 )
-                 # Update quota counter
+-            get_context().set_state('DBE_UPDATE')
+-            if api_name == 'ref-update':
+-                # read ref_update args
+-                ref_obj_type = ref_args.get('ref_obj_type')
+-                ref_uuid = ref_args.get('ref_uuid')
+-                ref_data = ref_args.get('data')
+-                operation = ref_args.get('operation')
+-                relax_ref_for_delete = ref_args.get('relax_ref_for_delete', False)
+-
+-                (ok, result) = db_conn.ref_update(
+-                    obj_type,
+-                    obj_uuid,
+-                    ref_obj_type,
+-                    ref_uuid,
+-                    ref_data,
+-                    operation,
+-                    db_obj_dict['id_perms'],
+-                    attr_to_publish=attr_to_publish,
+-                    relax_ref_for_delete=relax_ref_for_delete
+-                )
+-            elif req_obj_dict:
+-                (ok, result) = db_conn.dbe_update(
+-                    obj_type,
+-                    obj_uuid,
+-                    req_obj_dict,
+-                    attr_to_publish=attr_to_publish,
+-                )
+-                # Update quota counter
 -                if resource_type == 'project' and 'quota' in req_obj_dict:
 -                    proj_id = req_obj_dict['uuid']
 -                    quota_dict = req_obj_dict['quota']
@@ -664,44 +664,34 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                        msg = "Error in initializing quota "\
 -                              "Internal error : Failed to read resource count"
 -                        self.config_log(msg, level=SandeshLevel.SYS_ERR)
-+                #if resource_type == 'project' and 'quota' in req_obj_dict:
-+                #    proj_id = req_obj_dict['uuid']
-+                #    quota_dict = req_obj_dict['quota']
-+                #    path_prefix = self._path_prefix + proj_id
-+                #    try:
-+                #        QuotaHelper._zk_quota_counter_update(
-+                #                   path_prefix, quota_dict, proj_id, db_conn,
-+                #                   self.quota_counter)
-+                #    except NoIdError:
-+                #        msg = "Error in initializing quota "\
-+                #              "Internal error : Failed to read resource count"
-+                #        self.config_log(msg, level=SandeshLevel.SYS_ERR)
-             elif req_prop_coll_updates:
-                 (ok, result) = db_conn.prop_collection_update(
-                     obj_type,
-@@ -4280,12 +4280,12 @@
- 
-             get_context().set_state('POST_DBE_UPDATE')
-             # type-specific hook
+-            elif req_prop_coll_updates:
+-                (ok, result) = db_conn.prop_collection_update(
+-                    obj_type,
+-                    obj_uuid,
+-                    req_prop_coll_updates,
+-                    attr_to_publish=attr_to_publish,
+-                )
+-            if not ok:
+-                return (ok, result)
+-
+-            get_context().set_state('POST_DBE_UPDATE')
+-            # type-specific hook
 -            (ok, result) = r_class.post_dbe_update(
 -                obj_uuid, obj_fq_name, req_obj_dict or {}, self._db_conn,
 -                prop_collection_updates=req_prop_coll_updates)
 -            if not ok:
 -                return (ok, result)
 -
-+            #(ok, result) = r_class.post_dbe_update(
-+            #    obj_uuid, obj_fq_name, req_obj_dict or {}, self._db_conn,
-+            #    prop_collection_updates=req_prop_coll_updates)
-+            #if not ok:
-+            #    return (ok, result)
-+#
-             return (ok, result)
+-            return (ok, result)
++            return db_conn.dbe_update(obj_type, obj_uuid, req_obj_dict)
          # end stateful_update
  
-@@ -4313,18 +4313,18 @@
+         try:
+@@ -4312,19 +3771,6 @@
+                     self.config_log(err_msg, level=SandeshLevel.SYS_ERR)
              code, msg = result
              raise cfgm_common.exceptions.HttpError(code, msg)
- 
+-
 -        try:
 -            self._extension_mgrs['resourceApi'].map_method(
 -                'post_%s_update' %(obj_type), obj_uuid,
@@ -714,37 +704,56 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -                      %(obj_type, req_obj_dict)
 -            err_msg += cfgm_common.utils.detailed_traceback()
 -            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
-+        #try:
-+        #    self._extension_mgrs['resourceApi'].map_method(
-+        #        'post_%s_update' %(obj_type), obj_uuid,
-+        #         req_obj_dict, db_obj_dict)
-+        #except RuntimeError:
-+        #    # lack of registered extension leads to RuntimeError
-+        #    pass
-+        #except Exception as e:
-+        #    err_msg = 'In post_%s_update an extension had error for %s' \
-+        #              %(obj_type, req_obj_dict)
-+        #    err_msg += cfgm_common.utils.detailed_traceback()
-+        #    self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
      # end _put_common
  
      # parent_type needed for perms check. None for derived objects (eg.
-@@ -4437,47 +4437,47 @@
+@@ -4336,33 +3782,8 @@
+             return (False,
+                     (503, "Not connected to zookeeper. Not able to perform requested action"))
+ 
+-        # If there are too many pending updates to rabbit, do not allow
+-        # operations that cause state change
+-        npending = self._db_conn.dbe_oper_publish_pending()
+-        if (npending >= int(self._args.rabbit_max_pending_updates)):
+-            err_str = str(MaxRabbitPendingError(npending))
+-            return (False, (500, err_str))
+-
+-        fq_name = self._db_conn.uuid_to_fq_name(uuid)
+-        apiConfig = VncApiCommon()
+-        apiConfig.object_type = obj_type
+-        apiConfig.identifier_name=':'.join(fq_name)
+-        apiConfig.identifier_uuid = uuid
+-        apiConfig.operation = 'delete'
+-        self._set_api_audit_info(apiConfig)
+-        log = VncApiConfigLog(api_log=apiConfig, sandesh=self._sandesh)
+-        log.send(sandesh=self._sandesh)
+-
+-        # TODO check api + resource perms etc.
+-        if not self.is_auth_needed() or not parent_uuid:
+-            return (True, '')
++        return (True, '')
+ 
+-        """
+-        Validate parent allows write access. Implicitly trust
+-        parent info in the object since coming from our DB.
+-        """
+-        return self._permissions.check_perms_delete(request, obj_type, uuid,
+-                                                    parent_uuid)
+     # end _http_delete_common
+ 
+     def _post_validate(self, obj_type=None, obj_dict=None):
+@@ -4437,48 +3858,8 @@
          except NoIdError:
              pass
  
 -        self.validate_parent_type(obj_type, obj_dict)
 -        # Ensure object has at least default permissions set
-+        #self.validate_parent_type(obj_type, obj_dict)
-+        ## Ensure object has at least default permissions set
-         self._ensure_id_perms_present(None, obj_dict)
+-        self._ensure_id_perms_present(None, obj_dict)
 -        self._ensure_perms2_present(obj_type, None, obj_dict,
 -            get_request().headers.environ.get('HTTP_X_PROJECT_ID', None))
-+        #self._ensure_perms2_present(obj_type, None, obj_dict,
-+        #    get_request().headers.environ.get('HTTP_X_PROJECT_ID', None))
- 
-         # TODO check api + resource perms etc.
- 
+-
+-        # TODO check api + resource perms etc.
+-
          uuid_in_req = obj_dict.get('uuid', None)
  
 -        # Set the display name
@@ -778,51 +787,26 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_cfg_api_s
 -        self._set_api_audit_info(apiConfig)
 -        log = VncApiConfigLog(api_log=apiConfig, sandesh=self._sandesh)
 -        log.send(sandesh=self._sandesh)
-+        ## Set the display name
-+        #if (('display_name' not in obj_dict) or
-+        #    (obj_dict['display_name'] is None)):
-+        #    obj_dict['display_name'] = obj_dict['fq_name'][-1]
-+#
-+        #fq_name_str = ":".join(obj_dict['fq_name'])
-+        #apiConfig = VncApiCommon()
-+        #apiConfig.object_type = obj_type
-+        #apiConfig.identifier_name=fq_name_str
-+        #apiConfig.identifier_uuid = uuid_in_req
-+        #apiConfig.operation = 'post'
-+        #try:
-+        #    body = json.dumps(get_request().json)
-+        #except:
-+        #    body = str(get_request().json)
-+        #apiConfig.body = body
-+        #if uuid_in_req:
-+        #    if uuid_in_req != str(uuid.UUID(uuid_in_req)):
-+        #        bottle.abort(400, 'Invalid UUID format: ' + uuid_in_req)
-+        #    try:
-+        #        fq_name = self._db_conn.uuid_to_fq_name(uuid_in_req)
-+        #        raise cfgm_common.exceptions.HttpError(
-+        #            409, uuid_in_req + ' already exists with fq_name: ' +
-+        #            pformat(fq_name))
-+        #    except NoIdError:
-+        #        pass
-+        #    apiConfig.identifier_uuid = uuid_in_req
-+#
-+        #self._set_api_audit_info(apiConfig)
-+        #log = VncApiConfigLog(api_log=apiConfig, sandesh=self._sandesh)
-+        #log.send(sandesh=self._sandesh)
- 
+-
          return (True, uuid_in_req)
      # end _post_common
-diff -Naur -x '*.pyc' -x '*.orig' site-packages/vnc_cfg_api_server/vnc_db.py site-packages_patched/vnc_cfg_api_server/vnc_db.py
---- site-packages/vnc_cfg_api_server/vnc_db.py	2018-08-23 09:02:10.000000000 +0200
-+++ site-packages_patched/vnc_cfg_api_server/vnc_db.py	2018-08-24 14:50:31.000000000 +0200
-@@ -1353,8 +1353,8 @@
  
-                 # many updates don't touch perms2
-                 new_perms2 = obj_dict.get('perms2', None)
--                if not new_perms2:
--                    return (ok, result)
-+               
-+                return (ok, result)
+diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_db.py site-packages/vnc_cfg_api_server/vnc_db.py
+--- site-packages_orig/vnc_cfg_api_server/vnc_db.py	2018-08-23 09:02:10.000000000 +0200
++++ site-packages/vnc_cfg_api_server/vnc_db.py	2018-08-31 13:18:58.754944866 +0200
+@@ -1394,7 +1394,6 @@
+         return wrapper1
  
-                 share_perms = new_perms2.get('share', cur_perms2['share'])
-                 global_access = new_perms2.get('global_access', cur_perms2['global_access'])
+     @dbe_trace('create')
+-    @build_shared_index('create')
+     def dbe_create(self, obj_type, obj_uuid, obj_dict):
+         (ok, result) = self._object_db.object_create(obj_type, obj_uuid,
+                                                      obj_dict)
+@@ -1460,7 +1459,6 @@
+     # end _dbe_publish_update_implicit
+ 
+     @dbe_trace('update')
+-    @build_shared_index('update')
+     def dbe_update(self, obj_type, obj_uuid, new_obj_dict,
+                    attr_to_publish=None):
+         (ok, result) = self._object_db.object_update(obj_type, obj_uuid,
