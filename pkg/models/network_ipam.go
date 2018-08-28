@@ -125,7 +125,7 @@ func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
 		return false, nil
 	}
 
-	if len(m.GetAllocationPools()) == 0 {
+	if len(m.GetAllocationPools()) == 0 && subnet.IP.String() != ip.String() {
 		return true, nil
 	}
 
