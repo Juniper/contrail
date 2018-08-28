@@ -6,6 +6,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+  	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
@@ -333,7 +334,7 @@ func (sv *ContrailTypeLogicService) checkIfIPAddressUpdate(request *services.Upd
 	databaseIPAddress := databaseInstanceIP.GetInstanceIPAddress()
 	fieldMask := request.GetFieldMask()
 
-	if common.ContainsString(fieldMask.GetPaths(), models.InstanceIPFieldInstanceIPAddress) &&
+	if baseservices.FieldMaskContains(fieldMask, models.InstanceIPFieldInstanceIPAddress) &&
 		requestIPAddress != "" && requestIPAddress != databaseIPAddress {
 		return true
 	}
