@@ -7,10 +7,12 @@ import (
 	"io"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/jackc/pgx"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/db/basedb"
 )
 
 type pgxReplicationConn interface {
@@ -98,11 +100,11 @@ func (c *postgresReplicationConnection) DoInTransactionSnapshot(
 			tx := basedb.GetTransaction(ctx)
 			_, err := tx.ExecContext(ctx, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
 			if err != nil {
-				return err
+				return errors.Wrap(err, "error setting transaction isolation")
 			}
 			_, err = tx.ExecContext(ctx, fmt.Sprintf("SET TRANSACTION SNAPSHOT '%s'", snapshotName))
 			if err != nil {
-				return err
+				return errors.Wrap(err, "error setting transaction snapshot")
 			}
 
 			return do(ctx)
