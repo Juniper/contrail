@@ -3,6 +3,7 @@ package basemodels
 import (
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/gogo/protobuf/types"
 )
 
@@ -88,4 +89,9 @@ func nestMap(m map[string]interface{}, key string) map[string]interface{} {
 	nested = map[string]interface{}{}
 	m[key] = nested
 	return nested
+}
+
+// FieldMaskContains checks if given field mask contains requested string
+func FieldMaskContains(fm *types.FieldMask, field string) bool {
+	return common.ContainsString(fm.GetPaths(), field)
 }
