@@ -195,13 +195,7 @@ func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	ctx context.Context, vn *models.VirtualNetwork,
 ) error {
 	_, err := sv.WriteService.CreateRoutingInstance(ctx, &services.CreateRoutingInstanceRequest{
-		RoutingInstance: &models.RoutingInstance{
-			Name:                      vn.Name,
-			FQName:                    makeDefaultRoutingInstaceFQName(vn),
-			ParentUUID:                vn.UUID,
-			RoutingInstanceIsDefault:  true,
-			RoutingInstanceFabricSnat: vn.FabricSnat,
-		},
+		RoutingInstance: vn.DefaultRoutingInstance(),
 	})
 
 	if err != nil {
@@ -209,10 +203,6 @@ func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	}
 
 	return nil
-}
-
-func makeDefaultRoutingInstaceFQName(vn *models.VirtualNetwork) []string {
-	return append(vn.FQName, vn.FQName[len(vn.FQName)-1])
 }
 
 func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
