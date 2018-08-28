@@ -3,7 +3,6 @@ package integration
 import (
 	"context"
 	"fmt"
-	"path"
 	"testing"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 // Integration test settings.
@@ -146,7 +146,7 @@ func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revisio
 
 // JSONEtcdKey returns etcd key of JSON-encoded resource.
 func JSONEtcdKey(schemaID, uuid string) string {
-	return path.Join("/", EtcdJSONPrefix, schemaID, uuid)
+	return models.ResourceKey(models.JSONCodec, schemaID, uuid)
 }
 
 // RetrieveCreateEvent blocks and retrieves create Event from given watch channel.
