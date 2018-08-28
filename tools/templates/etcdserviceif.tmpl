@@ -6,6 +6,7 @@ import (
     "github.com/pkg/errors"
 
     "{{ option.PackagePath }}/pkg/services"
+    "{{ option.PackagePath }}/pkg/models"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -19,9 +20,14 @@ func (ns *NotifierService) Create{{ schema.JSONSchema.GoName }}(
     }
 
     o := response.Get{{ schema.JSONSchema.GoName }}()
-    key, jsonStr := ns.EtcdNotifierMarshal("{{ schema.ID }}", o.UUID, o)
+    key := models.ResourceKey(ns.Codec, "{{ schema.ID }}", o.UUID)
     if key == "" {
         return nil, errors.New("etcd object key is empty")
+    }
+
+    jsonStr, err := ns.Codec.Encode(o)
+    if err != nil {
+        return nil, errors.New("error encoding create data")
     }
 
     err = ns.Client.Put(ctx, key, jsonStr)
@@ -42,18 +48,22 @@ func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
     }
 
     o := response.Get{{ schema.JSONSchema.GoName }}()
-    key, jsonStr := ns.EtcdNotifierMarshal("{{ schema.ID }}", o.UUID, o)
+    key := models.ResourceKey(ns.Codec, "{{ schema.ID }}", o.UUID)
     if key == "" {
         return nil, errors.New("etcd object key is empty")
     }
 
-    err = ns.Client.Put(ctx, key, jsonStr)
-    if err != nil {
-        return nil, errors.Wrapf(err, "failed to update {{ schema.JSONSchema.GoName }} with UUID %q in etcd", o.UUID)
-    }
-
     ns.log.WithField("uuid", o.UUID).Debug("Updated {{ schema.JSONSchema.GoName }} in etcd")
-    return response, nil
+    return response, ns.Client.InTransaction(ctx, func(ctx context.Context) error {
+        txn := GetTxn(ctx)
+        oldData := txn.Get(key)
+        newData, err := models.UpdateData(ns.Codec, oldData, o, request.GetFieldMask())
+        if err != nil {
+            return errors.Wrap(err, "error processing update data for etcd")
+        }
+        txn.Put(key, newData)
+        return nil
+    })
 }
 
 func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
@@ -64,7 +74,7 @@ func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
         return nil, err
     }
 
-    key, _ := ns.EtcdNotifierMarshal("{{ schema.ID }}", response.GetID(), nil)
+    key := models.ResourceKey(ns.Codec, "{{ schema.ID }}", o.UUID)
     if key == "" {
         return nil, errors.New("etcd object key is empty")
     }
