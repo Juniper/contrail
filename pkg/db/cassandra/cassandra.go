@@ -435,12 +435,12 @@ func NewAmqpEventProcessor() *AmqpEventProcessor {
 
 //AmqpMessage type
 type AmqpMessage struct {
-	RequestID string   `json:"request_id"`
-	Oper      string   `json:"oper"`
-	Type      string   `json:"type"`
-	UUID      string   `json:"uuid"`
-	FqName    []string `json:"fq_name"`
-	Data      json.RawMessage   `json:"obj_dict"`
+	RequestID string          `json:"request_id"`
+	Oper      string          `json:"oper"`
+	Type      string          `json:"type"`
+	UUID      string          `json:"uuid"`
+	FqName    []string        `json:"fq_name"`
+	Data      json.RawMessage `json:"obj_dict"`
 }
 
 //Process sends msg to amqp exchange
