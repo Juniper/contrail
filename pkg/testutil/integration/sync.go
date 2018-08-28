@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/sync"
 )
 
@@ -18,6 +19,7 @@ const pgQueryCanceledErrorCode = "57014"
 func RunSyncService(t *testing.T) (closeSync func()) {
 	setViperConfig(map[string]interface{}{
 		"etcd.endpoints": []string{EtcdEndpoint},
+		"sync.storage":   models.JSONCodec.Key(),
 	})
 
 	s, err := sync.NewService()

@@ -132,7 +132,8 @@ func (s *Server) contrailService() (services.Service, error) {
 }
 
 func etcdNotifier() services.Service {
-	en, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"))
+	// TODO(Michał): Make the codec configurable
+	en, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"), models.JSONCodec)
 	if err != nil {
 		log.WithError(err).Error("Failed to add ETCD Notifier Service - ignoring")
 		return nil
