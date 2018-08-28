@@ -235,12 +235,12 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
     model := request.{{ schema.JSONSchema.GoName }}
     uuid := model.GetUUID()
     if uuid != "" {
-        _, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
+        existing, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
             &Get{{ schema.JSONSchema.GoName }}Request{
                 ID: uuid,
                 Fields: []string{"uuid"},
         })
-        if err == nil {
+        if err == nil && existing != nil {
             model := request.{{ schema.JSONSchema.GoName }}
             response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
                 {{ schema.JSONSchema.GoName }}: model,
