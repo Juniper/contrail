@@ -78,9 +78,9 @@ contrailutil convert -i 127.0.0.1 -p 9041 --intype cassandra --outtype yaml -o "
 
 # Build and run contrail-go2 docker
 build_docker
-AtomizerDocker='contrail-go-config-node'
-[ "$(docker ps -a -f "name=$AtomizerDocker" --format '{{.ID}}' | wc -l)" -ne 0 ] && docker rm -f "$AtomizerDocker"
-docker run -d --name "$AtomizerDocker" -p "$PORT:$PORT" --net host contrail-go-config
+ContrailGoDocker='contrail-go-config-node'
+[ "$(docker ps -a -f "name=$ContrailGoDocker" --format '{{.ID}}' | wc -l)" -ne 0 ] && docker rm -f "$ContrailGoDocker"
+docker run -d --name "$ContrailGoDocker" --net host contrail-go-config
 GoConfigIP='127.0.0.1' # networking mode 'host'
 
 # Prepare fresh database in contrail-go
