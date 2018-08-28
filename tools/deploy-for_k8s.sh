@@ -25,7 +25,6 @@ RealPath()
 ThisDir=$(RealPath "$(dirname "$0")")
 RootDir=$(RealPath "$ThisDir/..")
 PORT=8082
-ThisIP=$(ip route get 8.8.8.8 | sed '1 ! d; s/ *$//; s/.* //')
 
 build_docker()
 {
@@ -90,7 +89,7 @@ GoConfigIP='127.0.0.1' # networking mode 'host'
 contrailutil convert --intype yaml --in "$Dumpfile" --outtype rdbms -c docker/contrail_go/etc/contrail-k8s.yml
 
 # Run vnc-db-proxy
-./tools/vncdbproxy.sh "$ThisIP"
+./tools/vncdbproxy/vncdbproxy.sh -n host -z localhost:2181 -c localhost:9161 -r localhost:5673
 
 # Modify k8s config (subst contrail-go-config IP address as config-node) and restart if needed
 ModifyKubeConfig=1
