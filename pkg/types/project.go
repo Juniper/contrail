@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 // CreateProject creates a project and ensures a default application policy set for it.
@@ -96,7 +97,7 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(
 	requestedProject := request.GetProject()
 
 	fm := request.GetFieldMask()
-	isVxlanChangeRequested := common.ContainsString(fm.GetPaths(), models.ProjectFieldVxlanRouting)
+	isVxlanChangeRequested := baseservices.FieldMaskContains(fm, models.ProjectFieldVxlanRouting)
 	if !isVxlanChangeRequested {
 		return nil
 	}

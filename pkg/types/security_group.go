@@ -8,6 +8,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 // CreateSecurityGroup performs type specific validation and setup for creating security groups.
@@ -115,7 +116,7 @@ func (sv *ContrailTypeLogicService) disallowManualSecurityGroupID(
 		return common.ErrorForbidden("cannot set the security group ID, it's allocated by the server")
 	}
 
-	if !common.ContainsString(fieldMask.GetPaths(), models.SecurityGroupFieldSecurityGroupID) {
+	if !baseservices.FieldMaskContains(*fieldMask, models.SecurityGroupFieldSecurityGroupID) {
 		return nil
 	}
 

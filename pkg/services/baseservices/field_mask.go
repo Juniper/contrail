@@ -1,6 +1,7 @@
 package baseservices
 
 import (
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/gogo/protobuf/types"
 )
 
@@ -37,4 +38,9 @@ func paths(data map[string]interface{}, prefix string) []string {
 		}
 	}
 	return result
+}
+
+// FieldMaskContains checks if given field mask contains requested string
+func FieldMaskContains(fm types.FieldMask, field string) bool {
+	return common.ContainsString(fm.GetPaths(), field)
 }
