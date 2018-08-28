@@ -26,6 +26,6 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
 
 EXPOSE 8082
 WORKDIR /etc/contrail
-ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail-atomizer.yml", "run"]
+ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail-k8s.yml", "run"]
 
 # vi: ft=dockerfile
