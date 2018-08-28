@@ -21,6 +21,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync/replication"
 	"github.com/Juniper/contrail/pkg/sync/sink"
@@ -86,7 +87,8 @@ func NewService() (*Service, error) {
 	}
 
 	// Etcd sink
-	etcdNotifierService, err := etcd.NewNotifierService(viper.GetString("etcd.path"))
+	etcdNotifierService, err := etcd.NewNotifierService(viper.GetString("etcd.path"), models.JSONCodec) // TODO(Michał): Make the codec configurable
+
 	if err != nil {
 		return nil, err
 	}

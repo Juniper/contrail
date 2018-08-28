@@ -5,6 +5,10 @@ import (
 	"path"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 // Codec can encode objects and update encoded data with new data object.
@@ -15,42 +19,73 @@ type Codec interface {
 }
 
 // JSONCodec is Codec which uses JSON format for storing data.
-type JSONCodec struct{}
+var JSONCodec Codec = jsonCodec{}
+
+type jsonCodec struct{}
 
 // Encode serializes data to JSON format.
-func (j JSONCodec) Encode(obj proto.Message) ([]byte, error) {
+func (j jsonCodec) Encode(obj proto.Message) ([]byte, error) {
 	return json.Marshal(obj)
 }
 
 // Decode serializes data to JSON format.
-func (j JSONCodec) Decode(data []byte, obj proto.Message) error {
+func (j jsonCodec) Decode(data []byte, obj proto.Message) error {
 	return json.Unmarshal(data, obj)
 }
 
 // Key returns codec identifier.
-func (j JSONCodec) Key() string {
+func (j jsonCodec) Key() string {
 	return "json"
 }
 
 // ProtoCodec is Codec which uses Proto format for storing data.
-type ProtoCodec struct{}
+var ProtoCodec Codec = protoCodec{}
+
+type protoCodec struct{}
 
 // Encode serializes data to Proto format.
-func (j ProtoCodec) Encode(obj proto.Message) ([]byte, error) {
+func (j protoCodec) Encode(obj proto.Message) ([]byte, error) {
 	return proto.Marshal(obj)
 }
 
 // Decode serializes data to Proto format.
-func (j ProtoCodec) Decode(data []byte, obj proto.Message) error {
+func (j protoCodec) Decode(data []byte, obj proto.Message) error {
+	if len(data) == 0 {
+		return nil
+	}
 	return proto.Unmarshal(data, obj)
 }
 
 // Key returns codec identifier.
-func (j ProtoCodec) Key() string {
+func (j protoCodec) Key() string {
 	return "proto"
 }
 
 // ResourceKey constructs key for given codec, resource name and pk.
 func ResourceKey(c Codec, resourceName, pk string) string {
 	return path.Join(c.Key(), resourceName, pk)
+}
+
+// UpdateData deserializes oldData into same type as object provided in update,
+// applies an update and then serializes the result.
+func UpdateData(c Codec, oldData []byte, update basemodels.Object, fm types.FieldMask) ([]byte, error) {
+	if update == nil || len(fm.Paths) == 0 {
+		return oldData, nil
+	}
+	if len(oldData) == 0 {
+		return c.Encode(update)
+	}
+	oldObj := proto.Clone(update)
+	if err := c.Decode(oldData, oldObj); err != nil {
+		return nil, err
+	}
+
+	updateData := basemodels.ApplyFieldMask(update.ToMap(), fm)
+	output, ok := oldObj.(basemodels.Object)
+	if !ok {
+		return nil, errors.New("proto.Clone returned bad object type (should be impossible)")
+	}
+	output.ApplyMap(updateData)
+
+	return c.Encode(output)
 }
