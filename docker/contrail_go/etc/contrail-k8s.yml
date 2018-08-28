@@ -57,7 +57,7 @@ server:
 
   vnc_api_notifier:
     enabled: true
-    endpoint: http://localhost:8091
+    endpoint: http://localhost:9082
 
 # disable authentication with no_auth true and comment out keystone configuraion.
 no_auth: true
