@@ -1,6 +1,11 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/pkg/errors"
+)
 
 // policyAddressPair is a single combination of source and destination specifications from a PolicyRuleType.
 type policyAddressPair struct {
@@ -57,4 +62,56 @@ func (m *PolicyRuleType) allAddressCombinations() (pairs []policyAddressPair) {
 		}
 	}
 	return pairs
+}
+
+var ipV6ProtocolStringToNumber = map[string]string{
+	"icmp":  "58",
+	"icmp6": "58",
+	"tcp":   "6",
+	"udp":   "17",
+}
+
+var ipV4ProtocolStringToNumber = map[string]string{
+	"icmp":  "1",
+	"icmp6": "58",
+	"tcp":   "6",
+	"udp":   "17",
+}
+
+// TODO: Generate this from the enum in the schema.
+const ipv6Ethertype = "IPv6"
+
+// ACLProtocol returns the protocol in a format suitable for an AclRuleType.
+func (m *PolicyRuleType) ACLProtocol() (string, error) {
+	protocol := m.GetProtocol()
+	ethertype := m.GetEthertype()
+
+	if protocol == "" || protocol == "any" || isNumeric(protocol) {
+		return protocol, nil
+	}
+
+	protocol, err := numericProtocolForEthertype(protocol, ethertype)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to convert protocol for an ACL")
+	}
+	return protocol, nil
+}
+
+func isNumeric(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
+}
+
+func numericProtocolForEthertype(protocol, ethertype string) (numericProtocol string, err error) {
+	var ok bool
+	if ethertype == ipv6Ethertype {
+		numericProtocol, ok = ipV6ProtocolStringToNumber[protocol]
+	} else {
+		numericProtocol, ok = ipV4ProtocolStringToNumber[protocol]
+	}
+
+	if !ok {
+		return "", errors.Errorf("unknown protocol %q for ethertype %q", protocol, ethertype)
+	}
+	return numericProtocol, nil
 }

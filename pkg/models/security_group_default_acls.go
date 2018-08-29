@@ -3,8 +3,9 @@ package models
 import (
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/sirupsen/logrus"
 )
 
 // DefaultACLs returns default ACLs corresponding to the policy rules in a SecurityGroup.
@@ -18,11 +19,15 @@ func (m *SecurityGroup) DefaultACLs() (ingressACL *AccessControlList, egressACL 
 
 func (m *SecurityGroup) toACLRules() (ingressRules, egressRules []*AclRuleType) {
 	for _, pair := range m.allAddressCombinations() {
-		rule := m.makeACLRule(pair)
+		rule, err := m.makeACLRule(pair)
+		if err != nil {
+			log.WithError(err).Error("Ignoring ACL rule")
+			continue
+		}
 
 		isIngress, err := pair.isIngress()
 		if err != nil {
-			logrus.WithError(err).Error("Ignoring ACL rule")
+			log.WithError(err).Error("Ignoring ACL rule")
 			continue
 		}
 
@@ -42,12 +47,17 @@ func (m *SecurityGroup) allAddressCombinations() (pairs []policyAddressPair) {
 	return pairs
 }
 
-func (m *SecurityGroup) makeACLRule(pair policyAddressPair) *AclRuleType {
+func (m *SecurityGroup) makeACLRule(pair policyAddressPair) (*AclRuleType, error) {
+	protocol, err := pair.policyRule.ACLProtocol()
+	if err != nil {
+		return nil, err
+	}
+
 	return &AclRuleType{
 		RuleUUID: pair.policyRule.GetRuleUUID(),
 		MatchCondition: &MatchConditionType{
 			Ethertype:  pair.policyRule.GetEthertype(),
-			Protocol:   policyProtocolToACLProtocol(pair.policyRule.GetProtocol()),
+			Protocol:   protocol,
 			SRCAddress: m.policyAddressToACLAddress(pair.sourceAddress),
 			DSTAddress: m.policyAddressToACLAddress(pair.destinationAddress),
 			SRCPort:    pair.sourcePort,
@@ -56,12 +66,7 @@ func (m *SecurityGroup) makeACLRule(pair policyAddressPair) *AclRuleType {
 		ActionList: &ActionListType{
 			SimpleAction: "pass",
 		},
-	}
-}
-
-func policyProtocolToACLProtocol(policyProtocol string) (aclProtocol string) {
-	// TODO: Make this work for policyProtocol != "any".
-	return policyProtocol
+	}, nil
 }
 
 func (m *SecurityGroup) policyAddressToACLAddress(policyAddress *policyAddress) *AddressType {
