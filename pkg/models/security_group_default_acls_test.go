@@ -189,6 +189,118 @@ func TestToACLRules(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "Unknown IPv4 protocol in the only rule",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+					{
+						Direction: ">",
+						Protocol:  "some unknown protocol",
+						RuleUUID:  "rule1",
+						Ethertype: "IPv4",
+						SRCAddresses: []*AddressType{
+							{
+								SecurityGroup: "local",
+							},
+						},
+						DSTAddresses: []*AddressType{
+							AllIPv4Addresses(),
+							{
+								SecurityGroup: "local",
+							},
+						},
+						SRCPorts: []*PortType{AllPorts()},
+						DSTPorts: []*PortType{AllPorts()},
+					},
+				}},
+			},
+
+			expectedIngressACLRules: nil,
+			expectedEgressACLRules:  nil,
+		},
+
+		{
+			name: "Unknown IPv4 protocol in one of the rules",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+					{
+						Protocol:  "unknown protocol 1",
+						RuleUUID:  "rule1",
+						Ethertype: "IPv4",
+						SRCAddresses: []*AddressType{
+							{
+								SecurityGroup: "local",
+							},
+						},
+						DSTAddresses: []*AddressType{
+							AllIPv4Addresses(),
+							{
+								SecurityGroup: "local",
+							},
+						},
+						SRCPorts: []*PortType{AllPorts()},
+						DSTPorts: []*PortType{AllPorts()},
+					},
+					{
+						Direction: ">",
+						Protocol:  "any",
+						RuleUUID:  "rule2",
+						Ethertype: "IPv6",
+						SRCAddresses: []*AddressType{
+							{
+								SecurityGroup: "local",
+							},
+						},
+						DSTAddresses: []*AddressType{
+							AllIPv6Addresses(),
+							{
+								SecurityGroup: "local",
+							},
+						},
+						SRCPorts: []*PortType{AllPorts()},
+						DSTPorts: []*PortType{AllPorts()},
+					},
+				}},
+			},
+
+			expectedIngressACLRules: []*AclRuleType{
+				{
+					RuleUUID: "rule2",
+					MatchCondition: &MatchConditionType{
+						SRCPort:    AllPorts(),
+						DSTPort:    AllPorts(),
+						Protocol:   "any",
+						Ethertype:  "IPv6",
+						SRCAddress: &AddressType{},
+						DSTAddress: &AddressType{},
+					},
+					ActionList: &ActionListType{
+						SimpleAction: "pass",
+					},
+				},
+			},
+			expectedEgressACLRules: []*AclRuleType{
+				{
+					RuleUUID: "rule2",
+					MatchCondition: &MatchConditionType{
+						SRCPort:    AllPorts(),
+						DSTPort:    AllPorts(),
+						Protocol:   "any",
+						Ethertype:  "IPv6",
+						SRCAddress: &AddressType{},
+						DSTAddress: AllIPv6Addresses(),
+					},
+					ActionList: &ActionListType{
+						SimpleAction: "pass",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range testCases {
@@ -209,6 +321,7 @@ func TestMakeACLRule(t *testing.T) {
 		policyAddressPair
 
 		expectedACLRule *AclRuleType
+		expectedError   error
 	}{
 		{
 			name: "IPv4, specified security group to local security group",
@@ -407,12 +520,178 @@ func TestMakeACLRule(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "IPv4, unknown protocol",
+			policyAddressPair: policyAddressPair{
+				policyRule: &PolicyRuleType{
+					Protocol:  "some unknown protocol",
+					Ethertype: "IPv4",
+				},
+			},
+
+			expectedError: unknownProtocol{
+				protocol:  "some unknown protocol",
+				ethertype: "IPv4",
+			},
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			aclRule := tt.securityGroup.makeACLRule(tt.policyAddressPair)
+			aclRule, err := tt.securityGroup.makeACLRule(tt.policyAddressPair)
+			assert.Equal(t, tt.expectedError, err)
 			assert.Equal(t, tt.expectedACLRule, aclRule)
+		})
+	}
+}
+
+func TestPolicyProtocolToACLProtocol(t *testing.T) {
+	testCases := []struct {
+		name                string
+		policyRule          *PolicyRuleType
+		expectedACLProtocol string
+		expectedError       error
+	}{
+		{
+			name: "any",
+			policyRule: &PolicyRuleType{
+				Protocol: "any",
+			},
+			expectedACLProtocol: "any",
+		},
+
+		{
+			name: "not specified",
+			policyRule: &PolicyRuleType{
+				Protocol: "",
+			},
+			expectedACLProtocol: "",
+		},
+
+		{
+			name: "already a number",
+			policyRule: &PolicyRuleType{
+				Protocol: "58",
+			},
+			expectedACLProtocol: "58",
+		},
+
+		{
+			name: "unknown IPv6 protocol",
+			policyRule: &PolicyRuleType{
+				Protocol:  "some unknown protocol",
+				Ethertype: "IPv6",
+			},
+			expectedError: unknownProtocol{
+				protocol:  "some unknown protocol",
+				ethertype: "IPv6",
+			},
+		},
+
+		{
+			name: "unknown IPv4 protocol",
+			policyRule: &PolicyRuleType{
+				Protocol:  "some unknown protocol",
+				Ethertype: "IPv4",
+			},
+			expectedError: unknownProtocol{
+				protocol:  "some unknown protocol",
+				ethertype: "IPv4",
+			},
+		},
+
+		{
+			name: "unknown ethertype and protocol",
+			policyRule: &PolicyRuleType{
+				Protocol:  "some unknown protocol",
+				Ethertype: "some unknown ethertype",
+			},
+			expectedError: unknownProtocol{
+				protocol:  "some unknown protocol",
+				ethertype: "some unknown ethertype",
+			},
+		},
+
+		{
+			name: "icmp ipv6",
+			policyRule: &PolicyRuleType{
+				Protocol:  "icmp",
+				Ethertype: "IPv6",
+			},
+			expectedACLProtocol: "58",
+		},
+
+		{
+			name: "icmp ipv4",
+			policyRule: &PolicyRuleType{
+				Protocol:  "icmp",
+				Ethertype: "IPv4",
+			},
+			expectedACLProtocol: "1",
+		},
+
+		// The rest of the tests are the same for IPv6 and IPv4
+		{
+			name: "icmp6 ipv6",
+			policyRule: &PolicyRuleType{
+				Protocol:  "icmp6",
+				Ethertype: "IPv6",
+			},
+			expectedACLProtocol: "58",
+		},
+
+		{
+			name: "icmp6 ipv4",
+			policyRule: &PolicyRuleType{
+				Protocol:  "icmp6",
+				Ethertype: "IPv4",
+			},
+			expectedACLProtocol: "58",
+		},
+
+		{
+			name: "tcp ipv6",
+			policyRule: &PolicyRuleType{
+				Protocol:  "tcp",
+				Ethertype: "IPv6",
+			},
+			expectedACLProtocol: "6",
+		},
+
+		{
+			name: "tcp ipv4",
+			policyRule: &PolicyRuleType{
+				Protocol:  "tcp",
+				Ethertype: "IPv4",
+			},
+			expectedACLProtocol: "6",
+		},
+
+		{
+			name: "udp ipv6",
+			policyRule: &PolicyRuleType{
+				Protocol:  "udp",
+				Ethertype: "IPv6",
+			},
+			expectedACLProtocol: "17",
+		},
+
+		{
+			name: "udp ipv4",
+			policyRule: &PolicyRuleType{
+				Protocol:  "udp",
+				Ethertype: "IPv4",
+			},
+			expectedACLProtocol: "17",
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			aclProtocol, err := tt.policyRule.ACLProtocol()
+			assert.Equal(t, tt.expectedError, err)
+			assert.Equal(t, tt.expectedACLProtocol, aclProtocol)
 		})
 	}
 }

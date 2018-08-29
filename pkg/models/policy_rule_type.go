@@ -1,6 +1,9 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // policyAddressPair is a single combination of source and destination specifications from a PolicyRuleType.
 type policyAddressPair struct {
@@ -57,4 +60,57 @@ func (m *PolicyRuleType) allAddressCombinations() (pairs []policyAddressPair) {
 		}
 	}
 	return pairs
+}
+
+type unknownProtocol struct {
+	protocol, ethertype string
+}
+
+func (err unknownProtocol) Error() string {
+	return fmt.Sprintf("unknown protocol %v for ethertype %v", err.protocol, err.ethertype)
+}
+
+var ipV6ProtocolStringToNumber = map[string]string{
+	"icmp":  "58",
+	"icmp6": "58",
+	"tcp":   "6",
+	"udp":   "17",
+}
+
+var ipV4ProtocolStringToNumber = map[string]string{
+	"icmp":  "1",
+	"icmp6": "58",
+	"tcp":   "6",
+	"udp":   "17",
+}
+
+const IPv6Ethertype = "IPv6"
+
+func (m *PolicyRuleType) ACLProtocol() (string, error) {
+	protocol := m.GetProtocol()
+
+	if protocol == "" || protocol == "any" || isNumeric(protocol) {
+		return protocol, nil
+	}
+
+	var numericProtocol string
+	var ok bool
+	if m.GetEthertype() == IPv6Ethertype {
+		numericProtocol, ok = ipV6ProtocolStringToNumber[protocol]
+	} else {
+		numericProtocol, ok = ipV4ProtocolStringToNumber[protocol]
+	}
+
+	if !ok {
+		return "", unknownProtocol{
+			protocol:  protocol,
+			ethertype: m.GetEthertype(),
+		}
+	}
+	return numericProtocol, nil
+}
+
+func isNumeric(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
 }
