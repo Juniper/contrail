@@ -78,10 +78,7 @@ func Make{{ schema.JSONSchema.GoName }}() *{{ schema.JSONSchema.GoName }}{
 		{% elif property.GoType == "map[string]string" %}{{ property.GoName }}: map[string]string{},
 		{% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: map[string]interface{}{},
 		{% elif property.GoType == "bool" %}{{ property.GoName }}: false,
-		{% elif property.GoType == "int64" %}
-			{% if schema.JSONSchema.GoName == "QuotaType" %}{{ property.GoName }}: -1,
-			{% else %}{{ property.GoName }}: 0,
-			{% endif %}
+		{% elif property.GoType == "int64" %}{{ property.GoName }}: 0,
 		{% elif property.GoType == "float" %}{{ property.GoName }}: 0,
 		{% elif property.Type == "array"%}
 			{% if property.Items.Type == "string" %}
