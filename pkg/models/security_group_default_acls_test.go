@@ -189,6 +189,118 @@ func TestToACLRules(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "Unknown IPv4 protocol in the only rule",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+					{
+						Direction: ">",
+						Protocol:  "some unknown protocol",
+						RuleUUID:  "rule1",
+						Ethertype: "IPv4",
+						SRCAddresses: []*AddressType{
+							{
+								SecurityGroup: "local",
+							},
+						},
+						DSTAddresses: []*AddressType{
+							AllIPv4Addresses(),
+							{
+								SecurityGroup: "local",
+							},
+						},
+						SRCPorts: []*PortType{AllPorts()},
+						DSTPorts: []*PortType{AllPorts()},
+					},
+				}},
+			},
+
+			expectedIngressACLRules: nil,
+			expectedEgressACLRules:  nil,
+		},
+
+		{
+			name: "Unknown IPv4 protocol in one of the rules",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+					{
+						Protocol:  "unknown protocol 1",
+						RuleUUID:  "rule1",
+						Ethertype: "IPv4",
+						SRCAddresses: []*AddressType{
+							{
+								SecurityGroup: "local",
+							},
+						},
+						DSTAddresses: []*AddressType{
+							AllIPv4Addresses(),
+							{
+								SecurityGroup: "local",
+							},
+						},
+						SRCPorts: []*PortType{AllPorts()},
+						DSTPorts: []*PortType{AllPorts()},
+					},
+					{
+						Direction: ">",
+						Protocol:  "any",
+						RuleUUID:  "rule2",
+						Ethertype: "IPv6",
+						SRCAddresses: []*AddressType{
+							{
+								SecurityGroup: "local",
+							},
+						},
+						DSTAddresses: []*AddressType{
+							AllIPv6Addresses(),
+							{
+								SecurityGroup: "local",
+							},
+						},
+						SRCPorts: []*PortType{AllPorts()},
+						DSTPorts: []*PortType{AllPorts()},
+					},
+				}},
+			},
+
+			expectedIngressACLRules: []*AclRuleType{
+				{
+					RuleUUID: "rule2",
+					MatchCondition: &MatchConditionType{
+						SRCPort:    AllPorts(),
+						DSTPort:    AllPorts(),
+						Protocol:   "any",
+						Ethertype:  "IPv6",
+						SRCAddress: &AddressType{},
+						DSTAddress: &AddressType{},
+					},
+					ActionList: &ActionListType{
+						SimpleAction: "pass",
+					},
+				},
+			},
+			expectedEgressACLRules: []*AclRuleType{
+				{
+					RuleUUID: "rule2",
+					MatchCondition: &MatchConditionType{
+						SRCPort:    AllPorts(),
+						DSTPort:    AllPorts(),
+						Protocol:   "any",
+						Ethertype:  "IPv6",
+						SRCAddress: &AddressType{},
+						DSTAddress: AllIPv6Addresses(),
+					},
+					ActionList: &ActionListType{
+						SimpleAction: "pass",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range testCases {
@@ -209,6 +321,7 @@ func TestMakeACLRule(t *testing.T) {
 		policyAddressPair
 
 		expectedACLRule *AclRuleType
+		expectedError   error
 	}{
 		{
 			name: "IPv4, specified security group to local security group",
@@ -407,11 +520,27 @@ func TestMakeACLRule(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "IPv4, unknown protocol",
+			policyAddressPair: policyAddressPair{
+				policyRule: &PolicyRuleType{
+					Protocol:  "some unknown protocol",
+					Ethertype: "IPv4",
+				},
+			},
+
+			expectedError: unknownProtocol{
+				protocol:  "some unknown protocol",
+				ethertype: "IPv4",
+			},
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			aclRule := tt.securityGroup.makeACLRule(tt.policyAddressPair)
+			aclRule, err := tt.securityGroup.makeACLRule(tt.policyAddressPair)
+			assert.Equal(t, tt.expectedError, err)
 			assert.Equal(t, tt.expectedACLRule, aclRule)
 		})
 	}
