@@ -82,8 +82,9 @@ func visitResource(uuid string, sorted []*Event,
 	stateGraph[uuid] = temporaryVisited
 	event, found := eventMap[uuid]
 	if !found {
-		return nil, fmt.Errorf("Resource with uuid: %s not found in eventMap", uuid)
-	}
+        stateGraph[uuid] = visited
+	    return sorted, nil
+    }
 	depends := event.GetResource().Depends()
 	for _, refUUID := range depends {
 		sorted, err = visitResource(refUUID, sorted, eventMap, stateGraph)
@@ -100,6 +101,26 @@ func visitResource(uuid string, sorted []*Event,
 // Sort sorts Events by dependency using Tarjan's algorithm.
 // TODO: support parent-child relationship while checking dependencies.
 func (e *EventList) Sort() (err error) {
+    var createEvents []*Event
+    var updateEvents []*Event
+    var deleteEvents []*Event
+    var refEventsFromCreateEvents []*Event
+    var refEventsFromUpdateEvents []*Event
+    var refEventsFromDeleteEvents []*Event
+    var otherEvents []*Event
+
+    for id, event := range e.Events {
+        if (event.Operation() == OperationCreate && event.Operation() == OperationUpdate) {
+            createUpdateEvents = append(createUpdateEvents, e.Events[id])
+        } else if (event.Operation() == )
+    }
+
+    extracted, err := extractRefsFromEvents(e)
+	if err != nil {
+		return errors.Wrap(err, "extracting refs from events failed")
+	}
+    createRefEvents = append(createRefEvents, extracted)
+
 	var sorted []*Event
 	stateGraph := map[string]state{}
 	eventMap := map[string]*Event{}
@@ -125,6 +146,12 @@ func (e *EventList) Sort() (err error) {
 		}
 	}
 	e.Events = sorted
+
+    if createRefEvents != nil {
+		for _, event := range createRefEvents.Events {
+			e.Events = append(e.Events, event)
+		}
+	}
 	return nil
 }
 
@@ -207,6 +234,76 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
 }
 
 {% endif%}{% endfor %}
+
+func extractRefsFromEvents(events *EventList) (*EventList, error) {
+	var createRefEvents EventList
+
+	for _, event := range events.Events {
+		evs, err := ExtractRefEventsFromEvent(event)
+		if err != nil {
+			return nil, err
+		}
+		for id := range evs {
+			createRefEvents.Events = append(createRefEvents.Events, &evs[id])
+		}
+	}
+	return &createRefEvents, nil
+}
+
+func ExtractRefEventsFromEvent(e *Event) ([]Event, error) {
+
+    var refEvents []Event
+    switch e.GetResource().Kind() {
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    {% if schema.References|length > 0 %}
+    case "{{ schema.Path }}":
+        req := e.GetCreate{{ schema.JSONSchema.GoName }}Request()
+        {% for _, reference in schema.References %}
+        for _, ref := range req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs {
+
+            {%- if reference.Attr -%}raw, err := json.Marshal(ref.GetAttr())
+            if err != nil {
+                return nil, err
+            }
+            {%- endif -%}
+            refUpd := &RefUpdate {
+                Operation: RefOperationAdd,
+                Type: "{{ schema.Path }}",
+                UUID: req.{{ schema.JSONSchema.GoName }}.GetUUID(),
+                RefType: "{{ reference.LinkTo.Path }}",
+                RefUUID: ref.GetUUID(),
+                RefFQName: ref.GetTo(),
+                {% if reference.Attr %}Attr: json.RawMessage(raw),{% endif %}
+            }
+            newEvent, err := NewEventFromRefUpdate(refUpd)
+            if err != nil {
+                return nil, err
+            }
+            refEvents = append(
+                refEvents,
+                *newEvent,
+            )
+        }
+        req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs = req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs[:0]
+        {% endfor %}
+        options := &EventOption {
+            UUID: req.{{ schema.JSONSchema.GoName }}.GetUUID(),
+            Operation: OperationCreate,
+            Kind: "{{ schema.ID }}",
+            Data: req.{{ schema.JSONSchema.GoName }}.ToMap(),
+        }
+        eventWithoutRefs, err := NewEvent(options)
+        e = eventWithoutRefs
+        if err != nil {
+            return nil, err
+        }
+        return refEvents, nil
+    {% endif %}
+    {% endif%}{% endfor %}
+    default:
+        return nil, nil
+    }
+}
 
 
 //NewEvent makes event from interface
