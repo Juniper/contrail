@@ -1,6 +1,18 @@
 FROM centos:7.4.1708
 MAINTAINER Kamil Renczewski <kamil.renczewski@codilime.com>
 
+RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  &&\
+        yum install -y \
+        mysql-client \
+        postgresql-client \
+        git \
+        ansible-2.4.2.0\
+        docker \
+        python-pip \
+        wget \
+        unzip
+
+
 COPY ./contrail /go/src/github.com/Juniper/contrail
 COPY ./contrail /bin/contrail
 COPY ./contrailcli /bin/contrailcli
@@ -13,19 +25,8 @@ COPY ./public /usr/share/contrail/public
 COPY ./templates /usr/share/contrail/templates
 COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
 
-RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  &&\
-        yum install -y \
-        mysql-client \
-        postgresql-client \
-        git \
-        ansible-2.4.2.0\
-        docker \
-        python-pip \
-        wget \
-        unzip
-
 EXPOSE 8082
 WORKDIR /etc/contrail
-ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail-atomizer.yml", "run"]
+ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail-k8s.yml", "run"]
 
 # vi: ft=dockerfile
