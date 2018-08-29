@@ -122,3 +122,148 @@ func TestIsLocal(t *testing.T) {
 		})
 	}
 }
+
+func TestACLProtocol(t *testing.T) {
+	testCases := []struct {
+		name                string
+		policyRule          *PolicyRuleType
+		expectedACLProtocol string
+		fails               bool
+	}{
+		{
+			name: "any",
+			policyRule: &PolicyRuleType{
+				Protocol: "any",
+			},
+			expectedACLProtocol: "any",
+		},
+
+		{
+			name: "not specified",
+			policyRule: &PolicyRuleType{
+				Protocol: "",
+			},
+			expectedACLProtocol: "",
+		},
+
+		{
+			name: "already a number",
+			policyRule: &PolicyRuleType{
+				Protocol: "58",
+			},
+			expectedACLProtocol: "58",
+		},
+
+		{
+			name: "unknown IPv6 protocol",
+			policyRule: &PolicyRuleType{
+				Protocol:  "some unknown protocol",
+				Ethertype: "IPv6",
+			},
+			fails: true,
+		},
+
+		{
+			name: "unknown IPv4 protocol",
+			policyRule: &PolicyRuleType{
+				Protocol:  "some unknown protocol",
+				Ethertype: "IPv4",
+			},
+			fails: true,
+		},
+
+		{
+			name: "unknown ethertype and protocol",
+			policyRule: &PolicyRuleType{
+				Protocol:  "some unknown protocol",
+				Ethertype: "some unknown ethertype",
+			},
+			fails: true,
+		},
+
+		{
+			name: "icmp ipv6",
+			policyRule: &PolicyRuleType{
+				Protocol:  "icmp",
+				Ethertype: "IPv6",
+			},
+			expectedACLProtocol: "58",
+		},
+
+		{
+			name: "icmp ipv4",
+			policyRule: &PolicyRuleType{
+				Protocol:  "icmp",
+				Ethertype: "IPv4",
+			},
+			expectedACLProtocol: "1",
+		},
+
+		// The rest of the tests are the same for IPv6 and IPv4
+		{
+			name: "icmp6 ipv6",
+			policyRule: &PolicyRuleType{
+				Protocol:  "icmp6",
+				Ethertype: "IPv6",
+			},
+			expectedACLProtocol: "58",
+		},
+
+		{
+			name: "icmp6 ipv4",
+			policyRule: &PolicyRuleType{
+				Protocol:  "icmp6",
+				Ethertype: "IPv4",
+			},
+			expectedACLProtocol: "58",
+		},
+
+		{
+			name: "tcp ipv6",
+			policyRule: &PolicyRuleType{
+				Protocol:  "tcp",
+				Ethertype: "IPv6",
+			},
+			expectedACLProtocol: "6",
+		},
+
+		{
+			name: "tcp ipv4",
+			policyRule: &PolicyRuleType{
+				Protocol:  "tcp",
+				Ethertype: "IPv4",
+			},
+			expectedACLProtocol: "6",
+		},
+
+		{
+			name: "udp ipv6",
+			policyRule: &PolicyRuleType{
+				Protocol:  "udp",
+				Ethertype: "IPv6",
+			},
+			expectedACLProtocol: "17",
+		},
+
+		{
+			name: "udp ipv4",
+			policyRule: &PolicyRuleType{
+				Protocol:  "udp",
+				Ethertype: "IPv4",
+			},
+			expectedACLProtocol: "17",
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			aclProtocol, err := tt.policyRule.ACLProtocol()
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tt.expectedACLProtocol, aclProtocol)
+		})
+	}
+}
