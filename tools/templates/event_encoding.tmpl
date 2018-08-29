@@ -82,8 +82,9 @@ func visitResource(uuid string, sorted []*Event,
 	stateGraph[uuid] = temporaryVisited
 	event, found := eventMap[uuid]
 	if !found {
-		return nil, fmt.Errorf("Resource with uuid: %s not found in eventMap", uuid)
-	}
+        stateGraph[uuid] = visited
+	    return sorted, nil
+    }
 	depends := event.GetResource().Depends()
 	for _, refUUID := range depends {
 		sorted, err = visitResource(refUUID, sorted, eventMap, stateGraph)
@@ -98,12 +99,86 @@ func visitResource(uuid string, sorted []*Event,
 }
 
 // Sort sorts Events by dependency using Tarjan's algorithm.
-// TODO: support parent-child relationship while checking dependencies.
+// TODO: extract delete ref requests from delete events
 func (e *EventList) Sort() (err error) {
-	var sorted []*Event
+    var createEvents []*Event
+    var updateEvents []*Event
+    var deleteEvents []*Event
+    var refEventsFromCreateEvents []*Event
+    var refEventsFromUpdateEvents []*Event
+    var refEventsFromDeleteEvents []*Event
+    var otherEvents []*Event
+
+    for id, event := range e.Events {
+        switch (event.Operation()) {
+            case OperationCreate:
+                createEvents = append(createEvents, e.Events[id])
+            case OperationDelete:
+                updateEvents = append(updateEvents, e.Events[id])
+            case OperationUpdate:
+                deleteEvents = append(deleteEvents, e.Events[id])
+            case string(RefOperationAdd):
+                refEventsFromCreateEvents = append(refEventsFromCreateEvents, e.Events[id])
+            case string(RefOperationDelete):
+                refEventsFromDeleteEvents = append(refEventsFromDeleteEvents, e.Events[id])
+            default:
+                otherEvents = append(otherEvents, e.Events[id])
+        }
+    }
+
+    extractedFromCreates, err := extractRefsFromEvents(createEvents)
+	if err != nil {
+		return errors.Wrap(err, "extracting refs from create events failed")
+	}
+    refEventsFromCreateEvents = append(refEventsFromCreateEvents, extractedFromCreates...)
+
+    extractedFromUpdates, err := extractRefsFromEvents(updateEvents)
+	if err != nil {
+		return errors.Wrap(err, "extracting refs from update events failed")
+	}
+    refEventsFromUpdateEvents = append(refEventsFromUpdateEvents, extractedFromUpdates...)
+
+    // TODO(Ignacy): Uncomment this section when extracting refs from deleteEvents will be working
+    // extractedFromDeletes, err := extractRefsFromEvents(deleteEvents)
+	// if err != nil {
+	//    return errors.Wrap(err, "extracting refs from delete events failed")
+	// }
+    // refEventsFromDeleteEvents = append(refEventsFromDeleteEvents, extractedFromDeletes...)
+
+    createEvents, err = sortEventsByParentChildDependency(createEvents)
+    if err != nil {
+        return errors.Wrap(err, "sorting create events by parent-child dependency failed")
+    }
+
+    deleteEvents, err = sortEventsByParentChildDependency(deleteEvents)
+    if err != nil {
+        return errors.Wrap(err, "sorting delete events by parent-child dependency failed")
+    }
+    // Reverse deleteEvents slice (golang SliceTricks)
+    for i := len(deleteEvents)/2-1; i >= 0; i-- {
+	    opp := len(deleteEvents)-1-i
+	    deleteEvents[i], deleteEvents[opp] = deleteEvents[opp], deleteEvents[i]
+    }
+
+    e.Events = refEventsFromDeleteEvents
+    e.Events = append(e.Events, deleteEvents...)
+    e.Events = append(e.Events, createEvents...)
+    e.Events = append(e.Events, refEventsFromCreateEvents...)
+    e.Events = append(e.Events, updateEvents...)
+    e.Events = append(e.Events, refEventsFromUpdateEvents...)
+    e.Events = append(e.Events, otherEvents...)
+
+	return nil
+}
+
+// sortEventsByParentChildDependency sorts Events by
+// parent-child dependency using Tarjan's algorithm.
+func sortEventsByParentChildDependency(events []*Event) ([]*Event, error) {
+    var err error
+    var sorted []*Event
 	stateGraph := map[string]state{}
 	eventMap := map[string]*Event{}
-	for _, event := range e.Events {
+	for _, event := range events {
 		uuid := event.GetResource().GetUUID()
 		stateGraph[uuid] = notVisited
 		eventMap[uuid] = event
@@ -111,21 +186,20 @@ func (e *EventList) Sort() (err error) {
 	foundNotVisited := true
 	for foundNotVisited {
 		foundNotVisited = false
-		for _, event := range e.Events {
+		for _, event := range events {
 			uuid := event.GetResource().GetUUID()
 			state := stateGraph[uuid]
 			if state == notVisited {
 				sorted, err = visitResource(uuid, sorted, eventMap, stateGraph)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				foundNotVisited = true
 				break
 			}
 		}
 	}
-	e.Events = sorted
-	return nil
+    return sorted, nil
 }
 
 // Process dispatches resource event to call corresponding service functions.
@@ -207,6 +281,76 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
 }
 
 {% endif%}{% endfor %}
+
+func extractRefsFromEvents(events []*Event) ([]*Event, error) {
+	var refEvents []*Event
+
+	for _, event := range events {
+		evs, err := ExtractRefEventsFromEvent(event)
+		if err != nil {
+			return nil, err
+		}
+		for id := range evs {
+			refEvents = append(refEvents, &evs[id])
+		}
+	}
+	return &refEvents, nil
+}
+
+func ExtractRefEventsFromEvent(e *Event) ([]Event, error) {
+
+    var refEvents []Event
+    switch e.GetResource().Kind() {
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    {% if schema.References|length > 0 %}
+    case "{{ schema.Path }}":
+        req := e.GetCreate{{ schema.JSONSchema.GoName }}Request()
+        {% for _, reference in schema.References %}
+        for _, ref := range req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs {
+
+            {% if reference.Attr %}raw, err := json.Marshal(ref.GetAttr())
+            if err != nil {
+                return nil, err
+            }
+            {% endif %}
+            refUpd := &RefUpdate {
+                Operation: RefOperationAdd,
+                Type: "{{ schema.Path }}",
+                UUID: req.{{ schema.JSONSchema.GoName }}.GetUUID(),
+                RefType: "{{ reference.LinkTo.Path }}",
+                RefUUID: ref.GetUUID(),
+                RefFQName: ref.GetTo(),
+                {% if reference.Attr %}Attr: json.RawMessage(raw),{% endif %}
+            }
+            newEvent, err := NewEventFromRefUpdate(refUpd)
+            if err != nil {
+                return nil, err
+            }
+            refEvents = append(
+                refEvents,
+                *newEvent,
+            )
+        }
+        req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs = req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs[:0]
+        {% endfor %}
+        options := &EventOption {
+            UUID: req.{{ schema.JSONSchema.GoName }}.GetUUID(),
+            Operation: OperationCreate,
+            Kind: "{{ schema.ID }}",
+            Data: req.{{ schema.JSONSchema.GoName }}.ToMap(),
+        }
+        eventWithoutRefs, err := NewEvent(options)
+        e = eventWithoutRefs
+        if err != nil {
+            return nil, err
+        }
+        return refEvents, nil
+    {% endif %}
+    {% endif%}{% endfor %}
+    default:
+        return nil, nil
+    }
+}
 
 
 //NewEvent makes event from interface
