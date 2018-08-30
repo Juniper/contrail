@@ -3,6 +3,7 @@ package apisrv
 import (
 	"database/sql"
 	"encoding/json"
+	"io/ioutil"
 	"net/url"
 	"sync"
 	"time"
@@ -149,10 +150,11 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 // nolint: gocyclo
 func (s *Server) Init() (err error) {
 	common.SetLogLevel()
-
 	e := s.Echo
 	if viper.GetBool("server.log_api") {
 		e.Use(middleware.Logger())
+	} else {
+		e.Logger.SetOutput(ioutil.Discard) // Disables Echo's built-in logging.
 	}
 	//e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
