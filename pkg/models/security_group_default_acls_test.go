@@ -695,3 +695,62 @@ func TestPolicyProtocolToACLProtocol(t *testing.T) {
 		})
 	}
 }
+
+func TestSecurityGroupNameToID(t *testing.T) {
+	testCases := []struct {
+		name                    string
+		securityGroup           *SecurityGroup
+		securityGroupName       string
+		expectedSecurityGroupID string
+		expectedError           error
+	}{
+		{
+			name:                    "local",
+			securityGroup:           &SecurityGroup{},
+			securityGroupName:       "local",
+			expectedSecurityGroupID: "",
+		},
+
+		{
+			name:                    "unspecified",
+			securityGroup:           &SecurityGroup{},
+			securityGroupName:       "",
+			expectedSecurityGroupID: "",
+		},
+
+		{
+			name:                    "any",
+			securityGroup:           &SecurityGroup{},
+			securityGroupName:       "any",
+			expectedSecurityGroupID: "-1",
+		},
+
+		{
+			name: "matching this security group name",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+			},
+			securityGroupName:       "default-domain:project-blue:default",
+			expectedSecurityGroupID: "8000002",
+		},
+
+		{
+			name: "unknown security group name",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+			},
+			securityGroupName: "some:unknown:security-group",
+			expectedError:     unknownSecurityGroupName{"some:unknown:security-group"},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			securityGroupID, err := tt.securityGroup.securityGroupNameToID(tt.securityGroupName)
+			assert.Equal(t, tt.expectedError, err)
+			assert.Equal(t, tt.expectedSecurityGroupID, securityGroupID)
+		})
+	}
+}
