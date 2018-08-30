@@ -11,6 +11,7 @@ import (
 
 type fqNameToIDRequest struct {
 	FQName []string `json:"fq_name"`
+	Type   string   `json:"type"`
 }
 
 // FQNameToIDResponse defines FqNameToID response format.
@@ -19,19 +20,19 @@ type FQNameToIDResponse struct {
 }
 
 func (s *Server) fqNameToUUIDHandler(c echo.Context) error {
-	fqNameToIDRequest := new(fqNameToIDRequest)
+	var request fqNameToIDRequest
 	ctx := c.Request().Context()
 
-	err := c.Bind(fqNameToIDRequest)
+	err := c.Bind(&request)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 
-	fqName := fqNameToIDRequest.FQName
-	metadata, err := s.dbService.GetMetaData(ctx, "", fqName)
+	metadata, err := s.dbService.GetMetaData(ctx, basemodels.MetaData{Type: request.Type, FQName: request.FQName})
 	if err != nil {
 		//TODO adding Project
-		return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Name %s not found", basemodels.FQNameToString(fqName)))
+		errMsg := fmt.Sprintf("Failed to retrieve metadata for FQName %v and Type %v", request.FQName, request.Type)
+		return echo.NewHTTPError(http.StatusNotFound, errMsg)
 	}
 
 	//TODO permissions check

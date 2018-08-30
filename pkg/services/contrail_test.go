@@ -107,12 +107,16 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 
 type mockMetadataGetter basemodels.MetaData
 
-func (m *mockMetadataGetter) GetMetaData(_ context.Context, _ string, _ []string) (*basemodels.MetaData, error) {
+func (m *mockMetadataGetter) GetMetaData(
+	_ context.Context,
+	_ basemodels.MetaData,
+) (*basemodels.MetaData, error) {
 	return (*basemodels.MetaData)(m), nil
 }
 
 func (m *mockMetadataGetter) ListMetadata(
-	ctx context.Context, fqNameUUIDPairs []*basemodels.FQNameUUIDPair,
+	ctx context.Context,
+	metaDatas []*basemodels.MetaData,
 ) ([]*basemodels.MetaData, error) {
 	return []*basemodels.MetaData{(*basemodels.MetaData)(m)}, nil
 }
