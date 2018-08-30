@@ -3,6 +3,7 @@ package models
 import (
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -301,6 +302,54 @@ func TestToACLRules(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "unknown security group name in one of the addresses",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+					{
+						Direction: ">",
+						Protocol:  "any",
+						RuleUUID:  "rule1",
+						Ethertype: "IPv6",
+						SRCAddresses: []*AddressType{
+							{
+								SecurityGroup: "local",
+							},
+						},
+						DSTAddresses: []*AddressType{
+							AllIPv6Addresses(),
+							{
+								SecurityGroup: "some:unknown:security-group",
+							},
+						},
+						SRCPorts: []*PortType{AllPorts()},
+						DSTPorts: []*PortType{AllPorts()},
+					},
+				}},
+			},
+
+			expectedIngressACLRules: nil,
+
+			expectedEgressACLRules: []*AclRuleType{
+				{
+					RuleUUID: "rule1",
+					MatchCondition: &MatchConditionType{
+						SRCPort:    AllPorts(),
+						DSTPort:    AllPorts(),
+						Protocol:   "any",
+						Ethertype:  "IPv6",
+						SRCAddress: &AddressType{},
+						DSTAddress: AllIPv6Addresses(),
+					},
+					ActionList: &ActionListType{
+						SimpleAction: "pass",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range testCases {
@@ -535,13 +584,88 @@ func TestMakeACLRule(t *testing.T) {
 				ethertype: "IPv4",
 			},
 		},
+
+		{
+			name: "unknown security group name",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+			},
+			policyAddressPair: policyAddressPair{
+				sourceAddress: &policyAddress{
+					SecurityGroup: "some:unknown:security-group",
+				},
+			},
+			expectedError: errors.New("failed to convert source address for an ACL: unknown security group name: some:unknown:security-group"),
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			aclRule, err := tt.securityGroup.makeACLRule(tt.policyAddressPair)
-			assert.Equal(t, tt.expectedError, err)
+			if tt.expectedError != nil {
+				assert.Equal(t, tt.expectedError.Error(), err.Error())
+			}
 			assert.Equal(t, tt.expectedACLRule, aclRule)
+		})
+	}
+}
+
+func TestSecurityGroupNameToID(t *testing.T) {
+	testCases := []struct {
+		name                    string
+		securityGroup           *SecurityGroup
+		securityGroupName       string
+		expectedSecurityGroupID string
+		expectedError           error
+	}{
+		{
+			name:                    "local",
+			securityGroup:           &SecurityGroup{},
+			securityGroupName:       "local",
+			expectedSecurityGroupID: "",
+		},
+
+		{
+			name:                    "unspecified",
+			securityGroup:           &SecurityGroup{},
+			securityGroupName:       "",
+			expectedSecurityGroupID: "",
+		},
+
+		{
+			name:                    "any",
+			securityGroup:           &SecurityGroup{},
+			securityGroupName:       "any",
+			expectedSecurityGroupID: "-1",
+		},
+
+		{
+			name: "matching this security group name",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+			},
+			securityGroupName:       "default-domain:project-blue:default",
+			expectedSecurityGroupID: "8000002",
+		},
+
+		{
+			name: "unknown security group name",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+			},
+			securityGroupName: "some:unknown:security-group",
+			expectedError:     unknownSecurityGroupName{"some:unknown:security-group"},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			securityGroupID, err := tt.securityGroup.securityGroupNameToID(tt.securityGroupName)
+			assert.Equal(t, tt.expectedError, err)
+			assert.Equal(t, tt.expectedSecurityGroupID, securityGroupID)
 		})
 	}
 }
