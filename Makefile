@@ -52,6 +52,8 @@ generate: reset_gen ## Run the source code generator
 	go fmt ./...
 	mkdir -p pkg/types/mock
 	mockgen -destination=pkg/types/mock/gen_types_mock.go -package=typesmock -source pkg/types/service.go
+	mkdir -p pkg/services/baseservices/mock
+	mockgen -destination=pkg/services/baseservices/mock/gen_metadata_mock.go -package=baseservicesmock -source pkg/services/baseservices/metadata.go
 	mkdir -p pkg/services/mock
 	mockgen -destination=pkg/services/mock/gen_service_mock.go -package=servicesmock -source pkg/services/gen_service_interface.go Service
 	mkdir -p pkg/types/ipam/mock

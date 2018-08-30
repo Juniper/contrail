@@ -179,7 +179,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 
     metaData := &basemodels.MetaData{
         UUID: model.UUID,
-        Type: "{{ schema.ID }}",
+        Type: "{{ schema.TypeName }}",
         FQName: model.FQName,
     }
     err = db.CreateMetaData(ctx, metaData)
@@ -337,13 +337,6 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
     spec := request.Spec
     result := []*models.{{ schema.JSONSchema.GoName }}{}
 
-    if spec.ParentFQName != nil {
-       parentMetaData, err := db.GetMetaData(ctx, "", spec.ParentFQName)
-       if err != nil {
-		  return nil, errors.Wrapf(err, "cannot find parents when listing {{ schema.JSONSchema.GoName }} with request data %v", request)
-       }
-       spec.Filters = baseservices.AppendFilter(spec.Filters, "parent_uuid", parentMetaData.UUID)
-    }
     query, columns, values := qb.ListQuery(auth, spec)
     rows, err = tx.QueryContext(ctx, query, values...)
     if err != nil {

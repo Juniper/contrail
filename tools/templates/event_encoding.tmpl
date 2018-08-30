@@ -3,6 +3,7 @@ package services
 import (
     "context"
     "encoding/json"
+    "strings"
     "fmt"
 
     "github.com/pkg/errors"
@@ -213,6 +214,7 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
 func NewEvent(option *EventOption) (*Event, error) {
     e := &Event{}
     kind := option.Kind
+    kind = strings.Replace(kind, "-", "_", -1)
     data := option.Data
     uuid := option.UUID
   	operation := option.Operation

@@ -16,50 +16,56 @@ func TestService_ListMetadata(t *testing.T) {
 		{
 			UUID:   "uuid-a",
 			FQName: []string{"default", "uuid-a"},
+			Type:   "hoge",
 		},
 		{
 			UUID:   "uuid-b",
 			FQName: []string{"default", "uuid-b"},
+			Type:   "hoge",
 		},
 		{
 			UUID:   "uuid-c",
 			FQName: []string{"default", "uuid-c"},
+			Type:   "hoge",
 		},
 	}
 
 	tests := []struct {
 		name        string
 		dbMetadatas []*basemodels.MetaData
-		args        []*basemodels.FQNameUUIDPair
+		args        []*basemodels.MetaData
 		want        []*basemodels.MetaData
 		wantErr     bool
 	}{
 		{
 			name:        "Get multiple metadatas using UUID and FQName",
 			dbMetadatas: dbMetadatas,
-			args: []*basemodels.FQNameUUIDPair{
+			args: []*basemodels.MetaData{
 				{
 					UUID: "uuid-b",
 				},
 				{
 					FQName: []string{"default", "uuid-c"},
+					Type:   "hoge",
 				},
 			},
 			want: []*basemodels.MetaData{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 				{
 					UUID:   "uuid-c",
 					FQName: []string{"default", "uuid-c"},
+					Type:   "hoge",
 				},
 			},
 		},
 		{
 			name:        "Get multiple metadatas using UUIDs",
 			dbMetadatas: dbMetadatas,
-			args: []*basemodels.FQNameUUIDPair{
+			args: []*basemodels.MetaData{
 				{
 					UUID: "uuid-b",
 				},
@@ -71,54 +77,62 @@ func TestService_ListMetadata(t *testing.T) {
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 				{
 					UUID:   "uuid-c",
 					FQName: []string{"default", "uuid-c"},
+					Type:   "hoge",
 				},
 			},
 		},
 		{
 			name:        "Get multiple metadatas using FQNames",
 			dbMetadatas: dbMetadatas,
-			args: []*basemodels.FQNameUUIDPair{
+			args: []*basemodels.MetaData{
 				{
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 				{
 					FQName: []string{"default", "uuid-c"},
+					Type:   "hoge",
 				},
 			},
 			want: []*basemodels.MetaData{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 				{
 					UUID:   "uuid-c",
 					FQName: []string{"default", "uuid-c"},
+					Type:   "hoge",
 				},
 			},
 		},
 		{
 			name:        "Get metadata using FQName",
 			dbMetadatas: dbMetadatas,
-			args: []*basemodels.FQNameUUIDPair{
+			args: []*basemodels.MetaData{
 				{
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 			},
 			want: []*basemodels.MetaData{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 			},
 		},
 		{
 			name:        "Get metadata using UUID",
 			dbMetadatas: dbMetadatas,
-			args: []*basemodels.FQNameUUIDPair{
+			args: []*basemodels.MetaData{
 				{
 					UUID: "uuid-b",
 				},
@@ -127,6 +141,7 @@ func TestService_ListMetadata(t *testing.T) {
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 			},
 		},
@@ -134,18 +149,20 @@ func TestService_ListMetadata(t *testing.T) {
 		{
 			name:        "Get single metadata using UUID and FQName",
 			dbMetadatas: dbMetadatas,
-			args: []*basemodels.FQNameUUIDPair{
+			args: []*basemodels.MetaData{
 				{
 					UUID: "uuid-b",
 				},
 				{
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 			},
 			want: []*basemodels.MetaData{
 				{
 					UUID:   "uuid-b",
 					FQName: []string{"default", "uuid-b"},
+					Type:   "hoge",
 				},
 			},
 		},
