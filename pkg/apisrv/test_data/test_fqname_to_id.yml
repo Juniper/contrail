@@ -1,5 +1,4 @@
-name: Endpoints test
-description:  basic endpoints test
+name: FQName to UUID endpoint test
 cleanup:
 - path: /virtual-network/vn_endpoint_blue
 - path: /network-ipam/test_ipam_endpoint_blue
@@ -80,7 +79,7 @@ workflow:
     - 200
     data:
       fq_name: ["default", "admin_endpoint", "vn_endpoint_blue"]
-      type: project
+      type: virtual-network
     expect:
       id: "vn_endpoint_blue"
 
@@ -92,7 +91,7 @@ workflow:
     - 200
     data:
       fq_name: ["domain","admin","test_ipam_endpoint_blue"]
-      type: project
+      type: network-ipam
     expect:
       id: "test_ipam_endpoint_blue"
 
