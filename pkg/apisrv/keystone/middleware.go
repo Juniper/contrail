@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -26,15 +27,13 @@ const (
 
 func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
 	if tokenString == "" {
-		log.Debug("No auth token in request")
-		return nil, common.ErrorUnauthenticated
+		return nil, errors.Wrap(common.ErrorUnauthenticated, "no auth token in request")
 	}
 	validatedToken, err := auth.Validate(tokenString)
 	if err != nil {
 		log.Errorf("Invalid Token: %s", err)
 		return nil, common.ErrorUnauthenticated
 	}
-	log.WithField("token", validatedToken).Debug("Authenticated")
 	roles := []string{}
 	for _, r := range validatedToken.Roles {
 		roles = append(roles, r.Name)
