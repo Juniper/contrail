@@ -39,6 +39,7 @@ log_level: debug
 
 # Server configuration
 server:
+    log_api: false
     read_timeout: 10
     write_timeout: 5
 
