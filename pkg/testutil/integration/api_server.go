@@ -78,7 +78,7 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 		"server.notify_etcd":          c.EnableEtcdNotifier,
 		"server.read_timeout":         10,
 		"server.write_timeout":        5,
-		"server.log_api":              true,
+		"server.log_api":              false,
 		"static_files.public":         path.Join(c.RepoRootPath, "public"),
 		"tls.enabled":                 false,
 	})

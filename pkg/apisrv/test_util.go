@@ -181,7 +181,7 @@ type clientsList map[string]*client.HTTP
 
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
 func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
-	log.Info("Running clean test scenario: ", testScenario.Name)
+	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
 	clients := prepareClients(ctx, t, testScenario)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
@@ -190,7 +190,7 @@ func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
 func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario) func() {
-	log.Info("Running *DIRTY* test scenario: ", testScenario.Name)
+	log.Debug("Running *DIRTY* test scenario: ", testScenario.Name)
 	ctx := context.Background()
 	clients := prepareClients(ctx, t, testScenario)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
@@ -201,9 +201,9 @@ func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario) func() {
 }
 
 func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, clients map[string]*client.HTTP) {
-	log.Infof("There are %v resources to clean (in clean tests should be ZERO)", len(tracked))
+	log.Debugf("There are %v resources to clean (in clean tests should be ZERO)", len(tracked))
 	for i, tr := range tracked {
-		log.Warnf("POST clean up resource %v / %v: %v {clien:t %v}", i+1, len(tracked), tr.Path, tr.Client)
+		log.Warnf("POST clean up resource %v / %v: %v {client: %v}", i+1, len(tracked), tr.Path, tr.Client)
 		response, err := clients[tr.Client].EnsureDeleted(ctx, tr.Path, nil)
 		if err != nil {
 			log.Errorf("Ignored Error deleting dirty resource: %v, for url path '%v' with client %v", err, tr.Path, tr.Client)
@@ -249,7 +249,7 @@ func runTestScenario(ctx context.Context,
 			log.Debug(err)
 		}
 	}
-	log.Info("CLEANUP COMPETE! Starting test sequence...")
+	log.Debug("CLEANUP COMPETE! Starting test sequence...")
 	for _, task := range testScenario.Workflow {
 		log.Debugf("[Task] Name: %s, TestScenario: %s\n", task.Name, testScenario.Name)
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)

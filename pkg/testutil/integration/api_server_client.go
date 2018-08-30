@@ -54,6 +54,7 @@ type HTTPAPIClient struct {
 // NewHTTPAPIClient creates HTTP client of API Server.
 func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	l := pkglog.NewLogger("http-api-client")
+	l.Level = logrus.WarnLevel
 	l.WithFields(logrus.Fields{"endpoint": apiServerURL}).Debug("Connecting to API Server")
 	c := client.NewHTTP(
 		apiServerURL,

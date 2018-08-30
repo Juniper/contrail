@@ -35,10 +35,11 @@ test_database:
 
 
 # Log Level
-log_level: debug
+log_level: info
 
 # Server configuration
 server:
+    log_api: false
     read_timeout: 10
     write_timeout: 5
 

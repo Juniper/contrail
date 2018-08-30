@@ -84,10 +84,16 @@ func checkDiff(path string, expected, actual interface{}) error {
 	case []interface{}:
 		actualList, ok := actual.([]interface{})
 		if !ok {
-			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
+			return fmt.Errorf("expected %v but actually we got %v for path %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 		if len(t) != len(actualList) {
-			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
+			return fmt.Errorf("expected %v but actually we got %v for path %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 		for i, value := range t {
 			found := false
@@ -104,11 +110,17 @@ func checkDiff(path string, expected, actual interface{}) error {
 		}
 	case int:
 		if float64(t) != common.InterfaceToFloat(actual) {
-			return fmt.Errorf("ffff expected %d but actually we got %f for path %s", t, actual, path)
+			return fmt.Errorf("ffff expected %d but actually we got %f for path %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 	default:
 		if t != actual {
-			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
+			return fmt.Errorf("expected %v but actually we got %v for path %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 	}
 	return nil

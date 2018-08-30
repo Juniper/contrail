@@ -113,22 +113,19 @@ func (h *HTTP) Login(ctx context.Context) error {
 
 	resp, err := h.httpClient.Do(request)
 	if err != nil {
-		logErrorAndResponse(err, resp)
-		return err
+		return errorFromResponse(err, resp)
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
 	err = checkStatusCode([]int{200}, resp.StatusCode)
 	if err != nil {
-		logErrorAndResponse(err, resp)
-		return err
+		return errorFromResponse(err, resp)
 	}
 
 	var authResponse keystone.AuthResponse
 	err = json.NewDecoder(resp.Body).Decode(&authResponse)
 	if err != nil {
-		logErrorAndResponse(err, resp)
-		return err
+		return errorFromResponse(err, resp)
 	}
 
 	h.AuthToken = resp.Header.Get("X-Subject-Token")
@@ -181,23 +178,20 @@ func (h *HTTP) Do(ctx context.Context,
 
 	resp, err := h.doHTTPRequestRetryingOn401(ctx, request, data)
 	if err != nil {
-		logErrorAndResponse(err, resp)
-		return nil, err
+		return nil, errorFromResponse(err, resp)
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
 	err = checkStatusCode(expected, resp.StatusCode)
 	if err != nil {
-		logErrorAndResponse(err, resp)
-		return resp, err
+		return resp, errorFromResponse(err, resp)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&output)
 	if err == io.EOF {
 		return resp, nil
 	} else if err != nil {
-		logErrorAndResponse(err, resp)
-		return resp, errors.Wrap(err, "decoding response body failed")
+		return resp, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
 	}
 
 	if h.Debug {
@@ -293,24 +287,6 @@ func checkStatusCode(expected []int, actual int) error {
 	return errors.Errorf("unexpected return code: expected %v, actual %v", expected, actual)
 }
 
-func logErrorAndResponse(err error, response *http.Response) {
-	if err == nil {
-		return
-	}
-
-	if response == nil {
-		log.WithError(err).WithField("response", "nil response").Info("Request failed")
-		return
-	}
-
-	r, dErr := httputil.DumpResponse(response, true)
-	if dErr != nil {
-		log.WithError(err).WithField("response", "error dumping response").Info("Request failed")
-	} else {
-		log.WithError(err).WithField("response", string(r)).Info("Request failed")
-	}
-}
-
 // DoRequest requests based on request object.
 func (h *HTTP) DoRequest(ctx context.Context, request *Request) (*http.Response, error) {
 	return h.Do(ctx, request.Method, request.Path, request.Data, &request.Output, request.Expected)
@@ -325,4 +301,9 @@ func (h *HTTP) Batch(ctx context.Context, requests []*Request) error {
 		}
 	}
 	return nil
+}
+
+func errorFromResponse(e error, r *http.Response) error {
+	b, _ := httputil.DumpResponse(r, true)
+	return errors.Wrapf(e, "RESPONSE:\n%v", string(b))
 }
