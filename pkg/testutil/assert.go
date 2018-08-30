@@ -6,9 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
-
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/stretchr/testify/assert"
 )
@@ -47,17 +44,11 @@ func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...inter
 	actual = common.YAMLtoJSONCompat(actual)
 
 	err := checkDiff("", expected, actual)
-	if err != nil {
-		logObjects(expected, actual)
-	}
 
 	return assert.NoError(
 		t,
 		err,
-		append(
-			msgAndArgs,
-			fmt.Sprintf("objects not equal:\n expected: %+v\n actual: %+v", expected, actual),
-		)...,
+		msgAndArgs...,
 	)
 }
 
@@ -73,7 +64,10 @@ func checkDiff(path string, expected, actual interface{}) error {
 	case map[string]interface{}:
 		actualMap, ok := actual.(map[string]interface{})
 		if !ok {
-			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
+			return fmt.Errorf("expected: \n%v\nactual:\n%v\npath: %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 		for key, value := range t {
 			err := checkDiff(path+"."+key, value, actualMap[key])
@@ -84,10 +78,16 @@ func checkDiff(path string, expected, actual interface{}) error {
 	case []interface{}:
 		actualList, ok := actual.([]interface{})
 		if !ok {
-			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
+			return fmt.Errorf("expected: \n%v\nactual:\n%v\npath: %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 		if len(t) != len(actualList) {
-			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
+			return fmt.Errorf("expected: \n%v\nactual:\n%v\npath: %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 		for i, value := range t {
 			found := false
@@ -104,11 +104,17 @@ func checkDiff(path string, expected, actual interface{}) error {
 		}
 	case int:
 		if float64(t) != common.InterfaceToFloat(actual) {
-			return fmt.Errorf("ffff expected %d but actually we got %f for path %s", t, actual, path)
+			return fmt.Errorf("expected: \n%v\nactual:\n%v\npath: %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 	default:
 		if t != actual {
-			return fmt.Errorf("expected %v but actually we got %v for path %s", t, actual, path)
+			return fmt.Errorf("expected: \n%v\nactual:\n%v\npath: %s",
+				common.MustYAML(t),
+				common.MustYAML(actual),
+				path)
 		}
 	}
 	return nil
@@ -172,20 +178,4 @@ func getAssertFunction(key string) (assertFunction, error) {
 		return nil, fmt.Errorf("assert function %s not found", assertName)
 	}
 	return assert, nil
-}
-
-func logObjects(expected, actual interface{}) {
-	expectedYAML, err := yaml.Marshal(expected)
-	log.Debug("Expected object:")
-	fmt.Println(string(expectedYAML))
-	if err != nil {
-		log.WithError(err).Debug("Failed to marshal expected object")
-	}
-
-	actualYAML, err := yaml.Marshal(actual)
-	log.Debug("Actual object:")
-	fmt.Println(string(actualYAML))
-	if err != nil {
-		log.WithError(err).Debug("Failed to marshal actual object")
-	}
 }
