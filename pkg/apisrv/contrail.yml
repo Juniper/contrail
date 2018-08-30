@@ -35,7 +35,7 @@ test_database:
 
 
 # Log Level
-log_level: debug
+log_level: info
 
 # Server configuration
 server:

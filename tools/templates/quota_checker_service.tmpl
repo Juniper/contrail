@@ -37,7 +37,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 	}
 
 	if limit == NoQuotaLimit {
-		log.Infof("Quota for {{ name }}(%v) in is not set - continue", obj.GetUUID())
+		log.Debugf("Quota for {{ name }}(%v) in is not set - continue", obj.GetUUID())
 		return nil
 	}
 
@@ -46,7 +46,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 		return errors.Wrapf(err, "could not get count for resource {{ name }}(%v)", obj.GetUUID())
 	}
 
-	log.Infof("Quota limit for {{ name }} is %v, count is %v", limit, count)
+	log.Debugf("Quota limit for {{ name }} is %v, count is %v", limit, count)
 
 	if count >= limit {
 		return common.ErrorBadRequestf("Quota exceeded for resource {{ name }}(%v); there are already %v resources", obj.GetUUID(), count)
