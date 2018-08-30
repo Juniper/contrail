@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -27,15 +28,12 @@ func (db *BaseDB) CreateMetaData(ctx context.Context, metaData *basemodels.MetaD
 	})
 }
 
-// GetMetaData gets metadata from database.
-func (db *BaseDB) GetMetaData(ctx context.Context, uuid string, fqName []string) (*basemodels.MetaData, error) {
-	if uuid == "" && len(fqName) == 0 {
-		return nil, fmt.Errorf("uuid and fqName unspecified")
-	}
-
-	metadatas, err := db.ListMetadata(ctx, []*basemodels.FQNameUUIDPair{
-		{FQName: fqName, UUID: uuid},
-	})
+// GetMetaData gets metadata from database. It requires type and either uuid or fq_name.
+func (db *BaseDB) GetMetaData(
+	ctx context.Context,
+	m basemodels.MetaData,
+) (*basemodels.MetaData, error) {
+	metadatas, err := db.ListMetadata(ctx, []*basemodels.MetaData{&m})
 
 	if err != nil {
 		return nil, errors.Wrapf(FormatDBError(err), "failed to get metadata")
@@ -48,66 +46,55 @@ func (db *BaseDB) GetMetaData(ctx context.Context, uuid string, fqName []string)
 	return nil, common.ErrorNotFound
 }
 
-func (db *BaseDB) buildFilter(columns []string, filterValues ...[]string) string {
-	var where string
-	var filterQuery bytes.Buffer
+func (db *BaseDB) buildMetadataFilter(
+	metaDatas []*basemodels.MetaData,
+) (where string, values []interface{}, err error) {
 	index := 0
-	WriteStrings(&filterQuery, " false")
-	for i, column := range columns {
-		if len(filterValues[i]) > 0 {
-			WriteStrings(&filterQuery, " or ")
-			WriteStrings(&filterQuery, column, " in (")
-			var valuesQuery string
-			values := filterValues[i]
-			valuesQuery, index = db.Dialect.ValuesWithIndex(index, values...)
-			WriteStrings(&filterQuery, valuesQuery)
-			WriteStrings(&filterQuery, ")")
+	var filters []string
+	var t, uuid, fqName string
+	for _, m := range metaDatas {
+		if (m.Type == "" || len(m.FQName) == 0) && m.UUID == "" {
+			return "", nil, fmt.Errorf("uuid or pair of fq_name and type is required")
+		}
+
+		if m.UUID != "" {
+			uuid, index = db.Dialect.ValuesWithIndex(index, m.UUID)
+			values = append(values, m.UUID)
+			filters = append(filters, " ( uuid = "+uuid+" ) ")
+		} else {
+			t, index = db.Dialect.ValuesWithIndex(index, m.Type)
+			values = append(values, m.Type)
+			fqNameStr, err := fqNameToString(m.FQName)
+			if err != nil {
+				return "", nil, errors.Wrapf(err, "failed to stringify fq_name")
+			}
+			fqName, index = db.Dialect.ValuesWithIndex(index, fqNameStr)
+			values = append(values, fqNameStr)
+			filters = append(filters, " ( type = "+t+" and fq_name = "+fqName+" ) ")
 		}
 	}
-	where = filterQuery.String()
-
-	return where
-}
-
-func (db *BaseDB) stringsToValues(strings []string) []interface{} {
-	var values []interface{}
-	for _, s := range strings {
-		values = append(values, s)
-	}
-	return values
+	where = strings.Join(filters, " or ")
+	return where, values, nil
 }
 
 // ListMetadata gets metadata from database.
 func (db *BaseDB) ListMetadata(
-	ctx context.Context, fqNameUUIDPairs []*basemodels.FQNameUUIDPair,
+	ctx context.Context,
+	m []*basemodels.MetaData,
 ) ([]*basemodels.MetaData, error) {
 	var metadatas []*basemodels.MetaData
 
+	var query bytes.Buffer
+	query.WriteString("select uuid,type, fq_name from metadata where ")
+
+	where, values, err := db.buildMetadataFilter(m)
+	if err != nil {
+		return nil, err
+	}
+	query.WriteString(where)
+
 	if err := db.DoInTransaction(ctx, func(ctx context.Context) error {
 		tx := GetTransaction(ctx)
-		var query bytes.Buffer
-		query.WriteString("select uuid,type, fq_name from metadata where ")
-		var fqNames []string
-		var uuids []string
-
-		for _, pair := range fqNameUUIDPairs {
-			if len(pair.FQName) > 0 {
-				fqNameStr, err := fqNameToString(pair.FQName)
-				if err != nil {
-					return errors.Wrapf(err, "failed to stringify fq_name")
-				}
-				fqNames = append(fqNames, fqNameStr)
-			}
-			if pair.UUID != "" {
-				uuids = append(uuids, pair.UUID)
-			}
-		}
-
-		where := db.buildFilter([]string{"fq_name", "uuid"}, fqNames, uuids)
-		query.WriteString(where)
-		var values []interface{}
-		values = append(values, db.stringsToValues(fqNames)...)
-		values = append(values, db.stringsToValues(uuids)...)
 
 		rows, err := tx.QueryContext(ctx, query.String(), values...)
 		if err != nil {

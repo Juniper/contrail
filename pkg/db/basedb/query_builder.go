@@ -239,6 +239,9 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 	if spec.ParentType != "" {
 		filters = baseservices.AppendFilter(filters, "parent_type", spec.ParentType)
 	}
+	if spec.ParentFQName != nil {
+		// TODO: implement parent_fq_name filter
+	}
 	for _, filter := range filters {
 		if !qb.isValidField(filter.Key) {
 			continue
