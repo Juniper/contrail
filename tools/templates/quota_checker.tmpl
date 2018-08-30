@@ -55,12 +55,9 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 
 	limit := project.Project.Quota.{{ name }}
 	if limit == 0 {
-		log.Infof("[Create] Quota for {{ name }}(%v) in project %v is not set - continue", obj.GetUUID(), project.Project.GetUUID())
 		return nil
 	}
-	log.Infof("[Create] Checking quota for {{ name }}(%v) in project %v", obj.GetUUID(), project.Project.GetUUID())
 	count, err := svc.quotaCounter.Count{{ name }}(ctx, obj, project.Project)
-	log.Infof("Quota limit for {{ name }} is %v, count is %v (in project %v)", limit, count, project.Project.GetUUID())
 	if count >= limit {
 		return common.ErrorBadRequestf("Quota exceeded for resource {{ name }}; under project %s (%v) there are already %v resources count", project.Project.DisplayName, project.Project.GetUUID(), count)
 	}
@@ -70,7 +67,6 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 
 // Create{{ name }} is an implementation of handling quota verificatin during object creation
 func (svc *QuotaCheckerService) Create{{ name }}(ctx context.Context, request *Create{{ name }}Request) (*Create{{ name }}Response, error) {
-	log.Debugf("Create{{ name }} request = %+v;", request)
 	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
 		return nil, err
 	}
@@ -96,13 +92,11 @@ func (svc *QuotaCheckerService) Update{{ name }}(ctx context.Context, request *U
 {% if schema.Parents|length >= 1 %}
 // GetProjectFor{{ name }} retrieves project UUID for given {{ name }} object (if possible) // Parents count: {{ schema.Parents|length }};
 func (svc *QuotaCheckerService) GetProjectFor{{ name }}(ctx context.Context, obj *models.{{ name }}) (string, error) {
-	log.Debugf("GetProject lookup on {{ name }} with UUID: %v -> %v, %v", obj.GetUUID(), obj.GetParentType(), obj.GetParentUUID())
 	{% if name == "Project" %}
 	log.Debugf("GetProject returns Project with UUID: %v", obj.GetUUID())
 	return obj.GetUUID(), nil
 	{% else %}{% for _, pdef in schema.Parents %}{% set ptype = pdef.LinkTo.TypeName %}
 		if obj.GetParentType() == "{{ ptype }}" {
-		log.Debugf("GetProject lookup {{ ptype }} with UUID: %v", obj.GetParentUUID())
 		{% if ptype == "project" %}
 		parentUUID := obj.GetParentUUID()
 		if parentUUID == "" {

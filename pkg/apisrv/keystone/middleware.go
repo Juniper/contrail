@@ -26,7 +26,6 @@ const (
 
 func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
 	if tokenString == "" {
-		log.Debug("No auth token in request")
 		return nil, common.ErrorUnauthenticated
 	}
 	validatedToken, err := auth.Validate(tokenString)
@@ -34,7 +33,6 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 		log.Errorf("Invalid Token: %s", err)
 		return nil, common.ErrorUnauthenticated
 	}
-	log.WithField("token", validatedToken).Debug("Authenticated")
 	roles := []string{}
 	for _, r := range validatedToken.Roles {
 		roles = append(roles, r.Name)
