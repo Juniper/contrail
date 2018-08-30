@@ -3,6 +3,7 @@ package models
 import (
 	"strconv"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -53,13 +54,22 @@ func (m *SecurityGroup) makeACLRule(pair policyAddressPair) (*AclRuleType, error
 		return nil, err
 	}
 
+	sourceAddress, err := m.policyAddressToACLAddress(pair.sourceAddress)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert source address for an ACL")
+	}
+	destinationAddress, err := m.policyAddressToACLAddress(pair.destinationAddress)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert destination address for an ACL")
+	}
+
 	return &AclRuleType{
 		RuleUUID: pair.policyRule.GetRuleUUID(),
 		MatchCondition: &MatchConditionType{
 			Ethertype:  pair.policyRule.GetEthertype(),
 			Protocol:   protocol,
-			SRCAddress: m.policyAddressToACLAddress(pair.sourceAddress),
-			DSTAddress: m.policyAddressToACLAddress(pair.destinationAddress),
+			SRCAddress: sourceAddress,
+			DSTAddress: destinationAddress,
 			SRCPort:    pair.sourcePort,
 			DSTPort:    pair.destinationPort,
 		},
@@ -69,23 +79,28 @@ func (m *SecurityGroup) makeACLRule(pair policyAddressPair) (*AclRuleType, error
 	}, nil
 }
 
-func (m *SecurityGroup) policyAddressToACLAddress(policyAddress *policyAddress) *AddressType {
+func (m *SecurityGroup) policyAddressToACLAddress(policyAddress *policyAddress) (*AddressType, error) {
+	numericSecurityGroup, err := m.securityGroupNameToID(policyAddress.SecurityGroup)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert security group name for an ACL")
+	}
+
 	aclAddress := AddressType(*policyAddress)
-	aclAddress.SecurityGroup = m.securityGroupNameToID(policyAddress.SecurityGroup)
-	return &aclAddress
+	aclAddress.SecurityGroup = numericSecurityGroup
+	return &aclAddress, nil
 }
 
-func (m *SecurityGroup) securityGroupNameToID(name string) string {
+func (m *SecurityGroup) securityGroupNameToID(name string) (string, error) {
 	switch {
 	case name == "local" || name == "":
-		return ""
+		return "", nil
+	case name == "any":
+		return "-1", nil
 	case basemodels.FQNameToString(m.GetFQName()) == name:
-		return strconv.FormatInt(m.GetSecurityGroupID(), 10)
+		return strconv.FormatInt(m.GetSecurityGroupID(), 10), nil
 	default:
-		// TODO: Handle name == "any".
 		// TODO: If there is a security group in cache with FQName == name, take its SecurityGroupID.
-		// TODO: Handle the "skip this rule" case.
-		return ""
+		return "", errors.Errorf("unknown security group name %q", name)
 	}
 }
 
