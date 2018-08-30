@@ -8,14 +8,12 @@ import (
 	"testing"
 
 	"github.com/labstack/echo"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -53,8 +51,6 @@ type HTTPAPIClient struct {
 
 // NewHTTPAPIClient creates HTTP client of API Server.
 func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
-	l := pkglog.NewLogger("http-api-client")
-	l.WithFields(logrus.Fields{"endpoint": apiServerURL}).Debug("Connecting to API Server")
 	c := client.NewHTTP(
 		apiServerURL,
 		apiServerURL+authEndpointSuffix,
