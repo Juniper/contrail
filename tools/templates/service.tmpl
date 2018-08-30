@@ -73,10 +73,11 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }
 {% endif %}
 
-{% if schema.Parents | length == 1 and !schema.IsConfigRootInParents %}{# There is only one parent, so "for" will extract him #}
+    {% if schema.Parents | length == 1 and !schema.IsConfigRootInParents %}{# There is only one parent, so "for" will extract him #}
     if model.ParentType == "" { {% for key, reference in schema.Parents %}
         model.ParentType = "{{ reference.LinkTo.TypeName }}"{% endfor %}
-    }{% endif %}
+    }
+    {% endif %}
 
 
     if err := service.sanitizeFQNameFor{{ schema.JSONSchema.GoName }}(ctx, request); err != nil {
@@ -84,14 +85,14 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     }
 
 {% if schema.Parents | length != 0 %}
-    if model.ParentUUID == "" {
+    if model.ParentUUID == "" && model.ParentType != "" {
         // fqName must be have at least 2 elements to contain parent fqName
         if l := len(model.FQName); l > 1 {
             // get parentUUID by parent fqName
             parentFQName := model.FQName[:l-1]
-            metadata, err := service.MetadataGetter.GetMetaData(ctx, "", parentFQName)
+            metadata, err := service.MetadataGetter.GetMetadata(ctx,  basemodels.Metadata{Type: model.ParentType, FQName: parentFQName})
             if err != nil {
-                return nil, common.ErrorBadRequest("please provide correct FQName or ParentUUID")
+                return nil, common.ErrorBadRequestf("please provide correct FQName or ParentUUID. cause: %v", err)
             }
             model.ParentUUID = metadata.UUID
         }
@@ -142,7 +143,7 @@ func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} 
     {% endif %}
     if model.ParentUUID != "" {
         // fqName is empty but parentUUID is not - get parent fqName
-        metadata, err := service.MetadataGetter.GetMetaData(ctx, model.ParentUUID, nil)
+        metadata, err := service.MetadataGetter.GetMetadata(ctx,  basemodels.Metadata{UUID: model.ParentUUID})
         if err != nil {
             return common.ErrorBadRequestf("Failed to generate FQName: %v", err)
         }
