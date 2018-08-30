@@ -334,7 +334,8 @@ workflow:
       uuid: routing_instance_ref_update_uuid
       ref-type: route-target
   expect:
-    message: 'error resolving ref-uuid using ref-fq-name: uuid and fqName unspecified'
+    message: 'error resolving ref-uuid using ref-fq-name: failed to get metadata: uuid or pair
+    of fq_name and type is required'
 
 - name: try to link vn with with non-provider network using ref-update (trigger type logic error)
   request:

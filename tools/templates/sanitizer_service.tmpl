@@ -17,7 +17,7 @@ import (
 //This is needed to prevent an import error.
 var _ = common.ErrorNotFound
 var _ = models.Version
-var _ = basemodels.MetaData{}
+var _ = basemodels.Metadata{}
 
 // SanitizerService fills up missing properties based on resources logic and metadata
 // TODO: Move logic from ContrailService when validation will be a separate service
@@ -26,28 +26,31 @@ type SanitizerService struct {
 	MetadataGetter baseservices.MetadataGetter
 }
 
-func (sv *SanitizerService) sanitizeRefs(ctx context.Context, refs []basemodels.Reference) error {
+func (sv *SanitizerService) sanitizeRefs(
+	ctx context.Context,
+	refs []basemodels.Reference,
+) error {
 	fqNameToRef:= make(map[string] basemodels.Reference)
-	var fqNameUUIDPairs []*basemodels.FQNameUUIDPair
+	var metadatas []*basemodels.Metadata
 	for _, ref := range refs {
 		if ref.GetUUID() != "" {
 			continue
 		}
 		fqNameToRef[basemodels.FQNameToString(ref.GetTo())] = ref
-		fqNameUUIDPairs = append(fqNameUUIDPairs, &basemodels.FQNameUUIDPair{FQName: ref.GetTo()})
+		metadatas = append(metadatas, &basemodels.Metadata{FQName: ref.GetTo(), Type: ref.GetReferredKind()})
 	}
 
-	if len(fqNameUUIDPairs) == 0 {
+	if len(metadatas) == 0 {
 		return nil
 	}
 
-	metadatas, err := sv.MetadataGetter.ListMetadata(ctx, fqNameUUIDPairs)
+	ml, err := sv.MetadataGetter.ListMetadata(ctx, metadatas)
 	if err != nil {
 		return err
 	}
 
-	if len(metadatas) != len(fqNameUUIDPairs) {
-		for _, metadata := range metadatas {
+	if len(ml) != len(metadatas) {
+		for _, metadata := range ml {
 			delete(fqNameToRef, basemodels.FQNameToString(metadata.FQName))
 		}
 		var missingRefs bytes.Buffer
@@ -57,7 +60,7 @@ func (sv *SanitizerService) sanitizeRefs(ctx context.Context, refs []basemodels.
 		return errors.Errorf("couldn't get metadatas for references:%v", missingRefs.String())
 	}
 
-	for _, metadata := range metadatas {
+	for _, metadata := range ml {
 		fqNameToRef[basemodels.FQNameToString(metadata.FQName)].SetUUID(metadata.UUID)
 	}
 	return nil

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strings"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -162,7 +163,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	if data.RefUUID == "" {
-		m, err := service.MetadataGetter.GetMetaData(ctx, "", data.RefFQName)
+		m, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{Type: data.RefType, FQName: data.RefFQName})
 		if err != nil {
 			return common.ToHTTPError(common.ErrorBadRequestf("error resolving ref-uuid using ref-fq-name: %v", err))
 		}
@@ -242,9 +243,12 @@ func (service *ContrailService) RESTPropCollectionUpdate(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (service *ContrailService) updatePropCollection(ctx context.Context, data *PropCollectionUpdateRequest) error {
+func (service *ContrailService) updatePropCollection(
+	ctx context.Context,
+	data *PropCollectionUpdateRequest,
+) error {
 	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		m, err := service.MetadataGetter.GetMetaData(ctx, data.UUID, nil)
+		m, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{UUID: data.UUID})
 		if err != nil {
 			return errors.Wrap(err, "error getting metadata for provided UUID: %v")
 		}
@@ -377,17 +381,18 @@ func RegisterPluralPaths (register registerFunc) {
 }
 
 // GetObject retrieves object dynamically from ReadService by its schema ID and UUID.
-func GetObject(ctx context.Context, rs ReadService, schemaID, uuid string) (basemodels.Object, error) {
-	return getObject(ctx, rs, schemaID, uuid)
+func GetObject(ctx context.Context, rs ReadService, typeName, uuid string) (basemodels.Object, error) {
+	return getObject(ctx, rs, typeName, uuid)
 }
 
-func getObject(ctx context.Context, rs ReadService, schemaID, uuid string) (basemodels.Object, error) {
-	switch schemaID {
+func getObject(ctx context.Context, rs ReadService, typeName, uuid string) (basemodels.Object, error) {
+	kind := strings.Replace(typeName, "_", "-", -1)
+	switch kind {
 		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-	case "{{ schema.ID }}":
+	case "{{ schema.TypeName }}":
 		resp, err := rs.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{ID: uuid})
 		return resp.Get{{ schema.JSONSchema.GoName }}(), err
 		{% endif %}{% endfor %}
 	}
-	return nil, errors.Errorf("unknown schema ID provided: %v", schemaID)
+	return nil, errors.Errorf("unknown type provided: %v", kind)
 }
