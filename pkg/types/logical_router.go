@@ -9,6 +9,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 //CreateLogicalRouter validates logical-router create request
@@ -38,9 +39,16 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 				return err
 			}
 
+			if err = sv.checkRouterSupportsVPNType(ctx, logicalRouter); err != nil {
+				return err
+			}
+
+			if err = sv.checkRouterHasBGPVPNAssocViaNetwork(ctx, logicalRouter, nil, nil); err != nil {
+				return err
+			}
+
 			logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
 
-			//TODO check router supports vpn type
 			response, err = sv.BaseService.CreateLogicalRouter(ctx, request)
 			return err
 
@@ -83,9 +91,16 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 				return err
 			}
 
+			if err = sv.checkRouterSupportsVPNType(ctx, logicalRouter); err != nil {
+				return err
+			}
+
+			if err = sv.checkRouterHasBGPVPNAssocViaNetwork(ctx, logicalRouter, dbLogicalRouter, &fieldMask); err != nil {
+				return err
+			}
+
 			logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
 
-			//TODO check BGP VPNs
 			response, err = sv.BaseService.UpdateLogicalRouter(ctx, request)
 			return err
 
@@ -255,4 +270,124 @@ func (sv *ContrailTypeLogicService) checkPortAvailability(
 	}
 
 	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkRouterSupportsVPNType(ctx context.Context, lr *models.LogicalRouter) error {
+	bgpvpnRefs := lr.GetBGPVPNRefs()
+	if len(bgpvpnRefs) == 0 {
+		return nil
+	}
+
+	bgpvpnUUIDs := make([]string, 0, len(bgpvpnRefs))
+	for _, bgpvpnRef := range bgpvpnRefs {
+		bgpvpnUUIDs = append(bgpvpnUUIDs, bgpvpnRef.GetUUID())
+	}
+
+	bgpvpns, err := sv.ReadService.ListBGPVPN(
+		ctx, &services.ListBGPVPNRequest{baseservices.SimpleListSpec(ctx, bgpvpnUUIDs, models.BGPVPNFieldBGPVPNType)},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, bgpvpn := range bgpvpns.GetBGPVPNs() {
+		if bgpvpn.GetBGPVPNType() != models.L3VPNType {
+			return common.ErrorBadRequestf("can only associate '%s' type BGPVPNs to a logical router", models.L3VPNType)
+		}
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkRouterHasBGPVPNAssocViaNetwork(
+	ctx context.Context,
+	lr, dbLR *models.LogicalRouter,
+	fm *types.FieldMask,
+) error {
+
+	if !isBGPVPNOrVMIChangeRequested(fm) {
+		return nil
+	}
+
+	if !hasBGPVPNRefs(lr, dbLR, fm) {
+		return nil
+	}
+
+	vmiRefs := getVMIRefs(lr, dbLR, fm)
+	if len(vmiRefs) == 0 {
+		return nil
+	}
+
+	vnUUIDs, err := sv.getLinkedVnUUIDs(ctx, vmiRefs)
+	if err != nil || len(vnUUIDs) == 0 {
+		return err
+	}
+
+	vnsResp, err := sv.ReadService.ListVirtualNetwork(
+		ctx, &services.ListVirtualNetworkRequest{
+			baseservices.SimpleListSpec(ctx, vnUUIDs, models.VirtualNetworkFieldBGPVPNRefs),
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, vn := range vnsResp.GetVirtualNetworks() {
+		if len(vn.GetBGPVPNRefs()) != 0 {
+			return common.ErrorBadRequestf(
+				"can not associate BGPVPN to router which is linked to a network(%s) "+
+					"which already has BGPVPN associated",
+				vn.GetUUID())
+		}
+	}
+
+	return nil
+}
+
+func isBGPVPNOrVMIChangeRequested(fm *types.FieldMask) bool {
+	return fm == nil ||
+		basemodels.FieldMaskContains(fm, models.LogicalRouterFieldBGPVPNRefs) ||
+		basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualMachineInterfaceRefs)
+}
+
+func hasBGPVPNRefs(lr, dbLR *models.LogicalRouter, fm *types.FieldMask) bool {
+	if fm == nil || basemodels.FieldMaskContains(fm, models.LogicalRouterFieldBGPVPNRefs) {
+		return len(lr.GetBGPVPNRefs()) != 0
+	}
+	return len(dbLR.GetBGPVPNRefs()) != 0
+}
+
+func getVMIRefs(lr, dbLR *models.LogicalRouter, fm *types.FieldMask) []*models.LogicalRouterVirtualMachineInterfaceRef {
+	if fm == nil || basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualMachineInterfaceRefs) {
+		return lr.GetVirtualMachineInterfaceRefs()
+	}
+	return dbLR.GetVirtualMachineInterfaceRefs()
+}
+
+func (sv *ContrailTypeLogicService) getLinkedVnUUIDs(
+	ctx context.Context,
+	vmiRefs []*models.LogicalRouterVirtualMachineInterfaceRef,
+) ([]string, error) {
+
+	vmiUUIDs := make([]string, 0, len(vmiRefs))
+	for _, vmiRef := range vmiRefs {
+		vmiUUIDs = append(vmiUUIDs, vmiRef.GetUUID())
+	}
+
+	vmisResp, err := sv.ReadService.ListVirtualMachineInterface(
+		ctx, &services.ListVirtualMachineInterfaceRequest{
+			baseservices.SimpleListSpec(ctx, vmiUUIDs, models.VirtualMachineInterfaceFieldVirtualNetworkRefs),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var vnUUIDs []string
+	for _, vmi := range vmisResp.GetVirtualMachineInterfaces() {
+		for _, vnRef := range vmi.GetVirtualNetworkRefs() {
+			vnUUIDs = append(vnUUIDs, vnRef.GetUUID())
+		}
+	}
+	return vnUUIDs, nil
 }
