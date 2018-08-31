@@ -85,7 +85,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 	}
 
 	vnList, err := sv.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{Spec: &baseservices.ListSpec{
-		Fields: []string{"route_target_list"}},
+		Fields: []string{models.VirtualNetworkFieldRouteTargetList}},
 	})
 	if err != nil {
 		return err
