@@ -82,7 +82,8 @@ func visitResource(uuid string, sorted []*Event,
 	stateGraph[uuid] = temporaryVisited
 	event, found := eventMap[uuid]
 	if !found {
-		return nil, fmt.Errorf("Resource with uuid: %s not found in eventMap", uuid)
+		stateGraph[uuid] = visited
+	    return sorted, nil
 	}
 	depends := event.GetResource().Depends()
 	for _, refUUID := range depends {
@@ -208,6 +209,59 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
 
 {% endif%}{% endfor %}
 
+func ExtractRefEventsFromEvent(e *Event) ([]Event, error) {
+
+    var refEvents []Event
+    switch e.GetResource().Kind() {
+    {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+    {% if schema.References|length > 0 %}
+    case "{{ schema.Path }}":
+        req := e.GetCreate{{ schema.JSONSchema.GoName }}Request()
+        {% for _, reference in schema.References %}
+        for _, ref := range req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs {
+
+            {% if reference.Attr %}raw, err := json.Marshal(ref.GetAttr())
+            if err != nil {
+                return nil, err
+            }{% endif %}
+            refUpd := &RefUpdate {
+                Operation: RefOperationAdd,
+                Type: "{{ schema.Path }}",
+                UUID: req.{{ schema.JSONSchema.GoName }}.GetUUID(),
+                RefType: "{{ reference.LinkTo.Path }}",
+                RefUUID: ref.GetUUID(),
+                RefFQName: ref.GetTo(),
+                {% if reference.Attr %}Attr: json.RawMessage(raw),{% endif %}
+            }
+            newEvent, err := NewEventFromRefUpdate(refUpd)
+            if err != nil {
+                return nil, err
+            }
+            refEvents = append(
+                refEvents,
+                *newEvent,
+            )
+        }
+        req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs = req.{{ schema.JSONSchema.GoName }}.{{ reference.GoName }}Refs[:0]
+        {% endfor %}
+        options := &EventOption {
+            UUID: req.{{ schema.JSONSchema.GoName }}.GetUUID(),
+            Operation: OperationCreate,
+            Kind: "{{ schema.ID }}",
+            Data: req.{{ schema.JSONSchema.GoName }}.ToMap(),
+        }
+        eventWithoutRefs, err := NewEvent(options)
+        e = eventWithoutRefs
+        if err != nil {
+            return nil, err
+        }
+        return refEvents, nil
+    {% endif %}
+    {% endif%}{% endfor %}
+    default:
+        return refEvents, nil
+    }
+}
 
 //NewEvent makes event from interface
 func NewEvent(option *EventOption) (*Event, error) {
@@ -392,6 +446,16 @@ func (e *Event) ToMap() map[string]interface{} {
             m["data"] = map[string]interface{}{
                 "uuid": t.Delete{{ schema.JSONSchema.GoName }}Request.ID,
             }
+        {% for _, reference in schema.References %}
+        case *Event_Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest:
+            m["kind"] = "{{ schema.ID }}_{{ reference.LinkTo.ID }}"
+            m["operation"] = string(RefOperationAdd)
+            m["data"] = t.Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest
+        case *Event_Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest:
+            m["kind"] = "{{ schema.ID }}_{{ reference.LinkTo.ID }}"
+            m["operation"] = string(RefOperationDelete)
+            m["data"] = t.Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest
+        {% endfor %}
         {% endif%}{% endfor %}
     }
     return m
@@ -450,6 +514,27 @@ func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
                         },
                     }
             }
+        {% for _, reference in schema.References %}
+        case "{{ schema.ID }}_{{ reference.LinkTo.ID }}":
+            switch (operation) {
+                case string(RefOperationAdd):
+                    s := InterfaceToCreate{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest(data)
+                    if err != nil {
+                        return err
+                    }
+                    e.Request = &Event_Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                        Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest: s,
+                    }
+                case string(RefOperationDelete):
+                    s := InterfaceToDelete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest(data)
+                    if err != nil {
+                        return err
+                    }
+                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                        Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest: s,
+                    }
+            }
+        {% endfor %}
          {% endif%}{% endfor %}
     }
     return nil

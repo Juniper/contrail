@@ -239,3 +239,53 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
 
 {% endif %}
 {% endfor %}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% for _, reference in schema.References %}
+//InterfaceToCreate{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest transforms interface to Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest struct.
+func InterfaceToCreate{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest(i interface{}) *Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+	switch o := i.(type) {
+		case *Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest:
+			return o
+		case Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest:
+			return &o
+		case map[string]interface{}:
+			return &Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                ID: common.InterfaceToString(o["id"]),
+                {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref: &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
+                    UUID: common.InterfaceToString(o["{{ schema.JSONSchema.ID }}_{{ reference.LinkTo.ID }}_ref"].(map[string]interface{})["uuid"]),
+                    To: common.InterfaceToStringList(o["{{ schema.JSONSchema.ID }}_{{ reference.LinkTo.ID }}_ref"].(map[string]interface{})["to"]),
+                    {% if reference.RefType %}
+			        Attr: models.InterfaceTo{{ reference.RefType }}(o["{{ schema.JSONSchema.ID }}_{{ reference.LinkTo.ID }}_ref"].(map[string]interface{})["attr"]),
+			        {% endif %}
+                },
+		}
+        default:
+            return nil
+	}
+}
+
+//InterfaceToDelete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest transforms interface to Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest struct.
+func InterfaceToDelete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest(i interface{}) *Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+	switch o := i.(type) {
+		case *Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest:
+			return o
+		case Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest:
+			return &o
+		case map[string]interface{}:
+			return &Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest{
+                ID: common.InterfaceToString(o["id"]),
+                {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref: &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
+                    UUID: common.InterfaceToString(o["{{ schema.JSONSchema.ID }}_{{ reference.LinkTo.ID }}_ref"].(map[string]interface{})["id"]),
+                    To: common.InterfaceToStringList(o["{{ schema.JSONSchema.ID }}_{{ reference.LinkTo.ID }}_ref"].(map[string]interface{})["to"]),
+                    {% if reference.RefType %}
+			        Attr: models.InterfaceTo{{ reference.RefType }}(o["{{ schema.JSONSchema.ID }}_{{ reference.LinkTo.ID }}_ref"].(map[string]interface{})["attr"]),
+			        {% endif %}
+                },
+		}
+        default:
+            return nil
+	}
+}
+{% endfor %}{% endif %}
+{% endfor %}

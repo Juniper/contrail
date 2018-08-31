@@ -1,0 +1,35 @@
+resources:
+- kind: tag
+  data:
+    fq_name:
+    - label=fabric-as_number
+    id_perms:
+      created: 2018-05-23T17:29:58.405867
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.405867
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.3509699e+19
+        uuid_mslong: 7.219542e+17
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    tag_id: "0x00000001"
+    tag_type_name: label
+    tag_type_refs:
+    - attr: null
+      uuid: 781a55ae-a93f-4f79-b146-88fb92cde7d3
+    tag_value: fabric-as_number
+    type: tag
+    uuid: 0a04e57d-c2ad-4944-bb7c-182073cdbfde
+  operation: ""

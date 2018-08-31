@@ -2,6 +2,7 @@ package convert
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -41,9 +42,26 @@ func Convert(c *Config) error {
 		return errors.Wrapf(err, "reading events from %v failed", c.InType)
 	}
 
+	fmt.Println("\n\n------------------------------\nEVENTS BEFORE SORTING\n------------------------------\n\n")
+	for _, e := range events.Events {
+		fmt.Println("\n" + e.String() + "\n")
+	}
+
+	createRefEvents, err := extractRefsFromEvents(events)
+	if err != nil {
+		return errors.Wrap(err, "extracting refs from events failed")
+	}
+
 	err = events.Sort()
 	if err != nil {
 		return errors.Wrap(err, "sorting events failed")
+	}
+
+	events.Events = append(events.Events, createRefEvents.Events...)
+
+	fmt.Println("\n\n------------------------------\nEVENTS AFTER SORTING\n------------------------------\n\n")
+	for _, e := range events.Events {
+		fmt.Println("\n" + e.String() + "\n")
 	}
 
 	err = writeData(events, c)
@@ -51,6 +69,21 @@ func Convert(c *Config) error {
 		return errors.Wrapf(err, "writing events to %v failed", c.OutType)
 	}
 	return nil
+}
+
+func extractRefsFromEvents(events *services.EventList) (*services.EventList, error) {
+	var createRefEvents services.EventList
+
+	for _, event := range events.Events {
+		evs, err := services.ExtractRefEventsFromEvent(event)
+		if err != nil {
+			return nil, err
+		}
+		for id := range evs {
+			createRefEvents.Events = append(createRefEvents.Events, &evs[id])
+		}
+	}
+	return &createRefEvents, nil
 }
 
 func readData(c *Config) (*services.EventList, error) {
