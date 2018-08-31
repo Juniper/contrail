@@ -22,6 +22,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
+	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/vncapi"
@@ -148,8 +149,12 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 //Init setup the server.
 // nolint: gocyclo
 func (s *Server) Init() (err error) {
-	common.SetLogLevel()
+	// TODO (Kamil): should we refactor server to use a local logger?
+	if err = pkglog.Configure(viper.GetString("log_level")); err != nil {
+		return err
+	}
 
+	// TODO: integrate Echo's logger with logrus
 	e := s.Echo
 	if viper.GetBool("server.log_api") {
 		e.Use(middleware.Logger())
