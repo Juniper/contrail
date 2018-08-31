@@ -9,6 +9,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 //CreateLogicalRouter validates logical-router create request
@@ -38,9 +39,16 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 				return err
 			}
 
+			if err = sv.checkRouterSupportsVpnType(ctx, logicalRouter); err != nil {
+				return err
+			}
+
+			if err = sv.checkRouterHasBgpvpnAssocViaNetwork(ctx, logicalRouter, nil); err != nil {
+				return err
+			}
+
 			logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
 
-			//TODO check router supports vpn type
 			response, err = sv.BaseService.CreateLogicalRouter(ctx, request)
 			return err
 
@@ -83,9 +91,16 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 				return err
 			}
 
+			if err = sv.checkRouterSupportsVpnType(ctx, logicalRouter); err != nil {
+				return err
+			}
+
+			if err = sv.checkRouterHasBgpvpnAssocViaNetwork(ctx, logicalRouter, dbLogicalRouter); err != nil {
+				return err
+			}
+
 			logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
 
-			//TODO check BGP VPNs
 			response, err = sv.BaseService.UpdateLogicalRouter(ctx, request)
 			return err
 
@@ -251,6 +266,126 @@ func (sv *ContrailTypeLogicService) checkPortAvailability(
 		vmi := vmiResponse.GetVirtualMachineInterface()
 		if vmi.GetParentType() == models.KindVirtualMachine || len(vmi.GetVirtualMachineRefs()) > 0 {
 			return common.ErrorConflictf("port(%s) already in use by virtual-machine", vmi.GetUUID())
+		}
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkRouterSupportsVpnType(
+	ctx context.Context,
+	logicalRouter *models.LogicalRouter) error {
+
+	bgpvpnRefs := logicalRouter.GetBGPVPNRefs()
+	bgpvpnUUIDs := make([]string, 0, len(bgpvpnRefs))
+	for _, bgpvpnRef := range bgpvpnRefs {
+		bgpvpnUUIDs = append(bgpvpnUUIDs, bgpvpnRef.GetUUID())
+	}
+
+	if len(bgpvpnUUIDs) == 0 {
+		return nil
+	}
+
+	bgpvpns, err := sv.ReadService.ListBGPVPN(
+		ctx,
+		&services.ListBGPVPNRequest{
+			Spec: &baseservices.ListSpec{
+				Filters: []*baseservices.Filter{{
+					Key:    models.BGPVPNFieldUUID,
+					Values: bgpvpnUUIDs,
+				}},
+				Fields: []string{models.BGPVPNFieldBGPVPNType},
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, bgpvpn := range bgpvpns.GetBGPVPNs() {
+		if bgpvpn.GetBGPVPNType() != models.L3VPNType {
+			return common.ErrorBadRequestf("Can only associate '%s' type BGPVPNs to a logical router", models.L3VPNType)
+		}
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) checkRouterHasBgpvpnAssocViaNetwork( //nolint: gocyclo
+	ctx context.Context,
+	logicalRouter, dbLogicalRouter *models.LogicalRouter) error {
+
+	bgpvpnRefs := logicalRouter.GetBGPVPNRefs()
+	if len(bgpvpnRefs) == 0 {
+		bgpvpnRefs = dbLogicalRouter.GetBGPVPNRefs()
+	}
+	if len(bgpvpnRefs) == 0 {
+		return nil
+	}
+
+	vmiRefs := logicalRouter.GetVirtualMachineInterfaceRefs()
+	if len(vmiRefs) == 0 {
+		vmiRefs = dbLogicalRouter.GetVirtualMachineInterfaceRefs()
+	}
+	if len(vmiRefs) == 0 {
+		return nil
+	}
+
+	vmiUUIDs := make([]string, 0, len(vmiRefs))
+	for _, vmiRef := range vmiRefs {
+		vmiUUIDs = append(vmiUUIDs, vmiRef.GetUUID())
+	}
+
+	vmisResp, err := sv.ReadService.ListVirtualMachineInterface(
+		ctx,
+		&services.ListVirtualMachineInterfaceRequest{
+			Spec: &baseservices.ListSpec{
+				Filters: []*baseservices.Filter{{
+					Key:    models.VirtualMachineInterfaceFieldUUID,
+					Values: vmiUUIDs,
+				}},
+				Detail: true,
+				Fields: []string{models.VirtualMachineInterfaceFieldVirtualNetworkRefs},
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	var vnUUIDs []string
+	for _, vmi := range vmisResp.GetVirtualMachineInterfaces() {
+		vnRefs := vmi.GetVirtualNetworkRefs()
+		for _, vnRef := range vnRefs {
+			vnUUIDs = append(vnUUIDs, vnRef.GetUUID())
+		}
+	}
+	if len(vnUUIDs) == 0 {
+		return nil
+	}
+
+	vnResp, err := sv.ReadService.ListVirtualNetwork(
+		ctx,
+		&services.ListVirtualNetworkRequest{
+			Spec: &baseservices.ListSpec{
+				Filters: []*baseservices.Filter{{
+					Key:    models.VirtualNetworkFieldUUID,
+					Values: vnUUIDs,
+				}},
+				Detail: true,
+				Fields: []string{models.VirtualNetworkFieldBGPVPNRefs},
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, vn := range vnResp.GetVirtualNetworks() {
+		if len(vn.GetBGPVPNRefs()) != 0 {
+			return common.ErrorBadRequestf(
+				"Can not associate BGPVPN to router which is linked to a network(%s) "+
+					"which already has BGPVPN associated", vn.GetUUID())
 		}
 	}
 

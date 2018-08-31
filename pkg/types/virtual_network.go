@@ -521,12 +521,12 @@ func (sv *ContrailTypeLogicService) checkNetworkSupportBGPTypes(
 		if err != nil {
 			return err
 		}
-		if vpnType != virtualNetwork.VirtualNetworkProperties.ForwardingMode {
+		if vpnType != virtualNetwork.GetVirtualNetworkProperties().GetForwardingMode() {
 			return common.ErrorBadRequestf(
 				"bgp types check failed: cannot associate bgpvpn type '%v' "+
 					"with a virtual network in forwarding mode '%v'",
 				vpnType,
-				virtualNetwork.VirtualNetworkProperties.ForwardingMode,
+				virtualNetwork.GetVirtualNetworkProperties().GetForwardingMode(),
 			)
 		}
 	}
