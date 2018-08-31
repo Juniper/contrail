@@ -415,7 +415,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 			return err
 		}
 		if s.Items == nil {
-			goType = "[]interface{}"
+			goType = "[]string"
 			protoType = "repeated string"
 		} else {
 			if s.Items.Type == IntegerType || s.Items.Type == NumberType || s.Items.Type == BooleanType ||
