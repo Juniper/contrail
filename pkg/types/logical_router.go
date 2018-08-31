@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/gogo/protobuf/types"
 
@@ -23,7 +24,7 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 		func(ctx context.Context) error {
 			var err error
 
-			err = sv.checkForExternalGateway(ctx, logicalRouter, nil)
+			vxLanRouting, err := sv.checkForExternalGateway(ctx, logicalRouter, nil)
 			if err != nil {
 				return err
 			}
@@ -38,13 +39,30 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 				return err
 			}
 
-			logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
+			logicalRouter.VxlanNetworkIdentifier, err = logicalRouter.GetVXLanIDInLogicaRouter()
+			if err != nil {
+				return err
+			}
+
+			if vxLanRouting {
+				internalVN, err := sv.createInternalVirtualNetwork(ctx, logicalRouter)
+				if err != nil {
+					return err
+				}
+
+				vnRef := &models.LogicalRouterVirtualNetworkRef{
+					UUID: internalVN.GetUUID(),
+					To:   internalVN.GetFQName(),
+					Attr: &models.LogicalRouterVirtualNetworkType{
+						LogicalRouterVirtualNetworkType: "InternalVirtualNetwork",
+					},
+				}
+				request.LogicalRouter.AddVirtualNetworkRef(vnRef)
+			}
 
 			//TODO check router supports vpn type
 			response, err = sv.BaseService.CreateLogicalRouter(ctx, request)
 			return err
-
-			//TODO post-create creating internal virtual network
 		})
 
 	return response, err
@@ -63,7 +81,7 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 		func(ctx context.Context) error {
 			var err error
 
-			err = sv.checkForExternalGateway(ctx, logicalRouter, &fieldMask)
+			_, err = sv.checkForExternalGateway(ctx, logicalRouter, &fieldMask)
 			if err != nil {
 				return err
 			}
@@ -83,13 +101,18 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 				return err
 			}
 
-			logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
+			logicalRouter.VxlanNetworkIdentifier, err = logicalRouter.GetVXLanIDInLogicaRouter()
+			if err != nil {
+				return err
+			}
 
 			//TODO check BGP VPNs
 			response, err = sv.BaseService.UpdateLogicalRouter(ctx, request)
-			return err
+			if err != nil {
+				return err
+			}
 
-			//TODO post update changes
+			return nil
 		})
 
 	return response, err
@@ -112,27 +135,28 @@ func (sv *ContrailTypeLogicService) getLogicalRouter(
 func (sv *ContrailTypeLogicService) checkForExternalGateway(
 	ctx context.Context,
 	logicalRouter *models.LogicalRouter,
-	fm *types.FieldMask) error {
+	fm *types.FieldMask,
+) (bool, error) {
 
 	if fm != nil && !basemodels.FieldMaskContains(*fm, models.LogicalRouterFieldParentUUID) &&
 		!basemodels.FieldMaskContains(*fm, models.LogicalRouterFieldVirtualNetworkRefs) {
-		return nil
+		return false, nil
 	}
 
 	enabled, err := sv.isVxlanRoutingEnabled(ctx, logicalRouter)
 	if err != nil {
-		return err
+		return enabled, err
 	}
 
 	if enabled {
 		for _, vn := range logicalRouter.GetVirtualNetworkRefs() {
 			if vn.GetAttr().GetLogicalRouterVirtualNetworkType() != "InternalVirtualNetwork" {
-				return common.ErrorBadRequest("external gateway not supported with VxLAN")
+				return false, common.ErrorBadRequest("external gateway not supported with VxLAN")
 			}
 		}
 	}
 
-	return nil
+	return enabled, nil
 }
 
 func (sv *ContrailTypeLogicService) isVxlanRoutingEnabled(
@@ -255,4 +279,33 @@ func (sv *ContrailTypeLogicService) checkPortAvailability(
 	}
 
 	return nil
+}
+
+func (sv *ContrailTypeLogicService) createInternalVirtualNetwork(
+	ctx context.Context,
+	logicalRouter *models.LogicalRouter,
+) (*models.VirtualNetwork, error) {
+
+	internalVN := models.MakeVirtualNetwork()
+	internalVN.ParentUUID = logicalRouter.GetParentUUID()
+	internalVN.ParentType = models.KindProject
+	internalVN.Name = logicalRouter.GetInternalVNName()
+	internalVN.RouteTargetList = logicalRouter.GetConfiguredRouteTargetList()
+	internalVN.IDPerms = &models.IdPermsType{
+		Enable:      true,
+		UserVisible: false,
+	}
+
+	vxlanNetworkID, _ := strconv.ParseInt(logicalRouter.GetVxlanNetworkIdentifier(), 10, 64)
+	internalVN.VirtualNetworkProperties = &models.VirtualNetworkType{
+		VxlanNetworkIdentifier: vxlanNetworkID,
+		ForwardingMode:         models.L3Mode,
+	}
+
+	request := &services.CreateVirtualNetworkRequest{
+		VirtualNetwork: internalVN,
+	}
+
+	response, err := sv.BaseService.CreateVirtualNetwork(ctx, request)
+	return response.GetVirtualNetwork(), err
 }
