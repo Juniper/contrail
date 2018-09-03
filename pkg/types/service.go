@@ -3,7 +3,9 @@ package types
 import (
 	"context"
 
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
@@ -22,7 +24,14 @@ type InTransactionDoer interface {
 // IntPoolAllocator (de)allocates integers in an integer pool.
 type IntPoolAllocator interface {
 	AllocateInt(context.Context, string) (int64, error)
+	SetInt(context.Context, string, int64) error
 	DeallocateInt(context.Context, string, int64) error
+}
+
+//MetadataGetter provides getter for metadata.
+type MetadataGetter interface {
+	GetMetadata(ctx context.Context, requested basemodels.Metadata) (*basemodels.Metadata, error)
+	ListMetadata(ctx context.Context, requested []*basemodels.Metadata) ([]*basemodels.Metadata, error)
 }
 
 // ContrailTypeLogicService is a service for implementing type specific logic
@@ -32,5 +41,6 @@ type ContrailTypeLogicService struct {
 	InTransactionDoer InTransactionDoer
 	AddressManager    ipam.AddressManager
 	IntPoolAllocator  IntPoolAllocator
+	MetadataGetter    baseservices.MetadataGetter
 	WriteService      services.WriteService
 }
