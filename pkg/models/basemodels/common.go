@@ -3,6 +3,9 @@ package basemodels
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/gogo/protobuf/types"
 )
 
 const (
@@ -63,4 +66,13 @@ func FQNameEquals(fqNameA, fqNameB []string) bool {
 		}
 	}
 	return true
+}
+
+<<<<<<< 8e8d69379981e06d9ed655e8e3edb3397cb7f007
+// FieldMaskContains checks if given field mask contains requested string
+=======
+//FieldMaskContains checks if given field mask contains requested string
+>>>>>>> Implementing pre create/update logical-router type validation
+func FieldMaskContains(fm types.FieldMask, field string) bool {
+	return common.ContainsString(fm.GetPaths(), field)
 }
