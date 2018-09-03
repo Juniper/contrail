@@ -2,8 +2,11 @@ package types
 
 import (
 	"context"
+	"strconv"
+	"strings"
 
 	"github.com/gogo/protobuf/types"
+	"github.com/twinj/uuid"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
@@ -12,7 +15,8 @@ import (
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
-//CreateLogicalRouter validates logical-router create request
+// CreateLogicalRouter creates a logical router and if vxlan routing is enabled
+// also creates internal virtual network connected to this logical router
 func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 	ctx context.Context,
 	request *services.CreateLogicalRouterRequest) (*services.CreateLogicalRouterResponse, error) {
@@ -24,7 +28,13 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 		func(ctx context.Context) error {
 			var err error
 
-			err = sv.checkForExternalGateway(ctx, logicalRouter, nil)
+			vxLanRouting, err := sv.getVxlanRouting(ctx, logicalRouter, nil, nil)
+			if err != nil {
+				return err
+			}
+
+			err = sv.checkForExternalGateway(
+				ctx, logicalRouter, nil, nil, vxLanRouting)
 			if err != nil {
 				return err
 			}
@@ -39,6 +49,30 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 				return err
 			}
 
+			if vxLanRouting {
+
+				logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
+				logicalRouter.VxlanNetworkIdentifier, err = sv.allocateVxlanNetworkID(ctx, logicalRouter)
+				if err != nil {
+					return err
+				}
+
+				var internalVN *models.VirtualNetwork
+				internalVN, err = sv.createInternalVirtualNetwork(ctx, logicalRouter)
+				if err != nil {
+					return err
+				}
+
+				vnRef := &models.LogicalRouterVirtualNetworkRef{
+					UUID: internalVN.GetUUID(),
+					To:   internalVN.GetFQName(),
+					Attr: &models.LogicalRouterVirtualNetworkType{
+						LogicalRouterVirtualNetworkType: "InternalVirtualNetwork",
+					},
+				}
+				request.LogicalRouter.AddVirtualNetworkRef(vnRef)
+			}
+
 			if err = sv.checkRouterSupportsVPNType(ctx, logicalRouter); err != nil {
 				return err
 			}
@@ -47,18 +81,15 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 				return err
 			}
 
-			logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
-
 			response, err = sv.BaseService.CreateLogicalRouter(ctx, request)
 			return err
-
-			//TODO post-create creating internal virtual network
 		})
 
 	return response, err
 }
 
-//UpdateLogicalRouter validates logical-router update request
+// UpdateLogicalRouter validates logical-router update request and if vxlan routing is
+// enabled also updates internal virtual network associated with this logical router
 func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 	ctx context.Context,
 	request *services.UpdateLogicalRouterRequest) (*services.UpdateLogicalRouterResponse, error) {
@@ -71,12 +102,21 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 		func(ctx context.Context) error {
 			var err error
 
-			err = sv.checkForExternalGateway(ctx, logicalRouter, &fieldMask)
+			dbLogicalRouter, err := sv.getLogicalRouter(ctx, logicalRouter.GetUUID())
 			if err != nil {
 				return err
 			}
 
-			dbLogicalRouter, err := sv.getLogicalRouter(ctx, logicalRouter.GetUUID())
+			vxLanRouting, err := sv.getVxlanRouting(
+				ctx, logicalRouter, dbLogicalRouter, &fieldMask,
+			)
+			if err != nil {
+				return err
+			}
+
+			err = sv.checkForExternalGateway(
+				ctx, logicalRouter, dbLogicalRouter, &fieldMask, vxLanRouting,
+			)
 			if err != nil {
 				return err
 			}
@@ -91,6 +131,19 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 				return err
 			}
 
+			if vxLanRouting {
+				logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
+				err = sv.updateVxlanID(ctx, logicalRouter, dbLogicalRouter, &fieldMask)
+				if err != nil {
+					return err
+				}
+
+				err = sv.updateInternalVirtualNetwork(ctx, logicalRouter, dbLogicalRouter, &fieldMask)
+				if err != nil {
+					return err
+				}
+			}
+
 			if err = sv.checkRouterSupportsVPNType(ctx, logicalRouter); err != nil {
 				return err
 			}
@@ -99,15 +152,88 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 				return err
 			}
 
-			logicalRouter.VxlanNetworkIdentifier = logicalRouter.GetVXLanIDInLogicaRouter()
-
 			response, err = sv.BaseService.UpdateLogicalRouter(ctx, request)
 			return err
-
-			//TODO post update changes
 		})
 
 	return response, err
+}
+
+// DeleteLogicalRouter deletes internal virtual network associated
+// with this logical router if xvlan is enabled
+func (sv *ContrailTypeLogicService) DeleteLogicalRouter(
+	ctx context.Context,
+	request *services.DeleteLogicalRouterRequest) (*services.DeleteLogicalRouterResponse, error) {
+
+	var response *services.DeleteLogicalRouterResponse
+	uuid := request.GetID()
+	err := sv.InTransactionDoer.DoInTransaction(
+		ctx,
+		func(ctx context.Context) error {
+			var err error
+
+			logicalRouterResponse, err := sv.ReadService.GetLogicalRouter(
+				ctx,
+				&services.GetLogicalRouterRequest{
+					ID: uuid,
+				},
+			)
+			if err != nil {
+				return err
+			}
+
+			logicalRouter := logicalRouterResponse.GetLogicalRouter()
+			vxLanRouting, err := sv.getVxlanRouting(ctx, logicalRouter, nil, nil)
+			if err != nil {
+				return err
+			}
+
+			if vxLanRouting {
+				var id int64
+				id, err = logicalRouter.ConvertVXLanIDToInt()
+				if err != nil {
+					return err
+				}
+
+				err = sv.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, id)
+				if err != nil {
+					return err
+				}
+
+				err = sv.deleteInternalVirtualNetwork(ctx, logicalRouter)
+				if err != nil {
+					return err
+				}
+			}
+
+			response, err = sv.BaseService.DeleteLogicalRouter(ctx, request)
+			return err
+		})
+
+	return response, err
+}
+
+func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
+	ctx context.Context, logicalRouter *models.LogicalRouter,
+) (string, error) {
+
+	vxlanNetworkID := logicalRouter.GetVxlanNetworkIdentifier()
+	if vxlanNetworkID == "" {
+		id, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
+		return strconv.FormatInt(id, 10), err
+	}
+
+	id, err := logicalRouter.ConvertVXLanIDToInt()
+	if err != nil {
+		return "", err
+	}
+
+	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id)
+	if err != nil {
+		return "", common.ErrorBadRequestf("cannot allocate provided vxlan identifier(%s)", vxlanNetworkID)
+	}
+
+	return vxlanNetworkID, nil
 }
 
 func (sv *ContrailTypeLogicService) getLogicalRouter(
@@ -127,19 +253,16 @@ func (sv *ContrailTypeLogicService) getLogicalRouter(
 func (sv *ContrailTypeLogicService) checkForExternalGateway(
 	ctx context.Context,
 	logicalRouter *models.LogicalRouter,
-	fm *types.FieldMask) error {
+	dbLogicalRouter *models.LogicalRouter,
+	fm *types.FieldMask,
+	vxLanRouting bool,
+) error {
 
-	if fm != nil && !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldParentUUID) &&
-		!basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualNetworkRefs) {
+	if fm != nil && !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVirtualNetworkRefs) {
 		return nil
 	}
 
-	enabled, err := sv.isVxlanRoutingEnabled(ctx, logicalRouter)
-	if err != nil {
-		return err
-	}
-
-	if enabled {
+	if vxLanRouting {
 		for _, vn := range logicalRouter.GetVirtualNetworkRefs() {
 			if vn.GetAttr().GetLogicalRouterVirtualNetworkType() != "InternalVirtualNetwork" {
 				return common.ErrorBadRequest("external gateway not supported with VxLAN")
@@ -148,6 +271,20 @@ func (sv *ContrailTypeLogicService) checkForExternalGateway(
 	}
 
 	return nil
+}
+
+func (sv *ContrailTypeLogicService) getVxlanRouting(
+	ctx context.Context,
+	logicalRouter *models.LogicalRouter,
+	dbLogicalRouter *models.LogicalRouter,
+	fm *types.FieldMask,
+) (bool, error) {
+
+	if fm != nil && !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldParentUUID) {
+		return sv.isVxlanRoutingEnabled(ctx, dbLogicalRouter)
+	}
+
+	return sv.isVxlanRoutingEnabled(ctx, logicalRouter)
 }
 
 func (sv *ContrailTypeLogicService) isVxlanRoutingEnabled(
@@ -270,6 +407,165 @@ func (sv *ContrailTypeLogicService) checkPortAvailability(
 	}
 
 	return nil
+}
+
+func (sv *ContrailTypeLogicService) createInternalVirtualNetwork(
+	ctx context.Context,
+	logicalRouter *models.LogicalRouter,
+) (*models.VirtualNetwork, error) {
+
+	internalVN := models.MakeVirtualNetwork()
+	internalVN.UUID = uuid.NewV4().String()
+	internalVN.ParentUUID = logicalRouter.GetParentUUID()
+	internalVN.ParentType = models.KindProject
+	internalVN.Name = logicalRouter.GetInternalVNName()
+	internalVN.RouteTargetList = logicalRouter.GetConfiguredRouteTargetList()
+	internalVN.IDPerms = &models.IdPermsType{
+		Enable:      true,
+		UserVisible: false,
+	}
+
+	vxlanNetworkID, err := logicalRouter.ConvertVXLanIDToInt()
+	if err != nil {
+		return nil, nil
+	}
+
+	internalVN.VirtualNetworkProperties = &models.VirtualNetworkType{
+		VxlanNetworkIdentifier: vxlanNetworkID,
+		ForwardingMode:         models.L3Mode,
+	}
+
+	request := &services.CreateVirtualNetworkRequest{
+		VirtualNetwork: internalVN,
+	}
+
+	response, err := sv.WriteService.CreateVirtualNetwork(ctx, request)
+	return response.GetVirtualNetwork(), err
+}
+
+func (sv *ContrailTypeLogicService) updateVxlanID(
+	ctx context.Context,
+	logicalRouter *models.LogicalRouter,
+	dbLogicalRouter *models.LogicalRouter,
+	fm *types.FieldMask,
+) error {
+
+	if !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
+		return nil
+	}
+
+	oldVxlanID := dbLogicalRouter.GetVxlanNetworkIdentifier()
+	newVxlanID := logicalRouter.GetVxlanNetworkIdentifier()
+	if oldVxlanID == newVxlanID {
+		return nil
+	}
+
+	idToDelete, err := dbLogicalRouter.ConvertVXLanIDToInt()
+	if err != nil {
+		return err
+	}
+
+	err = sv.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, idToDelete)
+	if err != nil {
+		return err
+	}
+
+	logicalRouter.VxlanNetworkIdentifier, err = sv.allocateVxlanNetworkID(ctx, logicalRouter)
+	return err
+}
+
+func (sv *ContrailTypeLogicService) updateInternalVirtualNetwork(
+	ctx context.Context,
+	logicalRouter *models.LogicalRouter,
+	dbLogicalRouter *models.LogicalRouter,
+	fm *types.FieldMask,
+) error {
+
+	if !basemodels.FieldMaskContains(fm, models.LogicalRouterFieldConfiguredRouteTargetList) &&
+		!basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
+		return nil
+	}
+
+	var uuid string
+	for _, vn := range dbLogicalRouter.GetVirtualNetworkRefs() {
+		if vn.GetAttr().GetLogicalRouterVirtualNetworkType() == "InternalVirtualNetwork" {
+			uuid = vn.GetUUID()
+			break
+		}
+	}
+
+	if uuid == "" {
+		return nil
+	}
+
+	updateVN := models.MakeVirtualNetwork()
+	updateVN.UUID = uuid
+	var updatePaths []string
+
+	if basemodels.FieldMaskContains(fm, models.LogicalRouterFieldConfiguredRouteTargetList) {
+		updateVN.RouteTargetList = logicalRouter.GetConfiguredRouteTargetList()
+		updatePaths = append(updatePaths, models.VirtualNetworkFieldRouteTargetList)
+	}
+
+	if basemodels.FieldMaskContains(fm, models.LogicalRouterFieldVxlanNetworkIdentifier) {
+		vxlanNetworkID, err := logicalRouter.ConvertVXLanIDToInt()
+		if err != nil {
+			return err
+		}
+
+		updateVN.VirtualNetworkProperties = &models.VirtualNetworkType{
+			VxlanNetworkIdentifier: vxlanNetworkID,
+		}
+
+		path := []string{
+			models.VirtualNetworkFieldVirtualNetworkProperties,
+			models.VirtualNetworkTypeFieldVxlanNetworkIdentifier,
+		}
+		updatePaths = append(updatePaths, strings.Join(path, "."))
+	}
+
+	_, err := sv.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: updateVN,
+		FieldMask:      types.FieldMask{Paths: updatePaths},
+	})
+
+	return err
+}
+
+func (sv *ContrailTypeLogicService) deleteInternalVirtualNetwork(
+	ctx context.Context,
+	logicalRouter *models.LogicalRouter,
+) error {
+
+	projectResponse, err := sv.ReadService.GetProject(
+		ctx,
+		&services.GetProjectRequest{
+			ID:     logicalRouter.GetParentUUID(),
+			Fields: []string{models.ProjectFieldFQName},
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	fqName := projectResponse.GetProject().GetFQName()
+	fqName = append(fqName, logicalRouter.GetInternalVNName())
+	m, err := sv.MetadataGetter.GetMetadata(
+		ctx,
+		basemodels.Metadata{
+			FQName: fqName,
+			Type:   models.KindVirtualNetwork,
+		},
+	)
+	if err != nil {
+		return common.ErrorNotFoundf("cannot find internal virtual network")
+	}
+
+	_, err = sv.WriteService.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{
+		ID: m.UUID,
+	})
+
+	return err
 }
 
 func (sv *ContrailTypeLogicService) checkRouterSupportsVPNType(ctx context.Context, lr *models.LogicalRouter) error {
