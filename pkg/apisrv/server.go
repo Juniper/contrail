@@ -90,6 +90,7 @@ func (s *Server) SetupService() (services.Service, error) {
 		InTransactionDoer: s.dbService,
 		AddressManager:    s.dbService,
 		IntPoolAllocator:  s.dbService,
+		MetadataGetter:    s.dbService,
 		WriteService:      serviceChain[0],
 	})
 
