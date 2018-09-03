@@ -17,6 +17,7 @@ test_data:
     name: admin_lr_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    vxlan_routing: true
     quota: {}
 
   bgpvpn_l2: &bgpvpn_l2
@@ -86,6 +87,7 @@ test_data:
     uuid: test_logical_router
     fq_name: ["default-domain", "admin_lr_project", "test_logical_router"]
     parent_type: project
+    vxlan_network_identifier: "10"
     virtual_machine_interface_refs:
       - uuid: 4837041a-2dc0-4e7d-b2f4-d7fe449f8734
     bgpvpn_refs:
@@ -239,6 +241,16 @@ workflow:
         virtual_network_refs:
           - uuid: test_vn_lr_blue
 
+- name: count virtual networks
+  request:
+    path: "/virtual-networks?count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 3
+
 - name: create logical router
   request:
     path: /logical-routers
@@ -249,6 +261,16 @@ workflow:
       logical-router: *test_lr
   expect:
     logical-router: *test_lr
+
+- name: count virtual networks after creating internal virtual network
+  request:
+    path: "/virtual-networks?count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 4
 
 - name: update logical router fail with bgpvpn l2
   request:
@@ -287,6 +309,8 @@ workflow:
         uuid: test_logical_router
         virtual_network_refs:
           - uuid: test_vn_lr_red
+            attr:
+              logical_router_virtual_network_type: "InternalVirtualNetwork"
   expect: null
 
 - name: get updated logical router
@@ -308,6 +332,16 @@ workflow:
     expected:
     - 200
   expect: null
+
+- name: count virtual networks after deleting internal one
+  request:
+    path: "/virtual-networks?count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 3
 
 - name: delete virtual machine interface blue
   request:
