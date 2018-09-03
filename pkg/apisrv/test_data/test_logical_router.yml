@@ -11,6 +11,7 @@ test_data:
   admin_project: &admin_project_lr
     uuid: admin_lr_project_uuid
     name: admin_lr_project
+    vxlan_routing: true
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -130,6 +131,16 @@ workflow:
         virtual_network_refs:
           - uuid: test_vn_lr_blue
 
+- name: count virtual networks
+  request:
+    path: "/virtual-networks?count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 2
+
 - name: create logical router
   request:
     path: /logical-routers
@@ -140,6 +151,16 @@ workflow:
       logical-router: *test_lr
   expect:
     logical-router: *test_lr
+
+- name: count virtual networks
+  request:
+    path: "/virtual-networks?count=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      count: 2
 
 - name: update logical router
   request:
