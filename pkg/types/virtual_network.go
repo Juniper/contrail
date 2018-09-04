@@ -115,7 +115,7 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 			}
 			//TODO: check network support BGP types
 			//TODO: check BGPVPN Refs
-			err = sv.updateVnSubnetsInAddrMgmt(ctx, currentVN, requestedVN)
+			err = sv.updateVnSubnetsInAddrMgmt(ctx, currentVN, requestedVN, &request.FieldMask)
 			if err != nil {
 				return err
 			}
@@ -335,8 +335,13 @@ func (sv *ContrailTypeLogicService) deallocateVnSubnet(
 }
 
 func (sv *ContrailTypeLogicService) updateVnSubnetsInAddrMgmt(
-	ctx context.Context, currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork,
+	ctx context.Context, currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork, fieldMask *protobuf.FieldMask,
 ) error {
+
+	if !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldNetworkIpamRefs) {
+		return nil
+	}
+
 	vnSubnetsToDelete := currentVN.GetIpamSubnets().Subtract(requestedVN.GetIpamSubnets())
 	err := sv.deallocateVnSubnetsInAddrMgmt(ctx, currentVN, vnSubnetsToDelete)
 	if err != nil {
