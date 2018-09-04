@@ -626,6 +626,21 @@ workflow:
                   ip_prefix: "10.0.0.0"
                   ip_prefix_len: 24
 
+- name: update virtual network properties it shouldn't affect subnets in address manager
+  request:
+    path: /virtual-network/vn_blue
+    method: PUT
+    expected:
+    - 200
+    data:
+      virtual-network:
+        virtual_network_properties:
+          forwarding_mode: l3
+  expect:
+    virtual-network:
+      virtual_network_properties:
+        forwarding_mode: l3
+
 - name: create instance ip
   request:
     path: /instance-ips
