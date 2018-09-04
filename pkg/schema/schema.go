@@ -37,6 +37,18 @@ const (
 	Base64Type   = "base64"
 )
 
+// Available Go type values.
+const (
+	IntGoType   = "int64"
+	FloatGoType = "float64"
+)
+
+// Available Proto type values
+const (
+	IntProtoType   = IntGoType
+	FloatProtoType = "float"
+)
+
 const (
 	maxColumnLen = 55
 	//RefPrefix is table column name prefix for reference
@@ -181,6 +193,8 @@ type JSONSchema struct {
 	// MapKey is name of MapKeyProperty.
 	MapKey         string      `yaml:"mapKey" json:"mapKey,omitempty"`
 	MapKeyProperty *JSONSchema `yaml:"mapKeyProperty" json:"mapKeyProperty,omitempty"`
+
+	HasNumberFields bool `yaml:"-" json:"-"`
 }
 
 //String makes string format for json schema.
@@ -190,6 +204,16 @@ func (s *JSONSchema) String() string {
 		log.WithError(err).Debug("Could not stringify JSONSchema")
 	}
 	return string(data)
+}
+
+// IsInt returns true if schema is of int type.
+func (s *JSONSchema) IsInt() bool {
+	return s.GoType == IntGoType
+}
+
+// IsFloat returns true if schema is of float type.
+func (s *JSONSchema) IsFloat() bool {
+	return s.GoType == FloatGoType
 }
 
 //Reference object represents many to many relationships between resources.
@@ -383,11 +407,11 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	goType := ""
 	switch s.Type {
 	case IntegerType:
-		goType = "int64"
-		protoType = "int64"
+		goType = IntGoType
+		protoType = IntProtoType
 	case NumberType:
-		goType = "float64"
-		protoType = "float"
+		goType = FloatGoType
+		protoType = FloatProtoType
 	case StringType:
 		goType = stringType
 		protoType = stringType
@@ -739,6 +763,25 @@ func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 	return nil
 }
 
+func (api *API) resolveHasNumberFields() {
+	for _, s := range api.Types {
+		for _, property := range s.Properties {
+			if property.GoType == IntGoType || property.GoType == FloatGoType {
+				s.HasNumberFields = true
+				break
+			}
+		}
+	}
+	for _, s := range api.Schemas {
+		for _, property := range s.JSONSchema.Properties {
+			if property.GoType == IntGoType || property.GoType == FloatGoType {
+				s.JSONSchema.HasNumberFields = true
+				break
+			}
+		}
+	}
+}
+
 //MakeAPI load directory and generate API definitions.
 // nolint: gocyclo
 func MakeAPI(dirs []string) (*API, error) {
@@ -812,5 +855,6 @@ func MakeAPI(dirs []string) (*API, error) {
 	if err != nil {
 		return nil, err
 	}
+	api.resolveHasNumberFields()
 	return api, err
 }
