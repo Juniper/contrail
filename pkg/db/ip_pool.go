@@ -87,22 +87,27 @@ func (db *Service) getIPPools(ctx context.Context, target *ipPool) ([]*ipPool, e
 
 // deleteIPPools deletes ip pool that overlaps target range. delete all if target.End is zero.
 // Whole pools are removed, not only overlapping parts.
-func (db *Service) deleteIPPools(ctx context.Context, target *ipPool) error {
+func (db *Service) deleteIPPools(ctx context.Context, target *ipPool) (int64, error) {
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	var err error
-
+	var res sql.Result
 	if target.end.Equal(net.IP{}) {
-		_, err = tx.ExecContext(ctx, "delete from ipaddress_pool where "+
+		res, err = tx.ExecContext(ctx, "delete from ipaddress_pool where "+
 			db.Dialect.Quote("key")+" = "+db.Dialect.Placeholder(1), target.key)
 	} else {
 		query := "delete from ipaddress_pool where " +
 			db.Dialect.Quote("key") + " = " + db.Dialect.Placeholder(1) + " and " +
 			d.LiteralIP(target.start) + " < " + d.Quote("end") + " and " +
 			d.Quote("start") + " < " + d.LiteralIP(target.end)
-		_, err = tx.ExecContext(ctx, query, target.key)
+		res, err = tx.ExecContext(ctx, query, target.key)
 	}
-	return errors.Wrap(basedb.FormatDBError(err), "failed to delete ip pools")
+
+	if err != nil {
+		return 0, errors.Wrap(basedb.FormatDBError(err), "failed to delete ip pools")
+	}
+
+	return res.RowsAffected()
 }
 
 // allocateIP allocates smallest available ip.
@@ -159,7 +164,7 @@ func (db *Service) setIP(ctx context.Context, key string, ip net.IP) error {
 	if len(pools) == 0 {
 		return errors.Errorf("Cannot allocate address %s : pool containing this address not found", ip.String())
 	}
-	err = db.deleteIPPools(ctx, rangePool)
+	_, err = db.deleteIPPools(ctx, rangePool)
 	if err != nil {
 		return err
 	}
@@ -234,7 +239,7 @@ func (db *Service) deallocateIPRange(ctx context.Context, target *ipPool) error 
 
 	// Clear overlapping ip pools
 	if len(pools) > 0 {
-		err = db.deleteIPPools(ctx, mergePool)
+		_, err = db.deleteIPPools(ctx, mergePool)
 		if err != nil {
 			return err
 		}

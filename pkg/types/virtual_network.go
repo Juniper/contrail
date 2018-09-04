@@ -10,6 +10,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
 )
@@ -115,7 +116,7 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 			}
 			//TODO: check network support BGP types
 			//TODO: check BGPVPN Refs
-			err = sv.updateVnSubnetsInAddrMgmt(ctx, currentVN, requestedVN)
+			err = sv.updateVnSubnetsInAddrMgmt(ctx, currentVN, requestedVN, &request.FieldMask)
 			if err != nil {
 				return err
 			}
@@ -336,7 +337,13 @@ func (sv *ContrailTypeLogicService) deallocateVnSubnet(
 
 func (sv *ContrailTypeLogicService) updateVnSubnetsInAddrMgmt(
 	ctx context.Context, currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork,
+	fieldMask *protobuf.FieldMask,
 ) error {
+
+	if !basemodels.FieldMaskContains(fieldMask, models.VirtualNetworkFieldNetworkIpamRefs) {
+		return nil
+	}
+
 	vnSubnetsToDelete := currentVN.GetIpamSubnets().Subtract(requestedVN.GetIpamSubnets())
 	err := sv.deallocateVnSubnetsInAddrMgmt(ctx, currentVN, vnSubnetsToDelete)
 	if err != nil {

@@ -349,8 +349,9 @@ func TestDeleteIpPools(t *testing.T) {
 		poolKey string
 		ipPools []ipPool
 
-		deletePool    ipPool
-		expectedCount int
+		deletePool          ipPool
+		expectedCount       int
+		expectedDeleteCount int64
 	}{
 		{
 			name: "Remove all pools",
@@ -380,8 +381,9 @@ func TestDeleteIpPools(t *testing.T) {
 				key:   "subnet-uuid-1",
 				start: net.ParseIP("12.0.0.1"),
 			},
-			poolKey:       "subnet-uuid-1",
-			expectedCount: 0,
+			poolKey:             "subnet-uuid-1",
+			expectedCount:       0,
+			expectedDeleteCount: 3,
 		},
 		{
 			name: "No overlapping pools",
@@ -439,8 +441,9 @@ func TestDeleteIpPools(t *testing.T) {
 				start: net.ParseIP("10.0.0.8"),
 				end:   net.ParseIP("11.0.0.2"),
 			},
-			poolKey:       "subnet-uuid-1",
-			expectedCount: 1,
+			poolKey:             "subnet-uuid-1",
+			expectedCount:       1,
+			expectedDeleteCount: 2,
 		},
 	}
 
@@ -461,8 +464,9 @@ func TestDeleteIpPools(t *testing.T) {
 							assert.NoError(t, err)
 
 							delPool := customPool(tt.deletePool, ts.firstByte)
-							err = db.deleteIPPools(ctx, &delPool)
+							deletedCount, err := db.deleteIPPools(ctx, &delPool)
 							assert.NoError(t, err)
+							assert.Equal(t, tt.expectedDeleteCount, deletedCount)
 
 							pools, err := db.getIPPools(ctx, &ipPool{key: tt.poolKey})
 							assert.NoError(t, err)

@@ -33,7 +33,7 @@ func (db *Service) CreateIpamSubnet(
 	// TODO: check and reserve dns nameservers
 	// TODO: check allocation units
 
-	err = db.deleteIPPools(ctx, &ipPool{
+	_, err = db.deleteIPPools(ctx, &ipPool{
 		key: subnetUUID,
 	})
 	if err != nil {
@@ -74,9 +74,19 @@ func (db *Service) DeleteIpamSubnet(ctx context.Context, request *ipam.DeleteIpa
 		return errors.Errorf("empty subnet uuid in DeleteIpamSubnet")
 	}
 
-	return db.deleteIPPools(ctx, &ipPool{
+	deletedCount, err := db.deleteIPPools(ctx, &ipPool{
 		key: request.SubnetUUID,
 	})
+
+	if err != nil {
+		return err
+	}
+
+	if deletedCount == 0 {
+		return errors.Errorf("ipam subnet with uuid %s doesn't exist", request.SubnetUUID)
+	}
+
+	return nil
 }
 
 // AllocateIP allocates ip
