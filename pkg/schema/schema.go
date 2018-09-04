@@ -181,6 +181,8 @@ type JSONSchema struct {
 	// MapKey is name of MapKeyProperty.
 	MapKey         string      `yaml:"mapKey" json:"mapKey,omitempty"`
 	MapKeyProperty *JSONSchema `yaml:"mapKeyProperty" json:"mapKeyProperty,omitempty"`
+
+	HasNumberFields bool `yaml:"-" json:"-"`
 }
 
 //String makes string format for json schema.
@@ -739,6 +741,27 @@ func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 	return nil
 }
 
+func (api *API) resolveHasNumberFields() {
+	for _, s := range api.Types {
+		for _, property := range s.Properties {
+			switch property.GoType {
+			case "int", "int64", "float", "float64":
+				s.HasNumberFields = true
+				break
+			}
+		}
+	}
+	for _, s := range api.Schemas {
+		for _, property := range s.JSONSchema.Properties {
+			switch property.GoType {
+			case "int", "int64", "float", "float64":
+				s.JSONSchema.HasNumberFields = true
+				break
+			}
+		}
+	}
+}
+
 //MakeAPI load directory and generate API definitions.
 // nolint: gocyclo
 func MakeAPI(dirs []string) (*API, error) {
@@ -812,5 +835,6 @@ func MakeAPI(dirs []string) (*API, error) {
 	if err != nil {
 		return nil, err
 	}
+	api.resolveHasNumberFields()
 	return api, err
 }
