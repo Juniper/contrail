@@ -363,6 +363,115 @@ func TestAddressManagerAllocateIP(t *testing.T) {
 	}
 }
 
+func TestAddressManagerDeleteIpamSubnet(t *testing.T) {
+	tests := []struct {
+		name                string
+		ipamSubnets         []*models.IpamSubnetType
+		subnetsUUIDToDelete []string
+		fails               bool
+	}{
+		{
+			name: "Delete existing subnet",
+			ipamSubnets: []*models.IpamSubnetType{
+				{
+					SubnetUUID: "uuid-1",
+					Subnet: &models.SubnetType{
+						IPPrefix:    "10.0.0.0",
+						IPPrefixLen: 24,
+					},
+				},
+			},
+			subnetsUUIDToDelete: []string{
+				"uuid-1",
+			},
+			fails: false,
+		},
+		{
+			name: "Delete 2 existing subnets",
+			ipamSubnets: []*models.IpamSubnetType{
+				{
+					SubnetUUID: "uuid-1",
+					Subnet: &models.SubnetType{
+						IPPrefix:    "10.0.0.0",
+						IPPrefixLen: 24,
+					},
+				},
+				{
+					SubnetUUID: "uuid-2",
+					Subnet: &models.SubnetType{
+						IPPrefix:    "10.0.0.0",
+						IPPrefixLen: 24,
+					},
+				},
+			},
+			subnetsUUIDToDelete: []string{
+				"uuid-1",
+				"uuid-2",
+			},
+			fails: false,
+		},
+		{
+			name:        "Try to delete nonexisting subnet",
+			ipamSubnets: []*models.IpamSubnetType{},
+			subnetsUUIDToDelete: []string{
+				"nonexisting-uuid-1",
+			},
+			fails: true,
+		},
+		{
+			name: "Try to delete existing subnet twice",
+			ipamSubnets: []*models.IpamSubnetType{
+				{
+					SubnetUUID: "uuid-1",
+					Subnet: &models.SubnetType{
+						IPPrefix:    "10.0.0.0",
+						IPPrefixLen: 24,
+					},
+				},
+			},
+			subnetsUUIDToDelete: []string{
+				"uuid-1",
+				"uuid-1",
+			},
+			fails: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			err := db.DoInTransaction(ctx,
+				func(ctx context.Context) error {
+					for _, ipamSubnet := range tt.ipamSubnets {
+						_, err := db.CreateIpamSubnet(ctx, &ipam.CreateIpamSubnetRequest{
+							IpamSubnet: ipamSubnet,
+						})
+						assert.NoError(t, err)
+					}
+					var err error
+					for _, subnetUUID := range tt.subnetsUUIDToDelete {
+						err = db.DeleteIpamSubnet(ctx, &ipam.DeleteIpamSubnetRequest{
+							SubnetUUID: subnetUUID,
+						})
+						if err != nil {
+							break
+						}
+					}
+					if tt.fails {
+						assert.Error(t, err)
+					} else {
+						assert.NoError(t, err)
+					}
+
+					err = clearIPAddressPool(ctx)
+					assert.NoError(t, err)
+					return nil
+				})
+			assert.NoError(t, err)
+		})
+	}
+}
+
 func TestAddressManagerCheckIfIpamSubnetExists(t *testing.T) {
 
 	tests := []struct {

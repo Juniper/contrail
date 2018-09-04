@@ -602,6 +602,32 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
+			name: "try to delete subnet on virtual network update without fieldmask",
+			expectedHTTPErrorCode: http.StatusBadRequest,
+			testVnData: &testVn{
+				isProviderNetwork: true,
+				networkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+					{
+						UUID: "network_ipam_a",
+						To:   []string{"test_vn_uuid"},
+						Attr: &models.VnSubnetsType{
+							IpamSubnets: []*models.IpamSubnetType{
+								virtualNetworkMakeUserDefinedSubnet("5d54b8ca-e5d4-4cac-bdaa-beefbeefbee3"),
+							},
+						},
+					},
+				},
+			},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID: "test_vn_uuid",
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{},
+				},
+			},
+		},
+		{
 			name:  "try delete subnet with instance ip on virtual network update",
 			fails: true,
 			expectedHTTPErrorCode: http.StatusConflict,
