@@ -33,6 +33,7 @@ type EventOption struct {
 type HasResource interface {
 	GetResource() Resource
 	Operation() string
+    ExtractRefsEventFromEvent() (*Event, error)
 }
 
 // CanProcessService is interface for process service.
@@ -82,7 +83,8 @@ func visitResource(uuid string, sorted []*Event,
 	stateGraph[uuid] = temporaryVisited
 	event, found := eventMap[uuid]
 	if !found {
-		return nil, fmt.Errorf("Resource with uuid: %s not found in eventMap", uuid)
+		stateGraph[uuid] = visited
+	    return sorted, nil
 	}
 	depends := event.GetResource().Depends()
 	for _, refUUID := range depends {
@@ -208,6 +210,59 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
 
 {% endif%}{% endfor %}
 
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+// ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
+func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
+    {% if schema.References|length == 0 %}
+    return nil, nil
+    {% else %}
+        updateRequest := Update{{ schema.JSONSchema.GoName }}Request{
+            {{ schema.JSONSchema.GoName }}: &models.{{ schema.JSONSchema.GoName }}{},
+        }
+        createRequest := e.Create{{ schema.JSONSchema.GoName }}Request
+        *(updateRequest.{{ schema.JSONSchema.GoName }}) = *(createRequest.{{ schema.JSONSchema.GoName }})
+        {% for _, reference in schema.References %}
+        {% set refList = schema.JSONSchema.GoName| add:"."| add:reference.GoName | add:"Refs" %}
+        createRequest.{{ refList }} = createRequest.{{ refList }}[:0]
+        {% endfor %}
+        optForUpdate := &EventOption {
+            UUID: createRequest.{{ schema.JSONSchema.GoName }}.GetUUID(),
+            Operation: OperationUpdate,
+            Kind: "{{ schema.ID }}",
+            Data: updateRequest.{{ schema.JSONSchema.GoName }}.ToMap(),
+        }
+        updateEvent, err := NewEvent(optForUpdate)
+        if err != nil {
+            return nil, err
+        }
+        e.Create{{ schema.JSONSchema.GoName }}Request = createRequest
+        return updateEvent, nil
+    {% endif %}
+}
+
+// ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
+    return nil, nil
+}
+
+// ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
+func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
+    // TODO: Extract event for removing refs from resource before deleting it
+    return nil, nil
+}
+{% endif%}{% endfor %}
+
+// ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
+func (e *Event) ExtractRefsEventFromEvent() (*Event, error) {
+	if e.Request.(HasResource) == nil {
+		return nil, errors.Errorf("Cannot extract refs from event %v.", e.ToMap())
+	}
+	refEvent, err := e.Request.(HasResource).ExtractRefsEventFromEvent()
+	if err != nil {
+		return nil, errors.Wrap(err, "extracting references update from event failed")
+	}
+	return refEvent, nil
+}
 
 //NewEvent makes event from interface
 func NewEvent(option *EventOption) (*Event, error) {

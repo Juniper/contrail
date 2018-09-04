@@ -108,6 +108,19 @@ func readRDBMS() (*services.EventList, error) {
 }
 
 func writeRDBMS(events *services.EventList) error {
+
+	var refUpdateEvents []*services.Event
+	for id := range events.Events {
+		newEvent, err := events.Events[id].ExtractRefsEventFromEvent()
+		if err != nil {
+			return errors.Wrap(err, "extracting references update from event failed")
+		}
+		if newEvent != nil {
+			refUpdateEvents = append(refUpdateEvents, newEvent)
+		}
+	}
+	events.Events = append(events.Events, refUpdateEvents...)
+
 	dbService, err := db.NewServiceFromConfig()
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to DB")
