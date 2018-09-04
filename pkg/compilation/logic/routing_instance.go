@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
 	"sync"
 	"time"
@@ -50,8 +49,7 @@ func (s *Service) CreateRoutingInstance(
 	ec := &EvaluateContext{
 		WriteService: s.WriteService,
 	}
-	err := EvaluateDependencies(ctx, ec, obj, "RoutingInstance")
-	if err != nil {
+	if err := EvaluateDependencies(ctx, ec, obj, "RoutingInstance"); err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Routing Instance dependencies")
 	}
 
@@ -59,12 +57,12 @@ func (s *Service) CreateRoutingInstance(
 }
 
 // Evaluate may create default Route Target.
-func (s *RoutingInstanceIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
-	if s.GetRoutingInstanceIsDefault() {
-		if s.IsIPFabric() || s.IsLinkLocal() {
+func (intent *RoutingInstanceIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
+	if intent.GetRoutingInstanceIsDefault() {
+		if intent.IsIPFabric() || intent.IsLinkLocal() {
 			return nil
 		}
-		if err := s.createDefaultRouteTarget(ctx, evaluateContext); err != nil {
+		if err := intent.createDefaultRouteTarget(ctx, evaluateContext); err != nil {
 			return err
 		}
 	} else {
@@ -82,19 +80,10 @@ func generateRandomRouteTargetNumber() int {
 	return minimumRoutingTargetNumber + rand.Intn(10)
 }
 
-func (s *RoutingInstanceIntent) createDefaultRouteTarget(ctx context.Context, evaluateContext *EvaluateContext) error {
-	rtKey := fmt.Sprintf("target:%v:%v", defaultAutonomousSystem, generateRandomRouteTargetNumber())
-
-	rtResponse, err := evaluateContext.WriteService.CreateRouteTarget(
-		ctx,
-		&services.CreateRouteTargetRequest{
-			RouteTarget: &models.RouteTarget{
-				FQName:      []string{rtKey},
-				DisplayName: rtKey,
-			},
-		},
-	)
-
+func (intent *RoutingInstanceIntent) createDefaultRouteTarget(
+	ctx context.Context, evaluateContext *EvaluateContext,
+) error {
+	rt, err := createDefaultRouteTarget(ctx, evaluateContext)
 	if err != nil {
 		return err
 	}
@@ -102,9 +91,9 @@ func (s *RoutingInstanceIntent) createDefaultRouteTarget(ctx context.Context, ev
 	_, err = evaluateContext.WriteService.CreateRoutingInstanceRouteTargetRef(
 		ctx,
 		&services.CreateRoutingInstanceRouteTargetRefRequest{
-			ID: s.GetUUID(),
+			ID: intent.GetUUID(),
 			RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
-				UUID: rtResponse.RouteTarget.GetUUID(),
+				UUID: rt.GetUUID(),
 			},
 		},
 	)

@@ -49,8 +49,8 @@ func (s *Service) CreateSecurityGroup(
 }
 
 // Evaluate Creates default AccessControlList's for the already created SecurityGroup.
-func (s *SecurityGroupIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
-	ingressACL, egressACL := s.DefaultACLs()
+func (intent *SecurityGroupIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
+	ingressACL, egressACL := intent.DefaultACLs()
 
 	_, err := evaluateContext.WriteService.CreateAccessControlList(ctx, &services.CreateAccessControlListRequest{
 		AccessControlList: ingressACL,
