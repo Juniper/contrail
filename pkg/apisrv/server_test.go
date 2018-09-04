@@ -144,6 +144,11 @@ func TestSanitizing(t *testing.T) {
 	RunTest(t, "./test_data/test_sanitizing.yml")
 }
 
+func TestProvisioning(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_provisioning.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	ctx := context.Background()
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
