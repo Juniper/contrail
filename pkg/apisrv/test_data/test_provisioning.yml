@@ -1,0 +1,76 @@
+name: Provisioning phase requests test
+description: |
+  This test scenario contains requests that are run during provisioning phase.
+cleanup:
+- path: /bgp-router/bgp_router_test_provisioning_uuid
+test_data:
+  bgp_router_parameters: &bgp_router_parameters_test_provisioning
+    vendor: contrail
+    admin_down: false
+    router_type: control-node
+    ipv6_gateway_address: null
+    local_autonomous_system: null
+    auth_data: null
+    autonomous_system: 64512
+    cluster_id: null
+    address: 192.168.0.14
+    source_port: null
+    gateway_address: null
+    identifier: 192.168.0.14
+    hold_time: 0
+    port: "179"
+    # TODO: uncomment below when enums are handled properly
+    #address_families:
+      #family:
+        #- route-target
+        #- inet-vpn
+        #- e-vpn
+        #- erm-vpn
+        #- inet6-vpn
+
+  bgp_router: &bgp_router_test_provisioning
+    uuid: bgp_router_test_provisioning_uuid
+    parent_type: routing-instance
+    fq_name:
+      - default-domain
+      - default-project
+      - ip-fabric
+      - __default__
+      - bgp-router-test-provisioning
+    bgp_router_parameters: *bgp_router_parameters_test_provisioning
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+# TODO: add other provisioning resources
+- name: create bgp router
+  request:
+    path: /bgp-routers
+    method: POST
+    expected: [200]
+    data:
+      bgp-router: *bgp_router_test_provisioning
+  expect:
+    bgp-router:
+      <<: *bgp_router_test_provisioning
+      bgp_router_parameters:
+        <<: *bgp_router_parameters_test_provisioning
+        admin_down: null # admin_down has omitempty which omits "false"
+        port: 179
+
+
+- name: delete bgp router
+  request:
+    path: /bgp-router/bgp_router_test_provisioning_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
