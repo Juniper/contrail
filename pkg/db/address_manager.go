@@ -74,6 +74,15 @@ func (db *Service) DeleteIpamSubnet(ctx context.Context, request *ipam.DeleteIpa
 		return errors.Errorf("empty subnet uuid in DeleteIpamSubnet")
 	}
 
+	subnetExists, err := db.CheckIfIpamSubnetExists(ctx, request.SubnetUUID)
+	if err != nil {
+		return err
+	}
+
+	if !subnetExists {
+		return errors.Errorf("ipam subnet with uuid %s doesn't exist", request.SubnetUUID)
+	}
+
 	return db.deleteIPPools(ctx, &ipPool{
 		key: request.SubnetUUID,
 	})
