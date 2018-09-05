@@ -1,0 +1,112 @@
+description: vcenter esxi node
+extends:
+- base
+- has_status
+id: vcenter_esxi_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this vcenter esxi node."
+      presence: "optional"
+parents:
+  vcenter_cluster_node:
+    operations: "CRUD"
+    description: "Parent of this vcenter esxi node."
+    presence: "optional"
+plural: vcenter_esxi_nodes
+prefix: /
+schema:
+  properties: 
+   name:
+      description: ESXI host name(ip)
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: name
+      type: string
+      view:
+      - create
+      - detail
+   username:
+      description: ESXI host username
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: username
+      type: string
+      view:
+      - create
+      - detail
+  password:
+      description: ESXI host password
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: password
+      type: string
+      view:
+      - create
+      - detail
+  vmdk:
+      description: path for contrailvm
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vmdk
+      type: string
+      view:
+      - create
+      - detail
+  mac:
+      description: mac address for contrailvm
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: mac
+      type: string
+      view:
+      - create
+      - detail
+  datastore:
+      description: datastore in vcenter
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: datastore
+      type: string
+      view:
+      - create
+      - detail
+  vcenter_server:
+      description: vcenter server
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vcenter server
+      type: string
+      view:
+      - create
+      - detail
+  propertiesOrder: []
+  required: []
+  type: object
+singular: vcenter_esxi_node
+title: vcenter esxi node
+type: ""
+

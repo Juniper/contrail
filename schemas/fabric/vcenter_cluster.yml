@@ -1,0 +1,64 @@
+description: VCenter Server Cluster Node
+extends:
+- base
+- has_status
+id: vcenter_cluster_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this vcenter cluster node."
+      presence: "optional"
+parents:
+  vcenter_server:
+    operations: "CRUD"
+    description: "Parent of this vcenter cluster node."
+    presence: "optional"
+plural: vcenter_cluster_nodes
+prefix: /
+schema:
+  properties:
+   VCENTER_DATACENTER:
+      description: vcenter server datacenter name
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: VCenter Datacenter
+      type: string
+      view:
+      - create
+      - detail
+    VCENTER_DVSWITCH:
+      description: vcenter server dvs switch name
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: VCenter dvs switch
+      type: string
+      view:
+      - create
+      - detail 
+   cluster:
+      description: cluster name 
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: cluster
+      type: string
+      view:
+      - create
+      - detail
+  propertiesOrder: []
+  required: []
+  type: object
+singular: vcenter_cluster_node
+title: VCenter Server Cluster Node
+type: ""
+
