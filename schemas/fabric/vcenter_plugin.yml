@@ -1,0 +1,29 @@
+description: vCenter Plugin Node
+extends:
+- base
+- has_status
+id: vCenter_plugin
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this vCenter plugin node."
+      presence: "optional"
+parents:
+  vCenter:
+    operations: "CRUD"
+    description: "Parent of this vCenter plugin node."
+    presence: "optional"
+plural: vCenter_plugins
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: vCenter_plugin
+title: vCenter Plugin  Node
+type: ""
+
+
