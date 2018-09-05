@@ -14,7 +14,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 	tests := []struct {
 		name     string
 		model    models.AccessControlList
-		metadata basemodels.MetaData
+		metadata basemodels.Metadata
 		want     models.AccessControlList
 		fails    bool
 	}{
@@ -31,7 +31,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				ParentUUID: "parent-uuid",
 				ParentType: "virtual-network",
 			},
-			metadata: basemodels.MetaData{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
+			metadata: basemodels.Metadata{FQName: []string{"default-domain", "default-project", "default-virtual-network"}},
 			want: models.AccessControlList{
 				UUID:       "4789f49b-a6df-4744-1ecf-60b0958e45e6",
 				ParentUUID: "parent-uuid",
@@ -105,16 +105,20 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 	}
 }
 
-type mockMetadataGetter basemodels.MetaData
+type mockMetadataGetter basemodels.Metadata
 
-func (m *mockMetadataGetter) GetMetaData(_ context.Context, _ string, _ []string) (*basemodels.MetaData, error) {
-	return (*basemodels.MetaData)(m), nil
+func (m *mockMetadataGetter) GetMetadata(
+	_ context.Context,
+	_ basemodels.Metadata,
+) (*basemodels.Metadata, error) {
+	return (*basemodels.Metadata)(m), nil
 }
 
 func (m *mockMetadataGetter) ListMetadata(
-	ctx context.Context, fqNameUUIDPairs []*basemodels.FQNameUUIDPair,
-) ([]*basemodels.MetaData, error) {
-	return []*basemodels.MetaData{(*basemodels.MetaData)(m)}, nil
+	ctx context.Context,
+	metaDatas []*basemodels.Metadata,
+) ([]*basemodels.Metadata, error) {
+	return []*basemodels.Metadata{(*basemodels.Metadata)(m)}, nil
 }
 
 type serviceSpy struct {

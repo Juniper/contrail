@@ -3,6 +3,7 @@ package services
 import (
     "context"
     "encoding/json"
+    "strings"
     "fmt"
 
     "github.com/pkg/errors"
@@ -267,7 +268,7 @@ func (e *Event) ExtractRefsEventFromEvent() (*Event, error) {
 //NewEvent makes event from interface
 func NewEvent(option *EventOption) (*Event, error) {
     e := &Event{}
-    kind := option.Kind
+    kind := strings.Replace(option.Kind, "-", "_", -1)
     data := option.Data
     uuid := option.UUID
   	operation := option.Operation
