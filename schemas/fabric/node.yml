@@ -74,6 +74,7 @@ schema:
       enum:
       - private
       - baremetal
+      - esxi
       nullable: false
       permission:
       - create
@@ -100,6 +101,10 @@ schema:
       presence: "optional"
       description: "Details of the baremetal server"
       $ref: "fabric_types.json#/definitions/BaremetalServerInfo"
+    esxi_info:
+      presence: "optional"
+      description: "Details of the ESXI host"
+      $ref: "fabric_types.json#/definitions/ESXIHostInfo"
   required: []
   type: object
 singular: node

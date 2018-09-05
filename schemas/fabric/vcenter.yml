@@ -1,0 +1,91 @@
+description: vCenter
+extends:
+- base
+- ownable
+- has_status
+id: vCenter
+metadata:
+  category: cluster
+parents:
+  global_system_config:
+    operations: "CRUD"
+    description: "Parent of this node resource."
+    presence: "optional"
+plural: vCenters
+prefix: /
+schema:
+  properties:
+    server:
+      description: vCenter server ip address to connect to vCenter server
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vCenter
+      type: string
+      view:
+      - create
+      - detail
+    username:
+      description: vCenter server username
+      nullable: false
+      permission:
+      - create
+      - update
+      title: vCenter Username
+      type: string
+      view:
+      - create
+      - detail
+    password:
+      description: vCenter server password
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vCenter Password
+      type: string
+      view:
+      - create
+      - detail
+    wsdl_path:
+      description: vCenter server wsdl path
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vCenter WSDL Path
+      type: string
+      view:
+      - create
+      - detail
+    auth_protocol:
+      description: vCenter server auth protocol
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vCenter Auth Protocol
+      type: string
+      view:
+      - create
+      - detail
+    ntp_server:
+      description: NTP server ip address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: ntp server
+      type: string
+      view:
+      - create
+      - detail
+singular: vCenter
+title: vCenter
+type: ""
