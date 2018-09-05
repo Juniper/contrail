@@ -15,6 +15,13 @@ import (
 	"github.com/Juniper/contrail/pkg/services/mock"
 )
 
+const (
+	//mockModes
+	vmiListRequest = 1 << iota
+	vnListRequest
+	bgpvpnListRequest
+)
+
 func logicalRouterSetupReadServiceMocks(s *ContrailTypeLogicService, lr *models.LogicalRouter) {
 	readService := s.ReadService.(*servicesmock.MockReadService)
 	project := models.MakeProject()
@@ -277,6 +284,252 @@ func TestUpdateLogicalRouter(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, &expectedResponse, updateLogicalRouterResponse)
+			}
+		})
+	}
+}
+
+func TestCheckRouterSupportsVPNType(t *testing.T) {
+	tests := []struct {
+		name              string
+		testLogicalRouter *models.LogicalRouter
+		bgpvpnType        string
+		mockMode          uint
+		errorCode         codes.Code
+	}{
+		{
+			name: "no bgpvpn",
+		},
+		{
+			name: "l2 type bgpvpn",
+			testLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-1",
+					},
+				},
+			},
+			bgpvpnType: models.L2VPNType,
+			mockMode:   bgpvpnListRequest,
+			errorCode:  codes.InvalidArgument,
+		},
+		{
+			name: "l3 type bgpvpn",
+			testLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-1",
+					},
+				},
+			},
+			bgpvpnType: models.L3VPNType,
+			mockMode:   bgpvpnListRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+			readService := service.ReadService.(*servicesmock.MockReadService)
+
+			if tt.mockMode&bgpvpnListRequest != 0 {
+				bgpvpn := models.MakeBGPVPN()
+				bgpvpn.BGPVPNType = tt.bgpvpnType
+				readService.EXPECT().ListBGPVPN(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+					&services.ListBGPVPNResponse{
+						BGPVPNs: []*models.BGPVPN{bgpvpn},
+					},
+					nil,
+				)
+			}
+
+			ctx := context.Background()
+			err := service.checkRouterSupportsVPNType(ctx, tt.testLogicalRouter)
+			if tt.errorCode != codes.OK {
+				assert.Error(t, err)
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestCheckRouterHasBGPVPNAssocViaNetwork(t *testing.T) {
+	tests := []struct {
+		name              string
+		testLogicalRouter *models.LogicalRouter
+		dbLogicalRouter   *models.LogicalRouter
+		vmiVnRefs         []*models.VirtualMachineInterfaceVirtualNetworkRef
+		vnBgpvpnRefs      []*models.VirtualNetworkBGPVPNRef
+		fieldMask         *types.FieldMask
+		errorCode         codes.Code
+		mockMode          uint
+	}{
+		{
+			name: "no bgpvpn refs",
+		},
+		{
+			name: "no vmi refs",
+			testLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-1",
+					},
+				},
+			},
+			dbLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-2",
+					},
+				},
+			},
+			fieldMask: &types.FieldMask{Paths: []string{models.LogicalRouterFieldBGPVPNRefs}},
+		},
+		{
+			name: "vmi and bgpvpn only in db",
+			dbLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-1",
+					},
+				},
+				VirtualMachineInterfaceRefs: []*models.LogicalRouterVirtualMachineInterfaceRef{
+					{
+						UUID: "vmi-1",
+					},
+				},
+			},
+			fieldMask: &types.FieldMask{},
+		},
+		{
+			name: "delete vmi and bgpvpn refs",
+			dbLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-1",
+					},
+				},
+				VirtualMachineInterfaceRefs: []*models.LogicalRouterVirtualMachineInterfaceRef{
+					{
+						UUID: "vmi-1",
+					},
+				},
+			},
+			fieldMask: &types.FieldMask{
+				Paths: []string{
+					models.LogicalRouterFieldBGPVPNRefs,
+					models.LogicalRouterFieldVirtualMachineInterfaceRefs,
+				},
+			},
+		},
+		{
+			name: "no vn refs in vmi",
+			testLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-1",
+					},
+				},
+				VirtualMachineInterfaceRefs: []*models.LogicalRouterVirtualMachineInterfaceRef{
+					{
+						UUID: "vmi-1",
+					},
+				},
+			},
+			mockMode: vmiListRequest,
+		},
+		{
+			name: "vn with no bgpvpn in vmi",
+			testLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-1",
+					},
+				},
+				VirtualMachineInterfaceRefs: []*models.LogicalRouterVirtualMachineInterfaceRef{
+					{
+						UUID: "vmi-1",
+					},
+				},
+			},
+			vmiVnRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+				{
+					UUID: "vn-1",
+				},
+			},
+			mockMode: vmiListRequest | vnListRequest,
+		},
+		{
+			name: "vn with bgpvpn in vmi refs",
+			testLogicalRouter: &models.LogicalRouter{
+				BGPVPNRefs: []*models.LogicalRouterBGPVPNRef{
+					{
+						UUID: "bgpvpn-1",
+					},
+				},
+				VirtualMachineInterfaceRefs: []*models.LogicalRouterVirtualMachineInterfaceRef{
+					{
+						UUID: "vmi-1",
+					},
+				},
+			},
+			vmiVnRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+				{
+					UUID: "vn-1",
+				},
+			},
+			vnBgpvpnRefs: []*models.VirtualNetworkBGPVPNRef{
+				{
+					UUID: "bgpvpn-2",
+				},
+			},
+			mockMode:  vmiListRequest | vnListRequest,
+			errorCode: codes.InvalidArgument,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+			readService := service.ReadService.(*servicesmock.MockReadService)
+
+			if tt.mockMode&vmiListRequest != 0 {
+				vmi := models.MakeVirtualMachineInterface()
+				vmi.VirtualNetworkRefs = tt.vmiVnRefs
+				readService.EXPECT().ListVirtualMachineInterface(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+					&services.ListVirtualMachineInterfaceResponse{
+						VirtualMachineInterfaces: []*models.VirtualMachineInterface{vmi},
+					},
+					nil,
+				)
+			}
+
+			if tt.mockMode&vnListRequest != 0 {
+				vn := models.MakeVirtualNetwork()
+				vn.BGPVPNRefs = tt.vnBgpvpnRefs
+				readService.EXPECT().ListVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+					&services.ListVirtualNetworkResponse{
+						VirtualNetworks: []*models.VirtualNetwork{vn},
+					},
+					nil,
+				)
+			}
+
+			ctx := context.Background()
+			err := service.checkRouterHasBGPVPNAssocViaNetwork(ctx, tt.testLogicalRouter, tt.dbLogicalRouter, tt.fieldMask)
+			if tt.errorCode != codes.OK {
+				assert.Error(t, err)
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
