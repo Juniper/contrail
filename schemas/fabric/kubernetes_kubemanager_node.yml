@@ -1,0 +1,27 @@
+description: kubernetes Manager Node
+extends:
+- base
+- has_status
+id: kubernetes_kubemanager_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this kube manager node."
+      presence: "optional"
+parents:
+  kubernetes_cluster:
+    operations: "CRUD"
+    description: "Parent of this kube manager node."
+    presence: "optional"
+plural: kubernetes_kubemanager_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: kubernetes_kubemanager_node
+title: kubernetes Kube Manager Node
+type: ""
