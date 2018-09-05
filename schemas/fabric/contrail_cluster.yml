@@ -22,6 +22,10 @@ references:
       operations: "CRUD"
       description: "Reference to kubernetes cluster object for this contrail cluster."
       presence: "optional"
+    vcenter_server:
+      operations: "CRUD"
+      description: "Reference to vcenter server object for this contrail cluster."
+      presence: "optional"
 schema:
   properties:
     container_registry:
