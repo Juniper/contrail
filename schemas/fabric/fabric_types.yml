@@ -101,6 +101,58 @@
           presence: "optional"
           description: "Details of baremetal hardware for scheduler"
           $ref: "fabric_types.json#/definitions/BaremetalProperties"
+    ESXIHostInfo:
+      type: "object"
+      properties:
+        esxi_name:
+          description: ESXI host name(ip)
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        username:
+          description: username
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        password:
+          description: ESXI host password
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        vmdk:
+          description: path for contrailvm
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        mac:
+          description: mac address for contrailvm
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        datastore:
+          description: datastore in vCenter
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        vcenter_server:
+          description: vCenter server
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
     LocalLinkConnection:
       type: "object"
       properties:
