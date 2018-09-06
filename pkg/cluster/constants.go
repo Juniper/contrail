@@ -36,6 +36,8 @@ const (
 	defaultKubernetesNodeResPath                = "/" + defaultKubernetesNodeRes
 	defaultKubernetesMasterNodeRes              = "kubernetes-master-node"
 	defaultKubernetesMasterNodeResPath          = "/" + defaultKubernetesMasterNodeRes
+	defaultKubernetesKubemanagerNodeRes         = "kubernetes-kubemanager-node"
+	defaultKubernetesKubemanagerNodeResPath     = "/" + defaultKubernetesKubemanagerNodeRes
 	defaultOpenstackControlNodeRes              = "openstack-control-node"
 	defaultOpenstackControlNodeResPath          = "/" + defaultOpenstackControlNodeRes
 	defaultOpenstackMonitoringNodeRes           = "openstack-monitoring-node"
