@@ -64,16 +64,26 @@ make install
 # etcd should be already deployed with kubernetes
 "$ThisDir/testenv.sh" -n host postgres
 
-KubemanagerDir='/etc/contrail/kubemanager'
-#Stop kubemanager and original config-node
-cd "$KubemanagerDir"
-docker-compose down
+# Stop kubemanager, original config-node, control-node and vrouter
+docker-compose -f /etc/contrail/kubemanager/docker-compose.yaml down
 docker-compose -f /etc/contrail/config/docker-compose.yaml down
-cd "$RootDir"
+docker-compose -f /etc/contrail/control/docker-compose.yaml down
+docker-compose -f /etc/contrail/vrouter/docker-compose.yaml down
 
-Dumpfile="$HOME/dump-$$.yaml"
-# Dump cassandra from orig config-node
-contrailutil convert -i 127.0.0.1 -p 9041 --intype cassandra --outtype yaml -o "$Dumpfile"
+# Clear old config-node databases
+docker-compose -f /etc/contrail/config_database/docker-compose.yaml down -v
+docker-compose -f /etc/contrail/config_database/docker-compose.yaml up -d
+
+# Prepare fresh database in contrail-go
+make zero_psql
+
+# Run vnc-db-proxy
+./tools/vncdbproxy/vncdbproxy.sh -n host -z localhost:2181 -c localhost:9161 -r localhost:5673
+
+# Load init data to new and legacy databases
+contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c docker/contrail_go/etc/contrail-k8s.yml
+contrailutil convert --intype yaml --in tools/init_data.yaml --outtype etcd -c docker/contrail_go/etc/contrail-k8s.yml
+contrailutil convert --intype yaml --in tools/init_data.yaml --outtype http -u http://127.0.0.1:9082
 
 # Build and run contrail-go2 docker
 build_docker
@@ -82,15 +92,6 @@ ContrailGoDocker='contrail-go-config-node'
 docker run -d --name "$ContrailGoDocker" --net host contrail-go-config
 GoConfigIP='127.0.0.1' # networking mode 'host'
 
-# Prepare fresh database in contrail-go
-./tools/reset_db_psql.sh
-
-# Convert cassandra data to etcd and feed etcd
-contrailutil convert --intype yaml --in "$Dumpfile" --outtype rdbms -c docker/contrail_go/etc/contrail-k8s.yml
-
-# Run vnc-db-proxy
-./tools/vncdbproxy/vncdbproxy.sh -n host -z localhost:2181 -c localhost:9161 -r localhost:5673
-
 # Modify k8s config (subst contrail-go-config IP address as config-node) and restart if needed
 ModifyKubeConfig=1
 grep -qE "^CONFIG_NODES\\W*=\\W*$GoConfigIP" /etc/contrail/common_kubemanager.env && ModifyKubeConfig=0
@@ -98,5 +99,7 @@ if [ $ModifyKubeConfig -eq 1 ]; then
 	sudo sed "-ibak$(date +%s)" "s/^CONFIG_NODES=.*/CONFIG_NODES=$GoConfigIP/" /etc/contrail/common_kubemanager.env
 fi
 
-cd "$KubemanagerDir"
-docker-compose up -d
+# Start control-node, vrouter and kubemanager
+docker-compose -f /etc/contrail/control/docker-compose.yaml up -d
+docker-compose -f /etc/contrail/vrouter/docker-compose.yaml up -d
+docker-compose -f /etc/contrail/kubemanager/docker-compose.yaml up -d
