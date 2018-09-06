@@ -67,6 +67,15 @@ type IntPoolAllocator interface {
 	SetInt(context.Context, string, int64) error
 }
 
+type noTransaction struct {}
+
+func (*noTransaction) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
+    return do(ctx)
+}
+
+// NoTransction is a InTransactionDoer that simply executes do function.
+var NoTransaction = &noTransaction{}
+
 // RefUpdateToUpdateService is a service that promotes CreateRef and DeleteRef
 // methods to Update method by fetching the object and updating reference
 // field with fieldmask applied.
