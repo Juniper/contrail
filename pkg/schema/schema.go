@@ -59,6 +59,8 @@ const (
 	optional     = "optional"
 )
 
+const overrideSubdir = "schemas/override"
+
 var sqlTypeMap = map[string]string{
 	ObjectType:  "json",
 	IntegerType: "bigint",
@@ -331,6 +333,9 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s.Maximum == nil {
 		s.Maximum = s2.Maximum
 	}
+	if s.Items == nil {
+		s.Items = s2.Items
+	}
 }
 
 //Walk apply one function for json schema recursively.
@@ -447,6 +452,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 			return err
 		}
 		if s.Items == nil {
+			log.Errorf("Got <nil> Items for array in schema '%v': %+#v", name, s)
 			goType = "[]string"
 			protoType = "repeated string"
 		} else {
@@ -462,8 +468,8 @@ func (s *JSONSchema) resolveGoName(name string) error {
 
 	s.GoType = goType
 	s.ProtoType = protoType
-	for name, property := range s.Properties {
-		err := property.resolveGoName(name)
+	for pname, property := range s.Properties {
+		err := property.resolveGoName(pname)
 		if err != nil {
 			return err
 		}
@@ -771,78 +777,115 @@ func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 	return nil
 }
 
-//MakeAPI load directory and generate API definitions.
-// nolint: gocyclo
+func loadSchemaFromPath(path string) (*Schema, error) {
+	var schema Schema
+	err := common.LoadFile(path, &schema)
+	return &schema, errors.Wrapf(err, "Loading file \"%v\" error", path)
+}
+
+func readOverrides(dir string) (Schema, error) {
+	var schema Schema
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		if f != nil && f.IsDir() || err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
+			return err
+		}
+
+		return err
+	})
+	return schema, err
+}
+
+func walkSchemaFile(overrides Schema, api *API, path string, f os.FileInfo, err error) error {
+	log.Infof("Walking -->  %v  <--", path)
+	// Don't walk over override schema files
+	if path == overrideSubdir && f.IsDir() {
+		return filepath.SkipDir
+	}
+	if f.IsDir() || err != nil {
+		return err
+	}
+	schema, err := loadSchemaFromPath(path)
+	if schema == nil {
+		return nil
+	}
+	schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
+	schema.JSONSchema = mapSlice(schema.JSONSchemaSlice).JSONSchema()
+	schema.Definitions = map[string]*JSONSchema{}
+	for key, definitionSlice := range schema.DefinitionsSlice {
+		schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
+		overDef, ok := overrides.DefinitionsSlice[key]
+		if ok {
+			schema.Definitions[key] = mapSlice(overDef).JSONSchema()
+		}
+	}
+	schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
+	schema.Path = schema.TypeName
+	schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
+	schema.BackReferences = map[string]*BackReference{}
+	if schema.ID != "" {
+		api.Schemas = append(api.Schemas, schema)
+	}
+	if len(schema.Definitions) > 0 {
+		api.Definitions = append(api.Definitions, schema)
+	}
+	return nil
+}
+
+func processAPI(api *API) error {
+	err := api.resolveAllRef()
+	if err != nil {
+		return err
+	}
+	err = api.resolveExtend()
+	if err != nil {
+		return err
+	}
+	err = api.resolveAllGoName()
+	if err != nil {
+		return err
+	}
+	err = api.resolveAllSQL()
+	if err != nil {
+		return err
+	}
+	err = api.resolveAllRelation()
+	if err != nil {
+		return err
+	}
+	err = api.resolveIndex()
+	if err != nil {
+		return err
+	}
+	err = api.resolveCollectionTypes()
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+// MakeAPI load directory and generate API definitions.
 func MakeAPI(dirs []string) (*API, error) {
+	log.Warnf("Making API from dirs: %#v", dirs)
 	api := &API{
 		Schemas:     []*Schema{},
 		Definitions: []*Schema{},
 		Types:       map[string]*JSONSchema{},
 	}
+	overrides, err := readOverrides(overrideSubdir)
+	if err != nil {
+		return nil, err
+	}
 	for _, dir := range dirs {
-		err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
-			if f.IsDir() {
-				return nil
-			}
-			var schema Schema
-			err = common.LoadFile(path, &schema)
-			if err != nil {
-				log.Warn(fmt.Sprintf("[%s] %s", path, err))
-				return nil
-			}
-			if &schema == nil {
-				return nil
-			}
-			schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
-			schema.JSONSchema = mapSlice(schema.JSONSchemaSlice).JSONSchema()
-			schema.Definitions = map[string]*JSONSchema{}
-			for key, definitionSlice := range schema.DefinitionsSlice {
-				schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
-			}
-			schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
-			schema.Path = schema.TypeName
-			schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
-			schema.BackReferences = map[string]*BackReference{}
-			if schema.ID != "" {
-				api.Schemas = append(api.Schemas, &schema)
-			}
-			if len(schema.Definitions) > 0 {
-				api.Definitions = append(api.Definitions, &schema)
-			}
-			return nil
+		err := filepath.Walk(dir, func(p string, f os.FileInfo, e error) error {
+			return walkSchemaFile(overrides, api, p, f, e)
 		})
 		if err != nil {
 			return nil, err
 		}
 	}
-
-	err := api.resolveAllRef()
-	if err != nil {
-		return nil, err
-	}
-	err = api.resolveExtend()
-	if err != nil {
-		return nil, err
-	}
-	err = api.resolveAllGoName()
-	if err != nil {
-		return nil, err
-	}
-	err = api.resolveAllSQL()
-	if err != nil {
-		return nil, err
-	}
-	err = api.resolveAllRelation()
-	if err != nil {
-		return nil, err
-	}
-	err = api.resolveIndex()
-	if err != nil {
-		return nil, err
-	}
-	err = api.resolveCollectionTypes()
-	if err != nil {
-		return nil, err
-	}
+	err = processAPI(api)
 	return api, err
 }
