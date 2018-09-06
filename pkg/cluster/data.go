@@ -68,6 +68,13 @@ func (k *KubernetesData) updateNodeDetails(c *Cluster) error {
 			}
 		}
 	}
+	for _, node := range k.clusterInfo.KubernetesKubemanagerNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, k); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -109,6 +116,25 @@ func (k *KubernetesData) interfaceToKubernetesMasterNode(
 	return nil
 }
 
+func (k *KubernetesData) interfaceToKubernetesKubemanagerNode(
+	kubernetesKubemanagerNodes interface{}, c *Cluster) error {
+	for _, kubernetesKubemanagerNode := range kubernetesKubemanagerNodes.([]interface{}) {
+		kubernetesKubemanagerNodeInfo := models.InterfaceToKubernetesKubemanagerNode(
+			kubernetesKubemanagerNode.(map[string]interface{}))
+		// Read kubernetesKubemanager role node to get the node refs information
+		kubernetesKubemanagerNodeData, err := c.getResource(
+			defaultKubernetesKubemanagerNodeResPath, kubernetesKubemanagerNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		kubernetesKubemanagerNodeInfo = models.InterfaceToKubernetesKubemanagerNode(
+			kubernetesKubemanagerNodeData)
+		k.clusterInfo.KubernetesKubemanagerNodes = append(
+			k.clusterInfo.KubernetesKubemanagerNodes, kubernetesKubemanagerNodeInfo)
+	}
+	return nil
+}
+
 func (k *KubernetesData) updateClusterDetails(clusterID string, c *Cluster) error {
 	rData, err := c.getResource(defaultK8sResourcePath, clusterID)
 	if err != nil {
@@ -116,19 +142,27 @@ func (k *KubernetesData) updateClusterDetails(clusterID string, c *Cluster) erro
 	}
 	k.clusterInfo = models.InterfaceToKubernetesCluster(rData)
 
-	// Expand kubernetes_master back ref
+	// Expand kubernetes node back ref
 	if kubernetesNodes, ok := rData["kubernetes_nodes"]; ok {
-		if err = k.interfaceToKubernetesMasterNode(kubernetesNodes, c); err != nil {
+		if err = k.interfaceToKubernetesNode(kubernetesNodes, c); err != nil {
 			return err
 		}
 	}
 
-	// Expand kubernetes node back ref
+	// Expand kubernetes_master back ref
 	if kubernetesMasterNodes, ok := rData["kubernetes_master_nodes"]; ok {
-		if err = k.interfaceToKubernetesNode(kubernetesMasterNodes, c); err != nil {
+		if err = k.interfaceToKubernetesMasterNode(kubernetesMasterNodes, c); err != nil {
 			return err
 		}
 	}
+
+	// Expand kubernetes_kubemanager back ref
+	if kubernetesKubemanagerNodes, ok := rData["kubernetes_kubemanager_nodes"]; ok {
+		if err = k.interfaceToKubernetesKubemanagerNode(kubernetesKubemanagerNodes, c); err != nil {
+			return err
+		}
+	}
+
 	// get all nodes information
 	if err = k.updateNodeDetails(c); err != nil {
 		return err
