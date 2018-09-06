@@ -140,7 +140,7 @@ func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 	openstackVars := openstackVariables{}
 	cluster := a.clusterData.getOpenstackClusterInfo()
 	// Enable haproxy when multiple openstack control nodes present in cluster
-	if len(cluster.OpenstackControlNodes) > 1 {
+	if (cluster != nil) && (len(cluster.OpenstackControlNodes) > 1) {
 		openstackVars.enableHaproxy = enable
 		return &openstackVars
 	}

@@ -161,15 +161,17 @@ func (e *EndpointData) create() error {
 	}
 
 	// openstack endpoints
-	openstackEndpoints := e.getOpenstackEndpointNodes()
-	for service, endpointIPs := range openstackEndpoints {
-		e.log.Infof("Creating %s endpoints", service)
-		for _, endpointIP := range endpointIPs {
-			publicURL := e.endpointToURL(protocol, endpointIP, portMap[service])
-			privateURL := publicURL
-			err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
-			if err != nil {
-				return err
+	if e.clusterData.clusterInfo.Orchestrator == "openstack" {
+		openstackEndpoints := e.getOpenstackEndpointNodes()
+		for service, endpointIPs := range openstackEndpoints {
+			e.log.Infof("Creating %s endpoints", service)
+			for _, endpointIP := range endpointIPs {
+				publicURL := e.endpointToURL(protocol, endpointIP, portMap[service])
+				privateURL := publicURL
+				err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
