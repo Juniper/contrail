@@ -20,8 +20,8 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/cfgm_common/vnc_cassandra.p
                      map_coll = field[wrapper_field]
                  else:
 diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_api_server.py site-packages/vnc_cfg_api_server/vnc_cfg_api_server.py
---- site-packages_orig/vnc_cfg_api_server/vnc_cfg_api_server.py	2018-08-23 09:02:10.000000000 +0200
-+++ site-packages/vnc_cfg_api_server/vnc_cfg_api_server.py	2018-08-31 13:11:45.634711660 +0200
+--- site-packages_orig/vnc_cfg_api_server/vnc_cfg_api_server.py	2018-09-06 12:56:38.133115450 +0200
++++ site-packages/vnc_cfg_api_server/vnc_cfg_api_server.py	2018-09-06 13:59:57.306491223 +0000
 @@ -899,72 +899,7 @@
      def http_resource_create(self, obj_type):
          resource_type, r_class = self._validate_resource_type(obj_type)
@@ -101,7 +101,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
          fq_name = obj_dict['fq_name']
 -
          db_conn = self._db_conn
- 
+
 -        # if client gave parent_type of config-root, ignore and remove
 -        if 'parent_type' in obj_dict and obj_dict['parent_type'] == 'config-root':
 -            del obj_dict['parent_type']
@@ -162,7 +162,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 +            (ok, result) = db_conn.dbe_create(obj_type, obj_id, obj_dict)
              if not ok:
                  return (ok, result)
- 
+
 -            callable = getattr(r_class, 'http_post_collection_fail', None)
 -            if callable:
 -                cleanup_on_failure.append((callable, [tenant_name, obj_dict, db_conn]))
@@ -219,7 +219,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -
              return True, obj_id
          # end stateful_create
- 
+
 @@ -1104,47 +936,14 @@
          if not ok:
              fq_name_str = ':'.join(fq_name)
@@ -228,7 +228,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 +                      counter=None, value=-1)
              code, msg = result
              raise cfgm_common.exceptions.HttpError(code, msg)
- 
+
 -        # Initialize quota counter if resource is project
 -        if resource_type == 'project' and 'quota' in obj_dict:
 -            proj_id = obj_dict['uuid']
@@ -266,12 +266,12 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -                      %(obj_type, obj_dict)
 -            err_msg += cfgm_common.utils.detailed_traceback()
 -            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
- 
+
          return {resource_type: rsp_body}
      # end http_resource_create
 @@ -1287,12 +1086,6 @@
              return
- 
+
          obj_dict = get_request().json[resource_type]
 -
 -        if 'perms2' in obj_dict:
@@ -308,13 +308,13 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
              'http_put', obj_type, id, db_obj_dict, req_obj_dict=obj_dict,
 -            quota_dict=old_quota_dict)
 +            quota_dict=None)
- 
+
          rsp_body = {}
          rsp_body['uuid'] = id
 @@ -1348,18 +1123,6 @@
              raise cfgm_common.exceptions.HttpError(
                  404, 'ID %s does not exist' %(id))
- 
+
 -        try:
 -            self._extension_mgrs['resourceApi'].map_method(
 -                'pre_%s_delete' %(obj_type), id)
@@ -333,7 +333,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 @@ -1370,13 +1133,6 @@
                  id, None, obj_type, 'http_delete', read_result)
              # proceed down to delete the resource
- 
+
 -        # check visibility
 -        if (not read_result['id_perms'].get('user_visible', True) and
 -            not self.is_admin_request()):
@@ -347,7 +347,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 @@ -1386,134 +1142,14 @@
              self.config_object_error(id, None, obj_type, 'http_delete', msg)
              raise cfgm_common.exceptions.HttpError(code, msg)
- 
+
 -        # Permit abort resource deletion and retrun 202 status code
 -        get_context().set_state('PENDING_DBE_DELETE')
 -        ok, result = r_class.pending_dbe_delete(read_result)
@@ -435,7 +435,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
              (ok, del_result) = db_conn.dbe_delete(obj_type, id, read_result)
              if not ok:
                  return (ok, del_result)
- 
+
 -            if proj_id:
 -                (ok, proj_dict) = QuotaHelper.get_project_dict_for_quota(
 -                                      proj_id, db_conn)
@@ -478,11 +478,11 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -
              return (True, '')
          # end stateful_delete
- 
+
 @@ -1531,17 +1167,6 @@
              code, msg = result
              raise cfgm_common.exceptions.HttpError(code, msg)
- 
+
 -        try:
 -            self._extension_mgrs['resourceApi'].map_method(
 -                'post_%s_delete' %(obj_type), id, read_result)
@@ -495,16 +495,396 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -            err_msg += cfgm_common.utils.detailed_traceback()
 -            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
      # end http_resource_delete
- 
+
      @log_api_stats
-@@ -4107,186 +3732,20 @@
- 
+@@ -3402,377 +3027,17 @@
+     # end _get_default_perms2
+
+     def _db_init_entries(self):
+-        # create singleton defaults if they don't exist already in db
+-        gsc = self.create_singleton_entry(GlobalSystemConfig(
+-            autonomous_system=64512, config_version=CONFIG_VERSION))
+-        self._gsc_uuid = gsc.uuid
+-        gvc = self.create_singleton_entry(GlobalVrouterConfig(
+-            parent_obj=gsc))
+-        self.create_singleton_entry(Domain())
+-
+-        # Global and default policy resources
+-        pm = self.create_singleton_entry(PolicyManagement())
+-        self._global_pm_uuid = pm.uuid
+-        aps = self.create_singleton_entry(ApplicationPolicySet(
+-            parent_obj=pm, all_applications=True))
+-        ok, result = self._db_conn.ref_update(
+-            ApplicationPolicySet.object_type,
+-            aps.uuid,
+-            GlobalVrouterConfig.object_type,
+-            gvc.uuid,
+-            {'attr': None},
+-            'ADD',
+-            None,
+-        )
+-        if not ok:
+-            msg = ("Error while referencing global vrouter config %s with the "
+-                   "default global application policy set %s: %s" %
+-                   (gvc.uuid, aps.uuid, result[1]))
+-            self.config_log(msg, level=SandeshLevel.SYS_ERR)
+-
+-        ip_fab_vn = self.create_singleton_entry(
+-            VirtualNetwork(cfgm_common.IP_FABRIC_VN_FQ_NAME[-1],
+-                           is_provider_network=True))
+-        self.create_singleton_entry(
+-            RoutingInstance(cfgm_common.IP_FABRIC_VN_FQ_NAME[-1], ip_fab_vn,
+-                            routing_instance_is_default=True))
+-        self.create_singleton_entry(
+-            RoutingInstance('__default__', ip_fab_vn))
+-        link_local_vn = self.create_singleton_entry(
+-            VirtualNetwork(cfgm_common.LINK_LOCAL_VN_FQ_NAME[-1]))
+-        self.create_singleton_entry(
+-            RoutingInstance('__link_local__', link_local_vn,
+-                            routing_instance_is_default=True))
+-
+-        # specifying alarm kwargs like contrail_alarm.py
+-        alarm_kwargs = {"alarm_rules":
+-                        {"or_list" : [
+-                         {"and_list": [
+-                           { "operand1": "UveConfigReq.err_info.*.",
+-                            "operation": "==",
+-                            "operand2": {"json_value": "True"}
+-                           }          ]
+-                         }           ]
+-                        },
+-                        "alarm_severity": 1,
+-                        "fq_name": [
+-                            "default-global-system-config",
+-                            "system-defined-bottle-request-size-limit"
+-                        ],
+-                        "id_perms": {
+-                            "description": "Bottle request size limit exceeded."
+-                        },
+-                        "parent_type": "global-system-config",
+-                        "uve_keys": {
+-                            "uve_key": [
+-                                "config-node"
+-                            ]
+-                        }
+-                       }
+-        self.create_singleton_entry(Alarm(**alarm_kwargs))
+-        try:
+-            self.create_singleton_entry(
+-                RoutingInstance('default-virtual-network',
+-                                routing_instance_is_default=True))
+-        except Exception as e:
+-            self.config_log('error while creating primary routing instance for'
+-                            'default-virtual-network: ' + str(e),
+-                            level=SandeshLevel.SYS_NOTICE)
+-        # Create singleton SG __no_rule__ object for openstack
+-        domain_obj = Domain(SG_NO_RULE_FQ_NAME[0])
+-        proj_obj = Project(SG_NO_RULE_FQ_NAME[1], domain_obj)
+-        sg_rules = PolicyEntriesType()
+-        id_perms = IdPermsType(enable=True,
+-                               description="Security group with no rules",
+-                               user_visible=True)
+-        perms2 = PermType2(owner='cloud-admin')
+-        perms2.set_global_access(PERMS_RX)
+-        sg_obj = SecurityGroup(name=SG_NO_RULE_NAME,
+-                               parent_obj=proj_obj,
+-                               security_group_entries=sg_rules.exportDict(''),
+-                               id_perms=id_perms.exportDict(''),
+-                               perms2=perms2.exportDict(''))
+-        self.create_singleton_entry(sg_obj)
+-
+-        self.create_singleton_entry(DiscoveryServiceAssignment())
+-        self.create_singleton_entry(GlobalQosConfig())
+-
+-        sc_ipam_subnet_v4 = IpamSubnetType(subnet=SubnetType('0.0.0.0', 8))
+-        sc_ipam_subnet_v6 = IpamSubnetType(subnet=SubnetType('::ffff', 104))
+-        sc_ipam_subnets = IpamSubnets([sc_ipam_subnet_v4, sc_ipam_subnet_v6])
+-        sc_ipam_obj = NetworkIpam('service-chain-flat-ipam',
+-                ipam_subnet_method="flat-subnet", ipam_subnets=sc_ipam_subnets)
+-        self.create_singleton_entry(sc_ipam_obj)
+-
+-        # Create pre-defined tag-type
+-        for type_str, type_id in TagTypeNameToId.items():
+-            type_id_hex = "0x{:04x}".format(type_id)
+-            tag = TagType(name=type_str, tag_type_id=type_id_hex)
+-            tag.display_name = type_str
+-            self.create_singleton_entry(tag, user_visible=False)
+-
+-        if int(self._args.worker_id) == 0:
+-            self._db_conn.db_resync()
+-
+-        #Load init data for job playbooks like JobTemplates, Tags, etc
+-        if self._args.enable_fabric_ansible:
+-            self._load_init_data()
+-
+-        # make default ipam available across tenants for backward compatability
+-        obj_type = 'network_ipam'
+-        fq_name = ['default-domain', 'default-project', 'default-network-ipam']
+-        obj_uuid = self._db_conn.fq_name_to_uuid(obj_type, fq_name)
+-        (ok, obj_dict) = self._db_conn.dbe_read(obj_type, obj_uuid,
+-                                                obj_fields=['perms2'])
+-        obj_dict['perms2']['global_access'] = PERMS_RX
+-        self._db_conn.dbe_update(obj_type, obj_uuid, obj_dict)
+-
+-    # end _db_init_entries
+-
+-    # Load init data for job playbooks like JobTemplates, Tags, etc
+-    def _load_init_data(self):
+-        """
+-        This function loads init data from a data file specified by the
+-        argument '--fabric_ansible_dir' to the database. The data file
+-        must be in JSON format and follow the format below:
+-        {
+-          "data": [
+-            {
+-              "object_type": "<vnc object type name>",
+-              "objects": [
+-                {
+-                  <vnc object payload>
+-                },
+-                ...
+-              ]
+-            },
+-            ...
+-          ]
+-        }
+-
+-        Here is an example:
+-        {
+-          "data": [
+-            {
+-              "object_type": "tag",
+-              "objects": [
+-                {
+-                  "fq_name": [
+-                    "fabric=management_ip"
+-                  ],
+-                  "name": "fabric=management_ip",
+-                  "tag_type_name": "fabric",
+-                  "tag_value": "management_ip"
+-                }
+-              ]
+-            }
+-          ]
+-        }
+-        """
+-        try:
+-            json_data = self._load_json_data()
+-            for item in json_data.get("data"):
+-                object_type = item.get("object_type")
+-
+-                # Get the class name from object type
+-                cls_name = cfgm_common.utils.CamelCase(object_type)
+-
+-                # Get the class object
+-                cls_ob = cfgm_common.utils.str_to_class(cls_name, __name__)
+-
+-                # saving the objects to the database
+-                for obj in item.get("objects"):
+-                    instance_obj = cls_ob(**obj)
+-                    self.create_singleton_entry(instance_obj)
+-
+-                    # update default-global-system-config for supported_device_families
+-                    if object_type =='global-system-config':
+-                        fq_name = instance_obj.get_fq_name()
+-                        uuid = self._db_conn.fq_name_to_uuid('global_system_config', fq_name)
+-                        self._db_conn.dbe_update(object_type, uuid, obj)
+-
+-            for item in json_data.get("refs"):
+-                from_type = item.get("from_type")
+-                from_fq_name = item.get("from_fq_name")
+-                from_uuid = self._db_conn._object_db.fq_name_to_uuid(
+-                    from_type, from_fq_name
+-                )
+-
+-                to_type = item.get("to_type")
+-                to_fq_name = item.get("to_fq_name")
+-                to_uuid = self._db_conn._object_db.fq_name_to_uuid(
+-                    to_type, to_fq_name
+-                )
+-
+-                ok, result = self._db_conn.ref_update(
+-                    from_type,
+-                    from_uuid,
+-                    to_type,
+-                    to_uuid,
+-                    { 'attr': None },
+-                    'ADD',
+-                    None,
+-                )
+-        except Exception as e:
+-            self.config_log('error while loading init data: ' + str(e),
+-                            level=SandeshLevel.SYS_NOTICE)
+-    # end Load init data
+-
+-    # Load json data from fabric_ansible_playbooks/conf directory
+-    def _load_json_data(self):
+-
+-        # open the json file
+-        with open(self._args.fabric_ansible_dir +
+-                  '/conf/predef_payloads.json') as data_file:
+-            input_json = json.load(data_file)
+-
+-        # Loop through the json
+-        for item in input_json.get("data"):
+-            if item.get("object_type") == "job-template":
+-                for object in item.get("objects"):
+-                    fq_name = object.get("fq_name")[-1]
+-                    schema_name = fq_name.replace('template', 'schema.json')
+-                    with open(os.path.join(self._args.fabric_ansible_dir +
+-                            '/schema/', schema_name), 'r+') as schema_file:
+-                        schema_json = json.load(schema_file)
+-                        object["job_template_input_schema"] = schema_json.get(
+-                            "input_schema")
+-                        object["job_template_output_schema"] = schema_json.get(
+-                            "output_schema")
+-
+-        return input_json
+-    # end load json data
++        pass
+
+     # generate default rbac group rule
+     def _create_default_rbac_rule(self):
+-        # allow full access to cloud admin
+-        rbac_rules = [
+-            {
+-                'rule_object':'fqname-to-id',
+-                'rule_field': '',
+-                'rule_perms': [{'role_name':'*', 'role_crud':'CRUD'}]
+-            },
+-            {
+-                'rule_object':'id-to-fqname',
+-                'rule_field': '',
+-                'rule_perms': [{'role_name':'*', 'role_crud':'CRUD'}]
+-            },
+-            {
+-                'rule_object':'useragent-kv',
+-                'rule_field': '',
+-                'rule_perms': [{'role_name':'*', 'role_crud':'CRUD'}]
+-            },
+-            {
+-                'rule_object':'documentation',
+-                'rule_field': '',
+-                'rule_perms': [{'role_name':'*', 'role_crud':'R'}]
+-            },
+-            {
+-                'rule_object':'/',
+-                'rule_field': '',
+-                'rule_perms': [{'role_name':'*', 'role_crud':'R'}]
+-            },
+-        ]
+-
+-        obj_type = 'api_access_list'
+-        fq_name = ['default-global-system-config', 'default-api-access-list']
+-        try:
+-            # ensure global list is not missing any default rules (bug 1642464)
+-            id = self._db_conn.fq_name_to_uuid(obj_type, fq_name)
+-            (ok, obj_dict) = self._db_conn.dbe_read(obj_type, id)
+-            update_obj = False
+-            cur_rbac_rules = copy.deepcopy(obj_dict['api_access_list_entries']['rbac_rule'])
+-            for rule in rbac_rules:
+-                present = False
+-                for existing_rule in cur_rbac_rules:
+-                    if rule == existing_rule:
+-                        present = True
+-                        cur_rbac_rules.remove(existing_rule)
+-                        break
+-                if not present:
+-                    obj_dict['api_access_list_entries']['rbac_rule'].append(rule)
+-                    update_obj = True
+-            if update_obj:
+-                self._db_conn.dbe_update(obj_type, id, obj_dict)
+-            return
+-        except NoIdError:
+-            pass
+-
+-        rge = RbacRuleEntriesType([])
+-        for rule in rbac_rules:
+-            rule_perms = [RbacPermType(role_name=p['role_name'], role_crud=p['role_crud']) for p in rule['rule_perms']]
+-            rbac_rule = RbacRuleType(rule_object=rule['rule_object'],
+-                rule_field=rule['rule_field'], rule_perms=rule_perms)
+-            rge.add_rbac_rule(rbac_rule)
+-
+-        rge_dict = rge.exportDict('')
+-        glb_rbac_cfg = ApiAccessList(parent_type='global-system-config',
+-            fq_name=fq_name, api_access_list_entries = rge_dict)
+-
+-        try:
+-            self.create_singleton_entry(glb_rbac_cfg)
+-        except Exception as e:
+-            err_msg = 'Error creating default api access list object'
+-            err_msg += cfgm_common.utils.detailed_traceback()
+-            self.config_log(err_msg, level=SandeshLevel.SYS_ERR)
+-    # end _create_default_rbac_rule
++        pass
+
+     def _resync_domains_projects(self, ext):
+         if hasattr(ext.obj, 'resync_domains_projects'):
+             ext.obj.resync_domains_projects()
+     # end _resync_domains_projects
+
+-    def create_singleton_entry(self, singleton_obj, user_visible=True):
+-
+-        s_obj = singleton_obj
+-        obj_type = s_obj.object_type
+-        fq_name = s_obj.get_fq_name()
+-
+-        # TODO remove backward compat create mapping in zk
+-        # for singleton START
+-        try:
+-            cass_uuid = self._db_conn._object_db.fq_name_to_uuid(obj_type, fq_name)
+-            try:
+-                zk_uuid = self._db_conn.fq_name_to_uuid(obj_type, fq_name)
+-            except NoIdError:
+-                # doesn't exist in zookeeper but does so in cassandra,
+-                # migrate this info to zookeeper
+-                self._db_conn._zk_db.create_fq_name_to_uuid_mapping(obj_type, fq_name, str(cass_uuid))
+-        except NoIdError:
+-            # doesn't exist in cassandra as well as zookeeper, proceed normal
+-            pass
+-        # TODO backward compat END
+-
+-        # create if it doesn't exist yet
+-        try:
+-            s_obj.uuid = self._db_conn.fq_name_to_uuid(obj_type, fq_name)
+-        except NoIdError:
+-            obj_json = json.dumps(s_obj, default=_obj_serializer_all)
+-            obj_dict = json.loads(obj_json)
+-            if s_obj.get_id_perms():
+-                obj_dict['id_perms'] = s_obj.get_id_perms()
+-            else:
+-                obj_dict['id_perms'] = self._get_default_id_perms(
+-                                                user_visible=user_visible)
+-            if s_obj.get_perms2():
+-                obj_dict['perms2'] = s_obj.get_perms2()
+-            else:
+-                obj_dict['perms2'] = self._get_default_perms2()
+-
+-            (ok, result) = self._db_conn.dbe_alloc(obj_type, obj_dict)
+-            obj_id = result
+-            s_obj.uuid = obj_id
+-            # For virtual networks, allocate an ID
+-            if obj_type == 'virtual_network':
+-                vn_id = self.alloc_vn_id(s_obj.get_fq_name_str())
+-                obj_dict['virtual_network_network_id'] = vn_id
+-            if obj_type == 'tag':
+-                obj_dict = self._allocate_tag_id(obj_dict)
+-            self._db_conn.dbe_create(obj_type, obj_id, obj_dict)
+-            self.create_default_children(obj_type, s_obj)
+-        return s_obj
+-    # end create_singleton_entry
+-
+     # allocate tag id for tag object
+     def _allocate_tag_id(self, obj_dict):
+         type_str = obj_dict['tag_type_name']
+@@ -4107,186 +3372,20 @@
+
          obj_fq_name = db_obj_dict.get('fq_name', 'missing-fq-name')
          # ZK and rabbitmq should be functional
 -        self._ensure_services_conn(
 -            api_name, obj_type, obj_uuid, obj_fq_name)
 +        self._ensure_services_conn(api_name, obj_type, obj_uuid, obj_fq_name)
- 
+
          resource_type, r_class = self._validate_resource_type(obj_type)
 -        try:
 -            self._extension_mgrs['resourceApi'].map_method(
@@ -598,7 +978,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
          cleanup_on_failure = []
          if req_obj_dict is not None:
              req_obj_dict['uuid'] = obj_uuid
- 
+
 -        # Permit abort resource update and retrun 202 status code
 -        get_context().set_state('PENDING_DBE_UPDATE')
 -        ok, result = r_class.pending_dbe_update(db_obj_dict, req_obj_dict,
@@ -685,9 +1065,9 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -            return (ok, result)
 +            return db_conn.dbe_update(obj_type, obj_uuid, req_obj_dict)
          # end stateful_update
- 
+
          try:
-@@ -4312,19 +3771,6 @@
+@@ -4312,19 +3411,6 @@
                      self.config_log(err_msg, level=SandeshLevel.SYS_ERR)
              code, msg = result
              raise cfgm_common.exceptions.HttpError(code, msg)
@@ -705,12 +1085,12 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -            err_msg += cfgm_common.utils.detailed_traceback()
 -            self.config_log(err_msg, level=SandeshLevel.SYS_NOTICE)
      # end _put_common
- 
+
      # parent_type needed for perms check. None for derived objects (eg.
-@@ -4336,33 +3782,8 @@
+@@ -4336,33 +3422,8 @@
              return (False,
                      (503, "Not connected to zookeeper. Not able to perform requested action"))
- 
+
 -        # If there are too many pending updates to rabbit, do not allow
 -        # operations that cause state change
 -        npending = self._db_conn.dbe_oper_publish_pending()
@@ -732,7 +1112,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -        if not self.is_auth_needed() or not parent_uuid:
 -            return (True, '')
 +        return (True, '')
- 
+
 -        """
 -        Validate parent allows write access. Implicitly trust
 -        parent info in the object since coming from our DB.
@@ -740,12 +1120,12 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -        return self._permissions.check_perms_delete(request, obj_type, uuid,
 -                                                    parent_uuid)
      # end _http_delete_common
- 
+
      def _post_validate(self, obj_type=None, obj_dict=None):
-@@ -4437,48 +3858,8 @@
+@@ -4437,48 +3498,8 @@
          except NoIdError:
              pass
- 
+
 -        self.validate_parent_type(obj_type, obj_dict)
 -        # Ensure object has at least default permissions set
 -        self._ensure_id_perms_present(None, obj_dict)
@@ -755,7 +1135,7 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -        # TODO check api + resource perms etc.
 -
          uuid_in_req = obj_dict.get('uuid', None)
- 
+
 -        # Set the display name
 -        if (('display_name' not in obj_dict) or
 -            (obj_dict['display_name'] is None)):
@@ -790,7 +1170,8 @@ diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_cfg_
 -
          return (True, uuid_in_req)
      # end _post_common
- 
+
+
 diff -Naur -x '*.pyc' -x '*.orig' site-packages_orig/vnc_cfg_api_server/vnc_db.py site-packages/vnc_cfg_api_server/vnc_db.py
 --- site-packages_orig/vnc_cfg_api_server/vnc_db.py	2018-08-23 09:02:10.000000000 +0200
 +++ site-packages/vnc_cfg_api_server/vnc_db.py	2018-08-31 13:18:58.754944866 +0200
