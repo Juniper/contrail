@@ -358,7 +358,7 @@ func TestSchemaValidationBgpFamilyAttributes(t *testing.T) {
 		{
 			name: "Validation pass",
 			bgpFamilyAttributes: &BgpFamilyAttributes{
-				AddressFamily: "inet",
+				AddressFamily: []string{"inet"},
 				LoopCount:     0,
 			},
 			fails: false,
@@ -366,7 +366,7 @@ func TestSchemaValidationBgpFamilyAttributes(t *testing.T) {
 		{
 			name: "Bad string value",
 			bgpFamilyAttributes: &BgpFamilyAttributes{
-				AddressFamily: "hogehoge",
+				AddressFamily: []string{"hogehoge"},
 			},
 			fails: true,
 		},
