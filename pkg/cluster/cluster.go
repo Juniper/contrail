@@ -41,6 +41,8 @@ type Config struct { // nolint: maligned
 	LogFile string `yaml:"log_file"`
 	// Template root directory
 	TemplateRoot string `yaml:"template_root"`
+	// Orchestrator
+	Orchestrator string `yaml:"orchestrator"`
 
 	// Optional ansible sudo password
 	AnsibleSudoPass string `yaml:"ansible_sudo_pass"`
@@ -61,6 +63,7 @@ type Cluster struct {
 	APIServer    *client.HTTP
 	log          *logrus.Entry
 	streamServer *pkglog.StreamServer
+	orchestrator string
 }
 
 // NewClusterManager creates Cluster reading configuration from given file.
@@ -118,6 +121,7 @@ func NewCluster(c *Config) (*Cluster, error) {
 		config:       c,
 		log:          logger,
 		streamServer: streamServer,
+		orchestrator: c.Orchestrator,
 	}, nil
 }
 

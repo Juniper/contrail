@@ -36,10 +36,11 @@ var portMap = map[string]string{
 
 // EndpointData is the representation of cluster endpoints.
 type EndpointData struct {
-	clusterID   string
-	cluster     *Cluster
-	clusterData *Data
-	log         *logrus.Entry
+	clusterID    string
+	cluster      *Cluster
+	clusterData  *Data
+	log          *logrus.Entry
+	orchestrator string
 }
 
 func (e *EndpointData) endpointToURL(protocol, ip, port string) (endpointURL string) {
@@ -161,15 +162,17 @@ func (e *EndpointData) create() error {
 	}
 
 	// openstack endpoints
-	openstackEndpoints := e.getOpenstackEndpointNodes()
-	for service, endpointIPs := range openstackEndpoints {
-		e.log.Infof("Creating %s endpoints", service)
-		for _, endpointIP := range endpointIPs {
-			publicURL := e.endpointToURL(protocol, endpointIP, portMap[service])
-			privateURL := publicURL
-			err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
-			if err != nil {
-				return err
+	if e.cluster.orchestrator == "openstack" {
+		openstackEndpoints := e.getOpenstackEndpointNodes()
+		for service, endpointIPs := range openstackEndpoints {
+			e.log.Infof("Creating %s endpoints", service)
+			for _, endpointIP := range endpointIPs {
+				publicURL := e.endpointToURL(protocol, endpointIP, portMap[service])
+				privateURL := publicURL
+				err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
