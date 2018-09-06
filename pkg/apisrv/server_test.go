@@ -139,6 +139,11 @@ func TestK8sInstanceIP(t *testing.T) {
 	RunTest(t, "./test_data/test_k8s_instance_ip_alloc.yml")
 }
 
+func TestEnumHandling(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_enum_schema.yml")
+}
+
 func TestSanitizing(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_sanitizing.yml")

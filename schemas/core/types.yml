@@ -117,17 +117,19 @@ definitions:
         description: BGP address families supported by contrail.
     type: object
   AddressFamily:
-    enum:
-    - inet
-    - inet-labeled
-    - inet-vpn
-    - e-vpn
-    - erm-vpn
-    - route-target
-    - inet6
-    - inet-mvpn
-    - inet6-vpn
-    type: string
+    items:
+      enum:
+      - inet
+      - inet-labeled
+      - inet-vpn
+      - e-vpn
+      - erm-vpn
+      - route-target
+      - inet6
+      - inet-mvpn
+      - inet6-vpn
+      type: string
+    type: array
   AddressMode:
     enum:
     - active-active
@@ -342,9 +344,11 @@ definitions:
         description: Address family for which these parameters are applied.
         presence: 'true'
       default_tunnel_encap:
-        $ref: types.json#/definitions/BgpTunnelEncapsulationType
+        items:
+          $ref: types.json#/definitions/BgpTunnelEncapsulationType
         description: Default prioritized tunnel encapsulation list.
         presence: optional
+        type: array
       loop_count:
         $ref: types.json#/definitions/BgpAsPathLoopCount
         description: For routing loop detection, loop-count is the number of times
@@ -558,14 +562,12 @@ definitions:
         presence: optional
     type: object
   BgpTunnelEncapsulationType:
-    items:
-      enum:
-      - gre
-      - mpls
-      - udp
-      - vxlan
-      type: string
-    type: array
+    enum:
+    - gre
+    - mpls
+    - udp
+    - vxlan
+    type: string
   BridgeDomainMembershipType:
     properties:
       vlan_tag:
