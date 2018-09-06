@@ -93,7 +93,7 @@ func TestApplyTemplatesAddsGenerationPrefix(t *testing.T) {
 }
 
 func makeAPI(t *testing.T) *API {
-	api, err := MakeAPI([]string{schemaPath})
+	api, err := MakeAPI([]string{schemaPath}, "")
 	assert.Nil(t, err)
 
 	return api
