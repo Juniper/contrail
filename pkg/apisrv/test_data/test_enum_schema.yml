@@ -1,0 +1,96 @@
+name: Test handling schema enums in arrays
+description: |
+  Test if enums stored in arrays are handled correctly.
+cleanup:
+  - path: /project/uuid_of_admin_project
+  - path: /virtual-network/uuid_of_vn
+  - path: /routing-instance/uuid_of_ri
+  - path: /bgp-router/uuid_of_bgp_r
+
+test_data:
+  admin_project: &admin_pr
+    uuid: uuid_of_admin_project
+    name: admin_pr
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  virtual_network_blue_base: &vn
+    fq_name: ["default", "admin", "virtual_network_blue"]
+    uuid: uuid_of_vn
+    display_name: "virtual_network_blue"
+    parent_type: "project"
+    parent_uuid: uuid_of_admin_project
+    route_target_list:
+      route_target: ["100:200"]
+
+  bgp_route_item: &bgp_r
+    parent_type: routing-instance
+    parent_uuid: f65f7f79-c43f-415f-8d63-336beaaa68e6
+    uuid: uuid_of_bgp_r
+    bgp_router_parameters:
+      vendor: contrail
+      admin_down: false
+      router_type: control-node
+      ipv6_gateway_address: 
+      local_autonomous_system: 
+      auth_data: 
+      autonomous_system: 64512
+      cluster_id: 
+      address: 192.168.100.11
+      source_port: 
+      gateway_address: 
+      identifier: 192.168.100.11
+      hold_time: 0
+      port: '179'
+      address_families:
+        family:
+        - route-target
+        - inet-vpn
+        - e-vpn
+        - erm-vpn
+        - inet6-vpn
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+  - name: create project
+    request:
+      path: /projects
+      method: POST
+      expected:
+        - 200
+      data:
+        project: *admin_pr
+    expect:
+      project: *admin_pr
+
+  - name: create virtual network blue
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+      - 200
+      data:
+        virtual-network: *vn
+    expect: null
+
+  - name: create bgp router
+    request:
+      path: /bgp-routers
+      method: POST
+      expected:
+        - 200
+      data:
+        bgp-router: *bgp_r
+    expect:
+      bgp-router: *bgp_r
+

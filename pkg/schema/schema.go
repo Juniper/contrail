@@ -248,6 +248,7 @@ func (s JSONSchema) Copy() *JSONSchema {
 //Update merges two JSONSchema
 // nolint: gocyclo
 func (s *JSONSchema) Update(s2 *JSONSchema) {
+	log.Warnf("MERGE BEFORE #####\n%+#v", s)
 	if s2 == nil {
 		return
 	}
@@ -299,10 +300,15 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s.Maximum == nil {
 		s.Maximum = s2.Maximum
 	}
+	if s.Items == nil {
+		s.Items = s2.Items
+	}
+	log.Warnf("MERGE - Update of schema\n%+#v\nwith:\n%+#v", s, s2)
 }
 
 //Walk apply one function for json schema recursively.
 func (s *JSONSchema) Walk(do func(s2 *JSONSchema) error) error {
+	log.Debugf("Walking: %v (%v)", s.ID, s.Title)
 	if s == nil {
 		return nil
 	}
@@ -415,6 +421,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 			return err
 		}
 		if s.Items == nil {
+			log.Errorf("Got <nil> Items for array in schema '%v': %+#v", name, s)
 			goType = "[]string"
 			protoType = "repeated string"
 		} else {
@@ -430,8 +437,8 @@ func (s *JSONSchema) resolveGoName(name string) error {
 
 	s.GoType = goType
 	s.ProtoType = protoType
-	for name, property := range s.Properties {
-		err := property.resolveGoName(name)
+	for pname, property := range s.Properties {
+		err := property.resolveGoName(pname)
 		if err != nil {
 			return err
 		}
@@ -490,6 +497,7 @@ func (api *API) resolveRef(schema *JSONSchema) error {
 		return nil
 	}
 	if schema.Type == ArrayType {
+		log.Warnf("REsolving REF for items in %v => %+#v", schema.ID, schema.Items)
 		err := api.resolveRef(schema.Items)
 		if err != nil {
 			return err
@@ -753,6 +761,7 @@ func MakeAPI(dirs []string) (*API, error) {
 				return nil
 			}
 			var schema Schema
+			log.Infof("Loading file: %v", path)
 			err = common.LoadFile(path, &schema)
 			if err != nil {
 				log.Warn(fmt.Sprintf("[%s] %s", path, err))
@@ -765,7 +774,11 @@ func MakeAPI(dirs []string) (*API, error) {
 			schema.JSONSchema = mapSlice(schema.JSONSchemaSlice).JSONSchema()
 			schema.Definitions = map[string]*JSONSchema{}
 			for key, definitionSlice := range schema.DefinitionsSlice {
+				log.Infof("Got definition: %v", key)
 				schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
+				if key == "EncapsulationType" || key == "BgpRouterType" || key == "CommunityAttribute" || key == "BgpTunnelEncapsulationType" {
+					log.Warnf("RAW Def of %v is:\n%v\nProcessed: %+#v\n------", key, definitionSlice, schema.Definitions[key])
+				}
 			}
 			schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
 			schema.Path = schema.TypeName
