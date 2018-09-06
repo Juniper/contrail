@@ -1,0 +1,21 @@
+definitions:
+  AddressFamily:
+    items:
+      enum:
+      - inet
+      - inet-labeled
+      - inet-vpn
+      - e-vpn
+      - erm-vpn
+      - route-target
+      - inet6
+      - inet-mvpn
+      - inet6-vpn
+      type: string
+    type: array
+  AddressFamilies:
+    properties:
+      family:
+        $ref: types.json#/definitions/AddressFamily
+        description: BGP address families supported by contrail.
+    type: object
