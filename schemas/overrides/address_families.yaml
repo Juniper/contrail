@@ -1,0 +1,10 @@
+definitions:
+  AddressFamilies:
+    properties:
+      family:
+        items:
+          $ref: types.json#/definitions/AddressFamily
+        type: array
+        description: BGP address families supported by contrail.
+    type: object
+
