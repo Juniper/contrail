@@ -299,10 +299,14 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s.Maximum == nil {
 		s.Maximum = s2.Maximum
 	}
+	if s.Items == nil {
+		s.Items = s2.Items
+	}
 }
 
 //Walk apply one function for json schema recursively.
 func (s *JSONSchema) Walk(do func(s2 *JSONSchema) error) error {
+	log.Debugf("Walking: %v (%v)", s.ID, s.Title)
 	if s == nil {
 		return nil
 	}
@@ -415,6 +419,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 			return err
 		}
 		if s.Items == nil {
+			log.Errorf("Got <nil> Items for array in schema '%v': %+#v", name, s)
 			goType = "[]string"
 			protoType = "repeated string"
 		} else {
@@ -430,8 +435,8 @@ func (s *JSONSchema) resolveGoName(name string) error {
 
 	s.GoType = goType
 	s.ProtoType = protoType
-	for name, property := range s.Properties {
-		err := property.resolveGoName(name)
+	for pname, property := range s.Properties {
+		err := property.resolveGoName(pname)
 		if err != nil {
 			return err
 		}
