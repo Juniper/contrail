@@ -28,7 +28,7 @@ func init() {
 
 func generateCode() {
 	log.Info("Generating source code from schema")
-	api, err := schema.MakeAPI(strings.Split(option.SchemasDir, ","))
+	api, err := schema.MakeAPI(strings.Split(option.SchemasDir, ","), "overrides")
 	if err != nil {
 		log.Fatal(err)
 	}
