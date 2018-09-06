@@ -19,14 +19,13 @@ test_data:
     identifier: 192.168.0.14
     hold_time: 0
     port: "179"
-    # TODO: uncomment below when enums are handled properly
-    #address_families:
-      #family:
-        #- route-target
-        #- inet-vpn
-        #- e-vpn
-        #- erm-vpn
-        #- inet6-vpn
+    address_families:
+      family:
+        - route-target
+        - inet-vpn
+        - e-vpn
+        - erm-vpn
+        - inet6-vpn
 
   bgp_router: &bgp_router_test_provisioning
     uuid: bgp_router_test_provisioning_uuid
