@@ -1,12 +1,12 @@
 ---
   prefix: "/"
   api_style: "contrail"
-  extends:
+  extends: 
   - "base"
   references: {}
   parents: {}
   plural: "projects"
   id: "project"
-  schema:
+  schema: 
     type: "object"
     properties: {}
