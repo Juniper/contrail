@@ -1,0 +1,33 @@
+definitions:
+  BgpFamilyAttributes:
+    properties:
+      address_family:
+        $ref: types.json#/definitions/AddressFamily
+        description: Address family for which these parameters are applied.
+        presence: 'true'
+      default_tunnel_encap:
+        items:
+          $ref: types.json#/definitions/BgpTunnelEncapsulationType
+        description: Default prioritized tunnel encapsulation list.
+        presence: optional
+        type: array
+      loop_count:
+        $ref: types.json#/definitions/BgpAsPathLoopCount
+        description: For routing loop detection, loop-count is the number of times
+          the local bgp-routers AS is             allowed in the AS_PATH attribute.
+        presence: optional
+      prefix_limit:
+        $ref: types.json#/definitions/BgpPrefixLimit
+        description: prefix-limit contains the maximum number of prefixes that are
+          allowed to be received on the session for this address family.
+        presence: optional
+    type: object
+
+  BgpTunnelEncapsulationType:
+    enum:
+    - gre
+    - mpls
+    - udp
+    - vxlan
+    type: string
+    items:
