@@ -50,6 +50,7 @@ instances:
         {%endif%}{%endfor %}{%endfor%}
       {% for k8s_master_node in k8sCluster.KubernetesMasterNodes %}{% for node_ref in k8s_master_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_master:{%endif%}{%endfor%}{%endfor%}
       {% for k8s_node in k8sCluster.KubernetesNodes %}{% for node_ref in k8s_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_node:{%endif%}{%endfor%}{%endfor%}
+      {% for k8s_kubemanager_node in k8sCluster.KubernetesKubemanagerNodes %}{% for node_ref in k8s_kubemanager_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}kubemanager:{%endif%}{%endfor%}{%endfor%}
       {% for openstack_control_node in openstackCluster.OpenstackControlNodes %}{% for node_ref in openstack_control_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_control:{%endif%}{%endfor %}{%endfor%}
       {% for openstack_network_node in openstackCluster.OpenstackNetworkNodes %}{% for node_ref in openstack_network_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_network:{%endif%}{%endfor%}{%endfor%}
       {% for openstack_storage_node in openstackCluster.OpenstackStorageNodes %}{% for node_ref in openstack_storage_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_storage:
