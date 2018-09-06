@@ -117,17 +117,19 @@ definitions:
         description: BGP address families supported by contrail.
     type: object
   AddressFamily:
-    enum:
-    - inet
-    - inet-labeled
-    - inet-vpn
-    - e-vpn
-    - erm-vpn
-    - route-target
-    - inet6
-    - inet-mvpn
-    - inet6-vpn
-    type: string
+    items:
+      enum:
+      - inet
+      - inet-labeled
+      - inet-vpn
+      - e-vpn
+      - erm-vpn
+      - route-target
+      - inet6
+      - inet-mvpn
+      - inet6-vpn
+      type: string
+    type: array
   AddressMode:
     enum:
     - active-active
