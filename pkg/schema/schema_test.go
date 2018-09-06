@@ -7,7 +7,7 @@ import (
 )
 
 func TestSchema(t *testing.T) {
-	api, err := MakeAPI([]string{"test_data/schema"})
+	api, err := MakeAPI([]string{"test_data/schema"}, "overrides")
 	assert.Nil(t, err, "API reading failed")
 	assert.Equal(t, 4, len(api.Types))
 	assert.Equal(t, 4, len(api.Schemas))
