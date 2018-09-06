@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/siddontang/go/log"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
@@ -12,6 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/vncapi"
 )
 
 // Data source and destination types.
@@ -21,6 +23,7 @@ const (
 	CassandraDumpType = "cassandra_dump"
 	RDBMSType         = "rdbms"
 	EtcdType          = "etcd"
+	HTTPType          = "http"
 )
 
 // Config for Convert command.
@@ -33,6 +36,7 @@ type Config struct {
 	CassandraTimeout        int
 	CassandraConnectTimeout int
 	EtcdNotifierPath        string
+	URL                     string
 }
 
 // Convert converts data from one format to another.
@@ -83,6 +87,8 @@ func writeData(events *services.EventList, c *Config) error {
 		return writeYAML(events, c.OutFile)
 	case EtcdType:
 		return writeEtcd(events, c.EtcdNotifierPath)
+	case HTTPType:
+		return writeHTTP(events, c.URL)
 	default:
 		return errors.Errorf("unsupported output type %v", c.OutType)
 	}
@@ -107,19 +113,12 @@ func readRDBMS() (*services.EventList, error) {
 	return services.Dump(context.Background(), dbService)
 }
 
-func writeRDBMS(events *services.EventList) error {
-
-	var refUpdateEvents []*services.Event
-	for id := range events.Events {
-		newEvent, err := events.Events[id].ExtractRefsEventFromEvent()
-		if err != nil {
-			return errors.Wrap(err, "extracting references update from event failed")
-		}
-		if newEvent != nil {
-			refUpdateEvents = append(refUpdateEvents, newEvent)
-		}
+func writeRDBMS(events *services.EventList) (err error) {
+	e, err := extractRefUpdateEvents(events)
+	if err != nil {
+		return errors.Wrap(err, "failed to extract ref events")
 	}
-	events.Events = append(events.Events, refUpdateEvents...)
+	events = &services.EventList{Events: e}
 
 	dbService, err := db.NewServiceFromConfig()
 	if err != nil {
@@ -135,6 +134,24 @@ func writeRDBMS(events *services.EventList) error {
 	)
 }
 
+func extractRefUpdateEvents(e *services.EventList) (result []*services.Event, err error) {
+	var refUpdateEvents []*services.Event
+	for id := range e.Events {
+		newEvent, err := e.Events[id].ExtractRefsEventFromEvent()
+		if err != nil {
+			return nil, errors.Wrap(err, "extracting references update from event failed")
+		}
+		if newEvent != nil {
+			refUpdateEvents = append(refUpdateEvents, newEvent)
+		}
+	}
+
+	result = make([]*services.Event, 0, len(e.Events)+len(refUpdateEvents))
+	result = append(result, e.Events...)
+	result = append(result, refUpdateEvents...)
+	return result, nil
+}
+
 func writeEtcd(events *services.EventList, etcdNotifierPath string) error {
 	etcdNotifierService, err := etcd.NewNotifierService(etcdNotifierPath, models.JSONCodec)
 	if err != nil {
@@ -145,4 +162,25 @@ func writeEtcd(events *services.EventList, etcdNotifierPath string) error {
 
 	_, err = events.Process(context.Background(), etcdNotifierService)
 	return errors.Wrap(err, "processing events on etcdNotifierService failed")
+}
+
+func writeHTTP(events *services.EventList, url string) (err error) {
+	e, err := extractRefUpdateEvents(events)
+	if err != nil {
+		return errors.Wrap(err, "failed to extract ref events")
+	}
+	events = &services.EventList{Events: e}
+
+	s := vncapi.NewNotifierService(&vncapi.Config{
+		Endpoint:          url,
+		InTransactionDoer: services.NoTransaction,
+	})
+
+	for _, event := range events.Events {
+		_, err = event.Process(context.Background(), s)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+	return errors.Wrap(err, "some events were not processed, last error")
 }
