@@ -25,3 +25,36 @@
       minimum: 1
       type: "integer"
       maximum: 4294967296
+    SampleEnumType:
+      enum:
+        - a
+        - b
+        - c
+      type: string
+    ObjectThatReferencesEnumAsProperty:
+      type: "object"
+      properties:
+        enum_item:
+          $ref: "types.json#/definitions/SampleEnumType"
+    ObjectThatReferencesEnumAsArray:
+      type: "object"
+      properties:
+        enum_items:
+          items:
+            $ref: "types.json#/definitions/SampleEnumType"
+          type: "array"
+    ObjectThatReferencesEnumAsArrayOverriden:
+      type: "object"
+      properties:
+        enum_item:
+          $ref: "types.json#/definitions/SampleEnumType"
+
+    EnumTestObject:
+      type: "object"
+      properties:
+        enum_prop:
+          $ref: "types.json#/definitions/ObjectThatReferencesEnumAsProperty"
+        enum_array:
+          $ref: "types.json#/definitions/ObjectThatReferencesEnumAsArray"
+        enum_overr:
+          $ref: "types.json#/definitions/ObjectThatReferencesEnumAsArrayOverriden"
