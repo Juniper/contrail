@@ -1,6 +1,7 @@
 package keystone
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -11,6 +12,10 @@ import (
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+)
+
+const (
+	configService = "config"
 )
 
 //Keystone is used to represents Keystone Controller.
@@ -78,8 +83,59 @@ func filterProject(user *User, scope *Scope) (*Project, error) {
 	return nil, nil
 }
 
+func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint string, err error) {
+	configEndpoint, err = endpoints.GetEndpoint(configService)
+	return configEndpoint, err
+}
+
+func (keystone *Keystone) getVncProjects(c echo.Context, configEndpoint string) error {
+	tokenID := c.Request().Header.Get("X-Auth-Token")
+	if tokenID == "" {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	}
+	token, ok := keystone.Store.ValidateToken(tokenID)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	}
+	user := token.User
+	projectURI := fmt.Sprintf("%s/projects?detail=True", configEndpoint)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", projectURI, nil)
+	req.SetBasicAuth(user.Name, user.Password)
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Error : %s", err)
+	}
+	defer resp.Body.Close() // nolint: errcheck
+	vncProjectsResponse := &VncProjectListResponse{}
+	_ = json.NewDecoder(resp.Body).Decode(vncProjectsResponse)
+	projects := []*Project{}
+	for _, vncProject := range vncProjectsResponse.Projects {
+		projects = append(projects, &Project{
+			Name: vncProject.Project.Name,
+			ID:   vncProject.Project.UUID,
+		})
+	}
+	projectsResponse := &ProjectListResponse{
+		Projects: projects,
+	}
+
+	return c.JSON(resp.StatusCode, projectsResponse)
+}
+
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
+	authType := viper.GetString("auth_type")
+	if authType == "basic-auth" {
+		configEndpoint, err := getVncConfigEndpoint(keystone.Endpoints)
+		if err != nil {
+			log.Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+		if configEndpoint != "" {
+			return keystone.getVncProjects(c, configEndpoint)
+		}
+	}
 	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
 	if err != nil {
 		log.Error(err)
