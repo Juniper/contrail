@@ -10,6 +10,7 @@ cleanup:
 - path: /network-ipam/test_ipam_lr_blue
 - path: /virtual-machine-interface/4837041a-2dc0-4e7d-b2f4-d7fe449f8734
 - path: /logical-router/test_logical_router
+- path: /project/admin_lr_project_uuid
 test_data:
 
   admin_project: &admin_project_lr
@@ -243,7 +244,7 @@ workflow:
 
 - name: count virtual networks
   request:
-    path: "/virtual-networks?count=true"
+    path: "/virtual-networks?count=true&parent_id=admin_lr_project_uuid"
     method: GET
     expected:
     - 200
@@ -264,7 +265,7 @@ workflow:
 
 - name: count virtual networks after creating internal virtual network
   request:
-    path: "/virtual-networks?count=true"
+    path: "/virtual-networks?count=true&parent_id=admin_lr_project_uuid"
     method: GET
     expected:
     - 200
@@ -335,7 +336,7 @@ workflow:
 
 - name: count virtual networks after deleting internal one
   request:
-    path: "/virtual-networks?count=true"
+    path: "/virtual-networks?count=true&parent_id=admin_lr_project_uuid"
     method: GET
     expected:
     - 200
@@ -370,6 +371,22 @@ workflow:
 - name: delete network ipam blue
   request:
     path: /network-ipam/test_ipam_lr_blue
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete virtual machine interface
+  request:
+    path: /virtual-machine-interface/7624a02f-1dc1-4318-8316-7343d1187aac
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/test_vn_lr_with_bgpvpn
     method: DELETE
     expected:
     - 200
