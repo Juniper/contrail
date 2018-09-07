@@ -1,0 +1,27 @@
+description: Appformix Bare Host Node
+extends:
+- base
+- has_status
+id: appformix_bare_host_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this appformix bare host node."
+      presence: "optional"
+parents:
+  appformix_cluster:
+    operations: "CRUD"
+    description: "Parent of this appformix bare host node."
+    presence: "optional"
+plural: appformix_bare_host_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: appformix_bare_host_node
+title: Appformix Bare Host Node
+type: ""

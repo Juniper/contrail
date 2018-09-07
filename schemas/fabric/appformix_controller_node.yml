@@ -1,0 +1,27 @@
+description: Appformix Controller Node
+extends:
+- base
+- has_status
+id: appformix_controller_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this appformix controller node."
+      presence: "optional"
+parents:
+  appformix_cluster:
+    operations: "CRUD"
+    description: "Parent of this appformix controller node."
+    presence: "optional"
+plural: appformix_controller_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: appformix_controller_node
+title: Appformix Controller Node
+type: ""

@@ -1,0 +1,226 @@
+description: Appformix Cluster
+extends:
+- base
+- ownable
+- has_status
+id: appformix_cluster
+metadata:
+  category: cluster
+parents:
+  global_system_config:
+    operations: "CRUD"
+    description: "Parent of this node resource."
+    presence: "optional"
+plural: appformix_clusters
+prefix: /
+references:
+    openstack_cluster:
+      operations: "CRUD"
+      description: "Reference to openstack cluster object from this appformix cluster."
+      presence: "optional"
+schema:
+  properties:
+    appformix_image_path_platform:
+      description: Appformix platform image path
+      nullable: true
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Appformix Platform Image Path
+      type: string
+      view:
+      - create
+      - detail
+    appformix_image_path_dependencies:
+      description: Appformix dependencies image path
+      nullable: true
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Appformix Dependencies Image Path
+      type: string
+      view:
+      - create
+      - detail
+    appformix_image_path_network_device:
+      description: Appformix network device image path
+      nullable: true
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Appformix Network Device Image Path
+      type: string
+      view:
+      - create
+      - detail
+    appformix_image_path_openstack:
+      description: Appformix network device image path
+      nullable: true
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Appformix Network Device Image Path
+      type: string
+      view:
+      - create
+      - detail
+    appformix_configuration:
+      operations: "CRUD"
+      presence: "optional"
+      description: "Custom Appformix Configurations. Specified as list of Key:Value pairs."
+      $ref: "types.json#/definitions/KeyValuePairs"
+    appformix_registry:
+      description: Docker registry of appformix to be used
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Appformix Docker Registry
+      type: string
+      view:
+      - create
+      - detail
+    appformix_license:
+      description: License of appformix image to be used
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Appformix License
+      type: string
+      view:
+      - create
+      - detail
+    appformix_version:
+      description: Version of appformix image to be used
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Appformix Version
+      type: string
+      view:
+      - create
+      - detail
+    appformix_kvm_instance_discovery:
+      description: Appformix KVM discovery enabled
+      default: true
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Appformix KVM discovery
+      type: "boolean"
+      view:
+      - create
+      - detail
+    appformix_network_device_monitoring_enabled:
+      description: For enabling pre-requisites for package installation
+      default: true
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Network Device Monitoring
+      type: "boolean"
+      view:
+      - create
+      - detail
+    appformix_jti_network_device_monitoring_enabled:
+      description: Enable JTI network device monitoring
+      default: true
+      nullable: false
+      permission:
+      - create
+      - update
+      title: JTI Network Device Monitoring
+      type: "boolean"
+      view:
+      - create
+      - detail
+    appformix_remote_host_monitoring_enabled:
+      description: Enable remote host monitoring
+      default: true
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Remote Host
+      type: "boolean"
+      view:
+      - create
+      - detail
+    contrail_analytics_url:
+      description: Contrail Analytics API Server URL
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Analytics API Server URL
+      type: string
+      view:
+      - create
+      - detail
+    contrail_config_url:
+      description: Contrail Config API Server URL
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Config API Server URL
+      type: string
+      view:
+      - create
+      - detail
+    contrail_cluster_name:
+      description: Name of Contrail Cluster for Monitoring
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Contrail Cluster Name
+      type: string
+      view:
+      - create
+      - detail
+    network_device_discovery_enabled:
+      description: For running the appformix-network-device-adapter
+      default: true
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Network Device Discovery
+      type: "boolean"
+      view:
+      - create
+      - detail
+    openstack_platform_enabled:
+      description: Enable Openstack for Appformix
+      default: true
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Openstack
+      type: "boolean"
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: appformix_cluster
+title: Appformix Cluster
+type: ""
+
+
