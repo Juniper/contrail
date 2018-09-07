@@ -37,17 +37,13 @@ func (s *Service) CreateLogicalRouter(
 		objMap.(*sync.Map).Store(obj.GetUUID(), intent)
 	}
 
-	ec := &EvaluateContext{
-		WriteService: s.WriteService,
-	}
-
 	if len(obj.GetRouteTargetRefs()) == 0 {
-		if err := intent.createDefaultRouteTarget(ctx, ec); err != nil {
+		if err := intent.createDefaultRouteTarget(ctx, s.evaluateContext()); err != nil {
 			return nil, errors.Wrap(err, "failed to create Logical Router's default Route Target")
 		}
 	}
 
-	if err := EvaluateDependencies(ctx, ec, obj, "LogicalRouter"); err != nil {
+	if err := EvaluateDependencies(ctx, s.evaluateContext(), obj, "LogicalRouter"); err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Logical Router dependencies")
 	}
 
