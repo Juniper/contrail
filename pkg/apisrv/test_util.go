@@ -137,7 +137,7 @@ func (s *Server) ForceProxyUpdate() {
 type Task struct {
 	Name    string          `yaml:"name,omitempty"`
 	Client  string          `yaml:"client,omitempty"`
-	Request *client.Request `yaml:"request,omitempty"`
+	Request *common.Request `yaml:"request,omitempty"`
 	Expect  interface{}     `yaml:"expect,omitempty"`
 }
 
