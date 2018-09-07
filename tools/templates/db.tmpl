@@ -29,7 +29,7 @@ var {{ schema.JSONSchema.GoName }}Fields = []string{
 // {{ schema.JSONSchema.GoName }}RefFields is db reference fields for {{ schema.JSONSchema.GoName }}
 var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
    {% for linkTo, reference in schema.References %}
-    "{{ linkTo | lower }}": []string{
+    "{{ reference.LinkTo.Table }}": []string{
         {% for column in reference.Columns %}"{{ column.Column }}",
         {% endfor %}
     },
@@ -40,7 +40,7 @@ var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
 var {{ schema.JSONSchema.GoName }}ChildFields = map[string][]string{
    {% for backref in schema.Children %}
    {% set child = backref.LinkTo %}
-   "{{ child.ID | lower }}": []string{
+   "{{ child.Table }}": []string{
         {% for column in child.Columns %}"{{ column.Column }}",
         {% endfor %}
    },
@@ -51,7 +51,7 @@ var {{ schema.JSONSchema.GoName }}ChildFields = map[string][]string{
 var {{ schema.JSONSchema.GoName }}BackRefFields = map[string][]string{
    {% for _, definition in schema.BackReferences %}
    {% set backref = definition.LinkTo %}
-   "{{ backref.ID | lower }}": []string{
+   "{{ backref.Table }}": []string{
         {% for column in backref.Columns %}"{{ column.Column }}",
         {% endfor %}
    },

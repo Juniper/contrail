@@ -137,6 +137,7 @@ type Schema struct {
 	Plural                string                    `yaml:"plural" json:"plural,omitempty"`
 	Type                  string                    `yaml:"type" json:"type,omitempty"`
 	Title                 string                    `yaml:"title" json:"title,omitempty"`
+	Table                 string                    `yaml:"table" json:"table,omitempty"`
 	Description           string                    `yaml:"description" json:"description,omitempty"`
 	Parents               map[string]*Reference     `yaml:"-" json:"parents,omitempty"`
 	ParentsSlice          yaml.MapSlice             `yaml:"parents" json:"-"`
@@ -637,7 +638,7 @@ func (api *API) resolveAllRelation() error {
 			if err := api.resolveRelation(linkToSchema, reference); err != nil {
 				return err
 			}
-			reference.Table = ReferenceTableName(RefPrefix, s.ID, linkTo)
+			reference.Table = ReferenceTableName(RefPrefix, s.Table, linkTo)
 		}
 		s.IsConfigRootInParents = false
 		for _, m := range mapSlice(s.ParentsSlice) {
@@ -654,7 +655,7 @@ func (api *API) resolveAllRelation() error {
 				s.ParentOptional = true
 			}
 			s.Parents[linkTo] = reference
-			reference.Table = ReferenceTableName(ParentPrefix, s.ID, linkTo)
+			reference.Table = ReferenceTableName(ParentPrefix, s.Table, linkTo)
 			parentSchema := api.SchemaByID(linkTo)
 			if parentSchema == nil {
 				return fmt.Errorf("Parent schema %s not found", linkTo)
@@ -800,6 +801,9 @@ func MakeAPI(dirs []string) (*API, error) {
 				schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
 			}
 			schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
+			if schema.Table == "" {
+				schema.Table = strings.ToLower(schema.ID)
+			}
 			schema.Path = schema.TypeName
 			schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
 			schema.BackReferences = map[string]*BackReference{}

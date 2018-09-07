@@ -16,7 +16,7 @@ func (db *Service) initQueryBuilders() {
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     queryBuilders["{{ schema.ID }}"] = basedb.NewQueryBuilder(db.Dialect,
-       "{{ schema.ID | lower }}",
+       "{{ schema.Table }}",
        {{ schema.JSONSchema.GoName }}Fields,
        {{ schema.JSONSchema.GoName }}RefFields,
        {{ schema.JSONSchema.GoName }}ChildFields,
