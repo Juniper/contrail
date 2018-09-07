@@ -242,6 +242,8 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 	}
 	if spec.ParentFQName != nil {
 		// TODO: implement parent_fq_name filter
+		// TODO: reenable test "list virtual networks with parent_fq_name_str"
+		// (pkg/apisrv/test_data/test_virtual_network.go)
 	}
 	for _, filter := range filters {
 		if !qb.isValidField(filter.Key) {
@@ -272,16 +274,16 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 	if !auth.IsAdmin() {
 		ctx.values = append(ctx.values, auth.ProjectID())
 		where = append(where, qb.Quote(qb.TableAlias, "owner")+" = "+qb.Placeholder(len(ctx.values)))
-	}
-	if spec.Shared {
-		shareTables := []string{"domain_share_" + qb.Table, "tenant_share_" + qb.Table}
-		for i, shareTable := range shareTables {
-			ctx.joins = append(ctx.joins,
-				qb.join(shareTable, "uuid", qb.TableAlias))
-			where = append(where, fmt.Sprintf("(%s.to = %s and %s.access >= 4)",
-				qb.Quote(shareTable), qb.Placeholder(len(ctx.values)+i+1), qb.Quote(shareTable)))
+		if spec.Shared {
+			shareTables := []string{"domain_share_" + qb.Table, "tenant_share_" + qb.Table}
+			for i, shareTable := range shareTables {
+				ctx.joins = append(ctx.joins,
+					qb.join(shareTable, "uuid", qb.TableAlias))
+				where = append(where, fmt.Sprintf("(%s.to = %s and %s.access >= 4)",
+					qb.Quote(shareTable), qb.Placeholder(len(ctx.values)+i+1), qb.Quote(shareTable)))
+			}
+			ctx.values = append(ctx.values, auth.DomainID(), auth.ProjectID())
 		}
-		ctx.values = append(ctx.values, auth.DomainID(), auth.ProjectID())
 	}
 	if len(where) > 0 {
 		ctx.where = append(ctx.where, fmt.Sprintf("(%s)", strings.Join(where, " or ")))
