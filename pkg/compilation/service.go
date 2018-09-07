@@ -19,28 +19,23 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/compilation/config"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
-	"github.com/Juniper/contrail/pkg/compilationif"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
 // SetupService setups all required services and chains them.
-func SetupService(apiService services.WriteService) *compilationif.CompilationService {
+func SetupService(apiService services.WriteService) services.Service {
 	// create services
-	compilationService := compilationif.NewCompilationService()
-	logicService := logic.NewService(apiService)
 
-	// chain them
-	services.Chain(
-		compilationService,
-		logicService,
-	)
+	cache := intent.NewCache()
+	logicService := logic.NewService(apiService, cache)
 
 	// return entry service
-	return compilationService
+	return logicService
 }
 
 type locker interface {
@@ -62,7 +57,7 @@ type IntentCompilationService struct {
 	config    *config.Config
 	Store     Store
 	locker    locker
-	service   *compilationif.CompilationService
+	service   services.Service
 	apiClient *client.HTTP
 
 	log logrus.FieldLogger
@@ -163,7 +158,7 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	}
 
 	watch.WatcherInit(ics.config.DefaultCfg.MaxJobQueueLen)
-	watch.InitDispatcher(ics.config.DefaultCfg.NumberOfWorkers, ics.service.HandleEtcdMessage)
+	watch.InitDispatcher(ics.config.DefaultCfg.NumberOfWorkers, ics.handleEtcdMessage)
 
 	ics.log.Debug("Setting MessageIndex to 0 (if not exists)")
 	err = ics.Store.Create(ctx, ics.config.EtcdNotifierCfg.MsgIndexString, []byte("0"))
@@ -190,5 +185,22 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 			}
 			ics.handleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)
 		}
+	}
+}
+
+// HandleEtcdMessage handles messages received from etcd.
+func (ics *IntentCompilationService) handleEtcdMessage(ctx context.Context, oper int32, key, value string) {
+	messageFields := logrus.Fields{"operation": oper, "key": key, "value": value}
+	logrus.WithFields(messageFields).Print("HandleEtcdMessages: Got a message")
+	event, err := etcd.ParseEvent(oper, key, []byte(value))
+	if err != nil {
+		logrus.WithFields(messageFields).WithError(err).Error("failed to parse ETCD event")
+	}
+	processor := services.ServiceEventProcessor{
+		Service: ics.service,
+	}
+	_, err = processor.Process(ctx, event)
+	if err != nil {
+		logrus.WithFields(messageFields).WithError(err).Error("Failed to handle etcd message")
 	}
 }

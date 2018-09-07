@@ -9,6 +9,7 @@ type Object interface {
 	proto.Message
 	ToMap() map[string]interface{}
 	Kind() string
+	TypeName() string
 	Depends() []string
 	ApplyPropCollectionUpdate(*PropCollectionUpdate) (updated map[string]interface{}, err error)
 	ApplyMap(map[string]interface{})

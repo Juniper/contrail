@@ -82,6 +82,8 @@ func (d *dummyMessage) Kind() string { return "" }
 
 func (d *dummyMessage) Depends() []string { return nil }
 
+func (d *dummyMessage) TypeName() string { return "" }
+
 func (d *dummyMessage) ApplyPropCollectionUpdate(
 	*basemodels.PropCollectionUpdate,
 ) (updated map[string]interface{}, err error) {

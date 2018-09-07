@@ -1,4 +1,4 @@
-package logic
+package intent
 
 import (
 	"context"
@@ -9,10 +9,12 @@ import (
 // EvaluateContext contains context information for Resource to handle CRUD
 type EvaluateContext struct {
 	WriteService services.WriteService
+	Cache        *Cache
 }
 
 // Intent contains Intent Compiler state for a resource.
 type Intent interface {
+	services.Resource
 	Evaluate(ctx context.Context, evaluateCtx *EvaluateContext) error
 }
 
