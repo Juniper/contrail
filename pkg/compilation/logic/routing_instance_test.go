@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/types/mock"
 )
 
 func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
@@ -36,9 +37,11 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPIService := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIService)
+	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
+	service := NewService(mockAPIService, mockIntPoolAllocator)
 
 	expectCreateRT(mockAPIService, expectedRT)
+	expectAllocateInt(mockIntPoolAllocator, routeTargetIntPoolID)
 
 	compilationif.Init()
 	_, err := service.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{
