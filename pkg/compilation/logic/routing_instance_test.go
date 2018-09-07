@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/types/mock"
 )
 
 func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
@@ -21,12 +22,14 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIClient)
+	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
+	service := NewService(mockAPIClient, mockIntPoolAllocator)
 
 	expectCreateRT(mockAPIClient, &models.RouteTarget{
 		FQName:      []string{"target:64512:8000002"},
 		DisplayName: "target:64512:8000002",
 	})
+	expectAllocateInt(mockIntPoolAllocator, routeTargetIntPoolID)
 
 	_, err := service.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{
 		RoutingInstance: &models.RoutingInstance{
@@ -41,16 +44,16 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func expectCreateRT(mockAPIService *servicesmock.MockWriteService, returnedRT *models.RouteTarget) {
+func expectCreateRT(mockAPIClient *servicesmock.MockWriteService, returnedRT *models.RouteTarget) {
 	// TODO Revisit code below when route target is allocated properly.
-	mockAPIService.EXPECT().CreateRouteTarget(
+	mockAPIClient.EXPECT().CreateRouteTarget(
 		testutil.NotNil(),
 		testutil.NotNil(),
 	).Return(&services.CreateRouteTargetResponse{RouteTarget: returnedRT},
 		nil,
 	).Times(1)
 
-	mockAPIService.EXPECT().CreateRoutingInstanceRouteTargetRef(
+	mockAPIClient.EXPECT().CreateRoutingInstanceRouteTargetRef(
 		testutil.NotNil(), testutil.NotNil(),
 	).Return(nil, nil).Times(1)
 }
