@@ -4,19 +4,18 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
 // RoutingInstanceIntent contains Intent Compiler state for RoutingInstance
 type RoutingInstanceIntent struct {
-	BaseIntent
+	intent.BaseIntent
 	*models.RoutingInstance
 }
 
@@ -34,23 +33,16 @@ func (s *Service) CreateRoutingInstance(
 
 	obj := request.GetRoutingInstance()
 
-	intent := &RoutingInstanceIntent{
+	i := &RoutingInstanceIntent{
 		RoutingInstance: obj,
 	}
 
-	if _, ok := compilationif.ObjsCache.Load("RoutingInstanceIntent"); !ok {
-		compilationif.ObjsCache.Store("RoutingInstanceIntent", &sync.Map{})
-	}
+	s.cache.Store(i)
 
-	objMap, ok := compilationif.ObjsCache.Load("RoutingInstanceIntent")
-	if ok {
-		objMap.(*sync.Map).Store(obj.GetUUID(), intent)
-	}
-
-	ec := &EvaluateContext{
+	ec := &intent.EvaluateContext{
 		WriteService: s.WriteService,
 	}
-	err := EvaluateDependencies(ctx, ec, obj, "RoutingInstance")
+	err := s.EvaluateDependencies(ctx, ec, obj, "RoutingInstance")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Routing Instance dependencies")
 	}
@@ -59,7 +51,7 @@ func (s *Service) CreateRoutingInstance(
 }
 
 // Evaluate may create default Route Target.
-func (s *RoutingInstanceIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
+func (s *RoutingInstanceIntent) Evaluate(ctx context.Context, evaluateContext *intent.EvaluateContext) error {
 	if s.GetRoutingInstanceIsDefault() {
 		if s.IsIPFabric() || s.IsLinkLocal() {
 			return nil
@@ -82,7 +74,10 @@ func generateRandomRouteTargetNumber() int {
 	return minimumRoutingTargetNumber + rand.Intn(10)
 }
 
-func (s *RoutingInstanceIntent) createDefaultRouteTarget(ctx context.Context, evaluateContext *EvaluateContext) error {
+func (s *RoutingInstanceIntent) createDefaultRouteTarget(
+	ctx context.Context,
+	evaluateContext *intent.EvaluateContext,
+) error {
 	rtKey := fmt.Sprintf("target:%v:%v", defaultAutonomousSystem, generateRandomRouteTargetNumber())
 
 	rtResponse, err := evaluateContext.WriteService.CreateRouteTarget(

@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -36,11 +36,11 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPIService := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIService)
+	cache := intent.NewCache()
+	service := NewService(mockAPIService, cache)
 
 	expectCreateRT(mockAPIService, expectedRT)
 
-	compilationif.Init()
 	_, err := service.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{
 		RoutingInstance: routingInstance,
 	})
