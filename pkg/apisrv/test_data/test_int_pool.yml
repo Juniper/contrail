@@ -1,0 +1,92 @@
+name: Test int pool allocation
+description: |
+  Integration test for /int-pool endpoint which
+  handles allocating ints in precreated pools
+cleanup:
+- path: /int-pool/virtual_network_id/5
+- path: /int-pool/virtual_network_id/6
+- path: /int-pool/virtual_network_id/1337
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: allocate first int
+  request:
+    path: /int-pool/virtual_network_id
+    method: POST
+    expected: [200]
+  expect:
+    value: 5
+
+- name: allocate next int
+  request:
+    path: /int-pool/virtual_network_id
+    method: POST
+    expected: [200]
+  expect:
+    value: 6
+
+- name: deallocate one int
+  request:
+    path: /int-pool/virtual_network_id/5
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: allocate next int again
+  request:
+    path: /int-pool/virtual_network_id
+    method: POST
+    expected: [200]
+  expect:
+    value: 5
+
+- name: allocate specified int
+  request:
+    path: /int-pool/virtual_network_id/1337
+    method: POST
+    expected: [200]
+  expect:
+    value: 1337
+
+- name: fail to allocate same int
+  request:
+    path: /int-pool/virtual_network_id/1337
+    method: POST
+    expected: [400]
+  expect: null
+
+- name: deallocate specified int
+  request:
+    path: /int-pool/virtual_network_id/1337
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: deallocate same int twice should pass
+  request:
+    path: /int-pool/virtual_network_id/1337
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: deallocate generated int 1
+  request:
+    path: /int-pool/virtual_network_id/6
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: deallocate generated int 2
+  request:
+    path: /int-pool/virtual_network_id/5
+    method: DELETE
+    expected: [200]
+  expect: null
