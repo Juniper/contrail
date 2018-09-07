@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
 func createDefaultRouteTarget(
-	ctx context.Context, evaluateContext *EvaluateContext,
+	ctx context.Context, evaluateContext *intent.EvaluateContext,
 ) (*models.RouteTarget, error) {
 	rtKey := fmt.Sprintf("target:%v:%v", defaultAutonomousSystem, generateRandomRouteTargetNumber())
 
