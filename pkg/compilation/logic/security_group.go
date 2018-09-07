@@ -37,10 +37,7 @@ func (s *Service) CreateSecurityGroup(
 		objMap.(*sync.Map).Store(obj.GetUUID(), intent)
 	}
 
-	ec := &EvaluateContext{
-		WriteService: s.WriteService,
-	}
-	err := EvaluateDependencies(ctx, ec, obj, "SecurityGroup")
+	err := EvaluateDependencies(ctx, s.evaluateContext(), obj, "SecurityGroup")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
 	}
