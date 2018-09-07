@@ -266,7 +266,6 @@ func runTestScenario(ctx context.Context,
 		ok = testutil.AssertEqual(t, task.Expect, task.Request.Output,
 			fmt.Sprintf("In test scenario '%v' task' %v' failed", testScenario.Name, task))
 		if !ok {
-			log.Errorf("Assertion error was: %+v", err)
 			break
 		}
 	}
