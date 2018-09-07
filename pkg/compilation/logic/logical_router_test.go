@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/types/mock"
 )
 
 func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
@@ -61,12 +62,15 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
+
 			mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
-			service := NewService(mockAPIClient, intent.NewCache())
+			mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
+			service := NewService(mockAPIClient, mockIntPoolAllocator, intent.NewCache())
 
 			if tt.returnedRT == nil {
 				expectCreateRTinLR(mockAPIClient, tt.returnedRT, 0)
 			} else {
+				expectAllocateInt(mockIntPoolAllocator, routeTargetIntPoolID)
 				expectCreateRTinLR(mockAPIClient, tt.returnedRT, 1)
 			}
 
@@ -82,15 +86,21 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 func expectCreateRTinLR(
 	mockAPIClient *servicesmock.MockWriteService,
 	returnedRT *models.RouteTarget,
-	times int) {
+	times int,
+) {
 	mockAPIClient.EXPECT().CreateRouteTarget(
 		testutil.NotNil(),
 		testutil.NotNil(),
-	).Return(&services.CreateRouteTargetResponse{RouteTarget: returnedRT},
+	).Return(
+		&services.CreateRouteTargetResponse{RouteTarget: returnedRT},
 		nil,
 	).Times(times)
 
 	mockAPIClient.EXPECT().CreateLogicalRouterRouteTargetRef(
 		testutil.NotNil(), testutil.NotNil(),
 	).Return(nil, nil).Times(times)
+}
+
+func expectAllocateInt(mock *typesmock.MockIntPoolAllocator, poolKey string) {
+	mock.EXPECT().AllocateInt(testutil.NotNil(), poolKey).Return(int64(800002), nil)
 }

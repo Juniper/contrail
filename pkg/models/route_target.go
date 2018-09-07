@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -17,6 +18,11 @@ const (
 func (rt *RouteTarget) Validate() error {
 	_, _, _, err := parseRouteTarget(rt.GetName())
 	return err
+}
+
+// RouteTargetString constructs route target string for given asn and target number.
+func RouteTargetString(asn int64, target int64) string {
+	return fmt.Sprintf("target:%v:%v", asn, target)
 }
 
 // IsRouteTargetUserDefined checks if route target was user defined.
