@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -61,9 +61,9 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
-			compilationif.Init()
+			cache := intent.NewCache()
 			mockAPIService := servicesmock.NewMockWriteService(mockCtrl)
-			service := NewService(mockAPIService)
+			service := NewService(mockAPIService, cache)
 
 			if tt.returnedRT == nil {
 				expectCreateRTinLR(mockAPIService, tt.returnedRT, 0)

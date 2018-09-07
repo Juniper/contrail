@@ -20,12 +20,16 @@ import (
 	"gopkg.in/oleiade/reflections.v1"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 )
 
 // NewDependencyProcessor - creates new instance
-func NewDependencyProcessor(objCache *sync.Map) *DependencyProcessor {
-	d := &DependencyProcessor{cache: objCache}
-	d.Init()
+func NewDependencyProcessor(cache *intent.Cache) *DependencyProcessor {
+	d := &DependencyProcessor{
+		cache:     cache,
+		resources: &sync.Map{},
+	}
 	return d
 }
 
@@ -37,12 +41,7 @@ type DependencyProcessor struct {
 
 	// Local Cache to maintained by Intent compiler.
 	// Dependency Tracker  uses this cache to find dependent resources.
-	cache *sync.Map
-}
-
-// Init - initializes the dependency processor
-func (d *DependencyProcessor) Init() {
-	d.resources = &sync.Map{}
+	cache *intent.Cache
 }
 
 // Add - Add object to dependency processor list
@@ -73,33 +72,33 @@ func (d *DependencyProcessor) getUUID(obj interface{}) string {
 // canAdd checks if object can be been added to the dependency list
 func (d *DependencyProcessor) canAdd(key string, obj interface{}) bool {
 	if objMap, ok := d.resources.Load(key); ok {
-		_, there := objMap.(*sync.Map).Load(d.getUUID(obj))
-		if there {
+		_, ok = objMap.(*sync.Map).Load(d.getUUID(obj))
+		if ok {
 			log.Infof("%s exists, not adding", d.getUUID(obj))
+			return false
 		}
-		return !there
 	}
 	return true
 }
 
 // getCachedObject gets the cached object
 func (d *DependencyProcessor) getCachedObject(objTypeStr, uuid string) interface{} {
-	if objMap, ok := d.cache.Load(objTypeStr); ok {
-		if obj, present := objMap.(*sync.Map).Load(uuid); present {
-			return obj
-		}
+	intent, ok := d.cache.Load(objTypeStr, uuid)
+	if !ok {
+		log.Debugf("failed to get intent from cache. type: %s, uuid: %s", objTypeStr, uuid)
 		return nil
 	}
-	return nil
+	return intent
 }
 
 // Evaluate - Evaluates object dependency based on the ReactionMap
 func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr string) { // nolint: gocyclo
+	log.Debugf("Evaluating: Type: %s, UUID: %s, From: %s", objTypeStr, d.getUUID(obj), fromTypeStr)
 	if _, ok := ReactionMap[objTypeStr]; !ok {
+		log.Infof("No reaction needed.")
 		return
 	}
 
-	log.Infof("Evaluating: Object: %s(%s) From: %s", objTypeStr, d.getUUID(obj), fromTypeStr)
 	if !d.canAdd(objTypeStr, obj) {
 		return
 	}
