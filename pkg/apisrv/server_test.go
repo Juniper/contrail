@@ -149,6 +149,11 @@ func TestProvisioning(t *testing.T) {
 	RunTest(t, "./test_data/test_provisioning.yml")
 }
 
+func TestIntPool(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_int_pool.yml")
+}
+
 func TestGRPC(t *testing.T) {
 	ctx := context.Background()
 	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
