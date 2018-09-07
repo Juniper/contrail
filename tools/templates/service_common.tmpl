@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"encoding/json"
 	"fmt"
@@ -23,6 +24,7 @@ const (
 	PropCollectionUpdatePath = "prop-collection-update"
 	RefRelaxForDeletePath    = "ref-relax-for-delete"
 	SetTagPath               = "set-tag"
+	IntPoolPath              = "int-pool/:pool"
 )
 
 // Chain setup chain of services.
@@ -56,6 +58,13 @@ func (service *BaseService) SetNext(next Service) {
 // InTransactionDoer executes do function atomically.
 type InTransactionDoer interface {
 	DoInTransaction(ctx context.Context, do func(context.Context) error) error
+}
+
+// IntPoolAllocator (de)allocates integers in an integer pool.
+type IntPoolAllocator interface {
+	AllocateInt(context.Context, string) (int64, error)
+	DeallocateInt(context.Context, string, int64) error
+	SetInt(context.Context, string, int64) error
 }
 
 // RefUpdateToUpdateService is a service that promotes CreateRef and DeleteRef
@@ -97,6 +106,7 @@ type ContrailService struct {
 	MetadataGetter baseservices.MetadataGetter
 	TypeValidator  *models.TypeValidator
 	InTransactionDoer InTransactionDoer
+	IntPoolAllocator IntPoolAllocator
 }
 
 // RESTSync handles Sync API request.
@@ -339,6 +349,95 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{})
 }
 
+// RESTIntPool handles a POST on int-pool/:pool-name/:value and int-pool/:pool-name request.
+func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
+	pool := c.Param("pool-name")
+	v := c.Param("value")
+	var i64 int64
+	var err error
+	ctx := c.Request().Context()
+	if v == "" {
+		i64, err = service.allocateNextInt(ctx, pool)
+		if err != nil {
+			return err
+		}
+	} else {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			return common.ErrorBadRequestf("Invalid int to allocate (%v)", v)
+		}
+		i64 = int64(i)
+		if err = service.allocateInt(ctx, pool, i64); err != nil {
+			return err
+		}
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{"value": i64})
+}
+
+func (service *ContrailService) allocateNextInt(ctx context.Context, poolID string) (int64, error) {
+	var v int64
+	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		var err error
+		v, err = service.IntPoolAllocator.AllocateInt(ctx, poolID)
+		if err != nil {
+			return common.ErrorBadRequest(err.Error())
+		}
+		return nil
+	})
+	if err != nil {
+		return 0, common.ToHTTPError(err)
+	}
+	return v, nil
+}
+
+func (service *ContrailService) allocateInt(ctx context.Context, poolID string, i64 int64) error {
+	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		var err error
+		err = service.IntPoolAllocator.SetInt(ctx, poolID, i64)
+		if err != nil {
+			return common.ErrorBadRequest(err.Error())
+		}
+		return nil
+	})
+	if err != nil {
+		return common.ToHTTPError(err)
+	}
+	return nil
+}
+
+// RESTIntPoolDeallocate handles a DELETE on int-pool/:pool-name/:value request.
+func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
+	pool := c.Param("pool-name")
+	v := c.Param("value")
+	i, err := strconv.Atoi(v)
+	if err != nil {
+		return common.ErrorBadRequest("Invalid int value to deallocate")
+	}
+
+	err = service.deallocateInt(c.Request().Context(), pool, int64(i))
+	if err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+func (service *ContrailService) deallocateInt(ctx context.Context, poolID string, i64 int64) error {
+	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		var err error
+		err = service.IntPoolAllocator.DeallocateInt(ctx, poolID, i64)
+		if err != nil {
+			return common.ErrorBadRequest(err.Error())
+		}
+		return nil
+	})
+	if err != nil {
+		return common.ToHTTPError(err)
+	}
+	return nil
+}
+
 type routeRegistry interface {
 	GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
@@ -361,6 +460,9 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.POST(RefRelaxForDeletePath, service.RESTRefRelaxForDelete)
 	r.POST(PropCollectionUpdatePath, service.RESTPropCollectionUpdate)
 	r.POST(SetTagPath, service.RESTSetTag)
+	r.POST(IntPoolPath, service.RESTIntPoolAllocate)
+	r.POST(IntPoolPath + "/:value", service.RESTIntPoolAllocate)
+	r.DELETE(IntPoolPath + "/:value", service.RESTIntPoolDeallocate)
 	// TODO: Handle gRPC "set-tag" endpoint
 }
 
