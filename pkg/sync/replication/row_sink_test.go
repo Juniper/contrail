@@ -80,6 +80,8 @@ func (d *dummyMessage) ToMap() map[string]interface{} { return nil }
 
 func (d *dummyMessage) Kind() string { return "" }
 
+func (d *dummyMessage) TypeName() string { return "" }
+
 func (d *dummyMessage) Depends() []string { return nil }
 
 func (d *dummyMessage) ApplyPropCollectionUpdate(

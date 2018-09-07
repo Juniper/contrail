@@ -3,19 +3,16 @@ package logic
 import (
 	"context"
 	"math/rand"
-	"sync"
 	"time"
 
-	"github.com/pkg/errors"
-
-	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
 // RoutingInstanceIntent contains Intent Compiler state for RoutingInstance.
 type RoutingInstanceIntent struct {
-	BaseIntent
+	intent.BaseIntent
 	*models.RoutingInstance
 }
 
@@ -30,39 +27,28 @@ const (
 func (s *Service) CreateRoutingInstance(
 	ctx context.Context, request *services.CreateRoutingInstanceRequest,
 ) (*services.CreateRoutingInstanceResponse, error) {
-
-	obj := request.GetRoutingInstance()
-
-	intent := &RoutingInstanceIntent{
-		RoutingInstance: obj,
+	i := &RoutingInstanceIntent{
+		RoutingInstance: request.GetRoutingInstance(),
 	}
 
-	if _, ok := compilationif.ObjsCache.Load("RoutingInstanceIntent"); !ok {
-		compilationif.ObjsCache.Store("RoutingInstanceIntent", &sync.Map{})
-	}
-
-	objMap, ok := compilationif.ObjsCache.Load("RoutingInstanceIntent")
-	if ok {
-		objMap.(*sync.Map).Store(obj.GetUUID(), intent)
-	}
-
-	ec := &EvaluateContext{
-		WriteService: s.WriteService,
-	}
-	if err := EvaluateDependencies(ctx, ec, obj, "RoutingInstance"); err != nil {
-		return nil, errors.Wrap(err, "failed to evaluate Routing Instance dependencies")
+	err := s.handleCreate(ctx, i, nil, i.RoutingInstance)
+	if err != nil {
+		return nil, err
 	}
 
 	return s.BaseService.CreateRoutingInstance(ctx, request)
 }
 
 // Evaluate may create default Route Target.
-func (intent *RoutingInstanceIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
-	if intent.GetRoutingInstanceIsDefault() {
-		if intent.IsIPFabric() || intent.IsLinkLocal() {
+func (i *RoutingInstanceIntent) Evaluate(
+	ctx context.Context,
+	evaluateContext *intent.EvaluateContext,
+) error {
+	if i.GetRoutingInstanceIsDefault() {
+		if i.IsIPFabric() || i.IsLinkLocal() {
 			return nil
 		}
-		if err := intent.createDefaultRouteTarget(ctx, evaluateContext); err != nil {
+		if err := i.createDefaultRouteTarget(ctx, evaluateContext); err != nil {
 			return err
 		}
 	} else {
@@ -80,8 +66,9 @@ func generateRandomRouteTargetNumber() int {
 	return minimumRoutingTargetNumber + rand.Intn(10)
 }
 
-func (intent *RoutingInstanceIntent) createDefaultRouteTarget(
-	ctx context.Context, evaluateContext *EvaluateContext,
+func (i *RoutingInstanceIntent) createDefaultRouteTarget(
+	ctx context.Context,
+	evaluateContext *intent.EvaluateContext,
 ) error {
 	rt, err := createDefaultRouteTarget(ctx, evaluateContext)
 	if err != nil {
@@ -91,7 +78,7 @@ func (intent *RoutingInstanceIntent) createDefaultRouteTarget(
 	_, err = evaluateContext.WriteService.CreateRoutingInstanceRouteTargetRef(
 		ctx,
 		&services.CreateRoutingInstanceRouteTargetRefRequest{
-			ID: intent.GetUUID(),
+			ID: i.GetUUID(),
 			RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
 				UUID: rt.GetUUID(),
 			},
