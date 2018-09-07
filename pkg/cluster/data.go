@@ -29,6 +29,14 @@ type KubernetesData struct {
 	credsInfo    []*models.Credential
 }
 
+// AppformixData is the representation of appformix cluster details.
+type AppformixData struct {
+	clusterInfo  *models.AppformixCluster
+	nodesInfo    []*models.Node
+	keypairsInfo []*models.Keypair
+	credsInfo    []*models.Credential
+}
+
 // Data is the representation of cluster details.
 type Data struct {
 	clusterInfo           *models.ContrailCluster
@@ -37,7 +45,173 @@ type Data struct {
 	credsInfo             []*models.Credential
 	openstackClusterData  []*OpenstackData
 	kubernetesClusterData []*KubernetesData
+	appformixClusterData  []*AppformixData
 	// TODO (ijohnson): Add gce/aws/kvm info
+}
+
+func (a *AppformixData) addKeypair(keypair *models.Keypair) {
+	a.keypairsInfo = append(a.keypairsInfo, keypair)
+}
+
+func (a *AppformixData) addCredential(cred *models.Credential) {
+	a.credsInfo = append(a.credsInfo, cred)
+}
+
+func (a *AppformixData) addNode(node *models.Node) {
+	a.nodesInfo = append(a.nodesInfo, node)
+}
+
+func (a *AppformixData) interfaceToAppformixControllerNode(
+	appformixControllerNodes interface{}, c *Cluster) error {
+	for _, appformixControllerNode := range appformixControllerNodes.([]interface{}) {
+		appformixControllerNodeInfo := models.InterfaceToAppformixControllerNode(
+			appformixControllerNode.(map[string]interface{}))
+		// Read appformixController role node to get the node refs information
+		appformixControllerNodeData, err := c.getResource(
+			defaultAppformixControllerNodeResPath, appformixControllerNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		appformixControllerNodeInfo = models.InterfaceToAppformixControllerNode(
+			appformixControllerNodeData)
+		a.clusterInfo.AppformixControllerNodes = append(
+			a.clusterInfo.AppformixControllerNodes, appformixControllerNodeInfo)
+	}
+	return nil
+}
+
+func (a *AppformixData) interfaceToAppformixBareHostNode(
+	appformixBareHostNodes interface{}, c *Cluster) error {
+	for _, appformixBareHostNode := range appformixBareHostNodes.([]interface{}) {
+		appformixBareHostNodeInfo := models.InterfaceToAppformixBareHostNode(
+			appformixBareHostNode.(map[string]interface{}))
+		// Read appformixBareHost role node to get the node refs information
+		appformixBareHostNodeData, err := c.getResource(
+			defaultAppformixBareHostNodeResPath, appformixBareHostNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		appformixBareHostNodeInfo = models.InterfaceToAppformixBareHostNode(
+			appformixBareHostNodeData)
+		a.clusterInfo.AppformixBareHostNodes = append(
+			a.clusterInfo.AppformixBareHostNodes, appformixBareHostNodeInfo)
+	}
+	return nil
+}
+
+func (a *AppformixData) interfaceToAppformixOpenstackNode(
+	appformixOpenstackNodes interface{}, c *Cluster) error {
+	for _, appformixOpenstackNode := range appformixOpenstackNodes.([]interface{}) {
+		appformixOpenstackNodeInfo := models.InterfaceToAppformixOpenstackNode(
+			appformixOpenstackNode.(map[string]interface{}))
+		// Read appformixOpenstack role node to get the node refs information
+		appformixOpenstackNodeData, err := c.getResource(
+			defaultAppformixOpenstackNodeResPath, appformixOpenstackNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		appformixOpenstackNodeInfo = models.InterfaceToAppformixOpenstackNode(
+			appformixOpenstackNodeData)
+		a.clusterInfo.AppformixOpenstackNodes = append(
+			a.clusterInfo.AppformixOpenstackNodes, appformixOpenstackNodeInfo)
+	}
+	return nil
+}
+
+func (a *AppformixData) interfaceToAppformixComputeNode(
+	appformixComputeNodes interface{}, c *Cluster) error {
+	for _, appformixComputeNode := range appformixComputeNodes.([]interface{}) {
+		appformixComputeNodeInfo := models.InterfaceToAppformixComputeNode(
+			appformixComputeNode.(map[string]interface{}))
+		// Read appformixCompute role node to get the node refs information
+		appformixComputeNodeData, err := c.getResource(
+			defaultAppformixComputeNodeResPath, appformixComputeNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		appformixComputeNodeInfo = models.InterfaceToAppformixComputeNode(
+			appformixComputeNodeData)
+		a.clusterInfo.AppformixComputeNodes = append(
+			a.clusterInfo.AppformixComputeNodes, appformixComputeNodeInfo)
+	}
+	return nil
+}
+
+// nolint: gocyclo
+func (a *AppformixData) updateNodeDetails(c *Cluster) error {
+	m := make(map[string]bool)
+	for _, node := range a.clusterInfo.AppformixControllerNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, a); err != nil {
+				return err
+			}
+		}
+	}
+	for _, node := range a.clusterInfo.AppformixBareHostNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, a); err != nil {
+				return err
+			}
+		}
+	}
+	for _, node := range a.clusterInfo.AppformixOpenstackNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, a); err != nil {
+				return err
+			}
+		}
+	}
+	for _, node := range a.clusterInfo.AppformixComputeNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, a); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// nolint: gocyclo
+func (a *AppformixData) updateClusterDetails(clusterID string, c *Cluster) error {
+	rData, err := c.getResource(defaultAppformixResourcePath, clusterID)
+	if err != nil {
+		return err
+	}
+	a.clusterInfo = models.InterfaceToAppformixCluster(rData)
+
+	// Expand appformix_controller back ref
+	if appformixControllerNodes, ok := rData["appformix_controller_nodes"]; ok {
+		if err = a.interfaceToAppformixControllerNode(appformixControllerNodes, c); err != nil {
+			return err
+		}
+	}
+
+	// Expand appformix_bare_host back ref
+	if appformixBareHostNodes, ok := rData["appformix_bare_host_nodes"]; ok {
+		if err = a.interfaceToAppformixBareHostNode(appformixBareHostNodes, c); err != nil {
+			return err
+		}
+	}
+
+	// Expand appformix_openstack back ref
+	if appformixOpenstackNodes, ok := rData["appformix_openstack_nodes"]; ok {
+		if err = a.interfaceToAppformixOpenstackNode(appformixOpenstackNodes, c); err != nil {
+			return err
+		}
+	}
+
+	// Expand appformix_compute back ref
+	if appformixComputeNodes, ok := rData["appformix_compute_nodes"]; ok {
+		if err = a.interfaceToAppformixComputeNode(appformixComputeNodes, c); err != nil {
+			return err
+		}
+	}
+
+	// get all nodes information
+	if err = a.updateNodeDetails(c); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (k *KubernetesData) addKeypair(keypair *models.Keypair) {
@@ -763,6 +937,11 @@ func (d *Data) getAllNodesInfo() []*models.Node {
 	if d.getK8sClusterData() != nil {
 		nodes = append(nodes, d.getK8sClusterData().nodesInfo...)
 	}
+	if d.getAppformixClusterData() != nil {
+		nodes = append(nodes, d.getAppformixClusterData().nodesInfo...)
+	}
+
+	//
 
 	var uniqueNodes []*models.Node
 	m := make(map[string]bool)
@@ -814,4 +993,19 @@ func (d *Data) getWebuiNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (d *Data) getAppformixClusterData() *AppformixData {
+	// One appformix cluster is the supported topology
+	if len(d.appformixClusterData) > 0 {
+		return d.appformixClusterData[0]
+	}
+	return nil
+}
+
+func (d *Data) getAppformixClusterInfo() *models.AppformixCluster {
+	if d.getAppformixClusterData() != nil {
+		return d.getAppformixClusterData().clusterInfo
+	}
+	return nil
 }

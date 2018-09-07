@@ -1,0 +1,27 @@
+description: Appformix Openstack Node
+extends:
+- base
+- has_status
+id: appformix_openstack_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this appformix openstack node."
+      presence: "optional"
+parents:
+  appformix_cluster:
+    operations: "CRUD"
+    description: "Parent of this appformix openstack node."
+    presence: "optional"
+plural: appformix_openstack_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: appformix_openstack_node
+title: Appformix Openstack Node
+type: ""

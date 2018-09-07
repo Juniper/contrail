@@ -180,5 +180,16 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 			clusterData.kubernetesClusterData, k8sData)
 	}
 
+	// get all referred appformix cluster information
+	for _, appformixClusterRef := range clusterData.clusterInfo.AppformixClusterRefs {
+		appformixData := &AppformixData{}
+		if err := appformixData.updateClusterDetails(
+			appformixClusterRef.UUID, c); err != nil {
+			return nil, err
+		}
+		clusterData.appformixClusterData = append(
+			clusterData.appformixClusterData, appformixData)
+	}
+
 	return clusterData, nil
 }
