@@ -1,0 +1,27 @@
+description: Appformix compute Node
+extends:
+- base
+- has_status
+id: appformix_compute_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this appformix compute node."
+      presence: "optional"
+parents:
+  appformix_cluster:
+    operations: "CRUD"
+    description: "Parent of this appformix compute node."
+    presence: "optional"
+plural: appformix_compute_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: appformix_compute_node
+title: Appformix Compute Node
+type: ""

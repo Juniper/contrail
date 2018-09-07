@@ -47,6 +47,10 @@ func (a *ansibleProvisioner) getAnsibleDeployerRepoDir() (ansibleRepoDir string)
 	return filepath.Join(defaultAnsibleRepoDir, defaultAnsibleRepo)
 }
 
+func (a *ansibleProvisioner) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
+	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo)
+}
+
 func (a *ansibleProvisioner) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
 	return filepath.Join(defaultAnsibleRepoDir, defaultAnsibleDatapathEncryptionRepo)
 }
@@ -199,6 +203,7 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		"cluster":            a.clusterData.clusterInfo,
 		"openstackCluster":   a.clusterData.getOpenstackClusterInfo(),
 		"k8sCluster":         a.clusterData.getK8sClusterInfo(),
+		"appformixCluster":   a.clusterData.getAppformixClusterInfo(),
 		"nodes":              a.clusterData.getAllNodesInfo(),
 		"credentials":        a.clusterData.getAllCredsInfo(),
 		"keypairs":           a.clusterData.getAllKeypairsInfo(),
@@ -256,6 +261,41 @@ func (a *ansibleProvisioner) mockPlay(ansibleArgs []string) error {
 func (a *ansibleProvisioner) play(ansibleArgs []string) error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	return a.playFromDir(repoDir, ansibleArgs)
+}
+
+func (a *ansibleProvisioner) appformixPlay(ansibleArgs []string) error {
+	if a.cluster.config.Test {
+		return a.mockPlay(ansibleArgs)
+	}
+	repoDir := a.getAppformixAnsibleDeployerRepoDir()
+	cmdline := "ansible-playbook"
+	a.log.Infof("Playing playbook: cmd:%s Dir:%s %s",
+		cmdline, repoDir, strings.Join(ansibleArgs, " "))
+	cmd := exec.Command(cmdline, ansibleArgs...)
+	cmd.Dir = repoDir
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+	if err = cmd.Start(); err != nil {
+		return err
+	}
+
+	// Report progress log periodically to stdout
+	go a.reporter.reportLog(stdout)
+	go a.reporter.reportLog(stderr)
+
+	if err = cmd.Wait(); err != nil {
+		return err
+	}
+	a.log.Infof("Finished playing aooformix playbook: %s %s",
+		cmdline, strings.Join(ansibleArgs, " "))
+
+	return nil
 }
 
 func (a *ansibleProvisioner) playFromDir(
@@ -336,6 +376,14 @@ func (a *ansibleProvisioner) playContrailDatapathEncryption() error {
 	return nil
 }
 
+func (a *ansibleProvisioner) playAppformixProvision() error {
+	args := []string{"-i", a.getInstanceFile()}
+	// play Appformix provisioning playbook
+	args = append(args, defaultAppformixProvPlay)
+	err := a.appformixPlay(args)
+	return err
+}
+
 // nolint: gocyclo
 func (a *ansibleProvisioner) playBook() error {
 	args := []string{"-i", "inventory/", "-e",
@@ -362,6 +410,11 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailDatapathEncryption(); err != nil {
 			return err
 		}
+                if a.clusterData.getAppformixClusterInfo() != nil {
+		    if err := a.playAppformixProvision(); err != nil {
+			return err
+		    }
+                }
 	case "UPGRADE":
 		if err := a.playContrailProvision(args); err != nil {
 			return err
@@ -369,6 +422,11 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailDatapathEncryption(); err != nil {
 			return err
 		}
+                if a.clusterData.getAppformixClusterInfo() != nil {
+		    if err := a.playAppformixProvision(); err != nil {
+			return err
+		    }
+                }
 	case "ADD_COMPUTE":
 		if err := a.playInstancesConfig(args); err != nil {
 			return err
@@ -382,6 +440,11 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailDatapathEncryption(); err != nil {
 			return err
 		}
+                if a.clusterData.getAppformixClusterInfo() != nil {
+		    if err := a.playAppformixProvision(); err != nil {
+			return err
+		    }
+                }
 	case "ADD_CSN":
 		if err := a.playInstancesConfig(args); err != nil {
 			return err
@@ -389,6 +452,12 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailProvision(args); err != nil {
 			return err
 		}
+		//what is this??
+                if a.clusterData.getAppformixClusterInfo() != nil {
+		    if err := a.playAppformixProvision(); err != nil {
+			return err
+		    }
+                }
 	}
 	return nil
 }

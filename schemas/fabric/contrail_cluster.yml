@@ -25,6 +25,9 @@ references:
     vCenter:
       operations: "CRUD"
       description: "Reference to vcenter object for this contrail cluster."
+    appformix_cluster:
+      operations: "CRUD"
+      description: "Reference to contrail cluster object from this appformix cluster."
       presence: "optional"
 schema:
   properties:
