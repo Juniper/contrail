@@ -2,9 +2,7 @@ package logic
 
 import (
 	"context"
-	"math/rand"
 	"sync"
-	"time"
 
 	"github.com/pkg/errors"
 
@@ -19,11 +17,10 @@ type RoutingInstanceIntent struct {
 	*models.RoutingInstance
 }
 
-// TODO: get_autonomous_system method and int pool allocator endpoint.
+// TODO: get_autonomous_system method
 const (
 	defaultAutonomousSystem = 64512
-	// This number should be generated from int pool allocator.
-	minimumRoutingTargetNumber = 8000002
+	routeTargetIntPoolID    = "route_target_number"
 )
 
 // CreateRoutingInstance evaluates RoutingInstance dependencies.
@@ -73,17 +70,25 @@ func (intent *RoutingInstanceIntent) Evaluate(ctx context.Context, evaluateConte
 	return nil
 }
 
-// TODO Temporary way to generate route target number
-// until allocate route target is implemented.
-func generateRandomRouteTargetNumber() int {
-	rand.Seed(time.Now().UTC().UnixNano())
-	return minimumRoutingTargetNumber + rand.Intn(10)
-}
-
 func (intent *RoutingInstanceIntent) createDefaultRouteTarget(
 	ctx context.Context, evaluateContext *EvaluateContext,
 ) error {
-	rt, err := createDefaultRouteTarget(ctx, evaluateContext)
+	target, err := evaluateContext.IntPoolAllocator.AllocateInt(ctx, routeTargetIntPoolID)
+	if err != nil {
+		return err
+	}
+
+	rtKey := models.RouteTargetString(defaultAutonomousSystem, target)
+
+	rtResponse, err := evaluateContext.WriteService.CreateRouteTarget(
+		ctx,
+		&services.CreateRouteTargetRequest{
+			RouteTarget: &models.RouteTarget{
+				FQName:      []string{rtKey},
+				DisplayName: rtKey,
+			},
+		},
+	)
 	if err != nil {
 		return err
 	}
