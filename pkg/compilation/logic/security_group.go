@@ -25,8 +25,7 @@ func (s *Service) CreateSecurityGroup(
 		SecurityGroup: request.GetSecurityGroup(),
 	}
 
-	err := s.handleCreate(ctx, i, nil, i.SecurityGroup)
-	if err != nil {
+	if err := s.handleCreate(ctx, i, nil, i.SecurityGroup); err != nil {
 		return nil, err
 	}
 

@@ -2,8 +2,6 @@ package logic
 
 import (
 	"context"
-	"math/rand"
-	"time"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
@@ -15,13 +13,6 @@ type RoutingInstanceIntent struct {
 	intent.BaseIntent
 	*models.RoutingInstance
 }
-
-// TODO: get_autonomous_system method and int pool allocator endpoint.
-const (
-	defaultAutonomousSystem = 64512
-	// This number should be generated from int pool allocator.
-	minimumRoutingTargetNumber = 8000002
-)
 
 // CreateRoutingInstance evaluates RoutingInstance dependencies.
 func (s *Service) CreateRoutingInstance(
@@ -41,8 +32,7 @@ func (s *Service) CreateRoutingInstance(
 
 // Evaluate may create default Route Target.
 func (i *RoutingInstanceIntent) Evaluate(
-	ctx context.Context,
-	evaluateContext *intent.EvaluateContext,
+	ctx context.Context, evaluateContext *intent.EvaluateContext,
 ) error {
 	if i.GetRoutingInstanceIsDefault() {
 		if i.IsIPFabric() || i.IsLinkLocal() {
@@ -59,16 +49,8 @@ func (i *RoutingInstanceIntent) Evaluate(
 	return nil
 }
 
-// TODO Temporary way to generate route target number
-// until allocate route target is implemented.
-func generateRandomRouteTargetNumber() int {
-	rand.Seed(time.Now().UTC().UnixNano())
-	return minimumRoutingTargetNumber + rand.Intn(10)
-}
-
 func (i *RoutingInstanceIntent) createDefaultRouteTarget(
-	ctx context.Context,
-	evaluateContext *intent.EvaluateContext,
+	ctx context.Context, evaluateContext *intent.EvaluateContext,
 ) error {
 	rt, err := createDefaultRouteTarget(ctx, evaluateContext)
 	if err != nil {
