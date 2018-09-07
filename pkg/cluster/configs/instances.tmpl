@@ -10,7 +10,6 @@ provider_config:
     {%if defaultSSHKey %}ssh_public_key: {{ SSHKey }}{%endif%}
     ntpserver: {{ cluster.NTPServer }}
     domainsuffix: {%if cluster.DomainSuffix %}{{ cluster.DomainSuffix }}{%else%}local{%endif%}
-
 instances:
     {% for node in nodes %}
   {{ node.Hostname }}:
@@ -57,6 +56,20 @@ instances:
         {%if node.DiskPartition != "" %}disk_partition: {{ node.DiskPartition }}{%endif%}{%endif%}{%endfor%}{%endfor%}
       {% for openstack_monitoring_node in openstackCluster.OpenstackMonitoringNodes %}{% for node_ref in openstack_monitoring_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_monitoring:{%endif%}{%endfor%}{%endfor%}
       {% for openstack_compute_node in openstackCluster.OpenstackComputeNodes %}{% for node_ref in openstack_compute_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_compute:{%endif%}{%endfor%}{%endfor%}
+      {% if appformixCluster %}
+      {% for appformix_controller_node in appformixCluster.AppformixControllerNodes %}{% for node_ref in appformix_controller_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_controller:
+          #connection: ssh
+      {%endif%}{%endfor%}{%endfor%}
+      {% for appformix_bare_host_node in appformixCluster.AppformixBareHostNodes %}{% for node_ref in appformix_bare_host_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_bare_host:
+          #connection: ssh
+      {%endif%}{%endfor%}{%endfor%}
+      {% for appformix_openstack_node in appformixCluster.AppformixOpenstackNodes %}{% for node_ref in appformix_openstack_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_openstack_controller:
+          #connection: ssh
+      {%endif%}{%endfor%}{%endfor%}
+      {% for appformix_compute_node in appformixCluster.AppformixComputeNodes %}{% for node_ref in appformix_compute_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_compute:
+          #connection: ssh
+      {%endif%}{%endfor%}{%endfor%}
+      {%endif%}
     {%endfor%}
 
 contrail_configuration:
@@ -94,4 +107,35 @@ kolla_config:
     {{key_value.Key}}: {{key_value.Value}}
     {%endif%}
     {%endfor%}
+{% if appformixCluster %}
+appformix_configuration:
+    appformix_docker_images:
+      - {{ appformixCluster.AppformixImagePathPlatform }}
+      - {{ appformixCluster.AppformixImagePathDependencies }}
+      - {{ appformixCluster.AppformixImagePathNetworkDevice }}
+      - {{ appformixCluster.AppformixImagePathOpenstack }}
+    appformix_license:  {{ appformixCluster.AppformixLicense }}
+    contrail_analytics_url: '{{ appformixCluster.ContrailAnalyticsURL }}'
+    contrail_config_url: '{{ appformixCluster.ContrailConfigURL }}'
+    contrail_cluster_name: '{{ appformixCluster.ContrailClusterName }}'
+    appformix_jti_network_device_monitoring_enabled: {{ appformixCluster.AppformixJtiNetworkDeviceMonitoringEnabled }}
+    appformix_kvm_instance_discovery: {{ appformixCluster.AppformixKVMInstanceDiscovery }}
+    network_device_discovery_enabled: {{ appformixCluster.NetworkDeviceDiscoveryEnabled }}
+    appformix_network_device_monitoring_enabled: {{ appformixCluster.AppformixNetworkDeviceMonitoringEnabled }}
+    openstack_platform_enabled: {{ appformixCluster.OpenstackPlatformEnabled }}
+    appformix_remote_host_monitoring_enabled: {{ appformixCluster.AppformixRemoteHostMonitoringEnabled }}
+    {% for key_value in appformixCluster.AppformixConfiguration.KeyValuePair %}
+    {% if key_value.Key && key_value.Value%}
+    {%if key_value.Key == "appformix_plugins" %}
+    {{key_value.Key}}: '{{key_value.Value}}'
+    {%elif key_value.Key == "appformix_datamanager_port_http" %}
+    {{key_value.Key}}: "{{key_value.Value}}"
+    {%elif key_value.Key == "appformix_datamanager_port_https" %}
+    {{key_value.Key}}: "{{key_value.Value}}"
+    {%else%}
+    {{key_value.Key}}: {{key_value.Value}}
+    {%endif%}
+    {%endif%}
+    {%endfor%}
+{%endif%}
 {%endif%}
