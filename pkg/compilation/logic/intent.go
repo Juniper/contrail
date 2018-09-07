@@ -8,7 +8,8 @@ import (
 
 // EvaluateContext contains context information for Resource to handle CRUD
 type EvaluateContext struct {
-	WriteService services.WriteService
+	WriteService     services.WriteService
+	IntPoolAllocator services.IntPoolAllocator
 }
 
 // Intent contains Intent Compiler state for a resource.
