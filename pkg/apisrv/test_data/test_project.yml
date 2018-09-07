@@ -31,14 +31,6 @@ clients:
         name: admin
 
 workflow:
-- name: ensure no application policy set exists
-  request:
-    path: /application-policy-sets
-    method: GET
-    expected: [200]
-  expect:
-    application-policy-sets: []
-
 - name: create project
   request:
     path: /projects
@@ -51,7 +43,7 @@ workflow:
 
 - name: check if default-application-policy-set was created
   request:
-    path: /application-policy-sets
+    path: /application-policy-sets?parent_id=project_blue_project_uuid
     method: GET
     expected: [200]
   expect:
@@ -111,7 +103,7 @@ workflow:
 
 - name: ensure default application policy set is deleted too
   request:
-    path: /application-policy-sets
+    path: /application-policy-sets?parent_id=project_blue_project_uuid
     method: GET
     expected: [200]
   expect:
