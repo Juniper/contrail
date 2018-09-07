@@ -37,6 +37,18 @@ const (
 	Base64Type   = "base64"
 )
 
+// Available Go type values.
+const (
+	IntGoType   = "int64"
+	FloatGoType = "float64"
+)
+
+// Available Proto type values
+const (
+	IntProtoType   = IntGoType
+	FloatProtoType = "float"
+)
+
 const (
 	maxColumnLen = 55
 	//RefPrefix is table column name prefix for reference
@@ -190,6 +202,26 @@ func (s *JSONSchema) String() string {
 		log.WithError(err).Debug("Could not stringify JSONSchema")
 	}
 	return string(data)
+}
+
+// IsInt returns true if schema is of int type.
+func (s *JSONSchema) IsInt() bool {
+	return s.GoType == IntGoType
+}
+
+// IsFloat returns true if schema is of float type.
+func (s *JSONSchema) IsFloat() bool {
+	return s.GoType == FloatGoType
+}
+
+// HasNumberFields returns true if JSONSchema has any number fields (int or float).
+func (s *JSONSchema) HasNumberFields() bool {
+	for _, property := range s.Properties {
+		if property.GoType == IntGoType || property.GoType == FloatGoType {
+			return true
+		}
+	}
+	return false
 }
 
 //Reference object represents many to many relationships between resources.
@@ -383,11 +415,11 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	goType := ""
 	switch s.Type {
 	case IntegerType:
-		goType = "int64"
-		protoType = "int64"
+		goType = IntGoType
+		protoType = IntProtoType
 	case NumberType:
-		goType = "float64"
-		protoType = "float"
+		goType = FloatGoType
+		protoType = FloatProtoType
 	case StringType:
 		goType = stringType
 		protoType = stringType
