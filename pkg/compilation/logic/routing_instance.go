@@ -2,9 +2,7 @@ package logic
 
 import (
 	"context"
-	"math/rand"
 	"sync"
-	"time"
 
 	"github.com/pkg/errors"
 
@@ -18,13 +16,6 @@ type RoutingInstanceIntent struct {
 	BaseIntent
 	*models.RoutingInstance
 }
-
-// TODO: get_autonomous_system method and int pool allocator endpoint.
-const (
-	defaultAutonomousSystem = 64512
-	// This number should be generated from int pool allocator.
-	minimumRoutingTargetNumber = 8000002
-)
 
 // CreateRoutingInstance evaluates RoutingInstance dependencies.
 func (s *Service) CreateRoutingInstance(
@@ -71,13 +62,6 @@ func (intent *RoutingInstanceIntent) Evaluate(ctx context.Context, evaluateConte
 	}
 
 	return nil
-}
-
-// TODO Temporary way to generate route target number
-// until allocate route target is implemented.
-func generateRandomRouteTargetNumber() int {
-	rand.Seed(time.Now().UTC().UnixNano())
-	return minimumRoutingTargetNumber + rand.Intn(10)
 }
 
 func (intent *RoutingInstanceIntent) createDefaultRouteTarget(

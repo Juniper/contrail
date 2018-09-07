@@ -6,12 +6,14 @@ import "github.com/Juniper/contrail/pkg/services"
 type Service struct {
 	services.BaseService
 	// WriteService is used to create/update/delete lower-level resources
-	WriteService services.WriteService
+	WriteService     services.WriteService
+	IntPoolAllocator services.IntPoolAllocator
 }
 
 // NewService creates a Service
-func NewService(apiClient services.WriteService) *Service {
+func NewService(apiClient services.WriteService, allocator services.IntPoolAllocator) *Service {
 	return &Service{
-		WriteService: apiClient,
+		WriteService:     apiClient,
+		IntPoolAllocator: allocator,
 	}
 }

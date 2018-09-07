@@ -176,6 +176,32 @@ func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{
 	return h.Do(ctx, echo.DELETE, path, nil, nil, output, expected)
 }
 
+// AllocateInt sends an allocate int request to remote int-pool.
+func (h *HTTP) AllocateInt(ctx context.Context, pool string) (int64, error) {
+	var output struct {
+		Value int64 `json:"value"`
+	}
+	expected := []int{http.StatusOK}
+	_, err := h.Do(ctx, echo.POST, fmt.Sprintf("/int-pool/%s", pool), nil, nil, &output, expected)
+	return output.Value, errors.Wrap(err, "error allocating int in int-pool via http")
+}
+
+// SetInt sends a set int request to remote int-pool.
+func (h *HTTP) SetInt(ctx context.Context, pool string, value int64) error {
+	var output struct{}
+	expected := []int{http.StatusOK}
+	_, err := h.Do(ctx, echo.POST, fmt.Sprintf("/int-pool/%s/%d", pool, value), nil, nil, &output, expected)
+	return errors.Wrap(err, "error setting int in int-pool via http")
+}
+
+// DeallocateInt sends a delete init request to remote int pool.
+func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) error {
+	var output struct{}
+	expected := []int{http.StatusOK}
+	_, err := h.Do(ctx, echo.DELETE, fmt.Sprintf("/int-pool/%s/%d", pool, value), nil, nil, &output, expected)
+	return errors.Wrap(err, "error deallocating int in int-pool via http")
+}
+
 // Do issues an API request.
 func (h *HTTP) Do(ctx context.Context,
 	method, path string, query url.Values, data interface{}, output interface{}, expected []int) (*http.Response, error) {
