@@ -33,8 +33,8 @@ func (s *Service) CreateLogicalRouter(
 		}
 		return nil
 	}
-	err := s.handleCreate(ctx, i, c, i.LogicalRouter)
-	if err != nil {
+
+	if err := s.handleCreate(ctx, i, c, i.LogicalRouter); err != nil {
 		return nil, err
 	}
 

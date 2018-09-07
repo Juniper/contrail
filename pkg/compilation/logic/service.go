@@ -13,15 +13,17 @@ import (
 type Service struct {
 	services.BaseService
 	// WriteService is used to create/update/delete lower-level resources
-	WriteService services.WriteService
-	cache        *intent.Cache
+	WriteService     services.WriteService
+	IntPoolAllocator services.IntPoolAllocator
+	cache            *intent.Cache
 }
 
 // NewService creates a Service
-func NewService(apiClient services.WriteService, cache *intent.Cache) *Service {
+func NewService(apiClient services.WriteService, allocator services.IntPoolAllocator, cache *intent.Cache) *Service {
 	return &Service{
-		WriteService: apiClient,
-		cache:        cache,
+		WriteService:     apiClient,
+		IntPoolAllocator: allocator,
+		cache:            cache,
 	}
 }
 
@@ -35,7 +37,9 @@ func (s *Service) handleCreate(
 	s.cache.Store(i)
 
 	ec := &intent.EvaluateContext{
-		WriteService: s.WriteService,
+		WriteService:     s.WriteService,
+		IntPoolAllocator: s.IntPoolAllocator,
+		Cache:            s.cache,
 	}
 
 	if intentLogic != nil {
