@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -61,14 +61,13 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
-			compilationif.Init()
-			mockAPIService := servicesmock.NewMockWriteService(mockCtrl)
-			service := NewService(mockAPIService)
+			mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
+			service := NewService(mockAPIClient, intent.NewCache())
 
 			if tt.returnedRT == nil {
-				expectCreateRTinLR(mockAPIService, tt.returnedRT, 0)
+				expectCreateRTinLR(mockAPIClient, tt.returnedRT, 0)
 			} else {
-				expectCreateRTinLR(mockAPIService, tt.returnedRT, 1)
+				expectCreateRTinLR(mockAPIClient, tt.returnedRT, 1)
 			}
 
 			_, err := service.CreateLogicalRouter(context.Background(), &services.CreateLogicalRouterRequest{
@@ -81,17 +80,17 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 }
 
 func expectCreateRTinLR(
-	mockAPIService *servicesmock.MockWriteService,
+	mockAPIClient *servicesmock.MockWriteService,
 	returnedRT *models.RouteTarget,
 	times int) {
-	mockAPIService.EXPECT().CreateRouteTarget(
+	mockAPIClient.EXPECT().CreateRouteTarget(
 		testutil.NotNil(),
 		testutil.NotNil(),
 	).Return(&services.CreateRouteTargetResponse{RouteTarget: returnedRT},
 		nil,
 	).Times(times)
 
-	mockAPIService.EXPECT().CreateLogicalRouterRouteTargetRef(
+	mockAPIClient.EXPECT().CreateLogicalRouterRouteTargetRef(
 		testutil.NotNil(), testutil.NotNil(),
 	).Return(nil, nil).Times(times)
 }
