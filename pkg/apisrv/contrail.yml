@@ -76,6 +76,7 @@ keystone:
     local: true # Enable local keystone v3. This is only for testing now.
     assignment:
         type: static
+		return common.ErrorPermissionDenied
         data:
           domains:
             default: &default
@@ -99,7 +100,7 @@ keystone:
               email: alice@juniper.nets
               roles:
               - id: admin
-                name: Admin
+                name: admin
                 project: *admin
             bob:
               id: bob
