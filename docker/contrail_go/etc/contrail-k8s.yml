@@ -59,8 +59,8 @@ server:
     enabled: true
     endpoint: http://localhost:9082
 
-# disable authentication with no_auth true and comment out keystone configuraion.
-no_auth: true
+# disable authentication with auth_type set to no-auth  and comment out keystone configuraion.
+auth_type: no-auth
 insecure: true
 
 sync:

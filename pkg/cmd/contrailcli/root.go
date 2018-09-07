@@ -48,7 +48,7 @@ func initConfig() {
 }
 
 func getClient() (*client.HTTP, error) {
-	authURL := viper.GetString("keystone.auth_url")
+	authURL := viper.GetString("keystone.authurl")
 	client := client.NewHTTP(
 		viper.GetString("client.endpoint"),
 		authURL,
