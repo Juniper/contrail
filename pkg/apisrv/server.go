@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
@@ -225,7 +224,7 @@ func (s *Server) Init() (err error) {
 		skipPaths := keystone.GetAuthSkipPaths()
 		e.Use(keystone.AuthMiddleware(
 			keystoneClient, skipPaths, endpointStore))
-	} else if viper.GetBool("no_auth") {
+	} else if viper.GetString("auth_type") == "no-auth" {
 		e.Use(noAuthMiddleware())
 	}
 	localKeystone := viper.GetBool("keystone.local")
@@ -280,7 +279,7 @@ func (s *Server) Init() (err error) {
 				log.Debug("malformed json response")
 			}
 			task := &Task{
-				Request: &client.Request{
+				Request: &common.Request{
 					Method:   c.Request().Method,
 					Path:     c.Request().URL.Path,
 					Expected: []int{c.Response().Status},

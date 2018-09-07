@@ -92,8 +92,10 @@ func NewAgentByConfig() (*Agent, error) {
 // NewAgent creates Agent with given configuration.
 func NewAgent(c *Config) (*Agent, error) {
 	s := &client.HTTP{
-		Endpoint: c.Endpoint,
-		InSecure: c.InSecure,
+		BaseHTTP: &common.BaseHTTP{
+			Endpoint: c.Endpoint,
+			InSecure: c.InSecure,
+		},
 	}
 	// auth enabled
 	if c.AuthURL != "" {

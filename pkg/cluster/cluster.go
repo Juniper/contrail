@@ -82,8 +82,10 @@ func NewClusterManager(configPath string) (*Cluster, error) {
 // NewCluster creates Cluster with given configuration.
 func NewCluster(c *Config) (*Cluster, error) {
 	s := &client.HTTP{
-		Endpoint: c.Endpoint,
-		InSecure: c.InSecure,
+		BaseHTTP: &common.BaseHTTP{
+			Endpoint: c.Endpoint,
+			InSecure: c.InSecure,
+		},
 	}
 	// auth enabled
 	if c.AuthURL != "" {
