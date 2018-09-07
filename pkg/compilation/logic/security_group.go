@@ -2,18 +2,17 @@ package logic
 
 import (
 	"context"
-	"sync"
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
 // SecurityGroupIntent contains Intent Compiler state for SecurityGroup
 type SecurityGroupIntent struct {
-	BaseIntent
+	intent.BaseIntent
 	*models.SecurityGroup
 }
 
@@ -24,23 +23,16 @@ func (s *Service) CreateSecurityGroup(
 
 	obj := request.GetSecurityGroup()
 
-	intent := &SecurityGroupIntent{
+	i := &SecurityGroupIntent{
 		SecurityGroup: obj,
 	}
 
-	if _, ok := compilationif.ObjsCache.Load("SecurityGroupIntent"); !ok {
-		compilationif.ObjsCache.Store("SecurityGroupIntent", &sync.Map{})
-	}
+	s.cache.Store(i)
 
-	objMap, ok := compilationif.ObjsCache.Load("SecurityGroupIntent")
-	if ok {
-		objMap.(*sync.Map).Store(obj.GetUUID(), intent)
-	}
-
-	ec := &EvaluateContext{
+	ec := &intent.EvaluateContext{
 		WriteService: s.WriteService,
 	}
-	err := EvaluateDependencies(ctx, ec, obj, "SecurityGroup")
+	err := s.EvaluateDependencies(ctx, ec, obj, "SecurityGroup")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
 	}
@@ -49,7 +41,7 @@ func (s *Service) CreateSecurityGroup(
 }
 
 // Evaluate Creates default AccessControlList's for the already created SecurityGroup.
-func (s *SecurityGroupIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
+func (s *SecurityGroupIntent) Evaluate(ctx context.Context, evaluateContext *intent.EvaluateContext) error {
 	ingressACL, egressACL := s.DefaultACLs()
 
 	_, err := evaluateContext.WriteService.CreateAccessControlList(ctx, &services.CreateAccessControlListRequest{
