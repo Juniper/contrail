@@ -1,4 +1,4 @@
-package logic
+package intent
 
 import (
 	"context"
@@ -13,6 +13,7 @@ type EvaluateContext struct {
 
 // Intent contains Intent Compiler state for a resource.
 type Intent interface {
+	services.Resource
 	Evaluate(ctx context.Context, evaluateCtx *EvaluateContext) error
 }
 
