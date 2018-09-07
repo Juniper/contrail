@@ -5,12 +5,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/common"
-
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/apisrv/vncapi"
+	"github.com/Juniper/contrail/pkg/common"
+
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+)
+
+const (
+	configService = "config"
 )
 
 //Keystone is used to represents Keystone Controller.
@@ -19,6 +25,7 @@ type Keystone struct {
 	Assignment Assignment
 	Endpoints  *apicommon.EndpointStore
 	Client     *KeystoneClient
+	vncClient  *vncapi.VncApiClient
 }
 
 //Init is used to initialize echo with Kesytone capability.
@@ -78,6 +85,38 @@ func filterProject(user *User, scope *Scope) (*Project, error) {
 	return nil, nil
 }
 
+func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint string, err error) {
+	configEndpoint, err = endpoints.GetEndpoint(configService)
+	return configEndpoint, err
+}
+
+func (keystone *Keystone) getVncProjects(c echo.Context, configEndpoint string) ([]*Project, error) {
+	tokenID := c.Request().Header.Get("X-Auth-Token")
+	if tokenID == "" {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	}
+	_, ok := keystone.Store.ValidateToken(tokenID)
+	if !ok {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	}
+	if keystone.vncClient == nil {
+		keystone.vncClient = vncapi.NewVncApiClient()
+	}
+	keystone.vncClient.Initialize(configEndpoint)
+	vncProjectsResponse, err := keystone.vncClient.ListProjects()
+	if err != nil {
+		return nil, err
+	}
+	projects := []*Project{}
+	for _, vncProject := range vncProjectsResponse.Projects {
+		projects = append(projects, &Project{
+			Name: vncProject.Project.Name,
+			ID:   vncProject.Project.UUID,
+		})
+	}
+	return projects, nil
+}
+
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
@@ -98,9 +137,23 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 	}
+	userProjects := []*Project{}
+	authType := viper.GetString("auth_type")
+	if authType == "basic-auth" {
+		configEndpoint, err := getVncConfigEndpoint(keystone.Endpoints)
+		if err != nil {
+			log.Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+		if configEndpoint != "" {
+			userProjects, err = keystone.getVncProjects(c, configEndpoint)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	user := token.User
 	projects := keystone.Assignment.ListProjects()
-	userProjects := []*Project{}
 	for _, project := range projects {
 		for _, role := range user.Roles {
 			if role.Project.Name == project.Name {
@@ -156,7 +209,8 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 		}
 	}
-	project, err := filterProject(user, authRequest.Auth.Scope)
+	var project *Project
+	project, err = filterProject(user, authRequest.Auth.Scope)
 	if err != nil {
 		log.WithField("err", err).Debug("filter project error")
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
