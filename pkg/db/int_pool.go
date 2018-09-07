@@ -82,6 +82,9 @@ func (db *Service) DeleteIntPools(ctx context.Context, target *IntPool) error {
 
 //AllocateInt allocates integer.
 func (db *Service) AllocateInt(ctx context.Context, key string) (int64, error) {
+	if key == "" {
+		return 0, errors.New("empty int-pool key provided to allocate")
+	}
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	query := "select " +
@@ -122,6 +125,9 @@ func (db *Service) AllocateInt(ctx context.Context, key string) (int64, error) {
 
 //SetInt set a id for allocation pool.
 func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
+	if key == "" {
+		return errors.New("empty int-pool key provided to set")
+	}
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	rangePool := &IntPool{
@@ -147,18 +153,12 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
 				d.Values("key", "start", "end")+");",
 			key, pool.Start+1, pool.End)
-		if err != nil {
-			return basedb.FormatDBError(err)
-		}
 	} else if pool.End-1 == id {
 		_, err = tx.ExecContext(
 			ctx,
 			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
 				d.Values("key", "start", "end")+");",
 			key, pool.Start, pool.End-1)
-		if err != nil {
-			return basedb.FormatDBError(err)
-		}
 	} else {
 		// We need divide one pool to two.
 		_, err = tx.ExecContext(
@@ -174,9 +174,9 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
 				d.Values("key", "start", "end")+");",
 			key, id+1, pool.End)
-		if err != nil {
-			return basedb.FormatDBError(err)
-		}
+	}
+	if err != nil {
+		return basedb.FormatDBError(err)
 	}
 	return nil
 }
