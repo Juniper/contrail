@@ -1,35 +1,35 @@
-package dependencies
+package dependencies_test
 
 import (
 	"sync"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Juniper/contrail/pkg/compilation/intent"
+	"github.com/Juniper/contrail/pkg/compilation/logic"
+	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 func TestReturnsRefs(t *testing.T) {
-	ObjsCache := &sync.Map{}
+	cache := intent.NewCache()
 
 	// Create VirtualNetworks in the Cache
-	VnObjMap := &sync.Map{}
-	Vn1 := models.VirtualNetwork{}
-	Vn1.UUID = "Virtual-Network-1"
-	VnObjMap.Store(Vn1.UUID, &Vn1)
-	Vn2 := models.VirtualNetwork{}
-	Vn2.UUID = "Virtual-Network-2"
-	VnObjMap.Store(Vn2.UUID, &Vn2)
-	ObjsCache.Store("VirtualNetwork", VnObjMap)
+	Vn1 := models.VirtualNetwork{
+		UUID: "Virtual-Network-1",
+	}
+	Vn2 := models.VirtualNetwork{
+		UUID: "Virtual-Network-2",
+	}
 
 	// Create NetworkPolicys in the Cache
-	NpObjMap := &sync.Map{}
-	Np1 := models.NetworkPolicy{}
-	Np1.UUID = "Network-policy-1"
-	NpObjMap.Store(Np1.UUID, &Np1)
-	Np2 := models.NetworkPolicy{}
-	Np2.UUID = "Network-policy-2"
-	NpObjMap.Store(Np2.UUID, &Np2)
-	ObjsCache.Store("NetworkPolicy", NpObjMap)
+	Np1 := models.NetworkPolicy{
+		UUID: "Network-policy-1",
+	}
+	Np2 := models.NetworkPolicy{
+		UUID: "Network-policy-2",
+	}
 
 	Np1Ref := models.VirtualNetworkNetworkPolicyRef{}
 	Np1Ref.UUID = Np1.UUID
@@ -48,7 +48,13 @@ func TestReturnsRefs(t *testing.T) {
 
 	Np2.VirtualNetworkBackRefs = append(Np1.VirtualNetworkBackRefs, &Vn2)
 
-	d := NewDependencyProcessor(ObjsCache)
+	storeTestVirtualNetworkIntent(cache, &Vn1)
+	storeTestVirtualNetworkIntent(cache, &Vn2)
+
+	storeTestNetworkPolicyIntent(cache, &Np1)
+	storeTestNetworkPolicyIntent(cache, &Np2)
+
+	d := dependencies.NewDependencyProcessor(cache)
 	if d != nil {
 		d.Evaluate(Vn1, "VirtualNetwork", "Self")
 		resources := d.GetResources()
@@ -64,22 +70,19 @@ func TestReturnsRefs(t *testing.T) {
 }
 
 func TestReturnsSelf(t *testing.T) {
-	ObjsCache := &sync.Map{}
-
-	VnObjMap := &sync.Map{}
-	Vn1 := models.VirtualNetwork{
+	cache := intent.NewCache()
+	vn := &models.VirtualNetwork{
 		UUID: "Virtual-Network-1",
 	}
-	VnObjMap.Store(Vn1.UUID, &Vn1)
-	ObjsCache.Store("VirtualNetwork", VnObjMap)
+	vnIntent := storeTestVirtualNetworkIntent(cache, vn)
 
-	d := NewDependencyProcessor(ObjsCache)
+	d := dependencies.NewDependencyProcessor(cache)
 	if d != nil {
-		d.Evaluate(Vn1, "VirtualNetwork", "Self")
+		d.Evaluate(vnIntent, "VirtualNetwork", "Self")
 		resources := d.GetResources()
 
 		networks := mustLoad(t, resources, "VirtualNetwork")
-		mustLoad(t, networks, Vn1.UUID)
+		mustLoad(t, networks, vnIntent.GetUUID())
 	}
 }
 
@@ -90,4 +93,26 @@ func mustLoad(t *testing.T, rawSyncMap interface{}, key string) interface{} {
 	value, ok := syncMap.Load(key)
 	assert.Truef(t, ok, "The map should have a '%s' key", key)
 	return value
+}
+
+func storeTestVirtualNetworkIntent(
+	cache *intent.Cache,
+	vn *models.VirtualNetwork,
+) intent.Intent {
+	i := &logic.VirtualNetworkIntent{
+		VirtualNetwork: vn,
+	}
+	cache.Store(i)
+	return i
+}
+
+func storeTestNetworkPolicyIntent(
+	cache *intent.Cache,
+	np *models.NetworkPolicy,
+) intent.Intent {
+	i := &logic.NetworkPolicyIntent{
+		NetworkPolicy: np,
+	}
+	cache.Store(i)
+	return i
 }
