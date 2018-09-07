@@ -2,55 +2,43 @@ package logic
 
 import (
 	"context"
-	"sync"
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
 // SecurityGroupIntent contains Intent Compiler state for SecurityGroup
 type SecurityGroupIntent struct {
-	BaseIntent
+	intent.BaseIntent
 	*models.SecurityGroup
 }
 
 // CreateSecurityGroup evaluates SecurityGroup dependencies.
 func (s *Service) CreateSecurityGroup(
-	ctx context.Context, request *services.CreateSecurityGroupRequest,
+	ctx context.Context,
+	request *services.CreateSecurityGroupRequest,
 ) (*services.CreateSecurityGroupResponse, error) {
-
-	obj := request.GetSecurityGroup()
-
-	intent := &SecurityGroupIntent{
-		SecurityGroup: obj,
+	i := &SecurityGroupIntent{
+		SecurityGroup: request.GetSecurityGroup(),
 	}
 
-	if _, ok := compilationif.ObjsCache.Load("SecurityGroupIntent"); !ok {
-		compilationif.ObjsCache.Store("SecurityGroupIntent", &sync.Map{})
-	}
-
-	objMap, ok := compilationif.ObjsCache.Load("SecurityGroupIntent")
-	if ok {
-		objMap.(*sync.Map).Store(obj.GetUUID(), intent)
-	}
-
-	ec := &EvaluateContext{
-		WriteService: s.WriteService,
-	}
-	err := EvaluateDependencies(ctx, ec, obj, "SecurityGroup")
+	err := s.handleCreate(ctx, i, nil, i.SecurityGroup)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
+		return nil, err
 	}
 
 	return s.BaseService.CreateSecurityGroup(ctx, request)
 }
 
 // Evaluate Creates default AccessControlList's for the already created SecurityGroup.
-func (intent *SecurityGroupIntent) Evaluate(ctx context.Context, evaluateContext *EvaluateContext) error {
-	ingressACL, egressACL := intent.DefaultACLs()
+func (i *SecurityGroupIntent) Evaluate(
+	ctx context.Context,
+	evaluateContext *intent.EvaluateContext,
+) error {
+	ingressACL, egressACL := i.DefaultACLs()
 
 	_, err := evaluateContext.WriteService.CreateAccessControlList(ctx, &services.CreateAccessControlListRequest{
 		AccessControlList: ingressACL,
