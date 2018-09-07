@@ -33,7 +33,7 @@ const (
 	AdminProjectID    = "admin"
 	AdminProjectName  = "AdminProject"
 	AdminRoleID       = "admin"
-	AdminRoleName     = "AdminRole"
+	AdminRoleName     = "admin"
 	AdminUserID       = "alice"
 	AdminUserName     = "Alice"
 	AdminUserPassword = "alice_password"

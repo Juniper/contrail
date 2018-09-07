@@ -12,6 +12,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/types/mock"
 )
 
 func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
@@ -201,9 +202,11 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	cache := intent.NewCache()
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIClient, cache)
+	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
+	cache := intent.NewCache()
+
+	service := NewService(mockAPIClient, mockIntPoolAllocator, cache)
 
 	expectCreateACL(mockAPIClient, expectedIngressACL)
 	expectCreateACL(mockAPIClient, expectedEgressACL)
