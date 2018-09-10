@@ -83,8 +83,8 @@ func (d *DependencyProcessor) canAdd(key string, obj interface{}) bool {
 
 // getCachedObject gets the cached object
 func (d *DependencyProcessor) getCachedObject(objTypeStr, uuid string) interface{} {
-	intent, ok := d.cache.Load(objTypeStr, uuid)
-	if !ok {
+	intent := d.cache.Load(objTypeStr, intent.ByUUID(uuid))
+	if intent == nil {
 		log.Debugf("failed to get intent from cache. type: %s, uuid: %s", objTypeStr, uuid)
 		return nil
 	}

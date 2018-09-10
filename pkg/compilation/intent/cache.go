@@ -1,83 +1,135 @@
 package intent
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/iancoleman/strcase"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
-// Cache cache for intents.
+// Cache stores intents.
 type Cache struct {
-	intentMap *intentMap
+	*intentStore
+}
+
+// Query finds an intent in cache.
+type Query struct {
+	load        func(intents) Intent
+	description string
+}
+
+// String returns the description of a Query.
+func (q Query) String() string {
+	return q.description
+}
+
+// ByUUID returns a query to find an intent by UUID.
+func ByUUID(uuid string) Query {
+	return Query{
+		load: func(is intents) Intent {
+			return is.uuidToIntent[uuid]
+		},
+		description: fmt.Sprintf("by UUID: %v", uuid),
+	}
+}
+
+// ByFQName returns a query to find an intent by FQName.
+func ByFQName(fqName []string) Query {
+	return Query{
+		load: func(is intents) Intent {
+			return is.uuidToIntent[is.fqNameToUUID[fqNameKey(fqName)]]
+		},
+		description: fmt.Sprintf("by FQName: %v", fqName),
+	}
 }
 
 // NewCache creates new cache for intents.
 func NewCache() *Cache {
 	return &Cache{
-		intentMap: newIntentMap(),
+		intentStore: newIntentStore(),
 	}
 }
 
-func newIntentMap() *intentMap {
-	return &intentMap{
-		internal: make(map[string]map[string]Intent),
-	}
-}
-
-type intentMap struct {
-	internal map[string]map[string]Intent
-	sync.RWMutex
-}
-
-func (m *intentMap) load(typeName, uuid string) (value Intent, ok bool) {
-	m.RLock()
-	defer m.RUnlock()
-	typeMap, ok := m.internal[typeName]
-	if !ok {
-		return nil, false
-	}
-	intent, ok := typeMap[uuid]
-	return intent, ok
-}
-
-func (m *intentMap) delete(typeName, uuid string) {
-	m.Lock()
-	defer m.Unlock()
-	typeMap, ok := m.internal[typeName]
-	if ok {
-		delete(typeMap, uuid)
-	}
-}
-
-func (m *intentMap) store(typeName, uuid string, intent Intent) {
-	m.Lock()
-	defer m.Unlock()
-	typeMap, ok := m.internal[typeName]
-	if !ok {
-		typeMap = make(map[string]Intent)
-		m.internal[typeName] = typeMap
-	}
-	typeMap[uuid] = intent
-}
-
-// Load loads intent from cache. It accepts as type both kebab-case and CamelCase
-func (c *Cache) Load(typeName, uuid string) (Intent, bool) {
+// Load loads intent from cache. It accepts kebab-case or CamelCase type name.
+func (c *Cache) Load(typeName string, q Query) Intent {
 	typeName = strcase.ToCamel(typeName)
-	log.WithFields(log.Fields{"type-name": typeName, "uuid": uuid}).Debug("Loading from cache")
-	return c.intentMap.load(typeName, uuid)
+	log.WithFields(log.Fields{"type-name": typeName, "query": q}).Debug("Loading from cache")
+	return c.intentStore.load(typeName, q)
 }
 
 // Store puts intent into cache.
 func (c *Cache) Store(i Intent) {
 	typeName := strcase.ToCamel(i.Kind())
 	log.WithFields(log.Fields{"type-name": typeName, "uuid": i.GetUUID()}).Debug("Storing in cache")
-	c.intentMap.store(typeName, i.GetUUID(), i)
+	c.intentStore.store(typeName, i)
 }
 
-// Delete deletes intent from cache. It accepts as type both kebab-case and CamelCase
-func (c *Cache) Delete(typeName, uuid string) {
+// Delete deletes intent from cache. It accepts kebab-case or CamelCase type name.
+func (c *Cache) Delete(typeName string, q Query) {
 	typeName = strcase.ToCamel(typeName)
-	log.WithFields(log.Fields{"TypeName": typeName, "UUID": uuid}).Debug("Deleting from cache")
-	c.intentMap.delete(typeName, uuid)
+	log.WithFields(log.Fields{"type-name": typeName, "query": q}).Debug("Deleting from cache")
+	c.intentStore.delete(typeName, q)
+}
+
+type intentStore struct {
+	typeNameToIntents map[string]intents
+	sync.RWMutex
+}
+
+type intents struct {
+	fqNameToUUID map[string]string
+	uuidToIntent map[string]Intent
+}
+
+func newIntentStore() *intentStore {
+	return &intentStore{
+		typeNameToIntents: make(map[string]intents),
+	}
+}
+
+func (s *intentStore) load(typeName string, q Query) Intent {
+	s.RLock()
+	defer s.RUnlock()
+	is, ok := s.typeNameToIntents[typeName]
+	if !ok {
+		return nil
+	}
+	return q.load(is)
+}
+
+func (s *intentStore) delete(typeName string, q Query) {
+	s.Lock()
+	defer s.Unlock()
+	is, ok := s.typeNameToIntents[typeName]
+	if !ok {
+		return
+	}
+	intent := q.load(is)
+	if intent == nil {
+		return
+	}
+	delete(is.fqNameToUUID, fqNameKey(intent.GetFQName()))
+	delete(is.uuidToIntent, intent.GetUUID())
+}
+
+func (s *intentStore) store(typeName string, i Intent) {
+	s.Lock()
+	defer s.Unlock()
+	is, ok := s.typeNameToIntents[typeName]
+	if !ok {
+		is = intents{
+			fqNameToUUID: map[string]string{},
+			uuidToIntent: map[string]Intent{},
+		}
+		s.typeNameToIntents[typeName] = is
+	}
+	is.uuidToIntent[i.GetUUID()] = i
+	is.fqNameToUUID[fqNameKey(i.GetFQName())] = i.GetUUID()
+}
+
+func fqNameKey(fqName []string) string {
+	return basemodels.FQNameToString(fqName)
 }
