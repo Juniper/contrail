@@ -109,12 +109,11 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	}
 }
 
-func TestSortEventListByDependency(t *testing.T) {
+func TestSortEventList(t *testing.T) {
 	tests := []struct {
 		name        string
 		events      []*Event
 		sortedOrder []string
-		fails       bool
 	}{
 		{
 			name:        "no events",
@@ -124,140 +123,112 @@ func TestSortEventListByDependency(t *testing.T) {
 		{
 			name: "single event",
 			events: []*Event{
-				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{uuid: "vn-uuid"})),
+				projectCreateEvent("project_uuid", ""),
 			},
-			sortedOrder: []string{"vn-uuid"},
+			sortedOrder: []string{"project_uuid"},
 		},
 		{
-			name: "reference dependency",
+			name: "test two resources with the same parent",
 			events: []*Event{
-				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{
-					uuid: "vn-uuid",
-					networkPolicyRefs: []*models.VirtualNetworkNetworkPolicyRef{
-						{
-							UUID: "network-policy-uuid",
-						},
-					},
-				})),
-				networkPolicyCreateEvent(networkPolicy("network-policy-uuid")),
+				projectCreateEvent("project_uuid_1", "domain_uuid"),
+				projectCreateEvent("project_uuid_2", "domain_uuid"),
+				domainCreateEvent("domain_uuid"),
 			},
-			sortedOrder: []string{"network-policy-uuid", "vn-uuid"},
+			sortedOrder: []string{"domain_uuid", "project_uuid_1", "project_uuid_2"},
 		},
 		{
-			name: "parent-child dependency",
+			name: "test two resources with non existing parent (in event list)",
 			events: []*Event{
-				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{
-					uuid:       "vn-uuid",
-					parentUUID: "project-uuid",
-					parentType: "project",
-				})),
-				projectCreateEvent(project("project-uuid")),
+				projectCreateEvent("project_uuid_1", "non_existing_uuid"),
+				projectCreateEvent("project_uuid_2", "non_existing_uuid"),
 			},
-
-			sortedOrder: []string{"project-uuid", "vn-uuid"},
+			sortedOrder: []string{"project_uuid_1", "project_uuid_2"},
 		},
 		{
-			name: "circular dependency",
+			name: "test line parent-child structure",
 			events: []*Event{
-				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{
-					uuid: "vn-one-uuid",
-					virtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
-						{
-							UUID: "vn-two-uuid",
-						},
-					},
-				})),
-				virtualNetworkCreateEvent(virtualNetwork(&vnParameters{
-					uuid: "vn-two-uuid",
-					virtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
-						{
-							UUID: "vn-one-uuid",
-						},
-					},
-				})),
+				routingInstanceCreateEvent("ri_uuid", "vi_uuid"),
+				projectCreateEvent("project_uuid", "domain_uuid"),
+				bgpRouterCreateEvent("bgp_uuid", "ri_uuid"),
+				domainCreateEvent("domain_uuid"),
+				virtualNetworkCreateEvent("vi_uuid", "project_uuid"),
 			},
-			fails: true,
+			sortedOrder: []string{"domain_uuid", "project_uuid", "vi_uuid", "ri_uuid", "bgp_uuid"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			eventList := EventList{tt.events}
-
 			err := eventList.Sort()
-
-			if tt.fails {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				for i, e := range eventList.Events {
-					assert.Equal(t, tt.sortedOrder[i], e.GetResource().GetUUID())
-				}
+			assert.NoError(t, err)
+			for i, e := range eventList.Events {
+				assert.Equal(t, tt.sortedOrder[i], e.GetResource().GetUUID())
 			}
 		})
 	}
 }
 
-func projectCreateEvent(p *models.Project) *Event {
+func domainCreateEvent(uuid string) *Event {
+	return &Event{
+		Request: &Event_CreateDomainRequest{
+			&CreateDomainRequest{
+				Domain: &models.Domain{
+					UUID: uuid,
+				},
+			},
+		},
+	}
+}
+
+func projectCreateEvent(uuid, parentUUID string) *Event {
 	return &Event{
 		Request: &Event_CreateProjectRequest{
 			&CreateProjectRequest{
-				Project: p,
+				Project: &models.Project{
+					UUID:       uuid,
+					ParentUUID: parentUUID,
+				},
 			},
 		},
 	}
 }
 
-func virtualNetworkCreateEvent(vn *models.VirtualNetwork) *Event {
+func virtualNetworkCreateEvent(uuid, parentUUID string) *Event {
 	return &Event{
 		Request: &Event_CreateVirtualNetworkRequest{
 			&CreateVirtualNetworkRequest{
-				VirtualNetwork: vn,
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID:       uuid,
+					ParentUUID: parentUUID,
+				},
 			},
 		},
 	}
 }
 
-func networkPolicyCreateEvent(np *models.NetworkPolicy) *Event {
+func routingInstanceCreateEvent(uuid, parentUUID string) *Event {
 	return &Event{
-		Request: &Event_CreateNetworkPolicyRequest{
-			CreateNetworkPolicyRequest: &CreateNetworkPolicyRequest{
-				NetworkPolicy: np,
+		Request: &Event_CreateRoutingInstanceRequest{
+			&CreateRoutingInstanceRequest{
+				RoutingInstance: &models.RoutingInstance{
+					UUID:       uuid,
+					ParentUUID: parentUUID,
+				},
 			},
 		},
 	}
 }
 
-func project(uuid string) *models.Project {
-	p := models.MakeProject()
-	p.UUID = uuid
-	return p
-}
-
-type vnParameters struct {
-	uuid               string
-	parentUUID         string
-	parentType         string
-	networkPolicyRefs  []*models.VirtualNetworkNetworkPolicyRef
-	virtualNetworkRefs []*models.VirtualNetworkVirtualNetworkRef
-}
-
-func virtualNetwork(p *vnParameters) *models.VirtualNetwork {
-	vn := models.MakeVirtualNetwork()
-	vn.UUID = p.uuid
-	vn.ParentUUID = p.parentUUID
-	vn.ParentType = p.parentType
-	if len(p.networkPolicyRefs) > 0 {
-		vn.NetworkPolicyRefs = p.networkPolicyRefs
+func bgpRouterCreateEvent(uuid, parentUUID string) *Event {
+	return &Event{
+		Request: &Event_CreateBGPRouterRequest{
+			&CreateBGPRouterRequest{
+				BGPRouter: &models.BGPRouter{
+					UUID:       uuid,
+					ParentUUID: parentUUID,
+				},
+			},
+		},
 	}
-	if len(p.virtualNetworkRefs) > 0 {
-		vn.VirtualNetworkRefs = p.virtualNetworkRefs
-	}
-	return vn
-}
-
-func networkPolicy(uuid string) *models.NetworkPolicy {
-	np := models.MakeNetworkPolicy()
-	np.UUID = uuid
-	return np
 }
