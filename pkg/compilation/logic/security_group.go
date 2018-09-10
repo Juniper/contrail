@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -38,7 +39,7 @@ func (i *SecurityGroupIntent) Evaluate(
 	ctx context.Context,
 	evaluateContext *intent.EvaluateContext,
 ) error {
-	ingressACL, egressACL := i.DefaultACLs()
+	ingressACL, egressACL := i.DefaultACLs(evaluateContext)
 
 	_, err := evaluateContext.WriteService.CreateAccessControlList(ctx, &services.CreateAccessControlListRequest{
 		AccessControlList: ingressACL,
@@ -55,4 +56,42 @@ func (i *SecurityGroupIntent) Evaluate(
 	}
 
 	return nil
+}
+
+// DefaultACLs returns default ACLs corresponding to the security group's policy rules.
+func (i *SecurityGroupIntent) DefaultACLs(ec *intent.EvaluateContext) (
+	ingressACL *models.AccessControlList, egressACL *models.AccessControlList) {
+
+	rs := &models.PolicyRulesWithRefs{
+		Rules:      i.GetSecurityGroupEntries().GetPolicyRule(),
+		FQNameToSG: make(map[string]*models.SecurityGroup),
+	}
+	resolveSGRefs(rs, ec)
+
+	ingressRules, egressRules := rs.ToACLRules()
+
+	ingressACL = i.MakeChildACL("ingress-access-control-list", ingressRules)
+	egressACL = i.MakeChildACL("egress-access-control-list", egressRules)
+	return ingressACL, egressACL
+}
+
+func resolveSGRefs(rs *models.PolicyRulesWithRefs, ec *intent.EvaluateContext) {
+	for _, r := range rs.Rules {
+		for _, addr := range r.SRCAddresses {
+			resolveSGRef(rs, addr, ec)
+		}
+		for _, addr := range r.DSTAddresses {
+			resolveSGRef(rs, addr, ec)
+		}
+	}
+}
+
+func resolveSGRef(rs *models.PolicyRulesWithRefs, addr *AddressType, ec *intent.EvaluateContext) {
+	if !addr.IsSecurityGroupNameAReference() {
+		return
+	}
+	// TODO (Kamil) use loadSecurityGroupIntent()
+	i := ec.IntentLoader.Load(models.TypeNameSecurityGroup, intent.ByFQName(basemodels.ParseFQName(name)))
+	sg, _ := i.(*SecurityGroupIntent)
+	rs.FQNameToSG[name] = sg.SecurityGroup
 }
