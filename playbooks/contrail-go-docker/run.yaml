@@ -2,12 +2,20 @@
   name: Build and test Juniper/contrail
   roles:
     - zuul-include-vars # include variables exported from trusted context
-    - install-docker-daemon
-    - role: add-insecure-registry
-      new_registry: "{{ contrail_docker_registry }}"
+    - acquire-ip-address
+    - self-ssh-key
+    - prepare-template-for-ansible-deployer
+    - contrail-ansible-deployer
+    - sanitytest
+
   vars:
     workdir: /go/src/github.com/Juniper/contrail
     sourcedir: "{{ ansible_env.HOME }}"
+    contrail_version: ocata-master-276
+    contrail_docker_registry: 10.84.12.27:5000
+    setup_docker_registry: False
+    cloud_orchestrator: kubernetes
+    test_target: ci_k8s_sanity
   tasks:
     - include: build-setup.yaml
 
@@ -38,13 +46,4 @@
         owner: "{{ ansible_env.USER }}"
       become: yes
       become_user: root
-
-- hosts: builder
-  name: Publish containers to the internal registry
-  roles:
-    - role: publish-container-images
-      registry: "{{ contrail_docker_registry }}"
-      tag: "{{ packaging.docker_version }}"
-      images:
-        - { name: contrail-go, tag: latest }
 
