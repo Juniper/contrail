@@ -36,6 +36,7 @@ func (s *Service) handleCreate(
 
 	ec := &intent.EvaluateContext{
 		WriteService: s.WriteService,
+		IntentLoader: s.cache,
 	}
 
 	if intentLogic != nil {
