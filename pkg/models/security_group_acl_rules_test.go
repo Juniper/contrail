@@ -8,8 +8,8 @@ import (
 
 func TestToACLRules(t *testing.T) {
 	testCases := []struct {
-		name          string
-		securityGroup *SecurityGroup
+		name        string
+		policyRules *PolicyRulesWithRefs
 
 		expectedIngressACLRules []*AclRuleType
 		expectedEgressACLRules  []*AclRuleType
@@ -18,10 +18,8 @@ func TestToACLRules(t *testing.T) {
 			// Behave properly, unlike
 			// https://github.com/Juniper/contrail-controller/blob/be4053c84/src/config/schema-transformer/config_db.py#L2030
 			name: "Non-local destination address after a local destination address",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+			policyRules: &PolicyRulesWithRefs{
+				Rules: []*PolicyRuleType{
 					{
 						Direction: ">",
 						Protocol:  "any",
@@ -42,7 +40,7 @@ func TestToACLRules(t *testing.T) {
 						SRCPorts: []*PortType{AllPorts()},
 						DSTPorts: []*PortType{AllPorts()},
 					},
-				}},
+				},
 			},
 
 			expectedIngressACLRules: []*AclRuleType{
@@ -98,10 +96,8 @@ func TestToACLRules(t *testing.T) {
 			// Behave properly, unlike
 			// https://github.com/Juniper/contrail-controller/blob/be4053c84/src/config/schema-transformer/config_db.py#L2030
 			name: "Non-local source & destination addresses after a local source address",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+			policyRules: &PolicyRulesWithRefs{
+				Rules: []*PolicyRuleType{
 					{
 						Direction: ">",
 						Protocol:  "any",
@@ -119,7 +115,7 @@ func TestToACLRules(t *testing.T) {
 						SRCPorts: []*PortType{AllPorts()},
 						DSTPorts: []*PortType{AllPorts()},
 					},
-				}},
+				},
 			},
 
 			expectedIngressACLRules: nil,
@@ -146,10 +142,8 @@ func TestToACLRules(t *testing.T) {
 			// Behave properly, unlike
 			// https://github.com/Juniper/contrail-controller/blob/be4053c84/src/config/schema-transformer/config_db.py#L2030
 			name: "Non-local source & destination addresses after a local destination address",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+			policyRules: &PolicyRulesWithRefs{
+				Rules: []*PolicyRuleType{
 					{
 						Direction: ">",
 						Protocol:  "any",
@@ -167,7 +161,7 @@ func TestToACLRules(t *testing.T) {
 						SRCPorts: []*PortType{AllPorts()},
 						DSTPorts: []*PortType{AllPorts()},
 					},
-				}},
+				},
 			},
 
 			expectedIngressACLRules: nil,
@@ -192,10 +186,8 @@ func TestToACLRules(t *testing.T) {
 
 		{
 			name: "Unknown IPv4 protocol in the only rule",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+			policyRules: &PolicyRulesWithRefs{
+				Rules: []*PolicyRuleType{
 					{
 						Direction: ">",
 						Protocol:  "some unknown protocol",
@@ -215,7 +207,7 @@ func TestToACLRules(t *testing.T) {
 						SRCPorts: []*PortType{AllPorts()},
 						DSTPorts: []*PortType{AllPorts()},
 					},
-				}},
+				},
 			},
 
 			expectedIngressACLRules: nil,
@@ -224,10 +216,8 @@ func TestToACLRules(t *testing.T) {
 
 		{
 			name: "Unknown IPv4 protocol in one of the rules",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+			policyRules: &PolicyRulesWithRefs{
+				Rules: []*PolicyRuleType{
 					{
 						Protocol:  "unknown protocol 1",
 						RuleUUID:  "rule1",
@@ -265,7 +255,7 @@ func TestToACLRules(t *testing.T) {
 						SRCPorts: []*PortType{AllPorts()},
 						DSTPorts: []*PortType{AllPorts()},
 					},
-				}},
+				},
 			},
 
 			expectedIngressACLRules: []*AclRuleType{
@@ -304,10 +294,8 @@ func TestToACLRules(t *testing.T) {
 
 		{
 			name: "unknown security group name in one of the addresses",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-				SecurityGroupEntries: &PolicyEntriesType{PolicyRule: []*PolicyRuleType{
+			policyRules: &PolicyRulesWithRefs{
+				Rules: []*PolicyRuleType{
 					{
 						Direction: ">",
 						Protocol:  "any",
@@ -327,7 +315,7 @@ func TestToACLRules(t *testing.T) {
 						SRCPorts: []*PortType{AllPorts()},
 						DSTPorts: []*PortType{AllPorts()},
 					},
-				}},
+				},
 			},
 
 			expectedIngressACLRules: nil,
@@ -349,11 +337,61 @@ func TestToACLRules(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name: "reference to existing security group",
+			policyRules: &PolicyRulesWithRefs{
+				Rules: []*PolicyRuleType{
+					{
+						Direction: ">",
+						Protocol:  "any",
+						RuleUUID:  "rule1",
+						Ethertype: "IPv6",
+						SRCAddresses: []*AddressType{
+							{
+								SecurityGroup: "local",
+							},
+						},
+						DSTAddresses: []*AddressType{
+							{
+								SecurityGroup: "some:known:security-group",
+							},
+						},
+						SRCPorts: []*PortType{AllPorts()},
+						DSTPorts: []*PortType{AllPorts()},
+					},
+				},
+				FQNameToSG: map[string]*SecurityGroup{
+					"some:known:security-group": {
+						SecurityGroupID: 8000002,
+					},
+				},
+			},
+
+			expectedIngressACLRules: nil,
+
+			expectedEgressACLRules: []*AclRuleType{
+				{
+					RuleUUID: "rule1",
+					MatchCondition: &MatchConditionType{
+						SRCPort:    AllPorts(),
+						DSTPort:    AllPorts(),
+						Protocol:   "any",
+						Ethertype:  "IPv6",
+						SRCAddress: &AddressType{},
+						DSTAddress: &AddressType{SecurityGroup: "8000002"},
+					},
+					ActionList: &ActionListType{
+						SimpleAction: "pass",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			ingressACLRules, egressACLRules := tt.securityGroup.toACLRules()
+			ingressACLRules, egressACLRules := tt.policyRules.ToACLRules()
 			assert.Equal(t, tt.expectedIngressACLRules, ingressACLRules,
 				"ingress ACL rules don't match the expected ones")
 			assert.Equal(t, tt.expectedEgressACLRules, egressACLRules,
@@ -364,8 +402,8 @@ func TestToACLRules(t *testing.T) {
 
 func TestMakeACLRule(t *testing.T) {
 	testCases := []struct {
-		name          string
-		securityGroup *SecurityGroup
+		name       string
+		fqNameToSG map[string]*SecurityGroup
 		policyAddressPair
 
 		expectedACLRule *AclRuleType
@@ -373,9 +411,10 @@ func TestMakeACLRule(t *testing.T) {
 	}{
 		{
 			name: "IPv4, specified security group to local security group",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
+			fqNameToSG: map[string]*SecurityGroup{
+				"default-domain:project-blue:default": {
+					SecurityGroupID: 8000002,
+				},
 			},
 			policyAddressPair: policyAddressPair{
 				policyRule: &PolicyRuleType{
@@ -414,9 +453,10 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv6, specified security group to local security group",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
+			fqNameToSG: map[string]*SecurityGroup{
+				"default-domain:project-blue:default": {
+					SecurityGroupID: 8000002,
+				},
 			},
 			policyAddressPair: policyAddressPair{
 				policyRule: &PolicyRuleType{
@@ -455,10 +495,6 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv4, local security group to all addresses",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-			},
 			policyAddressPair: policyAddressPair{
 				policyRule: &PolicyRuleType{
 					RuleUUID:  "b7c07625-e03e-43b9-a9fc-d11a6c863cc6",
@@ -492,10 +528,6 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv6, local security group to all addresses",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-			},
 			policyAddressPair: policyAddressPair{
 				policyRule: &PolicyRuleType{
 					RuleUUID:  "6a5f3026-02bc-4ba1-abde-39abafd21f47",
@@ -531,10 +563,6 @@ func TestMakeACLRule(t *testing.T) {
 			// Replicates the logic in
 			// https://github.com/Juniper/contrail-controller/blob/474731ce0/src/config/schema-transformer/config_db.py#L2039
 			name: "ActionList with a deny action (should be ignored)",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-			},
 			policyAddressPair: policyAddressPair{
 				policyRule: &PolicyRuleType{
 					RuleUUID:  "rule2",
@@ -582,10 +610,6 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "unknown security group name",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-			},
 			policyAddressPair: policyAddressPair{
 				sourceAddress: &policyAddress{
 					SecurityGroup: "some:unknown:security-group",
@@ -597,7 +621,7 @@ func TestMakeACLRule(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			aclRule, err := tt.securityGroup.makeACLRule(tt.policyAddressPair)
+			aclRule, err := makeACLRule(tt.policyAddressPair, tt.fqNameToSG)
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
@@ -611,49 +635,46 @@ func TestMakeACLRule(t *testing.T) {
 func TestSecurityGroupNameToID(t *testing.T) {
 	testCases := []struct {
 		name              string
-		securityGroup     *SecurityGroup
 		securityGroupName string
+		fqNameToSG        map[string]*SecurityGroup
 
 		expectedSecurityGroupID string
 		fails                   bool
 	}{
 		{
 			name:                    "local",
-			securityGroup:           &SecurityGroup{},
 			securityGroupName:       "local",
 			expectedSecurityGroupID: "",
 		},
 
 		{
 			name:                    "unspecified",
-			securityGroup:           &SecurityGroup{},
 			securityGroupName:       "",
 			expectedSecurityGroupID: "",
 		},
 
 		{
 			name:                    "any",
-			securityGroup:           &SecurityGroup{},
 			securityGroupName:       "any",
 			expectedSecurityGroupID: "-1",
 		},
 
 		{
-			name: "matching this security group name",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
+			name: "name of existing security group",
+			fqNameToSG: map[string]*SecurityGroup{
+				"default-domain:project-blue:default": {
+					SecurityGroupID: 8000002,
+				},
+				"default-domain:project-blue:other": {
+					SecurityGroupID: 8000003,
+				},
 			},
 			securityGroupName:       "default-domain:project-blue:default",
 			expectedSecurityGroupID: "8000002",
 		},
 
 		{
-			name: "unknown security group name",
-			securityGroup: &SecurityGroup{
-				FQName:          []string{"default-domain", "project-blue", "default"},
-				SecurityGroupID: 8000002,
-			},
+			name:              "unknown security group name",
 			securityGroupName: "some:unknown:security-group",
 			fails:             true,
 		},
@@ -661,7 +682,7 @@ func TestSecurityGroupNameToID(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			securityGroupID, err := tt.securityGroup.securityGroupNameToID(tt.securityGroupName)
+			securityGroupID, err := securityGroupNameToID(tt.securityGroupName, tt.fqNameToSG)
 			if tt.fails {
 				assert.Error(t, err)
 			} else {

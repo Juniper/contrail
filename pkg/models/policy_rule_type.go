@@ -32,7 +32,7 @@ func (pair *policyAddressPair) isIngress() (bool, error) {
 type policyAddress AddressType
 
 func (policyAddress *policyAddress) isLocal() bool {
-	return policyAddress.SecurityGroup == "local"
+	return policyAddress.SecurityGroup == LocalSecurityGroup
 }
 
 type neitherAddressIsLocal struct {
