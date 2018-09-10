@@ -24,6 +24,13 @@ func NewService(apiClient services.WriteService, cache *intent.Cache) *Service {
 	}
 }
 
+func (s *Service) evaluateContext() *intent.EvaluateContext {
+	return &intent.EvaluateContext{
+		WriteService: s.WriteService,
+		Cache:        s.cache,
+	}
+}
+
 // TODO use GetObject from Intent interface instead of passing r
 func (s *Service) handleCreate(
 	ctx context.Context,
@@ -33,9 +40,7 @@ func (s *Service) handleCreate(
 ) error {
 	s.cache.Store(i)
 
-	ec := &intent.EvaluateContext{
-		WriteService: s.WriteService,
-	}
+	ec := s.evaluateContext()
 
 	if intentLogic != nil {
 		err := intentLogic(ctx, ec)

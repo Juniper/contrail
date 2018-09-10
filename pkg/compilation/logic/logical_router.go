@@ -14,6 +14,7 @@ import (
 type LogicalRouterIntent struct {
 	intent.BaseIntent
 	*models.LogicalRouter
+	virtualNetworks map[string]*VirtualNetworkIntent
 }
 
 // CreateLogicalRouter evaluates LogicalRouter dependencies.
@@ -41,8 +42,46 @@ func (s *Service) CreateLogicalRouter(
 	return s.BaseService.CreateLogicalRouter(ctx, request)
 }
 
+func (i *LogicalRouterIntent) checkVnDiff(
+	vns map[string]*VirtualNetworkIntent,
+) bool {
+	for k := range vns {
+		_, present := i.virtualNetworks[k]
+		if !present {
+			return false
+		}
+	}
+	return true
+}
+
+func (i *LogicalRouterIntent) Evaluate(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+) error {
+	i.updateVirtualNetworks(ctx, evaluateCtx)
+	return nil
+}
+
+func (i *LogicalRouterIntent) updateVirtualNetworks(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+) {
+	var vns map[string]*VirtualNetworkIntent
+	for _, vmi := range i.VirtualMachineInterfaceRefs {
+		vn, ok := LoadVirtualNetworkIntent(evaluateCtx.Cache, vmi.UUID)
+		if ok {
+			vns[vmi.UUID] = vn
+		}
+	}
+	if i.checkVnDiff(vns) {
+		return
+	}
+	// TODO implement logic for changed vns
+}
+
 func (i *LogicalRouterIntent) createDefaultRouteTarget(
-	ctx context.Context, evaluateContext *intent.EvaluateContext,
+	ctx context.Context,
+	evaluateContext *intent.EvaluateContext,
 ) error {
 	rt, err := createDefaultRouteTarget(ctx, evaluateContext)
 	if err != nil {

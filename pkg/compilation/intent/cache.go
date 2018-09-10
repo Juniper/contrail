@@ -12,6 +12,10 @@ type Cache struct {
 	intentMap *intentMap
 }
 
+type Loader interface {
+	Load(typeName, uuid string) (Intent, bool)
+}
+
 // NewCache creates new cache for intents.
 func NewCache() *Cache {
 	return &Cache{
