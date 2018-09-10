@@ -22,7 +22,7 @@ func (s *Service) CreateRoutingInstance(
 		RoutingInstance: request.GetRoutingInstance(),
 	}
 
-	err := s.handleCreate(ctx, i, nil, i.RoutingInstance)
+	err := s.handleCreate(ctx, i, i.RoutingInstance)
 	if err != nil {
 		return nil, err
 	}

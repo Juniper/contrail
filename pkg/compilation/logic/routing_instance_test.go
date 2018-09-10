@@ -21,7 +21,8 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
 	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
-	service := NewService(mockAPIClient, mockIntPoolAllocator, intent.NewCache())
+	mockReadService := servicesmock.NewMockReadService(mockCtrl)
+	service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, intent.NewCache())
 
 	expectCreateRT(mockAPIClient, &models.RouteTarget{
 		FQName:      []string{"target:64512:8000002"},
