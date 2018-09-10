@@ -153,3 +153,9 @@ func (m *RouteTargetList) AsRefs(instanceTargetType *InstanceTargetType) (refs [
 	}
 	return refs
 }
+
+// IsLinkLocal returns true if virtual network FQName fits Link Local
+func (m *VirtualNetwork) IsLinkLocal() bool {
+	fq := []string{"default-domain", "default-project", "__link_local__"}
+	return basemodels.FQNameEquals(fq, m.GetFQName())
+}

@@ -165,6 +165,15 @@ func (s *Server) Init() (err error) {
 	} else {
 		e.Logger.SetOutput(ioutil.Discard) // Disables Echo's built-in logging.
 	}
+
+	if viper.GetBool("server.log_body") {
+		e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+			log.WithFields(log.Fields{
+				"reqBody": string(reqBody),
+				"resBody": string(resBody),
+			}).Debugf("Request body")
+		}))
+	}
 	//e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
 
