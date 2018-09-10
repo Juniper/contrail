@@ -9,13 +9,18 @@ import (
 // EvaluateContext contains context information for Resource to handle CRUD
 type EvaluateContext struct {
 	WriteService services.WriteService
-	Cache        *Cache
+	IntentLoader Loader
 }
 
 // Intent contains Intent Compiler state for a resource.
 type Intent interface {
 	services.Resource
 	Evaluate(ctx context.Context, evaluateCtx *EvaluateContext) error
+}
+
+// Loader provides access to existing intents (e.g. using a cache)
+type Loader interface {
+	Load(typeName string, id ID) Intent
 }
 
 // BaseIntent implements the default Evaluate interface
