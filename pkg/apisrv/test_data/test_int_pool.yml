@@ -6,7 +6,7 @@ cleanup:
 - path: /int-pool/virtual_network_id/5
 - path: /int-pool/virtual_network_id/6
 - path: /int-pool/virtual_network_id/1337
-- path: /int-pool/route_target_number/8000002
+- path: /int-pool/route_target_number/8000100
 clients:
   default:
     id: alice
@@ -98,11 +98,11 @@ workflow:
     method: POST
     expected: [200]
   expect:
-    value: 8000002
+    value: 8000100
 
 - name: deallocate allocated route target number
   request:
-    path: /int-pool/route_target_number/8000002
+    path: /int-pool/route_target_number/8000100
     method: DELETE
     expected: [200]
   expect: null
