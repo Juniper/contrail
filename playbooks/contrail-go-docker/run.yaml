@@ -3,11 +3,19 @@
   roles:
     - zuul-include-vars # include variables exported from trusted context
     - install-docker-daemon
+    - acquire-ip-address
+    - self-ssh-key
+    - prepare-template-for-ansible-deployer
+    - contrail-ansible-deployer
+    - sanitytest
     - role: add-insecure-registry
       new_registry: "{{ contrail_docker_registry }}"
   vars:
     workdir: /go/src/github.com/Juniper/contrail
     sourcedir: "{{ ansible_env.HOME }}"
+    openstack_version: ocata
+    cloud_orchestrator: kubernetes
+    test_target: ci_k8s_sanity
   tasks:
     - include: build-setup.yaml
 
