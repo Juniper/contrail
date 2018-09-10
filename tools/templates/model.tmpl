@@ -246,24 +246,24 @@ func (m *{{ schema.JSONSchema.GoName }}) Depends() []string {
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) AddDependency(i interface{}) {
-	{% if schema.BackReferences|length > 0 %}
+	{%- if schema.BackReferences|length > 0 %}
 	switch resource := i.(type) {
-		{% for _, backref in schema.BackReferences %}
-			{% set linkTo = backref.LinkTo %}
+		{%- for _, backref in schema.BackReferences -%}
+			{%- set linkTo = backref.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.{{ linkTo.JSONSchema.GoName }}BackRefs = append(m.{{ linkTo.JSONSchema.GoName }}BackRefs, resource)
-		{% endfor %}
+		{%- endfor %}
 	}
-	{% endif %}
-	{% if schema.Children|length > 0 %}
+	{%- endif -%}
+	{%- if schema.Children|length > 0 %}
 	switch resource := i.(type) {
-		{% for child in schema.Children %}
-			{% set linkTo = child.LinkTo %}
+		{%- for child in schema.Children -%}
+			{%- set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.{{ linkTo.JSONSchema.GoName }}s = append(m.{{ linkTo.JSONSchema.GoName }}s, resource)
-		{% endfor %}
+		{%- endfor %}
 	}
-	{% endif %}
+	{%- endif %}
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) RemoveDependency(i interface{}) {

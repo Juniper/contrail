@@ -70,17 +70,17 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 
 type dummyMessage struct{}
 
-func (d *dummyMessage) Reset() {}
-
-func (d *dummyMessage) String() string { return "dummy" }
-
-func (d *dummyMessage) ProtoMessage() {}
-
+func (d *dummyMessage) Reset()                        {}
+func (d *dummyMessage) String() string                { return "dummy" }
+func (d *dummyMessage) ProtoMessage()                 {}
 func (d *dummyMessage) ToMap() map[string]interface{} { return nil }
-
-func (d *dummyMessage) Kind() string { return "" }
-
-func (d *dummyMessage) Depends() []string { return nil }
+func (d *dummyMessage) Kind() string                  { return "" }
+func (d *dummyMessage) GetParentUUID() string         { return "" }
+func (d *dummyMessage) GetUUID() string               { return "" }
+func (d *dummyMessage) Depends() []string             { return nil }
+func (d *dummyMessage) GetFQName() []string           { return nil }
+func (d *dummyMessage) AddDependency(interface{})     {}
+func (d *dummyMessage) RemoveDependency(interface{})  {}
 
 func (d *dummyMessage) ApplyPropCollectionUpdate(
 	*basemodels.PropCollectionUpdate,
