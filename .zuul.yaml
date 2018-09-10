@@ -16,6 +16,9 @@
     timeout: 5400
     required-projects:
       - Juniper/contrail
+      - Juniper/contrail-ansible-deployer
+      - Juniper/contrail-test
+      - Juniper/contrail-test-ci
     run: playbooks/contrail-go-docker/run.yaml
     nodeset:
       nodes:
