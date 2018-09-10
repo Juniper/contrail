@@ -10,7 +10,8 @@ import (
 )
 
 func createDefaultRouteTarget(
-	ctx context.Context, evaluateContext *intent.EvaluateContext,
+	ctx context.Context,
+	evaluateContext *intent.EvaluateContext,
 ) (*models.RouteTarget, error) {
 	rtKey := fmt.Sprintf("target:%v:%v", defaultAutonomousSystem, generateRandomRouteTargetNumber())
 
