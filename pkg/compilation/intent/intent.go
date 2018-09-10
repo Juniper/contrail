@@ -9,6 +9,7 @@ import (
 // EvaluateContext contains context information for Resource to handle CRUD
 type EvaluateContext struct {
 	WriteService services.WriteService
+	ReadService  services.ReadService
 	IntentLoader Loader
 }
 
@@ -16,6 +17,7 @@ type EvaluateContext struct {
 type Intent interface {
 	services.Resource
 	Evaluate(ctx context.Context, evaluateCtx *EvaluateContext) error
+	ProcessCreate(ctx context.Context, evaluateCtx *EvaluateContext) error
 }
 
 // Loader provides access to existing intents (e.g. using a cache)
@@ -29,5 +31,10 @@ type BaseIntent struct {
 
 // Evaluate creates/updates/deletes lower-level resources when needed.
 func (b *BaseIntent) Evaluate(ctx context.Context, evaluateCtx *EvaluateContext) error {
+	return nil
+}
+
+// ProcessCreate handles creation of a resource.
+func (b *BaseIntent) ProcessCreate(ctx context.Context, evaluateCtx *EvaluateContext) error {
 	return nil
 }
