@@ -1,7 +1,7 @@
 package intent
 
 import (
-	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/iancoleman/strcase"
@@ -10,94 +10,122 @@ import (
 
 // Cache cache for intents
 type Cache struct {
-	m *intentMap
+	s *intentStore
 }
 
 // NewCache creates new cache for intents
 func NewCache() *Cache {
 	return &Cache{
-		m: newIntentMap(),
+		s: newIntentStore(),
 	}
 }
 
-func newIntentMap() *intentMap {
-	return &intentMap{
-		internal: make(map[string]map[string]Intent),
+func newIntentStore() *intentStore {
+	return &intentStore{
+		typeToIntents: make(map[string]intents),
 	}
 }
 
-type intentMap struct {
-	internal map[string]map[string]Intent
+type intentStore struct {
+	typeToIntents map[string]intents
 	sync.RWMutex
 }
 
-func (im *intentMap) loadTypeMap(typeName string) map[string]Intent {
-	objMap, found := im.internal[typeName]
-	if !found {
-		objMap = map[string]Intent{}
-		im.internal[typeName] = objMap
-	}
-	return objMap
+type intents struct {
+	fqNameToID map[string]string
+	idToIntent map[string]Intent
 }
 
-func (m *intentMap) load(typeName, uuid string) (value Intent, ok bool) {
-	m.RLock()
-	defer m.RUnlock()
-	typeMap := m.loadTypeMap(typeName)
-	intent, ok := typeMap[uuid]
-	return intent, ok
-}
-
-func (m *intentMap) delete(typeName, uuid string) {
-	m.Lock()
-	defer m.Unlock()
-	typeMap := m.loadTypeMap(typeName)
-	delete(typeMap, uuid)
-}
-
-func (m *intentMap) store(typeName, uuid string, intent Intent) {
-	m.Lock()
-	defer m.Unlock()
-	typeMap := m.loadTypeMap(typeName)
-	typeMap[uuid] = intent
-}
-
-func (m *intentMap) debug() {
-	log.Debug("Cache content:")
-	m.Lock()
-	defer m.Unlock()
-	for t, v := range m.internal {
-		for uuid, _ := range v {
-			log.Debugf("Type: %s, UUID: %s", t, uuid)
-		}
-	}
+// LoadByFQName loads intent from cache. It accepts as type both snake-case and CamelCase
+func (c *Cache) LoadByFQName(typeName string, fqName []string) (Intent, bool) {
+	typeName = strcase.ToCamel(typeName)
+	log.Debugf("Loading: TypeName: %s, FQName: %v", typeName, fqName)
+	c.s.debug()
+	return c.s.loadByFQName(typeName, fqName)
 }
 
 // Load loads intent from cache. It accepts as type both snake-case and CamelCase
 func (c *Cache) Load(typeName, uuid string) (Intent, bool) {
 	typeName = strcase.ToCamel(typeName)
 	log.Debugf("Loading: TypeName: %s, UUID: %s", typeName, uuid)
-	c.m.debug()
-	return c.m.load(typeName, uuid)
+	c.s.debug()
+	return c.s.load(typeName, uuid)
 }
 
 // Delete puts intent into cache.
 func (c *Cache) Store(i Intent) {
 	typeName := strcase.ToCamel(i.Kind())
-	uuid := i.GetUUID()
-	log.Debugf("Storing: TypeName: %s, UUID: %s", typeName, uuid)
-	c.m.store(typeName, uuid, i)
-	c.m.debug()
+	log.Debugf("Storing: TypeName: %s, UUID: %s", typeName, i.GetUUID())
+	c.s.store(typeName, i)
+	c.s.debug()
 }
 
 // Delete deletes intent from cache. It accepts as type both snake-case and CamelCase
 func (c *Cache) Delete(typeName, uuid string) {
 	typeName = strcase.ToCamel(typeName)
 	log.Debugf("Deleting: TypeName: %s, UUID: %s", typeName, uuid)
-	c.m.delete(typeName, uuid)
-	c.m.debug()
+	c.s.delete(typeName, uuid)
+	c.s.debug()
 }
 
-func wrongCacheTypeError(got, expected interface{}) error {
-	return fmt.Errorf("got wrong type from cache. expected %T, got %T", expected, got)
+func (s *intentStore) loadByFQName(typeName string, fqName []string) (Intent, bool) {
+	s.RLock()
+	defer s.RUnlock()
+	is := s.loadIntents(typeName)
+	i, ok := is.idToIntent[is.fqNameToID[fqNameKey(fqName)]]
+	return i, ok
+}
+
+func (s *intentStore) load(typeName, uuid string) (Intent, bool) {
+	s.RLock()
+	defer s.RUnlock()
+	i, ok := s.loadIntents(typeName).idToIntent[uuid]
+	return i, ok
+}
+
+func (s *intentStore) delete(typeName, uuid string) {
+	s.Lock()
+	defer s.Unlock()
+	is := s.loadIntents(typeName)
+	i, found := is.idToIntent[uuid]
+	if !found {
+		return
+	}
+	delete(is.fqNameToID, fqNameKey(i.GetFQName()))
+	delete(is.idToIntent, uuid)
+}
+
+func (s *intentStore) store(typeName string, intent Intent) {
+	s.Lock()
+	defer s.Unlock()
+	is := s.loadIntents(typeName)
+	is.idToIntent[intent.GetUUID()] = intent
+	is.fqNameToID[fqNameKey(intent.GetFQName())] = intent.GetUUID()
+}
+
+func (s *intentStore) loadIntents(typeName string) intents {
+	is, found := s.typeToIntents[typeName]
+	if !found {
+		is = intents{
+			fqNameToID: map[string]string{},
+			idToIntent: map[string]Intent{},
+		}
+		s.typeToIntents[typeName] = is
+	}
+	return is
+}
+
+func (s *intentStore) debug() {
+	log.Debug("Cache content:")
+	s.Lock()
+	defer s.Unlock()
+	for t, is := range s.typeToIntents {
+		for fqname, uuid := range is.fqNameToID {
+			log.Debugf("Type: %s, FQName: %s, UUID: %s", t, fqname, uuid)
+		}
+	}
+}
+
+func fqNameKey(fqName []string) string {
+	return strings.Join(fqName, ":")
 }
