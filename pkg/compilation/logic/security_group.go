@@ -30,9 +30,8 @@ func (s *Service) CreateSecurityGroup(
 
 	s.cache.Store(i)
 
-	ec := &intent.EvaluateContext{
-		WriteService: s.WriteService,
-	}
+	ec := s.evaluateContext()
+
 	err := s.EvaluateDependencies(ctx, ec, obj, "SecurityGroup")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")

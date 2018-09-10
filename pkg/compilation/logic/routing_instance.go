@@ -38,9 +38,8 @@ func (s *Service) CreateRoutingInstance(
 
 	s.cache.Store(i)
 
-	ec := &intent.EvaluateContext{
-		WriteService: s.WriteService,
-	}
+	ec := s.evaluateContext()
+
 	if err := s.EvaluateDependencies(ctx, ec, obj, "RoutingInstance"); err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Routing Instance dependencies")
 	}
