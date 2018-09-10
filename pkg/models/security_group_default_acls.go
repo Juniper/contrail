@@ -9,18 +9,25 @@ import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
+type securityGroupLoader interface {
+	// LoadByFQName loads a Security Group (e.g. from cache) given its FQName.
+	LoadByFQName([]string) *SecurityGroup
+}
+
 // DefaultACLs returns default ACLs corresponding to the policy rules in a SecurityGroup.
-func (m *SecurityGroup) DefaultACLs() (ingressACL *AccessControlList, egressACL *AccessControlList) {
-	ingressRules, egressRules := m.toACLRules()
+func (m *SecurityGroup) DefaultACLs(l securityGroupLoader) (
+	ingressACL *AccessControlList, egressACL *AccessControlList) {
+
+	ingressRules, egressRules := m.toACLRules(l)
 
 	ingressACL = m.makeChildACL("ingress-access-control-list", ingressRules)
 	egressACL = m.makeChildACL("egress-access-control-list", egressRules)
 	return ingressACL, egressACL
 }
 
-func (m *SecurityGroup) toACLRules() (ingressRules, egressRules []*AclRuleType) {
+func (m *SecurityGroup) toACLRules(l securityGroupLoader) (ingressRules, egressRules []*AclRuleType) {
 	for _, pair := range m.allAddressCombinations() {
-		rule, err := m.makeACLRule(pair)
+		rule, err := m.makeACLRule(pair, l)
 		if err != nil {
 			log.WithError(err).Error("Ignoring ACL rule")
 			continue
@@ -48,17 +55,17 @@ func (m *SecurityGroup) allAddressCombinations() (pairs []policyAddressPair) {
 	return pairs
 }
 
-func (m *SecurityGroup) makeACLRule(pair policyAddressPair) (*AclRuleType, error) {
+func (m *SecurityGroup) makeACLRule(pair policyAddressPair, l securityGroupLoader) (*AclRuleType, error) {
 	protocol, err := pair.policyRule.ACLProtocol()
 	if err != nil {
 		return nil, err
 	}
 
-	sourceAddress, err := m.policyAddressToACLAddress(pair.sourceAddress)
+	sourceAddress, err := m.policyAddressToACLAddress(pair.sourceAddress, l)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert source address for an ACL")
 	}
-	destinationAddress, err := m.policyAddressToACLAddress(pair.destinationAddress)
+	destinationAddress, err := m.policyAddressToACLAddress(pair.destinationAddress, l)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert destination address for an ACL")
 	}
@@ -79,8 +86,10 @@ func (m *SecurityGroup) makeACLRule(pair policyAddressPair) (*AclRuleType, error
 	}, nil
 }
 
-func (m *SecurityGroup) policyAddressToACLAddress(policyAddress *policyAddress) (*AddressType, error) {
-	numericSecurityGroup, err := m.securityGroupNameToID(policyAddress.SecurityGroup)
+func (m *SecurityGroup) policyAddressToACLAddress(
+	policyAddress *policyAddress, l securityGroupLoader) (*AddressType, error) {
+
+	numericSecurityGroup, err := m.securityGroupNameToID(policyAddress.SecurityGroup, l)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert security group name for an ACL")
 	}
@@ -90,7 +99,7 @@ func (m *SecurityGroup) policyAddressToACLAddress(policyAddress *policyAddress) 
 	return &aclAddress, nil
 }
 
-func (m *SecurityGroup) securityGroupNameToID(name string) (string, error) {
+func (m *SecurityGroup) securityGroupNameToID(name string, l securityGroupLoader) (string, error) {
 	switch {
 	case name == "local" || name == "":
 		return "", nil
@@ -99,8 +108,12 @@ func (m *SecurityGroup) securityGroupNameToID(name string) (string, error) {
 	case basemodels.FQNameToString(m.GetFQName()) == name:
 		return strconv.FormatInt(m.GetSecurityGroupID(), 10), nil
 	default:
-		// TODO: If there is a security group in cache with FQName == name, take its SecurityGroupID.
-		return "", errors.Errorf("unknown security group name %q", name)
+		fqName := basemodels.ParseFQName(name)
+		sg := l.LoadByFQName(fqName)
+		if sg == nil {
+			return "", errors.Errorf("unknown security group name %q", name)
+		}
+		return strconv.FormatInt(sg.GetSecurityGroupID(), 10), nil
 	}
 }
 

@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 func TestToACLRules(t *testing.T) {
@@ -351,9 +353,10 @@ func TestToACLRules(t *testing.T) {
 		},
 	}
 
+	// TODO (Kamil): Test toACLRules in presence of other SGs
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			ingressACLRules, egressACLRules := tt.securityGroup.toACLRules()
+			ingressACLRules, egressACLRules := tt.securityGroup.toACLRules(&nilSGLoader{})
 			assert.Equal(t, tt.expectedIngressACLRules, ingressACLRules,
 				"ingress ACL rules don't match the expected ones")
 			assert.Equal(t, tt.expectedEgressACLRules, egressACLRules,
@@ -595,9 +598,10 @@ func TestMakeACLRule(t *testing.T) {
 		},
 	}
 
+	// TODO (Kamil): Test makeACLRule in presence of other SGs
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			aclRule, err := tt.securityGroup.makeACLRule(tt.policyAddressPair)
+			aclRule, err := tt.securityGroup.makeACLRule(tt.policyAddressPair, &nilSGLoader{})
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
@@ -613,6 +617,7 @@ func TestSecurityGroupNameToID(t *testing.T) {
 		name              string
 		securityGroup     *SecurityGroup
 		securityGroupName string
+		otherSGs          []*SecurityGroup
 
 		expectedSecurityGroupID string
 		fails                   bool
@@ -649,6 +654,26 @@ func TestSecurityGroupNameToID(t *testing.T) {
 		},
 
 		{
+			name: "name of another existing security group",
+			securityGroup: &SecurityGroup{
+				FQName:          []string{"default-domain", "project-blue", "default"},
+				SecurityGroupID: 8000002,
+			},
+			securityGroupName: "default-domain:project-blue:other1",
+			otherSGs: []*SecurityGroup{
+				{
+					FQName:          []string{"default-domain", "project-blue", "other1"},
+					SecurityGroupID: 8000003,
+				},
+				{
+					FQName:          []string{"default-domain", "project-blue", "other2"},
+					SecurityGroupID: 8000004,
+				},
+			},
+			expectedSecurityGroupID: "8000003",
+		},
+
+		{
 			name: "unknown security group name",
 			securityGroup: &SecurityGroup{
 				FQName:          []string{"default-domain", "project-blue", "default"},
@@ -661,7 +686,10 @@ func TestSecurityGroupNameToID(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			securityGroupID, err := tt.securityGroup.securityGroupNameToID(tt.securityGroupName)
+			loader := &mapSGLoader{}
+			loader.fromList(tt.otherSGs)
+
+			securityGroupID, err := tt.securityGroup.securityGroupNameToID(tt.securityGroupName, loader)
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
@@ -669,5 +697,30 @@ func TestSecurityGroupNameToID(t *testing.T) {
 			}
 			assert.Equal(t, tt.expectedSecurityGroupID, securityGroupID)
 		})
+	}
+}
+
+type nilSGLoader struct {
+}
+
+func (*nilSGLoader) LoadByFQName([]string) *SecurityGroup {
+	return nil
+}
+
+type mapSGLoader struct {
+	sgs map[string]*SecurityGroup
+}
+
+func (l *mapSGLoader) LoadByFQName(fqName []string) *SecurityGroup {
+	return l.sgs[basemodels.FQNameToString(fqName)]
+}
+
+func (l *mapSGLoader) fromList(sgs []*SecurityGroup) {
+	if l.sgs == nil {
+		l.sgs = make(map[string]*SecurityGroup)
+	}
+
+	for _, sg := range sgs {
+		l.sgs[basemodels.FQNameToString(sg.GetFQName())] = sg
 	}
 }
