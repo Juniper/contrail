@@ -7,9 +7,14 @@ import (
 // Object is generic model instance.
 type Object interface {
 	proto.Message
-	ToMap() map[string]interface{}
+	GetUUID() string
+	GetFQName() []string
+	GetParentUUID() string
 	Kind() string
 	Depends() []string
-	ApplyPropCollectionUpdate(*PropCollectionUpdate) (updated map[string]interface{}, err error)
+	AddDependency(interface{})
+	RemoveDependency(interface{})
+	ToMap() map[string]interface{}
 	ApplyMap(map[string]interface{})
+	ApplyPropCollectionUpdate(*PropCollectionUpdate) (updated map[string]interface{}, err error)
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -14,6 +15,10 @@ import (
 type LogicalRouterIntent struct {
 	intent.BaseIntent
 	*models.LogicalRouter
+}
+
+func (i *LogicalRouterIntent) GetObject() basemodels.Object {
+	return i.LogicalRouter
 }
 
 // CreateLogicalRouter evaluates LogicalRouter dependencies.
