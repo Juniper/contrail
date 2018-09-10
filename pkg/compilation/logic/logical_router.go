@@ -29,9 +29,7 @@ func (s *Service) CreateLogicalRouter(
 
 	s.cache.Store(i)
 
-	ec := &intent.EvaluateContext{
-		WriteService: s.WriteService,
-	}
+	ec := s.evaluateContext()
 
 	if len(obj.GetRouteTargetRefs()) == 0 {
 		if err := i.createDefaultRouteTarget(ctx, ec); err != nil {

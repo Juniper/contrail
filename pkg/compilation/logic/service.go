@@ -20,3 +20,10 @@ func NewService(apiClient services.WriteService, cache *intent.Cache) *Service {
 		cache:        cache,
 	}
 }
+
+func (s *Service) evaluateContext() *intent.EvaluateContext {
+	return &intent.EvaluateContext{
+		WriteService: s.WriteService,
+		Cache:        s.cache,
+	}
+}
