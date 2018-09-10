@@ -15,45 +15,38 @@ import (
 )
 
 func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
-	routingInstance := &models.RoutingInstance{
-		UUID:       "a8edf702-7dd6-4cbc-b599-a7f8ace1d22b",
-		ParentUUID: "af68b258-6fc4-4959-8181-a2cfb6f93500",
-		ParentType: "virtual-network",
-		FQName: []string{
-			"default-domain",
-			"project-blue",
-			"vn-blue",
-			"vn-blue"},
-		RoutingInstanceIsDefault: true,
-	}
-
-	expectedRT := &models.RouteTarget{
-		FQName:      []string{"target:64512:8000002"},
-		DisplayName: "target:64512:8000002",
-	}
+	compilationif.Init()
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockAPIService := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIService)
+	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
+	service := NewService(mockAPIClient)
 
-	expectCreateRT(mockAPIService, expectedRT)
+	expectCreateRT(mockAPIClient, &models.RouteTarget{
+		FQName:      []string{"target:64512:8000002"},
+		DisplayName: "target:64512:8000002",
+	})
 
-	compilationif.Init()
 	_, err := service.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{
-		RoutingInstance: routingInstance,
+		RoutingInstance: &models.RoutingInstance{
+			UUID:       "a8edf702-7dd6-4cbc-b599-a7f8ace1d22b",
+			ParentUUID: "af68b258-6fc4-4959-8181-a2cfb6f93500",
+			ParentType: "virtual-network",
+			FQName:     []string{"default-domain", "project-blue", "vn-blue", "vn-blue"},
+			RoutingInstanceIsDefault: true,
+		},
 	})
 
 	assert.NoError(t, err)
 }
 
-func expectCreateRT(mockAPIService *servicesmock.MockWriteService, expectedRT *models.RouteTarget) {
+func expectCreateRT(mockAPIService *servicesmock.MockWriteService, returnedRT *models.RouteTarget) {
 	// TODO Revisit code below when route target is allocated properly.
 	mockAPIService.EXPECT().CreateRouteTarget(
 		testutil.NotNil(),
 		testutil.NotNil(),
-	).Return(&services.CreateRouteTargetResponse{RouteTarget: expectedRT},
+	).Return(&services.CreateRouteTargetResponse{RouteTarget: returnedRT},
 		nil,
 	).Times(1)
 

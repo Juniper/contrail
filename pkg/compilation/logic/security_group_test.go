@@ -201,11 +201,11 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockAPIService := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIService)
+	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
+	service := NewService(mockAPIClient)
 
-	expectCreateACL(mockAPIService, expectedIngressACL)
-	expectCreateACL(mockAPIService, expectedEgressACL)
+	expectCreateACL(mockAPIClient, expectedIngressACL)
+	expectCreateACL(mockAPIClient, expectedEgressACL)
 
 	compilationif.Init()
 	_, err := service.CreateSecurityGroup(context.Background(), &services.CreateSecurityGroupRequest{
@@ -214,8 +214,8 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func expectCreateACL(mockAPIService *servicesmock.MockWriteService, expectedACL *models.AccessControlList) {
-	mockAPIService.EXPECT().CreateAccessControlList(testutil.NotNil(), &services.CreateAccessControlListRequest{
+func expectCreateACL(mockAPIClient *servicesmock.MockWriteService, expectedACL *models.AccessControlList) {
+	mockAPIClient.EXPECT().CreateAccessControlList(testutil.NotNil(), &services.CreateAccessControlListRequest{
 		AccessControlList: expectedACL,
 	}).Return(&services.CreateAccessControlListResponse{
 		AccessControlList: expectedACL,
