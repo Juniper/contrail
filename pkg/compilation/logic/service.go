@@ -15,15 +15,31 @@ type Service struct {
 	// WriteService is used to create/update/delete lower-level resources
 	WriteService     services.WriteService
 	IntPoolAllocator services.IntPoolAllocator
+	ReadService      services.ReadService
 	cache            *intent.Cache
 }
 
 // NewService creates a Service
-func NewService(apiClient services.WriteService, allocator services.IntPoolAllocator, cache *intent.Cache) *Service {
+func NewService(
+	apiClient services.WriteService,
+	readService services.ReadService,
+	allocator services.IntPoolAllocator,
+	cache *intent.Cache,
+) *Service {
 	return &Service{
 		WriteService:     apiClient,
+		ReadService:      readService,
 		IntPoolAllocator: allocator,
 		cache:            cache,
+	}
+}
+
+func (s *Service) evaluateContext() *intent.EvaluateContext {
+	return &intent.EvaluateContext{
+		WriteService:     s.WriteService,
+		ReadService:      s.ReadService,
+		IntPoolAllocator: s.IntPoolAllocator,
+		IntentLoader:     s.cache,
 	}
 }
 
@@ -31,25 +47,12 @@ func NewService(apiClient services.WriteService, allocator services.IntPoolAlloc
 func (s *Service) handleCreate(
 	ctx context.Context,
 	i intent.Intent,
-	intentLogic func(ctx context.Context, ec *intent.EvaluateContext) error,
-	r services.Resource,
 ) error {
 	s.cache.Store(i)
 
-	ec := &intent.EvaluateContext{
-		WriteService:     s.WriteService,
-		IntPoolAllocator: s.IntPoolAllocator,
-		IntentLoader:     s.cache,
-	}
+	ec := s.evaluateContext()
 
-	if intentLogic != nil {
-		err := intentLogic(ctx, ec)
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := s.EvaluateDependencies(ctx, ec, r); err != nil {
+	if err := s.EvaluateDependencies(ctx, ec, i.GetObject()); err != nil {
 		return errors.Wrapf(err, "failed to evaluate %s dependencies", i.Kind())
 	}
 	return nil
