@@ -1,4 +1,4 @@
-package intent
+package intent_test
 
 import (
 	"os"
