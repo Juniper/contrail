@@ -28,11 +28,10 @@ import (
 )
 
 // SetupService setups all required services and chains them.
-func SetupService(apiService services.WriteService) services.Service {
+func SetupService(WriteService services.WriteService, ReadService services.ReadService) services.Service {
 	// create services
-
 	cache := intent.NewCache()
-	logicService := logic.NewService(apiService, cache)
+	logicService := logic.NewService(WriteService, ReadService, cache)
 
 	// return entry service
 	return logicService
@@ -80,7 +79,7 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 	apiClient := newAPIClient(c)
 
 	return &IntentCompilationService{
-		service:   SetupService(apiClient),
+		service:   SetupService(apiClient, apiClient),
 		apiClient: apiClient,
 		Store:     etcd.NewClient(e),
 		locker:    l,

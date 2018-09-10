@@ -34,6 +34,7 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 			},
 			returnedRT: &models.RouteTarget{
 				FQName:      []string{"target:64512:8000002"},
+				UUID:        "default-route-target",
 				DisplayName: "target:64512:8000002",
 			},
 		},
@@ -50,7 +51,8 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 				},
 				RouteTargetRefs: []*models.LogicalRouterRouteTargetRef{
 					{
-						To: []string{"target:64512:8000003"},
+						UUID: "default-route-target",
+						To:   []string{"target:64512:8000003"},
 					},
 				},
 			},
@@ -62,7 +64,16 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
-			service := NewService(mockAPIClient, intent.NewCache())
+			mockReadService := servicesmock.NewMockReadService(mockCtrl)
+			cache := intent.NewCache()
+			service := NewService(mockAPIClient, mockReadService, cache)
+
+			mockReadService.EXPECT().GetProject(
+				testutil.NotNil(),
+				testutil.NotNil(),
+			).Return(&services.GetProjectResponse{Project: &models.Project{VxlanRouting: false}},
+				nil,
+			).AnyTimes()
 
 			if tt.returnedRT == nil {
 				expectCreateRTinLR(mockAPIClient, tt.returnedRT, 0)
@@ -73,8 +84,14 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 			_, err := service.CreateLogicalRouter(context.Background(), &services.CreateLogicalRouterRequest{
 				LogicalRouter: tt.testLogicalRouter,
 			})
+
 			assert.NoError(t, err)
 
+			lrIntent := LoadLogicalRouterIntent(cache, tt.testLogicalRouter.GetUUID())
+
+			if assert.NotNil(t, lrIntent) {
+				assert.Equal(t, "default-route-target", lrIntent.defaultRouteTargetUUID)
+			}
 		})
 	}
 }
@@ -93,4 +110,111 @@ func expectCreateRTinLR(
 	mockAPIClient.EXPECT().CreateLogicalRouterRouteTargetRef(
 		testutil.NotNil(), testutil.NotNil(),
 	).Return(nil, nil).Times(times)
+}
+
+func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
+	mockReadService := servicesmock.NewMockReadService(mockCtrl)
+	cache := intent.NewCache()
+	service := NewService(mockAPIClient, mockReadService, cache)
+
+	rt := &models.RouteTarget{
+		FQName:      []string{"target:64512:8000002"},
+		DisplayName: "target:64512:8000002",
+		UUID:        "default-route-target",
+	}
+
+	ri := &models.RoutingInstance{
+		UUID: "test-vn",
+		FQName: []string{
+			"default-domain",
+			"project-blue",
+			"test-vn",
+			"test-vn",
+		},
+	}
+
+	vn := &models.VirtualNetwork{
+		UUID: "test-vn",
+		FQName: []string{
+			"default-domain",
+			"project-blue",
+			"test-vn",
+		},
+	}
+
+	vmi := &models.VirtualMachineInterface{
+		UUID: "test-vmi",
+		VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+			{
+				UUID: "test-vn",
+			},
+		},
+	}
+
+	lr := &models.LogicalRouter{
+		UUID:       "ffe0e3e8-b035-11e8-8981-529269fb1659",
+		ParentUUID: "ffe0e050-b035-11e8-8981-529269fb1559",
+		ParentType: "project",
+		FQName: []string{
+			"default-domain",
+			"project-blue",
+			"logical_router_red",
+		},
+		VirtualMachineInterfaceRefs: []*models.LogicalRouterVirtualMachineInterfaceRef{
+			{
+				UUID: "test-vmi",
+			},
+		},
+	}
+
+	_, err := service.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{
+		RoutingInstance: ri,
+	})
+	assert.NoError(t, err)
+
+	_, err = service.CreateVirtualNetwork(context.Background(), &services.CreateVirtualNetworkRequest{
+		VirtualNetwork: vn,
+	})
+	assert.NoError(t, err)
+
+	_, err = service.CreateVirtualMachineInterface(context.Background(), &services.CreateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: vmi,
+	})
+	assert.NoError(t, err)
+
+	mockReadService.EXPECT().GetProject(
+		testutil.NotNil(),
+		testutil.NotNil(),
+	).Return(&services.GetProjectResponse{Project: &models.Project{VxlanRouting: false}},
+		nil,
+	).Times(1)
+
+	mockAPIClient.EXPECT().CreateRouteTarget(
+		testutil.NotNil(),
+		testutil.NotNil(),
+	).Return(&services.CreateRouteTargetResponse{RouteTarget: rt},
+		nil,
+	).Times(1)
+
+	mockAPIClient.EXPECT().CreateLogicalRouterRouteTargetRef(
+		testutil.NotNil(), testutil.NotNil(),
+	).Return(nil, nil).Times(1)
+
+	mockAPIClient.EXPECT().CreateRoutingInstanceRouteTargetRef(
+		testutil.NotNil(),
+		&services.CreateRoutingInstanceRouteTargetRefRequest{
+			ID: "test-vn",
+			RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
+				UUID: rt.GetUUID(),
+			},
+		},
+	).Times(1)
+
+	_, err = service.CreateLogicalRouter(context.Background(), &services.CreateLogicalRouterRequest{
+		LogicalRouter: lr,
+	})
+	assert.NoError(t, err)
 }
