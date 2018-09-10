@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	"github.com/siddontang/go/log"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
@@ -14,26 +15,33 @@ import (
 type LogicalRouterIntent struct {
 	intent.BaseIntent
 	*models.LogicalRouter
+	virtualNetworks    map[string]*models.VirtualMachineInterfaceVirtualNetworkRef
+	defaultRouteTarget string
+	vxlanRouting       bool
+}
+
+func NewLogicalRouterIntent(
+	ctx context.Context,
+	ReadService services.ReadService,
+	request *services.CreateLogicalRouterRequest,
+) *LogicalRouterIntent {
+	lr := &LogicalRouterIntent{
+		LogicalRouter: request.GetLogicalRouter(),
+	}
+	lr.resolveVxLan(ctx, ReadService)
+
+	return lr
 }
 
 // CreateLogicalRouter evaluates LogicalRouter dependencies.
 func (s *Service) CreateLogicalRouter(
-	ctx context.Context, request *services.CreateLogicalRouterRequest,
+	ctx context.Context,
+	request *services.CreateLogicalRouterRequest,
 ) (*services.CreateLogicalRouterResponse, error) {
 
-	i := &LogicalRouterIntent{
-		LogicalRouter: request.GetLogicalRouter(),
-	}
+	i := NewLogicalRouterIntent(ctx, s.ReadService, request)
 
-	c := func(ctx context.Context, ec *intent.EvaluateContext) error {
-		if len(i.LogicalRouter.GetRouteTargetRefs()) == 0 {
-			if err := i.createDefaultRouteTarget(ctx, ec); err != nil {
-				return errors.Wrap(err, "failed to create Logical Router's default Route Target")
-			}
-		}
-		return nil
-	}
-	err := s.handleCreate(ctx, i, c, i.LogicalRouter)
+	err := s.handleCreate(ctx, i, i.LogicalRouter)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +49,188 @@ func (s *Service) CreateLogicalRouter(
 	return s.BaseService.CreateLogicalRouter(ctx, request)
 }
 
+func (i *LogicalRouterIntent) ProcessCreate(
+	ctx context.Context,
+	ec *intent.EvaluateContext,
+) error {
+	if len(i.LogicalRouter.GetRouteTargetRefs()) == 0 {
+		if err := i.createDefaultRouteTarget(ctx, ec); err != nil {
+			return errors.Wrap(err, "failed to create Logical Router's default Route Target")
+		}
+	}
+	return nil
+}
+
+func (i *LogicalRouterIntent) checkVnDiff(
+	vns map[string]*models.VirtualMachineInterfaceVirtualNetworkRef,
+) bool {
+	for k := range vns {
+		_, present := i.virtualNetworks[k]
+		if !present {
+			return false
+		}
+	}
+	return true
+}
+
+func (i *LogicalRouterIntent) Evaluate(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+) error {
+	return i.updateVirtualNetworks(ctx, evaluateCtx)
+}
+
+func (i *LogicalRouterIntent) resolveVxLan(
+	ctx context.Context,
+	ReadService services.ReadService,
+) {
+	r, err := ReadService.GetProject(ctx, &services.GetProjectRequest{
+		ID:     i.GetParentUUID(),
+		Fields: []string{"vxlan_routing"},
+	})
+
+	if err == nil {
+		i.vxlanRouting = r.GetProject().VxlanRouting
+	}
+}
+
+func (i *LogicalRouterIntent) updateVirtualNetworks(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+) error {
+	var vnRefs map[string]*models.VirtualMachineInterfaceVirtualNetworkRef
+	for _, ref := range i.VirtualMachineInterfaceRefs {
+		vmi, ok := LoadVirtualMachineInterfaceIntent(evaluateCtx.IntentLoader, ref.UUID)
+		if ok {
+			if len(vmi.GetVirtualNetworkRefs()) > 0 {
+				vnRefs[vmi.UUID] = vmi.GetVirtualNetworkRefs()[0]
+			}
+		}
+	}
+	if i.checkVnDiff(vnRefs) {
+		return nil
+	}
+	return i.setVirtualNetworks(ctx, evaluateCtx, vnRefs)
+}
+
+func (i *LogicalRouterIntent) setVirtualNetworks(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+	vnRefs map[string]*models.VirtualMachineInterfaceVirtualNetworkRef,
+) error {
+	if i.vxlanRouting {
+		i.virtualNetworks = vnRefs
+		return nil
+	}
+	err := i.handleDeletedNetworks(ctx, evaluateCtx, vnRefs)
+	if err != nil {
+		return nil
+	}
+	return i.handleAddedNetworks(ctx, evaluateCtx, vnRefs)
+
+}
+
+func (i *LogicalRouterIntent) handleDeletedNetworks(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+	vnRefs map[string]*models.VirtualMachineInterfaceVirtualNetworkRef,
+) error {
+	for _, vn := range i.getDeletedNetworks(ctx, evaluateCtx, vnRefs) {
+		ri := vn.GetPrimaryRoutingInstanceIntent(ctx, evaluateCtx)
+		if ri == nil {
+			log.Errorf("Primary RI is None for VN: %s", vn.GetUUID())
+			continue
+		}
+		// TODO handle delete
+	}
+	return nil
+}
+
+func (i *LogicalRouterIntent) handleAddedNetworks(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+	vnRefs map[string]*models.VirtualMachineInterfaceVirtualNetworkRef,
+) error {
+	for _, vn := range i.getAddedNetworks(ctx, evaluateCtx, vnRefs) {
+		ri := vn.GetPrimaryRoutingInstanceIntent(ctx, evaluateCtx)
+		if ri == nil {
+			// TODO handle all route targets
+			uuid, err := i.getDefaultRouteTargetUUID()
+			if err != nil {
+				return err
+			}
+			evaluateCtx.WriteService.CreateRoutingInstanceRouteTargetRef(
+				ctx, &services.CreateRoutingInstanceRouteTargetRefRequest{
+					ID: ri.GetUUID(),
+					RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
+						UUID: uuid,
+					},
+				},
+			)
+		}
+	}
+	return nil
+}
+
+func (i *LogicalRouterIntent) getDeletedNetworks(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+	vnRefs map[string]*models.VirtualMachineInterfaceVirtualNetworkRef,
+) []*VirtualNetworkIntent {
+	vns := []*VirtualNetworkIntent{}
+	for uuid, vnref := range i.virtualNetworks {
+		if _, ok := vnRefs[uuid]; !ok {
+			vn := getVirtualNetworkIntentFromReference(ctx, evaluateCtx, vnref)
+			if vn != nil {
+				vns = append(vns, vn)
+			}
+		}
+	}
+	return vns
+}
+
+func (i *LogicalRouterIntent) getAddedNetworks(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+	vnRefs map[string]*models.VirtualMachineInterfaceVirtualNetworkRef,
+) []*VirtualNetworkIntent {
+	vns := []*VirtualNetworkIntent{}
+	for uuid, vnref := range vnRefs {
+		if _, ok := i.virtualNetworks[uuid]; !ok {
+			vn := getVirtualNetworkIntentFromReference(ctx, evaluateCtx, vnref)
+			if vn != nil {
+				vns = append(vns, vn)
+			}
+		}
+	}
+	return vns
+}
+
+func getVirtualNetworkIntentFromReference(
+	ctx context.Context,
+	evaluateCtx *intent.EvaluateContext,
+	ref *models.VirtualMachineInterfaceVirtualNetworkRef,
+) *VirtualNetworkIntent {
+	var vi *VirtualNetworkIntent
+	if ref.UUID != "" {
+		vi, _ = LoadVirtualNetworkIntent(evaluateCtx.IntentLoader, ref.UUID)
+	} else {
+		i, _ := evaluateCtx.IntentLoader.LoadByFQName(models.TypeNameVirtualNetwork, ref.To)
+		vi, _ = i.(*VirtualNetworkIntent)
+	}
+	return vi
+}
+
+func (i *LogicalRouterIntent) getDefaultRouteTargetUUID() (string, error) {
+	if len(i.RouteTargetRefs) == 0 {
+		return "", errors.Errorf("failed to get default route target for logical router with uuid %s", i.GetUUID())
+	}
+	return i.RouteTargetRefs[0].UUID, nil
+}
+
 func (i *LogicalRouterIntent) createDefaultRouteTarget(
-	ctx context.Context, evaluateContext *intent.EvaluateContext,
+	ctx context.Context,
+	evaluateContext *intent.EvaluateContext,
 ) error {
 	rt, err := createDefaultRouteTarget(ctx, evaluateContext)
 	if err != nil {
@@ -58,6 +246,5 @@ func (i *LogicalRouterIntent) createDefaultRouteTarget(
 			},
 		},
 	)
-
 	return err
 }

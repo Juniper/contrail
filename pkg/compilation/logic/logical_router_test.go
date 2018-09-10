@@ -62,7 +62,15 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
-			service := NewService(mockAPIClient, intent.NewCache())
+			mockReadService := servicesmock.NewMockReadService(mockCtrl)
+			service := NewService(mockAPIClient, mockReadService, intent.NewCache())
+
+			mockReadService.EXPECT().GetProject(
+				testutil.NotNil(),
+				testutil.NotNil(),
+			).Return(&services.GetProjectResponse{Project: &models.Project{VxlanRouting: false}},
+				nil,
+			).AnyTimes()
 
 			if tt.returnedRT == nil {
 				expectCreateRTinLR(mockAPIClient, tt.returnedRT, 0)
