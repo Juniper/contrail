@@ -19,3 +19,9 @@ func AllIPv6Addresses() *AddressType {
 		},
 	}
 }
+
+// IsSecurityGroupNameAReference checks if the Security Group name in an address
+// is a reference to other security group.
+func (a *AddressType) IsSecurityGroupNameAReference() bool {
+	return a.SecurityGroup != "" && a.SecurityGroup != "local" && a.SecurityGroup != "any"
+}
