@@ -203,7 +203,8 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 
 	cache := intent.NewCache()
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIClient, cache)
+	mockReadService := servicesmock.NewMockReadService(mockCtrl)
+	service := NewService(mockAPIClient, mockReadService, cache)
 
 	expectCreateACL(mockAPIClient, expectedIngressACL)
 	expectCreateACL(mockAPIClient, expectedEgressACL)
