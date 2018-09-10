@@ -42,7 +42,7 @@ func (i *SecurityGroupIntent) Evaluate(
 	ctx context.Context,
 	evaluateContext *intent.EvaluateContext,
 ) error {
-	ingressACL, egressACL := i.DefaultACLs()
+	ingressACL, egressACL := i.DefaultACLs(makeSGLoader(evaluateContext))
 
 	_, err := evaluateContext.WriteService.CreateAccessControlList(ctx, &services.CreateAccessControlListRequest{
 		AccessControlList: ingressACL,
@@ -59,4 +59,26 @@ func (i *SecurityGroupIntent) Evaluate(
 	}
 
 	return nil
+}
+
+type securityGroupLoader struct {
+	loader intent.Loader
+}
+
+func (l *securityGroupLoader) LoadByFQName(fqName []string) *models.SecurityGroup {
+	i, ok := l.loader.LoadByFQName("SecurityGroup", fqName)
+	if !ok {
+		return nil
+	}
+	sgi, ok := i.(*SecurityGroupIntent)
+	if !ok {
+		return nil
+	}
+	return sgi.SecurityGroup
+}
+
+func makeSGLoader(ctx *intent.EvaluateContext) *securityGroupLoader {
+	return &securityGroupLoader{
+		loader: ctx.IntentLoader,
+	}
 }
