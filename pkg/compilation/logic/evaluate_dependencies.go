@@ -35,8 +35,8 @@ func (s *Service) EvaluateDependencies(
 			log.Printf("Processing ObjUUID[%s] \n", objUUID)
 			log.Printf("Processing Object[%v] \n", objVal)
 
-			intent, ok := s.cache.Load(objTypeKey, objUUID)
-			if !ok {
+			intent := s.cache.Load(objTypeKey, intent.UUID(objUUID))
+			if intent == nil {
 				return false
 			}
 			err = intent.Evaluate(ctx, evaluateCtx)

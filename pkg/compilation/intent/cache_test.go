@@ -61,8 +61,8 @@ func TestCacheLoad(t *testing.T) {
 				})
 			}
 
-			_, ok := c.Load(tt.typeName, vn.GetUUID())
-			assert.Equal(t, tt.expectedOk, ok)
+			i := c.Load(tt.typeName, UUID(vn.GetUUID()))
+			assert.Equal(t, tt.expectedOk, i != nil)
 		})
 	}
 }
@@ -102,10 +102,10 @@ func TestCacheDelete(t *testing.T) {
 				})
 			}
 
-			c.Delete(tt.typeName, vn.GetUUID())
+			c.Delete(tt.typeName, UUID(vn.GetUUID()))
 
-			_, ok := c.Load(tt.typeName, vn.GetUUID())
-			assert.False(t, ok)
+			i := c.Load(tt.typeName, UUID(vn.GetUUID()))
+			assert.Nil(t, i)
 		})
 	}
 }
