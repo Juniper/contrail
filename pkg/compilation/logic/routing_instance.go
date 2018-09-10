@@ -18,6 +18,21 @@ type RoutingInstanceIntent struct {
 	*models.RoutingInstance
 }
 
+func LoadRoutingInstanceIntent(
+	c *intent.Cache,
+	uuid string,
+) (*RoutingInstanceIntent, bool) {
+	i, ok := c.Load(models.KindRoutingInstance, uuid)
+	if !ok {
+		return nil, false
+	}
+	actual, ok := i.(*RoutingInstanceIntent)
+	if !ok {
+		return nil, false
+	}
+	return actual, true
+}
+
 // TODO: get_autonomous_system method and int pool allocator endpoint.
 const (
 	defaultAutonomousSystem = 64512
