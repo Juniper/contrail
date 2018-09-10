@@ -1,5 +1,11 @@
 package models
 
+const (
+	AnySecurityGroup         = "any"
+	LocalSecurityGroup       = "local"
+	UnspecifiedSecurityGroup = ""
+)
+
 // AllIPv4Addresses returns an AddressType with a subnet of all possible IPv4 addresses.
 func AllIPv4Addresses() *AddressType {
 	return &AddressType{
@@ -18,4 +24,11 @@ func AllIPv6Addresses() *AddressType {
 			IPPrefixLen: 0,
 		},
 	}
+}
+
+// IsSecurityGroupNameAReference checks if the Security Group name in an address
+// is a reference to other security group.
+func (m *AddressType) IsSecurityGroupNameAReference() bool {
+	return m.SecurityGroup != AnySecurityGroup &&
+		m.SecurityGroup != LocalSecurityGroup && m.SecurityGroup != UnspecifiedSecurityGroup
 }
