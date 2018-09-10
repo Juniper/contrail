@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -14,6 +15,25 @@ import (
 type RoutingInstanceIntent struct {
 	intent.BaseIntent
 	*models.RoutingInstance
+}
+
+func (i *RoutingInstanceIntent) GetObject() basemodels.Object {
+	return i.RoutingInstance
+}
+
+func LoadRoutingInstanceIntent(
+	c *intent.Cache,
+	uuid string,
+) (*RoutingInstanceIntent, bool) {
+	i, ok := c.Load(models.KindRoutingInstance, uuid)
+	if !ok {
+		return nil, false
+	}
+	actual, ok := i.(*RoutingInstanceIntent)
+	if !ok {
+		return nil, false
+	}
+	return actual, true
 }
 
 // TODO: get_autonomous_system method and int pool allocator endpoint.
