@@ -97,6 +97,20 @@ workflow:
   expect:
     uuid: routing_instance_ref_update_uuid
 
+- name: try to create ref that already exists
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: ADD
+      type: routing-instance
+      uuid: routing_instance_ref_update_uuid
+      ref-type: route-target
+      ref-uuid: route_target_ref_update_uuid
+  expect:
+    uuid: routing_instance_ref_update_uuid
+
 - name: check if the ref from routing-instance to route-target was created
   request:
     path: /routing-instance/routing_instance_ref_update_uuid

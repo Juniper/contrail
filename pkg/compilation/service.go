@@ -27,11 +27,15 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-func setupService(
-	apiService services.WriteService, allocator services.IntPoolAllocator,
+// SetupService setups all required services and chains them.
+func SetupService(
+	WriteService services.WriteService,
+	ReadService services.ReadService,
+	allocator services.IntPoolAllocator,
 ) services.Service {
+	// create services
 	cache := intent.NewCache()
-	logicService := logic.NewService(apiService, allocator, cache)
+	logicService := logic.NewService(WriteService, ReadService, allocator, cache)
 
 	return logicService
 }
@@ -78,7 +82,7 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 	apiClient := newAPIClient(c)
 
 	return &IntentCompilationService{
-		service:   setupService(apiClient, apiClient),
+		service:   SetupService(apiClient, apiClient, apiClient),
 		apiClient: apiClient,
 		Store:     etcd.NewClient(e),
 		locker:    l,
