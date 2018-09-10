@@ -3,6 +3,7 @@ package intent
 import (
 	"context"
 
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -14,8 +15,9 @@ type EvaluateContext struct {
 
 // Intent contains Intent Compiler state for a resource.
 type Intent interface {
-	services.Resource
+	basemodels.Object
 	Evaluate(ctx context.Context, evaluateCtx *EvaluateContext) error
+	GetObject() basemodels.Object
 }
 
 // Loader provides access to existing intents (e.g. using a cache)

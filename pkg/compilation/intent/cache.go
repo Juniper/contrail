@@ -76,6 +76,7 @@ func (c *Cache) Delete(typeName string, q Query) {
 
 type intentStore struct {
 	typeNameToIntents map[string]intents
+	uuidToType        map[string]string
 	sync.RWMutex
 }
 
@@ -87,12 +88,32 @@ type intents struct {
 func newIntentStore() *intentStore {
 	return &intentStore{
 		typeNameToIntents: make(map[string]intents),
+		uuidToType:        make(map[string]string),
 	}
 }
 
 func (s *intentStore) load(typeName string, q Query) Intent {
 	s.RLock()
 	defer s.RUnlock()
+	return s.loadInternal(typeName, q)
+}
+
+func (s *intentStore) delete(typeName string, q Query) {
+	s.Lock()
+	defer s.Unlock()
+	s.removeDependencies(typeName, q)
+	s.deleteInternal(typeName, q)
+}
+
+func (s *intentStore) store(typeName string, i Intent) {
+	s.Lock()
+	defer s.Unlock()
+	s.removeDependencies(typeName, ByUUID(i.GetUUID()))
+	s.storeInternal(typeName, i)
+	s.addDependencies(i.GetObject())
+}
+
+func (s *intentStore) loadInternal(typeName string, q Query) Intent {
 	is, ok := s.typeNameToIntents[typeName]
 	if !ok {
 		return nil
@@ -100,9 +121,7 @@ func (s *intentStore) load(typeName string, q Query) Intent {
 	return q.load(is)
 }
 
-func (s *intentStore) delete(typeName string, q Query) {
-	s.Lock()
-	defer s.Unlock()
+func (s *intentStore) deleteInternal(typeName string, q Query) {
 	is, ok := s.typeNameToIntents[typeName]
 	if !ok {
 		return
@@ -113,11 +132,10 @@ func (s *intentStore) delete(typeName string, q Query) {
 	}
 	delete(is.fqNameToUUID, fqNameKey(intent.GetFQName()))
 	delete(is.uuidToIntent, intent.GetUUID())
+	delete(s.uuidToType, intent.GetUUID())
 }
 
-func (s *intentStore) store(typeName string, i Intent) {
-	s.Lock()
-	defer s.Unlock()
+func (s *intentStore) storeInternal(typeName string, i Intent) {
 	is, ok := s.typeNameToIntents[typeName]
 	if !ok {
 		is = intents{
@@ -128,6 +146,38 @@ func (s *intentStore) store(typeName string, i Intent) {
 	}
 	is.uuidToIntent[i.GetUUID()] = i
 	is.fqNameToUUID[fqNameKey(i.GetFQName())] = i.GetUUID()
+	s.uuidToType[i.GetUUID()] = typeName
+}
+
+func (s *intentStore) addDependencies(resource basemodels.Object) {
+	dependencies := resource.Depends()
+	for _, dependencyID := range dependencies {
+		t, ok := s.uuidToType[dependencyID]
+		if !ok {
+			continue
+		}
+		dependentIntent := s.loadInternal(t, ByUUID(dependencyID))
+		if dependentIntent != nil {
+			dependentIntent.AddDependency(resource)
+		}
+	}
+}
+
+func (s *intentStore) removeDependencies(typeName string, q Query) {
+	i := s.loadInternal(typeName, q)
+	if i != nil {
+		dependencies := i.GetObject().Depends()
+		for _, dependencyID := range dependencies {
+			t, ok := s.uuidToType[dependencyID]
+			if !ok {
+				continue
+			}
+			dependentIntent := s.loadInternal(t, ByUUID(dependencyID))
+			if ok {
+				dependentIntent.RemoveDependency(i.GetObject())
+			}
+		}
+	}
 }
 
 func fqNameKey(fqName []string) string {
