@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -14,6 +15,11 @@ import (
 type SecurityGroupIntent struct {
 	intent.BaseIntent
 	*models.SecurityGroup
+}
+
+// GetObject returns embedded resource object
+func (i *SecurityGroupIntent) GetObject() basemodels.Object {
+	return i.SecurityGroup
 }
 
 // CreateSecurityGroup evaluates SecurityGroup dependencies.
