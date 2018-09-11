@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -33,6 +34,62 @@ func (s *Service) CreateSecurityGroup(
 	}
 
 	return s.BaseService.CreateSecurityGroup(ctx, request)
+}
+
+// DeleteSecurityGroup evaluates SecurityGroup dependencies.
+func (s *Service) DeleteSecurityGroup(
+	ctx context.Context,
+	request *services.DeleteSecurityGroupRequest,
+) (*services.DeleteSecurityGroupResponse, error) {
+
+	i := loadSecurityGroupIntent(s.cache, intent.ByUUID(request.GetID()))
+	if i == nil {
+		return nil, errors.New("failed to process SecurityGroup deletion: SecurityGroupIntent not found in cache")
+	}
+
+	err := deleteDefaultACLs(ctx, s.WriteService, i)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to process SecurityGroup deletion")
+	}
+
+	s.cache.Delete(models.KindSecurityGroup, intent.ByUUID(i.GetUUID()))
+
+	return s.BaseService.DeleteSecurityGroup(ctx, request)
+}
+
+func deleteDefaultACLs(ctx context.Context, writeService services.WriteService, i *SecurityGroupIntent) error {
+	var multiError common.MultiError
+
+	err := deleteAndUnsetACL(ctx, writeService, &i.ingressACL)
+	if err != nil {
+		multiError = append(multiError, errors.Wrap(err, "failed to delete ingress access control list"))
+	}
+
+	err = deleteAndUnsetACL(ctx, writeService, &i.egressACL)
+	if err != nil {
+		multiError = append(multiError, errors.Wrap(err, "failed to delete egress access control list"))
+	}
+
+	if len(multiError) > 0 {
+		return multiError
+	}
+	return nil
+}
+
+func deleteAndUnsetACL(
+	ctx context.Context, writeService services.WriteService, acl **models.AccessControlList,
+) error {
+	if *acl == nil {
+		return nil
+	}
+
+	err := deleteACL(ctx, writeService, (*acl).GetUUID())
+	if err != nil {
+		return err
+	}
+
+	*acl = nil
+	return nil
 }
 
 // Evaluate Creates default AccessControlList's for the already created SecurityGroup.
@@ -86,11 +143,16 @@ func resolveSGRef(rs *models.PolicyRulesWithRefs, addr *models.AddressType, ec *
 	if !addr.IsSecurityGroupNameAReference() {
 		return
 	}
-	// TODO (Kamil) use loadSecurityGroupIntent()
-	i := ec.IntentLoader.Load(models.TypeNameSecurityGroup,
+	i := loadSecurityGroupIntent(
+		ec.IntentLoader,
 		intent.ByFQName(basemodels.ParseFQName(addr.SecurityGroup)))
-	sg, _ := i.(*SecurityGroupIntent)
-	rs.FQNameToSG[addr.SecurityGroup] = sg.SecurityGroup
+	rs.FQNameToSG[addr.SecurityGroup] = i.SecurityGroup
+}
+
+func loadSecurityGroupIntent(loader intent.Loader, query intent.Query) *SecurityGroupIntent {
+	intent := loader.Load(models.KindSecurityGroup, query)
+	sgIntent, _ := intent.(*SecurityGroupIntent)
+	return sgIntent
 }
 
 func createACL(
@@ -101,4 +163,12 @@ func createACL(
 			AccessControlList: acl,
 		})
 	return response.GetAccessControlList(), err
+}
+
+func deleteACL(ctx context.Context, writeService services.WriteService, uuid string) error {
+	_, err := writeService.DeleteAccessControlList(
+		ctx, &services.DeleteAccessControlListRequest{
+			ID: uuid,
+		})
+	return err
 }
