@@ -201,8 +201,9 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
+	cache := intent.NewCache()
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIClient, intent.NewCache())
+	service := NewService(mockAPIClient, cache)
 
 	expectCreateACL(mockAPIClient, expectedIngressACL)
 	expectCreateACL(mockAPIClient, expectedEgressACL)
@@ -211,6 +212,18 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 		SecurityGroup: securityGroup,
 	})
 	assert.NoError(t, err)
+
+	intent, ok := cache.Load(models.KindSecurityGroup, securityGroup.GetUUID())
+	assert.True(t, ok)
+
+	assert.Equal(t,
+		&SecurityGroupIntent{
+			SecurityGroup: securityGroup,
+			ingressACL:    expectedIngressACL,
+			egressACL:     expectedEgressACL,
+		},
+		intent,
+	)
 }
 
 func expectCreateACL(mockAPIClient *servicesmock.MockWriteService, expectedACL *models.AccessControlList) {
