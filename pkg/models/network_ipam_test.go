@@ -2,6 +2,7 @@ package models
 
 import (
 	"net"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -58,6 +59,82 @@ func TestAllocPoolIsInSubnet(t *testing.T) {
 		err := allocPool.IsInSubnet(&subnet)
 		assert.Error(t, err)
 	})
+}
+
+func TestAllocationPoolsSubtract(t *testing.T) {
+	type args struct {
+		left  []*AllocationPoolType
+		right []*AllocationPoolType
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantRes []*AllocationPoolType
+	}{
+		{
+			name: "Equal sets",
+			args: args{
+				left: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+				},
+				right: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+				},
+			},
+			wantRes: nil,
+		},
+		{
+			name: "Left set has more elements",
+			args: args{
+				left: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+					{Start: "10.1.0.1", End: "10.1.0.101"},
+				},
+				right: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+				},
+			},
+			wantRes: []*AllocationPoolType{
+				{Start: "10.1.0.1", End: "10.1.0.101"},
+			},
+		},
+		{
+			name: "Right set has more elements",
+			args: args{
+				left: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+					{Start: "10.1.0.1", End: "10.1.0.101"},
+				},
+				right: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+					{Start: "10.1.0.1", End: "10.1.0.101"},
+					{Start: "10.2.0.1", End: "10.2.0.101"},
+				},
+			},
+			wantRes: nil,
+		},
+		{
+			name: "Right set is empty",
+			args: args{
+				left: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+					{Start: "10.1.0.1", End: "10.1.0.101"},
+				},
+				right: nil,
+			},
+			wantRes: []*AllocationPoolType{
+				{Start: "10.0.0.1", End: "10.0.0.101"},
+				{Start: "10.1.0.1", End: "10.1.0.101"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotRes := AllocationPoolsSubtract(tt.args.left, tt.args.right); !reflect.DeepEqual(gotRes, tt.wantRes) {
+				t.Errorf("AllocationPoolsSubtract() = %v, want %v", gotRes, tt.wantRes)
+			}
+		})
+	}
 }
 
 func TestCheckIfSubnetParamsAreValid(t *testing.T) {
