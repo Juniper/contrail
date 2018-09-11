@@ -212,6 +212,31 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 		SecurityGroup: securityGroup,
 	})
 	assert.NoError(t, err)
+
+	intent, ok := cache.Load(securityGroup.Kind(), securityGroup.GetUUID())
+	assert.True(t, ok)
+
+	assert.Equal(t,
+		&SecurityGroupIntent{
+			SecurityGroup: securityGroup,
+			ingressACL:    expectedIngressACL,
+			egressACL:     expectedEgressACL,
+		},
+		intent,
+	)
+}
+
+func TestLoadSecurityGroupIntent(t *testing.T) {
+	expectedIntent := &SecurityGroupIntent{
+		SecurityGroup: &models.SecurityGroup{UUID: "a"},
+	}
+
+	cache := intent.NewCache()
+	cache.Store(expectedIntent)
+
+	actualIntent, ok := loadSecurityGroupIntent(cache, expectedIntent.UUID)
+	assert.True(t, ok)
+	assert.Equal(t, expectedIntent, actualIntent)
 }
 
 func expectCreateACL(mockAPIClient *servicesmock.MockWriteService, expectedACL *models.AccessControlList) {
