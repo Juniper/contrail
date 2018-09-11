@@ -22,11 +22,33 @@ func (m *NetworkIpam) IsFlatSubnet() bool {
 	return m.IpamSubnetMethod == FlatSubnet
 }
 
+// ContainsAllocationPool checks if ipam contains provided allocation pool.
+func (m *NetworkIpam) ContainsAllocationPool(allocPool *AllocationPoolType) bool {
+	for _, subnet := range m.GetIpamSubnets().GetSubnets() {
+		for _, ap := range subnet.GetAllocationPools() {
+			if *allocPool == *ap {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // Net returns IPNet object for this subnet.
 func (m *SubnetType) Net() (*net.IPNet, error) {
 	cidr := m.IPPrefix + "/" + strconv.Itoa(int(m.IPPrefixLen))
 	_, n, err := net.ParseCIDR(cidr)
 	return n, errors.Wrap(err, "couldn't parse cidr")
+}
+
+// Validate subnet type.
+func (m *SubnetType) Validate() error {
+	if m.IPPrefix == "" {
+		return errors.New("IP prefix is empty")
+	}
+	_, err := m.Net()
+	return err
 }
 
 // IsInSubnet validates allocation pool is in specific subnet.
@@ -42,7 +64,40 @@ func (m *AllocationPoolType) IsInSubnet(subnet *net.IPNet) error {
 	return nil
 }
 
-// Contains checks if ip address belongs to allocation pool
+// AllocationPoolsSubtract subtract allocation pools.
+func AllocationPoolsSubtract(
+	left []*AllocationPoolType, right []*AllocationPoolType,
+) (res []*AllocationPoolType) {
+
+	isPresentInRight := make(map[string]bool)
+	hashFunc := func(ap *AllocationPoolType) string {
+		return ap.Start + ap.End
+	}
+
+	for _, r := range right {
+		isPresentInRight[hashFunc(r)] = true
+	}
+
+	for _, l := range left {
+		if !isPresentInRight[hashFunc(l)] {
+			res = append(res, l)
+		}
+	}
+
+	return res
+}
+
+// ContainsIPAddress if ip address string belongs to allocation pool.
+func (m *AllocationPoolType) ContainsIPAddress(ipAddress string) (bool, error) {
+	ip := net.ParseIP(ipAddress)
+	if ip == nil {
+		return false, errors.Errorf("couldn't parse ip address: %v", ipAddress)
+	}
+
+	return m.Contains(ip)
+}
+
+// Contains checks if ip address belongs to allocation pool.
 func (m *AllocationPoolType) Contains(ip net.IP) (bool, error) {
 	startIP := net.ParseIP(m.Start)
 	if startIP == nil {
