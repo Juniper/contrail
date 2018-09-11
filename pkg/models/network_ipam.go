@@ -29,6 +29,12 @@ func (m *SubnetType) Net() (*net.IPNet, error) {
 	return n, errors.Wrap(err, "couldn't parse cidr")
 }
 
+// Validate subnet type
+func (m *SubnetType) Validate() error {
+	_, err := m.Net()
+	return err
+}
+
 // IsInSubnet validates allocation pool is in specific subnet.
 func (m *AllocationPoolType) IsInSubnet(subnet *net.IPNet) error {
 	err := isIPInSubnet(subnet, m.Start)
