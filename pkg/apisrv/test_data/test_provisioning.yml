@@ -3,6 +3,7 @@ description: |
   This test scenario contains requests that are run during provisioning phase.
 cleanup:
 - path: /bgp-router/bgp_router_test_provisioning_uuid
+- path: /virtual-router/virtual_router_test_provisioning_uuid
 test_data:
   bgp_router_parameters: &bgp_router_parameters_test_provisioning
     vendor: contrail
@@ -39,6 +40,15 @@ test_data:
       - bgp-router-test-provisioning
     bgp_router_parameters: *bgp_router_parameters_test_provisioning
 
+  virtual_router: &virtual_router_test_provisioning
+    uuid: virtual_router_test_provisioning_uuid
+    virtual_router_dpdk_enabled: false
+    parent_type: global-system-config
+    fq_name:
+    - default-global-system-config
+    - virtual-router-test-provisioning
+    virtual_router_ip_address: 192.168.0.14
+
 clients:
   default:
     id: alice
@@ -66,6 +76,30 @@ workflow:
         admin_down: null # admin_down has omitempty which omits "false"
         port: 179
 
+- name: create virtual router
+  request:
+    path: /virtual-routers
+    method: POST
+    expected: [200]
+    data:
+      virtual-router: *virtual_router_test_provisioning
+  expect:
+    virtual-router:
+      <<: *virtual_router_test_provisioning
+      virtual_router_dpdk_enabled: null # virtual_router_dpdk_enabled has omitempty which omits "false"
+      display_name: virtual-router-test-provisioning
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      parent_type: global-system-config
+      name: virtual-router-test-provisioning
+
+
+- name: delete virtual router
+  request:
+    path: /virtual-router/virtual_router_test_provisioning_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
 
 - name: delete bgp router
   request:
