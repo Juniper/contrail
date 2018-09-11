@@ -2,6 +2,7 @@ package models
 
 import (
 	"net"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -58,6 +59,153 @@ func TestAllocPoolIsInSubnet(t *testing.T) {
 		err := allocPool.IsInSubnet(&subnet)
 		assert.Error(t, err)
 	})
+}
+
+func TestContainsAllocationPool(t *testing.T) {
+	tests := []struct {
+		name        string
+		ipam        *NetworkIpam
+		allocPool   *AllocationPoolType
+		expectedRes bool
+	}{
+		{
+			name: "Network ipam contains alloc pool",
+			ipam: &NetworkIpam{
+				IpamSubnets: &IpamSubnets{
+					Subnets: []*IpamSubnetType{
+						{
+							AllocationPools: []*AllocationPoolType{
+								{Start: "10.0.0.1", End: "10.0.0.101"},
+							},
+						},
+					},
+				},
+			},
+			allocPool: &AllocationPoolType{
+				Start: "10.0.0.1", End: "10.0.0.101",
+			},
+			expectedRes: true,
+		},
+		{
+			name: "Network ipam doesn't contain alloc pool",
+			ipam: &NetworkIpam{
+				IpamSubnets: &IpamSubnets{
+					Subnets: []*IpamSubnetType{
+						{
+							AllocationPools: []*AllocationPoolType{
+								{Start: "10.0.0.1", End: "10.0.0.101"},
+							},
+						},
+					},
+				},
+			},
+			allocPool: &AllocationPoolType{
+				Start: "10.1.0.1", End: "10.1.0.101",
+			},
+			expectedRes: false,
+		},
+		{
+			name: "Network ipam with multiple alloc pools contains alloc pool",
+			ipam: &NetworkIpam{
+				IpamSubnets: &IpamSubnets{
+					Subnets: []*IpamSubnetType{
+						{
+							AllocationPools: []*AllocationPoolType{
+								{Start: "10.0.0.1", End: "10.0.0.101"},
+								{Start: "10.1.0.1", End: "10.1.0.101"},
+							},
+						},
+					},
+				},
+			},
+			allocPool: &AllocationPoolType{
+				Start: "10.0.0.1", End: "10.0.0.101",
+			},
+			expectedRes: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			contains := tt.ipam.ContainsAllocationPool(tt.allocPool)
+			assert.Equal(t, contains, tt.expectedRes)
+		})
+	}
+}
+
+func TestAllocationPoolsSubtract(t *testing.T) {
+	type args struct {
+		left  []*AllocationPoolType
+		right []*AllocationPoolType
+	}
+	tests := []struct {
+		name        string
+		args        args
+		expectedRes []*AllocationPoolType
+	}{
+		{
+			name: "Equal sets",
+			args: args{
+				left: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+				},
+				right: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+				},
+			},
+			expectedRes: nil,
+		},
+		{
+			name: "Left set has more elements",
+			args: args{
+				left: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+					{Start: "10.1.0.1", End: "10.1.0.101"},
+				},
+				right: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+				},
+			},
+			expectedRes: []*AllocationPoolType{
+				{Start: "10.1.0.1", End: "10.1.0.101"},
+			},
+		},
+		{
+			name: "Right set has more elements",
+			args: args{
+				left: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+					{Start: "10.1.0.1", End: "10.1.0.101"},
+				},
+				right: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+					{Start: "10.1.0.1", End: "10.1.0.101"},
+					{Start: "10.2.0.1", End: "10.2.0.101"},
+				},
+			},
+			expectedRes: nil,
+		},
+		{
+			name: "Right set is empty",
+			args: args{
+				left: []*AllocationPoolType{
+					{Start: "10.0.0.1", End: "10.0.0.101"},
+					{Start: "10.1.0.1", End: "10.1.0.101"},
+				},
+				right: nil,
+			},
+			expectedRes: []*AllocationPoolType{
+				{Start: "10.0.0.1", End: "10.0.0.101"},
+				{Start: "10.1.0.1", End: "10.1.0.101"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotRes := AllocationPoolsSubtract(tt.args.left, tt.args.right); !reflect.DeepEqual(gotRes, tt.expectedRes) {
+				t.Errorf("AllocationPoolsSubtract() = %v, want %v", gotRes, tt.expectedRes)
+			}
+		})
+	}
 }
 
 func TestCheckIfSubnetParamsAreValid(t *testing.T) {

@@ -106,6 +106,11 @@ func TestLogicalRouter(t *testing.T) {
 	RunTest(t, "./test_data/test_logical_router.yml")
 }
 
+func TestVirtualRouter(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_virtual_router.yml")
+}
+
 func TestFQNameToID(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_fqname_to_id.yml")
