@@ -9,7 +9,7 @@ go get -u github.com/alecthomas/gometalinter
 go get -u github.com/mitchellh/gox
 go get -u github.com/mattn/goveralls
 go get -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
-go get -u github.com/go-openapi/spec
+# go get -u github.com/go-openapi/spec
 go install ./vendor/github.com/gogo/protobuf/protoc-gen-gogo
 go install ./vendor/github.com/golang/mock/mockgen
 gometalinter --install
