@@ -14,6 +14,8 @@ import (
 type SecurityGroupIntent struct {
 	intent.BaseIntent
 	*models.SecurityGroup
+
+	ingressACL, egressACL *models.AccessControlList
 }
 
 // CreateSecurityGroup evaluates SecurityGroup dependencies.
