@@ -219,7 +219,48 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 			ingressACL:    expectedIngressACL,
 			egressACL:     expectedEgressACL,
 		},
-		cache.Load(models.KindSecurityGroup, intent.ByUUID(securityGroup.GetUUID())))
+		loadSecurityGroupIntent(cache, intent.ByUUID(securityGroup.GetUUID())))
+}
+
+func TestSecurityGroupDeleteDeletesACLs(t *testing.T) {
+	securityGroup := &models.SecurityGroup{UUID: "sg_uuid"}
+	ingressACL := &models.AccessControlList{UUID: "ingress_uuid"}
+	egressACL := &models.AccessControlList{UUID: "egress_uuid"}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
+	cache := intent.NewCache()
+	cache.Store(&SecurityGroupIntent{
+		SecurityGroup: securityGroup,
+		ingressACL:    ingressACL,
+		egressACL:     egressACL,
+	})
+
+	service := NewService(mockAPIClient, cache)
+
+	expectDeleteACL(mockAPIClient, ingressACL.GetUUID())
+	expectDeleteACL(mockAPIClient, egressACL.GetUUID())
+
+	_, err := service.DeleteSecurityGroup(context.Background(), &services.DeleteSecurityGroupRequest{
+		ID: securityGroup.GetUUID(),
+	})
+	assert.NoError(t, err)
+
+	assert.Nil(t, loadSecurityGroupIntent(cache, intent.ByUUID(securityGroup.GetUUID())))
+}
+
+func TestLoadSecurityGroupIntent(t *testing.T) {
+	expectedIntent := &SecurityGroupIntent{
+		SecurityGroup: &models.SecurityGroup{UUID: "a"},
+	}
+
+	cache := intent.NewCache()
+	cache.Store(expectedIntent)
+
+	actualIntent := loadSecurityGroupIntent(cache, intent.ByUUID(expectedIntent.UUID))
+	assert.Equal(t, expectedIntent, actualIntent)
 }
 
 func expectCreateACL(mockAPIClient *servicesmock.MockWriteService, expectedACL *models.AccessControlList) {
@@ -227,5 +268,13 @@ func expectCreateACL(mockAPIClient *servicesmock.MockWriteService, expectedACL *
 		AccessControlList: expectedACL,
 	}).Return(&services.CreateAccessControlListResponse{
 		AccessControlList: expectedACL,
+	}, nil).Times(1)
+}
+
+func expectDeleteACL(mockAPIClient *servicesmock.MockWriteService, expectedUUID string) {
+	mockAPIClient.EXPECT().DeleteAccessControlList(testutil.NotNil(), &services.DeleteAccessControlListRequest{
+		ID: expectedUUID,
+	}).Return(&services.DeleteAccessControlListResponse{
+		ID: expectedUUID,
 	}, nil).Times(1)
 }
