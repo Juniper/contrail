@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/compilation"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 )
 
 // RunIntentCompilationService runs Intent Compilation process and returns function closing it.
-func RunIntentCompilationService(t *testing.T) (cancel context.CancelFunc) {
+func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc {
 	setViperConfig(map[string]interface{}{
 		"compilation.plugin_directory":    pluginDirectory,
 		"compilation.number_of_workers":   4,
@@ -33,19 +34,30 @@ func RunIntentCompilationService(t *testing.T) (cancel context.CancelFunc) {
 				"delete_handler": "HandleDelete",
 			},
 		},
-		"etcd.endpoints":     EtcdEndpoint,
+		"etcd.endpoints":     integrationetcd.Endpoint,
 		"etcd.grpc_insecure": true,
-		"etcd.path":          EtcdJSONPrefix,
+		"etcd.path":          integrationetcd.JSONPrefix,
+		"client.id":          AdminUserID,
+		"client.password":    AdminUserPassword,
+		"client.project_id":  AdminProjectID,
+		"client.domain_id":   DefaultDomainID,
+		"client.schema_root": "/public",
+		"client.endpoint":    apiURL,
+		"insecure":           true,
 	})
 
 	ics, err := compilation.NewIntentCompilationService()
 	require.NoError(t, err, "creating Intent Compilation service failed")
 
 	ctx, cancel := context.WithCancel(context.Background())
+
+	errChan := make(chan error)
 	go func() {
-		err = ics.Run(ctx)
-		assert.NoError(t, err, "unexpected Intent Compilation runtime error")
+		errChan <- ics.Run(ctx)
 	}()
 
-	return cancel
+	return func() {
+		cancel()
+		assert.NoError(t, <-errChan, "unexpected Intent Compilation runtime error")
+	}
 }

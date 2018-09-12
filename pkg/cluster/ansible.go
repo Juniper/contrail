@@ -357,11 +357,11 @@ func (a *ansibleProvisioner) playAppformixProvision() error {
 		AppformixVersion := a.clusterData.getAppformixClusterInfo().AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
 			"-e", "appformix_version=" + AppformixVersion}
-        	if a.clusterData.getAppformixClusterInfo().AppformixVip != "" {
-                	ansibleArgs = append(ansibleArgs, defaultAppformixHaProvPlay)
-        	} else {
-                	ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
-        	}
+		if a.clusterData.getAppformixClusterInfo().AppformixVip != "" {
+			ansibleArgs = append(ansibleArgs, defaultAppformixHaProvPlay)
+		} else {
+			ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
+		}
 		return a.playFromDir(a.getAppformixAnsibleDeployerRepoDir(), ansibleArgs)
 	}
 	return nil
