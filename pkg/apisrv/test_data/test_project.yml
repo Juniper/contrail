@@ -116,3 +116,7 @@ workflow:
     expected: [200]
   expect:
     application-policy-sets: []
+
+watchers:
+  /json/application_policy_set/my_custom_application_policy_set_uuid:
+    - name: my-custom-aps
