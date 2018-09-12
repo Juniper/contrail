@@ -33,6 +33,14 @@ test_database:
         password: contrail123
         name: contrail_test
 
+etcd:
+  endpoints:
+    - localhost:2379
+  username: ""
+  password: ""
+  path: contrail
+  grpc_insecure: true
+
 
 # Log Level
 log_level: info
@@ -59,6 +67,8 @@ server:
     # value: file path. (absolute path recommended in production)
     static_files:
         public: ../../public
+
+    notify_etcd: true
 
     dynamic_proxy_path: proxy
     # API Proxy configuration
