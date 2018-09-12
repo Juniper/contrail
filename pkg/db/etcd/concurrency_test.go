@@ -6,10 +6,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 )
 
 func TestInTransactionEtcdDataRace(t *testing.T) {
-	e := integration.NewEtcdClient(t)
+	e := integrationetcd.NewEtcdClient(t)
 	defer e.Close(t)
 
 	client := etcd.NewClient(e.Client)
