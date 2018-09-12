@@ -1,6 +1,5 @@
-uuid: 808b0b1c-c311-48d9-b59a-0c84bb4e7a90
-name: ''
-parent_uuid: 770b8ebe-decb-47e8-89a4-33eb0cef28b3
+uuid: $uuid
+parent_uuid: $uuid
 parent_type: security-group
 fq_name:
 - default-domain
@@ -9,97 +8,98 @@ fq_name:
 - egress-access-control-list
 id_perms:
   enable: true
-  description: ''
+# TODO(Michal): IDPerms logic
+#  description: ''
 #  created: '2018-07-20T13:43:18.178642'
-  creator: ''
-  user_visible: true
+#  creator: ''
+#  user_visible: true
 #  last_modified: '2018-07-20T13:43:18.178642'
-  permissions:
-    owner: cloud-admin
-    owner_access: 7
-    other_access: 7
-    group: cloud-admin-group
-    group_access: 7
-#  uuid:
-#    uuid_mslong: -9223372036854776000
-#    uuid_lslong: -9223372036854776000
+#  permissions:
+#    owner: cloud-admin
+#    owner_access: 7
+#    other_access: 7
+#    group: cloud-admin-group
+#    group_access: 7
+  uuid:
+    uuid_mslong: $number
+    uuid_lslong: $number
 display_name: egress-access-control-list
 annotations: null
 perms2:
-  owner: 73a4ad89-3455-46f5-b37c-394aeb1f7c87
+  owner: admin
   owner_access: 7
-  global_access: 0
-  share: []
-configuration_version: 0
-access_control_list_hash: 0
+  #global_access: 0
+  #share: []
+#configuration_version: 0
+#access_control_list_hash: 0
 access_control_list_entries:
-  dynamic: false
+  #dynamic: false
   acl_rule:
   - rule_uuid: 3e016dd1-8e50-441c-a572-6c2cf1d77a7c
     match_condition:
       src_port:
         end_port: 65535
-        start_port: 0
+        #start_port: 0
       src_address:
-        security_group: ''
+        #security_group: ''
         subnet: null
-        network_policy: ''
-        subnet_list: []
-        virtual_network: ''
+        #network_policy: ''
+        #subnet_list: []
+        #virtual_network: ''
       ethertype: IPv4
       dst_address:
-        security_group: ''
+        #security_group: ''
         subnet:
           ip_prefix: 0.0.0.0
-          ip_prefix_len: 0
-        network_policy: ''
-        subnet_list: []
-        virtual_network: ''
+          #ip_prefix_len: 0
+        #network_policy: ''
+        #subnet_list: []
+        #virtual_network: ''
       dst_port:
         end_port: 65535
-        start_port: 0
+        #start_port: 0
       protocol: any
-    direction: ''
+    #direction: ''
     action_list:
-      gateway_name: ''
-      log: false
-      alert: false
-      qos_action: ''
-      assign_routing_instance: ''
+      #gateway_name: ''
+      #log: false
+      #alert: false
+      #qos_action: ''
+      #assign_routing_instance: ''
       mirror_to: null
       simple_action: pass
-      apply_service: []
+      #apply_service: []
   - rule_uuid: 977c1645-f680-4a5a-882e-f3b68fab8714
     match_condition:
       src_port:
         end_port: 65535
-        start_port: 0
+        #start_port: 0
       src_address:
-        security_group: ''
+        #security_group: ''
         subnet: null
-        network_policy: ''
-        subnet_list: []
-        virtual_network: ''
+        #network_policy: ''
+        #subnet_list: []
+        #virtual_network: ''
       ethertype: IPv6
       dst_address:
-        security_group: ''
+        #security_group: ''
         subnet:
           ip_prefix: '::'
-          ip_prefix_len: 0
-        network_policy: ''
-        subnet_list: []
-        virtual_network: ''
+          #ip_prefix_len: 0
+        #network_policy: ''
+        #subnet_list: []
+        #virtual_network: ''
       dst_port:
         end_port: 65535
-        start_port: 0
+        #start_port: 0
       protocol: any
-    direction: ''
+    #direction: ''
     action_list:
-      gateway_name: ''
-      log: false
-      alert: false
-      qos_action: ''
-      assign_routing_instance: ''
+      #gateway_name: ''
+      #log: false
+      #alert: false
+      #qos_action: ''
+      #assign_routing_instance: ''
       mirror_to: null
       simple_action: pass
-      apply_service: []
+      #apply_service: []

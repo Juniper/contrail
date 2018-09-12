@@ -1,6 +1,5 @@
-#uuid: 87b82e91-fd45-4457-904d-db7215dc4656
-name: ''
-parent_uuid: 770b8ebe-decb-47e8-89a4-33eb0cef28b3
+uuid: $uuid
+parent_uuid: $uuid
 parent_type: security-group
 fq_name:
 - default-domain
@@ -9,93 +8,94 @@ fq_name:
 - ingress-access-control-list
 id_perms:
   enable: true
-  description: ''
+  uuid:
+    uuid_mslong: $number
+    uuid_lslong: $number
+# TODO(Michal): Implement perms filling logic
+#  description: ''
 #  created: '2018-07-20T13:43:18.072155'
-  creator: ''
-  user_visible: true
+#  creator: ''
+#  user_visible: true
 #  last_modified: '2018-07-20T13:43:18.072155'
-  permissions:
-    owner: cloud-admin
-    owner_access: 7
-    other_access: 7
-    group: cloud-admin-group
-    group_access: 7
-#  uuid:
-#    uuid_mslong: -9223372036854776000
-#    uuid_lslong: -9223372036854776000
+#  permissions:
+#    owner: cloud-admin
+#    owner_access: 7
+#    other_access: 7
+#    group: cloud-admin-group
+#    group_access: 7
 display_name: ingress-access-control-list
 annotations: null
 perms2:
-  owner: 73a4ad89-3455-46f5-b37c-394aeb1f7c87
+  owner: admin
   owner_access: 7
-  global_access: 0
-  share: []
+  #global_access: 0
+  #share: []
 configuration_version: 0
 access_control_list_hash: 0
 access_control_list_entries:
-  dynamic: false
+  #dynamic: false
   acl_rule:
   - rule_uuid: 03a61a46-1757-475f-8145-4dc60859366b
     match_condition:
       src_port:
         end_port: 65535
-        start_port: 0
+        #start_port: 0
       src_address:
-        security_group: '8000002'
-        subnet: null
-        network_policy: ''
-        subnet_list: []
-        virtual_network: ''
+        security_group: '8000001'
+        #subnet: null
+        #network_policy: ''
+        #subnet_list: []
+        #virtual_network: ''
       ethertype: IPv4
       dst_address:
-        security_group: ''
-        subnet: null
-        network_policy: ''
-        subnet_list: []
-        virtual_network: ''
+        #security_group: ''
+        #subnet: null
+        #network_policy: ''
+        #subnet_list: []
+        #virtual_network: ''
       dst_port:
         end_port: 65535
-        start_port: 0
+        #start_port: 0
       protocol: any
-    direction: ''
+    #direction: ''
     action_list:
-      gateway_name: ''
-      log: false
-      alert: false
-      qos_action: ''
-      assign_routing_instance: ''
+      #gateway_name: ''
+      #log: false
+      #alert: false
+      #qos_action: ''
+      #assign_routing_instance: ''
       mirror_to: null
       simple_action: pass
-      apply_service: []
+      #apply_service: []
   - rule_uuid: e387f24c-7b0b-4884-83a3-7a3bda728497
     match_condition:
       src_port:
         end_port: 65535
-        start_port: 0
+        #start_port: 0
       src_address:
-        security_group: '8000002'
-        subnet: null
-        network_policy: ''
-        subnet_list: []
-        virtual_network: ''
+        security_group: '8000001'
+        #subnet: null
+        #network_policy: ''
+        #subnet_list: []
+        #virtual_network: ''
       ethertype: IPv6
       dst_address:
-        security_group: ''
-        subnet: null
-        network_policy: ''
-        subnet_list: []
-        virtual_network: ''
+        #security_group: ''
+        #subnet: null
+        #network_policy: ''
+        #subnet_list: []
+        #virtual_network: ''
       dst_port:
         end_port: 65535
-        start_port: 0
+        #start_port: 0
       protocol: any
-    direction: ''
+    #direction: ''
     action_list:
-      gateway_name: ''
-      log: false
-      alert: false
-      qos_action: ''
-      assign_routing_instance: ''
+      #gateway_name: ''
+      #log: false
+      #alert: false
+      #qos_action: ''
+      #assign_routing_instance: ''
       mirror_to: null
       simple_action: pass
-      apply_service: []
+      #apply_service: []

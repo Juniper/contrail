@@ -17,6 +17,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cache"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -114,7 +115,7 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"database.connection_retries": 10,
 		"database.retry_period":       3,
 		"database.debug":              true,
-		"etcd.path":                   EtcdJSONPrefix,
+		"etcd.path":                   integrationetcd.JSONPrefix,
 		"keystone.local":              true,
 		"keystone.assignment.type":    "static",
 		"keystone.assignment.data":    keystoneAssignment(),

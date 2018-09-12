@@ -1,36 +1,36 @@
 uuid: 73a4ad89-3455-46f5-b37c-394aeb1f7c87
-name: ''
-#parent_uuid: 2658b3b9-509c-4986-81ac-a5589a689042
+parent_uuid: $uuid
 parent_type: domain
 fq_name:
 - default-domain
 - atom-demo-project
 id_perms:
   enable: true
-  description: ''
+  uuid:
+    uuid_mslong: $number
+    uuid_lslong: $number
+# TODO(Michal): IDPerms logic
+#  description: ''
 #  created: '2018-07-20T13:43:17.826003'
-  creator: ''
-  user_visible: true
+#  creator: ''
+#  user_visible: true
 #  last_modified: '2018-07-20T13:43:30.956275'
-  permissions:
-    owner: cloud-admin
-    owner_access: 7
-    other_access: 7
-    group: cloud-admin-group
-    group_access: 7
-#  uuid:
-#    uuid_mslong: 8332976015342389000
-#    uuid_lslong: -9223372036854776000
+#  permissions:
+#    owner: cloud-admin
+#    owner_access: 7
+#    other_access: 7
+#    group: cloud-admin-group
+#    group_access: 7
 display_name: atom-demo-project
 annotations: null
 perms2:
-  owner: 73a4ad89345546f5b37c394aeb1f7c87
+  owner: admin
   owner_access: 7
-  global_access: 0
-  share: []
-configuration_version: 0
-vxlan_routing: false
-alarm_enable: false
+  #global_access: 0
+  #share: []
+#configuration_version: 0
+#vxlan_routing: false
+#alarm_enable: false
 quota:
   virtual_router: 0
   network_policy: 0
@@ -58,43 +58,47 @@ quota:
   defaults: 0
   security_group: -1
   virtual_network: -1
-enable_security_policy_draft: false
-alias_ip_pool_refs: []
-namespace_refs: []
 application_policy_set_refs:
-- to: []
-#  uuid: 49e4792d-d49b-4867-b05c-38449147e926
-floating_ip_pool_refs: []
-alias_ip_backrefs: []
-floating_ip_backrefs: []
-address_groups: []
-alarms: []
-api_access_lists: []
-application_policy_sets: []
-bgp_as_a_services: []
-bgpvpns: []
-firewall_policys: []
-firewall_rules: []
-interface_route_tables: []
-loadbalancer_healthmonitors: []
-loadbalancer_listeners: []
-loadbalancer_pools: []
-loadbalancers: []
-logical_routers: []
-network_ipams: []
-network_policys: []
-policy_managements: []
-qos_configs: []
-route_aggregates: []
-route_tables: []
-routing_policys: []
-security_groups: []
-security_logging_objects: []
-service_groups: []
-service_health_checks: []
-service_instances: []
-structured_syslog_configs: []
-tags: []
-virtual_ips: []
-virtual_machine_interfaces: []
-virtual_networks: []
+- to:
+  - default-domain
+  - atom-demo-project
+  - default-application-policy-set
+  uuid: 49e4792d-d49b-4867-b05c-38449147e926
+#  Omitempty values below
+#enable_security_policy_draft: false
+#alias_ip_pool_refs: []
+#namespace_refs: []
+#floating_ip_pool_refs: []
+#alias_ip_backrefs: []
+#floating_ip_backrefs: []
+#address_groups: []
+#alarms: []
+#api_access_lists: []
+#application_policy_sets: []
+#bgp_as_a_services: []
+#bgpvpns: []
+#firewall_policys: []
+#firewall_rules: []
+#interface_route_tables: []
+#loadbalancer_healthmonitors: []
+#loadbalancer_listeners: []
+#loadbalancer_pools: []
+#loadbalancers: []
+#logical_routers: []
+#network_ipams: []
+#network_policys: []
+#policy_managements: []
+#qos_configs: []
+#route_aggregates: []
+#route_tables: []
+#routing_policys: []
+#security_groups: []
+#security_logging_objects: []
+#service_groups: []
+#service_health_checks: []
+#service_instances: []
+#structured_syslog_configs: []
+#tags: []
+#virtual_ips: []
+#virtual_machine_interfaces: []
+#virtual_networks: []
