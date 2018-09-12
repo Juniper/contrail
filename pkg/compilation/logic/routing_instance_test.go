@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/compilationif"
+	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -15,13 +15,11 @@ import (
 )
 
 func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
-	compilationif.Init()
-
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
-	service := NewService(mockAPIClient)
+	service := NewService(mockAPIClient, intent.NewCache())
 
 	expectCreateRT(mockAPIClient, &models.RouteTarget{
 		FQName:      []string{"target:64512:8000002"},
@@ -41,16 +39,16 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func expectCreateRT(mockAPIService *servicesmock.MockWriteService, returnedRT *models.RouteTarget) {
+func expectCreateRT(mockAPIClient *servicesmock.MockWriteService, returnedRT *models.RouteTarget) {
 	// TODO Revisit code below when route target is allocated properly.
-	mockAPIService.EXPECT().CreateRouteTarget(
+	mockAPIClient.EXPECT().CreateRouteTarget(
 		testutil.NotNil(),
 		testutil.NotNil(),
 	).Return(&services.CreateRouteTargetResponse{RouteTarget: returnedRT},
 		nil,
 	).Times(1)
 
-	mockAPIService.EXPECT().CreateRoutingInstanceRouteTargetRef(
+	mockAPIClient.EXPECT().CreateRoutingInstanceRouteTargetRef(
 		testutil.NotNil(), testutil.NotNil(),
 	).Return(nil, nil).Times(1)
 }
