@@ -1,4 +1,4 @@
-package integration
+package integrationetcd
 
 import (
 	"context"
@@ -18,11 +18,18 @@ import (
 
 // Integration test settings.
 const (
-	EtcdEndpoint       = "localhost:2379"
-	EtcdJSONPrefix     = "json"
+	Endpoint           = "localhost:2379"
+	JSONPrefix         = "json"
 	etcdDialTimeout    = 10 * time.Second
 	etcdRequestTimeout = 10 * time.Second
 	etcdWatchTimeout   = 10 * time.Second
+
+	AccessControlListSchemaID    = "access_control_list"
+	ApplicationPolicySetSchemaID = "application_policy_set"
+	NetworkIPAMSchemaID          = "network_ipam"
+	ProjectSchemaID              = "project"
+	SecurityGroupSchemaID        = "security_group"
+	VirtualNetworkSchemaID       = "virtual_network"
 )
 
 // EtcdClient is etcd client extending etcd.clientv3 with test functionality and using etcd v3 API.
@@ -35,9 +42,9 @@ type EtcdClient struct {
 // After usage Close() needs to be called to close underlying connections.
 func NewEtcdClient(t *testing.T) *EtcdClient {
 	l := pkglog.NewLogger("etcd-client")
-	l.WithFields(logrus.Fields{"endpoint": EtcdEndpoint, "dial-timeout": etcdDialTimeout}).Debug("Connecting")
+	l.WithFields(logrus.Fields{"endpoint": Endpoint, "dial-timeout": etcdDialTimeout}).Debug("Connecting")
 	c, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{EtcdEndpoint},
+		Endpoints:   []string{Endpoint},
 		DialTimeout: etcdDialTimeout,
 	})
 	require.NoError(t, err, "connecting etcd failed")
@@ -90,21 +97,38 @@ func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOpti
 }
 
 // WatchKey watches value changes for provided key and returns collect method that collect captured values.
-func (e *EtcdClient) WatchKey(key string) (collect func() []string) {
+func (e *EtcdClient) WatchKey(
+	key string, opts ...clientv3.OpOption,
+) (collect func() []string) {
+	return e.WatchKeyN(key, 0, 0, opts...)
+}
+
+// WatchKeyN watches value changes for provided key n times and returns collect method that collect captured values.
+// If there were less than n events then it waits until timeout passes.
+func (e *EtcdClient) WatchKeyN(
+	key string, n int, timeout time.Duration, opts ...clientv3.OpOption,
+) (collect func() []string) {
 	var result []string
 	ctx, cancel := context.WithCancel(context.Background())
-	wchan := e.Client.Watch(ctx, key)
+	wchan := e.Client.Watch(ctx, key, opts...)
 
 	go func() {
 		for val := range wchan {
 			if len(val.Events) > 0 {
 				result = append(result, string(val.Events[0].Kv.Value))
+				if n > 0 && len(result) >= n {
+					cancel()
+				}
 			}
 		}
 	}()
 
 	return func() (vals []string) {
-		cancel()
+		select {
+		case <-ctx.Done():
+		case <-time.After(timeout):
+			cancel()
+		}
 		return result
 	}
 }
