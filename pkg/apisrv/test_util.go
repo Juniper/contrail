@@ -2,6 +2,7 @@ package apisrv
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -9,10 +10,12 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
@@ -22,7 +25,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/testutil"
-	log "github.com/sirupsen/logrus"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -143,12 +146,13 @@ type Task struct {
 
 //TestScenario has a list of tasks.
 type TestScenario struct {
-	Name        string                  `yaml:"name,omitempty"`
-	Description string                  `yaml:"description,omitempty"`
-	Tables      []string                `yaml:"tables,omitempty"`
-	Clients     map[string]*client.HTTP `yaml:"clients,omitempty"`
-	Cleanup     []map[string]string     `yaml:"cleanup,omitempty"`
-	Workflow    []*Task                 `yaml:"workflow,omitempty"`
+	Name        string                              `yaml:"name,omitempty"`
+	Description string                              `yaml:"description,omitempty"`
+	Tables      []string                            `yaml:"tables,omitempty"`
+	Clients     map[string]*client.HTTP             `yaml:"clients,omitempty"`
+	Cleanup     []map[string]string                 `yaml:"cleanup,omitempty"`
+	Workflow    []*Task                             `yaml:"workflow,omitempty"`
+	Watchers    map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -183,9 +187,13 @@ type clientsList map[string]*client.HTTP
 func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
+	checkWatchers := startWatchers(ctx, t, testScenario)
+
 	clients := prepareClients(ctx, t, testScenario)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
 	cleanupTrackedResources(ctx, tracked, clients)
+
+	checkWatchers(t)
 }
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
@@ -209,6 +217,32 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 		}
 		if response.StatusCode != 404 {
 			log.Warnf("DIRTY test scenario: left resource with path '%v'", tr.Path)
+		}
+	}
+}
+
+func startWatchers(ctx context.Context, t *testing.T, testScenario *TestScenario) func(t *testing.T) {
+	checks := []func(t *testing.T){}
+
+	ec := integrationetcd.NewEtcdClient(t)
+	for key, events := range testScenario.Watchers {
+		collect := ec.WatchKeyN(key, len(events), 2*time.Second)
+
+		checks = append(checks, func(t *testing.T) {
+			collected := collect()
+			assert.Equal(t, len(events), len(collected))
+			for i, e := range events[:len(collected)] {
+				var data interface{}
+				err := json.Unmarshal([]byte(collected[i]), &data)
+				assert.NoError(t, err)
+				testutil.AssertEqual(t, e, data, "etcd emitted not enough events: %s")
+			}
+		})
+	}
+
+	return func(t *testing.T) {
+		for _, c := range checks {
+			c(t)
 		}
 	}
 }
