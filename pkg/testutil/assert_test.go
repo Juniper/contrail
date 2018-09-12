@@ -17,6 +17,7 @@ map:
   key1: value1
   key2: value2
 number: 1
+uuid: 770b8ebe-decb-47e8-89a4-33eb0cef28b3
 bool: true
 nilValue: null
 `
@@ -42,22 +43,48 @@ list:
 map:
   key1: $any
 number: $number
+uuid: $uuid
 bool: true
 nilValue: $null
 `
 
+var missingKeys = `
+string: value
+`
+
+var missingKeysInNestedMap = `
+map: {}
+`
+
+var nullMapKey = `
+map: null
+`
+
 func TestAssertEquals(t *testing.T) {
-	var actualData interface{}
-	err := yaml.Unmarshal([]byte(actualYAML), &actualData)
-	assert.NoError(t, err, "no error expected")
+	type args struct {
+	}
+	tests := []struct {
+		name     string
+		expected string
+		actual   string
+	}{
+		{name: "test1", expected: test1YAML, actual: actualYAML},
+		{name: "test2", expected: test2YAML, actual: actualYAML},
+		{name: "missing keys", expected: missingKeys, actual: actualYAML},
+		{name: "missing keys in nested map", expected: missingKeysInNestedMap, actual: actualYAML},
+		{name: "null key", expected: nullMapKey, actual: actualYAML},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var actualData interface{}
+			err := yaml.Unmarshal([]byte(tt.actual), &actualData)
+			assert.NoError(t, err)
 
-	var test1Data interface{}
-	err = yaml.Unmarshal([]byte(test1YAML), &test1Data)
-	assert.NoError(t, err, "no error expected")
-	AssertEqual(t, test1Data, actualData, "check same data")
+			var testData interface{}
+			err = yaml.Unmarshal([]byte(tt.expected), &testData)
+			assert.NoError(t, err)
 
-	var test2Data interface{}
-	err = yaml.Unmarshal([]byte(test2YAML), &test2Data)
-	assert.NoError(t, err, "no error expected")
-	AssertEqual(t, test2Data, actualData, "check func works")
+			AssertEqual(t, testData, actualData, "check same data: %s")
+		})
+	}
 }
