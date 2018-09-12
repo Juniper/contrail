@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/compilation"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -33,9 +34,9 @@ func RunIntentCompilationService(t *testing.T) (cancel context.CancelFunc) {
 				"delete_handler": "HandleDelete",
 			},
 		},
-		"etcd.endpoints":     EtcdEndpoint,
+		"etcd.endpoints":     integrationetcd.Endpoint,
 		"etcd.grpc_insecure": true,
-		"etcd.path":          EtcdJSONPrefix,
+		"etcd.path":          integrationetcd.JSONPrefix,
 	})
 
 	ics, err := compilation.NewIntentCompilationService()

@@ -22,23 +22,17 @@ import (
 
 // Resource constants
 const (
-	AccessControlListSchemaID    = "access_control_list"
-	ApplicationPolicySetSchemaID = "application_policy_set"
-	DomainType                   = "domain"
-	DefaultDomainUUID            = "beefbeef-beef-beef-beef-beefbeef0002"
-	NetworkIPAMSchemaID          = "network_ipam"
-	NetworkIpamSingularPath      = "/network-ipam"
-	NetworkIpamPluralPath        = "/network-ipams"
-	ProjectType                  = "project"
-	ProjectSchemaID              = "project"
-	ProjectSingularPath          = "/project"
-	ProjectPluralPath            = "/projects"
-	SecurityGroupSchemaID        = "security_group"
-	SecurityGroupSingularPath    = "/security-group"
-	SecurityGroupPluralPath      = "/security-groups"
-	VirtualNetworkSchemaID       = "virtual_network"
-	VirtualNetworkSingularPath   = "/virtual-network"
-	VirtualNetworkPluralPath     = "/virtual-networks"
+	DomainType                 = "domain"
+	DefaultDomainUUID          = "beefbeef-beef-beef-beef-beefbeef0002"
+	NetworkIpamSingularPath    = "/network-ipam"
+	NetworkIpamPluralPath      = "/network-ipams"
+	ProjectType                = "project"
+	ProjectSingularPath        = "/project"
+	ProjectPluralPath          = "/projects"
+	SecurityGroupSingularPath  = "/security-group"
+	SecurityGroupPluralPath    = "/security-groups"
+	VirtualNetworkSingularPath = "/virtual-network"
+	VirtualNetworkPluralPath   = "/virtual-networks"
 )
 
 const (

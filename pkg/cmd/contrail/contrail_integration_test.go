@@ -15,6 +15,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -37,7 +38,7 @@ func TestCreateCoreResources(t *testing.T) {
 	closeIntentCompilation := integration.RunIntentCompilationService(t)
 	defer closeIntentCompilation()
 
-	ec := integration.NewEtcdClient(t)
+	ec := integrationetcd.NewEtcdClient(t)
 	defer ec.Close(t)
 
 	tests := []struct {
@@ -64,22 +65,22 @@ func TestCreateCoreResources(t *testing.T) {
 	}
 }
 
-func testCreateProjectAndSecurityGroup(hc *integration.HTTPAPIClient, ec *integration.EtcdClient) func(t *testing.T) {
+func testCreateProjectAndSecurityGroup(hc *integration.HTTPAPIClient, ec *integrationetcd.EtcdClient) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Skip("Not implemented") // TODO: implement API Server and Compilation Service functionality
 
 		defaultDomainUUID := hc.FQNameToID(t, []string{"default-domain", "default-project"}, integration.ProjectType)
 
-		apsWatch, apsCtx, cancelAPSCtx := ec.WatchResource(integration.ApplicationPolicySetSchemaID, "",
+		apsWatch, apsCtx, cancelAPSCtx := ec.WatchResource(integrationetcd.ApplicationPolicySetSchemaID, "",
 			clientv3.WithPrefix())
 		defer cancelAPSCtx()
 
-		aclWatch, aclCtx, cancelACLCtx := ec.WatchResource(integration.AccessControlListSchemaID, "",
+		aclWatch, aclCtx, cancelACLCtx := ec.WatchResource(integrationetcd.AccessControlListSchemaID, "",
 			clientv3.WithPrefix())
 		defer cancelACLCtx()
 
 		project := loadProject(t, demoProjectRequestPath)
-		projectWatch, projectCtx, cancelProjectCtx := ec.WatchResource(integration.ProjectSchemaID, project.UUID)
+		projectWatch, projectCtx, cancelProjectCtx := ec.WatchResource(integrationetcd.ProjectSchemaID, project.UUID)
 		defer cancelProjectCtx()
 
 		// TODO: creating project fails with following message:
@@ -90,7 +91,7 @@ func testCreateProjectAndSecurityGroup(hc *integration.HTTPAPIClient, ec *integr
 		defer ec.DeleteProject(t, project.UUID)
 
 		sg := loadSecurityGroup(t, securityGroupRequestPath)
-		sgWatch, sgCtx, cancelSGCtx := ec.WatchResource(integration.SecurityGroupSchemaID, sg.UUID)
+		sgWatch, sgCtx, cancelSGCtx := ec.WatchResource(integrationetcd.SecurityGroupSchemaID, sg.UUID)
 		defer cancelSGCtx()
 
 		// TODO: creating security group fails with following message:
@@ -104,12 +105,12 @@ func testCreateProjectAndSecurityGroup(hc *integration.HTTPAPIClient, ec *integr
 
 		hc.UpdateProject(t, project.UUID, loadResourceJSON(t, demoProjectQuotaUpdatePath))
 
-		apsEvent := integration.RetrieveCreateEvent(apsCtx, t, apsWatch)
+		apsEvent := integrationetcd.RetrieveCreateEvent(apsCtx, t, apsWatch)
 		if apsEvent != nil {
 			aps := decodeJSON(t, apsEvent.Kv.Value)
 			testutil.AssertEqual(t, loadResourceYAML(t, expectedApplicationPolicySetPath), aps)
 
-			projectEvents := integration.RetrieveWatchEvents(projectCtx, t, projectWatch)
+			projectEvents := integrationetcd.RetrieveWatchEvents(projectCtx, t, projectWatch)
 			if len(projectEvents) > 0 {
 				checkCreatedProject(t, defaultDomainUUID, aps["uuid"].(string), projectEvents[len(projectEvents)-1])
 			}
@@ -123,19 +124,19 @@ func testCreateProjectAndSecurityGroup(hc *integration.HTTPAPIClient, ec *integr
 func checkCreatedProject(t *testing.T, defaultDomainUUID, apsUUID string, projectEvent *clientv3.Event) {
 	expectedDemoProject := loadResourceYAML(t, expectedDemoProjectPath)
 	expectedDemoProject["parent_uuid"] = defaultDomainUUID
-	expectedDemoProject["application_policy_set_refs"].([]map[string]interface{})[0]["uuid"] = apsUUID
+	expectedDemoProject["application_policy_set_refs"].([]interface{})[0].(map[string]interface{})["uuid"] = apsUUID
 	testutil.AssertEqual(t, expectedDemoProject, decodeJSON(t, projectEvent.Kv.Value))
 }
 
 func retrieveAndCheckCreatedSecurityGroup(sgCtx context.Context, t *testing.T, sgWatch clientv3.WatchChan) {
-	sgEvent := integration.RetrieveCreateEvent(sgCtx, t, sgWatch)
+	sgEvent := integrationetcd.RetrieveCreateEvent(sgCtx, t, sgWatch)
 	if sgEvent != nil {
 		testutil.AssertEqual(t, loadResourceYAML(t, expectedSecurityGroupPath), decodeJSON(t, sgEvent.Kv.Value))
 	}
 }
 
 func retrieveAndCheckCreatedACLs(aclCtx context.Context, t *testing.T, aclWatch clientv3.WatchChan) {
-	aclEvents := integration.RetrieveWatchEvents(aclCtx, t, aclWatch)
+	aclEvents := integrationetcd.RetrieveWatchEvents(aclCtx, t, aclWatch)
 	if !assert.Equal(t, 2, len(aclEvents)) {
 		return
 	}
