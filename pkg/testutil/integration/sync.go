@@ -11,6 +11,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/sync"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const pgQueryCanceledErrorCode = "57014"
@@ -18,7 +19,7 @@ const pgQueryCanceledErrorCode = "57014"
 // RunSyncService runs Sync process and returns function closing it.
 func RunSyncService(t *testing.T) (closeSync func()) {
 	setViperConfig(map[string]interface{}{
-		"etcd.endpoints": []string{EtcdEndpoint},
+		"etcd.endpoints": []string{integrationetcd.Endpoint},
 		"sync.storage":   models.JSONCodec.Key(),
 	})
 
