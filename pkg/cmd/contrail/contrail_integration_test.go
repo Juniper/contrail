@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"testing"
+	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/stretchr/testify/assert"
@@ -13,8 +14,10 @@ import (
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -26,18 +29,17 @@ const (
 	expectedDemoProjectPath              = "testdata/demo_project.yml"
 	securityGroupRequestPath             = "testdata/security_group_request.yml"
 	expectedSecurityGroupPath            = "testdata/security_group.yml"
+	expectedProjectCount                 = 3
+	expectedAPSCount                     = 1
+	expectedSGCount                      = 1
+	expectedACLCount                     = 2
 )
 
 func TestCreateCoreResources(t *testing.T) {
-	t.Skip("Not implemented") // TODO: implement API Server and Compilation Service functionality
-
 	cacheDB, cancelEtcdEventProducer := integration.RunCacheDB(t)
 	defer cancelEtcdEventProducer()
 
-	closeIntentCompilation := integration.RunIntentCompilationService(t)
-	defer closeIntentCompilation()
-
-	ec := integration.NewEtcdClient(t)
+	ec := integrationetcd.NewEtcdClient(t)
 	defer ec.Close(t)
 
 	tests := []struct {
@@ -57,6 +59,9 @@ func TestCreateCoreResources(t *testing.T) {
 			})
 			defer s.CloseT(t)
 
+			closeIntentCompilation := integration.RunIntentCompilationService(t, s.URL())
+			defer closeIntentCompilation()
+
 			hc := integration.NewTestingHTTPClient(t, s.URL())
 
 			t.Run("create Project and Security Group", testCreateProjectAndSecurityGroup(hc, ec))
@@ -64,90 +69,116 @@ func TestCreateCoreResources(t *testing.T) {
 	}
 }
 
-func testCreateProjectAndSecurityGroup(hc *integration.HTTPAPIClient, ec *integration.EtcdClient) func(t *testing.T) {
+func testCreateProjectAndSecurityGroup(
+	hc *integration.HTTPAPIClient, ec *integrationetcd.EtcdClient,
+) func(t *testing.T) {
 	return func(t *testing.T) {
-		t.Skip("Not implemented") // TODO: implement API Server and Compilation Service functionality
+		wTime := 1 * time.Second
 
-		defaultDomainUUID := hc.FQNameToID(t, []string{"default-domain", "default-project"}, integration.ProjectType)
+		defaultDomainUUID := hc.FQNameToID(t, []string{"default-domain"}, integration.DomainType)
 
-		apsWatch, apsCtx, cancelAPSCtx := ec.WatchResource(integration.ApplicationPolicySetSchemaID, "",
-			clientv3.WithPrefix())
-		defer cancelAPSCtx()
+		collectAPSEvs := ec.WatchKeyN(
+			integrationetcd.JSONEtcdKey(integrationetcd.ApplicationPolicySetSchemaID, ""),
+			expectedAPSCount,
+			wTime,
+			clientv3.WithPrefix(),
+		)
+		defer collectAPSEvs()
 
-		aclWatch, aclCtx, cancelACLCtx := ec.WatchResource(integration.AccessControlListSchemaID, "",
-			clientv3.WithPrefix())
-		defer cancelACLCtx()
+		collectACLEvs := ec.WatchKeyN(
+			integrationetcd.JSONEtcdKey(integrationetcd.AccessControlListSchemaID, ""),
+			expectedACLCount,
+			wTime,
+			clientv3.WithPrefix(),
+		)
+		defer collectACLEvs()
 
 		project := loadProject(t, demoProjectRequestPath)
-		projectWatch, projectCtx, cancelProjectCtx := ec.WatchResource(integration.ProjectSchemaID, project.UUID)
-		defer cancelProjectCtx()
 
-		// TODO: creating project fails with following message:
-		// "Validation failed for resource with UUID 73a4ad89-3455-46f5-b37c-394aeb1f7c87:
-		// quota property is missing for resource project"
-		hc.CreateRequiredProject(t, project)
-		defer hc.RemoveProject(t, project.UUID)
-		defer ec.DeleteProject(t, project.UUID)
+		collectProjectEvs := ec.WatchKeyN(
+			integrationetcd.JSONEtcdKey(integrationetcd.ProjectSchemaID, project.UUID), expectedProjectCount, wTime,
+		)
+
+		defer collectProjectEvs()
+
+		ctx := context.Background()
+
+		_, err := hc.CreateProject(ctx, &services.CreateProjectRequest{Project: project})
+		require.NoError(t, err)
+		defer hc.DeleteProject(ctx, &services.DeleteProjectRequest{ID: project.UUID})
 
 		sg := loadSecurityGroup(t, securityGroupRequestPath)
-		sgWatch, sgCtx, cancelSGCtx := ec.WatchResource(integration.SecurityGroupSchemaID, sg.UUID)
-		defer cancelSGCtx()
+		collectSGEvs := ec.WatchKeyN(
+			integrationetcd.JSONEtcdKey(integrationetcd.SecurityGroupSchemaID, ""),
+			expectedSGCount,
+			wTime,
+			clientv3.WithPrefix(),
+		)
+		defer collectSGEvs()
 
-		// TODO: creating security group fails with following message:
-		// "Please provide correct FQName or ParentUUID"
-		hc.CreateRequiredSecurityGroup(t, sg)
-		defer hc.RemoveSecurityGroup(t, sg.UUID)
-		defer ec.DeleteSecurityGroup(t, sg.UUID)
+		sgResp, err := hc.CreateSecurityGroup(ctx, &services.CreateSecurityGroupRequest{SecurityGroup: sg})
+		require.NoError(t, err)
+		defer hc.DeleteSecurityGroup(ctx, &services.DeleteSecurityGroupRequest{ID: sgResp.SecurityGroup.UUID})
 
-		// TODO: Chown endpoint fails with following message: "Not Found"
-		hc.Chown(t, project.UUID, sg.UUID)
+		// TODO(Michal): implement chown endpoint
+		//hc.Chown(t, project.UUID, sg.UUID)
 
-		hc.UpdateRequiredProject(t, project.UUID, loadResourceJSON(t, demoProjectQuotaUpdatePath))
+		req := &services.UpdateProjectRequest{}
+		readJSONFile(t, demoProjectQuotaUpdatePath, &req)
+		req.Project.UUID = project.UUID
+		_, err = hc.UpdateProject(ctx, req)
+		require.NoError(t, err)
 
-		apsEvent := integration.RetrieveCreateEvent(apsCtx, t, apsWatch)
-		if apsEvent != nil {
-			aps := decodeJSON(t, apsEvent.Kv.Value)
-			testutil.AssertEqual(t, loadResourceYAML(t, expectedApplicationPolicySetPath), aps)
+		apsEvents := collectAPSEvs()
+		require.Len(t, apsEvents, 1)
 
-			projectEvents := integration.RetrieveWatchEvents(projectCtx, t, projectWatch)
-			if len(projectEvents) > 0 {
-				checkCreatedProject(t, defaultDomainUUID, aps["uuid"].(string), projectEvents[len(projectEvents)-1])
-			}
+		apsOne := decodeJSON(t, []byte(apsEvents[0]))
+		testutil.AssertEqual(t, loadResourceYAML(t, expectedApplicationPolicySetPath), apsOne)
+
+		projectEvents := collectProjectEvs()
+		if len(projectEvents) > 0 {
+			checkCreatedProject(t, defaultDomainUUID, apsOne["uuid"].(string), projectEvents[len(projectEvents)-1])
 		}
 
-		retrieveAndCheckCreatedSecurityGroup(sgCtx, t, sgWatch)
-		retrieveAndCheckCreatedACLs(aclCtx, t, aclWatch)
+		checkCreatedSecurityGroup(t, collectSGEvs())
+		aclEvents := collectACLEvs()
+		for _, ev := range aclEvents {
+			acl := decodeJSON(t, []byte(ev))
+			defer hc.DeleteAccessControlList(ctx, &services.DeleteAccessControlListRequest{
+				ID: acl["uuid"].(string),
+			})
+		}
+		if assert.Equal(t, expectedACLCount, len(aclEvents)) {
+			checkCreatedACLs(t, aclEvents)
+		}
 	}
 }
 
-func checkCreatedProject(t *testing.T, defaultDomainUUID, apsUUID string, projectEvent *clientv3.Event) {
+func checkCreatedProject(t *testing.T, defaultDomainUUID, apsUUID string, projectEvent string) {
 	expectedDemoProject := loadResourceYAML(t, expectedDemoProjectPath)
 	expectedDemoProject["parent_uuid"] = defaultDomainUUID
-	expectedDemoProject["application_policy_set_refs"].([]map[string]interface{})[0]["uuid"] = apsUUID
-	testutil.AssertEqual(t, expectedDemoProject, decodeJSON(t, projectEvent.Kv.Value))
+	expectedDemoProject["application_policy_set_refs"].([]interface{})[0].(map[interface{}]interface{})["uuid"] = apsUUID
+	testutil.AssertEqual(t, expectedDemoProject, decodeJSON(t, []byte(projectEvent)))
 }
 
-func retrieveAndCheckCreatedSecurityGroup(sgCtx context.Context, t *testing.T, sgWatch clientv3.WatchChan) {
-	sgEvent := integration.RetrieveCreateEvent(sgCtx, t, sgWatch)
-	if sgEvent != nil {
-		testutil.AssertEqual(t, loadResourceYAML(t, expectedSecurityGroupPath), decodeJSON(t, sgEvent.Kv.Value))
-	}
-}
-
-func retrieveAndCheckCreatedACLs(aclCtx context.Context, t *testing.T, aclWatch clientv3.WatchChan) {
-	aclEvents := integration.RetrieveWatchEvents(aclCtx, t, aclWatch)
-	if !assert.Equal(t, 2, len(aclEvents)) {
+func checkCreatedSecurityGroup(t *testing.T, sgEvents []string) {
+	if !assert.Equal(t, expectedSGCount, len(sgEvents)) {
 		return
 	}
+	testutil.AssertEqual(t, loadResourceYAML(t, expectedSecurityGroupPath), decodeJSON(t, []byte(sgEvents[0])))
+}
 
-	aclOne := decodeJSON(t, aclEvents[0].Kv.Value)
-	aclTwo := decodeJSON(t, aclEvents[1].Kv.Value)
+func checkCreatedACLs(t *testing.T, aclEvents []string) {
+
+	aclOne := decodeJSON(t, []byte(aclEvents[0]))
+	aclTwo := decodeJSON(t, []byte(aclEvents[1]))
+
 	if aclOne["display_name"] == "ingress-access-control-list" {
-		testutil.AssertEqual(t, expectedIngressAccessControlListPath, aclOne)
-		testutil.AssertEqual(t, expectedEgressAccessControlListPath, aclTwo)
+		testutil.AssertEqual(t, loadResourceYAML(t, expectedIngressAccessControlListPath), aclOne)
+		testutil.AssertEqual(t, loadResourceYAML(t, expectedEgressAccessControlListPath), aclTwo)
 	} else if aclOne["display_name"] == "egress-access-control-list" {
-		testutil.AssertEqual(t, expectedEgressAccessControlListPath, aclOne)
-		testutil.AssertEqual(t, expectedIngressAccessControlListPath, aclTwo)
+		testutil.AssertEqual(t, loadResourceYAML(t, expectedEgressAccessControlListPath), aclOne)
+		testutil.AssertEqual(t, loadResourceYAML(t, expectedIngressAccessControlListPath), aclTwo)
 	} else {
 		assert.Fail(t, "unexpected ACL display_name: %+v", aclOne)
 	}
