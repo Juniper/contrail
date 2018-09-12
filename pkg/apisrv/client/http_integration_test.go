@@ -26,50 +26,61 @@ func TestCreateRefMethod(t *testing.T) {
 	vnUUID := testID + "_virtual-network"
 	niUUID := testID + "_network-ipam"
 
-	hc.CreateProject(
-		t,
-		&models.Project{
-			UUID:       projectUUID,
-			ParentType: integration.DomainType,
-			ParentUUID: integration.DefaultDomainUUID,
-			Name:       "testProject",
-			Quota:      &models.QuotaType{},
-		},
-	)
-	defer hc.DeleteProject(t, projectUUID)
+	ctx := context.Background()
 
-	hc.CreateNetworkIPAM(
-		t,
-		&models.NetworkIpam{
-			UUID:       niUUID,
-			ParentType: integration.ProjectType,
-			ParentUUID: projectUUID,
-			Name:       "testIpam",
+	hc.CreateProject(
+		ctx,
+		&services.CreateProjectRequest{
+			Project: &models.Project{
+				UUID:       projectUUID,
+				ParentType: integration.DomainType,
+				ParentUUID: integration.DefaultDomainUUID,
+				Name:       "testProject",
+				Quota:      &models.QuotaType{},
+			},
 		},
 	)
-	defer hc.DeleteNetworkIPAM(t, niUUID)
+	defer hc.DeleteProject(ctx, &services.DeleteProjectRequest{ID: projectUUID})
+
+	hc.CreateNetworkIpam(
+		ctx,
+		&services.CreateNetworkIpamRequest{
+			NetworkIpam: &models.NetworkIpam{
+				UUID:       niUUID,
+				ParentType: integration.ProjectType,
+				ParentUUID: projectUUID,
+				Name:       "testIpam",
+			},
+		},
+	)
+	defer hc.DeleteNetworkIpam(ctx, &services.DeleteNetworkIpamRequest{ID: niUUID})
 
 	hc.CreateVirtualNetwork(
-		t,
-		&models.VirtualNetwork{
-			UUID:       vnUUID,
-			ParentType: integration.ProjectType,
-			ParentUUID: projectUUID,
-			Name:       "testVN",
-			NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
-				{
-					UUID: niUUID,
+		ctx,
+		&services.CreateVirtualNetworkRequest{
+			VirtualNetwork: &models.VirtualNetwork{
+				UUID:       vnUUID,
+				ParentType: integration.ProjectType,
+				ParentUUID: projectUUID,
+				Name:       "testVN",
+				NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+					{
+						UUID: niUUID,
+					},
 				},
 			},
 		},
 	)
-	defer hc.DeleteVirtualNetwork(t, vnUUID)
+	defer hc.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: vnUUID})
 
 	// After creating VirtualNetwork it is already connected to networkIpam
-	vn := hc.GetVirtualNetwork(t, vnUUID)
+	vnResp, err := hc.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnUUID})
+	assert.NoError(t, err)
+
+	vn := vnResp.GetVirtualNetwork()
 	assert.Len(t, vn.NetworkIpamRefs, 1)
 
-	_, err := hc.DeleteVirtualNetworkNetworkIpamRef(
+	_, err = hc.DeleteVirtualNetworkNetworkIpamRef(
 		context.Background(),
 		&services.DeleteVirtualNetworkNetworkIpamRefRequest{
 			ID: vnUUID,
@@ -78,9 +89,12 @@ func TestCreateRefMethod(t *testing.T) {
 			},
 		},
 	)
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 
-	vn = hc.GetVirtualNetwork(t, vnUUID)
+	vnResp, err = hc.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnUUID})
+	assert.NoError(t, err)
+
+	vn = vnResp.GetVirtualNetwork()
 	assert.Len(t, vn.NetworkIpamRefs, 0)
 
 	_, err = hc.CreateVirtualNetworkNetworkIpamRef(
@@ -92,8 +106,10 @@ func TestCreateRefMethod(t *testing.T) {
 			},
 		},
 	)
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 
-	vn = hc.GetVirtualNetwork(t, vnUUID)
+	vnResp, err = hc.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: vnUUID})
+	assert.NoError(t, err)
+	vn = vnResp.GetVirtualNetwork()
 	assert.Len(t, vn.NetworkIpamRefs, 1)
 }
