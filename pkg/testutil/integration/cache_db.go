@@ -9,6 +9,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -19,7 +20,7 @@ const (
 func RunCacheDB(t *testing.T) (cacheDB *cache.DB, cancelEtcdEventProducer context.CancelFunc) {
 	setViperConfig(map[string]interface{}{
 		"cache.timeout":  "10s",
-		"etcd.endpoints": []string{EtcdEndpoint},
+		"etcd.endpoints": []string{integrationetcd.Endpoint},
 	})
 
 	cacheDB = cache.NewDB(maxHistory)
