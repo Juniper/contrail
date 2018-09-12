@@ -72,11 +72,10 @@ func logicalRouterSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
 
 func TestCreateLogicalRouter(t *testing.T) {
 	tests := []struct {
-		name                  string
-		testLogicalRouter     models.LogicalRouter
-		expectedLogicalRouter models.LogicalRouter
-		vxlanEnabled          bool
-		errorCode             codes.Code
+		name              string
+		testLogicalRouter models.LogicalRouter
+		vxlanEnabled      bool
+		errorCode         codes.Code
 	}{
 		{
 			name:              "Try to create logical-router when cannot find parent project",
