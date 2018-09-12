@@ -17,7 +17,8 @@ func newAPIClient(config config.Config) *client.HTTP {
 		c.Insecure,
 		&keystone.Scope{
 			Project: &keystone.Project{
-				Name: c.Project,
+				ID:     c.Project,
+				Domain: &keystone.Domain{},
 			},
 		},
 	)
