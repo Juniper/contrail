@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 )
 
 func setTestConfig() {
-	viper.Set("etcd.endpoints", integration.EtcdEndpoint)
+	viper.Set("etcd.endpoints", integrationetcd.Endpoint)
 	viper.Set("etcd.path", testEtcdPath)
 	viper.Set("etcd.grpc_insecure", true)
 	viper.Set("compilation.msg_index_string", testMessageIndexString)
@@ -34,7 +34,7 @@ func setTestConfig() {
 }
 
 func TestIntentCompilationServiceHandlesMessage(t *testing.T) {
-	etcdClient := integration.NewEtcdClient(t)
+	etcdClient := integrationetcd.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
 
@@ -73,7 +73,7 @@ func TestIntentCompilationServiceHandlesMessage(t *testing.T) {
 }
 
 func TestIntentCompilationServiceConcurrency(t *testing.T) {
-	etcdClient := integration.NewEtcdClient(t)
+	etcdClient := integrationetcd.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
 
