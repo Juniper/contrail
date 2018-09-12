@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"path"
 	"testing"
 
 	"github.com/labstack/echo"
@@ -16,29 +15,21 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
 )
 
 // Resource constants
 const (
-	AccessControlListSchemaID    = "access_control_list"
-	ApplicationPolicySetSchemaID = "application_policy_set"
-	DomainType                   = "domain"
-	DefaultDomainUUID            = "beefbeef-beef-beef-beef-beefbeef0002"
-	NetworkIPAMSchemaID          = "network_ipam"
-	NetworkIpamSingularPath      = "/network-ipam"
-	NetworkIpamPluralPath        = "/network-ipams"
-	ProjectType                  = "project"
-	ProjectSchemaID              = "project"
-	ProjectSingularPath          = "/project"
-	ProjectPluralPath            = "/projects"
-	SecurityGroupSchemaID        = "security_group"
-	SecurityGroupSingularPath    = "/security-group"
-	SecurityGroupPluralPath      = "/security-groups"
-	VirtualNetworkSchemaID       = "virtual_network"
-	VirtualNetworkSingularPath   = "/virtual-network"
-	VirtualNetworkPluralPath     = "/virtual-networks"
+	DomainType                 = "domain"
+	DefaultDomainUUID          = "beefbeef-beef-beef-beef-beefbeef0002"
+	NetworkIpamSingularPath    = "/network-ipam"
+	NetworkIpamPluralPath      = "/network-ipams"
+	ProjectType                = "project"
+	ProjectSingularPath        = "/project"
+	ProjectPluralPath          = "/projects"
+	SecurityGroupSingularPath  = "/security-group"
+	SecurityGroupPluralPath    = "/security-groups"
+	VirtualNetworkSingularPath = "/virtual-network"
+	VirtualNetworkPluralPath   = "/virtual-networks"
 )
 
 const (
@@ -138,63 +129,11 @@ func (c *HTTPAPIClient) Chown(t *testing.T, owner, uuid string) {
 	assert.NoError(t, err, "Chown failed\n response: %+v\n responseData: %+v", r, responseData)
 }
 
-// CreateNetworkIPAM creates NetworkIPAM resource.
-func (c *HTTPAPIClient) CreateNetworkIPAM(t *testing.T, ni *models.NetworkIpam) {
-	c.CreateResource(t, NetworkIpamPluralPath, &services.CreateNetworkIpamRequest{NetworkIpam: ni})
-}
-
-// DeleteNetworkIPAM deletes NetworkIPAM resource.
-func (c *HTTPAPIClient) DeleteNetworkIPAM(t *testing.T, uuid string) {
-	c.DeleteResource(t, path.Join(NetworkIpamSingularPath, uuid))
-}
-
-// CreateProject creates Project resource.
-func (c *HTTPAPIClient) CreateProject(t *testing.T, p *models.Project) {
-	c.CreateResource(t, ProjectPluralPath, &services.CreateProjectRequest{Project: p})
-}
-
-// UpdateProject updates Project resource.
-func (c *HTTPAPIClient) UpdateProject(t *testing.T, uuid string, requestData interface{}) {
-	c.UpdateResource(t, path.Join(ProjectSingularPath, uuid), requestData)
-}
-
-// DeleteProject deletes Project resource.
-func (c *HTTPAPIClient) DeleteProject(t *testing.T, uuid string) {
-	c.DeleteResource(t, path.Join(ProjectSingularPath, uuid))
-}
-
-// CreateSecurityGroup creates SecurityGroup resource.
-func (c *HTTPAPIClient) CreateSecurityGroup(t *testing.T, p *models.SecurityGroup) {
-	c.CreateResource(t, SecurityGroupPluralPath, &services.CreateSecurityGroupRequest{SecurityGroup: p})
-}
-
-// DeleteSecurityGroup deletes SecurityGroup resource.
-func (c *HTTPAPIClient) DeleteSecurityGroup(t *testing.T, uuid string) {
-	c.DeleteResource(t, path.Join(SecurityGroupSingularPath, uuid))
-}
-
-// CreateVirtualNetwork creates VirtualNetwork resource.
-func (c *HTTPAPIClient) CreateVirtualNetwork(t *testing.T, vn *models.VirtualNetwork) {
-	c.CreateResource(t, VirtualNetworkPluralPath, &services.CreateVirtualNetworkRequest{VirtualNetwork: vn})
-}
-
-// GetVirtualNetwork gets VirtualNetwork resource.
-func (c *HTTPAPIClient) GetVirtualNetwork(t *testing.T, uuid string) *models.VirtualNetwork {
-	var responseData services.GetVirtualNetworkResponse
-	c.GetResource(t, path.Join(VirtualNetworkSingularPath, uuid), &responseData)
-	return responseData.VirtualNetwork
-}
-
-// DeleteVirtualNetwork deletes VirtualNetwork resource.
-func (c *HTTPAPIClient) DeleteVirtualNetwork(t *testing.T, uuid string) {
-	c.DeleteResource(t, path.Join(VirtualNetworkSingularPath, uuid))
-}
-
 // CreateResource creates resource.
 func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData interface{}) {
 	var responseData interface{}
 	r, err := c.Create(context.Background(), path, requestData, &responseData)
-	assert.NoError(
+	require.NoError(
 		t,
 		err,
 		fmt.Sprintf("creating resource failed\n requestData: %+v\n "+
@@ -226,9 +165,10 @@ func (c *HTTPAPIClient) UpdateResource(t *testing.T, path string, requestData in
 
 // DeleteResource deletes resource.
 func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
+	c.log.Debug("deleting resource %v", path)
 	var responseData interface{}
 	r, err := c.Delete(context.Background(), path, &responseData)
-	assert.NoError(t, err, "deleting resource failed\n response: %+v\n responseData: %+v", r, responseData)
+	require.NoError(t, err, "deleting resource failed\n response: %+v\n responseData: %+v", r, responseData)
 }
 
 // CheckResourceDoesNotExist checks that there is no resource with given path.

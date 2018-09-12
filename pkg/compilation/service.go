@@ -10,7 +10,6 @@ package compilation
 
 import (
 	"context"
-	"errors"
 	"runtime"
 	"strconv"
 	"time"
@@ -179,9 +178,11 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 			return nil
 		case e, ok := <-eventChan:
 			if !ok {
-				return errors.New("event channel unsuspectingly closed")
+				ics.log.Info("event channel unsuspectingly closed, restarting etcd watch")
+				eventChan = ics.Store.WatchRecursive(ctx, "/"+watchPath, int64(0))
+			} else {
+				ics.handleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)
 			}
-			ics.handleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)
 		}
 	}
 }
