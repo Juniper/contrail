@@ -120,16 +120,15 @@ func (sv *ContrailTypeLogicService) ensureDefaultApplicationPolicySet(
 ) error {
 	apsName := basemodels.DefaultNameForKind(models.KindApplicationPolicySet)
 
-	aps := models.MakeApplicationPolicySet()
-	aps.FQName = basemodels.ChildFQName(project.GetFQName(), apsName)
-	aps.ParentType = project.Kind()
-	aps.ParentUUID = project.GetUUID()
-	aps.Name = apsName
-	aps.DisplayName = apsName
-	aps.AllApplications = true
-
 	response, err := sv.WriteService.CreateApplicationPolicySet(ctx, &services.CreateApplicationPolicySetRequest{
-		ApplicationPolicySet: aps,
+		ApplicationPolicySet: &models.ApplicationPolicySet{
+			FQName:          basemodels.ChildFQName(project.GetFQName(), apsName),
+			ParentType:      project.Kind(),
+			ParentUUID:      project.GetUUID(),
+			Name:            apsName,
+			DisplayName:     apsName,
+			AllApplications: true,
+		},
 	})
 	if common.IsConflict(err) {
 		return nil // object already exists - do nothing
