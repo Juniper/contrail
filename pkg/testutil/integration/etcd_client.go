@@ -91,6 +91,12 @@ func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOpti
 
 // WatchKey watches value changes for provided key and returns collect method that collect captured values.
 func (e *EtcdClient) WatchKey(key string) (collect func() []string) {
+	return WatchKey(key, 0, 0)
+}
+
+// WatchKeyN watches value changes for provided key n times and returns collect method that collect captured values.
+// If there were less than n events then it waits until timeout passes.
+func (e *EtcdClient) WatchKeyN(key string, n int, timeout time.Duration) (collect func() []string) {
 	var result []string
 	ctx, cancel := context.WithCancel(context.Background())
 	wchan := e.Client.Watch(ctx, key)
@@ -99,12 +105,19 @@ func (e *EtcdClient) WatchKey(key string) (collect func() []string) {
 		for val := range wchan {
 			if len(val.Events) > 0 {
 				result = append(result, string(val.Events[0].Kv.Value))
+				if n > 0 && len(result) >= n {
+					cancel()
+				}
 			}
 		}
 	}()
 
 	return func() (vals []string) {
-		cancel()
+		select {
+		case ctx.Done():
+		case time.After(timeout):
+			cancel()
+		}
 		return result
 	}
 }
