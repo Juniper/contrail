@@ -141,6 +141,9 @@ type Task struct {
 	Expect  interface{}     `yaml:"expect,omitempty"`
 }
 
+// KeyEvent is an event received from etcd watch.
+type KeyEvent map[string]interface{}
+
 //TestScenario has a list of tasks.
 type TestScenario struct {
 	Name        string                  `yaml:"name,omitempty"`
@@ -149,6 +152,7 @@ type TestScenario struct {
 	Clients     map[string]*client.HTTP `yaml:"clients,omitempty"`
 	Cleanup     []map[string]string     `yaml:"cleanup,omitempty"`
 	Workflow    []*Task                 `yaml:"workflow,omitempty"`
+	Watchers    map[string][]KeyEvent   `yaml:"watchers,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -212,6 +216,10 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 		}
 	}
 }
+
+//func startWatchers(ctx context.Context, t *testing.T, testScenario *TestScenario) func(t *testing.T) {
+//ec := integration.NewEtcdClient(t)
+//}
 
 func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario) clientsList {
 	clients := clientsList{}
