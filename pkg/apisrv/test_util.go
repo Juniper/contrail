@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
@@ -22,6 +23,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -141,6 +143,9 @@ type Task struct {
 	Expect  interface{}     `yaml:"expect,omitempty"`
 }
 
+// KeyEvent is an event received from etcd watch.
+type KeyEvent string
+
 //TestScenario has a list of tasks.
 type TestScenario struct {
 	Name        string                  `yaml:"name,omitempty"`
@@ -149,6 +154,7 @@ type TestScenario struct {
 	Clients     map[string]*client.HTTP `yaml:"clients,omitempty"`
 	Cleanup     []map[string]string     `yaml:"cleanup,omitempty"`
 	Workflow    []*Task                 `yaml:"workflow,omitempty"`
+	Watchers    map[string][]KeyEvent   `yaml:"watchers,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -183,9 +189,13 @@ type clientsList map[string]*client.HTTP
 func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
+	checkWatchers := startWatchers(ctx, t, testScenario)
+
 	clients := prepareClients(ctx, t, testScenario)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
 	cleanupTrackedResources(ctx, tracked, clients)
+
+	checkWatchers()
 }
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
@@ -209,6 +219,25 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 		}
 		if response.StatusCode != 404 {
 			log.Warnf("DIRTY test scenario: left resource with path '%v'", tr.Path)
+		}
+	}
+}
+
+func startWatchers(ctx context.Context, t *testing.T, testScenario *TestScenario) func(t *testing.T) {
+	checks := []func(t *testing.T){}
+
+	ec := integration.NewEtcdClient(t)
+	for key, events := range testScenario.Watchers {
+		collect := ec.WatchKeyN(key, len(events), 2*time.Second)
+
+		checks = append(checks, func(t *testing.T) {
+			assert.Equal(events, collect())
+		})
+	}
+
+	return func(t *testing.T) {
+		for _, c := range checks {
+			c(t)
 		}
 	}
 }
