@@ -1,0 +1,10 @@
+- name: Deploy contrail for kubernetes
+  hosts: localhost
+  tasks:
+  - name: Run deploy contrail script
+    command: ./tools/deploy-for_k8s.sh
+    when:
+      - contrail_type is defined
+      - contrail_type == "atom_api"
+    args:
+      chdir: "{{ contrail_path }}"
