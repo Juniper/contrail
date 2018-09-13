@@ -34,7 +34,7 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 			}
 
 			err = sv.checkForExternalGateway(
-				ctx, logicalRouter, nil, nil, vxLanRouting)
+				logicalRouter, nil, vxLanRouting)
 			if err != nil {
 				return err
 			}
@@ -115,7 +115,7 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 			}
 
 			err = sv.checkForExternalGateway(
-				ctx, logicalRouter, dbLogicalRouter, &fieldMask, vxLanRouting,
+				logicalRouter, &fieldMask, vxLanRouting,
 			)
 			if err != nil {
 				return err
@@ -245,9 +245,7 @@ func (sv *ContrailTypeLogicService) getLogicalRouter(
 }
 
 func (sv *ContrailTypeLogicService) checkForExternalGateway(
-	ctx context.Context,
 	logicalRouter *models.LogicalRouter,
-	dbLogicalRouter *models.LogicalRouter,
 	fm *types.FieldMask,
 	vxLanRouting bool,
 ) error {

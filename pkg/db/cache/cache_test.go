@@ -38,7 +38,7 @@ func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB) {
 	}()
 }
 
-func notifyEvent(cache *DB, version uint64) {
+func notifyEvent(cache *DB, version uint64) { // nolint: interfacer
 	event := &services.Event{
 		Version: version,
 		Request: &services.Event_CreateVirtualNetworkRequest{
@@ -52,8 +52,8 @@ func notifyEvent(cache *DB, version uint64) {
 	cache.Process(context.Background(), event) // nolint: errcheck
 }
 
-// nolint: unused
-func notifyDelete(cache *DB, version uint64) {
+// nolint: unused, deadcode
+func notifyDelete(cache *DB, version uint64) { // nolint: interfacer
 	event := &services.Event{
 		Version: version,
 		Request: &services.Event_DeleteVirtualNetworkRequest{
@@ -96,6 +96,7 @@ func TestCache(t *testing.T) {
 
 	wg.Wait()
 
+	// TODO: finish test
 	// notifyDelete(t, cache, 0)
 	// notifyDelete(t, cache, 1)
 	// notifyDelete(t, cache, 2)

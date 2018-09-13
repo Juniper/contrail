@@ -34,7 +34,7 @@ func init() {
 }
 
 // nolint: gocyclo
-func commandHandler(handler handler, task *task, context map[string]interface{}) (interface{}, error) {
+func commandHandler(handler handler, _ *task, context map[string]interface{}) (interface{}, error) {
 	c, err := getCommand(handler, context)
 	if err != nil {
 		return nil, err
@@ -195,7 +195,7 @@ func applyTemplateObject(template interface{}, context map[string]interface{}) (
 	return nil, nil
 }
 
-func varsHandler(handler handler, task *task, context map[string]interface{}) (interface{}, error) {
+func varsHandler(handler handler, _ *task, context map[string]interface{}) (interface{}, error) {
 	vars, ok := handler["vars"].(map[interface{}]interface{})
 	if !ok {
 		return nil, fmt.Errorf("invalid vars format")
@@ -212,7 +212,7 @@ func varsHandler(handler handler, task *task, context map[string]interface{}) (i
 	return nil, nil
 }
 
-func envHandler(handler handler, task *task, context map[string]interface{}) (interface{}, error) {
+func envHandler(handler handler, _ *task, context map[string]interface{}) (interface{}, error) {
 	envFile, err := applyTemplate(handler["env_file"], context)
 	if err != nil {
 		return nil, err
@@ -227,7 +227,7 @@ func envHandler(handler handler, task *task, context map[string]interface{}) (in
 	return nil, nil
 }
 
-func debugHandler(handler handler, task *task, context map[string]interface{}) (interface{}, error) {
+func debugHandler(handler handler, _ *task, context map[string]interface{}) (interface{}, error) {
 	debugLog, err := applyTemplate(handler["debug"], context)
 	if err != nil {
 		return nil, err

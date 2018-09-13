@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -16,6 +17,18 @@ const (
 	funcPrefix = "$"
 )
 
+// AssertContainsStrings asserts that object contains all expected strings.
+func AssertContainsStrings(t *testing.T, expected []string, actual interface{}) {
+	for _, e := range expected {
+		assert.Contains(t, actual, e)
+	}
+}
+
+// NotNil matches any non-nil value.
+func NotNil() gomock.Matcher {
+	return gomock.Not(gomock.Nil())
+}
+
 // assertFunction for macros in diff.
 type assertFunction func(path string, args, actual interface{}) error
 
@@ -24,13 +37,13 @@ var assertFunctions = map[string]assertFunction{
 	"any": func(path string, args, actual interface{}) error {
 		return nil
 	},
-	"null": func(path string, args, actual interface{}) error {
+	"null": func(path string, _, actual interface{}) error {
 		if actual != nil {
 			return fmt.Errorf("expecetd null but got %s on path %s", actual, path)
 		}
 		return nil
 	},
-	"number": func(path string, args, actual interface{}) error {
+	"number": func(path string, _, actual interface{}) error {
 		switch actual.(type) {
 		case int64, int, float64:
 			return nil
