@@ -29,7 +29,7 @@ func logicalRouterSetupReadServiceMocks(
 	s *ContrailTypeLogicService,
 	lr *models.LogicalRouter,
 	vxlan bool) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 	project := models.MakeProject()
 	project.VxlanRouting = vxlan
 	vmi := models.MakeVirtualMachineInterface()
@@ -59,7 +59,7 @@ func logicalRouterSetupReadServiceMocks(
 }
 
 func logicalRouterSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
-	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator)
+	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
 	intPoolAllocator.EXPECT().AllocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		int64(1), nil).AnyTimes()
 	intPoolAllocator.EXPECT().SetInt(
@@ -198,15 +198,14 @@ func TestCreateLogicalRouter(t *testing.T) {
 			createLRCall := service.Next().(*servicesmock.MockService).EXPECT().CreateLogicalRouter(
 				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 			).DoAndReturn(
-				func(_ context.Context, request *services.CreateLogicalRouterRequest,
+				func(_ context.Context, _ *services.CreateLogicalRouterRequest,
 				) (response *services.CreateLogicalRouterResponse, err error) {
 					return &services.CreateLogicalRouterResponse{LogicalRouter: &tt.testLogicalRouter}, nil
 				},
 			)
 
-			createVNCall := service.WriteService.(*servicesmock.MockWriteService).EXPECT().CreateVirtualNetwork(
-				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
-			).DoAndReturn(
+			createVNCall := service.WriteService.(*servicesmock.MockWriteService).EXPECT( //nolint: errcheck
+			).CreateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 				func(_ context.Context, request *services.CreateVirtualNetworkRequest,
 				) (response *services.CreateVirtualNetworkResponse, err error) {
 					return &services.CreateVirtualNetworkResponse{VirtualNetwork: request.VirtualNetwork}, nil
@@ -240,7 +239,7 @@ func TestCreateLogicalRouter(t *testing.T) {
 }
 
 func TestUpdateLogicalRouter(t *testing.T) {
-	tests := []struct {
+	tests := []struct { // nolint: maligned
 		name              string
 		testLogicalRouter models.LogicalRouter
 		vxlanEnabled      bool
@@ -363,7 +362,7 @@ func TestUpdateLogicalRouter(t *testing.T) {
 			logicalRouterSetupReadServiceMocks(service, &tt.testLogicalRouter, tt.vxlanEnabled)
 			logicalRouterSetupIntPoolAllocatorMocks(service)
 
-			readService := service.ReadService.(*servicesmock.MockReadService)
+			readService := service.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 			readService.EXPECT().GetLogicalRouter(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 				&services.GetLogicalRouterResponse{
 					LogicalRouter: &tt.dbLogicalRouter,
@@ -371,18 +370,17 @@ func TestUpdateLogicalRouter(t *testing.T) {
 				nil,
 			).AnyTimes()
 
-			updateLRCall := service.Next().(*servicesmock.MockService).EXPECT().UpdateLogicalRouter(
+			updateLRCall := service.Next().(*servicesmock.MockService).EXPECT().UpdateLogicalRouter( //nolint: errcheck
 				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 			).DoAndReturn(
-				func(_ context.Context, request *services.UpdateLogicalRouterRequest,
+				func(_ context.Context, _ *services.UpdateLogicalRouterRequest,
 				) (response *services.UpdateLogicalRouterResponse, err error) {
 					return &services.UpdateLogicalRouterResponse{LogicalRouter: &tt.testLogicalRouter}, nil
 				},
 			)
 
-			updateVNCall := service.WriteService.(*servicesmock.MockWriteService).EXPECT().UpdateVirtualNetwork(
-				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
-			).DoAndReturn(
+			updateVNCall := service.WriteService.(*servicesmock.MockWriteService).EXPECT( //nolint: errcheck
+			).UpdateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 				func(_ context.Context, request *services.UpdateVirtualNetworkRequest,
 				) (response *services.UpdateVirtualNetworkResponse, err error) {
 					return &services.UpdateVirtualNetworkResponse{VirtualNetwork: request.VirtualNetwork}, nil
@@ -461,7 +459,7 @@ func TestDeleteLogicalRouter(t *testing.T) {
 			logicalRouterSetupReadServiceMocks(service, tt.dbLogicalRouter, tt.vxlanEnabled)
 			logicalRouterSetupIntPoolAllocatorMocks(service)
 
-			readService := service.ReadService.(*servicesmock.MockReadService)
+			readService := service.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 			if tt.dbLogicalRouter != nil {
 				readService.EXPECT().GetLogicalRouter(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.GetLogicalRouterResponse{
@@ -478,15 +476,13 @@ func TestDeleteLogicalRouter(t *testing.T) {
 				&services.DeleteLogicalRouterResponse{}, nil,
 			)
 
-			deleteVNCall := service.WriteService.(*servicesmock.MockWriteService).EXPECT().DeleteVirtualNetwork(
-				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
-			).Return(
+			deleteVNCall := service.WriteService.(*servicesmock.MockWriteService).EXPECT( //nolint: errcheck
+			).DeleteVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 				&services.DeleteVirtualNetworkResponse{}, nil,
 			)
 
-			metadataCall := service.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT().GetMetadata(
-				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
-			).Return(
+			metadataCall := service.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT( //nolint: errcheck
+			).GetMetadata(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 				&basemodels.Metadata{
 					UUID: "internal-virtual-network-uuid",
 				},
@@ -567,7 +563,7 @@ func TestCheckRouterSupportsVPNType(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
-			readService := service.ReadService.(*servicesmock.MockReadService)
+			readService := service.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 			if tt.mockMode&bgpvpnListRequest != 0 {
 				bgpvpn := models.MakeBGPVPN()
@@ -733,7 +729,7 @@ func TestCheckRouterHasBGPVPNAssocViaNetwork(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
-			readService := service.ReadService.(*servicesmock.MockReadService)
+			readService := service.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 			if tt.mockMode&vmiListRequest != 0 {
 				vmi := models.MakeVirtualMachineInterface()

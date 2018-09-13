@@ -54,7 +54,7 @@ func (p *provisionCommon) applyTemplate(templateSrc string, context map[string]i
 		return nil, err
 	}
 	// strip empty lines in output content
-	regex, _ := regexp.Compile("\n[ \r\n\t]*\n")
+	regex, _ := regexp.Compile("\n[ \r\n\t]*\n") // nolint: errcheck
 	outputString := regex.ReplaceAllString(string(output), "\n")
 	return []byte(outputString), nil
 }

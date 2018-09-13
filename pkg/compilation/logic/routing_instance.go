@@ -26,7 +26,7 @@ func LoadRoutingInstanceIntent(
 	uuid string,
 ) *RoutingInstanceIntent {
 	i := c.Load(models.KindRoutingInstance, intent.ByUUID(uuid))
-	actual, _ := i.(*RoutingInstanceIntent)
+	actual, _ := i.(*RoutingInstanceIntent) //nolint: errcheck
 	return actual
 }
 

@@ -42,9 +42,9 @@ func TestCreateSecurityGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		runTest(t, tt.name, func(t *testing.T, sv *ContrailTypeLogicService) {
-			allocateCall := sv.IntPoolAllocator.(*typesmock.MockIntPoolAllocator).
-				EXPECT().AllocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).
-				Return(tt.allocatedInt, nil)
+			allocateCall := sv.IntPoolAllocator.(*typesmock.MockIntPoolAllocator). //nolint: errcheck
+												EXPECT().AllocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).
+												Return(tt.allocatedInt, nil)
 			createCall := sv.Next().(*servicesmock.MockService).
 				EXPECT().CreateSecurityGroup(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).
 				DoAndReturn(func(_ context.Context, request *services.CreateSecurityGroupRequest) (
@@ -114,8 +114,8 @@ func TestUpdateSecurityGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		runTest(t, tt.name, func(t *testing.T, sv *ContrailTypeLogicService) {
-			sv.ReadService.(*servicesmock.MockReadService).
-				EXPECT().GetSecurityGroup(gomock.Not(gomock.Nil()), &services.GetSecurityGroupRequest{
+			sv.ReadService.(*servicesmock.MockReadService). //nolint: errcheck
+									EXPECT().GetSecurityGroup(gomock.Not(gomock.Nil()), &services.GetSecurityGroupRequest{
 				ID: tt.requestedSG.UUID,
 			}).Return(&services.GetSecurityGroupResponse{SecurityGroup: tt.existingSG}, nil).Times(1)
 
@@ -169,14 +169,14 @@ func TestDeleteSecurityGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		runTest(t, tt.name, func(t *testing.T, sv *ContrailTypeLogicService) {
-			sv.ReadService.(*servicesmock.MockReadService).
-				EXPECT().GetSecurityGroup(gomock.Not(gomock.Nil()), &services.GetSecurityGroupRequest{
+			sv.ReadService.(*servicesmock.MockReadService). //nolint: errcheck
+									EXPECT().GetSecurityGroup(gomock.Not(gomock.Nil()), &services.GetSecurityGroupRequest{
 				ID: tt.existingSG.UUID,
 			}).Return(&services.GetSecurityGroupResponse{SecurityGroup: tt.existingSG}, nil).Times(1)
 
-			sv.IntPoolAllocator.(*typesmock.MockIntPoolAllocator).
-				EXPECT().DeallocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), tt.deallocatedInt).
-				Return(nil).Times(1)
+			sv.IntPoolAllocator.(*typesmock.MockIntPoolAllocator). //nolint: errcheck
+										EXPECT().DeallocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), tt.deallocatedInt).
+										Return(nil).Times(1)
 
 			sv.Next().(*servicesmock.MockService).
 				EXPECT().DeleteSecurityGroup(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).

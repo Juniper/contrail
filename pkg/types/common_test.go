@@ -24,8 +24,8 @@ func makeMockedContrailTypeLogicService(controller *gomock.Controller) *Contrail
 	}
 	service.SetNext(servicesmock.NewMockService(controller))
 
-	service.InTransactionDoer.(*typesmock.MockInTransactionDoer).
-		EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+	service.InTransactionDoer.(*typesmock.MockInTransactionDoer). //nolint: errcheck
+									EXPECT().DoInTransaction(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(ctx context.Context, do func(context.Context) error) error {
 			return do(ctx)
 		},
@@ -35,7 +35,7 @@ func makeMockedContrailTypeLogicService(controller *gomock.Controller) *Contrail
 }
 
 func mockedReadServiceAddVirtualNetwork(s *ContrailTypeLogicService, virtualNetwork *models.VirtualNetwork) {
-	readServiceMock := s.ReadService.(*servicesmock.MockReadService)
+	readServiceMock := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	readServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
 		&services.GetVirtualNetworkRequest{

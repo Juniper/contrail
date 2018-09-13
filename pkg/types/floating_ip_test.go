@@ -27,7 +27,7 @@ func (e addrMgrSubnetExhausted) Error() string {
 }
 
 func floatingIPSetupReadServiceMocks(s *ContrailTypeLogicService) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		&services.GetVirtualNetworkResponse{
 			VirtualNetwork: &models.VirtualNetwork{},
@@ -35,7 +35,7 @@ func floatingIPSetupReadServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func floatingIPSetupIPAMMocks(s *ContrailTypeLogicService) {
-	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager := s.AddressManager.(*ipammock.MockAddressManager) //nolint: errcheck
 	addressManager.EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(_ context.Context, request *ipam.AllocateIPRequest) (address string, subnetUUID string, err error) {
 
@@ -51,7 +51,7 @@ func floatingIPSetupIPAMMocks(s *ContrailTypeLogicService) {
 				return "", "", &exhaustedError
 			}
 			if request.SubnetUUID == "uuid-4" {
-				return "", "", fmt.Errorf("Generic error")
+				return "", "", fmt.Errorf("generic error")
 			}
 
 			return "10.0.0.1", "uuid-1", nil
@@ -65,7 +65,7 @@ func floatingIPSetupIPAMMocks(s *ContrailTypeLogicService) {
 }
 
 func floatingIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
-	nextService := s.Next().(*servicesmock.MockService)
+	nextService := s.Next().(*servicesmock.MockService) //nolint: errcheck
 	// CreateFloatingIP - response
 	nextService.EXPECT().CreateFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(
@@ -87,7 +87,7 @@ func floatingIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func floatingIPPrepareParent(s *ContrailTypeLogicService, floatingIPPool *models.FloatingIPPool) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 	if floatingIPPool != nil {
 		readService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 			&services.GetFloatingIPPoolResponse{
@@ -95,7 +95,7 @@ func floatingIPPrepareParent(s *ContrailTypeLogicService, floatingIPPool *models
 			}, nil).AnyTimes()
 	} else {
 		readService.EXPECT().GetFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-			nil, fmt.Errorf("DB error")).AnyTimes()
+			nil, fmt.Errorf("error from DB")).AnyTimes()
 	}
 }
 
@@ -269,7 +269,7 @@ func TestDeleteFloatingIP(t *testing.T) {
 			floatingIPSetupNextServiceMocks(service)
 			floatingIPPrepareParent(service, tt.floatingIPParent)
 
-			readService := service.ReadService.(*servicesmock.MockReadService)
+			readService := service.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 			if tt.floatingIP != nil {
 				readService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.GetFloatingIPResponse{
@@ -277,11 +277,11 @@ func TestDeleteFloatingIP(t *testing.T) {
 					}, nil).AnyTimes()
 			} else {
 				readService.EXPECT().GetFloatingIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-					nil, fmt.Errorf("Not found")).AnyTimes()
+					nil, fmt.Errorf("not found")).AnyTimes()
 			}
 
 			if tt.deallocatesIP {
-				addressManager := service.AddressManager.(*ipammock.MockAddressManager)
+				addressManager := service.AddressManager.(*ipammock.MockAddressManager) //nolint: errcheck
 				addressManager.EXPECT().DeallocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(nil)
 			}
 
