@@ -123,7 +123,7 @@ func (sv *ContrailTypeLogicService) UpdateNetworkIpam(
 				return common.ErrorBadRequestf("validate subnet update failed with error: %v", err)
 			}
 
-			err = sv.processIpamUpdate(ctx, oldNetworkIpam, newNetworkIpam, &fieldMask)
+			err = sv.processIpamUpdate(oldNetworkIpam, newNetworkIpam, &fieldMask)
 			if err != nil {
 				return common.ErrorBadRequestf("ipam update failed with error: %v", err)
 			}
@@ -412,7 +412,6 @@ func (sv *ContrailTypeLogicService) validateDefaultGWChange(
 }
 
 func (sv *ContrailTypeLogicService) processIpamUpdate(
-	ctx context.Context,
 	oldIpam *models.NetworkIpam,
 	newIpam *models.NetworkIpam,
 	fieldMask *types.FieldMask,

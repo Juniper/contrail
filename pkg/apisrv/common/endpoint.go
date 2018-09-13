@@ -61,7 +61,7 @@ func (t *TargetStore) Write(id string, endpoint *models.Endpoint) {
 func (t *TargetStore) Next(scope string) (endpointURL string) {
 	endpointURL = ""
 	t.Data.Range(func(id, endpoint interface{}) bool {
-		ids := id.(string)
+		ids := id.(string) // nolint: errcheck
 		if t.nextTarget == "" {
 			t.nextTarget = ids
 		}

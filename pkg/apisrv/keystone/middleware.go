@@ -135,7 +135,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
 			if tokenString == "" {
-				cookie, _ := r.Cookie("x-auth-token")
+				cookie, _ := r.Cookie("x-auth-token") // nolint: errcheck
 				if cookie != nil {
 					tokenString = cookie.Value
 				}

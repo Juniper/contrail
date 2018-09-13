@@ -55,7 +55,7 @@ func (store *InMemoryStore) ValidateToken(tokenID string) (*Token, bool) {
 	return token, ok
 }
 
-//RetrieveToken is used to retrive a token, and return a token body.
+//RetrieveToken is used to retrieve a token, and return a token body.
 func (store *InMemoryStore) RetrieveToken(tokenID string) (*Token, error) {
 	i, ok := store.store.Load(tokenID)
 	if !ok {
