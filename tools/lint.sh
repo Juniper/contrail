@@ -15,4 +15,4 @@ set -o pipefail
 
 [[ -z `go tool fix --diff ./pkg/` ]]
 
-gometalinter --config .gometalinter.json ./...
+golangci-lint --config .golangci-lint.yml run
