@@ -1,0 +1,10 @@
+- name: Deploy contrail-go for kubernetes
+  hosts: localhost
+  tasks:
+  - name: Run deploy contrail-go script
+    command: ./tools/deploy-for_k8s.sh
+    when:
+      - contrail_type is defined
+      - contrail_type == "contrail-go"
+    args:
+      chdir: "{{ contrail_path }}"
