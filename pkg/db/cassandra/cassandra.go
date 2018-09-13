@@ -72,7 +72,7 @@ func (t table) makeEventList() *services.EventList {
 		Events: []*services.Event{},
 	}
 	for uuid, data := range t {
-		kind := data["type"].(string)
+		kind := data["type"].(string) //nolint: errcheck
 		data["uuid"] = uuid
 		event, err := services.NewEvent(&services.EventOption{
 			Kind: kind,
@@ -99,7 +99,7 @@ func (o object) Get(key string) interface{} {
 		return nil
 	}
 	var response interface{}
-	err := json.Unmarshal([]byte(data[0].(string)), &response)
+	err := json.Unmarshal([]byte(data[0].(string)), &response) //nolint: errcheck
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func (o object) Get(key string) interface{} {
 
 func (o object) GetString(key string) string {
 	data := o.Get(key)
-	response, _ := data.(string)
+	response, _ := data.(string) //nolint: errcheck
 	return response
 }
 
@@ -120,14 +120,14 @@ func parseProperty(data map[string]interface{}, property string, value interface
 			data[propertyList[1]] = value
 		case "propl", "propm":
 			// TODO: preserve order in case of propl
-			l, _ := data[propertyList[1]].([]interface{})
+			l, _ := data[propertyList[1]].([]interface{}) //nolint: errcheck
 			data[propertyList[1]] = append(l, value)
 		case "parent":
 			data["parent_uuid"] = propertyList[2]
 		case "ref":
 			refProperty := propertyList[1] + "_refs"
-			list, _ := data[refProperty].([]interface{})
-			m, _ := value.(map[string]interface{})
+			list, _ := data[refProperty].([]interface{}) //nolint: errcheck
+			m, _ := value.(map[string]interface{})       //nolint: errcheck
 			data[refProperty] = append(list, map[string]interface{}{
 				"uuid": propertyList[2],
 				"attr": m["attr"],
@@ -206,7 +206,7 @@ type AmqpConfig struct {
 }
 
 func getQueueName() string {
-	name, _ := os.Hostname() // nolint: noerror
+	name, _ := os.Hostname() // nolint: errcheck
 	return "contrail_process_" + name
 }
 
@@ -297,10 +297,10 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 				p.log.WithError(err).WithField("data", string(d.Body)).Warn("Decoding failed - ignoring")
 				continue
 			}
-			operation, _ := data["oper"].(string)
-			kind, _ := data["type"].(string)
-			uuid, _ := data["uuid"].(string)
-			obj, _ := data["obj_dict"].(map[string]interface{})
+			operation, _ := data["oper"].(string)               //nolint: errcheck
+			kind, _ := data["type"].(string)                    //nolint: errcheck
+			uuid, _ := data["uuid"].(string)                    //nolint: errcheck
+			obj, _ := data["obj_dict"].(map[string]interface{}) //nolint: errcheck
 			event, err := services.NewEvent(&services.EventOption{
 				Operation: operation,
 				Data:      obj,

@@ -22,8 +22,8 @@ func (i *VirtualNetworkIntent) GetObject() basemodels.Object {
 
 // NewVirtualNetworkIntent returns a new virtual network intent.
 func NewVirtualNetworkIntent(
-	ctx context.Context,
-	ReadService services.ReadService,
+	_ context.Context,
+	_ services.ReadService,
 	request *services.CreateVirtualNetworkRequest,
 ) *VirtualNetworkIntent {
 	return &VirtualNetworkIntent{
@@ -53,17 +53,17 @@ func LoadVirtualNetworkIntent(
 	uuid string,
 ) *VirtualNetworkIntent {
 	i := c.Load(models.KindVirtualNetwork, intent.ByUUID(uuid))
-	actual, _ := i.(*VirtualNetworkIntent)
+	actual, _ := i.(*VirtualNetworkIntent) //nolint: errcheck
 	return actual
 }
 
 // GetPrimaryRoutingInstanceIntent returns the virtual network's default routing instance intent.
 func (i *VirtualNetworkIntent) GetPrimaryRoutingInstanceIntent(
-	ctx context.Context,
+	_ context.Context,
 	ec *intent.EvaluateContext,
 ) *RoutingInstanceIntent {
 	fqName := i.DefaultRoutingInstanceFQName()
 	ri := ec.IntentLoader.Load(models.TypeNameRoutingInstance, intent.ByFQName(fqName))
-	actualIntent, _ := ri.(*RoutingInstanceIntent)
+	actualIntent, _ := ri.(*RoutingInstanceIntent) //nolint: errcheck
 	return actualIntent
 }

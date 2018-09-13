@@ -94,7 +94,7 @@ func parseKey(key string) (kind string, uuid string, err error) {
 	subkeys := strings.Split(key, "/")
 
 	if len(subkeys) < 4 {
-		return "", "", errors.New("Key has too few fields")
+		return "", "", errors.New("key has too few fields")
 	}
 	kind = subkeys[2]
 	uuid = subkeys[3]

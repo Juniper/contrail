@@ -83,7 +83,7 @@ type PostgresWatcher struct {
 	log *logrus.Entry
 }
 
-// NewPostgresWatcher creates new watcher and initialises its connections.
+// NewPostgresWatcher creates new watcher and initializes its connections.
 func NewPostgresWatcher(
 	config PostgresSubscriptionConfig,
 	dbs *db.Service, replConn pgxReplicationConn,

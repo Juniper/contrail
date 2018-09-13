@@ -49,7 +49,7 @@ func GetFromMapByPath(data map[string]interface{}, path []string) (value interfa
 	}
 	last := len(path) - 1
 	for _, field := range path[:last] {
-		next, _ := data[field].(map[string]interface{})
+		next, _ := data[field].(map[string]interface{}) //nolint: errcheck
 		if next == nil {
 			return nil, false
 		}
@@ -82,7 +82,7 @@ func ApplyFieldMask(m map[string]interface{}, fm types.FieldMask) map[string]int
 }
 
 func nestMap(m map[string]interface{}, key string) map[string]interface{} {
-	nested, ok := m[key].(map[string]interface{})
+	nested, ok := m[key].(map[string]interface{}) //nolint: errcheck
 	if ok {
 		return nested
 	}

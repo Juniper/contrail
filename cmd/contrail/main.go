@@ -1,4 +1,4 @@
-package main
+package main // nolint: golint
 
 import (
 	"github.com/Juniper/contrail/pkg/cmd/contrail"

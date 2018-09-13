@@ -97,7 +97,7 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	assert.NoError(t, err, "unmarhsal event failed")
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
-	i = common.YAMLtoJSONCompat(i).(map[string]interface{})
+	i = common.YAMLtoJSONCompat(i).(map[string]interface{}) //nolint: errcheck
 	d2, err := NewEvent(&EventOption{
 		Kind:      i["kind"].(string),
 		Operation: i["operation"].(string),

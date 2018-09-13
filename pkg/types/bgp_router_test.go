@@ -15,7 +15,7 @@ import (
 )
 
 func bgpRouterSetupReadServiceMocks(s *ContrailTypeLogicService, subCluster *models.SubCluster) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	readService.EXPECT().GetSubCluster(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		&services.GetSubClusterResponse{
@@ -116,7 +116,7 @@ func TestCreateBGPRouter(t *testing.T) {
 			createBGPRCall := service.Next().(*servicesmock.MockService).EXPECT().CreateBGPRouter(
 				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 			).DoAndReturn(
-				func(_ context.Context, request *services.CreateBGPRouterRequest,
+				func(_ context.Context, _ *services.CreateBGPRouterRequest,
 				) (response *services.CreateBGPRouterResponse, err error) {
 					return &services.CreateBGPRouterResponse{BGPRouter: tt.testBGPRouter}, nil
 				},

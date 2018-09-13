@@ -39,10 +39,10 @@ func access(dataSource map[string]interface{}, path []string, ok *bool, isSet bo
 		}
 	} else if isSet {
 		dataSource[currentAttr] = map[string]interface{}{}
-		currentSource = dataSource[currentAttr].(map[string]interface{})
+		currentSource = dataSource[currentAttr].(map[string]interface{}) //nolint: errcheck
 		for _, element := range path {
 			currentSource[element] = map[string]interface{}{}
-			currentSource = currentSource[element].(map[string]interface{})
+			currentSource = currentSource[element].(map[string]interface{}) //nolint: errcheck
 		}
 		*ok = true
 	} else {

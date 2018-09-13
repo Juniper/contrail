@@ -53,7 +53,7 @@ func showResource(schemaID, uuid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, _ := response[dashedCase(schemaID)].(map[string]interface{})
+	data, _ := response[dashedCase(schemaID)].(map[string]interface{}) //nolint: errcheck
 	event, err := services.NewEvent(&services.EventOption{
 		Kind: schemaID,
 		Data: data,

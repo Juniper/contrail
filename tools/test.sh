@@ -36,4 +36,5 @@ do
 	fi
 done
 
+[ -z "$COVERPROFILE" ] && exit 0
 go tool cover -func "$TOP/profile.cov"

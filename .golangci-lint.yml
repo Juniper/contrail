@@ -1,0 +1,51 @@
+run:
+  # Concurrency is reduced in order to reduce RAM consumption
+  concurrency: 2
+  deadline: 5m
+  skip-dirs:
+  - extension/pkg/db/cache        # TODO: reenable when compilation fixed
+  - extension/pkg/db/etcd         # TODO: reenable when compilation fixed
+  - extension/pkg/services/vncapi # TODO: reenable when compilation fixed
+  - extension/pkg/apisrv/client   # TODO: reenable when compilation fixed
+
+issues:
+  exclude:
+  - .* is always .* # unparam issue
+  - ^should have a package comment, unless it's in another file for this package$
+  exclude-use-default: false
+  max-per-linter: 0
+
+# Intentionally disabled linters:
+# - dupl consumes too much RAM and CPU cycles
+# - gosec consumes too much RAM and CPU cycles
+# - megacheck uses staticcheck which consumes too much RAM and CPU cycles
+# - staticcheck consumes too much RAM and CPU cycles
+linters:
+  enable-all: true
+  disable:
+  - dupl
+  - gofmt # TODO: get rid of false-positives and enable gofmt
+  - goimports # TODO: get rid of false-positives and enable goimports
+  - gosec
+  - megacheck
+  - prealloc # TODO: fix prealloc issues in order to increase performance and enable prealloc
+  - staticcheck
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  gocyclo:
+    min-complexity: 10
+  golint:
+    min-confidence: 0
+  govet:
+    check-shadowing: true
+  maligned:
+    suggest-new: true
+  unused:
+    check-exported: true # TODO: default false, possibly remove
+  unparam:
+    check-exported: true # TODO: default false, possibly remove
+  nakedret:
+    max-func-lines: 5

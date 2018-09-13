@@ -49,7 +49,7 @@ func (b *bytesDecoderValue) DecodeText(ci *pgtype.ConnInfo, src []byte) error {
 }
 
 func (b *bytesDecoderValue) Set(src interface{}) error {
-	switch value := src.(type) {
+	switch value := src.(type) { //nolint: errcheck
 	case []byte:
 		*b = bytesDecoderValue{bytes: value}
 	case string:
@@ -69,7 +69,7 @@ func (b *bytesDecoderValue) Get() interface{} {
 }
 
 func (b *bytesDecoderValue) AssignTo(dst interface{}) error {
-	switch value := dst.(type) {
+	switch value := dst.(type) { //nolint: errcheck
 	case *[]byte:
 		*value = b.bytes
 	case *string:

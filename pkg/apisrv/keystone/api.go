@@ -57,7 +57,7 @@ func filterProject(user *User, scope *Scope) (*Project, error) {
 	domain := scope.Domain
 	if domain != nil {
 		if domain.ID != user.Domain.ID {
-			return nil, fmt.Errorf("Domain unmatched for user %s", user.ID)
+			return nil, fmt.Errorf("domain unmatched for user %s", user.ID)
 		}
 	}
 	project := scope.Project

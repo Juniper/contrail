@@ -18,7 +18,7 @@ func (s *Server) watchHandler(c echo.Context) error {
 		defer closeConnection(ws, c.Logger())
 		watcher, err := s.Cache.AddWatcher(ctx, 0)
 		if err != nil {
-			errorJSON, _ := json.Marshal(map[string]interface{}{
+			errorJSON, _ := json.Marshal(map[string]interface{}{ // nolint: errcheck
 				"error": err,
 			})
 			if sErr := websocket.Message.Send(ws, string(errorJSON)); sErr != nil {

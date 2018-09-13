@@ -47,7 +47,7 @@ func LoadLogicalRouterIntent(
 	uuid string,
 ) *LogicalRouterIntent {
 	i := c.Load(models.KindLogicalRouter, intent.ByUUID(uuid))
-	actual, _ := i.(*LogicalRouterIntent)
+	actual, _ := i.(*LogicalRouterIntent) //nolint: errcheck
 	return actual
 }
 
@@ -188,7 +188,7 @@ func (i *LogicalRouterIntent) handleAddedNetworks(
 			continue
 		}
 		// TODO handle all route targets
-		evaluateCtx.WriteService.CreateRoutingInstanceRouteTargetRef(
+		_, err := evaluateCtx.WriteService.CreateRoutingInstanceRouteTargetRef(
 			ctx, &services.CreateRoutingInstanceRouteTargetRefRequest{
 				ID: ri.GetUUID(),
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
@@ -196,12 +196,15 @@ func (i *LogicalRouterIntent) handleAddedNetworks(
 				},
 			},
 		)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func (i *LogicalRouterIntent) getDeletedNetworks(
-	ctx context.Context,
+	_ context.Context,
 	evaluateCtx *intent.EvaluateContext,
 	vnRefs map[string]*models.VirtualMachineInterfaceVirtualNetworkRef,
 ) []*VirtualNetworkIntent {
@@ -220,7 +223,7 @@ func (i *LogicalRouterIntent) getDeletedNetworks(
 }
 
 func (i *LogicalRouterIntent) getAddedNetworks(
-	ctx context.Context,
+	_ context.Context,
 	evaluateCtx *intent.EvaluateContext,
 	vnRefs map[string]*models.VirtualMachineInterfaceVirtualNetworkRef,
 ) []*VirtualNetworkIntent {

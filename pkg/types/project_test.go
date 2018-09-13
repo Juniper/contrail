@@ -96,7 +96,7 @@ func TestEnsureDefaultApplicationPolicySet(t *testing.T) {
 		{
 			name: "create returns internal",
 			initMocks: func(s *ContrailTypeLogicService) {
-				m := s.WriteService.(*servicesmock.MockWriteService)
+				m := s.WriteService.(*servicesmock.MockWriteService) //nolint: errcheck
 
 				m.EXPECT().CreateApplicationPolicySet(
 					gomock.Not(gomock.Nil()),
@@ -108,7 +108,7 @@ func TestEnsureDefaultApplicationPolicySet(t *testing.T) {
 		{
 			name: "create returns conflict",
 			initMocks: func(s *ContrailTypeLogicService) {
-				m := s.WriteService.(*servicesmock.MockWriteService)
+				m := s.WriteService.(*servicesmock.MockWriteService) //nolint: errcheck
 
 				m.EXPECT().CreateApplicationPolicySet(
 					gomock.Not(gomock.Nil()),
@@ -119,7 +119,7 @@ func TestEnsureDefaultApplicationPolicySet(t *testing.T) {
 		{
 			name: "create returns ApplicationPolicySet object",
 			initMocks: func(s *ContrailTypeLogicService) {
-				m := s.WriteService.(*servicesmock.MockWriteService)
+				m := s.WriteService.(*servicesmock.MockWriteService) //nolint: errcheck
 
 				m.EXPECT().CreateApplicationPolicySet(
 					gomock.Not(gomock.Nil()),
