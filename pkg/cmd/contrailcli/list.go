@@ -146,7 +146,7 @@ func listResources(schemaID string) (string, error) {
 	}
 	for _, list := range response {
 		for _, d := range list {
-			m, _ := d.(map[string]interface{})
+			m, _ := d.(map[string]interface{}) //nolint: errcheck
 			var event *services.Event
 			event, err = services.NewEvent(&services.EventOption{
 				Kind: schemaID,

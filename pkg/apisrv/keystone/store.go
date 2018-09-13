@@ -55,13 +55,17 @@ func (store *InMemoryStore) ValidateToken(tokenID string) (*Token, bool) {
 	return token, ok
 }
 
-//RetrieveToken is used to retrive a token, and return a token body.
+//RetrieveToken is used to retrieve a token, and return a token body.
 func (store *InMemoryStore) RetrieveToken(tokenID string) (*Token, error) {
 	i, ok := store.store.Load(tokenID)
 	if !ok {
-		return nil, fmt.Errorf("Token not found")
+		return nil, fmt.Errorf("token not found")
 	}
-	token, _ := i.(*Token)
+	token, ok := i.(*Token)
+	var err error
+	if !ok {
+		err = fmt.Errorf("can't convert stored token (%v) back to it's type", i)
+	}
 
-	return token, nil
+	return token, err
 }

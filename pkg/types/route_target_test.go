@@ -27,7 +27,7 @@ func createTestRouteTarget(testParams *testRTParams) *models.RouteTarget {
 }
 
 func routeTargetNextServMocks(service *ContrailTypeLogicService) {
-	nextServiceMock := service.Next().(*servicesmock.MockService)
+	nextServiceMock := service.Next().(*servicesmock.MockService) //nolint: errcheck
 	nextServiceMock.EXPECT().CreateRouteTarget(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(
 			_ context.Context, request *services.CreateRouteTargetRequest,

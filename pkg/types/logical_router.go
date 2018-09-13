@@ -34,7 +34,7 @@ func (sv *ContrailTypeLogicService) CreateLogicalRouter(
 			}
 
 			err = sv.checkForExternalGateway(
-				ctx, logicalRouter, nil, nil, vxLanRouting)
+				logicalRouter, nil, vxLanRouting)
 			if err != nil {
 				return err
 			}
@@ -115,7 +115,7 @@ func (sv *ContrailTypeLogicService) UpdateLogicalRouter(
 			}
 
 			err = sv.checkForExternalGateway(
-				ctx, logicalRouter, dbLogicalRouter, &fieldMask, vxLanRouting,
+				logicalRouter, &fieldMask, vxLanRouting,
 			)
 			if err != nil {
 				return err
@@ -245,9 +245,7 @@ func (sv *ContrailTypeLogicService) getLogicalRouter(
 }
 
 func (sv *ContrailTypeLogicService) checkForExternalGateway(
-	ctx context.Context,
 	logicalRouter *models.LogicalRouter,
-	dbLogicalRouter *models.LogicalRouter,
 	fm *types.FieldMask,
 	vxLanRouting bool,
 ) error {
@@ -581,7 +579,7 @@ func (sv *ContrailTypeLogicService) checkRouterSupportsVPNType(ctx context.Conte
 	}
 
 	bgpvpns, err := sv.ReadService.ListBGPVPN(
-		ctx, &services.ListBGPVPNRequest{Spec: baseservices.SimpleListSpec(ctx, bgpvpnUUIDs, models.BGPVPNFieldBGPVPNType)},
+		ctx, &services.ListBGPVPNRequest{Spec: baseservices.SimpleListSpec(bgpvpnUUIDs, models.BGPVPNFieldBGPVPNType)},
 	)
 	if err != nil {
 		return err
@@ -622,7 +620,7 @@ func (sv *ContrailTypeLogicService) checkRouterHasBGPVPNAssocViaNetwork(
 
 	vnsResp, err := sv.ReadService.ListVirtualNetwork(
 		ctx, &services.ListVirtualNetworkRequest{
-			Spec: baseservices.SimpleListSpec(ctx, vnUUIDs, models.VirtualNetworkFieldBGPVPNRefs),
+			Spec: baseservices.SimpleListSpec(vnUUIDs, models.VirtualNetworkFieldBGPVPNRefs),
 		},
 	)
 	if err != nil {
@@ -673,7 +671,7 @@ func (sv *ContrailTypeLogicService) getLinkedVnUUIDs(
 
 	vmisResp, err := sv.ReadService.ListVirtualMachineInterface(
 		ctx, &services.ListVirtualMachineInterfaceRequest{
-			Spec: baseservices.SimpleListSpec(ctx, vmiUUIDs, models.VirtualMachineInterfaceFieldVirtualNetworkRefs),
+			Spec: baseservices.SimpleListSpec(vmiUUIDs, models.VirtualMachineInterfaceFieldVirtualNetworkRefs),
 		},
 	)
 	if err != nil {

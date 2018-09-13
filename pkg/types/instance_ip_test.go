@@ -19,7 +19,7 @@ import (
 )
 
 func instanceIPPrepareVirtualNetwork(s *ContrailTypeLogicService) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	virtualNetworks := []*models.VirtualNetwork{models.MakeVirtualNetwork(), models.MakeVirtualNetwork()}
 	virtualNetworks[0].UUID = "virtual-network-uuid-1"
@@ -35,7 +35,7 @@ func instanceIPPrepareVirtualNetwork(s *ContrailTypeLogicService) {
 }
 
 func instanceIPPrepareReadService(s *ContrailTypeLogicService, instanceIP *models.InstanceIP) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	if instanceIP != nil {
 		readService.EXPECT().GetInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
@@ -49,7 +49,7 @@ func instanceIPPrepareReadService(s *ContrailTypeLogicService, instanceIP *model
 }
 
 func instanceIPPrepareVirtualRouter(s *ContrailTypeLogicService) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	readService.EXPECT().GetVirtualRouter(gomock.Not(gomock.Nil()),
 		&services.GetVirtualRouterRequest{
@@ -75,7 +75,7 @@ func instanceIPPrepareVirtualRouter(s *ContrailTypeLogicService) {
 }
 
 func instanceIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
-	nextService := s.Next().(*servicesmock.MockService)
+	nextService := s.Next().(*servicesmock.MockService) //nolint: errcheck
 	nextService.EXPECT().CreateInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(_ context.Context, request *services.CreateInstanceIPRequest,
 		) (response *services.CreateInstanceIPResponse, err error) {
@@ -96,7 +96,7 @@ func instanceIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func instanceIPSetupIPAMMocks(s *ContrailTypeLogicService) {
-	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager := s.AddressManager.(*ipammock.MockAddressManager) //nolint: errcheck
 	virtualNetwork := models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "virtual-network-uuid-2"
 	virtualNetwork.FQName = []string{"default"}

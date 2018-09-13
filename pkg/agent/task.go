@@ -35,12 +35,12 @@ func (task *task) runHandler(handler handler, context map[string]interface{}) er
 		if handlerFunc, ok := globalTaskHandler[id]; ok {
 			output, err := handlerFunc(handler, task, context)
 			if err != nil {
-				byteHandler, _ := yaml.Marshal(handler)
+				byteHandler, _ := yaml.Marshal(handler) // nolint: errcheck
 				return errors.Wrap(err, fmt.Sprintf("%voutput:%s", string(byteHandler), output))
 			}
 			register, ok := handler["register"]
 			if ok {
-				context[register.(string)] = output
+				context[register.(string)] = output //nolint: errcheck
 			}
 			return nil
 		}
@@ -52,7 +52,7 @@ func applyTemplate(rawTemplate interface{}, context map[string]interface{}) (str
 	if rawTemplate == nil {
 		return "", nil
 	}
-	templateString, ok := rawTemplate.(string)
+	templateString, ok := rawTemplate.(string) //nolint: errcheck
 	if !ok {
 		return "", errors.New("invalid template string")
 	}

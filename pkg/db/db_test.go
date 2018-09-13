@@ -231,7 +231,7 @@ func TestDBCreateRef(t *testing.T) {
 func TestDBDeleteRef(t *testing.T) {
 	vnUUID, riUUID, rtUUID := exampleVN.UUID, exampleRI.UUID, exampleRT.UUID
 
-	tests := []struct {
+	tests := []struct { // nolint: maligned
 		name           string
 		request        services.DeleteRoutingInstanceRouteTargetRefRequest
 		fails          bool

@@ -1,4 +1,4 @@
-package models
+package models // nolint: golint
 
 import (
 	"regexp"
