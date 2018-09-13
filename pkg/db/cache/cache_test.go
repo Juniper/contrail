@@ -52,7 +52,7 @@ func notifyEvent(cache *DB, version uint64) {
 	cache.Process(context.Background(), event) // nolint: errcheck
 }
 
-// nolint: unused
+// nolint: unused, deadcode
 func notifyDelete(cache *DB, version uint64) {
 	event := &services.Event{
 		Version: version,
@@ -96,6 +96,7 @@ func TestCache(t *testing.T) {
 
 	wg.Wait()
 
+	// TODO: finish test
 	// notifyDelete(t, cache, 0)
 	// notifyDelete(t, cache, 1)
 	// notifyDelete(t, cache, 2)

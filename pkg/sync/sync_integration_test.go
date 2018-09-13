@@ -46,24 +46,24 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	vnBlueWatch, blueCtx, cancelBlueCtx := ec.WatchResource(integration.VirtualNetworkSchemaID, vnBlueUUID)
 	defer cancelBlueCtx()
 
-	hc.CreateProject(t, project(projectUUID))
-	defer hc.DeleteProject(t, projectUUID)
+	hc.CreateRequiredProject(t, project(projectUUID))
+	defer hc.RemoveProject(t, projectUUID)
 	defer ec.DeleteProject(t, projectUUID)
 
-	hc.CreateNetworkIPAM(t, networkIPAM(networkIPAMUUID, projectUUID))
-	defer hc.DeleteNetworkIPAM(t, networkIPAMUUID)
+	hc.CreateRequiredNetworkIPAM(t, networkIPAM(networkIPAMUUID, projectUUID))
+	defer hc.RemoveNetworkIPAM(t, networkIPAMUUID)
 	defer ec.DeleteNetworkIPAM(t, networkIPAMUUID)
 
-	hc.CreateVirtualNetwork(t, virtualNetworkRed(vnRedUUID, projectUUID, networkIPAMUUID))
-	hc.CreateVirtualNetwork(t, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
-	hc.CreateVirtualNetwork(t, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
+	hc.CreateRequiredVirtualNetwork(t, virtualNetworkRed(vnRedUUID, projectUUID, networkIPAMUUID))
+	hc.CreateRequiredVirtualNetwork(t, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
+	hc.CreateRequiredVirtualNetwork(t, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
 	defer deleteVirtualNetworksFromAPIServer(t, hc, vnUUIDs)
 	defer ec.DeleteKey(t, integration.JSONEtcdKey(integration.VirtualNetworkSchemaID, ""),
 		clientv3.WithPrefix()) // delete all VNs
 
-	vnRed := hc.GetVirtualNetwork(t, vnRedUUID)
-	vnGreen := hc.GetVirtualNetwork(t, vnGreenUUID)
-	vnBlue := hc.GetVirtualNetwork(t, vnBlueUUID)
+	vnRed := hc.FetchVirtualNetwork(t, vnRedUUID)
+	vnGreen := hc.FetchVirtualNetwork(t, vnGreenUUID)
+	vnBlue := hc.FetchVirtualNetwork(t, vnBlueUUID)
 
 	closeSync := integration.RunSyncService(t)
 	defer closeSync()
@@ -168,7 +168,7 @@ func virtualNetworkBlue(uuid, parentUUID, networkIPAMUUID string) *models.Virtua
 
 func deleteVirtualNetworksFromAPIServer(t *testing.T, hc *integration.HTTPAPIClient, uuids []string) {
 	for _, uuid := range uuids {
-		hc.DeleteVirtualNetwork(t, uuid)
+		hc.RemoveVirtualNetwork(t, uuid)
 	}
 }
 

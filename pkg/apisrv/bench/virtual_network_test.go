@@ -36,7 +36,7 @@ func BenchmarkVirtualNetworkCreate(b *testing.B) {
 				}); err != nil {
 					b.Fatal("Failed to create project: ", err)
 				}
-				defer hc.DeleteProject(ctx, &services.DeleteProjectRequest{ID: projectUUID})
+				defer hc.DeleteProject(ctx, &services.DeleteProjectRequest{ID: projectUUID}) // nolint: errcheck
 
 				vn := &models.VirtualNetwork{
 					ParentType: integration.ProjectType,
@@ -51,7 +51,7 @@ func BenchmarkVirtualNetworkCreate(b *testing.B) {
 						b.Fatal("Failed to create VN: ", err)
 					}
 
-					defer hc.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: vn.UUID})
+					defer hc.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: vn.UUID}) // nolint: errcheck
 				}
 
 				vn.UUID = "test_vn_uuid"

@@ -24,7 +24,7 @@ func (cache *DB) NewEventProducer(process services.EventProcessor) *EventProduce
 //Start starts event processing.
 func (p *EventProducer) Start(ctx context.Context) {
 	//adding watcher with version 0 always success.
-	watcher, _ := p.cache.AddWatcher(ctx, 0) // nolint: noerror
+	watcher, _ := p.cache.AddWatcher(ctx, 0)
 	for {
 		select {
 		case e := <-watcher.ch:
