@@ -500,7 +500,7 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 		for _, d := range api.Definitions {
 			log.Info(d.FileName)
 		}
-		return nil, fmt.Errorf("Can't find file for %s", schemaFile)
+		return nil, fmt.Errorf("can't find file for %s", schemaFile)
 	}
 	definition, ok := definitions.Definitions[typeName]
 	if !ok {
@@ -629,7 +629,7 @@ func (api *API) resolveAllRelation() error {
 			s.References[linkTo] = reference
 			linkToSchema := api.SchemaByID(linkTo)
 			if linkToSchema == nil {
-				return fmt.Errorf("Can't find linked schema %s", linkTo)
+				return fmt.Errorf("can't find linked schema %s", linkTo)
 			}
 			linkToSchema.BackReferences[s.ID] = &BackReference{
 				LinkTo:      s,
@@ -658,7 +658,7 @@ func (api *API) resolveAllRelation() error {
 			reference.Table = ReferenceTableName(ParentPrefix, s.Table, linkTo)
 			parentSchema := api.SchemaByID(linkTo)
 			if parentSchema == nil {
-				return fmt.Errorf("Parent schema %s not found", linkTo)
+				return fmt.Errorf("parent schema %s not found", linkTo)
 			}
 			if err := api.resolveRelation(parentSchema, reference); err != nil {
 				return err

@@ -81,7 +81,7 @@ func (k *KeystoneClient) CreateToken(c echo.Context) error {
 	c.Response().Header().Set("X-Subject-Token",
 		resp.Header.Get("X-Subject-Token"))
 	authResponse := &AuthResponse{}
-	_ = json.NewDecoder(resp.Body).Decode(authResponse)
+	_ = json.NewDecoder(resp.Body).Decode(authResponse) // nolint: errcheck
 
 	return c.JSON(resp.StatusCode, authResponse)
 }
@@ -94,7 +94,7 @@ func (k *KeystoneClient) ValidateToken(c echo.Context) error {
 	}
 	defer resp.Body.Close() // nolint: errcheck
 	validateTokenResponse := &ValidateTokenResponse{}
-	_ = json.NewDecoder(resp.Body).Decode(validateTokenResponse)
+	_ = json.NewDecoder(resp.Body).Decode(validateTokenResponse) // nolint: errcheck
 
 	return c.JSON(resp.StatusCode, validateTokenResponse)
 }
@@ -113,7 +113,7 @@ func (k *KeystoneClient) GetProjects(c echo.Context) error {
 	}
 	defer resp.Body.Close() // nolint: errcheck
 	projectsResponse := &ProjectListResponse{}
-	_ = json.NewDecoder(resp.Body).Decode(projectsResponse)
+	_ = json.NewDecoder(resp.Body).Decode(projectsResponse) // nolint: errcheck
 
 	return c.JSON(resp.StatusCode, projectsResponse)
 }

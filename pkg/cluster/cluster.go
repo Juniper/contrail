@@ -102,9 +102,9 @@ func NewCluster(c *Config) (*Cluster, error) {
 	if c.ClusterID != "" && c.Action != "" {
 		t = "oneshot"
 	} else if c.ClusterID != "" && c.Action == "" {
-		return nil, fmt.Errorf("Action not specified in the config for oneshot manager")
+		return nil, fmt.Errorf("action not specified in the config for oneshot manager")
 	} else if c.Action != "" && c.ClusterID == "" {
-		return nil, fmt.Errorf("Cluster ID not specified in the config for oneshot manager")
+		return nil, fmt.Errorf("cluster ID not specified in the config for oneshot manager")
 	}
 
 	// create logger for cluster

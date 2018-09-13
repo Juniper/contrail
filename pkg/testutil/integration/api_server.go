@@ -48,12 +48,12 @@ type APIServer struct {
 
 // APIServerConfig contains parameters for test API Server.
 type APIServerConfig struct {
-	DBDriver           string
-	EnableEtcdNotifier bool
-	RepoRootPath       string
 	CacheDB            *cache.DB
-	DisableLogAPI      bool
+	DBDriver           string
+	RepoRootPath       string
 	LogLevel           string
+	EnableEtcdNotifier bool
+	DisableLogAPI      bool
 }
 
 // NewRunningAPIServer creates new running test API Server for testing purposes.

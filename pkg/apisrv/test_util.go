@@ -106,7 +106,7 @@ func LaunchTestAPIServer() (*Server, *httptest.Server) {
 
 //AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
 func AddKeystoneProjectAndUser(s *Server, testID string) {
-	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment)
+	assignment = s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
 	assignment.Projects[testID] = &keystone.Project{
 		Domain: assignment.Domains[defaultDomainID],
 		ID:     testID,
