@@ -18,7 +18,7 @@ var txnKey interface{} = "etcd-txn"
 // GetTxn get a txn from context.
 func GetTxn(ctx context.Context) Txn {
 	iTxn := ctx.Value(txnKey)
-	t, _ := iTxn.(Txn)
+	t, _ := iTxn.(Txn) //nolint: errcheck
 	return t
 }
 

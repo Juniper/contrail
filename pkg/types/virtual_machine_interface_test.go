@@ -16,7 +16,7 @@ import (
 )
 
 func virtualMachineInterfaceSetupNextServiceMocks(s *ContrailTypeLogicService) {
-	nextService := s.Next().(*servicesmock.MockService)
+	nextService := s.Next().(*servicesmock.MockService) //nolint: errcheck
 	nextService.EXPECT().CreateVirtualMachineInterface(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
@@ -29,7 +29,7 @@ func virtualMachineInterfaceSetupNextServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func virtualMachineInterfacePrepareNetwork(s *ContrailTypeLogicService) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	defaultRoutingInstance := models.MakeRoutingInstance()
 	defaultRoutingInstance.UUID = "routing-instance-uuid"
@@ -54,7 +54,7 @@ func virtualMachineInterfacePrepareNetwork(s *ContrailTypeLogicService) {
 }
 
 func virtualMachineInterfacePrepareRoutingInstanceRef(s *ContrailTypeLogicService, shouldCreate bool, vmiID string) {
-	writeService := s.WriteService.(*servicesmock.MockWriteService)
+	writeService := s.WriteService.(*servicesmock.MockWriteService) //nolint: errcheck
 
 	times := 0
 	if shouldCreate {

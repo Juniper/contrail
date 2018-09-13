@@ -85,7 +85,7 @@ func cleanup(ctx context.Context, t *testing.T, restClient *client.HTTP) {
 		for _, project := range projects.GetProjects() {
 			wg.Add(1)
 			go func(uuid string) {
-				restClient.DeleteProject(ctx, &services.DeleteProjectRequest{
+				restClient.DeleteProject(ctx, &services.DeleteProjectRequest{ // nolint: errcheck
 					ID: uuid,
 				})
 				wg.Done()
