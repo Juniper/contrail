@@ -70,7 +70,7 @@ var Transaction interface{} = "transaction"
 //GetTransaction get a transaction from context.
 func GetTransaction(ctx context.Context) *sql.Tx {
 	iTx := ctx.Value(Transaction)
-	tx, _ := iTx.(*sql.Tx)
+	tx, _ := iTx.(*sql.Tx) //nolint: errcheck
 	return tx
 }
 

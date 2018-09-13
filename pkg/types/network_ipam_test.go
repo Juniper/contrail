@@ -38,7 +38,7 @@ func createTestNetworkIpam(testParams *testNetIpamParams) *models.NetworkIpam {
 }
 
 func networkIpamNextServMocks(service *ContrailTypeLogicService) {
-	nextServiceMock := service.Next().(*servicesmock.MockService)
+	nextServiceMock := service.Next().(*servicesmock.MockService) //nolint: errcheck
 	nextServiceMock.EXPECT().CreateNetworkIpam(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(
 			_ context.Context, request *services.CreateNetworkIpamRequest,
@@ -133,7 +133,7 @@ func TestCreateNetworkIpam(t *testing.T) {
 
 func TestUpdateNetworkIpam(t *testing.T) {
 	updateIpamDBMock := func(service *ContrailTypeLogicService, getNetworkIpamResponse *services.GetNetworkIpamResponse) {
-		readService := service.ReadService.(*servicesmock.MockReadService)
+		readService := service.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 		readService.EXPECT().GetNetworkIpam(gomock.Any(), gomock.Any()).DoAndReturn(
 			func(
 				_ context.Context, _ *services.GetNetworkIpamRequest,

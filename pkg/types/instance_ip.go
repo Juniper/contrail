@@ -27,7 +27,7 @@ func (sv *ContrailTypeLogicService) CreateInstanceIP(
 				return err
 			}
 
-			ipAddress, subnetUUID, err := sv.allocateIPAddressForInstanceIP(ctx, request, instanceIP)
+			ipAddress, subnetUUID, err := sv.allocateIPAddressForInstanceIP(ctx, instanceIP)
 			if err != nil {
 				return err
 			}
@@ -172,23 +172,23 @@ func validateInstanceIPRefs(instanceIP *models.InstanceIP) error {
 }
 
 func (sv *ContrailTypeLogicService) allocateIPAddressForInstanceIP(
-	ctx context.Context, request *services.CreateInstanceIPRequest, instanceIP *models.InstanceIP,
+	ctx context.Context, instanceIP *models.InstanceIP,
 ) (string, string, error) {
 
 	virtualNetworkRefs := instanceIP.GetVirtualNetworkRefs()
 	virtualRouterRefs := instanceIP.GetVirtualRouterRefs()
 
 	if len(virtualNetworkRefs) > 0 {
-		return sv.allocateIPAddressWithVirtualNetworkRefs(ctx, request, instanceIP)
+		return sv.allocateIPAddressWithVirtualNetworkRefs(ctx, instanceIP)
 	} else if len(virtualRouterRefs) > 0 {
-		return sv.allocateIPAddressWithVirtualRouterRefs(ctx, request, instanceIP)
+		return sv.allocateIPAddressWithVirtualRouterRefs(ctx, instanceIP)
 	}
 
-	return sv.allocateIPAddressWithNetworkIpamRefs(ctx, request, instanceIP)
+	return sv.allocateIPAddressWithNetworkIpamRefs(ctx, instanceIP)
 }
 
 func (sv *ContrailTypeLogicService) allocateIPAddressWithVirtualNetworkRefs(
-	ctx context.Context, request *services.CreateInstanceIPRequest, instanceIP *models.InstanceIP,
+	ctx context.Context, instanceIP *models.InstanceIP,
 ) (string, string, error) {
 
 	virtualNetworkRefs := instanceIP.GetVirtualNetworkRefs()
@@ -210,7 +210,7 @@ func (sv *ContrailTypeLogicService) allocateIPAddressWithVirtualNetworkRefs(
 }
 
 func (sv *ContrailTypeLogicService) allocateIPAddressWithVirtualRouterRefs(
-	ctx context.Context, request *services.CreateInstanceIPRequest, instanceIP *models.InstanceIP,
+	ctx context.Context, instanceIP *models.InstanceIP,
 ) (string, string, error) {
 
 	virtualRouterRefs := instanceIP.GetVirtualRouterRefs()
@@ -223,7 +223,7 @@ func (sv *ContrailTypeLogicService) allocateIPAddressWithVirtualRouterRefs(
 }
 
 func (sv *ContrailTypeLogicService) allocateIPAddressWithNetworkIpamRefs(
-	ctx context.Context, request *services.CreateInstanceIPRequest, instanceIP *models.InstanceIP,
+	ctx context.Context, instanceIP *models.InstanceIP,
 ) (string, string, error) {
 
 	instanceIPNetworkIpamRefs := instanceIP.GetNetworkIpamRefs()

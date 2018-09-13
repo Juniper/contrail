@@ -11,7 +11,7 @@ type mapSlice yaml.MapSlice
 
 func (s mapSlice) get(key string) interface{} {
 	for _, i := range s {
-		k := i.Key.(string)
+		k := i.Key.(string) //nolint: errcheck
 		if k == key {
 			return i.Value
 		}
@@ -22,7 +22,7 @@ func (s mapSlice) get(key string) interface{} {
 func (s mapSlice) keys() []string {
 	result := []string{}
 	for _, i := range s {
-		k := i.Key.(string)
+		k := i.Key.(string) //nolint: errcheck
 		result = append(result, k)
 	}
 	return result
@@ -30,7 +30,7 @@ func (s mapSlice) keys() []string {
 
 func (s mapSlice) getString(key string) string {
 	i := s.get(key)
-	result, _ := i.(string)
+	result, _ := i.(string) //nolint: errcheck
 	return result
 }
 
@@ -39,7 +39,7 @@ func (s mapSlice) getMapSlice(key string) mapSlice {
 	if i == nil {
 		return nil
 	}
-	result := i.(yaml.MapSlice)
+	result := i.(yaml.MapSlice) //nolint: errcheck
 	return mapSlice(result)
 }
 
@@ -48,10 +48,10 @@ func (s mapSlice) getStringSlice(key string) []string {
 	if i == nil {
 		return nil
 	}
-	iResult := i.([]interface{})
+	iResult := i.([]interface{}) //nolint: errcheck
 	result := []string{}
 	for _, a := range iResult {
-		result = append(result, a.(string))
+		result = append(result, a.(string)) //nolint: errcheck
 	}
 	return result
 }
@@ -94,11 +94,11 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 	}
 	schema.OrderedProperties = []*JSONSchema{}
 	for _, property := range properties {
-		key := property.Key.(string)
+		key := property.Key.(string) //nolint: errcheck
 		if property.Value == nil {
 			log.Fatal(fmt.Sprintf("Property is null on key %s", key))
 		}
-		propertySchema := mapSlice(property.Value.(yaml.MapSlice)).JSONSchema()
+		propertySchema := mapSlice(property.Value.(yaml.MapSlice)).JSONSchema() //nolint: errcheck
 
 		// TODO: remove this workaround when schema is updated for zero-value required properties
 		_, present := overridenTypes[propertySchema.Ref]

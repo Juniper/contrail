@@ -1,9 +1,18 @@
-- type: type
-  template_path: templates/type.tmpl
-  output_path: test_output/__resource___type.yml
 - type: all
   template_path: templates/all.tmpl
   output_path: test_output/all.yml
+- type: type
+  template_path: templates/type.tmpl
+  output_path: test_output/__resource___type.yml
 - type: resource
   template_path: templates/resource.tmpl
   output_path: test_output/__resource___resource.yml
+- type: all
+  template_path: templates/hoge_go.tmpl
+  output_path: test_output/hoge.go
+- type: all
+  template_path: templates/hoge_proto.tmpl
+  output_path: test_output/hoge.proto
+- type: all
+  template_path: templates/hoge_sql.tmpl
+  output_path: test_output/hoge.sql

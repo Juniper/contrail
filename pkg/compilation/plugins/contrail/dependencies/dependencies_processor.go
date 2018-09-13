@@ -50,7 +50,7 @@ func (d *DependencyProcessor) Add(key string, obj interface{}) {
 		d.resources.Store(key, &sync.Map{})
 	}
 	if objMap, ok := d.resources.Load(key); ok {
-		objMap.(*sync.Map).Store(d.getUUID(obj), obj)
+		objMap.(*sync.Map).Store(d.getUUID(obj), obj) //nolint: errcheck
 		log.Infof("Adding %s(%s)", key, d.getUUID(obj))
 	}
 }
@@ -64,7 +64,7 @@ func (d *DependencyProcessor) GetResources() *sync.Map {
 func (d *DependencyProcessor) getUUID(obj interface{}) string {
 	uuid, err := reflections.GetField(obj, "UUID")
 	if err == nil {
-		return uuid.(string)
+		return uuid.(string) //nolint: errcheck
 	}
 	return ""
 }
@@ -72,7 +72,7 @@ func (d *DependencyProcessor) getUUID(obj interface{}) string {
 // canAdd checks if object can be been added to the dependency list
 func (d *DependencyProcessor) canAdd(key string, obj interface{}) bool {
 	if objMap, ok := d.resources.Load(key); ok {
-		_, ok = objMap.(*sync.Map).Load(d.getUUID(obj))
+		_, ok = objMap.(*sync.Map).Load(d.getUUID(obj)) //nolint: errcheck
 		if ok {
 			log.Infof("%s exists, not adding", d.getUUID(obj))
 			return false
@@ -115,12 +115,13 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 			objValues := reflect.ValueOf(refObjTypeValues)
 			for i := 0; i < objValues.Len(); i++ {
 				interfaceObj := objValues.Index(i).Elem().Interface()
-				uuid, _ := reflections.GetField(interfaceObj, "UUID")
-				refObj := d.getCachedObject(refObjTypeStr, uuid.(string))
+				uuid, _ := reflections.GetField(interfaceObj, "UUID")     // nolint: errcheck
+				refObj := d.getCachedObject(refObjTypeStr, uuid.(string)) //nolint: errcheck
 				if refObj == nil {
 					continue
 				}
-				log.Infof("Evaluating: Object: %s %s(%s) From: %s", fieldName, refObjTypeStr, uuid.(string), objTypeStr)
+				log.Infof("Evaluating: Object: %s %s(%s) From: %s",
+					fieldName, refObjTypeStr, uuid.(string), objTypeStr) //nolint: errcheck
 				d.Evaluate(refObj, refObjTypeStr, objTypeStr)
 			}
 		}

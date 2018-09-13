@@ -22,8 +22,8 @@ func (i *VirtualMachineInterfaceIntent) GetObject() basemodels.Object {
 
 // NewVirtualMachineInterfaceIntent returns a new virtual machine interface intent.
 func NewVirtualMachineInterfaceIntent(
-	ctx context.Context,
-	ReadService services.ReadService,
+	_ context.Context,
+	_ services.ReadService,
 	request *services.CreateVirtualMachineInterfaceRequest,
 ) *VirtualMachineInterfaceIntent {
 	return &VirtualMachineInterfaceIntent{
@@ -53,6 +53,6 @@ func LoadVirtualMachineInterfaceIntent(
 	uuid string,
 ) *VirtualMachineInterfaceIntent {
 	i := loader.Load(models.KindVirtualMachineInterface, intent.ByUUID(uuid))
-	actual, _ := i.(*VirtualMachineInterfaceIntent)
+	actual, _ := i.(*VirtualMachineInterfaceIntent) //nolint: errcheck
 	return actual
 }

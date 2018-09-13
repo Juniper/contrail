@@ -16,7 +16,7 @@ import (
 )
 
 func floatingIPPoolSetupNextServiceMocks(s *ContrailTypeLogicService) {
-	nextService := s.Next().(*servicesmock.MockService)
+	nextService := s.Next().(*servicesmock.MockService) //nolint: errcheck
 	nextService.EXPECT().CreateFloatingIPPool(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 		func(_ context.Context, request *services.CreateFloatingIPPoolRequest,
 		) (response *services.CreateFloatingIPPoolResponse, err error) {
@@ -26,7 +26,7 @@ func floatingIPPoolSetupNextServiceMocks(s *ContrailTypeLogicService) {
 
 func createTestVirtualNetwork() *models.VirtualNetwork {
 	virtualNetwork := models.MakeVirtualNetwork()
-	virtualNetwork.UUID = "uuid-1"
+	virtualNetwork.UUID = "uuid-1" // nolint: goconst
 	virtualNetwork.NetworkIpamRefs = []*models.VirtualNetworkNetworkIpamRef{
 		{
 			Attr: &models.VnSubnetsType{
@@ -58,7 +58,7 @@ func createTestVirtualNetwork() *models.VirtualNetwork {
 }
 
 func floatingIPPoolPrepareNetwork(s *ContrailTypeLogicService, virtualNetwork *models.VirtualNetwork) {
-	readService := s.ReadService.(*servicesmock.MockReadService)
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
 		&services.GetVirtualNetworkRequest{

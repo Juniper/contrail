@@ -16,8 +16,8 @@ import (
 func TestCreateRefMethod(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
 		DBDriver:           basedb.DriverPostgreSQL,
-		EnableEtcdNotifier: false,
 		RepoRootPath:       "../../..",
+		EnableEtcdNotifier: false,
 	})
 	defer s.CloseT(t)
 	hc := integration.NewTestingHTTPClient(t, s.URL())
@@ -27,7 +27,7 @@ func TestCreateRefMethod(t *testing.T) {
 	vnUUID := testID + "_virtual-network"
 	niUUID := testID + "_network-ipam"
 
-	hc.CreateProject(
+	hc.CreateRequiredProject(
 		t,
 		&models.Project{
 			UUID:       projectUUID,
@@ -37,9 +37,9 @@ func TestCreateRefMethod(t *testing.T) {
 			Quota:      &models.QuotaType{},
 		},
 	)
-	defer hc.DeleteProject(t, projectUUID)
+	defer hc.RemoveProject(t, projectUUID)
 
-	hc.CreateNetworkIPAM(
+	hc.CreateRequiredNetworkIPAM(
 		t,
 		&models.NetworkIpam{
 			UUID:       niUUID,
@@ -48,9 +48,9 @@ func TestCreateRefMethod(t *testing.T) {
 			Name:       "testIpam",
 		},
 	)
-	defer hc.DeleteNetworkIPAM(t, niUUID)
+	defer hc.RemoveNetworkIPAM(t, niUUID)
 
-	hc.CreateVirtualNetwork(
+	hc.CreateRequiredVirtualNetwork(
 		t,
 		&models.VirtualNetwork{
 			UUID:       vnUUID,
@@ -64,10 +64,10 @@ func TestCreateRefMethod(t *testing.T) {
 			},
 		},
 	)
-	defer hc.DeleteVirtualNetwork(t, vnUUID)
+	defer hc.RemoveVirtualNetwork(t, vnUUID)
 
 	// After creating VirtualNetwork it is already connected to networkIpam
-	vn := hc.GetVirtualNetwork(t, vnUUID)
+	vn := hc.FetchVirtualNetwork(t, vnUUID)
 	assert.Len(t, vn.NetworkIpamRefs, 1)
 
 	_, err := hc.DeleteVirtualNetworkNetworkIpamRef(
@@ -81,7 +81,7 @@ func TestCreateRefMethod(t *testing.T) {
 	)
 	assert.Equal(t, nil, err)
 
-	vn = hc.GetVirtualNetwork(t, vnUUID)
+	vn = hc.FetchVirtualNetwork(t, vnUUID)
 	assert.Len(t, vn.NetworkIpamRefs, 0)
 
 	_, err = hc.CreateVirtualNetworkNetworkIpamRef(
@@ -95,15 +95,15 @@ func TestCreateRefMethod(t *testing.T) {
 	)
 	assert.Equal(t, nil, err)
 
-	vn = hc.GetVirtualNetwork(t, vnUUID)
+	vn = hc.FetchVirtualNetwork(t, vnUUID)
 	assert.Len(t, vn.NetworkIpamRefs, 1)
 }
 
 func TestRemoteIntPoolMethods(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
 		DBDriver:           basedb.DriverPostgreSQL,
-		EnableEtcdNotifier: false,
 		RepoRootPath:       "../../..",
+		EnableEtcdNotifier: false,
 	})
 	defer s.CloseT(t)
 	hc := integration.NewTestingHTTPClient(t, s.URL())

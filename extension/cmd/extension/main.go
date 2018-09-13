@@ -1,4 +1,4 @@
-package main
+package main // nolint: golint
 
 import (
 	log "github.com/sirupsen/logrus"

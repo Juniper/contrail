@@ -1,4 +1,4 @@
-package api
+package api // nolint: golint
 
 import (
 	"github.com/spf13/viper"

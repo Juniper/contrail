@@ -45,23 +45,23 @@ func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario,
 		_, err := client.Read(context.Background(), url, &response)
 		assert.NoError(t, err, "Unable to list endpoints of the cluster")
 		for _, endpoint := range response["endpoints"] {
-			e := endpoint.(map[string]interface{})
+			e := endpoint.(map[string]interface{}) //nolint: errcheck
 			// TODO(ijohnson) remove using DisplayName as prefix
 			// once UI takes prefix as input.
 			var prefix = e["display_name"]
 			if v, ok := e["prefix"]; ok {
 				prefix = v
 			}
-			createdEndpoints[prefix.(string)] = e["public_url"].(string)
+			createdEndpoints[prefix.(string)] = e["public_url"].(string) //nolint: errcheck
 		}
 	}
 	for k, e := range expectedEndpoints {
 		if v, ok := createdEndpoints[k]; ok {
 			if e != v {
-				return fmt.Errorf("Endpoint expected: %s, actual: %s for service %s", e, v, k)
+				return fmt.Errorf("endpoint expected: %s, actual: %s for service %s", e, v, k)
 			}
 		} else {
-			return fmt.Errorf("Missing endpoint for service %s", k)
+			return fmt.Errorf("missing endpoint for service %s", k)
 		}
 	}
 	return nil
@@ -119,14 +119,14 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 	cluster := map[string]interface{}{"uuid": clusterID,
 		"provisioning_action": action,
 	}
-	config.Action = "update"
+	config.Action = updateAction
 	switch action {
-	case "UPGRADE":
+	case upgradeProvisioningAction:
 		cluster["provisioning_state"] = "NOSTATE"
 		if expectedInventory != "" {
 			expectedPlaybooks = upgradeEncryptPlaybooks
 		}
-	case "ADD_COMPUTE":
+	case addComputeProvisioningAction:
 		// remove instances.yml to mock trriger cluster update
 		err = os.Remove(generatedInstancesPath())
 		if err != nil {
@@ -135,14 +135,14 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 		if expectedInventory != "" {
 			expectedPlaybooks = addComputeEncryptPlaybooks
 		}
-	case "ADD_CSN":
+	case addCSNProvisioningAction:
 		// remove instances.yml to mock trriger cluster update
 		err = os.Remove(generatedInstancesPath())
 		if err != nil {
 			assert.NoError(t, err, "failed to delete instances.yml")
 		}
-	case "IMPORT":
-		config.Action = "create"
+	case importProvisioningAction:
+		config.Action = createAction
 		cluster["provisioning_action"] = ""
 	}
 	data = map[string]interface{}{"contrail-cluster": cluster}
@@ -206,7 +206,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		Endpoint:     apisrv.TestServer.URL,
 		InSecure:     true,
 		ClusterID:    clusterID,
-		Action:       "create",
+		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "configs/",
 		Test:         true,
@@ -243,7 +243,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	}
 
 	// update cluster
-	config.Action = "update"
+	config.Action = updateAction
 	// remove instances.yml to trriger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
@@ -281,25 +281,25 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 
 	// UPGRADE test
 	runClusterActionTest(t, testScenario, config,
-		"UPGRADE", expectedInstance, expectedInventory,
+		upgradeProvisioningAction, expectedInstance, expectedInventory,
 		upgradePlaybooks, expectedEndpoints)
 
 	// ADD_COMPUTE  test
 	runClusterActionTest(t, testScenario, config,
-		"ADD_COMPUTE", expectedInstance, expectedInventory,
+		addComputeProvisioningAction, expectedInstance, expectedInventory,
 		addComputePlaybooks, expectedEndpoints)
 
 	// ADD_CSN  test
 	runClusterActionTest(t, testScenario, config,
-		"ADD_CSN", expectedInstance, expectedInventory,
+		addCSNProvisioningAction, expectedInstance, expectedInventory,
 		addCSNPlaybooks, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints without triggering playbooks)
 	runClusterActionTest(t, testScenario, config,
-		"IMPORT", "", "", "", expectedEndpoints)
+		importProvisioningAction, "", "", "", expectedEndpoints)
 
 	// delete cluster
-	config.Action = "delete"
+	config.Action = deleteAction
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
 		// cleanup executed playbook file
 		err = os.Remove(executedPlaybooksPath())
@@ -466,7 +466,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		Endpoint:     apisrv.TestServer.URL,
 		InSecure:     true,
 		ClusterID:    clusterID,
-		Action:       "create",
+		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "configs/",
 		Test:         true,
@@ -496,7 +496,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	}
 
 	// update cluster
-	config.Action = "update"
+	config.Action = updateAction
 	// remove instances.yml to trriger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
@@ -527,15 +527,15 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 
 	// UPGRADE test
 	runClusterActionTest(t, testScenario, config,
-		"UPGRADE", expectedOutput, "",
+		upgradeProvisioningAction, expectedOutput, "",
 		upgradePlaybooksKubernetes, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
 	runClusterActionTest(t, testScenario, config,
-		"IMPORT", "", "", "", expectedEndpoints)
+		importProvisioningAction, "", "", "", expectedEndpoints)
 
 	// delete cluster
-	config.Action = "delete"
+	config.Action = deleteAction
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
 		// cleanup executed playbook file
 		err = os.Remove(executedPlaybooksPath())

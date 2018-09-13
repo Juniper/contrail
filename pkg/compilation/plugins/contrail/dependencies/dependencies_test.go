@@ -87,7 +87,7 @@ func TestReturnsSelf(t *testing.T) {
 }
 
 func mustLoad(t *testing.T, rawSyncMap interface{}, key string) interface{} {
-	syncMap, ok := rawSyncMap.(*sync.Map)
+	syncMap, ok := rawSyncMap.(*sync.Map) //nolint: errcheck
 	assert.Truef(t, ok, "%v should be a sync.Map", rawSyncMap)
 
 	value, ok := syncMap.Load(key)

@@ -196,7 +196,7 @@ func createOrUpdateDefaultACL(
 
 func loadSecurityGroupIntent(loader intent.Loader, query intent.Query) *SecurityGroupIntent {
 	intent := loader.Load(models.KindSecurityGroup, query)
-	sgIntent, _ := intent.(*SecurityGroupIntent)
+	sgIntent, _ := intent.(*SecurityGroupIntent) //nolint: errcheck
 	return sgIntent
 }
 
