@@ -206,7 +206,7 @@ type AmqpConfig struct {
 }
 
 func getQueueName() string {
-	name, _ := os.Hostname() // nolint: noerror
+	name, _ := os.Hostname() // nolint: errcheck
 	return "contrail_process_" + name
 }
 

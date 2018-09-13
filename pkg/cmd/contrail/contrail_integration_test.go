@@ -50,10 +50,10 @@ func TestCreateCoreResources(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.dbDriver, func(t *testing.T) {
 			s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-				DBDriver:           tt.dbDriver,
-				EnableEtcdNotifier: true,
-				RepoRootPath:       "../../..",
 				CacheDB:            cacheDB,
+				DBDriver:           tt.dbDriver,
+				RepoRootPath:       "../../..",
+				EnableEtcdNotifier: true,
 			})
 			defer s.CloseT(t)
 
@@ -85,8 +85,8 @@ func testCreateProjectAndSecurityGroup(hc *integration.HTTPAPIClient, ec *integr
 		// TODO: creating project fails with following message:
 		// "Validation failed for resource with UUID 73a4ad89-3455-46f5-b37c-394aeb1f7c87:
 		// quota property is missing for resource project"
-		hc.CreateProject(t, project)
-		defer hc.DeleteProject(t, project.UUID)
+		hc.CreateRequiredProject(t, project)
+		defer hc.RemoveProject(t, project.UUID)
 		defer ec.DeleteProject(t, project.UUID)
 
 		sg := loadSecurityGroup(t, securityGroupRequestPath)
@@ -95,14 +95,14 @@ func testCreateProjectAndSecurityGroup(hc *integration.HTTPAPIClient, ec *integr
 
 		// TODO: creating security group fails with following message:
 		// "Please provide correct FQName or ParentUUID"
-		hc.CreateSecurityGroup(t, sg)
-		defer hc.DeleteSecurityGroup(t, sg.UUID)
+		hc.CreateRequiredSecurityGroup(t, sg)
+		defer hc.RemoveSecurityGroup(t, sg.UUID)
 		defer ec.DeleteSecurityGroup(t, sg.UUID)
 
 		// TODO: Chown endpoint fails with following message: "Not Found"
 		hc.Chown(t, project.UUID, sg.UUID)
 
-		hc.UpdateProject(t, project.UUID, loadResourceJSON(t, demoProjectQuotaUpdatePath))
+		hc.UpdateRequiredProject(t, project.UUID, loadResourceJSON(t, demoProjectQuotaUpdatePath))
 
 		apsEvent := integration.RetrieveCreateEvent(apsCtx, t, apsWatch)
 		if apsEvent != nil {

@@ -198,7 +198,7 @@ func TestCreateLogicalRouter(t *testing.T) {
 			createLRCall := service.Next().(*servicesmock.MockService).EXPECT().CreateLogicalRouter(
 				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 			).DoAndReturn(
-				func(_ context.Context, request *services.CreateLogicalRouterRequest,
+				func(_ context.Context, _ *services.CreateLogicalRouterRequest,
 				) (response *services.CreateLogicalRouterResponse, err error) {
 					return &services.CreateLogicalRouterResponse{LogicalRouter: &tt.testLogicalRouter}, nil
 				},
@@ -240,7 +240,7 @@ func TestCreateLogicalRouter(t *testing.T) {
 }
 
 func TestUpdateLogicalRouter(t *testing.T) {
-	tests := []struct {
+	tests := []struct { // nolint: maligned
 		name              string
 		testLogicalRouter models.LogicalRouter
 		vxlanEnabled      bool
@@ -374,7 +374,7 @@ func TestUpdateLogicalRouter(t *testing.T) {
 			updateLRCall := service.Next().(*servicesmock.MockService).EXPECT().UpdateLogicalRouter(
 				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 			).DoAndReturn(
-				func(_ context.Context, request *services.UpdateLogicalRouterRequest,
+				func(_ context.Context, _ *services.UpdateLogicalRouterRequest,
 				) (response *services.UpdateLogicalRouterResponse, err error) {
 					return &services.UpdateLogicalRouterResponse{LogicalRouter: &tt.testLogicalRouter}, nil
 				},

@@ -115,7 +115,7 @@ func (d *DependencyProcessor) Evaluate(obj interface{}, objTypeStr, fromTypeStr 
 			objValues := reflect.ValueOf(refObjTypeValues)
 			for i := 0; i < objValues.Len(); i++ {
 				interfaceObj := objValues.Index(i).Elem().Interface()
-				uuid, _ := reflections.GetField(interfaceObj, "UUID")
+				uuid, _ := reflections.GetField(interfaceObj, "UUID") // nolint: errcheck
 				refObj := d.getCachedObject(refObjTypeStr, uuid.(string))
 				if refObj == nil {
 					continue

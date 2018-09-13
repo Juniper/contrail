@@ -342,7 +342,7 @@ func errorFromResponse(e error, r *http.Response) error {
 	}
 	b, err := httputil.DumpResponse(r, true)
 	if err != nil {
-		errors.Wrap(e, "response: failed to dump")
+		return errors.Wrap(e, "response: failed to dump")
 	}
 	return errors.Wrapf(e, "response:\n%v", string(b))
 }

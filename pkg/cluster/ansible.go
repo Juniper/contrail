@@ -15,6 +15,16 @@ import (
 )
 
 const (
+	createAction = "create"
+	updateAction = "update"
+	deleteAction = "delete"
+
+	provisionProvisioningAction  = "PROVISION"
+	upgradeProvisioningAction    = "UPGRADE"
+	importProvisioningAction     = "IMPORT"
+	addComputeProvisioningAction = "ADD_COMPUTE"
+	addCSNProvisioningAction     = "ADD_CSN"
+
 	enable  = "yes"
 	disable = "no"
 )
@@ -351,7 +361,7 @@ func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) err
 	case "openstack":
 		ansibleArgs = append(ansibleArgs, "-e force_checkout=yes")
 		switch a.clusterData.clusterInfo.ProvisioningAction {
-		case "ADD_COMPUTE":
+		case addComputeProvisioningAction:
 			ansibleArgs = append(ansibleArgs, "--tags nova")
 		}
 		ansibleArgs = append(ansibleArgs, defaultOpenstackProvPlay)
@@ -393,8 +403,9 @@ func (a *ansibleProvisioner) playBook() error {
 		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
 		args = append(args, sudoArg)
 	}
+
 	switch a.clusterData.clusterInfo.ProvisioningAction {
-	case "PROVISION", "":
+	case provisionProvisioningAction, "":
 		if err := a.playInstancesProvision(args); err != nil {
 			return err
 		}
@@ -415,7 +426,7 @@ func (a *ansibleProvisioner) playBook() error {
 				return err
 			}
 		}
-	case "UPGRADE":
+	case upgradeProvisioningAction:
 		if err := a.playContrailProvision(args); err != nil {
 			return err
 		}
@@ -427,7 +438,7 @@ func (a *ansibleProvisioner) playBook() error {
 				return err
 			}
 		}
-	case "ADD_COMPUTE":
+	case addComputeProvisioningAction:
 		if err := a.playInstancesConfig(args); err != nil {
 			return err
 		}
@@ -445,7 +456,7 @@ func (a *ansibleProvisioner) playBook() error {
 				return err
 			}
 		}
-	case "ADD_CSN":
+	case addCSNProvisioningAction:
 		if err := a.playInstancesConfig(args); err != nil {
 			return err
 		}
@@ -564,7 +575,7 @@ func (a *ansibleProvisioner) deleteCluster() error {
 
 func (a *ansibleProvisioner) provision() error {
 	switch a.action {
-	case "create":
+	case createAction:
 		if a.isCreated() {
 			return a.updateEndpoints()
 		}
@@ -573,7 +584,7 @@ func (a *ansibleProvisioner) provision() error {
 			return err
 		}
 		return a.createEndpoints()
-	case "update":
+	case updateAction:
 		updated, err := a.isUpdated()
 		if err != nil {
 			return err
@@ -586,7 +597,7 @@ func (a *ansibleProvisioner) provision() error {
 			return err
 		}
 		return a.updateEndpoints()
-	case "delete":
+	case deleteAction:
 		err := a.deleteCluster()
 		if err != nil {
 			return err

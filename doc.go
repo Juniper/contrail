@@ -1,1 +1,1 @@
-package contrail
+package contrail // nolint: golint
