@@ -25,7 +25,7 @@ to community discussion.
 
 ### Step2. Go get contrail
 
-``` shell
+```bash
 go get -u github.com/Juniper/contrail
 ```
 
@@ -34,30 +34,27 @@ commit generated code.
 
 ### Step3. Install dependencies
 
-``` shell
+```bash
 make deps
 ```
 
 ### Step4. Generate code
 
-``` shell
+```bash
 make generate
 ```
 
-
 ### Step5. Install code
 
-``` shell
+```bash
 make install
 ```
 
 ### Step6. Install test environment
 
-``` shell
-# setup testenv using docker
-make testenv
-# you need wait db process up
-make reset_db
+```bash
+# Setup test environment using Docker and setup DB
+make testenv reset_db
 ```
 
 Note that these commands use `docker` command and depending on your docker
@@ -69,8 +66,8 @@ for more info.
 
 - Run processes
 
-    ```
-    contrail -c sample/contrail.yml run 
+    ```bash
+    contrail -c sample/contrail.yml run
     ```
 
     Note that you can overwrite configuration parameters using environment variable with
@@ -78,7 +75,7 @@ for more info.
 
     For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
 
-    ``` shell
+    ```bash
     CONTRAIL_DATABASE_DEBUG=true contrail -c sample/contrail.yml run
     ```
 
@@ -86,7 +83,7 @@ for more info.
 
 - Run CLI
 
-    ```
+    ```bash
     export CONTRAIL_CONFIG=sample/cli.yml
     # Show Schema
     contrailcli schema virtual_network
@@ -103,7 +100,7 @@ for more info.
 ## Schema Files
 
 Note that schema stored here is just a cache for helping development.
-Developers should make sure download latest schema from http://github.com/Juniper/contrail-api-client
+Developers should make sure download latest schema from [contrail-api-client](http://github.com/Juniper/contrail-api-client)
 
 JSON version stored in public/schema.json
 
@@ -113,39 +110,36 @@ You can add your template on template_config.yaml.
 
 ## Testing
 
-``` shell
+```bash
 make test
 ```
 
 You can print out full sql trace too.
 
-``` shell
+```bash
 CONTRAIL_DATABASE_DEBUG=true make test
 ```
 
 ## Commands
 
 Repository holds source code for following CLI applications:
-- `contrail` - contains API Server, [Agent](doc/agent.md) and [Sync](doc/sync.md)
-processes and [Cluster](doc/cluster.md) service
-- `contrailcli` - contains [API Server command line client][cli]
+
+- `contrail` - contains API Server, [Agent](doc/agent.md) and [Sync](doc/sync.md) processes and [Cluster](doc/cluster.md) service
+- `contrailcli` - contains [API Server command line client](doc/cli.md)
 - `contrailschema` - code generator by schema definitions
 - `contrailutil` - contains development utilities
 
 Show possible commands of application:
 
-``` shell
+```bash
 contrail -h
 ```
 
 Show detailed information about specific command:
 
-``` shell
+```bash
 contrail <command> -h
 ```
-
-[cli]: doc/cli.md
-
 
 ## Keystone Support
 
@@ -155,31 +149,28 @@ See a configuration [example](https://github.com/Juniper/contrail/blob/master/sa
 
 ## How to contribute
 
-- Apply lint tools
-- Follow best practices
-  - comply to [Effective Go](https://golang.org/doc/effective_go.html)
-  - comply to [Code review comments](https://github.com/golang/go/wiki/CodeReviewComments)
-  - keep `make lint` output clean
+- Follow [Openstack review process](https://docs.openstack.org/infra/manual/developers.html)
+- Use [Tungsten Fabric Gerrit](https://review.opencontrail.org)
+- Ensure that `make test lint` passes
+- Comply to [Code review guidlines](REVIEW.md)
 
-We follow openstack way of review. https://docs.openstack.org/infra/manual/developers.html
-This is our review system. https://review.opencontrail.org
-
-### Step1.
+### Step1
 
 Setup gerrit account. Sign CLA.
 
-### Step2.
+### Step2
 
 Install git-review.
 
-```
+```bash
 pip install git-review
 ```
 
-### Step3.
+### Step3
 
 Send git review command.
-```
+
+```bash
 git review
 ```
 
