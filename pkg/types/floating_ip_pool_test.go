@@ -26,7 +26,7 @@ func floatingIPPoolSetupNextServiceMocks(s *ContrailTypeLogicService) {
 
 func createTestVirtualNetwork() *models.VirtualNetwork {
 	virtualNetwork := models.MakeVirtualNetwork()
-	virtualNetwork.UUID = "uuid-1"
+	virtualNetwork.UUID = "uuid-1" // nolint: goconst
 	virtualNetwork.NetworkIpamRefs = []*models.VirtualNetworkNetworkIpamRef{
 		{
 			Attr: &models.VnSubnetsType{

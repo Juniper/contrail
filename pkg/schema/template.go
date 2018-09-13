@@ -8,16 +8,21 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
 )
 
-//TemplateConfig is configuration option for templates.
+const (
+	dictGetJSONSchemaByStringKeyFilter = "dict_get_JSONSchema_by_string_key"
+)
+
+// TemplateConfig contains configuration for template.
 type TemplateConfig struct {
 	TemplateType string `yaml:"type"`
 	TemplatePath string `yaml:"template_path"`
 	OutputPath   string `yaml:"output_path"`
 }
 
-//TemplateOption for template
+// TemplateOption contains options for template.
 type TemplateOption struct {
 	SchemasDir        string
 	TemplateConfPath  string
@@ -63,8 +68,8 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(tc.outputPath("", option), []byte(output), 0644)
-		if err != nil {
+
+		if err = writeGeneratedFile(tc.outputPath("", option), output); err != nil {
 			return err
 		}
 	} else if tc.TemplateType == "type" {
@@ -74,10 +79,8 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 			if err != nil {
 				return err
 			}
-			err = ioutil.WriteFile(
-				tc.outputPath(goName, option),
-				[]byte(output), 0644)
-			if err != nil {
+
+			if err = writeGeneratedFile(tc.outputPath(goName, option), output); err != nil {
 				return err
 			}
 		}
@@ -99,10 +102,8 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 			if err != nil {
 				return err
 			}
-			err = ioutil.WriteFile(
-				tc.outputPath(schema.JSONSchema.GoName, option),
-				[]byte(output), 0644)
-			if err != nil {
+
+			if err = writeGeneratedFile(tc.outputPath(schema.JSONSchema.GoName, option), output); err != nil {
 				return err
 			}
 		}
@@ -126,8 +127,8 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(tc.outputPath("", option), []byte(output), 0644)
-		if err != nil {
+
+		if err = writeGeneratedFile(tc.outputPath("", option), output); err != nil {
 			return err
 		}
 	} else {
@@ -139,10 +140,8 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 			if err != nil {
 				return err
 			}
-			err = ioutil.WriteFile(
-				tc.outputPath(schema.ID, option),
-				[]byte(output), 0644)
-			if err != nil {
+
+			if err = writeGeneratedFile(tc.outputPath(schema.ID, option), output); err != nil {
 				return err
 			}
 		}
@@ -150,28 +149,16 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 	return nil
 }
 
-//LoadTemplates loads templates from config path.
+// LoadTemplates loads template configurations from given path.
 func LoadTemplates(path string) ([]*TemplateConfig, error) {
 	var config []*TemplateConfig
 	err := common.LoadFile(path, &config)
 	return config, err
 }
 
-//ApplyTemplates applies templates and generate codes.
+// ApplyTemplates writes files with content generated from templates.
 func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig, option *TemplateOption) error {
-
-	// Make custom filters available for everyone
-
-	/* When called like this: {{ dict_value|dict_get_JSONSchema_by_string_key:key_var }}
-	then: dict_value is here as `in' variable and key_var is here as `param'
-	This is needed to obtain value from map with a key in variable (not as a hardcoded string)
-	*/
-	err := pongo2.RegisterFilter("dict_get_JSONSchema_by_string_key",
-		func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
-			m, _ := in.Interface().(map[string]*JSONSchema)
-			return pongo2.AsValue(m[param.String()]), nil
-		})
-	if err != nil {
+	if err := registerCustomFilters(); err != nil {
 		return err
 	}
 
@@ -182,4 +169,40 @@ func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig, opt
 		}
 	}
 	return nil
+}
+
+func registerCustomFilters() error {
+	/* When called like this: {{ dict_value|dict_get_JSONSchema_by_string_key:key_var }}
+	then: dict_value is here as `in' variable and key_var is here as `param'
+	This is needed to obtain value from map with a key in variable (not as a hardcoded string)
+	*/
+	if !pongo2.FilterExists(dictGetJSONSchemaByStringKeyFilter) {
+		if err := pongo2.RegisterFilter(
+			dictGetJSONSchemaByStringKeyFilter,
+			func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+				m, _ := in.Interface().(map[string]*JSONSchema)
+				return pongo2.AsValue(m[param.String()]), nil
+			},
+		); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func writeGeneratedFile(path string, data string) error {
+	if err := ioutil.WriteFile(path, []byte(generationPrefix(path)+data), 0644); err != nil {
+		return errors.Wrapf(err, "failed to write generate file to path %q", path)
+	}
+	return nil
+}
+
+func generationPrefix(path string) string {
+	if strings.HasSuffix(path, ".go") || strings.HasSuffix(path, ".proto") {
+		return "// Code generated by contrailschema tool. DO NOT EDIT.\n\n"
+	} else if strings.HasSuffix(path, ".sql") {
+		return "-- Code generated by contrailschema tool. DO NOT EDIT.\n\n"
+	}
+	return "# Code generated by contrailschema tool. DO NOT EDIT.\n\n"
 }

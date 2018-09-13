@@ -34,7 +34,7 @@ func init() {
 }
 
 // nolint: gocyclo
-func commandHandler(handler handler, task *task, context map[string]interface{}) (interface{}, error) {
+func commandHandler(handler handler, _ *task, context map[string]interface{}) (interface{}, error) {
 	c, err := getCommand(handler, context)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func commandHandler(handler handler, task *task, context map[string]interface{})
 	chdir := ""
 	commandArgs, ok := handler["args"].(map[interface{}]interface{})
 	if ok {
-		chdir, _ = applyTemplate(commandArgs["chdir"], context)
+		chdir, _ = applyTemplate(commandArgs["chdir"], context) // nolint: errcheck
 	}
 
 	if chdir != "" {
@@ -75,7 +75,7 @@ func commandHandler(handler handler, task *task, context map[string]interface{})
 	cmd.Env = env
 
 	var output bytes.Buffer
-	stdout, _ := cmd.StdoutPipe()
+	stdout, _ := cmd.StdoutPipe() // nolint: errcheck
 	err = cmd.Start()
 	if err != nil {
 		return "", err
@@ -121,16 +121,16 @@ func saveHandler(handler handler, task *task, context map[string]interface{}) (i
 	}
 	var resourceBytes []byte
 	resource := context["resource"]
-	resourceMap, _ := resource.(map[string]interface{})
+	resourceMap, _ := resource.(map[string]interface{}) // nolint: errcheck
 	outputData := map[string]interface{}{
 		resourceMap["schema_id"].(string): map[string]interface{}{
 			resourceMap["uuid"].(string): resourceMap,
 		},
 	}
 	if format == "json" {
-		resourceBytes, _ = json.Marshal(outputData)
+		resourceBytes, _ = json.Marshal(outputData) // nolint: errcheck
 	} else {
-		resourceBytes, _ = yaml.Marshal(outputData)
+		resourceBytes, _ = yaml.Marshal(outputData) // nolint: errcheck
 	}
 	return nil, task.agent.backend.write(outputPath, resourceBytes)
 }
@@ -195,7 +195,7 @@ func applyTemplateObject(template interface{}, context map[string]interface{}) (
 	return nil, nil
 }
 
-func varsHandler(handler handler, task *task, context map[string]interface{}) (interface{}, error) {
+func varsHandler(handler handler, _ *task, context map[string]interface{}) (interface{}, error) {
 	vars, ok := handler["vars"].(map[interface{}]interface{})
 	if !ok {
 		return nil, fmt.Errorf("invalid vars format")
@@ -207,12 +207,12 @@ func varsHandler(handler handler, task *task, context map[string]interface{}) (i
 	}
 
 	for key, value := range vars {
-		context[key.(string)], _ = applyTemplateObject(value, context)
+		context[key.(string)], _ = applyTemplateObject(value, context) // nolint: errcheck
 	}
 	return nil, nil
 }
 
-func envHandler(handler handler, task *task, context map[string]interface{}) (interface{}, error) {
+func envHandler(handler handler, _ *task, context map[string]interface{}) (interface{}, error) {
 	envFile, err := applyTemplate(handler["env_file"], context)
 	if err != nil {
 		return nil, err
@@ -227,7 +227,7 @@ func envHandler(handler handler, task *task, context map[string]interface{}) (in
 	return nil, nil
 }
 
-func debugHandler(handler handler, task *task, context map[string]interface{}) (interface{}, error) {
+func debugHandler(handler handler, _ *task, context map[string]interface{}) (interface{}, error) {
 	debugLog, err := applyTemplate(handler["debug"], context)
 	if err != nil {
 		return nil, err

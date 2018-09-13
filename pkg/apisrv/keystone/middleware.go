@@ -56,17 +56,17 @@ func getKeystoneEndpoint(endpoints *apicommon.EndpointStore) (authEndpoint strin
 	endpointCount := 0
 	authEndpoint = ""
 	endpoints.Data.Range(func(key, targets interface{}) bool {
-		keyString, _ := key.(string)
+		keyString, _ := key.(string) // nolint: errcheck
 		keyParts := strings.Split(keyString, pathSep)
 		if keyParts[3] != keystoneService || keyParts[4] != private {
 			return true // continue iterating the endpoints
 		}
 		endpointCount++
 		if endpointCount > 1 {
-			err = fmt.Errorf("Ambiguious, more than one cluster found")
+			err = fmt.Errorf("ambiguious, more than one cluster found")
 			return false
 		}
-		authEndpoints, _ := targets.(*apicommon.TargetStore)
+		authEndpoints, _ := targets.(*apicommon.TargetStore) // nolint: errcheck
 		authEndpoint = authEndpoints.Next(private)
 		return false
 
@@ -126,7 +126,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			}
 			keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
 			if err != nil {
-				log.Errorf("Unable to get keystone endpoint: %s", err)
+				log.Errorf("unable to get keystone endpoint: %s", err)
 				return common.ToHTTPError(common.ErrorUnauthenticated)
 			}
 			if keystoneEndpoint != "" {
@@ -135,7 +135,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
 			if tokenString == "" {
-				cookie, _ := r.Cookie("x-auth-token")
+				cookie, _ := r.Cookie("x-auth-token") // nolint: errcheck
 				if cookie != nil {
 					tokenString = cookie.Value
 				}
