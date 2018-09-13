@@ -52,6 +52,7 @@ run_docker_etcd()
 	docker run -d --name contrail_etcd \
 		--net "$Network" \
 		-p 2379:2379 \
+		-e "ETCDCTL_API=3"
 		gcr.io/etcd-development/etcd:v3.3.2 \
 		etcd --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379
 }
