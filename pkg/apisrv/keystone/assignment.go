@@ -23,10 +23,10 @@ type StaticAssignment struct {
 func (assignment *StaticAssignment) FetchUser(name, password string) (*User, error) {
 	user, ok := assignment.Users[name]
 	if !ok {
-		return nil, fmt.Errorf("User %s not found", name)
+		return nil, fmt.Errorf("user %s not found", name)
 	}
 	if user.Password != "" && common.InterfaceToString(user.Password) != password {
-		return nil, fmt.Errorf("Invalid Credentials")
+		return nil, fmt.Errorf("invalid credentials")
 	}
 	return user, nil
 }

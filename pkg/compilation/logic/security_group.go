@@ -171,7 +171,7 @@ func resolveSGRef(rs *models.PolicyRulesWithRefs, addr *models.AddressType, ec *
 	i := loadSecurityGroupIntent(
 		ec.IntentLoader,
 		intent.ByFQName(basemodels.ParseFQName(addr.SecurityGroup)))
-	if i == nil {
+	sg, _ := i.(*SecurityGroupIntent) //nolint: errcheck
 		return
 	}
 	rs.FQNameToSG[addr.SecurityGroup] = i.SecurityGroup

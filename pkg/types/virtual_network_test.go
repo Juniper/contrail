@@ -379,8 +379,8 @@ func TestCreateVirtualNetwork(t *testing.T) {
 							VirtualNetwork: request.VirtualNetwork,
 						}, nil
 					}).Times(1)
-				service.WriteService.(*servicesmock.MockWriteService).
-					EXPECT().CreateRoutingInstance(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
+				service.WriteService.(*servicesmock.MockWriteService). //nolint: errcheck
+											EXPECT().CreateRoutingInstance(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 					func(
 						_ context.Context, request *services.CreateRoutingInstanceRequest,
 					) (*services.CreateRoutingInstanceResponse, error) {
@@ -720,7 +720,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			ctx := context.Background()
 			// In case of successful flow UpdateVirtualNetwork should be called once on next service
 			if !tt.fails {
-				nextService := service.Next().(*servicesmock.MockService)
+				nextService := service.Next().(*servicesmock.MockService) //nolint: errcheck
 				nextService.EXPECT().UpdateVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 					func(ctx context.Context, request *services.UpdateVirtualNetworkRequest) ( //nolint: unparam
 						*services.UpdateVirtualNetworkResponse, error) {
@@ -805,7 +805,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 			ctx := context.Background()
 			// In case of successful flow DeleteVirtualNetwork should be called once on next service
 			if !tt.fails {
-				nextService := service.Next().(*servicesmock.MockService)
+				nextService := service.Next().(*servicesmock.MockService) //nolint: errcheck
 				nextService.EXPECT().DeleteVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).DoAndReturn(
 					func(
 						_ context.Context, request *services.DeleteVirtualNetworkRequest,
@@ -863,7 +863,8 @@ func TestDeleteDefaultRoutingInstance(t *testing.T) {
 			virtualNetwork := models.MakeVirtualNetwork()
 			virtualNetwork.UUID = "test_vn_red_uuid"
 			virtualNetwork.RoutingInstances = tt.routingInstances
-			service.ReadService.(*servicesmock.MockReadService).EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()),
+			service.ReadService.(*servicesmock.MockReadService).EXPECT( //nolint: errcheck
+			).GetVirtualNetwork(gomock.Not(gomock.Nil()),
 				&services.GetVirtualNetworkRequest{
 					ID: virtualNetwork.UUID,
 				}).Return(&services.GetVirtualNetworkResponse{VirtualNetwork: virtualNetwork}, nil).Times(1)
@@ -876,8 +877,8 @@ func TestDeleteDefaultRoutingInstance(t *testing.T) {
 			if tt.shouldDelete {
 				expectedDeletes = 1
 			}
-			service.WriteService.(*servicesmock.MockWriteService).
-				EXPECT().DeleteRoutingInstance(gomock.Not(gomock.Nil()),
+			service.WriteService.(*servicesmock.MockWriteService). //nolint: errcheck
+										EXPECT().DeleteRoutingInstance(gomock.Not(gomock.Nil()),
 				&services.DeleteRoutingInstanceRequest{
 					ID: tt.defaultRoutingInstanceID,
 				}).Return(&services.DeleteRoutingInstanceResponse{}, nil).Times(expectedDeletes)
@@ -931,7 +932,7 @@ func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 }
 
 func virtualNetworkSetupReadServiceMocks(s *ContrailTypeLogicService) {
-	readServiceMock := s.ReadService.(*servicesmock.MockReadService)
+	readServiceMock := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	virtualNetwork := models.MakeVirtualNetwork()
 	virtualNetwork.UUID = "test_provider_vn_uuid"
@@ -1008,7 +1009,7 @@ func virtualNetworkSetupReadServiceMocks(s *ContrailTypeLogicService) {
 }
 
 func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMethod string) {
-	readServiceMock := s.ReadService.(*servicesmock.MockReadService)
+	readServiceMock := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	ipamSubnetA := models.MakeIpamSubnetType()
 	ipamSubnetA.Subnet = &models.SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24}
@@ -1053,7 +1054,7 @@ func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMetho
 }
 
 func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
-	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator)
+	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
 	intPoolAllocator.EXPECT().AllocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		int64(13), nil).AnyTimes()
 	intPoolAllocator.EXPECT().DeallocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(0)).Return(
@@ -1061,7 +1062,7 @@ func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
 }
 
 func virtualNetworkMustCreateSubnet(s *ContrailTypeLogicService) {
-	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager := s.AddressManager.(*ipammock.MockAddressManager) //nolint: errcheck
 	addressManager.EXPECT().CheckIfIpamSubnetExists(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		false, nil,
 	).AnyTimes()
@@ -1073,7 +1074,7 @@ func virtualNetworkMustCreateSubnet(s *ContrailTypeLogicService) {
 }
 
 func virtualNetworkMustDeleteSubnet(s *ContrailTypeLogicService) {
-	addressManager := s.AddressManager.(*ipammock.MockAddressManager)
+	addressManager := s.AddressManager.(*ipammock.MockAddressManager) //nolint: errcheck
 	addressManager.EXPECT().DeleteIpamSubnet(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 }
 

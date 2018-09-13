@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 	common.SetLogLevel()
 	for _, iConfig := range viper.GetStringMap("test_database") {
 		config := common.InterfaceToInterfaceMap(iConfig)
-		driver := config["type"].(string)
+		driver := config["type"].(string) //nolint: errcheck
 		testDB, err := basedb.OpenConnection(basedb.ConnectionConfig{
 			Driver:   driver,
 			User:     config["user"].(string),

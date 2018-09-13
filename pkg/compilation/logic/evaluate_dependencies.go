@@ -26,11 +26,11 @@ func (s *Service) EvaluateDependencies(
 	var err error
 
 	objMap.Range(func(k1, v1 interface{}) bool {
-		objTypeKey := k1.(string)
-		objList := v1.(*sync.Map)
+		objTypeKey := k1.(string) //nolint: errcheck
+		objList := v1.(*sync.Map) //nolint: errcheck
 		log.Printf("Processing ObjType[%s] \n", objTypeKey)
 		objList.Range(func(k2, v2 interface{}) bool {
-			objUUID := k2.(string)
+			objUUID := k2.(string) //nolint: errcheck
 			objVal := v2
 			log.Printf("Processing ObjUUID[%s] \n", objUUID)
 			log.Printf("Processing Object[%v] \n", objVal)

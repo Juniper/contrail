@@ -115,25 +115,25 @@ func InterfaceToInt64List(i interface{}) []int64 {
 
 //InterfaceToInterfaceList makes a interface list from interface
 func InterfaceToInterfaceList(i interface{}) []interface{} {
-	t, _ := i.([]interface{})
+	t, _ := i.([]interface{}) //nolint: errcheck
 	return t
 }
 
 //InterfaceToStringMap makes a string map.
 func InterfaceToStringMap(i interface{}) map[string]string {
-	t, _ := i.(map[string]string)
+	t, _ := i.(map[string]string) //nolint: errcheck
 	return t
 }
 
 //InterfaceToInterfaceMap makes a interface map.
 func InterfaceToInterfaceMap(i interface{}) map[string]interface{} {
-	t, _ := i.(map[string]interface{})
+	t, _ := i.(map[string]interface{}) //nolint: errcheck
 	return t
 }
 
 //InterfaceToFloat makes a float.
 func InterfaceToFloat(i interface{}) float64 {
-	t, _ := i.(float64)
+	t, _ := i.(float64) //nolint: errcheck
 	switch t := i.(type) {
 	case []byte:
 		f, err := strconv.ParseFloat(string(t), 64)
@@ -153,7 +153,7 @@ func InterfaceToFloat(i interface{}) float64 {
 
 //InterfaceToBytes makes a bytes from interface
 func InterfaceToBytes(i interface{}) []byte {
-	switch t := i.(type) {
+	switch t := i.(type) { //nolint: errcheck
 	case []byte:
 		return t
 	case string:
@@ -176,7 +176,7 @@ func GetUUIDFromInterface(rawProperties interface{}) (string, error) {
 
 	uuid, ok := rawUUID.(string)
 	if !ok {
-		return "", fmt.Errorf("UUID should be string instead of %T", uuid)
+		return "", fmt.Errorf("value UUID should be string instead of %T", uuid)
 	}
 	return uuid, nil
 }
