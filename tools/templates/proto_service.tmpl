@@ -22,6 +22,8 @@ option (gogoproto.protosizer_all) = false;
 
 option go_package = "services";
 
+message Empty {}
+
 service ContrailService {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 rpc Get{{ schema.JSONSchema.GoName }} (Get{{ schema.JSONSchema.GoName }}Request) returns (Get{{ schema.JSONSchema.GoName }}Response);
@@ -117,6 +119,30 @@ message Event {
 {% set index = index + 2 * (schema.References|length)%}{# pongo2 variables are scoped so we need to add offset #}
 {% endif %}{% endfor %}
     }
+}
+
+service Action {
+    rpc AllocateInt (AllocateIntRequest) returns (AllocateIntResponse);
+    rpc SetInt (SetIntRequest) returns (Empty);
+    rpc DeallocateInt (DeallocateIntRequest) returns (Empty);
+}
+
+message AllocateIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+}
+
+message AllocateIntResponse {
+    int64 Value = 1 [(gogoproto.customname) = "Value"];
+}
+
+message SetIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+    int64 Value = 2 [(gogoproto.customname) = "Value"];
+}
+
+message DeallocateIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+    int64 Value = 2 [(gogoproto.customname) = "Value"];
 }
 
 service Watch {

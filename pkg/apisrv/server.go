@@ -47,13 +47,14 @@ func RegisterExtension(f func(server *Server) error) {
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo       *echo.Echo
-	GRPCServer *grpc.Server
-	Keystone   *keystone.Keystone
-	dbService  *db.Service
-	Proxy      *proxyService
-	Service    services.Service
-	Cache      *cache.DB
+	Echo         *echo.Echo
+	GRPCServer   *grpc.Server
+	Keystone     *keystone.Keystone
+	dbService    *db.Service
+	Proxy        *proxyService
+	Service      services.Service
+	ActionServer services.ActionServer
+	Cache        *cache.DB
 }
 
 // NewServer makes a server
@@ -64,10 +65,9 @@ func NewServer() (*Server, error) {
 	return server, nil
 }
 
-//SetupService setup service.
 //Application with custom logics can embed server struct, and overwrite
 //this method.
-func (s *Server) SetupService() (services.Service, error) {
+func (s *Server) setupService() (*services.ContrailService, error) {
 	var serviceChain []services.Service
 
 	cs, err := s.contrailService()
@@ -117,7 +117,7 @@ func (s *Server) SetupService() (services.Service, error) {
 	return cs, nil
 }
 
-func (s *Server) contrailService() (services.Service, error) {
+func (s *Server) contrailService() (*services.ContrailService, error) {
 	tv, err := models.NewTypeValidatorWithFormat()
 	if err != nil {
 		return nil, err
@@ -173,10 +173,12 @@ func (s *Server) Init() (err error) {
 		return err
 	}
 
-	s.Service, err = s.SetupService()
+	cs, err := s.setupService()
 	if err != nil {
 		return err
 	}
+	s.Service = cs
+	s.ActionServer = cs
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -253,6 +255,7 @@ func (s *Server) Init() (err error) {
 					noAuthInterceptor()))
 		}
 		services.RegisterContrailServiceServer(s.GRPCServer, s.Service)
+		services.RegisterActionServer(s.GRPCServer, s.ActionServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 
