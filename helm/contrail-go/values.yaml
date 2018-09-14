@@ -82,7 +82,7 @@ config:
          - localhost:2379
         username: ""
         password: ""
-        path: contrail
+        path: json
 
     # Log Level
     log_level: debug 
