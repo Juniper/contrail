@@ -8,6 +8,8 @@ const (
 	defaultK8sResourcePath                      = "/" + defaultK8sResource
 	defaultOpenstackResource                    = "openstack-cluster"
 	defaultOpenstackResourcePath                = "/" + defaultOpenstackResource
+	defaultAppformixResource                    = "appformix-cluster"
+	defaultAppformixResourcePath                = "/" + defaultAppformixResource
 	defaultEndpointRes                          = "endpoint"
 	defaultEndpointResPath                      = "/" + defaultEndpointRes
 	defaultNodeRes                              = "node"
@@ -65,6 +67,18 @@ const (
 	defaultContrailDatapathEncryptionPlay = "playbooks/deploy_and_run_all.yml"
 	defaultInventoryTemplate              = "inventory.tmpl"
 	defaultInventoryFile                  = "inventory.yml"
+
+	defaultAppformixAnsibleRepoDir        = "/opt/software/openstack_appformix/"
+	defaultAppformixAnsibleRepo           = "appformix-2.18.0"
+	defaultAppformixProvPlay              = "appformix_openstack.yml"
+	defaultAppformixControllerNodeRes     = "appformix-controller-node"
+	defaultAppformixControllerNodeResPath = "/" + defaultAppformixControllerNodeRes
+	defaultAppformixBareHostNodeRes       = "appformix-bare-host-node"
+	defaultAppformixBareHostNodeResPath   = "/" + defaultAppformixBareHostNodeRes
+	defaultAppformixOpenstackNodeRes      = "appformix-openstack-node"
+	defaultAppformixOpenstackNodeResPath  = "/" + defaultAppformixOpenstackNodeRes
+	defaultAppformixComputeNodeRes        = "appformix-compute-node"
+	defaultAppformixComputeNodeResPath    = "/" + defaultAppformixComputeNodeRes
 
 	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
 	statusField          = "provisioning_state"
