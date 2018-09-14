@@ -1,6 +1,7 @@
 package intent
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,8 @@ func TestCacheLoad(t *testing.T) {
 	c := NewCache()
 
 	vn := &models.VirtualNetwork{
-		UUID: "hoge",
+		UUID:   "hoge",
+		FQName: []string{"dead", "beef"},
 	}
 
 	tests := []struct {
@@ -54,15 +56,26 @@ func TestCacheLoad(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s (query by UUID)", tt.name), func(t *testing.T) {
 			if tt.storeResource {
 				c.Store(&TestIntent{
 					VirtualNetwork: vn,
 				})
 			}
 
-			_, ok := c.Load(tt.typeName, vn.GetUUID())
-			assert.Equal(t, tt.expectedOk, ok)
+			i := c.Load(tt.typeName, ByUUID(vn.GetUUID()))
+			assert.Equal(t, tt.expectedOk, i != nil)
+		})
+
+		t.Run(fmt.Sprintf("%s (query by FQName)", tt.name), func(t *testing.T) {
+			if tt.storeResource {
+				c.Store(&TestIntent{
+					VirtualNetwork: vn,
+				})
+			}
+
+			i := c.Load(tt.typeName, ByFQName(vn.GetFQName()))
+			assert.Equal(t, tt.expectedOk, i != nil)
 		})
 	}
 }
@@ -95,17 +108,30 @@ func TestCacheDelete(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s (query by UUID)", tt.name), func(t *testing.T) {
 			if tt.storeResource {
 				c.Store(&TestIntent{
 					VirtualNetwork: vn,
 				})
 			}
 
-			c.Delete(tt.typeName, vn.GetUUID())
+			c.Delete(tt.typeName, ByUUID(vn.GetUUID()))
 
-			_, ok := c.Load(tt.typeName, vn.GetUUID())
-			assert.False(t, ok)
+			i := c.Load(tt.typeName, ByUUID(vn.GetUUID()))
+			assert.Nil(t, i)
+		})
+
+		t.Run(fmt.Sprintf("%s (query by FQName)", tt.name), func(t *testing.T) {
+			if tt.storeResource {
+				c.Store(&TestIntent{
+					VirtualNetwork: vn,
+				})
+			}
+
+			c.Delete(tt.typeName, ByFQName(vn.GetFQName()))
+
+			i := c.Load(tt.typeName, ByFQName(vn.GetFQName()))
+			assert.Nil(t, i)
 		})
 	}
 }
