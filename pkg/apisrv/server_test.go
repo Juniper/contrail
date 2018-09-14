@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/twinj/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -154,9 +155,7 @@ func TestIntPool(t *testing.T) {
 	RunTest(t, "./test_data/test_int_pool.yml")
 }
 
-func TestGRPC(t *testing.T) {
-	ctx := context.Background()
-	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
+func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		TestServer.URL,
 		TestServer.URL+"/keystone/v3",
@@ -173,7 +172,16 @@ func TestGRPC(t *testing.T) {
 	restClient.InSecure = true
 	restClient.Init()
 	err := restClient.Login(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+	return restClient.AuthToken
+}
+
+func TestGRPC(t *testing.T) {
+	ctx := context.Background()
+	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
+
+	authToken := restLogin(ctx, t)
+
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})
@@ -181,7 +189,7 @@ func TestGRPC(t *testing.T) {
 	conn, err := grpc.Dial(dial, grpc.WithTransportCredentials(creds))
 	assert.NoError(t, err)
 	defer LogFatalIfErr(conn.Close)
-	md := metadata.Pairs("X-Auth-Token", restClient.AuthToken)
+	md := metadata.Pairs("X-Auth-Token", authToken)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	// Contact the server and print out its response.
 	c := services.NewContrailServiceClient(conn)
@@ -215,6 +223,32 @@ func TestGRPC(t *testing.T) {
 	_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
 		ID: project.UUID,
 	})
+	assert.NoError(t, err)
+}
+
+func TestActionGRPC(t *testing.T) {
+	ctx := context.Background()
+	AddKeystoneProjectAndUser(APIServer, "TestActionGRPC")
+	authToken := restLogin(ctx, t)
+
+	creds := credentials.NewTLS(&tls.Config{
+		InsecureSkipVerify: true,
+	})
+	dial := strings.TrimPrefix(TestServer.URL, "https://")
+
+	conn, err := grpc.Dial(dial, grpc.WithTransportCredentials(creds))
+	assert.NoError(t, err)
+	defer LogFatalIfErr(conn.Close)
+	md := metadata.Pairs("X-Auth-Token", authToken)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	// Contact the server and print out its response.
+	c := services.NewActionClient(conn)
+	assert.NoError(t, err)
+
+	allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{Pool: "virtual_network_id"})
+	assert.NoError(t, err)
+
+	_, err = c.DeallocateInt(ctx, &services.DeallocateIntRequest{Pool: "virtual_network_id", Value: allocateResp.GetValue()})
 	assert.NoError(t, err)
 }
 

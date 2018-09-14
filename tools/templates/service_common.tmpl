@@ -360,55 +360,52 @@ func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	pool := c.Param("pool-name")
 	v := c.Param("value")
 	var i64 int64
-	var err error
 	if v == "" {
-		i64, err = service.allocateNextInt(ctx, pool)
+        resp, err := service.AllocateInt(ctx, &AllocateIntRequest{Pool: pool})
 		if err != nil {
-			return err
+			return common.ToHTTPError(err)
 		}
+        i64 = resp.Value
 	} else {
 		i, err := strconv.Atoi(v)
 		if err != nil {
-			return common.ErrorBadRequestf("Invalid int to allocate (%v): %s", v, err.Error())
+			return common.ToHTTPError(common.ErrorBadRequestf("Invalid int to allocate (%v): %s", v, err))
 		}
 		i64 = int64(i)
-		if err = service.allocateInt(ctx, pool, i64); err != nil {
-			return err
+        if _, err = service.SetInt(ctx, &SetIntRequest{Pool: pool, Value: i64}); err != nil {
+			return common.ToHTTPError(err)
 		}
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"value": i64})
 }
 
-func (service *ContrailService) allocateNextInt(ctx context.Context, poolID string) (int64, error) {
+// AllocateInt allocates int in given int-pool.
+func (service *ContrailService) AllocateInt(ctx context.Context, request *AllocateIntRequest) (*AllocateIntResponse, error) {
 	var v int64
-	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		var err error
-		v, err = service.IntPoolAllocator.AllocateInt(ctx, poolID)
-		if err != nil {
-			return common.ErrorBadRequestf("Failed to allocate next int: %s", err.Error())
+		if v, err = service.IntPoolAllocator.AllocateInt(ctx, request.GetPool()); err != nil {
+			return common.ErrorBadRequestf("Failed to allocate next int: %s", err)
 		}
 		return nil
-	})
-	if err != nil {
-		return 0, common.ToHTTPError(err)
+	}); err != nil {
+		return nil, err
 	}
-	return v, nil
+    return &AllocateIntResponse{Value: v}, nil
 }
 
-func (service *ContrailService) allocateInt(ctx context.Context, poolID string, i64 int64) error {
-	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		var err error
-		err = service.IntPoolAllocator.SetInt(ctx, poolID, i64)
-		if err != nil {
-			return common.ErrorBadRequestf("Failed to allocate specified int: ", err.Error())
+// SetInt sets int in given int-pool.
+func (service *ContrailService) SetInt(ctx context.Context, request *SetIntRequest) (*Empty, error) {
+	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		if err := service.IntPoolAllocator.SetInt(ctx, request.GetPool(), request.GetValue()); err != nil {
+			return common.ErrorBadRequestf("Failed to allocate specified int: %s", err)
 		}
 		return nil
-	})
-	if err != nil {
-		return common.ToHTTPError(err)
+	}); err != nil {
+		return nil, err
 	}
-	return nil
+    return &Empty{}, nil
 }
 
 // RESTIntPoolDeallocate handles a DELETE on int-pool/:pool-name/:value request.
@@ -423,30 +420,27 @@ func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 	v := c.Param("value")
 	i, err := strconv.Atoi(v)
 	if err != nil {
-		return common.ErrorBadRequest("Invalid int value to deallocate")
+		return common.ToHTTPError(common.ErrorBadRequest("Invalid int value to deallocate"))
 	}
 
-	err = service.deallocateInt(ctx, pool, int64(i))
-	if err != nil {
-		return err
+    if _, err := service.DeallocateInt(ctx, &DeallocateIntRequest{Pool: pool, Value: int64(i)}); err != nil {
+		return common.ToHTTPError(err)
 	}
 
 	return c.NoContent(http.StatusOK)
 }
 
-func (service *ContrailService) deallocateInt(ctx context.Context, poolID string, i64 int64) error {
-	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		var err error
-		err = service.IntPoolAllocator.DeallocateInt(ctx, poolID, i64)
-		if err != nil {
+// DeallocateInt deallocates int in given int-pool.
+func (service *ContrailService) DeallocateInt(ctx context.Context, request *DeallocateIntRequest) (*Empty, error) {
+	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+        if err := service.IntPoolAllocator.DeallocateInt(ctx, request.GetPool(), request.GetValue()); err != nil {
 			return common.ErrorBadRequest(err.Error())
 		}
 		return nil
-	})
-	if err != nil {
-		return common.ToHTTPError(err)
+	}); err != nil {
+		return nil, err
 	}
-	return nil
+    return &Empty{}, nil
 }
 
 type routeRegistry interface {
