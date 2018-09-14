@@ -18,7 +18,7 @@ remove_dockers()
 		some-rabbit \
 		some-keystone \
 		config-api \
-		schema-transformer
+		schema-transformer \
 		some-redis \
 		config-ui
 }
