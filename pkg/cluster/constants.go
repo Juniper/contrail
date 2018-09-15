@@ -68,7 +68,7 @@ const (
 	defaultInventoryTemplate              = "inventory.tmpl"
 	defaultInventoryFile                  = "inventory.yml"
 
-	defaultAppformixAnsibleRepoDir        = "/opt/software/openstack_appformix/"
+	defaultAppformixAnsibleRepoDir        = "/opt/software/appformix/"
 	defaultAppformixAnsibleRepo           = "appformix-2.18.0"
 	defaultAppformixProvPlay              = "appformix_openstack.yml"
 	defaultAppformixControllerNodeRes     = "appformix-controller-node"

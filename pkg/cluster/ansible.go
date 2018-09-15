@@ -377,7 +377,7 @@ func (a *ansibleProvisioner) playContrailDatapathEncryption() error {
 }
 
 func (a *ansibleProvisioner) playAppformixProvision() error {
-	args := []string{"-i", a.getInstanceFile()}
+	args := []string{"-e", "config_file=" + a.getInstanceFile()}
 	// play Appformix provisioning playbook
 	args = append(args, defaultAppformixProvPlay)
 	err := a.appformixPlay(args)
