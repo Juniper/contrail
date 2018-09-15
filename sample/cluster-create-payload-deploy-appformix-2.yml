@@ -66,13 +66,11 @@ resources:
     display_name: appfmx_test1
     perms2:
       owner: admin
-    appformix_registry: registry.appformix.com/
     appformix_image_path_platform: /opt/software/openstack_appformix/appformix-platform-images-2.18.0.tar.gz
     appformix_image_path_dependencies: /opt/software/openstack_appformix/appformix-dependencies-images-2.18.0.tar.gz
     appformix_image_path_network_device: /opt/software/openstack_appformix/appformix-network_device-images-2.18.0.tar.gz
     appformix_image_path_openstack: /opt/software/openstack_appformix/appformix-openstack-images-2.18.0.tar.gz
-    appformix_license: /opt/software/configs/contrail.sig
-    appformix_version: 2.18.0
+    appformix_license: /opt/software/openstack_appformix/appformix-internal-openstack-2.18.sig
     appformix_kvm_instance_discovery: true
     appformix_network_device_monitoring_enabled: true
     appformix_jti_network_device_monitoring_enabled: true
@@ -86,14 +84,6 @@ resources:
     - uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
     appformix_configuration:
       key_value_pair:
-      - value: '{{ appformix_contrail_factory_plugins }}
-                + {{ appformix_network_device_factory_plugins }}
-                + {{ appformix_openstack_factory_plugins }}'
-        key: appformix_plugins
-      - value: '{{ (appformix_scale_setup_flag|bool) | ternary(28200, 8200) }}'
-        key: appformix_datamanager_port_http
-      - value: '{{ (appformix_scale_setup_flag|bool) | ternary(28201, 8201) }}'
-        key: appformix_datamanager_port_https
       - value: '8200'
         key: appformix_haproxy_datamanager_port_http
       - value: '8201'
