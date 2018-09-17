@@ -107,6 +107,8 @@ kolla_config:
     {{key_value.Key}}: {{key_value.Value}}
     {%endif%}
     {%endfor%}
+  customize:
+    openstackCluster.Customize
 {% if appformixCluster %}
 appformix_configuration:
     appformix_docker_images:
