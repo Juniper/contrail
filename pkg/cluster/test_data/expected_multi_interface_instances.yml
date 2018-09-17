@@ -43,3 +43,8 @@ kolla_config:
     kolla_internal_vip_address: 127.0.0.1
   kolla_passwords:
     keystone_admin_password: contrail123
+  customize:
+    nova.conf: |
+      [libvirt]
+      virt_type=qemu
+      cpu_mode=none
