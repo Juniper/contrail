@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -39,6 +40,35 @@ func (s *Service) CreateSecurityGroup(
 	}
 
 	return s.BaseService.CreateSecurityGroup(ctx, request)
+}
+
+// UpdateSecurityGroup evaluates SecurityGroup dependencies.
+func (s *Service) UpdateSecurityGroup(
+	ctx context.Context,
+	request *services.UpdateSecurityGroupRequest,
+) (*services.UpdateSecurityGroupResponse, error) {
+	sg := request.GetSecurityGroup()
+	if sg == nil {
+		return nil, errors.New("failed to update Security Group." +
+			" Security Group Request needs to contain resource!")
+	}
+
+	i := loadSecurityGroupIntent(s.cache, intent.ByUUID(sg.GetUUID()))
+	if i == nil {
+		return nil, errors.Errorf("cannot load intent for security group %v", sg.GetUUID())
+	}
+
+	i.SecurityGroup = sg
+
+	ec := &intent.EvaluateContext{
+		WriteService: s.WriteService,
+	}
+	err := s.EvaluateDependencies(ctx, ec, sg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
+	}
+
+	return s.BaseService.UpdateSecurityGroup(ctx, request)
 }
 
 // DeleteSecurityGroup evaluates SecurityGroup dependencies.
@@ -96,20 +126,16 @@ func deleteAndUnsetACL(
 
 // Evaluate Creates default AccessControlList's for the already created SecurityGroup.
 func (i *SecurityGroupIntent) Evaluate(ctx context.Context, ec *intent.EvaluateContext) error {
-	ingressACL, egressACL := i.DefaultACLs(ec)
+	newIngressACL, newEgressACL := i.DefaultACLs(ec)
+	var err error
 
 	// TODO: Use batch create so that either both ACLs are created or none.
-	var err error
-	i.ingressACL, err = createACL(ctx, ec.WriteService, ingressACL)
-	if err != nil {
+	if i.ingressACL, err = createOrUpdateDefaultACL(ctx, ec, i.ingressACL, newIngressACL); err != nil {
 		return errors.Wrap(err, "failed to create ingress access control list")
 	}
-
-	i.egressACL, err = createACL(ctx, ec.WriteService, egressACL)
-	if err != nil {
+	if i.egressACL, err = createOrUpdateDefaultACL(ctx, ec, i.egressACL, newEgressACL); err != nil {
 		return errors.Wrap(err, "failed to create egress access control list")
 	}
-
 	return nil
 }
 
@@ -148,7 +174,29 @@ func resolveSGRef(rs *models.PolicyRulesWithRefs, addr *models.AddressType, ec *
 	i := loadSecurityGroupIntent(
 		ec.IntentLoader,
 		intent.ByFQName(basemodels.ParseFQName(addr.SecurityGroup)))
+	if i == nil {
+		return
+	}
 	rs.FQNameToSG[addr.SecurityGroup] = i.SecurityGroup
+}
+
+func createOrUpdateDefaultACL(
+	ctx context.Context,
+	ec *intent.EvaluateContext,
+	oldACL *models.AccessControlList,
+	newACL *models.AccessControlList,
+) (*models.AccessControlList, error) {
+	var err error
+	if oldACL == nil {
+		newACL, err = createACL(ctx, ec.WriteService, newACL)
+	} else {
+		newACL.UUID = oldACL.GetUUID()
+		newACL, err = updateACL(ctx, ec.WriteService, newACL)
+	}
+	if err != nil {
+		return oldACL, err
+	}
+	return newACL, nil
 }
 
 func loadSecurityGroupIntent(loader intent.Loader, query intent.Query) *SecurityGroupIntent {
@@ -163,6 +211,19 @@ func createACL(
 	response, err := writeService.CreateAccessControlList(
 		ctx, &services.CreateAccessControlListRequest{
 			AccessControlList: acl,
+		})
+	return response.GetAccessControlList(), err
+}
+
+func updateACL(
+	ctx context.Context, writeService services.WriteService, acl *models.AccessControlList,
+) (*models.AccessControlList, error) {
+	response, err := writeService.UpdateAccessControlList(
+		ctx, &services.UpdateAccessControlListRequest{
+			AccessControlList: acl,
+			FieldMask: types.FieldMask{
+				Paths: []string{models.AccessControlListFieldAccessControlListEntries},
+			},
 		})
 	return response.GetAccessControlList(), err
 }
