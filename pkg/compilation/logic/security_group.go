@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -36,7 +37,7 @@ func (s *Service) CreateSecurityGroup(
 
 // Evaluate Creates default AccessControlList's for the already created SecurityGroup.
 func (i *SecurityGroupIntent) Evaluate(ctx context.Context, ec *intent.EvaluateContext) error {
-	ingressACL, egressACL := i.DefaultACLs()
+	ingressACL, egressACL := i.DefaultACLs(ec)
 
 	// TODO: Use batch create so that either both ACLs are created or none.
 	var err error
@@ -51,6 +52,45 @@ func (i *SecurityGroupIntent) Evaluate(ctx context.Context, ec *intent.EvaluateC
 	}
 
 	return nil
+}
+
+// DefaultACLs returns default ACLs corresponding to the security group's policy rules.
+func (i *SecurityGroupIntent) DefaultACLs(ec *intent.EvaluateContext) (
+	ingressACL *models.AccessControlList, egressACL *models.AccessControlList) {
+
+	rs := &models.PolicyRulesWithRefs{
+		Rules:      i.GetSecurityGroupEntries().GetPolicyRule(),
+		FQNameToSG: make(map[string]*models.SecurityGroup),
+	}
+	resolveSGRefs(rs, ec)
+
+	ingressRules, egressRules := rs.ToACLRules()
+
+	ingressACL = i.MakeChildACL("ingress-access-control-list", ingressRules)
+	egressACL = i.MakeChildACL("egress-access-control-list", egressRules)
+	return ingressACL, egressACL
+}
+
+func resolveSGRefs(rs *models.PolicyRulesWithRefs, ec *intent.EvaluateContext) {
+	for _, r := range rs.Rules {
+		for _, addr := range r.SRCAddresses {
+			resolveSGRef(rs, addr, ec)
+		}
+		for _, addr := range r.DSTAddresses {
+			resolveSGRef(rs, addr, ec)
+		}
+	}
+}
+
+func resolveSGRef(rs *models.PolicyRulesWithRefs, addr *models.AddressType, ec *intent.EvaluateContext) {
+	if !addr.IsSecurityGroupNameAReference() {
+		return
+	}
+	// TODO (Kamil) use loadSecurityGroupIntent()
+	i := ec.IntentLoader.Load(models.TypeNameSecurityGroup,
+		intent.ByFQName(basemodels.ParseFQName(addr.SecurityGroup)))
+	sg, _ := i.(*SecurityGroupIntent)
+	rs.FQNameToSG[addr.SecurityGroup] = sg.SecurityGroup
 }
 
 func createACL(
