@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/common"
@@ -34,6 +35,35 @@ func (s *Service) CreateSecurityGroup(
 	}
 
 	return s.BaseService.CreateSecurityGroup(ctx, request)
+}
+
+// UpdateSecurityGroup evaluates SecurityGroup dependencies.
+func (s *Service) UpdateSecurityGroup(
+	ctx context.Context,
+	request *services.UpdateSecurityGroupRequest,
+) (*services.UpdateSecurityGroupResponse, error) {
+	var sg *models.SecurityGroup
+	if sg = request.GetSecurityGroup(); sg == nil {
+		return nil, errors.New("failed to update Security Group." +
+			" Security Group Request needs to contain resource!")
+	}
+
+	i := loadSecurityGroupIntent(s.cache, intent.ByUUID(sg.GetUUID()))
+	if i == nil {
+		return nil, errors.Errorf("cannot load intent from security group %v", request.SecurityGroup.GetUUID())
+	}
+
+	i.SecurityGroup = sg
+
+	ec := &intent.EvaluateContext{
+		WriteService: s.WriteService,
+	}
+	err := s.EvaluateDependencies(ctx, ec, sg)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
+	}
+
+	return s.BaseService.UpdateSecurityGroup(ctx, request)
 }
 
 // DeleteSecurityGroup evaluates SecurityGroup dependencies.
@@ -98,14 +128,32 @@ func (i *SecurityGroupIntent) Evaluate(ctx context.Context, ec *intent.EvaluateC
 
 	// TODO: Use batch create so that either both ACLs are created or none.
 	var err error
-	i.ingressACL, err = createACL(ctx, ec.WriteService, ingressACL)
-	if err != nil {
-		return errors.Wrap(err, "failed to create ingress access control list")
+	if i.ingressACL == nil {
+		i.ingressACL, err = createACL(ctx, ec.WriteService, ingressACL)
+		if err != nil {
+			return errors.Wrap(err, "failed to create egress access control list")
+		}
+	} else {
+		keepUUID := i.ingressACL.GetUUID()
+		i.ingressACL, err = updateACL(ctx, ec.WriteService, ingressACL)
+		if err != nil {
+			return errors.Wrap(err, "failed to create egress access control list")
+		}
+		i.ingressACL.UUID = keepUUID
 	}
 
-	i.egressACL, err = createACL(ctx, ec.WriteService, egressACL)
-	if err != nil {
-		return errors.Wrap(err, "failed to create egress access control list")
+	if i.egressACL == nil {
+		i.egressACL, err = createACL(ctx, ec.WriteService, egressACL)
+		if err != nil {
+			return errors.Wrap(err, "failed to create egress access control list")
+		}
+	} else {
+		keepUUID := i.egressACL.GetUUID()
+		i.egressACL, err = updateACL(ctx, ec.WriteService, egressACL)
+		if err != nil {
+			return errors.Wrap(err, "failed to create egress access control list")
+		}
+		i.egressACL.UUID = keepUUID
 	}
 
 	return nil
@@ -123,6 +171,17 @@ func createACL(
 	response, err := writeService.CreateAccessControlList(
 		ctx, &services.CreateAccessControlListRequest{
 			AccessControlList: acl,
+		})
+	return response.GetAccessControlList(), err
+}
+
+func updateACL(
+	ctx context.Context, writeService services.WriteService, acl *models.AccessControlList,
+) (*models.AccessControlList, error) {
+	response, err := writeService.UpdateAccessControlList(
+		ctx, &services.UpdateAccessControlListRequest{
+			AccessControlList: acl,
+			FieldMask:         types.FieldMask{Paths: []string{models.AccessControlListFieldAccessControlListEntries}},
 		})
 	return response.GetAccessControlList(), err
 }
