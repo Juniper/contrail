@@ -87,11 +87,26 @@ func (sv *ContrailTypeLogicService) DeleteSecurityGroup(
 			return err
 		}
 
+		if err = sv.deleteChildACLs(ctx, sg); err != nil {
+			return nil
+		}
+
 		response, err = sv.BaseService.DeleteSecurityGroup(ctx, request)
 		return err
 	})
 
 	return response, err
+}
+
+func (sv *ContrailTypeLogicService) deleteChildACLs(ctx context.Context, sg *models.SecurityGroup) error {
+	for _, acl := range sg.AccessControlLists {
+		if _, err := sv.WriteService.DeleteAccessControlList(ctx, &services.DeleteAccessControlListRequest{
+			ID: acl.GetUUID(),
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (sv *ContrailTypeLogicService) allocateSecurityGroupID(ctx context.Context) (int64, error) {
