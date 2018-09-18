@@ -60,8 +60,8 @@ instances:
     {%endfor%}
 
 contrail_configuration:
-  CONTRAIL_VERSION: {{ cluster.ContrailVersion }}
-  CLOUD_ORCHESTRATOR: {{ cluster.Orchestrator }}
+  CONTRAIL_VERSION: {%if cluster.ContrailVersion %}{{ cluster.ContrailVersion }}{%else%}latest{%endif%}
+  CLOUD_ORCHESTRATOR: {%if cluster.Orchestrator %}{{ cluster.Orchestrator }}{%else%}openstack{%endif%}
   RABBITMQ_NODE_PORT: {%if cluster.RabbitMQPort %}{{ cluster.RabbitMQPort }}{%else%}5673{%endif%}
   {%if cluster.DefaultGateway != "" %}VROUTER_GATEWAY: {{ cluster.DefaultGateway }}{%endif%}
   ENCAP_PRIORITY: {%if cluster.EncapPriority %}{{cluster.EncapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
