@@ -1,0 +1,65 @@
+global_configuration:
+  CONTAINER_REGISTRY: test_registry
+  REGISTRY_PRIVATE_INSECURE: True
+provider_config:
+  bms:
+    ssh_user: root
+    ssh_pwd: c0ntrail123
+    ntpserver: 10.1.1.100
+    domainsuffix: local
+instances:
+  all_in_one_node:
+    ip: 127.0.0.1
+    provider: bms
+    roles:
+      config:
+      config_database:
+      control:
+      webui:
+      analytics:
+      analytics_database:
+      vrouter:
+      openstack_control:
+      openstack_network:
+      openstack_storage:
+      openstack_monitoring:
+      openstack_compute:
+      appformix_controller:
+          #connection: ssh
+      appformix_bare_host:
+          #connection: ssh
+      appformix_openstack_controller:
+          #connection: ssh
+      appformix_compute:
+          #connection: ssh
+contrail_configuration:
+  CONTRAIL_VERSION: ocata-5.0-x
+  CLOUD_ORCHESTRATOR: openstack
+  RABBITMQ_NODE_PORT: 5673
+  VROUTER_GATEWAY: 127.0.0.254
+  ENCAP_PRIORITY: VXLAN,MPLSoUDP,MPLSoGRE
+  AUTH_MODE: keystone
+  KEYSTONE_AUTH_HOST: 127.0.0.1
+  KEYSTONE_AUTH_URL_VERSION: /v3
+kolla_config:
+  kolla_globals:
+    openstack_release: ocata-xyz
+    enable_haproxy: no
+  kolla_passwords:
+    keystone_admin_password: contrail123
+appformix_configuration:
+    appformix_docker_images:
+      - /opt/software/openstack_appformix/appformix-platform-images-2.18.0.tar.gz
+      - /opt/software/openstack_appformix/appformix-dependencies-images-2.18.0.tar.gz
+      - /opt/software/openstack_appformix/appformix-network_device-images-2.18.0.tar.gz
+      - /opt/software/openstack_appformix/appformix-openstack-images-2.18.0.tar.gz
+    appformix_license:  /opt/software/configs/contrail.sig
+    contrail_analytics_url: 'http://10.84.24.44:8081'
+    contrail_config_url: 'http://10.84.24.44:8082'
+    contrail_cluster_name: 'ContrailCluster1'
+    appformix_jti_network_device_monitoring_enabled: True
+    appformix_kvm_instance_discovery: True
+    network_device_discovery_enabled: True
+    appformix_network_device_monitoring_enabled: True
+    openstack_platform_enabled: True
+    appformix_remote_host_monitoring_enabled: True

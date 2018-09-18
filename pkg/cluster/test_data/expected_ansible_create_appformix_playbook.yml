@@ -1,0 +1,10 @@
+playbooks/provision_instances.yml:
+  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
+playbooks/configure_instances.yml:
+  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
+playbooks/install_openstack.yml:
+  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack -e force_checkout=yes
+playbooks/install_contrail.yml:
+  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
+appformix_openstack.yml:
+  args: -i /var/tmp/contrail_cluster/test_cluster_uuid/instances.yml
