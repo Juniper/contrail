@@ -1,0 +1,634 @@
+name: All in one cluster test
+description: all-in-one cluster CRUD test
+cleanup:
+- path: /contrail-config-node/contrail_config_nodes_uuid
+- path: /contrail-config-database-node/contrail_config_database_nodes_uuid
+- path: /contrail-analytics-node/contrail_analytics_nodes_uuid
+- path: /contrail-analytics-database-node/contrail_analytics_database_nodes_uuid
+- path: /contrail-webui-node/contrail_webui_nodes_uuid
+- path: /contrail-control-node/contrail_control_nodes_uuid
+- path: /contrail-vrouter-node/contrail_vrouter_nodes_uuid
+- path: /openstack-control-node/openstack_control_nodes_uuid
+- path: /openstack-monitoring-node/openstack_monitoring_nodes_uuid
+- path: /openstack-network-node/openstack_network_nodes_uuid
+- path: /openstack-storage-node/openstack_storage_nodes_uuid
+- path: /openstack-compute-node/openstack_compute_nodes_uuid
+- path: /appformix-controller-node/appformix_controller_node_uuid
+- path: /appformix-openstack-node/appformix_openstack_node_uuid
+- path: /appformix-compute-node/appformix_compute_node_uuid
+- path: /appformix-bare-host-node/appformix_bare_host_node_uuid
+- path: /keypair/all_in_one_keypair_uuid
+- path: /credential/all_in_one_credential_uuid
+- path: /node/all_in_one_node_uuid
+- path: /contrail-cluster/test_cluster_uuid
+- path: /openstack-cluster/test_openstack_cluster_uuid
+- path: /appformix-cluster/test_appformix_cluster_uuid
+test_data:
+  {% if CREDS %}
+  all_in_one_keypair: &all_in_one_keypair
+    name: all_in_one_keypair
+    uuid: all_in_one_keypair_uuid
+    ssh_public_key: test_ssh_key
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  all_in_one_credential: &all_in_one_credential
+    name: all_in_one_credential
+    uuid: all_in_one_credential_uuid
+    ssh_user: test_ssh_user
+    ssh_password: test_ssh_password
+    keypair_refs:
+      - uuid: all_in_one_keypair_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  {%endif%}
+  all_in_one_node: &all_in_one_node
+    uuid: all_in_one_node_uuid
+    hostname: all_in_one_node
+    interface_name: all_in_one_node_interface
+    ip_address: {{MGMT_INT_IP}}
+    {% if CREDS %}
+    credential_refs:
+      - uuid: all_in_one_credential_uuid
+    {%endif%}
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  all_in_one_openstack_cluster: &all_in_one_openstack_cluster
+    uuid: test_openstack_cluster_uuid
+    parent_type: global-system-config
+    fq_name: ["default-global-system-config", "all_in_one_openstack_cluster"]
+    openstack_registry: default
+    openstack_release: ocata-xyz
+    ntp_server: 10.1.1.100
+    {% if OPENSTACK_INTERNAL_VIP %}
+    openstack_internal_vip: {{OPENSTACK_INTERNAL_VIP}}
+    {%endif%}
+  openstack_control_nodes: &openstack_control_nodes
+    uuid: openstack_control_nodes_uuid
+    parent_type: openstack-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  openstack_monitoring_nodes: &openstack_monitoring_nodes
+    uuid: openstack_monitoring_nodes_uuid
+    parent_type: openstack-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  openstack_network_nodes: &openstack_network_nodes
+    uuid: openstack_network_nodes_uuid
+    parent_type: openstack-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  openstack_storage_nodes: &openstack_storage_nodes
+    uuid: openstack_storage_nodes_uuid
+    parent_type: openstack-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  openstack_compute_nodes: &openstack_compute_nodes
+    uuid: openstack_compute_nodes_uuid
+    parent_type: openstack-cluster
+    parent_uuid: test_openstack_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  all_in_one_appformix_cluster: &all_in_one_appformix_cluster
+    uuid: test_appformix_cluster_uuid
+    parent_type: global-system-config
+    fq_name: ["default-global-system-config", "all_in_one_appformix_cluster"]
+    appformix_license: /opt/software/configs/contrail.sig
+    appformix_image_dir: /opt/software/appformix/
+    appformix_version: 2.18.1
+    appformix_kvm_instance_discovery: true
+    appformix_network_device_monitoring_enabled: true
+    appformix_jti_network_device_monitoring_enabled: true
+    appformix_remote_host_monitoring_enabled: true
+    contrail_analytics_url: 'http://10.84.24.44:8081'
+    contrail_config_url: 'http://10.84.24.44:8082'
+    contrail_cluster_name: 'ContrailCluster1'
+    network_device_discovery_enabled: true
+    openstack_platform_enabled: true
+    openstack_cluster_refs:
+    - uuid: test_openstack_cluster_uuid
+
+  appformix_controller_nodes: &appformix_controller_nodes
+    uuid: appformix_controller_nodes_uuid
+    parent_type: appformix-cluster
+    parent_uuid: test_appformix_cluster_uuid
+    ansible_connection: ssh
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  appformix_openstack_nodes: &appformix_openstack_nodes
+    uuid: appformix_openstack_nodes_uuid
+    parent_type: appformix-cluster
+    parent_uuid: test_appformix_cluster_uuid
+    ansible_connection: ssh
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  appformix_compute_nodes: &appformix_compute_nodes
+    uuid: appformix_compute_nodes_uuid
+    parent_type: appformix-cluster
+    parent_uuid: test_appformix_cluster_uuid
+    ansible_connection: ssh
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  appformix_bare_host_nodes: &appformix_bare_host_nodes
+    uuid: appformix_bare_host_nodes_uuid
+    parent_type: appformix-cluster
+    parent_uuid: test_appformix_cluster_uuid
+    ansible_connection: ssh
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  all_in_one_cluster: &all_in_one_cluster
+    uuid: test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    container_registry: test_registry
+    registry_private_insecure: true
+    contrail_version: ocata-5.0-x
+    provisioner_type: ansible
+    orchestrator: openstack
+    default_gateway: 127.0.0.254
+    ntp_server: 10.1.1.100
+    encap_priority: VXLAN,MPLSoUDP,MPLSoGRE
+    {% if DATAPATH_ENCRYPT %}
+    datapath_encryption: true
+    pre_shared_key: MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTAo=
+    {%endif%}
+    openstack_cluster_refs:
+      - uuid: test_openstack_cluster_uuid
+    appformix_cluster_refs:
+      - uuid: test_appformix_cluster_uuid
+    {% if CONTROL_NODES %}
+    contrail_configuration:
+      key_value_pair:
+        - key: CONTROL_NODES
+          value: {{CONTROL_NODES}}
+        {% if CONTROLLER_NODES %}
+        - key: CONTROLLER_NODES
+          value: {{CONTROLLER_NODES}}
+        {%endif%}
+        {% if OPENSTACK_NODES %}
+        - key: OPENSTACK_NODES
+          value: {{OPENSTACK_NODES}}
+        {%endif%}
+    {%endif%}
+  contrail_config_nodes: &contrail_config_nodes
+    uuid: contrail_config_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_config_database_nodes: &contrail_config_database_nodes
+    uuid: contrail_config_database_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_nodes: &contrail_analytics_nodes
+    uuid: contrail_analytics_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_database_nodes: &contrail_analytics_database_nodes
+    uuid: contrail_analytics_database_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_webui_nodes: &contrail_webui_nodes
+    uuid: contrail_webui_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_control_nodes: &contrail_control_nodes
+    uuid: contrail_control_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_vrouter_nodes: &contrail_vrouter_nodes
+    uuid: contrail_vrouter_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+    {% if TYPE == "dpdk" %}
+    type: dpdk
+    dpdk_info:
+      cpu_core_mask: "0xff"
+      dpdk_uio_driver: vfio-pci
+      huge_pages: 64000
+    {% elif TYPE == "sriov" %}
+    type: sriov
+    sriov_info:
+      sriov_vf: 10
+      sriov_physical_interface: enp129s0f1
+      sriov_physical_net: physnet1
+    {%endif%}
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create openstack cluster
+  request:
+    path: /openstack-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      openstack-cluster: *all_in_one_openstack_cluster
+  expect:
+    openstack-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: test_openstack_cluster_uuid
+      openstack_registry: default
+      openstack_release: ocata-xyz
+      ntp_server: 10.1.1.100
+
+- name: create appformix cluster
+  request:
+    path: /appformix-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-cluster: *all_in_one_appformix_cluster
+  expect:
+    appformix-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: test_appformix_cluster_uuid
+      appformix_image_dir: /opt/software/appformix/
+      appformix_license: /opt/software/configs/contrail.sig
+      appformix_version: 2.18.1
+      appformix_kvm_instance_discovery: true
+      appformix_network_device_monitoring_enabled: true
+      appformix_jti_network_device_monitoring_enabled: true
+      appformix_remote_host_monitoring_enabled: true
+      contrail_analytics_url: 'http://10.84.24.44:8081'
+      contrail_config_url: 'http://10.84.24.44:8082'
+      contrail_cluster_name: 'ContrailCluster1'
+      network_device_discovery_enabled: true
+      openstack_platform_enabled: true
+      openstack_cluster_refs:
+      - uuid: test_openstack_cluster_uuid
+
+- name: create cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *all_in_one_cluster
+  expect:
+    contrail-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: test_cluster_uuid
+      container_registry: test_registry
+      registry_private_insecure: true
+      contrail_version: ocata-5.0-x
+      provisioner_type: ansible
+      orchestrator: openstack
+      default_gateway: 127.0.0.254
+      ntp_server: 10.1.1.100
+      openstack_cluster_refs:
+        - uuid: test_openstack_cluster_uuid
+      appformix_cluster_refs:
+        - uuid: test_appformix_cluster_uuid
+
+{% if CREDS %}
+- name: create keypair
+  request:
+    path: /keypairs
+    method: POST
+    expected:
+    - 200
+    data:
+      keypair: *all_in_one_keypair
+  expect:
+    keypair:
+      perms2:
+        owner: admin
+      uuid: all_in_one_keypair_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      ssh_public_key: test_ssh_key
+
+- name: create credential
+  request:
+    path: /credentials
+    method: POST
+    expected:
+    - 200
+    data:
+      credential: *all_in_one_credential
+  expect:
+    credential:
+      perms2:
+        owner: admin
+      uuid: all_in_one_credential_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      ssh_user: test_ssh_user
+      ssh_password: test_ssh_password
+      keypair_refs:
+        - uuid: all_in_one_keypair_uuid
+{%endif%}
+
+- name: create node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *all_in_one_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: all_in_one_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: all_in_one_node
+      interface_name: all_in_one_node_interface
+      ip_address: {{MGMT_INT_IP}}
+      {% if CREDS %}
+      credential_refs:
+        - uuid: all_in_one_credential_uuid
+      {%endif%}
+
+- name: create config node
+  request:
+    path: /contrail-config-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-config-node: *contrail_config_nodes
+    expect:
+      contrail-config-node:
+        uuid: contrail_config_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create config database node
+  request:
+    path: /contrail-config-database-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-config-database-node: *contrail_config_database_nodes
+    expect:
+      contrail-config-database-node:
+        uuid: contrail_config_database_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create analytics node
+  request:
+    path: /contrail-analytics-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-node: *contrail_analytics_nodes
+    expect:
+      contrail-analytics-node:
+        uuid: contrail_analytics_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create analytics database node
+  request:
+    path: /contrail-analytics-database-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-database-node: *contrail_analytics_database_nodes
+    expect:
+      contrail-analytics-database-node:
+        uuid: contrail_analytics_database_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create webui node
+  request:
+    path: /contrail-webui-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-webui-node: *contrail_webui_nodes
+    expect:
+      contrail-webui-node:
+        uuid: contrail_webui_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+         - uuid: all_in_one_node_uuid
+- name: create control node
+  request:
+    path: /contrail-control-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-control-node: *contrail_control_nodes
+    expect:
+      contrail-control-node:
+        uuid: contrail_control_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create vrouter node
+  request:
+    path: /contrail-vrouter-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-vrouter-node: *contrail_vrouter_nodes
+    expect:
+      contrail-vrouter-node:
+        uuid: contrail_vrouter_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+        {% if TYPE == "dpdk" %}
+        dpdk_info:
+          cpu_core_mask: 0xff
+          dpdk_uio_driver: vfio-pci
+          huge_pages: 64000
+        {%endif%}
+        {% if TYPE == "sriov" %}
+        sriov_info:
+          sriov_vf: 10
+          sriov_physical_interface: enp129s0f1
+          sriov_physical_net: physnet1
+        {%endif%}
+- name: create openstack control node
+  request:
+    path: /openstack-control-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      openstack-control-node: *openstack_control_nodes
+    expect:
+      contrail-control-node:
+        uuid: openstack_control_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_openstack_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create openstack monitoring node
+  request:
+    path: /openstack-monitoring-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      openstack-monitoring-node: *openstack_monitoring_nodes
+    expect:
+      openstack-monitoring-node:
+        uuid: openstack_monitoring_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_openstack_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create openstack network node
+  request:
+    path: /openstack-network-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      openstack-network-node: *openstack_network_nodes
+    expect:
+      openstack-network-node:
+        uuid: openstack_network_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_openstack_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create openstack storage node
+  request:
+    path: /openstack-storage-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      openstack-storage-node: *openstack_storage_nodes
+    expect:
+      openstack-storage-node:
+        uuid: openstack_storage_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_openstack_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create openstack compute node
+  request:
+    path: /openstack-compute-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      openstack-compute-node: *openstack_compute_nodes
+    expect:
+      openstack-compute-node:
+        uuid: openstack_compute_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_openstack_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create appformix controller node
+  request:
+    path: /appformix-controller-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-controller-node: *appformix_controller_nodes
+    expect:
+      appformix-controller-node:
+        uuid: appformix_controller_nodes_uuid
+        parent_type: appformix-cluster
+        parent_uuid: test_appformix_cluster_uuid
+        ansible_connection: ssh
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create appformix openstack node
+  request:
+    path: /appformix-openstack-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-openstack-node: *appformix_openstack_nodes
+    expect:
+      appformix-openstack-node:
+        uuid: appformix_openstack_nodes_uuid
+        parent_type: appformix-cluster
+        ansible_connection: ssh
+        parent_uuid: test_appformix_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create appformix compute node
+  request:
+    path: /appformix-compute-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-compute-node: *appformix_compute_nodes
+    expect:
+      appformix-compute-node:
+        uuid: appformix_compute_nodes_uuid
+        parent_type: appformix-cluster
+        parent_uuid: test_appformix_cluster_uuid
+        ansible_connection: ssh
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create appformix bare host node
+  request:
+    path: /appformix-bare-host-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-bare-host-node: *appformix_bare_host_nodes
+    expect:
+      appformix-bare-host-node:
+        uuid: appformix_bare_host_nodes_uuid
+        parent_type: appformix-cluster
+        parent_uuid: test_appformix_cluster_uuid
+        ansible_connection: ssh
+        node_refs:
+          - uuid: all_in_one_node_uuid
