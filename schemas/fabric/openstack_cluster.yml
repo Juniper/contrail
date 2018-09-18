@@ -147,6 +147,18 @@ schema:
       presence: "optional"
       description: "Custom kolla password configurations. Specified as list of Key:Value pairs."
       $ref: "types.json#/definitions/KeyValuePairs"
+    customize:
+      description: Custom openstack configurations.
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: text
+      title: Custom Openstack Configurations.
+      type: string
+      view:
+      - detail
+
 singular: openstack_cluster
 title: Openstack Cluster
 type: ""

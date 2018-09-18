@@ -71,3 +71,8 @@ kolla_config:
     enable_haproxy: no
   kolla_passwords:
     keystone_admin_password: contrail123
+  customize:
+    nova.conf: |
+      [libvirt]
+      virt_type=qemu
+      cpu_mode=none
