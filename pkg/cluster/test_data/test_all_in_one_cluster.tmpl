@@ -52,7 +52,7 @@ test_data:
     parent_type: global-system-config
     fq_name: ["default-global-system-config", "all_in_one_openstack_cluster"]
     openstack_registry: default
-    openstack_release: ocata-xyz
+    openstack_release: queens
     ntp_server: 10.1.1.100
     {% if OPENSTACK_INTERNAL_VIP %}
     openstack_internal_vip: {{OPENSTACK_INTERNAL_VIP}}
@@ -207,8 +207,15 @@ workflow:
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
       uuid: test_openstack_cluster_uuid
       openstack_registry: default
-      openstack_release: ocata-xyz
+      openstack_release: queens
       ntp_server: 10.1.1.100
+      {% if CUSTOMIZE %}
+      customize: |-
+        nova.conf: |
+              [libvirt]
+              virt_type=qemu
+              cpu_mode=none
+      {%endif%}
 
 - name: create cluster
   request:
