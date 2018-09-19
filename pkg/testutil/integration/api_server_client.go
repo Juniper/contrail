@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -49,17 +48,9 @@ func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 		apiServerURL+authEndpointSuffix,
 		AdminUserID,
 		AdminUserPassword,
-		DefaultDomainID,
 		true,
-		&keystone.Scope{
-			Project: &keystone.Project{
-				ID:   AdminProjectID,
-				Name: AdminProjectName,
-				Domain: &keystone.Domain{
-					ID: DefaultDomainID,
-				},
-			},
-		},
+		client.GetKeystoneScope(DefaultDomainID, "",
+			AdminProjectID, AdminProjectName),
 	)
 	c.Debug = true
 
