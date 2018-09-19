@@ -75,6 +75,7 @@ const (
 	defaultAppformixAnsibleRepoDir        = "/usr/share/contrail/"
 	defaultAppformixAnsibleRepo           = "contrail-ansible-deployer"
 	defaultAppformixProvPlay              = "playbooks/install_appformix.yml"
+	defaultAppformixHaProvPlay            = "appformix_openstack_ha.yml"
 	defaultAppformixControllerNodeRes     = "appformix-controller-node"
 	defaultAppformixControllerNodeResPath = "/" + defaultAppformixControllerNodeRes
 	defaultAppformixBareHostNodeRes       = "appformix-bare-host-node"
