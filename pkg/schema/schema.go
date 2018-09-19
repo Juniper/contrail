@@ -232,6 +232,7 @@ type Reference struct {
 	Description string        `yaml:"description" json:"description,omitempty"`
 	Operations  string        `yaml:"operations" json:"operations,omitempty"`
 	Presence    string        `yaml:"presence" json:"presence,omitempty"`
+	Derived     bool          `yaml:"derived" json:"derived,omitempty"`
 	RefType     string        `yaml:"-" json:"-"`
 	Columns     ColumnConfigs `yaml:"-" json:"-"`
 	Attr        *JSONSchema   `yaml:"-" json:"attr"`

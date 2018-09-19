@@ -58,7 +58,7 @@ create table {{ reference.Table }} (
     `to` varchar(255),
     primary key (`from`,`to`),
     foreign key (`from`) references {{ schema.ID | lower  }}(uuid) on delete cascade,
-    foreign key (`to`) references {{ linkTo | lower  }}(uuid),
+    foreign key (`to`) references {{ linkTo | lower  }}(uuid) {% if reference.Derived %}on delete cascade{% endif %},
     index from_index (`from`)) CHARACTER SET utf8mb4;
 {% endfor %}
 

@@ -4,11 +4,13 @@ extends:
 id: access_control_list
 parents:
   security_group:
+    derived: true
     description: port access control list is  automatically derived from all the security
       groups attached to port.
     operations: CRUD
     presence: system-only
   virtual_network:
+    derived: true
     description: Virtual network access control list are automatically derived from
       all the network policies attached to virtual network.
     operations: CRUD

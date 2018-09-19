@@ -50,7 +50,7 @@ create table {{ reference.Table }} (
     primary key ("from","to"),
     {% for column in reference.Columns %}"{{column.Column}}" {{column.JSONSchema.SQL}},
     {% endfor %} foreign key ("from") references "{{ schema.ID | lower }}"(uuid) on delete cascade,
-    foreign key ("to") references "{{ linkTo | lower }}"(uuid));
+    foreign key ("to") references "{{ linkTo | lower }}"(uuid) {% if reference.Derived %}on delete cascade{% endif %});
 
 create index index_{{ reference.Table }} on {{ reference.Table }} ("from");
 {% endfor %}
