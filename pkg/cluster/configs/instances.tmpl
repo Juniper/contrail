@@ -58,16 +58,19 @@ instances:
       {% for openstack_compute_node in openstackCluster.OpenstackComputeNodes %}{% for node_ref in openstack_compute_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}openstack_compute:{%endif%}{%endfor%}{%endfor%}
       {% if appformixCluster %}
       {% for appformix_controller_node in appformixCluster.AppformixControllerNodes %}{% for node_ref in appformix_controller_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_controller:
-          #connection: ssh
+          {% if appformixCluster.AppformixVip %}
+          keepalived_vrrp_interface: {{ appformix_controller_node.KeepalivedVRRPInterface }}
+          {%endif%}
+          connection: {{ appformix_controller_node.AnsibleConnection }}
       {%endif%}{%endfor%}{%endfor%}
       {% for appformix_bare_host_node in appformixCluster.AppformixBareHostNodes %}{% for node_ref in appformix_bare_host_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_bare_host:
-          #connection: ssh
+          connection: {{ appformix_bare_host_node.AnsibleConnection }}
       {%endif%}{%endfor%}{%endfor%}
       {% for appformix_openstack_node in appformixCluster.AppformixOpenstackNodes %}{% for node_ref in appformix_openstack_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_openstack_controller:
-          #connection: ssh
+          connection: {{ appformix_openstack_node.AnsibleConnection }}
       {%endif%}{%endfor%}{%endfor%}
       {% for appformix_compute_node in appformixCluster.AppformixComputeNodes %}{% for node_ref in appformix_compute_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_compute:
-          #connection: ssh
+          connection: {{ appformix_compute_node.AnsibleConnection }}
       {%endif%}{%endfor%}{%endfor%}
       {%endif%}
     {%endfor%}
@@ -109,11 +112,14 @@ kolla_config:
     {%endfor%}
 {% if appformixCluster %}
 appformix_configuration:
+    {% if appformixCluster.AppformixVip %}
+    appformix_vip: {{ appformixCluster.AppformixVip }}
+    {%endif%}
     appformix_docker_images:
-      - {{ appformixCluster.AppformixImagePathPlatform }}
-      - {{ appformixCluster.AppformixImagePathDependencies }}
-      - {{ appformixCluster.AppformixImagePathNetworkDevice }}
-      - {{ appformixCluster.AppformixImagePathOpenstack }}
+      - {{ appformixCluster.AppformixImagePath }}appformix-platform-images-{{ appformixCluster.AppformixVersion }}.tar.gz
+      - {{ appformixCluster.AppformixImagePath }}appformix-dependencies-images-{{ appformixCluster.AppformixVersion }}.tar.gz
+      - {{ appformixCluster.AppformixImagePath }}appformix-network_device-images-{{ appformixCluster.AppformixVersion }}.tar.gz
+      - {{ appformixCluster.AppformixImagePath }}appformix-openstack-images-{{ appformixCluster.AppformixVersion }}.tar.gz
     appformix_license:  {{ appformixCluster.AppformixLicense }}
     contrail_analytics_url: '{{ appformixCluster.ContrailAnalyticsURL }}'
     contrail_config_url: '{{ appformixCluster.ContrailConfigURL }}'

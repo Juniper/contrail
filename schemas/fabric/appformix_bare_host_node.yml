@@ -18,7 +18,19 @@ parents:
 plural: appformix_bare_host_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    ansible_connection:
+      description: APPFORMIX ANSIBLE CONNECTION WAY
+      default: "ssh"
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Appformix Ansible Connection Way
+      type: "string"
+      view:
+      - create
+      - detail
   propertiesOrder: []
   required: []
   type: object
