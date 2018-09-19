@@ -38,7 +38,7 @@ contrail_configuration:
   KEYSTONE_AUTH_URL_VERSION: /v3
 kolla_config:
   kolla_globals:
-    openstack_release: ocata-xyz
+    openstack_release: queens-xyz
     enable_haproxy: no
   kolla_passwords:
     keystone_admin_password: contrail123
