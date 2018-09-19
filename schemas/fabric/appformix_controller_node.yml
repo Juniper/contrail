@@ -18,7 +18,31 @@ parents:
 plural: appformix_controller_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    ansible_connection:
+      description: APPFORMIX ANSIBLE CONNECTION
+      default: "ssh"
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Appformix Ansible Connection
+      type: "string"
+      view:
+      - create
+      - detail
+    keepalived_vrrp_interface:
+      description: APPFORMIX HA VRRP interface
+      default: ""
+      nullable: true
+      permission:
+      - create
+      - update
+      title: Appformix HA VRRP Interface
+      type: "string"
+      view:
+      - create
+      - detail
   propertiesOrder: []
   required: []
   type: object
