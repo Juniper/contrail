@@ -57,11 +57,13 @@ test_data:
     {% if OPENSTACK_INTERNAL_VIP %}
     openstack_internal_vip: {{OPENSTACK_INTERNAL_VIP}}
     {%endif%}
+    {% if CUSTOMIZE %}
     customize: |-
       nova.conf: |
             [libvirt]
             virt_type=qemu
             cpu_mode=none
+    {%endif%}
   openstack_control_nodes: &openstack_control_nodes
     uuid: openstack_control_nodes_uuid
     parent_type: openstack-cluster
