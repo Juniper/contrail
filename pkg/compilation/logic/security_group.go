@@ -19,6 +19,11 @@ type SecurityGroupIntent struct {
 	ingressACL, egressACL *models.AccessControlList
 }
 
+// GetObject returns embedded resource object
+func (i *SecurityGroupIntent) GetObject() basemodels.Object {
+	return i.SecurityGroup
+}
+
 // CreateSecurityGroup evaluates SecurityGroup dependencies.
 func (s *Service) CreateSecurityGroup(
 	ctx context.Context,
