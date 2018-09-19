@@ -82,13 +82,8 @@ func TestGRPC(t *testing.T) {
 		TestServer.URL+"/keystone/v3",
 		"TestGRPC",
 		"TestGRPC",
-		"default",
 		true,
-		&keystone.Scope{
-			Project: &keystone.Project{
-				Name: "TestGRPC",
-			},
-		},
+		client.GetKeystoneScope("", "default", "", "TestGRPC"),
 	)
 	restClient.InSecure = true
 	restClient.Init()
