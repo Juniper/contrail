@@ -4,6 +4,7 @@ extends:
 id: routing_instance
 parents:
   virtual_network:
+    derived: true
     description: List of references of routing instances for this virtual network,
       routing instances are internal to the system.
     operations: CRUD
