@@ -1,0 +1,125 @@
+name: Virtual Network Test
+description:  basic virtual network test
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin_project_uuid"]
+    uuid: admin_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin_project_uuid", "vn_blue"]
+    uuid: vn_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    route_target_list:
+       route_target: ["100:200"]
+  vn_blue_ri1: &vn_blue_ri1
+    uuid: ri_uuid
+    fq_name: ["default", "admin_project_uuid", "ri1"]
+    parent_type: virtual-network
+    parent_uuid: vn_blue
+  service_instance: &service_instance
+    parent_uuid: admin_project_uuid
+    uuid: si_uuid
+    service_instance_properties: {}
+  virtual_machine: &virtual_machine
+    uuid: vm_uuid
+    service_instance_refs:
+    - uuid: si_uuid
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create project admin
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+- name: create routing instance blue
+  request:
+    path: /routing-instances
+    method: POST
+    expected:
+    - 200
+    data:
+      routing-instance: *vn_blue_ri1
+  expect:
+    routing-instance: *vn_blue_ri1
+- name: delete virtual network blue
+  request:
+    path: /virtual-network/vn_blue
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete routing instance blue
+  request:
+    path: /routing-instance/ri_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: create service instance
+  request:
+    path: /service-instances
+    method: POST
+    expected:
+    - 200
+    data:
+      service-instance: *service_instance
+  expect:
+    service-instance: *service_instance
+- name: create virtual machine
+  request:
+    path: /virtual-machines
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-machine: *virtual_machine
+  expect:
+    virtual-machine: *virtual_machine
+- name: delete virtual machine
+  request:
+    path: /virtual-machine/vm_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete service instance
+  request:
+    path: /service-instance/si_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete admin project
+  request:
+    path: /project/admin_project_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null

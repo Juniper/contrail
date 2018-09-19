@@ -232,6 +232,7 @@ type Reference struct {
 	Description string        `yaml:"description" json:"description,omitempty"`
 	Operations  string        `yaml:"operations" json:"operations,omitempty"`
 	Presence    string        `yaml:"presence" json:"presence,omitempty"`
+	Derived     bool          `yaml:"derived" json:"derived,omitempty"`
 	RefType     string        `yaml:"-" json:"-"`
 	Columns     ColumnConfigs `yaml:"-" json:"-"`
 	Attr        *JSONSchema   `yaml:"-" json:"attr"`
@@ -612,6 +613,11 @@ func BackRefColumnName(fromID, toID string) string {
 	return strings.ToLower("backref_" + fromID + "_" + toID)
 }
 
+var derivedParentSchemas = map[string]struct{}{
+	"virtual_network": {},
+	"security_group":  {},
+}
+
 // nolint: gocyclo
 func (api *API) resolveAllRelation() error {
 	for _, s := range api.Schemas {
@@ -649,6 +655,10 @@ func (api *API) resolveAllRelation() error {
 			}
 			referenceMap := mapSlice(m.Value.(yaml.MapSlice))
 			reference := referenceMap.Reference()
+			_, ok := derivedParentSchemas[linkTo]
+			if ok {
+				reference.Derived = true
+			}
 			s.DefaultParent = reference
 			if reference.Presence == optional {
 				s.ParentOptional = true

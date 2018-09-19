@@ -156,6 +156,11 @@ func TestIntPool(t *testing.T) {
 	RunTest(t, "./test_data/test_int_pool.yml")
 }
 
+func TestDerivedRelations(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_derived_relations.yml")
+}
+
 func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		TestServer.URL,
