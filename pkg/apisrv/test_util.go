@@ -2,6 +2,7 @@ package apisrv
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -9,10 +10,12 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
@@ -22,7 +25,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/testutil"
-	log "github.com/sirupsen/logrus"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -135,20 +138,22 @@ func (s *Server) ForceProxyUpdate() {
 
 //Task has API request and expected response.
 type Task struct {
-	Name    string          `yaml:"name,omitempty"`
-	Client  string          `yaml:"client,omitempty"`
-	Request *client.Request `yaml:"request,omitempty"`
-	Expect  interface{}     `yaml:"expect,omitempty"`
+	Name     string                              `yaml:"name,omitempty"`
+	Client   string                              `yaml:"client,omitempty"`
+	Request  *client.Request                     `yaml:"request,omitempty"`
+	Expect   interface{}                         `yaml:"expect,omitempty"`
+	Watchers map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
 }
 
 //TestScenario has a list of tasks.
 type TestScenario struct {
-	Name        string                  `yaml:"name,omitempty"`
-	Description string                  `yaml:"description,omitempty"`
-	Tables      []string                `yaml:"tables,omitempty"`
-	Clients     map[string]*client.HTTP `yaml:"clients,omitempty"`
-	Cleanup     []map[string]string     `yaml:"cleanup,omitempty"`
-	Workflow    []*Task                 `yaml:"workflow,omitempty"`
+	Name        string                              `yaml:"name,omitempty"`
+	Description string                              `yaml:"description,omitempty"`
+	Tables      []string                            `yaml:"tables,omitempty"`
+	Clients     map[string]*client.HTTP             `yaml:"clients,omitempty"`
+	Cleanup     []map[string]string                 `yaml:"cleanup,omitempty"`
+	Workflow    []*Task                             `yaml:"workflow,omitempty"`
+	Watchers    map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -183,9 +188,13 @@ type clientsList map[string]*client.HTTP
 func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
+	checkWatchers := startWatchers(ctx, t, testScenario.Watchers)
+
 	clients := prepareClients(ctx, t, testScenario)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
 	cleanupTrackedResources(ctx, tracked, clients)
+
+	checkWatchers(t)
 }
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
@@ -209,6 +218,32 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 		}
 		if response.StatusCode != 404 {
 			log.Warnf("DIRTY test scenario: left resource with path '%v'", tr.Path)
+		}
+	}
+}
+
+func startWatchers(ctx context.Context, t *testing.T, watchers map[string][]map[string]interface{}) func(t *testing.T) {
+	checks := []func(t *testing.T){}
+
+	ec := integrationetcd.NewEtcdClient(t)
+	for key, events := range watchers {
+		collect := ec.WatchKeyN(key, len(events), 2*time.Second)
+
+		checks = append(checks, func(t *testing.T) {
+			collected := collect()
+			assert.Equal(t, len(events), len(collected))
+			for i, e := range events[:len(collected)] {
+				var data interface{}
+				err := json.Unmarshal([]byte(collected[i]), &data)
+				assert.NoError(t, err)
+				testutil.AssertEqual(t, e, data, "etcd emitted not enough events: %s")
+			}
+		})
+	}
+
+	return func(t *testing.T) {
+		for _, c := range checks {
+			c(t)
 		}
 	}
 }
@@ -248,6 +283,8 @@ func runTestScenario(ctx context.Context,
 	}
 	for _, task := range testScenario.Workflow {
 		log.Infof("[Task] Name: %s, TestScenario: %s", task.Name, testScenario.Name)
+		checkWatchers := startWatchers(ctx, t, task.Watchers)
+
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
 		clientID := defaultClientID
 		if task.Client != "" {
@@ -265,6 +302,7 @@ func runTestScenario(ctx context.Context,
 		task.Expect = common.YAMLtoJSONCompat(task.Expect)
 		ok = testutil.AssertEqual(t, task.Expect, task.Request.Output,
 			fmt.Sprintf("In test scenario '%v' task' %v' failed", testScenario.Name, task))
+		checkWatchers(t)
 		if !ok {
 			break
 		}
