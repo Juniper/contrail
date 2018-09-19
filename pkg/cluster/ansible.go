@@ -20,7 +20,8 @@ const (
 )
 
 type openstackVariables struct {
-	enableHaproxy string
+	enableHaproxy    string
+	openstackRelease string
 }
 
 type ansibleProvisioner struct {
@@ -139,6 +140,17 @@ func (a *ansibleProvisioner) createInventory() error {
 func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 	openstackVars := openstackVariables{}
 	cluster := a.clusterData.getOpenstackClusterInfo()
+	// get OPENSTACK_VERSION from contrail configuration
+	if cluster != nil && cluster.OpenstackRelease != "" {
+		openstackVars.openstackRelease = cluster.OpenstackRelease
+	} else if c := a.clusterData.clusterInfo.GetContrailConfiguration(); c != nil {
+		for _, keyValuePair := range c.GetKeyValuePair() {
+			if keyValuePair.Key == "OPENSTACK_VERSION" {
+				openstackVars.openstackRelease = keyValuePair.Value
+				break
+			}
+		}
+	}
 	// Enable haproxy when multiple openstack control nodes present in cluster
 	if (cluster != nil) && (len(cluster.OpenstackControlNodes) > 1) {
 		openstackVars.enableHaproxy = enable

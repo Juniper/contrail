@@ -52,7 +52,9 @@ test_data:
     parent_type: global-system-config
     fq_name: ["default-global-system-config", "all_in_one_openstack_cluster"]
     openstack_registry: default
-    openstack_release: ocata-xyz
+    {% if OPENSTACK_RELEASE %}
+    openstack_release: {{OPENSTACK_RELEASE}}
+    {%endif%}
     ntp_server: 10.1.1.100
     {% if OPENSTACK_INTERNAL_VIP %}
     openstack_internal_vip: {{OPENSTACK_INTERNAL_VIP}}
@@ -124,6 +126,10 @@ test_data:
         {% if OPENSTACK_NODES %}
         - key: OPENSTACK_NODES
           value: {{OPENSTACK_NODES}}
+        {%endif%}
+        {% if OPENSTACK_VERSION %}
+        - key: OPENSTACK_VERSION
+          value: {{OPENSTACK_VERSION}}
         {%endif%}
     {%endif%}
   contrail_config_nodes: &contrail_config_nodes
