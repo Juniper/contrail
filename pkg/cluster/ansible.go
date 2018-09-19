@@ -48,7 +48,8 @@ func (a *ansibleProvisioner) getAnsibleDeployerRepoDir() (ansibleRepoDir string)
 }
 
 func (a *ansibleProvisioner) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
-	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo)
+	appformixAnsibleRepo := "appformix-" + a.clusterData.getAppformixClusterInfo().AppformixVersion
+	return filepath.Join(defaultAppformixAnsibleRepoDir, appformixAnsibleRepo)
 }
 
 func (a *ansibleProvisioner) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
@@ -379,7 +380,11 @@ func (a *ansibleProvisioner) playContrailDatapathEncryption() error {
 func (a *ansibleProvisioner) playAppformixProvision() error {
 	args := []string{"-e", "config_file=" + a.getInstanceFile()}
 	// play Appformix provisioning playbook
-	args = append(args, defaultAppformixProvPlay)
+	if a.clusterData.getAppformixClusterInfo().AppformixVip != "" {
+		args = append(args, defaultAppformixHaProvPlay)
+	} else {
+		args = append(args, defaultAppformixProvPlay)
+	}
 	err := a.appformixPlay(args)
 	return err
 }
