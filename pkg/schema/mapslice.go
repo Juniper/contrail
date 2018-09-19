@@ -34,6 +34,12 @@ func (s mapSlice) getString(key string) string {
 	return result
 }
 
+func (s mapSlice) getBool(key string) bool {
+	i := s.get(key)
+	result, _ := i.(bool) //nolint: errcheck
+	return result
+}
+
 func (s mapSlice) getMapSlice(key string) mapSlice {
 	i := s.get(key)
 	if i == nil {
@@ -128,6 +134,7 @@ func (s mapSlice) Reference() *Reference {
 		Description: s.getString("description"),
 		Operations:  s.getString("operations"),
 		Presence:    s.getString("presence"),
+		Derived:     s.getBool("derived"),
 		Ref:         s.getString("$ref"),
 		AttrSlice:   yaml.MapSlice(s.getMapSlice("attr")),
 	}

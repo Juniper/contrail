@@ -4,6 +4,7 @@ extends:
 id: port_tuple
 parents:
   service_instance:
+    derived: true
     description: ''
     operations: CRUD
     presence: optional
