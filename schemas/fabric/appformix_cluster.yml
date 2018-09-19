@@ -20,50 +20,14 @@ references:
       presence: "optional"
 schema:
   properties:
-    appformix_image_path_platform:
-      description: Appformix platform image path
+    appformix_image_dir:
+      description: Appformix image directory
       nullable: true
       permission:
       - create
       - update
       sql: ""
-      title: Appformix Platform Image Path
-      type: string
-      view:
-      - create
-      - detail
-    appformix_image_path_dependencies:
-      description: Appformix dependencies image path
-      nullable: true
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Appformix Dependencies Image Path
-      type: string
-      view:
-      - create
-      - detail
-    appformix_image_path_network_device:
-      description: Appformix network device image path
-      nullable: true
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Appformix Network Device Image Path
-      type: string
-      view:
-      - create
-      - detail
-    appformix_image_path_openstack:
-      description: Appformix network device image path
-      nullable: true
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Appformix Network Device Image Path
+      title: Appformix Image Directory
       type: string
       view:
       - create
@@ -214,6 +178,18 @@ schema:
       - update
       title: Openstack
       type: "boolean"
+      view:
+      - create
+      - detail
+    appformix_vip:
+      description: APPFORMIX HA VRRP VIP
+      default: ""
+      nullable: true
+      permission:
+      - create
+      - update
+      title: Appformix HA VRRP Vip
+      type: "string"
       view:
       - create
       - detail
