@@ -52,7 +52,9 @@ test_data:
     parent_type: global-system-config
     fq_name: ["default-global-system-config", "all_in_one_openstack_cluster"]
     openstack_registry: default
-    openstack_release: ocata-xyz
+    {% if OPENSTACK_RELEASE %}
+    openstack_release: {{OPENSTACK_RELEASE}}
+    {%endif%}
     ntp_server: 10.1.1.100
     {% if OPENSTACK_INTERNAL_VIP %}
     openstack_internal_vip: {{OPENSTACK_INTERNAL_VIP}}
@@ -112,9 +114,11 @@ test_data:
     {%endif%}
     openstack_cluster_refs:
       - uuid: test_openstack_cluster_uuid
-    {% if CONTROL_NODES %}
+    {% if CONTROL_NODES || OPENSTACK_VERSION %}
     contrail_configuration:
       key_value_pair:
+    {%endif%}
+    {% if CONTROL_NODES %}
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}
         {% if CONTROLLER_NODES %}
@@ -125,6 +129,10 @@ test_data:
         - key: OPENSTACK_NODES
           value: {{OPENSTACK_NODES}}
         {%endif%}
+    {%endif%}
+    {% if OPENSTACK_VERSION %}
+        - key: OPENSTACK_VERSION
+          value: {{OPENSTACK_VERSION}}
     {%endif%}
   contrail_config_nodes: &contrail_config_nodes
     uuid: contrail_config_nodes_uuid
@@ -207,8 +215,17 @@ workflow:
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
       uuid: test_openstack_cluster_uuid
       openstack_registry: default
-      openstack_release: ocata-xyz
+      {% if OPENSTACK_RELEASE %}
+      openstack_release: {{ OPENSTACK_RELEASE }}
+      {%endif%}
       ntp_server: 10.1.1.100
+      {% if CUSTOMIZE %}
+      customize: |-
+        nova.conf: |
+              [libvirt]
+              virt_type=qemu
+              cpu_mode=none
+      {%endif%}
 
 - name: create cluster
   request:

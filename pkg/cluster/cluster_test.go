@@ -317,10 +317,11 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 
 func runAllInOneClusterTest(t *testing.T, computeType string) {
 	context := pongo2.Context{
-		"TYPE":            computeType,
-		"MGMT_INT_IP":     "127.0.0.1",
-		"CONTROL_NODES":   "",
-		"OPENSTACK_NODES": "",
+		"TYPE":              computeType,
+		"MGMT_INT_IP":       "127.0.0.1",
+		"CONTROL_NODES":     "",
+		"OPENSTACK_NODES":   "",
+		"OPENSTACK_RELEASE": "ocata-xyz",
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
@@ -356,10 +357,11 @@ func TestAllInOneSriovCluster(t *testing.T) {
 
 func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
 	context := pongo2.Context{
-		"DATAPATH_ENCRYPT": true,
-		"MGMT_INT_IP":      "127.0.0.1",
-		"CONTROL_NODES":    "",
-		"OPENSTACK_NODES":  "",
+		"DATAPATH_ENCRYPT":  true,
+		"MGMT_INT_IP":       "127.0.0.1",
+		"CONTROL_NODES":     "",
+		"OPENSTACK_NODES":   "",
+		"OPENSTACK_RELEASE": "ocata-xyz",
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
@@ -401,6 +403,8 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 		"CONTROLLER_NODES":       "127.0.0.1",
 		"OPENSTACK_NODES":        "127.0.0.1",
 		"OPENSTACK_INTERNAL_VIP": "127.0.0.1",
+		"OPENSTACK_RELEASE":      "ocata-xyz",
+		"OPENSTACK_VERSION":      "queens-xyz",
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
@@ -418,12 +422,13 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 
 func TestCredAllInOneClusterTest(t *testing.T) {
 	context := pongo2.Context{
-		"CUSTOMIZE":       true,
-		"CREDS":           true,
-		"TYPE":            "",
-		"MGMT_INT_IP":     "127.0.0.1",
-		"CONTROL_NODES":   "",
-		"OPENSTACK_NODES": "",
+		"CUSTOMIZE":         true,
+		"CREDS":             true,
+		"TYPE":              "",
+		"MGMT_INT_IP":       "127.0.0.1",
+		"CONTROL_NODES":     "",
+		"OPENSTACK_NODES":   "",
+		"OPENSTACK_VERSION": "queens-xyz",
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
