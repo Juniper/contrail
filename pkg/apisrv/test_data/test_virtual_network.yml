@@ -733,13 +733,6 @@ workflow:
         virtual_network_refs:
           - uuid: "vn_red"
           - to: ["default", "admin_project_uuid", "vn_red"]
-- name: fail to delete virtual network with non-default routing instance
-  request:
-    path: /virtual-network/vn_blue
-    method: DELETE
-    expected:
-    - 409
-  expect: null
 - name: delete routing instance
   request:
     path: /routing-instance/ri_uuid
