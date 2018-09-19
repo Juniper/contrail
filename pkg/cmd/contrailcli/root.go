@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -49,21 +48,19 @@ func initConfig() {
 
 func getClient() (*client.HTTP, error) {
 	authURL := viper.GetString("keystone.auth_url")
+	scope := client.GetKeystoneScope(
+		viper.GetString("client.domain_id"),
+		viper.GetString("client.domain_name"),
+		viper.GetString("client.project_id"),
+		viper.GetString("client.project_name"),
+	)
 	client := client.NewHTTP(
 		viper.GetString("client.endpoint"),
 		authURL,
 		viper.GetString("client.id"),
 		viper.GetString("client.password"),
-		viper.GetString("client.domain_id"),
 		viper.GetBool("insecure"),
-		&keystone.Scope{
-			Project: &keystone.Project{
-				Name: viper.GetString("client.project_id"),
-				Domain: &keystone.Domain{
-					ID: viper.GetString("domain_id"),
-				},
-			},
-		},
+		scope,
 	)
 	var err error
 	if authURL != "" {

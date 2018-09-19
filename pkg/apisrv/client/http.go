@@ -33,7 +33,6 @@ type HTTP struct {
 	AuthURL   string          `yaml:"authurl"`
 	Endpoint  string          `yaml:"endpoint"`
 	AuthToken string          `yaml:"-"`
-	Domain    string          `yaml:"domain"`
 	InSecure  bool            `yaml:"insecure"`
 	Debug     bool            `yaml:"debug"`
 	Scope     *keystone.Scope `yaml:"scope"`
@@ -48,15 +47,34 @@ type Request struct {
 	Output   interface{} `yaml:"output,omitempty"`
 }
 
+// GetKeystoneScope returns the project/domain scope
+func GetKeystoneScope(domainID, domainName, projectID, projectName string) *keystone.Scope {
+	scope := &keystone.Scope{
+		Project: &keystone.Project{
+			Domain: &keystone.Domain{},
+		},
+	}
+	if domainID != "" {
+		scope.Project.Domain.ID = domainID
+	} else if domainName != "" {
+		scope.Project.Domain.Name = domainName
+	}
+	if projectID != "" {
+		scope.Project.ID = projectID
+	} else if projectName != "" {
+		scope.Project.Name = projectName
+	}
+	return scope
+}
+
 // NewHTTP makes API Server HTTP client.
-func NewHTTP(endpoint, authURL, id, password, domain string, insecure bool, scope *keystone.Scope) *HTTP {
+func NewHTTP(endpoint, authURL, id, password string, insecure bool, scope *keystone.Scope) *HTTP {
 	c := &HTTP{
 		ID:       id,
 		Password: password,
 		AuthURL:  authURL,
 		Endpoint: endpoint,
 		Scope:    scope,
-		Domain:   domain,
 		InSecure: insecure,
 	}
 	c.Init()
@@ -85,6 +103,12 @@ func (h *HTTP) Login(ctx context.Context) error {
 		return nil
 	}
 
+	var domain *keystone.Domain
+	if h.Scope.Domain != nil {
+		domain = h.Scope.Domain
+	} else if h.Scope.Project != nil {
+		domain = h.Scope.Project.Domain
+	}
 	dataJSON, err := json.Marshal(&keystone.AuthRequest{
 		Auth: &keystone.Auth{
 			Identity: &keystone.Identity{
@@ -93,9 +117,7 @@ func (h *HTTP) Login(ctx context.Context) error {
 					User: &keystone.User{
 						Name:     h.ID,
 						Password: h.Password,
-						Domain: &keystone.Domain{
-							ID: h.Domain,
-						},
+						Domain:   domain,
 					},
 				},
 			},

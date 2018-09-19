@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -36,13 +35,8 @@ func TestBenchAPI(t *testing.T) {
 		host+"/keystone/v3",
 		testName,
 		testName,
-		"default",
 		true,
-		&keystone.Scope{
-			Project: &keystone.Project{
-				Name: testName,
-			},
-		},
+		client.GetKeystoneScope("", "default", "", testName),
 	)
 	restClient.InSecure = true
 	restClient.Init()
