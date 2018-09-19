@@ -29,7 +29,6 @@ func NewNotifierService(c *Config) *NotifierService {
 		"",
 		"",
 		"",
-		"",
 		true,
 		nil,
 	)

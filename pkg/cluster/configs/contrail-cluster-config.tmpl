@@ -1,7 +1,10 @@
 {% if input.AuthURL %}
 id: {{ input.ID }}
 password: {{ input.Password }}
-project_id: {{ input.ProjectID }}
+{%if input.DomainID %}domain_id: {{ input.DomainID }}{%endif%}
+{%if input.DomainName %}domain_Name: {{ input.DomainName }}{%endif%}
+{%if input.ProjectID %}project_id: {{ input.ProjectID }}{%endif%}
+{%if input.ProjectName %}project_name: {{ input.ProjectName }}{%endif%}
 auth_url: {{ input.AuthURL }}
 {% endif %}
 endpoint: {{ input.Endpoint }}

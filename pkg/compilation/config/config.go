@@ -26,11 +26,12 @@ type EtcdNotifierConfig struct {
 
 // APIClientConfig is the configuration for intent compiler's REST API client.
 type APIClientConfig struct {
-	URL             string
-	AuthURL         string
-	ID, Password    string
-	Domain, Project string
-	Insecure        bool
+	URL                     string
+	AuthURL                 string
+	ID, Password            string
+	DomainID, ProjectID     string
+	DomainName, ProjectName string
+	Insecure                bool
 }
 
 // PluginConfig section.
@@ -67,11 +68,13 @@ func ReadConfig() Config {
 			MasterElection:   viper.GetBool("compilation.master_election"),
 		},
 		APIClientConfig: APIClientConfig{
-			URL:      viper.GetString("client.endpoint"),
-			ID:       viper.GetString("client.id"),
-			Password: viper.GetString("client.password"),
-			Project:  viper.GetString("client.project_id"),
-			Domain:   viper.GetString("client.domain_id"),
+			URL:         viper.GetString("client.endpoint"),
+			ID:          viper.GetString("client.id"),
+			Password:    viper.GetString("client.password"),
+			ProjectID:   viper.GetString("client.project_id"),
+			ProjectName: viper.GetString("client.project_name"),
+			DomainID:    viper.GetString("client.domain_id"),
+			DomainName:  viper.GetString("client.domain_name"),
 
 			AuthURL:  viper.GetString("keystone.authurl"),
 			Insecure: viper.GetBool("insecure"),
