@@ -8,7 +8,7 @@ resources:
     - default-global-system-config
     - server1-9d03e841-3fd8-439c-bdb2-ff5800497579
     hostname: server1
-    ip_address: 10.84.24.144
+    ip_address: 10.87.68.52
   kind: node
   operation: CREATE
 - data:
@@ -20,11 +20,11 @@ resources:
     - default-global-system-config
     - server2-9d03e842-3fd2-4392-bdb2-ff5800497572
     hostname: server2
-    ip_address: 10.84.24.45
+    ip_address: 10.84.24.44
   kind: node
   operation: CREATE
 - data:
-    name: server3-9d03e843-3fd3-4393-bdb3-ff5800497573
+    name: server3-9d03e843-3fd3-4392-bdb3-ff5800497573
     uuid: 9d03e843-3fd3-4393-bdb3-ff5800497573
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     parent_type: global-system-config
@@ -32,7 +32,7 @@ resources:
     - default-global-system-config
     - server3-9d03e843-3fd3-4393-bdb3-ff5800497573
     hostname: server3
-    ip_address: 10.84.24.49
+    ip_address: 10.84.24.45
   kind: node
   operation: CREATE
 - data:
@@ -44,19 +44,7 @@ resources:
     - default-global-system-config
     - server4-9d03e844-3fd4-4394-bdb4-ff5800497574
     hostname: server4
-    ip_address: 10.84.24.47
-  kind: node
-  operation: CREATE
-- data:
-    name: server5-9d03e845-3fd5-4395-bdb5-ff5800497575
-    uuid: 9d03e845-3fd5-4395-bdb5-ff5800497575
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-    parent_type: global-system-config
-    fq_name:
-    - default-global-system-config
-    - server5-9d03e845-3fd5-4395-bdb5-ff5800497575
-    hostname: server5
-    ip_address: 10.84.24.48
+    ip_address: 10.84.24.46
   kind: node
   operation: CREATE
 - data:
@@ -72,8 +60,8 @@ resources:
       owner: admin
     openstack_registry: default
     openstack_release: ocata
-    openstack_internal_vip: 10.84.24.144
-    openstack_external_vip: 10.84.24.144
+    openstack_internal_vip: 10.87.68.52
+    openstack_external_vip: 10.87.68.52
     kolla_globals:
       key_value_pair:
       - value: 'no'
@@ -85,7 +73,7 @@ resources:
 # leave the following commented per Ram Not required
 #- value: enp1s0f0
 #  key: network_interface
-      - value: 10.84.24.144
+      - value: 10.87.68.52
         key: contrail_api_interface_address
   kind: openstack_cluster
   operation: CREATE
@@ -102,18 +90,16 @@ resources:
     display_name: appfmx_test1
     perms2:
       owner: admin
-    appformix_image_path_platform: /opt/software/appformix/appformix-platform-images-2.18.0.tar.gz
-    appformix_image_path_dependencies: /opt/software/appformix/appformix-dependencies-images-2.18.0.tar.gz
-    appformix_image_path_network_device: /opt/software/appformix/appformix-network_device-images-2.18.0.tar.gz
-    appformix_image_path_openstack: /opt/software/appformix/appformix-openstack-images-2.18.0.tar.gz
+    appformix_vip: 10.10.10.10
     appformix_license: /opt/software/appformix/appformix-internal-openstack-2.18.sig
-    appformix_version: 2.18.0
+    appformix_image_dir: /opt/software/appformix/
+    appformix_version: 2.18.1
     appformix_kvm_instance_discovery: true
     appformix_network_device_monitoring_enabled: true
     appformix_jti_network_device_monitoring_enabled: true
     appformix_remote_host_monitoring_enabled: true
-    contrail_analytics_url: 'http://10.84.24.144:8081'
-    contrail_config_url: 'http://10.84.24.144:8082'
+    contrail_analytics_url: 'http://10.84.24.44:8081'
+    contrail_config_url: 'http://10.84.24.44:8082'
     contrail_cluster_name: 'ContrailCluster1'
     network_device_discovery_enabled: false
     openstack_platform_enabled: true
@@ -121,6 +107,14 @@ resources:
     - uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
     appformix_configuration:
       key_value_pair:
+      - value: '{{ appformix_contrail_factory_plugins }}
+                + {{ appformix_network_device_factory_plugins }}
+                + {{ appformix_openstack_factory_plugins }}'
+        key: appformix_plugins
+      - value: '{{ (appformix_scale_setup_flag|bool) | ternary(28200, 8200) }}'
+        key: appformix_datamanager_port_http
+      - value: '{{ (appformix_scale_setup_flag|bool) | ternary(28201, 8201) }}'
+        key: appformix_datamanager_port_https
       - value: '8200'
         key: appformix_haproxy_datamanager_port_http
       - value: '8201'
@@ -142,17 +136,13 @@ resources:
       owner: admin
     container_registry: ci-repo.englab.juniper.net:5010
     registry_private_insecure: true
-    contrail_version: master-latest
-    default_gateway: 10.84.24.254
+    contrail_version: master-251
+    default_gateway: 10.87.68.126
     ntp_server: 10.84.5.100
     domain_suffix: englab.juniper.net
     encap_priority: VXLAN,MPLSoUDP,MPLSoGRE
     contrail_configuration:
       key_value_pair:
-      - value: 10.84.24.144
-        key: CONTROLLER_NODES
-      - value: 10.84.24.144
-        key: CONTROL_NODES
       - value: ocata
         key: OPENSTACK_VERSION
       - value: '2'
@@ -297,38 +287,6 @@ resources:
   kind: openstack_compute_node
   operation: CREATE
 - data:
-    uuid: 5e77005d-b7bd-489d-989d-8472cee9eadd
-    name: 5e77005d-b7bd-489d-989d-8472cee9eadd
-    parent_uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
-    parent_type: openstack-cluster
-    fq_name:
-    - default-global-system-config
-    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
-    - 5e77005d-b7bd-489d-989d-8472cee9eadd
-    display_name: 5e77005d-b7bd-489d-989d-8472cee9eadd
-    perms2:
-      owner: admin
-    node_refs:
-    - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
-  kind: openstack_compute_node
-  operation: CREATE
-- data:
-    uuid: 5e77005e-b7be-489e-989e-8472cee9eade
-    name: 5e77005e-b7be-489e-989e-8472cee9eade
-    parent_uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
-    parent_type: openstack-cluster
-    fq_name:
-    - default-global-system-config
-    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
-    - 5e77005e-b7be-489e-989e-8472cee9eade
-    display_name: 5e77005e-b7be-489e-989e-8472cee9eade
-    perms2:
-      owner: admin
-    node_refs:
-    - uuid: 9d03e843-3fd3-4393-bdb3-ff5800497573
-  kind: openstack_compute_node
-  operation: CREATE
-- data:
     uuid: 6e77005b-b7ba-489b-9891-8472cee9eadf
     name: 6e77005b-b7ba-489b-9891-8472cee9eadf
     parent_uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
@@ -404,6 +362,44 @@ resources:
     display_name: 9e770059-b7b9-4899-9899-8472cee9ead9
     perms2:
       owner: admin
+    ansible_connection: ssh
+    keepalived_vrrp_interface: enp1s0f0
+    node_refs:
+    - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
+  kind: appformix_controller_node
+  operation: CREATE
+- data:
+    uuid: 9e771059-17b9-1899-1899-8472cee1ead9
+    name: 9e771059-17b9-1899-1899-8472cee1ead9
+    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: appformix-cluster
+    fq_name:
+    - default-global-system-config
+    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
+    - 9e771059-17b9-1899-1899-8472cee1ead9
+    display_name: 9e771059-17b9-1899-1899-8472cee1ead9
+    perms2:
+      owner: admin
+    ansible_connection: ssh
+    keepalived_vrrp_interface: enp1s0f0
+    node_refs:
+    - uuid: 9d03e843-3fd3-4393-bdb3-ff5800497573
+  kind: appformix_controller_node
+  operation: CREATE
+- data:
+    uuid: 9e772059-17b9-2899-2899-8472cee2ead9
+    name: 9e771059-27b9-2899-2899-8472cee2ead9
+    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: appformix-cluster
+    fq_name:
+    - default-global-system-config
+    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
+    - 9e772059-27b9-2899-2899-8472cee2ead9
+    display_name: 9e772059-27b9-2899-2899-8472cee2ead9
+    perms2:
+      owner: admin
+    ansible_connection: ssh
+    keepalived_vrrp_interface: enp1s0f0
     node_refs:
     - uuid: 9d03e844-3fd4-4394-bdb4-ff5800497574
   kind: appformix_controller_node
@@ -420,24 +416,9 @@ resources:
     display_name: 9e77005c-b7bc-489c-989c-8472cee9eadc
     perms2:
       owner: admin
+    ansible_connection: ssh
     node_refs:
-    - uuid: 9d03e844-3fd4-4394-bdb4-ff5800497574
-  kind: appformix_bare_host_node
-  operation: CREATE
-- data:
-    uuid: 9e770056-b7b6-4896-9896-8472cee9ead6
-    name: 9e770056-b7b6-4896-9896-8472cee9ead6
-    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
-    parent_type: appformix-cluster
-    fq_name:
-    - default-global-system-config
-    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
-    - 9e770056-b7b6-4896-9896-8472cee9ead6
-    display_name: 9e770056-b7b6-4896-9896-8472cee9ead6
-    perms2:
-      owner: admin
-    node_refs:
-    - uuid: 9d03e845-3fd5-4395-bdb5-ff5800497575
+    - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
   kind: appformix_bare_host_node
   operation: CREATE
 - data:
@@ -452,25 +433,10 @@ resources:
     display_name: ca770056-cab6-ca96-ca96-ca72cee9ead6
     perms2:
       owner: admin
+    ansible_connection: ssh
     node_refs:
-    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+    - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
   kind: appformix_openstack_node
-  operation: CREATE
-- data:
-    uuid: ae770056-a7b6-a896-a896-a472cee9ead6
-    name: ae770056-a7b6-a896-a896-a472cee9ead6
-    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
-    parent_type: appformix-cluster
-    fq_name:
-    - default-global-system-config
-    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
-    - ae770056-a7b6-a896-a896-a472cee9ead6
-    display_name: ae770056-a7b6-a896-a896-a472cee9ead6
-    perms2:
-      owner: admin
-    node_refs:
-    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
-  kind: appformix_compute_node
   operation: CREATE
 - data:
     uuid: be770056-b7b6-b896-b896-b472cee9ead6
@@ -484,24 +450,8 @@ resources:
     display_name: be770056-b7b6-b896-b896-b472cee9ead6
     perms2:
       owner: admin
+    ansible_connection: ssh
     node_refs:
     - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
   kind: appformix_compute_node
   operation: CREATE
-- data:
-    uuid: ce770056-c7b6-c896-c896-c472cee9ead6
-    name: ce770056-c7b6-c896-c896-c472cee9ead6
-    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
-    parent_type: appformix-cluster
-    fq_name:
-    - default-global-system-config
-    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
-    - ce770056-c7b6-c896-c896-c472cee9ead6
-    display_name: ce770056-c7b6-c896-c896-c472cee9ead6
-    perms2:
-      owner: admin
-    node_refs:
-    - uuid: 9d03e843-3fd3-4393-bdb3-ff5800497573
-  kind: appformix_compute_node
-  operation: CREATE
-
