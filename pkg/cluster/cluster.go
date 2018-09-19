@@ -21,8 +21,14 @@ type Config struct { // nolint: maligned
 	ID string `yaml:"id"`
 	// Password of Cluster account.
 	Password string `yaml:"password"`
+	// DomainID is ID of keystone domain used for authentication.
+	DomainID string `yaml:"domain_id"`
 	// ProjectID is ID of keystone project used for authentication.
 	ProjectID string `yaml:"project_id"`
+	// DomainName is Name of keystone domain used for authentication.
+	DomainName string `yaml:"domain_name"`
+	// ProjectName is Name of keystone project used for authentication.
+	ProjectName string `yaml:"project_name"`
 	// AuthURL defines authentication URL.
 	AuthURL string `yaml:"auth_url"`
 	// Endpoint of API Server.
@@ -90,11 +96,8 @@ func NewCluster(c *Config) (*Cluster, error) {
 		s.AuthURL = c.AuthURL
 		s.ID = c.ID
 		s.Password = c.Password
-		s.Scope = &keystone.Scope{
-			Project: &keystone.Project{
-				ID: c.ProjectID,
-			},
-		}
+		s.Scope = client.GetKeystoneScope(c.DomainID, c.DomainName,
+			c.ProjectID, c.ProjectName)
 	}
 	s.Init()
 
