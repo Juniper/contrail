@@ -66,11 +66,9 @@ resources:
     display_name: appfmx_test1
     perms2:
       owner: admin
-    appformix_image_path_platform: /opt/software/appformix/appformix-platform-images-2.18.0.tar.gz
-    appformix_image_path_dependencies: /opt/software/appformix/appformix-dependencies-images-2.18.0.tar.gz
-    appformix_image_path_network_device: /opt/software/appformix/appformix-network_device-images-2.18.0.tar.gz
-    appformix_image_path_openstack: /opt/software/appformix/appformix-openstack-images-2.18.0.tar.gz
-    appformix_license: /opt/software/appformix/appformix-internal-openstack-2.18.sig
+    appformix_image_dir: /opt/software/appformix/
+    appformix_license: /opt/software/configs/contrail.sig
+    appformix_version: 2.18.0
     appformix_kvm_instance_discovery: true
     appformix_network_device_monitoring_enabled: true
     appformix_jti_network_device_monitoring_enabled: true
@@ -331,6 +329,7 @@ resources:
     display_name: 9e770059-b7b9-4899-9899-8472cee9ead9
     perms2:
       owner: admin
+    ansible_connection: ssh
     node_refs:
     - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
   kind: appformix_controller_node
@@ -347,6 +346,7 @@ resources:
     display_name: 9e77005c-b7bc-489c-989c-8472cee9eadc
     perms2:
       owner: admin
+    ansible_connection: ssh
     node_refs:
     - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
   kind: appformix_bare_host_node
@@ -363,6 +363,7 @@ resources:
     display_name: ca770056-cab6-ca96-ca96-ca72cee9ead6
     perms2:
       owner: admin
+    ansible_connection: ssh
     node_refs:
     - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
   kind: appformix_openstack_node
@@ -379,6 +380,7 @@ resources:
     display_name: be770056-b7b6-b896-b896-b472cee9ead6
     perms2:
       owner: admin
+    ansible_connection: ssh
     node_refs:
     - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
   kind: appformix_compute_node

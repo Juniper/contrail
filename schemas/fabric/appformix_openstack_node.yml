@@ -18,7 +18,19 @@ parents:
 plural: appformix_openstack_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    ansible_connection:
+      description: Ansile Connection
+      default: "ssh"
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Ansible Connection
+      type: "string"
+      view:
+      - create
+      - detail
   propertiesOrder: []
   required: []
   type: object
