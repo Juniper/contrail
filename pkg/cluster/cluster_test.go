@@ -416,6 +416,7 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 
 func TestCredAllInOneClusterTest(t *testing.T) {
 	context := pongo2.Context{
+		"CUSTOMIZE":       true,
 		"CREDS":           true,
 		"TYPE":            "",
 		"MGMT_INT_IP":     "127.0.0.1",
