@@ -162,13 +162,8 @@ func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 		TestServer.URL+"/keystone/v3",
 		"TestGRPC",
 		"TestGRPC",
-		"default",
 		true,
-		&keystone.Scope{
-			Project: &keystone.Project{
-				Name: "TestGRPC",
-			},
-		},
+		client.GetKeystoneScope("", "default", "", "TestGRPC"),
 	)
 	restClient.InSecure = true
 	restClient.Init()
@@ -265,13 +260,8 @@ func TestRESTClient(t *testing.T) {
 		TestServer.URL+"/keystone/v3",
 		testName,
 		testName,
-		"default",
 		true,
-		&keystone.Scope{
-			Project: &keystone.Project{
-				Name: testName,
-			},
-		},
+		client.GetKeystoneScope("", "default", "", testName),
 	)
 	restClient.InSecure = true
 	restClient.Init()
