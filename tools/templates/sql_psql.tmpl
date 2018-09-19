@@ -51,7 +51,7 @@ create table {{ reference.Table }} (
     primary key ("from","to"),
     {% for column in reference.Columns %}"{{column.Column}}" {{column.JSONSchema.SQL}},
     {% endfor %} foreign key ("from") references "{{ schema.Table }}"(uuid) on delete cascade,
-    foreign key ("to") references "{{ reference.LinkTo.Table  }}"(uuid));
+    foreign key ("to") references "{{ reference.LinkTo.Table }}"(uuid) {% if reference.Derived %}on delete cascade{% endif %});
 
 create index index_{{ reference.Table }} on {{ reference.Table }} ("from");
 {% endfor %}
@@ -62,7 +62,7 @@ create table {{ reference.Table }} (
     "to" varchar(255),
     primary key ("from","to"),
     foreign key ("from") references "{{ schema.Table }}"(uuid) on delete cascade,
-    foreign key ("to") references "{{ reference.LinkTo.Table  }}"(uuid));
+    foreign key ("to") references "{{ reference.LinkTo.Table  }}"(uuid) {% if reference.Derived %}on delete cascade{% endif %});
 
 create index index_{{ reference.Table }} on {{ reference.Table }} ("from");
 {% endfor%}
