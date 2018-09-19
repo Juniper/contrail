@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/stretchr/testify/assert"
@@ -82,13 +81,8 @@ func TestGRPC(t *testing.T) {
 		TestServer.URL+"/keystone/v3",
 		"TestGRPC",
 		"TestGRPC",
-		"default",
 		true,
-		&keystone.Scope{
-			Project: &keystone.Project{
-				Name: "TestGRPC",
-			},
-		},
+		client.GetKeystoneScope("", "default", "", "TestGRPC"),
 	)
 	restClient.InSecure = true
 	restClient.Init()
