@@ -1,0 +1,68 @@
+---
+  definitions:
+    AzureCredential:
+      type: "object"
+      properties:
+        username_cred:
+          presence: "optional"
+          description: "Username and password details of cloud"
+          $ref: "cloud_types.json#/definitions/cloud_username_cred"
+    AWSCredential:
+      type: "object"
+      properties:
+        access_key:
+          description: Access key for AWS cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: AWS Access Key
+          type: string
+          view:
+          - detail
+        secret_key:
+          description: Secret Key for AWS cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: AWS Secret Key
+          type: string
+    gcp_credential:
+      type: "object"
+      properties:
+        username_cred:
+          presence: "optional"
+          description: "Username and password details of cloud"
+          $ref: "cloud_types.json#/definitions/cloud_username_cred"
+    cloud_username_cred:
+      type: "object"
+      properties:
+        username:
+          description: username of the cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Cloud Account Username
+          type: string
+          view:
+          - detail
+        password:
+          description: password of the cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Cloud Account Password
+          type: string
+          view:
+          - detail

@@ -12,6 +12,10 @@ references:
       operations: "CRUD"
       description: "Reference to SSH credential object."
       presence: "optional"
+    cloud:
+      operations: "CRUD"
+      description: "Reference to cloud object"
+      presence: "optional"
 plural: nodes
 prefix: /
 schema:
