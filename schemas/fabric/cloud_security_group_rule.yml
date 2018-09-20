@@ -1,0 +1,83 @@
+description: Security Group rules associated with cloud
+extends:
+- base
+id: cloud_security_group_rule
+metadata:
+  category: cloud
+parents:
+  cloud_security_group:
+    operations: "CRUD"
+    description: "Parent for security group rules"
+    presence: "optional"
+plural: cloud_security_group_rules
+prefix: /
+schema:
+  properties:
+    direction:
+      description: Direction of the rule
+      nullable: false
+      enum:
+        - ingress
+        - egress
+      permission:
+      - create
+      - update
+      sql: ""
+      title: direction
+      type: string
+      view:
+      - create
+      - detail
+    from_port:
+      description: From port number
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: From Port
+      type: integer
+      view:
+      - create
+      - detail
+    to_port:
+      description: To port number
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: To Port
+      type: integer
+      view:
+      - create
+      - detail
+    protocol:
+      description: Protocol
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Protocol
+      type: string
+      view:
+      - create
+      - detail
+    cidr_block:
+      description: Cidr Block
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Cidr Block
+      type: string
+      view:
+      - create
+      - detail
+  propertiesOrder: []
+  type: object
+singular: cloud_security_group_rule
+title: Cloud Security Group Rule
+type: ""

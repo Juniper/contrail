@@ -1,0 +1,170 @@
+---
+  definitions:
+    CloudCredential:
+      type: "object"
+      properties:
+        username:
+          description: username of the cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Cloud Account Username
+          type: string
+          view:
+          - detail
+        password:
+          description: password of the cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: Cloud Account Password
+          type: string
+          view:
+          - detail
+    AWSCredential:
+      type: "object"
+      properties:
+        access_key:
+          description: Access key for AWS cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: AWS Access Key
+          type: string
+          view:
+          - detail
+        secret_key:
+          description: Secret Key for AWS cloud account
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+          sql: ""
+          title: AWS Secret Key
+          type: string
+    MCGWClusterInfo:
+      type: "object"
+      properties:
+        AS:
+          description: Autonomous System Number for multicloud gw
+          nullable: false
+          default: 65000
+          permission:
+            - create
+            - update
+          sql: ""
+          title: AS
+          type: integer
+          view:
+            - create
+            - detail
+        openvpn_port:
+          description: OpenVPN port
+          nullable: false
+          default: 443
+          permission:
+            - create
+            - update
+          sql: ""
+          title: OpenVPN port number
+          type: integer
+          view:
+            - create
+            - detail
+        vpn_lo_network:
+          description: vpn loopback network
+          nullable: false
+          default: 100.65.0.0/16
+          permission:
+            - create
+            - update
+          sql: ""
+          title: VPN loopback network
+          type: string
+          view:
+            - create
+            - detail
+        vpn_network:
+          description: vpn network
+          nullable: false
+          default: 100.64.0.0/16
+          permission:
+            - create
+            - update
+          sql: ""
+          title: VPN network
+          type: string
+          view:
+            - create
+            - detail
+        bfd_interval:
+          description: bfd interval
+          nullable: false
+          default: 200ms
+          permission:
+            - create
+            - update
+          sql: ""
+          title: BFD interval
+          type: string
+          view:
+            - create
+            - detail
+        bfd_multiplier:
+          description: bfd multiplier
+          nullable: false
+          default: 5
+          permission:
+            - create
+            - update
+          sql: ""
+          title: BFD multiplier
+          type: integer
+          view:
+            - create
+            - detail
+        bfd_interval_multihop:
+          description: bfd interval multihop
+          nullable: false
+          default: 500ms
+          permission:
+            - create
+            - update
+          sql: ""
+          title: BFD interval multihop
+          type: string
+          view:
+            - create
+            - detail
+        bfd_multiplier_multihop:
+          description: bfd multiplier multihop
+          nullable: false
+          default: 5
+          permission:
+            - create
+            - update
+          sql: ""
+          title: BFD multiplier multihop
+          type: integer
+          view:
+            - create
+            - detail
+        onprem_pvt_subnets:
+          description: "List of onprem private subnets"
+          type: "array"
+          items:
+            type: "string"
+          permission:
+          - create
+          - update
+          nullable: false

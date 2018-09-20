@@ -7,10 +7,22 @@ parents:
     operations: "CRUD"
     description: "Parent of this node resource."
     presence: "optional"
+  virtual_cloud:
+    operations: "CRUD"
+    description: "Parent for node"
+    presence: "optional"
 references:
     credential:
       operations: "CRUD"
       description: "Reference to SSH credential object."
+      presence: "optional"
+    cloud_security_group:
+      operations: "CRUD"
+      description: "Reference to security-group, when node belongs to public cloud"
+      presence: "optional"
+    cloud_private_subnet:
+      operations: "CRUD"
+      description: "Reference to private subnet of cloud, when node belongs to public cloud"
       presence: "optional"
 plural: nodes
 prefix: /
@@ -105,6 +117,10 @@ schema:
       presence: "optional"
       description: "Details of the ESXI host"
       $ref: "fabric_types.json#/definitions/ESXIHostInfo"
+    cloud_info:
+      presence: "optional"
+      description: "Information related to cloud"
+      $ref: "fabric_types.json#/definitions/CloudInstanceInfo"
   required: []
   type: object
 singular: node

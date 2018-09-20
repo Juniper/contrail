@@ -26,6 +26,10 @@ references:
       operations: "CRUD"
       description: "Reference to vcenter object for this contrail cluster."
       presence: "optional"
+    cloud:
+      operations: "CRUD"
+      description: "Reference to public cloud, which will have VM part of this cluster"
+      presence: "optional"
 schema:
   properties:
     container_registry:
@@ -304,6 +308,10 @@ schema:
       view:
       - create
       - detail
+    mc_gw_info:
+      presence: "optional"
+      description: "Multi Cloud Gateway Details"
+      $ref: "cloud_types.json#/definitions/MCGWClusterInfo"
   required: []
   type: object
 singular: contrail_cluster

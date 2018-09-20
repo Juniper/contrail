@@ -1,0 +1,25 @@
+description: Security Group associated with cloud
+extends:
+- base
+id: cloud_security_group
+metadata:
+  category: cloud
+parents:
+  virtual_cloud:
+    operations: "CRUD"
+    description: "Parent for security group"
+    presence: "optional"
+references:
+  cloud_private_subnet:
+    operations: "CRUD"
+    description: "Reference to cloud private subnet object"
+    presence: "optional"
+plural: cloud_security_groups
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  type: object
+singular: cloud_security_group
+title: Cloud Security Group
+type: ""

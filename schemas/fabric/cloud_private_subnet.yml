@@ -1,0 +1,45 @@
+description: Private Subnet associated with cloud
+extends:
+- base
+id: cloud_private_subnet
+metadata:
+  category: cloud
+parents:
+  virtual_cloud:
+    operations: "CRUD"
+    description: "Parent for private subnet"
+    presence: "optional"
+plural: cloud_private_subnets
+prefix: /
+schema:
+  properties:
+    cidr_block:
+      description: CIDR block for cloud
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: CIDR block
+      type: string
+      view:
+      - create
+      - detail
+    availability_zone:
+      description: Availability zone to which subnet belongs to
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: CIDR block
+      type: string
+      view:
+      - create
+      - detail
+  propertiesOrder: []
+  required: []
+  type: object
+singular: cloud_private_subnet
+title: Private subnet for cloud
+type: ""

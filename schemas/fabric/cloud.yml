@@ -1,0 +1,45 @@
+description: Cloud (can consist of multiple providers)
+extends:
+- base
+- has_status
+id: cloud
+metadata:
+  category: cloud
+parent: ""
+references:
+    cloud_user:
+      operations: "CRUD"
+      description: "Reference to Cloud User"
+      presence: "optional"
+plural: clouds
+prefix: /
+schema:
+  properties:
+    organization:
+      description: Name of the organization
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: organization name
+      type: string
+      view:
+      - create
+      - detail
+    project:
+      description: Name of the project
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: project name
+      type: string
+      view:
+      - create
+      - detail
+  type: object
+singular: cloud
+title: Cloud
+type: ""

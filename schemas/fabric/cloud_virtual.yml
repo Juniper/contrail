@@ -1,0 +1,31 @@
+description: Virtual cloud
+extends:
+- base
+id: virtual_cloud
+metadata:
+  category: cloud
+parents:
+  cloud_region:
+    operations: "CRUD"
+    description: "Parent for cloud virtual cloud"
+    presence: "optional"
+plural: virtual_clouds
+prefix: /
+schema:
+  properties:
+    cidr_block:
+      description: CIDR block for virtual cloud
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: CIDR block
+      type: string
+      view:
+      - create
+      - detail
+  type: object
+type: ""
+singular: virtual_cloud
+title: Virtual Cloud
