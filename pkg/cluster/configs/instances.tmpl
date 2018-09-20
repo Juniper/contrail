@@ -114,10 +114,10 @@ kolla_config:
 {% if appformixCluster %}
 appformix_configuration:
     appformix_docker_images:
-      - {{ appformixCluster.AppformixImagePathPlatform }}
-      - {{ appformixCluster.AppformixImagePathDependencies }}
-      - {{ appformixCluster.AppformixImagePathNetworkDevice }}
-      - {{ appformixCluster.AppformixImagePathOpenstack }}
+      {{ appformixCluster.AppformixImagePathPlatform }}
+      {{ appformixCluster.AppformixImagePathDependencies }}
+      {{ appformixCluster.AppformixImagePathNetworkDevice }}
+      {{ appformixCluster.AppformixImagePathOpenstack }}
     appformix_license:  {{ appformixCluster.AppformixLicense }}
     contrail_analytics_url: '{{ appformixCluster.ContrailAnalyticsURL }}'
     contrail_config_url: '{{ appformixCluster.ContrailConfigURL }}'
