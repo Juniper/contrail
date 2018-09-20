@@ -33,7 +33,7 @@ create table kv_store (
 );
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-create table {{schema.ID | lower  }} (
+create table {{ schema.Table  }} (
     {% for column in schema.Columns %}`{{column.Column}}` {{column.JSONSchema.SQL}},
     {% endfor %} primary key(`uuid`),
     index parent_uuid_index (`parent_uuid`)
@@ -41,45 +41,45 @@ create table {{schema.ID | lower  }} (
 {% endif %}
 {% endfor %}
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-{% for linkTo, reference in schema.References %}
+{% for _, reference in schema.References %}
 
 create table {{ reference.Table }} (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
     {% for column in reference.Columns %}`{{column.Column}}` {{column.JSONSchema.SQL}},
-    {% endfor %} foreign key (`from`) references {{ schema.ID | lower  }}(uuid) on delete cascade,
-    foreign key (`to`) references {{ linkTo | lower  }}(uuid),
+    {% endfor %} foreign key (`from`) references {{ schema.Table  }}(uuid) on delete cascade,
+    foreign key (`to`) references {{ reference.LinkTo.Table }}(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 {% endfor %}
 
-{% for linkTo, reference in schema.Parents %}
+{% for _, reference in schema.Parents %}
 create table {{ reference.Table }} (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
-    foreign key (`from`) references {{ schema.ID | lower  }}(uuid) on delete cascade,
-    foreign key (`to`) references {{ linkTo | lower  }}(uuid),
+    foreign key (`from`) references {{ schema.Table  }}(uuid) on delete cascade,
+    foreign key (`to`) references {{ reference.LinkTo.Table }}(uuid),
     index from_index (`from`)) CHARACTER SET utf8mb4;
 {% endfor %}
 
-create table tenant_share_{{ schema.ID | lower  }} (
+create table tenant_share_{{ schema.Table  }} (
     `uuid` varchar(255),
     `to` varchar(255),
     primary key (`uuid`,`to`),
     `access` integer,
-    foreign key (`uuid`) references {{ schema.ID | lower  }}(uuid) on delete cascade,
+    foreign key (`uuid`) references {{ schema.Table }}(uuid) on delete cascade,
     foreign key (`to`) references project(uuid) on delete cascade,
     index uuid_index (`uuid`),
     index to_index (`to`)
     ) CHARACTER SET utf8mb4;
 
-create table domain_share_{{ schema.ID | lower  }} (
+create table domain_share_{{ schema.Table  }} (
     `uuid` varchar(255),
     `to` varchar(255),
     primary key (`uuid`,`to`),
     `access` integer,
-    foreign key (`uuid`) references {{ schema.ID | lower  }}(uuid) on delete cascade,
+    foreign key (`uuid`) references {{ schema.Table  }}(uuid) on delete cascade,
     foreign key (`to`) references domain(uuid) on delete cascade,
     index uuid_index (`uuid`),
     index to_index (`to`)
