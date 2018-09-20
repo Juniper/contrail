@@ -51,7 +51,7 @@ func parseStringList(query string) []string {
 func GetListSpec(c echo.Context) *ListSpec {
 	filters := ParseFilter(c.QueryParam(FiltersKey))
 	pageMarker := parsePositiveNumber(c.QueryParam(PageMarkerKey), 0)
-	pageLimit := parsePositiveNumber(c.QueryParam(PageLimitKey), 100)
+	pageLimit := parsePositiveNumber(c.QueryParam(PageLimitKey), 0)
 	detail := parseBool(c.QueryParam(DetailKey))
 	count := parseBool(c.QueryParam(CountKey))
 	shared := parseBool(c.QueryParam(SharedKey))
