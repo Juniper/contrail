@@ -1,0 +1,84 @@
+description: Cloud (Azure, AWS, GCP and OnPrem)
+extends:
+- base
+- has_status
+id: cloud
+metadata:
+  category: cloud
+parent: ""
+plural: clouds
+prefix: /
+schema:
+  properties:
+    type:
+      description: Type of cloud
+      default: onprem
+      enum:
+      - aws
+      - azure
+      - gcp
+      - onprem
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Location Type
+      type: string
+      view:
+      - create
+      - detail
+    project:
+      description: Name of the project, where cloud is hosted
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: project name
+      type: string
+      view:
+      - create
+      - detail
+    organization:
+      description: Name of the organization
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: organization name
+      type: string
+      view:
+      - create
+      - detail
+    region:
+      description: Region asscoiated with cloud
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Region name
+      type: string
+      view:
+      - create
+      - detail
+    cidr_block:
+      description: CIDR block for cloud
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: CIDR block
+      type: string
+      view:
+      - create
+      - detail
+  required:
+    - type
+  type: object
+singular: cloud
+title: Cloud
+type: ""

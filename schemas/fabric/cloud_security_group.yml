@@ -1,0 +1,39 @@
+description: Security Group associated with cloud
+extends:
+- base
+id: cloud_security_group
+metadata:
+  category: cloud
+references:
+    cloud:
+      operations: "CRUD"
+      description: "Reference to cloud object for this security_group"
+      presence: "optional"
+plural: cloud_security_groups
+prefix: /
+schema:
+  properties:
+    direction:
+      description: Direction of the rule
+      nullable: false
+      enum:
+        - ingress
+        - egress
+        - inbound
+        - outbound
+      permission:
+      - create
+      - update
+      sql: ""
+      title: direction
+      type: string
+      view:
+      - create
+      - detail
+  propertiesOrder: []
+  required:
+    - direction
+  type: object
+singular: cloud_security_group
+title: Security Group of Cloud
+type: ""
