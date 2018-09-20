@@ -117,7 +117,7 @@ func TestRemoteIntPoolMethods(t *testing.T) {
 	}()
 
 	assert.NoError(t, err)
-	assert.True(t, rt > 8000001)
+	assert.True(t, rt > 8000099)
 
 	err = hc.SetInt(context.Background(), "route_target_number", rt+1)
 	defer func() {
