@@ -7,6 +7,10 @@ parents:
     operations: "CRUD"
     description: "Parent of this node resource."
     presence: "optional"
+  cloud:
+    operations: "CRUD"
+    description: "Parent for node"
+    presence: "optional"
 references:
     credential:
       operations: "CRUD"
