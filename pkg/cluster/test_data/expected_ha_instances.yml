@@ -62,12 +62,12 @@ contrail_configuration:
   RABBITMQ_NODE_PORT: 5673
   VROUTER_GATEWAY: 127.0.0.254
   ENCAP_PRIORITY: VXLANMPLSoUDPMPLSoGRE
+  OPENSTACK_VERSION: queens
   AUTH_MODE: keystone
   KEYSTONE_AUTH_HOST: 127.0.0.3
   KEYSTONE_AUTH_URL_VERSION: /v3
 kolla_config:
   kolla_globals:
-    openstack_release: ocata-xyz
     enable_haproxy: no
   kolla_passwords:
     keystone_admin_password: contrail123

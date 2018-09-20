@@ -79,6 +79,7 @@ contrail_configuration:
   {%if cluster.DefaultGateway != "" %}VROUTER_GATEWAY: {{ cluster.DefaultGateway }}{%endif%}
   ENCAP_PRIORITY: {%if cluster.EncapPriority %}{{cluster.EncapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
 {% if cluster.Orchestrator == "openstack" %}
+  {%if openstackCluster.OpenstackRelease %}OPENSTACK_VERSION: {{openstackCluster.OpenstackRelease}}{%endif%}
   AUTH_MODE: keystone
   KEYSTONE_AUTH_HOST: {%if openstackCluster.OpenstackInternalVip %}{{openstackCluster.OpenstackInternalVip}}{%else%}{% for node in nodes %}{%if openstackCluster.OpenstackControlNodes.0.NodeRefs.0.UUID == node.UUID %}{{node.IPAddress}}{%endif%}{%endfor%}{%endif%}
   KEYSTONE_AUTH_URL_VERSION: {%if cluster.KeystoneVersion %}/{{cluster.KeystoneVersion}}{%else%}/v3{%endif%}
@@ -90,7 +91,6 @@ contrail_configuration:
 
 kolla_config:
   kolla_globals:
-    openstack_release: {%if openstackCluster.OpenstackRelease %}{{openstackCluster.OpenstackRelease}}{%else%}ocata{%endif%}
     enable_haproxy: {{openstack.enableHaproxy}}
     {%if openstackCluster.OpenstackInternalVip %}kolla_internal_vip_address: {{openstackCluster.OpenstackInternalVip}}{%endif%}
     {% if openstackCluster.OpenstackRegistry && openstackCluster.OpenstackRegistry != "default" %}docker_registry: {{ openstackCluster.OpenstackRegistry }}{%endif%}
