@@ -22,6 +22,7 @@ RealPath()
 	popd &> /dev/null
 }
 
+RepoPath="$1"
 ThisDir=$(RealPath "$(dirname "$0")")
 RootDir=$(RealPath "$ThisDir/..")
 PORT=8082
@@ -40,7 +41,8 @@ set -x
 install_golang()
 {
 	cd /tmp
-	curl -o go.tar.gz https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz
+	IP=$(host dl.google.com 8.8.8.8 | sed -n -e 's/^.*has address \(.*\)$/\1/p')
+	curl -o go.tar.gz "https://$IP/go/go1.10.3.linux-amd64.tar.gz"
 	sudo tar --overwrite -C /usr -xzf go.tar.gz
 	sudo yum install -y wget unzip
 	export PATH="$PATH:/usr/go/bin"
@@ -53,23 +55,25 @@ if [ -d /usr/go/bin ]; then
 fi
 go env || install_golang
 [ -z "$GOPATH" ] && export GOPATH="$HOME/go"
-[ "$GOPATH/src/github.com/Juniper/contrail" = "$RootDir" ] || { echo "This repo should be clonned into GOPATH == $GOPATH"; exit 2; }
+[ -z "$RepoPath" ] || { mkdir "$GOPATH/src/github.com"; mv "$RepoPath" "$GOPATH/src/github.com/" }
+#[ "$GOPATH/src/github.com/Juniper/contrail" = "$RootDir" ] || { echo "This repo should be clonned into GOPATH == $GOPATH"; exit 2; }
 echo "$PATH" | grep -q "$GOPATH/bin" || export PATH="$PATH:$GOPATH/bin"
 
-cd "$RootDir"
+#cd "$RootDir"
+cd "$GOPATH/src/github.com/Juniper/contrail"
 make deps
 make generate
 make build
 make install
 # etcd should be already deployed with kubernetes
-"$ThisDir/testenv.sh" -n host postgres
+"$GOPATH/src/github.com/Juniper/contrail/tools/testenv.sh" -n host postgres
 
 KubemanagerDir='/etc/contrail/kubemanager'
 #Stop kubemanager and original config-node
 cd "$KubemanagerDir"
 docker-compose down
 docker-compose -f /etc/contrail/config/docker-compose.yaml down
-cd "$RootDir"
+cd "$GOPATH/src/github.com/Juniper/contrail"
 
 Dumpfile="$HOME/dump-$$.yaml"
 # Dump cassandra from orig config-node
