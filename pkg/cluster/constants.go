@@ -32,6 +32,10 @@ const (
 	defaultContrailVrouterNodeResPath           = "/" + defaultContrailVrouterNodeRes
 	defaultContrailServiceNodeRes               = "contrail-service-node"
 	defaultContrailServiceNodeResPath           = "/" + defaultContrailServiceNodeRes
+	defaultContrailZTPDHCPNodeRes               = "contrail-ztp-dhcp-node"
+	defaultContrailZTPDHCPNodeResPath           = "/" + defaultContrailZTPDHCPNodeRes
+	defaultContrailZTPTFTPNodeRes               = "contrail-ztp-tftp-node"
+	defaultContrailZTPTFTPNodeResPath           = "/" + defaultContrailZTPTFTPNodeRes
 	defaultKubernetesNodeRes                    = "kubernetes-node"
 	defaultKubernetesNodeResPath                = "/" + defaultKubernetesNodeRes
 	defaultKubernetesMasterNodeRes              = "kubernetes-master-node"

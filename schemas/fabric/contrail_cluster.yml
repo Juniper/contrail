@@ -292,6 +292,18 @@ schema:
       view:
       - create
       - detail
+    enable_ztp:
+      description: Enable Contrail ZTP services
+      default: false
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Enable ZTP
+      type: "boolean"
+      view:
+      - create
+      - detail
   required: []
   type: object
 singular: contrail_cluster
