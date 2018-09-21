@@ -421,6 +421,44 @@ func (d *Data) interfaceToContrailVrouterNode(
 	return nil
 }
 
+func (d *Data) interfaceToContrailZTPTFTPNode(
+	contrailZTPTFTPNodes interface{}, c *Cluster) error {
+	for _, contrailZTPTFTPNode := range contrailZTPTFTPNodes.([]interface{}) {
+		contrailZTPTFTPNodeInfo := models.InterfaceToContrailZTPTFTPNode(
+			contrailZTPTFTPNode.(map[string]interface{}))
+		// Read contrailZTPTFTP role node to get the node refs information
+		contrailZTPTFTPNodeData, err := c.getResource(
+			defaultContrailZTPTFTPNodeResPath, contrailZTPTFTPNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		contrailZTPTFTPNodeInfo = models.InterfaceToContrailZTPTFTPNode(
+			contrailZTPTFTPNodeData)
+		d.clusterInfo.ContrailZTPTFTPNodes = append(
+			d.clusterInfo.ContrailZTPTFTPNodes, contrailZTPTFTPNodeInfo)
+	}
+	return nil
+}
+
+func (d *Data) interfaceToContrailZTPDHCPNode(
+	contrailZTPDHCPNodes interface{}, c *Cluster) error {
+	for _, contrailZTPDHCPNode := range contrailZTPDHCPNodes.([]interface{}) {
+		contrailZTPDHCPNodeInfo := models.InterfaceToContrailZTPDHCPNode(
+			contrailZTPDHCPNode.(map[string]interface{}))
+		// Read contrailZTPDHCP role node to get the node refs information
+		contrailZTPDHCPNodeData, err := c.getResource(
+			defaultContrailZTPDHCPNodeResPath, contrailZTPDHCPNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		contrailZTPDHCPNodeInfo = models.InterfaceToContrailZTPDHCPNode(
+			contrailZTPDHCPNodeData)
+		d.clusterInfo.ContrailZTPDHCPNodes = append(
+			d.clusterInfo.ContrailZTPDHCPNodes, contrailZTPDHCPNodeInfo)
+	}
+	return nil
+}
+
 func (d *Data) interfaceToContrailServiceNode(
 	contrailServiceNodes interface{}, c *Cluster) error {
 	for _, contrailServiceNode := range contrailServiceNodes.([]interface{}) {
@@ -671,6 +709,18 @@ func (d *Data) updateClusterDetails(clusterID string, c *Cluster) error {
 	// Expand csn node back ref
 	if csnNodes, ok := rData["contrail_service_nodes"]; ok {
 		if err = d.interfaceToContrailServiceNode(csnNodes, c); err != nil {
+			return err
+		}
+	}
+	// Expand tftp node back ref
+	if tftpNodes, ok := rData["contrail_ztp_tftp_nodes"]; ok {
+		if err = d.interfaceToContrailZTPTFTPNode(tftpNodes, c); err != nil {
+			return err
+		}
+	}
+	// Expand dhcp node back ref
+	if dhcpNodes, ok := rData["contrail_ztp_dhcp_nodes"]; ok {
+		if err = d.interfaceToContrailZTPDHCPNode(dhcpNodes, c); err != nil {
 			return err
 		}
 	}

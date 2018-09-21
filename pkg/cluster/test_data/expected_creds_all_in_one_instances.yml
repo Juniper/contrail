@@ -16,6 +16,7 @@ instances:
     provider: bms
     roles:
       config:
+      dhcp:
       config_database:
       control:
       webui:
@@ -37,6 +38,8 @@ contrail_configuration:
   AUTH_MODE: keystone
   KEYSTONE_AUTH_HOST: 127.0.0.1
   KEYSTONE_AUTH_URL_VERSION: /v3
+  GENERATE_SSH: True
+  USE_OPENSTACK_TFTP: True
 kolla_config:
   kolla_globals:
     enable_haproxy: no
