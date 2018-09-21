@@ -22,6 +22,7 @@ RealPath()
 	popd &> /dev/null
 }
 
+RepoPath="$1"
 ThisDir=$(RealPath "$(dirname "$0")")
 RootDir=$(RealPath "$ThisDir/..")
 PORT=8082
@@ -53,6 +54,7 @@ if [ -d /usr/go/bin ]; then
 fi
 go env || install_golang
 [ -z "$GOPATH" ] && export GOPATH="$HOME/go"
+[ -z "$RepoPath" ] || { mkdir "$GOPATH/src/github.com"; mv "$RepoPath" "$GOPATH/src/github.com/"; }
 [ "$GOPATH/src/github.com/Juniper/contrail" = "$RootDir" ] || { echo "This repo should be clonned into GOPATH == $GOPATH"; exit 2; }
 echo "$PATH" | grep -q "$GOPATH/bin" || export PATH="$PATH:$GOPATH/bin"
 
