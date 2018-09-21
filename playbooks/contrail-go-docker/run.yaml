@@ -9,9 +9,10 @@
     workdir: /go/src/github.com/Juniper/contrail
     sourcedir: "{{ ansible_env.HOME }}"
   tasks:
-    - include: build-setup.yaml
+    - name: Run build setup
+      include: build-setup.yaml
 
-    - name: run
+    - name: Run build steps in loop
       include: build-step.yaml
       loop_control:
         label: "{{ item.name }}"
@@ -47,4 +48,3 @@
       tag: "{{ packaging.docker_version }}"
       images:
         - { name: contrail-go, tag: latest }
-
