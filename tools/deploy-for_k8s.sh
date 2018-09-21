@@ -1,10 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+#set -o pipefail # TODO: reenable when ensure_group fixed
+set -x
 
 create_group()
 {
 	sudo groupadd "$1"
 	sudo usermod -aG "$1" "$USER"
 }
+
 ensure_group()
 {
 	local expected_group='docker'
@@ -13,6 +19,7 @@ ensure_group()
 		exec sg "$expected_group" -c "$0 $*"
 	fi
 }
+
 ensure_group "$@"
 
 RealPath()
@@ -23,19 +30,15 @@ RealPath()
 }
 
 ThisDir=$(RealPath "$(dirname "$0")")
-RootDir=$(RealPath "$ThisDir/..")
-PORT=8082
+ContrailRootDir=$(RealPath "$ThisDir/..")
 
 build_docker()
 {
 	dir=$(pwd)
-	cd "$RootDir"
+	cd "$ContrailRootDir"
 	make docker_k8s
 	cd "$dir"
 }
-
-set -e
-set -x
 
 install_golang()
 {
@@ -53,23 +56,22 @@ if [ -d /usr/go/bin ]; then
 fi
 go env || install_golang
 [ -z "$GOPATH" ] && export GOPATH="$HOME/go"
-[ "$GOPATH/src/github.com/Juniper/contrail" = "$RootDir" ] || { echo "This repo should be clonned into GOPATH == $GOPATH"; exit 2; }
 echo "$PATH" | grep -q "$GOPATH/bin" || export PATH="$PATH:$GOPATH/bin"
 
-cd "$RootDir"
+cd "$ContrailRootDir"
 make deps
 make generate
 make build
 make install
 # etcd should be already deployed with kubernetes
-"$ThisDir/testenv.sh" -n host postgres
+"$ContrailRootDir/tools/testenv.sh" -n host postgres
 
 KubemanagerDir='/etc/contrail/kubemanager'
-#Stop kubemanager and original config-node
+# Stop kubemanager and original config-node
 cd "$KubemanagerDir"
 docker-compose down
 docker-compose -f /etc/contrail/config/docker-compose.yaml down
-cd "$RootDir"
+cd "$ContrailRootDir"
 
 Dumpfile="$HOME/dump-$$.yaml"
 # Dump cassandra from orig config-node
