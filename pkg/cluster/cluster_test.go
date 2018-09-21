@@ -401,6 +401,7 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 		"CONTROLLER_NODES":       "127.0.0.1",
 		"OPENSTACK_NODES":        "127.0.0.1",
 		"OPENSTACK_INTERNAL_VIP": "127.0.0.1",
+		"ZTP_ROLE":               true,
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
@@ -424,6 +425,7 @@ func TestCredAllInOneClusterTest(t *testing.T) {
 		"MGMT_INT_IP":     "127.0.0.1",
 		"CONTROL_NODES":   "",
 		"OPENSTACK_NODES": "",
+		"ENABLE_ZTP":      true,
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",

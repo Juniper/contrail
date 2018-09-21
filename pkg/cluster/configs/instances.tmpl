@@ -23,7 +23,8 @@ instances:
     {%endif%}{%endfor%}{%endfor%}
     provider: bms
     roles:
-      {% for config_node in cluster.ContrailConfigNodes %}{% for node_ref in config_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}config:{%endif%}{%endfor%}{%endfor%}
+      {% for config_node in cluster.ContrailConfigNodes %}{% for node_ref in config_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}config:
+      {%if cluster.EnableZTP && cluster.Orchestrator == "openstack"%}dhcp:{%endif%}{%endif%}{%endfor%}{%endfor%}
       {% for configdb_node in cluster.ContrailConfigDatabaseNodes %}{% for node_ref in configdb_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}config_database:{%endif%}{%endfor%}{%endfor%}
       {% for control_node in cluster.ContrailControlNodes %}{% for node_ref in control_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}control:{%endif%}{%endfor%}{%endfor%}
       {% for webui_node in cluster.ContrailWebuiNodes %}{% for node_ref in webui_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}webui:{%endif%}{%endfor%}{%endfor%}
@@ -47,6 +48,8 @@ instances:
         TSN_EVPN_MODE: true
         {%if csn_node.DefaultGateway != "" %}VROUTER_GATEWAY: {{ csn_node.DefaultGateway }}{%endif%}
         {%endif%}{%endfor %}{%endfor%}
+      {% for dhcp_node in cluster.ContrailZTPDHCPNodes %}{% for node_ref in dhcp_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}dhcp:{%endif%}{%endfor%}{%endfor%}
+      {% for tftp_node in cluster.ContrailZTPTFTPNodes %}{% for node_ref in tftp_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}tftp:{%endif%}{%endfor%}{%endfor%}
       {% for k8s_master_node in k8sCluster.KubernetesMasterNodes %}{% for node_ref in k8s_master_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_master:{%endif%}{%endfor%}{%endfor%}
       {% for k8s_node in k8sCluster.KubernetesNodes %}{% for node_ref in k8s_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}k8s_node:{%endif%}{%endfor%}{%endfor%}
       {% for k8s_kubemanager_node in k8sCluster.KubernetesKubemanagerNodes %}{% for node_ref in k8s_kubemanager_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}kubemanager:{%endif%}{%endfor%}{%endfor%}
@@ -88,6 +91,10 @@ contrail_configuration:
   {{key_value.Key}}: {{key_value.Value}}
   {%endif%}
   {%endfor%}
+  {%if cluster.EnableZTP %}
+  GENERATE_SSH: True
+  USE_OPENSTACK_TFTP: True
+  {%endif%}
 
 kolla_config:
   kolla_globals:
