@@ -2,6 +2,10 @@ name: All in one cluster test
 description: all-in-one cluster CRUD test
 cleanup:
 - path: /contrail-config-node/contrail_config_nodes_uuid
+{% if ZTP_ROLE %}
+- path: /contrail-ztp-dhcp-node/contrail_ztp_dhcp_nodes_uuid
+- path: /contrail-ztp-tftp-node/contrail_ztp_tftp_nodes_uuid
+{% endif %}
 - path: /contrail-config-database-node/contrail_config_database_nodes_uuid
 - path: /contrail-analytics-node/contrail_analytics_nodes_uuid
 - path: /contrail-analytics-database-node/contrail_analytics_database_nodes_uuid
@@ -110,6 +114,9 @@ test_data:
     datapath_encryption: true
     pre_shared_key: MTIzNDU2Nzg5MEFCQ0RFRkdISUpLTAo=
     {%endif%}
+    {% if ENABLE_ZTP %}
+    enable_ztp: {{ ENABLE_ZTP }}
+    {%endif%}
     openstack_cluster_refs:
       - uuid: test_openstack_cluster_uuid
     {% if CONTROL_NODES %}
@@ -132,6 +139,20 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
+  {% if ZTP_ROLE %}
+  contrail_ztp_dhcp_nodes: &contrail_ztp_dhcp_nodes
+    uuid: contrail_ztp_dhcp_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_ztp_tftp_nodes: &contrail_ztp_tftp_nodes
+    uuid: contrail_ztp_tftp_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  {% endif %}
   contrail_config_database_nodes: &contrail_config_database_nodes
     uuid: contrail_config_database_nodes_uuid
     parent_type: contrail-cluster
@@ -232,6 +253,9 @@ workflow:
       orchestrator: openstack
       default_gateway: 127.0.0.254
       ntp_server: 10.1.1.100
+      {% if ENABLE_ZTP %}
+      enable_ztp: {{ ENABLE_ZTP }}
+      {%endif%}
       openstack_cluster_refs:
         - uuid: test_openstack_cluster_uuid
 
@@ -312,6 +336,38 @@ workflow:
         parent_uuid: test_cluster_uuid
         node_refs:
           - uuid: all_in_one_node_uuid
+{% if ZTP_ROLE %}
+- name: create ztp dhcp node
+  request:
+    path: /contrail-ztp-dhcp-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-ztp-dhcp-node: *contrail_ztp_dhcp_nodes
+    expect:
+      contrail-ztp-dhcp-node:
+        uuid: contrail_ztp_dhcp_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create ztp tftp node
+  request:
+    path: /contrail-ztp-tftp-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-ztp-tftp-node: *contrail_ztp_tftp_nodes
+    expect:
+      contrail-ztp-tftp-node:
+        uuid: contrail_ztp_tftp_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+{% endif %}
 - name: create config database node
   request:
     path: /contrail-config-database-nodes

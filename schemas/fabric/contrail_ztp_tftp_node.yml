@@ -1,0 +1,27 @@
+description: Contrail ZTP TFTP Node
+extends:
+- base
+- has_status
+id: contrail_ztp_tftp_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this ztp tftp node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this ztp tftp node."
+    presence: "optional"
+plural: contrail_ztp_tftp_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: contrail_ztp_tftp_node
+title: Contrail ZTP TFTP Node
+type: ""

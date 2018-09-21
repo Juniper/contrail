@@ -1,0 +1,27 @@
+description: Contrail ZTP DHCP Node
+extends:
+- base
+- has_status
+id: contrail_ztp_dhcp_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this ztp dhcp node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this ztp dhcp node."
+    presence: "optional"
+plural: contrail_ztp_dhcp_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: contrail_ztp_dhcp_node
+title: Contrail ZTP DHCP Node
+type: ""

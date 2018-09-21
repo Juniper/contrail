@@ -19,6 +19,8 @@ instances:
       analytics:
       analytics_database:
       vrouter:
+      dhcp:
+      tftp:
       openstack_control:
       openstack_network:
       openstack_storage:
