@@ -3,9 +3,13 @@
     check:
       jobs:
         - contrail-go-docker
+        - contrail-go-sanity-centos7-k8s:
+            voting: False # TODO: mark as voting when tests pass
     gate:
       jobs:
         - contrail-go-docker
+        - contrail-go-sanity-centos7-k8s:
+            voting: False # TODO: mark as voting when tests pass
 
 - job:
     name: contrail-go-docker
