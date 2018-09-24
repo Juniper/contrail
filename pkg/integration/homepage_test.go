@@ -1,4 +1,4 @@
-package apisrv_test
+package integration
 
 import (
 	"context"
@@ -13,11 +13,10 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 func TestHomepageResources(t *testing.T) {
-	c := integration.NewTestingHTTPClient(t, apisrv.TestServer.URL)
+	c := NewTestingHTTPClient(t, runningServer.testServer.URL)
 
 	var response map[string]interface{}
 	r, err := c.Read(context.Background(), "/", &response)
@@ -54,7 +53,7 @@ func TestHomepageResources(t *testing.T) {
 }
 
 func TestRoutesAreRegistered(t *testing.T) {
-	c := integration.NewTestingHTTPClient(t, apisrv.TestServer.URL)
+	c := NewTestingHTTPClient(t, runningServer.testServer.URL)
 
 	var response map[string]interface{}
 	r, err := c.Read(context.Background(), "/", &response)
@@ -106,7 +105,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	routes.add(apisrv.UserAgentKVPath)
 	routes.add(services.PropCollectionUpdatePath)
 
-	for _, route := range apisrv.APIServer.Echo.Routes() {
+	for _, route := range runningServer.apiServer.Echo.Routes() {
 		assert.Truef(t, routes.contains(route.Path),
 			"Route %s has no corresponding link in homepage discovery."+
 				" Register it in APIServer setup code and add it to the set of excluded routes in the test.",
