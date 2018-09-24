@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/integration"
 )
 
 func TestMain(m *testing.M) {
 	apisrv.RegisterExtension(Init)
-	apisrv.SetupAndRunTest(m)
+	integration.SetupAndRunTest(m)
 }
 
 func TestInit(t *testing.T) {

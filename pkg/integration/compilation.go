@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/compilation"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	"github.com/Juniper/contrail/pkg/integration/etcd"
 )
 
 const (
