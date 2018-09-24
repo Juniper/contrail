@@ -1,0 +1,6 @@
+playbooks/vcenter.yml:
+  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=vcenter
+playbooks/configure_instances.yml:
+  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yaml -e orchestrator=vcenter
+playbooks/install_contrail.yml:
+  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yaml -e orchestrator=vcenter

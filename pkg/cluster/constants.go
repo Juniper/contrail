@@ -8,6 +8,8 @@ const (
 	defaultK8sResourcePath                      = "/" + defaultK8sResource
 	defaultOpenstackResource                    = "openstack-cluster"
 	defaultOpenstackResourcePath                = "/" + defaultOpenstackResource
+        defaultVCenterResource                      = "vCenter"
+	defaultVCenterResourcePath                  = "/" + defaultVCenterResource
 	defaultAppformixResource                    = "appformix-cluster"
 	defaultAppformixResourcePath                = "/" + defaultAppformixResource
 	defaultEndpointRes                          = "endpoint"
@@ -54,6 +56,10 @@ const (
 	defaultOpenstackStorageNodeResPath          = "/" + defaultOpenstackStorageNodeRes
 	defaultOpenstackComputeNodeRes              = "openstack-compute-node"
 	defaultOpenstackComputeNodeResPath          = "/" + defaultOpenstackComputeNodeRes
+        defaultVCenterComputeRes                    = "vCenter-compute"
+	defaultVCenterComputeResPath                = "/" + defaultVCenterComputeRes
+	defaultVCenterPluginNodeRes                 = "vCenter-plugin-node"
+	defaultVCenterPluginNodeResPath             = "/" + defaultVCenterPluginNodeRes
 
 	defaultWorkRoot                       = "/var/tmp/contrail_cluster"
 	defaultTemplateRoot                   = "./pkg/cluster/configs"

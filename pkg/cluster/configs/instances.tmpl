@@ -44,6 +44,7 @@ instances:
         SRIOV_PHYS_NET: {{ vrouter_node.SriovInfo.SriovPhysicalNet }}
         {%endif%}
         {%endif%}{%endfor %}{%endfor%}
+      {% for vcenter_plugin_node in vcenter.VCenterPluginNodes %}{% for node_ref in vcenter_plugin_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vcenter_plugin:{%endif%}{%endfor%}{%endfor%}
       {% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
         TSN_EVPN_MODE: true
         {%if csn_node.DefaultGateway != "" %}VROUTER_GATEWAY: {{ csn_node.DefaultGateway }}{%endif%}
@@ -80,7 +81,9 @@ contrail_configuration:
   CLOUD_ORCHESTRATOR: {%if cluster.Orchestrator %}{{ cluster.Orchestrator }}{%else%}openstack{%endif%}
   RABBITMQ_NODE_PORT: {%if cluster.RabbitMQPort %}{{ cluster.RabbitMQPort }}{%else%}5673{%endif%}
   {%if cluster.DefaultGateway != "" %}VROUTER_GATEWAY: {{ cluster.DefaultGateway }}{%endif%}
+{% if not cluster.Orchestrator == "vcenter" %}
   ENCAP_PRIORITY: {%if cluster.EncapPriority %}{{cluster.EncapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
+  {%endif%}
 {% if cluster.Orchestrator == "openstack" %}
   {%if openstackCluster.OpenstackRelease %}OPENSTACK_VERSION: {{openstackCluster.OpenstackRelease}}{%endif%}
   AUTH_MODE: keystone
@@ -149,4 +152,18 @@ appformix_configuration:
     {%endif%}
     {%endfor%}
 {%endif%}
+{%endif%}
+{% if cluster.Orchestrator == "vcenter" %}
+{% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
+  {% if key_value.Key && key_value.Value%}
+  {{key_value.Key}}: {{key_value.Value}}
+  {%endif%}
+  {%endfor%}
+  VCENTER_SERVER: {%if vcenter.Server %}{{vcenter.Server}}{%endif%}
+  VCENTER_USERNAME: {%if vcenter.Username %}{{vcenter.Username}}{%endif%}
+  VCENTER_PASSWORD: {%if vcenter.Password %}{{vcenter.Password}}{%endif%}
+  VCENTER_DATACENTER: {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.Datacenter}}{%endif%}{%endfor%}
+  VCENTER_DVSWITCH: {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.Dvsswitch}}{%endif%}{%endfor%}
+  VCENTER_WSDL_PATH: {%if vcenter.WSDLPath %}{{vcenter.WSDLPath}}{%endif%}
+  VCENTER_AUTH_PROTOCOL: {%if vcenter.AuthProtocol %}{{vcenter.AuthProtocol}}{%endif%}
 {%endif%}

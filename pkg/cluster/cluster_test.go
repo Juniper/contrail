@@ -29,6 +29,8 @@ const (
 	addComputeEncryptPlaybooks            = "./test_data/expected_ansible_add_compute_encrypt_playbook.yml"
 	allInOneKubernetesClusterTemplatePath = "./test_data/test_all_in_one_kubernetes_cluster.tmpl"
 	upgradePlaybooksKubernetes            = "./test_data/expected_ansible_upgrade_playbook_kubernetes.yml"
+        allInOnevcenterClusterTemplatePath    = "./test_data/test_all_in_one_vcenter_server.tmpl"
+	upgradePlaybooksvcenter               = "./test_data/expected_ansible_upgrade_playbook_vcenter.yml"
 	clusterID                             = "test_cluster_uuid"
 )
 
@@ -563,3 +565,129 @@ func TestKubernetesCluster(t *testing.T) {
 	}
 	runKubernetesClusterTest(t, "./test_data/expected_all_in_one_kubernetes_instances.yml", context, expectedEndpoints)
 }
+
+//vcenter
+// nolint: gocyclo
+func runvcenterClusterTest(t *testing.T, expectedOutput string,
+	context map[string]interface{}, expectedEndpoints map[string]string) {
+	// mock keystone to let access server after cluster create
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	ksPublic := apisrv.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	defer ksPublic.Close()
+	ksPrivate := apisrv.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	defer ksPrivate.Close()
+	// Create the cluster and related objects
+	var testScenario apisrv.TestScenario
+	err := apisrv.LoadTestScenario(&testScenario, allInOnevcenterClusterTemplatePath, context)
+	assert.NoError(t, err, "failed to load cluster test data")
+	cleanup := apisrv.RunDirtyTestScenario(t, &testScenario)
+	defer cleanup()
+	// create cluster config
+	config := &Config{
+		ID:           "alice",
+		Password:     "alice_password",
+		ProjectID:    "admin",
+		AuthURL:      apisrv.TestServer.URL + "/keystone/v3",
+		Endpoint:     apisrv.TestServer.URL,
+		InSecure:     true,
+		ClusterID:    clusterID,
+		Action:       "create",
+		LogLevel:     "debug",
+		TemplateRoot: "configs/",
+		Test:         true,
+	}
+	// create cluster
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup old executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	clusterManager, err := NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to create cluster")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(create) cluster")
+	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+		"Instance file created during cluster create is not as expected")
+	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_vcenter.yml"),
+		"Expected list of create playbooks are not executed")
+	// Wait for the in-memory endpoint cache to get updated
+	apisrv.APIServer.ForceProxyUpdate()
+	// make sure all endpoints are created
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+
+	// update cluster
+	config.Action = "update"
+	// remove instances.yml to trriger cluster update
+	err = os.Remove(generatedInstancesPath())
+	if err != nil {
+		assert.NoError(t, err, "failed to delete instances.yml")
+	}
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	clusterManager, err = NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to update cluster")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(update) cluster")
+	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+		"Instance file created during cluster update is not as expected")
+	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_vcenter.yml"),
+		"Expected list of update playbooks are not executed")
+	// Wait for the in-memory endpoint cache to get updated
+	apisrv.APIServer.ForceProxyUpdate()
+	// make sure all endpoints are recreated as part of update
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+
+	// UPGRADE test
+	runClusterActionTest(t, testScenario, config,
+		"UPGRADE", expectedOutput, "",
+		upgradePlaybooksvcenter, expectedEndpoints)
+
+	// IMPORT test (expected to create endpoints withtout triggering playbooks)
+	runClusterActionTest(t, testScenario, config,
+		"IMPORT", "", "", "", expectedEndpoints)
+
+	// delete cluster
+	config.Action = "delete"
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	clusterManager, err = NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(delete) cluster")
+	// make sure cluster is removed
+	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
+}
+func TestVcenterCluster(t *testing.T) {
+	context := pongo2.Context{
+		"TYPE":             "ESXI",
+		"ESXI":             "10.84.16.11",
+		"MGMT_INT_IP":      "127.0.0.1",
+		"CONTROL_NODES":    "1.84.16.10",
+		"CONTROLLER_NODES": "1.84.16.10",
+	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+	}
+	runvcenterClusterTest(t, "./test_data/expected_all_in_one_vcenter_instances.yml", context, expectedEndpoints)
+}
+
