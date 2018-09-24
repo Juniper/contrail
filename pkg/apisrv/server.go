@@ -277,9 +277,14 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("recorder.enabled") {
 		file := viper.GetString("recorder.file")
-		scenario := &TestScenario{
-			Workflow: []*Task{},
+		type task struct {
+			Request *client.Request `yaml:"request,omitempty"`
+			Expect  interface{}     `yaml:"expect,omitempty"`
 		}
+		scenario := &struct {
+			Workflow []*task `yaml:"workflow,omitempty"`
+		}{}
+
 		var mutex sync.Mutex
 		e.Use(middleware.BodyDump(func(c echo.Context, requestBody, responseBody []byte) {
 			var data interface{}
@@ -292,7 +297,7 @@ func (s *Server) Init() (err error) {
 			if err != nil {
 				log.Debug("malformed json response")
 			}
-			task := &Task{
+			task := &task{
 				Request: &client.Request{
 					Method:   c.Request().Method,
 					Path:     c.Request().URL.Path,
@@ -401,4 +406,9 @@ func (s *Server) Close() error {
 //DB return db object.
 func (s *Server) DB() *sql.DB {
 	return s.dbService.DB()
+}
+
+// ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
+func (s *Server) ForceProxyUpdate() {
+	s.Proxy.forceUpdate()
 }
