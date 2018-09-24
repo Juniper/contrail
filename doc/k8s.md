@@ -63,3 +63,42 @@ cd contrail
 ./tools/deploy-for_k8s.sh
 ```
 
+## Examples
+
+### Security groups
+* Prepare 3 terminals on a machine with Contrail deployed: one for running the scenario script, and two for running Kubernetes pods.
+* Go to the `tools/demo/security-groups` subdirectory of the Contrail repository and run `setup.sh` as root.
+  It will create a Kubernetes namespace and a virtual network. For example:
+``` shell
+# In the Contrail repository
+cd ./tools/demo/security-groups/
+sudo ./setup.sh
+```
+* Go to the same directory in the other two terminals and create two pods using `pod.sh` as root. Use different names for the pods. For example:
+```shell
+cd ./tools/demo/security-groups/
+sudo ./pod.sh pod1
+
+# Do the same in the other terminal, using e.g. ./pod.sh pod2
+```
+The script will print the full name of the pods, such as "pod1-75f684d9f9-mndt4". You will need one of them in the next step.
+* Run the scenario script `run.sh`. It requires the name of the pod. For example:
+``` shell
+# In the security groups demo directory
+./run.sh pod1-75f684d9f9-mndt4
+```
+* The script will allow/disallow traffic from/to the chosen pod. Attach the pods in the other two terminals. Use `ip a` to obtain their IP addresses.
+  You can use ping and `echo.sh` with netcat to check if ICMP/TCP is blocked. For example, in one of the pods:
+``` shell
+./echo.sh
+```
+and in the other:
+``` shell
+# Assuming the IP of the first pod is 10.32.0.1.
+
+# Should reply if and only if ICMP traffic is allowed:
+ping 10.32.0.1
+
+# Should print "echo" if and only if TCP traffic is allowed:
+nc 10.32.0.1 8080
+```
