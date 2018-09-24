@@ -7,9 +7,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/integration"
 )
 
 var inputPath string
@@ -44,7 +44,7 @@ func recordTest() {
 		}
 	}
 
-	testScenario, err := apisrv.LoadTest(inputPath, vars)
+	testScenario, err := integration.LoadTest(inputPath, vars)
 	assertError(err, "failed to load test scenario")
 	clients := map[string]*client.HTTP{}
 
