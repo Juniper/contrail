@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
@@ -203,9 +204,9 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
+	mockReadService := servicesmock.NewMockReadService(mockCtrl)
 	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
 	cache := intent.NewCache()
-	mockReadService := servicesmock.NewMockReadService(mockCtrl)
 	service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
 
 	expectCreateACL(mockAPIClient, expectedIngressACL)
@@ -222,7 +223,131 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 			ingressACL:    expectedIngressACL,
 			egressACL:     expectedEgressACL,
 		},
-		cache.Load(models.KindSecurityGroup, intent.ByUUID(securityGroup.GetUUID())))
+		loadSecurityGroupIntent(cache, intent.ByUUID(securityGroup.GetUUID())))
+}
+
+func TestSecurityGroupDelete(t *testing.T) {
+	testCases := []struct {
+		name           string
+		intent         *SecurityGroupIntent
+		mock           func(*servicesmock.MockWriteService)
+		fails          bool
+		expectedIntent *SecurityGroupIntent
+	}{
+		{
+			name: "deleting ACLs succeeds",
+			intent: &SecurityGroupIntent{
+				SecurityGroup: &models.SecurityGroup{UUID: "sg_uuid"},
+				ingressACL:    &models.AccessControlList{UUID: "ingress_uuid"},
+				egressACL:     &models.AccessControlList{UUID: "egress_uuid"},
+			},
+			mock: func(mockAPIClient *servicesmock.MockWriteService) {
+				expectDeleteACL(mockAPIClient, "ingress_uuid")
+				expectDeleteACL(mockAPIClient, "egress_uuid")
+			},
+			expectedIntent: nil,
+		},
+
+		{
+			name: "deleting ingress ACL fails",
+			intent: &SecurityGroupIntent{
+				SecurityGroup: &models.SecurityGroup{UUID: "sg_uuid"},
+				ingressACL:    &models.AccessControlList{UUID: "ingress_uuid"},
+				egressACL:     &models.AccessControlList{UUID: "egress_uuid"},
+			},
+			mock: func(mockAPIClient *servicesmock.MockWriteService) {
+				expectDeleteACLFailure(mockAPIClient, "ingress_uuid")
+				expectDeleteACL(mockAPIClient, "egress_uuid")
+			},
+			fails: true,
+			expectedIntent: &SecurityGroupIntent{
+				SecurityGroup: &models.SecurityGroup{UUID: "sg_uuid"},
+				ingressACL:    &models.AccessControlList{UUID: "ingress_uuid"},
+				egressACL:     nil,
+			},
+		},
+
+		{
+			name: "deleting egress ACL fails",
+			intent: &SecurityGroupIntent{
+				SecurityGroup: &models.SecurityGroup{UUID: "sg_uuid"},
+				ingressACL:    &models.AccessControlList{UUID: "ingress_uuid"},
+				egressACL:     &models.AccessControlList{UUID: "egress_uuid"},
+			},
+			mock: func(mockAPIClient *servicesmock.MockWriteService) {
+				expectDeleteACL(mockAPIClient, "ingress_uuid")
+				expectDeleteACLFailure(mockAPIClient, "egress_uuid")
+			},
+			fails: true,
+			expectedIntent: &SecurityGroupIntent{
+				SecurityGroup: &models.SecurityGroup{UUID: "sg_uuid"},
+				ingressACL:    nil,
+				egressACL:     &models.AccessControlList{UUID: "egress_uuid"},
+			},
+		},
+
+		{
+			name: "deleting both ACLs fails",
+			intent: &SecurityGroupIntent{
+				SecurityGroup: &models.SecurityGroup{UUID: "sg_uuid"},
+				ingressACL:    &models.AccessControlList{UUID: "ingress_uuid"},
+				egressACL:     &models.AccessControlList{UUID: "egress_uuid"},
+			},
+			mock: func(mockAPIClient *servicesmock.MockWriteService) {
+				expectDeleteACLFailure(mockAPIClient, "ingress_uuid")
+				expectDeleteACLFailure(mockAPIClient, "egress_uuid")
+			},
+			fails: true,
+			expectedIntent: &SecurityGroupIntent{
+				SecurityGroup: &models.SecurityGroup{UUID: "sg_uuid"},
+				ingressACL:    &models.AccessControlList{UUID: "ingress_uuid"},
+				egressACL:     &models.AccessControlList{UUID: "egress_uuid"},
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+
+			mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
+			mockReadService := servicesmock.NewMockReadService(mockCtrl)
+			mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
+			cache := intent.NewCache()
+
+			cache.Store(tt.intent)
+
+			service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
+
+			tt.mock(mockAPIClient)
+
+			_, err := service.DeleteSecurityGroup(context.Background(), &services.DeleteSecurityGroupRequest{
+				ID: tt.intent.GetUUID(),
+			})
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t,
+				tt.expectedIntent,
+				loadSecurityGroupIntent(cache, intent.ByUUID(tt.intent.GetUUID())))
+		})
+	}
+}
+
+func TestLoadSecurityGroupIntent(t *testing.T) {
+	expectedIntent := &SecurityGroupIntent{
+		SecurityGroup: &models.SecurityGroup{UUID: "a"},
+	}
+
+	cache := intent.NewCache()
+	cache.Store(expectedIntent)
+
+	actualIntent := loadSecurityGroupIntent(cache, intent.ByUUID(expectedIntent.UUID))
+	assert.Equal(t, expectedIntent, actualIntent)
 }
 
 func expectCreateACL(mockAPIClient *servicesmock.MockWriteService, expectedACL *models.AccessControlList) {
@@ -231,4 +356,18 @@ func expectCreateACL(mockAPIClient *servicesmock.MockWriteService, expectedACL *
 	}).Return(&services.CreateAccessControlListResponse{
 		AccessControlList: expectedACL,
 	}, nil).Times(1)
+}
+
+func expectDeleteACL(mockAPIClient *servicesmock.MockWriteService, expectedUUID string) {
+	mockAPIClient.EXPECT().DeleteAccessControlList(testutil.NotNil(), &services.DeleteAccessControlListRequest{
+		ID: expectedUUID,
+	}).Return(&services.DeleteAccessControlListResponse{
+		ID: expectedUUID,
+	}, nil).Times(1)
+}
+
+func expectDeleteACLFailure(mockAPIClient *servicesmock.MockWriteService, expectedUUID string) {
+	mockAPIClient.EXPECT().DeleteAccessControlList(testutil.NotNil(), &services.DeleteAccessControlListRequest{
+		ID: expectedUUID,
+	}).Return(nil, errors.New("failed to delete the ACL for some reason")).Times(1)
 }
