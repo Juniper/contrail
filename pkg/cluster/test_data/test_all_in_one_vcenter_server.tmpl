@@ -1,0 +1,355 @@
+name: All in one cluster test
+description: all-in-one cluster CRUD test
+cleanup:
+- path: /contrail-config-node/contrail_config_nodes_uuid
+- path: /contrail-config-database-node/contrail_config_database_nodes_uuid
+- path: /contrail-analytics-node/contrail_analytics_nodes_uuid
+- path: /contrail-analytics-database-node/contrail_analytics_database_nodes_uuid
+- path: /contrail-webui-node/contrail_webui_nodes_uuid
+- path: /contrail-control-node/contrail_control_nodes_uuid
+- path: /contrail-vrouter-node/contrail_vrouter_nodes_uuid
+- path: /node/all_in_one_node_uuid
+- path: /contrail-cluster/test_cluster_uuid
+- path: /vCenter/test_vCenter_uuid
+- path: /vCenter-compute/vCenter_computes_uuid
+- path: /vCenter-plugin_node/vCenter_plugin_nodes_uuid
+test_data:
+  all_in_one_node: &all_in_one_node
+    uuid: all_in_one_node_uuid
+    hostname: all_in_one_node
+    interface_name: all_in_one_node_interface
+    ip_address: {{MGMT_INT_IP}}
+    {% if CREDS %}
+    credential_refs:
+      - uuid: all_in_one_credential_uuid
+    {%endif%}
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  all_in_one_vCenter: &all_in_one_vCenter
+    uuid: test_vCenter_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    server: 10.84.16.51
+    username: administrator
+    password: Contrail123
+    wsdl_path: wsdl
+    auth_protocol: https
+    ntp_server: 10.1.1.100
+  vCenter_computes: &vCenter_computes
+    uuid: vCenter_computes_uuid
+    parent_type: vCenter
+    parent_uuid: test_vCenter_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+    datacenter: qa-dc
+    dvsswitch: qa_dvs
+    cluster_name: qa_cluster
+  vCenter_plugin_nodes: &vCenter_plugin_nodes
+    uuid: vCenter_plugin_nodes_uuid
+    parent_type: vCenter
+    parent_uuid: test_vCenter_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  all_in_one_cluster: &all_in_one_cluster
+    uuid: test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    container_registry: test_registry
+    registry_private_insecure: true
+    contrail_version: ocata-5.0-x
+    provisioner_type: ansible
+    orchestrator: vcenter
+    default_gateway: 127.0.0.254
+    ntp_server: 10.1.1.100
+    vCenter_refs:
+      - uuid: test_vCenter_uuid
+    {% if CONTROL_NODES %}
+    contrail_configuration:
+      key_value_pair:
+        - key: CONTROL_NODES
+          value: {{CONTROL_NODES}}
+        {% if CONTROLLER_NODES %}
+        - key: CONTROLLER_NODES
+          value: {{CONTROLLER_NODES}}
+        {%endif%}
+    {%endif%}
+  contrail_config_nodes: &contrail_config_nodes
+    uuid: contrail_config_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_config_database_nodes: &contrail_config_database_nodes
+    uuid: contrail_config_database_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_nodes: &contrail_analytics_nodes
+    uuid: contrail_analytics_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_database_nodes: &contrail_analytics_database_nodes
+    uuid: contrail_analytics_database_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_webui_nodes: &contrail_webui_nodes
+    uuid: contrail_webui_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_control_nodes: &contrail_control_nodes
+    uuid: contrail_control_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_vrouter_nodes: &contrail_vrouter_nodes
+    uuid: contrail_vrouter_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+    {% if TYPE == "dpdk" %}
+    type: dpdk
+    dpdk_info:
+      cpu_core_mask: "0xff"
+      dpdk_uio_driver: vfio-pci
+      huge_pages: 64000
+    {% elif TYPE == "sriov" %}
+    type: sriov
+    sriov_info:
+      sriov_vf: 10
+      sriov_physical_interface: enp129s0f1
+      sriov_physical_net: physnet1
+    {%endif%}
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create cluster
+  request:
+    path: /vCenters
+    method: POST
+    expected:
+    - 200
+    data:
+      vCenter: *all_in_one_vCenter
+  expect:
+    vCenter:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: test_vCenter_uuid
+      server: 10.84.16.51
+      username: administrator
+      password: Contrail123
+      wsdl_path: wsdl
+      auth_protocol: https
+      ntp_server: 10.1.1.100
+- name: create cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *all_in_one_cluster
+  expect:
+    contrail-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: test_cluster_uuid
+      container_registry: test_registry
+      registry_private_insecure: true
+      contrail_version: ocata-5.0-x
+      provisioner_type: ansible
+      orchestrator: vcenter
+      default_gateway: 127.0.0.254
+      ntp_server: 10.1.1.100
+- name: create node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *all_in_one_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: all_in_one_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: all_in_one_node
+      interface_name: all_in_one_node_interface
+      ip_address: {{MGMT_INT_IP}}
+      {% if CREDS %}
+      credential_refs:
+        - uuid: all_in_one_credential_uuid
+      {%endif%}
+- name: create vcenter compute
+  request:
+    path: /vCenter-computes
+    method: POST
+    expected:
+    - 200
+    data:
+      vCenter-compute: *vCenter_computes
+    expect:
+      vCenter-compute:
+        uuid: vCenter_computes_uuid
+        parent_type: vCenter
+        parent_uuid: test_vCenter_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+        datacenter: qa-dc
+        dvsswitch: qa_dvs
+        cluster_name: qa_cluster
+- name: create vcenter plugin node
+  request:
+    path: /vCenter-plugin-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      vCenter-plugin-node: *vCenter_plugin_nodes
+    expect:
+      vCenter-plugin-node:
+        uuid: vCenter_plugin_nodes_uuid
+        parent_type: vCenter
+        parent_uuid: test_vCenter_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create config node
+  request:
+    path: /contrail-config-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-config-node: *contrail_config_nodes
+    expect:
+      contrail-config-node:
+        uuid: contrail_config_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create config database node
+  request:
+    path: /contrail-config-database-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-config-database-node: *contrail_config_database_nodes
+    expect:
+      contrail-config-database-node:
+        uuid: contrail_config_database_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create analytics node
+  request:
+    path: /contrail-analytics-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-node: *contrail_analytics_nodes
+    expect:
+      contrail-analytics-node:
+        uuid: contrail_analytics_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create analytics database node
+  request:
+    path: /contrail-analytics-database-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-database-node: *contrail_analytics_database_nodes
+    expect:
+      contrail-analytics-database-node:
+        uuid: contrail_analytics_database_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create webui node
+  request:
+    path: /contrail-webui-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-webui-node: *contrail_webui_nodes
+    expect:
+      contrail-webui-node:
+        uuid: contrail_webui_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+         - uuid: all_in_one_node_uuid
+- name: create control node
+  request:
+    path: /contrail-control-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-control-node: *contrail_control_nodes
+    expect:
+      contrail-control-node:
+        uuid: contrail_control_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create vrouter node
+  request:
+    path: /contrail-vrouter-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-vrouter-node: *contrail_vrouter_nodes
+    expect:
+      contrail-vrouter-node:
+        uuid: contrail_vrouter_nodes_uuid
+        parent_type: contrail-cluster
+        parent_uuid: test_cluster_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+        {% if TYPE == "dpdk" %}
+        dpdk_info:
+          cpu_core_mask: 0xff
+          dpdk_uio_driver: vfio-pci
+          huge_pages: 64000
+        {%endif%}
+        {% if TYPE == "sriov" %}
+        sriov_info:
+          sriov_vf: 10
+          sriov_physical_interface: enp129s0f1
+          sriov_physical_net: physnet1
+        {%endif%}

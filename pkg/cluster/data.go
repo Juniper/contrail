@@ -28,6 +28,13 @@ type KubernetesData struct {
 	keypairsInfo []*models.Keypair
 	credsInfo    []*models.Credential
 }
+// VCenterData is the representation of VCenter details.
+type VCenterData struct {
+	clusterInfo  *models.VCenter
+	nodesInfo    []*models.Node
+	keypairsInfo []*models.Keypair
+	credsInfo    []*models.Credential
+}
 
 // AppformixData is the representation of appformix cluster details.
 type AppformixData struct {
@@ -44,6 +51,7 @@ type Data struct {
 	keypairsInfo          []*models.Keypair
 	credsInfo             []*models.Credential
 	openstackClusterData  []*OpenstackData
+        vcenterData           []*VCenterData
 	kubernetesClusterData []*KubernetesData
 	appformixClusterData  []*AppformixData
 	// TODO (ijohnson): Add gce/aws/kvm info
@@ -339,6 +347,103 @@ func (k *KubernetesData) updateClusterDetails(clusterID string, c *Cluster) erro
 
 	// get all nodes information
 	if err = k.updateNodeDetails(c); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (v *VCenterData) addKeypair(keypair *models.Keypair) {
+	v.keypairsInfo = append(v.keypairsInfo, keypair)
+}
+
+func (v *VCenterData) addCredential(cred *models.Credential) {
+	v.credsInfo = append(v.credsInfo, cred)
+}
+
+func (v *VCenterData) addNode(node *models.Node) {
+	v.nodesInfo = append(v.nodesInfo, node)
+}
+
+func (v *VCenterData) updateNodeDetails(c *Cluster) error {
+	m := make(map[string]bool)
+	for _, node := range v.clusterInfo.VCenterPluginNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, v); err != nil {
+				return err
+			}
+		}
+	}
+	for _, node := range v.clusterInfo.VCenterComputes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, v); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (v *VCenterData) interfaceToVCenterPluginNode(
+	vcenterPluginNodes interface{}, c *Cluster) error {
+	for _, vcenterPluginNode := range vcenterPluginNodes.([]interface{}) {
+		vcenterPluginNodeInfo := models.InterfaceToVCenterPluginNode(
+			vcenterPluginNode.(map[string]interface{}))
+		// Read vcenter_plugin role node to get the node refs information
+		vcenterPluginNodeData, err := c.getResource(
+			defaultVCenterPluginNodeResPath, vcenterPluginNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		vcenterPluginNodeInfo = models.InterfaceToVCenterPluginNode(
+			vcenterPluginNodeData)
+		v.clusterInfo.VCenterPluginNodes = append(
+			v.clusterInfo.VCenterPluginNodes, vcenterPluginNodeInfo)
+	}
+	return nil
+}
+
+func (v *VCenterData) interfaceToVCenterCompute(
+	vcenterComputes interface{}, c *Cluster) error {
+	for _, vcenterCompute := range vcenterComputes.([]interface{}) {
+		vcenterComputeInfo := models.InterfaceToVCenterCompute(
+			vcenterCompute.(map[string]interface{}))
+		// Read vcenter_compute role node to get the node refs information
+		vcenterComputeData, err := c.getResource(
+			defaultVCenterComputeResPath, vcenterComputeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		vcenterComputeInfo = models.InterfaceToVCenterCompute(
+			vcenterComputeData)
+		v.clusterInfo.VCenterComputes = append(
+			v.clusterInfo.VCenterComputes, vcenterComputeInfo)
+	}
+	return nil
+}
+
+func (v *VCenterData) updateClusterDetails(clusterID string, c *Cluster) error {
+	rData, err := c.getResource(defaultVCenterResourcePath, clusterID)
+	if err != nil {
+		return err
+	}
+	v.clusterInfo = models.InterfaceToVCenter(rData)
+
+	// Expand vcenter_plugin back ref
+	if vcenterPluginNodes, ok := rData["vCenter_plugin_nodes"]; ok {
+		if err = v.interfaceToVCenterPluginNode(vcenterPluginNodes, c); err != nil {
+			return err
+		}
+	}
+	// Expand vcenter_compute back ref
+	if vcenterComputes, ok := rData["vCenter_computes"]; ok {
+		if err = v.interfaceToVCenterCompute(vcenterComputes, c); err != nil {
+			return err
+		}
+	}
+
+	// get all nodes information
+	if err = v.updateNodeDetails(c); err != nil {
 		return err
 	}
 	return nil
@@ -916,6 +1021,21 @@ func (d *Data) getK8sClusterData() *KubernetesData {
 func (d *Data) getK8sClusterInfo() *models.KubernetesCluster {
 	if d.getK8sClusterData() != nil {
 		return d.getK8sClusterData().clusterInfo
+	}
+	return nil
+}
+
+func (d *Data) getVCenterClusterData() *VCenterData {
+
+	if len(d.vcenterData) > 0 {
+		return d.vcenterData[0]
+	}
+	return nil
+}
+
+func (d *Data) getVCenterClusterInfo() *models.VCenter {
+	if d.getVCenterClusterData() != nil {
+		return d.getVCenterClusterData().clusterInfo
 	}
 	return nil
 }

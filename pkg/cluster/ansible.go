@@ -203,6 +203,7 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		"cluster":            a.clusterData.clusterInfo,
 		"openstackCluster":   a.clusterData.getOpenstackClusterInfo(),
 		"k8sCluster":         a.clusterData.getK8sClusterInfo(),
+                "vcenter":            a.clusterData.getVCenterClusterInfo(),
 		"appformixCluster":   a.clusterData.getAppformixClusterInfo(),
 		"nodes":              a.clusterData.getAllNodesInfo(),
 		"credentials":        a.clusterData.getAllCredsInfo(),

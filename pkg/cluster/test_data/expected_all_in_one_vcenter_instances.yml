@@ -1,0 +1,37 @@
+global_configuration:
+  CONTAINER_REGISTRY: test_registry
+  REGISTRY_PRIVATE_INSECURE: True
+provider_config:
+  bms:
+    ssh_user: root
+    ssh_pwd: c0ntrail123
+    ntpserver: 10.1.1.100
+    domainsuffix: local
+instances:
+  all_in_one_node:
+    ip: 127.0.0.1
+    provider: bms
+    roles:
+      config:
+      config_database:
+      control:
+      webui:
+      analytics:
+      analytics_database:
+      vrouter:
+      vcenter_plugin:
+contrail_configuration:
+  CONTRAIL_VERSION: ocata-5.0-x
+  CLOUD_ORCHESTRATOR: vcenter
+  RABBITMQ_NODE_PORT: 5673
+  VROUTER_GATEWAY: 127.0.0.254
+  CONTROL_NODES: 1.84.16.10
+  CONTROLLER_NODES: 1.84.16.10
+  VCENTER_SERVER: 10.84.16.51
+  VCENTER_USERNAME: administrator
+  VCENTER_PASSWORD: Contrail123
+  VCENTER_DATACENTER: qa-dc
+  VCENTER_DVSWITCH: qa_dvs
+  VCENTER_WSDL_PATH: wsdl
+  VCENTER_AUTH_PROTOCOL: https
+
