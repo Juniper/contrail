@@ -1,0 +1,18 @@
+#!/bin/bash
+
+kubectl run -i --tty "$1" --image=busybox --attach=false -l "name=$1" --namespace "{{ns-name}}"
+POD_NAME=$(kubectl get pod -l "name=$1" -o jsonpath="{.items[0].metadata.name}" --namespace "{{ns-name}}")
+
+echo "Waiting for container to start..."
+kubectl rollout status deployment "$1" --namespace "{{ns-name}}"
+
+cat > echo.sh << EOF
+echo "Running simple HTTP server on port 8080..."
+while true; do { echo -e 'HTTP/1.1 200 OK\r\n'; echo 'echo'; } | nc -l -p 8080; done
+EOF
+chmod +x echo.sh
+kubectl cp echo.sh "$POD_NAME:/echo.sh" --namespace "{{ns-name}}"
+
+echo "Container running, pod name: $POD_NAME"
+echo "Attach shell using 'kubectl attach -it $POD_NAME --namespace {{ns-name}}'"
+echo "You can use echo.sh inside the container to run a simple HTTP server for testing."
