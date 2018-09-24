@@ -1,0 +1,56 @@
+#!/bin/bash
+set -x
+
+CONTRAIL_ADDR={{addr}}
+
+tee namespace.json << "EOF"
+{
+  "kind": "Namespace",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "{{ns-name}}",
+    "labels": {
+      "name": "{{ns-name}}"
+    },
+    "annotations": {
+      "opencontrail.org/network": "{'project': '{{proj-name}}', 'domain': 'default-domain', 'name': 'vn_blue'}"
+    }
+  }
+}
+EOF
+read
+
+kubectl create -f namespace.json
+read
+
+tee vn_blue.json << "EOF"
+{
+	"virtual-network": {
+		"virtual_network_properties": {
+			"forwarding_mode": "l3"
+		},
+		"fq_name": [
+			"default-domain",
+			"{{proj-name}}",
+			"vn_blue"
+		],
+		"address_allocation_mode": "flat-subnet-only",
+		"parent_type": "project",
+		"network_ipam_refs": [
+			{
+				"to": [
+				  "default-domain",
+				  "k8s-default",
+				  "k8s-pod-ipam"
+				],
+				"attr": { "ipam_subnets": [] }
+			}
+		],
+		"fabric_snat": false
+	}
+}
+EOF
+read
+
+curl -X POST -H "Content-Type: application/json; charset=UTF-8" -d @vn_blue.json $CONTRAIL_ADDR/virtual-networks
+read
