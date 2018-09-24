@@ -29,7 +29,7 @@ type DB struct {
 
 //Watcher watches cache update.
 type Watcher struct {
-	ch       chan *services.Event
+	Ch       chan *services.Event
 	updateCh chan bool
 	id       uint64
 	node     *node
@@ -48,7 +48,7 @@ func (w *Watcher) notify() {
 
 //Chan returns event streams.
 func (w *Watcher) Chan() chan *services.Event {
-	return w.ch
+	return w.Ch
 }
 
 //nolint: gocyclo
@@ -62,7 +62,7 @@ func (w *Watcher) watch(ctx context.Context, db *DB) {
 		if ok {
 			delete(db.watchers, w.id)
 		}
-		close(w.ch)
+		close(w.Ch)
 		close(w.updateCh)
 	}()
 	log.Debugf("[Watcher %d] watch started", w.id)
@@ -84,7 +84,7 @@ func (w *Watcher) watch(ctx context.Context, db *DB) {
 		log.Debugf("[Watcher %d] send event %v", w.id, w.node)
 
 		select {
-		case w.ch <- w.node.event:
+		case w.Ch <- w.node.event:
 		case <-ctx.Done():
 			log.Debugf("[Watcher %d] canceled by context", w.id)
 			return
@@ -132,7 +132,7 @@ func (db *DB) AddWatcher(ctx context.Context, versionID uint64) (*Watcher, error
 	}
 	watcher := &Watcher{
 		id:       watcherID,
-		ch:       make(chan *services.Event),
+		Ch:       make(chan *services.Event),
 		updateCh: make(chan bool, 1000),
 		node:     db.getNodeByVersion(versionID),
 	}
@@ -227,16 +227,12 @@ func (db *DB) addDependencies(
 		dependentNode, ok := db.idMap[ref.GetUUID()]
 		if ok {
 			dependentNode.event.GetResource().AddBackReference(resource)
-			dependentNode.pop()
-			db.append(dependentNode)
 		}
 	}
 	if resource.GetParentUUID() != "" {
 		dependentNode, ok := db.idMap[resource.GetParentUUID()]
 		if ok {
 			dependentNode.event.GetResource().AddChild(resource)
-			dependentNode.pop()
-			db.append(dependentNode)
 		}
 	}
 }

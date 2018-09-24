@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
@@ -128,8 +127,6 @@ func TestProxyEndpoint(t *testing.T) {
 	defer clusterANeutron2Private.Close()
 	defer clusterANeutron2Public.Close()
 
-	server.ForceProxyUpdate()
-
 	// verify proxies
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
 
@@ -141,8 +138,6 @@ func TestProxyEndpoint(t *testing.T) {
 	// remove tempfile after test
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
-
-	server.ForceProxyUpdate()
 
 	// verify new proxies
 	verifyProxies(ctx, t, testScenario, clusterBName, true)
@@ -168,8 +163,6 @@ func TestProxyEndpoint(t *testing.T) {
 			break
 		}
 	}
-
-	server.ForceProxyUpdate()
 
 	// verify proxy (expected to fail as the port is incorrect)
 	verifyProxies(ctx, t, testScenario, clusterAName, false)
@@ -205,47 +198,7 @@ func TestProxyEndpoint(t *testing.T) {
 		break
 	}
 
-	server.ForceProxyUpdate()
-
 	// verify proxy
-	verifyProxies(ctx, t, testScenario, clusterAName, true)
-}
-
-// TestProxyEndpointWithSleep tests the first part of TestProxyEndpoint,
-// but verifies that endpoint updates are triggered every 2 seconds.
-// TODO: Remove this test when proxyService switches to using events instead of Ticker.
-func TestProxyEndpointWithSleep(t *testing.T) {
-	ctx := context.Background()
-	// Create a cluster and its neutron endpoint
-	clusterAName := "clusterA"
-	testScenario, clusterANeutronPublic, clusterANeutronPrivate, cleanup1 := runEndpointTest(
-		t, clusterAName, "neutron1")
-	defer cleanup1()
-	// remove tempfile after test
-	defer clusterANeutronPrivate.Close()
-	defer clusterANeutronPublic.Close()
-
-	// wait for proxy endpoints to update
-	time.Sleep(2 * time.Second)
-
-	verifyProxies(ctx, t, testScenario, clusterAName, true)
-
-	// create one more cluster/neutron endpoint for new cluster
-	clusterBName := "clusterB"
-	testScenario, neutronPublic, neutronPrivate, cleanup2 := runEndpointTest(
-		t, clusterBName, "neutron1")
-	defer cleanup2()
-	// remove tempfile after test
-	defer neutronPrivate.Close()
-	defer neutronPublic.Close()
-
-	// wait for proxy endpoints to update
-	time.Sleep(2 * time.Second)
-
-	// verify new proxies
-	verifyProxies(ctx, t, testScenario, clusterBName, true)
-
-	// verify existing proxies, make sure the proxy prefix is updated with cluster id
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
 }
 
@@ -285,8 +238,6 @@ func TestKeystoneEndpoint(t *testing.T) {
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
 
-	server.ForceProxyUpdate()
-
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
 		err = client.Login(ctx)
@@ -305,7 +256,6 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
 	}
-	server.ForceProxyUpdate()
 
 	// Login to new local keystone
 	for _, client := range testScenario.Clients {
@@ -328,8 +278,6 @@ func TestKeystoneEndpoint(t *testing.T) {
 	cleanup = integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
 
-	server.ForceProxyUpdate()
-
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
 		err = client.Login(ctx)
@@ -349,5 +297,4 @@ func TestKeystoneEndpoint(t *testing.T) {
 		break
 	}
 
-	server.ForceProxyUpdate()
 }

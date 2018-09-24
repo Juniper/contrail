@@ -28,7 +28,7 @@ func (p *EventProducer) Start(ctx context.Context) {
 	watcher, _ := p.cache.AddWatcher(ctx, 0) // nolint: errcheck
 	for {
 		select {
-		case e := <-watcher.ch:
+		case e := <-watcher.Ch:
 			_, err := p.Processor.Process(ctx, e)
 			if err != nil {
 				log.Warn(err)
