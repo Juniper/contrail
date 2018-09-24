@@ -7,6 +7,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
@@ -62,8 +63,8 @@ func (j protoCodec) Key() string {
 }
 
 // ResourceKey constructs key for given codec, resource name and pk.
-func ResourceKey(c Codec, resourceName, pk string) string {
-	return path.Join("/", c.Key(), resourceName, pk)
+func ResourceKey(resourceName, pk string) string {
+	return path.Join("/", viper.GetString("etcd.path"), resourceName, pk)
 }
 
 // UpdateData deserializes oldData into same type as object provided in update,

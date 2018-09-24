@@ -146,7 +146,7 @@ func (e *EtcdClient) ExpectValue(t *testing.T, key string, value string, revisio
 
 // JSONEtcdKey returns etcd key of JSON-encoded resource.
 func JSONEtcdKey(schemaID, uuid string) string {
-	return models.ResourceKey(models.JSONCodec, schemaID, uuid)
+	return models.ResourceKey(schemaID, uuid)
 }
 
 // RetrieveCreateEvent blocks and retrieves create Event from given watch channel.

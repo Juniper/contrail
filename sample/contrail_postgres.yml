@@ -18,7 +18,7 @@ etcd:
     - localhost:2379
   username: ""
   password: ""
-  path: json
+  path: contrail
   grpc_insecure: true
 
 log_level: debug
