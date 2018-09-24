@@ -8,9 +8,9 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/integration"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 func BenchmarkVirtualNetworkCreate(b *testing.B) {

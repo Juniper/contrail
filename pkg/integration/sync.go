@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/integration/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/sync"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const pgQueryCanceledErrorCode = "57014"
