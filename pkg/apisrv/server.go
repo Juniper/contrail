@@ -150,8 +150,14 @@ func etcdNotifier() services.Service {
 }
 
 func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
-	s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService)
-	s.Proxy.serve()
+	enableDynamicProxy := viper.GetBool("server.dynamic_proxy.enabled")
+	if enableDynamicProxy && viper.GetBool("cache.rdbms.enabled") {
+		s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService, s.Cache)
+		s.Proxy.serve()
+	} else if enableDynamicProxy {
+		log.Fatal("dynamic proxy service requires RDBMS caching enabled.")
+	}
+
 }
 
 //Init setup the server.
@@ -243,8 +249,9 @@ func (s *Server) Init() (err error) {
 		}
 		g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 	}
+
+	endpointStore := apicommon.MakeEndpointStore()
 	// serve dynamic proxy based on configured endpoints
-	endpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
 	s.serveDynamicProxy(endpointStore)
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
