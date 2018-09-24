@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	"github.com/Juniper/contrail/pkg/integration/etcd"
 )
 
 const (

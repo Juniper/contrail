@@ -13,11 +13,11 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/integration"
+	"github.com/Juniper/contrail/pkg/integration/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
-	"github.com/Juniper/contrail/pkg/testutil/integration"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (

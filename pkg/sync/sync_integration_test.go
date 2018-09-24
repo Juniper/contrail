@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/integration"
+	"github.com/Juniper/contrail/pkg/integration/etcd"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/testutil/integration"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {

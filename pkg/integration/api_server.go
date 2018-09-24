@@ -2,6 +2,7 @@ package integration
 
 import (
 	"fmt"
+	"log"
 	"net/http/httptest"
 	"path"
 	"testing"
@@ -10,14 +11,13 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/db/cache"
+	"github.com/Juniper/contrail/pkg/integration/etcd"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/testutil"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -59,13 +59,15 @@ type APIServerConfig struct {
 
 // NewRunningAPIServer creates new running test API Server for testing purposes.
 // Call Close() method to release its resources.
-func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
+func NewRunningAPIServer(c *APIServerConfig) *APIServer {
 	if c.LogLevel == "" {
 		c.LogLevel = "debug"
 	}
 
 	s, err := NewRunningServer(c)
-	require.NoError(t, err)
+	if err != nil {
+		log.Fatalf("Error starting test API server: %+v", err)
+	}
 
 	return s
 }
@@ -166,7 +168,7 @@ func keystoneAssignment() *keystone.StaticAssignment {
 
 func setViperConfig(config map[string]interface{}) {
 	for k, v := range config {
-		viper.Set(k, v)
+		viper.SetDefault(k, v)
 	}
 }
 
