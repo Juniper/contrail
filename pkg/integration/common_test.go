@@ -1,4 +1,4 @@
-package apisrv
+package integration
 
 import (
 	"context"
@@ -20,12 +20,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 
+	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/integration/etcd"
 	"github.com/Juniper/contrail/pkg/testutil"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -33,11 +34,8 @@ const (
 	defaultDomainID = "default"
 )
 
-// TestServer is httptest.Server instance
-var TestServer *httptest.Server
-
 // APIServer is test API Server instance
-var APIServer *Server
+var runningServer *APIServer
 
 // SetupAndRunTest does test setup and run tests for
 // all supported db types.
@@ -76,9 +74,13 @@ func initViperConfig() error {
 
 // RunTestForDB runs tests for all supported DB
 func RunTestForDB(m *testing.M, dbType string) {
-	server, testServer := LaunchTestAPIServer()
-	defer testServer.Close()
-	defer LogFatalIfErr(server.Close)
+	runningServer = NewRunningAPIServer(&APIServerConfig{
+		DBDriver:           dbType,
+		EnableEtcdNotifier: true,
+		RepoRootPath:       "../../..",
+	})
+	defer runningServer.testServer.Close()
+	defer LogFatalIfErr(runningServer.Close)
 
 	log.WithField("dbType", dbType).Info("Starting tests for DB")
 	code := m.Run()
@@ -88,27 +90,8 @@ func RunTestForDB(m *testing.M, dbType string) {
 	}
 }
 
-//LaunchTestAPIServer used to launch test API Server.
-func LaunchTestAPIServer() (*Server, *httptest.Server) {
-	var err error
-	APIServer, err = NewServer()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	TestServer = testutil.NewTestHTTPServer(APIServer.Echo)
-
-	viper.Set("keystone.authurl", TestServer.URL+"/keystone/v3")
-	err = APIServer.Init()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return APIServer, TestServer
-}
-
 //AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
-func AddKeystoneProjectAndUser(s *Server, testID string) {
+func AddKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
 	assignment.Projects[testID] = &keystone.Project{
 		Domain: assignment.Domains[defaultDomainID],
@@ -129,11 +112,6 @@ func AddKeystoneProjectAndUser(s *Server, testID string) {
 			},
 		},
 	}
-}
-
-// ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
-func (s *Server) ForceProxyUpdate() {
-	s.Proxy.forceUpdate()
 }
 
 //Task has API request and expected response.
@@ -253,8 +231,8 @@ func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenari
 
 	for key, client := range testScenario.Clients {
 		//Rewrite endpoint for test server
-		client.Endpoint = TestServer.URL
-		client.AuthURL = TestServer.URL + "/keystone/v3"
+		client.Endpoint = runningServer.testServer.URL
+		client.AuthURL = runningServer.testServer.URL + "/keystone/v3"
 		client.InSecure = true
 		client.Init()
 

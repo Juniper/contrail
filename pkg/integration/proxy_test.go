@@ -1,4 +1,4 @@
-package apisrv
+package integration
 
 import (
 	"context"
@@ -127,7 +127,7 @@ func TestProxyEndpoint(t *testing.T) {
 	defer clusterANeutron2Private.Close()
 	defer clusterANeutron2Public.Close()
 
-	APIServer.ForceProxyUpdate()
+	runningServer.apiServer.ForceProxyUpdate()
 
 	// verify proxies
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
@@ -141,7 +141,7 @@ func TestProxyEndpoint(t *testing.T) {
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 
-	APIServer.ForceProxyUpdate()
+	runningServer.apiServer.ForceProxyUpdate()
 
 	// verify new proxies
 	verifyProxies(ctx, t, testScenario, clusterBName, true)
@@ -168,7 +168,7 @@ func TestProxyEndpoint(t *testing.T) {
 		}
 	}
 
-	APIServer.ForceProxyUpdate()
+	runningServer.apiServer.ForceProxyUpdate()
 
 	// verify proxy (expected to fail as the port is incorrect)
 	verifyProxies(ctx, t, testScenario, clusterAName, false)
@@ -204,7 +204,7 @@ func TestProxyEndpoint(t *testing.T) {
 		break
 	}
 
-	APIServer.ForceProxyUpdate()
+	runningServer.apiServer.ForceProxyUpdate()
 
 	// verify proxy
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
@@ -282,7 +282,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	cleanup := RunDirtyTestScenario(t, &testScenario)
 	defer cleanup()
 
-	APIServer.ForceProxyUpdate()
+	runningServer.apiServer.ForceProxyUpdate()
 
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
@@ -302,7 +302,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
 	}
-	APIServer.ForceProxyUpdate()
+	runningServer.apiServer.ForceProxyUpdate()
 
 	// Login to new local keystone
 	for _, client := range testScenario.Clients {
@@ -325,7 +325,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	cleanup = RunDirtyTestScenario(t, &testScenario)
 	defer cleanup()
 
-	APIServer.ForceProxyUpdate()
+	runningServer.apiServer.ForceProxyUpdate()
 
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
@@ -346,5 +346,5 @@ func TestKeystoneEndpoint(t *testing.T) {
 		break
 	}
 
-	APIServer.ForceProxyUpdate()
+	runningServer.apiServer.ForceProxyUpdate()
 }
