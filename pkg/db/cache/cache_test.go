@@ -14,10 +14,9 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-const numEvent = 4
 const timeOut = 10 * time.Second
 
-func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB) {
+func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB, numEvent int) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	watcher, _ := cache.AddWatcher(ctx, 0) // nolint: errcheck
 	wg.Add(1)
@@ -30,7 +29,7 @@ func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB) {
 			case <-ctx.Done():
 				log.Debugf("[watcher %d] time out on test", watcher.id)
 				assert.Fail(t, "timeout")
-			case e := <-watcher.ch:
+			case e := <-watcher.Ch:
 				log.Debugf("[watcher %d] got event version %d", watcher.id, e.Version)
 				assert.Equal(t, uint64(i), e.Version)
 			}
@@ -52,6 +51,21 @@ func notifyEvent(cache *DB, version uint64) { // nolint: interfacer
 	cache.Process(context.Background(), event) // nolint: errcheck
 }
 
+func notifyDependentEvent(cache *DB, version uint64) { // nolint: interfacer
+	event := &services.Event{
+		Version: version,
+		Request: &services.Event_CreateRoutingInstanceRequest{
+			CreateRoutingInstanceRequest: &services.CreateRoutingInstanceRequest{
+				RoutingInstance: &models.RoutingInstance{
+					UUID:       "ri" + strconv.FormatUint(version, 10),
+					ParentUUID: "vn" + strconv.FormatUint(version-1, 10),
+				},
+			},
+		},
+	}
+	cache.Process(context.Background(), event) // nolint: errcheck
+}
+
 // nolint: unused, deadcode
 func notifyDelete(cache *DB, version uint64) { // nolint: interfacer
 	event := &services.Event{
@@ -65,19 +79,31 @@ func notifyDelete(cache *DB, version uint64) { // nolint: interfacer
 	cache.Process(context.Background(), event) // nolint: errcheck
 }
 
+func TestCacheWithDependentResources(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	cache := NewDB(1)
+	wg := &sync.WaitGroup{}
+
+	addWatcher(t, wg, cache, 2)
+	notifyEvent(cache, 0)
+	notifyDependentEvent(cache, 1)
+
+	wg.Wait()
+}
+
 func TestCache(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	cache := NewDB(1)
 	wg := &sync.WaitGroup{}
 
-	addWatcher(t, wg, cache)
-	addWatcher(t, wg, cache)
+	addWatcher(t, wg, cache, 4)
+	addWatcher(t, wg, cache, 4)
 
 	notifyEvent(cache, 0)
 	notifyEvent(cache, 1)
 
-	addWatcher(t, wg, cache)
-	addWatcher(t, wg, cache)
+	addWatcher(t, wg, cache, 4)
+	addWatcher(t, wg, cache, 4)
 	// test cancelation of channel.
 	// expect no panic or blocking.
 	ctx2, cancel := context.WithCancel(context.Background())
@@ -92,7 +118,7 @@ func TestCache(t *testing.T) {
 	notifyEvent(cache, 2)
 	notifyEvent(cache, 3)
 
-	addWatcher(t, wg, cache)
+	addWatcher(t, wg, cache, 4)
 
 	wg.Wait()
 
