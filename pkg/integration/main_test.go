@@ -1,4 +1,4 @@
-package apisrv
+package integration
 
 import (
 	"testing"
