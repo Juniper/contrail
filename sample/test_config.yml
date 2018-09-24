@@ -132,3 +132,11 @@ keystone:
     expire: 3600
   insecure: true
   authurl: https://localhost:9091/keystone/v3
+
+cache:
+  enabled: true
+  timeout: 10s
+  # how long revision deleted event preserved.
+  max_history: 100000
+  rdbms:
+    enabled: true

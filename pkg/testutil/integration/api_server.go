@@ -193,8 +193,3 @@ func (s *APIServer) Close() error {
 	s.TestServer.Close()
 	return s.APIServer.Close()
 }
-
-// ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
-func (s *APIServer) ForceProxyUpdate() {
-	s.APIServer.Proxy.ForceUpdate()
-}

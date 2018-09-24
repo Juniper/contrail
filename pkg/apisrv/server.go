@@ -150,7 +150,7 @@ func etcdNotifier() services.Service {
 }
 
 func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
-	s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService)
+	s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService, s.Cache)
 	s.Proxy.serve()
 }
 
@@ -243,9 +243,8 @@ func (s *Server) Init() (err error) {
 		}
 		g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 	}
-	// serve dynamic proxy based on configured endpoints
+
 	endpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
-	s.serveDynamicProxy(endpointStore)
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	var keystoneClient *keystone.Client
@@ -296,6 +295,9 @@ func (s *Server) Init() (err error) {
 
 	s.setupWatchAPI()
 	s.setupActionResources(cs)
+
+	// serve dynamic proxy based on configured endpoints
+	s.serveDynamicProxy(endpointStore)
 
 	if viper.GetBool("recorder.enabled") {
 		file := viper.GetString("recorder.file")
