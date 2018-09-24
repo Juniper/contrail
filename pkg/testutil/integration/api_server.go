@@ -125,6 +125,7 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"server.log_body":             !c.DisableLogAPI,
 		"static_files.public":         path.Join(c.RepoRootPath, "public"),
 		"server.enable_vnc_neutron":   true,
+		"server.enable_dynamic_proxy": false,
 		"tls.enabled":                 false,
 		"aaa_mode":                    rbacConfig(c.EnableRBAC),
 	})
@@ -192,9 +193,4 @@ func (s *APIServer) CloseT(t *testing.T) {
 func (s *APIServer) Close() error {
 	s.TestServer.Close()
 	return s.APIServer.Close()
-}
-
-// ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
-func (s *APIServer) ForceProxyUpdate() {
-	s.APIServer.Proxy.ForceUpdate()
 }

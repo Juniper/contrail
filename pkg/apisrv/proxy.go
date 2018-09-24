@@ -17,14 +17,13 @@ import (
 	"github.com/spf13/viper"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
-	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 const (
-	// DefaultDynamicProxyPath default value for server.dynamic_proxy_path
+	// DefaultDynamicProxyPath default value for server.dynamic_proxy.path
 	DefaultDynamicProxyPath = "proxy"
 	public                  = apicommon.Public
 	private                 = apicommon.Private
@@ -37,16 +36,16 @@ type proxyService struct {
 	echoServer    *echo.Echo
 	dbService     services.Service
 	EndpointStore *apicommon.EndpointStore
+	Cache         *cache.DB
 	// context to stop servicing proxy endpoints
 	serviceContext     context.Context
 	stopServiceContext context.CancelFunc
 	serviceWaitGroup   *sync.WaitGroup
-	forceUpdateChan    chan chan struct{}
 }
 
 func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
-	dbService services.Service) *proxyService {
-	group := viper.GetString("server.dynamic_proxy_path")
+	dbService services.Service, cache *cache.DB) *proxyService {
+	group := viper.GetString("server.dynamic_proxy.path")
 	if group == "" {
 		group = DefaultDynamicProxyPath
 	}
@@ -55,32 +54,9 @@ func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
 		dbService:     dbService,
 		echoServer:    e,
 		EndpointStore: endpointStore,
+		Cache:         cache,
 	}
 	return p
-}
-
-func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
-	endpoints := make(map[string]*models.Endpoint)
-	ctx := auth.NoAuth(context.Background())
-	spec := baseservices.ListSpec{Limit: limit}
-	for {
-		request := &services.ListEndpointRequest{Spec: &spec}
-		response, err := p.dbService.ListEndpoint(ctx, request)
-		if err != nil {
-			return nil, err
-		}
-		for _, e := range response.Endpoints {
-			endpoints[e.UUID] = e
-		}
-		if len(response.Endpoints) != limit {
-			// less than 100 records present in DB
-			break
-		}
-		// more than 100 records present in DB, continue to read
-		marker := response.Endpoints[len(response.Endpoints)-1].UUID
-		spec.Marker = marker
-	}
-	return endpoints, nil
 }
 
 func (p *proxyService) getProxyPrefixFromURL(urlPath string, scope string) (proxyPrefix string) {
@@ -146,7 +122,7 @@ func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo
 	}
 }
 
-func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
+func (p *proxyService) deleteProxyEndpoint(endpointID string) {
 	p.EndpointStore.Data.Range(func(prefix, proxy interface{}) bool {
 		s, ok := proxy.(*apicommon.TargetStore)
 		if !ok {
@@ -166,8 +142,7 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 				log.Errorf("Unable to convert id %v to string when looking EndpointStore", id)
 				return true
 			}
-			_, ok = endpoints[ids]
-			if !ok {
+			if ids == endpointID {
 				s.Remove(ids)
 				log.Debugf("deleting dynamic proxy endpoint for id: %s", ids)
 			}
@@ -222,59 +197,48 @@ func (p *proxyService) manageProxyEndpoint(endpoint *models.Endpoint, scope stri
 	}
 }
 
-func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint) {
-	// delete stale proxy endpoints in-memory
-	p.checkDeleted(endpoints)
+func (p *proxyService) syncProxyEndpoint(endpoint *models.Endpoint) {
 	// create/update proxy middleware
-	for _, endpoint := range endpoints {
-		p.initProxyTargetStore(endpoint)
-		if endpoint.PublicURL != "" {
-			p.manageProxyEndpoint(endpoint, public)
-			p.manageProxyEndpoint(endpoint, private)
-		}
+	p.initProxyTargetStore(endpoint)
+	if endpoint.PublicURL != "" {
+		p.manageProxyEndpoint(endpoint, public)
+		p.manageProxyEndpoint(endpoint, private)
 	}
 }
 
-func (p *proxyService) ForceUpdate() {
-	wait := make(chan struct{})
-	p.forceUpdateChan <- wait
-	<-wait
+func (p *proxyService) process(e *services.Event) {
+	// process the received event.
+	switch event := e.Request.(type) {
+	case *services.Event_CreateEndpointRequest:
+		p.syncProxyEndpoint(event.CreateEndpointRequest.Endpoint)
+	case *services.Event_UpdateEndpointRequest:
+		p.syncProxyEndpoint(event.UpdateEndpointRequest.Endpoint)
+	case *services.Event_DeleteEndpointRequest:
+		p.deleteProxyEndpoint(event.DeleteEndpointRequest.ID)
+	}
+	log.Debugf("proxy: Processed event %v", e)
 }
 
 func (p *proxyService) serve() {
 	// add dynamic proxy middleware
 	g := p.echoServer.Group(p.group)
 	g.Use(p.dynamicProxyMiddleware())
-	p.forceUpdateChan = make(chan chan struct{})
 	p.serviceContext, p.stopServiceContext = context.WithCancel(context.Background())
+	watcher, _ := p.Cache.AddWatcher(p.serviceContext, 0)
 	p.serviceWaitGroup = &sync.WaitGroup{}
 	p.serviceWaitGroup.Add(1)
 	go func() {
 		defer p.serviceWaitGroup.Done()
-		ticker := time.NewTicker(2 * time.Second)
-		defer ticker.Stop()
 		for {
 			select {
 			case <-p.serviceContext.Done():
 				log.Info("Stopping dynamic proxy server")
 				return
-			case wait := <-p.forceUpdateChan:
-				p.updateEndpoints()
-				close(wait)
-			case <-ticker.C:
-				p.updateEndpoints()
+			case e := <-watcher.Chan():
+				p.process(e)
 			}
 		}
 	}()
-}
-
-func (p *proxyService) updateEndpoints() {
-	endpoints, err := p.readEndpoints()
-	if err != nil {
-		log.WithError(err).Error("Endpoints read failed")
-		return
-	}
-	p.syncProxyEndpoints(endpoints)
 }
 
 func (p *proxyService) stop() {
