@@ -300,8 +300,6 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 		assert.True(t, verifyPlaybooks(t, expectedPlaybooks),
 			fmt.Sprintf("Expected list of %s playbooks are not executed", action))
 	}
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -372,8 +370,6 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		assert.True(t, verifyPlaybooks(t, createPlaybooks),
 			"Expected list of create playbooks are not executed")
 	}
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -411,8 +407,6 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		assert.True(t, verifyPlaybooks(t, updatePlaybooks),
 			"Expected list of update playbooks are not executed")
 	}
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -525,8 +519,6 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 		assert.True(t, verifyPlaybooks(t, createAppformixPlaybooks),
 			"Expected list of create playbooks are not executed")
 	}
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -564,8 +556,6 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 		assert.True(t, verifyPlaybooks(t, updateAppformixPlaybooks),
 			"Expected list of update playbooks are not executed")
 	}
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -828,8 +818,6 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		"Instance file created during cluster create is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_kubernetes.yml"),
 		"Expected list of create playbooks are not executed")
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -860,8 +848,6 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		"Instance file created during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_kubernetes.yml"),
 		"Expected list of update playbooks are not executed")
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -967,8 +953,6 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 		"Vcenter_vars file created during cluster create is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_vcenter.yml"),
 		"Expected list of create playbooks are not executed")
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -999,8 +983,6 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 		"Instance file created during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_vcenter.yml"),
 		"Expected list of update playbooks are not executed")
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -1133,8 +1115,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_mc_playbook.yml"),
 		"Expected list of update playbooks are not executed")
 
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -1210,8 +1190,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
 		"Expected list of update playbooks are not executed")
 
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {

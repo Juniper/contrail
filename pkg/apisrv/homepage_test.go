@@ -85,7 +85,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 
 	{
 		proxyPath := apisrv.DefaultDynamicProxyPath
-		if p := viper.GetString("server.dynamic_proxy_path"); p != "" {
+		if p := viper.GetString("server.dynamic_proxy.path"); p != "" {
 			proxyPath = p
 		}
 
@@ -113,6 +113,9 @@ func TestRoutesAreRegistered(t *testing.T) {
 	routes.add(apisrv.FQNameToIDPath)
 	routes.add(apisrv.UserAgentKVPath)
 	routes.add(services.PropCollectionUpdatePath)
+	if viper.GetBool("cache.enabled") {
+		routes.add(apisrv.WatchPath)
+	}
 
 	for _, route := range server.APIServer.Echo.Routes() {
 		var isPathExcludedFromHomepage bool
