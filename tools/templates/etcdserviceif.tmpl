@@ -20,7 +20,7 @@ func (ns *NotifierService) Create{{ schema.JSONSchema.GoName }}(
     }
 
     o := response.Get{{ schema.JSONSchema.GoName }}()
-    key := models.ResourceKey(ns.Codec, "{{ schema.ID }}", o.UUID)
+    key := models.ResourceKey("{{ schema.ID }}", o.UUID)
     if key == "" {
         return nil, errors.New("etcd object key is empty")
     }
@@ -48,7 +48,7 @@ func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
     }
 
     o := response.Get{{ schema.JSONSchema.GoName }}()
-    key := models.ResourceKey(ns.Codec, "{{ schema.ID }}", o.UUID)
+    key := models.ResourceKey("{{ schema.ID }}", o.UUID)
     if key == "" {
         return nil, errors.New("etcd object key is empty")
     }
@@ -74,7 +74,7 @@ func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
         return nil, err
     }
 
-    key := models.ResourceKey(ns.Codec, "{{ schema.ID }}", response.GetID())
+    key := models.ResourceKey("{{ schema.ID }}", response.GetID())
     if key == "" {
         return nil, errors.New("etcd object key is empty")
     }
