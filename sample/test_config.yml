@@ -74,13 +74,17 @@ server:
   static_files:
     public: ../../public
 
-  dynamic_proxy_path: proxy
   # API Proxy configuration
   # key: URL path
   # value: String list of backend host
   proxy:
     /contrail:
     - http://localhost:8082
+
+  # API Dynamic Proxy configuration
+  dynamic_proxy:
+    enabled: true
+    path: proxy
 
 sync:
   storage: json
@@ -133,3 +137,11 @@ keystone:
     expire: 3600
   insecure: true
   authurl: https://localhost:9091/keystone/v3
+
+cache:
+  enabled: true
+  timeout: 10s
+  # how long revision deleted event preserved.
+  max_history: 100000
+  rdbms:
+    enabled: true

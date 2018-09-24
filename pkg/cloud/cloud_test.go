@@ -110,9 +110,6 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 	assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
 		"Expected list of create commands are not executed")
 
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
-
 	//update cloud
 	config.Action = updateAction
 

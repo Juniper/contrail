@@ -59,6 +59,11 @@ server:
     /contrail:
     - http://localhost:8082
 
+  # API Dynamic Proxy configuration
+  dynamic_proxy:
+    enabled: true
+    path: proxy
+
   notify_etcd: true
 
 # Keystone configuration

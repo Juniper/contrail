@@ -100,33 +100,34 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 
 func setDefaultViperConfig(c *APIServerConfig) {
 	setViperConfig(map[string]interface{}{
-		"database.type":               c.DBDriver,
-		"database.host":               "localhost",
-		"database.user":               dbUser,
-		"database.name":               dbName,
-		"database.password":           dbPassword,
-		"database.dialect":            c.DBDriver,
-		"database.max_open_conn":      100,
-		"database.connection_retries": 10,
-		"database.retry_period":       3,
-		"database.debug":              true,
-		constants.ETCDPathVK:          integrationetcd.Prefix,
-		"keystone.local":              true,
-		"keystone.assignment.type":    "static",
-		"keystone.assignment.data":    keystoneAssignment(),
-		"keystone.store.type":         "memory",
-		"keystone.store.expire":       3600,
-		"keystone.insecure":           true,
-		"log_level":                   c.LogLevel,
-		"server.notify_etcd":          c.EnableEtcdNotifier,
-		"server.read_timeout":         10,
-		"server.write_timeout":        5,
-		"server.log_api":              !c.DisableLogAPI,
-		"server.log_body":             !c.DisableLogAPI,
-		"static_files.public":         path.Join(c.RepoRootPath, "public"),
-		"server.enable_vnc_neutron":   true,
-		"tls.enabled":                 false,
-		"aaa_mode":                    rbacConfig(c.EnableRBAC),
+		"database.type":                c.DBDriver,
+		"database.host":                "localhost",
+		"database.user":                dbUser,
+		"database.name":                dbName,
+		"database.password":            dbPassword,
+		"database.dialect":             c.DBDriver,
+		"database.max_open_conn":       100,
+		"database.connection_retries":  10,
+		"database.retry_period":        3,
+		"database.debug":               true,
+		constants.ETCDPathVK:           integrationetcd.Prefix,
+		"keystone.local":               true,
+		"keystone.assignment.type":     "static",
+		"keystone.assignment.data":     keystoneAssignment(),
+		"keystone.store.type":          "memory",
+		"keystone.store.expire":        3600,
+		"keystone.insecure":            true,
+		"log_level":                    c.LogLevel,
+		"server.notify_etcd":           c.EnableEtcdNotifier,
+		"server.read_timeout":          10,
+		"server.write_timeout":         5,
+		"server.log_api":               !c.DisableLogAPI,
+		"server.log_body":              !c.DisableLogAPI,
+		"static_files.public":          path.Join(c.RepoRootPath, "public"),
+		"server.enable_vnc_neutron":    true,
+		"server.dynamic_proxy.enabled": false,
+		"tls.enabled":                  false,
+		"aaa_mode":                     rbacConfig(c.EnableRBAC),
 	})
 }
 
@@ -192,9 +193,4 @@ func (s *APIServer) CloseT(t *testing.T) {
 func (s *APIServer) Close() error {
 	s.TestServer.Close()
 	return s.APIServer.Close()
-}
-
-// ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
-func (s *APIServer) ForceProxyUpdate() {
-	s.APIServer.Proxy.ForceUpdate()
 }
