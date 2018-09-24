@@ -5,9 +5,9 @@ global_configuration:
   {%if cluster.ContainerRegistryPassword %}CONTAINER_REGISTRY_PASSWORD: {{ cluster.ContainerRegistryPassword }}{%endif%}
 provider_config:
   bms:
-    ssh_user: {%if defaultSSHUser %}{{SSHUser}}{%else%}root{%endif%}
-    ssh_pwd: {%if defaultSSHPassword %}{{SSHPassword}}{%else%}c0ntrail123{%endif%}
-    {%if defaultSSHKey %}ssh_public_key: {{ SSHKey }}{%endif%}
+    ssh_user: {%if defaultSSHUser %}{{defaultSSHUser}}{%else%}root{%endif%}
+    ssh_pwd: {%if defaultSSHPassword %}{{defaultSSHPassword}}{%else%}c0ntrail123{%endif%}
+    {%if defaultSSHKey %}ssh_public_key: {{ defaultSSHKey }}{%endif%}
     ntpserver: {{ cluster.NTPServer }}
     domainsuffix: {%if cluster.DomainSuffix %}{{ cluster.DomainSuffix }}{%else%}local{%endif%}
 instances:
