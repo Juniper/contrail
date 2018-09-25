@@ -2,149 +2,146 @@ package integration
 
 import (
 	"fmt"
-	"net/http/httptest"
+	"net/http"
 	"path"
 	"testing"
 
+	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
+// Resource constants
 const (
-	authEndpointSuffix = "/keystone/v3"
-	dbUser             = "root"
-	dbPassword         = "contrail123"
-	dbName             = "contrail_test"
+	DomainType                 = "domain"
+	DefaultDomainUUID          = "beefbeef-beef-beef-beef-beefbeef0002"
+	ProjectType                = "project"
+	ProjectSchemaID            = "project"
+	ProjectSingularPath        = "/project"
+	ProjectPluralPath          = "/projects"
+	NetworkIPAMSchemaID        = "network_ipam"
+	NetworkIpamSingularPath    = "/network-ipam"
+	NetworkIpamPluralPath      = "/network-ipams"
+	VirtualNetworkSchemaID     = "virtual_network"
+	VirtualNetworkSingularPath = "/virtual-network"
+	VirtualNetworkPluralPath   = "/virtual-networks"
 )
 
-// Keystone credentials
-const (
-	DefaultDomainID   = "default"
-	DefaultDomainName = "DefaultDomain"
-	AdminProjectID    = "admin"
-	AdminProjectName  = "AdminProject"
-	AdminRoleID       = "admin"
-	AdminRoleName     = "AdminRole"
-	AdminUserID       = "alice"
-	AdminUserName     = "Alice"
-	AdminUserPassword = "alice_password"
-)
-
-// APIServer is embedded API Server for testing purposes.
-type APIServer struct {
-	apiServer  *apisrv.Server
-	testServer *httptest.Server
-	log        *logrus.Entry
+// HTTPAPIClient is API Server client for tests purposes.
+type HTTPAPIClient struct {
+	*client.HTTP
+	log *logrus.Entry
 }
 
-// NewRunningAPIServer creates new running test API Server.
-// Call Close() method to release its resources.
-func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string) *APIServer {
-	setViperConfig(map[string]interface{}{
-		"database.type":               dbDriver,
-		"database.host":               "localhost",
-		"database.user":               dbUser,
-		"database.name":               dbName,
-		"database.password":           dbPassword,
-		"database.dialect":            dbDriver,
-		"database.max_open_conn":      100,
-		"database.connection_retries": 10,
-		"database.retry_period":       3,
-		"database.debug":              true,
-		"etcd.path":                   EtcdJSONPrefix,
-		"keystone.local":              true,
-		"keystone.assignment.type":    "static",
-		"keystone.assignment.data":    keystoneAssignment(),
-		"keystone.store.type":         "memory",
-		"keystone.store.expire":       3600,
-		"keystone.insecure":           true,
-		"log_level":                   "debug",
-		"server.read_timeout":         10,
-		"server.write_timeout":        5,
-		"server.log_api":              true,
-		"static_files.public":         path.Join(repoRootPath, "public"),
-		"tls.enabled":                 false,
-	})
-	configureDebugLogging(t)
+// NewHTTPAPIClient creates HTTP client of API Server.
+func NewHTTPAPIClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
+	l := pkglog.NewLogger("http-api-client")
+	l.WithFields(logrus.Fields{"endpoint": apiServerURL}).Debug("Connecting to API Server")
+	c := client.NewHTTP(
+		apiServerURL,
+		apiServerURL+authEndpointSuffix,
+		AdminUserID,
+		AdminUserPassword,
+		true,
+		client.GetKeystoneScope(DefaultDomainID, "",
+			AdminProjectID, AdminProjectName),
+	)
+	c.Debug = true
 
-	log := pkglog.NewLogger("api-server")
-	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Creating API Server")
-	s, err := apisrv.NewServer()
-	require.NoError(t, err, "creating API Server failed")
+	err := c.Login()
+	require.NoError(t, err, "connecting API Server failed")
 
-	ts := testutil.NewTestHTTPServer(s.Echo)
-
-	viper.Set("keystone.authurl", ts.URL+authEndpointSuffix)
-	err = s.Init()
-	require.NoError(t, err, "initialization of test API Server failed")
-
-	return &APIServer{
-		apiServer:  s,
-		testServer: ts,
-		log:        log,
+	return &HTTPAPIClient{
+		HTTP: c,
+		log:  l,
 	}
 }
 
-func keystoneAssignment() *keystone.StaticAssignment {
-	a := keystone.StaticAssignment{
-		Domains: map[string]*keystone.Domain{
-			DefaultDomainID: {
-				ID:   DefaultDomainID,
-				Name: DefaultDomainName,
-			},
-		},
-		Projects: make(map[string]*keystone.Project),
-		Users:    make(map[string]*keystone.User),
-	}
-	a.Projects[AdminProjectID] = &keystone.Project{
-		Domain: a.Domains[DefaultDomainID],
-		ID:     AdminProjectID,
-		Name:   AdminProjectName,
-	}
-	a.Users[AdminUserID] = &keystone.User{
-		Domain:   a.Domains[DefaultDomainID],
-		ID:       AdminUserID,
-		Name:     AdminUserName,
-		Password: AdminUserPassword,
-		Roles: []*keystone.Role{
-			{
-				ID:      AdminRoleID,
-				Name:    AdminRoleName,
-				Project: a.Projects[AdminProjectID],
-			},
-		},
-	}
-	return &a
+// CreateProject creates Project resource.
+func (c *HTTPAPIClient) CreateProject(t *testing.T, p *models.Project) {
+	c.CreateResource(t, ProjectPluralPath, &services.CreateProjectRequest{Project: p})
 }
 
-func setViperConfig(config map[string]interface{}) {
-	for k, v := range config {
-		viper.Set(k, v)
-	}
+// DeleteProject deletes Project resource.
+func (c *HTTPAPIClient) DeleteProject(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(ProjectSingularPath, uuid))
 }
 
-func configureDebugLogging(t *testing.T) {
-	err := pkglog.Configure("debug")
-	assert.NoError(t, err, "configuring logging failed")
+// CreateNetworkIPAM creates NetworkIPAM resource.
+func (c *HTTPAPIClient) CreateNetworkIPAM(t *testing.T, ni *models.NetworkIpam) {
+	c.CreateResource(t, NetworkIpamPluralPath, &services.CreateNetworkIpamRequest{NetworkIpam: ni})
 }
 
-// URL returns server base URL.
-func (s *APIServer) URL() string {
-	return s.testServer.URL
+// DeleteNetworkIPAM deletes NetworkIPAM resource.
+func (c *HTTPAPIClient) DeleteNetworkIPAM(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(NetworkIpamSingularPath, uuid))
 }
 
-// Close closes server.
-func (s *APIServer) Close(t *testing.T) {
-	s.log.Debug("Closing test API server")
-	err := s.apiServer.Close()
-	assert.NoError(t, err, "closing API Server failed")
+// CreateVirtualNetwork creates VirtualNetwork resource.
+func (c *HTTPAPIClient) CreateVirtualNetwork(t *testing.T, vn *models.VirtualNetwork) {
+	c.CreateResource(t, VirtualNetworkPluralPath, &services.CreateVirtualNetworkRequest{VirtualNetwork: vn})
+}
 
-	s.testServer.Close()
+// GetVirtualNetwork gets VirtualNetwork resource.
+func (c *HTTPAPIClient) GetVirtualNetwork(t *testing.T, uuid string) *models.VirtualNetwork {
+	var responseData services.GetVirtualNetworkResponse
+	c.GetResource(t, path.Join(VirtualNetworkSingularPath, uuid), &responseData)
+	return responseData.VirtualNetwork
+}
+
+// DeleteVirtualNetwork deletes VirtualNetwork resource.
+func (c *HTTPAPIClient) DeleteVirtualNetwork(t *testing.T, uuid string) {
+	c.DeleteResource(t, path.Join(VirtualNetworkSingularPath, uuid))
+}
+
+// CreateResource creates resource.
+func (c *HTTPAPIClient) CreateResource(t *testing.T, path string, requestData interface{}) {
+	var responseData interface{}
+	r, err := c.Create(
+		path,
+		requestData,
+		&responseData,
+	)
+	c.log.WithFields(logrus.Fields{
+		"requestData":  requestData,
+		"response":     r,
+		"responseData": responseData,
+	}).Debug("Got Create response")
+	assert.NoError(t, err, fmt.Sprintf("creating resource failed\n requestData: %v\n response: %+v", requestData, r))
+}
+
+// GetResource gets resource.
+func (c *HTTPAPIClient) GetResource(t *testing.T, path string, responseData interface{}) {
+	r, err := c.Read(path, &responseData)
+	c.log.WithFields(logrus.Fields{
+		"response":     r,
+		"responseData": responseData,
+	}).Debug("Got Get response")
+	assert.NoError(t, err, fmt.Sprintf("getting resource failed\n response: %+v", r))
+}
+
+// DeleteResource deletes resource.
+func (c *HTTPAPIClient) DeleteResource(t *testing.T, path string) {
+	r, err := c.Delete(path, nil)
+	c.log.WithField("response", r).Debug("Got Delete response")
+	assert.NoError(t, err, "deleting resource failed\n response: %+v", r)
+}
+
+// CheckResourceDoesNotExist checks that there is no resource with given path.
+func (c *HTTPAPIClient) CheckResourceDoesNotExist(t *testing.T, path string) {
+	r, err := c.Do(
+		echo.GET,
+		path,
+		nil,
+		nil,
+		nil,
+		[]int{http.StatusNotFound},
+	)
+	assert.NoError(t, err, "getting resource failed\n response: %+v", r)
 }

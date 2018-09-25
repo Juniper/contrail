@@ -140,6 +140,7 @@ func (c *HTTPAPIClient) CheckResourceDoesNotExist(t *testing.T, path string) {
 		path,
 		nil,
 		nil,
+		nil,
 		[]int{http.StatusNotFound},
 	)
 	assert.NoError(t, err, "getting resource failed\n response: %+v", r)
