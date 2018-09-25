@@ -8,12 +8,13 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/common/keystone"
 )
 
 const (
@@ -79,18 +80,21 @@ func NewHTTP(endpoint, authURL, id, password string, insecure bool, scope *keyst
 
 //Init is used to initialize a client.
 func (h *HTTP) Init() {
-	tr := &http.Transport{
-		Dial: (&net.Dialer{
-			//Timeout: 5 * time.Second,
-		}).Dial,
-		//TLSHandshakeTimeout: 5 * time.Second,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
+	if h.getProtocol() == "https" {
+		tr := &http.Transport{
+			Dial: (&net.Dialer{
+				//Timeout: 5 * time.Second,
+			}).Dial,
+			//TLSHandshakeTimeout: 5 * time.Second,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
+		}
+		h.httpClient = &http.Client{
+			Transport: tr,
+			//Timeout:   time.Second * 10,
+		}
+	} else {
+		h.httpClient = &http.Client{}
 	}
-	client := &http.Client{
-		Transport: tr,
-		//Timeout:   time.Second * 10,
-	}
-	h.httpClient = client
 }
 
 // Login refreshes authentication token.
@@ -157,36 +161,43 @@ func (h *HTTP) Login() error {
 // Create send a create API request.
 func (h *HTTP) Create(path string, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusCreated}
-	return h.Do(echo.POST, path, data, output, expected)
+	return h.Do(echo.POST, path, nil, data, output, expected)
 }
 
 // Read send a get API request.
 func (h *HTTP) Read(path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(echo.GET, path, nil, output, expected)
+	return h.Do(echo.GET, path, nil, nil, output, expected)
+}
+
+// ReadWithQuery send a get API request with a query.
+func (h *HTTP) ReadWithQuery(
+	path string, query url.Values, output interface{}) (*http.Response, error) {
+	expected := []int{http.StatusOK}
+	return h.Do(echo.GET, path, query, nil, output, expected)
 }
 
 // Update send an update API request.
 func (h *HTTP) Update(path string, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(echo.PUT, path, data, output, expected)
+	return h.Do(echo.PUT, path, nil, data, output, expected)
 }
 
 // Delete send a delete API request.
 func (h *HTTP) Delete(path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusNoContent}
-	return h.Do(echo.DELETE, path, nil, output, expected)
+	return h.Do(echo.DELETE, path, nil, nil, output, expected)
 }
 
 // EnsureDeleted send a delete API request.
 func (h *HTTP) EnsureDeleted(path string, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusNoContent, http.StatusNotFound}
-	return h.Do(echo.DELETE, path, nil, output, expected)
+	return h.Do(echo.DELETE, path, nil, nil, output, expected)
 }
 
 // Do issues an API request.
-func (h *HTTP) Do(method, path string, data interface{}, output interface{}, expected []int) (*http.Response, error) {
-	request, err := h.prepareHTTPRequest(method, path, data)
+func (h *HTTP) Do(method, path string, query url.Values, data interface{}, output interface{}, expected []int) (*http.Response, error) {
+	request, err := h.prepareHTTPRequest(method, path, data, query)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +234,7 @@ func (h *HTTP) Do(method, path string, data interface{}, output interface{}, exp
 	return resp, nil
 }
 
-func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}) (*http.Request, error) {
+func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query url.Values) (*http.Request, error) {
 	var request *http.Request
 	if data == nil {
 		var err error
@@ -244,6 +255,10 @@ func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}) (*http.
 		}
 	}
 
+	if len(query) > 0 {
+		request.URL.RawQuery = query.Encode()
+	}
+
 	request.Header.Set("Content-Type", "application/json")
 	if h.AuthToken != "" {
 		request.Header.Set("X-Auth-Token", h.AuthToken)
@@ -255,7 +270,13 @@ func getURL(endpoint, path string) string {
 	return endpoint + path
 }
 
-func (h *HTTP) doHTTPRequestRetryingOn401(request *http.Request, data interface{}) (*http.Response, error) {
+func (h *HTTP) getProtocol() string {
+	u, _ := url.Parse(h.Endpoint) // nolint: errcheck
+	return u.Scheme
+}
+
+func (h *HTTP) doHTTPRequestRetryingOn401(
+	request *http.Request, data interface{}) (*http.Response, error) {
 	if h.Debug {
 		log.WithFields(log.Fields{
 			"method": request.Method,
@@ -324,7 +345,7 @@ func logErrorAndResponse(err error, response *http.Response) {
 
 // DoRequest requests based on request object.
 func (h *HTTP) DoRequest(request *Request) (*http.Response, error) {
-	return h.Do(request.Method, request.Path, request.Data, &request.Output, request.Expected)
+	return h.Do(request.Method, request.Path, nil, request.Data, &request.Output, request.Expected)
 }
 
 // Batch execution.
