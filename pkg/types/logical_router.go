@@ -433,7 +433,7 @@ func (sv *ContrailTypeLogicService) createInternalVirtualNetwork(
 		VirtualNetwork: internalVN,
 	}
 
-	response, err := sv.WriteService.CreateVirtualNetwork(ctx, request)
+	response, err := sv.WriteService.CreateVirtualNetwork(GetInternalRequestContext(ctx), request)
 	return response.GetVirtualNetwork(), err
 }
 
@@ -525,10 +525,13 @@ func (sv *ContrailTypeLogicService) updateInternalVirtualNetwork(
 		updatePaths = append(updatePaths, strings.Join(path, "."))
 	}
 
-	_, err = sv.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
-		VirtualNetwork: updateVN,
-		FieldMask:      types.FieldMask{Paths: updatePaths},
-	})
+	_, err = sv.WriteService.UpdateVirtualNetwork(
+		GetInternalRequestContext(ctx),
+		&services.UpdateVirtualNetworkRequest{
+			VirtualNetwork: updateVN,
+			FieldMask:      types.FieldMask{Paths: updatePaths},
+		},
+	)
 
 	return err
 }
@@ -562,9 +565,12 @@ func (sv *ContrailTypeLogicService) deleteInternalVirtualNetwork(
 		return common.ErrorNotFoundf("cannot find internal virtual network: %v", err)
 	}
 
-	_, err = sv.WriteService.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{
-		ID: m.UUID,
-	})
+	_, err = sv.WriteService.DeleteVirtualNetwork(
+		GetInternalRequestContext(ctx),
+		&services.DeleteVirtualNetworkRequest{
+			ID: m.UUID,
+		},
+	)
 
 	return err
 }
