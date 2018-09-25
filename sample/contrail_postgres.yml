@@ -101,8 +101,8 @@ server:
 #     insecure: true
 #     authurl: https://localhost:9091/keystone/v3
 
-# disable authentication with no_auth true and comment out keystone configuraion.
-no_auth: true
+# disable authentication with auth_type set to no-auth and comment out keystone configuraion.
+auth_type: no-auth
 insecure: true
 
 sync:
