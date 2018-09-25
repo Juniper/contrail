@@ -13,6 +13,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	kscommon "github.com/Juniper/contrail/pkg/keystone"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/testutil"
 )
@@ -94,26 +95,26 @@ func NewRunningAPIServer(t *testing.T, repoRootPath, dbDriver string) *APIServer
 
 func keystoneAssignment() *keystone.StaticAssignment {
 	a := keystone.StaticAssignment{
-		Domains: map[string]*keystone.Domain{
+		Domains: map[string]*kscommon.Domain{
 			DefaultDomainID: {
 				ID:   DefaultDomainID,
 				Name: DefaultDomainName,
 			},
 		},
-		Projects: make(map[string]*keystone.Project),
-		Users:    make(map[string]*keystone.User),
+		Projects: make(map[string]*kscommon.Project),
+		Users:    make(map[string]*kscommon.User),
 	}
-	a.Projects[AdminProjectID] = &keystone.Project{
+	a.Projects[AdminProjectID] = &kscommon.Project{
 		Domain: a.Domains[DefaultDomainID],
 		ID:     AdminProjectID,
 		Name:   AdminProjectName,
 	}
-	a.Users[AdminUserID] = &keystone.User{
+	a.Users[AdminUserID] = &kscommon.User{
 		Domain:   a.Domains[DefaultDomainID],
 		ID:       AdminUserID,
 		Name:     AdminUserName,
 		Password: AdminUserPassword,
-		Roles: []*keystone.Role{
+		Roles: []*kscommon.Role{
 			{
 				ID:      AdminRoleID,
 				Name:    AdminRoleName,
