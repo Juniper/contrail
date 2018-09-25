@@ -2,10 +2,7 @@ package integration
 
 import (
 	"context"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"log"
 
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/integration/etcd"
@@ -18,7 +15,7 @@ const (
 )
 
 // RunIntentCompilationService runs Intent Compilation process and returns function closing it.
-func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc {
+func RunIntentCompilationService(apiURL string) context.CancelFunc {
 	setViperConfig(map[string]interface{}{
 		"compilation.plugin_directory":    pluginDirectory,
 		"compilation.number_of_workers":   4,
@@ -47,7 +44,9 @@ func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc
 	})
 
 	ics, err := compilation.NewIntentCompilationService()
-	require.NoError(t, err, "creating Intent Compilation service failed")
+	if err != nil {
+		log.Fatalf("creating Intent Compilation service failed: %+v", err)
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -58,6 +57,8 @@ func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc
 
 	return func() {
 		cancel()
-		assert.NoError(t, <-errChan, "unexpected Intent Compilation runtime error")
+		if err != nil {
+			log.Fatalf("unexpected Intent Compilation runtime error: %+v", err)
+		}
 	}
 }
