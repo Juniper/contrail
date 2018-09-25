@@ -110,6 +110,11 @@ func TestVirtualRouter(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_router.yml")
 }
 
+func TestFirewallRule(t *testing.T) {
+	AddKeystoneProjectAndUser(APIServer, t.Name())
+	RunTest(t, "./test_data/test_firewall_rule.yml")
+}
+
 func TestFQNameToID(t *testing.T) {
 	AddKeystoneProjectAndUser(APIServer, t.Name())
 	RunTest(t, "./test_data/test_fqname_to_id.yml")

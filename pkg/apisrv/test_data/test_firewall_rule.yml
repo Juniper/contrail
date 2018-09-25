@@ -1,0 +1,102 @@
+name: Firewall Rule Test
+description:  basic firewall rule test
+cleanup:
+- path: /firewall-rule/test_firewall_rule_uuid
+- path: /tag/test_tag_blue_uuid
+test_data:
+  tag: &test_tag_blue
+    uuid: test_tag_blue_uuid
+    fq_name:
+      - namespace=kube-system
+    tag_id: "0x00000001"
+    tag_type_name: namespace
+    tag_value: kube-system
+
+  firewall_rule: &test_firewall_rule
+    uuid: test_firewall_rule_uuid
+    parent_type: policy-management
+    fq_name:
+      - default-policy-management
+      - test_firewall_rule_uuid
+    endpoint_1:
+      any: true
+    endpoint_2:
+      tags:
+        - "namespace=kube-system"
+    match_tags:
+      tag_list:
+        - application
+    service:
+      protocol: tcp
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create tag blue
+  request:
+    path: /tags
+    method: POST
+    expected: [200]
+    data:
+      tag: *test_tag_blue
+  expect:
+    tag: *test_tag_blue
+
+- name: try to create firewall rule with non existing tag reference
+  request:
+    path: /firewall-rules
+    method: POST
+    expected: [404]
+    data:
+      firewall-rule:
+        <<: *test_firewall_rule
+        endpoint_1:
+          any: false
+          tags:
+            - "namespace=default"
+
+- name: create firewall rule
+  request:
+    path: /firewall-rules
+    method: POST
+    expected: [200]
+    data:
+      firewall-rule: *test_firewall_rule
+  expect:
+    firewall-rule:
+      <<: *test_firewall_rule
+      service:
+        protocol_id: 6
+      endpoint_2:
+        tag_ids:
+          - 1
+      # TODO uncomment when tag refs definied
+      # tag_refs:
+      #   - uuid: test_tag_blue_uuid
+      #     to:
+      #       - namespace=kube-system
+
+- name: delete firewall rule
+  request:
+    path: /firewall-rule/test_firewall_rule_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete tag blue
+  request:
+    path: /tag/test_tag_blue_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
