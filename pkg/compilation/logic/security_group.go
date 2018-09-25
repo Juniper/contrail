@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
@@ -168,6 +169,7 @@ func resolveSGRef(rs *models.PolicyRulesWithRefs, addr *models.AddressType, ec *
 	if !addr.IsSecurityGroupNameAReference() {
 		return
 	}
+	fmt.Println(addr.SecurityGroup, intent.ByFQName(basemodels.ParseFQName(addr.SecurityGroup)))
 	i := loadSecurityGroupIntent(
 		ec.IntentLoader,
 		intent.ByFQName(basemodels.ParseFQName(addr.SecurityGroup)))
