@@ -17,7 +17,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/common/keystone"
 )
 
 const (
@@ -83,18 +83,21 @@ func NewHTTP(endpoint, authURL, id, password string, insecure bool, scope *keyst
 
 //Init is used to initialize a client.
 func (h *HTTP) Init() {
-	tr := &http.Transport{
-		Dial: (&net.Dialer{
-			//Timeout: 5 * time.Second,
-		}).Dial,
-		//TLSHandshakeTimeout: 5 * time.Second,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
+	if h.getProtocol() == "https" {
+		tr := &http.Transport{
+			Dial: (&net.Dialer{
+				//Timeout: 5 * time.Second,
+			}).Dial,
+			//TLSHandshakeTimeout: 5 * time.Second,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
+		}
+		h.httpClient = &http.Client{
+			Transport: tr,
+			//Timeout:   time.Second * 10,
+		}
+	} else {
+		h.httpClient = &http.Client{}
 	}
-	client := &http.Client{
-		Transport: tr,
-		//Timeout:   time.Second * 10,
-	}
-	h.httpClient = client
 }
 
 // Login refreshes authentication token.
@@ -288,6 +291,11 @@ func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query u
 
 func getURL(endpoint, path string) string {
 	return endpoint + path
+}
+
+func (h *HTTP) getProtocol() string {
+	u, _ := url.Parse(h.Endpoint)
+	return u.Scheme
 }
 
 func (h *HTTP) doHTTPRequestRetryingOn401(
