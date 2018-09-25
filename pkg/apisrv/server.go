@@ -237,7 +237,7 @@ func (s *Server) Init() (err error) {
 		skipPaths := keystone.GetAuthSkipPaths()
 		e.Use(keystone.AuthMiddleware(
 			keystoneClient, skipPaths, endpointStore))
-	} else if viper.GetBool("no_auth") {
+	} else if viper.GetString("auth_type") == "no-auth" {
 		e.Use(noAuthMiddleware())
 	}
 	localKeystone := viper.GetBool("keystone.local")
