@@ -31,6 +31,10 @@ references:
     description: Reference to virtual network attached to endpoints
     operations: R
     presence: optional
+  tag:
+    description: Attribute attached to objects - has a type and value
+    operations: CRUD
+    presence: optional
 schema:
   properties:
     action_list:
