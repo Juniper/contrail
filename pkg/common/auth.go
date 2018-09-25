@@ -63,7 +63,7 @@ func GetAuthContext(c echo.Context) *AuthContext {
 //GetAuthCTX is used to get an authentication from ctx.Context.
 func GetAuthCTX(ctx context.Context) *AuthContext {
 	iAuth := ctx.Value("auth")
-	auth, _ := iAuth.(*AuthContext)
+	auth, _ := iAuth.(*AuthContext) //nolint: errcheck
 	return auth
 }
 

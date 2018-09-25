@@ -157,7 +157,11 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 					id)
 				return true
 			}
-			ids := id.(string)
+			ids, ok := id.(string)
+			if !ok {
+				log.Errorf("Unable to convert id %v to string when looking EndpointStore", id)
+				return true
+			}
 			_, ok = endpoints[ids]
 			if !ok {
 				s.Remove(ids)

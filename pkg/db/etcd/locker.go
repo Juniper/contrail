@@ -66,7 +66,7 @@ var lockKey interface{} = "etcd-lock"
 
 func getLock(ctx context.Context) *etcdlock.Lock {
 	iLock := ctx.Value(lockKey)
-	l, _ := iLock.(*etcdlock.Lock)
+	l, _ := iLock.(*etcdlock.Lock) //nolint: errcheck
 	return l
 }
 

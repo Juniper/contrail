@@ -101,7 +101,7 @@ func (sv *ContrailTypeLogicService) vrouterCheckAllocationPoolsDelete(
 // check if any ip address from given alloc_pool sets is used in
 // in given virtual router, for instance_ip
 func (sv *ContrailTypeLogicService) vrouterCanDeleteAllocationPools(
-	ctx context.Context,
+	_ context.Context,
 	poolSet []*models.AllocationPoolType,
 	dbVr *models.VirtualRouter,
 ) error {

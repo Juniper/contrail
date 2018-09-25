@@ -73,7 +73,7 @@ func (c *Cluster) getEndpoints(parentUUIDs []string) (endpointIDs []string, err 
 		return nil, err
 	}
 	for _, rawEndpoint := range endpointList[defaultEndpointRes+"s"] {
-		endpointID := rawEndpoint.(map[string]interface{})["uuid"].(string)
+		endpointID := rawEndpoint.(map[string]interface{})["uuid"].(string) // nolint: errcheck
 		endpointIDs = append(endpointIDs, endpointID)
 	}
 	return endpointIDs, nil
