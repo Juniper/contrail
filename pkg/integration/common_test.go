@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coreos/etcd/clientv3"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -125,13 +126,14 @@ type Task struct {
 
 //TestScenario has a list of tasks.
 type TestScenario struct {
-	Name        string                              `yaml:"name,omitempty"`
-	Description string                              `yaml:"description,omitempty"`
-	Tables      []string                            `yaml:"tables,omitempty"`
-	Clients     map[string]*client.HTTP             `yaml:"clients,omitempty"`
-	Cleanup     []map[string]string                 `yaml:"cleanup,omitempty"`
-	Workflow    []*Task                             `yaml:"workflow,omitempty"`
-	Watchers    map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
+	Name                  string                              `yaml:"name,omitempty"`
+	Description           string                              `yaml:"description,omitempty"`
+	IntentCompilerEnabled bool                                `yaml:"intent_compiler_enabled,omitempty"`
+	Tables                []string                            `yaml:"tables,omitempty"`
+	Clients               map[string]*client.HTTP             `yaml:"clients,omitempty"`
+	Cleanup               []map[string]string                 `yaml:"cleanup,omitempty"`
+	Workflow              []*Task                             `yaml:"workflow,omitempty"`
+	Watchers              map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -167,6 +169,10 @@ func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
 	checkWatchers := startWatchers(t, testScenario.Watchers)
+	if testScenario.IntentCompilerEnabled {
+		stopIC := RunIntentCompilationService(runningServer.testServer.URL)
+		defer stopIC()
+	}
 
 	clients := prepareClients(ctx, t, testScenario)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
@@ -205,7 +211,7 @@ func startWatchers(t *testing.T, watchers map[string][]map[string]interface{}) f
 
 	ec := integrationetcd.NewEtcdClient(t)
 	for key, events := range watchers {
-		collect := ec.WatchKeyN(key, len(events), 2*time.Second)
+		collect := ec.WatchKeyN(key, len(events), 5*time.Second, clientv3.WithPrefix())
 
 		checks = append(checks, func(t *testing.T) {
 			collected := collect()

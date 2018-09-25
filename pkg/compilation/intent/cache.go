@@ -40,6 +40,7 @@ func ByUUID(uuid string) Query {
 func ByFQName(fqName []string) Query {
 	return Query{
 		load: func(is intents) Intent {
+			fmt.Println("GOT UUID", fqNameKey(fqName), is.fqNameToUUID[fqNameKey(fqName)])
 			return is.uuidToIntent[is.fqNameToUUID[fqNameKey(fqName)]]
 		},
 		description: fmt.Sprintf("by FQName: %v", fqName),
@@ -55,6 +56,7 @@ func NewCache() *Cache {
 
 // Load loads intent from cache. It accepts kebab-case or CamelCase type name.
 func (c *Cache) Load(typeName string, q Query) Intent {
+	fmt.Println(c.intentStore)
 	typeName = strcase.ToCamel(typeName)
 	log.WithFields(log.Fields{"type-name": typeName, "query": q}).Debug("Loading from cache")
 	return c.intentStore.load(typeName, q)
