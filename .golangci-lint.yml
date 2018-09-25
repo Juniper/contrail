@@ -7,6 +7,7 @@ run:
   - extension/pkg/db/etcd         # TODO: reenable when compilation fixed
   - extension/pkg/services/vncapi # TODO: reenable when compilation fixed
   - extension/pkg/apisrv/client   # TODO: reenable when compilation fixed
+  - pkg/types/gomock*
 
 issues:
   exclude:

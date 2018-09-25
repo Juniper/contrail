@@ -34,6 +34,7 @@ func setTestConfig() {
 }
 
 func TestIntentCompilationServiceHandlesMessage(t *testing.T) {
+	t.Skip("temporary skipping test.")
 	etcdClient := integration.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
@@ -73,6 +74,7 @@ func TestIntentCompilationServiceHandlesMessage(t *testing.T) {
 }
 
 func TestIntentCompilationServiceConcurrency(t *testing.T) {
+	t.Skip("temporary skipping test.")
 	etcdClient := integration.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
