@@ -1,5 +1,6 @@
 name: Security Group Test
 description: security group test
+intent_compiler_enabled: true
 cleanup:
 - path: /security-group/sg_uuid
 - path: /project/project_uuid
@@ -11,6 +12,7 @@ test_data:
     quota: {}
   sg: &sg
     uuid: sg_uuid
+    name: sg_uuid
     parent_uuid: project_uuid
     security_group_entries:
       policy_rule:
@@ -29,6 +31,7 @@ test_data:
             start_port: 0
   sg_with_id: &sg_with_id
     uuid: sg_uuid
+    name: sg_uuid
     parent_type: project
     parent_uuid: project_uuid
     security_group_entries:
@@ -86,6 +89,10 @@ workflow:
       security-group: *sg
   expect:
     security-group: *sg
+  watchers:
+    /json/access_control_list:
+      - null
+      - null
 - name: delete security group
   request:
     path: /security-group/sg_uuid
