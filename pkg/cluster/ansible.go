@@ -263,41 +263,6 @@ func (a *ansibleProvisioner) play(ansibleArgs []string) error {
 	return a.playFromDir(repoDir, ansibleArgs)
 }
 
-func (a *ansibleProvisioner) appformixPlay(ansibleArgs []string) error {
-	if a.cluster.config.Test {
-		return a.mockPlay(ansibleArgs)
-	}
-	repoDir := a.getAppformixAnsibleDeployerRepoDir()
-	cmdline := "ansible-playbook"
-	a.log.Infof("Playing playbook: cmd:%s Dir:%s %s",
-		cmdline, repoDir, strings.Join(ansibleArgs, " "))
-	cmd := exec.Command(cmdline, ansibleArgs...)
-	cmd.Dir = repoDir
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-	if err = cmd.Start(); err != nil {
-		return err
-	}
-
-	// Report progress log periodically to stdout
-	go a.reporter.reportLog(stdout)
-	go a.reporter.reportLog(stderr)
-
-	if err = cmd.Wait(); err != nil {
-		return err
-	}
-	a.log.Infof("Finished playing appformix playbook: %s %s",
-		cmdline, strings.Join(ansibleArgs, " "))
-
-	return nil
-}
-
 func (a *ansibleProvisioner) playFromDir(
 	repoDir string, ansibleArgs []string) error {
 	if a.cluster.config.Test {
@@ -377,11 +342,14 @@ func (a *ansibleProvisioner) playContrailDatapathEncryption() error {
 }
 
 func (a *ansibleProvisioner) playAppformixProvision() error {
-	args := []string{"-e", "config_file=" + a.getInstanceFile()}
-	// play Appformix provisioning playbook
-	args = append(args, defaultAppformixProvPlay)
-	err := a.appformixPlay(args)
-	return err
+	if a.clusterData.getAppformixClusterInfo() != nil {
+		AppformixVersion := a.clusterData.getAppformixClusterInfo().AppformixVersion
+		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
+			"-e", "appformix_version=" + AppformixVersion,
+			defaultAppformixProvPlay}
+		return a.playFromDir(a.getAppformixAnsibleDeployerRepoDir(), ansibleArgs)
+	}
+	return nil
 }
 
 // nolint: gocyclo
@@ -410,10 +378,8 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailDatapathEncryption(); err != nil {
 			return err
 		}
-		if a.clusterData.getAppformixClusterInfo() != nil {
-			if err := a.playAppformixProvision(); err != nil {
-				return err
-			}
+		if err := a.playAppformixProvision(); err != nil {
+			return err
 		}
 	case "UPGRADE":
 		if err := a.playContrailProvision(args); err != nil {
@@ -422,10 +388,8 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailDatapathEncryption(); err != nil {
 			return err
 		}
-		if a.clusterData.getAppformixClusterInfo() != nil {
-			if err := a.playAppformixProvision(); err != nil {
-				return err
-			}
+		if err := a.playAppformixProvision(); err != nil {
+			return err
 		}
 	case "ADD_COMPUTE":
 		if err := a.playInstancesConfig(args); err != nil {
@@ -440,10 +404,8 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailDatapathEncryption(); err != nil {
 			return err
 		}
-		if a.clusterData.getAppformixClusterInfo() != nil {
-			if err := a.playAppformixProvision(); err != nil {
-				return err
-			}
+		if err := a.playAppformixProvision(); err != nil {
+			return err
 		}
 	case "ADD_CSN":
 		if err := a.playInstancesConfig(args); err != nil {
@@ -452,10 +414,8 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playContrailProvision(args); err != nil {
 			return err
 		}
-		if a.clusterData.getAppformixClusterInfo() != nil {
-			if err := a.playAppformixProvision(); err != nil {
-				return err
-			}
+		if err := a.playAppformixProvision(); err != nil {
+			return err
 		}
 	}
 	return nil

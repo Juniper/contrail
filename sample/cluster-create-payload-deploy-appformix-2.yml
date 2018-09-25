@@ -71,6 +71,7 @@ resources:
     appformix_image_path_network_device: /opt/software/appformix/appformix-network_device-images-2.18.0.tar.gz
     appformix_image_path_openstack: /opt/software/appformix/appformix-openstack-images-2.18.0.tar.gz
     appformix_license: /opt/software/appformix/appformix-internal-openstack-2.18.sig
+    appformix_version: 2.18.0
     appformix_kvm_instance_discovery: true
     appformix_network_device_monitoring_enabled: true
     appformix_jti_network_device_monitoring_enabled: true
