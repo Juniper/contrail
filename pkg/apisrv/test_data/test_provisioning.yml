@@ -4,6 +4,8 @@ description: |
 cleanup:
 - path: /bgp-router/bgp_router_test_provisioning_uuid
 - path: /virtual-router/virtual_router_test_provisioning_uuid
+- path: /firewall-rule/firewall_rule_test_provisioning_uuid
+- path: /tag/tag_test_provisioning_uuid
 test_data:
   bgp_router_parameters: &bgp_router_parameters_test_provisioning
     vendor: contrail
@@ -48,6 +50,49 @@ test_data:
     - virtual-router-test-provisioning
     virtual_router_ip_address: 192.168.0.14
 
+  tag_type: &tag_type_test_provisioning
+    uuid: tag_type_test_provisioning_uuid
+    fq_name:
+      - namespace
+    display_name: namespace
+    tag_type_id: "0x00ff"
+
+  tag: &tag_test_provisioning
+    uuid: tag_test_provisioning_uuid
+    fq_name:
+      - namespace=default
+    display_name: namespace=default
+    tag_id: "0x00ff0001"
+    tag_type_name: namespace
+    tag_value: default
+    tag_type_refs:
+      - uuid: tag_type_test_provisioning_uuid
+
+  firewall_rule: &firewall_rule_test_provisioning
+    uuid: firewall_rule_test_provisioning_uuid
+    parent_type: policy-management
+    fq_name:
+      - default-policy-management
+      - firewall_rule_test_provisioning
+    direction: ">"
+    endpoint_1:
+      any: true
+    endpoint_2:
+      tags:
+        - "namespace=default"
+    match_tag_types:
+      tag_type:
+        - 1
+    service:
+      protocol: any
+      protocol_id: 0
+      src_ports:
+        start_port: 0
+        end_port: 0
+      dst_ports:
+        start_port: 0
+        end_port: 0
+
 clients:
   default:
     id: alice
@@ -90,6 +135,63 @@ workflow:
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
       parent_type: global-system-config
       name: virtual-router-test-provisioning
+
+- name: create tag type
+  request:
+    path: /tag-types
+    method: POST
+    expected: [200]
+    data:
+      tag-type: *tag_type_test_provisioning
+  expect:
+    tag-type:
+      <<: *tag_type_test_provisioning
+
+- name: create tag
+  request:
+    path: /tags
+    method: POST
+    expected: [200]
+    data:
+      tag: *tag_test_provisioning
+  expect:
+    tag:
+      <<: *tag_test_provisioning
+
+- name: create firewall rule
+  request:
+    path: /firewall-rules
+    method: POST
+    expected: [200]
+    data:
+      firewall-rule: *firewall_rule_test_provisioning
+  expect:
+    firewall-rule:
+      <<: *firewall_rule_test_provisioning
+
+- name: delete firewall rule
+  request:
+    path: /firewall-rule/firewall_rule_test_provisioning_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete tag
+  request:
+    path: /tag/tag_test_provisioning_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete tag type
+  request:
+    path: /tag-type/tag_type_test_provisioning_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
 
 - name: delete virtual router
   request:
