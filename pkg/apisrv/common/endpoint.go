@@ -1,6 +1,8 @@
 package common
 
 import (
+	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/Juniper/contrail/pkg/models"
@@ -11,6 +13,7 @@ const (
 	Public = "public"
 	// Private scope of the endpoint url
 	Private = "private"
+	pathSep = "/"
 )
 
 // TargetStore is used to store service specific endpoint targets in-memory
@@ -116,4 +119,28 @@ func (e *EndpointStore) Read(endpointKey string) *TargetStore {
 //Write endpoint targets store in-memory
 func (e *EndpointStore) Write(endpointKey string, endpointStore *TargetStore) {
 	e.Data.Store(endpointKey, endpointStore)
+}
+
+//GetEndpoint by prefix
+func (e *EndpointStore) GetEndpoint(prefix string) (endpoint string, err error) {
+	endpointCount := 0
+	endpoint = ""
+	e.Data.Range(func(key, targets interface{}) bool {
+		keyString, _ := key.(string) // nolint: errcheck
+		keyParts := strings.Split(keyString, pathSep)
+		if keyParts[3] != prefix || keyParts[4] != Private {
+			return true // continue iterating the endpoints
+		}
+		endpointCount++
+		if endpointCount > 1 {
+			err = fmt.Errorf("ambiguious, more than one cluster found")
+			return false
+		}
+		endpoints, _ := targets.(*TargetStore) // nolint: errcheck
+		endpoint = endpoints.Next(Private)
+		return false
+
+	})
+
+	return endpoint, err
 }

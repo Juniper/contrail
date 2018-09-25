@@ -20,6 +20,7 @@ import (
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
+	kscommon "github.com/Juniper/contrail/pkg/common/keystone"
 	"github.com/Juniper/contrail/pkg/testutil"
 	log "github.com/sirupsen/logrus"
 )
@@ -105,19 +106,19 @@ func LaunchTestAPIServer() (*Server, *httptest.Server) {
 
 //AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
 func AddKeystoneProjectAndUser(s *Server, testID string) {
-	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment)
-	assignment.Projects[testID] = &keystone.Project{
+	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
+	assignment.Projects[testID] = &kscommon.Project{
 		Domain: assignment.Domains[defaultDomainID],
 		ID:     testID,
 		Name:   testID,
 	}
 
-	assignment.Users[testID] = &keystone.User{
+	assignment.Users[testID] = &kscommon.User{
 		Domain:   assignment.Domains[defaultDomainID],
 		ID:       testID,
 		Name:     testID,
 		Password: testID,
-		Roles: []*keystone.Role{
+		Roles: []*kscommon.Role{
 			{
 				ID:      "member",
 				Name:    "Member",
