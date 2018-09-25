@@ -1,0 +1,7 @@
+client:
+  id: alice
+  password: alice_password
+  project_id: admin
+  schema_root: /public
+  domain_id: default
+  endpoint: http://localhost:8082

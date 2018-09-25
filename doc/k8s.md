@@ -63,3 +63,23 @@ cd contrail
 ./tools/deploy-for_k8s.sh
 ```
 
+## Examples
+
+### Intra VN ping
+
+Run the script located in [./tools/demo/intra-vn-ping/run.sh](../tools/demo/intra-vn-ping/run.sh)
+on target machine. Last command located in script launches new pod in that terminal.
+
+Next run second pod in another terminal
+
+```sh
+kubectl run -i --tty busybox-one --image=busybox --namespace blue -- sh
+```
+
+Now you can check their IP addresses by typing
+
+```sh
+ip a
+```
+
+And then you can try to make them ping each other.
