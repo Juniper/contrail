@@ -2,7 +2,6 @@ package keystone
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -53,26 +52,9 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 }
 
 func getKeystoneEndpoint(endpoints *apicommon.EndpointStore) (authEndpoint string, err error) {
-	endpointCount := 0
-	authEndpoint = ""
-	endpoints.Data.Range(func(key, targets interface{}) bool {
-		keyString, _ := key.(string) // nolint: errcheck
-		keyParts := strings.Split(keyString, pathSep)
-		if keyParts[3] != keystoneService || keyParts[4] != private {
-			return true // continue iterating the endpoints
-		}
-		endpointCount++
-		if endpointCount > 1 {
-			err = fmt.Errorf("ambiguious, more than one cluster found")
-			return false
-		}
-		authEndpoints, _ := targets.(*apicommon.TargetStore) // nolint: errcheck
-		authEndpoint = authEndpoints.Next(private)
-		return false
-
-	})
-
+	authEndpoint, err = endpoints.GetEndpoint(keystoneService)
 	return authEndpoint, err
+
 }
 
 // GetAuthSkipPaths returns the list of paths which need not be authenticated.
