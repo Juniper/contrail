@@ -195,9 +195,12 @@ func (sv *ContrailTypeLogicService) prevalidateVirtualNetwork(vn *models.Virtual
 func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	ctx context.Context, vn *models.VirtualNetwork,
 ) error {
-	_, err := sv.WriteService.CreateRoutingInstance(ctx, &services.CreateRoutingInstanceRequest{
-		RoutingInstance: vn.MakeDefaultRoutingInstance(),
-	})
+	_, err := sv.WriteService.CreateRoutingInstance(
+		MakeInternalRequestContext(ctx),
+		&services.CreateRoutingInstanceRequest{
+			RoutingInstance: vn.MakeDefaultRoutingInstance(),
+		},
+	)
 
 	if err != nil {
 		return errors.Wrap(err, "could not create default routing instance for VN")
@@ -212,9 +215,12 @@ func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
 	// Delete native/VN-default routing instance if it hasn't been deleted by the user
 	if ri := vn.GetDefaultRoutingInstance(); ri != nil {
 		// TODO: delete children of the default routing instance
-		_, err := sv.WriteService.DeleteRoutingInstance(ctx, &services.DeleteRoutingInstanceRequest{
-			ID: ri.UUID,
-		})
+		_, err := sv.WriteService.DeleteRoutingInstance(
+			MakeInternalRequestContext(ctx),
+			&services.DeleteRoutingInstanceRequest{
+				ID: ri.UUID,
+			},
+		)
 
 		if err != nil {
 			return errors.Wrapf(err,
