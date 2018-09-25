@@ -1,0 +1,20 @@
+description: Cloud account details
+extends:
+- base
+id: cloud_account
+metadata:
+  category: cloud
+parents:
+  cloud:
+    operations: "CRUD"
+    description: "Parent for cloud account"
+    presence: "optional"
+plural: cloud_accounts
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  type: object
+singular: cloud_account
+title: Cloud Account
+type: ""
