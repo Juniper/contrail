@@ -85,7 +85,7 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 		Data:      data,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create event from data: %v, reason: %v", data)
+		return nil, errors.Wrapf(err, "failed to create event from data: %v", data)
 	}
 	return event, nil
 }

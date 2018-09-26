@@ -21,6 +21,41 @@ var _ = basemodels.Metadata{}
 //Version is a model version.
 const Version = "1.0"
 
+{% macro addToList(list, item) %}
+	if {{ item }} == nil {
+		return
+	}
+
+	result := {{ list }}
+	updated := false
+	for i, e := range result {
+		if e.UUID == {{ item }}.GetUUID() {
+			result[i] = {{ item }}
+			updated = true
+		}
+	}
+	if !updated {
+		result = append(result, {{ item }})
+	}
+
+	{{ list }} = result
+{% endmacro %}
+
+{% macro removeFromList(list, item) %}
+	if {{ item }} == nil {
+		return
+	}
+
+	result := {{ list }}[:0]
+	for _, e := range {{ list }} {
+		if e.UUID != {{ item }}.GetUUID() {
+			result = append(result, e)
+		}
+	}
+
+	{{ list }} = result
+{% endmacro %}
+
 // NewIDPerms creates new UUIdType instance
 func NewIDPerms(uuid string) *IdPermsType {
 	return &IdPermsType{
@@ -257,7 +292,7 @@ func (m *{{ schema.JSONSchema.GoName }}) AddDependency(i interface{}) {
 		{%- for _, backref in schema.BackReferences -%}
 			{%- set linkTo = backref.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
-				m.{{ linkTo.JSONSchema.GoName }}BackRefs = append(m.{{ linkTo.JSONSchema.GoName }}BackRefs, resource)
+				m.Add{{ linkTo.JSONSchema.GoName }}Backref(resource)
 		{%- endfor %}
 	}
 	{%- endif -%}
@@ -266,7 +301,7 @@ func (m *{{ schema.JSONSchema.GoName }}) AddDependency(i interface{}) {
 		{%- for child in schema.Children -%}
 			{%- set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
-				m.{{ linkTo.JSONSchema.GoName }}s = append(m.{{ linkTo.JSONSchema.GoName }}s, resource)
+				m.Add{{ linkTo.JSONSchema.GoName }}(resource)
 		{%- endfor %}
 	}
 	{%- endif %}
@@ -278,13 +313,7 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveDependency(i interface{}) {
 		{% for _, backref in schema.BackReferences %}
 			{% set linkTo = backref.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
-				l := []*{{ linkTo.JSONSchema.GoName }}{}
-				for _, backref := range m.{{ linkTo.JSONSchema.GoName }}BackRefs {
-					if backref.GetUUID() != resource.GetUUID() {
-						l = append(l, backref)
-					}
-				}
-				m.{{ linkTo.JSONSchema.GoName }}BackRefs = l
+				m.Remove{{ linkTo.JSONSchema.GoName }}Backref(resource)
 		{% endfor %}
 	}
 	{% endif %}
@@ -293,13 +322,7 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveDependency(i interface{}) {
 		{% for child in schema.Children %}
 			{% set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
-				l := []*{{ linkTo.JSONSchema.GoName }}{}
-				for _, child := range m.{{ linkTo.JSONSchema.GoName }}s {
-					if child.GetUUID() != resource.GetUUID() {
-						l = append(l, child)
-					}
-				}
-				m.{{ linkTo.JSONSchema.GoName }}s = l
+				m.Remove{{ linkTo.JSONSchema.GoName }}(resource)
 		{% endfor %}
 	}
 	{% endif %}
@@ -492,37 +515,39 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(i inter
 	return result
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) Add{{ reference.GoName }}Ref(toAdd *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) {
-	if toAdd == nil {
-		return
-	}
-	updated := false
-	refs := m.{{ reference.GoName }}Refs
-	for i, ref := range refs {
-		if ref.UUID == toAdd.GetUUID() {
-			refs[i] = toAdd
-			updated = true
-		}
-	}
-	if !updated {
-		refs = append(refs, toAdd)
-	}
-	m.{{ reference.GoName }}Refs = refs
+func (m *{{ schema.JSONSchema.GoName }}) Add{{ reference.GoName }}Ref(to *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) {
+	{{ addToList("m."|add:reference.GoName|add:"Refs", "to") }}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) Remove{{ reference.GoName }}Ref(toRemove *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) {
-	if toRemove == nil {
-		return
-	}
-	refs := m.{{ reference.GoName }}Refs
-	result := refs[:0]
-	for _, ref := range refs {
-		if ref.UUID != toRemove.GetUUID() {
-			result = append(result, ref)
-		}
-	}
-	m.{{ reference.GoName }}Refs = result
-}{% endfor %}
+func (m *{{ schema.JSONSchema.GoName }}) Remove{{ reference.GoName }}Ref(to *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) {
+	{{ removeFromList("m."|add:reference.GoName|add:"Refs", "to") }}
+}
+
+{% endfor %}
+
+{% for _, backref in schema.BackReferences %}{% set linkTo = backref.LinkTo %}
+
+func (m *{{ schema.JSONSchema.GoName }}) Add{{ linkTo.JSONSchema.GoName }}Backref(to *{{ linkTo.JSONSchema.GoName }}) {
+	{{ addToList("m."|add:linkTo.JSONSchema.GoName|add:"BackRefs", "to") }}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) Remove{{ linkTo.JSONSchema.GoName }}Backref(to *{{ linkTo.JSONSchema.GoName }}) {
+	{{ removeFromList("m."|add:linkTo.JSONSchema.GoName|add:"BackRefs", "to") }}
+}
+
+{% endfor %}
+
+{% for child in schema.Children %}{% set linkTo = child.LinkTo %}
+
+func (m *{{ schema.JSONSchema.GoName }}) Add{{ linkTo.JSONSchema.GoName }}(child *{{ linkTo.JSONSchema.GoName }}) {
+	{{ addToList("m."|add:linkTo.JSONSchema.GoName|add:"s", "child") }}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) Remove{{ linkTo.JSONSchema.GoName }}(child *{{ linkTo.JSONSchema.GoName }}) {
+	{{ removeFromList("m."|add:linkTo.JSONSchema.GoName|add:"s", "child") }}
+}
+
+{% endfor %}
 
 // Make{{ schema.JSONSchema.GoName }}Slice() makes a slice of {{ schema.JSONSchema.GoName }}
 func Make{{ schema.JSONSchema.GoName }}Slice() []{% if schema.JSONSchema.Properties %}*{% endif %}{{ schema.JSONSchema.GoName }} {
