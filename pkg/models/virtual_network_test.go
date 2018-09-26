@@ -229,8 +229,8 @@ func TestVirtualNetworkAddNetworkIpamRef(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.virtualNetwork.AddNetworkIpamRef(tt.toAdd)
-			assert.Equal(t, tt.virtualNetwork.NetworkIpamRefs, tt.expected.NetworkIpamRefs)
-			assert.Equal(t, tt.virtualNetwork, tt.expected)
+			assert.Equal(t, tt.expected.NetworkIpamRefs, tt.virtualNetwork.NetworkIpamRefs)
+			assert.Equal(t, tt.expected, tt.virtualNetwork)
 		})
 	}
 }
