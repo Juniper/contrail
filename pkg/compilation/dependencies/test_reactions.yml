@@ -1,0 +1,23 @@
+test:
+  virtual-network:
+    self:
+    - network-policy
+    - route-table
+    - virtual-network
+    routing-instance:
+    - network-policy
+
+  network-policy:
+    self:
+    - security-logging-object
+    - virtual-network
+    - network-policy
+    - service-instance
+    service-instance:
+    - virtual-network
+    network-policy:
+    - virtual-network
+    virtual-network:
+    - virtual-network
+    - network-policy
+    - service-instance

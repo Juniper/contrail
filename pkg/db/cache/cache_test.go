@@ -220,6 +220,23 @@ func TestDependencyResolution(t *testing.T) {
 			},
 		},
 		{
+			name: "Update vn_blue name",
+			event: &services.Event{
+				Version: 1,
+				Request: &services.Event_UpdateVirtualNetworkRequest{
+					UpdateVirtualNetworkRequest: &services.UpdateVirtualNetworkRequest{
+						VirtualNetwork: vnWithParent,
+					},
+				},
+			},
+			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
+				e := cache.Get(vnBlue.UUID)
+				assert.Equal(t, result, e)
+				assert.Equal(t, services.OperationUpdate, e.Operation())
+				assert.Equal(t, e.GetResource().GetParentUUID(), "domain")
+			},
+		},
+		{
 			name: "Delete routing instance 2",
 			event: &services.Event{
 				Version: 4,
