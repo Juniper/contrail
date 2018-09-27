@@ -10,7 +10,7 @@ import (
 )
 
 func TestObjectMappingAdapterCreate(t *testing.T) {
-	resourceName, pk, props := "resource", "1", map[string]interface{}{}
+	resourceName, pk, props := "resource", []string{"1"}, map[string]interface{}{}
 	message := &dummyMessage{}
 
 	tests := []struct {
@@ -19,16 +19,19 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 		initSink       func(o oner)
 		fails          bool
 	}{
-		{name: "scanner fails", initRowScanner: func(o oner) {
-			o.On("ScanRow", resourceName, props).Return(nil, assert.AnError).Once()
-		}, fails: true},
+		{
+			name: "scanner fails",
+			initRowScanner: func(o oner) {
+				o.On("ScanRow", resourceName, props).Return(nil, assert.AnError).Once()
+			},
+			fails: true},
 		{
 			name: "sink fails",
 			initRowScanner: func(o oner) {
 				o.On("ScanRow", resourceName, props).Return(message, nil).Once()
 			},
 			initSink: func(o oner) {
-				o.On("Create", resourceName, pk, message).Return(assert.AnError).Once()
+				o.On("Create", resourceName, pk[0], message).Return(assert.AnError).Once()
 			},
 			fails: true,
 		},
@@ -38,7 +41,7 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 				o.On("ScanRow", resourceName, props).Return(message, nil).Once()
 			},
 			initSink: func(o oner) {
-				o.On("Create", resourceName, pk, message).Return(nil).Once()
+				o.On("Create", resourceName, pk[0], message).Return(nil).Once()
 			},
 		},
 	}
@@ -56,6 +59,71 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 			a := NewObjectMappingAdapter(sMock, (*rowScannerMock)(rsMock))
 
 			err := a.Create(context.Background(), resourceName, pk, props)
+
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			sMock.AssertExpectations(t)
+			rsMock.AssertExpectations(t)
+		})
+	}
+}
+
+func TestObjectMappingAdapterRefCreate(t *testing.T) {
+	resourceName, correctPK, props := "ref_resource", []string{"1", "2"}, map[string]interface{}{}
+	message := &dummyMessage{}
+
+	sMock, rsMock := &sinkMock{}, &mock.Mock{}
+	adapter := NewObjectMappingAdapter(sMock, (*rowScannerMock)(rsMock))
+
+	tests := []struct {
+		name           string
+		initRowScanner func(o oner)
+		initSink       func(o oner)
+		fails          bool
+		operationFunc  func(context.Context, string, []string, map[string]interface{}) error
+		pk             []string
+	}{
+		{
+			name:          "missing multiple primary key in ref_ message",
+			fails:         true,
+			pk:            []string{"1"},
+			operationFunc: adapter.Create,
+			initRowScanner: func(o oner) {
+				o.On("ScanRow", resourceName, props).Return(message, nil).Once()
+			},
+		},
+		{
+			name:          "update for refs is not handled",
+			fails:         true,
+			pk:            correctPK,
+			operationFunc: adapter.Update,
+		},
+		{
+			name:          "correct ref_ message",
+			pk:            correctPK,
+			operationFunc: adapter.Create,
+			initRowScanner: func(o oner) {
+				o.On("ScanRow", resourceName, props).Return(message, nil).Once()
+			},
+			initSink: func(o oner) {
+				o.On("CreateRef", resourceName, correctPK, message).Return(nil).Once()
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.initRowScanner != nil {
+				tt.initRowScanner(rsMock)
+			}
+			if tt.initSink != nil {
+				tt.initSink(sMock)
+			}
+
+			err := tt.operationFunc(context.Background(), resourceName, tt.pk, props)
 
 			if tt.fails {
 				assert.Error(t, err)
@@ -117,5 +185,15 @@ func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, o
 
 func (s *sinkMock) Delete(ctx context.Context, resourceName string, pk string) error {
 	args := s.MethodCalled("Delete", resourceName, pk)
+	return args.Error(0)
+}
+
+func (s *sinkMock) CreateRef(ctx context.Context, resourceName string, pk []string, obj basemodels.Object) error {
+	args := s.MethodCalled("CreateRef", resourceName, pk, obj)
+	return args.Error(0)
+}
+
+func (s *sinkMock) DeleteRef(ctx context.Context, resourceName string, pk []string) error {
+	args := s.MethodCalled("DeleteRef", resourceName, pk)
 	return args.Error(0)
 }
