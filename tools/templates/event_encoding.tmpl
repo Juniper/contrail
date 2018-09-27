@@ -311,6 +311,9 @@ func NewEvent(option *EventOption) (*Event, error) {
 }
 
 // NewEventFromRefUpdate creates ref create or delete event from RefUpdate object.
+/* TODO This might be refactored to not accept RefUpdate type 
+instead it may accept only UUIDs and data that is passed to resolveReferenceTable
+*/
 func NewEventFromRefUpdate(refUpdate *RefUpdate) (*Event, error) {
     e := &Event{}
     kind := fmt.Sprintf("%s-%s", refUpdate.Type, refUpdate.RefType)
