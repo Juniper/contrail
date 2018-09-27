@@ -3,16 +3,19 @@ package replication
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/sync/sink"
+	"github.com/pkg/errors"
 )
 
-// RowSink is data consumer capable of processing row data.
+// RowSink is data consumer capable of processing row data (aka db logic).
 type RowSink interface {
-	Create(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error
-	Update(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error
-	Delete(ctx context.Context, resourceName string, pk string) error
+	Create(ctx context.Context, resourceName string, pk []string, properties map[string]interface{}) error
+	Update(ctx context.Context, resourceName string, pk []string, properties map[string]interface{}) error
+	Delete(ctx context.Context, resourceName string, pk []string) error
 }
 
 type rowScanner interface {
@@ -31,21 +34,44 @@ func NewObjectMappingAdapter(s sink.Sink, rs rowScanner) RowSink {
 }
 
 func (o *objectMappingAdapter) Create(
-	ctx context.Context, resourceName string, pk string, properties map[string]interface{},
+	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
 	obj, err := o.rs.ScanRow(resourceName, properties)
 	if err != nil {
 		return fmt.Errorf("error scanning row: %v", err)
 	}
-	return o.Sink.Create(ctx, resourceName, pk, obj)
+	if strings.HasPrefix(resourceName, schema.RefPrefix) {
+		return o.Sink.CreateRef(ctx, resourceName, pk, obj)
+	}
+	if k := len(pk); k != 1 {
+		return errors.Errorf("single element primary key expected for resource %v, %v elems provided", resourceName, k)
+	}
+	return o.Sink.Create(ctx, resourceName, pk[0], obj)
 }
 
 func (o *objectMappingAdapter) Update(
-	ctx context.Context, resourceName string, pk string, properties map[string]interface{},
+	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
+	if strings.HasPrefix(resourceName, schema.RefPrefix) {
+		return errors.New("method UPDATE not available on ref_* resources - this is a bug")
+	}
+	if k := len(pk); k != 1 {
+		return errors.Errorf("single element primary key expected for resource %v, %v elems provided", resourceName, k)
+	}
 	obj, err := o.rs.ScanRow(resourceName, properties)
 	if err != nil {
 		return fmt.Errorf("error scanning row: %v", err)
 	}
-	return o.Sink.Update(ctx, resourceName, pk, obj)
+	return o.Sink.Update(ctx, resourceName, pk[0], obj)
+}
+
+func (o *objectMappingAdapter) Delete(
+	ctx context.Context, resourceName string, pk []string) error {
+	if strings.HasPrefix(resourceName, schema.RefPrefix) {
+		return o.Sink.DeleteRef(ctx, resourceName, pk)
+	}
+	if k := len(pk); k != 1 {
+		return errors.Errorf("single element primary key expected for resource %v, %v elems provided", resourceName, k)
+	}
+	return o.Sink.Delete(ctx, resourceName, pk[0])
 }
