@@ -2,11 +2,11 @@ package replication
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/kyleconroy/pgoutput"
+	"github.com/pkg/errors"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
@@ -166,9 +166,14 @@ func (h *CanalEventHandler) OnRow(e *canal.RowsEvent) error {
 	}
 }
 
-// TODO(daniel): remove duplication
-// nolint: dupl
-func (h *CanalEventHandler) handleCreate(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
+type handlerFunc func(context.Context, string, string, basemodels.Object) error
+
+func (h *CanalEventHandler) handleOperation(
+	ctx context.Context,
+	rows [][]interface{},
+	t *schema.Table,
+	hndl handlerFunc,
+) error {
 	for _, row := range rows {
 		pk, err := getPrimaryKeyValue(row, t)
 		if err != nil {
@@ -178,30 +183,20 @@ func (h *CanalEventHandler) handleCreate(ctx context.Context, rows [][]interface
 		if err != nil {
 			return fmt.Errorf("table %s error: %s", t, err)
 		}
-		if err := h.sink.Create(ctx, t.Name, pk, kvs); err != nil {
+		if err := hndl(ctx, t.Name, pk, kvs); err != nil {
 			return err
 		}
 	}
 	return nil
+
 }
 
-// TODO(daniel): remove duplication
-// nolint: dupl
+func (h *CanalEventHandler) handleCreate(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
+	h.handleOperation(ctx, rows, t, h.sink.Create)
+}
+
 func (h *CanalEventHandler) handleUpdate(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
-	for _, row := range rows {
-		pk, err := getPrimaryKeyValue(row, t)
-		if err != nil {
-			return err
-		}
-		kvs, err := getKeyValues(row, t.Columns)
-		if err != nil {
-			return fmt.Errorf("table %s error: %s", t, err)
-		}
-		if err := h.sink.Update(ctx, t.Name, pk, kvs); err != nil {
-			return err
-		}
-	}
-	return nil
+	h.handleOperation(ctx, rows, t, h.sink.Update)
 }
 
 func (h *CanalEventHandler) handleDelete(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
@@ -218,31 +213,39 @@ func (h *CanalEventHandler) handleDelete(ctx context.Context, rows [][]interface
 	return nil
 }
 
-func getPrimaryKeyValue(row []interface{}, t *schema.Table) (string, error) {
+func getAllPrimaryKeys(row []interface{}, t *schema.Table) ([]string, error) {
+	var keys []string
 	v, err := canal.GetPKValues(t, row)
 	if err != nil {
 		return "", err
 	}
-	key, err := primaryKeyToString(v)
+	keys, err = primaryKeyToStringSlice(v)
 	if err != nil {
-		return "", fmt.Errorf("table %s: %v", t.Name, err)
+		return "", errors.Wrapf(err, "table: %s error", t.Name)
 	}
-	return key, nil
+	return keys, nil
 }
 
-func primaryKeyToString(keyValues []interface{}) (string, error) {
-	if len(keyValues) == 0 {
-		return "", errors.New("no key values provided")
+func getPrimaryKeyValue(row []interface{}, t *schema.Table) (string, error) {
+	keys := getAllPrimaryKeys(row, t)
+	if len(keys) == 0 {
+		return "", errors.Errorf("table %v: no key values provided", t.Name)
 	}
-	if len(keyValues) > 1 {
-		return "", errors.New("multi-column primary key is not supported")
+	if len(keys) > 1 {
+		return "", errors.New("multi-column primary key is not supported in table %v", t.Name)
 	}
-	pk := keyValues[0]
-	if pk == nil || pk == "" {
-		return "", errors.New("primary key value is nil or empty")
-	}
+	return keys[0], nil
+}
 
-	return fmt.Sprint(pk), nil
+func primaryKeyToStringSlice(keyValues []interface{}) ([]string, error) {
+	keys := []string{}
+	for i, pk := range keyValues {
+		if pk == nil || pk == "" {
+			return "", fmt.Errorf("primary key value is nil or empty on key element at index %v", i)
+		}
+		keys = append(keys, fmt.Sprint(pk))
+	}
+	return keys, nil
 }
 
 // getKeyValues uses the fact that columns are in the same order as values in a row
