@@ -63,7 +63,7 @@ func (i *VirtualNetworkIntent) GetPrimaryRoutingInstanceIntent(
 	ec *intent.EvaluateContext,
 ) *RoutingInstanceIntent {
 	fqName := i.DefaultRoutingInstanceFQName()
-	ri := ec.IntentLoader.Load(models.TypeNameRoutingInstance, intent.ByFQName(fqName))
+	ri := ec.IntentLoader.Load(models.KindRoutingInstance, intent.ByFQName(fqName))
 	actualIntent, _ := ri.(*RoutingInstanceIntent) //nolint: errcheck
 	return actualIntent
 }
