@@ -12,25 +12,25 @@
 package dependencies
 
 // ReactionMap - map of object dependencies
-var ReactionMap = map[string]map[string][]string{
+var ReactionMap = map[string]map[string]map[string]struct{}{
 	"RoutingInstance": {
-		"Self": {"VirtualNetwork"},
+		"Self": {"VirtualNetwork": {}},
 	},
 	"VirtualMachineInterface": {
-		"Self":           {"VirtualMachine", "PortTuple", "VirtualNetwork", "BGPAsAService"},
-		"VirtualNetwork": {"VirtualMachine", "PortTuple", "BGPAsAService"},
-		"LogicalRouter":  {"VirtualNetwork"},
-		"InstanceIP":     {"VirtualMachine", "PortTuple", "BGPAsAService", "VirtualNetwork"},
-		"FloatingIP":     {"VirtualMachine", "PortTuple"},
-		"AliasIP":        {"VirtualMachine", "PortTuple"},
-		"VirtualMachine": {"VirtualNetwork"},
-		"PortTuple":      {"VirtualNetwork"},
+		"Self":           {"VirtualMachine": {}, "PortTuple": {}, "VirtualNetwork": {}, "BGPAsAService": {}},
+		"VirtualNetwork": {"VirtualMachine": {}, "PortTuple": {}, "BGPAsAService": {}},
+		"LogicalRouter":  {"VirtualNetwork": {}},
+		"InstanceIP":     {"VirtualMachine": {}, "PortTuple": {}, "BGPAsAService": {}, "VirtualNetwork": {}},
+		"FloatingIP":     {"VirtualMachine": {}, "PortTuple": {}},
+		"AliasIP":        {"VirtualMachine": {}, "PortTuple": {}},
+		"VirtualMachine": {"VirtualNetwork": {}},
+		"PortTuple":      {"VirtualNetwork": {}},
 		"BGPAsAService":  {},
 	},
 	"VirtualNetwork": {
-		"Self":                    {"NetworkPolicy", "RouteTable", "VirtualNetwork"},
+		"Self":                    {"NetworkPolicy": {}, "RouteTable": {}, "VirtualNetwork": {}},
 		"VirtualNetwork":          {},
-		"RoutingInstance":         {"NetworkPolicy"},
+		"RoutingInstance":         {"NetworkPolicy": {}},
 		"NetworkPolicy":           {},
 		"VirtualMachineInterface": {},
 		"RouteTable":              {},
@@ -38,32 +38,32 @@ var ReactionMap = map[string]map[string][]string{
 		"RoutingPolicy":           {},
 	},
 	"VirtualMachine": {
-		"Self": {"ServiceInstance"},
-		"VirtualMachineInterface": {"ServiceInstance"},
-		"ServiceInstance":         {"VirtualMachineInterface"},
+		"Self": {"ServiceInstance": {}},
+		"VirtualMachineInterface": {"ServiceInstance": {}},
+		"ServiceInstance":         {"VirtualMachineInterface": {}},
 	},
 	"PortTuple": {
-		"Self": {"ServiceInstance"},
-		"VirtualMachineInterface": {"ServiceInstance"},
-		"ServiceInstance":         {"VirtualMachineInterface"},
+		"Self": {"ServiceInstance": {}},
+		"VirtualMachineInterface": {"ServiceInstance": {}},
+		"ServiceInstance":         {"VirtualMachineInterface": {}},
 	},
 	"ServiceInstance": {
-		"Self":           {"NetworkPolicy", "VirtualMachine", "PortTuple"},
-		"RouteTable":     {"NetworkPolicy"},
-		"RoutingPolicy":  {"NetworkPolicy"},
-		"RouteAggregate": {"NetworkPolicy"},
-		"VirtualMachine": {"NetworkPolicy"},
-		"PortTuple":      {"NetworkPolicy"},
-		"NetworkPolicy":  {"VirtualMachine", "PortTuple"},
+		"Self":           {"NetworkPolicy": {}, "VirtualMachine": {}, "PortTuple": {}},
+		"RouteTable":     {"NetworkPolicy": {}},
+		"RoutingPolicy":  {"NetworkPolicy": {}},
+		"RouteAggregate": {"NetworkPolicy": {}},
+		"VirtualMachine": {"NetworkPolicy": {}},
+		"PortTuple":      {"NetworkPolicy": {}},
+		"NetworkPolicy":  {"VirtualMachine": {}, "PortTuple": {}},
 	},
 	"NetworkPolicy": {
-		"Self":            {"SecurityLoggingObject", "VirtualNetwork", "NetworkPolicy", "ServiceInstance"},
-		"ServiceInstance": {"VirtualNetwork"},
-		"NetworkPolicy":   {"VirtualNetwork"},
-		"VirtualNetwork":  {"VirtualNetwork", "NetworkPolicy", "ServiceInstance"},
+		"Self":            {"SecurityLoggingObject": {}, "VirtualNetwork": {}, "NetworkPolicy": {}, "ServiceInstance": {}},
+		"ServiceInstance": {"VirtualNetwork": {}},
+		"NetworkPolicy":   {"VirtualNetwork": {}},
+		"VirtualNetwork":  {"VirtualNetwork": {}, "NetworkPolicy": {}, "ServiceInstance": {}},
 	},
 	"SecurityGroup": {
-		"Self":          {"SecurityGroup", "SecurityLoggingObject"},
+		"Self":          {"SecurityGroup": {}, "SecurityLoggingObject": {}},
 		"SecurityGroup": {},
 	},
 	"SecurityLoggingObject": {
@@ -72,28 +72,28 @@ var ReactionMap = map[string]map[string][]string{
 		"SecurityGroup": {},
 	},
 	"RouteTable": {
-		"Self":           {"VirtualNetwork", "ServiceInstance", "LogicalRouter"},
-		"VirtualNetwork": {"ServiceInstance"},
-		"LogicalRouter":  {"ServiceInstance"},
+		"Self":           {"VirtualNetwork": {}, "ServiceInstance": {}, "LogicalRouter": {}},
+		"VirtualNetwork": {"ServiceInstance": {}},
+		"LogicalRouter":  {"ServiceInstance": {}},
 	},
 	"LogicalRouter": {
-		"Self": {"RouteTable"},
+		"Self": {"RouteTable": {}},
 		"VirtualMachineInterface": {},
 		"RouteTable":              {},
 		"bgpvpn":                  {},
 	},
 	"FloatingIP": {
-		"Self": {"VirtualMachineInterface"},
+		"Self": {"VirtualMachineInterface": {}},
 	},
 	"AliasIP": {
-		"Self": {"VirtualMachineInterface"},
+		"Self": {"VirtualMachineInterface": {}},
 	},
 	"InstanceIP": {
-		"Self": {"VirtualMachineInterface"},
+		"Self": {"VirtualMachineInterface": {}},
 	},
 	"BGPAsAService": {
-		"Self": {"BGPRouter"},
-		"VirtualMachineInterface": {"BGPRouter"},
+		"Self": {"BGPRouter": {}},
+		"VirtualMachineInterface": {"BGPRouter": {}},
 	},
 	"BGPRouter": {
 		"Self":          {},
@@ -103,13 +103,13 @@ var ReactionMap = map[string]map[string][]string{
 		"Self": {},
 	},
 	"RoutingPolicy": {
-		"Self": {"ServiceInstance", "VirtualNetwork"},
+		"Self": {"ServiceInstance": {}, "VirtualNetwork": {}},
 	},
 	"RouteAggregate": {
-		"Self": {"ServiceInstance"},
+		"Self": {"ServiceInstance": {}},
 	},
 	"bgpvpn": {
-		"Self":           {"VirtualNetwork", "LogicalRouter"},
+		"Self":           {"VirtualNetwork": {}, "LogicalRouter": {}},
 		"VirtualNetwork": {},
 		"LogicalRouter":  {},
 	},

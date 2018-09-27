@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
+	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -187,7 +188,7 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
 	mockReadService := servicesmock.NewMockReadService(mockCtrl)
 	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
-	cache := intent.NewCache()
+	cache := intent.NewCache(dependencies.ReactionMap)
 	service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
 
 	expectCreateACL(mockAPIClient, expectedIngressACL)
@@ -331,7 +332,7 @@ func TestSecurityGroupUpdate(t *testing.T) {
 
 			mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
 			mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
-			cache := intent.NewCache()
+			cache := intent.NewCache(dependencies.ReactionMap)
 
 			cache.Store(tt.intent)
 
@@ -446,7 +447,7 @@ func TestSecurityGroupDelete(t *testing.T) {
 			mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
 			mockReadService := servicesmock.NewMockReadService(mockCtrl)
 			mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
-			cache := intent.NewCache()
+			cache := intent.NewCache(dependencies.ReactionMap)
 
 			cache.Store(tt.intent)
 			service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
@@ -474,7 +475,7 @@ func TestLoadSecurityGroupIntent(t *testing.T) {
 		SecurityGroup: &models.SecurityGroup{UUID: "a"},
 	}
 
-	cache := intent.NewCache()
+	cache := intent.NewCache(dependencies.ReactionMap)
 	cache.Store(expectedIntent)
 
 	actualIntent := loadSecurityGroupIntent(cache, intent.ByUUID(expectedIntent.UUID))
@@ -486,7 +487,7 @@ func TestUpdateSecurityGroupIntent(t *testing.T) {
 		SecurityGroup: &models.SecurityGroup{UUID: "a", DisplayName: "before"},
 	}
 
-	cache := intent.NewCache()
+	cache := intent.NewCache(dependencies.ReactionMap)
 	cache.Store(newIntent)
 
 	loadedIntent := loadSecurityGroupIntent(cache, intent.ByUUID(newIntent.GetUUID()))

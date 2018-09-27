@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
+	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -75,7 +76,7 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 			mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
 			mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
 			mockReadService := servicesmock.NewMockReadService(mockCtrl)
-			cache := intent.NewCache()
+			cache := intent.NewCache(dependencies.ReactionMap)
 			service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
 
 			mockReadService.EXPECT().GetProject(
@@ -133,7 +134,7 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
 	mockReadService := servicesmock.NewMockReadService(mockCtrl)
 	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
-	cache := intent.NewCache()
+	cache := intent.NewCache(dependencies.ReactionMap)
 	service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
 
 	rt := &models.RouteTarget{

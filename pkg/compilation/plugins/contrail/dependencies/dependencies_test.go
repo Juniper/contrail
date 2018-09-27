@@ -1,19 +1,19 @@
-package dependencies_test
+package dependencies
 
 import (
 	"sync"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/models"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
-	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
-	"github.com/Juniper/contrail/pkg/models"
 )
 
 func TestReturnsRefs(t *testing.T) {
-	cache := intent.NewCache()
+	cache := intent.NewCache(ReactionMap)
 
 	// Create VirtualNetworks in the Cache
 	Vn1 := models.VirtualNetwork{
@@ -54,7 +54,6 @@ func TestReturnsRefs(t *testing.T) {
 	storeTestNetworkPolicyIntent(cache, &Np1)
 	storeTestNetworkPolicyIntent(cache, &Np2)
 
-	d := dependencies.NewDependencyProcessor(cache)
 	if d != nil {
 		d.Evaluate(Vn1, "VirtualNetwork", "Self")
 		resources := d.GetResources()

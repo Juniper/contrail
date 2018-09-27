@@ -2,47 +2,34 @@ package logic
 
 import (
 	"context"
-	"sync"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
-	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
-	"github.com/Juniper/contrail/pkg/services"
 )
 
 // EvaluateDependencies evaluates the dependencies upon object change
 func (s *Service) EvaluateDependencies(
 	ctx context.Context,
 	evaluateCtx *intent.EvaluateContext,
-	obj services.Resource,
+	i intent.Intent,
 ) error {
 
-	log.Printf("EvaluateDependencies called for (%s): \n", obj.TypeName())
-	d := dependencies.NewDependencyProcessor(s.cache)
-	d.Evaluate(obj, obj.TypeName(), "Self")
-	objMap := d.GetResources()
+	log.Printf("EvaluateDependencies called for (%s): \n", i.TypeName())
+	dependencies := s.cache.GetDependencies(i, "Self")
 
-	var err error
-
-	objMap.Range(func(k1, v1 interface{}) bool {
-		objTypeKey := k1.(string) //nolint: errcheck
-		objList := v1.(*sync.Map) //nolint: errcheck
-		log.Printf("Processing ObjType[%s] \n", objTypeKey)
-		objList.Range(func(k2, v2 interface{}) bool {
-			objUUID := k2.(string) //nolint: errcheck
-			objVal := v2
-			log.Printf("Processing ObjUUID[%s] \n", objUUID)
-			log.Printf("Processing Object[%v] \n", objVal)
-
-			intent := s.cache.Load(objTypeKey, intent.ByUUID(objUUID))
-			if intent == nil {
-				return false
-			}
-			err = intent.Evaluate(ctx, evaluateCtx)
-			return err == nil
-		})
-		return err == nil
-	})
-	return err
+	for _, dependency := range dependencies {
+		log.WithFields(log.Fields{"type-name": i.Kind(), "uuid": i.GetUUID()}).Printf("Processing intent")
+		err := dependency.Evaluate(ctx, evaluateCtx)
+		if err != nil {
+			return errors.Wrapf(
+				err,
+				"failed to evaluate intent of type %s with uuid %s",
+				i.Kind(),
+				i.GetUUID(),
+			)
+		}
+	}
+	return nil
 }

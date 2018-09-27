@@ -8,11 +8,12 @@ import (
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
+	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
 func TestCacheLoad(t *testing.T) {
-	c := intent.NewCache()
+	c := intent.NewCache(dependencies.ReactionMap)
 
 	vn := &models.VirtualNetwork{
 		UUID:   "hoge",
@@ -78,7 +79,7 @@ func TestCacheLoad(t *testing.T) {
 }
 
 func TestCacheDelete(t *testing.T) {
-	c := intent.NewCache()
+	c := intent.NewCache(dependencies.ReactionMap)
 
 	vn := &models.VirtualNetwork{
 		UUID: "hoge",
@@ -134,7 +135,7 @@ func TestCacheDelete(t *testing.T) {
 }
 
 func TestDependencyResolution(t *testing.T) {
-	cache := intent.NewCache()
+	c := intent.NewCache(dependencies.ReactionMap)
 
 	vnBlue := &models.VirtualNetwork{
 		UUID: "vn_blue",
@@ -164,38 +165,40 @@ func TestDependencyResolution(t *testing.T) {
 		RoutingInstance: ri2,
 	}
 
-	cache.Store(vnBlueIntent)
-	vn := logic.LoadVirtualNetworkIntent(cache, vnBlue.UUID)
+	c.Store(vnBlueIntent)
+	vn := logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 0, len(vn.RoutingInstances))
 	}
 
-	cache.Store(ri1Intent)
-	vn = logic.LoadVirtualNetworkIntent(cache, vnBlue.UUID)
+	c.Store(ri1Intent)
+	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
 	if assert.NotNil(t, vn) {
+		dependencies := vn.GetDependencies()
+		assert.Contains(t, len(dependencies), "RoutingInstance")
 		assert.Equal(t, 1, len(vn.RoutingInstances))
 	}
 
-	cache.Store(ri2Intent)
-	ri := logic.LoadRoutingInstanceIntent(cache, ri1Intent.UUID)
+	c.Store(ri2Intent)
+	ri := logic.LoadRoutingInstanceIntent(c, ri1Intent.UUID)
 	if assert.NotNil(t, ri) {
 		assert.Equal(t, 1, len(ri.RoutingInstanceBackRefs))
 	}
-	ri = logic.LoadRoutingInstanceIntent(cache, ri2Intent.UUID)
+	ri = logic.LoadRoutingInstanceIntent(c, ri2Intent.UUID)
 	if assert.NotNil(t, ri) {
 		assert.Equal(t, 0, len(ri.RoutingInstanceBackRefs))
 	}
-	vn = logic.LoadVirtualNetworkIntent(cache, vnBlue.UUID)
+	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 2, len(vn.RoutingInstances))
 	}
 
-	cache.Delete(ri2Intent.Kind(), intent.ByUUID(ri2Intent.GetUUID()))
-	ri = logic.LoadRoutingInstanceIntent(cache, ri1Intent.UUID)
+	c.Delete(ri2Intent.Kind(), intent.ByUUID(ri2Intent.GetUUID()))
+	ri = logic.LoadRoutingInstanceIntent(c, ri1Intent.UUID)
 	if assert.NotNil(t, ri) {
 		assert.Equal(t, 0, len(ri.RoutingInstanceBackRefs))
 	}
-	vn = logic.LoadVirtualNetworkIntent(cache, vnBlue.UUID)
+	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 1, len(vn.RoutingInstances))
 	}

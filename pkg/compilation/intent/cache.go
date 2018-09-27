@@ -12,6 +12,7 @@ import (
 
 // Cache stores intents.
 type Cache struct {
+	reactionMap map[string]map[string]map[string]struct{}
 	*intentStore
 }
 
@@ -47,9 +48,10 @@ func ByFQName(fqName []string) Query {
 }
 
 // NewCache creates new cache for intents.
-func NewCache() *Cache {
+func NewCache(reactionMap map[string]map[string]map[string]struct{}) *Cache {
 	return &Cache{
 		intentStore: newIntentStore(),
+		reactionMap: reactionMap,
 	}
 }
 
@@ -72,6 +74,36 @@ func (c *Cache) Delete(typeName string, q Query) {
 	typeName = strcase.ToCamel(typeName)
 	log.WithFields(log.Fields{"type-name": typeName, "query": q}).Debug("Deleting from cache")
 	c.intentStore.delete(typeName, q)
+}
+
+func (c *Cache) GetDependencies(
+	i Intent,
+	from string,
+) []Intent {
+	intents := []Intent{}
+	intentReactionMap, ok := c.reactionMap[i.TypeName()]
+	if !ok {
+		return intents
+	}
+	dependentTypes, ok := intentReactionMap[from]
+	if !ok {
+		return intents
+	}
+	intents = append(intents, i)
+	dependentIntents := i.GetDependencies()
+	for t, uuids := range dependentIntents {
+		_, ok := dependentTypes[t]
+		if ok {
+			for uuid := range uuids {
+				dependentIntent := c.Load(t, ByUUID(uuid))
+				intents = append(intents, dependentIntent)
+				for _, k := range c.GetDependencies(dependentIntent, t) {
+					intents = append(intents, k)
+				}
+			}
+		}
+	}
+	return intents
 }
 
 type intentStore struct {
@@ -110,7 +142,7 @@ func (s *intentStore) store(typeName string, i Intent) {
 	defer s.Unlock()
 	s.removeDependencies(typeName, ByUUID(i.GetUUID()))
 	s.storeInternal(typeName, i)
-	s.addDependencies(i.GetObject())
+	s.addDependencies(i)
 }
 
 func (s *intentStore) loadInternal(typeName string, q Query) Intent {
@@ -149,8 +181,8 @@ func (s *intentStore) storeInternal(typeName string, i Intent) {
 	s.uuidToType[i.GetUUID()] = typeName
 }
 
-func (s *intentStore) addDependencies(resource basemodels.Object) {
-	dependencies := resource.Depends()
+func (s *intentStore) addDependencies(i Intent) {
+	dependencies := i.Depends()
 	for _, dependencyID := range dependencies {
 		t, ok := s.uuidToType[dependencyID]
 		if !ok {
@@ -158,7 +190,8 @@ func (s *intentStore) addDependencies(resource basemodels.Object) {
 		}
 		dependentIntent := s.loadInternal(t, ByUUID(dependencyID))
 		if dependentIntent != nil {
-			dependentIntent.AddDependency(resource)
+			dependentIntent.AddDependency(i.GetObject())
+			dependentIntent.AddDependentIntent(i)
 		}
 	}
 }
@@ -175,6 +208,7 @@ func (s *intentStore) removeDependencies(typeName string, q Query) {
 			dependentIntent := s.loadInternal(t, ByUUID(dependencyID))
 			if ok {
 				dependentIntent.RemoveDependency(i.GetObject())
+				dependentIntent.RemoveDependentIntent(i)
 			}
 		}
 	}

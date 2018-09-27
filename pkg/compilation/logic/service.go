@@ -52,7 +52,7 @@ func (s *Service) handleCreate(
 
 	ec := s.evaluateContext()
 
-	if err := s.EvaluateDependencies(ctx, ec, i.GetObject()); err != nil {
+	if err := s.EvaluateDependencies(ctx, ec, i); err != nil {
 		return errors.Wrapf(err, "failed to evaluate %s dependencies", i.Kind())
 	}
 	return nil
