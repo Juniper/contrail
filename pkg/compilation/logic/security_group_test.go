@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
+	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -188,7 +189,13 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	mockReadService := servicesmock.NewMockReadService(mockCtrl)
 	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
 	cache := intent.NewCache()
-	service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
+	service := NewService(
+		mockAPIClient,
+		mockReadService,
+		mockIntPoolAllocator,
+		cache,
+		dependencies.NewDependencyProcessor(ReactionMap),
+	)
 
 	expectCreateACL(mockAPIClient, expectedIngressACL)
 	expectCreateACL(mockAPIClient, expectedEgressACL)
@@ -336,7 +343,13 @@ func TestSecurityGroupUpdate(t *testing.T) {
 			cache.Store(tt.intent)
 
 			mockReadService := servicesmock.NewMockReadService(mockCtrl)
-			service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
+			service := NewService(
+				mockAPIClient,
+				mockReadService,
+				mockIntPoolAllocator,
+				cache,
+				dependencies.NewDependencyProcessor(ReactionMap),
+			)
 
 			tt.mock(mockAPIClient)
 
@@ -449,7 +462,13 @@ func TestSecurityGroupDelete(t *testing.T) {
 			cache := intent.NewCache()
 
 			cache.Store(tt.intent)
-			service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
+			service := NewService(
+				mockAPIClient,
+				mockReadService,
+				mockIntPoolAllocator,
+				cache,
+				dependencies.NewDependencyProcessor(ReactionMap),
+			)
 
 			tt.mock(mockAPIClient)
 

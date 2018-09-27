@@ -210,26 +210,38 @@ func (db *DB) removeTooOldNodesIfNeeded() {
 }
 
 func (db *DB) addDependencies(resource services.Resource) {
-	dependencies := resource.Depends()
-	for _, dependencyID := range dependencies {
-		dependentNode, ok := db.idMap[dependencyID]
-		if ok {
-			dependentNode.event.GetResource().AddDependency(resource)
-			dependentNode.pop()
-			db.append(dependentNode)
-		}
+	for _, ref := range resource.Depends() {
+		db.addDependency(ref.GetUUID(), resource)
+	}
+	if resource.GetParentUUID() != "" {
+		db.addDependency(resource.GetParentUUID(), resource)
 	}
 }
 
 func (db *DB) removeDependencies(resource services.Resource) {
-	dependencies := resource.Depends()
-	for _, dependencyID := range dependencies {
-		dependentNode, ok := db.idMap[dependencyID]
-		if ok {
-			dependentNode.event.GetResource().RemoveDependency(resource)
-			dependentNode.pop()
-			db.append(dependentNode)
-		}
+	for _, ref := range resource.Depends() {
+		db.removeDependency(ref.GetUUID(), resource)
+	}
+	if resource.GetParentUUID() != "" {
+		db.removeDependency(resource.GetParentUUID(), resource)
+	}
+}
+
+func (db *DB) addDependency(uuid string, resource services.Resource) {
+	dependentNode, ok := db.idMap[uuid]
+	if ok {
+		dependentNode.event.GetResource().AddDependency(resource)
+		dependentNode.pop()
+		db.append(dependentNode)
+	}
+}
+
+func (db *DB) removeDependency(uuid string, resource services.Resource) {
+	dependentNode, ok := db.idMap[uuid]
+	if ok {
+		dependentNode.event.GetResource().RemoveDependency(resource)
+		dependentNode.pop()
+		db.append(dependentNode)
 	}
 }
 
