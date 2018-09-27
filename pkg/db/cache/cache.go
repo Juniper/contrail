@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 
 	log "github.com/sirupsen/logrus"
@@ -154,9 +155,12 @@ func (db *DB) update(event *services.Event) {
 	resource := event.GetResource()
 
 	existingNode, ok := db.idMap[resource.GetUUID()]
+	var backRefs, children []basemodels.Object
 	if ok {
 		// We should consider throwing error if operation is create here
 		oldResource := existingNode.event.GetResource()
+		backRefs = oldResource.GetBackReferences()
+		children = oldResource.GetChildren()
 		db.removeDependencies(oldResource)
 		log.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
 		if existingNode == db.first {
@@ -178,7 +182,7 @@ func (db *DB) update(event *services.Event) {
 	// This is done after removing too old objects as the uuid is same regardless of operation type
 	db.idMap[resource.GetUUID()] = n
 
-	db.updateDependentNodes(event)
+	db.updateDependentNodes(event, backRefs, children)
 	db.handleNode(n)
 
 	log.Debugf("node %v updated", n.version)
@@ -209,33 +213,65 @@ func (db *DB) removeTooOldNodesIfNeeded() {
 	}
 }
 
-func (db *DB) addDependencies(resource services.Resource) {
-	dependencies := resource.Depends()
-	for _, dependencyID := range dependencies {
-		dependentNode, ok := db.idMap[dependencyID]
+func (db *DB) addDependencies(
+	resource basemodels.Object,
+	backRefs, children []basemodels.Object,
+) {
+	for _, backRef := range backRefs {
+		resource.AddBackReference(backRef)
+	}
+	for _, child := range children {
+		resource.AddChild(child)
+	}
+	for _, ref := range resource.GetReferences() {
+		dependentNode, ok := db.idMap[ref.GetUUID()]
 		if ok {
-			dependentNode.event.GetResource().AddDependency(resource)
+			dependentNode.event.GetResource().AddBackReference(resource)
+			dependentNode.pop()
+			db.append(dependentNode)
+		}
+	}
+	if resource.GetParentUUID() != "" {
+		dependentNode, ok := db.idMap[resource.GetParentUUID()]
+		if ok {
+			dependentNode.event.GetResource().AddChild(resource)
 			dependentNode.pop()
 			db.append(dependentNode)
 		}
 	}
 }
 
-func (db *DB) removeDependencies(resource services.Resource) {
-	dependencies := resource.Depends()
-	for _, dependencyID := range dependencies {
-		dependentNode, ok := db.idMap[dependencyID]
+func (db *DB) removeDependencies(resource basemodels.Object) {
+	for _, backRef := range resource.GetBackReferences() {
+		resource.RemoveBackReference(backRef)
+	}
+	for _, child := range resource.GetChildren() {
+		resource.RemoveChild(child)
+	}
+	for _, ref := range resource.GetReferences() {
+		dependentNode, ok := db.idMap[ref.GetUUID()]
 		if ok {
-			dependentNode.event.GetResource().RemoveDependency(resource)
+			dependentNode.event.GetResource().RemoveBackReference(resource)
+			dependentNode.pop()
+			db.append(dependentNode)
+		}
+	}
+	if resource.GetParentUUID() != "" {
+		dependentNode, ok := db.idMap[resource.GetParentUUID()]
+		if ok {
+			dependentNode.event.GetResource().RemoveChild(resource)
 			dependentNode.pop()
 			db.append(dependentNode)
 		}
 	}
 }
 
-func (db *DB) updateDependentNodes(event services.HasResource) {
+func (db *DB) updateDependentNodes(
+	event services.HasResource,
+	backRefs, children []basemodels.Object,
+) {
 	if event.Operation() == services.OperationCreate || event.Operation() == services.OperationUpdate {
-		db.addDependencies(event.GetResource())
+		db.addDependencies(event.GetResource(), backRefs, children)
 	}
 }
 

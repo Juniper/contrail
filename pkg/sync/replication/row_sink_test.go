@@ -138,18 +138,22 @@ func TestObjectMappingAdapterRefCreate(t *testing.T) {
 
 type dummyMessage struct{}
 
-func (d *dummyMessage) Reset()                        {}
-func (d *dummyMessage) String() string                { return "dummy" }
-func (d *dummyMessage) ProtoMessage()                 {}
-func (d *dummyMessage) ToMap() map[string]interface{} { return nil }
-func (d *dummyMessage) Kind() string                  { return "" }
-func (d *dummyMessage) GetParentUUID() string         { return "" }
-func (d *dummyMessage) GetUUID() string               { return "" }
-func (d *dummyMessage) Depends() []string             { return nil }
-func (d *dummyMessage) GetFQName() []string           { return nil }
-func (d *dummyMessage) AddDependency(interface{})     {}
-func (d *dummyMessage) RemoveDependency(interface{})  {}
-func (d *dummyMessage) TypeName() string              { return "" }
+func (d *dummyMessage) Reset()                                 {}
+func (d *dummyMessage) String() string                         { return "dummy" }
+func (d *dummyMessage) ProtoMessage()                          {}
+func (d *dummyMessage) ToMap() map[string]interface{}          { return nil }
+func (d *dummyMessage) Kind() string                           { return "" }
+func (d *dummyMessage) GetParentUUID() string                  { return "" }
+func (d *dummyMessage) GetUUID() string                        { return "" }
+func (d *dummyMessage) GetReferences() []basemodels.Reference  { return nil }
+func (d *dummyMessage) GetBackReferences() []basemodels.Object { return nil }
+func (d *dummyMessage) GetChildren() []basemodels.Object       { return nil }
+func (d *dummyMessage) AddBackReference(interface{})           {}
+func (d *dummyMessage) AddChild(interface{})                   {}
+func (d *dummyMessage) RemoveBackReference(interface{})        {}
+func (d *dummyMessage) RemoveChild(interface{})                {}
+func (d *dummyMessage) GetFQName() []string                    { return nil }
+func (d *dummyMessage) TypeName() string                       { return "" }
 
 func (d *dummyMessage) ApplyPropCollectionUpdate(
 	*basemodels.PropCollectionUpdate,

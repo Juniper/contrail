@@ -63,7 +63,7 @@ func (s *Service) UpdateSecurityGroup(
 	ec := &intent.EvaluateContext{
 		WriteService: s.WriteService,
 	}
-	err := s.EvaluateDependencies(ctx, ec, sg)
+	err := s.EvaluateDependencies(ctx, ec, i)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
 	}
