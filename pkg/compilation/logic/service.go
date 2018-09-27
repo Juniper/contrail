@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -13,10 +14,11 @@ import (
 type Service struct {
 	services.BaseService
 	// WriteService is used to create/update/delete lower-level resources
-	WriteService     services.WriteService
-	IntPoolAllocator services.IntPoolAllocator
-	ReadService      services.ReadService
-	cache            *intent.Cache
+	WriteService        services.WriteService
+	IntPoolAllocator    services.IntPoolAllocator
+	ReadService         services.ReadService
+	cache               *intent.Cache
+	dependencyProcessor *dependencies.DependencyProcessor
 }
 
 // NewService creates a Service
@@ -25,12 +27,14 @@ func NewService(
 	readService services.ReadService,
 	allocator services.IntPoolAllocator,
 	cache *intent.Cache,
+	dependencyProcessor *dependencies.DependencyProcessor,
 ) *Service {
 	return &Service{
-		WriteService:     apiClient,
-		ReadService:      readService,
-		IntPoolAllocator: allocator,
-		cache:            cache,
+		WriteService:        apiClient,
+		ReadService:         readService,
+		IntPoolAllocator:    allocator,
+		cache:               cache,
+		dependencyProcessor: dependencyProcessor,
 	}
 }
 
@@ -52,7 +56,7 @@ func (s *Service) handleCreate(
 
 	ec := s.evaluateContext()
 
-	if err := s.EvaluateDependencies(ctx, ec, i.GetObject()); err != nil {
+	if err := s.EvaluateDependencies(ctx, ec, i); err != nil {
 		return errors.Wrapf(err, "failed to evaluate %s dependencies", i.Kind())
 	}
 	return nil

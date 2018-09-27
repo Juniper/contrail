@@ -2,6 +2,7 @@ package integration
 
 import (
 	"context"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ const (
 )
 
 // RunIntentCompilationService runs Intent Compilation process and returns function closing it.
-func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc {
+func RunIntentCompilationService(t *testing.T, apiURL, repoRootPath string) context.CancelFunc {
 	setViperConfig(map[string]interface{}{
 		"compilation.plugin_directory":    pluginDirectory,
 		"compilation.number_of_workers":   4,
@@ -27,6 +28,8 @@ func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc
 		"compilation.msg_index_string":    messageIndex,
 		"compilation.read_lock_string":    readLock,
 		"compilation.master_election":     true,
+		"compilation.reactions.path":      path.Join(repoRootPath, "tools/dependencies.yml"),
+		"compilation.reactions.prefix":    "intent-compiler",
 		"compilation.plugin": map[string]map[string]string{
 			"handlers": {
 				"create_handler": "HandleCreate",
