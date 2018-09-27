@@ -50,7 +50,6 @@ type Resource interface {
 	ToMap() map[string]interface{}
 	// Kind returns id of schema. For non resource objects it returns empty string
 	Kind() string
-	TypeName() string
 	// Depends returns UUIDs of children and back references
 	Depends() []string
 	// AddDependency adds child/backref to model

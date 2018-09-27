@@ -30,10 +30,6 @@ func TestCacheLoad(t *testing.T) {
 			typeName: vn.Kind(),
 		},
 		{
-			name:     "failsWhenResourceIsNotInCacheUsingTypeName",
-			typeName: vn.TypeName(),
-		},
-		{
 			name:          "failsGivenIncorrectTypeName",
 			typeName:      "hoge",
 			storeResource: true,
@@ -41,12 +37,6 @@ func TestCacheLoad(t *testing.T) {
 		{
 			name:          "loadsStoredResource",
 			typeName:      vn.Kind(),
-			storeResource: true,
-			expectedOk:    true,
-		},
-		{
-			name:          "loadsStoredResourceUsingTypeName",
-			typeName:      vn.TypeName(),
 			storeResource: true,
 			expectedOk:    true,
 		},
@@ -94,10 +84,6 @@ func TestCacheDelete(t *testing.T) {
 			typeName: vn.Kind(),
 		},
 		{
-			name:     "doesNothingGivenInvalidUUIDUsingTypeName",
-			typeName: vn.TypeName(),
-		},
-		{
 			name:          "deletesStoredResource",
 			typeName:      vn.Kind(),
 			storeResource: true,
@@ -134,7 +120,7 @@ func TestCacheDelete(t *testing.T) {
 }
 
 func TestDependencyResolution(t *testing.T) {
-	cache := intent.NewCache()
+	c := intent.NewCache()
 
 	vnBlue := &models.VirtualNetwork{
 		UUID: "vn_blue",
@@ -164,38 +150,46 @@ func TestDependencyResolution(t *testing.T) {
 		RoutingInstance: ri2,
 	}
 
-	cache.Store(vnBlueIntent)
-	vn := logic.LoadVirtualNetworkIntent(cache, vnBlue.UUID)
+	c.Store(vnBlueIntent)
+	vn := logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 0, len(vn.RoutingInstances))
 	}
 
-	cache.Store(ri1Intent)
-	vn = logic.LoadVirtualNetworkIntent(cache, vnBlue.UUID)
+	c.Store(ri1Intent)
+	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
 	if assert.NotNil(t, vn) {
+		dependencies := vn.GetDependencies()
+		if assert.Contains(t, dependencies, "routing-instance") {
+			assert.Contains(t, dependencies["routing-instance"], "ri_uuid1")
+		}
 		assert.Equal(t, 1, len(vn.RoutingInstances))
 	}
 
-	cache.Store(ri2Intent)
-	ri := logic.LoadRoutingInstanceIntent(cache, ri1Intent.UUID)
+	c.Store(ri2Intent)
+	ri := logic.LoadRoutingInstanceIntent(c, ri1Intent.UUID)
 	if assert.NotNil(t, ri) {
+		dependencies := ri.GetDependencies()
+		if assert.Contains(t, dependencies, "routing-instance") {
+			assert.Contains(t, dependencies["routing-instance"], "ri_uuid2")
+		}
 		assert.Equal(t, 1, len(ri.RoutingInstanceBackRefs))
 	}
-	ri = logic.LoadRoutingInstanceIntent(cache, ri2Intent.UUID)
+	ri = logic.LoadRoutingInstanceIntent(c, ri2Intent.UUID)
 	if assert.NotNil(t, ri) {
 		assert.Equal(t, 0, len(ri.RoutingInstanceBackRefs))
 	}
-	vn = logic.LoadVirtualNetworkIntent(cache, vnBlue.UUID)
+	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 2, len(vn.RoutingInstances))
 	}
 
-	cache.Delete(ri2Intent.Kind(), intent.ByUUID(ri2Intent.GetUUID()))
-	ri = logic.LoadRoutingInstanceIntent(cache, ri1Intent.UUID)
+	c.Delete(ri2Intent.Kind(), intent.ByUUID(ri2Intent.GetUUID()))
+	ri = logic.LoadRoutingInstanceIntent(c, ri1Intent.UUID)
 	if assert.NotNil(t, ri) {
 		assert.Equal(t, 0, len(ri.RoutingInstanceBackRefs))
 	}
-	vn = logic.LoadVirtualNetworkIntent(cache, vnBlue.UUID)
+	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 1, len(vn.RoutingInstances))
 	}

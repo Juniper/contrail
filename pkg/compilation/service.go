@@ -21,6 +21,7 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/config"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
+	"github.com/Juniper/contrail/pkg/compilation/plugins/contrail/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/log"
@@ -34,8 +35,13 @@ func SetupService(
 	allocator services.IntPoolAllocator,
 ) services.Service {
 	// create services
-	cache := intent.NewCache()
-	logicService := logic.NewService(WriteService, ReadService, allocator, cache)
+	logicService := logic.NewService(
+		WriteService,
+		ReadService,
+		allocator,
+		intent.NewCache(),
+		dependencies.NewDependencyProcessor(logic.ReactionMap),
+	)
 
 	return logicService
 }
