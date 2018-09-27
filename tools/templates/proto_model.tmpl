@@ -27,7 +27,7 @@ message {{ schema.JSONSchema.GoName }} {
     repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs", (gogoproto.moretags) = "yaml:\"{{ linkTo }}_refs\""];// {{ reference.Description }} {% endfor %}
 {% for _, backref in schema.BackReferences %}
     {% set linkTo = backref.LinkTo %}
-    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_backrefs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_backrefs\""]; // {{ backref.Description }} {% endfor %}
+    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_back_refs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_back_refs\""]; // {{ backref.Description }} {% endfor %}
 {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
     repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s", (gogoproto.moretags) = "yaml:\"{{ child.Plural }}\""]; // {{ backref.Description }} {% endfor %}

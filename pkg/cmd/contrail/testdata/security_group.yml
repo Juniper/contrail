@@ -144,6 +144,6 @@ security_group_entries:
     src_ports:
     - end_port: 65535
       start_port: 0
-security_logging_object_backrefs: []
-virtual_machine_interface_backrefs: []
+security_logging_object_back_refs: []
+virtual_machine_interface_back_refs: []
 access_control_lists: []
