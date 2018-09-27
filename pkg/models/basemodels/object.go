@@ -11,10 +11,13 @@ type Object interface {
 	GetFQName() []string
 	GetParentUUID() string
 	Kind() string
-	TypeName() string
-	Depends() []string
-	AddDependency(interface{})
-	RemoveDependency(interface{})
+	GetReferences() []Reference
+	GetBackReferences() []Object
+	GetChildren() []Object
+	AddBackReference(interface{})
+	AddChild(interface{})
+	RemoveBackReference(interface{})
+	RemoveChild(interface{})
 	ToMap() map[string]interface{}
 	ApplyMap(map[string]interface{})
 	ApplyPropCollectionUpdate(*PropCollectionUpdate) (updated map[string]interface{}, err error)
