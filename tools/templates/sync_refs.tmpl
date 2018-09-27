@@ -1,0 +1,14 @@
+package sink
+
+// resolveReferenceTable returns Event kind from reference table name
+func resolveReferenceTable(name string) (typeName, refType string) {
+	switch name {
+{%- for schema in schemas -%}{% if schema.Type != "abstract" and schema.ID %}
+{%- for _, reference in schema.References -%}
+	case "{{ reference.Table }}":
+		return "{{ schema.TypeName }}", "{{ reference.LinkTo.TypeName }}"
+{% endfor %}{% endif %}{% endfor %}
+	}
+	return "", ""
+}
+
