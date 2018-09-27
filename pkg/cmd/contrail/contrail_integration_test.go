@@ -59,7 +59,7 @@ func TestCreateCoreResources(t *testing.T) {
 			})
 			defer s.CloseT(t)
 
-			closeIntentCompilation := integration.RunIntentCompilationService(t, s.URL())
+			closeIntentCompilation := integration.RunIntentCompilationService(t, s.URL(), "../../..")
 			defer closeIntentCompilation()
 
 			hc := integration.NewTestingHTTPClient(t, s.URL())

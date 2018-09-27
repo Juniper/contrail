@@ -32,7 +32,7 @@ type EventOption struct {
 
 // HasResource defines methods that might be implemented by Event.
 type HasResource interface {
-	GetResource() Resource
+	GetResource() basemodels.Object
 	Operation() string
     ExtractRefsEventFromEvent() (*Event, error)
 }
@@ -40,23 +40,6 @@ type HasResource interface {
 // CanProcessService is interface for process service.
 type CanProcessService interface {
 	Process(ctx context.Context, service Service) (*Event, error)
-}
-
-// Resource is a generic resource interface.
-type Resource interface {
-	GetUUID() string
-	GetFQName() []string
-	GetParentUUID() string
-	ToMap() map[string]interface{}
-	// Kind returns id of schema. For non resource objects it returns empty string
-	Kind() string
-	TypeName() string
-	// Depends returns UUIDs of children and back references
-	Depends() []string
-	// AddDependency adds child/backref to model
-	AddDependency(i interface{})
-	// RemoveDependency removes child/backref from model
-	RemoveDependency(i interface{})
 }
 
 // EventList has multiple rest requests.
@@ -152,7 +135,7 @@ func (e *EventList) Process(ctx context.Context, service Service) (*EventList, e
 }
 
 // GetResource returns event on resource.
-func (e *Event) GetResource() Resource {
+func (e *Event) GetResource() basemodels.Object {
 	if e == nil {
 		return nil
 	}
@@ -178,17 +161,17 @@ func (e *Event) Operation() string {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
 //GetResource returns resource.
-func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) GetResource() Resource {
+func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
     return e.Create{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
 }
 
 //GetResource returns resource.
-func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) GetResource() Resource {
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
     return e.Update{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
 }
 
 //GetResource returns resource.
-func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) GetResource() Resource {
+func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
     return &models.{{ schema.JSONSchema.GoName }}{
         UUID: e.Delete{{ schema.JSONSchema.GoName }}Request.ID,
     }

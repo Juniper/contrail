@@ -179,6 +179,9 @@ compilation:
   msg_index_string: 'MsgIndex'
   read_lock_string: "MsgReadLock"
   master_election: true
+  reactions:
+    path: tools/dependencies.yml
+    prefix: intent-compiler
 
   # Plugin configuration
   plugin:

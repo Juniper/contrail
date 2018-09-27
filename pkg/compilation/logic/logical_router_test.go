@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -76,7 +77,13 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 			mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
 			mockReadService := servicesmock.NewMockReadService(mockCtrl)
 			cache := intent.NewCache()
-			service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
+			service := NewService(
+				mockAPIClient,
+				mockReadService,
+				mockIntPoolAllocator,
+				cache,
+				dependencies.NewDependencyProcessor(parseReactions(t)),
+			)
 
 			mockReadService.EXPECT().GetProject(
 				testutil.NotNil(),
@@ -134,7 +141,13 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 	mockReadService := servicesmock.NewMockReadService(mockCtrl)
 	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
 	cache := intent.NewCache()
-	service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, cache)
+	service := NewService(
+		mockAPIClient,
+		mockReadService,
+		mockIntPoolAllocator,
+		cache,
+		dependencies.NewDependencyProcessor(parseReactions(t)),
+	)
 
 	rt := &models.RouteTarget{
 		FQName:      []string{"target:64512:8000002"},
@@ -143,7 +156,7 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 	}
 
 	ri := &models.RoutingInstance{
-		UUID: "test-vn",
+		UUID: "test-ri",
 		FQName: []string{
 			"default-domain",
 			"project-blue",
@@ -165,7 +178,7 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 		UUID: "test-vmi",
 		VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
 			{
-				UUID: "test-vn",
+				UUID: vn.UUID,
 			},
 		},
 	}
@@ -181,7 +194,7 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 		},
 		VirtualMachineInterfaceRefs: []*models.LogicalRouterVirtualMachineInterfaceRef{
 			{
-				UUID: "test-vmi",
+				UUID: vmi.UUID,
 			},
 		},
 	}
@@ -224,7 +237,7 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 	mockAPIClient.EXPECT().CreateRoutingInstanceRouteTargetRef(
 		testutil.NotNil(),
 		&services.CreateRoutingInstanceRouteTargetRefRequest{
-			ID: "test-vn",
+			ID: ri.UUID,
 			RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
 				UUID: rt.GetUUID(),
 			},

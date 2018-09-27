@@ -93,7 +93,6 @@ const (
 {% for schema in schemas %}
 
 const Kind{{ schema.JSONSchema.GoName }} = "{{ schema.TypeName }}"
-const TypeName{{ schema.JSONSchema.GoName }} = "{{ schema.JSONSchema.GoName }}"
 
 {% if schema.JSONSchema.Type == "object" %}
 
@@ -263,30 +262,58 @@ func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
 	return Kind{{ schema.JSONSchema.GoName }}
 }
 
-// TypeName returns typeName of an resource.
-func (m *{{ schema.JSONSchema.GoName }}) TypeName() string {
-	return TypeName{{ schema.JSONSchema.GoName }}
-}
-
-func (m *{{ schema.JSONSchema.GoName }}) Depends() []string {
+func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []basemodels.Reference {
+	{%- if schema.References|length > 0%}
 	if m == nil {
 		return nil
 	}
-	var depends []string
-	{% if schema.Parents|length > 0 %}
-		if m.GetParentUUID() != "" {
-			depends = append(depends, m.GetParentUUID())
-		}
-	{% endif %}
-	{% for linkTo, reference in schema.References %}
-		for _, ref := range m.{{ reference.GoName }}Refs {
-			depends = append(depends, ref.GetUUID())
-		}
+	var refs []basemodels.Reference
+	{% for _, reference in schema.References %}
+	for _, ref := range m.{{ reference.GoName }}Refs {
+		refs = append(refs, ref)
+	}
 	{% endfor %}
-	return depends
+	return refs
+	{%- else %}
+	return nil
+	{%- endif %}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) AddDependency(i interface{}) {
+func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object {
+	{%- if schema.References|length > 0%}
+	if m == nil {
+		return nil
+	}
+	var backRefs []basemodels.Object
+	{%- for _, backref in schema.BackReferences %}
+	for _, backRef := range m.{{ backref.LinkTo.JSONSchema.GoName }}BackRefs {
+		backRefs = append(backRefs, backRef)
+	}
+	{% endfor %}
+	return backRefs
+	{%- else %}
+	return nil
+	{%- endif %}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) GetChildren() []basemodels.Object {
+	{%- if schema.References|length > 0%}
+	if m == nil {
+		return nil
+	}
+	var children []basemodels.Object
+	{% for reference in schema.Children %}
+	for _, child := range m.{{ reference.LinkTo.JSONSchema.GoName }}s {
+		children = append(children, child)
+	}
+	{% endfor %}
+	return children
+	{%- else %}
+	return nil
+	{%- endif %}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) AddBackReference(i interface{}) {
 	{%- if schema.BackReferences|length > 0 %}
 	switch resource := i.(type) {
 		{%- for _, backref in schema.BackReferences -%}
@@ -296,6 +323,9 @@ func (m *{{ schema.JSONSchema.GoName }}) AddDependency(i interface{}) {
 		{%- endfor %}
 	}
 	{%- endif -%}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) AddChild(i interface{}) {
 	{%- if schema.Children|length > 0 %}
 	switch resource := i.(type) {
 		{%- for child in schema.Children -%}
@@ -307,25 +337,28 @@ func (m *{{ schema.JSONSchema.GoName }}) AddDependency(i interface{}) {
 	{%- endif %}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) RemoveDependency(i interface{}) {
-	{% if schema.BackReferences|length > 0 %}
+func (m *{{ schema.JSONSchema.GoName }}) RemoveBackReference(i interface{}) {
+	{%- if schema.BackReferences|length > 0 %}
 	switch resource := i.(type) {
-		{% for _, backref in schema.BackReferences %}
-			{% set linkTo = backref.LinkTo %}
+		{%- for _, backref in schema.BackReferences -%}
+			{%- set linkTo = backref.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.Remove{{ linkTo.JSONSchema.GoName }}Backref(resource)
-		{% endfor %}
+		{%- endfor %}
 	}
-	{% endif %}
-	{% if schema.Children|length > 0 %}
+	{%- endif %}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) RemoveChild(i interface{}) {
+	{%- if schema.Children|length > 0 %}
 	switch resource := i.(type) {
-		{% for child in schema.Children %}
-			{% set linkTo = child.LinkTo %}
+		{%- for child in schema.Children -%}
+			{%- set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.Remove{{ linkTo.JSONSchema.GoName }}(resource)
-		{% endfor %}
+		{%- endfor %}
 	}
-	{% endif %}
+	{%- endif %}
 }
 
 {% if schema.TypeName %}
@@ -445,18 +478,6 @@ func (m *{{ schema.JSONSchema.GoName }}) DeleteInList(position int) {
 	m.{{ listType.GoName }} = append(list[:position], list[position+1:]...)
 }
 
-{% endif %}
-
-{% if schema.References | length != 0%}
-func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []basemodels.Reference {
-	var references []basemodels.Reference
-	{% for linkTo, reference in schema.References %}
-	for _, ref := range m.{{ reference.GoName }}Refs {
-		references = append(references, ref)
-	}
-	{% endfor %}
-	return references
-}
 {% endif %}
 
 {% for linkTo, reference in schema.References %}

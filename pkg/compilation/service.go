@@ -15,9 +15,11 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/compilation/config"
+	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
@@ -31,12 +33,24 @@ func SetupService(
 	WriteService services.WriteService,
 	ReadService services.ReadService,
 	allocator services.IntPoolAllocator,
-) services.Service {
-	// create services
-	cache := intent.NewCache()
-	logicService := logic.NewService(WriteService, ReadService, allocator, cache)
+) (services.Service, error) {
+	reactions, err := dependencies.ParseReactions(
+		viper.GetString("compilation.reactions.path"),
+		viper.GetString("compilation.reactions.prefix"),
+	)
+	if err != nil {
+		return nil, err
+	}
 
-	return logicService
+	logicService := logic.NewService(
+		WriteService,
+		ReadService,
+		allocator,
+		intent.NewCache(),
+		dependencies.NewDependencyProcessor(reactions),
+	)
+
+	return logicService, nil
 }
 
 type locker interface {
@@ -80,8 +94,13 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 
 	apiClient := newAPIClient(c)
 
+	logicService, err := SetupService(apiClient, apiClient, apiClient)
+	if err != nil {
+		return nil, err
+	}
+
 	return &IntentCompilationService{
-		service:   SetupService(apiClient, apiClient, apiClient),
+		service:   logicService,
 		apiClient: apiClient,
 		Store:     etcd.NewClient(e),
 		locker:    l,
