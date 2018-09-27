@@ -423,7 +423,7 @@ func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 		return
 	}
 	for backrefTable, backrefFields := range qb.BackRefFields {
-		if !qb.islinkToInField(ctx, backrefTable+"backrefs") {
+		if !qb.islinkToInField(ctx, backrefTable+"back_refs") {
 			continue
 		}
 		refTable := schema.ReferenceTableName(schema.RefPrefix, backrefTable, qb.Table)
