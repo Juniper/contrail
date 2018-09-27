@@ -371,21 +371,21 @@ func newRowSinkMock() *rowSinkMock {
 }
 
 func (m *rowSinkMock) Create(
-	ctx context.Context, resourceName string, pk string, properties map[string]interface{},
+	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
 	args := m.Called(resourceName, pk, properties)
 	return args.Error(0)
 }
 
 func (m *rowSinkMock) Update(
-	ctx context.Context, resourceName string, pk string, properties map[string]interface{},
+	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
 	args := m.Called(resourceName, pk, properties)
 	return args.Error(0)
 }
 
 func (m *rowSinkMock) Delete(
-	ctx context.Context, resourceName string, pk string,
+	ctx context.Context, resourceName string, pk []string,
 ) error {
 	args := m.Called(resourceName, pk)
 	return args.Error(0)

@@ -10,7 +10,7 @@ import (
 )
 
 func TestObjectMappingAdapterCreate(t *testing.T) {
-	resourceName, pk, props := "resource", "1", map[string]interface{}{}
+	resourceName, pk, props := "resource", []string{"1"}, map[string]interface{}{}
 	message := &dummyMessage{}
 
 	tests := []struct {
@@ -105,17 +105,17 @@ type sinkMock struct {
 	mock.Mock
 }
 
-func (s *sinkMock) Create(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
+func (s *sinkMock) Create(ctx context.Context, resourceName string, pk []string, obj basemodels.Object) error {
 	args := s.MethodCalled("Create", resourceName, pk, obj)
 	return args.Error(0)
 }
 
-func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
+func (s *sinkMock) Update(ctx context.Context, resourceName string, pk []string, obj basemodels.Object) error {
 	args := s.MethodCalled("Update", resourceName, pk, obj)
 	return args.Error(0)
 }
 
-func (s *sinkMock) Delete(ctx context.Context, resourceName string, pk string) error {
+func (s *sinkMock) Delete(ctx context.Context, resourceName string, pk []string) error {
 	args := s.MethodCalled("Delete", resourceName, pk)
 	return args.Error(0)
 }
