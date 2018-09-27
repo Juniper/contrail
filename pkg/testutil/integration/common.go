@@ -185,7 +185,11 @@ type trackedResource struct {
 type clientsList map[string]*client.HTTP
 
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
-func RunCleanTestScenario(t *testing.T, testScenario *TestScenario, server *APIServer) {
+func RunCleanTestScenario(
+	t *testing.T,
+	testScenario *TestScenario,
+	server *APIServer,
+) {
 	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
 	checkWatchers := StartWatchers(t, testScenario.Watchers)
@@ -268,7 +272,11 @@ func createWatchChecker(collect func() []string, key string, events []event) fun
 	}
 }
 
-func startIntentCompiler(t *testing.T, testScenario *TestScenario, server *APIServer) context.CancelFunc {
+func startIntentCompiler(
+	t *testing.T,
+	testScenario *TestScenario,
+	server *APIServer,
+) context.CancelFunc {
 	if testScenario.IntentCompilerEnabled {
 		etcdClient := integrationetcd.NewEtcdClient(t)
 		etcdClient.Clear(t)
