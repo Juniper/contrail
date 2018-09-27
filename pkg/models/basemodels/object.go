@@ -11,7 +11,6 @@ type Object interface {
 	GetFQName() []string
 	GetParentUUID() string
 	Kind() string
-	TypeName() string
 	Depends() []string
 	AddDependency(interface{})
 	RemoveDependency(interface{})

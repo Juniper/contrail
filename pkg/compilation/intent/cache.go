@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/iancoleman/strcase"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -53,25 +52,22 @@ func NewCache() *Cache {
 	}
 }
 
-// Load loads intent from cache. It accepts kebab-case or CamelCase type name.
-func (c *Cache) Load(typeName string, q Query) Intent {
-	typeName = strcase.ToCamel(typeName)
-	log.WithFields(log.Fields{"type-name": typeName, "query": q}).Debug("Loading from cache")
-	return c.intentStore.load(typeName, q)
+// Load loads intent from cache.
+func (c *Cache) Load(kind string, q Query) Intent {
+	log.WithFields(log.Fields{"kind": kind, "query": q}).Debug("Loading from cache")
+	return c.intentStore.load(kind, q)
 }
 
 // Store puts intent into cache.
 func (c *Cache) Store(i Intent) {
-	typeName := strcase.ToCamel(i.Kind())
-	log.WithFields(log.Fields{"type-name": typeName, "uuid": i.GetUUID()}).Debug("Storing in cache")
-	c.intentStore.store(typeName, i)
+	log.WithFields(log.Fields{"kind": i.Kind(), "uuid": i.GetUUID()}).Debug("Storing in cache")
+	c.intentStore.store(i.Kind(), i)
 }
 
 // Delete deletes intent from cache. It accepts kebab-case or CamelCase type name.
-func (c *Cache) Delete(typeName string, q Query) {
-	typeName = strcase.ToCamel(typeName)
-	log.WithFields(log.Fields{"type-name": typeName, "query": q}).Debug("Deleting from cache")
-	c.intentStore.delete(typeName, q)
+func (c *Cache) Delete(kind string, q Query) {
+	log.WithFields(log.Fields{"kind": kind, "query": q}).Debug("Deleting from cache")
+	c.intentStore.delete(kind, q)
 }
 
 type intentStore struct {
@@ -110,7 +106,7 @@ func (s *intentStore) store(typeName string, i Intent) {
 	defer s.Unlock()
 	s.removeDependencies(typeName, ByUUID(i.GetUUID()))
 	s.storeInternal(typeName, i)
-	s.addDependencies(i.GetObject())
+	s.addDependencies(i)
 }
 
 func (s *intentStore) loadInternal(typeName string, q Query) Intent {
@@ -149,8 +145,8 @@ func (s *intentStore) storeInternal(typeName string, i Intent) {
 	s.uuidToType[i.GetUUID()] = typeName
 }
 
-func (s *intentStore) addDependencies(resource basemodels.Object) {
-	dependencies := resource.Depends()
+func (s *intentStore) addDependencies(i Intent) {
+	dependencies := i.Depends()
 	for _, dependencyID := range dependencies {
 		t, ok := s.uuidToType[dependencyID]
 		if !ok {
@@ -158,7 +154,9 @@ func (s *intentStore) addDependencies(resource basemodels.Object) {
 		}
 		dependentIntent := s.loadInternal(t, ByUUID(dependencyID))
 		if dependentIntent != nil {
-			dependentIntent.AddDependency(resource)
+			i.AddDependentIntent(dependentIntent)
+			dependentIntent.AddDependency(i.GetObject())
+			dependentIntent.AddDependentIntent(i)
 		}
 	}
 }
@@ -173,8 +171,10 @@ func (s *intentStore) removeDependencies(typeName string, q Query) {
 				continue
 			}
 			dependentIntent := s.loadInternal(t, ByUUID(dependencyID))
+			i.RemoveDependentIntent(dependentIntent)
 			if ok {
 				dependentIntent.RemoveDependency(i.GetObject())
+				dependentIntent.RemoveDependentIntent(i)
 			}
 		}
 	}
