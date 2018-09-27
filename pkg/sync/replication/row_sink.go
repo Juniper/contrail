@@ -10,9 +10,9 @@ import (
 
 // RowSink is data consumer capable of processing row data.
 type RowSink interface {
-	Create(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error
-	Update(ctx context.Context, resourceName string, pk string, properties map[string]interface{}) error
-	Delete(ctx context.Context, resourceName string, pk string) error
+	Create(ctx context.Context, resourceName string, pk []string, properties map[string]interface{}) error
+	Update(ctx context.Context, resourceName string, pk []string, properties map[string]interface{}) error
+	Delete(ctx context.Context, resourceName string, pk []string) error
 }
 
 type rowScanner interface {
@@ -31,7 +31,7 @@ func NewObjectMappingAdapter(s sink.Sink, rs rowScanner) RowSink {
 }
 
 func (o *objectMappingAdapter) Create(
-	ctx context.Context, resourceName string, pk string, properties map[string]interface{},
+	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
 	obj, err := o.rs.ScanRow(resourceName, properties)
 	if err != nil {
@@ -41,7 +41,7 @@ func (o *objectMappingAdapter) Create(
 }
 
 func (o *objectMappingAdapter) Update(
-	ctx context.Context, resourceName string, pk string, properties map[string]interface{},
+	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
 	obj, err := o.rs.ScanRow(resourceName, properties)
 	if err != nil {
