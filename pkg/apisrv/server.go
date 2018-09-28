@@ -166,6 +166,10 @@ func (s *Server) Init() (err error) {
 		e.Logger.SetOutput(ioutil.Discard) // Disables Echo's built-in logging.
 	}
 
+	if viper.GetBool("server.enable_gzip") {
+		e.Use(middleware.Gzip())
+	}
+
 	if viper.GetBool("server.log_body") {
 		e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
 			log.WithFields(log.Fields{
