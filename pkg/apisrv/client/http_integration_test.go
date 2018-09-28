@@ -27,8 +27,9 @@ func TestCreateRefMethod(t *testing.T) {
 	vnUUID := testID + "_virtual-network"
 	niUUID := testID + "_network-ipam"
 
-	hc.CreateRequiredProject(
+	integration.CreateProject(
 		t,
+		hc,
 		&models.Project{
 			UUID:       projectUUID,
 			ParentType: integration.DomainType,
@@ -37,10 +38,11 @@ func TestCreateRefMethod(t *testing.T) {
 			Quota:      &models.QuotaType{},
 		},
 	)
-	defer hc.RemoveProject(t, projectUUID)
+	defer integration.DeleteProject(t, hc, projectUUID)
 
-	hc.CreateRequiredNetworkIPAM(
+	integration.CreateNetworkIpam(
 		t,
+		hc,
 		&models.NetworkIpam{
 			UUID:       niUUID,
 			ParentType: integration.ProjectType,
@@ -48,10 +50,11 @@ func TestCreateRefMethod(t *testing.T) {
 			Name:       "testIpam",
 		},
 	)
-	defer hc.RemoveNetworkIPAM(t, niUUID)
+	defer integration.DeleteNetworkIpam(t, hc, niUUID)
 
-	hc.CreateRequiredVirtualNetwork(
+	integration.CreateVirtualNetwork(
 		t,
+		hc,
 		&models.VirtualNetwork{
 			UUID:       vnUUID,
 			ParentType: integration.ProjectType,
@@ -64,10 +67,12 @@ func TestCreateRefMethod(t *testing.T) {
 			},
 		},
 	)
-	defer hc.RemoveVirtualNetwork(t, vnUUID)
+
+	defer integration.DeleteVirtualNetwork(t, hc, vnUUID)
 
 	// After creating VirtualNetwork it is already connected to networkIpam
-	vn := hc.FetchVirtualNetwork(t, vnUUID)
+	vn := integration.GetVirtualNetwork(t, hc, vnUUID)
+
 	assert.Len(t, vn.NetworkIpamRefs, 1)
 
 	_, err := hc.DeleteVirtualNetworkNetworkIpamRef(
@@ -79,9 +84,10 @@ func TestCreateRefMethod(t *testing.T) {
 			},
 		},
 	)
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 
-	vn = hc.FetchVirtualNetwork(t, vnUUID)
+	vn = integration.GetVirtualNetwork(t, hc, vnUUID)
+
 	assert.Len(t, vn.NetworkIpamRefs, 0)
 
 	_, err = hc.CreateVirtualNetworkNetworkIpamRef(
@@ -93,9 +99,9 @@ func TestCreateRefMethod(t *testing.T) {
 			},
 		},
 	)
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 
-	vn = hc.FetchVirtualNetwork(t, vnUUID)
+	vn = integration.GetVirtualNetwork(t, hc, vnUUID)
 	assert.Len(t, vn.NetworkIpamRefs, 1)
 }
 

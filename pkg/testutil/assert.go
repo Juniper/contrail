@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/twinj/uuid"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/format"
@@ -39,7 +41,7 @@ var assertFunctions = map[string]assertFunction{
 	},
 	"null": func(path string, _, actual interface{}) error {
 		if actual != nil {
-			return fmt.Errorf("expecetd null but got %s on path %s", actual, path)
+			return errors.Errorf("expeceted null but got %s on path %s", actual, path)
 		}
 		return nil
 	},
@@ -48,7 +50,16 @@ var assertFunctions = map[string]assertFunction{
 		case int64, int, float64:
 			return nil
 		}
-		return fmt.Errorf("expecetd integer but got %s on path %s", actual, path)
+		return errors.Errorf("expeceted number but got %s on path %s", actual, path)
+	},
+	"uuid": func(path string, _, actual interface{}) error {
+		if val, ok := actual.(string); ok {
+			if _, err := uuid.Parse(val); err != nil {
+				return errors.Errorf("expected uuid but got %s on path %s (error: %s)", actual, path, err)
+			}
+			return nil
+		}
+		return errors.Errorf("expected uuid string but got %s on path %s", actual, path)
 	},
 }
 
@@ -81,14 +92,24 @@ func checkDiff(path string, expected, actual interface{}) error {
 		return runFunction(path, expected, actual)
 	}
 	switch t := expected.(type) {
+	case map[interface{}]interface{}:
+		actualMap, ok := actual.(map[string]interface{})
+		if !ok {
+			return errorWithFields(t, actual, path)
+		}
+		for keyI, value := range t {
+			key := fmt.Sprint(keyI)
+			if err := checkDiff(fmt.Sprintf("%s.%s", path, key), value, actualMap[key]); err != nil {
+				return err
+			}
+		}
 	case map[string]interface{}:
 		actualMap, ok := actual.(map[string]interface{})
 		if !ok {
 			return errorWithFields(t, actual, path)
 		}
 		for key, value := range t {
-			err := checkDiff(path+"."+key, value, actualMap[key])
-			if err != nil {
+			if err := checkDiff(fmt.Sprintf("%s.%s", path, key), value, actualMap[key]); err != nil {
 				return err
 			}
 		}
@@ -101,6 +122,7 @@ func checkDiff(path string, expected, actual interface{}) error {
 			return errorWithFields(t, actual, path)
 		}
 		for i, value := range t {
+			var mErr common.MultiError
 			found := false
 			for _, actualValue := range actualList {
 				err := checkDiff(path+"."+strconv.Itoa(i), value, actualValue)
@@ -108,9 +130,10 @@ func checkDiff(path string, expected, actual interface{}) error {
 					found = true
 					break
 				}
+				mErr = append(mErr, err)
 			}
 			if !found {
-				return fmt.Errorf("%s not found", path+"."+strconv.Itoa(i))
+				return fmt.Errorf("%s not found, last err: %v", path+"."+strconv.Itoa(i), mErr)
 			}
 		}
 	case int:
@@ -186,8 +209,10 @@ func getAssertFunction(key string) (assertFunction, error) {
 }
 
 func errorWithFields(expected, actual interface{}, path string) error {
-	return fmt.Errorf("expected:\n%v\nactual:\n%v\npath: %s",
+	return fmt.Errorf("expected(%T):\n%v\nactual(%T):\n%v\npath: %s",
+		expected,
 		format.MustYAML(expected),
+		actual,
 		format.MustYAML(actual),
 		path)
 }

@@ -13,8 +13,9 @@ func newAPIClient(config config.Config) *client.HTTP {
 		c.ID,
 		c.Password,
 		c.Insecure,
-		client.GetKeystoneScope(c.DomainID, c.DomainName,
-			c.ProjectID, c.ProjectName),
+		client.GetKeystoneScope(
+			c.DomainID, c.DomainName, c.ProjectID, c.ProjectName,
+		),
 	)
 	restClient.Init()
 
