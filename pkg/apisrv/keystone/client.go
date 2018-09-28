@@ -8,6 +8,8 @@ import (
 
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
+
+	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
 const (
@@ -80,7 +82,7 @@ func (k *KeystoneClient) CreateToken(c echo.Context) error {
 	defer resp.Body.Close() // nolint: errcheck
 	c.Response().Header().Set("X-Subject-Token",
 		resp.Header.Get("X-Subject-Token"))
-	authResponse := &AuthResponse{}
+	authResponse := &kscommon.AuthResponse{}
 	_ = json.NewDecoder(resp.Body).Decode(authResponse) // nolint: errcheck
 
 	return c.JSON(resp.StatusCode, authResponse)
@@ -93,7 +95,7 @@ func (k *KeystoneClient) ValidateToken(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	defer resp.Body.Close() // nolint: errcheck
-	validateTokenResponse := &ValidateTokenResponse{}
+	validateTokenResponse := &kscommon.ValidateTokenResponse{}
 	_ = json.NewDecoder(resp.Body).Decode(validateTokenResponse) // nolint: errcheck
 
 	return c.JSON(resp.StatusCode, validateTokenResponse)
