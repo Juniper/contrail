@@ -6,4 +6,4 @@ set -o pipefail
 
 [[ -z `go tool fix --diff ./pkg/` ]]
 
-golangci-lint --config .golangci-lint.yml run ./...
+golangci-lint --config .golangci-lint.yml run ./... 2>&1
