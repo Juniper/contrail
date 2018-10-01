@@ -32,7 +32,8 @@ server:
   write_timeout: 5
   log_api: false
   address: ":9091"
-
+  # Enable gzip on output
+  enable_gzip: false
   # TLS Configuration
   tls:
       enabled: false
