@@ -61,6 +61,14 @@ type InTransactionDoer interface {
 	DoInTransaction(ctx context.Context, do func(context.Context) error) error
 }
 
+// NoTransction executes do function non-atomically.
+type NoTransaction struct {}
+
+// DoInTransaction just runs do.
+func (*NoTransaction) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
+    return do(ctx)
+}
+
 // IntPoolAllocator (de)allocates integers in an integer pool.
 type IntPoolAllocator interface {
 	AllocateInt(context.Context, string) (int64, error)
