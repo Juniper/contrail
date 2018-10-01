@@ -51,7 +51,6 @@ read
 contrailcli -c config.yml sync vn_blue.yml
 read
 
-
 read -p 'Run pod in second terminal using command: "kubectl run -i --tty busybox-one --image=busybox --namespace blue -- sh"'
 
 kubectl run -i --tty busybox-two --image=busybox --namespace blue -- sh

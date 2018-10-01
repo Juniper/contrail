@@ -84,6 +84,20 @@ ip a
 
 And then you can try to make them ping each other.
 
+### Logical router ping
+
+Run the script located in [./tools/demo/logical-router-ping/run.sh](../tools/demo/logical-router-ping/run.sh)
+on target machine. Last command located in script launches new pod in that terminal.
+
+Next run second pod in another terminal
+
+```sh
+sudo kubectl run -i --tty busybox-one --image=busybox --namespace blue -- sh
+```
+
+Now you can check their IP addresses and then ping the same way
+as described in "Intra VN ping"
+
 ### Security groups
 * Prepare 3 terminals on a machine with Contrail deployed: one for running the scenario script, and two for running Kubernetes pods.
 * Go to the `tools/demo/security-groups` subdirectory of the Contrail repository and run `setup.sh` as root.
