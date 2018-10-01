@@ -5,12 +5,11 @@
     - install-docker-daemon
     - role: add-insecure-registry
       new_registry: "{{ contrail_docker_registry }}"
+    - contrail-go-build-setup
   vars:
     workdir: /go/src/github.com/Juniper/contrail
     sourcedir: "{{ ansible_env.HOME }}"
   tasks:
-    - include: build-setup.yaml
-
     - name: run
       include: build-step.yaml
       loop_control:
