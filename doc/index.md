@@ -179,4 +179,6 @@ func (sv *ContrailTypeLogicService) CreateProject(
 
 # Intent Compiler
 
+[Intent Compiler Documentation](./intent_compilation.md)
+
 # Sync Process
