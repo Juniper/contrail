@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"bytes"
+        "io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -12,6 +13,9 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/mattn/go-shellwords"
 	"github.com/siddontang/go/log"
+
+	"archive/tar"
+	"compress/gzip"
 )
 
 const (
@@ -35,6 +39,78 @@ type openstackVariables struct {
 
 type ansibleProvisioner struct {
 	provisionCommon
+}
+
+// Untar takes a destination path and a reader; a tar reader loops over the tarfile
+// creating the file structure at 'dst' along the way, and writing any files
+func Untar(src, dst string) error {
+	f, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gzr, err := gzip.NewReader(f)
+	if err != nil {
+		return err
+	}
+	defer gzr.Close()
+
+	tr := tar.NewReader(gzr)
+
+	for {
+		header, err := tr.Next()
+
+		switch {
+
+		// if no more files are found return
+		case err == io.EOF:
+			return nil
+
+		// return any other error
+		case err != nil:
+			return err
+
+			// if the header is nil, just skip it (not sure how this happens)
+		case header == nil:
+			continue
+		}
+
+		// the target location where the dir/file should be created
+		target := filepath.Join(dst, header.Name)
+
+		// the following switch could also be done using fi.Mode(), not sure if there
+		// a benefit of using one vs. the other.
+		// fi := header.FileInfo()
+
+		// check the file type
+		switch header.Typeflag {
+
+		// if its a dir and it doesn't exist create it
+		case tar.TypeDir:
+			if _, err := os.Stat(target); err != nil {
+				if err := os.MkdirAll(target, 0755); err != nil {
+					return err
+				}
+			}
+
+		// if it's a file create it
+		case tar.TypeReg:
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			if err != nil {
+				return err
+			}
+
+			// copy over contents
+			if _, err := io.Copy(f, tr); err != nil {
+				return err
+			}
+
+			// manually close here after each file operation; defering would cause each file close
+			// to wait until all operations have completed.
+			f.Close()
+		}
+	}
 }
 
 func (a *ansibleProvisioner) getInstanceTemplate() (instanceTemplate string) {
@@ -362,7 +438,13 @@ func (a *ansibleProvisioner) playAppformixProvision() error {
 		} else {
 			ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 		}
-		return a.playFromDir(a.getAppformixAnsibleDeployerRepoDir(), ansibleArgs)
+		repoDir := a.getAppformixAnsibleDeployerRepoDir()
+		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
+			srcPath := a.clusterData.getAppformixClusterInfo().AppformixImageDir
+			srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
+			Untar(srcPath+srcFile, repoDir)
+		}
+		return a.playFromDir(repoDir, ansibleArgs)
 	}
 	return nil
 }
