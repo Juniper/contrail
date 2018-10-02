@@ -1,4 +1,4 @@
-package apisrv
+package integration
 
 import (
 	"context"
@@ -18,8 +18,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
+	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
@@ -29,35 +30,53 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
-const (
-	defaultClientID = "default"
-	defaultDomainID = "default"
-)
+// TestMain is a function that can be called inside package specific TestMain
+// to enable integration testing capabilities.
+func TestMain(m *testing.M, s **APIServer) {
+	WithTestDBs(func(dbType string) {
+		var err error
+		if *s, err = NewRunningServer(&APIServerConfig{
+			DBDriver:           dbType,
+			RepoRootPath:       "../../..",
+			EnableEtcdNotifier: true,
+		}); err != nil {
+			log.Fatalf("Error initializing integration APIServer: %+v", err)
+		}
+		defer testutil.LogFatalIfErr((*s).Close)
 
-// TestServer is httptest.Server instance
-var TestServer *httptest.Server
+		os.Exit(m.Run())
+	})
+}
 
-// APIServer is test API Server instance
-var APIServer *Server
-
-// SetupAndRunTest does test setup and run tests for
+// WithTestDBs does test setup and run tests for
 // all supported db types.
-func SetupAndRunTest(m *testing.M) {
+func WithTestDBs(f func(dbType string)) {
 	err := initViperConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 	common.SetLogLevel()
+	testDBs := viper.GetStringMap("test_database")
+	if len(testDBs) == 0 {
+		log.Fatal("Test suite expected test database definitions under 'test_database' key")
+	}
 
-	for _, iConfig := range viper.GetStringMap("test_database") {
+	for _, iConfig := range testDBs {
 		config := common.InterfaceToInterfaceMap(iConfig)
-		viper.Set("database.type", config["type"])
+		dbType, ok := config["type"].(string)
+		if !ok {
+			log.Error("Failed to read dbType: %v (%T)", dbType, dbType)
+		}
+		viper.Set("database.type", dbType)
 		viper.Set("database.host", config["host"])
 		viper.Set("database.user", config["user"])
 		viper.Set("database.name", config["name"])
 		viper.Set("database.password", config["password"])
 		viper.Set("database.dialect", config["dialect"])
-		RunTestForDB(m, viper.GetString("database.type"))
+
+		log.WithField("dbType", dbType).Info("Starting tests for DB")
+		f(dbType)
+		log.WithField("dbType", dbType).Info("Finished tests for DB")
 	}
 }
 
@@ -75,41 +94,13 @@ func initViperConfig() error {
 	return viper.ReadInConfig()
 }
 
-// RunTestForDB runs tests for all supported DB
-func RunTestForDB(m *testing.M, dbType string) {
-	server, testServer := LaunchTestAPIServer()
-	defer testServer.Close()
-	defer LogFatalIfErr(server.Close)
-
-	log.WithField("dbType", dbType).Info("Starting tests for DB")
-	code := m.Run()
-	log.WithField("dbType", dbType).Info("Finished tests for DB")
-	if code != 0 {
-		os.Exit(code)
-	}
-}
-
-//LaunchTestAPIServer used to launch test API Server.
-func LaunchTestAPIServer() (*Server, *httptest.Server) {
-	var err error
-	APIServer, err = NewServer()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	TestServer = testutil.NewTestHTTPServer(APIServer.Echo)
-
-	viper.Set("keystone.authurl", TestServer.URL+"/keystone/v3")
-	err = APIServer.Init()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return APIServer, TestServer
-}
+const (
+	defaultClientID = "default"
+	defaultDomainID = "default"
+)
 
 //AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
-func AddKeystoneProjectAndUser(s *Server, testID string) {
+func AddKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
 	assignment.Projects[testID] = &kscommon.Project{
 		Domain: assignment.Domains[defaultDomainID],
@@ -130,11 +121,6 @@ func AddKeystoneProjectAndUser(s *Server, testID string) {
 			},
 		},
 	}
-}
-
-// ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
-func (s *Server) ForceProxyUpdate() {
-	s.Proxy.forceUpdate()
 }
 
 //Task has API request and expected response.
@@ -186,12 +172,12 @@ type trackedResource struct {
 type clientsList map[string]*client.HTTP
 
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
-func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
+func RunCleanTestScenario(t *testing.T, testScenario *TestScenario, server *APIServer) {
 	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
 	checkWatchers := startWatchers(t, testScenario.Watchers)
 
-	clients := prepareClients(ctx, t, testScenario)
+	clients := prepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
 	cleanupTrackedResources(ctx, tracked, clients)
 
@@ -199,10 +185,10 @@ func RunCleanTestScenario(t *testing.T, testScenario *TestScenario) {
 }
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
-func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario) func() {
+func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario, server *APIServer) func() {
 	log.Debug("Running *DIRTY* test scenario: ", testScenario.Name)
 	ctx := context.Background()
-	clients := prepareClients(ctx, t, testScenario)
+	clients := prepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
 	cleanupFunc := func() {
 		cleanupTrackedResources(ctx, tracked, clients)
@@ -251,13 +237,13 @@ func startWatchers(t *testing.T, watchers map[string][]map[string]interface{}) f
 	}
 }
 
-func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario) clientsList {
+func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) clientsList {
 	clients := clientsList{}
 
 	for key, client := range testScenario.Clients {
 		//Rewrite endpoint for test server
-		client.Endpoint = TestServer.URL
-		client.AuthURL = TestServer.URL + "/keystone/v3"
+		client.Endpoint = server.TestServer.URL
+		client.AuthURL = server.TestServer.URL + "/keystone/v3"
 		client.InSecure = true
 		client.Init()
 
@@ -433,11 +419,4 @@ func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
 	mockServer := NewWellKnownServer(serve, e)
 	mockServer.Start()
 	return mockServer
-}
-
-// LogFatalIfErr logs the err during function call
-func LogFatalIfErr(f func() error) {
-	if err := f(); err != nil {
-		log.Fatal(err)
-	}
 }
