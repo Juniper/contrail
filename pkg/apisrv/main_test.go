@@ -1,17 +1,20 @@
-package apisrv
+package apisrv_test
 
 import (
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 )
 
+var Server *integration.APIServer
+
 func TestMain(m *testing.M) {
-	SetupAndRunTest(m)
+	integration.TestMain(m, &Server)
 }
 
 func RunTest(t *testing.T, file string) {
-	testScenario, err := LoadTest(file, nil)
+	testScenario, err := integration.LoadTest(file, nil)
 	assert.NoError(t, err, "failed to load test data")
-	RunCleanTestScenario(t, testScenario)
+	integration.RunCleanTestScenario(t, testScenario, Server)
 }
