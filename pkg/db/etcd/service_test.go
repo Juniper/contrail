@@ -2,9 +2,7 @@ package etcd_test
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
-	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/gogo/protobuf/types"
@@ -15,15 +13,19 @@ import (
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
+
+type event = map[string]interface{}
+
+type watchers = map[string][]event
 
 func TestEtcdNotifierService(t *testing.T) {
 	tests := []struct {
 		name     string
 		ops      func(*testing.T, context.Context, *etcd.NotifierService)
-		watchers []watcher
+		watchers watchers
 	}{
 		{
 			name: "create and update virtual network",
@@ -45,16 +47,13 @@ func TestEtcdNotifierService(t *testing.T) {
 				})
 				assert.NoError(t, err, "update virtual network failed")
 			},
-			watchers: []watcher{
-				{
-					key: "/test/virtual_network/vn-blue",
-					expectedValues: []map[string]interface{}{
-						{
-							"name": "vn_blue",
-						},
-						{
-							"name": "vn_bluuee",
-						},
+			watchers: watchers{
+				"/test/virtual_network/vn-blue": []event{
+					{
+						"name": "vn_blue",
+					},
+					{
+						"name": "vn_bluuee",
 					},
 				},
 			},
@@ -94,43 +93,39 @@ func TestEtcdNotifierService(t *testing.T) {
 						}})
 				assert.NoError(t, err, "delete vn-lr reference failed")
 			},
-			watchers: []watcher{
-				{
-					key: "/test/virtual_network/vn-blue",
-					expectedValues: []map[string]interface{}{
-						{
-							"name": "vn_blue",
-						},
-						{
-							"name": "vn_blue",
-							"logical_router_refs": []interface{}{
-								map[string]interface{}{
-									"uuid": "lr-blue",
-								},
+			watchers: watchers{
+				"/test/virtual_network/vn-blue": []event{
+					{
+						"name": "vn_blue",
+					},
+					{
+						"name": "vn_blue",
+						"logical_router_refs": []interface{}{
+							map[string]interface{}{
+								"uuid": "lr-blue",
 							},
-						},
-						{
-							"name": "vn_blue",
 						},
 					},
+					{
+						"name":                "vn_blue",
+						"logical_router_refs": "$null",
+					},
 				},
-				{
-					key: "/test/logical_router/lr-blue",
-					expectedValues: []map[string]interface{}{
-						{
-							"name": "lr_blue",
-						},
-						{
-							"name": "lr_blue",
-							"virtual_network_backrefs": []interface{}{
-								map[string]interface{}{
-									"uuid": "vn-blue",
-								},
+				"/test/logical_router/lr-blue": []event{
+					{
+						"name": "lr_blue",
+					},
+					{
+						"name": "lr_blue",
+						"virtual_network_backrefs": []interface{}{
+							map[string]interface{}{
+								"uuid": "vn-blue",
 							},
 						},
-						{
-							"name": "lr_blue",
-						},
+					},
+					{
+						"name": "lr_blue",
+						"virtual_network_backrefs": "$null",
 					},
 				},
 			},
@@ -149,7 +144,7 @@ func TestEtcdNotifierService(t *testing.T) {
 			// Clean the database
 			ec.DeleteKey(t, etcdPath, clientv3.WithPrefix())
 
-			check := startWatchers(t, tt.watchers)
+			check := integration.StartWatchers(t, tt.watchers)
 			sv, err := etcd.NewNotifierService(etcdPath, models.JSONCodec)
 			require.NoError(t, err)
 
@@ -157,37 +152,5 @@ func TestEtcdNotifierService(t *testing.T) {
 
 			check(t)
 		})
-	}
-}
-
-type watcher struct {
-	key            string
-	expectedValues []map[string]interface{}
-}
-
-func startWatchers(t *testing.T, watchers []watcher) func(t *testing.T) {
-	checks := []func(t *testing.T){}
-
-	ec := integrationetcd.NewEtcdClient(t)
-	for _, w := range watchers {
-		w := w
-
-		collect := ec.WatchKeyN(w.key, len(w.expectedValues), 2*time.Second)
-		checks = append(checks, func(t *testing.T) {
-			collected := collect()
-			assert.Equal(t, len(w.expectedValues), len(collected))
-			for i, e := range w.expectedValues {
-				var data interface{}
-				err := json.Unmarshal([]byte(collected[i]), &data)
-				assert.NoError(t, err)
-				testutil.AssertEqual(t, e, data, "different data under key %s\n", w.key)
-			}
-		})
-	}
-
-	return func(t *testing.T) {
-		for _, c := range checks {
-			c(t)
-		}
 	}
 }
