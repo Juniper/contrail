@@ -281,9 +281,9 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("recorder.enabled") {
 		file := viper.GetString("recorder.file")
-		scenario := &TestScenario{
-			Workflow: []*Task{},
-		}
+		scenario := &struct {
+			Workflow []*recorderTask `yaml:"workflow,omitempty"`
+		}{}
 		var mutex sync.Mutex
 		e.Use(middleware.BodyDump(func(c echo.Context, requestBody, responseBody []byte) {
 			var data interface{}
@@ -296,7 +296,7 @@ func (s *Server) Init() (err error) {
 			if err != nil {
 				log.Debug("malformed json response")
 			}
-			task := &Task{
+			task := &recorderTask{
 				Request: &client.Request{
 					Method:   c.Request().Method,
 					Path:     c.Request().URL.Path,
@@ -316,6 +316,11 @@ func (s *Server) Init() (err error) {
 	}
 
 	return s.applyExtensions()
+}
+
+type recorderTask struct {
+	Request *client.Request `yaml:"request,omitempty"`
+	Expect  interface{}     `yaml:"expect,omitempty"`
 }
 
 func (s *Server) applyExtensions() error {

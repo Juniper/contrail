@@ -20,9 +20,9 @@ const timeOut = 10 * time.Second
 func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	watcher, _ := cache.AddWatcher(ctx, 0) // nolint: errcheck
+	wg.Add(1)
 
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 		defer cancel()
 		for i := 0; i < numEvent; i++ {
