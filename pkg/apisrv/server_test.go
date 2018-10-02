@@ -1,4 +1,4 @@
-package apisrv
+package apisrv_test
 
 import (
 	"context"
@@ -17,158 +17,160 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/Juniper/contrail/pkg/types"
 )
 
 func TestKVStore(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestKVStore")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestKVStore")
 	RunTest(t, "./test_data/test_kv_store.yml")
 }
 
 func TestFloatingIP(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_floating_ip.yml")
 }
 
 func TestNetworkIpam(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_network_ipam.yml")
 }
 
 func TestVirtualNetwork(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
 func TestSecurityGroup(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_security_group.yml")
 }
 
 func TestQuotaChecking(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestAPIServer")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestAPIServer")
 	RunTest(t, "./test_data/test_quota_checking.yml")
 }
 
 func TestSync(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestSync")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestSync")
 	RunTest(t, "./test_data/test_sync.yml")
 }
 
 func TestValidation(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, "TestValidation")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestValidation")
 	RunTest(t, "./test_data/test_validation.yml")
 }
 
 func TestNameUnique(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_name_unique.yml")
 }
 
 func TestBaseProperties(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_base_properties.yml")
 }
 
 func TestBasePropsTwoParents(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_base_props_two_parents.yml")
 }
 
 func TestBaseWithConfigRootInParents(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_base_config_root_parent.yml")
 }
 
 func TestProject(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_project.yml")
 }
 
 func TestProjectConflict(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_project_conflict.yml")
 }
 
 func TestInstanceIP(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_instance_ip.yml")
 }
 
 func TestVirtualMachineInterface(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_virtual_machine_interface.yml")
 }
 
 func TestLogicalRouter(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_logical_router.yml")
 }
 
 func TestVirtualRouter(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_virtual_router.yml")
 }
 
 func TestFQNameToID(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_fqname_to_id.yml")
 }
 
 func TestRefRead(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_ref_read.yml")
 }
 
 func TestRefUpdate(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_ref_update.yml")
 }
 
 func TestRefRelaxForDelete(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_ref_relax.yml")
 }
 
 func TestPropCollectionUpdate(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_prop_collection_update.yml")
 }
 
 func TestSetTag(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_set_tag.yml")
 }
 
 func TestK8sInstanceIP(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_k8s_instance_ip_alloc.yml")
 }
 
 func TestSanitizing(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_sanitizing.yml")
 }
 
 func TestProvisioning(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_provisioning.yml")
 }
 
 func TestIntPool(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_int_pool.yml")
 }
 
 func TestDerivedRelations(t *testing.T) {
-	AddKeystoneProjectAndUser(APIServer, t.Name())
+	integration.AddKeystoneProjectAndUser(Server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_derived_relations.yml")
 }
 
 func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
-		TestServer.URL,
-		TestServer.URL+"/keystone/v3",
+		Server.TestServer.URL,
+		Server.TestServer.URL+"/keystone/v3",
 		"TestGRPC",
 		"TestGRPC",
 		true,
@@ -183,17 +185,17 @@ func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 
 func TestGRPC(t *testing.T) {
 	ctx := context.Background()
-	AddKeystoneProjectAndUser(APIServer, "TestGRPC")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestGRPC")
 
 	authToken := restLogin(ctx, t)
 
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})
-	dial := strings.TrimPrefix(TestServer.URL, "https://")
+	dial := strings.TrimPrefix(Server.TestServer.URL, "https://")
 	conn, err := grpc.Dial(dial, grpc.WithTransportCredentials(creds))
 	assert.NoError(t, err)
-	defer LogFatalIfErr(conn.Close)
+	defer testutil.LogFatalIfErr(conn.Close)
 	md := metadata.Pairs("X-Auth-Token", authToken)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	// Contact the server and print out its response.
@@ -233,17 +235,17 @@ func TestGRPC(t *testing.T) {
 
 func TestIPAMGRPC(t *testing.T) {
 	ctx := context.Background()
-	AddKeystoneProjectAndUser(APIServer, "TestIPAMGRPC")
+	integration.AddKeystoneProjectAndUser(Server.APIServer, "TestIPAMGRPC")
 	authToken := restLogin(ctx, t)
 
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})
-	dial := strings.TrimPrefix(TestServer.URL, "https://")
+	dial := strings.TrimPrefix(Server.TestServer.URL, "https://")
 
 	conn, err := grpc.Dial(dial, grpc.WithTransportCredentials(creds))
 	assert.NoError(t, err)
-	defer LogFatalIfErr(conn.Close)
+	defer testutil.LogFatalIfErr(conn.Close)
 	md := metadata.Pairs("X-Auth-Token", authToken)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	// Contact the server and print out its response.
@@ -263,10 +265,10 @@ func TestIPAMGRPC(t *testing.T) {
 func TestRESTClient(t *testing.T) {
 	ctx := context.Background()
 	testName := "TestRESTClient"
-	AddKeystoneProjectAndUser(APIServer, testName)
+	integration.AddKeystoneProjectAndUser(Server.APIServer, testName)
 	restClient := client.NewHTTP(
-		TestServer.URL,
-		TestServer.URL+"/keystone/v3",
+		Server.TestServer.URL,
+		Server.TestServer.URL+"/keystone/v3",
 		testName,
 		testName,
 		true,
