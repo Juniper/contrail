@@ -231,7 +231,7 @@ func (p *proxyService) syncProxyEndpoints(endpoints map[string]*models.Endpoint)
 	}
 }
 
-func (p *proxyService) forceUpdate() {
+func (p *proxyService) ForceUpdate() {
 	wait := make(chan struct{})
 	p.forceUpdateChan <- wait
 	<-wait
