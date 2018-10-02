@@ -58,8 +58,7 @@ func (a *ansibleProvisioner) getAnsibleDeployerRepoDir() (ansibleRepoDir string)
 }
 
 func (a *ansibleProvisioner) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
-	appformixAnsibleRepo := "appformix-" + a.clusterData.getAppformixClusterInfo().AppformixVersion
-	return filepath.Join(defaultAppformixAnsibleRepoDir, appformixAnsibleRepo)
+	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo)
 }
 
 func (a *ansibleProvisioner) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
@@ -324,14 +323,14 @@ func (a *ansibleProvisioner) playInstancesConfig(ansibleArgs []string) error {
 func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) error {
 	// play orchestrator provisioning playbook
 	switch a.clusterData.clusterInfo.Orchestrator {
-	case "openstack":
+	case orchestratorOpenstack:
 		ansibleArgs = append(ansibleArgs, "-e force_checkout=yes")
 		switch a.clusterData.clusterInfo.ProvisioningAction {
 		case addComputeProvisioningAction:
 			ansibleArgs = append(ansibleArgs, "--tags nova")
 		}
 		ansibleArgs = append(ansibleArgs, defaultOpenstackProvPlay)
-	case "kubernetes":
+	case orchestratorKubernetes:
 		ansibleArgs = append(ansibleArgs, defaultKubernetesProvPlay)
 	}
 	return a.play(ansibleArgs)
@@ -354,14 +353,30 @@ func (a *ansibleProvisioner) playContrailDatapathEncryption() error {
 
 func (a *ansibleProvisioner) playAppformixProvision() error {
 	if a.clusterData.getAppformixClusterInfo() != nil {
+		AppformixUsername := a.clusterData.getAppformixClusterInfo().AppformixUsername
+		AppformixPassword := a.clusterData.getAppformixClusterInfo().AppformixPassword
+		if AppformixUsername != "" {
+			err := os.Setenv("APPFORMIX_USERNAME", AppformixUsername)
+			if err != nil {
+				return err
+			}
+		}
+		if AppformixPassword != "" {
+			err := os.Setenv("APPFORMIX_PASSWORD", AppformixPassword)
+			if err != nil {
+				return err
+			}
+		}
+
 		AppformixVersion := a.clusterData.getAppformixClusterInfo().AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
-			"-e", "appformix_version=" + AppformixVersion}
-		if a.clusterData.getAppformixClusterInfo().AppformixVip != "" {
-			ansibleArgs = append(ansibleArgs, defaultAppformixHaProvPlay)
-		} else {
-			ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
+			                "-e", "appformix_version=" + AppformixVersion}
+		if a.clusterData.clusterInfo.Orchestrator == orchestratorOpenstack {
+			ansibleArgs = append(ansibleArgs,
+				             "-e /etc/kolla/external/admin-openrc.yml")
 		}
+
+		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 		return a.playFromDir(a.getAppformixAnsibleDeployerRepoDir(), ansibleArgs)
 	}
 	return nil
