@@ -1,0 +1,11 @@
+package models
+
+{% for schema in schemas -%}
+{%- if schema.Type != "abstract" and schema.ID %}
+
+func (m *{{ schema.JSONSchema.GoName }}) GetPerms2Owner() string {
+    return m.GetPerms2().GetOwner()
+}
+
+{% endif -%}
+{%- endfor %}

@@ -70,3 +70,9 @@
 - type: all
   template_path: client.tmpl
   output_path: pkg/apisrv/client/gen_http.go
+- type: all
+  template_path: memdb.tmpl
+  output_path: pkg/db/cache/gen_memdb.go
+- type: all
+  template_path: ownable.tmpl
+  output_path: pkg/models/gen_ownable.go

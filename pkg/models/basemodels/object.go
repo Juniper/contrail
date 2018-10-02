@@ -19,3 +19,8 @@ type Object interface {
 	ApplyMap(map[string]interface{})
 	ApplyPropCollectionUpdate(*PropCollectionUpdate) (updated map[string]interface{}, err error)
 }
+
+//Ownable is generic interface which have a owner.
+type Ownable interface {
+	GetPerms2Owner() string
+}

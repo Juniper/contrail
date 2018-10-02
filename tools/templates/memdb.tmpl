@@ -1,0 +1,127 @@
+package cache
+
+import (
+	"context"
+
+    "github.com/hashicorp/go-memdb"
+
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+)
+
+{% macro schemaName(schema) export %}{{ schema.JSONSchema.GoName }}{% endmacro %}
+{% macro schemaTypeNameString(schema) export %}"{{ schema.TypeName }}"{% endmacro %}
+{% macro schemaPlural(schema) export %}{{ schemaName(schema) }}s{% endmacro %}
+{% macro resourceCount(schema) export %}{{ schemaName(schema) }}Count{% endmacro %}
+
+{% macro getResource(schema) export %}Get{{ schemaName(schema) }}{% endmacro %}
+{% macro getRequest(schema) export %}Get{{ schemaName(schema) }}Request{% endmacro %}
+{% macro getResponse(schema) export %}Get{{ schemaName(schema) }}Response{% endmacro %}
+
+{% macro listResource(schema) export %}List{{ schemaName(schema) }}{% endmacro %}
+{% macro listRequest(schema) export %}List{{ schemaName(schema) }}Request{% endmacro %}
+{% macro getListRequest(schema) export %}GetList{{ schemaName(schema) }}Request(){% endmacro %}
+{% macro listResponse(schema) export %}List{{ schemaName(schema) }}Response{% endmacro %}
+
+{% macro createResource(schema) export %}Create{{ schemaName(schema) }}{% endmacro %}
+{% macro createRequest(schema) export %}Create{{ schemaName(schema) }}Request{% endmacro %}
+{% macro getCreateRequest(schema) export %}GetCreate{{ schemaName(schema) }}Request(){% endmacro %}
+{% macro createResponse(schema) export %}Create{{ schemaName(schema) }}Response{% endmacro %}
+
+{% macro updateResource(schema) export %}Update{{ schemaName(schema) }}{% endmacro %}
+{% macro updateRequest(schema) export %}Update{{ schemaName(schema) }}Request{% endmacro %}
+{% macro getUpdateRequest(schema) export %}GetUpdate{{ schemaName(schema) }}Request(){% endmacro %}
+{% macro updateResponse(schema) export %}Update{{ schemaName(schema) }}Response{% endmacro %}
+
+{% macro updateResource(schema) export %}Update{{ schemaName(schema) }}{% endmacro %}
+{% macro updateRequest(schema) export %}Update{{ schemaName(schema) }}Request{% endmacro %}
+{% macro getUpdateRequest(schema) export %}GetUpdate{{ schemaName(schema) }}Request(){% endmacro %}
+{% macro updateResponse(schema) export %}Update{{ schemaName(schema) }}Response{% endmacro %}
+
+{%- macro errorNotFound(schema) -%}
+common.ErrorNotFoundf("no {{schemaName(schema)}} found with uuid: %s", request.ID)
+{%- endmacro %}
+
+func MemDBSchema() *memdb.DBSchema {
+    schema := &memdb.DBSchema{
+        Tables: map[string]*memdb.TableSchema{
+{% for schema in schemas -%}
+{% if schema.Type != "abstract" and schema.ID %}
+            "{{ schema.ID }}": &memdb.TableSchema{
+                Name: "{{ schema.ID }}",
+                Indexes: map[string]*memdb.IndexSchema{
+                    "id": &memdb.IndexSchema{
+                        Name:    "id",
+                        Unique:  true,
+                        Indexer: &UUIDIndex{},
+                    },
+                    "owner": &memdb.IndexSchema{
+                        Name:    "owner",
+                        Indexer: &OwnerIndex{},
+                    },
+                },
+            },
+{% endif -%}
+{% endfor %}
+        },
+    }
+    return schema
+}
+
+type MemDB struct {
+    db *memdb.MemDB
+}
+
+func NewMemDB() (*MemDB, error) {
+    db, err := memdb.NewMemDB(MemDBSchema())
+    if err != nil {
+        return nil, err
+    }
+    return &MemDB{
+        db: db,
+    }, nil
+}
+
+{% for schema in schemas -%}
+{% if schema.Type != "abstract" and schema.ID %}
+func (cache *MemDB) {{ getResource(schema) }}(
+	_ context.Context,
+	request *services.{{ getRequest(schema) }},
+) (*services.{{ getResponse(schema) }}, error) {
+	response := &services.{{ getResponse(schema) }}{}
+
+	txn := cache.db.Txn(false)
+    defer txn.Abort()
+
+    raw, err := txn.First("{{ schema.ID }}", "id", request.ID)
+    if err != nil {
+		return nil, common.ErrorNotFoundf("failed to get {{schemaName(schema)}} with uuid: %s", request.ID)
+    }
+
+	response.{{ schemaName(schema) }} = raw.(*models.{{ schemaName(schema)}})
+	return response, nil
+}
+
+func (cache *MemDB) {{ listResource(schema) }}(
+	context.Context,
+	*services.{{ listRequest(schema) }},
+) (*services.{{ listResponse(schema) }}, error) {
+	response := &services.{{ listResponse(schema) }}{}
+
+	txn := cache.db.Txn(false)
+    defer txn.Abort()
+
+    it, err := txn.Get("{{ schema.ID }}", "owner")
+    if err != nil {
+        return nil, err
+    }
+	{# TODO: implement list spec #}
+	for i := it.Next(); i != nil; i = it.Next() {
+		response.{{ schemaPlural(schema) }} = append(response.{{ schemaPlural(schema) }}, i.(*models.{{ schemaName(schema)}}))
+	}
+	response.{{ resourceCount(schema) }} = int64(len(response.{{ schemaPlural(schema) }}))
+	return response, nil
+}
+{% endif -%}
+{% endfor %}
