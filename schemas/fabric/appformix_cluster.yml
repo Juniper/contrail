@@ -181,6 +181,30 @@ schema:
       view:
       - create
       - detail
+    appformix_username:
+      description: Appformix Username
+      default: ""
+      nullable: true
+      permission:
+      - create
+      - update
+      title: Appformix Username
+      type: "string"
+      view:
+      - create
+      - detail
+    appformix_password:
+      description: Appformix Password
+      default: ""
+      nullable: true
+      permission:
+      - create
+      - update
+      title: Appformix Password
+      type: "string"
+      view:
+      - create
+      - detail
   required: []
   type: object
 singular: appformix_cluster
