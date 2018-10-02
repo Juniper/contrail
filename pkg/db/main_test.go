@@ -16,7 +16,7 @@ import (
 var db *Service
 
 func TestMain(m *testing.M) {
-	viper.SetConfigName("contrail")
+	viper.SetConfigType("yml")
 	viper.AddConfigPath("../apisrv")
 	err := viper.ReadInConfig()
 	if err != nil {
