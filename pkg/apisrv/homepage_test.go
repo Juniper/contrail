@@ -17,7 +17,7 @@ import (
 )
 
 func TestHomepageResources(t *testing.T) {
-	c := integration.NewTestingHTTPClient(t, apisrv.TestServer.URL)
+	c := integration.NewTestingHTTPClient(t, Server.TestServer.URL)
 
 	var response map[string]interface{}
 	r, err := c.Read(context.Background(), "/", &response)
@@ -54,7 +54,7 @@ func TestHomepageResources(t *testing.T) {
 }
 
 func TestRoutesAreRegistered(t *testing.T) {
-	c := integration.NewTestingHTTPClient(t, apisrv.TestServer.URL)
+	c := integration.NewTestingHTTPClient(t, Server.TestServer.URL)
 
 	var response map[string]interface{}
 	r, err := c.Read(context.Background(), "/", &response)
@@ -106,7 +106,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	routes.add(apisrv.UserAgentKVPath)
 	routes.add(services.PropCollectionUpdatePath)
 
-	for _, route := range apisrv.APIServer.Echo.Routes() {
+	for _, route := range Server.APIServer.Echo.Routes() {
 		assert.Truef(t, routes.contains(route.Path),
 			"Route %s has no corresponding link in homepage discovery."+
 				" Register it in APIServer setup code and add it to the set of excluded routes in the test.",
