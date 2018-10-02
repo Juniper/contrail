@@ -22,6 +22,8 @@ schema:
   properties:
     appformix_image_dir:
       description: Appformix image directory
+      operations: "CRUD"
+      presence: "optional"
       nullable: true
       permission:
       - create
@@ -57,6 +59,18 @@ schema:
       - update
       sql: ""
       title: Appformix Version
+      type: string
+      view:
+      - create
+      - detail
+    appformix_docker_registry:
+      description: Appformix docker registry
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Appformix docker registry
       type: string
       view:
       - create
@@ -177,6 +191,30 @@ schema:
       - create
       - update
       title: Appformix HA VRRP VIP
+      type: "string"
+      view:
+      - create
+      - detail
+    appformix_username:
+      description: Appformix Username
+      default: ""
+      nullable: true
+      permission:
+      - create
+      - update
+      title: Appformix Username
+      type: "string"
+      view:
+      - create
+      - detail
+    appformix_password:
+      description: Appformix Password
+      default: ""
+      nullable: true
+      permission:
+      - create
+      - update
+      title: Appformix Password
       type: "string"
       view:
       - create
