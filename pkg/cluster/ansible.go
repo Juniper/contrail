@@ -58,8 +58,7 @@ func (a *ansibleProvisioner) getAnsibleDeployerRepoDir() (ansibleRepoDir string)
 }
 
 func (a *ansibleProvisioner) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
-	appformixAnsibleRepo := "appformix-" + a.clusterData.getAppformixClusterInfo().AppformixVersion
-	return filepath.Join(defaultAppformixAnsibleRepoDir, appformixAnsibleRepo)
+	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo)
 }
 
 func (a *ansibleProvisioner) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
@@ -354,14 +353,25 @@ func (a *ansibleProvisioner) playContrailDatapathEncryption() error {
 
 func (a *ansibleProvisioner) playAppformixProvision() error {
 	if a.clusterData.getAppformixClusterInfo() != nil {
+		AppformixUsername := a.clusterData.getAppformixClusterInfo().AppformixUsername
+		AppformixPassword := a.clusterData.getAppformixClusterInfo().AppformixPassword
+		if AppformixUsername != "" {
+			os.Setenv("APPFORMIX_USERNAME", AppformixUsername)
+		}
+		if AppformixPassword != "" {
+			os.Setenv("APPFORMIX_PASSWORD", AppformixPassword)
+		}
+
 		AppformixVersion := a.clusterData.getAppformixClusterInfo().AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
-			"-e", "appformix_version=" + AppformixVersion}
-		if a.clusterData.getAppformixClusterInfo().AppformixVip != "" {
-			ansibleArgs = append(ansibleArgs, defaultAppformixHaProvPlay)
-		} else {
-			ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
+			                "-e", "appformix_version=" + AppformixVersion}
+		if AppformixPassword != "" {
+		if a.clusterData.clusterInfo.Orchestrator == "openstack" {
+			ansibleArgs = append(ansibleArgs,
+                                    	     "-e /etc/kolla/kolla-toolbox/admin-openrc.yml")
 		}
+
+		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 		return a.playFromDir(a.getAppformixAnsibleDeployerRepoDir(), ansibleArgs)
 	}
 	return nil
