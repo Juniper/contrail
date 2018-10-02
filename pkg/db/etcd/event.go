@@ -124,7 +124,8 @@ func (p *EventProducer) Start(ctx context.Context) error {
 			return nil
 		case e, ok := <-eventChan:
 			if !ok {
-				return errors.New("event channel unsuspectingly closed")
+				log.Info("event channel unsuspectingly closed, restarting etcd watch")
+				eventChan = p.client.WatchRecursive(ctx, "/"+p.WatchPath, int64(0))
 			}
 			p.HandleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)
 		}
