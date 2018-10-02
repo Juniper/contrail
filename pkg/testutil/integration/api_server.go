@@ -43,8 +43,8 @@ const (
 
 // APIServer is embedded API Server for testing purposes.
 type APIServer struct {
-	apiServer  *apisrv.Server
-	testServer *httptest.Server
+	APIServer  *apisrv.Server
+	TestServer *httptest.Server
 	log        *logrus.Entry
 }
 
@@ -61,10 +61,6 @@ type APIServerConfig struct {
 // NewRunningAPIServer creates new running test API Server for testing purposes.
 // Call Close() method to release its resources.
 func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
-	if c.LogLevel == "" {
-		c.LogLevel = "debug"
-	}
-
 	s, err := NewRunningServer(c)
 	require.NoError(t, err)
 
@@ -74,6 +70,10 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 // NewRunningServer creates new running API server with default testing configuration.
 // Call Close() method to release its resources.
 func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
+	if c.LogLevel == "" {
+		c.LogLevel = "info"
+	}
+
 	setDefaultViperConfig(c)
 
 	log := pkglog.NewLogger("api-server")
@@ -98,8 +98,8 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	}
 
 	return &APIServer{
-		apiServer:  s,
-		testServer: ts,
+		APIServer:  s,
+		TestServer: ts,
 		log:        log,
 	}, nil
 }
@@ -167,13 +167,13 @@ func keystoneAssignment() *keystone.StaticAssignment {
 
 func setViperConfig(config map[string]interface{}) {
 	for k, v := range config {
-		viper.Set(k, v)
+		viper.SetDefault(k, v)
 	}
 }
 
 // URL returns server base URL.
 func (s *APIServer) URL() string {
-	return s.testServer.URL
+	return s.TestServer.URL
 }
 
 // CloseT closes server.
@@ -186,6 +186,11 @@ func (s *APIServer) CloseT(t *testing.T) {
 
 // Close closes server.
 func (s *APIServer) Close() error {
-	s.testServer.Close()
-	return s.apiServer.Close()
+	s.TestServer.Close()
+	return s.APIServer.Close()
+}
+
+// ForceProxyUpdate requests an immediate update of endpoints and waits for its completion.
+func (s *APIServer) ForceProxyUpdate() {
+	s.APIServer.Proxy.ForceUpdate()
 }
