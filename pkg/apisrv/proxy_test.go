@@ -1,4 +1,4 @@
-package apisrv
+package apisrv_test
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 const (
@@ -39,7 +40,7 @@ func mockServer(routes map[string]interface{}) *httptest.Server {
 	return mockServer
 }
 
-func runEndpointTest(t *testing.T, clusterName, endpointName string) (*TestScenario,
+func runEndpointTest(t *testing.T, clusterName, endpointName string) (*integration.TestScenario,
 	*httptest.Server, *httptest.Server, func()) {
 	routes := map[string]interface{}{
 		"/ports": echo.HandlerFunc(func(c echo.Context) error {
@@ -69,15 +70,15 @@ func runEndpointTest(t *testing.T, clusterName, endpointName string) (*TestScena
 		"manage_parent":   manageParent,
 	}
 
-	var testScenario TestScenario
-	err := LoadTestScenario(&testScenario, testEndpointFile, context)
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load test data")
-	cleanup := RunDirtyTestScenario(t, &testScenario)
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, Server)
 
 	return &testScenario, neutronPublic, neutronPrivate, cleanup
 }
 
-func verifyProxy(ctx context.Context, t *testing.T, testScenario *TestScenario, url string,
+func verifyProxy(ctx context.Context, t *testing.T, testScenario *integration.TestScenario, url string,
 	clusterName string, expected string) bool {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
@@ -97,7 +98,7 @@ func verifyProxy(ctx context.Context, t *testing.T, testScenario *TestScenario, 
 	return true
 }
 
-func verifyKeystoneEndpoint(ctx context.Context, testScenario *TestScenario, testInvalidUser bool) error {
+func verifyKeystoneEndpoint(ctx context.Context, testScenario *integration.TestScenario, testInvalidUser bool) error {
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
 		_, err := client.Read(ctx, "/keystone/v3/auth/tokens", &response)
@@ -127,7 +128,7 @@ func TestProxyEndpoint(t *testing.T) {
 	defer clusterANeutron2Private.Close()
 	defer clusterANeutron2Public.Close()
 
-	APIServer.ForceProxyUpdate()
+	Server.ForceProxyUpdate()
 
 	// verify proxies
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
@@ -141,7 +142,7 @@ func TestProxyEndpoint(t *testing.T) {
 	defer neutronPrivate.Close()
 	defer neutronPublic.Close()
 
-	APIServer.ForceProxyUpdate()
+	Server.ForceProxyUpdate()
 
 	// verify new proxies
 	verifyProxies(ctx, t, testScenario, clusterBName, true)
@@ -168,7 +169,7 @@ func TestProxyEndpoint(t *testing.T) {
 		}
 	}
 
-	APIServer.ForceProxyUpdate()
+	Server.ForceProxyUpdate()
 
 	// verify proxy (expected to fail as the port is incorrect)
 	verifyProxies(ctx, t, testScenario, clusterAName, false)
@@ -204,7 +205,7 @@ func TestProxyEndpoint(t *testing.T) {
 		break
 	}
 
-	APIServer.ForceProxyUpdate()
+	Server.ForceProxyUpdate()
 
 	// verify proxy
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
@@ -248,7 +249,9 @@ func TestProxyEndpointWithSleep(t *testing.T) {
 	verifyProxies(ctx, t, testScenario, clusterAName, true)
 }
 
-func verifyProxies(ctx context.Context, t *testing.T, scenario *TestScenario, clusterName string, isSuccessful bool) {
+func verifyProxies(
+	ctx context.Context, t *testing.T, scenario *integration.TestScenario, clusterName string, isSuccessful bool,
+) {
 	url := "/proxy/" + clusterName + "_uuid/neutron/ports"
 	ok := verifyProxy(ctx, t, scenario, url, clusterName, publicPortList)
 	assert.Equal(t, ok, isSuccessful, "failed to proxy %s", url)
@@ -261,10 +264,10 @@ func verifyProxies(ctx context.Context, t *testing.T, scenario *TestScenario, cl
 func TestKeystoneEndpoint(t *testing.T) {
 	ctx := context.Background()
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPrivate := MockServerWithKeystone("", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystone("", keystoneAuthURL)
 	defer ksPrivate.Close()
 
-	ksPublic := MockServerWithKeystone("", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystone("", keystoneAuthURL)
 	defer ksPublic.Close()
 
 	clusterName := "clusterC"
@@ -276,13 +279,13 @@ func TestKeystoneEndpoint(t *testing.T) {
 		"manage_parent": true,
 	}
 
-	var testScenario TestScenario
-	err := LoadTestScenario(&testScenario, testEndpointFile, context)
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	cleanup := RunDirtyTestScenario(t, &testScenario)
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, Server)
 	defer cleanup()
 
-	APIServer.ForceProxyUpdate()
+	Server.ForceProxyUpdate()
 
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
@@ -302,7 +305,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
 	}
-	APIServer.ForceProxyUpdate()
+	Server.ForceProxyUpdate()
 
 	// Login to new local keystone
 	for _, client := range testScenario.Clients {
@@ -320,12 +323,12 @@ func TestKeystoneEndpoint(t *testing.T) {
 		"endpoint_name": clusterName + "_keystone",
 		"public_url":    ksPublic.URL,
 	}
-	err = LoadTestScenario(&testScenario, testEndpointFile, context)
+	err = integration.LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	cleanup = RunDirtyTestScenario(t, &testScenario)
+	cleanup = integration.RunDirtyTestScenario(t, &testScenario, Server)
 	defer cleanup()
 
-	APIServer.ForceProxyUpdate()
+	Server.ForceProxyUpdate()
 
 	// Login to new remote keystone
 	for _, client := range testScenario.Clients {
@@ -346,5 +349,5 @@ func TestKeystoneEndpoint(t *testing.T) {
 		break
 	}
 
-	APIServer.ForceProxyUpdate()
+	Server.ForceProxyUpdate()
 }
