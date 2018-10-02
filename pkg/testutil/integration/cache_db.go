@@ -29,10 +29,13 @@ func RunCacheDB(t *testing.T) (cacheDB *cache.DB, cancelEtcdEventProducer contex
 	require.NoError(t, err, "creating etcd event producer for Cache DB failed")
 
 	ctx, cancelEtcdEventProducer := context.WithCancel(context.Background())
+	errChan := make(chan error)
 	go func() {
-		err = processor.Start(ctx)
-		assert.NoError(t, err, "unexpected etcd event producer runtime error")
+		errChan <- processor.Start(ctx)
 	}()
 
-	return cacheDB, cancelEtcdEventProducer
+	return cacheDB, func() {
+		assert.NoError(t, <-errChan, "unexpected etcd event producer runtime error")
+		cancelEtcdEventProducer()
+	}
 }
