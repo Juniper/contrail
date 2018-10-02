@@ -5,9 +5,9 @@ global_configuration:
   {%if cluster.ContainerRegistryPassword %}CONTAINER_REGISTRY_PASSWORD: {{ cluster.ContainerRegistryPassword }}{%endif%}
 provider_config:
   bms:
-    ssh_user: {%if defaultSSHUser %}{{defaultSSHUser}}{%else%}root{%endif%}
-    ssh_pwd: {%if defaultSSHPassword %}{{defaultSSHPassword}}{%else%}c0ntrail123{%endif%}
-    {%if defaultSSHKey %}ssh_public_key: {{ defaultSSHKey }}{%endif%}
+    ssh_user: {%if defaultSSHUser %}{{SSHUser}}{%else%}root{%endif%}
+    ssh_pwd: {%if defaultSSHPassword %}{{SSHPassword}}{%else%}c0ntrail123{%endif%}
+    {%if defaultSSHKey %}ssh_public_key: {{ SSHKey }}{%endif%}
     ntpserver: {{ cluster.NTPServer }}
     domainsuffix: {%if cluster.DomainSuffix %}{{ cluster.DomainSuffix }}{%else%}local{%endif%}
 instances:
@@ -126,13 +126,24 @@ appformix_configuration:
     {% if appformixCluster.AppformixVip %}
     appformix_vip: {{ appformixCluster.AppformixVip }}
     {%endif%}
+    {% if appformixCluster.AppformixImageDir %}
     appformix_docker_images:
       {{ appformixCluster.AppformixImageDir }}appformix-platform-images-{{ appformixCluster.AppformixVersion }}.tar.gz
       {{ appformixCluster.AppformixImageDir }}appformix-dependencies-images-{{ appformixCluster.AppformixVersion }}.tar.gz
       {{ appformixCluster.AppformixImageDir }}appformix-network_device-images-{{ appformixCluster.AppformixVersion }}.tar.gz
       {{ appformixCluster.AppformixImageDir }}appformix-openstack-images-{{ appformixCluster.AppformixVersion }}.tar.gz
+    {%endif%}
     appformix_version:  {{ appformixCluster.AppformixVersion }}
     appformix_license:  {{ appformixCluster.AppformixLicense }}
+    {% if appformixCluster.AppformixDockerRegistry %}
+    appformix_docker_registry: {{ appformixCluster.AppformixDockerRegistry }}
+    {%endif%}
+    {% if appformixCluster.AppformixUsername %}
+    appformix_username: {{ appformixCluster.AppformixUsername }}
+    {%endif%}
+    {% if appformixCluster.AppformixPassword %}
+    appformix_password: {{ appformixCluster.AppformixPassword }}
+    {%endif%}
     contrail_analytics_url: '{{ appformixCluster.ContrailAnalyticsURL }}'
     contrail_config_url: '{{ appformixCluster.ContrailConfigURL }}'
     contrail_cluster_name: '{{ appformixCluster.ContrailClusterName }}'

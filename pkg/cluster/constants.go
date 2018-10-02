@@ -73,8 +73,8 @@ const (
 	defaultInventoryFile                  = "inventory.yml"
 
 	defaultAppformixAnsibleRepoDir        = "/usr/share/contrail/"
+	defaultAppformixAnsibleRepo           = "appformix-ansible-deployer"
 	defaultAppformixProvPlay              = "playbooks/install_appformix.yml"
-	defaultAppformixHaProvPlay            = "playbooks/appformix_openstack_ha.yml"
 	defaultAppformixControllerNodeRes     = "appformix-controller-node"
 	defaultAppformixControllerNodeResPath = "/" + defaultAppformixControllerNodeRes
 	defaultAppformixBareHostNodeRes       = "appformix-bare-host-node"
