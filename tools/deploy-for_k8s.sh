@@ -85,8 +85,9 @@ GoConfigIP='127.0.0.1' # networking mode 'host'
 # Prepare fresh database in contrail-go
 ./tools/reset_db_psql.sh
 
-# Convert cassandra data to etcd and feed etcd
+# Convert cassandra data and feed etcd and postgres
 contrailutil convert --intype yaml --in "$Dumpfile" --outtype rdbms -c docker/contrail_go/etc/contrail-k8s.yml
+contrailutil convert --intype yaml --in "$Dumpfile" --outtype etcd -c docker/contrail_go/etc/contrail-k8s.yml
 
 # Run vnc-db-proxy
 ./tools/vncdbproxy/vncdbproxy.sh -n host -z localhost:2181 -c localhost:9161 -r localhost:5673
