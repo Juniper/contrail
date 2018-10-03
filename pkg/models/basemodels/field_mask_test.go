@@ -164,3 +164,44 @@ func TestFieldMaskContains(t *testing.T) {
 		})
 	}
 }
+
+func TestFieldMaskPartlyContains(t *testing.T) {
+	tests := []struct {
+		name             string
+		requestedFM      *types.FieldMask
+		requestedPath    []string
+		expectedResponse bool
+	}{
+		{
+			name:             "field mask partly contrains requested path",
+			requestedFM:      &types.FieldMask{Paths: []string{"first.test", "second.test"}},
+			requestedPath:    []string{"first"},
+			expectedResponse: true,
+		},
+		{
+			name:             "field mask partly contrains requested complex path",
+			requestedFM:      &types.FieldMask{Paths: []string{"first.test", "second.test"}},
+			requestedPath:    []string{"second.test"},
+			expectedResponse: true,
+		},
+		{
+			name:             "field mask doesn't contrain requested path",
+			requestedFM:      &types.FieldMask{Paths: []string{"first.test", "second.third"}},
+			requestedPath:    []string{"third"},
+			expectedResponse: false,
+		},
+		{
+			name:             "field mask is empty",
+			requestedFM:      &types.FieldMask{Paths: []string{}},
+			requestedPath:    []string{"second.third"},
+			expectedResponse: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			contains := basemodels.FieldMaskPartlyContains(tt.requestedFM, tt.requestedPath)
+			assert.Equal(t, contains, tt.expectedResponse)
+		})
+	}
+}

@@ -84,19 +84,51 @@ workflow:
       #     to:
       #       - namespace=kube-system
 
+- name: try to update firewall rule
+  request:
+    path: /firewall-rule/test_firewall_rule_uuid
+    method: PUT
+    expected: [200]
+    data:
+      firewall-rule:
+        uuid: test_firewall_rule_uuid
+        endpoint_1:
+          tags:
+            - "namespace=kube-system"
+          any: false
+        endpoint_2:
+          any: true
+          tags: []
+          tag_ids: []
+  expect: null
+
+- name: get updated firewall rule
+  request:
+    path: /firewall-rule/test_firewall_rule_uuid
+    method: GET
+    expected: [200]
+  expect:
+    firewall-rule:
+        uuid: test_firewall_rule_uuid
+        endpoint_1:
+          tags:
+            - "namespace=kube-system"
+          tag_ids:
+            - 1
+        endpoint_2:
+          any: true
+
 - name: delete firewall rule
   request:
     path: /firewall-rule/test_firewall_rule_uuid
     method: DELETE
-    expected:
-    - 200
+    expected: [200]
   expect: null
 
 - name: delete tag blue
   request:
     path: /tag/test_tag_blue_uuid
     method: DELETE
-    expected:
-    - 200
+    expected: [200]
   expect: null
 
