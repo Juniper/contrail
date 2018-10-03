@@ -134,33 +134,82 @@ func TestFieldMaskContains(t *testing.T) {
 	tests := []struct {
 		name             string
 		requestedFM      *types.FieldMask
-		requestedField   string
+		requestedFields  []string
 		expectedResponse bool
 	}{
 		{
 			name:             "field mask contrains requested field",
 			requestedFM:      &types.FieldMask{Paths: []string{"first", "second"}},
-			requestedField:   "first",
+			requestedFields:  []string{"first"},
 			expectedResponse: true,
+		},
+		{
+			name:             "field mask contrains requested prefix field",
+			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
+			requestedFields:  []string{"test"},
+			expectedResponse: true,
+		},
+		{
+			name:             "field mask contrains requested complex field",
+			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
+			requestedFields:  []string{"test", "first", "first"},
+			expectedResponse: true,
+		},
+		{
+			name:             "field mask doesn't contrains requested complex field",
+			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
+			requestedFields:  []string{"test", "third", "first"},
+			expectedResponse: false,
 		},
 		{
 			name:             "field mask doesn't contrain requested field",
 			requestedFM:      &types.FieldMask{Paths: []string{"first", "second"}},
-			requestedField:   "third",
+			requestedFields:  []string{"third"},
 			expectedResponse: false,
 		},
 		{
 			name:             "field mask is empty",
 			requestedFM:      &types.FieldMask{Paths: []string{}},
-			requestedField:   "first",
+			requestedFields:  []string{"first"},
 			expectedResponse: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			contains := basemodels.FieldMaskContains(tt.requestedFM, tt.requestedField)
-			assert.Equal(t, contains, tt.expectedResponse)
+			contains := basemodels.FieldMaskContains(tt.requestedFM, tt.requestedFields...)
+			assert.Equal(t, tt.expectedResponse, contains)
+		})
+	}
+}
+
+func TestJoinPath(t *testing.T) {
+	tests := []struct {
+		name             string
+		requestedFields  []string
+		expectedResponse string
+	}{
+		{
+			name:             "concatenate multiple fields",
+			requestedFields:  []string{"first", "second", "third"},
+			expectedResponse: "first.second.third",
+		},
+		{
+			name:             "join only one field",
+			requestedFields:  []string{"first"},
+			expectedResponse: "first",
+		},
+		{
+			name:             "no fields provided",
+			requestedFields:  []string{},
+			expectedResponse: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := basemodels.JoinPath(tt.requestedFields...)
+			assert.Equal(t, tt.expectedResponse, path)
 		})
 	}
 }
