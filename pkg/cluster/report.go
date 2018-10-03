@@ -13,29 +13,31 @@ import (
 
 // Reporter reports provisioing status and log
 type Reporter struct {
-	api      *client.HTTP
-	resource string
-	log      *logrus.Entry
+	API      *client.HTTP
+	Resource string
+	Log      *logrus.Entry
 }
 
-func (r *Reporter) reportStatus(status map[string]interface{}) {
+//ReportStatus reports status to APIServer
+func (r *Reporter) ReportStatus(status map[string]interface{}) {
 	data := map[string]map[string]interface{}{defaultResource: status}
 	var response interface{}
 	//TODO(nati) fixed context
-	_, err := r.api.Update(context.Background(), r.resource, data, &response)
+	_, err := r.API.Update(context.Background(), r.Resource, data, &response)
 	if err != nil {
-		r.log.Infof("update cluster status failed: %s", err)
+		r.Log.Infof("update cluster status failed: %s", err)
 	}
-	r.log.Infof("cluster status updated: %s", status)
+	r.Log.Infof("cluster status updated: %s", status)
 }
 
-func (r *Reporter) reportLog(stdio io.Reader) {
+//ReportLog reports log
+func (r *Reporter) ReportLog(stdio io.Reader) {
 	var output bytes.Buffer
 	scanner := bufio.NewScanner(stdio)
 	for scanner.Scan() {
 		m := scanner.Text()
 		output.WriteString(m)
-		r.log.Info(m)
+		r.Log.Info(m)
 	}
 	//TODO(ijohnson) Implement status update to db
 }

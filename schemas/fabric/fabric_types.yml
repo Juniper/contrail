@@ -201,6 +201,14 @@
           permission:
           - create
           - update
+        roles:
+          description: "Roles of the cloud instance"
+          type: "array"
+          items:
+            type: "string"
+          permission:
+          - create
+          - update
     LocalLinkConnection:
       type: "object"
       properties:
