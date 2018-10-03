@@ -31,21 +31,21 @@ func (sv *ContrailTypeLogicService) CreateFirewallRule(
 				return err
 			}
 
-			if err = firewallRule.CheckAssociatedRefsInSameScope(); err != nil {
+			if err = firewallRule.CheckAssociatedRefsInSameScope(nil); err != nil {
 				return err
 			}
 
-			if err = firewallRule.CheckServiceProperties(); err != nil {
+			if err = firewallRule.CheckServiceProperties(nil, nil); err != nil {
 				return err
 			}
 
-			firewallRule.AddDefaultMatchTag()
+			firewallRule.AddDefaultMatchTag(nil)
 
-			if err = firewallRule.SetProtocolID(); err != nil {
+			if err = firewallRule.SetProtocolID(nil); err != nil {
 				return err
 			}
 
-			if err = sv.setMatchTagTypes(ctx, firewallRule); err != nil {
+			if err = sv.setMatchTagTypes(ctx, firewallRule, nil); err != nil {
 				return err
 			}
 
@@ -76,24 +76,82 @@ func (sv *ContrailTypeLogicService) UpdateFirewallRule(
 ) (*services.UpdateFirewallRuleResponse, error) {
 
 	var response *services.UpdateFirewallRuleResponse
+	firewallRule := request.GetFirewallRule()
+	fm := request.GetFieldMask()
+
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
 			var err error
 
-			//TODO update validation
-			response, err = sv.BaseService.UpdateFirewallRule(ctx, request)
+			if err = checkDraftModeState(ctx, firewallRule); err != nil {
+				return err
+			}
+
+			databaseFR, err := sv.getFirewallRule(ctx, firewallRule.GetUUID())
+			if err != nil {
+				return err
+			}
+
+			if err = firewallRule.CheckAssociatedRefsInSameScope(databaseFR); err != nil {
+				return err
+			}
+
+			if err = firewallRule.CheckServiceProperties(databaseFR, &fm); err != nil {
+				return err
+			}
+
+			firewallRule.AddDefaultMatchTag(&fm)
+
+			if err = firewallRule.SetProtocolID(&fm); err != nil {
+				return err
+			}
+
+			if err = sv.setMatchTagTypes(ctx, firewallRule, &fm); err != nil {
+				return err
+			}
+
+			if err = firewallRule.CheckEndpoints(); err != nil {
+				return err
+			}
+
+			if err = sv.setTagProperties(ctx, firewallRule, databaseFR, &fm); err != nil {
+				return err
+			}
+
+			if err = sv.setAddressGroupRefs(ctx, firewallRule, databaseFR, &fm); err != nil {
+				return err
+			}
+
+			response, err = sv.Next().UpdateFirewallRule(ctx, request)
 			return err
 		})
 
 	return response, err
 }
 
+func (sv *ContrailTypeLogicService) getFirewallRule(
+	ctx context.Context, id string,
+) (*models.FirewallRule, error) {
+
+	firewallRuleResponse, err := sv.ReadService.GetFirewallRule(
+		ctx,
+		&services.GetFirewallRuleRequest{
+			ID: id,
+		},
+	)
+
+	return firewallRuleResponse.GetFirewallRule(), err
+}
+
 func (sv *ContrailTypeLogicService) setMatchTagTypes(
-	ctx context.Context, fr *models.FirewallRule,
+	ctx context.Context, fr *models.FirewallRule, fm *types.FieldMask,
 ) error {
-	fr.MatchTagTypes = &models.FirewallRuleMatchTagsTypeIdList{
-		TagType: []int64{},
+	if fm != nil &&
+		basemodels.FieldMaskContains(fm, models.FirewallRuleFieldMatchTags) {
+		fr.MatchTagTypes = &models.FirewallRuleMatchTagsTypeIdList{
+			TagType: []int64{},
+		}
 	}
 
 	for _, tagType := range fr.GetMatchTags().GetTagList() {
@@ -111,6 +169,11 @@ func (sv *ContrailTypeLogicService) setMatchTagTypes(
 			fr.GetMatchTagTypes().GetTagType(),
 			tagTypeID,
 		)
+	}
+
+	if len(fr.GetMatchTagTypes().GetTagType()) > 0 && fm != nil &&
+		!basemodels.FieldMaskContains(fm, models.FirewallRuleFieldMatchTagTypes) {
+		fm.Paths = append(fm.Paths, models.FirewallRuleFieldMatchTagTypes)
 	}
 
 	return nil
@@ -187,6 +250,11 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 
 			ep.TagIds = append(ep.GetTagIds(), tagID)
 		}
+	}
+
+	if len(fr.GetTagRefs()) > 0 && fm != nil &&
+		!basemodels.FieldMaskContains(fm, "tag_refs") {
+		fm.Paths = append(fm.Paths, "tag_refs")
 	}
 
 	return nil
@@ -289,6 +357,11 @@ func (sv *ContrailTypeLogicService) setAddressGroupRefs(
 				To:   fqName,
 			},
 		)
+	}
+
+	if len(fr.GetAddressGroupRefs()) > 0 && fm != nil &&
+		!basemodels.FieldMaskContains(fm, models.FirewallRuleFieldAddressGroupRefs) {
+		fm.Paths = append(fm.Paths, models.FirewallRuleFieldAddressGroupRefs)
 	}
 
 	return nil
