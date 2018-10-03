@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/common"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
@@ -24,11 +22,11 @@ const (
 
 //Keystone is used to represents Keystone Controller.
 type Keystone struct {
-	Store      Store
-	Assignment Assignment
-	Endpoints  *apicommon.EndpointStore
-	Client     *KeystoneClient
-	vncClient  *client.HTTP
+	Store            Store
+	staticAssignment *StaticAssignment
+	Assignment       Assignment
+	Endpoints        *apicommon.EndpointStore
+	Client           *KeystoneClient
 }
 
 //Init is used to initialize echo with Kesytone capability.
@@ -46,6 +44,7 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 		if err != nil {
 			return nil, err
 		}
+		keystone.staticAssignment = &staticAssignment
 		keystone.Assignment = &staticAssignment
 	}
 	storeType := viper.GetString("keystone.store.type")
@@ -93,36 +92,44 @@ func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint st
 	return configEndpoint, err
 }
 
-func (keystone *Keystone) getVncProjects(c echo.Context, configEndpoint string) ([]*kscommon.Project, error) {
-	tokenID := c.Request().Header.Get("X-Auth-Token")
-	if tokenID == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
+	authType := viper.GetString("auth_type")
+	if authType != "basic-auth" {
+		return "", nil
 	}
-	_, ok := keystone.Store.ValidateToken(tokenID)
-	if !ok {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
-	}
-	if keystone.vncClient == nil {
-		keystone.vncClient = client.NewHTTP("", "", "", "", true, nil)
-	}
-	keystone.vncClient.Endpoint = configEndpoint
-	keystone.vncClient.Init()
-	projectURI := "/projects"
-	query := url.Values{"detail": []string{"True"}}
-	vncProjectsResponse := &VncProjectListResponse{}
-	_, err := keystone.vncClient.ReadWithQuery(
-		context.Background(), projectURI, query, vncProjectsResponse)
+	configEndpoint, err = getVncConfigEndpoint(keystone.Endpoints)
 	if err != nil {
-		return nil, err
+		log.Error(err)
+		return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	projects := []*kscommon.Project{}
-	for _, vncProject := range vncProjectsResponse.Projects {
-		projects = append(projects, &kscommon.Project{
-			Name: vncProject.Project.Name,
-			ID:   vncProject.Project.UUID,
-		})
+	if configEndpoint != "" {
+		apiAssignment := &VNCAPIAssignment{}
+		err := apiAssignment.Init(
+			configEndpoint, keystone.staticAssignment.ListUsers())
+		if err != nil {
+			log.Error(err)
+			return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+		keystone.Assignment = apiAssignment
+	} else {
+		keystone.Assignment = keystone.staticAssignment
 	}
-	return projects, nil
+	return configEndpoint, nil
+}
+
+func (keystone *Keystone) appendStaticProjects(
+	configEndpoint string, userProjects *[]*kscommon.Project, user *kscommon.User) {
+	authType := viper.GetString("auth_type")
+	if authType == "basic-auth" && configEndpoint != "" {
+		staticProjects := keystone.staticAssignment.ListProjects()
+		for _, project := range staticProjects {
+			for _, role := range user.Roles {
+				if role.Project.Name == project.Name {
+					*userProjects = append(*userProjects, role.Project)
+				}
+			}
+		}
+	}
 }
 
 //GetProjectAPI is an API handler to list projects.
@@ -145,21 +152,11 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 	}
-	userProjects := []*kscommon.Project{}
-	authType := viper.GetString("auth_type")
-	if authType == "basic-auth" {
-		configEndpoint, err := getVncConfigEndpoint(keystone.Endpoints)
-		if err != nil {
-			log.Error(err)
-			return echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-		if configEndpoint != "" {
-			userProjects, err = keystone.getVncProjects(c, configEndpoint)
-			if err != nil {
-				return err
-			}
-		}
+	configEndpoint, err := keystone.setAssignment()
+	if err != nil {
+		return err
 	}
+	userProjects := []*kscommon.Project{}
 	user := token.User
 	projects := keystone.Assignment.ListProjects()
 	for _, project := range projects {
@@ -169,6 +166,7 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 			}
 		}
 	}
+	keystone.appendStaticProjects(configEndpoint, &userProjects, user)
 	projectsResponse := &ProjectListResponse{
 		Projects: userProjects,
 	}
@@ -176,7 +174,7 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 }
 
 //CreateTokenAPI is an API handler for issuing new Token.
-func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
+func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
 	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
 	if err != nil {
 		log.Error(err)
@@ -204,6 +202,10 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 		}
 		user = token.User
 	} else {
+		_, err = keystone.setAssignment()
+		if err != nil {
+			return err
+		}
 		user, err = keystone.Assignment.FetchUser(
 			authRequest.Auth.Identity.Password.User.Name,
 			authRequest.Auth.Identity.Password.User.Password,
