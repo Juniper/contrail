@@ -1,0 +1,81 @@
+{% with cloud.cloudInfo.Type as cloudType "azure" as az "aws" as aws %}
+- provider: {{ cloudType }}
+  organization: {{ cloud.cloudInfo.Organization }}
+  project: {{ cloud.projectName }}
+  regions:
+  {% for region in cloud.regions %}
+    - name: {{ region.info.Name }}
+    {% if az in cloudType %}
+      resource_group: {{ region.info.ResourceGroup }}
+    {% endif %}
+    {% for vcloud in region.virtualClouds %}
+      - name: {{ vcloud.info.Name }}
+        cidr_block: {{ vcloud.info.CidrBlock }}
+        subnets:
+        {% for subnet in vcloud.info.CloudPrivateSubnets %}
+          - Name: {{ subnet.name }}
+            cidr_block: {{ subnet.CidrBlock }}
+            {% if aws in cloudType %}
+            availability_zone: {{ subnet.AvailabilityZone }}
+            {% endif %}
+        {% endfor %}
+        security_groups
+        {% for sg in vcloud.sgs %}
+        {% if az in cloudType %}
+          - name: {{ sg.info.Name }}
+            rules:
+            {% for sgRule in sg.info.CloudSecurityGroupRules %}
+              - name: {{ sgRule.Name }}
+                direction: {{ sgRule.Direction }}
+                {% if sgRule.Protocol %}protocol: {{ sgRule.Protocol }}{% endif %}
+            {% endfor %}
+        {% elif aws in cloudType %}
+        {% for sgRule in sg.info.CloudSecurityGroupRules %}
+          - name: {{ sgRule.Name }}
+            {{ sgRule.Direction }}
+              from_port: {{ sgRule.FromPort }}
+              to_port: {{ sgRule.ToPort }}
+              protocol: {{ sgRule.Protocol }}
+              cidr_blocks:
+               - {{ sgRule.CidrBlock }}
+        {% endfor %}
+        {% endif %}
+      {% endfor %}
+      {% for instance in vcloud.info.Nodes %}
+      - name: {{ instance.Name }}
+        roles:
+        {% if instance.ContrailConfigNodeBackRefs %}
+          - controller
+        {% endif %}
+        {% if instance.ContrailVrouterNodeBackRefs and instance.ContrailMulticloudGWNodeBackRefs %}
+          - gateway
+        {% endif %}
+        {% if instance.ContrailVrouterNodeBackRefs and not instance.ContrailMulticloudGWNodeBackRefs and instance.KubernetesNodeBackRefs %}
+          - compute_node
+        {% endif %}
+        {% if instance.KubernetesMasterNodeBackRefs %}
+          - k8s_master
+        {% endif %}
+        provision: true
+        {% for cred in cloud.credentials %}{% for cred_ref in instance.CredentialRefs %}{%if cred_ref.UUID == cred.UUID %}
+        username: {{ cred.SSHUser }}
+        {% endif %}{% endfor %}{% endfor %}
+        os: {{ instance.CloudInfo.OperatingSystem }}
+        instance_type: {{ instance.CloudInfo.InstanceType }}
+        {% if aws in cloudType %}
+        machine_id: {{ instance.MachineID }}
+        {% endif %}
+        {% for subnet in cloud.cloudSubnets %}{% for subnet_ref in instance.CloudPrivateSubnetRefs %}{%if subnet_ref.UUID == subnet.UUID %}
+        subnets: {{ instance.subnet.Name }}
+        {% endif %}{% endfor %}{% endfor %}
+        {% if aws in cloudType %}
+        security_groups:
+        {% for sg in cloud.cloudSecurityGroups %}{% for sg_ref in instance.CloudSecurityGroupRefs %}{% if sg_ref.UUID == sg.UUID %}
+          - {{ sg.Name }}
+        {% endif %}{% endfor %}{% endfor %}
+        {% endif %}
+        interface: {{ instance.InterfaceName }}
+        {% endfor %}
+    {% endfor %}
+  {% endfor %}
+{% endwith %}
