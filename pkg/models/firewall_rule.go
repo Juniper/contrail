@@ -6,6 +6,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/gogo/protobuf/types"
 )
 
 // FirewallRule constants.
@@ -22,14 +23,20 @@ var protocolIDs = map[string]int64{
 
 // CheckAssociatedRefsInSameScope checks scope of firewallRule refs
 // that global scoped firewall rule cannot reference scoped resources
-func (fr *FirewallRule) CheckAssociatedRefsInSameScope() error {
+func (fr *FirewallRule) CheckAssociatedRefsInSameScope(
+	databaseFR *FirewallRule,
+) error {
 
 	// this method is simply based on the fact global
 	// firewall resource (draft or not) have a FQ name length equal to two
 	// and scoped one (draft or not) have a FQ name longer than 2 to
 	// distinguish a scoped firewall resource to a global one. If that
 	// assumption disappear, all that method will need to be re-worked
-	if len(fr.GetFQName()) != 2 {
+	if databaseFR == nil && len(fr.GetFQName()) != 2 {
+		return nil
+	}
+
+	if databaseFR != nil && len(databaseFR.GetFQName()) != 2 {
 		return nil
 	}
 
@@ -71,9 +78,16 @@ func (fr *FirewallRule) checkRefInSameScope(ref basemodels.Reference) error {
 }
 
 // CheckServiceProperties checks for existence of service and serviceGroupRefs property
-func (fr *FirewallRule) CheckServiceProperties() error {
+func (fr *FirewallRule) CheckServiceProperties(databaseFR *FirewallRule) error {
 	serviceGroupRefs := fr.GetServiceGroupRefs()
+	if serviceGroupRefs == nil {
+		serviceGroupRefs = databaseFR.GetServiceGroupRefs()
+	}
+
 	service := fr.GetService()
+	if service == nil {
+		service = databaseFR.GetService()
+	}
 
 	if service == nil && len(serviceGroupRefs) == 0 {
 		return common.ErrorBadRequest("firewall Rule requires at least 'service' property or Service Group references(s)")
@@ -89,8 +103,9 @@ func (fr *FirewallRule) CheckServiceProperties() error {
 }
 
 // AddDefaultMatchTag sets default matchTag if not defined in the request
-func (fr *FirewallRule) AddDefaultMatchTag() {
-	if fr.GetMatchTags() == nil {
+func (fr *FirewallRule) AddDefaultMatchTag(fm *types.FieldMask) {
+	if fr.GetMatchTags() == nil &&
+		basemodels.FieldMaskContains(fm, FirewallRuleFieldMatchTags) {
 		fr.MatchTags = &FirewallRuleMatchTagsType{
 			TagList: []string{DefaultMatchTagType},
 		}
@@ -98,7 +113,11 @@ func (fr *FirewallRule) AddDefaultMatchTag() {
 }
 
 // SetProtocolID sets protocolID based on protocol property
-func (fr *FirewallRule) SetProtocolID() error {
+func (fr *FirewallRule) SetProtocolID(fm *types.FieldMask) error {
+	if !basemodels.FieldMaskContains(fm, FirewallRuleFieldService) {
+		return nil
+	}
+
 	protocol := fr.GetService().GetProtocol()
 	ok := true
 
