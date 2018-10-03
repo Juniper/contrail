@@ -3,7 +3,6 @@ package types
 import (
 	"context"
 	"strconv"
-	"strings"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/twinj/uuid"
@@ -431,7 +430,7 @@ func (sv *ContrailTypeLogicService) createInternalVirtualNetwork(
 		VirtualNetwork: internalVN,
 	}
 
-	response, err := sv.WriteService.CreateVirtualNetwork(MakeInternalRequestContext(ctx), request)
+	response, err := sv.WriteService.CreateVirtualNetwork(WithInternalRequest(ctx), request)
 	return response.GetVirtualNetwork(), err
 }
 
@@ -516,15 +515,17 @@ func (sv *ContrailTypeLogicService) updateInternalVirtualNetwork(
 			VxlanNetworkIdentifier: vxlanNetworkID,
 		}
 
-		path := []string{
-			models.VirtualNetworkFieldVirtualNetworkProperties,
-			models.VirtualNetworkTypeFieldVxlanNetworkIdentifier,
-		}
-		updatePaths = append(updatePaths, strings.Join(path, "."))
+		updatePaths = append(
+			updatePaths,
+			basemodels.JoinPath(
+				models.VirtualNetworkFieldVirtualNetworkProperties,
+				models.VirtualNetworkTypeFieldVxlanNetworkIdentifier,
+			),
+		)
 	}
 
 	_, err = sv.WriteService.UpdateVirtualNetwork(
-		MakeInternalRequestContext(ctx),
+		WithInternalRequest(ctx),
 		&services.UpdateVirtualNetworkRequest{
 			VirtualNetwork: updateVN,
 			FieldMask:      types.FieldMask{Paths: updatePaths},
@@ -564,7 +565,7 @@ func (sv *ContrailTypeLogicService) deleteInternalVirtualNetwork(
 	}
 
 	_, err = sv.WriteService.DeleteVirtualNetwork(
-		MakeInternalRequestContext(ctx),
+		WithInternalRequest(ctx),
 		&services.DeleteVirtualNetworkRequest{
 			ID: m.UUID,
 		},
