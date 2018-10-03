@@ -91,6 +91,9 @@ schema:
       - "DELETE_COMPUTE"
       - "ADD_CSN"
       - "UPGRADE"
+      - "ADD_CLOUD"
+      - "UPDATE_CLOUD"
+      - "DELETE_CLOUD"
       permission:
       - create
       - update
