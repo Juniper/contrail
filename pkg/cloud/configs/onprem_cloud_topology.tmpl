@@ -1,0 +1,36 @@
+- provider: {{ cloud.info.Type }}
+  organization: {{ cloud.info.Organization }}
+  project: {{ cloud.projectName }}
+  instances:
+  {% for instance in cloud.instances %}
+    - name: {{ instance.info.Hostname }}
+      public_ip: {{ instance.info.IPAddress }}
+      private_ip: {{ instance.pvtIntf.IPAddress }}
+      interface: {{ instance.pvtIntf.Name }}
+      private_subnet:
+      {% for subnet in cloud.subnets %}{% for subnet_ref in instance.info.CloudPrivateSubnetRefs %}{% if subnet_ref.UUID in subnet.info.UUID %}
+        - {{ subnet.info.CidrBlock }}
+      {% endif %}{% endfor %}{% endfor %}
+      provision: {{ instance.provision }}
+      {% for cred in cloud.credentials %}{% for cred_ref in instance.info.CredentialRefs %}{%if cred_ref.UUID in cred.UUID %}
+      username: {{ cred.SSHUser }}
+      password: {{ cred.SSHPassword }}
+      {% endif %}{% endfor %}{% endfor %}
+      {% if instance.tags %}
+      {% for key, value in instance.tags %}
+      {{ key }}: {{ value }}
+      {% endfor %}
+      {% endif %}
+      {% if instance.roles %}
+      roles:
+      {% for role in instance.roles %}
+        - {{ role }}
+      {% endfor %}
+      {% endif %}
+      {% if instance.protocolsMode %}
+      protocols_mode:
+      {% for mode in instance.protocolsMode %}
+        - {{ mode }}
+      {% endfor %}
+      {% endif %}
+  {% endfor %}
