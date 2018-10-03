@@ -1,0 +1,16 @@
+{% if input.AuthURL %}
+id: {{ input.ID }}
+password: {{ input.Password }}
+{%if input.DomainID %}domain_id: {{ input.DomainID }}{%endif%}
+{%if input.DomainName %}domain_Name: {{ input.DomainName }}{%endif%}
+{%if input.ProjectID %}project_id: {{ input.ProjectID }}{%endif%}
+{%if input.ProjectName %}project_name: {{ input.ProjectName }}{%endif%}
+auth_url: {{ input.AuthURL }}
+{% endif %}
+endpoint: {{ input.Endpoint }}
+insecure: {{ input.InSecure }}
+cloud_id: {{ resource.uuid }}
+cloud_action: {{ action }}
+log_level: debug
+log_file: /var/log/contrail/cloud.log
+template_root: /Users/mnayakbomman/go/src/github.com/Juniper/contrail/pkg/cloud/configs
