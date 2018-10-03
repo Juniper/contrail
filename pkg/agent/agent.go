@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -186,11 +185,7 @@ func (a *Agent) Watch(ctx context.Context) error {
 		schemaIDPattern := task.SchemaID
 
 		for k := range a.schemas {
-			matched, err := regexp.MatchString(schemaIDPattern, k)
-			if err != nil {
-				continue
-			}
-			if !matched {
+			if schemaIDPattern != k {
 				continue
 			}
 
