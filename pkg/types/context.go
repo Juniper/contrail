@@ -11,9 +11,9 @@ const (
 	InternalRequestKey key = "isInternal"
 )
 
-// MakeInternalRequestContext creates child context with additional information
+// WithInternalRequest creates child context with additional information
 // that this context is for internal requests
-func MakeInternalRequestContext(ctx context.Context) context.Context {
+func WithInternalRequest(ctx context.Context) context.Context {
 	return context.WithValue(ctx, InternalRequestKey, true)
 }
 

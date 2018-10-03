@@ -2,8 +2,10 @@ package types
 
 import (
 	"context"
+	"strings"
 	"testing"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -37,7 +39,7 @@ func updateExpectedFirewallRule(fr models.FirewallRule, params expectedParams) *
 	return &fr
 }
 
-func firewallRuleSetupMocks(s *ContrailTypeLogicService) {
+func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.FirewallRule) {
 	nextService := s.Next().(*servicesmock.MockService)          //nolint: errcheck
 	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
@@ -50,6 +52,25 @@ func firewallRuleSetupMocks(s *ContrailTypeLogicService) {
 			return &services.CreateFirewallRuleResponse{FirewallRule: request.FirewallRule}, nil
 		},
 	).AnyTimes()
+
+	nextService.EXPECT().UpdateFirewallRule(
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+	).DoAndReturn(
+		func(_ context.Context, request *services.UpdateFirewallRuleRequest) (
+			response *services.UpdateFirewallRuleResponse, err error,
+		) {
+			return &services.UpdateFirewallRuleResponse{FirewallRule: request.FirewallRule}, nil
+		},
+	).AnyTimes()
+
+	if databaseFR != nil {
+		readService.EXPECT().GetFirewallRule(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+			&services.GetFirewallRuleResponse{
+				FirewallRule: databaseFR,
+			},
+			nil,
+		).AnyTimes()
+	}
 
 	s.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT().GetMetadata(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
@@ -151,7 +172,7 @@ func TestCreateFirewallRule(t *testing.T) {
 				UUID:           "test-firewall-rule",
 				DraftModeState: "draft_mode_state",
 			},
-			IsInternalRequest: true,
+			IsInternalRequest: false,
 			errorCode:         codes.InvalidArgument,
 		},
 		{
@@ -403,11 +424,11 @@ func TestCreateFirewallRule(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
-			firewallRuleSetupMocks(service)
+			firewallRuleSetupMocks(service, nil)
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
-				ctx = MakeInternalRequestContext(ctx)
+				ctx = WithInternalRequest(ctx)
 			}
 
 			paramRequest := &services.CreateFirewallRuleRequest{FirewallRule: &tt.testFirewallRule}
@@ -424,6 +445,282 @@ func TestCreateFirewallRule(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, expectedResponse, createFirewallRuleResponse)
+			}
+		})
+	}
+}
+
+func TestUpdateFirewallRule(t *testing.T) {
+	tests := []struct {
+		name              string
+		request           services.UpdateFirewallRuleRequest
+		databaseFR        *models.FirewallRule
+		expected          *models.FirewallRule
+		IsInternalRequest bool
+		errorCode         codes.Code
+	}{
+		{
+			name: "Try to update read-only draft-mode-state property",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					DraftModeState: "draft_mode_state",
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.FirewallRuleFieldDraftModeState,
+					},
+				},
+			},
+			IsInternalRequest: false,
+			errorCode:         codes.InvalidArgument,
+		},
+		{
+			name: "Try to update virtual-network refs with different scope",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
+						{
+							UUID: "virtual-network-ref-uuid",
+							To:   []string{"virtual-network-ref-uuid"},
+						},
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.FirewallRuleFieldVirtualNetworkRefs,
+					},
+				},
+			},
+			databaseFR: &models.FirewallRule{
+				FQName: []string{"default-policy-management", "test-firewall-rule"},
+			},
+			IsInternalRequest: false,
+			errorCode:         codes.InvalidArgument,
+		},
+		{
+			name: "Try to define service and service-group refs",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					Service: &models.FirewallServiceType{
+						Protocol: "240",
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						strings.Join(
+							[]string{
+								models.FirewallRuleFieldService,
+								models.FirewallServiceTypeFieldProtocol,
+							},
+							".",
+						),
+					},
+				},
+			},
+			databaseFR: &models.FirewallRule{
+				ServiceGroupRefs: []*models.FirewallRuleServiceGroupRef{{}},
+			},
+			IsInternalRequest: false,
+			errorCode:         codes.InvalidArgument,
+		},
+		{
+			name: "Try to remove service ref",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.FirewallRuleFieldService,
+					},
+				},
+			},
+			databaseFR: &models.FirewallRule{
+				Service: &models.FirewallServiceType{
+					Protocol:   "240",
+					ProtocolID: 240,
+				},
+			},
+			IsInternalRequest: false,
+			errorCode:         codes.InvalidArgument,
+		},
+		{
+			name: "Update firewall rule to default match tag",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					MatchTags: &models.FirewallRuleMatchTagsType{},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.FirewallRuleFieldMatchTags,
+					},
+				},
+			},
+			expected: &models.FirewallRule{
+				MatchTags: &models.FirewallRuleMatchTagsType{
+					TagList: []string{"application"},
+				},
+				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
+					TagType: []int64{1},
+				},
+				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{},
+			},
+			databaseFR: &models.FirewallRule{
+				Service: &models.FirewallServiceType{
+					Protocol:   "240",
+					ProtocolID: 240,
+				},
+				MatchTags: &models.FirewallRuleMatchTagsType{
+					TagList: []string{"tier"},
+				},
+				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
+					TagType: []int64{2},
+				},
+			},
+			IsInternalRequest: false,
+		},
+		{
+			name: "Update firewall rule service property",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					Service: &models.FirewallServiceType{
+						Protocol: "tcp",
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						strings.Join(
+							[]string{
+								models.FirewallRuleFieldService,
+								models.FirewallServiceTypeFieldProtocol,
+							},
+							".",
+						),
+					},
+				},
+			},
+			expected: &models.FirewallRule{
+				Service: &models.FirewallServiceType{
+					Protocol:   "tcp",
+					ProtocolID: 6,
+				},
+				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
+					TagType: []int64{},
+				},
+				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{},
+			},
+			databaseFR: &models.FirewallRule{
+				Service: &models.FirewallServiceType{
+					Protocol:   "240",
+					ProtocolID: 240,
+				},
+			},
+			IsInternalRequest: false,
+		},
+		{
+			name: "Try to update with improper endpoint type",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					Endpoint1: &models.FirewallRuleEndpointType{
+						AddressGroup: "address-group-uuid-1",
+						Any:          true,
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						strings.Join(
+							[]string{
+								models.FirewallRuleFieldEndpoint1,
+								models.FirewallRuleEndpointTypeFieldAddressGroup,
+							},
+							".",
+						),
+						strings.Join(
+							[]string{
+								models.FirewallRuleFieldEndpoint1,
+								models.FirewallRuleEndpointTypeFieldAny,
+							},
+							".",
+						),
+					},
+				},
+			},
+			databaseFR: &models.FirewallRule{
+				Service: &models.FirewallServiceType{
+					Protocol:   "tcp",
+					ProtocolID: 6,
+				},
+			},
+			IsInternalRequest: false,
+			errorCode:         codes.InvalidArgument,
+		},
+		{
+			name: "Update firewall rule tags",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					Endpoint1: &models.FirewallRuleEndpointType{
+						Tags: []string{"global:namespace=default"},
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						strings.Join(
+							[]string{
+								models.FirewallRuleFieldEndpoint1,
+								models.FirewallRuleEndpointTypeFieldTags,
+							},
+							".",
+						),
+					},
+				},
+			},
+			expected: &models.FirewallRule{
+				Endpoint1: &models.FirewallRuleEndpointType{
+					Tags:   []string{"global:namespace=default"},
+					TagIds: []int64{0x00ff0001},
+				},
+				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
+					TagType: []int64{},
+				},
+				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{},
+			},
+			databaseFR: &models.FirewallRule{
+				Endpoint1: &models.FirewallRuleEndpointType{
+					Tags:   []string{"global:namespace=contrail"},
+					TagIds: []int64{0x00ff0002},
+				},
+				Service: &models.FirewallServiceType{
+					Protocol:   "tcp",
+					ProtocolID: 6,
+				},
+			},
+			IsInternalRequest: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+			firewallRuleSetupMocks(service, tt.databaseFR)
+
+			ctx := context.Background()
+			if tt.IsInternalRequest {
+				ctx = WithInternalRequest(ctx)
+			}
+
+			expectedResponse := &services.UpdateFirewallRuleResponse{
+				FirewallRule: tt.expected,
+			}
+
+			updateFirewallRuleResponse, err := service.UpdateFirewallRule(ctx, &tt.request)
+			if tt.errorCode != codes.OK {
+				assert.Error(t, err)
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, expectedResponse, updateFirewallRuleResponse)
 			}
 		})
 	}

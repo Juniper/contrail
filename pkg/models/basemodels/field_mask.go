@@ -95,3 +95,14 @@ func nestMap(m map[string]interface{}, key string) map[string]interface{} {
 func FieldMaskContains(fm *types.FieldMask, field string) bool {
 	return common.ContainsString(fm.GetPaths(), field)
 }
+
+// FieldMaskPartlyContains checks if given field mask partly contains requested string
+func FieldMaskPartlyContains(fm *types.FieldMask, path []string) bool {
+	conPath := strings.Join(path, ".")
+	for _, p := range fm.GetPaths() {
+		if strings.HasPrefix(p, conPath) {
+			return true
+		}
+	}
+	return false
+}

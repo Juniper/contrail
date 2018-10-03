@@ -84,6 +84,19 @@ workflow:
       #     to:
       #       - namespace=kube-system
 
+- name: try to update firewall rule
+  request:
+    path: /firewall-rule/test_firewall_rule_uuid
+    method: PUT
+    expected:
+    - 122
+    data:
+      uuid: test_firewall_rule_uuid
+      firewall-rule:
+        service:
+          protocol_id: 66
+  expect: null
+
 - name: delete firewall rule
   request:
     path: /firewall-rule/test_firewall_rule_uuid
