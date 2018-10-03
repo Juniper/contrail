@@ -207,7 +207,7 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 		}
 	}()
 
-	a.log.Debugf("Creating temperory inventory %s", tmpFileName)
+	a.log.Debugf("Creating temporary inventory %s", tmpFileName)
 	err = a.createInstancesFile(tmpFileName)
 	if err != nil {
 		return false, err
@@ -382,8 +382,8 @@ func (a *ansibleProvisioner) playFromDir(
 	}
 
 	// Report progress log periodically to stdout
-	go a.reporter.reportLog(stdout)
-	go a.reporter.reportLog(stderr)
+	go a.reporter.ReportLog(stdout)
+	go a.reporter.ReportLog(stderr)
 
 	if err = cmd.Wait(); err != nil {
 		return err
@@ -550,12 +550,13 @@ func (a *ansibleProvisioner) playBook() error {
 func (a *ansibleProvisioner) createCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	status := map[string]interface{}{statusField: statusCreateProgress}
-	a.reporter.reportStatus(status)
+
+	a.reporter.ReportStatus(status, defaultResource)
 
 	status[statusField] = statusCreateFailed
 	err := a.createWorkingDir()
 	if err != nil {
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(status, defaultResource)
 		return err
 	}
 
@@ -563,39 +564,39 @@ func (a *ansibleProvisioner) createCluster() error {
 		if a.cluster.config.AnsibleFetchURL != "" {
 			err = a.fetchAnsibleDeployer()
 			if err != nil {
-				a.reporter.reportStatus(status)
+				a.reporter.ReportStatus(status, defaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleCherryPickRevision != "" {
 			err = a.cherryPickAnsibleDeployer()
 			if err != nil {
-				a.reporter.reportStatus(status)
+				a.reporter.ReportStatus(status, defaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleRevision != "" {
 			err = a.resetAnsibleDeployer()
 			if err != nil {
-				a.reporter.reportStatus(status)
+				a.reporter.ReportStatus(status, defaultResource)
 				return err
 			}
 		}
 	}
 	err = a.createInventory()
 	if err != nil {
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(status, defaultResource)
 		return err
 	}
 
 	err = a.playBook()
 	if err != nil {
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(status, defaultResource)
 		return err
 	}
 
 	status[statusField] = statusCreated
-	a.reporter.reportStatus(status)
+	a.reporter.ReportStatus(status, defaultResource)
 	return nil
 }
 
@@ -608,7 +609,7 @@ func (a *ansibleProvisioner) isUpdated() (updated bool, err error) {
 		ok, err := a.compareInventory()
 		if err != nil {
 			status[statusField] = statusUpdateFailed
-			a.reporter.reportStatus(status)
+			a.reporter.ReportStatus(status, defaultResource)
 			return false, err
 		}
 		if ok {
@@ -623,22 +624,22 @@ func (a *ansibleProvisioner) updateCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	status := map[string]interface{}{}
 	status[statusField] = statusUpdateProgress
-	a.reporter.reportStatus(status)
+	a.reporter.ReportStatus(status, defaultResource)
 
 	err := a.createInventory()
 	if err != nil {
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(status, defaultResource)
 		return err
 	}
 	err = a.playBook()
 	if err != nil {
 		status[statusField] = statusUpdateFailed
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(status, defaultResource)
 		return err
 	}
 
 	status[statusField] = statusUpdated
-	a.reporter.reportStatus(status)
+	a.reporter.ReportStatus(status, defaultResource)
 	return nil
 }
 

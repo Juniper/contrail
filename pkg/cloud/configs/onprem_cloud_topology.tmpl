@@ -1,0 +1,22 @@
+- provider: {{ cloud.info.Type }}
+  organization: {{ cloud.info.Organization }}
+  project: {{ cloud.projectName }}
+  instances:
+  {% for instance in cloud.instances %}
+    - name: {{ instance.info.Name }}
+      public_ip: {{ instance.info.IPAddress }}
+      private_ip:
+      private_subnet:
+      {% for subnet in cloud.cloudSubnets %}{% for subnet_ref in instance.info.CloudPrivateSubnetRefs %}{% if subnet_ref.UUID in subnet.UUID %}
+      - {{ subnet.CidrBlock }}
+      {% endif %}{% endfor %}{% endfor %}
+      provision: {{ instance.provision }}
+      {% for cred in cloud.credentials %}{% for cred_ref in instance.info.CredentialRefs %}{%if cred_ref.UUID in cred.UUID %}
+      username: {{ cred.SSHUser }}
+      {% endif %}{% endfor %}{% endfor %}
+      {% if instance.protocolsMode %}
+      {% for mode in instance.protocolsMode %}
+        - {{ mode }}
+      {% endfor %}
+      {% endif %}
+  {% endfor %}

@@ -12,7 +12,9 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 type provisioner interface {
@@ -25,7 +27,7 @@ type provisionCommon struct {
 	action      string
 	clusterData *Data
 	log         *logrus.Entry
-	reporter    *Reporter
+	reporter    *common.Reporter
 }
 
 func (p *provisionCommon) isCreated() bool {
@@ -150,8 +152,8 @@ func (p *provisionCommon) execCmd(cmd string, args []string, dir string) error {
 		return err
 	}
 	// Report progress log periodically to stdout/db
-	go p.reporter.reportLog(stdout)
-	go p.reporter.reportLog(stderr)
+	go p.reporter.ReportLog(stdout)
+	go p.reporter.ReportLog(stderr)
 	return cmdline.Wait()
 }
 
@@ -160,10 +162,10 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
-	r := &Reporter{
-		api:      cluster.APIServer,
-		resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
-		log:      logger,
+	r := &common.Reporter{
+		API:      cluster.APIServer,
+		Resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
+		Log:      logger,
 	}
 
 	// create logger for ansible provisioner
@@ -180,15 +182,45 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	}}, nil
 }
 
+func newMCProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
+	// create logger for reporter
+	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
+
+	r := &common.Reporter{
+		API:      cluster.APIServer,
+		Resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
+		Log:      logger,
+	}
+
+	// create logger for multi-cloud provisioner
+	logger = pkglog.NewFileLogger("multi-cloud-provisioner", cluster.config.LogFile)
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
+
+	action, err := getMCAction(cData.clusterInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &multiCloudProvisioner{ansibleProvisioner{provisionCommon{
+		cluster:     cluster,
+		clusterID:   clusterID,
+		action:      action,
+		clusterData: cData,
+		reporter:    r,
+		log:         logger,
+	}}, ""}, nil
+}
+
 func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
 	// create logger for reporter
 	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
-	r := &Reporter{
-		api:      cluster.APIServer,
-		resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
-		log:      logger,
+	r := &common.Reporter{
+		API:      cluster.APIServer,
+		Resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
+		Log:      logger,
 	}
 
 	// create logger for Helm provisioner
@@ -226,11 +258,71 @@ func newProvisionerByID(cluster *Cluster, clusterID string, action string) (prov
 		provisionerType = defaultProvisioner
 	}
 
+	// Check if cloudbackrefs are present
+	if isMCProvisioner(cData) {
+		provisionerType = mCProvisioner
+	}
+
 	switch provisionerType {
 	case "ansible":
 		return newAnsibleProvisioner(cluster, cData, clusterID, action)
 	case "helm":
 		return newHelmProvisioner(cluster, cData, clusterID, action)
+	case mCProvisioner:
+		return newMCProvisioner(cluster, cData, clusterID, action)
 	}
 	return nil, errors.New("unsupported provisioner type")
+}
+
+func hasCloudRefs(cData *Data) bool {
+
+	if cData.cloudInfo != nil {
+		return true
+	}
+	return false
+
+}
+
+func hasMCGWNodes(clusterInfo *models.ContrailCluster) bool {
+
+	if clusterInfo.ContrailMulticloudGWNodes != nil {
+		return true
+	}
+	return false
+}
+
+func getMCAction(clusterInfo *models.ContrailCluster) (string, error) {
+
+	switch clusterInfo.ProvisioningAction {
+	case "ADD_CLOUD":
+		return createAction, nil
+	case "UPDATE_CLOUD":
+		return updateAction, nil
+	case "DELETE_CLOUD":
+		return deleteAction, nil
+	case "ADD_COMPUTE":
+		return updateAction, nil
+	}
+
+	return "", fmt.Errorf("invalid provisioning action for cluster with cloud ref:  %s", clusterInfo.ProvisioningAction)
+
+}
+
+func isMCProvisioner(cData *Data) bool {
+
+	state := cData.clusterInfo.ProvisioningState
+	if hasCloudRefs(cData) && hasMCGWNodes(cData.clusterInfo) && (state == "NOSTATE" || state == "") {
+		switch cData.clusterInfo.ProvisioningAction {
+		case "ADD_CLOUD":
+			return true
+		case "UPDATE_CLOUD":
+			return true
+		case "DELETE_CLOUD":
+			return true
+		case "ADD_COMPUTE":
+			return true
+			// implement delete compute
+		}
+	}
+	return false
 }

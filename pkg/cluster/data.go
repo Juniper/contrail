@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
@@ -43,6 +44,7 @@ type Data struct {
 	nodesInfo             []*models.Node
 	keypairsInfo          []*models.Keypair
 	credsInfo             []*models.Credential
+	cloudInfo             []*models.Cloud
 	openstackClusterData  []*OpenstackData
 	kubernetesClusterData []*KubernetesData
 	appformixClusterData  []*AppformixData
@@ -897,6 +899,17 @@ func (d *Data) updateNodeDetails(c *Cluster) error {
 	return nil
 }
 
+func (d *Data) updateCloudDetails(c *Cluster) error {
+	for _, cloudRef := range d.clusterInfo.CloudRefs {
+		cloudObject, err := cloud.GetCloud(c.APIServer, cloudRef.UUID)
+		if err != nil {
+			return err
+		}
+		d.cloudInfo = append(d.cloudInfo, cloudObject)
+	}
+	return nil
+}
+
 // nolint: gocyclo
 func (d *Data) updateClusterDetails(clusterID string, c *Cluster) error {
 	rData, err := c.getResource(defaultResourcePath, clusterID)
@@ -967,6 +980,11 @@ func (d *Data) updateClusterDetails(clusterID string, c *Cluster) error {
 	}
 	// get all nodes information
 	if err := d.updateNodeDetails(c); err != nil {
+		return err
+	}
+
+	// get all cloud information
+	if err := d.updateCloudDetails(c); err != nil {
 		return err
 	}
 	return nil
@@ -1140,4 +1158,8 @@ func (d *Data) getAppformixControllerNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (d *Data) getCloudRefs() ([]*models.Cloud, error) {
+	return nil, nil
 }

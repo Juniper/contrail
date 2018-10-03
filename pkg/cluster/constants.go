@@ -60,6 +60,7 @@ const (
 	defaultInstanceTemplate               = "instances.tmpl"
 	defaultInstanceFile                   = "instances.yml"
 	defaultProvisioner                    = "ansible"
+	mCProvisioner                         = "multi-cloud"
 	defaultAnsibleRepo                    = "contrail-ansible-deployer"
 	defaultAnsibleRepoDir                 = "/usr/share/contrail/"
 	defaultContrailProvPlay               = "playbooks/install_contrail.yml"
