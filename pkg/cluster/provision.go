@@ -150,8 +150,8 @@ func (p *provisionCommon) execCmd(cmd string, args []string, dir string) error {
 		return err
 	}
 	// Report progress log periodically to stdout/db
-	go p.reporter.reportLog(stdout)
-	go p.reporter.reportLog(stderr)
+	go p.reporter.ReportLog(stdout)
+	go p.reporter.ReportLog(stderr)
 	return cmdline.Wait()
 }
 
@@ -161,9 +161,9 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	r := &Reporter{
-		api:      cluster.APIServer,
-		resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
-		log:      logger,
+		API:      cluster.APIServer,
+		Resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
+		Log:      logger,
 	}
 
 	// create logger for ansible provisioner
@@ -186,9 +186,9 @@ func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action 
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	r := &Reporter{
-		api:      cluster.APIServer,
-		resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
-		log:      logger,
+		API:      cluster.APIServer,
+		Resource: fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
+		Log:      logger,
 	}
 
 	// create logger for Helm provisioner

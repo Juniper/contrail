@@ -1,0 +1,75 @@
+{% with cloud.cloudInfo.Type as cloudType "azure" as az "aws" as aws %}
+- provider: {{ cloudType }}
+  organization: {{ cloud.cloudInfo.Organization }}
+  project: {{ cloud.projectName }}
+  regions:
+  {% for region in cloud.regions %}
+    - name: {{ region.info.Name }}
+    {% if az in cloudType %}
+      resource_group: {{ region.info.ResourceGroup }}
+    {% endif %}
+    {% for vcloud in region.virtualClouds %}
+      clouds:
+        - name: {{ vcloud.info.Name }}
+          cidr_block: {{ vcloud.info.CidrBlock }}
+          subnets:
+          {% for subnet in vcloud.subnets %}
+            - name: {{ subnet.info.Name }}
+              cidr_block: {{ subnet.info.CidrBlock }}
+              {% if aws in cloudType %}
+              availability_zone: {{ subnet.info.AvailabilityZone }}
+              {% endif %}
+              {% endfor %}
+          security_groups:
+          {% for sg in vcloud.sgs %}
+            {% if az in cloudType %}
+            - name: {{ sg.info.Name }}
+              rules:
+              {% for sgRule in sg.info.CloudSecurityGroupRules %}
+                - name: {{ sgRule.Name }}
+                  direction: {{ sgRule.Direction }}
+                  {% if sgRule.Protocol %}protocol: {{ sgRule.Protocol }}{% endif %}
+              {% endfor %}
+            {% elif aws in cloudType %}
+              rules:
+              {% for sgRule in sg.info.CloudSecurityGroupRules %}
+              - name: {{ sgRule.Name }}
+                {{ sgRule.Direction }}
+                from_port: {{ sgRule.FromPort }}
+                to_port: {{ sgRule.ToPort }}
+                protocol: {{ sgRule.Protocol }}
+                cidr_blocks:
+                  - {{ sgRule.CidrBlock }}
+                {% endfor %}
+            {% endif %}
+          {% endfor %}
+          instances:
+          {% for instance in vcloud.instances %}
+          - name: {{ instance.info.Name }}
+            roles:
+            {% for role in instance.info.CloudInfo.Roles %}
+              - {{ role }}
+            {% endfor %}
+            provision: true
+            {% for cred in cloud.credentials %}{% for cred_ref in instance.info.CredentialRefs %}{%if cred_ref.UUID in cred.UUID %}
+            username: {{ cred.SSHUser }}
+            {% endif %}{% endfor %}{% endfor %}
+            os: {{ instance.info.CloudInfo.OperatingSystem }}
+            instance_type: {{ instance.info.CloudInfo.InstanceType }}
+            {% if aws in cloudType %}
+            machine_id: {{ instance.info.CloudInfo.MachineID }}
+            {% endif %}
+            {% for subnet in cloud.cloudSubnets %}{% for subnet_ref in instance.info.CloudPrivateSubnetRefs %}{% if subnet_ref.UUID in subnet.UUID %}
+            subnets: {{ subnet.Name }}
+            {% endif %}{% endfor %}{% endfor %}
+            {% if aws in cloudType %}
+            security_groups:
+            {% for sg in cloud.cloudSecurityGroups %}{% for sg_ref in instance.info.CloudSecurityGroupRefs %}{% if sg_ref.UUID in sg.UUID %}
+              - {{ sg.Name }}
+            {% endif %}{% endfor %}{% endfor %}
+            {% endif %}
+            interface: {{ instance.info.InterfaceName }}
+            {% endfor %}
+    {% endfor %}
+  {% endfor %}
+{% endwith %}
