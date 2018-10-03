@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -37,7 +38,7 @@ func updateExpectedFirewallRule(fr models.FirewallRule, params expectedParams) *
 	return &fr
 }
 
-func firewallRuleSetupMocks(s *ContrailTypeLogicService) {
+func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.FirewallRule) {
 	nextService := s.Next().(*servicesmock.MockService)          //nolint: errcheck
 	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
@@ -50,6 +51,25 @@ func firewallRuleSetupMocks(s *ContrailTypeLogicService) {
 			return &services.CreateFirewallRuleResponse{FirewallRule: request.FirewallRule}, nil
 		},
 	).AnyTimes()
+
+	nextService.EXPECT().UpdateFirewallRule(
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+	).DoAndReturn(
+		func(_ context.Context, request *services.UpdateFirewallRuleRequest) (
+			response *services.UpdateFirewallRuleResponse, err error,
+		) {
+			return &services.UpdateFirewallRuleResponse{FirewallRule: request.FirewallRule}, nil
+		},
+	).AnyTimes()
+
+	if databaseFR != nil {
+		readService.EXPECT().GetFirewallRule(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+			&services.GetFirewallRuleResponse{
+				FirewallRule: databaseFR,
+			},
+			nil,
+		).AnyTimes()
+	}
 
 	s.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT().GetMetadata(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
@@ -151,7 +171,7 @@ func TestCreateFirewallRule(t *testing.T) {
 				UUID:           "test-firewall-rule",
 				DraftModeState: "draft_mode_state",
 			},
-			IsInternalRequest: true,
+			IsInternalRequest: false,
 			errorCode:         codes.InvalidArgument,
 		},
 		{
@@ -403,7 +423,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
-			firewallRuleSetupMocks(service)
+			firewallRuleSetupMocks(service, nil)
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
@@ -424,6 +444,62 @@ func TestCreateFirewallRule(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, expectedResponse, createFirewallRuleResponse)
+			}
+		})
+	}
+}
+
+func TestUpdateFirewallRule(t *testing.T) {
+	tests := []struct {
+		name              string
+		request           services.UpdateFirewallRuleRequest
+		databaseFR        *models.FirewallRule
+		expected          *models.FirewallRule
+		IsInternalRequest bool
+		errorCode         codes.Code
+	}{
+		{
+			name: "Try to update read-only draft-mode-state property",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					DraftModeState: "draft_mode_state",
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.FirewallRuleFieldDraftModeState,
+					},
+				},
+			},
+			IsInternalRequest: false,
+			errorCode:         codes.InvalidArgument,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+			firewallRuleSetupMocks(service, tt.databaseFR)
+
+			ctx := context.Background()
+			if tt.IsInternalRequest {
+				ctx = MakeInternalRequestContext(ctx)
+			}
+
+			expectedResponse := &services.UpdateFirewallRuleResponse{
+				FirewallRule: tt.expected,
+			}
+
+			updateFirewallRuleResponse, err := service.UpdateFirewallRule(ctx, &tt.request)
+			if tt.errorCode != codes.OK {
+				assert.Error(t, err)
+				status, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, tt.errorCode, status.Code())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, expectedResponse, updateFirewallRuleResponse)
 			}
 		})
 	}
