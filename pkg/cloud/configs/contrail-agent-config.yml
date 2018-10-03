@@ -1,0 +1,41 @@
+id: alice
+password: alice_password
+project_id: admin
+#auth_url: http://localhost:9091/v3
+endpoint: https://localhost:9091
+insecure: true
+backend: file
+watcher: polling
+schema_root: /
+log_level: debug
+tasks:
+- schema_id: cloud
+  common:
+  - vars:
+      dir: "/var/tmp/{{ resource.schema_id }}/config/{{ resource.uuid }}"
+  on_create:
+  - debug: "AGENT creating {{ dir }}"
+  - command: mkdir -p "{{ dir }}"
+  - debug: "AGENT created {{ dir }}"
+  - template:
+      src: "/etc/contrail/contrail-cloud-config.tmpl"
+      dest: "{{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT creating cloud (contrail cloud -c {{ dir }}/contrail-cloud-config.yml)"
+  - command: "contrail cloud -c {{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT cloud create complete"
+  on_update:
+  - template:
+      src: "/etc/contrail/contrail-cloud-config.tmpl"
+      dest: "{{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT updating cloud (contrail cloud -c {{ dir }}/contrail-cloud-config.yml)"
+  - command: "contrail cloud -c {{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT cloud update complete"
+  on_delete:
+  - template:
+      src: "/etc/contrail/contrail-cloud-config.tmpl"
+      dest: "{{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT deleting cloud (contrail cloud -c {{ dir }}/contrail-cloud-config.yml)"
+  - command: "contrail cloud -c {{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT deleting {{ dir }}"
+  - command: "rm -rf  {{ dir }}"
+  - debug: "AGENT deleted {{ dir }}"
