@@ -3,14 +3,12 @@ package keystone
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/common"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
@@ -22,11 +20,11 @@ const (
 
 //Keystone is used to represents Keystone Controller.
 type Keystone struct {
-	Store      Store
-	Assignment Assignment
-	Endpoints  *apicommon.EndpointStore
-	Client     *KeystoneClient
-	vncClient  *client.HTTP
+	Store            Store
+	staticAssignment *StaticAssignment
+	Assignment       Assignment
+	Endpoints        *apicommon.EndpointStore
+	Client           *KeystoneClient
 }
 
 //Init is used to initialize echo with Kesytone capability.
@@ -44,6 +42,7 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 		if err != nil {
 			return nil, err
 		}
+		keystone.staticAssignment = &staticAssignment
 		keystone.Assignment = &staticAssignment
 	}
 	storeType := viper.GetString("keystone.store.type")
@@ -91,38 +90,6 @@ func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint st
 	return configEndpoint, err
 }
 
-func (keystone *Keystone) getVncProjects(c echo.Context, configEndpoint string) ([]*kscommon.Project, error) {
-	tokenID := c.Request().Header.Get("X-Auth-Token")
-	if tokenID == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
-	}
-	_, ok := keystone.Store.ValidateToken(tokenID)
-	if !ok {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
-	}
-	if keystone.vncClient == nil {
-		keystone.vncClient = client.NewHTTP("", "", "", "", true, nil)
-	}
-	keystone.vncClient.Endpoint = configEndpoint
-	keystone.vncClient.Init()
-	projectURI := "/projects"
-	query := url.Values{"detail": []string{"True"}}
-	vncProjectsResponse := &VncProjectListResponse{}
-	_, err := keystone.vncClient.ReadWithQuery(
-		projectURI, query, vncProjectsResponse)
-	if err != nil {
-		return nil, err
-	}
-	projects := []*kscommon.Project{}
-	for _, vncProject := range vncProjectsResponse.Projects {
-		projects = append(projects, &kscommon.Project{
-			Name: vncProject.Project.Name,
-			ID:   vncProject.Project.UUID,
-		})
-	}
-	return projects, nil
-}
-
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyclo
 	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
@@ -143,27 +110,42 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 	if !ok {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 	}
-	userProjects := []*kscommon.Project{}
 	authType := viper.GetString("auth_type")
+	var configEndpoint string
 	if authType == "basic-auth" {
-		configEndpoint, err := getVncConfigEndpoint(keystone.Endpoints)
+		configEndpoint, err = getVncConfigEndpoint(keystone.Endpoints)
 		if err != nil {
 			log.Error(err)
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 		if configEndpoint != "" {
-			userProjects, err = keystone.getVncProjects(c, configEndpoint)
+			dynamicAssignment := &DynamicAssignment{}
+			err := dynamicAssignment.Init(
+				configEndpoint, keystone.staticAssignment.ListUsers())
 			if err != nil {
-				return err
+				log.Error(err)
+				return echo.NewHTTPError(http.StatusInternalServerError, err)
 			}
+			keystone.Assignment = dynamicAssignment
 		}
 	}
+	userProjects := []*kscommon.Project{}
 	user := token.User
 	projects := keystone.Assignment.ListProjects()
 	for _, project := range projects {
 		for _, role := range user.Roles {
 			if role.Project.Name == project.Name {
 				userProjects = append(userProjects, role.Project)
+			}
+		}
+	}
+	if authType == "basic-auth" && configEndpoint != "" {
+		staticProjects := keystone.staticAssignment.ListProjects()
+		for _, project := range staticProjects {
+			for _, role := range user.Roles {
+				if role.Project.Name == project.Name {
+					userProjects = append(userProjects, role.Project)
+				}
 			}
 		}
 	}
