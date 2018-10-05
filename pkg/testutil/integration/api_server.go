@@ -116,7 +116,7 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"database.connection_retries": 10,
 		"database.retry_period":       3,
 		"database.debug":              true,
-		"etcd.path":                   integrationetcd.JSONPrefix,
+		"etcd.path":                   integrationetcd.Prefix,
 		"keystone.local":              true,
 		"keystone.assignment.type":    "static",
 		"keystone.assignment.data":    keystoneAssignment(),
