@@ -36,7 +36,7 @@ func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc
 		},
 		"etcd.endpoints":     integrationetcd.Endpoint,
 		"etcd.grpc_insecure": true,
-		"etcd.path":          integrationetcd.JSONPrefix,
+		"etcd.path":          integrationetcd.Prefix,
 		"client.id":          AdminUserID,
 		"client.password":    AdminUserPassword,
 		"client.project_id":  AdminProjectID,
