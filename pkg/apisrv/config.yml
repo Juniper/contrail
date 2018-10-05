@@ -78,6 +78,8 @@ server:
         /contrail:
         - http://localhost:8082
 
+    notify_etcd: true
+
 homepage:
     enabled: true
 

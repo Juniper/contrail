@@ -9,6 +9,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -19,7 +20,7 @@ import (
 // Integration test settings.
 const (
 	Endpoint           = "localhost:2379"
-	JSONPrefix         = "json"
+	Prefix             = "contrail"
 	etcdDialTimeout    = 10 * time.Second
 	etcdRequestTimeout = 10 * time.Second
 	etcdWatchTimeout   = 10 * time.Second
@@ -74,6 +75,11 @@ func (e *EtcdClient) DeleteProject(t *testing.T, uuid string, opts ...clientv3.O
 // DeleteSecurityGroup deletes SecurityGroup resource.
 func (e *EtcdClient) DeleteSecurityGroup(t *testing.T, uuid string, opts ...clientv3.OpOption) {
 	e.DeleteKey(t, JSONEtcdKey(SecurityGroupSchemaID, uuid), opts...)
+}
+
+// Clear recursively deletes all key for etcd prefix.
+func (e *EtcdClient) Clear(t *testing.T) {
+	e.DeleteKey(t, "/"+viper.GetString("etcd.path"), clientv3.WithPrefix())
 }
 
 // GetKey gets etcd key.

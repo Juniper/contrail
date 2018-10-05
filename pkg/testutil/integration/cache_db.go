@@ -2,10 +2,6 @@ package integration
 
 import (
 	"context"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/etcd"
@@ -17,7 +13,7 @@ const (
 )
 
 // RunCacheDB runs DB Cache with etcd event producer.
-func RunCacheDB(t *testing.T) (*cache.DB, context.CancelFunc) {
+func RunCacheDB() (*cache.DB, func() error, error) {
 	setViperConfig(map[string]interface{}{
 		"cache.timeout":  "10s",
 		"etcd.endpoints": []string{integrationetcd.Endpoint},
@@ -26,7 +22,9 @@ func RunCacheDB(t *testing.T) (*cache.DB, context.CancelFunc) {
 	cacheDB := cache.NewDB(maxHistory)
 
 	processor, err := etcd.NewEventProducer(cacheDB)
-	require.NoError(t, err, "creating etcd event producer for Cache DB failed")
+	if err != nil {
+		return nil, func() error { return nil }, err
+	}
 
 	ctx, cancelEtcdEventProducer := context.WithCancel(context.Background())
 	errChan := make(chan error)
@@ -34,8 +32,8 @@ func RunCacheDB(t *testing.T) (*cache.DB, context.CancelFunc) {
 		errChan <- processor.Start(ctx)
 	}()
 
-	return cacheDB, func() {
+	return cacheDB, func() error {
 		cancelEtcdEventProducer()
-		assert.NoError(t, <-errChan, "unexpected etcd event producer runtime error")
-	}
+		return <-errChan
+	}, nil
 }
