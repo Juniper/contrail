@@ -6,11 +6,12 @@ cleanup:
 test_data:
   project: &project
     uuid: project_uuid
-    fq_name: ["default", "project_uuid"]
+    name: project_name
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg
     uuid: sg_uuid
+    name: sg_name
     parent_uuid: project_uuid
     security_group_entries:
       policy_rule:
@@ -23,7 +24,7 @@ test_data:
             start_port: 0
           ethertype: "IPv4"
           src_addresses:
-          - security_group: "default:project_uuid:sg_uuid"
+          - security_group: "default:project_name:sg_name"
           src_ports:
           - end_port: 65535
             start_port: 0
@@ -42,7 +43,7 @@ test_data:
             start_port: 0
           ethertype: "IPv4"
           src_addresses:
-          - security_group: "default:project_uuid:sg_uuid"
+          - security_group: "default:project_name:sg_name"
           src_ports:
           - end_port: 65535
             start_port: 0
@@ -89,6 +90,13 @@ workflow:
 - name: delete security group
   request:
     path: /security-group/sg_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete project
+  request:
+    path: /project/project_uuid
     method: DELETE
     expected:
     - 200
