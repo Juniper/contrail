@@ -1,7 +1,7 @@
 # Database configuration. Only MySQL supported
 database:
     # MySQL example
-    type: mysql 
+    type: mysql
     dialect: mysql
     host: localhost
     user: root
@@ -9,7 +9,7 @@ database:
     name: contrail_test
     # Postgres example
     # connection: "user=root dbname=contrail_test sslmode=disable"
-    # type: pgx 
+    # type: pgx
     # dialect: postgres
 
     # Max Open Connections for DB Server
@@ -18,7 +18,7 @@ database:
     retry_period: 3
 
 test_database:
-    mysql: 
+    mysql:
         type: mysql
         dialect: mysql
         host: localhost
@@ -26,16 +26,24 @@ test_database:
         password: contrail123
         name: contrail_test
     postgres:
-        type: postgres 
+        type: postgres
         dialect: postgres
         host: localhost
         user: root
         password: contrail123
         name: contrail_test
 
+etcd:
+  endpoints:
+    - localhost:2379
+  username: ""
+  password: ""
+  path: contrail
+  grpc_insecure: true
+
 
 # Log Level
-log_level: debug
+log_level: info
 
 # Server configuration
 server:
@@ -60,6 +68,8 @@ server:
     static_files:
         public: ../../public
 
+    notify_etcd: true
+
     dynamic_proxy_path: proxy
     # API Proxy configuration
     # key: URL path
@@ -67,6 +77,11 @@ server:
     proxy:
         /contrail:
         - http://localhost:8082
+
+    notify_etcd: true
+
+homepage:
+    enabled: true
 
 # Keystone configuration
 keystone:
@@ -96,7 +111,7 @@ keystone:
               email: alice@juniper.nets
               roles:
               - id: admin
-                name: Admin
+                name: admin
                 project: *admin
             bob:
               id: bob
