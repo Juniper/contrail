@@ -328,7 +328,7 @@ func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) err
 		ansibleArgs = append(ansibleArgs, "-e force_checkout=yes")
 		switch a.clusterData.clusterInfo.ProvisioningAction {
 		case addComputeProvisioningAction:
-			ansibleArgs = append(ansibleArgs, "--tags nova")
+			ansibleArgs = append(ansibleArgs, "--tags=nova")
 		}
 		ansibleArgs = append(ansibleArgs, defaultOpenstackProvPlay)
 	case "kubernetes":
