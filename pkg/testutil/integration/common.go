@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coreos/etcd/clientv3"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -34,11 +35,17 @@ import (
 // to enable integration testing capabilities.
 func TestMain(m *testing.M, s **APIServer) {
 	WithTestDBs(func(dbType string) {
-		var err error
+		cacheDB, err, cancelEtcdEventProducer := RunCacheDB()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer testutil.LogFatalIfErr(cancelEtcdEventProducer)
+
 		if *s, err = NewRunningServer(&APIServerConfig{
 			DBDriver:           dbType,
 			RepoRootPath:       "../../..",
 			EnableEtcdNotifier: true,
+			CacheDB:            cacheDB,
 		}); err != nil {
 			log.Fatalf("Error initializing integration APIServer: %+v", err)
 		}
@@ -90,6 +97,8 @@ func initViperConfig() error {
 	viper.AddConfigPath("../sample")
 	viper.AddConfigPath("./sample")
 	viper.AddConfigPath("./test_data")
+	viper.AddConfigPath("../apisrv")
+	viper.AddConfigPath("../../apisrv")
 	viper.SetEnvPrefix("contrail")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
@@ -136,13 +145,14 @@ type Task struct {
 
 //TestScenario has a list of tasks.
 type TestScenario struct {
-	Name        string                              `yaml:"name,omitempty"`
-	Description string                              `yaml:"description,omitempty"`
-	Tables      []string                            `yaml:"tables,omitempty"`
-	Clients     map[string]*client.HTTP             `yaml:"clients,omitempty"`
-	Cleanup     []map[string]string                 `yaml:"cleanup,omitempty"`
-	Workflow    []*Task                             `yaml:"workflow,omitempty"`
-	Watchers    map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
+	Name                  string                              `yaml:"name,omitempty"`
+	Description           string                              `yaml:"description,omitempty"`
+	IntentCompilerEnabled bool                                `yaml:"intent_compiler_enabled,omitempty"`
+	Tables                []string                            `yaml:"tables,omitempty"`
+	Clients               map[string]*client.HTTP             `yaml:"clients,omitempty"`
+	Cleanup               []map[string]string                 `yaml:"cleanup,omitempty"`
+	Workflow              []*Task                             `yaml:"workflow,omitempty"`
+	Watchers              map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -178,6 +188,8 @@ func RunCleanTestScenario(t *testing.T, testScenario *TestScenario, server *APIS
 	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
 	checkWatchers := startWatchers(t, testScenario.Watchers)
+	stopIC := startIntentCompiler(t, testScenario, server)
+	defer stopIC()
 
 	clients := prepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
@@ -217,18 +229,9 @@ func startWatchers(t *testing.T, watchers map[string][]map[string]interface{}) f
 	ec := integrationetcd.NewEtcdClient(t)
 	for key := range watchers {
 		events := watchers[key]
-		collect := ec.WatchKeyN(key, len(events), 2*time.Second)
+		collect := ec.WatchKeyN(key, len(events), 5*time.Second, clientv3.WithPrefix())
 
-		checks = append(checks, func(t *testing.T) {
-			collected := collect()
-			assert.Equal(t, len(events), len(collected), "etcd emitted not enough events: %s")
-			for i, e := range events[:len(collected)] {
-				var data interface{}
-				err := json.Unmarshal([]byte(collected[i]), &data)
-				assert.NoError(t, err)
-				testutil.AssertEqual(t, e, data)
-			}
-		})
+		checks = append(checks, createWatchChecker(collect, key, events))
 	}
 
 	return func(t *testing.T) {
@@ -237,6 +240,36 @@ func startWatchers(t *testing.T, watchers map[string][]map[string]interface{}) f
 			c(t)
 		}
 	}
+}
+
+func createWatchChecker(collect func() []string, key string, events []map[string]interface{}) func(t *testing.T) {
+	return func(t *testing.T) {
+		collected := collect()
+		assert.Equal(
+			t, len(events), len(collected), "etcd emitted not enough events on %s:\n%s", key,
+		)
+		for i, e := range events[:len(collected)] {
+			c := collected[i]
+			var data interface{} = map[string]interface{}{}
+			if len(c) > 0 {
+				err := json.Unmarshal([]byte(c), &data)
+				assert.NoError(t, err)
+			}
+			testutil.AssertEqual(
+				t, e, data, "etcd event not equal for %s[%v]:\n%s", key, i,
+			)
+		}
+	}
+}
+
+func startIntentCompiler(t *testing.T, testScenario *TestScenario, server *APIServer) context.CancelFunc {
+	if testScenario.IntentCompilerEnabled {
+		etcdClient := integrationetcd.NewEtcdClient(t)
+		etcdClient.Clear(t)
+
+		return RunIntentCompilationService(t, server.TestServer.URL)
+	}
+	return func() {}
 }
 
 func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) clientsList {
