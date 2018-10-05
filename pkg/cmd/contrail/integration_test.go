@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
@@ -35,38 +34,20 @@ const (
 	expectedACLCount                     = 2
 )
 
-func TestCreateCoreResources(t *testing.T) {
-	cacheDB, cancelEtcdEventProducer := integration.RunCacheDB(t)
-	defer cancelEtcdEventProducer()
+func TestSecurityGroup(t *testing.T) {
+	runTest(t, t.Name())
+}
 
+func TestCreateCoreResources(t *testing.T) {
 	ec := integrationetcd.NewEtcdClient(t)
 	defer ec.Close(t)
 
-	tests := []struct {
-		dbDriver string
-	}{
-		{dbDriver: basedb.DriverMySQL},
-		{dbDriver: basedb.DriverPostgreSQL},
-	}
+	closeIntentCompilation := integration.RunIntentCompilationService(t, server.URL())
+	defer closeIntentCompilation()
 
-	for _, tt := range tests {
-		t.Run(tt.dbDriver, func(t *testing.T) {
-			s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-				CacheDB:            cacheDB,
-				DBDriver:           tt.dbDriver,
-				RepoRootPath:       "../../..",
-				EnableEtcdNotifier: true,
-			})
-			defer s.CloseT(t)
+	hc := integration.NewTestingHTTPClient(t, server.URL())
 
-			closeIntentCompilation := integration.RunIntentCompilationService(t, s.URL())
-			defer closeIntentCompilation()
-
-			hc := integration.NewTestingHTTPClient(t, s.URL())
-
-			t.Run("create Project and Security Group", testCreateProjectAndSecurityGroup(hc, ec))
-		})
-	}
+	t.Run("create Project and Security Group", testCreateProjectAndSecurityGroup(hc, ec))
 }
 
 func testCreateProjectAndSecurityGroup(

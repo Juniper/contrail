@@ -1,0 +1,133 @@
+name: Security Group Test
+description: security group test
+intent_compiler_enabled: true
+cleanup:
+# TODO(Michał): implement cleanup by fq_name for ACLs
+- path: /security-group/sg_uuid
+- path: /project/project_uuid
+test_data:
+  project: &project
+    uuid: project_uuid
+    fq_name: ["default", "project_name"]
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+  sg: &sg
+    uuid: sg_uuid
+    name: sg_name
+    parent_uuid: project_uuid
+    security_group_entries:
+      policy_rule:
+        - direction: ">"
+          protocol: "any"
+          dst_addresses:
+          - security_group: "local"
+          dst_ports:
+          - end_port: 65535
+            start_port: 0
+          ethertype: "IPv4"
+          src_addresses:
+          - security_group: "default:project_name:sg_name"
+          src_ports:
+          - end_port: 65535
+            start_port: 0
+  ingress_acl: &ingress_acl
+    name: ingress-access-control-list
+    uuid: $uuid
+    parent_uuid: sg_uuid
+    fq_name: ["default","project_name","sg_name","ingress-access-control-list"]
+    access_control_list_entries:
+      acl_rule:
+        - action_list:
+            simple_action: pass
+          match_condition:
+            dst_address: null
+            dst_port:
+              end_port: 65535
+            ethertype: IPv4
+            protocol: any
+            src_address:
+              security_group: "8000001"
+            src_port:
+              end_port: 65535
+  egress_acl: &egress_acl
+    name: egress-access-control-list
+    uuid: $uuid
+    parent_uuid: sg_uuid
+    fq_name: ["default","project_name","sg_name","egress-access-control-list"]
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+# TODO(Michał): ensure that other ACLs are not deleted
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *project
+  expect:
+    project: *project
+  expect: null
+- name: create security group
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 200
+    data:
+      security-group: *sg
+  expect:
+    security-group: *sg
+  watchers:
+    /contrail/security_group/:
+      - *sg
+    /contrail/access_control_list/:
+      - *ingress_acl
+      - *egress_acl
+- name: ensure ACL were created
+  request:
+    path: /access-control-lists?parent_id=sg_uuid
+    method: GET
+    expected:
+    - 200
+  expect:
+    access-control-lists:
+    - *ingress_acl
+    - *egress_acl
+- name: delete security group
+  request:
+    path: /security-group/sg_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+  watchers:
+    /contrail/security_group/:
+      - null # nulls are emitted in case of delete
+    /contrail/access_control_list/:
+      - null
+      - null
+- name: ensure ACL were deleted
+  request:
+    path: /access-control-lists?parent_id=sg_uuid
+    method: GET
+    expected:
+    - 200
+  expect:
+    access-control-lists: []
+
+- name: delete project
+  request:
+    path: /project/project_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
