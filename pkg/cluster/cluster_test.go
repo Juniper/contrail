@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 const (
@@ -32,11 +32,13 @@ const (
 	clusterID                             = "test_cluster_uuid"
 )
 
+var server *integration.APIServer
+
 func TestMain(m *testing.M) {
-	apisrv.SetupAndRunTest(m)
+	integration.TestMain(m, &server)
 }
 
-func verifyEndpoints(t *testing.T, testScenario *apisrv.TestScenario,
+func verifyEndpoints(t *testing.T, testScenario *integration.TestScenario,
 	expectedEndpoints map[string]string) error {
 	createdEndpoints := map[string]string{}
 	for _, client := range testScenario.Clients {
@@ -110,7 +112,7 @@ func executedPlaybooksPath() string {
 }
 
 // nolint: gocyclo
-func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
+func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 	config *Config, action, expectedInstance, expectedInventory string,
 	expectedPlaybooks string, expectedEndpoints map[string]string) {
 	// set action field in the contrail-cluster resource
@@ -173,7 +175,7 @@ func runClusterActionTest(t *testing.T, testScenario apisrv.TestScenario,
 			fmt.Sprintf("Expected list of %s playbooks are not executed", action))
 	}
 	// Wait for the in-memory endpoint cache to get updated
-	apisrv.APIServer.ForceProxyUpdate()
+	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -186,24 +188,24 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	context map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := apisrv.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
 	defer ksPublic.Close()
-	ksPrivate := apisrv.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
 	defer ksPrivate.Close()
 
 	// Create the cluster and related objects
-	var testScenario apisrv.TestScenario
-	err := apisrv.LoadTestScenario(&testScenario, allInOneClusterTemplatePath, context)
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, allInOneClusterTemplatePath, context)
 	assert.NoError(t, err, "failed to load cluster test data")
-	cleanup := apisrv.RunDirtyTestScenario(t, &testScenario)
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
 	// create cluster config
 	config := &Config{
 		ID:           "alice",
 		Password:     "alice_password",
 		ProjectID:    "admin",
-		AuthURL:      apisrv.TestServer.URL + "/keystone/v3",
-		Endpoint:     apisrv.TestServer.URL,
+		AuthURL:      server.URL() + "/keystone/v3",
+		Endpoint:     server.URL(),
 		InSecure:     true,
 		ClusterID:    clusterID,
 		Action:       createAction,
@@ -235,7 +237,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 			"Expected list of create playbooks are not executed")
 	}
 	// Wait for the in-memory endpoint cache to get updated
-	apisrv.APIServer.ForceProxyUpdate()
+	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -272,7 +274,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 			"Expected list of update playbooks are not executed")
 	}
 	// Wait for the in-memory endpoint cache to get updated
-	apisrv.APIServer.ForceProxyUpdate()
+	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -447,23 +449,23 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	context map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := apisrv.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
 	defer ksPublic.Close()
-	ksPrivate := apisrv.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
-	var testScenario apisrv.TestScenario
-	err := apisrv.LoadTestScenario(&testScenario, allInOneKubernetesClusterTemplatePath, context)
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, allInOneKubernetesClusterTemplatePath, context)
 	assert.NoError(t, err, "failed to load cluster test data")
-	cleanup := apisrv.RunDirtyTestScenario(t, &testScenario)
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
 	// create cluster config
 	config := &Config{
 		ID:           "alice",
 		Password:     "alice_password",
 		ProjectID:    "admin",
-		AuthURL:      apisrv.TestServer.URL + "/keystone/v3",
-		Endpoint:     apisrv.TestServer.URL,
+		AuthURL:      server.URL() + "/keystone/v3",
+		Endpoint:     server.URL(),
 		InSecure:     true,
 		ClusterID:    clusterID,
 		Action:       createAction,
@@ -488,7 +490,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_kubernetes.yml"),
 		"Expected list of create playbooks are not executed")
 	// Wait for the in-memory endpoint cache to get updated
-	apisrv.APIServer.ForceProxyUpdate()
+	server.ForceProxyUpdate()
 	// make sure all endpoints are created
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {
@@ -518,7 +520,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_kubernetes.yml"),
 		"Expected list of update playbooks are not executed")
 	// Wait for the in-memory endpoint cache to get updated
-	apisrv.APIServer.ForceProxyUpdate()
+	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
 	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
 	if err != nil {

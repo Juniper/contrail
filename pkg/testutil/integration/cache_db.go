@@ -17,22 +17,25 @@ const (
 )
 
 // RunCacheDB runs DB Cache with etcd event producer.
-func RunCacheDB(t *testing.T) (cacheDB *cache.DB, cancelEtcdEventProducer context.CancelFunc) {
+func RunCacheDB(t *testing.T) (*cache.DB, context.CancelFunc) {
 	setViperConfig(map[string]interface{}{
 		"cache.timeout":  "10s",
 		"etcd.endpoints": []string{integrationetcd.Endpoint},
 	})
 
-	cacheDB = cache.NewDB(maxHistory)
+	cacheDB := cache.NewDB(maxHistory)
 
 	processor, err := etcd.NewEventProducer(cacheDB)
 	require.NoError(t, err, "creating etcd event producer for Cache DB failed")
 
 	ctx, cancelEtcdEventProducer := context.WithCancel(context.Background())
+	errChan := make(chan error)
 	go func() {
-		err = processor.Start(ctx)
-		assert.NoError(t, err, "unexpected etcd event producer runtime error")
+		errChan <- processor.Start(ctx)
 	}()
 
-	return cacheDB, cancelEtcdEventProducer
+	return cacheDB, func() {
+		cancelEtcdEventProducer()
+		assert.NoError(t, <-errChan, "unexpected etcd event producer runtime error")
+	}
 }
