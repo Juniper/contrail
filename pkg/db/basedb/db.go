@@ -211,23 +211,33 @@ func logQuery(_ context.Context, command string, args ...interface{}) {
 }
 
 func wrapDriver(driver string) string {
+	idriver := "instrumented-" + driver
+	if isDriverRegistered(idriver) {
+		return idriver
+	}
+
 	switch driver {
 	case POSTGRES:
-		driver = "instrumented-" + driver
-		sql.Register(driver, instrumentedsql.WrapDriver(
+		sql.Register(idriver, instrumentedsql.WrapDriver(
 			&pq.Driver{},
 			instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery))),
 		)
-		return driver
 	case MYSQL:
-		driver = "instrumented-" + driver
-		sql.Register(driver, instrumentedsql.WrapDriver(
+		sql.Register(idriver, instrumentedsql.WrapDriver(
 			&mysql.MySQLDriver{},
 			instrumentedsql.WithLogger(instrumentedsql.LoggerFunc(logQuery))),
 		)
-		return driver
 	}
-	return driver
+	return idriver
+}
+
+func isDriverRegistered(driver string) bool {
+	for _, d := range sql.Drivers() {
+		if d == driver {
+			return true
+		}
+	}
+	return false
 }
 
 func dataSourceName(c *ConnectionConfig) (string, error) {

@@ -2,16 +2,31 @@ package sink
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-// EventProcessorSink is a Sink that dispatches events to processor.
+// EventProcessorSink is a Sink that dispatches it's method calls as events
+// to EventProcessor.
 type EventProcessorSink struct {
-	services.EventProcessor
+	processor services.EventProcessor
+	log       *logrus.Entry
+}
+
+// NewEventProcessorSink creates new EventProcessorSink that uses recevied EventProcessor.
+func NewEventProcessorSink(processor services.EventProcessor) *EventProcessorSink {
+	return &EventProcessorSink{
+		processor: processor,
+		log:       log.NewLogger("event-processor-sink"),
+	}
 }
 
 // Create dispatches OperationCreate event to processor.
@@ -33,8 +48,9 @@ func (e *EventProcessorSink) CreateRef(
 	ctx context.Context,
 	resourceName string,
 	pk []string,
-	obj basemodels.Object,
+	attr map[string]interface{},
 ) error {
+
 	if len(pk) != 2 {
 		return errors.Errorf("expecting primary key with 2 items, got %d instead", len(pk))
 	}
@@ -45,6 +61,7 @@ func (e *EventProcessorSink) CreateRef(
 		UUID:      pk[0],
 		RefType:   typeRef,
 		RefUUID:   pk[1],
+		Attr:      json.RawMessage(common.MustJSON(attr)),
 	})
 	if err != nil {
 		return err
@@ -86,7 +103,7 @@ func (e *EventProcessorSink) DeleteRef(ctx context.Context, resourceName string,
 	}
 	typeName, typeRef := resolveReferenceTable(resourceName)
 	ev, err := services.NewEventFromRefUpdate(&services.RefUpdate{
-		Operation: services.RefOperationAdd,
+		Operation: services.RefOperationDelete,
 		Type:      typeName,
 		UUID:      pk[0],
 		RefType:   typeRef,
@@ -99,6 +116,7 @@ func (e *EventProcessorSink) DeleteRef(ctx context.Context, resourceName string,
 }
 
 func (e *EventProcessorSink) process(ctx context.Context, ev *services.Event) error {
-	_, err := e.Process(ctx, ev)
+	e.log.WithField("type", fmt.Sprintf("%T", ev.Request)).Debug("Dispatching event")
+	_, err := e.processor.Process(ctx, ev)
 	return err
 }
