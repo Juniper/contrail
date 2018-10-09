@@ -24,6 +24,7 @@ const (
 	PropCollectionUpdatePath = "prop-collection-update"
 	RefRelaxForDeletePath    = "ref-relax-for-delete"
 	SetTagPath               = "set-tag"
+	ChownPath                = "chown"
 	IntPoolPath              = "int-pool/:pool-name"
 )
 
@@ -357,6 +358,23 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{})
 }
 
+// Chown handles chown request.
+func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest) (*Empty, error) {
+	// TODO: implement chown logic.
+	return &Empty{}, nil
+}
+
+// RESTChown handles chown request.
+func (service *ContrailService) RESTChown(c echo.Context) error {
+	// TODO: bind request
+	ctx := c.Request().Context()
+	if _, err := service.Chown(ctx, &ChownRequest{}); err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{})
+}
+
 // RESTIntPool handles a POST on int-pool/:pool-name/:value and int-pool/:pool-name request.
 // TODO(Michal): gRPC endpoint
 func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
@@ -473,6 +491,7 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.POST(RefRelaxForDeletePath, service.RESTRefRelaxForDelete)
 	r.POST(PropCollectionUpdatePath, service.RESTPropCollectionUpdate)
 	r.POST(SetTagPath, service.RESTSetTag)
+	r.POST(ChownPath, service.RESTChown)
 	r.POST(IntPoolPath, service.RESTIntPoolAllocate)
 	r.POST(IntPoolPath + "/:value", service.RESTIntPoolAllocate)
 	r.DELETE(IntPoolPath + "/:value", service.RESTIntPoolDeallocate)
