@@ -16,7 +16,8 @@ var server *integration.APIServer
 
 func TestMain(m *testing.M) {
 	viper.SetConfigType("yml")
-	viper.AddConfigPath("../../apisrv")
+	viper.SetConfigName("test_config")
+	viper.AddConfigPath("../../../sample")
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)

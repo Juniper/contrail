@@ -86,7 +86,7 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		Store:     etcd.NewClient(e),
 		locker:    l,
 		config:    &c,
-		log:       log.NewLogger(c.DefaultCfg.ServiceName),
+		log:       log.NewLogger("intent-compiler"),
 	}, nil
 }
 
@@ -194,7 +194,7 @@ func (ics *IntentCompilationService) Run(ctx context.Context) error {
 // HandleEtcdMessage handles messages received from etcd.
 func (ics *IntentCompilationService) handleEtcdMessage(ctx context.Context, oper int32, key, value string) {
 	messageFields := logrus.Fields{"operation": oper, "key": key, "value": value}
-	logrus.WithFields(messageFields).Print("HandleEtcdMessages: Got a message")
+	ics.log.WithFields(messageFields).Print("HandleEtcdMessages: Got a message")
 	event, err := etcd.ParseEvent(oper, key, []byte(value))
 	if err != nil {
 		logrus.WithFields(messageFields).WithError(err).Error("failed to parse ETCD event")
@@ -204,6 +204,6 @@ func (ics *IntentCompilationService) handleEtcdMessage(ctx context.Context, oper
 	}
 	_, err = processor.Process(ctx, event)
 	if err != nil {
-		logrus.WithFields(messageFields).WithError(err).Error("Failed to handle etcd message")
+		ics.log.WithFields(messageFields).WithError(err).Error("Failed to handle etcd message")
 	}
 }
