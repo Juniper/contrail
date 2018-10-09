@@ -3,7 +3,20 @@
     check:
       jobs:
         - contrail-go-docker
+        - contrail-vnc-build-package-centos74
+            voting: False
+        - contrail-vnc-build-containers-centos7-ocata:
+            dependencies:
+              - contrail-vnc-build-package-centos74
+            voting: False
+        - contrail-vnc-build-test-containers:
+            dependencies:
+              - contrail-vnc-build-package-centos74
+            voting: False
         - contrail-go-sanity-centos7-k8s:
+            dependencies:
+              - contrail-vnc-build-containers-centos7-ocata
+              - contrail-vnc-build-test-containers
             voting: False # TODO: mark as voting and add to gate when tests pass
     gate:
       jobs:
