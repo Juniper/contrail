@@ -4,20 +4,6 @@ set -o errexit
 set -o pipefail
 set -o xtrace
 
-ensure_group()
-{
-	local expected_group='docker'
-	
-	cut -d: -f1 /etc/group | grep -q "$expected_group" || sudo groupadd "$expected_group" # ensure group exists
-	groups | grep -q "$expected_group" || sudo usermod -aG "$expected_group" "$USER" # ensure user is in that group
-
-	if [ "$(id -gn)" != "$expected_group" ]; then
-		exec sg "$expected_group" -c "$0 $*"
-	fi
-}
-
-ensure_group "$@"
-
 RealPath()
 {
 	pushd "$1" &> /dev/null
@@ -26,6 +12,10 @@ RealPath()
 }
 
 ThisDir=$(RealPath "$(dirname "$0")")
+. "$ThisDir/ensure_docker_group.sh"
+
+ensure_group "$@"
+
 ContrailRootDir=$(RealPath "$ThisDir/..")
 
 build_docker()
