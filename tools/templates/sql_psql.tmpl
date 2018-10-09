@@ -1,3 +1,5 @@
+create publication "syncpub" for all tables; -- publication that is watching all tables for sync
+
 create table metadata (
     "uuid" varchar(255),
     "type" varchar(255),

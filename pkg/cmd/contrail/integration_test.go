@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
@@ -39,6 +40,9 @@ func TestSecurityGroup(t *testing.T) {
 }
 
 func TestCreateCoreResources(t *testing.T) {
+	if viper.GetBool("sync.enabled") {
+		t.Skip("test incompatible with sync process")
+	}
 	ec := integrationetcd.NewEtcdClient(t)
 	defer ec.Close(t)
 
