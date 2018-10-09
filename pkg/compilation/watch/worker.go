@@ -59,8 +59,9 @@ func (g *Worker) Run() {
 
 				g.Callback(job.context, job.operation, job.key, job.value)
 
-				time.Sleep(1 * time.Second)
-				log.Printf("Worker: %d, Slept for 1 seconds\n", g.WorkerID)
+				d := 10 * time.Millisecond
+				time.Sleep(d)
+				log.Printf("Worker: %d, Slept for %s\n", g.WorkerID, d)
 
 			case <-g.ExitChan:
 				log.Printf("Worker: %d exiting\n", g.WorkerID)

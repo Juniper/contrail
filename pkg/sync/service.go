@@ -86,8 +86,13 @@ func NewService() (*Service, error) {
 		return nil, err
 	}
 
+	c := determineCodecType()
+	if c == nil {
+		return nil, errors.New(`unknown codec set as "sync.storage"`)
+	}
+
 	// Etcd sink
-	etcdNotifierService, err := etcd.NewNotifierService(viper.GetString("etcd.path"), determineCodecType())
+	etcdNotifierService, err := etcd.NewNotifierService(viper.GetString("etcd.path"), c)
 
 	if err != nil {
 		return nil, err
@@ -130,7 +135,7 @@ func createWatcher(log *logrus.Entry, processor services.EventProcessor) (watchC
 		return nil, err
 	}
 
-	s := &sink.EventProcessorSink{EventProcessor: processor}
+	s := sink.NewEventProcessorSink(processor)
 	rowSink := replication.NewObjectMappingAdapter(s, dbService)
 
 	switch driver {
