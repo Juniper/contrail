@@ -32,6 +32,7 @@ test_database:
         user: root
         password: contrail123
         name: contrail_test
+        use_sync: true
 
 etcd:
   endpoints:
@@ -67,8 +68,6 @@ server:
     # value: file path. (absolute path recommended in production)
     static_files:
         public: ../../public
-
-    notify_etcd: true
 
     dynamic_proxy_path: proxy
     # API Proxy configuration

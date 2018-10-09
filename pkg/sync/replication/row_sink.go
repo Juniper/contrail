@@ -2,6 +2,7 @@ package replication
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -37,19 +38,46 @@ func NewObjectMappingAdapter(s sink.Sink, rs rowScanner) RowSink {
 func (o *objectMappingAdapter) Create(
 	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
-	obj, err := o.rs.ScanRow(resourceName, properties)
-	if err != nil {
-		return fmt.Errorf("error scanning row: %v", err)
-	}
 	pkLen := len(pk)
 	isRef := strings.HasPrefix(resourceName, schema.RefPrefix)
 	switch {
 	case pkLen == 1 && !isRef:
+		obj, err := o.rs.ScanRow(resourceName, properties)
+		if err != nil {
+			return errors.Wrap(err, "error scanning row")
+		}
 		return o.Sink.Create(ctx, resourceName, pk[0], obj)
 	case pkLen == 2 && isRef:
-		return o.Sink.CreateRef(ctx, resourceName, pk, obj)
+		attr, err := scanAttr(properties)
+		if err != nil {
+			return errors.Wrap(err, "error scanning attr")
+		}
+		return o.Sink.CreateRef(ctx, resourceName, pk, attr)
 	}
 	return errors.Errorf("create row: unhandled case with table %v and primary key with %v elements", resourceName, pkLen)
+}
+
+func scanAttr(properties map[string]interface{}) (map[string]interface{}, error) {
+	attr := map[string]interface{}{}
+	exclude := map[string]bool{"from": true, "to": true}
+
+	for key, value := range properties {
+		if exclude[key] {
+			continue
+		}
+		switch b := value.(type) {
+		case []byte:
+			var v interface{}
+			err := json.Unmarshal(b, &v)
+			if err != nil {
+				return nil, err
+			}
+			attr[key] = v
+		default:
+			attr[key] = value
+		}
+	}
+	return attr, nil
 }
 
 func (o *objectMappingAdapter) Update(
