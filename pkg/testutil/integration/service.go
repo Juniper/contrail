@@ -7,8 +7,57 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Runner can be run and return an error.
+type Runner interface {
+	Run() error
+}
+
+// RunConcurrently runs runner in separate goroutine and returns a channel to read Run error.
+func RunConcurrently(r Runner) <-chan error {
+	runError := make(chan error)
+	go func() {
+		runError <- r.Run()
+	}()
+
+	return runError
+}
+
+// Closer can be closed.
+type Closer interface {
+	Close()
+}
+
+// CloseNoError calls close and expects that error channel is closed without an error.
+func CloseNoError(t *testing.T, c Closer, errChan <-chan error) {
+	c.Close()
+	assert.NoError(t, <-errChan, "unexpected error while closing")
+}
+
+// CloseFatalIfError calls close and calls log.Fatal if error channel returns an error.
+func CloseFatalIfError(c Closer, errChan <-chan error) {
+	c.Close()
+	if err := <-errChan; err != nil {
+		log.Fatalf("unexpected error while closing: %v", err)
+	}
+}
+
+// RunCloser is a Runner that is also a Closer.
+type RunCloser interface {
+	Runner
+	Closer
+}
+
+// RunNoError runs RunCloser concurrently and returns callback for stopping
+// the goroutine that also expexts no error is returned from Run.
+func RunNoError(t *testing.T, rc RunCloser) (close func(*testing.T)) {
+	errChan := RunConcurrently(rc)
+	return func(*testing.T) { CloseNoError(t, rc, errChan) }
+}
 
 // CreateProject creates a project resource in given service.
 func CreateProject(t *testing.T, s services.WriteService, obj *models.Project) *models.Project {

@@ -29,6 +29,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/common"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
@@ -43,13 +44,25 @@ func TestMain(m *testing.M, s **APIServer) {
 		}
 		defer testutil.LogFatalIfError(cancelEtcdEventProducer)
 
-		if *s, err = NewRunningServer(&APIServerConfig{
+		if viper.GetBool("sync.enabled") {
+			sync, err := sync.NewService()
+			if err != nil {
+				log.Fatalf("Error initializing integration Sync: %+v", err)
+			}
+			errChan := RunConcurrently(sync)
+
+			defer CloseFatalIfError(sync, errChan)
+		}
+
+		if srv, err := NewRunningServer(&APIServerConfig{
 			DBDriver:           dbType,
 			RepoRootPath:       "../../..",
 			EnableEtcdNotifier: true,
 			CacheDB:            cacheDB,
 		}); err != nil {
 			log.Fatalf("Error initializing integration APIServer: %+v", err)
+		} else {
+			*s = srv
 		}
 		defer testutil.LogFatalIfError((*s).Close)
 
@@ -84,6 +97,11 @@ func WithTestDBs(f func(dbType string)) {
 		viper.Set("database.name", config["name"])
 		viper.Set("database.password", config["password"])
 		viper.Set("database.dialect", config["dialect"])
+
+		if val, ok := config["use_sync"]; ok && val != "" {
+			viper.Set("server.notify_etcd", false)
+			viper.Set("sync.enabled", true)
+		}
 
 		log.WithField("dbType", dbType).Info("Starting tests for DB")
 		f(dbType)
@@ -135,25 +153,32 @@ func AddKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 	}
 }
 
+// Event represents event received from etcd watch.
+type Event = map[string]interface{}
+
+// Watchers map contains slices of events that should be emitted on
+// etcd key matching the map key.
+type Watchers = map[string][]Event
+
 //Task has API request and expected response.
 type Task struct {
-	Name     string                              `yaml:"name,omitempty"`
-	Client   string                              `yaml:"client,omitempty"`
-	Request  *client.Request                     `yaml:"request,omitempty"`
-	Expect   interface{}                         `yaml:"expect,omitempty"`
-	Watchers map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
+	Name     string          `yaml:"name,omitempty"`
+	Client   string          `yaml:"client,omitempty"`
+	Request  *client.Request `yaml:"request,omitempty"`
+	Expect   interface{}     `yaml:"expect,omitempty"`
+	Watchers Watchers        `yaml:"watchers,omitempty"`
 }
 
 //TestScenario has a list of tasks.
 type TestScenario struct {
-	Name                  string                              `yaml:"name,omitempty"`
-	Description           string                              `yaml:"description,omitempty"`
-	IntentCompilerEnabled bool                                `yaml:"intent_compiler_enabled,omitempty"`
-	Tables                []string                            `yaml:"tables,omitempty"`
-	Clients               map[string]*client.HTTP             `yaml:"clients,omitempty"`
-	Cleanup               []map[string]string                 `yaml:"cleanup,omitempty"`
-	Workflow              []*Task                             `yaml:"workflow,omitempty"`
-	Watchers              map[string][]map[string]interface{} `yaml:"watchers,omitempty"`
+	Name                  string                  `yaml:"name,omitempty"`
+	Description           string                  `yaml:"description,omitempty"`
+	IntentCompilerEnabled bool                    `yaml:"intent_compiler_enabled,omitempty"`
+	Tables                []string                `yaml:"tables,omitempty"`
+	Clients               map[string]*client.HTTP `yaml:"clients,omitempty"`
+	Cleanup               []map[string]string     `yaml:"cleanup,omitempty"`
+	Workflow              []*Task                 `yaml:"workflow,omitempty"`
+	Watchers              Watchers                `yaml:"watchers,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -228,12 +253,8 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 	}
 }
 
-type event = map[string]interface{}
-
 // StartWatchers checks if events emitted to etcd match those given in watchers dict.
-// Provided `watchers` map contains slices of events that should be emitted on
-// etcd key matching the map key.
-func StartWatchers(t *testing.T, watchers map[string][]event) func(t *testing.T) {
+func StartWatchers(t *testing.T, watchers Watchers) func(t *testing.T) {
 	checks := []func(t *testing.T){}
 
 	ec := integrationetcd.NewEtcdClient(t)
@@ -252,7 +273,7 @@ func StartWatchers(t *testing.T, watchers map[string][]event) func(t *testing.T)
 	}
 }
 
-func createWatchChecker(collect func() []string, key string, events []event) func(t *testing.T) {
+func createWatchChecker(collect func() []string, key string, events []Event) func(t *testing.T) {
 	return func(t *testing.T) {
 		collected := collect()
 		assert.Equal(

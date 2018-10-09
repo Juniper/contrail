@@ -1,53 +1,25 @@
 package integration
 
 import (
-	"context"
-	"testing"
-
-	"github.com/lib/pq"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
-const pgQueryCanceledErrorCode = "57014"
-
-// RunSyncService runs Sync process and returns function closing it.
-func RunSyncService(t *testing.T) (closeSync func()) {
+// SetDefaultSyncConfig sets config options required by sync.
+func SetDefaultSyncConfig() {
 	setViperConfig(map[string]interface{}{
-		"etcd.endpoints": []string{integrationetcd.Endpoint},
-		"sync.storage":   models.JSONCodec.Key(),
+		"etcd.endpoints":              []string{integrationetcd.Endpoint},
+		"sync.storage":                models.JSONCodec.Key(),
+		"database.type":               basedb.DriverPostgreSQL,
+		"database.host":               "localhost",
+		"database.user":               dbUser,
+		"database.name":               dbName,
+		"database.password":           dbPassword,
+		"database.dialect":            basedb.DriverPostgreSQL,
+		"database.max_open_conn":      100,
+		"database.connection_retries": 10,
+		"database.retry_period":       3,
+		"database.debug":              true,
 	})
-
-	s, err := sync.NewService()
-	require.NoError(t, err, "creating Sync service failed")
-
-	runError := make(chan error)
-	go func() {
-		runError <- s.Run()
-	}()
-
-	return func() {
-		s.Close()
-		err := <-runError
-		if !isContextCancellationError(err) {
-			assert.NoError(t, err, "unexpected Sync runtime error")
-		}
-	}
-}
-
-func isContextCancellationError(err error) bool {
-	if pqErr, ok := errors.Cause(err).(*pq.Error); ok {
-		if pqErr.Code == pgQueryCanceledErrorCode {
-			return true
-		}
-	}
-	if errors.Cause(err) == context.Canceled {
-		return true
-	}
-	return false
 }
