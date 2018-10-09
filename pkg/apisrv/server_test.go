@@ -236,9 +236,9 @@ func TestGRPC(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestIPAMGRPC(t *testing.T) {
+func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
-	AddKeystoneProjectAndUser(APIServer, "TestIPAMGRPC")
+	AddKeystoneProjectAndUser(APIServer, testName)
 	authToken := restLogin(ctx, t)
 
 	creds := credentials.NewTLS(&tls.Config{
@@ -251,18 +251,34 @@ func TestIPAMGRPC(t *testing.T) {
 	defer LogFatalIfErr(conn.Close)
 	md := metadata.Pairs("X-Auth-Token", authToken)
 	ctx = metadata.NewOutgoingContext(ctx, md)
-	// Contact the server and print out its response.
-	c := services.NewIPAMClient(conn)
-	assert.NoError(t, err)
 
-	allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{Pool: types.VirtualNetworkIDPoolKey})
-	assert.NoError(t, err)
+	testBody(ctx, conn)
+}
 
-	_, err = c.DeallocateInt(ctx, &services.DeallocateIntRequest{
-		Pool:  types.VirtualNetworkIDPoolKey,
-		Value: allocateResp.GetValue(),
-	})
-	assert.NoError(t, err)
+func TestChownGRPC(t *testing.T) {
+	testGRPCServer(t, "TestChownGRPC",
+		func(ctx context.Context, conn *grpc.ClientConn) {
+			c := services.NewChownClient(conn)
+
+			// This is only a stub implementation
+			_, err := c.Chown(ctx, &services.ChownRequest{})
+			assert.NoError(t, err)
+		})
+}
+
+func TestIPAMGRPC(t *testing.T) {
+	testGRPCServer(t, "TestIPAMGRPC",
+		func(ctx context.Context, conn *grpc.ClientConn) {
+			c := services.NewIPAMClient(conn)
+			allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{Pool: types.VirtualNetworkIDPoolKey})
+			assert.NoError(t, err)
+
+			_, err = c.DeallocateInt(ctx, &services.DeallocateIntRequest{
+				Pool:  types.VirtualNetworkIDPoolKey,
+				Value: allocateResp.GetValue(),
+			})
+			assert.NoError(t, err)
+		})
 }
 
 func TestRESTClient(t *testing.T) {
