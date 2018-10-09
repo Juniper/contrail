@@ -47,14 +47,15 @@ func RegisterExtension(f func(server *Server) error) {
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo       *echo.Echo
-	GRPCServer *grpc.Server
-	Keystone   *keystone.Keystone
-	dbService  *db.Service
-	Proxy      *proxyService
-	Service    services.Service
-	IPAMServer services.IPAMServer
-	Cache      *cache.DB
+	Echo        *echo.Echo
+	GRPCServer  *grpc.Server
+	Keystone    *keystone.Keystone
+	dbService   *db.Service
+	Proxy       *proxyService
+	Service     services.Service
+	IPAMServer  services.IPAMServer
+	ChownServer services.ChownServer
+	Cache       *cache.DB
 }
 
 // NewServer makes a server
@@ -192,6 +193,7 @@ func (s *Server) Init() (err error) {
 	}
 	s.Service = cs
 	s.IPAMServer = cs
+	s.ChownServer = cs
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -269,6 +271,7 @@ func (s *Server) Init() (err error) {
 		}
 		services.RegisterContrailServiceServer(s.GRPCServer, s.Service)
 		services.RegisterIPAMServer(s.GRPCServer, s.IPAMServer)
+		services.RegisterChownServer(s.GRPCServer, s.ChownServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 
@@ -344,6 +347,7 @@ func (s *Server) setupHomepage() {
 	dh.Register(services.RefRelaxForDeletePath, "POST", services.RefRelaxForDeletePath, "action")
 	dh.Register(services.PropCollectionUpdatePath, "POST", services.PropCollectionUpdatePath, "action")
 	dh.Register(services.SetTagPath, "POST", services.SetTagPath, "action")
+	dh.Register(services.ChownPath, "POST", services.ChownPath, "action")
 	dh.Register(services.IntPoolPath, "POST", services.IntPoolPath, "action")
 
 	// TODO: register sync?

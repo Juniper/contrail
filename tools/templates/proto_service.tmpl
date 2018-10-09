@@ -121,6 +121,15 @@ message Event {
     }
 }
 
+service Chown {
+    rpc Chown(ChownRequest) returns (Empty);
+}
+
+message ChownRequest {
+    string UUID = 1 [(gogoproto.customname) = "UUID"];
+    string Owner = 2 [(gogoproto.customname) = "Owner"];
+}
+
 service IPAM {
     rpc AllocateInt (AllocateIntRequest) returns (AllocateIntResponse);
     rpc SetInt (SetIntRequest) returns (Empty);
