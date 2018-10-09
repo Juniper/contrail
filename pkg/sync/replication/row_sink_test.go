@@ -73,27 +73,23 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 
 func TestObjectMappingAdapterRefCreate(t *testing.T) {
 	resourceName, correctPK, props := "ref_resource", []string{"1", "2"}, map[string]interface{}{}
-	message := &dummyMessage{}
+	attr := map[string]interface{}{}
 
 	sMock, rsMock := &sinkMock{}, &mock.Mock{}
 	adapter := NewObjectMappingAdapter(sMock, (*rowScannerMock)(rsMock))
 
 	tests := []struct {
-		name           string
-		initRowScanner func(o oner)
-		initSink       func(o oner)
-		fails          bool
-		operationFunc  func(context.Context, string, []string, map[string]interface{}) error
-		pk             []string
+		name          string
+		initSink      func(o oner)
+		fails         bool
+		operationFunc func(context.Context, string, []string, map[string]interface{}) error
+		pk            []string
 	}{
 		{
 			name:          "missing multiple primary key in ref_ message",
 			fails:         true,
 			pk:            []string{"1"},
 			operationFunc: adapter.Create,
-			initRowScanner: func(o oner) {
-				o.On("ScanRow", resourceName, props).Return(message, nil).Once()
-			},
 		},
 		{
 			name:          "update for refs is not handled",
@@ -105,20 +101,14 @@ func TestObjectMappingAdapterRefCreate(t *testing.T) {
 			name:          "correct ref_ message",
 			pk:            correctPK,
 			operationFunc: adapter.Create,
-			initRowScanner: func(o oner) {
-				o.On("ScanRow", resourceName, props).Return(message, nil).Once()
-			},
 			initSink: func(o oner) {
-				o.On("CreateRef", resourceName, correctPK, message).Return(nil).Once()
+				o.On("CreateRef", resourceName, correctPK, attr).Return(nil).Once()
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.initRowScanner != nil {
-				tt.initRowScanner(rsMock)
-			}
 			if tt.initSink != nil {
 				tt.initSink(sMock)
 			}
@@ -188,8 +178,8 @@ func (s *sinkMock) Delete(ctx context.Context, resourceName string, pk string) e
 	return args.Error(0)
 }
 
-func (s *sinkMock) CreateRef(ctx context.Context, resourceName string, pk []string, obj basemodels.Object) error {
-	args := s.MethodCalled("CreateRef", resourceName, pk, obj)
+func (s *sinkMock) CreateRef(ctx context.Context, resourceName string, pk []string, attr map[string]interface{}) error {
+	args := s.MethodCalled("CreateRef", resourceName, pk, attr)
 	return args.Error(0)
 }
 
