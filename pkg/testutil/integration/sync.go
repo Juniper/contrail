@@ -1,53 +1,60 @@
 package integration
 
 import (
-	"context"
 	"testing"
 
-	"github.com/lib/pq"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
-const pgQueryCanceledErrorCode = "57014"
-
-// RunSyncService runs Sync process and returns function closing it.
-func RunSyncService(t *testing.T) (closeSync func()) {
-	setViperConfig(map[string]interface{}{
-		"etcd.endpoints": []string{integrationetcd.Endpoint},
-		"sync.storage":   models.JSONCodec.Key(),
-	})
-
-	s, err := sync.NewService()
-	require.NoError(t, err, "creating Sync service failed")
-
-	runError := make(chan error)
-	go func() {
-		runError <- s.Run()
-	}()
-
-	return func() {
-		s.Close()
-		err := <-runError
-		if !isContextCancellationError(err) {
-			assert.NoError(t, err, "unexpected Sync runtime error")
-		}
-	}
+type Runner interface {
+	Run() error
 }
 
-func isContextCancellationError(err error) bool {
-	if pqErr, ok := errors.Cause(err).(*pq.Error); ok {
-		if pqErr.Code == pgQueryCanceledErrorCode {
-			return true
-		}
-	}
-	if errors.Cause(err) == context.Canceled {
-		return true
-	}
-	return false
+func RunConcurrently(r Runner) <-chan error {
+	runError := make(chan error)
+	go func() {
+		runError <- r.Run()
+	}()
+
+	return runError
+}
+
+type Closer interface {
+	Close()
+}
+
+func CloseNoError(t *testing.T, c Closer, errChan <-chan error) {
+	c.Close()
+	assert.NoError(t, <-errChan, "unexpected error while closing")
+}
+
+type RunCloser interface {
+	Runner
+	Closer
+}
+
+func RunNoError(t *testing.T, rc RunCloser) (close func(*testing.T)) {
+	errChan := RunConcurrently(rc)
+	return func(*testing.T) { CloseNoError(t, rc, errChan) }
+}
+
+func SetDefaultSyncConfig() {
+	setViperConfig(map[string]interface{}{
+		"etcd.endpoints":              []string{integrationetcd.Endpoint},
+		"sync.storage":                models.JSONCodec.Key(),
+		"database.type":               basedb.DriverPostgreSQL,
+		"database.host":               "localhost",
+		"database.user":               dbUser,
+		"database.name":               dbName,
+		"database.password":           dbPassword,
+		"database.dialect":            basedb.DriverPostgreSQL,
+		"database.max_open_conn":      100,
+		"database.connection_retries": 10,
+		"database.retry_period":       3,
+		"database.debug":              true,
+	})
 }

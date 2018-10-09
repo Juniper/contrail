@@ -1,6 +1,7 @@
 package sync_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -10,13 +11,99 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gogo/protobuf/types"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
+
+type event = map[string]interface{}
+
+type watchers = map[string][]map[string]interface{}
+
+func TestSyncService(t *testing.T) {
+	tests := []struct {
+		name     string
+		ops      func(*testing.T, services.WriteService)
+		cleanup  func(*testing.T, services.WriteService)
+		watchers watchers
+	}{
+		{
+			name: "create and update virtual network",
+			ops: func(t *testing.T, sv services.WriteService) {
+				ctx := context.Background()
+				_, err := sv.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
+					VirtualNetwork: &models.VirtualNetwork{
+						UUID: "vn-blue",
+						Name: "vn_blue",
+					},
+				})
+				require.NoError(t, err, "create virtual network failed")
+
+				_, err = sv.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+					VirtualNetwork: &models.VirtualNetwork{
+						UUID: "vn-blue",
+						Name: "vn_bluuee",
+					},
+					FieldMask: types.FieldMask{Paths: []string{"name"}},
+				})
+				assert.NoError(t, err, "update virtual network failed")
+			},
+			cleanup: func(t *testing.T, sv services.WriteService) {
+				ctx := context.Background()
+				_, err := sv.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: "vn-blue"})
+				t.Logf("Cleanup error: %v", err)
+			},
+			watchers: watchers{
+				"/test/virtual_network/vn-blue": []event{
+					{
+						"name": "vn_blue",
+					},
+					{
+						"name": "vn_bluuee",
+					},
+				},
+			},
+		},
+	}
+
+	etcdPath := "test"
+	viper.Set("etcd.path", etcdPath)
+	integration.SetDefaultSyncConfig()
+
+	dbService, err := db.NewServiceFromConfig()
+	require.NoError(t, err)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ec := integrationetcd.NewEtcdClient(t)
+			defer ec.Close(t)
+
+			// Clean the database
+			ec.DeleteKey(t, etcdPath, clientv3.WithPrefix())
+
+			check := integration.StartWatchers(t, tt.watchers)
+
+			sync, err := sync.NewService()
+			require.NoError(t, err)
+
+			defer integration.RunNoError(t, sync)(t)
+
+			tt.ops(t, dbService)
+			defer tt.cleanup(t, dbService)
+
+			check(t)
+		})
+	}
+}
 
 func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
@@ -64,8 +151,11 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	vnGreen := integration.GetVirtualNetwork(t, hc, vnGreenUUID)
 	vnBlue := integration.GetVirtualNetwork(t, hc, vnBlueUUID)
 
-	closeSync := integration.RunSyncService(t)
-	defer closeSync()
+	integration.SetDefaultSyncConfig()
+	sync, err := sync.NewService()
+	require.NoError(t, err)
+
+	defer integration.RunNoError(t, sync)(t)
 
 	redEvent := integrationetcd.RetrieveCreateEvent(redCtx, t, vnRedWatch)
 	greenEvent := integrationetcd.RetrieveCreateEvent(greenCtx, t, vnGreenWatch)

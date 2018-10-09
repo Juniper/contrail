@@ -43,6 +43,15 @@ func TestMain(m *testing.M, s **APIServer) {
 		}
 		defer testutil.LogFatalIfError(cancelEtcdEventProducer)
 
+		if viper.GetBool("sync.enabled") {
+			stopSync, err := RunSyncService()
+			if err != nil {
+				log.Fatalf("Error initializing integration Sync: %+v", err)
+			}
+			defer testutil.LogFatalIfErr(stopSync)
+		}
+
+		var err error
 		if *s, err = NewRunningServer(&APIServerConfig{
 			DBDriver:           dbType,
 			RepoRootPath:       "../../..",
@@ -84,6 +93,11 @@ func WithTestDBs(f func(dbType string)) {
 		viper.Set("database.name", config["name"])
 		viper.Set("database.password", config["password"])
 		viper.Set("database.dialect", config["dialect"])
+
+		if val, ok := config["use_sync"]; ok && val != "" {
+			viper.Set("server.notify_etcd", false)
+			viper.Set("sync.enabled", true)
+		}
 
 		log.WithField("dbType", dbType).Info("Starting tests for DB")
 		f(dbType)
