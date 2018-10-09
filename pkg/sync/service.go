@@ -130,7 +130,7 @@ func createWatcher(log *logrus.Entry, processor services.EventProcessor) (watchC
 		return nil, err
 	}
 
-	s := &sink.EventProcessorSink{EventProcessor: processor}
+	s := sink.NewEventProcessorSink(processor)
 	rowSink := replication.NewObjectMappingAdapter(s, dbService)
 
 	switch driver {

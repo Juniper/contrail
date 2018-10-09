@@ -1,3 +1,5 @@
+DROP PUBLICATION IF EXISTS "syncpub";
+
 TRUNCATE TABLE metadata, int_pool, ipaddress_pool CASCADE;
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

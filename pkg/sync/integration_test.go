@@ -1,6 +1,7 @@
 package sync_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -10,13 +11,223 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gogo/protobuf/types"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
+
+func TestSyncService(t *testing.T) {
+	tests := []struct {
+		name     string
+		ops      func(*testing.T, services.WriteService)
+		watchers integration.Watchers
+	}{
+		{
+			name: "some initial resources are dumped",
+			watchers: integration.Watchers{
+				"/test/virtual_network/5720afd0-d5a6-46ef-bd81-3be7f715cd27": []integration.Event{
+					{
+						"uuid":        "5720afd0-d5a6-46ef-bd81-3be7f715cd27",
+						"parent_uuid": "beefbeef-beef-beef-beef-beefbeef0003",
+						"parent_type": "project",
+						"fq_name":     []interface{}{"default-domain", "default-project", "default-virtual-network"},
+						"id_perms": map[string]interface{}{
+							"enable":        true,
+							"created":       "2018-05-23T17:29:57.559916",
+							"user_visible":  true,
+							"last_modified": "2018-05-23T17:29:57.559916",
+							"permissions": map[string]interface{}{
+								"owner":        "cloud-admin",
+								"owner_access": 7,
+								"other_access": 7,
+								"group":        "cloud-admin-group",
+								"group_access": 7,
+							},
+							"uuid": map[string]interface{}{
+								"uuid_mslong": 6278211400000000000,
+								"uuid_lslong": -9223372036854775808},
+						},
+						"perms2": map[string]interface{}{
+							"owner":        "cloud-admin",
+							"owner_access": 7,
+						},
+						"virtual_network_network_id": 1,
+						"routing_instances": []interface{}{
+							map[string]interface{}{
+								"uuid": "d59c5934-1dbd-4865-b8e9-ff9d7f3f16d0",
+								"fq_name": []interface{}{
+									"default-domain",
+									"default-project",
+									"default-virtual-network",
+									"default-virtual-network",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "create and update virtual network",
+			ops: func(t *testing.T, sv services.WriteService) {
+				ctx := context.Background()
+				_, err := sv.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
+					VirtualNetwork: &models.VirtualNetwork{
+						UUID: "vn-blue",
+						Name: "vn_blue",
+					},
+				})
+				require.NoError(t, err, "create virtual network failed")
+
+				_, err = sv.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+					VirtualNetwork: &models.VirtualNetwork{
+						UUID: "vn-blue",
+						Name: "vn_bluuee",
+					},
+					FieldMask: types.FieldMask{Paths: []string{"name"}},
+				})
+				assert.NoError(t, err, "update virtual network failed")
+
+				_, err = sv.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: "vn-blue"})
+				assert.NoError(t, err, "delete virtual network failed")
+			},
+			watchers: integration.Watchers{
+				"/test/virtual_network/vn-blue": []integration.Event{
+					{
+						"name": "vn_blue",
+					},
+					{
+						"name": "vn_bluuee",
+					},
+					nil,
+				},
+			},
+		},
+		{
+			name: "create and delete reference from virtual network to network IPAM",
+			ops: func(t *testing.T, sv services.WriteService) {
+				ctx := context.Background()
+				_, err := sv.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
+					VirtualNetwork: &models.VirtualNetwork{
+						UUID: "vn-blue",
+						Name: "vn_blue",
+					},
+				})
+				assert.NoError(t, err, "create virtual network failed")
+
+				_, err = sv.CreateNetworkIpam(ctx, &services.CreateNetworkIpamRequest{
+					NetworkIpam: &models.NetworkIpam{
+						UUID: "ni-blue",
+						Name: "ni_blue",
+					},
+				})
+				assert.NoError(t, err, "create network IPAM failed")
+
+				_, err = sv.CreateVirtualNetworkNetworkIpamRef(ctx,
+					&services.CreateVirtualNetworkNetworkIpamRefRequest{
+						ID: "vn-blue",
+						VirtualNetworkNetworkIpamRef: &models.VirtualNetworkNetworkIpamRef{
+							UUID: "ni-blue",
+						},
+					},
+				)
+				assert.NoError(t, err, "create vn-ni reference failed")
+
+				_, err = sv.DeleteVirtualNetworkNetworkIpamRef(ctx,
+					&services.DeleteVirtualNetworkNetworkIpamRefRequest{
+						ID: "vn-blue",
+						VirtualNetworkNetworkIpamRef: &models.VirtualNetworkNetworkIpamRef{
+							UUID: "ni-blue",
+						}})
+				assert.NoError(t, err, "delete vn-ni reference failed")
+
+				_, err = sv.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: "vn-blue"})
+				assert.NoError(t, err, "delete virtual network failed")
+
+				_, err = sv.DeleteNetworkIpam(ctx, &services.DeleteNetworkIpamRequest{ID: "ni-blue"})
+				assert.NoError(t, err, "delete network IPAM failed")
+			},
+			watchers: integration.Watchers{
+				"/test/virtual_network/vn-blue": []integration.Event{
+					{
+						"name":              "vn_blue",
+						"network_ipam_refs": "$null",
+					},
+					{
+						"name": "vn_blue",
+						"network_ipam_refs": []interface{}{map[string]interface{}{
+							"uuid":         "ni-blue",
+							"ipam_subnets": nil,
+							"route":        nil,
+						}},
+					},
+					{
+						"name":              "vn_blue",
+						"network_ipam_refs": "$null",
+					},
+					nil,
+				},
+				"/test/network_ipam/ni-blue": []integration.Event{
+					{
+						"name": "ni_blue",
+						"virtual_network_backrefs": "$null",
+					},
+					{
+						"name": "ni_blue",
+						"virtual_network_backrefs": []interface{}{
+							map[string]interface{}{
+								"uuid": "vn-blue",
+							},
+						},
+					},
+					{
+						"name": "ni_blue",
+						"virtual_network_backrefs": "$null",
+					},
+					nil,
+				},
+			},
+		},
+	}
+
+	etcdPath := "test"
+	viper.Set("etcd.path", etcdPath)
+	integration.SetDefaultSyncConfig()
+
+	dbService, err := db.NewServiceFromConfig()
+	require.NoError(t, err)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ec := integrationetcd.NewEtcdClient(t)
+			defer ec.Close(t)
+
+			ec.Clear(t)
+
+			check := integration.StartWatchers(t, tt.watchers)
+
+			sync, err := sync.NewService()
+			require.NoError(t, err)
+
+			defer integration.RunNoError(t, sync)(t)
+
+			if tt.ops != nil {
+				tt.ops(t, dbService)
+			}
+
+			check(t)
+		})
+	}
+}
 
 func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
@@ -64,8 +275,11 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	vnGreen := integration.GetVirtualNetwork(t, hc, vnGreenUUID)
 	vnBlue := integration.GetVirtualNetwork(t, hc, vnBlueUUID)
 
-	closeSync := integration.RunSyncService(t)
-	defer closeSync()
+	integration.SetDefaultSyncConfig()
+	sync, err := sync.NewService()
+	require.NoError(t, err)
+
+	defer integration.RunNoError(t, sync)(t)
 
 	redEvent := integrationetcd.RetrieveCreateEvent(redCtx, t, vnRedWatch)
 	greenEvent := integrationetcd.RetrieveCreateEvent(greenCtx, t, vnGreenWatch)
