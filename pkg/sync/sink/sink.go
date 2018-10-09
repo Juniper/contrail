@@ -12,6 +12,6 @@ type Sink interface {
 	Update(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error
 	Delete(ctx context.Context, resourceName string, pk string) error
 
-	CreateRef(ctx context.Context, resourceName string, pk []string, obj basemodels.Object) error
+	CreateRef(ctx context.Context, resourceName string, pk []string, obj map[string]interface{}) error
 	DeleteRef(ctx context.Context, resourceName string, pk []string) error
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/gogo/protobuf/types"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -17,19 +16,15 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
-type event = map[string]interface{}
-
-type watchers = map[string][]event
-
 func TestEtcdNotifierService(t *testing.T) {
 	tests := []struct {
 		name     string
-		ops      func(*testing.T, context.Context, *etcd.NotifierService)
-		watchers watchers
+		ops      func(*testing.T, context.Context, services.WriteService)
+		watchers integration.Watchers
 	}{
 		{
 			name: "create and update virtual network",
-			ops: func(t *testing.T, ctx context.Context, sv *etcd.NotifierService) {
+			ops: func(t *testing.T, ctx context.Context, sv services.WriteService) {
 				_, err := sv.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
 					VirtualNetwork: &models.VirtualNetwork{
 						UUID: "vn-blue",
@@ -47,8 +42,8 @@ func TestEtcdNotifierService(t *testing.T) {
 				})
 				assert.NoError(t, err, "update virtual network failed")
 			},
-			watchers: watchers{
-				"/test/virtual_network/vn-blue": []event{
+			watchers: integration.Watchers{
+				"/test/virtual_network/vn-blue": []integration.Event{
 					{
 						"name": "vn_blue",
 					},
@@ -60,7 +55,7 @@ func TestEtcdNotifierService(t *testing.T) {
 		},
 		{
 			name: "create and delete reference from virtual network to logical router",
-			ops: func(t *testing.T, ctx context.Context, sv *etcd.NotifierService) {
+			ops: func(t *testing.T, ctx context.Context, sv services.WriteService) {
 				_, err := sv.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
 					VirtualNetwork: &models.VirtualNetwork{
 						UUID: "vn-blue",
@@ -93,8 +88,8 @@ func TestEtcdNotifierService(t *testing.T) {
 						}})
 				assert.NoError(t, err, "delete vn-lr reference failed")
 			},
-			watchers: watchers{
-				"/test/virtual_network/vn-blue": []event{
+			watchers: integration.Watchers{
+				"/test/virtual_network/vn-blue": []integration.Event{
 					{
 						"name": "vn_blue",
 					},
@@ -111,7 +106,7 @@ func TestEtcdNotifierService(t *testing.T) {
 						"logical_router_refs": "$null",
 					},
 				},
-				"/test/logical_router/lr-blue": []event{
+				"/test/logical_router/lr-blue": []integration.Event{
 					{
 						"name": "lr_blue",
 					},
@@ -141,10 +136,10 @@ func TestEtcdNotifierService(t *testing.T) {
 			ec := integrationetcd.NewEtcdClient(t)
 			defer ec.Close(t)
 
-			// Clean the database
-			ec.DeleteKey(t, etcdPath, clientv3.WithPrefix())
+			ec.Clear(t)
 
 			check := integration.StartWatchers(t, tt.watchers)
+
 			sv, err := etcd.NewNotifierService(etcdPath, models.JSONCodec)
 			require.NoError(t, err)
 
