@@ -32,6 +32,7 @@ test_database:
         user: root
         password: contrail123
         name: contrail_test
+        use_sync: true
 
 etcd:
   endpoints:
@@ -68,8 +69,6 @@ server:
     static_files:
         public: ../../public
 
-    notify_etcd: true
-
     dynamic_proxy_path: proxy
     # API Proxy configuration
     # key: URL path
@@ -78,7 +77,8 @@ server:
         /contrail:
         - http://localhost:8082
 
-    notify_etcd: true
+sync:
+  storage: json
 
 homepage:
     enabled: true
