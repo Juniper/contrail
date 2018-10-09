@@ -5,6 +5,9 @@
         - contrail-go-docker
         - contrail-go-sanity-centos7-k8s:
             voting: False # TODO: mark as voting and add to gate when tests pass
+            dependencies:
+              - contrail-vnc-build-containers-centos7-ocata
+              - contrail-vnc-build-test-containers
     gate:
       jobs:
         - contrail-go-docker
