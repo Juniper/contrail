@@ -56,7 +56,6 @@ type PostgresSubscriptionConfig struct {
 type postgresWatcherConnection interface {
 	io.Closer
 	GetReplicationSlot(name string) (lastLSN uint64, snapshotName string, err error)
-	RenewPublication(ctx context.Context, name string) error
 	StartReplication(slot, publication string, startLSN uint64) error
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 	SendStatus(lastLSN uint64) error
@@ -121,11 +120,6 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 
 	w.lastLSN = slotLSN // TODO(Michal): get lastLSN from etcd
 
-	if err := w.conn.RenewPublication(ctx, w.conf.Publication); err != nil {
-		return errors.Wrap(err, "failed to create publication")
-	}
-	w.log.Debug("Created publication: ", w.conf.Publication)
-
 	w.log.Debug("Starting dump phase")
 	dumpStart := time.Now()
 	if err := w.conn.DoInTransactionSnapshot(ctx, snapshotName, func(ctx context.Context) error {
@@ -142,7 +136,7 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "dumping snapshot failed")
+		return errors.Wrap(w.muteCancellationError(err), "dumping snapshot failed")
 	}
 	w.log.WithField("dumpTime", time.Since(dumpStart)).Debugf("Dump phase finished - starting replication")
 
@@ -153,6 +147,14 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	feed := make(chan *pgx.ReplicationMessage)
 	go w.runMessageConsumer(ctx, feed)
 	return w.runMessageProducer(ctx, feed)
+}
+
+func (w *PostgresWatcher) muteCancellationError(err error) error {
+	if isContextCancellationError(err) {
+		w.log.Infof("Watcher exited with cancellation error: %v", err)
+		return nil
+	}
+	return err
 }
 
 func (w *PostgresWatcher) runMessageConsumer(ctx context.Context, feed <-chan *pgx.ReplicationMessage) {
@@ -170,7 +172,7 @@ func (w *PostgresWatcher) runMessageProducer(ctx context.Context, feed chan<- *p
 	for {
 		select {
 		case <-ctx.Done():
-			return w.conn.Close()
+			return w.muteCancellationError(w.conn.Close())
 		case <-tick:
 			w.log.Debug("Sending standby status with position: ", pgx.FormatLSN(w.lastLSN))
 			if err := w.conn.SendStatus(w.lastLSN); err != nil {

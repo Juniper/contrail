@@ -67,6 +67,7 @@ func (h *PgoutputEventHandler) handleCreate(ctx context.Context, relationID uint
 	if err != nil {
 		return fmt.Errorf("error decoding row: %v", err)
 	}
+	fmt.Println(pk, relation, row)
 	if len(pk) == 0 {
 		return fmt.Errorf("no primary key specified for row: %v", row)
 	}

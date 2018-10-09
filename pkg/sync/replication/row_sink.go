@@ -37,17 +37,17 @@ func NewObjectMappingAdapter(s sink.Sink, rs rowScanner) RowSink {
 func (o *objectMappingAdapter) Create(
 	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
-	obj, err := o.rs.ScanRow(resourceName, properties)
-	if err != nil {
-		return fmt.Errorf("error scanning row: %v", err)
-	}
 	pkLen := len(pk)
 	isRef := strings.HasPrefix(resourceName, schema.RefPrefix)
 	switch {
 	case pkLen == 1 && !isRef:
+		obj, err := o.rs.ScanRow(resourceName, properties)
+		if err != nil {
+			return fmt.Errorf("error scanning row: %v", err)
+		}
 		return o.Sink.Create(ctx, resourceName, pk[0], obj)
 	case pkLen == 2 && isRef:
-		return o.Sink.CreateRef(ctx, resourceName, pk, obj)
+		return o.Sink.CreateRef(ctx, resourceName, pk, properties)
 	}
 	return errors.Errorf("create row: unhandled case with table %v and primary key with %v elements", resourceName, pkLen)
 }
