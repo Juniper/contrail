@@ -3,9 +3,10 @@ package services
 import (
     "context"
 
-    "github.com/gogo/protobuf/types"
 
-    "github.com/Juniper/contrail/pkg/common"
+    "github.com/gogo/protobuf/types"
+    "github.com/pkg/errors"
+
     "github.com/Juniper/contrail/pkg/models/basemodels"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "{{ option.PackagePath }}/pkg/models"
@@ -338,7 +339,7 @@ func Dump(ctx context.Context, service Service) (*EventList, error) {
         },
     )
     if err != nil {
-        return nil, common.ToHTTPError(err)
+        return nil, errors.Wrap(err, "error listing {{ schema.JSONSchema.GoName }} objects")
     }
     for _, resource := range list{{ schema.JSONSchema.GoName }}.{{ schema.JSONSchema.GoName }}s {
         response = append(response, &Event{

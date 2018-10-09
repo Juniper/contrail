@@ -641,7 +641,7 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
             result, err = db.list{{ schema.JSONSchema.GoName }}(ctx, listRequest)
             return err
         }); err != nil {
-        return nil, common.ErrorInternal
+        return nil, errors.Wrap(err, "getting {{ schema.JSONSchema.GoName }} object")
     }
     if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
         return nil, common.ErrorNotFoundf("No {{ schema.TypeName }}: %s", request.ID)

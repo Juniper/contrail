@@ -76,6 +76,9 @@ workflow:
   expect:
     project: *project
   expect: null
+  watchers:
+    /contrail/project/project_uuid:
+      - *project
 - name: create security group
   request:
     path: /security-groups
