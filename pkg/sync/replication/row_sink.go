@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/sync/sink"
 )
@@ -21,7 +21,7 @@ type RowSink interface {
 }
 
 type rowScanner interface {
-	ScanRow(schemaID string, rowData map[string]interface{}) (basemodels.Object, error)
+	ScanRow(schemaID string, rowData map[string]interface{}) (basedb.Object, error)
 }
 
 type objectMappingAdapter struct {
@@ -39,20 +39,16 @@ func (o *objectMappingAdapter) Create(
 	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
 	pkLen := len(pk)
+	obj, err := o.rs.ScanRow(resourceName, properties)
+	if err != nil {
+		return errors.Wrap(err, "error scanning row")
+	}
 	isRef := strings.HasPrefix(resourceName, schema.RefPrefix)
 	switch {
 	case pkLen == 1 && !isRef:
-		obj, err := o.rs.ScanRow(resourceName, properties)
-		if err != nil {
-			return errors.Wrap(err, "error scanning row")
-		}
 		return o.Sink.Create(ctx, resourceName, pk[0], obj)
 	case pkLen == 2 && isRef:
-		attr, err := scanAttr(properties)
-		if err != nil {
-			return errors.Wrap(err, "error scanning attr")
-		}
-		return o.Sink.CreateRef(ctx, resourceName, pk, attr)
+		return o.Sink.CreateRef(ctx, resourceName, pk, obj)
 	}
 	return errors.Errorf("create row: unhandled case with table %v and primary key with %v elements", resourceName, pkLen)
 }
