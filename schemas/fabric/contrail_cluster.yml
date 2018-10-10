@@ -307,6 +307,10 @@ schema:
       view:
       - create
       - detail
+    overcloud:
+      presence: "optional"
+      description: "Details of the RHOSPD undercloud VM"
+      $ref: "rhospd_types.json#/definitions/OverCloudInfo"
   required: []
   type: object
 singular: contrail_cluster
