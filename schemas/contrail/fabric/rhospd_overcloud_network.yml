@@ -1,0 +1,37 @@
+description: RHOSPD Overcloud Network
+extends:
+- base
+- has_status
+id: rhospd_overcloud_network
+metadata:
+  category: cluster
+parents:
+  rhospd_overcloud:
+    operations: "CRUD"
+    description: "Parent of this overcloud_network."
+    presence: "optional"
+references:
+    virtual_network:
+      operations: "CRUD"
+      description: "Reference to virtual_network object for this overcloud network."
+      presence: "optional"
+plural: rhospd_overcloud_networks
+prefix: /
+schema:
+  properties:
+    vip:
+      description: "Floating virtual IP for the Openstack APIs on this network"
+      type: string
+      operations: CRUD
+      presence: optional
+    mtu:
+      description: "MTU for this network"
+      type: string
+      operations: CRUD
+      presence: optional
+  propertiesOrder: []
+  required: []
+  type: object
+singular: rhospd_overcloud_network
+title: RHOSPD Overcloud
+type: ""
