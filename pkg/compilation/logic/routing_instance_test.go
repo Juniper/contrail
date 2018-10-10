@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -22,7 +23,13 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 	mockAPIClient := servicesmock.NewMockWriteService(mockCtrl)
 	mockIntPoolAllocator := typesmock.NewMockIntPoolAllocator(mockCtrl)
 	mockReadService := servicesmock.NewMockReadService(mockCtrl)
-	service := NewService(mockAPIClient, mockReadService, mockIntPoolAllocator, intent.NewCache())
+	service := NewService(
+		mockAPIClient,
+		mockReadService,
+		mockIntPoolAllocator,
+		intent.NewCache(),
+		dependencies.NewDependencyProcessor(parseReactions(t)),
+	)
 
 	expectCreateRT(mockAPIClient, &models.RouteTarget{
 		FQName:      []string{"target:64512:8000002"},
