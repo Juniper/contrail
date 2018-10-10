@@ -15,17 +15,14 @@ import (
 	pkglog "github.com/Juniper/contrail/pkg/log"
 )
 
-type relationAddGetter interface {
-	Add(pgoutput.Relation)
-	Get(id uint32) (pgoutput.Relation, error)
-}
+type relationSet map[uint32]pgoutput.Relation
 
 // PgoutputEventHandler handles replication messages by pushing it to sink.
 type PgoutputEventHandler struct {
 	sink RowSink
 	log  *logrus.Entry
 
-	relations relationAddGetter
+	relations relationSet
 }
 
 // NewPgoutputEventHandler creates new ReplicationEventHandler using sink provided as an argument.
@@ -33,7 +30,7 @@ func NewPgoutputEventHandler(s RowSink) *PgoutputEventHandler {
 	return &PgoutputEventHandler{
 		sink:      s,
 		log:       pkglog.NewLogger("replication-event-handler"),
-		relations: &relationSet{},
+		relations: relationSet{},
 	}
 }
 
@@ -43,7 +40,7 @@ func (h *PgoutputEventHandler) Handle(ctx context.Context, msg pgoutput.Message)
 	switch v := msg.(type) {
 	case pgoutput.Relation:
 		h.log.Debug("received RELATION message")
-		h.relations.Add(v)
+		h.relations[v.ID] = v
 	case pgoutput.Insert:
 		h.log.Debug("received INSERT message")
 		return h.handleCreate(ctx, v.RelationID, v.Row)
@@ -58,9 +55,9 @@ func (h *PgoutputEventHandler) Handle(ctx context.Context, msg pgoutput.Message)
 }
 
 func (h *PgoutputEventHandler) handleCreate(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
-	relation, err := h.relations.Get(relationID)
-	if err != nil {
-		return err
+	relation, ok := h.relations[relationID]
+	if !ok {
+		return fmt.Errorf("no relation for %d", relationID)
 	}
 
 	pk, data, err := decodeRowData(relation, row)
@@ -75,9 +72,9 @@ func (h *PgoutputEventHandler) handleCreate(ctx context.Context, relationID uint
 }
 
 func (h *PgoutputEventHandler) handleUpdate(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
-	relation, err := h.relations.Get(relationID)
-	if err != nil {
-		return err
+	relation, ok := h.relations[relationID]
+	if !ok {
+		return fmt.Errorf("no relation for %d", relationID)
 	}
 
 	pk, data, err := decodeRowData(relation, row)
@@ -92,9 +89,9 @@ func (h *PgoutputEventHandler) handleUpdate(ctx context.Context, relationID uint
 }
 
 func (h *PgoutputEventHandler) handleDelete(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
-	relation, err := h.relations.Get(relationID)
-	if err != nil {
-		return err
+	relation, ok := h.relations[relationID]
+	if !ok {
+		return fmt.Errorf("no relation for %d", relationID)
 	}
 
 	pk, _, err := decodeRowData(relation, row)
@@ -120,7 +117,7 @@ func decodeRowData(
 
 	for i, tuple := range row {
 		col := relation.Columns[i]
-		decoder := getDecoder(col)
+		decoder := col.Decoder()
 		if err = decoder.DecodeText(nil, tuple.Value); err != nil {
 			return nil, nil, fmt.Errorf("error decoding column '%v': %s", col.Name, err)
 		}
