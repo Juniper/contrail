@@ -12,7 +12,10 @@
       uuid:
           presence: "true"
           description: "UUID of the object, system automatically allocates one if not provided"
-          type: "string"
+      version:
+          type: number
+          go_type: "uint64"
+          proto_type: "uint64"
       display_name:
         operations: "CRUD"
         type: "string"

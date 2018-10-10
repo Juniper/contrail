@@ -98,7 +98,7 @@ func TestDBScanRow(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, result, tt.expected)
+				assert.Equal(t, tt.expected, result)
 			}
 		})
 	}

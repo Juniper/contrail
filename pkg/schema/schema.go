@@ -30,6 +30,7 @@ const (
 	AbstractType = "abstract"
 	ObjectType   = "object"
 	IntegerType  = "integer"
+	UintType     = "uint64"
 	ArrayType    = "array"
 	BooleanType  = "boolean"
 	NumberType   = "number"
@@ -40,6 +41,7 @@ const (
 // Available Go type values.
 const (
 	IntGoType   = "int64"
+	UintGoType  = "uint64"
 	FloatGoType = "float64"
 )
 
@@ -62,6 +64,7 @@ const (
 var sqlTypeMap = map[string]string{
 	ObjectType:  "json",
 	IntegerType: "bigint",
+	UintType:    "bigint",
 	ArrayType:   "json",
 	BooleanType: "bool",
 	NumberType:  "float",
@@ -72,6 +75,7 @@ var sqlTypeMap = map[string]string{
 var sqlBindMap = map[string]string{
 	ObjectType:  "json",
 	IntegerType: "int",
+	UintType:    "uint",
 	ArrayType:   "json",
 	BooleanType: "bool",
 	NumberType:  "float",
@@ -183,8 +187,8 @@ type JSONSchema struct {
 	Ref               string                 `yaml:"$ref" json:"-"`
 	Items             *JSONSchema            `yaml:"items" json:"items,omitempty"`
 	GoName            string                 `yaml:"-" json:"-"`
-	GoType            string                 `yaml:"-" json:"-"`
-	ProtoType         string                 `yaml:"-" json:"-"`
+	GoType            string                 `yaml:"go_type" json:"go_type"`
+	ProtoType         string                 `yaml:"proto_type" json:"proto_type"`
 	Required          []string               `yaml:"required" json:"-"`
 	GoPremitive       bool                   `yaml:"-" json:"-"`
 	Format            string                 `yaml:"format" json:"format,omitempty"`
@@ -210,6 +214,11 @@ func (s *JSONSchema) IsInt() bool {
 	return s.GoType == IntGoType
 }
 
+// IsUint returns true if schema is of int type.
+func (s *JSONSchema) IsUint() bool {
+	return s.GoType == UintGoType
+}
+
 // IsFloat returns true if schema is of float type.
 func (s *JSONSchema) IsFloat() bool {
 	return s.GoType == FloatGoType
@@ -218,7 +227,7 @@ func (s *JSONSchema) IsFloat() bool {
 // HasNumberFields returns true if JSONSchema has any number fields (int or float).
 func (s *JSONSchema) HasNumberFields() bool {
 	for _, property := range s.Properties {
-		if property.GoType == IntGoType || property.GoType == FloatGoType {
+		if property.IsInt() || property.IsFloat() || property.IsUint() {
 			return true
 		}
 	}
@@ -324,6 +333,12 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	if s.Type == "" {
 		s.Type = s2.Type
 	}
+	if s.GoType == "" {
+		s.GoType = s2.GoType
+	}
+	if s.ProtoType == "" {
+		s.ProtoType = s2.ProtoType
+	}
 	if s.Enum == nil {
 		s.Enum = s2.Enum
 	}
@@ -371,7 +386,11 @@ func (s *JSONSchema) resolveSQL(
 		}
 		bind := ""
 		if s.GoType != "" {
-			bind = sqlBindMap[s.Type]
+			if s.IsUint() {
+				bind = "uint"
+			} else {
+				bind = sqlBindMap[s.Type]
+			}
 		}
 
 		*columns = append(*columns, &ColumnConfig{
@@ -414,60 +433,60 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	if s.GoName == "Size" {
 		s.GoName = "Size_"
 	}
-
-	protoType := ""
-	s.GoPremitive = true
-	goType := ""
-	switch s.Type {
-	case IntegerType:
-		goType = IntGoType
-		protoType = IntProtoType
-	case NumberType:
-		goType = FloatGoType
-		protoType = FloatProtoType
-	case StringType:
-		goType = stringType
-		protoType = stringType
-	case Base64Type:
-		goType = "base64"
-		protoType = stringType
-	case BooleanType:
-		goType = "bool"
-		protoType = "bool"
-	case ObjectType:
-		goType = s.getRefType()
-		if s.Properties == nil {
-			goType = "map[string]interface{}"
-		}
-
-		if goType != "" {
-			protoType = goType
-		}
-		if s.Properties == nil {
-			protoType = "bytes"
-		}
-	case ArrayType:
-		err := s.Items.resolveGoName(name)
-		if err != nil {
-			return err
-		}
-		if s.Items == nil {
-			log.Errorf("Got <nil> Items for array in schema '%v': %+#v", name, s)
-			goType = "[]string"
-			protoType = "repeated string"
-		} else {
-			if s.Items.Type == IntegerType || s.Items.Type == NumberType || s.Items.Type == BooleanType ||
-				s.Items.Type == StringType {
-				goType = "[]" + s.Items.GoType
-			} else {
-				goType = "[]*" + s.Items.GoType
+	if s.ProtoType == "" {
+		protoType := ""
+		s.GoPremitive = true
+		goType := ""
+		switch s.Type {
+		case IntegerType:
+			goType = IntGoType
+			protoType = IntProtoType
+		case NumberType:
+			goType = FloatGoType
+			protoType = FloatProtoType
+		case StringType:
+			goType = stringType
+			protoType = stringType
+		case Base64Type:
+			goType = "base64"
+			protoType = stringType
+		case BooleanType:
+			goType = "bool"
+			protoType = "bool"
+		case ObjectType:
+			goType = s.getRefType()
+			if s.Properties == nil {
+				goType = "map[string]interface{}"
 			}
-			protoType = "repeated " + s.Items.ProtoType
-		}
-	}
 
-	s.GoType = goType
-	s.ProtoType = protoType
+			if goType != "" {
+				protoType = goType
+			}
+			if s.Properties == nil {
+				protoType = "bytes"
+			}
+		case ArrayType:
+			err := s.Items.resolveGoName(name)
+			if err != nil {
+				return err
+			}
+			if s.Items == nil {
+				log.Errorf("Got <nil> Items for array in schema '%v': %+#v", name, s)
+				goType = "[]string"
+				protoType = "repeated string"
+			} else {
+				if s.Items.Type == IntegerType || s.Items.Type == NumberType || s.Items.Type == BooleanType ||
+					s.Items.Type == StringType {
+					goType = "[]" + s.Items.GoType
+				} else {
+					goType = "[]*" + s.Items.GoType
+				}
+				protoType = "repeated " + s.Items.ProtoType
+			}
+		}
+		s.GoType = goType
+		s.ProtoType = protoType
+	}
 	for pname, property := range s.Properties {
 		err := property.resolveGoName(pname)
 		if err != nil {

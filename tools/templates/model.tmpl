@@ -67,13 +67,13 @@ func NewIDPerms(uuid string) *IdPermsType {
 // NewUUIDType creates new UUIdType instance from provided uuid.
 func NewUUIDType(uuid string) *UuidType {
 	uuid = strings.Replace(uuid, "-", "", 4)
-	uuidHigh, err1 := strconv.ParseInt(uuid[:len(uuid)/2], 16, 64)
-	uuidLow, err2 := strconv.ParseInt(uuid[len(uuid)/2:], 16, 64)
+	uuidHigh, err1 := strconv.ParseUint(uuid[:len(uuid)/2], 16, 64)
+	uuidLow, err2 := strconv.ParseUint(uuid[len(uuid)/2:], 16, 64)
 
 	if len(uuid) != 32 || err1 != nil || err2 != nil {
 		random := rand.New(rand.NewSource(time.Now().UnixNano()))
-		uuidHigh = random.Int63()
-		uuidLow = random.Int63()
+		uuidHigh = random.Uint64()
+		uuidLow = random.Uint64()
 	}
 
 	return &UuidType{
@@ -113,7 +113,7 @@ func Make{{ schema.JSONSchema.GoName }}() *{{ schema.JSONSchema.GoName }}{
 		{% elif property.GoType == "map[string]string" %}{{ property.GoName }}: map[string]string{},
 		{% elif property.GoType == "map[string]interface{}" %}{{ property.GoName }}: map[string]interface{}{},
 		{% elif property.GoType == "bool" %}{{ property.GoName }}: false,
-		{% elif property.GoType == "int64" %}{{ property.GoName }}: 0,
+		{% elif property.GoType == "int64" || property.GoType == "uint64" %}{{ property.GoName }}: 0,
 		{% elif property.GoType == "float" %}{{ property.GoName }}: 0,
 		{% elif property.Type == "array"%}
 			{% if property.Items.Type == "string" %}
@@ -172,13 +172,16 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
 		{% elif property.GoType == "map[string]interface{}" %}m.{{ property.GoName }} = common.InterfaceToInterfaceMap(val)
 		{% elif property.GoType == "bool" %}m.{{ property.GoName }} = common.InterfaceToBool(val)
 		{% elif property.GoType == "int64" %}m.{{ property.GoName }} = common.InterfaceToInt64(val)
+		{% elif property.GoType == "uint64" %}m.{{ property.GoName }} = common.InterfaceToUint64(val)
 		{% elif property.GoType == "float" %}m.{{ property.GoName }} = common.InterfaceToFloat(val)
 		{% elif property.Type == "array"%}
 			{% if property.Items.Type == "string" %}
 			// string
 				m.{{ property.GoName }} = common.InterfaceToStringList(val)
-			{% elif property.Items.Type == "integer"%}
+			{% elif property.Items.GoType == "int64"%}
 				m.{{ property.GoName }} = common.InterfaceToInt64List(val)
+			{% elif property.Items.GoType == "uint64"%}
+				m.{{ property.GoName }} = common.InterfaceToUint64List(val)
 			{% elif property.Items.GoType %}
 				m.{{ property.GoName }} = InterfaceTo{{ property.Items.GoType }}Slice(val)
 			{% endif %}
@@ -210,7 +213,7 @@ func (m *{{ schema.JSONSchema.GoName }}) ToMap() map[string]interface{} {
 	}
 	return map[string]interface{}{
 	{% for property in schema.JSONSchema.OrderedProperties %}
-		{% if property.GoType == "string" || property.GoType == "[]string" || property.GoType == "[]interface" || property.GoType == "map[string]interface{}" || property.GoType == "map[string]string" || property.GoType == "bool" || property.GoType == "int64" || property.GoType == "float" || property.Type == "array" %} "{{ property.ID }}": m.{{ property.GoName}},
+		{% if property.GoType == "string" || property.GoType == "[]string" || property.GoType == "[]interface" || property.GoType == "map[string]interface{}" || property.GoType == "map[string]string" || property.GoType == "bool" || property.GoType == "int64" || property.GoType == "uint64" || property.GoType == "float" || property.Type == "array" %} "{{ property.ID }}": m.{{ property.GoName}},
 		{% else %}"{{ property.ID }}": m.{{ property.GoName}}.ToMap(),
 	{% endif %}{% endfor %}
 	{% for linkTo, reference in schema.References %}
@@ -227,7 +230,7 @@ func (m *{{ schema.JSONSchema.GoName }}) UnmarshalJSON(b []byte) error {
 	obj := struct {
 		*alias
 	{%- for property in schema.JSONSchema.OrderedProperties -%}
-		{%- if property.IsInt() || property.IsFloat() %}
+		{%- if property.IsInt() || property.IsUint() || property.IsFloat() %}
 		{{ property.GoName }} json.Number `json:"{{ property.ID }}"`
 		{%- endif %}
 	{%- endfor %}
@@ -240,6 +243,14 @@ func (m *{{ schema.JSONSchema.GoName }}) UnmarshalJSON(b []byte) error {
 		{% if property.IsInt() %}
 	if obj.{{property.GoName}}.String() != "" {
 		m.{{ property.GoName }}, err = obj.{{property.GoName}}.Int64()
+		if err != nil {
+			return err
+		}
+	}
+		{% elif property.IsUint() %}
+	if obj.{{property.GoName}}.String() != "" {
+		v, err := strconv.ParseUint(string(obj.{{property.GoName}}), 10, 64)
+		m.{{ property.GoName }} = uint64(v)
 		if err != nil {
 			return err
 		}

@@ -179,7 +179,7 @@ func (s *Server) Init() (err error) {
 			}).Debugf("Request body")
 		}))
 	}
-	//e.Use(middleware.Recover())
+	e.Use(middleware.Recover())
 	//e.Use(middleware.BodyLimit("10M"))
 
 	s.dbService, err = db.NewServiceFromConfig()

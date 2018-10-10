@@ -14,18 +14,19 @@ func TestSchema(t *testing.T) {
 	project := api.SchemaByID("project")
 
 	assert.Equal(t, "project", project.Table)
-	assert.Equal(t, 2, len(project.JSONSchema.Properties))
-	assert.Equal(t, 2, len(project.JSONSchema.OrderedProperties))
-	assert.Equal(t, 2, len(project.Columns))
+	assert.Equal(t, 3, len(project.JSONSchema.Properties))
+	assert.Equal(t, 3, len(project.JSONSchema.OrderedProperties))
+	assert.Equal(t, 3, len(project.Columns))
 
 	virtualNetwork := api.SchemaByID("virtual_network")
 
 	assert.Equal(t, "vn", virtualNetwork.Table)
-	assert.Equal(t, 3, len(virtualNetwork.JSONSchema.Properties))
-	assert.Equal(t, []string{"uuid", "display_name", "virtual_network_network_id"},
+	assert.Equal(t, 4, len(virtualNetwork.JSONSchema.Properties))
+	assert.Equal(t, "uint64", virtualNetwork.JSONSchema.Properties["version"].GoType)
+	assert.Equal(t, []string{"uuid", "version", "display_name", "virtual_network_network_id"},
 		virtualNetwork.JSONSchema.PropertiesOrder)
-	assert.Equal(t, 3, len(virtualNetwork.Columns))
-	assert.Equal(t, 1004, virtualNetwork.References["network_ipam"].Index)
+	assert.Equal(t, 4, len(virtualNetwork.Columns))
+	assert.Equal(t, 1005, virtualNetwork.References["network_ipam"].Index)
 }
 
 func TestSchemaEnums(t *testing.T) {
