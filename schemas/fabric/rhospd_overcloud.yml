@@ -1,0 +1,31 @@
+description: RHOSPD Overcloud
+extends:
+- base
+- has_status
+id: rhospd_overcloud
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this overcloud node."
+      presence: "optional"
+parents:
+  rhospd_cloud_manager:
+    operations: "CRUD"
+    description: "Parent of this overcloud node."
+    presence: "optional"
+plural: rhospd_overclouds
+prefix: /
+schema:
+  properties:
+    overcloud:
+      presence: "optional"
+      description: "Details of the RHOSPD overcloud VM"
+      $ref: "rhospd_types.json#/definitions/OverCloudInfo"
+  propertiesOrder: []
+  required: []
+  type: object
+singular: rhospd_overcloud
+title: RHOSPD Overcloud
+type: ""

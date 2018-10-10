@@ -42,6 +42,27 @@ schema:
       presence: "optional"
       description: "Details of the baremetal server port"
       $ref: "fabric_types.json#/definitions/BaremetalPortInfo"
+    label:
+      description: Label of the interface representing the use of the interface.
+      nullable: false
+      enum:
+      - management
+      - provision
+      - control
+      - tenant
+      - external
+      - internal_api
+      - storage
+      - storage_management
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Interface Label
+      type: string
+      view:
+      - create
+      - detail
   required: []
   type: object
 singular: port

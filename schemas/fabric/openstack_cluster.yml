@@ -158,7 +158,10 @@ schema:
       type: string
       view:
       - detail
-
+    ceph:
+      presence: "optional"
+      description: "Details of the RHOSPD Ceph storage in the overcloud."
+      $ref: "rhospd_types.json#/definitions/CephInfo"
 singular: openstack_cluster
 title: Openstack Cluster
 type: ""
