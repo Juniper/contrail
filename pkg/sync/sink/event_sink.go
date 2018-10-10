@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -30,7 +30,7 @@ func NewEventProcessorSink(processor services.EventProcessor) *EventProcessorSin
 }
 
 // Create dispatches OperationCreate event to processor.
-func (e *EventProcessorSink) Create(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
+func (e *EventProcessorSink) Create(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
 	ev, err := services.NewEvent(&services.EventOption{
 		UUID:      pk,
 		Kind:      resourceName,
@@ -48,9 +48,8 @@ func (e *EventProcessorSink) CreateRef(
 	ctx context.Context,
 	resourceName string,
 	pk []string,
-	attr map[string]interface{},
+	attr basedb.Object,
 ) error {
-
 	if len(pk) != 2 {
 		return errors.Errorf("expecting primary key with 2 items, got %d instead", len(pk))
 	}
@@ -70,7 +69,7 @@ func (e *EventProcessorSink) CreateRef(
 }
 
 // Update dispatches OperationUpdate event to processor.
-func (e *EventProcessorSink) Update(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
+func (e *EventProcessorSink) Update(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
 	ev, err := services.NewEvent(&services.EventOption{
 		UUID:      pk,
 		Kind:      resourceName,
