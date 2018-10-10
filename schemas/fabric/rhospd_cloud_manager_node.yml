@@ -1,0 +1,47 @@
+description: RedHat OpenStack Platform Director Cloud Manager Node
+extends:
+- base
+- has_status
+id: rhospd_cloud_manager_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this RHOSPD cloud manager node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this RHOSPD cloud manager node."
+    presence: "optional"
+plural: rhospd_cloud_manager_nodes
+prefix: /
+schema:
+  properties:
+    global:
+      presence: "optional"
+      description: "Details of the RHOSPD global settings"
+      $ref: "rhospd_types.json#/definitions/GlobalInfo"
+    jumphost:
+      presence: "optional"
+      description: "Details of the RHOSPD JumpHost"
+      $ref: "rhospd_types.json#/definitions/JumpHostInfo"
+    undercloud:
+      presence: "optional"
+      description: "Details of the RHOSPD undercloud VM"
+      $ref: "rhospd_types.json#/definitions/UnderCloudInfo"
+    control_hosts:
+      presence: "optional"
+      description: "Details of the RHOSPD undercloud VM"
+      $ref: "rhospd_types.json#/definitions/ControlHostsInfo"
+    overcloud:
+      presence: "optional"
+      description: "Details of the RHOSPD undercloud VM"
+      $ref: "rhospd_types.json#/definitions/OverCloudInfo"
+  propertiesOrder: []
+  required: []
+  type: object
+singular: rhospd_cloud_manager_node
+title: RedHat OpenStack Platform Director Cloud Manager Node
+type: ""
