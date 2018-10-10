@@ -16,23 +16,50 @@ ensure_group "$@"
 
 Usage()
 {
-	echo -e "Usage: $(basename "$0") [-D]\n"
+	echo -e "Usage: $(basename "$0") [-h] [-D] [-t <test_spec> ...]\n"
 	echo 'This script is intended to be used on a node with contrail is installed '
 	echo 'with contrail-ansible-deployer and later tools/deploy-for_k8s.sh is used'
 	echo 'This script will run sanity tests defined in https://github.com/Juniper/contrail-test'
 	echo
-	echo -e "\t-A => Don't check contrail-go dockers before tests"
+	echo -e "\t-D => Don't check contrail-go dockers before tests"
+	echo -e "\t-t => Test cases/tags to be run by contrail-test, specified as contrail-test flags (eg. \`-t -c test_many_pods -T k8s_sanity\`"
+	echo -e "\t\ttest_spec is (-c|-T|-f name)"
+}
+
+declare -a TestsTypes
+declare -a TestsToRun
+TestCount=0
+GatherTests()
+{
+	shiftem=1
+	TestCount=0
+	shift
+	while :; do
+		case "$1" in
+			-c | -T | -f) ttype="$1"; name="$2"; shift 2; shiftem=$((shiftem+2));;
+			*) break;;
+		esac
+		[ -z "$name" ] && { Usage; exit 1; }
+		TestsTypes[$TestCount]="$ttype"
+		TestsToRun[$TestCount]="$name"
+		TestCount=$((TestCount+1))
+	done
+	return $shiftem
 }
 
 CheckDockers=1
 while :; do
 	case "$1" in
 		'-D') CheckDockers=0; shift;;
+		'-t') GatherTests "$@"; shift $?;;
 		'-h') Usage; exit 0;;
 		*) break;;
 	esac
 done
 [ $# -ne 0 ] && { Usage; exit 1; }
+
+read
+exit 3
 
 InstancesFile="$HOME/contrail-ansible-deployer/config/instances.yaml"
 ThisUser=$(id -nu)
@@ -48,10 +75,23 @@ check_dockers()
 
 ensure_root_access()
 {
-	key="$HOME/.ssh/id_rsa"
-	[ ! -e "$key" ] && ssh-keygen -N '' -f "$key"
-	auth_entry="$ThisUser@$(hostname)"
-	sudo grep -q "$auth_entry" /root/.ssh/authorized_keys || sudo sh -c "cat \"$HOME/.ssh/id_rsa.pub\" >> /root/.ssh/authorized_keys"
+	yq -y 'with_entries(select(.key == "provider_config")) | with_entries(.value[] +={ "ssh_user": "root", "ssh_pwd": "contrail123"})' "$InstancesFile" > /tmp/instances-provider.yaml
+	yq -y 'with_entries(select(.key != "provider_config"))' "$InstancesFile" > /tmp/instances-rest.yaml
+	cp -f /tmp/instances-provider.yaml "$InstancesFile"
+	cat /tmp/instances-rest.yaml >> "$InstancesFile"
+	modify_sshd=0
+	sudo grep '^PasswordAuthentication yes$' /etc/ssh/sshd_config || modify_sshd=1
+	sudo grep '^PermitRootLogin yes$' /etc/ssh/sshd_config || modify_sshd=1
+	if [ $modify_sshd -eq 1 ]; then
+		#shellcheck disable=SC2024
+		sudo grep -vE 'PasswordAuthentication|PermitRootLogin' /etc/ssh/sshd_config > /tmp/sshd_config
+		cat > /tmp/sshd_config <<EOF
+PasswordAuthentication yes
+PermitRootLogin yes
+EOF
+		sudo cp -f /tmp/sshd_config /etc/ssh/sshd_config
+		sudo service sshd restart
+	fi
 }
 
 prepare_test_env()
@@ -60,29 +100,38 @@ prepare_test_env()
 	[ ! -e ./testrunner.sh ] && wget https://github.com/Juniper/contrail-test/raw/master/testrunner.sh
 	sed -i '/^\s\+tput/ d' ./testrunner.sh
 	chmod +x ./testrunner.sh
-	[ ! -e contrail_test_input.yaml.sample ] && {
-		wget https://github.com/Juniper/contrail-test/raw/master/contrail_test_input.yaml.sample && \
-		cp contrail_test_input.yaml.sample contrail_test_input.yaml; }
-	docker pull opencontrailnightly/contrail-test-test:latest
+	docker pull opencontrailnightly/contrail-test-test:latest || { echo 'Fail to pull docker image'; exit 2; }
 	ensure_root_access
 	grep -q 'orchestrator: kubernetes' "$InstancesFile" || cat >> "$InstancesFile" <<EOF
 deployment:
   orchestrator: kubernetes
 EOF
-
 }
 
+TestStatusMsg=''
 run_contrail_test()
 {
 	echo 'Running testrunner...'
 	echo
-	./testrunner.sh run -P "$InstancesFile" -c test_many_pods opencontrailnightly/contrail-test-test:latest
+	if [ 0 -eq ${#TestsTypes[@]} ]; then
+		TestsTypes=('-T')
+		TestsToRun=('ci_contrail_go_k8s_sanity')
+	fi
+	status=0
+	runs=0
+	for n in $(seq 0 $((${#TestsTypes[@]}-1))); do
+		./testrunner.sh run -P "$InstancesFile" "${TestsTypes[$n]}" "${TestsToRun[$n]}" -r opencontrailnightly/contrail-test-test:latest
+		status=$((status + $?))
+		runs=$((runs+1))
+	done
+	TestStatusMsg="Testing summary: pass $((runs-status)) out of $runs"
+	return $status
 }
 
 finalize_test_run()
 {
 	cd ~/contrail-test-runs || return 0
-	sudo chown -R "$ThisUser:$ThisUser" ./
+	find . -maxdepth 1 -type d -group docker -exec sudo chown -R "$ThisUser:$ThisUser" "{}" \;
 	for dir in $(find ./ -maxdepth 1 -type d | cut -f 2 -d '/'); do
 		echo "$dir" | grep -qE '^[0-9_]+$' || continue # skip non-report directories (if any)
 		archive="$dir.tgz"
@@ -95,4 +144,7 @@ finalize_test_run()
 check_dockers
 prepare_test_env
 run_contrail_test
+status=$?
 finalize_test_run
+echo "$TestStatusMsg"
+exit "$status"
