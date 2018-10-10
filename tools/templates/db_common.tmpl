@@ -5,7 +5,6 @@ import (
     "fmt"
 
     "github.com/Juniper/contrail/pkg/db/basedb"
-    "github.com/Juniper/contrail/pkg/models/basemodels"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "{{ option.PackagePath }}/pkg/services"
 )
@@ -49,10 +48,16 @@ func (db *Service) dump(ctx context.Context, ow basedb.ObjectWriter) error {
 }
 
 // ScanRow maps row from database table named schemaID into generated Go struct.
-func (db *Service) ScanRow(schemaID string, rowData map[string]interface{}) (basemodels.Object, error) {
+func (db *Service) ScanRow(schemaID string, rowData map[string]interface{}) (basedb.Object, error) {
     switch schemaID { {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     case "{{ schema.ID }}":
-        return db.scan{{schema.JSONSchema.GoName}}(rowData){% endif%}{% endfor %}
+        return db.scan{{schema.JSONSchema.GoName}}(rowData)
+        {%- for linkTo, reference in schema.References %}
+    case "ref_{{ schema.ID }}_{{ linkTo }}":
+        {% if reference.RefType %}return db.scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAttr(rowData), nil
+        {%- else %}return nil, nil{% endif %}
+{%- endfor -%}
+    {% endif%}{% endfor %}
     }
 
     return nil, fmt.Errorf("unknown schemaID: %v", schemaID)
