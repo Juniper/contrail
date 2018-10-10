@@ -120,7 +120,7 @@ func decodeRowData(
 
 	for i, tuple := range row {
 		col := relation.Columns[i]
-		decoder := getDecoder(col)
+		decoder := col.Decoder()
 		if err = decoder.DecodeText(nil, tuple.Value); err != nil {
 			return nil, nil, fmt.Errorf("error decoding column '%v': %s", col.Name, err)
 		}
