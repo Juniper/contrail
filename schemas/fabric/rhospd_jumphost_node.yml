@@ -1,0 +1,31 @@
+description: RHOSPD jumphost Node
+extends:
+- base
+- has_status
+id: rhospd_jumphost_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this jumphost node."
+      presence: "optional"
+parents:
+  rhospd_cloud_manager:
+    operations: "CRUD"
+    description: "Parent of this jumphost node."
+    presence: "optional"
+plural: rhospd_jumphost_nodes
+prefix: /
+schema:
+  properties:
+    jumphost:
+      presence: "required"
+      description: "Details of the RHOSPD JumpHost"
+      $ref: "rhospd_types.json#/definitions/JumpHostInfo"
+  propertiesOrder: []
+  required: []
+  type: object
+singular: rhospd_jumphost_node
+title: RHOSPD jumphost Node
+type: ""
