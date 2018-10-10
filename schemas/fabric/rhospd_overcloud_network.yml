@@ -1,0 +1,65 @@
+description: RHOSPD Overcloud Network
+extends:
+- base
+- has_status
+id: rhospd_overcloud_network
+metadata:
+  category: cluster
+parents:
+  rhospd_overcloud:
+    operations: "CRUD"
+    description: "Parent of this overcloud_network node."
+    presence: "optional"
+plural: rhospd_overcloud_networks
+prefix: /
+schema:
+  properties:
+    label:
+      description: Label of the network interface.
+      type: string
+      enum:
+      - management
+      - provision
+      - control
+      - tenant
+      - external
+      - internal_api
+      - storage
+      - storage_management
+      operations: CRUD
+      presence: required
+    cidr:
+      description: "CIDR (IP/prefix) for this network subnet"
+      type: string
+      operations: CRUD
+      presence: optional
+    vip:
+      description: "Floating virtual IP for the Openstack APIs on this network"
+      type: string
+      operations: CRUD
+      presence: optional
+    default_route:
+      description: "Default route for this network"
+      type: string
+      operations: CRUD
+      presence: optional
+    vlan:
+      description: "VLAN tag for this network"
+      type: string
+      operations: CRUD
+      presence: required
+    mtu:
+      description: "MTU for this network"
+      type: string
+      operations: CRUD
+      presence: optional
+    pool:
+      presence: optional
+      description: "DHCP pool for this network"
+      $ref: "rhospd_types.json#/definitions/IPPoolInfo"
+  propertiesOrder: []
+  required: []
+  type: object
+singular: rhospd_overcloud_network
+title: RHOSPD Overcloud
+type: ""
