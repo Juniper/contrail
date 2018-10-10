@@ -1,0 +1,454 @@
+---
+  definitions:
+    GlobalInfo:
+      type: "object"
+      properties:
+        dns:
+          description: List of DNS nameservers
+          items:
+            type: string
+          type: array
+          operations: CRUD
+          presence: required
+        ntp:
+          description: List of NTP time servers
+          items:
+            type: string
+          type: array
+          operations: CRUD
+          presence: required
+        timezone:
+          description: Timezone for all servers
+          type: string
+          operations: CRUD
+          presence: required
+        rhel:
+          presence: required
+          description: "Red Hat Subscription Management(Satellite)"
+          $ref: "rhospd_types.json#/definitions/RHELInfo"
+    RHELInfo:
+      type: "object"
+      properties:
+        satellite:
+          presence: required
+          description: "Satellite server details"
+          $ref: "rhospd_types.json#/definitions/SatelliteInfo"
+    SatelliteInfo:
+      type: "object"
+      properties:
+        key:
+          description: "Contrail Cloud Activation Key"
+          type: string
+          operations: CRUD
+          presence: required
+        organization:
+          description: "Satellite Organization Name"
+          type: string
+          operations: CRUD
+          presence: required
+        fqdn:
+          description: "Satellite Fully-Qualified Name"
+          type: string
+          operations: CRUD
+          presence: required
+    JumpHostInfo:
+      type: "object"
+      properties:
+        password:
+          description: "SHA512 encypted password of the jumphost.user"
+          type: string
+          operations: CRUD
+          presence: required
+        network:
+          presence: required
+          description: "Network details of Jump Host"
+          $ref: "rhospd_types.json#/definitions/JumpHostNetworkInfo"
+    JumpHostNetworkInfo:
+      type: "object"
+      properties:
+        provision:
+          presence: required
+          description: "Provisioning Network details of Jump Host"
+          $ref: "rhospd_types.json#/definitions/ProvisionNetworkInfo"
+    ProvisionNetworkInfo:
+      type: "object"
+      properties:
+        nic:
+          description: "Jumphost nic to be used for provisioning (PXE booting) servers"
+          type: string
+          operations: CRUD
+          presence: required
+    UnderCloudInfo:
+      type: "object"
+      properties:
+        vm:
+          presence: required
+          description: "UnderCloud VM details"
+          $ref: "rhospd_types.json#/definitions/UnderCloudVMInfo"
+    UnderCloudVMInfo:
+      type: "object"
+      properties:
+        password: 
+          description: "Password for the undercloud.vm.user"
+          type: string
+          operations: CRUD
+          presence: required
+          default: "contrail123"
+        root_password: 
+          description: "Password for the undercloud.vm root user"
+          type: string
+          operations: CRUD
+          presence: optional
+          default: "contrail123"
+        memory: 
+          description: "Memory to use for undercloud VM"
+          type: string
+          operations: CRUD
+          presence: optional
+          default: 48
+        cpu: 
+          description: "Number of CPU's to use for undercloud VM"
+          type: string
+          operations: CRUD
+          presence: optional
+          default: 24
+        vnc:
+          presence: required
+          description: "UnderCloud VM's VNC details"
+          $ref: "rhospd_types.json#/definitions/VNCInfo"
+    VNCInfo:
+      type: "object"
+      properties:
+        password: 
+          description: "Password for VNC access to undercloud VM console"
+          type: string
+          operations: CRUD
+          presence: optional
+          default: "contrail123"
+    ControlHostVMDiskPartitionInfo:
+      type: "object"
+      properties:
+        size: 
+          description: "Control host VM Disk Partition size"
+          type: string
+          operations: CRUD
+          presence: optional
+          default: 100
+        pool:
+          description: "Control host VM Disk storage"
+          type: string
+          enum:
+          - dir_storage
+          - spinning_storage
+          - ssd_storage
+          operations: CRUD
+          presence: optional
+          default: dir_storage
+    ControlHostVMDiskInfo:
+      type: "object"
+      properties:
+        vda: 
+          presence: required
+          description: "Disk partiation details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMDiskPartitionInfo"
+        vdb: 
+          presence: required
+          description: "Disk partiation details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMDiskPartitionInfo"
+    ControlHostVMHardwareInfo:
+      type: "object"
+      properties:
+        memory: 
+          description: "Memory to use for control host VM"
+          type: string
+          operations: CRUD
+          presence: optional
+          default: 48
+        cpu: 
+          description: "Number of CPU's to use for control host VM"
+          type: string
+          operations: CRUD
+          presence: optional
+          default: 24
+        disk:
+          presence: required
+          description: "Control Host VM Disk details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMDiskInfo"
+    ControlHostVMInfo:
+      type: "object"
+      properties:
+        control:
+          presence: required
+          description: "Openstack control VM hardware details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
+        contrail_controller:
+          presence: required
+          description: "Contrail conroller VM hardware details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
+        contrail_analytics:
+          presence: required
+          description: "Contrail analytics VM hardware details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
+        contrail_analytics_database:
+          presence: required
+          description: "Contrail analytics database VM hardware details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
+        appformix_controller:
+          presence: required
+          description: "Appformix controller VM hardware details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
+    ControlHostsInfo:
+      type: "object"
+      properties:
+        storage:
+          presence: required
+          description: "Storage details of the control host VM's"
+          $ref: "rhospd_types.json#/definitions/StorageInfo"
+        vm:
+          presence: required
+          description: "Control host VM details"
+          $ref: "rhospd_types.json#/definitions/ControlHostVMInfo"
+        image:
+          presence: required
+          description: "Image details of the control host VM's"
+          $ref: "rhospd_types.json#/definitions/ImageInfo"
+        vnc:
+          presence: required
+          description: "VNC details of the control host VM's"
+          $ref: "rhospd_types.json#/definitions/VNCInfo"
+    ImageInfo:
+      type: "object"
+      properties:
+        user:
+          description: "User to add in all control host servers"
+          type: string
+          operations: CRUD
+          presence: required
+          default: "baremetal"
+        password:
+          description: "Password for the control_hosts.image.user user"
+          type: string
+          operations: CRUD
+          presence: optional
+          default: "c0ntrail123"
+    StorageType:
+      type: "object"
+      properties:
+        type:
+          description: "Type of storage"
+          type: string
+          enum:
+          - dir
+          - logical
+          operations: CRUD
+          presence: required
+        disk:
+          description: "List of storage disk"
+          items:
+            type: string
+          type: array
+          operations: CRUD
+          presence: optional
+    StorageInfo:
+      type: "object"
+      properties:
+        spinning_storage:
+          presence: required
+          description: "Spinning Storage details"
+          $ref: "rhospd_types.json#/definitions/StorageData"
+        ssd_storage:
+          presence: required
+          description: "SSD Storage details"
+          $ref: "rhospd_types.json#/definitions/StorageData"
+        dir_storage:
+          presence: required
+          description: "Directory Storage details"
+          $ref: "rhospd_types.json#/definitions/StorageData"
+    StorageData:
+      type: "object"
+      properties:
+        type:
+          description: "Control host VM Disk storage"
+          type: string
+          enum:
+          - logical
+          - dir
+          operations: CRUD
+          presence: required
+          default: dir_storage
+        disk:
+          description: "List of OSD Disk" 
+          items:
+            type: string
+          type: array
+          operations: CRUD
+          presence: required
+    OverCloudInfo:
+      type: "object"
+      properties:
+        image:
+          presence: required
+          description: "Image details of the overcloud servers"
+          $ref: "rhospd_types.json#/definitions/ImageInfo"
+        network:
+          presence: required
+          description: "Overcloud External Network details"
+          $ref: "rhospd_types.json#/definitions/OverCloudNetworkInfo"
+        tls:
+          presence: required
+          description: "Information used to generate the SSL certificates"
+          $ref: "rhospd_types.json#/definitions/OverCloudTLSInfo"
+    OverCloudTLSInfo:
+      type: "object"
+      properties:
+        country:
+          description: "countryName_default setting of openssl"
+          type: string
+          operations: CRUD
+          presence: required
+        state:
+          description: "stateOrProvinceName_default setting of openssl"
+          type: string
+          operations: CRUD
+          presence: required
+        city:
+          description: "localityName_default setting of openssl"
+          type: string
+          operations: CRUD
+          presence: required
+        organization:
+          description: "organizationalUnitName_default setting of openssl"
+          type: string
+          operations: CRUD
+          presence: required
+        common_name:
+          description: "commonName_default setting of openssl"
+          type: string
+          operations: CRUD
+          presence: required
+    OverCloudNetworkInfo:
+      type: "object"
+      properties:
+        external:
+          presence: required
+          description: "External Network to reference the overcloud APIs from outside the infrastructure"
+          $ref: "rhospd_types.json#/definitions/ExternalNetworkInfo"
+        internal_api:
+          presence: required
+          description: "Internal API network is used for control plane signalling and service API calls "
+          $ref: "rhospd_types.json#/definitions/NetworkInfo"
+        tenant:
+          presence: required
+          description: "Tenant network is used for tenant workload data"
+          $ref: "rhospd_types.json#/definitions/NetworkInfo"
+        storage:
+          presence: required
+          description: "Storage network is used for compute storage access"
+          $ref: "rhospd_types.json#/definitions/NetworkInfo"
+        storage_management:
+          presence: required
+          description: "Storage Management network is used for storage operations such as replication"
+          $ref: "rhospd_types.json#/definitions/NetworkInfo"
+        management:
+          presence: required
+          description: "Management network is used for misc access such as SSH, and monitoring"
+          $ref: "rhospd_types.json#/definitions/NetworkInfo"
+    ExternalNetworkInfo:
+      type: "object"
+      properties:
+        cidr:
+          description: "CIDR (IP/prefix) for the external network subnet"
+          type: string
+          operations: CRUD
+          presence: required
+        vip:
+          description: "Floating virtual IP for the Openstack APIs on the external network"
+          type: string
+          operations: CRUD
+          presence: required
+        default_route:
+          description: "Default route for the external network"
+          type: string
+          operations: CRUD
+          presence: required
+        vlan:
+          description: "VLAN tag for the external network"
+          type: string
+          operations: CRUD
+          presence: required
+        mtu:
+          description: "MTU for external network"
+          type: string
+          operations: CRUD
+          presence: required
+        pool:
+          presence: required
+          description: "DHCP pool for the external network"
+          $ref: "rhospd_types.json#/definitions/IPPoolInfo"
+    NetworkInfo:
+      type: "object"
+      properties:
+        cidr:
+          description: "CIDR (IP/prefix) for this network subnet"
+          type: string
+          operations: CRUD
+          presence: optional
+        vip:
+          description: "Floating virtual IP for the Openstack APIs on this network"
+          type: string
+          operations: CRUD
+          presence: optional
+        default_route:
+          description: "Default route for this network"
+          type: string
+          operations: CRUD
+          presence: optional
+        vlan:
+          description: "VLAN tag for this network"
+          type: string
+          operations: CRUD
+          presence: required
+        mtu:
+          description: "MTU for this network"
+          type: string
+          operations: CRUD
+          presence: optional
+        pool:
+          presence: optional
+          description: "DHCP pool for this network"
+          $ref: "rhospd_types.json#/definitions/IPPoolInfo"
+    IPPoolInfo:
+      type: "object"
+      properties:
+        start:
+          description: "Range start for the IP pool"
+          type: string
+          operations: CRUD
+          presence: required
+        end:
+          description: "Range end for the IP pool"
+          type: string
+          operations: CRUD
+          presence: required
+    CephInfo:
+      type: "object"
+      properties:
+        enabled:
+          description: "Ceph to be deployed as the backed for Cinder and Glance services"
+          default: false
+          presence: optional
+          type: "boolean"
+        osd:
+          presence: required
+          description: "Ceph OSD disk configuration"
+          $ref: "rhospd_types.json#/definitions/CephOSDInfo"
+    CephOSDInfo:
+      type: "object"
+      properties:
+        disk:
+          description: "List of OSD Disk" 
+          items:
+            type: string
+          type: array
+          operations: CRUD
+          presence: required
