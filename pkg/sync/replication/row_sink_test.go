@@ -4,7 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -73,7 +75,6 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 
 func TestObjectMappingAdapterRefCreate(t *testing.T) {
 	resourceName, correctPK, props := "ref_resource", []string{"1", "2"}, map[string]interface{}{}
-	attr := map[string]interface{}{}
 
 	sMock, rsMock := &sinkMock{}, &mock.Mock{}
 	adapter := NewObjectMappingAdapter(sMock, (*rowScannerMock)(rsMock))
@@ -102,7 +103,7 @@ func TestObjectMappingAdapterRefCreate(t *testing.T) {
 			pk:            correctPK,
 			operationFunc: adapter.Create,
 			initSink: func(o oner) {
-				o.On("CreateRef", resourceName, correctPK, attr).Return(nil).Once()
+				o.On("CreateRef", resourceName, correctPK, testutil.NotNil()).Return(nil).Once()
 			},
 		},
 	}
@@ -155,24 +156,24 @@ func (d *dummyMessage) ApplyMap(_ map[string]interface{}) {}
 
 type rowScannerMock mock.Mock
 
-func (m *rowScannerMock) ScanRow(schemaID string, rowData map[string]interface{}) (basemodels.Object, error) {
+func (m *rowScannerMock) ScanRow(schemaID string, rowData map[string]interface{}) (basedb.Object, error) {
 	args := (*mock.Mock)(m).MethodCalled("ScanRow", schemaID, rowData)
 	if args.Error(1) != nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(basemodels.Object), nil
+	return args.Get(0).(basedb.Object), nil
 }
 
 type sinkMock struct {
 	mock.Mock
 }
 
-func (s *sinkMock) Create(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
+func (s *sinkMock) Create(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
 	args := s.MethodCalled("Create", resourceName, pk, obj)
 	return args.Error(0)
 }
 
-func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, obj basemodels.Object) error {
+func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
 	args := s.MethodCalled("Update", resourceName, pk, obj)
 	return args.Error(0)
 }
@@ -182,7 +183,7 @@ func (s *sinkMock) Delete(ctx context.Context, resourceName string, pk string) e
 	return args.Error(0)
 }
 
-func (s *sinkMock) CreateRef(ctx context.Context, resourceName string, pk []string, attr map[string]interface{}) error {
+func (s *sinkMock) CreateRef(ctx context.Context, resourceName string, pk []string, attr basedb.Object) error {
 	args := s.MethodCalled("CreateRef", resourceName, pk, attr)
 	return args.Error(0)
 }

@@ -137,6 +137,9 @@ func TestSyncService(t *testing.T) {
 						ID: "vn-blue",
 						VirtualNetworkNetworkIpamRef: &models.VirtualNetworkNetworkIpamRef{
 							UUID: "ni-blue",
+							Attr: &models.VnSubnetsType{HostRoutes: &models.RouteTableType{
+								Route: []*models.RouteType{{Prefix: "test_prefix", NextHop: "1.2.3.5"}},
+							}},
 						},
 					},
 				)
@@ -165,9 +168,16 @@ func TestSyncService(t *testing.T) {
 					{
 						"name": "vn_blue",
 						"network_ipam_refs": []interface{}{map[string]interface{}{
-							"uuid":         "ni-blue",
-							"ipam_subnets": nil,
-							"route":        nil,
+							"uuid": "ni-blue",
+							"attr": map[string]interface{}{
+								"ipam_subnets": nil,
+								"host_routes": map[string]interface{}{
+									"route": []interface{}{map[string]interface{}{
+										"next_hop": "1.2.3.5",
+										"prefix":   "test_prefix",
+									}},
+								},
+							},
 						}},
 					},
 					{
