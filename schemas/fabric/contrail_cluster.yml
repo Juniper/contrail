@@ -33,6 +33,10 @@ references:
       operations: "CRUD"
       description: "Reference to public cloud, which will have VM part of this cluster"
       presence: "optional"
+    rhospd_cloud_manager:
+      operations: "CRUD"
+      description: "Reference to rhospd cloud manager of this cluster"
+      presence: "optional"
 schema:
   properties:
     container_registry:
@@ -311,6 +315,10 @@ schema:
       view:
       - create
       - detail
+    overcloud:
+      presence: "optional"
+      description: "Details of the RHOSPD undercloud VM"
+      $ref: "rhospd_types.json#/definitions/OverCloudInfo"
   required: []
   type: object
 singular: contrail_cluster

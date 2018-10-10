@@ -10,6 +10,10 @@ references:
       operations: "CRUD"
       description: "Reference to node object for this analyticsdb node."
       presence: "optional"
+    rhospd_control_host_flavor:
+      operations: "CRUD"
+      description: "Reference to rhospd_control_host_flavor object for this analyticsdb node."
+      presence: "optional"
 parents:
   contrail_cluster:
     operations: "CRUD"

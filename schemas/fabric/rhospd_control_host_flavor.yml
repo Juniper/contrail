@@ -1,0 +1,37 @@
+description: RHOSPD Control Host Flavor
+extends:
+- base
+- ownable
+id: rhospd_control_host_flavor
+metadata:
+  category: cluster
+parents:
+  global_system_config:
+    operations: "CRUD"
+    description: "Parent of this node resource."
+    presence: "optional"
+plural: rhospd_control_host_flavors
+prefix: /
+schema:
+  properties:
+    memory:
+      description: "Memory to use for control host VM"
+      type: string
+      operations: CRUD
+      presence: optional
+      default: 48
+    cpu:
+      description: "Number of CPU's to use for control host VM"
+      type: string
+      operations: CRUD
+      presence: optional
+      default: 24
+    disk:
+      presence: required
+      description: "Control Host VM Disk details"
+      $ref: "rhospd_types.json#/definitions/ControlHostVMDiskInfo"
+  required: []
+  type: object
+singular: rhospd_control_host_flavor
+title: RHOSPD Control Host Flavor
+type: ""
