@@ -107,5 +107,9 @@ definitions:
     properties:
       uuid_mslong:
         type: integer
+        proto_type: "uint64"
+        go_type: "uint64"
       uuid_lslong:
         type: integer
+        proto_type: "uint64"
+        go_type: "uint64"

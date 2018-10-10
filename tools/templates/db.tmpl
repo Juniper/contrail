@@ -198,8 +198,10 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     {% if JSONSchema.Type == "array" %}
         {% if JSONSchema.Items.Type == "string" %}
             {{ path }} = common.InterfaceToStringList({{arg}})
-        {% elif JSONSchema.Items.Type == "integer" %}
+        {% elif JSONSchema.Items.GoType == "int64" %}
             {{ path }} = common.InterfaceToInt64List({{arg}})
+        {% elif JSONSchema.Items.GoType == "uint64" %}
+            {{ path }} = common.InterfaceToUint64List({{arg}})
         {% elif JSONSchema.Items.Type == "boolean" %}
             {{ path }} = common.InterfaceToBoolList({{arg}})
         {% elif JSONSchema.Items.Type == "object" %}
@@ -208,8 +210,10 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     {% else %}
         {% if JSONSchema.Type == "string" %}
             {{ path }} = common.InterfaceToString({{arg}})
-        {% elif JSONSchema.Type == "integer" %}
+        {% elif JSONSchema.GoType == "int64" %}
             {{ path }} = common.InterfaceToInt64({{arg}})
+        {% elif JSONSchema.GoType == "uint64" %}
+            {{ path }} = common.InterfaceToUint64({{arg}})
         {% elif JSONSchema.Type == "boolean" %}
             {{ path }} = common.InterfaceToBool({{arg}})
         {% elif JSONSchema.Type == "object" %}
@@ -227,6 +231,8 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
         {% else %}
             {% if column.Bind == "int" %}
                m{{ column.Path }} = common.InterfaceToInt64(value)
+            {% elif column.Bind == "uint" %}
+               m{{ column.Path }} = common.InterfaceToUint64(value)
             {% elif column.Bind == "bool" %}
                m{{ column.Path }} = common.InterfaceToBool(value)
             {% elif column.Bind == "string" %}
