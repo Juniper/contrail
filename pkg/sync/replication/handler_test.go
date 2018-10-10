@@ -40,10 +40,10 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 	tests := []struct {
 		name         string
 		initMock     func(oner)
-		initialRels  relationAddGetter
+		initialRels  relationSet
 		message      pgoutput.Message
 		fails        bool
-		expectedRels relationAddGetter
+		expectedRels relationSet
 	}{
 		{name: "nil message", message: nil},
 		{name: "insert unknown relation", message: pgoutput.Insert{}, fails: true},
@@ -54,39 +54,39 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		{name: "delete malformed relation", message: pgoutput.Delete{RelationID: 1}, fails: true},
 		{
 			name:        "insert no primary key",
-			initialRels: &relationSet{1: pgoutput.Relation{Name: "rel"}},
+			initialRels: relationSet{1: pgoutput.Relation{Name: "rel"}},
 			message:     pgoutput.Insert{RelationID: 1},
 			fails:       true,
 		},
 		{
 			name:        "update no primary key",
-			initialRels: &relationSet{1: pgoutput.Relation{Name: "rel"}},
+			initialRels: relationSet{1: pgoutput.Relation{Name: "rel"}},
 			message:     pgoutput.Update{RelationID: 1},
 			fails:       true,
 		},
 		{
 			name:        "delete no primary key",
-			initialRels: &relationSet{1: pgoutput.Relation{Name: "rel"}},
+			initialRels: relationSet{1: pgoutput.Relation{Name: "rel"}},
 			message:     pgoutput.Delete{RelationID: 1},
 			fails:       true,
 		},
 		{
 			name:         "new relation",
 			message:      pgoutput.Relation{ID: 1337},
-			expectedRels: &relationSet{1337: pgoutput.Relation{ID: 1337}},
+			expectedRels: relationSet{1337: pgoutput.Relation{ID: 1337}},
 		},
 		{
 			name:         "already stored relation",
-			initialRels:  &relationSet{1337: pgoutput.Relation{Name: "old"}},
+			initialRels:  relationSet{1337: pgoutput.Relation{Name: "old"}},
 			message:      pgoutput.Relation{ID: 1337, Name: "new"},
-			expectedRels: &relationSet{1337: pgoutput.Relation{ID: 1337, Name: "new"}},
+			expectedRels: relationSet{1337: pgoutput.Relation{ID: 1337, Name: "new"}},
 		},
 		{
 			name: "correct insert message",
 			initMock: func(m oner) {
 				m.On("Create", "test-resource", []string{"foo"}, exampleRowData).Return(nil).Once()
 			},
-			initialRels: &relationSet{1: exampleRelation},
+			initialRels: relationSet{1: exampleRelation},
 			message:     pgoutput.Insert{RelationID: 1, Row: exampleRow},
 		},
 		{
@@ -94,7 +94,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 			initMock: func(m oner) {
 				m.On("Update", "test-resource", []string{"foo"}, exampleRowData).Return(nil).Once()
 			},
-			initialRels: &relationSet{1: exampleRelation},
+			initialRels: relationSet{1: exampleRelation},
 			message:     pgoutput.Update{RelationID: 1, Row: exampleRow},
 		},
 		{
@@ -102,7 +102,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 			initMock: func(m oner) {
 				m.On("Delete", "test-resource", []string{"foo"}).Return(nil).Once()
 			},
-			initialRels: &relationSet{1: exampleRelation},
+			initialRels: relationSet{1: exampleRelation},
 			message:     pgoutput.Delete{RelationID: 1, Row: exampleRow},
 		},
 	}
