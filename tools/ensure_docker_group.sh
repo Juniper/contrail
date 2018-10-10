@@ -10,7 +10,7 @@ ensure_group()
 	groups | grep -q "$expected_group" || sudo usermod -aG "$expected_group" "$user" # ensure user is in that group
 
 	if [ "$(id -gn)" != "$expected_group" ]; then
-		exec sg "$expected_group" -c "$0" "$@"
+		exec sg "$expected_group" -c "$0 $*"
 	fi
 }
 
