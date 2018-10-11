@@ -2,10 +2,10 @@ package db
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -195,7 +195,7 @@ func TestDBCreateRef(t *testing.T) {
 		{
 			name: "objects missing",
 			request: services.CreateRoutingInstanceRouteTargetRefRequest{
-				ID: "foo",
+				ID:                            "foo",
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: "bar"},
 			},
 			fails: true,
@@ -203,7 +203,7 @@ func TestDBCreateRef(t *testing.T) {
 		{
 			name: "valid ID invalid ref UUID",
 			request: services.CreateRoutingInstanceRouteTargetRefRequest{
-				ID: riUUID,
+				ID:                            riUUID,
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: "bar"},
 			},
 			fails: true,
@@ -301,11 +301,11 @@ func TestDBDeleteRef(t *testing.T) {
 		{
 			name: "objects missing",
 			request: services.DeleteRoutingInstanceRouteTargetRefRequest{
-				ID: "foo",
+				ID:                            "foo",
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: "bar"},
 			},
 			expected: &services.DeleteRoutingInstanceRouteTargetRefResponse{
-				ID: "foo",
+				ID:                            "foo",
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: "bar"},
 			},
 			shouldRefExist: true,
@@ -313,11 +313,11 @@ func TestDBDeleteRef(t *testing.T) {
 		{
 			name: "valid ID invalid ref UUID",
 			request: services.DeleteRoutingInstanceRouteTargetRefRequest{
-				ID: riUUID,
+				ID:                            riUUID,
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: "bar"},
 			},
 			expected: &services.DeleteRoutingInstanceRouteTargetRefResponse{
-				ID: riUUID,
+				ID:                            riUUID,
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: "bar"},
 			},
 			shouldRefExist: true,
@@ -325,11 +325,11 @@ func TestDBDeleteRef(t *testing.T) {
 		{
 			name: "valid ID valid ref UUID",
 			request: services.DeleteRoutingInstanceRouteTargetRefRequest{
-				ID: riUUID,
+				ID:                            riUUID,
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: rtUUID},
 			},
 			expected: &services.DeleteRoutingInstanceRouteTargetRefResponse{
-				ID: riUUID,
+				ID:                            riUUID,
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{UUID: rtUUID},
 			},
 			shouldRefExist: false,
