@@ -3,9 +3,10 @@ package sync
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/sirupsen/logrus"
 )
 
 //EventProducer based on RDBMS updates.

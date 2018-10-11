@@ -4,11 +4,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/schema"
-	log "github.com/sirupsen/logrus"
 )
 
 var option = &schema.TemplateOption{}

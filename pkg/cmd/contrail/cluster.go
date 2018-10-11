@@ -1,9 +1,10 @@
 package contrail
 
 import (
-	"github.com/Juniper/contrail/pkg/cluster"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/Juniper/contrail/pkg/cluster"
 )
 
 func init() {

@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {

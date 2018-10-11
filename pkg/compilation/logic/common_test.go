@@ -3,8 +3,9 @@ package logic
 import (
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 )
 
 func parseReactions(t *testing.T) dependencies.Reactions {
