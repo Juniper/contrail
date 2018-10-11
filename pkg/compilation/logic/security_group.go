@@ -5,6 +5,7 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
+	"github.com/siddontang/go/log"
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
@@ -18,7 +19,17 @@ type SecurityGroupIntent struct {
 	intent.BaseIntent
 	*models.SecurityGroup
 
+	refferedSGs           map[string]*SecurityGroupIntent
 	ingressACL, egressACL *models.AccessControlList
+}
+
+// LoadSecurityGroupIntent returns embedded resource object
+func LoadSecurityGroupIntent(
+	loader intent.Loader,
+	q intent.Query,
+) *SecurityGroupIntent {
+	i, _ := loader.Load(models.KindSecurityGroup, q).(*SecurityGroupIntent)
+	return i
 }
 
 // GetObject returns embedded resource object
@@ -33,11 +44,13 @@ func (s *Service) CreateSecurityGroup(
 ) (*services.CreateSecurityGroupResponse, error) {
 	i := &SecurityGroupIntent{
 		SecurityGroup: request.GetSecurityGroup(),
+		refferedSGs:   map[string]*SecurityGroupIntent{},
 	}
 
 	if err := s.handleCreate(ctx, i); err != nil {
 		return nil, err
 	}
+	i.processRefferedSecurityGroups(s.evaluateContext())
 
 	return s.BaseService.CreateSecurityGroup(ctx, request)
 }
@@ -60,9 +73,9 @@ func (s *Service) UpdateSecurityGroup(
 
 	i.SecurityGroup = sg
 
-	ec := &intent.EvaluateContext{
-		WriteService: s.WriteService,
-	}
+	ec := s.evaluateContext()
+	i.processRefferedSecurityGroups(ec)
+
 	err := s.EvaluateDependencies(ctx, ec, i)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
@@ -82,16 +95,25 @@ func (s *Service) DeleteSecurityGroup(
 		return nil, errors.New("failed to process SecurityGroup deletion: SecurityGroupIntent not found in cache")
 	}
 
-	if err := deleteDefaultACLs(ctx, s.WriteService, i); err != nil {
+	if err := i.deleteDefaultACLs(ctx, s.WriteService); err != nil {
 		return nil, errors.Wrap(err, "failed to process SecurityGroup deletion")
 	}
+	i.SecurityGroupEntries = nil
+
+	ec := s.evaluateContext()
 
 	s.cache.Delete(models.KindSecurityGroup, intent.ByUUID(i.GetUUID()))
+
+	err := s.EvaluateDependencies(ctx, ec, i)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
+	}
+	i.processRefferedSecurityGroups(ec)
 
 	return s.BaseService.DeleteSecurityGroup(ctx, request)
 }
 
-func deleteDefaultACLs(ctx context.Context, writeService services.WriteService, i *SecurityGroupIntent) error {
+func (i *SecurityGroupIntent) deleteDefaultACLs(ctx context.Context, writeService services.WriteService) error {
 	var multiError common.MultiError
 
 	if err := deleteACLIfNeeded(ctx, writeService, i.ingressACL); err != nil {
@@ -151,6 +173,58 @@ func (i *SecurityGroupIntent) DefaultACLs(ec *intent.EvaluateContext) (
 	ingressACL = i.MakeChildACL("ingress-access-control-list", ingressRules)
 	egressACL = i.MakeChildACL("egress-access-control-list", egressRules)
 	return ingressACL, egressACL
+}
+
+func (i *SecurityGroupIntent) processRefferedSecurityGroups(ec *intent.EvaluateContext) {
+	var rules []*models.PolicyRuleType
+	if sges := i.GetSecurityGroupEntries(); sges != nil {
+		rules = sges.GetPolicyRule()
+	}
+	refferedSGs := map[string]*SecurityGroupIntent{}
+	for _, rule := range rules {
+		for _, addr := range rule.GetSRCAddresses() {
+			checkAddressIsReffered(ec, refferedSGs, addr)
+		}
+		for _, addr := range rule.GetDSTAddresses() {
+			checkAddressIsReffered(ec, refferedSGs, addr)
+		}
+	}
+	for _, sg := range getDiffSecurityGroups(i.refferedSGs, refferedSGs) {
+		log.Debugf("removing dependent intent: %s-%s %s-%s", sg.Kind(), i.Kind(), sg.GetUUID(), i.GetUUID())
+		sg.RemoveDependentIntent(i)
+	}
+	for _, sg := range getDiffSecurityGroups(refferedSGs, i.refferedSGs) {
+		log.Debugf("adding dependent intent: %s-%s %s-%s", sg.Kind(), i.Kind(), sg.GetUUID(), i.GetUUID())
+		sg.AddDependentIntent(i)
+	}
+	i.refferedSGs = refferedSGs
+}
+
+func getDiffSecurityGroups(old, new map[string]*SecurityGroupIntent) map[string]*SecurityGroupIntent {
+	deleted := map[string]*SecurityGroupIntent{}
+	for uuid, sg := range old {
+		_, ok := new[uuid]
+		if !ok {
+			deleted[uuid] = sg
+		}
+	}
+	return deleted
+}
+
+func checkAddressIsReffered(
+	ec *intent.EvaluateContext,
+	reffered map[string]*SecurityGroupIntent,
+	address *models.AddressType,
+) {
+	if !address.IsSecurityGroupNameAReference() {
+		return
+	}
+	fqName := basemodels.ParseFQName(address.GetSecurityGroup())
+	sg := LoadSecurityGroupIntent(ec.IntentLoader, intent.ByFQName(fqName))
+	if sg == nil {
+		return
+	}
+	reffered[sg.GetUUID()] = sg
 }
 
 func resolveSGRefs(rs *models.PolicyRulesWithRefs, ec *intent.EvaluateContext) {
