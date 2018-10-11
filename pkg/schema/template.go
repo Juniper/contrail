@@ -7,9 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 const (

@@ -1,10 +1,9 @@
 package contrailcli
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-
-	"context"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

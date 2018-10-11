@@ -5,9 +5,10 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/pkg/errors"
 	"github.com/twinj/uuid"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 // IPAM subnet methods.

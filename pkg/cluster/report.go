@@ -3,9 +3,8 @@ package cluster
 import (
 	"bufio"
 	"bytes"
-	"io"
-
 	"context"
+	"io"
 
 	"github.com/sirupsen/logrus"
 

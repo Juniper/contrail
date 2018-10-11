@@ -14,12 +14,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/Juniper/contrail/pkg/log"
 	"github.com/coreos/etcd/clientv3"
 	conc "github.com/coreos/etcd/clientv3/concurrency"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 const (

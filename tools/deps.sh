@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 set -o errexit
-set -o nounset
-set -o pipefail
 
 # TODO: uncomment this once this dep is fixed
 # go get -u github.com/go-openapi/spec
@@ -11,6 +9,7 @@ go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 go get -u github.com/mattn/goveralls
 go get -u github.com/mitchellh/gox
 go get -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
+go get -u golang.org/x/tools/cmd/goimports
 
 go install ./vendor/github.com/gogo/protobuf/protoc-gen-gogo
 go install ./vendor/github.com/golang/mock/mockgen

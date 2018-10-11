@@ -3,9 +3,12 @@ package client
 import (
     "context"
 
-    "github.com/Juniper/contrail/pkg/services"
-    "github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
+
+// This is needed to prevent an import error
+var _ = models.Version
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 func (h *HTTP) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
