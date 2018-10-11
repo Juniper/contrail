@@ -61,11 +61,14 @@ func (a *AppformixData) addNode(node *models.Node) {
 	a.nodesInfo = append(a.nodesInfo, node)
 }
 
-func (a *AppformixData) interfaceToAppformixControllerNode(
-	appformixControllerNodes interface{}, c *Cluster) error {
-	for _, appformixControllerNode := range appformixControllerNodes.([]interface{}) { //nolint: errcheck
-		appformixControllerNodeInfo := models.InterfaceToAppformixControllerNode(
-			appformixControllerNode.(map[string]interface{})) //nolint: errcheck
+func (a *AppformixData) interfaceToAppformixControllerNode(appformixControllerNodes interface{}, c *Cluster) error {
+	n, ok := appformixControllerNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, appformixControllerNode := range n {
+		appformixControllerNodeInfo := models.InterfaceToAppformixControllerNode(appformixControllerNode)
 		// Read appformixController role node to get the node refs information
 		appformixControllerNodeData, err := c.getResource(
 			defaultAppformixControllerNodeResPath, appformixControllerNodeInfo.UUID)
@@ -80,11 +83,14 @@ func (a *AppformixData) interfaceToAppformixControllerNode(
 	return nil
 }
 
-func (a *AppformixData) interfaceToAppformixBareHostNode(
-	appformixBareHostNodes interface{}, c *Cluster) error {
-	for _, appformixBareHostNode := range appformixBareHostNodes.([]interface{}) { //nolint: errcheck
-		appformixBareHostNodeInfo := models.InterfaceToAppformixBareHostNode(
-			appformixBareHostNode.(map[string]interface{})) //nolint: errcheck
+func (a *AppformixData) interfaceToAppformixBareHostNode(appformixBareHostNodes interface{}, c *Cluster) error {
+	n, ok := appformixBareHostNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, appformixBareHostNode := range n {
+		appformixBareHostNodeInfo := models.InterfaceToAppformixBareHostNode(appformixBareHostNode)
 		// Read appformixBareHost role node to get the node refs information
 		appformixBareHostNodeData, err := c.getResource(
 			defaultAppformixBareHostNodeResPath, appformixBareHostNodeInfo.UUID)
@@ -99,11 +105,14 @@ func (a *AppformixData) interfaceToAppformixBareHostNode(
 	return nil
 }
 
-func (a *AppformixData) interfaceToAppformixOpenstackNode(
-	appformixOpenstackNodes interface{}, c *Cluster) error {
-	for _, appformixOpenstackNode := range appformixOpenstackNodes.([]interface{}) { //nolint: errcheck
-		appformixOpenstackNodeInfo := models.InterfaceToAppformixOpenstackNode(
-			appformixOpenstackNode.(map[string]interface{})) //nolint: errcheck
+func (a *AppformixData) interfaceToAppformixOpenstackNode(appformixOpenstackNodes interface{}, c *Cluster) error {
+	n, ok := appformixOpenstackNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, appformixOpenstackNode := range n {
+		appformixOpenstackNodeInfo := models.InterfaceToAppformixOpenstackNode(appformixOpenstackNode)
 		// Read appformixOpenstack role node to get the node refs information
 		appformixOpenstackNodeData, err := c.getResource(
 			defaultAppformixOpenstackNodeResPath, appformixOpenstackNodeInfo.UUID)
@@ -118,11 +127,14 @@ func (a *AppformixData) interfaceToAppformixOpenstackNode(
 	return nil
 }
 
-func (a *AppformixData) interfaceToAppformixComputeNode(
-	appformixComputeNodes interface{}, c *Cluster) error {
-	for _, appformixComputeNode := range appformixComputeNodes.([]interface{}) { //nolint: errcheck
-		appformixComputeNodeInfo := models.InterfaceToAppformixComputeNode(
-			appformixComputeNode.(map[string]interface{})) //nolint: errcheck
+func (a *AppformixData) interfaceToAppformixComputeNode(appformixComputeNodes interface{}, c *Cluster) error {
+	n, ok := appformixComputeNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, appformixComputeNode := range n {
+		appformixComputeNodeInfo := models.InterfaceToAppformixComputeNode(appformixComputeNode)
 		// Read appformixCompute role node to get the node refs information
 		appformixComputeNodeData, err := c.getResource(
 			defaultAppformixComputeNodeResPath, appformixComputeNodeInfo.UUID)
@@ -252,11 +264,14 @@ func (k *KubernetesData) updateNodeDetails(c *Cluster) error {
 	return nil
 }
 
-func (k *KubernetesData) interfaceToKubernetesNode(
-	kubernetesNodes interface{}, c *Cluster) error {
-	for _, kubernetesNode := range kubernetesNodes.([]interface{}) { //nolint: errcheck
-		kubernetesNodeInfo := models.InterfaceToKubernetesNode(
-			kubernetesNode.(map[string]interface{})) //nolint: errcheck
+func (k *KubernetesData) interfaceToKubernetesNode(kubernetesNodes interface{}, c *Cluster) error {
+	n, ok := kubernetesNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, kubernetesNode := range n {
+		kubernetesNodeInfo := models.InterfaceToKubernetesNode(kubernetesNode)
 		// Read kubernetes role node to get the node refs information
 		kubernetesNodeData, err := c.getResource(
 			defaultKubernetesNodeResPath, kubernetesNodeInfo.UUID)
@@ -271,11 +286,14 @@ func (k *KubernetesData) interfaceToKubernetesNode(
 	return nil
 }
 
-func (k *KubernetesData) interfaceToKubernetesMasterNode(
-	kubernetesMasterNodes interface{}, c *Cluster) error {
-	for _, kubernetesMasterNode := range kubernetesMasterNodes.([]interface{}) { //nolint: errcheck
-		kubernetesMasterNodeInfo := models.InterfaceToKubernetesMasterNode(
-			kubernetesMasterNode.(map[string]interface{})) //nolint: errcheck
+func (k *KubernetesData) interfaceToKubernetesMasterNode(kubernetesMasterNodes interface{}, c *Cluster) error {
+	n, ok := kubernetesMasterNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, kubernetesMasterNode := range n {
+		kubernetesMasterNodeInfo := models.InterfaceToKubernetesMasterNode(kubernetesMasterNode)
 		// Read kubernetesMaster role node to get the node refs information
 		kubernetesMasterNodeData, err := c.getResource(
 			defaultKubernetesMasterNodeResPath, kubernetesMasterNodeInfo.UUID)
@@ -291,10 +309,15 @@ func (k *KubernetesData) interfaceToKubernetesMasterNode(
 }
 
 func (k *KubernetesData) interfaceToKubernetesKubemanagerNode(
-	kubernetesKubemanagerNodes interface{}, c *Cluster) error {
-	for _, kubernetesKubemanagerNode := range kubernetesKubemanagerNodes.([]interface{}) { //nolint: errcheck
-		kubernetesKubemanagerNodeInfo := models.InterfaceToKubernetesKubemanagerNode(
-			kubernetesKubemanagerNode.(map[string]interface{})) //nolint: errcheck
+	kubernetesKubemanagerNodes interface{}, c *Cluster,
+) error {
+	n, ok := kubernetesKubemanagerNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, kubernetesKubemanagerNode := range n {
+		kubernetesKubemanagerNodeInfo := models.InterfaceToKubernetesKubemanagerNode(kubernetesKubemanagerNode)
 		// Read kubernetesKubemanager role node to get the node refs information
 		kubernetesKubemanagerNodeData, err := c.getResource(
 			defaultKubernetesKubemanagerNodeResPath, kubernetesKubemanagerNodeInfo.UUID)
@@ -397,11 +420,14 @@ func (o *OpenstackData) updateNodeDetails(c *Cluster) error {
 	return nil
 }
 
-func (o *OpenstackData) interfaceToOpenstackControlNode(
-	openstackControlNodes interface{}, c *Cluster) error {
-	for _, openstackControlNode := range openstackControlNodes.([]interface{}) { //nolint: errcheck
-		openstackControlNodeInfo := models.InterfaceToOpenstackControlNode(
-			openstackControlNode.(map[string]interface{})) //nolint: errcheck
+func (o *OpenstackData) interfaceToOpenstackControlNode(openstackControlNodes interface{}, c *Cluster) error {
+	n, ok := openstackControlNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, openstackControlNode := range n {
+		openstackControlNodeInfo := models.InterfaceToOpenstackControlNode(openstackControlNode)
 		// Read openstackControl role node to get the node refs information
 		openstackControlNodeData, err := c.getResource(
 			defaultOpenstackControlNodeResPath, openstackControlNodeInfo.UUID)
@@ -416,11 +442,14 @@ func (o *OpenstackData) interfaceToOpenstackControlNode(
 	return nil
 }
 
-func (o *OpenstackData) interfaceToOpenstackMonitoringNode(
-	openstackMonitoringNodes interface{}, c *Cluster) error {
-	for _, openstackMonitoringNode := range openstackMonitoringNodes.([]interface{}) { //nolint: errcheck
-		openstackMonitoringNodeInfo := models.InterfaceToOpenstackMonitoringNode(
-			openstackMonitoringNode.(map[string]interface{})) //nolint: errcheck
+func (o *OpenstackData) interfaceToOpenstackMonitoringNode(openstackMonitoringNodes interface{}, c *Cluster) error {
+	n, ok := openstackMonitoringNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, openstackMonitoringNode := range n {
+		openstackMonitoringNodeInfo := models.InterfaceToOpenstackMonitoringNode(openstackMonitoringNode)
 		// Read openstackMonitoring role node to get the node refs information
 		openstackMonitoringNodeData, err := c.getResource(
 			defaultOpenstackMonitoringNodeResPath, openstackMonitoringNodeInfo.UUID)
@@ -436,11 +465,14 @@ func (o *OpenstackData) interfaceToOpenstackMonitoringNode(
 	return nil
 }
 
-func (o *OpenstackData) interfaceToOpenstackNetworkNode(
-	openstackNetworkNodes interface{}, c *Cluster) error {
-	for _, openstackNetworkNode := range openstackNetworkNodes.([]interface{}) { //nolint: errcheck
-		openstackNetworkNodeInfo := models.InterfaceToOpenstackNetworkNode(
-			openstackNetworkNode.(map[string]interface{})) //nolint: errcheck
+func (o *OpenstackData) interfaceToOpenstackNetworkNode(openstackNetworkNodes interface{}, c *Cluster) error {
+	n, ok := openstackNetworkNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, openstackNetworkNode := range n {
+		openstackNetworkNodeInfo := models.InterfaceToOpenstackNetworkNode(openstackNetworkNode)
 		// Read openstackNetwork role node to get the node refs information
 		openstackNetworkNodeData, err := c.getResource(
 			defaultOpenstackNetworkNodeResPath, openstackNetworkNodeInfo.UUID)
@@ -455,11 +487,14 @@ func (o *OpenstackData) interfaceToOpenstackNetworkNode(
 	return nil
 }
 
-func (o *OpenstackData) interfaceToOpenstackStorageNode(
-	openstackStorageNodes interface{}, c *Cluster) error {
-	for _, openstackStorageNode := range openstackStorageNodes.([]interface{}) { //nolint: errcheck
-		openstackStorageNodeInfo := models.InterfaceToOpenstackStorageNode(
-			openstackStorageNode.(map[string]interface{})) //nolint: errcheck
+func (o *OpenstackData) interfaceToOpenstackStorageNode(openstackStorageNodes interface{}, c *Cluster) error {
+	n, ok := openstackStorageNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, openstackStorageNode := range n {
+		openstackStorageNodeInfo := models.InterfaceToOpenstackStorageNode(openstackStorageNode)
 		// Read openstackStorage role node to get the node refs information
 		openstackStorageNodeData, err := c.getResource(
 			defaultOpenstackStorageNodeResPath, openstackStorageNodeInfo.UUID)
@@ -474,11 +509,14 @@ func (o *OpenstackData) interfaceToOpenstackStorageNode(
 	return nil
 }
 
-func (o *OpenstackData) interfaceToOpenstackComputeNode(
-	openstackComputeNodes interface{}, c *Cluster) error {
-	for _, openstackComputeNode := range openstackComputeNodes.([]interface{}) { //nolint: errcheck
-		openstackComputeNodeInfo := models.InterfaceToOpenstackComputeNode(
-			openstackComputeNode.(map[string]interface{})) //nolint: errcheck
+func (o *OpenstackData) interfaceToOpenstackComputeNode(openstackComputeNodes interface{}, c *Cluster) error {
+	n, ok := openstackComputeNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, openstackComputeNode := range n {
+		openstackComputeNodeInfo := models.InterfaceToOpenstackComputeNode(openstackComputeNode)
 		// Read openstackCompute role node to get the node refs information
 		openstackComputeNodeData, err := c.getResource(
 			defaultOpenstackComputeNodeResPath, openstackComputeNodeInfo.UUID)
@@ -576,11 +614,14 @@ func (d *Data) addNode(node *models.Node) {
 	d.nodesInfo = append(d.nodesInfo, node)
 }
 
-func (d *Data) interfaceToContrailVrouterNode(
-	contrailVrouterNodes interface{}, c *Cluster) error {
-	for _, contrailVrouterNode := range contrailVrouterNodes.([]interface{}) { //nolint: errcheck
-		contrailVrouterNodeInfo := models.InterfaceToContrailVrouterNode(
-			contrailVrouterNode.(map[string]interface{})) //nolint: errcheck
+func (d *Data) interfaceToContrailVrouterNode(contrailVrouterNodes interface{}, c *Cluster) error {
+	n, ok := contrailVrouterNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailVrouterNode := range n {
+		contrailVrouterNodeInfo := models.InterfaceToContrailVrouterNode(contrailVrouterNode)
 		// Read contrailVrouter role node to get the node refs information
 		contrailVrouterNodeData, err := c.getResource(
 			defaultContrailVrouterNodeResPath, contrailVrouterNodeInfo.UUID)
@@ -595,9 +636,13 @@ func (d *Data) interfaceToContrailVrouterNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailZTPTFTPNode(
-	contrailZTPTFTPNodes interface{}, c *Cluster) error {
-	for _, contrailZTPTFTPNode := range contrailZTPTFTPNodes.([]interface{}) {
+func (d *Data) interfaceToContrailZTPTFTPNode(contrailZTPTFTPNodes interface{}, c *Cluster) error {
+	n, ok := contrailZTPTFTPNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailZTPTFTPNode := range n {
 		contrailZTPTFTPNodeInfo := models.InterfaceToContrailZTPTFTPNode(
 			contrailZTPTFTPNode.(map[string]interface{}))
 		// Read contrailZTPTFTP role node to get the node refs information
@@ -614,9 +659,13 @@ func (d *Data) interfaceToContrailZTPTFTPNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailZTPDHCPNode(
-	contrailZTPDHCPNodes interface{}, c *Cluster) error {
-	for _, contrailZTPDHCPNode := range contrailZTPDHCPNodes.([]interface{}) {
+func (d *Data) interfaceToContrailZTPDHCPNode(contrailZTPDHCPNodes interface{}, c *Cluster) error {
+	n, ok := contrailZTPDHCPNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailZTPDHCPNode := range n {
 		contrailZTPDHCPNodeInfo := models.InterfaceToContrailZTPDHCPNode(
 			contrailZTPDHCPNode.(map[string]interface{}))
 		// Read contrailZTPDHCP role node to get the node refs information
@@ -633,11 +682,14 @@ func (d *Data) interfaceToContrailZTPDHCPNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailServiceNode(
-	contrailServiceNodes interface{}, c *Cluster) error {
-	for _, contrailServiceNode := range contrailServiceNodes.([]interface{}) { //nolint: errcheck
-		contrailServiceNodeInfo := models.InterfaceToContrailServiceNode(
-			contrailServiceNode.(map[string]interface{})) //nolint: errcheck
+func (d *Data) interfaceToContrailServiceNode(contrailServiceNodes interface{}, c *Cluster) error {
+	n, ok := contrailServiceNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailServiceNode := range n {
+		contrailServiceNodeInfo := models.InterfaceToContrailServiceNode(contrailServiceNode)
 		// Read contrailService role node to get the node refs information
 		contrailServiceNodeData, err := c.getResource(
 			defaultContrailServiceNodeResPath, contrailServiceNodeInfo.UUID)
@@ -652,11 +704,14 @@ func (d *Data) interfaceToContrailServiceNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailAnalyticsDatabaseNode(
-	contrailAnalyticsDatabaseNodes interface{}, c *Cluster) error {
-	for _, contrailAnalyticsDatabaseNode := range contrailAnalyticsDatabaseNodes.([]interface{}) { //nolint: errcheck
-		contrailAnalyticsDatabaseNodeInfo := models.InterfaceToContrailAnalyticsDatabaseNode(
-			contrailAnalyticsDatabaseNode.(map[string]interface{})) //nolint: errcheck
+func (d *Data) interfaceToContrailAnalyticsDatabaseNode(contrailAnalyticsDatabaseNodes interface{}, c *Cluster) error {
+	n, ok := contrailAnalyticsDatabaseNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailAnalyticsDatabaseNode := range n {
+		contrailAnalyticsDatabaseNodeInfo := models.InterfaceToContrailAnalyticsDatabaseNode(contrailAnalyticsDatabaseNode)
 		// Read contrailAnalyticsDatabase role node to get the node refs information
 		contrailAnalyticsDatabaseNodeData, err := c.getResource(
 			defaultContrailAnalyticsDatabaseNodeResPath, contrailAnalyticsDatabaseNodeInfo.UUID)
@@ -671,11 +726,14 @@ func (d *Data) interfaceToContrailAnalyticsDatabaseNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailAnalyticsNode(
-	contrailAnalyticsNodes interface{}, c *Cluster) error {
-	for _, contrailAnalyticsNode := range contrailAnalyticsNodes.([]interface{}) { //nolint: errcheck
-		contrailAnalyticsNodeInfo := models.InterfaceToContrailAnalyticsNode(
-			contrailAnalyticsNode.(map[string]interface{})) //nolint: errcheck
+func (d *Data) interfaceToContrailAnalyticsNode(contrailAnalyticsNodes interface{}, c *Cluster) error {
+	n, ok := contrailAnalyticsNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailAnalyticsNode := range n {
+		contrailAnalyticsNodeInfo := models.InterfaceToContrailAnalyticsNode(contrailAnalyticsNode)
 		// Read contrailAnalytics role node to get the node refs information
 		contrailAnalyticsNodeData, err := c.getResource(
 			defaultContrailAnalyticsNodeResPath, contrailAnalyticsNodeInfo.UUID)
@@ -690,11 +748,14 @@ func (d *Data) interfaceToContrailAnalyticsNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailWebuiNode(
-	contrailWebuiNodes interface{}, c *Cluster) error {
-	for _, contrailWebuiNode := range contrailWebuiNodes.([]interface{}) { //nolint: errcheck
-		contrailWebuiNodeInfo := models.InterfaceToContrailWebuiNode(
-			contrailWebuiNode.(map[string]interface{})) //nolint: errcheck
+func (d *Data) interfaceToContrailWebuiNode(contrailWebuiNodes interface{}, c *Cluster) error {
+	n, ok := contrailWebuiNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailWebuiNode := range n {
+		contrailWebuiNodeInfo := models.InterfaceToContrailWebuiNode(contrailWebuiNode)
 		// Read contrailWebui role node to get the node refs information
 		contrailWebuiNodeData, err := c.getResource(
 			defaultContrailWebuiNodeResPath, contrailWebuiNodeInfo.UUID)
@@ -709,11 +770,14 @@ func (d *Data) interfaceToContrailWebuiNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailControlNode(
-	contrailControlNodes interface{}, c *Cluster) error {
-	for _, contrailControlNode := range contrailControlNodes.([]interface{}) { //nolint: errcheck
-		contrailControlNodeInfo := models.InterfaceToContrailControlNode(
-			contrailControlNode.(map[string]interface{})) //nolint: errcheck
+func (d *Data) interfaceToContrailControlNode(contrailControlNodes interface{}, c *Cluster) error {
+	n, ok := contrailControlNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailControlNode := range n {
+		contrailControlNodeInfo := models.InterfaceToContrailControlNode(contrailControlNode)
 		// Read contrailControl role node to get the node refs information
 		contrailControlNodeData, err := c.getResource(
 			defaultContrailControlNodeResPath, contrailControlNodeInfo.UUID)
@@ -729,11 +793,14 @@ func (d *Data) interfaceToContrailControlNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailConfigDatabaseNode(
-	contrailConfigDatabaseNodes interface{}, c *Cluster) error {
-	for _, contrailConfigDatabaseNode := range contrailConfigDatabaseNodes.([]interface{}) { //nolint: errcheck
-		contrailConfigDatabaseNodeInfo := models.InterfaceToContrailConfigDatabaseNode(
-			contrailConfigDatabaseNode.(map[string]interface{})) //nolint: errcheck
+func (d *Data) interfaceToContrailConfigDatabaseNode(contrailConfigDatabaseNodes interface{}, c *Cluster) error {
+	n, ok := contrailConfigDatabaseNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailConfigDatabaseNode := range n {
+		contrailConfigDatabaseNodeInfo := models.InterfaceToContrailConfigDatabaseNode(contrailConfigDatabaseNode)
 		// Read contrailConfigDatabase role node to get the node refs information
 		contrailConfigDatabaseNodeData, err := c.getResource(
 			defaultContrailConfigDatabaseNodeResPath, contrailConfigDatabaseNodeInfo.UUID)
@@ -748,12 +815,14 @@ func (d *Data) interfaceToContrailConfigDatabaseNode(
 	return nil
 }
 
-func (d *Data) interfaceToContrailConfigNode(
-	contrailConfigNodes interface{}, c *Cluster) error {
-	for _, contrailConfigNode := range contrailConfigNodes.([]interface{}) { //nolint: errcheck
-		contrailConfigNodeInfo := models.InterfaceToContrailConfigNode(
+func (d *Data) interfaceToContrailConfigNode(contrailConfigNodes interface{}, c *Cluster) error {
+	n, ok := contrailConfigNodes.([]interface{})
+	if !ok {
+		return nil
+	}
 
-			contrailConfigNode.(map[string]interface{})) //nolint: errcheck
+	for _, contrailConfigNode := range n {
+		contrailConfigNodeInfo := models.InterfaceToContrailConfigNode(contrailConfigNode)
 		// Read contrailConfig role node to get the node refs information
 		contrailConfigNodeData, err := c.getResource(
 			defaultContrailConfigNodeResPath, contrailConfigNodeInfo.UUID)
