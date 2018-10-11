@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/stretchr/testify/require"
 )
 
 // CreateProject creates a project resource in given service.

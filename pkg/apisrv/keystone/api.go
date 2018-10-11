@@ -12,9 +12,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/common"
-
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	"github.com/Juniper/contrail/pkg/common"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 

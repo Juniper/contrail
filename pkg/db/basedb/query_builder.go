@@ -8,10 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
-	log "github.com/sirupsen/logrus"
 )
 
 const (

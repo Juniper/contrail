@@ -2,12 +2,11 @@ package cluster
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"context"
 
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"

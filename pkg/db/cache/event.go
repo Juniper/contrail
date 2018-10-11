@@ -3,8 +3,9 @@ package cache
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/services"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 //EventProducer processes cached events.

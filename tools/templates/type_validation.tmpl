@@ -1,8 +1,9 @@
 package models
 
 import (
-    "strings"
-	errors "github.com/pkg/errors"
+	"strings"
+
+	"github.com/pkg/errors"
 )
 
 //This is needed to prevent an import error.
@@ -112,7 +113,6 @@ var _ = errors.New
 {% for type, definition in types %}
 {% if definition.Type == "object" %}
 //Validate{{ type }} validation based on information in schema
-// nolint
 func (sv * SchemaValidator) Validate{{ type }}( obj * {{ type }}) error {
 	{{validateProperties(type, definition.Properties)}}
 	return nil
@@ -121,7 +121,6 @@ func (sv * SchemaValidator) Validate{{ type }}( obj * {{ type }}) error {
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 //Validate{{ schema.JSONSchema.GoName }} validation based on information in schema
-// nolint
 func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ schema.JSONSchema.GoName }}) error {
 	//Validate Properties
 	{{validateProperties(schema.ID, schema.JSONSchema.Properties)}}

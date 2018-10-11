@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/log"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 func TestClient_InTransaction(t *testing.T) {
