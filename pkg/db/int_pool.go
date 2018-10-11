@@ -5,9 +5,10 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/pkg/errors"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/pkg/errors"
 )
 
 // IntPool represents the half-open integer range [Start, End) in the set of integers identified by Key.

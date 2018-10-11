@@ -1,14 +1,13 @@
 package basemodels
 
 import (
-	fmt "fmt"
+	"fmt"
+	"net"
 	"regexp"
 	"strings"
 	"time"
 
-	"net"
-
-	errors "github.com/pkg/errors"
+	"github.com/pkg/errors"
 )
 
 //NewBaseValidatorWithFormat creates new BaseValidator with format validators

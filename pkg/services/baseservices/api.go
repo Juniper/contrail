@@ -5,8 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/labstack/echo"
+
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 // Block of constants consumed by client code.

@@ -3,9 +3,10 @@ package apisrv
 import (
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/labstack/echo"
 	"golang.org/x/net/websocket"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 func (s *Server) watchHandler(c echo.Context) error {

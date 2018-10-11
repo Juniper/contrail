@@ -1,11 +1,10 @@
 package contrailcli
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
-
-	"context"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

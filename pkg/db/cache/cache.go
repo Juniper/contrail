@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
-
-	log "github.com/sirupsen/logrus"
 )
 
 //DB is cache db implemenation.
