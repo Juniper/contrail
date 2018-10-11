@@ -1,8 +1,9 @@
-package main // nolint: golint
+package main
 
 import (
-	"github.com/Juniper/contrail/pkg/cmd/contrailcli"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/cmd/contrailcli"
 )
 
 func main() {

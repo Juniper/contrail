@@ -3,10 +3,11 @@ package basedb
 import (
 	"database/sql"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 const (

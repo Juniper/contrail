@@ -3,8 +3,9 @@ package cluster
 import (
 	"errors"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/sirupsen/logrus"
+
+	pkglog "github.com/Juniper/contrail/pkg/log"
 )
 
 // manager inerface to manage clusters

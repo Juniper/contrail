@@ -1,10 +1,9 @@
 package cluster
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
-
-	"context"
 
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"

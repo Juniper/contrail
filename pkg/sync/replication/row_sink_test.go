@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 func TestObjectMappingAdapterCreate(t *testing.T) {

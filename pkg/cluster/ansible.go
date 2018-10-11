@@ -1,7 +1,9 @@
 package cluster
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"io"
 	"io/ioutil"
 	"net"
@@ -12,10 +14,6 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/mattn/go-shellwords"
-	"github.com/siddontang/go/log"
-
-	"archive/tar"
-	"compress/gzip"
 )
 
 const (
@@ -50,7 +48,7 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 	defer func() {
 		er := f.Close()
 		if er != nil {
-			log.Errorf("Error while untar file: %s", er)
+			a.log.Errorf("Error while untar file: %s", er)
 		}
 	}()
 
@@ -61,7 +59,7 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 	defer func() {
 		er := gzr.Close()
 		if er != nil {
-			log.Errorf("Error while untar file: %s", er)
+			a.log.Errorf("Error while untar file: %s", er)
 		}
 	}()
 
@@ -119,7 +117,7 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 			// to wait until all operations have completed.
 			er := f.Close()
 			if er != nil {
-				log.Errorf("Error while untar file: %s", er)
+				a.log.Errorf("Error while untar file: %s", er)
 			}
 		}
 	}
@@ -205,7 +203,7 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 	tmpFileName := tmpfile.Name()
 	defer func() {
 		if err = os.Remove(tmpFileName); err != nil {
-			log.Errorf("Error while deleting tmpfile: %s", err)
+			a.log.Errorf("Error while deleting tmpfile: %s", err)
 		}
 	}()
 
@@ -457,10 +455,10 @@ func (a *ansibleProvisioner) playAppformixProvision() error {
 		}
 		AppformixVersion := a.clusterData.getAppformixClusterInfo().AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
-			                "-e", "appformix_version=" + AppformixVersion}
+			"-e", "appformix_version=" + AppformixVersion}
 		if a.clusterData.clusterInfo.Orchestrator == orchestratorOpenstack {
 			ansibleArgs = append(ansibleArgs,
-				             "-e @/etc/kolla/external/admin-openrc.yml")
+				"-e @/etc/kolla/external/admin-openrc.yml")
 		}
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
@@ -470,7 +468,7 @@ func (a *ansibleProvisioner) playAppformixProvision() error {
 			srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
 			er := a.untar(srcPath+srcFile, repoDir)
 			if er != nil {
-				log.Errorf("Error while untar file: %s", er)
+				a.log.Errorf("Error while untar file: %s", er)
 			}
 		}
 		return a.playFromDir(repoDir, ansibleArgs)
