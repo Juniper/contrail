@@ -240,7 +240,7 @@ func (w *PostgresWatcher) handleWalMessage(ctx context.Context, msg *pgx.WalMess
 
 func (w *PostgresWatcher) handleServerHeartbeat(shb *pgx.ServerHeartbeat) error {
 	if shb.ReplyRequested == 1 {
-		w.log.Info("Server requested reply, sending standby status with position: ", pgx.FormatLSN)
+		w.log.Info("Server requested reply, sending standby status with position: ", pgx.FormatLSN(w.lastLSN))
 		return w.conn.SendStatus(w.lastLSN)
 	}
 	return nil
