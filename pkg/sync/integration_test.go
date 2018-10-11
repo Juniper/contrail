@@ -248,7 +248,7 @@ func TestSyncService(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rev := ec.Clear(t)
 
-			check := integration.StartWatchers(t, tt.watchers, clientv3.WithRev(rev))
+			check := integration.StartWatchers(t, tt.name, tt.watchers, clientv3.WithRev(rev))
 
 			sync, err := sync.NewService()
 			require.NoError(t, err)
