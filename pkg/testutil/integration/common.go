@@ -192,7 +192,7 @@ func RunCleanTestScenario(
 ) {
 	log.Debug("Running clean test scenario: ", testScenario.Name)
 	ctx := context.Background()
-	checkWatchers := StartWatchers(t, testScenario.Watchers)
+	checkWatchers := StartWatchers(t, testScenario.Name, testScenario.Watchers)
 	stopIC := startIntentCompiler(t, testScenario, server)
 	defer stopIC()
 
@@ -233,7 +233,7 @@ type event = map[string]interface{}
 // StartWatchers checks if events emitted to etcd match those given in watchers dict.
 // Provided `watchers` map contains slices of events that should be emitted on
 // etcd key matching the map key.
-func StartWatchers(t *testing.T, watchers map[string][]event) func(t *testing.T) {
+func StartWatchers(t *testing.T, task string, watchers map[string][]event) func(t *testing.T) {
 	checks := []func(t *testing.T){}
 
 	ec := integrationetcd.NewEtcdClient(t)
@@ -241,7 +241,7 @@ func StartWatchers(t *testing.T, watchers map[string][]event) func(t *testing.T)
 		events := watchers[key]
 		collect := ec.WatchKeyN(key, len(events), 5*time.Second, clientv3.WithPrefix())
 
-		checks = append(checks, createWatchChecker(collect, key, events))
+		checks = append(checks, createWatchChecker(task, collect, key, events))
 	}
 
 	return func(t *testing.T) {
@@ -252,7 +252,7 @@ func StartWatchers(t *testing.T, watchers map[string][]event) func(t *testing.T)
 	}
 }
 
-func createWatchChecker(collect func() []string, key string, events []event) func(t *testing.T) {
+func createWatchChecker(task string, collect func() []string, key string, events []event) func(t *testing.T) {
 	return func(t *testing.T) {
 		collected := collect()
 		assert.Equal(
@@ -266,7 +266,7 @@ func createWatchChecker(collect func() []string, key string, events []event) fun
 				assert.NoError(t, err)
 			}
 			testutil.AssertEqual(
-				t, e, data, "etcd event not equal for %s[%v]:\n%s", key, i,
+				t, e, data, "task: %s\netcd event not equal for %s[%v]:\n%s", task, key, i,
 			)
 		}
 	}
@@ -321,7 +321,7 @@ func runTestScenario(ctx context.Context,
 	}
 	for _, task := range testScenario.Workflow {
 		log.Infof("[Task] Name: %s, TestScenario: %s", task.Name, testScenario.Name)
-		checkWatchers := StartWatchers(t, task.Watchers)
+		checkWatchers := StartWatchers(t, task.Name, task.Watchers)
 
 		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
 		clientID := defaultClientID
