@@ -1,7 +1,9 @@
 package cluster
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"io"
 	"io/ioutil"
 	"net"
@@ -13,9 +15,6 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/mattn/go-shellwords"
 	"github.com/siddontang/go/log"
-
-	"archive/tar"
-	"compress/gzip"
 )
 
 const (
@@ -457,10 +456,10 @@ func (a *ansibleProvisioner) playAppformixProvision() error {
 		}
 		AppformixVersion := a.clusterData.getAppformixClusterInfo().AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
-			                "-e", "appformix_version=" + AppformixVersion}
+			"-e", "appformix_version=" + AppformixVersion}
 		if a.clusterData.clusterInfo.Orchestrator == orchestratorOpenstack {
 			ansibleArgs = append(ansibleArgs,
-				             "-e @/etc/kolla/external/admin-openrc.yml")
+				"-e @/etc/kolla/external/admin-openrc.yml")
 		}
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 

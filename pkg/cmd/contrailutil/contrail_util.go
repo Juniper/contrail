@@ -3,10 +3,11 @@ package contrailutil
 import (
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 var configFile string

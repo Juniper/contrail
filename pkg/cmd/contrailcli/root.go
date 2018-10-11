@@ -1,9 +1,8 @@
 package contrailcli
 
 import (
-	"strings"
-
 	"context"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

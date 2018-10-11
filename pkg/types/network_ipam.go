@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -11,7 +12,6 @@ import (
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/gogo/protobuf/types"
 )
 
 func isSubnetOverlap(subnet1, subnet2 *net.IPNet) bool {
