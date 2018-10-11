@@ -38,6 +38,10 @@ func TestSecurityGroup(t *testing.T) {
 	runTest(t, t.Name())
 }
 
+func TestReferredSecurityGroups(t *testing.T) {
+	runTest(t, t.Name())
+}
+
 func TestCreateCoreResources(t *testing.T) {
 	ec := integrationetcd.NewEtcdClient(t)
 	defer ec.Close(t)

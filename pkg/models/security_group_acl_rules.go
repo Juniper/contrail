@@ -16,6 +16,8 @@ type PolicyRulesWithRefs struct {
 
 // ToACLRules translates policy rules to ACL rules.
 func (rs *PolicyRulesWithRefs) ToACLRules() (ingressRules, egressRules []*AclRuleType) {
+	ingressRules = []*AclRuleType{}
+	egressRules = []*AclRuleType{}
 	for _, pair := range allAddressCombinations(rs.Rules) {
 		rule, err := makeACLRule(pair, rs.FQNameToSG)
 		if err != nil {
