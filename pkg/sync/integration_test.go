@@ -223,7 +223,7 @@ func TestSyncService(t *testing.T) {
 
 			ec.Clear(t)
 
-			check := integration.StartWatchers(t, tt.watchers)
+			check := integration.StartWatchers(t, tt.name, tt.watchers)
 
 			sync, err := sync.NewService()
 			require.NoError(t, err)
