@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/gogo/protobuf/types"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 // MapToFieldMask returns updated fields masks.

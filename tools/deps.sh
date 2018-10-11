@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 set -o errexit
-set -o nounset
-set -o pipefail
 
 # TODO: uncomment this once this dep is fixed
 # go get -u github.com/go-openapi/spec

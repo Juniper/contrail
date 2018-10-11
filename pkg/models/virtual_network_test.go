@@ -3,8 +3,9 @@ package models
 import (
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
