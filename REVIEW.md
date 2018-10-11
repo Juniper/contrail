@@ -153,3 +153,10 @@ In particular, Go template files should be indented with tabs.
 +{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 +	Create{{ schema.JSONSchema.GoName }}(context.Context, *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error)
 ```
+
+## Tests
+
+### Parameters
+
+UUIDs in tests (both yaml and go) should be in beefbeef-beef-beef-beef-beefbeef1002 
+format. It makes it easier to maintain and navigate through scenarios.
