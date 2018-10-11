@@ -4,9 +4,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gogo/protobuf/types"
+
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/gogo/protobuf/types"
 )
 
 // FirewallRule constants.

@@ -3,33 +3,33 @@ run:
   concurrency: 2
   deadline: 11m
   skip-dirs:
-  - extension/pkg/db/cache        # TODO: reenable when compilation fixed
-  - extension/pkg/db/etcd         # TODO: reenable when compilation fixed
-  - extension/pkg/services/vncapi # TODO: reenable when compilation fixed
-  - extension/pkg/apisrv/client   # TODO: reenable when compilation fixed
-  - pkg/types/gomock*
+  - extension/pkg/db/cache        # TODO: re-enable when compilation fixed
+  - extension/pkg/db/etcd         # TODO: re-enable when compilation fixed
+  - extension/pkg/services/vncapi # TODO: re-enable when compilation fixed
+  - extension/pkg/apisrv/client   # TODO: re-enable when compilation fixed
 
 issues:
   exclude:
   - .* is always .* # unparam issue
-  - ^should have a package comment, unless it's in another file for this package$
+  - ^should have a package comment, unless it's in another file for this package$ # golint issue
   exclude-use-default: false
-  max-per-linter: 0
+  max-issues-per-linter: 0
+  max-same-issues: 0
 
 # Intentionally disabled linters:
 # - dupl consumes too much RAM and CPU cycles
 # - gosec consumes too much RAM and CPU cycles
 # - megacheck uses staticcheck which consumes too much RAM and CPU cycles
+# - prealloc issues are considered premature optimization
 # - staticcheck consumes too much RAM and CPU cycles
 linters:
   enable-all: true
   disable:
   - dupl
-  - gofmt # TODO: get rid of false-positives and enable gofmt
   - goimports # TODO: get rid of false-positives and enable goimports
   - gosec
   - megacheck
-  - prealloc # TODO: fix prealloc issues in order to increase performance and enable prealloc
+  - prealloc
   - staticcheck
 
 linters-settings:
@@ -45,8 +45,8 @@ linters-settings:
   maligned:
     suggest-new: true
   unused:
-    check-exported: true # TODO: default false, possibly remove
+    check-exported: true
   unparam:
-    check-exported: true # TODO: default false, possibly remove
+    check-exported: true
   nakedret:
     max-func-lines: 5

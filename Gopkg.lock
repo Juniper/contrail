@@ -285,14 +285,6 @@
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
-  branch = "master"
-  digest = "1:67bcf41677f33b22aee1b82e9460aa093a96cfe4877445dd19ea950c200a47ab"
-  name = "github.com/iancoleman/strcase"
-  packages = ["."]
-  pruneopts = ""
-  revision = "3605ed457bf7f8caa1371b4fafadadc026673479"
-
-[[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
@@ -785,14 +777,6 @@
   version = "v0.9.1"
 
 [[projects]]
-  digest = "1:a1704342ebd73b0f5cf08dac9fff5a98ce3975c65e0f8bff95ff5e83da1e352d"
-  name = "gopkg.in/oleiade/reflections.v1"
-  packages = ["."]
-  pruneopts = ""
-  revision = "2b6ec3da648e3e834dc41bad8d9ed7f2dc6a9496"
-  version = "v1.0.0"
-
-[[projects]]
   branch = "v2"
   digest = "1:4b4e5848dfe7f316f95f754df071bebfb40cf4482da62e17e7e1aebdf11f4918"
   name = "gopkg.in/yaml.v2"
@@ -819,7 +803,6 @@
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",
     "github.com/golang/mock/gomock",
-    "github.com/iancoleman/strcase",
     "github.com/jackc/pgx",
     "github.com/jackc/pgx/pgtype",
     "github.com/joho/godotenv",
@@ -855,7 +838,6 @@
     "google.golang.org/grpc/grpclog",
     "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/status",
-    "gopkg.in/oleiade/reflections.v1",
     "gopkg.in/yaml.v2",
   ]
   solver-name = "gps-cdcl"

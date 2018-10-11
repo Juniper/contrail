@@ -1,16 +1,16 @@
 package agent
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
 
-	"context"
+	"github.com/sirupsen/logrus"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/sirupsen/logrus"
 )
 
 const (

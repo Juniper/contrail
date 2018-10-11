@@ -3,14 +3,14 @@ package dependencies_test
 import (
 	"testing"
 
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/compilation/dependencies"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/compilation/logic"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 const testReactionsYAML = `
