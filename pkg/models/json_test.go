@@ -7,6 +7,39 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestJSONMarshal(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    interface{}
+		expected string
+	}{
+		{
+			name:     "omits nil fields of generated types",
+			input:    &VirtualNetwork{},
+			expected: `{}`,
+		},
+		{
+			name:     "does not omit nil fields of KeyValuePair object",
+			input:    &KeyValuePair{},
+			expected: `{"value":"","key":""}`,
+		},
+		{
+			name:     "does not omit nil value field of KeyValuePair object",
+			input:    &KeyValuePair{Key: "hoge"},
+			expected: `{"value":"","key":"hoge"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o, err := json.Marshal(tt.input)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, string(o))
+		})
+	}
+}
+
 func TestJSONUnmarshal(t *testing.T) {
 	tests := []struct {
 		name            string
