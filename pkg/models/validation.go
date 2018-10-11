@@ -1,14 +1,14 @@
-package models // nolint: golint
+package models
 
 import (
+	"net"
 	"regexp"
 	"strconv"
 	"strings"
 
-	"net"
+	errors "github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
-	errors "github.com/pkg/errors"
 )
 
 //NewTypeValidatorWithFormat creates new TypeValidator with format validators

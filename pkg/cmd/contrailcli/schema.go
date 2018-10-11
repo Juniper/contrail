@@ -1,11 +1,10 @@
 package contrailcli
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"time"
-
-	"context"
 
 	"github.com/flosch/pongo2"
 	log "github.com/sirupsen/logrus"

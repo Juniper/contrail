@@ -1,12 +1,11 @@
 package cluster
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
 	"strings"
-
-	"context"
 
 	uuid "github.com/satori/go.uuid"
 

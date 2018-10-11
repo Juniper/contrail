@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -o errexit
-set -o nounset
-set -o pipefail
-
-dep ensure -dry-run -no-vendor
+# "dep ensure -dry-run" does not fail when inconsistencies are found
+# TODO: use "dep check" when it passes on CI
+dep ensure -dry-run

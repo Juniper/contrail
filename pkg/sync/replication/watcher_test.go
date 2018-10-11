@@ -7,11 +7,12 @@ import (
 	"testing"
 	"time"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/jackc/pgx"
 	"github.com/kyleconroy/pgoutput"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	pkglog "github.com/Juniper/contrail/pkg/log"
 )
 
 type oner interface {
