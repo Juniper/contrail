@@ -228,7 +228,7 @@ func RunCleanTestScenario(
 ) {
 	log.WithField("test-scenario", testScenario.Name).Debug("Running clean test scenario")
 	ctx := context.Background()
-	checkWatchers := StartWatchers(t, testScenario.Watchers)
+	checkWatchers := StartWatchers(t, testScenario.Name, testScenario.Watchers)
 	stopIC := startIntentCompiler(t, testScenario, server)
 	defer stopIC()
 
@@ -270,7 +270,7 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 }
 
 // StartWatchers checks if events emitted to etcd match those given in watchers dict.
-func StartWatchers(t *testing.T, watchers Watchers, opts ...clientv3.OpOption) func(t *testing.T) {
+func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv3.OpOption) func(t *testing.T) {
 	checks := []func(t *testing.T){}
 
 	ec := integrationetcd.NewEtcdClient(t)
@@ -278,7 +278,7 @@ func StartWatchers(t *testing.T, watchers Watchers, opts ...clientv3.OpOption) f
 		events := watchers[key]
 		collect := ec.WatchKeyN(key, len(events), collectTimeout, append(opts, clientv3.WithPrefix())...)
 
-		checks = append(checks, createWatchChecker(collect, key, events))
+		checks = append(checks, createWatchChecker(task, collect, key, events))
 	}
 
 	return func(t *testing.T) {
@@ -289,7 +289,7 @@ func StartWatchers(t *testing.T, watchers Watchers, opts ...clientv3.OpOption) f
 	}
 }
 
-func createWatchChecker(collect func() []string, key string, events []Event) func(t *testing.T) {
+func createWatchChecker(task string, collect func() []string, key string, events []Event) func(t *testing.T) {
 	return func(t *testing.T) {
 		collected := collect()
 		assert.Equal(
@@ -302,7 +302,7 @@ func createWatchChecker(collect func() []string, key string, events []Event) fun
 				err := json.Unmarshal([]byte(c), &data)
 				assert.NoError(t, err)
 			}
-			testutil.AssertEqual(t, e, data, fmt.Sprintf("etcd event not equal for %s[%v]", key, i))
+			testutil.AssertEqual(t, e, data, fmt.Sprintf("task: %s\netcd event not equal for %s[%v]", task, key, i))
 		}
 	}
 }
@@ -367,7 +367,7 @@ func runTestScenario(
 			"test-scenario": testScenario.Name,
 			"task":          task.Name,
 		}).Info("Starting task")
-		checkWatchers := StartWatchers(t, task.Watchers)
+		checkWatchers := StartWatchers(t, task.Name, task.Watchers)
 
 		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
 		clientID := defaultClientID
