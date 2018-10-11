@@ -128,6 +128,7 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"server.read_timeout":         10,
 		"server.write_timeout":        5,
 		"server.log_api":              !c.DisableLogAPI,
+		"server.log_body":             !c.DisableLogAPI,
 		"static_files.public":         path.Join(c.RepoRootPath, "public"),
 		"tls.enabled":                 false,
 	})

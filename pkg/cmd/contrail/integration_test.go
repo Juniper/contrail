@@ -39,6 +39,10 @@ func TestSecurityGroup(t *testing.T) {
 	runTest(t, t.Name())
 }
 
+func TestReferredSecurityGroups(t *testing.T) {
+	runTest(t, t.Name())
+}
+
 func TestCreateCoreResources(t *testing.T) {
 	if viper.GetBool("sync.enabled") {
 		t.Skip("test incompatible with sync process")
