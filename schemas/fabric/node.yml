@@ -16,6 +16,10 @@ references:
       operations: "CRUD"
       description: "Reference to SSH credential object."
       presence: "optional"
+    cloud_security_group:
+      operations: "CRUD"
+      description: "Reference to security-group, when node belongs to pub cloud"
+      presence: "optional"
 plural: nodes
 prefix: /
 schema:
@@ -109,6 +113,10 @@ schema:
       presence: "optional"
       description: "Details of the ESXI host"
       $ref: "fabric_types.json#/definitions/ESXIHostInfo"
+    cloud_info:
+      presence: "optional"
+      description: "Information related to cloud"
+      $ref: "fabric_types.json#/definitions/CloudInstanceInfo"
   required: []
   type: object
 singular: node

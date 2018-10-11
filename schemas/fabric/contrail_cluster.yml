@@ -29,6 +29,10 @@ references:
       operations: "CRUD"
       description: "Reference to contrail cluster object from this appformix cluster."
       presence: "optional"
+    cloud:
+      operations: "CRUD"
+      description: "Reference to public cloud, which will have VM part of this cluster"
+      presence: "optional"
 schema:
   properties:
     container_registry:

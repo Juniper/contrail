@@ -52,18 +52,6 @@ schema:
       view:
       - create
       - detail
-    cidr_block:
-      description: CIDR block for cloud
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: CIDR block
-      type: string
-      view:
-      - create
-      - detail
   required:
     - type
   type: object

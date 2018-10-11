@@ -10,10 +10,6 @@ references:
       operations: "CRUD"
       description: "Reference to node object for this multicloud_gw node."
       presence: "optional"
-    cloud_private_subnet:
-      operations: "CRUD"
-      description: "Reference to private subnets which cloud has"
-      presence: "optional"
 parents:
   contrail_cluster:
     operations: "CRUD"

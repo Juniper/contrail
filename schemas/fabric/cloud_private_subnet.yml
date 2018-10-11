@@ -5,7 +5,7 @@ id: cloud_private_subnet
 metadata:
   category: cloud
 parents:
-  cloud:
+  virtual_cloud:
     operations: "CRUD"
     description: "Parent for private subnet"
     presence: "optional"
