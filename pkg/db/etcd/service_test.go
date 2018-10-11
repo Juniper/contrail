@@ -138,8 +138,7 @@ func TestEtcdNotifierService(t *testing.T) {
 
 			ec.Clear(t)
 
-			check := integration.StartWatchers(t, tt.watchers)
-
+			check := integration.StartWatchers(t, tt.name, tt.watchers)
 			sv, err := etcd.NewNotifierService(etcdPath, models.JSONCodec)
 			require.NoError(t, err)
 
