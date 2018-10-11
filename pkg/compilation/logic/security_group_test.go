@@ -205,13 +205,26 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
+	actualIntent := loadSecurityGroupIntent(cache, intent.ByUUID(securityGroup.GetUUID()))
+
 	assert.Equal(t,
 		&SecurityGroupIntent{
+			BaseIntent: intent.BaseIntent{
+				Dependencies: map[string]intent.UUIDSet{
+					"security-group": {
+						actualIntent.GetUUID(): struct{}{},
+					},
+				},
+			},
+			referredSGs: map[string]*SecurityGroupIntent{
+				actualIntent.GetUUID(): actualIntent,
+			},
 			SecurityGroup: securityGroup,
 			ingressACL:    expectedIngressACL,
 			egressACL:     expectedEgressACL,
 		},
-		loadSecurityGroupIntent(cache, intent.ByUUID(securityGroup.GetUUID())))
+		actualIntent,
+	)
 }
 
 func TestSecurityGroupUpdate(t *testing.T) {

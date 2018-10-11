@@ -23,6 +23,10 @@ func paths(data map[string]interface{}, prefix string) []string {
 	for key, value := range data {
 		switch v := value.(type) {
 		case map[string]interface{}:
+			if len(v) == 0 {
+				result = append(result, prefix+key)
+				continue
+			}
 			if prefix != "" {
 				result = append(result, paths(v, prefix+key+".")...)
 			} else {
@@ -30,6 +34,10 @@ func paths(data map[string]interface{}, prefix string) []string {
 			}
 		case toMapper:
 			m := v.ToMap()
+			if len(m) == 0 {
+				result = append(result, prefix+key)
+				continue
+			}
 			if prefix != "" {
 				result = append(result, paths(m, prefix+key+".")...)
 			} else {

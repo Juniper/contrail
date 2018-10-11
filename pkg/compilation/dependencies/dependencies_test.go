@@ -45,13 +45,13 @@ func TestReturnsRefs(t *testing.T) {
 	require.NoError(t, err)
 	d := dependencies.NewDependencyProcessor(reactions)
 	Np1 := models.NetworkPolicy{
-		UUID: "Network-policy-1",
+		UUID: "Network-Policy-1",
 	}
 	Np1Ref := &models.VirtualNetworkNetworkPolicyRef{
 		UUID: Np1.UUID,
 	}
 	Np2 := models.NetworkPolicy{
-		UUID: "Network-policy-2",
+		UUID: "Network-Policy-2",
 	}
 	Np2Ref := &models.VirtualNetworkNetworkPolicyRef{
 		UUID: Np2.UUID,
@@ -80,8 +80,73 @@ func TestReturnsRefs(t *testing.T) {
 
 	assert.Contains(t, l, "Virtual-Network-1")
 	assert.Contains(t, l, "Virtual-Network-2")
-	assert.Contains(t, l, "Network-policy-1")
-	assert.Contains(t, l, "Network-policy-1")
+	assert.Contains(t, l, "Network-Policy-1")
+	assert.Contains(t, l, "Network-Policy-2")
+}
+
+func TestAddDependentIntent(t *testing.T) {
+	c := intent.NewCache()
+	reactions, err := dependencies.ParseReactions([]byte(testReactionsYAML), "test")
+	require.NoError(t, err)
+	d := dependencies.NewDependencyProcessor(reactions)
+
+	Vn1 := models.VirtualNetwork{
+		UUID: "Virtual-Network-1",
+	}
+	Vn2 := models.VirtualNetwork{
+		UUID: "Virtual-Network-2",
+	}
+
+	vn1Intent := storeTestVirtualNetworkIntent(c, &Vn1)
+	vn2Intent := storeTestVirtualNetworkIntent(c, &Vn2)
+
+	l := d.GetDependencies(c, vn1Intent, "self")
+
+	assert.Contains(t, l, "Virtual-Network-1")
+	assert.NotContains(t, l, "Virtual-Network-2")
+
+	vn1Intent.AddDependentIntent(vn2Intent)
+
+	vn1Intent = loadIntentByResource(c, &Vn1)
+	l = d.GetDependencies(c, vn1Intent, "self")
+
+	assert.Contains(t, l, "Virtual-Network-1")
+	assert.Contains(t, l, "Virtual-Network-2")
+}
+
+func TestRemoveDependentIntent(t *testing.T) {
+	c := intent.NewCache()
+	reactions, err := dependencies.ParseReactions([]byte(testReactionsYAML), "test")
+	require.NoError(t, err)
+	d := dependencies.NewDependencyProcessor(reactions)
+
+	Np1 := models.NetworkPolicy{
+		UUID: "Network-Policy-1",
+	}
+	Np1Ref := &models.VirtualNetworkNetworkPolicyRef{
+		UUID: Np1.UUID,
+	}
+	Vn1 := models.VirtualNetwork{
+		UUID: "Virtual-Network-1",
+		NetworkPolicyRefs: []*models.VirtualNetworkNetworkPolicyRef{
+			Np1Ref,
+		},
+	}
+
+	np1Intent := storeTestNetworkPolicyIntent(c, &Np1)
+	vn1Intent := storeTestVirtualNetworkIntent(c, &Vn1)
+
+	l := d.GetDependencies(c, vn1Intent, "self")
+
+	assert.Contains(t, l, "Virtual-Network-1")
+	assert.Contains(t, l, "Network-Policy-1")
+
+	vn1Intent.RemoveDependentIntent(np1Intent)
+
+	l = d.GetDependencies(c, vn1Intent, "self")
+
+	assert.Contains(t, l, "Virtual-Network-1")
+	assert.NotContains(t, l, "Network-Policy-1")
 }
 
 func loadIntentByResource(c intent.Loader, r basemodels.Object) intent.Intent {
