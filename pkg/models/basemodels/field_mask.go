@@ -1,7 +1,7 @@
 package basemodels
 
 import (
-	fmt "fmt"
+	"fmt"
 	"strings"
 
 	"github.com/gogo/protobuf/types"

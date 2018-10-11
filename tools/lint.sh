@@ -1,9 +1,24 @@
 #!/usr/bin/env bash
 
-set -o errexit
-set -o nounset
-set -o pipefail
+ContrailPackage="github.com/Juniper/contrail"
 
-[[ -z `go tool fix --diff ./pkg/` ]]
+function run_go_tool_fix() {
+	local issues
+	issues=$(go tool fix --diff ./cmd/ ./extension/ ./pkg/)
 
-golangci-lint --config .golangci-lint.yml run ./... 2>&1
+	[[ -z "$issues" ]] || (echo "Go tool fix found issues: $issues" && return 1)
+}
+
+function run_goimports() {
+	local dirty_files
+	dirty_files="$(goimports -l -local "$ContrailPackage" ./cmd/ ./extension/ ./pkg/ | grep -v _mock.go)"
+
+	[[ -z "$dirty_files" ]] || (echo "Goimports found issues in files: $dirty_files" && return 1)
+}
+
+run_go_tool_fix || exit 1
+
+# TODO: remove when goimports tool is re-enabled in golangci-lint
+run_goimports || exit 1
+
+golangci-lint --config .golangci.yml run ./... 2>&1 || exit 1
