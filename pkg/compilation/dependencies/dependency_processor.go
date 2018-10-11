@@ -39,7 +39,9 @@ func (d *DependencyProcessor) GetDependencies(
 	if !ok {
 		return intents
 	}
-	intents[i.GetUUID()] = i
+	if loader.Load(i.Kind(), intent.ByUUID(i.GetUUID())) != nil {
+		intents[i.GetUUID()] = i
+	}
 	for t, uuids := range i.GetDependencies() {
 		_, ok := dependentTypes[t]
 		if !ok {
@@ -47,6 +49,9 @@ func (d *DependencyProcessor) GetDependencies(
 		}
 		for uuid := range uuids {
 			dependentIntent := loader.Load(t, intent.ByUUID(uuid))
+			if dependentIntent == nil {
+				continue
+			}
 			intents[dependentIntent.GetUUID()] = dependentIntent
 			for _, k := range d.GetDependencies(loader, dependentIntent, t) {
 				intents[k.GetUUID()] = k

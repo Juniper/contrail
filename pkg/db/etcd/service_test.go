@@ -144,7 +144,7 @@ func TestEtcdNotifierService(t *testing.T) {
 			// Clean the database
 			ec.DeleteKey(t, etcdPath, clientv3.WithPrefix())
 
-			check := integration.StartWatchers(t, tt.watchers)
+			check := integration.StartWatchers(t, tt.name, tt.watchers)
 			sv, err := etcd.NewNotifierService(etcdPath, models.JSONCodec)
 			require.NoError(t, err)
 
