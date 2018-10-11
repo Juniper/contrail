@@ -22,35 +22,51 @@ option go_package = "models";
 
 message {{ schema.JSONSchema.GoName }} {
 {% for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}{% endfor %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+{% endfor %}
 {% for linkTo, reference in schema.References %}
-    repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs", (gogoproto.moretags) = "yaml:\"{{ linkTo }}_refs\""];// {{ reference.Description }} {% endfor %}
+    repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs", (gogoproto.moretags) = "yaml:\"{{ linkTo }}_refs\""];// {{ reference.Description }}
+{% endfor %}
 {% for _, backref in schema.BackReferences %}
     {% set linkTo = backref.LinkTo %}
-    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_backrefs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_backrefs\""]; // {{ backref.Description }} {% endfor %}
+    repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_backrefs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_backrefs\""]; // {{ backref.Description }}
+{% endfor %}
 {% for backref in schema.Children %}
     {% set child = backref.LinkTo %}
-    repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s", (gogoproto.moretags) = "yaml:\"{{ child.Plural }}\""]; // {{ backref.Description }} {% endfor %}
+    repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s", (gogoproto.moretags) = "yaml:\"{{ child.Plural }}\""]; // {{ backref.Description }}
+{% endfor %}
 }
 
 {% for linkTo, reference in schema.References %}
 message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
-    string uuid = 1 [(gogoproto.customname) = "UUID"];
-    repeated string to = 2 [(gogoproto.customname) = "To"];
+    string uuid = 1 [(gogoproto.customname) = "UUID", (gogoproto.moretags) = "yaml:\"uuid\""];
+    repeated string to = 2 [(gogoproto.customname) = "To", (gogoproto.moretags) = "yaml:\"to\""];
     {% if reference.RefType %}
-    {{ reference.RefType }} attr = 3 [(gogoproto.customname) = "Attr"];
+    {{ reference.RefType }} attr = 3 [(gogoproto.customname) = "Attr", (gogoproto.moretags) = "yaml:\"attr\""];
     {% endif %}
 }
 {% endfor %}
 
 {% endif %}{% endfor %}
 
-{% for type, definition in types %}
-{% if definition.Type == "object" %}
-message {{ type }} {
-{% for property in definition.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}{% endfor %}
-}
-{% endif %}
-{% endfor %}
+{% for type, definition in types %}{% if definition.Type == "object" %}
+{% if type == "KeyValuePair" %}
 
+	// Omitempty tag is removed from fields of KeyValuePair type, because it caused issues in REST API clients
+	// which expected all fields to be present. To achieve that "gogoproto.jsontag" extension is used.
+	message KeyValuePair {
+	{% for property in definition.OrderedProperties %}
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\"", (gogoproto.jsontag) = "{{ property.ID }}"]; // {{ property.Description }}
+	{% endfor %}
+	}
+
+{% else %}
+
+	message {{ type }} {
+	{% for property in definition.OrderedProperties %}
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+	{% endfor %}
+	}
+
+{% endif %}
+{% endif %}{% endfor %}
