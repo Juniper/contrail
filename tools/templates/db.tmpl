@@ -1,18 +1,18 @@
-// nolint
 package db
 
 import (
 	"context"
 	"encoding/json"
 
-	"github.com/Juniper/contrail/pkg/common"
-	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/schema"
-	"github.com/Juniper/contrail/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/pkg/errors"
+
 	"{{ option.PackagePath }}/pkg/models"
 	"{{ option.PackagePath }}/pkg/services"
-	"github.com/pkg/errors"
+	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/schema"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 //This is needed to prevent an import error.
@@ -152,7 +152,6 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
 }
 
 // create{{ schema.JSONSchema.GoName }} inserts {{ schema.JSONSchema.GoName }} to DB
-// nolint
 func (db *Service) create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.Create{{ schema.JSONSchema.GoName }}Request) error {
@@ -514,7 +513,6 @@ func (db *Service) delete{{ schema.JSONSchema.GoName }}(
 }
 
 //Create{{ schema.JSONSchema.GoName }} handle a Create API
-// nolint
 func (db *Service) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
@@ -653,7 +651,6 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 }
 
 //List{{ schema.JSONSchema.GoName }} handles a List service Request.
-// nolint
 func (db *Service) List{{ schema.JSONSchema.GoName }}(
     ctx context.Context,
     request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {

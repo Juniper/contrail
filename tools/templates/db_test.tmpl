@@ -1,18 +1,19 @@
-// nolint
 package db
 
 import (
-        "context"
-        "time"
-        "testing"
-        "github.com/stretchr/testify/assert"
-        "github.com/satori/go.uuid"
-        "github.com/gogo/protobuf/types"
-        "github.com/Juniper/contrail/pkg/services/baseservices"
-        "{{ option.PackagePath }}/pkg/models"
-        "{{ option.PackagePath }}/pkg/services"
-        "github.com/pkg/errors"
-        )
+    "context"
+    "testing"
+    "time"
+
+    "github.com/gogo/protobuf/types"
+    "github.com/pkg/errors"
+    "github.com/satori/go.uuid"
+    "github.com/stretchr/testify/assert"
+
+    "{{ option.PackagePath }}/pkg/models"
+    "{{ option.PackagePath }}/pkg/services"
+    "github.com/Juniper/contrail/pkg/services/baseservices"
+)
 
 //For skip import error.
 var _ = errors.New("")
