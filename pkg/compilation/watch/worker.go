@@ -55,15 +55,15 @@ func (g *Worker) Run() {
 
 			case job := <-g.JobChan:
 				// Received a Job Request, process it
-				log.Printf("Worker: %d, Received job request %d\n", g.WorkerID, job.JobID)
+				log.Infof("Worker: %d, Received job request %d", g.WorkerID, job.JobID)
 
 				g.Callback(job.context, job.operation, job.key, job.value)
 
 				time.Sleep(1 * time.Second)
-				log.Printf("Worker: %d, Slept for 1 seconds\n", g.WorkerID)
+				log.Debugf("Worker: %d, Slept for 1 seconds", g.WorkerID)
 
 			case <-g.ExitChan:
-				log.Printf("Worker: %d exiting\n", g.WorkerID)
+				log.Infof("Worker: %d exiting", g.WorkerID)
 				return
 
 			}
