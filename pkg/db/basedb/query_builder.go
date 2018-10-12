@@ -264,6 +264,11 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 		}
 		ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
 	}
+
+	// Add condition to start query items from next to markered item's uuid
+	if spec.Marker != "" {
+		ctx.where = append(ctx.where, fmt.Sprintf("%s > \"%s\"", qb.Quote(qb.TableAlias, "uuid"), spec.Marker))
+	}
 }
 
 func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
@@ -306,6 +311,7 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	if len(ctx.where) > 0 {
 		WriteStrings(query, " where ", strings.Join(ctx.where, " and "))
 	}
+
 	// We use 'group by' to eliminate duplicates arising from using joins.
 	// TODO (Kamil): we should consider a perhaps more efficient "WHERE EXISTS" query instead of using joins.
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
@@ -317,11 +323,10 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 			query,
 			" limit ",
 			strconv.FormatInt(spec.Limit, 10),
-			" offset ",
-			strconv.FormatInt(spec.Offset, 10),
-			" ",
 		)
 	}
+
+	log.Debug("Query: " + ctx.query.String())
 }
 
 func (qb *QueryBuilder) islinkToInField(ctx *queryContext, linkTo string) bool {
