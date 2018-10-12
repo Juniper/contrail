@@ -267,6 +267,13 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 		}
 		ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
 	}
+
+	// Add condition to start query items from next to markered item's uuid
+	if spec.Marker != "" {
+		ctx.values = append(ctx.values, spec.Marker)
+		ctx.where = append(ctx.where,
+			fmt.Sprintf("%s > %s", qb.Quote(qb.TableAlias, "uuid"), qb.Placeholder(len(ctx.values))))
+	}
 }
 
 func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
@@ -302,28 +309,29 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	if len(ctx.columnParts) != len(ctx.columns) {
 		log.Fatal("unmatch")
 	}
-	WriteStrings(query, strings.Join(ctx.columnParts, ","), " from ", qb.as(qb.Table, qb.TableAlias), " ")
+	WriteStrings(query, strings.Join(ctx.columnParts, ","), " from ", qb.as(qb.Table, qb.TableAlias))
 
 	if len(ctx.joins) > 0 {
-		writeString(query, strings.Join(ctx.joins, " "))
+		WriteStrings(query, " ", strings.Join(ctx.joins, " "))
 	}
 	if len(ctx.where) > 0 {
 		WriteStrings(query, " where ", strings.Join(ctx.where, " and "))
 	}
+
 	// We use 'group by' to eliminate duplicates arising from using joins.
 	// TODO (Kamil): we should consider a perhaps more efficient "WHERE EXISTS" query instead of using joins.
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
 		WriteStrings(query, " group by ", qb.Quote(qb.TableAlias, "uuid"))
 	}
-	writeString(query, " ")
+
+	// Ordering by uuid to support pagination with uuid index.
+	WriteStrings(query, " order by ", qb.Quote(qb.TableAlias, "uuid"))
+
 	if spec.Limit > 0 {
 		WriteStrings(
 			query,
 			" limit ",
 			strconv.FormatInt(spec.Limit, 10),
-			" offset ",
-			strconv.FormatInt(spec.Offset, 10),
-			" ",
 		)
 	}
 }

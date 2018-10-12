@@ -19,3 +19,10 @@ func RunTest(t *testing.T, file string) {
 	assert.NoError(t, err, "failed to load test data")
 	integration.RunCleanTestScenario(t, testScenario, server)
 }
+
+func RunTestTemplate(t *testing.T, file string, context map[string]interface{}) {
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, file, context)
+	assert.NoError(t, err, "failed to load test data")
+	integration.RunCleanTestScenario(t, &testScenario, server)
+}
