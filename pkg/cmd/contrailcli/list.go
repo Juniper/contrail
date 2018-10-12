@@ -17,7 +17,7 @@ import (
 
 var (
 	filters      string
-	pageMarker   int
+	pageMarker   string
 	pageLimit    int
 	detail       bool
 	count        bool
@@ -40,8 +40,8 @@ func init() {
 
 	ListCmd.Flags().StringVarP(&filters, baseservices.FiltersKey, "f", "",
 		"Comma-separated filter parameters (e.g. check==a,check==b,name==Bob)")
-	ListCmd.Flags().IntVarP(&pageMarker, baseservices.PageMarkerKey, "m", 0,
-		"Page marker that returned resources start from (i.e. offset)")
+	ListCmd.Flags().StringVarP(&pageMarker, baseservices.PageMarkerKey, "m", "",
+		"Page marker that returned resources next to item's uuid (i.e. marker)")
 	ListCmd.Flags().IntVarP(&pageLimit, baseservices.PageLimitKey, "l", 100,
 		"Limit number of returned resources")
 	ListCmd.Flags().BoolVarP(&detail, baseservices.DetailKey, "d", false,

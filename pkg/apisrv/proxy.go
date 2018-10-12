@@ -77,8 +77,8 @@ func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 			break
 		}
 		// more than 100 records present in DB, continue to read
-		offset := int64(len(endpoints) + 1)
-		spec.Offset = offset
+		marker := response.Endpoints[len(response.Endpoints)-1].UUID
+		spec.Marker = marker
 	}
 	return endpoints, nil
 }

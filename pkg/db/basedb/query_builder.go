@@ -306,6 +306,17 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	if len(ctx.where) > 0 {
 		WriteStrings(query, " where ", strings.Join(ctx.where, " and "))
 	}
+
+	// Add condition to start query items from next to markered item's uuid
+	if len(spec.Marker) > 0 {
+		if len(ctx.where) > 0 {
+			WriteStrings(query, " and ")
+		} else {
+			WriteStrings(query, " where ")
+		}
+		WriteStrings(query, qb.Quote(qb.TableAlias, "uuid"), " > ", qb.Quote(spec.Marker))
+	}
+
 	// We use 'group by' to eliminate duplicates arising from using joins.
 	// TODO (Kamil): we should consider a perhaps more efficient "WHERE EXISTS" query instead of using joins.
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
@@ -317,9 +328,6 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 			query,
 			" limit ",
 			strconv.FormatInt(spec.Limit, 10),
-			" offset ",
-			strconv.FormatInt(spec.Offset, 10),
-			" ",
 		)
 	}
 }

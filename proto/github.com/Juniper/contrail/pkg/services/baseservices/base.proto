@@ -22,7 +22,7 @@ option go_package = "baseservices";
 message ListSpec {
     repeated Filter filters = 1 [(gogoproto.customname) = "Filters"]; // QueryFilter
     int64 limit = 2 [(gogoproto.customname) = "Limit"]; // Number of items expected to be returned
-    int64 offset = 3 [(gogoproto.customname) = "Offset"]; // Starting offset of items
+    string marker = 3 [(gogoproto.customname) = "Marker"]; // Starting from the next item's id (marker)
     bool detail = 4 [(gogoproto.customname) = "Detail"]; // Include detail informatoin or not
     bool count = 5 [(gogoproto.customname) = "Count"]; // TBD
     bool shared = 6 [(gogoproto.customname) = "Shared"]; // Include shared resources or not
