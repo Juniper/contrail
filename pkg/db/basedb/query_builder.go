@@ -21,6 +21,9 @@ const (
 	POSTGRES = "postgres"
 )
 
+//TODO(ijohnson) remove when global share table is supported.
+var globalResources = []string{"contrail_cluster", "endpoint"}
+
 // QueryBuilder builds list query.
 type QueryBuilder struct {
 	Dialect
@@ -271,7 +274,8 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 	spec := ctx.spec
 	where := []string{}
 
-	if !auth.IsAdmin() {
+	//TODO(ijohnson) support global share table
+	if !auth.IsAdmin() && !common.ContainsString(globalResources, qb.Table) {
 		ctx.values = append(ctx.values, auth.ProjectID())
 		where = append(where, qb.Quote(qb.TableAlias, "owner")+" = "+qb.Placeholder(len(ctx.values)))
 		if spec.Shared {
