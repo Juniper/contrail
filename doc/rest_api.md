@@ -268,15 +268,6 @@ Example Response
             "fq_name": [
                 "default-domain",
                 "admin",
-                "vn-blue"
-            ],
-            "href": "http://10.84.14.2:8082/virtual-network/8c84ff8a-30ac-4136-99d9-f0d9662f3eee",
-            "uuid": "8c84ff8a-30ac-4136-99d9-f0d9662f3eee"
-        },
-        {
-            "fq_name": [
-                "default-domain",
-                "admin",
                 "vn-red"
             ],
             "href": "http://10.84.14.2:8082/virtual-network/47a91732-629b-4cbe-9aa5-45ba4d7b0e99",
@@ -285,11 +276,20 @@ Example Response
         {
             "fq_name": [
                 "default-domain",
-                "default-project",
-                "__link_local__"
+                "admin",
+                "vn-blue"
             ],
-            "href": "http://10.84.14.2:8082/virtual-network/f423b6c8-deb6-4325-9035-15a8c8bb0a0d",
-            "uuid": "f423b6c8-deb6-4325-9035-15a8c8bb0a0d"
+            "href": "http://10.84.14.2:8082/virtual-network/8c84ff8a-30ac-4136-99d9-f0d9662f3eee",
+            "uuid": "8c84ff8a-30ac-4136-99d9-f0d9662f3eee"
+        },
+        {
+            "fq_name": [
+                "default-domain",
+                "default-project",
+                "ip-fabric"
+            ],
+            "href": "http://10.84.14.2:8082/virtual-network/aad9e80a-8638-449f-a484-5d1bfd58065c",
+            "uuid": "aad9e80a-8638-449f-a484-5d1bfd58065c"
         },
         {
             "fq_name": [
@@ -304,13 +304,55 @@ Example Response
             "fq_name": [
                 "default-domain",
                 "default-project",
-                "ip-fabric"
+                "__link_local__"
             ],
-            "href": "http://10.84.14.2:8082/virtual-network/aad9e80a-8638-449f-a484-5d1bfd58065c",
-            "uuid": "aad9e80a-8638-449f-a484-5d1bfd58065c"
+            "href": "http://10.84.14.2:8082/virtual-network/f423b6c8-deb6-4325-9035-15a8c8bb0a0d",
+            "uuid": "f423b6c8-deb6-4325-9035-15a8c8bb0a0d"
         }
     ]
 }
+```
+
+Example with pagination limit
+``` shell
+curl -X GET -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" http://10.84.14.2:8082/virtual-networks?page_limit=1
+```
+
+``` javascript
+{
+    "virtual-networks": [
+        {
+            "fq_name": [
+                "default-domain",
+                "admin",
+                "vn-red"
+            ],
+            "href": "http://10.84.14.2:8082/virtual-network/47a91732-629b-4cbe-9aa5-45ba4d7b0e99",
+            "uuid": "47a91732-629b-4cbe-9aa5-45ba4d7b0e99"
+        }
+    ]
+ }
+```
+
+Example with using of pagination limit and marker
+``` shell
+curl -X GET -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" http://10.84.14.2:8082/virtual-networks?page_limit=1&page_marker=47a91732-629b-4cbe-9aa5-45ba4d7b0e99
+```
+
+``` javascript
+{
+    "virtual-networks": [
+        {
+            "fq_name": [
+                "default-domain",
+                "admin",
+                "vn-blue"
+            ],
+            "href": "http://10.84.14.2:8082/virtual-network/8c84ff8a-30ac-4136-99d9-f0d9662f3eee",
+            "uuid": "8c84ff8a-30ac-4136-99d9-f0d9662f3eee"
+        }
+    ]
+ }
 ```
 
 # Sync API
