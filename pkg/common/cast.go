@@ -53,6 +53,32 @@ func InterfaceToInt64(i interface{}) int64 {
 	return 0
 }
 
+//InterfaceToUint64 makes an uint64 from interface
+func InterfaceToUint64(i interface{}) uint64 {
+	if i == nil {
+		return 0
+	}
+	switch t := i.(type) {
+	case []byte:
+		i, err := strconv.ParseUint(string(t), 10, 64)
+		if err != nil {
+			log.WithError(err).Debugf("Could not convert %#v to uint64", t)
+		}
+		return i
+	case int:
+		return uint64(t)
+	case int64:
+		return uint64(t)
+	case uint:
+		return uint64(t)
+	case uint64:
+		return t
+	case float64:
+		return uint64(t)
+	}
+	return 0
+}
+
 //InterfaceToBool makes a bool from interface
 func InterfaceToBool(i interface{}) bool {
 	switch t := i.(type) {

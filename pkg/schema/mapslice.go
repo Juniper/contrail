@@ -86,6 +86,8 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 		Permission:      s.getStringSlice("permission"),
 		Operation:       s.getString("operation"),
 		Type:            s.getString("type"),
+		GoType:          s.getString("go_type"),
+		ProtoType:       s.getString("proto_type"),
 		Presence:        s.getString("presence"),
 		Description:     s.getString("description"),
 		Format:          s.getString("format"),
