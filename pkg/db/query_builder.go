@@ -21,6 +21,8 @@ const (
 	POSTGRES = "postgres"
 )
 
+var globalResources = []string{"contrail_cluster", "endpoint"}
+
 //QueryBuilder builds list query.
 type QueryBuilder struct {
 	Dialect
@@ -251,7 +253,8 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 	spec := ctx.spec
 	where := []string{}
 
-	if !auth.IsAdmin() {
+	//TODO(ijohnson) support global share table
+	if !auth.IsAdmin() && !common.StringInSlice(qb.Table, globalResources) {
 		ctx.values = append(ctx.values, auth.ProjectID())
 		where = append(where, qb.quote(qb.TableAlias, "owner")+" = "+qb.placeholder(len(ctx.values)))
 	}

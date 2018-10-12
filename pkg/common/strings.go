@@ -46,3 +46,13 @@ func CheckPath(fieldMask *types.FieldMask, path []string) bool {
 	genPath := strings.Join(path, ".")
 	return ContainsString(fieldMask.GetPaths(), genPath)
 }
+
+//StringInSlice checks if a given string is in slice of string.
+func StringInSlice(s string, list []string) bool {
+	for _, e := range list {
+		if e == s {
+			return true
+		}
+	}
+	return false
+}
