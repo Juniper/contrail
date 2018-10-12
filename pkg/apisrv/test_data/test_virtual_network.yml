@@ -490,6 +490,15 @@ workflow:
     virtual-networks:
     - *vn_blue_simple
     - *vn_red_simple
+- name: list virtual networks with parent_id and start marker
+  request:
+    path: "/virtual-networks?parent_id=admin_project_uuid&page_marker=vn_blue"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_red_simple
 # TODO enable when ParentFQName filter is implemented (pkg/db/basedb/query_builder.go:244)
 #- name: list virtual networks with parent_fq_name_str
 #  request:
@@ -505,13 +514,22 @@ workflow:
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
     # Display name is needed as adding parent_id constraint is changing order.
-    path: /virtual-networks?pageLimit=1&detail=true&parent_id=admin_project_uuid&filters=display_name==blue
+    path: /virtual-networks?page_limit=1&detail=true&parent_id=admin_project_uuid&filters=display_name==blue
     method: GET
     expected:
     - 200
   expect:
     virtual-networks:
     - *vn_blue_with_detail
+- name: list virtual networks with page limit and marker
+  request:
+    path: /virtual-networks?page_limit=1&detail=true&parent_id=admin_project_uuid&page_marker=vn_blue
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - *vn_red_with_detail
 - name: list virtual networks with obj_uuids
   request:
     path: "/virtual-networks?obj_uuids=vn_blue&detail=true"
