@@ -313,6 +313,48 @@ Example Response
 }
 ```
 
+Example with pagination limit
+``` shell
+curl -X GET -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" http://10.84.14.2:8082/virtual-networks?page_limit=1
+```
+
+``` javascript
+{
+    "virtual-networks": [
+        {
+            "fq_name": [
+                "default-domain",
+                "admin",
+                "vn-blue"
+            ],
+            "href": "http://10.84.14.2:8082/virtual-network/8c84ff8a-30ac-4136-99d9-f0d9662f3eee",
+            "uuid": "8c84ff8a-30ac-4136-99d9-f0d9662f3eee"
+        }
+    ]
+ }
+```
+
+Example with using of pagination limit and marker
+``` shell
+curl -X GET -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" http://10.84.14.2:8082/virtual-networks?page_limit=1&page_marker=vn_blue
+```
+
+``` javascript
+{
+    "virtual-networks": [
+        {
+            "fq_name": [
+                "default-domain",
+                "admin",
+                "vn-red"
+            ],
+            "href": "http://10.84.14.2:8082/virtual-network/47a91732-629b-4cbe-9aa5-45ba4d7b0e99",
+            "uuid": "47a91732-629b-4cbe-9aa5-45ba4d7b0e99"
+        }
+    ]
+ }
+```
+
 # Sync API
 
 Sync API support creating or deleting multiple resoruces in one time. 
