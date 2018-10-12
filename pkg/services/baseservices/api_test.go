@@ -52,7 +52,7 @@ func TestNilURLQuerySpec(t *testing.T) {
 func TestURLQuerySpec(t *testing.T) {
 	spec := &ListSpec{
 		Limit:  10,
-		Offset: 10,
+		Marker: "c6b11cbf-f225-4c9b-b61c-b892a7e66747",
 		Detail: true,
 		Filters: []*Filter{
 			{
@@ -77,7 +77,7 @@ func TestURLQuerySpec(t *testing.T) {
 	assert.Equal(t,
 		"back_ref_id=a%2Cb&count=true&detail=true&exclude_hrefs=true"+
 			"&fields=a%2Cb%2Cc&filters=check%3D%3Da%2Ccheck%3D%3Db%2Cname%3D%3DBob"+
-			"&obj_uuids=a%2Cb&pageLimit=10&pageMarker=10"+
+			"&obj_uuids=a%2Cb&page_limit=10&page_marker=c6b11cbf-f225-4c9b-b61c-b892a7e66747"+
 			"&parent_fq_name_str=a%3Ab&parent_id=a%2Cb&parent_type=test&shared=true",
 		spec.URLQuery().Encode())
 }
