@@ -5,7 +5,7 @@ id: cloud_security_group
 metadata:
   category: cloud
 parents:
-  cloud:
+  virtual_cloud:
     operations: "CRUD"
     description: "Parent for security group"
     presence: "optional"

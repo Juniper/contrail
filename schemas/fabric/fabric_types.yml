@@ -153,6 +153,54 @@
           permission:
           - create
           - update
+    CloudInstanceInfo:
+      type: "object"
+      properties:
+        operating_system:
+          description: Name of operating system, ex - centos7 or ubuntu16
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        os_version:
+          description: specific version of operating system
+          default: ""
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        instance_type:
+          description: size of instance
+          default: ""
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        machine_id:
+          description: image (ami) id of instance
+          default: ""
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        volume_size:
+          description: Size of the volume for the cloud instance
+          type: integer
+          nullable: false
+          permission:
+          - create
+          - update
+        subnets:
+          description: Subnet associated with this cloud instance
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
     LocalLinkConnection:
       type: "object"
       properties:
