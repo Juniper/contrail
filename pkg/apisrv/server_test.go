@@ -332,3 +332,40 @@ func TestRESTClient(t *testing.T) {
 	})
 	assert.NoError(t, err)
 }
+
+func TestPagination(t *testing.T) {
+	context := map[string]interface{}{
+		"ids": []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+		"lists": []struct {
+			name        string
+			marker      int
+			limit       int
+			expectedIds []int
+		}{
+			{
+				name:        "show limited count of alarms",
+				limit:       3,
+				expectedIds: []int{0, 1, 2},
+			},
+			{
+				name:        "show limited count of alarms starting form the marker",
+				marker:      2,
+				limit:       4,
+				expectedIds: []int{3, 4, 5, 6},
+			},
+			{
+				name:        "show the alarms starting from the marker",
+				marker:      7,
+				expectedIds: []int{8, 9},
+			},
+			{
+				name:        "check if no alarms arter the last marker",
+				marker:      9,
+				expectedIds: []int{},
+			},
+		},
+	}
+
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTestTemplate(t, "./test_data/test_pagination.tmpl", context)
+}
