@@ -16,7 +16,7 @@ Here is a supported output type list.
 - File
 - etcd
 
-``` shell
+```bash
 contrailutil convert --help
 This command converts data formats from one to another
 
@@ -36,31 +36,31 @@ Global Flags:
   -c, --config string   Configuration File
 ```
 
-# Example usage
+## Example usage
 
 Cassandra -> File (database migration from Cassandra to new DB)
 
-``` shell
+```bash
 contrailutil convert --intype cassandra --in localhost --outtype yaml --out dbdata.yaml
 contrailutil convert --intype cassandra --in localhost -p 9041 -t 60 --outtype yaml --out dbdata.yaml
 ```
 
 File -> etcd (restore to etcd from yaml or json)
 
-``` shell
+```bash
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype etcd -c sample/contrail.yml
 contrailutil convert --intype yaml --in tools/init_data.json --outtype etcd -c sample/contrail.yml
 ```
 
 RDBMS -> File ( backup in yaml or json )
 
-``` shell
+```bash
 contrailutil convert --intype rdbms --outtype yaml --out db.yml -c sample/contrail.yml
 contrailutil convert --intype rdbms --outtype yaml --out db.json -c sample/contrail.yml
 ```
 
 File -> RDBMS ( initialize database entity by file for restore or testing )
 
-``` shell
+```bash
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
 ```

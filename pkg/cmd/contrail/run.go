@@ -59,7 +59,7 @@ func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGro
 
 func startCassandraReplicator(wg *sync.WaitGroup) {
 	ctx := context.Background()
-	log.Debug("cassandra replication service enabled")
+	log.Debug("Cassandra replication service enabled")
 	cassandraProcessor := cassandra.NewEventProcessor()
 	producer, err := etcd.NewEventProducer(cassandraProcessor)
 	if err != nil {
@@ -73,7 +73,7 @@ func startCassandraReplicator(wg *sync.WaitGroup) {
 
 func startAmqpReplicator(wg *sync.WaitGroup) {
 	ctx := context.Background()
-	log.Debug("amqp replication service enabled")
+	log.Debug("AMQP replication service enabled")
 	amqpProcessor := cassandra.NewAmqpEventProcessor()
 	producer, err := etcd.NewEventProducer(amqpProcessor)
 	if err != nil {
@@ -86,7 +86,7 @@ func startAmqpReplicator(wg *sync.WaitGroup) {
 }
 
 func startCacheService(wg *sync.WaitGroup) {
-	log.Debug("cache service enabled")
+	log.Debug("Cache service enabled")
 	cacheDB = cache.NewDB(uint64(viper.GetInt64("cache.max_history")))
 	MaybeStart("cache.cassandra", startCassandraWatcher, wg)
 	MaybeStart("cache.etcd", startEtcdWatcher, wg)
@@ -95,7 +95,7 @@ func startCacheService(wg *sync.WaitGroup) {
 
 func startCassandraWatcher(wg *sync.WaitGroup) {
 	ctx := context.Background()
-	log.Debug("cassandra watcher enabled for cache")
+	log.Debug("Cassandra watcher enabled for cache")
 	producer := cassandra.NewEventProducer(cacheDB)
 	err := producer.Start(ctx)
 	if err != nil {
@@ -105,7 +105,7 @@ func startCassandraWatcher(wg *sync.WaitGroup) {
 
 func startEtcdWatcher(wg *sync.WaitGroup) {
 	ctx := context.Background()
-	log.Debug("etcd watcher enabled for cache")
+	log.Debug("Etcd watcher enabled for cache")
 	producer, err := etcd.NewEventProducer(cacheDB)
 	if err != nil {
 		log.Fatal(err)
@@ -118,7 +118,7 @@ func startEtcdWatcher(wg *sync.WaitGroup) {
 
 func startRDBMSWatcher(wg *sync.WaitGroup) {
 	ctx := context.Background()
-	log.Debug("rdbms watcher enabled for cache")
+	log.Debug("RDBMS watcher enabled for cache")
 	producer, err := syncp.NewEventProducer(cacheDB)
 	if err != nil {
 		log.Fatal(err)
