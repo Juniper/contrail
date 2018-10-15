@@ -75,7 +75,6 @@ done
 
 # Load init data to new and legacy databases
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c docker/contrail_go/etc/contrail-k8s.yml
-contrailutil convert --intype yaml --in tools/init_data.yaml --outtype etcd -c docker/contrail_go/etc/contrail-k8s.yml
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype http -u http://127.0.0.1:9082 || true
 
 # Build and run contrail-go2 docker
