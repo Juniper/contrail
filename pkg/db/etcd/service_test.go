@@ -117,7 +117,7 @@ func TestEtcdNotifierService(t *testing.T) {
 					},
 					{
 						"name": "lr_blue",
-						"virtual_network_backrefs": []interface{}{
+						"virtual_network_back_refs": []interface{}{
 							map[string]interface{}{
 								"uuid": "vn-blue",
 							},
@@ -125,7 +125,7 @@ func TestEtcdNotifierService(t *testing.T) {
 					},
 					{
 						"name": "lr_blue",
-						"virtual_network_backrefs": "$null",
+						"virtual_network_back_refs": "$null",
 					},
 				},
 			},

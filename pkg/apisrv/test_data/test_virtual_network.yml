@@ -430,7 +430,7 @@ workflow:
   expect:
     network-ipam:
       <<: *network_ipam_blue
-      virtual_network_backrefs:
+      virtual_network_back_refs:
       - *vn_blue_simple
 - name: list virtual networks with detail
   request:
