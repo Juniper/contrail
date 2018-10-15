@@ -113,7 +113,7 @@ auth_type: no-auth
 insecure: true
 
 sync:
-  enabled: false
+  enabled: false # sync in mysql is not working yet
   storage: json
   dump: true
 
