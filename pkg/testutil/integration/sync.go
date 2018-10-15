@@ -21,6 +21,7 @@ func RunSyncService(t *testing.T) (closeSync func()) {
 	setViperConfig(map[string]interface{}{
 		"etcd.endpoints": []string{integrationetcd.Endpoint},
 		"sync.storage":   models.JSONCodec.Key(),
+		"sync.dump":      true,
 	})
 
 	s, err := sync.NewService()

@@ -115,6 +115,7 @@ insecure: true
 sync:
   enabled: false
   storage: json
+  dump: true
 
 client:
   id: alice

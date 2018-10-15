@@ -203,9 +203,11 @@ func givenPostgresWatcher(
 			Slot:          slot,
 			Publication:   publication,
 		},
-		conn:    conn,
-		handler: handler,
-		log:     pkglog.NewLogger("postgres-watcher"),
+		conn:       conn,
+		handler:    handler,
+		log:        pkglog.NewLogger("postgres-watcher"),
+		shouldDump: true,
+		dumpDoneCh: make(chan struct{}),
 	}
 }
 
@@ -288,6 +290,12 @@ type failingCanalStub struct{}
 
 func (c *failingCanalStub) Run() error { return assert.AnError }
 
+func (_ *failingCanalStub) WaitDumpDone() <-chan struct{} {
+	c := make(chan struct{})
+	close(c)
+	return c
+}
+
 func (c *failingCanalStub) Close() {}
 
 type succeedingCanalSpy struct {
@@ -298,6 +306,12 @@ type succeedingCanalSpy struct {
 func (c *succeedingCanalSpy) Run() error {
 	c.startCounter++
 	return nil
+}
+
+func (_ *succeedingCanalSpy) WaitDumpDone() <-chan struct{} {
+	c := make(chan struct{})
+	close(c)
+	return c
 }
 
 func (c *succeedingCanalSpy) Close() {

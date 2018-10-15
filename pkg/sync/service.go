@@ -33,6 +33,7 @@ const (
 
 type watchCloser interface {
 	Watch(context.Context) error
+	DumpDone() <-chan struct{}
 	Close()
 }
 
@@ -167,7 +168,14 @@ func createPostgreSQLWatcher(
 	}
 	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got pgx config")
 
-	return replication.NewPostgresWatcher(conf, dbService, replConn, handler.Handle, processor)
+	return replication.NewPostgresWatcher(
+		conf,
+		dbService,
+		replConn,
+		handler.Handle,
+		processor,
+		viper.GetBool("sync.dump"),
+	)
 }
 
 func createMySQLWatcher(log *logrus.Entry, sink replication.RowSink) (watchCloser, error) {
