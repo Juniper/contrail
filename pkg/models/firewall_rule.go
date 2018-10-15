@@ -6,6 +6,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/gogo/protobuf/types"
 )
 
 // FirewallRule constants.
@@ -23,31 +24,31 @@ var protocolIDs = map[string]int64{
 
 // CheckAssociatedRefsInSameScope checks scope of firewallRule refs
 // that global scoped firewall rule cannot reference scoped resources
-func (fr *FirewallRule) CheckAssociatedRefsInSameScope() error {
+func (fr *FirewallRule) CheckAssociatedRefsInSameScope(fqName []string) error {
 
 	// this method is simply based on the fact global
 	// firewall resource (draft or not) have a FQ name length equal to two
 	// and scoped one (draft or not) have a FQ name longer than 2 to
 	// distinguish a scoped firewall resource to a global one. If that
 	// assumption disappear, all that method will need to be re-worked
-	if len(fr.GetFQName()) != 2 {
+	if len(fqName) != 2 {
 		return nil
 	}
 
 	for _, ref := range fr.GetAddressGroupRefs() {
-		if err := fr.checkRefInSameScope(ref); err != nil {
+		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
 			return err
 		}
 	}
 
 	for _, ref := range fr.GetServiceGroupRefs() {
-		if err := fr.checkRefInSameScope(ref); err != nil {
+		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
 			return err
 		}
 	}
 
 	for _, ref := range fr.GetVirtualNetworkRefs() {
-		if err := fr.checkRefInSameScope(ref); err != nil {
+		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
 			return err
 		}
 	}
@@ -55,7 +56,9 @@ func (fr *FirewallRule) CheckAssociatedRefsInSameScope() error {
 	return nil
 }
 
-func (fr *FirewallRule) checkRefInSameScope(ref basemodels.Reference) error {
+func (fr *FirewallRule) checkRefInSameScope(
+	ref basemodels.Reference, fqName []string,
+) error {
 	if len(ref.GetTo()) == 2 {
 		return nil
 	}
@@ -63,7 +66,7 @@ func (fr *FirewallRule) checkRefInSameScope(ref basemodels.Reference) error {
 	refKind := strings.Replace(ref.GetReferredKind(), "-", " ", -1)
 	return common.ErrorBadRequestf(
 		"global Firewall Rule %s (%s) cannot reference a scoped %s %s (%s)",
-		basemodels.FQNameToString(fr.GetFQName()),
+		basemodels.FQNameToString(fqName),
 		fr.GetUUID(),
 		strings.Title(refKind),
 		basemodels.FQNameToString(ref.GetTo()),
@@ -71,34 +74,18 @@ func (fr *FirewallRule) checkRefInSameScope(ref basemodels.Reference) error {
 	)
 }
 
-// CheckServiceProperties checks for existence of service and serviceGroupRefs property
-func (fr *FirewallRule) CheckServiceProperties() error {
-	serviceGroupRefs := fr.GetServiceGroupRefs()
-	service := fr.GetService()
-
-	if service == nil && len(serviceGroupRefs) == 0 {
-		return common.ErrorBadRequest("firewall Rule requires at least 'service' property or Service Group references(s)")
-	}
-
-	if service != nil && len(serviceGroupRefs) > 0 {
-		return common.ErrorBadRequest(
-			"firewall Rule cannot have both defined 'service' property and Service Group reference(s)",
-		)
-	}
-
-	return nil
-}
-
 // AddDefaultMatchTag sets default matchTag if not defined in the request
-func (fr *FirewallRule) AddDefaultMatchTag() {
-	if fr.GetMatchTags() == nil {
+func (fr *FirewallRule) AddDefaultMatchTag(fm *types.FieldMask) {
+	if fr.GetMatchTags().GetTagList() == nil && (fm == nil ||
+		basemodels.FieldMaskContains(fm, FirewallRuleFieldMatchTags)) {
 		fr.MatchTags = &FirewallRuleMatchTagsType{
 			TagList: []string{DefaultMatchTagType},
 		}
 	}
 }
 
-func (fr *FirewallRule) getProtocolID() (int64, error) {
+// GetProtocolID returns id based on service's protocol
+func (fr *FirewallRule) GetProtocolID() (int64, error) {
 	protocol := fr.GetService().GetProtocol()
 	ok := true
 	protocolID, err := strconv.ParseInt(protocol, 10, 64)
@@ -111,13 +98,6 @@ func (fr *FirewallRule) getProtocolID() (int64, error) {
 	}
 
 	return protocolID, nil
-}
-
-// SetProtocolID sets protocolID based on protocol property
-func (fr *FirewallRule) SetProtocolID() error {
-	protocolID, err := fr.getProtocolID()
-	fr.Service.ProtocolID = protocolID
-	return err
 }
 
 // CheckEndpoints validates endpoint_1 and endpoint_2
@@ -143,7 +123,9 @@ func (fr *FirewallRule) CheckEndpoints() error {
 }
 
 // GetTagFQName returns fqname based on a tag name and firewall rule
-func (fr *FirewallRule) GetTagFQName(tagName string) ([]string, error) {
+func (fr *FirewallRule) GetTagFQName(
+	tagName string, parentType string, fqName []string,
+) ([]string, error) {
 	if !strings.Contains(tagName, "=") {
 		return nil, common.ErrorNotFoundf("invalid tag name '%s'", tagName)
 	}
@@ -152,21 +134,21 @@ func (fr *FirewallRule) GetTagFQName(tagName string) ([]string, error) {
 		return []string{tagName[7:]}, nil
 	}
 
-	fqName := append([]string(nil), fr.GetFQName()...)
-	if fr.GetParentType() == KindPolicyManagement {
-		return append(fqName[:len(fqName)-2], tagName), nil
+	name := append([]string(nil), fqName...)
+	if parentType == KindPolicyManagement {
+		return append(name[:len(fqName)-2], tagName), nil
 	}
 
-	fqName = append([]string(nil), fr.GetFQName()...)
-	if fr.GetParentType() == KindProject {
-		return append(fqName[:len(fqName)-1], tagName), nil
+	name = append([]string(nil), fqName...)
+	if parentType == KindProject {
+		return append(name[:len(fqName)-1], tagName), nil
 	}
 
 	return nil, common.ErrorBadRequestf(
 		"Firewall rule %s (%s) parent type '%s' is not supported as security resource scope",
 		fr.GetUUID(),
-		fr.GetFQName(),
-		fr.GetParentType(),
+		fqName,
+		parentType,
 	)
 }
 

@@ -1,9 +1,9 @@
 package basemodels
 
 import (
+	fmt "fmt"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/gogo/protobuf/types"
 )
 
@@ -91,7 +91,30 @@ func nestMap(m map[string]interface{}, key string) map[string]interface{} {
 	return nested
 }
 
+// JoinPath concatenates arguments and returns path
+func JoinPath(fields ...string) string {
+	var path string
+	for i, f := range fields {
+		if i == 0 {
+			path = f
+			continue
+		}
+
+		path = fmt.Sprintf(path + "." + f)
+	}
+
+	return path
+}
+
 // FieldMaskContains checks if given field mask contains requested string
-func FieldMaskContains(fm *types.FieldMask, field string) bool {
-	return common.ContainsString(fm.GetPaths(), field)
+func FieldMaskContains(fm *types.FieldMask, fields ...string) bool {
+
+	path := JoinPath(fields...)
+	for _, p := range fm.GetPaths() {
+		if strings.HasPrefix(p, path) {
+			return true
+		}
+	}
+
+	return false
 }
