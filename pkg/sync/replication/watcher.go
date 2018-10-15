@@ -17,6 +17,7 @@ import (
 
 type abstractCanal interface {
 	Run() error
+	WaitDumpDone() <-chan struct{}
 	Close()
 }
 
@@ -38,6 +39,11 @@ func NewMySQLWatcher(c abstractCanal) *MySQLWatcher {
 func (w *MySQLWatcher) Watch(context.Context) error {
 	w.log.Debug("Watching events on MySQL binlog")
 	return w.canal.Run()
+}
+
+// DumpDone returns a channel that is closed when dump is done.
+func (w *MySQLWatcher) DumpDone() <-chan struct{} {
+	return w.canal.WaitDumpDone()
 }
 
 // Close closes canal.
@@ -81,6 +87,9 @@ type PostgresWatcher struct {
 	processor services.EventProcessor
 
 	log *logrus.Entry
+
+	dumpDoneCh chan struct{}
+	shouldDump bool
 }
 
 // NewPostgresWatcher creates new watcher and initializes its connections.
@@ -89,20 +98,32 @@ func NewPostgresWatcher(
 	dbs *db.Service, replConn pgxReplicationConn,
 	handler Handler,
 	processor services.EventProcessor,
+	shouldDump bool,
 ) (*PostgresWatcher, error) {
 	conn, err := newPostgresReplicationConnection(dbs, replConn)
 	if err != nil {
 		return nil, err
 	}
 
-	return &PostgresWatcher{
-		conf:      config,
-		conn:      conn,
-		handler:   handler,
-		db:        dbs,
-		processor: processor,
-		log:       pkglog.NewLogger("postgres-watcher"),
-	}, nil
+	w := &PostgresWatcher{
+		conf:       config,
+		conn:       conn,
+		handler:    handler,
+		db:         dbs,
+		processor:  processor,
+		shouldDump: shouldDump,
+		dumpDoneCh: make(chan struct{}),
+		log:        pkglog.NewLogger("postgres-watcher"),
+	}
+	if !w.shouldDump {
+		close(w.dumpDoneCh)
+	}
+	return w, nil
+}
+
+// DumpDone returns a channel that is closed when dump is done.
+func (w *PostgresWatcher) DumpDone() <-chan struct{} {
+	return w.dumpDoneCh
 }
 
 // Watch starts subscription and store context cancel function.
@@ -126,8 +147,30 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	}
 	w.log.Debug("Created publication: ", w.conf.Publication)
 
+	if w.shouldDump {
+		if err := w.Dump(ctx, snapshotName); err != nil {
+			return nil
+		}
+	}
+
+	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
+		return errors.Wrap(err, "failed to start replication")
+	}
+
+	feed := make(chan *pgx.ReplicationMessage)
+	go w.runMessageConsumer(ctx, feed)
+	return w.runMessageProducer(ctx, feed)
+}
+
+// Dump dumps whole db state using provided snapshot name.
+func (w *PostgresWatcher) Dump(ctx context.Context, snapshotName string) error {
 	w.log.Debug("Starting dump phase")
+	defer func() {
+		w.shouldDump = false
+		close(w.dumpDoneCh)
+	}()
 	dumpStart := time.Now()
+
 	if err := w.conn.DoInTransactionSnapshot(ctx, snapshotName, func(ctx context.Context) error {
 		es, err := services.Dump(ctx, w.db)
 		if err != nil {
@@ -146,13 +189,7 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	}
 	w.log.WithField("dumpTime", time.Since(dumpStart)).Debugf("Dump phase finished - starting replication")
 
-	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
-		return errors.Wrap(err, "failed to start replication")
-	}
-
-	feed := make(chan *pgx.ReplicationMessage)
-	go w.runMessageConsumer(ctx, feed)
-	return w.runMessageProducer(ctx, feed)
+	return nil
 }
 
 func (w *PostgresWatcher) runMessageConsumer(ctx context.Context, feed <-chan *pgx.ReplicationMessage) {
