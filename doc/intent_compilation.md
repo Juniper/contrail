@@ -9,7 +9,8 @@ Intent Compilation service watching for events from etcd service.
 ## Requirements
 
 Intent Compilation requires access to service which it pulls data from.
-It requires
+It requires:
+
 * API Server
 * etcd server with v3 API support
 
@@ -25,7 +26,7 @@ Example configuration can be found [here](../sample/contrail.yml).
 
 Intent Compilation Service uses Intent interface:
 
-``` Go
+```go
 type Intent interface {
     basemodels.Object
     Evaluate(ctx context.Context, evaluateCtx *EvaluateContext) error
@@ -43,7 +44,7 @@ When Intent is created/updated/deleted then Dependency Processor is called. It g
 
 In order to keep all the resources updated we define reaction map which describes relations between Intents. This is sample reaction:
 
-``` YAML
+```yaml
   port_tuple:
     self:
       - service_instance

@@ -1,11 +1,12 @@
 # Deployment for kubernetes (k8s)
 
 ## Prerequisites
-* Clean VM with Centos7
-* Installed k8s + contrail with contrail-ansible-deployer
+
+- Clean VM with Centos7
+- Installed k8s + contrail with contrail-ansible-deployer
   - Sample instances.yaml file presented below. Tokens @localip and @routerip must be changed before running contrail-ansible-deployer, passwords should be adjusted.
 
-```
+```yaml
 provider_config:
   bms:
     ssh_user: centos
@@ -51,17 +52,21 @@ kolla_config:
 ```
 
 ## Deployment
-* On remote (target) machine clone https://github.com/Juniper/contrail into $HOME/go/src/github.com/Juniper
-``` shell
-mkdir -p $HOME/go/src/github.com/Juniper
-cd !$
-git clone https://github.com/Juniper/contrail
-```
-* Run a deployment script
-``` shell
-cd contrail
-./tools/deploy-for_k8s.sh
-```
+
+- On remote (target) machine clone [Contrail repository](https://github.com/Juniper/contrail) into $HOME/go/src/github.com/Juniper
+
+  ```bash
+  mkdir -p $HOME/go/src/github.com/Juniper
+  cd !$
+  git clone https://github.com/Juniper/contrail
+  ```
+
+- Run a deployment script
+
+  ```bash
+  cd contrail
+  ./tools/deploy-for_k8s.sh
+  ```
 
 ## Examples
 
@@ -72,13 +77,13 @@ on target machine. Last command located in script launches new pod in that termi
 
 Next run second pod in another terminal
 
-```sh
+```bash
 kubectl run -i --tty busybox-one --image=busybox --namespace blue -- sh
 ```
 
 Now you can check their IP addresses by typing
 
-```sh
+```bash
 ip a
 ```
 
@@ -91,7 +96,7 @@ on target machine. Last command located in script launches new pod in that termi
 
 Next run second pod in another terminal
 
-```sh
+```bash
 sudo kubectl run -i --tty busybox-one --image=busybox --namespace blue -- sh
 ```
 
@@ -99,39 +104,50 @@ Now you can check their IP addresses and then ping the same way
 as described in "Intra VN ping"
 
 ### Security groups
-* Prepare 3 terminals on a machine with Contrail deployed: one for running the scenario script, and two for running Kubernetes pods.
-* Go to the `tools/demo/security-groups` subdirectory of the Contrail repository and run `setup.sh` as root.
+
+- Prepare 3 terminals on a machine with Contrail deployed: one for running the scenario script, and two for running Kubernetes pods.
+- Go to the `tools/demo/security-groups` subdirectory of the Contrail repository and run `setup.sh` as root.
   It will create a Kubernetes namespace and a virtual network. For example:
-``` shell
-# In the Contrail repository
-cd ./tools/demo/security-groups/
-sudo ./setup.sh
-```
-* Go to the same directory in the other two terminals and create two pods using `pod.sh` as root. Use different names for the pods. For example:
-```shell
-cd ./tools/demo/security-groups/
-sudo ./pod.sh pod1
 
-# Do the same in the other terminal, using e.g. ./pod.sh pod2
-```
-The script will print the full name of the pods, such as "pod1-75f684d9f9-mndt4". You will need one of them in the next step.
-* Run the scenario script `run.sh`. It requires the name of the pod. For example:
-``` shell
-# In the security groups demo directory
-./run.sh pod1-75f684d9f9-mndt4
-```
-* The script will allow/disallow traffic from/to the chosen pod. Attach the pods in the other two terminals. Use `ip a` to obtain their IP addresses.
+  ```bash
+  # In the Contrail repository
+  cd ./tools/demo/security-groups/
+  sudo ./setup.sh
+  ```
+
+- Go to the same directory in the other two terminals and create two pods using `pod.sh` as root. Use different names for the pods. For example:
+
+  ```bash
+  cd ./tools/demo/security-groups/
+  sudo ./pod.sh pod1
+
+  # Do the same in the other terminal, using e.g. ./pod.sh pod2
+  ```
+
+  The script will print the full name of the pods, such as "pod1-75f684d9f9-mndt4". You will need one of them in the next step.
+
+- Run the scenario script `run.sh`. It requires the name of the pod. For example:
+
+  ```bash
+  # In the security groups demo directory
+  ./run.sh pod1-75f684d9f9-mndt4
+  ```
+
+- The script will allow/disallow traffic from/to the chosen pod. Attach the pods in the other two terminals. Use `ip a` to obtain their IP addresses.
   You can use ping and `echo.sh` with netcat to check if ICMP/TCP is blocked. For example, in one of the pods:
-``` shell
-./echo.sh
-```
-and in the other:
-``` shell
-# Assuming the IP of the first pod is 10.32.0.1.
 
-# Should reply if and only if ICMP traffic is allowed:
-ping 10.32.0.1
+  ```bash
+  ./echo.sh
+  ```
 
-# Should print "echo" if and only if TCP traffic is allowed:
-nc 10.32.0.1 8080
-```
+  and in the other:
+
+  ```bash
+  # Assuming the IP of the first pod is 10.32.0.1.
+
+  # Should reply if and only if ICMP traffic is allowed:
+  ping 10.32.0.1
+
+  # Should print "echo" if and only if TCP traffic is allowed:
+  nc 10.32.0.1 8080
+  ```
