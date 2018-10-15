@@ -56,7 +56,7 @@ server:
       /contrail:
       - http://localhost:8082
 
-  notify_etcd: true
+  notify_etcd: false # notify_etcd should be disable when using sync process
 
   vnc_api_notifier:
     enabled: false
@@ -113,7 +113,7 @@ auth_type: no-auth
 insecure: true
 
 sync:
-  enabled: false
+  enabled: true
   storage: json
   dump: true
 
