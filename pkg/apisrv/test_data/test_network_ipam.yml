@@ -50,7 +50,7 @@ test_data:
     parent_type: project
     parent_uuid: admin_project_network_ipam_uuid
     fq_name: ["domain","admin","test_ipam_netipam_blue"]
-    virtual_network_backrefs:
+    virtual_network_back_refs:
     - *virtual_network_blue_base
 
   network_ipam_blue: &network_ipam_blue
