@@ -1,6 +1,8 @@
-# Introduction
+# REST API
 
-API Server provides REST API endpints.
+## Introduction
+
+API Server provides REST API endpoints.
 For each resource type, the following APIs are available:
 
 - Create a resource
@@ -16,37 +18,38 @@ In addition, the following APIs are also available:
 - Convert UUID to FQ name
 - Add/Delete/Update a reference between two objects
 
-# OpenAPI
+## OpenAPI
 
 We have OpenAPI version 2.0 definitions in public directory.
 You can also take a look detail REST API spec using OpenAPI document generator.
 
 Example.
 
-```
+```bash
 npm install -g spectacle-docs
 spectacle -d public/openapi.json
 ```
 
-# Creating a resource
+## Creating a resource
 
 To create a resource, a POST has to be issued on the collection URL. So for a resource of type example-resource,
 
-- METHOD: POST
-- URL: http://<ip>:<port>/example_resources/
-- BODY: JSON representation of example-resource type
-- RESPONSE: UUID and href of created resource
-
+```text
+METHOD: POST
+URL: http://<ip>:<port>/example_resources/
+BODY: JSON representation of example-resource type
+RESPONSE: UUID and href of created resource
+```
 
 Example request
 
-``` shell
+```bash
 curl -X POST -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" -d '{"virtual-network": {"parent_type": "project", "fq_name": ["default-domain", "admin", "vn-blue"], "network_ipam_refs": [{"attr": {"ipam_subnets": [{"subnet": {"ip_prefix": "10.1.1.0", "ip_prefix_len": 24}}]}, "to": ["default-domain", "default-project", "default-network-ipam"]}]}}' http://10.84.14.2:8082/virtual-networks
 ```
 
 Response
 
-``` javascript
+```json
 {
     "virtual-network": {
         "fq_name": [
@@ -63,24 +66,26 @@ Response
 }
 ```
 
-# Reading a resource
+## Reading a resource
 
 To read a resource, a GET has to be issued on the resource URL.
 
-- METHOD: GET
-- URL: http://<ip>:<port>/example_resource/<example-resource-uuid>
-- BODY: None
-- RESPONSE: JSON representation of the resource
+```text
+METHOD: GET
+URL: http://<ip>:<port>/example_resource/<example-resource-uuid>
+BODY: None
+RESPONSE: JSON representation of the resource
+```
 
 Example Request
 
-``` shell
+```bash
 curl -X GET -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" http://10.84.14.2:8082/virtual-network/8c84ff8a-30ac-4136-99d9-f0d9662f3eee
 ```
 
 Response
 
-``` javascript
+```json
 {
     "virtual-network": {
         "access_control_lists": [
@@ -183,26 +188,28 @@ Response
 }
 ```
 
-# Updating a resource
+## Updating a resource
 
 To update a resource, a PUT has to be issued on the resource URL.
 
-- METHOD: PUT
-- URL: http://<ip>:<port>/example_resource/<example-resource-uuid>
-- BODY: JSON representation of resource attributes that are changing
-- RESPONSE: UUID and href of updated resource
+```text
+METHOD: PUT
+URL: http://<ip>:<port>/example_resource/<example-resource-uuid>
+BODY: JSON representation of resource attributes that are changing
+RESPONSE: UUID and href of updated resource
+```
 
 References to other resources are specified as a list of dictionaries with “to” and “attr” keys where “to” is the fully-qualified name of the resource being referred to and “attr” is the data associated with the relation (if any).
 
 Example request
 
-```
+```bash
 curl -X PUT -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" -d '{"virtual-network": {"fq_name": ["default-domain", "admin", "vn-blue"],"network_policy_refs": [{"to": ["default-domain", "admin", "policy-red-blue"], "attr":{"sequence":{"major":0, "minor": 0}}}]}}' http://10.84.14.2:8082/virtual-network/8c84ff8a-30ac-4136-99d9-f0d9662f3eee
 ```
 
 Response
 
-``` javascript
+```json
 {
     "virtual-network": {
         "href": "http://10.84.14.2:8082/virtual-network/8c84ff8a-30ac-4136-99d9-f0d9662f3eee",
@@ -211,34 +218,37 @@ Response
 }
 ```
 
-# Deleting a resource
+## Deleting a resource
+
 To delete a resource, a DELETE has to be issued on the resource URL
 
-- METHOD: DELETE
-- URL: http://<ip>:<port>/example_resource/<example-resource-uuid>
-- BODY: None
-- RESPONSE: None
+```text
+METHOD: DELETE
+URL: http://<ip>:<port>/example_resource/<example-resource-uuid>
+BODY: None
+RESPONSE: None
+```
 
 Example Request
 
-```
+```bash
 curl -X DELETE -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" http://10.84.14.2:8082/virtual-network/47a91732-629b-4cbe-9aa5-45ba4d7b0e99
 ```
 
 Response None
 
-# Listing Resources
+## Listing Resources
 
-To list a set of resources, a GET has to be issued on the collection URL with an optional query parameter mentioning the parent resource that contains this collection. If parent resource is not mentioned, a resource named ‘default-<parent-type>’ is assumed.
+To list a set of resources, a GET has to be issued on the collection URL with an optional query parameter mentioning the parent resource that contains this collection. If parent resource is not mentioned, a resource named `default-<parent-type>` is assumed.
 
-- METHOD: GET
-- URL: http://<ip>:<port>/example_resources
-http://<ip>:<port>/example_resources
-- BODY: None
-
+```text
+METHOD: GET
+URL: http://<ip>:<port>/example_resources
+BODY: None
 RESPONSE: JSON list of UUID and href of collection if detail not specified, else JSON list of collection dicts
+```
 
-# Query parameters
+## Query parameters
 
 - parent_id  parent_uuid
 - parent_fq_name_str parent’s fully-qualified name delimited by ‘:’
@@ -255,13 +265,13 @@ RESPONSE: JSON list of UUID and href of collection if detail not specified, else
 
 Example Request
 
-``` shell
+```bash
 curl -X GET -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; charset=UTF-8" http://10.84.14.2:8082/virtual-networks
 ```
 
 Example Response
 
-``` javascript
+```json
 {
     "virtual-networks": [
         {
@@ -313,9 +323,9 @@ Example Response
 }
 ```
 
-# Sync API
+## Sync API
 
-Sync API support creating or deleting multiple resoruces in one time. 
+Sync API support creating or deleting multiple resoruces in one time.
 This API tries to update resources if same resource with UUID has already exists.
 
 POST
@@ -323,7 +333,7 @@ POST
 
 Body
 
-```
+```json
 {
   "resources": [
     {

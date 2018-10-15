@@ -3,19 +3,20 @@
 Cluster manages clustering of contrail/orchestrator components, currently cluster service
 is triggered by agent service.
 
-Agent service does the following,
-* Watches for changes in contrail_cluster resource. For each change in resource.
-    - Creates the contrail-cluster.yml input config file for cluster service.
-    - Runs cluster service(one-shot) with the input config file(contrail-cluster.yml).
-   Change can be creation, update or deletion of a contrail_cluster resource.
+Agent service does the following:
 
-Cluster service does the following,
-* Creates the input file for the provisioing tool (ansible/helm).
-* Triggers the ansible playbook or helm chart
-* Updates the provisioning status/provisioning logs in the contrail_cluster object.
+- Watches for changes in contrail_cluster resource. For each change in resource. Change can be creation, update or deletion of a contrail_cluster resource.
+- Creates the contrail-cluster.yml input config file for cluster service.
+- Runs cluster service(one-shot) with the input config file(contrail-cluster.yml).
+
+Cluster service does the following:
+
+- Creates the input file for the provisioning tool (ansible/helm).
+- Triggers the ansible playbook or helm chart
+- Updates the provisioning status/provisioning logs in the contrail_cluster object.
 
 TODO: Run cluster service independent of agent service as a daemon and make it watch for
-      events in etcd service to trrigger provisioning tool.
+      events in etcd service to trigger provisioning tool.
 
 ## Requirements
 
@@ -34,4 +35,6 @@ Which will be used by agent to generate the cluster config file.
 
 Start cluster service in one-shot mode by specifying configuration file path:
 
-	contrail cluster -c <config-file-path>
+```bash
+contrail cluster -c config-file-path
+```
