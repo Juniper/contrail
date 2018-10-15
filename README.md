@@ -7,8 +7,8 @@ in order to improve performance, scale and ease operation.
 
 We are planning to add following sub components.
 
-- API Server ( python based VNC API Server equivalent)
-- Sync (ifmap, rabbitMQ related code equivalent but depends on etcd)
+- API Server (Python-based VNC API Server equivalent)
+- Sync (IF-MAP, RabbitMQ related code equivalent but depends on etcd)
 - Agent (SchemaTransformer, Device Manager equivalent)
 - Code generation tool (generateDS equivalent)
 
@@ -18,14 +18,14 @@ to community discussion.
 
 ## Development setup
 
-### Step1. Install Go and docker
+### Step1. Install Go and Docker
 
 - [golang.org/doc/install](https://golang.org/doc/install)
 - [docs.docker.com/install](https://docs.docker.com/install/)
 
-### Step2. Go get contrail
+### Step2. Go get Contrail
 
-``` shell
+```bash
 go get -u github.com/Juniper/contrail
 ```
 
@@ -34,43 +34,37 @@ commit generated code.
 
 ### Step3. Install dependencies
 
-``` shell
+```bash
 make deps
 ```
 
-### Step4. Generate code
+### Step4. Generate source code
 
-``` shell
+```bash
 make generate
 ```
 
+### Step5. Install Contrail binaries
 
-### Step5. Install code
-
-``` shell
+```bash
 make install
 ```
 
-### Step6. Install test environment
+### Step6. Setup test environment
 
-``` shell
-# setup testenv using docker
-make testenv
-# you need wait db process up
-make reset_db
+```bash
+make testenv reset_db
 ```
 
-Note that these commands use `docker` command and depending on your docker
-configuration they may require root permissions.
-See [Docker Documentation](https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
-for more info.
+Note that these commands use `docker` command and depending on your Docker configuration they may require root permissions.
+See: [Docker Documentation](https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
 
-## Try
+## First run
 
 - Run processes
 
-    ```
-    contrail -c sample/contrail.yml run 
+    ```bash
+    contrail -c sample/contrail.yml run
     ```
 
     Note that you can overwrite configuration parameters using environment variable with
@@ -78,7 +72,7 @@ for more info.
 
     For example CONTRAIL_DATABASE_DEBUG is overwriting database.debug value.
 
-    ``` shell
+    ```bash
     CONTRAIL_DATABASE_DEBUG=true contrail -c sample/contrail.yml run
     ```
 
@@ -86,66 +80,44 @@ for more info.
 
 - Run CLI
 
-    ```
+    ```bash
     export CONTRAIL_CONFIG=sample/cli.yml
-    # Show Schema
+
+    # Show schema
     contrailcli schema virtual_network
-    # Create resources
+
+    # Sync resources
     contrailcli sync sample/sample_resource.yml
+
     # List resources
     contrailcli list virtual_network --detail
+
     # Delete resources
     contrailcli delete sample/sample_resource.yml
     ```
 
-    For more cli command see [CLI Usage](doc/cli.md),
+    See: [CLI Usage](doc/cli.md)
 
-## Schema Files
+## Schema files
 
-Note that schema stored here is just a cache for helping development.
-Developers should make sure download latest schema from http://github.com/Juniper/contrail-api-client
+Note that schema stored here is just a cache for development.
+Latest schema is located in [contrail-api-client repository](http://github.com/Juniper/contrail-api-client).
+JSON version of schema is generated [here](public/schema.json).
 
-JSON version stored in public/schema.json
-
-Templates for code generation based on this schema are stored in [tools/templates](tools/templates)
-[Template configuration](tools/templates/template_config.yaml)
-You can add your template on template_config.yaml.
+Templates for code generation based on this schema are stored in [tools/templates](tools/templates).
+Template configuration is located [here](tools/templates/template_config.yaml).
 
 ## Testing
 
-``` shell
+```bash
 make test
 ```
 
-You can print out full sql trace too.
+Run tests with more debug information:
 
-``` shell
+```bash
 CONTRAIL_DATABASE_DEBUG=true make test
 ```
-
-## Commands
-
-Repository holds source code for following CLI applications:
-- `contrail` - contains API Server, [Agent](doc/agent.md) and [Sync](doc/sync.md)
-processes and [Cluster](doc/cluster.md) service
-- `contrailcli` - contains [API Server command line client][cli]
-- `contrailschema` - code generator by schema definitions
-- `contrailutil` - contains development utilities
-
-Show possible commands of application:
-
-``` shell
-contrail -h
-```
-
-Show detailed information about specific command:
-
-``` shell
-contrail <command> -h
-```
-
-[cli]: doc/cli.md
-
 
 ## Keystone Support
 
@@ -155,34 +127,30 @@ See a configuration [example](https://github.com/Juniper/contrail/blob/master/sa
 
 ## How to contribute
 
-- Apply lint tools
-- Follow best practices
-  - comply to [Effective Go](https://golang.org/doc/effective_go.html)
-  - comply to [Code review comments](https://github.com/golang/go/wiki/CodeReviewComments)
-  - keep `make lint` output clean
+- Follow [Openstack review process](https://docs.openstack.org/infra/manual/developers.html)
+- Use [Tungsten Fabric Gerrit](https://review.opencontrail.org)
+- Comply to [Code review guidelines](REVIEW.md)
 
-We follow openstack way of review. https://docs.openstack.org/infra/manual/developers.html
-This is our review system. https://review.opencontrail.org
+### Step1
 
-### Step1.
+Setup Gerrit account. Sign CLA.
 
-Setup gerrit account. Sign CLA.
+### Step2
 
-### Step2.
+Install [git-review tool](https://docs.openstack.org/infra/git-review/installation.html).
 
-Install git-review.
-
-```
+```bash
 pip install git-review
 ```
 
-### Step3.
+### Step3
 
-Send git review command.
-```
+Send review to Gerrit:
+
+```bash
 git review
 ```
 
-## Document
+## Documentation
 
-See [docs](./doc) folder.
+See: [Documentation index](./doc/index.md)

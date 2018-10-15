@@ -1,18 +1,16 @@
-# Preface
+# Documentation index
+
+## Preface
 
 This is a design document for refactoring Contrail using Go.
-The goal of this change is to provide
+The goal of this change is to provide:
 
-- Simplify architecture and operation experience
+- Simpler architecture and operation experience
 - Higher performance
 - Data collections
 - Maintainability
 
-# Review process
-
-see [Review Doc](../REVIEW.md)
-
-# Architecture
+## Architecture
 
 This diagram shows the overall architecture.
 
@@ -29,7 +27,7 @@ Kube Managers will be capable of watching for any updates in etcd.
 
 ![Architecture](./images/architecture.svg "Architecture")
 
-# Process management
+## Process management
 
 To simplify deployment,
 we take a "Single binary" approach for Go-related project. We manage multiple goroutine
@@ -37,16 +35,16 @@ as micro-services, and run them based on a switch in configuration.
 Each process communicate with each other using Service Interface defined above so that we can
 switch internal functional call or gRPC call depending on where the other processes running on.
 
-![Process model](./images/process.svg "Processs")
+![Process model](./images/process.svg "Process")
 
-see [Related source code](../pkg/cmd/contrail/run.go)
+See: [Related source code](../pkg/cmd/contrail/run.go)
 
-# Configuration
+## Configuration
 
 We use [Viper](https://github.com/spf13/viper) for configuration management.
 YAML is our default configuration format. Every configuration option must be configured via environment variables too with CONTRAIL_ prefix for docker based operation.
 
-# Schema
+## Schema
 
 We manage API Schema using the YAML format.
 [schemas directory](../schemas) contains schemas.
@@ -62,7 +60,7 @@ In YAML format, the schema as following properties.
 
 This is a sample schema.
 
-``` YAML
+```yaml
 extends:
 - base
 id: virtual_network
@@ -100,31 +98,31 @@ schema:
   type: object
 ```
 
-# Code generation
+## Code generation
 
 We have a makefile target to generate source codes or initial SQL definitions.
 
-``` shell
+```bash
 make generate
 ```
 
 templates are stored in [template directory](../tools/templates)
 
-List of templates are specificed in [template configuration](../tools/templates/template_config.yaml)
+List of templates are specified in [template configuration](../tools/templates/template_config.yaml)
 
 We use [Pongo2](https://github.com/flosch/pongo2) which support a subset of Jinja2 template.
 
-# Models
+## Models
 
 [../pkg/models] has Go structs for all resource objects. All processes must
 use this model. Note that we should avoid the use of the level objects such as JSON strings /
 map[string]interfaces{}.
-We have model specific logics here. See more in GoDoc of this package.
+We have model specific logic here. See more in GoDoc of this package.
 
-# API Server
+## API Server
 
 API Server provides REST API and gRPC for external orchestrators such as UI / OpenStack or
-Kuberunetes. [Source Code](../pkg/apisrv)
+Kubernetes. [Source Code](../pkg/apisrv)
 We use [echo framework](https://echo.labstack.com/) for HTTP Web server framework,
 and use standard library for gRPC Server.
 Internally, we dispatch any API requests for internal services which support
@@ -132,11 +130,15 @@ Service Interface described in the next chapter.
 
 ![API Server Internal Architecture](./images/api_process.svg "API Process Data")
 
-# Service Interface & Chain
+See: [REST API documentation](rest_api.md)
+See: [Authentication documentation](authentication.md)
+See: [Access control documentation](policy.md)
+
+## Service Interface & Chain
 
 To decouple logic from specific implementation, we define "Service Interface".
 The service interface support gRPC client API plus chain concept.
-We apply HTTP middleware concept where we can inject multiple logics later in the process
+We apply HTTP middleware concept where we can inject multiple logic later in the process
 pipeline.
 
 We need to set "Next" services for each service implementation, and we are expecting
@@ -144,8 +146,7 @@ call Next() service on each call.
 
 Next call example
 
-``` Go
-
+```go
 // CreateProject creates a project and ensures a default application policy set for it.
 func (sv *ContrailTypeLogicService) CreateProject(
     ctx context.Context, request *services.CreateProjectRequest,
@@ -164,21 +165,47 @@ func (sv *ContrailTypeLogicService) CreateProject(
 
     return response, err
 }
-
 ```
 
-# Services
+## Commands
 
-## DB Service
+Repository holds source code for following CLI applications:
 
-## Cache Service
+- `contrail` - contains core processes, such as: [API Server](rest_api.md), [Agent](agent.md), [Sync](sync.md) and [Cluster service](cluster.md)
+- `contrailcli` - [API command line client](cli.md)
+- `contrailschema` - code generator using schema definitions
+- `contrailutil` - development utilities, such as [Convert](convert.md), `package`, `record_test`
 
-## Contrail Service
+Show possible commands of application:
 
-## Type Specific logic service
+```bash
+contrail -h
+```
 
-# Intent Compiler
+Show detailed information about specific command:
 
-[Intent Compiler Documentation](./intent_compilation.md)
+```bash
+contrail <command> -h
+```
 
-# Sync Process
+## Services
+
+### DB Service
+
+### Cache Service
+
+### Contrail Service
+
+### Type Specific logic service
+
+## Intent Compiler
+
+See: [Intent Compiler documentation](./intent_compilation.md)
+
+## Sync Process
+
+See: [Sync process documentation](./sync.md)
+
+## Kubernetes support
+
+See: [Kubernetes support documentation](./k8s.md)
