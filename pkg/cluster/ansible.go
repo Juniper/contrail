@@ -2,7 +2,7 @@ package cluster
 
 import (
 	"bytes"
-        "io"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -58,12 +58,12 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 	if err != nil {
 		return err
 	}
-        defer func() {
-                er := gzr.Close()
-                if er != nil {
-                        log.Errorf("Error while untar file: %s", er)
-                }
-        }()
+	defer func() {
+		er := gzr.Close()
+		if er != nil {
+			log.Errorf("Error while untar file: %s", er)
+		}
+	}()
 
 	tr := tar.NewReader(gzr)
 
@@ -118,7 +118,7 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 			// manually close here after each file operation; defering would cause each file close
 			// to wait until all operations have completed.
 			er := f.Close()
-			if (er != nil) {
+			if er != nil {
 				log.Errorf("Error while untar file: %s", er)
 			}
 		}

@@ -58,7 +58,7 @@ var dataYAML = []struct {
   perms2: null
   configuration_version: 0
   floating_ip_pool_subnets: null
-  project_backrefs: []
+  project_back_refs: []
   floating_ips: []
 `),
 	}, {
