@@ -34,7 +34,6 @@ func setTestConfig() {
 }
 
 func TestIntentCompilationServiceHandlesMessage(t *testing.T) {
-	t.Skip("temporary skipping test.")
 	etcdClient := integrationetcd.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
@@ -74,7 +73,6 @@ func TestIntentCompilationServiceHandlesMessage(t *testing.T) {
 }
 
 func TestIntentCompilationServiceConcurrency(t *testing.T) {
-	t.Skip("temporary skipping test.")
 	etcdClient := integrationetcd.NewEtcdClient(t)
 	_, err := etcdClient.Delete(context.Background(), testMessageIndexString)
 	assert.NoError(t, err)
@@ -219,7 +217,7 @@ type blockingStore struct {
 
 func newBlockingStore() *blockingStore {
 	b := &blockingStore{
-		StartedWatch:          make(chan struct{}),
+		StartedWatch:          make(chan struct{}, 1),
 		StartPut:              make(chan struct{}, 1),
 		FinishedPut:           make(chan string, 1),
 		StartGet:              make(chan struct{}, 1),
@@ -253,7 +251,7 @@ func (s *blockingStore) WatchRecursive(
 	ctx context.Context, keyPattern string, afterIndex int64,
 ) chan etcd.Message {
 	c := s.Store.WatchRecursive(ctx, keyPattern, afterIndex)
-	close(s.StartedWatch)
+	s.StartedWatch <- struct{}{}
 	return c
 }
 

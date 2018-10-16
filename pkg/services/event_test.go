@@ -23,16 +23,16 @@ func TestCreateEventJSONEncoding(t *testing.T) {
 		},
 	}
 	m, err := json.Marshal(e)
-	assert.NoError(t, err, "marhsal event failed")
+	assert.NoError(t, err, "marshal event failed")
 	var i map[string]interface{}
 	err = json.Unmarshal(m, &i)
-	assert.NoError(t, err, "unmarhsal event failed")
+	assert.NoError(t, err, "unmarshal event failed")
 	assert.Equal(t, "virtual_network", i["kind"])
 	assert.Equal(t, "CREATE", i["operation"])
 
 	var d Event
 	err = json.Unmarshal(m, &d)
-	assert.NoError(t, err, "unmarhsal event failed")
+	assert.NoError(t, err, "unmarshal event failed")
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 
@@ -56,24 +56,23 @@ func TestDeleteEventJSONEncoding(t *testing.T) {
 		},
 	}
 	m, err := json.Marshal(e)
-	assert.NoError(t, err, "marhsal event failed")
+	assert.NoError(t, err, "marshal event failed")
 	fmt.Println(string(m))
 	var i map[string]interface{}
 	err = json.Unmarshal(m, &i)
-	assert.NoError(t, err, "unmarhsal event failed")
+	assert.NoError(t, err, "unmarshal event failed")
 	assert.Equal(t, "virtual_network", i["kind"])
 	assert.Equal(t, "DELETE", i["operation"])
 	assert.Equal(t, "vn_uuid", i["data"].(map[string]interface{})["uuid"])
 
 	var d Event
 	err = json.Unmarshal(m, &d)
-	assert.NoError(t, err, "unmarhsal event failed")
+	assert.NoError(t, err, "unmarshal event failed")
 	request := d.GetDeleteVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.ID)
 }
 
 func TestCreateEventYAMLEncoding(t *testing.T) {
-	t.Skip("TODO: Fix me")
 	e := &Event{
 		Request: &Event_CreateVirtualNetworkRequest{
 			CreateVirtualNetworkRequest: &CreateVirtualNetworkRequest{
@@ -85,23 +84,24 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	}
 	m, err := yaml.Marshal(e)
 	fmt.Println(string(m))
-	assert.NoError(t, err, "marhsal event failed")
+	assert.NoError(t, err, "marshal event failed")
+
 	var i map[string]interface{}
 	err = yaml.Unmarshal(m, &i)
-	assert.NoError(t, err, "unmarhsal event failed")
+	assert.NoError(t, err, "unmarshal event failed")
 	assert.Equal(t, "virtual_network", i["kind"])
 	assert.Equal(t, "CREATE", i["operation"])
 
 	var d Event
 	err = yaml.Unmarshal(m, &d)
-	assert.NoError(t, err, "unmarhsal event failed")
+	assert.NoError(t, err, "unmarshal event failed")
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 	i = common.YAMLtoJSONCompat(i).(map[string]interface{}) //nolint: errcheck
 	d2, err := NewEvent(&EventOption{
 		Kind:      i["kind"].(string),
 		Operation: i["operation"].(string),
-		Data:      i["data"].(map[string]interface{}),
+		Data:      common.YAMLtoJSONCompat(i["data"]).(map[string]interface{}),
 	})
 	if assert.NoError(t, err) {
 		request = d2.GetCreateVirtualNetworkRequest()
