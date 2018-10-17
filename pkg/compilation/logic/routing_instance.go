@@ -38,7 +38,7 @@ func (s *Service) CreateRoutingInstance(
 		RoutingInstance: request.GetRoutingInstance(),
 	}
 
-	err := s.handleCreate(ctx, i)
+	err := s.storeAndEvaluate(ctx, i)
 	if err != nil {
 		return nil, err
 	}

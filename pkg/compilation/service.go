@@ -10,6 +10,7 @@ package compilation
 
 import (
 	"context"
+	"fmt"
 	"runtime"
 	"strconv"
 	"time"
@@ -215,13 +216,15 @@ func (ics *IntentCompilationService) handleEtcdMessage(ctx context.Context, oper
 	ics.log.WithFields(messageFields).Print("HandleEtcdMessages: Got a message")
 	event, err := etcd.ParseEvent(oper, key, []byte(value))
 	if err != nil {
-		logrus.WithFields(messageFields).WithError(err).Error("failed to parse ETCD event")
+		logrus.WithFields(messageFields).WithField(
+			logrus.ErrorKey, fmt.Sprintf("%+v", err)).Error("failed to parse ETCD event")
 	}
 	processor := services.ServiceEventProcessor{
 		Service: ics.service,
 	}
 	_, err = processor.Process(ctx, event)
 	if err != nil {
-		ics.log.WithFields(messageFields).WithError(err).Error("Failed to handle etcd message")
+		ics.log.WithFields(messageFields).WithField(
+			logrus.ErrorKey, fmt.Sprintf("%+v", err)).Error("Failed to handle etcd message")
 	}
 }
