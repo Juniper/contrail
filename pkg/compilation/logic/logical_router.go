@@ -71,7 +71,7 @@ func (s *Service) CreateLogicalRouter(
 		i.defaultRouteTargetUUID = i.LogicalRouter.GetRouteTargetRefs()[0].GetUUID()
 	}
 
-	if err := s.handleCreate(ctx, i); err != nil {
+	if err := s.storeAndEvaluate(ctx, i); err != nil {
 		return nil, err
 	}
 

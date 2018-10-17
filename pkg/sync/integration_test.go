@@ -188,7 +188,7 @@ func TestSyncService(t *testing.T) {
 				},
 				"/test/network_ipam/ni-blue": []integration.Event{
 					{
-						"name": "ni_blue",
+						"name":                      "ni_blue",
 						"virtual_network_back_refs": "$null",
 					},
 					{
@@ -200,7 +200,7 @@ func TestSyncService(t *testing.T) {
 						},
 					},
 					{
-						"name": "ni_blue",
+						"name":                      "ni_blue",
 						"virtual_network_back_refs": "$null",
 					},
 					nil,
