@@ -23,59 +23,25 @@ var protocolIDs = map[string]int64{
 	"udp":  17,
 }
 
-// CheckAssociatedRefsInSameScope checks scope of firewallRule refs
-// that global scoped firewall rule cannot reference scoped resources
+// CheckAssociatedRefsInSameScope checks scope of Firewall Rule references.
 func (fr *FirewallRule) CheckAssociatedRefsInSameScope(fqName []string) error {
-
-	// this method is simply based on the fact global
-	// firewall resource (draft or not) have a FQ name length equal to two
-	// and scoped one (draft or not) have a FQ name longer than 2 to
-	// distinguish a scoped firewall resource to a global one. If that
-	// assumption disappear, all that method will need to be re-worked
-	if len(fqName) != 2 {
-		return nil
-	}
-
+	var refs []basemodels.Reference
 	for _, ref := range fr.GetAddressGroupRefs() {
-		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
-			return err
-		}
+		refs = append(refs, ref)
 	}
 
 	for _, ref := range fr.GetServiceGroupRefs() {
-		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
-			return err
-		}
+		refs = append(refs, ref)
 	}
 
 	for _, ref := range fr.GetVirtualNetworkRefs() {
-		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
-			return err
-		}
+		refs = append(refs, ref)
 	}
 
-	return nil
+	return checkAssociatedRefsInSameScope(fr, fqName, refs)
 }
 
-func (fr *FirewallRule) checkRefInSameScope(
-	ref basemodels.Reference, fqName []string,
-) error {
-	if len(ref.GetTo()) == 2 {
-		return nil
-	}
-
-	refKind := strings.Replace(ref.GetReferredKind(), "-", " ", -1)
-	return errutil.ErrorBadRequestf(
-		"global Firewall Rule %s (%s) cannot reference a scoped %s %s (%s)",
-		basemodels.FQNameToString(fqName),
-		fr.GetUUID(),
-		strings.Title(refKind),
-		basemodels.FQNameToString(ref.GetTo()),
-		ref.GetUUID(),
-	)
-}
-
-// AddDefaultMatchTag sets default matchTag if not defined in the request
+// AddDefaultMatchTag sets default matchTag if not defined in the request.
 func (fr *FirewallRule) AddDefaultMatchTag(fm *types.FieldMask) {
 	if fr.GetMatchTags().GetTagList() == nil && (fm == nil ||
 		basemodels.FieldMaskContains(fm, FirewallRuleFieldMatchTags)) {
@@ -85,7 +51,7 @@ func (fr *FirewallRule) AddDefaultMatchTag(fm *types.FieldMask) {
 	}
 }
 
-// GetProtocolID returns id based on service's protocol
+// GetProtocolID returns id based on service's protocol.
 func (fr *FirewallRule) GetProtocolID() (int64, error) {
 	protocol := fr.GetService().GetProtocol()
 	ok := true
@@ -101,9 +67,8 @@ func (fr *FirewallRule) GetProtocolID() (int64, error) {
 	return protocolID, nil
 }
 
-// CheckEndpoints validates endpoint_1 and endpoint_2
+// CheckEndpoints validates endpoint_1 and endpoint_2.
 func (fr *FirewallRule) CheckEndpoints() error {
-
 	//TODO Authorize only one condition per endpoint for the moment
 	endpoints := []*FirewallRuleEndpointType{
 		fr.GetEndpoint1(),
@@ -123,7 +88,7 @@ func (fr *FirewallRule) CheckEndpoints() error {
 	return nil
 }
 
-// GetTagFQName returns fqname based on a tag name and firewall rule
+// GetTagFQName returns fqname based on a tag name and firewall rule.
 func (fr *FirewallRule) GetTagFQName(
 	tagName string, parentType string, fqName []string,
 ) ([]string, error) {
@@ -153,7 +118,7 @@ func (fr *FirewallRule) GetTagFQName(
 	)
 }
 
-// GetEndpoints returns request and database endpoints properties of firewall rules
+// GetEndpoints returns request and database endpoints properties of firewall rules.
 func (fr *FirewallRule) GetEndpoints(
 	databaseFR *FirewallRule,
 ) ([]*FirewallRuleEndpointType, []*FirewallRuleEndpointType) {

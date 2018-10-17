@@ -1,0 +1,173 @@
+name: Firewall Policy Test
+description: basic firewall policy test
+cleanup:
+- path: /project/admin_project_uuid
+- path: /firewall-rule/test_firewall_rule_uuid
+- path: /firewall-policy/test_firewall_policy_uuid
+test_data:
+  admin_project: &admin_project
+    fq_name:
+      - default
+      - admin_project_uuid
+    uuid: admin_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  firewall_rule: &test_firewall_rule
+    uuid: test_firewall_rule_uuid
+    parent_type: project
+    fq_name:
+      - default
+      - admin_project_uuid
+      - test_firewall_rule_uuid
+    endpoint_1:
+      any: true
+    endpoint_2:
+      any: true
+    match_tags:
+      tag_list:
+        - application
+    service:
+      protocol: tcp
+
+  firewall_policy: &test_firewall_policy
+    uuid: test_firewall_policy_uuid
+    parent_type: policy-management
+    fq_name:
+      - default-policy-management
+      - test_firewall_policy_uuid
+    name: k8s-denyall
+    display_name: k8s-denyall
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project admin
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+
+- name: create firewall rule
+  request:
+    path: /firewall-rules
+    method: POST
+    expected: [200]
+    data:
+      firewall-rule: *test_firewall_rule
+  expect:
+    firewall-rule: *test_firewall_rule
+
+- name: creating firewall policy with draft mode state property defined should fail
+  request:
+    path: /firewall-policys
+    method: POST
+    expected: [400]
+    data:
+      firewall-policy:
+        <<: *test_firewall_policy
+        draft_mode_state: created
+
+- name: creating global firewall policy with scoped refs should fail
+  request:
+    path: /firewall-policys
+    method: POST
+    expected: [400]
+    data:
+      firewall-policy:
+        <<: *test_firewall_policy
+        firewall_rule_refs:
+          - uuid: test_firewall_rule_uuid
+
+- name: create firewall policy
+  request:
+    path: /firewall-policys
+    method: POST
+    expected: [200]
+    data:
+      firewall-policy: *test_firewall_policy
+  expect:
+    firewall-policy: *test_firewall_policy
+
+- name: updating firewall policy with draft-state-mode property defined should fail
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: PUT
+    expected: [400]
+    data:
+      firewall-policy:
+        uuid: test_firewall_policy_uuid
+        draft_mode_state: created
+
+- name: updating global firewall policy with scoped refs should fail
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: PUT
+    expected: [400]
+    data:
+      firewall-policy:
+        uuid: test_firewall_policy_uuid
+        firewall_rule_refs:
+          - uuid: test_firewall_rule_uuid
+
+- name: update firewall policy
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: PUT
+    expected: [200]
+    data:
+      firewall-policy:
+        uuid: test_firewall_policy_uuid
+        annotations:
+          key_value_pair:
+            - value: denyall
+              key: name
+
+- name: get updated firewall policy
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: GET
+    expected: [200]
+  expect:
+    firewall-policy:
+        uuid: test_firewall_policy_uuid
+        annotations:
+          key_value_pair:
+            - value: denyall
+              key: name
+
+- name: delete firewall policy
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete firewall rule
+  request:
+    path: /firewall-rule/test_firewall_rule_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete admin project
+  request:
+    path: /project/admin_project_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null

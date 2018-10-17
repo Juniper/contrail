@@ -138,7 +138,7 @@ func validateFirewallRule(
 	}
 
 	if err := firewallRule.CheckAssociatedRefsInSameScope(fqName); err != nil {
-		return err
+		return errutil.ErrorBadRequest(err.Error())
 	}
 
 	return CheckServiceProperties(firewallRule, databaseFR, fm)
