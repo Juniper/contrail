@@ -11,8 +11,9 @@ Watching for events from etcd service is a feature during implementation.
 
 Agent requires access to service which it pulls data from.
 Depending on chosen operation mode it might be:
-* API Server
-* etcd with v3 API support
+
+- API Server
+- etcd with v3 API support
 
 ## Configuration
 

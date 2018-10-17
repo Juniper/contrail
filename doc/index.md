@@ -1,68 +1,115 @@
-# Preface
+# Documentation index
+
+## Preface
 
 This is a design document for refactoring Contrail using Go.
-The goal of this change is to provide
+The goal of this change is to provide:
 
-- Simplify architecture and operation experience
+- Simpler architecture and operation experience
 - Higher performance
 - Data collections
 - Maintainability
 
-# Review process
-
-see [Review Doc](../REVIEW.md)
-
-# Architecture
+## Architecture
 
 This diagram shows the overall architecture.
 
 API Server provides REST API and gRPC API.
-Internal logic depending on RDBMS and utilize the power
+Internal logic depends on RDBMS and utilizes the power
 of the relational model, so that developers can focus on implementing logic.
 Sync process replicates RDBMS data to [etcd](https://github.com/etcd-io/etcd) using Replication mechanism.
 
-Intent compiler get updates from etcd, evaluate configuration changes and dependency,
-and generate config object from the API resource model.
+Intent Compiler gets updates from etcd, evaluates configuration changes and dependency
+and generates config object from the API resource model.
 
-Existing contrail processes such as Control Node, Device manager,
-Kube Managers will be capable of watching for any updates in etcd.
+Existing Contrail processes such as Control Node, Device Manager,
+Kube Manager will be capable of watching for any updates in etcd.
 
 ![Architecture](./images/architecture.svg "Architecture")
 
-# Process management
+## Process management
 
-To simplify deployment,
-we take a "Single binary" approach for Go-related project. We manage multiple goroutine
-as micro-services, and run them based on a switch in configuration.
-Each process communicate with each other using Service Interface defined above so that we can
-switch internal functional call or gRPC call depending on where the other processes running on.
+[Cobra](https://github.com/spf13/cobra) is used to build CLI applications within project.
 
-![Process model](./images/process.svg "Processs")
+Show possible commands of application:
 
-see [Related source code](../pkg/cmd/contrail/run.go)
+```bash
+contrail -h
+```
 
-# Configuration
+Show detailed information about specific command:
 
-We use [Viper](https://github.com/spf13/viper) for configuration management.
-YAML is our default configuration format. Every configuration option must be configured via environment variables too with CONTRAIL_ prefix for docker based operation.
+```bash
+contrail <command> -h
+```
 
-# Schema
+### `Contrail` application
 
-We manage API Schema using the YAML format.
-[schemas directory](../schemas) contains schemas.
+To simplify deployment, "single binary" approach is taken for Go-related project. Multiple micro-services are managed as goroutines and are run based on configuration flags, such as `sync.enabled`.
+Processes communicate with each other using Service Interface (described below) so that it is possible to
+switch between internal function call or gRPC call depending on where other processes are running.
 
-In YAML format, the schema as following properties.
+`contrail` application contains following services (processes) spawned as separate goroutines:
+
+- [Agent service](agent.md)
+- AMQP Replicator service
+- [API Server](rest_api.md)
+- Cache Database
+- [Cluster service](cluster.md)
+- [Intent Compilation service](intent_compilation.md)
+- Cassandra Replicator service
+- [Sync service](sync.md)
+
+![Process model](images/process.svg "Process")
+
+See: [Related source code](../pkg/cmd/contrail/run.go)
+
+### Helper applications
+
+Repository holds source code for following helper CLI applications:
+
+- `contrailcli` - [API Server command line client](cli.md)
+- `contrailschema` - code generator using schema definitions
+- `contrailutil` - utilities such as [Convert](convert.md), `package`, `record_test`
+
+## Configuration
+
+[Viper](https://github.com/spf13/viper) is used for configuration management. YAML is default configuration format. Every configuration option may be set via environment variable with `CONTRAIL_` prefix, e.g. `CONTRAIL_SYNC_ENABLED=true`.
+
+CLI reads configuration from YAML file on path specified with `-c` / `--config` flag:
+
+ ```bash
+ contrailcli schema -c ./sample/cli.yml virtual_network
+ contrailcli list -c ./sample/cli.yml virtual_network
+ ```
+
+Alternatively, `CONTRAIL_CONFIG` environment variable can be set to desired path:
+
+ ```bash
+ export CONTRAIL_CONFIG=./sample/cli.yml
+
+ contrailcli schema -c virtual_network
+ contrailcli list virtual_network
+ ```
+
+Sample configuration files are located in ["sample" directory](../sample).
+
+## Schema
+
+API schema is defined in multiple YAML files in ["schemas" directory](../schemas). Note that schema stored here is just a cache for development. Latest schema is located in [contrail-api-client repository](http://github.com/Juniper/contrail-api-client). JSON version of schema is generated [here](../public/schema.json).
+
+Schema has following properties:
 
 - id: unique schema ID
-- extends: You can specify a list of abstract schema
-- parents: parents resources
+- extends: list of abstract schemas that defined schema extends
+- parents: parent resources
 - references: many to many relations
-- prefix: REST API prefix
+- prefix: REST API path prefix
 - schema: JSON Schema
 
-This is a sample schema.
+Sample schema:
 
-``` YAML
+```yaml
 extends:
 - base
 id: virtual_network
@@ -100,52 +147,56 @@ schema:
   type: object
 ```
 
-# Code generation
+## Code generation
 
-We have a makefile target to generate source codes or initial SQL definitions.
+Generate source code and initial SQL definitions based on schema:
 
-``` shell
+```bash
 make generate
 ```
 
-templates are stored in [template directory](../tools/templates)
+Templates for code generation are stored in ["template" directory](../tools/templates).
+List of templates is specified in [template configuration](../tools/templates/template_config.yaml).
 
-List of templates are specificed in [template configuration](../tools/templates/template_config.yaml)
+Project uses [Pongo2 template engine](https://github.com/flosch/pongo2) which is based on [Django template language](https://docs.djangoproject.com/en/dev/ref/templates/language/).
 
-We use [Pongo2](https://github.com/flosch/pongo2) which support a subset of Jinja2 template.
+## Models
 
-# Models
+[Models package](../pkg/models) contains Go structs for all resource objects. All processes must
+use this model. Note that one should avoid the use of the level objects such as JSON strings or
+`map[string]interface{}`.
+This package contains model-specific logic as well.
 
-[../pkg/models] has Go structs for all resource objects. All processes must
-use this model. Note that we should avoid the use of the level objects such as JSON strings /
-map[string]interfaces{}.
-We have model specific logics here. See more in GoDoc of this package.
+See: [Generated models documentation](proto.md)
 
-# API Server
+## API Server
 
-API Server provides REST API and gRPC for external orchestrators such as UI / OpenStack or
-Kuberunetes. [Source Code](../pkg/apisrv)
-We use [echo framework](https://echo.labstack.com/) for HTTP Web server framework,
-and use standard library for gRPC Server.
-Internally, we dispatch any API requests for internal services which support
+API Server provides REST API and gRPC for external orchestrators such as UI / OpenStack or Kubernetes.
+[Echo framework](https://echo.labstack.com/) is used as HTTP Web server framework
+and standard library is used for gRPC Server.
+Internally, API requests are dispatched to internal services which support
 Service Interface described in the next chapter.
 
-![API Server Internal Architecture](./images/api_process.svg "API Process Data")
+![API Server Internal Architecture](images/api_process.svg "API Process Data")
 
-# Service Interface & Chain
+API Server supports Keystone V3 authentication and RBAC.
+See: [Authentication documentation](authentication.md)
+See: [Access Control documentation](policy.md)
 
-To decouple logic from specific implementation, we define "Service Interface".
-The service interface support gRPC client API plus chain concept.
-We apply HTTP middleware concept where we can inject multiple logics later in the process
-pipeline.
+API Server has minimal Keystone API V3 support for standalone use case for testing purposes.
+See "keystone" key [in sample configuration file](https://github.com/Juniper/contrail/blob/master/sample/contrail.yml).
 
-We need to set "Next" services for each service implementation, and we are expecting
-call Next() service on each call.
+See: [REST API documentation](rest_api.md)
+See: [API Server source code](../pkg/apisrv)
 
-Next call example
+## Service Interface & Chain
 
-``` Go
+To decouple logic from transport layer (gRPC, HTTP), "Service Interface" is defined.
+The Service Interface allows Service Chain concept to be used. Multiple services implementing Service Interface can be chained together, similarly to middleware pattern. For each service, "next" service needs to be set. Each layer of logic is expected to call `service.Next()` once, in arbitrary place.
 
+`ContrailTypeLogicService` `CreateProject()` method implementation presenting `service.Next()` usage:
+
+```go
 // CreateProject creates a project and ensures a default application policy set for it.
 func (sv *ContrailTypeLogicService) CreateProject(
     ctx context.Context, request *services.CreateProjectRequest,
@@ -164,21 +215,59 @@ func (sv *ContrailTypeLogicService) CreateProject(
 
     return response, err
 }
-
 ```
 
-# Services
+## Services
 
-## DB Service
+### DB Service
 
-## Cache Service
+### Cache Service
 
-## Contrail Service
+### Contrail Service
 
-## Type Specific logic service
+### Type Specific logic service
 
-# Intent Compiler
+## Kubernetes support
 
-[Intent Compiler Documentation](./intent_compilation.md)
+See: [Deployment for Kubernetes](k8s.md)
 
-# Sync Process
+## Testing
+
+Run all tests with coverage:
+
+```bash
+make test
+```
+
+Run all tests without coverage (faster, useful for local testing):
+
+```bash
+make nocovtest
+```
+
+Run all tests with additional debug information:
+
+```bash
+CONTRAIL_DATABASE_DEBUG=true make test
+```
+
+### Testutil package
+
+`Testutil` package is located [here](../pkg/testutil). It contains helpers for automatic tests.
+It contains also `integration` subpackage, which holds utilities and types used for integration testing. This package depends on internal packages, such as `pkg/apisrv` and `pkg/sync`. 
+ 
+### YAML integration tests
+
+File [testutil/integration/common.go](../pkg/testutil/integration/common.go) contains integration testing toolkit, whose core object is `TestScenario` struct. Tests written with this toolkit are often called by developers "YAML tests". This name comes from the fact, that test scenarios are defined in YAML files containing custom structure.
+
+YAML test toolkit reads test scenario from YAML files to `TestScenario` struct. It allows to:
+
+- Define multiple Keystone users (`TestScenario.clients`) to be used in HTTP requests (`Task.client`).
+- Perform multiple HTTP requests to API Server and check responses (`TestScenario.Workflow` which is list of `Task` objects).
+- Enable Intent Compilation service within test scenario (`TestScenario.IntentCompilerEnabled`).
+- Specify etcd watchers both on `TestScenario.Watchers` level and `Task.Watchers` level. Each watcher entry holds a key the test is expecting events on (such as `/contrail/project/project_blue_project_uuid`) and list of values of events on that key.
+- Specify list of paths of resources to delete after scenario's workflow is finished (`TestScenario.Cleanup`).
+
+This toolkit is used in [API Server tests](../pkg/apisrv/server_test.go). Test scenarios are located in ["test_data" directory](../pkg/apisrv/test_data). Only API Server is tested here by performing various HTTP requests to it. 
+
+This toolkit is also used in [Contrail integration tests](../pkg/cmd/contrail/integration_test.go). Test scenarios are located in ["tests" directory](../pkg/cmd/contrail/tests). Those scenarios test not only API Server, but also Sync service, etcd and Intent Compilation service.
