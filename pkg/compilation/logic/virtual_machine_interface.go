@@ -39,7 +39,7 @@ func (s *Service) CreateVirtualMachineInterface(
 
 	i := NewVirtualMachineInterfaceIntent(ctx, s.ReadService, request)
 
-	err := s.handleCreate(ctx, i)
+	err := s.StoreAndEvaluate(ctx, i)
 	if err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ func (s *Service) CreateSecurityGroup(
 		SecurityGroup: request.GetSecurityGroup(),
 	}
 
-	if err := s.handleCreate(ctx, i); err != nil {
+	if err := s.StoreAndEvaluate(ctx, i); err != nil {
 		return nil, err
 	}
 
@@ -59,13 +59,8 @@ func (s *Service) UpdateSecurityGroup(
 	}
 
 	i.SecurityGroup = sg
-
-	ec := &intent.EvaluateContext{
-		WriteService: s.WriteService,
-	}
-	err := s.EvaluateDependencies(ctx, ec, i)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to evaluate Security Group dependencies")
+	if err := s.StoreAndEvaluate(ctx, i); err != nil {
+		return nil, err
 	}
 
 	return s.BaseService.UpdateSecurityGroup(ctx, request)
