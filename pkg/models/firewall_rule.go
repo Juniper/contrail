@@ -23,55 +23,22 @@ var protocolIDs = map[string]int64{
 }
 
 // CheckAssociatedRefsInSameScope checks scope of firewallRule refs
-// that global scoped firewall rule cannot reference scoped resources
 func (fr *FirewallRule) CheckAssociatedRefsInSameScope(fqName []string) error {
 
-	// this method is simply based on the fact global
-	// firewall resource (draft or not) have a FQ name length equal to two
-	// and scoped one (draft or not) have a FQ name longer than 2 to
-	// distinguish a scoped firewall resource to a global one. If that
-	// assumption disappear, all that method will need to be re-worked
-	if len(fqName) != 2 {
-		return nil
-	}
-
+	var refs []basemodels.Reference
 	for _, ref := range fr.GetAddressGroupRefs() {
-		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
-			return err
-		}
+		refs = append(refs, ref)
 	}
 
 	for _, ref := range fr.GetServiceGroupRefs() {
-		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
-			return err
-		}
+		refs = append(refs, ref)
 	}
 
 	for _, ref := range fr.GetVirtualNetworkRefs() {
-		if err := fr.checkRefInSameScope(ref, fqName); err != nil {
-			return err
-		}
+		refs = append(refs, ref)
 	}
 
-	return nil
-}
-
-func (fr *FirewallRule) checkRefInSameScope(
-	ref basemodels.Reference, fqName []string,
-) error {
-	if len(ref.GetTo()) == 2 {
-		return nil
-	}
-
-	refKind := strings.Replace(ref.GetReferredKind(), "-", " ", -1)
-	return common.ErrorBadRequestf(
-		"global Firewall Rule %s (%s) cannot reference a scoped %s %s (%s)",
-		basemodels.FQNameToString(fqName),
-		fr.GetUUID(),
-		strings.Title(refKind),
-		basemodels.FQNameToString(ref.GetTo()),
-		ref.GetUUID(),
-	)
+	return basemodels.CheckAssociatedRefsInSameScope(fr, fqName, refs)
 }
 
 // AddDefaultMatchTag sets default matchTag if not defined in the request
