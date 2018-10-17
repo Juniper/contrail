@@ -1,0 +1,88 @@
+name: Firewall Policy Test
+description:  basic firewall policy test
+cleanup:
+- path: /firewall-policy/test_firewall_policy_uuid
+test_data:
+
+  firewall_policy: &test_firewall_policy
+    uuid: test_firewall_policy_uuid
+    parent_type: policy-management
+    fq_name:
+      - default-policy-management
+      - test_firewall_policy_uuid
+    name: k8s-denyall
+    display_name: k8s-denyall
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: try to create firewall policy with draft-state-mode defined
+  request:
+    path: /firewall-policys
+    method: POST
+    expected: [400]
+    data:
+      firewall-policy:
+        <<: *test_firewall_policy
+        draft_mode_state: created
+
+- name: create firewall policy
+  request:
+    path: /firewall-policys
+    method: POST
+    expected: [200]
+    data:
+      firewall-policy: *test_firewall_policy
+  expect:
+    firewall-policy: *test_firewall_policy
+
+- name: try to update firewall policy with draft-state-mode defined
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: PUT
+    expected: [400]
+    data:
+      firewall-policy:
+        uuid: test_firewall_policy_uuid
+        draft_mode_state: created
+
+- name: update firewall policy
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: PUT
+    expected: [200]
+    data:
+      firewall-policy:
+        uuid: test_firewall_policy_uuid
+        annotations:
+          key_value_pair:
+            - value: denyall
+              key: name
+
+- name: get updated firewall policy
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: GET
+    expected: [200]
+  expect:
+    firewall-policy:
+        uuid: test_firewall_policy_uuid
+        annotations:
+          key_value_pair:
+            - value: denyall
+              key: name
+
+- name: delete firewall policy
+  request:
+    path: /firewall-policy/test_firewall_policy_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
