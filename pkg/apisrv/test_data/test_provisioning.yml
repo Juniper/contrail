@@ -5,6 +5,7 @@ cleanup:
 - path: /bgp-router/bgp_router_test_provisioning_uuid
 - path: /virtual-router/virtual_router_test_provisioning_uuid
 - path: /firewall-rule/firewall_rule_test_provisioning_uuid
+- path: /firewall-policy/firewall_policy_test_provisioning_uuid
 - path: /tag/tag_test_provisioning_uuid
 test_data:
   bgp_router_parameters: &bgp_router_parameters_test_provisioning
@@ -93,6 +94,35 @@ test_data:
         start_port: 0
         end_port: 0
 
+  firewall_policy: &firewall_policy_test_provisioning
+    uuid: firewall_policy_test_provisioning_uuid
+    parent_type: policy-management
+    fq_name:
+      - default-policy-management
+      - firewall_policy_test_provisioning
+    display_name: k8s-denyall
+    configuration_version: 0
+    annotations:
+      key_value_pair:
+        - value: k8s
+          key: cluster
+        - value: ""
+          key: k8s_uuid
+        - value: VncSecurityPolicy
+          key: kind
+        - value: denyall
+          key: name
+        - value: ""
+          key: namespace
+        - value: k8s
+          key: owner
+        - value: ""
+          key: project
+        - value: "null"
+          key: spec
+        - value: "True"
+          key: tail
+
 clients:
   default:
     id: alice
@@ -175,6 +205,23 @@ workflow:
       #     to:
       #       - namespace=default
 
+- name: create firewall policy
+  request:
+    path: /firewall-policys
+    method: POST
+    expected: [200]
+    data:
+      firewall-policy: *firewall_policy_test_provisioning
+  expect:
+    firewall-policy: *firewall_policy_test_provisioning
+
+- name: delete firewall policy
+  request:
+    path: /firewall-policy/firewall_policy_test_provisioning_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
 
 - name: delete firewall rule
   request:
