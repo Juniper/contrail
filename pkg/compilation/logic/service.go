@@ -48,7 +48,7 @@ func (s *Service) evaluateContext() *intent.EvaluateContext {
 }
 
 // TODO use GetObject from Intent interface instead of passing r
-func (s *Service) handleCreate(
+func (s *Service) StoreAndEvaluate(
 	ctx context.Context,
 	i intent.Intent,
 ) error {
