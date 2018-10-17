@@ -112,8 +112,11 @@ func TestVirtualRouter(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_router.yml")
 }
 
+func TestFirewallPolicy(t *testing.T) {
+	RunTest(t, "./test_data/test_firewall_policy.yml")
+}
+
 func TestFirewallRule(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_firewall_rule.yml")
 }
 
