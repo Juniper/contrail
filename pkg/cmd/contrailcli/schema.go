@@ -91,7 +91,7 @@ func fetchServerAPI(client *client.HTTP, serverSchema string) (*schema.API, erro
 		if err == nil {
 			break
 		}
-		log.Warnf("failed to connect server %d. reconnecting...", err)
+		log.WithError(err).Warn("Failed to connect API Server - reconnecting")
 		time.Sleep(time.Second)
 	}
 	return &api, nil

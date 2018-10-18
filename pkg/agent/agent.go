@@ -31,7 +31,6 @@ const (
 )
 
 // Config represents Agent configuration.
-// nolint
 type Config struct {
 	// ID of Agent account.
 	ID string `yaml:"id"`
