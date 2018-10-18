@@ -4,13 +4,154 @@ import (
 	"context"
 	"testing"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
+
+func TestFieldMaskPaths(t *testing.T) {
+	tests := []struct {
+		name               string
+		structure          *basedb.Structure
+		path               string
+		expectedChildPaths []string
+		expectedLength     int
+	}{
+		{
+			name:               "top level simple property",
+			structure:          FirewallRuleStructure,
+			path:               "uuid",
+			expectedChildPaths: nil,
+			expectedLength:     0,
+		},
+		{
+			name:               "nested simple property",
+			structure:          FirewallRuleStructure,
+			path:               "match_tags.tag_list",
+			expectedChildPaths: nil,
+			expectedLength:     0,
+		},
+		{
+			name:      "top level complex property",
+			structure: FirewallRuleStructure,
+			path:      "action_list",
+			expectedChildPaths: []string{
+				"action_list.gateway_name",
+				"action_list.mirror_to.analyzer_ip_address",
+			},
+			expectedLength: 20,
+		},
+		{
+			name:      "nested complex property",
+			structure: FirewallRuleStructure,
+			path:      "service.src_ports",
+			expectedChildPaths: []string{
+				"service.src_ports.start_port",
+				"service.src_ports.end_port",
+			},
+			expectedLength: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			paths := tt.structure.GetInnerPaths(tt.path)
+			for _, p := range tt.expectedChildPaths {
+				assert.Contains(t, paths, p)
+			}
+			logrus.Println(paths)
+			assert.Equal(t, tt.expectedLength, len(paths))
+		})
+	}
+}
+
+func TestUpdateComplexField(t *testing.T) {
+	tests := []struct {
+		name           string
+		resource       *models.FirewallRule
+		updateResource *models.FirewallRule
+		assertion      func(t *testing.T, expected, actual *models.FirewallRule)
+		paths          []string
+	}{
+		{
+			name: "zero simple property",
+			resource: &models.FirewallRule{
+				UUID: "hoge",
+				Name: "hogehoge",
+			},
+			updateResource: &models.FirewallRule{
+				UUID: "hoge",
+			},
+			paths: []string{
+				"name",
+			},
+			assertion: func(t *testing.T, expected, actual *models.FirewallRule) {
+				assert.Equal(t, expected.Name, actual.Name)
+			},
+		},
+		{
+			name: "zero complex property",
+			resource: &models.FirewallRule{
+				UUID: "hoge",
+				IDPerms: &models.IdPermsType{
+					Enable: true,
+				},
+			},
+			updateResource: &models.FirewallRule{
+				UUID: "hoge",
+			},
+			paths: []string{
+				"id_perms",
+			},
+			assertion: func(t *testing.T, expected, actual *models.FirewallRule) {
+				assert.Equal(t, false, actual.IDPerms.Enable)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := db.CreateFirewallRule(context.Background(), createFireWallRuleRequest(tt.resource))
+			require.NoError(t, err)
+			defer func() {
+				db.DeleteFirewallRule(context.Background(), &services.DeleteFirewallRuleRequest{ // nolint: errcheck
+					ID: tt.resource.GetUUID(),
+				})
+			}()
+			_, err = db.UpdateFirewallRule(context.Background(), updateFireWallRuleRequest(tt.updateResource, tt.paths))
+			require.NoError(t, err)
+			response, err := db.GetFirewallRule(context.Background(), &services.GetFirewallRuleRequest{
+				ID: tt.resource.GetUUID(),
+			})
+			require.NoError(t, err)
+			if tt.assertion != nil {
+				tt.assertion(t, tt.updateResource, response.GetFirewallRule())
+			}
+		})
+	}
+}
+
+func createFireWallRuleRequest(m *models.FirewallRule) *services.CreateFirewallRuleRequest {
+	return &services.CreateFirewallRuleRequest{
+		FirewallRule: m,
+	}
+}
+
+func updateFireWallRuleRequest(m *models.FirewallRule, paths []string) *services.UpdateFirewallRuleRequest {
+	return &services.UpdateFirewallRuleRequest{
+		FirewallRule: m,
+		FieldMask: types.FieldMask{
+			Paths: paths,
+		},
+	}
+}
 
 func TestDBScanRow(t *testing.T) {
 	tests := []struct {
