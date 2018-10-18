@@ -2,15 +2,56 @@ package db
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
+
+func TestFieldMaskPaths(t *testing.T) {
+	tests := []struct {
+		name               string
+		structure          *basedb.Structure
+		path               string
+		expectedChildPaths []string
+		expectedLength     int
+	}{
+		{
+			name:               "top level simple property",
+			structure:          &FirewallRuleStructure,
+			path:               "uuid",
+			expectedChildPaths: []string{"uuid"},
+			expectedLength:     1,
+		},
+		{
+			name:      "top level complex property",
+			structure: &FirewallRuleStructure,
+			path:      "action_list",
+			expectedChildPaths: []string{
+				"action_list.gateway_name",
+				"action_list.mirror_to.analyzer_ip_address",
+			},
+			expectedLength: 20,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			paths := tt.structure.GetChildPaths(tt.path)
+			for _, p := range tt.expectedChildPaths {
+				assert.Contains(t, paths, p)
+			}
+			logrus.Println(paths)
+			assert.Equal(t, tt.expectedLength, len(paths))
+		})
+	}
+}
 
 func TestDBScanRow(t *testing.T) {
 	tests := []struct {
