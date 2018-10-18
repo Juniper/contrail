@@ -3,6 +3,7 @@ package db // nolint: golint
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -51,4 +52,33 @@ func (db *Service) Dump(ctx context.Context, ow basedb.ObjectWriter) error {
 			return db.dump(ctx, ow)
 		},
 	)
+}
+
+type structure map[string]interface{}
+
+func (s *structure) getPaths(prefix string) []string {
+	var paths []string
+	for k, v := range *s {
+		p := prefix + "." + k
+		switch o := v.(type) {
+		case struct{}:
+			paths = append(paths, p)
+		case *structure:
+			paths = append(paths, o.getPaths(p)...)
+		}
+	}
+	return paths
+}
+
+func (s *structure) getChildPaths(path string) (paths []string) {
+	innerStructure := s
+	for _, segment := range strings.Split(path, ".") {
+		switch o := (*innerStructure)[segment].(type) {
+		case struct{}:
+			return []string{path}
+		case *structure:
+			innerStructure = o
+		}
+	}
+	return innerStructure.getPaths(path)
 }

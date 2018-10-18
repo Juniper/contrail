@@ -18,7 +18,23 @@ import (
 //This is needed to prevent an import error.
 var _ = schema.Version
 
+{%- macro propertiesStructure(JSONSchema) %}
+    {%- for property, definition in JSONSchema.Properties -%}
+    {%- if definition.Properties|length == 0 %}
+    "{{ property }}": struct{}{},
+    {%- else %}
+    "{{ property }}": &structure{
+        {{- propertiesStructure(definition) -}}
+    },
+    {%- endif %}
+    {%- endfor %}
+{% endmacro -%}
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+var {{ schema.JSONSchema.GoName }}Structure = structure{
+    {{- propertiesStructure(schema.JSONSchema) -}}
+}
 
 // {{ schema.JSONSchema.GoName }}Fields is db columns for {{ schema.JSONSchema.GoName }}
 var {{ schema.JSONSchema.GoName }}Fields = []string{

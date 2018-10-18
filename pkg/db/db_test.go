@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/sirupsen/logrus"
 	"context"
 	"testing"
 
@@ -10,6 +11,45 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestFieldMaskPaths(t *testing.T) {
+	tests := []struct {
+		name               string
+		structure          *structure
+		path               string
+		expectedChildPaths []string
+		expectedLength     int
+	}{
+		{
+			name:               "top level simple property",
+			structure:          &FirewallRuleStructure,
+			path:               "uuid",
+			expectedChildPaths: []string{"uuid"},
+			expectedLength:     1,
+		},
+		{
+			name:      "top level complex property",
+			structure: &FirewallRuleStructure,
+			path:      "action_list",
+			expectedChildPaths: []string{
+				"action_list.gateway_name",
+				"action_list.mirror_to.analyzer_ip_address",
+			},
+			expectedLength: 20,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			paths := tt.structure.getChildPaths(tt.path)
+			for _, p := range tt.expectedChildPaths {
+				assert.Contains(t, paths, p)
+			}
+			logrus.Println(paths)
+			assert.Equal(t, tt.expectedLength, len(paths))
+		})
+	}
+}
 
 func TestDBScanRow(t *testing.T) {
 	tests := []struct {
