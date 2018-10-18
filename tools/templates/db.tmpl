@@ -422,9 +422,19 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
         return err
     }
 
+    var paths []string
+    for _, path := range request.FieldMask.Paths {
+        childPaths := {{ schema.JSONSchema.GoName }}Structure.GetChildPaths(path)
+		if len(childPaths) == 0 {
+            paths = append(paths, path)
+        } else {
+			paths = append(paths, childPaths...)
+		}
+    }
+
     columns := []string{}
     values := []interface{}{}
-    for _, updatedPath := range request.FieldMask.Paths {
+    for _, updatedPath := range paths {
         switch (updatedPath) {
             {% for column in schema.Columns %}
             case "{{ column.UpdatePath }}":

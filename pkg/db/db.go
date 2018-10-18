@@ -1,4 +1,4 @@
-package db // nolint: golint
+package db
 
 import (
 	"context"
