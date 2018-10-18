@@ -6,11 +6,12 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
-// MultiError implements errors with multiple causes
+// MultiError implements errors with multiple causes.
 type MultiError []error
 
 // Error implements default errors interface for MultiError.
@@ -97,9 +98,20 @@ func ErrorConflictf(format string, a ...interface{}) error {
 	return grpc.Errorf(codes.AlreadyExists, format, a...)
 }
 
-// HTTPStatusFromCode converts a gRPC error code into the corresponding HTTP response status.
+// ToHTTPError translates grpc error to error.
+func ToHTTPError(err error) error {
+	log.WithError(err).Debug("Translating to HTTP error") // error translation might lose error description
+
+	cause := errors.Cause(err)
+	return echo.NewHTTPError(
+		httpStatusFromCode(grpc.Code(cause)),
+		grpc.ErrorDesc(cause),
+	)
+}
+
+// httpStatusFromCode converts a gRPC error code into the corresponding HTTP response status.
 // nolint: gocyclo
-func HTTPStatusFromCode(code codes.Code) int {
+func httpStatusFromCode(code codes.Code) int {
 	switch code {
 	case codes.OK:
 		return http.StatusOK
@@ -137,11 +149,4 @@ func HTTPStatusFromCode(code codes.Code) int {
 		return http.StatusInternalServerError
 	}
 	return http.StatusInternalServerError
-}
-
-// ToHTTPError translates grpc error to error.
-func ToHTTPError(err error) error {
-	cause := errors.Cause(err)
-	code := HTTPStatusFromCode(grpc.Code(cause))
-	return echo.NewHTTPError(code, grpc.ErrorDesc(cause))
 }

@@ -77,3 +77,55 @@ func TestCheckPath(t *testing.T) {
 	}
 
 }
+
+func TestRemoveFromStringSlice(t *testing.T) {
+	tests := []struct {
+		name     string
+		slice    []string
+		values   map[string]struct{}
+		expected []string
+	}{
+		{
+			name:     "does nothing when no values given",
+			slice:    []string{"foo", "bar", "baz", "hoge"},
+			values:   nil,
+			expected: []string{"foo", "bar", "baz", "hoge"},
+		},
+		{
+			name:  "removes single value from slice",
+			slice: []string{"foo", "bar", "baz", "hoge"},
+			values: map[string]struct{}{
+				"bar": {},
+			},
+			expected: []string{"foo", "baz", "hoge"},
+		},
+		{
+			name:  "removes multiple values from slice",
+			slice: []string{"foo", "bar", "baz", "hoge"},
+			values: map[string]struct{}{
+				"bar": {},
+				"baz": {},
+			},
+			expected: []string{"foo", "hoge"},
+		},
+		{
+			name:  "removes all values from slice given all values",
+			slice: []string{"foo", "bar", "baz", "hoge"},
+			values: map[string]struct{}{
+				"foo":  {},
+				"bar":  {},
+				"baz":  {},
+				"hoge": {},
+			},
+			expected: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := RemoveFromStringSlice(tt.slice, tt.values)
+
+			assert.Equal(t, tt.expected, s)
+		})
+	}
+}
