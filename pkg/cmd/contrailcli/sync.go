@@ -42,7 +42,7 @@ func syncResources(dataPath string) (string, error) {
 		return "", err
 	}
 	response := []*services.Event{}
-	_, err = client.Create(context.Background(), "/sync", request, &response) //nolint
+	_, err = client.Create(context.Background(), "/sync", request, &response)
 	if err != nil {
 		fmt.Println(err)
 		return "", err

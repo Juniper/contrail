@@ -179,7 +179,7 @@ func TestService_ListMetadata(t *testing.T) {
 	for _, metadata := range dbMetadatas {
 		err := db.CreateMetadata(ctx, metadata)
 		assert.NoError(t, err)
-		defer db.DeleteMetadata(ctx, metadata.UUID) //nolint
+		defer db.DeleteMetadata(ctx, metadata.UUID)
 	}
 
 	for _, tt := range tests {
