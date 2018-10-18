@@ -18,7 +18,23 @@ import (
 //This is needed to prevent an import error.
 var _ = schema.Version
 
+{%- macro propertiesStructure(JSONSchema) %}
+    {%- for property, definition in JSONSchema.Properties -%}
+    {%- if definition.Properties|length == 0 %}
+    "{{ property }}": struct{}{},
+    {%- else %}
+    "{{ property }}": &basedb.Structure{
+        {{- propertiesStructure(definition) -}}
+    },
+    {%- endif %}
+    {%- endfor %}
+{% endmacro -%}
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+var {{ schema.JSONSchema.GoName }}Structure = basedb.Structure{
+    {{- propertiesStructure(schema.JSONSchema) -}}
+}
 
 // {{ schema.JSONSchema.GoName }}Fields is db columns for {{ schema.JSONSchema.GoName }}
 var {{ schema.JSONSchema.GoName }}Fields = []string{
@@ -420,9 +436,19 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
         return err
     }
 
+    var paths []string
+    for _, path := range request.FieldMask.Paths {
+        childPaths := {{ schema.JSONSchema.GoName }}Structure.GetChildPaths(path)
+		if len(childPaths) == 0 {
+            paths = append(paths, path)
+        } else {
+			paths = append(paths, childPaths...)
+		}
+    }
+
     columns := []string{}
     values := []interface{}{}
-    for _, updatedPath := range request.FieldMask.Paths {
+    for _, updatedPath := range paths {
         switch (updatedPath) {
             {% for column in schema.Columns %}
             case "{{ column.UpdatePath }}":
