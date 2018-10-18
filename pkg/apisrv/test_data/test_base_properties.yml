@@ -1,24 +1,31 @@
-name: Base poperties filling up tests
+name: Base poperties test
+description: Tests handling of base properties
 cleanup:
-- path: /fabrics/fabric_blue
-- path: /network-ipam/f774ea9e-fc59-4730-8bcf-8ef4f69a812e
+- path: /fabrics/default_fabric
+- path: /fabrics/fabric_base_properties_uuid
+- path: /projects/project_base_properties_uuid
 - path: /network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
 test_data:
-  fabric_minimal: &fabric_minimal_base_props
-    uuid: fabric_blue
+  fabric_minimal: &fabric_minimal
+    uuid: fabric_base_properties_uuid
 
-  admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
-    uuid: admin_project_uuid
+  project: &project
+    fq_name:
+    - default
+    - project_base_properties
+    uuid: project_base_properties_uuid
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
 
-  network_ipam_blue: &network_ipam_blue
-    display_name: test_ipam_blue
+  network_ipam: &network_ipam
+    fq_name:
+    - domain
+    - project_base_properties_uuid
+    - 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+    uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
     parent_type: project
-    parent_uuid: admin_project_uuid
-    fq_name: ["domain","admin_project_uuid","test_ipam_blue"]
+    parent_uuid: project_base_properties_uuid
 
 clients:
   default:
@@ -31,127 +38,189 @@ clients:
         name: admin
 
 workflow:
-- name: create fabric without parent_uuid and fq_name
+
+##################################################################
+#  Name, DisplayName, ParentType, FQName and ParentUUID handling #
+##################################################################
+
+- name: create Fabric without parent_uuid and fq_name
   request:
     path: /fabrics
     method: POST
     expected: [400]
     data:
-      fabric: *fabric_minimal_base_props
-  expect: null
+      fabric: *fabric_minimal
 
-- name: create fabric with parent_uuid
+- name: create Fabric with parent_uuid
   request:
     path: /fabrics
     method: POST
     expected: [200]
     data:
       fabric:
-        <<: *fabric_minimal_base_props
+        <<: *fabric_minimal
         parent_uuid: beefbeef-beef-beef-beef-beefbeef0001 # default global-system-config uuid
   expect:
     fabric:
-      <<: *fabric_minimal_base_props
+      <<: *fabric_minimal
       name: default-fabric                # default name is filled
       display_name: default-fabric        # display_name defaults to name
       parent_type: global-system-config   # parent_type filled - gsc is only possible parent for fabric
-      fq_name: [default-global-system-config, default-fabric]
+      fq_name:
+      - default-global-system-config
+      - default-fabric
 
-- name: delete fabric
+- name: delete Fabric
   request:
-    path: /fabric/fabric_blue
+    path: /fabric/fabric_base_properties_uuid
     method: DELETE
     expected: [200]
-  expect: null
 
-- name: create fabric with fq_name
+- name: create Fabric with fq_name
   request:
     path: /fabrics
     method: POST
     expected: [200]
     data:
       fabric:
-        <<: *fabric_minimal_base_props
-        fq_name: [default-global-system-config, my-fabric]
+        <<: *fabric_minimal
+        fq_name:
+        - default-global-system-config
+        - my-fabric
   expect:
     fabric:
-      <<: *fabric_minimal_base_props
-      name: my-fabric                                    # default name is extracted from fqName
+      <<: *fabric_minimal
+      name: my-fabric                                    # default name is extracted from fq_name
       display_name: my-fabric                            # display_name defaults to name
       parent_type: global-system-config                  # parent_type filled - gsc is only possible parent for fabric
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001  # parent_uuid filled using fq_name
-      fq_name: [default-global-system-config, my-fabric]
+      fq_name:
+      - default-global-system-config
+      - my-fabric
 
-- name: delete fabric
+- name: delete Fabric
   request:
-    path: /fabric/fabric_blue
+    path: /fabric/fabric_base_properties_uuid
     method: DELETE
     expected: [200]
-  expect: null
 
-- name: create project admin
+#####################
+# ID perms handling #
+#####################
+
+- name: create Project
   request:
     path: /projects
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
-      project: *admin_project
+      project: *project
   expect:
-    project: *admin_project
+    project: *project
 
-- name: create ipam with uuid and id_perms specified
+# TODO: API Server should verify if id_perms.uuid match uuid
+- name: create Network IPAM with uuid and id_perms specified
   request:
     path: /network-ipams
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
       network-ipam:
-        <<: *network_ipam_blue
-        uuid: f774ea9e-fc59-4730-8bcf-8ef4f69a812e
+        <<: *network_ipam
         id_perms:
           uuid:
             uuid_mslong: 123
             uuid_lslong: 456
   expect:
     network-ipam:
-      <<: *network_ipam_blue
+      <<: *network_ipam
       id_perms:
         uuid:
           uuid_mslong: 123
           uuid_lslong: 456
 
-- name: delete network ipam
+- name: delete Network IPAM
   request:
-    path: /network-ipam/f774ea9e-fc59-4730-8bcf-8ef4f69a812e
+    path: /network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
     method: DELETE
-    expected:
-    - 200
-  expect: null
+    expected: [200]
 
-- name: create ipam with proper uuid but without id_perms uuid
+- name: create should fill id_perms.uuid given proper uuid property
   request:
     path: /network-ipams
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
       network-ipam:
-        <<: *network_ipam_blue
-        uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+        <<: *network_ipam
   expect:
     network-ipam:
-      <<: *network_ipam_blue
+      <<: *network_ipam
       id_perms:
         uuid:
           uuid_lslong: 3335361290466096867
           uuid_mslong: 5441706009095324062
 
-- name: delete network ipam
+- name: update should not zero id_perms.uuid
+  request:
+    path: /network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+    method: PUT
+    expected: [200]
+    data:
+      network-ipam:
+        <<: *network_ipam
+        id_perms:
+          uuid: null
+
+- name: update should not zero id_perms.uuid
+  request:
+    path: "/network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3"
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-ipam:
+      <<: *network_ipam
+      id_perms:
+        uuid:
+          uuid_lslong: 3335361290466096867
+          uuid_mslong: 5441706009095324062
+
+- name: update should not modify id_perms.uuid
+  request:
+    path: /network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+    method: PUT
+    expected: [200]
+    data:
+      network-ipam:
+        <<: *network_ipam
+        id_perms:
+          uuid:
+            uuid_lslong: 2222222222222222222
+            uuid_mslong: 1111111111111111111
+
+- name: update should not modify id_perms.uuid
+  request:
+    path: "/network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3"
+    method: GET
+    expected:
+    - 200
+  expect:
+    network-ipam:
+      <<: *network_ipam
+      id_perms:
+        uuid:
+          uuid_lslong: 3335361290466096867
+          uuid_mslong: 5441706009095324062
+
+- name: delete Network IPAM
   request:
     path: /network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
     method: DELETE
-    expected:
-    - 200
-  expect: null
+    expected: [200]
+
+- name: delete Project
+  request:
+    path: /project/project_base_properties_uuid
+    method: DELETE
+    expected: [200]
