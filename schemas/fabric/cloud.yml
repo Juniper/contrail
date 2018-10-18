@@ -40,18 +40,6 @@ schema:
       view:
       - create
       - detail
-    region:
-      description: Region asscoiated with cloud
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Region name
-      type: string
-      view:
-      - create
-      - detail
   required:
     - type
   type: object
