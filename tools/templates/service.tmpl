@@ -8,8 +8,9 @@ import (
     "github.com/labstack/echo"
     "github.com/satori/go.uuid"
 
-    "github.com/Juniper/contrail/pkg/errutil"
     "github.com/Juniper/contrail/pkg/auth"
+    "github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/format"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "github.com/Juniper/contrail/pkg/models/basemodels"
     "{{ option.PackagePath }}/pkg/models"
@@ -88,7 +89,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
             parentFQName := model.FQName[:l-1]
             metadata, err := service.MetadataGetter.GetMetadata(ctx,  basemodels.Metadata{Type: model.ParentType, FQName: parentFQName})
             if err != nil {
-                return nil, errutil.ErrorBadRequestf("please provide correct FQName or ParentUUID. cause: %v", err)
+                return nil, errutil.ErrorBadRequestf("invalid FQName or ParentUUID: %v", err)
             }
             model.ParentUUID = metadata.UUID
         }
@@ -110,11 +111,11 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
-        return nil, errutil.ErrorBadRequest(fmt.Sprintf(
-        	"validation failed for resource with UUID %v: %v",
-        	request.{{ schema.JSONSchema.GoName }}.UUID,
-        	err,
-        ))
+        return nil, errutil.ErrorBadRequestf(
+            "validation failed for resource with UUID %v: %v",
+            request.{{ schema.JSONSchema.GoName }}.UUID,
+            err,
+        )
     }
 
     return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -157,21 +158,25 @@ func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} 
 
 // RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST update request.
 func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
-    id := c.Param("id")
-    request := &RESTUpdate{{ schema.JSONSchema.GoName }}Request{}
-    if err := c.Bind(request); err != nil {
+    var request RESTUpdate{{ schema.JSONSchema.GoName }}Request
+    if err := c.Bind(&request); err != nil {
             return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
     }
-    ctx := c.Request().Context()
+
     model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
-    model.UUID = id
-    response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
-        {{ schema.JSONSchema.GoName }}: model,
-        FieldMask: basemodels.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
-    })
+    model.UUID = c.Param("id")
+
+    response, err := service.Update{{ schema.JSONSchema.GoName }}(
+        c.Request().Context(),
+        &Update{{ schema.JSONSchema.GoName }}Request{
+            {{ schema.JSONSchema.GoName }}: model,
+            FieldMask: basemodels.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
+        },
+    )
     if err != nil {
         return errutil.ToHTTPError(err)
     }
+
     return c.JSON(http.StatusOK, response)
 }
 
@@ -183,14 +188,26 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
     if model == nil {
         return nil, errutil.ErrorBadRequest("update request body is empty")
     }
+
+    if model.GetIDPerms().GetUUID() != nil {
+        model.IDPerms.UUID = nil
+        request.FieldMask.Paths = format.RemoveFromStringSlice(
+            request.FieldMask.Paths,
+            map[string]struct{}{
+                "id_perms.uuid": {},
+                "id_perms.uuid.uuid_mslong": {},
+                "id_perms.uuid.uuid_lslong": {},
+            },
+        )
+    }
+
     return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
 // RESTDelete{{ schema.JSONSchema.GoName }} handles a REST delete request.
 func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
-    id := c.Param("id")
     request := &Delete{{ schema.JSONSchema.GoName }}Request{
-        ID: id,
+        ID: c.Param("id"),
     }
     ctx := c.Request().Context()
     _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -200,12 +217,10 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
     return c.NoContent(http.StatusOK)
 }
 
-
 // RESTGet{{ schema.JSONSchema.GoName }} handles a REST get request.
 func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
-    id := c.Param("id")
     request := &Get{{ schema.JSONSchema.GoName }}Request{
-        ID: id,
+        ID: c.Param("id"),
     }
     ctx := c.Request().Context()
     response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
