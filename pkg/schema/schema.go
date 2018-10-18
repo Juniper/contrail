@@ -378,8 +378,13 @@ func (s *JSONSchema) Walk(do func(s2 *JSONSchema) error) error {
 }
 
 func (s *JSONSchema) resolveSQL(
-	parentColumn []string, columnName string,
-	goPath string, getPath string, updatePath string, columns *ColumnConfigs) error {
+	parentColumn []string,
+	columnName string,
+	goPath string,
+	getPath string,
+	updatePath string,
+	columns *ColumnConfigs,
+) error {
 	if s == nil {
 		return nil
 	}
