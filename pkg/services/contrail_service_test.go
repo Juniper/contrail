@@ -11,7 +11,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
-func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
+func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 	tests := []struct {
 		name     string
 		model    models.AccessControlList
@@ -21,7 +21,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 	}{
 		{name: "empty", fails: true},
 		{
-			name:  "missing parent type - ambigious",
+			name:  "missing parent type - ambiguous",
 			model: models.AccessControlList{ParentUUID: "parent-uuid"},
 			fails: true,
 		},
@@ -81,6 +81,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			spy := &serviceSpy{}
@@ -117,7 +118,7 @@ func (m *mockMetadataGetter) GetMetadata(
 
 func (m *mockMetadataGetter) ListMetadata(
 	ctx context.Context,
-	metaDatas []*basemodels.Metadata,
+	metadataSlice []*basemodels.Metadata,
 ) ([]*basemodels.Metadata, error) {
 	return []*basemodels.Metadata{(*basemodels.Metadata)(m)}, nil
 }

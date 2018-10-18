@@ -22,7 +22,7 @@ func (r *Reporter) reportStatus(status map[string]interface{}) {
 	data := map[string]map[string]interface{}{defaultResource: status}
 	var response interface{}
 	//TODO(nati) fixed context
-	_, err := r.api.Update(context.Background(), r.resource, data, &response) //nolint
+	_, err := r.api.Update(context.Background(), r.resource, data, &response)
 	if err != nil {
 		r.log.Infof("update cluster status failed: %s", err)
 	}
@@ -34,7 +34,7 @@ func (r *Reporter) reportLog(stdio io.Reader) {
 	scanner := bufio.NewScanner(stdio)
 	for scanner.Scan() {
 		m := scanner.Text()
-		output.WriteString(m) // nolint
+		output.WriteString(m)
 		r.log.Info(m)
 	}
 	//TODO(ijohnson) Implement status update to db

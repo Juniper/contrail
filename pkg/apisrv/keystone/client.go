@@ -17,7 +17,6 @@ const (
 )
 
 // KeystoneClient represents a client.
-// nolint
 type KeystoneClient struct {
 	AuthURL      string `yaml:"authurl"`
 	LocalAuthURL string `yaml:"local_authurl"`

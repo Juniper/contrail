@@ -63,7 +63,7 @@ func getClient() (*client.HTTP, error) {
 	)
 	var err error
 	if authURL != "" {
-		err = client.Login(context.Background()) //nolint
+		err = client.Login(context.Background())
 	}
 	return client, err
 }

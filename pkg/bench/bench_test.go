@@ -24,8 +24,8 @@ func TestBenchAPI(t *testing.T) {
 	ctx := context.Background()
 	testName := "TestRESTClient"
 	host := os.Getenv("BENCH_HOST")
-	workerCount, _ := strconv.Atoi(os.Getenv("WORKER_COUNT")) // nolint
-	loopCount, _ := strconv.Atoi(os.Getenv("LOOP_COUNT"))     // nolint
+	workerCount, _ := strconv.Atoi(os.Getenv("WORKER_COUNT"))
+	loopCount, _ := strconv.Atoi(os.Getenv("LOOP_COUNT"))
 	if host == "" {
 		t.Skip("BENCH_HOST isn't set. skipping")
 		return

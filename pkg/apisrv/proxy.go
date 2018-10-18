@@ -109,8 +109,8 @@ func (p *proxyService) getReverseProxy(urlPath string) (
 	if target == "" {
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
-	insecure := true          //TODO:(ijohnson) add insecure to endpoint schema
-	u, _ := url.Parse(target) // nolint
+	insecure := true //TODO:(ijohnson) add insecure to endpoint schema
+	u, _ := url.Parse(target)
 	server = httputil.NewSingleHostReverseProxy(u)
 	if u.Scheme == "https" {
 		server.Transport = &http.Transport{
@@ -118,7 +118,7 @@ func (p *proxyService) getReverseProxy(urlPath string) (
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
 			}).Dial,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure}, // nolint
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure},
 			TLSHandshakeTimeout: 10 * time.Second,
 		}
 	}
