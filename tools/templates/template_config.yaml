@@ -28,6 +28,9 @@
 - type: all
   template_path: db.tmpl
   output_path: pkg/db/gen_db.go
+- type: alltype
+  template_path: db_types.tmpl
+  output_path: pkg/db/gen_db_types.go
 - type: all
   template_path: db_test.tmpl
   output_path: pkg/db/gen_db_test.go
