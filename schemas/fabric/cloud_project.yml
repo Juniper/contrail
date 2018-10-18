@@ -1,4 +1,4 @@
-escription: Cloud project details
+description: Cloud project details
 extends:
 - base
 id: cloud_project

@@ -1,12 +1,11 @@
 description: Virtual cloud
 extends:
 - base
-- has_status
 id: virtual_cloud
 metadata:
   category: cloud
 parents:
-  cloud:
+  cloud_region:
     operations: "CRUD"
     description: "Parent for cloud virtual cloud"
     presence: "optional"
