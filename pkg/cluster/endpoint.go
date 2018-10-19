@@ -21,6 +21,7 @@ const (
 	ironic         = "baremetal"
 	glance         = "glance"
 	swift          = "swift"
+	appformix      = "appformix"
 )
 
 var portMap = map[string]string{
@@ -32,6 +33,7 @@ var portMap = map[string]string{
 	ironic:    "6385",
 	glance:    "9292",
 	swift:     "8080",
+	appformix: "9000",
 }
 
 // EndpointData is the representation of cluster endpoints.
@@ -141,6 +143,13 @@ func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]st
 	return endpointNodes
 }
 
+func (e *EndpointData) getAppformixEndpointNodes() (endpointNodes map[string][]string) {
+	endpointNodes = make(map[string][]string)
+	endpointNodes[appformix] = e.clusterData.getAppformixControllerNodeIPs()
+	return endpointNodes
+}
+
+// nolint: gocyclo
 func (e *EndpointData) create() error {
 	e.log.Infof("Creating service endpoints for cluster: %s", e.clusterID)
 	contrailEndpoints := e.getContrailEndpointNodes()
@@ -172,6 +181,24 @@ func (e *EndpointData) create() error {
 				if err != nil {
 					return err
 				}
+			}
+		}
+	}
+
+	// appformix endpoints
+	appformixEndpoints := e.getAppformixEndpointNodes()
+	for service, endpointIPs := range appformixEndpoints {
+		e.log.Infof("Creating %s endpoints:%s", service, endpointIPs)
+		for _, endpointIP := range endpointIPs {
+			endpointProtocol := protocol
+			if service == appformix {
+				endpointProtocol = secureProtocol
+			}
+			publicURL := e.endpointToURL(endpointProtocol, endpointIP, portMap[service])
+			privateURL := publicURL
+			err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
+			if err != nil {
+				return err
 			}
 		}
 	}
