@@ -1,7 +1,7 @@
-package common
+package logging
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -10,16 +10,16 @@ func SetLogLevel() {
 	logLevel := viper.GetString("log_level")
 	switch logLevel {
 	case "panic":
-		log.SetLevel(log.PanicLevel)
+		logrus.SetLevel(logrus.PanicLevel)
 	case "fatal":
-		log.SetLevel(log.FatalLevel)
+		logrus.SetLevel(logrus.FatalLevel)
 	case "error":
-		log.SetLevel(log.ErrorLevel)
+		logrus.SetLevel(logrus.ErrorLevel)
 	case "warn":
-		log.SetLevel(log.WarnLevel)
+		logrus.SetLevel(logrus.WarnLevel)
 	case "debug":
-		log.SetLevel(log.DebugLevel)
+		logrus.SetLevel(logrus.DebugLevel)
 	default:
-		log.SetLevel(log.InfoLevel)
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 }

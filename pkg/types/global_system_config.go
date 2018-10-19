@@ -2,10 +2,10 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -16,7 +16,7 @@ import (
 func (sv *ContrailTypeLogicService) CreateGlobalSystemConfig(
 	ctx context.Context, request *services.CreateGlobalSystemConfigRequest,
 ) (resp *services.CreateGlobalSystemConfigResponse, err error) {
-	return nil, common.ErrorBadRequest("Trying to call create GlobalSystemConfig outside of DBInit")
+	return nil, errutil.ErrorBadRequest("Trying to call create GlobalSystemConfig outside of DBInit")
 }
 
 // UpdateGlobalSystemConfig performs type specific checks for update.
@@ -91,7 +91,7 @@ func (sv *ContrailTypeLogicService) checkAsn(ctx context.Context, updateObj *mod
 		return err
 	}
 
-	var multiError common.MultiError
+	var multiError errutil.MultiError
 	for _, vn := range vnList.VirtualNetworks {
 		rtList := vn.RouteTargetList
 		for _, rt := range rtList.RouteTarget {

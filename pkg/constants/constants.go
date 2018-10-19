@@ -1,6 +1,6 @@
-package common
+package constants
 
-// list of constant strings.
+// list of constant strutil.
 const (
 	OPERATION = "operation"
 	ADD       = "add"

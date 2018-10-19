@@ -3,9 +3,9 @@ package types
 import (
 	"context"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -41,7 +41,7 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 
 			ri := vn.GetDefaultRoutingInstance()
 			if ri == nil {
-				return common.ErrorBadRequestf("could not get default routing instance for VN (%v)", vn.UUID)
+				return errutil.ErrorBadRequestf("could not get default routing instance for VN (%v)", vn.UUID)
 			}
 
 			return sv.createRoutingInstanceRefForVirtualMachineInterface(ctx, vmi, ri)
@@ -54,7 +54,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkFromVirtualMachineInterface
 	ctx context.Context, vmi *models.VirtualMachineInterface) (*models.VirtualNetwork, error) {
 
 	if len(vmi.GetVirtualNetworkRefs()) == 0 {
-		return nil, common.ErrorBadRequest("virtual_network_refs are not defined")
+		return nil, errutil.ErrorBadRequest("virtual_network_refs are not defined")
 	}
 
 	uuid := vmi.GetVirtualNetworkRefs()[0].GetUUID()
@@ -65,7 +65,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkFromVirtualMachineInterface
 		},
 	)
 	if err != nil {
-		return nil, common.ErrorBadRequestf("missing virtual-network with uuid %s: %v", uuid, err)
+		return nil, errutil.ErrorBadRequestf("missing virtual-network with uuid %s: %v", uuid, err)
 	}
 
 	return response.GetVirtualNetwork(), nil
@@ -84,7 +84,7 @@ func calculateMacAddresses(vmi *models.VirtualMachineInterface) (*models.MacAddr
 
 	uuid := vmi.GetUUID()
 	if len(uuid) < 11 {
-		return nil, common.ErrorBadRequestf("could not generate mac address: vn uuid (%v) too short", uuid)
+		return nil, errutil.ErrorBadRequestf("could not generate mac address: vn uuid (%v) too short", uuid)
 	}
 
 	macAddress := fmt.Sprintf("02:%s:%s:%s:%s:%s", uuid[0:2], uuid[2:4], uuid[4:6], uuid[6:8], uuid[9:11])
@@ -110,7 +110,7 @@ func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInt
 	)
 
 	if err != nil {
-		return common.ErrorBadRequestf("cannot add routing-instance ref to virtual-machine-interface: %v", err)
+		return errutil.ErrorBadRequestf("cannot add routing-instance ref to virtual-machine-interface: %v", err)
 	}
 
 	return nil

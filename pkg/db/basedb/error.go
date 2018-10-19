@@ -2,6 +2,7 @@ package basedb
 
 import (
 	"database/sql"
+	"github.com/Juniper/contrail/pkg/errutil"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
@@ -37,7 +38,7 @@ func FormatDBError(err error) error {
 // If err is not recognized, nil is returned.
 func getPublicError(err error) error {
 	if err == sql.ErrNoRows {
-		return common.ErrorNotFound
+		return errutil.ErrorNotFound
 	}
 
 	switch err.(type) {
@@ -75,9 +76,9 @@ func getPublicPGError(err *pq.Error) error {
 }
 
 func uniqueConstraintViolation() error {
-	return common.ErrorConflictf("Resource conflict: unique constraint violation")
+	return errutil.ErrorConflictf("Resource conflict: unique constraint violation")
 }
 
 func foreignKeyConstraintViolation() error {
-	return common.ErrorConflictf("Resource conflict: foreign key constraint violation")
+	return errutil.ErrorConflictf("Resource conflict: foreign key constraint violation")
 }

@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/strutil"
 )
 
 // Virtual network forwarding modes.
@@ -11,7 +11,7 @@ const (
 	L2L3Mode = "l2_l3"
 )
 
-// TODO: Enums strings should be generated from schema
+// TODO: Enums strutil should be generated from schema
 const (
 	UserDefinedSubnetOnly      = "user-defined-subnet-only"
 	UserDefinedSubnetPreferred = "user-defined-subnet-preferred"
@@ -65,7 +65,7 @@ func (m *VirtualNetwork) IsValidMultiPolicyServiceChainConfig() bool {
 //ShouldIgnoreAllocation checks if there is ip-fabric or link-local address allocation
 func (m *VirtualNetwork) ShouldIgnoreAllocation() bool {
 	fqName := m.GetFQName()
-	if common.ContainsString(fqName, "ip-fabric") || common.ContainsString(fqName, "__link_local__") {
+	if strutil.ContainsString(fqName, "ip-fabric") || strutil.ContainsString(fqName, "__link_local__") {
 		return true
 	}
 	return false

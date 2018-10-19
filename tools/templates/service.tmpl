@@ -9,7 +9,8 @@ import (
     "github.com/satori/go.uuid"
     log "github.com/sirupsen/logrus"
 
-    "github.com/Juniper/contrail/pkg/common"
+    "github.com/Juniper/contrail/pkg/errutil"
+    "github.com/Juniper/contrail/pkg/auth"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "github.com/Juniper/contrail/pkg/models/basemodels"
     "{{ option.PackagePath }}/pkg/models"
@@ -38,7 +39,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
     ctx := c.Request().Context()
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
     if err != nil {
-        return common.ToHTTPError(err)
+        return errutil.ToHTTPError(err)
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -49,11 +50,11 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
-        return nil, common.ErrorBadRequest("create body is empty")
+        return nil, errutil.ErrorBadRequest("create body is empty")
     }
-    auth := common.GetAuthCTX(ctx)
+    auth := auth.GetAuthCTX(ctx)
     if auth == nil {
-        return nil, common.ErrorUnauthenticated
+        return nil, errutil.ErrorUnauthenticated
     }
     if model.UUID == "" {
         model.UUID = uuid.NewV4().String()
@@ -92,7 +93,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
             parentFQName := model.FQName[:l-1]
             metadata, err := service.MetadataGetter.GetMetadata(ctx,  basemodels.Metadata{Type: model.ParentType, FQName: parentFQName})
             if err != nil {
-                return nil, common.ErrorBadRequestf("please provide correct FQName or ParentUUID. cause: %v", err)
+                return nil, errutil.ErrorBadRequestf("please provide correct FQName or ParentUUID. cause: %v", err)
             }
             model.ParentUUID = metadata.UUID
         }
@@ -114,7 +115,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
-        return nil, common.ErrorBadRequest(fmt.Sprintf(
+        return nil, errutil.ErrorBadRequest(fmt.Sprintf(
         	"validation failed for resource with UUID %v: %v",
         	request.{{ schema.JSONSchema.GoName }}.UUID,
         	err,
@@ -145,14 +146,14 @@ func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} 
         // fqName is empty but parentUUID is not - get parent fqName
         metadata, err := service.MetadataGetter.GetMetadata(ctx,  basemodels.Metadata{UUID: model.ParentUUID})
         if err != nil {
-            return common.ErrorBadRequestf("Failed to generate FQName: %v", err)
+            return errutil.ErrorBadRequestf("Failed to generate FQName: %v", err)
         }
         model.FQName = append(metadata.FQName, model.Name)
         return nil
     }
     if model.ParentType != "" {
         // assign default fqName
-        auth := common.GetAuthCTX(ctx)
+        auth := auth.GetAuthCTX(ctx)
         model.FQName = []string{auth.DomainID(), fmt.Sprintf("default-%s", model.ParentType), model.Name}
     }
 {% endif %}
@@ -178,7 +179,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
         FieldMask: basemodels.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
     })
     if err != nil {
-        return common.ToHTTPError(err)
+        return errutil.ToHTTPError(err)
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -189,7 +190,7 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
     request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
-        return nil, common.ErrorBadRequest("update body is empty")
+        return nil, errutil.ErrorBadRequest("update body is empty")
     }
     return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
@@ -203,7 +204,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
     ctx := c.Request().Context()
     _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
-        return common.ToHTTPError(err)
+        return errutil.ToHTTPError(err)
     }
     return c.NoContent(http.StatusOK)
 }
@@ -218,7 +219,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     ctx := c.Request().Context()
     response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
-        return common.ToHTTPError(err)
+        return errutil.ToHTTPError(err)
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -233,7 +234,7 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     ctx := c.Request().Context()
     response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
-        return common.ToHTTPError(err)
+        return errutil.ToHTTPError(err)
     }
     return c.JSON(http.StatusOK, response)
 }

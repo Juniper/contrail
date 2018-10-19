@@ -1,8 +1,8 @@
-package common
+package auth
 
 import (
 	"context"
-
+	"github.com/Juniper/contrail/pkg/strutil"
 	"github.com/labstack/echo"
 )
 
@@ -35,7 +35,7 @@ func (context *AuthContext) IsAdmin() bool {
 	if context == nil {
 		return true
 	}
-	return ContainsString(context.roles, AdminRole)
+	return strutil.ContainsString(context.roles, AdminRole)
 }
 
 //ProjectID is used to get an id for project.

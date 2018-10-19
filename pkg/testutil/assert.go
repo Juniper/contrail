@@ -2,6 +2,9 @@ package testutil
 
 import (
 	"fmt"
+	"github.com/Juniper/contrail/pkg/cast"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"strconv"
 	"strings"
 	"testing"
@@ -11,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/twinj/uuid"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/format"
 )
 
@@ -19,7 +21,7 @@ const (
 	funcPrefix = "$"
 )
 
-// AssertContainsStrings asserts that object contains all expected strings.
+// AssertContainsStrings asserts that object contains all expected strutil.
 func AssertContainsStrings(t *testing.T, expected []string, actual interface{}) {
 	for _, e := range expected {
 		assert.Contains(t, actual, e)
@@ -66,8 +68,8 @@ var assertFunctions = map[string]assertFunction{
 // AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
 // For lists and maps, it iterates over expected values, ignoring additional values in actual object.
 func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
-	expected = common.YAMLtoJSONCompat(expected)
-	actual = common.YAMLtoJSONCompat(actual)
+	expected = fileutil.YAMLtoJSONCompat(expected)
+	actual = fileutil.YAMLtoJSONCompat(actual)
 
 	err := checkDiff("", expected, actual)
 
@@ -122,7 +124,7 @@ func checkDiff(path string, expected, actual interface{}) error {
 			return errorWithFields(t, actual, path)
 		}
 		for i, value := range t {
-			var mErr common.MultiError
+			var mErr errutil.MultiError
 			found := false
 			for _, actualValue := range actualList {
 				err := checkDiff(path+"."+strconv.Itoa(i), value, actualValue)
@@ -137,7 +139,7 @@ func checkDiff(path string, expected, actual interface{}) error {
 			}
 		}
 	case int:
-		if float64(t) != common.InterfaceToFloat(actual) {
+		if float64(t) != cast.InterfaceToFloat(actual) {
 			return errorWithFields(t, actual, path)
 		}
 	default:

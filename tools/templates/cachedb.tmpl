@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -25,7 +25,7 @@ import (
 
 
 {%- macro errorNotFound(schema) -%}
-common.ErrorNotFoundf("no {{schemaName(schema)}} found with uuid: %s", request.ID)
+errutil.ErrorNotFoundf("no {{schemaName(schema)}} found with uuid: %s", request.ID)
 {%- endmacro %}
 
 {% for schema in schemas -%}
@@ -45,7 +45,7 @@ func (cache *DB) {{ getResource(schema) }}(
 	}
 	resource, ok := node.event.GetResource().(*models.{{ schemaName(schema) }})
 	if !ok {
-		return nil, common.ErrorNotFoundf("failed to get {{schemaName(schema)}} with uuid: %s", request.ID)
+		return nil, errutil.ErrorNotFoundf("failed to get {{schemaName(schema)}} with uuid: %s", request.ID)
 	}
 	response.{{ schemaName(schema) }} = resource
 	return response, nil

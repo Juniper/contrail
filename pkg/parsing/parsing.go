@@ -1,8 +1,9 @@
-package common
+package parsing
 
 import (
 	"encoding/json"
-	"strings"
+	"github.com/Juniper/contrail/pkg/strutil"
+	strings2 "strings"
 )
 
 //MustJSON Marshal json
@@ -22,7 +23,7 @@ func access(dataSource map[string]interface{}, path []string, ok *bool, isSet bo
 		*ok = true
 		return dataSource
 	}
-	currentAttr := CamelToSnake(path[0])
+	currentAttr := strutil.CamelToSnake(path[0])
 	path = path[1:]
 	if mapValue, found := dataSource[currentAttr]; found {
 		switch mapValue.(type) {
@@ -74,11 +75,11 @@ func SetValueByPath(dataSource map[string]interface{}, path string, delimiter st
 }
 
 func getPathAsList(path string, delimiter string) ([]string, string) {
-	pathAsList := strings.Split(path, delimiter)
+	pathAsList := strings2.Split(path, delimiter)
 	if pathAsList[0] == "" {
 		pathAsList = pathAsList[1:] //ignore the leading empty string on split of .a.b.c
 	}
-	attributeName := CamelToSnake(pathAsList[len(pathAsList)-1])
+	attributeName := strutil.CamelToSnake(pathAsList[len(pathAsList)-1])
 	pathAsList = pathAsList[:len(pathAsList)-1]
 	return pathAsList, attributeName
 }

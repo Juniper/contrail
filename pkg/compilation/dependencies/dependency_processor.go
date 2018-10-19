@@ -4,7 +4,7 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 )
 
-// KindSet Set of strings representing resource Kind
+// KindSet Set of strutil representing resource Kind
 type KindSet map[string]struct{}
 
 // Reactions describes reactions between intents on create/update/delete event.

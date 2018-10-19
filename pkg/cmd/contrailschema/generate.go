@@ -1,13 +1,13 @@
 package contrailschema
 
 import (
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"path/filepath"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/schema"
 )
 
@@ -41,7 +41,7 @@ func generateCode() {
 		log.Fatal(err)
 	}
 
-	if err = common.SaveFile(option.SchemaOutputPath, api); err != nil {
+	if err = fileutil.SaveFile(option.SchemaOutputPath, api); err != nil {
 		log.Fatal(err)
 	}
 
@@ -50,7 +50,7 @@ func generateCode() {
 		log.Fatal(err)
 	}
 
-	if err = common.SaveFile(option.OpenapiOutputPath, openapi); err != nil {
+	if err = fileutil.SaveFile(option.OpenapiOutputPath, openapi); err != nil {
 		log.Fatal(err)
 	}
 }

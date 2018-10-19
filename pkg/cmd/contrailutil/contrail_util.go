@@ -1,6 +1,7 @@
 package contrailutil
 
 import (
+	"github.com/Juniper/contrail/pkg/logging"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -37,5 +38,5 @@ func initConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	common.SetLogLevel()
+	logging.SetLogLevel()
 }

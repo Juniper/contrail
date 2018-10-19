@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"net/http"
 	"testing"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -231,7 +231,7 @@ func TestCreateVirtualRouter(t *testing.T) {
 
 			if tt.expectedStatusCode != http.StatusOK {
 				assert.Error(t, err)
-				httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+				httpError, ok := errutil.ToHTTPError(err).(*echo.HTTPError)
 				assert.True(t, ok, "Expected http error")
 				assert.Equal(t, tt.expectedStatusCode, httpError.Code, "Expected different http status")
 			} else if assert.NoError(t, err) && tt.expectedVR != nil {
@@ -507,7 +507,7 @@ func TestUpdateVirtualRouter(t *testing.T) {
 			res, err := sv.UpdateVirtualRouter(context.Background(), tt.vrUpdateRequest)
 			if tt.expectedStatusCode != http.StatusOK {
 				require.Error(t, err)
-				httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+				httpError, ok := errutil.ToHTTPError(err).(*echo.HTTPError)
 				assert.True(t, ok, "Expected http error")
 				assert.Equal(t, tt.expectedStatusCode, httpError.Code, "Expected different http status")
 			} else {
@@ -562,7 +562,7 @@ func TestDeleteVirtualRouter(t *testing.T) {
 
 			if tt.expectedStatusCode != http.StatusOK {
 				require.Error(t, err)
-				httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+				httpError, ok := errutil.ToHTTPError(err).(*echo.HTTPError)
 				assert.True(t, ok, "Expected http error")
 				assert.Equal(t, tt.expectedStatusCode, httpError.Code, "Expected different http status")
 			} else {

@@ -81,7 +81,7 @@ func GetListSpec(c echo.Context) *ListSpec {
 	}
 }
 
-// URLQuery returns URL query strings.
+// URLQuery returns URL query strutil.
 func (s *ListSpec) URLQuery() url.Values {
 	if s == nil {
 		return nil

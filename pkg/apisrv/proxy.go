@@ -3,6 +3,7 @@ package apisrv
 import (
 	"context"
 	"crypto/tls"
+	"github.com/Juniper/contrail/pkg/auth"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -17,7 +18,6 @@ import (
 	"github.com/spf13/viper"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -61,7 +61,7 @@ func newProxyService(e *echo.Echo, endpointStore *apicommon.EndpointStore,
 
 func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 	endpoints := make(map[string]*models.Endpoint)
-	ctx := common.NoAuth(context.Background())
+	ctx := auth.NoAuth(context.Background())
 	spec := baseservices.ListSpec{Limit: limit}
 	for {
 		request := &services.ListEndpointRequest{Spec: &spec}

@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -71,7 +71,7 @@ func getClient() (*client.HTTP, error) {
 // readResources decodes single or array of input data from YAML.
 func readResources(file string) (*services.EventList, error) {
 	request := &services.EventList{}
-	err := common.LoadFile(file, request)
+	err := fileutil.LoadFile(file, request)
 	return request, err
 }
 

@@ -2,8 +2,7 @@ package types
 
 import (
 	"context"
-
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 type draftModeStateGetter interface {
@@ -21,7 +20,7 @@ func checkDraftModeState(ctx context.Context, dms draftModeStateGetter) error {
 	}
 
 	if dms.GetDraftModeState() != "" {
-		return common.ErrorBadRequest(
+		return errutil.ErrorBadRequest(
 			"security resource property 'draft_mode_state' is only readable",
 		)
 	}
