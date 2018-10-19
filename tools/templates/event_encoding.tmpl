@@ -6,6 +6,7 @@ import (
     "strings"
     "fmt"
 
+    "github.com/gogo/protobuf/types"
     "github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -29,6 +30,7 @@ type EventOption struct {
 	Operation string
 	Kind      string
 	Data      map[string]interface{}
+	FieldMask *types.FieldMask
 }
 
 // HasResource defines methods that might be implemented by Event.
@@ -259,6 +261,7 @@ func NewEvent(option *EventOption) (*Event, error) {
     if operation == "" {
         operation = OperationCreate
     }
+    fm := option.FieldMask
     switch (kind) {
         {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
         case "{{ schema.ID }}":
@@ -277,10 +280,14 @@ func NewEvent(option *EventOption) (*Event, error) {
                     if uuid != "" {
                         obj.UUID = uuid
                     }
+                    if fm == nil {
+                        f := basemodels.MapToFieldMask(data)
+                        fm = &f
+                    }
                     e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
                         Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
                             {{ schema.JSONSchema.GoName }}: obj,
-                            FieldMask: basemodels.MapToFieldMask(data),
+                            FieldMask: *fm,
                         }}
                 case OperationDelete:
                     e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{

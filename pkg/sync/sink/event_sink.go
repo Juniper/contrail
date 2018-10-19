@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -69,12 +70,13 @@ func (e *EventProcessorSink) CreateRef(
 }
 
 // Update dispatches OperationUpdate event to processor.
-func (e *EventProcessorSink) Update(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
+func (e *EventProcessorSink) Update(ctx context.Context, resourceName string, pk string, obj basedb.Object, fm types.FieldMask) error {
 	ev, err := services.NewEvent(&services.EventOption{
 		UUID:      pk,
 		Kind:      resourceName,
 		Data:      obj.ToMap(),
 		Operation: services.OperationUpdate,
+		FieldMask: &fm,
 	})
 	if err != nil {
 		return err

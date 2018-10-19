@@ -263,13 +263,13 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 }
 
 // StartWatchers checks if events emitted to etcd match those given in watchers dict.
-func StartWatchers(t *testing.T, watchers Watchers) func(t *testing.T) {
+func StartWatchers(t *testing.T, watchers Watchers, opts ...clientv3.OpOption) func(t *testing.T) {
 	checks := []func(t *testing.T){}
 
 	ec := integrationetcd.NewEtcdClient(t)
 	for key := range watchers {
 		events := watchers[key]
-		collect := ec.WatchKeyN(key, len(events), collectTimeout, clientv3.WithPrefix())
+		collect := ec.WatchKeyN(key, len(events), collectTimeout, append(opts, clientv3.WithPrefix())...)
 
 		checks = append(checks, createWatchChecker(collect, key, events))
 	}
