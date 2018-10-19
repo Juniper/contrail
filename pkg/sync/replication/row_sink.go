@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/sync/sink"
 )
@@ -63,7 +64,7 @@ func (o *objectMappingAdapter) Update(
 		if err != nil {
 			return fmt.Errorf("error scanning row: %v", err)
 		}
-		return o.Sink.Update(ctx, resourceName, pk[0], obj)
+		return o.Sink.Update(ctx, resourceName, pk[0], obj, basemodels.MapToFieldMask(properties))
 	case pkLen == 2 && isRef:
 		return errors.New("method UPDATE not available on ref_* resources - this is a bug")
 	}

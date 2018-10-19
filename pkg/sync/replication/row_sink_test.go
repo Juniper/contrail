@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/gogo/protobuf/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestObjectMappingAdapterCreate(t *testing.T) {
@@ -184,8 +184,8 @@ func (s *sinkMock) Create(ctx context.Context, resourceName string, pk string, o
 	return args.Error(0)
 }
 
-func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, obj basedb.Object) error {
-	args := s.MethodCalled("Update", resourceName, pk, obj)
+func (s *sinkMock) Update(ctx context.Context, resourceName string, pk string, obj basedb.Object, fm types.FieldMask) error {
+	args := s.MethodCalled("Update", resourceName, pk, obj, fm)
 	return args.Error(0)
 }
 
