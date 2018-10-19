@@ -78,8 +78,8 @@ func (e *EtcdClient) DeleteSecurityGroup(t *testing.T, uuid string, opts ...clie
 }
 
 // Clear recursively deletes all keys starting with "etcd.path" prefix.
-func (e *EtcdClient) Clear(t *testing.T) {
-	e.DeleteKey(t, "/"+viper.GetString("etcd.path"), clientv3.WithPrefix())
+func (e *EtcdClient) Clear(t *testing.T) (revision int64) {
+	return e.DeleteKey(t, "/"+viper.GetString("etcd.path"), clientv3.WithPrefix())
 }
 
 // GetKey gets etcd key.
@@ -94,12 +94,13 @@ func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption)
 }
 
 // DeleteKey deletes etcd key.
-func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOption) {
+func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOption) (revision int64) {
 	ctx, cancel := context.WithTimeout(context.Background(), etcdRequestTimeout)
 	defer cancel()
 
 	r, err := e.Delete(ctx, key, opts...)
 	assert.NoError(t, err, fmt.Sprintf("deleting etcd resource from etcd failed\n response: %+v", r))
+	return r.Header.Revision
 }
 
 // WatchKey watches value changes for provided key and returns collect method that collect captured values.
