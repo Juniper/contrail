@@ -42,6 +42,7 @@ var dataYAML = []struct {
 					FQName:          []string{},
 					ProjectBackRefs: []*models.Project{},
 					FloatingIPs:     []*models.FloatingIP{},
+					TagRefs:         []*models.FloatingIPPoolTagRef{},
 				},
 			},
 			FloatingIPPoolCount: 1,
@@ -58,6 +59,7 @@ var dataYAML = []struct {
   perms2: null
   configuration_version: 0
   floating_ip_pool_subnets: null
+  tag_refs: []
   project_backrefs: []
   floating_ips: []
 `),
@@ -102,6 +104,10 @@ func TestListResponseYAMLUnmarshaling(t *testing.T) {
 		var dataStruct ListFloatingIPPoolResponse
 		err := yaml.Unmarshal(data.bytes, &dataStruct)
 		assert.NoError(t, err, "unmarshaling ListResponse failed")
-		assert.Equal(t, data.structure, dataStruct)
+		assert.EqualValues(t, len(data.structure.FloatingIPPools), len(dataStruct.FloatingIPPools))
+		for i := range data.structure.FloatingIPPools {
+			assert.EqualValues(t, data.structure.FloatingIPPools[i], dataStruct.FloatingIPPools[i])
+
+		}
 	}
 }
