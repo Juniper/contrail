@@ -1,4 +1,4 @@
-package common
+package errutil
 
 import (
 	"net/http"

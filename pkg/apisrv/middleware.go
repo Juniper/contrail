@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo"
 	"google.golang.org/grpc"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/auth"
 )
 
 func removePathPrefixMiddleware(prefix string) echo.MiddlewareFunc {
@@ -30,7 +30,7 @@ func noAuthMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
-			ctx := common.NoAuth(r.Context())
+			ctx := auth.NoAuth(r.Context())
 			newRequest := r.WithContext(ctx)
 			c.SetRequest(newRequest)
 			return next(c)
@@ -63,7 +63,7 @@ func proxyMiddleware(target *url.URL, insecure bool) func(next echo.HandlerFunc)
 func noAuthInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		newCtx := common.NoAuth(ctx)
+		newCtx := auth.NoAuth(ctx)
 		return handler(newCtx, req)
 	}
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/testutil"
 )
 
@@ -108,7 +108,7 @@ func loadTemplates(t *testing.T) []*TemplateConfig {
 
 func loadStrings(t *testing.T, path string) []string {
 	var data []string
-	err := common.LoadFile(path, &data)
+	err := fileutil.LoadFile(path, &data)
 	assert.Nil(t, err)
 
 	return data

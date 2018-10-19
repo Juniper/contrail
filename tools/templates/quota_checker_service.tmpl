@@ -7,13 +7,13 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"{{ option.PackagePath }}/pkg/models"
 )
 
 //preventing import error
 var _ = log.Debug
-var _ = common.ErrorNotFound
+var _ = errutil.ErrorNotFound
 var _ = models.Version
 var _ = errors.New
 var _ context.Context
@@ -49,7 +49,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 	log.Debugf("Quota limit for {{ name }} is %v, count is %v", limit, count)
 
 	if count >= limit {
-		return common.ErrorBadRequestf("Quota exceeded for resource {{ name }}(%v); there are already %v resources", obj.GetUUID(), count)
+		return errutil.ErrorBadRequestf("Quota exceeded for resource {{ name }}(%v); there are already %v resources", obj.GetUUID(), count)
 	}
 
 	return nil

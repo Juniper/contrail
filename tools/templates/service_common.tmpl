@@ -12,7 +12,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/auth"
 	"{{ option.PackagePath }}/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -129,7 +130,7 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 
 	responses, err := events.Process(c.Request().Context(), service)
 	if err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, responses.Events)
 }
@@ -156,14 +157,14 @@ type RefUpdate struct {
 
 func (r *RefUpdate) validate() error {
 	if r.UUID == "" || r.Type == "" || r.RefType == "" || r.Operation == "" {
-		return common.ErrorBadRequestf(
+		return errutil.ErrorBadRequestf(
 			"uuid/type/ref-type/operation is null: %s, %s, %s, %s",
 			r.UUID, r.Type, r.RefType, r.Operation,
 		)
 	}
 
 	if r.Operation != RefOperationAdd && r.Operation != RefOperationDelete {
-		return common.ErrorBadRequestf("operation should be ADD or DELETE, was %s", r.Operation)
+		return errutil.ErrorBadRequestf("operation should be ADD or DELETE, was %s", r.Operation)
 	}
 
 	return nil
@@ -177,24 +178,24 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 	}
 
 	if err := data.validate(); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 
 	ctx := c.Request().Context()
 	if data.RefUUID == "" {
 		m, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{Type: data.RefType, FQName: data.RefFQName})
 		if err != nil {
-			return common.ToHTTPError(common.ErrorBadRequestf("error resolving ref-uuid using ref-fq-name: %v", err))
+			return errutil.ToHTTPError(errutil.ErrorBadRequestf("error resolving ref-uuid using ref-fq-name: %v", err))
 		}
 		data.RefUUID = m.UUID
 	}
 
 	e, err := NewEventFromRefUpdate(&data)
 	if err != nil {
-		return common.ToHTTPError(common.ErrorBadRequest(err.Error()))
+		return errutil.ToHTTPError(errutil.ErrorBadRequest(err.Error()))
 	}
 	if _, err = e.Process(ctx, service); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
@@ -208,7 +209,7 @@ type RefRelax struct {
 
 func (r *RefRelax) validate() error {
 	if r.UUID == "" || r.RefUUID == "" {
-		return common.ErrorBadRequestf(
+		return errutil.ErrorBadRequestf(
 			"bad request: both uuid and ref-uuid should be specified: %s, %s", r.UUID, r.RefUUID)
 	}
 
@@ -223,7 +224,7 @@ func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
 	}
 
 	if err := data.validate(); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 
 	// TODO (Kamil): implement ref-relax logic
@@ -239,7 +240,7 @@ type PropCollectionUpdateRequest struct {
 
 func (p *PropCollectionUpdateRequest) validate() error {
 	if p.UUID == "" {
-		return common.ErrorBadRequest("prop-collection-update needs object UUID")
+		return errutil.ErrorBadRequest("prop-collection-update needs object UUID")
 	}
 	return nil
 }
@@ -252,7 +253,7 @@ func (service *ContrailService) RESTPropCollectionUpdate(c echo.Context) error {
 	}
 
 	if err := data.validate(); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 
 	if err := service.updatePropCollection(c.Request().Context(), &data); err != nil {
@@ -279,7 +280,7 @@ func (service *ContrailService) updatePropCollection(
 
 		updateMap, err := createUpdateMap(o, data.Updates)
 		if err != nil {
-			return common.ErrorBadRequest(err.Error())
+			return errutil.ErrorBadRequest(err.Error())
 		}
 
 		e, err := NewEvent(&EventOption{
@@ -296,7 +297,7 @@ func (service *ContrailService) updatePropCollection(
 		return err
 	})
 	if err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 	return nil
 }
@@ -332,7 +333,7 @@ type SetTag struct {
 
 func (t *SetTag) validate() error {
 	if t.ObjUUID == "" || t.ObjType == "" {
-		return common.ErrorBadRequestf(
+		return errutil.ErrorBadRequestf(
 			"both obj_uuid and obj_type should be specified but got uuid: '%s' and type: '%s",
 			t.ObjUUID, t.ObjType,
 		)
@@ -350,7 +351,7 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 	}
 
 	if err := data.validate(); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 
 	// TODO (Ignacy): implement set-tag logic
@@ -379,9 +380,9 @@ func (service *ContrailService) RESTChown(c echo.Context) error {
 // TODO(Michal): gRPC endpoint
 func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	ctx := c.Request().Context()
-	auth := common.GetAuthCTX(ctx)
+	auth := auth.GetAuthCTX(ctx)
 	if !auth.IsAdmin() {
-		return common.ToHTTPError(common.ErrorPermissionDenied)
+		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 	pool := c.Param("pool-name")
 	v := c.Param("value")
@@ -389,17 +390,17 @@ func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	if v == "" {
 		resp, err := service.AllocateInt(ctx, &AllocateIntRequest{Pool: pool})
 		if err != nil {
-			return common.ToHTTPError(err)
+			return errutil.ToHTTPError(err)
 		}
 		val = resp.Value
 	} else {
 		var err error
 		val, err = strconv.ParseInt(v, 10, 64)
 		if err != nil {
-			return common.ToHTTPError(common.ErrorBadRequestf("Invalid int to allocate (%v): %s", v, err))
+			return errutil.ToHTTPError(errutil.ErrorBadRequestf("Invalid int to allocate (%v): %s", v, err))
 		}
 		if _, err = service.SetInt(ctx, &SetIntRequest{Pool: pool, Value: val}); err != nil {
-			return common.ToHTTPError(err)
+			return errutil.ToHTTPError(err)
 		}
 	}
 
@@ -412,7 +413,7 @@ func (service *ContrailService) AllocateInt(ctx context.Context, request *Alloca
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		var err error
 		if v, err = service.IntPoolAllocator.AllocateInt(ctx, request.GetPool()); err != nil {
-			return common.ErrorBadRequestf("Failed to allocate next int: %s", err)
+			return errutil.ErrorBadRequestf("Failed to allocate next int: %s", err)
 		}
 		return nil
 	}); err != nil {
@@ -425,7 +426,7 @@ func (service *ContrailService) AllocateInt(ctx context.Context, request *Alloca
 func (service *ContrailService) SetInt(ctx context.Context, request *SetIntRequest) (*Empty, error) {
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		if err := service.IntPoolAllocator.SetInt(ctx, request.GetPool(), request.GetValue()); err != nil {
-			return common.ErrorBadRequestf("Failed to allocate specified int: %s", err)
+			return errutil.ErrorBadRequestf("Failed to allocate specified int: %s", err)
 		}
 		return nil
 	}); err != nil {
@@ -438,19 +439,19 @@ func (service *ContrailService) SetInt(ctx context.Context, request *SetIntReque
 // TODO(Michal): gRPC endpoint
 func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 	ctx := c.Request().Context()
-	auth := common.GetAuthCTX(ctx)
+	auth := auth.GetAuthCTX(ctx)
 	if !auth.IsAdmin() {
-		return common.ToHTTPError(common.ErrorPermissionDenied)
+		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 	pool := c.Param("pool-name")
 	v := c.Param("value")
 	i, err := strconv.ParseInt(v, 10, 64)
 	if err != nil {
-			return common.ToHTTPError(common.ErrorBadRequestf("Invalid int to deallocate (%v): %s", v, err))
+			return errutil.ToHTTPError(errutil.ErrorBadRequestf("Invalid int to deallocate (%v): %s", v, err))
 	}
 
 	if _, err := service.DeallocateInt(ctx, &DeallocateIntRequest{Pool: pool, Value: i}); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 
 	return c.NoContent(http.StatusOK)
@@ -460,7 +461,7 @@ func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 func (service *ContrailService) DeallocateInt(ctx context.Context, request *DeallocateIntRequest) (*Empty, error) {
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		if err := service.IntPoolAllocator.DeallocateInt(ctx, request.GetPool(), request.GetValue()); err != nil {
-			return common.ErrorBadRequest(err.Error())
+			return errutil.ErrorBadRequest(err.Error())
 		}
 		return nil
 	}); err != nil {

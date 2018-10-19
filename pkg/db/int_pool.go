@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 // IntPool represents the half-open integer range [Start, End) in the set of integers identified by Key.
@@ -141,7 +141,7 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 		return err
 	}
 	if len(pools) == 0 {
-		return common.ErrorNotFound
+		return errutil.ErrorNotFound
 	}
 	err = db.DeleteIntPools(ctx, rangePool)
 	if err != nil {
@@ -217,7 +217,7 @@ func (db *Service) DeallocateIntRange(ctx context.Context, target *IntPool) erro
 		End:   target.End + 1,
 	}
 	pools, err := db.GetIntPools(ctx, mergePool)
-	if err != nil && err != common.ErrorNotFound {
+	if err != nil && err != errutil.ErrorNotFound {
 		return err
 	}
 

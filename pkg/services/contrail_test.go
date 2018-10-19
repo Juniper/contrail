@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
@@ -93,7 +93,7 @@ func TestBaseObjectDefaultValuesOnCreateAccessControlList(t *testing.T) {
 				TypeValidator:  tv,
 			}
 			_, err = service.CreateAccessControlList(
-				common.NoAuth(context.Background()),
+				auth.NoAuth(context.Background()),
 				&CreateAccessControlListRequest{&tt.model},
 			)
 			if tt.fails {

@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/cast"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 //Sharable resource can share.
@@ -34,9 +35,9 @@ func (db *BaseDB) UpdateSharing(tx *sql.Tx, table string, uuid string, shares []
 		return err
 	}
 	for _, share := range shares {
-		err = db.createSharingEntry(tx, table, uuid, common.InterfaceToString(
+		err = db.createSharingEntry(tx, table, uuid, cast.InterfaceToString(
 			share.(map[string]interface{})["tenant"]), //nolint: errcheck
-			common.InterfaceToInt(share.(map[string]interface{})["tenant_access"])) //nolint: errcheck
+			cast.InterfaceToInt(share.(map[string]interface{})["tenant_access"])) //nolint: errcheck
 		if err != nil {
 			return err
 		}
@@ -47,7 +48,7 @@ func (db *BaseDB) UpdateSharing(tx *sql.Tx, table string, uuid string, shares []
 func (db *BaseDB) createSharingEntry(tx *sql.Tx, table string, uuid string, tenant string, tenantAccess int) error {
 	shareParts := strings.Split(tenant, ":")
 	if len(shareParts) < 2 {
-		return common.ErrorBadRequest("invalid sharing entry")
+		return errutil.ErrorBadRequest("invalid sharing entry")
 	}
 
 	shareType := shareParts[0]

@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 // Database drivers
@@ -115,7 +115,7 @@ func (db *BaseDB) DoWithoutConstraints(ctx context.Context, do func(context.Cont
 	defer func() {
 		if enerr := db.enableConstraints(); enerr != nil {
 			if err != nil {
-				err = common.MultiError{err, enerr}
+				err = errutil.MultiError{err, enerr}
 				return
 			}
 			err = enerr

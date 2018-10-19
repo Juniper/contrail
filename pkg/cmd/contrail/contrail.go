@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/logging"
 )
 
 var configFile string
@@ -41,5 +41,5 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("Can't read config: ", err)
 	}
-	common.SetLogLevel()
+	logging.SetLogLevel()
 }

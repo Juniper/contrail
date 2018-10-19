@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 // IsParentTypeVirtualNetwork checks if parent's type is virtual network
@@ -31,7 +31,7 @@ func (fipp *FloatingIPPool) CheckAreSubnetsInVirtualNetworkSubnets(vn *VirtualNe
 		}
 
 		if !subnetFound {
-			return common.ErrorBadRequestf("Subnet %s was not found in virtual-network %s",
+			return errutil.ErrorBadRequestf("Subnet %s was not found in virtual-network %s",
 				floatingIPPoolSubnetUUID, vn.GetUUID())
 		}
 	}

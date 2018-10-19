@@ -1,11 +1,11 @@
-package common
+package cast
 
 import (
 	"fmt"
 	"strconv"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 //InterfaceToInt makes an int from interface
@@ -17,7 +17,7 @@ func InterfaceToInt(i interface{}) int {
 	case []byte:
 		i, err := strconv.Atoi(string(t))
 		if err != nil {
-			log.WithError(err).Debugf("Could not convert %#v to int", t)
+			logrus.WithError(err).Debugf("Could not convert %#v to int", t)
 		}
 		return i
 	case int:
@@ -39,7 +39,7 @@ func InterfaceToInt64(i interface{}) int64 {
 	case []byte:
 		i, err := strconv.ParseInt(string(t), 10, 64)
 		if err != nil {
-			log.WithError(err).Debugf("Could not convert %#v to int64", t)
+			logrus.WithError(err).Debugf("Could not convert %#v to int64", t)
 		}
 		return i
 	case int:
@@ -61,7 +61,7 @@ func InterfaceToUint64(i interface{}) uint64 {
 	case []byte:
 		i, err := strconv.ParseUint(string(t), 10, 64)
 		if err != nil {
-			log.WithError(err).Debugf("Could not convert %#v to uint64", t)
+			logrus.WithError(err).Debugf("Could not convert %#v to uint64", t)
 		}
 		return i
 	case int:
@@ -84,7 +84,7 @@ func InterfaceToBool(i interface{}) bool {
 	case []byte:
 		b, err := strconv.ParseBool(string(t))
 		if err != nil {
-			log.WithError(err).Debugf("Could not convert %#v to bool", t)
+			logrus.WithError(err).Debugf("Could not convert %#v to bool", t)
 		}
 		return b
 	case bool:
@@ -163,7 +163,7 @@ func InterfaceToFloat(i interface{}) float64 {
 	case []byte:
 		f, err := strconv.ParseFloat(string(t), 64)
 		if err != nil {
-			log.WithError(err).Debugf("Could not convert %#v to float ", t)
+			logrus.WithError(err).Debugf("Could not convert %#v to float ", t)
 		}
 		return f
 	case int:

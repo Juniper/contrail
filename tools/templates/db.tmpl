@@ -8,7 +8,10 @@ import (
 
 	"{{ option.PackagePath }}/pkg/models"
 	"{{ option.PackagePath }}/pkg/services"
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/cast"
+	"github.com/Juniper/contrail/pkg/parsing"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/schema"
@@ -97,7 +100,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
         qb.CreateRefQuery("{{ linkTo | lower }}"),
         fromID,
         ref.UUID,
-        {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+        {% for column in reference.Columns %}{% if column.Bind == "json" %}parsing.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
 {% endif %}{% endfor %})
     if err != nil {
         err = basedb.FormatDBError(err)
@@ -144,7 +147,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}ParentReference(
         {% if schema.ParentOptional %}
         return nil
         {% else %}
-        return common.ErrorBadRequest("invalid parent type")
+        return errutil.ErrorBadRequest("invalid parent type")
         {% endif %}
     {% else %}
     return nil
@@ -158,7 +161,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     qb := db.QueryBuilders["{{ schema.ID }}"]
     tx := basedb.GetTransaction(ctx)
     model := request.{{ schema.JSONSchema.GoName }}
-    _, err := tx.ExecContext(ctx, qb.CreateQuery(), {% for column in schema.Columns %}{% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+    _, err := tx.ExecContext(ctx, qb.CreateQuery(), {% for column in schema.Columns %}{% if column.Bind == "json" %}parsing.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
     {% endif %}{% endfor %})
     if err != nil {
         err = basedb.FormatDBError(err)
@@ -196,25 +199,25 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 {% macro scanJSONObject(JSONSchema, path, arg) %}
     {% if JSONSchema.Type == "array" %}
         {% if JSONSchema.Items.Type == "string" %}
-            {{ path }} = common.InterfaceToStringList({{arg}})
+            {{ path }} = cast.InterfaceToStringList({{arg}})
         {% elif JSONSchema.Items.GoType == "int64" %}
-            {{ path }} = common.InterfaceToInt64List({{arg}})
+            {{ path }} = cast.InterfaceToInt64List({{arg}})
         {% elif JSONSchema.Items.GoType == "uint64" %}
-            {{ path }} = common.InterfaceToUint64List({{arg}})
+            {{ path }} = cast.InterfaceToUint64List({{arg}})
         {% elif JSONSchema.Items.Type == "boolean" %}
-            {{ path }} = common.InterfaceToBoolList({{arg}})
+            {{ path }} = cast.InterfaceToBoolList({{arg}})
         {% elif JSONSchema.Items.Type == "object" %}
             {{ path }} = models.InterfaceTo{{ JSONSchema.Items.GoType }}Slice({{arg}})
         {% endif %}
     {% else %}
         {% if JSONSchema.Type == "string" %}
-            {{ path }} = common.InterfaceToString({{arg}})
+            {{ path }} = cast.InterfaceToString({{arg}})
         {% elif JSONSchema.GoType == "int64" %}
-            {{ path }} = common.InterfaceToInt64({{arg}})
+            {{ path }} = cast.InterfaceToInt64({{arg}})
         {% elif JSONSchema.GoType == "uint64" %}
-            {{ path }} = common.InterfaceToUint64({{arg}})
+            {{ path }} = cast.InterfaceToUint64({{arg}})
         {% elif JSONSchema.Type == "boolean" %}
-            {{ path }} = common.InterfaceToBool({{arg}})
+            {{ path }} = cast.InterfaceToBool({{arg}})
         {% elif JSONSchema.Type == "object" %}
             {{ path }} = models.InterfaceTo{{ JSONSchema.Items.GoType }}({{arg}})
         {% endif %}
@@ -232,13 +235,13 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
                 {{scanJSONObject(column.JSONSchema, "m"|add:column.Path, "value")}}
             }
         {% elif column.Bind == "int" %}
-           m{{ column.Path }} = common.InterfaceToInt64(value)
+           m{{ column.Path }} = cast.InterfaceToInt64(value)
         {% elif column.Bind == "uint" %}
-           m{{ column.Path }} = common.InterfaceToUint64(value)
+           m{{ column.Path }} = cast.InterfaceToUint64(value)
         {% elif column.Bind == "bool" %}
-           m{{ column.Path }} = common.InterfaceToBool(value)
+           m{{ column.Path }} = cast.InterfaceToBool(value)
         {% elif column.Bind == "string" %}
-           m{{ column.Path }} = common.InterfaceToString(value)
+           m{{ column.Path }} = cast.InterfaceToString(value)
         {% endif %}
     }
     {% endfor %}
@@ -255,11 +258,11 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             if !ok {
                 continue
             }
-            uuid := common.InterfaceToString(referenceMap["to"])
+            uuid := cast.InterfaceToString(referenceMap["to"])
             if uuid == "" {
                 continue
             }
-            fqNameStr := common.InterfaceToString(referenceMap["fq_name"])
+            fqNameStr := cast.InterfaceToString(referenceMap["fq_name"])
             fqName, err := basedb.ParseFQName(fqNameStr)
             if err != nil {
                 return nil, err
@@ -284,7 +287,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             if !ok {
                 continue
             }
-            uuid := common.InterfaceToString(childResourceMap["uuid"])
+            uuid := cast.InterfaceToString(childResourceMap["uuid"])
             if uuid == "" {
                 continue
             }
@@ -308,7 +311,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             if !ok {
                 continue
             }
-            uuid := common.InterfaceToString(backrefResourceMap["uuid"])
+            uuid := cast.InterfaceToString(backrefResourceMap["uuid"])
             if uuid == "" {
                 continue
             }
@@ -341,7 +344,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAt
 // list{{ schema.JSONSchema.GoName }} lists {{ schema.JSONSchema.GoName }} with list spec.
 func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
     qb := db.QueryBuilders["{{ schema.ID }}"]
-    query, columns, values := qb.ListQuery(common.GetAuthCTX(ctx), request.Spec)
+    query, columns, values := qb.ListQuery(auth.GetAuthCTX(ctx), request.Spec)
 
     tx := basedb.GetTransaction(ctx)
     rows, err := tx.QueryContext(ctx, query, values...)
@@ -389,7 +392,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
 // count {{ schema.JSONSchema.GoName }} counts {{ schema.JSONSchema.GoName }}s using the givne list spec.
 func (db *Service) count{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
 	qb := db.QueryBuilders["{{ schema.ID }}"]
-	query, values := qb.CountQuery(common.GetAuthCTX(ctx), request.Spec)
+	query, values := qb.CountQuery(auth.GetAuthCTX(ctx), request.Spec)
 
 	tx := basedb.GetTransaction(ctx)
 	row := tx.QueryRowContext(ctx, query, values...)
@@ -427,7 +430,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
             {% for column in schema.Columns %}
             case "{{ column.UpdatePath }}":
                 columns = append(columns, "{{ column.Column }}")
-                values = append(values, {% if column.Bind == "json" %}common.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %} )
+                values = append(values, {% if column.Bind == "json" %}parsing.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %} )
             {% endfor %}
             {% for linkTo, reference in schema.References %}
             case "{{ linkTo | lower }}_refs":
@@ -442,7 +445,7 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
                         ref.Attr = &models.{{ reference.RefType }}{}
                     }
                     {% endif %}
-                    _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}common.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
+                    _, err = tx.ExecContext(ctx, qb.CreateRefQuery("{{ linkTo | lower  }}"), model.UUID, ref.UUID, {% for column in reference.Columns %}{% if column.Bind == "json" %}parsing.MustJSON(ref.Attr{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(ref.Attr{{ column.GetPath }}){% else %}ref.Attr{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
                 {% endif %}{% endfor %})
                     if err != nil {
                         err = basedb.FormatDBError(err)
@@ -470,7 +473,7 @@ func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
     var count int
 
     tx := basedb.GetTransaction(ctx)
-    auth := common.GetAuthCTX(ctx)
+    auth := auth.GetAuthCTX(ctx)
 
     selectQuery := qb.SelectAuthQuery(auth.IsAdmin())
     if auth.IsAdmin() {
@@ -480,7 +483,7 @@ func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
         }
         row.Scan(&count)
         if count == 0 {
-           return common.ErrorNotFound
+           return errutil.ErrorNotFound
         }
     }else{
         row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
@@ -489,7 +492,7 @@ func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
         }
         row.Scan(&count)
         if count == 0 {
-           return common.ErrorNotFound
+           return errutil.ErrorNotFound
         }
     }
     return nil
@@ -526,7 +529,7 @@ func (db *Service) Create{{ schema.JSONSchema.GoName }}(
     request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
-        return nil, common.ErrorBadRequest("update body is empty")
+        return nil, errutil.ErrorBadRequest("update body is empty")
     }
     if err := db.DoInTransaction(
         ctx,
@@ -546,7 +549,7 @@ func (db *Service) Update{{ schema.JSONSchema.GoName }}(
     request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
-        return nil, common.ErrorBadRequest("update body is empty")
+        return nil, errutil.ErrorBadRequest("update body is empty")
     }
     if err := db.DoInTransaction(
         ctx,
@@ -581,10 +584,10 @@ func (db *Service) Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
     request *services.Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*services.Create{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error) {
     ref := request.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
     if request.ID == "" {
-        return nil, common.ErrorBadRequest("reference from ID is missing")
+        return nil, errutil.ErrorBadRequest("reference from ID is missing")
     }
     if ref == nil {
-        return nil, common.ErrorBadRequest("reference data is missing")
+        return nil, errutil.ErrorBadRequest("reference data is missing")
     }
     if err := db.DoInTransaction(
         ctx,
@@ -605,10 +608,10 @@ func (db *Service) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
     request *services.Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefRequest) (*services.Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefResponse, error) {
     ref := request.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
     if request.ID == "" {
-        return nil, common.ErrorBadRequest("reference from ID is missing")
+        return nil, errutil.ErrorBadRequest("reference from ID is missing")
     }
     if ref == nil {
-        return nil, common.ErrorBadRequest("reference data is missing")
+        return nil, errutil.ErrorBadRequest("reference data is missing")
     }
     if err := db.DoInTransaction(
         ctx,
@@ -647,10 +650,10 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
             result, err = db.list{{ schema.JSONSchema.GoName }}(ctx, listRequest)
             return err
         }); err != nil {
-        return nil, common.ErrorInternal
+        return nil, errutil.ErrorInternal
     }
     if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
-        return nil, common.ErrorNotFoundf("No {{ schema.TypeName }}: %s", request.ID)
+        return nil, errutil.ErrorNotFoundf("No {{ schema.TypeName }}: %s", request.ID)
     }
     response = &services.Get{{ schema.JSONSchema.GoName }}Response{
        {{ schema.JSONSchema.GoName }}: result.{{ schema.JSONSchema.GoName }}s[0],

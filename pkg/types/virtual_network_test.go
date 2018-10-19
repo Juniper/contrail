@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -341,7 +341,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 					},
 				},
 			},
-			fails:                 true,
+			fails: true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
 		},
 	}
@@ -401,7 +401,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			if tt.fails {
 				assert.Error(t, err)
 				if tt.expectedHTTPErrorCode != 0 {
-					httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+					httpError, ok := errutil.ToHTTPError(err).(*echo.HTTPError)
 					assert.True(t, ok, "Expected http error")
 					assert.Equal(t, tt.expectedHTTPErrorCode, httpError.Code, "Expected different http status")
 				}
@@ -424,15 +424,15 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 		expectedHTTPErrorCode int
 	}{
 		{
-			name:                  "check for update with a different VirtualNetworkID",
-			fails:                 false, //TODO: This test should fail
+			name:  "check for update with a different VirtualNetworkID",
+			fails: false, //TODO: This test should fail
 			expectedHTTPErrorCode: http.StatusForbidden,
 			testVnData: &testVn{
 				virtualNetworkNetworkID: 13,
 			},
 			updateRequest: &services.UpdateVirtualNetworkRequest{
 				VirtualNetwork: &models.VirtualNetwork{
-					UUID:                    "test_vn_uuid",
+					UUID: "test_vn_uuid",
 					VirtualNetworkNetworkID: 16,
 				},
 				FieldMask: types.FieldMask{
@@ -443,15 +443,15 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "check for update with the same VirtualNetworkID",
-			fails:                 false,
+			name:  "check for update with the same VirtualNetworkID",
+			fails: false,
 			expectedHTTPErrorCode: http.StatusForbidden,
 			testVnData: &testVn{
 				virtualNetworkNetworkID: 13,
 			},
 			updateRequest: &services.UpdateVirtualNetworkRequest{
 				VirtualNetwork: &models.VirtualNetwork{
-					UUID:                    "test_vn_uuid",
+					UUID: "test_vn_uuid",
 					VirtualNetworkNetworkID: 13,
 				},
 				FieldMask: types.FieldMask{
@@ -462,8 +462,8 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "check is_provider_network update",
-			fails:                 true,
+			name:  "check is_provider_network update",
+			fails: true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData:            &testVn{},
 			updateRequest: &services.UpdateVirtualNetworkRequest{
@@ -493,8 +493,8 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "check if provider network can be linked to a provider network",
-			fails:                 true,
+			name:  "check if provider network can be linked to a provider network",
+			fails: true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -517,7 +517,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "check if provider network can be linked to non-provider networks",
+			name: "check if provider network can be linked to non-provider networks",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -540,7 +540,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "add a new subnet to virtual network",
+			name: "add a new subnet to virtual network",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -571,7 +571,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "delete subnet on virtual network update",
+			name: "delete subnet on virtual network update",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -602,7 +602,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "try to delete subnet on virtual network update without fieldmask",
+			name: "try to delete subnet on virtual network update without fieldmask",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -628,8 +628,8 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "try delete subnet with instance ip on virtual network update",
-			fails:                 true,
+			name:  "try delete subnet with instance ip on virtual network update",
+			fails: true,
 			expectedHTTPErrorCode: http.StatusConflict,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -662,7 +662,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "delete and add subnet on virtual network update",
+			name: "delete and add subnet on virtual network update",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -739,7 +739,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			if tt.fails {
 				assert.Error(t, err)
 				if tt.expectedHTTPErrorCode != 0 {
-					httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+					httpError, ok := errutil.ToHTTPError(err).(*echo.HTTPError)
 					assert.True(t, ok, "Expected http error")
 					assert.Equal(t, tt.expectedHTTPErrorCode, httpError.Code, "Expected different http status")
 				}
@@ -946,7 +946,7 @@ func virtualNetworkSetupReadServiceMocks(s *ContrailTypeLogicService) {
 	mockedReadServiceAddVirtualNetwork(s, virtualNetwork)
 
 	readServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		nil, common.ErrorNotFound).AnyTimes()
+		nil, errutil.ErrorNotFound).AnyTimes()
 
 	// BGPVPN
 	bgpVPNL3 := models.MakeBGPVPN()
@@ -970,7 +970,7 @@ func virtualNetworkSetupReadServiceMocks(s *ContrailTypeLogicService) {
 		}, nil).AnyTimes()
 
 	readServiceMock.EXPECT().GetBGPVPN(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(nil,
-		common.ErrorNotFound).AnyTimes()
+		errutil.ErrorNotFound).AnyTimes()
 
 	// Logical Routers
 	logicalRouter := models.MakeLogicalRouter()
@@ -1050,7 +1050,7 @@ func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMetho
 		}, nil).AnyTimes()
 
 	readServiceMock.EXPECT().GetNetworkIpam(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		nil, common.ErrorNotFound).AnyTimes()
+		nil, errutil.ErrorNotFound).AnyTimes()
 }
 
 func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {

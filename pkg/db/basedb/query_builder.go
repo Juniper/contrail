@@ -10,9 +10,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/cast"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	strings2 "github.com/Juniper/contrail/pkg/strutil"
 )
 
 const (
@@ -37,7 +39,7 @@ type QueryBuilder struct {
 }
 
 type queryContext struct {
-	auth        *common.AuthContext
+	auth        *auth.Context
 	values      []interface{}
 	columns     Columns
 	columnParts []string
@@ -47,7 +49,7 @@ type queryContext struct {
 	spec        *baseservices.ListSpec
 }
 
-func newQueryContext(auth *common.AuthContext, spec *baseservices.ListSpec) *queryContext {
+func newQueryContext(auth *auth.Context, spec *baseservices.ListSpec) *queryContext {
 	return &queryContext{
 		auth:        auth,
 		query:       &bytes.Buffer{},
@@ -276,7 +278,7 @@ func (qb *QueryBuilder) buildAuthQuery(ctx *queryContext) {
 	where := []string{}
 
 	//TODO(ijohnson) support global share table
-	if !auth.IsAdmin() && !common.ContainsString(globalResources, qb.Table) {
+	if !auth.IsAdmin() && !strings2.ContainsString(globalResources, qb.Table) {
 		ctx.values = append(ctx.values, auth.ProjectID())
 		where = append(where, qb.Quote(qb.TableAlias, "owner")+" = "+qb.Placeholder(len(ctx.values)))
 		if spec.Shared {
@@ -488,7 +490,7 @@ func (qb *QueryBuilder) buildColumns(ctx *queryContext) {
 
 //ListQuery makes sql query.
 func (qb *QueryBuilder) ListQuery(
-	auth *common.AuthContext,
+	auth *auth.Context,
 	spec *baseservices.ListSpec) (string, Columns, []interface{}) {
 	ctx := newQueryContext(auth, spec)
 	qb.buildColumns(ctx)
@@ -502,7 +504,7 @@ func (qb *QueryBuilder) ListQuery(
 }
 
 // CountQuery makes an SQL query which counts the number of specified resources.
-func (qb *QueryBuilder) CountQuery(auth *common.AuthContext, spec *baseservices.ListSpec) (string, []interface{}) {
+func (qb *QueryBuilder) CountQuery(auth *auth.Context, spec *baseservices.ListSpec) (string, []interface{}) {
 	ctx := newQueryContext(auth, spec)
 
 	qb.buildFilterQuery(ctx)
@@ -598,7 +600,7 @@ func (qb *QueryBuilder) UpdateQuery(columns []string) string {
 //ScanResourceList scan list.
 func (qb *QueryBuilder) ScanResourceList(value interface{}) []interface{} {
 	var resources []interface{}
-	stringValue := common.InterfaceToString(value)
+	stringValue := cast.InterfaceToString(value)
 	if stringValue == "" {
 		return nil
 	}
