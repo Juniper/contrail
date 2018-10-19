@@ -557,7 +557,7 @@ func (api *API) resolveRef(schema *JSONSchema) error {
 	}
 	definition, err := api.loadType(parseRef(schema.Ref))
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "required by %v", schema.ID)
 	}
 	schema.Update(definition)
 	return nil
@@ -750,6 +750,7 @@ func (api *API) resolveExtend() error {
 				continue
 			}
 			s.JSONSchema.Update(baseSchema.JSONSchema)
+			s.ReferencesSlice = append(s.ReferencesSlice, baseSchema.ReferencesSlice...)
 		}
 	}
 	return nil
