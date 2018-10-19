@@ -169,14 +169,3 @@ func (fr *FirewallRule) GetEndpoints(
 
 	return endpoints, dbEndpoints
 }
-
-// FirewallRuleTagRef stub to be removed when tag refs implemented
-type FirewallRuleTagRef struct {
-	UUID string
-	To   []string
-}
-
-// GetTagRefs to be removed when tag refs implemented
-func (fr *FirewallRule) GetTagRefs() []*FirewallRuleTagRef {
-	return []*FirewallRuleTagRef{}
-}
