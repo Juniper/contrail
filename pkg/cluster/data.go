@@ -1124,3 +1124,20 @@ func (d *Data) getAppformixClusterInfo() *models.AppformixCluster {
 	}
 	return nil
 }
+
+func (d *Data) getAppformixControllerNodeIPs() (nodeIPs []string) {
+	appformixClusterInfo := d.getAppformixClusterInfo()
+	if appformixClusterInfo == nil {
+		return nodeIPs
+	}
+	for _, appformixControllerNode := range appformixClusterInfo.AppformixControllerNodes {
+		for _, nodeRef := range appformixControllerNode.NodeRefs {
+			for _, node := range d.getAppformixClusterData().nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					nodeIPs = append(nodeIPs, node.IPAddress)
+				}
+			}
+		}
+	}
+	return nodeIPs
+}
