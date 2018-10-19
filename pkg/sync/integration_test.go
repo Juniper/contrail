@@ -32,7 +32,7 @@ func TestSyncService(t *testing.T) {
 		watchers integration.Watchers
 	}{
 		{
-			name: "some initial resources are dumped",
+			name: "some initial resources are dumped by Sync",
 			watchers: integration.Watchers{
 				"/test/virtual_network/5720afd0-d5a6-46ef-bd81-3be7f715cd27": []integration.Event{
 					{
@@ -145,6 +145,16 @@ func TestSyncService(t *testing.T) {
 				)
 				assert.NoError(t, err, "create vn-ni reference failed")
 
+				// Check if update requests preserve refs
+				_, err = sv.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+					VirtualNetwork: &models.VirtualNetwork{
+						UUID: "vn-blue",
+						Name: "vn_bluuee",
+					},
+					FieldMask: types.FieldMask{Paths: []string{"name"}},
+				})
+				assert.NoError(t, err, "update virtual network failed")
+
 				_, err = sv.DeleteVirtualNetworkNetworkIpamRef(ctx,
 					&services.DeleteVirtualNetworkNetworkIpamRefRequest{
 						ID: "vn-blue",
@@ -181,14 +191,29 @@ func TestSyncService(t *testing.T) {
 						}},
 					},
 					{
-						"name":              "vn_blue",
+						"name": "vn_bluuee",
+						"network_ipam_refs": []interface{}{map[string]interface{}{
+							"uuid": "ni-blue",
+							"attr": map[string]interface{}{
+								"ipam_subnets": nil,
+								"host_routes": map[string]interface{}{
+									"route": []interface{}{map[string]interface{}{
+										"next_hop": "1.2.3.5",
+										"prefix":   "test_prefix",
+									}},
+								},
+							},
+						}},
+					},
+					{
+						"name":              "vn_bluuee",
 						"network_ipam_refs": "$null",
 					},
 					nil,
 				},
 				"/test/network_ipam/ni-blue": []integration.Event{
 					{
-						"name": "ni_blue",
+						"name":                      "ni_blue",
 						"virtual_network_back_refs": "$null",
 					},
 					{
@@ -200,7 +225,7 @@ func TestSyncService(t *testing.T) {
 						},
 					},
 					{
-						"name": "ni_blue",
+						"name":                      "ni_blue",
 						"virtual_network_back_refs": "$null",
 					},
 					nil,
