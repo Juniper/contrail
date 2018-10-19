@@ -341,7 +341,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 					},
 				},
 			},
-			fails:                 true,
+			fails: true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
 		},
 	}
@@ -424,15 +424,15 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 		expectedHTTPErrorCode int
 	}{
 		{
-			name:                  "check for update with a different VirtualNetworkID",
-			fails:                 false, //TODO: This test should fail
+			name:  "check for update with a different VirtualNetworkID",
+			fails: false, //TODO: This test should fail
 			expectedHTTPErrorCode: http.StatusForbidden,
 			testVnData: &testVn{
 				virtualNetworkNetworkID: 13,
 			},
 			updateRequest: &services.UpdateVirtualNetworkRequest{
 				VirtualNetwork: &models.VirtualNetwork{
-					UUID:                    "test_vn_uuid",
+					UUID: "test_vn_uuid",
 					VirtualNetworkNetworkID: 16,
 				},
 				FieldMask: types.FieldMask{
@@ -443,15 +443,15 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "check for update with the same VirtualNetworkID",
-			fails:                 false,
+			name:  "check for update with the same VirtualNetworkID",
+			fails: false,
 			expectedHTTPErrorCode: http.StatusForbidden,
 			testVnData: &testVn{
 				virtualNetworkNetworkID: 13,
 			},
 			updateRequest: &services.UpdateVirtualNetworkRequest{
 				VirtualNetwork: &models.VirtualNetwork{
-					UUID:                    "test_vn_uuid",
+					UUID: "test_vn_uuid",
 					VirtualNetworkNetworkID: 13,
 				},
 				FieldMask: types.FieldMask{
@@ -462,8 +462,8 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "check is_provider_network update",
-			fails:                 true,
+			name:  "check is_provider_network update",
+			fails: true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData:            &testVn{},
 			updateRequest: &services.UpdateVirtualNetworkRequest{
@@ -493,8 +493,8 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "check if provider network can be linked to a provider network",
-			fails:                 true,
+			name:  "check if provider network can be linked to a provider network",
+			fails: true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -517,7 +517,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "check if provider network can be linked to non-provider networks",
+			name: "check if provider network can be linked to non-provider networks",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -540,7 +540,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "add a new subnet to virtual network",
+			name: "add a new subnet to virtual network",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -571,7 +571,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "delete subnet on virtual network update",
+			name: "delete subnet on virtual network update",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -602,7 +602,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "try to delete subnet on virtual network update without fieldmask",
+			name: "try to delete subnet on virtual network update without fieldmask",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -628,8 +628,8 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "try delete subnet with instance ip on virtual network update",
-			fails:                 true,
+			name:  "try delete subnet with instance ip on virtual network update",
+			fails: true,
 			expectedHTTPErrorCode: http.StatusConflict,
 			testVnData: &testVn{
 				isProviderNetwork: true,
@@ -662,7 +662,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			},
 		},
 		{
-			name:                  "delete and add subnet on virtual network update",
+			name: "delete and add subnet on virtual network update",
 			expectedHTTPErrorCode: http.StatusBadRequest,
 			testVnData: &testVn{
 				isProviderNetwork: true,

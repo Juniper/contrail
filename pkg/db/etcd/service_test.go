@@ -119,7 +119,7 @@ func TestEtcdNotifierService(t *testing.T) {
 						},
 					},
 					{
-						"name":                      "lr_blue",
+						"name": "lr_blue",
 						"virtual_network_back_refs": "$null",
 					},
 				},
