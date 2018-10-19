@@ -1,0 +1,12 @@
+api_style: contrail
+extends:
+- base
+id: derived_object
+parents: {}
+plural: derived_objects
+prefix: "/"
+schema:
+  properties: {}
+  required: []
+  type: object
+
