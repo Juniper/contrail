@@ -2,11 +2,11 @@ package logic
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -92,7 +92,7 @@ func (s *Service) DeleteSecurityGroup(
 }
 
 func deleteDefaultACLs(ctx context.Context, writeService services.WriteService, i *SecurityGroupIntent) error {
-	var multiError common.MultiError
+	var multiError errutil.MultiError
 
 	if err := deleteACLIfNeeded(ctx, writeService, i.ingressACL); err != nil {
 		multiError = append(multiError, errors.Wrap(err, "failed to delete ingress access control list"))

@@ -1,9 +1,8 @@
-package common
+package parsing
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestMustJSONReturnsEmptyStringOnMarshalError(t *testing.T) {

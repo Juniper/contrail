@@ -3,6 +3,8 @@ package agent
 import (
 	"context"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/config"
+	"github.com/Juniper/contrail/pkg/logging"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -15,7 +17,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/schema"
 )
@@ -78,7 +79,7 @@ type Agent struct {
 // NewAgentByConfig creates Agent reading configuration from viper config.
 func NewAgentByConfig() (*Agent, error) {
 	var c Config
-	err := common.LoadConfig("agent", &c)
+	err := config.LoadConfig("agent", &c)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +168,7 @@ func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
 // Watch starts watching for events on API Server resources.
 func (a *Agent) Watch(ctx context.Context) error {
 	// configure global log level
-	common.SetLogLevel()
+	logging.SetLogLevel()
 
 	a.log.Info("Starting watching for events")
 	if a.config.AuthURL != "" {

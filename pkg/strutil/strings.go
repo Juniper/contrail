@@ -1,12 +1,11 @@
-package common
+package strutil
 
 import (
 	"bytes"
-	"strings"
-	"unicode"
-
 	"github.com/gogo/protobuf/types"
 	"github.com/volatiletech/sqlboiler/strmangle"
+	"strings"
+	"unicode"
 )
 
 func isUpperOrDigit(c rune) bool {

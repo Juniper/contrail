@@ -1,13 +1,12 @@
-package common
+package errutil
 
 import (
-	"net/http"
-	"testing"
-
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"net/http"
+	"testing"
 )
 
 func TestToHTTPError(t *testing.T) {

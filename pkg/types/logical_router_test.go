@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"testing"
 
 	"github.com/gogo/protobuf/types"
@@ -10,7 +11,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -467,7 +467,7 @@ func TestDeleteLogicalRouter(t *testing.T) {
 					}, nil).AnyTimes()
 			} else {
 				readService.EXPECT().GetLogicalRouter(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-					nil, common.ErrorNotFound).AnyTimes()
+					nil, errutil.ErrorNotFound).AnyTimes()
 			}
 
 			deleteLRCall := service.Next().(*servicesmock.MockService).EXPECT().DeleteLogicalRouter(

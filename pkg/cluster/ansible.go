@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/flosch/pongo2"
-	"github.com/mattn/go-shellwords"
 )
 
 const (
@@ -70,7 +69,7 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 
 		switch {
 
-		// if no more files are found return
+		// if no more fileutil are found return
 		case err == io.EOF:
 			return nil
 

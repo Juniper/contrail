@@ -2,8 +2,8 @@ package keystone
 
 import (
 	"fmt"
+	"github.com/Juniper/contrail/pkg/cast"
 
-	"github.com/Juniper/contrail/pkg/common"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
@@ -26,7 +26,7 @@ func (assignment *StaticAssignment) FetchUser(name, password string) (*kscommon.
 	if !ok {
 		return nil, fmt.Errorf("user %s not found", name)
 	}
-	if user.Password != "" && common.InterfaceToString(user.Password) != password {
+	if user.Password != "" && cast.InterfaceToString(user.Password) != password {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 	return user, nil

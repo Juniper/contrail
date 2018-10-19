@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -9,7 +10,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -69,7 +69,7 @@ func floatingIPPoolPrepareNetwork(s *ContrailTypeLogicService, virtualNetwork *m
 		}, nil).AnyTimes()
 
 	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		nil, common.ErrorNotFound).AnyTimes()
+		nil, errutil.ErrorNotFound).AnyTimes()
 }
 
 func TestCreateFloatingIPPool(t *testing.T) {

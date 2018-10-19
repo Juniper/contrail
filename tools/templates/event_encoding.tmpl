@@ -8,7 +8,8 @@ import (
 
     "github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/cast"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"{{ option.PackagePath }}/pkg/models"
 )
@@ -458,8 +459,8 @@ func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
     }
     raw := r.(map[interface{}]interface{})
     kind := raw["kind"]
-    data := common.YAMLtoJSONCompat(raw["data"])
-  	operation := common.InterfaceToString(raw["operation"])
+    data := fileutil.YAMLtoJSONCompat(raw["data"])
+    operation := cast.InterfaceToString(raw["operation"])
     if operation == "" {
         operation = OperationCreate
     }

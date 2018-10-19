@@ -2,12 +2,12 @@ package convert
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"time"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
@@ -96,12 +96,12 @@ func writeData(events *services.EventList, c *Config) error {
 
 func readYAML(inFile string) (*services.EventList, error) {
 	var events services.EventList
-	err := common.LoadFile(inFile, &events)
+	err := fileutil.LoadFile(inFile, &events)
 	return &events, err
 }
 
 func writeYAML(events *services.EventList, outFile string) error {
-	return common.SaveFile(outFile, events)
+	return fileutil.SaveFile(outFile, events)
 }
 
 func readRDBMS() (*services.EventList, error) {

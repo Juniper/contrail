@@ -7,10 +7,11 @@ import (
 	"net"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/errutil"
+
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 )
 
@@ -228,7 +229,7 @@ func (db *Service) deallocateIPRange(ctx context.Context, target *ipPool) error 
 	}
 
 	pools, err := db.getIPPools(ctx, mergePool)
-	if err != nil && err != common.ErrorNotFound {
+	if err != nil && err != errutil.ErrorNotFound {
 		return err
 	}
 

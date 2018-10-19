@@ -2,12 +2,13 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
+	strings2 "github.com/Juniper/contrail/pkg/strutil"
 	"strconv"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/twinj/uuid"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -223,7 +224,7 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 
 	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id)
 	if err != nil {
-		return "", common.ErrorBadRequestf("cannot allocate provided vxlan identifier(%s): %v", vxlanNetworkID, err)
+		return "", errutil.ErrorBadRequestf("cannot allocate provided vxlan identifier(%s): %v", vxlanNetworkID, err)
 	}
 
 	return vxlanNetworkID, nil
@@ -256,7 +257,7 @@ func (sv *ContrailTypeLogicService) checkForExternalGateway(
 	if vxLanRouting {
 		for _, vn := range logicalRouter.GetVirtualNetworkRefs() {
 			if vn.GetAttr().GetLogicalRouterVirtualNetworkType() != "InternalVirtualNetwork" {
-				return common.ErrorBadRequest("external gateway not supported with VxLAN")
+				return errutil.ErrorBadRequest("external gateway not supported with VxLAN")
 			}
 		}
 	}
@@ -287,7 +288,7 @@ func (sv *ContrailTypeLogicService) isVxlanRoutingEnabled(
 
 		uuid := logicalRouter.GetUUID()
 		if uuid == "" {
-			return false, common.ErrorBadRequest("no input to derive parent for Logical Router")
+			return false, errutil.ErrorBadRequest("no input to derive parent for Logical Router")
 		}
 
 		logicalRouterResponse, err := sv.ReadService.GetLogicalRouter(
@@ -366,8 +367,8 @@ func (sv *ContrailTypeLogicService) checkPortGateway(
 	}
 
 	for _, vn := range vnRefs {
-		if common.ContainsString(interfaceNetworkUUIDs, vn.GetUUID()) {
-			return common.ErrorBadRequestf(
+		if strings2.ContainsString(interfaceNetworkUUIDs, vn.GetUUID()) {
+			return errutil.ErrorBadRequestf(
 				"logical router interface and gateway cannot be in the same virtual network(%s)", vn.GetUUID(),
 			)
 		}
@@ -393,7 +394,7 @@ func (sv *ContrailTypeLogicService) checkPortAvailability(
 
 		vmi := vmiResponse.GetVirtualMachineInterface()
 		if vmi.GetParentType() == models.KindVirtualMachine || len(vmi.GetVirtualMachineRefs()) > 0 {
-			return common.ErrorConflictf("port(%s) already in use by virtual-machine", vmi.GetUUID())
+			return errutil.ErrorConflictf("port(%s) already in use by virtual-machine", vmi.GetUUID())
 		}
 	}
 
@@ -561,7 +562,7 @@ func (sv *ContrailTypeLogicService) deleteInternalVirtualNetwork(
 		},
 	)
 	if err != nil {
-		return common.ErrorNotFoundf("cannot find internal virtual network: %v", err)
+		return errutil.ErrorNotFoundf("cannot find internal virtual network: %v", err)
 	}
 
 	_, err = sv.WriteService.DeleteVirtualNetwork(
@@ -594,7 +595,7 @@ func (sv *ContrailTypeLogicService) checkRouterSupportsVPNType(ctx context.Conte
 
 	for _, bgpvpn := range bgpvpns.GetBGPVPNs() {
 		if bgpvpn.GetBGPVPNType() != models.L3VPNType {
-			return common.ErrorBadRequestf("can only associate '%s' type BGPVPNs to a logical router", models.L3VPNType)
+			return errutil.ErrorBadRequestf("can only associate '%s' type BGPVPNs to a logical router", models.L3VPNType)
 		}
 	}
 
@@ -636,7 +637,7 @@ func (sv *ContrailTypeLogicService) checkRouterHasBGPVPNAssocViaNetwork(
 
 	for _, vn := range vnsResp.GetVirtualNetworks() {
 		if len(vn.GetBGPVPNRefs()) != 0 {
-			return common.ErrorBadRequestf(
+			return errutil.ErrorBadRequestf(
 				"can not associate BGPVPN to router which is linked to a network(%s) "+
 					"which already has BGPVPN associated",
 				vn.GetUUID())

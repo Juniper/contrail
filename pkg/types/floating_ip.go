@@ -2,12 +2,12 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
@@ -132,7 +132,7 @@ func (sv *ContrailTypeLogicService) tryToAllocateIPAddress(ctx context.Context,
 
 	floatingIPPoolSubnets, err := sv.getFloatingIPPoolSubnets(ctx, floatingIP)
 	if err != nil {
-		return "", common.ErrorBadRequest("floating-ip-pool lookup failed with error:" + err.Error())
+		return "", errutil.ErrorBadRequest("floating-ip-pool lookup failed with error:" + err.Error())
 	}
 
 	var floatingIPAddress string

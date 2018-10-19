@@ -1,13 +1,12 @@
-package common
+package errutil
 
 import (
-	"net/http"
-	"strings"
-
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"net/http"
+	"strings"
 )
 
 // MultiError implements errors with multiple causes

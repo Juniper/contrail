@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"github.com/Juniper/contrail/pkg/cast"
+	"github.com/Juniper/contrail/pkg/logging"
 	"os"
 	"strings"
 	"testing"
@@ -9,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 )
 
@@ -27,9 +28,9 @@ func TestMain(m *testing.M) {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
-	common.SetLogLevel()
+	logging.SetLogLevel()
 	for _, iConfig := range viper.GetStringMap("test_database") {
-		config := common.InterfaceToInterfaceMap(iConfig)
+		config := cast.InterfaceToInterfaceMap(iConfig)
 		driver := config["type"].(string) //nolint: errcheck
 		testDB, err := basedb.OpenConnection(basedb.ConnectionConfig{
 			Driver:   driver,

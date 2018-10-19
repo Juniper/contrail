@@ -1,11 +1,11 @@
 package apisrv
 
 import (
+	"github.com/Juniper/contrail/pkg/errutil"
 	"net/http"
 
 	"github.com/labstack/echo"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
@@ -26,7 +26,7 @@ func (s *Server) UseragentKVHandler(c echo.Context) error {
 	}
 
 	if err := data.validateKVRequest(); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 
 	switch op := data["operation"]; op {
@@ -51,7 +51,7 @@ func (s *Server) UseragentKVHandler(c echo.Context) error {
 
 func (s *Server) storeKeyValue(c echo.Context, key string, value string) error {
 	if err := s.dbService.StoreKV(c.Request().Context(), key, value); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
 }
@@ -59,7 +59,7 @@ func (s *Server) storeKeyValue(c echo.Context, key string, value string) error {
 func (s *Server) retrieveValue(c echo.Context, key string) error {
 	val, err := s.dbService.RetrieveValue(c.Request().Context(), key)
 	if err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, struct {
 		Value string `json:"value"`
@@ -69,7 +69,7 @@ func (s *Server) retrieveValue(c echo.Context, key string) error {
 func (s *Server) retrieveValues(c echo.Context, keys []string) error {
 	vals, err := s.dbService.RetrieveValues(c.Request().Context(), keys)
 	if err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, struct {
 		Value []string `json:"value"`
@@ -79,7 +79,7 @@ func (s *Server) retrieveValues(c echo.Context, keys []string) error {
 func (s *Server) retrieveKVPs(c echo.Context) error {
 	kvps, err := s.dbService.RetrieveKVPs(c.Request().Context())
 	if err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, struct {
 		Value []*models.KeyValuePair `json:"value"`
@@ -88,18 +88,18 @@ func (s *Server) retrieveKVPs(c echo.Context) error {
 
 func (s *Server) deleteKey(c echo.Context, key string) error {
 	if err := s.dbService.DeleteKey(c.Request().Context(), key); err != nil {
-		return common.ToHTTPError(err)
+		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
 }
 
 func (data useragentKVRequest) validateKVRequest() error {
 	if _, ok := data["operation"]; !ok {
-		return common.ErrorBadRequest("Key/value store API needs 'operation' parameter")
+		return errutil.ErrorBadRequest("Key/value store API needs 'operation' parameter")
 	}
 
 	if _, ok := data["key"]; !ok {
-		return common.ErrorBadRequest("Key/value store API needs 'key' parameter")
+		return errutil.ErrorBadRequest("Key/value store API needs 'key' parameter")
 	}
 
 	switch op := data["operation"]; op {
@@ -108,12 +108,12 @@ func (data useragentKVRequest) validateKVRequest() error {
 	case UseragentKVOperationRetrieve:
 		return data.validateRetrieveOperation()
 	default:
-		return common.ErrorNotFoundf("Invalid Operation %v", op)
+		return errutil.ErrorNotFoundf("Invalid Operation %v", op)
 	}
 }
 
 func (data useragentKVRequest) validateRetrieveOperation() error {
-	errMsg := "retrieve: 'key' must be a string or a list of strings"
+	errMsg := "retrieve: 'key' must be a string or a list of strutil"
 
 	switch key := data["key"].(type) {
 	case string:
@@ -123,12 +123,12 @@ func (data useragentKVRequest) validateRetrieveOperation() error {
 			if keyString, ok := k.(string); ok {
 				keyStrings = append(keyStrings, keyString)
 			} else {
-				return common.ErrorBadRequestf(errMsg)
+				return errutil.ErrorBadRequestf(errMsg)
 			}
 		}
 		data["key"] = keyStrings
 	default:
-		return common.ErrorBadRequestf(errMsg)
+		return errutil.ErrorBadRequestf(errMsg)
 	}
 
 	return nil
@@ -136,9 +136,9 @@ func (data useragentKVRequest) validateRetrieveOperation() error {
 
 func (data useragentKVRequest) validateStoreOrDeleteOperation() error {
 	if key, ok := data["key"].(string); !ok {
-		return common.ErrorBadRequestf("store/delete: 'key' must be a string")
+		return errutil.ErrorBadRequestf("store/delete: 'key' must be a string")
 	} else if key == "" {
-		return common.ErrorBadRequestf("store/delete: 'key' must be nonempty")
+		return errutil.ErrorBadRequestf("store/delete: 'key' must be nonempty")
 	}
 
 	return nil

@@ -3,6 +3,8 @@ package schema
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/fileutil"
+	strings2 "github.com/Juniper/contrail/pkg/strutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -11,8 +13,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
-
-	"github.com/Juniper/contrail/pkg/common"
 )
 
 //Version is version for schema format.
@@ -429,7 +429,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	if s == nil {
 		return nil
 	}
-	s.GoName = common.SnakeToCamel(name)
+	s.GoName = strings2.SnakeToCamel(name)
 	if s.GoName == "Size" {
 		s.GoName = "Size_"
 	}
@@ -586,7 +586,7 @@ func (api *API) resolveAllSQL() error {
 
 func (api *API) resolveRelation(linkToSchema *Schema, reference *Reference) error {
 	linkTo := linkToSchema.ID
-	reference.GoName = common.SnakeToCamel(linkTo)
+	reference.GoName = strings2.SnakeToCamel(linkTo)
 	reference.Attr = mapSlice(reference.AttrSlice).JSONSchema()
 
 	reference.LinkTo = linkToSchema
@@ -798,7 +798,7 @@ func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 
 func loadSchemaFromPath(path string) (*Schema, error) {
 	var schema Schema
-	err := common.LoadFile(path, &schema)
+	err := fileutil.LoadFile(path, &schema)
 	return &schema, errors.Wrapf(err, "Loading file \"%v\" error", path)
 }
 
@@ -851,7 +851,7 @@ func processSchema(schema, overrides *Schema, api *API) error {
 }
 
 func walkSchemaFile(overridePath string, overrides *Schema, api *API, path string, f os.FileInfo, err error) error {
-	// Don't walk over override schema files
+	// Don't walk over override schema fileutil
 	if path == overridePath && f.IsDir() {
 		return filepath.SkipDir
 	}

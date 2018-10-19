@@ -2,12 +2,12 @@ package services_test
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -54,7 +54,7 @@ func TestGetObject(t *testing.T) {
 			initMock: func(rsMock *servicesmock.MockReadService) {
 				rsMock.EXPECT().GetVirtualNetwork(
 					gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
-				).Return((*services.GetVirtualNetworkResponse)(nil), common.ErrorNotFound).Times(1)
+				).Return((*services.GetVirtualNetworkResponse)(nil), errutil.ErrorNotFound).Times(1)
 			},
 			fails: true,
 		},

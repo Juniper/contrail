@@ -4,10 +4,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gogo/protobuf/types"
+	"github.com/Juniper/contrail/pkg/errutil"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/gogo/protobuf/types"
 )
 
 // FirewallRule constants.
@@ -65,7 +65,7 @@ func (fr *FirewallRule) checkRefInSameScope(
 	}
 
 	refKind := strings.Replace(ref.GetReferredKind(), "-", " ", -1)
-	return common.ErrorBadRequestf(
+	return errutil.ErrorBadRequestf(
 		"global Firewall Rule %s (%s) cannot reference a scoped %s %s (%s)",
 		basemodels.FQNameToString(fqName),
 		fr.GetUUID(),
@@ -95,7 +95,7 @@ func (fr *FirewallRule) GetProtocolID() (int64, error) {
 	}
 
 	if !ok || protocolID < 0 || protocolID > 255 {
-		return 0, common.ErrorBadRequestf("rule with invalid protocol: %s", protocol)
+		return 0, errutil.ErrorBadRequestf("rule with invalid protocol: %s", protocol)
 	}
 
 	return protocolID, nil
@@ -128,7 +128,7 @@ func (fr *FirewallRule) GetTagFQName(
 	tagName string, parentType string, fqName []string,
 ) ([]string, error) {
 	if !strings.Contains(tagName, "=") {
-		return nil, common.ErrorNotFoundf("invalid tag name '%s'", tagName)
+		return nil, errutil.ErrorNotFoundf("invalid tag name '%s'", tagName)
 	}
 
 	if strings.HasPrefix(tagName, FirewallPolicyTagNameGlobalPrefix) {
@@ -145,7 +145,7 @@ func (fr *FirewallRule) GetTagFQName(
 		return append(name[:len(fqName)-1], tagName), nil
 	}
 
-	return nil, common.ErrorBadRequestf(
+	return nil, errutil.ErrorBadRequestf(
 		"Firewall rule %s (%s) parent type '%s' is not supported as security resource scope",
 		fr.GetUUID(),
 		fqName,

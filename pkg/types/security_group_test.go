@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"net/http"
 	"testing"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -69,7 +69,7 @@ func TestCreateSecurityGroup(t *testing.T) {
 
 			if tt.fails {
 				if assert.Error(t, err) {
-					httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+					httpError, ok := errutil.ToHTTPError(err).(*echo.HTTPError)
 					assert.True(t, ok, "Expected http error")
 					assert.Equal(t, tt.expectedStatusCode, httpError.Code, "Expected different http status")
 				}

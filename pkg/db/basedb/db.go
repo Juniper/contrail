@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/errutil"
+
 	"github.com/ExpansiveWorlds/instrumentedsql"
 	"github.com/go-sql-driver/mysql"
 	"github.com/gogo/protobuf/proto"
@@ -13,8 +15,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	"github.com/Juniper/contrail/pkg/common"
 )
 
 // Database drivers
@@ -115,7 +115,7 @@ func (db *BaseDB) DoWithoutConstraints(ctx context.Context, do func(context.Cont
 	defer func() {
 		if enerr := db.enableConstraints(); enerr != nil {
 			if err != nil {
-				err = common.MultiError{err, enerr}
+				err = errutil.MultiError{err, enerr}
 				return
 			}
 			err = enerr

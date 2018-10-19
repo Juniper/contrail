@@ -1,16 +1,15 @@
-package common
+package fileutil
 
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"gopkg.in/yaml.v2"
 )
 
 //SaveFile saves object to file. suffix of filepath will be

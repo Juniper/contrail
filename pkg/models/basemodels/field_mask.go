@@ -42,7 +42,7 @@ func paths(data map[string]interface{}, prefix string) []string {
 	return result
 }
 
-// GetFromMapByPath gets map value by provided as slice of strings.
+// GetFromMapByPath gets map value by provided as slice of strutil.
 func GetFromMapByPath(data map[string]interface{}, path []string) (value interface{}, ok bool) {
 	if len(path) == 0 {
 		return nil, false

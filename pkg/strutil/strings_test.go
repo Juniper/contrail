@@ -1,11 +1,10 @@
-package common
+package strutil
 
 import (
-	"testing"
-
 	"github.com/gogo/protobuf/types"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestCamelToSnake(t *testing.T) {
@@ -19,7 +18,7 @@ func TestCamelToSnake(t *testing.T) {
 	for _, testData := range testDatas {
 		camelToSnake := CamelToSnake(testData[0])
 		snakeToCamel := SnakeToCamel(testData[1])
-		log.Debug("hogehoge")
+		logrus.Debug("hogehoge")
 		if camelToSnake != testData[1] {
 			t.Fatal("CamelToSnake failed expected", testData[1], " got ", camelToSnake)
 		}

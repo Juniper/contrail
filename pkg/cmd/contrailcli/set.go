@@ -6,9 +6,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/fileutil"
 )
 
 func init() {
@@ -58,7 +57,7 @@ func setResourceParameter(schemaID, uuid, yamlString string) (string, error) {
 
 	data["uuid"] = uuid
 	_, err = client.Update(context.Background(), path(schemaID, uuid), map[string]interface{}{
-		dashedCase(schemaID): common.YAMLtoJSONCompat(data),
+		dashedCase(schemaID): fileutil.YAMLtoJSONCompat(data),
 	}, nil) //nolint
 	if err != nil {
 		return "", err

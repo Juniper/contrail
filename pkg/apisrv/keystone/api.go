@@ -3,6 +3,7 @@ package keystone
 import (
 	"context"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/config"
 	"net/http"
 	"net/url"
 	"time"
@@ -41,7 +42,7 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {
 		var staticAssignment StaticAssignment
-		err := common.LoadConfig("keystone.assignment.data", &staticAssignment)
+		err := config.LoadConfig("keystone.assignment.data", &staticAssignment)
 		if err != nil {
 			return nil, err
 		}

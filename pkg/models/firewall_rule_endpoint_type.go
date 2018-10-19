@@ -1,6 +1,8 @@
 package models
 
-import "github.com/Juniper/contrail/pkg/common"
+import (
+	"github.com/Juniper/contrail/pkg/errutil"
+)
 
 // ValidateEndpointType checks if endpoint refers to only one endpoint type
 func (e *FirewallRuleEndpointType) ValidateEndpointType() error {
@@ -26,7 +28,7 @@ func (e *FirewallRuleEndpointType) ValidateEndpointType() error {
 	}
 
 	if count > 1 {
-		return common.ErrorBadRequest("endpoint is limited to only one endpoint type at a time")
+		return errutil.ErrorBadRequest("endpoint is limited to only one endpoint type at a time")
 	}
 
 	return nil

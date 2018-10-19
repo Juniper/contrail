@@ -126,7 +126,7 @@ func createPackage(options linuxPackageOptions) {
 	runPrint("cp", "-p", options.defaultFileSrc, filepath.Join(packageRoot, options.etcDefaultFilePath))
 	// copy systemd file
 	runPrint("cp", "-p", options.systemdFileSrc, filepath.Join(packageRoot, options.systemdServiceFilePath))
-	// copy release files
+	// copy release fileutil
 	runPrint("cp", "-a", filepath.Join(wd, "tmp")+"/.", filepath.Join(packageRoot, options.homeDir))
 	// copy json schema
 	runPrint("cp", "-rp", filepath.Join(wd, "public"), homeDir)
@@ -144,9 +144,9 @@ func createPackage(options linuxPackageOptions) {
 		"--url", "https://juniper.net",
 		"--license", "\"Apache 2.0\"",
 		"--maintainer", "nueno@juniper.net",
-		"--config-files", options.initdScriptFilePath,
-		"--config-files", options.etcDefaultFilePath,
-		"--config-files", options.systemdServiceFilePath,
+		"--config-fileutil", options.initdScriptFilePath,
+		"--config-fileutil", options.etcDefaultFilePath,
+		"--config-fileutil", options.systemdServiceFilePath,
 		"--after-install", options.postinstSrc,
 		"--name", "contrail",
 		"--version", linuxPackageVersion,
@@ -159,7 +159,7 @@ func createPackage(options linuxPackageOptions) {
 	}
 
 	if options.packageType == "deb" {
-		args = append(args, "--deb-no-default-config-files")
+		args = append(args, "--deb-no-default-config-fileutil")
 	}
 
 	if pkgArch != "" {

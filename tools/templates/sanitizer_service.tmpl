@@ -8,13 +8,12 @@ import (
 	"github.com/pkg/errors"
 
 	"{{ option.PackagePath }}/pkg/models"
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
-)
+	"github.com/Juniper/contrail/pkg/errutil"
 
 //This is needed to prevent an import error.
-var _ = common.ErrorNotFound
+var _ = errutil.ErrorNotFound
 var _ = models.Version
 var _ = basemodels.Metadata{}
 
@@ -79,7 +78,7 @@ func (sv *SanitizerService) Create{{ schema.JSONSchema.GoName }}(
 	sv.sanitize{{ schema.JSONSchema.GoName }}DisplayName(ctx, m)
 	{% if schema.References | length != 0 %}
 	if err := sv.sanitizeRefs(ctx, m.GetReferences()); err != nil {
-		return nil, common.ErrorBadRequestf("couldn't sanitize refs of {{ schema.JSONSchema.GoName }} %v: %v", m.GetUUID(), err)
+		return nil, errutil.ErrorBadRequestf("couldn't sanitize refs of {{ schema.JSONSchema.GoName }} %v: %v", m.GetUUID(), err)
 	}
 	{% endif %}
 
@@ -92,7 +91,7 @@ func (sv *SanitizerService) Update{{ schema.JSONSchema.GoName }}(
 	{% if schema.References | length != 0 %}
 	m := request.Get{{ schema.JSONSchema.GoName }}()
 	if err := sv.sanitizeRefs(ctx, m.GetReferences()); err != nil {
-		return nil, common.ErrorBadRequestf("couldn't sanitize refs of {{ schema.JSONSchema.GoName }} %v: %v", m.GetUUID(), err)
+		return nil, errutil.ErrorBadRequestf("couldn't sanitize refs of {{ schema.JSONSchema.GoName }} %v: %v", m.GetUUID(), err)
 	}
 	{% endif %}
 	return sv.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)

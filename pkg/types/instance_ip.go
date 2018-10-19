@@ -2,8 +2,8 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -76,7 +76,7 @@ func (sv *ContrailTypeLogicService) UpdateInstanceIP(
 			}
 
 			if sv.checkIfIPAddressUpdate(request, requestInstanceIP, databaseInstanceIP) {
-				return common.ErrorBadRequest("Changing instance-ip-address is not allowed")
+				return errutil.ErrorBadRequest("Changing instance-ip-address is not allowed")
 			}
 
 			//TODO Gateway IP check
@@ -161,11 +161,11 @@ func validateInstanceIPRefs(instanceIP *models.InstanceIP) error {
 	networkIpamRefs := instanceIP.GetNetworkIpamRefs()
 
 	if len(virtualRouterRefs) > 0 && len(networkIpamRefs) > 0 {
-		return common.ErrorBadRequest("virtual_router_refs and network_ipam_refs are not allowed")
+		return errutil.ErrorBadRequest("virtual_router_refs and network_ipam_refs are not allowed")
 	}
 
 	if len(virtualRouterRefs) > 0 && len(virtualNetworkRefs) > 0 {
-		return common.ErrorBadRequest("virtual_router_refs and virtual_network_refs are not allowed")
+		return errutil.ErrorBadRequest("virtual_router_refs and virtual_network_refs are not allowed")
 	}
 
 	return nil
@@ -235,7 +235,7 @@ func (sv *ContrailTypeLogicService) getIpamRefsFromVirtualRouterRefs(
 ) ([]*models.VirtualRouterNetworkIpamRef, error) {
 
 	if len(virtualRouterRefs) > 1 {
-		return nil, common.ErrorBadRequest("Instance-ip can not refer to multiple vrouters")
+		return nil, errutil.ErrorBadRequest("Instance-ip can not refer to multiple vrouters")
 	}
 
 	virtualRouterResponse, err := sv.ReadService.GetVirtualRouter(ctx,
@@ -284,11 +284,11 @@ func (sv *ContrailTypeLogicService) allocateIPAddress(
 	ipFamily := instanceIP.GetInstanceIPFamily()
 
 	if subnetUUID != "" && len(virtualRouterRefs) > 0 {
-		return "", "", common.ErrorBadRequest("Subnet uuid based allocation not supported with vrouter")
+		return "", "", errutil.ErrorBadRequest("Subnet uuid based allocation not supported with vrouter")
 	}
 
 	if (len(virtualRouterNetworkIpamRefs) > 0 || len(instanceIPNetworkIpamRefs) > 0) && ipAddress != "" {
-		return "", "", common.ErrorBadRequest("Allocation for requested IP from a network_ipam is not supported")
+		return "", "", errutil.ErrorBadRequest("Allocation for requested IP from a network_ipam is not supported")
 	}
 
 	allocateIPParams := &ipam.AllocateIPRequest{

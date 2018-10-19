@@ -2,11 +2,11 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/errutil"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -108,7 +108,7 @@ func (sv *ContrailTypeLogicService) checkVxlanConfig(
 
 	areLogicalRoutersAlreadyConfigured := len(currentProject.GetLogicalRouters()) > 0
 	if areLogicalRoutersAlreadyConfigured {
-		return common.ErrorBadRequest("VxLAN Routing update for project " + currentProject.GetUUID() +
+		return errutil.ErrorBadRequest("VxLAN Routing update for project " + currentProject.GetUUID() +
 			" cannot be done when Logical Routers are configured")
 	}
 
@@ -132,7 +132,7 @@ func (sv *ContrailTypeLogicService) ensureDefaultApplicationPolicySet(
 				AllApplications: true,
 			},
 		})
-	if common.IsConflict(err) {
+	if errutil.IsConflict(err) {
 		return nil // object already exists - do nothing
 	} else if err != nil {
 		return errors.Wrap(err, "failed to create default application policy set for project")

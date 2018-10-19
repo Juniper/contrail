@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gogo/protobuf/types"
+	"github.com/Juniper/contrail/pkg/errutil"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/gogo/protobuf/types"
 )
 
 // CreateFirewallRule performs types specific validation,
@@ -173,11 +173,11 @@ func CheckServiceProperties(
 	}
 
 	if service == nil && len(serviceGroupRefs) == 0 {
-		return common.ErrorBadRequest("firewall Rule requires at least 'service' property or Service Group references(s)")
+		return errutil.ErrorBadRequest("firewall Rule requires at least 'service' property or Service Group references(s)")
 	}
 
 	if service != nil && len(serviceGroupRefs) > 0 {
-		return common.ErrorBadRequest(
+		return errutil.ErrorBadRequest(
 			"firewall Rule cannot have both defined 'service' property and Service Group reference(s)",
 		)
 	}
@@ -221,7 +221,7 @@ func (sv *ContrailTypeLogicService) setMatchTagTypes(
 	for _, tagType := range fr.GetMatchTags().GetTagList() {
 		tagType = strings.ToLower(tagType)
 		if tagType == "label" {
-			return common.ErrorBadRequest("labels not allowed as match-tags")
+			return errutil.ErrorBadRequest("labels not allowed as match-tags")
 		}
 
 		tagTypeID, err := sv.getTagTypeID(ctx, tagType)
@@ -264,7 +264,7 @@ func (sv *ContrailTypeLogicService) getTagTypeID(
 		},
 	)
 	if err != nil {
-		return -1, common.ErrorNotFoundf("cannot find tag-type %s uuid: %v", tagType, err)
+		return -1, errutil.ErrorNotFoundf("cannot find tag-type %s uuid: %v", tagType, err)
 	}
 
 	tagTypeResponse, err := sv.ReadService.GetTagType(
@@ -275,7 +275,7 @@ func (sv *ContrailTypeLogicService) getTagTypeID(
 		},
 	)
 	if err != nil {
-		return -1, common.ErrorNotFoundf("cannot find tag-type %s: %v", tagType, err)
+		return -1, errutil.ErrorNotFoundf("cannot find tag-type %s: %v", tagType, err)
 	}
 
 	id := tagTypeResponse.GetTagType().GetTagTypeID()
@@ -289,7 +289,7 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 	fm *types.FieldMask,
 ) error {
 	if !IsInternalRequest(ctx) && len(fr.GetTagRefs()) > 0 {
-		return common.ErrorBadRequestf(
+		return errutil.ErrorBadRequestf(
 			"cannot directly define Tags reference from a Firewall Rule. " +
 				"Use 'tags' endpoints property in the Firewall Rule")
 	}
@@ -377,7 +377,7 @@ func (sv *ContrailTypeLogicService) getTagByFQName(
 		},
 	)
 	if err != nil {
-		return nil, common.ErrorNotFoundf("cannot find Tag (fq_name: %s): %v", tagFQName, err)
+		return nil, errutil.ErrorNotFoundf("cannot find Tag (fq_name: %s): %v", tagFQName, err)
 	}
 
 	tagResponse, err := sv.ReadService.GetTag(
@@ -386,7 +386,7 @@ func (sv *ContrailTypeLogicService) getTagByFQName(
 			ID: m.UUID,
 		})
 	if err != nil {
-		return nil, common.ErrorNotFoundf("cannot get Tag (uuid: %s): %v", m.UUID, err)
+		return nil, errutil.ErrorNotFoundf("cannot get Tag (uuid: %s): %v", m.UUID, err)
 	}
 
 	return tagResponse.GetTag(), nil
@@ -419,7 +419,7 @@ func (sv *ContrailTypeLogicService) setAddressGroupRefs(
 	fm *types.FieldMask,
 ) error {
 	if !IsInternalRequest(ctx) && len(fr.GetAddressGroupRefs()) > 0 {
-		return common.ErrorBadRequestf(
+		return errutil.ErrorBadRequestf(
 			"cannot directly define Address Group reference from a Firewall Rule. " +
 				"Use 'address_group' endpoints property in the Firewall Rule")
 	}
@@ -471,7 +471,7 @@ func (sv *ContrailTypeLogicService) addAddressGroupRef(
 		},
 	)
 	if err != nil {
-		return common.ErrorNotFoundf(
+		return errutil.ErrorNotFoundf(
 			"no Address Group found for %s: %v",
 			fqName,
 			err,
