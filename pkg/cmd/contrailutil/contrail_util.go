@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/logging"
 )
 
 var configFile string
@@ -37,5 +37,5 @@ func initConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	common.SetLogLevel()
+	logging.SetLogLevel()
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -60,7 +60,7 @@ func (e *EventProcessorSink) CreateRef(
 		UUID:      pk[0],
 		RefType:   typeRef,
 		RefUUID:   pk[1],
-		Attr:      json.RawMessage(common.MustJSON(attr)),
+		Attr:      json.RawMessage(format.MustJSON(attr)),
 	})
 	if err != nil {
 		return err

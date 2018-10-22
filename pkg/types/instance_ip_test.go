@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -31,7 +31,7 @@ func instanceIPPrepareVirtualNetwork(s *ContrailTypeLogicService) {
 	mockedReadServiceAddVirtualNetwork(s, virtualNetworks[1])
 
 	readService.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		nil, common.ErrorNotFound).AnyTimes()
+		nil, errutil.ErrorNotFound).AnyTimes()
 }
 
 func instanceIPPrepareReadService(s *ContrailTypeLogicService, instanceIP *models.InstanceIP) {
@@ -44,7 +44,7 @@ func instanceIPPrepareReadService(s *ContrailTypeLogicService, instanceIP *model
 			}, nil).AnyTimes()
 	} else {
 		readService.EXPECT().GetInstanceIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-			nil, common.ErrorNotFound).AnyTimes()
+			nil, errutil.ErrorNotFound).AnyTimes()
 	}
 }
 
@@ -71,7 +71,7 @@ func instanceIPPrepareVirtualRouter(s *ContrailTypeLogicService) {
 		}, nil).AnyTimes()
 
 	readService.EXPECT().GetVirtualRouter(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		nil, common.ErrorNotFound).AnyTimes()
+		nil, errutil.ErrorNotFound).AnyTimes()
 }
 
 func instanceIPSetupNextServiceMocks(s *ContrailTypeLogicService) {
@@ -120,7 +120,7 @@ func instanceIPSetupIPAMMocks(s *ContrailTypeLogicService) {
 		&ipam.IsIPAllocatedRequest{
 			VirtualNetwork: virtualNetwork,
 			IPAddress:      "10.10.10.11",
-		}).Return(false, common.ErrorNotFound).AnyTimes()
+		}).Return(false, errutil.ErrorNotFound).AnyTimes()
 }
 
 func TestCreateInstanceIP(t *testing.T) {

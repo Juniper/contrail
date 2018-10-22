@@ -314,7 +314,7 @@ func TestSchemaValidationJobTemplate(t *testing.T) {
 				JobTemplatePlaybooks:        &PlaybookInfoListType{},
 				JobTemplateMultiDeviceJob:   true,
 				JobTemplateConcurrencyLevel: "fabric",
-				FQName:                      []string{"a", "b"},
+				FQName: []string{"a", "b"},
 			},
 		},
 		{
@@ -327,7 +327,7 @@ func TestSchemaValidationJobTemplate(t *testing.T) {
 				JobTemplatePlaybooks:        &PlaybookInfoListType{},
 				JobTemplateMultiDeviceJob:   true,
 				JobTemplateConcurrencyLevel: "fabric",
-				FQName:                      []string{"a", "b"},
+				FQName: []string{"a", "b"},
 			},
 			fails: true,
 		},

@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -49,7 +49,7 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkFromFloatingIPPool(
 			ID: floatingIPPool.GetParentUUID(),
 		})
 	if err != nil {
-		return nil, common.ErrorBadRequestf("Missing virtual-network with uuid %s: %v",
+		return nil, errutil.ErrorBadRequestf("Missing virtual-network with uuid %s: %v",
 			floatingIPPool.GetParentUUID(), err)
 	}
 

@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -101,7 +101,7 @@ func TestEnsureDefaultApplicationPolicySet(t *testing.T) {
 				m.EXPECT().CreateApplicationPolicySet(
 					gomock.Not(gomock.Nil()),
 					gomock.Not(gomock.Nil()),
-				).Return(nil, common.ErrorInternal).Times(1)
+				).Return(nil, errutil.ErrorInternal).Times(1)
 			},
 			fails: true,
 		},
@@ -113,7 +113,7 @@ func TestEnsureDefaultApplicationPolicySet(t *testing.T) {
 				m.EXPECT().CreateApplicationPolicySet(
 					gomock.Not(gomock.Nil()),
 					gomock.Not(gomock.Nil()),
-				).Return(nil, common.ErrorConflict).Times(1)
+				).Return(nil, errutil.ErrorConflict).Times(1)
 			},
 		},
 		{

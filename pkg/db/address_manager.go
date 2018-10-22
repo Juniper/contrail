@@ -8,7 +8,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types/ipam"
@@ -156,7 +157,7 @@ func (db *Service) getRefSubnets(ctx context.Context, vn *models.VirtualNetwork)
 				ID: ipamRef.GetUUID(),
 			})
 			if err != nil {
-				return nil, common.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
+				return nil, errutil.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
 					ipamRef.GetUUID(), err)
 			}
 			subnets = append(subnets, ipamResponse.GetNetworkIpam().GetIpamSubnets().GetSubnets()...)
@@ -207,7 +208,7 @@ func (db *Service) performNetworkBasedIPAllocation(
 	virtualNetwork := request.VirtualNetwork
 	subnetUUIDs := virtualNetwork.GetSubnetUUIDs()
 	if request.SubnetUUID != "" {
-		if !common.ContainsString(subnetUUIDs, request.SubnetUUID) {
+		if !format.ContainsString(subnetUUIDs, request.SubnetUUID) {
 			return "", "", errors.Errorf("could not find subnet %s in in virtual network %v", request.SubnetUUID,
 				virtualNetwork.GetUUID())
 		}
@@ -216,7 +217,7 @@ func (db *Service) performNetworkBasedIPAllocation(
 
 	for _, subnetUUID := range subnetUUIDs {
 		addr, err := db.allocateIPForSubnetUUID(ctx, subnetUUID, request.IPAddress)
-		if common.IsNotFound(err) {
+		if errutil.IsNotFound(err) {
 			continue
 		}
 		if err != nil {

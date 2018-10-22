@@ -21,14 +21,16 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/format"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/logging"
 	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
@@ -83,14 +85,14 @@ func WithTestDBs(f func(dbType string)) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	common.SetLogLevel()
+	logging.SetLogLevel()
 	testDBs := viper.GetStringMap("test_database")
 	if len(testDBs) == 0 {
 		log.Fatal("Test suite expected test database definitions under 'test_database' key")
 	}
 
 	for _, iConfig := range testDBs {
-		config := common.InterfaceToInterfaceMap(iConfig)
+		config := format.InterfaceToInterfaceMap(iConfig)
 		dbType, ok := config["type"].(string)
 		if !ok {
 			log.Error("Failed to read dbType: %v (%T)", dbType, dbType)
@@ -351,7 +353,7 @@ func runTestScenario(ctx context.Context,
 		log.Infof("[Task] Name: %s, TestScenario: %s", task.Name, testScenario.Name)
 		checkWatchers := StartWatchers(t, task.Watchers)
 
-		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
+		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
 		clientID := defaultClientID
 		if task.Client != "" {
 			clientID = task.Client
@@ -365,7 +367,7 @@ func runTestScenario(ctx context.Context,
 		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
 		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
 
-		task.Expect = common.YAMLtoJSONCompat(task.Expect)
+		task.Expect = fileutil.YAMLtoJSONCompat(task.Expect)
 		ok = testutil.AssertEqual(t, task.Expect, task.Request.Output,
 			fmt.Sprintf("In test scenario '%v' task' %v' failed", testScenario.Name, task))
 		checkWatchers(t)

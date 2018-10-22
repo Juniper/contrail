@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/twinj/uuid"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 // IPAM subnet methods.
@@ -56,11 +56,11 @@ func (m *SubnetType) Validate() error {
 func (m *AllocationPoolType) IsInSubnet(subnet *net.IPNet) error {
 	err := isIPInSubnet(subnet, m.Start)
 	if err != nil {
-		return common.ErrorBadRequest("allocation pool start " + err.Error())
+		return errutil.ErrorBadRequest("allocation pool start " + err.Error())
 	}
 	err = isIPInSubnet(subnet, m.End)
 	if err != nil {
-		return common.ErrorBadRequest("allocation pool end " + err.Error())
+		return errutil.ErrorBadRequest("allocation pool end " + err.Error())
 	}
 	return nil
 }
@@ -131,7 +131,7 @@ func isIPInSubnet(subnet *net.IPNet, ipString string) error {
 func (m *IpamSubnetType) Validate() error {
 	if m.SubnetUUID != "" {
 		if _, err := uuid.Parse(m.SubnetUUID); err != nil {
-			return common.ErrorBadRequestf("invalid subnet uuid: %v", err)
+			return errutil.ErrorBadRequestf("invalid subnet uuid: %v", err)
 		}
 	}
 
@@ -142,7 +142,7 @@ func (m *IpamSubnetType) Validate() error {
 func (m *IpamSubnetType) ValidateSubnetParams() error {
 	subnet, err := m.Subnet.Net()
 	if err != nil {
-		return common.ErrorBadRequest("invalid subnet")
+		return errutil.ErrorBadRequest("invalid subnet")
 	}
 
 	for _, allocationPool := range m.AllocationPools {
@@ -154,13 +154,13 @@ func (m *IpamSubnetType) ValidateSubnetParams() error {
 	if m.DefaultGateway != "" {
 		err = isIPInSubnet(subnet, m.DefaultGateway)
 		if err != nil {
-			return common.ErrorBadRequest("default gateway " + err.Error())
+			return errutil.ErrorBadRequest("default gateway " + err.Error())
 		}
 	}
 	if m.DNSServerAddress != "" {
 		err = isIPInSubnet(subnet, m.DNSServerAddress)
 		if err != nil {
-			return common.ErrorBadRequest("DNS server " + err.Error())
+			return errutil.ErrorBadRequest("DNS server " + err.Error())
 		}
 	}
 	return nil

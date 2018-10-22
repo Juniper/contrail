@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -59,7 +59,7 @@ func (sv *ContrailTypeLogicService) checkSubClusterASN(
 		}
 
 		if asn != subCluster.GetSubClusterAsn() {
-			return common.ErrorBadRequestf("subcluster asn and bgp asn should be same")
+			return errutil.ErrorBadRequestf("subcluster asn and bgp asn should be same")
 		}
 	}
 
