@@ -6,6 +6,11 @@ id: cloud
 metadata:
   category: cloud
 parent: ""
+references:
+    credential:
+      operations: "CRUD"
+      description: "Reference to SSH credential object."
+      presence: "optional"
 plural: clouds
 prefix: /
 schema:
@@ -36,18 +41,6 @@ schema:
       - update
       sql: ""
       title: organization name
-      type: string
-      view:
-      - create
-      - detail
-    region:
-      description: Region asscoiated with cloud
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Region name
       type: string
       view:
       - create

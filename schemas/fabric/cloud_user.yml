@@ -1,4 +1,4 @@
-escription: Cloud User Details
+description: Cloud User Details
 extends:
 - base
 id: cloud_user

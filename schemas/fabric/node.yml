@@ -7,7 +7,7 @@ parents:
     operations: "CRUD"
     description: "Parent of this node resource."
     presence: "optional"
-  cloud:
+  virtual_cloud:
     operations: "CRUD"
     description: "Parent for node"
     presence: "optional"
@@ -18,7 +18,11 @@ references:
       presence: "optional"
     cloud_security_group:
       operations: "CRUD"
-      description: "Reference to security-group, when node belongs to pub cloud"
+      description: "Reference to security-group, when node belongs to public cloud"
+      presence: "optional"
+    cloud_private_subnet:
+      operations: "CRUD"
+      description: "Reference to private subnet of cloud, when node belongs to public cloud"
       presence: "optional"
 plural: nodes
 prefix: /

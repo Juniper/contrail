@@ -1,0 +1,43 @@
+description: Region belonging to cloud
+extends:
+- base
+id: cloud_region
+metadata:
+  category: cloud
+parents:
+  cloud:
+    operations: "CRUD"
+    description: "Parent for cloud region"
+    presence: "optional"
+plural: cloud_regions
+prefix: /
+schema:
+  properties:
+    resource_group:
+      description: Resource group associated to cloud
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Resource Group
+      type: string
+      view:
+      - create
+      - detail
+    availability_zone:
+      description: Availability zone of the region
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Availability Zone
+      type: string
+      view:
+      - create
+      - detail
+  type: object
+type: ""
+singular: cloud_region
+title: Cloud Region
