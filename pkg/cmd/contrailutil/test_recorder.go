@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
@@ -38,7 +38,7 @@ func recordTest() {
 	log.Info("Recording API beheivior")
 	var vars map[string]interface{}
 	if variablePath != "" {
-		err := common.LoadFile(variablePath, &vars)
+		err := fileutil.LoadFile(variablePath, &vars)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -63,7 +63,7 @@ func recordTest() {
 
 	for _, task := range testScenario.Workflow {
 		log.Debug("[Step] ", task.Name)
-		task.Request.Data = common.YAMLtoJSONCompat(task.Request.Data)
+		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
 		clientID := "default"
 		if task.Client != "" {
 			clientID = task.Client
@@ -75,7 +75,7 @@ func recordTest() {
 		task.Request.Output = nil
 	}
 
-	err = common.SaveFile(outputPath, testScenario)
+	err = fileutil.SaveFile(outputPath, testScenario)
 	if err != nil {
 		log.Fatal(err)
 	}

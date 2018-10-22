@@ -1,14 +1,16 @@
-package common
+package auth
 
 import (
 	"context"
 
 	"github.com/labstack/echo"
+
+	"github.com/Juniper/contrail/pkg/format"
 )
 
-//AuthContext is used to represents AuthContext.
+//Context is used to represents Context.
 // API layer and DB layer depends on this.
-type AuthContext struct {
+type Context struct {
 	projectID string
 	domainID  string
 	userID    string
@@ -20,9 +22,9 @@ const (
 	AdminRole = "admin"
 )
 
-//NewAuthContext makes a authentication context.
-func NewAuthContext(domainID, projectID, userID string, roles []string) *AuthContext {
-	return &AuthContext{
+//NewContext makes a authentication context.
+func NewContext(domainID, projectID, userID string, roles []string) *Context {
+	return &Context{
 		projectID: projectID,
 		domainID:  domainID,
 		userID:    userID,
@@ -31,15 +33,15 @@ func NewAuthContext(domainID, projectID, userID string, roles []string) *AuthCon
 }
 
 //IsAdmin is used to check if this is admin context
-func (context *AuthContext) IsAdmin() bool {
+func (context *Context) IsAdmin() bool {
 	if context == nil {
 		return true
 	}
-	return ContainsString(context.roles, AdminRole)
+	return format.ContainsString(context.roles, AdminRole)
 }
 
 //ProjectID is used to get an id for project.
-func (context *AuthContext) ProjectID() string {
+func (context *Context) ProjectID() string {
 	if context == nil {
 		return "admin"
 	}
@@ -47,30 +49,30 @@ func (context *AuthContext) ProjectID() string {
 }
 
 //DomainID is used to get an id for domain.
-func (context *AuthContext) DomainID() string {
+func (context *Context) DomainID() string {
 	if context == nil {
 		return "admin"
 	}
 	return context.domainID
 }
 
-//GetAuthContext is used to get an authentication from echo.Context.
-func GetAuthContext(c echo.Context) *AuthContext {
+//GetContext is used to get an authentication from echo.Context.
+func GetContext(c echo.Context) *Context {
 	ctx := c.Request().Context()
 	return GetAuthCTX(ctx)
 }
 
 //GetAuthCTX is used to get an authentication from ctx.Context.
-func GetAuthCTX(ctx context.Context) *AuthContext {
+func GetAuthCTX(ctx context.Context) *Context {
 	iAuth := ctx.Value("auth")
-	auth, _ := iAuth.(*AuthContext) //nolint: errcheck
+	auth, _ := iAuth.(*Context) //nolint: errcheck
 	return auth
 }
 
 // NoAuth is used to create new no auth context
 func NoAuth(ctx context.Context) context.Context {
-	authContext := NewAuthContext(
+	Context := NewContext(
 		"default-domain", "default-project", "admin", []string{"admin"})
 	var authKey interface{} = "auth"
-	return context.WithValue(ctx, authKey, authContext)
+	return context.WithValue(ctx, authKey, Context)
 }

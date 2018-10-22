@@ -39,10 +39,10 @@ func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {
 
 	_, err := service.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{
 		RoutingInstance: &models.RoutingInstance{
-			UUID:                     "a8edf702-7dd6-4cbc-b599-a7f8ace1d22b",
-			ParentUUID:               "af68b258-6fc4-4959-8181-a2cfb6f93500",
-			ParentType:               "virtual-network",
-			FQName:                   []string{"default-domain", "project-blue", "vn-blue", "vn-blue"},
+			UUID:       "a8edf702-7dd6-4cbc-b599-a7f8ace1d22b",
+			ParentUUID: "af68b258-6fc4-4959-8181-a2cfb6f93500",
+			ParentType: "virtual-network",
+			FQName:     []string{"default-domain", "project-blue", "vn-blue", "vn-blue"},
 			RoutingInstanceIsDefault: true,
 		},
 	})

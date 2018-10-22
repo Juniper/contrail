@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -85,7 +85,7 @@ func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.Fire
 
 			if requested.Type == models.KindAddressGroup {
 				if requested.FQName[0] == "address-group-uuid-1" {
-					return nil, common.ErrorNotFound
+					return nil, errutil.ErrorNotFound
 				}
 
 				return &basemodels.Metadata{
@@ -142,7 +142,7 @@ func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.Fire
 			}
 
 			if request.GetID() == "tag-uuid-2" {
-				return nil, common.ErrorNotFound
+				return nil, errutil.ErrorNotFound
 			}
 
 			return &services.GetTagResponse{

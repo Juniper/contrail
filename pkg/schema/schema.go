@@ -12,7 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/format"
 )
 
 //Version is version for schema format.
@@ -429,7 +430,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 	if s == nil {
 		return nil
 	}
-	s.GoName = common.SnakeToCamel(name)
+	s.GoName = format.SnakeToCamel(name)
 	if s.GoName == "Size" {
 		s.GoName = "Size_"
 	}
@@ -586,7 +587,7 @@ func (api *API) resolveAllSQL() error {
 
 func (api *API) resolveRelation(linkToSchema *Schema, reference *Reference) error {
 	linkTo := linkToSchema.ID
-	reference.GoName = common.SnakeToCamel(linkTo)
+	reference.GoName = format.SnakeToCamel(linkTo)
 	reference.Attr = mapSlice(reference.AttrSlice).JSONSchema()
 
 	reference.LinkTo = linkToSchema
@@ -798,7 +799,7 @@ func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 
 func loadSchemaFromPath(path string) (*Schema, error) {
 	var schema Schema
-	err := common.LoadFile(path, &schema)
+	err := fileutil.LoadFile(path, &schema)
 	return &schema, errors.Wrapf(err, "Loading file \"%v\" error", path)
 }
 

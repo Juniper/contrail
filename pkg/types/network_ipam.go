@@ -9,7 +9,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -60,12 +61,12 @@ func (sv *ContrailTypeLogicService) CreateNetworkIpam(
 			}
 
 			if !networkIpam.IsFlatSubnet() {
-				return common.ErrorBadRequest("Ipam subnets are allowed only with flat-subnet")
+				return errutil.ErrorBadRequest("Ipam subnets are allowed only with flat-subnet")
 			}
 
 			err = checkSubnetsOverlap(ipamSubnets.GetSubnets())
 			if err != nil {
-				return common.ErrorBadRequest(err.Error())
+				return errutil.ErrorBadRequest(err.Error())
 			}
 
 			for _, ipamSubnet := range ipamSubnets.GetSubnets() {
@@ -100,12 +101,12 @@ func (sv *ContrailTypeLogicService) UpdateNetworkIpam(
 			fieldMask := request.GetFieldMask()
 			err = sv.checkNetworkIpamMGMT(oldNetworkIpam, newNetworkIpam, &fieldMask)
 			if err != nil {
-				return common.ErrorBadRequestf("check for network ipam mgmt failed with error: %v", err)
+				return errutil.ErrorBadRequestf("check for network ipam mgmt failed with error: %v", err)
 			}
 
 			err = sv.checkSubnetMethod(oldNetworkIpam, newNetworkIpam, &fieldMask)
 			if err != nil {
-				return common.ErrorBadRequestf("check for subnet method failed with error: %v", err)
+				return errutil.ErrorBadRequestf("check for subnet method failed with error: %v", err)
 			}
 
 			err = sv.checkIpamSubnets(ctx, oldNetworkIpam, newNetworkIpam, &fieldMask)
@@ -120,12 +121,12 @@ func (sv *ContrailTypeLogicService) UpdateNetworkIpam(
 
 			err = sv.validateSubnetUpdate(oldNetworkIpam.GetIpamSubnets(), newNetworkIpam.GetIpamSubnets())
 			if err != nil {
-				return common.ErrorBadRequestf("validate subnet update failed with error: %v", err)
+				return errutil.ErrorBadRequestf("validate subnet update failed with error: %v", err)
 			}
 
 			err = sv.processIpamUpdate(oldNetworkIpam, newNetworkIpam, &fieldMask)
 			if err != nil {
-				return common.ErrorBadRequestf("ipam update failed with error: %v", err)
+				return errutil.ErrorBadRequestf("ipam update failed with error: %v", err)
 			}
 
 			response, err = sv.BaseService.UpdateNetworkIpam(ctx, request)
@@ -152,7 +153,7 @@ func (sv *ContrailTypeLogicService) checkNetworkIpamMGMT(
 	fieldMask *types.FieldMask,
 ) error {
 	dnsMethodPath := []string{models.NetworkIpamFieldNetworkIpamMGMT, models.IpamTypeFieldIpamDNSMethod}
-	if !common.CheckPath(fieldMask, dnsMethodPath) {
+	if !format.CheckPath(fieldMask, dnsMethodPath) {
 		return nil
 	}
 	isDNSChangeAllowed := sv.isDNSChangeAllowed(oldIpam, newIpam)
@@ -198,7 +199,7 @@ func (sv *ContrailTypeLogicService) checkSubnetMethod(
 	newIpam *models.NetworkIpam,
 	fieldMask *types.FieldMask,
 ) error {
-	if common.CheckPath(fieldMask, []string{models.NetworkIpamFieldIpamSubnetMethod}) {
+	if format.CheckPath(fieldMask, []string{models.NetworkIpamFieldIpamSubnetMethod}) {
 		if oldIpam.GetIpamSubnetMethod() != newIpam.GetIpamSubnetMethod() {
 			return errors.Errorf("Subnet method cannot be changed")
 		}
@@ -213,19 +214,19 @@ func (sv *ContrailTypeLogicService) checkIpamSubnets(
 	fieldMask *types.FieldMask,
 ) error {
 	ipamSubnetsPath := []string{models.NetworkIpamFieldIpamSubnets, models.IpamSubnetsFieldSubnets}
-	if common.CheckPath(fieldMask, ipamSubnetsPath) {
+	if format.CheckPath(fieldMask, ipamSubnetsPath) {
 		ipamSubnets := newIpam.GetIpamSubnets().GetSubnets()
 		if len(ipamSubnets) == 0 {
 			return nil
 		}
 
 		if oldIpam.GetIpamSubnetMethod() != "flat-subnet" {
-			return common.ErrorBadRequest("ipam subnets are only allowed with flat subnet")
+			return errutil.ErrorBadRequest("ipam subnets are only allowed with flat subnet")
 		}
 
 		err := checkSubnetsOverlap(ipamSubnets)
 		if err != nil {
-			return common.ErrorBadRequest(err.Error())
+			return errutil.ErrorBadRequest(err.Error())
 		}
 
 		var refIpamUUIDList []string
@@ -247,7 +248,7 @@ func (sv *ContrailTypeLogicService) checkIpamSubnets(
 		subnetsList := append(refSubnetsList, ipamSubnets...)
 		err = checkSubnetsOverlap(subnetsList)
 		if err != nil {
-			return common.ErrorBadRequest(err.Error())
+			return errutil.ErrorBadRequest(err.Error())
 		}
 
 		err = sv.validateIpamSubnets(ipamSubnets)
@@ -298,7 +299,7 @@ func (sv *ContrailTypeLogicService) findFlatSubnetIpams(
 		}
 		for _, ipamRef := range vn.GetVirtualNetwork().GetNetworkIpamRefs() {
 			ipamRefUUID := ipamRef.GetUUID()
-			if ipamRefUUID == ipamUUID || common.ContainsString(refIpamUUIDList, ipamRefUUID) {
+			if ipamRefUUID == ipamUUID || format.ContainsString(refIpamUUIDList, ipamRefUUID) {
 				continue
 			}
 			if !ipamRef.GetAttr().IsFlatSubnet() {
@@ -338,7 +339,7 @@ func (sv *ContrailTypeLogicService) checkSubnetDelete(
 	fieldMask *types.FieldMask,
 ) error {
 	ipamSubnetsPath := []string{models.NetworkIpamFieldIpamSubnets, models.IpamSubnetsFieldSubnets}
-	if !common.CheckPath(fieldMask, ipamSubnetsPath) {
+	if !format.CheckPath(fieldMask, ipamSubnetsPath) {
 		return nil
 	}
 
@@ -417,7 +418,7 @@ func (sv *ContrailTypeLogicService) processIpamUpdate(
 	fieldMask *types.FieldMask,
 ) error {
 	ipamSubnetsPath := []string{models.NetworkIpamFieldIpamSubnets, models.IpamSubnetsFieldSubnets}
-	if common.CheckPath(fieldMask, ipamSubnetsPath) {
+	if format.CheckPath(fieldMask, ipamSubnetsPath) {
 		newIpamSubnets := newIpam.GetIpamSubnets().GetSubnets()
 		oldIpamSubnets := oldIpam.GetIpamSubnets().GetSubnets()
 		err := sv.validateSubnetChanges(oldIpamSubnets, newIpamSubnets)

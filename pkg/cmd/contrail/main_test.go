@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 }
 
 func runTest(t *testing.T, name string) {
-	testScenario, err := integration.LoadTest(fmt.Sprintf("./tests/%s.yml", common.CamelToSnake(name)), nil)
+	testScenario, err := integration.LoadTest(fmt.Sprintf("./tests/%s.yml", format.CamelToSnake(name)), nil)
 	assert.NoError(t, err, "failed to load test data")
 	integration.RunCleanTestScenario(t, testScenario, server)
 }

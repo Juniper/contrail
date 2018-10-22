@@ -1,4 +1,4 @@
-package common
+package auth
 
 import (
 	"testing"
@@ -7,12 +7,12 @@ import (
 )
 
 func TestAuth(t *testing.T) {
-	var nullAuth *AuthContext
+	var nullAuth *Context
 	assert.Equal(t, nullAuth.IsAdmin(), true)
 	assert.Equal(t, nullAuth.ProjectID(), "admin")
 	assert.Equal(t, nullAuth.DomainID(), "admin")
 
-	auth := NewAuthContext("default", "admin", "admin", []string{
+	auth := NewContext("default", "admin", "admin", []string{
 		"admin",
 	})
 
@@ -20,7 +20,7 @@ func TestAuth(t *testing.T) {
 	assert.Equal(t, auth.ProjectID(), "admin")
 	assert.Equal(t, auth.DomainID(), "default")
 
-	auth = NewAuthContext("default", "demo", "demo", []string{})
+	auth = NewContext("default", "demo", "demo", []string{})
 
 	assert.Equal(t, auth.IsAdmin(), false)
 	assert.Equal(t, auth.ProjectID(), "demo")

@@ -5,7 +5,7 @@ import (
 
 	protobuf "github.com/gogo/protobuf/types"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -113,7 +113,7 @@ func (sv *ContrailTypeLogicService) disallowManualSecurityGroupID(
 			return nil
 		}
 
-		return common.ErrorForbidden("cannot set the security group ID, it's allocated by the server")
+		return errutil.ErrorForbidden("cannot set the security group ID, it's allocated by the server")
 	}
 
 	if !basemodels.FieldMaskContains(fieldMask, models.SecurityGroupFieldSecurityGroupID) {
@@ -124,5 +124,5 @@ func (sv *ContrailTypeLogicService) disallowManualSecurityGroupID(
 		return nil
 	}
 
-	return common.ErrorForbidden("cannot update the security group ID, it's allocated by the server")
+	return errutil.ErrorForbidden("cannot update the security group ID, it's allocated by the server")
 }

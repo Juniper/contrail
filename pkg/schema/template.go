@@ -10,7 +10,8 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/format"
 )
 
 const (
@@ -41,7 +42,7 @@ func ensureDir(path string) error {
 
 func (tc *TemplateConfig) load(base string) (*pongo2.Template, error) {
 	path := filepath.Join(base, tc.TemplatePath)
-	templateCode, err := common.GetContent(path)
+	templateCode, err := fileutil.GetContent(path)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func (tc *TemplateConfig) load(base string) (*pongo2.Template, error) {
 }
 
 func (tc *TemplateConfig) outputPath(goName string, option *TemplateOption) string {
-	path := strings.Replace(tc.OutputPath, "__resource__", common.CamelToSnake(goName), 1)
+	path := strings.Replace(tc.OutputPath, "__resource__", format.CamelToSnake(goName), 1)
 	path = strings.Replace(path, "__package__", option.PackagePath, 1)
 	return path
 }
@@ -154,7 +155,7 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 // LoadTemplates loads template configurations from given path.
 func LoadTemplates(path string) ([]*TemplateConfig, error) {
 	var config []*TemplateConfig
-	err := common.LoadFile(path, &config)
+	err := fileutil.LoadFile(path, &config)
 	return config, err
 }
 

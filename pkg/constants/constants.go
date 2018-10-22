@@ -1,4 +1,4 @@
-package common
+package constants
 
 // list of constant strings.
 const (

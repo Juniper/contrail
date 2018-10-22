@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
@@ -44,7 +44,7 @@ func (db *BaseDB) GetMetadata(
 		return metadatas[0], nil
 	}
 
-	return nil, common.ErrorNotFound
+	return nil, errutil.ErrorNotFound
 }
 
 func buildMetadataFilter(

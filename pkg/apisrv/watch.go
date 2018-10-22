@@ -6,14 +6,15 @@ import (
 	"github.com/labstack/echo"
 	"golang.org/x/net/websocket"
 
-	"github.com/Juniper/contrail/pkg/common"
+	auth2 "github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 func (s *Server) watchHandler(c echo.Context) error {
 	ctx := c.Request().Context()
-	auth := common.GetAuthCTX(ctx)
+	auth := auth2.GetAuthCTX(ctx)
 	if !auth.IsAdmin() {
-		return common.ErrorPermissionDenied
+		return errutil.ErrorPermissionDenied
 	}
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer closeConnection(ws, c.Logger())

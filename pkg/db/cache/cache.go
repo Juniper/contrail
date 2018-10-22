@@ -7,7 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -128,7 +128,7 @@ func (db *DB) AddWatcher(ctx context.Context, versionID uint64) (*Watcher, error
 	watcherID := uint64(len(db.watchers))
 	node := db.getNodeByVersion(versionID)
 	if versionID != 0 && node == nil {
-		return nil, common.ErrorBadRequest("requested version is compacted.")
+		return nil, errutil.ErrorBadRequest("requested version is compacted.")
 	}
 	watcher := &Watcher{
 		id:       watcherID,

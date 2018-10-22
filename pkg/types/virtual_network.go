@@ -8,7 +8,8 @@ import (
 	protobuf "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -89,7 +90,7 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 				ID: requestedVN.UUID,
 			})
 			if err != nil {
-				return common.ErrorBadRequestf("couldn't get virtual network (%v) for an update: %v", requestedVN.UUID, err)
+				return errutil.ErrorBadRequestf("couldn't get virtual network (%v) for an update: %v", requestedVN.UUID, err)
 			}
 
 			currentVN := virtualNetworkResponse.GetVirtualNetwork()
@@ -144,7 +145,7 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 				ID: uuid,
 			})
 			if err != nil {
-				return common.ErrorBadRequestf("couldn't get virtual network (%v) for a delete: %v", uuid, err)
+				return errutil.ErrorBadRequestf("couldn't get virtual network (%v) for a delete: %v", uuid, err)
 			}
 			vn := virtualNetworkResponse.GetVirtualNetwork()
 
@@ -152,7 +153,7 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 			err = sv.IntPoolAllocator.DeallocateInt(ctx,
 				VirtualNetworkIDPoolKey, vn.VirtualNetworkNetworkID)
 			if err != nil {
-				return common.ErrorBadRequestf("couldn't deallocate virtual network (%v) id(%v): %v",
+				return errutil.ErrorBadRequestf("couldn't deallocate virtual network (%v) id(%v): %v",
 					uuid, vn.VirtualNetworkNetworkID, err)
 			}
 
@@ -169,7 +170,7 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 
 			err = sv.deallocateVnSubnetsInAddrMgmt(ctx, vn, subnetsToDelete)
 			if err != nil {
-				return common.ErrorBadRequestf("couldn't remove virtual network subnet objects: %v", err)
+				return errutil.ErrorBadRequestf("couldn't remove virtual network subnet objects: %v", err)
 			}
 
 			response, err = sv.BaseService.DeleteVirtualNetwork(ctx, request)
@@ -183,7 +184,7 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 func (sv *ContrailTypeLogicService) prevalidateVirtualNetwork(vn *models.VirtualNetwork) error {
 	// check if multiple policy service chain supported
 	if !vn.IsValidMultiPolicyServiceChainConfig() {
-		return common.ErrorBadRequest(
+		return errutil.ErrorBadRequest(
 			"multi policy service chains are not supported, with both import export external route targets")
 	}
 
@@ -280,7 +281,7 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 			ID: ipamReference.UUID,
 		})
 		if err != nil {
-			return common.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
+			return errutil.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
 				ipamReference.UUID, err)
 		}
 
@@ -288,7 +289,7 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 		vnSubnet := ipamReference.GetAttr()
 		err = validateIpamSubnets(virtualNetwork, ipam, vnSubnet)
 		if err != nil {
-			return common.ErrorBadRequestf(
+			return errutil.ErrorBadRequestf(
 				"validation of IPAM subnets of referenced network IPAM with UUID %s failed: %v",
 				ipamReference.UUID, err)
 		}
@@ -296,7 +297,7 @@ func (sv *ContrailTypeLogicService) processIpamNetworkSubnets(
 		ipamSubnets := extractIpamSubnets(ipam, vnSubnet)
 		subnets, err = mergeIpamSubnetsIfNoOverlap(subnets, ipamSubnets)
 		if err != nil {
-			return common.ErrorBadRequestf(
+			return errutil.ErrorBadRequestf(
 				"merging of IPAM subnets of referenced network IPAM with UUID %s failed: %v",
 				ipamReference.UUID, err)
 		}
@@ -310,7 +311,7 @@ func (sv *ContrailTypeLogicService) allocateVnSubnet(
 	var subnetAlreadyCreated bool
 	subnetAlreadyCreated, err = sv.AddressManager.CheckIfIpamSubnetExists(ctx, vnSubnet.SubnetUUID)
 	if err != nil {
-		return "", common.ErrorBadRequestf("couldn't check if ipam subnet with UUID %v exists: %v", vnSubnet.SubnetUUID, err)
+		return "", errutil.ErrorBadRequestf("couldn't check if ipam subnet with UUID %v exists: %v", vnSubnet.SubnetUUID, err)
 	}
 
 	if subnetAlreadyCreated {
@@ -322,7 +323,7 @@ func (sv *ContrailTypeLogicService) allocateVnSubnet(
 	})
 
 	if err != nil {
-		return "", common.ErrorBadRequestf("couldn't allocate ipam subnet %v: %v", vnSubnet.SubnetUUID, err)
+		return "", errutil.ErrorBadRequestf("couldn't allocate ipam subnet %v: %v", vnSubnet.SubnetUUID, err)
 	}
 
 	return subnetUUID, nil
@@ -335,7 +336,7 @@ func (sv *ContrailTypeLogicService) deallocateVnSubnet(
 	})
 
 	if err != nil {
-		return common.ErrorBadRequestf("couldn't deallocate ipam subnet %v: %v", subnetUUID, err)
+		return errutil.ErrorBadRequestf("couldn't deallocate ipam subnet %v: %v", subnetUUID, err)
 	}
 
 	return nil
@@ -381,7 +382,7 @@ func (sv *ContrailTypeLogicService) allocateVnSubnetsInAddrMgmt(
 				ID: ipamRef.GetUUID(),
 			})
 			if err != nil {
-				return common.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
+				return errutil.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
 					ipamRef.GetUUID(), err)
 			}
 
@@ -415,7 +416,7 @@ func (sv *ContrailTypeLogicService) deallocateVnSubnetsInAddrMgmt(
 ) error {
 	err := sv.canSubnetsBeDeleted(ctx, vn, vnSubnets)
 	if err != nil {
-		return common.ErrorConflictf("subnets from virtual network %v cannot be deleted: %v", vn.GetUUID(), err)
+		return errutil.ErrorConflictf("subnets from virtual network %v cannot be deleted: %v", vn.GetUUID(), err)
 	}
 
 	for _, subnetUUID := range vn.GetSubnetUUIDs() {
@@ -433,17 +434,17 @@ func (sv *ContrailTypeLogicService) checkVirtualNetworkID(
 
 	if currentVN == nil {
 		if requestedVN.HasVirtualNetworkNetworkID() {
-			return common.ErrorForbidden("cannot set the virtual network ID, it's allocated by the server")
+			return errutil.ErrorForbidden("cannot set the virtual network ID, it's allocated by the server")
 		}
 		return nil
 	}
 
-	if !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldVirtualNetworkNetworkID) {
+	if !format.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldVirtualNetworkNetworkID) {
 		return nil
 	}
 
 	if currentVN.GetVirtualNetworkNetworkID() != requestedVN.GetVirtualNetworkNetworkID() {
-		return common.ErrorForbidden("cannot update the virtual network ID, it's allocated by the server")
+		return errutil.ErrorForbidden("cannot update the virtual network ID, it's allocated by the server")
 	}
 
 	return nil
@@ -455,18 +456,18 @@ func (sv *ContrailTypeLogicService) checkIsProviderNetwork(
 
 	if currentVN == nil {
 		if requestedVN.IsProviderNetwork {
-			return common.ErrorBadRequestf("non-provider VN (%v) can not be configured with %v = True",
+			return errutil.ErrorBadRequestf("non-provider VN (%v) can not be configured with %v = True",
 				requestedVN.UUID, models.VirtualNetworkFieldIsProviderNetwork)
 		}
 		return nil
 	}
 
-	if !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldIsProviderNetwork) {
+	if !format.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldIsProviderNetwork) {
 		return nil
 	}
 
 	if currentVN.IsProviderNetwork != requestedVN.IsProviderNetwork {
-		return common.ErrorBadRequestf("update %v property of VN (%v) is not allowed",
+		return errutil.ErrorBadRequestf("update %v property of VN (%v) is not allowed",
 			models.VirtualNetworkFieldIsProviderNetwork, requestedVN.UUID)
 	}
 
@@ -477,7 +478,7 @@ func (sv *ContrailTypeLogicService) isProviderNetwork(
 	currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork,
 	fieldMask *protobuf.FieldMask) bool {
 	isProviderNetwork := requestedVN.IsProviderNetwork
-	if currentVN != nil && !common.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldIsProviderNetwork) {
+	if currentVN != nil && !format.ContainsString(fieldMask.GetPaths(), models.VirtualNetworkFieldIsProviderNetwork) {
 		isProviderNetwork = currentVN.IsProviderNetwork
 	}
 	return isProviderNetwork
@@ -496,7 +497,7 @@ func (sv *ContrailTypeLogicService) checkProviderNetwork(
 
 	// Non-provider network can connect to only one provider network.
 	if !isProviderNetwork && len(requestedVN.VirtualNetworkRefs) > 1 {
-		return common.ErrorBadRequestf(
+		return errutil.ErrorBadRequestf(
 			"non-provider VN (%v) can be connected to one provider VN but trying to connect to multiple VN: %v",
 			requestedVN.UUID, func() (vnUUIDs []string) {
 				for _, vnRef := range requestedVN.VirtualNetworkRefs {
@@ -513,13 +514,13 @@ func (sv *ContrailTypeLogicService) checkProviderNetwork(
 
 	// Provider VN can not connect to another provider VN.
 	if isProviderNetwork && len(linkedProviderVirtualNetworkUUIDs) > 0 {
-		return common.ErrorBadRequestf("provider VN (%v) cannot be connected to another provider VN (%v)",
+		return errutil.ErrorBadRequestf("provider VN (%v) cannot be connected to another provider VN (%v)",
 			requestedVN.UUID, linkedProviderVirtualNetworkUUIDs)
 	}
 
 	// Non-provider network can connect to only one provider network.
 	if !isProviderNetwork && len(linkedProviderVirtualNetworkUUIDs) != 1 {
-		return common.ErrorBadRequestf("non-provider VN (%v) can be connected to one provider VN but not to (%v)",
+		return errutil.ErrorBadRequestf("non-provider VN (%v) can be connected to one provider VN but not to (%v)",
 			requestedVN.UUID, linkedProviderVirtualNetworkUUIDs)
 	}
 
@@ -537,7 +538,7 @@ func (sv *ContrailTypeLogicService) checkNetworkSupportBGPTypes(
 			return err
 		}
 		if vpnType != virtualNetwork.GetVirtualNetworkProperties().GetForwardingMode() {
-			return common.ErrorBadRequestf(
+			return errutil.ErrorBadRequestf(
 				"bgp types check failed: cannot associate bgpvpn type '%v' "+
 					"with a virtual network in forwarding mode '%v'",
 				vpnType,
@@ -574,7 +575,7 @@ func (sv *ContrailTypeLogicService) checkBGPVPNRefs(
 			for _, vpnRef := range vpnRefs {
 				vpnUUIDs = append(vpnUUIDs, vpnRef.UUID)
 			}
-			return common.ErrorBadRequestf(
+			return errutil.ErrorBadRequestf(
 				"bgp VPN check failed: network %v is linked to a logical router "+
 					"which is associated to bgpvpn(s) %v",
 				virtualNetwork.UUID,
@@ -722,7 +723,7 @@ func (sv *ContrailTypeLogicService) getRefSubnets(
 				ID: ipamRef.GetUUID(),
 			})
 			if err != nil {
-				return nil, common.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
+				return nil, errutil.ErrorBadRequestf("getting referenced network IPAM with UUID %s failed: %v",
 					ipamRef.GetUUID(), err)
 			}
 
