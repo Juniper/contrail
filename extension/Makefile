@@ -36,8 +36,6 @@ clean_gen: ## Remove genarated files
 	find pkg/ -name generated.pb.go -delete
 	rm -rf public/[^watch.html]*
 	rm -rf proto/*
-	rm -f tools/init_mysql.sql
-	rm -f tools/init_psql.sql
 	rm -f tools/cleanup.sql
 
 install:

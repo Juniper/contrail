@@ -1,7 +1,7 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
-DB_FILES := init_mysql.sql init_psql.sql init_data.yaml
+DB_FILES := gen_create_schema_mysql.sql gen_create_schema_psql.sql init_psql.sql init_db_mysql.sql init_data.yaml
 ifdef ANSIBLE_DEPLOYER_REPO_DIR
   export ANSIBLE_DEPLOYER_REPO_DIR
 else
@@ -88,10 +88,6 @@ doc/proto.md: $(PROTO_PKG_PATH)/models/generated.proto $(PROTO_PKG_PATH)/service
 
 clean_gen:
 	rm -rf public/[^watch.html]*
-	rm -f tools/init_mysql.sql
-	rm -f tools/init_psql.sql
-	rm -f tools/cleanup_mysql.sql
-	rm -f tools/cleanup_psql.sql
 	find pkg/ -name gen_* -delete
 	find pkg/ -name generated.pb.go -delete
 	find proto/ -name generated.proto -delete
@@ -125,18 +121,18 @@ zero_psql:
 clean_db: clean_mysql clean_psql init_db ## Truncate all database tables and load initial data
 
 clean_mysql:
-	docker exec -i contrail_mysql mysql -uroot -pcontrail123 contrail_test < tools/cleanup_mysql.sql
+	docker exec -i contrail_mysql mysql -uroot -pcontrail123 contrail_test < tools/gen_cleanup_mysql.sql
 
 clean_psql:
-	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/cleanup_psql.sql
+	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/gen_cleanup_psql.sql
 
 init_db: init_mysql init_psql ## Load initial data to databases
 
 init_mysql:
-	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail.yml
+	./tools/init_db_mysql.sh
 
 init_psql:
-	go run cmd/contrailutil/main.go convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail_postgres.yml
+	./tools/init_db_psql.sh
 
 binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrail_{{.OS}}_{{.Arch}}" ./cmd/contrail
