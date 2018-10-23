@@ -1,7 +1,17 @@
-DROP PUBLICATION IF EXISTS "syncpub";
+TRUNCATE TABLE metadata CASCADE;
+TRUNCATE TABLE int_pool CASCADE;
+TRUNCATE TABLE ipaddress_pool CASCADE;
 
-TRUNCATE TABLE metadata, int_pool, ipaddress_pool CASCADE;
-
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{%- for schema in schemas -%}
+{%- if schema.Type != "abstract" and schema.ID %}
+TRUNCATE TABLE tenant_share_{{ schema.ID | lower }} CASCADE;
+TRUNCATE TABLE domain_share_{{ schema.ID | lower }} CASCADE;
+{%- for linkTo, reference in schema.References %}
+TRUNCATE TABLE {{ reference.Table }} CASCADE;
+{%- endfor %}
+{%- for linkTo, reference in schema.Parents %}
+TRUNCATE TABLE {{ reference.Table }} CASCADE;
+{%- endfor %}
 TRUNCATE TABLE {{ schema.ID | lower }} CASCADE;
-{% endif %}{% endfor %}
+{%- endif -%}
+{%- endfor %}

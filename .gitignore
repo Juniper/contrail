@@ -23,7 +23,7 @@ docker/contrail_go/etc/*
 docker/contrail_go/contrail
 docker/contrail_go/contrailcli
 pkg/**/gen_*
-pkg/**/**/gen_*
+tools/**/gen_*
 pkg/**/generated.pb.go
 profile.cov
 profile.tmp
@@ -31,10 +31,7 @@ coverage.log
 proto/
 public/
 test_output/
-**/tools/init_mysql.sql
-**/tools/init_psql.sql
-**/tools/cleanup_mysql.sql
-**/tools/cleanup_psql.sql
 
 extension/pkg/**/gen_*
+extension/tools/**/gen_*
 extension/pkg/**/generated.pb.go
