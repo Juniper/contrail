@@ -13,8 +13,8 @@ import (
 // Block of constants consumed by client code.
 const (
 	FiltersKey      = "filters"
-	PageMarkerKey   = "pageMarker"
-	PageLimitKey    = "pageLimit"
+	PageMarkerKey   = "page_marker"
+	PageLimitKey    = "page_limit"
 	DetailKey       = "detail"
 	CountKey        = "count"
 	SharedKey       = "shared"
@@ -52,7 +52,7 @@ func parseStringList(query string) []string {
 // GetListSpec makes ListSpec from Query Parameters
 func GetListSpec(c echo.Context) *ListSpec {
 	filters := ParseFilter(c.QueryParam(FiltersKey))
-	pageMarker := parsePositiveNumber(c.QueryParam(PageMarkerKey), 0)
+	pageMarker := c.QueryParam(PageMarkerKey)
 	pageLimit := parsePositiveNumber(c.QueryParam(PageLimitKey), 0)
 	detail := parseBool(c.QueryParam(DetailKey))
 	count := parseBool(c.QueryParam(CountKey))
@@ -70,7 +70,7 @@ func GetListSpec(c echo.Context) *ListSpec {
 		ParentType:   parentType,
 		ParentFQName: parentFQName,
 		Limit:        pageLimit,
-		Offset:       pageMarker,
+		Marker:       pageMarker,
 		Detail:       detail,
 		Count:        count,
 		ExcludeHrefs: excludeHrefs,
@@ -88,8 +88,8 @@ func (s *ListSpec) URLQuery() url.Values {
 	}
 	query := url.Values{}
 	addQuery(query, FiltersKey, EncodeFilter(s.Filters))
-	if s.Offset > 0 {
-		addQuery(query, PageMarkerKey, strconv.FormatInt(s.Offset, 10))
+	if s.Marker != "" {
+		addQuery(query, PageMarkerKey, s.Marker)
 	}
 	if s.Limit > 0 {
 		addQuery(query, PageLimitKey, strconv.FormatInt(s.Limit, 10))
