@@ -557,7 +557,7 @@ func (api *API) resolveRef(schema *JSONSchema) error {
 	}
 	definition, err := api.loadType(parseRef(schema.Ref))
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "required by %v", schema.ID)
 	}
 	schema.Update(definition)
 	return nil
@@ -653,7 +653,8 @@ func (api *API) resolveAllRelation() error {
 			s.References[linkTo] = reference
 			linkToSchema := api.SchemaByID(linkTo)
 			if linkToSchema == nil {
-				return fmt.Errorf("can't find linked schema %s", linkTo)
+				return fmt.Errorf("missing linked schema '%s' for reference '%v' in schema %v [%v]",
+					linkTo, linkTo, s.ID, s.FileName)
 			}
 			linkToSchema.BackReferences[s.ID] = &BackReference{
 				LinkTo:      s,
@@ -750,6 +751,7 @@ func (api *API) resolveExtend() error {
 				continue
 			}
 			s.JSONSchema.Update(baseSchema.JSONSchema)
+			s.ReferencesSlice = append(s.ReferencesSlice, baseSchema.ReferencesSlice...)
 		}
 	}
 	return nil
@@ -919,6 +921,7 @@ func MakeAPI(dirs []string, overrideSubdir string) (*API, error) {
 		Definitions: []*Schema{},
 		Types:       map[string]*JSONSchema{},
 	}
+	log.Printf("Making API from schema dirs: %v", dirs)
 	for _, dir := range dirs {
 		overrides := &Schema{}
 		overridePath := ""
