@@ -11,7 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/twinj/uuid"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/format"
 )
 
@@ -66,8 +67,8 @@ var assertFunctions = map[string]assertFunction{
 // AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
 // For lists and maps, it iterates over expected values, ignoring additional values in actual object.
 func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
-	expected = common.YAMLtoJSONCompat(expected)
-	actual = common.YAMLtoJSONCompat(actual)
+	expected = fileutil.YAMLtoJSONCompat(expected)
+	actual = fileutil.YAMLtoJSONCompat(actual)
 
 	err := checkDiff("", expected, actual)
 
@@ -122,7 +123,7 @@ func checkDiff(path string, expected, actual interface{}) error {
 			return errorWithFields(t, actual, path)
 		}
 		for i, value := range t {
-			var mErr common.MultiError
+			var mErr errutil.MultiError
 			found := false
 			for _, actualValue := range actualList {
 				err := checkDiff(path+"."+strconv.Itoa(i), value, actualValue)
@@ -137,7 +138,7 @@ func checkDiff(path string, expected, actual interface{}) error {
 			}
 		}
 	case int:
-		if float64(t) != common.InterfaceToFloat(actual) {
+		if float64(t) != format.InterfaceToFloat(actual) {
 			return errorWithFields(t, actual, path)
 		}
 	default:

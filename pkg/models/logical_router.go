@@ -3,7 +3,7 @@ package models
 import (
 	"strconv"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 const (
@@ -31,7 +31,7 @@ func (lr *LogicalRouter) ConvertVXLanIDToInt() (int64, error) {
 	vxlanNetworkID := lr.GetVxlanNetworkIdentifier()
 	id, err := strconv.ParseInt(vxlanNetworkID, 10, 64)
 	if err != nil {
-		return 0, common.ErrorBadRequestf("vxlan network id must be a number(%s): %v", vxlanNetworkID, err)
+		return 0, errutil.ErrorBadRequestf("vxlan network id must be a number(%s): %v", vxlanNetworkID, err)
 	}
 
 	return id, nil

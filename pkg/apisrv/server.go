@@ -19,10 +19,10 @@ import (
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/common"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -311,7 +311,7 @@ func (s *Server) Init() (err error) {
 			mutex.Lock()
 			defer mutex.Unlock()
 			scenario.Workflow = append(scenario.Workflow, task)
-			err = common.SaveFile(file, scenario)
+			err = fileutil.SaveFile(file, scenario)
 			if err != nil {
 				log.Warn(err)
 			}

@@ -11,8 +11,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/common"
 )
 
 //This is needed to prevent an import error.
@@ -147,7 +147,7 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}(i interface{}) *{{ schema.JSONSch
 	case []interface{}:
 		return &{{ schema.JSONSchema.GoName }}{
 		{% if subtype.Items.Type == "string" %}
-			{{ subtype.GoName }}: common.InterfaceToStringList(o),
+			{{ subtype.GoName }}: format.InterfaceToStringList(o),
 		{% elif subtype.Items.GoType %}
 			{{ subtype.GoName }}: InterfaceTo{{ subtype.Items.GoType }}Slice(o),
 		{% endif %}
@@ -165,23 +165,23 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
 	}
 	{% for property in schema.JSONSchema.OrderedProperties %}
 	if val, ok := o["{{ property.ID }}"]; ok {
-		{% if property.GoType == "string" %}m.{{ property.GoName }} = common.InterfaceToString(val)
-		{% elif property.GoType == "[]string" %}m.{{ property.GoName }} = common.InterfaceToStringList(val)
-		{% elif property.GoType == "[]interface" %}m.{{ property.GoName }} = common.InterfaceToStringList(val)
-		{% elif property.GoType == "map[string]string" %}m.{{ property.GoName }} = common.InterfaceToStringMap(val)
-		{% elif property.GoType == "map[string]interface{}" %}m.{{ property.GoName }} = common.InterfaceToInterfaceMap(val)
-		{% elif property.GoType == "bool" %}m.{{ property.GoName }} = common.InterfaceToBool(val)
-		{% elif property.GoType == "int64" %}m.{{ property.GoName }} = common.InterfaceToInt64(val)
-		{% elif property.GoType == "uint64" %}m.{{ property.GoName }} = common.InterfaceToUint64(val)
-		{% elif property.GoType == "float" %}m.{{ property.GoName }} = common.InterfaceToFloat(val)
+		{% if property.GoType == "string" %}m.{{ property.GoName }} = format.InterfaceToString(val)
+		{% elif property.GoType == "[]string" %}m.{{ property.GoName }} = format.InterfaceToStringList(val)
+		{% elif property.GoType == "[]interface" %}m.{{ property.GoName }} = format.InterfaceToStringList(val)
+		{% elif property.GoType == "map[string]string" %}m.{{ property.GoName }} = format.InterfaceToStringMap(val)
+		{% elif property.GoType == "map[string]interface{}" %}m.{{ property.GoName }} = format.InterfaceToInterfaceMap(val)
+		{% elif property.GoType == "bool" %}m.{{ property.GoName }} = format.InterfaceToBool(val)
+		{% elif property.GoType == "int64" %}m.{{ property.GoName }} = format.InterfaceToInt64(val)
+		{% elif property.GoType == "uint64" %}m.{{ property.GoName }} = format.InterfaceToUint64(val)
+		{% elif property.GoType == "float" %}m.{{ property.GoName }} = format.InterfaceToFloat(val)
 		{% elif property.Type == "array"%}
 			{% if property.Items.Type == "string" %}
 			// string
-				m.{{ property.GoName }} = common.InterfaceToStringList(val)
+				m.{{ property.GoName }} = format.InterfaceToStringList(val)
 			{% elif property.Items.GoType == "int64"%}
-				m.{{ property.GoName }} = common.InterfaceToInt64List(val)
+				m.{{ property.GoName }} = format.InterfaceToInt64List(val)
 			{% elif property.Items.GoType == "uint64"%}
-				m.{{ property.GoName }} = common.InterfaceToUint64List(val)
+				m.{{ property.GoName }} = format.InterfaceToUint64List(val)
 			{% elif property.Items.GoType %}
 				m.{{ property.GoName }} = InterfaceTo{{ property.Items.GoType }}Slice(val)
 			{% endif %}
@@ -536,8 +536,8 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(i inter
 			return nil
 		}
 		result = append(result, &{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
-			UUID: common.InterfaceToString(m["uuid"]),
-			To: common.InterfaceToStringList(m["to"]),
+			UUID: format.InterfaceToString(m["uuid"]),
+			To: format.InterfaceToStringList(m["to"]),
 			{% if reference.RefType %}
 			Attr: InterfaceTo{{ reference.RefType }}(m["attr"]),
 			{% endif %}
@@ -596,7 +596,7 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}Slice(i interface{}) []{{ itemType
 	if list, ok := i.([]{{ itemType }}); ok {
 		return list
 	}
-	list := common.InterfaceToInterfaceList(i)
+	list := format.InterfaceToInterfaceList(i)
 	if list == nil {
 		return nil
 	}

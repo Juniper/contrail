@@ -15,7 +15,8 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
-	"github.com/Juniper/contrail/pkg/common"
+	auth2 "github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/errutil"
 )
 
 const (
@@ -24,12 +25,12 @@ const (
 
 func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) (context.Context, error) {
 	if tokenString == "" {
-		return nil, errors.Wrap(common.ErrorUnauthenticated, "no auth token in request")
+		return nil, errors.Wrap(errutil.ErrorUnauthenticated, "no auth token in request")
 	}
 	validatedToken, err := auth.Validate(tokenString)
 	if err != nil {
 		log.Errorf("Invalid Token: %s", err)
-		return nil, common.ErrorUnauthenticated
+		return nil, errutil.ErrorUnauthenticated
 	}
 	roles := []string{}
 	for _, r := range validatedToken.Roles {
@@ -38,11 +39,11 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	project := validatedToken.Project
 	if project == nil {
 		log.Debug("No project in a token")
-		return nil, common.ErrorUnauthenticated
+		return nil, errutil.ErrorUnauthenticated
 	}
 	domain := validatedToken.Project.Domain.ID
 	user := validatedToken.User
-	authContext := common.NewAuthContext(domain, project.ID, user.ID, roles)
+	authContext := auth2.NewContext(domain, project.ID, user.ID, roles)
 
 	var authKey interface{} = "auth"
 	newCtx := context.WithValue(ctx, authKey, authContext)
@@ -63,7 +64,7 @@ func GetAuthSkipPaths() []string {
 		"/keystone/v3/auth/projects",
 		"/v3/auth/tokens",
 	}
-	// skip auth for all the static files
+	// skip auth for all the static fileutil
 	for prefix, root := range viper.GetStringMap("server.static_files") {
 		if prefix == "/" {
 			staticFiles, err := ioutil.ReadDir(root.(string))
@@ -107,7 +108,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
 			if err != nil {
 				log.Errorf("unable to get keystone endpoint: %s", err)
-				return common.ToHTTPError(common.ErrorUnauthenticated)
+				return errutil.ToHTTPError(errutil.ErrorUnauthenticated)
 			}
 			if keystoneEndpoint != "" {
 				keystoneClient.SetAuthURL(keystoneEndpoint)
@@ -126,7 +127,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 			ctx, err := authenticate(r.Context(), auth, tokenString)
 			if err != nil {
 				log.Errorf("Authentication failure: %s", err)
-				return common.ToHTTPError(err)
+				return errutil.ToHTTPError(err)
 			}
 			newRequest := r.WithContext(ctx)
 			c.SetRequest(newRequest)
@@ -144,16 +145,16 @@ func AuthInterceptor(keystoneClient *KeystoneClient,
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
-			return nil, common.ErrorUnauthenticated
+			return nil, errutil.ErrorUnauthenticated
 		}
 		token := md["x-auth-token"]
 		if len(token) == 0 {
-			return nil, common.ErrorUnauthenticated
+			return nil, errutil.ErrorUnauthenticated
 		}
 		keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
 		if err != nil {
 			log.Error(err)
-			return nil, common.ErrorUnauthenticated
+			return nil, errutil.ErrorUnauthenticated
 		}
 		if keystoneEndpoint != "" {
 			keystoneClient.SetAuthURL(keystoneEndpoint)

@@ -1,4 +1,4 @@
-package common
+package format
 
 import (
 	"testing"

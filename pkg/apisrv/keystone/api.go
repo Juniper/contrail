@@ -13,7 +13,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/config"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
@@ -41,7 +41,7 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {
 		var staticAssignment StaticAssignment
-		err := common.LoadConfig("keystone.assignment.data", &staticAssignment)
+		err := config.LoadConfig("keystone.assignment.data", &staticAssignment)
 		if err != nil {
 			return nil, err
 		}

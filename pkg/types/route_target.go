@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -18,7 +18,7 @@ func (sv *ContrailTypeLogicService) CreateRouteTarget(
 		func(ctx context.Context) error {
 			err = routeTarget.Validate()
 			if err != nil {
-				return common.ErrorBadRequestf("Validation of route target name failed with error: %v", err)
+				return errutil.ErrorBadRequestf("Validation of route target name failed with error: %v", err)
 			}
 
 			response, err = sv.BaseService.CreateRouteTarget(ctx, request)

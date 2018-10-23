@@ -6,7 +6,7 @@ import (
 	protobuf "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -81,7 +81,7 @@ func (sv *ContrailTypeLogicService) vrouterCheckAllocationPoolsDelete(
 	ipamRefs := vr.GetNetworkIpamRefs()
 	if len(ipamRefs) == 0 {
 		if len(dbVr.GetInstanceIPBackRefs()) != 0 {
-			return common.ErrorBadRequestf("cannot delete allocation pool, ip address in use")
+			return errutil.ErrorBadRequestf("cannot delete allocation pool, ip address in use")
 		}
 	}
 
@@ -113,11 +113,11 @@ func (sv *ContrailTypeLogicService) vrouterCanDeleteAllocationPools(
 		for _, allocPool := range poolSet {
 			contains, err := allocPool.ContainsIPAddress(iip.GetInstanceIPAddress())
 			if err != nil {
-				return common.ErrorBadRequestf("cannot delete allocation pool: %v", err)
+				return errutil.ErrorBadRequestf("cannot delete allocation pool: %v", err)
 			}
 
 			if contains {
-				return common.ErrorBadRequestf("cannot delete allocation pool, %s in use", iip.GetInstanceIPAddress())
+				return errutil.ErrorBadRequestf("cannot delete allocation pool, %s in use", iip.GetInstanceIPAddress())
 			}
 		}
 	}
@@ -141,13 +141,13 @@ func (sv *ContrailTypeLogicService) validateVrouterAllocationPools(
 	})
 
 	if err != nil {
-		return common.ErrorBadRequestf("error in dbe_list: %v", err)
+		return errutil.ErrorBadRequestf("error in dbe_list: %v", err)
 	}
 
 	refUUIDToNetworkIpamRefMap := vr.GetRefUUIDToNetworkIpamRefMap()
 	for _, netIpam := range networkIpamsRes.GetNetworkIpams() {
 		if netIpam.GetIpamSubnetMethod() != models.FlatSubnet {
-			return common.ErrorBadRequestf(
+			return errutil.ErrorBadRequestf(
 				"only flat-subnet ipam can be attached to vrouter: NetworkIpam %s has subnet method %s",
 				netIpam.GetUUID(),
 				netIpam.GetIpamSubnetMethod(),
@@ -157,12 +157,12 @@ func (sv *ContrailTypeLogicService) validateVrouterAllocationPools(
 
 		err = netIpamRef.Validate()
 		if err != nil {
-			return common.ErrorBadRequestf("failed to validate ref to network-ipam %s: %v", netIpamRef.GetUUID(), err)
+			return errutil.ErrorBadRequestf("failed to validate ref to network-ipam %s: %v", netIpamRef.GetUUID(), err)
 		}
 
 		err = netIpamRef.ValidateLinkToIpam(netIpam)
 		if err != nil {
-			return common.ErrorBadRequestf("failed to validate ref to network-ipam %s: %v", netIpamRef.GetUUID(), err)
+			return errutil.ErrorBadRequestf("failed to validate ref to network-ipam %s: %v", netIpamRef.GetUUID(), err)
 		}
 
 		if len(netIpam.GetVirtualRouterBackRefs()) == 0 {

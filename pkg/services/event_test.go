@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
@@ -97,11 +97,11 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	assert.NoError(t, err, "unmarshal event failed")
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
-	i = common.YAMLtoJSONCompat(i).(map[string]interface{}) //nolint: errcheck
+	i = fileutil.YAMLtoJSONCompat(i).(map[string]interface{}) //nolint: errcheck
 	d2, err := NewEvent(&EventOption{
 		Kind:      i["kind"].(string),
 		Operation: i["operation"].(string),
-		Data:      common.YAMLtoJSONCompat(i["data"]).(map[string]interface{}),
+		Data:      fileutil.YAMLtoJSONCompat(i["data"]).(map[string]interface{}),
 	})
 	if assert.NoError(t, err) {
 		request = d2.GetCreateVirtualNetworkRequest()

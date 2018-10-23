@@ -9,8 +9,8 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/common"
 	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logging"
 )
 
 // Config represents Cluster configuration.
@@ -124,7 +124,7 @@ func NewCluster(c *Config) (*Cluster, error) {
 
 // Manage starts managing the clusters.
 func (c *Cluster) Manage() error {
-	common.SetLogLevel()
+	logging.SetLogLevel()
 	// start log server
 	c.streamServer.Serve()
 	defer c.streamServer.Close()

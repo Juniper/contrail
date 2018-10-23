@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
@@ -401,7 +401,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			if tt.fails {
 				assert.Error(t, err)
 				if tt.expectedHTTPErrorCode != 0 {
-					httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+					httpError, ok := errutil.ToHTTPError(err).(*echo.HTTPError)
 					assert.True(t, ok, "Expected http error")
 					assert.Equal(t, tt.expectedHTTPErrorCode, httpError.Code, "Expected different http status")
 				}
@@ -739,7 +739,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 			if tt.fails {
 				assert.Error(t, err)
 				if tt.expectedHTTPErrorCode != 0 {
-					httpError, ok := common.ToHTTPError(err).(*echo.HTTPError)
+					httpError, ok := errutil.ToHTTPError(err).(*echo.HTTPError)
 					assert.True(t, ok, "Expected http error")
 					assert.Equal(t, tt.expectedHTTPErrorCode, httpError.Code, "Expected different http status")
 				}
@@ -946,7 +946,7 @@ func virtualNetworkSetupReadServiceMocks(s *ContrailTypeLogicService) {
 	mockedReadServiceAddVirtualNetwork(s, virtualNetwork)
 
 	readServiceMock.EXPECT().GetVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		nil, common.ErrorNotFound).AnyTimes()
+		nil, errutil.ErrorNotFound).AnyTimes()
 
 	// BGPVPN
 	bgpVPNL3 := models.MakeBGPVPN()
@@ -970,7 +970,7 @@ func virtualNetworkSetupReadServiceMocks(s *ContrailTypeLogicService) {
 		}, nil).AnyTimes()
 
 	readServiceMock.EXPECT().GetBGPVPN(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(nil,
-		common.ErrorNotFound).AnyTimes()
+		errutil.ErrorNotFound).AnyTimes()
 
 	// Logical Routers
 	logicalRouter := models.MakeLogicalRouter()
@@ -1050,7 +1050,7 @@ func virtualNetworkSetupNetworkIpam(s *ContrailTypeLogicService, ipamSubnetMetho
 		}, nil).AnyTimes()
 
 	readServiceMock.EXPECT().GetNetworkIpam(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		nil, common.ErrorNotFound).AnyTimes()
+		nil, errutil.ErrorNotFound).AnyTimes()
 }
 
 func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
