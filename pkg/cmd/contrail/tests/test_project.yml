@@ -1,6 +1,7 @@
 name: Test project
 description: |
   Integration test for project creation.
+intent_compiler_enabled: true
 cleanup:
 - path: /project/my_custom_application_policy_set_uuid
 - path: /project/project_blue_project_uuid
