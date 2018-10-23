@@ -15,16 +15,16 @@
   output_path: pkg/services/gen_list_response_encoding.go
 - type: all
   template_path: sql_mysql.tmpl
-  output_path: tools/init_mysql.sql
+  output_path: tools/gen_create_schema_mysql.sql
 - type: all
   template_path: sql_psql.tmpl
-  output_path: tools/init_psql.sql
+  output_path: tools/gen_create_schema_psql.sql
 - type: all
   template_path: sql_cleanup_mysql.tmpl
-  output_path: tools/cleanup_mysql.sql
+  output_path: tools/gen_cleanup_mysql.sql
 - type: all
   template_path: sql_cleanup_psql.tmpl
-  output_path: tools/cleanup_psql.sql
+  output_path: tools/gen_cleanup_psql.sql
 - type: all
   template_path: db.tmpl
   output_path: pkg/db/gen_db.go
