@@ -4,19 +4,18 @@ TRUNCATE TABLE metadata;
 TRUNCATE TABLE int_pool;
 TRUNCATE TABLE ipaddress_pool;
 
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{%- for schema in schemas -%}
+{%- if schema.Type != "abstract" and schema.ID %}
 TRUNCATE TABLE {{ schema.ID | lower }};
 TRUNCATE TABLE tenant_share_{{ schema.ID | lower }};
 TRUNCATE TABLE domain_share_{{ schema.ID | lower }};
-
-{% for linkTo, reference in schema.References %}
+{%- for linkTo, reference in schema.References %}
 TRUNCATE TABLE {{ reference.Table }};
-{% endfor %}
-
-{% for linkTo, reference in schema.Parents %}
+{%- endfor %}
+{%- for linkTo, reference in schema.Parents %}
 TRUNCATE TABLE {{ reference.Table }};
-{% endfor %}
-
-{% endif %}{% endfor %}
+{%- endfor %}
+{%- endif -%}
+{%- endfor %}
 
 SET FOREIGN_KEY_CHECKS=1;

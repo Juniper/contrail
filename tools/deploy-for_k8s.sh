@@ -63,6 +63,7 @@ docker-compose -f /etc/contrail/config_database/docker-compose.yaml up -d
 
 # Prepare fresh database in contrail-go
 make zero_psql
+docker exec --interactive contrail_postgres psql -U postgres contrail_test -f tools/init_psql.sql
 
 # Run vnc-db-proxy
 ./tools/vncdbproxy/vncdbproxy.sh -n host -z localhost:2181 -c localhost:9161 -r localhost:5673
