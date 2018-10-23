@@ -64,6 +64,9 @@ docker-compose -f /etc/contrail/config_database/docker-compose.yaml up -d
 # Prepare fresh database in contrail-go
 make zero_psql
 
+# Build patched kube_manager with ETCD support
+docker build "$ContrailRootDir/docker/kube_manager_etcd/" -t opencontrailnightly/contrail-kubernetes-kube-manager:latest
+
 # Run vnc-db-proxy
 ./tools/vncdbproxy/vncdbproxy.sh -n host -z localhost:2181 -c localhost:9161 -r localhost:5673
 
