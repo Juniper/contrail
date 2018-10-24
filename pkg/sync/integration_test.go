@@ -232,6 +232,85 @@ func TestSyncService(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "create NetworkIpam, VirtualNetwork with ref to that IPAM and delete them",
+			ops: func(t *testing.T, sv services.WriteService) {
+				ctx := context.Background()
+
+				_, err := sv.CreateNetworkIpam(ctx, &services.CreateNetworkIpamRequest{
+					NetworkIpam: &models.NetworkIpam{
+						UUID: "ni-red",
+						Name: "ni_red",
+					},
+				})
+				assert.NoError(t, err, "create network IPAM failed")
+
+				_, err = sv.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
+					VirtualNetwork: &models.VirtualNetwork{
+						UUID: "vn-red",
+						Name: "vn_red",
+						NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+							{
+								UUID: "ni-red",
+								Attr: &models.VnSubnetsType{HostRoutes: &models.RouteTableType{
+									Route: []*models.RouteType{{Prefix: "test_prefix", NextHop: "1.2.3.5"}},
+								}},
+							},
+						},
+					},
+				})
+				assert.NoError(t, err, "create virtual network failed")
+
+				_, err = sv.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: "vn-red"})
+				assert.NoError(t, err, "delete virtual network failed")
+
+				_, err = sv.DeleteNetworkIpam(ctx, &services.DeleteNetworkIpamRequest{ID: "ni-red"})
+				assert.NoError(t, err, "delete network IPAM failed")
+			},
+			watchers: integration.Watchers{
+				"/test/virtual_network/vn-red": []integration.Event{
+					{
+						"name":              "vn_red",
+						"network_ipam_refs": "$null",
+					},
+					{
+						"name": "vn_red",
+						"network_ipam_refs": []interface{}{map[string]interface{}{
+							"uuid": "ni-red",
+							"attr": map[string]interface{}{
+								"ipam_subnets": nil,
+								"host_routes": map[string]interface{}{
+									"route": []interface{}{map[string]interface{}{
+										"next_hop": "1.2.3.5",
+										"prefix":   "test_prefix",
+									}},
+								},
+							},
+						}},
+					},
+					nil,
+				},
+				"/test/network_ipam/ni-red": []integration.Event{
+					{
+						"name":                      "ni_red",
+						"virtual_network_back_refs": "$null",
+					},
+					{
+						"name": "ni_red",
+						"virtual_network_back_refs": []interface{}{
+							map[string]interface{}{
+								"uuid": "vn-red",
+							},
+						},
+					},
+					{
+						"name":                      "ni_red",
+						"virtual_network_back_refs": "$null",
+					},
+					nil,
+				},
+			},
+		},
 	}
 
 	etcdPath := "test"
