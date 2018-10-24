@@ -27,6 +27,7 @@ pkg/**/**/gen_*
 pkg/**/generated.pb.go
 profile.cov
 profile.tmp
+coverage.log
 proto/
 public/
 test_output/
