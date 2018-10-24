@@ -96,7 +96,7 @@ func writeData(events *services.EventList, c *Config) error {
 
 func readYAML(inFile string) (*services.EventList, error) {
 	var events services.EventList
-	err := fileutil.LoadFile(inFile, &events)
+	_, err := fileutil.LoadFile(inFile, &events)
 	return &events, err
 }
 
