@@ -5,30 +5,31 @@ CONTRAIL_PATH=$(GOPATH)/src/github.com/Juniper/contrail
 
 #TODO(nati) remove unused tables from generated sql
 
-generate: reset_gen ## Run the source code generator
-	mkdir -p public
+generate: generate_go pkg/services/generated.pb.go pkg/models/generated.pb.go ## Run the source code generator
+	#TODO(nati) renable db test
+	rm pkg/db/gen_db_test.go
 
-	find pkg -type f -name "*.go" -print0 | xargs -0 sed -i -e "s|github.com/Juniper/contrail/extension|$(PACKAGE_PATH)|"
+format_gen:
+	find ./cmd ./pkg -name 'gen_*.go' -exec go fmt {} \;
+
+generate_go:
+	@mkdir -p public
 	go run $(CONTRAIL_PATH)/cmd/contrailschema/main.go generate --schemas $(CONTRAIL_PATH)/schemas/abstract,schemas \
 		--templates $(CONTRAIL_PATH)/tools/templates/template_config.yaml \
 		--package-path "$(PACKAGE_PATH)" \
 		--proto-package "$(PROTO_PACKAGE)" \
 		--schema-output public/schema.json --openapi-output public/openapi.json
 
-	$(CONTRAIL_PATH)/bin/protoc -I $(CONTRAIL_PATH)/vendor/ \
-		-I $(CONTRAIL_PATH)/vendor/github.com/gogo/protobuf/protobuf -I ./proto \
-		--gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ \
-		proto/$(PACKAGE_PATH)/pkg/models/generated.proto
-	$(CONTRAIL_PATH)/bin/protoc -I $(CONTRAIL_PATH)/proto/ \
+PROTO := $(CONTRAIL_PATH)/bin/protoc -I $(CONTRAIL_PATH)/proto/ \
 		-I $(CONTRAIL_PATH)/vendor/ -I $(CONTRAIL_PATH)/vendor/github.com/gogo/protobuf/protobuf \
-		-I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ \
-		proto/$(PACKAGE_PATH)/pkg/services/generated.proto
-	go tool fix ./pkg/services/generated.pb.go
-	#TODO(nati) renable db test
-	rm pkg/db/gen_db_test.go
-	go fmt $(PACKAGE_PATH)/pkg/...
+		-I ./proto
 
-reset_gen: ## Remove genarated files
+pkg/%.pb.go: proto/$(PACKAGE_PATH)/pkg/%.proto
+	$(PROTO) --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ $<
+	go tool fix $@
+
+
+clean_gen: ## Remove genarated files
 	find pkg/ -name gen_* -delete
 	find pkg/ -name generated.pb.go -delete
 	rm -rf public/[^watch.html]*
