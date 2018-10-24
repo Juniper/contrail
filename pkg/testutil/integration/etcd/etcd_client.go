@@ -110,24 +110,30 @@ func (e *EtcdClient) WatchKey(
 	return e.WatchKeyN(key, 0, 0, opts...)
 }
 
-// WatchKeyN watches value changes for provided key n times and returns collect method that collect captured values.
+// WatchKeyN watches value changes for provided key n times and returns collect method
+// that collects the captured values.
 // If there were less than n events then it waits until timeout passes.
 func (e *EtcdClient) WatchKeyN(
 	key string, n int, timeout time.Duration, opts ...clientv3.OpOption,
 ) (collect func() []string) {
-	var result []string
+	resultChan := make(chan []string)
 	ctx, cancel := context.WithCancel(context.Background())
 	wchan := e.Client.Watch(ctx, key, opts...)
 
 	go func() {
+		var result []string
+
 		for val := range wchan {
-			if len(val.Events) > 0 {
-				result = append(result, string(val.Events[0].Kv.Value))
+			for _, ev := range val.Events {
+				result = append(result, string(ev.Kv.Value))
 				if n > 0 && len(result) >= n {
 					cancel()
 				}
 			}
 		}
+
+		resultChan <- result
+		close(resultChan)
 	}()
 
 	return func() (vals []string) {
@@ -136,7 +142,7 @@ func (e *EtcdClient) WatchKeyN(
 		case <-time.After(timeout):
 			cancel()
 		}
-		return result
+		return <-resultChan
 	}
 }
 
