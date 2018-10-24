@@ -71,7 +71,7 @@ func getClient() (*client.HTTP, error) {
 // readResources decodes single or array of input data from YAML.
 func readResources(file string) (*services.EventList, error) {
 	request := &services.EventList{}
-	err := fileutil.LoadFile(file, request)
+	_, err := fileutil.LoadFile(file, request)
 	return request, err
 }
 

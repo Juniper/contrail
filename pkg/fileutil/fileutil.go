@@ -32,17 +32,21 @@ func SaveFile(file string, data interface{}) error {
 
 //LoadFile loads object from file. suffix of filepath will be
 // used as file type. currently, json and yaml is supported
-func LoadFile(filePath string, data interface{}) error {
+func LoadFile(filePath string, data interface{}) (os.FileInfo, error) {
 	bodyBuff, err := GetContent(filePath)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return nil, err
 	}
 	if strings.HasSuffix(filePath, ".json") {
-		return json.Unmarshal(bodyBuff, data)
+		return info, json.Unmarshal(bodyBuff, data)
 	} else if strings.HasSuffix(filePath, ".yaml") || strings.HasSuffix(filePath, ".yml") {
-		return yaml.Unmarshal(bodyBuff, data)
+		return info, yaml.Unmarshal(bodyBuff, data)
 	}
-	return fmt.Errorf("format isn't supported")
+	return nil, fmt.Errorf("format isn't supported")
 }
 
 //GetContent loads file from remote or local
