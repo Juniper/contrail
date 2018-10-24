@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -89,6 +90,7 @@ type API struct {
 	Schemas     []*Schema              `yaml:"schemas" json:"schemas,omitempty"`
 	Definitions []*Schema              `yaml:"-" json:"-"`
 	Types       map[string]*JSONSchema `yaml:"-" json:"-"`
+	Timestamp   time.Time
 }
 
 //ColumnConfig is for database configuration.
@@ -799,13 +801,23 @@ func resolveMapCollectionType(property, propertyType *JSONSchema) error {
 	return nil
 }
 
-func loadSchemaFromPath(path string) (*Schema, error) {
+func (api *API) loadSchemaFromPath(path string) (*Schema, error) {
 	var schema Schema
 	err := fileutil.LoadFile(path, &schema)
-	return &schema, errors.Wrapf(err, "Loading file \"%v\" error", path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to load file %s", path)
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to stat file %s", path)
+	}
+	if info.ModTime().After(api.Timestamp) {
+		api.Timestamp = info.ModTime()
+	}
+	return &schema, nil
 }
 
-func readOverrides(dir string) (*Schema, error) {
+func (api *API) readOverrides(dir string) (*Schema, error) {
 	var schemaOverrides = &Schema{DefinitionsSlice: map[string]yaml.MapSlice{}}
 	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if (f != nil && f.IsDir()) || err != nil {
@@ -816,7 +828,7 @@ func readOverrides(dir string) (*Schema, error) {
 		}
 		// This is as a Warning because overrides fixes schema problems that should be fixed in upstream schema definition
 		log.Warnf("Reading overrides from %v file", path)
-		schema, err := loadSchemaFromPath(path)
+		schema, err := api.loadSchemaFromPath(path)
 		if err == nil && len(schema.DefinitionsSlice) > 0 {
 			for key, def := range schema.DefinitionsSlice {
 				schemaOverrides.DefinitionsSlice[key] = def
@@ -861,7 +873,7 @@ func walkSchemaFile(overridePath string, overrides *Schema, api *API, path strin
 	if f.IsDir() || err != nil {
 		return err
 	}
-	schema, err := loadSchemaFromPath(path)
+	schema, err := api.loadSchemaFromPath(path)
 	if err != nil {
 		return err
 	}
@@ -904,8 +916,8 @@ func (api *API) process() error {
 	return err
 }
 
-func loadOverrides(dir string) (*Schema, error) {
-	overrides, err := readOverrides(dir)
+func (api *API) loadOverrides(dir string) (*Schema, error) {
+	overrides, err := api.readOverrides(dir)
 	if overrides == nil {
 		overrides = &Schema{}
 	}
@@ -929,7 +941,7 @@ func MakeAPI(dirs []string, overrideSubdir string) (*API, error) {
 		if overrideSubdir != "" {
 			overridePath = dir + string(os.PathSeparator) + overrideSubdir
 			var err error
-			overrides, err = loadOverrides(overridePath)
+			overrides, err = api.loadOverrides(overridePath)
 			if err != nil {
 				return api, err
 			}
