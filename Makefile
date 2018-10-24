@@ -41,36 +41,64 @@ test: ## Run tests with coverage
 build: ## Build all binaries without producing output
 	go build ./cmd/...
 
-generate: reset_gen ## Run the source code generator
-	mkdir -p public
-	go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
-	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
-	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/baseservices/base.proto
-	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
-	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto.md proto/github.com/Juniper/contrail/pkg/services/generated.proto proto/github.com/Juniper/contrail/pkg/models/generated.proto
-	go tool fix ./pkg/services/generated.pb.go
-	go fmt ./...
-	mkdir -p pkg/types/mock
-	mockgen -destination=pkg/types/mock/gen_types_mock.go -package=typesmock -source pkg/types/service.go
-	mkdir -p pkg/services/mock
-	mockgen -destination=pkg/services/mock/gen_service_mock.go -package=servicesmock -source pkg/services/gen_service_interface.go Service
-	mkdir -p pkg/types/ipam/mock
-	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock -source pkg/types/ipam/address_manager.go AddressManager
+GENERATE_DEPS := generate_go
+GENERATE_DEPS += generate_pb_go
+GENERATE_DEPS += generate_mocks
+GENERATE_DEPS += doc/proto.md
+
+format_gen:
+	find ./cmd ./pkg -name 'gen_*.go' | xargs -L 1 go fmt
+
+generate: $(GENERATE_DEPS) ## Run the source code generator
 	cd extension && $(MAKE) generate
 
-reset_gen: ## Remove genarated files
-	find pkg/ -name gen_* -delete
-	find pkg/ -name generated.pb.go -delete
-	find proto/ -name generated.proto -delete
+.PHONY: generate_go
+generate_go:
+	@mkdir -p public
+	go run cmd/contrailschema/main.go generate \
+		--schemas schemas --templates tools/templates/template_config.yaml \
+		--schema-output public/schema.json --openapi-output public/openapi.json
+
+generate_mocks: pkg/types/mock/gen_types_mock.go pkg/services/mock/gen_service_mock.go pkg/types/ipam/mock/gen_address_manager_mock.go
+
+pkg/types/mock/gen_types_mock.go: pkg/types/service.go
+	@mkdir -p pkg/types/mock
+	mockgen -destination=$@ -package=typesmock -source $<
+
+pkg/services/mock/gen_service_mock.go: pkg/services/gen_service_interface.go
+	@mkdir -p pkg/services/mock
+	mockgen -destination=$@ -package=servicesmock -source $< Service
+
+pkg/types/ipam/mock/gen_address_manager_mock.go: pkg/types/ipam/address_manager.go
+	@mkdir -p pkg/types/ipam/mock
+	mockgen -destination=$@ -package=ipammock -source $< AddressManager
+
+PROTO_DEPS := generate_go
+PROTO_DEPS += pkg/models/generated.pb.go
+PROTO_DEPS += pkg/services/baseservices/base.pb.go
+PROTO_DEPS += pkg/services/generated.pb.go
+
+generate_pb_go: $(PROTO_DEPS)
+
+PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
+
+pkg/%.pb.go: proto/github.com/Juniper/contrail/pkg/%.proto
+	$(PROTO) --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ $<
+
+doc/proto.md: proto/github.com/Juniper/contrail/pkg/models/generated.proto proto/github.com/Juniper/contrail/pkg/services/generated.proto
+	$(PROTO) --doc_out=./doc --doc_opt=markdown,proto.md $^
+
+clean_gen:
 	rm -rf public/[^watch.html]*
 	rm -f tools/init_mysql.sql
 	rm -f tools/init_psql.sql
 	rm -f tools/cleanup_mysql.sql
 	rm -f tools/cleanup_psql.sql
-	rm -rf pkg/types/mock
-	rm -rf pkg/services/mock
-	rm -rf pkg/types/ipam/mock
-	cd extension && $(MAKE) reset_gen
+	find pkg/ -name gen_* -delete
+	find pkg/ -name generated.pb.go -delete
+	find pkg/ -name base.pb.go -delete
+	find proto/ -name generated.proto -delete
+	cd extension && $(MAKE) clean_gen
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
