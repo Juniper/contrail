@@ -109,13 +109,20 @@ func (c *Client) Delete(ctx context.Context, key string) error {
 	return err
 }
 
-// WatchRecursive Watches a key pattern for changes After an Index
+// WatchRecursive watches a key pattern for changes After an Index and returns channel with messages.
 func (c *Client) WatchRecursive(
 	ctx context.Context, keyPattern string, afterIndex int64,
 ) chan Message {
+	return c.Watch(ctx, keyPattern, clientv3.WithPrefix(), clientv3.WithRev(afterIndex))
+
+}
+
+// Watch watches a key and returns channel with messages.
+func (c *Client) Watch(
+	ctx context.Context, key string, opts ...clientv3.OpOption,
+) chan Message {
 	resultChan := make(chan Message)
-	rchan := c.Etcd.Watch(ctx, keyPattern,
-		clientv3.WithPrefix(), clientv3.WithRev(afterIndex))
+	rchan := c.Etcd.Watch(ctx, key, opts...)
 
 	go func() {
 		for wresp := range rchan {
