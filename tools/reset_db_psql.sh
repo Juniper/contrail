@@ -7,4 +7,4 @@ docker inspect -f '{{ range $i, $m := .Mounts }}{{ $m.Source }}:{{ $m.Destinatio
 
 docker exec contrail_postgres psql -U postgres -c "drop database contrail_test"
 docker exec contrail_postgres psql -U postgres -c "create database contrail_test"
-docker exec --interactive contrail_postgres psql -U postgres contrail_test -f $TOP/init_psql.sql
+docker exec --interactive contrail_postgres psql -U postgres contrail_test -f $TOP/init_psql.sql > /dev/null
