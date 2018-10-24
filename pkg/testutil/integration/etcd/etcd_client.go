@@ -115,19 +115,25 @@ func (e *EtcdClient) WatchKey(
 func (e *EtcdClient) WatchKeyN(
 	key string, n int, timeout time.Duration, opts ...clientv3.OpOption,
 ) (collect func() []string) {
-	var result []string
+	resultChan := make(chan []string)
 	ctx, cancel := context.WithCancel(context.Background())
 	wchan := e.Client.Watch(ctx, key, opts...)
 
 	go func() {
+		var result []string
+
 		for val := range wchan {
 			if len(val.Events) > 0 {
-				result = append(result, string(val.Events[0].Kv.Value))
-				if n > 0 && len(result) >= n {
-					cancel()
+				for _, ev := range val.Events {
+					result = append(result, string(ev.Kv.Value))
+					if n > 0 && len(result) >= n {
+						cancel()
+					}
 				}
 			}
 		}
+
+		resultChan <- result
 	}()
 
 	return func() (vals []string) {
@@ -136,7 +142,7 @@ func (e *EtcdClient) WatchKeyN(
 		case <-time.After(timeout):
 			cancel()
 		}
-		return result
+		return <-resultChan
 	}
 }
 
