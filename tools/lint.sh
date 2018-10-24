@@ -10,10 +10,10 @@ function run_go_tool_fix() {
 }
 
 function run_goimports() {
-	local dirty_files
-	dirty_files="$(goimports -l -local "$ContrailPackage" ./cmd/ ./extension/ ./pkg/ | grep -v _mock.go)"
+	local issues
+	issues="$(goimports -d -local "$ContrailPackage" ./cmd/ ./extension/ ./pkg/ | grep -v _mock.go)"
 
-	[[ -z "$dirty_files" ]] || (echo "Goimports found issues in files: $dirty_files" && return 1)
+	[[ -z "$issues" ]] || (echo "Goimports found issues: $issues" && return 1)
 }
 
 run_go_tool_fix || exit 1

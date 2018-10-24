@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/format"
 )
 
 const (
@@ -49,9 +48,8 @@ func (tc *TemplateConfig) load(base string) (*pongo2.Template, error) {
 	return pongo2.FromString(string(templateCode))
 }
 
-func (tc *TemplateConfig) outputPath(goName string, option *TemplateOption) string {
-	path := strings.Replace(tc.OutputPath, "__resource__", format.CamelToSnake(goName), 1)
-	path = strings.Replace(path, "__package__", option.PackagePath, 1)
+func (tc *TemplateConfig) outputPath(option *TemplateOption) string {
+	path := strings.Replace(tc.OutputPath, "__package__", option.PackagePath, 1)
 	return path
 }
 
@@ -61,7 +59,7 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 	if err != nil {
 		return err
 	}
-	if err = ensureDir(tc.outputPath("", option)); err != nil {
+	if err = ensureDir(tc.outputPath(option)); err != nil {
 		return err
 	}
 	if tc.TemplateType == "all" {
@@ -72,43 +70,8 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 			return err
 		}
 
-		if err = writeGeneratedFile(tc.outputPath("", option), output, tc.TemplatePath); err != nil {
+		if err = writeGeneratedFile(tc.outputPath(option), output, tc.TemplatePath); err != nil {
 			return err
-		}
-	} else if tc.TemplateType == "type" {
-		for goName, typeJSONSchema := range api.Types {
-			output, err := tpl.Execute(pongo2.Context{
-				"type": typeJSONSchema, "name": goName, "option": option})
-			if err != nil {
-				return err
-			}
-
-			if err = writeGeneratedFile(tc.outputPath(goName, option), output, tc.TemplatePath); err != nil {
-				return err
-			}
-		}
-		for _, schema := range api.Schemas {
-			if schema.Type == AbstractType || schema.ID == "" {
-				continue
-			}
-
-			output, err := tpl.Execute(pongo2.Context{
-				"type":            schema.JSONSchema,
-				"typename":        schema.TypeName,
-				"name":            schema.JSONSchema.GoName,
-				"references":      schema.References,
-				"back_references": schema.BackReferences,
-				"parents":         schema.Parents,
-				"children":        schema.Children,
-				"option":          option,
-			})
-			if err != nil {
-				return err
-			}
-
-			if err = writeGeneratedFile(tc.outputPath(schema.JSONSchema.GoName, option), output, tc.TemplatePath); err != nil {
-				return err
-			}
 		}
 	} else if tc.TemplateType == "alltype" {
 		var schemas []*Schema
@@ -131,22 +94,8 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 			return err
 		}
 
-		if err = writeGeneratedFile(tc.outputPath("", option), output, tc.TemplatePath); err != nil {
+		if err = writeGeneratedFile(tc.outputPath(option), output, tc.TemplatePath); err != nil {
 			return err
-		}
-	} else {
-		for _, schema := range api.Schemas {
-			if schema.Type == AbstractType || schema.ID == "" {
-				continue
-			}
-			output, err := tpl.Execute(pongo2.Context{"schema": schema, "types": api.Types, "option": option})
-			if err != nil {
-				return err
-			}
-
-			if err = writeGeneratedFile(tc.outputPath(schema.ID, option), output, tc.TemplatePath); err != nil {
-				return err
-			}
 		}
 	}
 	return nil
@@ -166,12 +115,32 @@ func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig, opt
 	}
 
 	for _, templateConfig := range config {
+		if !isOutdated(
+			filepath.Join(templateBase, templateConfig.TemplatePath),
+			filepath.Join(option.OutputDir, templateConfig.outputPath(option)),
+		) {
+			continue
+		}
 		err := templateConfig.apply(templateBase, api, option)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func isOutdated(source, target string) bool {
+	sourceInfo, err := os.Stat(source)
+	if err != nil {
+		return true
+	}
+	targetInfo, err := os.Stat(target)
+	if err != nil {
+		return true
+	}
+	sourceModTime := sourceInfo.ModTime()
+	targetModTime := targetInfo.ModTime()
+	return sourceModTime.After(targetModTime)
 }
 
 func registerCustomFilters() error {

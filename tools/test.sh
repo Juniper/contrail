@@ -37,4 +37,4 @@ do
 done
 
 [ -z "$COVERPROFILE" ] && exit 0
-go tool cover -func "$TOP/profile.cov"
+go tool cover -func "$TOP/profile.cov" > $TOP/coverage.log
