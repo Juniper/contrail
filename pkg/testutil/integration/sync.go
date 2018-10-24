@@ -7,11 +7,11 @@ import (
 )
 
 // SetDefaultSyncConfig sets config options required by sync.
-func SetDefaultSyncConfig() {
+func SetDefaultSyncConfig(shouldDump bool) {
 	setViperConfig(map[string]interface{}{
 		"etcd.endpoints":              []string{integrationetcd.Endpoint},
 		"sync.storage":                models.JSONCodec.Key(),
-		"sync.dump":                   true,
+		"sync.dump":                   shouldDump,
 		"database.type":               basedb.DriverPostgreSQL,
 		"database.host":               "localhost",
 		"database.user":               dbUser,
