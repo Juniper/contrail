@@ -218,6 +218,11 @@ func (s *Service) Run() error {
 	return s.watcher.Watch(context.Background())
 }
 
+// DumpDone returns a channel that is closed when dump is done.
+func (s *Service) DumpDone() <-chan struct{} {
+	return s.watcher.DumpDone()
+}
+
 // Close closes Sync service.
 func (s *Service) Close() {
 	s.log.Info("Closing Sync service")
