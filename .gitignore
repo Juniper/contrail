@@ -18,6 +18,7 @@
 base.pb.go
 bin/
 dist/
+tmp/
 doc/proto.md
 docker/contrail_go/etc/*
 docker/contrail_go/contrail
@@ -27,6 +28,7 @@ pkg/**/**/gen_*
 pkg/**/generated.pb.go
 profile.cov
 profile.tmp
+covrage.log
 proto/
 public/
 test_output/
