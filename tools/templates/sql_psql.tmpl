@@ -1,5 +1,3 @@
-create publication "syncpub" for all tables; -- publication that is watching all tables for sync
-
 create table metadata (
     "uuid" varchar(255),
     "type" varchar(255),
@@ -97,3 +95,11 @@ create index index_d_{{ schema.Table }}_to on domain_share_{{ schema.Table }}("t
 
 {% endif %}
 {% endfor %}
+
+-- publication containing all object and ref tables for Sync process
+create publication "syncpub" for table
+{% for schema in schemas -%}{% if schema.Type != "abstract" and schema.ID -%}
+{%- for _, reference in schema.References %}
+	{{ reference.Table }},{% endfor %}
+	{{ schema.Table }}{% if forloop.Last %};{% else %},{% endif %}
+{%- endif %}{% endfor %}
