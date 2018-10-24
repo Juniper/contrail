@@ -17,6 +17,12 @@ import (
 
 type relationSet map[uint32]pgoutput.Relation
 
+var skipSchemaID = map[string]bool{
+	"metadata":       true,
+	"int_pool":       true,
+	"ipaddress_pool": true,
+}
+
 // PgoutputEventHandler handles replication messages by pushing it to sink.
 type PgoutputEventHandler struct {
 	sink RowSink
@@ -59,6 +65,9 @@ func (h *PgoutputEventHandler) handleCreate(ctx context.Context, relationID uint
 	if !ok {
 		return fmt.Errorf("no relation for %d", relationID)
 	}
+	if h.shouldSkipMessage(relation.Name) {
+		return nil
+	}
 
 	pk, data, err := decodeRowData(relation, row)
 	if err != nil {
@@ -75,6 +84,9 @@ func (h *PgoutputEventHandler) handleUpdate(ctx context.Context, relationID uint
 	relation, ok := h.relations[relationID]
 	if !ok {
 		return fmt.Errorf("no relation for %d", relationID)
+	}
+	if h.shouldSkipMessage(relation.Name) {
+		return nil
 	}
 
 	pk, data, err := decodeRowData(relation, row)
@@ -93,6 +105,9 @@ func (h *PgoutputEventHandler) handleDelete(ctx context.Context, relationID uint
 	if !ok {
 		return fmt.Errorf("no relation for %d", relationID)
 	}
+	if h.shouldSkipMessage(relation.Name) {
+		return nil
+	}
 
 	pk, _, err := decodeRowData(relation, row)
 	if err != nil {
@@ -103,6 +118,14 @@ func (h *PgoutputEventHandler) handleDelete(ctx context.Context, relationID uint
 	}
 
 	return h.sink.Delete(ctx, relation.Name, pk)
+}
+
+func (h *PgoutputEventHandler) shouldSkipMessage(schemaID string) bool {
+	if skipSchemaID[schemaID] {
+		h.log.Debugf("Skipped replication message with schemaID: %v", schemaID)
+		return true
+	}
+	return false
 }
 
 func decodeRowData(
