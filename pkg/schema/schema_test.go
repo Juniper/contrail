@@ -20,7 +20,6 @@ func TestSchema(t *testing.T) {
 	assert.Equal(t, 3, len(project.Columns))
 
 	virtualNetwork := api.SchemaByID("virtual_network")
-
 	assert.Equal(t, "vn", virtualNetwork.Table)
 	assert.Equal(t, 4, len(virtualNetwork.JSONSchema.Properties))
 	assert.Equal(t, "uint64", virtualNetwork.JSONSchema.Properties["version"].GoType)

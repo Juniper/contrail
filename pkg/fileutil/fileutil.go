@@ -37,6 +37,7 @@ func LoadFile(filePath string, data interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	if strings.HasSuffix(filePath, ".json") {
 		return json.Unmarshal(bodyBuff, data)
 	} else if strings.HasSuffix(filePath, ".yaml") || strings.HasSuffix(filePath, ".yml") {
