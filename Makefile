@@ -41,36 +41,61 @@ test: ## Run tests with coverage
 build: ## Build all binaries without producing output
 	go build ./cmd/...
 
-generate: reset_gen ## Run the source code generator
-	mkdir -p public
-	go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
-	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/models/generated.proto
-	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/baseservices/base.proto
-	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ proto/github.com/Juniper/contrail/pkg/services/generated.proto
-	./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto --doc_out=./doc --doc_opt=markdown,proto.md proto/github.com/Juniper/contrail/pkg/services/generated.proto proto/github.com/Juniper/contrail/pkg/models/generated.proto
-	go tool fix ./pkg/services/generated.pb.go
-	go fmt ./...
-	mkdir -p pkg/types/mock
-	mockgen -destination=pkg/types/mock/gen_types_mock.go -package=typesmock -source pkg/types/service.go
-	mkdir -p pkg/services/mock
-	mockgen -destination=pkg/services/mock/gen_service_mock.go -package=servicesmock -source pkg/services/gen_service_interface.go Service
-	mkdir -p pkg/types/ipam/mock
-	mockgen -destination=pkg/types/ipam/mock/gen_address_manager_mock.go -package=ipammock -source pkg/types/ipam/address_manager.go AddressManager
-	cd extension && $(MAKE) generate
+format_gen:
+	find ./cmd ./pkg -name 'gen_*.go' -exec go fmt {} \;
 
-reset_gen: ## Remove genarated files
-	find pkg/ -name gen_* -delete
-	find pkg/ -name generated.pb.go -delete
-	find proto/ -name generated.proto -delete
+fast_generate: generate_pb_go generate_mocks doc/proto.md
+	cd extension && $(MAKE) fast_generate
+
+generate_pb_go: generate_go pkg/models/generated.pb.go pkg/services/baseservices/base.pb.go pkg/services/generated.pb.go
+
+generate: fast_generate format_gen
+	cd extension && $(MAKE) format_gen
+
+generate_go:
+	@mkdir -p public
+	go run cmd/contrailschema/main.go generate \
+		--schemas schemas --templates tools/templates/template_config.yaml \
+		--schema-output public/schema.json --openapi-output public/openapi.json
+
+TYPES_MOCK := pkg/types/mock/gen_service_mock.go
+SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
+IPAM_MOCK := pkg/types/ipam/mock/gen_address_manager_mock.go
+
+generate_mocks: $(TYPES_MOCK) $(SERVICES_MOCK) $(IPAM_MOCK)
+
+$(TYPES_MOCK): pkg/types/service.go
+	mkdir -p $(@D)
+	mockgen -destination=$@ -package=typesmock -source $<
+
+$(SERVICES_MOCK): pkg/services/gen_service_interface.go
+	mkdir -p $(@D)
+	mockgen -destination=$@ -package=servicesmock -source $<
+
+$(IPAM_MOCK): pkg/types/ipam/address_manager.go
+	mkdir -p $(@D)
+	mockgen -destination=$@ -package=ipammock -source $<
+
+PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
+PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
+
+pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
+	$(PROTO) --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,plugins=grpc:$(GOPATH)/src/ $<
+	go tool fix $@
+
+doc/proto.md: $(PROTO_PKG_PATH)/models/generated.proto $(PROTO_PKG_PATH)/services/generated.proto
+	$(PROTO) --doc_out=./doc --doc_opt=markdown,proto.md $^
+
+clean_gen:
 	rm -rf public/[^watch.html]*
 	rm -f tools/init_mysql.sql
 	rm -f tools/init_psql.sql
 	rm -f tools/cleanup_mysql.sql
 	rm -f tools/cleanup_psql.sql
-	rm -rf pkg/types/mock
-	rm -rf pkg/services/mock
-	rm -rf pkg/types/ipam/mock
-	cd extension && $(MAKE) reset_gen
+	find pkg/ -name gen_* -delete
+	find pkg/ -name generated.pb.go -delete
+	find proto/ -name generated.proto -delete
+	cd extension && $(MAKE) clean_gen
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
@@ -118,7 +143,6 @@ binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailcli_{{.OS}}_{{.Arch}}" ./cmd/contrailcli
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
 
-.PHONY: docker_prepare
 docker_prepare: ## Prepare common data to generate Docker files (use target `docker` or `docker_k8s` instead)
 	rm -rf $(BUILD_DIR) && mkdir -p $(BUILD_DIR)/contrail
 	cp -r docker $(BUILD_DIR)
@@ -139,13 +163,11 @@ else
 		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
 endif
 
-.PHONY: docker
 docker: docker_prepare ## Generate Docker files
 	docker build -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
 # This target creates contrail-go docker that is able to work as a drop-in replacement to original config-api.
 # It depends on 'docker' target to inherit all the necesary steps with minimal changes
-.PHONY: docker_k8s
 docker_k8s: docker_prepare ## Create contrail-go docker as a drop-in replacement to original config-api
 	## Copy dockerfile because it must be in a build context dir
 	cp -f docker/contrail_go/Dockerfile-k8s $(BUILD_DIR)/docker/contrail_go
@@ -156,3 +178,6 @@ help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .DEFAULT_GOAL := help
+
+.PHONY: docker_prepare docker_k8s docker generate_go
+.SUFFIXES: .go .proto
