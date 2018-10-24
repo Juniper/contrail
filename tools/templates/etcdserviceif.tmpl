@@ -14,7 +14,10 @@ func (ns *NotifierService) handleRefWrapper(
 	ctx context.Context, key string, obj proto.Message, handleRef func(),
 ) error {
 	txn := GetTxn(ctx)
-	oldData:= txn.Get(key)
+	oldData := txn.Get(key)
+	if len(oldData) == 0 {
+		return nil
+	}
 
 	sObj := models.NewSerializedObject(oldData, obj, ns.Codec)
 	if err := sObj.Map(handleRef); err != nil {

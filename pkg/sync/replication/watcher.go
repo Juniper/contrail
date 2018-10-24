@@ -2,6 +2,7 @@ package replication
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
@@ -114,9 +115,7 @@ func NewPostgresWatcher(
 		dumpDoneCh: make(chan struct{}),
 		log:        pkglog.NewLogger("postgres-watcher"),
 	}
-	if !w.shouldDump {
-		close(w.dumpDoneCh)
-	}
+	fmt.Println("SHOULD DUMP")
 	return w, nil
 }
 
@@ -141,10 +140,8 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 
 	w.lastLSN = slotLSN // TODO(Michal): get lastLSN from etcd
 
-	if w.shouldDump {
-		if err := w.Dump(ctx, snapshotName); err != nil {
-			return nil
-		}
+	if err := w.Dump(ctx, snapshotName); err != nil {
+		return nil
 	}
 
 	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
@@ -158,11 +155,14 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 
 // Dump dumps whole db state using provided snapshot name.
 func (w *PostgresWatcher) Dump(ctx context.Context, snapshotName string) error {
-	w.log.Debug("Starting dump phase")
 	defer func() {
 		w.shouldDump = false
 		close(w.dumpDoneCh)
 	}()
+	if !w.shouldDump {
+		return nil
+	}
+	w.log.Debug("Starting dump phase")
 	dumpStart := time.Now()
 
 	if err := w.conn.DoInTransactionSnapshot(ctx, snapshotName, func(ctx context.Context) error {
