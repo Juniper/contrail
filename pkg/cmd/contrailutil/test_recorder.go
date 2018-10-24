@@ -38,7 +38,7 @@ func recordTest() {
 	log.Info("Recording API beheivior")
 	var vars map[string]interface{}
 	if variablePath != "" {
-		err := fileutil.LoadFile(variablePath, &vars)
+		_, err := fileutil.LoadFile(variablePath, &vars)
 		if err != nil {
 			log.Fatal(err)
 		}
