@@ -290,6 +290,21 @@ func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []basemodels.Reference 
 	{%- endif %}
 }
 
+func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() []basemodels.Reference {
+	if m == nil {
+		return nil
+	}
+	var refs []basemodels.Reference
+	{%- for _, extend in schema.Extends %}
+		{%- if extend == "base" %}
+			for _, ref := range m.TagRefs {
+				refs = append(refs, ref)
+			}
+		{%- endif %}
+	{%- endfor %}
+	return refs
+}
+
 func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object {
 	{%- if schema.References|length > 0%}
 	if m == nil {
