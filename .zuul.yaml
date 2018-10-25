@@ -26,7 +26,7 @@
     vars:
       setup_docker_registry: true
       docker:
-        - image: circleci/golang:1.10
+        - image: circleci/golang:1.11
         - image: circleci/mysql:5.7
           name: contrail_mysql
           environment:
