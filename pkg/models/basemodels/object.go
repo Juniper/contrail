@@ -10,8 +10,10 @@ type Object interface {
 	GetUUID() string
 	GetFQName() []string
 	GetParentUUID() string
+	GetParentType() string
 	Kind() string
-	GetReferences() []Reference
+	GetReferences() References
+	GetTagReferences() References
 	GetBackReferences() []Object
 	GetChildren() []Object
 	AddBackReference(interface{})
