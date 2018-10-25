@@ -83,7 +83,7 @@ func commandHandler(handler handler, _ *task, context map[string]interface{}) (i
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		m := scanner.Text()
-		output.WriteString(m) // nolint
+		output.WriteString(m)
 		log.Debug(m)
 	}
 
