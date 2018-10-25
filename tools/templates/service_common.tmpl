@@ -2,21 +2,22 @@ package services
 
 import (
 	"context"
-	"strconv"
-	"strings"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/auth"
-	"{{ option.PackagePath }}/pkg/models"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"{{ option.PackagePath }}/pkg/models"
 )
 
 const (
@@ -318,10 +319,40 @@ func createUpdateMap(
 	return updateMap, nil
 }
 
-//TagAttr is a part of set-tag input data. TODO: Investigate it
+// Consts migration from https://github.com/Juniper/contrail-controller/blob/master/src/sandesh/common/vns.sandesh
+// These constants are required for set-tag endpoint logic.
+const (
+	LABEL = iota
+	APPLICATION
+	TIER
+	DEPLOYMENT
+	SITE
+)
+
+var (
+	TagTypeIdToName = map[int]string {
+		LABEL: "label",
+		APPLICATION: "application",
+		TIER: "tier",
+		DEPLOYMENT: "deployment",
+		SITE: "site",
+	}
+	TAG_TYPE_NOT_UNIQUE_PER_OBJECT = []string {
+		TagTypeIdToName[LABEL],
+	}
+	TAG_TYPE_AUTHORIZED_ON_ADDRESS_GROUP = []string {
+		TagTypeIdToName[LABEL],
+	}
+)
+// End const migration
+
+//TagAttr is a part of set-tag input data.
 type TagAttr struct {
-	IsGlobal bool   `json:"is_global"`
-	Value    string `json:"value"`
+	IsGlobal bool `json:"is_global"`
+	// Value could be nil, string or slice of strings
+	Value        interface{} `json:"value"`
+	AddValues    []string    `json:"add_values"`
+	DeleteValues []string    `json:"delete_values"`
 }
 
 // SetTag represents set-tag input data.
@@ -354,10 +385,136 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 		return errutil.ToHTTPError(err)
 	}
 
-	// TODO (Ignacy): implement set-tag logic
+	ctx := c.Request().Context()
+	if err := service.SetTag(ctx, data); err != nil {
+		return errutil.ToHTTPError(err)
+	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{})
 }
+
+func SliceContainsString(haystack []string, needle string) bool {
+	sort.Strings(haystack)
+	i := sort.SearchStrings(haystack, needle)
+	if i < len(haystack) && haystack[i] == needle {
+		return true
+	}
+	return false
+}
+
+func (service *ContrailService) SetTag(ctx context.Context, setTag SetTag) error {
+	sort.Strings(TAG_TYPE_NOT_UNIQUE_PER_OBJECT)
+
+	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		obj, err := GetObject(ctx, service.Next(), setTag.ObjType, setTag.ObjUUID)
+		if err != nil {
+			return errutil.ErrorBadRequestf(
+				"error: %v, while getting %v with UUID %v",
+				err,
+				setTag.ObjType,
+				setTag.ObjUUID,
+			)
+		}
+
+		// Prepare map with refs sorted by type for easy filtering purposes in next steps.
+		refsPerType := make(map[string][]interface{})
+		for _, tagRef := range obj.TagRefs {
+			tag := strings.Split(tagRef.To[len(tagRef.To)-1], "=")
+			tagRefType := tag[0]
+			if _, ok := refsPerType[tagRefType]; !ok {
+				refsPerType[tagRefType] = make([]interface{}, 0)
+			}
+			refsPerType[tagRefType] = append(refsPerType[tagRefType], tagRef)
+		}
+
+		for tagType, tagAttrs := range setTag.Tags {
+			if tagAttrs == nil {
+				// Remove tag from obj.TagRefs if tagAttrs doesn't exist
+				for i, tagRef := range obj.TagRefs {
+					tag := strings.Split(tagRef.To[len(tagRef.To)-1], "=")
+					tagRefType := tag[0]
+					if tagType == tagRefType {
+						// TODO send event RefOperationDelete
+						obj.TagRefs = append(obj.TagRefs[:i], obj.TagRefs[i+1:]...)
+						break
+					}
+				}
+				refsPerType[tagType] = make([]interface{}, 0)
+				continue
+			}
+
+			// address-group object can only be associated with label
+			if (setTag.ObjType == "address_group" &&
+				!SliceContainsString(TAG_TYPE_AUTHORIZED_ON_ADDRESS_GROUP, normalizedTagType)) {
+				return errutil.ErrorBadRequestf(
+					"invalid tag type %v for object type %v",
+					normalizedTagType,
+					setTag.ObjType,
+				)
+			}
+
+			refsPerValue := make(map[string]interface{})
+			for _, tagRef := range refsPerType[tagType] {
+				tag := strings.Split(tagRef.To[len(tagRef.To)-1], "=")
+				tagRefValue := tag[2]
+				refsPerValue[tagRefValue] = tagRef
+			}
+
+
+			if !SliceContainsString(TAG_TYPE_NOT_UNIQUE_PER_OBJECT, normalizedTagType) {
+				if len(tagAttr.AddValues) > 0 || len(tagAttr.DeleteValues) > 0 {
+					return errutil.ErrorBadRequestf(
+						"tag type %v cannot be set multiple times on a same object",
+						normalizedTagType,
+					)
+				}
+				if _, ok := tagAttr.Value.(string); !ok {
+					return errutil.ErrorBadRequestf(
+						"no valid value provided for tag type %v",
+						normalizedTagType,
+					)
+				}
+
+				if _, ok := refsPerValue[tagAttr.Value]; ok {
+					// don't need to update if tag type with same value already exists
+					continue
+				}
+
+				for _, r := range refsPerValue {
+					rFqName := strings.Join(r.To, "-")
+					for i, tagRef := range obj.TagRefs {
+						tagRefFqName := strings.Join(tagRef.To, "-")
+						if rFqName == tagRefFqName {
+							// object already have a reference to that tag type with a
+							// different value, remove it
+							// TODO locate outdated xTagRef
+							// TODO send event RefOperationDelete on outdated xTagRef
+							obj.TagRefs = append(obj.TagRefs[:i], obj.TagRefs[i+1:]...)
+							break
+						}
+					}
+				}
+
+				// finally, reference the tag type with the new value
+				// TODO locate new xTagRef
+				// TODO send event RefOperationAdd for new xTagRef
+			} else {
+				// TODO collect values to add
+				// TODO locate new xTagRef
+				// TODO send event RefOperationAdd for new xTagRef
+				///////////////////////////////////////////////////////////
+				// TODO collect values to delete
+				// TODO locate outdated xTagRef
+				// TODO send event RefOperationDelete for outdated xTagRef
+			}
+		}
+	})
+	if err != nil {
+		return errutil.ToHTTPError(err)
+	}
+	return nil
+}
+
 
 // Chown handles chown request.
 func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest) (*Empty, error) {
