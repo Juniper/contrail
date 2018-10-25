@@ -290,6 +290,25 @@ func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []basemodels.Reference 
 	{%- endif %}
 }
 
+func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() []basemodels.Reference {
+	{%- if schema.References|length > 0%}
+		if m == nil {
+			return nil
+		}
+		var refs []basemodels.Reference
+		{%- for _, reference in schema.References %}
+			{%- if reference.GoName|lower == "tag" %}
+				for _, ref := range m.{{ reference.GoName }}Refs {
+					refs = append(refs, ref)
+				}
+			{%- endif %}
+		{%- endfor %}
+		return refs
+	{%- else %}
+		return nil
+	{%- endif %}
+}
+
 func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object {
 	{%- if schema.References|length > 0%}
 	if m == nil {

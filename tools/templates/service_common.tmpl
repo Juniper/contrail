@@ -2,21 +2,22 @@ package services
 
 import (
 	"context"
-	"strconv"
-	"strings"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/auth"
-	"{{ option.PackagePath }}/pkg/models"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"{{ option.PackagePath }}/pkg/models"
 )
 
 const (
@@ -318,10 +319,40 @@ func createUpdateMap(
 	return updateMap, nil
 }
 
-//TagAttr is a part of set-tag input data. TODO: Investigate it
+// Consts migration from https://github.com/Juniper/contrail-controller/blob/master/src/sandesh/common/vns.sandesh
+// These constants are required for set-tag endpoint logic.
+const (
+	LABEL = iota
+	APPLICATION
+	TIER
+	DEPLOYMENT
+	SITE
+)
+
+var (
+	TagTypeIdToName = map[int]string {
+		LABEL: "label",
+		APPLICATION: "application",
+		TIER: "tier",
+		DEPLOYMENT: "deployment",
+		SITE: "site",
+	}
+	TAG_TYPE_NOT_UNIQUE_PER_OBJECT = []string {
+		TagTypeIdToName[LABEL],
+	}
+	TAG_TYPE_AUTHORIZED_ON_ADDRESS_GROUP = []string {
+		TagTypeIdToName[LABEL],
+	}
+)
+// End const migration
+
+//TagAttr is a part of set-tag input data.
 type TagAttr struct {
-	IsGlobal bool   `json:"is_global"`
-	Value    string `json:"value"`
+	IsGlobal bool `json:"is_global"`
+	// Value could be nil, string or slice of strings
+	Value        interface{} `json:"value"`
+	AddValues    []string    `json:"add_values"`
+	DeleteValues []string    `json:"delete_values"`
 }
 
 // SetTag represents set-tag input data.
@@ -354,9 +385,187 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 		return errutil.ToHTTPError(err)
 	}
 
-	// TODO (Ignacy): implement set-tag logic
+	ctx := c.Request().Context()
+	if err := service.SetTag(ctx, data); err != nil {
+		return errutil.ToHTTPError(err)
+	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{})
+}
+
+func SliceContainsString(haystack []string, needle string) bool {
+	sort.Strings(haystack)
+	i := sort.SearchStrings(haystack, needle)
+	if i < len(haystack) && haystack[i] == needle {
+		return true
+	}
+	return false
+}
+
+func makeRefsPerType(tagRefs []basemodels.Reference) map[string][]basemodels.Reference {
+	refsPerType := make(map[string][]basemodels.Reference)
+	for _, tagRef := range tagRefs {
+		refTo := tagRef.GetTo()
+		tag := strings.Split(refTo[len(refTo)-1], "=")
+		tagRefType := tag[0]
+		if _, ok := refsPerType[tagRefType]; !ok {
+			refsPerType[tagRefType] = make([]basemodels.Reference, 0)
+		}
+		refsPerType[tagRefType] = append(refsPerType[tagRefType], tagRef)
+	}
+	return refsPerType
+}
+
+func makeRefsPerValue(tagRefs []basemodels.Reference) map[string]basemodels.Reference {
+	refsPerValue := make(map[string]basemodels.Reference)
+	for _, tagRef := range tagRefs {
+		refTo := tagRef.GetTo()
+		tag := strings.Split(refTo[len(refTo)-1], "=")
+		tagRefValue := tag[2]
+		refsPerValue[tagRefValue] = tagRef
+	}
+	return refsPerValue
+}
+
+func modifyTagRef(ref *basemodels.Metadata, setTag SetTag, operation RefOperation) (ev *Event, err error) {
+	return NewEventFromRefUpdate(&RefUpdate{
+		Operation: operation,
+		Type:      setTag.ObjType,
+		UUID:      setTag.ObjUUID,
+		RefType:   ref.Type,
+		RefUUID:   ref.UUID,
+		RefFQName: ref.FQName,
+	})
+}
+
+func (service *ContrailService) SetTag(ctx context.Context, setTag SetTag) error {
+	sort.Strings(TAG_TYPE_NOT_UNIQUE_PER_OBJECT)
+	return service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		obj, err := GetObject(ctx, service.Next(), setTag.ObjType, setTag.ObjUUID)
+		if err != nil {
+			return errutil.ErrorBadRequestf(
+				"error: %v, while getting %v with UUID %v",
+				err,
+				setTag.ObjType,
+				setTag.ObjUUID,
+			)
+		}
+
+		// LOCATE func
+		locate := func(tagType, tagValue string, isGlobal bool) (*basemodels.Metadata, error) {
+			tagName := fmt.Sprintf("%v=%v", tagType, tagValue)
+			var fqName []string
+
+			if isGlobal {
+				fqName = []string{tagName}
+			} else {
+				fqName = obj.GetFQName()
+				if obj.Kind() == models.KindProject {
+					fqName = append(fqName, tagName)
+				}
+				//TODO other cases
+			}
+			data, err := service.MetadataGetter.GetMetadata(
+				ctx,
+				basemodels.Metadata{
+					FQName: fqName,
+					Type:   tagType,
+				},
+			)
+			if err != nil {
+				return nil, errutil.ErrorNotFoundf("cannot find tag type %s uuid: %v", tagType, err)
+			}
+			return data, nil
+		}
+		// END LOCATE func
+
+		// Prepare map with refs sorted by type for easy filtering purposes in next steps.
+		refsPerType := makeRefsPerType(obj.GetTagReferences())
+		for tagType, tagAttrs := range setTag.Tags {
+			if tagAttrs.Value == nil {
+				// Remove tag from obj.TagRefs if tagAttrs doesn't exist
+				for _, tagRef := range obj.GetTagReferences() {
+					refTo := tagRef.GetTo()
+					tag := strings.Split(refTo[len(refTo)-1], "=")
+					tagRefType := tag[0]
+					tagRefValue := tag[1]
+					if tagType == tagRefType {
+						tagMeta, _ := locate(tagType, tagRefValue, tagAttrs.IsGlobal)
+						event, _ := modifyTagRef(tagMeta, setTag, RefOperationDelete)
+						event.Process(ctx, service)
+						break
+					}
+				}
+				refsPerType[tagType] = make([]basemodels.Reference, 0)
+				continue
+			}
+
+			// address-group object can only be associated with label
+			if (setTag.ObjType == "address_group" &&
+				!SliceContainsString(TAG_TYPE_AUTHORIZED_ON_ADDRESS_GROUP, tagType)) {
+				return errutil.ErrorBadRequestf(
+					"invalid tag type %v for object type %v",
+					tagType,
+					setTag.ObjType,
+				)
+			}
+
+			refsPerValue := makeRefsPerValue(refsPerType[tagType])
+			if !SliceContainsString(TAG_TYPE_NOT_UNIQUE_PER_OBJECT, tagType) {
+				if len(tagAttrs.AddValues) > 0 || len(tagAttrs.DeleteValues) > 0 {
+					return errutil.ErrorBadRequestf(
+						"tag type %v cannot be set multiple times on a same object",
+						tagType,
+					)
+				}
+				if _, ok := tagAttrs.Value.(string); !ok {
+					return errutil.ErrorBadRequestf(
+						"no valid value provided for tag type %v",
+						tagType,
+					)
+				}
+
+				if _, ok := refsPerValue[tagAttrs.Value.(string)]; ok {
+					// don't need to update if tag type with same value already exists
+					continue
+				}
+
+				for _, r := range refsPerValue {
+					rFqName := strings.Join(r.GetTo(), "-")
+					for _, tagRef := range obj.GetTagReferences() {
+						tagRefFqName := strings.Join(tagRef.GetTo(), "-")
+						if rFqName == tagRefFqName && tagAttrs.Value != nil {
+							// object already have a reference to that tag type with a
+							// different value, remove it
+							tagMeta, _ := locate(tagType, tagAttrs.Value.(string), tagAttrs.IsGlobal)
+							event, _ := modifyTagRef(tagMeta, setTag, RefOperationDelete)
+							event.Process(ctx, service)
+							break
+						}
+					}
+				}
+				// finally, reference the tag type with the new value
+				tagMeta, _ := locate(tagType, tagAttrs.Value.(string), tagAttrs.IsGlobal)
+				event, _ := modifyTagRef(tagMeta, setTag, RefOperationAdd)
+				event.Process(ctx, service)
+			} else {
+				for _, tagValue := range tagAttrs.AddValues {
+					if _, ok := refsPerValue[tagValue]; !ok {
+						// Add only if not exists already
+						tagMeta, _ := locate(tagType, tagValue, tagAttrs.IsGlobal)
+						event, _ := modifyTagRef(tagMeta, setTag, RefOperationAdd)
+						event.Process(ctx, service)
+					}
+				}
+				for _, tagValue := range tagAttrs.DeleteValues {
+					tagMeta, _ := locate(tagType, tagValue, tagAttrs.IsGlobal)
+					event, _ := modifyTagRef(tagMeta, setTag, RefOperationDelete)
+					event.Process(ctx, service)
+				}
+			}
+		}
+		return nil
+	})
 }
 
 // Chown handles chown request.

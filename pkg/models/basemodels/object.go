@@ -12,6 +12,7 @@ type Object interface {
 	GetParentUUID() string
 	Kind() string
 	GetReferences() []Reference
+	GetTagReferences() []Reference
 	GetBackReferences() []Object
 	GetChildren() []Object
 	AddBackReference(interface{})
