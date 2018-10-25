@@ -10,8 +10,11 @@ type Object interface {
 	GetUUID() string
 	GetFQName() []string
 	GetParentUUID() string
+	GetParentType() string
+	//GetPerms2() *models.PermType2
 	Kind() string
 	GetReferences() []Reference
+	GetTagReferences() []Reference
 	GetBackReferences() []Object
 	GetChildren() []Object
 	AddBackReference(interface{})
