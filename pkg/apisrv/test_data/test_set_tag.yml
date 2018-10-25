@@ -1,18 +1,55 @@
 name: Test set-tag endpoint
+description: basic set-tag test
+
+cleanup:
+- path: /virtual_network/virtual_network_uuid
+- path: /project/admin_project_uuid
+- path: /tag/tag_namespace_uuid
+- path: /tag/tag_application_uuid
 
 test_data:
+# SetUp resources
+  admin_project: &admin_project
+    fq_name: ["default", "admin_project_uuid"]
+    uuid: admin_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  virtual_network: &virtual_network
+    fq_name: ["default", "admin", "virtual_network"]
+    uuid: virtual_network_uuid
+    display_name: virtual_network
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    virtual_network_properties:
+      forwarding_mode: "l3"
+      vxlan_network_identifier: 1
+    route_target_list:
+      route_target: ["100:200"]
+
+  tag_namespace: &tag_namespace
+    uuid: tag_namespace_uuid
+    fq_name: ["namespace=kube-system"]
+    tag_value: kube-system
+    tag_type_name: namespace
+
+  tag_application: &tag_application
+    uuid: tag_application_uuid
+    fq_name: ["application=k8s"]
+    tag_value: k8s
+    tag_type_name: application
+
+# Test resources
   set_tag_correct: &set_tag_correct
-    obj_uuid: test_uuid
-    obj_type: virtual_machine_interface
+    obj_uuid: admin_project_uuid
+    obj_type: project
+    application:
+      is_global: true
+      value: k8s
     namespace:
       is_global: true
       value: kube-system
-    k8s-app:
-      is_global: true
-      value: kube-dns
-    pod-template-hash:
-      is_global: true
-      value: template-hash
 
   set_tag_without_uuid: &set_tag_without_uuid
     obj_uuid: ""
@@ -22,11 +59,25 @@ test_data:
       value: k8s
 
   set_tag_without_type: &set_tag_without_type
-    obj_uuid: test_uuid
+    obj_uuid: admin_project_uuid
     obj_type: ""
     application:
       is_global: true
       value: k8s
+
+  set_not_existing_tag: &set_not_existing_tag
+    obj_uuid: virtual_network_uuid
+    obj_type: virtual_network
+    fake:
+      is_global: false
+      value: fake
+
+  unset_existing_tag: &unset_existing_tag
+    obj_uuid: virtual_network_uuid
+    obj_type: virtual_network
+    namespace:
+      is_global: true
+      value: null
 
 clients:
   default:
@@ -39,12 +90,59 @@ clients:
         name: admin
 
 workflow:
+# SetUp test
+- name: create project admin
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+
+- name: create virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [200]
+    data:
+      virtual-network: *virtual_network
+  expect: null
+
+- name: create tag namespace
+  request:
+    path: /tags
+    method: POST
+    expected: [200]
+    data:
+      tag: *tag_namespace
+  expected: *tag_namespace
+
+- name: create tag application
+  request:
+    path: /tags
+    method: POST
+    expected: [200]
+    data:
+      tag: *tag_application
+  expected: *tag_application
+# \SetUp END
+
 - name: check correctly filled set-tag
   request:
     path: /set-tag
     method: POST
     expected: [200]
     data: *set_tag_correct
+  expect: null
+
+- name: check correctly unset tag
+  request:
+    path: /set-tag
+    method: POST
+    expected: [200]
+    data: *unset_existing_tag
   expect: null
 
 - name: check set-tag without obj_uuid
@@ -62,3 +160,41 @@ workflow:
     expected: [400]
     data: *set_tag_without_type
   expect: null
+
+- name: check set-tag when tag not exist
+  request:
+    path: /set-tag
+    method: POST
+    expected: [404]
+    data: *set_not_existing_tag
+  expect: null
+
+# TearDown
+- name: delete virtual network
+  request:
+    path: /virtual-network/virtual_network_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete project admin
+  request:
+    path: /project/admin_project_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete tag namespace
+  request:
+    path: /tag/tag_namespace_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete tag application
+  request:
+    path: /tag/tag_application_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+# \TearDown END
