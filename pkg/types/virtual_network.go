@@ -145,7 +145,7 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 				ID: uuid,
 			})
 			if err != nil {
-				return errutil.ErrorBadRequestf("couldn't get virtual network (%v) for a delete: %v", uuid, err)
+				return errutil.ErrorNotFoundf("couldn't get virtual network (%v) for a delete: %v", uuid, err)
 			}
 			vn := virtualNetworkResponse.GetVirtualNetwork()
 
