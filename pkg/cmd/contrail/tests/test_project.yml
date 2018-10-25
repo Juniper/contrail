@@ -1,6 +1,7 @@
 name: Test project
 description: |
   Integration test for project creation.
+intent_compiler_enabled: true
 cleanup:
 - path: /project/my_custom_application_policy_set_uuid
 - path: /project/project_blue_project_uuid
@@ -43,9 +44,9 @@ workflow:
   watchers:
     /contrail/project/project_blue_project_uuid:
       - *project_blue_project       # requested project was created
-      - <<: *project_blue_project   # project is updated with default-application-policy-set
-        application_policy_set_refs:
-          - to: [default-domain, project_blue_project, default-application-policy-set]
+    /contrail/application_policy_set/:
+      - fq_name: [default-domain, project_blue_project, default-application-policy-set]
+        uuid: $uuid
 
 - name: check if default-application-policy-set was created
   request:
@@ -72,7 +73,8 @@ workflow:
   expect:
     project:
       application_policy_set_refs:
-        - {}
+        - uuid: $uuid
+          to: [default-domain, project_blue_project, default-application-policy-set]
       application_policy_sets:
         - fq_name: [default-domain, project_blue_project, default-application-policy-set]
 
@@ -85,6 +87,10 @@ workflow:
       application-policy-set: *user_made_application_policy_set_project
   expect:
     application-policy-set: *user_made_application_policy_set_project
+  watchers:
+    /contrail/application_policy_set/my_custom_application_policy_set_uuid:
+      - <<: *user_made_application_policy_set_project
+        name: my-custom-aps
 
 - name: try to delete project with user made application-policy-set
   request:
@@ -117,4 +123,6 @@ workflow:
 
 watchers:
   /contrail/application_policy_set/my_custom_application_policy_set_uuid:
-    - name: my-custom-aps
+    - <<: *user_made_application_policy_set_project
+      name: my-custom-aps
+    - null
