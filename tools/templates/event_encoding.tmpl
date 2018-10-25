@@ -147,7 +147,9 @@ instead it may accept only UUIDs and data that is passed to resolveReferenceTabl
 */
 func NewEventFromRefUpdate(refUpdate *RefUpdate) (*Event, error) {
     e := &Event{}
-    kind := fmt.Sprintf("%s-%s", refUpdate.Type, refUpdate.RefType)
+    resourceType := strings.Replace(refUpdate.Type, "_", "-", -1)
+    refType := strings.Replace(refUpdate.RefType, "_", "-", -1)
+    kind := fmt.Sprintf("%s-%s", resourceType, refType)
     operation := refUpdate.Operation
     if operation == "" {
         operation = RefOperationAdd

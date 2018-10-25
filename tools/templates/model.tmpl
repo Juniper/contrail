@@ -264,18 +264,19 @@ func (m *{{ schema.JSONSchema.GoName }}) UnmarshalJSON(b []byte) error {
 	return err
 }
 {% endif %}
+{% if schema.TypeName %}
 
 // Kind returns kind of an resource.
 func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
 	return Kind{{ schema.JSONSchema.GoName }}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []basemodels.Reference {
+func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
 	{%- if schema.References|length > 0%}
 	if m == nil {
 		return nil
 	}
-	var refs []basemodels.Reference
+	var refs basemodels.References
 	{% for _, reference in schema.References %}
 	for _, ref := range m.{{ reference.GoName }}Refs {
 		refs = append(refs, ref)
@@ -285,6 +286,13 @@ func (m *{{ schema.JSONSchema.GoName }}) GetReferences() []basemodels.Reference 
 	{%- else %}
 	return nil
 	{%- endif %}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() (refs basemodels.References) {
+	for _, ref := range m.GetTagRefs() {
+		refs = append(refs, ref)
+	}
+	return refs
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object {
@@ -369,7 +377,6 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveChild(i interface{}) {
 	{%- endif %}
 }
 
-{% if schema.TypeName %}
 func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels.PropCollectionUpdate) (map[string]interface{}, error) {
 	switch (u.Field) { {% for property in schema.JSONSchema.OrderedProperties %}{% if property.CollectionType %}
 {% set listType = property.OrderedProperties | first %}{% set itemType = listType.Items.GoType %}
@@ -539,24 +546,29 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) ToMap() map[st
 }
 
 func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(i interface{}) []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
-	list, ok := i.([]interface{})
-	if !ok {
-		return nil
-	}
 	result := []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
-	for _, item := range list {
-		m, ok := item.(map[string]interface{})
-		_ = m
-		if !ok {
-			return nil
+	if ok := basemodels.ForEach(i, func(elem interface{}){
+		switch e := elem.(type) {
+			case map[string]interface{}:
+				result = append(result, &{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
+					UUID: format.InterfaceToString(e["uuid"]),
+					To: format.InterfaceToStringList(e["to"]),
+					{% if reference.RefType %}
+					Attr: InterfaceTo{{ reference.RefType }}(e["attr"]),
+					{% endif %}
+				})
+			case {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
+				result = append(result, &e)
+			case *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
+				result = append(result, e)
+			case basemodels.Reference:
+				result = append(
+					result,
+					&{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID: e.GetUUID(), To: e.GetTo()},
+				)
 		}
-		result = append(result, &{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
-			UUID: format.InterfaceToString(m["uuid"]),
-			To: format.InterfaceToStringList(m["to"]),
-			{% if reference.RefType %}
-			Attr: InterfaceTo{{ reference.RefType }}(m["attr"]),
-			{% endif %}
-		})
+	}); !ok {
+		return nil
 	}
 
 	return result
