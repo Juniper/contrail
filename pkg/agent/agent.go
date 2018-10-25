@@ -31,7 +31,6 @@ const (
 )
 
 // Config represents Agent configuration.
-// nolint
 type Config struct {
 	// ID of Agent account.
 	ID string `yaml:"id"`
@@ -49,8 +48,6 @@ type Config struct {
 	AuthURL string `yaml:"auth_url"`
 	// Endpoint of API Server.
 	Endpoint string `yaml:"endpoint"`
-	// InSecure https connection to endpoint
-	InSecure bool `yaml:"insecure"`
 	// Server schema path
 	SchemaRoot string `yaml:"schema_root"`
 	// Logging level
@@ -61,6 +58,8 @@ type Config struct {
 	Watcher string `yaml:"watcher"`
 	// List of tasks for Agent to perform on events that involve specified resources.
 	Tasks []*task `yaml:"tasks"`
+	// InSecure https connection to endpoint
+	InSecure bool `yaml:"insecure"`
 	// Enabled
 	Enabled bool `yaml:"enabled"`
 }

@@ -66,7 +66,7 @@ var assertFunctions = map[string]assertFunction{
 
 // AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
 // For lists and maps, it iterates over expected values, ignoring additional values in actual object.
-func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) bool {
+func AssertEqual(t *testing.T, expected, actual interface{}, msg ...string) bool {
 	expected = fileutil.YAMLtoJSONCompat(expected)
 	actual = fileutil.YAMLtoJSONCompat(actual)
 
@@ -75,12 +75,12 @@ func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...inter
 	return assert.NoError(
 		t,
 		err,
-		append(
-			msgAndArgs,
-			fmt.Sprintf("objects not equal:\nexpected: %+v\nactual: %+v",
-				format.MustYAML(expected),
-				format.MustYAML(actual)),
-		)...,
+		fmt.Sprintf(
+			"%s: objects not equal:\nexpected: %+v\nactual: %+v",
+			strings.Join(msg, ", "),
+			format.MustYAML(expected),
+			format.MustYAML(actual),
+		),
 	)
 }
 

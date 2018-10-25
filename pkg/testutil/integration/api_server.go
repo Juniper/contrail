@@ -87,9 +87,6 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	}
 	s.Cache = c.CacheDB
 
-	// TODO: instrumented-mysql driver used with database.debug cannot be registered twice
-	viper.Set("database.debug", false)
-
 	ts := testutil.NewTestHTTPServer(s.Echo)
 	viper.Set("keystone.authurl", ts.URL+authEndpointSuffix)
 

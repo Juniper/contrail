@@ -16,9 +16,8 @@ const (
 	keystoneVersion = "v3"
 )
 
-// KeystoneClient represents a client.
-// nolint
-type KeystoneClient struct {
+// Client represents a client.
+type Client struct {
 	AuthURL      string `yaml:"authurl"`
 	LocalAuthURL string `yaml:"local_authurl"`
 	httpClient   *http.Client
@@ -26,8 +25,8 @@ type KeystoneClient struct {
 }
 
 // NewKeystoneClient makes keystone client.
-func NewKeystoneClient(authURL string, insecure bool) *KeystoneClient {
-	c := &KeystoneClient{
+func NewKeystoneClient(authURL string, insecure bool) *Client {
+	c := &Client{
 		AuthURL:      authURL,
 		LocalAuthURL: authURL,
 		InSecure:     insecure,
@@ -37,7 +36,7 @@ func NewKeystoneClient(authURL string, insecure bool) *KeystoneClient {
 }
 
 // Init is used to initialize a keystone client.
-func (k *KeystoneClient) Init() {
+func (k *Client) Init() {
 	tr := &http.Transport{
 		Dial:            (&net.Dialer{}).Dial,
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: k.InSecure},
@@ -49,18 +48,18 @@ func (k *KeystoneClient) Init() {
 }
 
 // SetAuthURL uses specified auth url in the keystone auth.
-func (k *KeystoneClient) SetAuthURL(authURL string) {
+func (k *Client) SetAuthURL(authURL string) {
 	k.AuthURL = authURL + "/" + keystoneVersion
 }
 
 // NewAuth creates new keystone auth
-func (k *KeystoneClient) NewAuth() *keystone.Auth {
+func (k *Client) NewAuth() *keystone.Auth {
 	auth := keystone.New(k.AuthURL)
 	auth.Client = k.httpClient
 	return auth
 }
 
-func (k *KeystoneClient) tokenRequest(method string, c echo.Context) (*http.Response, error) {
+func (k *Client) tokenRequest(method string, c echo.Context) (*http.Response, error) {
 	tokenURL := k.AuthURL + "/auth/tokens"
 	request, err := http.NewRequest(method, tokenURL, c.Request().Body)
 	if err != nil {
@@ -74,7 +73,7 @@ func (k *KeystoneClient) tokenRequest(method string, c echo.Context) (*http.Resp
 }
 
 // CreateToken sends token create request to keystone endpoint.
-func (k *KeystoneClient) CreateToken(c echo.Context) error {
+func (k *Client) CreateToken(c echo.Context) error {
 	resp, err := k.tokenRequest(echo.POST, c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -89,7 +88,7 @@ func (k *KeystoneClient) CreateToken(c echo.Context) error {
 }
 
 // ValidateToken sends validate token request to keystone endpoint.
-func (k *KeystoneClient) ValidateToken(c echo.Context) error {
+func (k *Client) ValidateToken(c echo.Context) error {
 	resp, err := k.tokenRequest(echo.GET, c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -102,7 +101,7 @@ func (k *KeystoneClient) ValidateToken(c echo.Context) error {
 }
 
 // GetProjects sends project get request to keystone endpoint.
-func (k *KeystoneClient) GetProjects(c echo.Context) error {
+func (k *Client) GetProjects(c echo.Context) error {
 	projectURL := k.AuthURL + "/auth/projects"
 	request, err := http.NewRequest(echo.GET, projectURL, c.Request().Body)
 	if err != nil {

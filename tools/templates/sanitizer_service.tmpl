@@ -77,6 +77,7 @@ func (sv *SanitizerService) Create{{ schema.JSONSchema.GoName }}(
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
 	m := request.Get{{ schema.JSONSchema.GoName }}()
 	sv.sanitize{{ schema.JSONSchema.GoName }}DisplayName(ctx, m)
+
 	{% if schema.References | length != 0 %}
 	if err := sv.sanitizeRefs(ctx, m.GetReferences()); err != nil {
 		return nil, errutil.ErrorBadRequestf("couldn't sanitize refs of {{ schema.JSONSchema.GoName }} %v: %v", m.GetUUID(), err)
@@ -91,10 +92,12 @@ func (sv *SanitizerService) Update{{ schema.JSONSchema.GoName }}(
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
 	{% if schema.References | length != 0 %}
 	m := request.Get{{ schema.JSONSchema.GoName }}()
+
 	if err := sv.sanitizeRefs(ctx, m.GetReferences()); err != nil {
 		return nil, errutil.ErrorBadRequestf("couldn't sanitize refs of {{ schema.JSONSchema.GoName }} %v: %v", m.GetUUID(), err)
 	}
 	{% endif %}
+
 	return sv.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 {% endif %}{% endfor %}

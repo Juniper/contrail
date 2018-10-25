@@ -26,14 +26,14 @@ type Keystone struct {
 	Store      Store
 	Assignment Assignment
 	Endpoints  *apicommon.EndpointStore
-	Client     *KeystoneClient
+	Client     *Client
 	vncClient  *client.HTTP
 }
 
 //Init is used to initialize echo with Kesytone capability.
 //This function reads config from viper.
 func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
-	keystoneClient *KeystoneClient) (*Keystone, error) {
+	keystoneClient *Client) (*Keystone, error) {
 	keystone := &Keystone{
 		Endpoints: endpoints,
 		Client:    keystoneClient,

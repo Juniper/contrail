@@ -45,7 +45,7 @@ func deleteResources(dataPath string) (string, error) {
 			return "", err
 		}
 		var output interface{}
-		response, err := client.Delete(context.Background(), path(resource.Kind(), uuid), &output) //nolint
+		response, err := client.Delete(context.Background(), path(resource.Kind(), uuid), &output)
 		if response.StatusCode != http.StatusNotFound && err != nil {
 			return "", err
 		}

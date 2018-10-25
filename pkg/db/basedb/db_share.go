@@ -57,7 +57,7 @@ func (db *BaseDB) createSharingEntry(tx *sql.Tx, table string, uuid string, tena
 	_, err := tx.Exec(
 		"insert into "+
 			db.Dialect.Quote(shareType+"_share_"+table)+" (uuid, access, "+
-			db.Dialect.Quote("to")+") values ("+db.Dialect.Values("uuid", "access", "to")+");", // nolint
+			db.Dialect.Quote("to")+") values ("+db.Dialect.Values("uuid", "access", "to")+");",
 		uuid, tenantAccess, to)
 	return err
 }
