@@ -52,6 +52,15 @@ func ChildFQName(parentFQName []string, childName string) []string {
 	return result
 }
 
+// FQNameToName gets object's name from it's fqName.
+func FQNameToName(fqName []string) string {
+	pos := len(fqName) - 1
+	if pos < 0 {
+		return ""
+	}
+	return fqName[pos]
+}
+
 // FQNameEquals checks if fqName slices have the same length and values
 func FQNameEquals(fqNameA, fqNameB []string) bool {
 	if len(fqNameA) != len(fqNameB) {
