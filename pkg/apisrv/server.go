@@ -111,7 +111,6 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		}))
 	}
 
-	// Put DB Service at the end
 	serviceChain = append(serviceChain, s.dbService)
 
 	services.Chain(serviceChain...)
@@ -167,20 +166,20 @@ func (s *Server) Init() (err error) {
 		e.Logger.SetOutput(ioutil.Discard) // Disables Echo's built-in logging.
 	}
 
+	if viper.GetBool("server.log_body") {
+		e.Use(middleware.BodyDump(func(c echo.Context, requestBody, responseBody []byte) {
+			log.WithFields(log.Fields{
+				"request-body":  string(requestBody),
+				"response-body": string(responseBody),
+			}).Debug("Request handled")
+		}))
+	}
+
 	if viper.GetBool("server.enable_gzip") {
 		e.Use(middleware.Gzip())
 	}
 
-	if viper.GetBool("server.log_body") {
-		e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
-			log.WithFields(log.Fields{
-				"reqBody": string(reqBody),
-				"resBody": string(resBody),
-			}).Debugf("Request body")
-		}))
-	}
 	e.Use(middleware.Recover())
-	//e.Use(middleware.BodyLimit("10M"))
 
 	s.dbService, err = db.NewServiceFromConfig()
 	if err != nil {
@@ -236,7 +235,7 @@ func (s *Server) Init() (err error) {
 	s.serveDynamicProxy(endpointStore)
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	var keystoneClient *keystone.KeystoneClient
+	var keystoneClient *keystone.Client
 	if keystoneAuthURL != "" {
 		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL,
 			viper.GetBool("keystone.insecure"))

@@ -46,14 +46,14 @@ func TestMain(m *testing.M, s **APIServer) {
 	WithTestDBs(func(dbType string) {
 		cacheDB, cancelEtcdEventProducer, err := RunCacheDB()
 		if err != nil {
-			log.Fatal(err)
+			log.WithError(err).Fatal("Failed to run Cache DB")
 		}
 		defer testutil.LogFatalIfError(cancelEtcdEventProducer)
 
 		if viper.GetBool("sync.enabled") {
 			sync, err := sync.NewService()
 			if err != nil {
-				log.Fatalf("Error initializing integration Sync: %v", err)
+				log.WithError(err).Fatal("Failed to initialize Sync")
 			}
 			errChan := RunConcurrently(sync)
 
@@ -66,7 +66,7 @@ func TestMain(m *testing.M, s **APIServer) {
 			EnableEtcdNotifier: true,
 			CacheDB:            cacheDB,
 		}); err != nil {
-			log.Fatalf("Error initializing integration APIServer: %v", err)
+			log.WithError(err).Fatal("Failed to initialize API Server")
 		} else {
 			*s = srv
 		}
@@ -83,7 +83,7 @@ func TestMain(m *testing.M, s **APIServer) {
 func WithTestDBs(f func(dbType string)) {
 	err := initViperConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Fatal("Failed to initialize Viper config")
 	}
 	logging.SetLogLevel()
 	testDBs := viper.GetStringMap("test_database")
@@ -95,7 +95,9 @@ func WithTestDBs(f func(dbType string)) {
 		config := format.InterfaceToInterfaceMap(iConfig)
 		dbType, ok := config["type"].(string)
 		if !ok {
-			log.Error("Failed to read dbType: %v (%T)", dbType, dbType)
+			log.WithFields(log.Fields{
+				"db-type": dbType,
+			}).Error("Failed to read test_database.type value")
 		}
 		viper.Set("database.type", dbType)
 		viper.Set("database.host", config["host"])
@@ -112,9 +114,9 @@ func WithTestDBs(f func(dbType string)) {
 			viper.Set("sync.enabled", false)
 		}
 
-		log.WithField("dbType", dbType).Info("Starting tests for DB")
+		log.WithField("db-type", dbType).Info("Starting tests with DB")
 		f(dbType)
-		log.WithField("dbType", dbType).Info("Finished tests for DB")
+		log.WithField("db-type", dbType).Info("Finished tests with DB")
 	}
 }
 
@@ -224,7 +226,7 @@ func RunCleanTestScenario(
 	testScenario *TestScenario,
 	server *APIServer,
 ) {
-	log.Debug("Running clean test scenario: ", testScenario.Name)
+	log.WithField("test-scenario", testScenario.Name).Debug("Running clean test scenario")
 	ctx := context.Background()
 	checkWatchers := StartWatchers(t, testScenario.Watchers)
 	stopIC := startIntentCompiler(t, testScenario, server)
@@ -239,7 +241,7 @@ func RunCleanTestScenario(
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
 func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario, server *APIServer) func() {
-	log.Debug("Running *DIRTY* test scenario: ", testScenario.Name)
+	log.WithField("test-scenario", testScenario.Name).Debug("Running dirty test scenario")
 	ctx := context.Background()
 	clients := prepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients)
@@ -253,11 +255,16 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 	for _, tr := range tracked {
 		response, err := clients[tr.Client].EnsureDeleted(ctx, tr.Path, nil)
 		if err != nil {
-			log.Errorf("Ignored Error deleting dirty resource: %v, for url path '%v' with client %v", err, tr.Path, tr.Client)
-			continue // It is desired to loop over all resources even with errors
+			log.WithError(err).WithFields(log.Fields{
+				"url-path":    tr.Path,
+				"http-client": tr.Client,
+			}).Error("Deleting dirty resource failed - ignoring")
 		}
-		if response.StatusCode != 404 {
-			log.Warnf("DIRTY test scenario: left resource with path '%v'", tr.Path)
+		if response.StatusCode == http.StatusOK {
+			log.WithFields(log.Fields{
+				"url-path":    tr.Path,
+				"http-client": tr.Client,
+			}).Warn("Test scenario has not deleted resource but should have deleted - test scenario is dirty")
 		}
 	}
 }
@@ -295,9 +302,7 @@ func createWatchChecker(collect func() []string, key string, events []Event) fun
 				err := json.Unmarshal([]byte(c), &data)
 				assert.NoError(t, err)
 			}
-			testutil.AssertEqual(
-				t, e, data, "etcd event not equal for %s[%v]:\n%s", key, i,
-			)
+			testutil.AssertEqual(t, e, data, fmt.Sprintf("etcd event not equal for %s[%v]", key, i))
 		}
 	}
 }
@@ -320,37 +325,48 @@ func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenari
 	clients := clientsList{}
 
 	for key, client := range testScenario.Clients {
-		//Rewrite endpoint for test server
-		client.Endpoint = server.TestServer.URL
 		client.AuthURL = server.TestServer.URL + "/keystone/v3"
+		client.Endpoint = server.TestServer.URL
 		client.InSecure = true
+		client.Debug = true
+
 		client.Init()
 
 		clients[key] = client
 
 		err := clients[key].Login(ctx)
-		assert.NoError(t, err, "client failed to login")
+		assert.NoError(t, err, fmt.Sprintf("client %q failed to login", client.ID))
 	}
 	return clients
 }
 
-func runTestScenario(ctx context.Context,
-	t *testing.T, testScenario *TestScenario, clients clientsList) (tracked []trackedResource) {
+func runTestScenario(
+	ctx context.Context, t *testing.T, testScenario *TestScenario, clients clientsList,
+) (tracked []trackedResource) {
 	for _, cleanTask := range testScenario.Cleanup {
 		clientID := cleanTask["client"]
 		if clientID == "" {
 			clientID = defaultClientID
 		}
-		client := clients[clientID]
-		// delete existing resources.
-		log.Debugf("[Clean task] Path: %s, TestScenario: %s", cleanTask["path"], testScenario.Name)
-		response, err := client.EnsureDeleted(ctx, cleanTask["path"], nil) // nolint
-		if err != nil && response.StatusCode != 404 {
-			log.Debug(err)
+
+		log.WithFields(log.Fields{
+			"test-scenario": testScenario.Name,
+			"url-path":      cleanTask["path"],
+		}).Debug("Deleting existing resources before test scenario workflow")
+		response, err := clients[clientID].EnsureDeleted(ctx, cleanTask["path"], nil)
+		if err != nil && response.StatusCode != http.StatusNotFound {
+			log.WithError(err).WithFields(log.Fields{
+				"test-scenario":        testScenario.Name,
+				"url-path":             cleanTask["path"],
+				"response-status-code": response.StatusCode,
+			}).Error("Failed to delete existing resource before running workflow - ignoring")
 		}
 	}
 	for _, task := range testScenario.Workflow {
-		log.Infof("[Task] Name: %s, TestScenario: %s", task.Name, testScenario.Name)
+		log.WithFields(log.Fields{
+			"test-scenario": testScenario.Name,
+			"task":          task.Name,
+		}).Info("Starting task")
 		checkWatchers := StartWatchers(t, task.Watchers)
 
 		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
@@ -360,16 +376,16 @@ func runTestScenario(ctx context.Context,
 		}
 		client, ok := clients[clientID]
 		if !assert.True(t, ok,
-			"Client '%v' not defined in test scenario '%v' task '%v'", clientID, testScenario.Name, task) {
+			"Client %q not defined in test scenario %q task %q", clientID, testScenario.Name, task.Name) {
 			break
 		}
 		response, err := client.DoRequest(ctx, task.Request)
-		assert.NoError(t, err, fmt.Sprintf("In test scenario '%v' task '%v' failed", testScenario.Name, task))
+		assert.NoError(t, err, fmt.Sprintf("In test scenario %q task %q failed", testScenario.Name, task.Name))
 		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
 
 		task.Expect = fileutil.YAMLtoJSONCompat(task.Expect)
 		ok = testutil.AssertEqual(t, task.Expect, task.Request.Output,
-			fmt.Sprintf("In test scenario '%v' task' %v' failed", testScenario.Name, task))
+			fmt.Sprintf("In test scenario %q task %q failed", testScenario.Name, task.Name))
 		checkWatchers(t)
 		if !ok {
 			break
@@ -426,7 +442,7 @@ func extractSyncOperation(syncOp map[string]interface{}, client string) []tracke
 }
 
 func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResource) []trackedResource {
-	if task.Request.Output != nil && task.Request.Method == "POST" && code == 200 && rerr == nil {
+	if task.Request.Output != nil && task.Request.Method == "POST" && code == http.StatusOK && rerr == nil {
 		clientID := defaultClientID
 		if task.Client != "" {
 			clientID = task.Client

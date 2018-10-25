@@ -91,8 +91,7 @@ func (p *proxyService) getProxyPrefixFromURL(urlPath string, scope string) (prox
 	return strings.Join(prefixes, pathSep)
 }
 
-func (p *proxyService) getReverseProxy(urlPath string) (
-	prefix string, server *httputil.ReverseProxy) {
+func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *httputil.ReverseProxy) {
 	var scope string
 	if strings.Contains(urlPath, private) {
 		scope = private
@@ -102,15 +101,20 @@ func (p *proxyService) getReverseProxy(urlPath string) (
 	proxyPrefix := p.getProxyPrefixFromURL(urlPath, scope)
 	proxyEndpoint := p.EndpointStore.Read(proxyPrefix)
 	if proxyEndpoint == nil {
-		log.Errorf("Endpoint targets not found for %s", proxyPrefix)
+		log.WithField("proxy-prefix", proxyPrefix).Info("Endpoint targets not found for given proxy prefix")
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
 	target := proxyEndpoint.Next(scope)
 	if target == "" {
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
-	insecure := true          //TODO:(ijohnson) add insecure to endpoint schema
-	u, _ := url.Parse(target) // nolint
+	insecure := true //TODO:(ijohnson) add insecure to endpoint schema
+
+	u, err := url.Parse(target)
+	if err != nil {
+		log.WithError(err).WithField("target", target).Info("Failed to parse target - ignoring")
+	}
+
 	server = httputil.NewSingleHostReverseProxy(u)
 	if u.Scheme == "https" {
 		server.Transport = &http.Transport{
@@ -118,7 +122,7 @@ func (p *proxyService) getReverseProxy(urlPath string) (
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
 			}).Dial,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure}, // nolint
+			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure},
 			TLSHandshakeTimeout: 10 * time.Second,
 		}
 	}

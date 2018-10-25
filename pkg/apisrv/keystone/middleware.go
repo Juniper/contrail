@@ -84,7 +84,7 @@ func GetAuthSkipPaths() []string {
 
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
 //nolint: gocyclo
-func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
+func AuthMiddleware(keystoneClient *Client, skipPath []string,
 	endpoints *apicommon.EndpointStore) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		keystoneClient.AuthURL = keystoneClient.LocalAuthURL
@@ -137,7 +137,7 @@ func AuthMiddleware(keystoneClient *KeystoneClient, skipPath []string,
 }
 
 //AuthInterceptor for Auth process for gRPC based apps.
-func AuthInterceptor(keystoneClient *KeystoneClient,
+func AuthInterceptor(keystoneClient *Client,
 	endpoints *apicommon.EndpointStore) grpc.UnaryServerInterceptor {
 	keystoneClient.AuthURL = keystoneClient.LocalAuthURL
 	auth := keystoneClient.NewAuth()
