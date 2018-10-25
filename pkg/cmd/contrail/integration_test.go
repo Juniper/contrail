@@ -35,6 +35,10 @@ const (
 	expectedACLCount                     = 2
 )
 
+func TestProject(t *testing.T) {
+	runTest(t, t.Name())
+}
+
 func TestSecurityGroup(t *testing.T) {
 	runTest(t, t.Name())
 }
