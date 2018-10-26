@@ -155,14 +155,20 @@ func updateFireWallRuleRequest(m *models.FirewallRule, paths []string) *services
 
 func TestDBScanRow(t *testing.T) {
 	tests := []struct {
-		name     string
-		schemaID string
-		row      map[string]interface{}
-		fails    bool
-		expected proto.Message
+		name       string
+		schemaID   string
+		row        map[string]interface{}
+		fails      bool
+		expected   proto.Message
+		expectedFM *types.FieldMask
 	}{
 		{name: "empty", fails: true},
-		{name: "empty with valid schemaID", schemaID: "logical_interface", expected: models.MakeLogicalInterface()},
+		{
+			name:       "empty with valid schemaID",
+			schemaID:   "logical_interface",
+			expected:   models.MakeLogicalInterface(),
+			expectedFM: &types.FieldMask{},
+		},
 		{name: "valid logical_interface_row", schemaID: "logical_interface",
 			row: map[string]interface{}{
 				"configuration_version":      1,
@@ -230,17 +236,33 @@ func TestDBScanRow(t *testing.T) {
 				LogicalInterfaceVlanTag:     4,
 				LogicalInterfaceType:        "test type",
 				VirtualMachineInterfaceRefs: nil,
+			},
+			expectedFM: &types.FieldMask{Paths: []string{
+				"uuid", "perms2.share", "perms2.owner_access", "perms2.owner",
+				"perms2.global_access", "parent_uuid", "parent_type", "logical_interface_vlan_tag",
+				"logical_interface_type", "id_perms.uuid.uuid_mslong", "id_perms.uuid.uuid_lslong",
+				"id_perms.user_visible", "id_perms.permissions.owner_access", "id_perms.permissions.owner",
+				"id_perms.permissions.other_access", "id_perms.permissions.group_access",
+				"id_perms.permissions.group", "id_perms.last_modified", "id_perms.enable",
+				"id_perms.description", "id_perms.creator", "id_perms.created", "fq_name",
+				"display_name", "configuration_version", "annotations.key_value_pair",
 			}},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := db.ScanRow(tt.schemaID, tt.row)
+			result, fm, err := db.ScanRow(tt.schemaID, tt.row)
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expected, result)
+				assert.Equal(t, tt.expectedFM, fm)
+				if tt.expectedFM != nil {
+					assert.Equal(t, len(tt.row), len(tt.expectedFM.Paths),
+						"FieldMask should contain same number of paths as row does")
+				}
 			}
 		})
 	}
