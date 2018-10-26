@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
+	"github.com/gogo/protobuf/types"
 
 	"{{ option.PackagePath }}/pkg/models"
 	"{{ option.PackagePath }}/pkg/services"
@@ -223,27 +224,25 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
     {% endif %}
 {% endmacro %}
 
-func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{} ) (*models.{{ schema.JSONSchema.GoName }}, error) {
-    m := models.Make{{ schema.JSONSchema.GoName }}()
-    {% for column in schema.Columns %}
-    if value, ok := values["{{ column.Column }}"]; ok {
-        {% if column.Bind == "json" %}
-            if b, ok := value.([]byte); ok {
-                json.Unmarshal(b, &m{{ column.Path }})
-            } else {
-                {{scanJSONObject(column.JSONSchema, "m"|add:column.Path, "value")}}
-            }
-        {% elif column.Bind == "int" %}
-           m{{ column.Path }} = format.InterfaceToInt64(value)
-        {% elif column.Bind == "uint" %}
-           m{{ column.Path }} = format.InterfaceToUint64(value)
-        {% elif column.Bind == "bool" %}
-           m{{ column.Path }} = format.InterfaceToBool(value)
-        {% elif column.Bind == "string" %}
-           m{{ column.Path }} = format.InterfaceToString(value)
-        {% endif %}
-    }
-    {% endfor %}
+func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interface{}) (*models.{{ schema.JSONSchema.GoName }}, *types.FieldMask, error) {
+	m := models.Make{{ schema.JSONSchema.GoName }}()
+	fields := []string{}
+	{% for column in schema.Columns %}
+		if value, ok := values["{{ column.Column }}"]; ok {
+		fields = append(fields, "{{ schema.Table }}{{ column.Path }}")
+		{% if column.Bind == "json" -%}
+		if b, ok := value.([]byte); ok {
+			json.Unmarshal(b, &m{{ column.Path }})
+		} else {
+			{{scanJSONObject(column.JSONSchema, "m"|add:column.Path, "value")}}
+		}
+		{%- elif column.Bind == "int" %}m{{ column.Path }} = format.InterfaceToInt64(value)
+		{%- elif column.Bind == "uint" %}m{{ column.Path }} = format.InterfaceToUint64(value)
+		{%- elif column.Bind == "bool" %}m{{ column.Path }} = format.InterfaceToBool(value)
+		{%- elif column.Bind == "string" %}m{{ column.Path }} = format.InterfaceToString(value)
+		{% endif -%}
+	}
+	{%- endfor -%}
 
     {% if  schema.References | length + schema.Children | length + schema.BackReferences | length  > 0 %}
     qb := db.QueryBuilders["{{ schema.ID }}"]
@@ -264,20 +263,21 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             fqNameStr := format.InterfaceToString(referenceMap["fq_name"])
             fqName, err := basedb.ParseFQName(fqNameStr)
             if err != nil {
-                return nil, err
+                return nil, nil, err
             }
 
             referenceModel := &models.{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
             referenceModel.UUID = uuid
             referenceModel.To = fqName
             m.{{ reference.GoName }}Refs = append(m.{{ reference.GoName }}Refs, referenceModel)
-            {% if reference.RefType %}
-            referenceModel.Attr = db.scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAttr(referenceMap)
-            {% endif %}
+            {% if reference.RefType -%}
+            referenceModel.Attr, _ = db.scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAttr(referenceMap)
+		  //fields = append(fields, refFields.Fields)
+            {%- endif %}
         }
     }
     {% endfor %}
-    {% for backref in schema.Children %}
+    {%- for backref in schema.Children %}
     {% set child = backref.LinkTo %}
     if value, ok := values[schema.ChildColumnName("{{ child.Table }}", "{{ schema.ID }}")]; ok {
         childResources := qb.ScanResourceList(value)
@@ -293,14 +293,14 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
             childModel := models.Make{{ child.JSONSchema.GoName }}()
             m.{{ child.JSONSchema.GoName }}s = append(m.{{ child.JSONSchema.GoName }}s, childModel)
 
-            {% for column in child.Columns %}
+            {%- for column in child.Columns %}
                 if propertyValue, ok := childResourceMap["{{ column.Column }}"]; ok && propertyValue != nil {
                 {{scanJSONObject(column.JSONSchema, "childModel"|add:column.Path, "propertyValue")}}
                 }
-            {% endfor %}
+            {%- endfor %}
         }
     }
-    {% endfor %}
+    {%- endfor %}
     {% for _, definition in schema.BackReferences %}
     {% set backref = definition.LinkTo %}
     if value, ok := values[schema.BackRefColumnName("{{ backref.Table }}", "{{ schema.Table }}")]; ok {
@@ -325,18 +325,20 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(values map[string]interfac
         }
     }
     {% endfor %}
-    return m, nil
+    return m, &types.FieldMask{fields}, nil
 }
 
 {% for linkTo, reference in schema.References %}{% if reference.RefType %}
-func (db *Service) scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAttr(values map[string]interface{}) *models.{{ reference.RefType }} {
-    attr := models.Make{{reference.RefType}}()
-    {% for column in reference.Columns %}
-    if refAttrValue, ok := values["{{column.Column}}"]; ok && refAttrValue != nil {
-        {{scanJSONObject(column.JSONSchema, "attr"|add:column.Path, "refAttrValue")}}
-    }
-    {% endfor %}
-    return attr
+func (db *Service) scan{{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefAttr(values map[string]interface{}) (*models.{{ reference.RefType }}, *types.FieldMask) {
+	attr := models.Make{{reference.RefType}}()
+	fields := []string{}
+	{% for column in reference.Columns %}
+	if refAttrValue, ok := values["{{column.Column}}"]; ok && refAttrValue != nil {
+		fields = append(fields, "{{ schema.Table }}{{ column.Path }}")
+		{{scanJSONObject(column.JSONSchema, "attr"|add:column.Path, "refAttrValue")}}
+	}
+	{% endfor %}
+	return attr, &types.FieldMask{fields}
 }
 {% endif %}{% endfor %}
 
@@ -373,7 +375,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
                 val := valuesPointers[index].(*interface{})
                 valuesMap[column] = *val
             }
-            m, err := db.scan{{ schema.JSONSchema.GoName }}(valuesMap)
+            m, _, err := db.scan{{ schema.JSONSchema.GoName }}(valuesMap)
             if err != nil {
                 return nil, errors.Wrap(err, "scan row failed")
             }
