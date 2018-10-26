@@ -84,6 +84,12 @@ func TestSyncService(t *testing.T) {
 					VirtualNetwork: &models.VirtualNetwork{
 						UUID: "vn-blue",
 						Name: "vn_blue",
+						IDPerms: &models.IdPermsType{
+							UUID: &models.UuidType{
+								UUIDMslong: 1,
+								UUIDLslong: 2,
+							},
+						},
 					},
 				})
 				require.NoError(t, err, "create virtual network failed")
@@ -92,8 +98,16 @@ func TestSyncService(t *testing.T) {
 					VirtualNetwork: &models.VirtualNetwork{
 						UUID: "vn-blue",
 						Name: "vn_bluuee",
+						IDPerms: &models.IdPermsType{
+							UUID: &models.UuidType{
+								UUIDMslong: 1337,
+								UUIDLslong: 2778,
+							},
+						},
 					},
-					FieldMask: types.FieldMask{Paths: []string{"name"}},
+					FieldMask: types.FieldMask{Paths: []string{
+						"name", "id_perms.uuid.uuid_lslong", "id_perms.uuid.uuid_mslong",
+					}},
 				})
 				assert.NoError(t, err, "update virtual network failed")
 
@@ -104,9 +118,21 @@ func TestSyncService(t *testing.T) {
 				"/test/virtual_network/vn-blue": []integration.Event{
 					{
 						"name": "vn_blue",
+						"id_perms": map[string]interface{}{
+							"uuid": map[string]interface{}{
+								"uuid_mslong": float64(1),
+								"uuid_lslong": float64(2),
+							},
+						},
 					},
 					{
 						"name": "vn_bluuee",
+						"id_perms": map[string]interface{}{
+							"uuid": map[string]interface{}{
+								"uuid_mslong": float64(1337),
+								"uuid_lslong": float64(2778),
+							},
+						},
 					},
 					nil,
 				},
