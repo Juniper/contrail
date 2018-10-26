@@ -27,6 +27,12 @@ test_data:
     parent_type: project
     parent_uuid: project_base_properties_uuid
 
+    id_perms: &id_perms_with_correct_uuid
+      uuid:
+        uuid_lslong: 3335361290466096867
+        uuid_mslong: 5441706009095324062
+
+
 clients:
   default:
     id: alice
@@ -138,6 +144,36 @@ workflow:
         uuid:
           uuid_mslong: 123
           uuid_lslong: 456
+  watchers:
+    /contrail/network_ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3:
+      - <<: *network_ipam
+        uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+        id_perms:
+          uuid:
+            uuid_mslong: 123
+            uuid_lslong: 456
+
+- name: update id_perms description
+  request:
+    path: /network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+    method: PUT
+    expected:
+    - 200
+    data:
+      network-ipam:
+        id_perms:
+          description: my-description
+  expect:
+    network-ipam:
+      uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+      id_perms:
+        description: my-description
+  watchers:
+    /contrail/network_ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3:
+      - <<: *network_ipam
+        uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+        id_perms:
+          description: my-description
 
 - name: delete Network IPAM
   request:
@@ -156,10 +192,7 @@ workflow:
   expect:
     network-ipam:
       <<: *network_ipam
-      id_perms:
-        uuid:
-          uuid_lslong: 3335361290466096867
-          uuid_mslong: 5441706009095324062
+      id_perms: *id_perms_with_correct_uuid
 
 - name: update should not zero id_perms.uuid
   request:
@@ -185,10 +218,7 @@ workflow:
   expect:
     network-ipam:
       <<: *network_ipam
-      id_perms:
-        uuid:
-          uuid_lslong: 3335361290466096867
-          uuid_mslong: 5441706009095324062
+      id_perms: *id_perms_with_correct_uuid
 
 - name: update should not modify id_perms.uuid
   request:
@@ -216,10 +246,7 @@ workflow:
   expect:
     network-ipam:
       <<: *network_ipam
-      id_perms:
-        uuid:
-          uuid_lslong: 3335361290466096867
-          uuid_mslong: 5441706009095324062
+      id_perms: *id_perms_with_correct_uuid
 
 - name: delete Network IPAM
   request:
