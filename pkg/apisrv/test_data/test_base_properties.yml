@@ -27,6 +27,10 @@ test_data:
     parent_type: project
     parent_uuid: project_base_properties_uuid
 
+  custom-id-perms: &custom-id-perms
+    description: my-description
+
+
 clients:
   default:
     id: alice
@@ -138,6 +142,33 @@ workflow:
         uuid:
           uuid_mslong: 123
           uuid_lslong: 456
+  watchers:
+    /contrail/network_ipam/f774ea9e-fc59-4730-8bcf-8ef4f69a812e:
+      - <<: *network_ipam
+        uuid: f774ea9e-fc59-4730-8bcf-8ef4f69a812e
+        id_perms:
+          uuid:
+            uuid_mslong: 123
+            uuid_lslong: 456
+
+- name: update id_perms
+  request:
+    path: /network-ipam/f774ea9e-fc59-4730-8bcf-8ef4f69a812e
+    method: PUT
+    expected:
+    - 200
+    data:
+      network-ipam:
+        id_perms: *custom-id-perms
+  expect:
+    network-ipam:
+      uuid: f774ea9e-fc59-4730-8bcf-8ef4f69a812e
+      id_perms: *custom-id-perms
+  watchers:
+    /contrail/network_ipam/f774ea9e-fc59-4730-8bcf-8ef4f69a812e:
+      - <<: *network_ipam
+        uuid: f774ea9e-fc59-4730-8bcf-8ef4f69a812e
+        id_perms: *custom-id-perms
 
 - name: delete Network IPAM
   request:
