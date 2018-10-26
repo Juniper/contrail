@@ -83,6 +83,14 @@ workflow:
       #   - uuid: test_tag_blue_uuid
       #     to:
       #       - namespace=kube-system
+  watchers:
+    /contrail/firewall_rule/test_firewall_rule_uuid:
+      - <<: *test_firewall_rule
+        service:
+          protocol_id: 6
+        endpoint_2:
+          tag_ids:
+            - 1
 
 - name: try to update firewall rule
   request:
@@ -114,6 +122,14 @@ workflow:
           tags: []
           tag_ids: []
   expect: null
+  watchers:
+    /contrail/firewall_rule/test_firewall_rule_uuid:
+      - <<: *test_firewall_rule
+        endpoint_1:
+          tags:
+            - "namespace=kube-system"
+        endpoint_2:
+          any: true
 
 - name: get updated firewall rule
   request:
