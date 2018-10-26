@@ -14,6 +14,7 @@ import (
 
 func TestObjectMappingAdapterCreate(t *testing.T) {
 	resourceName, pk, props := "resource", []string{"1"}, map[string]interface{}{}
+	fields := types.FieldMask{[]string{"resource"}}
 	message := &dummyMessage{}
 
 	tests := []struct {
@@ -25,13 +26,13 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 		{
 			name: "scanner fails",
 			initRowScanner: func(o oner) {
-				o.On("ScanRow", resourceName, props).Return(nil, assert.AnError).Once()
+				o.On("ScanRow", resourceName, props).Return(nil, nil, assert.AnError).Once()
 			},
 			fails: true},
 		{
 			name: "sink fails",
 			initRowScanner: func(o oner) {
-				o.On("ScanRow", resourceName, props).Return(message, nil).Once()
+				o.On("ScanRow", resourceName, props).Return(message, fields, nil).Once()
 			},
 			initSink: func(o oner) {
 				o.On("Create", resourceName, pk[0], message).Return(assert.AnError).Once()
@@ -41,7 +42,7 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 		{
 			name: "correct message",
 			initRowScanner: func(o oner) {
-				o.On("ScanRow", resourceName, props).Return(message, nil).Once()
+				o.On("ScanRow", resourceName, props).Return(message, fields, nil).Once()
 			},
 			initSink: func(o oner) {
 				o.On("Create", resourceName, pk[0], message).Return(nil).Once()
@@ -76,6 +77,7 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 
 func TestObjectMappingAdapterRefCreate(t *testing.T) {
 	resourceName, correctPK, props := "ref_resource", []string{"1", "2"}, map[string]interface{}{}
+	fields := types.FieldMask{[]string{"ref_resource"}}
 	attr := &dummyMessage{}
 
 	sMock, rsMock := &sinkMock{}, &mock.Mock{}
@@ -95,7 +97,7 @@ func TestObjectMappingAdapterRefCreate(t *testing.T) {
 			pk:            []string{"1"},
 			operationFunc: adapter.Create,
 			initRowScanner: func(o oner) {
-				o.On("ScanRow", resourceName, props).Return(attr, nil).Once()
+				o.On("ScanRow", resourceName, props).Return(attr, fields, nil).Once()
 			},
 		},
 		{
@@ -109,7 +111,7 @@ func TestObjectMappingAdapterRefCreate(t *testing.T) {
 			pk:            correctPK,
 			operationFunc: adapter.Create,
 			initRowScanner: func(o oner) {
-				o.On("ScanRow", resourceName, props).Return(attr, nil).Once()
+				o.On("ScanRow", resourceName, props).Return(attr, fields, nil).Once()
 			},
 			initSink: func(o oner) {
 				o.On("CreateRef", resourceName, correctPK, attr).Return(nil).Once()
@@ -168,12 +170,15 @@ func (d *dummyMessage) ApplyMap(_ map[string]interface{}) {}
 
 type rowScannerMock mock.Mock
 
-func (m *rowScannerMock) ScanRow(schemaID string, rowData map[string]interface{}) (basedb.Object, error) {
+func (m *rowScannerMock) ScanRow(
+	schemaID string, rowData map[string]interface{},
+) (basedb.Object, *types.FieldMask, error) {
 	args := (*mock.Mock)(m).MethodCalled("ScanRow", schemaID, rowData)
-	if args.Error(1) != nil {
-		return nil, args.Error(1)
+	if err := args.Error(2); err != nil {
+		return nil, nil, err
 	}
-	return args.Get(0).(basedb.Object), nil
+	fields := args.Get(1).(types.FieldMask) // nolint: errcheck
+	return args.Get(0).(basedb.Object), &fields, nil
 }
 
 type sinkMock struct {
