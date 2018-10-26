@@ -293,7 +293,9 @@ func createWatchChecker(task string, collect func() []string, key string, events
 	return func(t *testing.T) {
 		collected := collect()
 		assert.Equal(
-			t, len(events), len(collected), "etcd emitted not enough events on %s\n", key,
+			t, len(events), len(collected),
+			"etcd emitted not enough events on %s(expected %v, got %v)\n",
+			key, collected, events,
 		)
 		for i, e := range events[:len(collected)] {
 			c := collected[i]

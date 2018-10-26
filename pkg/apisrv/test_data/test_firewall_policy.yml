@@ -2,7 +2,7 @@ name: Firewall Policy Test
 description: basic firewall policy test
 cleanup:
 - path: /project/admin_project_uuid
-- path: /firewall-rule/test_firewall_rule_uuid
+- path: /firewall-rule/test_firewall_policy_uuid
 - path: /firewall-policy/test_firewall_policy_uuid
 test_data:
   admin_project: &admin_project
@@ -14,13 +14,13 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
 
-  firewall_rule: &test_firewall_rule
-    uuid: test_firewall_rule_uuid
+  firewall_rule: &test_firewall_policy
+    uuid: test_firewall_policy_uuid
     parent_type: project
     fq_name:
       - default
       - admin_project_uuid
-      - test_firewall_rule_uuid
+      - test_firewall_policy_uuid
     endpoint_1:
       any: true
     endpoint_2:
@@ -68,9 +68,9 @@ workflow:
     method: POST
     expected: [200]
     data:
-      firewall-rule: *test_firewall_rule
+      firewall-rule: *test_firewall_policy
   expect:
-    firewall-rule: *test_firewall_rule
+    firewall-rule: *test_firewall_policy
 
 - name: creating firewall policy with draft mode state property defined should fail
   request:
@@ -91,7 +91,7 @@ workflow:
       firewall-policy:
         <<: *test_firewall_policy
         firewall_rule_refs:
-          - uuid: test_firewall_rule_uuid
+          - uuid: test_firewall_policy_uuid
 
 - name: create firewall policy
   request:
@@ -122,7 +122,7 @@ workflow:
       firewall-policy:
         uuid: test_firewall_policy_uuid
         firewall_rule_refs:
-          - uuid: test_firewall_rule_uuid
+          - uuid: test_firewall_policy_uuid
 
 - name: update firewall policy
   request:
@@ -159,7 +159,7 @@ workflow:
 
 - name: delete firewall rule
   request:
-    path: /firewall-rule/test_firewall_rule_uuid
+    path: /firewall-rule/test_firewall_policy_uuid
     method: DELETE
     expected: [200]
   expect: null
