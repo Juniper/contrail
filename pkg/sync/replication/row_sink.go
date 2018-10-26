@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/sync/sink"
 )
@@ -21,7 +21,7 @@ type RowSink interface {
 }
 
 type rowScanner interface {
-	ScanRow(schemaID string, rowData map[string]interface{}) (basedb.Object, error)
+	ScanRow(schemaID string, rowData map[string]interface{}) (basedb.Object, *types.FieldMask, error)
 }
 
 type objectMappingAdapter struct {
@@ -39,7 +39,7 @@ func (o *objectMappingAdapter) Create(
 	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
 ) error {
 	pkLen := len(pk)
-	obj, err := o.rs.ScanRow(resourceName, properties)
+	obj, _, err := o.rs.ScanRow(resourceName, properties)
 	if err != nil {
 		return errors.Wrap(err, "error scanning row")
 	}
@@ -60,11 +60,11 @@ func (o *objectMappingAdapter) Update(
 	isRef := strings.HasPrefix(resourceName, schema.RefPrefix)
 	switch {
 	case pkLen == 1 && !isRef:
-		obj, err := o.rs.ScanRow(resourceName, properties)
+		obj, fields, err := o.rs.ScanRow(resourceName, properties)
 		if err != nil {
 			return fmt.Errorf("error scanning row: %v", err)
 		}
-		return o.Sink.Update(ctx, resourceName, pk[0], obj, basemodels.MapToFieldMask(properties))
+		return o.Sink.Update(ctx, resourceName, pk[0], obj, *fields)
 	case pkLen == 2 && isRef:
 		return errors.New("method UPDATE not available on ref_* resources - this is a bug")
 	}
