@@ -1,0 +1,18 @@
+resources:
+- kind: floating_ip
+  data:
+    fq_name:
+    - default-domain
+    - k8s-default
+    - vn_floating_blue
+    - test_floating_ip_pool
+    - test_floating_ip
+    uuid: beefbeef-beef-beef-beef-beefbeef0105
+    display_name: floating_ip
+    parent_type: floating-ip-pool
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0104
+    virtual_machine_interface_refs:
+    - to:
+      - PUT VMI FQNAME HERE (domain name)
+      - PUT VMI FQNAME HERE (project name)
+      - PUT VMI FQNAME HERE (vmi name)
