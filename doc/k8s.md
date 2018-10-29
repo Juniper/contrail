@@ -151,3 +151,7 @@ as described in "Intra VN ping"
   # Should print "echo" if and only if TCP traffic is allowed:
   nc 10.32.0.1 8080
   ```
+
+### Floating IP
+
+Follow steps described in [./tools/demo/floating-ip-ping/scenario.md](../tools/demo/floating-ip-ping/scenario.md)
