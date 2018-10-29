@@ -1,0 +1,15 @@
+resources:
+- kind: floating_ip_pool
+  data:
+    fq_name:
+    - default-domain
+    - k8s-default
+    - vn_floating_blue
+    - test_floating_ip_pool
+    uuid: beefbeef-beef-beef-beef-beefbeef0104
+    display_name: test_floating_ip_pool
+    parent_type: virtual-network
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0102
+    floating_ip_pool_subnets:
+      subnet_uuid:
+      - 054ca01e-cef3-444e-b4d5-4ac16554ac3d

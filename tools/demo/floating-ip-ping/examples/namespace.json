@@ -1,0 +1,14 @@
+{
+    "kind": "Namespace",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "f-ip-namespace",
+        "labels": {
+            "name": "f-ip-namespace"
+        },
+        "annotations": {
+            "opencontrail.org/network": "{'project': 'k8s-default', 'domain': 'default-domain', 'name': 'vn_floating_blue'}"
+        }
+    }
+}
+
