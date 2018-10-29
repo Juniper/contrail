@@ -1,0 +1,22 @@
+To verify floating ip ping:
+
+1. Create virtual machine
+2. Open three terminals
+3. Log them on the machine,
+4. Create namespace (You can use example namespace: namespace.json),
+5. Create project or use default-project or k8s-default,
+6. Create Network IPAM with ipam_subnet_method: "user-defined-subnet",
+7. Create Virtual Network with address_allocation_mode: "user-defined-subnet-only",
+   network_ipam_refs set to previously created network ipam with added subnet in attr
+   (see vn.yml),
+8. Create Floating Ip Pool as a child of previously created Virtual Network with
+   floating_ip_pool_subnets. You can check subnet uuid within Virtual Network,
+9. Create two pods on different terminals to ensure normal ping between them is
+   working,
+10. Create clean Floating Ip as a child of Floating Ip Pool,
+11. Check ip address allocated for Floating Ip. Try to ping it from any pod
+    (it should fail),
+12. Find Virtual Machine Interface connected with one of previously created pods,
+13. Add Virtual Machine Interface Ref to Floating Ip,
+14. Try to ping once again (now it should succed),
+15. Enjoy your pinging!
