@@ -5,7 +5,6 @@ run:
   skip-dirs:
   - extension/pkg/db/cache        # TODO: re-enable when compilation fixed
   - extension/pkg/db/etcd         # TODO: re-enable when compilation fixed
-  - extension/pkg/services/vncapi # TODO: re-enable when compilation fixed
   - extension/pkg/apisrv/client   # TODO: re-enable when compilation fixed
 
 issues:

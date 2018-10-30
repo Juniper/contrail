@@ -7,13 +7,13 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/vncapi"
 )
 
 // Data source and destination types.
@@ -153,10 +153,7 @@ func writeHTTP(events *services.EventList, url string) (err error) {
 	}
 	events = &services.EventList{Events: e}
 
-	s := vncapi.NewNotifierService(&vncapi.Config{
-		Endpoint:          url,
-		InTransactionDoer: &services.NoTransaction{},
-	})
+	s := client.NewHTTP(url, "", "", "", true, nil)
 
 	failed := 0
 	for _, event := range events.Events {
