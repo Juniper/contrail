@@ -18,6 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (
@@ -26,6 +27,7 @@ const (
 
 // HTTP represents API Server HTTP client.
 type HTTP struct {
+	services.BaseService
 	httpClient *http.Client
 
 	ID        string          `yaml:"id"`

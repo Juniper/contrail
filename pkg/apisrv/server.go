@@ -26,7 +26,6 @@ import (
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/vncapi"
 	"github.com/Juniper/contrail/pkg/types"
 )
 
@@ -102,13 +101,6 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		if en != nil {
 			serviceChain = append(serviceChain, en)
 		}
-	}
-
-	if viper.GetBool("server.vnc_api_notifier.enabled") {
-		serviceChain = append(serviceChain, vncapi.NewNotifierService(&vncapi.Config{
-			Endpoint:          viper.GetString("server.vnc_api_notifier.endpoint"),
-			InTransactionDoer: s.dbService,
-		}))
 	}
 
 	serviceChain = append(serviceChain, s.dbService)

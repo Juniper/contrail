@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/vncapi"
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 )
 
 // Data source and destination types.
@@ -153,10 +153,7 @@ func writeHTTP(events *services.EventList, url string) (err error) {
 	}
 	events = &services.EventList{Events: e}
 
-	s := vncapi.NewNotifierService(&vncapi.Config{
-		Endpoint:          url,
-		InTransactionDoer: &services.NoTransaction{},
-	})
+	s := client.NewHTTP(url, "", "", "", true, nil)
 
 	failed := 0
 	for _, event := range events.Events {
