@@ -79,9 +79,3 @@ workflow:
     - *pagination_network_ipam{{ id }}
     {% endfor %}
 {% endfor %}
-
-- name: delete Project
-  request:
-    path: /project/pagination_project_uuid
-    method: DELETE
-    expected: [200]

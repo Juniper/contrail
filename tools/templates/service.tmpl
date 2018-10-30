@@ -189,17 +189,14 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
         return nil, errutil.ErrorBadRequest("update request body is empty")
     }
 
-    if model.GetIDPerms().GetUUID() != nil {
-        model.IDPerms.UUID = nil
-        request.FieldMask.Paths = format.RemoveFromStringSlice(
-            request.FieldMask.Paths,
-            map[string]struct{}{
-                "id_perms.uuid": {},
-                "id_perms.uuid.uuid_mslong": {},
-                "id_perms.uuid.uuid_lslong": {},
-            },
-        )
-    }
+    request.FieldMask.Paths = format.RemoveFromStringSlice(
+        request.FieldMask.Paths,
+        map[string]struct{}{
+            "id_perms.uuid": {},
+            "id_perms.uuid.uuid_mslong": {},
+            "id_perms.uuid.uuid_lslong": {},
+        },
+    )
 
     return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }

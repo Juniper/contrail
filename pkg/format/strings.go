@@ -54,16 +54,12 @@ func RemoveFromStringSlice(slice []string, values map[string]struct{}) []string 
 		return slice
 	}
 
-	var indexesToRemove []int
-	for i, v := range slice {
-		if _, ok := values[v]; ok {
-			indexesToRemove = append(indexesToRemove, i)
+	var trimmedSlice []string
+	for _, v := range slice {
+		if _, ok := values[v]; ok != true {
+			trimmedSlice = append(trimmedSlice, v)
 		}
 	}
 
-	for i, v := range indexesToRemove {
-		slice = append(slice[:v-i], slice[v-i+1:]...)
-	}
-
-	return slice
+	return trimmedSlice
 }
