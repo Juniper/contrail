@@ -70,18 +70,11 @@ docker build "$ContrailRootDir/docker/kube_manager_etcd/" -t contrail-kubernetes
 # Update kube_manager docker compose file
 sudo ./tools/kube_manager_etcd/update-docker-compose.py
 
-# Run vnc-db-proxy
-./tools/vncdbproxy/vncdbproxy.sh -n host -z localhost:2181 -c localhost:9161 -r localhost:5673
+# Update control-node docker compose file
+sudo ./tools/control-node_etcd/update-docker-compose.py
 
-# Wait for vnc-db-proxy
-until $(curl --output /dev/null --silent --head --fail http://localhost:9082); do
-    printf '.'
-    sleep 5
-done
-
-# Load init data to new and legacy databases
+# Load init data to rdbms
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c docker/contrail_go/etc/contrail-k8s.yml
-contrailutil convert --intype yaml --in tools/init_data.yaml --outtype http -u http://127.0.0.1:9082 || true
 
 # Build and run contrail-go2 docker
 build_docker
