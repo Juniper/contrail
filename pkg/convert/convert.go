@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
@@ -13,7 +12,6 @@ import (
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/vncapi"
 )
 
 // Data source and destination types.
@@ -87,8 +85,6 @@ func writeData(events *services.EventList, c *Config) error {
 		return writeYAML(events, c.OutFile)
 	case EtcdType:
 		return writeEtcd(events, c.EtcdNotifierPath)
-	case HTTPType:
-		return writeHTTP(events, c.URL)
 	default:
 		return errors.Errorf("unsupported output type %v", c.OutType)
 	}
@@ -144,32 +140,6 @@ func writeEtcd(events *services.EventList, etcdNotifierPath string) error {
 
 	_, err = events.Process(context.Background(), etcdNotifierService)
 	return errors.Wrap(err, "processing events on etcdNotifierService failed")
-}
-
-func writeHTTP(events *services.EventList, url string) (err error) {
-	e, err := separateRefUpdateEvents(events)
-	if err != nil {
-		return errors.Wrap(err, "failed to extract ref events")
-	}
-	events = &services.EventList{Events: e}
-
-	s := vncapi.NewNotifierService(&vncapi.Config{
-		Endpoint:          url,
-		InTransactionDoer: &services.NoTransaction{},
-	})
-
-	failed := 0
-	for _, event := range events.Events {
-		_, err = event.Process(context.Background(), s)
-		if err != nil {
-			log.Error(err)
-			failed++
-		}
-	}
-	if failed > 0 {
-		return errors.Wrapf(err, "%d events were not processed, last error", failed)
-	}
-	return nil
 }
 
 func separateRefUpdateEvents(e *services.EventList) (result []*services.Event, err error) {
