@@ -9,11 +9,7 @@ import (
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
-func isUpperOrDigit(c rune) bool {
-	return unicode.IsUpper(c) || unicode.IsDigit(c)
-}
-
-//CamelToSnake translate camel case to snake case
+// CamelToSnake translate camel case to snake case.
 func CamelToSnake(s string) string {
 	var buf bytes.Buffer
 	runes := []rune(s)
@@ -26,12 +22,16 @@ func CamelToSnake(s string) string {
 	return buf.String()
 }
 
-//SnakeToCamel translates snake case to camel case
+func isUpperOrDigit(c rune) bool {
+	return unicode.IsUpper(c) || unicode.IsDigit(c)
+}
+
+// SnakeToCamel translates snake case to camel case.
 func SnakeToCamel(s string) string {
 	return strmangle.TitleCase(s)
 }
 
-//ContainsString check if a string is in a string list
+// ContainsString check if a string is in a string list.
 func ContainsString(list []string, a string) bool {
 	for _, b := range list {
 		if a == b {
@@ -41,8 +41,27 @@ func ContainsString(list []string, a string) bool {
 	return false
 }
 
-//CheckPath check if fieldMask includes provided path
+// CheckPath check if fieldMask includes provided path.
 func CheckPath(fieldMask *types.FieldMask, path []string) bool {
 	genPath := strings.Join(path, ".")
 	return ContainsString(fieldMask.GetPaths(), genPath)
+}
+
+// RemoveFromStringSlice removes given values from slice of strings.
+// It preserves order of values.
+func RemoveFromStringSlice(slice []string, values map[string]struct{}) []string {
+	if len(values) == 0 {
+		return slice
+	}
+
+	var trimmedSlice []string
+	lowerBound := 0
+	for i, v := range slice {
+		if _, ok := values[v]; ok {
+			trimmedSlice = append(trimmedSlice, slice[lowerBound:i]...)
+			lowerBound = i + 1
+		}
+	}
+
+	return append(trimmedSlice, slice[lowerBound:]...)
 }
