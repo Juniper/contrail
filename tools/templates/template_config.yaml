@@ -59,9 +59,6 @@
   template_path: etcdserviceif.tmpl
   output_path: pkg/db/etcd/gen_etcd_notifier_service.go
 - type: all
-  template_path: vnc_api_notifier_service.tmpl
-  output_path: pkg/services/vncapi/gen_notifier_service.go
-- type: all
   template_path: service.tmpl
   output_path: pkg/services/gen_service.go
 - type: all
