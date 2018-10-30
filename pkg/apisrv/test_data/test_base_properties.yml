@@ -171,6 +171,13 @@ workflow:
         <<: *network_ipam
         id_perms:
           uuid: null
+
+- name: update should not zero id_perms.uuid
+  request:
+    path: "/network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3"
+    method: GET
+    expected:
+    - 200
   expect:
     network-ipam:
       <<: *network_ipam
@@ -191,6 +198,13 @@ workflow:
           uuid:
             uuid_lslong: 2222222222222222222
             uuid_mslong: 1111111111111111111
+
+- name: update should not modify id_perms.uuid
+  request:
+    path: "/network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3"
+    method: GET
+    expected:
+    - 200
   expect:
     network-ipam:
       <<: *network_ipam
