@@ -118,7 +118,14 @@ workflow:
   expect:
     project: *project
 
-# TODO: API Server should verify if id_perms.uuid match uuid
+# Id perms create handling
+
+# TODO: create non-admin user should fail when user_visible -> 'false'
+
+# TODO: tests for _ensure_id_perms_present in request data()
+
+# TODO: API Server should verify if id_perms.uuid match uuid (after transforming to longs)
+
 - name: create Network IPAM with uuid and id_perms specified
   request:
     path: /network-ipams
@@ -160,6 +167,12 @@ workflow:
         uuid:
           uuid_lslong: 3335361290466096867
           uuid_mslong: 5441706009095324062
+
+# Id perms update handling
+
+# TODO: update by non-admin user should fail when user_visible -> 'false'
+
+# TODO: tests for _ensure_id_perms_present in request data()
 
 - name: update should not zero id_perms.uuid
   request:
@@ -220,6 +233,10 @@ workflow:
         uuid:
           uuid_lslong: 3335361290466096867
           uuid_mslong: 5441706009095324062
+
+# ID perms delete handling
+
+# TODO: delete by non-admin user should fail when user_visible -> 'false'
 
 - name: delete Network IPAM
   request:

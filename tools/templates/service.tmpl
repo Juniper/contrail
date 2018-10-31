@@ -237,6 +237,8 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
 
 {% endif %}{% endfor %}
 
+// TODO: Remove from template as soon as extensions does not depend on it
+
 func sanitizeIDPermsUUID(idPerms *models.IdPermsType, paths []string) (*models.IdPermsType, []string) {
     if idPerms.GetUUID() != nil {
         idPerms.UUID = nil
