@@ -21,11 +21,12 @@ const (
 	updateAction = "update"
 	deleteAction = "delete"
 
-	provisionProvisioningAction  = "PROVISION"
-	upgradeProvisioningAction    = "UPGRADE"
-	importProvisioningAction     = "IMPORT"
-	addComputeProvisioningAction = "ADD_COMPUTE"
-	addCSNProvisioningAction     = "ADD_CSN"
+	provisionProvisioningAction     = "PROVISION"
+	upgradeProvisioningAction       = "UPGRADE"
+	importProvisioningAction        = "IMPORT"
+	addComputeProvisioningAction    = "ADD_COMPUTE"
+	deleteComputeProvisioningAction = "DELETE_COMPUTE"
+	addCSNProvisioningAction        = "ADD_CSN"
 
 	enable  = "yes"
 	disable = "no"
@@ -412,7 +413,7 @@ func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) err
 	case orchestratorOpenstack:
 		ansibleArgs = append(ansibleArgs, "-e force_checkout=yes")
 		switch a.clusterData.clusterInfo.ProvisioningAction {
-		case addComputeProvisioningAction:
+		case addComputeProvisioningAction, deleteComputeProvisioningAction:
 			ansibleArgs = append(ansibleArgs, "--tags=nova")
 		}
 		ansibleArgs = append(ansibleArgs, defaultOpenstackProvPlay)
@@ -527,6 +528,19 @@ func (a *ansibleProvisioner) playBook() error {
 			return err
 		}
 		if err := a.playContrailDatapathEncryption(); err != nil {
+			return err
+		}
+		if err := a.playAppformixProvision(); err != nil {
+			return err
+		}
+	case deleteComputeProvisioningAction:
+		if err := a.playInstancesConfig(args); err != nil {
+			return err
+		}
+		if err := a.playOrchestratorProvision(args); err != nil {
+			return err
+		}
+		if err := a.playContrailProvision(args); err != nil {
 			return err
 		}
 		if err := a.playAppformixProvision(); err != nil {
