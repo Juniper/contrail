@@ -1,17 +1,17 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: global_analytics_config
 parents:
-  global_system_config:
-    description: List of global-analytics-config that are          anchored under
-      global-system-config.
-    operations: CRUD
-    presence: optional
+    global_system_config:
+        description: 'List of global-analytics-config that are          anchored under
+            global-system-config.'
+        operations: CRUD
+        presence: optional
 plural: global_analytics_configs
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

@@ -1,46 +1,47 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: alarm
 parents:
-  global_system_config:
-    description: List of alarms that are applicable to objects anchored under global-system-config.
-    operations: CRUD
-    presence: optional
-  project:
-    description: List of alarms that are applicable to objects anchored under the
-      project.
-    operations: CRUD
-    presence: optional
+    global_system_config:
+        description: 'List of alarms that are applicable to objects anchored under
+            global-system-config.'
+        operations: CRUD
+        presence: optional
+    project:
+        description: 'List of alarms that are applicable to objects anchored under
+            the project.'
+        operations: CRUD
+        presence: optional
 plural: alarms
 prefix: /
 references: {}
 schema:
-  properties:
-    alarm_rules:
-      $ref: types.json#/definitions/AlarmOrList
-      collectionType: list
-      description: 'Rules based on the UVE attributes specified as OR-of-ANDs of AlarmExpression
-        template. Example: "alarm_rules": {"or_list": [{"and_list": [{AlarmExpression1},
-        {AlarmExpression2}, ...]}, {"and_list": [{AlarmExpression3}, {AlarmExpression4},
-        ...]}]}'
-      operations: CRUD
-      presence: optional
-      wrapper: true
-    alarm_severity:
-      $ref: types.json#/definitions/AlarmSeverity
-      description: Severity level for the alarm.
-      operations: CRUD
-      presence: required
-    uve_keys:
-      $ref: types.json#/definitions/UveKeysType
-      description: List of UVE tables or UVE objects where this alarm config should
-        be applied. For example, rules based on NodeStatus UVE can be applied to multiple
-        object types or specific uve objects such as analytics-node, config-node,
-        control-node:<hostname>, etc.,
-      operations: CRUD
-      presence: required
-  required:
-  - uve_keys
-  - alarm_severity
-  type: object
+    properties:
+        alarm_rules:
+            $ref: types.json#/definitions/AlarmOrList
+            collectionType: list
+            description: 'Rules based on the UVE attributes specified as OR-of-ANDs
+                of AlarmExpression template. Example: "alarm_rules": {"or_list": [{"and_list":
+                [{AlarmExpression1}, {AlarmExpression2}, ...]}, {"and_list": [{AlarmExpression3},
+                {AlarmExpression4}, ...]}]}'
+            operations: CRUD
+            presence: optional
+            wrapper: true
+        alarm_severity:
+            $ref: types.json#/definitions/AlarmSeverity
+            description: 'Severity level for the alarm.'
+            operations: CRUD
+            presence: required
+        uve_keys:
+            $ref: types.json#/definitions/UveKeysType
+            description: 'List of UVE tables or UVE objects where this alarm config
+                should be applied. For example, rules based on NodeStatus UVE can
+                be applied to multiple object types or specific uve objects such as
+                analytics-node, config-node, control-node:<hostname>, etc.,'
+            operations: CRUD
+            presence: required
+    required:
+        - uve_keys
+        - alarm_severity
+    type: object

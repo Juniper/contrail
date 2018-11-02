@@ -1,43 +1,43 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: bridge_domain
 parents:
-  virtual_network:
-    description: bridge-domains configured in a virtual network
-    operations: CRUD
-    presence: optional
+    virtual_network:
+        description: 'bridge-domains configured in a virtual network'
+        operations: CRUD
+        presence: optional
 plural: bridge_domains
 prefix: /
 references: {}
 schema:
-  properties:
-    isid:
-      $ref: types.json#/definitions/IsidType
-      description: i-sid value
-      operations: CRUD
-      presence: required
-    mac_aging_time:
-      $ref: types.json#/definitions/MACAgingTime
-      description: MAC aging time on the network
-      operations: CRUD
-      presence: optional
-    mac_learning_enabled:
-      default: false
-      description: Enable MAC learning on the network
-      operations: CRUD
-      presence: optional
-      type: boolean
-    mac_limit_control:
-      $ref: types.json#/definitions/MACLimitControlType
-      description: MAC limit control on the network
-      operations: CRUD
-      presence: optional
-    mac_move_control:
-      $ref: types.json#/definitions/MACMoveLimitControlType
-      description: MAC move control on the network
-      operations: CRUD
-      presence: optional
-  required:
-  - isid
-  type: object
+    properties:
+        isid:
+            $ref: types.json#/definitions/IsidType
+            description: 'i-sid value'
+            operations: CRUD
+            presence: required
+        mac_aging_time:
+            $ref: types.json#/definitions/MACAgingTime
+            description: 'MAC aging time on the network'
+            operations: CRUD
+            presence: optional
+        mac_learning_enabled:
+            default: false
+            description: 'Enable MAC learning on the network'
+            operations: CRUD
+            presence: optional
+            type: boolean
+        mac_limit_control:
+            $ref: types.json#/definitions/MACLimitControlType
+            description: 'MAC limit control on the network'
+            operations: CRUD
+            presence: optional
+        mac_move_control:
+            $ref: types.json#/definitions/MACMoveLimitControlType
+            description: 'MAC move control on the network'
+            operations: CRUD
+            presence: optional
+    required:
+        - isid
+    type: object

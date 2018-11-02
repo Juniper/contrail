@@ -1,35 +1,35 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: security_group
 parents:
-  project:
-    description: Security Groups are set of state full access control rules attached
-      to interfaces.It can be used to implement microsegmentation.
-    operations: CRUD
-    presence: optional
+    project:
+        description: 'Security Groups are set of state full access control rules attached
+            to interfaces.It can be used to implement microsegmentation.'
+        operations: CRUD
+        presence: optional
 plural: security_groups
 prefix: /
 references: {}
 schema:
-  properties:
-    configured_security_group_id:
-      $ref: types.json#/definitions/ConfiguredSecurityGroupIdType
-      description: Unique 32 bit user defined ID assigned to this security group [1,
-        8M - 1].
-      operations: CRUD
-      presence: optional
-    security_group_entries:
-      $ref: types.json#/definitions/PolicyEntriesType
-      description: Security group rule entries.
-      operations: CRUD
-      presence: required
-    security_group_id:
-      $ref: types.json#/definitions/SecurityGroupIdType
-      description: Unique 32 bit ID automatically assigned to this security group
-        [8M+1, 32G].
-      operations: R
-      presence: system-only
-  required:
-  - security_group_entries
-  type: object
+    properties:
+        configured_security_group_id:
+            $ref: types.json#/definitions/ConfiguredSecurityGroupIdType
+            description: 'Unique 32 bit user defined ID assigned to this security
+                group [1, 8M - 1].'
+            operations: CRUD
+            presence: optional
+        security_group_entries:
+            $ref: types.json#/definitions/PolicyEntriesType
+            description: 'Security group rule entries.'
+            operations: CRUD
+            presence: required
+        security_group_id:
+            $ref: types.json#/definitions/SecurityGroupIdType
+            description: 'Unique 32 bit ID automatically assigned to this security
+                group [8M+1, 32G].'
+            operations: R
+            presence: system-only
+    required:
+        - security_group_entries
+    type: object

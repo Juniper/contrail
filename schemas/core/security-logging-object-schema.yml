@@ -1,42 +1,42 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: security_logging_object
 parents:
-  global_vrouter_config:
-    description: Reference to security logging object for global-vrouter-config.
-    operations: CRUD
-    presence: optional
-  project:
-    description: Security logging object configuration for specifying session logging
-      criteria
-    operations: CRUD
-    presence: optional
+    global_vrouter_config:
+        description: 'Reference to security logging object for global-vrouter-config.'
+        operations: CRUD
+        presence: optional
+    project:
+        description: 'Security logging object configuration for specifying session
+            logging criteria'
+        operations: CRUD
+        presence: optional
 plural: security_logging_objects
 prefix: /
 references:
-  network_policy:
-    $ref: types.json#definitions/SecurityLoggingObjectRuleListType
-    description: Reference to network-policy attached to this security-logging-object
-    operations: CRUD
-    presence: optional
-  security_group:
-    $ref: types.json#definitions/SecurityLoggingObjectRuleListType
-    description: Reference to security-group attached to this security-logging-object
-    operations: CRUD
-    presence: optional
+    network_policy:
+        $ref: types.json#definitions/SecurityLoggingObjectRuleListType
+        description: 'Reference to network-policy attached to this security-logging-object'
+        operations: CRUD
+        presence: optional
+    security_group:
+        $ref: types.json#definitions/SecurityLoggingObjectRuleListType
+        description: 'Reference to security-group attached to this security-logging-object'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    security_logging_object_rate:
-      default: '100'
-      description: Security logging object rate defining rate of session logging
-      operations: CRUD
-      presence: optional
-      type: integer
-    security_logging_object_rules:
-      $ref: types.json#/definitions/SecurityLoggingObjectRuleListType
-      description: Security logging object rules derived internally.
-      operations: CRUD
-      presence: optional
-  required: []
-  type: object
+    properties:
+        security_logging_object_rate:
+            default: 100
+            description: 'Security logging object rate defining rate of session logging'
+            operations: CRUD
+            presence: optional
+            type: integer
+        security_logging_object_rules:
+            $ref: types.json#/definitions/SecurityLoggingObjectRuleListType
+            description: 'Security logging object rules derived internally.'
+            operations: CRUD
+            presence: optional
+    required: []
+    type: object

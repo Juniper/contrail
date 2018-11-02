@@ -1,35 +1,35 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: bgp_router
 parents:
-  routing_instance:
-    description: ''
-    operations: BGP router object represent configuration of BGP peers. All the BGP
-      peers involved in contrail system are under default routing instance of the
-      default virtual network.
-    presence: optionalCRUD
+    routing_instance:
+        description: ""
+        operations: 'BGP router object represent configuration of BGP peers. All the
+            BGP peers involved in contrail system are under default routing instance
+            of the default virtual network.'
+        presence: optionalCRUD
 plural: bgp_routers
 prefix: /
 references:
-  bgp_router:
-    $ref: types.json#definitions/BgpPeeringAttributes
-    description: References to peer BGP router, property of the reference has BGP
-      peering attributes.
-    operations: CRUD
-    presence: optional
-  sub_cluster:
-    description: Reference of bgp-router to sub-cluster .
-    operations: CRUD
-    presence: optional
+    bgp_router:
+        $ref: types.json#definitions/BgpPeeringAttributes
+        description: 'References to peer BGP router, property of the reference has
+            BGP peering attributes.'
+        operations: CRUD
+        presence: optional
+    sub_cluster:
+        description: 'Reference of bgp-router to sub-cluster .'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    bgp_router_parameters:
-      $ref: types.json#/definitions/BgpRouterParams
-      description: BGP router configuration parameters like ip address, AS number,
-        hold time etc.
-      operations: CRUD
-      presence: required
-  required:
-  - bgp_router_parameters
-  type: object
+    properties:
+        bgp_router_parameters:
+            $ref: types.json#/definitions/BgpRouterParams
+            description: 'BGP router configuration parameters like ip address, AS
+                number, hold time etc.'
+            operations: CRUD
+            presence: required
+    required:
+        - bgp_router_parameters
+    type: object

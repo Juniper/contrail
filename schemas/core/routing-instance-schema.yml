@@ -1,67 +1,67 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: routing_instance
 parents:
-  virtual_network:
-    derived: true
-    description: List of references of routing instances for this virtual network,
-      routing instances are internal to the system.
-    operations: CRUD
-    presence: system-only
+    virtual_network:
+        derived: true
+        description: 'List of references of routing instances for this virtual network,
+            routing instances are internal to the system.'
+        operations: CRUD
+        presence: system-only
 plural: routing_instances
 prefix: /
 references:
-  route_target:
-    $ref: types.json#definitions/InstanceTargetType
-    description: ''
-    operations: CRUD
-    presence: optional
-  routing_instance:
-    $ref: types.json#definitions/ConnectionType
-    description: ''
-    operations: CRUD
-    presence: optional
+    route_target:
+        $ref: types.json#definitions/InstanceTargetType
+        description: ""
+        operations: CRUD
+        presence: optional
+    routing_instance:
+        $ref: types.json#definitions/ConnectionType
+        description: ""
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    default_ce_protocol:
-      $ref: types.json#/definitions/DefaultProtocolType
-      description: ''
-      operations: CRUD
-      presence: optional
-    ipv6_service_chain_information:
-      $ref: types.json#/definitions/ServiceChainInfo
-      description: Internal service chaining information, should not be modified.
-      operations: CRUD
-      presence: system-only
-    routing_instance_fabric_snat:
-      default: false
-      description: Provide connectivity to underlay network by port mapping trafficwith
-        source IP of compute node
-      operations: CRUD
-      presence: system-only
-      type: boolean
-    routing_instance_has_pnf:
-      default: false
-      description: Internal service chaining information, should not be modified.
-      operations: CRUD
-      presence: system-only
-      type: boolean
-    routing_instance_is_default:
-      default: false
-      description: Internal service chaining information, should not be modified.
-      operations: CRUD
-      presence: system-only
-      type: boolean
-    service_chain_information:
-      $ref: types.json#/definitions/ServiceChainInfo
-      description: Internal service chaining information, should not be modified.
-      operations: CRUD
-      presence: system-only
-    static_route_entries:
-      $ref: types.json#/definitions/StaticRouteEntriesType
-      description: Internal service chaining information, should not be modified.
-      operations: CRUD
-      presence: system-only
-  required: []
-  type: object
+    properties:
+        default_ce_protocol:
+            $ref: types.json#/definitions/DefaultProtocolType
+            description: ""
+            operations: CRUD
+            presence: optional
+        ipv6_service_chain_information:
+            $ref: types.json#/definitions/ServiceChainInfo
+            description: 'Internal service chaining information, should not be modified.'
+            operations: CRUD
+            presence: system-only
+        routing_instance_fabric_snat:
+            default: false
+            description: 'Provide connectivity to underlay network by port mapping
+                trafficwith source IP of compute node'
+            operations: CRUD
+            presence: system-only
+            type: boolean
+        routing_instance_has_pnf:
+            default: false
+            description: 'Internal service chaining information, should not be modified.'
+            operations: CRUD
+            presence: system-only
+            type: boolean
+        routing_instance_is_default:
+            default: false
+            description: 'Internal service chaining information, should not be modified.'
+            operations: CRUD
+            presence: system-only
+            type: boolean
+        service_chain_information:
+            $ref: types.json#/definitions/ServiceChainInfo
+            description: 'Internal service chaining information, should not be modified.'
+            operations: CRUD
+            presence: system-only
+        static_route_entries:
+            $ref: types.json#/definitions/StaticRouteEntriesType
+            description: 'Internal service chaining information, should not be modified.'
+            operations: CRUD
+            presence: system-only
+    required: []
+    type: object

@@ -1,34 +1,34 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: qos_queue
 parents:
-  global_qos_config:
-    description: QOS queue config object in this project.
-    operations: CRUD
-    presence: optional
+    global_qos_config:
+        description: 'QOS queue config object in this project.'
+        operations: CRUD
+        presence: optional
 plural: qos_queues
 prefix: /
 references: {}
 schema:
-  properties:
-    max_bandwidth:
-      description: Maximum bandwidth for this queue.
-      operations: CRUD
-      presence: required
-      type: integer
-    min_bandwidth:
-      description: Minimum bandwidth for this queue.
-      operations: CRUD
-      presence: required
-      type: integer
-    qos_queue_identifier:
-      description: Unique id for this queue.
-      operations: CRUD
-      presence: required
-      type: integer
-  required:
-  - min_bandwidth
-  - max_bandwidth
-  - qos_queue_identifier
-  type: object
+    properties:
+        max_bandwidth:
+            description: 'Maximum bandwidth for this queue.'
+            operations: CRUD
+            presence: required
+            type: integer
+        min_bandwidth:
+            description: 'Minimum bandwidth for this queue.'
+            operations: CRUD
+            presence: required
+            type: integer
+        qos_queue_identifier:
+            description: 'Unique id for this queue.'
+            operations: CRUD
+            presence: required
+            type: integer
+    required:
+        - min_bandwidth
+        - max_bandwidth
+        - qos_queue_identifier
+    type: object

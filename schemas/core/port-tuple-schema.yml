@@ -1,17 +1,17 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: port_tuple
 parents:
-  service_instance:
-    derived: true
-    description: ''
-    operations: CRUD
-    presence: optional
+    service_instance:
+        derived: true
+        description: ""
+        operations: CRUD
+        presence: optional
 plural: port_tuples
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

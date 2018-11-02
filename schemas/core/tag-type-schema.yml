@@ -1,21 +1,22 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: tag_type
 parents: {}
 plural: tag_types
 prefix: /
 references: {}
 schema:
-  properties:
-    tag_type_id:
-      $ref: types.json#/definitions/U16BitHexInt
-      description: Internal Tag type ID                  coded on 16 bits where the
-        first 255 IDs are reserved                  and pre-defined. Users (principally
-        cloud admin) can define                  arbitrary types but its automatically
-        shared to all project as                  it is a global resource.
-      operations: R
-      presence: required
-  required:
-  - tag_type_id
-  type: object
+    properties:
+        tag_type_id:
+            $ref: types.json#/definitions/U16BitHexInt
+            description: 'Internal Tag type ID                  coded on 16 bits where
+                the first 255 IDs are reserved                  and pre-defined. Users
+                (principally cloud admin) can define                  arbitrary types
+                but its automatically shared to all project as                  it
+                is a global resource.'
+            operations: R
+            presence: required
+    required:
+        - tag_type_id
+    type: object

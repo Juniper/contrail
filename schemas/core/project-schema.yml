@@ -1,59 +1,60 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: project
 parents:
-  domain:
-    description: Project represent one instance of application or tenant.
-    operations: CRUD
-    presence: system-only
+    domain:
+        description: 'Project represent one instance of application or tenant.'
+        operations: CRUD
+        presence: system-only
 plural: projects
 prefix: /
 references:
-  alias_ip_pool:
-    description: Reference to alias ip pool in this project.
-    operations: CRUD
-    presence: optional
-  application_policy_set:
-    description: Reference to default application-policy-set is automatically created
-      by system for default socped application policy sets. Needed by vrouter to identify
-      default application-policy-set rules of a virtual machine interface
-    operations: CRUD
-    presence: system-only
-  floating_ip_pool:
-    description: Deprecated as it is not needed. Will be removed in future.
-    operations: CRUD
-    presence: optional
-  namespace:
-    $ref: types.json#definitions/SubnetType
-    description: Reference to network namespace of this project.
-    operations: CRUD
-    presence: optional
+    alias_ip_pool:
+        description: 'Reference to alias ip pool in this project.'
+        operations: CRUD
+        presence: optional
+    application_policy_set:
+        description: 'Reference to default application-policy-set is automatically
+            created by system for default socped application policy sets. Needed by
+            vrouter to identify default application-policy-set rules of a virtual
+            machine interface'
+        operations: CRUD
+        presence: system-only
+    floating_ip_pool:
+        description: 'Deprecated as it is not needed. Will be removed in future.'
+        operations: CRUD
+        presence: optional
+    namespace:
+        $ref: types.json#definitions/SubnetType
+        description: 'Reference to network namespace of this project.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    alarm_enable:
-      description: Flag to enable/disable alarms configured under global-system-config.
-        True, if not set.
-      operations: CRUD
-      presence: optional
-      type: boolean
-    enable_security_policy_draft:
-      default: false
-      description: ''
-      operations: CRUD
-      presence: optional
-      type: boolean
-    quota:
-      $ref: types.json#/definitions/QuotaType
-      description: Max instances limits for various objects under project.
-      operations: CRUD
-      presence: required
-    vxlan_routing:
-      description: When this knob is enabled for a project, an internal system VN
-        (VN-Int) is created for every logical router in the project.
-      operations: CRUD
-      presence: optional
-      type: boolean
-  required:
-  - quota
-  type: object
+    properties:
+        alarm_enable:
+            description: 'Flag to enable/disable alarms configured under global-system-config.
+                True, if not set.'
+            operations: CRUD
+            presence: optional
+            type: boolean
+        enable_security_policy_draft:
+            default: false
+            description: ""
+            operations: CRUD
+            presence: optional
+            type: boolean
+        quota:
+            $ref: types.json#/definitions/QuotaType
+            description: 'Max instances limits for various objects under project.'
+            operations: CRUD
+            presence: required
+        vxlan_routing:
+            description: 'When this knob is enabled for a project, an internal system
+                VN (VN-Int) is created for every logical router in the project.'
+            operations: CRUD
+            presence: optional
+            type: boolean
+    required:
+        - quota
+    type: object

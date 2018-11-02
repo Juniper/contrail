@@ -1,23 +1,23 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: route_table
 parents:
-  project:
-    description: Network route table is mechanism of adding static routes in the virtual
-      network
-    operations: CRUD
-    presence: optional
+    project:
+        description: 'Network route table is mechanism of adding static routes in
+            the virtual network'
+        operations: CRUD
+        presence: optional
 plural: route_tables
 prefix: /
 references: {}
 schema:
-  properties:
-    routes:
-      $ref: types.json#/definitions/RouteTableType
-      description: Routes in the route table are configured in following way.
-      operations: CRUD
-      presence: required
-  required:
-  - routes
-  type: object
+    properties:
+        routes:
+            $ref: types.json#/definitions/RouteTableType
+            description: 'Routes in the route table are configured in following way.'
+            operations: CRUD
+            presence: required
+    required:
+        - routes
+    type: object

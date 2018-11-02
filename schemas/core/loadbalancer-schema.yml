@@ -1,43 +1,45 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: loadbalancer
 parents:
-  project:
-    description: Loadbalancer object represents a LBaaS instance. One single Virtual
-      IP and multiple (listeners, pools). Applicable to LBaaS V2.
-    operations: CRUD
-    presence: optional
+    project:
+        description: 'Loadbalancer object represents a LBaaS instance. One single
+            Virtual IP and multiple (listeners, pools). Applicable to LBaaS V2.'
+        operations: CRUD
+        presence: optional
 plural: loadbalancers
 prefix: /
 references:
-  service_appliance_set:
-    description: ''
-    operations: CRUD
-    presence: optional
-  service_instance:
-    description: Reference to the service instance, created automatically by the system.
-    operations: CRUD
-    presence: system-only
-  virtual_machine_interface:
-    description: Reference to the virtual machine interface for VIP, created automatically
-      by the system.
-    operations: CRUD
-    presence: system-only
+    service_appliance_set:
+        description: ""
+        operations: CRUD
+        presence: optional
+    service_instance:
+        description: 'Reference to the service instance, created automatically by
+            the system.'
+        operations: CRUD
+        presence: system-only
+    virtual_machine_interface:
+        description: 'Reference to the virtual machine interface for VIP, created
+            automatically by the system.'
+        operations: CRUD
+        presence: system-only
 schema:
-  properties:
-    loadbalancer_properties:
-      $ref: types.json#/definitions/LoadbalancerType
-      description: Loadbalancer configuration like  admin state, VIP, VIP subnet etc.
-      operations: CRUD
-      presence: required
-    loadbalancer_provider:
-      description: Provider field selects backend provider of the LBaaS, Cloudadmin
-        could offer different levels of service like gold, silver, bronze. Provided
-        by  HA-proxy or various HW or SW appliances in the backend.
-      operations: CR
-      presence: optional
-      type: string
-  required:
-  - loadbalancer_properties
-  type: object
+    properties:
+        loadbalancer_properties:
+            $ref: types.json#/definitions/LoadbalancerType
+            description: 'Loadbalancer configuration like  admin state, VIP, VIP subnet
+                etc.'
+            operations: CRUD
+            presence: required
+        loadbalancer_provider:
+            description: 'Provider field selects backend provider of the LBaaS, Cloudadmin
+                could offer different levels of service like gold, silver, bronze.
+                Provided by  HA-proxy or various HW or SW appliances in the backend.'
+            operations: CR
+            presence: optional
+            type: string
+    required:
+        - loadbalancer_properties
+    type: object

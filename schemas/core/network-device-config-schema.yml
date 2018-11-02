@@ -1,16 +1,16 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: network_device_config
 parents: {}
 plural: network_device_configs
 prefix: /
 references:
-  physical_router:
-    description: Network device config of a physical router.
-    operations: CRUD
-    presence: optional
+    physical_router:
+        description: 'Network device config of a physical router.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object
