@@ -1,23 +1,23 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: virtual_DNS_record
 parents:
-  virtual_DNS:
-    description: Static DNS records in virtual DNS server.
-    operations: CRUD
-    presence: optional
+    virtual_DNS:
+        description: 'Static DNS records in virtual DNS server.'
+        operations: CRUD
+        presence: optional
 plural: virtual_DNS_records
 prefix: /
 references: {}
 schema:
-  properties:
-    virtual_DNS_record_data:
-      $ref: types.json#/definitions/VirtualDnsRecordType
-      description: DNS record data has configuration like type, name, ip address,
-        loadbalancing etc.
-      operations: CRUD
-      presence: required
-  required:
-  - virtual_DNS_record_data
-  type: object
+    properties:
+        virtual_DNS_record_data:
+            $ref: types.json#/definitions/VirtualDnsRecordType
+            description: 'DNS record data has configuration like type, name, ip address,
+                loadbalancing etc.'
+            operations: CRUD
+            presence: required
+    required:
+        - virtual_DNS_record_data
+    type: object

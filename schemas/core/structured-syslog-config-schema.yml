@@ -1,22 +1,22 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: structured_syslog_config
 parents:
-  global_analytics_config:
-    description: List of structured-syslog-config that are          applicable to
-      objects anchored under global-analytics-config.
-    operations: CRUD
-    presence: optional
-  project:
-    description: List of structured-syslog-config that are          applicable to
-      objects anchored under project.
-    operations: CRUD
-    presence: optional
+    global_analytics_config:
+        description: 'List of structured-syslog-config that are          applicable
+            to objects anchored under global-analytics-config.'
+        operations: CRUD
+        presence: optional
+    project:
+        description: 'List of structured-syslog-config that are          applicable
+            to objects anchored under project.'
+        operations: CRUD
+        presence: optional
 plural: structured_syslog_configs
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

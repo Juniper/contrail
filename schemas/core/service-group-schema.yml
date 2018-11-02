@@ -1,34 +1,34 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: service_group
 parents:
-  policy_management:
-    description: Service Group object
-    operations: CRUD
-    presence: optional
-  project:
-    description: Project level service Group object
-    operations: CRUD
-    presence: optional
+    policy_management:
+        description: 'Service Group object'
+        operations: CRUD
+        presence: optional
+    project:
+        description: 'Project level service Group object'
+        operations: CRUD
+        presence: optional
 plural: service_groups
 prefix: /
 references: {}
 schema:
-  properties:
-    draft_mode_state:
-      $ref: types.json#/definitions/DraftModeState
-      description: ''
-      operations: R
-      presence: optional
-    service_group_firewall_service_list:
-      $ref: types.json#/definitions/FirewallServiceGroupType
-      collectionType: list
-      description: list of service objects (protocol, source port and destination
-        port
-      operations: CRUD
-      presence: required
-      wrapper: true
-  required:
-  - service_group_firewall_service_list
-  type: object
+    properties:
+        draft_mode_state:
+            $ref: types.json#/definitions/DraftModeState
+            description: ""
+            operations: R
+            presence: optional
+        service_group_firewall_service_list:
+            $ref: types.json#/definitions/FirewallServiceGroupType
+            collectionType: list
+            description: 'list of service objects (protocol, source port and destination
+                port'
+            operations: CRUD
+            presence: required
+            wrapper: true
+    required:
+        - service_group_firewall_service_list
+    type: object

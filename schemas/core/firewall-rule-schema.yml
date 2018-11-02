@@ -1,85 +1,85 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: firewall_rule
 parents:
-  policy_management:
-    description: Firewall-rule object
-    operations: CRUD
-    presence: optional
-  project:
-    description: Project level firewall-rule object
-    operations: CRUD
-    presence: optional
+    policy_management:
+        description: 'Firewall-rule object'
+        operations: CRUD
+        presence: optional
+    project:
+        description: 'Project level firewall-rule object'
+        operations: CRUD
+        presence: optional
 plural: firewall_rules
 prefix: /
 references:
-  address_group:
-    description: Reference to address group attached to endpoints
-    operations: R
-    presence: optional
-  security_logging_object:
-    $ref: types.json#definitions/SloRateType
-    description: Reference to security-logging-object attached to this firewall-rule
-    operations: CRUD
-    presence: optional
-  service_group:
-    description: Reference to service-group attached to this firewall policy
-    operations: CRUD
-    presence: optional
-  virtual_network:
-    description: Reference to virtual network attached to endpoints
-    operations: R
-    presence: optional
+    address_group:
+        description: 'Reference to address group attached to endpoints'
+        operations: R
+        presence: optional
+    security_logging_object:
+        $ref: types.json#definitions/SloRateType
+        description: 'Reference to security-logging-object attached to this firewall-rule'
+        operations: CRUD
+        presence: optional
+    service_group:
+        description: 'Reference to service-group attached to this firewall policy'
+        operations: CRUD
+        presence: optional
+    virtual_network:
+        description: 'Reference to virtual network attached to endpoints'
+        operations: R
+        presence: optional
 schema:
-  properties:
-    action_list:
-      $ref: types.json#/definitions/ActionListType
-      description: Actions to be performed if packets match condition
-      operations: CRUD
-      presence: required
-    direction:
-      $ref: types.json#/definitions/FirewallRuleDirectionType
-      description: Direction in the rule
-      operations: CRUD
-      presence: required
-    draft_mode_state:
-      $ref: types.json#/definitions/DraftModeState
-      description: ''
-      operations: R
-      presence: optional
-    endpoint_1:
-      $ref: types.json#/definitions/FirewallRuleEndpointType
-      description: match condition for traffic source
-      operations: CRUD
-      presence: required
-    endpoint_2:
-      $ref: types.json#/definitions/FirewallRuleEndpointType
-      description: match condition for traffic destination
-      operations: CRUD
-      presence: required
-    match_tag_types:
-      $ref: types.json#/definitions/FirewallRuleMatchTagsTypeIdList
-      description: matching tags ids for source and destination endpoints
-      operations: R
-      presence: required
-    match_tags:
-      $ref: types.json#/definitions/FirewallRuleMatchTagsType
-      collectionType: list
-      description: matching tags for source and destination endpoints
-      operations: CRUD
-      presence: required
-      wrapper: true
-    service:
-      $ref: types.json#/definitions/FirewallServiceType
-      description: Service (port, protocol) for packets match condition
-      operations: CRUD
-      presence: optional
-  required:
-  - action_list
-  - endpoint_1
-  - endpoint_2
-  - match_tags
-  - match_tag_types
-  - direction
-  type: object
+    properties:
+        action_list:
+            $ref: types.json#/definitions/ActionListType
+            description: 'Actions to be performed if packets match condition'
+            operations: CRUD
+            presence: required
+        direction:
+            $ref: types.json#/definitions/FirewallRuleDirectionType
+            description: 'Direction in the rule'
+            operations: CRUD
+            presence: required
+        draft_mode_state:
+            $ref: types.json#/definitions/DraftModeState
+            description: ""
+            operations: R
+            presence: optional
+        endpoint_1:
+            $ref: types.json#/definitions/FirewallRuleEndpointType
+            description: 'match condition for traffic source'
+            operations: CRUD
+            presence: required
+        endpoint_2:
+            $ref: types.json#/definitions/FirewallRuleEndpointType
+            description: 'match condition for traffic destination'
+            operations: CRUD
+            presence: required
+        match_tag_types:
+            $ref: types.json#/definitions/FirewallRuleMatchTagsTypeIdList
+            description: 'matching tags ids for source and destination endpoints'
+            operations: R
+            presence: required
+        match_tags:
+            $ref: types.json#/definitions/FirewallRuleMatchTagsType
+            collectionType: list
+            description: 'matching tags for source and destination endpoints'
+            operations: CRUD
+            presence: required
+            wrapper: true
+        service:
+            $ref: types.json#/definitions/FirewallServiceType
+            description: 'Service (port, protocol) for packets match condition'
+            operations: CRUD
+            presence: optional
+    required:
+        - action_list
+        - endpoint_1
+        - endpoint_2
+        - match_tags
+        - match_tag_types
+        - direction
+    type: object

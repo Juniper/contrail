@@ -1,21 +1,22 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: policy_management
 parents:
-  config_root:
-    description: Global level policy-management object re-grouping global policy resources.
-    operations: CRUD
-    presence: optional
-  project:
-    description: Project level policy-management object re-grouping project policy
-      resources
-    operations: CRUD
-    presence: optional
+    config_root:
+        description: 'Global level policy-management object re-grouping global policy
+            resources.'
+        operations: CRUD
+        presence: optional
+    project:
+        description: 'Project level policy-management object re-grouping project policy
+            resources'
+        operations: CRUD
+        presence: optional
 plural: policy_managements
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

@@ -1,19 +1,19 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: multicast_policy
 parents: {}
 plural: multicast_policys
 prefix: /
 references: {}
 schema:
-  properties:
-    multicast_source_groups:
-      $ref: types.json#/definitions/MulticastSourceGroups
-      collectionType: list
-      description: List of Multicast (S,G) Addresses.
-      operations: CRUD
-      presence: optional
-      wrapper: true
-  required: []
-  type: object
+    properties:
+        multicast_source_groups:
+            $ref: types.json#/definitions/MulticastSourceGroups
+            collectionType: list
+            description: 'List of Multicast (S,G) Addresses.'
+            operations: CRUD
+            presence: optional
+            wrapper: true
+    required: []
+    type: object

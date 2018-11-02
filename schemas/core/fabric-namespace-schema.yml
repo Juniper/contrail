@@ -1,27 +1,27 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: fabric_namespace
 parents:
-  fabric:
-    description: list of fabric namespaces that define a set of resources that can
-      be used to configure the network devices in the fabric.
-    operations: CRUD
-    presence: optional
+    fabric:
+        description: 'list of fabric namespaces that define a set of resources that
+            can be used to configure the network devices in the fabric.'
+        operations: CRUD
+        presence: optional
 plural: fabric_namespaces
 prefix: /
 references: {}
 schema:
-  properties:
-    fabric_namespace_type:
-      $ref: types.json#/definitions/NamespaceType
-      description: Supported namespace types
-      operations: CRUD
-      presence: optional
-    fabric_namespace_value:
-      $ref: types.json#/definitions/NamespaceValue
-      description: namespace value of type defined by the namespace-type.
-      operations: CRUD
-      presence: optional
-  required: []
-  type: object
+    properties:
+        fabric_namespace_type:
+            $ref: types.json#/definitions/NamespaceType
+            description: 'Supported namespace types'
+            operations: CRUD
+            presence: optional
+        fabric_namespace_value:
+            $ref: types.json#/definitions/NamespaceValue
+            description: 'namespace value of type defined by the namespace-type.'
+            operations: CRUD
+            presence: optional
+    required: []
+    type: object

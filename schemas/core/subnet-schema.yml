@@ -1,24 +1,25 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: subnet
 parents: {}
 plural: subnets
 prefix: /
 references:
-  virtual_machine_interface:
-    description: Subnet belongs of the referenced virtual machine interface. This
-      is used in CPE use case when a subnet is reachable via the interface. It also
-      serves as dynamic DHCP pool for host on this LAN, where vrouter is DHCP server.
-    operations: CRUD
-    presence: optional
+    virtual_machine_interface:
+        description: 'Subnet belongs of the referenced virtual machine interface.
+            This is used in CPE use case when a subnet is reachable via the interface.
+            It also serves as dynamic DHCP pool for host on this LAN, where vrouter
+            is DHCP server.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    subnet_ip_prefix:
-      $ref: types.json#/definitions/SubnetType
-      description: Ip prefix/length of the subnet.
-      operations: CRD
-      presence: required
-  required:
-  - subnet_ip_prefix
-  type: object
+    properties:
+        subnet_ip_prefix:
+            $ref: types.json#/definitions/SubnetType
+            description: 'Ip prefix/length of the subnet.'
+            operations: CRD
+            presence: required
+    required:
+        - subnet_ip_prefix
+    type: object

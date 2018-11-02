@@ -1,41 +1,43 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: service_appliance
 parents:
-  service_appliance_set:
-    description: Service appliance is a member in service appliance set (e.g. Loadbalancer,
-      Firewall provider).By default system will create "ha-proxy" based service appliance.
-    operations: CRUD
-    presence: optional
+    service_appliance_set:
+        description: 'Service appliance is a member in service appliance set (e.g.
+            Loadbalancer, Firewall provider).By default system will create "ha-proxy"
+            based service appliance.'
+        operations: CRUD
+        presence: optional
 plural: service_appliances
 prefix: /
 references:
-  physical_interface:
-    $ref: types.json#definitions/ServiceApplianceInterfaceType
-    description: Reference to physical interface that can be used as (service interface
-      type)left, right, management OR other.
-    operations: CRUD
-    presence: optional
+    physical_interface:
+        $ref: types.json#definitions/ServiceApplianceInterfaceType
+        description: 'Reference to physical interface that can be used as (service
+            interface type)left, right, management OR other.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    service_appliance_ip_address:
-      $ref: types.json#/definitions/IpAddressType
-      description: Management Ip address of the service-appliance.
-      operations: CRUD
-      presence: required
-    service_appliance_properties:
-      $ref: types.json#/definitions/KeyValuePairs
-      description: List of Key:Value pairs used by the provider driver of this service
-        appliance.
-      operations: CRUD
-      presence: required
-    service_appliance_user_credentials:
-      $ref: types.json#/definitions/UserCredentials
-      description: Authentication credentials for driver to access service appliance.
-      operations: CRUD
-      presence: optional
-  required:
-  - service_appliance_ip_address
-  - service_appliance_properties
-  type: object
+    properties:
+        service_appliance_ip_address:
+            $ref: types.json#/definitions/IpAddressType
+            description: 'Management Ip address of the service-appliance.'
+            operations: CRUD
+            presence: required
+        service_appliance_properties:
+            $ref: types.json#/definitions/KeyValuePairs
+            description: 'List of Key:Value pairs used by the provider driver of this
+                service appliance.'
+            operations: CRUD
+            presence: required
+        service_appliance_user_credentials:
+            $ref: types.json#/definitions/UserCredentials
+            description: 'Authentication credentials for driver to access service
+                appliance.'
+            operations: CRUD
+            presence: optional
+    required:
+        - service_appliance_ip_address
+        - service_appliance_properties
+    type: object
