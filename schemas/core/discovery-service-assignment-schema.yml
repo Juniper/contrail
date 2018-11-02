@@ -1,12 +1,12 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: discovery_service_assignment
 parents: {}
 plural: discovery_service_assignments
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

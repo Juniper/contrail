@@ -1,18 +1,18 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: alias_ip_pool
 parents:
-  virtual_network:
-    description: Alias ip pool is set of addresses that are carved out of a given
-      network. Ip(s) from this set can be assigned to virtual-machine-interface so
-      that they become members of this network
-    operations: CRUD
-    presence: optional
+    virtual_network:
+        description: 'Alias ip pool is set of addresses that are carved out of a given
+            network. Ip(s) from this set can be assigned to virtual-machine-interface
+            so that they become members of this network'
+        operations: CRUD
+        presence: optional
 plural: alias_ip_pools
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

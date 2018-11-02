@@ -1,22 +1,22 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: virtual_machine
 parents: {}
 plural: virtual_machines
 prefix: /
 references:
-  service_instance:
-    derived: true
-    description: Reference to the service instance of this virtual machine.
-    operations: CRUD
-    presence: system-only
+    service_instance:
+        derived: true
+        description: 'Reference to the service instance of this virtual machine.'
+        operations: CRUD
+        presence: system-only
 schema:
-  properties:
-    server_type:
-      $ref: types.json#/definitions/ServerType
-      description: An enumeration value specifying the server type.
-      operations: CRUD
-      presence: optional
-  required: []
-  type: object
+    properties:
+        server_type:
+            $ref: types.json#/definitions/ServerType
+            description: 'An enumeration value specifying the server type.'
+            operations: CRUD
+            presence: optional
+    required: []
+    type: object

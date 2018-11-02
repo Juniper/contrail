@@ -1,33 +1,33 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: virtual_ip
 parents:
-  project:
-    description: Virtual ip object application(protocol, port). Applicable only to
-      LBaaS V1
-    operations: CRUD
-    presence: optional
+    project:
+        description: 'Virtual ip object application(protocol, port). Applicable only
+            to LBaaS V1'
+        operations: CRUD
+        presence: optional
 plural: virtual_ips
 prefix: /
 references:
-  loadbalancer_pool:
-    description: Reference to the load balancer pool that this virtual ip represent.
-      Applicable only to LBaaS V1
-    operations: CRUD
-    presence: optional
-  virtual_machine_interface:
-    description: Reference to the virtual machine interface for virtual ip. Applicable
-      only to LBaaS V1
-    operations: CRUD
-    presence: optional
+    loadbalancer_pool:
+        description: 'Reference to the load balancer pool that this virtual ip represent.
+            Applicable only to LBaaS V1'
+        operations: CRUD
+        presence: optional
+    virtual_machine_interface:
+        description: 'Reference to the virtual machine interface for virtual ip. Applicable
+            only to LBaaS V1'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    virtual_ip_properties:
-      $ref: types.json#/definitions/VirtualIpType
-      description: Virtual ip configuration like port, protocol, subnet etc.
-      operations: CRUD
-      presence: required
-  required:
-  - virtual_ip_properties
-  type: object
+    properties:
+        virtual_ip_properties:
+            $ref: types.json#/definitions/VirtualIpType
+            description: 'Virtual ip configuration like port, protocol, subnet etc.'
+            operations: CRUD
+            presence: required
+    required:
+        - virtual_ip_properties
+    type: object

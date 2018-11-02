@@ -1,44 +1,45 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: forwarding_class
 parents:
-  global_qos_config:
-    description: Link to global-qos config.
-    operations: CRUD
-    presence: optional
+    global_qos_config:
+        description: 'Link to global-qos config.'
+        operations: CRUD
+        presence: optional
 plural: forwarding_classs
 prefix: /
 references:
-  qos_queue:
-    description: Qos queue to be used for this forwarding class.
-    operations: CRUD
-    presence: required
+    qos_queue:
+        description: 'Qos queue to be used for this forwarding class.'
+        operations: CRUD
+        presence: required
 schema:
-  properties:
-    forwarding_class_dscp:
-      $ref: types.json#/definitions/DscpValueType
-      description: DSCP value to be written on outgoing packet for this forwarding-class.
-      operations: CRUD
-      presence: required
-    forwarding_class_id:
-      $ref: types.json#/definitions/ForwardingClassId
-      description: Unique ID for this forwarding class.
-      operations: CRUD
-      presence: required
-    forwarding_class_mpls_exp:
-      $ref: types.json#/definitions/MplsExpType
-      description: MPLS exp value to be written on outgoing packet for this forwarding-class.
-      operations: CRUD
-      presence: required
-    forwarding_class_vlan_priority:
-      $ref: types.json#/definitions/VlanPriorityType
-      description: 802.1p value to be written on outgoing packet for this forwarding-class.
-      operations: CRUD
-      presence: required
-  required:
-  - forwarding_class_id
-  - forwarding_class_dscp
-  - forwarding_class_vlan_priority
-  - forwarding_class_mpls_exp
-  type: object
+    properties:
+        forwarding_class_dscp:
+            $ref: types.json#/definitions/DscpValueType
+            description: 'DSCP value to be written on outgoing packet for this forwarding-class.'
+            operations: CRUD
+            presence: required
+        forwarding_class_id:
+            $ref: types.json#/definitions/ForwardingClassId
+            description: 'Unique ID for this forwarding class.'
+            operations: CRUD
+            presence: required
+        forwarding_class_mpls_exp:
+            $ref: types.json#/definitions/MplsExpType
+            description: 'MPLS exp value to be written on outgoing packet for this
+                forwarding-class.'
+            operations: CRUD
+            presence: required
+        forwarding_class_vlan_priority:
+            $ref: types.json#/definitions/VlanPriorityType
+            description: '802.1p value to be written on outgoing packet for this forwarding-class.'
+            operations: CRUD
+            presence: required
+    required:
+        - forwarding_class_id
+        - forwarding_class_dscp
+        - forwarding_class_vlan_priority
+        - forwarding_class_mpls_exp
+    type: object

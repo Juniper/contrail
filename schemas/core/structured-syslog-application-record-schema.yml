@@ -1,44 +1,44 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: structured_syslog_application_record
 parents:
-  structured_syslog_config:
-    description: List of         structured-syslog-application-record that are applicable
-      to objects         anchored under structured-syslog-config.
-    operations: CRUD
-    presence: optional
+    structured_syslog_config:
+        description: 'List of         structured-syslog-application-record that are
+            applicable to objects         anchored under structured-syslog-config.'
+        operations: CRUD
+        presence: optional
 plural: structured_syslog_application_records
 prefix: /
 references: {}
 schema:
-  properties:
-    structured_syslog_app_category:
-      description: The application                                   category
-      operations: CRUD
-      presence: required
-      type: string
-    structured_syslog_app_groups:
-      description: app groups comma                                   separated
-      operations: CRUD
-      presence: optional
-      type: string
-    structured_syslog_app_risk:
-      description: The application                                   risk profile
-      operations: CRUD
-      presence: optional
-      type: string
-    structured_syslog_app_service_tags:
-      description: service-tags                                   corresponding to
-        applications
-      operations: CRUD
-      presence: optional
-      type: string
-    structured_syslog_app_subcategory:
-      description: The application                                   sub category
-      operations: CRUD
-      presence: optional
-      type: string
-  required:
-  - structured_syslog_app_category
-  type: object
+    properties:
+        structured_syslog_app_category:
+            description: 'The application                                   category'
+            operations: CRUD
+            presence: required
+            type: string
+        structured_syslog_app_groups:
+            description: 'app groups comma                                   separated'
+            operations: CRUD
+            presence: optional
+            type: string
+        structured_syslog_app_risk:
+            description: 'The application                                   risk profile'
+            operations: CRUD
+            presence: optional
+            type: string
+        structured_syslog_app_service_tags:
+            description: 'service-tags                                   corresponding
+                to applications'
+            operations: CRUD
+            presence: optional
+            type: string
+        structured_syslog_app_subcategory:
+            description: 'The application                                   sub category'
+            operations: CRUD
+            presence: optional
+            type: string
+    required:
+        - structured_syslog_app_category
+    type: object

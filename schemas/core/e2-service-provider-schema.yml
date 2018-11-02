@@ -1,25 +1,26 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: e2_service_provider
 parents: {}
 plural: e2_service_providers
 prefix: /
 references:
-  peering_policy:
-    description: Links the service provider to a peering policy.
-    operations: CRUD
-    presence: optional
-  physical_router:
-    description: Links the service provider to peer routers.
-    operations: CRUD
-    presence: optional
+    peering_policy:
+        description: 'Links the service provider to a peering policy.'
+        operations: CRUD
+        presence: optional
+    physical_router:
+        description: 'Links the service provider to peer routers.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    e2_service_provider_promiscuous:
-      description: This service provider is connected to all other service providers.
-      operations: CRUD
-      presence: optional
-      type: boolean
-  required: []
-  type: object
+    properties:
+        e2_service_provider_promiscuous:
+            description: 'This service provider is connected to all other service
+                providers.'
+            operations: CRUD
+            presence: optional
+            type: boolean
+    required: []
+    type: object

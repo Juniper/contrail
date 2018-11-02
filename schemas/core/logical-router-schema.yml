@@ -1,67 +1,74 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: logical_router
 parents:
-  project:
-    description: Logical router is a mechanism to connect multiple virtual network
-      as they have been connected by a router.
-    operations: CRUD
-    presence: optional
+    project:
+        description: 'Logical router is a mechanism to connect multiple virtual network
+            as they have been connected by a router.'
+        operations: CRUD
+        presence: optional
 plural: logical_routers
 prefix: /
 references:
-  bgpvpn:
-    description: Back reference to logical router associated to the BGP VPN resource
-    operations: CRUD
-    presence: optional
-  physical_router:
-    description: Reference to physical router, when this link is present device manager
-      configures logical router associated route targets/interfaces on the Physical
-      Router.
-    operations: CRUD
-    presence: optional
-  route_table:
-    description: Reference to the route table attached to this logical router. By
-      attaching route table, system will create static routes with the route target
-      only of route targets linked to this logical router
-    operations: CRUD
-    presence: optional
-  route_target:
-    description: Route target that represent this logical router.
-    operations: CRUD
-    presence: system-only
-  service_instance:
-    description: Reference to service instance doing SNAT functionality for external
-      gateway.
-    operations: CRUD
-    presence: system-only
-  virtual_machine_interface:
-    description: Reference to the interface attached to this logical router. By attaching
-      a interface to logical network all subnets in the virtual network of the interface
-      has this router.
-    operations: CRUD
-    presence: optional
-  virtual_network:
-    $ref: types.json#definitions/LogicalRouterVirtualNetworkType
-    description: Reference to a virtual network. Please refer to link attribute for
-      additional details
-    operations: CRUD
-    presence: optional
+    bgpvpn:
+        description: 'Back reference to logical router associated to the BGP VPN resource'
+        operations: CRUD
+        presence: optional
+    physical_router:
+        description: 'Reference to physical router, when this link is present device
+            manager configures logical router associated route targets/interfaces
+            on the Physical Router.'
+        operations: CRUD
+        presence: optional
+    route_table:
+        description: 'Reference to the route table attached to this logical router.
+            By attaching route table, system will create static routes with the route
+            target only of route targets linked to this logical router'
+        operations: CRUD
+        presence: optional
+    route_target:
+        description: 'Route target that represent this logical router.'
+        operations: CRUD
+        presence: system-only
+    service_instance:
+        description: 'Reference to service instance doing SNAT functionality for external
+            gateway.'
+        operations: CRUD
+        presence: system-only
+    virtual_machine_interface:
+        description: 'Reference to the interface attached to this logical router.
+            By attaching a interface to logical network all subnets in the virtual
+            network of the interface has this router.'
+        operations: CRUD
+        presence: optional
+    virtual_network:
+        $ref: types.json#definitions/LogicalRouterVirtualNetworkType
+        description: 'Reference to a virtual network. Please refer to link attribute
+            for additional details'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    configured_route_target_list:
-      $ref: types.json#/definitions/RouteTargetList
-      description: List of route targets that represent this logical router, all virtual
-        networks connected to this logical router will have this as their route target
-        list.
-      operations: CRUD
-      presence: optional
-    vxlan_network_identifier:
-      description: The VNI that needs to be associated with the internal VN if vxlan_routing
-        mode is enabled.
-      operations: CRUD
-      presence: optional
-      type: string
-  required: []
-  type: object
+    properties:
+        configured_route_target_list:
+            $ref: types.json#/definitions/RouteTargetList
+            description: 'List of route targets that represent this logical router,
+                all virtual networks connected to this logical router will have this
+                as their route target list.'
+            operations: CRUD
+            presence: optional
+        logical_router_gateway_external:
+            description: 'this logical router is used for external connectivity or
+                not.'
+            operations: CRUD
+            presence: required
+            type: boolean
+        vxlan_network_identifier:
+            description: 'The VNI that needs to be associated with the internal VN
+                if vxlan_routing mode is enabled.'
+            operations: CRUD
+            presence: optional
+            type: string
+    required:
+        - logical_router_gateway_external
+    type: object

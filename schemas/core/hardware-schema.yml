@@ -1,16 +1,16 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: hardware
 parents: {}
 plural: hardwares
 prefix: /
 references:
-  card:
-    description: List of installed interface cards in a specific hardware platform.
-    operations: CRUD
-    presence: optional
+    card:
+        description: 'List of installed interface cards in a specific hardware platform.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

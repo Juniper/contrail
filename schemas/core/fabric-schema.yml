@@ -1,41 +1,50 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: fabric
 parents:
-  global_system_config:
-    description: List of fabrics in the system. Each fabric is an administrative domain
-      for all the network devices in one or multiple CLOS.
-    operations: CRUD
-    presence: optional
+    global_system_config:
+        description: 'List of fabrics in the system. Each fabric is an administrative
+            domain for all the network devices in one or multiple CLOS.'
+        operations: CRUD
+        presence: optional
 plural: fabrics
 prefix: /
 references:
-  node_profile:
-    $ref: types.json#definitions/SerialNumListType
-    description: node profiles assignd to the fabric. The serial number list on the
-      link is used to auto assign node-profile during ZTP so that port channelization
-      could be bootstrapped based on the hardware spec in the node profile.
-    operations: CRUD
-    presence: optional
-  virtual_network:
-    $ref: types.json#definitions/FabricNetworkTag
-    description: Similar to using virtual-machine to model the bare metal server,
-      we are using virtual-network to model various underlay networks such as the
-      management network and IP fabric network. This would allow us the re-use the
-      same IPAM data model and code base to manage the IP auto-assignments for the
-      underlay physical networks.
-    operations: CRUD
-    presence: optional
+    node_profile:
+        $ref: types.json#definitions/SerialNumListType
+        description: 'node profiles assignd to the fabric. The serial number list
+            on the link is used to auto assign node-profile during ZTP so that port
+            channelization could be bootstrapped based on the hardware spec in the
+            node profile.'
+        operations: CRUD
+        presence: optional
+    virtual_network:
+        $ref: types.json#definitions/FabricNetworkTag
+        description: 'Similar to using virtual-machine to model the bare metal server,
+            we are using virtual-network to model various underlay networks such as
+            the management network and IP fabric network. This would allow us the
+            re-use the same IPAM data model and code base to manage the IP auto-assignments
+            for the underlay physical networks.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    fabric_credentials:
-      $ref: types.json#/definitions/DeviceCredentialList
-      collectionType: list
-      description: List of device credentials to manage the network devices in the
-        fabric.
-      operations: CRUD
-      presence: optional
-      wrapper: true
-  required: []
-  type: object
+    properties:
+        fabric_credentials:
+            $ref: types.json#/definitions/DeviceCredentialList
+            collectionType: list
+            description: 'List of device credentials to manage the network devices
+                in the fabric.'
+            operations: CRUD
+            presence: optional
+            wrapper: true
+        fabric_ztp:
+            description: 'This attribute to indicate if the fabric is zero-touch provisioned
+                or not. If this attribute is set to "True", user should not be allowed
+                to remove any existing namespaces from the fabric as they may be used
+                to provision the devices.'
+            operations: CRUD
+            presence: optional
+            type: boolean
+    required: []
+    type: object

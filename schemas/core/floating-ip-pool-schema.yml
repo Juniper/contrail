@@ -1,24 +1,25 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: floating_ip_pool
 parents:
-  virtual_network:
-    description: Floating ip pool is set of ip address that are carved out of a given
-      network. Ip(s) from this set can be assigned to (virtual machine interface,
-      ip) so that they become members of this network using one:one NAT.
-    operations: CRUD
-    presence: optional
+    virtual_network:
+        description: 'Floating ip pool is set of ip address that are carved out of
+            a given network. Ip(s) from this set can be assigned to (virtual machine
+            interface, ip) so that they become members of this network using one:one
+            NAT.'
+        operations: CRUD
+        presence: optional
 plural: floating_ip_pools
 prefix: /
 references: {}
 schema:
-  properties:
-    floating_ip_pool_subnets:
-      $ref: types.json#/definitions/FloatingIpPoolSubnetType
-      description: Subnets that restrict floating ip allocation from the corresponding
-        virtual network.
-      operations: CRUD
-      presence: optional
-  required: []
-  type: object
+    properties:
+        floating_ip_pool_subnets:
+            $ref: types.json#/definitions/FloatingIpPoolSubnetType
+            description: 'Subnets that restrict floating ip allocation from the corresponding
+                virtual network.'
+            operations: CRUD
+            presence: optional
+    required: []
+    type: object

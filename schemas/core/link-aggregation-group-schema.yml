@@ -1,29 +1,29 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: link_aggregation_group
 parents:
-  physical_router:
-    description: List of link aggregation groups on this PRouter.
-    operations: CRUD
-    presence: optional
+    physical_router:
+        description: 'List of link aggregation groups on this PRouter.'
+        operations: CRUD
+        presence: optional
 plural: link_aggregation_groups
 prefix: /
 references:
-  physical_interface:
-    description: All the interfaces that belongs to the LAG. There should be exact
-      one ref edge that points to the lag interface and two or more ref-edges points
-      to the regular interfaces.
-    operations: CRUD
-    presence: optional
+    physical_interface:
+        description: 'All the interfaces that belongs to the LAG. There should be
+            exact one ref edge that points to the lag interface and two or more ref-edges
+            points to the regular interfaces.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    link_aggregation_group_lacp_enabled:
-      description: Flag to turn on or off Link Aggregation Control Protocol (LACP)
-        on this link aggregation group.
-      operations: CRUD
-      presence: required
-      type: boolean
-  required:
-  - link_aggregation_group_lacp_enabled
-  type: object
+    properties:
+        link_aggregation_group_lacp_enabled:
+            description: 'Flag to turn on or off Link Aggregation Control Protocol
+                (LACP) on this link aggregation group.'
+            operations: CRUD
+            presence: required
+            type: boolean
+    required:
+        - link_aggregation_group_lacp_enabled
+    type: object

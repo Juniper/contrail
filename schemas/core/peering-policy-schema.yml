@@ -1,18 +1,18 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: peering_policy
 parents: {}
 plural: peering_policys
 prefix: /
 references: {}
 schema:
-  properties:
-    peering_service:
-      $ref: types.json#/definitions/PeeringServiceType
-      description: Peering policy service type.
-      operations: CRUD
-      presence: required
-  required:
-  - peering_service
-  type: object
+    properties:
+        peering_service:
+            $ref: types.json#/definitions/PeeringServiceType
+            description: 'Peering policy service type.'
+            operations: CRUD
+            presence: required
+    required:
+        - peering_service
+    type: object

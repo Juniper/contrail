@@ -1,23 +1,23 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: dsa_rule
 parents:
-  discovery_service_assignment:
-    description: Discovery service rule for assigning subscriber to publisher. (set
-      of subscriber) can be assigned to (set of publisher).
-    operations: CRUD
-    presence: optional
+    discovery_service_assignment:
+        description: 'Discovery service rule for assigning subscriber to publisher.
+            (set of subscriber) can be assigned to (set of publisher).'
+        operations: CRUD
+        presence: optional
 plural: dsa_rules
 prefix: /
 references: {}
 schema:
-  properties:
-    dsa_rule_entry:
-      $ref: types.json#/definitions/DiscoveryServiceAssignmentType
-      description: rule entry defining publisher set and subscriber set.
-      operations: CRUD
-      presence: required
-  required:
-  - dsa_rule_entry
-  type: object
+    properties:
+        dsa_rule_entry:
+            $ref: types.json#/definitions/DiscoveryServiceAssignmentType
+            description: 'rule entry defining publisher set and subscriber set.'
+            operations: CRUD
+            presence: required
+    required:
+        - dsa_rule_entry
+    type: object

@@ -1,56 +1,56 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: structured_syslog_message
 parents:
-  structured_syslog_config:
-    description: List of          structured-syslog-message that are applicable to
-      objects          anchored under structured-syslog-config.
-    operations: CRUD
-    presence: optional
+    structured_syslog_config:
+        description: 'List of          structured-syslog-message that are applicable
+            to objects          anchored under structured-syslog-config.'
+        operations: CRUD
+        presence: optional
 plural: structured_syslog_messages
 prefix: /
 references: {}
 schema:
-  properties:
-    structured_syslog_message_forward:
-      $ref: types.json#/definitions/StructuredSyslogMessageForwardType
-      description: fowarding action to be taken on the message
-      operations: CRUD
-      presence: required
-    structured_syslog_message_integer_fields:
-      $ref: types.json#/definitions/FieldNamesList
-      description: list of integer fields in the message
-      operations: CRUD
-      presence: required
-    structured_syslog_message_process_and_store:
-      default: false
-      description: message is to be processed and stored or not
-      operations: CRUD
-      presence: required
-      type: boolean
-    structured_syslog_message_process_and_summarize:
-      default: false
-      description: message is to be processed and summarized or not
-      operations: CRUD
-      presence: required
-      type: boolean
-    structured_syslog_message_process_and_summarize_user:
-      default: false
-      description: message is to be processed and summarized for user or not
-      operations: CRUD
-      presence: required
-      type: boolean
-    structured_syslog_message_tagged_fields:
-      $ref: types.json#/definitions/FieldNamesList
-      description: list of field names in the message to be tagged
-      operations: CRUD
-      presence: required
-  required:
-  - structured_syslog_message_tagged_fields
-  - structured_syslog_message_integer_fields
-  - structured_syslog_message_process_and_store
-  - structured_syslog_message_process_and_summarize
-  - structured_syslog_message_process_and_summarize_user
-  - structured_syslog_message_forward
-  type: object
+    properties:
+        structured_syslog_message_forward:
+            $ref: types.json#/definitions/StructuredSyslogMessageForwardType
+            description: 'fowarding action to be taken on the message'
+            operations: CRUD
+            presence: required
+        structured_syslog_message_integer_fields:
+            $ref: types.json#/definitions/FieldNamesList
+            description: 'list of integer fields in the message'
+            operations: CRUD
+            presence: required
+        structured_syslog_message_process_and_store:
+            default: false
+            description: 'message is to be processed and stored or not'
+            operations: CRUD
+            presence: required
+            type: boolean
+        structured_syslog_message_process_and_summarize:
+            default: false
+            description: 'message is to be processed and summarized or not'
+            operations: CRUD
+            presence: required
+            type: boolean
+        structured_syslog_message_process_and_summarize_user:
+            default: false
+            description: 'message is to be processed and summarized for user or not'
+            operations: CRUD
+            presence: required
+            type: boolean
+        structured_syslog_message_tagged_fields:
+            $ref: types.json#/definitions/FieldNamesList
+            description: 'list of field names in the message to be tagged'
+            operations: CRUD
+            presence: required
+    required:
+        - structured_syslog_message_tagged_fields
+        - structured_syslog_message_integer_fields
+        - structured_syslog_message_process_and_store
+        - structured_syslog_message_process_and_summarize
+        - structured_syslog_message_process_and_summarize_user
+        - structured_syslog_message_forward
+    type: object

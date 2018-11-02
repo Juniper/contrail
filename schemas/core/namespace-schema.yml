@@ -1,23 +1,24 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: namespace
 parents:
-  domain:
-    description: Namespace is unique networking namespace within this domain. If namespace
-      is not present then default namespace of default project is used.
-    operations: CRUD
-    presence: optional
+    domain:
+        description: 'Namespace is unique networking namespace within this domain.
+            If namespace is not present then default namespace of default project
+            is used.'
+        operations: CRUD
+        presence: optional
 plural: namespaces
 prefix: /
 references: {}
 schema:
-  properties:
-    namespace_cidr:
-      $ref: types.json#/definitions/SubnetType
-      description: All networks in this namespace belong to this list of Prefixes.
-        Not implemented.
-      operations: CRUD
-      presence: optional
-  required: []
-  type: object
+    properties:
+        namespace_cidr:
+            $ref: types.json#/definitions/SubnetType
+            description: 'All networks in this namespace belong to this list of Prefixes.
+                Not implemented.'
+            operations: CRUD
+            presence: optional
+    required: []
+    type: object

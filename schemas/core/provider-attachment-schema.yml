@@ -1,16 +1,16 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: provider_attachment
 parents: {}
 plural: provider_attachments
 prefix: /
 references:
-  virtual_router:
-    description: Not in Use.
-    operations: CRUD
-    presence: optional
+    virtual_router:
+        description: 'Not in Use.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object
