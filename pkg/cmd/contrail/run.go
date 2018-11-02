@@ -10,7 +10,9 @@ import (
 
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/commander"
 	"github.com/Juniper/contrail/pkg/compilation"
+	"github.com/Juniper/contrail/pkg/compilation/config"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
@@ -43,6 +45,7 @@ func StartProcesses(wg *sync.WaitGroup) {
 	MaybeStart("agent", startAgent, wg)
 	MaybeStart("sync", startSync, wg)
 	MaybeStart("compilation", startCompilationService, wg)
+	MaybeStart("commander", startCommanderCompilationService, wg)
 }
 
 //MaybeStart runs process if it is enabled.
@@ -167,6 +170,30 @@ func startCompilationService(wg *sync.WaitGroup) {
 
 	if err = server.Run(ctx); err != nil {
 		log.Warn(err)
+	}
+}
+
+func startCommanderCompilationService(wg *sync.WaitGroup) {
+	c := config.ReadConfig()
+	apiClient := compilation.NewAPIClient(c)
+	commandLogicService, err := commander.SetupService(
+		apiClient, apiClient, apiClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	server, err := compilation.NewIntentCompilationServiceByConfig(
+		c, apiClient, commandLogicService)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	for {
+		if err = server.Run(ctx); err != nil {
+			log.Warn(err)
+		}
 	}
 }
 

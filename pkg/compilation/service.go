@@ -81,20 +81,30 @@ type IntentCompilationService struct {
 // NewIntentCompilationService makes a new Intent Compilation Service
 func NewIntentCompilationService() (*IntentCompilationService, error) {
 	c := config.ReadConfig()
+	apiClient := NewAPIClient(c)
+	logicService, err := SetupService(apiClient, apiClient, apiClient)
+	if err != nil {
+		return nil, err
+	}
+	ics, err := NewIntentCompilationServiceByConfig(c, apiClient, logicService)
+	if err != nil {
+		return nil, err
+	}
 
+	return ics, nil
+}
+
+// NewIntentCompilationServiceByConfig makes a new Intent Compilation Service
+func NewIntentCompilationServiceByConfig(
+	c config.Config,
+	apiClient *client.HTTP,
+	logicService services.Service) (*IntentCompilationService, error) {
 	e, err := etcd.DialByConfig()
 	if err != nil {
 		return nil, err
 	}
 
 	l, err := etcd.NewDistributedLocker()
-	if err != nil {
-		return nil, err
-	}
-
-	apiClient := newAPIClient(c)
-
-	logicService, err := SetupService(apiClient, apiClient, apiClient)
 	if err != nil {
 		return nil, err
 	}

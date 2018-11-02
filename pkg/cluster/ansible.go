@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	createAction = "create"
-	updateAction = "update"
-	deleteAction = "delete"
+	CreateAction = "create"
+	UpdateAction = "update"
+	DeleteAction = "delete"
 
 	provisionProvisioningAction  = "PROVISION"
 	upgradeProvisioningAction    = "UPGRADE"
@@ -649,7 +649,7 @@ func (a *ansibleProvisioner) deleteCluster() error {
 
 func (a *ansibleProvisioner) provision() error {
 	switch a.action {
-	case createAction:
+	case CreateAction:
 		if a.isCreated() {
 			return a.updateEndpoints()
 		}
@@ -658,7 +658,7 @@ func (a *ansibleProvisioner) provision() error {
 			return err
 		}
 		return a.createEndpoints()
-	case updateAction:
+	case UpdateAction:
 		updated, err := a.isUpdated()
 		if err != nil {
 			return err
@@ -671,7 +671,7 @@ func (a *ansibleProvisioner) provision() error {
 			return err
 		}
 		return a.updateEndpoints()
-	case deleteAction:
+	case DeleteAction:
 		err := a.deleteCluster()
 		if err != nil {
 			return err
