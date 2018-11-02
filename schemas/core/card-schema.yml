@@ -1,12 +1,12 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: card
 parents: {}
 plural: cards
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

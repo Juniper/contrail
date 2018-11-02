@@ -1,12 +1,12 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: service_object
 parents: {}
 plural: service_objects
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

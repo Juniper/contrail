@@ -1,41 +1,42 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: bgpvpn
 parents:
-  project:
-    description: BGP VPN resource contains a set of parameters for a BGP-based VPN
-    operations: CR
-    presence: optional
+    project:
+        description: 'BGP VPN resource contains a set of parameters for a BGP-based
+            VPN'
+        operations: CR
+        presence: optional
 plural: bgpvpns
 prefix: /
 references: {}
 schema:
-  properties:
-    bgpvpn_type:
-      $ref: types.json#/definitions/VpnType
-      description: 'BGP VPN type selection between IP VPN (l3) and Ethernet VPN (l2)
-        (default: l3).'
-      operations: CR
-      presence: required
-    export_route_target_list:
-      $ref: types.json#/definitions/RouteTargetList
-      description: List of route targets that are used as export for this virtual
-        network.
-      operations: CRUD
-      presence: optional
-    import_route_target_list:
-      $ref: types.json#/definitions/RouteTargetList
-      description: List of route targets that are used as import for this virtual
-        network.
-      operations: CRUD
-      presence: optional
-    route_target_list:
-      $ref: types.json#/definitions/RouteTargetList
-      description: List of route targets that are used as both import and export for
-        this virtual network.
-      operations: CRUD
-      presence: optional
-  required:
-  - bgpvpn_type
-  type: object
+    properties:
+        bgpvpn_type:
+            $ref: types.json#/definitions/VpnType
+            description: 'BGP VPN type selection between IP VPN (l3) and Ethernet
+                VPN (l2) (default: l3).'
+            operations: CR
+            presence: required
+        export_route_target_list:
+            $ref: types.json#/definitions/RouteTargetList
+            description: 'List of route targets that are used as export for this virtual
+                network.'
+            operations: CRUD
+            presence: optional
+        import_route_target_list:
+            $ref: types.json#/definitions/RouteTargetList
+            description: 'List of route targets that are used as import for this virtual
+                network.'
+            operations: CRUD
+            presence: optional
+        route_target_list:
+            $ref: types.json#/definitions/RouteTargetList
+            description: 'List of route targets that are used as both import and export
+                for this virtual network.'
+            operations: CRUD
+            presence: optional
+    required:
+        - bgpvpn_type
+    type: object

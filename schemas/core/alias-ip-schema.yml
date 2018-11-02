@@ -1,38 +1,38 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: alias_ip
 parents:
-  alias_ip_pool:
-    description: alias ip is a ip that can be assigned to virtual-machine-interface(VMI),
-      By doing so VMI can now be part of the alias ip network. packets originating
-      with alias-ip as the source-ip belongs to alias-ip-network
-    operations: CRUD
-    presence: optional
+    alias_ip_pool:
+        description: 'alias ip is a ip that can be assigned to virtual-machine-interface(VMI),
+            By doing so VMI can now be part of the alias ip network. packets originating
+            with alias-ip as the source-ip belongs to alias-ip-network'
+        operations: CRUD
+        presence: optional
 plural: alias_ips
 prefix: /
 references:
-  project:
-    description: Reference to project from which this alias ip was allocated.
-    operations: CRUD
-    presence: required
-  virtual_machine_interface:
-    description: Reference to virtual machine interface to which this alias ip is
-      attached.
-    operations: CRUD
-    presence: optional
+    project:
+        description: 'Reference to project from which this alias ip was allocated.'
+        operations: CRUD
+        presence: required
+    virtual_machine_interface:
+        description: 'Reference to virtual machine interface to which this alias ip
+            is attached.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    alias_ip_address:
-      $ref: types.json#/definitions/IpAddressType
-      description: Alias ip address.
-      operations: CR
-      presence: required
-    alias_ip_address_family:
-      $ref: types.json#/definitions/IpAddressFamilyType
-      description: Ip address family of the alias ip, IpV4 or IpV6
-      operations: CRUD
-      presence: optional
-  required:
-  - alias_ip_address
-  type: object
+    properties:
+        alias_ip_address:
+            $ref: types.json#/definitions/IpAddressType
+            description: 'Alias ip address.'
+            operations: CR
+            presence: required
+        alias_ip_address_family:
+            $ref: types.json#/definitions/IpAddressFamilyType
+            description: 'Ip address family of the alias ip, IpV4 or IpV6'
+            operations: CRUD
+            presence: optional
+    required:
+        - alias_ip_address
+    type: object

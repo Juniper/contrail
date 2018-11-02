@@ -1,43 +1,44 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: service_instance
 parents:
-  project:
-    description: Service instance represents logical instance service used in the
-      virtual world, e.g. firewall, load balancer etc. It can represent one or multiple
-      virtual machines or physical devices. Many service instances can share a virtual
-      machine or physical device.
-    operations: CRUD
-    presence: optional
+    project:
+        description: 'Service instance represents logical instance service used in
+            the virtual world, e.g. firewall, load balancer etc. It can represent
+            one or multiple virtual machines or physical devices. Many service instances
+            can share a virtual machine or physical device.'
+        operations: CRUD
+        presence: optional
 plural: service_instances
 prefix: /
 references:
-  instance_ip:
-    $ref: types.json#definitions/ServiceInterfaceTag
-    description: Reference to ip address, which is used as nexthop pointing to (service
-      instance, service interface).
-    operations: CRUD
-    presence: system-only
-  service_template:
-    description: Reference to the service template of this service instance.
-    operations: CRUD
-    presence: required
+    instance_ip:
+        $ref: types.json#definitions/ServiceInterfaceTag
+        description: 'Reference to ip address, which is used as nexthop pointing to
+            (service instance, service interface).'
+        operations: CRUD
+        presence: system-only
+    service_template:
+        description: 'Reference to the service template of this service instance.'
+        operations: CRUD
+        presence: required
 schema:
-  properties:
-    service_instance_bindings:
-      $ref: types.json#/definitions/KeyValuePairs
-      collectionType: map
-      description: Opaque key value pair for generating config for the service instance.
-      mapKey: key
-      operations: CRUD
-      presence: optional
-      wrapper: true
-    service_instance_properties:
-      $ref: types.json#/definitions/ServiceInstanceType
-      description: Service instance configuration parameters.
-      operations: CRUD
-      presence: required
-  required:
-  - service_instance_properties
-  type: object
+    properties:
+        service_instance_bindings:
+            $ref: types.json#/definitions/KeyValuePairs
+            collectionType: map
+            description: 'Opaque key value pair for generating config for the service
+                instance.'
+            mapKey: key
+            operations: CRUD
+            presence: optional
+            wrapper: true
+        service_instance_properties:
+            $ref: types.json#/definitions/ServiceInstanceType
+            description: 'Service instance configuration parameters.'
+            operations: CRUD
+            presence: required
+    required:
+        - service_instance_properties
+    type: object

@@ -1,16 +1,16 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: config_root
 parents: {}
 plural: config_roots
 prefix: /
 references:
-  tag:
-    description: Attribute attached to objects - has a type and value
-    operations: CRUD
-    presence: optional
+    tag:
+        description: 'Attribute attached to objects - has a type and value'
+        operations: CRUD
+        presence: optional
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

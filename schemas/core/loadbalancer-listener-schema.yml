@@ -1,25 +1,26 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: loadbalancer_listener
 parents:
-  project:
-    description: Listener represents the application(protocol, port) to be load balanced.
-    operations: CRUD
-    presence: optional
+    project:
+        description: 'Listener represents the application(protocol, port) to be load
+            balanced.'
+        operations: CRUD
+        presence: optional
 plural: loadbalancer_listeners
 prefix: /
 references:
-  loadbalancer:
-    description: ''
-    operations: CRUD
-    presence: optional
+    loadbalancer:
+        description: ""
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    loadbalancer_listener_properties:
-      $ref: types.json#/definitions/LoadbalancerListenerType
-      description: ''
-      operations: CRUD
-      presence: optional
-  required: []
-  type: object
+    properties:
+        loadbalancer_listener_properties:
+            $ref: types.json#/definitions/LoadbalancerListenerType
+            description: ""
+            operations: CRUD
+            presence: optional
+    required: []
+    type: object

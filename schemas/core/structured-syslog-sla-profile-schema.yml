@@ -1,24 +1,24 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: structured_syslog_sla_profile
 parents:
-  structured_syslog_config:
-    description: List of         structured-syslog-sla-profile that are applicable
-      to objects         anchored under structured-syslog-config.
-    operations: CRUD
-    presence: optional
+    structured_syslog_config:
+        description: 'List of         structured-syslog-sla-profile that are applicable
+            to objects         anchored under structured-syslog-config.'
+        operations: CRUD
+        presence: optional
 plural: structured_syslog_sla_profiles
 prefix: /
 references: {}
 schema:
-  properties:
-    structured_syslog_sla_params:
-      description: The sla                                   params like sampling
-        %age and                                   traffic type
-      operations: CRUD
-      presence: required
-      type: string
-  required:
-  - structured_syslog_sla_params
-  type: object
+    properties:
+        structured_syslog_sla_params:
+            description: 'The sla                                   params like sampling
+                %age and                                   traffic type'
+            operations: CRUD
+            presence: required
+            type: string
+    required:
+        - structured_syslog_sla_params
+    type: object

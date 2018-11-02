@@ -1,28 +1,28 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: service_connection_module
 parents: {}
 plural: service_connection_modules
 prefix: /
 references:
-  service_object:
-    description: Links the service-connection-module to a service object.
-    operations: CRUD
-    presence: optional
+    service_object:
+        description: 'Links the service-connection-module to a service object.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    e2_service:
-      $ref: types.json#/definitions/E2servicetype
-      description: E2 service type.
-      operations: CRUD
-      presence: required
-    service_type:
-      $ref: types.json#/definitions/ServiceConnectionType
-      description: Type of service assigned for this object
-      operations: CRUD
-      presence: required
-  required:
-  - e2_service
-  - service_type
-  type: object
+    properties:
+        e2_service:
+            $ref: types.json#/definitions/E2servicetype
+            description: 'E2 service type.'
+            operations: CRUD
+            presence: required
+        service_type:
+            $ref: types.json#/definitions/ServiceConnectionType
+            description: 'Type of service assigned for this object'
+            operations: CRUD
+            presence: required
+    required:
+        - e2_service
+        - service_type
+    type: object

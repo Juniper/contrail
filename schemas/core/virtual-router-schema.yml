@@ -1,52 +1,52 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: virtual_router
 parents:
-  global_system_config:
-    description: Virtual router is packet forwarding system on devices such as compute
-      nodes(servers), TOR(s), routers.
-    operations: CRUD
-    presence: optional
+    global_system_config:
+        description: 'Virtual router is packet forwarding system on devices such as
+            compute nodes(servers), TOR(s), routers.'
+        operations: CRUD
+        presence: optional
 plural: virtual_routers
 prefix: /
 references:
-  network_ipam:
-    $ref: types.json#definitions/VirtualRouterNetworkIpamType
-    description: Reference to network-ipam this virtual-router is using. It has list
-      of virtual-router specific allocation-pools and cidrs that are to be used as
-      property of the reference.
-    operations: CRUD
-    presence: optional
-  sub_cluster:
-    description: Reference of vrouter to sub-cluster.
-    operations: CRUD
-    presence: optional
-  virtual_machine:
-    description: References to all virtual machines on this vrouter. This link is
-      not present for dynamically scheduled VMs by Nova.
-    operations: CRUD
-    presence: optional
+    network_ipam:
+        $ref: types.json#definitions/VirtualRouterNetworkIpamType
+        description: 'Reference to network-ipam this virtual-router is using. It has
+            list of virtual-router specific allocation-pools and cidrs that are to
+            be used as property of the reference.'
+        operations: CRUD
+        presence: optional
+    sub_cluster:
+        description: 'Reference of vrouter to sub-cluster.'
+        operations: CRUD
+        presence: optional
+    virtual_machine:
+        description: 'References to all virtual machines on this vrouter. This link
+            is not present for dynamically scheduled VMs by Nova.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    virtual_router_dpdk_enabled:
-      description: This vrouter's data path is using DPDK library, Virtual machines
-        interfaces scheduled on this compute node will be tagged with additional flags
-        so that they are spawned with user space virtio driver. It is only applicable
-        for embedded vrouter.
-      operations: CRUD
-      presence: optional
-      type: boolean
-    virtual_router_ip_address:
-      $ref: types.json#/definitions/IpAddressType
-      description: Ip address of the virtual router.
-      operations: CRUD
-      presence: required
-    virtual_router_type:
-      $ref: types.json#/definitions/VirtualRouterType
-      description: Different types of the vrouters in the system.
-      operations: CRD
-      presence: optional
-  required:
-  - virtual_router_ip_address
-  type: object
+    properties:
+        virtual_router_dpdk_enabled:
+            description: 'This vrouter''s data path is using DPDK library, Virtual
+                machines interfaces scheduled on this compute node will be tagged
+                with additional flags so that they are spawned with user space virtio
+                driver. It is only applicable for embedded vrouter.'
+            operations: CRUD
+            presence: optional
+            type: boolean
+        virtual_router_ip_address:
+            $ref: types.json#/definitions/IpAddressType
+            description: 'Ip address of the virtual router.'
+            operations: CRUD
+            presence: required
+        virtual_router_type:
+            $ref: types.json#/definitions/VirtualRouterType
+            description: 'Different types of the vrouters in the system.'
+            operations: CRD
+            presence: optional
+    required:
+        - virtual_router_ip_address
+    type: object

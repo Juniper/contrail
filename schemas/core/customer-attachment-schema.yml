@@ -1,25 +1,26 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: customer_attachment
 parents: {}
 plural: customer_attachments
 prefix: /
 references:
-  floating_ip:
-    description: Not in Use.
-    operations: CRUD
-    presence: optional
-  virtual_machine_interface:
-    description: Not in Use.
-    operations: CRUD
-    presence: optional
+    floating_ip:
+        description: 'Not in Use.'
+        operations: CRUD
+        presence: optional
+    virtual_machine_interface:
+        description: 'Not in Use.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    attachment_address:
-      $ref: types.json#/definitions/AttachmentAddressType
-      description: ''
-      operations: CRUD
-      presence: optional
-  required: []
-  type: object
+    properties:
+        attachment_address:
+            # $ref: types.json#/definitions/AttachmentAddressType
+            description: ""
+            operations: CRUD
+            presence: optional
+            type: string
+    required: []
+    type: object

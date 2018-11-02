@@ -1,24 +1,24 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: service_endpoint
 parents: {}
 plural: service_endpoints
 prefix: /
 references:
-  physical_router:
-    description: Reference to Router for a given service.
-    operations: CRUD
-    presence: optional
-  service_connection_module:
-    description: Link the service endpoint to service connection node
-    operations: CRUD
-    presence: optional
-  service_object:
-    description: Links the service-endpoints to a service object.
-    operations: CRUD
-    presence: optional
+    physical_router:
+        description: 'Reference to Router for a given service.'
+        operations: CRUD
+        presence: optional
+    service_connection_module:
+        description: 'Link the service endpoint to service connection node'
+        operations: CRUD
+        presence: optional
+    service_object:
+        description: 'Links the service-endpoints to a service object.'
+        operations: CRUD
+        presence: optional
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object

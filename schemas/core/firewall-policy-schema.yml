@@ -1,36 +1,36 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: firewall_policy
 parents:
-  policy_management:
-    description: firewall-policy object consisting of one or more firewall rules
-    operations: CRUD
-    presence: optional
-  project:
-    description: Project level firewall-policy object consisting of one or more firewall
-      rules
-    operations: CRUD
-    presence: optional
+    policy_management:
+        description: 'firewall-policy object consisting of one or more firewall rules'
+        operations: CRUD
+        presence: optional
+    project:
+        description: 'Project level firewall-policy object consisting of one or more
+            firewall rules'
+        operations: CRUD
+        presence: optional
 plural: firewall_policys
 prefix: /
 references:
-  firewall_rule:
-    $ref: types.json#definitions/FirewallSequence
-    description: Reference to firewall-rule attached to this firewall-policy
-    operations: CRUD
-    presence: optional
-  security_logging_object:
-    $ref: types.json#definitions/SloRateType
-    description: Reference to security-logging-object attached to this firewall-policy
-    operations: CRUD
-    presence: optional
+    firewall_rule:
+        $ref: types.json#definitions/FirewallSequence
+        description: 'Reference to firewall-rule attached to this firewall-policy'
+        operations: CRUD
+        presence: optional
+    security_logging_object:
+        $ref: types.json#definitions/SloRateType
+        description: 'Reference to security-logging-object attached to this firewall-policy'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    draft_mode_state:
-      $ref: types.json#/definitions/DraftModeState
-      description: ''
-      operations: R
-      presence: optional
-  required: []
-  type: object
+    properties:
+        draft_mode_state:
+            $ref: types.json#/definitions/DraftModeState
+            description: ""
+            operations: R
+            presence: optional
+    required: []
+    type: object

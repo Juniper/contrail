@@ -1,80 +1,81 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: global_vrouter_config
 parents:
-  global_system_config:
-    description: Global vrouter config is object where all global vrouter config is
-      present.
-    operations: R
-    presence: required
+    global_system_config:
+        description: 'Global vrouter config is object where all global vrouter config
+            is present.'
+        operations: R
+        presence: required
 plural: global_vrouter_configs
 prefix: /
 references: {}
 schema:
-  properties:
-    ecmp_hashing_include_fields:
-      $ref: types.json#/definitions/EcmpHashingIncludeFields
-      description: ECMP hashing config at global level.
-      operations: CRUD
-      presence: optional
-    enable_security_logging:
-      default: true
-      description: Enable or disable security-logging in the system
-      operations: CRUD
-      presence: optional
-      type: boolean
-    encapsulation_priorities:
-      $ref: types.json#/definitions/EncapsulationPrioritiesType
-      description: Ordered list of encapsulations that vrouter will use in priority
-        order.
-      operations: CRUD
-      presence: optional
-    encryption_mode:
-      $ref: types.json#/definitions/EncryptionMode
-      description: Enable encryption mode
-      operations: CRUD
-      presence: optional
-    encryption_tunnel_endpoints:
-      $ref: types.json#/definitions/EncryptionTunnelEndpointList
-      collectionType: list
-      description: Encryption tunnel endpoints list
-      operations: CRUD
-      presence: optional
-      wrapper: true
-    flow_aging_timeout_list:
-      $ref: types.json#/definitions/FlowAgingTimeoutList
-      description: Flow aging timeout per application (protocol, port) list.
-      operations: CRUD
-      presence: optional
-    flow_export_rate:
-      description: Flow export rate is global config, rate at which each vrouter will
-        sample and export flow records to analytics
-      operations: CRUD
-      presence: optional
-      type: integer
-    forwarding_mode:
-      $ref: types.json#/definitions/ForwardingModeType
-      description: Packet forwarding mode for this system L2-only, L3-only OR L2-L3.
-        L2-L3 is default.
-      operations: CRUD
-      presence: optional
-    linklocal_services:
-      $ref: types.json#/definitions/LinklocalServicesTypes
-      description: Global services provided on link local subnet to the virtual machines.
-      operations: CRUD
-      presence: optional
-    port_translation_pools:
-      $ref: types.json#/definitions/PortTranslationPools
-      collectionType: list
-      description: List of Ports to be reserved for providing underlay connectivity
-        via Port translation.
-      operations: CRUD
-      presence: optional
-      wrapper: true
-    vxlan_network_identifier_mode:
-      $ref: types.json#/definitions/VxlanNetworkIdentifierModeType
-      operations: CRUD
-      presence: optional
-  required: []
-  type: object
+    properties:
+        ecmp_hashing_include_fields:
+            $ref: types.json#/definitions/EcmpHashingIncludeFields
+            description: 'ECMP hashing config at global level.'
+            operations: CRUD
+            presence: optional
+        enable_security_logging:
+            default: true
+            description: 'Enable or disable security-logging in the system'
+            operations: CRUD
+            presence: optional
+            type: boolean
+        encapsulation_priorities:
+            $ref: types.json#/definitions/EncapsulationPrioritiesType
+            description: 'Ordered list of encapsulations that vrouter will use in
+                priority order.'
+            operations: CRUD
+            presence: optional
+        encryption_mode:
+            $ref: types.json#/definitions/EncryptionMode
+            description: 'Enable encryption mode'
+            operations: CRUD
+            presence: optional
+        encryption_tunnel_endpoints:
+            $ref: types.json#/definitions/EncryptionTunnelEndpointList
+            collectionType: list
+            description: 'Encryption tunnel endpoints list'
+            operations: CRUD
+            presence: optional
+            wrapper: true
+        flow_aging_timeout_list:
+            $ref: types.json#/definitions/FlowAgingTimeoutList
+            description: 'Flow aging timeout per application (protocol, port) list.'
+            operations: CRUD
+            presence: optional
+        flow_export_rate:
+            description: 'Flow export rate is global config, rate at which each vrouter
+                will sample and export flow records to analytics'
+            operations: CRUD
+            presence: optional
+            type: integer
+        forwarding_mode:
+            $ref: types.json#/definitions/ForwardingModeType
+            description: 'Packet forwarding mode for this system L2-only, L3-only
+                OR L2-L3. L2-L3 is default.'
+            operations: CRUD
+            presence: optional
+        linklocal_services:
+            $ref: types.json#/definitions/LinklocalServicesTypes
+            description: 'Global services provided on link local subnet to the virtual
+                machines.'
+            operations: CRUD
+            presence: optional
+        port_translation_pools:
+            $ref: types.json#/definitions/PortTranslationPools
+            collectionType: list
+            description: 'List of Ports to be reserved for providing underlay connectivity
+                via Port translation.'
+            operations: CRUD
+            presence: optional
+            wrapper: true
+        vxlan_network_identifier_mode:
+            $ref: types.json#/definitions/VxlanNetworkIdentifierModeType
+            operations: CRUD
+            presence: optional
+    required: []
+    type: object

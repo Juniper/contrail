@@ -1,42 +1,48 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: tag
 parents:
-  config_root:
-    description: Attribute attached to objects - has a type and value
-    operations: CRUD
-    presence: optional
-  project:
-    description: Attribute attached to objects - has a type and value
-    operations: CRUD
-    presence: optional
+    config_root:
+        description: 'Attribute attached to objects - has a type and value'
+        operations: CRUD
+        presence: optional
+    project:
+        description: 'Attribute attached to objects - has a type and value'
+        operations: CRUD
+        presence: optional
 plural: tags
 prefix: /
 references:
-  tag_type:
-    description: Tag type reference which is limited to one
-    operations: CRUD
-    presence: optional
+    tag_type:
+        description: 'Tag type reference which is limited to one'
+        operations: CRUD
+        presence: optional
 schema:
-  properties:
-    tag_id:
-      $ref: types.json#/definitions/U32BitHexInt
-      description: 'Internal Tag ID encapsulating tag type and value in                  hexadecimal
-        fomat: 0xTTTTVVVV (T: type, V: value)'
-      operations: R
-      presence: optional
-    tag_type_name:
-      description: Tag type string representation
-      operations: CR
-      presence: required
-      type: string
-    tag_value:
-      description: Tag value string representation
-      operations: CR
-      presence: required
-      type: string
-  required:
-  - tag_type_name
-  - tag_value
-  type: object
+    properties:
+        tag_id:
+            $ref: types.json#/definitions/U32BitHexInt
+            description: 'Internal Tag ID encapsulating tag type and value in                  hexadecimal
+                fomat: 0xTTTTVVVV (T: type, V: value)'
+            operations: R
+            presence: optional
+        tag_predefined:
+            default: false
+            description: 'Tag delete boolean representation'
+            operations: CR
+            presence: optional
+            type: boolean
+        tag_type_name:
+            description: 'Tag type string representation'
+            operations: CR
+            presence: required
+            type: string
+        tag_value:
+            description: 'Tag value string representation'
+            operations: CR
+            presence: required
+            type: string
+    required:
+        - tag_type_name
+        - tag_value
+    type: object

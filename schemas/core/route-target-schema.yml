@@ -1,12 +1,12 @@
 api_style: contrail
 extends:
-- base
+    - base
 id: route_target
 parents: {}
 plural: route_targets
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
-  type: object
+    properties: {}
+    required: []
+    type: object
