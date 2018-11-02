@@ -6,9 +6,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/testutil"
 )
 
 const (
@@ -16,43 +13,12 @@ const (
 	templateConfigPath = "test_data/templates/template_config.yaml"
 	templatesPath      = "test_data/templates"
 
-	allPath                 = "test_output/all.yml"
-	ipamSubnetTypeTypePath  = "test_output/ipam_subnet_type_type.yml"
-	ipamSubnetsTypePath     = "test_output/ipam_subnets_type.yml"
-	networkIPAMResourcePath = "test_output/network_ipam_resource.yml"
-	networkIPAMTypePath     = "test_output/network_ipam_type.yml"
-	projectResourcePath     = "test_output/project_resource.yml"
-	projectTypePath         = "test_output/project_type.yml"
-	vnIDTypeTypePath        = "test_output/virtual_network_id_type_type.yml"
-	vnResourcePath          = "test_output/virtual_network_resource.yml"
-	vnTypePath              = "test_output/virtual_network_type.yml"
-	vnSubnetsTypeTypePath   = "test_output/vn_subnets_type_type.yml"
+	allPath = "test_output/all.yml"
 
 	hogeGoPath    = "test_output/hoge.go"
 	hogeProtoPath = "test_output/hoge.proto"
 	hogeSQLPath   = "test_output/hoge.sql"
 )
-
-func TestApplyTemplatesGeneratesFilesFilledWithData(t *testing.T) {
-	err := ApplyTemplates(makeAPI(t), filepath.Dir(templatesPath), loadTemplates(t), &TemplateOption{})
-
-	assert.Nil(t, err)
-	assert.Equal(t, []string{"base", "network_ipam", "project", "virtual_network"}, loadStrings(t, allPath))
-	assert.Equal(t, []string{"subnet_name"}, loadStrings(t, ipamSubnetTypeTypePath))
-	assert.Equal(t, []string{"subnets"}, loadStrings(t, ipamSubnetsTypePath))
-	testutil.AssertContainsStrings(t, []string{"ipam_subnets", "uuid", "display_name"},
-		loadStrings(t, networkIPAMResourcePath))
-	testutil.AssertContainsStrings(t, []string{"display_name", "ipam_subnets", "uuid"},
-		loadStrings(t, networkIPAMTypePath))
-	testutil.AssertContainsStrings(t, []string{"uuid", "display_name"}, loadStrings(t, projectResourcePath))
-	testutil.AssertContainsStrings(t, []string{"display_name", "uuid"}, loadStrings(t, projectTypePath))
-	assert.Equal(t, 0, len(loadStrings(t, vnIDTypeTypePath)))
-	testutil.AssertContainsStrings(t, []string{"uuid", "display_name", "virtual_network_network_id"},
-		loadStrings(t, vnResourcePath))
-	testutil.AssertContainsStrings(t, []string{"virtual_network_network_id", "uuid", "display_name"},
-		loadStrings(t, vnTypePath))
-	assert.Equal(t, []string{"ipam_subnets"}, loadStrings(t, vnSubnetsTypeTypePath))
-}
 
 func TestApplyTemplatesAddsGenerationPrefix(t *testing.T) {
 	tests := []struct {
@@ -104,14 +70,6 @@ func loadTemplates(t *testing.T) []*TemplateConfig {
 	assert.Nil(t, err)
 
 	return c
-}
-
-func loadStrings(t *testing.T, path string) []string {
-	var data []string
-	err := fileutil.LoadFile(path, &data)
-	assert.Nil(t, err)
-
-	return data
 }
 
 func loadString(t *testing.T, path string) string {
