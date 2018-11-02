@@ -5,7 +5,8 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/config"
 )
 
-func newAPIClient(config config.Config) *client.HTTP {
+// NewAPIClient create a rest client for API
+func NewAPIClient(config config.Config) *client.HTTP {
 	c := config.APIClientConfig
 	restClient := client.NewHTTP(
 		c.URL,

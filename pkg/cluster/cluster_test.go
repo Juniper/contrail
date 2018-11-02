@@ -120,7 +120,7 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 	cluster := map[string]interface{}{"uuid": clusterID,
 		"provisioning_action": action,
 	}
-	config.Action = updateAction
+	config.Action = UpdateAction
 	switch action {
 	case upgradeProvisioningAction:
 		cluster["provisioning_state"] = "NOSTATE"
@@ -143,7 +143,7 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 			assert.NoError(t, err, "failed to delete instances.yml")
 		}
 	case importProvisioningAction:
-		config.Action = createAction
+		config.Action = CreateAction
 		cluster["provisioning_action"] = ""
 	}
 	data = map[string]interface{}{"contrail-cluster": cluster}
@@ -207,7 +207,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		Endpoint:     server.URL(),
 		InSecure:     true,
 		ClusterID:    clusterID,
-		Action:       createAction,
+		Action:       CreateAction,
 		LogLevel:     "debug",
 		TemplateRoot: "configs/",
 		Test:         true,
@@ -244,7 +244,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	}
 
 	// update cluster
-	config.Action = updateAction
+	config.Action = UpdateAction
 	// remove instances.yml to trriger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
@@ -300,7 +300,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		importProvisioningAction, "", "", "", expectedEndpoints)
 
 	// delete cluster
-	config.Action = deleteAction
+	config.Action = DeleteAction
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
 		// cleanup executed playbook file
 		err = os.Remove(executedPlaybooksPath())
@@ -467,7 +467,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		Endpoint:     server.URL(),
 		InSecure:     true,
 		ClusterID:    clusterID,
-		Action:       createAction,
+		Action:       CreateAction,
 		LogLevel:     "debug",
 		TemplateRoot: "configs/",
 		Test:         true,
@@ -497,7 +497,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	}
 
 	// update cluster
-	config.Action = updateAction
+	config.Action = UpdateAction
 	// remove instances.yml to trriger cluster update
 	err = os.Remove(generatedInstancesPath())
 	if err != nil {
@@ -536,7 +536,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		importProvisioningAction, "", "", "", expectedEndpoints)
 
 	// delete cluster
-	config.Action = deleteAction
+	config.Action = DeleteAction
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
 		// cleanup executed playbook file
 		err = os.Remove(executedPlaybooksPath())

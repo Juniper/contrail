@@ -1,6 +1,9 @@
 package config
 
 import (
+	"fmt"
+	"strings"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -48,21 +51,35 @@ type Config struct {
 
 // ReadConfig gets configuration from Viper and logs its values.
 func ReadConfig() Config {
-	viper.SetDefault("compilation.service_name", "intent-compilation-service")
+	return ReadCompilerConfig("")
+}
+
+// ReadCompilerConfig gets configuration from Viper and logs its values.
+func ReadCompilerConfig(compiler string) Config {
+	viper.SetDefault(
+		strings.Join([]string{compiler, "compilation.service_name"}, "."),
+		"intent-compilation-service")
 
 	c := Config{
 		DefaultCfg: DefaultConfig{
-			PluginDirectory: viper.GetString("compilation.plugin_directory"),
-			NumberOfWorkers: viper.GetInt("compilation.number_of_workers"),
-			MaxJobQueueLen:  viper.GetInt("compilation.max_job_queue_len"),
+			PluginDirectory: viper.GetString(
+				strings.Join([]string{compiler, "compilation.plugin_directory"}, ".")),
+			NumberOfWorkers: viper.GetInt(
+				strings.Join([]string{compiler, "compilation.number_of_workers"}, ".")),
+			MaxJobQueueLen: viper.GetInt(
+				strings.Join([]string{compiler, "compilation.max_job_queue_len"}, ".")),
 		},
 		EtcdNotifierCfg: EtcdNotifierConfig{
-			EtcdServers:      viper.GetStringSlice("etcd.endpoints"),
-			WatchPath:        viper.GetString("etcd.path"),
-			MsgQueueLockTime: viper.GetInt("compilation.msg_queue_lock_time"), // TODO(Michal): Change to GetDuration
-			MsgIndexString:   viper.GetString("compilation.msg_index_string"),
-			ReadLockString:   viper.GetString("compilation.read_lock_string"),
-			MasterElection:   viper.GetBool("compilation.master_election"),
+			EtcdServers: viper.GetStringSlice("etcd.endpoints"),
+			WatchPath:   viper.GetString("etcd.path"),
+			MsgQueueLockTime: viper.GetInt(
+				strings.Join([]string{compiler, "compilation.msg_queue_lock_time"}, ".")), // TODO(Michal): Change to GetDuration
+			MsgIndexString: viper.GetString(
+				strings.Join([]string{compiler, "compilation.msg_index_string"}, ".")),
+			ReadLockString: viper.GetString(
+				strings.Join([]string{compiler, "compilation.read_lock_string"}, ".")),
+			MasterElection: viper.GetBool(
+				strings.Join([]string{compiler, "compilation.master_election"}, ".")),
 		},
 		APIClientConfig: APIClientConfig{
 			URL:         viper.GetString("client.endpoint"),
