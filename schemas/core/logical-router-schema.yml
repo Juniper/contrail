@@ -57,11 +57,17 @@ schema:
         list.
       operations: CRUD
       presence: optional
+    logical_router_gateway_external:
+      description: this logical router is used for external connectivity or not.
+      operations: CRUD
+      presence: required
+      type: boolean
     vxlan_network_identifier:
       description: The VNI that needs to be associated with the internal VN if vxlan_routing
         mode is enabled.
       operations: CRUD
       presence: optional
       type: string
-  required: []
+  required:
+  - logical_router_gateway_external
   type: object
