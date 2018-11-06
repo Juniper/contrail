@@ -3,12 +3,20 @@ description:  basic firewall rule test
 cleanup:
 - path: /firewall-rule/test_firewall_rule_uuid
 - path: /tag/test_tag_blue_uuid
+- path: /tag-type/tag_type_uuid
+
 test_data:
+  tag_type: &tag_type
+    uuid: tag_type_uuid
+    display_name: namespace
+    fq_name:
+      - namespace
+    tag_type_id: "0x0002"
+
   tag: &test_tag_blue
     uuid: test_tag_blue_uuid
     fq_name:
       - namespace=kube-system
-    tag_id: "0x00000001"
     tag_type_name: namespace
     tag_value: kube-system
 
@@ -40,6 +48,21 @@ clients:
         name: admin
 
 workflow:
+- name: create tag type
+  request:
+    path: /tag-types
+    method: POST
+    expected: [200]
+    data:
+      tag-type: *tag_type
+  expect:
+    tag-type:
+      display_name: namespace
+      fq_name:
+      - namespace
+      tag_type_id: "0x0002"
+      uuid: tag_type_uuid
+
 - name: create tag blue
   request:
     path: /tags
@@ -77,7 +100,7 @@ workflow:
         protocol_id: 6
       endpoint_2:
         tag_ids:
-          - 1
+        - 0x00020002
       # TODO uncomment when tag refs definied
       # tag_refs:
       #   - uuid: test_tag_blue_uuid
@@ -90,7 +113,7 @@ workflow:
           protocol_id: 6
         endpoint_2:
           tag_ids:
-            - 1
+          - 0x00020002
 
 - name: try to update firewall rule
   request:
@@ -151,7 +174,7 @@ workflow:
         tags:
           - "namespace=kube-system"
         tag_ids:
-          - 1
+          - 0x00020002
       endpoint_2:
         any: true
 
@@ -198,4 +221,3 @@ workflow:
     method: DELETE
     expected: [200]
   expect: null
-
