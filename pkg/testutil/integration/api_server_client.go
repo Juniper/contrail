@@ -2,6 +2,7 @@ package integration
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/apisrv"
 	"net/http"
 	"testing"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 )

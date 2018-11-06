@@ -1,0 +1,38 @@
+name: Test FQName cleanup
+description: |
+  This test is intended to be run twice in a row to ensure that cleaning by
+  fq_name is working properly
+cleanup:
+- kind: project
+  fq_name:
+  - default-domain
+  - project_blue_project
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+test_data:
+  project_blue: &project_blue_project
+    uuid: beefbeef-beef-beef-beef-beefbeef1000
+    name: project_blue_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project_blue_project
+  expect:
+    project: *project_blue_project
