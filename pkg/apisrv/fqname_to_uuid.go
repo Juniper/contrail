@@ -7,20 +7,11 @@ import (
 	"github.com/labstack/echo"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
-type fqNameToIDRequest struct {
-	FQName []string `json:"fq_name"`
-	Type   string   `json:"type"`
-}
-
-// FQNameToIDResponse defines FqNameToID response format.
-type FQNameToIDResponse struct {
-	UUID string `json:"uuid"`
-}
-
 func (s *Server) fqNameToUUIDHandler(c echo.Context) error {
-	var request fqNameToIDRequest
+	var request services.FQNameToIDRequest
 	ctx := c.Request().Context()
 
 	err := c.Bind(&request)
@@ -37,7 +28,7 @@ func (s *Server) fqNameToUUIDHandler(c echo.Context) error {
 
 	//TODO permissions check
 
-	fqNameToIDResponse := &FQNameToIDResponse{
+	fqNameToIDResponse := &services.FQNameToIDResponse{
 		UUID: metadata.UUID,
 	}
 	return c.JSON(http.StatusOK, fqNameToIDResponse)

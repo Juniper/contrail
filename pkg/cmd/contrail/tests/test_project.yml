@@ -5,6 +5,8 @@ intent_compiler_enabled: true
 cleanup:
 - path: /project/my_custom_application_policy_set_uuid
 - path: /project/project_blue_project_uuid
+- kind: application-policy-set
+  fq_name: [default-domain, project_blue_project, default-application-policy-set]
 test_data:
   project_blue: &project_blue_project
     uuid: project_blue_project_uuid
