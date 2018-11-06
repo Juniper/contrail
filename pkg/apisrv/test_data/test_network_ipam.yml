@@ -1,6 +1,6 @@
 name: Network Ipam Test
 description:  basic network ipam test
-cleanup:
+clean_tasks:
 - path: /floating-ip/test_floating_ip
 - path: /floating-ip-pool/test_floating_ip_pool
 - path: /virtual-network/virtual_network_blue

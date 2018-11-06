@@ -1,6 +1,6 @@
 name: Quota checking test
 description: Checking for quota overflow for all resources managed by QuotaTye
-cleanup:
+clean_tasks:
   - path: /loadbalancer-healthmonitor/uuid_lb_hm_blue1
   - path: /loadbalancer-healthmonitor/uuid_lb_hm_blue2
   - path: /loadbalancer-pool/uuid_lb_p_blue1

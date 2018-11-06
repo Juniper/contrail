@@ -1,7 +1,7 @@
 name: Test k8s instance ip ip address allocation
 description: |
   Integration test for k8s address allocation during instance ip creation
-cleanup:
+clean_tasks:
 - path: /instance-ip/default-iip-uuid
 - path: /virtual-machine-interface/default-vmi-uuid
 - path: /virtual-machine/default-vm-uuid

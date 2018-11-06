@@ -1,6 +1,6 @@
 name: Virtual Network Test
 description:  basic virtual network test
-cleanup:
+clean_tasks:
 - path: /routing-instance/ri_uuid
 - path: /virtual-network/vn_blue
 - path: /virtual-network/vn_red

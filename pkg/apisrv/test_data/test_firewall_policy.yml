@@ -1,6 +1,6 @@
 name: Firewall Policy Test
 description: basic firewall policy test
-cleanup:
+clean_tasks:
 - path: /project/admin_project_uuid
 - path: /firewall-rule/fw_rule_test_firewall_policy_uuid
 - path: /firewall-policy/test_firewall_policy_uuid

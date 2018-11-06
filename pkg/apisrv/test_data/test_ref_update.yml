@@ -2,7 +2,7 @@ name: Test ref-update endpoint
 description: |
   Integration test for ref-update endpoint which allows creating
   and deleting references for specified objects.
-cleanup:
+clean_tasks:
 - path: /route-target/route_target_ref_update_uuid
 - path: /routing-instance/routing_instance_ref_update_uuid
 - path: /virtual-network/virtual_network_ref_update_uuid

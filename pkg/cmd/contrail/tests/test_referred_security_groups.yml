@@ -1,8 +1,12 @@
 name: referred Security Groups test
 description: this tests checks whether referred security groups are handled properly on delete
 intent_compiler_enabled: true
-cleanup:
-# TODO(Michał): implement cleanup by fq_name for ACLs
+clean_tasks:
+# TODO(Michał): implement clean_tasks by fq_name for ACLs
+- kind:  access-control-list
+  fq_name: ["default-domain", "blue", "sg_referring", "ingress-access-control-list"]
+- kind:  access-control-list
+  fq_name: ["default-domain", "blue", "sg_referring", "egress-access-control-list"]
 - path: /security-group/beefbeef-beef-beef-beef-beefbeef1001
 - path: /security-group/beefbeef-beef-beef-beef-beefbeef1002
 - path: /project/beefbeef-beef-beef-beef-beefbeef1000
@@ -160,8 +164,8 @@ workflow:
     expected:
     - 200
   expect: null
-  watchers:
-    /contrail/access_control_list/: [null, null]
+  # watchers:
+  #   /contrail/access_control_list/: [null, null]
 
 - name: delete project
   request:

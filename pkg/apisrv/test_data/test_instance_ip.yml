@@ -1,6 +1,6 @@
 name: Instance IP Test
 description:  basic instance ip test
-cleanup:
+clean_tasks:
 - path: /virtual-network/vn_instance_ip_blue
 - path: /network-ipam/test_ipam_instance_ip_blue
 - path: /instance-ip/test_instance_ip

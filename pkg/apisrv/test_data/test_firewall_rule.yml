@@ -1,6 +1,6 @@
 name: Firewall Rule Test
 description:  basic firewall rule test
-cleanup:
+clean_tasks:
 - path: /firewall-rule/test_firewall_rule_uuid
 - path: /tag/test_tag_blue_uuid
 test_data:

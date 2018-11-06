@@ -1,7 +1,7 @@
 name: Virtual Router Test
 description: |
   Basic Virtual Router test
-cleanup:
+clean_tasks:
 - path: /virtual-router/test_virtual_router_uuid
 - path: /network-ipam/test_virtual_router_ipam_uuid
 test_data:

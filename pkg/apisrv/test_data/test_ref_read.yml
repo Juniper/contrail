@@ -1,6 +1,6 @@
 name: Test ref objects read from DB
 description: Check if ref objects read from DB contain all fields
-cleanup:
+clean_tasks:
 - path: /routing-instance/routing_instance_ref_read_uuid
 - path: /route-target/route_target_ref_read_uuid
 - path: /virtual-network/virtual_network_ref_read

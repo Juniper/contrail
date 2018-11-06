@@ -1,6 +1,6 @@
 name: Sanitizer Service Test
 description: integration test of sanitizer service
-cleanup:
+clean_tasks:
 - path: /virtual-network/vn_sanitize_blue
 - path: /network-ipam/test_ipam_sanitize_blue
 - path: /instance-ip/test_sanitize_iip

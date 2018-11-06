@@ -1,6 +1,6 @@
 name: Sync test
 description: network sync test
-cleanup:
+clean_tasks:
 - path: /virtual-network/vn_blue_test_sync
 - path: /network-ipam/test_ipam_blue_uuid_test_sync
 - path: /network-policy/network_policy_uuid_test_sync

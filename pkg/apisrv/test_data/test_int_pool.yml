@@ -2,7 +2,7 @@ name: Test int pool allocation
 description: |
   Integration test for /int-pool endpoint which
   handles allocating ints in precreated pools
-cleanup:
+clean_tasks:
 - path: /int-pool/virtual_network_id/5
 - path: /int-pool/virtual_network_id/6
 - path: /int-pool/virtual_network_id/1337

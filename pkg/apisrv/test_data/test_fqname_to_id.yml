@@ -1,5 +1,5 @@
 name: FQName to UUID endpoint test
-cleanup:
+clean_tasks:
 - path: /virtual-network/vn_endpoint_blue
 - path: /network-ipam/test_ipam_endpoint_blue
 test_data:

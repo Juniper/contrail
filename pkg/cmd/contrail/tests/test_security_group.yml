@@ -1,14 +1,14 @@
 name: Security Group Test
 description: security group test
 intent_compiler_enabled: true
-cleanup:
-# TODO(Michał): implement cleanup by fq_name for ACLs
+clean_tasks:
+# TODO(Michał): implement clean_tasks by fq_name for ACLs
 - path: /security-group/sg_uuid
 - path: /project/project_uuid
 test_data:
   project: &project
     uuid: project_uuid
-    fq_name: ["default", "project_name"]
+    fq_name: 
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg

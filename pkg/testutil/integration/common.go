@@ -14,6 +14,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/services"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
@@ -180,6 +182,14 @@ type Task struct {
 	Watchers Watchers        `yaml:"watchers,omitempty"`
 }
 
+// CleanTask defines clean task
+type CleanTask struct {
+	Client string   `yaml:"client,omitempty"`
+	Path   string   `yaml:"path,omitempty"`
+	FQName []string `yaml:"fq_name,omitempty"`
+	Kind   string   `yaml:"kind,omitempty"`
+}
+
 //TestScenario has a list of tasks.
 type TestScenario struct {
 	Name                  string                  `yaml:"name,omitempty"`
@@ -187,7 +197,7 @@ type TestScenario struct {
 	IntentCompilerEnabled bool                    `yaml:"intent_compiler_enabled,omitempty"`
 	Tables                []string                `yaml:"tables,omitempty"`
 	Clients               map[string]*client.HTTP `yaml:"clients,omitempty"`
-	Cleanup               []map[string]string     `yaml:"cleanup,omitempty"`
+	CleanTasks            []CleanTask             `yaml:"clean_tasks,omitempty"`
 	Workflow              []*Task                 `yaml:"workflow,omitempty"`
 	Watchers              Watchers                `yaml:"watchers,omitempty"`
 }
@@ -345,22 +355,16 @@ func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenari
 func runTestScenario(
 	ctx context.Context, t *testing.T, testScenario *TestScenario, clients clientsList,
 ) (tracked []trackedResource) {
-	for _, cleanTask := range testScenario.Cleanup {
-		clientID := cleanTask["client"]
-		if clientID == "" {
-			clientID = defaultClientID
-		}
-
+	for _, cleanTask := range testScenario.CleanTasks {
 		log.WithFields(log.Fields{
 			"test-scenario": testScenario.Name,
-			"url-path":      cleanTask["path"],
+			"clean-task":    cleanTask,
 		}).Debug("Deleting existing resources before test scenario workflow")
-		response, err := clients[clientID].EnsureDeleted(ctx, cleanTask["path"], nil)
-		if err != nil && response.StatusCode != http.StatusNotFound {
+		err := performCleanup(ctx, cleanTask, getClientByID(cleanTask.Client, clients))
+		if err != nil {
 			log.WithError(err).WithFields(log.Fields{
-				"test-scenario":        testScenario.Name,
-				"url-path":             cleanTask["path"],
-				"response-status-code": response.StatusCode,
+				"test-scenario": testScenario.Name,
+				"clean-task":    cleanTask,
 			}).Error("Failed to delete existing resource before running workflow - ignoring")
 		}
 	}
@@ -399,6 +403,55 @@ func runTestScenario(
 		tracked[left], tracked[right] = tracked[right], tracked[left]
 	}
 	return tracked
+}
+
+func performCleanup(
+	ctx context.Context,
+	cleanTask CleanTask,
+	client *client.HTTP,
+) error {
+	if cleanTask.Path != "" {
+		return cleanPath(ctx, cleanTask.Path, client)
+	}
+	if cleanTask.Kind != "" && cleanTask.FQName != nil {
+		return cleanByFQNameAndKind(ctx, cleanTask.FQName, cleanTask.Kind, client)
+	}
+	return fmt.Errorf("invalid clean task %v", cleanTask)
+}
+
+func getClientByID(clientID string, clients clientsList) *client.HTTP {
+	if clientID == "" {
+		clientID = defaultClientID
+	}
+	return clients[clientID]
+}
+
+func cleanPath(
+	ctx context.Context,
+	path string,
+	client *client.HTTP,
+) error {
+	response, err := client.EnsureDeleted(ctx, path, nil)
+	if err != nil && response.StatusCode != http.StatusNotFound {
+		return fmt.Errorf("failed to delete resource, got status code %v", response.StatusCode)
+	}
+	return nil
+}
+
+func cleanByFQNameAndKind(
+	ctx context.Context,
+	fqName []string,
+	kind string,
+	client *client.HTTP,
+) error {
+	response, err := client.FQNameToUUID(ctx, &services.FQNameToIDRequest{
+		FQName: fqName,
+		Type:   kind,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "failed to fetch uuid for %s with fqName %s", kind, fqName)
+	}
+	return cleanPath(ctx, "/"+kind+"/"+response.UUID, client)
 }
 
 func extractResourcePathFromJSON(data interface{}) (path string) {
