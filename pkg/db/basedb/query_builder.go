@@ -94,6 +94,7 @@ func NewDialect(mode string) Dialect {
 			SelectIPSuffix:     "`)",
 			ConstraintsDisable: "SET GLOBAL FOREIGN_KEY_CHECKS=0;",
 			ConstraintsEnable:  "SET GLOBAL FOREIGN_KEY_CHECKS=1;",
+			CastColumnToText:   "CONVERT(%s USING utf8)",
 		}
 	default:
 		return Dialect{
@@ -109,6 +110,7 @@ func NewDialect(mode string) Dialect {
 			SelectIPSuffix:     `"`,
 			ConstraintsDisable: "SET session_replication_role = replica;",
 			ConstraintsEnable:  "SET session_replication_role = DEFAULT;",
+			CastColumnToText:   "%s :: TEXT",
 		}
 	}
 }
@@ -127,6 +129,7 @@ type Dialect struct {
 	SelectIPSuffix     string
 	ConstraintsDisable string
 	ConstraintsEnable  string
+	CastColumnToText   string
 }
 
 // DisableConstraints gives statement for disabling constraint checking (use with caution!)
@@ -148,6 +151,11 @@ func (d *Dialect) Quote(params ...string) string {
 	}
 	query += d.QuoteRune + strings.ToLower(params[l-1]) + d.QuoteRune
 	return query
+}
+
+// CastToText makes column treated as text field.
+func (d *Dialect) CastToText(column string) string {
+	return fmt.Sprintf(d.CastColumnToText, column)
 }
 
 // Placeholder returns DB specific placeholder.
@@ -207,14 +215,12 @@ func (d *Dialect) SelectIP(columnName string) string {
 type Columns map[string]int
 
 func (qb *QueryBuilder) buildFilterParts(ctx *queryContext, column string, filterValues []string) string {
-	var where string
+	var filterQuery bytes.Buffer
 	if len(filterValues) == 1 {
 		ctx.values = append(ctx.values, filterValues[0])
-		where = column + " = " + qb.Placeholder(len(ctx.values))
+		WriteStrings(&filterQuery, qb.CastToText(column), " = ", qb.Placeholder(len(ctx.values)))
 	} else {
-		var filterQuery bytes.Buffer
-		WriteStrings(&filterQuery, column, " in (")
-
+		WriteStrings(&filterQuery, qb.CastToText(column), " in (")
 		last := len(filterValues) - 1
 		for _, value := range filterValues[:last] {
 			ctx.values = append(ctx.values, value)
@@ -222,10 +228,8 @@ func (qb *QueryBuilder) buildFilterParts(ctx *queryContext, column string, filte
 		}
 		ctx.values = append(ctx.values, filterValues[last])
 		WriteStrings(&filterQuery, qb.Placeholder(len(ctx.values)), ")")
-
-		where = filterQuery.String()
 	}
-	return where
+	return filterQuery.String()
 }
 
 func (qb *QueryBuilder) join(fromTable, fromProperty, toTable string) string {
