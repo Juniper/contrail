@@ -7,6 +7,8 @@ cleanup:
 - path: /firewall-rule/firewall_rule_test_provisioning_uuid
 - path: /firewall-policy/firewall_policy_test_provisioning_uuid
 - path: /tag/tag_test_provisioning_uuid
+- path: /int-pool/tag_type_id/1
+
 test_data:
   bgp_router_parameters: &bgp_router_parameters_test_provisioning
     vendor: contrail
@@ -56,14 +58,12 @@ test_data:
     fq_name:
       - namespace
     display_name: namespace
-    tag_type_id: "0x00ff"
 
   tag: &tag_test_provisioning
     uuid: tag_test_provisioning_uuid
     fq_name:
       - namespace=default
     display_name: namespace=default
-    tag_id: "0x00ff0001"
     tag_type_name: namespace
     tag_value: default
     tag_type_refs:
@@ -198,7 +198,7 @@ workflow:
       <<: *firewall_rule_test_provisioning
       endpoint_2:
         tag_ids:
-          - 16711681
+          - 1
       # TODO uncomment when tag refs definied
       # tag_refs:
       #   - uuid: tag_test_provisioning_uuid
@@ -261,4 +261,11 @@ workflow:
     method: DELETE
     expected:
     - 200
+  expect: null
+
+- name: deallocate specified int
+  request:
+    path: /int-pool/tag_type_id/1
+    method: DELETE
+    expected: [200]
   expect: null
