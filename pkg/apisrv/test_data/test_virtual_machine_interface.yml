@@ -1,5 +1,5 @@
 name: Virtual Machine Interface test
-cleanup:
+clean_tasks:
 - path: /virtual-network/vn_vmi_blue
 - path: /network-ipam/test_ipam_vmi_blue
 - path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a

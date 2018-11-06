@@ -2,7 +2,7 @@ name: Test prop collection update
 description: |
   Integration test for /prop-collection-update endpoint which allows modifying
   data stored in List and Map properties of object.
-cleanup:
+clean_tasks:
 - path: /virtual-network/virtual_network_prop_collection_update_uuid
 - path: /project/project_prop_collection_update_uuid
 test_data:

@@ -1,6 +1,6 @@
 name: Security Group Test
 description: security group test
-cleanup:
+clean_tasks:
 - path: /security-group/sg_uuid
 - path: /project/project_uuid
 test_data:

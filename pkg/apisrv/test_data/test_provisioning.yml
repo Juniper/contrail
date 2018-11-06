@@ -1,7 +1,7 @@
 name: Provisioning phase requests test
 description: |
   This test scenario contains requests that are run during provisioning phase.
-cleanup:
+clean_tasks:
 - path: /bgp-router/bgp_router_test_provisioning_uuid
 - path: /virtual-router/virtual_router_test_provisioning_uuid
 - path: /firewall-rule/firewall_rule_test_provisioning_uuid

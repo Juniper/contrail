@@ -1,6 +1,6 @@
 name: Logical Router Test
 description:  basic logical router test
-cleanup:
+clean_tasks:
 - path: /bgpvpn/test_bgpvpn_l2
 - path: /bgpvpn/test_bgpvpn_l3
 - path: /virtual-network/test_vn_lr_with_bgpvpn

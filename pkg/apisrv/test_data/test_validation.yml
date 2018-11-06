@@ -1,6 +1,6 @@
 name: Resource Validation test
 description:  validation test
-cleanup:
+clean_tasks:
 - path: /virtual-network/vn_validation_test_uuid
 - path: /network-ipam/test_ipam_validation_uuid
 - path: /project/admin_project_validation_test_uuid

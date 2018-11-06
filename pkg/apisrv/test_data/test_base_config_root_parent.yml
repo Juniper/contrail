@@ -1,5 +1,5 @@
 name: Base poperties tests for objects which contain Config Root as parent
-cleanup:
+clean_tasks:
 - path: /domain/domain-test
 - path: /policy-management/policy-management-test
 - path: /policy-management/policy-management-test2

@@ -2,7 +2,7 @@ name: Test unique name validation
 description: |
   Test creates two different resources with same, implicit name.
   Second creation should fail, because first resource takes the default name.
-cleanup:
+clean_tasks:
 - path: /openserverserver/srv_blue
 - path: /openserverserver/srv_red
 - path: /project/admin_project_name_unique_uuid

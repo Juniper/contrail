@@ -2,7 +2,7 @@ name: Test project
 description: |
   Test that creating the same project twice fails with the expected code
   and no extra information is returned.
-cleanup:
+clean_tasks:
 - path: /project/project_blue_project_uuid
 test_data:
   project_blue: &project_blue_project

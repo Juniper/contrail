@@ -1,6 +1,6 @@
 name: Floating IP Test
 description:  basic floating ip test
-cleanup:
+clean_tasks:
 - path: /virtual-network/vn_floating_blue
 - path: /network-ipam/test_ipam
 - path: /network-ipam/test_ipam_floating_blue

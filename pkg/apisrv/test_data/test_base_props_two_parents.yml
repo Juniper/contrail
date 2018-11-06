@@ -1,5 +1,5 @@
 name: Base poperties tests for logical interface which has 2 parents
-cleanup:
+clean_tasks:
 - path: /logical_interface/logical_interface_blue
 - path: /logical_interface/logical_interface_blue2
 - path: /physical-routers/physical_router_blue_uuid
