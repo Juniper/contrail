@@ -279,7 +279,7 @@ func (sv *ContrailTypeLogicService) getTagTypeID(
 	}
 
 	id := tagTypeResponse.GetTagType().GetTagTypeID()
-	return strconv.ParseInt(id, 10, 64)
+	return strconv.ParseInt(id, 0, 64)
 }
 
 func (sv *ContrailTypeLogicService) setTagProperties(
@@ -362,8 +362,8 @@ func (sv *ContrailTypeLogicService) setTagRef(
 
 	//TODO append to tagRefs tag with given tagName
 
-	id := strings.Replace(tag.GetTagID(), "0x", "", -1)
-	return strconv.ParseInt(id, 16, 64)
+	// id := strings.Replace(tag.GetTagID(), "0x", "", -1)
+	return strconv.ParseInt(tag.GetTagID(), 0, 64)
 }
 
 func (sv *ContrailTypeLogicService) getTagByFQName(
