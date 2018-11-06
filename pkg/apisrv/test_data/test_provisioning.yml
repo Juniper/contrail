@@ -7,6 +7,7 @@ cleanup:
 - path: /firewall-rule/firewall_rule_test_provisioning_uuid
 - path: /firewall-policy/firewall_policy_test_provisioning_uuid
 - path: /tag/tag_test_provisioning_uuid
+
 test_data:
   bgp_router_parameters: &bgp_router_parameters_test_provisioning
     vendor: contrail
@@ -63,11 +64,8 @@ test_data:
     fq_name:
       - namespace=default
     display_name: namespace=default
-    tag_id: "0x00ff0001"
     tag_type_name: namespace
     tag_value: default
-    tag_type_refs:
-      - uuid: tag_type_test_provisioning_uuid
 
   firewall_rule: &firewall_rule_test_provisioning
     uuid: firewall_rule_test_provisioning_uuid
@@ -198,7 +196,7 @@ workflow:
       <<: *firewall_rule_test_provisioning
       endpoint_2:
         tag_ids:
-          - 16711681
+          - 4082
       # TODO uncomment when tag refs definied
       # tag_refs:
       #   - uuid: tag_test_provisioning_uuid
