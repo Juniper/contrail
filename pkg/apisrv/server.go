@@ -49,7 +49,7 @@ type Server struct {
 	Echo        *echo.Echo
 	GRPCServer  *grpc.Server
 	Keystone    *keystone.Keystone
-	dbService   *db.Service
+	DBService   *db.Service
 	Proxy       *proxyService
 	Service     services.Service
 	IPAMServer  services.IPAMServer
@@ -77,24 +77,24 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 	serviceChain = append(serviceChain, cs)
 
 	serviceChain = append(serviceChain, &services.RefUpdateToUpdateService{
-		ReadService:       s.dbService,
-		InTransactionDoer: s.dbService,
+		ReadService:       s.DBService,
+		InTransactionDoer: s.DBService,
 	})
 
 	serviceChain = append(serviceChain, &services.SanitizerService{
-		MetadataGetter: s.dbService,
+		MetadataGetter: s.DBService,
 	})
 
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
-		ReadService:       s.dbService,
-		InTransactionDoer: s.dbService,
-		AddressManager:    s.dbService,
-		IntPoolAllocator:  s.dbService,
-		MetadataGetter:    s.dbService,
+		ReadService:       s.DBService,
+		InTransactionDoer: s.DBService,
+		AddressManager:    s.DBService,
+		IntPoolAllocator:  s.DBService,
+		MetadataGetter:    s.DBService,
 		WriteService:      serviceChain[0],
 	})
 
-	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.dbService))
+	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.DBService))
 
 	if viper.GetBool("server.notify_etcd") {
 		en := etcdNotifier()
@@ -103,7 +103,7 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		}
 	}
 
-	serviceChain = append(serviceChain, s.dbService)
+	serviceChain = append(serviceChain, s.DBService)
 
 	services.Chain(serviceChain...)
 	return cs, nil
@@ -118,9 +118,9 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	cs := &services.ContrailService{
 		BaseService:       services.BaseService{},
 		TypeValidator:     tv,
-		MetadataGetter:    s.dbService,
-		InTransactionDoer: s.dbService,
-		IntPoolAllocator:  s.dbService,
+		MetadataGetter:    s.DBService,
+		InTransactionDoer: s.DBService,
+		IntPoolAllocator:  s.DBService,
 	}
 
 	cs.RegisterRESTAPI(s.Echo)
@@ -138,7 +138,7 @@ func etcdNotifier() services.Service {
 }
 
 func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
-	s.Proxy = newProxyService(s.Echo, endpointStore, s.dbService)
+	s.Proxy = newProxyService(s.Echo, endpointStore, s.DBService)
 	s.Proxy.serve()
 }
 
@@ -173,7 +173,7 @@ func (s *Server) Init() (err error) {
 
 	e.Use(middleware.Recover())
 
-	s.dbService, err = db.NewServiceFromConfig()
+	s.DBService, err = db.NewServiceFromConfig()
 	if err != nil {
 		return err
 	}
@@ -399,10 +399,10 @@ func (s *Server) Run() error {
 //Close closes server resources
 func (s *Server) Close() error {
 	s.Proxy.stop()
-	return s.dbService.Close()
+	return s.DBService.Close()
 }
 
 //DB return db object.
 func (s *Server) DB() *sql.DB {
-	return s.dbService.DB()
+	return s.DBService.DB()
 }

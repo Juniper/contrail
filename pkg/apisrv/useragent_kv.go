@@ -50,14 +50,14 @@ func (s *Server) UseragentKVHandler(c echo.Context) error {
 }
 
 func (s *Server) storeKeyValue(c echo.Context, key string, value string) error {
-	if err := s.dbService.StoreKV(c.Request().Context(), key, value); err != nil {
+	if err := s.DBService.StoreKV(c.Request().Context(), key, value); err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
 }
 
 func (s *Server) retrieveValue(c echo.Context, key string) error {
-	val, err := s.dbService.RetrieveValue(c.Request().Context(), key)
+	val, err := s.DBService.RetrieveValue(c.Request().Context(), key)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
@@ -67,7 +67,7 @@ func (s *Server) retrieveValue(c echo.Context, key string) error {
 }
 
 func (s *Server) retrieveValues(c echo.Context, keys []string) error {
-	vals, err := s.dbService.RetrieveValues(c.Request().Context(), keys)
+	vals, err := s.DBService.RetrieveValues(c.Request().Context(), keys)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
@@ -77,7 +77,7 @@ func (s *Server) retrieveValues(c echo.Context, keys []string) error {
 }
 
 func (s *Server) retrieveKVPs(c echo.Context) error {
-	kvps, err := s.dbService.RetrieveKVPs(c.Request().Context())
+	kvps, err := s.DBService.RetrieveKVPs(c.Request().Context())
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
@@ -87,7 +87,7 @@ func (s *Server) retrieveKVPs(c echo.Context) error {
 }
 
 func (s *Server) deleteKey(c echo.Context, key string) error {
-	if err := s.dbService.DeleteKey(c.Request().Context(), key); err != nil {
+	if err := s.DBService.DeleteKey(c.Request().Context(), key); err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
