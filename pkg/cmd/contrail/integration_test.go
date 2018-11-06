@@ -35,6 +35,11 @@ const (
 	expectedACLCount                     = 2
 )
 
+func TestFQNameCleanup(t *testing.T) {
+	runDirtyTest(t, t.Name())
+	runTest(t, t.Name())
+}
+
 func TestProject(t *testing.T) {
 	runTest(t, t.Name())
 }
