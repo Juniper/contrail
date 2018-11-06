@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/services"
+
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 )
@@ -78,7 +79,7 @@ type fqNameToIDLegacyRequest struct {
 
 // FQNameToID performs FQName to ID request.
 func (c *HTTPAPIClient) FQNameToID(t *testing.T, fqName []string, resourceType string) (uuid string) {
-	var responseData apisrv.FQNameToIDResponse
+	var responseData services.FQNameToIDResponse
 	r, err := c.Do(
 		context.Background(),
 		echo.POST,
