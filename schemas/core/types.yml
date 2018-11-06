@@ -316,7 +316,7 @@ definitions:
     - md5
     type: string
   AutonomousSystemType:
-    maximum: 65534
+    maximum: 4294967294
     minimum: 1
     type: integer
   AutonomousSystemsType:
@@ -1639,6 +1639,22 @@ definitions:
         presence: optional
         type: array
     type: object
+  NodeProfileRoleType:
+    properties:
+      physical_role:
+        type: string
+      rb_roles:
+        items:
+          type: string
+        type: array
+    type: object
+  NodeProfileRolesType:
+    properties:
+      role_mappings:
+        items:
+          $ref: types.json#/definitions/NodeProfileRoleType
+        type: array
+    type: object
   PathSourceType:
     items:
       enum:
@@ -1662,11 +1678,6 @@ definitions:
     - regular
     - lag
     type: string
-  PhysicalRolesType:
-    properties:
-      physical_role:
-        $ref: types.json#/definitions/PhysicalRouterRole
-    type: object
   PhysicalRouterRole:
     enum:
     - spine
@@ -1906,6 +1917,11 @@ definitions:
     type: object
   ProtocolType:
     properties:
+      destination_aggregate_prefix_length:
+        description: Fat flow prefix mask length for IP where destination-prefix is
+          applied
+        presence: optional
+        type: integer
       destination_prefix:
         $ref: types.json#/definitions/SubnetType
         description: For packets originated from VM destination-prefix is applied
@@ -1924,6 +1940,10 @@ definitions:
         type: integer
       protocol:
         type: string
+      source_aggregate_prefix_length:
+        description: Fat flow prefix mask length for IP where source-prefix is applied
+        presence: optional
+        type: integer
       source_prefix:
         $ref: types.json#/definitions/SubnetType
         description: For packets originated from VM source-prefix is applied to source
@@ -2165,18 +2185,12 @@ definitions:
         description: Ip prefix/len format prefix
         type: string
     type: object
-  RoutingBridgingRole:
-    items:
-      enum:
-      - CRB-Gateway
-      - CRB-Access
-      - DC-Gateway
-      type: string
-    type: array
   RoutingBridgingRolesType:
     properties:
-      rb_role:
-        $ref: types.json#/definitions/RoutingBridgingRole
+      rb_roles:
+        items:
+          type: string
+        type: array
     type: object
   RoutingPolicyServiceInstanceType:
     properties:

@@ -37,5 +37,13 @@ schema:
       operations: CRUD
       presence: optional
       wrapper: true
+    fabric_ztp:
+      description: This attribute to indicate if the fabric is zero-touch provisioned
+        or not. If this attribute is set to "True", user should not be allowed to
+        remove any existing namespaces from the fabric as they may be used to provision
+        the devices.
+      operations: CRUD
+      presence: optional
+      type: boolean
   required: []
   type: object

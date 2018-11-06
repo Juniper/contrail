@@ -26,6 +26,12 @@ schema:
         fomat: 0xTTTTVVVV (T: type, V: value)'
       operations: R
       presence: optional
+    tag_predefined:
+      default: false
+      description: Tag delete boolean representation
+      operations: CR
+      presence: optional
+      type: boolean
     tag_type_name:
       description: Tag type string representation
       operations: CR
