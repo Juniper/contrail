@@ -17,9 +17,10 @@ references:
 schema:
   properties:
     attachment_address:
-      $ref: types.json#/definitions/AttachmentAddressType
+      # $ref: types.json#/definitions/AttachmentAddressType
       description: ''
       operations: CRUD
       presence: optional
+      type: string
   required: []
   type: object

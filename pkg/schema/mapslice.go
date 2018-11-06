@@ -104,7 +104,7 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 	for _, property := range properties {
 		key := property.Key.(string) //nolint: errcheck
 		if property.Value == nil {
-			log.Fatal(fmt.Sprintf("Property is null on key %s", key))
+			log.Fatal(fmt.Sprintf("Property %s is null on %v", key, schema))
 		}
 		propertySchema := mapSlice(property.Value.(yaml.MapSlice)).JSONSchema() //nolint: errcheck
 

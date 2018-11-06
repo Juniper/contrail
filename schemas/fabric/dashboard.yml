@@ -13,7 +13,7 @@ schema:
       permission:
       - create
       - update
-      sql: ""
+      sql: "text"
       title: Container Config
       type: string
       view:

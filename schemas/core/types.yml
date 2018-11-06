@@ -1,4 +1,8 @@
 definitions:
+  AccessType:
+    maximum: 7
+    minimum: 0
+    type: integer
   AclEntriesType:
     properties:
       acl_rule:
@@ -271,11 +275,9 @@ definitions:
       asn_min:
         type: integer
     type: object
-  AttachmentAddressType:
-    properties:
-      status:
-        type: string
-    type: object
+  # AttachmentAddressType:
+  #   properties: {}
+  #   type: object
   AttachmentInfoType:
     properties:
       _static:
@@ -284,8 +286,6 @@ definitions:
         $ref: types.json#/definitions/ProtocolBgpType
       ospf:
         $ref: types.json#/definitions/ProtocolOspfType
-      state:
-        type: string
     type: object
   AuthenticationData:
     properties:
@@ -316,7 +316,7 @@ definitions:
     - md5
     type: string
   AutonomousSystemType:
-    maximum: 65534
+    maximum: 4294967294
     minimum: 1
     type: integer
   AutonomousSystemsType:
@@ -1049,6 +1049,45 @@ definitions:
     - HTTP
     - HTTPS
     type: string
+  IdPermsType:
+    properties:
+      created:
+        description: Time when this object was created
+        format: date-time
+        presence: system-only
+        type: string
+      creator:
+        description: Id of tenant who created this object
+        presence: system-only
+        type: string
+      description:
+        description: User provided text
+        presence: optional
+        type: string
+      enable:
+        description: Administratively Enable/Disable this object
+        presence: 'true'
+        type: boolean
+      last_modified:
+        description: Time when this object was created
+        format: date-time
+        presence: system-only
+        type: string
+      permissions:
+        $ref: types.json#/definitions/PermType
+        description: No longer used, will be removed
+        presence: optional
+      user_visible:
+        description: System created internal objects will have this flag set and will
+          not be visible
+        presence: system-only
+        type: boolean
+      uuid:
+        $ref: types.json#/definitions/UuidType
+        description: UUID of the object, system automatically allocates one if not
+          provided
+        presence: 'true'
+    type: object
   ImportExportType:
     enum:
     - import
@@ -1225,6 +1264,20 @@ definitions:
       service_port:
         items:
           type: string
+        type: array
+    type: object
+  KeyValuePair:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    type: object
+  KeyValuePairs:
+    properties:
+      key_value_pair:
+        items:
+          $ref: types.json#/definitions/KeyValuePair
         type: array
     type: object
   L4PortType:
@@ -1639,6 +1692,22 @@ definitions:
         presence: optional
         type: array
     type: object
+  NodeProfileRoleType:
+    properties:
+      physical_role:
+        type: string
+      rb_roles:
+        items:
+          type: string
+        type: array
+    type: object
+  NodeProfileRolesType:
+    properties:
+      role_mappings:
+        items:
+          $ref: types.json#/definitions/NodeProfileRoleType
+        type: array
+    type: object
   PathSourceType:
     items:
       enum:
@@ -1657,16 +1726,46 @@ definitions:
     enum:
     - public-peering
     type: string
+  PermType:
+    properties:
+      group:
+        type: string
+      group_access:
+        $ref: types.json#/definitions/AccessType
+      other_access:
+        $ref: types.json#/definitions/AccessType
+      owner:
+        type: string
+      owner_access:
+        $ref: types.json#/definitions/AccessType
+    type: object
+  PermType2:
+    properties:
+      global_access:
+        $ref: types.json#/definitions/AccessType
+        description: Globally(others) shared object and permissions for others of
+          the object
+        presence: optional
+      owner:
+        description: Owner tenant of the object
+        presence: 'true'
+        type: string
+      owner_access:
+        $ref: types.json#/definitions/AccessType
+        description: Owner permissions of the object
+        presence: 'true'
+      share:
+        description: Selectively shared object, List of (tenant, permissions)
+        items:
+          $ref: types.json#/definitions/ShareType
+        presence: optional
+        type: array
+    type: object
   PhysicalInterfaceType:
     enum:
     - regular
     - lag
     type: string
-  PhysicalRolesType:
-    properties:
-      physical_role:
-        $ref: types.json#/definitions/PhysicalRouterRole
-    type: object
   PhysicalRouterRole:
     enum:
     - spine
@@ -1906,6 +2005,11 @@ definitions:
     type: object
   ProtocolType:
     properties:
+      destination_aggregate_prefix_length:
+        description: Fat flow prefix mask length for IP where destination-prefix is
+          applied
+        presence: optional
+        type: integer
       destination_prefix:
         $ref: types.json#/definitions/SubnetType
         description: For packets originated from VM destination-prefix is applied
@@ -1924,6 +2028,10 @@ definitions:
         type: integer
       protocol:
         type: string
+      source_aggregate_prefix_length:
+        description: Fat flow prefix mask length for IP where source-prefix is applied
+        presence: optional
+        type: integer
       source_prefix:
         $ref: types.json#/definitions/SubnetType
         description: For packets originated from VM source-prefix is applied to source
@@ -2165,18 +2273,12 @@ definitions:
         description: Ip prefix/len format prefix
         type: string
     type: object
-  RoutingBridgingRole:
-    items:
-      enum:
-      - CRB-Gateway
-      - CRB-Access
-      - DC-Gateway
-      type: string
-    type: array
   RoutingBridgingRolesType:
     properties:
-      rb_role:
-        $ref: types.json#/definitions/RoutingBridgingRole
+      rb_roles:
+        items:
+          type: string
+        type: array
     type: object
   RoutingPolicyServiceInstanceType:
     properties:
@@ -2446,7 +2548,6 @@ definitions:
         $ref: types.json#/definitions/ServiceInterfaceType
     type: object
   ServiceInterfaceType:
-    format: service_interface_type_format
     type: string
   ServiceModeType:
     enum:
@@ -2561,6 +2662,17 @@ definitions:
     - HTTP_COOKIE
     - APP_COOKIE
     type: string
+  ShareType:
+    properties:
+      tenant:
+        description: Name of tenant with whom the object is shared
+        presence: 'true'
+        type: string
+      tenant_access:
+        $ref: types.json#/definitions/AccessType
+        description: Allowed permissions in sharing
+        presence: 'true'
+    type: object
   SimpleActionType:
     enum:
     - deny
@@ -2754,6 +2866,13 @@ definitions:
     type: object
   UuidStringType:
     type: string
+  UuidType:
+    properties:
+      uuid_lslong:
+        type: integer
+      uuid_mslong:
+        type: integer
+    type: object
   UveKeysType:
     properties:
       uve_key:

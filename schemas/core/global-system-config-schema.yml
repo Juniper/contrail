@@ -43,17 +43,20 @@ schema:
       operations: R
       presence: system-only
       type: string
+    data_center_interconnect_asn_namespace:
+      $ref: types.json#/definitions/AsnRangeType
+      description: Used for assigning asn values on interconnect physical devices.
+      operations: CRUD
+      presence: optional
+    data_center_interconnect_loopback_namespace:
+      $ref: types.json#/definitions/SubnetListType
+      description: Used for assigning loopback addresses on interconnect physical
+        devices.
+      operations: CRUD
+      presence: optional
     enable_security_policy_draft:
       default: false
       description: ''
-      operations: CRUD
-      presence: optional
-      type: boolean
-    fabric_ztp:
-      description: This attribute to indicate if the fabric is zero-touch provisioned
-        or not. If this attribute is set to "True", user should not be allowed to
-        remove any existing namespaces from the fabric as they may be used to provision
-        the devices.
       operations: CRUD
       presence: optional
       type: boolean
