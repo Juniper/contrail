@@ -277,7 +277,6 @@ resources:
       owner: cloud-admin
       owner_access: 7
       share: []
-    tag_id: "0x00000001"
     tag_type_name: label
     tag_type_refs:
     - attr: null
@@ -311,7 +310,6 @@ resources:
       owner: cloud-admin
       owner_access: 7
       share: []
-    tag_id: "0x00000000"
     tag_type_name: label
     tag_type_refs:
     - attr: null

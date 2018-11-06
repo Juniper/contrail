@@ -63,7 +63,6 @@ test_data:
     fq_name:
       - namespace=default
     display_name: namespace=default
-    tag_id: "0x00ff0001"
     tag_type_name: namespace
     tag_value: default
     tag_type_refs:

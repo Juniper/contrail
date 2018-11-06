@@ -8,7 +8,6 @@ test_data:
     uuid: test_tag_blue_uuid
     fq_name:
       - namespace=kube-system
-    tag_id: "0x00000001"
     tag_type_name: namespace
     tag_value: kube-system
 

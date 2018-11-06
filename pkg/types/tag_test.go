@@ -1,0 +1,124 @@
+package types
+
+import (
+	"context"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/status"
+	"testing"
+
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/contrail/pkg/types/mock"
+	"github.com/golang/mock/gomock"
+	"google.golang.org/grpc/codes"
+)
+
+func tagSetupNextServiceMocks(s *ContrailTypeLogicService) {
+	nextService := s.Next().(*servicesmock.MockService) //nolint: errcheck
+	nextService.EXPECT().CreateTag(
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+	).DoAndReturn(
+		func(_ context.Context, request *services.CreateTagRequest) (
+			response *services.CreateTagResponse, err error,
+		) {
+			return &services.CreateTagResponse{Tag: request.Tag}, nil
+		},
+	).AnyTimes()
+}
+
+func tagSetupIntPoolAllocMock(s *ContrailTypeLogicService) {
+	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
+	intPoolAllocator.EXPECT().AllocateInt(
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+	).DoAndReturn(
+		func(_ context.Context, tagTypeIDPoolKey string) (int64, error) {
+			return 1, nil
+		},
+	).AnyTimes()
+}
+
+func TestCreateTag(t *testing.T) {
+	tests := []struct{
+		name        string
+		paramTag    models.Tag
+		expectedTag models.Tag
+		status   codes.Code
+	}{
+		{
+			name: "Create tag without tag_type_name should failed",
+			paramTag: models.Tag{
+				FQName: []string{"namespace=ctest-namespace-95268437"},
+				TagValue: "ctest-namespace-95268437",
+			},
+			status: codes.InvalidArgument,
+		},
+		{
+			name: "Create tag without fq_name should failed",
+			paramTag: models.Tag{
+				TagTypeName: "namespace",
+				TagValue: "ctest-namespace-95268437",
+			},
+			status: codes.InvalidArgument,
+		},
+		{
+			name: "Create tag without tag_value should failed",
+			paramTag: models.Tag{
+				TagTypeName: "namespace",
+				FQName: []string{"namespace=ctest-namespace-95268437"},
+			},
+			status: codes.InvalidArgument,
+		},
+		{
+			name: "Create tag with tag_id should failed",
+			paramTag: models.Tag{
+				TagID: "0x00000001",
+				TagTypeName: "namespace",
+				FQName: []string{"namespace=ctest-namespace-95268437"},
+				TagValue: "ctest-namespace-95268437",
+			},
+			expectedTag: models.Tag{},
+			status: codes.InvalidArgument,
+		},
+		{
+			name: "Create Tag with correct request should succeed",
+			paramTag: models.Tag{
+				TagTypeName: "namespace",
+				FQName: []string{"namespace=ctest-namespace-95268437"},
+				TagValue: "ctest-namespace-95268437",
+			},
+			expectedTag: models.Tag{
+				TagID: "1",
+				TagTypeName: "namespace",
+				FQName: []string{"namespace=ctest-namespace-95268437"},
+				TagValue: "ctest-namespace-95268437",
+			},
+			status: codes.OK,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+			tagSetupNextServiceMocks(service)
+			tagSetupIntPoolAllocMock(service)
+
+			ctx := context.Background()
+
+			paramRequest := services.CreateTagRequest{Tag: &test.paramTag}
+			expectedResponse := services.CreateTagResponse{Tag: &test.expectedTag}
+			createTagResponse, err := service.CreateTag(ctx, &paramRequest)
+
+			if test.status != codes.OK {
+				stat, ok := status.FromError(err)
+				assert.True(t, ok)
+				assert.Equal(t, test.status, stat.Code())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, &expectedResponse, createTagResponse)
+			}
+		})
+	}
+}
