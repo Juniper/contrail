@@ -13,12 +13,12 @@ import (
 	"net/url"
 	"path"
 
+	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/services"
+
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (
@@ -228,6 +228,17 @@ func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) erro
 	expected := []int{http.StatusOK}
 	_, err := h.Do(ctx, echo.DELETE, path.Join("/int-pool", pool, fmt.Sprint(value)), nil, nil, &output, expected)
 	return errors.Wrap(err, "error deallocating int in int-pool via HTTP")
+}
+
+// FQNameToUUID sends a fqname-to-id request.
+func (h *HTTP) FQNameToUUID(
+	ctx context.Context,
+	request *services.FQNameToIDRequest,
+) (*services.FQNameToIDResponse, error) {
+	expected := []int{http.StatusOK}
+	response := &services.FQNameToIDResponse{}
+	_, err := h.Do(ctx, echo.POST, "/fqname-to-id", nil, request, response, expected)
+	return response, err
 }
 
 // Do issues an API request.
