@@ -9,7 +9,8 @@ import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
-type fqNameToIDRequest struct {
+// FQNameToIDRequest defines fq_name to id request format
+type FQNameToIDRequest struct {
 	FQName []string `json:"fq_name"`
 	Type   string   `json:"type"`
 }
@@ -19,8 +20,9 @@ type FQNameToIDResponse struct {
 	UUID string `json:"uuid"`
 }
 
+
 func (s *Server) fqNameToUUIDHandler(c echo.Context) error {
-	var request fqNameToIDRequest
+	var request FQNameToIDRequest
 	ctx := c.Request().Context()
 
 	err := c.Bind(&request)
@@ -28,7 +30,7 @@ func (s *Server) fqNameToUUIDHandler(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 
-	metadata, err := s.dbService.GetMetadata(ctx, basemodels.Metadata{Type: request.Type, FQName: request.FQName})
+	metadata, err := s.DBService.GetMetadata(ctx, basemodels.Metadata{Type: request.Type, FQName: request.FQName})
 	if err != nil {
 		//TODO adding Project
 		errMsg := fmt.Sprintf("Failed to retrieve metadata for FQName %v and Type %v", request.FQName, request.Type)
