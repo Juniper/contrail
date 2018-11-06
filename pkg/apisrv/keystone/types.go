@@ -21,6 +21,23 @@ type VncProject struct {
 
 //ConfigProject represents project object.
 type ConfigProject struct {
+	UUID   string   `json:"uuid,omitempty"`
+	Name   string   `json:"name,omitempty"`
+	FQName []string `json:"fq_name,omitempty"`
+}
+
+//VncDomainListResponse represents a domain list response.
+type VncDomainListResponse struct {
+	Domains []*VncDomain `json:"domains"`
+}
+
+//VncDomain represents a vnc config domain object.
+type VncDomain struct {
+	Domain *ConfigDomain `json:"domain"`
+}
+
+//ConfigDomain represents domain object.
+type ConfigDomain struct {
 	UUID string `json:"uuid,omitempty"`
 	Name string `json:"name,omitempty"`
 }
