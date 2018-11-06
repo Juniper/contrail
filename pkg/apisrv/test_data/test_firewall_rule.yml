@@ -3,12 +3,13 @@ description:  basic firewall rule test
 cleanup:
 - path: /firewall-rule/test_firewall_rule_uuid
 - path: /tag/test_tag_blue_uuid
+- path: /int-pool/tag_type_id/1
+
 test_data:
   tag: &test_tag_blue
     uuid: test_tag_blue_uuid
     fq_name:
       - namespace=kube-system
-    tag_id: "0x00000001"
     tag_type_name: namespace
     tag_value: kube-system
 
@@ -199,3 +200,9 @@ workflow:
     expected: [200]
   expect: null
 
+- name: deallocate specified int
+  request:
+    path: /int-pool/tag_type_id/1
+    method: DELETE
+    expected: [200]
+  expect: null

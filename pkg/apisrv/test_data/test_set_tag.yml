@@ -6,6 +6,7 @@ cleanup:
 - path: /project/admin_project_uuid
 - path: /tag/tag_namespace_uuid
 - path: /tag/tag_application_uuid
+- path: /int-pool/tag_type_id/1
 
 test_data:
 # SetUp resources
@@ -194,6 +195,13 @@ workflow:
 - name: delete tag application
   request:
     path: /tag/tag_application_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: deallocate specified int
+  request:
+    path: /int-pool/tag_type_id/1
     method: DELETE
     expected: [200]
   expect: null
