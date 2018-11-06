@@ -1,0 +1,180 @@
+name: Test tag endpoint
+cleanup:
+- path: /tag/tag_correct_uuid
+- path: /tag/tag_minimal_correct_uuid
+- path: /tag-type/tag_type_uuid
+
+test_data:
+  # SetUp data
+  tag_type: &tag_type
+    tag-type:
+      uuid: tag_type_uuid
+      fq_name:
+      - namespace
+      tag_type_name: namespace
+      tag_type_id: "0x00ff"
+  # End SetUp
+
+  tag_with_id_incorrect: &tag_with_id_incorrect
+    tag:
+      uuid: tag_incorrect_with_id
+      fq_name:
+      - namespace=tag_with_id
+      tag_value: tag_with_id
+      tag_type_name: namespace
+      tag_id: "0x3BFA"
+
+  tag_without_type_name_incorrect: &tag_without_type_name_incorrect
+    tag:
+      uuid: tag_without_type_name_incorrect
+      fq_name:
+      - namespace=tag_without_type_name
+      tag_value: tag_without_type_name
+
+  tag_without_value_incorrect: &tag_without_value_incorrect
+    tag:
+      uuid: tag_correct_uuid
+      fq_name:
+      - namespace=tag_without_value
+      tag_type_name: namespace
+
+  tag_with_type_refs_incorrect: &tag_with_type_refs_incorrect
+    tag:
+      uuid: tag_correct_uuid
+      fq_name:
+      - namespace=tag_correct_value
+      tag_value: tag_correct_value
+      tag_type_name: namespace
+      tag_type_refs:
+        - namespace
+        - application
+
+  tag_minimal_correct: &tag_minimal_correct
+    tag:
+      uuid: tag_minimal_correct_uuid
+      fq_name:
+      - namespace=tag_minimal_correct
+      tag_value: tag_minimal_correct
+      tag_type_name: namespace
+
+  tag_full_correct: &tag_full_correct
+    tag:
+      uuid: tag_full_correct_uuid
+      name: namespace=tag_full_correct
+      fq_name:
+      - namespace=tag_full_correct
+      tag_value: tag_full_correct
+      tag_type_name: namespace
+      id_perms:
+        enable: true
+        uuid:
+          uuid_mslong: 4603359347807309478
+          uuid_lslong: 13538275414110178732
+      perms2:
+        owner: default-project
+        owner_access: 7
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+# SetUp
+- name: create TagType
+  request:
+    path: /tag-types
+    method: POST
+    expected: [200]
+    data: *tag_type
+  expect:
+    tag-type:
+      display_name: namespace
+      fq_name:
+      - namespace
+      name: namespace
+      tag_type_id: "0x00ff"
+      uuid: tag_type_uuid
+# End SetUp
+
+- name: check create correct minimal tag
+  request:
+    path: /tags
+    method: POST
+    expected: [200]
+    data: *tag_minimal_correct
+  expect:
+    tag:
+      fq_name:
+      - namespace=tag_minimal_correct
+      name: namespace=tag_minimal_correct
+      tag_id: "2"
+      tag_type_name: namespace
+      tag_value: tag_minimal_correct
+
+- name: check create correct full tag
+  request:
+    path: /tags
+    method: POST
+    expected: [200]
+    data: *tag_full_correct
+  expect:
+    tag:
+      uuid: tag_full_correct_uuid
+      name: namespace=tag_full_correct
+      fq_name:
+      - namespace=tag_full_correct
+      tag_id: "3"
+      tag_value: tag_full_correct
+      tag_type_name: namespace
+      id_perms:
+        enable: true
+        uuid:
+          uuid_lslong: 1.3538276e+19
+          uuid_mslong: 4.6033594e+18
+      perms2:
+        owner: default-project
+        owner_access: 7
+
+
+- name: check create incorrect tag with tag_id
+  request:
+    path: /tags
+    method: POST
+    expected: [400]
+    data: *tag_with_id_incorrect
+
+- name: check create incorrect tag without type name
+  request:
+    path: /tags
+    method: POST
+    expected: [400]
+    data: *tag_without_type_name_incorrect
+
+- name: check create incorrect tag without value
+  request:
+    path: /tags
+    method: POST
+    expected: [400]
+    data: *tag_without_value_incorrect
+
+- name: check create incorrect tag with type refs
+  request:
+    path: /tags
+    method: POST
+    expected: [400]
+    data: *tag_with_type_refs_incorrect
+
+# TearDown
+- name: remove tag_type
+  request:
+    path: /tag-type/tag_type_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+# End TearDown
