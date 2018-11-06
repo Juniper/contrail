@@ -21,6 +21,7 @@ const (
 	updatePlaybooks                       = "./test_data/expected_ansible_update_playbook.yml"
 	upgradePlaybooks                      = "./test_data/expected_ansible_upgrade_playbook.yml"
 	addComputePlaybooks                   = "./test_data/expected_ansible_add_compute_playbook.yml"
+	deleteComputePlaybooks                = "./test_data/expected_ansible_delete_compute_playbook.yml"
 	addCSNPlaybooks                       = "./test_data/expected_ansible_add_csn_playbook.yml"
 	createEncryptPlaybooks                = "./test_data/expected_ansible_create_encrypt_playbook.yml"
 	updateEncryptPlaybooks                = "./test_data/expected_ansible_update_encrypt_playbook.yml"
@@ -135,6 +136,12 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 		}
 		if expectedInventory != "" {
 			expectedPlaybooks = addComputeEncryptPlaybooks
+		}
+	case deleteComputeProvisioningAction:
+		// remove instances.yml to mock trriger cluster update
+		err = os.Remove(generatedInstancesPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete instances.yml")
 		}
 	case addCSNProvisioningAction:
 		// remove instances.yml to mock trriger cluster update
@@ -289,6 +296,11 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	runClusterActionTest(t, testScenario, config,
 		addComputeProvisioningAction, expectedInstance, expectedInventory,
 		addComputePlaybooks, expectedEndpoints)
+
+	// DELETE_COMPUTE  test
+	runClusterActionTest(t, testScenario, config,
+		deleteComputeProvisioningAction, expectedInstance, "",
+		deleteComputePlaybooks, expectedEndpoints)
 
 	// ADD_CSN  test
 	runClusterActionTest(t, testScenario, config,
