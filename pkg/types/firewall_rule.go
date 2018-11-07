@@ -279,7 +279,7 @@ func (sv *ContrailTypeLogicService) getTagTypeID(
 	}
 
 	id := tagTypeResponse.GetTagType().GetTagTypeID()
-	return strconv.ParseInt(id, 10, 64)
+	return strconv.ParseInt(id, 0, 64)
 }
 
 func (sv *ContrailTypeLogicService) setTagProperties(
@@ -294,7 +294,10 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 				"Use 'tags' endpoints property in the Firewall Rule")
 	}
 
-	//TODO initialize tagRefs
+	fr.TagRefs = []*models.FirewallRuleTagRef{}
+	if fm != nil && !basemodels.FieldMaskContains(fm, models.FirewallRuleFieldTagRefs) {
+		fm.Paths = append(fm.Paths, models.FirewallRuleFieldTagRefs)
+	}
 	return sv.setTagRefs(ctx, fr, databaseFR, fm)
 }
 
@@ -318,19 +321,37 @@ func (sv *ContrailTypeLogicService) setTagRefs(
 
 		if ep != nil {
 			ep.TagIds = nil
+			if fm != nil &&
+				!basemodels.FieldMaskContains(fm, fields[i], models.FirewallRuleEndpointTypeFieldTagIds) {
+				fm.Paths = append(
+					fm.Paths,
+					basemodels.JoinPath(fields[i], models.FirewallRuleEndpointTypeFieldTagIds),
+				)
+			}
 		}
 
-		for _, tagName := range ep.GetTags() {
-			tagID, err := sv.setTagRef(ctx, fr, databaseFR, tagName)
-			if err != nil {
-				return err
-			}
-
-			ep.TagIds = append(ep.GetTagIds(), tagID)
+		if err := sv.processTags(ctx, fr, databaseFR, ep); err != nil {
+			return err
 		}
 	}
 
-	handleTagRefsFieldMask(fr, fm)
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) processTags(
+	ctx context.Context,
+	fr *models.FirewallRule,
+	databaseFR *models.FirewallRule,
+	ep *models.FirewallRuleEndpointType,
+) error {
+	for _, tagName := range ep.GetTags() {
+		tagID, err := sv.setTagRef(ctx, fr, databaseFR, tagName)
+		if err != nil {
+			return err
+		}
+
+		ep.TagIds = append(ep.GetTagIds(), tagID)
+	}
 	return nil
 }
 
@@ -360,10 +381,15 @@ func (sv *ContrailTypeLogicService) setTagRef(
 		return 0, err
 	}
 
-	//TODO append to tagRefs tag with given tagName
+	fr.TagRefs = append(
+		fr.GetTagRefs(),
+		&models.FirewallRuleTagRef{
+			UUID: tag.GetUUID(),
+			To:   tag.GetFQName(),
+		},
+	)
 
-	id := strings.Replace(tag.GetTagID(), "0x", "", -1)
-	return strconv.ParseInt(id, 16, 64)
+	return strconv.ParseInt(tag.GetTagID(), 0, 64)
 }
 
 func (sv *ContrailTypeLogicService) getTagByFQName(
@@ -390,26 +416,6 @@ func (sv *ContrailTypeLogicService) getTagByFQName(
 	}
 
 	return tagResponse.GetTag(), nil
-}
-
-func handleTagRefsFieldMask(fr *models.FirewallRule, fm *types.FieldMask) {
-	endpoints := []*models.FirewallRuleEndpointType{fr.GetEndpoint1(), fr.GetEndpoint2()}
-	fields := []string{models.FirewallRuleFieldEndpoint1, models.FirewallRuleFieldEndpoint2}
-
-	for i, ep := range endpoints {
-		if len(ep.GetTagIds()) > 0 && fm != nil &&
-			!basemodels.FieldMaskContains(fm, fields[i], models.FirewallRuleEndpointTypeFieldTagIds) {
-			fm.Paths = append(
-				fm.Paths,
-				basemodels.JoinPath(fields[i], models.FirewallRuleEndpointTypeFieldTagIds),
-			)
-		}
-	}
-
-	if len(fr.GetTagRefs()) > 0 && fm != nil &&
-		!basemodels.FieldMaskContains(fm, "tag_refs") {
-		fm.Paths = append(fm.Paths, "tag_refs")
-	}
 }
 
 func (sv *ContrailTypeLogicService) setAddressGroupRefs(

@@ -38,39 +38,41 @@ func TestSyncService(t *testing.T) {
 			watchers: integration.Watchers{
 				"/test/virtual_network/5720afd0-d5a6-46ef-bd81-3be7f715cd27": []integration.Event{
 					{
-						"uuid":        "5720afd0-d5a6-46ef-bd81-3be7f715cd27",
-						"parent_uuid": "beefbeef-beef-beef-beef-beefbeef0003",
-						"parent_type": "project",
-						"fq_name":     []interface{}{"default-domain", "default-project", "default-virtual-network"},
-						"id_perms": map[string]interface{}{
-							"enable":        true,
-							"created":       "2018-05-23T17:29:57.559916",
-							"user_visible":  true,
-							"last_modified": "2018-05-23T17:29:57.559916",
-							"permissions": map[string]interface{}{
+						Data: map[string]interface{}{
+							"uuid":        "5720afd0-d5a6-46ef-bd81-3be7f715cd27",
+							"parent_uuid": "beefbeef-beef-beef-beef-beefbeef0003",
+							"parent_type": "project",
+							"fq_name":     []interface{}{"default-domain", "default-project", "default-virtual-network"},
+							"id_perms": map[string]interface{}{
+								"enable":        true,
+								"created":       "2018-05-23T17:29:57.559916",
+								"user_visible":  true,
+								"last_modified": "2018-05-23T17:29:57.559916",
+								"permissions": map[string]interface{}{
+									"owner":        "cloud-admin",
+									"owner_access": 7,
+									"other_access": 7,
+									"group":        "cloud-admin-group",
+									"group_access": 7,
+								},
+								"uuid": map[string]interface{}{
+									"uuid_mslong": 6278211400000000000,
+									"uuid_lslong": float64(13655262000000000000)},
+							},
+							"perms2": map[string]interface{}{
 								"owner":        "cloud-admin",
 								"owner_access": 7,
-								"other_access": 7,
-								"group":        "cloud-admin-group",
-								"group_access": 7,
 							},
-							"uuid": map[string]interface{}{
-								"uuid_mslong": 6278211400000000000,
-								"uuid_lslong": float64(13655262000000000000)},
-						},
-						"perms2": map[string]interface{}{
-							"owner":        "cloud-admin",
-							"owner_access": 7,
-						},
-						"virtual_network_network_id": 1,
-						"routing_instances": []interface{}{
-							map[string]interface{}{
-								"uuid": "d59c5934-1dbd-4865-b8e9-ff9d7f3f16d0",
-								"fq_name": []interface{}{
-									"default-domain",
-									"default-project",
-									"default-virtual-network",
-									"default-virtual-network",
+							"virtual_network_network_id": 1,
+							"routing_instances": []interface{}{
+								map[string]interface{}{
+									"uuid": "d59c5934-1dbd-4865-b8e9-ff9d7f3f16d0",
+									"fq_name": []interface{}{
+										"default-domain",
+										"default-project",
+										"default-virtual-network",
+										"default-virtual-network",
+									},
 								},
 							},
 						},
@@ -119,24 +121,30 @@ func TestSyncService(t *testing.T) {
 			watchers: integration.Watchers{
 				"/test/virtual_network/vn-blue": []integration.Event{
 					{
-						"name": "vn_blue",
-						"id_perms": map[string]interface{}{
-							"uuid": map[string]interface{}{
-								"uuid_mslong": float64(1),
-								"uuid_lslong": float64(2),
+						Data: map[string]interface{}{
+							"name": "vn_blue",
+							"id_perms": map[string]interface{}{
+								"uuid": map[string]interface{}{
+									"uuid_mslong": float64(1),
+									"uuid_lslong": float64(2),
+								},
 							},
 						},
 					},
 					{
-						"name": "vn_bluuee",
-						"id_perms": map[string]interface{}{
-							"uuid": map[string]interface{}{
-								"uuid_mslong": float64(1337),
-								"uuid_lslong": float64(2778),
+						Data: map[string]interface{}{
+							"name": "vn_bluuee",
+							"id_perms": map[string]interface{}{
+								"uuid": map[string]interface{}{
+									"uuid_mslong": float64(1337),
+									"uuid_lslong": float64(2778),
+								},
 							},
 						},
 					},
-					nil,
+					{
+						Data: nil,
+					},
 				},
 			},
 		},
@@ -200,63 +208,81 @@ func TestSyncService(t *testing.T) {
 			watchers: integration.Watchers{
 				"/test/virtual_network/vn-blue": []integration.Event{
 					{
-						"name":              "vn_blue",
-						"network_ipam_refs": "$null",
+						Data: map[string]interface{}{
+							"name":              "vn_blue",
+							"network_ipam_refs": "$null",
+						},
 					},
 					{
-						"name": "vn_blue",
-						"network_ipam_refs": []interface{}{map[string]interface{}{
-							"uuid": "ni-blue",
-							"attr": map[string]interface{}{
-								"ipam_subnets": nil,
-								"host_routes": map[string]interface{}{
-									"route": []interface{}{map[string]interface{}{
-										"next_hop": "1.2.3.5",
-										"prefix":   "test_prefix",
-									}},
+						Data: map[string]interface{}{
+							"name": "vn_blue",
+							"network_ipam_refs": []interface{}{map[string]interface{}{
+								"uuid": "ni-blue",
+								"attr": map[string]interface{}{
+									"ipam_subnets": nil,
+									"host_routes": map[string]interface{}{
+										"route": []interface{}{map[string]interface{}{
+											"next_hop": "1.2.3.5",
+											"prefix":   "test_prefix",
+										}},
+									},
 								},
-							},
-						}},
+							}},
+						},
 					},
 					{
-						"name": "vn_bluuee",
-						"network_ipam_refs": []interface{}{map[string]interface{}{
-							"uuid": "ni-blue",
-							"attr": map[string]interface{}{
-								"ipam_subnets": nil,
-								"host_routes": map[string]interface{}{
-									"route": []interface{}{map[string]interface{}{
-										"next_hop": "1.2.3.5",
-										"prefix":   "test_prefix",
-									}},
+						Data: map[string]interface{}{
+							"name": "vn_bluuee",
+							"network_ipam_refs": []interface{}{map[string]interface{}{
+								"uuid": "ni-blue",
+								"attr": map[string]interface{}{
+									"ipam_subnets": nil,
+									"host_routes": map[string]interface{}{
+										"route": []interface{}{map[string]interface{}{
+											"next_hop": "1.2.3.5",
+											"prefix":   "test_prefix",
+										}},
+									},
 								},
-							},
-						}},
+							}},
+						},
 					},
 					{
-						"name":              "vn_bluuee",
-						"network_ipam_refs": "$null",
+						Data: map[string]interface{}{
+							"name":              "vn_bluuee",
+							"network_ipam_refs": "$null",
+						},
 					},
-					nil,
+					{
+						Data: nil,
+					},
 				},
 				"/test/network_ipam/ni-blue": []integration.Event{
 					{
-						"name":                      "ni_blue",
-						"virtual_network_back_refs": "$null",
+						Data: map[string]interface{}{
+							"name":                      "ni_blue",
+							"virtual_network_back_refs": "$null",
+						},
 					},
 					{
-						"name": "ni_blue",
-						"virtual_network_back_refs": []interface{}{
-							map[string]interface{}{
-								"uuid": "vn-blue",
+						Data: map[string]interface{}{
+							"name": "ni_blue",
+							"virtual_network_back_refs": []interface{}{
+								map[string]interface{}{
+									"uuid": "vn-blue",
+								},
 							},
 						},
 					},
 					{
-						"name":                      "ni_blue",
-						"virtual_network_back_refs": "$null",
+						Data: map[string]interface{}{
+							"name":                      "ni_blue",
+							"virtual_network_back_refs": "$null",
+						},
 					},
-					nil,
+					{
+						Data: nil,
+					},
 				},
 			},
 		},
@@ -298,44 +324,58 @@ func TestSyncService(t *testing.T) {
 			watchers: integration.Watchers{
 				"/test/virtual_network/vn-red": []integration.Event{
 					{
-						"name":              "vn_red",
-						"network_ipam_refs": "$null",
+						Data: map[string]interface{}{
+							"name":              "vn_red",
+							"network_ipam_refs": "$null",
+						},
 					},
 					{
-						"name": "vn_red",
-						"network_ipam_refs": []interface{}{map[string]interface{}{
-							"uuid": "ni-red",
-							"attr": map[string]interface{}{
-								"ipam_subnets": nil,
-								"host_routes": map[string]interface{}{
-									"route": []interface{}{map[string]interface{}{
-										"next_hop": "1.2.3.5",
-										"prefix":   "test_prefix",
-									}},
+						Data: map[string]interface{}{
+							"name": "vn_red",
+							"network_ipam_refs": []interface{}{map[string]interface{}{
+								"uuid": "ni-red",
+								"attr": map[string]interface{}{
+									"ipam_subnets": nil,
+									"host_routes": map[string]interface{}{
+										"route": []interface{}{map[string]interface{}{
+											"next_hop": "1.2.3.5",
+											"prefix":   "test_prefix",
+										}},
+									},
 								},
-							},
-						}},
+							}},
+						},
 					},
-					nil,
+					{
+						Data: nil,
+					},
 				},
 				"/test/network_ipam/ni-red": []integration.Event{
 					{
-						"name":                      "ni_red",
-						"virtual_network_back_refs": "$null",
+						Data: map[string]interface{}{
+							"name":                      "ni_red",
+							"virtual_network_back_refs": "$null",
+						},
 					},
 					{
-						"name": "ni_red",
-						"virtual_network_back_refs": []interface{}{
-							map[string]interface{}{
-								"uuid": "vn-red",
+						Data: map[string]interface{}{
+							"name": "ni_red",
+							"virtual_network_back_refs": []interface{}{
+								map[string]interface{}{
+									"uuid": "vn-red",
+								},
 							},
 						},
 					},
 					{
-						"name":                      "ni_red",
-						"virtual_network_back_refs": "$null",
+						Data: map[string]interface{}{
+							"name":                      "ni_red",
+							"virtual_network_back_refs": "$null",
+						},
 					},
-					nil,
+					{
+						Data: nil,
+					},
 				},
 			},
 		},
