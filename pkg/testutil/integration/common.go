@@ -165,7 +165,10 @@ func AddKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 }
 
 // Event represents event received from etcd watch.
-type Event = map[string]interface{}
+type Event struct {
+	Data     map[string]interface{} `yaml:"data,omitempty"`
+	SyncOnly bool                   `yaml:"sync_only,omitempty"`
+}
 
 // Watchers map contains slices of events that should be emitted on
 // etcd key matching the map key.
@@ -292,19 +295,32 @@ func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv
 func createWatchChecker(task string, collect func() []string, key string, events []Event) func(t *testing.T) {
 	return func(t *testing.T) {
 		collected := collect()
+		syncEnabled := viper.GetBool("sync.enabled")
+		eventCount := len(events)
+		if !syncEnabled {
+			for _, e := range events {
+				if e.SyncOnly {
+					eventCount--
+				}
+			}
+		}
 		assert.Equal(
-			t, len(events), len(collected),
+			t, eventCount, len(collected),
 			"etcd emitted not enough events on %s(got %v, expected %v)\n",
 			key, collected, events,
 		)
+
 		for i, e := range events[:len(collected)] {
+			if !syncEnabled && e.SyncOnly {
+				continue
+			}
 			c := collected[i]
 			var data interface{} = map[string]interface{}{}
 			if len(c) > 0 {
 				err := json.Unmarshal([]byte(c), &data)
 				assert.NoError(t, err)
 			}
-			testutil.AssertEqual(t, e, data, fmt.Sprintf("task: %s\netcd event not equal for %s[%v]", task, key, i))
+			testutil.AssertEqual(t, e.Data, data, fmt.Sprintf("task: %s\netcd event not equal for %s[%v]", task, key, i))
 		}
 	}
 }

@@ -146,12 +146,13 @@ workflow:
           uuid_lslong: 456
   watchers:
     /contrail/network_ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3:
-      - <<: *network_ipam
-        uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
-        id_perms:
-          uuid:
-            uuid_mslong: 123
-            uuid_lslong: 456
+      - data:
+          <<: *network_ipam
+          uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+          id_perms:
+            uuid:
+              uuid_mslong: 123
+              uuid_lslong: 456
 
 - name: update id_perms description
   request:
@@ -170,10 +171,11 @@ workflow:
         description: my-description
   watchers:
     /contrail/network_ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3:
-      - <<: *network_ipam
-        uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
-        id_perms:
-          description: my-description
+      - data:
+          <<: *network_ipam
+          uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
+          id_perms:
+            description: my-description
 
 - name: delete Network IPAM
   request:
