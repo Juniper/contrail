@@ -78,19 +78,22 @@ workflow:
       endpoint_2:
         tag_ids:
           - 1
-      # TODO uncomment when tag refs definied
-      # tag_refs:
-      #   - uuid: test_tag_blue_uuid
-      #     to:
-      #       - namespace=kube-system
+      tag_refs:
+        - uuid: test_tag_blue_uuid
+          to: [namespace=kube-system]
   watchers:
     /contrail/firewall_rule/test_firewall_rule_uuid:
-      - <<: *test_firewall_rule
-        service:
-          protocol_id: 6
-        endpoint_2:
-          tag_ids:
-            - 1
+      - data:
+          <<: *test_firewall_rule
+          service:
+            protocol_id: 6
+          endpoint_2:
+            tag_ids:
+              - 1
+      - data:
+        tag_refs:
+          - uuid: test_tag_blue_uuid
+        sync_only: true
 
 - name: try to update firewall rule
   request:
@@ -127,16 +130,32 @@ workflow:
       endpoint_1:
         tags:
           - "namespace=kube-system"
+        tag_ids:
+          - 1
       endpoint_2:
         any: true
   watchers:
     /contrail/firewall_rule/test_firewall_rule_uuid:
-      - <<: *test_firewall_rule
-        endpoint_1:
-          tags:
-            - "namespace=kube-system"
-        endpoint_2:
-          any: true
+      - data:
+          <<: *test_firewall_rule
+          tag_refs: $null
+        sync_only: true
+      - data:
+          <<: *test_firewall_rule
+          tag_refs:
+            - uuid: test_tag_blue_uuid
+        sync_only: true
+      - data:
+          <<: *test_firewall_rule
+          endpoint_1:
+            tags:
+              - "namespace=kube-system"
+            tag_ids:
+              - 1
+          endpoint_2:
+            any: true
+          tag_refs:
+            - uuid: test_tag_blue_uuid
 
 - name: get updated firewall rule
   request:
@@ -179,11 +198,12 @@ workflow:
           ip_prefix_len: 24
   watchers:
     /contrail/firewall_rule/test_firewall_rule_uuid:
-      - uuid: test_firewall_rule_uuid
-        endpoint_1:
-          subnet:
-            ip_prefix: "10.0.0.0"
-            ip_prefix_len: 24
+      - data:
+          uuid: test_firewall_rule_uuid
+          endpoint_1:
+            subnet:
+              ip_prefix: "10.0.0.0"
+              ip_prefix_len: 24
 
 - name: delete firewall rule
   request:

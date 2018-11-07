@@ -45,10 +45,14 @@ func TestEtcdNotifierService(t *testing.T) {
 			watchers: integration.Watchers{
 				"/test/virtual_network/vn-blue": []integration.Event{
 					{
-						"name": "vn_blue",
+						Data: map[string]interface{}{
+							"name": "vn_blue",
+						},
 					},
 					{
-						"name": "vn_bluuee",
+						Data: map[string]interface{}{
+							"name": "vn_bluuee",
+						},
 					},
 				},
 			},
@@ -91,36 +95,48 @@ func TestEtcdNotifierService(t *testing.T) {
 			watchers: integration.Watchers{
 				"/test/virtual_network/vn-blue": []integration.Event{
 					{
-						"name": "vn_blue",
+						Data: map[string]interface{}{
+							"name": "vn_blue",
+						},
 					},
 					{
-						"name": "vn_blue",
-						"logical_router_refs": []interface{}{
-							map[string]interface{}{
-								"uuid": "lr-blue",
+						Data: map[string]interface{}{
+							"name": "vn_blue",
+							"logical_router_refs": []interface{}{
+								map[string]interface{}{
+									"uuid": "lr-blue",
+								},
 							},
 						},
 					},
 					{
-						"name":                "vn_blue",
-						"logical_router_refs": "$null",
+						Data: map[string]interface{}{
+							"name":                "vn_blue",
+							"logical_router_refs": "$null",
+						},
 					},
 				},
 				"/test/logical_router/lr-blue": []integration.Event{
 					{
-						"name": "lr_blue",
+						Data: map[string]interface{}{
+							"name": "lr_blue",
+						},
 					},
 					{
-						"name": "lr_blue",
-						"virtual_network_back_refs": []interface{}{
-							map[string]interface{}{
-								"uuid": "vn-blue",
+						Data: map[string]interface{}{
+							"name": "lr_blue",
+							"virtual_network_back_refs": []interface{}{
+								map[string]interface{}{
+									"uuid": "vn-blue",
+								},
 							},
 						},
 					},
 					{
-						"name":                      "lr_blue",
-						"virtual_network_back_refs": "$null",
+						Data: map[string]interface{}{
+							"name":                      "lr_blue",
+							"virtual_network_back_refs": "$null",
+						},
 					},
 				},
 			},
