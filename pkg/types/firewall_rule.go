@@ -5,12 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gogo/protobuf/types"
-
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/gogo/protobuf/types"
 )
 
 // CreateFirewallRule performs types specific validation,
@@ -294,7 +293,7 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 				"Use 'tags' endpoints property in the Firewall Rule")
 	}
 
-	//TODO initialize tagRefs
+	fr.TagRefs = []*models.FirewallRuleTagRef{}
 	return sv.setTagRefs(ctx, fr, databaseFR, fm)
 }
 
@@ -360,7 +359,13 @@ func (sv *ContrailTypeLogicService) setTagRef(
 		return 0, err
 	}
 
-	//TODO append to tagRefs tag with given tagName
+	fr.TagRefs = append(
+		fr.GetTagRefs(),
+		&models.FirewallRuleTagRef{
+			UUID: tag.GetUUID(),
+			To:   tag.GetFQName(),
+		},
+	)
 
 	id := strings.Replace(tag.GetTagID(), "0x", "", -1)
 	return strconv.ParseInt(id, 16, 64)
