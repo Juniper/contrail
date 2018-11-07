@@ -4,18 +4,17 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gogo/protobuf/types"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/types/mock"
+	"github.com/gogo/protobuf/types"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 //Structure expectedParams is used to store some expected values
@@ -25,6 +24,7 @@ type expectedParams struct {
 	Service          *models.FirewallServiceType
 	Endpoint1        *models.FirewallRuleEndpointType
 	Endpoint2        *models.FirewallRuleEndpointType
+	TagRefs          []*models.FirewallRuleTagRef
 	AddressGroupRefs []*models.FirewallRuleAddressGroupRef
 }
 
@@ -34,6 +34,7 @@ func updateExpectedFirewallRule(fr models.FirewallRule, params expectedParams) *
 	fr.Service = params.Service
 	fr.Endpoint1 = params.Endpoint1
 	fr.Endpoint2 = params.Endpoint2
+	fr.TagRefs = params.TagRefs
 	fr.AddressGroupRefs = params.AddressGroupRefs
 	return &fr
 }
@@ -118,7 +119,7 @@ func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.Fire
 	readService.EXPECT().GetTagType(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		&services.GetTagTypeResponse{
 			TagType: &models.TagType{
-				TagTypeID: "121",
+				TagTypeID: "0xff",
 			},
 		},
 		nil,
@@ -135,7 +136,7 @@ func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.Fire
 						Tag: &models.Tag{
 							UUID:   "tag-uuid-1",
 							FQName: []string{"namespace=default"},
-							TagID:  "0x00ff0001",
+							TagID:  "12",
 						},
 					},
 					nil
@@ -287,6 +288,21 @@ func TestCreateFirewallRule(t *testing.T) {
 			errorCode: codes.InvalidArgument,
 		},
 		{
+			name: "Try to create with tag references definied",
+			testFirewallRule: models.FirewallRule{
+				Service: &models.FirewallServiceType{
+					Protocol: "tcp",
+				},
+				TagRefs: []*models.FirewallRuleTagRef{
+					{
+						UUID: "tag-uuid",
+						To:   []string{"default-project", "tag-uuid"},
+					},
+				},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
 			name: "Try to create with improper tag name",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
@@ -382,7 +398,17 @@ func TestCreateFirewallRule(t *testing.T) {
 				},
 				Endpoint2: &models.FirewallRuleEndpointType{
 					Tags:   []string{"namespace=default"},
-					TagIds: []int64{0x00ff0001},
+					TagIds: []int64{12},
+				},
+				TagRefs: []*models.FirewallRuleTagRef{
+					{
+						UUID: "tag-uuid-3",
+						To:   []string{"namespace=contrail"},
+					},
+					{
+						UUID: "tag-uuid-1",
+						To:   []string{"namespace=default"},
+					},
 				},
 				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{},
 			},
@@ -406,7 +432,7 @@ func TestCreateFirewallRule(t *testing.T) {
 					TagList: []string{"Application", "Tier", "OtherTag"},
 				},
 				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
-					TagType: []int64{1, 2, 121},
+					TagType: []int64{1, 2, 255},
 				},
 				Endpoint1: &models.FirewallRuleEndpointType{
 					AddressGroup: "address-group-uuid-2",
@@ -415,6 +441,7 @@ func TestCreateFirewallRule(t *testing.T) {
 					Protocol:   "240",
 					ProtocolID: 240,
 				},
+				TagRefs: []*models.FirewallRuleTagRef{},
 				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{
 					{
 						UUID: "address-group-uuid-2",
@@ -563,6 +590,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
 					TagType: []int64{1},
 				},
+				TagRefs:          []*models.FirewallRuleTagRef{},
 				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{},
 			},
 			databaseFR: &models.FirewallRule{
@@ -576,6 +604,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
 					TagType: []int64{2},
 				},
+				TagRefs: []*models.FirewallRuleTagRef{},
 			},
 			IsInternalRequest: true,
 		},
@@ -604,6 +633,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
 					TagType: []int64{},
 				},
+				TagRefs:          []*models.FirewallRuleTagRef{},
 				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{},
 			},
 			databaseFR: &models.FirewallRule{
@@ -664,10 +694,16 @@ func TestUpdateFirewallRule(t *testing.T) {
 			expected: &models.FirewallRule{
 				Endpoint1: &models.FirewallRuleEndpointType{
 					Tags:   []string{"global:namespace=default"},
-					TagIds: []int64{0x00ff0001},
+					TagIds: []int64{12},
 				},
 				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
 					TagType: []int64{},
+				},
+				TagRefs: []*models.FirewallRuleTagRef{
+					{
+						UUID: "tag-uuid-1",
+						To:   []string{"namespace=default"},
+					},
 				},
 				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{},
 			},
@@ -707,6 +743,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
 					TagType: []int64{},
 				},
+				TagRefs: []*models.FirewallRuleTagRef{},
 				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{
 					{
 						UUID: "address-group-uuid-2",
