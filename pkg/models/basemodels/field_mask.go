@@ -99,7 +99,7 @@ func nestMap(m map[string]interface{}, key string) map[string]interface{} {
 	return nested
 }
 
-// JoinPath concatenates arguments and returns path
+// JoinPath concatenates arguments and returns path.
 func JoinPath(fields ...string) string {
 	var path string
 	for i, f := range fields {
@@ -114,7 +114,7 @@ func JoinPath(fields ...string) string {
 	return path
 }
 
-// FieldMaskContains checks if given field mask contains requested string
+// FieldMaskContains checks if given field mask contains requested string.
 func FieldMaskContains(fm *types.FieldMask, fields ...string) bool {
 
 	path := JoinPath(fields...)
@@ -125,4 +125,13 @@ func FieldMaskContains(fm *types.FieldMask, fields ...string) bool {
 	}
 
 	return false
+}
+
+// FieldMaskAppend appends to field mask if it doesn't contain requested string.
+func FieldMaskAppend(fm *types.FieldMask, fields ...string) {
+	if fm == nil || FieldMaskContains(fm, fields...) {
+		return
+	}
+	path := JoinPath(fields...)
+	fm.Paths = append(fm.Paths, path)
 }
