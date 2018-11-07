@@ -279,7 +279,7 @@ func (sv *ContrailTypeLogicService) getTagTypeID(
 	}
 
 	id := tagTypeResponse.GetTagType().GetTagTypeID()
-	return strconv.ParseInt(id, 10, 64)
+	return strconv.ParseInt(id, 0, 64)
 }
 
 func (sv *ContrailTypeLogicService) setTagProperties(
@@ -294,7 +294,7 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 				"Use 'tags' endpoints property in the Firewall Rule")
 	}
 
-	//TODO initialize tagRefs
+	fr.TagRefs = []*models.FirewallRuleTagRef{}
 	return sv.setTagRefs(ctx, fr, databaseFR, fm)
 }
 
@@ -360,10 +360,15 @@ func (sv *ContrailTypeLogicService) setTagRef(
 		return 0, err
 	}
 
-	//TODO append to tagRefs tag with given tagName
+	fr.TagRefs = append(
+		fr.GetTagRefs(),
+		&models.FirewallRuleTagRef{
+			UUID: tag.GetUUID(),
+			To:   tag.GetFQName(),
+		},
+	)
 
-	id := strings.Replace(tag.GetTagID(), "0x", "", -1)
-	return strconv.ParseInt(id, 16, 64)
+	return strconv.ParseInt(tag.GetTagID(), 0, 64)
 }
 
 func (sv *ContrailTypeLogicService) getTagByFQName(
