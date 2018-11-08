@@ -94,7 +94,7 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFrom
 //NewEvent makes event from interface
 func NewEvent(option *EventOption) (*Event, error) {
     e := &Event{}
-    kind := strings.Replace(option.Kind, "-", "_", -1)
+    kind := format.KindToSchemaID(option.Kind)
     data := option.Data
     uuid := option.UUID
   	operation := option.Operation
