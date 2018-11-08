@@ -50,6 +50,7 @@ create table {{ reference.Table }} (
     `from` varchar(255),
     `to` varchar(255),
     primary key (`from`,`to`),
+    `relaxed` boolean,
     {%- for column in reference.Columns %}
     `{{column.Column}}` {{column.JSONSchema.SQL}},
     {%- endfor %}

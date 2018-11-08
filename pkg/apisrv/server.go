@@ -46,16 +46,17 @@ func RegisterExtension(f func(server *Server) error) {
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo         *echo.Echo
-	GRPCServer   *grpc.Server
-	Keystone     *keystone.Keystone
-	DBService    *db.Service
-	Proxy        *proxyService
-	Service      services.Service
-	IPAMServer   services.IPAMServer
-	ChownServer  services.ChownServer
-	SetTagServer services.SetTagServer
-	Cache        *cache.DB
+	Echo           *echo.Echo
+	GRPCServer     *grpc.Server
+	Keystone       *keystone.Keystone
+	DBService      *db.Service
+	Proxy          *proxyService
+	Service        services.Service
+	IPAMServer     services.IPAMServer
+	ChownServer    services.ChownServer
+	SetTagServer   services.SetTagServer
+	RefRelaxServer services.RefRelaxServer
+	Cache          *cache.DB
 }
 
 // NewServer makes a server
@@ -122,6 +123,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		MetadataGetter:    s.DBService,
 		InTransactionDoer: s.DBService,
 		IntPoolAllocator:  s.DBService,
+		RefRelaxer:        s.DBService,
 	}
 
 	cs.RegisterRESTAPI(s.Echo)
@@ -187,6 +189,7 @@ func (s *Server) Init() (err error) {
 	s.IPAMServer = cs
 	s.ChownServer = cs
 	s.SetTagServer = cs
+	s.RefRelaxServer = cs
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -266,6 +269,7 @@ func (s *Server) Init() (err error) {
 		services.RegisterIPAMServer(s.GRPCServer, s.IPAMServer)
 		services.RegisterChownServer(s.GRPCServer, s.ChownServer)
 		services.RegisterSetTagServer(s.GRPCServer, s.SetTagServer)
+		services.RegisterRefRelaxServer(s.GRPCServer, s.RefRelaxServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 

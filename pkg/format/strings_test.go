@@ -4,28 +4,35 @@ import (
 	"testing"
 
 	"github.com/gogo/protobuf/types"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCamelToSnake(t *testing.T) {
-	testDatas := [][]string{
-		{"APIList", "api_list"},
-		{"L4Policy", "l4_policy"},
-		{"E2Service", "e2_service"},
-		{"AppleBanana", "apple_banana"},
-		{"AwsNode", "aws_node"},
+func TestNameConversions(t *testing.T) {
+	tests := []struct {
+		goType   string
+		schemaID string
+		kind     string
+	}{
+		{goType: "APIList", schemaID: "api_list", kind: "api-list"},
+		{goType: "L4Policy", schemaID: "l4_policy", kind: "l4-policy"},
+		{goType: "E2Service", schemaID: "e2_service", kind: "e2-service"},
+		{goType: "AppleBanana", schemaID: "apple_banana", kind: "apple-banana"},
+		{goType: "AwsNode", schemaID: "aws_node", kind: "aws-node"},
+		{goType: "KubernetesMasterNode", schemaID: "kubernetes_master_node", kind: "kubernetes-master-node"},
 	}
-	for _, testData := range testDatas {
-		camelToSnake := CamelToSnake(testData[0])
-		snakeToCamel := SnakeToCamel(testData[1])
-		logrus.Debug("hogehoge")
-		if camelToSnake != testData[1] {
-			t.Fatal("CamelToSnake failed expected", testData[1], " got ", camelToSnake)
-		}
-		if snakeToCamel != testData[0] {
-			t.Fatal("SnakeToCamel failed expected", testData[0], " got ", snakeToCamel)
-		}
+
+	for _, tt := range tests {
+		t.Run(tt.goType, func(t *testing.T) {
+			t.Run("CamelToSnakeCase", func(t *testing.T) {
+				assert.Equal(t, tt.schemaID, CamelToSnake(tt.goType))
+			})
+			t.Run("SnakeToCamel", func(t *testing.T) {
+				assert.Equal(t, tt.goType, SnakeToCamel(tt.schemaID))
+			})
+			t.Run("KindToSchemaID", func(t *testing.T) {
+				assert.Equal(t, tt.schemaID, KindToSchemaID(tt.kind))
+			})
+		})
 	}
 }
 
