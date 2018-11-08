@@ -42,6 +42,7 @@ rpc Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref (Delete{{ sche
 
 message Create{{ schema.JSONSchema.GoName }}Request {
     github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}",(gogoproto.jsontag) = "{{ schema.Path }}"];
+    google.protobuf.FieldMask field_mask = 2 [(gogoproto.nullable) = false];
 }
 
 message Create{{ schema.JSONSchema.GoName }}Response {

@@ -151,32 +151,35 @@ workflow:
     virtual-networks:
     - virtual-network:
         *vn_blue_with_detail
-# TODO: Uncoment it once sync endpoint create is fixed (updating fields with zero-value)
-#- name: sync update project, policy and network
-#  request:
-#    path: /sync
-#    method: POST
-#    expected:
-#    - 200
-#    data:
-#      resources:
-#      - kind: project
-#        data: *admin_project
-#      - kind: network_policy
-#        data: *network_policy1
-#      - kind: network_ipam
-#        data: *network_ipam_blue
-#      - kind: virtual_network
-#        data: *vn_blue2
-#  expect:
-#    - kind: project
-#      data: *admin_project
-#    - kind: network_policy
-#      data: *network_policy1
-#    - kind: network_ipam
-#      data: *network_ipam_blue
-#    - kind: virtual_network
-#      data: *vn_blue2
+- name: sync update project, policy and network
+  request:
+    path: /sync
+    method: POST
+    expected:
+    - 200
+    data:
+      resources:
+      - kind: project
+        data: *admin_project
+      - kind: network_policy
+        data: *network_policy1
+      - kind: network_ipam
+        data: *network_ipam_blue
+      - kind: virtual_network
+        data: *vn_blue2
+  expect:
+    - kind: project
+      data: *admin_project
+      operation: UPDATE
+    - kind: network_policy
+      data: *network_policy1
+      operation: UPDATE
+    - kind: network_ipam
+      data: *network_ipam_blue
+      operation: UPDATE
+    - kind: virtual_network
+      data: *vn_blue2
+      operation: UPDATE
 - name: list project
   request:
     path: /projects?detail=true
@@ -187,17 +190,16 @@ workflow:
     projects:
     - project:
         *admin_project
-# TODO: Uncoment it once "sync update project, policy and network"
-#- name: list virtual networks with detail
-#  request:
-#    path: /virtual-networks?detail=true
-#    method: GET
-#    expected:
-#    - 200
-#  expect:
-#    virtual-networks:
-#    - virtual-network:
-#        *vn_blue_with_detail2
+- name: list virtual networks with detail
+  request:
+    path: /virtual-networks?detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+    - virtual-network:
+        *vn_blue_with_detail2
 - name: sync delete network, policy and project
   request:
     path: /sync
