@@ -8,6 +8,14 @@ import (
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
+type queryBuilderParams struct {
+	table         string
+	fields        []string
+	refFields     map[string][]string
+	childFields   map[string][]string
+	backRefFields map[string][]string
+}
+
 func TestQueryBuilder(t *testing.T) {
 	type expectedResult struct {
 		query  string
@@ -15,79 +23,87 @@ func TestQueryBuilder(t *testing.T) {
 	}
 
 	tests := []struct {
-		name           string
-		table          string
-		fields         []string
-		refFields      map[string][]string
-		childFields    map[string][]string
-		backRefFields  map[string][]string
-		spec           baseservices.ListSpec
-		mysqlExpect    expectedResult
-		postgresExpect expectedResult
+		name               string
+		queryBuilderParams queryBuilderParams
+		spec               baseservices.ListSpec
+
+		expected map[string]expectedResult // map[dialect]expectedResult
 	}{
 		{
 			name: "Collecion of alarms",
-			fields: []string{
-				"global_access",
-				"group_access",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"global_access",
+					"group_access",
+				},
+				table: "alert",
 			},
-			table: "alert",
-			spec:  baseservices.ListSpec{},
-			mysqlExpect: expectedResult{
-				query: "select `alert_t`.`global_access`,`alert_t`.`group_access` from alert " +
-					"as alert_t order by `alert_t`.`uuid`",
-				values: []interface{}{},
-			},
-			postgresExpect: expectedResult{
-				query: "select \"alert_t\".\"global_access\",\"alert_t\".\"group_access\" from alert " +
-					"as alert_t order by \"alert_t\".\"uuid\"",
-				values: []interface{}{},
+			spec: baseservices.ListSpec{},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select `alert_t`.`global_access`,`alert_t`.`group_access` from alert " +
+						"as alert_t order by `alert_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: "select \"alert_t\".\"global_access\",\"alert_t\".\"group_access\" from alert " +
+						"as alert_t order by \"alert_t\".\"uuid\"",
+					values: []interface{}{},
+				},
 			},
 		},
 		{
 			name: "Collecion of virtual networks are limited",
-			fields: []string{
-				"uuid",
-				"name",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+					"name",
+				},
+				table: "virtual_network",
 			},
-			table: "virtual_network",
 			spec: baseservices.ListSpec{
 				Limit: 10,
 			},
-			mysqlExpect: expectedResult{
-				query: "select `virtual_network_t`.`uuid`,`virtual_network_t`.`name` from virtual_network " +
-					"as virtual_network_t order by `virtual_network_t`.`uuid` limit 10",
-				values: []interface{}{},
-			},
-			postgresExpect: expectedResult{
-				query: "select \"virtual_network_t\".\"uuid\",\"virtual_network_t\".\"name\" from virtual_network " +
-					"as virtual_network_t order by \"virtual_network_t\".\"uuid\" limit 10",
-				values: []interface{}{},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select `virtual_network_t`.`uuid`,`virtual_network_t`.`name` from virtual_network " +
+						"as virtual_network_t order by `virtual_network_t`.`uuid` limit 10",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: "select \"virtual_network_t\".\"uuid\",\"virtual_network_t\".\"name\" from virtual_network " +
+						"as virtual_network_t order by \"virtual_network_t\".\"uuid\" limit 10",
+					values: []interface{}{},
+				},
 			},
 		},
 		{
 			name: "Collecion of virtual networks are limited and started with marker",
-			fields: []string{
-				"parent_type",
-				"parent_uuid",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"parent_type",
+					"parent_uuid",
+				},
+				table: "virtual_network",
 			},
-			table: "virtual_network",
 			spec: baseservices.ListSpec{
 				Limit:  5,
 				Marker: "marker_uuid",
 			},
-			mysqlExpect: expectedResult{
-				query: "select `virtual_network_t`.`parent_type`,`virtual_network_t`.`parent_uuid` from virtual_network " +
-					"as virtual_network_t where `virtual_network_t`.`uuid` > ? order by `virtual_network_t`.`uuid` limit 5",
-				values: []interface{}{
-					"marker_uuid",
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select `virtual_network_t`.`parent_type`,`virtual_network_t`.`parent_uuid` from virtual_network " +
+						"as virtual_network_t where `virtual_network_t`.`uuid` > ? order by `virtual_network_t`.`uuid` limit 5",
+					values: []interface{}{
+						"marker_uuid",
+					},
 				},
-			},
-			postgresExpect: expectedResult{
-				query: "select \"virtual_network_t\".\"parent_type\",\"virtual_network_t\".\"parent_uuid\" from virtual_network " +
-					"as virtual_network_t where \"virtual_network_t\".\"uuid\" > $1 order by \"virtual_network_t\".\"uuid\" limit 5",
-				values: []interface{}{
-					"marker_uuid",
+				POSTGRES: {
+					query: "select \"virtual_network_t\".\"parent_type\",\"virtual_network_t\".\"parent_uuid\" from virtual_network " +
+						"as virtual_network_t where \"virtual_network_t\".\"uuid\" > $1 order by \"virtual_network_t\".\"uuid\" limit 5",
+					values: []interface{}{
+						"marker_uuid",
+					},
 				},
 			},
 		},
@@ -95,20 +111,83 @@ func TestQueryBuilder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mysqlDialect := NewDialect(MYSQL)
-			postgresDialect := NewDialect(POSTGRES)
-
-			mysql, _, mysqlValues :=
-				NewQueryBuilder(mysqlDialect, tt.table, tt.fields, tt.refFields, tt.childFields, tt.backRefFields).
-					ListQuery(nil, &tt.spec)
-			postgres, _, postgresValues :=
-				NewQueryBuilder(postgresDialect, tt.table, tt.fields, tt.refFields, tt.childFields, tt.backRefFields).
-					ListQuery(nil, &tt.spec)
-
-			assert.Equal(t, tt.mysqlExpect.query, mysql)
-			assert.Equal(t, tt.mysqlExpect.values, mysqlValues)
-			assert.Equal(t, tt.postgresExpect.query, postgres)
-			assert.Equal(t, tt.postgresExpect.values, postgresValues)
+			for dialect, expectedResult := range tt.expected {
+				query, _, values := newQueryBuilder(dialect, tt.queryBuilderParams).ListQuery(nil, &tt.spec)
+				assert.Equal(t, expectedResult.query, query)
+				assert.Equal(t, expectedResult.values, values)
+			}
 		})
 	}
+}
+
+func TestRelaxRefQuery(t *testing.T) {
+	tests := []struct {
+		name               string
+		queryBuilderParams queryBuilderParams
+		linkTo             string
+
+		expected map[string]string // map[dialect]expectedQuery
+	}{
+		{
+			name: "Reference from VirtualNetwork to NetworkPolicy",
+			queryBuilderParams: queryBuilderParams{
+				table: "virtual_network",
+			},
+			linkTo: "network_policy",
+			expected: map[string]string{
+				MYSQL:    "update ref_virtual_network_network_policy set `relaxed` = true where `from` = ? and `to` = ?",
+				POSTGRES: `update ref_virtual_network_network_policy set "relaxed" = true where "from" = $1 and "to" = $2`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for dialect, expectedQuery := range tt.expected {
+				query := newQueryBuilder(dialect, tt.queryBuilderParams).RelaxRefQuery(tt.linkTo)
+				assert.Equal(t, expectedQuery, query)
+			}
+		})
+	}
+}
+
+func TestDeleteRelaxedBackrefsQuery(t *testing.T) {
+	tests := []struct {
+		name               string
+		queryBuilderParams queryBuilderParams
+		linkFrom           string
+
+		expected map[string]string // map[dialect]expectedQuery
+	}{
+		{
+			name:     "References from VirtualNetwork to NetworkPolicy",
+			linkFrom: "virtual_network",
+			queryBuilderParams: queryBuilderParams{
+				table: "network_policy",
+			},
+			expected: map[string]string{
+				MYSQL:    "delete from ref_virtual_network_network_policy where `to` = ? and `relaxed` = true",
+				POSTGRES: `delete from ref_virtual_network_network_policy where "to" = $1 and "relaxed" = true`,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for dialect, expectedQuery := range tt.expected {
+				query := newQueryBuilder(dialect, tt.queryBuilderParams).DeleteRelaxedBackrefsQuery(tt.linkFrom)
+				assert.Equal(t, expectedQuery, query)
+			}
+		})
+	}
+}
+
+func newQueryBuilder(dialect string, p queryBuilderParams) *QueryBuilder {
+	return NewQueryBuilder(
+		NewDialect(dialect),
+		p.table,
+		p.fields,
+		p.refFields,
+		p.childFields,
+		p.backRefFields)
 }
