@@ -5,7 +5,7 @@ id: cloud_region
 metadata:
   category: cloud
 parents:
-  cloud:
+  cloud_provider:
     operations: "CRUD"
     description: "Parent for cloud region"
     presence: "optional"

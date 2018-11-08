@@ -1,4 +1,4 @@
-description: Cloud (Azure, AWS, GCP and OnPrem)
+description: Cloud (can consist of multiple providers)
 extends:
 - base
 - has_status
@@ -7,46 +7,15 @@ metadata:
   category: cloud
 parent: ""
 references:
-    credential:
+    cloud_user:
       operations: "CRUD"
-      description: "Reference to SSH credential object."
+      description: "Reference to Cloud User"
       presence: "optional"
 plural: clouds
 prefix: /
 schema:
-  properties:
-    type:
-      description: Type of cloud
-      default: private
-      enum:
-      - aws
-      - azure
-      - gcp
-      - private
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Type Of Cloud
-      type: string
-      view:
-      - create
-      - detail
-    organization:
-      description: Name of the organization
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: organization name
-      type: string
-      view:
-      - create
-      - detail
-  required:
-    - type
+  properties: {}
+  propertiesOrder: []
   type: object
 singular: cloud
 title: Cloud

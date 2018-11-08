@@ -27,13 +27,6 @@
           type: string
           view:
           - detail
-    AzureCredential:
-      type: "object"
-      properties:
-        username_cred:
-          presence: "optional"
-          description: "Username and password details of cloud"
-          $ref: "cloud_types.json#/definitions/CloudUsernameCred"
     AWSCredential:
       type: "object"
       properties:
@@ -59,10 +52,3 @@
           sql: ""
           title: AWS Secret Key
           type: string
-    GCPCredential:
-      type: "object"
-      properties:
-        username_cred:
-          presence: "optional"
-          description: "Username and password details of cloud"
-          $ref: "cloud_types.json#/definitions/CloudUsernameCred"

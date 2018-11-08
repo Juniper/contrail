@@ -1,0 +1,51 @@
+description: Cloud Provider
+extends:
+- base
+id: cloud_provider
+metadata:
+  category: cloud
+parent:
+  cloud:
+    operations: "CRUD"
+    description: "Parent for cloud provider"
+    presence: "optional"
+plural: cloud_providers
+prefix: /
+schema:
+  properties:
+    type:
+      description: Cloud Provider type
+      default: private
+      enum:
+      - aws
+      - azure
+      - gcp
+      - private
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Type Of Cloud
+      type: string
+      view:
+      - create
+      - detail
+    organization:
+      description: Name of the organization
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: organization name
+      type: string
+      view:
+      - create
+      - detail
+  required:
+    - type
+  type: object
+singular: cloud_provider
+title: Cloud Provider
+type: ""
