@@ -517,22 +517,30 @@ func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
 // Delete{{ schema.JSONSchema.GoName }} deletes a resource
 func (db *Service) delete{{ schema.JSONSchema.GoName }}(
 	ctx context.Context,
-	request *services.Delete{{ schema.JSONSchema.GoName }}Request) error {
+	request *services.Delete{{ schema.JSONSchema.GoName }}Request,
+) error {
 	qb := db.QueryBuilders["{{ schema.ID }}"]
 
-	deleteQuery := qb.DeleteQuery()
 	err := db.Check{{ schema.JSONSchema.GoName }}Policy(ctx, request.ID)
 	if err != nil {
 		return err
 	}
-	uuid := request.ID
+
 	tx := basedb.GetTransaction(ctx)
+	uuid := request.ID
 
-	_, err = tx.ExecContext(ctx, deleteQuery, uuid)
-
+{%- for _, backref in schema.BackReferences %}
+	_, err = tx.ExecContext(ctx, qb.DeleteRelaxedBackrefsQuery("{{ backref.LinkTo.ID }}"), uuid)
 	if err != nil {
 		err = basedb.FormatDBError(err)
-	   return errors.Wrapf(err, "deleting resource {{ schema.JSONSchema.GoName }} with UUID '%v' from DB failed", request.GetID())
+		return errors.Wrapf(err, "deleting all relaxed references from {{ backref.LinkTo.JSONSchema.GoName }} to resource {{ schema.JSONSchema.GoName }} with UUID '%v' from DB failed", request.GetID())
+	}
+{% endfor %}
+
+	_, err = tx.ExecContext(ctx, qb.DeleteQuery(), uuid)
+	if err != nil {
+		err = basedb.FormatDBError(err)
+		return errors.Wrapf(err, "deleting resource {{ schema.JSONSchema.GoName }} with UUID '%v' from DB failed", request.GetID())
 	}
 
 	err = db.DeleteMetadata(ctx, uuid)
