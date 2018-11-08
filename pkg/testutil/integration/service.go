@@ -142,6 +142,47 @@ func GetNetworkIpam(
 	return resp.GetNetworkIpam()
 }
 
+// CreateNetworkPolicy creates a network policy resource in given service.
+func CreateNetworkPolicy(
+	ctx context.Context, t *testing.T, s services.WriteService, obj *models.NetworkPolicy,
+) *models.NetworkPolicy {
+	resp, err := s.CreateNetworkPolicy(ctx, &services.CreateNetworkPolicyRequest{NetworkPolicy: obj})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("creating NetworkPolicy failed\n requested: %+v\n "+
+			"response: %+v\n", obj, resp),
+	)
+	return resp.GetNetworkPolicy()
+}
+
+// DeleteNetworkPolicy deletes a network policy resource from given service.
+func DeleteNetworkPolicy(
+	ctx context.Context, t *testing.T, s services.WriteService, id string,
+) {
+	resp, err := s.DeleteNetworkPolicy(ctx, &services.DeleteNetworkPolicyRequest{ID: id})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("deleting NetworkPolicy failed\n UUID: %+v\n "+
+			"response: %+v\n", id, resp),
+	)
+}
+
+// GetNetworkPolicy gets a network policy resource from given service.
+func GetNetworkPolicy(
+	ctx context.Context, t *testing.T, s services.ReadService, id string,
+) *models.NetworkPolicy {
+	resp, err := s.GetNetworkPolicy(ctx, &services.GetNetworkPolicyRequest{ID: id})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("getting NetworkPolicy failed\n id: %+v\n "+
+			"response: %+v\n", id, resp),
+	)
+	return resp.GetNetworkPolicy()
+}
+
 // CreateVirtualNetwork creates a virtual network resource from given service.
 func CreateVirtualNetwork(
 	ctx context.Context, t *testing.T, s services.WriteService, obj *models.VirtualNetwork,

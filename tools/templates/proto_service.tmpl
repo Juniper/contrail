@@ -130,6 +130,19 @@ message ChownRequest {
     string Owner = 2 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
 }
 
+service RefRelax {
+    rpc RelaxRef (RelaxRefRequest) returns (RelaxRefResponse);
+}
+
+message RelaxRefRequest {
+    string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+    string RefUUID = 2 [(gogoproto.customname) = "RefUUID",(gogoproto.jsontag) = "ref-uuid"];
+}
+
+message RelaxRefResponse {
+    string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+}
+
 service IPAM {
     rpc AllocateInt (AllocateIntRequest) returns (AllocateIntResponse);
     rpc SetInt (SetIntRequest) returns (Empty);
