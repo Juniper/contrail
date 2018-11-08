@@ -19,6 +19,25 @@ plural: contrail_multicloud_gw_nodes
 prefix: /
 schema:
   properties:
+    protocols_mode:
+      description: Tunnel protocol mode
+      nullable: false
+      type: "array"
+      items:
+        type: "string"
+        enum:
+        - ssl_client
+        - ssl_server
+        - ipsec_client
+        - ipsec_server
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Protocols Mode
+      view:
+      - create
+      - detail
     AS:
       description: Autonomous System Number for multicloud gw
       nullable: false
