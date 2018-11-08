@@ -50,10 +50,8 @@ test_data:
     parent_type: project
     parent_uuid: admin_project_network_ipam_uuid
     fq_name: ["domain","admin","test_ipam_netipam_blue"]
-    virtual_network_back_refs:
-    - *virtual_network_blue_base
 
-  network_ipam_blue: &network_ipam_blue
+  network_ipam_blue_no_vn_backref: &network_ipam_blue_no_vn_backref
     <<: *network_ipam_blue_base
     ipam_subnets:
       subnets:
@@ -61,6 +59,11 @@ test_data:
           subnet:
             ip_prefix: "10.0.0.0"
             ip_prefix_len: 24
+
+  network_ipam_blue: &network_ipam_blue
+    <<: *network_ipam_blue_no_vn_backref
+    virtual_network_back_refs:
+    - *virtual_network_blue_base
 
   network_ipam_red: &network_ipam_red
     network_ipam_mgmt:
@@ -92,6 +95,8 @@ test_data:
 
   network_ipam_blue_up: &network_ipam_blue_up
     <<: *network_ipam_blue_base
+    virtual_network_back_refs:
+    - *virtual_network_blue_base
     ipam_subnets:
       subnets:
         - subnet_uuid: subnet1
@@ -148,7 +153,7 @@ workflow:
     data:
       network-ipam: *network_ipam_blue
   expect:
-    network-ipam: *network_ipam_blue
+    network-ipam: *network_ipam_blue_no_vn_backref
 
 - name: try to create network ipam red
   request:

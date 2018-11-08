@@ -95,7 +95,7 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 			}
 			_, err = service.CreateAccessControlList(
 				auth.NoAuth(context.Background()),
-				&CreateAccessControlListRequest{&tt.model},
+				&CreateAccessControlListRequest{AccessControlList: &tt.model},
 			)
 			if tt.fails {
 				assert.Error(t, err)
