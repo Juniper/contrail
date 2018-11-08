@@ -17,6 +17,7 @@ In addition, the following APIs are also available:
 - Convert FQ name to UUID
 - Convert UUID to FQ name
 - Add/Delete/Update a reference between two objects
+- Relax a reference between two objects
 
 ## OpenAPI
 
@@ -364,6 +365,24 @@ curl -X GET -H "X-Auth-Token: $OS_TOKEN" -H "Content-Type: application/json; cha
     ]
  }
 ```
+
+## Relaxing a reference between two resources
+
+Relaxing a reference makes it possible to delete the referred resource even when the reference exists.
+When a resource is deleted, all relaxed references to it are deleted as well.
+
+```text
+METHOD: POST
+URL: http://<ip>:<port>/ref-relax-for-delete
+BODY: {
+  uuid: "<referring-resource-uuid>",
+  ref-uuid: "<referred-resource-uuid>,
+}
+RESPONSE: {
+  uuid: "<referring-resource-uuid>"
+}
+```
+
 
 ## Sync API
 
