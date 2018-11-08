@@ -31,6 +31,11 @@ func SnakeToCamel(s string) string {
 	return strmangle.TitleCase(s)
 }
 
+// KindToSchemaID makes a snake_case schema ID from a kebab-case kind.
+func KindToSchemaID(kind string) string {
+	return strings.Replace(kind, "-", "_", -1)
+}
+
 // ContainsString check if a string is in a string list.
 func ContainsString(list []string, a string) bool {
 	for _, b := range list {
