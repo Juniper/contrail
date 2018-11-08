@@ -192,53 +192,39 @@ func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 }
 
 func TestGRPC(t *testing.T) {
-	ctx := context.Background()
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := services.NewContrailServiceClient(conn)
+		project := models.MakeProject()
+		project.UUID = uuid.NewV4().String()
+		project.FQName = []string{"default-domain", "project", project.UUID}
+		project.ParentType = "domain"
+		project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
+		project.ConfigurationVersion = 1
+		_, err := c.CreateProject(ctx, &services.CreateProjectRequest{
+			Project: project,
+		})
+		assert.NoError(t, err)
+		response, err := c.ListProject(ctx, &services.ListProjectRequest{
+			Spec: &baseservices.ListSpec{
+				Limit: 1,
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, 1, len(response.Projects))
 
-	authToken := restLogin(ctx, t)
+		getResponse, err := c.GetProject(ctx, &services.GetProjectRequest{
+			ID: project.UUID,
+		})
+		assert.NoError(t, err)
+		assert.NotNil(t, getResponse.Project)
 
-	creds := credentials.NewTLS(&tls.Config{
-		InsecureSkipVerify: true,
+		_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
+			ID: project.UUID,
+		})
+		assert.NoError(t, err)
 	})
-	dial := strings.TrimPrefix(server.URL(), "https://")
-	conn, err := grpc.Dial(dial, grpc.WithTransportCredentials(creds))
-	assert.NoError(t, err)
-	defer testutil.LogFatalIfError(conn.Close)
-	md := metadata.Pairs("X-Auth-Token", authToken)
-	ctx = metadata.NewOutgoingContext(ctx, md)
-	// Contact the server and print out its response.
-	c := services.NewContrailServiceClient(conn)
-	assert.NoError(t, err)
-	project := models.MakeProject()
-	project.UUID = uuid.NewV4().String()
-	project.FQName = []string{"default-domain", "project", project.UUID}
-	project.ParentType = "domain"
-	project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
-	project.ConfigurationVersion = 1
-	_, err = c.CreateProject(ctx, &services.CreateProjectRequest{
-		Project: project,
-	})
-	assert.NoError(t, err)
-	response, err := c.ListProject(ctx, &services.ListProjectRequest{
-		Spec: &baseservices.ListSpec{
-			Limit: 1,
-		},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, 1, len(response.Projects))
-
-	getResponse, err := c.GetProject(ctx, &services.GetProjectRequest{
-		ID: project.UUID,
-	})
-	assert.NoError(t, err)
-	assert.NotNil(t, getResponse.Project)
-
-	_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
-		ID: project.UUID,
-	})
-	assert.NoError(t, err)
 }
 
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
@@ -284,6 +270,60 @@ func TestIPAMGRPC(t *testing.T) {
 			})
 			assert.NoError(t, err)
 		})
+}
+
+func TestRefRelaxGRPC(t *testing.T) {
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := services.NewContrailServiceClient(conn)
+
+		projectUUID := uuid.NewV4().String()
+		project := integration.GRPCCreateProject(t, c, ctx, &models.Project{
+			UUID:                 projectUUID,
+			Name:                 projectUUID,
+			ParentType:           "domain",
+			ParentUUID:           "beefbeef-beef-beef-beef-beefbeef0002",
+			ConfigurationVersion: 1,
+		})
+		defer integration.GRPCDeleteProject(t, c, ctx, project.GetUUID())
+
+		policy := integration.GRPCCreateNetworkPolicy(t, c, ctx, &models.NetworkPolicy{
+			ParentType: models.KindProject,
+			ParentUUID: project.GetUUID(),
+		})
+		defer func() {
+			if policy == nil {
+				return
+			}
+			integration.GRPCDeleteNetworkPolicy(t, c, ctx, policy.GetUUID())
+		}()
+
+		network := integration.GRPCCreateVirtualNetwork(t, c, ctx, &models.VirtualNetwork{
+			ParentType: models.KindProject,
+			ParentUUID: project.GetUUID(),
+			RouteTargetList: &models.RouteTargetList{
+				RouteTarget: []string{"100:200"},
+			},
+			NetworkPolicyRefs: []*models.VirtualNetworkNetworkPolicyRef{
+				&models.VirtualNetworkNetworkPolicyRef{
+					UUID: policy.GetUUID(),
+				},
+			},
+		})
+		defer integration.GRPCDeleteVirtualNetwork(t, c, ctx, network.GetUUID())
+
+		r := services.NewRefRelaxClient(conn)
+		response, err := r.RelaxRef(ctx, &services.RelaxRefRequest{
+			UUID:    network.GetUUID(),
+			RefUUID: policy.GetUUID(),
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, &services.RelaxRefResponse{
+			UUID: network.GetUUID(),
+		}, response)
+
+		integration.GRPCDeleteNetworkPolicy(t, c, ctx, policy.GetUUID())
+		policy = nil
+	})
 }
 
 func TestRESTClient(t *testing.T) {
