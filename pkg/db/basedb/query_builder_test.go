@@ -8,6 +8,14 @@ import (
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
+type queryBuilderParams struct {
+	table         string
+	fields        []string
+	refFields     map[string][]string
+	childFields   map[string][]string
+	backRefFields map[string][]string
+}
+
 func TestQueryBuilder(t *testing.T) {
 	type expectedResult struct {
 		query  string
@@ -15,24 +23,23 @@ func TestQueryBuilder(t *testing.T) {
 	}
 
 	tests := []struct {
-		name           string
-		table          string
-		fields         []string
-		refFields      map[string][]string
-		childFields    map[string][]string
-		backRefFields  map[string][]string
-		spec           baseservices.ListSpec
+		name               string
+		queryBuilderParams queryBuilderParams
+		spec               baseservices.ListSpec
+
 		mysqlExpect    expectedResult
 		postgresExpect expectedResult
 	}{
 		{
 			name: "Collecion of alarms",
-			fields: []string{
-				"global_access",
-				"group_access",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"global_access",
+					"group_access",
+				},
+				table: "alert",
 			},
-			table: "alert",
-			spec:  baseservices.ListSpec{},
+			spec: baseservices.ListSpec{},
 			mysqlExpect: expectedResult{
 				query: "select `alert_t`.`global_access`,`alert_t`.`group_access` from alert " +
 					"as alert_t order by `alert_t`.`uuid`",
@@ -46,11 +53,13 @@ func TestQueryBuilder(t *testing.T) {
 		},
 		{
 			name: "Collecion of virtual networks are limited",
-			fields: []string{
-				"uuid",
-				"name",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+					"name",
+				},
+				table: "virtual_network",
 			},
-			table: "virtual_network",
 			spec: baseservices.ListSpec{
 				Limit: 10,
 			},
@@ -67,11 +76,13 @@ func TestQueryBuilder(t *testing.T) {
 		},
 		{
 			name: "Collecion of virtual networks are limited and started with marker",
-			fields: []string{
-				"parent_type",
-				"parent_uuid",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"parent_type",
+					"parent_uuid",
+				},
+				table: "virtual_network",
 			},
-			table: "virtual_network",
 			spec: baseservices.ListSpec{
 				Limit:  5,
 				Marker: "marker_uuid",
@@ -95,15 +106,8 @@ func TestQueryBuilder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mysqlDialect := NewDialect(MYSQL)
-			postgresDialect := NewDialect(POSTGRES)
-
-			mysql, _, mysqlValues :=
-				NewQueryBuilder(mysqlDialect, tt.table, tt.fields, tt.refFields, tt.childFields, tt.backRefFields).
-					ListQuery(nil, &tt.spec)
-			postgres, _, postgresValues :=
-				NewQueryBuilder(postgresDialect, tt.table, tt.fields, tt.refFields, tt.childFields, tt.backRefFields).
-					ListQuery(nil, &tt.spec)
+			mysql, _, mysqlValues := newQueryBuilder(MYSQL, tt.queryBuilderParams).ListQuery(nil, &tt.spec)
+			postgres, _, postgresValues := newQueryBuilder(POSTGRES, tt.queryBuilderParams).ListQuery(nil, &tt.spec)
 
 			assert.Equal(t, tt.mysqlExpect.query, mysql)
 			assert.Equal(t, tt.mysqlExpect.values, mysqlValues)
@@ -111,4 +115,76 @@ func TestQueryBuilder(t *testing.T) {
 			assert.Equal(t, tt.postgresExpect.values, postgresValues)
 		})
 	}
+}
+
+func TestRelaxRefQuery(t *testing.T) {
+	tests := []struct {
+		name               string
+		queryBuilderParams queryBuilderParams
+		linkTo             string
+
+		mysqlExpect    string
+		postgresExpect string
+	}{
+		{
+			name: "Reference from VirtualNetwork to NetworkPolicy",
+			queryBuilderParams: queryBuilderParams{
+				table: "virtual_network",
+			},
+			linkTo:         "network_policy",
+			mysqlExpect:    "update ref_virtual_network_network_policy set `relaxed` = true where `from` = ? and `to` = ?",
+			postgresExpect: `update ref_virtual_network_network_policy set "relaxed" = true where "from" = $1 and "to" = $2`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mysql := newQueryBuilder(MYSQL, tt.queryBuilderParams).RelaxRefQuery(tt.linkTo)
+			postgres := newQueryBuilder(POSTGRES, tt.queryBuilderParams).RelaxRefQuery(tt.linkTo)
+
+			assert.Equal(t, tt.mysqlExpect, mysql)
+			assert.Equal(t, tt.postgresExpect, postgres)
+		})
+	}
+}
+
+func TestDeleteRelaxedBackrefsQuery(t *testing.T) {
+	tests := []struct {
+		name               string
+		queryBuilderParams queryBuilderParams
+		linkFrom           string
+
+		mysqlExpect    string
+		postgresExpect string
+	}{
+		{
+			name:     "References from VirtualNetwork to NetworkPolicy",
+			linkFrom: "virtual_network",
+			queryBuilderParams: queryBuilderParams{
+				table: "network_policy",
+			},
+			mysqlExpect:    "delete from ref_virtual_network_network_policy where `to` = ? and `relaxed` = true",
+			postgresExpect: `delete from ref_virtual_network_network_policy where "to" = $1 and "relaxed" = true`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mysql := newQueryBuilder(MYSQL, tt.queryBuilderParams).DeleteRelaxedBackrefsQuery(tt.linkFrom)
+			postgres := newQueryBuilder(POSTGRES, tt.queryBuilderParams).DeleteRelaxedBackrefsQuery(tt.linkFrom)
+
+			assert.Equal(t, tt.mysqlExpect, mysql)
+			assert.Equal(t, tt.postgresExpect, postgres)
+		})
+	}
+}
+
+func newQueryBuilder(dialect string, p queryBuilderParams) *QueryBuilder {
+	return NewQueryBuilder(
+		NewDialect(dialect),
+		p.table,
+		p.fields,
+		p.refFields,
+		p.childFields,
+		p.backRefFields)
 }
