@@ -80,3 +80,23 @@ func TestFQNameEquals(t *testing.T) {
 		})
 	}
 }
+
+func TestKindToSchemaID(t *testing.T) {
+	tests := []struct {
+		kind     string
+		schemaID string
+	}{
+		{schemaID: "api_list", kind: "api-list"},
+		{schemaID: "l4_policy", kind: "l4-policy"},
+		{schemaID: "e2_service", kind: "e2-service"},
+		{schemaID: "apple_banana", kind: "apple-banana"},
+		{schemaID: "aws_node", kind: "aws-node"},
+		{schemaID: "kubernetes_master_node", kind: "kubernetes-master-node"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.kind, func(t *testing.T) {
+			assert.Equal(t, tt.schemaID, KindToSchemaID(tt.kind))
+		})
+	}
+}
