@@ -121,6 +121,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		MetadataGetter:    s.dbService,
 		InTransactionDoer: s.dbService,
 		IntPoolAllocator:  s.dbService,
+		RefRelaxer:        s.dbService,
 	}
 
 	cs.RegisterRESTAPI(s.Echo)

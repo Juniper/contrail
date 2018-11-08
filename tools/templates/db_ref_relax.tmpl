@@ -1,0 +1,37 @@
+package db
+
+import (
+	"context"
+	"strings"
+
+	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/db/basedb"
+	"github.com/Juniper/contrail/pkg/services"
+)
+
+// RelaxRef makes a reference not prevent the referenced resource from being deleted.
+// When the referenced resource gets deleted, the reference would be deleted as well.
+func (db *Service) RelaxRef(ctx context.Context, request *services.RelaxRefRequest) error {
+	var err error
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+	{%- for linkTo, reference in schema.References %}
+		// TODO Use MultiError
+		if err = db.relaxRef(ctx, "{{ schema.ID }}", "{{ linkTo }}", request); err != nil {
+			return err
+		}
+	{%- endfor -%}
+{% endif %}{% endfor %}
+	return nil
+}
+
+func (db *Service) relaxRef(ctx context.Context, schemaID, linkTo string, request *services.RelaxRefRequest) error {
+	qb := db.QueryBuilders[schemaID]
+	tx := basedb.GetTransaction(ctx)
+	_, err := tx.ExecContext(ctx, qb.RelaxRefQuery(strings.ToLower(linkTo)), request.UUID, request.RefUUID)
+	if err != nil {
+		err = basedb.FormatDBError(err)
+		return errors.Wrapf(err, "TODO")
+	}
+	return nil
+}

@@ -44,6 +44,7 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
     {% if reference.RefType %}
     {{ reference.RefType }} attr = 3 [(gogoproto.customname) = "Attr", (gogoproto.moretags) = "yaml:\"attr\""];
     {% endif %}
+    bool relaxed = 4 [(gogoproto.customname) = "Relaxed", (gogoproto.moretags) = "yaml:\"relaxed\""];
 }
 {% endfor %}
 

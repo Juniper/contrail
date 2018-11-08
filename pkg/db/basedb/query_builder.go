@@ -578,6 +578,13 @@ func (qb *QueryBuilder) DeleteRefQuery(linkTo string) string {
 		table, qb.Quote("from"), qb.Placeholder(1), qb.Quote("to"), qb.Placeholder(2))
 }
 
+func (qb *QueryBuilder) RelaxRefQuery(linkTo string) string {
+	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
+	return fmt.Sprintf("update %s set %s = true where %s = %s and %s = %s",
+		table, qb.Quote("relaxed"),
+		qb.Quote("from"), qb.Placeholder(1), qb.Quote("to"), qb.Placeholder(2))
+}
+
 //SelectAuthQuery makes sql query.
 func (qb *QueryBuilder) SelectAuthQuery(admin bool) string {
 	query := "select count(uuid) from " + qb.Quote(qb.Table) + " where uuid = " + qb.Placeholder(1)
