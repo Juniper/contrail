@@ -21,19 +21,31 @@ var _ = fmt.Println
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
+type RESTCreate{{ schema.JSONSchema.GoName }}Request struct{
+    {{ schema.JSONSchema.GoName }} map[string]interface{} `json:"{{ schema.Path }}"`
+}
+
 type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
     {{ schema.JSONSchema.GoName }} map[string]interface{} `json:"{{ schema.Path }}"`
 }
 
 // RESTCreate{{ schema.JSONSchema.GoName }} handles a REST create request.
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
-    requestData := &Create{{ schema.JSONSchema.GoName }}Request{
+    var request RESTCreate{{ schema.JSONSchema.GoName }}Request
+    if err := c.Bind(&request); err != nil {
+            return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
     }
-    if err := c.Bind(requestData); err != nil {
-        return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
-    }
-    ctx := c.Request().Context()
-    response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
+
+    model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
+    model.UUID = c.Param("id")
+
+    response, err := service.Create{{ schema.JSONSchema.GoName }}(
+        c.Request().Context(),
+        &Create{{ schema.JSONSchema.GoName }}Request{
+            {{ schema.JSONSchema.GoName }}: model,
+            FieldMask: basemodels.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
+        },
+    )
     if err != nil {
         return errutil.ToHTTPError(err)
     }
