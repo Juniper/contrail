@@ -194,13 +194,21 @@
           permission:
           - create
           - update
-        subnets:
-          description: Subnet associated with this cloud instance
-          type: string
-          nullable: false
+        roles:
+          description: "Roles of the cloud instance"
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - gateway
+            - compute
+            - controller
+            - k8s_master
+            - k8s_node
           permission:
           - create
           - update
+          nullable: false
     LocalLinkConnection:
       type: "object"
       properties:
