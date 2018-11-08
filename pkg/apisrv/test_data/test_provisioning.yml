@@ -22,7 +22,7 @@ test_data:
     gateway_address: null
     identifier: 192.168.0.14
     hold_time: 0
-    port: "179"
+    port: 179
     address_families:
       family:
         - route-target
