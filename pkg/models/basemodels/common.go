@@ -73,3 +73,8 @@ func FQNameEquals(fqNameA, fqNameB []string) bool {
 	}
 	return true
 }
+
+// KindToSchemaID makes a snake_case schema ID from a kebab-case kind.
+func KindToSchemaID(kind string) string {
+	return strings.Replace(kind, "-", "_", -1)
+}

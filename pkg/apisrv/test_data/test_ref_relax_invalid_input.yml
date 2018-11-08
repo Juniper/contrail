@@ -4,7 +4,6 @@ description: |
     some references which are originally not possible to be deleted for deletion.
 cleanup:
 - path: /virtual-network/vn_blue
-- path: /virtual-network/vn_red
 - path: /network-policy/network_policy_uuid
 test_data:
   admin_project: &admin_project
@@ -22,15 +21,6 @@ test_data:
     uuid: vn_blue
     parent_type: project
     parent_uuid: admin_project_uuid
-    network_policy_refs:
-    - uuid: network_policy_uuid
-  vn_red: &vn_red
-    fq_name: ["default", "admin_project_uuid", "vn_red"]
-    uuid: vn_red
-    parent_type: project
-    parent_uuid: admin_project_uuid
-    network_policy_refs:
-    - uuid: network_policy_uuid
 
 clients:
   default:
@@ -73,26 +63,8 @@ workflow:
       virtual-network: *vn_blue
   expect:
     virtual-network: *vn_blue
-- name: create virtual network red
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 200
-    data:
-      virtual-network: *vn_red
-  expect:
-    virtual-network: *vn_red
 
-- name: try to delete network policy with 2 non-relaxed references
-  request:
-    path: /network-policy/network_policy_uuid
-    method: DELETE
-    expected:
-    - 409
-  expect: null
-
-- name: relax vn_blue -> network_policy reference
+- name: try when no reference between the resources exists
   request:
     path: /ref-relax-for-delete
     method: POST
@@ -103,34 +75,71 @@ workflow:
   expect:
     uuid: vn_blue
 
-- name: try to delete network policy with 1 non-relaxed reference
+- name: create ref from vn_blue to policy
   request:
-    path: /network-policy/network_policy_uuid
-    method: DELETE
-    expected:
-    - 409
-  expect: null
-
-- name: relax vn_red -> network_policy reference
-  request:
-    path: /ref-relax-for-delete
+    path: /ref-update
     method: POST
     expected: [200]
     data:
-      uuid: vn_red
+      operation: ADD
+      type: virtual-network
+      uuid: vn_blue
+      ref-type: network-policy
       ref-uuid: network_policy_uuid
   expect:
-    uuid: vn_red
+    uuid: vn_blue
 
-- name: delete network policy
+- name: try without specifying anything
   request:
-    path: /network-policy/network_policy_uuid
-    method: DELETE
-    expected:
-    - 200
-  expect: null
+    path: /ref-relax-for-delete
+    method: POST
+    expected: [400]
+    data: {}
+  expect:
+    message: 'bad request: both uuid and ref-uuid should be specified: , '
 
-# Cleanup
+- name: try without specifying uuid
+  request:
+    path: /ref-relax-for-delete
+    method: POST
+    expected: [400]
+    data:
+      ref-uuid: network_policy_uuid
+  expect:
+    message: 'bad request: both uuid and ref-uuid should be specified: , network_policy_uuid'
+
+- name: try without specifying ref-uuid
+  request:
+    path: /ref-relax-for-delete
+    method: POST
+    expected: [400]
+    data:
+      uuid: vn_blue
+  expect:
+    message: 'bad request: both uuid and ref-uuid should be specified: vn_blue, '
+
+- name: try with a nonexistent uuid
+  request:
+    path: /ref-relax-for-delete
+    method: POST
+    expected: [404]
+    data:
+      uuid: does_not_exist
+      ref-uuid: network_policy_uuid
+  expect:
+    null
+
+- name: try with a nonexistent ref-uuid
+  request:
+    path: /ref-relax-for-delete
+    method: POST
+    expected: [404]
+    data:
+      uuid: vn_blue
+      ref-uuid: does_not_exist
+  expect:
+    null
+
 - name: delete virtual network blue
   request:
     path: /virtual-network/vn_blue
@@ -138,9 +147,9 @@ workflow:
     expected:
     - 200
   expect: null
-- name: delete virtual network red
+- name: delete network policy
   request:
-    path: /virtual-network/vn_red
+    path: /network-policy/network_policy_uuid
     method: DELETE
     expected:
     - 200
