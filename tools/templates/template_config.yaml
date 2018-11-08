@@ -38,6 +38,9 @@
   template_path: db_common.tmpl
   output_path: pkg/db/gen_common.go
 - type: all
+  template_path: db_ref_relax.tmpl
+  output_path: pkg/db/gen_ref_relax.go
+- type: all
   template_path: service_common.tmpl
   output_path: pkg/services/gen_common.go
 - type: all

@@ -1,0 +1,15 @@
+package db
+
+import (
+	"context"
+
+	"github.com/Juniper/contrail/pkg/services"
+)
+
+// RelaxRef makes a reference not prevent the referenced resource from being deleted.
+// When the referenced resource gets deleted, the reference would be deleted as well.
+func (db *Service) RelaxRef(ctx context.Context, request *services.RelaxRefRequest) error {
+	// TODO Find which ref-table the reference is in (if any).
+	// TODO Set "relaxed" in the table to true.
+	return nil
+}
