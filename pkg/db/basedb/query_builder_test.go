@@ -112,3 +112,83 @@ func TestQueryBuilder(t *testing.T) {
 		})
 	}
 }
+
+func TestRelaxRefQuery(t *testing.T) {
+	tests := []struct {
+		name          string
+		fields        []string
+		refFields     map[string][]string
+		childFields   map[string][]string
+		backRefFields map[string][]string
+
+		table  string
+		linkTo string
+
+		mysqlExpect    string
+		postgresExpect string
+	}{
+		{
+			name:           "Reference from VirtualNetwork to NetworkPolicy",
+			table:          "virtual_network",
+			linkTo:         "network_policy",
+			mysqlExpect:    "update ref_virtual_network_network_policy set `relaxed` = true where `from` = ? and `to` = ?",
+			postgresExpect: `update ref_virtual_network_network_policy set "relaxed" = true where "from" = $1 and "to" = $2`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mysqlDialect := NewDialect(MYSQL)
+			postgresDialect := NewDialect(POSTGRES)
+
+			// TODO Extract a newQueryBuilder function.
+			mysql := NewQueryBuilder(mysqlDialect, tt.table, tt.fields, tt.refFields, tt.childFields, tt.backRefFields).
+				RelaxRefQuery(tt.linkTo)
+			postgres := NewQueryBuilder(postgresDialect, tt.table, tt.fields, tt.refFields, tt.childFields, tt.backRefFields).
+				RelaxRefQuery(tt.linkTo)
+
+			assert.Equal(t, tt.mysqlExpect, mysql)
+			assert.Equal(t, tt.postgresExpect, postgres)
+		})
+	}
+}
+
+func TestDeleteRelaxedBackrefsQuery(t *testing.T) {
+	tests := []struct {
+		name          string
+		fields        []string
+		refFields     map[string][]string
+		childFields   map[string][]string
+		backRefFields map[string][]string
+
+		table    string
+		linkFrom string
+
+		mysqlExpect    string
+		postgresExpect string
+	}{
+		{
+			name:           "References from VirtualNetwork to NetworkPolicy",
+			linkFrom:       "virtual_network",
+			table:          "network_policy",
+			mysqlExpect:    "delete from ref_virtual_network_network_policy where `to` = ? and `relaxed` = true",
+			postgresExpect: `delete from ref_virtual_network_network_policy where "to" = $1 and "relaxed" = true`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mysqlDialect := NewDialect(MYSQL)
+			postgresDialect := NewDialect(POSTGRES)
+
+			// TODO Extract a newQueryBuilder function.
+			mysql := NewQueryBuilder(mysqlDialect, tt.table, tt.fields, tt.refFields, tt.childFields, tt.backRefFields).
+				DeleteRelaxedBackrefsQuery(tt.linkFrom)
+			postgres := NewQueryBuilder(postgresDialect, tt.table, tt.fields, tt.refFields, tt.childFields, tt.backRefFields).
+				DeleteRelaxedBackrefsQuery(tt.linkFrom)
+
+			assert.Equal(t, tt.mysqlExpect, mysql)
+			assert.Equal(t, tt.postgresExpect, postgres)
+		})
+	}
+}

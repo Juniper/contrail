@@ -77,6 +77,11 @@ type IntPoolAllocator interface {
 	SetInt(context.Context, string, int64) error
 }
 
+// RefRelaxer makes references not prevent the referenced resource from being deleted.
+type RefRelaxer interface {
+	RelaxRef(ctx context.Context, request *RelaxRefRequest) error
+}
+
 // RefUpdateToUpdateService is a service that promotes CreateRef and DeleteRef
 // methods to Update method by fetching the object and updating reference
 // field with fieldmask applied.
@@ -117,6 +122,7 @@ type ContrailService struct {
 	TypeValidator     *models.TypeValidator
 	InTransactionDoer InTransactionDoer
 	IntPoolAllocator  IntPoolAllocator
+	RefRelaxer        RefRelaxer
 }
 
 // RESTSync handles Sync API request.
@@ -201,13 +207,26 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
 }
 
-// RefRelax represents ref-relax-for-delete input data.
-type RefRelax struct {
-	UUID    string `json:"uuid"`
-	RefUUID string `json:"ref-uuid"`
+// RESTRefRelaxForDelete handles a ref-relax-for-delete request.
+func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
+	var data RelaxRefRequest
+	if err := c.Bind(&data); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+
+	if err := validateRelaxRefRequest(&data); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
+	response, err := service.RelaxRef(c.Request().Context(), &data)
+	if err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
-func (r *RefRelax) validate() error {
+func validateRelaxRefRequest(r *RelaxRefRequest) error {
 	if r.UUID == "" || r.RefUUID == "" {
 		return errutil.ErrorBadRequestf(
 			"bad request: both uuid and ref-uuid should be specified: %s, %s", r.UUID, r.RefUUID)
@@ -216,20 +235,14 @@ func (r *RefRelax) validate() error {
 	return nil
 }
 
-// RESTRefRelaxForDelete handles a ref-relax-for-delete request.
-func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
-	var data RefRelax
-	if err := c.Bind(&data); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+// RelaxRef makes a reference not prevent the referenced resource from being deleted.
+// TODO Test this via GRPC.
+func (service *ContrailService) RelaxRef(ctx context.Context, request *RelaxRefRequest) (*RelaxRefResponse, error) {
+	err := service.RefRelaxer.RelaxRef(ctx, request)
+	if err != nil {
+		return nil, err
 	}
-
-	if err := data.validate(); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	// TODO (Kamil): implement ref-relax logic
-
-	return c.JSON(http.StatusOK, map[string]interface{}{"uuid": data.UUID})
+	return &RelaxRefResponse{UUID: request.UUID}, nil
 }
 
 // PropCollectionUpdateRequest is input request for /prop-collection-update endpoint.
