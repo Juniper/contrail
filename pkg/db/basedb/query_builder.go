@@ -571,11 +571,26 @@ func (qb *QueryBuilder) DeleteRefsQuery(linkTo string) string {
 	return "delete from " + table + " where " + qb.Quote("from") + " = " + qb.Placeholder(1)
 }
 
+// DeleteRelaxedBackrefsQuery makes sql query that deletes all backrefs marked as relaxed.
+func (qb *QueryBuilder) DeleteRelaxedBackrefsQuery(linkFrom string) string {
+	table := schema.ReferenceTableName(schema.RefPrefix, linkFrom, qb.Table)
+	return fmt.Sprintf("delete from %s where %s = %s and %s = true",
+		table, qb.Quote("to"), qb.Placeholder(1), qb.Quote("relaxed"))
+}
+
 // DeleteRefQuery makes sql query deleting single ref entry.
 func (qb *QueryBuilder) DeleteRefQuery(linkTo string) string {
 	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
 	return fmt.Sprintf("delete from %s where %s = %s and %s = %s",
 		table, qb.Quote("from"), qb.Placeholder(1), qb.Quote("to"), qb.Placeholder(2))
+}
+
+// RelaxRefQuery makes sql query that marks a reference as relaxed.
+func (qb *QueryBuilder) RelaxRefQuery(linkTo string) string {
+	table := schema.ReferenceTableName(schema.RefPrefix, qb.Table, linkTo)
+	return fmt.Sprintf("update %s set %s = true where %s = %s and %s = %s",
+		table, qb.Quote("relaxed"),
+		qb.Quote("from"), qb.Placeholder(1), qb.Quote("to"), qb.Placeholder(2))
 }
 
 //SelectAuthQuery makes sql query.
