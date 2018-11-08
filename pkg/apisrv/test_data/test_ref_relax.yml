@@ -2,14 +2,36 @@ name: Test ref-relax-for-delete endpoint
 description: |
     Integration test for ref-relax-for-delete endpoint which allows to prepare
     some references which are originally not possible to be deleted for deletion.
+cleanup:
+- path: /virtual-network/vn_blue
+- path: /virtual-network/vn_red
+- path: /network-ipam/test_ipam
+- path: /network-policy/network_policy_uuid
 test_data:
-  ref_relax_data: &ref_relax_data
-    uuid: hogehoge
-    ref-uuid: hogehoge_ref
-  ref_relax_response: &ref_relax_response
-    uuid: hogehoge
-  ref_relax_data_missing: &ref_relax_data_missing
-    uuid: hogehoge
+  admin_project: &admin_project
+    fq_name: ["default", "admin_project_uuid"]
+    uuid: admin_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+  network_policy: &network_policy
+    fq_name: ["default", "admin_project_uuid", "policy"]
+    uuid: network_policy_uuid
+    parent_type: project
+    parent_uuid: admin_project_uuid
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin_project_uuid", "vn_blue"]
+    uuid: vn_blue
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    network_policy_refs:
+    - uuid: network_policy_uuid
+  vn_red: &vn_red
+    fq_name: ["default", "admin_project_uuid", "vn_red"]
+    uuid: vn_red
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    network_policy_refs:
+    - uuid: network_policy_uuid
 
 clients:
   default:
@@ -22,19 +44,116 @@ clients:
         name: admin
 
 workflow:
-- name: check OK response
+- name: create project admin
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+- name: create network policy
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 200
+    data:
+      network-policy: *network_policy
+  expect:
+    network-policy: *network_policy
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+- name: create virtual network red
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_red
+  expect:
+    virtual-network: *vn_red
+
+- name: try to delete network policy with 2 non-relaxed references
+  request:
+    path: /network-policy/network_policy_uuid
+    method: DELETE
+    expected:
+    - 409
+  expect: null
+
+- name: relax vn_blue -> network_policy reference
   request:
     path: /ref-relax-for-delete
     method: POST
     expected: [200]
-    data: *ref_relax_data
-  expect: *ref_relax_response
+    data:
+      uuid: vn_blue
+      ref-uuid: network_policy_uuid
+  expect:
+    uuid: vn_blue
 
+- name: try to delete network policy with 1 non-relaxed reference
+  request:
+    path: /network-policy/network_policy_uuid
+    method: DELETE
+    expected:
+    - 409
+  expect: null
+
+- name: relax vn_red -> network_policy reference
+  request:
+    path: /ref-relax-for-delete
+    method: POST
+    expected: [200]
+    data:
+      uuid: vn_red
+      ref-uuid: network_policy_uuid
+  expect:
+    uuid: vn_red
+
+- name: delete network policy
+  request:
+    path: /network-policy/network_policy_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+# TODO Move this to a separate test?
 - name: check fail response
   request:
     path: /ref-relax-for-delete
     method: POST
     expected: [400]
-    data: *ref_relax_data_missing
+    data:
+      uuid: hogehoge
   expect:
       message: 'bad request: both uuid and ref-uuid should be specified: hogehoge, '
+
+# Cleanup
+- name: delete virtual network blue
+  request:
+    path: /virtual-network/vn_blue
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete virtual network red
+  request:
+    path: /virtual-network/vn_red
+    method: DELETE
+    expected:
+    - 200
+  expect: null
