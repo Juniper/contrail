@@ -56,10 +56,6 @@ server:
 
   notify_etcd: false
 
-  vnc_api_notifier:
-    enabled: true
-    endpoint: http://localhost:9082
-
 # disable authentication with auth_type set to no-auth  and comment out keystone configuraion.
 auth_type: no-auth
 insecure: true

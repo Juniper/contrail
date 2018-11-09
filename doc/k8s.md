@@ -70,6 +70,25 @@ kolla_config:
 
 ## Examples
 
+### Simple ping
+
+Run two pods in different terminals (default namespace can be used):
+
+```bash
+kubectl run -i --tty busybox-one --image=busybox -- sh
+```
+
+```bash
+kubectl run -i --tty busybox-two --image=busybox -- sh
+```
+
+You can check their IP addresses by typing
+```bash
+ip a
+```
+
+And then you can try to make them ping each other.
+
 ### Intra VN ping
 
 Run the script located in [./tools/demo/intra-vn-ping/run.sh](../tools/demo/intra-vn-ping/run.sh)
