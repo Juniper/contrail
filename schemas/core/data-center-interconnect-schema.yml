@@ -1,0 +1,28 @@
+api_style: contrail
+extends:
+- base
+id: data_center_interconnect
+parents: {}
+plural: data_center_interconnects
+prefix: /
+references:
+  logical_router:
+    description: List of LRs one from each fabric participating in the DCI, each LR
+      belongs to different fabric
+    operations: CRUD
+    presence: optional
+schema:
+  properties:
+    data_center_interconnect_bgp_address_families:
+      $ref: types.json#/definitions/AddressFamilies
+      description: BGP address families supported by BGP router.
+      operations: CRUD
+      presence: optional
+    data_center_interconnect_bgp_hold_time:
+      $ref: types.json#/definitions/BgpHoldTime
+      description: BGP hold time in seconds [0-65535], Max time to detect liveliness
+        to peer. Value 0 will result in default value of 90 seconds.
+      operations: CRUD
+      presence: optional
+  required: []
+  type: object
