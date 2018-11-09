@@ -1,0 +1,23 @@
+resources:
+- kind: virtual_network
+  data:
+    fq_name:
+    - default-domain
+    - k8s-default
+    - vn_floating_blue
+    uuid: beefbeef-beef-beef-beef-beefbeef0102
+    display_name: blue
+    parent_type: project
+    address_allocation_mode: user-defined-subnet-only
+    network_ipam_refs:
+    - uuid: beefbeef-beef-beef-beef-beefbeef0101
+      to:
+      - default-domain
+      - k8s-default
+      - test_ipam_floating_blue
+      attr:
+        ipam_subnets:
+        - subnet_uuid: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+          subnet:
+            ip_prefix: "17.0.0.0"
+            ip_prefix_len: 24
