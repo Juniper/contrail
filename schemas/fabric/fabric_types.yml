@@ -214,6 +214,10 @@
         switch_info:
           description: UUID of the Physical-Port with contrail database
           type: string
+        port_index:
+          description: Port-Id provided by LLDP, This usually maps to SnmpIndex
+          type: string
+          format: "^([1-9]+[0-9]*)$"
     BaremetalPortInfo:
       type: "object"
       properties:
