@@ -179,6 +179,17 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 			clusterData.kubernetesClusterData, k8sData)
 	}
 
+	// get all referred vCenter information
+	for _, vcenterRef := range clusterData.clusterInfo.VCenterRefs {
+		vCenterData := &VCenterData{}
+		if err := vCenterData.updateClusterDetails(
+			vcenterRef.UUID, c); err != nil {
+			return nil, err
+		}
+		clusterData.vcenterData = append(
+			clusterData.vcenterData, vCenterData)
+	}
+
 	// get all referred appformix cluster information
 	for _, appformixClusterRef := range clusterData.clusterInfo.AppformixClusterRefs {
 		appformixData := &AppformixData{}
