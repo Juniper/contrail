@@ -14,7 +14,7 @@ import (
 {% set plural = schema.PluralPath %}
 
 func (r List{{ name }}Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.toMap())
+	return json.Marshal(r.ToMap())
 }
 
 func (r *List{{ name }}Response) UnmarshalJSON(data []byte) error {
@@ -24,14 +24,14 @@ func (r *List{{ name }}Response) UnmarshalJSON(data []byte) error {
 }
 
 func (r List{{ name }}Response) MarshalYAML() (interface{}, error) {
-	return r.toMap(), nil
+	return r.ToMap(), nil
 }
 
 func (r *List{{ name }}Response) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return r.unmarshalWith(unmarshal)
 }
 
-func (r List{{ name }}Response) toMap() map[string]interface{} {
+func (r List{{ name }}Response) ToMap() map[string]interface{} {
 	if r.{{ name }}s == nil {
 		return map[string]interface{}{
 			"{{ plural }}": map[string]interface{}{
