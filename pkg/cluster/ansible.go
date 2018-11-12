@@ -300,6 +300,7 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		"cluster":            a.clusterData.clusterInfo,
 		"openstackCluster":   a.clusterData.getOpenstackClusterInfo(),
 		"k8sCluster":         a.clusterData.getK8sClusterInfo(),
+		"vcenter":            a.clusterData.getVCenterClusterInfo(),
 		"appformixCluster":   a.clusterData.getAppformixClusterInfo(),
 		"nodes":              a.clusterData.getAllNodesInfo(),
 		"credentials":        a.clusterData.getAllCredsInfo(),
@@ -419,6 +420,8 @@ func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) err
 		ansibleArgs = append(ansibleArgs, defaultOpenstackProvPlay)
 	case orchestratorKubernetes:
 		ansibleArgs = append(ansibleArgs, defaultKubernetesProvPlay)
+	case "vcenter":
+		ansibleArgs = append(ansibleArgs, defaultvCenterProvPlay)
 	}
 	return a.play(ansibleArgs)
 }
