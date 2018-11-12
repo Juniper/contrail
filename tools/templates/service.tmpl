@@ -37,7 +37,11 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    return c.JSON(http.StatusOK, response)
+    res, err := format.ExtendResponseWithHref(format.ToMap(response), c.Request().URL.String(), "uuid")
+    if err != nil {
+        return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("failed to process the responce: %s", err))
+    }
+    return c.JSON(http.StatusOK, res)
 }
 
 // Create{{ schema.JSONSchema.GoName }} handles a create request.
@@ -177,7 +181,11 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
         return errutil.ToHTTPError(err)
     }
 
-    return c.JSON(http.StatusOK, response)
+    res, err := format.ExtendResponseWithHref(format.ToMap(response), c.Request().URL.String(), "uuid")
+    if err != nil {
+        return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("failed to process the responce: %s", err))
+    }
+    return c.JSON(http.StatusOK, res)
 }
 
 // Update{{ schema.JSONSchema.GoName }} handles an update request.
@@ -217,7 +225,12 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    return c.JSON(http.StatusOK, response)
+
+    res, err := format.ExtendResponseWithHref(format.ToMap(response), c.Request().URL.String(), "uuid")
+    if err != nil {
+        return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("failed to process the responce: %s", err))
+    }
+    return c.JSON(http.StatusOK, res)
 }
 
 // RESTList{{ schema.JSONSchema.GoName }} handles a REST list request.
@@ -232,7 +245,12 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    return c.JSON(http.StatusOK, response)
+
+    res, err := format.ExtendResponseWithHref(response.ToMap(), c.Request().URL.String() + "/", "uuid")
+    if err != nil {
+        return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("failed to process the responce: %s", err))
+    }
+    return c.JSON(http.StatusOK, res)
 }
 
 {% endif %}{% endfor %}
