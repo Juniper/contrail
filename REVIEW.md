@@ -17,8 +17,7 @@ Imports should be split into 3 groups:
 1.  standard library packages, e.g. `net/http`;
 2.  third-party library packages, e.g. `github.com/pkg/errors`;
 3.  packages under `github.com/Juniper/contrail`,
-    e.g. `github.com/Juniper/contrail/pkg/models`
-    and `github.com/Juniper/contrail/extension/pkg/models`;
+    e.g. `github.com/Juniper/contrail/pkg/models`;
 
 Additionally, each of the groups should be sorted alphabetically -
 `goimports` will do it for you.
