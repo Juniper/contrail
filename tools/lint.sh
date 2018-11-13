@@ -4,14 +4,14 @@ ContrailPackage="github.com/Juniper/contrail"
 
 function run_go_tool_fix() {
 	local issues
-	issues=$(go tool fix --diff ./cmd/ ./extension/ ./pkg/)
+	issues=$(go tool fix --diff ./cmd/ ./pkg/)
 
 	[[ -z "$issues" ]] || (echo "Go tool fix found issues: $issues" && return 1)
 }
 
 function run_goimports() {
 	local dirty_files
-	dirty_files="$(goimports -l -local "$ContrailPackage" ./cmd/ ./extension/ ./pkg/ | grep -v _mock.go)"
+	dirty_files="$(goimports -l -local "$ContrailPackage" ./cmd/ ./pkg/ | grep -v _mock.go)"
 
 	[[ -z "$dirty_files" ]] || (echo "Goimports found issues in files: $dirty_files" && return 1)
 }

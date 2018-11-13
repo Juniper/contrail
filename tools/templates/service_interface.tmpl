@@ -15,14 +15,6 @@ import (
 //This is needed to prevent an import error.
 var _ = types.AnyMessageName
 
-type Service interface {
-    Next() Service
-    SetNext(Service)
-
-    WriteService
-    ReadService
-}
-
 type WriteService interface {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     Create{{ schema.JSONSchema.GoName }}(context.Context, *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error)
