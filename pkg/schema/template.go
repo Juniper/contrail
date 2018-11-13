@@ -30,8 +30,6 @@ type TemplateOption struct {
 	TemplateConfPath  string
 	SchemaOutputPath  string
 	OpenapiOutputPath string
-	PackagePath       string
-	ProtoPackage      string
 	OutputDir         string
 }
 
@@ -49,8 +47,7 @@ func (tc *TemplateConfig) load(base string) (*pongo2.Template, error) {
 }
 
 func (tc *TemplateConfig) outputPath(option *TemplateOption) string {
-	path := strings.Replace(tc.OutputPath, "__package__", option.PackagePath, 1)
-	return path
+	return tc.OutputPath
 }
 
 // nolint: gocyclo

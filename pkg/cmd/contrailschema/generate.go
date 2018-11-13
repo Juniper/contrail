@@ -17,10 +17,6 @@ func init() {
 	ContrailSchema.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&option.SchemasDir, "schemas", "s", "", "Schema Directory")
 	generateCmd.Flags().StringVarP(&option.TemplateConfPath, "templates", "t", "", "Template Configuration")
-	generateCmd.Flags().StringVarP(&option.PackagePath, "package-path", "p", "github.com/Juniper/contrail", "Package name")
-	generateCmd.Flags().StringVarP(
-		&option.ProtoPackage, "proto-package", "",
-		"github.com.Juniper.contrail", "Protoc package base")
 	generateCmd.Flags().StringVarP(&option.OutputDir, "output-dir", "", "./", "output dir")
 	generateCmd.Flags().StringVarP(&option.SchemaOutputPath, "schema-output", "", "", "Schema Output path")
 	generateCmd.Flags().StringVarP(&option.OpenapiOutputPath, "openapi-output", "", "", "OpenAPI Output path")
