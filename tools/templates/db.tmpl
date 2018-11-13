@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/gogo/protobuf/types"
 
-	"{{ option.PackagePath }}/pkg/models"
-	"{{ option.PackagePath }}/pkg/services"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/db/basedb"
@@ -17,9 +17,6 @@ import (
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
-
-//This is needed to prevent an import error.
-var _ = schema.Version
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
