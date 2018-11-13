@@ -56,11 +56,13 @@ The idea is to have all the resources of the kinds relevant to Intent Compiler i
 a copy of `etcd` contents for those kinds of resources.
 
 Note that Intent Compiler does not fetch the current state of resources when it (re)starts (it starts with an empty cache).
+
 Additionally:
 - When an update/delete event for a resource that's not in the cache is received,
   the IC does not know if the lower-level resources for it have already been created.
 - When a resource is put into the cache and its parent or a resource it refers to is not in the cache,
   the referred resource won't have a child/backreference to it even after getting added to the cache.
+  
 This means that, in general, the Intent Compiler does not work after a restart.
 
 ## Intents

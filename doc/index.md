@@ -256,17 +256,17 @@ CONTRAIL_DATABASE_DEBUG=true make test
 `Testutil` package is located [here](../pkg/testutil). It contains helpers for automatic tests.
 It contains also `integration` subpackage, which holds utilities and types used for integration testing. This package depends on internal packages, such as `pkg/apisrv` and `pkg/sync`. 
  
-### YAML integration tests
+### YAML integration testing toolkit
 
 File [testutil/integration/common.go](../pkg/testutil/integration/common.go) contains integration testing toolkit, whose core object is `TestScenario` struct. Tests written with this toolkit are often called by developers "YAML tests". This name comes from the fact, that test scenarios are defined in YAML files containing custom structure.
 
 YAML test toolkit reads test scenario from YAML files to `TestScenario` struct. It allows to:
 
-- Define multiple Keystone users (`TestScenario.clients`) to be used in HTTP requests (`Task.client`).
+- Define multiple Keystone users (`TestScenario.Clients`) to be used in HTTP requests (`Task.Client`).
+- Specify list of paths of resources to delete before `TestScenario.Workflow` is started (`TestScenario.Cleanup`). One should specify cleanup paths for all resources created during `TestScenario.Workflow` to ensure test is performed in DB state.
 - Perform multiple HTTP requests to API Server and check responses (`TestScenario.Workflow` which is list of `Task` objects).
-- Enable Intent Compilation service within test scenario (`TestScenario.IntentCompilerEnabled`).
 - Specify etcd watchers both on `TestScenario.Watchers` level and `Task.Watchers` level. Each watcher entry holds a key the test is expecting events on (such as `/contrail/project/project_blue_project_uuid`) and list of values of events on that key.
-- Specify list of paths of resources to delete after scenario's workflow is finished (`TestScenario.Cleanup`).
+- Enable Intent Compilation service within test scenario (`TestScenario.IntentCompilerEnabled`).
 
 This toolkit is used in [API Server tests](../pkg/apisrv/server_test.go). Test scenarios are located in ["test_data" directory](../pkg/apisrv/test_data). Only API Server is tested here by performing various HTTP requests to it. 
 
