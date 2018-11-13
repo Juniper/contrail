@@ -2,10 +2,7 @@ run:
   # Concurrency is reduced in order to reduce RAM consumption
   concurrency: 2
   deadline: 11m
-  skip-dirs:
-  - extension/pkg/db/cache        # TODO: re-enable when compilation fixed
-  - extension/pkg/db/etcd         # TODO: re-enable when compilation fixed
-  - extension/pkg/apisrv/client   # TODO: re-enable when compilation fixed
+  skip-dirs: []
 
 issues:
   exclude:
