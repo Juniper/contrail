@@ -6,15 +6,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"{{ option.PackagePath }}/pkg/models"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
-
-//preventing import error
-var _ = log.Debug
-var _ = models.Version
-var _ context.Context
-var _ baseservices.ListSpec
 
 type QuotaResourceCounter interface {
 {%- for schema in schemas -%}
