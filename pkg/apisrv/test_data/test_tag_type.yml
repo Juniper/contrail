@@ -1,0 +1,43 @@
+name: Tag Type logic test
+
+cleanup:
+- path: /projects/project_base_properties_uuid
+
+test_data:
+  project: &project
+    fq_name:
+    - default
+    - project_base_properties
+    uuid: project_base_properties_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create Project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project
+  expect:
+    project: *project
+
+# TODO: Test that pre-defined Tag Types are created
+
+- name: delete Project
+  request:
+    path: /project/project_base_properties_uuid
+    method: DELETE
+    expected: [200]
