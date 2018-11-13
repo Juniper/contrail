@@ -45,12 +45,10 @@ format_gen:
 	find ./cmd ./pkg -name 'gen_*.go' -exec go fmt {} \;
 
 fast_generate: generate_pb_go generate_mocks doc/proto.md
-	cd extension && $(MAKE) fast_generate
 
 generate_pb_go: generate_go pkg/models/generated.pb.go pkg/services/baseservices/base.pb.go pkg/services/generated.pb.go
 
 generate: fast_generate format_gen
-	cd extension && $(MAKE) format_gen
 
 generate_go:
 	@mkdir -p public
@@ -95,7 +93,6 @@ clean_gen:
 	find pkg/ -name gen_* -delete
 	find pkg/ -name generated.pb.go -delete
 	find proto/ -name generated.proto -delete
-	cd extension && $(MAKE) clean_gen
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package

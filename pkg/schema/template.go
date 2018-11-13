@@ -30,8 +30,6 @@ type TemplateOption struct {
 	TemplateConfPath  string
 	SchemaOutputPath  string
 	OpenapiOutputPath string
-	PackagePath       string
-	ProtoPackage      string
 	OutputDir         string
 }
 
@@ -48,18 +46,13 @@ func (tc *TemplateConfig) load(base string) (*pongo2.Template, error) {
 	return pongo2.FromString(string(templateCode))
 }
 
-func (tc *TemplateConfig) outputPath(option *TemplateOption) string {
-	path := strings.Replace(tc.OutputPath, "__package__", option.PackagePath, 1)
-	return path
-}
-
 // nolint: gocyclo
 func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateOption) error {
 	tpl, err := tc.load(templateBase)
 	if err != nil {
 		return err
 	}
-	if err = ensureDir(tc.outputPath(option)); err != nil {
+	if err = ensureDir(tc.OutputPath); err != nil {
 		return err
 	}
 	if tc.TemplateType == "all" {
@@ -70,7 +63,7 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 			return err
 		}
 
-		if err = writeGeneratedFile(tc.outputPath(option), output, tc.TemplatePath); err != nil {
+		if err = writeGeneratedFile(tc.OutputPath, output, tc.TemplatePath); err != nil {
 			return err
 		}
 	} else if tc.TemplateType == "alltype" {
@@ -94,7 +87,7 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 			return err
 		}
 
-		if err = writeGeneratedFile(tc.outputPath(option), output, tc.TemplatePath); err != nil {
+		if err = writeGeneratedFile(tc.OutputPath, output, tc.TemplatePath); err != nil {
 			return err
 		}
 	}
@@ -117,7 +110,7 @@ func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig, opt
 	for _, templateConfig := range config {
 		if !isOutdated(
 			filepath.Join(templateBase, templateConfig.TemplatePath),
-			filepath.Join(option.OutputDir, templateConfig.outputPath(option)),
+			filepath.Join(option.OutputDir, templateConfig.OutputPath),
 			api,
 		) {
 			continue
