@@ -1,0 +1,80 @@
+name: Tag Type logic test
+
+cleanup:
+- path: /project/project-test-tag-type-uuid
+- path: /tag-type/test-tag-type-uuid
+
+test_data:
+  project: &project
+    fq_name:
+    - default
+    - project-test-tag-type
+    uuid: project-test-tag-type-uuid
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  tag_type: &tag_type
+    fq_name:
+    - default
+    - project-test-tag-type-uuid
+    - test-tag-type
+    uuid: test-tag-type-uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create Project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project
+  expect:
+    project: *project
+
+- name: creating Tag Type with given tag_type_id property should fail
+  request:
+    path: /tag-types
+    method: POST
+    expected: [400]
+    data:
+      tag-type:
+        <<: *tag_type
+        tag_type_id: BEEF
+
+- name: create Tag Type succeeds
+  request:
+    path: /tag-types
+    method: POST
+    expected: [200]
+    data:
+      tag-type:
+        <<: *tag_type
+  expect:
+    tag-type:
+      <<: *tag_type
+      name: test-tag-type
+      display_name: test-tag-type
+
+# TODO: Test that pre-defined Tag Types are created
+
+- name: delete Tag Type
+  request:
+    path: /tag-type/test-tag-type-uuid
+    method: DELETE
+    expected: [200]
+
+- name: delete Project
+  request:
+    path: /project/project-test-tag-type-uuid
+    method: DELETE
+    expected: [200]
