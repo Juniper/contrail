@@ -21,10 +21,13 @@ func (sv *ContrailTypeLogicService) CreateForwardingClass(
 		func(ctx context.Context) error {
 			fcID := request.GetForwardingClass().ForwardingClassID
 			err := validateForwardingClassID(ctx, sv, fcID)
+			if err != nil {
+				return err
+			}
+
 			response, err = sv.Next().CreateForwardingClass(ctx, request)
 			return err
 		})
-
 	return response, err
 }
 
@@ -52,17 +55,15 @@ func (sv *ContrailTypeLogicService) UpdateForwardingClass(
 				}
 			}
 
+			response, err = sv.Next().UpdateForwardingClass(ctx, request)
 			return err
 		})
-
 	return response, err
 }
 
 func validateForwardingClassID(ctx context.Context, sv *ContrailTypeLogicService, fcID int64) error {
-	// TODO: this can be a standalone function
 	forwardingClassResponse, err := sv.ReadService.ListForwardingClass(ctx, &services.ListForwardingClassRequest{
 		Spec: &baseservices.ListSpec{
-			Count: true,
 			Filters: []*baseservices.Filter{
 				&baseservices.Filter{
 					Key:    models.ForwardingClassFieldForwardingClassID,
@@ -71,13 +72,12 @@ func validateForwardingClassID(ctx context.Context, sv *ContrailTypeLogicService
 			},
 		},
 	})
-
 	if err != nil {
 		return err
 	}
 
 	if forwardingClassResponse.ForwardingClassCount != 0 {
-		return errutil.ErrorBadRequestf("Forwarding class %s is configured with a id %d", forwardingClassResponse.ForwardingClasss[0], fcID)
+		return errutil.ErrorBadRequestf("Forwarding class %s is configured with a id %d", forwardingClassResponse.ForwardingClasss[0].DisplayName, fcID)
 	}
 
 	return nil
