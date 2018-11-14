@@ -1,0 +1,116 @@
+name: Forwarding Class Test
+description:  basic forwarding class test
+cleanup:
+- path: /forwarding-class/uuid-frwdclass-first-model
+- path: /forwarding-class/uuid-frwdclass-second-model
+- path: /qos-queue/qos-queue-model
+
+test_data:
+  qosq: &qosq
+    uuid: uuid-qosq-for-frwdclass
+    name: qosq-ref-for-frwdclass
+    parent_type: global-qos-config
+    parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
+    min_bandwidth: 100
+    max_bandwidth: 2400
+    qos_queue_identifier: 1
+
+  forw_class: &forw_class
+    uuid: uuid-frwdclass-first-model
+    name: uuid-frwdclass-first-model
+    parent_type: global-qos-config
+    parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
+    qos_queue_refs:
+      - uuid: uuid-qosq-for-frwdclass
+    forwarding_class_id: 1
+    forwarding_class_dscp: 63
+    forwarding_class_vlan_priority: 7
+    forwarding_class_mpls_exp: 7
+
+  edited_forw_class: &edited_forw_class
+    <<: *forw_class
+    forwarding_class_dscp: 32
+
+  forw_class_second: &forw_class_second
+    <<: *forw_class
+    uuid: uuid-frwdclass-second-model
+    name: uuid-frwdclass-second-model
+    forwarding_class_id: 2
+
+  forw_class_duplicated_id: &forw_class_duplicated_id
+    <<: *forw_class_second
+    forwarding_class_id: 1
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+# TEST Creating
+workflow:
+- name: create qos queue
+  request:
+    path: /qos-queues
+    method: POST
+    expected:
+    - 200
+    data:
+      qos-queue: *qosq
+
+- name: successfully create frowarding class
+  request:
+    path: /forwarding-classs
+    method: POST
+    expected:
+    - 200
+    data:
+      forwarding-class: *forw_class
+  expect:
+    forwarding-class: *forw_class
+
+- name: try to create frowarding class with already used id
+  request:
+    path: /forwarding-classs
+    method: POST
+    expected:
+    - 400
+    data:
+      forwarding-class: *forw_class_duplicated_id
+
+- name: successfully create second frowarding class
+  request:
+    path: /forwarding-classs
+    method: POST
+    expected:
+    - 200
+    data:
+      forwarding-class: *forw_class_second
+  expect:
+    forwarding-class: *forw_class_second
+
+# TEST Updating
+- name: successfully update frowarding class
+  request:
+    path: /forwarding-class/uuid-frwdclass-first-model
+    method: PUT
+    expected:
+    - 200
+    data:
+      forwarding-class: *edited_forw_class
+  expect:
+    forwarding-class: *edited_forw_class
+
+- name: try to update frowarding class with already used id
+  request:
+    path: /forwarding-class/uuid-frwdclass-second-model
+    method: PUT
+    expected:
+    - 400
+    data:
+      forwarding-class: *forw_class_duplicated_id
+
+
