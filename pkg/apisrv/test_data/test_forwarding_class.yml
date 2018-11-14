@@ -1,0 +1,61 @@
+name: Forwarding Class Test
+description:  basic forwarding class test
+cleanup:
+- path: /forwarding-class/uuid-frwdclass-first-model
+- path: /qos-queue/qos-queue-model
+
+test_data:
+  qosq: &qosq
+    uuid: uuid-qosq-for-frwdclass
+    name: qosq-ref-for-frwdclass
+    parent_type: global-qos-config
+    parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
+    min_bandwidth: 100
+    max_bandwidth: 2400
+    qos_queue_identifier: 1
+
+  forw_class: &forw_class
+    uuid: uuid-frwdclass-first-model
+    name: uuid-frwdclass-first-model
+    parent_type: global-qos-config
+    parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
+    qos_queue_refs:
+      - uuid: uuid-qosq-for-frwdclass
+    forwarding_class_id: 1
+    forwarding_class_dscp: 63
+    forwarding_class_vlan_priority: 7
+    forwarding_class_mpls_exp: 7
+
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create qos queue
+  request:
+    path: /qos-queues
+    method: POST
+    expected:
+    - 200
+    data:
+      qos-queue: *qosq
+
+- name: create frowarding class
+  request:
+    path: /forwarding-classs
+    method: POST
+    expected:
+    - 200
+    data:
+      forwarding-class: *forw_class
+  expect:
+    forwarding-class: *forw_class
+
+
