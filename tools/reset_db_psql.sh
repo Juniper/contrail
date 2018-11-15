@@ -1,10 +1,16 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-TOP=/go/src/github.com/Juniper/contrail/tools
+#DIR=$(dirname $0)
+DIR=/psq
+HOST=localhost
+PORT=5432
+USER=root
+PASS=contrail123
 
-echo "Mounts:"
-docker inspect -f '{{ range $i, $m := .Mounts }}{{ $m.Source }}:{{ $m.Destination }}{{"\n"}}{{end}}' contrail_postgres
+#PGPASSWORD=$PASS psql -h $HOST -p $PORT -U $USER postgres -c "drop database contrail_test"
+#PGPASSWORD=$PASS psql -h $HOST -p $PORT -U $USER postgres -c "create database contrail_test"
+#PGPASSWORD=$PASS psql -h $HOST -p $PORT -U $USER contrail_test -f $DIR/init_psql.sql > /dev/null
 
-docker exec contrail_postgres psql -U postgres -c "drop database contrail_test"
-docker exec contrail_postgres psql -U postgres -c "create database contrail_test"
-docker exec --interactive contrail_postgres psql -U postgres contrail_test -f $TOP/init_psql.sql > /dev/null
+docker exec contrail_dbnode_1 psql -h $HOST -p $PORT -U $USER postgres -c "drop database contrail_test"
+docker exec contrail_dbnode_1 psql -h $HOST -p $PORT -U $USER postgres -c "create database contrail_test"
+docker exec contrail_dbnode_1 psql -h $HOST -p $PORT -U $USER contrail_test -f $DIR/init_psql.sql > /dev/null
