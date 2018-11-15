@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
-TOP=/go/src/github.com/Juniper/contrail/tools
+DIR=$(dirname $0)
+SUCCESS_MSG="ERROR, SQLSTATE: no results to fetch"
 
-echo "Mounts:"
-docker inspect -f '{{ range $i, $m := .Mounts }}{{ $m.Source }}:{{ $m.Destination }}{{"\n"}}{{end}}' contrail_postgres
+echo "Resetting psql database"
 
-docker exec contrail_postgres psql -U postgres -c "drop database contrail_test"
-docker exec contrail_postgres psql -U postgres -c "create database contrail_test"
-docker exec --interactive contrail_postgres psql -U postgres contrail_test -f $TOP/init_psql.sql > /dev/null
+res=$(docker-compose -f $DIR/patroni/docker-compose.yml -p "contrail" exec -T dbnode bash -c "PGPASSWORD=contrail123 patronictl query -Uroot -d postgres -c \"drop database contrail_test;\" testcluster")
+if [ "${res:20}" != "$SUCCESS_MSG" ]; then echo "Error while dropping database ${res:20}"; fi
+
+res=$(docker-compose -f $DIR/patroni/docker-compose.yml -p "contrail" exec -T dbnode bash -c "PGPASSWORD=contrail123 patronictl query -Uroot -d postgres -c \"create database contrail_test;\" testcluster")
+if [ "${res:20}" != "$SUCCESS_MSG" ]; then echo "Error while creating database ${res:20}"; fi
+
+res=$(docker-compose -f $DIR/patroni/docker-compose.yml -p "contrail" exec -T dbnode bash -c "PGPASSWORD=contrail123 patronictl query -Uroot -d contrail_test --file /tools/init_psql.sql testcluster")
+if [ "${res:20}" != "$SUCCESS_MSG" ]; then echo "Error while initializing database ${res:20}"; fi
