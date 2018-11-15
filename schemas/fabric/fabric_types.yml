@@ -159,6 +159,9 @@
         operating_system:
           description: Name of operating system, ex - centos7 or ubuntu16
           type: string
+          enum:
+          - "centos7"
+          - "ubuntu16"
           nullable: false
           permission:
           - create
@@ -194,13 +197,33 @@
           permission:
           - create
           - update
-        subnets:
-          description: Subnet associated with this cloud instance
-          type: string
+        availability_zone:
+          description: Availability zone to which the instance belongs to
           nullable: false
+          default: ""
           permission:
           - create
           - update
+          title: Availability Zone
+          type: string
+          view:
+          - create
+          - detail
+        roles:
+          description: "Roles of the cloud instance"
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - gateway
+            - compute
+            - controller
+            - k8s_master
+            - k8s_node
+          permission:
+          - create
+          - update
+          nullable: false
     LocalLinkConnection:
       type: "object"
       properties:

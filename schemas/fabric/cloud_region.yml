@@ -5,7 +5,7 @@ id: cloud_region
 metadata:
   category: cloud
 parents:
-  cloud:
+  cloud_provider:
     operations: "CRUD"
     description: "Parent for cloud region"
     presence: "optional"
@@ -21,18 +21,6 @@ schema:
       - update
       sql: ""
       title: Resource Group
-      type: string
-      view:
-      - create
-      - detail
-    availability_zone:
-      description: Availability zone of the region
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Availability Zone
       type: string
       view:
       - create
