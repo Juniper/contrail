@@ -11,6 +11,8 @@
   tasks:
     - name: Run build setup
       include: build-setup.yaml
+    - name: Create test environment
+      command: "chdir={{ sourcedir }}/src/github.com/Juniper/contrail make testenv"
 
     - name: Run build steps in loop
       include: build-step.yaml
