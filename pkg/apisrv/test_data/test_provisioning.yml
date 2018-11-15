@@ -56,7 +56,6 @@ test_data:
     fq_name:
       - namespace
     display_name: namespace
-    tag_type_id: "0x00ff"
 
   tag: &tag_test_provisioning
     uuid: tag_test_provisioning_uuid
