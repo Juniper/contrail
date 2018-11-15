@@ -1,25 +1,29 @@
-etcd:
-    image: patroni
-    command: --etcd
+version: '3'
 
-haproxy:
+services:
+  haproxy:
+    container_name: contrail_haproxy
     image: patroni
-    links:
-        - etcd:etcd
     ports:
-        - "5000:5000"
-        - "5001:5001"
+      - "5432:5000"
+      - "5001:5001"
     environment:
-        PATRONI_ETCD_URL: http://etcd:2379
-        PATRONI_SCOPE: testcluster
+      PATRONI_ETCD_URL: http://contrail_etcd:2379
+      PATRONI_SCOPE: testcluster
     command: --confd
 
-dbnode:
+  dbnode:
     image: patroni
-    links:
-        - etcd:etcd
-    env_file: ./patroni-secrets.env
+    volumes:
+      - /go/src/github.com/Juniper/contrail/tools/patroni/patroni.yml:/patroni.yml
+      - ../init_psql.sql:/psq/init_psql.sql
     environment:
-        PATRONI_ETCD_URL: http://etcd:2379
-        PATRONI_SCOPE: testcluster
+      PATRONI_ETCD_URL: http://contrail_etcd:2379
+      PATRONI_SCOPE: testcluster
+      PATRONI_SUPERUSER_USERNAME: root
+      PATRONI_SUPERUSER_PASSWORD: contrail123
 
+networks:
+  default:
+    external:
+      name: contrail
