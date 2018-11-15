@@ -62,6 +62,9 @@
   template_path: service.tmpl
   output_path: pkg/services/gen_service.go
 - type: all
+  template_path: response_href.tmpl
+  output_path: pkg/services/gen_response_href.go
+- type: all
   template_path: proto_model.tmpl
   output_path: proto/__package__/pkg/models/generated.proto
 - type: all
