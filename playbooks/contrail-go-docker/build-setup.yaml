@@ -1,7 +1,12 @@
-- name: "Install docker-py"
-  yum:
-    name: python-docker-py
-    state: present
+- name: "Install docker"
+  pip:
+    name: docker
+  become: yes
+  become_user: root
+
+- name: "Install docker-compose"
+  pip:
+    name: docker-compose
   become: yes
   become_user: root
 
@@ -28,16 +33,7 @@
   become: yes
   become_user: root
 
-- name: "Run required additional docker containers in background"
-  docker_container:
-    name: "{{ item.name|default(item.image.split('/')[-1].split(':')[0]) }}"
-    image: "{{ item.image }}"
-    state: started
-    env: "{{ item.environment|default(omit) }}"
-    command: "{{ item.command|default(omit) }}"
-    network_mode: host
-    volumes:
-      - "{{ sourcedir }}:/go"
-  with_items: "{{ docker[1:] }}"
+- name: Create test environment
+  command: "chdir={{ sourcedir }}/src/github.com/Juniper/contrail make testenv"
   become: yes
   become_user: root
