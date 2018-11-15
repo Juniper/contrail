@@ -49,6 +49,7 @@ make generate
 make build
 make install
 # etcd should be already deployed with kubernetes
+"$ContrailRootDir/tools/patroni/install_patroni.sh"
 "$ContrailRootDir/tools/testenv.sh" -n host postgres
 
 # Stop kubemanager, original config-node, control-node and vrouter

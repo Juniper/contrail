@@ -1,0 +1,10 @@
+bootstrap:
+  dcs:
+    postgresql:
+      use_pg_rewind: true
+      parameters:
+        wal_level: logical
+
+  pg_hba:
+  - host replication replicator 172.0.0.0/8 md5
+  - host all all 0.0.0.0/0 md5
