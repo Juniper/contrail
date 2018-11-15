@@ -61,6 +61,7 @@ const (
 	ParentPrefix = "parent"
 	configRoot   = "config_root"
 	optional     = "optional"
+	servicePropery = "service"
 )
 
 var sqlTypeMap = map[string]string{
@@ -388,6 +389,11 @@ func (s *JSONSchema) resolveSQL(
 	if s == nil {
 		return nil
 	}
+
+	if s.Presence == servicePropery {
+		return nil
+	}
+
 	if len(s.Properties) == 0 || s.Type == ArrayType {
 		if s.SQL == "" {
 			s.SQL = sqlTypeMap[s.Type]

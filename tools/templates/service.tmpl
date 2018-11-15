@@ -176,6 +176,9 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
+    if err = response.ApplyHref(c.Request().URL); err != nil {
+        return errutil.ToHTTPError(err)
+    }
 
     return c.JSON(http.StatusOK, response)
 }
@@ -217,6 +220,9 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     if err != nil {
         return errutil.ToHTTPError(err)
     }
+    if err = response.ApplyHref(c.Request().URL); err != nil {
+        return errutil.ToHTTPError(err)
+    }
     return c.JSON(http.StatusOK, response)
 }
 
@@ -230,6 +236,9 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     ctx := c.Request().Context()
     response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
+        return errutil.ToHTTPError(err)
+    }
+    if err = response.ApplyHref(c.Request().URL); err != nil {
         return errutil.ToHTTPError(err)
     }
     return c.JSON(http.StatusOK, response)
