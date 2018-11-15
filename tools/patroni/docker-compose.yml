@@ -1,0 +1,25 @@
+etcd:
+    image: patroni
+    command: --etcd
+
+haproxy:
+    image: patroni
+    links:
+        - etcd:etcd
+    ports:
+        - "5000:5000"
+        - "5001:5001"
+    environment:
+        PATRONI_ETCD_URL: http://etcd:2379
+        PATRONI_SCOPE: testcluster
+    command: --confd
+
+dbnode:
+    image: patroni
+    links:
+        - etcd:etcd
+    env_file: ./patroni-secrets.env
+    environment:
+        PATRONI_ETCD_URL: http://etcd:2379
+        PATRONI_SCOPE: testcluster
+
