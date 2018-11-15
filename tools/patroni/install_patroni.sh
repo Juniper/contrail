@@ -12,4 +12,3 @@ unzip -q "$tmpdir/v$patroni_version.zip" -d $tmpdir && rm "$tmpdir/v$patroni_ver
 echo "Archive unpacked"
 docker build -t patroni "$tmpdir/patroni-$patroni_version" || { echo "Failed to build docker image" ; exit 1; }
 rm -rf $tmpdir || { echo "Failed to remove temporary directory" ; exit 1; }
-
