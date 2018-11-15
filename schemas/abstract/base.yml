@@ -65,4 +65,8 @@
         description: "Configuration Version for the object."
         type: integer
         sql: bigint
-
+      href:
+        operations: "R"
+        presence: "service"
+        description: "Instance reference URL"
+        type: "string"
