@@ -8,6 +8,8 @@ const (
 	defaultK8sResourcePath                      = "/" + defaultK8sResource
 	defaultOpenstackResource                    = "openstack-cluster"
 	defaultOpenstackResourcePath                = "/" + defaultOpenstackResource
+	defaultVCenterResource                      = "vCenter"
+	defaultVCenterResourcePath                  = "/" + defaultVCenterResource
 	defaultAppformixResource                    = "appformix-cluster"
 	defaultAppformixResourcePath                = "/" + defaultAppformixResource
 	defaultEndpointRes                          = "endpoint"
@@ -54,6 +56,12 @@ const (
 	defaultOpenstackStorageNodeResPath          = "/" + defaultOpenstackStorageNodeRes
 	defaultOpenstackComputeNodeRes              = "openstack-compute-node"
 	defaultOpenstackComputeNodeResPath          = "/" + defaultOpenstackComputeNodeRes
+	defaultVCenterComputeRes                    = "vCenter-compute"
+	defaultVCenterComputeResPath                = "/" + defaultVCenterComputeRes
+	defaultVCenterPluginNodeRes                 = "vCenter-plugin-node"
+	defaultVCenterPluginNodeResPath             = "/" + defaultVCenterPluginNodeRes
+	defaultVCenterManagerNodeRes                = "vCenter-manager-node"
+	defaultVCenterManagerNodeResPath            = "/" + defaultVCenterManagerNodeRes
 
 	defaultWorkRoot                       = "/var/tmp/contrail_cluster"
 	defaultTemplateRoot                   = "./pkg/cluster/configs"
@@ -62,6 +70,7 @@ const (
 	defaultProvisioner                    = "ansible"
 	defaultAnsibleRepo                    = "contrail-ansible-deployer"
 	defaultAnsibleRepoDir                 = "/usr/share/contrail/"
+	defaultvCenterProvPlay                = "playbooks/vcenter.yml"
 	defaultContrailProvPlay               = "playbooks/install_contrail.yml"
 	defaultInstanceProvPlay               = "playbooks/provision_instances.yml"
 	defaultInstanceConfPlay               = "playbooks/configure_instances.yml"
