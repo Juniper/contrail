@@ -23,6 +23,8 @@
           command: make check
         - name: Run the source code generator
           command: make generate
+        - name: Create test environment
+          command: make testenv
         - name: Reset databases with latest schema and load initial data
           command: make reset_db
         - name: Run tests with coverage
