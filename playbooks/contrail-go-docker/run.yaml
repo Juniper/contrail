@@ -17,6 +17,8 @@
       loop_control:
         label: "{{ item.name }}"
       with_items:
+        - name: Create test environment
+          command: make testenv
         - name: Install development dependencies
           command: make deps
         - name: Check vendored dependencies
