@@ -24,6 +24,7 @@ done
 PASSWORD=contrail123
 SpecialNetworks='bridge none host'
 [[ "$SpecialNetworks" = *"$Network"* ]] || docker network create contrail || true
+#docker-compose -f ./tools/patroni/docker-compose.yml -p "contrail" down || true
 docker rm -f contrail_postgres contrail_mysql contrail_etcd || true
 
 run_docker_postgres()
@@ -60,10 +61,21 @@ run_docker_etcd()
 [ ! -z "$1" ] && RunDockers="$*"
 
 WaitMysql=0
-for docker in $RunDockers; do 
+for docker in $RunDockers; do
 	eval "run_docker_$docker"
 	[ "$docker" = mysql ] && WaitMysql=1
 done
+
+
+PT="src/github.com/Juniper/contrail"
+echo "Files inside $PWD" && ls -al
+echo "Files inside /go/$PT/tools/patroni" && ls -al /go/$PT/tools/patroni
+echo "Files inside $PWD/tools" && ls -al $PWD/tools
+echo "Files inside /" && ls -al /
+echo "Files inside /home/" && ls -al /home/ || echo "No files in /home/"
+
+#docker-compose -f ./tools/patroni/docker-compose.yml -p "contrail" up --scale dbnode=2 -d || { echo "Files inside tools/patroni" ; ls -al ./tools/patroni ;
+#                                                                                               exit 1 ; }
 
 if [ $WaitMysql -eq 1 ]; then
 	echo "Waiting for mysql"
