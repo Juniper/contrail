@@ -311,6 +311,10 @@ schema:
       view:
       - create
       - detail
+    mc_gw_info:
+      presence: "optional"
+      description: "Multi Cloud Gateway Details"
+      $ref: "cloud_types.json#/definitions/MCGWClusterInfo"
   required: []
   type: object
 singular: contrail_cluster
