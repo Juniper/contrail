@@ -4,7 +4,7 @@ set -e
 
 SOURCEDIR=$( cd "$(dirname "$0")/../../../../.." ; pwd -P )
 
-RunDockers="postgres mysql etcd"
+RunDockers="mysql etcd"
 Network='contrail'
 
 Usage()
@@ -24,18 +24,8 @@ done
 PASSWORD=contrail123
 SpecialNetworks='bridge none host'
 [[ "$SpecialNetworks" = *"$Network"* ]] || docker network create contrail || true
-docker rm -f contrail_postgres contrail_mysql contrail_etcd || true
-
-run_docker_postgres()
-{
-	docker run -d --name contrail_postgres \
-		--net "$Network" \
-		-v "$SOURCEDIR:/go" \
-		-p 5432:5432 \
-		-e "POSTGRES_USER=root" \
-		-e "POSTGRES_PASSWORD=$PASSWORD" \
-		circleci/postgres:10.3-alpine -c 'wal_level=logical'
-}
+docker-compose -f ./tools/patroni/docker-compose.yml -p "contrail" down || true
+docker rm -f contrail_mysql contrail_etcd || true
 
 run_docker_mysql()
 {
@@ -60,10 +50,23 @@ run_docker_etcd()
 [ ! -z "$1" ] && RunDockers="$*"
 
 WaitMysql=0
-for docker in $RunDockers; do 
+for docker in $RunDockers; do
 	eval "run_docker_$docker"
 	[ "$docker" = mysql ] && WaitMysql=1
 done
+
+
+#PT="src/github.com/Juniper/contrail"
+#echo "Files inside $PWD" && ls -al
+#echo "Files inside /go/$PT/tools/patroni" && ls -al /go/$PT/tools/patroni
+#echo "Files inside $PWD/tools" && ls -al $PWD/tools
+#echo "Files inside /" && ls -al /
+
+docker-compose -f ./tools/patroni/docker-compose.yml -p "contrail" up --scale dbnode=2 -d || { echo "Files inside tools/patroni" ; ls -al ./tools/patroni ;
+                                                                                               exit 1 ; }
+
+docker-compose -f ./tools/patroni/docker-compose.yml -p "contrail" exec dbnode bash -c "ls -al /" || echo "Cannot execute ls /"
+docker-compose -f ./tools/patroni/docker-compose.yml -p "contrail" exec dbnode bash -c "ls -al /psq" || echo "Cannot execute ls /psq"
 
 if [ $WaitMysql -eq 1 ]; then
 	echo "Waiting for mysql"
