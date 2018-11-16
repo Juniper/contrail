@@ -529,10 +529,11 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 	}
 	definitions := api.definitionByFileName(schemaFile)
 	if definitions == nil {
+		log.Info("definitions read from following files:")
 		for _, d := range api.Definitions {
 			log.Info(d.FileName)
 		}
-		return nil, fmt.Errorf("can't find file for %s", schemaFile)
+		return nil, fmt.Errorf("can't find file for '%s' (with type %s)", schemaFile, typeName)
 	}
 	definition, ok := definitions.Definitions[typeName]
 	if !ok {
@@ -565,7 +566,7 @@ func (api *API) resolveRef(schema *JSONSchema) error {
 	}
 	definition, err := api.loadType(parseRef(schema.Ref))
 	if err != nil {
-		return errors.Wrapf(err, "required by %v", schema.ID)
+		return errors.Wrapf(err, "resolve ref required by %v (ref: %v)", schema.ID, schema.Ref)
 	}
 	schema.Update(definition)
 	return nil
@@ -885,7 +886,8 @@ func walkSchemaFile(overridePath string, overrides *Schema, api *API, path strin
 	if schema == nil {
 		return nil
 	}
-	schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
+	r := strings.NewReplacer(".yml", ".json", ".yaml", ".json")
+	schema.FileName = r.Replace(filepath.Base(path))
 	return processSchema(schema, overrides, api)
 }
 
