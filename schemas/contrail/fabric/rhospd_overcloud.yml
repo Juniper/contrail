@@ -19,10 +19,14 @@ plural: rhospd_overclouds
 prefix: /
 schema:
   properties:
-    overcloud:
-      presence: "optional"
-      description: "Details of the RHOSPD overcloud VM"
-      $ref: "rhospd_types.json#/definitions/OverCloudInfo"
+    image:
+      presence: required
+      description: "Image details of the overcloud servers"
+      $ref: "rhospd_types.json#/definitions/ImageInfo"
+    tls:
+      presence: required
+      description: "Information used to generate the SSL certificates"
+      $ref: "rhospd_types.json#/definitions/OverCloudTLSInfo"
   propertiesOrder: []
   required: []
   type: object
