@@ -1,0 +1,303 @@
+name: RHOSPD undercloud test
+description: RHOSPD undercloud CRUD test
+cleanup:
+- path: /rhospd-jumphost-node/rhospd_jumphost_nodes_uuid
+- path: /rhospd-undercloud-node/rhospd_undercloud_nodes_uuid
+- path: /rhospd-overcloud/rhospd_overcloud_uuid
+- path: /rhospd-overcloud-network/test_rhospd_overcloud_network_external_uuid
+- path: /node/all_in_one_node_uuid
+- path: /rhospd-cloud-manager/test_rhospd_cloud_manager_uuid
+- path: /virtual-network/virtual_network_external_uuid
+- path: /network-ipam/ipam_external_uuid
+- path: /project/admin_project_uuid
+- path: /tag/external_tag_uuid
+
+test_data:
+  external_tag: &external_tag
+    uuid: external_tag_uuid
+    name: external_tag
+    tag_type_name: label
+    tag_value: external
+  admin_project: &admin_project
+    uuid: admin_project_uuid
+    name: admin_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  ipam_external: &ipam_external
+    uuid: ipam_external_uuid
+    display_name: ipam_external
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    fq_name: ["domain","admin","ipam_external"]
+
+  virtual_network_external: &virtual_network_external
+    fq_name: ["default", "admin", "virtual_network_external"]
+    uuid: virtual_network_external_uuid
+    display_name: "virtual_network_external"
+    parent_type: "project"
+    parent_uuid: admin_project_uuid
+    network_ipam_refs:
+      - uuid: "ipam_external_uuid"
+        to: ["domain","admin","ipam_external"]
+        attr:
+          ipam_subnets:
+            - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+              subnet:
+                ip_prefix: 10.87.78.0
+                ip_prefix_len: 25
+              default_gateway: 10.87.78.126
+              allocation_pools:
+              - start: 10.87.78.51
+                end: 10.87.78.70
+    tag_refs:
+      - uuid: external_tag_uuid
+  all_in_one_node: &all_in_one_node
+    uuid: all_in_one_node_uuid
+    hostname: all_in_one_node
+    interface_name: all_in_one_node_interface
+    ip_address: localhost
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  rhospd_overcloud_network_external: &rhospd_overcloud_network_external
+    uuid: test_rhospd_overcloud_network_external_uuid
+    parent_type: rhospd-overcloud
+    parent_uuid: rhospd_overcloud_uuid
+    mtu: "1500"
+    vip: 10.1.1.1
+    virtual_network_refs:
+      - uuid: virtual_network_external_uuid
+    tag_refs:
+      - uuid: external_tag_uuid
+  rhospd_cloud_manager: &rhospd_cloud_manager
+    uuid: test_rhospd_cloud_manager_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    global:
+      dns:
+      - 1.1.1.1
+      - 1.1.1.2
+      ntp:
+      - 1.1.1.1
+      - 1.1.1.2
+      timezone: "America/Los_Angeles"
+      domain: "englab.juniper.net"
+      rhel:
+        satellite:
+          key: "test_key"
+          organization: "test_org"
+          fqdn: "test.rhospd.net"
+    control_hosts:
+      storage:
+        dir_storage:
+          type: dir
+        spinning_storage:
+          type: logical
+          disk:
+          - "/dev/sdb"
+          - "/dev/sdc"
+          - "/dev/sdd"
+          - "/dev/sde"
+        ssd_storage:
+          type: logical
+          disk:
+          - "/dev/sdf"
+      image:
+        user: testimageuser
+        password: testimage123
+      vnc:
+        password: testvnc123
+  rhospd_jumphost_nodes: &rhospd_jumphost_nodes
+    uuid: rhospd_jumphost_nodes_uuid
+    parent_type: rhospd-cloud-manager
+    parent_uuid: test_rhospd_cloud_manager_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+    password: testencrypted123
+    network:
+      provision:
+        nic: eth0
+  rhospd_undercloud_nodes: &rhospd_undercloud_nodes
+    uuid: rhospd_undercloud_nodes_uuid
+    parent_type: rhospd-cloud-manager
+    parent_uuid: test_rhospd_cloud_manager_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+    vm:
+      password: testvm123
+      root_password: testvmroot123
+      memory: 48
+      cpu: 16
+      vnc:
+        password: testvmvnc123
+  rhospd_overcloud: &rhospd_overcloud
+    uuid: rhospd_overcloud_uuid
+    parent_type: rhospd-cloud-manager
+    parent_uuid: test_rhospd_cloud_manager_uuid
+    tls:
+      country: testcountry
+      state: teststate
+      city: testcity
+      organization: testorg
+      common_name: testcommonname
+    image:
+      user: testimageuser
+      password: testimage123
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create external tag
+  request:
+    path: /tags
+    method: POST
+    expected:
+    - 200
+    data:
+      tag: *external_tag
+  expect:
+    tag:
+      perms2:
+        owner: admin
+      uuid: external_tag_uuid
+- name: create admin project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project
+  expect:
+    project:
+      perms2:
+        owner: admin
+      uuid: admin_project_uuid
+- name: create rhospd cloud manager
+  request:
+    path: /rhospd-cloud-managers
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-cloud-manager: *rhospd_cloud_manager
+  expect:
+    rhospd-cloud-manager:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: test_rhospd_cloud_manager_uuid
+- name: create external network ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 200
+    data:
+      network-ipam: *ipam_external
+  expect:
+    network-ipam:
+      perms2:
+        owner: admin
+      uuid: ipam_external_uuid
+      parent_type: "project"
+      parent_uuid: admin_project_uuid
+- name: create external virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *virtual_network_external
+  expect:
+    virtual-network:
+      perms2:
+        owner: admin
+      uuid: virtual_network_external_uuid
+      parent_type: "project"
+      parent_uuid: admin_project_uuid
+- name: create node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *all_in_one_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: all_in_one_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: all_in_one_node
+      interface_name: all_in_one_node_interface
+      ip_address: localhost
+
+- name: create rhospd jumphost node
+  request:
+    path: /rhospd-jumphost-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-jumphost-node: *rhospd_jumphost_nodes
+  expect:
+    rhospd-jumphost-node:
+      uuid: rhospd_jumphost_nodes_uuid
+      parent_type: rhospd-cloud-manager
+      parent_uuid: test_rhospd_cloud_manager_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+- name: create rhospd undercloud node
+  request:
+    path: /rhospd-undercloud-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-undercloud-node: *rhospd_undercloud_nodes
+  expect:
+    rhospd-undercloud-node:
+      uuid: rhospd_undercloud_nodes_uuid
+      parent_type: rhospd-cloud-manager
+      parent_uuid: test_rhospd_cloud_manager_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+- name: create rhospd overcloud
+  request:
+    path: /rhospd-overclouds
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-overcloud: *rhospd_overcloud
+  expect:
+    rhospd-overcloud:
+      uuid: rhospd_overcloud_uuid
+      parent_type: rhospd-cloud-manager
+      parent_uuid: test_rhospd_cloud_manager_uuid
+- name: create overcloud external network
+  request:
+    path: /rhospd-overcloud-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-overcloud-network: *rhospd_overcloud_network_external
+  expect:
+    rhospd-overcloud-network:
+      perms2:
+        owner: admin
+      uuid: test_rhospd_overcloud_network_external_uuid
+      parent_type: rhospd-overcloud
+      parent_uuid: rhospd_overcloud_uuid

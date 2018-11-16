@@ -133,6 +133,7 @@ func initViperConfig() error {
 	viper.SetConfigName("test_config")
 	viper.SetConfigType("yml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("../../../../sample")
 	viper.AddConfigPath("../../../sample")
 	viper.AddConfigPath("../../sample")
 	viper.AddConfigPath("../sample")

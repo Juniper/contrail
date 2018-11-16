@@ -53,7 +53,7 @@ const (
 	defaultMCSetupContrailRoutes = "ansible/contrail/playbooks/add_tunnel_routes.yml"
 	defaultMCContrailCleanup     = "ansible/contrail/playbooks/cleanup.yml"
 	defaultMCGatewayCleanup      = "ansible/gateway/playbooks/cleanup.yml"
-	testTemplate                 = "./../cloud/test_data/test_cmd.tmpl"
+	testTemplate                 = "./../../cloud/test_data/test_cmd.tmpl"
 
 	openstack = "openstack"
 
@@ -68,11 +68,11 @@ const (
 )
 
 type multiCloudProvisioner struct {
-	ansibleProvisioner
+	contrailAnsibleDeployer
 	workDir string
 }
 
-func (m *multiCloudProvisioner) provision() error {
+func (m *multiCloudProvisioner) Deploy() error {
 
 	m.updateMCWorkDir()
 	switch m.clusterData.clusterInfo.ProvisioningAction {
@@ -106,7 +106,7 @@ func (m *multiCloudProvisioner) provision() error {
 // nolint: gocyclo
 func (m *multiCloudProvisioner) createMCCluster() error {
 
-	m.log.Infof("Starting %s of contrail cluster: %s",
+	m.Log.Infof("Starting %s of contrail cluster: %s",
 		m.clusterData.clusterInfo.ProvisioningAction,
 		m.clusterData.clusterInfo.FQName)
 
@@ -114,7 +114,7 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 	if m.action == createAction {
 		status = map[string]interface{}{statusField: statusCreateProgress}
 	}
-	m.reporter.ReportStatus(context.Background(), status, defaultResource)
+	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 
 	status[statusField] = statusUpdateFailed
 	if m.action == createAction {
@@ -125,21 +125,21 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		if m.cluster.config.AnsibleFetchURL != "" {
 			err := m.fetchAnsibleDeployer()
 			if err != nil {
-				m.reporter.ReportStatus(context.Background(), status, defaultResource)
+				m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
 		if m.cluster.config.AnsibleCherryPickRevision != "" {
 			err := m.cherryPickAnsibleDeployer()
 			if err != nil {
-				m.reporter.ReportStatus(context.Background(), status, defaultResource)
+				m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
 		if m.cluster.config.AnsibleRevision != "" {
 			err := m.resetAnsibleDeployer()
 			if err != nil {
-				m.reporter.ReportStatus(context.Background(), status, defaultResource)
+				m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
@@ -147,47 +147,47 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 
 	err := m.createFiles(m.workDir)
 	if err != nil {
-		m.reporter.ReportStatus(context.Background(), status, defaultResource)
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
 	err = m.runGenerateInventory(m.workDir)
 	if err != nil {
-		m.reporter.ReportStatus(context.Background(), status, defaultResource)
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
 	err = m.mcPlayBook()
 	if err != nil {
-		m.reporter.ReportStatus(context.Background(), status, defaultResource)
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 	return nil
 }
 
 func (m *multiCloudProvisioner) updateMCCluster() error {
-	m.log.Infof("Starting %s of contrail cluster: %s", m.action, m.clusterData.clusterInfo.FQName)
+	m.Log.Infof("Starting %s of contrail cluster: %s", m.action, m.clusterData.clusterInfo.FQName)
 
 	status := map[string]interface{}{}
 	status[statusField] = statusUpdateProgress
-	m.reporter.ReportStatus(context.Background(), status, defaultResource)
+	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	status[statusField] = statusUpdateFailed
 
 	err := m.createFiles(m.workDir)
 	if err != nil {
-		m.reporter.ReportStatus(context.Background(), status, defaultResource)
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
 	err = m.runGenerateInventory(m.workDir)
 	if err != nil {
-		m.reporter.ReportStatus(context.Background(), status, defaultResource)
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
 	err = m.mcPlayBook()
 	if err != nil {
-		m.reporter.ReportStatus(context.Background(), status, defaultResource)
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 	return nil
@@ -209,11 +209,11 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 		ok, err := m.compareMCInventoryFile()
 		if err != nil {
 			status[statusField] = statusUpdateFailed
-			m.reporter.ReportStatus(context.Background(), status, defaultResource)
+			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 			return true, err
 		}
 		if ok {
-			m.log.Infof("%s inventory file is already up-to-date", defaultResource)
+			m.Log.Infof("%s inventory file is already up-to-date", defaultResource)
 			return true, nil
 		}
 	}
@@ -229,7 +229,7 @@ func (m *multiCloudProvisioner) compareMCInventoryFile() (bool, error) {
 
 	// nolint: errcheck
 	defer os.RemoveAll(tmpDir)
-	m.log.Debugf("Creating temperory inventory at dir %s", tmpDir)
+	m.Log.Debugf("Creating temperory inventory at dir %s", tmpDir)
 
 	err = m.createFiles(tmpDir)
 	if err != nil {
@@ -260,15 +260,15 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string) error {
 		m.getClusterTopoFile(workDir), m.getClusterSecretFile(workDir), m.getTFStateFile(),
 		mcState, mcState), " ")
 
-	m.log.Info("Generating inventory file multi-cloud provisioner")
-	m.log.Debugf("Command executed: %s %s", cmd,
+	m.Log.Info("Generating inventory file multi-cloud provisioner")
+	m.Log.Debugf("Command executed: %s %s", cmd,
 		strings.Join(args, " "))
 
 	if m.cluster.config.Test {
 		return cloud.TestCmdHelper(cmd, args, workDir, testTemplate)
 	}
 
-	err := osutil.ExecCmdAndWait(m.reporter, cmd, args, workDir)
+	err := osutil.ExecCmdAndWait(m.Reporter, cmd, args, workDir)
 	if err != nil {
 		return err
 	}
@@ -280,7 +280,7 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string) error {
 		}
 	}
 
-	m.log.Infof("Successfully generated inventory file")
+	m.Log.Infof("Successfully generated inventory file")
 
 	return nil
 }
@@ -504,7 +504,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile(workDir string) error {
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
-	m.log.Info("Creating contrail/common.yml input file for multi-cloud deployer")
+	m.Log.Info("Creating contrail/common.yml input file for multi-cloud deployer")
 	SSHUser, SSHPassword, SSHKey, err := m.cluster.getDefaultCredential()
 	if err != nil {
 		return err
@@ -534,12 +534,12 @@ func (m *multiCloudProvisioner) createContrailCommonFile(destination string) err
 	if err != nil {
 		return err
 	}
-	m.log.Info("Created contrail/common.yml input file for multi-cloud deployer")
+	m.Log.Info("Created contrail/common.yml input file for multi-cloud deployer")
 	return nil
 }
 
 func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) error {
-	m.log.Info("Creating gateway/common.yml input file for multi-cloud deployer")
+	m.Log.Info("Creating gateway/common.yml input file for multi-cloud deployer")
 	context := pongo2.Context{
 		"cluster":       m.clusterData.clusterInfo,
 		"pathConfig":    pathConfig,
@@ -556,12 +556,12 @@ func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) erro
 	if err != nil {
 		return err
 	}
-	m.log.Info("Created gateway/common.yml input file for multi-cloud deployer")
+	m.Log.Info("Created gateway/common.yml input file for multi-cloud deployer")
 	return nil
 }
 
 func (m *multiCloudProvisioner) createTORCommonFile(destination string) error {
-	m.log.Info("Creating tor/common.yml input file for multi-cloud deployer")
+	m.Log.Info("Creating tor/common.yml input file for multi-cloud deployer")
 	context := pongo2.Context{
 		"torBGPSecret":  torBGPSecret,
 		"torOSPFSecret": torOSPFSecret,
@@ -576,12 +576,12 @@ func (m *multiCloudProvisioner) createTORCommonFile(destination string) error {
 	if err != nil {
 		return err
 	}
-	m.log.Info("Created tor/common.yml input file for multi-cloud deployer")
+	m.Log.Info("Created tor/common.yml input file for multi-cloud deployer")
 	return nil
 }
 
 func (m *multiCloudProvisioner) appendOpenStackConfigToInventory(destination string) error {
-	m.log.Info("Appending openstack config to inventory file")
+	m.Log.Info("Appending openstack config to inventory file")
 
 	context := pongo2.Context{
 		"openstackCluster": m.clusterData.getOpenstackClusterInfo(),
@@ -595,7 +595,7 @@ func (m *multiCloudProvisioner) appendOpenStackConfigToInventory(destination str
 	if err != nil {
 		return err
 	}
-	m.log.Info("Appended openstack config to inventory file")
+	m.Log.Info("Appended openstack config to inventory file")
 	return nil
 }
 

@@ -1,4 +1,5 @@
 FROM centos:7.4.1708
+ARG GOPATH
 MAINTAINER Kamil Renczewski <kamil.renczewski@codilime.com>
 
 RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  &&\
@@ -13,7 +14,7 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
         unzip
 
 
-COPY ./contrail /go/src/github.com/Juniper/contrail
+COPY ./src/ $GOPATH/src/github.com/Juniper/
 COPY ./contrail /bin/contrail
 COPY ./contrailcli /bin/contrailcli
 COPY ./contrailutil /bin/contrailutil

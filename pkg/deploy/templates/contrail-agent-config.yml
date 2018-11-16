@@ -1,0 +1,46 @@
+id: alice
+password: alice_password
+project_id: admin
+#auth_url: http://localhost:9091/v3
+endpoint: https://localhost:9091
+insecure: true
+backend: file
+watcher: polling
+schema_root: /
+log_level: debug
+tasks:
+- schema_ids:
+  - contrail_cluster
+  - rhospd_cloud_manager
+  common:
+  - vars:
+      res_type: "{{ resource.schema_id }}"
+      dir: "/var/tmp/{{ resource.schema_id }}/config/{{ resource.uuid }}"
+  on_create:
+  - debug: "AGENT creating {{ dir }}"
+  - command: mkdir -p "{{ dir }}"
+  - debug: "AGENT created {{ dir }}"
+  - template:
+      src: "/etc/contrail/contrail-deploy-config.tmpl"
+      dest: "{{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT creating {{ res_type }}(contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
+  - command: "contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+    #- command: "go run cmd/contrail/main.go deploy -c {{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT {{ res_type }} create complete"
+  on_update:
+  - template:
+      src: "/etc/contrail/contrail-deploy-config.tmpl"
+      dest: "{{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT updating {{ res_type }}(contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
+  - command: "contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+    #- command: "go run cmd/contrail/main.go deploy -c {{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT {{ res_type }} update complete"
+  on_delete:
+  - template:
+      src: "/etc/contrail/contrail-deploy-config.tmpl"
+      dest: "{{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT deleting {{ res_type }}(contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
+  - command: "contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT deleting {{ dir }}"
+  - command: "rm -rf  {{ dir }}"
+  - debug: "AGENT deleted {{ dir }}"
