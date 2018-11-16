@@ -7,3 +7,23 @@ const (
 	UPDATE    = "update"
 	DELETE    = "delete"
 )
+
+// OperationCRUD CRUD opeartions type
+type OperationCRUD int
+
+// CRUD operations
+const (
+	OpCreate OperationCRUD = iota + 1
+	OpRead
+	OpUpdate
+	OpDelete
+	OpInvalid
+)
+
+// CRUD operations rune constants
+const (
+	UpperCaseC rune = 'C'
+	UpperCaseR rune = 'R'
+	UpperCaseU rune = 'U'
+	UpperCaseD rune = 'D'
+)

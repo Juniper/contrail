@@ -266,6 +266,7 @@ func (m *{{ schema.JSONSchema.GoName }}) UnmarshalJSON(b []byte) error {
 {% endif %}
 {% if schema.TypeName %}
 
+
 // Kind returns kind of an resource.
 func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
 	return Kind{{ schema.JSONSchema.GoName }}
