@@ -51,12 +51,17 @@ func LoadLogicalRouterIntent(
 	return actual
 }
 
+func loadLogicalRouterIntent(loader intent.Loader, query intent.Query) *LogicalRouterIntent {
+	intent := loader.Load(models.KindLogicalRouter, query)
+	lrIntent, _ := intent.(*LogicalRouterIntent) //nolint: errcheck
+	return lrIntent
+}
+
 // CreateLogicalRouter evaluates logical router dependencies.
 func (s *Service) CreateLogicalRouter(
 	ctx context.Context,
 	request *services.CreateLogicalRouterRequest,
 ) (*services.CreateLogicalRouterResponse, error) {
-
 	i := NewLogicalRouterIntent(ctx, s.ReadService, request)
 
 	ec := s.evaluateContext()
@@ -76,6 +81,30 @@ func (s *Service) CreateLogicalRouter(
 	}
 
 	return s.BaseService.CreateLogicalRouter(ctx, request)
+}
+
+// UpdateLogicalRouter evaluates logical router dependencies.
+func (s *Service) UpdateLogicalRouter(
+	ctx context.Context,
+	request *services.UpdateLogicalRouterRequest,
+) (*services.UpdateLogicalRouterResponse, error) {
+	lr := request.GetLogicalRouter()
+	if lr == nil {
+		return nil, errors.New("failed to update Logical Router." +
+			" Logical Router Request needs to contain resource!")
+	}
+
+	i := loadLogicalRouterIntent(s.cache, intent.ByUUID(lr.GetUUID()))
+	if i == nil {
+		return nil, errors.Errorf("cannot load intent for logical router %v", lr.GetUUID())
+	}
+
+	i.LogicalRouter = lr
+	if err := s.storeAndEvaluate(ctx, i); err != nil {
+		return nil, err
+	}
+
+	return s.BaseService.UpdateLogicalRouter(ctx, request)
 }
 
 func (i *LogicalRouterIntent) checkVnDiff(
