@@ -43,7 +43,7 @@ type openstackVariables struct {
 }
 
 type ansibleProvisioner struct {
-	provisionCommon
+	provisionCluster
 }
 
 // nolint: gocyclo
@@ -55,7 +55,7 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 	defer func() {
 		er := f.Close()
 		if er != nil {
-			a.log.Errorf("Error while untar file: %s", er)
+			a.Log.Errorf("Error while untar file: %s", er)
 		}
 	}()
 
@@ -66,7 +66,7 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 	defer func() {
 		er := gzr.Close()
 		if er != nil {
-			a.log.Errorf("Error while untar file: %s", er)
+			a.Log.Errorf("Error while untar file: %s", er)
 		}
 	}()
 
@@ -124,7 +124,7 @@ func (a *ansibleProvisioner) untar(src, dst string) error {
 			// to wait until all operations have completed.
 			er := f.Close()
 			if er != nil {
-				a.log.Errorf("Error while untar file: %s", er)
+				a.Log.Errorf("Error while untar file: %s", er)
 			}
 		}
 	}
@@ -165,7 +165,7 @@ func (a *ansibleProvisioner) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoD
 func (a *ansibleProvisioner) fetchAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 
-	a.log.Infof("Fetching :%s", a.cluster.config.AnsibleFetchURL)
+	a.Log.Infof("Fetching :%s", a.cluster.config.AnsibleFetchURL)
 	args, err := shellwords.Parse(a.cluster.config.AnsibleFetchURL)
 	if err != nil {
 		return err
@@ -175,33 +175,33 @@ func (a *ansibleProvisioner) fetchAnsibleDeployer() error {
 	if err != nil {
 		return err
 	}
-	a.log.Info("git fetch completed")
+	a.Log.Info("git fetch completed")
 
 	return nil
 }
 
 func (a *ansibleProvisioner) cherryPickAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
-	a.log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
+	a.Log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
 	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
 	err := osutil.ExecCmdAndWait(a.reporter, "git", args, repoDir)
 	if err != nil {
 		return err
 	}
-	a.log.Info("Cherry-pick completed")
+	a.Log.Info("Cherry-pick completed")
 
 	return nil
 }
 
 func (a *ansibleProvisioner) resetAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
-	a.log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
+	a.Log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
 	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
 	err := osutil.ExecCmdAndWait(a.reporter, "git", args, repoDir)
 	if err != nil {
 		return err
 	}
-	a.log.Info("Git reset completed")
+	a.Log.Info("Git reset completed")
 
 	return nil
 }
@@ -214,11 +214,11 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 	tmpFileName := tmpfile.Name()
 	defer func() {
 		if err = os.Remove(tmpFileName); err != nil {
-			a.log.Errorf("Error while deleting tmpfile: %s", err)
+			a.Log.Errorf("Error while deleting tmpfile: %s", err)
 		}
 	}()
 
-	a.log.Debugf("Creating temperory inventory %s", tmpFileName)
+	a.Log.Debugf("Creating temperory inventory %s", tmpFileName)
 	err = a.createInstancesFile(tmpFileName)
 	if err != nil {
 		return false, err
@@ -301,7 +301,7 @@ func (a *ansibleProvisioner) getOpenstackDerivedVars() *openstackVariables {
 }
 
 func (a *ansibleProvisioner) createInstancesFile(destination string) error {
-	a.log.Info("Creating instance.yml input file for ansible deployer")
+	a.Log.Info("Creating instance.yml input file for ansible deployer")
 	SSHUser, SSHPassword, SSHKey, err := a.cluster.getDefaultCredential()
 	if err != nil {
 		return err
@@ -329,12 +329,12 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 	if err != nil {
 		return err
 	}
-	a.log.Info("Created instance.yml input file for ansible deployer")
+	a.Log.Info("Created instance.yml input file for ansible deployer")
 	return nil
 }
 
 func (a *ansibleProvisioner) createDatapathEncryptionInventory(destination string) error {
-	a.log.Info("Creating inventory.yml input file for datapath encryption ansible deployer")
+	a.Log.Info("Creating inventory.yml input file for datapath encryption ansible deployer")
 	context := pongo2.Context{
 		"cluster": a.clusterData.clusterInfo,
 		"nodes":   a.clusterData.getAllNodesInfo(),
@@ -347,7 +347,7 @@ func (a *ansibleProvisioner) createDatapathEncryptionInventory(destination strin
 	if err != nil {
 		return err
 	}
-	a.log.Info("Created inventory.yml input file for datapath encryption ansible deployer")
+	a.Log.Info("Created inventory.yml input file for datapath encryption ansible deployer")
 	return nil
 }
 
@@ -377,14 +377,14 @@ func (a *ansibleProvisioner) playFromDir(
 		return a.mockPlay(ansibleArgs)
 	}
 	cmdline := "ansible-playbook"
-	a.log.Infof("Playing playbook: %s %s",
+	a.Log.Infof("Playing playbook: %s %s",
 		cmdline, strings.Join(ansibleArgs, " "))
 
 	err := osutil.ExecCmdAndWait(a.reporter, cmdline, ansibleArgs, repoDir)
 	if err != nil {
 		return err
 	}
-	a.log.Infof("Finished playing playbook: %s %s",
+	a.Log.Infof("Finished playing playbook: %s %s",
 		cmdline, strings.Join(ansibleArgs, " "))
 
 	return nil
@@ -466,7 +466,7 @@ func (a *ansibleProvisioner) playAppformixProvision() error {
 			srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
 			er := a.untar(srcPath+srcFile, repoDir)
 			if er != nil {
-				a.log.Errorf("Error while untar file: %s", er)
+				a.Log.Errorf("Error while untar file: %s", er)
 			}
 		}
 		return a.playFromDir(repoDir, ansibleArgs)
@@ -577,7 +577,7 @@ func (a *ansibleProvisioner) playBook() error {
 
 // nolint: gocyclo
 func (a *ansibleProvisioner) createCluster() error {
-	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	status := map[string]interface{}{statusField: statusCreateProgress}
 	a.reporter.ReportStatus(context.Background(), status, defaultResource)
 
@@ -641,7 +641,7 @@ func (a *ansibleProvisioner) isUpdated() (updated bool, err error) {
 			return false, err
 		}
 		if ok {
-			a.log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.clusterInfo.FQName)
+			a.Log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.clusterInfo.FQName)
 			return true, nil
 		}
 	}
@@ -649,7 +649,7 @@ func (a *ansibleProvisioner) isUpdated() (updated bool, err error) {
 }
 
 func (a *ansibleProvisioner) updateCluster() error {
-	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	status := map[string]interface{}{}
 	status[statusField] = statusUpdateProgress
 	a.reporter.ReportStatus(context.Background(), status, defaultResource)
@@ -672,11 +672,12 @@ func (a *ansibleProvisioner) updateCluster() error {
 }
 
 func (a *ansibleProvisioner) deleteCluster() error {
-	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.cluster.config.ClusterID)
+	a.Log.Infof("Starting %s of contrail cluster: %s",
+		a.action, a.cluster.config.ResourceID)
 	return a.deleteWorkingDir()
 }
 
-func (a *ansibleProvisioner) provision() error {
+func (a *ansibleProvisioner) Provision() error {
 	switch a.action {
 	case createAction:
 		if a.isCreated() {
