@@ -1,0 +1,91 @@
+global:
+  dns:
+    {% for dns in cloudManager.Global.DNS %}
+    - {{dns}}
+    {%endfor%}
+  ntp:
+    {% for ntp in cloudManager.Global.NTP %}
+    - {{ntp}}
+    {%endfor%}
+  timezone: {{cloudManager.Global.Timezone}}
+  domain: {{cloudManager.Global.Domain}}
+  rhel:
+    satellite:
+      key: {{cloudManager.Global.Rhel.Satellite.Key}}
+      organization: {{cloudManager.Global.Rhel.Satellite.Organization}}
+      fqdn: {{cloudManager.Global.Rhel.Satellite.FQDN}}
+jumphost:
+  password: {{jumphost.Password}}
+  network:
+    provision:
+      nic: {{jumphost.Network.Provision.Nic}}
+undercloud:
+  vm:
+    password: {{undercloud.VM.Password}}
+    root_password: {{undercloud.VM.RootPassword}}
+    memory: {{undercloud.VM.Memory}}
+    cpu: {{undercloud.VM.CPU}}
+    vnc:
+      password: {{undercloud.VM.VNC.Password}}
+control_hosts:
+  vnc:
+    password: {{cloudManager.ControlHosts.VNC.Password}}
+  image:
+    user: {{cloudManager.ControlHosts.Image.User}}
+    password: {{cloudManager.ControlHosts.Image.Password}}
+  storage:
+    {%if cloudManager.ControlHosts.Storage.SpinningStorage %}
+    spinning_storage:
+      type: {{cloudManager.ControlHosts.Storage.SpinningStorage.Type}}
+      disk:
+        {% for disk in cloudManager.ControlHosts.Storage.SpinningStorage.Disk %}
+        - {{disk}}
+        {%endfor%}
+    {%endif%}
+    {% if cloudManager.ControlHosts.Storage.SSDStorage %}
+    ssd_storage:
+      type: {{cloudManager.ControlHosts.Storage.SSDStorage.Type}}
+      disk:
+        {% for disk in cloudManager.ControlHosts.Storage.SSDStorage.Disk %}
+        - {{disk}}
+        {%endfor%}
+    {%endif%}
+    {% if cloudManager.ControlHosts.Storage.DirStorage %}
+    dir_storage:
+      type: {{cloudManager.ControlHosts.Storage.DirStorage.Type}}
+    {%endif%}
+overcloud:
+  tls:
+    country: {{overcloud.TLS.Country}}
+    state: {{overcloud.TLS.State}}
+    city: {{overcloud.TLS.City}}
+    organization: {{overcloud.TLS.Organization}}
+    common_name: {{overcloud.TLS.CommonName}}
+  image:
+    user: {{overcloud.Image.User}}
+    password: {{overcloud.Image.Password}}
+  network:
+    {% for network in networks %}
+    {% for tag in network.tags %}
+    {{ tag.TagValue }}:
+      {% for virtual_network in network.virtualNetworks %}
+      {% for ipam_ref in virtual_network.NetworkIpamRefs %}
+      {% for ipam_subnet in ipam_ref.Attr.IpamSubnets %}
+      cidr: {{ ipam_subnet.Subnet.IPPrefix }}/{{ ipam_subnet.Subnet.IPPrefixLen }}
+      default_route: {{ ipam_subnet.DefaultGateway }}
+      {% for allocation_pool in ipam_subnet.AllocationPools %}
+      pool:
+        start: {{ allocation_pool.Start }}
+        end: {{ allocation_pool.End }}
+      {%endfor%}
+      {%endfor%}
+      {%endfor%}
+      {%endfor%}
+      {% if network.overcloudNetwork.Mtu %}
+      mtu: {{ network.overcloudNetwork.Mtu }}
+      {%endif%}
+      {% if network.overcloudNetwork.Vip %}
+      vip: {{ network.overcloudNetwork.Vip }}
+      {%endif%}
+    {%endfor%}
+    {%endfor%}

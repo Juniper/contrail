@@ -1,0 +1,220 @@
+package undercloud
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"testing"
+
+	"github.com/flosch/pongo2"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/testutil/integration"
+)
+
+const (
+	cloudManagerTemplatePath = "./test_data/test_undercloud.tmpl"
+	createPlaybooks          = "./test_data/expected_ansible_create_command.yml"
+	updatePlaybooks          = "./test_data/expected_ansible_update_command.yml"
+	cloudManagerID           = "test_rhospd_cloud_manager_uuid"
+)
+
+var server *integration.APIServer
+
+func TestMain(m *testing.M) {
+	integration.TestMain(m, &server)
+}
+
+func verifyUnderCloudDeleted() bool {
+	// Make sure working dir is deleted
+	if _, err := os.Stat(defaultWorkRoot + "/" + cloudManagerID); err == nil {
+		// working dir not deleted
+		return false
+	}
+	return true
+}
+
+func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
+	generatedData, err := ioutil.ReadFile(generatedFile)
+	assert.NoErrorf(t, err, "Unable to read generated: %s", generatedFile)
+	expectedData, err := ioutil.ReadFile(expectedFile)
+	assert.NoErrorf(t, err, "Unable to read expected: %s", expectedFile)
+	return bytes.Equal(generatedData, expectedData)
+
+}
+
+func compareGeneratedSite(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedSitePath())
+}
+
+func verifyPlaybooks(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, executedPlaybooksPath())
+}
+
+func generatedSitePath() string {
+	return defaultWorkRoot + "/" + cloudManagerID + "/site.yml"
+}
+
+func executedPlaybooksPath() string {
+	return defaultWorkRoot + "/" + cloudManagerID + "/executed_command.yml"
+}
+
+// nolint: gocyclo
+func runUnderCloudActionTest(t *testing.T, testScenario integration.TestScenario,
+	config *Config, action, expectedSite, expectedPlaybooks string) {
+	// set action field in the rhospd-cloud-manager resource
+	var err error
+	var data interface{}
+	cloudManager := map[string]interface{}{"uuid": cloudManagerID,
+		"provisioning_action": action,
+	}
+	config.Action = updateAction
+	switch action {
+	case importProvisioningAction:
+		config.Action = createAction
+		cloudManager["provisioning_action"] = ""
+	}
+	data = map[string]interface{}{"rhospd-cloud-manager": cloudManager}
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		url := fmt.Sprintf("/rhospd-cloud-manager/%s", cloudManagerID)
+		_, err = client.Update(context.Background(), url, &data, &response)
+		assert.NoErrorf(t, err, "failed to set %s action in rhospd cloudManager", action)
+		break
+	}
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	underCloudManager, err := NewUnderCloud(config)
+	assert.NoErrorf(t, err, "failed to create cloudManager manager to %s cloudManager", config.Action)
+	deployer, err := underCloudManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoErrorf(t, err, "failed to manage(%s) cloudManager", action)
+	if expectedSite != "" {
+		assert.True(t, compareGeneratedSite(t, expectedSite),
+			fmt.Sprintf("Site file created during action %s is not as expected", action))
+	}
+	if expectedPlaybooks != "" {
+		assert.True(t, verifyPlaybooks(t, expectedPlaybooks),
+			fmt.Sprintf("Expected list of %s playbooks are not executed", action))
+	}
+}
+
+// nolint: gocyclo
+func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]interface{}) {
+	// mock keystone to let access server after cloudManager create
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	defer ksPublic.Close()
+	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	defer ksPrivate.Close()
+
+	// Create the cloudManager and related objects
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, cloudManagerTemplatePath, pContext)
+	assert.NoError(t, err, "failed to load cloudManager test data")
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup()
+	// create cloudManager config
+	s := &client.HTTP{
+		Endpoint: server.URL(),
+		InSecure: true,
+		AuthURL:  server.URL() + "/keystone/v3",
+		ID:       "alice",
+		Password: "alice_password",
+		Scope: client.GetKeystoneScope(
+			"default", "default", "admin", "admin"),
+	}
+	s.Init()
+	err = s.Login(context.Background())
+	assert.NoError(t, err, "failed to login")
+	config := &Config{
+		APIServer:    s,
+		ResourceID:   cloudManagerID,
+		Action:       createAction,
+		LogLevel:     "debug",
+		TemplateRoot: "templates/",
+		Test:         true,
+		LogFile:      defaultWorkRoot + "/deploy.log",
+	}
+	// create cloudManager
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup old executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	underCloudManager, err := NewUnderCloud(config)
+	assert.NoError(t, err, "failed to create cloudManager manager to create cloudManager")
+	deployer, err := underCloudManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoError(t, err, "failed to manage(create) cloudManager")
+	assert.True(t, compareGeneratedSite(t, expectedSite),
+		"Site file created is not as expected")
+	assert.True(t, verifyPlaybooks(t, createPlaybooks),
+		"Expected list of create playbooks are not executed")
+
+	// update cloudManager
+	config.Action = updateAction
+	// remove site.yml to trriger cloudManager update
+	err = os.Remove(generatedSitePath())
+	if err != nil {
+		assert.NoError(t, err, "failed to delete site.yml")
+	}
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	underCloudManager, err = NewUnderCloud(config)
+	assert.NoError(t, err, "failed to create cloudManager manager to update cloudManager")
+	deployer, err = underCloudManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoError(t, err, "failed to manage(update) cloudManager")
+	assert.True(t, compareGeneratedSite(t, expectedSite),
+		"Site file updated is not as expected")
+	assert.True(t, verifyPlaybooks(t, updatePlaybooks),
+		"Expected list of update playbooks are not executed")
+
+	// IMPORT test (expected to create endpoints without triggering playbooks)
+	runUnderCloudActionTest(t, testScenario, config, importProvisioningAction, "", "")
+
+	// delete cloudManager
+	config.Action = deleteAction
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	underCloudManager, err = NewUnderCloud(config)
+	assert.NoError(t, err, "failed to create cloudManager manager to delete cloudManager")
+	deployer, err = underCloudManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.NoError(t, err, "failed to manage(delete) cloudManager")
+	// make sure cloudManager is removed
+	assert.True(t, verifyUnderCloudDeleted(), "Site file is not deleted")
+}
+
+func TestUnderCloud(t *testing.T) {
+	pContext := pongo2.Context{}
+	expectedSites := "./test_data/expected_site.yml"
+
+	runUnderCloudTest(t, expectedSites, pContext)
+}

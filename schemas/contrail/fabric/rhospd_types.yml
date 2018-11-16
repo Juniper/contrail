@@ -26,6 +26,11 @@
           presence: required
           description: "Red Hat Subscription Management(Satellite)"
           $ref: "rhospd_types.json#/definitions/RHELInfo"
+        domain:
+          description: "DNS domain information"
+          type: string
+          operations: CRUD
+          presence: required
     RHELInfo:
       type: "object"
       properties:
@@ -51,18 +56,6 @@
           type: string
           operations: CRUD
           presence: required
-    JumpHostInfo:
-      type: "object"
-      properties:
-        password:
-          description: "SHA512 encypted password of the jumphost.user"
-          type: string
-          operations: CRUD
-          presence: required
-        network:
-          presence: required
-          description: "Network details of Jump Host"
-          $ref: "rhospd_types.json#/definitions/JumpHostNetworkInfo"
     JumpHostNetworkInfo:
       type: "object"
       properties:
@@ -78,13 +71,6 @@
           type: string
           operations: CRUD
           presence: required
-    UnderCloudInfo:
-      type: "object"
-      properties:
-        vm:
-          presence: required
-          description: "UnderCloud VM details"
-          $ref: "rhospd_types.json#/definitions/UnderCloudVMInfo"
     UnderCloudVMInfo:
       type: "object"
       properties:
@@ -101,13 +87,13 @@
           default: ""
         memory:
           description: "Memory to use for undercloud VM"
-          type: string
+          type: integer
           operations: CRUD
           presence: optional
           default: 48
         cpu:
           description: "Number of CPU's to use for undercloud VM"
-          type: string
+          type: integer
           operations: CRUD
           presence: optional
           default: 24
@@ -127,6 +113,12 @@
     ControlHostVMDiskPartitionInfo:
       type: "object"
       properties:
+        name:
+          description: "Partiation Name"
+          type: string
+          operations: CRID
+          presence: required
+          default: ""
         size:
           description: "Control host VM Disk Partition size"
           type: string
@@ -146,56 +138,12 @@
     ControlHostVMDiskInfo:
       type: "object"
       properties:
-        vda:
-          presence: required
+        partitions:
           description: "Disk partiation details"
-          $ref: "rhospd_types.json#/definitions/ControlHostVMDiskPartitionInfo"
-        vdb:
-          presence: required
-          description: "Disk partiation details"
-          $ref: "rhospd_types.json#/definitions/ControlHostVMDiskPartitionInfo"
-    ControlHostVMHardwareInfo:
-      type: "object"
-      properties:
-        memory:
-          description: "Memory to use for control host VM"
-          type: string
-          operations: CRUD
-          presence: optional
-          default: 48
-        cpu:
-          description: "Number of CPU's to use for control host VM"
-          type: string
-          operations: CRUD
-          presence: optional
-          default: 24
-        disk:
-          presence: required
-          description: "Control Host VM Disk details"
-          $ref: "rhospd_types.json#/definitions/ControlHostVMDiskInfo"
-    ControlHostVMInfo:
-      type: "object"
-      properties:
-        control:
-          presence: required
-          description: "Openstack control VM hardware details"
-          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
-        contrail_controller:
-          presence: required
-          description: "Contrail conroller VM hardware details"
-          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
-        contrail_analytics:
-          presence: required
-          description: "Contrail analytics VM hardware details"
-          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
-        contrail_analytics_database:
-          presence: required
-          description: "Contrail analytics database VM hardware details"
-          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
-        appformix_controller:
-          presence: required
-          description: "Appformix controller VM hardware details"
-          $ref: "rhospd_types.json#/definitions/ControlHostVMHardwareInfo"
+          items:
+            $ref: "rhospd_types.json#/definitions/ControlHostVMDiskPartitionInfo"
+          presence: exclusive
+          type: array
     ControlHostsInfo:
       type: "object"
       properties:
