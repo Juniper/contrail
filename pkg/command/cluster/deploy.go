@@ -6,35 +6,34 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sirupsen/logrus"
-
+	"github.com/Juniper/contrail/pkg/command/deploy"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/log/report"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
-type provisioner interface {
-	provision() error
-}
+const (
+	defaultTemplateRoot = "./pkg/cluster/configs"
+)
 
-type provisionCommon struct {
+type deployCluster struct {
+	deploy.Deploy
 	cluster     *Cluster
 	clusterID   string
 	action      string
 	clusterData *Data
-	log         *logrus.Entry
-	reporter    *report.Reporter
 }
 
-func (p *provisionCommon) isCreated() bool {
+func (p *deployCluster) isCreated() bool {
 	state := p.clusterData.clusterInfo.ProvisioningState
 	if p.action == "create" && (state == statusNoState || state == "") {
 		return false
 	}
-	p.log.Infof("Cluster %s already provisioned, STATE: %s", p.clusterID, state)
+	p.Log.Infof("Cluster %s already deployed, STATE: %s", p.clusterID, state)
 	return true
 }
-func (p *provisionCommon) getTemplateRoot() string {
+
+func (p *deployCluster) getTemplateRoot() string {
 	templateRoot := p.cluster.config.TemplateRoot
 	if templateRoot == "" {
 		templateRoot = defaultTemplateRoot
@@ -42,57 +41,58 @@ func (p *provisionCommon) getTemplateRoot() string {
 	return templateRoot
 }
 
-func (p *provisionCommon) getClusterHomeDir() string {
+func (p *deployCluster) getClusterHomeDir() string {
 	dir := filepath.Join(defaultWorkRoot, p.clusterID)
 	return dir
 }
 
-func (p *provisionCommon) getWorkingDir() string {
+func (p *deployCluster) getWorkingDir() string {
 	dir := filepath.Join(p.getClusterHomeDir())
 	return dir
 }
 
-func (p *provisionCommon) createWorkingDir() error {
+func (p *deployCluster) createWorkingDir() error {
 	return os.MkdirAll(p.getWorkingDir(), os.ModePerm)
 }
 
-func (p *provisionCommon) deleteWorkingDir() error {
+func (p *deployCluster) deleteWorkingDir() error {
 	return os.RemoveAll(p.getClusterHomeDir())
 }
 
-func (p *provisionCommon) createEndpoints() error {
+func (p *deployCluster) createEndpoints() error {
 	e := &EndpointData{
 		clusterID:   p.clusterID,
 		cluster:     p.cluster,
 		clusterData: p.clusterData,
-		log:         p.log,
+		log:         p.Log,
 	}
 
 	return e.create()
 }
 
-func (p *provisionCommon) updateEndpoints() error {
+func (p *deployCluster) updateEndpoints() error {
 	e := &EndpointData{
 		clusterID:   p.clusterID,
 		cluster:     p.cluster,
 		clusterData: p.clusterData,
-		log:         p.log,
+		log:         p.Log,
 	}
 
 	return e.update()
 }
 
-func (p *provisionCommon) deleteEndpoints() error {
+func (p *deployCluster) deleteEndpoints() error {
 	e := &EndpointData{
 		clusterID: p.clusterID,
 		cluster:   p.cluster,
-		log:       p.log,
+		log:       p.Log,
 	}
 
 	return e.remove()
 }
 
-func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
+func newAnsibleDeployer(cluster *Cluster, cData *Data) (deploy.Deployer, error) {
+	clusterID := cluster.config.ClusterID
 	// create logger for reporter
 	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
@@ -100,17 +100,19 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	r := report.NewReporter(cluster.APIServer,
 		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
 
-	// create logger for ansible provisioner
-	logger = pkglog.NewFileLogger("ansible-provisioner", cluster.config.LogFile)
+	// create logger for ansible deployer
+	logger = pkglog.NewFileLogger("contrail-ansible-deployer", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
-	return &ansibleProvisioner{provisionCommon{
+	return &contrailAnsibleDeployer{deployCluster{
 		cluster:     cluster,
 		clusterID:   clusterID,
-		action:      action,
+		action:      cluster.config.Action,
 		clusterData: cData,
-		reporter:    r,
-		log:         logger,
+		Deploy: deploy.Deploy{
+			Reporter: r,
+			Log:      logger,
+		},
 	}}, nil
 }
 
@@ -136,7 +138,8 @@ func newMCProvisioner(cluster *Cluster, cData *Data, clusterID string, action st
 	}}, ""}, nil
 }
 
-func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
+func newHelmDeployer(cluster *Cluster, cData *Data) (deploy.Deployer, error) {
+	clusterID := cluster.config.ClusterID
 	// create logger for reporter
 	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
@@ -144,57 +147,54 @@ func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action 
 	r := report.NewReporter(cluster.APIServer,
 		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
 
-	// create logger for Helm provisioner
-	logger = pkglog.NewFileLogger("helm-provisioner", cluster.config.LogFile)
+	// create logger for Helm deployer
+	logger = pkglog.NewFileLogger("helm-deployer", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
-	return &helmProvisioner{provisionCommon{
+	return &helmDeployer{deployCluster{
 		cluster:     cluster,
 		clusterID:   clusterID,
-		action:      action,
+		action:      cluster.config.Action,
 		clusterData: cData,
-		reporter:    r,
-		log:         logger,
+		Deploy: deploy.Deploy{
+			Reporter: r,
+			Log:      logger,
+		},
 	}}, nil
 }
 
-// Creates new provisioner based on the type
-func newProvisioner(cluster *Cluster) (provisioner, error) {
-	return newProvisionerByID(cluster, cluster.config.ClusterID, cluster.config.Action)
-}
-
-func newProvisionerByID(cluster *Cluster, clusterID string, action string) (provisioner, error) {
+func newDeployerByID(cluster *Cluster) (deploy.Deployer, error) {
 	var cData *Data
 	var err error
-	if action == "delete" {
+	if cluster.config.Action == "delete" {
 		cData = &Data{}
 	} else {
-		cData, err = cluster.getClusterDetails(clusterID)
+		cData, err = cluster.getClusterDetails(cluster.config.ClusterID)
 	}
 	if err != nil {
 		return nil, err
 	}
-	provisionerType := cluster.config.ProvisionerType
-	if provisionerType == "" {
-		provisionerType = defaultProvisioner
+	deployerType := defaultDeployer
+	if cData.clusterInfo != nil && cData.clusterInfo.ProvisionerType != "" {
+		deployerType = cData.clusterInfo.ProvisionerType
 	}
 
 	// Check if cloudbackrefs are present
 	if action != deleteAction {
 		if isMCProvisioner(cData) {
-			provisionerType = mCProvisioner
+			deployerType = mCProvisioner
 		}
 	}
 
-	switch provisionerType {
+	switch deployerType {
 	case "ansible":
-		return newAnsibleProvisioner(cluster, cData, clusterID, action)
+		return newAnsibleDeployer(cluster, cData)
 	case "helm":
-		return newHelmProvisioner(cluster, cData, clusterID, action)
+		return newHelmDeployer(cluster, cData)
 	case mCProvisioner:
-		return newMCProvisioner(cluster, cData, clusterID, action)
+		return newMCProvisioner(cluster, cData, cluster.config.ClusterID, action)
 	}
-	return nil, errors.New("unsupported provisioner type")
+	return nil, errors.New("unsupported deployer type")
 }
 
 func hasCloudRefs(cData *Data) bool {

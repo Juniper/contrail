@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
@@ -273,7 +274,9 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 	}
 	clusterManager, err := NewCluster(config)
 	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", config.Action)
-	err = clusterManager.Manage()
+	deployer, err := clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoErrorf(t, err, "failed to manage(%s) cluster", action)
 	if expectedInstance != "" {
 		assert.True(t, compareGeneratedInstances(t, expectedInstance),
@@ -294,7 +297,7 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 
 // nolint: gocyclo
 func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
-	context map[string]interface{}, expectedEndpoints map[string]string) {
+	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
@@ -304,23 +307,31 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 
 	// Create the cluster and related objects
 	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, allInOneClusterTemplatePath, context)
+	err := integration.LoadTestScenario(&testScenario, allInOneClusterTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
 	// create cluster config
+	s := &client.HTTP{
+		Endpoint: server.URL(),
+		InSecure: true,
+		AuthURL:  server.URL() + "/keystone/v3",
+		ID:       "alice",
+		Password: "alice_password",
+		Scope: client.GetKeystoneScope(
+			"default", "default", "admin", "admin"),
+	}
+	s.Init()
+	err = s.Login(context.Background())
+	assert.NoError(t, err, "failed to login")
 	config := &Config{
-		ID:           "alice",
-		Password:     "alice_password",
-		ProjectID:    "admin",
-		AuthURL:      server.URL() + "/keystone/v3",
-		Endpoint:     server.URL(),
-		InSecure:     true,
+		APIServer:    s,
 		ClusterID:    clusterID,
 		Action:       createAction,
 		LogLevel:     "debug",
-		TemplateRoot: "configs/",
+		TemplateRoot: "templates/",
 		Test:         true,
+		LogFile:      defaultWorkRoot + "/command.log",
 	}
 	// create cluster
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
@@ -332,7 +343,9 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	}
 	clusterManager, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	err = clusterManager.Manage()
+	deployer, err := clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedInstance),
 		"Instance file created during cluster create is not as expected")
@@ -369,7 +382,9 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	}
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
-	err = clusterManager.Manage()
+	deployer, err = clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedInstance),
 		"Instance file created during cluster update is not as expected")
@@ -425,14 +440,16 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	}
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
-	err = clusterManager.Manage()
+	deployer, err = clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(delete) cluster")
 	// make sure cluster is removed
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
 
 func runAllInOneClusterTest(t *testing.T, computeType string) {
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"TYPE":            computeType,
 		"MGMT_INT_IP":     "127.0.0.1",
 		"CONTROL_NODES":   "",
@@ -456,7 +473,7 @@ func runAllInOneClusterTest(t *testing.T, computeType string) {
 		expectedInstances = "./test_data/expected_all_in_one_sriov_instances.yml"
 	}
 
-	runClusterTest(t, expectedInstances, "", context, expectedEndpoints)
+	runClusterTest(t, expectedInstances, "", pContext, expectedEndpoints)
 }
 
 func TestAllInOneCluster(t *testing.T) {
@@ -471,7 +488,7 @@ func TestAllInOneSriovCluster(t *testing.T) {
 }
 
 func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"DATAPATH_ENCRYPT": true,
 		"MGMT_INT_IP":      "127.0.0.1",
 		"CONTROL_NODES":    "",
@@ -488,11 +505,11 @@ func TestAllInOneClusterWithDatapathEncryption(t *testing.T) {
 		"keystone":  "http://127.0.0.1:5000",
 	}
 	runClusterTest(t, "./test_data/expected_all_in_one_instances.yml",
-		"./test_data/expected_all_in_one_inventory.yml", context, expectedEndpoints)
+		"./test_data/expected_all_in_one_inventory.yml", pContext, expectedEndpoints)
 }
 
 func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"MGMT_INT_IP":     "127.0.0.1",
 		"CONTROL_NODES":   "127.0.0.1",
 		"OPENSTACK_NODES": "127.0.0.1",
@@ -507,11 +524,11 @@ func TestClusterWithManagementNetworkAsControlDataNet(t *testing.T) {
 		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
 	}
-	runClusterTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", "", context, expectedEndpoints)
+	runClusterTest(t, "./test_data/expected_same_mgmt_ctrldata_net_instances.yml", "", pContext, expectedEndpoints)
 }
 
 func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"MGMT_INT_IP":            "10.1.1.1",
 		"CONTROL_NODES":          "127.0.0.1",
 		"CONTROLLER_NODES":       "127.0.0.1",
@@ -530,11 +547,11 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 		"keystone":  "http://127.0.0.1:5000",
 	}
 
-	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", "", context, expectedEndpoints)
+	runClusterTest(t, "./test_data/expected_multi_interface_instances.yml", "", pContext, expectedEndpoints)
 }
 
 func TestCredAllInOneClusterTest(t *testing.T) {
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"CUSTOMIZE":       true,
 		"CREDS":           true,
 		"TYPE":            "",
@@ -555,12 +572,12 @@ func TestCredAllInOneClusterTest(t *testing.T) {
 	}
 	expectedInstances := "./test_data/expected_creds_all_in_one_instances.yml"
 
-	runClusterTest(t, expectedInstances, "", context, expectedEndpoints)
+	runClusterTest(t, expectedInstances, "", pContext, expectedEndpoints)
 }
 
 // nolint: gocyclo
 func runKubernetesClusterTest(t *testing.T, expectedOutput string,
-	context map[string]interface{}, expectedEndpoints map[string]string) {
+	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
@@ -569,23 +586,31 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
 	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, allInOneKubernetesClusterTemplatePath, context)
+	err := integration.LoadTestScenario(&testScenario, allInOneKubernetesClusterTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
 	// create cluster config
+	s := &client.HTTP{
+		Endpoint: server.URL(),
+		InSecure: true,
+		AuthURL:  server.URL() + "/keystone/v3",
+		ID:       "alice",
+		Password: "alice_password",
+		Scope: client.GetKeystoneScope(
+			"default", "default", "admin", "admin"),
+	}
+	s.Init()
+	err = s.Login(context.Background())
+	assert.NoError(t, err, "failed to login")
 	config := &Config{
-		ID:           "alice",
-		Password:     "alice_password",
-		ProjectID:    "admin",
-		AuthURL:      server.URL() + "/keystone/v3",
-		Endpoint:     server.URL(),
-		InSecure:     true,
+		APIServer:    s,
 		ClusterID:    clusterID,
 		Action:       createAction,
 		LogLevel:     "debug",
-		TemplateRoot: "configs/",
+		TemplateRoot: "templates/",
 		Test:         true,
+		LogFile:      defaultWorkRoot + "/command.log",
 	}
 	// create cluster
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
@@ -597,7 +622,9 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	}
 	clusterManager, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	err = clusterManager.Manage()
+	deployer, err := clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster create is not as expected")
@@ -627,7 +654,9 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	}
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
-	err = clusterManager.Manage()
+	deployer, err = clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster update is not as expected")
@@ -661,13 +690,15 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	}
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
-	err = clusterManager.Manage()
+	deployer, err = clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(delete) cluster")
 	// make sure cluster is removed
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
 func TestKubernetesCluster(t *testing.T) {
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"TYPE":          "kernel",
 		"MGMT_INT_IP":   "127.0.0.1",
 		"CONTROL_NODES": "",
@@ -677,13 +708,13 @@ func TestKubernetesCluster(t *testing.T) {
 		"nodejs":    "https://127.0.0.1:8143",
 		"telemetry": "http://127.0.0.1:8081",
 	}
-	runKubernetesClusterTest(t, "./test_data/expected_all_in_one_kubernetes_instances.yml", context, expectedEndpoints)
+	runKubernetesClusterTest(t, "./test_data/expected_all_in_one_kubernetes_instances.yml", pContext, expectedEndpoints)
 }
 
 //vcenter
 // nolint: gocyclo
 func runvcenterClusterTest(t *testing.T, expectedOutput string,
-	context map[string]interface{}, expectedEndpoints map[string]string) {
+	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
@@ -692,23 +723,31 @@ func runvcenterClusterTest(t *testing.T, expectedOutput string,
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
 	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, allInOnevcenterClusterTemplatePath, context)
+	err := integration.LoadTestScenario(&testScenario, allInOnevcenterClusterTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
 	// create cluster config
+	s := &client.HTTP{
+		Endpoint: server.URL(),
+		InSecure: true,
+		AuthURL:  server.URL() + "/keystone/v3",
+		ID:       "alice",
+		Password: "alice_password",
+		Scope: client.GetKeystoneScope(
+			"default", "default", "admin", "admin"),
+	}
+	s.Init()
+	err = s.Login(context.Background())
+	assert.NoError(t, err, "failed to login")
 	config := &Config{
-		ID:           "alice",
-		Password:     "alice_password",
-		ProjectID:    "admin",
-		AuthURL:      server.URL() + "/keystone/v3",
-		Endpoint:     server.URL(),
-		InSecure:     true,
+		APIServer:    s,
 		ClusterID:    clusterID,
 		Action:       "create",
 		LogLevel:     "debug",
-		TemplateRoot: "configs/",
+		TemplateRoot: "templates/",
 		Test:         true,
+		LogFile:      defaultWorkRoot + "/command.log",
 	}
 	// create cluster
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
@@ -720,7 +759,9 @@ func runvcenterClusterTest(t *testing.T, expectedOutput string,
 	}
 	clusterManager, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
-	err = clusterManager.Manage()
+	deployer, err := clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster create is not as expected")
@@ -750,7 +791,9 @@ func runvcenterClusterTest(t *testing.T, expectedOutput string,
 	}
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
-	err = clusterManager.Manage()
+	deployer, err = clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster update is not as expected")
@@ -784,13 +827,15 @@ func runvcenterClusterTest(t *testing.T, expectedOutput string,
 	}
 	clusterManager, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
-	err = clusterManager.Manage()
+	deployer, err = clusterManager.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(delete) cluster")
 	// make sure cluster is removed
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
 func TestVcenterCluster(t *testing.T) {
-	context := pongo2.Context{
+	pContext := pongo2.Context{
 		"TYPE":             "ESXI",
 		"ESXI":             "10.84.16.11",
 		"MGMT_INT_IP":      "127.0.0.1",
@@ -801,7 +846,7 @@ func TestVcenterCluster(t *testing.T) {
 		"nodejs":    "https://127.0.0.1:8143",
 		"telemetry": "http://127.0.0.1:8081",
 	}
-	runvcenterClusterTest(t, "./test_data/expected_all_in_one_vcenter_instances.yml", context, expectedEndpoints)
+	runvcenterClusterTest(t, "./test_data/expected_all_in_one_vcenter_instances.yml", pContext, expectedEndpoints)
 }
 
 func TestWindowsCompute(t *testing.T) {
@@ -837,7 +882,7 @@ func runMCClusterTest(t *testing.T, context map[string]interface{},
 		ClusterID:    clusterID,
 		Action:       createAction,
 		LogLevel:     "debug",
-		TemplateRoot: "configs/",
+		TemplateRoot: "templates/",
 		Test:         true,
 	}
 
