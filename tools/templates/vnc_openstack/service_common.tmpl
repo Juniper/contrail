@@ -1,0 +1,8 @@
+package services
+
+//RegisterRESTAPI register REST API service for path.
+func (service *OpenstackService) RegisterOpenstackAPI(r routeRegistry) {
+	{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+		r.POST("{{ schema.Prefix }}{{ schema.ID }}", service.RESTNeutron{{ schema.JSONSchema.GoName }})
+    {% endif%}{% endfor %}
+}

@@ -1,0 +1,30 @@
+{
+    "data": {
+        "fields": null,
+        "resource": {
+            "description": "",
+            "admin_state_up": true,
+            "network_id": "9f75b712-8f2c-4a35-937a-ab10e804bfa3",
+            "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+            "extra_dhcp_opts": null,
+            "name": "",
+            "device_owner": "",
+            "binding:vnic_type": "normal",
+            "project_id": "5595adaac4f6423b930f1f1f66c89507",
+            "device_id": ""
+        },
+        "filters": null
+    },
+    "context": {
+        "user_id": "32fc3e2bf6e94e0daa21090e493e7aef",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+        "is_admin": true,
+        "request_id": "req-a2e32a97-0499-4e3a-a516-1f9e93d487d3",
+        "operation": "CREATE",
+        "type": "port",
+        "tenant": "5595adaac4f6423b930f1f1f66c89507"
+    }
+}

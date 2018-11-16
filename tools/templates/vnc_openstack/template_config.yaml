@@ -1,0 +1,12 @@
+- type: all
+  template_path: service_common.tmpl
+  output_path: pkg/openstack/services/gen_common.go
+- type: all
+  template_path: service.tmpl
+  output_path: pkg/openstack/services/gen_service.go
+- type: all
+  template_path: model.tmpl
+  output_path: pkg/openstack/models/gen_models.go
+- type: all
+  template_path: request.tmpl
+  output_path: pkg/openstack/services/gen_request.go

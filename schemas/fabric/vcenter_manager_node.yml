@@ -1,0 +1,51 @@
+description: vCenter Manager Node
+extends:
+- base
+- has_status
+id: vCenter_manager_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this vCenter manager node."
+      presence: "optional"
+parents:
+  vCenter:
+    operations: "CRUD"
+    description: "Parent of this vCenter manager node."
+    presence: "optional"
+plural: vCenter_manager_nodes
+prefix: /
+schema:
+  properties:
+    esxi_username:
+      description: ESXi host username
+      nullable: false
+      permission:
+      - create
+      - update
+      title: ESXi Username
+      type: string
+      view:
+      - create
+      - detail
+    esxi_password:
+      description: ESXi host password
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: ESXi Password
+      type: string
+      view:
+      - create
+      - detail
+  propertiesOrder: []
+  required: []
+  type: object
+singular: vCenter_manager_node
+title: vCenter Manager Node
+type: ""
+
