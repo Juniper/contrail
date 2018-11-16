@@ -1,0 +1,24 @@
+description: Cloud project details
+extends:
+- base
+id: cloud_project
+metadata:
+  category: cloud
+parents:
+  cloud_account:
+    operations: "CRUD"
+    description: "Parent for cloud project"
+    presence: "optional"
+references:
+  cloud_user:
+    operations: "CRUD"
+    description: "Reference to cloud user belonging to this project"
+plural: cloud_projects
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  type: object
+singular: cloud_project
+title: Cloud Project
+type: ""
