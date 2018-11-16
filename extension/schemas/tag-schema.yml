@@ -12,3 +12,4 @@ schema:
       presence: optional
       type: string
   type: object
+type  : extension

@@ -56,7 +56,23 @@ func (context *Context) DomainID() string {
 	return context.domainID
 }
 
-//GetContext is used to get an authentication from echo.Context.
+//UserID is used to get an id for User.
+func (context *Context) UserID() string {
+	if context == nil {
+		return AdminRole
+	}
+	return context.userID
+}
+
+//Roles  is used to get the roles of a user
+func (context *Context) Roles() []string {
+	if context == nil {
+		return nil
+	}
+	return context.roles
+}
+
+//GetAuthContext is used to get an authentication from echo.Context.
 func GetContext(c echo.Context) *Context {
 	ctx := c.Request().Context()
 	return GetAuthCTX(ctx)
