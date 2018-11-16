@@ -31,6 +31,13 @@ func NewVirtualNetworkIntent(
 	}
 }
 
+// LoadVirtualNetworkIntent loads a virtual network intent from cache.
+func LoadVirtualNetworkIntent(loader intent.Loader, query intent.Query) *VirtualNetworkIntent {
+	intent := loader.Load(models.KindVirtualNetwork, query)
+	vnIntent, _ := intent.(*VirtualNetworkIntent) //nolint: errcheck
+	return vnIntent
+}
+
 // CreateVirtualNetwork evaluates VirtualNetwork dependencies.
 func (s *Service) CreateVirtualNetwork(
 	ctx context.Context,
@@ -45,16 +52,6 @@ func (s *Service) CreateVirtualNetwork(
 	}
 
 	return s.BaseService.CreateVirtualNetwork(ctx, request)
-}
-
-// LoadVirtualNetworkIntent loads a virtual network intent from cache.
-func LoadVirtualNetworkIntent(
-	c intent.Loader,
-	uuid string,
-) *VirtualNetworkIntent {
-	i := c.Load(models.KindVirtualNetwork, intent.ByUUID(uuid))
-	actual, _ := i.(*VirtualNetworkIntent) //nolint: errcheck
-	return actual
 }
 
 // GetPrimaryRoutingInstanceIntent returns the virtual network's default routing instance intent.

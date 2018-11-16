@@ -2,11 +2,13 @@ package logic
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
 )
 
 // RoutingInstanceIntent contains Intent Compiler state for RoutingInstance.
@@ -20,22 +22,32 @@ func (i *RoutingInstanceIntent) GetObject() basemodels.Object {
 	return i.RoutingInstance
 }
 
-// LoadRoutingInstanceIntent loads RoutingInstanceIntent from cache
-func LoadRoutingInstanceIntent(
-	c intent.Loader,
-	uuid string,
-) *RoutingInstanceIntent {
-	i := c.Load(models.KindRoutingInstance, intent.ByUUID(uuid))
-	actual, _ := i.(*RoutingInstanceIntent) //nolint: errcheck
-	return actual
+// LoadRoutingInstanceIntent loads a routing instance intent from cache.
+func LoadRoutingInstanceIntent(loader intent.Loader, query intent.Query) *RoutingInstanceIntent {
+	intent := loader.Load(models.KindRoutingInstance, query)
+	riIntent, _ := intent.(*RoutingInstanceIntent) //nolint: errcheck
+	return riIntent
 }
 
 // CreateRoutingInstance evaluates RoutingInstance dependencies.
 func (s *Service) CreateRoutingInstance(
 	ctx context.Context, request *services.CreateRoutingInstanceRequest,
 ) (*services.CreateRoutingInstanceResponse, error) {
+	fmt.Println("dupa")
 	i := &RoutingInstanceIntent{
 		RoutingInstance: request.GetRoutingInstance(),
+	}
+
+	if i.GetRoutingInstanceIsDefault() {
+		if i.IsIPFabric() || i.IsLinkLocal() {
+			return nil, nil
+		}
+		if err := i.createDefaultRouteTarget(ctx, s.evaluateContext()); err != nil {
+			return nil, err
+		}
+	} else {
+		// TODO: handle the situation in case if it's not default Routing Instance
+		// and creating non default route targets.
 	}
 
 	err := s.storeAndEvaluate(ctx, i)
@@ -46,21 +58,34 @@ func (s *Service) CreateRoutingInstance(
 	return s.BaseService.CreateRoutingInstance(ctx, request)
 }
 
+// UpdateRoutingInstance evaluates routing instance dependencies.
+func (s *Service) UpdateRoutingInstance(
+	ctx context.Context,
+	request *services.UpdateRoutingInstanceRequest,
+) (*services.UpdateRoutingInstanceResponse, error) {
+	fmt.Println("dupa")
+	ri := request.GetRoutingInstance()
+	if ri == nil {
+		return nil, errors.New("failed to update Routing Instance." +
+			" Routing Instance Request needs to contain resource!")
+	}
+
+	i := LoadRoutingInstanceIntent(s.cache, intent.ByUUID(ri.GetUUID()))
+	if i == nil {
+		return nil, errors.Errorf("cannot load intent for routing instance %v", ri.GetUUID())
+	}
+
+	i.RoutingInstance = ri
+	if err := s.storeAndEvaluate(ctx, i); err != nil {
+		return nil, err
+	}
+	return s.BaseService.UpdateRoutingInstance(ctx, request)
+}
+
 // Evaluate may create default Route Target.
 func (i *RoutingInstanceIntent) Evaluate(
 	ctx context.Context, evaluateContext *intent.EvaluateContext,
 ) error {
-	if i.GetRoutingInstanceIsDefault() {
-		if i.IsIPFabric() || i.IsLinkLocal() {
-			return nil
-		}
-		if err := i.createDefaultRouteTarget(ctx, evaluateContext); err != nil {
-			return err
-		}
-	} else {
-		// TODO: handle the situation in case if it's not default Routing Instance
-		// and creating non default route targets.
-	}
 
 	return nil
 }
