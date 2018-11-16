@@ -59,7 +59,7 @@ generate_go:
 	# Generate for openstack api resources.
 	@mkdir -p public/openstack
 	go run  cmd/contrailschema/main.go generate \
-	    --schemas schemas/openstack --templates tools/templates/openstack/template_config.yaml \
+	    --schemas schemas/vnc_openstack --templates tools/templates/vnc_openstack/template_config.yaml \
 		--schema-output public/openstack/schema.json --openapi-output public/openstack/openapi.json
 
 TYPES_MOCK := pkg/types/mock/gen_service_mock.go
