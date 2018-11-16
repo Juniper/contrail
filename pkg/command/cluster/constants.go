@@ -64,7 +64,6 @@ const (
 	defaultVCenterManagerNodeResPath            = "/" + defaultVCenterManagerNodeRes
 
 	defaultWorkRoot                       = "/var/tmp/contrail_cluster"
-	defaultTemplateRoot                   = "./pkg/cluster/configs"
 	defaultInstanceTemplate               = "instances.tmpl"
 	defaultInstanceFile                   = "instances.yml"
 	defaultVcenterFile                    = "vcenter_vars.yml"
