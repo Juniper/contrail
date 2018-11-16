@@ -4,15 +4,15 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/Juniper/contrail/pkg/cluster"
+	"github.com/Juniper/contrail/pkg/command"
 )
 
 func init() {
-	Contrail.AddCommand(clusterCmd)
+	Contrail.AddCommand(commanderCmd)
 }
 
-var clusterCmd = &cobra.Command{
-	Use:   "cluster",
+var commanderCmd = &cobra.Command{
+	Use:   "command",
 	Short: "Start managing contrail cluster",
 	Run: func(cmd *cobra.Command, args []string) {
 		manageCluster()
@@ -20,7 +20,7 @@ var clusterCmd = &cobra.Command{
 }
 
 func manageCluster() {
-	manager, err := cluster.NewClusterManager(configFile)
+	manager, err := command.NewCommandManager(configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
