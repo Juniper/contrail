@@ -6,34 +6,33 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sirupsen/logrus"
-
+	"github.com/Juniper/contrail/pkg/command/provision"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/log/report"
 )
 
-type provisioner interface {
-	provision() error
-}
+const (
+	defaultTemplateRoot = "./pkg/cluster/configs"
+)
 
-type provisionCommon struct {
+type provisionCluster struct {
+	provision.Provision
 	cluster     *Cluster
 	clusterID   string
 	action      string
 	clusterData *Data
-	log         *logrus.Entry
-	reporter    *report.Reporter
 }
 
-func (p *provisionCommon) isCreated() bool {
+func (p *provisionCluster) isCreated() bool {
 	state := p.clusterData.clusterInfo.ProvisioningState
 	if p.action == "create" && (state == "NOSTATE" || state == "") {
 		return false
 	}
-	p.log.Infof("Cluster %s already provisioned, STATE: %s", p.clusterID, state)
+	p.Log.Infof("Cluster %s already provisioned, STATE: %s", p.clusterID, state)
 	return true
 }
-func (p *provisionCommon) getTemplateRoot() string {
+
+func (p *provisionCluster) getTemplateRoot() string {
 	templateRoot := p.cluster.config.TemplateRoot
 	if templateRoot == "" {
 		templateRoot = defaultTemplateRoot
@@ -41,57 +40,58 @@ func (p *provisionCommon) getTemplateRoot() string {
 	return templateRoot
 }
 
-func (p *provisionCommon) getClusterHomeDir() string {
+func (p *provisionCluster) getClusterHomeDir() string {
 	dir := filepath.Join(defaultWorkRoot, p.clusterID)
 	return dir
 }
 
-func (p *provisionCommon) getWorkingDir() string {
+func (p *provisionCluster) getWorkingDir() string {
 	dir := filepath.Join(p.getClusterHomeDir())
 	return dir
 }
 
-func (p *provisionCommon) createWorkingDir() error {
+func (p *provisionCluster) createWorkingDir() error {
 	return os.MkdirAll(p.getWorkingDir(), os.ModePerm)
 }
 
-func (p *provisionCommon) deleteWorkingDir() error {
+func (p *provisionCluster) deleteWorkingDir() error {
 	return os.RemoveAll(p.getClusterHomeDir())
 }
 
-func (p *provisionCommon) createEndpoints() error {
+func (p *provisionCluster) createEndpoints() error {
 	e := &EndpointData{
 		clusterID:   p.clusterID,
 		cluster:     p.cluster,
 		clusterData: p.clusterData,
-		log:         p.log,
+		log:         p.Log,
 	}
 
 	return e.create()
 }
 
-func (p *provisionCommon) updateEndpoints() error {
+func (p *provisionCluster) updateEndpoints() error {
 	e := &EndpointData{
 		clusterID:   p.clusterID,
 		cluster:     p.cluster,
 		clusterData: p.clusterData,
-		log:         p.log,
+		log:         p.Log,
 	}
 
 	return e.update()
 }
 
-func (p *provisionCommon) deleteEndpoints() error {
+func (p *provisionCluster) deleteEndpoints() error {
 	e := &EndpointData{
 		clusterID: p.clusterID,
 		cluster:   p.cluster,
-		log:       p.log,
+		log:       p.Log,
 	}
 
 	return e.remove()
 }
 
-func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
+func newAnsibleProvisioner(cluster *Cluster, cData *Data) (provision.Provisioner, error) {
+	clusterID := cluster.config.ResourceID
 	// create logger for reporter
 	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
@@ -103,17 +103,20 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	logger = pkglog.NewFileLogger("ansible-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
-	return &ansibleProvisioner{provisionCommon{
+	return &ansibleProvisioner{provisionCluster{
 		cluster:     cluster,
 		clusterID:   clusterID,
-		action:      action,
+		action:      cluster.config.Action,
 		clusterData: cData,
-		reporter:    r,
-		log:         logger,
+		Provision: provision.Provision{
+			Reporter: r,
+			Log:      logger,
+		},
 	}}, nil
 }
 
-func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
+func newHelmProvisioner(cluster *Cluster, cData *Data) (provision.Provisioner, error) {
+	clusterID := cluster.config.ResourceID
 	// create logger for reporter
 	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
@@ -125,42 +128,39 @@ func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action 
 	logger = pkglog.NewFileLogger("helm-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
-	return &helmProvisioner{provisionCommon{
+	return &helmProvisioner{provisionCluster{
 		cluster:     cluster,
 		clusterID:   clusterID,
-		action:      action,
+		action:      cluster.config.Action,
 		clusterData: cData,
-		reporter:    r,
-		log:         logger,
+		Provision: provision.Provision{
+			Reporter: r,
+			Log:      logger,
+		},
 	}}, nil
 }
 
-// Creates new provisioner based on the type
-func newProvisioner(cluster *Cluster) (provisioner, error) {
-	return newProvisionerByID(cluster, cluster.config.ClusterID, cluster.config.Action)
-}
-
-func newProvisionerByID(cluster *Cluster, clusterID string, action string) (provisioner, error) {
+func newProvisionerByID(cluster *Cluster) (provision.Provisioner, error) {
 	var cData *Data
 	var err error
-	if action == "delete" {
+	if cluster.config.Action == "delete" {
 		cData = &Data{}
 	} else {
-		cData, err = cluster.getClusterDetails(clusterID)
+		cData, err = cluster.getClusterDetails(cluster.config.ResourceID)
 	}
 	if err != nil {
 		return nil, err
 	}
-	provisionerType := cluster.config.ProvisionerType
-	if provisionerType == "" {
-		provisionerType = defaultProvisioner
+	provisionerType := defaultProvisioner
+	if cData.clusterInfo != nil && cData.clusterInfo.ProvisionerType != "" {
+		provisionerType = cData.clusterInfo.ProvisionerType
 	}
 
 	switch provisionerType {
 	case "ansible":
-		return newAnsibleProvisioner(cluster, cData, clusterID, action)
+		return newAnsibleProvisioner(cluster, cData)
 	case "helm":
-		return newHelmProvisioner(cluster, cData, clusterID, action)
+		return newHelmProvisioner(cluster, cData)
 	}
 	return nil, errors.New("unsupported provisioner type")
 }
