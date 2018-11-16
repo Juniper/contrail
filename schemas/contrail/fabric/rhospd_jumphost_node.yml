@@ -19,10 +19,15 @@ plural: rhospd_jumphost_nodes
 prefix: /
 schema:
   properties:
-    jumphost:
-      presence: "required"
-      description: "Details of the RHOSPD JumpHost"
-      $ref: "rhospd_types.json#/definitions/JumpHostInfo"
+    password:
+      description: "SHA512 encypted password of the jumphost.user"
+      type: string
+      operations: CRUD
+      presence: required
+    network:
+      presence: required
+      description: "Network details of Jump Host"
+      $ref: "rhospd_types.json#/definitions/JumpHostNetworkInfo"
   propertiesOrder: []
   required: []
   type: object
