@@ -9,7 +9,7 @@ import (
 )
 
 type task struct {
-	SchemaID      string    `yaml:"schema_id"`
+	SchemaIDs     []string  `yaml:"schema_ids"`
 	Commands      []string  `yaml:"commands"`
 	Common        []handler `yaml:"common"`
 	OnCreate      []handler `yaml:"on_create"`

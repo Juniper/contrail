@@ -1,0 +1,66 @@
+global:
+  dns:
+    - 1.1.1.1
+    - 1.1.1.2
+  ntp:
+    - 1.1.1.1
+    - 1.1.1.2
+  timezone: America/Los_Angeles
+  domain: englab.juniper.net
+  rhel:
+    satellite:
+      key: test_key
+      organization: test_org
+      fqdn: test.rhospd.net
+jumphost:
+  password: testencrypted123
+  network:
+    provision:
+      nic: eth0
+undercloud:
+  vm:
+    password: testvm123
+    root_password: testvmroot123
+    memory: 48
+    cpu: 16
+    vnc:
+      password: testvmvnc123
+control_hosts:
+  vnc:
+    password: testvnc123
+  image:
+    user: testimageuser
+    password: testimage123
+  storage:
+    spinning_storage:
+      type: logical
+      disk:
+        - /dev/sdb
+        - /dev/sdc
+        - /dev/sdd
+        - /dev/sde
+    ssd_storage:
+      type: logical
+      disk:
+        - /dev/sdf
+    dir_storage:
+      type: dir
+overcloud:
+  tls:
+    country: testcountry
+    state: teststate
+    city: testcity
+    organization: testorg
+    common_name: testcommonname
+  image:
+    user: testimageuser
+    password: testimage123
+  network:
+    external:
+      cidr: 10.87.78.0/25
+      default_route: 10.87.78.126
+      pool:
+        start: 10.87.78.51
+        end: 10.87.78.70
+      mtu: 1500
+      vip: 10.1.1.1
