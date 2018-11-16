@@ -1,0 +1,135 @@
+name: Test project
+description: |
+  Integration test for project creation.
+
+test_data:
+  project_blue: &project_blue_project
+    uuid: project_blue_project_uuid
+    name: project_blue_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+  default-api-access-list8: &default-api-access-list8 
+      display_name: default-api-access-list8
+      uuid: default-api-access-list8_uuid
+      parent_type: domain
+      perms2:
+       owner_access: 7
+       global_access: 0
+       share: []
+      api_access_list_entries:
+       rbac_rule:
+         - rule_object: projects 
+           rule_perms:
+              - role_crud: CRUD
+                role_name: Member
+      fq_name:
+          - default-domain
+          - default-api-access-list8
+      name: default-api-access-list8
+  user_made_application_policy_set: &user_made_application_policy_set_project
+    uuid: my_custom_application_policy_set_uuid
+    fq_name:
+    - default-domain
+    - project_blue_project
+    - my-custom-aps
+    parent_type: project
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+  bob:
+    id: bob
+    password: bob_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: demo
+
+workflow:
+- name: create project as admin 
+  request:
+    path: /projects
+    method: POST 
+    expected: [200]
+    data:
+      project: *project_blue_project
+
+- name: delete project as non-admin
+  client: bob
+  request:
+    path: /project/project_blue_project_uuid
+    method: DELETE 
+    expected: [403]
+  expect: null 
+
+- name: delete project as admin (cleanup)
+  request:
+    path: /project/project_blue_project_uuid
+    method: DELETE 
+    expected: [200]
+  expect: null 
+
+
+- name: create project (Not RBAC rule to allow)
+  client: bob
+  request:
+    path: /projects
+    method: POST 
+    expected: [403]
+    data:
+      project: *project_blue_project
+
+- name: create api access rule
+  request: 
+   path: /api-access-lists 
+   method: POST
+   data:
+    api-access-list: *default-api-access-list8
+                
+   expected: 
+    - 200
+        
+- name: create project
+  client: bob
+  request:
+    path: /projects
+    method: POST 
+    expected: [200]
+    data:
+      project: *project_blue_project
+
+- name: delete project
+  client: bob
+  request:
+    path: /project/project_blue_project_uuid
+    method: DELETE 
+    expected: [200]
+  expect: null 
+
+- name: delete api access list 
+  request:
+    path: /api-access-list/default-api-access-list8_uuid
+    method: DELETE 
+    expected: [200]
+  expect: null 
+
+- name: create project ( RBAC rule deleted - it should fail)
+  client: bob
+  request:
+    path: /projects
+    method: POST 
+    expected: [403]
+    data:
+      project: *project_blue_project
+
+
+
+
