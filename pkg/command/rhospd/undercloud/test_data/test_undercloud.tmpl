@@ -1,0 +1,162 @@
+name: RHOSPD undercloud test
+description: RHOSPD undercloud CRUD test
+cleanup:
+- path: /rhospd-jumphost-node/rhospd_jumphost_nodes_uuid
+- path: /rhospd-undercloud-node/rhospd_undercloud_nodes_uuid
+- path: /rhospd-overcloud/rhospd_overcloud_uuid
+- path: /node/all_in_one_node_uuid
+- path: /rhospd-cloud-manager/test_rhospd_cloud_manager_uuid
+test_data:
+  all_in_one_node: &all_in_one_node
+    uuid: all_in_one_node_uuid
+    hostname: all_in_one_node
+    interface_name: all_in_one_node_interface
+    ip_address: localhost
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  rhospd_cloud_manager: &rhospd_cloud_manager
+    uuid: test_rhospd_cloud_manager_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    global:
+      dns:
+      - 1.1.1.1
+      - 1.1.1.2
+      ntp:
+      - 1.1.1.1
+      - 1.1.1.2
+      timezone: "America/Los_Angeles"
+      rhel:
+        satellite:
+          key: "test_key"
+          organization: "test_org"
+          fqdn: "test.rhospd.net"
+    control_hosts:
+      storage:
+        dir_storage:
+          type: dir
+        spinning_storage:
+          type: logical
+          disk:
+          - "/dev/sdb"
+          - "/dev/sdc"
+          - "/dev/sdd"
+          - "/dev/sde"
+        ssd_storage:
+          type: logical
+          disk:
+          - "/dev/sdf"
+      image:
+        user: testimageuser
+        password: testimage123
+      vnc:
+        password: testvnc123
+  rhospd_jumphost_nodes: &rhospd_jumphost_nodes
+    uuid: rhospd_jumphost_nodes_uuid
+    parent_type: rhospd-cloud-manager
+    parent_uuid: test_rhospd_cloud_manager_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  rhospd_undercloud_nodes: &rhospd_undercloud_nodes
+    uuid: rhospd_undercloud_nodes_uuid
+    parent_type: rhospd-cloud-manager
+    parent_uuid: test_rhospd_cloud_manager_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  rhospd_overcloud: &rhospd_overcloud
+    uuid: rhospd_overcloud_uuid
+    parent_type: rhospd-cloud-manager
+    parent_uuid: test_rhospd_cloud_manager_uuid
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create rhospd cloud manager
+  request:
+    path: /rhospd-cloud-managers
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-cloud-manager: *rhospd_cloud_manager
+  expect:
+    rhospd-cloud-manager:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: test_rhospd_cloud_manager_uuid
+- name: create node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *all_in_one_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: all_in_one_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: all_in_one_node
+      interface_name: all_in_one_node_interface
+      ip_address: {{MGMT_INT_IP}}
+      {% if CREDS %}
+      credential_refs:
+        - uuid: all_in_one_credential_uuid
+      {%endif%}
+
+- name: create rhospd jumphost node
+  request:
+    path: /rhospd-jumphost-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-jumphost-node: *rhospd_jumphost_nodes
+    expect:
+      rhospd-jumphost-node:
+        uuid: rhospd_jumphost_nodes_uuid
+        parent_type: rhospd-cloud-manager
+        parent_uuid: test_rhospd_cloud_manager_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create rhospd undercloud node
+  request:
+    path: /rhospd-undercloud-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-undercloud-node: *rhospd_undercloud_nodes
+    expect:
+      rhospd-undercloud-node:
+        uuid: rhospd_undercloud_nodes_uuid
+        parent_type: rhospd-cloud-manager
+        parent_uuid: test_rhospd_cloud_manager_uuid
+        node_refs:
+          - uuid: all_in_one_node_uuid
+- name: create rhospd overcloud
+  request:
+    path: /rhospd-overclouds
+    method: POST
+    expected:
+    - 200
+    data:
+      rhospd-overcloud: *rhospd_overcloud
+    expect:
+      rhospd-overcloud:
+        uuid: rhospd_overcloud_uuid
+        parent_type: rhospd-cloud-manager
+        parent_uuid: test_rhospd_cloud_manager_uuid
+        node_refs:
+         - uuid: all_in_one_node_uuid

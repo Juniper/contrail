@@ -1,0 +1,261 @@
+package undercloud
+
+import (
+	"bytes"
+	"context"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+
+	"github.com/flosch/pongo2"
+)
+
+const (
+	createAction = "create"
+	updateAction = "update"
+	deleteAction = "delete"
+
+	provisionProvisioningAction = "PROVISION"
+	importProvisioningAction    = "IMPORT"
+
+	enable  = "yes"
+	disable = "no"
+)
+
+type contrailCloudDeployer struct {
+	deployUnderCloud
+}
+
+func (a *contrailCloudDeployer) getSiteTemplate() (siteTemplate string) {
+	return filepath.Join(a.getTemplateRoot(), defaultSiteTemplate)
+}
+
+func (a *contrailCloudDeployer) getSiteFile() (siteFile string) {
+	return filepath.Join(a.getWorkingDir(), defaultSiteFile)
+}
+
+func (a *contrailCloudDeployer) getContrailCloudDeployerRepoDir() (ansibleRepoDir string) {
+	return filepath.Join(defaultContrailCloudDeployerRepoDir, defaultContrailCloudDeployerRepo)
+}
+
+func (a *contrailCloudDeployer) createSiteFile(destination string) error {
+	a.Log.Info("Creating site.yml input file for contrail cloud deployer")
+	cloudManager := a.undercloudData.cloudManagerInfo
+	context := pongo2.Context{
+		"jumphost":     cloudManager.RhospdJumphostNodes[0],
+		"cloudManager": cloudManager,
+		"undercloud":   cloudManager.RhospdUndercloudNodes[0],
+		"overcloud":    cloudManager.RhospdOverclouds[0],
+	}
+	content, err := a.ApplyTemplate(a.getSiteTemplate(), context)
+	if err != nil {
+		return err
+	}
+
+	err = a.WriteToFile(destination, content)
+	if err != nil {
+		return err
+	}
+	a.Log.Info("Created instance.yml input file for ansible deployer")
+	return nil
+}
+
+func (a *contrailCloudDeployer) mockPlay(ansibleArgs []string) error {
+	playBookIndex := len(ansibleArgs) - 1
+	context := pongo2.Context{
+		"playBook":    ansibleArgs[playBookIndex],
+		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
+	}
+	content, err := a.ApplyTemplate("./test_data/test_ansible_playbook.tmpl", context)
+	if err != nil {
+		return err
+	}
+	destination := filepath.Join(a.getWorkingDir(), "executed_ansible_playbook.yml")
+	err = a.AppendToFile(destination, content)
+	return err
+}
+
+func (a *contrailCloudDeployer) compareSite() (identical bool, err error) {
+	tmpfile, err := ioutil.TempFile("", "instances")
+	if err != nil {
+		return false, err
+	}
+	tmpFileName := tmpfile.Name()
+	defer func() {
+		if err = os.Remove(tmpFileName); err != nil {
+			a.Log.Errorf("Error while deleting tmpfile: %s", err)
+		}
+	}()
+
+	a.Log.Debugf("Creating temperory site %s", tmpFileName)
+	err = a.createSiteFile(tmpFileName)
+	if err != nil {
+		return false, err
+	}
+
+	newSite, err := ioutil.ReadFile(tmpFileName)
+	if err != nil {
+		return false, err
+	}
+	oldSite, err := ioutil.ReadFile(a.getSiteFile())
+	if err != nil {
+		return false, err
+	}
+
+	return bytes.Equal(oldSite, newSite), nil
+}
+
+func (a *contrailCloudDeployer) play(ansibleArgs []string) error {
+	repoDir := a.getContrailCloudDeployerRepoDir()
+	return a.playFromDir(repoDir, ansibleArgs)
+}
+
+func (a *contrailCloudDeployer) playFromDir(
+	repoDir string, ansibleArgs []string) error {
+	if a.undercloud.config.Test {
+		return a.mockPlay(ansibleArgs)
+	}
+	cmdline := "ansible-playbook"
+	a.Log.Infof("Playing playbook: %s %s",
+		cmdline, strings.Join(ansibleArgs, " "))
+	cmd := exec.Command(cmdline, ansibleArgs...)
+	cmd.Dir = repoDir
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+	if err = cmd.Start(); err != nil {
+		return err
+	}
+
+	// Report progress log periodically to stdout
+	go a.Reporter.ReportLog(stdout)
+	go a.Reporter.ReportLog(stderr)
+
+	if err = cmd.Wait(); err != nil {
+		return err
+	}
+	a.Log.Infof("Finished playing playbook: %s %s",
+		cmdline, strings.Join(ansibleArgs, " "))
+
+	return nil
+}
+
+func (a *contrailCloudDeployer) playBook() error {
+	switch a.undercloudData.cloudManagerInfo.ProvisioningAction {
+	case provisionProvisioningAction, "":
+		return nil
+	}
+	return nil
+}
+
+func (a *contrailCloudDeployer) createUndercloud() error {
+	a.Log.Infof("Starting %s of contrail undercloud: %s", a.action,
+		a.undercloudData.cloudManagerInfo.RhospdUndercloudNodes[0].FQName)
+	status := map[string]interface{}{statusField: statusCreateProgress}
+	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+
+	status[statusField] = statusCreateFailed
+	err := a.createWorkingDir()
+	if err != nil {
+		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		return err
+	}
+
+	err = a.createSiteFile(a.getSiteFile())
+	if err != nil {
+		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		return err
+	}
+
+	err = a.playBook()
+	if err != nil {
+		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		return err
+	}
+
+	status[statusField] = statusCreated
+	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	return nil
+}
+
+func (a *contrailCloudDeployer) isUpdated() (updated bool, err error) {
+	if a.undercloudData.cloudManagerInfo.RhospdUndercloudNodes[0].ProvisioningState == statusNoState {
+		return false, nil
+	}
+	status := map[string]interface{}{}
+	if _, err := os.Stat(a.getSiteFile()); err == nil {
+		ok, err := a.compareSite()
+		if err != nil {
+			status[statusField] = statusUpdateFailed
+			a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			return false, err
+		}
+		if ok {
+			a.Log.Infof("contrail undercloud: %s is already up-to-date", a.undercloudData.cloudManagerInfo.RhospdUndercloudNodes[0].FQName)
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (a *contrailCloudDeployer) updateUndercloud() error {
+	a.Log.Infof("Starting %s of contrail undercloud: %s", a.action, a.undercloudData.cloudManagerInfo.RhospdUndercloudNodes[0].FQName)
+	status := map[string]interface{}{}
+	status[statusField] = statusUpdateProgress
+	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+
+	err := a.playBook()
+	if err != nil {
+		status[statusField] = statusUpdateFailed
+		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		return err
+	}
+
+	status[statusField] = statusUpdated
+	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	return nil
+}
+
+func (a *contrailCloudDeployer) deleteUndercloud() error {
+	a.Log.Infof("Starting %s of contrail undercloud: %s",
+		a.action, a.undercloud.config.ResourceID)
+	return a.deleteWorkingDir()
+}
+
+func (a *contrailCloudDeployer) Deploy() error {
+	switch a.action {
+	case createAction:
+		err := a.createUndercloud()
+		if err != nil {
+			return err
+		}
+		return nil
+	case updateAction:
+		updated, err := a.isUpdated()
+		if err != nil {
+			return err
+		}
+		if updated {
+			return nil
+		}
+		err = a.updateUndercloud()
+		if err != nil {
+			return err
+		}
+		return nil
+	case deleteAction:
+		err := a.deleteUndercloud()
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return nil
+}

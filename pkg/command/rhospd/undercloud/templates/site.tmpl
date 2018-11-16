@@ -1,0 +1,66 @@
+global:
+  dns:                             
+    {% for dns in cloudManager.Global.DNS %}
+    - {{dns}}       
+    {%endfor%}
+  ntp:                       
+    {% for ntp in cloudManager.Global.NTP %}
+    - {{ntp}}       
+    {%endfor%}
+  timezone: {{cloudManager.Global.Timezone}}
+  domain: {{cloudManager.Global.Domain}}
+  rhel:                          
+    satellite:                     
+      key: {{cloudManager.Global.Rhel.Satellite.Key}}
+      organization: {{cloudManager.Global.Rhel.Satellite.Organization}}
+      fqdn: {{cloudManager.Global.Rhel.Satellite.FQDN}}
+jumphost:
+  password: {{jumphost.Password}}
+  network:                                                                                                            
+    provision:                                                                                                        
+      nic: {{jumphost.Network.Provison.Nic}}
+undercloud:
+  vm:      
+    password: {{undercloud.VM.Password}}
+    root_password: {{undercloud.VM.RootPassword}}
+    memory: {{undercloud.VM.Memory}}
+    cpu: 16  {{undercloud.VM.CPU}}                                        
+    vnc:                                                                     
+      password: {{undercloud.VM.VNC.Password}}
+control_hosts:
+  vnc:                                                                        
+    password: {{cloudManager.ControlHosts.VNC.Password}}
+  image:
+    user: {{cloudManager.ControlHosts.Image.User}}
+    password: {{cloudManager.ControlHosts.Image.Password}}
+  stograge:
+    {%if cloudManager.ControlHosts.Storage.SpinningStorage %}
+    spinning_storage:
+      type: {{cloudManager.ControlHosts.Storage.SpinningStorage.Type}}
+      disk:
+        {% for disk in cloudManager.Storage.SpinningStorage.Disk %}
+        - {{disk}}
+        {%endfor%}
+    {%endif%}
+    {% if cloudManager.ControlHosts.Storage.SSDStorage %}
+    ssd_storage:
+      type: {{cloudManager.ControlHosts.Storage.SSDStorage.Type}}
+      disk:
+        {% for disk in cloudManager.Storage.SSDStorage.Disk %}
+        - {{disk}}
+        {%endfor%}
+    {%endif%}
+    {% if cloudManager.ControlHosts.Storage.DirStorage %}
+    dir_storage:
+      type: {{cloudManager.ControlHosts.Storage.DirStorage.Type}}
+    {%endif%}
+overcloud:
+  tls:
+    country: {{overcloud.TLS.Country}}
+    state: {{overcloud.TLS.State}}
+    city: {{overcloud.TLS.City}}
+    organization: {{overcloud.TLS.Organization}}
+    common_name: {{overcloud.TLS.CommonName}}
+  image:
+    user: {{overcloud.Image.User}}
+    password: {{overcloud.Image.Password}}

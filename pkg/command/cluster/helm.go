@@ -4,11 +4,11 @@ import (
 	"errors"
 )
 
-type helmProvisioner struct {
-	provisionCommon
+type helmDeployer struct {
+	deployCluster
 }
 
-func (h *helmProvisioner) provision() error {
+func (h *helmDeployer) Deploy() error {
 	//TODO(ijohnson) Support daemon manager with etcd
 	return errors.New("helm is an unsupported provisioner type")
 }
