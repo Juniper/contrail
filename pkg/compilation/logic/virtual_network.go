@@ -3,6 +3,8 @@ package logic
 import (
 	"context"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -31,6 +33,16 @@ func NewVirtualNetworkIntent(
 	}
 }
 
+// LoadVirtualNetworkIntent loads a virtual network intent from cache.
+func LoadVirtualNetworkIntent(loader intent.Loader, query intent.Query) *VirtualNetworkIntent {
+	intent := loader.Load(models.KindVirtualNetwork, query)
+	vnIntent, ok := intent.(*VirtualNetworkIntent)
+	if ok == false {
+		log.Debug("Cannot cast intent to Virtual Network Intent")
+	}
+	return vnIntent
+}
+
 // CreateVirtualNetwork evaluates VirtualNetwork dependencies.
 func (s *Service) CreateVirtualNetwork(
 	ctx context.Context,
@@ -45,16 +57,6 @@ func (s *Service) CreateVirtualNetwork(
 	}
 
 	return s.BaseService.CreateVirtualNetwork(ctx, request)
-}
-
-// LoadVirtualNetworkIntent loads a virtual network intent from cache.
-func LoadVirtualNetworkIntent(
-	c intent.Loader,
-	uuid string,
-) *VirtualNetworkIntent {
-	i := c.Load(models.KindVirtualNetwork, intent.ByUUID(uuid))
-	actual, _ := i.(*VirtualNetworkIntent) //nolint: errcheck
-	return actual
 }
 
 // GetPrimaryRoutingInstanceIntent returns the virtual network's default routing instance intent.

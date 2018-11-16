@@ -205,7 +205,7 @@ func TestCreateSecurityGroupCreatesACLs(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	actualIntent := loadSecurityGroupIntent(cache, intent.ByUUID(securityGroup.GetUUID()))
+	actualIntent := LoadSecurityGroupIntent(cache, intent.ByUUID(securityGroup.GetUUID()))
 
 	assert.Equal(t,
 		&SecurityGroupIntent{
@@ -377,7 +377,7 @@ func TestSecurityGroupUpdate(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
-			actualIntent := loadSecurityGroupIntent(cache, intent.ByUUID(tt.intent.GetUUID()))
+			actualIntent := LoadSecurityGroupIntent(cache, intent.ByUUID(tt.intent.GetUUID()))
 			assert.Equal(t, tt.expectedIntent.ingressACL, actualIntent.ingressACL)
 			assert.Equal(t, tt.expectedIntent.egressACL, actualIntent.egressACL)
 		})
@@ -496,7 +496,7 @@ func TestSecurityGroupDelete(t *testing.T) {
 
 			assert.Equal(t,
 				tt.expectedIntent,
-				loadSecurityGroupIntent(cache, intent.ByUUID(tt.intent.GetUUID())))
+				LoadSecurityGroupIntent(cache, intent.ByUUID(tt.intent.GetUUID())))
 		})
 	}
 }
@@ -509,7 +509,7 @@ func TestLoadSecurityGroupIntent(t *testing.T) {
 	cache := intent.NewCache()
 	cache.Store(expectedIntent)
 
-	actualIntent := loadSecurityGroupIntent(cache, intent.ByUUID(expectedIntent.UUID))
+	actualIntent := LoadSecurityGroupIntent(cache, intent.ByUUID(expectedIntent.UUID))
 	assert.Equal(t, expectedIntent, actualIntent)
 }
 
@@ -521,7 +521,7 @@ func TestUpdateSecurityGroupIntent(t *testing.T) {
 	cache := intent.NewCache()
 	cache.Store(newIntent)
 
-	loadedIntent := loadSecurityGroupIntent(cache, intent.ByUUID(newIntent.GetUUID()))
+	loadedIntent := LoadSecurityGroupIntent(cache, intent.ByUUID(newIntent.GetUUID()))
 	assert.NotNil(t, loadedIntent)
 	loadedIntent.DisplayName = "after"
 
@@ -531,7 +531,7 @@ func TestUpdateSecurityGroupIntent(t *testing.T) {
 		SecurityGroup: &models.SecurityGroup{UUID: "a", DisplayName: "after"},
 	}
 
-	actualIntent := loadSecurityGroupIntent(cache, intent.ByUUID(expectedUpdatedIntent.GetUUID()))
+	actualIntent := LoadSecurityGroupIntent(cache, intent.ByUUID(expectedUpdatedIntent.GetUUID()))
 	assert.NotNil(t, actualIntent)
 	assert.Equal(t, expectedUpdatedIntent, actualIntent)
 }

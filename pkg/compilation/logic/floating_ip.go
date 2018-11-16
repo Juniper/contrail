@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
@@ -22,6 +23,16 @@ type FloatingIPIntent struct {
 	intent.BaseIntent
 	*models.FloatingIP
 	ipVersion int8
+}
+
+// LoadFloatingIPIntent loads a floating IP intent from cache.
+func LoadFloatingIPIntent(loader intent.Loader, query intent.Query) *FloatingIPIntent {
+	intent := loader.Load(models.KindFloatingIP, query)
+	fipIntent, ok := intent.(*FloatingIPIntent)
+	if ok == false {
+		log.Debug("Cannot cast intent to Floating IP Intent")
+	}
+	return fipIntent
 }
 
 // GetObject returns embedded resource object.
@@ -53,7 +64,7 @@ func (s *Service) UpdateFloatingIP(
 	request *services.UpdateFloatingIPRequest,
 ) (*services.UpdateFloatingIPResponse, error) {
 	fip := request.GetFloatingIP()
-	i := LoadFloatingIPIntent(s.cache, fip.GetUUID())
+	i := LoadFloatingIPIntent(s.cache, intent.ByUUID(fip.GetUUID()))
 	if i == nil {
 		return nil, errors.Errorf("cannot load intent for floating ip: %v", fip.GetUUID())
 	}
@@ -78,23 +89,13 @@ func (s *Service) DeleteFloatingIP(
 	request *services.DeleteFloatingIPRequest,
 ) (*services.DeleteFloatingIPResponse, error) {
 
-	i := LoadFloatingIPIntent(s.cache, request.GetID())
+	i := LoadFloatingIPIntent(s.cache, intent.ByUUID(request.GetID()))
 	if i == nil {
 		return nil, errors.New("failed to process FloatingIP deletion: FloatingIPIntent not found in cache")
 	}
 
 	s.cache.Delete(models.KindFloatingIP, intent.ByUUID(i.GetUUID()))
 	return s.BaseService.DeleteFloatingIP(ctx, request)
-}
-
-// LoadFloatingIPIntent loads a floating ip intent from cache.
-func LoadFloatingIPIntent(
-	loader intent.Loader,
-	uuid string,
-) *FloatingIPIntent {
-	i := loader.Load(models.KindFloatingIP, intent.ByUUID(uuid))
-	actual, _ := i.(*FloatingIPIntent) //nolint: errcheck
-	return actual
 }
 
 func newFloatingIPIntent(fip *models.FloatingIP) (*FloatingIPIntent, error) {
