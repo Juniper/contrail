@@ -155,7 +155,7 @@ workflow:
         virtual_network_refs:
         - uuid: vn_sanitize_blue
 
-- name: try to create instance ip with ref with non existing and existing 'to'
+- name: try to create instance ip with ref with non existing 'uuid' and existing 'to'
   request:
     path: /instance-ips
     method: POST
