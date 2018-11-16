@@ -7,3 +7,15 @@ const (
 	UPDATE    = "update"
 	DELETE    = "delete"
 )
+
+// OperationCRUD CRUD opeartions type
+type OperationCRUD int
+
+// CRUD operations
+const (
+	OpCreate OperationCRUD = iota
+	OpRead
+	OpUpdate
+	OpDelete
+	OpInvalid
+)
