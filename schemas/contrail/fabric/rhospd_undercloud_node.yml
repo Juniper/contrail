@@ -19,10 +19,10 @@ plural: rhospd_undercloud_nodes
 prefix: /
 schema:
   properties:
-    undercloud:
-      presence: "required"
-      description: "Details of the RHOSPD undercloud VM"
-      $ref: "rhospd_types.json#/definitions/UnderCloudInfo"
+    vm:
+      presence: required
+      description: "UnderCloud VM details"
+      $ref: "rhospd_types.json#/definitions/UnderCloudVMInfo"
   propertiesOrder: []
   required: []
   type: object
