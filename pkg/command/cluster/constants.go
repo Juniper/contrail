@@ -64,11 +64,10 @@ const (
 	defaultVCenterManagerNodeResPath            = "/" + defaultVCenterManagerNodeRes
 
 	defaultWorkRoot                       = "/var/tmp/contrail_cluster"
-	defaultTemplateRoot                   = "./pkg/cluster/configs"
 	defaultInstanceTemplate               = "instances.tmpl"
 	defaultInstanceFile                   = "instances.yml"
 	defaultVcenterFile                    = "vcenter_vars.yml"
-	defaultProvisioner                    = "ansible"
+	defaultDeployer                       = "ansible"
 	defaultAnsibleRepo                    = "contrail-ansible-deployer"
 	defaultAnsibleRepoDir                 = "/usr/share/contrail/"
 	defaultvCenterProvPlay                = "playbooks/vcenter.yml"
