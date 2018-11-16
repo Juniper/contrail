@@ -151,19 +151,19 @@ func TestDependencyResolution(t *testing.T) {
 	}
 
 	c.Store(vnBlueIntent)
-	vn := logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
+	vn := logic.LoadVirtualNetworkIntent(c, intent.ByUUID(vnBlue.UUID))
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 0, len(vn.RoutingInstances))
 	}
 
 	c.Store(ri1Intent)
-	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
+	vn = logic.LoadVirtualNetworkIntent(c, intent.ByUUID(vnBlue.UUID))
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 1, len(vn.RoutingInstances))
 	}
 
 	c.Store(ri2Intent)
-	ri := logic.LoadRoutingInstanceIntent(c, ri1Intent.UUID)
+	ri := logic.LoadRoutingInstanceIntent(c, intent.ByUUID(ri1Intent.UUID))
 	if assert.NotNil(t, ri) {
 		dependencies := ri.GetDependencies()
 		if assert.Contains(t, dependencies, "routing-instance") {
@@ -171,21 +171,21 @@ func TestDependencyResolution(t *testing.T) {
 		}
 		assert.Equal(t, 1, len(ri.RoutingInstanceBackRefs))
 	}
-	ri = logic.LoadRoutingInstanceIntent(c, ri2Intent.UUID)
+	ri = logic.LoadRoutingInstanceIntent(c, intent.ByUUID(ri2Intent.UUID))
 	if assert.NotNil(t, ri) {
 		assert.Equal(t, 0, len(ri.RoutingInstanceBackRefs))
 	}
-	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
+	vn = logic.LoadVirtualNetworkIntent(c, intent.ByUUID(vnBlue.UUID))
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 2, len(vn.RoutingInstances))
 	}
 
 	c.Delete(ri2Intent.Kind(), intent.ByUUID(ri2Intent.GetUUID()))
-	ri = logic.LoadRoutingInstanceIntent(c, ri1Intent.UUID)
+	ri = logic.LoadRoutingInstanceIntent(c, intent.ByUUID(ri1Intent.UUID))
 	if assert.NotNil(t, ri) {
 		assert.Equal(t, 0, len(ri.RoutingInstanceBackRefs))
 	}
-	vn = logic.LoadVirtualNetworkIntent(c, vnBlue.UUID)
+	vn = logic.LoadVirtualNetworkIntent(c, intent.ByUUID(vnBlue.UUID))
 	if assert.NotNil(t, vn) {
 		assert.Equal(t, 1, len(vn.RoutingInstances))
 	}

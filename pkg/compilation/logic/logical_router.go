@@ -41,14 +41,14 @@ func NewLogicalRouterIntent(
 	return lr
 }
 
-// LoadLogicalRouterIntent loads a virtual network intent from cache.
-func LoadLogicalRouterIntent(
-	c intent.Loader,
-	uuid string,
-) *LogicalRouterIntent {
-	i := c.Load(models.KindLogicalRouter, intent.ByUUID(uuid))
-	actual, _ := i.(*LogicalRouterIntent) //nolint: errcheck
-	return actual
+// LoadLogicalRouterIntent loads a logical router intent from cache.
+func LoadLogicalRouterIntent(loader intent.Loader, query intent.Query) *LogicalRouterIntent {
+	intent := loader.Load(models.KindLogicalRouter, query)
+	lrIntent, ok := intent.(*LogicalRouterIntent)
+	if ok == false {
+		log.Warning("Cannot cast intent to Logical Router Intent")
+	}
+	return lrIntent
 }
 
 // CreateLogicalRouter evaluates logical router dependencies.
@@ -56,7 +56,6 @@ func (s *Service) CreateLogicalRouter(
 	ctx context.Context,
 	request *services.CreateLogicalRouterRequest,
 ) (*services.CreateLogicalRouterResponse, error) {
-
 	i := NewLogicalRouterIntent(ctx, s.ReadService, request)
 
 	ec := s.evaluateContext()
@@ -76,6 +75,30 @@ func (s *Service) CreateLogicalRouter(
 	}
 
 	return s.BaseService.CreateLogicalRouter(ctx, request)
+}
+
+// UpdateLogicalRouter evaluates logical router dependencies.
+func (s *Service) UpdateLogicalRouter(
+	ctx context.Context,
+	request *services.UpdateLogicalRouterRequest,
+) (*services.UpdateLogicalRouterResponse, error) {
+	lr := request.GetLogicalRouter()
+	if lr == nil {
+		return nil, errors.New("failed to update Logical Router." +
+			" Logical Router Request needs to contain resource!")
+	}
+
+	i := LoadLogicalRouterIntent(s.cache, intent.ByUUID(lr.GetUUID()))
+	if i == nil {
+		return nil, errors.Errorf("cannot load intent for logical router %v", lr.GetUUID())
+	}
+
+	i.LogicalRouter = lr
+	if err := s.storeAndEvaluate(ctx, i); err != nil {
+		return nil, errors.Wrapf(err, "failed to update intent for Logical Router :%v", lr.GetUUID())
+	}
+
+	return s.BaseService.UpdateLogicalRouter(ctx, request)
 }
 
 func (i *LogicalRouterIntent) checkVnDiff(
@@ -123,7 +146,7 @@ func (i *LogicalRouterIntent) updateVirtualNetworks(
 ) error {
 	vnRefs := make(map[string]*models.VirtualMachineInterfaceVirtualNetworkRef)
 	for _, ref := range i.VirtualMachineInterfaceRefs {
-		vmi := LoadVirtualMachineInterfaceIntent(evaluateCtx.IntentLoader, ref.UUID)
+		vmi := LoadVirtualMachineInterfaceIntent(evaluateCtx.IntentLoader, intent.ByUUID(ref.UUID))
 		if vmi == nil {
 			return errors.Errorf("failed to retrieve virtual-machine-interface "+
 				"reference with uuid %s for logical-router with uuid %s", ref.UUID, i.GetUUID())
@@ -211,7 +234,7 @@ func (i *LogicalRouterIntent) getDeletedNetworks(
 	vns := []*VirtualNetworkIntent{}
 	for uuid, vnref := range i.virtualNetworks {
 		if _, ok := vnRefs[uuid]; !ok {
-			vn := LoadVirtualNetworkIntent(evaluateCtx.IntentLoader, vnref.UUID)
+			vn := LoadVirtualNetworkIntent(evaluateCtx.IntentLoader, intent.ByUUID(vnref.UUID))
 			if vn == nil {
 				log.Errorf("Failed to load VN with uuid %s", vnref.UUID)
 				continue
@@ -230,7 +253,7 @@ func (i *LogicalRouterIntent) getAddedNetworks(
 	vns := []*VirtualNetworkIntent{}
 	for uuid, vnRef := range vnRefs {
 		if _, ok := i.virtualNetworks[uuid]; !ok {
-			vn := LoadVirtualNetworkIntent(evaluateCtx.IntentLoader, vnRef.UUID)
+			vn := LoadVirtualNetworkIntent(evaluateCtx.IntentLoader, intent.ByUUID(vnRef.UUID))
 			if vn == nil {
 				log.Errorf("failed to retrieve VN with uuid %s", vnRef.UUID)
 				continue
