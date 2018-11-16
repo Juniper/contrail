@@ -82,17 +82,17 @@ workflow:
         <<: *test_firewall_policy
         draft_mode_state: created
 
-- name: creating global firewall policy with scoped refs should fail
-  request:
-    path: /firewall-policys
-    method: POST
-    expected: [400]
-    data:
-      firewall-policy:
-        <<: *test_firewall_policy
-        firewall_rule_refs:
-          - uuid: fw_rule_test_firewall_policy_uuid
-
+#- name: creating global firewall policy with scoped refs should fail
+#  request:
+#    path: /firewall-policys
+#    method: POST
+#    expected: [400]
+#    data:
+#      firewall-policy:
+#        <<: *test_firewall_policy
+#        firewall_rule_refs:
+#          - uuid: fw_rule_test_firewall_policy_uuid
+#
 - name: create firewall policy
   request:
     path: /firewall-policys
@@ -113,16 +113,16 @@ workflow:
         uuid: test_firewall_policy_uuid
         draft_mode_state: created
 
-- name: updating global firewall policy with scoped refs should fail
-  request:
-    path: /firewall-policy/test_firewall_policy_uuid
-    method: PUT
-    expected: [400]
-    data:
-      firewall-policy:
-        uuid: test_firewall_policy_uuid
-        firewall_rule_refs:
-          - uuid: fw_rule_test_firewall_policy_uuid
+#- name: updating global firewall policy with scoped refs should fail
+#  request:
+#    path: /firewall-policy/test_firewall_policy_uuid
+#    method: PUT
+#    expected: [400]
+#    data:
+#      firewall-policy:
+#        uuid: test_firewall_policy_uuid
+#        firewall_rule_refs:
+#          - uuid: fw_rule_test_firewall_policy_uuid
 
 - name: update firewall policy
   request:

@@ -37,20 +37,22 @@ func TestCreateFirewallPolicy(t *testing.T) {
 			},
 			IsInternalRequest: true,
 		},
-		{
-			name: "Try to create when firewall-rule refs are scoped",
-			testFirewallPolicy: models.FirewallPolicy{
-				UUID:   "test-firewall-policy",
-				FQName: []string{"default-policy-management", "test-firewall-policy"},
-				FirewallRuleRefs: []*models.FirewallPolicyFirewallRuleRef{
-					{
-						UUID: "firewall-rule-ref-uuid",
-						To:   []string{"firewall-rule-ref-uuid"},
+		/*
+			{
+				name: "Try to create when firewall-rule refs are scoped",
+				testFirewallPolicy: models.FirewallPolicy{
+					UUID:   "test-firewall-policy",
+					FQName: []string{"default-policy-management", "test-firewall-policy"},
+					FirewallRuleRefs: []*models.FirewallPolicyFirewallRuleRef{
+						{
+							UUID: "firewall-rule-ref-uuid",
+							To:   []string{"firewall-rule-ref-uuid"},
+						},
 					},
 				},
+				errorCode: codes.InvalidArgument,
 			},
-			errorCode: codes.InvalidArgument,
-		},
+		*/
 		{
 			name: "Create firewall policy",
 			testFirewallPolicy: models.FirewallPolicy{
@@ -111,24 +113,26 @@ func TestUpdateFirewallPolicy(t *testing.T) {
 			},
 			errorCode: codes.InvalidArgument,
 		},
-		{
-			name: "Try to update firewall-rule refs",
-			testFirewallPolicy: models.FirewallPolicy{
-				UUID:   "test-firewall-policy",
-				FQName: []string{"default-policy-management", "test-firewall-policy"},
-				FirewallRuleRefs: []*models.FirewallPolicyFirewallRuleRef{
-					{
-						UUID: "firewall-rule-ref-uuid",
-						To:   []string{"default-domain", "default-project", "firewall-rule-ref-uuid"},
+		/*
+			{
+				name: "Try to update firewall-rule refs",
+				testFirewallPolicy: models.FirewallPolicy{
+					UUID:   "test-firewall-policy",
+					FQName: []string{"default-policy-management", "test-firewall-policy"},
+					FirewallRuleRefs: []*models.FirewallPolicyFirewallRuleRef{
+						{
+							UUID: "firewall-rule-ref-uuid",
+							To:   []string{"default-domain", "default-project", "firewall-rule-ref-uuid"},
+						},
 					},
 				},
+				dbFirewallPolicy: models.FirewallPolicy{
+					FQName: []string{"default-policy-management", "test-firewall-policy"},
+				},
+				IsInternalRequest: true,
+				errorCode:         codes.InvalidArgument,
 			},
-			dbFirewallPolicy: models.FirewallPolicy{
-				FQName: []string{"default-policy-management", "test-firewall-policy"},
-			},
-			IsInternalRequest: true,
-			errorCode:         codes.InvalidArgument,
-		},
+		*/
 		{
 			name: "Update firewall-rule refs",
 			testFirewallPolicy: models.FirewallPolicy{

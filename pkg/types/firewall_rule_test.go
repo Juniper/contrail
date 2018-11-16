@@ -173,51 +173,53 @@ func TestCreateFirewallRule(t *testing.T) {
 			},
 			errorCode: codes.InvalidArgument,
 		},
-		{
-			name: "Try to create when address-group refs are scoped",
-			testFirewallRule: models.FirewallRule{
-				UUID:           "test-firewall-rule",
-				FQName:         []string{"default-policy-management", "test-firewall-rule"},
-				DraftModeState: "draft_mode_state",
-				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{
-					{
-						UUID: "address-group-ref-uuid",
-						To:   []string{"address-group-ref-uuid"},
+		/*
+			{
+				name: "Try to create when address-group refs are scoped",
+				testFirewallRule: models.FirewallRule{
+					UUID:           "test-firewall-rule",
+					FQName:         []string{"default-policy-management", "test-firewall-rule"},
+					DraftModeState: "draft_mode_state",
+					AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{
+						{
+							UUID: "address-group-ref-uuid",
+							To:   []string{"address-group-ref-uuid"},
+						},
 					},
 				},
+				IsInternalRequest: true,
+				errorCode:         codes.InvalidArgument,
 			},
-			IsInternalRequest: true,
-			errorCode:         codes.InvalidArgument,
-		},
-		{
-			name: "Try to create when service-group refs are scoped",
-			testFirewallRule: models.FirewallRule{
-				UUID:   "test-firewall-rule",
-				FQName: []string{"default-policy-management", "test-firewall-rule"},
-				ServiceGroupRefs: []*models.FirewallRuleServiceGroupRef{
-					{
-						UUID: "service-group-ref-uuid",
-						To:   []string{"service-group-ref-uuid"},
+			{
+				name: "Try to create when service-group refs are scoped",
+				testFirewallRule: models.FirewallRule{
+					UUID:   "test-firewall-rule",
+					FQName: []string{"default-policy-management", "test-firewall-rule"},
+					ServiceGroupRefs: []*models.FirewallRuleServiceGroupRef{
+						{
+							UUID: "service-group-ref-uuid",
+							To:   []string{"service-group-ref-uuid"},
+						},
 					},
 				},
+				errorCode: codes.InvalidArgument,
 			},
-			errorCode: codes.InvalidArgument,
-		},
-		{
-			name: "Try to create when virtual-network refs are scoped",
-			testFirewallRule: models.FirewallRule{
-				UUID:   "test-firewall-rule",
-				FQName: []string{"default-policy-management", "test-firewall-rule"},
-				VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
-					{
-						UUID: "virtual-network-ref-uuid",
-						To:   []string{"virtual-network-ref-uuid"},
+			{
+				name: "Try to create when virtual-network refs are scoped",
+				testFirewallRule: models.FirewallRule{
+					UUID:   "test-firewall-rule",
+					FQName: []string{"default-policy-management", "test-firewall-rule"},
+					VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
+						{
+							UUID: "virtual-network-ref-uuid",
+							To:   []string{"virtual-network-ref-uuid"},
+						},
 					},
 				},
+				errorCode:         codes.InvalidArgument,
+				IsInternalRequest: true,
 			},
-			errorCode:         codes.InvalidArgument,
-			IsInternalRequest: true,
-		},
+		*/
 		{
 			name: "Try to create when service and service-group-ref properties are undefined",
 			testFirewallRule: models.FirewallRule{
@@ -480,29 +482,31 @@ func TestUpdateFirewallRule(t *testing.T) {
 			databaseFR: &models.FirewallRule{},
 			errorCode:  codes.InvalidArgument,
 		},
-		{
-			name: "Try to update virtual-network refs with different scope",
-			request: services.UpdateFirewallRuleRequest{
-				FirewallRule: &models.FirewallRule{
-					VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
-						{
-							UUID: "virtual-network-ref-uuid",
-							To:   []string{"virtual-network-ref-uuid"},
+		/*
+			{
+				name: "Try to update virtual-network refs with different scope",
+				request: services.UpdateFirewallRuleRequest{
+					FirewallRule: &models.FirewallRule{
+						VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
+							{
+								UUID: "virtual-network-ref-uuid",
+								To:   []string{"virtual-network-ref-uuid"},
+							},
+						},
+					},
+					FieldMask: types.FieldMask{
+						Paths: []string{
+							models.FirewallRuleFieldVirtualNetworkRefs,
 						},
 					},
 				},
-				FieldMask: types.FieldMask{
-					Paths: []string{
-						models.FirewallRuleFieldVirtualNetworkRefs,
-					},
+				databaseFR: &models.FirewallRule{
+					FQName: []string{"default-policy-management", "test-firewall-rule"},
 				},
+				IsInternalRequest: true,
+				errorCode:         codes.InvalidArgument,
 			},
-			databaseFR: &models.FirewallRule{
-				FQName: []string{"default-policy-management", "test-firewall-rule"},
-			},
-			IsInternalRequest: true,
-			errorCode:         codes.InvalidArgument,
-		},
+		*/
 		{
 			name: "Try to define service and service-group refs",
 			request: services.UpdateFirewallRuleRequest{
