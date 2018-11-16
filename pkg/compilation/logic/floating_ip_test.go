@@ -81,7 +81,7 @@ func TestCreateFloatingIP(t *testing.T) {
 				FloatingIP: tt.testFloatingIP,
 			})
 
-			fipIntent := LoadFloatingIPIntent(cache, tt.testFloatingIP.GetUUID())
+			fipIntent := LoadFloatingIPIntent(cache, intent.ByUUID(tt.testFloatingIP.GetUUID()))
 			if tt.fails {
 				assert.Error(t, err)
 				assert.Nil(t, fipIntent)
@@ -194,7 +194,7 @@ func TestUpdateFloatingIP(t *testing.T) {
 				FloatingIP: tt.testFloatingIP,
 			})
 
-			fipIntent := LoadFloatingIPIntent(cache, tt.testFloatingIP.GetUUID())
+			fipIntent := LoadFloatingIPIntent(cache, intent.ByUUID(tt.testFloatingIP.GetUUID()))
 			if tt.fails {
 				assert.Error(t, err)
 				assert.Equal(t, tt.cacheIntent, fipIntent)
@@ -257,7 +257,7 @@ func TestDeleteFloatingIP(t *testing.T) {
 				ID: tt.uuid,
 			})
 
-			fipIntent := LoadFloatingIPIntent(cache, tt.uuid)
+			fipIntent := LoadFloatingIPIntent(cache, intent.ByUUID(tt.uuid))
 			assert.Nil(t, fipIntent)
 			if tt.fails {
 				assert.Error(t, err)

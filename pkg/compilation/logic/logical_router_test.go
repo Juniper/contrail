@@ -105,7 +105,7 @@ func TestCreateLogicalRouterCreatesRouteTarget(t *testing.T) {
 
 			assert.NoError(t, err)
 
-			lrIntent := LoadLogicalRouterIntent(cache, tt.testLogicalRouter.GetUUID())
+			lrIntent := LoadLogicalRouterIntent(cache, intent.ByUUID(tt.testLogicalRouter.GetUUID()))
 
 			if tt.logicalRouterIntent != nil {
 				if assert.NotNil(t, lrIntent) {

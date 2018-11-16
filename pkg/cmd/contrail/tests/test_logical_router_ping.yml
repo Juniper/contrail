@@ -1,0 +1,445 @@
+name: Logical Router Ping
+intent_compiler_enabled: true
+cleanup:
+- path: /logical-router/beefbeef-beef-beef-beef-beefbeef1005
+- path: /instance-ip/beefbeef-beef-beef-beef-beefbeef1004
+- path: /instance-ip/beefbeef-beef-beef-beef-beefbeef1003
+- path: /virtual-machine-interface/beefbeef-beef-beef-beef-beefbeef1002
+- path: /virtual-machine-interface/beefbeef-beef-beef-beef-beefbeef1001
+- path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1014
+- path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1013
+- path: /network-ipam/beefbeef-beef-beef-beef-
+- path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1011
+- path: /project/project_uuid
+test_data:
+  project: &project
+    uuid: project_uuid
+    fq_name: ["default", "default-project"]
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  network_ipam_blue: &network_ipam_blue
+    uuid: beefbeef-beef-beef-beef-beefbeef1011
+    parent_type: project
+    fq_name:
+    - default
+    - default-project
+    - net_ipam_blue
+    ipam_subnet_method: flat-subnet
+    ipam_subnets:
+      subnets:
+      - addr_from_start: true
+        alloc_unit: 0
+        default_gateway: 13.32.0.1
+        dhcp_option_list:
+        dns_server_address: 13.32.0.2
+        enable_dhcp: true
+        subnet:
+          ip_prefix: 13.32.0.0
+          ip_prefix_len: 12
+
+  network_ipam_red: &network_ipam_red
+    uuid: beefbeef-beef-beef-beef-beefbeef1012
+    parent_type: project
+    fq_name:
+    - default
+    - default-project
+    - net_ipam_red
+    ipam_subnet_method: flat-subnet
+    ipam_subnets:
+      subnets:
+      - addr_from_start: true
+        alloc_unit: 0
+        default_gateway: 14.32.0.1
+        dhcp_option_list:
+        dns_server_address: 14.32.0.2
+        enable_dhcp: true
+        subnet:
+          ip_prefix: 14.32.0.0
+          ip_prefix_len: 12
+
+  virtual_network_blue: &virtual_network_blue
+    uuid: beefbeef-beef-beef-beef-beefbeef1013
+    address_allocation_mode: flat-subnet-only
+    parent_type: project
+    virtual_network_properties:
+      forwarding_mode: l3
+      rpf: enable
+    network_ipam_refs:
+    - to:
+      - default
+      - default-project
+      - net_ipam_blue
+    fq_name:
+    - default
+    - default-project
+    - vn1
+
+  virtual_network_red: &virtual_network_red
+    uuid: beefbeef-beef-beef-beef-beefbeef1014
+    address_allocation_mode: flat-subnet-only
+    parent_type: project
+    virtual_network_properties:
+      forwarding_mode: l3
+      rpf: enable
+    network_ipam_refs:
+    - to:
+      - default
+      - default-project
+      - net_ipam_red
+    fq_name:
+    - default
+    - default-project
+    - vn2
+
+  virtual_machine_interface_blue: &virtual_machine_interface_blue
+    parent_type: project
+    fq_name:
+    - default
+    - default-project
+    - beefbeef-beef-beef-beef-beefbeef1001
+    virtual_network_refs:
+    - to:
+      - default
+      - default-project
+      - vn1
+    virtual_machine_interface_device_owner: network:router_interface
+    display_name: beefbeef-beef-beef-beef-beefbeef1001
+    uuid: beefbeef-beef-beef-beef-beefbeef1001
+    name: beefbeef-beef-beef-beef-beefbeef1001
+
+  virtual_machine_interface_red: &virtual_machine_interface_red
+    parent_type: project
+    fq_name:
+    - default
+    - default-project
+    - beefbeef-beef-beef-beef-beefbeef1002
+    virtual_network_refs:
+    - to:
+      - default
+      - default-project
+      - vn2
+    virtual_machine_interface_device_owner: network:router_interface
+    display_name: beefbeef-beef-beef-beef-beefbeef1002
+    uuid: beefbeef-beef-beef-beef-beefbeef1002
+    name: beefbeef-beef-beef-beef-beefbeef1002
+
+  instance_ip_blue: &instance_ip_blue
+    fq_name:
+    - beefbeef-beef-beef-beef-beefbeef1003
+    display_name: beefbeef-beef-beef-beef-beefbeef1003
+    name: beefbeef-beef-beef-beef-beefbeef1003
+    uuid: beefbeef-beef-beef-beef-beefbeef1003
+    virtual_machine_interface_refs:
+    - to:
+      - default
+      - default-project
+      - beefbeef-beef-beef-beef-beefbeef1001
+      uuid: beefbeef-beef-beef-beef-beefbeef1001
+    virtual_network_refs:
+    - to:
+      - default
+      - default-project
+      - vn1
+
+  instance_ip_red: &instance_ip_red
+    fq_name:
+    - beefbeef-beef-beef-beef-beefbeef1004
+    display_name: beefbeef-beef-beef-beef-beefbeef1004
+    name: beefbeef-beef-beef-beef-beefbeef1004
+    uuid: beefbeef-beef-beef-beef-beefbeef1004
+    virtual_machine_interface_refs:
+    - to:
+      - default
+      - default-project
+      - beefbeef-beef-beef-beef-beefbeef1002
+      uuid: beefbeef-beef-beef-beef-beefbeef1002
+    virtual_network_refs:
+    - to:
+      - default
+      - default-project
+      - vn2
+
+  logical_router: &logical_router
+    uuid: beefbeef-beef-beef-beef-beefbeef1005
+    name: logical_router_1
+    fq_name:
+    - default
+    - default-project
+    - logical_router_1
+    parent_type: project
+    virtual_machine_interface_refs:
+    - to:
+      - default
+      - default-project
+      - beefbeef-beef-beef-beef-beefbeef1001
+      uuid: beefbeef-beef-beef-beef-beefbeef1001
+    - to:
+      - default
+      - default-project
+      - beefbeef-beef-beef-beef-beefbeef1002
+      uuid: beefbeef-beef-beef-beef-beefbeef1002
+    id_perms:
+      enable: true
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *project
+  expect:
+    project: *project
+
+- name: create network ipam blue
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 200
+    data:
+      network-ipam: *network_ipam_blue
+  expect:
+    network-ipam: *network_ipam_blue
+
+- name: create network ipam red
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 200
+    data:
+      network-ipam: *network_ipam_red
+  expect:
+    network-ipam: *network_ipam_red
+
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network:
+        uuid: beefbeef-beef-beef-beef-beefbeef1013
+        address_allocation_mode: flat-subnet-only
+        parent_type: project
+        virtual_network_properties:
+          forwarding_mode: l3
+          rpf: enable
+        network_ipam_refs:
+        - to:
+          - default
+          - default-project
+          - net_ipam_blue
+          attr:
+            ipam_subnets: []
+        fq_name:
+        - default
+        - default-project
+        - vn1
+  expect:
+    virtual-network: *virtual_network_blue
+  watchers:
+    /contrail/routing_instance/:
+      - null
+      - null
+
+- name: create virtual network red
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network:
+        uuid: beefbeef-beef-beef-beef-beefbeef1014
+        address_allocation_mode: flat-subnet-only
+        parent_type: project
+        virtual_network_properties:
+          forwarding_mode: l3
+          rpf: enable
+        network_ipam_refs:
+        - to:
+          - default
+          - default-project
+          - net_ipam_red
+          attr:
+            ipam_subnets: []
+        fq_name:
+        - default
+        - default-project
+        - vn2
+  expect:
+    virtual-network: *virtual_network_red
+  watchers:
+    /contrail/routing_instance/:
+      - null
+      - null
+
+- name: create virtual machine interface blue
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-machine-interface: *virtual_machine_interface_blue
+  expect:
+    virtual-machine-interface: *virtual_machine_interface_blue
+
+- name: create virtual machine interface red
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-machine-interface: *virtual_machine_interface_red
+  expect:
+    virtual-machine-interface: *virtual_machine_interface_red
+
+- name: create instance ip blue
+  request:
+    path: /instance-ips
+    method: POST
+    expected:
+    - 200
+    data:
+      instance-ip: *instance_ip_blue
+  expect:
+    instance-ip: *instance_ip_blue
+
+- name: create instance ip red
+  request:
+    path: /instance-ips
+    method: POST
+    expected:
+    - 200
+    data:
+      instance-ip: *instance_ip_red
+  expect:
+    instance-ip: *instance_ip_red
+
+- name: create logical router
+  request:
+    path: /logical-routers
+    method: POST
+    expected:
+    - 200
+    data:
+      logical-router: *logical_router
+  expect:
+    logical-router: *logical_router
+  watchers:
+    /contrail/routing_instance/:
+      - null
+      - null
+      - null
+      - null
+
+- name: check if routing instance has 2 target refs
+  request:
+    path: /routing-instances?parent_id=beefbeef-beef-beef-beef-beefbeef1013&detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    routing-instances:
+    - routing-instance:
+        route_target_refs:
+        - null
+        - null
+
+- name: delete logical router
+  request:
+    path: /logical-router/beefbeef-beef-beef-beef-beefbeef1005
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete instance ip
+  request:
+    path: /instance-ip/beefbeef-beef-beef-beef-beefbeef1004
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete instance ip
+  request:
+    path: /instance-ip/beefbeef-beef-beef-beef-beefbeef1003
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete vmi
+  request:
+    path: /virtual-machine-interface/beefbeef-beef-beef-beef-beefbeef1002
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete vmi
+  request:
+    path: /virtual-machine-interface/beefbeef-beef-beef-beef-beefbeef1001
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete vn
+  request:
+    path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1014
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete vn
+  request:
+    path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1013
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete ipam
+  request:
+    path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1012
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete ipam
+  request:
+    path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1011
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete project
+  request:
+    path: /project/project_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
