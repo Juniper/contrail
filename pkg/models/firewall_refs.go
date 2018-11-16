@@ -1,9 +1,6 @@
 package models
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
@@ -32,21 +29,27 @@ func isScopedFirewallResource(fqName []string) bool {
 }
 
 func checkRefInSameScope(obj basemodels.Object, ref basemodels.Reference, fqName []string) error {
-	if len(ref.GetTo()) == 2 {
-		return nil
-	}
+	// HACK - this method is should not use field "To", since it may not be set in some cases
+	return nil
+	/*
+		if len(ref.GetTo()) == 2 {
+			return nil
+		}
 
-	return fmt.Errorf(
-		"global %s %s (%s) cannot reference a scoped %s %s (%s)",
-		formatResourceKind(obj.Kind()),
-		basemodels.FQNameToString(fqName),
-		obj.GetUUID(),
-		formatResourceKind(ref.GetReferredKind()),
-		basemodels.FQNameToString(ref.GetTo()),
-		ref.GetUUID(),
-	)
+		return fmt.Errorf(
+			"global %s %s (%s) cannot reference a scoped %s %s (%s)",
+			formatResourceKind(obj.Kind()),
+			basemodels.FQNameToString(fqName),
+			obj.GetUUID(),
+			formatResourceKind(ref.GetReferredKind()),
+			basemodels.FQNameToString(ref.GetTo()),
+			ref.GetUUID(),
+		)
+	*/
 }
 
+/*
 func formatResourceKind(kind string) string {
 	return strings.Title(strings.Replace(kind, "-", " ", -1))
 }
+*/
