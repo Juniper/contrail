@@ -93,6 +93,8 @@ const (
 {% for schema in schemas %}
 
 const Kind{{ schema.JSONSchema.GoName }} = "{{ schema.TypeName }}"
+const ObjName{{ schema.JSONSchema.GoName }} = "{{ schema.TypeName }}s"
+const TypeName{{ schema.JSONSchema.GoName }} = "{{ schema.JSONSchema.GoName }}"
 
 {% if schema.JSONSchema.Type == "object" %}
 
@@ -267,6 +269,12 @@ func (m *{{ schema.JSONSchema.GoName }}) UnmarshalJSON(b []byte) error {
 	return err
 }
 {% endif %}
+
+// Kind returns Object Name of an resource.
+func (m *{{ schema.JSONSchema.GoName }}) ObjName() string {
+	return ObjName{{ schema.JSONSchema.GoName }}
+}
+
 
 // Kind returns kind of an resource.
 func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
