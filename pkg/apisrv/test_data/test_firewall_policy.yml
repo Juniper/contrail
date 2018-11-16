@@ -3,6 +3,7 @@ description: basic firewall policy test
 cleanup:
 - path: /project/admin_project_uuid
 - path: /firewall-rule/fw_rule_test_firewall_policy_uuid
+- path: /firewall-rule/global_fw_rule_test_firewall_policy_uuid
 - path: /firewall-policy/test_firewall_policy_uuid
 test_data:
   admin_project: &admin_project
@@ -20,6 +21,22 @@ test_data:
     fq_name:
       - default-domain
       - admin_project
+      - test_firewall_rule
+    endpoint_1:
+      any: true
+    endpoint_2:
+      any: true
+    match_tags:
+      tag_list:
+        - application
+    service:
+      protocol: tcp
+
+  firewall_rule: &test_global_firewall_rule
+    uuid: global_fw_rule_test_firewall_policy_uuid
+    parent_type: policy-management
+    fq_name:
+      - default-policy-management
       - test_firewall_rule
     endpoint_1:
       any: true
@@ -71,6 +88,16 @@ workflow:
       firewall-rule: *test_firewall_rule
   expect:
     firewall-rule: *test_firewall_rule
+
+- name: create firewall rule
+  request:
+    path: /firewall-rules
+    method: POST
+    expected: [200]
+    data:
+      firewall-rule: *test_global_firewall_rule
+  expect:
+    firewall-rule: *test_global_firewall_rule
 
 - name: creating firewall policy with draft mode state property defined should fail
   request:
@@ -124,6 +151,20 @@ workflow:
         firewall_rule_refs:
           - uuid: fw_rule_test_firewall_policy_uuid
 
+- name: updating global firewall policy with global firewall rule
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: ADD
+      type: firewall-policy
+      uuid: test_firewall_policy_uuid
+      ref-type: firewall-rule
+      ref-uuid: global_fw_rule_test_firewall_policy_uuid
+  expect:
+    uuid: test_firewall_policy_uuid
+
 - name: update firewall policy
   request:
     path: /firewall-policy/test_firewall_policy_uuid
@@ -160,6 +201,13 @@ workflow:
 - name: delete firewall rule
   request:
     path: /firewall-rule/fw_rule_test_firewall_policy_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete firewall rule
+  request:
+    path: /firewall-rule/global_fw_rule_test_firewall_policy_uuid
     method: DELETE
     expected: [200]
   expect: null
