@@ -23,13 +23,11 @@ type SecurityGroupIntent struct {
 	ingressACL, egressACL *models.AccessControlList
 }
 
-// LoadSecurityGroupIntent returns embedded resource object
-func LoadSecurityGroupIntent(
-	loader intent.Loader,
-	q intent.Query,
-) *SecurityGroupIntent {
-	i, _ := loader.Load(models.KindSecurityGroup, q).(*SecurityGroupIntent) //nolint: errcheck
-	return i
+// LoadSecurityGroupIntent loads a security group intent from cache.
+func LoadSecurityGroupIntent(loader intent.Loader, query intent.Query) *SecurityGroupIntent {
+	intent := loader.Load(models.KindSecurityGroup, query)
+	sgIntent, _ := intent.(*SecurityGroupIntent) //nolint: errcheck
+	return sgIntent
 }
 
 // GetObject returns embedded resource object
@@ -66,7 +64,7 @@ func (s *Service) UpdateSecurityGroup(
 			" Security Group Request needs to contain resource!")
 	}
 
-	i := loadSecurityGroupIntent(s.cache, intent.ByUUID(sg.GetUUID()))
+	i := LoadSecurityGroupIntent(s.cache, intent.ByUUID(sg.GetUUID()))
 	if i == nil {
 		return nil, errors.Errorf("cannot load intent for security group %v", sg.GetUUID())
 	}
@@ -86,7 +84,7 @@ func (s *Service) DeleteSecurityGroup(
 	request *services.DeleteSecurityGroupRequest,
 ) (*services.DeleteSecurityGroupResponse, error) {
 
-	i := loadSecurityGroupIntent(s.cache, intent.ByUUID(request.GetID()))
+	i := LoadSecurityGroupIntent(s.cache, intent.ByUUID(request.GetID()))
 	if i == nil {
 		return nil, errors.New("failed to process SecurityGroup deletion: SecurityGroupIntent not found in cache")
 	}
@@ -238,7 +236,7 @@ func resolveSGRef(rs *models.PolicyRulesWithRefs, addr *models.AddressType, ec *
 	if !addr.IsSecurityGroupNameAReference() {
 		return
 	}
-	i := loadSecurityGroupIntent(
+	i := LoadSecurityGroupIntent(
 		ec.IntentLoader,
 		intent.ByFQName(basemodels.ParseFQName(addr.SecurityGroup)))
 	if i == nil {
@@ -262,12 +260,6 @@ func createOrUpdateDefaultACL(
 		return oldACL, err
 	}
 	return updatedACL, nil
-}
-
-func loadSecurityGroupIntent(loader intent.Loader, query intent.Query) *SecurityGroupIntent {
-	intent := loader.Load(models.KindSecurityGroup, query)
-	sgIntent, _ := intent.(*SecurityGroupIntent) //nolint: errcheck
-	return sgIntent
 }
 
 func createACL(
