@@ -154,23 +154,19 @@ binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
 
 docker_prepare: ## Prepare common data to generate Docker files (use target `docker` or `docker_config_api` instead)
-	rm -rf $(BUILD_DIR) && mkdir -p $(BUILD_DIR)/contrail
-	cp -r docker $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/docker/contrail_go/src/contrail && cp -r docker/* $(BUILD_DIR)/docker/
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrail" ./cmd/contrail
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrailcli" ./cmd/contrailcli
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrailutil" ./cmd/contrailutil
 	cp -r sample $(BUILD_DIR)/docker/contrail_go/etc
 	$(foreach db_file, $(DB_FILES), cp tools/$(db_file) $(BUILD_DIR)/docker/contrail_go/etc;)
 	cp -r public $(BUILD_DIR)/docker/contrail_go/public
-	$(foreach src, $(SRC_DIRS), cp -r ../contrail/$(src) $(BUILD_DIR)/contrail;)
-	mkdir -p $(BUILD_DIR)/docker/contrail_go/templates/ && cp pkg/cluster/configs/instances.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
-	mkdir -p $(BUILD_DIR)/docker/contrail_go/templates/ && cp pkg/cluster/configs/inventory.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
+	$(foreach src, $(SRC_DIRS), cp -r ../contrail/$(src) $(BUILD_DIR)/docker/contrail_go/src/contrail;)
+	mkdir -p $(BUILD_DIR)/docker/contrail_go/templates/ && cp pkg/deploy/cluster/templates/* $(BUILD_DIR)/docker/contrail_go/templates/
 	cp pkg/cloud/configs/onprem_cloud_topology.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
 	cp pkg/cloud/configs/public_cloud_topology.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
 	cp pkg/cloud/configs/secret.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
-	cp pkg/cluster/configs/contrail_common.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
-	cp pkg/cluster/configs/gateway_common.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
-	cp pkg/cluster/configs/tor_common.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
 	mkdir -p $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
 ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
 		git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git $(BUILD_DIR)/docker/contrail_go/contrail-ansible-deployer
@@ -180,7 +176,7 @@ else
 endif
 
 docker: docker_prepare ## Generate Docker files
-	docker build -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
+	docker build --build-arg GOPATH=$(GOPATH) -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
 # This target creates contrail-go docker that is able to work as a drop-in replacement to original config-api.
 # It depends on 'docker' target to inherit all the necesary steps with minimal changes
@@ -188,7 +184,7 @@ docker_config_api: docker_prepare ## Create contrail-go docker as a drop-in repl
 	## Copy dockerfile because it must be in a build context dir
 	cp -f docker/contrail_go/Dockerfile-config_api $(BUILD_DIR)/docker/contrail_go
 	cp -f sample/contrail-config_api.yml $(BUILD_DIR)/docker/contrail_go/etc/
-	docker build -t "contrail-go-config" -f $(BUILD_DIR)/docker/contrail_go/Dockerfile-config_api $(BUILD_DIR)/docker/contrail_go
+	docker build --build-arg GOPATH=$(GOPATH) -t "contrail-go-config" -f $(BUILD_DIR)/docker/contrail_go/Dockerfile-config_api $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

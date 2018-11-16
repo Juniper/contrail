@@ -9,11 +9,12 @@ auth_url: {{ input.AuthURL }}
 {% endif %}
 endpoint: {{ input.Endpoint }}
 insecure: {{ input.InSecure }}
-cluster_id: {{ resource.uuid }}
-cluster_action: {{ action }}
+resource_type: {{ resource.schema_id }}
+resource_id: {{ resource.uuid }}
+resource_action: {{ action }}
 provisioner_type: {{ resource.ProvisionerType }}
 log_level: debug
-log_file: /var/log/contrail/cluster.log
+log_file: /var/log/contrail/deploy.log
 template_root: /usr/share/contrail/templates/
 
 # Optional ansible params for dev/test

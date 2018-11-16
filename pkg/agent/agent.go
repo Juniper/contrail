@@ -181,22 +181,23 @@ func (a *Agent) Watch(ctx context.Context) error {
 
 	for _, task := range a.config.Tasks {
 		task.init(a)
-		schemaIDPattern := task.SchemaID
 
 		for k := range a.schemas {
-			if schemaIDPattern != k {
-				continue
-			}
+			for _, schemaID := range task.SchemaIDs {
+				if schemaID != k {
+					continue
+				}
 
-			watcher, err := newWatcher(a, task, k)
-			if err != nil {
-				return err
-			}
+				watcher, err := newWatcher(a, task, k)
+				if err != nil {
+					return err
+				}
 
-			go func() {
-				defer wg.Done()
-				watcher.watch(ctx)
-			}()
+				go func() {
+					defer wg.Done()
+					watcher.watch(ctx)
+				}()
+			}
 		}
 	}
 
