@@ -44,7 +44,7 @@ etcd:
 
 
 # Log Level
-log_level: info
+log_level: debug
 
 # Server configuration
 server:
@@ -125,6 +125,17 @@ keystone:
               - id: Member
                 name: Member
                 project: *demo
+            ben:
+              id: ben
+              name: Bob
+              domain: *default
+              password: ben_password
+              email: ben@juniper.net
+              roles:
+              - id: dev
+                name: dev
+                project: *demo
+
     store:
         type: memory
         expire: 3600
