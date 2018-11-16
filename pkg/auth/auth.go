@@ -20,6 +20,8 @@ type Context struct {
 const (
 	//AdminRole string
 	AdminRole = "admin"
+	//GlobalReadOnlyRole string
+	GlobalReadOnlyRole = "RO"
 )
 
 //NewContext makes a authentication context.
@@ -40,6 +42,14 @@ func (context *Context) IsAdmin() bool {
 	return format.ContainsString(context.roles, AdminRole)
 }
 
+//IsGlobalRORole is used to check if this context is  global read only role
+func (context *Context) IsGlobalRORole() bool {
+	if context == nil {
+		return true
+	}
+	return format.ContainsString(context.roles, GlobalReadOnlyRole)
+}
+
 //ProjectID is used to get an id for project.
 func (context *Context) ProjectID() string {
 	if context == nil {
@@ -54,6 +64,22 @@ func (context *Context) DomainID() string {
 		return "admin"
 	}
 	return context.domainID
+}
+
+//UserID is used to get an id for User.
+func (context *Context) UserID() string {
+	if context == nil {
+		return AdminRole
+	}
+	return context.userID
+}
+
+//Roles  is used to get the roles of a user
+func (context *Context) Roles() []string {
+	if context == nil {
+		return nil
+	}
+	return context.roles
 }
 
 //GetContext is used to get an authentication from echo.Context.
