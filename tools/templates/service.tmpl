@@ -9,13 +9,19 @@ import (
     "github.com/satori/go.uuid"
     log "github.com/sirupsen/logrus"
 
+    "github.com/Juniper/contrail/pkg/apisrv/rbac"
     "github.com/Juniper/contrail/pkg/auth"
     "github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/format"
+    "github.com/Juniper/contrail/pkg/constants"
+    "github.com/Juniper/contrail/pkg/format"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "github.com/Juniper/contrail/pkg/models/basemodels"
     "github.com/Juniper/contrail/pkg/models"
 )
+
+// This is needed to prevent an import error.
+var _ = rbac.ValidateRequest
+var _ = constants.OpUpdate
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
@@ -30,7 +36,16 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
     if err := c.Bind(requestData); err != nil {
         return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
     }
-    ctx := c.Request().Context()
+    ctx := c.Request().Context()   
+
+    
+    model := requestData.{{ schema.JSONSchema.GoName }}
+    apiAccessRules := service.getAllAPIAccessLists(ctx) 
+    ret := rbac.ValidateRequest(ctx,apiAccessRules,model.ObjectName(),constants.OpCreate)
+    if ret != nil {
+	return errutil.ToHTTPError(ret)
+    }	
+    
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
     if err != nil {
         return errutil.ToHTTPError(err)
@@ -109,7 +124,6 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     if model.IDPerms.UUID == nil {
         model.IDPerms.UUID = models.NewUUIDType(model.UUID)
     }
-
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
         return nil, errutil.ErrorBadRequestf(
@@ -167,6 +181,13 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     model.UUID = c.Param("id")
 
+    ctx := c.Request().Context()
+    apiAccessRules := service.getAllAPIAccessLists(ctx)
+    ret := rbac.ValidateRequest( ctx,apiAccessRules, model.ObjectName(),constants.OpUpdate)
+    if ret != nil  {
+	return errutil.ToHTTPError(ret)
+    }	
+
     response, err := service.Update{{ schema.JSONSchema.GoName }}(
         c.Request().Context(),
         &Update{{ schema.JSONSchema.GoName }}Request{
@@ -203,7 +224,15 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
         ID: c.Param("id"),
     }
     ctx := c.Request().Context()
-    _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+    
+    model := models.{{ schema.JSONSchema.GoName }}{} 
+    apiAccessRules := service.getAllAPIAccessLists(ctx)
+    ret := rbac.ValidateRequest(ctx,apiAccessRules, model.ObjectName(),constants.OpDelete)
+    if ret != nil {
+	return  errutil.ToHTTPError(ret)
+    }	
+
+     _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
     }
@@ -216,6 +245,14 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
         ID: c.Param("id"),
     }
     ctx := c.Request().Context()
+    model := models.{{ schema.JSONSchema.GoName }}{} 
+    apiAccessRules := service.getAllAPIAccessLists(ctx)
+    ret := rbac.ValidateRequest(ctx,apiAccessRules, model.ObjectName(),constants.OpRead) 
+    if ret != nil {
+	return errutil.ToHTTPError(ret) 
+    }	
+ 
+    
     response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
@@ -229,11 +266,19 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 // RESTList{{ schema.JSONSchema.GoName }} handles a REST list request.
 func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
     var err error
+    
     spec := baseservices.GetListSpec(c)
-    request := &List{{ schema.JSONSchema.GoName }}Request{
-        Spec: spec,
-    }
+    request := &List{{ schema.JSONSchema.GoName }}Request{ Spec: spec, }
     ctx := c.Request().Context()
+    
+    model := models.{{ schema.JSONSchema.GoName }}{} 
+    apiAccessRules := service.getAllAPIAccessLists(ctx)
+    
+    ret := rbac.ValidateRequest(ctx,apiAccessRules,model.ObjectName(),constants.OpRead)
+    if ret != nil {
+	return errutil.ToHTTPError(ret)
+    }	
+    
     response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
@@ -241,14 +286,14 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     if err = response.ApplyHref(c.Request()); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
-
+    
     if spec.Count == true {
         return c.JSON(http.StatusOK, response.Count())
     }
     if spec.Detail == true {
         return c.JSON(http.StatusOK, response.Detailed())
     }
-    return c.JSON(http.StatusOK, response.Data())
+    return c.JSON(http.StatusOK, response.Data())    
 }
 
 {% endif %}{% endfor %}

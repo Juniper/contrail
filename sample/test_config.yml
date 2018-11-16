@@ -44,7 +44,7 @@ etcd:
 
 
 # Log Level
-log_level: info
+log_level: Info
 
 # Server configuration
 server:
@@ -125,6 +125,7 @@ keystone:
               - id: Member
                 name: Member
                 project: *demo
+
     store:
         type: memory
         expire: 3600
