@@ -18,26 +18,26 @@ option (gogoproto.protosizer_all) = false;
 
 option go_package = "models";
 
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% for schema in schemas sorted %}{% if schema.Type != "abstract" and schema.ID %}
 
 message {{ schema.JSONSchema.GoName }} {
 {%- for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.FieldName }}\""]; // {{ property.Description }}
 {%- endfor %}
-{%- for linkTo, reference in schema.References %}
+{%- for linkTo, reference in schema.References sorted %}
     repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs", (gogoproto.moretags) = "yaml:\"{{ linkTo }}_refs\""];// {{ reference.Description }}
 {%- endfor %}
-{%- for _, backref in schema.BackReferences %}
+{%- for _, backref in schema.BackReferences sorted %}
     {% set linkTo = backref.LinkTo %}
     repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_back_refs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_back_refs\""]; // {{ backref.Description }}
 {%- endfor %}
-{%- for backref in schema.Children %}
+{%- for backref in schema.Children sorted %}
     {% set child = backref.LinkTo %}
     repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s", (gogoproto.moretags) = "yaml:\"{{ child.Plural }}\""]; // {{ backref.Description }}
 {%- endfor %}
 }
 
-{% for linkTo, reference in schema.References %}
+{% for linkTo, reference in schema.References sorted %}
 message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
     string uuid = 1 [(gogoproto.customname) = "UUID", (gogoproto.moretags) = "yaml:\"uuid\""];
     repeated string to = 2 [(gogoproto.customname) = "To", (gogoproto.moretags) = "yaml:\"to\""];
@@ -49,14 +49,14 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 
 {% endif %}{% endfor %}
 
-{% for type, definition in types %}{% if definition.Type == "object" %}
+{% for type, definition in types sorted %}{% if definition.Type == "object" %}
 {% if type == "KeyValuePair" %}
 
 	// Omitempty tag is removed from fields of KeyValuePair type, because it caused issues in REST API clients
 	// which expected all fields to be present. To achieve that "gogoproto.jsontag" extension is used.
 	message KeyValuePair {
 	{%- for property in definition.OrderedProperties %}
-		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\"", (gogoproto.jsontag) = "{{ property.ID }}"]; // {{ property.Description }}
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.FieldName }}\"", (gogoproto.jsontag) = "{{ property.FieldName }}"]; // {{ property.Description }}
 	{%- endfor %}
 	}
 
@@ -64,7 +64,7 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 
 	message {{ type }} {
 	{%- for property in definition.OrderedProperties %}
-		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.FieldName }}\""]; // {{ property.Description }}
 	{%- endfor %}
 	}
 
