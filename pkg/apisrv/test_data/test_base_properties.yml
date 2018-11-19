@@ -1,9 +1,9 @@
 name: Base poperties test
 description: Tests handling of base properties
 cleanup:
-- path: /fabrics/default_fabric
-- path: /fabrics/fabric_base_properties_uuid
-- path: /projects/project_base_properties_uuid
+- path: /fabric/default_fabric
+- path: /fabric/fabric_base_properties_uuid
+- path: /project/project_base_properties_uuid
 - path: /network-ipam/4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
 test_data:
   fabric_minimal: &fabric_minimal
@@ -20,7 +20,7 @@ test_data:
 
   network_ipam: &network_ipam
     fq_name:
-    - domain
+    - default
     - project_base_properties_uuid
     - 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
     uuid: 4b84d2c8-ac3c-419e-2e49-956c13d1f6e3
