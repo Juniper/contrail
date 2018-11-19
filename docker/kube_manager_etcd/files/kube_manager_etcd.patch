@@ -918,3 +918,203 @@ diff -Naur -x '*.pyc' -x '*.orig' -x '*.pyo' orig/site-packages/kube_manager/vnc
  
          # Register label add and delete callbacks with label management entity.
          XLabelCache.register_label_add_callback(VncKubernetes.create_tags)
+diff -Naur -x '*.pyc' -x '*.orig' -x '*.pyo' orig/site-packages/kube_manager/vnc/loadbalancer.py new/site-packages/kube_manager/vnc/loadbalancer.py
+--- orig/site-packages/kube_manager/vnc/loadbalancer.py	2018-11-14 11:44:04.111243922 +0100
++++ new/site-packages/kube_manager/vnc/loadbalancer.py	2018-11-14 11:44:12.971322370 +0100
+@@ -82,7 +82,8 @@
+         try:
+             self.logger.debug("Create LB Interface %s " % vmi_obj.get_fq_name())
+             self._vnc_lib.virtual_machine_interface_create(vmi_obj)
+-            VirtualMachineInterfaceKM.locate(vmi_obj.uuid)
++            vmi_obj = self._vnc_lib.virtual_machine_interface_read(id=vmi_obj.uuid)
++            VirtualMachineInterfaceKM.locate(vmi_obj.uuid, vmi_obj.__dict__)
+         except BadRequest as e:
+             self.logger.warning("LB (%s) Interface create failed %s " % (service_name, str(e)))
+             return None, None
+@@ -116,7 +117,8 @@
+             self._vnc_lib.instance_ip_create(iip_obj)
+         except RefsExistError:
+             self._vnc_lib.instance_ip_update(iip_obj)
+-        InstanceIpKM.locate(iip_obj.uuid)
++        iip_obj = self._vnc_lib.instance_ip_read(id=iip_obj.uuid)
++        InstanceIpKM.locate(iip_obj.uuid, iip_obj.__dict__)
+         iip_obj = self._vnc_lib.instance_ip_read(id=iip_obj.uuid)
+         vip_address = iip_obj.get_instance_ip_address()
+         self.logger.debug("Created LB VMI InstanceIp %s with VIP %s" %
+@@ -209,6 +211,8 @@
+             self._vnc_lib.loadbalancer_create(lb_obj)
+         except RefsExistError:
+             self._vnc_lib.loadbalancer_update(lb_obj)
++        lb_obj = self._vnc_lib.loadbalancer_read(fq_name=lb_obj.fq_name)
++        LoadbalancerKM.locate(lb_obj.uuid, lb_obj.__dict__)
+         return lb_obj
+ 
+ class ServiceLbListenerManager(VncCommon):
+@@ -263,6 +267,8 @@
+         except RefsExistError:
+             self._vnc_lib.loadbalancer_listener_update(ll_obj)
+ 
++        ll_obj = self._vnc_lib.loadbalancer_listener_read(fq_name=ll_obj.fq_name)
++        LoadbalancerListenerKM.locate(ll_obj.uuid, ll_obj.__dict__)
+         return ll_obj
+ 
+ class ServiceLbPoolManager(VncCommon):
+@@ -315,6 +321,8 @@
+         except RefsExistError:
+             self._vnc_lib.loadbalancer_pool_update(pool_obj)
+ 
++        pool_obj = self._vnc_lib.loadbalancer_pool_read(fq_name=pool_obj.fq_name)
++        LoadbalancerPoolKM.locate(pool_obj.uuid, pool_obj.__dict__)
+         return pool_obj
+ 
+ class ServiceLbMemberManager(VncCommon):
+@@ -347,6 +355,9 @@
+             for key in annotations:
+                 member_obj.add_annotations(KeyValuePair(key=key, value=annotations[key]))
+         self._vnc_lib.loadbalancer_member_create(member_obj)
++
++        member_obj = self._vnc_lib.loadbalancer_member_read(fq_name=member_obj.fq_name)
++        LoadbalancerMemberKM.locate(member_obj.uuid, member_obj.__dict__)
+         return member_obj
+ 
+     def update(self, member_id, address, port, annotations):
+diff -Naur -x '*.pyc' -x '*.orig' -x '*.pyo' orig/site-packages/kube_manager/vnc/vnc_ingress.py new/site-packages/kube_manager/vnc/vnc_ingress.py
+--- orig/site-packages/kube_manager/vnc/vnc_ingress.py	2018-11-14 11:44:04.115243959 +0100
++++ new/site-packages/kube_manager/vnc/vnc_ingress.py	2018-11-14 11:44:12.971322370 +0100
+@@ -180,7 +180,8 @@
+             fip_obj.floating_ip_address = external_ip
+         try:
+             self._vnc_lib.floating_ip_create(fip_obj)
+-            fip = FloatingIpKM.locate(fip_obj.uuid)
++            fip_obj = self._vnc_lib.floating_ip_read(id=fip_obj.uuid)
++            fip = FloatingIpKM.locate(fip_obj.uuid, fip_obj.__dict__)
+         except Exception as e:
+             string_buf = StringIO()
+             cgitb_hook(file=string_buf, format="text")
+@@ -222,6 +223,8 @@
+             lb_obj.add_annotations(
+                 KeyValuePair(key='externalIP', value=external_ip))
+             self._vnc_lib.loadbalancer_update(lb_obj)
++            lb_obj = self._vnc_lib.loadbalancer_read(id=lb_obj.get_uuid())
++            LoadbalancerKM.locate(lb_obj.get_uuid(), lb_obj.__dict__)
+         return fip
+ 
+     def _update_kube_api_server(self, name, ns_name, lb_obj, fip):
+diff -Naur -x '*.pyc' -x '*.orig' -x '*.pyo' orig/site-packages/kube_manager/vnc/vnc_namespace.py new/site-packages/kube_manager/vnc/vnc_namespace.py
+--- orig/site-packages/kube_manager/vnc/vnc_namespace.py	2018-11-14 11:44:04.115243959 +0100
++++ new/site-packages/kube_manager/vnc/vnc_namespace.py	2018-11-14 11:44:12.971322370 +0100
+@@ -208,7 +208,8 @@
+                 vn_obj.set_fabric_snat(False)
+             vn_uuid = self._vnc_lib.virtual_network_create(vn_obj)
+             # Cache the virtual network.
+-            VirtualNetworkKM.locate(vn_uuid)
++            vn_obj = self._vnc_lib.virtual_network_read(id=vn_uuid)
++            VirtualNetworkKM.locate(vn_uuid, vn_obj.__dict__)
+         else:
+             ip_fabric_enabled = False
+             if provider:
+@@ -418,7 +419,8 @@
+             self._vnc_lib.chown(sg_obj.get_uuid(), proj_obj.get_uuid())
+         except RefsExistError:
+             self._vnc_lib.security_group_update(sg_obj)
+-        sg = SecurityGroupKM.locate(sg_obj.get_uuid())
++        sg_obj = self._vnc_lib.security_group_read(id=sg_obj.get_uuid())
++        sg = SecurityGroupKM.locate(sg_obj.get_uuid(), sg_obj.__dict__)
+         return sg
+ 
+     def vnc_namespace_add(self, namespace_id, name, labels):
+@@ -445,8 +447,9 @@
+         try:
+             self._vnc_lib.project_create(proj_obj)
+         except RefsExistError:
+-            proj_obj = self._vnc_lib.project_read(fq_name=proj_fq_name)
+-        project = ProjectKM.locate(proj_obj.uuid)
++            pass
++        proj_obj = self._vnc_lib.project_read(fq_name=proj_fq_name)
++        project = ProjectKM.locate(proj_obj.uuid, proj_obj.__dict__)
+ 
+ 
+         # Validate the presence of annotated virtual network.
+diff -Naur -x '*.pyc' -x '*.orig' -x '*.pyo' vnc/vnc_network_policy.py orig/site-packages/kube_manager/vnc/container/kube-manager/kube_manager/vnc/vnc_network_policy.py
+--- orig/site-packages/kube_manager/vnc/vnc_network_policy.py	2018-11-14 11:44:04.115243959 +0100
++++ new/site-packages/kube_manager/vnc/vnc_network_policy.py	2018-11-14 11:44:12.971322370 +0100
+@@ -165,7 +165,8 @@
+         except Exception as e:
+             self._logger.error("%s - %s SG Not Created" %s(self._name, name))
+             return None
+-        sg = SecurityGroupKM.locate(sg_obj.uuid)
++        sg_obj = self._vnc_lib.security_group_read(sg_obj.uuid)
++        sg = SecurityGroupKM.locate(sg_obj.uuid, sg_obj.__dict__)
+         return sg
+ 
+     def _create_ingress_sg(self, namespace, sg_name, ingress_pod_selector):
+diff -Naur -x '*.pyc' -x '*.orig' -x '*.pyo' orig/site-packages/kube_manager/vnc/vnc_network.py new/site-packages/kube_manager/vnc/vnc_network.py
+--- orig/site-packages/kube_manager/vnc/vnc_network.py	2018-11-14 11:44:04.115243959 +0100
++++ new/site-packages/kube_manager/vnc/vnc_network.py	2018-11-14 11:44:12.971322370 +0100
+@@ -179,7 +179,8 @@
+                 ipam_update = True
+ 
+         # Cache ipam info.
+-        NetworkIpamKM.locate(ipam_uuid)
++        ipam_obj = self._vnc_lib.network_ipam_read(id=ipam_uuid)
++        NetworkIpamKM.locate(ipam_uuid, ipam_obj.__dict__)
+ 
+         return ipam_update, ipam_obj, ipam_subnets
+ 
+@@ -256,7 +257,7 @@
+ 
+         vn_obj = self._vnc_lib.virtual_network_read(
+             fq_name=vn_obj.get_fq_name())
+-        VirtualNetworkKM.locate(vn_obj.uuid)
++        VirtualNetworkKM.locate(vn_obj.uuid, vn_obj.__dict__)
+ 
+         return vn_obj
+ 
+diff -Naur -x '*.pyc' -x '*.orig' -x '*.pyo' orig/site-packages/kube_manager/vnc/vnc_pod.py new/site-packages/kube_manager/vnc/vnc_pod.py
+--- orig/site-packages/kube_manager/vnc/vnc_pod.py	2018-11-14 11:44:04.115243959 +0100
++++ new/site-packages/kube_manager/vnc/vnc_pod.py	2018-11-14 11:44:12.971322370 +0100
+@@ -221,7 +221,8 @@
+             self._vnc_lib.instance_ip_create(iip_obj)
+         except RefsExistError:
+             self._vnc_lib.instance_ip_update(iip_obj)
+-        InstanceIpKM.locate(iip_obj.uuid)
++        iip_obj = self._vnc_lib.instance_ip_read(id=iip_obj.uuid)
++        InstanceIpKM.locate(iip_obj.uuid, iip_obj.__dict__)
+         return iip_obj
+ 
+     def _get_host_vmi(self, pod_name):
+@@ -280,7 +281,8 @@
+         except RefsExistError:
+             vmi_uuid = self._vnc_lib.virtual_machine_interface_update(vmi_obj)
+ 
+-        VirtualMachineInterfaceKM.locate(vmi_uuid)
++        vmi_obj = self._vnc_lib.virtual_machine_interface_read(id=vmi_uuid)
++        VirtualMachineInterfaceKM.locate(vmi_uuid, vmi_obj.__dict__)
+         return vmi_uuid
+ 
+     def _create_vm(self, pod_namespace, pod_id, pod_name, labels):
+@@ -296,8 +298,9 @@
+         try:
+             self._vnc_lib.virtual_machine_create(vm_obj)
+         except RefsExistError:
+-            vm_obj = self._vnc_lib.virtual_machine_read(id=pod_id)
+-        VirtualMachineKM.locate(vm_obj.uuid)
++            pass
++        vm_obj = self._vnc_lib.virtual_machine_read(id=pod_id)
++        VirtualMachineKM.locate(vm_obj.uuid, vm_obj.__dict__)
+         return vm_obj
+ 
+     def _link_vm_to_node(self, vm_obj, pod_node, node_ip):
+diff -Naur -x '*.pyc' -x '*.orig' -x '*.pyo' vnc/vnc_service.py orig/site-packages/kube_manager/vnc/container/kube-manager/kube_manager/vnc/vnc_service.py
+--- orig/site-packages/kube_manager/vnc/vnc_service.py	2018-11-14 11:44:04.115243959 +0100
++++ new/site-packages/kube_manager/vnc/vnc_service.py	2018-11-14 11:44:12.971322370 +0100
+@@ -367,7 +367,8 @@
+                 err_msg = string_buf.getvalue()
+                 self.logger.error("%s" %(err_msg))
+ 
+-            fip = FloatingIpKM.locate(fip_obj.uuid)
++            fip_obj = self._vnc_lib.floating_ip_read(id=fip_obj.uuid)
++            fip = FloatingIpKM.locate(fip_obj.uuid, fip_obj.__dict__)
+             self.logger.notice("floating ip allocated : %s for Service (%s)" %
+                            (fip.address, service_id))
+             return(fip.address)
