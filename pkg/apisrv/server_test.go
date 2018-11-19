@@ -23,22 +23,22 @@ import (
 )
 
 func TestKVStore(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestKVStore")
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_kv_store.yml")
 }
 
 func TestFloatingIP(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestAPIServer")
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_floating_ip.yml")
 }
 
 func TestNetworkIpam(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestAPIServer")
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_network_ipam.yml")
 }
 
 func TestVirtualNetwork(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestAPIServer")
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
@@ -48,17 +48,17 @@ func TestSecurityGroup(t *testing.T) {
 }
 
 func TestQuotaChecking(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestAPIServer")
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_quota_checking.yml")
 }
 
 func TestSync(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestSync")
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_sync.yml")
 }
 
 func TestValidation(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestValidation")
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_validation.yml")
 }
 
@@ -179,10 +179,10 @@ func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),
 		server.URL()+"/keystone/v3",
-		"TestGRPC",
-		"TestGRPC",
+		t.Name(),
+		t.Name(),
 		true,
-		client.GetKeystoneScope("", "default", "", "TestGRPC"),
+		client.GetKeystoneScope("", "default", "", t.Name()),
 	)
 	restClient.InSecure = true
 	restClient.Init()
@@ -193,7 +193,7 @@ func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 
 func TestGRPC(t *testing.T) {
 	ctx := context.Background()
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestGRPC")
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 
 	authToken := restLogin(ctx, t)
 
@@ -261,7 +261,7 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 }
 
 func TestChownGRPC(t *testing.T) {
-	testGRPCServer(t, "TestChownGRPC",
+	testGRPCServer(t, t.Name(),
 		func(ctx context.Context, conn *grpc.ClientConn) {
 			c := services.NewChownClient(conn)
 
@@ -272,7 +272,7 @@ func TestChownGRPC(t *testing.T) {
 }
 
 func TestIPAMGRPC(t *testing.T) {
-	testGRPCServer(t, "TestIPAMGRPC",
+	testGRPCServer(t, t.Name(),
 		func(ctx context.Context, conn *grpc.ClientConn) {
 			c := services.NewIPAMClient(conn)
 			allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{Pool: types.VirtualNetworkIDPoolKey})
@@ -288,15 +288,14 @@ func TestIPAMGRPC(t *testing.T) {
 
 func TestRESTClient(t *testing.T) {
 	ctx := context.Background()
-	testName := "TestRESTClient"
-	integration.AddKeystoneProjectAndUser(server.APIServer, testName)
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	restClient := client.NewHTTP(
 		server.URL(),
 		server.URL()+"/keystone/v3",
-		testName,
-		testName,
+		t.Name(),
+		t.Name(),
 		true,
-		client.GetKeystoneScope("", "default", "", testName),
+		client.GetKeystoneScope("", "default", "", t.Name()),
 	)
 	restClient.InSecure = true
 	restClient.Init()

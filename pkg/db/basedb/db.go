@@ -170,13 +170,13 @@ func ConnectDB() (*sql.DB, error) {
 	for i := 0; i < retries; i++ {
 		err = db.Ping()
 		if err == nil {
-			log.Info("connected to the database")
+			log.Debug("Connected to the database")
 			return db, nil
 		}
 		time.Sleep(period)
-		log.Printf("Retrying db connection... (%s)", err)
+		log.WithError(err).Debug("DB connection error. Retrying...")
 	}
-	return nil, fmt.Errorf("failed to open db connection")
+	return nil, fmt.Errorf("failed to open DB connection")
 }
 
 // ConnectionConfig holds DB connection configuration.
