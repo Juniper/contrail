@@ -256,7 +256,7 @@ func (p *proxyService) serve() {
 		for {
 			select {
 			case <-p.serviceContext.Done():
-				log.Info("stopping dynamic proxy server")
+				log.Info("Stopping dynamic proxy server")
 				return
 			case wait := <-p.forceUpdateChan:
 				p.updateEndpoints()

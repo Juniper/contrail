@@ -7,7 +7,7 @@ cleanup:
 test_data:
   admin_project: &admin_project
     fq_name:
-      - default
+      - default-domain
       - admin_project
     uuid: admin_project_uuid
     parent_type: domain
@@ -18,7 +18,7 @@ test_data:
     uuid: fw_rule_test_firewall_policy_uuid
     parent_type: project
     fq_name:
-      - default
+      - default-domain
       - admin_project
       - test_firewall_rule
     endpoint_1:
