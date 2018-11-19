@@ -17,4 +17,8 @@
         presence: "true"
         description: "UUID of the object, system automatically allocates one if not provided"
         type: "string"
+      colonseparatedinbase:
+        description: "Field with colon in name"
+        type: "string"
+        fieldName: "colon:separated:in:base"
 
