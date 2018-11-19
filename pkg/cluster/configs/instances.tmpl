@@ -22,6 +22,7 @@ instances:
     {%endif%}{%endfor%}{%endfor%}
     {%endif%}{%endfor%}{%endfor%}
     provider: bms
+    {%if node.Type == "esxi" %}esxi_host: {{ node.EsxiInfo.EsxiName }}{%endif%}
     roles:
       {% for config_node in cluster.ContrailConfigNodes %}{% for node_ref in config_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}config:
       {%if cluster.EnableZTP && cluster.Orchestrator == "openstack"%}dhcp:{%endif%}{%endif%}{%endfor%}{%endfor%}
@@ -45,7 +46,10 @@ instances:
         {%endif%}
         {%endif%}{%endfor %}{%endfor%}
       {% for vcenter_plugin_node in vcenter.VCenterPluginNodes %}{% for node_ref in vcenter_plugin_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vcenter_plugin:{%endif%}{%endfor%}{%endfor%}
-      {% for vcenter_manager_node in vcenter.VCenterManagerNodes %}{% for node_ref in vcenter_manager_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vcenter_manager:{%endif%}{%endfor%}{%endfor%}
+      {% for vcenter_manager_node in vcenter.VCenterManagerNodes %}{% for node_ref in vcenter_manager_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vcenter_manager:
+        ESXI_USERNAME: {{ node.EsxiInfo.Username }}
+        ESXI_PASSWORD: {{ node.EsxiInfo.Password }}
+        {%endif%}{%endfor%}{%endfor%}
       {% for csn_node in cluster.ContrailServiceNodes %}{% for node_ref in csn_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
         TSN_EVPN_MODE: true
         {%if csn_node.DefaultGateway != "" %}VROUTER_GATEWAY: {{ csn_node.DefaultGateway }}{%endif%}

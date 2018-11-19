@@ -693,7 +693,6 @@ func TestVcenterCluster(t *testing.T) {
 		"TYPE":             "ESXI",
 		"ESXI":             "10.84.16.11",
 		"MGMT_INT_IP":      "127.0.0.1",
-		"CONTROL_NODES":    "127.0.0.1",
 		"CONTROLLER_NODES": "127.0.0.1",
 	}
 	expectedEndpoints := map[string]string{
