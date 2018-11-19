@@ -18,7 +18,30 @@ parents:
 plural: vCenter_manager_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    esxi_username:
+      description: ESXi host username
+      nullable: false
+      permission:
+      - create
+      - update
+      title: ESXi Username
+      type: string
+      view:
+      - create
+      - detail
+    esxi_password:
+      description: ESXi host password
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: ESXi Password
+      type: string
+      view:
+      - create
+      - detail
   propertiesOrder: []
   required: []
   type: object

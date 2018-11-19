@@ -18,8 +18,26 @@ cleanup:
 test_data:
   all_in_one_node: &all_in_one_node
     uuid: all_in_one_node_uuid
+    name: all_in_one_node
     hostname: all_in_one_node
     interface_name: all_in_one_node_interface
+    ip_address: {{MGMT_INT_IP}}
+    {% if CREDS %}
+    credential_refs:
+      - uuid: all_in_one_credential_uuid
+    {%endif%}
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  esxi_node: &esxi_node
+    uuid: esxi_node_uuid
+    name: esxi_node
+    type: esxi
+    esxi_info:
+      esxi_name: 10.84.16.11
+      username: root
+      password: c0ntrail123
+    hostname: esxi_node
+    interface_name: esxi_node_interface
     ip_address: {{MGMT_INT_IP}}
     {% if CREDS %}
     credential_refs:
@@ -57,9 +75,7 @@ test_data:
     parent_type: vCenter
     parent_uuid: test_vCenter_uuid
     node_refs:
-      - uuid: test_vCenter_uuid 
-    node_refs:
-      - uuid: all_in_one_node_uuid
+      - uuid: esxi_node_uuid
   all_in_one_cluster: &all_in_one_cluster
     uuid: test_cluster_uuid
     parent_type: global-system-config
@@ -124,7 +140,7 @@ test_data:
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
-      - uuid: all_in_one_node_uuid
+      - uuid: esxi_node_uuid
     {% if TYPE == "dpdk" %}
     type: dpdk
     dpdk_info:
@@ -208,6 +224,28 @@ workflow:
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
       hostname: all_in_one_node
       interface_name: all_in_one_node_interface
+      ip_address: {{MGMT_INT_IP}}
+      {% if CREDS %}
+      credential_refs:
+        - uuid: all_in_one_credential_uuid
+      {%endif%}
+- name: create node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *esxi_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: esxi_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: esxi_node
+      interface_name: esxi_node_interface
       ip_address: {{MGMT_INT_IP}}
       {% if CREDS %}
       credential_refs:

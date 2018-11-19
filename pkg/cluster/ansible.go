@@ -132,6 +132,10 @@ func (a *ansibleProvisioner) getInstanceFile() (instanceFile string) {
 	return filepath.Join(a.getWorkingDir(), defaultInstanceFile)
 }
 
+func (a *ansibleProvisioner) getVcenterFile() (instanceFile string) {
+	return filepath.Join(a.getWorkingDir(), defaultVcenterFile)
+}
+
 func (a *ansibleProvisioner) getInventoryTemplate() (inventoryTemplate string) {
 	return filepath.Join(a.getTemplateRoot(), defaultInventoryTemplate)
 }
@@ -420,7 +424,7 @@ func (a *ansibleProvisioner) playOrchestratorProvision(ansibleArgs []string) err
 		ansibleArgs = append(ansibleArgs, defaultOpenstackProvPlay)
 	case orchestratorKubernetes:
 		ansibleArgs = append(ansibleArgs, defaultKubernetesProvPlay)
-	case "vcenter":
+	case orchestratorVcenter:
 		ansibleArgs = append(ansibleArgs, defaultvCenterProvPlay)
 	}
 	return a.play(ansibleArgs)
@@ -495,11 +499,20 @@ func (a *ansibleProvisioner) playBook() error {
 		if err := a.playInstancesProvision(args); err != nil {
 			return err
 		}
-		if err := a.playInstancesConfig(args); err != nil {
-			return err
-		}
-		if err := a.playOrchestratorProvision(args); err != nil {
-			return err
+		if a.clusterData.clusterInfo.Orchestrator == orchestratorVcenter {
+			if err := a.playOrchestratorProvision(args); err != nil {
+				return err
+			}
+			if err := a.playInstancesConfig(args); err != nil {
+				return err
+			}
+		} else {
+			if err := a.playInstancesConfig(args); err != nil {
+				return err
+			}
+			if err := a.playOrchestratorProvision(args); err != nil {
+				return err
+			}
 		}
 		if err := a.playContrailProvision(args); err != nil {
 			return err
@@ -521,11 +534,20 @@ func (a *ansibleProvisioner) playBook() error {
 			return err
 		}
 	case addComputeProvisioningAction:
-		if err := a.playInstancesConfig(args); err != nil {
-			return err
-		}
-		if err := a.playOrchestratorProvision(args); err != nil {
-			return err
+		if a.clusterData.clusterInfo.Orchestrator == orchestratorVcenter {
+			if err := a.playOrchestratorProvision(args); err != nil {
+				return err
+			}
+			if err := a.playInstancesConfig(args); err != nil {
+				return err
+			}
+		} else {
+			if err := a.playInstancesConfig(args); err != nil {
+				return err
+			}
+			if err := a.playOrchestratorProvision(args); err != nil {
+				return err
+			}
 		}
 		if err := a.playContrailProvision(args); err != nil {
 			return err

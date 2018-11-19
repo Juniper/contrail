@@ -18,16 +18,21 @@ instances:
       webui:
       analytics:
       analytics_database:
-      vrouter:
       vcenter_plugin:
+  esxi_node:
+    ip: 127.0.0.1
+    provider: bms
+    esxi_host: 10.84.16.11
+    roles:
+      vrouter:
       vcenter_manager:
+        ESXI_USERNAME: root
+        ESXI_PASSWORD: c0ntrail123
 contrail_configuration:
   CONTRAIL_VERSION: ocata-5.0-x
   CLOUD_ORCHESTRATOR: vcenter
   RABBITMQ_NODE_PORT: 5673
   VROUTER_GATEWAY: 127.0.0.254
-  CONTROL_NODES: 127.0.0.1
-  CONTROLLER_NODES: 127.0.0.1
   VCENTER_SERVER: 10.84.16.51
   VCENTER_USERNAME: administrator
   VCENTER_PASSWORD: Contrail123
