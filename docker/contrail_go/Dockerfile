@@ -20,6 +20,7 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
         git \
         ansible-2.4.2.0\
         docker \
+        python-requests \
         python-pip
 
 EXPOSE 9091
