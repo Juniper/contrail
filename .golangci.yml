@@ -1,7 +1,7 @@
 run:
   # Concurrency is reduced in order to reduce RAM consumption
   concurrency: 2
-  deadline: 11m
+  deadline: 8m
   skip-dirs: []
 
 issues:
@@ -24,6 +24,7 @@ linters:
   - dupl
   - gosec
   - megacheck
+  - unparam
   - prealloc
   - staticcheck
 
