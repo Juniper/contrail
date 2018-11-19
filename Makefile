@@ -21,6 +21,9 @@ endif
 
 GOPATH ?= `go env GOPATH`
 
+# This is needed by generate* targets that works only sequentially
+.NOTPARALLEL:
+
 all: check lint test build
 
 deps: ## Install development dependencies
