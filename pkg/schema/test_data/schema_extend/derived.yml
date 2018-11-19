@@ -6,7 +6,11 @@ parents: {}
 plural: derived_objects
 prefix: "/"
 schema:
-  properties: {}
+  properties:
+    colonseparatedinderived:
+      description: "Field with colon in name"
+      type: "string"
+      fieldName: "colon:separated:in:derived"
   required: []
   type: object
 
