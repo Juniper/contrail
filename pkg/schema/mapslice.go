@@ -78,6 +78,7 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 	schema := &JSONSchema{
 		Title:           s.getString("title"),
 		SQL:             s.getString("sql"),
+		JSONTag:         s.getString("json_tag"),
 		Default:         s.get("default"),
 		Enum:            s.getStringSlice("enum"),
 		Minimum:         s.get("minimum"),

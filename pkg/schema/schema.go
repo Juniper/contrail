@@ -175,6 +175,7 @@ type JSONSchema struct {
 	ID                string                 `yaml:"-" json:"-"`
 	Index             int                    `yaml:"-" json:"-"`
 	Title             string                 `yaml:"title" json:"title,omitempty"`
+	JSONTag           string                 `yaml:"json_tag" json:"-"`
 	Description       string                 `yaml:"description" json:"description,omitempty"`
 	SQL               string                 `yaml:"sql" json:"-"`
 	Default           interface{}            `yaml:"default" json:"default,omitempty"`
@@ -300,6 +301,9 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 	if s.Title == "" {
 		s.Title = s2.Title
+	}
+	if s.JSONTag == "" {
+		s.JSONTag = s2.JSONTag
 	}
 	if s.Description == "" {
 		s.Description = s2.Description
@@ -565,6 +569,10 @@ func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = definition.Walk(api.resolveJSONTag)
+	if err != nil {
+		return nil, err
+	}
 	api.Types[typeName] = definition
 	return definition, nil
 }
@@ -784,6 +792,32 @@ func (api *API) resolveExtend() error {
 	return nil
 }
 
+func (api *API) resolveAllJSONTag() error {
+	for _, schema := range api.Schemas {
+		err := schema.JSONSchema.Walk(api.resolveJSONTag)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (api *API) resolveJSONTag(schema *JSONSchema) error {
+	if schema == nil {
+		return nil
+	}
+	if len(schema.JSONTag) == 0 {
+		schema.JSONTag = schema.ID
+	}
+
+	for _, prop := range schema.Properties {
+		if len(prop.JSONTag) == 0 {
+			prop.JSONTag = prop.ID
+		}
+	}
+	return nil
+}
+
 func (api *API) resolveCollectionTypes() error {
 	for _, s := range api.Schemas {
 		for propertyName, property := range s.JSONSchema.Properties {
@@ -937,6 +971,7 @@ func (api *API) process() error {
 	if err != nil {
 		return err
 	}
+	err = api.resolveAllJSONTag()
 	return err
 }
 

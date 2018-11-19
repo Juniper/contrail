@@ -70,6 +70,21 @@ func TestReferencesExtendBase(t *testing.T) {
 	assert.Equal(t, 2, len(ownRefObj.References))
 }
 
+func TestJSONTag(t *testing.T) {
+	api, err := MakeAPI([]string{"test_data/schema_extend"}, "")
+	require.Nil(t, err, "API reading failed")
+	assert.Equal(t, 5, len(api.Schemas))
+
+	base := api.SchemaByID("base")
+	require.NotNil(t, base, "Base object can't be <nil>")
+
+	assert.Equal(t, "colon:separated:in:base", base.JSONSchema.Properties["colonseparatedinbase"].JSONTag)
+
+	derived := api.SchemaByID("derived_object")
+	require.NotNil(t, derived, "derived_object schema shouldn't be <nil>")
+	assert.Equal(t, "colon:separated:in:derived", derived.JSONSchema.Properties["colonseparatedinderived"].JSONTag)
+}
+
 func checkPropertyRepeated(t *testing.T, obj *JSONSchema) {
 	assert.NotNil(t, obj)
 	assert.Equal(t, 1, len(obj.Properties))
