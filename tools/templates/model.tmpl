@@ -228,7 +228,7 @@ func (m *{{ schema.JSONSchema.GoName }}) UnmarshalJSON(b []byte) error {
 		*alias
 	{%- for property in schema.JSONSchema.OrderedProperties -%}
 		{%- if property.IsInt() || property.IsUint() || property.IsFloat() %}
-		{{ property.GoName }} json.Number `json:"{{ property.ID }}"`
+		{{ property.GoName }} json.Number `json:"{{ property.FieldName }}"`
 		{%- endif %}
 	{%- endfor %}
 	}{alias: (*alias)(m)}
