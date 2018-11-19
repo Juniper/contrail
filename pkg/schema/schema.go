@@ -174,6 +174,7 @@ type JSONSchema struct {
 	ID                string                 `yaml:"-" json:"-"`
 	Index             int                    `yaml:"-" json:"-"`
 	Title             string                 `yaml:"title" json:"title,omitempty"`
+	FieldName         string                 `yaml:"fieldname" json:"fieldname,omitempty"`
 	Description       string                 `yaml:"description" json:"description,omitempty"`
 	SQL               string                 `yaml:"sql" json:"-"`
 	Default           interface{}            `yaml:"default" json:"default,omitempty"`
@@ -765,6 +766,17 @@ func (api *API) resolveExtend() error {
 	return nil
 }
 
+func (api *API) resolveFieldName() error {
+	for _, schema := range api.Schemas {
+		for _, prop := range schema.JSONSchema.Properties {
+			if len(prop.FieldName) == 0 {
+				prop.FieldName = schema.ID
+			}
+		}
+	}
+	return nil
+}
+
 func (api *API) resolveCollectionTypes() error {
 	for _, s := range api.Schemas {
 		for propertyName, property := range s.JSONSchema.Properties {
@@ -918,6 +930,7 @@ func (api *API) process() error {
 	if err != nil {
 		return err
 	}
+	err = api.resolveFieldName()
 	return err
 }
 

@@ -22,7 +22,7 @@ option go_package = "models";
 
 message {{ schema.JSONSchema.GoName }} {
 {%- for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.FieldName }}\""]; // {{ property.Description }}
 {%- endfor %}
 {%- for linkTo, reference in schema.References %}
     repeated {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {{ linkTo }}_refs = {{ reference.Index }} [(gogoproto.customname) = "{{ reference.GoName }}Refs", (gogoproto.moretags) = "yaml:\"{{ linkTo }}_refs\""];// {{ reference.Description }}
@@ -56,7 +56,7 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 	// which expected all fields to be present. To achieve that "gogoproto.jsontag" extension is used.
 	message KeyValuePair {
 	{%- for property in definition.OrderedProperties %}
-		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\"", (gogoproto.jsontag) = "{{ property.ID }}"]; // {{ property.Description }}
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.FieldName }}\"", (gogoproto.jsontag) = "{{ property.FieldName }}"]; // {{ property.Description }}
 	{%- endfor %}
 	}
 
@@ -64,7 +64,7 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 
 	message {{ type }} {
 	{%- for property in definition.OrderedProperties %}
-		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.FieldName }}\""]; // {{ property.Description }}
 	{%- endfor %}
 	}
 
