@@ -21,4 +21,4 @@ run_go_tool_fix || exit 1
 # TODO: remove when goimports tool is re-enabled in golangci-lint
 run_goimports || exit 1
 
-golangci-lint --config .golangci.yml run ./... 2>&1 || exit 1
+golangci-lint --config .golangci.yml --verbose run ./... 2>&1 || exit 1
