@@ -1,6 +1,6 @@
 run:
   # Concurrency is reduced in order to reduce RAM consumption
-  concurrency: 2
+  concurrency: 4
   deadline: 11m
   skip-dirs:
   - extension/pkg/db/cache        # TODO: re-enable when compilation fixed
