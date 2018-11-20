@@ -1,15 +1,18 @@
 package services
 
 import (
+	"net/http"
 	"net/url"
 
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/fileutil"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 {% set name = schema.JSONSchema.GoName %}
 
-{% macro applyHref(objPrefix, obj, type, name) %} collectionURL, err := url.Parse("http://"+host+"{{ schema.Prefix }}{{ schema.Path }}/")
+{% macro applyHref(objPrefix, obj, type, name) %} collectionURL, err := url.Parse(fileutil.GetRequestSchema(req)+req.Host+"{{ schema.Prefix }}{{ schema.Path }}/")
 	if err != nil {
 		return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response")
 	}
@@ -19,22 +22,22 @@ import (
 	}
     {{ objPrefix }}{{ obj }}.Href = collectionURL.ResolveReference(uuidURL).String(){% endmacro %}
 
-func (r* Create{{ name }}Response) ApplyHref(host string) error {
+func (r* Create{{ name }}Response) ApplyHref(req *http.Request) error {
 	{{ applyHref("r.", name, "Create", name) }}
 	return nil
 }
 
-func (r* Update{{ name }}Response) ApplyHref(host string) error {
+func (r* Update{{ name }}Response) ApplyHref(req *http.Request) error {
 	{{ applyHref("r.", name, "Update", name) }}
 	return nil
 }
 
-func (r* Get{{ name }}Response) ApplyHref(host string) error {
+func (r* Get{{ name }}Response) ApplyHref(req *http.Request) error {
 	{{ applyHref("r.", name, "Get", name) }}
 	return nil
 }
 
-func (r *List{{name}}Response) ApplyHref(host string) error {
+func (r *List{{name}}Response) ApplyHref(req *http.Request) error {
 	for _, obj := range r.{{ name }}s {
 		{{ applyHref("", "obj", "List", name) }}
 	}

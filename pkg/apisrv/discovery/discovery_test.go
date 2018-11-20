@@ -18,7 +18,7 @@ func TestDiscovery(t *testing.T) {
 	}
 
 	tests := []struct {
-		addr      string
+		host      string
 		registers []register
 		expected  string
 	}{
@@ -29,15 +29,15 @@ func TestDiscovery(t *testing.T) {
 				{"path2", "", "test2", "rel2"},
 			},
 			`{
-				"href": "addr",
+				"href": "http://addr",
 				"links": [
-					{"link": { "href": "addr/path1", "method": "GET", "name": "test1", "rel": "rel1" }},
-					{"link": { "href": "addr/path2", "method": null, "name": "test2", "rel": "rel2" }}
+					{"link": { "href": "http://addr/path1", "method": "GET", "name": "test1", "rel": "rel1" }},
+					{"link": { "href": "http://addr/path2", "method": null, "name": "test2", "rel": "rel2" }}
 				]
 			}`,
 		},
 		{
-			"http://localhost:8082/",
+			"localhost:8082",
 			[]register{
 				{"/path1", "GET", "test1", "rel1"},
 				{"path2", "", "test2", "rel2"},
@@ -53,7 +53,7 @@ func TestDiscovery(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		dh := NewHandler(tt.addr)
+		dh := NewHandler()
 
 		for _, l := range tt.registers {
 			dh.Register(l.path, l.method, l.name, l.rel)
@@ -61,7 +61,9 @@ func TestDiscovery(t *testing.T) {
 
 		e := echo.New()
 		rec := httptest.NewRecorder()
-		c := e.NewContext(httptest.NewRequest(echo.GET, "/", nil), rec)
+		req := httptest.NewRequest(echo.GET, "/", nil)
+		req.Host = tt.host
+		c := e.NewContext(req, rec)
 		err := dh.Handle(c)
 
 		if assert.NoError(t, err) {
