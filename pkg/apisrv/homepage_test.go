@@ -23,7 +23,7 @@ func TestHomepageResources(t *testing.T) {
 	r, err := c.Read(context.Background(), "/", &response)
 	assert.NoError(t, err, fmt.Sprintf("GET failed\n response: %+v", r))
 
-	addr := resolve(viper.GetString("server.address"))
+	addr := server.URL()
 	expected := map[string]interface{}{
 		"href": addr,
 		"links": []interface{}{

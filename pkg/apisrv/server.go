@@ -328,7 +328,7 @@ func (s *Server) applyExtensions() error {
 }
 
 func (s *Server) setupHomepage() {
-	dh := discovery.NewHandler(viper.GetString("server.address"))
+	dh := discovery.NewHandler()
 
 	services.RegisterSingularPaths(func(path string, name string) {
 		dh.Register(path, "", name, "resource-base")

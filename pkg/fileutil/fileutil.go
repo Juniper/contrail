@@ -96,3 +96,11 @@ func YAMLtoJSONCompat(yamlData interface{}) interface{} {
 	}
 	return yamlData
 }
+
+// GetRequestSchema returns 'https://' for TLS based request or 'http://' otherwise
+func GetRequestSchema(r *http.Request) string {
+	if r.TLS != nil {
+		return "https://"
+	}
+	return "http://"
+}

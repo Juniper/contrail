@@ -35,7 +35,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request().Host); err != nil {
+    if err = response.ApplyHref(c.Request()); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
@@ -177,7 +177,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request().Host); err != nil {
+    if err = response.ApplyHref(c.Request()); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
@@ -220,7 +220,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request().Host); err != nil {
+    if err = response.ApplyHref(c.Request()); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
@@ -238,7 +238,7 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request().Host); err != nil {
+    if err = response.ApplyHref(c.Request()); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
