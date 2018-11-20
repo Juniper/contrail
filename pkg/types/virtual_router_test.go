@@ -202,11 +202,18 @@ func TestCreateVirtualRouter(t *testing.T) {
 
 	for _, tt := range tests {
 		runTest(t, tt.name, func(t *testing.T, sv *ContrailTypeLogicService) {
-
+			var expectedNetworkIpams []*services.GetNetworkIpamResponse
+			for _, networkIpam := range tt.networkIpams {
+				expectedNetworkIpams = append(expectedNetworkIpams,
+					&services.GetNetworkIpamResponse{
+						NetworkIpam: networkIpam,
+					},
+				)
+			}
 			readServiceListNetworkIpamCall := sv.ReadService.(*servicesmock.MockReadService).EXPECT().ListNetworkIpam(
 				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 				&services.ListNetworkIpamResponse{
-					NetworkIpams: tt.networkIpams,
+					NetworkIpams: expectedNetworkIpams,
 				}, nil)
 
 			nextServiceCreateCall := sv.Next().(*servicesmock.MockService).
@@ -474,10 +481,18 @@ func TestUpdateVirtualRouter(t *testing.T) {
 
 	for _, tt := range tests {
 		runTest(t, tt.name, func(t *testing.T, sv *ContrailTypeLogicService) {
+			var expectedNetworkIpams []*services.GetNetworkIpamResponse
+			for _, networkIpam := range tt.networkIpams {
+				expectedNetworkIpams = append(expectedNetworkIpams,
+					&services.GetNetworkIpamResponse{
+						NetworkIpam: networkIpam,
+					},
+				)
+			}
 			readServiceListNetworkIpamCall := sv.ReadService.(*servicesmock.MockReadService).EXPECT().ListNetworkIpam(
 				gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 				&services.ListNetworkIpamResponse{
-					NetworkIpams: tt.networkIpams,
+					NetworkIpams: expectedNetworkIpams,
 				}, nil)
 
 			readServiceGetVirtualRouterCall := sv.ReadService.(*servicesmock.MockReadService).

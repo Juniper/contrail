@@ -40,7 +40,8 @@ func (db *Service) dump(ctx context.Context, ow basedb.ObjectWriter) error {
         return err
     }
 
-    for _, item := range list{{ schema.JSONSchema.GoName }}Response.{{ schema.JSONSchema.GoName }}s {
+    for _, listItem := range list{{ schema.JSONSchema.GoName }}Response.{{ schema.JSONSchema.GoName }}s {
+        item := listItem.{{ schema.JSONSchema.GoName }}
         if err = ow.WriteObject("{{ schema.ID }}", item.GetUUID(), item); err != nil {
             return err
         }

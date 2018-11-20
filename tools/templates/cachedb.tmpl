@@ -61,7 +61,10 @@ func (cache *DB) {{ listResource(schema) }}(
 	for _, node := range resourceMap {
 		resource, ok := node.event.GetResource().(*models.{{ schemaName(schema) }})
 		if ok {
-		response.{{ schemaPlural(schema) }} = append(response.{{ schemaPlural(schema) }}, resource)
+		response.{{ schemaPlural(schema) }} = append(response.{{ schemaPlural(schema) }},
+			&services.{{ getResponse(schema) }}{
+				{{ schemaName(schema) }}: resource,
+			})
 		}
 	}
 	response.{{ resourceCount(schema) }} = int64(len(response.{{ schemaPlural(schema) }}))

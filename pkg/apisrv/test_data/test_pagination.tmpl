@@ -76,6 +76,7 @@ workflow:
   expect:
     network-ipams:
     {% for id in list.expectedIds %}
-    - *pagination_network_ipam{{ id }}
+      - network-ipam:
+          *pagination_network_ipam{{ id }}
     {% endfor %}
 {% endfor %}

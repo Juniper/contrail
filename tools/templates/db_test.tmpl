@@ -131,7 +131,8 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
             Spec: listSpec,
     })
     assert.NoError(t, err, "list count failed")
-    assert.Equal(t, ([]*models.{{ schema.JSONSchema.GoName }})(nil), response.{{ schema.JSONSchema.GoName }}s, "expected nil list")
+    assert.Equal(t, ([]*services.Get{{ schema.JSONSchema.GoName }}Response)(nil),
+        response.{{ schema.JSONSchema.GoName }}s, "expected nil list")
     assert.Equal(t, int64(1), response.{{ schema.JSONSchema.GoName }}Count, "expected count = 1")
 
     model.DisplayName = "updated"

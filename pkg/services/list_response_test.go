@@ -16,10 +16,14 @@ var dataJSON = []struct {
 }{
 	{
 		ListFloatingIPPoolResponse{
-			FloatingIPPools:     []*models.FloatingIPPool{{UUID: "vn_uuid"}},
+			FloatingIPPools: []*GetFloatingIPPoolResponse{
+				{
+					FloatingIPPool: &models.FloatingIPPool{UUID: "vn_uuid"},
+				},
+			},
 			FloatingIPPoolCount: 1,
 		},
-		[]byte(`{"floating-ip-pools": [{"uuid": "vn_uuid"}]}`),
+		[]byte(`{"floating-ip-pools": [{"floating-ip-pool": {"uuid": "vn_uuid"}}]}`),
 	}, {
 		ListFloatingIPPoolResponse{
 			FloatingIPPools:     nil,
@@ -35,34 +39,37 @@ var dataYAML = []struct {
 }{
 	{
 		ListFloatingIPPoolResponse{
-			FloatingIPPools: []*models.FloatingIPPool{
-				// We initialize the lists for comparing since yaml.v2 marshals null lists to empty lists
+			FloatingIPPools: []*GetFloatingIPPoolResponse{
 				{
-					UUID:            "vn_uuid",
-					FQName:          []string{},
-					ProjectBackRefs: []*models.Project{},
-					FloatingIPs:     []*models.FloatingIP{},
-					TagRefs:         []*models.FloatingIPPoolTagRef{},
+					FloatingIPPool: &models.FloatingIPPool{
+						// We initialize the lists for comparing since yaml.v2 marshals null lists to empty lists
+						UUID:            "vn_uuid",
+						FQName:          []string{},
+						ProjectBackRefs: []*models.Project{},
+						FloatingIPs:     []*models.FloatingIP{},
+						TagRefs:         []*models.FloatingIPPoolTagRef{},
+					},
 				},
 			},
 			FloatingIPPoolCount: 1,
 		},
 		[]byte(`floating-ip-pools:
-- uuid: vn_uuid
-  name: ""
-  parent_uuid: ""
-  parent_type: ""
-  fq_name: []
-  id_perms: null
-  display_name: ""
-  annotations: null
-  perms2: null
-  configuration_version: 0
-  href: ""
-  floating_ip_pool_subnets: null
-  tag_refs: []
-  project_back_refs: []
-  floating_ips: []
+- floating-ip-pool:
+    uuid: vn_uuid
+    name: ""
+    parent_uuid: ""
+    parent_type: ""
+    fq_name: []
+    id_perms: null
+    display_name: ""
+    annotations: null
+    perms2: null
+    configuration_version: 0
+    href: ""
+    floating_ip_pool_subnets: null
+    tag_refs: []
+    project_back_refs: []
+    floating_ips: []
 `),
 	}, {
 		ListFloatingIPPoolResponse{

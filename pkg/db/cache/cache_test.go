@@ -330,7 +330,7 @@ func TestReadInterfaceAndMaxHistory(t *testing.T) {
 				listResponse, err := cache.ListVirtualNetwork(context.Background(), &services.ListVirtualNetworkRequest{})
 				assert.NoError(t, err)
 				assert.Equal(t, listResponse.VirtualNetworkCount, int64(1))
-				assert.Equal(t, listResponse.VirtualNetworks[0].UUID, vnBlue.UUID)
+				assert.Equal(t, listResponse.VirtualNetworks[0].VirtualNetwork.UUID, vnBlue.UUID)
 
 				getResponse, err := cache.GetVirtualNetwork(context.Background(), &services.GetVirtualNetworkRequest{
 					ID: vnBlue.UUID,
@@ -380,7 +380,7 @@ func TestReadInterfaceAndMaxHistory(t *testing.T) {
 				r, err := cache.ListVirtualNetwork(context.Background(), &services.ListVirtualNetworkRequest{})
 				assert.NoError(t, err)
 				assert.Equal(t, r.VirtualNetworkCount, int64(1))
-				assert.Equal(t, r.VirtualNetworks[0].UUID, vnBlue.UUID)
+				assert.Equal(t, r.VirtualNetworks[0].VirtualNetwork.UUID, vnBlue.UUID)
 			},
 		},
 		{

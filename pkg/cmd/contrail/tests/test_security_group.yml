@@ -103,8 +103,10 @@ workflow:
     - 200
   expect:
     access-control-lists:
-    - *ingress_acl
-    - *egress_acl
+    - access-control-list:
+        *ingress_acl
+    - access-control-list:
+        *egress_acl
 - name: delete security group
   request:
     path: /security-group/sg_uuid

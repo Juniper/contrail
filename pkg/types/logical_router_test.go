@@ -570,7 +570,11 @@ func TestCheckRouterSupportsVPNType(t *testing.T) {
 				bgpvpn.BGPVPNType = tt.bgpvpnType
 				readService.EXPECT().ListBGPVPN(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.ListBGPVPNResponse{
-						BGPVPNs: []*models.BGPVPN{bgpvpn},
+						BGPVPNs: []*services.GetBGPVPNResponse{
+							{
+								BGPVPN: bgpvpn,
+							},
+						},
 					},
 					nil,
 				)
@@ -736,7 +740,11 @@ func TestCheckRouterHasBGPVPNAssocViaNetwork(t *testing.T) {
 				vmi.VirtualNetworkRefs = tt.vmiVnRefs
 				readService.EXPECT().ListVirtualMachineInterface(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.ListVirtualMachineInterfaceResponse{
-						VirtualMachineInterfaces: []*models.VirtualMachineInterface{vmi},
+						VirtualMachineInterfaces: []*services.GetVirtualMachineInterfaceResponse{
+							{
+								VirtualMachineInterface: vmi,
+							},
+						},
 					},
 					nil,
 				)
@@ -747,7 +755,11 @@ func TestCheckRouterHasBGPVPNAssocViaNetwork(t *testing.T) {
 				vn.BGPVPNRefs = tt.vnBgpvpnRefs
 				readService.EXPECT().ListVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 					&services.ListVirtualNetworkResponse{
-						VirtualNetworks: []*models.VirtualNetwork{vn},
+						VirtualNetworks: []*services.GetVirtualNetworkResponse{
+							{
+								VirtualNetwork: vn,
+							},
+						},
 					},
 					nil,
 				)
