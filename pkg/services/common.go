@@ -478,3 +478,11 @@ type routeRegistry interface {
 	PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 	DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
 }
+
+// GetRequestSchema returns 'https://' for TLS based request or 'http://' otherwise
+func GetRequestSchema(r *http.Request) string {
+	if r.TLS != nil {
+		return "https://"
+	}
+	return "http://"
+}
