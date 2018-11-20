@@ -186,4 +186,11 @@ appformix_configuration:
   VCENTER_WSDL_PATH: {%if vcenter.WSDLPath %}{{vcenter.WSDLPath}}{%endif%}
   VCENTER_AUTH_PROTOCOL: {%if vcenter.AuthProtocol %}{{vcenter.AuthProtocol}}{%endif%}
 {%endif%}
+{% if cluster.Orchestrator == "kubernetes" %}
+{% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
+  {% if key_value.Key && key_value.Value%}
+  {{key_value.Key}}: {{key_value.Value}}
+  {%endif%}
+  {%endfor%}
+{%endif%}
 
