@@ -36,7 +36,7 @@ func (r* Get{{ name }}Response) ApplyHref(host string) error {
 
 func (r *List{{name}}Response) ApplyHref(host string) error {
 	for _, obj := range r.{{ name }}s {
-		{{ applyHref("", "obj", "List", name) }}
+		{{ applyHref("obj.", name, "List", name) }}
 	}
 	return nil
 }

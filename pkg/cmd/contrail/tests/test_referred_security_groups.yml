@@ -154,7 +154,11 @@ workflow:
     expected:
     - 200
   expect:
-    access-control-lists: [*ingress_acl_referring_update, *egress_acl_referring]
+    access-control-lists:
+    - access-control-list:
+        *ingress_acl_referring_update
+    - access-control-list:
+        *egress_acl_referring
 
 - name: delete security group 2
   request:

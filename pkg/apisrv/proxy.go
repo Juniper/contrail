@@ -69,7 +69,8 @@ func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 		if err != nil {
 			return nil, err
 		}
-		for _, e := range response.Endpoints {
+		for _, eResp := range response.Endpoints {
+			e := eResp.Endpoint
 			endpoints[e.UUID] = e
 		}
 		if len(response.Endpoints) != limit {
@@ -77,7 +78,7 @@ func (p *proxyService) readEndpoints() (map[string]*models.Endpoint, error) {
 			break
 		}
 		// more than 100 records present in DB, continue to read
-		marker := response.Endpoints[len(response.Endpoints)-1].UUID
+		marker := response.Endpoints[len(response.Endpoints)-1].Endpoint.UUID
 		spec.Marker = marker
 	}
 	return endpoints, nil

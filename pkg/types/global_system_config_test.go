@@ -221,7 +221,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 			func(
 				_ context.Context, _ *services.ListBGPAsAServiceRequest,
 			) (*services.ListBGPAsAServiceResponse, error) {
-				bgps := []*models.BGPAsAService{nil}
+				bgps := []*services.GetBGPAsAServiceResponse{nil}
 				resp := services.ListBGPAsAServiceResponse{BGPAsAServices: bgps}
 				return &resp, nil
 			}).AnyTimes()
@@ -252,7 +252,7 @@ func TestGlobalSystemConfigBgpaasPorts(t *testing.T) {
 			func(
 				_ context.Context, _ *services.ListBGPAsAServiceRequest,
 			) (*services.ListBGPAsAServiceResponse, error) {
-				bgps := []*models.BGPAsAService{nil}
+				bgps := []*services.GetBGPAsAServiceResponse{nil}
 				resp := services.ListBGPAsAServiceResponse{BGPAsAServices: bgps}
 				return &resp, nil
 			}).AnyTimes()
@@ -341,7 +341,13 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 			) (*services.ListVirtualNetworkResponse, error) {
 				rtList := models.RouteTargetList{RouteTarget: []string{"target:1:8000001"}}
 				vn := models.VirtualNetwork{RouteTargetList: &rtList}
-				resp := services.ListVirtualNetworkResponse{VirtualNetworks: []*models.VirtualNetwork{&vn}}
+				resp := services.ListVirtualNetworkResponse{
+					VirtualNetworks: []*services.GetVirtualNetworkResponse{
+						{
+							VirtualNetwork: &vn,
+						},
+					},
+				}
 				return &resp, nil
 			}).AnyTimes()
 
@@ -365,7 +371,13 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 			) (*services.ListVirtualNetworkResponse, error) {
 				rtList := models.RouteTargetList{RouteTarget: []string{"target:192.168.0.1:8000001"}}
 				vn := models.VirtualNetwork{RouteTargetList: &rtList}
-				resp := services.ListVirtualNetworkResponse{VirtualNetworks: []*models.VirtualNetwork{&vn}}
+				resp := services.ListVirtualNetworkResponse{
+					VirtualNetworks: []*services.GetVirtualNetworkResponse{
+						{
+							VirtualNetwork: &vn,
+						},
+					},
+				}
 				return &resp, nil
 			}).AnyTimes()
 
@@ -389,7 +401,13 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 			) (*services.ListVirtualNetworkResponse, error) {
 				rtList := models.RouteTargetList{RouteTarget: []string{"target:1:1"}}
 				vn := models.VirtualNetwork{RouteTargetList: &rtList}
-				resp := services.ListVirtualNetworkResponse{VirtualNetworks: []*models.VirtualNetwork{&vn}}
+				resp := services.ListVirtualNetworkResponse{
+					VirtualNetworks: []*services.GetVirtualNetworkResponse{
+						{
+							VirtualNetwork: &vn,
+						},
+					},
+				}
 				return &resp, nil
 			}).AnyTimes()
 
@@ -413,7 +431,13 @@ func TestGlobalSystemConfigAsn(t *testing.T) {
 			) (*services.ListVirtualNetworkResponse, error) {
 				rtList := models.RouteTargetList{RouteTarget: []string{"target:1a:1"}}
 				vn := models.VirtualNetwork{RouteTargetList: &rtList}
-				resp := services.ListVirtualNetworkResponse{VirtualNetworks: []*models.VirtualNetwork{&vn}}
+				resp := services.ListVirtualNetworkResponse{
+					VirtualNetworks: []*services.GetVirtualNetworkResponse{
+						{
+							VirtualNetwork: &vn,
+						},
+					},
+				}
 				return &resp, nil
 			}).AnyTimes()
 

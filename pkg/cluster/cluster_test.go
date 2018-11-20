@@ -49,14 +49,23 @@ func verifyEndpoints(t *testing.T, testScenario *integration.TestScenario,
 		_, err := client.Read(context.Background(), url, &response)
 		assert.NoError(t, err, "Unable to list endpoints of the cluster")
 		for _, endpoint := range response["endpoints"] {
-			e := endpoint.(map[string]interface{}) //nolint: errcheck
+			eMap, castOk := endpoint.(map[string]interface{})
+			assert.True(t, castOk)
 			// TODO(ijohnson) remove using DisplayName as prefix
 			// once UI takes prefix as input.
-			var prefix = e["display_name"]
+			e, castOk := eMap["endpoint"].(map[string]interface{})
+			assert.True(t, castOk)
+			prefix, castOk := e["display_name"].(string)
+			assert.True(t, castOk)
+
 			if v, ok := e["prefix"]; ok {
-				prefix = v
+				prefixStr, castOk2 := v.(string)
+				assert.True(t, castOk2)
+				prefix = prefixStr
 			}
-			createdEndpoints[prefix.(string)] = e["public_url"].(string) //nolint: errcheck
+			publicURL, castOk := e["public_url"].(string)
+			assert.True(t, castOk)
+			createdEndpoints[prefix] = publicURL
 		}
 	}
 	for k, e := range expectedEndpoints {

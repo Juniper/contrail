@@ -65,15 +65,6 @@ message Delete{{ schema.JSONSchema.GoName }}Response {
     string id = 1 [(gogoproto.customname) = "ID"];
 }
 
-message List{{ schema.JSONSchema.GoName }}Request {
-    github.com.Juniper.contrail.pkg.services.baseservices.ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
-}
-
-message List{{ schema.JSONSchema.GoName }}Response {
-    repeated github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s"];
-    int64 {{ schema.ID }}_count = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}Count"];
-}
-
 message Get{{ schema.JSONSchema.GoName }}Request {
     string id = 1 [(gogoproto.customname) = "ID"];
     repeated string fields = 13 [(gogoproto.customname) = "Fields"]; // limit displayed fields
@@ -81,6 +72,15 @@ message Get{{ schema.JSONSchema.GoName }}Request {
 
 message Get{{ schema.JSONSchema.GoName }}Response {
     github.com.Juniper.contrail.pkg.models.{{ schema.JSONSchema.GoName }} {{ schema.ID }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}", (gogoproto.jsontag) = "{{ schema.Path }}"];
+}
+
+message List{{ schema.JSONSchema.GoName }}Request {
+    github.com.Juniper.contrail.pkg.services.baseservices.ListSpec spec = 1 [(gogoproto.customname) = "Spec"];
+}
+
+message List{{ schema.JSONSchema.GoName }}Response {
+    repeated Get{{ schema.JSONSchema.GoName }}Response {{ schema.Plural }} = 1 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}s"];
+    int64 {{ schema.ID }}_count = 2 [(gogoproto.customname) = "{{ schema.JSONSchema.GoName }}Count"];
 }
 
 {% for linkTo, reference in schema.References %}

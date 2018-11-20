@@ -62,15 +62,16 @@ workflow:
     expected: [200]
   expect:
     application-policy-sets:
-    - all_applications: true
-      name: default-application-policy-set          # name is default
-      display_name: default-application-policy-set  # display_name matches default name
-      fq_name:
-      - default-domain
-      - project_blue_project
-      - default-application-policy-set  # fqname extends project's fqname
-      parent_type: project
-      parent_uuid: project_blue_project_uuid  # parent_uuid points to project
+    - application-policy-set:
+        all_applications: true
+        name: default-application-policy-set          # name is default
+        display_name: default-application-policy-set  # display_name matches default name
+        fq_name:
+        - default-domain
+        - project_blue_project
+        - default-application-policy-set  # fqname extends project's fqname
+        parent_type: project
+        parent_uuid: project_blue_project_uuid  # parent_uuid points to project
 
 - name: check if the ref from the project to the set was created
   request:

@@ -145,7 +145,8 @@ func (sv *ContrailTypeLogicService) validateVrouterAllocationPools(
 	}
 
 	refUUIDToNetworkIpamRefMap := vr.GetRefUUIDToNetworkIpamRefMap()
-	for _, netIpam := range networkIpamsRes.GetNetworkIpams() {
+	for _, netIpamResp := range networkIpamsRes.GetNetworkIpams() {
+		netIpam := netIpamResp.NetworkIpam
 		if netIpam.GetIpamSubnetMethod() != models.FlatSubnet {
 			return errutil.ErrorBadRequestf(
 				"only flat-subnet ipam can be attached to vrouter: NetworkIpam %s has subnet method %s",
