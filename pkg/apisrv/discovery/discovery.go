@@ -7,31 +7,36 @@ import (
 	"github.com/labstack/echo"
 )
 
-type link struct {
-	Link struct {
-		Path   string  `json:"href"`
-		Method *string `json:"method"`
-		Name   string  `json:"name"`
-		Rel    string  `json:"rel"`
-	} `json:"link"`
+type linkDetails struct {
+	Path   string  `json:"href"`
+	Method *string `json:"method"`
+	Name   string  `json:"name"`
+	Rel    string  `json:"rel"`
 }
 
-// Handler which serves a set of registered links.
-type Handler struct {
-	addr  string
+type link struct {
+	Link linkDetails `json:"link"`
+}
+
+// handler which serves a set of registered links.
+type Handler interface {
+	// Register adds a new link to the Handler.
+	Register(path string, method string, name string, rel string)
+	// Handle requests to return the links.
+	Handle(c echo.Context) error
+}
+
+type handler struct {
 	links []*link
 }
 
 // NewHandler creates a new Handler.
-func NewHandler(addr string) *Handler {
-	addr = strings.TrimSuffix(addr, "/")
-	return &Handler{
-		addr: addr,
-	}
+func NewHandler() Handler {
+	return &handler{}
 }
 
 // Register adds a new link to the Handler.
-func (h *Handler) Register(path string, method string, name string, rel string) {
+func (h *handler) Register(path string, method string, name string, rel string) {
 	// path is assumed to be relative with respect to addr
 	path = strings.TrimPrefix(path, "/")
 
@@ -41,7 +46,7 @@ func (h *Handler) Register(path string, method string, name string, rel string) 
 	}
 
 	var l link
-	l.Link.Path = strings.Join([]string{h.addr, path}, "/")
+	l.Link.Path = path
 	l.Link.Method = m
 	l.Link.Name = name
 	l.Link.Rel = rel
@@ -49,9 +54,25 @@ func (h *Handler) Register(path string, method string, name string, rel string) 
 }
 
 // Handle requests to return the links.
-func (h *Handler) Handle(c echo.Context) error {
-	return c.JSON(http.StatusOK, struct {
+func (h *handler) Handle(c echo.Context) error {
+	addr := "http://" + c.Request().Host
+
+	var reply struct {
 		Addr  string  `json:"href"`
 		Links []*link `json:"links"`
-	}{h.addr, h.links})
+	}
+
+	reply.Addr = addr
+	for _, l := range h.links {
+		reply.Links = append(reply.Links, &link{
+			Link: linkDetails{
+				Path:   strings.Join([]string{addr, l.Link.Path}, "/"),
+				Method: l.Link.Method,
+				Name:   l.Link.Name,
+				Rel:    l.Link.Rel,
+			},
+		})
+	}
+
+	return c.JSON(http.StatusOK, reply)
 }
