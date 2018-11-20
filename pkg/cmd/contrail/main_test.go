@@ -21,3 +21,9 @@ func runTest(t *testing.T, name string) {
 	assert.NoError(t, err, "failed to load test data")
 	integration.RunCleanTestScenario(t, testScenario, server)
 }
+
+func runDirtyTest(t *testing.T, name string) func() {
+	testScenario, err := integration.LoadTest(fmt.Sprintf("./tests/%s.yml", format.CamelToSnake(name)), nil)
+	assert.NoError(t, err, "failed to load test data")
+	return integration.RunDirtyTestScenario(t, testScenario, server)
+}

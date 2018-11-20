@@ -13,12 +13,12 @@ import (
 	"net/url"
 	"path"
 
+	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/services"
+
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (
