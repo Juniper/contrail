@@ -58,6 +58,7 @@ var dataYAML = []struct {
   annotations: null
   perms2: null
   configuration_version: 0
+  href: ""
   floating_ip_pool_subnets: null
   tag_refs: []
   project_back_refs: []

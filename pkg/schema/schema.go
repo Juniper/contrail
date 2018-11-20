@@ -58,9 +58,10 @@ const (
 	//RefPrefix is table column name prefix for reference
 	RefPrefix = "ref"
 	//ParentPrefix is table column name prefix for parent
-	ParentPrefix = "parent"
-	configRoot   = "config_root"
-	optional     = "optional"
+	ParentPrefix    = "parent"
+	configRoot      = "config_root"
+	optional        = "optional"
+	serviceProperty = "service"
 )
 
 var sqlTypeMap = map[string]string{
@@ -377,6 +378,44 @@ func (s *JSONSchema) Walk(do func(s2 *JSONSchema) error) error {
 	return nil
 }
 
+func (s *JSONSchema) resolveSQLForArray(
+	parentColumn []string,
+	columnName string,
+	goPath string,
+	getPath string,
+	updatePath string,
+	columns *ColumnConfigs,
+) bool {
+	if len(s.Properties) != 0 && s.Type != ArrayType {
+		return false
+	}
+
+	if s.SQL == "" {
+		s.SQL = sqlTypeMap[s.Type]
+	}
+	bind := ""
+	if s.GoType != "" {
+		if s.IsUint() {
+			bind = "uint"
+		} else {
+			bind = sqlBindMap[s.Type]
+		}
+	}
+
+	*columns = append(*columns, &ColumnConfig{
+		Path:         goPath,
+		GetPath:      getPath,
+		UpdatePath:   updatePath,
+		Bind:         bind,
+		Column:       strings.ToLower(columnName),
+		ParentColumn: parentColumn,
+		Name:         columnName,
+		JSONSchema:   s,
+	})
+
+	return true
+}
+
 func (s *JSONSchema) resolveSQL(
 	parentColumn []string,
 	columnName string,
@@ -385,34 +424,14 @@ func (s *JSONSchema) resolveSQL(
 	updatePath string,
 	columns *ColumnConfigs,
 ) error {
-	if s == nil {
+	if s == nil || s.Presence == serviceProperty {
 		return nil
 	}
-	if len(s.Properties) == 0 || s.Type == ArrayType {
-		if s.SQL == "" {
-			s.SQL = sqlTypeMap[s.Type]
-		}
-		bind := ""
-		if s.GoType != "" {
-			if s.IsUint() {
-				bind = "uint"
-			} else {
-				bind = sqlBindMap[s.Type]
-			}
-		}
 
-		*columns = append(*columns, &ColumnConfig{
-			Path:         goPath,
-			GetPath:      getPath,
-			UpdatePath:   updatePath,
-			Bind:         bind,
-			Column:       strings.ToLower(columnName),
-			ParentColumn: parentColumn,
-			Name:         columnName,
-			JSONSchema:   s,
-		})
+	if s.resolveSQLForArray(parentColumn, columnName, goPath, getPath, updatePath, columns) {
 		return nil
 	}
+
 	for name, property := range s.Properties {
 		nextParentColumn := make([]string, len(parentColumn))
 		copy(nextParentColumn, parentColumn)

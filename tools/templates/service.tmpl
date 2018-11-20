@@ -7,6 +7,7 @@ import (
 
     "github.com/labstack/echo"
     "github.com/satori/go.uuid"
+    log "github.com/sirupsen/logrus"
 
     "github.com/Juniper/contrail/pkg/auth"
     "github.com/Juniper/contrail/pkg/errutil"
@@ -36,6 +37,9 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
     if err != nil {
         return errutil.ToHTTPError(err)
+    }
+    if err = response.ApplyHref(c.Request().Host); err != nil {
+        log.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -176,7 +180,9 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-
+    if err = response.ApplyHref(c.Request().Host); err != nil {
+        log.WithError(err).Error("Failed to apply href")
+    }
     return c.JSON(http.StatusOK, response)
 }
 
@@ -217,6 +223,9 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     if err != nil {
         return errutil.ToHTTPError(err)
     }
+    if err = response.ApplyHref(c.Request().Host); err != nil {
+        log.WithError(err).Error("Failed to apply href")
+    }
     return c.JSON(http.StatusOK, response)
 }
 
@@ -231,6 +240,9 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
+    }
+    if err = response.ApplyHref(c.Request().Host); err != nil {
+        log.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
 }

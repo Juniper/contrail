@@ -569,7 +569,7 @@ func deleteVirtualNetworksFromAPIServer(t *testing.T, hc *integration.HTTPAPICli
 
 func checkSyncedVirtualNetwork(t *testing.T, event *clientv3.Event, expectedVN *models.VirtualNetwork) {
 	syncedVN := decodeVirtualNetworkJSON(t, event.Kv.Value)
-	assert.Equal(t, expectedVN, syncedVN, "synced VN does not match created VN")
+	assert.Equal(t, expectedVN.NoServiceProperties(), syncedVN, "synced VN does not match created VN")
 }
 
 func decodeVirtualNetworkJSON(t *testing.T, vnBytes []byte) *models.VirtualNetwork {
