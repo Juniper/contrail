@@ -89,7 +89,7 @@ func cleanup(ctx context.Context, t *testing.T, restClient *client.HTTP) {
 					ID: uuid,
 				})
 				wg.Done()
-			}(project.UUID)
+			}(project.Project.UUID)
 		}
 		wg.Wait()
 	}

@@ -342,7 +342,7 @@ func Dump(ctx context.Context, service Service) (*EventList, error) {
         response = append(response, &Event{
                     Request: &Event_Create{{ schema.JSONSchema.GoName }}Request{
                         Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: resource,
+                            {{ schema.JSONSchema.GoName }}: resource.{{ schema.JSONSchema.GoName }},
                         }}})
     }
     {% endif %}{% endfor %}

@@ -365,7 +365,7 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
 		return nil, errors.Wrap(basedb.FormatDBError(err), "row error")
 	}
 
-	result := []*models.{{ schema.JSONSchema.GoName }}{}
+	result := []*services.Get{{ schema.JSONSchema.GoName }}Response{}
 	for rows.Next() {
 			valuesMap := map[string]interface{}{}
 			values := make([]interface{}, len(columns))
@@ -384,7 +384,11 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
 			if err != nil {
 				return nil, errors.Wrap(err, "scan row failed")
 			}
-			result = append(result, m)
+			
+			result = append(result,
+				&services.Get{{ schema.JSONSchema.GoName }}Response{
+					{{ schema.JSONSchema.GoName }}: m,
+				})
 	}
 
 	response = &services.List{{ schema.JSONSchema.GoName }}Response{
@@ -671,9 +675,7 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 	if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
 		return nil, errutil.ErrorNotFoundf("No {{ schema.TypeName }}: %s", request.ID)
 	}
-	response = &services.Get{{ schema.JSONSchema.GoName }}Response{
-	   {{ schema.JSONSchema.GoName }}: result.{{ schema.JSONSchema.GoName }}s[0],
-	}
+	response = result.{{ schema.JSONSchema.GoName }}s[0]
 	return response, nil
 }
 

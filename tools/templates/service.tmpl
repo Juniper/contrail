@@ -241,6 +241,11 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     if err = response.ApplyHref(c.Request().Host); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
+    // If 'detail' query parameter is not true than format of reply is different.
+    // See https://contrail-jws.atlassian.net/browse/JBE-494 for details.
+    if c.Request().URL.Query().Get("detail") != "true" {
+        return c.JSON(http.StatusOK, response.NoDetailResponse())
+    }
     return c.JSON(http.StatusOK, response)
 }
 

@@ -72,7 +72,14 @@ func (c *Cluster) getEndpoints(parentUUIDs []string) (endpointIDs []string, err 
 		return nil, err
 	}
 	for _, rawEndpoint := range endpointList[defaultEndpointRes+"s"] {
-		endpointID := rawEndpoint.(map[string]interface{})["uuid"].(string) // nolint: errcheck
+		endpoint, ok := rawEndpoint.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("failed to read endpoints from server")
+		}
+		endpointID, ok := endpoint["uuid"].(string)
+		if !ok {
+			return nil, errors.New("invalid response from server: no uuid field for enpoint has found")
+		}
 		endpointIDs = append(endpointIDs, endpointID)
 	}
 	return endpointIDs, nil

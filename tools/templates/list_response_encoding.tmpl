@@ -11,7 +11,9 @@ import (
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 {% set name = schema.JSONSchema.GoName %}
+{% set single = schema.Path %}
 {% set plural = schema.PluralPath %}
+
 
 func (r List{{ name }}Response) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.toMap())
@@ -40,21 +42,52 @@ func (r List{{ name }}Response) toMap() map[string]interface{} {
 		}
 	}
 
+	result := make([]map[string]interface{}, 0)
+	for _, obj := range r.{{ name }}s {
+		result = append(result,
+			map[string]interface{}{
+				"{{ single }}": obj.{{ name }},
+			},
+		)
+	} 
 	return map[string]interface{}{
-		"{{ plural }}": r.{{ name }}s,
+		"{{ plural }}": result,
+	}
+}
+
+func (r List{{ name }}Response) NoDetailResponse() interface{} {
+	if r.{{ name }}s == nil {
+		return &r
 	}
 
+	objects := make([]interface{}, len(r.{{ name }}s))
+	for i := 0; i < len(r.{{ name }}s); i++ {
+		objects[i] = r.{{ name }}s[i].{{ name }}
+	}
+
+	return map[string]interface{} {
+		"{{ plural }}": objects,
+	}
 }
 
 func (r *List{{ name }}Response) unmarshalWith(unmarshal func(interface{}) error) error {
+	type getResponse struct {
+		Resource *models.{{ name }} `json:"{{ single }}" yaml:"{{ single }}"`
+	}
 	var listResponse struct {
-		Resources []*models.{{ name }} `json:"{{ plural }}" yaml:"{{ plural }}"`
+		Resources []*getResponse `json:"{{ plural }}" yaml:"{{ plural }}"`
 	}
 	err := unmarshal(&listResponse)
 	if err == nil {
 		list := listResponse.Resources
+		var result []*Get{{ name }}Response
+		for _, obj := range list {
+			result = append(result, &Get{{ name }}Response{
+				{{ name }}: obj.Resource,
+			})
+		}
 		*r = List{{ name }}Response{
-			{{ name }}s:	 list,
+			{{ name }}s:	 result,
 			{{ name }}Count: int64(len(list)),
 		}
 		return nil

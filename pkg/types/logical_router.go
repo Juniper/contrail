@@ -594,7 +594,7 @@ func (sv *ContrailTypeLogicService) checkRouterSupportsVPNType(ctx context.Conte
 	}
 
 	for _, bgpvpn := range bgpvpns.GetBGPVPNs() {
-		if bgpvpn.GetBGPVPNType() != models.L3VPNType {
+		if bgpvpn.BGPVPN.GetBGPVPNType() != models.L3VPNType {
 			return errutil.ErrorBadRequestf("can only associate '%s' type BGPVPNs to a logical router", models.L3VPNType)
 		}
 	}
@@ -635,7 +635,8 @@ func (sv *ContrailTypeLogicService) checkRouterHasBGPVPNAssocViaNetwork(
 		return err
 	}
 
-	for _, vn := range vnsResp.GetVirtualNetworks() {
+	for _, vnResp := range vnsResp.GetVirtualNetworks() {
+		vn := vnResp.VirtualNetwork
 		if len(vn.GetBGPVPNRefs()) != 0 {
 			return errutil.ErrorBadRequestf(
 				"can not associate BGPVPN to router which is linked to a network(%s) "+
@@ -688,7 +689,7 @@ func (sv *ContrailTypeLogicService) getLinkedVnUUIDs(
 
 	var vnUUIDs []string
 	for _, vmi := range vmisResp.GetVirtualMachineInterfaces() {
-		for _, vnRef := range vmi.GetVirtualNetworkRefs() {
+		for _, vnRef := range vmi.VirtualMachineInterface.GetVirtualNetworkRefs() {
 			vnUUIDs = append(vnUUIDs, vnRef.GetUUID())
 		}
 	}
