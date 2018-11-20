@@ -66,10 +66,10 @@
   output_path: pkg/services/gen_response_href.go
 - type: all
   template_path: proto_model.tmpl
-  output_path: proto/__package__/pkg/models/generated.proto
+  output_path: proto/github.com/Juniper/contrail/pkg/models/generated.proto
 - type: all
   template_path: proto_service.tmpl
-  output_path: proto/__package__/pkg/services/generated.proto
+  output_path: proto/github.com/Juniper/contrail/pkg/services/generated.proto
 - type: all
   template_path: client.tmpl
   output_path: pkg/apisrv/client/gen_http.go
