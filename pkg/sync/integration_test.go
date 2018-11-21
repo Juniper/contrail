@@ -421,6 +421,7 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	hc := integration.NewTestingHTTPClient(t, s.URL())
 	ec := integrationetcd.NewEtcdClient(t)
 	defer ec.Close(t)
+	ctx := context.Background()
 
 	testID := generateTestID(t)
 	projectUUID := testID + "-project"
@@ -440,22 +441,22 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	vnBlueWatch, blueCtx, cancelBlueCtx := ec.WatchResource(integrationetcd.VirtualNetworkSchemaID, vnBlueUUID)
 	defer cancelBlueCtx()
 
-	integration.CreateProject(t, hc, project(projectUUID))
-	defer integration.DeleteProject(t, hc, projectUUID)
+	integration.CreateProject(ctx, t, hc, project(projectUUID))
+	defer integration.DeleteProject(ctx, t, hc, projectUUID)
 
-	integration.CreateNetworkIpam(t, hc, networkIPAM(networkIPAMUUID, projectUUID))
-	defer integration.DeleteNetworkIpam(t, hc, networkIPAMUUID)
+	integration.CreateNetworkIpam(ctx, t, hc, networkIPAM(networkIPAMUUID, projectUUID))
+	defer integration.DeleteNetworkIpam(ctx, t, hc, networkIPAMUUID)
 
-	integration.CreateVirtualNetwork(t, hc, virtualNetworkRed(vnRedUUID, projectUUID, networkIPAMUUID))
-	integration.CreateVirtualNetwork(t, hc, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
-	integration.CreateVirtualNetwork(t, hc, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
-	defer deleteVirtualNetworksFromAPIServer(t, hc, vnUUIDs)
+	integration.CreateVirtualNetwork(ctx, t, hc, virtualNetworkRed(vnRedUUID, projectUUID, networkIPAMUUID))
+	integration.CreateVirtualNetwork(ctx, t, hc, virtualNetworkGreen(vnGreenUUID, projectUUID, networkIPAMUUID))
+	integration.CreateVirtualNetwork(ctx, t, hc, virtualNetworkBlue(vnBlueUUID, projectUUID, networkIPAMUUID))
+	defer deleteVirtualNetworksFromAPIServer(ctx, t, hc, vnUUIDs)
 	defer ec.DeleteKey(t, integrationetcd.JSONEtcdKey(integrationetcd.VirtualNetworkSchemaID, ""),
 		clientv3.WithPrefix()) // delete all VNs
 
-	vnRed := integration.GetVirtualNetwork(t, hc, vnRedUUID)
-	vnGreen := integration.GetVirtualNetwork(t, hc, vnGreenUUID)
-	vnBlue := integration.GetVirtualNetwork(t, hc, vnBlueUUID)
+	vnRed := integration.GetVirtualNetwork(ctx, t, hc, vnRedUUID)
+	vnGreen := integration.GetVirtualNetwork(ctx, t, hc, vnGreenUUID)
+	vnBlue := integration.GetVirtualNetwork(ctx, t, hc, vnBlueUUID)
 
 	integration.SetDefaultSyncConfig(true)
 	sync, err := sync.NewService()
@@ -561,9 +562,9 @@ func virtualNetworkBlue(uuid, parentUUID, networkIPAMUUID string) *models.Virtua
 	}
 }
 
-func deleteVirtualNetworksFromAPIServer(t *testing.T, hc *integration.HTTPAPIClient, uuids []string) {
+func deleteVirtualNetworksFromAPIServer(ctx context.Context, t *testing.T, hc *integration.HTTPAPIClient, uuids []string) {
 	for _, uuid := range uuids {
-		integration.DeleteVirtualNetwork(t, hc, uuid)
+		integration.DeleteVirtualNetwork(ctx, t, hc, uuid)
 	}
 }
 

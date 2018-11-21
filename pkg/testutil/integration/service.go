@@ -61,8 +61,8 @@ func RunNoError(t *testing.T, rc RunCloser) (close func(*testing.T)) {
 }
 
 // CreateProject creates a project resource in given service.
-func CreateProject(t *testing.T, s services.WriteService, obj *models.Project) *models.Project {
-	resp, err := s.CreateProject(context.Background(), &services.CreateProjectRequest{Project: obj})
+func CreateProject(ctx context.Context, t *testing.T, s services.WriteService, obj *models.Project) *models.Project {
+	resp, err := s.CreateProject(ctx, &services.CreateProjectRequest{Project: obj})
 	require.NoError(
 		t,
 		err,
@@ -73,8 +73,8 @@ func CreateProject(t *testing.T, s services.WriteService, obj *models.Project) *
 }
 
 // DeleteProject deletes a project resource using given service.
-func DeleteProject(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteProject(context.Background(), &services.DeleteProjectRequest{ID: id})
+func DeleteProject(ctx context.Context, t *testing.T, s services.WriteService, id string) {
+	resp, err := s.DeleteProject(ctx, &services.DeleteProjectRequest{ID: id})
 	require.NoError(
 		t,
 		err,
@@ -84,8 +84,8 @@ func DeleteProject(t *testing.T, s services.WriteService, id string) {
 }
 
 // GetProject gets a project resource from given service.
-func GetProject(t *testing.T, s services.ReadService, id string) *models.Project {
-	resp, err := s.GetProject(context.Background(), &services.GetProjectRequest{ID: id})
+func GetProject(ctx context.Context, t *testing.T, s services.ReadService, id string) *models.Project {
+	resp, err := s.GetProject(ctx, &services.GetProjectRequest{ID: id})
 	require.NoError(
 		t,
 		err,
@@ -96,8 +96,8 @@ func GetProject(t *testing.T, s services.ReadService, id string) *models.Project
 }
 
 // CreateNetworkIpam creates a network IPAM resource in given service.
-func CreateNetworkIpam(t *testing.T, s services.WriteService, obj *models.NetworkIpam) *models.NetworkIpam {
-	resp, err := s.CreateNetworkIpam(context.Background(), &services.CreateNetworkIpamRequest{NetworkIpam: obj})
+func CreateNetworkIpam(ctx context.Context, t *testing.T, s services.WriteService, obj *models.NetworkIpam) *models.NetworkIpam {
+	resp, err := s.CreateNetworkIpam(ctx, &services.CreateNetworkIpamRequest{NetworkIpam: obj})
 	require.NoError(
 		t,
 		err,
@@ -108,8 +108,8 @@ func CreateNetworkIpam(t *testing.T, s services.WriteService, obj *models.Networ
 }
 
 // DeleteNetworkIpam deletes a network IPAM resource from given service.
-func DeleteNetworkIpam(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteNetworkIpam(context.Background(), &services.DeleteNetworkIpamRequest{ID: id})
+func DeleteNetworkIpam(ctx context.Context, t *testing.T, s services.WriteService, id string) {
+	resp, err := s.DeleteNetworkIpam(ctx, &services.DeleteNetworkIpamRequest{ID: id})
 	require.NoError(
 		t,
 		err,
@@ -119,8 +119,8 @@ func DeleteNetworkIpam(t *testing.T, s services.WriteService, id string) {
 }
 
 // GetNetworkIpam gets a network IPAM resource from given service.
-func GetNetworkIpam(t *testing.T, s services.ReadService, id string) *models.NetworkIpam {
-	resp, err := s.GetNetworkIpam(context.Background(), &services.GetNetworkIpamRequest{ID: id})
+func GetNetworkIpam(ctx context.Context, t *testing.T, s services.ReadService, id string) *models.NetworkIpam {
+	resp, err := s.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{ID: id})
 	require.NoError(
 		t,
 		err,
@@ -131,8 +131,8 @@ func GetNetworkIpam(t *testing.T, s services.ReadService, id string) *models.Net
 }
 
 // CreateVirtualNetwork creates a virtual network resource from given service.
-func CreateVirtualNetwork(t *testing.T, s services.WriteService, obj *models.VirtualNetwork) *models.VirtualNetwork {
-	resp, err := s.CreateVirtualNetwork(context.Background(), &services.CreateVirtualNetworkRequest{VirtualNetwork: obj})
+func CreateVirtualNetwork(ctx context.Context, t *testing.T, s services.WriteService, obj *models.VirtualNetwork) *models.VirtualNetwork {
+	resp, err := s.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{VirtualNetwork: obj})
 	require.NoError(
 		t,
 		err,
@@ -143,8 +143,8 @@ func CreateVirtualNetwork(t *testing.T, s services.WriteService, obj *models.Vir
 }
 
 // DeleteVirtualNetwork deletes a virtual network resource from given service.
-func DeleteVirtualNetwork(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteVirtualNetwork(context.Background(), &services.DeleteVirtualNetworkRequest{ID: id})
+func DeleteVirtualNetwork(ctx context.Context, t *testing.T, s services.WriteService, id string) {
+	resp, err := s.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: id})
 	require.NoError(
 		t,
 		err,
@@ -154,8 +154,8 @@ func DeleteVirtualNetwork(t *testing.T, s services.WriteService, id string) {
 }
 
 // GetVirtualNetwork gets a virtual network resource from given service.
-func GetVirtualNetwork(t *testing.T, s services.ReadService, id string) *models.VirtualNetwork {
-	resp, err := s.GetVirtualNetwork(context.Background(), &services.GetVirtualNetworkRequest{ID: id})
+func GetVirtualNetwork(ctx context.Context, t *testing.T, s services.ReadService, id string) *models.VirtualNetwork {
+	resp, err := s.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: id})
 	require.NoError(
 		t,
 		err,
@@ -166,8 +166,8 @@ func GetVirtualNetwork(t *testing.T, s services.ReadService, id string) *models.
 }
 
 // DeleteSecurityGroup deletes a security group resource from given service.
-func DeleteSecurityGroup(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteSecurityGroup(context.Background(), &services.DeleteSecurityGroupRequest{ID: id})
+func DeleteSecurityGroup(ctx context.Context, t *testing.T, s services.WriteService, id string) {
+	resp, err := s.DeleteSecurityGroup(ctx, &services.DeleteSecurityGroupRequest{ID: id})
 	require.NoError(
 		t,
 		err,
@@ -177,8 +177,8 @@ func DeleteSecurityGroup(t *testing.T, s services.WriteService, id string) {
 }
 
 // DeleteAccessControlList deletes an access control list resource from given service.
-func DeleteAccessControlList(t *testing.T, s services.WriteService, id string) {
-	resp, err := s.DeleteAccessControlList(context.Background(), &services.DeleteAccessControlListRequest{ID: id})
+func DeleteAccessControlList(ctx context.Context, t *testing.T, s services.WriteService, id string) {
+	resp, err := s.DeleteAccessControlList(ctx, &services.DeleteAccessControlListRequest{ID: id})
 	require.NoError(
 		t,
 		err,

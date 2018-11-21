@@ -64,11 +64,13 @@ func TestCreateCoreResources(t *testing.T) {
 
 	hc := integration.NewTestingHTTPClient(t, server.URL())
 
-	t.Run("create Project and Security Group", testCreateProjectAndSecurityGroup(hc, ec))
+	ctx := context.Background()
+
+	t.Run("create Project and Security Group", testCreateProjectAndSecurityGroup(ctx, hc, ec))
 }
 
 func testCreateProjectAndSecurityGroup(
-	hc *integration.HTTPAPIClient, ec *integrationetcd.EtcdClient,
+	ctx context.Context, hc *integration.HTTPAPIClient, ec *integrationetcd.EtcdClient,
 ) func(t *testing.T) {
 	return func(t *testing.T) {
 		wTime := 1 * time.Second
@@ -103,7 +105,7 @@ func testCreateProjectAndSecurityGroup(
 
 		_, err := hc.CreateProject(ctx, &services.CreateProjectRequest{Project: project})
 		require.NoError(t, err)
-		defer integration.DeleteProject(t, hc, project.UUID)
+		defer integration.DeleteProject(ctx, t, hc, project.UUID)
 
 		sg := loadSecurityGroup(t, securityGroupRequestPath)
 		collectSGEvs := ec.WatchKeyN(
@@ -116,7 +118,7 @@ func testCreateProjectAndSecurityGroup(
 
 		sgResp, err := hc.CreateSecurityGroup(ctx, &services.CreateSecurityGroupRequest{SecurityGroup: sg})
 		require.NoError(t, err)
-		defer integration.DeleteSecurityGroup(t, hc, sgResp.SecurityGroup.UUID)
+		defer integration.DeleteSecurityGroup(ctx, t, hc, sgResp.SecurityGroup.UUID)
 
 		// TODO(Michal): implement chown endpoint
 		//hc.Chown(t, project.UUID, sg.UUID)
@@ -142,7 +144,7 @@ func testCreateProjectAndSecurityGroup(
 		aclEvents := collectACLEvs()
 		for _, ev := range aclEvents {
 			acl := decodeJSON(t, []byte(ev))
-			defer integration.DeleteAccessControlList(t, hc, acl["uuid"].(string))
+			defer integration.DeleteAccessControlList(ctx, t, hc, acl["uuid"].(string))
 		}
 		if assert.Equal(t, expectedACLCount, len(aclEvents)) {
 			checkCreatedACLs(t, aclEvents)
