@@ -71,8 +71,11 @@
   template_path: proto_service.tmpl
   output_path: proto/github.com/Juniper/contrail/pkg/services/generated.proto
 - type: all
-  template_path: client.tmpl
+  template_path: client_http.tmpl
   output_path: pkg/apisrv/client/gen_http.go
+- type: all
+  template_path: client_grpc.tmpl
+  output_path: pkg/apisrv/client/gen_grpc.go
 - type: all
   template_path: sync_refs.tmpl
   output_path: pkg/sync/sink/gen_reverse_refs.go
