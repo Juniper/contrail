@@ -1,0 +1,66 @@
+package services
+
+import (
+	"context"
+)
+
+// SimpleContrailServiceClient satisfies Service using ContrailServiceClient.
+type SimpleContrailServiceClient struct {
+	c ContrailServiceClient
+}
+
+// NewSimpleContrailServiceClient returns a new SimpleContrailServiceClient.
+func NewSimpleContrailServiceClient(c ContrailServiceClient) *SimpleContrailServiceClient {
+	return &SimpleContrailServiceClient{c: c}
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+func (s *SimpleContrailServiceClient) Create{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
+) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+	return s.c.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (s *SimpleContrailServiceClient) Update{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
+) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+	return s.c.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (s *SimpleContrailServiceClient) Delete{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
+) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+	return s.c.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (s *SimpleContrailServiceClient) Get{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
+) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
+	return s.c.Get{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (s *SimpleContrailServiceClient) List{{ schema.JSONSchema.GoName }}(
+	ctx context.Context, request *List{{ schema.JSONSchema.GoName }}Request,
+) (*List{{ schema.JSONSchema.GoName }}Response, error) {
+	return s.c.List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+{% for _, reference in schema.References %}
+{% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+
+func (s *SimpleContrailServiceClient) Create{{ refType }}(
+	ctx context.Context, request *Create{{ refType }}Request,
+) (*Create{{ refType }}Response, error) {
+	return s.c.Create{{ refType }}(ctx, request)
+}
+
+func (s *SimpleContrailServiceClient) Delete{{ refType }}(
+	ctx context.Context, request *Delete{{ refType }}Request,
+) (*Delete{{ refType }}Response, error) {
+	return s.c.Delete{{ refType }}(ctx, request)
+}
+
+{% endfor %}
+
+{% endif%}{% endfor %}
