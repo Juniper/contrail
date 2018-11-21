@@ -67,6 +67,7 @@ const (
 	defaultTemplateRoot                   = "./pkg/cluster/configs"
 	defaultInstanceTemplate               = "instances.tmpl"
 	defaultInstanceFile                   = "instances.yml"
+	defaultVcenterFile                    = "vcenter_vars.yml"
 	defaultProvisioner                    = "ansible"
 	defaultAnsibleRepo                    = "contrail-ansible-deployer"
 	defaultAnsibleRepoDir                 = "/usr/share/contrail/"
@@ -106,4 +107,5 @@ const (
 
 	orchestratorOpenstack  = "openstack"
 	orchestratorKubernetes = "kubernetes"
+	orchestratorVcenter    = "vcenter"
 )
