@@ -62,6 +62,9 @@
   template_path: service.tmpl
   output_path: pkg/services/gen_service.go
 - type: all
+  template_path: simple_contrail_service_client.tmpl
+  output_path: pkg/services/gen_simple_contrail_service_client.go
+- type: all
   template_path: response_href.tmpl
   output_path: pkg/services/gen_response_href.go
 - type: all
