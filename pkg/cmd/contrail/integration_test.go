@@ -103,7 +103,7 @@ func testCreateProjectAndSecurityGroup(
 
 		_, err := hc.CreateProject(ctx, &services.CreateProjectRequest{Project: project})
 		require.NoError(t, err)
-		defer integration.DeleteProject(t, hc, project.UUID)
+		defer integration.DeleteProject(ctx, t, hc, project.UUID)
 
 		sg := loadSecurityGroup(t, securityGroupRequestPath)
 		collectSGEvs := ec.WatchKeyN(
@@ -116,7 +116,7 @@ func testCreateProjectAndSecurityGroup(
 
 		sgResp, err := hc.CreateSecurityGroup(ctx, &services.CreateSecurityGroupRequest{SecurityGroup: sg})
 		require.NoError(t, err)
-		defer integration.DeleteSecurityGroup(t, hc, sgResp.SecurityGroup.UUID)
+		defer integration.DeleteSecurityGroup(ctx, t, hc, sgResp.SecurityGroup.UUID)
 
 		// TODO(Michal): implement chown endpoint
 		//hc.Chown(t, project.UUID, sg.UUID)
@@ -142,7 +142,7 @@ func testCreateProjectAndSecurityGroup(
 		aclEvents := collectACLEvs()
 		for _, ev := range aclEvents {
 			acl := decodeJSON(t, []byte(ev))
-			defer integration.DeleteAccessControlList(t, hc, acl["uuid"].(string))
+			defer integration.DeleteAccessControlList(ctx, t, hc, acl["uuid"].(string))
 		}
 		if assert.Equal(t, expectedACLCount, len(aclEvents)) {
 			checkCreatedACLs(t, aclEvents)
