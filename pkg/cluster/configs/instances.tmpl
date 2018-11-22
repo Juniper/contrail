@@ -176,12 +176,14 @@ appformix_configuration:
     {%endfor%}
 {%endif%}
 {%endif%}
-{% if cluster.Orchestrator == "vcenter" %}
+{% if cluster.Orchestrator == "vcenter" or cluster.Orchestrator == "kubernetes"%}
 {% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
   {% if key_value.Key && key_value.Value%}
   {{key_value.Key}}: {{key_value.Value}}
   {%endif%}
   {%endfor%}
+{%endif%}
+{% if cluster.Orchestrator == "vcenter" %}
   VCENTER_SERVER: {%if vcenter.Server %}{{vcenter.Server}}{%endif%}
   VCENTER_USERNAME: {%if vcenter.Username %}{{vcenter.Username}}{%endif%}
   VCENTER_PASSWORD: {%if vcenter.Password %}{{vcenter.Password}}{%endif%}
