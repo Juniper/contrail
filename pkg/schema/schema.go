@@ -964,19 +964,24 @@ func MakeAPI(dirs []string, overrideSubdir string) (*API, error) {
 		overridePath := ""
 		if overrideSubdir != "" {
 			overridePath = dir + string(os.PathSeparator) + overrideSubdir
+			log.Println("@@@@ Path", overridePath) // TODO: Debug only - delete it later
 			var err error
 			overrides, err = api.loadOverrides(overridePath)
 			if err != nil {
 				return api, err
 			}
 		}
+		log.Println("@@@@ HERE 1") // TODO: Debug only - delete it later
 		err := filepath.Walk(dir, func(p string, f os.FileInfo, e error) error {
 			return walkSchemaFile(overridePath, overrides, api, p, f, e)
 		})
 		if err != nil {
+			log.Println("@@@@ HERE 3") // TODO: Debug only - delete it later
 			return nil, err
 		}
 	}
 	err := api.process()
+
+	log.Println("@@@@ HERE 2") // TODO: Debug only - delete it later
 	return api, err
 }
