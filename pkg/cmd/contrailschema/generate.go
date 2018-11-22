@@ -1,6 +1,7 @@
 package contrailschema
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -24,6 +25,7 @@ func init() {
 
 func generateCode() {
 	log.Info("Generating source code from schema")
+	fmt.Printf("Schema dir %+v \n", option.SchemasDir)
 	api, err := schema.MakeAPI(strings.Split(option.SchemasDir, ","), "overrides")
 	if err != nil {
 		log.Fatal(err)
