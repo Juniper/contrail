@@ -22,7 +22,7 @@ Flags:
 Reference example for contrailschema generate usage is in [`Makefile`](../Makefile)
 
 ```bash
-go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/template_config.yaml --schema-output public/schema.json --openapi-output public/openapi.json
+go run cmd/contrailschema/main.go generate --schemas schemas --templates tools/templates/native/template_config.yaml --schema-output public/native/schema.json --openapi-output public/native/openapi.json
 ```
 
 ## Schema Directory
