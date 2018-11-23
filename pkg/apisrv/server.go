@@ -46,15 +46,16 @@ func RegisterExtension(f func(server *Server) error) {
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo        *echo.Echo
-	GRPCServer  *grpc.Server
-	Keystone    *keystone.Keystone
-	DBService   *db.Service
-	Proxy       *proxyService
-	Service     services.Service
-	IPAMServer  services.IPAMServer
-	ChownServer services.ChownServer
-	Cache       *cache.DB
+	Echo         *echo.Echo
+	GRPCServer   *grpc.Server
+	Keystone     *keystone.Keystone
+	DBService    *db.Service
+	Proxy        *proxyService
+	Service      services.Service
+	IPAMServer   services.IPAMServer
+	ChownServer  services.ChownServer
+	SetTagServer services.SetTagServer
+	Cache        *cache.DB
 }
 
 // NewServer makes a server
@@ -185,6 +186,7 @@ func (s *Server) Init() (err error) {
 	s.Service = cs
 	s.IPAMServer = cs
 	s.ChownServer = cs
+	s.SetTagServer = cs
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -263,6 +265,7 @@ func (s *Server) Init() (err error) {
 		services.RegisterContrailServiceServer(s.GRPCServer, s.Service)
 		services.RegisterIPAMServer(s.GRPCServer, s.IPAMServer)
 		services.RegisterChownServer(s.GRPCServer, s.ChownServer)
+		services.RegisterSetTagServer(s.GRPCServer, s.SetTagServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 

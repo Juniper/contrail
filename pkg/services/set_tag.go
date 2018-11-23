@@ -5,137 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	strings "strings"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
-
-var (
-	// TagTypeNotUniquePerObject contains not unique tag-types per object
-	TagTypeNotUniquePerObject = map[string]bool{
-		"label": true,
-	}
-	// TagTypeAuthorizedOnAddressGroup contains authorized on address group tag-types
-	TagTypeAuthorizedOnAddressGroup = map[string]bool{
-		"label": true,
-	}
-)
-
-func isTagTypeUniquePerObject(tagType string) bool {
-	return !TagTypeNotUniquePerObject[tagType]
-}
-
-//TagAttr is a part of set-tag input data.
-type TagAttr struct {
-	IsGlobal     bool        `json:"is_global"`
-	Value        interface{} `json:"value"` // Value could be nil, string or slice of strings
-	AddValues    []string    `json:"add_values"`
-	DeleteValues []string    `json:"delete_values"`
-}
-
-func (t *TagAttr) isDeleteRequest() bool {
-	return t.Value == nil && (len(t.AddValues) == 0 && len(t.DeleteValues) == 0)
-}
-
-func (t *TagAttr) hasAddValues() bool {
-	return len(t.AddValues) > 0
-}
-func (t *TagAttr) hasDeleteValues() bool {
-	return len(t.DeleteValues) > 0
-}
-
-// SetTagRequest represents set-tag input data.
-type SetTagRequest struct {
-	ObjUUID string `json:"obj_uuid"`
-	ObjType string `json:"obj_type"`
-	Tags    map[string]TagAttr
-}
-
-func (t *SetTagRequest) validate() error {
-	if t.ObjUUID == "" || t.ObjType == "" {
-		return errutil.ErrorBadRequestf(
-			"both obj_uuid and obj_type should be specified but got uuid: '%s' and type: '%s",
-			t.ObjUUID, t.ObjType,
-		)
-	}
-	for tagType, tagAttr := range t.Tags {
-		if err := t.validateTagAttr(tagType, tagAttr); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (t *SetTagRequest) validateTagAttr(tagType string, tagAttr TagAttr) error {
-	tagType = strings.ToLower(tagType)
-
-	// address-group object can only be associated with label
-	if t.ObjType == "address_group" && !TagTypeAuthorizedOnAddressGroup[tagType] {
-		return errutil.ErrorBadRequestf(
-			"invalid tag type %v for object type %v", tagType, t.ObjType,
-		)
-	}
-	if isTagTypeUniquePerObject(tagType) {
-		if len(tagAttr.AddValues) > 0 || len(tagAttr.DeleteValues) > 0 {
-			return errutil.ErrorBadRequestf(
-				"tag type %v cannot be set multiple times on a same object", tagType,
-			)
-		}
-
-		if _, ok := tagAttr.Value.(string); !ok && !tagAttr.isDeleteRequest() {
-			return errutil.ErrorBadRequestf("no valid value provided for tag type %v", tagType)
-		}
-	}
-	return nil
-}
-
-func (t *SetTagRequest) parseObjFields(rawJSON map[string]json.RawMessage) error {
-	if err := parseField(rawJSON, "obj_uuid", &t.ObjUUID); err != nil {
-		return err
-	}
-	if err := parseField(rawJSON, "obj_type", &t.ObjType); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func parseField(rawJSON map[string]json.RawMessage, key string, dst interface{}) error {
-	if val, ok := rawJSON[key]; ok {
-		if err := json.Unmarshal(val, dst); err != nil {
-			return errutil.ErrorBadRequestf("invalid '%s' format: %v", key, err)
-		}
-		delete(rawJSON, key)
-	}
-	return nil
-}
-
-func (t *SetTagRequest) parseTagAttrs(rawJSON map[string]json.RawMessage) error {
-	t.Tags = make(map[string]TagAttr)
-	for key, val := range rawJSON {
-		var tagAttr TagAttr
-		if err := json.Unmarshal(val, &tagAttr); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid '%v' format: %v", key, err))
-		}
-		t.Tags[key] = tagAttr
-	}
-	return nil
-}
-
-func (t *SetTagRequest) tagRefEvent(tagUUID string, operation RefOperation) (*Event, error) {
-	return NewEventFromRefUpdate(&RefUpdate{
-		Operation: operation,
-		Type:      t.ObjType,
-		UUID:      t.ObjUUID,
-		RefType:   models.KindTag,
-		RefUUID:   tagUUID,
-	})
-}
 
 // RESTSetTag handles set-tag request.
 func (service *ContrailService) RESTSetTag(c echo.Context) error {
@@ -144,7 +22,7 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
 	}
 
-	setTag := SetTagRequest{}
+	setTag := &SetTagRequest{}
 	if err := setTag.parseObjFields(rawJSON); err != nil {
 		return errutil.ToHTTPError(err)
 	}
@@ -154,7 +32,8 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		return service.SetTag(ctx, setTag)
+		_, err := service.SetTag(ctx, setTag)
+		return err
 	})
 
 	if err != nil {
@@ -164,24 +43,23 @@ func (service *ContrailService) RESTSetTag(c echo.Context) error {
 }
 
 // SetTag allows setting tags based on SetTagRequest.
-func (service *ContrailService) SetTag(ctx context.Context, setTag SetTagRequest) error {
+func (service *ContrailService) SetTag(ctx context.Context, setTag *SetTagRequest) (*types.Empty, error) {
 	if err := setTag.validate(); err != nil {
-		return err
+		return nil, err
 	}
 
 	obj, err := GetObject(ctx, service.Next(), setTag.ObjType, setTag.ObjUUID)
 	if err != nil {
-		return errutil.ErrorBadRequestf(
+		return nil, errutil.ErrorBadRequestf(
 			"error: %v, while getting %v with UUID %v", err, setTag.ObjType, setTag.ObjUUID,
 		)
 	}
 
 	references := obj.GetTagReferences()
 
-	for tagType, tagAttr := range setTag.Tags {
-		tagType = strings.ToLower(tagType)
-		if references, err = service.handleTagAttr(ctx, tagAttr, tagType, obj, references); err != nil {
-			return err
+	for _, tagAttr := range setTag.Tags {
+		if references, err = service.handleTagAttr(ctx, tagAttr, obj, references); err != nil {
+			return nil, err
 		}
 	}
 	e, err := NewEvent(&EventOption{
@@ -191,30 +69,29 @@ func (service *ContrailService) SetTag(ctx context.Context, setTag SetTagRequest
 		Operation: OperationUpdate,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	_, err = e.Process(ctx, service)
 
-	return err
+	return &types.Empty{}, err
 }
 
 func (service *ContrailService) handleTagAttr(
-	ctx context.Context, tagAttr TagAttr, tagType string, obj basemodels.Object, refs basemodels.References,
+	ctx context.Context, tagAttr *SetTagAttr, obj basemodels.Object, refs basemodels.References,
 ) (basemodels.References, error) {
 	switch {
 	case tagAttr.isDeleteRequest():
-		return removeTagsOfType(refs, tagType), nil
-	case isTagTypeUniquePerObject(tagType):
-		refs = removeTagsOfType(refs, tagType)
+		return removeTagsOfType(refs, tagAttr.GetType()), nil
+	case tagAttr.hasTypeUniquePerObject():
+		refs = removeTagsOfType(refs, tagAttr.GetType())
 
-		tagValue := format.InterfaceToString(tagAttr.Value)
-		uuid, err := service.getTagUUIDInScope(ctx, tagType, tagValue, tagAttr.IsGlobal, obj)
+		uuid, err := service.getTagUUIDInScope(ctx, tagAttr.GetType(), tagAttr.GetValue().GetValue(), tagAttr.IsGlobal, obj)
 
 		return append(refs, basemodels.NewReference(uuid, models.KindTag)), err
 	case tagAttr.hasAddValues():
 		for _, tagValue := range tagAttr.AddValues {
-			uuid, err := service.getTagUUIDInScope(ctx, tagType, tagValue, tagAttr.IsGlobal, obj)
+			uuid, err := service.getTagUUIDInScope(ctx, tagAttr.GetType(), tagValue, tagAttr.IsGlobal, obj)
 			if err != nil {
 				return nil, err
 			}
@@ -225,7 +102,7 @@ func (service *ContrailService) handleTagAttr(
 	case tagAttr.hasDeleteValues():
 		toDelete := map[string]bool{}
 		for _, tagValue := range tagAttr.DeleteValues {
-			uuid, err := service.getTagUUIDInScope(ctx, tagType, tagValue, tagAttr.IsGlobal, obj)
+			uuid, err := service.getTagUUIDInScope(ctx, tagAttr.GetType(), tagValue, tagAttr.IsGlobal, obj)
 			if err != nil {
 				return nil, err
 			}
@@ -282,7 +159,7 @@ func (service *ContrailService) getTagFQNameInScope(
 			ctx, basemodels.Metadata{UUID: tl.GetPerms2().GetOwner()},
 		)
 		if err != nil {
-			return nil, errutil.ErrorNotFoundf("cannot find %s %s owner: %v", tagName, tl.GetUUID(), err)
+			return nil, errors.Wrapf(err, "cannot find %s %s owner", tagName, tl.GetUUID())
 		}
 		return basemodels.ChildFQName(data.FQName, tagName), nil
 	default:
@@ -304,7 +181,7 @@ func (service *ContrailService) getTagUUIDInScope(
 		ctx, basemodels.Metadata{FQName: fqName, Type: models.KindTag},
 	)
 	if err != nil {
-		return "", errutil.ErrorNotFoundf("not able to determine the scope of the tag %s: %v", tagName, err)
+		return "", errors.Wrapf(err, "not able to determine the scope of the tag %s", tagName)
 	}
 	return m.UUID, nil
 }
