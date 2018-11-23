@@ -1,0 +1,50 @@
+---
+api_style: contrail
+id: subnet
+prefix: /neutron/
+type: response
+schema:
+  type: object
+  properties:
+    host_routes:
+      type: array
+      items:
+        # TODO fix the type of array -- need to check first
+        type: string
+    name:
+      type: string
+    enable_dhcp:
+      type: boolean
+    network_id:
+      type: string
+    tenant_id:
+      type: string
+    created_at:
+      type: string
+    dns_nameservers:
+      type: array
+      items:
+        $ref: req_subnet.json#/definitions/DnsNameserver
+      presence: optional
+    updated_at:
+      type: string
+    ipv6_ra_mode:
+      type: string
+    allocation_pools:
+      type: array
+      items:
+        $ref: req_subnet.json#/definitions/AllocationPool
+    gateway_ip:
+      type: string
+    dns_server_address:
+      type: string
+    shared:
+      type: boolean
+    ip_version:
+      type: integer
+    ipv6_address_mode:
+      type: string
+    cidr:
+      type: string
+    id:
+      type: string
