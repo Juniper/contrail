@@ -27,7 +27,7 @@ Example.
 
 ```bash
 npm install -g spectacle-docs
-spectacle -d public/openapi.json
+spectacle -d public/native/openapi.json
 ```
 
 ## Creating a resource
