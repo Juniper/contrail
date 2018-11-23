@@ -1,0 +1,27 @@
+---
+api_style: contrail
+id: security_group
+prefix: /neutron/
+schema:
+  type: object
+
+definitions:
+  RequestResourceSecurityGroup:
+    type: object
+    properties:
+      id:
+        type: string
+        presence: true
+      name:
+        presence: optional
+        type: string
+      tenant_id:
+        type: string
+        presence: optional
+      destination:
+        type: string
+        presence: true
+      project_id:
+        type: string
+        presence: true
+
