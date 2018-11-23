@@ -1,0 +1,15 @@
+api_style: contrail
+extends:
+  - neutron-base
+id: network
+plural: networks
+prefix: /neutron/
+schema:
+  required: ["data"]
+  type: object
+  properties:
+      data:
+        presence: "true"
+        $ref: "request.json#/definitions/DataNetwork"
+        description: "Request data"
+

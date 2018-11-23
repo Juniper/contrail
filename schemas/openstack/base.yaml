@@ -1,0 +1,14 @@
+---
+  plural: "neutron-base"
+  prefix: "/"
+  parents: {}
+  type: "abstract"
+  id: "neutron-base"
+  schema:
+    required: ["context"]
+    type: "object"
+    properties:
+      context:
+        presence: "true"
+        $ref: "request.json#/definitions/RequestContext"
+        description: "Request context"
