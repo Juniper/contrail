@@ -1,0 +1,24 @@
+package services
+
+import (
+	"fmt"
+
+	"github.com/labstack/echo"
+)
+
+// TODO: This is only a example template. Implement it later.
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
+    {{ schema.JSONSchema.GoName }} map[string]interface{} `json:"{{ schema.Path }}"`
+}
+
+// RESTCreate{{ schema.JSONSchema.GoName }} handles a REST create request.
+func (service *OpenstackService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+    fmt.Println("I'm working!!! ~ {{schema.JSONSchema.GoName }}")
+	return nil
+}
+
+
+{% endif %}{% endfor %}
