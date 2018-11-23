@@ -12,7 +12,6 @@ test_data:
     fq_name:
     - namespace
     display_name: namespace
-    tag_type_id: "0x00ff"
   # End SetUp
 
   tag_with_id_incorrect: &tag_with_id_incorrect
@@ -51,13 +50,6 @@ test_data:
     - namespace=tag_minimal_correct
     tag_value: tag_minimal_correct
     tag_type_name: namespace
-
-  tag_wihout_tagtype: &tag_without_tagtype
-    uuid: tag_wihout_tagtype_uuid
-    fq_name:
-    - vn=tag_wihout_tagtype_uuid
-    tag_value: tag_wihout_tagtype_uuid
-    tag_type_name: vn
 
   tag_full_correct: &tag_full_correct
     uuid: tag_full_correct_uuid
@@ -153,23 +145,6 @@ workflow:
       tag_refs:
         - uuid: tag_full_correct_uuid
         - uuid: tag_minimal_correct_uuid
-
-# TODO(pawel.zadrozny) Uncomment this test when CreateTagType logic is done.
-#- name: check create tag without tag type
-#  request:
-#    path: /tags
-#    method: POST
-#    expected:
-#    - 200
-#    data:
-#      tag: *tag_without_tagtype
-#  expect:
-#    tag:
-#      uuid: tag_wihout_tagtype_uuid
-#      fq_name:
-#      - vn=tag_wihout_tagtype_uuid
-#      tag_value: tag_wihout_tagtype_uuid
-#      tag_type_name: vn
 
 - name: create incorrect tag with tag_id
   request:
