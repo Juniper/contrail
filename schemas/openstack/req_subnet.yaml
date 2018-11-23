@@ -1,0 +1,94 @@
+---
+api_style: contrail
+id: subnet
+prefix: /neutron/
+type: request
+schema:
+  type: object
+  properties:
+    description:
+      type: string
+      presence: optional
+    enable_dhcp:
+      type: boolean
+    network_id:
+      type: string
+      presence: true
+    tenant_id:
+      type: string
+      presence: optional
+    ipam_fq_name:
+      type: array
+      items:
+        type: string
+    ip_version:
+      type: string
+      presence: optional
+    cidr:
+      type: string
+      presence: optional
+    project_id:
+      type: string
+      presence: true
+    name:
+      presence: optional
+      type: string
+    # Properties below are present in vnc_openstack code but not observed in real data exchange yet
+    allocation_pools:
+      type: array
+      items:
+        $ref: req_subnet.json#/definitions/AllocationPool
+    gateway_ip:
+      type: string
+      presence: optional
+    ipv6_ra_mode:
+      type: string
+      presence: optional
+    ipv6_address_mode:
+      type: string
+      presence: optional
+    dns_nameservers:
+      type: array
+      items:
+        $ref: req_subnet.json#/definitions/DnsNameserver
+      presence: optional
+    destination:
+      type: string
+      presence: true
+    nexthop:
+      type: string
+      presence: true
+    routes:
+      type: string
+      presence: optional
+    shared:
+      type: string
+      presence: optional
+    created_at:
+      type: string
+      presence: optional
+    updated_at:
+      type: string
+      presence: optional
+    dns_server_address:
+      type: string
+      presence: optional
+
+definitions:
+  AllocationPool:
+    type: object
+    description: First last IP of allocation pool
+    properties:
+      first_ip:
+        type: integer
+        presence: true
+      last_ip:
+        type: integer
+        presence: true
+  DnsNameserver:
+    type: object
+    properties:
+      address:
+        type: string
+        presence: true
+
