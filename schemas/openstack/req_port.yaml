@@ -1,0 +1,35 @@
+---
+api_style: contrail
+id: port
+prefix: /neutron/
+type: request
+schema:
+  type: object
+  properties:
+    description:
+      type: string
+    admin_state_up:
+      type: boolean
+    network_id:
+      type: string
+    tenant_id:
+      type: string
+    extra_dhcp_opts:
+      type: boolean
+    name:
+      type: string
+    device_owner:
+      type: string
+    # Property 'bindings' is treated in a special way by template and needs custom (un)marshaller
+    bindings:
+      json_tag: "-"
+      type: string
+    project_id:
+      type: string
+    security_groups:
+      type: array
+      items:
+        type: string
+    device_id:
+      type: string
+
