@@ -1,0 +1,33 @@
+---
+api_style: contrail
+id: security_group_rule
+prefix: /neutron/
+schema:
+  type: object
+
+definitions:
+  RequestResourceSecurityGroupRule:
+    type: object
+    properties:
+      remote_group_id:
+        type: string
+        presence: optional
+      direction:
+        type: string
+      protocol:
+        type: string
+      remote_ip_prefix:
+        type: string
+      port_range_max:
+        type: integer
+      security_group_id:
+        type: string
+      tenant_id:
+        type: string
+      port_range_min:
+        type: integer
+      ethertype:
+        type: string
+      project_id:
+        type: string
+

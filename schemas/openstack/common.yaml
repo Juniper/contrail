@@ -1,0 +1,26 @@
+definitions:
+  RequestContext:
+    type: object
+    properties:
+      tenant:
+        type: string
+      tenant_id:
+        type: string
+      operation:
+        # TODO: Should be enum
+        type: string
+        presence: 'true'
+        description: Operation to be performed via vnc_openstack
+      user_id:
+        type: string
+      roles:
+        type: array
+        items:
+          type: string
+      is_admin:
+        type: boolean
+      request_id:
+        type: string
+      type:
+        type: string
+
