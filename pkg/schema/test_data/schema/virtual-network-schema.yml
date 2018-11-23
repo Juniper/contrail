@@ -6,7 +6,7 @@
   references:
     network_ipam:
       operations: "CRUD"
-      $ref: "types.json#definitions/VnSubnetsType"
+      $ref: "types.json#/definitions/VnSubnetsType"
       description: "Reference to network-ipam this network is using. It has list of subnets that are being used as property of the reference."
       presence: "required"
   parents:

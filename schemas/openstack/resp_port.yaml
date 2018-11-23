@@ -1,0 +1,76 @@
+---
+api_style: contrail
+id: port
+prefix: /neutron/
+type: request
+schema:
+  type: object
+  properties:
+    status:
+      type: string
+    created_at:
+      type: string
+    port_security_enabled:
+      type: boolean
+    binding_host_id:
+      json_tag: "binding:host_id"
+      type: string
+    name:
+      type: string
+    allowed_address_pairs:
+      type: array
+      items:
+        type: string
+    admin_state_up:
+      type: boolean
+    network_id:
+      type: string
+    tenant_id:
+      type: string
+    binding_vif_details:
+      json_tag: "binding:vif_details"
+      $ref: resp_port.json#/definitions/BindingVifDetails
+    description:
+      type: string
+    updated_at:
+      type: string
+    binding_vnic_type:
+      json_tag: "binding:vnic_type"
+      type: string
+    binding_vif_type:
+      json_tag: "binding_vif_type"
+      type: string
+    device_owner:
+      type: string
+    mac_address:
+      type: string
+    fq_name:
+      type: array
+      items:
+        type: string
+    fixed_ips:
+      type: array
+      items:
+        $ref: resp_port.json#/definitions/FixedIp
+    id:
+      type: string
+    security_groups:
+      type: array
+      items:
+        type: string
+    device_id:
+      type: string
+
+definitions:
+  BindingVifDetails:
+    type: object
+    properties:
+      port_filter:
+        type: boolean
+  FixedIp:
+    type: object
+    properties:
+      subnet_id:
+        type: string
+      ip_address:
+        type: string
