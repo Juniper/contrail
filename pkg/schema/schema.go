@@ -64,6 +64,11 @@ const (
 	serviceProperty = "service"
 )
 
+const (
+	definitionsInFile = "definitions"
+	schemasInFile     = "schemas"
+)
+
 var sqlTypeMap = map[string]string{
 	ObjectType:  "json",
 	IntegerType: "bigint",
@@ -263,17 +268,17 @@ type BackReference struct {
 	LinkTo      *Schema `yaml:"-" json:"-"`
 }
 
-func parseRef(ref string) (string, string) {
+func parseRef(ref string) (file, section, goType string) {
 	if ref == "" {
-		return "", ""
+		return "", "", ""
 	}
 	refs := strings.Split(ref, "#")
 	types := strings.Split(ref, "/")
-	return refs[0], types[len(types)-1]
+	return refs[0], types[1], types[len(types)-1]
 }
 
 func (s *JSONSchema) getRefType() string {
-	_, goType := parseRef(s.Ref)
+	_, _, goType := parseRef(s.Ref)
 	return goType
 }
 
@@ -546,22 +551,49 @@ func (api *API) SchemaByID(id string) *Schema {
 	return nil
 }
 
-func (api *API) loadType(schemaFile, typeName string) (*JSONSchema, error) {
-	if definition, ok := api.Types[typeName]; ok {
-		return definition, nil
-	}
+func (api *API) readDefinitionFromDefinitions(schemaFile, typeName string) (*JSONSchema, error) {
 	definitions := api.definitionByFileName(schemaFile)
 	if definitions == nil {
+		log.Info("definitions read from following files:")
 		for _, d := range api.Definitions {
 			log.Info(d.FileName)
 		}
-		return nil, fmt.Errorf("can't find file for %s", schemaFile)
+		return nil, fmt.Errorf("can't find file '%s' (with type %s)", schemaFile, typeName)
 	}
 	definition, ok := definitions.Definitions[typeName]
 	if !ok {
 		return nil, fmt.Errorf("%s isn't defined in %s", typeName, schemaFile)
 	}
-	err := definition.Walk(api.resolveRef)
+	return definition, nil
+}
+
+func (api *API) readDefinitionFromSchemas(typeName string) (*JSONSchema, error) {
+	schema := api.SchemaByID(typeName)
+	if schema == nil {
+		return nil, fmt.Errorf("can find schema with id: %v", typeName)
+	}
+	return schema.JSONSchema, nil
+}
+
+func (api *API) readDefinition(schemaFile, section, typeName string) (*JSONSchema, error) {
+	switch section {
+	case definitionsInFile:
+		return api.readDefinitionFromDefinitions(schemaFile, typeName)
+	case schemasInFile:
+		return api.readDefinitionFromSchemas(typeName)
+	}
+	return nil, fmt.Errorf("section '%v' not handled for reading definitions", section)
+}
+
+func (api *API) loadType(schemaFile, section, typeName string) (*JSONSchema, error) {
+	if definition, ok := api.Types[typeName]; ok {
+		return definition, nil
+	}
+	definition, err := api.readDefinition(schemaFile, section, typeName)
+	if err != nil {
+		return nil, errors.Wrapf(err, "reading definiton from %v", section)
+	}
+	err = definition.Walk(api.resolveRef)
 	if err != nil {
 		return nil, err
 	}
@@ -592,7 +624,7 @@ func (api *API) resolveRef(schema *JSONSchema) error {
 	}
 	definition, err := api.loadType(parseRef(schema.Ref))
 	if err != nil {
-		return errors.Wrapf(err, "required by %v", schema.ID)
+		return errors.Wrapf(err, "resolve ref required by %v (ref: %v)", schema.ID, schema.Ref)
 	}
 	schema.Update(definition)
 	return nil
@@ -629,9 +661,9 @@ func (api *API) resolveRelation(linkToSchema *Schema, reference *Reference) erro
 	if ref == "" {
 		return nil
 	}
-	file, jsonType := parseRef(ref)
+	file, section, jsonType := parseRef(ref)
 	reference.RefType = jsonType
-	definition, err := api.loadType(file, jsonType)
+	definition, err := api.loadType(file, section, jsonType)
 	if err != nil {
 		return err
 	}
@@ -872,6 +904,7 @@ func (api *API) loadSchemaFromPath(path string) (*Schema, error) {
 	if info.ModTime().After(api.Timestamp) {
 		api.Timestamp = info.ModTime()
 	}
+	log.Printf("Loading schema from %v - %v", path, schema.ID)
 	return &schema, nil
 }
 
@@ -928,7 +961,7 @@ func walkSchemaFile(overridePath string, overrides *Schema, api *API, path strin
 	if path == overridePath && f.IsDir() {
 		return filepath.SkipDir
 	}
-	if f.IsDir() || err != nil {
+	if f == nil || f.IsDir() || err != nil {
 		return err
 	}
 	schema, err := api.loadSchemaFromPath(path)
@@ -938,7 +971,8 @@ func walkSchemaFile(overridePath string, overrides *Schema, api *API, path strin
 	if schema == nil {
 		return nil
 	}
-	schema.FileName = strings.Replace(filepath.Base(path), ".yml", ".json", 1)
+	r := strings.NewReplacer(".yml", ".json", ".yaml", ".json")
+	schema.FileName = r.Replace(filepath.Base(path))
 	return processSchema(schema, overrides, api)
 }
 
