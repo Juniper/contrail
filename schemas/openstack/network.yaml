@@ -1,0 +1,89 @@
+---
+api_style: contrail
+id: network
+prefix: /neutron/
+schema:
+  type: object
+
+definitions:
+  RequestResourceNetwork:
+    type: object
+    description: Object data for network resource handled by vnc_openstack
+    properties:
+      id:
+        type: string
+        presence: true
+      name:
+        presence: optional
+        type: string
+      router_external:
+        presence: optional
+        type: string
+        json_tag: "router:external"
+      shared:
+        presence: optional
+        type: string
+      provider_physical_network:
+        presence: optional
+        type: string
+        json_tag: "provider:physical_network"
+      vpc_route_table:
+        presence: optional
+        type: string
+        json_tag: "vpc:route_table"
+      provider_segmentation_id:
+        presence: optional
+        type: string
+        json_tag: "provider:segmentation_id"
+      admin_state_up:
+        presence: optional
+        type: string
+      policys:
+        presence: optional
+        type: string
+      route_table:
+        presence: optional
+        type: string
+      port_security_enabled:
+        presence: optional
+        type: string
+      description:
+        presence: optional
+        type: string
+  ResponseNetwork:
+    type: object
+    properties:
+      status:
+        type: string
+      router_external:
+        type: boolean
+        json_tag: "router:external"
+      subnets:
+        type: array
+        items:
+          type: string
+      fq_name:
+        type: array
+        items:
+          type: string
+      name:
+        type: string
+      admin_state_up:
+        type: boolean
+      tenant_id:
+        type: string
+      created_at:
+        type: string
+      updated_at:
+        type: string
+      port_security_enabled:
+        type: boolean
+      shared:
+        type: boolean
+      project_id:
+        type: string
+      id:
+        type: string
+      description:
+        type: string
+
