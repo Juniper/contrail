@@ -1,0 +1,54 @@
+definitions:
+  ReqContext:
+    type: object
+    properties:
+      tenant:
+        type: string
+      tenant_id:
+        type: string
+      operation:
+        # TODO: Should be enum
+        type: string
+        presence: 'true'
+        description: Operation to be performed via vnc_openstack
+  ReqDataNetwork:
+    type: object
+    description: Object data for network resource handled by vnc_openstack
+    properties:
+      id:
+        type: string
+        presence: true
+      name:
+        presence: optional
+        type: string
+      router_external:
+        presence: optional
+        type: string
+        fieldname: "router:external"
+      shared:
+        presence: optional
+        type: string
+      provider_physical_network:
+        presence: optional
+        type: string
+        fieldname: "provider:physical_network"
+      provider_segmentation_id:
+        presence: optional
+        type: string
+        fieldname: "provider:segmentation_id"
+      admin_state_up:
+        presence: optional
+        type: string
+      policys:
+        presence: optional
+        type: string
+      route_table:
+        presence: optional
+        type: string
+      port_security_enabled:
+        presence: optional
+        type: string
+      description:
+        presence: optional
+        type: string
+
