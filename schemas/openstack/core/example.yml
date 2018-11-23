@@ -1,0 +1,11 @@
+api_style: openstack
+extends:
+- base
+id: placeholder
+parents: {}
+plural: placeholders
+prefix: /
+schema:
+  properties: {}
+  required: []
+  type: object
