@@ -3,6 +3,7 @@ package apisrv_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -64,6 +65,13 @@ func TestRoutesAreRegistered(t *testing.T) {
 		set: make(map[string]struct{}),
 	}
 
+	excludedRoutesRegexes, err := compileRegexStrings(
+		[]string{
+			"^neutron/*",
+		},
+	)
+	assert.NoError(t, err)
+
 	// Not for discovery
 	for _, configKey := range []string{
 		"server.static_files",
@@ -107,10 +115,19 @@ func TestRoutesAreRegistered(t *testing.T) {
 	routes.add(services.PropCollectionUpdatePath)
 
 	for _, route := range server.APIServer.Echo.Routes() {
-		assert.Truef(t, routes.contains(route.Path),
-			"Route %s has no corresponding link in homepage discovery."+
-				" Register it in APIServer setup code and add it to the set of excluded routes in the test.",
-			route.Path)
+		var isPathExcludedFromHomepage bool
+		for _, excludedRegex := range excludedRoutesRegexes {
+			if excludedRegex.MatchString(route.Path) {
+				isPathExcludedFromHomepage = true
+				break
+			}
+		}
+		if !isPathExcludedFromHomepage {
+			assert.Truef(t, routes.contains(route.Path),
+				"Route %s has no corresponding link in homepage discovery."+
+					" Register it in APIServer setup code or add it to the set of excluded routes in the test.",
+				route.Path)
+		}
 	}
 }
 
@@ -151,4 +168,16 @@ func (r *routeSet) DELETE(path string, _ echo.HandlerFunc, _ ...echo.MiddlewareF
 func resolve(base string, parts ...string) string {
 	base = strings.TrimSuffix(base, "/")
 	return strings.Join(append([]string{base}, parts...), "/")
+}
+
+func compileRegexStrings(stringsToCompile []string) ([]*regexp.Regexp, error) {
+	compiledRegexes := make([]*regexp.Regexp, len(stringsToCompile))
+	var err error
+	for i, str := range stringsToCompile {
+		compiledRegexes[i], err = regexp.Compile(str)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return compiledRegexes, nil
 }
