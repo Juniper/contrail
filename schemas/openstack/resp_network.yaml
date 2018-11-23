@@ -1,0 +1,42 @@
+---
+api_style: contrail
+id: network
+prefix: /neutron/
+type: response
+schema:
+  type: object
+  properties:
+    status:
+      type: string
+    router_external:
+      type: boolean
+      json_tag: "router:external"
+    subnets:
+      type: array
+      items:
+        type: string
+    fq_name:
+      type: array
+      items:
+        type: string
+    name:
+      type: string
+    admin_state_up:
+      type: boolean
+    tenant_id:
+      type: string
+    created_at:
+      type: string
+    updated_at:
+      type: string
+    port_security_enabled:
+      type: boolean
+    shared:
+      type: boolean
+    project_id:
+      type: string
+    id:
+      type: string
+    description:
+      type: string
+

@@ -13,7 +13,7 @@ plural: bgp_routers
 prefix: /
 references:
   bgp_router:
-    $ref: types.json#definitions/BgpPeeringAttributes
+    $ref: types.json#/definitions/BgpPeeringAttributes
     description: References to peer BGP router, property of the reference has BGP
       peering attributes.
     operations: CRUD
