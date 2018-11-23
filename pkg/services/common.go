@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
@@ -319,9 +320,9 @@ func createUpdateMap(
 }
 
 // Chown handles chown request.
-func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest) (*Empty, error) {
+func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest) (*types.Empty, error) {
 	// TODO: implement chown logic.
-	return &Empty{}, nil
+	return &types.Empty{}, nil
 }
 
 // RESTChown handles chown request.
@@ -383,7 +384,7 @@ func (service *ContrailService) AllocateInt(
 }
 
 // SetInt sets int in given int-pool.
-func (service *ContrailService) SetInt(ctx context.Context, request *SetIntRequest) (*Empty, error) {
+func (service *ContrailService) SetInt(ctx context.Context, request *SetIntRequest) (*types.Empty, error) {
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		if err := service.IntPoolAllocator.SetInt(ctx, request.GetPool(), request.GetValue()); err != nil {
 			return errutil.ErrorBadRequestf("Failed to allocate specified int: %s", err)
@@ -392,7 +393,7 @@ func (service *ContrailService) SetInt(ctx context.Context, request *SetIntReque
 	}); err != nil {
 		return nil, err
 	}
-	return &Empty{}, nil
+	return &types.Empty{}, nil
 }
 
 // RESTIntPoolDeallocate handles a DELETE on int-pool/:pool-name/:value request.
@@ -417,7 +418,7 @@ func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 }
 
 // DeallocateInt deallocates int in given int-pool.
-func (service *ContrailService) DeallocateInt(ctx context.Context, request *DeallocateIntRequest) (*Empty, error) {
+func (service *ContrailService) DeallocateInt(ctx context.Context, request *DeallocateIntRequest) (*types.Empty, error) {
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		if err := service.IntPoolAllocator.DeallocateInt(ctx, request.GetPool(), request.GetValue()); err != nil {
 			return errutil.ErrorBadRequest(err.Error())
@@ -426,7 +427,7 @@ func (service *ContrailService) DeallocateInt(ctx context.Context, request *Deal
 	}); err != nil {
 		return nil, err
 	}
-	return &Empty{}, nil
+	return &types.Empty{}, nil
 }
 
 type routeRegistry interface {
