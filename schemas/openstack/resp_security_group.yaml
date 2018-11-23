@@ -1,0 +1,28 @@
+---
+api_style: contrail
+id: security_group
+prefix: /neutron/
+type: response
+schema:
+  type: object
+  properties:
+    fq_name:
+      type: array
+      items:
+        type: string
+    description:
+      type: string
+    tenant_id:
+      type: string
+    created_at:
+      type: string
+    updated_at:
+      type: string
+    security_group_rules:
+      type: array
+      items:
+        $ref: resp_security_group_rule.json#/schemas/SecurityGroup2sR_rule
+    id:
+      type: string
+    name:
+      type: string
