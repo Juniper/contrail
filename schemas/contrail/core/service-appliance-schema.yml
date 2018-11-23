@@ -12,7 +12,7 @@ plural: service_appliances
 prefix: /
 references:
   physical_interface:
-    $ref: types.json#definitions/ServiceApplianceInterfaceType
+    $ref: types.json#/definitions/ServiceApplianceInterfaceType
     description: Reference to physical interface that can be used as (service interface
       type)left, right, management OR other.
     operations: CRUD
