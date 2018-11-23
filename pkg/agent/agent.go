@@ -26,7 +26,7 @@ const (
 	FileBackend    = "file"
 	PollingWatcher = "polling"
 
-	serverSchemaRoot = "/public/"
+	serverSchemaRoot = "/public/" //TODO: This folder has changed. Make sure if this will still works.
 	serverSchemaFile = "schema.json"
 )
 

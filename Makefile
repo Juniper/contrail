@@ -52,9 +52,14 @@ generate: fast_generate format_gen
 
 generate_go:
 	@mkdir -p public
+	# Generate for native resources.
 	go run cmd/contrailschema/main.go generate \
-		--schemas schemas --templates tools/templates/template_config.yaml \
+		--schemas schemas/native --templates tools/templates/native/template_config.yaml \
 		--schema-output public/schema.json --openapi-output public/openapi.json
+	# Generate for vnc_opencstack resources.
+	go run  cmd/contrailschema/main.go generate \
+	    --schemas schemas/vnc_opencstack --templates tools/templates/vncopenstack/template_config.yaml \
+		--schema-output public/native/schema.json --openapi-output public/vnc_openstack/openapi.json
 
 TYPES_MOCK := pkg/types/mock/gen_service_mock.go
 SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
