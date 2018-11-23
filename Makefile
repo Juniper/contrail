@@ -51,10 +51,16 @@ generate_pb_go: generate_go pkg/models/generated.pb.go pkg/services/baseservices
 generate: fast_generate format_gen
 
 generate_go:
-	@mkdir -p public
+	# Generate for native resources.
+	@mkdir -p public/native
 	go run cmd/contrailschema/main.go generate \
-		--schemas schemas --templates tools/templates/template_config.yaml \
-		--schema-output public/schema.json --openapi-output public/openapi.json
+		--schemas schemas/native --templates tools/templates/native/template_config.yaml \
+		--schema-output public/native/schema.json --openapi-output public/native/openapi.json
+	# Generate for vnc_openstack resources.
+	@mkdir -p public/vnc_openstack
+	go run  cmd/contrailschema/main.go generate \
+	    --schemas schemas/vnc_openstack --templates tools/templates/vnc_openstack/template_config.yaml \
+		--schema-output public/vnc_openstack/schema.json --openapi-output public/vnc_openstack/openapi.json
 
 TYPES_MOCK := pkg/types/mock/gen_service_mock.go
 SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
