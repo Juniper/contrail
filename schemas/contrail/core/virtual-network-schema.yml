@@ -26,13 +26,13 @@ references:
     operations: CRUD
     presence: optional
   network_ipam:
-    $ref: types.json#definitions/VnSubnetsType
+    $ref: types.json#/definitions/VnSubnetsType
     description: Reference to network-ipam this network is using. It has list of subnets
       that are to be used as property of the reference.
     operations: CRUD
     presence: required
   network_policy:
-    $ref: types.json#definitions/VirtualNetworkPolicyType
+    $ref: types.json#/definitions/VirtualNetworkPolicyType
     description: Reference to network-policy attached to this network. It has sequence
       number to specify attachment order.
     operations: CRUD
@@ -46,7 +46,7 @@ references:
     operations: CRUD
     presence: optional
   routing_policy:
-    $ref: types.json#definitions/RoutingPolicyType
+    $ref: types.json#/definitions/RoutingPolicyType
     description: List of references of routing policy objects. imported by user.
     operations: CRUD
     presence: optional
