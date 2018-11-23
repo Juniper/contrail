@@ -1,0 +1,302 @@
+definitions:
+  RequestContext:
+    type: object
+    properties:
+      tenant:
+        type: string
+      tenant_id:
+        type: string
+      operation:
+        # TODO: Should be enum
+        type: string
+        presence: 'true'
+        description: Operation to be performed via vnc_openstack
+      user_id:
+        type: string
+      roles:
+        type: array
+        items:
+          type: string
+      is_admin:
+        type: boolean
+      request_id:
+        type: string
+      type:
+        type: string
+
+  DataNetwork:
+    type: object
+    properties:
+      fields:
+        type: array
+        items:
+          type: string
+        presence: optional
+        # This originally may be always required and passed as empty array
+      filters:
+        type: array
+        items:
+          type: string
+          # TODO this should by type object and consist of all possible filter keys with array of values
+        presence: optional
+        # This originally may be always required and passed as empty array
+      resource:
+        type: object
+        presence: optional
+        $ref: "request.json#/definitions/RequestResourceNetwork"
+      id:
+        type: string
+        presence: optional
+        description: For READ/DELETE operations UUID of object to be manipulated
+  RequestResourceNetwork:
+    type: object
+    description: Object data for network resource handled by vnc_openstack
+    properties:
+      id:
+        type: string
+        presence: true
+      name:
+        presence: optional
+        type: string
+      router_external:
+        presence: optional
+        type: string
+        json_tag: "router:external"
+      shared:
+        presence: optional
+        type: string
+      provider_physical_network:
+        presence: optional
+        type: string
+        json_tag: "provider:physical_network"
+      vpc_route_table:
+        presence: optional
+        type: string
+        json_tag: "vpc:route_table"
+      provider_segmentation_id:
+        presence: optional
+        type: string
+        json_tag: "provider:segmentation_id"
+      admin_state_up:
+        presence: optional
+        type: string
+      policys:
+        presence: optional
+        type: string
+      route_table:
+        presence: optional
+        type: string
+      port_security_enabled:
+        presence: optional
+        type: string
+      description:
+        presence: optional
+        type: string
+  ResponseNetwork:
+    type: object
+    properties:
+
+  DataSubnet:
+    type: object
+    properties:
+      fields:
+        type: array
+        items:
+          type: string
+        presence: optional
+        # This originally may be always required and passed as empty array
+      filters:
+        type: array
+        items:
+          type: string
+          # TODO this should by type object and consist of all possible filter keys with array of values
+        presence: optional
+        # This originally may be always required and passed as empty array
+      resource:
+        type: object
+        presence: optional
+        $ref: "request.json#/definitions/RequestResourceSubnet"
+      id:
+        type: string
+        presence: optional
+        description: For READ/DELETE operations UUID of object to be manipulated
+  RequestResourceSubnet:
+    type: object
+    description: Object data for subnet resource handled by vnc_openstack
+    properties:
+      description:
+        type: string
+        presence: optional
+      enable_dhcp:
+        type: boolean
+      network_id:
+        type: string
+        presence: true
+      tenant_id:
+        type: string
+        presence: optional
+      ipam_fq_name:
+        type: array
+        items:
+          type: string
+      ip_version:
+        type: string
+        presence: optional
+      cidr:
+        type: string
+        presence: optional
+      project_id:
+        type: string
+        presence: true
+      name:
+        presence: optional
+        type: string
+      # Properties below are present in vnc_openstack code but not observed in real data exchange yet
+      allocation_pools:
+        type: array
+        items:
+          $ref: request.json#/definitions/AllocationPool
+      gateway_ip:
+        type: string
+        presence: optional
+      ipv6_ra_mode:
+        type: string
+        presence: optional
+      ipv6_address_mode:
+        type: string
+        presence: optional
+      dns_nameservers':
+        type: array
+        items:
+          $ref: request.json#/definitions/DnsNameserver
+        presence: optional
+      destination:
+        type: string
+        presence: true
+      nexthop:
+        type: string
+        presence: true
+      routes:
+        type: string
+        presence: optional
+      shared:
+        type: string
+        presence: optional
+      created_at:
+        type: string
+        presence: optional
+      updated_at:
+        type: string
+        presence: optional
+      dns_server_address:
+        type: string
+        presence: optional
+  AllocationPool:
+    type: object
+    description: First last IP of allocation pool
+    properties:
+      first_ip:
+        type: integer
+        presence: true
+      last_ip:
+        type: integer
+        presence: true
+  DnsNameserver:
+    type: object
+    properties:
+      address:
+        type: string
+        presence: true
+
+  DataSecurityGroup:
+    type: object
+    properties:
+      fields:
+        type: array
+        items:
+          type: string
+        presence: optional
+        # This originally may be always required and passed as empty array
+      filters:
+        type: array
+        items:
+          type: string
+          # TODO this should by type object and consist of all possible filter keys with array of values
+        presence: optional
+        # This originally may be always required and passed as empty array
+      resource:
+        type: object
+        presence: optional
+        $ref: "request.json#/definitions/RequestResourceSecurityGroup"
+      id:
+        type: string
+        presence: optional
+        description: For READ/DELETE operations UUID of object to be manipulated
+  RequestResourceSecurityGroup:
+    type: object
+    properties:
+      id:
+        type: string
+        presence: true
+      name:
+        presence: optional
+        type: string
+      tenant_id:
+        type: string
+        presence: optional
+      destination:
+        type: string
+        presence: true
+      project_id:
+        type: string
+        presence: true
+
+  DataSecurityGroupRule:
+    type: object
+    properties:
+      fields:
+        type: array
+        items:
+          type: string
+        presence: optional
+        # This originally may be always required and passed as empty array
+      filters:
+        type: array
+        items:
+          type: string
+          # TODO this should by type object and consist of all possible filter keys with array of values
+        presence: optional
+        # This originally may be always required and passed as empty array
+      resource:
+        type: object
+        presence: optional
+        $ref: "request.json#/definitions/RequestResourceSecurityGroupRule"
+      id:
+        type: string
+        presence: optional
+        description: For READ/DELETE operations UUID of object to be manipulated
+  RequestResourceSecurityGroupRule:
+    type: object
+    properties:
+      remote_group_id:
+        type: string
+        presence: optional
+      direction:
+        type: string
+      protocol:
+        type: string
+      remote_ip_prefix:
+        type: string
+      port_range_max:
+        type: integer
+      security_group_id:
+        type: string
+      tenant_id:
+        type: string
+      port_range_min:
+        type: integer
+      ethertype:
+        type: string
+      project_id:
+        type: string
+
