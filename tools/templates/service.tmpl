@@ -241,7 +241,14 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     if err = response.ApplyHref(c.Request().Host); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
-    return c.JSON(http.StatusOK, response)
+
+    if spec.Count == true {
+        return c.JSON(http.StatusOK, response.Count())
+    }
+    if spec.Detail == true {
+        return c.JSON(http.StatusOK, response.Detailed())
+    }
+    return c.JSON(http.StatusOK, response.Data())
 }
 
 {% endif %}{% endfor %}
