@@ -11,6 +11,7 @@ import (
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 {% set name = schema.JSONSchema.GoName %}
+{% set single = schema.Path %}
 {% set plural = schema.PluralPath %}
 
 func (r List{{ name }}Response) MarshalJSON() ([]byte, error) {
@@ -43,7 +44,6 @@ func (r List{{ name }}Response) toMap() map[string]interface{} {
 	return map[string]interface{}{
 		"{{ plural }}": r.{{ name }}s,
 	}
-
 }
 
 func (r *List{{ name }}Response) unmarshalWith(unmarshal func(interface{}) error) error {
@@ -77,6 +77,41 @@ func (r *List{{ name }}Response) unmarshalWith(unmarshal func(interface{}) error
 		{{ name }}Count: countResponse.Resources.Count,
 	}
 	return nil
+}
+
+type List{{ name }}DetailedResponse struct {
+	{{ name }}s []*Get{{ name }}Response `json:"{{ plural }},omitempty"`
+	{{ schema.JSONSchema.GoName }}Count int64 `json:"{{ single }}_count,omitempty"`
+}
+
+func (r List{{ name }}DetailedResponse) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.toMap())
+}
+
+func (r List{{ name }}DetailedResponse) toMap() map[string]interface{} {
+	if r.{{ name }}s == nil {
+		return map[string]interface{}{
+			"{{ plural }}": map[string]interface{}{
+				"count": r.{{ name }}Count,
+			},
+		}
+	}
+
+	return map[string]interface{}{
+		"{{ plural }}": r.{{ name }}s,
+	}
+}
+
+func (r List{{ name }}Response) Detailed() *List{{ name }}DetailedResponse {
+	var res List{{ name }}DetailedResponse
+
+	res.{{ name }}s = make([]*Get{{ name }}Response, len(r.{{ name }}s))
+	for i := 0; i < len(r.{{ name }}s); i++ {
+		res.{{ name }}s[i] = &Get{{ name }}Response{
+			{{ name }}: r.{{ name }}s[i],
+		}
+	}
+	return &res
 }
 
 {% endif %}{% endfor %}

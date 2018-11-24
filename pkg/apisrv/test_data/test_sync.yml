@@ -129,7 +129,8 @@ workflow:
     - 200
   expect:
     projects:
-    - *admin_project
+    - project:
+        *admin_project
 - name: list network_policy
   request:
     path: /network-policys?detail=true
@@ -138,7 +139,8 @@ workflow:
     - 200
   expect:
     network-policys:
-    - *network_policy1
+    - network-policy:
+        *network_policy1
 - name: list virtual networks with detail
   request:
     path: /virtual-networks?detail=true
@@ -147,7 +149,8 @@ workflow:
     - 200
   expect:
     virtual-networks:
-    - *vn_blue_with_detail
+    - virtual-network:
+        *vn_blue_with_detail
 # TODO: Uncoment it once sync endpoint create is fixed (updating fields with zero-value)
 #- name: sync update project, policy and network
 #  request:
@@ -182,7 +185,8 @@ workflow:
     - 200
   expect:
     projects:
-    - *admin_project
+    - project:
+        *admin_project
 # TODO: Uncoment it once "sync update project, policy and network"
 #- name: list virtual networks with detail
 #  request:
@@ -192,7 +196,8 @@ workflow:
 #    - 200
 #  expect:
 #    virtual-networks:
-#    - *vn_blue_with_detail2
+#    - virtual-network:
+#        *vn_blue_with_detail2
 - name: sync delete network, policy and project
   request:
     path: /sync
