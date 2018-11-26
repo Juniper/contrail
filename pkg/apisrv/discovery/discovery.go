@@ -5,29 +5,29 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
+
+	"github.com/Juniper/contrail/pkg/services"
 )
 
+type linkDetails struct {
+	Path   string  `json:"href"`
+	Method *string `json:"method"`
+	Name   string  `json:"name"`
+	Rel    string  `json:"rel"`
+}
+
 type link struct {
-	Link struct {
-		Path   string  `json:"href"`
-		Method *string `json:"method"`
-		Name   string  `json:"name"`
-		Rel    string  `json:"rel"`
-	} `json:"link"`
+	Link linkDetails `json:"link"`
 }
 
 // Handler which serves a set of registered links.
 type Handler struct {
-	addr  string
 	links []*link
 }
 
 // NewHandler creates a new Handler.
-func NewHandler(addr string) *Handler {
-	addr = strings.TrimSuffix(addr, "/")
-	return &Handler{
-		addr: addr,
-	}
+func NewHandler() *Handler {
+	return &Handler{}
 }
 
 // Register adds a new link to the Handler.
@@ -40,18 +40,37 @@ func (h *Handler) Register(path string, method string, name string, rel string) 
 		m = &method
 	}
 
-	var l link
-	l.Link.Path = strings.Join([]string{h.addr, path}, "/")
-	l.Link.Method = m
-	l.Link.Name = name
-	l.Link.Rel = rel
-	h.links = append(h.links, &l)
+	h.links = append(h.links, &link{
+		Link: linkDetails{
+			Path:   path,
+			Method: m,
+			Name:   name,
+			Rel:    rel,
+		},
+	})
 }
 
 // Handle requests to return the links.
 func (h *Handler) Handle(c echo.Context) error {
-	return c.JSON(http.StatusOK, struct {
+	r := c.Request()
+	addr := services.GetRequestSchema(r) + r.Host
+
+	var reply struct {
 		Addr  string  `json:"href"`
 		Links []*link `json:"links"`
-	}{h.addr, h.links})
+	}
+
+	reply.Addr = addr
+	for _, l := range h.links {
+		reply.Links = append(reply.Links, &link{
+			Link: linkDetails{
+				Path:   strings.Join([]string{addr, l.Link.Path}, "/"),
+				Method: l.Link.Method,
+				Name:   l.Link.Name,
+				Rel:    l.Link.Rel,
+			},
+		})
+	}
+
+	return c.JSON(http.StatusOK, reply)
 }
