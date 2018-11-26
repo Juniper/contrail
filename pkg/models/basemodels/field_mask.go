@@ -120,12 +120,28 @@ func FieldMaskContains(fm *types.FieldMask, fields ...string) bool {
 	path := JoinPath(fields...)
 	for _, p := range fm.GetPaths() {
 		if strings.HasPrefix(p, path) {
-			return true
+			suffix := strings.TrimPrefix(p, path)
+			if len(suffix) == 0 || strings.HasPrefix(suffix, ".") {
+				return true
+			}
 		}
 	}
 
 	return false
 }
+
+// for _, p := range fm.GetPaths() {
+// 	path := strings.Split(p, ".")
+// 	for i, f := range fields {
+// 		if len(path) <= i || f != path[i] {
+// 			continue
+// 		}
+
+// 		if i == len(fields)-1 {
+// 			return true
+// 		}
+// 	}
+// }
 
 // FieldMaskAppend appends to field mask if it doesn't contain requested string.
 func FieldMaskAppend(fm *types.FieldMask, fields ...string) {
