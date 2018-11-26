@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -14,6 +15,8 @@ import (
 const (
 	DefaultMatchTagType               = "application"
 	FirewallPolicyTagNameGlobalPrefix = "global:"
+	Endpoint1Index                    = 1
+	Endpoint2Index                    = 2
 )
 
 var protocolIDs = map[string]int64{
@@ -76,6 +79,10 @@ func (fr *FirewallRule) CheckEndpoints() error {
 	}
 
 	for _, endpoint := range endpoints {
+		if endpoint == nil {
+			continue
+		}
+
 		if err := endpoint.ValidateEndpointType(); err != nil {
 			return err
 		}
@@ -133,4 +140,18 @@ func (fr *FirewallRule) GetEndpoints(
 	}
 
 	return endpoints, dbEndpoints
+}
+
+//SetEndpoint sets Endpoint1 or Endpoint2 property value based on endpointIndex={1,2}
+func (fr *FirewallRule) SetEndpoint(e *FirewallRuleEndpointType, endpointIndex int) error {
+	switch endpointIndex {
+	case Endpoint1Index:
+		fr.Endpoint1 = e
+	case Endpoint2Index:
+		fr.Endpoint2 = e
+	default:
+		return errors.Errorf("Cannot assign to endpoint with provided index: %d", endpointIndex)
+	}
+
+	return nil
 }

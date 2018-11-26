@@ -139,31 +139,43 @@ func TestFieldMaskContains(t *testing.T) {
 		expectedResponse bool
 	}{
 		{
-			name:             "field mask contrains requested field",
+			name:             "field mask contains requested field",
 			requestedFM:      &types.FieldMask{Paths: []string{"first", "second"}},
 			requestedFields:  []string{"first"},
 			expectedResponse: true,
 		},
 		{
-			name:             "field mask contrains requested prefix field",
+			name:             "field mask shouldn't contain path if only prefix matches",
+			requestedFM:      &types.FieldMask{Paths: []string{"first", "second"}},
+			requestedFields:  []string{"fir"},
+			expectedResponse: false,
+		},
+		{
+			name:             "field mask contains requested prefix field",
 			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
 			requestedFields:  []string{"test"},
 			expectedResponse: true,
 		},
 		{
-			name:             "field mask contrains requested complex field",
+			name:             "field mask contains requested prefix compelx field",
+			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
+			requestedFields:  []string{"test", "second"},
+			expectedResponse: true,
+		},
+		{
+			name:             "field mask contains requested complex field",
 			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
 			requestedFields:  []string{"test", "first", "first"},
 			expectedResponse: true,
 		},
 		{
-			name:             "field mask doesn't contrains requested complex field",
+			name:             "field mask doesn't contain requested complex field",
 			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
 			requestedFields:  []string{"test", "third", "first"},
 			expectedResponse: false,
 		},
 		{
-			name:             "field mask doesn't contrain requested field",
+			name:             "field mask doesn't contain requested field",
 			requestedFM:      &types.FieldMask{Paths: []string{"first", "second"}},
 			requestedFields:  []string{"third"},
 			expectedResponse: false,
