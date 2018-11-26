@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gogo/protobuf/types"
-
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/gogo/protobuf/types"
+	log "github.com/sirupsen/logrus"
 )
 
 // CreateFirewallRule performs types specific validation,
@@ -22,13 +22,12 @@ func (sv *ContrailTypeLogicService) CreateFirewallRule(
 
 	var response *services.CreateFirewallRuleResponse
 	firewallRule := request.GetFirewallRule()
-
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
 			var err error
 
-			if err = validateFirewallRule(ctx, firewallRule, nil, nil); err != nil {
+			if err = sv.validateFirewallRule(ctx, firewallRule, nil, nil); err != nil {
 				return err
 			}
 
@@ -54,7 +53,7 @@ func (sv *ContrailTypeLogicService) CreateFirewallRule(
 				return err
 			}
 
-			response, err = sv.Next().CreateFirewallRule(ctx, request)
+			response, err = sv.BaseService.CreateFirewallRule(ctx, request)
 			return err
 		})
 
@@ -71,21 +70,19 @@ func (sv *ContrailTypeLogicService) UpdateFirewallRule(
 	var response *services.UpdateFirewallRuleResponse
 	firewallRule := request.GetFirewallRule()
 	fm := request.GetFieldMask()
-
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
 			var err error
-
 			databaseFR, err := sv.getFirewallRule(ctx, firewallRule.GetUUID())
 			if err != nil {
 				return err
 			}
-
-			if err = validateFirewallRule(ctx, firewallRule, databaseFR, &fm); err != nil {
+			log.Debugf(" kokokos ")
+			if err = sv.validateFirewallRule(ctx, firewallRule, databaseFR, &fm); err != nil {
 				return err
 			}
-
+			log.Debugf(" kokokod ")
 			firewallRule.AddDefaultMatchTag(&fm)
 
 			if err = SetProtocolID(firewallRule, &fm); err != nil {
@@ -103,12 +100,13 @@ func (sv *ContrailTypeLogicService) UpdateFirewallRule(
 			if err = sv.setTagProperties(ctx, firewallRule, databaseFR, &fm); err != nil {
 				return err
 			}
+			log.Debugf("kokoko(2): %v %v, ", fm.GetPaths(), firewallRule.GetEndpoint1())
 
 			if err = sv.setAddressGroupRefs(ctx, firewallRule, databaseFR, &fm); err != nil {
 				return err
 			}
 
-			response, err = sv.Next().UpdateFirewallRule(
+			response, err = sv.BaseService.UpdateFirewallRule(
 				ctx,
 				&services.UpdateFirewallRuleRequest{
 					FirewallRule: firewallRule,
@@ -121,7 +119,7 @@ func (sv *ContrailTypeLogicService) UpdateFirewallRule(
 	return response, err
 }
 
-func validateFirewallRule(
+func (sv *ContrailTypeLogicService) validateFirewallRule(
 	ctx context.Context,
 	firewallRule *models.FirewallRule,
 	databaseFR *models.FirewallRule,
@@ -137,6 +135,10 @@ func validateFirewallRule(
 		return err
 	}
 
+	if err := sv.ComplementRefs(ctx, firewallRule); err != nil {
+		return err
+	}
+
 	if err := firewallRule.CheckAssociatedRefsInSameScope(fqName); err != nil {
 		return errutil.ErrorBadRequest(err.Error())
 	}
@@ -147,14 +149,12 @@ func validateFirewallRule(
 func (sv *ContrailTypeLogicService) getFirewallRule(
 	ctx context.Context, id string,
 ) (*models.FirewallRule, error) {
-
 	firewallRuleResponse, err := sv.ReadService.GetFirewallRule(
 		ctx,
 		&services.GetFirewallRuleRequest{
 			ID: id,
 		},
 	)
-
 	return firewallRuleResponse.GetFirewallRule(), err
 }
 
@@ -168,15 +168,15 @@ func CheckServiceProperties(
 	}
 
 	service := fr.GetService()
-	if fm != nil && service == nil && !basemodels.FieldMaskContains(fm, models.FirewallRuleFieldService) {
+	if fm != nil && !basemodels.FieldMaskContains(fm, models.FirewallRuleFieldService) {
 		service = databaseFR.GetService()
 	}
 
-	if service == nil && len(serviceGroupRefs) == 0 {
+	if (service == nil || service.GetProtocol() == "") && len(serviceGroupRefs) == 0 {
 		return errutil.ErrorBadRequest("firewall Rule requires at least 'service' property or Service Group references(s)")
 	}
 
-	if service != nil && len(serviceGroupRefs) > 0 {
+	if (service != nil && service.GetProtocol() != "") && len(serviceGroupRefs) > 0 {
 		return errutil.ErrorBadRequest(
 			"firewall Rule cannot have both defined 'service' property and Service Group reference(s)",
 		)
@@ -187,12 +187,12 @@ func CheckServiceProperties(
 
 // SetProtocolID sets protocolID based on protocol property
 func SetProtocolID(fr *models.FirewallRule, fm *types.FieldMask) error {
-	if fm != nil &&
+	if fr.GetService() == nil || (fm != nil &&
 		!basemodels.FieldMaskContains(
 			fm,
 			models.FirewallRuleFieldService,
 			models.FirewallServiceTypeFieldProtocol,
-		) {
+		)) {
 		return nil
 	}
 
@@ -311,7 +311,7 @@ func (sv *ContrailTypeLogicService) setTagRefs(
 			ep = dbEndpoints[i]
 		}
 
-		if ep != nil {
+		if ep != nil && basemodels.FieldMaskContains(fm, fields[i]) {
 			ep.TagIds = nil
 			basemodels.FieldMaskAppend(fm, fields[i], models.FirewallRuleEndpointTypeFieldTagIds)
 		}
@@ -319,6 +319,8 @@ func (sv *ContrailTypeLogicService) setTagRefs(
 		if err := sv.processTags(ctx, fr, databaseFR, ep); err != nil {
 			return err
 		}
+
+		fr.SetEndpoint(endpoints[i], i+1)
 	}
 
 	return nil
