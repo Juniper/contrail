@@ -161,7 +161,7 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
 		return
 	}
 	{% for property in schema.JSONSchema.OrderedProperties %}
-	if val, ok := o["{{ property.ID }}"]; ok {
+	if val, ok := o["{{ property.ID }}"]; ok && val != nil {
 		{% if property.GoType == "string" %}m.{{ property.GoName }} = format.InterfaceToString(val)
 		{% elif property.GoType == "[]string" %}m.{{ property.GoName }} = format.InterfaceToStringList(val)
 		{% elif property.GoType == "[]interface" %}m.{{ property.GoName }} = format.InterfaceToStringList(val)

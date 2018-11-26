@@ -10,6 +10,7 @@ func (e *FirewallRuleEndpointType) ValidateEndpointType() error {
 		return nil
 	}
 
+	//TODO update should check with database endpoint values that are not in a request
 	count := 0
 	if e.GetAddressGroup() != "" {
 		count++

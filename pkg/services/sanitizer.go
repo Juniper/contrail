@@ -18,51 +18,22 @@ type SanitizerService struct {
 	MetadataGetter baseservices.MetadataGetter
 }
 
-func (sv *SanitizerService) getIncompleteRefs(
-	refs []basemodels.Reference,
-) map[string]basemodels.Reference {
-	incompleteRefsMap := make(map[string]basemodels.Reference)
-
-	for _, ref := range refs {
-		switch {
-		case ref.GetUUID() == "":
-			incompleteRefsMap[basemodels.FQNameToString(ref.GetTo())] = ref
-		case len(ref.GetTo()) == 0:
-			incompleteRefsMap[ref.GetUUID()] = ref
-		}
-	}
-
-	return incompleteRefsMap
-}
-
-func (sv *SanitizerService) completeRefs(
-	incompleteRefsMap map[string]basemodels.Reference, metadatas []*basemodels.Metadata,
-) {
-	for _, metadata := range metadatas {
-		if ref, ok := incompleteRefsMap[basemodels.FQNameToString(metadata.FQName)]; ok {
-			ref.SetUUID(metadata.UUID)
-		}
-
-		if ref, ok := incompleteRefsMap[metadata.UUID]; ok {
-			ref.SetTo(metadata.FQName)
-		}
-	}
-}
-
 func (sv *SanitizerService) sanitizeRefs(
 	ctx context.Context,
 	refs []basemodels.Reference,
 ) error {
-	incompleteRefsMap := sv.getIncompleteRefs(refs)
+	fqNameToRef := make(map[string]basemodels.Reference)
 	var metadatas []*basemodels.Metadata
-
-	if len(incompleteRefsMap) == 0 {
-		return nil
+	for _, ref := range refs {
+		if ref.GetUUID() != "" {
+			continue
+		}
+		fqNameToRef[basemodels.FQNameToString(ref.GetTo())] = ref
+		metadatas = append(metadatas, &basemodels.Metadata{FQName: ref.GetTo(), Type: ref.GetReferredKind()})
 	}
 
-	for _, ref := range incompleteRefsMap {
-		metadatas = append(metadatas,
-			&basemodels.Metadata{FQName: ref.GetTo(), UUID: ref.GetUUID(), Type: ref.GetReferredKind()})
+	if len(metadatas) == 0 {
+		return nil
 	}
 
 	ml, err := sv.MetadataGetter.ListMetadata(ctx, metadatas)
@@ -72,19 +43,17 @@ func (sv *SanitizerService) sanitizeRefs(
 
 	if len(ml) != len(metadatas) {
 		for _, metadata := range ml {
-			delete(incompleteRefsMap, basemodels.FQNameToString(metadata.FQName))
-			delete(incompleteRefsMap, metadata.UUID)
+			delete(fqNameToRef, basemodels.FQNameToString(metadata.FQName))
 		}
-
 		var missingRefs bytes.Buffer
-		for _, ref := range incompleteRefsMap {
+		for _, ref := range fqNameToRef {
 			missingRefs.WriteString(fmt.Sprintf(" {type: %v, to: %v}", ref.GetReferredKind(), ref.GetTo()))
 		}
-
 		return errors.Errorf("couldn't get metadatas for references:%v", missingRefs.String())
 	}
 
-	sv.completeRefs(incompleteRefsMap, ml)
-
+	for _, metadata := range ml {
+		fqNameToRef[basemodels.FQNameToString(metadata.FQName)].SetUUID(metadata.UUID)
+	}
 	return nil
 }
