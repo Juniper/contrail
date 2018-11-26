@@ -9,9 +9,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/contrail/pkg/types/mock"
 )
 
 func TestCreateFirewallPolicy(t *testing.T) {
@@ -38,14 +41,26 @@ func TestCreateFirewallPolicy(t *testing.T) {
 			IsInternalRequest: true,
 		},
 		{
+			name: "Try to create when cannot find reference in database",
+			testFirewallPolicy: models.FirewallPolicy{
+				UUID:   "test-firewall-policy",
+				FQName: []string{"default-policy-management", "test-firewall-policy"},
+				FirewallRuleRefs: []*models.FirewallPolicyFirewallRuleRef{
+					{
+						UUID: "firewall-rule-uuid-1",
+					},
+				},
+			},
+			errorCode: codes.NotFound,
+		},
+		{
 			name: "Try to create when firewall-rule refs are scoped",
 			testFirewallPolicy: models.FirewallPolicy{
 				UUID:   "test-firewall-policy",
 				FQName: []string{"default-policy-management", "test-firewall-policy"},
 				FirewallRuleRefs: []*models.FirewallPolicyFirewallRuleRef{
 					{
-						UUID: "firewall-rule-ref-uuid",
-						To:   []string{"firewall-rule-ref-uuid"},
+						UUID: "firewall-rule-uuid-2",
 					},
 				},
 			},
@@ -73,6 +88,7 @@ func TestCreateFirewallPolicy(t *testing.T) {
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			setupNextServiceMocks(service)
+			setupReadServiceMock(service, nil)
 
 			createFirewallPolicyResponse, err := service.CreateFirewallPolicy(
 				getContext(tt.IsInternalRequest),
@@ -112,6 +128,22 @@ func TestUpdateFirewallPolicy(t *testing.T) {
 			errorCode: codes.InvalidArgument,
 		},
 		{
+			name: "Try to update with non existing firewall-rule ref",
+			testFirewallPolicy: models.FirewallPolicy{
+				UUID:   "test-firewall-policy",
+				FQName: []string{"default-policy-management", "test-firewall-policy"},
+				FirewallRuleRefs: []*models.FirewallPolicyFirewallRuleRef{
+					{
+						UUID: "firewall-rule-uuid-1",
+					},
+				},
+			},
+			dbFirewallPolicy: models.FirewallPolicy{
+				FQName: []string{"default-policy-management", "test-firewall-policy"},
+			},
+			errorCode: codes.NotFound,
+		},
+		{
 			name: "Try to update firewall-rule refs",
 			testFirewallPolicy: models.FirewallPolicy{
 				UUID:   "test-firewall-policy",
@@ -135,8 +167,7 @@ func TestUpdateFirewallPolicy(t *testing.T) {
 				UUID: "test-firewall-policy",
 				FirewallRuleRefs: []*models.FirewallPolicyFirewallRuleRef{
 					{
-						UUID: "firewall-rule-ref-uuid",
-						To:   []string{"firewall-rule-ref-uuid"},
+						UUID: "firewall-rule-uuid-2",
 					},
 				},
 			},
@@ -207,6 +238,23 @@ func setupReadServiceMock(s *ContrailTypeLogicService, databaseFP *models.Firewa
 		},
 		nil,
 	).MaxTimes(1)
+
+	s.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT().GetMetadata(
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+	).DoAndReturn(
+		func(_ context.Context, requested basemodels.Metadata) (
+			response *basemodels.Metadata, err error,
+		) {
+			if requested.UUID == "firewall-rule-uuid-1" {
+				return nil, errutil.ErrorNotFound
+			}
+
+			return &basemodels.Metadata{
+				UUID:   "firewall-rule-uuid-2",
+				FQName: []string{"firewall-rule-uuid-2"},
+			}, nil
+		},
+	).AnyTimes()
 }
 
 func getContext(isInternalRequest bool) context.Context {
