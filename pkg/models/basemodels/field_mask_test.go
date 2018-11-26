@@ -145,6 +145,12 @@ func TestFieldMaskContains(t *testing.T) {
 			expectedResponse: true,
 		},
 		{
+			name:             "field mask shouldn't contain if only prefix matches",
+			requestedFM:      &types.FieldMask{Paths: []string{"first", "second"}},
+			requestedFields:  []string{"fir"},
+			expectedResponse: false,
+		},
+		{
 			name:             "field mask contrains requested prefix field",
 			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
 			requestedFields:  []string{"test"},
@@ -157,7 +163,7 @@ func TestFieldMaskContains(t *testing.T) {
 			expectedResponse: true,
 		},
 		{
-			name:             "field mask doesn't contrains requested complex field",
+			name:             "field mask doesn't contrain requested complex field",
 			requestedFM:      &types.FieldMask{Paths: []string{"test.first.first", "test.second.first"}},
 			requestedFields:  []string{"test", "third", "first"},
 			expectedResponse: false,
