@@ -28,7 +28,7 @@ func (sv *ContrailTypeLogicService) CreateFirewallRule(
 		func(ctx context.Context) error {
 			var err error
 
-			if err = validateFirewallRule(ctx, firewallRule, nil, nil); err != nil {
+			if err = sv.validateFirewallRule(ctx, firewallRule, nil, nil); err != nil {
 				return err
 			}
 
@@ -82,7 +82,7 @@ func (sv *ContrailTypeLogicService) UpdateFirewallRule(
 				return err
 			}
 
-			if err = validateFirewallRule(ctx, firewallRule, databaseFR, &fm); err != nil {
+			if err = sv.validateFirewallRule(ctx, firewallRule, databaseFR, &fm); err != nil {
 				return err
 			}
 
@@ -121,7 +121,7 @@ func (sv *ContrailTypeLogicService) UpdateFirewallRule(
 	return response, err
 }
 
-func validateFirewallRule(
+func (sv *ContrailTypeLogicService) validateFirewallRule(
 	ctx context.Context,
 	firewallRule *models.FirewallRule,
 	databaseFR *models.FirewallRule,
@@ -134,6 +134,10 @@ func validateFirewallRule(
 	}
 
 	if err := checkDraftModeState(ctx, firewallRule); err != nil {
+		return err
+	}
+
+	if err := sv.ComplementRefs(ctx, firewallRule); err != nil {
 		return err
 	}
 
@@ -187,12 +191,12 @@ func CheckServiceProperties(
 
 // SetProtocolID sets protocolID based on protocol property
 func SetProtocolID(fr *models.FirewallRule, fm *types.FieldMask) error {
-	if fm != nil &&
+	if fr.GetService() == nil || (fm != nil &&
 		!basemodels.FieldMaskContains(
 			fm,
 			models.FirewallRuleFieldService,
 			models.FirewallServiceTypeFieldProtocol,
-		) {
+		)) {
 		return nil
 	}
 

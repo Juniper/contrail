@@ -1,9 +1,18 @@
 name: Firewall Rule Test
 description:  basic firewall rule test
 cleanup:
-- path: /firewall-rule/test_firewall_rule_uuid
+- path: /firewall-rule/test_firewall_rule_blue_uuid
+- path: /firewall-rule/test_firewall_rule_red_uuid
 - path: /tag/test_tag_blue_uuid
+- path: /service-group/test_service_group_uuid
 test_data:
+  service_group: &test_service_group
+    uuid: test_service_group_uuid
+    parent_type: policy-management
+    fq_name:
+      - default-policy-management
+      - test_service_group_uuid
+
   tag: &test_tag_blue
     uuid: test_tag_blue_uuid
     fq_name:
@@ -12,12 +21,12 @@ test_data:
     tag_type_name: namespace
     tag_value: kube-system
 
-  firewall_rule: &test_firewall_rule
-    uuid: test_firewall_rule_uuid
+  firewall_rule: &test_firewall_rule_blue
+    uuid: test_firewall_rule_blue_uuid
     parent_type: policy-management
     fq_name:
       - default-policy-management
-      - test_firewall_rule_uuid
+      - test_firewall_rule_blue_uuid
     endpoint_1:
       any: true
     endpoint_2:
@@ -28,6 +37,22 @@ test_data:
         - application
     service:
       protocol: tcp
+
+  firewall_rule: &test_firewall_rule_red
+    uuid: test_firewall_rule_red_uuid
+    parent_type: policy-management
+    fq_name:
+      - default-policy-management
+      - test_firewall_rule_red_uuid
+    endpoint_1:
+      any: true
+    endpoint_2:
+      any: true
+    match_tags:
+      tag_list:
+        - application
+    service_group_refs:
+      - uuid: test_service_group_uuid
 
 clients:
   default:
@@ -50,6 +75,16 @@ workflow:
   expect:
     tag: *test_tag_blue
 
+- name: create test service group
+  request:
+    path: /service-groups
+    method: POST
+    expected: [200]
+    data:
+      service-group: *test_service_group
+  expect:
+    service-group: *test_service_group
+
 - name: try to create firewall rule with non existing tag reference
   request:
     path: /firewall-rules
@@ -57,22 +92,47 @@ workflow:
     expected: [404]
     data:
       firewall-rule:
-        <<: *test_firewall_rule
+        <<: *test_firewall_rule_blue
         endpoint_1:
           any: false
           tags:
             - "namespace=default"
 
-- name: create firewall rule
+- name: try to create firewall rule red with non existing service group ref
+  request:
+    path: /firewall-rules
+    method: POST
+    expected: [404]
+    data:
+      firewall-rule:
+        <<: *test_firewall_rule_red
+        service_group_refs:
+          - uuid: service_group_uuid
+
+- name: create firewall rule red
   request:
     path: /firewall-rules
     method: POST
     expected: [200]
     data:
-      firewall-rule: *test_firewall_rule
+      firewall-rule: *test_firewall_rule_red
   expect:
     firewall-rule:
-      <<: *test_firewall_rule
+      <<: *test_firewall_rule_red
+      service_group_refs:
+        - uuid: test_service_group_uuid
+          to: [default-policy-management, test_service_group_uuid]
+
+- name: create firewall rule blue
+  request:
+    path: /firewall-rules
+    method: POST
+    expected: [200]
+    data:
+      firewall-rule: *test_firewall_rule_blue
+  expect:
+    firewall-rule:
+      <<: *test_firewall_rule_blue
       service:
         protocol_id: 6
       endpoint_2:
@@ -82,9 +142,9 @@ workflow:
         - uuid: test_tag_blue_uuid
           to: [namespace=kube-system]
   watchers:
-    /contrail/firewall_rule/test_firewall_rule_uuid:
+    /contrail/firewall_rule/test_firewall_rule_blue_uuid:
       - data:
-          <<: *test_firewall_rule
+          <<: *test_firewall_rule_blue
           service:
             protocol_id: 6
           endpoint_2:
@@ -95,27 +155,27 @@ workflow:
             - uuid: test_tag_blue_uuid
         sync_only: true
 
-- name: try to update firewall rule
-  request:
-    path: /firewall-rule/test_firewall_rule_uuid
-    method: PUT
-    expected: [400]
-    data:
-      firewall-rule:
-        uuid: test_firewall_rule_uuid
-        endpoint_1:
-          tags:
-            - "namespace=kube-system"
-          any: true
+# - name: try to update firewall rule
+#   request:
+#     path: /firewall-rule/test_firewall_rule_blue_uuid
+#     method: PUT
+#     expected: [400]
+#     data:
+#       firewall-rule:
+#         uuid: test_firewall_rule_blue_uuid
+#         endpoint_1:
+#           tags:
+#             - "namespace=kube-system"
+#           any: true
 
 - name: update firewall rule
   request:
-    path: /firewall-rule/test_firewall_rule_uuid
+    path: /firewall-rule/test_firewall_rule_blue_uuid
     method: PUT
     expected: [200]
     data:
       firewall-rule:
-        uuid: test_firewall_rule_uuid
+        uuid: test_firewall_rule_blue_uuid
         endpoint_1:
           tags:
             - "namespace=kube-system"
@@ -126,7 +186,7 @@ workflow:
           tag_ids: []
   expect:
     firewall-rule:
-      uuid: test_firewall_rule_uuid
+      uuid: test_firewall_rule_blue_uuid
       endpoint_1:
         tags:
           - "namespace=kube-system"
@@ -135,18 +195,18 @@ workflow:
       endpoint_2:
         any: true
   watchers:
-    /contrail/firewall_rule/test_firewall_rule_uuid:
+    /contrail/firewall_rule/test_firewall_rule_blue_uuid:
       - data:
-          <<: *test_firewall_rule
+          <<: *test_firewall_rule_blue
           tag_refs: $null
         sync_only: true
       - data:
-          <<: *test_firewall_rule
+          <<: *test_firewall_rule_blue
           tag_refs:
             - uuid: test_tag_blue_uuid
         sync_only: true
       - data:
-          <<: *test_firewall_rule
+          <<: *test_firewall_rule_blue
           endpoint_1:
             tags:
               - "namespace=kube-system"
@@ -157,60 +217,91 @@ workflow:
           tag_refs:
             - uuid: test_tag_blue_uuid
 
-- name: get updated firewall rule
+- name: update firewall rule refs
   request:
-    path: /firewall-rule/test_firewall_rule_uuid
-    method: GET
-    expected: [200]
-  expect:
-    firewall-rule:
-      <<: *test_firewall_rule
-      uuid: test_firewall_rule_uuid
-      endpoint_1:
-        tags:
-          - "namespace=kube-system"
-        tag_ids:
-          - 1
-      endpoint_2:
-        any: true
-
-- name: update firewall rule with subnet
-  request:
-    path: /firewall-rule/test_firewall_rule_uuid
+    path: /firewall-rule/test_firewall_rule_blue_uuid
     method: PUT
     expected: [200]
     data:
       firewall-rule:
-        uuid: test_firewall_rule_uuid
-        endpoint_1:
-          any: false
-          subnet:
-            ip_prefix: "10.0.0.0"
-            ip_prefix_len: 24
-        endpoint_2:
-          any: false
+        uuid: test_firewall_rule_blue_uuid
+        service_group_refs:
+          - uuid: test_service_group_uuid
   expect:
     firewall-rule:
-      uuid: test_firewall_rule_uuid
-      endpoint_1:
-        subnet:
-          ip_prefix: "10.0.0.0"
-          ip_prefix_len: 24
-  watchers:
-    /contrail/firewall_rule/test_firewall_rule_uuid:
-      - data:
-          tag_refs: $null
-        sync_only: true
-      - data:
-          uuid: test_firewall_rule_uuid
-          endpoint_1:
-            subnet:
-              ip_prefix: "10.0.0.0"
-              ip_prefix_len: 24
+      uuid: test_firewall_rule_blue_uuid
+      service_group_refs:
+        - uuid: test_service_group_uuid
+          to: [default-policy-management, test_service_group_uuid]
 
-- name: delete firewall rule
+- name: get updated firewall rule
   request:
-    path: /firewall-rule/test_firewall_rule_uuid
+    path: /firewall-rule/test_firewall_rule_blue_uuid
+    method: GET
+    expected: [200]
+  expect:
+    firewall-rule:
+      uuid: test_firewall_rule_blue_uuid
+      endpoint_1:
+        tags:
+          - "namespace=kube-system"
+        # tag_ids:
+        #   - 1
+      service_group_refs:
+        - uuid: test_service_group_uuid
+          to: [default-policy-management, test_service_group_uuid]
+
+# - name: update firewall rule with subnet
+#   request:
+#     path: /firewall-rule/test_firewall_rule_blue_uuid
+#     method: PUT
+#     expected: [200]
+#     data:
+#       firewall-rule:
+#         uuid: test_firewall_rule_blue_uuid
+#         endpoint_1:
+#           any: false
+#           subnet:
+#             ip_prefix: "10.0.0.0"
+#             ip_prefix_len: 24
+#         endpoint_2:
+#           any: false
+#   expect:
+#     firewall-rule:
+#       uuid: test_firewall_rule_blue_uuid
+#       endpoint_1:
+#         subnet:
+#           ip_prefix: "10.0.0.0"
+#           ip_prefix_len: 24
+#   watchers:
+#     /contrail/firewall_rule/test_firewall_rule_blue_uuid:
+#       - data:
+#           tag_refs: $null
+#         sync_only: true
+#       - data:
+#           uuid: test_firewall_rule_blue_uuid
+#           endpoint_1:
+#             subnet:
+#               ip_prefix: "10.0.0.0"
+#               ip_prefix_len: 24
+
+- name: delete firewall rule blue
+  request:
+    path: /firewall-rule/test_firewall_rule_blue_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete firewall rule red
+  request:
+    path: /firewall-rule/test_firewall_rule_red_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete test service group
+  request:
+    path: /service-group/test_service_group_uuid
     method: DELETE
     expected: [200]
   expect: null
