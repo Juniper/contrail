@@ -20,13 +20,14 @@ import (
 
 //Structure expectedParams is used to store some expected values
 type expectedParams struct {
-	MatchTags        *models.FirewallRuleMatchTagsType
-	MatchTagTypes    *models.FirewallRuleMatchTagsTypeIdList
-	Service          *models.FirewallServiceType
-	Endpoint1        *models.FirewallRuleEndpointType
-	Endpoint2        *models.FirewallRuleEndpointType
-	TagRefs          []*models.FirewallRuleTagRef
-	AddressGroupRefs []*models.FirewallRuleAddressGroupRef
+	MatchTags          *models.FirewallRuleMatchTagsType
+	MatchTagTypes      *models.FirewallRuleMatchTagsTypeIdList
+	Service            *models.FirewallServiceType
+	Endpoint1          *models.FirewallRuleEndpointType
+	Endpoint2          *models.FirewallRuleEndpointType
+	TagRefs            []*models.FirewallRuleTagRef
+	AddressGroupRefs   []*models.FirewallRuleAddressGroupRef
+	VirtualNetworkRefs []*models.FirewallRuleVirtualNetworkRef
 }
 
 func updateExpectedFirewallRule(fr models.FirewallRule, params expectedParams) *models.FirewallRule {
@@ -37,9 +38,9 @@ func updateExpectedFirewallRule(fr models.FirewallRule, params expectedParams) *
 	fr.Endpoint2 = params.Endpoint2
 	fr.TagRefs = params.TagRefs
 	fr.AddressGroupRefs = params.AddressGroupRefs
+	fr.VirtualNetworkRefs = params.VirtualNetworkRefs
 	return &fr
 }
-
 func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.FirewallRule) {
 	nextService := s.Next().(*servicesmock.MockService)          //nolint: errcheck
 	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
@@ -72,6 +73,10 @@ func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.Fire
 			nil,
 		).AnyTimes()
 	}
+}
+
+func firewallRuleSetupGettersMocks(s *ContrailTypeLogicService, databaseFR *models.FirewallRule) {
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
 
 	s.MetadataGetter.(*typesmock.MockMetadataGetter).EXPECT().GetMetadata(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
@@ -79,6 +84,17 @@ func firewallRuleSetupMocks(s *ContrailTypeLogicService, databaseFR *models.Fire
 		func(_ context.Context, requested basemodels.Metadata) (
 			response *basemodels.Metadata, err error,
 		) {
+			if requested.Type == models.KindVirtualNetwork {
+				if requested.UUID == "virtual-network-uuid-1" {
+					return nil, errutil.ErrorNotFound
+				}
+
+				return &basemodels.Metadata{
+					UUID:   "virtual-network-uuid-2",
+					FQName: []string{"virtual-network-uuid-2"},
+				}, nil
+			}
+
 			if requested.Type == models.KindTagType {
 				return &basemodels.Metadata{
 					UUID: "tag-type-uuid",
@@ -176,6 +192,32 @@ func TestCreateFirewallRule(t *testing.T) {
 			errorCode: codes.InvalidArgument,
 		},
 		{
+			name: "Try to create when cannot find refs in database",
+			testFirewallRule: models.FirewallRule{
+				UUID:   "test-firewall-rule",
+				FQName: []string{"default-policy-management", "test-firewall-rule"},
+				VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid-1",
+					},
+				},
+			},
+			errorCode: codes.NotFound,
+		},
+		{
+			name: "Try to create when filled virtual-network refs are of different scope",
+			testFirewallRule: models.FirewallRule{
+				UUID:   "test-firewall-rule",
+				FQName: []string{"default-policy-management", "test-firewall-rule"},
+				VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid-2",
+					},
+				},
+			},
+			errorCode: codes.InvalidArgument,
+		},
+		{
 			name: "Try to create when address-group refs are scoped",
 			testFirewallRule: models.FirewallRule{
 				UUID:           "test-firewall-rule",
@@ -237,8 +279,13 @@ func TestCreateFirewallRule(t *testing.T) {
 		{
 			name: "Try to create when service and service-group-ref properties are defined",
 			testFirewallRule: models.FirewallRule{
-				Service:          &models.FirewallServiceType{},
-				ServiceGroupRefs: []*models.FirewallRuleServiceGroupRef{{}},
+				Service: &models.FirewallServiceType{},
+				ServiceGroupRefs: []*models.FirewallRuleServiceGroupRef{
+					{
+						UUID: "service-group-ref-uuid",
+						To:   []string{"service-group-ref-uuid"},
+					},
+				},
 			},
 			errorCode:         codes.InvalidArgument,
 			IsInternalRequest: true,
@@ -350,7 +397,12 @@ func TestCreateFirewallRule(t *testing.T) {
 				Service: &models.FirewallServiceType{
 					Protocol: "tcp",
 				},
-				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{{}},
+				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{
+					{
+						UUID: "address-group-ref-uuid",
+						To:   []string{"address-group-ref-uuid"},
+					},
+				},
 			},
 			errorCode: codes.InvalidArgument,
 		},
@@ -380,6 +432,11 @@ func TestCreateFirewallRule(t *testing.T) {
 				},
 				Endpoint2: &models.FirewallRuleEndpointType{
 					Tags: []string{"namespace=default"},
+				},
+				VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid-2",
+					},
 				},
 			},
 			expectedParams: expectedParams{
@@ -412,6 +469,12 @@ func TestCreateFirewallRule(t *testing.T) {
 					},
 				},
 				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{},
+				VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
+					{
+						UUID: "virtual-network-uuid-2",
+						To:   []string{"virtual-network-uuid-2"},
+					},
+				},
 			},
 			IsInternalRequest: true,
 		},
@@ -459,6 +522,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			firewallRuleSetupMocks(service, nil)
+			firewallRuleSetupGettersMocks(service, nil)
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
@@ -509,13 +573,33 @@ func TestUpdateFirewallRule(t *testing.T) {
 			errorCode:  codes.InvalidArgument,
 		},
 		{
+			name: "Try to update with not existing virtual-network ref",
+			request: services.UpdateFirewallRuleRequest{
+				FirewallRule: &models.FirewallRule{
+					VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
+						{
+							UUID: "virtual-network-uuid-1",
+						},
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						models.FirewallRuleFieldVirtualNetworkRefs,
+					},
+				},
+			},
+			databaseFR: &models.FirewallRule{
+				FQName: []string{"default-policy-management", "test-firewall-rule"},
+			},
+			errorCode: codes.NotFound,
+		},
+		{
 			name: "Try to update virtual-network refs with different scope",
 			request: services.UpdateFirewallRuleRequest{
 				FirewallRule: &models.FirewallRule{
 					VirtualNetworkRefs: []*models.FirewallRuleVirtualNetworkRef{
 						{
-							UUID: "virtual-network-ref-uuid",
-							To:   []string{"virtual-network-ref-uuid"},
+							UUID: "virtual-network-uuid-2",
 						},
 					},
 				},
@@ -771,6 +855,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 			defer mockCtrl.Finish()
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			firewallRuleSetupMocks(service, tt.databaseFR)
+			firewallRuleSetupGettersMocks(service, nil)
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
