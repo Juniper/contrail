@@ -76,6 +76,10 @@ func (fr *FirewallRule) CheckEndpoints() error {
 	}
 
 	for _, endpoint := range endpoints {
+		if endpoint == nil {
+			continue
+		}
+
 		if err := endpoint.ValidateEndpointType(); err != nil {
 			return err
 		}
@@ -133,4 +137,14 @@ func (fr *FirewallRule) GetEndpoints(
 	}
 
 	return endpoints, dbEndpoints
+}
+
+//SetEndpoint sets Endpoint1 or Endpoint2 property value based on idx={1,2}
+func (fr *FirewallRule) SetEndpoint(e *FirewallRuleEndpointType, idx int) {
+	if idx == 1 {
+		fr.Endpoint1 = e
+		return
+	}
+
+	fr.Endpoint2 = e
 }
