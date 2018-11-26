@@ -21,6 +21,10 @@ func (sv *ContrailTypeLogicService) CreateFirewallPolicy(
 				return err
 			}
 
+			if err = sv.ComplementRefs(ctx, fp); err != nil {
+				return err
+			}
+
 			if err = fp.CheckAssociatedRefsInSameScope(fp.GetFQName()); err != nil {
 				return errutil.ErrorBadRequest(err.Error())
 			}
@@ -48,6 +52,10 @@ func (sv *ContrailTypeLogicService) UpdateFirewallPolicy(
 			var fqName []string
 			fqName, err = sv.getFirewallPolicyFQName(ctx, fp)
 			if err != nil {
+				return err
+			}
+
+			if err = sv.ComplementRefs(ctx, fp); err != nil {
 				return err
 			}
 
