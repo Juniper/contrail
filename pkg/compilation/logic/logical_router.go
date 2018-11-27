@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 // LogicalRouterIntent contains Intent Compiler state for LogicalRouter.
@@ -104,8 +105,10 @@ func (i *LogicalRouterIntent) resolveVxLan(
 	ReadService services.ReadService,
 ) {
 	r, err := ReadService.GetProject(ctx, &services.GetProjectRequest{
-		ID:     i.GetParentUUID(),
-		Fields: []string{"vxlan_routing"},
+		ID: i.GetParentUUID(),
+		Spec: &baseservices.GetSpec{
+			Fields: []string{"vxlan_routing"},
+		},
 	})
 
 	if err != nil {
