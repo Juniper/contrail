@@ -290,6 +290,8 @@ schema:
       - kubernetes
       - vcenter
       - openshift
+      - mesos
+      - windows
       permission:
       - create
       - update
