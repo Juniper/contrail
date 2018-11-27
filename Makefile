@@ -57,7 +57,7 @@ generate_go:
 		--schemas schemas/native --templates tools/templates/native/template_config.yaml \
 		--schema-output public/schema.json --openapi-output public/openapi.json
 	# Generate for openstack api resources.
-	@mkdir -p apiopenstack/public/
+	@mkdir -p public/openstack
 	go run  cmd/contrailschema/main.go generate \
 	    --schemas schemas/openstack --templates tools/templates/openstack/template_config.yaml \
 		--schema-output public/openstack/schema.json --openapi-output public/openstack/openapi.json
