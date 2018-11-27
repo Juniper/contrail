@@ -648,7 +648,6 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 	spec := &baseservices.ListSpec{
 				Limit: 1,
 				Detail: true,
-				Fields: request.Fields,
 				Filters: []*baseservices.Filter{
 					&baseservices.Filter{
 						Key: "uuid",
@@ -656,6 +655,12 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 					},
 				},
 	}
+	if request.Spec != nil {
+		spec.Fields = request.Spec.Fields
+		spec.ExcludeChildren = request.Spec.ExcludeChildren
+		spec.ExcludeBackRefs = request.Spec.ExcludeBackRefs
+	}
+
 	listRequest := &services.List{{ schema.JSONSchema.GoName }}Request{
 		Spec: spec,
 	}

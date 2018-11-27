@@ -412,6 +412,22 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 									Required:    false,
 								},
 							},
+							{
+								ParamProps: spec.ParamProps{
+									In:          "query",
+									Name:        "exclude_clildren",
+									Description: "",
+									Required:    false,
+								},
+							},
+							{
+								ParamProps: spec.ParamProps{
+									In:          "query",
+									Name:        "exclude_back_refs",
+									Description: "",
+									Required:    false,
+								},
+							},
 						},
 						Responses: &spec.Responses{
 							ResponsesProps: spec.ResponsesProps{

@@ -415,7 +415,7 @@ func (d *Dialect) jsonAggRef(table string, params ...string) string {
 
 func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 	spec := ctx.spec
-	if !spec.Detail {
+	if !spec.Detail || spec.ExcludeChildren {
 		return
 	}
 	for child, childFields := range qb.ChildFields {
@@ -437,7 +437,7 @@ func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 
 func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
 	spec := ctx.spec
-	if !spec.Detail {
+	if !spec.Detail || spec.ExcludeBackRefs {
 		return
 	}
 	for backrefTable, backrefFields := range qb.BackRefFields {
