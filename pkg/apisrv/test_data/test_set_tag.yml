@@ -348,6 +348,13 @@ workflow:
     expected: [200]
   expect: null
 
+- name: ensure tag namespace was deleted
+  request:
+    path: /tag/tag_namespace_uuid
+    method: GET
+    expected: [404]
+  expect: null
+
 - name: delete tag namespace kube
   request:
     path: /tag/tag_namespace_kube_uuid
@@ -367,6 +374,13 @@ workflow:
     path: /tag/tag_label_k8s_uuid
     method: DELETE
     expected: [200]
+  expect: null
+
+- name: ensure tag label k8s was deleted
+  request:
+    path: /tag/tag_label_k8s_uuid
+    method: GET
+    expected: [404]
   expect: null
 
 - name: delete tag label ctest
