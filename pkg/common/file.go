@@ -96,3 +96,30 @@ func YAMLtoJSONCompat(yamlData interface{}) interface{} {
 	}
 	return yamlData
 }
+
+//WriteToFile writes content to a file (path and content are provided as params)
+func WriteToFile(path string, content []byte, perm os.FileMode) error {
+	// create file if it doesn't exist
+	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	// write content to file
+	return ioutil.WriteFile(path, content, perm)
+}
+
+//AppendToFile append content to file
+func AppendToFile(path string, content []byte, perm os.FileMode) error {
+	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, perm)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(content)
+	return err
+}

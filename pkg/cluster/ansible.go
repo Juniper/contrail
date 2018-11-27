@@ -2,21 +2,25 @@ package cluster
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/flosch/pongo2"
-	"github.com/mattn/go-shellwords"
+	shellwords "github.com/mattn/go-shellwords"
 	"github.com/siddontang/go/log"
+
+	"github.com/Juniper/contrail/pkg/common"
 )
 
 const (
 	enable  = "yes"
 	disable = "no"
+
+	filePermRWOnly = 0600
 )
 
 type openstackVariables struct {
@@ -60,7 +64,7 @@ func (a *ansibleProvisioner) fetchAnsibleDeployer() error {
 		return err
 	}
 	args = append([]string{"fetch"}, args...)
-	err = a.execCmd("git", args, repoDir)
+	err = common.ExecCmdAndWait(a.reporter, "git", args, repoDir)
 	if err != nil {
 		return err
 	}
@@ -73,7 +77,7 @@ func (a *ansibleProvisioner) cherryPickAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.log.Infof("Cherry-picking :%s", a.cluster.config.AnsibleCherryPickRevision)
 	args := []string{"cherry-pick", a.cluster.config.AnsibleCherryPickRevision}
-	err := a.execCmd("git", args, repoDir)
+	err := common.ExecCmdAndWait(a.reporter, "git", args, repoDir)
 	if err != nil {
 		return err
 	}
@@ -86,7 +90,7 @@ func (a *ansibleProvisioner) resetAnsibleDeployer() error {
 	repoDir := a.getAnsibleDeployerRepoDir()
 	a.log.Infof("Git reset to %s", a.cluster.config.AnsibleRevision)
 	args := []string{"reset", "--hard", a.cluster.config.AnsibleRevision}
-	err := a.execCmd("git", args, repoDir)
+	err := common.ExecCmdAndWait(a.reporter, "git", args, repoDir)
 	if err != nil {
 		return err
 	}
@@ -207,12 +211,12 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		"defaultSSHPassword": SSHPassword,
 		"defaultSSHKey":      SSHKey,
 	}
-	content, err := a.applyTemplate(a.getInstanceTemplate(), context)
+	content, err := common.Apply(a.getInstanceTemplate(), context)
 	if err != nil {
 		return err
 	}
 
-	err = a.writeToFile(destination, content)
+	err = common.WriteToFile(destination, content, filePermRWOnly)
 	if err != nil {
 		return err
 	}
@@ -226,11 +230,11 @@ func (a *ansibleProvisioner) createDatapathEncryptionInventory(destination strin
 		"cluster": a.clusterData.clusterInfo,
 		"nodes":   a.clusterData.getAllNodesInfo(),
 	}
-	content, err := a.applyTemplate(a.getInventoryTemplate(), context)
+	content, err := common.Apply(a.getInventoryTemplate(), context)
 	if err != nil {
 		return err
 	}
-	err = a.writeToFile(destination, content)
+	err = common.WriteToFile(destination, content, filePermRWOnly)
 	if err != nil {
 		return err
 	}
@@ -244,12 +248,12 @@ func (a *ansibleProvisioner) mockPlay(ansibleArgs []string) error {
 		"playBook":    ansibleArgs[playBookIndex],
 		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
 	}
-	content, err := a.applyTemplate("./test_data/test_ansible_playbook.tmpl", context)
+	content, err := common.Apply("./test_data/test_ansible_playbook.tmpl", context)
 	if err != nil {
 		return err
 	}
 	destination := filepath.Join(a.getWorkingDir(), "executed_ansible_playbook.yml")
-	err = a.appendToFile(destination, content)
+	err = common.AppendToFile(destination, content, filePermRWOnly)
 	return err
 }
 
@@ -266,25 +270,9 @@ func (a *ansibleProvisioner) playFromDir(
 	cmdline := "ansible-playbook"
 	a.log.Infof("Playing playbook: %s %s",
 		cmdline, strings.Join(ansibleArgs, " "))
-	cmd := exec.Command(cmdline, ansibleArgs...)
-	cmd.Dir = repoDir
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-	if err = cmd.Start(); err != nil {
-		return err
-	}
 
-	// Report progress log periodically to stdout
-	go a.reporter.reportLog(stdout)
-	go a.reporter.reportLog(stderr)
-
-	if err = cmd.Wait(); err != nil {
+	err := common.ExecCmdAndWait(a.reporter, cmdline, ansibleArgs, repoDir)
+	if err != nil {
 		return err
 	}
 	a.log.Infof("Finished playing playbook: %s %s",
@@ -397,12 +385,12 @@ func (a *ansibleProvisioner) playBook() error {
 func (a *ansibleProvisioner) createCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	status := map[string]interface{}{statusField: statusCreateProgress}
-	a.reporter.reportStatus(status)
+	a.reporter.ReportStatus(context.Background(), status, defaultResource)
 
 	status[statusField] = statusCreateFailed
 	err := a.createWorkingDir()
 	if err != nil {
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
@@ -410,39 +398,39 @@ func (a *ansibleProvisioner) createCluster() error {
 		if a.cluster.config.AnsibleFetchURL != "" {
 			err = a.fetchAnsibleDeployer()
 			if err != nil {
-				a.reporter.reportStatus(status)
+				a.reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleCherryPickRevision != "" {
 			err = a.cherryPickAnsibleDeployer()
 			if err != nil {
-				a.reporter.reportStatus(status)
+				a.reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleRevision != "" {
 			err = a.resetAnsibleDeployer()
 			if err != nil {
-				a.reporter.reportStatus(status)
+				a.reporter.ReportStatus(context.Background(), status, defaultResource)
 				return err
 			}
 		}
 	}
 	err = a.createInventory()
 	if err != nil {
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
 	err = a.playBook()
 	if err != nil {
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
 	status[statusField] = statusCreated
-	a.reporter.reportStatus(status)
+	a.reporter.ReportStatus(context.Background(), status, defaultResource)
 	return nil
 }
 
@@ -455,7 +443,7 @@ func (a *ansibleProvisioner) isUpdated() (updated bool, err error) {
 		ok, err := a.compareInventory()
 		if err != nil {
 			status[statusField] = statusUpdateFailed
-			a.reporter.reportStatus(status)
+			a.reporter.ReportStatus(context.Background(), status, defaultResource)
 			return false, err
 		}
 		if ok {
@@ -470,22 +458,22 @@ func (a *ansibleProvisioner) updateCluster() error {
 	a.log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
 	status := map[string]interface{}{}
 	status[statusField] = statusUpdateProgress
-	a.reporter.reportStatus(status)
+	a.reporter.ReportStatus(context.Background(), status, defaultResource)
 
 	err := a.createInventory()
 	if err != nil {
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 	err = a.playBook()
 	if err != nil {
 		status[statusField] = statusUpdateFailed
-		a.reporter.reportStatus(status)
+		a.reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
 	status[statusField] = statusUpdated
-	a.reporter.reportStatus(status)
+	a.reporter.ReportStatus(context.Background(), status, defaultResource)
 	return nil
 }
 
