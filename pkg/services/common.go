@@ -318,47 +318,6 @@ func createUpdateMap(
 	return updateMap, nil
 }
 
-//TagAttr is a part of set-tag input data. TODO: Investigate it
-type TagAttr struct {
-	IsGlobal bool   `json:"is_global"`
-	Value    string `json:"value"`
-}
-
-// SetTag represents set-tag input data.
-type SetTag struct {
-	ObjUUID string `json:"obj_uuid"`
-	ObjType string `json:"obj_type"`
-	Tags    map[string]TagAttr
-}
-
-func (t *SetTag) validate() error {
-	if t.ObjUUID == "" || t.ObjType == "" {
-		return errutil.ErrorBadRequestf(
-			"both obj_uuid and obj_type should be specified but got uuid: '%s' and type: '%s",
-			t.ObjUUID, t.ObjType,
-		)
-	}
-	//TODO additional validation
-	return nil
-}
-
-// RESTSetTag handles set-tag request.
-func (service *ContrailService) RESTSetTag(c echo.Context) error {
-	var data SetTag
-
-	if err := c.Bind(&data); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-
-	if err := data.validate(); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	// TODO (Ignacy): implement set-tag logic
-
-	return c.JSON(http.StatusOK, map[string]interface{}{})
-}
-
 // Chown handles chown request.
 func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest) (*Empty, error) {
 	// TODO: implement chown logic.
@@ -377,7 +336,6 @@ func (service *ContrailService) RESTChown(c echo.Context) error {
 }
 
 // RESTIntPoolAllocate handles a POST on int-pool/:pool-name/:value and int-pool/:pool-name request.
-// TODO(Michal): gRPC endpoint
 func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	ctx := c.Request().Context()
 	auth := auth.GetAuthCTX(ctx)
@@ -438,7 +396,6 @@ func (service *ContrailService) SetInt(ctx context.Context, request *SetIntReque
 }
 
 // RESTIntPoolDeallocate handles a DELETE on int-pool/:pool-name/:value request.
-// TODO(Michal): gRPC endpoint
 func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 	ctx := c.Request().Context()
 	auth := auth.GetAuthCTX(ctx)
