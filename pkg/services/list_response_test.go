@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,10 +11,12 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 )
 
-var dataJSON = []struct {
+type testDataList struct {
 	structure ListFloatingIPPoolResponse
 	bytes     []byte
-}{
+}
+
+var dataJSON = []testDataList{
 	{
 		ListFloatingIPPoolResponse{
 			FloatingIPPools:     []*models.FloatingIPPool{{UUID: "vn_uuid"}},
@@ -22,17 +25,58 @@ var dataJSON = []struct {
 		[]byte(`{"floating-ip-pools": [{"uuid": "vn_uuid"}]}`),
 	}, {
 		ListFloatingIPPoolResponse{
-			FloatingIPPools:     nil,
-			FloatingIPPoolCount: 1,
+			FloatingIPPools:     make([]*models.FloatingIPPool, 0),
+			FloatingIPPoolCount: 0,
 		},
-		[]byte(`{"floating-ip-pools": {"count": 1}}`),
+		[]byte(`{"floating-ip-pools": []}`),
 	},
 }
 
-var dataYAML = []struct {
-	structure ListFloatingIPPoolResponse
-	bytes     []byte
-}{
+var detailedJSON = []testDataList{
+	{
+		ListFloatingIPPoolResponse{
+			FloatingIPPools:     []*models.FloatingIPPool{{UUID: "vn_uuid"}},
+			FloatingIPPoolCount: 1,
+		},
+		[]byte(`{"floating-ip-pools": [{"floating-ip-pool": {"uuid": "vn_uuid"}}]}`),
+	}, {
+		ListFloatingIPPoolResponse{
+			FloatingIPPools:     make([]*models.FloatingIPPool, 0),
+			FloatingIPPoolCount: 0,
+		},
+		[]byte(`{"floating-ip-pools": []}`),
+	}, {
+		ListFloatingIPPoolResponse{
+			FloatingIPPools:     nil,
+			FloatingIPPoolCount: 0,
+		},
+		[]byte(`{"floating-ip-pools": []}`),
+	},
+}
+
+var dataCountJSON = []testDataList{
+	{
+		ListFloatingIPPoolResponse{
+			FloatingIPPools:     []*models.FloatingIPPool{{UUID: "vn_uuid"}},
+			FloatingIPPoolCount: 1,
+		},
+		[]byte(`{"floating-ip-pools": {"count": 1}}`),
+	}, {
+		ListFloatingIPPoolResponse{
+			FloatingIPPools:     make([]*models.FloatingIPPool, 0),
+			FloatingIPPoolCount: 0,
+		},
+		[]byte(`{"floating-ip-pools": {"count": 0}}`),
+	}, {
+		ListFloatingIPPoolResponse{
+			FloatingIPPools:     nil,
+			FloatingIPPoolCount: 0,
+		},
+		[]byte(`{"floating-ip-pools": {"count": 0}}`),
+	},
+}
+
+var dataYAML = []testDataList{
 	{
 		ListFloatingIPPoolResponse{
 			FloatingIPPools: []*models.FloatingIPPool{
@@ -64,21 +108,39 @@ var dataYAML = []struct {
   project_back_refs: []
   floating_ips: []
 `),
-	}, {
+	},
+	{
 		ListFloatingIPPoolResponse{
-			FloatingIPPools:     nil,
-			FloatingIPPoolCount: 1,
+			FloatingIPPools:     make([]*models.FloatingIPPool, 0),
+			FloatingIPPoolCount: 0,
 		},
-		[]byte(`floating-ip-pools:
-  count: 1
+		[]byte(`floating-ip-pools: []
 `),
 	},
 }
 
 func TestListResponseJSONMarshaling(t *testing.T) {
 	for _, data := range dataJSON {
-		dataBytes, err := json.Marshal(data.structure)
-		assert.NoError(t, err, "marshaling ListResponse failed")
+		dataBytes, err := json.Marshal(data.structure.Data())
+		assert.NoError(t, err, "marshaling ListResponse.Data() failed")
+		assert.JSONEq(t, string(data.bytes), string(dataBytes))
+	}
+}
+
+func TestListDetailedResponseJSONMarshaling(t *testing.T) {
+	for _, data := range detailedJSON {
+		dataBytes, err := json.Marshal(data.structure.Detailed())
+		assert.NoError(t, err, "marshaling ListResponse.Detailed() failed")
+		fmt.Println("data:", string(dataBytes))
+		assert.JSONEq(t, string(data.bytes), string(dataBytes))
+	}
+}
+
+func TestListCountResponseJSONMarshaling(t *testing.T) {
+	for _, data := range dataCountJSON {
+		dataBytes, err := json.Marshal(data.structure.Count())
+		assert.NoError(t, err, "marshaling ListResponse.Count() failed")
+		fmt.Println("data:", string(dataBytes))
 		assert.JSONEq(t, string(data.bytes), string(dataBytes))
 	}
 }
@@ -94,7 +156,7 @@ func TestListResponseJSONUnmarshaling(t *testing.T) {
 
 func TestListResponseYAMLMarshaling(t *testing.T) {
 	for _, data := range dataYAML {
-		dataBytes, err := yaml.Marshal(data.structure)
+		dataBytes, err := yaml.Marshal(data.structure.Data())
 		assert.NoError(t, err, "marshaling ListResponse failed")
 		assert.Equal(t, data.bytes, dataBytes)
 	}
