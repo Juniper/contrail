@@ -151,6 +151,19 @@ workflow:
           value: invalid-value
   expect: null
 
+- name: setting key-value pair in annotations without value
+  request:
+    path: /prop-collection-update
+    method: POST
+    expected: [400]
+    data:
+      uuid: project_prop_collection_update_uuid
+      updates:
+        - field: annotations
+          operation: set
+          key: some-key
+  expect: null
+
 - name: setting key-value pair in project's annotations with no KeyValuePair key should fail
   request:
     path: /prop-collection-update
@@ -195,7 +208,7 @@ workflow:
         - field: annotations
           operation: set
           value:
-            key: another-key # TODO: key with empty value
+            key: another-key
             value: another value
   expect: null
 
