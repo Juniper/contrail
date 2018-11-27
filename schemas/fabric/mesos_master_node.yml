@@ -1,0 +1,27 @@
+description: mesos Master Node
+extends:
+- base
+- has_status
+id: mesos_master_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this mesos master node."
+      presence: "optional"
+parents:
+  mesos_cluster:
+    operations: "CRUD"
+    description: "Parent of this mesos master node."
+    presence: "optional"
+plural: mesos_master_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: mesos_master_node
+title: mesos Master Node
+type: ""

@@ -1,0 +1,27 @@
+description: mesos agent private Node
+extends:
+- base
+- has_status
+id: mesos_agent_private_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this mesos agent private node."
+      presence: "optional"
+parents:
+  mesos_cluster:
+    operations: "CRUD"
+    description: "Parent of this mesos agent private node."
+    presence: "optional"
+plural: mesos_agent_private_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: mesos_agent_private_node
+title: mesos agent private Node
+type: ""

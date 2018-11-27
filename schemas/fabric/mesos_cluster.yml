@@ -1,0 +1,32 @@
+description: Mesos Cluster
+extends:
+- base
+- ownable
+- has_status
+id: mesos_cluster
+metadata:
+  category: cluster
+parents:
+  global_system_config:
+    operations: "CRUD"
+    description: "Parent of this node resource."
+    presence: "optional"
+plural: mesos_clusters
+prefix: /
+schema:
+  properties:
+    ntp_server:
+      description: NTP server ip address
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: NTPServer
+      type: string
+      view:
+      - create
+      - detail
+singular: mesos_cluster
+title: Mesos Cluster
+type: ""
