@@ -504,8 +504,12 @@ func (qb *QueryBuilder) ListQuery(
 	qb.buildFilterQuery(ctx)
 	qb.buildAuthQuery(ctx)
 	qb.buildRefQuery(ctx)
-	qb.buildChildQuery(ctx)
-	qb.buildBackRefQuery(ctx)
+	if !spec.GetExcludeChildren() {
+		qb.buildChildQuery(ctx)
+	}
+	if !spec.GetExcludeBackRefs() {
+		qb.buildBackRefQuery(ctx)
+	}
 	qb.buildQuery(ctx)
 	return ctx.query.String(), ctx.columns, ctx.values
 }

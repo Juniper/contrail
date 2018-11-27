@@ -656,6 +656,11 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 					},
 				},
 	}
+	if request.Spec != nil {
+		spec.ExcludeChildren = request.Spec.ExcludeChildren
+		spec.ExcludeBackRefs = request.Spec.ExcludeBackRefs
+	}
+
 	listRequest := &services.List{{ schema.JSONSchema.GoName }}Request{
 		Spec: spec,
 	}
