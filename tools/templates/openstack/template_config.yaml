@@ -1,3 +1,9 @@
 - type: alltype
   template_path: example.tmpl
   output_path: pkg/apiopenstack/models/gen_example.go
+- type: all
+  template_path: service_common.tmpl
+  output_path: pkg/apiopenstack/services/gen_common.go
+- type: all
+  template_path: service.tmpl
+  output_path: pkg/apiopenstack/services/gen_service.go
