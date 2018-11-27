@@ -73,16 +73,12 @@ func (sv *ContrailTypeLogicService) DeleteTag(
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) (err error) {
-			tagResponse, err := sv.ReadService.GetTag(ctx, &services.GetTagRequest{ID: request.GetID()})
-			// Tag doesn't exist, skip.
-			if tagResponse == nil {
-				return nil
-			}
+			id := request.GetID()
 
-			// Don't de-allocate ID and remove pre-defined tag types
-			if _, ok := models.TagTypeIDs[tagResponse.Tag.TagTypeName]; ok {
-				response = &services.DeleteTagResponse{ID: request.ID}
-				return nil
+			tagResponse, err := sv.ReadService.GetTag(ctx, &services.GetTagRequest{ID: id})
+			if tagResponse == nil {
+				// Tag don't exist, skip.
+				return errutil.ErrorNotFoundf("No tag: %s", id)
 			}
 
 			tagType, err := sv.findTagTypeByName(ctx, tagResponse.Tag.TagTypeName)
@@ -94,11 +90,17 @@ func (sv *ContrailTypeLogicService) DeleteTag(
 				return err
 			}
 
-			if err = sv.deallocateTagID(ctx, tagResponse.Tag.TagID); err != nil {
+			if response, err = sv.Next().DeleteTag(ctx, request); err != nil {
 				return err
 			}
 
-			if response, err = sv.Next().DeleteTag(ctx, request); err != nil {
+			// Don't de-allocate ID and remove pre-defined tag types
+			if _, ok := models.TagTypeIDs[tagResponse.Tag.TagTypeName]; ok {
+				response = &services.DeleteTagResponse{ID: id}
+				return nil
+			}
+
+			if err = sv.deallocateTagID(ctx, tagResponse.Tag.TagID); err != nil {
 				return err
 			}
 
