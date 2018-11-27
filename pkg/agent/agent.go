@@ -146,7 +146,7 @@ func fetchServerAPI(ctx context.Context, server *client.HTTP, serverSchema strin
 		if err == nil {
 			break
 		}
-		log.Warn("failed to connect server %d. reconnecting...", err)
+		log.Warnf("failed to connect server %v. reconnecting...", err)
 		time.Sleep(time.Second)
 	}
 	return &api, nil
