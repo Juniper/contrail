@@ -5,6 +5,8 @@ import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 import "github.com/Juniper/contrail/pkg/services/baseservices/base.proto";
 import "github.com/Juniper/contrail/pkg/models/generated.proto";
 import "google/protobuf/field_mask.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
 
 
 option (gogoproto.goproto_enum_prefix_all) = false;
@@ -21,8 +23,6 @@ option (gogoproto.unmarshaler_all) = false;
 option (gogoproto.protosizer_all) = false;
 
 option go_package = "services";
-
-message Empty {}
 
 service ContrailService {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -122,7 +122,7 @@ message Event {
 }
 
 service Chown {
-    rpc Chown(ChownRequest) returns (Empty);
+    rpc Chown(ChownRequest) returns (google.protobuf.Empty);
 }
 
 message ChownRequest {
@@ -132,8 +132,8 @@ message ChownRequest {
 
 service IPAM {
     rpc AllocateInt (AllocateIntRequest) returns (AllocateIntResponse);
-    rpc SetInt (SetIntRequest) returns (Empty);
-    rpc DeallocateInt (DeallocateIntRequest) returns (Empty);
+    rpc SetInt (SetIntRequest) returns (google.protobuf.Empty);
+    rpc DeallocateInt (DeallocateIntRequest) returns (google.protobuf.Empty);
 }
 
 message AllocateIntRequest {
@@ -152,6 +152,24 @@ message SetIntRequest {
 message DeallocateIntRequest {
     string Pool = 1 [(gogoproto.customname) = "Pool"];
     int64 Value = 2 [(gogoproto.customname) = "Value"];
+}
+
+service SetTag {
+	rpc SetTag(SetTagRequest) returns (google.protobuf.Empty);
+}
+
+message SetTagRequest {
+	string ObjUUID = 1 [(gogoproto.customname) = "ObjUUID",(gogoproto.jsontag) = "obj_uuid"];
+	string ObjType = 2 [(gogoproto.customname) = "ObjType",(gogoproto.jsontag) = "obj_type"];
+	repeated SetTagAttr Tags = 3 [(gogoproto.customname) = "Tags"];
+}
+
+message SetTagAttr {
+	string Type = 1 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
+	google.protobuf.StringValue Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+	bool IsGlobal = 3 [(gogoproto.customname) = "IsGlobal",(gogoproto.jsontag) = "is_global"];
+	repeated string AddValues = 4 [(gogoproto.customname) = "AddValues",(gogoproto.jsontag) = "add_values"];
+	repeated string DeleteValues = 5 [(gogoproto.customname) = "DeleteValues",(gogoproto.jsontag) = "delete_values"];
 }
 
 service Watch {
