@@ -12,3 +12,11 @@ func SimpleListSpec(uuids []string, fields ...string) *ListSpec {
 		Fields: fields,
 	}
 }
+
+func (m *ListSpec) ToGetSpec() *GetSpec {
+	return &GetSpec{
+		Fields:          m.Fields,
+		ExcludeChildren: m.ExcludeChildren,
+		ExcludeBackRefs: m.ExcludeBackRefs,
+	}
+}
