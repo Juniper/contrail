@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	openstackservice "github.com/Juniper/contrail/pkg/apiopenstack/services"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
@@ -127,6 +128,13 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	return cs, nil
 }
 
+func (s *Server) setupOpenstack() (*openstackservice.OpenstackService, error) {
+	// TODO: implement. It should be simliart to contrailService method
+	os := &openstackservice.OpenstackService{}
+	os.RegisterOpenstackAPI(s.Echo)
+	return os, nil
+}
+
 func etcdNotifier() services.Service {
 	// TODO(Michał): Make the codec configurable
 	en, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"), models.JSONCodec)
@@ -177,6 +185,8 @@ func (s *Server) Init() (err error) {
 	if err != nil {
 		return err
 	}
+
+	s.setupOpenstack() // TODO: this should init OpenstackService structure and pass it to echo.
 
 	cs, err := s.setupService()
 	if err != nil {
