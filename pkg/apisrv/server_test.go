@@ -57,6 +57,11 @@ func TestSync(t *testing.T) {
 	RunTest(t, "./test_data/test_sync.yml")
 }
 
+func TestTagType(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_tag_type.yml")
+}
+
 func TestValidation(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_validation.yml")
