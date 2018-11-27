@@ -11,6 +11,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 // CreateFirewallRule performs types specific validation,
@@ -261,8 +262,10 @@ func (sv *ContrailTypeLogicService) getTagTypeID(
 	tagTypeResponse, err := sv.ReadService.GetTagType(
 		ctx,
 		&services.GetTagTypeRequest{
-			ID:     m.UUID,
-			Fields: []string{models.TagTypeFieldTagTypeID},
+			ID: m.UUID,
+			Spec: &baseservices.GetSpec{
+				Fields: []string{models.TagTypeFieldTagTypeID},
+			},
 		},
 	)
 	if err != nil {
