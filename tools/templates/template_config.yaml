@@ -73,6 +73,3 @@
 - type: all
   template_path: client.tmpl
   output_path: pkg/apisrv/client/gen_http.go
-- type: all
-  template_path: sync_refs.tmpl
-  output_path: pkg/sync/sink/gen_reverse_refs.go
