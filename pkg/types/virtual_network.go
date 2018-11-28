@@ -122,7 +122,7 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 				return err
 			}
 
-			response, err = sv.Next().UpdateVirtualNetwork(ctx, request)
+			response, err = sv.BaseService.UpdateVirtualNetwork(ctx, request)
 
 			//TODO: update native/default-VN routing instance
 			return err
