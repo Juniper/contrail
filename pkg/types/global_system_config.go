@@ -59,7 +59,7 @@ func (sv *ContrailTypeLogicService) UpdateGlobalSystemConfig(
 				return err
 			}
 
-			resp, err = sv.Next().UpdateGlobalSystemConfig(ctx, request)
+			resp, err = sv.BaseService.UpdateGlobalSystemConfig(ctx, request)
 			return err
 
 		})

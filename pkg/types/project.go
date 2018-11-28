@@ -20,7 +20,7 @@ func (sv *ContrailTypeLogicService) CreateProject(
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			response, err = sv.Next().CreateProject(ctx, request)
+			response, err = sv.BaseService.CreateProject(ctx, request)
 			if err != nil {
 				return err
 			}
@@ -50,7 +50,7 @@ func (sv *ContrailTypeLogicService) UpdateProject(
 			}
 			//TODO: check enable_security_policy_draft
 
-			response, err = sv.Next().UpdateProject(ctx, request)
+			response, err = sv.BaseService.UpdateProject(ctx, request)
 			return err
 		})
 
@@ -76,7 +76,7 @@ func (sv *ContrailTypeLogicService) DeleteProject(
 				return err
 			}
 
-			response, err = sv.Next().DeleteProject(ctx, request)
+			response, err = sv.BaseService.DeleteProject(ctx, request)
 			return err
 		})
 
