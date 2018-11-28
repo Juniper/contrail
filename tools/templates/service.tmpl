@@ -119,7 +119,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
         )
     }
 
-    return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+    return service.BaseService.Create{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
 func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} (
@@ -194,7 +194,7 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 
     model.IDPerms, request.FieldMask.Paths = sanitizeIDPermsUUID(model.GetIDPerms(), request.FieldMask.Paths)
 
-    return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+    return service.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
 // RESTDelete{{ schema.JSONSchema.GoName }} handles a REST delete request.

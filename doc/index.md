@@ -192,9 +192,9 @@ See: [API Server source code](../pkg/apisrv)
 ## Service Interface & Chain
 
 To decouple logic from transport layer (gRPC, HTTP), "Service Interface" is defined.
-The Service Interface allows Service Chain concept to be used. Multiple services implementing Service Interface can be chained together, similarly to middleware pattern. For each service, "next" service needs to be set. Each layer of logic is expected to call `service.Next()` once, in arbitrary place.
+The Service Interface allows Service Chain concept to be used. Multiple services implementing Service Interface can be chained together, similarly to middleware pattern. For each service, "next" service needs to be set. Each layer of logic is expected to call `service.Next()` once, in arbitrary place. Calling service.BaseService provides additional check if "next" service is not nil.
 
-`ContrailTypeLogicService` `CreateProject()` method implementation presenting `service.Next()` usage:
+`ContrailTypeLogicService` `CreateProject()` method implementation presenting `service.BaseService` usage:
 
 ```go
 // CreateProject creates a project and ensures a default application policy set for it.
@@ -205,7 +205,7 @@ func (sv *ContrailTypeLogicService) CreateProject(
     err = sv.InTransactionDoer.DoInTransaction(
         ctx,
         func(ctx context.Context) error {
-            response, err = sv.Next().CreateProject(ctx, request)
+            response, err = sv.BaseService.CreateProject(ctx, request)
             if err != nil {
                 return err
             }

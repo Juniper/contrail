@@ -25,7 +25,7 @@ func (sv *ContrailTypeLogicService) CreateFirewallPolicy(
 				return errutil.ErrorBadRequest(err.Error())
 			}
 
-			response, err = sv.Next().CreateFirewallPolicy(ctx, request)
+			response, err = sv.BaseService.CreateFirewallPolicy(ctx, request)
 			return err
 		})
 
@@ -55,7 +55,7 @@ func (sv *ContrailTypeLogicService) UpdateFirewallPolicy(
 				return errutil.ErrorBadRequest(err.Error())
 			}
 
-			response, err = sv.Next().UpdateFirewallPolicy(ctx, request)
+			response, err = sv.BaseService.UpdateFirewallPolicy(ctx, request)
 			return err
 		})
 
