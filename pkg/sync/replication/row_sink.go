@@ -48,7 +48,7 @@ func (o *objectMappingAdapter) Create(
 	case pkLen == 1 && !isRef:
 		return o.Sink.Create(ctx, resourceName, pk[0], obj)
 	case pkLen == 2 && isRef:
-		return o.Sink.CreateRef(ctx, resourceName, pk, obj)
+		return o.Sink.CreateRef(ctx, refTableNameToReferenceName(resourceName), pk, obj)
 	}
 	return errors.Errorf("create row: unhandled case with table %v and primary key with %v elements", resourceName, pkLen)
 }
@@ -79,7 +79,11 @@ func (o *objectMappingAdapter) Delete(
 	case pkLen == 1 && !isRef:
 		return o.Sink.Delete(ctx, resourceName, pk[0])
 	case pkLen == 2 && isRef:
-		return o.Sink.DeleteRef(ctx, resourceName, pk)
+		return o.Sink.DeleteRef(ctx, refTableNameToReferenceName(resourceName), pk)
 	}
 	return errors.Errorf("delete row: unhandled case with table %v and primary key with %v elements", resourceName, pkLen)
+}
+
+func refTableNameToReferenceName(name string) string {
+	return strings.Replace(strings.TrimPrefix(name, "ref_"), "_", "-", -1)
 }

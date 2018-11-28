@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"runtime"
 	"strconv"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -53,10 +52,6 @@ func SetupService(
 	return logicService, nil
 }
 
-type locker interface {
-	DoWithLock(context.Context, string, time.Duration, func(ctx context.Context) error) error
-}
-
 // Store represents data store that is source of events.
 type Store interface {
 	Create(context.Context, string, []byte) error
@@ -71,7 +66,6 @@ type Store interface {
 type IntentCompilationService struct {
 	config    *config.Config
 	Store     Store
-	locker    locker
 	service   services.Service
 	apiClient *client.HTTP
 
@@ -87,11 +81,6 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		return nil, err
 	}
 
-	l, err := etcd.NewDistributedLocker()
-	if err != nil {
-		return nil, err
-	}
-
 	apiClient := newAPIClient(c)
 
 	logicService, err := SetupService(apiClient, apiClient, apiClient)
@@ -103,7 +92,6 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		service:   logicService,
 		apiClient: apiClient,
 		Store:     etcd.NewClient(e),
-		locker:    l,
 		config:    &c,
 		log:       log.NewLogger("intent-compiler"),
 	}, nil
