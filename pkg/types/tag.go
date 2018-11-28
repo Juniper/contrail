@@ -36,20 +36,20 @@ func (sv *ContrailTypeLogicService) CreateTag(
 		ctx,
 		func(ctx context.Context) (err error) {
 			var tagType *models.TagType
-			if tagType, err = sv.findOrCreateTagTypeByName(ctx, tag.TagTypeName); err != nil {
+			if tagType, err = sv.findOrCreateTagTypeByName(ctx, tag.GetTagTypeName()); err != nil {
 				return err
 			}
 
-			if tag.TagID, err = sv.allocateTagID(ctx, tagType.TagTypeID); err != nil {
+			if tag.TagID, err = sv.allocateTagID(ctx, tagType.GetTagTypeID()); err != nil {
 				return err
 			}
 
-			if response, err = sv.Next().CreateTag(ctx, request); err != nil {
+			if response, err = sv.BaseService.CreateTag(ctx, request); err != nil {
 				return err
 			}
 
 			tagType.AddTagRef(&models.TagTypeTagRef{
-				UUID: response.GetTag().GetUUID(),
+				UUID: tag.GetUUID(),
 			})
 			_, err = sv.WriteService.UpdateTagType(ctx, &services.UpdateTagTypeRequest{
 				TagType: tagType,
@@ -70,39 +70,44 @@ func (sv *ContrailTypeLogicService) DeleteTag(
 	request *services.DeleteTagRequest,
 ) (*services.DeleteTagResponse, error) {
 	var response *services.DeleteTagResponse
+
+	id := request.GetID()
+
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) (err error) {
-			tagResponse, err := sv.ReadService.GetTag(ctx, &services.GetTagRequest{ID: request.GetID()})
-			// Tag doesn't exist, skip.
+			tagResponse, err := sv.ReadService.GetTag(ctx, &services.GetTagRequest{ID: id})
 			if tagResponse == nil {
-				return nil
+				// Tag don't exist, skip.
+				return errutil.ErrorNotFoundf("No tag: %s", id)
 			}
 
-			// Don't de-allocate ID and remove pre-defined tag types
-			if _, ok := models.TagTypeIDs[tagResponse.Tag.TagTypeName]; ok {
-				response = &services.DeleteTagResponse{ID: request.ID}
-				return nil
-			}
+			tag := tagResponse.GetTag()
 
-			tagType, err := sv.findTagTypeByName(ctx, tagResponse.Tag.TagTypeName)
+			tagType, err := sv.findTagTypeByName(ctx, tag.GetTagTypeName())
 			if err != nil {
 				return err
 			}
 
-			if err = sv.removeTagTypeTagRef(ctx, tagType, tagResponse.GetTag().GetUUID()); err != nil {
+			if err = sv.removeTagTypeTagRef(ctx, tagType, id); err != nil {
 				return err
 			}
 
-			if err = sv.deallocateTagID(ctx, tagResponse.Tag.TagID); err != nil {
+			if response, err = sv.BaseService.DeleteTag(ctx, request); err != nil {
 				return err
 			}
 
-			if response, err = sv.Next().DeleteTag(ctx, request); err != nil {
+			// Don't de-allocate ID and remove pre-defined tag types
+			if _, ok := models.TagTypeIDs[tag.GetTagTypeName()]; ok {
+				response = &services.DeleteTagResponse{ID: id}
+				return nil
+			}
+
+			if err = sv.deallocateTagID(ctx, tag.GetTagID()); err != nil {
 				return err
 			}
 
-			// Try to delete referenced tag-type if no references left and ignore constraint violation error.
+			// Try to delete referenced tag-type if no references left.
 			if tagType != nil && len(tagType.GetReferences()) == 0 {
 				_, err = sv.WriteService.DeleteTagType(ctx, &services.DeleteTagTypeRequest{ID: tagType.GetUUID()})
 				if err != nil {
@@ -110,7 +115,7 @@ func (sv *ContrailTypeLogicService) DeleteTag(
 				}
 			}
 
-			return err
+			return nil
 		})
 
 	return response, err
