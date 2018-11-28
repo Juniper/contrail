@@ -619,17 +619,17 @@ func Make{{ schema.JSONSchema.GoName }}Slice() []{% if schema.JSONSchema.Propert
 {% set itemType = schema.JSONSchema.GoName %}
 {% endif %}
 // InterfaceTo{{ schema.JSONSchema.GoName }}Slice() makes a slice of {{ schema.JSONSchema.GoName }}
-func InterfaceTo{{ schema.JSONSchema.GoName }}Slice(i interface{}) []{{ itemType }} {
-	if list, ok := i.([]{{ itemType }}); ok {
+func InterfaceTo{{ schema.JSONSchema.GoName }}Slice(s interface{}) []{{ itemType }} {
+	if list, ok := s.([]{{ itemType }}); ok {
 		return list
 	}
-	list := format.InterfaceToInterfaceList(i)
+	list := format.InterfaceToInterfaceList(s)
 	if list == nil {
 		return nil
 	}
-	result := []{% if schema.JSONSchema.Properties %}*{% endif %}{{ schema.JSONSchema.GoName }}{}
-	for _, item := range list {
-		result = append(result, InterfaceTo{{ schema.JSONSchema.GoName }}(item) )
+	result := make([]{% if schema.JSONSchema.Properties %}*{% endif %}{{ schema.JSONSchema.GoName }}, len(list))
+	for i, item := range list {
+		result[i] = InterfaceTo{{ schema.JSONSchema.GoName }}(item)
 	}
 	return result
 }

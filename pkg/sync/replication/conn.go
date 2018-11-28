@@ -28,7 +28,6 @@ type pgxReplicationConn interface {
 type dbService interface {
 	DB() *sql.DB
 	DoInTransaction(ctx context.Context, do func(context.Context) error) error
-	Dump(context.Context, basedb.ObjectWriter) error
 }
 
 type postgresReplicationConnection struct {
