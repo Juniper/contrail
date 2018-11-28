@@ -78,3 +78,8 @@ func FQNameEquals(fqNameA, fqNameB []string) bool {
 func KindToSchemaID(kind string) string {
 	return strings.Replace(kind, "-", "_", -1)
 }
+
+// ReferenceKind constructs reference kind for given from and to kinds.
+func ReferenceKind(fromKind, toKind string) string {
+	return fmt.Sprintf("%s-%s", fromKind, toKind)
+}

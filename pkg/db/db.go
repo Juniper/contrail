@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 
 	"github.com/pkg/errors"
@@ -34,21 +33,4 @@ func NewService(db *sql.DB, dialect string) *Service {
 	}
 	dbService.initQueryBuilders()
 	return dbService
-}
-
-// Dump selects all data from every table and writes each row to ObjectWriter.
-//
-// Note that dumping the whole database using SELECT statements may take a lot
-// of time and memory, increasing both server and database load thus it should
-// be used as a first shot operation only.
-//
-// An example application of that function is loading initial database snapshot
-// in Watcher.
-func (db *Service) Dump(ctx context.Context, ow basedb.ObjectWriter) error {
-	return db.DoInTransaction(
-		ctx,
-		func(ctx context.Context) error {
-			return db.dump(ctx, ow)
-		},
-	)
 }
