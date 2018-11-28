@@ -266,7 +266,7 @@ workflow:
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
   expect:
-    message: 'ref from type does-not-exist to type route-target does not exist'
+    message: 'ref type does-not-exist-route-target does not exist'
 
 - name: send bad operation value
   request:

@@ -197,7 +197,13 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 		data.RefUUID = m.UUID
 	}
 
-	e, err := NewEventFromRefUpdate(&data)
+	e, err := NewEventFromRefUpdate(RefUpdateOption{
+		ReferenceType: common.ReferenceKind(data.Type, data.RefType),
+		FromUUID:      data.UUID,
+		ToUUID:        data.RefUUID,
+		Operation:     data.Operation,
+		AttrData:      data.Attr,
+	})
 	if err != nil {
 		return errutil.ToHTTPError(errutil.ErrorBadRequest(err.Error()))
 	}

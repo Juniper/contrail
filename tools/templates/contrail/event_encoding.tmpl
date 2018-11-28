@@ -3,14 +3,13 @@ package services
 import (
     "encoding/json"
     "strings"
-    "fmt"
 
     "github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/format"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/fileutil"
+    "github.com/Juniper/contrail/pkg/format"
+    "github.com/Juniper/contrail/pkg/models/basemodels"
+    "github.com/Juniper/contrail/pkg/models"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -97,7 +96,7 @@ func NewEvent(option *EventOption) (*Event, error) {
     kind := basemodels.KindToSchemaID(option.Kind)
     data := option.Data
     uuid := option.UUID
-  	operation := option.Operation
+    operation := option.Operation
     if operation == "" {
         operation = OperationCreate
     }
@@ -141,16 +140,19 @@ func NewEvent(option *EventOption) (*Event, error) {
     return e, nil
 }
 
-// NewEventFromRefUpdate creates ref create or delete event from RefUpdate object.
-/* TODO This might be refactored to not accept RefUpdate type
-instead it may accept only UUIDs and data that is passed to resolveReferenceTable
-*/
-func NewEventFromRefUpdate(refUpdate *RefUpdate) (*Event, error) {
+// RefUpdateOption contains parameters for NewEventForRefUpdate.
+type RefUpdateOption struct {
+    ReferenceType string
+    FromUUID, ToUUID string
+    Operation RefOperation
+    AttrData json.RawMessage
+}
+
+// NewEventFromRefUpdate creates ref create or delete event for updating ref.
+func NewEventFromRefUpdate(option RefUpdateOption) (*Event, error) {
     e := &Event{}
-    resourceType := strings.Replace(refUpdate.Type, "_", "-", -1)
-    refType := strings.Replace(refUpdate.RefType, "_", "-", -1)
-    kind := fmt.Sprintf("%s-%s", resourceType, refType)
-    operation := refUpdate.Operation
+    kind := basemodels.KindToSchemaID(option.ReferenceType)
+    operation := option.Operation
     if operation == "" {
         operation = RefOperationAdd
     }
@@ -163,15 +165,15 @@ func NewEventFromRefUpdate(refUpdate *RefUpdate) (*Event, error) {
                 case RefOperationAdd:
                     request := &Event_Create{{ refType }}Request{
                         Create{{ refType }}Request: &Create{{ refType }}Request{
-                                ID: refUpdate.UUID,
+                                ID: option.FromUUID,
                                 {{ refType }}: &models.{{ refType }}{
-                                    UUID: refUpdate.RefUUID,
+                                    UUID: option.ToUUID,
                                 },
                             },
                     }
                     {% if reference.RefType %}
-                    if len(refUpdate.Attr) > 0 {
-                    err := json.Unmarshal(refUpdate.Attr, &request.Create{{ refType }}Request.{{ refType }}.Attr)
+                    if len(option.AttrData) > 0 {
+                        err := json.Unmarshal(option.AttrData, &request.Create{{ refType }}Request.{{ refType }}.Attr)
                         if err != nil {
                             return nil, errors.Wrap(err, "bad attr data")
                         }
@@ -181,15 +183,15 @@ func NewEventFromRefUpdate(refUpdate *RefUpdate) (*Event, error) {
                 case RefOperationDelete:
                     e.Request = &Event_Delete{{ refType }}Request{
                         Delete{{ refType }}Request: &Delete{{ refType }}Request{
-                                ID: refUpdate.UUID,
+                                ID: option.FromUUID,
                                 {{ refType }}: &models.{{ refType }}{
-                                    UUID: refUpdate.RefUUID,
+                                    UUID: option.ToUUID,
                                 },
                             },
                     }
             }{% endfor %}{% endif%}{% endfor %}
         default:
-            return nil, errors.Errorf("ref from type %s to type %s does not exist", refUpdate.Type, refUpdate.RefType)
+            return nil, errors.Errorf("ref type %s does not exist", kind)
     }
     return e, nil
 }
