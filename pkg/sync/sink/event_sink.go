@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
@@ -54,14 +55,12 @@ func (e *EventProcessorSink) CreateRef(
 	if len(pk) != 2 {
 		return errors.Errorf("expecting primary key with 2 items, got %d instead", len(pk))
 	}
-	typeName, typeRef := resolveReferenceTable(resourceName)
-	ev, err := services.NewEventFromRefUpdate(&services.RefUpdate{
-		Operation: services.RefOperationAdd,
-		Type:      typeName,
-		UUID:      pk[0],
-		RefType:   typeRef,
-		RefUUID:   pk[1],
-		Attr:      json.RawMessage(format.MustJSON(attr)),
+	ev, err := services.NewEventFromRefUpdate(services.RefUpdateOption{
+		Operation:     services.RefOperationAdd,
+		ReferenceType: strings.TrimPrefix(resourceName, "ref_"),
+		FromUUID:      pk[0],
+		ToUUID:        pk[1],
+		AttrData:      json.RawMessage(format.MustJSON(attr)),
 	})
 	if err != nil {
 		return err
@@ -104,13 +103,11 @@ func (e *EventProcessorSink) DeleteRef(ctx context.Context, resourceName string,
 	if len(pk) != 2 {
 		return errors.Errorf("expecting primary key with 2 items, got %d instead", len(pk))
 	}
-	typeName, typeRef := resolveReferenceTable(resourceName)
-	ev, err := services.NewEventFromRefUpdate(&services.RefUpdate{
-		Operation: services.RefOperationDelete,
-		Type:      typeName,
-		UUID:      pk[0],
-		RefType:   typeRef,
-		RefUUID:   pk[1],
+	ev, err := services.NewEventFromRefUpdate(services.RefUpdateOption{
+		Operation:     services.RefOperationDelete,
+		ReferenceType: strings.TrimPrefix(resourceName, "ref_"),
+		FromUUID:      pk[0],
+		ToUUID:        pk[1],
 	})
 	if err != nil {
 		return err
