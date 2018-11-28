@@ -14,7 +14,7 @@ import (
 
 func TestObjectMappingAdapterCreate(t *testing.T) {
 	resourceName, pk, props := "resource", []string{"1"}, map[string]interface{}{}
-	fields := types.FieldMask{[]string{"resource"}}
+	fields := types.FieldMask{Paths: []string{"resource"}}
 	message := &dummyMessage{}
 
 	tests := []struct {
@@ -76,8 +76,9 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 }
 
 func TestObjectMappingAdapterRefCreate(t *testing.T) {
-	resourceName, correctPK, props := "ref_resource", []string{"1", "2"}, map[string]interface{}{}
-	fields := types.FieldMask{[]string{"ref_resource"}}
+	resourceName, correctPK, props := "ref_from_to", []string{"1", "2"}, map[string]interface{}{}
+	fields := types.FieldMask{[]string{"ref_from_to"}}
+	referenceName := "from-to"
 	attr := &dummyMessage{}
 
 	sMock, rsMock := &sinkMock{}, &mock.Mock{}
@@ -114,7 +115,7 @@ func TestObjectMappingAdapterRefCreate(t *testing.T) {
 				o.On("ScanRow", resourceName, props).Return(attr, &fields, nil).Once()
 			},
 			initSink: func(o oner) {
-				o.On("CreateRef", resourceName, correctPK, attr).Return(nil).Once()
+				o.On("CreateRef", referenceName, correctPK, attr).Return(nil).Once()
 			},
 		},
 	}

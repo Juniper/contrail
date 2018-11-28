@@ -11,6 +11,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 var (
@@ -119,11 +120,10 @@ func (t *SetTagRequest) parseTagAttrs(rawJSON map[string]json.RawMessage) error 
 }
 
 func (t *SetTagRequest) tagRefEvent(tagUUID string, operation RefOperation) (*Event, error) {
-	return NewEventFromRefUpdate(&RefUpdate{
-		Operation: operation,
-		Type:      t.ObjType,
-		UUID:      t.ObjUUID,
-		RefType:   models.KindTag,
-		RefUUID:   tagUUID,
+	return NewEventFromRefUpdate(RefUpdateOption{
+		ReferenceType: basemodels.ReferenceKind(t.ObjType, models.KindTag),
+		FromUUID:      t.ObjUUID,
+		ToUUID:        tagUUID,
+		Operation:     operation,
 	})
 }
