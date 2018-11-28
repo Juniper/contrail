@@ -32,6 +32,11 @@ func TestFloatingIP(t *testing.T) {
 	RunTest(t, "./test_data/test_floating_ip.yml")
 }
 
+func TestForwardingClass(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, "TestAPIServer")
+	RunTest(t, "./test_data/test_forwarding_class.yml")
+}
+
 func TestNetworkIpam(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_network_ipam.yml")
