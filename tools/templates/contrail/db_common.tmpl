@@ -1,14 +1,11 @@
 package db
 
 import (
-    "context"
     "fmt"
 
     "github.com/gogo/protobuf/types"
 
     "github.com/Juniper/contrail/pkg/db/basedb"
-    "github.com/Juniper/contrail/pkg/services/baseservices"
-    "github.com/Juniper/contrail/pkg/services"
 )
 
 func (db *Service) initQueryBuilders() {
@@ -23,30 +20,6 @@ func (db *Service) initQueryBuilders() {
        {{ schema.JSONSchema.GoName }}ChildFields,
        {{ schema.JSONSchema.GoName }}BackRefFields)
 {% endif%}{% endfor %}
-}
-
-
-func (db *Service) dump(ctx context.Context, ow basedb.ObjectWriter) error {
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-    list{{ schema.JSONSchema.GoName }}Response, err := db.list{{ schema.JSONSchema.GoName }}(
-        ctx,
-        &services.List{{ schema.JSONSchema.GoName }}Request{
-            Spec: &baseservices.ListSpec{
-                Detail: true,
-            },
-        },
-    )
-    if err != nil {
-        return err
-    }
-
-    for _, item := range list{{ schema.JSONSchema.GoName }}Response.{{ schema.JSONSchema.GoName }}s {
-        if err = ow.WriteObject("{{ schema.ID }}", item.GetUUID(), item); err != nil {
-            return err
-        }
-    }
-{% endif%}{% endfor %}
-    return nil
 }
 
 // ScanRow maps row from database table named schemaID into generated Go struct.
