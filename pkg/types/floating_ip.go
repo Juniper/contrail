@@ -26,7 +26,7 @@ func (sv *ContrailTypeLogicService) CreateFloatingIP(
 		func(ctx context.Context) error {
 			var err error
 			if sv.checkIfParentTypeIsInstanceIP(floatingIP) {
-				response, err = sv.Next().CreateFloatingIP(ctx, request)
+				response, err = sv.BaseService.CreateFloatingIP(ctx, request)
 				return err
 			}
 
@@ -53,7 +53,7 @@ func (sv *ContrailTypeLogicService) CreateFloatingIP(
 			}
 			floatingIP.FloatingIPAddress = floatingIPAddress
 
-			response, err = sv.Next().CreateFloatingIP(ctx, request)
+			response, err = sv.BaseService.CreateFloatingIP(ctx, request)
 			return err
 		})
 
@@ -77,7 +77,7 @@ func (sv *ContrailTypeLogicService) DeleteFloatingIP(
 				return err
 			}
 
-			response, err = sv.Next().DeleteFloatingIP(ctx, request)
+			response, err = sv.BaseService.DeleteFloatingIP(ctx, request)
 			if err != nil {
 				return err
 			}

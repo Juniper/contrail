@@ -44,7 +44,7 @@ func (sv *ContrailTypeLogicService) CreateTag(
 				return err
 			}
 
-			if response, err = sv.Next().CreateTag(ctx, request); err != nil {
+			if response, err = sv.BaseService.CreateTag(ctx, request); err != nil {
 				return err
 			}
 
@@ -98,7 +98,7 @@ func (sv *ContrailTypeLogicService) DeleteTag(
 				return err
 			}
 
-			if response, err = sv.Next().DeleteTag(ctx, request); err != nil {
+			if response, err = sv.BaseService.DeleteTag(ctx, request); err != nil {
 				return err
 			}
 

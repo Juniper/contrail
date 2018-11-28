@@ -54,7 +54,7 @@ func (sv *ContrailTypeLogicService) CreateFirewallRule(
 				return err
 			}
 
-			response, err = sv.Next().CreateFirewallRule(ctx, request)
+			response, err = sv.BaseService.CreateFirewallRule(ctx, request)
 			return err
 		})
 
@@ -108,7 +108,7 @@ func (sv *ContrailTypeLogicService) UpdateFirewallRule(
 				return err
 			}
 
-			response, err = sv.Next().UpdateFirewallRule(
+			response, err = sv.BaseService.UpdateFirewallRule(
 				ctx,
 				&services.UpdateFirewallRuleRequest{
 					FirewallRule: firewallRule,
