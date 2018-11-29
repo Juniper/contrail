@@ -4,7 +4,7 @@ extends:
 id: cloud_provider
 metadata:
   category: cloud
-parent:
+parents:
   cloud:
     operations: "CRUD"
     description: "Parent for cloud provider"

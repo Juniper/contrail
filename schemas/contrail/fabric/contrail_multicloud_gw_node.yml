@@ -38,6 +38,11 @@ schema:
       view:
       - create
       - detail
+    services:
+      operations: "CRUD"
+      presence: "optional"
+      description: "Custom gateway services. Specified as list of Key:Value pairs."
+      $ref: "types.json#/definitions/KeyValuePairs"
 required: []
 type: object
 singular: contrail_multicloud_gw_node
