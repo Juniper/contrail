@@ -58,6 +58,7 @@
         AS:
           description: Autonomous System Number for multicloud gw
           nullable: false
+          default: 65000
           permission:
             - create
             - update
@@ -69,8 +70,8 @@
             - detail
         openvpn_port:
           description: OpenVPN port
-          default: 443
           nullable: false
+          default: 443
           permission:
             - create
             - update
@@ -83,6 +84,7 @@
         vpn_lo_network:
           description: vpn loopback network
           nullable: false
+          default: 100.65.0.0/16
           permission:
             - create
             - update
@@ -95,6 +97,7 @@
         vpn_network:
           description: vpn network
           nullable: false
+          default: 100.64.0.0/16
           permission:
             - create
             - update
@@ -107,6 +110,7 @@
         bfd_interval:
           description: bfd interval
           nullable: false
+          default: 200ms
           permission:
             - create
             - update
@@ -119,6 +123,7 @@
         bfd_multiplier:
           description: bfd multiplier
           nullable: false
+          default: 5
           permission:
             - create
             - update
@@ -131,6 +136,7 @@
         bfd_interval_multihop:
           description: bfd interval multihop
           nullable: false
+          default: 500ms
           permission:
             - create
             - update
@@ -143,6 +149,7 @@
         bfd_multiplier_multihop:
           description: bfd multiplier multihop
           nullable: false
+          default: 5
           permission:
             - create
             - update
