@@ -1,7 +1,8 @@
 #!/bin/bash
-set -x
+set +x
 
-export PATH=$(go env GOPATH)/bin/:$PATH
+PATH="$PATH:/usr/go/bin"
+PATH="$(go env GOPATH)/bin/:$PATH"
 
 tee namespace1.json << "EOF"
 {
@@ -13,7 +14,7 @@ tee namespace1.json << "EOF"
       "name": "namespace1"
     },
     "annotations": {
-      "opencontrail.org/network": "{'project': 'k8s-default', 'domain': 'default-domain', 'name': 'vn1'}"
+      "opencontrail.org/network": "{'project': 'k8s-default', 'domain': 'default-domain', 'name': 'vn1_lrp'}"
     }
   }
 }
@@ -33,7 +34,7 @@ tee namespace2.json << "EOF"
       "name": "namespace2"
     },
     "annotations": {
-      "opencontrail.org/network": "{'project': 'k8s-default', 'domain': 'default-domain', 'name': 'vn2'}"
+      "opencontrail.org/network": "{'project': 'k8s-default', 'domain': 'default-domain', 'name': 'vn2_lrp'}"
     }
   }
 }
@@ -51,7 +52,7 @@ resources:
     fq_name:
     - default-domain
     - k8s-default
-    - net_ipam_blue
+    - net_ipam_blue_lrp
     ipam_subnet_method: flat-subnet
     ipam_subnets:
       subnets:
@@ -80,7 +81,7 @@ resources:
     fq_name:
     - default-domain
     - k8s-default
-    - net_ipam_red
+    - net_ipam_red_lrp
     ipam_subnet_method: flat-subnet
     ipam_subnets:
       subnets:
@@ -119,13 +120,13 @@ resources:
     - to:
       - default-domain
       - k8s-default
-      - net_ipam_blue
+      - net_ipam_blue_lrp
       attr:
         ipam_subnets: []
     fq_name:
     - default-domain
     - k8s-default
-    - vn1
+    - vn1_lrp
 EOF
 read
 
@@ -150,13 +151,13 @@ resources:
     - to:
       - default-domain
       - k8s-default
-      - net_ipam_red
+      - net_ipam_red_lrp
       attr:
         ipam_subnets: []
     fq_name:
     - default-domain
     - k8s-default
-    - vn2
+    - vn2_lrp
 EOF
 read
 
@@ -171,16 +172,14 @@ resources:
     fq_name:
     - default-domain
     - k8s-default
-    - beefbeef-beef-beef-beef-beefbeef0001
+    - vmi_blue_lrp
     virtual_network_refs:
     - to:
       - default-domain
       - k8s-default
-      - vn1
+      - vn1_lrp
     virtual_machine_interface_device_owner: network:router_interface
-    display_name: beefbeef-beef-beef-beef-beefbeef0001
-    uuid: beefbeef-beef-beef-beef-beefbeef0001
-    name: beefbeef-beef-beef-beef-beefbeef0001
+    display_name: vmi_blue
 EOF
 read
 
@@ -195,16 +194,14 @@ resources:
     fq_name:
     - default-domain
     - k8s-default
-    - beefbeef-beef-beef-beef-beefbeef0002
+    - vmi_red_lrp
     virtual_network_refs:
     - to:
       - default-domain
       - k8s-default
-      - vn2
+      - vn2_lrp
     virtual_machine_interface_device_owner: network:router_interface
-    display_name: beefbeef-beef-beef-beef-beefbeef0002
-    uuid: beefbeef-beef-beef-beef-beefbeef0002
-    name: beefbeef-beef-beef-beef-beefbeef0002
+    display_name: vmi_red
 EOF
 read
 
@@ -216,22 +213,19 @@ resources:
 - kind: instance_ip
   data:
     fq_name:
-    - beefbeef-beef-beef-beef-beefbeef0003
-    display_name: beefbeef-beef-beef-beef-beefbeef0003
-    name: beefbeef-beef-beef-beef-beefbeef0003
-    uuid: beefbeef-beef-beef-beef-beefbeef0003
+    - instance_ip_blue_lrp
+    display_name: instance_ip_blue
     instance_ip_address: ''
     virtual_machine_interface_refs:
     - to:
       - default-domain
       - k8s-default
-      - beefbeef-beef-beef-beef-beefbeef0001
-      uuid: beefbeef-beef-beef-beef-beefbeef0001
+      - vmi_blue_lrp
     virtual_network_refs:
     - to:
       - default-domain
       - k8s-default
-      - vn1
+      - vn1_lrp
 EOF
 read
 
@@ -243,22 +237,19 @@ resources:
 - kind: instance_ip
   data:
     fq_name:
-    - beefbeef-beef-beef-beef-beefbeef0004
-    display_name: beefbeef-beef-beef-beef-beefbeef0004
-    name: beefbeef-beef-beef-beef-beefbeef0004
-    uuid: beefbeef-beef-beef-beef-beefbeef0004
+    - instance_ip_red_lrp
+    display_name: instance_ip_red
     instance_ip_address: ''
     virtual_machine_interface_refs:
     - to:
       - default-domain
       - k8s-default
-      - beefbeef-beef-beef-beef-beefbeef0002
-      uuid: beefbeef-beef-beef-beef-beefbeef0002
+      - vmi_red_lrp
     virtual_network_refs:
     - to:
       - default-domain
       - k8s-default
-      - vn2
+      - vn2_lrp
 EOF
 read
 
@@ -273,19 +264,17 @@ resources:
     fq_name:
     - default-domain
     - k8s-default
-    - logical_router_1
+    - logical_router_1_lrp
     parent_type: project
     virtual_machine_interface_refs:
     - to:
       - default-domain
       - k8s-default
-      - beefbeef-beef-beef-beef-beefbeef0001
-      uuid: beefbeef-beef-beef-beef-beefbeef0001
+      - vmi_blue_lrp
     - to:
       - default-domain
       - k8s-default
-      - beefbeef-beef-beef-beef-beefbeef0002
-      uuid: beefbeef-beef-beef-beef-beefbeef0002
+      - vmi_red_lrp
     virtual_network_refs: []
     id_perms:
       enable: true
