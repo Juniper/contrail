@@ -4,6 +4,11 @@ extends:
 id: cloud_user
 metadata:
   category: cloud
+references:
+  credential:
+    operations: "CRUD"
+    description: "Reference to SSH credential object."
+    presence: "optional"
 plural: cloud_users
 prefix: /
 schema:
@@ -20,30 +25,6 @@ schema:
       presence: "optional"
       description: "GCP Credential Details"
       $ref: "cloud_types.json#/definitions/CloudCredential"
-    public_key_name:
-      description: Public key name
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Public Key Name
-      type: string
-      view:
-      - create
-      - detail
-    public_key_value:
-      description: Public key value
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Public Key Value
-      type: string
-      view:
-      - create
-      - detail
   propertiesOrder: []
   type: object
 singular: cloud_user
