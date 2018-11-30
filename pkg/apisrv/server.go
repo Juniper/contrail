@@ -129,9 +129,9 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	return cs, nil
 }
 
-func (s *Server) setupOpenstack() (*openstackservice.OpenstackService, error) {
+func (s *Server) setupOpenstack() (*openstackservice.Service, error) {
 	// TODO: implement. It should be simliart to contrailService method
-	os := &openstackservice.OpenstackService{}
+	os := &openstackservice.Service{}
 	os.RegisterOpenstackAPI(s.Echo)
 	return os, nil
 }

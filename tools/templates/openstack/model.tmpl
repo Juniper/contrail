@@ -1,0 +1,11 @@
+package models
+
+{% for type, definition in types %}{% if definition.Type == "object" %}
+
+type {{ type }} struct {
+{%- for property in definition.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+
+{% endif %}{% endfor %}

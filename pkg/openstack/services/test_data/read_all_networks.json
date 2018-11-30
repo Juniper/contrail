@@ -1,0 +1,66 @@
+{
+    "data": {
+        "fields": [],
+        "filters": {
+            "tenant_id": [
+                "5595adaa-c4f6-423b-930f-1f1f66c89507"
+            ],
+            "name": [
+                "ctest-vn-49391908"
+            ],
+            "router:external": [
+                true
+            ]
+        }
+    },
+    "context": {
+        "user_id": "32fc3e2bf6e94e0daa21090e493e7aef",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+        "is_admin": true,
+        "request_id": "req-8fbe059a-f15e-4b86-aab7-8ca4c5c579d2",
+        "operation": "READALL",
+        "type": "network",
+        "tenant": "5595adaac4f6423b930f1f1f66c89507"
+    }
+}
+
+
+{
+    "status": "ACTIVE",READ
+    "router:external": false,
+    "subnets": [
+        "595948b2-3e34-4581-89bd-0b143fe10e4e"
+    ],
+    "fq_name": [
+        "default-domain",
+        "ctest-TestStaticRouteTables-50501624",
+        "ctest-vn-49391908"
+    ],
+    "name": "ctest-vn-49391908",
+    "admin_state_up": true,
+    "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+    "created_at": "2018-11-26T17:23:32.573518",
+    "updated_at": "2018-11-26T17:23:32.737887",
+    "port_security_enabled": true,
+    "shared": false,
+    "project_id": "5595adaac4f6423b930f1f1f66c89507",
+    "subnet_ipam": [
+        {
+            "subnet_cidr": "210.2.71.0/24",
+            "ipam_fq_name": [
+                "default-domain",
+                "default-project",
+                "default-network-ipam"
+            ]
+        }
+    ],
+    "id": "f978b32d-4d99-4060-be9a-c203424c3e94",
+    "description": ""
+}
+
+{"exception": "NetworkInUse", "net_id": "f978b32d-4d99-4060-be9a-c203424c3e94"}
+
+[]
