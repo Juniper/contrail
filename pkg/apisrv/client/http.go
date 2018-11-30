@@ -14,6 +14,8 @@ import (
 	"path"
 
 	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/openstack/models"
+	"github.com/Juniper/contrail/pkg/openstack/neutron"
 	"github.com/Juniper/contrail/pkg/services"
 
 	"github.com/labstack/echo"
@@ -257,6 +259,18 @@ func (h *HTTP) Do(ctx context.Context,
 	}
 
 	return resp, nil
+}
+
+func (h *HTTP) NeutronPost(r *neutron.Request, expected []int) (models.Response, error) {
+	response, err := models.GetResponse(r.GetType())
+	if err != nil {
+		return nil, errors.Errorf("failed to get response type for request %v", r)
+	}
+	_, err = h.Do(context.Background(), echo.POST, fmt.Sprintf("/neutron/%s", r.Context.Type), nil, r, &response, expected)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query url.Values) (*http.Request, error) {
