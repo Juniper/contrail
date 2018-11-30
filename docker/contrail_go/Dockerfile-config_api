@@ -27,6 +27,6 @@ COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
 
 EXPOSE 8082
 WORKDIR /etc/contrail
-ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail-k8s.yml", "run"]
+ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail-config_api.yml", "run"]
 
 # vi: ft=dockerfile
