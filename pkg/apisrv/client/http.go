@@ -13,12 +13,14 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/services"
-
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/neutron"
+	"github.com/Juniper/contrail/pkg/neutron/logic"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (
@@ -257,6 +259,19 @@ func (h *HTTP) Do(ctx context.Context,
 	}
 
 	return resp, nil
+}
+
+// NeutronPost sends neutron request
+func (h *HTTP) NeutronPost(r *neutron.Request, expected []int) (logic.Response, error) {
+	response, err := logic.GetResponse(r.GetType())
+	if err != nil {
+		return nil, errors.Errorf("failed to get response type for request %v", r)
+	}
+	_, err = h.Do(context.Background(), echo.POST, fmt.Sprintf("/neutron/%s", r.Context.Type), nil, r, &response, expected)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query url.Values) (*http.Request, error) {
