@@ -2,7 +2,7 @@
 api_style: contrail
 id: port
 prefix: /neutron/
-type: request
+type: response
 schema:
   type: object
   properties:
