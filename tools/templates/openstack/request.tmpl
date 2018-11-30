@@ -1,0 +1,13 @@
+package services
+
+import (
+	"github.com/Juniper/contrail/pkg/openstack/models"
+)
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+type Create{{ schema.JSONSchema.GoName }}Request struct {
+	{{ schema.JSONSchema.GoName }} *models.{{ schema.JSONSchema.GoName }} `json:"resource"`
+}
+
+{% endif %}{% endfor %}
