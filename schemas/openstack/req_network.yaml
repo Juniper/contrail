@@ -14,11 +14,11 @@ schema:
       type: string
     router_external:
       presence: optional
-      type: string
+      type: boolean
       json_tag: "router:external"
     shared:
       presence: optional
-      type: string
+      type: boolean
     provider_physical_network:
       presence: optional
       type: string
@@ -33,7 +33,7 @@ schema:
       json_tag: "provider:segmentation_id"
     admin_state_up:
       presence: optional
-      type: string
+      type: boolean
     policys:
       presence: optional
       type: string
@@ -42,7 +42,7 @@ schema:
       type: string
     port_security_enabled:
       presence: optional
-      type: string
+      type: boolean
     description:
       presence: optional
       type: string
