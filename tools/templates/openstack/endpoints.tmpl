@@ -1,0 +1,12 @@
+package neutron
+
+import (
+	"github.com/labstack/echo"
+)
+
+//RegisterOpenstackAPI register neutron endpoints
+func (s *Service) RegisterOpenstackAPI(r routeRegistry) {
+	{%- for schema in schemas %}{% if schema.Type == "request" and schema.ID %}
+		r.POST("{{ schema.Prefix }}{{ schema.ID }}", s.NeutronPost{{ schema.JSONSchema.GoName }})
+    {%- endif%}{% endfor %}
+}

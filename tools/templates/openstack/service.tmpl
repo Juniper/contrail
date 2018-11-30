@@ -1,0 +1,27 @@
+package neutron
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/labstack/echo"
+
+	"github.com/Juniper/contrail/pkg/openstack/models"
+)
+
+{%- for schema in schemas %}{% if schema.Type == "request" %}
+
+func (s *Service) NeutronPost{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+	request := &Request{
+		Data: Data{
+			Resource: &models.{{ schema.JSONSchema.GoName }}{},
+		},
+	}
+	if err := c.Bind(request); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
+	}
+	s.Process(request)
+	return nil
+}
+
+{%- endif%}{% endfor %}

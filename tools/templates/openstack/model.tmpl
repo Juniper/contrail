@@ -1,0 +1,34 @@
+package models
+
+{%- for schema in schemas %}{% if schema.Type == "request" %}
+type {{ schema.JSONSchema.GoName }}Request struct {
+	BaseResource
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+{% endif %}{% endfor %}
+
+{%- for schema in schemas %}{% if schema.Type == "response" %}
+type {{ schema.JSONSchema.GoName }}Response struct {
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+{% endif %}{% endfor %}
+
+{%- for schema in schemas %}{% if schema.Type == "object" %}
+type {{ schema.JSONSchema.GoName }} struct {
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+{% endif %}{% endfor %}
+
+{% for type, definition in types %}{% if definition.Type == "object" %}
+type {{ type }} struct {
+{%- for property in definition.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+{% endif %}{% endfor %}
