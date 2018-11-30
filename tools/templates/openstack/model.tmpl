@@ -1,0 +1,21 @@
+package models
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+type {{ schema.JSONSchema.GoName }} struct {
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+
+{% endif %}{% endfor %}
+
+{% for type, definition in types %}{% if definition.Type == "object" %}
+
+type {{ type }} struct {
+{%- for property in definition.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+
+{% endif %}{% endfor %}
