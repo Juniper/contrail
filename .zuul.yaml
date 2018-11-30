@@ -4,6 +4,8 @@
       jobs:
         - contrail-go-docker
         - contrail-go-sanity-centos7-k8s
+        - contrail-go-sanity-centos7-kolla-ocata:
+            voting: False
     gate:
       jobs:
         - contrail-go-docker
