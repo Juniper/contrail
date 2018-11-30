@@ -46,7 +46,7 @@ format_gen:
 
 fast_generate: generate_pb_go generate_mocks doc/proto.md
 
-generate_pb_go: generate_go pkg/models/generated.pb.go pkg/services/baseservices/base.pb.go pkg/services/generated.pb.go
+generate_pb_go: generate_go pkg/models/generated.pb.go pkg/services/baseservices/base.pb.go pkg/services/generated.pb.go pkg/openstack/models/generated.pb.go
 
 generate: fast_generate format_gen
 

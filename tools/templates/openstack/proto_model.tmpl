@@ -1,0 +1,39 @@
+syntax = "proto3";
+package github.com.Juniper.contrail.pkg.openstack.models;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.goproto_enum_prefix_all) = false;
+option (gogoproto.gostring_all) = false;
+option (gogoproto.equal_all) = false;
+option (gogoproto.verbose_equal_all) = false;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) =  true;
+option (gogoproto.populate_all) = false;
+option (gogoproto.benchgen_all) = false;
+option (gogoproto.marshaler_all) = false;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = false;
+option (gogoproto.protosizer_all) = false;
+
+option go_package = "models";
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+message {{ schema.JSONSchema.GoName }} {
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+{%- endfor %}
+}
+
+{% endif %}{% endfor %}
+
+{% for type, definition in types %}{% if definition.Type == "object" %}
+
+message {{ type }} {
+{%- for property in definition.OrderedProperties %}
+	{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.ID }}\""]; // {{ property.Description }}
+{%- endfor %}
+}
+
+{% endif %}{% endfor %}

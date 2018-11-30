@@ -21,18 +21,21 @@ definitions:
       name:
         presence: optional
         type: string
-      "router:external":
+      router_external:
         presence: optional
         type: string
+        field_name: "router:external"
       shared:
         presence: optional
         type: string
-      "provider:physical_network":
+      provider_physical_network:
         presence: optional
         type: string
-      "provider:segmentation_id":
+        field_name: "provider:physical_network"
+      provider_segmentation_id:
         presence: optional
         type: string
+        field_name: "provider:segmentation_id"
       admin_state_up:
         presence: optional
         type: string
