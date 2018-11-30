@@ -1,6 +1,14 @@
 package services
 
-//RegisterRESTAPI register REST API service for path.
+{%- for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+func (service *OpenstackService) handle{{ schema.GoName }}()
+
+{%- endif%}{% endfor %}
+
+//RegisterOpenstackAPI register neutron endpoints
 func (service *OpenstackService) RegisterOpenstackAPI(r routeRegistry) {
-    // TODO: implement generatetioning all endpoints from schema. eg. r.POST("endpoint", handle_function)
+	{%- for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+		r.POST("{{ schema.Prefix }}{{ schema.ID }}", service.RESTNeutron{{ schema.JSONSchema.GoName }})
+    {%- endif%}{% endfor %}
 }
