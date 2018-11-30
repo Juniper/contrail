@@ -35,7 +35,7 @@ func assertError(err error, message string) {
 
 func recordTest() {
 	ctx := context.Background()
-	log.Info("Recording API beheivior")
+	log.Info("Recording API behavior")
 	var vars map[string]interface{}
 	if variablePath != "" {
 		err := fileutil.LoadFile(variablePath, &vars)
@@ -83,8 +83,8 @@ func recordTest() {
 
 var recordTestCmd = &cobra.Command{
 	Use:   "record_test",
-	Short: "",
-	Long:  ``,
+	Short: "Record test result",
+	Long:  `Run test scenario and save result to file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		recordTest()
 	},
