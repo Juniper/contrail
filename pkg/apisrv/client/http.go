@@ -13,12 +13,13 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/services"
-
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/neutron/logic"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (
@@ -228,6 +229,19 @@ func (h *HTTP) DeallocateInt(ctx context.Context, pool string, value int64) erro
 	expected := []int{http.StatusOK}
 	_, err := h.Do(ctx, echo.DELETE, path.Join("/int-pool", pool, fmt.Sprint(value)), nil, nil, &output, expected)
 	return errors.Wrap(err, "error deallocating int in int-pool via HTTP")
+}
+
+// NeutronPost sends Neutron request
+func (h *HTTP) NeutronPost(ctx context.Context, r *logic.Request, expected []int) (logic.Response, error) {
+	response, err := logic.MakeResponse(r.GetType())
+	if err != nil {
+		return nil, errors.Errorf("failed to get response type for request %v", r)
+	}
+	_, err = h.Do(ctx, echo.POST, fmt.Sprintf("/neutron/%s", r.Context.Type), nil, r, &response, expected)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 // Do issues an API request.
