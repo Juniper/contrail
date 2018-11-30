@@ -97,7 +97,7 @@ definitions:
     properties:
       status:
         type: string
-      router:external": false,
+      router_external:
         type: boolean
         json_tag: "router:external"
       subnets:

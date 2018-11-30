@@ -1,0 +1,19 @@
+{
+    "data": {
+        "fields": [],
+        "id": "d36ee318-c8fd-47d9-9bad-5ae9b07e9df0",
+        "filters": null
+    },
+    "context": {
+        "user_id": "32fc3e2bf6e94e0daa21090e493e7aef",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+        "is_admin": true,
+        "request_id": "req-59ad7176-8484-41c0-b81d-5b68bbf4b3c1",
+        "operation": "READ",
+        "type": "subnet",
+        "tenant": "5595adaac4f6423b930f1f1f66c89507"
+    }
+}
