@@ -18,10 +18,10 @@ schema:
       type: string
     updated_at:
       type: string
-    security_group_rules:
-      type: array
-      items:
-        $ref: resp_security_group_rule.json#/schemas/SecurityGroup2sR_rule
+#    security_group_rules:
+#      type: array
+#      items:
+#        $ref: resp_security_group_rule.json#/schemas/SecurityGroup2sR_rule
     id:
       type: string
     name:

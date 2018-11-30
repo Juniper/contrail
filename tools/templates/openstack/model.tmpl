@@ -1,0 +1,63 @@
+package models
+
+import (
+	"fmt"
+)
+
+{%- for schema in schemas %}{% if schema.Type == "request" %}
+type {{ schema.JSONSchema.GoName }}Request struct {
+	BaseResource
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+{% endif %}{% endfor %}
+
+{%- for schema in schemas %}{% if schema.Type == "response" %}
+type {{ schema.JSONSchema.GoName }}Response struct {
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+{% endif %}{% endfor %}
+
+{%- for schema in schemas %}{% if schema.Type == "object" %}
+type {{ schema.JSONSchema.GoName }} struct {
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+{% endif %}{% endfor %}
+
+{% for type, definition in types %}{% if definition.Type == "object" %}
+type {{ type }} struct {
+{%- for property in definition.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
+{%- endfor %}
+}
+{% endif %}{% endfor %}
+
+
+// GetResource returns zero value resource
+func GetResource(id string) (Resource, error) {
+	switch id {
+	{%- for schema in schemas %}{% if schema.Type == "request" %}
+	case "{{ schema.ID }}":
+		return &{{ schema.JSONSchema.GoName }}Request{}, nil
+    {%- endif%}{% endfor %}
+    default:
+    	return nil, fmt.Errorf("resource with id: %s does not exists", id)
+	}
+}
+
+// GetResponse returns zero value resource
+func GetResponse(id string) (Response, error) {
+	switch id {
+	{%- for schema in schemas %}{% if schema.Type == "response" %}
+	case "{{ schema.ID }}":
+		return &{{ schema.JSONSchema.GoName }}Response{}, nil
+    {%- endif%}{% endfor %}
+    default:
+    	return nil, fmt.Errorf("response with id: %s does not exists", id)
+	}
+}
