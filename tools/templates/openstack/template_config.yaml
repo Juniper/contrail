@@ -1,3 +1,3 @@
 - type: all
-  template_path: service_common.tmpl
-  output_path: pkg/openstack/services/gen_common.go
+  template_path: model.tmpl
+  output_path: pkg/neutron/models/gen_models.go

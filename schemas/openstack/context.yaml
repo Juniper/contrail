@@ -1,7 +1,7 @@
 ---
 api_style: contrail
 id: request_context
-type: context
+type: object
 schema:
   type: object
   properties:
