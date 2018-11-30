@@ -1,0 +1,135 @@
+{
+    "data": {
+        "fields": null,
+        "resource": {
+            "description": "",
+            "admin_state_up": true,
+            "network_id": "9f75b712-8f2c-4a35-937a-ab10e804bfa3",
+            "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+            "extra_dhcp_opts": null,
+            "name": "",
+            "device_owner": "",
+            "binding:vnic_type": "normal",
+            "project_id": "5595adaac4f6423b930f1f1f66c89507",
+            "device_id": ""
+        },
+        "filters": null
+    },
+    "context": {
+        "user_id": "32fc3e2bf6e94e0daa21090e493e7aef",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+        "is_admin": true,
+        "request_id": "req-a2e32a97-0499-4e3a-a516-1f9e93d487d3",
+        "operation": "CREATE",
+        "type": "port",
+        "tenant": "5595adaac4f6423b930f1f1f66c89507"
+    }
+}
+
+{
+    "host_routes": [],
+    "name": "",
+    "enable_dhcp": true,
+    "network_id": "f978b32d-4d99-4060-be9a-c203424c3e94",
+    "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+    "created_at": "2018-11-26T17:23:32.677348",
+    "dns_nameservers": [],
+    "updated_at": "2018-11-26T17:23:32.677348",
+    "ipv6_ra_mode": null,
+    "allocation_pools": [
+        {
+            "start": "210.2.71.2",
+            "end": "210.2.71.254"
+        }
+    ],
+    "gateway_ip": "210.2.71.1",
+    "dns_server_address": "210.2.71.2",
+    "shared": false,
+    "ip_version": 4,
+    "ipv6_address_mode": null,
+    "cidr": "210.2.71.0/24",
+    "id": "595948b2-3e34-4581-89bd-0b143fe10e4e"
+}
+
+{
+    "data": {
+        "fields": null,
+        "resource": {
+            "router:external": false,
+            "name": "ctest-vn-49391908",
+            "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+            "admin_state_up": true,
+            "policys": "",
+            "vpc:route_table": "",
+            "shared": false,
+            "port_security_enabled": true,
+            "project_id": "5595adaac4f6423b930f1f1f66c89507",
+            "description": ""
+        },
+        "filters": null
+    },
+    "context": {
+        "user_id": "32fc3e2bf6e94e0daa21090e493e7aef",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+        "is_admin": true,
+        "request_id": "req-ac841ef9-2c79-4787-b80c-22a7b3263255",
+        "operation": "CREATE",
+        "type": "network",
+        "tenant": "5595adaac4f6423b930f1f1f66c89507"
+    }
+}
+
+{
+    "data": {
+        "fields": [],
+        "filters": {
+            "tenant_id": [
+                "5595adaa-c4f6-423b-930f-1f1f66c89507"
+            ],
+            "name": [
+                "ctest-vn-49391908"
+            ],
+            "router:external": [
+                true
+            ]
+        }
+    },
+    "context": {
+        "user_id": "32fc3e2bf6e94e0daa21090e493e7aef",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+        "is_admin": true,
+        "request_id": "req-8fbe059a-f15e-4b86-aab7-8ca4c5c579d2",
+        "operation": "READALL",
+        "type": "network",
+        "tenant": "5595adaac4f6423b930f1f1f66c89507"
+    }
+}
+
+{
+    "data": {
+        "fields": [],
+        "id": "d36ee318-c8fd-47d9-9bad-5ae9b07e9df0",
+        "filters": null
+    },
+    "context": {
+        "user_id": "32fc3e2bf6e94e0daa21090e493e7aef",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "5595adaac4f6423b930f1f1f66c89507",
+        "is_admin": true,
+        "request_id": "req-59ad7176-8484-41c0-b81d-5b68bbf4b3c1",
+        "operation": "READ",
+        "type": "subnet",
+        "tenant": "5595adaac4f6423b930f1f1f66c89507"
+    }
+}
