@@ -1,0 +1,58 @@
+{
+    "virtual-machine-interface": {
+        "virtual_machine_interface_bindings": {
+            "key_value_pair": [
+                {
+                    "key": "vnic_type",
+                    "value": "normal"
+                }
+            ]
+        },
+        "fq_name": [
+            "default-domain",
+            "ctest-TestStaticRouteTables-50501624",
+            "fc5c1018-c5b1-42a9-8122-ffecc59d5f11"
+        ],
+        "uuid": "fc5c1018-c5b1-42a9-8122-ffecc59d5f11",
+        "virtual_machine_interface_dhcp_option_list": null,
+        "security_group_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-TestStaticRouteTables-50501624",
+                    "default"
+                ]
+            }
+        ],
+        "parent_type": "project",
+        "perms2": {
+            "owner": "5595adaac4f6423b930f1f1f66c89507",
+            "owner_access": 7,
+            "global_access": 0,
+            "share": []
+        },
+        "virtual_network_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-TestStaticRouteTables-50501624",
+                    "ctest-vn-17799522"
+                ],
+                "uuid": "9f75b712-8f2c-4a35-937a-ab10e804bfa3"
+            }
+        ],
+        "id_perms": {
+            "enable": true,
+            "description": "",
+            "creator": null,
+            "created": null,
+            "uuid": null,
+            "user_visible": true,
+            "last_modified": null,
+            "permissions": null
+        },
+        "virtual_machine_refs": [],
+        "virtual_machine_interface_device_owner": "",
+        "port_security_enabled": true
+    }
+}

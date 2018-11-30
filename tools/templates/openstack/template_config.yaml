@@ -7,3 +7,6 @@
 - type: all
   template_path: service.tmpl
   output_path: pkg/openstack/services/gen_service.go
+- type: all
+  template_path: proto_model.tmpl
+  output_path: proto/github.com/Juniper/contrail/pkg/openstack/models/generated.proto

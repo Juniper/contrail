@@ -3,7 +3,7 @@ extends:
   - neutron-base
 id: network
 plural: networks
-prefix: /neutron/
+prefix: /neutron/network/
 schema:
   required: ["data"]
   type: object

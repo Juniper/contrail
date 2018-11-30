@@ -30,7 +30,6 @@ profile.tmp
 coverage.log
 proto/
 public/
-apiopenstack/public
 test_output/
 **/tools/init_mysql.sql
 **/tools/init_psql.sql
