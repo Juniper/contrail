@@ -28,6 +28,7 @@ all: check lint test build
 
 deps: ## Install development dependencies
 	./tools/deps.sh
+
 check: ## Check vendored dependencies
 	./tools/check.sh
 
@@ -152,7 +153,7 @@ binaries: ## Generate the contrail and contrailutil binaries
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailcli_{{.OS}}_{{.Arch}}" ./cmd/contrailcli
 	gox -osarch="linux/amd64 darwin/amd64 windows/amd64" --output "dist/contrailutil_{{.OS}}_{{.Arch}}" ./cmd/contrailutil
 
-docker_prepare: ## Prepare common data to generate Docker files (use target `docker` or `docker_k8s` instead)
+docker_prepare: ## Prepare common data to generate Docker files (use target `docker` or `docker_config_api` instead)
 	rm -rf $(BUILD_DIR) && mkdir -p $(BUILD_DIR)/contrail
 	cp -r docker $(BUILD_DIR)
 	CGO_ENABLED=0 gox -osarch="linux/amd64" --output "$(BUILD_DIR)/docker/contrail_go/contrail" ./cmd/contrail
@@ -177,16 +178,16 @@ docker: docker_prepare ## Generate Docker files
 
 # This target creates contrail-go docker that is able to work as a drop-in replacement to original config-api.
 # It depends on 'docker' target to inherit all the necesary steps with minimal changes
-docker_k8s: docker_prepare ## Create contrail-go docker as a drop-in replacement to original config-api
+docker_config_api: docker_prepare ## Create contrail-go docker as a drop-in replacement to original config-api
 	## Copy dockerfile because it must be in a build context dir
-	cp -f docker/contrail_go/Dockerfile-k8s $(BUILD_DIR)/docker/contrail_go
-	cp -f docker/contrail_go/etc/contrail-k8s.yml $(BUILD_DIR)/docker/contrail_go/etc/
-	docker build -t "contrail-go-config" -f $(BUILD_DIR)/docker/contrail_go/Dockerfile-k8s $(BUILD_DIR)/docker/contrail_go
+	cp -f docker/contrail_go/Dockerfile-config_api $(BUILD_DIR)/docker/contrail_go
+	cp -f docker/contrail_go/etc/contrail-config_api.yml $(BUILD_DIR)/docker/contrail_go/etc/
+	docker build -t "contrail-go-config" -f $(BUILD_DIR)/docker/contrail_go/Dockerfile-config_api $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .DEFAULT_GOAL := help
 
-.PHONY: docker_prepare docker_k8s docker generate_go
+.PHONY: docker_prepare docker_config_api docker generate_go
 .SUFFIXES: .go .proto
