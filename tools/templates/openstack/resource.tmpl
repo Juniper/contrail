@@ -1,0 +1,17 @@
+package models
+
+import (
+	"fmt"
+)
+
+// GetResource returns zero value resource
+func GetResource(id string) (Resource, error) {
+	switch id {
+	{%- for schema in schemas %}{% if schema.Type == "request" %}
+	case {{ schema.ID }}:
+		return &{{ schema.JSONSchema.GoName }}Request{}, nil
+    {%- endif%}{% endfor %}
+    default:
+    	return nil, fmt.Errorf("resource with id: %s not supported", id)
+	}
+}
