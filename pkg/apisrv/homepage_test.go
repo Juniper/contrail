@@ -67,7 +67,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 
 	excludedRoutesRegexes, err := compileRegexStrings(
 		[]string{
-			"^neutron/*",
+			"^/neutron/*",
 		},
 	)
 	assert.NoError(t, err)
