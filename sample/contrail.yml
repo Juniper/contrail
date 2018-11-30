@@ -1,16 +1,16 @@
 # Database configuration. MySQL/PostgreSQL supported
 database:
-    type: mysql
-    dialect: mysql
-    host: localhost
-    user: root
-    password: contrail123
-    name: contrail_test
+  type: mysql
+  dialect: mysql
+  host: localhost
+  user: root
+  password: contrail123
+  name: contrail_test
 
-    # Max Open Connections for DB Server
-    max_open_conn: 100
-    connection_retries: 10
-    retry_period: 3s
+  # Max Open Connections for DB Server
+  max_open_conn: 100
+  connection_retries: 10
+  retry_period: 3s
 
 etcd:
   endpoints:
@@ -42,6 +42,8 @@ server:
 
   # Enable GRPC or not
   enable_grpc: false
+
+  enable_vnc_neutron: true
 
   # Static file config
   # key: URL path
