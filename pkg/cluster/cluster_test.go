@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
@@ -31,7 +32,17 @@ const (
 	upgradePlaybooksKubernetes            = "./test_data/expected_ansible_upgrade_playbook_kubernetes.yml"
 	allInOnevcenterClusterTemplatePath    = "./test_data/test_all_in_one_vcenter_server.tmpl"
 	upgradePlaybooksvcenter               = "./test_data/expected_ansible_upgrade_playbook_vcenter.yml"
-	clusterID                             = "test_cluster_uuid"
+	allInOneMCClusterTemplatePath         = "./test_data/test_mc_cluster.tmpl"
+	allInOneMCClusterUpdateTemplatePath   = "./test_data/test_mc_update_cluster.tmpl"
+	allInOneMCClusterDeleteTemplatePath   = "./test_data/test_mc_delete_cluster.tmpl"
+
+	clusterID = "test_cluster_uuid"
+
+	expectedMCClusterTopology = "./test_data/expected_mc_cluster_topology.yml"
+	expectedMCClusterSecret   = "./test_data/expected_mc_cluster_secret.yml"
+	expectedContrailCommon    = "./test_data/expected_mc_contrail_common.yml"
+	expectedGatewayCommon     = "./test_data/expected_mc_gateway_common.yml"
+	expectedMCCmdExecuted     = "./test_data/expected_mc_cmd_executed.yml"
 )
 
 var server *integration.APIServer
@@ -80,6 +91,15 @@ func verifyClusterDeleted() bool {
 	return true
 }
 
+func verifyMCDeleted() bool {
+	// Make sure mc working dir is deleted
+	if _, err := os.Stat(defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir); err == nil {
+		// mc working dir not deleted
+		return false
+	}
+	return true
+}
+
 func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	generatedData, err := ioutil.ReadFile(generatedFile)
 	assert.NoErrorf(t, err, "Unable to read generated: %s", generatedFile)
@@ -97,6 +117,26 @@ func compareGeneratedInventory(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedInventoryPath())
 }
 
+func compareGeneratedTopology(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedTopologyPath())
+}
+
+func compareGeneratedSecret(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedSecretPath())
+}
+
+func compareGeneratedContrailCommon(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedContrailCommonPath())
+}
+
+func compareGeneratedGatewayCommon(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedGatewayCommonPath())
+}
+
+func verifyCommandsExecuted(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, executedMCCommandPath())
+}
+
 func verifyPlaybooks(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, executedPlaybooksPath())
 }
@@ -109,8 +149,65 @@ func generatedInventoryPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/inventory.yml"
 }
 
+func generatedSecretPath() string {
+	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultSecretFile
+}
+
+func generatedTopologyPath() string {
+	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
+}
+
+func generatedContrailCommonPath() string {
+	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
+}
+
+func generatedGatewayCommonPath() string {
+	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultGatewayCommonFile
+}
+
 func executedPlaybooksPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
+}
+
+func executedMCCommandPath() string {
+	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/executed_cmd.yml"
+}
+
+func createDummyCloudFiles(t *testing.T) func() {
+
+	// create public cloud topology.yaml
+	publicTopoData, err := fileutil.GetContent("file://./test_data/public_cloud_topology.yml")
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_topology.yml")
+	}
+	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/topology.yml", publicTopoData, defaultFilePermRWOnly)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/topology.yml")
+	}
+	// create pvt cloud topology.yml
+	pvtTopoData, err := fileutil.GetContent("./test_data/pvt_cloud_topology.yml")
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/pvt_cloud_topology.yml")
+	}
+	err = fileutil.WriteToFile("/var/tmp/cloud/pvt_cloud_uuid/topology.yml", pvtTopoData, defaultFilePermRWOnly)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/pvt_cloud_uuid/topology.yml")
+	}
+	// create public cloud secret.yml
+	secretData, err := fileutil.GetContent("./test_data/public_cloud_secret.yml")
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to read file: %s", "./test_data/public_cloud_secret.yml")
+	}
+	err = fileutil.WriteToFile("/var/tmp/cloud/public_cloud_uuid/secret.yml", secretData, defaultFilePermRWOnly)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to write file: %s", "/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
+	}
+
+	return func() {
+		_ = os.Remove("/var/tmp/cloud/config/public_cloud_uuid/topology.yml")
+		_ = os.Remove("/var/tmp/cloud/config/public_cloud_uuid/secret.yml")
+		_ = os.Remove("/var/tmp/cloud/config/pvt_cloud_uuid/topology.yml")
+	}
 }
 
 // nolint: gocyclo
@@ -707,4 +804,203 @@ func TestWindowsCompute(t *testing.T) {
 	testScenario, err := integration.LoadTest("./test_data/test_windows_compute.yml", nil)
 	assert.NoError(t, err, "failed to load test data")
 	integration.RunCleanTestScenario(t, testScenario, server)
+}
+
+func runMCClusterTest(t *testing.T, context map[string]interface{},
+	expectedEndpoints map[string]string) {
+
+	// mock keystone to let access server after cluster create
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	defer ksPublic.Close()
+	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	defer ksPrivate.Close()
+	// Create the cluster and related objects
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, allInOneMCClusterTemplatePath, context)
+	assert.NoError(t, err, "failed to load mc cluster test data")
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup()
+	// create cluster config
+	config := &Config{
+		ID:           "alice",
+		Password:     "alice_password",
+		ProjectID:    "admin",
+		AuthURL:      server.URL() + "/keystone/v3",
+		Endpoint:     server.URL(),
+		InSecure:     true,
+		ClusterID:    clusterID,
+		Action:       createAction,
+		LogLevel:     "debug",
+		TemplateRoot: "configs/",
+		Test:         true,
+	}
+
+	cloudFileCleanup := createDummyCloudFiles(t)
+	defer cloudFileCleanup()
+	// create cluster
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	if _, err = os.Stat(executedMCCommandPath()); err == nil {
+		// cleanup old executed playbook file
+		err = os.Remove(executedMCCommandPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+
+	clusterManager, err := NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to create cluster")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(create) cluster")
+
+	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
+		"Topolgy file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedSecret(t, expectedMCClusterSecret),
+		"Secret file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
+		"Contrail common file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
+		"Gateway common file created during cluster create is not as expected")
+	assert.True(t, verifyCommandsExecuted(t, expectedMCCmdExecuted),
+		"commands executed during cluster create is not as expected")
+	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_mc_playbook.yml"),
+		"Expected list of update playbooks are not executed")
+
+	// Wait for the in-memory endpoint cache to get updated
+	server.ForceProxyUpdate()
+	// make sure all endpoints are created
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+
+	// update cluster
+	config.Action = updateAction
+	//cleanup all the files
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	if _, err = os.Stat(executedMCCommandPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedMCCommandPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed mc command file")
+		}
+	}
+	if _, err = os.Stat(generatedTopologyPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(generatedTopologyPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete generated topology file")
+		}
+	}
+	if _, err = os.Stat(generatedSecretPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(generatedSecretPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete generated secret file")
+		}
+	}
+	if _, err = os.Stat(generatedContrailCommonPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(generatedContrailCommonPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete generated contrail common file")
+		}
+	}
+	if _, err = os.Stat(generatedGatewayCommonPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(generatedGatewayCommonPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete generated gateway common file")
+		}
+	}
+	var updateTestScenario integration.TestScenario
+	err = integration.LoadTestScenario(&updateTestScenario, allInOneMCClusterUpdateTemplatePath, context)
+	assert.NoError(t, err, "failed to load mc cluster test data")
+	_ = integration.RunDirtyTestScenario(t, &updateTestScenario, server)
+	clusterManager, err = NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to update cluster")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(update) cluster")
+
+	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
+		"Topolgy file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedSecret(t, expectedMCClusterSecret),
+		"Secret file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
+		"Contrail common file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
+		"Gateway common file created during cluster create is not as expected")
+	assert.True(t, verifyCommandsExecuted(t, expectedMCCmdExecuted),
+		"commands executed during cluster create is not as expected")
+	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
+		"Expected list of update playbooks are not executed")
+
+	// Wait for the in-memory endpoint cache to get updated
+	server.ForceProxyUpdate()
+	// make sure all endpoints are recreated as part of update
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
+
+	// delete cloud secanrio
+	//cleanup all the files
+	if _, err = os.Stat(executedMCCommandPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedMCCommandPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed mc command file")
+		}
+	}
+	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
+		// cleanup executed playbook file
+		err = os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
+		}
+	}
+	var deleteTestScenario integration.TestScenario
+	err = integration.LoadTestScenario(&deleteTestScenario, allInOneMCClusterDeleteTemplatePath, context)
+	assert.NoError(t, err, "failed to load mc cluster test data")
+	_ = integration.RunDirtyTestScenario(t, &deleteTestScenario, server)
+	clusterManager, err = NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to delete cloud")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(delete) cloud")
+	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_delete_mc_playbook.yml"),
+		"Expected list of delete playbooks are not executed")
+	// make sure cluster is removed
+	assert.True(t, verifyMCDeleted(), "MC folder is not deleted during cluster delete")
+
+	// delete cluster itself
+	config.Action = deleteAction
+	clusterManager, err = NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
+	err = clusterManager.Manage()
+	assert.NoError(t, err, "failed to manage(delete) cluster")
+
+}
+
+func TestMCCluster(t *testing.T) {
+	context := pongo2.Context{
+		"CONTROL_NODES": "",
+	}
+	expectedEndpoints := map[string]string{
+		"config":    "http://1.1.1.1:8082",
+		"nodejs":    "https://1.1.1.1:8143",
+		"telemetry": "http://1.1.1.1:8081",
+	}
+	runMCClusterTest(t, context, expectedEndpoints)
 }
