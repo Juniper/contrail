@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
@@ -35,6 +36,7 @@ type Data struct {
 	nodesInfo             []*models.Node
 	keypairsInfo          []*models.Keypair
 	credsInfo             []*models.Credential
+	cloudInfo             []*models.Cloud
 	openstackClusterData  []*OpenstackData
 	kubernetesClusterData []*KubernetesData
 	// TODO (ijohnson): Add gce/aws/kvm info
@@ -421,6 +423,28 @@ func (d *Data) interfaceToContrailVrouterNode(
 	return nil
 }
 
+func (d *Data) interfaceToContrailMCGWNode(contrailMCGWNodes interface{}, c *Cluster) error {
+	n, ok := contrailMCGWNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailMCGWNode := range n {
+		contrailMCGWNodeInfo := models.InterfaceToContrailMulticloudGWNode(contrailMCGWNode)
+		// Read ContrailMulticloudGW role node to get the node refs information
+		contrailMCGWNodeData, err := c.getResource(
+			defaultContrailMCGWNodeResPath, contrailMCGWNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		contrailMCGWNodeInfo = models.InterfaceToContrailMulticloudGWNode(
+			contrailMCGWNodeData)
+		d.clusterInfo.ContrailMulticloudGWNodes = append(
+			d.clusterInfo.ContrailMulticloudGWNodes, contrailMCGWNodeInfo)
+	}
+	return nil
+}
+
 func (d *Data) interfaceToContrailZTPTFTPNode(
 	contrailZTPTFTPNodes interface{}, c *Cluster) error {
 	for _, contrailZTPTFTPNode := range contrailZTPTFTPNodes.([]interface{}) {
@@ -646,12 +670,30 @@ func (d *Data) updateNodeDetails(c *Cluster) error {
 			}
 		}
 	}
+	for _, node := range d.clusterInfo.ContrailMulticloudGWNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, d); err != nil {
+				return err
+			}
+		}
+	}
 	for _, node := range d.clusterInfo.ContrailServiceNodes {
 		for _, nodeRef := range node.NodeRefs {
 			if err := c.getNode(nodeRef.UUID, m, d); err != nil {
 				return err
 			}
 		}
+	}
+	return nil
+}
+
+func (d *Data) updateCloudDetails(c *Cluster) error {
+	for _, cloudRef := range d.clusterInfo.CloudRefs {
+		cloudObject, err := cloud.GetCloud(c.APIServer, cloudRef.UUID)
+		if err != nil {
+			return err
+		}
+		d.cloudInfo = append(d.cloudInfo, cloudObject)
 	}
 	return nil
 }
@@ -706,6 +748,11 @@ func (d *Data) updateClusterDetails(clusterID string, c *Cluster) error {
 			return err
 		}
 	}
+	if mcGWNodes, ok := rData["contrail_multicloud_gw_nodes"]; ok {
+		if err = d.interfaceToContrailMCGWNode(mcGWNodes, c); err != nil {
+			return err
+		}
+	}
 	// Expand csn node back ref
 	if csnNodes, ok := rData["contrail_service_nodes"]; ok {
 		if err = d.interfaceToContrailServiceNode(csnNodes, c); err != nil {
@@ -726,6 +773,11 @@ func (d *Data) updateClusterDetails(clusterID string, c *Cluster) error {
 	}
 	// get all nodes information
 	if err := d.updateNodeDetails(c); err != nil {
+		return err
+	}
+
+	// get all cloud information
+	if err := d.updateCloudDetails(c); err != nil {
 		return err
 	}
 	return nil

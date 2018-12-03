@@ -30,6 +30,8 @@ const (
 	defaultContrailAnalyticsDatabaseNodeResPath = "/" + defaultContrailAnalyticsDatabaseNodeRes
 	defaultContrailVrouterNodeRes               = "contrail-vrouter-node"
 	defaultContrailVrouterNodeResPath           = "/" + defaultContrailVrouterNodeRes
+	defaultContrailMCGWNodeRes                  = "contrail-multicloud-gw-node"
+	defaultContrailMCGWNodeResPath              = "/" + defaultContrailMCGWNodeRes
 	defaultContrailServiceNodeRes               = "contrail-service-node"
 	defaultContrailServiceNodeResPath           = "/" + defaultContrailServiceNodeRes
 	defaultContrailZTPDHCPNodeRes               = "contrail-ztp-dhcp-node"
@@ -58,6 +60,7 @@ const (
 	defaultInstanceTemplate               = "instances.tmpl"
 	defaultInstanceFile                   = "instances.yml"
 	defaultProvisioner                    = "ansible"
+	mCProvisioner                         = "multi-cloud"
 	defaultAnsibleRepo                    = "contrail-ansible-deployer"
 	defaultAnsibleRepoDir                 = "/usr/share/contrail/"
 	defaultContrailProvPlay               = "playbooks/install_contrail.yml"
@@ -70,6 +73,8 @@ const (
 	defaultInventoryTemplate              = "inventory.tmpl"
 	defaultInventoryFile                  = "inventory.yml"
 
+	defaultFilePermRWOnly = 0600
+
 	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"
@@ -80,4 +85,8 @@ const (
 	statusUpdated        = "UPDATED"
 	statusUpdateProgress = "UPDATE_IN_PROGRESS"
 	statusUpdateFailed   = "UPDATE_FAILED"
+
+	createAction = "create"
+	updateAction = "update"
+	deleteAction = "delete"
 )
