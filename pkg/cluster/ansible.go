@@ -34,8 +34,6 @@ const (
 
 	enable  = "yes"
 	disable = "no"
-
-	filePermRWOnly = 0600
 )
 
 type openstackVariables struct {
@@ -218,7 +216,7 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 		}
 	}()
 
-	a.log.Debugf("Creating temperory inventory %s", tmpFileName)
+	a.log.Debugf("Creating temporary inventory %s", tmpFileName)
 	err = a.createInstancesFile(tmpFileName)
 	if err != nil {
 		return false, err
@@ -325,7 +323,7 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		return err
 	}
 
-	err = fileutil.WriteToFile(destination, content, filePermRWOnly)
+	err = fileutil.WriteToFile(destination, content, defaultFilePermRWOnly)
 	if err != nil {
 		return err
 	}
@@ -343,7 +341,7 @@ func (a *ansibleProvisioner) createDatapathEncryptionInventory(destination strin
 	if err != nil {
 		return err
 	}
-	err = fileutil.WriteToFile(destination, content, filePermRWOnly)
+	err = fileutil.WriteToFile(destination, content, defaultFilePermRWOnly)
 	if err != nil {
 		return err
 	}
@@ -362,7 +360,7 @@ func (a *ansibleProvisioner) mockPlay(ansibleArgs []string) error {
 		return err
 	}
 	destination := filepath.Join(a.getWorkingDir(), "executed_ansible_playbook.yml")
-	err = fileutil.AppendToFile(destination, content, filePermRWOnly)
+	err = fileutil.AppendToFile(destination, content, defaultFilePermRWOnly)
 	return err
 }
 
