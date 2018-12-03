@@ -18,8 +18,6 @@ import (
 const (
 	enable  = "yes"
 	disable = "no"
-
-	filePermRWOnly = 0600
 )
 
 type openstackVariables struct {
@@ -110,7 +108,7 @@ func (a *ansibleProvisioner) compareInventory() (identical bool, err error) {
 		}
 	}()
 
-	a.log.Debugf("Creating temperory inventory %s", tmpFileName)
+	a.log.Debugf("Creating temporary inventory %s", tmpFileName)
 	err = a.createInstancesFile(tmpFileName)
 	if err != nil {
 		return false, err
