@@ -1,0 +1,37 @@
+PATH_CONFIG:  {{ pathConfig }}
+PATH_SSL_CONFIG_LOCAL: "~/.multicloud/ssl"
+PATH_SSL_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/ssl"
+PATH_OPENVPN_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/openvpn"
+PATH_BIRD_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/bird"
+PATH_STRONGSWAN_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/strongswan"
+PATH_VRRP_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/vrrp"
+PATH_AWS_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/aws"
+PATH_INTERFACE_CONFIG: "/etc/network/interfaces.d"
+PATH_FW_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/firewall"
+PATH_GCP_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/gcp"
+PATH_SECRET_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/secret"
+
+CONTAINER_REGISTRY: {{ cluster.ContainerRegistry }}
+CONTRAIL_MULTICLOUD_VERSION: {{ cluster.ContrailVersion }}
+
+UPGRADE_KERNEL: {{ upgradeKernel }}
+KERNEL_VERSION: {{ kernelVersion }}
+
+AS: {{ cluster.MCGWInfo.asn }}
+vpn_lo_network: {{ cluster.MCGWInfo.vpnLoNetwork }}
+vpn_network: {{ cluster.MCGWInfo.vpnNetwork }}
+
+openvpn_port: {{ cluster.MCGWInfo.openvpnPort }}
+
+bfd_interval: {{ cluster.MCGWInfo.bfdInterval }}
+bfd_multiplier: {{ cluster.MCGWInfo.bfdMultiplier }}
+bfd_interval_multihop: {{ cluster.MCGWInfo.bfdIntervalMultihop }}
+bfd_multiplier_multihop: {{ cluster.MCGWInfo.bfdMultiplierMultihop }}
+core_bgp_secret: {{ bgpSecret }}
+
+{%if cluster.ContainerRegistryUsername and  cluster.ContainerRegistryPassword%}
+authorized_registries:
+  - registry: {{ cluster.ContainerRegistry }}
+    username: {{ cluster.ContainerRegistryUsername }}
+    password: {{ cluster.ContainerRegistryPassword }}
+{%endif%}
