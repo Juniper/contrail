@@ -195,6 +195,11 @@ func TestAlarm(t *testing.T) {
 	RunTest(t, "./test_data/test_alarm.yml")
 }
 
+func TestAliasIP(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_alias_ip.yml")
+}
+
 func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),
