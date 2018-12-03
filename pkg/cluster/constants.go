@@ -34,6 +34,8 @@ const (
 	defaultContrailAnalyticsDatabaseNodeResPath = "/" + defaultContrailAnalyticsDatabaseNodeRes
 	defaultContrailVrouterNodeRes               = "contrail-vrouter-node"
 	defaultContrailVrouterNodeResPath           = "/" + defaultContrailVrouterNodeRes
+	defaultContrailMCGWNodeRes                  = "contrail-multicloud-gw-node"
+	defaultContrailMCGWNodeResPath              = "/" + defaultContrailMCGWNodeRes
 	defaultContrailServiceNodeRes               = "contrail-service-node"
 	defaultContrailServiceNodeResPath           = "/" + defaultContrailServiceNodeRes
 	defaultContrailZTPDHCPNodeRes               = "contrail-ztp-dhcp-node"
@@ -69,6 +71,7 @@ const (
 	defaultInstanceFile                   = "instances.yml"
 	defaultVcenterFile                    = "vcenter_vars.yml"
 	defaultProvisioner                    = "ansible"
+	mCProvisioner                         = "multi-cloud"
 	defaultAnsibleRepo                    = "contrail-ansible-deployer"
 	defaultAnsibleRepoDir                 = "/usr/share/contrail/"
 	defaultvCenterProvPlay                = "playbooks/vcenter.yml"
@@ -93,6 +96,8 @@ const (
 	defaultAppformixOpenstackNodeResPath  = "/" + defaultAppformixOpenstackNodeRes
 	defaultAppformixComputeNodeRes        = "appformix-compute-node"
 	defaultAppformixComputeNodeResPath    = "/" + defaultAppformixComputeNodeRes
+
+	defaultFilePermRWOnly = 0600
 
 	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
 	statusField          = "provisioning_state"
