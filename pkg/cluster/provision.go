@@ -10,6 +10,7 @@ import (
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/log/report"
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 type provisioner interface {
@@ -27,7 +28,7 @@ type provisionCommon struct {
 
 func (p *provisionCommon) isCreated() bool {
 	state := p.clusterData.clusterInfo.ProvisioningState
-	if p.action == "create" && (state == "NOSTATE" || state == "") {
+	if p.action == "create" && (state == statusNoState || state == "") {
 		return false
 	}
 	p.log.Infof("Cluster %s already provisioned, STATE: %s", p.clusterID, state)
@@ -113,6 +114,28 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 	}}, nil
 }
 
+func newMCProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
+	// create logger for reporter
+	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
+
+	r := report.NewReporter(cluster.APIServer,
+		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
+
+	// create logger for multi-cloud provisioner
+	logger = pkglog.NewFileLogger("multi-cloud-provisioner", cluster.config.LogFile)
+	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
+
+	return &multiCloudProvisioner{ansibleProvisioner{provisionCommon{
+		cluster:     cluster,
+		clusterID:   clusterID,
+		action:      action,
+		clusterData: cData,
+		reporter:    r,
+		log:         logger,
+	}}, ""}, nil
+}
+
 func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
 	// create logger for reporter
 	logger := pkglog.NewLogger("reporter")
@@ -156,11 +179,53 @@ func newProvisionerByID(cluster *Cluster, clusterID string, action string) (prov
 		provisionerType = defaultProvisioner
 	}
 
+	// Check if cloudbackrefs are present
+	if action != deleteAction {
+		if isMCProvisioner(cData) {
+			provisionerType = mCProvisioner
+		}
+	}
+
 	switch provisionerType {
 	case "ansible":
 		return newAnsibleProvisioner(cluster, cData, clusterID, action)
 	case "helm":
 		return newHelmProvisioner(cluster, cData, clusterID, action)
+	case mCProvisioner:
+		return newMCProvisioner(cluster, cData, clusterID, action)
 	}
 	return nil, errors.New("unsupported provisioner type")
+}
+
+func hasCloudRefs(cData *Data) bool {
+
+	if cData.cloudInfo != nil {
+		return true
+	}
+	return false
+
+}
+
+func hasMCGWNodes(clusterInfo *models.ContrailCluster) bool {
+
+	if clusterInfo.ContrailMulticloudGWNodes != nil {
+		return true
+	}
+	return false
+}
+
+func isMCProvisioner(cData *Data) bool {
+
+	state := cData.clusterInfo.ProvisioningState
+	if hasCloudRefs(cData) && hasMCGWNodes(cData.clusterInfo) && (state == "NOSTATE" || state == "") {
+		switch cData.clusterInfo.ProvisioningAction {
+		case "ADD_CLOUD":
+			return true
+		case "UPDATE_CLOUD":
+			return true
+		case "DELETE_CLOUD":
+			return true
+		}
+	}
+	return false
 }

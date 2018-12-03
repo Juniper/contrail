@@ -1,0 +1,19 @@
+global_configuration:
+  CONTAINER_REGISTRY: test_registry
+  REGISTRY_PRIVATE_INSECURE: True
+contrail_user: admin
+contrail_password: c0ntrail123
+contrail_port: 8082
+contrail_tenant: default-project
+provider_config:
+  bms:
+    ssh_user: root
+    ssh_pwd: c0ntrail123
+    ntpserver: 10.1.1.100
+    domainsuffix: local
+contrail_configuration:
+  CONTRAIL_VERSION: ocata-5.0-x
+  RABBITMQ_NODE_PORT: 5673
+  VROUTER_GATEWAY: 127.0.0.254
+  ENCAP_PRIORITY: MPLSoGRE,MPLSoUDP,VXLAN
+  CLOUD_ORCHESTRATOR: kubernetes
