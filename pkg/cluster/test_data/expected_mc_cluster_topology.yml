@@ -1,0 +1,58 @@
+- provider: private
+  organization: dev
+  project: test1
+  instances:
+    - name: bms1
+      public_ip: 1.1.1.1
+      private_ip: 192.168.1.2
+      interface: bond0
+      private_subnet:
+        - 192.168.1.0/24
+      provision: false
+      username: root
+      password: c0ntrail123
+      roles:
+        - controller
+    - name: bms2
+      public_ip: 2.2.2.2
+      private_ip: 192.168.1.3
+      interface: bond0
+      private_subnet:
+        - 192.168.1.0/24
+      provision: false
+      username: root
+      password: c0ntrail123
+      roles:
+        - gateway
+- provider: azure
+  organization: dev
+  project: test2
+  regions:
+    - name: WestUS
+      resource_group: blah
+      vnet:
+        - name: virtual_cloud_test
+          cidr_block: 192.168.0.0/16
+          subnets:
+            - name: pvt_subnet_test
+              cidr_block: 192.168.100.0/24
+          security_groups:
+            - name: cloud_security_group_test
+              rules:
+          instances:
+          - name: gateway
+            roles:
+              - gateway
+            provision: true
+            username: centos
+            os: centos7
+            instance_type: Standard_F16
+            interface: eth0
+          - name: compute
+            roles:
+              - compute
+            provision: true
+            username: centos
+            os: centos7
+            instance_type: Standard_F16s_v2
+            interface: eth0
