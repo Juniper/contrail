@@ -219,13 +219,7 @@ func (sv *ContrailTypeLogicService) CreateProject(
 
 ## Services
 
-### DB Service
-
-### Cache Service
-
-### Contrail Service
-
-### Type Specific logic service
+See: [Contrail Services](services.md)
 
 ## Kubernetes support
 
