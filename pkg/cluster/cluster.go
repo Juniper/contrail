@@ -89,6 +89,7 @@ func NewCluster(c *Config) (*Cluster, error) {
 		Endpoint: c.Endpoint,
 		InSecure: c.InSecure,
 	}
+
 	// auth enabled
 	if c.AuthURL != "" {
 		s.AuthURL = c.AuthURL
