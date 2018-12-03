@@ -69,8 +69,8 @@ See: [Related source code](../pkg/cmd/contrail/run.go)
 Repository holds source code for following helper CLI applications:
 
 - `contrailcli` - [API Server command line client](cli.md)
-- `contrailschema` - [code generator using schema definitions](contrailschema.md)
-- `contrailutil` - utilities such as [Convert](convert.md), `package`, `record_test`
+- `contrailschema` - [Code generator using schema definitions](contrailschema.md)
+- `contrailutil` - [Utilities](contrailutil.md)
 
 ## Configuration
 
