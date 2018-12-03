@@ -1,0 +1,32 @@
+- provider: azure
+  organization: dev
+  project: test2
+  regions:
+    - name: WestUS
+      resource_group: blah
+      vnet:
+        - name: virtual_cloud_test
+          cidr_block: 192.168.0.0/16
+          subnets:
+            - name: pvt_subnet_test
+              cidr_block: 192.168.100.0/24
+          security_groups:
+            - name: cloud_security_group_test
+              rules:
+          instances:
+          - name: gateway
+            roles:
+              - gateway
+            provision: true
+            username: centos
+            os: centos7
+            instance_type: Standard_F16
+            interface: eth0
+          - name: compute
+            roles:
+              - compute
+            provision: true
+            username: centos
+            os: centos7
+            instance_type: Standard_F16s_v2
+            interface: eth0

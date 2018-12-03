@@ -1,0 +1,25 @@
+PATH_CONFIG:  /etc/multicloud
+PATH_SSL_CONFIG_LOCAL: "~/.multicloud/ssl"
+PATH_SSL_CONFIG: "{{ PATH_CONFIG }}/ssl"
+PATH_OPENVPN_CONFIG: "{{ PATH_CONFIG }}/openvpn"
+PATH_BIRD_CONFIG: "{{ PATH_CONFIG }}/bird"
+PATH_STRONGSWAN_CONFIG: "{{ PATH_CONFIG }}/strongswan"
+PATH_VRRP_CONFIG: "{{ PATH_CONFIG }}/vrrp"
+PATH_AWS_CONFIG: "{{ PATH_CONFIG }}/aws"
+PATH_INTERFACE_CONFIG: "/etc/network/interfaces.d"
+PATH_FW_CONFIG: "{{ PATH_CONFIG }}/firewall"
+PATH_GCP_CONFIG: "{{ PATH_CONFIG }}/gcp"
+PATH_SECRET_CONFIG: "{{ PATH_CONFIG }}/secret"
+CONTAINER_REGISTRY: test_registry
+CONTRAIL_MULTICLOUD_VERSION: ocata-5.0-x
+UPGRADE_KERNEL: True
+KERNEL_VERSION: 3.10.0-862.3.2.el7.x86_64
+AS: 
+vpn_lo_network: 
+vpn_network: 
+openvpn_port: 
+bfd_interval: 
+bfd_multiplier: 
+bfd_interval_multihop: 
+bfd_multiplier_multihop: 
+core_bgp_secret: bgp_secret
