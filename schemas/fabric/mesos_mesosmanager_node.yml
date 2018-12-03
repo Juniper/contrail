@@ -1,0 +1,27 @@
+description: mesos Manager Node
+extends:
+- base
+- has_status
+id: mesos_mesosmanager_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this mesos manager node."
+      presence: "optional"
+parents:
+  mesos_cluster:
+    operations: "CRUD"
+    description: "Parent of this mesos manager node."
+    presence: "optional"
+plural: mesos_mesosmanager_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: mesos_mesosmanager_node
+title: mesos Manager Node
+type: ""
