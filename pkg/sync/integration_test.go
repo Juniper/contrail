@@ -22,7 +22,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 func TestSyncService(t *testing.T) {

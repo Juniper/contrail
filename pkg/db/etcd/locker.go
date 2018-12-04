@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/DavidCai1993/etcd-lock"
+	etcdlock "github.com/DavidCai1993/etcd-lock"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"

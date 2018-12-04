@@ -18,7 +18,7 @@ import (
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/testutil"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (

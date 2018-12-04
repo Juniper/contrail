@@ -11,9 +11,9 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/mock"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/testutil"
-	"github.com/Juniper/contrail/pkg/types/mock"
+	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 )
 
 func TestCreateRoutingInstanceCreatesRouteTarget(t *testing.T) {

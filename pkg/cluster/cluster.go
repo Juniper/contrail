@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	pkglog "github.com/Juniper/contrail/pkg/log"

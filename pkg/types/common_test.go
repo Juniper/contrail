@@ -8,9 +8,9 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/mock"
-	"github.com/Juniper/contrail/pkg/types/ipam/mock"
-	"github.com/Juniper/contrail/pkg/types/mock"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
+	ipammock "github.com/Juniper/contrail/pkg/types/ipam/mock"
+	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 )
 
 func makeMockedContrailTypeLogicService(controller *gomock.Controller) *ContrailTypeLogicService {
