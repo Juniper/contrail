@@ -3,7 +3,7 @@ package integration
 import (
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 // SetDefaultSyncConfig sets config options required by sync.

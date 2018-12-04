@@ -10,7 +10,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/mattn/go-shellwords"
+	shellwords "github.com/mattn/go-shellwords"
 	"github.com/sirupsen/logrus"
 	"github.com/yudai/gotty/backend/localcommand"
 	"github.com/yudai/gotty/server"

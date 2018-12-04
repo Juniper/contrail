@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 //LoadConfig load data from data and bind to struct.

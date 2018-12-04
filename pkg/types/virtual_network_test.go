@@ -13,10 +13,10 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/mock"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/types/ipam"
-	"github.com/Juniper/contrail/pkg/types/ipam/mock"
-	"github.com/Juniper/contrail/pkg/types/mock"
+	ipammock "github.com/Juniper/contrail/pkg/types/ipam/mock"
+	typesmock "github.com/Juniper/contrail/pkg/types/mock"
 )
 
 //Structure testVn is used to pass vn parameters during VirtualNetwork object creation

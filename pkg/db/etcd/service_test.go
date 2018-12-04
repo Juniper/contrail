@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
-	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 func TestEtcdNotifierService(t *testing.T) {
