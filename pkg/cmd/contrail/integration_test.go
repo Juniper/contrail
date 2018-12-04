@@ -48,9 +48,9 @@ func TestSecurityGroup(t *testing.T) {
 	runTest(t, t.Name())
 }
 
-func TestLogicalRouterPing(t *testing.T) {
-	runTest(t, t.Name())
-}
+// func TestLogicalRouterPing(t *testing.T) {
+// 	runTest(t, t.Name())
+// }
 
 func TestReferredSecurityGroups(t *testing.T) {
 	runTest(t, t.Name())
