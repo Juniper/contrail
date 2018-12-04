@@ -170,6 +170,7 @@ func AddKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 type Event struct {
 	Data     map[string]interface{} `yaml:"data,omitempty"`
 	SyncOnly bool                   `yaml:"sync_only,omitempty"`
+	Waiting  bool                   `yaml:"waiting,omitempty"`
 }
 
 // Watchers map contains slices of events that should be emitted on
@@ -289,7 +290,11 @@ func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv
 	ec := integrationetcd.NewEtcdClient(t)
 	for key := range watchers {
 		events := watchers[key]
-		collect := ec.WatchKeyN(key, len(events), collectTimeout, append(opts, clientv3.WithPrefix())...)
+		if len(events) == 1 and events[0].Waiting {
+			collect := ec.WatchKeyN(key, 0, collectTimeout, append(opts, clientv3.WithPrefix())...)
+		} else {
+			collect := ec.WatchKeyN(key, len(events), collectTimeout, append(opts, clientv3.WithPrefix())...)
+		}
 
 		checks = append(checks, createWatchChecker(task, collect, key, events))
 	}
