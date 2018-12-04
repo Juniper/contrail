@@ -3,7 +3,7 @@ package dependencies
 import (
 	"fmt"
 
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // ParseReactions parses reactions from file.

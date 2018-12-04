@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	"github.com/Juniper/contrail/pkg/services/mock"
+	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 )
 
 func TestCheckVxlanConfig(t *testing.T) {

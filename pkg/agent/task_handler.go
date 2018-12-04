@@ -9,9 +9,9 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/joho/godotenv"
-	"github.com/mattn/go-shellwords"
+	shellwords "github.com/mattn/go-shellwords"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type handler map[string]interface{}

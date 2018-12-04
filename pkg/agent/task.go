@@ -5,7 +5,7 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type task struct {

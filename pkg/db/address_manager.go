@@ -6,7 +6,7 @@ import (
 
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/pkg/errors"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
