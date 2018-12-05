@@ -1,7 +1,8 @@
 #!/bin/bash
 set -x
 
-export PATH=$(go env GOPATH)/bin/:$PATH
+PATH="$PATH:/usr/go/bin"
+PATH="$(go env GOPATH)/bin/:$PATH"
 
 tee namespace-blue.json << "EOF"
 {
@@ -20,7 +21,7 @@ tee namespace-blue.json << "EOF"
 EOF
 read
 
-kubectl create -f namespace-blue.json
+sudo kubectl create -f namespace-blue.json
 read
 
 tee vn_blue.yml << "EOF"
@@ -51,6 +52,6 @@ read
 contrailcli -c config.yml sync vn_blue.yml
 read
 
-read -p 'Run pod in second terminal using command: "kubectl run -i --tty busybox-one --image=busybox --namespace blue -- sh"'
+read -p 'Run pod in second terminal using command: "sudo kubectl run -i --tty busybox-one --image=busybox --namespace blue -- sh"'
 
-kubectl run -i --tty busybox-two --image=busybox --namespace blue -- sh
+sudo kubectl run -i --tty busybox-two --image=busybox --namespace blue -- sh
