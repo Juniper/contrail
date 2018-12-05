@@ -49,7 +49,8 @@ make generate
 make build
 make install
 # etcd should be already deployed with kubernetes
-"$ContrailRootDir/tools/testenv.sh" -n host postgres
+"$ContrailRootDir/tools/patroni/install_patroni.sh"
+"$ContrailRootDir/tools/testenv.sh" -n bridge patroni
 
 # Stop kubemanager, original config-node, control-node and vrouter
 docker-compose -f /etc/contrail/kubemanager/docker-compose.yaml down
