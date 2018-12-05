@@ -1,5 +1,5 @@
 #!/bin/bash
-set +x
+set -x
 
 PATH="$PATH:/usr/go/bin"
 PATH="$(go env GOPATH)/bin/:$PATH"

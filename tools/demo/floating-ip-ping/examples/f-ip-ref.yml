@@ -11,6 +11,7 @@ resources:
     display_name: floating_ip
     parent_type: floating-ip-pool
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0104
+    floating_ip_address: PUT IPADDRESS HERE
     virtual_machine_interface_refs:
     - to:
       - PUT VMI FQNAME HERE (domain name)
