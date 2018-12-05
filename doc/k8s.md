@@ -11,9 +11,9 @@ provider_config:
   bms:
     ssh_user: centos
     ssh_private_key: /home/centos/id_rsa
-    domainsuffix: local
+    domainsuffix: novalocal
 instances:
-  bms1:
+  kolla-aio:
     provider: bms
     ip: @localip
     roles:
@@ -28,27 +28,23 @@ instances:
 
 global_configuration:
   CONTAINER_REGISTRY: opencontrailnightly
+  K8S_VERSION: 1.9.2
 contrail_configuration:
-  CONTRAIL_VERSION: latest
+  CONTRAIL_VERSION: master-409
   CLOUD_ORCHESTRATOR: kubernetes
-  RABBITMQ_NODE_PORT: 5673
   VROUTER_GATEWAY: @routerip
   PHYSICAL_INTERFACE: eth0
-  AUTH_MODE: keystone
-  KEYSTONE_AUTH_ADMIN_PASSWORD: contrail123
-  KEYSTONE_AUTH_HOST: @localip
-  KEYSTONE_AUTH_URL_VERSION: "/v3"
   JVM_EXTRA_OPTS: "-Xms1g -Xmx2g"
   CONFIG_NODEMGR__DEFAULTS__minimum_diskGB: 2
   DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: 2
-kolla_config:
-  kolla_globals:
-    network_interface: "eth0"
-    kolla_external_vip_interface: "eth0"
-    enable_haproxy: "no"
-    openstack_release: "ocata"
-  kolla_passwords:
-    keystone_admin_password: contrail123
+  KUBERNETES_PUBLIC_FIP_POOL:
+     domain: default-domain
+     name: __fip_pool_public__
+     network: __public__
+     project: k8s-default
+
+deployment:
+    orchestrator: kubernetes
 ```
 
 ## Deployment
