@@ -44,11 +44,12 @@ type EtcdClient struct {
 func NewEtcdClient(t *testing.T) *EtcdClient {
 	l := pkglog.NewLogger("etcd-client")
 	l.WithFields(logrus.Fields{"endpoint": Endpoint, "dial-timeout": etcdDialTimeout}).Debug("Connecting")
+
 	c, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{Endpoint},
 		DialTimeout: etcdDialTimeout,
 	})
-	require.NoError(t, err, "connecting etcd failed")
+	require.NoError(t, err, "connecting to etcd failed")
 
 	return &EtcdClient{
 		Client: c,
@@ -161,7 +162,7 @@ func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
 	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
 }
 
-// GetString gets a string value in Etcd
+// GetString gets a string value in etcd.
 func (e *EtcdClient) GetString(t *testing.T, key string) (value string, revision int64) {
 	err := e.Client.Sync(context.Background())
 	assert.NoError(t, err)

@@ -140,7 +140,7 @@ func etcdNotifier() services.Service {
 	// TODO(Michał): Make the codec configurable
 	en, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"), models.JSONCodec)
 	if err != nil {
-		log.WithError(err).Error("Failed to add ETCD Notifier Service - ignoring")
+		log.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
 		return nil
 	}
 	return en

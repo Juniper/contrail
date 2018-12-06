@@ -31,7 +31,7 @@ func NewDistributedLocker() (*DistributedLocker, error) {
 
 	l, err := etcdlock.NewLocker(opts)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error connecting to ETCD: %s\n", endpoints[0])
+		return nil, errors.Wrapf(err, "Error connecting to etcd on endpoints %v", endpoints)
 	}
 
 	return &DistributedLocker{Locker: l}, nil

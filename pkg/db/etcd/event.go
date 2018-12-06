@@ -22,17 +22,18 @@ type EventProducer struct {
 }
 
 //NewEventProducer makes a event producer and couple it with processor.
-func NewEventProducer(processor services.EventProcessor) (p *EventProducer, err error) {
+func NewEventProducer(processor services.EventProcessor, serviceName string) (p *EventProducer, err error) {
 	p = &EventProducer{
 		Processor: processor,
 		WatchPath: viper.GetString("etcd.path"),
 		Timeout:   viper.GetDuration("cache.timeout"),
 	}
-	e, err := DialByConfig()
-	p.client = NewClient(e)
+
+	p.client, err = NewClientByViper(serviceName)
 	if err != nil {
 		return nil, err
 	}
+
 	return p, nil
 }
 
@@ -55,7 +56,7 @@ func (p *EventProducer) HandleMessage(
 	}
 }
 
-// ParseEvent returns an Event corresponding to a change in ETCD.
+// ParseEvent returns an Event corresponding to a change in etcd.
 func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error) {
 
 	//TODO(nati) use sync.Codec
@@ -67,7 +68,7 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 
 	operation, err := parseOperation(oper)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse ETCD operation")
+		return nil, errors.Wrap(err, "failed to parse etcd operation")
 	}
 
 	var data map[string]interface{}
@@ -110,7 +111,7 @@ func parseOperation(etcdOperation int32) (string, error) {
 	case MessageDelete:
 		return services.OperationDelete, nil
 	default:
-		return "", errors.Errorf("unsupported ETCD operation: %v", etcdOperation)
+		return "", errors.Errorf("unsupported etcd operation: %v", etcdOperation)
 	}
 }
 

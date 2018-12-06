@@ -85,12 +85,12 @@ func ReadConfig() Config {
 	log.Println("Number of Workers:", c.DefaultCfg.NumberOfWorkers)
 	log.Println("Maximum Job Queue Len:", c.DefaultCfg.MaxJobQueueLen)
 
-	log.Println("ETCD Notifier Servers List:", c.EtcdNotifierCfg.EtcdServers)
-	log.Println("ETCD Notifier WatchPath :", "/"+c.EtcdNotifierCfg.WatchPath)
-	log.Println("ETCD Notifier MsgQueueLockTime:", c.EtcdNotifierCfg.MsgQueueLockTime)
-	log.Println("ETCD Notifier MsgIndexString:", c.EtcdNotifierCfg.MsgIndexString)
-	log.Println("ETCD Notifier ReadLockString:", c.EtcdNotifierCfg.ReadLockString)
-	log.Println("ETCD Notifier MasterElection:", c.EtcdNotifierCfg.MasterElection)
+	log.Println("etcd Notifier Servers List:", c.EtcdNotifierCfg.EtcdServers)
+	log.Println("etcd Notifier WatchPath :", "/"+c.EtcdNotifierCfg.WatchPath)
+	log.Println("etcd Notifier MsgQueueLockTime:", c.EtcdNotifierCfg.MsgQueueLockTime)
+	log.Println("etcd Notifier MsgIndexString:", c.EtcdNotifierCfg.MsgIndexString)
+	log.Println("etcd Notifier ReadLockString:", c.EtcdNotifierCfg.ReadLockString)
+	log.Println("etcd Notifier MasterElection:", c.EtcdNotifierCfg.MasterElection)
 
 	log.Println("Plugin Handlers:", c.PluginCfg.Handlers)
 	return c

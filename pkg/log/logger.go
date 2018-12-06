@@ -71,6 +71,7 @@ func newLogger(loggerName string, writer io.Writer) *logrus.Entry {
 }
 
 // SetLogLevel configure any level for any logger
+// TODO: remove that and use Configure() only
 func SetLogLevel(log *logrus.Entry, level string) {
 	switch level {
 	case "panic":
