@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"fmt"
 	"net/http/httptest"
 	"path"
 	"testing"
@@ -70,16 +69,9 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 // NewRunningServer creates new running API server with default testing configuration.
 // Call Close() method to release its resources.
 func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
-	if c.LogLevel == "" {
-		c.LogLevel = "info"
-	}
-
 	setDefaultViperConfig(c)
 
-	log := pkglog.NewLogger("api-server")
-	pkglog.SetLogLevel(log, c.LogLevel)
-
-	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Creating API Server")
+	pkglog.Configure(viper.GetString("log_level"))
 
 	s, err := apisrv.NewServer()
 	if err != nil {
@@ -97,7 +89,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	return &APIServer{
 		APIServer:  s,
 		TestServer: ts,
-		log:        log,
+		log:        pkglog.NewLogger("api-server"),
 	}, nil
 }
 

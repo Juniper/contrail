@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
@@ -21,12 +22,16 @@ func TestInTransactionEtcdDataRace(t *testing.T) {
 	e := integrationetcd.NewEtcdClient(t)
 	defer e.Close(t)
 
-	client := etcd.NewClient(e.Client)
+	client, err := etcd.NewClient(&etcd.Config{
+		Client:      e.Client,
+		ServiceName: t.Name(),
+	})
+	require.NoError(t, err)
 
 	collectKeyHistory := e.WatchKey(testResourceKey)
 
 	// Set initial state
-	err := client.Put(context.Background(), testResourceKey, []byte(testResourceInitialValue))
+	err = client.Put(context.Background(), testResourceKey, []byte(testResourceInitialValue))
 	assert.NoError(t, err)
 
 	firstValue, interrupterValue := "first-value", "interrupter-value"

@@ -21,9 +21,9 @@ import (
 const (
 	Endpoint           = "localhost:2379"
 	Prefix             = "contrail"
-	etcdDialTimeout    = 10 * time.Second
-	etcdRequestTimeout = 10 * time.Second
-	etcdWatchTimeout   = 10 * time.Second
+	ETCDDialTimeout    = 5 * time.Second
+	ETCDRequestTimeout = 5 * time.Second
+	ETCDWatchTimeout   = 5 * time.Second
 
 	AccessControlListSchemaID    = "access_control_list"
 	ApplicationPolicySetSchemaID = "application_policy_set"
@@ -43,12 +43,13 @@ type EtcdClient struct {
 // After usage Close() needs to be called to close underlying connections.
 func NewEtcdClient(t *testing.T) *EtcdClient {
 	l := pkglog.NewLogger("etcd-client")
-	l.WithFields(logrus.Fields{"endpoint": Endpoint, "dial-timeout": etcdDialTimeout}).Debug("Connecting")
+	l.WithFields(logrus.Fields{"endpoint": Endpoint, "dial-timeout": ETCDDialTimeout}).Debug("Connecting")
+
 	c, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{Endpoint},
-		DialTimeout: etcdDialTimeout,
+		DialTimeout: ETCDDialTimeout,
 	})
-	require.NoError(t, err, "connecting etcd failed")
+	require.NoError(t, err, "connecting to etcd failed")
 
 	return &EtcdClient{
 		Client: c,
@@ -84,7 +85,7 @@ func (e *EtcdClient) Clear(t *testing.T) (revision int64) {
 
 // GetKey gets etcd key.
 func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption) *clientv3.GetResponse {
-	ctx, cancel := context.WithTimeout(context.Background(), etcdRequestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), ETCDRequestTimeout)
 	defer cancel()
 
 	r, err := e.Get(ctx, key, opts...)
@@ -95,7 +96,7 @@ func (e *EtcdClient) GetKey(t *testing.T, key string, opts ...clientv3.OpOption)
 
 // DeleteKey deletes etcd key.
 func (e *EtcdClient) DeleteKey(t *testing.T, key string, opts ...clientv3.OpOption) (revision int64) {
-	ctx, cancel := context.WithTimeout(context.Background(), etcdRequestTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), ETCDRequestTimeout)
 	defer cancel()
 
 	r, err := e.Delete(ctx, key, opts...)
@@ -150,7 +151,7 @@ func (e *EtcdClient) WatchKeyN(
 func (e *EtcdClient) WatchResource(
 	schemaID, uuid string, opts ...clientv3.OpOption,
 ) (clientv3.WatchChan, context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithTimeout(context.Background(), etcdWatchTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), ETCDWatchTimeout)
 	w := e.Watch(ctx, JSONEtcdKey(schemaID, uuid), opts...)
 	return w, ctx, cancel
 }
@@ -161,7 +162,7 @@ func (e *EtcdClient) CheckKeyDoesNotExist(t *testing.T, key string) {
 	assert.Equal(t, int64(0), gr.Count, fmt.Sprintf("key %v should be empty", key))
 }
 
-// GetString gets a string value in Etcd
+// GetString gets a string value in etcd.
 func (e *EtcdClient) GetString(t *testing.T, key string) (value string, revision int64) {
 	err := e.Client.Sync(context.Background())
 	assert.NoError(t, err)

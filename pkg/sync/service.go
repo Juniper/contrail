@@ -4,18 +4,14 @@ package sync
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
-	"os"
 	"time"
 
-	"github.com/coreos/etcd/clientv3"
 	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
 	mysqlcanal "github.com/siddontang/go-mysql/canal"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc/grpclog"
 
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/basedb"
@@ -39,51 +35,16 @@ type watchCloser interface {
 
 // Service represents Sync service.
 type Service struct {
-	etcdClient *clientv3.Client
-	watcher    watchCloser
-	log        *logrus.Entry
-}
-
-// NewServiceByFile creates Sync service with configuration from file.
-// Close needs to be explicitly called on service teardown.
-func NewServiceByFile(configFilePath string) (*Service, error) {
-	viper.SetConfigFile(configFilePath)
-	if err := viper.MergeInConfig(); err != nil {
-		return nil, err
-	}
-
-	return NewService()
-}
-
-func setDefaults() {
-	viper.SetDefault("log_level", "debug")
-	viper.SetDefault("etcd.dial_timeout", "60s")
-	viper.SetDefault("database.retry_period", "1s")
-	viper.SetDefault("database.connection_retries", 10)
-	viper.SetDefault("database.replication_status_timeout", "10s")
+	watcher watchCloser
+	log     *logrus.Entry
 }
 
 // NewService creates Sync service with given configuration.
 // Close needs to be explicitly called on service teardown.
 func NewService() (*Service, error) {
-	setDefaults()
+	setViperDefaults()
 
-	// Logging
 	if err := log.Configure(viper.GetString("log_level")); err != nil {
-		return nil, err
-	}
-	log := log.NewLogger("sync-service")
-	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Got configuration")
-
-	// Etcd client
-	clientv3.SetLogger(grpclog.NewLoggerV2(ioutil.Discard, os.Stdout, os.Stdout))
-	etcdClient, err := clientv3.New(clientv3.Config{
-		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
-		Username:    viper.GetString("etcd.username"),
-		Password:    viper.GetString("etcd.password"),
-		DialTimeout: viper.GetDuration("etcd.dial_timeout"),
-	})
-	if err != nil {
 		return nil, err
 	}
 
@@ -92,25 +53,28 @@ func NewService() (*Service, error) {
 		return nil, errors.New(`unknown codec set as "sync.storage"`)
 	}
 
-	// Etcd sink
 	etcdNotifierService, err := etcd.NewNotifierService(viper.GetString("etcd.path"), c)
-
 	if err != nil {
 		return nil, err
 	}
-	processor := &services.ServiceEventProcessor{Service: etcdNotifierService}
 
-	// Replication
-	watcher, err := createWatcher(log, processor)
+	watcher, err := createWatcher(&services.ServiceEventProcessor{Service: etcdNotifierService}, "sync-service")
 	if err != nil {
 		return nil, err
 	}
 
 	return &Service{
-		etcdClient: etcdClient,
-		watcher:    watcher,
-		log:        log,
+		watcher: watcher,
+		log:     log.NewLogger("sync-service"),
 	}, nil
+}
+
+func setViperDefaults() {
+	viper.SetDefault("log_level", "debug")
+	viper.SetDefault("etcd.dial_timeout", "60s")
+	viper.SetDefault("database.retry_period", "1s")
+	viper.SetDefault("database.connection_retries", 10)
+	viper.SetDefault("database.replication_status_timeout", "10s")
 }
 
 func determineCodecType() models.Codec {
@@ -124,7 +88,7 @@ func determineCodecType() models.Codec {
 	}
 }
 
-func createWatcher(log *logrus.Entry, processor services.EventProcessor) (watchCloser, error) {
+func createWatcher(processor services.EventProcessor, serviceName string) (watchCloser, error) {
 	driver := viper.GetString("database.type")
 	sqlDB, err := basedb.ConnectDB()
 	if err != nil {
@@ -141,11 +105,11 @@ func createWatcher(log *logrus.Entry, processor services.EventProcessor) (watchC
 
 	switch driver {
 	case basedb.DriverPostgreSQL:
-		return createPostgreSQLWatcher(log, rowSink, dbService, processor)
+		return createPostgreSQLWatcher(log.NewLogger(fmt.Sprint(serviceName, "-psql-watcher")), rowSink, dbService, processor)
 	case basedb.DriverMySQL:
-		return createMySQLWatcher(log, rowSink)
+		return createMySQLWatcher(log.NewLogger(fmt.Sprint(serviceName, "-mysql-watcher")), rowSink)
 	default:
-		return nil, errors.New("undefined database type")
+		return nil, errors.Errorf("invalid database driver: %v", driver)
 	}
 }
 
@@ -227,7 +191,4 @@ func (s *Service) DumpDone() <-chan struct{} {
 func (s *Service) Close() {
 	s.log.Info("Closing Sync service")
 	s.watcher.Close()
-	if err := s.etcdClient.Close(); err != nil {
-		s.log.WithField("error", err).Error("Error closing etcd connection")
-	}
 }
