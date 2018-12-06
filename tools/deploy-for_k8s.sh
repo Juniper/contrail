@@ -66,9 +66,10 @@ docker-compose -f /etc/contrail/config_database/docker-compose.yaml up -d zookee
 make zero_psql
 
 # Drop contrail related content from etcd
+# TODO: use certificates
 docker exec $(docker ps -q -f name=k8s_etcd_etcd) sh -c "ETCDCTL_API=3 etcdctl del /contrail --prefix"
 
-# Build patched kube_manager with ETCD support
+# Build patched kube_manager with etcd support
 docker build "$ContrailRootDir/docker/kube_manager_etcd/" -t contrail-kubernetes-kube-manager:etcd
 
 # Update kube_manager docker compose file

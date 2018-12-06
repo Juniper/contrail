@@ -2,7 +2,7 @@
  * Copyright 2018 - Juniper Networks
  * Author: Praneet Bachheti
  *
- * ETCD Client interface
+ * etcd Client interface
  *
  */
 
@@ -12,13 +12,18 @@ package etcd
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
 	conc "github.com/coreos/etcd/clientv3/concurrency"
+	"github.com/coreos/etcd/pkg/transport"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc/grpclog"
 
 	"github.com/Juniper/contrail/pkg/log"
 )
@@ -27,36 +32,93 @@ const (
 	kvClientRequestTimeout = 60 * time.Second
 )
 
-// DialByConfig connects to the etcd db based on viper configuration.
-func DialByConfig() (*clientv3.Client, error) {
-	cfg := clientv3.Config{
-		Endpoints:   viper.GetStringSlice("etcd.endpoints"),
-		Username:    viper.GetString("etcd.username"),
-		Password:    viper.GetString("etcd.password"),
-		DialTimeout: viper.GetDuration("etcd.dial_timeout"),
-	}
-
-	etcd, err := clientv3.New(cfg)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Error connecting to ETCD: %s\n", cfg.Endpoints)
-	}
-	return etcd, nil
-}
-
 // Client is an etcd client using clientv3.
 type Client struct {
-	Etcd *clientv3.Client
+	ETCD *clientv3.Client
 	log  *logrus.Entry
 }
 
-// NewClient creates client.
-func NewClient(c *clientv3.Client) *Client {
-	return &Client{Etcd: c, log: log.NewLogger("etcd-client")}
+// Config holds Client configuration.
+type Config struct {
+	*clientv3.Client // optional clientv3.Client
+	clientv3.Config  // config for new clientv3.Client to create
+	TLSConfig        TLSConfig
+	ServiceName      string
 }
 
-// Get gets a value in Etcd
+// TLSConfig holds Client TLS configuration.
+type TLSConfig struct {
+	Enabled         bool
+	CertificatePath string
+	KeyPath         string
+	TrustedCAPath   string
+}
+
+// NewClientByViper creates etcd client based on global Viper configuration.
+func NewClientByViper(serviceName string) (*Client, error) {
+	return NewClient(&Config{
+		Config: clientv3.Config{
+			Endpoints:   viper.GetStringSlice("etcd.endpoints"),
+			Username:    viper.GetString("etcd.username"),
+			Password:    viper.GetString("etcd.password"),
+			DialTimeout: viper.GetDuration("etcd.dial_timeout"),
+		},
+		TLSConfig: TLSConfig{
+			Enabled:         viper.GetBool("etcd.tls.enabled"),
+			CertificatePath: viper.GetString("etcd.tls.certificate_path"),
+			KeyPath:         viper.GetString("etcd.tls.key_path"),
+			TrustedCAPath:   viper.GetString("etcd.tls.trusted_ca_path"),
+		},
+		ServiceName: serviceName,
+	})
+}
+
+// NewClient creates new etcd Client with given clientv3.Client.
+// It creates new clientv3.Client if it is not passed by parameter.
+func NewClient(c *Config) (*Client, error) {
+	clientv3.SetLogger(grpclog.NewLoggerV2(ioutil.Discard, os.Stdout, os.Stdout))
+
+	var etcd *clientv3.Client
+	if c.Client != nil {
+		etcd = c.Client
+	} else {
+		var err error
+		etcd, err = newETCDClient(c)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &Client{
+		ETCD: etcd,
+		log:  log.NewLogger(fmt.Sprint(c.ServiceName, "-etcd-client")),
+	}, nil
+}
+
+func newETCDClient(c *Config) (*clientv3.Client, error) {
+	if c.TLSConfig.Enabled {
+		var err error
+		c.TLS, err = transport.TLSInfo{
+			CertFile:      c.TLSConfig.CertificatePath,
+			KeyFile:       c.TLSConfig.KeyPath,
+			TrustedCAFile: c.TLSConfig.TrustedCAPath,
+		}.ClientConfig()
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid TLS config")
+		}
+	}
+
+	etcd, err := clientv3.New(c.Config)
+	if err != nil {
+		return nil, errors.Wrapf(err, "connecting to etcd failed")
+	}
+
+	return etcd, nil
+}
+
+// Get gets a value in etcd.
 func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
-	kvHandle := clientv3.NewKV(c.Etcd)
+	kvHandle := clientv3.NewKV(c.ETCD)
 	response, err := kvHandle.Get(ctx, key)
 	if err != nil || response.Count == 0 {
 		return nil, err
@@ -66,7 +128,7 @@ func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
 
 // Put puts value in etcd no matter if it was there or not.
 func (c *Client) Put(ctx context.Context, key string, value []byte) error {
-	kvHandle := clientv3.NewKV(c.Etcd)
+	kvHandle := clientv3.NewKV(c.ETCD)
 
 	_, err := kvHandle.Put(ctx, key, string(value))
 
@@ -75,7 +137,7 @@ func (c *Client) Put(ctx context.Context, key string, value []byte) error {
 
 // Create puts value in etcd if following key didn't exist.
 func (c *Client) Create(ctx context.Context, key string, value []byte) error {
-	kvHandle := clientv3.NewKV(c.Etcd)
+	kvHandle := clientv3.NewKV(c.ETCD)
 
 	_, err := kvHandle.Txn(ctx).
 		If(clientv3.Compare(clientv3.Version(key), "=", 0)).
@@ -87,7 +149,7 @@ func (c *Client) Create(ctx context.Context, key string, value []byte) error {
 
 // Update puts value in etcd if key existed before.
 func (c *Client) Update(ctx context.Context, key, value string) error {
-	kvHandle := clientv3.NewKV(c.Etcd)
+	kvHandle := clientv3.NewKV(c.ETCD)
 
 	_, err := kvHandle.Txn(ctx).
 		If(clientv3.Compare(clientv3.Version(key), "=", 0)).
@@ -97,9 +159,9 @@ func (c *Client) Update(ctx context.Context, key, value string) error {
 	return err
 }
 
-// Delete deletes a key/value in Etcd
+// Delete deletes a key/value in etcd.
 func (c *Client) Delete(ctx context.Context, key string) error {
-	kvHandle := clientv3.NewKV(c.Etcd)
+	kvHandle := clientv3.NewKV(c.ETCD)
 
 	_, err := kvHandle.Txn(ctx).
 		If(clientv3.Compare(clientv3.Version(key), "=", 0)).
@@ -122,7 +184,7 @@ func (c *Client) Watch(
 	ctx context.Context, key string, opts ...clientv3.OpOption,
 ) chan Message {
 	resultChan := make(chan Message)
-	rchan := c.Etcd.Watch(ctx, key, opts...)
+	rchan := c.ETCD.Watch(ctx, key, opts...)
 
 	go func() {
 		for wresp := range rchan {
@@ -147,7 +209,7 @@ func (c *Client) InTransaction(ctx context.Context, do func(context.Context) err
 	ctx, cancel := context.WithTimeout(context.Background(), kvClientRequestTimeout)
 	defer cancel()
 
-	_, err := conc.NewSTM(c.Etcd, func(stm conc.STM) error {
+	_, err := conc.NewSTM(c.ETCD, func(stm conc.STM) error {
 		return do(WithTxn(ctx, stmTxn{stm, c.log}))
 	}, conc.WithAbortContext(ctx))
 	return err
@@ -155,5 +217,5 @@ func (c *Client) InTransaction(ctx context.Context, do func(context.Context) err
 
 // Close closes client.
 func (c *Client) Close() error {
-	return c.Etcd.Close()
+	return c.ETCD.Close()
 }

@@ -21,7 +21,7 @@ func RunCacheDB() (*cache.DB, func() error, error) {
 
 	cacheDB := cache.NewDB(maxHistory)
 
-	processor, err := etcd.NewEventProducer(cacheDB)
+	processor, err := etcd.NewEventProducer(cacheDB, "integration-cache-db")
 	if err != nil {
 		return nil, func() error { return nil }, err
 	}

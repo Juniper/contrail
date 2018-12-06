@@ -30,6 +30,10 @@ const (
 
 // Configure configures global Logrus logger and sets configuration for new logger instances.
 func Configure(level string) error {
+	if level == "" {
+		level = "debug"
+	}
+
 	l, err := logrus.ParseLevel(level)
 	if err != nil {
 		return fmt.Errorf("parse log level: %s", err)
@@ -71,6 +75,7 @@ func newLogger(loggerName string, writer io.Writer) *logrus.Entry {
 }
 
 // SetLogLevel configure any level for any logger
+// TODO: remove that and use Configure() only
 func SetLogLevel(log *logrus.Entry, level string) {
 	switch level {
 	case "panic":

@@ -12,7 +12,6 @@ func TestConfigureFailsWhenInvalidLevelGiven(t *testing.T) {
 	tests := []struct {
 		level string
 	}{
-		{""},
 		{"invalid"},
 		{"warn "},
 	}
@@ -35,6 +34,7 @@ func TestConfigureSetsMinimalLevelPackageVariable(t *testing.T) {
 		{"warn", logrus.WarnLevel},
 		{"error", logrus.ErrorLevel},
 		{"InFo", logrus.InfoLevel},
+		{"", logrus.DebugLevel},
 	}
 	for _, test := range tests {
 		t.Run(test.level, func(t *testing.T) {

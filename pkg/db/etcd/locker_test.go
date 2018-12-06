@@ -10,16 +10,19 @@ import (
 )
 
 func TestDistributedLocker_DoWithLock(t *testing.T) {
-	l := &DistributedLocker{}
-	lock := &etcdlock.Lock{}
-	ctx := withLock(context.Background(), lock)
+	dl := &DistributedLocker{}
 
-	err := l.DoWithLock(ctx, "", time.Second, func(ctx context.Context) error {
-		if t := getLock(ctx); t == nil {
-			return assert.AnError
-		}
-		return nil
-	})
+	err := dl.DoWithLock(
+		withLock(context.Background(), &etcdlock.Lock{}),
+		"",
+		time.Second,
+		func(ctx context.Context) error {
+			if l := getLock(ctx); l == nil {
+				return assert.AnError
+			}
+			return nil
+		},
+	)
 
 	assert.NoError(t, err)
 }
