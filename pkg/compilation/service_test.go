@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/constants"
+
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/db/etcd"
@@ -23,10 +25,11 @@ const (
 	testEtcdPath           = "contrail-test"
 )
 
+// TODO(Daniel): remove that in order not to depend on Viper and use constructors' parameters instead
 func setTestConfig() {
-	viper.Set("etcd.endpoints", integrationetcd.Endpoint)
-	viper.Set("etcd.path", testEtcdPath)
-	viper.Set("etcd.grpc_insecure", true)
+	viper.Set(constants.ETCDEndpointsVK, integrationetcd.Endpoint)
+	viper.Set(constants.ETCDPathVK, testEtcdPath)
+	viper.Set(constants.ETCDGRPCInsecureVK, true)
 	viper.Set("compilation.msg_index_string", testMessageIndexString)
 	viper.Set("compilation.number_of_workers", 0)
 	viper.Set("compilation.max_job_queue_len", 0)

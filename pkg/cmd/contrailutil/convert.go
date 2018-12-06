@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/Juniper/contrail/pkg/constants"
+
 	"github.com/Juniper/contrail/pkg/convert"
 )
 
@@ -41,7 +43,7 @@ var convertCmd = &cobra.Command{
 			CassandraPort:           cassandraPort,
 			CassandraTimeout:        cassandraTimeout,
 			CassandraConnectTimeout: cassandraConnectTimeout,
-			EtcdNotifierPath:        viper.GetString("etcd.path"),
+			EtcdNotifierPath:        viper.GetString(constants.ETCDEndpointsVK),
 			URL:                     url,
 		})
 		if err != nil {

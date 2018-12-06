@@ -58,28 +58,26 @@ func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGro
 }
 
 func startCassandraReplicator(wg *sync.WaitGroup) {
-	ctx := context.Background()
 	log.Debug("Cassandra replication service enabled")
 	cassandraProcessor := cassandra.NewEventProcessor()
-	producer, err := etcd.NewEventProducer(cassandraProcessor)
+	producer, err := etcd.NewEventProducer(cassandraProcessor, "cassandra-replicator")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = producer.Start(ctx)
+	err = producer.Start(context.Background())
 	if err != nil {
 		log.Warn(err)
 	}
 }
 
 func startAmqpReplicator(wg *sync.WaitGroup) {
-	ctx := context.Background()
 	log.Debug("AMQP replication service enabled")
 	amqpProcessor := cassandra.NewAmqpEventProcessor()
-	producer, err := etcd.NewEventProducer(amqpProcessor)
+	producer, err := etcd.NewEventProducer(amqpProcessor, "amqp-replicator")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = producer.Start(ctx)
+	err = producer.Start(context.Background())
 	if err != nil {
 		log.Warn(err)
 	}
@@ -93,44 +91,41 @@ func startCacheService(wg *sync.WaitGroup) {
 	MaybeStart("cache.rdbms", startRDBMSWatcher, wg)
 }
 
-func startCassandraWatcher(wg *sync.WaitGroup) {
-	ctx := context.Background()
+func startCassandraWatcher(_ *sync.WaitGroup) {
 	log.Debug("Cassandra watcher enabled for cache")
 	producer := cassandra.NewEventProducer(cacheDB)
-	err := producer.Start(ctx)
+	err := producer.Start(context.Background())
 	if err != nil {
 		log.Warn(err)
 	}
 }
 
-func startEtcdWatcher(wg *sync.WaitGroup) {
-	ctx := context.Background()
-	log.Debug("Etcd watcher enabled for cache")
-	producer, err := etcd.NewEventProducer(cacheDB)
+func startEtcdWatcher(_ *sync.WaitGroup) {
+	log.Debug("etcd watcher enabled for cache")
+	producer, err := etcd.NewEventProducer(cacheDB, "cache-service")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = producer.Start(ctx)
+	err = producer.Start(context.Background())
 	if err != nil {
 		log.Warn(err)
 	}
 }
 
-func startRDBMSWatcher(wg *sync.WaitGroup) {
-	ctx := context.Background()
+func startRDBMSWatcher(_ *sync.WaitGroup) {
 	log.Debug("RDBMS watcher enabled for cache")
 	producer, err := syncp.NewEventProducer(cacheDB)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer producer.Close()
-	err = producer.Start(ctx)
+	err = producer.Start(context.Background())
 	if err != nil {
 		log.Warn(err)
 	}
 }
 
-func startServer(wg *sync.WaitGroup) {
+func startServer(_ *sync.WaitGroup) {
 	server, err := apisrv.NewServer()
 	if err != nil {
 		log.Fatal(err)
@@ -144,7 +139,7 @@ func startServer(wg *sync.WaitGroup) {
 	}
 }
 
-func startSync(wg *sync.WaitGroup) {
+func startSync(_ *sync.WaitGroup) {
 	s, err := syncp.NewService()
 	if err != nil {
 		log.Fatal(err)
@@ -157,7 +152,7 @@ func startSync(wg *sync.WaitGroup) {
 	}
 }
 
-func startCompilationService(wg *sync.WaitGroup) {
+func startCompilationService(_ *sync.WaitGroup) {
 	server, err := compilation.NewIntentCompilationService()
 	if err != nil {
 		log.Fatal(err)
@@ -170,7 +165,7 @@ func startCompilationService(wg *sync.WaitGroup) {
 	}
 }
 
-func startAgent(wg *sync.WaitGroup) {
+func startAgent(_ *sync.WaitGroup) {
 	a, err := agent.NewAgentByConfig()
 	if err != nil {
 		log.Fatal(err)

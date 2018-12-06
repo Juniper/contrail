@@ -18,16 +18,16 @@ type NotifierService struct {
 	log    *log.Entry
 }
 
-// NewNotifierService makes a etcdclient service.
+// NewNotifierService creates a etcd Notifier Service.
 func NewNotifierService(path string, codec models.Codec) (*NotifierService, error) {
-	c, err := DialByConfig()
+	ec, err := NewClientByViper("etcd-notifier")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to etcd server")
 	}
 
 	service := &NotifierService{
 		Path:   path,
-		Client: NewClient(c),
+		Client: ec,
 		Codec:  codec,
 		log:    pkglog.NewLogger("etcd-notifier"),
 	}

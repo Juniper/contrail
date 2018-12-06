@@ -8,6 +8,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+
+	"github.com/Juniper/contrail/pkg/constants"
 )
 
 // DistributedLocker allows securing critical sections using etcdlock.
@@ -17,7 +19,7 @@ type DistributedLocker struct {
 
 // NewDistributedLocker creates locker connected to the first etcd node from viper configuration.
 func NewDistributedLocker() (*DistributedLocker, error) {
-	endpoints := viper.GetStringSlice("etcd.endpoints")
+	endpoints := viper.GetStringSlice(constants.ETCDEndpointsVK)
 	if len(endpoints) < 1 {
 		return nil, errors.New("no etcd endpoints in config")
 	}
@@ -25,13 +27,13 @@ func NewDistributedLocker() (*DistributedLocker, error) {
 		Address: endpoints[0],
 	}
 
-	if etcdGRPCInsecure := viper.GetBool("etcd.grpc_insecure"); etcdGRPCInsecure {
+	if etcdGRPCInsecure := viper.GetBool(constants.ETCDGRPCInsecureVK); etcdGRPCInsecure {
 		opts.DialOptions = append(opts.DialOptions, grpc.WithInsecure())
 	}
 
 	l, err := etcdlock.NewLocker(opts)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error connecting to ETCD: %s\n", endpoints[0])
+		return nil, errors.Wrapf(err, "Error connecting to etcd on endpoints %v", endpoints)
 	}
 
 	return &DistributedLocker{Locker: l}, nil
