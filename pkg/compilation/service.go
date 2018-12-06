@@ -27,6 +27,8 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
+const serviceName = "intent-compiler"
+
 // SetupService setups all required services and chains them.
 func SetupService(
 	WriteService services.WriteService,
@@ -72,11 +74,11 @@ type IntentCompilationService struct {
 	log logrus.FieldLogger
 }
 
-// NewIntentCompilationService makes a new Intent Compilation Service
+// NewIntentCompilationService makes a new Intent Compilation Service.
 func NewIntentCompilationService() (*IntentCompilationService, error) {
 	c := config.ReadConfig()
 
-	e, err := etcd.DialByConfig()
+	ec, err := etcd.NewClientByViper(serviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -91,9 +93,9 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 	return &IntentCompilationService{
 		service:   logicService,
 		apiClient: apiClient,
-		Store:     etcd.NewClient(e),
+		Store:     ec,
 		config:    &c,
-		log:       log.NewLogger("intent-compiler"),
+		log:       log.NewLogger(serviceName),
 	}, nil
 }
 
@@ -205,7 +207,7 @@ func (ics *IntentCompilationService) handleEtcdMessage(ctx context.Context, oper
 	event, err := etcd.ParseEvent(oper, key, []byte(value))
 	if err != nil {
 		logrus.WithFields(messageFields).WithField(
-			logrus.ErrorKey, fmt.Sprintf("%+v", err)).Error("failed to parse ETCD event")
+			logrus.ErrorKey, fmt.Sprintf("%+v", err)).Error("failed to parse etcd event")
 	}
 	processor := services.ServiceEventProcessor{
 		Service: ics.service,

@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/constants"
+
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -144,8 +146,9 @@ func TestEtcdNotifierService(t *testing.T) {
 	}
 
 	etcdPath := "test"
-	viper.Set("etcd.endpoints", integrationetcd.Endpoint)
-	viper.Set("etcd.path", etcdPath)
+	// TODO(Daniel): remove that in order not to depend on Viper and use constructors' parameters instead
+	viper.Set(constants.ETCDEndpointsVK, integrationetcd.Endpoint)
+	viper.Set(constants.ETCDPathVK, etcdPath)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

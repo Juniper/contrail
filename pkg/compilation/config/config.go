@@ -3,6 +3,8 @@ package config
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/constants"
 )
 
 // DefaultConfig section.
@@ -57,8 +59,8 @@ func ReadConfig() Config {
 			MaxJobQueueLen:  viper.GetInt("compilation.max_job_queue_len"),
 		},
 		EtcdNotifierCfg: EtcdNotifierConfig{
-			EtcdServers:      viper.GetStringSlice("etcd.endpoints"),
-			WatchPath:        viper.GetString("etcd.path"),
+			EtcdServers:      viper.GetStringSlice(constants.ETCDEndpointsVK),
+			WatchPath:        viper.GetString(constants.ETCDPathVK),
 			MsgQueueLockTime: viper.GetInt("compilation.msg_queue_lock_time"), // TODO(Michal): Change to GetDuration
 			MsgIndexString:   viper.GetString("compilation.msg_index_string"),
 			ReadLockString:   viper.GetString("compilation.read_lock_string"),
@@ -85,12 +87,12 @@ func ReadConfig() Config {
 	log.Println("Number of Workers:", c.DefaultCfg.NumberOfWorkers)
 	log.Println("Maximum Job Queue Len:", c.DefaultCfg.MaxJobQueueLen)
 
-	log.Println("ETCD Notifier Servers List:", c.EtcdNotifierCfg.EtcdServers)
-	log.Println("ETCD Notifier WatchPath :", "/"+c.EtcdNotifierCfg.WatchPath)
-	log.Println("ETCD Notifier MsgQueueLockTime:", c.EtcdNotifierCfg.MsgQueueLockTime)
-	log.Println("ETCD Notifier MsgIndexString:", c.EtcdNotifierCfg.MsgIndexString)
-	log.Println("ETCD Notifier ReadLockString:", c.EtcdNotifierCfg.ReadLockString)
-	log.Println("ETCD Notifier MasterElection:", c.EtcdNotifierCfg.MasterElection)
+	log.Println("etcd Notifier Servers List:", c.EtcdNotifierCfg.EtcdServers)
+	log.Println("etcd Notifier WatchPath :", "/"+c.EtcdNotifierCfg.WatchPath)
+	log.Println("etcd Notifier MsgQueueLockTime:", c.EtcdNotifierCfg.MsgQueueLockTime)
+	log.Println("etcd Notifier MsgIndexString:", c.EtcdNotifierCfg.MsgIndexString)
+	log.Println("etcd Notifier ReadLockString:", c.EtcdNotifierCfg.ReadLockString)
+	log.Println("etcd Notifier MasterElection:", c.EtcdNotifierCfg.MasterElection)
 
 	log.Println("Plugin Handlers:", c.PluginCfg.Handlers)
 	return c
