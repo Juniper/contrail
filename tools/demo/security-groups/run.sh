@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-	echo "Usage: run.sh POD_NAME"
+	echo "Usage: run.sh POD_FULL_NAME"
 	exit 1
 fi
 
