@@ -12,6 +12,7 @@ RealPath()
 }
 
 ThisDir=$(RealPath "$(dirname "$0")")
+#shellcheck disable=SC1090
 . "$ThisDir/ensure_docker_group.sh"
 
 ensure_group "$@"
@@ -66,9 +67,11 @@ docker-compose -f /etc/contrail/config_database/docker-compose.yaml up -d zookee
 make zero_psql
 
 # Drop contrail related content from etcd
-docker exec $(docker ps -q -f name=k8s_etcd_etcd) sh -c "ETCDCTL_API=3 etcdctl del /contrail --prefix"
+etcdctl_tls="etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt \
+    --key=/etc/kubernetes/pki/etcd/peer.key"
+docker exec "$(docker ps -q -f name=k8s_etcd_etcd)" sh -c "ETCDCTL_API=3 $etcdctl_tls del /contrail --prefix"
 
-# Build patched kube_manager with ETCD support
+# Build patched kube_manager with etcd support
 docker build "$ContrailRootDir/docker/kube_manager_etcd/" -t contrail-kubernetes-kube-manager:etcd
 
 # Update kube_manager docker compose file
