@@ -170,23 +170,20 @@ See: [Generated models documentation](proto.md)
 
 ## API Server
 
-API Server provides REST API and gRPC for external orchestrators such as UI / OpenStack or Kubernetes.
-[Echo framework](https://echo.labstack.com/) is used as HTTP Web server framework
-and standard library is used for gRPC Server.
-Internally, API requests are dispatched to internal services which support
-Service Interface described in the next chapter.
+API Server provides REST API and gRPC API for external orchestrators such as UI, OpenStack or Kubernetes. [Echo](https://echo.labstack.com/) is used as HTTP Web server framework.
 
 ![API Server Internal Architecture](images/api_process.svg "API Process Data")
 
 API Server supports Keystone V3 authentication and RBAC.
-See: [Authentication documentation](authentication.md)
-See: [Access Control documentation](policy.md)
 
-API Server has minimal Keystone API V3 support for standalone use case for testing purposes.
-See "keystone" key [in sample configuration file](https://github.com/Juniper/contrail/blob/master/sample/contrail.yml).
+API Server has minimal embedded Keystone API V3 support for testing purposes. See "keystone" key [in sample configuration file](https://github.com/Juniper/contrail/blob/master/sample/contrail.yml).
 
-See: [REST API documentation](rest_api.md)
-See: [API Server source code](../pkg/apisrv)
+See:
+ 
+- [REST API documentation](rest_api.md)
+- [Authentication documentation](authentication.md)
+- [Policy documentation](policy.md)
+- [API Server source code](../pkg/apisrv)
 
 ## Service Interface & Chain
 

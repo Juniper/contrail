@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
@@ -9,7 +10,7 @@ import (
 // SetDefaultSyncConfig sets config options required by sync.
 func SetDefaultSyncConfig(shouldDump bool) {
 	setViperConfig(map[string]interface{}{
-		"etcd.endpoints":              []string{integrationetcd.Endpoint},
+		constants.ETCDEndpointsVK:     []string{integrationetcd.Endpoint},
 		"sync.storage":                models.JSONCodec.Key(),
 		"sync.dump":                   shouldDump,
 		"database.type":               basedb.DriverPostgreSQL,
