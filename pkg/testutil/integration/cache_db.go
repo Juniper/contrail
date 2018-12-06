@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 
+	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
@@ -15,13 +16,13 @@ const (
 // RunCacheDB runs DB Cache with etcd event producer.
 func RunCacheDB() (*cache.DB, func() error, error) {
 	setViperConfig(map[string]interface{}{
-		"cache.timeout":  "10s",
-		"etcd.endpoints": []string{integrationetcd.Endpoint},
+		"cache.timeout":           "10s",
+		constants.ETCDEndpointsVK: []string{integrationetcd.Endpoint},
 	})
 
 	cacheDB := cache.NewDB(maxHistory)
 
-	processor, err := etcd.NewEventProducer(cacheDB)
+	processor, err := etcd.NewEventProducer(cacheDB, "integration-cache-db")
 	if err != nil {
 		return nil, func() error { return nil }, err
 	}
