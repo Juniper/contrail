@@ -17,13 +17,12 @@ type EventProducer struct {
 
 //NewEventProducer makes EventProducer based RDBMS updates.
 func NewEventProducer(processor services.EventProcessor) (*EventProducer, error) {
-	log := log.NewLogger("sync-event-producer")
-	watcher, err := createWatcher(log, processor)
+	watcher, err := createWatcher(processor, "sync-event-producer")
 	if err != nil {
 		return nil, err
 	}
 	return &EventProducer{
-		log:     log,
+		log:     log.NewLogger("sync-event-producer"),
 		watcher: watcher,
 	}, nil
 }

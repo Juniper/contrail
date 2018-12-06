@@ -9,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
+	"github.com/Juniper/contrail/pkg/constants"
+
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
@@ -64,7 +66,7 @@ func (j protoCodec) Key() string {
 
 // ResourceKey constructs key for given codec, resource name and pk.
 func ResourceKey(resourceName, pk string) string {
-	return path.Join("/", viper.GetString("etcd.path"), resourceName, pk)
+	return path.Join("/", viper.GetString(constants.ETCDPathVK), resourceName, pk)
 }
 
 // UpdateData deserializes oldData into same type as object provided in update,
