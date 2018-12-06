@@ -15,6 +15,8 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
+	"github.com/Juniper/contrail/pkg/constants"
+
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
@@ -140,9 +142,9 @@ func (s *Server) setupOpenstack() (*openstackservice.OpenstackService, error) {
 
 func etcdNotifier() services.Service {
 	// TODO(Michał): Make the codec configurable
-	en, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"), models.JSONCodec)
+	en, err := etcdclient.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
 	if err != nil {
-		log.WithError(err).Error("Failed to add ETCD Notifier Service - ignoring")
+		log.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
 		return nil
 	}
 	return en

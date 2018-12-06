@@ -22,6 +22,8 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// TODO(Daniel): remove that in order not to depend on Viper and use constructors' parameters instead
 	viper.Set("server.static_files.public", "../../../public")
 
 	if server, err = integration.NewRunningServer(&integration.APIServerConfig{
