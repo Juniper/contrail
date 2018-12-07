@@ -1,0 +1,177 @@
+name: Physical Interface Test
+description:  basic physical interface test
+cleanup:
+- path: /physical-router/physical_router_blue_uuid
+- path: /logical-interface/logical_interface_blue_uuid
+- path: /logical-interface/logical_interface_child_uuid
+- path: /logical-interface/logical_interface_child_uuid2
+- path: /physical-interface/physical_interface_blue_uuid
+- path: /physical-interface/physical_interface_blue_uuid0
+- path: /physical-interface/physical_interface_blue_uuid2
+test_data:
+
+  admin_project: &admin_project_instance_ip
+    uuid: admin_instance_ip_project_uuid
+    name: admin_instance_ip_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  physical_router: &physical_router
+    uuid: physical_router_blue_uuid
+    name: physical_router_blue_name
+    physical_router_device_family: juniper
+    physical_router_vendor_name: juniper
+    physical_router_management_ip: localhost
+    physical_router_product_name: juniper
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001  # default global-system-config uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project:
+        parent_type: domain
+        fq_name:
+        - default-domain
+        - k8s-kube-system
+        uuid: k8s-kube-system-uuid
+
+- name: create network ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected: [200]
+    data:
+      network-ipam:
+        parent_type: project
+        parent_uuid: k8s-kube-system-uuid
+        uuid: k8s-pod-ipam-uuid
+
+- name: create default pod network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [200]
+    data:
+      virtual-network:
+        uuid: k8s-default-pod-network-uuid
+        parent_type: project
+        parent_uuid: k8s-kube-system-uuid
+
+- name: create virtual machine interface
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [200]
+    data:
+      virtual-machine-interface:
+        uuid: default-vmi-uuid
+        display_name: default-vmi-k8
+        parent_type: project
+        parent_uuid: k8s-kube-system-uuid
+        virtual_network_refs:
+        - to: ["default-domain", "k8s-default", "k8s-default-pod-network"]
+          uuid: k8s-default-pod-network-uuid
+
+- name: create physical router
+  request:
+    path: /physical-routers
+    method: POST
+    expected: [200]
+    data:
+      physical-router: *physical_router
+  expect:
+    physical-router: *physical_router
+
+- name: create physical interface
+  request:
+    path: /physical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid
+        name: physical_interface_blue_name
+        display_name: interface_no1
+        ethernet_segment_identifier: 01:02:03:04:05:06:07:08:09:10
+        parent_uuid: physical_router_blue_uuid
+
+- name: create child logical interface
+  request:
+    path: /logical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      logical-interface:
+        uuid: logical_interface_child_uuid
+        parent_type: physical-interface
+        parent_uuid: physical_interface_blue_uuid
+        logical_interface_vlan_tag: 1024
+        virtual_machine_interface_refs:
+        - to: ["default-domain", "k8s-default", "default-vmi-k8"]
+          uuid: default-vmi-uuid
+
+- name: create second physical interface with second esi
+  request:
+    path: /physical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid2
+        name: physical_interface_blue_name2
+        display_name: interface_no2
+        ethernet_segment_identifier: 11:02:03:04:05:06:07:08:09:11
+        parent_uuid: physical_router_blue_uuid
+
+- name: create second child logical interface
+  request:
+    path: /logical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      logical-interface:
+        uuid: logical_interface_child_uuid2
+        parent_type: physical-interface
+        parent_uuid: physical_interface_blue_uuid2
+        logical_interface_vlan_tag: 1024
+
+- name: update second physical interface ESI with wrong ESI
+  request:
+    path: /physical-interface/physical_interface_blue_uuid2
+    method: PUT
+    expected: [409]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid2
+        name: physical_interface_blue_name2
+        display_name: interface_no2
+        ethernet_segment_identifier: 01:02:03:04:05:06:07:08:09:10
+        parent_uuid: physical_router_blue_uuid
+
+- name: update first physical interface ESI with wrong ESI
+  request:
+    path: /physical-interface/physical_interface_blue_uuid
+    method: PUT
+    expected: [200]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid
+        name: physical_interface_blue_name
+        display_name: interface_no1
+        ethernet_segment_identifier: 11:02:03:04:05:06:07:08:09:11
+        parent_uuid: physical_router_blue_uuid
