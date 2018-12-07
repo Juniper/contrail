@@ -46,6 +46,9 @@ var ErrorInternal = grpc.Errorf(codes.Internal, "Internal Server Error")
 //ErrorConflict is for resource conflict error.
 var ErrorConflict = grpc.Errorf(codes.AlreadyExists, "Resource conflict")
 
+//ErrorUnknown is for unknown error.
+var ErrorUnknown = grpc.Errorf(codes.Unknown, "Unknown error")
+
 // CauseCode returns wrapped grpc error code
 func CauseCode(err error) codes.Code {
 	return grpc.Code(errors.Cause(err))
@@ -95,12 +98,20 @@ func ErrorNotFoundf(message string, a ...interface{}) error {
 	return grpc.Errorf(codes.NotFound, message, a...)
 }
 
-// ErrorConflictf makes not found error.
+// ErrorConflictf makes already exists error.
 func ErrorConflictf(format string, a ...interface{}) error {
 	if format == "" {
 		return ErrorConflict
 	}
 	return grpc.Errorf(codes.AlreadyExists, format, a...)
+}
+
+//ErrorInternalf makes unknown error.
+func ErrorInternalf(format string, a ...interface{}) error {
+	if format == "" {
+		return ErrorUnknown
+	}
+	return grpc.Errorf(codes.Unknown, format, a...)
 }
 
 // ToHTTPError translates grpc error to error.
