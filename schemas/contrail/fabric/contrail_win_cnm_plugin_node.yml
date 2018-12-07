@@ -1,0 +1,24 @@
+description: Contrail Windows CNM Plugin node
+extends:
+- base
+- has_status
+id: contrail_win_cnm_plugin_node
+metadata:
+  category: cluster
+references:
+  node:
+    operations: "CRUD"
+    description: "Reference to node object for this CNM Plugin node."
+    presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this CNM Plugin node."
+    presence: "optional"
+plural: contrail_win_cnm_plugin_nodes
+prefix: /
+schema:
+  properties:
+singular: contrail_win_cnm_plugin_node
+title: Contrail CNM Plugin node
+type: ""
