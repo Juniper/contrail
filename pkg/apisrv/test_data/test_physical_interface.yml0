@@ -1,0 +1,251 @@
+name: Physical Interface Test
+description:  basic physical interface test
+cleanup:
+- path: /tag/test_tag_blue_uuid
+- path: /physical-router/physical_router_blue_uuid
+- path: /logical-interface/logical_interface_blue_uuid
+- path: /logical-interface/logical_interface_child_uuid
+- path: /logical-interface/logical_interface_child_uuid2
+- path: /physical-interface/physical_interface_blue_uuid
+- path: /physical-interface/physical_interface_blue_uuid0
+- path: /physical-interface/physical_interface_blue_uuid2
+test_data:
+
+  admin_project: &admin_project_instance_ip
+    uuid: admin_instance_ip_project_uuid
+    name: admin_instance_ip_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  tag: &test_tag_blue
+    uuid: test_tag_blue_uuid
+    fq_name:
+      - namespace=kube-system
+    tag_type_name: namespace
+    tag_value: kube-system
+
+  physical_router: &physical_router
+    uuid: physical_router_blue_uuid
+    name: physical_router_blue_name
+    physical_router_device_family: juniper
+    physical_router_vendor_name: juniper
+    physical_router_management_ip: localhost
+    physical_router_product_name: juniper
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001  # default global-system-config uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create tag blue
+  request:
+    path: /tags
+    method: POST
+    expected: [200]
+    data:
+      tag: *test_tag_blue
+  expect:
+    tag: *test_tag_blue
+
+- name: create physical router
+  request:
+    path: /physical-routers
+    method: POST
+    expected: [200]
+    data:
+      physical-router: *physical_router
+  expect:
+    physical-router: *physical_router
+
+- name: create logical interface
+  request:
+    path: /logical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      logical-interface:
+        uuid: logical_interface_blue_uuid
+        tag_refs:
+        - uuid: test_tag_blue_uuid
+          to: [namespace=kube-system]
+        parent_type: physical-router
+        parent_uuid: physical_router_blue_uuid
+        logical_interface_vlan_tag: 1024
+  expect:
+    logical-interface:
+      uuid: logical_interface_blue_uuid
+      name: default-logical-interface
+      display_name: default-logical-interface
+      parent_type: physical-router
+      fq_name: [default-global-system-config, physical_router_blue_name, default-logical-interface]
+
+- name: create physical interface
+  request:
+    path: /physical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid
+        name: physical_interface_blue_name
+        display_name: interface_no1
+        ethernet_segment_identifier: 01:02:03:04:05:06:07:08:09:10
+        parent_uuid: physical_router_blue_uuid
+        tag_refs:
+        - uuid: test_tag_blue_uuid
+          to: [namespace=kube-system]
+
+- name: create child logical interface
+  request:
+    path: /logical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      logical-interface:
+        uuid: logical_interface_child_uuid
+        tag_refs:
+        - uuid: test_tag_blue_uuid
+          to: [namespace=kube-system]
+        parent_type: physical-interface
+        parent_uuid: physical_interface_blue_uuid
+        logical_interface_vlan_tag: 1024
+
+- name: create physical interface with wrong esi
+  request:
+    path: /physical-interfaces
+    method: POST
+    expected: [400]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid0
+        name: physical_interface_blue_name0
+        display_name: interface_no0
+        ethernet_segment_identifier: AB:CD:EF:GH:IJ:KL:MN:OP:QR:ST
+        parent_uuid: physical_router_blue_uuid
+
+- name: create physical interface with same tag
+  request:
+    path: /physical-interfaces
+    method: POST
+    expected: [409]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid0
+        name: physical_interface_blue_name0
+        display_name: interface_no0
+        parent_uuid: physical_router_blue_uuid
+        tag_refs:
+        - uuid: test_tag_blue_uuid
+          to: [namespace=kube-system]
+
+- name: update physical interface
+  request:
+    path: /physical-interface/physical_interface_blue_uuid
+    method: PUT
+    expected: [200]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid
+        name: physical_interface_blue_name
+        display_name: interface_no1
+        ethernet_segment_identifier: 01:02:03:04:05:06:07:08:09:10
+        parent_uuid: physical_router_blue_uuid
+        tag_refs:
+        - uuid: test_tag_blue_uuid
+          to: [namespace=kube-system]
+
+- name: update physical interface and try to change display name
+  request:
+    path: /physical-interface/physical_interface_blue_uuid
+    method: PUT
+    expected: [409, 500]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid
+        name: physical_interface_blue_name
+        display_name: interface_no0
+        ethernet_segment_identifier: 01:02:03:04:05:06:07:08:09:10
+        parent_uuid: physical_router_blue_uuid
+
+- name: create physical interface with same display name
+  request:
+    path: /physical-interfaces
+    method: POST
+    expected: [409]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid0
+        name: physical_interface_blue_name0
+        display_name: interface_no1
+        parent_uuid: physical_router_blue_uuid
+
+- name: create second physical interface with second esi
+  request:
+    path: /physical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid2
+        name: physical_interface_blue_name2
+        display_name: interface_no2
+        ethernet_segment_identifier: 11:02:03:04:05:06:07:08:09:11
+        parent_uuid: physical_router_blue_uuid
+        tag_refs:
+        - uuid: second_tag_blue_uuid
+          to: [namespace=kube-system]
+
+- name: update first physical interface ESI as second physical interface
+  request:
+    path: /physical-interface/physical_interface_blue_uuid
+    method: PUT
+    expected: [200]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid
+        name: physical_interface_blue_name
+        display_name: interface_no1
+        ethernet_segment_identifier: 11:02:03:04:05:06:07:08:09:11
+        parent_uuid: physical_router_blue_uuid
+        tag_refs:
+        - uuid: test_tag_blue_uuid
+          to: [namespace=kube-system]
+
+- name: create second child logical interface
+  request:
+    path: /logical-interfaces
+    method: POST
+    expected: [200]
+    data:
+      logical-interface:
+        uuid: logical_interface_child_uuid2
+        tag_refs:
+        - uuid: second_tag_blue_uuid
+          to: [namespace=kube-system]
+        parent_type: physical-interface
+        parent_uuid: physical_interface_blue_uuid2
+        logical_interface_vlan_tag: 2048
+
+- name: update first physical interface ESI with wrong ESI
+  request:
+    path: /physical-interface/physical_interface_blue_uuid
+    method: PUT
+    expected: [200]
+    data:
+      physical-interface:
+        uuid: physical_interface_blue_uuid
+        name: physical_interface_blue_name
+        display_name: interface_no1
+        ethernet_segment_identifier: 11:02:03:04:05:06:07:08:09:11
+        parent_uuid: physical_router_blue_uuid
+        tag_refs:
+        - uuid: test_tag_blue_uuid
+          to: [namespace=kube-system]
