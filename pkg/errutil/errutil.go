@@ -95,12 +95,20 @@ func ErrorNotFoundf(message string, a ...interface{}) error {
 	return grpc.Errorf(codes.NotFound, message, a...)
 }
 
-// ErrorConflictf makes not found error.
+// ErrorConflictf makes already exists error.
 func ErrorConflictf(format string, a ...interface{}) error {
 	if format == "" {
 		return ErrorConflict
 	}
 	return grpc.Errorf(codes.AlreadyExists, format, a...)
+}
+
+//ErrorInternalf makes unknown error.
+func ErrorInternalf(format string, a ...interface{}) error {
+	if format == "" {
+		return ErrorInternal
+	}
+	return grpc.Errorf(codes.Internal, format, a...)
 }
 
 // ToHTTPError translates grpc error to error.
