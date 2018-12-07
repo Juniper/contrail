@@ -291,7 +291,7 @@ schema:
       - vcenter
       - openshift
       - mesos
-      - windows
+      - none
       permission:
       - create
       - update

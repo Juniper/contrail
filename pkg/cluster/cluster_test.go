@@ -702,3 +702,9 @@ func TestVcenterCluster(t *testing.T) {
 	}
 	runvcenterClusterTest(t, "./test_data/expected_all_in_one_vcenter_instances.yml", context, expectedEndpoints)
 }
+
+func TestWindowsCompute(t *testing.T) {
+	testScenario, err := integration.LoadTest("./test_data/test_windows_compute.yml", nil)
+	assert.NoError(t, err, "failed to load test data")
+	integration.RunCleanTestScenario(t, testScenario, server)
+}
