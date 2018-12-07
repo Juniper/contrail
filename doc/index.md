@@ -52,12 +52,11 @@ switch between internal function call or gRPC call depending on where other proc
 `contrail` application contains following services (processes) spawned as separate goroutines:
 
 - [Agent service](agent.md)
-- AMQP Replicator service
 - [API Server](rest_api.md)
 - Cache Database
 - [Cluster service](cluster.md)
 - [Intent Compilation service](intent_compilation.md)
-- Cassandra Replicator service
+- [Cassandra & AMQP Replicator services](replicator_services.md)
 - [Sync service](sync.md)
 
 ![Process model](images/process.svg "Process")
