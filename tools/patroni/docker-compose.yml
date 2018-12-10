@@ -1,36 +1,29 @@
 version: '3'
 
 services:
-  etcd:
-    container_name: partoni_etcd
-    image: patroni
-    network_mode: bridge
-    command: --etcd
-
   haproxy:
     container_name: contrail_haproxy
     image: patroni
-    network_mode: bridge
-    links:
-      - etcd
     ports:
       - "5432:5000"
       - "5001:5001"
     environment:
-      PATRONI_ETCD_URL: http://etcd:2379
+      PATRONI_ETCD_URL: http://$HOSTIP:2379
       PATRONI_SCOPE: testcluster
     command: --confd
 
   dbnode:
     image: patroni
-    network_mode: bridge
-    links:
-      - etcd
     volumes:
       - ./patroni.yml:/patroni.yml
       - ../../tools:/tools
     environment:
-      PATRONI_ETCD_URL: http://etcd:2379
+      PATRONI_ETCD_URL: http://$HOSTIP:2379
       PATRONI_SCOPE: testcluster
       PATRONI_SUPERUSER_USERNAME: root
       PATRONI_SUPERUSER_PASSWORD: contrail123
+
+networks:
+  default:
+    external:
+      name: $NETWORKNAME

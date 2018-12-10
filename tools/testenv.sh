@@ -7,6 +7,7 @@ TOOLSDIR=$(dirname $0)
 
 RunDockers="mysql etcd patroni"
 Network='contrail'
+HOSTGATE='localhost'
 
 Usage()
 {
@@ -24,13 +25,14 @@ done
 
 PASSWORD=contrail123
 SpecialNetworks='bridge none host'
-[[ "$SpecialNetworks" = *"$Network"* ]] || docker network create contrail || true
-docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p "contrail" down || true
+[[ "$SpecialNetworks" = *"$Network"* ]] || docker network create $Network || true
+[[ "$Network" = "host" ]] || HOSTGATE=$(docker network inspect $Network --format='{{ range .IPAM.Config }}{{ .Gateway }}{{ end }}')
+HOSTIP=$HOSTGATE NETWORKNAME=$Network docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $Network down || true
 docker rm -f contrail_mysql contrail_etcd || true
 
 run_docker_patroni()
 {
-    docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p "contrail" up --scale dbnode=2 -d
+    HOSTIP=$HOSTGATE NETWORKNAME=$Network docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $Network up --scale dbnode=2 -d
 }
 
 run_docker_mysql()
