@@ -1,4 +1,4 @@
-FROM opencontrailnightly/contrail-kubernetes-kube-manager:master-latest
+FROM opencontrailnightly/contrail-kubernetes-kube-manager:master-423
 MAINTAINER Pawel Marchewka pawel.marchewka@codilime.com
 
 RUN rpm -ihv http://ftp.scientificlinux.org/linux/scientific/7.0/x86_64/os/Packages/patch-2.7.1-8.el7.x86_64.rpm
