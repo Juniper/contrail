@@ -7,6 +7,7 @@ TOOLSDIR=$(dirname $0)
 
 RunDockers="mysql etcd patroni"
 Network='contrail'
+PROJECT='contrail'
 
 Usage()
 {
@@ -24,13 +25,20 @@ done
 
 PASSWORD=contrail123
 SpecialNetworks='bridge none host'
-[[ "$SpecialNetworks" = *"$Network"* ]] || docker network create contrail || true
-docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p "contrail" down || true
+[[ "$SpecialNetworks" = "*$Network*" ]] || PROJECT=$Network
+docker network create $PROJECT --subnet 10.0.4.0/24 --gateway 10.0.4.1 || true
+NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT down || true
 docker rm -f contrail_mysql contrail_etcd || true
 
 run_docker_patroni()
 {
-    docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p "contrail" up --scale dbnode=2 -d
+    if [[ "$Network" = "host" ]]; then
+        NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT up -d etcd
+        HOSTGATE=$(docker inspect contrail_patroni_etcd --format='{{ range .NetworkSettings.Networks }}{{.IPAddress}}{{end}}')
+    else
+        HOSTGATE=$(docker network inspect $PROJECT --format='{{ range .IPAM.Config }}{{ .Gateway }}{{ end }}')
+    fi
+    HOSTIP=$HOSTGATE NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT up --scale dbnode=2 -d haproxy dbnode
 }
 
 run_docker_mysql()
