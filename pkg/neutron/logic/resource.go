@@ -17,6 +17,10 @@ type Resource interface {
 	DeleteInterface(ctx Context) (Response, error)
 }
 
+const (
+	READ = "READ"
+)
+
 type Response interface{}
 
 type BaseResource struct{}
