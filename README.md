@@ -18,10 +18,11 @@ to community discussion.
 
 ## Development setup
 
-### Step1. Install Go and Docker
+### Step1. Install Go, Docker and Docker Compose
 
-- [golang.org/doc/install](https://golang.org/doc/install)
-- [docs.docker.com/install](https://docs.docker.com/install/)
+- [Go](https://golang.org/doc/install)
+- [Docker](https://docs.docker.com/install/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Step2. Go get Contrail
 
@@ -35,6 +36,12 @@ commit generated code.
 ### Step3. Install dependencies
 
 ```bash
+# move to repo
+cd $HOME/go/src/github.com/Juniper/contrail
+# make sure put GOBIN to path
+export PATH=$PATH:$HOME/go/bin
+# or if you defined GOPATH
+# cd $GOPATH/src/github.com/Juniper/contrail
 make deps
 ```
 
