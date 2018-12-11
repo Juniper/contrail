@@ -5,18 +5,21 @@ import (
 	"fmt"
 )
 
+// ErrorFields neutron error fields.
+type ErrorFields map[string]interface{}
+
 // Error structure.
 type Error struct {
-	fields map[string]interface{}
+	fields ErrorFields
 }
 
 // NewNeutronError creates new Neutron error.
-func NewNeutronError(name string, fields map[string]interface{}) *Error {
+func NewNeutronError(name string, fields ErrorFields) *Error {
 	e := &Error{
 		fields: fields,
 	}
 	if fields == nil {
-		e.fields = map[string]interface{}{}
+		e.fields = ErrorFields{}
 	}
 	e.fields["exception"] = name
 	return e
@@ -38,5 +41,7 @@ func (e *Error) MarshalJSON() ([]byte, error) {
 // constants for Neutron API exception names
 // https://docs.openstack.org/neutron-lib/queens/reference/modules/neutron_lib.exceptions.html
 const (
-	BadRequest = "BadRequest"
+	badRequest                = "BadRequest"
+	securityGroupNotFound     = "SecurityGroupNotFound"
+	securityGroupRuleNotFound = "SecurityGroupRuleNotFound"
 )
