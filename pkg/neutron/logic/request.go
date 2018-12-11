@@ -25,7 +25,7 @@ func (r *Request) GetType() string {
 	return r.Context.Type
 }
 
-// UnmarshalJSON custom unmarshalling of Request
+// UnmarshalJSON custom unmarshalling of Request.
 func (r *Request) UnmarshalJSON(data []byte) error {
 	var rawJSON map[string]json.RawMessage
 	err := json.Unmarshal(data, &rawJSON)

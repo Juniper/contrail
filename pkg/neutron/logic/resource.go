@@ -1,6 +1,9 @@
 package logic
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/services"
@@ -74,4 +77,37 @@ type RequestParameters struct {
 	RequestContext RequestContext
 	ReadService    services.ReadService
 	WriteService   services.WriteService
+}
+
+// UnmarshalJSON Filters.
+func (f *Filters) UnmarshalJSON(data []byte) error {
+	if *f == nil {
+		*f = Filters{}
+	}
+	var m map[string]interface{}
+	err := json.Unmarshal(data, &m)
+	if err != nil {
+		return err
+	}
+	for k, v := range m {
+		var ss []string
+		switch s := v.(type) {
+		case []interface{}:
+			for _, i := range s {
+				switch c := i.(type) {
+				case bool:
+					ss = append(ss, fmt.Sprintf("%t", c))
+				case string:
+					ss = append(ss, fmt.Sprintf("%s", c))
+				default:
+					return errors.Errorf("%T filter not supported", v)
+				}
+			}
+		default:
+			return errors.Errorf("%T filter not supported", v)
+		}
+
+		(*f)[k] = ss
+	}
+	return nil
 }
