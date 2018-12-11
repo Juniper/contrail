@@ -50,7 +50,7 @@ func (s *Service) process(r *Request) (logic.Response, error) {
 		return r.Data.Resource.Update(ctx)
 	case "DELETE":
 		return r.Data.Resource.Delete(ctx, r.Data.ID)
-	case "READ":
+	case logic.READ:
 		return r.Data.Resource.Read(ctx, r.Data.ID)
 	case "READALL":
 		return r.Data.Resource.ReadAll(ctx, r.Data.Filters, r.Data.Fields)
