@@ -2,6 +2,8 @@
 
 set -o errexit
 
+exit 1
+
 # TODO: uncomment this once this dep is fixed
 # go get -u github.com/go-openapi/spec
 go get -u github.com/golang/dep/cmd/dep
