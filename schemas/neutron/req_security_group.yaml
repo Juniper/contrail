@@ -21,4 +21,6 @@ schema:
     project_id:
       type: string
       presence: true
-
+    description:
+      type: string
+      presence: optional
