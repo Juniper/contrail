@@ -1,0 +1,138 @@
+name: Security Group Test
+description: security group test
+cleanup:
+- path: /security-group/security-group-mock
+- path: /project/project-uuid-1
+
+# TODO: add missing tests. These test covers happy-path only.
+
+test_data:
+  project: &project
+    uuid: project-uuid-1
+    name: project_name
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+  sg: &sg
+    uuid: security-group-mock
+    name: sg_name
+    parent_uuid: project-uuid-1
+    security_group_entries:
+      policy_rule:
+      - direction: ">"
+        protocol: "any"
+        dst_addresses:
+        - security_group: "local"
+        dst_ports:
+        - end_port: 65535
+          start_port: 0
+        ethertype: "IPv4"
+        src_addresses:
+        - security_group: "default:project_name:sg_name"
+        src_ports:
+        - end_port: 65535
+          start_port: 0
+  sg_read_request: &sg_read_request
+    data:
+      id: security-group-mock
+    context:
+      user_id: 32fc3e2bf6e94e0daa21090e493e7aef
+      roles:
+      - admin
+      tenant_id: 5595adaac4f6423b930f1f1f66c89507
+      is_admin: true
+      request_id: req-ac841ef9-2c79-4787-b80c-22a7b3263255
+      operation: READ
+      type: security_group
+      tenant: 5595adaac4f6423b930f1f1f66c89507
+  sg_read_response: &sg_read_response
+    fq_name:
+      - default-domain
+      - project_name
+      - sg_name
+    tenant_id: projectuuid1
+    security_group_rules:
+    - remote_group_id: ''
+      direction: ingress
+      remote_ip_prefix: ''
+      protocol: any
+      ethertype: IPv4
+      port_range_max: 65535
+      updated_at: ''
+      security_group_id: security-group-mock
+      port_range_min: 0
+      tenant_id: projectuuid1
+      created_at: ''
+      id: ''
+    id: security-group-mock
+    name: sg_name
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *project
+  expect:
+    project: *project
+- name: check if security group is empty
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [400]
+    data: *sg_read_request
+  expect:
+    exception: SecurityGroupNotFound
+    id: security-group-mock
+- name: create security group
+  request:
+    path: /security-groups
+    method: POST
+    expected: [200]
+    data:
+      security-group: *sg
+  expect:
+    security-group: *sg
+- name: read default security group
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [200]
+    data: *sg_read_request
+  expect: *sg_read_response
+- name: try to read invalid security group
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [400]
+    data:
+      <<: *sg_read_request
+      data:
+        id: bad-id
+  expect:
+    exception: SecurityGroupNotFound
+    id: bad-id
+- name: delete security group
+  request:
+    path: /security-group/security-group-mock
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete project
+  request:
+    path: /project/project-uuid-1
+    method: DELETE
+    expected:
+    - 200
+  expect: null

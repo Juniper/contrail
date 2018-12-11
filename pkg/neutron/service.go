@@ -2,7 +2,6 @@ package neutron
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -41,12 +40,7 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 		if !ok {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
-		message, mErr := json.Marshal(e)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError,
-				errors.Wrapf(err, mErr.Error()))
-		}
-		return echo.NewHTTPError(http.StatusBadRequest, message)
+		return echo.NewHTTPError(http.StatusBadRequest, e)
 	}
 	return c.JSON(http.StatusOK, response)
 }
