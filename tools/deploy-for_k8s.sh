@@ -4,6 +4,8 @@ set -o errexit
 set -o pipefail
 set -o xtrace
 
+exit 1
+
 RealPath()
 {
 	pushd "$1" &> /dev/null
