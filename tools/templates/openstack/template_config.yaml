@@ -1,3 +1,6 @@
 - type: all
   template_path: models.tmpl
   output_path: pkg/neutron/logic/gen_models.go
+- type: all
+  template_path: json.tmpl
+  output_path: pkg/neutron/logic/gen_json.go
