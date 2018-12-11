@@ -17,9 +17,16 @@ type Resource interface {
 	DeleteInterface(ctx Context) (Response, error)
 }
 
+const (
+	READ = "READ"
+)
+
 type Response interface{}
 
-type BaseResource struct{}
+type BaseResource struct{
+	CreatedAt string `json:"created_at" yaml:"created_at"`
+	UpdatedAt string `json:"updated_at" yaml:"updated_at"`
+}
 
 func (b *BaseResource) Create(ctx Context) (Response, error) {
 	return nil, fmt.Errorf("not implemented")
