@@ -6,6 +6,45 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPatternValidation(t *testing.T) {
+	tests := []struct {
+		name       string
+		testString string
+		pattern    string
+		fails      bool
+	}{
+		{
+			name:       "Match case",
+			testString: "12",
+			pattern:    "^([1-9]+[0-9]*)$",
+			fails:      false,
+		},
+		{
+			name:       "Unmatch case",
+			testString: "02",
+			pattern:    "^([1-9]+[0-9]*)$",
+			fails:      true,
+		},
+	}
+
+	tv, err := NewTypeValidatorWithFormat()
+
+	assert.NoError(t, err)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fv, err := tv.GetPatternValidator(tt.pattern)
+			assert.NoError(t, err)
+			err = fv(tt.testString)
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestFormatValidation(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -314,7 +353,7 @@ func TestSchemaValidationJobTemplate(t *testing.T) {
 				JobTemplatePlaybooks:        &PlaybookInfoListType{},
 				JobTemplateMultiDeviceJob:   true,
 				JobTemplateConcurrencyLevel: "fabric",
-				FQName:                      []string{"a", "b"},
+				FQName: []string{"a", "b"},
 			},
 		},
 		{
@@ -327,7 +366,7 @@ func TestSchemaValidationJobTemplate(t *testing.T) {
 				JobTemplatePlaybooks:        &PlaybookInfoListType{},
 				JobTemplateMultiDeviceJob:   true,
 				JobTemplateConcurrencyLevel: "fabric",
-				FQName:                      []string{"a", "b"},
+				FQName: []string{"a", "b"},
 			},
 			fails: true,
 		},

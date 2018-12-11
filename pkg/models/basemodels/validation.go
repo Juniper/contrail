@@ -207,6 +207,21 @@ func (tv *BaseValidator) GetFormatValidator(format string) (func(string) error, 
 	return validator, nil
 }
 
+//GetPatternValidator get a validator based on regrex pattern.
+func (tv *BaseValidator) GetPatternValidator(pattern string) (func(string) error, error) {
+	//TODO: cache compiled regex.
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	return func(value string) error {
+		if !regex.MatchString(value) {
+			return errors.Errorf("Invalid format. expected %s", pattern)
+		}
+		return nil
+	}, nil
+}
+
 // Returns array of map keys
 func mapKeys(m map[string]struct{}) (keys []string) {
 	for s := range m {

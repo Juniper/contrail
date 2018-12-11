@@ -25,7 +25,16 @@ import (
 				return err
 			}
 		{% endif %}
-
+		{% if jsonSchema.Pattern != "" %}
+			fv, err := sv.GetPatternValidator("{{jsonSchema.Pattern}}")
+			if err != nil {
+				return err
+			}
+			err = fv({{variableName}})
+			if err != nil {
+				return err
+			}
+		{% endif %}
 		{# Create restrictions map #}
 		{% if jsonSchema.Enum|length > 0 %}
 		_, present := restrictions[{{variableName}}]

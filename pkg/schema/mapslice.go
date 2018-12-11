@@ -83,6 +83,7 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 		Enum:            s.getStringSlice("enum"),
 		Minimum:         s.get("minimum"),
 		Maximum:         s.get("maximum"),
+		Pattern:         s.getString("pattern"),
 		Ref:             s.getString("$ref"),
 		Permission:      s.getStringSlice("permission"),
 		Operation:       s.getString("operation"),

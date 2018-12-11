@@ -194,6 +194,7 @@ type JSONSchema struct {
 	Enum              []string               `yaml:"enum" json:"enum,omitempty"`
 	Minimum           interface{}            `yaml:"minimum" json:"minimum,omitempty"`
 	Maximum           interface{}            `yaml:"maximum" json:"maximum,omitempty"`
+	Pattern           string                 `yaml:"pattern" json:"pattern,omitempty"`
 	Ref               string                 `yaml:"$ref" json:"-"`
 	Items             *JSONSchema            `yaml:"items" json:"items,omitempty"`
 	GoName            string                 `yaml:"-" json:"-"`
@@ -360,6 +361,9 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 	}
 	if s.Maximum == nil {
 		s.Maximum = s2.Maximum
+	}
+	if s.Pattern == "" {
+		s.Pattern = s2.Pattern
 	}
 	if s.Items == nil {
 		s.Items = s2.Items
