@@ -30,7 +30,7 @@ global_configuration:
   CONTAINER_REGISTRY: opencontrailnightly
   K8S_VERSION: 1.9.2
 contrail_configuration:
-  CONTRAIL_VERSION: master-409
+  CONTRAIL_VERSION: master-latest
   CLOUD_ORCHESTRATOR: kubernetes
   VROUTER_GATEWAY: @routerip
   PHYSICAL_INTERFACE: eth0
