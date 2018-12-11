@@ -4,3 +4,12 @@
     "cd {{ workdir }}; {{ item.command }}"
   become: yes
   become_user: root
+  register: shell_result
+  when: shell_result.rc != 0 and item.retry | default(false)
+  retries: 3
+  ignore_errors: item.retry | default(false)
+
+- name: report error
+  fail:
+    msg: 'Failed to exec command'
+  when: not shell_result|succeeded
