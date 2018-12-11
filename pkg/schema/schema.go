@@ -244,6 +244,16 @@ func (s *JSONSchema) HasNumberFields() bool {
 	return false
 }
 
+// HasNumberFields returns true if JSONSchema has any number fields (int or float).
+func (s *JSONSchema) HasSpecialJSONFields() bool {
+	for _, property := range s.Properties {
+		if property.JSONTag == "-" {
+			return true
+		}
+	}
+	return false
+}
+
 //Reference object represents many to many relationships between resources.
 type Reference struct {
 	GoName      string        `yaml:"-" json:"-"`
