@@ -1,0 +1,30 @@
+package logic
+
+import (
+	"fmt"
+)
+{% for schema in schemas %}{% if schema.Type == "request" and schema.JSONSchema.HasSpecialJSONFields() %}
+// MarshalJSON for {{ schema.JSONSchema.GoName }}Request
+func ({{ schema.JSONSchema.GoName|first|lower }} *{{ schema.JSONSchema.GoName }}Request) MarshalJSON() ([]byte, error) {
+
+}
+
+// UnmarshalJSON for {{ schema.JSONSchema.GoName }}Request
+func ({{ schema.JSONSchema.GoName|first|lower }} *{{ schema.JSONSchema.GoName }}Request) UnmarshalJSON(bytes[]byte) error {
+
+}
+
+{% endif %}{% endfor %}
+
+{%- for schema in schemas %}{% if schema.Type == "response" and schema.JSONSchema.HasSpecialJSONFields() %}
+// MarshalJSON for {{ schema.JSONSchema.GoName }}Response
+func ({{ schema.JSONSchema.GoName|first|lower }} *{{ schema.JSONSchema.GoName }}Response) MarshalJSON() ([]byte, error) {
+
+}
+
+// UnmarshalJSON for {{ schema.JSONSchema.GoName }}Response
+func ({{ schema.JSONSchema.GoName|first|lower }} *{{ schema.JSONSchema.GoName }}Response) UnmarshalJSON(bytes[]byte) error {
+
+}
+
+{% endif %}{% endfor %}
