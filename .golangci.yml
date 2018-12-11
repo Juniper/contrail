@@ -26,6 +26,7 @@ linters:
   - megacheck
   - prealloc
   - staticcheck
+  - unparam
 
 linters-settings:
   errcheck:
