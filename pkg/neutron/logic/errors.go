@@ -40,5 +40,6 @@ func (e *NeutronError) JSON() (string, error) {
 // https://docs.openstack.org/neutron-lib/queens/reference/modules/neutron_lib.exceptions.html
 
 const (
-	BadRequest = "BadRequest"
+	BadRequest            = "BadRequest"
+	SecurityGroupNotFound = "SecurityGroupNotFound"
 )
