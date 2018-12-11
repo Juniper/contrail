@@ -19,6 +19,25 @@ type Service struct {
 	WriteService services.WriteService
 }
 
+// Request incoming data format
+type Request struct {
+	Data    Data                 `json:"data" yaml:"data"`
+	Context logic.RequestContext `json:"context" yaml:"context"`
+}
+
+// Data structure
+type Data struct {
+	Filters  logic.Filters  `json:"filters" yaml:"filters"`
+	ID       string         `json:"id" yaml:"id"`
+	Fields   logic.Fields   `json:"fields" yaml:"fields"`
+	Resource logic.Resource `json:"resource" yaml:"resource"`
+}
+
+// GetType returns resource type of a request
+func (r *Request) GetType() string {
+	return r.Context.Type
+}
+
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
 func (s *Service) RegisterNeutronAPI(r routeRegistry) {
 	r.POST("/neutron/:type", s.handleNeutronPostRequest)
@@ -76,6 +95,37 @@ func (s *Service) handle(r *logic.Request) (logic.Response, error) {
 		log.WithError(err).WithField("request", r).Errorf("failed to handle")
 		return nil, err
 	}
+}
+
+
+
+func (s *Service) NeutronPost(c echo.Context) error {
+	r, err := logic.GetResource(c.Param("id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err)
+	}
+	request := &Request{
+		Data: Data{
+			Resource: r,
+		},
+	}
+	if err := c.Bind(request); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
+	}
+	response, err := s.process(request)
+	if err != nil {
+		e, ok := errors.Cause(err).(*logic.NeutronError)
+		if !ok {
+			return echo.NewHTTPError(http.StatusInternalServerError, e)
+		}
+		str, err := e.JSON()
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError,
+				errors.Wrapf(e, "failed to marshall error description."))
+		}
+		return echo.NewHTTPError(http.StatusBadRequest, str)
+	}
+	return c.JSON(http.StatusOK, response)
 }
 
 type routeRegistry interface {
