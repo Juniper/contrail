@@ -2,6 +2,8 @@ package logic
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/pkg/errors"
 )
 
 // Request defines an API request.
@@ -21,6 +23,38 @@ type Data struct {
 // GetType returns resource type of the Request.
 func (r *Request) GetType() string {
 	return r.Context.Type
+}
+
+func (r *Filters) UnmarshalJSON(data []byte) error {
+	if *r == nil {
+		*r = Filters{}
+	}
+	var m map[string]interface{}
+	err := json.Unmarshal(data, &m)
+	if err != nil {
+		return err
+	}
+	for k, v := range m {
+		var ss []string
+		switch s := v.(type) {
+		case []interface{}:
+			for _, i := range s {
+				switch f := i.(type) {
+				case bool:
+					ss = append(ss, fmt.Sprintf("%t", f))
+				case string:
+					ss = append(ss, fmt.Sprintf("%s", f))
+				default:
+					return errors.Errorf("%T filter not supported", v)
+				}
+			}
+		default:
+			return errors.Errorf("%T filter not supported", v)
+		}
+
+		(*r)[k] = ss
+	}
+	return nil
 }
 
 // UnmarshalJSON custom unmarshalling of Request

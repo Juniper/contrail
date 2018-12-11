@@ -1,0 +1,41 @@
+package logic
+
+import (
+	"encoding/json"
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestFilters_UnmarshalJSON(t *testing.T) {
+	tests := []struct {
+		name     string
+		expected Filters
+		data     string
+		wantErr  bool
+	}{
+		{
+			name:     "empty filter",
+			data:     `{"data": []}`,
+			expected: Filters{"data": nil},
+		},
+		{
+			name:     "string filter",
+			data:     `{"data": ["false", "true"]}`,
+			expected: Filters{"data": []string{"false", "true"}},
+		},
+		{
+			name:     "boolean filter",
+			data:     `{"data": [false, true]}`,
+			expected: Filters{"data": []string{"false", "true"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var actual Filters
+			if err := json.Unmarshal([]byte(tt.data), &actual); (err != nil) != tt.wantErr {
+				t.Errorf("Filters.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
