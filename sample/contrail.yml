@@ -1,20 +1,20 @@
 # Database configuration. MySQL/PostgreSQL supported
 database:
-    type: mysql
-    dialect: mysql
-    host: localhost
-    user: root
-    password: contrail123
-    name: contrail_test
+  type: mysql
+  dialect: mysql
+  host: localhost
+  user: root
+  password: contrail123
+  name: contrail_test
 
-    # Max Open Connections for DB Server
-    max_open_conn: 100
-    connection_retries: 10
-    retry_period: 3s
+  # Max Open Connections for DB Server
+  max_open_conn: 100
+  connection_retries: 10
+  retry_period: 3s
 
 etcd:
   endpoints:
-    - localhost:2379
+  - localhost:2379
   username: ""
   password: ""
   path: contrail
@@ -23,7 +23,7 @@ etcd:
 log_level: debug
 
 homepage:
-    enabled: true
+  enabled: true
 
 # Server configuration
 server:
@@ -36,9 +36,9 @@ server:
   enable_gzip: false
   # TLS Configuration
   tls:
-      enabled: false
-      key_file: tools/server.key
-      cert_file: tools/server.crt
+    enabled: false
+    key_file: tools/server.key
+    cert_file: tools/server.crt
 
   # Enable GRPC or not
   enable_grpc: false
@@ -47,62 +47,62 @@ server:
   # key: URL path
   # value: file path. (absolute path recommended in production)
   static_files:
-      public: public
+    public: public
 
   # API Proxy configuration
   # key: URL path
   # value: String list of backend host
   proxy:
-      /contrail:
-      - http://localhost:8082
+    /contrail:
+    - http://localhost:8082
 
   notify_etcd: true
 
 # Keystone configuration
 # keystone:
-#     local: true # Enable local keystone v3. This is only for testing now.
-#     assignment:
-#         type: static
-#         data:
-#           domains:
-#             default: &default
-#               id: default
-#               name: default
-#           projects:
-#             admin: &admin
-#               id: admin
-#               name: admin
-#               domain: *default
-#             demo: &demo
-#               id: demo
-#               name: demo
-#               domain: *default
-#           users:
-#             alice:
-#               id: alice
-#               name: Alice
-#               domain: *default
-#               password: alice_password
-#               email: alice@juniper.nets
-#               roles:
-#               - id: admin
-#                 name: Admin
-#                 project: *admin
-#             bob:
-#               id: bob
-#               name: Bob
-#               domain: *default
-#               password: bob_password
-#               email: bob@juniper.net
-#               roles:
-#               - id: Member
-#                 name: Member
-#                 project: *demo
-#     store:
-#         type: memory
-#         expire: 3600
-#     insecure: true
-#     authurl: https://localhost:9091/keystone/v3
+#   local: true # Enable local keystone v3. This is only for testing now.
+#   assignment:
+#     type: static
+#     data:
+#       domains:
+#         default: &default
+#           id: default
+#           name: default
+#       projects:
+#         admin: &admin
+#           id: admin
+#           name: admin
+#           domain: *default
+#         demo: &demo
+#           id: demo
+#           name: demo
+#           domain: *default
+#       users:
+#         alice:
+#           id: alice
+#           name: Alice
+#           domain: *default
+#           password: alice_password
+#           email: alice@juniper.nets
+#           roles:
+#           - id: admin
+#             name: Admin
+#             project: *admin
+#         bob:
+#           id: bob
+#           name: Bob
+#           domain: *default
+#           password: bob_password
+#           email: bob@juniper.net
+#           roles:
+#           - id: Member
+#             name: Member
+#             project: *demo
+#   store:
+#     type: memory
+#     expire: 3600
+#   insecure: true
+#   authurl: https://localhost:9091/keystone/v3
 
 # disable authentication with auth_type set to no-auth and comment out keystone configuraion.
 auth_type: no-auth
@@ -163,32 +163,32 @@ compilation:
 
   # Plugin configuration
   plugin:
-      handlers:
-          create_handler: 'HandleCreate'
-          update_handler: 'HandleUpdate'
-          delete_handler: 'HandleDelete'
+    handlers:
+      create_handler: 'HandleCreate'
+      update_handler: 'HandleUpdate'
+      delete_handler: 'HandleDelete'
 
 cache:
+  enabled: true
+  timeout: 10s
+  # how long revision deleted event preserved.
+  max_history: 100000
+  cassandra:
     enabled: true
-    timeout: 10s
-    #how long revistion deleted event preserved.
-    max_history: 100000
-    cassandra:
-        enabled: true
-    etcd:
-        enabled: true
+  etcd:
+    enabled: true
 
 replication:
-    cassandra:
-        enabled: true
-    amqp:
-        enabled: true
+  cassandra:
+    enabled: true
+  amqp:
+    enabled: true
 
 cassandra:
-    host: localhost
-    port: 9042
-    timeout: 3600s
-    connect_timeout: 600ms
+  host: localhost
+  port: 9042
+  timeout: 3600s
+  connect_timeout: 600ms
 
 amqp:
-    url: amqp://guest:guest@localhost:5672/
+  url: amqp://guest:guest@localhost:5672/
