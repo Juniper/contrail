@@ -53,7 +53,7 @@ switch between internal function call or gRPC call depending on where other proc
 
 - [Agent service](agent.md)
 - [API Server](rest_api.md)
-- Cache Database
+- [Cache Database](cache_db.md)
 - [Cluster service](cluster.md)
 - [Intent Compilation service](intent_compilation.md)
 - [Cassandra & AMQP Replicator services](replicator_services.md)
