@@ -1,0 +1,48 @@
+package logic
+
+import (
+	"fmt"
+	"encoding/json"
+)
+
+{% macro receiver(JSONSchema) -%}
+{{ JSONSchema.GoName|first|lower }}
+{%- endmacro -%}
+
+{%- macro MarshalJSON(JSONSchema, typeName) %}
+// MarshalJSON for {{ typeName }}
+func ({{ receiver(JSONSchema) }} *{{ typeName }}) MarshalJSON() ([]byte, error) {
+	return nil, nil
+}
+{% endmacro -%}
+
+{%- macro UnmarshalJSON(JSONSchema, typeName) %}
+// UnmarshalJSON for {{ typeName }}
+func ({{ receiver(JSONSchema) }} *{{ typeName }}) UnmarshalJSON(bytes []byte) (err error) {
+	var rawJSON map[string]json.RawMessage
+	json.Unmarshal(bytes, rawJSON)
+	{%- for _, definition in JSONSchema.Properties %}{% if definition.JSONTag != "-" %}
+	err = ParseField(rawJSON, "{{ definition.JSONTag }}", &{{ receiver(JSONSchema) }}.{{ definition.GoName }})
+	{%- endif %}{% endfor %}
+	if err != nil {
+		return err
+	}
+	c, ok := customJSONUnmarshaler({{ receiver(JSONSchema) }})
+	if ok {
+		return c.unmarshalCustomJSON(rawJSON)
+	}
+	return nil
+}
+{% endmacro -%}
+
+{%- for schema in schemas %}{% if schema.Type == "request" and schema.JSONSchema.HasSpecialJSONFields() %}
+{{- MarshalJSON(schema.JSONSchema, schema.JSONSchema.GoName) -}}
+
+{{- UnmarshalJSON(schema.JSONSchema, schema.JSONSchema.GoName) -}}
+{% endif %}{% endfor %}
+
+{%- for schema in schemas %}{% if schema.Type == "response" and schema.JSONSchema.HasSpecialJSONFields() %}
+{{- MarshalJSON(schema.JSONSchema, schema.JSONSchema.GoName|add:"Response") -}}
+
+{{- UnmarshalJSON(schema.JSONSchema, schema.JSONSchema.GoName|add:"Response") -}}
+{% endif %}{% endfor %}
