@@ -1,0 +1,63 @@
+---
+api_style: contrail
+id: port
+prefix: /neutron/
+type: response
+schema:
+  type: object
+  properties:
+    status:
+      type: string
+    created_at:
+      type: string
+    port_security_enabled:
+      type: boolean
+    # Property 'bindings' is treated in a special way by template and needs custom (un)marshaller
+    bindings:
+      json_tag: "-"
+      type: string
+    name:
+      type: string
+    allowed_address_pairs:
+      type: array
+      items:
+        type: string
+    admin_state_up:
+      type: boolean
+    network_id:
+      type: string
+    tenant_id:
+      type: string
+    description:
+      type: string
+    updated_at:
+      type: string
+    device_owner:
+      type: string
+    mac_address:
+      type: string
+    fq_name:
+      type: array
+      items:
+        type: string
+    fixed_ips:
+      type: array
+      items:
+        $ref: resp_port.json#/definitions/FixedIp
+    id:
+      type: string
+    security_groups:
+      type: array
+      items:
+        type: string
+    device_id:
+      type: string
+
+definitions:
+  FixedIp:
+    type: object
+    properties:
+      subnet_id:
+        type: string
+      ip_address:
+        type: string

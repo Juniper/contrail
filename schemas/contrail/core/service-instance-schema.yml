@@ -14,7 +14,7 @@ plural: service_instances
 prefix: /
 references:
   instance_ip:
-    $ref: types.json#definitions/ServiceInterfaceTag
+    $ref: types.json#/definitions/ServiceInterfaceTag
     description: Reference to ip address, which is used as nexthop pointing to (service
       instance, service interface).
     operations: CRUD
