@@ -57,6 +57,7 @@ type APIServerConfig struct {
 	LogLevel           string
 	EnableEtcdNotifier bool
 	DisableLogAPI      bool
+	EnableRBAC         bool
 }
 
 // NewRunningAPIServer creates new running test API Server for testing purposes.
@@ -125,7 +126,15 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"static_files.public":         path.Join(c.RepoRootPath, "public"),
 		"server.enable_vnc_neutron":   true,
 		"tls.enabled":                 false,
+		"aaa_mode":                    rbacConfig(c),
 	})
+}
+
+func rbacConfig(c *APIServerConfig) string {
+	if c.EnableRBAC {
+		return "rbac"
+	}
+	return ""
 }
 
 func keystoneAssignment() *keystone.StaticAssignment {

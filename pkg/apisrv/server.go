@@ -90,6 +90,10 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		MetadataGetter: s.DBService,
 	})
 
+	serviceChain = append(serviceChain, &services.RBACService{
+		ReadService: s.DBService,
+		AAAMode:     viper.GetString("aaa_mode")})
+
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.DBService,
 		InTransactionDoer: s.DBService,
