@@ -2,8 +2,6 @@ package logic
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -69,9 +67,6 @@ func (b *baseResource) DeleteInterface(ctx context.Context, rp RequestParameters
 	return nil, errors.New("not implemented")
 }
 
-// Filters used in Neutron read API
-type Filters map[string][]string
-
 // Fields used in Neutron read API
 type Fields []string
 
@@ -80,37 +75,5 @@ type RequestParameters struct {
 	RequestContext RequestContext
 	ReadService    services.ReadService
 	WriteService   services.WriteService
-}
-
-// UnmarshalJSON Filters.
-func (f *Filters) UnmarshalJSON(data []byte) error {
-	if *f == nil {
-		*f = Filters{}
-	}
-	var m map[string]interface{}
-	err := json.Unmarshal(data, &m)
-	if err != nil {
-		return err
-	}
-	for k, v := range m {
-		var ss []string
-		switch s := v.(type) {
-		case []interface{}:
-			for _, i := range s {
-				switch c := i.(type) {
-				case bool:
-					ss = append(ss, fmt.Sprintf("%t", c))
-				case string:
-					ss = append(ss, fmt.Sprintf("%s", c))
-				default:
-					return errors.Errorf("%T filter not supported", v)
-				}
-			}
-		default:
-			return errors.Errorf("%T filter not supported", v)
-		}
-
-		(*f)[k] = ss
-	}
-	return nil
+	UserAgentKV    services.UserAgentKVServer
 }
