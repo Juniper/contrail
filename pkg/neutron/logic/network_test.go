@@ -11,8 +11,6 @@ import (
 )
 
 const (
-	testDataPath = "./test_data/"
-
 	createNetworkRequestPath = testDataPath + "create_network.json"
 )
 
