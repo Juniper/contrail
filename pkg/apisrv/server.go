@@ -87,6 +87,11 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 	serviceChain = append(serviceChain, &services.SanitizerService{
 		MetadataGetter: s.DBService,
 	})
+	
+	serviceChain = append(serviceChain, &services.RBACService{
+		ReadService: s.DBService,
+	})
+
 
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.DBService,

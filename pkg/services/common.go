@@ -93,6 +93,14 @@ type RefUpdateToUpdateService struct {
 	InTransactionDoer InTransactionDoer
 }
 
+// RBACService will RBAC check on resource opeations. 
+type RBACService struct {
+	BaseService
+	ReadService 	ReadService
+	aaaMode 	string
+}
+
+
 //EventProcessor can handle events on generic way.
 type EventProcessor interface {
 	Process(ctx context.Context, event *Event) (*Event, error)
