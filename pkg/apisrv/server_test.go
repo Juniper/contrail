@@ -48,6 +48,11 @@ func TestVirtualNetwork(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
+func TestRbacProject(t *testing.T) {
+	server.APIServer.RBACService.SetAAAMode("rbac")
+	RunTest(t, "./test_data/test_rbac.yml")
+	server.APIServer.RBACService.SetAAAMode("")
+}
 func TestSecurityGroup(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_security_group.yml")

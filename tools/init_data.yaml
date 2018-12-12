@@ -1413,3 +1413,50 @@ resources:
       owner_access: 7
       share: []
   operation: ""
+- kind: api_access_list
+  data:
+    display_name: default-api-access-list
+    parent_type:  global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    perms2:
+      owner_access: 7
+      global_access: 0
+      owner: cloud-admin
+      share: []
+    api_access_list_entries:
+     rbac_rule:
+       - rule_object: fqname-to-id
+         rule_perms:
+            - role_crud: CRUD
+              role_name: '*'
+       - rule_object:  id-to-fqname
+         rule_perms:
+            - role_crud: CRUD
+              role_name: '*'
+       - rule_object: useragent-kv
+         rule_perms:
+            - role_crud: CRUD
+              role_name: '*'
+       - rule_object: documentation
+         rule_perms:
+            - role_crud: R
+              role_name: '*'
+       - rule_object: '/'
+         rule_perms:
+            - role_crud: R
+              role_name: '*'
+    permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+    user_visible: true
+    uuid:
+        uuid_lslong: 1.2157939e+19
+        uuid_mslong: 1.0354165e+19
+    fq_name:
+          - default-global-system-config
+          - default-api-access-list
+    name: default-api-access-list
+    uuid: beefbeef-beef-beef-beef-beefbeef0005
