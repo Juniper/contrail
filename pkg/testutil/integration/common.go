@@ -179,9 +179,21 @@ type Event struct {
 	SyncOnly bool                   `yaml:"sync_only,omitempty"`
 }
 
+func convertEventsIntoMapList(events []Event) []map[string]interface{} {
+	m := make([]map[string]interface{}, len(events))
+	for i := range events {
+		m[i] = events[i].Data
+	}
+	return m
+}
+
 // Watchers map contains slices of events that should be emitted on
 // etcd key matching the map key.
-type Watchers = map[string][]Event
+type Watchers map[string][]Event
+
+// Waiters map contains slices of events that have to be emitted
+// during single task.
+type Waiters map[string][]Event
 
 //Task has API request and expected response.
 type Task struct {
@@ -190,6 +202,7 @@ type Task struct {
 	Request  *client.Request `yaml:"request,omitempty"`
 	Expect   interface{}     `yaml:"expect,omitempty"`
 	Watchers Watchers        `yaml:"watchers,omitempty"`
+	Waiters  Waiters         `yaml:"await,omitempty"`
 }
 
 // CleanTask defines clean task
@@ -290,15 +303,37 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 	}
 }
 
+// StartWaiters checks if there are emitted events described before.
+func StartWaiters(t *testing.T, task string, waiters Waiters) func(t *testing.T) {
+	checks := []func(t *testing.T){}
+
+	ec := integrationetcd.NewEtcdClient(t)
+
+	for key := range waiters {
+		events := waiters[key]
+		removeFoundEvents := ec.WaitForEvents(
+			key, convertEventsIntoMapList(events), collectTimeout, clientv3.WithPrefix(),
+		)
+		checks = append(checks, createWaiterChecker(task, removeFoundEvents))
+	}
+
+	return func(t *testing.T) {
+		defer ec.Close(t)
+		for _, c := range checks {
+			c(t)
+		}
+	}
+}
+
 // StartWatchers checks if events emitted to etcd match those given in watchers dict.
 func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv3.OpOption) func(t *testing.T) {
 	checks := []func(t *testing.T){}
 
 	ec := integrationetcd.NewEtcdClient(t)
+
 	for key := range watchers {
 		events := watchers[key]
 		collect := ec.WatchKeyN(key, len(events), collectTimeout, append(opts, clientv3.WithPrefix())...)
-
 		checks = append(checks, createWatchChecker(task, collect, key, events))
 	}
 
@@ -307,6 +342,16 @@ func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv
 		for _, c := range checks {
 			c(t)
 		}
+	}
+}
+
+func createWaiterChecker(
+	task string, removeFoundEvents func() ([]map[string]interface{}, error),
+) func(t *testing.T) {
+	return func(t *testing.T) {
+		notFound, err := removeFoundEvents()
+		assert.Equal(t, nil, err, "waiter for task %v got an error while collecting events: %v", task, err)
+		assert.Equal(t, 0, len(notFound), "etcd didn't emitted events %v for task %v", notFound, task)
 	}
 }
 
@@ -402,7 +447,7 @@ func runTestScenario(
 			"task":          task.Name,
 		}).Info("Starting task")
 		checkWatchers := StartWatchers(t, task.Name, task.Watchers)
-
+		checkWaiters := StartWaiters(t, testScenario.Name, task.Waiters)
 		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
 		clientID := defaultClientID
 		if task.Client != "" {
@@ -421,6 +466,7 @@ func runTestScenario(
 		ok = testutil.AssertEqual(t, task.Expect, task.Request.Output,
 			fmt.Sprintf("In test scenario %q task %q failed", testScenario.Name, task.Name))
 		checkWatchers(t)
+		checkWaiters(t)
 		if !ok {
 			break
 		}
