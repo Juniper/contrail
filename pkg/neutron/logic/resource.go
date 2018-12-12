@@ -77,6 +77,7 @@ type RequestParameters struct {
 	RequestContext RequestContext
 	ReadService    services.ReadService
 	WriteService   services.WriteService
+	UserAgentKV    services.UserAgentKVServer
 }
 
 // UnmarshalJSON Filters.
