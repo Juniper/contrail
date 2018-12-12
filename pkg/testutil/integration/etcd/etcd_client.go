@@ -2,6 +2,7 @@ package integrationetcd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -17,6 +18,7 @@ import (
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/testutil"
 )
 
 // Integration test settings.
@@ -34,6 +36,12 @@ const (
 	SecurityGroupSchemaID        = "security_group"
 	VirtualNetworkSchemaID       = "virtual_network"
 )
+
+// Event represents event received from etcd watch.
+type Event struct {
+	Data     map[string]interface{} `yaml:"data,omitempty"`
+	SyncOnly bool                   `yaml:"sync_only,omitempty"`
+}
 
 // EtcdClient is etcd client extending etcd.clientv3 with test functionality and using etcd v3 API.
 type EtcdClient struct {
@@ -111,6 +119,78 @@ func (e *EtcdClient) WatchKey(
 	key string, opts ...clientv3.OpOption,
 ) (collect func() []string) {
 	return e.WatchKeyN(key, 0, 0, opts...)
+}
+
+func convertEventsIntoMap(events []Event) []map[string]interface{} {
+	m := make([]map[string]interface{}, len(events))
+	for i := range events {
+		m[i] = events[i].Data
+	}
+	return m
+}
+
+func removeFoundEvents(
+	event *clientv3.Event, events []map[string]interface{},
+) ([]map[string]interface{}, error) {
+	var data interface{}
+	s := string(event.Kv.Value)
+	if len(s) > 0 {
+		if err := json.Unmarshal([]byte(s), &data); err != nil {
+			return nil, err
+		}
+	}
+
+	foundAlready := false
+	updated := []map[string]interface{}{}
+	for i, e := range events {
+		if err := testutil.CheckIfContains(e, data); err != nil || foundAlready {
+			updated = append(updated, events[i])
+		} else {
+			foundAlready = true
+		}
+	}
+	return updated, nil
+}
+
+// WaitForEvents waits for events to show up before moving to the next task.
+func (e *EtcdClient) WaitForEvents(
+	key string, awaitingEvents []Event, timeout time.Duration, opts ...clientv3.OpOption,
+) (collect func() ([]map[string]interface{}, error)) {
+	resultChan := make(chan []map[string]interface{})
+	ctx, cancel := context.WithCancel(context.Background())
+	wchan := e.Client.Watch(ctx, key, opts...)
+
+	var err error
+
+	go func() {
+		dataEvents := convertEventsIntoMap(awaitingEvents)
+		for val := range wchan {
+			for _, ev := range val.Events {
+				dataEvents, err = removeFoundEvents(ev, dataEvents)
+				if err != nil {
+					return
+				}
+				if len(dataEvents) == 0 {
+					cancel()
+				}
+			}
+		}
+		resultChan <- dataEvents
+		close(resultChan)
+	}()
+
+	return func() ([]map[string]interface{}, error) {
+		select {
+		case <-ctx.Done():
+		case <-time.After(timeout):
+			cancel()
+		}
+		if err != nil {
+			return nil, err
+		}
+		result := <-resultChan
+		return result, nil
+	}
 }
 
 // WatchKeyN watches value changes for provided key n times and returns collect method
