@@ -9,6 +9,7 @@ The chain overview:
     ↓ ContrailService
     ↓ RefUpdateToUpdateService
     ↓ SanitizerService
+    ↓ RBACService
     ↓ ContrailTypeLogicService
     ↓ QuotaCheckerService
     ↓ etcd.NotifierService (optional)
@@ -42,9 +43,18 @@ translates add/delete reference to in-transaction resource update.
 
 Sanitizer complement properties like: refs or display name by creating or updating resources.
 
+## RBAC service
+
+- **Caller:** Sanitizer service
+- **Purpose:** Check whether resource access is allowed based RBAC configuration.
+- **Source code:** [rbac_service.tmpl](../tools/templates/contrail/rbac_service.tmpl) [rbac.go](../pkg/services/rbac.go)
+
+RBAC does role based access control on resource operations. If a user has not any role which will allow a particular
+operation, RBAC service won't allow the user to do that resource operation. 
+
 ## Contrail type logic service
 
-- **Caller:** SanitizerService
+- **Caller:** RBAC service
 - **Purpose:** Implements business logic specific to each type (model).
 - **Source code:** [service.go](../pkg/types/service.go)
 

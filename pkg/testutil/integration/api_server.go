@@ -57,6 +57,7 @@ type APIServerConfig struct {
 	LogLevel           string
 	EnableEtcdNotifier bool
 	DisableLogAPI      bool
+	EnableRBAC         bool
 }
 
 // NewRunningAPIServer creates new running test API Server for testing purposes.
@@ -73,6 +74,9 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	setDefaultViperConfig(c)
 
+	if c.EnableRBAC {
+		viper.Set("aaa_mode", "rbac")
+	}
 	if err := pkglog.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
