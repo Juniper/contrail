@@ -1,0 +1,32 @@
+---
+api_style: contrail
+id: floatingip
+prefix: /neutron/
+type: request
+schema:
+  type: object
+  properties:
+    description:
+      presence: optional
+      type: string
+    subnet_id:
+      presence: optional
+      type: string
+    tenant_id:
+      presence: optional
+      type: string
+    floating_network_id:
+      presence: optional
+      type: string
+    fixed_ip_address:
+      presence: optional
+      type: string
+    floating_ip_address:
+      presence: optional
+      type: string
+    project_id:
+      presence: optional
+      type: string
+    port_id:
+      presence: optional
+      type: string
