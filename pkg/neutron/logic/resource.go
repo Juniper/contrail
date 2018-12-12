@@ -3,6 +3,7 @@ package logic
 import (
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -74,4 +75,5 @@ type RequestParameters struct {
 	RequestContext RequestContext
 	ReadService    services.ReadService
 	WriteService   services.WriteService
+	DBService      *db.Service
 }
