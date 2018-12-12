@@ -37,6 +37,29 @@ schema:
       type: string
     id:
       type: string
+    provider_physical_network:
+      type: string
+      json_tag: "provider:physical_network"
+    provider_segmentation_id:
+      type: integer
+      json_tag: "provider:segmentation_id"
+    subnet_ipam:
+      type: array
+      items:
+        $ref: resp_network.json#/definitions/SubnetIpam
     description:
       type: string
+
+definitions:
+  SubnetIpam:
+    type: object
+    properties:
+      subnet_cidr:
+        type: string
+        presence: true
+      ipam_fq_name:
+        type: array
+        items:
+          type: string
+        presence: true
 
