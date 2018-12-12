@@ -10,6 +10,7 @@ import (
     log "github.com/sirupsen/logrus"
 
     "github.com/Juniper/contrail/pkg/auth"
+    "github.com/Juniper/contrail/pkg/apisrv/rbac"
     "github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
     "github.com/Juniper/contrail/pkg/services/baseservices"
@@ -31,6 +32,11 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
         return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
     }
     ctx := c.Request().Context()
+    model := models.{{ schema.JSONSchema.GoName }}{}
+    if ret := rbac.ValidateRequest(ctx,service.getAllAPIAccessLists(ctx),
+                       model.Kind(),rbac.OpCreate) ; ret != nil {
+       return errutil.ToHTTPError(ret)
+    }
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
     if err != nil {
         return errutil.ToHTTPError(err)
@@ -166,7 +172,11 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 
     model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     model.UUID = c.Param("id")
-
+    ctx := c.Request().Context()
+    if ret := rbac.ValidateRequest(ctx,service.getAllAPIAccessLists(ctx),
+                       model.Kind(),rbac.OpUpdate); ret != nil {
+       return errutil.ToHTTPError(ret)
+    }
     response, err := service.Update{{ schema.JSONSchema.GoName }}(
         c.Request().Context(),
         &Update{{ schema.JSONSchema.GoName }}Request{
@@ -203,7 +213,13 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
         ID: c.Param("id"),
     }
     ctx := c.Request().Context()
-    _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+    
+    model := models.{{ schema.JSONSchema.GoName }}{}
+    if ret := rbac.ValidateRequest(ctx,service.getAllAPIAccessLists(ctx),
+                       model.Kind(),rbac.OpDelete); ret != nil {
+       return errutil.ToHTTPError(ret)
+    }
+     _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
     }
@@ -216,6 +232,11 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
         ID: c.Param("id"),
     }
     ctx := c.Request().Context()
+    model := models.{{ schema.JSONSchema.GoName }}{}
+    if ret := rbac.ValidateRequest(ctx,service.getAllAPIAccessLists(ctx),
+                       model.Kind(),rbac.OpRead) ; ret != nil {
+       return errutil.ToHTTPError(ret)
+    }
     response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
@@ -234,6 +255,11 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
         Spec: spec,
     }
     ctx := c.Request().Context()
+    model := models.{{ schema.JSONSchema.GoName }}{}
+    if ret := rbac.ValidateRequest(ctx,service.getAllAPIAccessLists(ctx),
+                       model.Kind(),rbac.OpRead); ret != nil {
+       return errutil.ToHTTPError(ret)
+    }
     response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)

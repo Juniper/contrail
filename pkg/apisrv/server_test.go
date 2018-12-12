@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twinj/uuid"
@@ -48,6 +49,11 @@ func TestVirtualNetwork(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
+func TestRbacProject(t *testing.T) {
+	viper.Set("aaa_mode", "rbac")
+	RunTest(t, "./test_data/test_rbac.yml")
+	viper.Set("aaa_mode", "")
+}
 func TestSecurityGroup(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_security_group.yml")
