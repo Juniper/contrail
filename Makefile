@@ -68,8 +68,9 @@ generate_go:
 TYPES_MOCK := pkg/types/mock/gen_service_mock.go
 SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
 IPAM_MOCK := pkg/types/ipam/mock/gen_address_manager_mock.go
+NEUTRON_LOGIC_MOCK := pkg/neutron/mock/gen_neutron_mock.go
 
-generate_mocks: $(TYPES_MOCK) $(SERVICES_MOCK) $(IPAM_MOCK)
+generate_mocks: $(TYPES_MOCK) $(SERVICES_MOCK) $(IPAM_MOCK) $(NEUTRON_LOGIC_MOCK)
 
 $(TYPES_MOCK): pkg/types/service.go
 	mkdir -p $(@D)
@@ -82,6 +83,10 @@ $(SERVICES_MOCK): pkg/services/gen_service_interface.go
 $(IPAM_MOCK): pkg/types/ipam/address_manager.go
 	mkdir -p $(@D)
 	mockgen -destination=$@ -package=ipammock -source $<
+
+$(NEUTRON_LOGIC_MOCK): pkg/neutron/service.go
+	mkdir -p $(@D)
+	mockgen -destination=$@ -package=neutronmock -source $<
 
 PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
