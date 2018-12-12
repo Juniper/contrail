@@ -1,0 +1,30 @@
+---
+api_style: contrail
+id: floatingip
+prefix: /neutron/
+type: response
+schema:
+  type: object
+  properties:
+    router_id:
+      type: string
+    status:
+      type: string
+    description:
+      type: string
+    tenant_id:
+      type: string
+    created_at:
+      type: string
+    updated_at:
+      type: string
+    floating_network_id:
+      type: string
+    fixed_ip_address:
+      type: string
+    floating_ip_address:
+      type: string
+    port_id:
+      type: string
+    id:
+      type: string
