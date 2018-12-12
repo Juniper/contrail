@@ -9,8 +9,8 @@ schema:
     host_routes:
       type: array
       items:
-        # TODO fix the type of array -- need to check first
-        type: string
+        $ref: req_subnet.json#/definitions/RouteTableType
+      presence: optional
     name:
       type: string
     enable_dhcp:
