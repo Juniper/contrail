@@ -54,6 +54,10 @@ func TestSecurityGroup(t *testing.T) {
 // 	runTest(t, t.Name())
 // }
 
+func TestWaiter(t *testing.T) {
+	runTest(t, t.Name())
+}
+
 func TestReferredSecurityGroups(t *testing.T) {
 	runTest(t, t.Name())
 }
