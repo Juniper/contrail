@@ -206,7 +206,6 @@ func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	if err != nil {
 		return errors.Wrap(err, "could not create default routing instance for VN")
 	}
-
 	return nil
 }
 

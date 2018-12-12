@@ -109,6 +109,5 @@ func (i *RoutingInstanceIntent) createDefaultRouteTarget(
 			},
 		},
 	)
-
 	return err
 }

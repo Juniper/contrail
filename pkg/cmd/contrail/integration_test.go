@@ -48,11 +48,13 @@ func TestSecurityGroup(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
 
-// Test temporary disabled since watchers cannot be set properly due to unknown number of events.
-//
-// func TestLogicalRouterPing(t *testing.T) {
-// 	integration.RunTest(t, t.Name(), server)
-// }
+func TestLogicalRouterPing(t *testing.T) {
+	runTest(t, t.Name())
+}
+
+func TestWaiter(t *testing.T) {
+	runTest(t, t.Name())
+}
 
 func TestReferredSecurityGroups(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
