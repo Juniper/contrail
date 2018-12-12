@@ -80,10 +80,10 @@ definitions:
     description: First last IP of allocation pool
     properties:
       first_ip:
-        type: integer
+        type: string
         presence: true
       last_ip:
-        type: integer
+        type: string
         presence: true
   DnsNameserver:
     type: object
@@ -91,4 +91,6 @@ definitions:
       address:
         type: string
         presence: true
-
+      subnet_id:
+        type: string
+        presence: optional
