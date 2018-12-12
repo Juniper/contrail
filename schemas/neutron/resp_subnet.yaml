@@ -9,8 +9,8 @@ schema:
     host_routes:
       type: array
       items:
-        # TODO fix the type of array -- need to check first
-        type: string
+        $ref: resp_subnet.json#/definitions/RouteTableType
+      presence: optional
     name:
       type: string
     enable_dhcp:
@@ -48,3 +48,17 @@ schema:
       type: string
     id:
       type: string
+
+definitions:
+  RouteTableType:
+    type: object
+    properties:
+      destination:
+        type: string
+        presence: true
+      nexthop:
+        type: string
+        presence: true
+      subnet_id:
+        type: string
+        presence: true
