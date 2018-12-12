@@ -3,7 +3,6 @@ package services
 import (
     "context"
 
-
     "github.com/gogo/protobuf/types"
     "github.com/pkg/errors"
 
@@ -33,11 +32,18 @@ type WriteService interface {
 {% endif%}{% endfor %}
 }
 
-type ReadService interface{
+type ReadService interface {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     Get{{ schema.JSONSchema.GoName }}(context.Context, *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error)
     List{{ schema.JSONSchema.GoName }}(context.Context, *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error)
 {% endif %}{% endfor %}
+}
+
+type UserAgentKVService interface {
+	StoreKeyValue(context.Context, *StoreKeyValueRequest) (*types.Empty, error)
+	RetrieveValues(context.Context, *RetrieveValuesRequest) (*RetrieveValuesResponse, error)
+	RetrieveKVPs(context.Context, *types.Empty) (*RetrieveKVPsResponse, error)
+	DeleteKey(context.Context, *DeleteKeyRequest) (*types.Empty, error)
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
