@@ -166,7 +166,6 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 
     model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     model.UUID = c.Param("id")
-
     response, err := service.Update{{ schema.JSONSchema.GoName }}(
         c.Request().Context(),
         &Update{{ schema.JSONSchema.GoName }}Request{
@@ -203,7 +202,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
         ID: c.Param("id"),
     }
     ctx := c.Request().Context()
-    _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+     _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
     }
