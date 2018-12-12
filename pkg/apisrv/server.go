@@ -53,6 +53,7 @@ type Server struct {
 	GRPCServer     *grpc.Server
 	Keystone       *keystone.Keystone
 	DBService      *db.Service
+	RBACService    *services.RBACService
 	Proxy          *proxyService
 	Service        services.Service
 	IPAMServer     services.IPAMServer
@@ -89,6 +90,8 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 	serviceChain = append(serviceChain, &services.SanitizerService{
 		MetadataGetter: s.DBService,
 	})
+
+	serviceChain = append(serviceChain, s.RBACService)
 
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.DBService,
@@ -183,6 +186,10 @@ func (s *Server) Init() (err error) {
 	if err != nil {
 		return err
 	}
+
+	s.RBACService = &services.RBACService{
+		ReadService: s.DBService,
+		AAAMode:     viper.GetString("aaa_mode")}
 
 	cs, err := s.setupService()
 	if err != nil {
