@@ -14,6 +14,10 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
+const (
+	testDataPath = "./test_data/"
+)
+
 func runTest(t *testing.T, test func(*testing.T, *integration.HTTPAPIClient)) {
 	for _, driver := range []string{basedb.DriverMySQL, basedb.DriverPostgreSQL} {
 		func() {
