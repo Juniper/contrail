@@ -6,7 +6,7 @@ cleanup:
 test_data:
   project: &project
     uuid: project_uuid
-    name: project_name
+    name: sg_project_name
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg
@@ -24,7 +24,7 @@ test_data:
             start_port: 0
           ethertype: "IPv4"
           src_addresses:
-          - security_group: "default:project_name:sg_name"
+          - security_group: "default:sg_project_name:sg_name"
           src_ports:
           - end_port: 65535
             start_port: 0
@@ -43,7 +43,7 @@ test_data:
             start_port: 0
           ethertype: "IPv4"
           src_addresses:
-          - security_group: "default:project_name:sg_name"
+          - security_group: "default:sg_project_name:sg_name"
           src_ports:
           - end_port: 65535
             start_port: 0
