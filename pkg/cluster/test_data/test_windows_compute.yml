@@ -1,0 +1,163 @@
+name: Windows compute test
+description: brownfield deployment test
+cleanup:
+- path: /contrail-win-cnm-plugin-node/contrail_win_cnm_plugin_node_uuid
+- path: /contrail-vrouter-node/contrail_vrouter_node_uuid
+- path: /node/compute_Windows_node_uuid
+- path: /credential/compute_Windows_credential_uuid
+- path: /contrail-cluster/compute_Windows_cluster_uuid
+test_data:
+  compute_Windows_cluster: &compute_Windows_cluster
+    uuid: compute_Windows_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    container_registry: test_registry
+    registry_private_insecure: true
+    contrail_version: master-430
+    provisioner_type: ansible
+    orchestrator: none
+    default_gateway: 10.7.3.1
+    contrail_configuration:
+      key_value_pair:
+        - key: CONTROL_NODES
+          value: 10.7.3.100
+        - key: CONTROLLER_NODES
+          value: 10.7.0.100
+  compute_Windows_credential: &compute_Windows_credential
+    name: compute_Windows_credential
+    uuid: compute_Windows_credential_uuid
+    ssh_user: test_ssh_user
+    ssh_password: test_ssh_password
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  compute_Windows_node: &compute_Windows_node
+    uuid: compute_Windows_node_uuid
+    hostname: compute_Windows_node
+    interface_name: compute_Windows_node_interface
+    ip_address: 10.7.0.101
+    credential_refs:
+      - uuid: compute_Windows_credential_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  contrail_vrouter_nodes: &contrail_vrouter_nodes
+    uuid: contrail_vrouter_node_uuid
+    parent_type: contrail-cluster
+    parent_uuid: compute_Windows_cluster_uuid
+    node_refs:
+      - uuid: compute_Windows_node_uuid
+  contrail_win_cnm_plugin_nodes: &contrail_win_cnm_plugin_nodes
+    uuid: contrail_win_cnm_plugin_node_uuid
+    parent_type: contrail-cluster
+    parent_uuid: compute_Windows_cluster_uuid
+    node_refs:
+      - uuid: compute_Windows_node_uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *compute_Windows_cluster
+  expect:
+    contrail-cluster:
+      <<: *compute_Windows_cluster
+      perms2:
+        owner: admin
+
+- name: create credential
+  request:
+    path: /credentials
+    method: POST
+    expected:
+    - 200
+    data:
+      credential: *compute_Windows_credential
+  expect:
+    credential:
+      <<: *compute_Windows_credential
+      perms2:
+        owner: admin
+
+- name: create node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *compute_Windows_node
+  expect:
+    node:
+      <<: *compute_Windows_node
+      perms2:
+        owner: admin
+
+- name: create vrouter node
+  request:
+    path: /contrail-vrouter-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-vrouter-node: *contrail_vrouter_nodes
+  expect:
+    contrail-vrouter-node: *contrail_vrouter_nodes
+
+- name: create win cnm plugin node
+  request:
+    path: /contrail-win-cnm-plugin-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-win-cnm-plugin-node: *contrail_win_cnm_plugin_nodes
+  expect:
+    contrail-win-cnm-plugin-node: *contrail_win_cnm_plugin_nodes
+
+- name: delete win cnm plugin node
+  request:
+    path: /contrail-win-cnm-plugin-node/contrail_win_cnm_plugin_node_uuid
+    method: DELETE
+    expected: [200]
+  expect: $null
+
+- name: delete vrouter node
+  request:
+    path: /contrail-vrouter-node/contrail_vrouter_node_uuid
+    method: DELETE
+    expected: [200]
+  expect: $null
+
+- name: delete Windows node
+  request:
+    path: /node/compute_Windows_node_uuid
+    method: DELETE
+    expected: [200]
+  expect: $null
+
+- name: delete credential
+  request:
+    path: /credential/compute_Windows_credential_uuid
+    method: DELETE
+    expected: [200]
+  expect: $null
+
+- name: delete Windows cluster
+  request:
+    path: /contrail-cluster/compute_Windows_cluster_uuid
+    method: DELETE
+    expected: [200]
+  expect: $null
