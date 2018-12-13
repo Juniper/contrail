@@ -74,4 +74,5 @@ type RequestParameters struct {
 	RequestContext RequestContext
 	ReadService    services.ReadService
 	WriteService   services.WriteService
+	FQNamService   services.FQNameToIDService
 }

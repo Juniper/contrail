@@ -17,6 +17,7 @@ import (
 type Service struct {
 	ReadService  services.ReadService
 	WriteService services.WriteService
+	FQNameToID   services.FQNameToIDService
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
