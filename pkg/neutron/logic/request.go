@@ -15,7 +15,7 @@ type Request struct {
 // Data defines API request data.
 type Data struct {
 	Filters  Filters  `json:"filters" yaml:"filters"`
-	ID       string   `json:"id" yaml:"id"`
+	ID       string   `json:"neutronIDKey" yaml:"neutronIDKey"`
 	Fields   Fields   `json:"fields" yaml:"fields"`
 	Resource Resource `json:"resource" yaml:"resource"`
 }

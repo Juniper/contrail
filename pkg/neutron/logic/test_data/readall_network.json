@@ -1,0 +1,26 @@
+{
+    "data": {
+        "fields": [],
+        "filters": {
+            "shared": [
+                false
+            ],
+            "tenant_id": [
+                "8cdb5412f5974b38a69f2f9d1ae969b7"
+            ]
+        }
+    },
+    "context": {
+        "user_id": "06be3763c8224dd5a343e3d95d87c1d2",
+        "roles": [
+            "heat_stack_owner",
+            "admin"
+        ],
+        "tenant_id": "8cdb5412f5974b38a69f2f9d1ae969b7",
+        "is_admin": true,
+        "request_id": "req-bdde67ed-1a62-42ee-9c27-142645d09be7",
+        "operation": "READALL",
+        "type": "network",
+        "tenant": "8cdb5412f5974b38a69f2f9d1ae969b7"
+    }
+}
