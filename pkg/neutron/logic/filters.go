@@ -59,3 +59,21 @@ func (f Filters) haveKeys(keys ...string) bool {
 
 	return true
 }
+
+// checkValue check equality of values in filters struct under specific key and provided sequence of strings
+func (filters Filters) checkValue(key string, values ...string) bool {
+	if !filters.haveKeys(key) {
+		return true
+	}
+	if len(filters[key]) != len(values) {
+		return false
+	}
+
+	for i, v := range values {
+		if filters[key][i] != v {
+			return false
+		}
+	}
+
+	return true
+}
