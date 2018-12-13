@@ -28,7 +28,6 @@ all: check lint test build
 
 deps: ## Install development dependencies
 	./tools/deps.sh
-
 check: ## Check vendored dependencies
 	./tools/check.sh
 
@@ -61,8 +60,8 @@ generate_go:
 		--schema-output public/schema.json --openapi-output public/openapi.json
 	# Generate for openstack api resources.
 	go run  cmd/contrailschema/main.go generate \
-	    --schemas schemas/openstack --templates tools/templates/openstack/template_config.yaml \
-		--schema-output public/openstack_schema.json --openapi-output public/openstack_openapi.json
+	    --schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
+		--schema-output public/neutron_schema.json --openapi-output public/neutron_openapi.json
 
 TYPES_MOCK := pkg/types/mock/gen_service_mock.go
 SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
