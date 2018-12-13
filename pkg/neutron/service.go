@@ -17,6 +17,7 @@ import (
 type Service struct {
 	ReadService  services.ReadService
 	WriteService services.WriteService
+	FQNameToID   services.FQNameToIDService
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
@@ -53,6 +54,7 @@ func (s *Service) handle(r *logic.Request) (logic.Response, error) {
 		ReadService:    s.ReadService,
 		WriteService:   s.WriteService,
 		RequestContext: r.Context,
+		FQNamService:   s.FQNameToID,
 	}
 	switch r.Context.Operation {
 	case "CREATE":

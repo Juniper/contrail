@@ -9,6 +9,10 @@ schema:
     id:
       type: string
       presence: true
+    tenant_id:
+      type: string
+    project_id:
+      type: string
     name:
       presence: optional
       type: string
