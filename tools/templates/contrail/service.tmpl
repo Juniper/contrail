@@ -90,8 +90,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
             parentFQName := model.FQName[:l-1]
             metadata, err := service.MetadataGetter.GetMetadata(ctx,  basemodels.Metadata{Type: model.ParentType, FQName: parentFQName})
             if err != nil {
-                return nil, errutil.ErrorBadRequestf("invalid FQName or ParentUUID: %v", err)
-            }
+		  return nil, errutil.ErrorBadRequestf("no parent for {{ schema.JSONSchema.GoName }} found by FQName=(%v): %v", parentFQName, err)            }
             model.ParentUUID = metadata.UUID
         }
     }
