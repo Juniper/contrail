@@ -19,6 +19,7 @@
       with_items:
         - name: Install development dependencies
           command: make deps
+          retries: 3
         - name: Check vendored dependencies
           command: make check
         - name: Run the source code generator
