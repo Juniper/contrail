@@ -2,7 +2,12 @@ name: Security Group Test
 description: security group test
 cleanup:
 - path: /security-group/security-group-mock
-- path: /project/project-uuid-1
+- kind: security-group
+  fq_name:
+  - default-domain
+  - project_name
+  - default
+- path: /project/92882ca8-f993-42f2-8643-0c05c96e12dd
 
 # TODO: add missing tests. These test covers happy-path only.
 
@@ -15,7 +20,7 @@ test_data:
   sg: &sg
     uuid: security-group-mock
     name: sg_name
-    parent_uuid: project-uuid-1
+    parent_uuid: 92882ca8-f993-42f2-8643-0c05c96e12dd
     security_group_entries:
       policy_rule:
       - direction: ">"
@@ -49,7 +54,7 @@ test_data:
       - default-domain
       - project_name
       - sg_name
-    tenant_id: projectuuid1
+    tenant_id: 92882ca8f99342f286430c05c96e12dd
     security_group_rules:
     - remote_group_id: ''
       direction: ingress
@@ -60,11 +65,28 @@ test_data:
       updated_at: ''
       security_group_id: security-group-mock
       port_range_min: 0
-      tenant_id: projectuuid1
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
       created_at: ''
       id: ''
     id: security-group-mock
     name: sg_name
+  sg_readall_request: &sg_readall_request
+    data:
+      fields: []
+      filters:
+        tenant_id:
+        - 92882ca8f99342f286430c05c96e12dd
+    context:
+      user_id: 06be3763c8224dd5a343e3d95d87c1d2
+      roles:
+      - heat_stack_owner
+      - admin
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      is_admin: true
+      request_id: req-051612ac-45e4-4df9-b36e-93190210bee8
+      operation: READALL
+      type: security_group
+      tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
 
 clients:
   default:
@@ -74,6 +96,7 @@ clients:
     scope:
       project:
         name: admin
+
 workflow:
 - name: create project
   request:
@@ -85,6 +108,19 @@ workflow:
       project: *project
   expect:
     project: *project
+- name: check if default security group is auto-created on READALL operation
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [200]
+    data: *sg_readall_request
+  expect:
+    - fq_name:
+      - default-domain
+      - project_name
+      - default
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      name: default
 - name: check if security group is empty
   request:
     path: /neutron/security_group
@@ -103,7 +139,7 @@ workflow:
       security-group: *sg
   expect:
     security-group: *sg
-- name: fetch default security group
+- name: READ created security group
   request:
     path: /neutron/security_group
     method: POST
@@ -122,16 +158,27 @@ workflow:
   expect:
     exception: SecurityGroupNotFound
     id: bad-id
+- name: assert READALL security groups of that project
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [200]
+    data: *sg_readall_request
+  expect:
+  - fq_name:
+    - default-domain
+    - project_name
+    - default
+    tenant_id: 92882ca8f99342f286430c05c96e12dd
+    name: default
+  - fq_name:
+    - default-domain
+    - project_name
+    - sg_name
+    tenant_id: 92882ca8f99342f286430c05c96e12dd
 - name: delete security group
   request:
     path: /security-group/security-group-mock
-    method: DELETE
-    expected:
-    - 200
-  expect: null
-- name: delete project
-  request:
-    path: /project/project-uuid-1
     method: DELETE
     expected:
     - 200
