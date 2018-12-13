@@ -38,5 +38,7 @@ func (e *Error) MarshalJSON() ([]byte, error) {
 // constants for Neutron API exception names
 // https://docs.openstack.org/neutron-lib/queens/reference/modules/neutron_lib.exceptions.html
 const (
-	BadRequest = "BadRequest"
+	BadRequest            = "BadRequest"
+	SecurityGroupNotFound = "SecurityGroupNotFound"
+	ProjectNotFound       = "ProjectNotFound"
 )
