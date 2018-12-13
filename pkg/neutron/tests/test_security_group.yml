@@ -6,14 +6,14 @@ cleanup:
 
 test_data:
   project: &project
-    uuid: project-uuid-1
+    uuid: project1-uuid-uuid-uuid-project00001
     name: project_name
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg
     uuid: security-group-mock
     name: sg_name
-    parent_uuid: project-uuid-1
+    parent_uuid: project1-uuid-uuid-uuid-project00001
     security_group_entries:
       policy_rule:
       - direction: ">"
@@ -47,7 +47,7 @@ test_data:
       - default-domain
       - project_name
       - sg_name
-    tenant_id: projectuuid1
+    tenant_id: project1uuiduuiduuidproject00001
     security_group_rules:
     - remote_group_id: ''
       direction: ingress
@@ -58,11 +58,28 @@ test_data:
       updated_at: ''
       security_group_id: security-group-mock
       port_range_min: 0
-      tenant_id: projectuuid1
+      tenant_id: project1uuiduuiduuidproject00001
       created_at: ''
       id: ''
     id: security-group-mock
     name: sg_name
+  sg_readall_request: &sg_readall_request
+    data:
+      fields: []
+      filters:
+        tenant_id:
+        - project1uuiduuiduuidproject00001
+    context:
+      user_id: 06be3763c8224dd5a343e3d95d87c1d2
+      roles:
+      - heat_stack_owner
+      - admin
+      tenant_id: project1uuiduuiduuidproject00001
+      is_admin: true
+      request_id: req-051612ac-45e4-4df9-b36e-93190210bee8
+      operation: READALL
+      type: security_group
+      tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
 
 clients:
   default:
@@ -89,6 +106,14 @@ workflow:
     method: POST
     expected: [400]
     data: *sg_read_request
+- name: check if default security group is auto-created on READALL operation
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [200]
+    data: *sg_readall_request
+  response:
+    - "" # TODO ...
 - name: create security group
   request:
     path: /security-groups
