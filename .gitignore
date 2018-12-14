@@ -24,10 +24,10 @@ docker/contrail_go/etc/
 docker/contrail_go/contrail
 docker/contrail_go/contrailcli
 pkg/**/gen_*
-pkg/**/generated.pb.go
+pkg/**/*.pb.go
 profile.cov
 profile.tmp
-proto/
+proto/**/gen*.proto
 public/
 test_output/
 tools/init_mysql.sql
