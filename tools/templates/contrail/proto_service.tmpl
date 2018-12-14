@@ -8,7 +8,6 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
 
-
 option (gogoproto.goproto_enum_prefix_all) = false;
 option (gogoproto.gostring_all) = false;
 option (gogoproto.equal_all) = false;
@@ -215,4 +214,40 @@ message WatchResponse {
   bool canceled = 3;
   string cancel_reason = 4;
   repeated Event events = 5;
+}
+
+service UserAgentKV {
+	rpc StoreKeyValue(StoreKeyValueRequest) returns (google.protobuf.Empty);
+	rpc RetrieveValues(RetrieveValuesRequest) returns (RetrieveValuesResponse);
+	rpc RetrieveKVPs(google.protobuf.Empty) returns (RetrieveKVPsResponse);
+	rpc DeleteKey(DeleteKeyRequest) returns (google.protobuf.Empty);
+}
+
+message StoreKeyValueRequest {
+	string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
+	string Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+}
+
+message RetrieveValueRequest {
+	string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
+}
+
+message RetrieveValueResponse {
+	string Value = 1 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+}
+
+message RetrieveValuesRequest {
+	repeated string Keys = 1 [(gogoproto.customname) = "Keys",(gogoproto.jsontag) = "key"];
+}
+
+message RetrieveValuesResponse {
+	repeated string Values = 1 [(gogoproto.customname) = "Values",(gogoproto.jsontag) = "value"];
+}
+
+message RetrieveKVPsResponse {
+	repeated github.com.Juniper.contrail.pkg.models.KeyValuePair value = 1 [(gogoproto.customname) = "KeyValuePairs",(gogoproto.jsontag) = "value"];
+}
+
+message DeleteKeyRequest {
+	string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
 }
