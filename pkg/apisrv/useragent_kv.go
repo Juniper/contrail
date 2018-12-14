@@ -1,26 +1,27 @@
 package apisrv
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 
 	"github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
-// Useragent key value store operations.
+// UserAgent key value store operations.
 const (
-	UseragentKVOperationStore    = "STORE"
-	UseragentKVOperationRetrieve = "RETRIEVE"
-	UseragentKVOperationDelete   = "DELETE"
+	UserAgentKVOperationStore    = "STORE"
+	UserAgentKVOperationRetrieve = "RETRIEVE"
+	UserAgentKVOperationDelete   = "DELETE"
 )
 
-type useragentKVRequest map[string]interface{}
+type userAgentKVRequest map[string]interface{}
 
-// UseragentKVHandler handles requests to access the useragent key value store.
-func (s *Server) UseragentKVHandler(c echo.Context) error {
-	var data useragentKVRequest
+func (s *Server) userAgentKVHandler(c echo.Context) error {
+	var data userAgentKVRequest
 	if err := c.Bind(&data); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
@@ -30,9 +31,9 @@ func (s *Server) UseragentKVHandler(c echo.Context) error {
 	}
 
 	switch op := data["operation"]; op {
-	case UseragentKVOperationStore:
+	case UserAgentKVOperationStore:
 		return s.storeKeyValue(c, data["key"].(string), data["value"].(string))
-	case UseragentKVOperationRetrieve:
+	case UserAgentKVOperationRetrieve:
 		if key, ok := data["key"].(string); ok && key != "" {
 			return s.retrieveValue(c, key)
 		}
@@ -42,7 +43,7 @@ func (s *Server) UseragentKVHandler(c echo.Context) error {
 		}
 
 		return s.retrieveKVPs(c)
-	case UseragentKVOperationDelete:
+	case UserAgentKVOperationDelete:
 		return s.deleteKey(c, data["key"].(string))
 	}
 
@@ -50,50 +51,55 @@ func (s *Server) UseragentKVHandler(c echo.Context) error {
 }
 
 func (s *Server) storeKeyValue(c echo.Context, key string, value string) error {
-	if err := s.DBService.StoreKV(c.Request().Context(), key, value); err != nil {
+	if _, err := s.UserAgentKVServer.StoreKeyValue(c.Request().Context(), &services.StoreKeyValueRequest{
+		Key:   key,
+		Value: value,
+	}); err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
 }
 
 func (s *Server) retrieveValue(c echo.Context, key string) error {
-	val, err := s.DBService.RetrieveValue(c.Request().Context(), key)
+	kv, err := s.UserAgentKVServer.RetrieveValues(
+		c.Request().Context(),
+		&services.RetrieveValuesRequest{Keys: []string{key}},
+	)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
-	return c.JSON(http.StatusOK, struct {
-		Value string `json:"value"`
-	}{Value: val})
+
+	if len(kv.Values) == 0 {
+		return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("No user agent key: %v", key))
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"value": kv.Values[0]})
 }
 
 func (s *Server) retrieveValues(c echo.Context, keys []string) error {
-	vals, err := s.DBService.RetrieveValues(c.Request().Context(), keys)
+	response, err := s.UserAgentKVServer.RetrieveValues(c.Request().Context(), &services.RetrieveValuesRequest{Keys: keys})
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
-	return c.JSON(http.StatusOK, struct {
-		Value []string `json:"value"`
-	}{Value: vals})
+	return c.JSON(http.StatusOK, response)
 }
 
 func (s *Server) retrieveKVPs(c echo.Context) error {
-	kvps, err := s.DBService.RetrieveKVPs(c.Request().Context())
+	response, err := s.UserAgentKVServer.RetrieveKVPs(c.Request().Context(), &types.Empty{})
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
-	return c.JSON(http.StatusOK, struct {
-		Value []*models.KeyValuePair `json:"value"`
-	}{Value: kvps})
+	return c.JSON(http.StatusOK, response)
 }
 
 func (s *Server) deleteKey(c echo.Context, key string) error {
-	if err := s.DBService.DeleteKey(c.Request().Context(), key); err != nil {
+	if _, err := s.UserAgentKVServer.DeleteKey(c.Request().Context(), &services.DeleteKeyRequest{Key: key}); err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
 }
 
-func (data useragentKVRequest) validateKVRequest() error {
+func (data userAgentKVRequest) validateKVRequest() error {
 	if _, ok := data["operation"]; !ok {
 		return errutil.ErrorBadRequest("Key/value store API needs 'operation' parameter")
 	}
@@ -103,16 +109,16 @@ func (data useragentKVRequest) validateKVRequest() error {
 	}
 
 	switch op := data["operation"]; op {
-	case UseragentKVOperationStore, UseragentKVOperationDelete:
+	case UserAgentKVOperationStore, UserAgentKVOperationDelete:
 		return data.validateStoreOrDeleteOperation()
-	case UseragentKVOperationRetrieve:
+	case UserAgentKVOperationRetrieve:
 		return data.validateRetrieveOperation()
 	default:
 		return errutil.ErrorNotFoundf("Invalid Operation %v", op)
 	}
 }
 
-func (data useragentKVRequest) validateRetrieveOperation() error {
+func (data userAgentKVRequest) validateRetrieveOperation() error {
 	errMsg := "retrieve: 'key' must be a string or a list of strings"
 
 	switch key := data["key"].(type) {
@@ -134,7 +140,7 @@ func (data useragentKVRequest) validateRetrieveOperation() error {
 	return nil
 }
 
-func (data useragentKVRequest) validateStoreOrDeleteOperation() error {
+func (data userAgentKVRequest) validateStoreOrDeleteOperation() error {
 	if key, ok := data["key"].(string); !ok {
 		return errutil.ErrorBadRequestf("store/delete: 'key' must be a string")
 	} else if key == "" {
