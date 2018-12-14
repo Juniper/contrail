@@ -47,17 +47,18 @@ func RegisterExtension(f func(server *Server) error) {
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo           *echo.Echo
-	GRPCServer     *grpc.Server
-	Keystone       *keystone.Keystone
-	DBService      *db.Service
-	Proxy          *proxyService
-	Service        services.Service
-	IPAMServer     services.IPAMServer
-	ChownServer    services.ChownServer
-	SetTagServer   services.SetTagServer
-	RefRelaxServer services.RefRelaxServer
-	Cache          *cache.DB
+	Echo              *echo.Echo
+	GRPCServer        *grpc.Server
+	Keystone          *keystone.Keystone
+	DBService         *db.Service
+	Proxy             *proxyService
+	Service           services.Service
+	IPAMServer        services.IPAMServer
+	ChownServer       services.ChownServer
+	SetTagServer      services.SetTagServer
+	RefRelaxServer    services.RefRelaxServer
+	UserAgentKVServer services.UserAgentKVServer
+	Cache             *cache.DB
 }
 
 // NewServer makes a server
@@ -196,6 +197,7 @@ func (s *Server) Init() (err error) {
 	s.ChownServer = cs
 	s.SetTagServer = cs
 	s.RefRelaxServer = cs
+	s.UserAgentKVServer = s.DBService
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -375,7 +377,6 @@ func (s *Server) setupHomepage() {
 	// TODO VN IP alloc
 	// TODO VN IP free
 	// TODO subnet IP count
-	// TODO set tag
 	// TODO security policy draft
 
 	s.Echo.GET("/", dh.Handle)
@@ -392,7 +393,7 @@ func (s *Server) setupActionResources() {
 	s.Echo.POST(FQNameToIDPath, s.fqNameToUUIDHandler)
 	//TODO handle gRPC
 
-	s.Echo.POST(UserAgentKVPath, s.UseragentKVHandler)
+	s.Echo.POST(UserAgentKVPath, s.userAgentKVHandler)
 }
 
 // Run runs server.
