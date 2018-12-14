@@ -372,7 +372,6 @@ func (s *Server) setupHomepage() {
 	// TODO VN IP alloc
 	// TODO VN IP free
 	// TODO subnet IP count
-	// TODO set tag
 	// TODO security policy draft
 
 	s.Echo.GET("/", dh.Handle)

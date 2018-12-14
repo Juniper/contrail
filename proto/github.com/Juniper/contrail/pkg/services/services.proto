@@ -1,0 +1,131 @@
+syntax = "proto3";
+package github.com.Juniper.contrail.pkg.services;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/Juniper/contrail/pkg/models/generated.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+option (gogoproto.goproto_enum_prefix_all) = false;
+option (gogoproto.gostring_all) = false;
+option (gogoproto.equal_all) = false;
+option (gogoproto.verbose_equal_all) = false;
+option (gogoproto.goproto_stringer_all) = false;
+option (gogoproto.stringer_all) =  true;
+option (gogoproto.populate_all) = false;
+option (gogoproto.benchgen_all) = false;
+option (gogoproto.marshaler_all) = false;
+option (gogoproto.sizer_all) = true;
+option (gogoproto.unmarshaler_all) = false;
+option (gogoproto.protosizer_all) = false;
+
+option go_package = "services";
+
+service Chown {
+    rpc Chown(ChownRequest) returns (google.protobuf.Empty);
+}
+
+message ChownRequest {
+    string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+    string Owner = 2 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
+}
+
+service RefRelax {
+    rpc RelaxRef (RelaxRefRequest) returns (RelaxRefResponse);
+}
+
+message RelaxRefRequest {
+    string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+    string RefUUID = 2 [(gogoproto.customname) = "RefUUID",(gogoproto.jsontag) = "ref-uuid"];
+}
+
+message RelaxRefResponse {
+    string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+}
+
+service IPAM {
+    rpc AllocateInt (AllocateIntRequest) returns (AllocateIntResponse);
+    rpc SetInt (SetIntRequest) returns (google.protobuf.Empty);
+    rpc DeallocateInt (DeallocateIntRequest) returns (google.protobuf.Empty);
+}
+
+message AllocateIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+}
+
+message AllocateIntResponse {
+    int64 Value = 1 [(gogoproto.customname) = "Value"];
+}
+
+message SetIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+    int64 Value = 2 [(gogoproto.customname) = "Value"];
+}
+
+message DeallocateIntRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool"];
+    int64 Value = 2 [(gogoproto.customname) = "Value"];
+}
+
+service SetTag {
+    rpc SetTag(SetTagRequest) returns (google.protobuf.Empty);
+}
+
+message SetTagRequest {
+    string ObjUUID = 1 [(gogoproto.customname) = "ObjUUID",(gogoproto.jsontag) = "obj_uuid"];
+    string ObjType = 2 [(gogoproto.customname) = "ObjType",(gogoproto.jsontag) = "obj_type"];
+    repeated SetTagAttr Tags = 3 [(gogoproto.customname) = "Tags"];
+}
+
+message SetTagAttr {
+    string Type = 1 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
+    google.protobuf.StringValue Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+    bool IsGlobal = 3 [(gogoproto.customname) = "IsGlobal",(gogoproto.jsontag) = "is_global"];
+    repeated string AddValues = 4 [(gogoproto.customname) = "AddValues",(gogoproto.jsontag) = "add_values"];
+    repeated string DeleteValues = 5 [(gogoproto.customname) = "DeleteValues",(gogoproto.jsontag) = "delete_values"];
+}
+
+service FQNameToID {
+    rpc FQNameToID(FQNameToIDRequest) returns (FQNameToIDResponse);
+}
+
+message FQNameToIDRequest {
+    repeated string FQName = 1 [(gogoproto.customname) = "FQName",(gogoproto.jsontag) = "fq_name"];
+    string Type = 2 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
+}
+
+message FQNameToIDResponse {
+    string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+}
+
+service UserAgentKV {
+    rpc StoreKeyValue(StoreKeyValueRequest) returns (google.protobuf.Empty);
+    rpc RetrieveValue(RetrieveValueRequest) returns (RetrieveValueResponse);
+    rpc RetrieveValues(RetrieveValuesRequest) returns (RetrieveValuesResponse);
+    rpc RetrieveKVPs(google.protobuf.Empty) returns (RetrieveValuesResponse);
+}
+
+message StoreKeyValueRequest {
+    string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
+    string Value = 2 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+}
+
+message RetrieveValueRequest {
+    string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
+}
+
+message RetrieveValueResponse {
+    string Value = 1 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+}
+
+message RetrieveValuesRequest {
+    repeated string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
+}
+
+message RetrieveValuesResponse {
+    repeated string Value = 1 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+}
+
+message RetrieveKVPsResponse {
+    github.com.Juniper.contrail.pkg.models.KeyValuePairs value = 1 [(gogoproto.customname) = "Value",(gogoproto.jsontag) = "value"];
+}
