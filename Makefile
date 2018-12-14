@@ -49,7 +49,7 @@ format_gen:
 
 fast_generate: generate_pb_go generate_mocks doc/proto.md
 
-generate_pb_go: generate_go pkg/models/generated.pb.go pkg/services/baseservices/base.pb.go pkg/services/generated.pb.go
+generate_pb_go: generate_go pkg/models/generated.pb.go pkg/services/baseservices/base.pb.go pkg/services/services.pb.go
 
 generate: fast_generate format_gen
 
@@ -92,6 +92,8 @@ Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 plugins=grpc:$(GOPATH)/src/ $<
 	go tool fix $@
 
+pkg/services/services.pb.go: pkg/services/generated.pb.go
+
 doc/proto.md: $(PROTO_PKG_PATH)/models/generated.proto $(PROTO_PKG_PATH)/services/generated.proto
 	$(PROTO) --doc_out=./doc --doc_opt=markdown,proto.md $^
 
@@ -102,7 +104,7 @@ clean_gen:
 	rm -f tools/cleanup_mysql.sql
 	rm -f tools/cleanup_psql.sql
 	find pkg/ -name gen_* -delete
-	find pkg/ -name generated.pb.go -delete
+	find pkg/ -name *.pb.go -delete
 	find proto/ -name generated.proto -delete
 
 package: ## Generate the packages
