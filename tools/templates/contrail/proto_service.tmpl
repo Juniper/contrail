@@ -243,3 +243,16 @@ message RetrieveKVPsResponse {
 message DeleteKeyRequest {
 	string Key = 1 [(gogoproto.customname) = "Key",(gogoproto.jsontag) = "key"];
 }
+
+service FQNameToID {
+rpc FQNameToID(FQNameToIDRequest) returns (FQNameToIDResponse);
+}
+
+message FQNameToIDRequest {
+repeated string FQName = 1 [(gogoproto.customname) = "FQName",(gogoproto.jsontag) = "fq_name"];
+string Type = 2 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
+}
+
+message FQNameToIDResponse {
+string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+}
