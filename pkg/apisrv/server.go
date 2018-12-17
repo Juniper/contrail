@@ -60,6 +60,7 @@ type Server struct {
 	SetTagServer      services.SetTagServer
 	RefRelaxServer    services.RefRelaxServer
 	UserAgentKVServer services.UserAgentKVServer
+	FQNameToIDServer  services.FQNameToIDServer
 	Cache             *cache.DB
 }
 
@@ -200,6 +201,7 @@ func (s *Server) Init() (err error) {
 	s.SetTagServer = cs
 	s.RefRelaxServer = cs
 	s.UserAgentKVServer = s.DBService
+	s.FQNameToIDServer = cs
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -280,6 +282,7 @@ func (s *Server) Init() (err error) {
 		services.RegisterChownServer(s.GRPCServer, s.ChownServer)
 		services.RegisterSetTagServer(s.GRPCServer, s.SetTagServer)
 		services.RegisterRefRelaxServer(s.GRPCServer, s.RefRelaxServer)
+		services.RegisterFQNameToIDServer(s.GRPCServer, s.FQNameToIDServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 
@@ -288,7 +291,7 @@ func (s *Server) Init() (err error) {
 	}
 
 	s.setupWatchAPI()
-	s.setupActionResources()
+	s.setupActionResources(cs)
 
 	if viper.GetBool("recorder.enabled") {
 		file := viper.GetString("recorder.file")
@@ -391,10 +394,8 @@ func (s *Server) setupWatchAPI() {
 	s.Echo.GET(WatchPath, s.watchHandler)
 }
 
-func (s *Server) setupActionResources() {
-	s.Echo.POST(FQNameToIDPath, s.fqNameToUUIDHandler)
-	//TODO handle gRPC
-
+func (s *Server) setupActionResources(cs *services.ContrailService) {
+	s.Echo.POST(FQNameToIDPath, cs.RESTFQNameToUUID)
 	s.Echo.POST(UserAgentKVPath, s.userAgentKVHandler)
 }
 

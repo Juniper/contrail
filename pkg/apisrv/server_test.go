@@ -287,6 +287,20 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 	testBody(ctx, conn)
 }
 
+func TestFQNameToIDGRPC(t *testing.T) {
+	testGRPCServer(t, t.Name(),
+		func(ctx context.Context, conn *grpc.ClientConn) {
+			c := services.NewFQNameToIDClient(conn)
+			resp, err := c.FQNameToID(ctx, &services.FQNameToIDRequest{
+				FQName: []string{"default-domain"},
+				Type:   "domain",
+			})
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+			assert.Equal(t, "beefbeef-beef-beef-beef-beefbeef0002", resp.UUID)
+		})
+}
+
 func TestChownGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(),
 		func(ctx context.Context, conn *grpc.ClientConn) {
