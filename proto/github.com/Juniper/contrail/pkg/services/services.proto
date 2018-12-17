@@ -85,6 +85,19 @@ message SetTagAttr {
     repeated string DeleteValues = 5 [(gogoproto.customname) = "DeleteValues",(gogoproto.jsontag) = "delete_values"];
 }
 
+service FQNameToID {
+    rpc FQNameToID(FQNameToIDRequest) returns (FQNameToIDResponse);
+}
+
+message FQNameToIDRequest {
+    repeated string FQName = 1 [(gogoproto.customname) = "FQName",(gogoproto.jsontag) = "fq_name"];
+    string Type = 2 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
+}
+
+message FQNameToIDResponse {
+    string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+}
+
 service UserAgentKV {
     rpc StoreKeyValue(StoreKeyValueRequest) returns (google.protobuf.Empty);
     rpc RetrieveValue(RetrieveValueRequest) returns (RetrieveValueResponse);
