@@ -60,6 +60,7 @@ type Server struct {
 	SetTagServer      services.SetTagServer
 	RefRelaxServer    services.RefRelaxServer
 	UserAgentKVServer services.UserAgentKVServer
+	FQNameToIDServer  services.FQNameToIDServer
 	Cache             *cache.DB
 }
 
@@ -200,6 +201,7 @@ func (s *Server) Init() (err error) {
 	s.SetTagServer = cs
 	s.RefRelaxServer = cs
 	s.UserAgentKVServer = s.DBService
+	s.FQNameToIDServer = s.DBService
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -280,6 +282,7 @@ func (s *Server) Init() (err error) {
 		services.RegisterChownServer(s.GRPCServer, s.ChownServer)
 		services.RegisterSetTagServer(s.GRPCServer, s.SetTagServer)
 		services.RegisterRefRelaxServer(s.GRPCServer, s.RefRelaxServer)
+		services.RegisterFQNameToIDServer(s.GRPCServer, s.FQNameToIDServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 
