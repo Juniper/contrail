@@ -25,7 +25,7 @@ import (
 	"github.com/Juniper/contrail/pkg/fileutil"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
-	openstackservice "github.com/Juniper/contrail/pkg/openstack/services"
+	"github.com/Juniper/contrail/pkg/neutron"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
 )
@@ -131,13 +131,6 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	return cs, nil
 }
 
-func (s *Server) setupOpenstack() (*openstackservice.OpenstackService, error) {
-	// TODO: implement. It should be simliart to contrailService method
-	os := &openstackservice.OpenstackService{}
-	os.RegisterOpenstackAPI(s.Echo)
-	return os, nil
-}
-
 func etcdNotifier() services.Service {
 	// TODO(Michał): Make the codec configurable
 	en, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"), models.JSONCodec)
@@ -189,14 +182,15 @@ func (s *Server) Init() (err error) {
 		return err
 	}
 
-	if _, err = s.setupOpenstack(); err != nil {
-		return err
-	}
-
 	cs, err := s.setupService()
 	if err != nil {
 		return err
 	}
+
+	if viper.GetBool("server.enable_vnc_neutron") {
+		s.setupNeutronService(cs)
+	}
+
 	s.Service = cs
 	s.IPAMServer = cs
 	s.ChownServer = cs
@@ -329,6 +323,15 @@ func (s *Server) Init() (err error) {
 	}
 
 	return s.applyExtensions()
+}
+
+func (s *Server) setupNeutronService(cs services.Service) *neutron.Service {
+	n := &neutron.Service{
+		ReadService:  s.DBService,
+		WriteService: cs,
+	}
+	n.RegisterNeutronAPI(s.Echo)
+	return n
 }
 
 type recorderTask struct {

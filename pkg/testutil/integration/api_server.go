@@ -127,6 +127,7 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"server.log_api":              !c.DisableLogAPI,
 		"server.log_body":             !c.DisableLogAPI,
 		"static_files.public":         path.Join(c.RepoRootPath, "public"),
+		"server.enable_vnc_neutron":   true,
 		"tls.enabled":                 false,
 	})
 }
