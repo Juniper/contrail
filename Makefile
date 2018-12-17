@@ -59,9 +59,10 @@ generate_go:
 		--schemas schemas/contrail --templates tools/templates/contrail/template_config.yaml \
 		--schema-output public/schema.json --openapi-output public/openapi.json
 	# Generate for openstack api resources.
+	@mkdir -p public/neutron
 	go run  cmd/contrailschema/main.go generate \
 	    --schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
-		--schema-output public/neutron_schema.json --openapi-output public/neutron_openapi.json
+		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
 TYPES_MOCK := pkg/types/mock/gen_service_mock.go
 SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
