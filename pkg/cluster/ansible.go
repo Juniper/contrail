@@ -325,7 +325,7 @@ func (a *ansibleProvisioner) createInstancesFile(destination string) error {
 		return err
 	}
 
-	err = fileutil.WriteToFile(destination, content, filePermRWOnly)
+	err = fileutil.WriteToNewFile(destination, content, filePermRWOnly)
 	if err != nil {
 		return err
 	}
@@ -343,7 +343,7 @@ func (a *ansibleProvisioner) createDatapathEncryptionInventory(destination strin
 	if err != nil {
 		return err
 	}
-	err = fileutil.WriteToFile(destination, content, filePermRWOnly)
+	err = fileutil.WriteToNewFile(destination, content, filePermRWOnly)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package osutil
 
 import (
+	"os"
 	"os/exec"
 
 	"github.com/Juniper/contrail/pkg/log/report"
@@ -10,11 +11,17 @@ import (
 func ExecCmdAndWait(r *report.Reporter, cmd string,
 	args []string, dir string) error {
 
+	// create dir, if it does not exist
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	cmdline := exec.Command(cmd, args...)
 	if dir != "" {
 		cmdline.Dir = dir
 	}
-	stdout, err := cmdline.StdoutPipe()
+	stdout, err = cmdline.StdoutPipe()
 	if err != nil {
 		return err
 	}
