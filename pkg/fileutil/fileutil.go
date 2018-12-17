@@ -97,15 +97,22 @@ func YAMLtoJSONCompat(yamlData interface{}) interface{} {
 	return yamlData
 }
 
-//WriteToFile writes content to a file (path and content are provided as params)
-func WriteToFile(path string, content []byte, perm os.FileMode) error {
-	// create file if it doesn't exist
+//WriteToNewFile writes content to a new file (path and content are provided as params)
+func WriteToNewFile(path string, content []byte, perm os.FileMode) error {
+
+	// create parent directory if it doesn't exist
 	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	// write content to file
+	// remove file if exists
+	err = os.Remove(path)
+	if err != nil {
+		return err
+	}
+
+	// write content to new file
 	return ioutil.WriteFile(path, content, perm)
 }
 
