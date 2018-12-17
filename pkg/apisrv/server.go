@@ -15,8 +15,6 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
-	"github.com/Juniper/contrail/pkg/constants"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
@@ -27,7 +25,7 @@ import (
 	"github.com/Juniper/contrail/pkg/fileutil"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/neutron"
+	openstackservice "github.com/Juniper/contrail/pkg/openstack/services"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/types"
 )
@@ -60,6 +58,7 @@ type Server struct {
 	SetTagServer      services.SetTagServer
 	RefRelaxServer    services.RefRelaxServer
 	UserAgentKVServer services.UserAgentKVServer
+	FQNameToIDServer  services.FQNameToIDServer
 	Cache             *cache.DB
 }
 
@@ -134,11 +133,18 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	return cs, nil
 }
 
+func (s *Server) setupOpenstack() (*openstackservice.OpenstackService, error) {
+	// TODO: implement. It should be simliart to contrailService method
+	os := &openstackservice.OpenstackService{}
+	os.RegisterOpenstackAPI(s.Echo)
+	return os, nil
+}
+
 func etcdNotifier() services.Service {
 	// TODO(Michał): Make the codec configurable
-	en, err := etcdclient.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
+	en, err := etcdclient.NewNotifierService(viper.GetString("etcd.path"), models.JSONCodec)
 	if err != nil {
-		log.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
+		log.WithError(err).Error("Failed to add ETCD Notifier Service - ignoring")
 		return nil
 	}
 	return en
@@ -185,21 +191,21 @@ func (s *Server) Init() (err error) {
 		return err
 	}
 
+	if _, err = s.setupOpenstack(); err != nil {
+		return err
+	}
+
 	cs, err := s.setupService()
 	if err != nil {
 		return err
 	}
-
-	if viper.GetBool("server.enable_vnc_neutron") {
-		s.setupNeutronService(cs)
-	}
-
 	s.Service = cs
 	s.IPAMServer = cs
 	s.ChownServer = cs
 	s.SetTagServer = cs
 	s.RefRelaxServer = cs
 	s.UserAgentKVServer = s.DBService
+	s.FQNameToIDServer = s.DBService
 
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
@@ -327,15 +333,6 @@ func (s *Server) Init() (err error) {
 	}
 
 	return s.applyExtensions()
-}
-
-func (s *Server) setupNeutronService(cs services.Service) *neutron.Service {
-	n := &neutron.Service{
-		ReadService:  s.DBService,
-		WriteService: cs,
-	}
-	n.RegisterNeutronAPI(s.Echo)
-	return n
 }
 
 type recorderTask struct {
