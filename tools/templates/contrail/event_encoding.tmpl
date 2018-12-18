@@ -227,14 +227,15 @@ func (e *Event) UnmarshalJSON(data []byte) error {
         case "{{ schema.ID }}":
             switch (operation) {
                 case OperationCreate:
-                    var m models.{{ schema.JSONSchema.GoName }}
+                    m := map[string]interface{}{}
                     err = json.Unmarshal(d, &m)
                     if err != nil {
                         return err
                     }
                     e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
                         Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: &m,
+                        {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(m),
+                            FieldMask: basemodels.MapToFieldMask(m),
                         },
                     }
                 case OperationUpdate:
@@ -318,6 +319,7 @@ func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
                     e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
                         Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
                             {{ schema.JSONSchema.GoName }}: m,
+                            FieldMask: basemodels.MapToFieldMask(data.(map[string]interface{})),
                         },
                     }
                 case OperationUpdate:
