@@ -180,7 +180,7 @@ docker: docker_prepare ## Generate Docker files
 docker_k8s: docker_prepare ## Create contrail-go docker as a drop-in replacement to original config-api
 	## Copy dockerfile because it must be in a build context dir
 	cp -f docker/contrail_go/Dockerfile-k8s $(BUILD_DIR)/docker/contrail_go
-	cp -f docker/contrail_go/etc/contrail-k8s.yml $(BUILD_DIR)/docker/contrail_go/etc/
+	cp -f sample/contrail-k8s.yml $(BUILD_DIR)/docker/contrail_go/etc/
 	docker build -t "contrail-go-config" -f $(BUILD_DIR)/docker/contrail_go/Dockerfile-k8s $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message

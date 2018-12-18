@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"fmt"
 	"net/http/httptest"
 	"path"
 	"testing"
@@ -11,6 +10,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Juniper/contrail/pkg/constants"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
@@ -70,16 +71,11 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 // NewRunningServer creates new running API server with default testing configuration.
 // Call Close() method to release its resources.
 func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
-	if c.LogLevel == "" {
-		c.LogLevel = "info"
-	}
-
 	setDefaultViperConfig(c)
 
-	log := pkglog.NewLogger("api-server")
-	pkglog.SetLogLevel(log, c.LogLevel)
-
-	log.WithField("config", fmt.Sprintf("%+v", viper.AllSettings())).Debug("Creating API Server")
+	if err := pkglog.Configure(viper.GetString("log_level")); err != nil {
+		return nil, err
+	}
 
 	s, err := apisrv.NewServer()
 	if err != nil {
@@ -97,7 +93,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	return &APIServer{
 		APIServer:  s,
 		TestServer: ts,
-		log:        log,
+		log:        pkglog.NewLogger("api-server"),
 	}, nil
 }
 
@@ -113,7 +109,7 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"database.connection_retries": 10,
 		"database.retry_period":       3,
 		"database.debug":              true,
-		"etcd.path":                   integrationetcd.Prefix,
+		constants.ETCDPathVK:          integrationetcd.Prefix,
 		"keystone.local":              true,
 		"keystone.assignment.type":    "static",
 		"keystone.assignment.data":    keystoneAssignment(),

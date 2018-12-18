@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/constants"
+
 	"github.com/Juniper/contrail/pkg/compilation"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
@@ -34,16 +36,16 @@ func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc
 				"delete_handler": "HandleDelete",
 			},
 		},
-		"etcd.endpoints":     integrationetcd.Endpoint,
-		"etcd.grpc_insecure": true,
-		"etcd.path":          integrationetcd.Prefix,
-		"client.id":          AdminUserID,
-		"client.password":    AdminUserPassword,
-		"client.project_id":  AdminProjectID,
-		"client.domain_id":   DefaultDomainID,
-		"client.schema_root": "/public",
-		"client.endpoint":    apiURL,
-		"insecure":           true,
+		constants.ETCDEndpointsVK:    integrationetcd.Endpoint,
+		constants.ETCDGRPCInsecureVK: true,
+		constants.ETCDPathVK:         integrationetcd.Prefix,
+		"client.id":                  AdminUserID,
+		"client.password":            AdminUserPassword,
+		"client.project_id":          AdminProjectID,
+		"client.domain_id":           DefaultDomainID,
+		"client.schema_root":         "/public",
+		"client.endpoint":            apiURL,
+		"insecure":                   true,
 	})
 
 	ics, err := compilation.NewIntentCompilationService()

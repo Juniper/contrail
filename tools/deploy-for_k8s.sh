@@ -12,6 +12,7 @@ RealPath()
 }
 
 ThisDir=$(RealPath "$(dirname "$0")")
+#shellcheck disable=SC1090
 . "$ThisDir/ensure_docker_group.sh"
 
 ensure_group "$@"
@@ -66,9 +67,9 @@ docker-compose -f /etc/contrail/config_database/docker-compose.yaml up -d zookee
 make zero_psql
 
 # Drop contrail related content from etcd
-docker exec $(docker ps -q -f name=k8s_etcd_etcd) sh -c "ETCDCTL_API=3 etcdctl del /contrail --prefix"
+docker exec "$(docker ps -q -f name=k8s_etcd_etcd)" sh -c "ETCDCTL_API=3 etcdctl del /contrail --prefix"
 
-# Build patched kube_manager with ETCD support
+# Build patched kube_manager with etcd support
 docker build "$ContrailRootDir/docker/kube_manager_etcd/" -t contrail-kubernetes-kube-manager:etcd
 
 # Update kube_manager docker compose file
@@ -78,13 +79,14 @@ sudo ./tools/kube_manager_etcd/update-docker-compose.py
 sudo ./tools/control-node_etcd/update-docker-compose.py
 
 # Load init data to rdbms
-contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c docker/contrail_go/etc/contrail-k8s.yml
+contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-k8s.yml
 
 # Build and run contrail-go2 docker
 build_docker
 ContrailGoDocker='contrail-go-config-node'
 [ "$(docker ps -a -f "name=$ContrailGoDocker" --format '{{.ID}}' | wc -l)" -ne 0 ] && docker rm -f "$ContrailGoDocker"
-docker run -d --name "$ContrailGoDocker" --net host contrail-go-config
+docker run -d --name "$ContrailGoDocker" --net host --volume /etc/kubernetes/pki/etcd:/etc/kubernetes/pki/etcd:ro \
+    contrail-go-config
 GoConfigIP='127.0.0.1' # networking mode 'host'
 
 # Modify k8s config (subst contrail-go-config IP address as config-node) and restart if needed
