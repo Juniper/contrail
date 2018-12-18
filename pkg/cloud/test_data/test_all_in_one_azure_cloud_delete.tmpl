@@ -1,0 +1,39 @@
+name: All in one azure cloud
+description: all-in-one azure delete test
+test_data:
+  cloud: &cloud
+    provisioning_action: DELETE_CLOUD
+    name: cloud
+    uuid: cloud_uuid
+    organization: unit_test
+    project: test2
+    cloud_user_refs:
+      - uuid: cloud_user_uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+  - name: delete cloud
+    request:
+      path: /cloud/cloud_uuid
+      method: PUT
+      expected:
+      - 200
+      data:
+        cloud: *cloud
+    expect:
+      cloud:
+        provisioning_action: DELETE_CLOUD
+        uuid: cloud_uuid
+        organization: unit_test
+        project: test2
+        cloud_user_refs:
+          - uuid: cloud_user_uuid

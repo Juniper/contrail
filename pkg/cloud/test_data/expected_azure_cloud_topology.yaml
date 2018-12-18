@@ -1,0 +1,44 @@
+
+- provider: azure
+  organization: unit_test
+  project: test2
+  regions:
+    - name: WestUS
+      resource_group: unit_test
+      vnet:
+        - name: virtual_cloud
+          cidr_block: 192.168.10.0/16
+          subnets:
+            - name: cloud_private_subnet
+              cidr_block: 192.168.10.0/24
+          security_groups:
+            - name: cloud_security_group
+              rules:
+                - name: cloud_security_group_rule
+                  direction: inbound
+                  protocol: tcp
+          instances:
+          - name: cloud_node_compute
+            roles:
+              - compute
+            provision: true
+            username: centos
+            os: centos7
+            instance_type: F16sv2
+            interface: cloud_node_compute_interface
+          - name: cloud_node_controller
+            roles:
+              - controller
+            provision: true
+            username: centos
+            os: centos7
+            instance_type: F16sv2
+            interface: cloud_node_controller_interface
+          - name: cloud_node_gw
+            roles:
+              - gateway
+            provision: true
+            username: centos
+            os: centos7
+            instance_type: F16sv2
+            interface: cloud_node_gw_interface
