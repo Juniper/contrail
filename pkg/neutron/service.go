@@ -1,6 +1,7 @@
 package neutron
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -32,7 +33,7 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 	if t := c.Param("type"); request.GetType() != t {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: %s", t))
 	}
-	response, err := s.handle(request)
+	response, err := s.handle(c.Request().Context(), request)
 	if err != nil {
 		e, ok := errors.Cause(err).(*logic.Error)
 		if !ok {
@@ -48,29 +49,29 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (s *Service) handle(r *logic.Request) (logic.Response, error) {
-	ctx := logic.RequestParameters{
+func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response, error) {
+	rp := logic.RequestParameters{
 		ReadService:    s.ReadService,
 		WriteService:   s.WriteService,
 		RequestContext: r.Context,
 	}
 	switch r.Context.Operation {
 	case "CREATE":
-		return r.Data.Resource.Create(ctx)
+		return r.Data.Resource.Create(ctx, rp)
 	case "UPDATE":
-		return r.Data.Resource.Update(ctx)
+		return r.Data.Resource.Update(ctx, rp)
 	case "DELETE":
-		return r.Data.Resource.Delete(ctx, r.Data.ID)
+		return r.Data.Resource.Delete(ctx, rp, r.Data.ID)
 	case "READ":
-		return r.Data.Resource.Read(ctx, r.Data.ID)
+		return r.Data.Resource.Read(ctx, rp, r.Data.ID)
 	case "READALL":
-		return r.Data.Resource.ReadAll(ctx, r.Data.Filters, r.Data.Fields)
+		return r.Data.Resource.ReadAll(ctx, rp, r.Data.Filters, r.Data.Fields)
 	case "READCOUNT":
-		return r.Data.Resource.ReadCount(ctx, r.Data.Filters)
+		return r.Data.Resource.ReadCount(ctx, rp, r.Data.Filters)
 	case "ADDINTERFACE":
-		return r.Data.Resource.AddInterface(ctx)
+		return r.Data.Resource.AddInterface(ctx, rp)
 	case "DELINTERFACE":
-		return r.Data.Resource.DeleteInterface(ctx)
+		return r.Data.Resource.DeleteInterface(ctx, rp)
 	default:
 		err := errors.Errorf("method %s not supported", r.Context.Operation)
 		log.WithError(err).WithField("request", r).Errorf("failed to handle")
