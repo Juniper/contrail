@@ -1,13 +1,13 @@
 run:
   # Concurrency is reduced in order to reduce RAM consumption
-  concurrency: 3
+  concurrency: 2
   deadline: 20m
   skip-dirs: []
 
 issues:
   exclude:
-  - .* is always .* # unparam issue
-  - ^should have a package comment, unless it's in another file for this package$ # golint issue
+  - .* is always .* # unparam check
+  - ^should have a package comment, unless it's in another file for this package$ # golint check
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
@@ -15,17 +15,21 @@ issues:
 # Intentionally disabled linters:
 # - dupl consumes too much RAM and CPU cycles
 # - gosec consumes too much RAM and CPU cycles
-# - megacheck uses staticcheck which consumes too much RAM and CPU cycles
+# - interfacer consumes too much RAM and CPU cycles
+# - megacheck consumes too much RAM and CPU cycles
 # - prealloc issues are considered premature optimization
-# - staticcheck consumes too much RAM and CPU cycles
+# - unparam consumes too much RAM and CPU cycles
 linters:
   enable-all: true
   disable:
   - dupl
   - gosec
+  - gocritic # TODO: resolve issues or add to intentionally disabled linters
+  - interfacer
   - megacheck
   - prealloc
-  - staticcheck
+  - scopelint # TODO: resolve issues or add to intentionally disabled linters
+  - unparam
 
 linters-settings:
   errcheck:
@@ -33,6 +37,8 @@ linters-settings:
     check-blank: true
   gocyclo:
     min-complexity: 10
+  goimports:
+    local-prefixes: github.com/Juniper/contrail
   golint:
     min-confidence: 0
   govet:
