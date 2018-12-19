@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 	"testing"
@@ -61,6 +62,15 @@ var assertFunctions = map[string]assertFunction{
 			return nil
 		}
 		return errors.Errorf("expected uuid string but got %s on path %s", actual, path)
+	},
+	"mac_address": func(path string, _, actual interface{}) error {
+		if val, ok := actual.(string); ok {
+			if _, err := net.ParseMAC(val); err != nil {
+				return errors.Errorf("expected mac address but got %s on path %s (error: %s)", actual, path, err)
+			}
+			return nil
+		}
+		return errors.Errorf("expected mac address string string but got %s on path %s", actual, path)
 	},
 }
 

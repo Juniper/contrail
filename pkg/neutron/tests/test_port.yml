@@ -1,0 +1,214 @@
+name: Test Neutron Port
+description: |
+  Integration test for neutron floating ip endpoint.
+
+cleanup:
+- path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
+- path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
+- path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+- path: /project/886c725d-0461-4dd6-ac27-30c74d4e46fb
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin_project_uuid"]
+    uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin_project_uuid", "vn_blue"]
+    uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    display_name: blue
+    parent_type: project
+    parent_uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+
+workflow:
+- name: create project admin
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+
+- name: Port create
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c 
+          description: ''
+          admin_state_up: true
+          network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+          tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
+          extra_dhcp_opts: 
+          name: ''
+          device_owner: ''
+          binding:vnic_type: normal
+          project_id: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+          security_groups:
+          - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+          device_id: c603fa24-81fa-4710-a288-78be45b2c93e
+        filters: 
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - heat_stack_owner
+        - admin
+        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
+        is_admin: true
+        request_id: req-db7a6a99-6dd0-46ae-9b61-a675e99ab70e
+        operation: CREATE
+        type: port
+        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+  expect: 
+    status: DOWN
+#    created_at: '2018-12-06T11:30:11.787306'
+    port_security_enabled: true
+    binding:host_id: "host_id"
+    name: $uuid
+#    allowed_address_pairs: []
+#    admin_state_up: true
+#    network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+#    tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
+#    binding:vif_details:
+#      port_filter: true
+#    description: ''
+#    updated_at: '2018-12-06T11:30:11.877835'
+#    binding:vnic_type: normal
+#    binding:vif_type: vrouter
+#    device_owner: ''
+#    mac_address: 02:c9:08:8d:8c:ec
+#    fq_name:
+#    - default-domain
+#    - admin
+#    - c9088d8c-ecd1-472a-9190-905c28a22f53
+#    fixed_ips:
+#    - subnet_id: a46ff943-72cd-41dc-b92b-a997c1287856
+#      ip_address: 10.0.1.3
+#    id: c9088d8c-ecd1-472a-9190-905c28a22f53
+#    security_groups:
+#    - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+#    device_id: ''
+
+- name: check if virtual machine interface has been created
+  request:
+    path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-machine-interface:
+      annotations: {}
+      display_name: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      ecmp_hashing_include_fields: {}
+      fq_name:
+      - default
+      - admin_project_uuid
+      - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      id_perms:
+        enable: true
+        permissions: {}
+      name: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      parent_type: project
+      parent_uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+      perms2:
+        owner: admin
+        owner_access: 7
+      routing_instance_refs:
+      - attr: {direction: both}
+        to: [default, admin_project_uuid, vn_blue, vn_blue]
+        uuid: $uuid
+      uuid: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      virtual_machine_interface_allowed_address_pairs: {}
+      virtual_machine_interface_bindings: {}
+      virtual_machine_interface_dhcp_option_list: {}
+      virtual_machine_interface_fat_flow_protocols: {}
+      virtual_machine_interface_host_routes: {}
+      virtual_machine_interface_mac_addresses:
+        mac_address:
+        - $mac_address
+      virtual_machine_interface_properties:
+        interface_mirror:
+          mirror_to: {static_nh_header: {}}
+      virtual_machine_refs:
+         - to: [c603fa24-81fa-4710-a288-78be45b2c93e]
+           uuid: c603fa24-81fa-4710-a288-78be45b2c93e
+      virtual_network_refs:
+         - to: [default, admin_project_uuid, vn_blue]
+           uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
+      vrf_assign_table: {}
+
+- name: Port read read all
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+          tenant_id:
+          - 8cdb5412f5974b38a69f2f9d1ae969b7
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - heat_stack_owner
+        - admin
+        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
+        is_admin: true
+        request_id: req-7ef05a71-0a78-4616-8741-64380919f5af
+        operation: READALL
+        type: port
+        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+    expect: []
+
+- name: delete virtual machine
+  request:
+    path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete virtual machine interface
+  request:
+    path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
+    method: DELETE
+    expected:
+    - 200
