@@ -32,4 +32,6 @@ schema:
         type: string
     device_id:
       type: string
+    mac_address:
+      type: string
 

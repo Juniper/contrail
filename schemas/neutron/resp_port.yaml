@@ -16,6 +16,9 @@ schema:
     bindings:
       json_tag: "-"
       type: string
+    binding_host_id:
+      json_tag: "binding:host_id"
+      type: string
     name:
       type: string
     allowed_address_pairs:
