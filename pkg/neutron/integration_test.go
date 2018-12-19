@@ -13,3 +13,7 @@ func TestFloatingIP(t *testing.T) {
 func TestNetwork(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
+
+func TestPort(t *testing.T) {
+	integration.RunTest(t, t.Name(), server)
+}
