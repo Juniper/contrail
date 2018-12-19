@@ -6,6 +6,8 @@ type: request
 schema:
   type: object
   properties:
+    id:
+      type: string
     description:
       type: string
     admin_state_up:
@@ -24,6 +26,11 @@ schema:
     bindings:
       json_tag: "-"
       type: string
+    binding_vnic_type:
+      json_tag: "binding:vnic_type"
+      type: string
+    port_security_enabled:
+      type: boolean
     project_id:
       type: string
     security_groups:
@@ -31,5 +38,7 @@ schema:
       items:
         type: string
     device_id:
+      type: string
+    mac_address:
       type: string
 
