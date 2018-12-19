@@ -61,6 +61,11 @@ func IsConflict(err error) bool {
 	return grpc.Code(errors.Cause(err)) == codes.AlreadyExists
 }
 
+// IsBadRequest returns true if error is of BadRequest type.
+func IsBadRequest(err error) bool {
+	return grpc.Code(errors.Cause(err)) == codes.InvalidArgument
+}
+
 //ErrorForbiddenf makes forbidden error with format.
 func ErrorForbiddenf(format string, a ...interface{}) error {
 	return grpc.Errorf(codes.PermissionDenied, format, a...)
