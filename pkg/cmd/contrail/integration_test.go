@@ -37,25 +37,25 @@ const (
 
 func TestFQNameCleanup(t *testing.T) {
 	runDirtyTest(t, t.Name())
-	runTest(t, t.Name())
+	integration.RunTest(t, t.Name(), server)
 }
 
 func TestProject(t *testing.T) {
-	runTest(t, t.Name())
+	integration.RunTest(t, t.Name(), server)
 }
 
 func TestSecurityGroup(t *testing.T) {
-	runTest(t, t.Name())
+	integration.RunTest(t, t.Name(), server)
 }
 
 // Test temporary disabled since watchers cannot be set properly due to unknown number of events.
 //
 // func TestLogicalRouterPing(t *testing.T) {
-// 	runTest(t, t.Name())
+// 	integration.RunTest(t, t.Name(), server)
 // }
 
 func TestReferredSecurityGroups(t *testing.T) {
-	runTest(t, t.Name())
+	integration.RunTest(t, t.Name(), server)
 }
 
 func TestCreateCoreResources(t *testing.T) {
