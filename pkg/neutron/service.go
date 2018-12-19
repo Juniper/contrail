@@ -59,7 +59,7 @@ func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response,
 	case "CREATE":
 		return r.Data.Resource.Create(ctx, rp)
 	case "UPDATE":
-		return r.Data.Resource.Update(ctx, rp)
+		return r.Data.Resource.Update(ctx, rp, r.Data.ID)
 	case "DELETE":
 		return r.Data.Resource.Delete(ctx, rp, r.Data.ID)
 	case "READ":

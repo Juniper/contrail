@@ -13,7 +13,7 @@ import (
 // Resource interface defines Neutron API operations
 type Resource interface {
 	Create(ctx context.Context, rp RequestParameters) (Response, error)
-	Update(ctx context.Context, rp RequestParameters) (Response, error)
+	Update(ctx context.Context, rp RequestParameters, id string) (Response, error)
 	Delete(ctx context.Context, rp RequestParameters, id string) (Response, error)
 	Read(ctx context.Context, rp RequestParameters, id string) (Response, error)
 	ReadAll(ctx context.Context, rp RequestParameters, filters Filters, fields Fields) (Response, error)
@@ -33,7 +33,7 @@ func (b *baseResource) Create(ctx context.Context, rp RequestParameters) (Respon
 }
 
 // Update default implementation
-func (b *baseResource) Update(ctx context.Context, rp RequestParameters) (Response, error) {
+func (b *baseResource) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
 	return nil, errors.New("not implemented")
 }
 
