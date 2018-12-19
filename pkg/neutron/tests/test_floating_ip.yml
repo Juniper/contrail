@@ -1,0 +1,38 @@
+name: Test Neutron Floating IP
+description: |
+  Integration test for neutron floating ip creation.
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    domain: default
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: Floating IP read all
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+          tenant_id:
+          - 8cdb5412f5974b38a69f2f9d1ae969b7
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - heat_stack_owner
+        - admin
+        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
+        is_admin: true
+        request_id: req-c4fcfcc2-7437-45f0-ad86-16561905617b
+        operation: READALL
+        type: floatingip
+        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+  expect: []

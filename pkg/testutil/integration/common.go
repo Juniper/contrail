@@ -80,6 +80,12 @@ func TestMain(m *testing.M, s **APIServer) {
 	})
 }
 
+func RunIntegrationTest(t *testing.T, name string, server *APIServer) {
+	testScenario, err := LoadTest(fmt.Sprintf("./tests/%s.yml", format.CamelToSnake(name)), nil)
+	assert.NoError(t, err, "failed to load test data")
+	RunCleanTestScenario(t, testScenario, server)
+}
+
 // WithTestDBs does test setup and run tests for
 // all supported db types.
 func WithTestDBs(f func(dbType string)) {
