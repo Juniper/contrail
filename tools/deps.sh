@@ -16,7 +16,7 @@ go install ./vendor/github.com/gogo/protobuf/protoc-gen-gogo
 go install ./vendor/github.com/golang/mock/mockgen
 
 curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | \
-	bash -s -- -b $(go env GOPATH)/bin v1.10.2
+    sh -s -- -b "$(go env GOPATH)/bin" v1.12.3
 
 if [ "$(uname)" == 'Darwin' ]; then
     wget https://github.com/google/protobuf/releases/download/v3.5.1/protoc-3.5.1-osx-x86_64.zip
