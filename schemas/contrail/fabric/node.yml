@@ -24,6 +24,10 @@ references:
       operations: "CRUD"
       description: "Reference to private subnet of cloud, when node belongs to public cloud"
       presence: "optional"
+    node_profile:
+      operations: "CRUD"
+      description: "Reference to matching node-profile object for this node"
+      presence: "optional"
 plural: nodes
 prefix: /
 schema:
