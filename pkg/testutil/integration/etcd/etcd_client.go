@@ -2,6 +2,7 @@ package integrationetcd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/constants"
+	"github.com/Juniper/contrail/pkg/testutil"
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
@@ -34,6 +36,12 @@ const (
 	SecurityGroupSchemaID        = "security_group"
 	VirtualNetworkSchemaID       = "virtual_network"
 )
+
+// Event represents event received from etcd watch.
+type Event struct {
+	Data     map[string]interface{} `yaml:"data,omitempty"`
+	SyncOnly bool                   `yaml:"sync_only,omitempty"`
+}
 
 // EtcdClient is etcd client extending etcd.clientv3 with test functionality and using etcd v3 API.
 type EtcdClient struct {
@@ -140,6 +148,64 @@ func (e *EtcdClient) WatchKeyN(
 	}()
 
 	return func() (vals []string) {
+		select {
+		case <-ctx.Done():
+		case <-time.After(timeout):
+			cancel()
+		}
+		return <-resultChan
+	}
+}
+
+// WatchForEventsKey ...
+func (e *EtcdClient) WatchForEventsKey(
+	key string, awaitingEvents []Event, timeout time.Duration, opts ...clientv3.OpOption,
+) (collect func() []map[string]interface{}) {
+	dataEvents := make([]map[string]interface{}, len(awaitingEvents))
+	for i := range awaitingEvents {
+		dataEvents[i] = awaitingEvents[i].Data
+	}
+
+	resultChan := make(chan []map[string]interface{})
+	ctx, cancel := context.WithCancel(context.Background())
+	wchan := e.Client.Watch(ctx, key, opts...)
+
+	go func() {
+		for val := range wchan {
+			for _, ev := range val.Events {
+				var data interface{}
+				s := string(ev.Kv.Value)
+				if len(s) > 0 {
+					//err := json.Unmarshal([]byte(s), &data)
+					json.Unmarshal([]byte(s), &data)
+					//assert.NoError(t, err)
+				}
+
+				foundAlready := false
+				updatedEvents := []map[string]interface{}{}
+				for i, e := range dataEvents {
+					if !foundAlready {
+						if err := testutil.CheckIfContains(e, data); err != nil {
+							updatedEvents = append(updatedEvents, dataEvents[i])
+							foundAlready = true
+						}
+					}
+				}
+				dataEvents = updatedEvents
+
+				//result = append(result, string(ev.Kv.Value))
+				// checkEvents
+				if len(dataEvents) == 0 {
+					cancel()
+				}
+			}
+		}
+
+		resultChan <- dataEvents
+		close(resultChan)
+	}()
+
+	return func() []map[string]interface{} {
 		select {
 		case <-ctx.Done():
 		case <-time.After(timeout):

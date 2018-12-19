@@ -38,6 +38,8 @@ import (
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
+type Event = integrationetcd.Event
+
 const (
 	collectTimeout = 5 * time.Second
 )
@@ -166,15 +168,13 @@ func AddKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 	}
 }
 
-// Event represents event received from etcd watch.
-type Event struct {
-	Data     map[string]interface{} `yaml:"data,omitempty"`
-	SyncOnly bool                   `yaml:"sync_only,omitempty"`
-}
-
 // Watchers map contains slices of events that should be emitted on
 // etcd key matching the map key.
-type Watchers = map[string][]Event
+type Watchers map[string][]Event
+
+// Waiters map contains slices of events that have to be emitted
+// during single task.
+type Waiters map[string][]Event
 
 //Task has API request and expected response.
 type Task struct {
@@ -183,6 +183,7 @@ type Task struct {
 	Request  *client.Request `yaml:"request,omitempty"`
 	Expect   interface{}     `yaml:"expect,omitempty"`
 	Watchers Watchers        `yaml:"watchers,omitempty"`
+	Waiters  Waiters         `yaml:"wait_for,omitempty"`
 }
 
 // CleanTask defines clean task
@@ -191,6 +192,12 @@ type CleanTask struct {
 	Path   string   `yaml:"path,omitempty"`
 	FQName []string `yaml:"fq_name,omitempty"`
 	Kind   string   `yaml:"kind,omitempty"`
+}
+
+// Event represents event received from etcd watch.
+type Event struct {
+	Data     map[string]interface{} `yaml:"data,omitempty"`
+	SyncOnly bool                   `yaml:"sync_only,omitempty"`
 }
 
 //TestScenario has a list of tasks.
@@ -282,6 +289,26 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 	}
 }
 
+// StartWaiters checks if there are emitted events described before.
+func StartWaiters(t *testing.T, task string, waiters Waiters, opts ...clientv3.OpOption) func(t *testing.T) {
+	checks := []func(t *testing.T){}
+
+	ec := integrationetcd.NewEtcdClient(t)
+
+	for key := range waiters {
+		events := waiters[key]
+		collect := ec.WatchForEventsKey(key, events, collectTimeout, append(opts, clientv3.WithPrefix())...)
+		checks = append(checks, createWaiterChecker(task, collect, events))
+	}
+
+	return func(t *testing.T) {
+		defer ec.Close(t)
+		for _, c := range checks {
+			c(t)
+		}
+	}
+}
+
 // StartWatchers checks if events emitted to etcd match those given in watchers dict.
 func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv3.OpOption) func(t *testing.T) {
 	checks := []func(t *testing.T){}
@@ -299,6 +326,13 @@ func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv
 		for _, c := range checks {
 			c(t)
 		}
+	}
+}
+
+func createWaiterChecker(task string, collect func() []map[string]interface{}, events []Event) func(t *testing.T) {
+	return func(t *testing.T) {
+		collected := collect()
+		assert.Equal(t, 0, len(collected), "etcd didn't emitted those events: ", collected)
 	}
 }
 
@@ -394,6 +428,7 @@ func runTestScenario(
 			"task":          task.Name,
 		}).Info("Starting task")
 		checkWatchers := StartWatchers(t, task.Name, task.Watchers)
+		checkWaiters := StartWaiters(t, testScenario.Name, task.Waiters)
 
 		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
 		clientID := defaultClientID
@@ -416,6 +451,8 @@ func runTestScenario(
 		if !ok {
 			break
 		}
+		checkWaiters(t)
++       // check error
 	}
 	// Reverse the order in tracked array so delete of nested resources is possible
 	// https://github.com/golang/go/wiki/SliceTricks#reversing

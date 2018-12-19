@@ -64,17 +64,20 @@ var assertFunctions = map[string]assertFunction{
 	},
 }
 
+// CheckIfContains checks if map of resources called in includes all resources
+// described in map what.
+func CheckIfContains(what, in interface{}) error {
+	what = fileutil.YAMLtoJSONCompat(what)
+	in = fileutil.YAMLtoJSONCompat(in)
+	return checkDiff("", what, in)
+}
+
 // AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
 // For lists and maps, it iterates over expected values, ignoring additional values in actual object.
 func AssertEqual(t *testing.T, expected, actual interface{}, msg ...string) bool {
-	expected = fileutil.YAMLtoJSONCompat(expected)
-	actual = fileutil.YAMLtoJSONCompat(actual)
-
-	err := checkDiff("", expected, actual)
-
 	return assert.NoError(
 		t,
-		err,
+		CheckIfContains(expected, actual),
 		fmt.Sprintf(
 			"%s: objects not equal:\nexpected: %+v\nactual: %+v",
 			strings.Join(msg, ", "),

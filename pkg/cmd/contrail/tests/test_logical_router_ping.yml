@@ -253,10 +253,6 @@ workflow:
         - vn1
   expect:
     virtual-network: *virtual_network_blue
-  watchers:
-    /contrail/routing_instance/:
-      - null
-      - null
 
 - name: create virtual network red
   request:
@@ -285,10 +281,6 @@ workflow:
         - vn2
   expect:
     virtual-network: *virtual_network_red
-  watchers:
-    /contrail/routing_instance/:
-      - null
-      - null
 
 - name: create virtual machine interface blue
   request:
@@ -344,12 +336,16 @@ workflow:
       logical-router: *logical_router
   expect:
     logical-router: *logical_router
-  watchers:
+  wait_for:
     /contrail/routing_instance/:
-      - null
-      - null
-      - null
-      - null
+      - data:
+        route_target_refs:
+          - null
+          - null
+      - data:
+        route_target_refs:
+          - null
+          - null
 
 - name: check if routing instance has 2 target refs
   request:
