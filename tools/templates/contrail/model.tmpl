@@ -452,6 +452,7 @@ func (m *{{ schema.JSONSchema.GoName }}) NoServiceProperties() *{{ schema.JSONSc
 {% if schema.JSONSchema.CollectionType == "map" %}
 
 {% set kvsType = schema.JSONSchema.OrderedProperties | first %}
+//TODO: SetInMap shouldn't return error
 func (m *{{ schema.JSONSchema.GoName }}) SetInMap(value *{{kvsType.Items.GoType}}) error {
 	{% if schema.JSONSchema.MapKeyProperty.GoType == "string" %}
 	if value.{{ schema.JSONSchema.MapKeyProperty.GoName }} == "" {
