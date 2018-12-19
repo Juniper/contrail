@@ -6,6 +6,8 @@ type: request
 schema:
   type: object
   properties:
+    id:
+      type: string
     description:
       type: string
     admin_state_up:
@@ -24,12 +26,27 @@ schema:
     bindings:
       json_tag: "-"
       type: string
+    binding_vnic_type:
+      json_tag: "binding:vnic_type"
+      type: string
+    port_security_enabled:
+      type: boolean
     project_id:
+      type: string
+    device_id:
+      type: string
+    mac_address:
       type: string
     security_groups:
       type: array
       items:
-        type: string
-    device_id:
-      type: string
+        $ref: req_port.json#/definitions/SecurityGroup
+    fixed_ips:
+      type: array
+      items:
+        $ref: resp_port.json#/definitions/FixedIp
 
+definitions:
+  SecurityGroup:
+    type: string
+    description: fixed ip
