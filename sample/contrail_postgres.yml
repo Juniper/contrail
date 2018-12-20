@@ -122,7 +122,7 @@ client:
   endpoint: http://localhost:9091
 
 agent:
-  enabled: true
+  enabled: false
   backend: file
   watcher: polling
   tasks:
@@ -175,19 +175,20 @@ cache:
     max_history: 100000
     cassandra:
         enabled: false
-        amqp: amqp://guest:guest@localhost:5672/
     etcd:
-        enabled: false
-    rdbms:
         enabled: true
 
 replication:
-    enabled: true
     cassandra:
-        enabled: true
+        enabled: false
+    amqp:
+        enabled: false
 
 cassandra:
     host: localhost
     port: 9042
     timeout: 3600s
     connect_timeout: 600ms
+
+amqp:
+    url: amqp://guest:guest@localhost:5672/
