@@ -32,7 +32,7 @@ postgresql:
   pgpass: /tmp/pgpass
   authentication:
     superuser:
-      username: 'postgres'
+      username: 'root'
       password: 'contrail123'
     replication:
       username: 'replicator'

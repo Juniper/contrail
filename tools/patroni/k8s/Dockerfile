@@ -27,6 +27,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/* /root/.cache
 
 ADD entrypoint.sh /
+ADD init_psql.sql /
 
 EXPOSE 5432 8008
 ENV LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 EDITOR=/usr/bin/editor
