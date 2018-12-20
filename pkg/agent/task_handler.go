@@ -9,9 +9,9 @@ import (
 
 	"github.com/flosch/pongo2"
 	"github.com/joho/godotenv"
-	"github.com/mattn/go-shellwords"
+	shellwords "github.com/mattn/go-shellwords"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type handler map[string]interface{}
@@ -75,16 +75,24 @@ func commandHandler(handler handler, task *task, context map[string]interface{})
 	cmd.Env = env
 
 	var output bytes.Buffer
-	stdout, _ := cmd.StdoutPipe()
+	stdout, _ := cmd.StdoutPipe() // nolint: errcheck
+	stderr, _ := cmd.StderrPipe() // nolint: errcheck
 	err = cmd.Start()
 	if err != nil {
 		return "", err
 	}
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		m := scanner.Text()
-		output.WriteString(m) // nolint
+	stdoutScanner := bufio.NewScanner(stdout)
+	for stdoutScanner.Scan() {
+		m := stdoutScanner.Text()
+		output.WriteString(m)
 		log.Debug(m)
+	}
+
+	stderrScanner := bufio.NewScanner(stderr)
+	for stderrScanner.Scan() {
+		m := stderrScanner.Text()
+		output.WriteString(m)
+		log.Error(m)
 	}
 
 	err = cmd.Wait()
