@@ -77,6 +77,11 @@ func GetTransaction(ctx context.Context) *sql.Tx {
 
 //DoInTransaction runs a function inside of DB transaction.
 func (db *BaseDB) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
+	return db.DoInTransactionWithOpts(ctx, do, nil)
+}
+
+//DoInTransactionWithOpts runs a function inside of DB transaction with extra options.
+func (db *BaseDB) DoInTransactionWithOpts(ctx context.Context, do func(context.Context) error, opts *sql.TxOptions) error {
 	tx := GetTransaction(ctx)
 	if tx != nil {
 		return do(ctx)
@@ -88,7 +93,7 @@ func (db *BaseDB) DoInTransaction(ctx context.Context, do func(context.Context) 
 	}
 	defer conn.Close() // nolint: errcheck
 
-	tx, err = conn.BeginTx(ctx, nil)
+	tx, err = conn.BeginTx(ctx, opts)
 	if err != nil {
 		return errors.Wrap(FormatDBError(err), "failed to start DB transaction")
 	}

@@ -2,6 +2,7 @@ package replication
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
@@ -61,10 +62,10 @@ type PostgresSubscriptionConfig struct {
 
 type postgresWatcherConnection interface {
 	io.Closer
-	GetReplicationSlot(name string) (lastLSN uint64, snapshotName string, err error)
+	GetReplicationSlot(name string) (receivedLSN uint64, snapshotName string, err error)
 	StartReplication(slot, publication string, startLSN uint64) error
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
-	SendStatus(lastLSN uint64) error
+	SendStatus(receivedLSN, savedLSN uint64) error
 
 	DoInTransactionSnapshot(ctx context.Context, snapshotName string, do func(context.Context) error) error
 }
@@ -76,7 +77,7 @@ type Handler func(context.Context, pgoutput.Message) error
 type PostgresWatcher struct {
 	conf PostgresSubscriptionConfig
 
-	lastLSN uint64 // lastLSN holds max WAL LSN value processed by subscription.
+	lsnCounter lsnCounter
 
 	cancel  context.CancelFunc
 	conn    postgresWatcherConnection
@@ -99,6 +100,9 @@ func NewPostgresWatcher(
 	processor services.EventProcessor,
 	shouldDump bool,
 ) (*PostgresWatcher, error) {
+	log := pkglog.NewLogger("postgres-watcher")
+	log.WithField("config", fmt.Sprintf("%+v", config)).Debug("Got pgx config")
+
 	conn, err := newPostgresReplicationConnection(dbs, replConn)
 	if err != nil {
 		return nil, err
@@ -112,7 +116,7 @@ func NewPostgresWatcher(
 		processor:  processor,
 		shouldDump: shouldDump,
 		dumpDoneCh: make(chan struct{}),
-		log:        pkglog.NewLogger("postgres-watcher"),
+		log:        log,
 	}
 	return w, nil
 }
@@ -136,11 +140,13 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	w.log.Debug("consistentPoint: ", pgx.FormatLSN(slotLSN))
 	w.log.Debug("snapshotName: ", snapshotName)
 
-	w.lastLSN = slotLSN // TODO(Michal): get lastLSN from etcd
+	w.lsnCounter.UpdateReceivedLSN(slotLSN) // TODO(Michal): get receivedLSN from etcd
 
 	if err := w.dumpIfShould(ctx, snapshotName); err != nil {
 		return nil
 	}
+
+	w.lsnCounter.TxnFinished(slotLSN)
 
 	if err := w.conn.StartReplication(w.conf.Slot, w.conf.Publication, 0); err != nil {
 		return errors.Wrap(err, "failed to start replication")
@@ -214,8 +220,7 @@ func (w *PostgresWatcher) runMessageProducer(ctx context.Context, feed chan<- *p
 		case <-ctx.Done():
 			return w.muteCancellationError(w.conn.Close())
 		case <-tick:
-			w.log.Debug("Sending standby status with position: ", pgx.FormatLSN(w.lastLSN))
-			if err := w.conn.SendStatus(w.lastLSN); err != nil {
+			if err := w.sendStatus(); err != nil {
 				return err
 			}
 		default:
@@ -223,8 +228,10 @@ func (w *PostgresWatcher) runMessageProducer(ctx context.Context, feed chan<- *p
 			if err != nil {
 				return err
 			}
-
 			if msg != nil {
+				if msg.WalMessage != nil {
+					w.lsnCounter.TxnStarted()
+				}
 				feed <- msg
 			}
 		}
@@ -264,9 +271,15 @@ func (w *PostgresWatcher) handleMessage(ctx context.Context, msg *pgx.Replicatio
 }
 
 func (w *PostgresWatcher) handleWalMessage(ctx context.Context, msg *pgx.WalMessage) error {
-	if msg.WalStart > w.lastLSN {
-		w.lastLSN = msg.WalStart
+	defer w.lsnCounter.TxnFinished(msg.WalStart)
+
+	var msgLSN uint64
+	if msg.WalStart < msg.ServerWalEnd {
+		msgLSN = msg.ServerWalEnd
+	} else {
+		msgLSN = msg.WalStart
 	}
+	w.lsnCounter.UpdateReceivedLSN(msgLSN)
 
 	logmsg, err := pgoutput.Parse(msg.WalData)
 	if err != nil {
@@ -281,13 +294,21 @@ func (w *PostgresWatcher) handleWalMessage(ctx context.Context, msg *pgx.WalMess
 }
 
 func (w *PostgresWatcher) handleServerHeartbeat(shb *pgx.ServerHeartbeat) error {
+	w.lsnCounter.UpdateReceivedLSN(shb.ServerWalEnd)
 	if shb.ReplyRequested == 1 {
-		w.log.WithField(
-			"standby-status-position", pgx.FormatLSN(w.lastLSN),
-		).Info("Server requested reply, sending standby status")
-		return w.conn.SendStatus(w.lastLSN)
+		w.log.Info("Server requested reply")
+		return w.sendStatus()
 	}
 	return nil
+}
+
+func (w *PostgresWatcher) sendStatus() error {
+	r, s := w.lsnCounter.LSNValues()
+	w.log.WithFields(logrus.Fields{
+		"receivedLSN": pgx.FormatLSN(r),
+		"savedLSN":    pgx.FormatLSN(s),
+	}).Info("Sending standby status")
+	return w.conn.SendStatus(r, s)
 }
 
 // Close stops subscription by calling cancel function of context passed in Watch.
