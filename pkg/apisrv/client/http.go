@@ -141,7 +141,7 @@ func (h *HTTP) Login() error {
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	err = checkStatusCode([]int{201}, resp.StatusCode)
+	err = checkStatusCode([]int{200, 201}, resp.StatusCode)
 	if err != nil {
 		logErrorAndResponse(err, resp)
 		return err
