@@ -27,7 +27,7 @@ type pgxReplicationConn interface {
 
 type dbService interface {
 	DB() *sql.DB
-	DoInTransaction(ctx context.Context, do func(context.Context) error) error
+	DoInTransactionWithOpts(ctx context.Context, do func(context.Context) error, opts *sql.TxOptions) error
 }
 
 type postgresReplicationConnection struct {
@@ -59,7 +59,7 @@ func (c *postgresReplicationConnection) GetReplicationSlot(
 	consistentPoint, snapshotName, err := c.replConn.CreateReplicationSlotEx(name, "pgoutput")
 	if err != nil {
 		if pgerr, ok := err.(pgx.PgError); !ok || pgerr.Code != "42710" {
-			return 0, "", fmt.Errorf("failed to create replication slot: %s", err)
+			return 0, "", errors.Wrap(err, "failed to create replication slot")
 		}
 	}
 
@@ -72,19 +72,20 @@ func (c *postgresReplicationConnection) GetReplicationSlot(
 
 // RenewPublication ensures that publication exists for all tables.
 func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, name string) error {
-	return c.db.DoInTransaction(
+	return c.db.DoInTransactionWithOpts(
 		ctx,
 		func(ctx context.Context) error {
 			_, err := c.db.DB().ExecContext(ctx, fmt.Sprintf("DROP PUBLICATION IF EXISTS %s", name))
 			if err != nil {
-				return fmt.Errorf("failed to drop publication: %s", err)
+				return errors.Wrap(err, "failed to drop publication")
 			}
 			_, err = c.db.DB().ExecContext(ctx, fmt.Sprintf("CREATE PUBLICATION %s FOR ALL TABLES", name))
 			if err != nil {
-				return fmt.Errorf("failed to create publication: %s", err)
+				return errors.Wrap(err, "failed to create publication")
 			}
 			return err
 		},
+		nil,
 	)
 }
 
@@ -93,7 +94,7 @@ func (c *postgresReplicationConnection) DoInTransactionSnapshot(
 	snapshotName string,
 	do func(context.Context) error,
 ) error {
-	return c.db.DoInTransaction(
+	return c.db.DoInTransactionWithOpts(
 		ctx,
 		func(ctx context.Context) error {
 			tx := basedb.GetTransaction(ctx)
@@ -108,6 +109,7 @@ func (c *postgresReplicationConnection) DoInTransactionSnapshot(
 
 			return do(ctx)
 		},
+		&sql.TxOptions{ReadOnly: true},
 	)
 }
 
@@ -129,13 +131,17 @@ func (c *postgresReplicationConnection) WaitForReplicationMessage(
 }
 
 // SendStatus sends standby status to server connected with replication connection.
-func (c *postgresReplicationConnection) SendStatus(maxWal uint64) error {
-	k, err := pgx.NewStandbyStatus(maxWal)
+func (c *postgresReplicationConnection) SendStatus(receivedLSN, savedLSN uint64) error {
+	k, err := pgx.NewStandbyStatus(
+		savedLSN,    // flush - savedLSN is already stored in etcd so we can say that it's flushed
+		savedLSN,    // apply - savedLSN is stored and visible in etcd so it's also applied
+		receivedLSN, // write - receivedLSN is last wal segment that was received by watcher
+	)
 	if err != nil {
-		return fmt.Errorf("error creating standby status: %s", err)
+		return errors.Wrap(err, "error creating standby status")
 	}
 	if err = c.replConn.SendStandbyStatus(k); err != nil {
-		return fmt.Errorf("failed to send standy status: %s", err)
+		return errors.Wrap(err, "failed to send standy status")
 	}
 	return nil
 }
