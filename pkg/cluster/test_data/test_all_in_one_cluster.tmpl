@@ -206,7 +206,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -336,13 +335,13 @@ workflow:
     - 200
     data:
       contrail-config-node: *contrail_config_nodes
-    expect:
-      contrail-config-node:
-        uuid: contrail_config_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    contrail-config-node:
+      uuid: contrail_config_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 {% if ZTP_ROLE %}
 - name: create ztp dhcp node
   request:
@@ -352,13 +351,13 @@ workflow:
     - 200
     data:
       contrail-ztp-dhcp-node: *contrail_ztp_dhcp_nodes
-    expect:
-      contrail-ztp-dhcp-node:
-        uuid: contrail_ztp_dhcp_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    contrail-ztp-dhcp-node:
+      uuid: contrail_ztp_dhcp_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create ztp tftp node
   request:
     path: /contrail-ztp-tftp-nodes
@@ -367,13 +366,13 @@ workflow:
     - 200
     data:
       contrail-ztp-tftp-node: *contrail_ztp_tftp_nodes
-    expect:
-      contrail-ztp-tftp-node:
-        uuid: contrail_ztp_tftp_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    contrail-ztp-tftp-node:
+      uuid: contrail_ztp_tftp_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 {% endif %}
 - name: create config database node
   request:
@@ -383,13 +382,13 @@ workflow:
     - 200
     data:
       contrail-config-database-node: *contrail_config_database_nodes
-    expect:
-      contrail-config-database-node:
-        uuid: contrail_config_database_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    contrail-config-database-node:
+      uuid: contrail_config_database_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create analytics node
   request:
     path: /contrail-analytics-nodes
@@ -398,13 +397,13 @@ workflow:
     - 200
     data:
       contrail-analytics-node: *contrail_analytics_nodes
-    expect:
-      contrail-analytics-node:
-        uuid: contrail_analytics_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    contrail-analytics-node:
+      uuid: contrail_analytics_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create analytics database node
   request:
     path: /contrail-analytics-database-nodes
@@ -413,13 +412,13 @@ workflow:
     - 200
     data:
       contrail-analytics-database-node: *contrail_analytics_database_nodes
-    expect:
-      contrail-analytics-database-node:
-        uuid: contrail_analytics_database_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    contrail-analytics-database-node:
+      uuid: contrail_analytics_database_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create webui node
   request:
     path: /contrail-webui-nodes
@@ -428,13 +427,13 @@ workflow:
     - 200
     data:
       contrail-webui-node: *contrail_webui_nodes
-    expect:
-      contrail-webui-node:
-        uuid: contrail_webui_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-         - uuid: all_in_one_node_uuid
+  expect:
+    contrail-webui-node:
+      uuid: contrail_webui_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+       - uuid: all_in_one_node_uuid
 - name: create control node
   request:
     path: /contrail-control-nodes
@@ -443,13 +442,13 @@ workflow:
     - 200
     data:
       contrail-control-node: *contrail_control_nodes
-    expect:
-      contrail-control-node:
-        uuid: contrail_control_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    contrail-control-node:
+      uuid: contrail_control_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create vrouter node
   request:
     path: /contrail-vrouter-nodes
@@ -458,25 +457,25 @@ workflow:
     - 200
     data:
       contrail-vrouter-node: *contrail_vrouter_nodes
-    expect:
-      contrail-vrouter-node:
-        uuid: contrail_vrouter_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
-        {% if TYPE == "dpdk" %}
-        dpdk_info:
-          cpu_core_mask: 0xff
-          dpdk_uio_driver: vfio-pci
-          huge_pages: 64000
-        {%endif%}
-        {% if TYPE == "sriov" %}
-        sriov_info:
-          sriov_vf: 10
-          sriov_physical_interface: enp129s0f1
-          sriov_physical_net: physnet1
-        {%endif%}
+  expect:
+    contrail-vrouter-node:
+      uuid: contrail_vrouter_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+      {% if TYPE == "dpdk" %}
+      dpdk_info:
+        cpu_core_mask: "0xff"
+        dpdk_uio_driver: vfio-pci
+        huge_pages: 64000
+      {%endif%}
+      {% if TYPE == "sriov" %}
+      sriov_info:
+        sriov_vf: 10
+        sriov_physical_interface: enp129s0f1
+        sriov_physical_net: physnet1
+      {%endif%}
 - name: create openstack control node
   request:
     path: /openstack-control-nodes
@@ -485,13 +484,13 @@ workflow:
     - 200
     data:
       openstack-control-node: *openstack_control_nodes
-    expect:
-      contrail-control-node:
-        uuid: openstack_control_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_openstack_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    openstack-control-node:
+      uuid: openstack_control_nodes_uuid
+      parent_type: openstack-cluster
+      parent_uuid: test_openstack_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create openstack monitoring node
   request:
     path: /openstack-monitoring-nodes
@@ -500,13 +499,13 @@ workflow:
     - 200
     data:
       openstack-monitoring-node: *openstack_monitoring_nodes
-    expect:
-      openstack-monitoring-node:
-        uuid: openstack_monitoring_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_openstack_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    openstack-monitoring-node:
+      uuid: openstack_monitoring_nodes_uuid
+      parent_type: openstack-cluster
+      parent_uuid: test_openstack_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create openstack network node
   request:
     path: /openstack-network-nodes
@@ -515,13 +514,13 @@ workflow:
     - 200
     data:
       openstack-network-node: *openstack_network_nodes
-    expect:
-      openstack-network-node:
-        uuid: openstack_network_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_openstack_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    openstack-network-node:
+      uuid: openstack_network_nodes_uuid
+      parent_type: openstack-cluster
+      parent_uuid: test_openstack_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create openstack storage node
   request:
     path: /openstack-storage-nodes
@@ -530,13 +529,13 @@ workflow:
     - 200
     data:
       openstack-storage-node: *openstack_storage_nodes
-    expect:
-      openstack-storage-node:
-        uuid: openstack_storage_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_openstack_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    openstack-storage-node:
+      uuid: openstack_storage_nodes_uuid
+      parent_type: openstack-cluster
+      parent_uuid: test_openstack_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
 - name: create openstack compute node
   request:
     path: /openstack-compute-nodes
@@ -545,10 +544,10 @@ workflow:
     - 200
     data:
       openstack-compute-node: *openstack_compute_nodes
-    expect:
-      openstack-compute-node:
-        uuid: openstack_compute_nodes_uuid
-        parent_type: contrail-cluster
-        parent_uuid: test_openstack_cluster_uuid
-        node_refs:
-          - uuid: all_in_one_node_uuid
+  expect:
+    openstack-compute-node:
+      uuid: openstack_compute_nodes_uuid
+      parent_type: openstack-cluster
+      parent_uuid: test_openstack_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid

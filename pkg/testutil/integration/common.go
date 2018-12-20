@@ -210,6 +210,7 @@ type TestScenario struct {
 	CleanTasks            []CleanTask             `yaml:"cleanup,omitempty"`
 	Workflow              []*Task                 `yaml:"workflow,omitempty"`
 	Watchers              Watchers                `yaml:"watchers,omitempty"`
+	TestData              interface{}             `yaml:"test_data,omitempty"`
 }
 
 //LoadTest load testscenario.
@@ -230,7 +231,7 @@ func LoadTestScenario(testScenario *TestScenario, file string, ctx map[string]in
 	if err != nil {
 		return errors.Wrap(err, "failed to apply test data template")
 	}
-	return yaml.Unmarshal(content, testScenario)
+	return yaml.UnmarshalStrict(content, testScenario)
 }
 
 type trackedResource struct {

@@ -31,7 +31,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -80,8 +79,8 @@ workflow:
     data:
       fq_name: ["default", "admin_endpoint", "vn_endpoint_blue"]
       type: virtual-network
-    expect:
-      id: "vn_endpoint_blue"
+  expect:
+    uuid: "vn_endpoint_blue"
 
 - name: get network ipam uuid from fqname
   request:
@@ -92,8 +91,8 @@ workflow:
     data:
       fq_name: ["domain","admin","test_ipam_endpoint_blue"]
       type: network-ipam
-    expect:
-      id: "test_ipam_endpoint_blue"
+  expect:
+    uuid: "test_ipam_endpoint_blue"
 
 - name: get uuid from fqname when it does not exist
   request:

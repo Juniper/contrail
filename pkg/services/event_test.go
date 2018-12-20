@@ -93,7 +93,7 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	assert.Equal(t, "CREATE", i["operation"])
 
 	var d Event
-	err = yaml.Unmarshal(m, &d)
+	err = yaml.UnmarshalStrict(m, &d)
 	assert.NoError(t, err, "unmarshal event failed")
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())

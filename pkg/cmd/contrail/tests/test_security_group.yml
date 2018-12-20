@@ -58,7 +58,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -78,7 +77,7 @@ workflow:
   expect: null
   watchers:
     /contrail/project/project_uuid:
-      - *project
+      - data: *project
 - name: create security group
   request:
     path: /security-groups
@@ -91,10 +90,10 @@ workflow:
     security-group: *sg
   watchers:
     /contrail/security_group/:
-      - *sg
+      - data: *sg
     /contrail/access_control_list/:
-      - *ingress_acl
-      - *egress_acl
+      - data: *ingress_acl
+      - data: *egress_acl
 - name: ensure ACL were created
   request:
     path: /access-control-lists?parent_id=sg_uuid
@@ -114,10 +113,10 @@ workflow:
   expect: null
   watchers:
     /contrail/security_group/:
-      - null # nulls are emitted in case of delete
+      - data: null # nulls are emitted in case of delete
     /contrail/access_control_list/:
-      - null
-      - null
+      - data: null
+      - data: null
 - name: ensure ACL were deleted
   request:
     path: /access-control-lists?parent_id=sg_uuid

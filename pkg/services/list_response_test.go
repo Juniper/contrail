@@ -165,7 +165,7 @@ func TestListResponseYAMLMarshaling(t *testing.T) {
 func TestListResponseYAMLUnmarshaling(t *testing.T) {
 	for _, data := range dataYAML {
 		var dataStruct ListFloatingIPPoolResponse
-		err := yaml.Unmarshal(data.bytes, &dataStruct)
+		err := yaml.UnmarshalStrict(data.bytes, &dataStruct)
 		assert.NoError(t, err, "unmarshaling ListResponse failed")
 		assert.EqualValues(t, len(data.structure.FloatingIPPools), len(dataStruct.FloatingIPPools))
 		for i := range data.structure.FloatingIPPools {
