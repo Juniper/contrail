@@ -1,3 +1,3 @@
 #!/bin/bash
 
-kubectl create -f ./patroni_k8s.yaml
+kubectl create -f $(dirname $0)/patroni_k8s.yaml

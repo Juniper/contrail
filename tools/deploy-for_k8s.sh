@@ -28,13 +28,12 @@ make deps
 make generate
 make build
 make install
-
 make docker_config_api
 
 # Ensure patroni installed
-./tools/patroni/pull_patroni.sh
-
-./tools/testenv.sh -n host patroni
+cp "$ContrailRootDir/tools/init_psql.sql" "$ContrailRootDir/tools/patroni/k8s/"
+"$ContrailRootDir/tools/patroni/k8s/install_patroni_k8s.sh"
+sudo "$ContrailRootDir/tools/patroni/k8s/start_cluster.sh"
 
 # Stop services using docker-compose
 compose_down kubemanager config control vrouter
@@ -43,7 +42,7 @@ compose_down kubemanager config control vrouter
 clear_config_database
 
 # Prepare fresh database in contrail-go
-make zero_psql
+"$ContrailRootDir/tools/reset_db_psql_k8s.sh"
 
 # Drop contrail related content from etcd
 docker exec "$(docker ps -q -f name=k8s_etcd_etcd)" sh -c "ETCDCTL_API=3 etcdctl del /contrail --prefix"
@@ -56,6 +55,11 @@ sudo ./tools/kube_manager_etcd/update-docker-compose.py
 
 # Update control-node docker compose file
 sudo ./tools/control-node_etcd/update-docker-compose.py
+
+# Get IP address of cluster
+CLIP=$(sudo kubectl describe svc -l application=contrail-postgres,cluster-name=contrail | grep IP: | sed "s/IP:[ ]*//g")
+
+# TODO: substitute address in config
 
 # Load init data to rdbms
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-config_api.yml
