@@ -2,7 +2,9 @@ package replication
 
 import (
 	"context"
+	"io"
 
+	"github.com/jackc/pgx"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 )
@@ -16,6 +18,33 @@ func isContextCancellationError(err error) bool {
 		}
 	}
 	if errors.Cause(err) == context.Canceled {
+		return true
+	}
+	return false
+}
+
+type causeError struct {
+	error
+}
+
+func (e causeError) Cause() error {
+	return errors.Cause(e.error)
+}
+
+type syncError struct {
+	causeError
+}
+
+func wrapError(err error) error {
+	if err == nil {
+		return nil
+	}
+	return syncError{causeError: causeError{error: err}}
+}
+
+func (e syncError) Temporary() bool {
+	c := errors.Cause(e.error)
+	if c == io.EOF || c == pgx.ErrConnBusy {
 		return true
 	}
 	return false
