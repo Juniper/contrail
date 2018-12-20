@@ -76,15 +76,23 @@ func commandHandler(handler handler, _ *task, context map[string]interface{}) (i
 
 	var output bytes.Buffer
 	stdout, _ := cmd.StdoutPipe() // nolint: errcheck
+	stderr, _ := cmd.StderrPipe() // nolint: errcheck
 	err = cmd.Start()
 	if err != nil {
 		return "", err
 	}
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		m := scanner.Text()
+	stdoutScanner := bufio.NewScanner(stdout)
+	for stdoutScanner.Scan() {
+		m := stdoutScanner.Text()
 		output.WriteString(m)
 		log.Debug(m)
+	}
+
+	stderrScanner := bufio.NewScanner(stderr)
+	for stderrScanner.Scan() {
+		m := stderrScanner.Text()
+		output.WriteString(m)
+		log.Error(m)
 	}
 
 	err = cmd.Wait()
