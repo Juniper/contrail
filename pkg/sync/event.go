@@ -9,15 +9,15 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-//EventProducer based on RDBMS updates.
+// EventProducer based on RDBMS updates.
 type EventProducer struct {
 	watcher watchCloser
 	log     *logrus.Entry
 }
 
-//NewEventProducer makes EventProducer based RDBMS updates.
+// NewEventProducer makes EventProducer based RDBMS updates.
 func NewEventProducer(processor services.EventProcessor) (*EventProducer, error) {
-	watcher, err := createWatcher(processor, "sync-event-producer")
+	watcher, err := createWatcher(processor)
 	if err != nil {
 		return nil, err
 	}
