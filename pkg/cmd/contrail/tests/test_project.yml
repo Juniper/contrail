@@ -27,7 +27,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -45,15 +44,16 @@ workflow:
     project: *project_blue_project
   watchers:
     /contrail/project/project_blue_project_uuid:
-      - *project_blue_project       # requested project was created
+      - data: *project_blue_project       # requested project was created
       # TODO(Michał): Uncomment this when sync and etcd.Notifier handles ref in the same way
       #- <<: *project_blue_project   # project is updated with default-application-policy-set
       #  application_policy_set_refs:
       #    - to: [default-domain, project_blue_project, default-application-policy-set]
 
     /contrail/application_policy_set/:
-      - fq_name: [default-domain, project_blue_project, default-application-policy-set]
-        uuid: $uuid
+      - data:
+          fq_name: [default-domain, project_blue_project, default-application-policy-set]
+          uuid: $uuid
 
 - name: check if default-application-policy-set was created
   request:
@@ -96,8 +96,9 @@ workflow:
     application-policy-set: *user_made_application_policy_set_project
   watchers:
     /contrail/application_policy_set/my_custom_application_policy_set_uuid:
-      - <<: *user_made_application_policy_set_project
-        name: my-custom-aps
+      - data:
+          <<: *user_made_application_policy_set_project
+          name: my-custom-aps
 
 - name: try to delete project with user made application-policy-set
   request:
@@ -130,6 +131,7 @@ workflow:
 
 watchers:
   /contrail/application_policy_set/my_custom_application_policy_set_uuid:
-    - <<: *user_made_application_policy_set_project
-      name: my-custom-aps
-    - {uuid: $null}  # empty event is emmited in case of deletion
+    - data:
+        <<: *user_made_application_policy_set_project
+        name: my-custom-aps
+    - data: {uuid: $null}  # empty event is emmited in case of deletion

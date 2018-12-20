@@ -79,7 +79,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -113,7 +112,7 @@ workflow:
     expected: [200]
     data:
       virtual-network: *virtual_network
-  expected:
+  expect:
     virtual-network: *virtual_network
 
 - name: create virtual machine interface
@@ -123,7 +122,7 @@ workflow:
     expected: [200]
     data:
       virtual-machine-interface: *virtual_machine_interface
-  expected:
+  expect:
     virtual-machine-interface: *virtual_machine_interface
 
 - name: create physical router
@@ -143,7 +142,7 @@ workflow:
     expected: [200]
     data:
       physical-interface: *physical_interface
-  expected:
+  expect:
     physical-interface: *physical_interface
 
 - name: create physical interface with same display name
@@ -179,7 +178,7 @@ workflow:
     expected: [200]
     data:
       logical-interface: *logical_interface
-  expected:
+  expect:
     logical-interface: *logical_interface
 
 - name: create second physical interface with second esi
@@ -189,7 +188,7 @@ workflow:
     expected: [200]
     data:
       physical-interface: *physical_interface2
-  expected:
+  expect:
     physical-interface: *physical_interface2
 
 - name: create second child logical interface
@@ -199,7 +198,7 @@ workflow:
     expected: [200]
     data:
       logical-interface: *logical_interface2
-  expected:
+  expect:
     logical-interface: *logical_interface2
 
 - name: update second physical interface with wrong ESI string format

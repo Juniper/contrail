@@ -104,7 +104,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -217,7 +216,10 @@ workflow:
         - 200
       data:
         alarm: *alarm_range_correct
-    expected: *alarm_range_correct
+    expect:
+      alarm:
+        <<: *alarm_range_correct
+        uuid: test_valid_alarm
 
   - name: update with emtpy rules
     request:
@@ -227,7 +229,7 @@ workflow:
         - 400
       data:
         alarm: *empty_alarm
-    expected:
+    expect:
       alarm: null
 
   - name: delete full alarm

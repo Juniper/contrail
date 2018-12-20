@@ -119,8 +119,8 @@ workflow:
   expect:
     security-group: *sg
   watchers:
-    /contrail/security_group/: [*sg]
-    /contrail/access_control_list/: [*ingress_acl, *egress_acl]
+    /contrail/security_group/: [{data: *sg}]
+    /contrail/access_control_list/: [{data: *ingress_acl}, {data: *egress_acl}]
 
 - name: create 2nd security group that refers 1st
   request:
@@ -133,8 +133,8 @@ workflow:
   expect:
     security-group: *sg_referring
   watchers:
-    /contrail/security_group/: [*sg_referring]
-    /contrail/access_control_list/: [*ingress_acl_referring, *egress_acl_referring]
+    /contrail/security_group/: [{data: *sg_referring}]
+    /contrail/access_control_list/: [{data: *ingress_acl_referring}, {data: *egress_acl_referring}]
 
 - name: delete referred security group
   request:
@@ -145,7 +145,7 @@ workflow:
   expect: null
   watchers:
     # TODO assert 3rd acl is ingress_acl_referring_update once etcd update is fixed
-    /contrail/access_control_list/: [null, null, null, *egress_acl_referring]
+    /contrail/access_control_list/: [{data: null}, {data: null}, {data: null}, {data: *egress_acl_referring}]
 
 - name: check whether ingress acl in sg_referring was updated
   request:
@@ -178,7 +178,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:

@@ -161,7 +161,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -169,7 +168,6 @@ clients:
   bob:
     id: bob
     password: bob_password
-    domain: default
     insecure: true
     scope:
       project:
