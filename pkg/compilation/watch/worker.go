@@ -61,7 +61,7 @@ func (g *Worker) Run() {
 
 				d := 10 * time.Millisecond
 				time.Sleep(d)
-				log.Debugf("Worker: %d, Slept for %s\n", g.WorkerID, d)
+				log.Debugf("Worker: %d, Slept for %s", g.WorkerID, d)
 
 			case <-g.ExitChan:
 				log.Infof("Worker: %d exiting", g.WorkerID)

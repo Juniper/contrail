@@ -3,6 +3,7 @@ package contrail
 import (
 	"context"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -14,7 +15,13 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/retry"
 	syncp "github.com/Juniper/contrail/pkg/sync"
+)
+
+const (
+	syncRetryInterval = 3 * time.Second
 )
 
 var cacheDB *cache.DB
@@ -140,14 +147,17 @@ func startServer(_ *sync.WaitGroup) {
 }
 
 func startSync(_ *sync.WaitGroup) {
-	s, err := syncp.NewService()
-	if err != nil {
-		log.Fatal(err)
-	}
+	if err := retry.Do(func() (retry bool, err error) {
+		s, err := syncp.NewService()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer s.Close()
 
-	defer s.Close()
-	err = s.Run()
-	if err != nil {
+		err = s.Run()
+
+		return errutil.ShouldRetry(err), err
+	}, retry.WithLog(log.StandardLogger()), retry.WithInterval(syncRetryInterval)); err != nil {
 		log.Warn(err)
 	}
 }

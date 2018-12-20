@@ -3,12 +3,12 @@ package replication
 import (
 	"context"
 	"encoding/binary"
-	"errors"
 	"testing"
 	"time"
 
 	"github.com/jackc/pgx"
 	"github.com/kyleconroy/pgoutput"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -153,7 +153,7 @@ func TestPostgresWatcherContextCancellation(t *testing.T) {
 	err := w.Watch(ctx)
 
 	// then
-	assert.Equal(t, closeErr, err)
+	assert.Equal(t, closeErr, errors.Cause(err))
 	m.AssertExpectations(t)
 }
 
@@ -234,8 +234,8 @@ func (m *mockPostgresWatcherConnection) WaitForReplicationMessage(
 	return args.Get(0).(*pgx.ReplicationMessage), args.Error(1)
 }
 
-func (m *mockPostgresWatcherConnection) SendStatus(lastLSN uint64) error {
-	args := m.MethodCalled("SendStatus", lastLSN)
+func (m *mockPostgresWatcherConnection) SendStatus(receivedLSN, savedLSN uint64) error {
+	args := m.MethodCalled("SendStatus", receivedLSN, savedLSN)
 	return args.Error(0)
 }
 

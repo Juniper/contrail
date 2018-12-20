@@ -60,7 +60,7 @@ func NewService() (*Service, error) {
 		return nil, err
 	}
 
-	watcher, err := createWatcher(&services.ServiceEventProcessor{Service: etcdNotifierService}, "sync-service")
+	watcher, err := createWatcher(&services.ServiceEventProcessor{Service: etcdNotifierService})
 	if err != nil {
 		return nil, err
 	}
@@ -90,8 +90,7 @@ func determineCodecType() models.Codec {
 	}
 }
 
-func createWatcher(processor services.EventProcessor, serviceName string) (watchCloser, error) {
-	driver := viper.GetString("database.type")
+func createWatcher(processor services.EventProcessor) (watchCloser, error) {
 	sqlDB, err := basedb.ConnectDB()
 	if err != nil {
 		return nil, err
@@ -105,18 +104,19 @@ func createWatcher(processor services.EventProcessor, serviceName string) (watch
 	s := sink.NewEventProcessorSink(processor)
 	rowSink := replication.NewObjectMappingAdapter(s, dbService)
 
+	driver := viper.GetString("database.type")
 	switch driver {
 	case basedb.DriverPostgreSQL:
-		return createPostgreSQLWatcher(log.NewLogger(fmt.Sprint(serviceName, "-psql-watcher")), rowSink, dbService, processor)
+		return createPostgreSQLWatcher(rowSink, dbService, processor)
 	case basedb.DriverMySQL:
-		return createMySQLWatcher(log.NewLogger(fmt.Sprint(serviceName, "-mysql-watcher")), rowSink)
+		return createMySQLWatcher(rowSink)
 	default:
 		return nil, errors.Errorf("invalid database driver: %v", driver)
 	}
 }
 
 func createPostgreSQLWatcher(
-	log *logrus.Entry, sink replication.RowSink, dbService *db.Service, processor services.EventProcessor,
+	sink replication.RowSink, dbService *db.Service, processor services.EventProcessor,
 ) (watchCloser, error) {
 	handler := replication.NewPgoutputEventHandler(sink)
 
@@ -137,7 +137,6 @@ func createPostgreSQLWatcher(
 		Publication:   replication.PostgreSQLPublicationName,
 		StatusTimeout: viper.GetDuration("database.replication_status_timeout"),
 	}
-	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got pgx config")
 
 	return replication.NewPostgresWatcher(
 		conf,
@@ -149,9 +148,8 @@ func createPostgreSQLWatcher(
 	)
 }
 
-func createMySQLWatcher(log *logrus.Entry, sink replication.RowSink) (watchCloser, error) {
+func createMySQLWatcher(sink replication.RowSink) (watchCloser, error) {
 	conf := canalConfig()
-	log.WithField("config", fmt.Sprintf("%+v", conf)).Debug("Got Canal config")
 
 	canal, err := mysqlcanal.NewCanal(conf)
 	if err != nil {

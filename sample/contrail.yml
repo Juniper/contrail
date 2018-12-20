@@ -182,9 +182,9 @@ cache:
 
 replication:
   cassandra:
-    enabled: true
+    enabled: false
   amqp:
-    enabled: true
+    enabled: false
 
 cassandra:
   host: localhost
