@@ -2,8 +2,12 @@ package contrail
 
 import (
 	"context"
+	"io"
 	"sync"
+	"time"
 
+	"github.com/jackc/pgx"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -15,6 +19,10 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	syncp "github.com/Juniper/contrail/pkg/sync"
+)
+
+const (
+	syncRetryInterval = 3 * time.Second
 )
 
 var cacheDB *cache.DB
@@ -55,6 +63,18 @@ func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGro
 		defer wg.Done()
 		f(wg)
 	}()
+}
+
+// Retry runs function f in loop until the function returns retry == false.
+// It waits time t after each loop iteration.
+func Retry(t time.Duration, f func() (retry bool, err error)) error {
+	for {
+		retry, err := f()
+		if !retry {
+			return err
+		}
+		time.Sleep(t)
+	}
 }
 
 func startCassandraReplicator(wg *sync.WaitGroup) {
@@ -140,14 +160,29 @@ func startServer(_ *sync.WaitGroup) {
 }
 
 func startSync(_ *sync.WaitGroup) {
-	s, err := syncp.NewService()
-	if err != nil {
-		log.Fatal(err)
-	}
+	if err := Retry(syncRetryInterval, func() (retry bool, err error) {
+		s, err := syncp.NewService()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer s.Close()
 
-	defer s.Close()
-	err = s.Run()
-	if err != nil {
+		err = s.Run()
+		if err != nil {
+			// TODO(Michal): handle with custom type wrapper
+			c := errors.Cause(err)
+			if e, ok := c.(pgx.PgError); ok {
+				if e.Code == "0A000" {
+					return true, err
+				}
+			}
+			if c == io.EOF || c == pgx.ErrConnBusy {
+				return true, err
+			}
+			return false, err
+		}
+		return true, err
+	}); err != nil {
 		log.Warn(err)
 	}
 }
