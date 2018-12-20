@@ -61,7 +61,7 @@ kind: Endpoints
 metadata:
   name: &cluster_name contrail
   labels:
-    application: contrail
+    application: contrail-postgres
     cluster-name: *cluster_name
 subsets: []
 
@@ -71,7 +71,7 @@ kind: Service
 metadata:
   name: &cluster_name contrail
   labels:
-    application: contrail
+    application: contrail-postgres
     cluster-name: *cluster_name
 spec:
   type: ClusterIP
