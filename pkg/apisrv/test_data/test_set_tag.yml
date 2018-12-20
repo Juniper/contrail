@@ -11,7 +11,6 @@ cleanup:
 - path: /tag/tag_label_ctest_uuid
 
 test_data:
-# SetUp resources
   admin_project: &admin_project
     fq_name: ["default", "admin_project_uuid"]
     uuid: admin_project_uuid
@@ -61,8 +60,6 @@ test_data:
     tag_value: ctest
     tag_type_name: label
 
-# Test resources
-
   set_tag_project: &set_tag_project
     obj_uuid: admin_project_uuid
     obj_type: project
@@ -84,7 +81,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -103,8 +99,8 @@ workflow:
     project: *admin_project
   watchers:
     /contrail/project/admin_project_uuid:
-      - *admin_project
-      - *admin_project # with APS
+      - data: *admin_project
+      - data: *admin_project # with APS
 
 - name: create virtual network
   request:
@@ -122,7 +118,8 @@ workflow:
     expected: [200]
     data:
       tag: *tag_namespace
-  expected: *tag_namespace
+  expect:
+    tag: *tag_namespace
 
 - name: create tag namespace kube
   request:
@@ -131,7 +128,8 @@ workflow:
     expected: [200]
     data:
       tag: *tag_namespace_kube
-  expected: *tag_namespace_kube
+  expect:
+    tag: *tag_namespace_kube
 
 - name: create tag application
   request:
@@ -140,7 +138,8 @@ workflow:
     expected: [200]
     data:
       tag: *tag_application
-  expected: *tag_application
+  expect:
+    tag: *tag_application
 
 - name: create tag label k8s
   request:
@@ -149,7 +148,8 @@ workflow:
     expected: [200]
     data:
       tag: *tag_label_k8s
-  expected: *tag_label_k8s
+  expect:
+    tag: *tag_label_k8s
 
 - name: create tag label ctest
   request:
@@ -158,7 +158,8 @@ workflow:
     expected: [200]
     data:
       tag: *tag_label_ctest
-  expected: *tag_label_ctest
+  expect:
+    tag: *tag_label_ctest
 # \SetUp END
 
 - name: correctly filled set-tag

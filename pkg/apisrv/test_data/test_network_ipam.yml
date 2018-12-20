@@ -126,7 +126,6 @@ clients:
   default:
     id: alice
     password: alice_password
-    domain: default
     insecure: true
     scope:
       project:
@@ -163,7 +162,7 @@ workflow:
     - 400
     data:
       network-ipams: *network_ipam_red
-    expect: null
+  expect: null
 
 - name: create virtual network blue
   request:

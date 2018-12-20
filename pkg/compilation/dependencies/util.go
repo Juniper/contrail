@@ -9,7 +9,7 @@ import (
 // ParseReactions parses reactions from file.
 func ParseReactions(bytes []byte, prefix string) (Reactions, error) {
 	raw := map[string]map[string]map[string][]string{}
-	err := yaml.Unmarshal(bytes, raw)
+	err := yaml.UnmarshalStrict(bytes, raw)
 	if err != nil {
 		return nil, err
 	}
