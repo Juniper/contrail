@@ -234,8 +234,8 @@ func (m *mockPostgresWatcherConnection) WaitForReplicationMessage(
 	return args.Get(0).(*pgx.ReplicationMessage), args.Error(1)
 }
 
-func (m *mockPostgresWatcherConnection) SendStatus(lastLSN uint64) error {
-	args := m.MethodCalled("SendStatus", lastLSN)
+func (m *mockPostgresWatcherConnection) SendStatus(receivedLSN, savedLSN uint64) error {
+	args := m.MethodCalled("SendStatus", receivedLSN, savedLSN)
 	return args.Error(0)
 }
 
