@@ -21,7 +21,8 @@ schema:
     security_group_rules:
       type: array
       items:
-        $ref: resp_security_group_rule.json#/schemas/security_group_rule
+        proto_type: "SecurityGroupRuleResponse"
+        go_type: "SecurityGroupRuleResponse"
     id:
       type: string
     name:
