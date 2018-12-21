@@ -10,6 +10,7 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 // ReadAll will fetch all Subnets.
@@ -35,6 +36,30 @@ func (*Subnet) ReadAll(ctx context.Context, rp RequestParameters, filters Filter
 	}
 
 	return response, err
+}
+
+func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, error) {
+	// neutron_plugin_db.py:3174
+	vNetworkReq := &services.GetVirtualNetworkRequest{ID: s.NetworkID}
+	vNetworkRes, err := rp.ReadService.GetVirtualNetwork(ctx, vNetworkReq)
+	if err != nil {
+		return nil, err
+	}
+
+	var netIpam *models.NetworkIpam
+	if len(s.IpamFQName) == 3 {
+		netIpam = &models.NetworkIpam{Name: s.IpamFQName[2], ParentType: "project", FQName: s.IpamFQName}
+	} else {
+		// link with project's default ipam or global default ipam
+		fqName := vNetworkRes.VirtualNetwork.GetFQName()
+		netIpam = &models.NetworkIpam{
+			Name: s.IpamFQName[2],
+			ParentType: "project",
+			FQName: []string{fqName[len(fqName)-1], "default-network-ipam"},
+		}
+	}
+
+	return &SubnetResponse{}, nil
 }
 
 func subnetVncToNeutron(vn *models.VirtualNetwork, ipam *models.IpamSubnetType) *SubnetResponse {
