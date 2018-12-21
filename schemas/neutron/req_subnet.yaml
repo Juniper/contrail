@@ -18,9 +18,7 @@ schema:
       type: string
       presence: optional
     ipam_fq_name:
-      type: array
-      items:
-        type: string
+      type: string
     ip_version:
       type: integer
       presence: optional
@@ -79,10 +77,10 @@ definitions:
     type: object
     description: First last IP of allocation pool
     properties:
-      first_ip:
+      start:
         type: string
         presence: true
-      last_ip:
+      end:
         type: string
         presence: true
   DnsNameserver:
