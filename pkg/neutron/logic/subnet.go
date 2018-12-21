@@ -2,14 +2,18 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"regexp"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/apparentlymart/go-cidr/cidr"
+	"github.com/gogo/protobuf/types"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 // ReadAll will fetch all Subnets.
@@ -35,6 +39,145 @@ func (*Subnet) ReadAll(ctx context.Context, rp RequestParameters, filters Filter
 	}
 
 	return response, err
+}
+
+func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, error) {
+	// neutron_plugin_db.py:3174
+	virtualNetwork, err := s.getVirtualNetwork(ctx, rp)
+	if err != nil {
+		return nil, err
+	}
+
+	networkIpam, err := s.getNetworkIpam(ctx, rp, virtualNetwork)
+	if err != nil {
+		return nil, err
+	}
+
+	// check if subnet exists and does not overlap
+	var networkIpamRef *models.VirtualNetworkNetworkIpamRef
+	for _, ipamRef := range virtualNetwork.GetNetworkIpamRefs() {
+		if strings.Join(ipamRef.GetTo(), "-") == strings.Join(networkIpam.GetFQName(), "-") {
+			networkIpamRef = ipamRef
+			break
+		}
+	}
+
+	subnetVnc := subnetNeutronToVnc(s)
+	if networkIpamRef != nil {
+		for _, ipamSubnet := range networkIpamRef.GetAttr().GetIpamSubnets() {
+			if subnetsOverlaps(subnetVnc, ipamSubnet) {
+				return nil, errors.New(fmt.Sprintf(
+					"Cidr %s overlaps with another subnet: %s",
+					s.Cidr,
+					ipamSubnet.GetSubnetUUID(),
+				))
+			}
+		}
+	}
+
+	err = updateVirtualNetwork(ctx, rp, virtualNetwork, subnetVnc)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO(pawel.zadrozny) fetch newly created subnet, and make a proper response
+	return &SubnetResponse{}, nil
+}
+
+func (s *Subnet) getVirtualNetwork(ctx context.Context, rp RequestParameters) (*models.VirtualNetwork, error) {
+	virtualNetworkRequest := &services.GetVirtualNetworkRequest{ID: s.NetworkID}
+	virtualNetworkResponse, err := rp.ReadService.GetVirtualNetwork(ctx, virtualNetworkRequest)
+	if err != nil {
+		return nil, err
+	}
+	return virtualNetworkResponse.GetVirtualNetwork(), nil
+}
+
+func (s *Subnet) getNetworkIpam(
+	ctx context.Context,
+	rp RequestParameters,
+	network *models.VirtualNetwork,
+) (*models.NetworkIpam, error) {
+	// if requested ipam FQName has length of 3, create new NetworkIpam from it.
+	if len(s.IpamFQName) == 3 {
+		return &models.NetworkIpam{Name: s.IpamFQName[2], ParentType: "project", FQName: s.IpamFQName}, nil
+	}
+
+	// try to link with project's default ipam or global default ipam
+	fqName := network.GetFQName()
+	netIpamRes, err := rp.ReadService.ListNetworkIpam(ctx, &services.ListNetworkIpamRequest{
+		Spec: &baseservices.ListSpec{
+			Filters: []*baseservices.Filter{
+				{
+					Key:    "FQName",
+					Values: []string{fqName[len(fqName)-1], "default-network-ipam"},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// if default global subnet does not exist create new empty NetworkIpam
+	if netIpamRes.NetworkIpamCount == 0 {
+		return &models.NetworkIpam{
+			Name:       s.IpamFQName[len(s.IpamFQName)-1],
+			ParentType: "project",
+			FQName:     s.IpamFQName,
+		}, nil
+	}
+
+	return netIpamRes.NetworkIpams[0], nil
+}
+
+func updateVirtualNetwork(
+	ctx context.Context,
+	rp RequestParameters,
+	vn *models.VirtualNetwork,
+	subnet *models.IpamSubnetType,
+) error {
+	_, err := rp.WriteService.UpdateVirtualNetwork(
+		ctx,
+		&services.UpdateVirtualNetworkRequest{
+			VirtualNetwork: &models.VirtualNetwork{
+				UUID: vn.GetUUID(),
+				NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+					{
+						To: []string{vn.GetUUID()},
+						Attr: &models.VnSubnetsType{
+							IpamSubnets: []*models.IpamSubnetType{subnet},
+						},
+					},
+				},
+			},
+			FieldMask: types.FieldMask{
+				Paths: []string{
+					models.VirtualNetworkFieldNetworkIpamRefs,
+				},
+			},
+		},
+	)
+	return err
+}
+
+func subnetsOverlaps(ipamA, ipamB *models.IpamSubnetType) bool {
+	// TODO(pawel.zadrozny) make it the right way
+	subnetA := ipamA.GetSubnet()
+	subnetB := ipamB.GetSubnet()
+	if subnetA == nil || subnetB == nil {
+		return false
+	}
+
+	cidrA := fmt.Sprintf("%s/%d", subnetA.GetIPPrefix(), subnetA.GetIPPrefixLen())
+	cidrB := fmt.Sprintf("%s/%d", subnetB.GetIPPrefix(), subnetB.GetIPPrefixLen())
+
+	return cidrA == cidrB
+}
+
+func subnetNeutronToVnc(subnet *Subnet) *models.IpamSubnetType {
+	// TODO(pawel.zadrozny) please do
+	return &models.IpamSubnetType{}
 }
 
 func subnetVncToNeutron(vn *models.VirtualNetwork, ipam *models.IpamSubnetType) *SubnetResponse {
