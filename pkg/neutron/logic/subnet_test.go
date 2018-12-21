@@ -102,7 +102,7 @@ func TestSubnetResponse_AllocationPoolsFromVnc(t *testing.T) {
 			hasSubnet:  true,
 			sr:         &logic.SubnetResponse{GatewayIP: "192.168.1.1"},
 			expected: []*logic.AllocationPool{
-				{FirstIP: "192.168.1.2", LastIP: "192.168.1.255"},
+				{Start: "192.168.1.2", End: "192.168.1.255"},
 			},
 		},
 		{
@@ -111,7 +111,7 @@ func TestSubnetResponse_AllocationPoolsFromVnc(t *testing.T) {
 			hasSubnet:  true,
 			sr:         &logic.SubnetResponse{GatewayIP: "192.168.1.1", Cidr: "192.168.1.0/24"},
 			expected: []*logic.AllocationPool{
-				{FirstIP: "192.168.1.2", LastIP: "192.168.1.254"},
+				{Start: "192.168.1.2", End: "192.168.1.254"},
 			},
 		},
 		{
@@ -120,7 +120,7 @@ func TestSubnetResponse_AllocationPoolsFromVnc(t *testing.T) {
 			hasSubnet:  true,
 			sr:         &logic.SubnetResponse{GatewayIP: "0.0.0.0", Cidr: "192.168.1.0/24"},
 			expected: []*logic.AllocationPool{
-				{FirstIP: "192.168.1.1", LastIP: "192.168.1.254"},
+				{Start: "192.168.1.1", End: "192.168.1.254"},
 			},
 		},
 		{
@@ -129,7 +129,7 @@ func TestSubnetResponse_AllocationPoolsFromVnc(t *testing.T) {
 			hasSubnet:  false,
 			sr:         &logic.SubnetResponse{},
 			expected: []*logic.AllocationPool{
-				{FirstIP: "0.0.0.0", LastIP: "255.255.255.255"},
+				{Start: "0.0.0.0", End: "255.255.255.255"},
 			},
 		},
 	}
@@ -153,7 +153,7 @@ func TestSubnetResponse_DNSNameServersFromVnc(t *testing.T) {
 			name:        "DHCP options does not exist",
 			dhcpOptions: nil,
 			sr:          &logic.SubnetResponse{},
-			expected:    nil,
+			expected:    []*logic.DnsNameserver{},
 		},
 		{
 			name: "DHCP with option 1",
@@ -166,7 +166,7 @@ func TestSubnetResponse_DNSNameServersFromVnc(t *testing.T) {
 				},
 			},
 			sr:       &logic.SubnetResponse{},
-			expected: nil,
+			expected: []*logic.DnsNameserver{},
 		},
 		{
 			name: "DHCP with option 6",
@@ -237,7 +237,7 @@ func TestSubnetResponse_HostRoutesFromVnc(t *testing.T) {
 			name:       "Route table is nil",
 			routeTable: nil,
 			sr:         &logic.SubnetResponse{},
-			expected:   nil,
+			expected:   []*logic.RouteTableType{},
 		},
 		{
 			name: "Route table is empty",
@@ -245,7 +245,7 @@ func TestSubnetResponse_HostRoutesFromVnc(t *testing.T) {
 				Route: []*models.RouteType{},
 			},
 			sr:       &logic.SubnetResponse{},
-			expected: nil,
+			expected: []*logic.RouteTableType{},
 		},
 		{
 			name: "Route table is defined",
@@ -322,7 +322,9 @@ func TestSubnet_ReadAll(t *testing.T) {
 					ID:              "subnet_blue_1_uuid",
 					Cidr:            "10.0.100.0/24",
 					GatewayIP:       "10.0.100.1",
-					AllocationPools: []*logic.AllocationPool{{FirstIP: "10.0.100.2", LastIP: "10.0.100.254"}},
+					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
+					HostRoutes:      []*logic.RouteTableType{},
+					DNSNameservers:  []*logic.DnsNameserver{},
 					IPVersion:       4,
 				},
 				{
@@ -330,7 +332,9 @@ func TestSubnet_ReadAll(t *testing.T) {
 					ID:              "subnet_blue_2_uuid",
 					Cidr:            "10.0.101.0/24",
 					GatewayIP:       "10.0.101.1",
-					AllocationPools: []*logic.AllocationPool{{FirstIP: "10.0.101.2", LastIP: "10.0.101.254"}},
+					AllocationPools: []*logic.AllocationPool{{Start: "10.0.101.2", End: "10.0.101.254"}},
+					HostRoutes:      []*logic.RouteTableType{},
+					DNSNameservers:  []*logic.DnsNameserver{},
 					IPVersion:       4,
 				},
 				{
@@ -338,7 +342,9 @@ func TestSubnet_ReadAll(t *testing.T) {
 					ID:              "subnet_red_1_uuid",
 					Cidr:            "10.0.100.0/24",
 					GatewayIP:       "10.0.100.1",
-					AllocationPools: []*logic.AllocationPool{{FirstIP: "10.0.100.2", LastIP: "10.0.100.254"}},
+					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
+					HostRoutes:      []*logic.RouteTableType{},
+					DNSNameservers:  []*logic.DnsNameserver{},
 					IPVersion:       4,
 				},
 			},
@@ -359,7 +365,9 @@ func TestSubnet_ReadAll(t *testing.T) {
 					ID:              "subnet_blue_1_uuid",
 					Cidr:            "10.0.100.0/24",
 					GatewayIP:       "10.0.100.1",
-					AllocationPools: []*logic.AllocationPool{{FirstIP: "10.0.100.2", LastIP: "10.0.100.254"}},
+					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
+					HostRoutes:      []*logic.RouteTableType{},
+					DNSNameservers:  []*logic.DnsNameserver{},
 					IPVersion:       4,
 				},
 			},
@@ -384,7 +392,9 @@ func TestSubnet_ReadAll(t *testing.T) {
 					ID:              "subnet_blue_1_uuid",
 					Cidr:            "10.0.100.0/24",
 					GatewayIP:       "10.0.100.1",
-					AllocationPools: []*logic.AllocationPool{{FirstIP: "10.0.100.2", LastIP: "10.0.100.254"}},
+					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
+					HostRoutes:      []*logic.RouteTableType{},
+					DNSNameservers:  []*logic.DnsNameserver{},
 					IPVersion:       4,
 				},
 			},
@@ -407,7 +417,9 @@ func TestSubnet_ReadAll(t *testing.T) {
 					ID:              "subnet_blue_1_uuid",
 					Cidr:            "10.0.100.0/24",
 					GatewayIP:       "10.0.100.1",
-					AllocationPools: []*logic.AllocationPool{{FirstIP: "10.0.100.2", LastIP: "10.0.100.254"}},
+					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
+					HostRoutes:      []*logic.RouteTableType{},
+					DNSNameservers:  []*logic.DnsNameserver{},
 					IPVersion:       4,
 				},
 			},

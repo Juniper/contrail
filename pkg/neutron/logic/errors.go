@@ -40,6 +40,7 @@ func newNeutronError(name string, fields errorFields) *Error {
 // constants for Neutron API exception names
 // https://docs.openstack.org/neutron-lib/queens/reference/modules/neutron_lib.exceptions.html
 const (
+	internalServerError        = "InternalServerError"
 	badRequest                 = "BadRequest"
 	portNotFound               = "PortNotFound"
 	l3PortInUse                = "L3PortInUse"

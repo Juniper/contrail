@@ -23,6 +23,7 @@ const (
 	netStatusActive          = "ACTIVE"
 	netStatusDown            = "DOWN"
 
+	// TODO(pawel.zadrozny) check if this config is still required or can be removed
 	contrailExtensionsEnabled = true
 )
 

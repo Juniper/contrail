@@ -135,36 +135,49 @@ workflow:
     project_id: 886c725d04614dd6ac2730c74d4e46fb
     description: ''
 
-#todo change to subnet create when it will be implemented
-- name: Create ref to ipam (causes subnet creation)
+- name: Create subnet
   request:
-    path: /ref-update
+    path: /neutron/subnet
     method: POST
     expected: [200]
     data:
-      ref-type: network-ipam
-      uuid: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-      ref-fq-name:
-      - default-domain
-      - default-project
-      - default-network-ipam
-      operation: ADD
-      type: virtual-network
-      attr:
-        ipam_subnets:
-        - subnet:
-            ip_prefix: 10.0.1.0
-            ip_prefix_len: 24
+      data:
+        resource:
+          name: ''
           enable_dhcp: true
-          default_gateway: 10.0.1.1
-          dns_nameservers: []
-          subnet_uuid: a46ff943-72cd-41dc-b92b-a997c1287856 #todo remove after subnet create and use id from request
-          alloc_unit: 1
-          addr_from_start: true
-          allocation_pools: []
-        host_routes:
+          network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          ipam_fq_name: ''
+          ip_version: 4
+          cidr: "10.0.1.0/24"
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          description: ''
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-2e00f3a3-d9a3-4016-abb3-f74ad1ea9bf0
+        "operation": CREATE
+        "type": subnet
+        "tenant": 886c725d04614dd6ac2730c74d4e46fb
   expect:
-    uuid: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    host_routes: []
+    name: ""
+    enable_dhcp: true
+    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    dns_nameservers: []
+    allocation_pools:
+    - start: 10.0.1.2
+      end: 10.0.1.254
+    gateway_ip: 10.0.1.1
+# TODO(pawel.zadrozny) check dns_server_address when address manager start to reserve dns nameservers
+#    dns_server_address: 10.0.1.2
+    shared: false
+    ip_version: 4
+    cidr: "10.0.1.0/24"
 
 - name: Network read with subnet
   request:
@@ -191,7 +204,7 @@ workflow:
     id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
     router:external: false
     subnets:
-    - a46ff943-72cd-41dc-b92b-a997c1287856
+    - $uuid
     subnet_ipam:
     - subnet_cidr: "10.0.1.0/24"
       ipam_fq_name:
@@ -236,7 +249,7 @@ workflow:
     id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
     router:external: false
     subnets:
-    - a46ff943-72cd-41dc-b92b-a997c1287856
+    - $uuid
     subnet_ipam:
     - subnet_cidr: "10.0.1.0/24"
       ipam_fq_name:
