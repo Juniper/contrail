@@ -2,23 +2,26 @@ package logic
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"regexp"
+	"strconv"
 	"strings"
-
-	"github.com/apparentlymart/go-cidr/cidr"
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/apparentlymart/go-cidr/cidr"
+	"github.com/gogo/protobuf/types"
 )
 
 const (
 	neutronNetworkIDKey = "network_id"
 	neutronCIDRKey      = "cidr"
+
+	// TODO(pawel.zadrozny) check if this config is still required or can be removed
+	strictCompliance = false
 )
 
-// ReadAll will fetch all Subnets.
+// ReadAll will fetch all subnets.
 func (*Subnet) ReadAll(ctx context.Context, rp RequestParameters, filters Filters, fields Fields) (Response, error) {
 	var response []*SubnetResponse
 
@@ -79,6 +82,223 @@ func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *Sub
 	return false
 }
 
+// Create new subnet for given network
+func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, error) {
+	// TODO(pawel.zadrozny) validate if CIDR version is equal to ip_version neutron_plugin_db.py:1585
+	virtualNetwork, err := s.getVirtualNetwork(ctx, rp)
+	if err != nil {
+		return nil, err
+	}
+	// TODO(pawel.zadrozny) check if subnet exists and does not overlap neutron_plugin_db.py:3217
+
+	subnetVnc, err := s.toVnc()
+	if err != nil {
+		return nil, err
+	}
+
+	networkIpam, err := s.getOrCreateNetworkIpam(virtualNetwork)
+	if err != nil {
+		return nil, err
+	}
+
+	// Locate list of subnets to which this subnet has to be appended
+	var networkIpamRef *models.VirtualNetworkNetworkIpamRef
+	for _, ipamRef := range virtualNetwork.GetNetworkIpamRefs() {
+		if strings.Join(ipamRef.GetTo(), "-") == strings.Join(networkIpam.GetFQName(), "-") {
+			networkIpamRef = ipamRef
+			break
+		}
+	}
+
+	subnetType, err := s.ipamSubnetType(subnetVnc)
+	if err != nil {
+		return nil, err
+	}
+
+	if networkIpamRef == nil {
+		// First link from net to this ipam
+		ipamRefRes, erra := rp.WriteService.CreateVirtualNetworkNetworkIpamRef(
+			ctx,
+			&services.CreateVirtualNetworkNetworkIpamRefRequest{
+				ID: virtualNetwork.GetUUID(),
+				VirtualNetworkNetworkIpamRef: &models.VirtualNetworkNetworkIpamRef{
+					Attr: &models.VnSubnetsType{
+						HostRoutes:  subnetType.GetHostRoutes(),
+						IpamSubnets: []*models.IpamSubnetType{subnetType},
+					},
+				},
+			},
+		)
+		if erra != nil {
+			return nil, erra
+		}
+		virtualNetwork.AddNetworkIpamRef(ipamRefRes.GetVirtualNetworkNetworkIpamRef())
+	} else {
+		// virtual-network already linked to this ipam
+		// TODO(pawel.zadrozny) check if new subnet overlaps one of already existing subnets
+		networkIpamRef.Attr.IpamSubnets = append(networkIpamRef.Attr.IpamSubnets, subnetType)
+	}
+
+	_, err = rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: virtualNetwork,
+		FieldMask: types.FieldMask{
+			Paths: []string{models.VirtualNetworkFieldNetworkIpamRefs},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return subnetVncToNeutron(virtualNetwork, subnetType), nil
+}
+
+func (s *Subnet) getOrCreateNetworkIpam(vn *models.VirtualNetwork) (*models.NetworkIpam, error) {
+	// TODO(pawel.zadrozny) pease do
+	return &models.NetworkIpam{}, nil
+}
+
+func (s *Subnet) getNetworkIpamRef(
+	ctx context.Context,
+	rp RequestParameters,
+	vn *models.VirtualNetwork,
+) (*models.VirtualNetworkNetworkIpamRef, error) {
+	ipamFQName := make([]string, 0, len(vn.GetFQName()))
+	ipamFQName = append(ipamFQName, vn.GetFQName()[:len(vn.GetFQName())-1]...)
+	ipamFQName = append(ipamFQName, "default-network-ipam")
+
+
+	return &models.VirtualNetworkNetworkIpamRef{}, nil
+}
+
+func (s *Subnet) ipamSubnetType(subnet *models.Subnet) (*models.IpamSubnetType, error) {
+	defaultGateway, err := s.GatewayToVnc()
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.IpamSubnetType{
+		SubnetUUID:       subnet.GetUUID(),
+		SubnetName:       subnet.GetName(),
+		Subnet:           subnet.GetSubnetIPPrefix(),
+		EnableDHCP:       s.EnableDHCP,
+		AddrFromStart:    true,
+		DHCPOptionList:   s.DHCPOptionListToVnc(),
+		DefaultGateway:   defaultGateway,
+		DNSServerAddress: s.DNSServerAddressToVnc(),
+		AllocationPools:  s.AllocationPoolsToVnc(),
+		HostRoutes:       s.HostRoutesToVnc(),
+	}, nil
+}
+
+func (s *Subnet) toVnc() (*models.Subnet, error) {
+	subnetIPPrefix, err := s.SubnetTypeToVnc()
+	if err != nil {
+		return nil, err
+	}
+
+	subnet := models.MakeSubnet()
+	subnet.Name = s.Name
+	subnet.ParentUUID = s.NetworkID
+	subnet.SubnetIPPrefix = subnetIPPrefix
+
+	return subnet, nil
+}
+
+func (s *Subnet) getVirtualNetwork(ctx context.Context, rp RequestParameters) (*models.VirtualNetwork, error) {
+	virtualNetworkRequest := &services.GetVirtualNetworkRequest{ID: s.NetworkID}
+	virtualNetworkResponse, err := rp.ReadService.GetVirtualNetwork(ctx, virtualNetworkRequest)
+	if err != nil {
+		return nil, err
+	}
+	return virtualNetworkResponse.GetVirtualNetwork(), nil
+}
+
+// DHCPOptionListToVnc converts Neutron request to DHCP options list type VNC format.
+func (s *Subnet) DHCPOptionListToVnc() *models.DhcpOptionsListType {
+	if len(s.DNSNameservers) == 0 {
+		return nil
+	}
+
+	var optVal []string
+	for _, nameserver := range s.DNSNameservers {
+		optVal = append(optVal, nameserver.Address)
+	}
+
+	return &models.DhcpOptionsListType{
+		DHCPOption: []*models.DhcpOptionType{
+			{
+				DHCPOptionName:  "6",
+				DHCPOptionValue: strings.Join(optVal, " "),
+			},
+		},
+	}
+}
+
+// GatewayToVnc converts Neutron request to Gateway VNC format.
+func (s *Subnet) GatewayToVnc() (string, error) {
+	if s.GatewayIP != "" {
+		return s.GatewayIP, nil
+	}
+
+	_, netIP, err := net.ParseCIDR(s.Cidr)
+	if err != nil {
+		return "", err
+	}
+
+	firstIP, _ := cidr.AddressRange(netIP)
+	return cidr.Inc(firstIP).String(), nil
+}
+
+// DNSServerAddressToVnc converts Neutron request to DNS server address VNC format.
+func (s *Subnet) DNSServerAddressToVnc() string {
+	if strictCompliance {
+		return "0.0.0.0"
+	}
+
+	if len(s.DNSNameservers) == 0 {
+		return s.GatewayIP
+	}
+
+	return s.DNSNameservers[0].Address
+}
+
+// AllocationPoolsToVnc converts Neutron request to allocation pools VNC format.
+func (s *Subnet) AllocationPoolsToVnc() []*models.AllocationPoolType {
+	if len(s.AllocationPools) == 0 {
+		return nil
+	}
+
+	allocationPoolTypes := make([]*models.AllocationPoolType, 0, len(s.AllocationPools))
+	for _, allocPool := range s.AllocationPools {
+		allocationPoolTypes = append(allocationPoolTypes, &models.AllocationPoolType{
+			Start: allocPool.Start,
+			End:   allocPool.End,
+		})
+	}
+	return allocationPoolTypes
+}
+
+// HostRoutesToVnc converts Neutron request to  host routes VNC format.
+func (s *Subnet) HostRoutesToVnc() *models.RouteTableType {
+	// TODO - not needed for ping by CREATE
+	return nil
+}
+
+// SubnetTypeToVnc converts Neutron request to subnet type VNC format.
+func (s *Subnet) SubnetTypeToVnc() (*models.SubnetType, error) {
+	_, netIP, err := net.ParseCIDR(s.Cidr)
+	if err != nil {
+		return nil, err
+	}
+
+	prefixLen, err := strconv.ParseInt(strings.Split(s.Cidr, "/")[1], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.SubnetType{IPPrefix: netIP.String(), IPPrefixLen: prefixLen}, nil
+}
+
 func subnetVncToNeutron(vn *models.VirtualNetwork, ipam *models.IpamSubnetType) *SubnetResponse {
 	subnet := &SubnetResponse{
 		ID:         ipam.GetSubnetUUID(),
@@ -86,7 +306,7 @@ func subnetVncToNeutron(vn *models.VirtualNetwork, ipam *models.IpamSubnetType) 
 		TenantID:   contrailUUIDToNeutronID(vn.GetParentUUID()),
 		NetworkID:  vn.GetUUID(),
 		EnableDHCP: ipam.GetEnableDHCP(),
-		Shared:     subnetIsShared(vn),
+		Shared:     vn.GetIsShared() || (vn.GetPerms2() != nil && len(vn.GetPerms2().GetShare()) > 0),
 		CreatedAt:  ipam.GetCreated(),
 		UpdatedAt:  ipam.GetLastModified(),
 	}
@@ -104,18 +324,14 @@ func subnetVncToNeutron(vn *models.VirtualNetwork, ipam *models.IpamSubnetType) 
 	return subnet
 }
 
-func subnetIsShared(vn *models.VirtualNetwork) bool {
-	return vn.GetIsShared() || (vn.GetPerms2() != nil && len(vn.GetPerms2().GetShare()) > 0)
-}
-
 // CIDRFromVnc converts VNC Subnet Type CIDR to neutron CIDR and IPVersion format.
 func (s *SubnetResponse) CIDRFromVnc(ipamType *models.SubnetType) {
 	if ipamType == nil {
 		s.Cidr = "0.0.0.0/0"
 		s.IPVersion = ipV4
 	} else {
-		s.Cidr = fmt.Sprintf("%v/%v", ipamType.GetIPPrefix(), ipamType.GetIPPrefixLen())
-		ipV, err := getIPVersion(ipamType.GetIPPrefix())
+		s.Cidr = ipamType.GetIPPrefix()
+		ipV, err := getIPVersionFromCIDR(ipamType.GetIPPrefix())
 		if err == nil {
 			s.IPVersion = int64(ipV)
 		}
@@ -134,15 +350,15 @@ func (s *SubnetResponse) GatewayFromVnc(gateway string) {
 func (s *SubnetResponse) AllocationPoolsFromVnc(aps []*models.AllocationPoolType, ipamHasSubnet bool) {
 	for _, ap := range aps {
 		s.AllocationPools = append(s.AllocationPools, &AllocationPool{
-			FirstIP: ap.GetStart(),
-			LastIP:  ap.GetEnd(),
+			Start: ap.GetStart(),
+			End:   ap.GetEnd(),
 		})
 	}
 
 	if !ipamHasSubnet {
 		s.AllocationPools = append(s.AllocationPools, &AllocationPool{
-			FirstIP: "0.0.0.0",
-			LastIP:  "255.255.255.255",
+			Start: "0.0.0.0",
+			End:   "255.255.255.255",
 		})
 	} else if ipamHasSubnet && len(s.AllocationPools) == 0 {
 		defaultAllocationPool := subnetDefaultAllocationPool(s.GatewayIP, s.Cidr)
@@ -168,14 +384,15 @@ func subnetDefaultAllocationPool(gateway, subnetCIDR string) *AllocationPool {
 	}
 
 	return &AllocationPool{
-		FirstIP: firstIP.String(),
-		LastIP:  lastIP.String(),
+		Start: firstIP.String(),
+		End:   lastIP.String(),
 	}
 }
 
 // DNSNameServersFromVnc converts VNC DHCP Option List Type to Neutron DNS Nameservers format.
 func (s *SubnetResponse) DNSNameServersFromVnc(dhcpOptions *models.DhcpOptionsListType) {
 	if dhcpOptions == nil {
+		s.DNSNameservers = make([]*DnsNameserver, 0, 0)
 		return
 	}
 	splitter := regexp.MustCompile("[^\\s]+")
@@ -195,7 +412,6 @@ func (s *SubnetResponse) DNSNameServersFromVnc(dhcpOptions *models.DhcpOptionsLi
 // DNSServerAddressFromVnc reassign DNS Address Server if contrail extensions are enabled.
 func (s *SubnetResponse) DNSServerAddressFromVnc(address string) {
 	// TODO(pawel.zadrozny): Check if contrail_extensions_enabled is True neutron_plugin_db.py:1724
-	contrailExtensionsEnabled := true
 	if contrailExtensionsEnabled {
 		s.DNSServerAddress = address
 	}
@@ -204,6 +420,7 @@ func (s *SubnetResponse) DNSServerAddressFromVnc(address string) {
 // HostRoutesFromVnc converts VNC Route Table Type to Neutron Host Routes format.
 func (s *SubnetResponse) HostRoutesFromVnc(routeTable *models.RouteTableType) {
 	if routeTable == nil {
+		s.HostRoutes = make([]*RouteTableType, 0, 0)
 		return
 	}
 	for _, route := range routeTable.GetRoute() {
@@ -236,6 +453,7 @@ func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filt
 	return nil, nil
 
 }
+
 func listVNWithoutFilters(ctx context.Context, rp RequestParameters) ([]*models.VirtualNetwork, error) {
 	req := &listReq{}
 	if rp.RequestContext.IsAdmin {
