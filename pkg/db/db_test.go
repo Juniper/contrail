@@ -236,6 +236,7 @@ func TestDBScanRow(t *testing.T) {
 				LogicalInterfaceVlanTag:     4,
 				LogicalInterfaceType:        "test type",
 				VirtualMachineInterfaceRefs: nil,
+				To:                          []string{},
 			},
 			expectedFM: &types.FieldMask{Paths: []string{
 				"uuid", "perms2.share", "perms2.owner_access", "perms2.owner",

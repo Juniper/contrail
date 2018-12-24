@@ -578,5 +578,8 @@ func checkSyncedVirtualNetwork(t *testing.T, event *clientv3.Event, expectedVN *
 func decodeVirtualNetworkJSON(t *testing.T, vnBytes []byte) *models.VirtualNetwork {
 	var vn models.VirtualNetwork
 	assert.NoError(t, json.Unmarshal(vnBytes, &vn))
+	for i := range vn.RoutingInstances {
+		vn.RoutingInstances[i].To = append(vn.FQName, vn.RoutingInstances[i].Name)
+	}
 	return &vn
 }

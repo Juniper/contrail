@@ -1,0 +1,22 @@
+package services
+
+import (
+	"net/http"
+)
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+{% if schema.Children | length != 0 %}
+{% set name = schema.JSONSchema.GoName %}
+func (r* Get{{ name }}Response) ApplyTo(req *http.Request) error {
+	{% for reference in schema.Children %}
+	for i := range r.{{ name }}.{{ reference.LinkTo.JSONSchema.GoName }}s {
+		r.{{ name }}.{{ reference.LinkTo.JSONSchema.GoName }}s[i].To =
+			append(r.{{ name }}.FQName, r.{{ name }}.{{ reference.LinkTo.JSONSchema.GoName }}s[i].Name)
+	}
+	{% endfor %}
+	return nil
+}
+{% endif %}
+
+{% endif %}{% endfor %}

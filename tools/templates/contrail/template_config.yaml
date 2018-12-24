@@ -65,6 +65,9 @@
   template_path: response_href.tmpl
   output_path: pkg/services/gen_response_href.go
 - type: all
+  template_path: response_to.tmpl
+  output_path: pkg/services/gen_response_to.go
+- type: all
   template_path: proto_model.tmpl
   output_path: proto/github.com/Juniper/contrail/pkg/models/generated.proto
 - type: all

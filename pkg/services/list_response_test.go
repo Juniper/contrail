@@ -87,6 +87,7 @@ var dataYAML = []testDataList{
 					ProjectBackRefs: []*models.Project{},
 					FloatingIPs:     []*models.FloatingIP{},
 					TagRefs:         []*models.FloatingIPPoolTagRef{},
+					To:              []string{},
 				},
 			},
 			FloatingIPPoolCount: 1,
@@ -103,6 +104,7 @@ var dataYAML = []testDataList{
   perms2: null
   configuration_version: 0
   href: ""
+  to: []
   floating_ip_pool_subnets: null
   tag_refs: []
   project_back_refs: []
