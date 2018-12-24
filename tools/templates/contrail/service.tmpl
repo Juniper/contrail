@@ -223,6 +223,9 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     if err = response.ApplyHref(c.Request()); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
+	if err = response.ApplyTo(c.Request()); err != nil {
+		log.WithError(err).Error("Failed to apply 'to'")
+	}
     return c.JSON(http.StatusOK, response)
 }
 

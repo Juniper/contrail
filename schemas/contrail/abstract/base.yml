@@ -70,3 +70,10 @@
         presence: "service"
         description: "Instance reference URL"
         type: "string"
+      to:
+        operations: "R"
+        presence: "service"
+        description: "Compatibility: fq_name slice"
+        type: "array"
+        items:
+          type: "string"

@@ -1,0 +1,24 @@
+package services
+
+import (
+	"net/http"
+)
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+{% set name = schema.JSONSchema.GoName %}
+
+{% macro applyTo(objPrefix, obj, type, name) %}
+{% for reference in schema.Children %}
+	for i := range {{ objPrefix }}{{ obj }}.{{ reference.LinkTo.JSONSchema.GoName }}s {
+		{{ objPrefix }}{{ obj }}.{{ reference.LinkTo.JSONSchema.GoName }}s[i].To = 
+			append({{ objPrefix }}{{ obj }}.FQName, {{ objPrefix }}{{ obj }}.{{ reference.LinkTo.JSONSchema.GoName }}s[i].Name)
+	}
+{% endfor %}
+{% endmacro %}
+
+func (r* Get{{ name }}Response) ApplyTo(req *http.Request) error {
+	{{ applyTo("r.", name, "Get", name) }}
+	return nil
+}
+
+{% endif %}{% endfor %}
