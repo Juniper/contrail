@@ -66,6 +66,7 @@ type postgresWatcherConnection interface {
 	StartReplication(slot, publication string, startLSN uint64) error
 	WaitForReplicationMessage(ctx context.Context) (*pgx.ReplicationMessage, error)
 	SendStatus(receivedLSN, savedLSN uint64) error
+	IsInRecovery(context.Context) (bool, error)
 
 	DoInTransactionSnapshot(ctx context.Context, snapshotName string, do func(context.Context) error) error
 }
@@ -131,6 +132,15 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	w.log.Debug("Starting Watch")
 	ctx, cancel := context.WithCancel(ctx)
 	w.cancel = cancel
+
+	// Logical replication cannot be run in recovery mode.
+	isInRecovery, err := w.conn.IsInRecovery(ctx)
+	if isInRecovery {
+		return markTemporaryError(errors.New("database is in recovery mode"))
+	}
+	if err != nil {
+		return wrapError(err)
+	}
 
 	var snapshotName string
 	slotLSN, snapshotName, err := w.conn.GetReplicationSlot(w.conf.Slot)
