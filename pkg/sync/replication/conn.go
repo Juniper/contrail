@@ -89,6 +89,27 @@ func (c *postgresReplicationConnection) RenewPublication(ctx context.Context, na
 	)
 }
 
+// IsInRecovery checks is database server is in recovery mode.
+func (c *postgresReplicationConnection) IsInRecovery(ctx context.Context) (isInRecovery bool, err error) {
+	return isInRecovery, c.db.DoInTransactionWithOpts(
+		ctx,
+		func(ctx context.Context) error {
+			r, err := c.db.DB().QueryContext(ctx, "SELECT pg_is_in_recovery()")
+			if err != nil {
+				return errors.Wrap(err, "failed to check recovery mode")
+			}
+			if !r.Next() {
+				return errors.New("pg_is_in_recovery() returned zero rows")
+			}
+			if err := r.Scan(&isInRecovery); err != nil {
+				return errors.Wrap(err, "error scanning recovery status")
+			}
+			return nil
+		},
+		&sql.TxOptions{ReadOnly: true},
+	)
+}
+
 func (c *postgresReplicationConnection) DoInTransactionSnapshot(
 	ctx context.Context,
 	snapshotName string,
