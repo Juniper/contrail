@@ -33,6 +33,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 		{
 			name: "should return error when GetReplicationSlot fails",
 			initMock: func(o oner) {
+				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
 				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), "", assert.AnError).Once()
 			},
 			watchError: true,
@@ -40,6 +41,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 		{
 			name: "should return error when StartReplication fails",
 			initMock: func(o oner) {
+				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
 				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(assert.AnError).Once()
@@ -49,6 +51,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 		{
 			name: "should return error when WaitForReplicationMessage returns unknown error",
 			initMock: func(o oner) {
+				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
 				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
@@ -59,6 +62,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 		{
 			name: "should stop on WaitForReplicationMessage when context cancelled",
 			initMock: func(o oner) {
+				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
 				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
@@ -71,6 +75,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 		{
 			name: "should continue when WaitForReplicationMessage returns context deadline",
 			initMock: func(o oner) {
+				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
 				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
@@ -85,6 +90,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 		{
 			name: "should pass to handler received WAL message",
 			initMock: func(o oner) {
+				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
 				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
@@ -139,6 +145,7 @@ func TestPostgresWatcherContextCancellation(t *testing.T) {
 	closeErr := errors.New("some closing error")
 
 	m := &mockPostgresWatcherConnection{}
+	m.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
 	m.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
 	m.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 	m.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
@@ -237,6 +244,10 @@ func (m *mockPostgresWatcherConnection) WaitForReplicationMessage(
 func (m *mockPostgresWatcherConnection) SendStatus(receivedLSN, savedLSN uint64) error {
 	args := m.MethodCalled("SendStatus", receivedLSN, savedLSN)
 	return args.Error(0)
+}
+func (m *mockPostgresWatcherConnection) IsInRecovery(ctx context.Context) (bool, error) {
+	args := m.MethodCalled("IsInRecovery", ctx)
+	return args.Get(0).(bool), args.Error(1)
 }
 
 func (m *mockPostgresWatcherConnection) DoInTransactionSnapshot(
