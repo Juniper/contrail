@@ -285,6 +285,10 @@ func (m *{{ schema.JSONSchema.GoName }}) SetUUID(uuid string) {
 	m.UUID = uuid
 }
 
+func (m *{{ schema.JSONSchema.GoName }}) SetHref(href string) {
+	m.Href = href
+}
+
 func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
 	{%- if schema.References|length > 0%}
 	if m == nil {
@@ -443,7 +447,7 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) NoServiceProperties() *{{ schema.JSONSchema.GoName }} {
-	return &{{ schema.JSONSchema.GoName }} {
+	result := &{{ schema.JSONSchema.GoName }} {
 	{%- for property in schema.JSONSchema.OrderedProperties %}
 		{% if property.Presence != "service" %}{{ property.GoName }}: m.{{ property.GoName }},{% endif %}
     {%- endfor %}
@@ -457,6 +461,24 @@ func (m *{{ schema.JSONSchema.GoName }}) NoServiceProperties() *{{ schema.JSONSc
 		{% if child.JSONSchema.Presence != "service" %}{{ child.JSONSchema.GoName }}s: m.{{ child.JSONSchema.GoName }}s,{% endif %}
 	{%- endfor %}
 	}
+
+	// Remove referencies, backrefs and children 'Href' service property
+	{%- for _, reference in schema.References %}
+	{% if property.Presence != "service" %}for _, ref := range result.{{ reference.GoName }}Refs {
+		ref.Href = ""
+	}{% endif %}
+	{% endfor %}
+	{%- for _, backref in schema.BackReferences %}{% set linkTo = backref.LinkTo %}
+		{% if linkTo.JSONSchema.Presence != "service" %}for _, ref := range result.{{ linkTo.JSONSchema.GoName }}BackRefs {
+		ref.Href = ""
+	}{% endif %}
+	{%- endfor %}
+	{%- for backref in schema.Children %}{% set child = backref.LinkTo %}
+		{% if child.JSONSchema.Presence != "service" %}for _, ref := range result.{{ child.JSONSchema.GoName }}s {
+		ref.Href = ""
+	}{% endif %}
+	{%- endfor %}
+	return result
 }
 
 {% endif %}
@@ -540,6 +562,10 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetUUID(uuid s
 	r.UUID = uuid
 }
 
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetHref(href string) {
+	r.Href = href
+}
+
 func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetTo(to []string) {
 	r.To = to
 }
@@ -556,6 +582,10 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) ToMap() map[st
 		"attr": r.Attr.ToMap(),
 		{% endif %}
 	}
+}
+
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SeHref(href string) {
+	r.Href = href
 }
 
 func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(i interface{}) []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
