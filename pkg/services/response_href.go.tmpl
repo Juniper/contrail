@@ -10,34 +10,75 @@ import (
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 {% set name = schema.JSONSchema.GoName %}
 
-{% macro applyHref(objPrefix, obj, type, name) %} collectionURL, err := url.Parse(GetRequestSchema(req)+req.Host+"{{ schema.Prefix }}{{ schema.Path }}/")
-	if err != nil {
+{% macro applyHref(objPrefix, obj, type) %} reqSchema := GetRequestSchema(req)
+	var collectionURL, uuidURL *url.URL
+	var err error
+	if collectionURL, err = url.Parse(GetRequestSchema(req)+req.Host+"{{ schema.Prefix }}{{ schema.Path }}/"); err != nil {
 		return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response")
 	}
-	uuidURL, err := url.Parse({{ objPrefix }}{{ obj }}.UUID)
-	if err != nil {
+	if uuidURL, err = url.Parse({{ objPrefix }}{{ obj }}.UUID); err != nil {
 		return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response")
 	}
-    {{ objPrefix }}{{ obj }}.Href = collectionURL.ResolveReference(uuidURL).String(){% endmacro %}
+    {{ objPrefix }}{{ obj }}.Href = collectionURL.ResolveReference(uuidURL).String()
+
+	{%- for _, reference in schema.References sorted %}
+	if collectionURL, err = url.Parse(reqSchema+req.Host+"{{ reference.LinkTo.Prefix }}{{ reference.LinkTo.Path }}/"); err != nil {
+		return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response")
+	}
+	for _, ref := range {{ objPrefix }}{{ obj }}.{{ reference.GoName }}Refs {
+		if uuidURL, err = url.Parse(ref.UUID); err != nil {
+			return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response, " +
+			"reference {{ reference.GoName }}Refs")
+		}
+		ref.Href = collectionURL.ResolveReference(uuidURL).String()
+	}
+	{%- endfor %}
+	{%- for _, backref in schema.BackReferences sorted %}
+	{% set linkTo = backref.LinkTo %}
+    if collectionURL, err = url.Parse(reqSchema+req.Host+"{{ linkTo.Prefix }}{{ linkTo.Path }}/"); err != nil {
+		return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response")
+	}
+	for _, backref := range {{ objPrefix }}{{ obj }}.{{ linkTo.JSONSchema.GoName }}BackRefs {
+		if uuidURL, err = url.Parse(backref.UUID); err != nil {
+			return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response, " +
+			"back reference {{ linkTo.JSONSchema.GoName }}BackRefs")
+		}
+		backref.Href = collectionURL.ResolveReference(uuidURL).String()
+	}
+	{%- endfor %}
+	{%- for backref in schema.Children sorted %}
+    {% set child = backref.LinkTo %}
+    if collectionURL, err = url.Parse(reqSchema+req.Host+"{{ child.Prefix }}{{ child.Path }}/"); err != nil {
+		return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response")
+	}
+	for _, child := range {{ objPrefix }}{{ obj }}.{{ child.JSONSchema.GoName }}s {
+		if uuidURL, err = url.Parse(child.UUID); err != nil {
+			return errors.Wrap(err, "failed to apply href to {{ type }}{{ name }}Response, " +
+			"child {{ child.JSONSchema.GoName }}s")
+		}
+		child.Href = collectionURL.ResolveReference(uuidURL).String()
+	}
+{%- endfor %}
+{% endmacro %}
 
 func (r* Create{{ name }}Response) ApplyHref(req *http.Request) error {
-	{{ applyHref("r.", name, "Create", name) }}
+	{{ applyHref("r.", name, "Create") }}
 	return nil
 }
 
 func (r* Update{{ name }}Response) ApplyHref(req *http.Request) error {
-	{{ applyHref("r.", name, "Update", name) }}
+	{{ applyHref("r.", name, "Update") }}
 	return nil
 }
 
 func (r* Get{{ name }}Response) ApplyHref(req *http.Request) error {
-	{{ applyHref("r.", name, "Get", name) }}
+	{{ applyHref("r.", name, "Get") }}
 	return nil
 }
 
 func (r *List{{name}}Response) ApplyHref(req *http.Request) error {
 	for _, obj := range r.{{ name }}s {
-		{{ applyHref("", "obj", "List", name) }}
+		{{ applyHref("", "obj", "List") }}
 	}
 	return nil
 }
