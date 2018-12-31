@@ -54,7 +54,7 @@ Here lives business logic specific for each type.
 
 - **Caller:** ContrailTypeLogicService
 - **Purpose:** Checks if the resource's quantity has been exceeded.
-- **Source code:** [base_quota_getter.tmpl](../tools/templates/contrail/base_quota_getter.tmpl), [base_quota_counter.tmpl](../tools/templates/contrail/base_quota_counter.tmpl), [quota_checker_service.tmpl](../tools/templates/contrail/quota_checker_service.tmpl)
+- **Source code:** [base_quota_getter.tmpl](../tools/templates/contrail/base_quota_getter.tmpl), [base_quota_counter.tmpl](../pkg/services/base_quota_counter.tmpl), [quota_checker_service.tmpl](../tools/templates/contrail/quota_checker_service.tmpl)
 
 Quota is a maximum limit for creation new resources.
 
