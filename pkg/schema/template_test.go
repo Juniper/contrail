@@ -2,7 +2,6 @@ package schema
 
 import (
 	"io/ioutil"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -50,7 +49,7 @@ func TestApplyTemplatesAddsGenerationPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ApplyTemplates(makeAPI(t), filepath.Dir(templatesPath), loadTemplates(t), &TemplateOption{})
+			err := ApplyTemplates(makeAPI(t), loadTemplates(t), &TemplateOption{})
 
 			assert.Nil(t, err)
 			assert.Regexp(t, tt.expectedPrefix, loadString(t, tt.filePath))

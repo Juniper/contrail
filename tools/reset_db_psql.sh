@@ -15,7 +15,7 @@ res=$(NETWORKNAME=$PROJECT docker-compose -f $TOOLSDIR/patroni/docker-compose.ym
 [[ "${res:20}" = "$SUCCESS_MSG" ]] || echo "Error while creating database ${res:20}"
 
 echo "Initializing database"
-res=$(NETWORKNAME=$PROJECT docker-compose -f $TOOLSDIR/patroni/docker-compose.yml -p $PROJECT exec -T dbnode bash -c "PGPASSWORD=contrail123 patronictl query -Uroot -d contrail_test --file /tools/init_psql.sql testcluster")
+res=$(NETWORKNAME=$PROJECT docker-compose -f $TOOLSDIR/patroni/docker-compose.yml -p $PROJECT exec -T dbnode bash -c "PGPASSWORD=contrail123 patronictl query -Uroot -d contrail_test --file /tools/gen_init_psql.sql testcluster")
 [[ "${res:20}" = "$SUCCESS_MSG" ]] || echo "Error while initializing database ${res:20}"
 
 echo "Database initialized"
