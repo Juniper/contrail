@@ -2,7 +2,6 @@ package schema
 
 import (
 	"io/ioutil"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,9 +12,9 @@ const (
 	templateConfigPath = "test_data/templates/template_config.yaml"
 	templatesPath      = "test_data/templates"
 
-	allPath = "test_output/all.yml"
+	allPath    = "test_output/gen_all.yml"
+	hogeGoPath = "test_output/gen_hoge.go"
 
-	hogeGoPath    = "test_output/hoge.go"
 	hogeProtoPath = "test_output/hoge.proto"
 	hogeSQLPath   = "test_output/hoge.sql"
 )
@@ -50,7 +49,7 @@ func TestApplyTemplatesAddsGenerationPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ApplyTemplates(makeAPI(t), filepath.Dir(templatesPath), loadTemplates(t), &TemplateOption{})
+			err := ApplyTemplates(makeAPI(t), loadTemplates(t), &TemplateOption{})
 
 			assert.Nil(t, err)
 			assert.Regexp(t, tt.expectedPrefix, loadString(t, tt.filePath))
