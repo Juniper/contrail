@@ -34,7 +34,7 @@ make docker_config_api
 # Ensure patroni installed
 ./tools/patroni/pull_patroni.sh
 
-./tools/testenv.sh -n host patroni etcd
+./tools/testenv.sh patroni etcd
 
 # Stop services using docker-compose
 compose_down config control vrouter
