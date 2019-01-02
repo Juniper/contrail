@@ -8,16 +8,18 @@ TOOLSDIR=$(dirname $0)
 RunDockers="mysql etcd patroni"
 Network='contrail'
 PROJECT='contrail'
+PatroniEtcd=0
 
 Usage()
 {
-	echo "Usage: $(basename "$0") [-h] [-n NetName] [dockers]"
+	echo "Usage: $(basename "$0") [-h] [-n NetName] [--patroni-etcd] [dockers]"
 	echo "Available dockers: $RunDockers"
 }
 
 while :; do
 	case "$1" in
 		'-n') Network="$2"; shift 2;;
+		'--patroni-etcd') PatroniEtcd=1; shift 1;;
 		'-h') Usage; exit 0;;
 		*) break;;
 	esac
@@ -32,13 +34,13 @@ docker rm -f contrail_mysql contrail_etcd || true
 
 run_docker_patroni()
 {
-    if [[ "$Network" = "host" ]]; then
+    if [[ "$PatroniEtcd" = 1 ]]; then
         NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT up -d etcd
-        HOSTGATE=$(docker inspect contrail_patroni_etcd --format='{{ range .NetworkSettings.Networks }}{{.IPAddress}}{{end}}')
+        ETCDIP=$(docker inspect contrail_patroni_etcd --format='{{ range .NetworkSettings.Networks }}{{.IPAddress}}{{end}}')
     else
-        HOSTGATE=$(docker network inspect $PROJECT --format='{{ range .IPAM.Config }}{{ .Gateway }}{{ end }}')
+        ETCDIP=$(docker inspect contrail_etcd --format='{{ range .NetworkSettings.Networks }}{{.IPAddress}}{{end}}')
     fi
-    HOSTIP=$HOSTGATE NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT up --scale dbnode=2 -d haproxy dbnode
+    ETCDIP=$ETCDIP NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT up --scale dbnode=2 -d haproxy dbnode
 }
 
 run_docker_mysql()
