@@ -13,7 +13,7 @@ services:
       - "5432:5000"
       - "5001:5001"
     environment:
-      PATRONI_ETCD_URL: http://$HOSTIP:2379
+      PATRONI_ETCD_URL: http://$ETCDIP:2379
       PATRONI_SCOPE: testcluster
     command: --confd
 
@@ -23,7 +23,7 @@ services:
       - ./patroni.yml:/patroni.yml:ro
       - ../../tools:/tools
     environment:
-      PATRONI_ETCD_URL: http://$HOSTIP:2379
+      PATRONI_ETCD_URL: http://$ETCDIP:2379
       PATRONI_SCOPE: testcluster
       PATRONI_SUPERUSER_USERNAME: root
       PATRONI_SUPERUSER_PASSWORD: contrail123
