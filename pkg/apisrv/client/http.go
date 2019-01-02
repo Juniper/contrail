@@ -147,7 +147,7 @@ func (h *HTTP) Login(ctx context.Context) error {
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	err = checkStatusCode([]int{200}, resp.StatusCode)
+	err = checkStatusCode([]int{200, 201}, resp.StatusCode)
 	if err != nil {
 		return errorFromResponse(err, resp)
 	}
