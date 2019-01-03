@@ -2,6 +2,9 @@ name: Security Group Test
 description: security group test
 cleanup:
 - path: /security-group/sg_uuid
+- path: /security-group/beefbeef-beef-beef-beef-sgsgsgsg0001
+- path: /security-group/beefbeef-beef-beef-beef-ipv6ipv60001
+- path: /security-group/beefbeef-beef-beef-beef-ipv4ipv40001
 - path: /project/project_uuid
 test_data:
   project: &project
@@ -9,6 +12,7 @@ test_data:
     name: project_name
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
+
   sg: &sg
     uuid: sg_uuid
     name: sg_name
@@ -28,6 +32,7 @@ test_data:
           src_ports:
           - end_port: 65535
             start_port: 0
+
   sg_with_id: &sg_with_id
     uuid: sg_uuid
     parent_type: project
@@ -48,6 +53,175 @@ test_data:
           - end_port: 65535
             start_port: 0
     security_group_id: 1
+
+  sg_with_same_rules: &sg_with_same_rules
+    display_name: sg-same-rules
+    security_group_entries:
+      policy_rule:
+      - direction: ">"
+        protocol: any
+        dst_ports:
+        - start_port: 0
+          end_port: 65535
+        src_addresses:
+        - security_group: local
+        src_ports:
+        - start_port: 0
+          end_port: 65535
+        dst_addresses:
+        - subnet:
+            ip_prefix: 0.0.0.0
+            ip_prefix_len: 0
+        ethertype: IPv4
+      - direction: ">"
+        protocol: any
+        dst_ports:
+        - start_port: 0
+          end_port: 65535
+        src_addresses:
+        - security_group: local
+        src_ports:
+        - start_port: 0
+          end_port: 65535
+        dst_addresses:
+        - subnet:
+            ip_prefix: 0.0.0.0
+            ip_prefix_len: 0
+        ethertype: IPv4
+    fq_name:
+    - default-domain
+    - default-project
+    - sg-same-rules
+    parent_type: project
+
+  sg_with_no_local: &sg_with_no_local
+    display_name: sg-with-no-local
+    security_group_entries:
+      policy_rule:
+      - direction: ">"
+        protocol: any
+        dst_ports:
+        - start_port: 0
+          end_port: 65535
+        src_addresses:
+        - subnet:
+            ip_prefix: 1.0.0.0
+            ip_prefix_len: 0
+        src_ports:
+        - start_port: 0
+          end_port: 65535
+        dst_addresses:
+        - subnet:
+            ip_prefix: 0.0.0.0
+            ip_prefix_len: 0
+        ethertype: IPv4
+    fq_name:
+    - default-domain
+    - default-project
+    - sg-with-no-local
+    parent_type: project
+
+  sg_with_non_matching_ethertype: &sg_with_non_matching_ethertype
+    display_name: sg-with-non-mathing-ethertype
+    security_group_entries:
+      policy_rule:
+      - direction: ">"
+        protocol: any
+        dst_ports:
+        - start_port: 0
+          end_port: 65535
+        src_addresses:
+        - subnet:
+            ip_prefix: "::"
+            ip_prefix_len: 0
+        src_ports:
+        - start_port: 0
+          end_port: 65535
+        dst_addresses:
+        - security_group: local
+        ethertype: IPv4
+    fq_name:
+    - default-domain
+    - default-project
+    - sg-with-non-mathing-ethertype
+    parent_type: project
+
+  sg_with_ipv4_rule: &sg_with_ipv4_rule
+    uuid: beefbeef-beef-beef-beef-ipv4ipv40001
+    display_name: sg-with-ipv4-rule
+    security_group_entries:
+      policy_rule:
+      - direction: ">"
+        protocol: any
+        dst_ports:
+        - start_port: 0
+          end_port: 65535
+        src_addresses:
+        - subnet:
+            ip_prefix: "0.0.0.0"
+            ip_prefix_len: 0
+        src_ports:
+        - start_port: 0
+          end_port: 65535
+        dst_addresses:
+        - security_group: local
+        ethertype: IPv4
+    fq_name:
+    - default-domain
+    - default-project
+    - sg-with-ipv4-rule
+    parent_type: project
+
+  sg_with_ipv6_rule: &sg_with_ipv6_rule
+    uuid: beefbeef-beef-beef-beef-ipv6ipv60001
+    display_name: sg-with-ipv6-rule
+    security_group_entries:
+      policy_rule:
+      - direction: ">"
+        protocol: any
+        dst_ports:
+        - start_port: 0
+          end_port: 65535
+        src_addresses:
+        - subnet:
+            ip_prefix: "::"
+            ip_prefix_len: 0
+        src_ports:
+        - start_port: 0
+          end_port: 65535
+        dst_addresses:
+        - security_group: local
+        ethertype: IPv6
+    fq_name:
+    - default-domain
+    - default-project
+    - sg-with-ipv6-rule
+    parent_type: project
+
+  sg_with_sg_rule: &sg_with_sg_rule
+    uuid: beefbeef-beef-beef-beef-sgsgsgsg0001
+    display_name: sg-with-sg-rule
+    security_group_entries:
+      policy_rule:
+      - direction: ">"
+        protocol: any
+        dst_ports:
+        - start_port: 0
+          end_port: 65535
+        src_addresses:
+        - security_group: local
+        src_ports:
+        - start_port: 0
+          end_port: 65535
+        dst_addresses:
+        - security_group: default-domain:default-project:sg-with-ipv4-rule
+        ethertype: IPv4
+    fq_name:
+    - default-domain
+    - default-project
+    - sg-with-sg-rule
+    parent_type: project
+
 clients:
   default:
     id: alice
@@ -56,6 +230,7 @@ clients:
     scope:
       project:
         name: admin
+
 workflow:
 - name: create project
   request:
@@ -76,6 +251,33 @@ workflow:
     data:
       security-group: *sg_with_id
   expect: null
+- name: try to create security group with the same rules
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 409
+    data:
+      security-group: *sg_with_same_rules
+  expect: null
+- name: try to create security group with no local in rules
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 400
+    data:
+      security-group: *sg_with_no_local
+  expect: null
+- name: try to create security group with non mathing ethertype
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 400
+    data:
+      security-group: *sg_with_non_matching_ethertype
+  expect: null
 - name: create security group
   request:
     path: /security-groups
@@ -86,6 +288,57 @@ workflow:
       security-group: *sg
   expect:
     security-group: *sg
+- name: create security group with rule IPv4
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 200
+    data:
+      security-group: *sg_with_ipv4_rule
+  expect:
+    security-group: *sg_with_ipv4_rule
+- name: create security group with rule IPv6
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 200
+    data:
+      security-group: *sg_with_ipv6_rule
+  expect:
+    security-group: *sg_with_ipv6_rule
+- name: create security group with sg rule
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 200
+    data:
+      security-group: *sg_with_sg_rule
+  expect:
+    security-group: *sg_with_sg_rule
+- name: delete security group with sg rule
+  request:
+    path: /security-group/beefbeef-beef-beef-beef-sgsgsgsg0001
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete security group with rule IPv6
+  request:
+    path: /security-group/beefbeef-beef-beef-beef-ipv6ipv60001
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete security group with rule IPv4
+  request:
+    path: /security-group/beefbeef-beef-beef-beef-ipv4ipv40001
+    method: DELETE
+    expected:
+    - 200
+  expect: null
 - name: delete security group
   request:
     path: /security-group/sg_uuid

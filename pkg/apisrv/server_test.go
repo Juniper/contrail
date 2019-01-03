@@ -43,6 +43,11 @@ func TestNetworkIpam(t *testing.T) {
 	RunTest(t, "./test_data/test_network_ipam.yml")
 }
 
+func TestNetworkPolicy(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_network_policy.yml")
+}
+
 func TestVirtualNetwork(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_virtual_network.yml")

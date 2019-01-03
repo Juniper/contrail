@@ -4,6 +4,7 @@ import (
 	"context"
 
 	protobuf "github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
@@ -23,6 +24,10 @@ func (sv *ContrailTypeLogicService) CreateSecurityGroup(
 	}
 
 	err = sv.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		err = sg.GetSecurityGroupEntries().CheckSecurityGroupRules()
+		if err != nil {
+			return errors.Wrapf(err, "failed to check Policy Rules")
+		}
 		// TODO: handle configured security group ID
 		if sg.SecurityGroupID, err = sv.allocateSecurityGroupID(ctx); err != nil {
 			return err
@@ -56,6 +61,11 @@ func (sv *ContrailTypeLogicService) UpdateSecurityGroup(
 
 		if err = sv.disallowManualSecurityGroupID(current, sg, &request.FieldMask); err != nil {
 			return err
+		}
+
+		err = sg.GetSecurityGroupEntries().CheckSecurityGroupRules()
+		if err != nil {
+			return errors.Wrapf(err, "failed to check Policy Rules")
 		}
 
 		response, err = sv.BaseService.UpdateSecurityGroup(ctx, request)

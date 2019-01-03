@@ -1,0 +1,318 @@
+name: Network Policy Rules
+description:  Test Network Policy Rules Validation
+cleanup:
+- path: /network-policy/beefbeef-beef-beef-beef-beefbeef1003
+- path: /network-policy/beefbeef-beef-beef-beef-beefbeef1002
+- path: /security-group/beefbeef-beef-beef-beef-beefbeef1001
+
+test_data:
+  sg: &sg
+    uuid: beefbeef-beef-beef-beef-beefbeef1001
+    fq_name:
+      - default-domain
+      - default-project
+      - temp-sg
+    security_group_entries:
+      policy_rule:
+        - direction: ">"
+          protocol: "any"
+          dst_addresses:
+          - security_group: "local"
+          dst_ports:
+          - end_port: 65535
+            start_port: 0
+          ethertype: "IPv4"
+          src_addresses:
+          - security_group: "default-domain:default-project:temp-sg"
+          src_ports:
+          - end_port: 65535
+            start_port: 0
+
+  sg_network_policy: &sg_network_policy
+    fq_name:
+    - default-domain
+    - default-project
+    - wrong-policy
+    display_name: network-policy-with-sg-group
+    parent_type: project
+    network_policy_entries:
+      policy_rule:
+      - action_list:
+          simple_action: deny
+          log: false
+        application: []
+        rule_sequence:
+          major: -1
+          minor: -1
+        direction: "<>"
+        protocol: any
+        dst_addresses:
+        - security_group: default-domain:default-project:temp-sg
+        src_ports:
+        - start_port: -1
+          end_port: -1
+        dst_ports:
+        - start_port: -1
+          end_port: -1
+
+  same_rules_network_policy: &same_rules_network_policy
+    fq_name:
+    - default-domain
+    - default-project
+    - wrong-policy
+    display_name: network-policy-with-two-same-rules
+    parent_type: project
+    network_policy_entries:
+      policy_rule:
+      - action_list:
+          simple_action: deny
+          log: false
+        application: []
+        rule_sequence:
+          major: -1
+          minor: -1
+        direction: "<>"
+        protocol: any
+        dst_addresses:
+        - network_policy: default-domain:default-project:wrong-policy
+        src_addresses:
+        - virtual_network: local
+        src_ports:
+        - start_port: -1
+          end_port: -1
+        dst_ports:
+        - start_port: -1
+          end_port: -1
+      - action_list:
+          simple_action: deny
+          log: false
+        application: []
+        rule_sequence:
+          major: -1
+          minor: -1
+        direction: "<>"
+        protocol: any
+        dst_addresses:
+        - network_policy: default-domain:default-project:wrong-policy
+        src_addresses:
+        - virtual_network: local
+        src_ports:
+        - start_port: -1
+          end_port: -1
+        dst_ports:
+        - start_port: -1
+          end_port: -1
+
+  invalid_number_protocol_network_policy: &invalid_number_protocol_network_policy
+    fq_name:
+    - default-domain
+    - default-project
+    - wrong-policy
+    display_name: network-policy-with-invalid-number-protocol
+    parent_type: project
+    network_policy_entries:
+      policy_rule:
+      - action_list:
+          simple_action: deny
+          log: false
+        application: []
+        rule_sequence:
+          major: -1
+          minor: -1
+        direction: "<>"
+        protocol: "300"
+        dst_addresses:
+        - network_policy: default-domain:default-project:wrong-policy
+        src_addresses:
+        - virtual_network: local
+        src_ports:
+        - start_port: -1
+          end_port: -1
+        dst_ports:
+        - start_port: -1
+          end_port: -1
+
+  invalid_protocol_network_policy: &invalid_protocol_network_policy
+    fq_name:
+    - default-domain
+    - default-project
+    - wrong-policy
+    display_name: network-policy-with-invalid-protocol
+    parent_type: project
+    network_policy_entries:
+      policy_rule:
+      - action_list:
+          simple_action: deny
+          log: false
+        application: []
+        rule_sequence:
+          major: -1
+          minor: -1
+        direction: "<>"
+        protocol: non-valid
+        dst_addresses:
+        - network_policy: default-domain:default-project:wrong-policy
+        src_addresses:
+        - virtual_network: local
+        src_ports:
+        - start_port: -1
+          end_port: -1
+        dst_ports:
+        - start_port: -1
+          end_port: -1
+
+  valid_network_policy_a: &valid_network_policy_a
+    uuid: beefbeef-beef-beef-beef-beefbeef1002
+    parent_type: project
+    fq_name:
+    - default-domain
+    - default-project
+    - valid-np-a
+    network_policy_entries:
+      policy_rule:
+      - direction: "<>"
+        protocol: any
+        dst_addresses:
+        - virtual_network: default-domain:default-project:default-virtual-network
+        action_list:
+          simple_action: pass
+        dst_ports:
+        - end_port: -1
+          start_port: -1
+        src_addresses:
+        - network_policy: default-domain:default-project:valid-np-a
+        src_ports:
+        - end_port: -1
+          start_port: -1
+
+  valid_network_policy_b: &valid_network_policy_b
+    uuid: beefbeef-beef-beef-beef-beefbeef1003
+    parent_type: project
+    fq_name:
+    - default-domain
+    - default-project
+    - valid-np-b
+    display_name: k8s-default-service-np
+    network_policy_entries:
+      policy_rule:
+      - action_list:
+          simple_action: pass
+        direction: "<>"
+        dst_addresses:
+        - virtual_network: default-domain:default-project:default-virtual-network
+        dst_ports:
+        - end_port: -1
+          start_port: -1
+        protocol: any
+        src_addresses:
+        - network_policy: default-domain:default-project:valid-np-b
+        src_ports:
+        - end_port: -1
+          start_port: -1
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create sg
+  request:
+    path: /security-groups
+    method: POST
+    expected:
+    - 200
+    data:
+      security-group: *sg
+  expect:
+    security-group: *sg
+
+- name: create network policy with security group entries
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 400
+    data:
+      network-policy: *sg_network_policy
+  expect: null
+
+- name: create network policy with two the same rules
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 409
+    data:
+      network-policy: *same_rules_network_policy
+  expect: null
+
+- name: create network policy with invalid protocol number
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 400
+    data:
+      network-policy: *invalid_number_protocol_network_policy
+  expect: null
+
+- name: create network policy with invalid protocol
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 400
+    data:
+      network-policy: *invalid_protocol_network_policy
+  expect: null
+
+- name: create valid network policy a
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 200
+    data:
+      network-policy: *valid_network_policy_a
+  expect:
+    network-policy: *valid_network_policy_a
+
+- name: create valid network policy b
+  request:
+    path: /network-policys
+    method: POST
+    expected:
+    - 200
+    data:
+      network-policy: *valid_network_policy_b
+  expect:
+    network-policy: *valid_network_policy_b
+
+- name: delete valid network policy b
+  request:
+    path: /network-policy/beefbeef-beef-beef-beef-beefbeef1003
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete valid network policy a
+  request:
+    path: /network-policy/beefbeef-beef-beef-beef-beefbeef1002
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete security group
+  request:
+    path: /security-group/beefbeef-beef-beef-beef-beefbeef1001
+    method: DELETE
+    expected:
+    - 200
+  expect: null
