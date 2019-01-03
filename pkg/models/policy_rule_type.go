@@ -2,10 +2,70 @@ package models
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/errutil"
 )
+
+// EqualRule checks if rule contains same data as other rule.
+func (m PolicyRuleType) EqualRule(other PolicyRuleType) bool {
+	m.RuleUUID = ""
+	m.LastModified = ""
+	m.Created = ""
+
+	other.RuleUUID = ""
+	other.LastModified = ""
+	other.Created = ""
+
+	return reflect.DeepEqual(m, other)
+}
+
+var avaiableProtocols = []string{"any", "icmp", "tcp", "udp", "icmp6"}
+
+var isAvailableProtocol = boolMap(avaiableProtocols)
+
+// ValidateProtocol checks if protocol is valid rule protocol.
+func (m *PolicyRuleType) ValidateProtocol() error {
+	proto := m.GetProtocol()
+
+	if isAvailableProtocol[proto] {
+		return nil
+	}
+
+	number, err := strconv.Atoi(proto)
+	if err != nil {
+		return errutil.ErrorBadRequestf("Rule with invalid protocol: %v.", proto)
+	}
+
+	if number < 0 || number > 255 {
+		return errutil.ErrorBadRequestf("Rule with invalid protocol: %v.", number)
+	}
+
+	return nil
+}
+
+// SRCSecurityGroups gets all source security groups in this rule.
+func (m *PolicyRuleType) SRCSecurityGroups() (sgs []string) {
+	for _, addr := range m.GetSRCAddresses() {
+		if sg := addr.GetSecurityGroup(); sg != "" {
+			sgs = append(sgs, sg)
+		}
+	}
+	return sgs
+}
+
+// DSTSecurityGroups gets all destination security groups in this rule.
+func (m *PolicyRuleType) DSTSecurityGroups() (sgs []string) {
+	for _, addr := range m.GetDSTAddresses() {
+		if sg := addr.GetSecurityGroup(); sg != "" {
+			sgs = append(sgs, sg)
+		}
+	}
+	return sgs
+}
 
 // policyAddressPair is a single combination of source and destination specifications from a PolicyRuleType.
 type policyAddressPair struct {
@@ -31,8 +91,8 @@ func (pair *policyAddressPair) isIngress() (bool, error) {
 // policyAddress is an address from a PolicyRuleType.
 type policyAddress AddressType
 
-func (policyAddress *policyAddress) isLocal() bool {
-	return policyAddress.SecurityGroup == LocalSecurityGroup
+func (m *policyAddress) isLocal() bool {
+	return m.SecurityGroup == LocalSecurityGroup
 }
 
 type neitherAddressIsLocal struct {
@@ -80,6 +140,40 @@ var ipV4ProtocolStringToNumber = map[string]string{
 
 // TODO: Generate this from the enum in the schema.
 const ipv6Ethertype = "IPv6"
+
+// ValidateSubnetsWithEthertype validates if every subnet
+// within source and destination addresses matches rule ethertype.
+func (m *PolicyRuleType) ValidateSubnetsWithEthertype() error {
+	if m.GetEthertype() != "" {
+		for _, addr := range m.GetSRCAddresses() {
+			if err := addr.VerifyEthertypeWithSubnet(m.GetEthertype()); err != nil {
+				return err
+			}
+		}
+		for _, addr := range m.GetDSTAddresses() {
+			if err := addr.VerifyEthertypeWithSubnet(m.GetEthertype()); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// IsAnySecurityGroupAddrLocal returns true if at least one of addresses contains
+// 'local' Security Group.
+func (m *PolicyRuleType) IsAnySecurityGroupAddrLocal() bool {
+	for _, addr := range m.GetSRCAddresses() {
+		if (*policyAddress)(addr).isLocal() {
+			return true
+		}
+	}
+	for _, addr := range m.GetDSTAddresses() {
+		if (*policyAddress)(addr).isLocal() {
+			return true
+		}
+	}
+	return false
+}
 
 // ACLProtocol returns the protocol in a format suitable for an AclRuleType.
 func (m *PolicyRuleType) ACLProtocol() (string, error) {
