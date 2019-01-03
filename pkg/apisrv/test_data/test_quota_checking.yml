@@ -117,41 +117,13 @@ test_data:
     name: uuid_netpol_blue1
     parent_type: project
     parent_uuid: uuid_proj_blue
-    network_policy_entries:
-      policy_rule:
-        - direction: "\u003e"
-          protocol: "test"
-          dst_addresses: [{}]
-          action_list:
-            simple_action: pass
-          rule_uuid: "test"
-          dst_ports: [{}]
-          ethertype: "IPv4"
-          src_addresses: [{}]
-          rule_sequence:
-            major: 4
-            minor: 1
-          src_ports: [{}]
+    network_policy_entries: {}
   network_policy_blue2: &network_policy_blue2
     uuid: uuid_netpol_blue2
     name: uuid_netpol_blue2
     parent_type: project
     parent_uuid: uuid_proj_blue
-    network_policy_entries:
-      policy_rule:
-        - direction: "\u003e"
-          protocol: "test"
-          dst_addresses: [{}]
-          action_list:
-            simple_action: pass
-          rule_uuid: "test"
-          dst_ports: [{}]
-          ethertype: "IPv4"
-          src_addresses: [{}]
-          rule_sequence:
-            major: 4
-            minor: 1
-          src_ports: [{}]
+    network_policy_entries: {}
   project_blue: &project_blue
     uuid: uuid_proj_blue
     name: project_blue
@@ -213,20 +185,7 @@ test_data:
     parent_uuid: uuid_proj_blue
     perms2:
       owner: admin
-    security_group_entries:
-      policy_rule:
-        - direction: ">"
-          protocol: tcp
-          rule_sequence:
-            major: 4
-            minor: 1
-          src_ports: [{}]
-          dst_ports: [{}]
-          ethertype: IPv4
-          src_addresses: [{}]
-          dst_addresses: [{}]
-          action_list:
-            simple_action: pass
+    security_group_entries: {}
   secgrp_blue2: &secgrp_blue2
     uuid: uuid_secgrp_blue2
     name: uuid_secgrp_blue2
@@ -234,20 +193,7 @@ test_data:
     parent_uuid: uuid_proj_blue
     perms2:
       owner: admin
-    security_group_entries:
-      policy_rule:
-        - direction: ">"
-          protocol: tcp
-          rule_sequence:
-            major: 4
-            minor: 1
-          src_ports: [{}]
-          dst_ports: [{}]
-          ethertype: IPv4
-          src_addresses: [{}]
-          dst_addresses: [{}]
-          action_list:
-            simple_action: pass
+    security_group_entries: {}
   secgrp_blue3: &secgrp_blue3
     uuid: uuid_secgrp_blue3
     name: uuid_secgrp_blue3
