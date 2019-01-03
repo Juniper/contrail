@@ -1,5 +1,11 @@
 package models
 
+import (
+	"net"
+
+	"github.com/Juniper/contrail/pkg/errutil"
+)
+
 // Non-reference security group names.
 const (
 	AnySecurityGroup         = "any"
@@ -24,6 +30,23 @@ func AllIPv6Addresses() *AddressType {
 			IPPrefix:    "::",
 			IPPrefixLen: 0,
 		},
+	}
+}
+
+func resolveIPVersionFromCIDR(IPPrefix, IPPrefixLen string) (string, error) {
+	network, _, err := net.ParseCIDR(IPPrefix + "/" + IPPrefixLen)
+	if err != nil {
+		return "", errutil.ErrorBadRequestf("Cannot parse address %v/%v. %v.",
+			IPPrefix, IPPrefixLen, err)
+	}
+	switch {
+	case network.To4() != nil:
+		return "IPv4", nil
+	case network.To16() != nil:
+		return "IPv6", nil
+	default:
+		return "", errutil.ErrorBadRequestf("Cannot resolve ip version %v/%v.",
+			IPPrefix, IPPrefixLen)
 	}
 }
 
