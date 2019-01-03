@@ -65,7 +65,7 @@ test_data:
       port_range_min: 0
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       created_at: ''
-      id: ''
+      id: $uuid
     id: security-group-uuid1
     name: sg_name
   sg_readall_request: &sg_readall_request
