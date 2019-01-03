@@ -2,10 +2,50 @@ package models
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/errutil"
 )
+
+func (m PolicyRuleType) EqualRule(other PolicyRuleType) bool {
+	m.RuleUUID = ""
+	m.LastModified = ""
+	m.Created = ""
+
+	other.RuleUUID = ""
+	other.LastModified = ""
+	other.Created = ""
+
+	return reflect.DeepEqual(m, other)
+}
+
+var avaiableProtocols = []string{"any", "icmp", "tcp", "udp", "icmp6"}
+
+var isAvailableProtocol = boolMap(avaiableProtocols)
+
+func (m *PolicyRuleType) ValidateProtocol() error {
+	proto := m.GetProtocol()
+
+	if isAvailableProtocol[proto] {
+		return nil
+	}
+
+	number, err := strconv.Atoi(proto)
+	if err != nil {
+		return errutil.ErrorBadRequestf("Rule with invalid protocol: %v. "+
+			"Protocol has to be one of these: %v", proto, avaiableProtocols)
+	}
+
+	if number < 0 || number > 255 {
+		return errutil.ErrorBadRequestf("Rule with invalid protocol: %v. "+
+			"Protocol number range is 0 - 255.", number)
+	}
+
+	return nil
+}
 
 // policyAddressPair is a single combination of source and destination specifications from a PolicyRuleType.
 type policyAddressPair struct {
