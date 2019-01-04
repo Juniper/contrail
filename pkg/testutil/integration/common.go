@@ -58,8 +58,8 @@ func TestMain(m *testing.M, s **APIServer) {
 				log.WithError(err).Fatal("Failed to initialize Sync")
 			}
 			errChan := RunConcurrently(sync)
-
 			defer CloseFatalIfError(sync, errChan)
+			<-sync.DumpDone()
 		}
 
 		if srv, err := NewRunningServer(&APIServerConfig{
