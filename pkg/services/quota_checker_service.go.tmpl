@@ -42,7 +42,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 	logrus.Debugf("Quota limit for {{ name }} is %v, count is %v", limit, count)
 
 	if count >= limit {
-		return errutil.ErrorBadRequestf("Quota exceeded for resource {{ name }}(%v); there are already %v resources", obj.GetUUID(), count)
+		return errutil.ErrorQuotaExceededf("Quota exceeded for resource {{ name }}(%v); there are already %v resources", obj.GetUUID(), count)
 	}
 
 	return nil

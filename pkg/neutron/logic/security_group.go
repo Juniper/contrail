@@ -3,10 +3,10 @@ package logic
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/pkg/errors"
+	"github.com/satori/go.uuid"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
@@ -18,21 +18,72 @@ import (
 var sgNoRuleFQName = []string{defaultDomain, defaultProject, noRuleSecurityGroup}
 
 const (
+	securityGroupResourceName          = "security_group"
 	projectFieldChildrenSecurityGroups = "security_groups"
-	defaultSGName                      = "default"
-	localSecurityGroup                 = "local"
+	securityGroupAny                   = "any"
+	securityGroupDefault               = "default"
+	securityGroupLocal                 = "local"
 	defaultProject                     = "default-project"
 	defaultDomain                      = "default-domain"
 	noRuleSecurityGroup                = "__no_rule__"
-	egressTrafficContrail              = ">"
-	anyProtocol                        = "any"
+	egressTrafficVnc                   = ">"
+	protocolAny                        = "any"
 	ethertypeIPv4                      = "IPv4"
 	ethertypeIPv6                      = "IPv6"
-	zeroMaskIPv4                       = "0.0.0.0"
-	zeroMaskIPv6                       = "::"
+	ipv4ZeroValue                      = "0.0.0.0"
+	ipv6ZeroValue                      = "::"
 	egressTrafficNeutron               = "egress"
 	ingressTrafficNeutron              = "ingress"
 )
+
+// Create security group logic.
+func (sg *SecurityGroup) Create(ctx context.Context, rp RequestParameters) (Response, error) {
+	vncSg, err := sg.vncFromNeutron(ctx, rp)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "error while casting security_group from neutron into vnc resource")
+	}
+
+	if sg.Name == securityGroupDefault {
+		err = sg.ensureDefaultSecurityGroupExists(ctx, rp)
+		if err != nil {
+			return nil, newSecurityGroupError(err, "can't ensure default security_group")
+		}
+		return nil, newNeutronError(securityGroupAlreadyExists, errorFields{
+			"id": sg.ID,
+		})
+	}
+
+	createSgResp, err := rp.WriteService.CreateSecurityGroup(ctx, &services.CreateSecurityGroupRequest{
+		SecurityGroup: vncSg,
+	})
+	if err != nil {
+		return nil, newSecurityGroupError(err, "error while saving security_group into database")
+	}
+	vncSg = createSgResp.GetSecurityGroup()
+
+	if err = assignDefaultSecurityGroupRules(ctx, rp, vncSg); err != nil {
+		return nil, newSecurityGroupError(err, "can't create default security group rules")
+	}
+
+	resp, err := sg.neutronFromVnc(vncSg)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "can't cast vnc security_group resource into neutron one")
+	}
+
+	return resp, nil
+}
+
+// Update security group logic.
+func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
+
+// Delete security group logic.
+func (sg *SecurityGroup) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
 
 // Read security group logic.
 func (sg *SecurityGroup) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
@@ -41,95 +92,73 @@ func (sg *SecurityGroup) Read(ctx context.Context, rp RequestParameters, id stri
 	})
 	if err != nil {
 		if errutil.IsNotFound(err) {
-			err = newNeutronError(securityGroupNotFound, errorFields{
+			return nil, newNeutronError(securityGroupNotFound, errorFields{
 				"id": id,
 			})
-		} else {
-			err = newNeutronError(badRequest, errorFields{
-				"resource": "security_group",
-				"msg":      fmt.Sprintf("Error while reading security group from database. Error details: %+v", err),
-			})
 		}
-		return nil, err
+		return nil, newSecurityGroupError(err, "error while reading security_group from database")
 	}
-	return securityGroupContrailToNeutron(resp.SecurityGroup)
+	return sg.neutronFromVnc(resp.SecurityGroup)
 }
 
 // ReadAll security group logic.
 func (sg *SecurityGroup) ReadAll(ctx context.Context, rp RequestParameters, f Filters, fields Fields) (
 	Response, error,
 ) {
-	err := ensureDefaultSecurityGroupExists(ctx, rp)
+	err := sg.ensureDefaultSecurityGroupExists(ctx, rp)
 	if err != nil {
-		return nil, newNeutronError(badRequest, errorFields{
-			"resource": "security_group",
-			"msg": fmt.Sprintf("Error while checking / creating Default security group. "+
-				"Error message: \n%+v", err),
-		})
+		return nil, newSecurityGroupError(err, "error while processing default security_group. ")
 	}
 
-	sgs, err := getSecurityGroupsFromDB(ctx, rp, f)
+	sgs, err := sg.getListSecurityGroupsFromDB(ctx, rp, f)
 	if err != nil {
-		return nil, newNeutronError(securityGroupNotFound, errorFields{
-			"resource": "security_group",
-			"msg": fmt.Sprintf("Error while reading security group from database. "+
-				"Error message: \n%+v", err),
-		})
+		return nil, newSecurityGroupError(err, "can't read security groups from database")
 	}
 
-	response, err := getNeutronSecurityGroups(sgs, f)
-
+	response, err := sg.neutronFromVncMany(sgs, f)
 	if err != nil {
-		return nil, newNeutronError(badRequest, errorFields{
-			"resource": "security_group",
-			"msg": fmt.Sprintf("Error while converting security group from contrail to neutron resource. "+
-				"Error message: \n%+v", err),
-		})
+		return nil, newSecurityGroupError(err, "can't cast vnc security_groups into neutron one")
 	}
 
 	return response, nil
 }
 
-func ensureDefaultSecurityGroupExists(ctx context.Context, rp RequestParameters) error {
-	projectID, err := neutronIDToContrailUUID(rp.RequestContext.TenantID)
-	if err != nil {
-		return newNeutronError(badRequest, errorFields{
-			"resource": "project",
-			"msg":      fmt.Sprintf("Invalid tenant_id parameter. Error message: \n%+v", err),
-		})
-	}
-	projectResponse, err := rp.ReadService.GetProject(
-		ctx,
-		&services.GetProjectRequest{
-			ID: projectID,
-			Fields: []string{
-				projectFieldChildrenSecurityGroups,
-			},
-		},
-	)
-	if err != nil {
-		return newNeutronError(badRequest, errorFields{
-			"resource": "project",
-			"msg": fmt.Sprintf("Error while reading project of id %s from the DB. "+
-				"Error message: \n%+v", projectID, err),
-		})
+func newSecurityGroupError(err error, message string) error {
+	if isNeutronError(err) {
+		// If that error is already neutron error than do not override it.
+		return err
 	}
 
-	project := projectResponse.GetProject()
+	if err != nil {
+		message = fmt.Sprintf(" %+v: %+v", message, err)
+	}
+
+	return newNeutronError(badRequest, errorFields{
+		"resource": securityGroupResourceName,
+		"msg":      message,
+	})
+}
+
+func (sg *SecurityGroup) ensureDefaultSecurityGroupExists(ctx context.Context, rp RequestParameters) error {
+	project, err := sg.getProject(ctx, rp)
+	if err != nil {
+		return errors.Wrapf(err, "can't get project")
+	}
+
 	for _, sg := range project.GetSecurityGroups() {
-		if l := len(sg.GetFQName()); l > 0 && sg.GetFQName()[l-1] == defaultSGName {
+		if l := len(sg.GetFQName()); l > 0 && sg.GetFQName()[l-1] == securityGroupDefault {
 			return nil
 		}
 	}
 
-	return createDefaultSecurityGroup(ctx, rp, project)
+	return sg.createDefaultSecurityGroup(ctx, rp, project)
 }
 
-func createDefaultSecurityGroup(
+func (sg *SecurityGroup) createDefaultSecurityGroup(
 	ctx context.Context, rp RequestParameters, project *models.Project) error {
 	projectFQNameString := basemodels.FQNameToString(project.GetFQName())
-	sg := models.SecurityGroup{
-		Name:       defaultSGName,
+	vncSg := models.SecurityGroup{
+		Name:       securityGroupDefault,
 		ParentUUID: project.GetUUID(),
 		ParentType: models.KindProject,
 		IDPerms: &models.IdPermsType{
@@ -138,10 +167,10 @@ func createDefaultSecurityGroup(
 		},
 		SecurityGroupEntries: &models.PolicyEntriesType{
 			PolicyRule: []*models.PolicyRuleType{
-				createRule(true, defaultSGName, "", ethertypeIPv4, projectFQNameString),
-				createRule(true, defaultSGName, "", ethertypeIPv6, projectFQNameString),
-				createRule(false, "", zeroMaskIPv4, ethertypeIPv4, projectFQNameString),
-				createRule(false, "", zeroMaskIPv6, ethertypeIPv6, projectFQNameString),
+				sg.createRule(true, securityGroupDefault, "", ethertypeIPv4, projectFQNameString),
+				sg.createRule(true, securityGroupDefault, "", ethertypeIPv6, projectFQNameString),
+				sg.createRule(false, "", ipv4ZeroValue, ethertypeIPv4, projectFQNameString),
+				sg.createRule(false, "", ipv6ZeroValue, ethertypeIPv6, projectFQNameString),
 			},
 		},
 	}
@@ -149,7 +178,7 @@ func createDefaultSecurityGroup(
 	_, err := rp.WriteService.CreateSecurityGroup(
 		ctx,
 		&services.CreateSecurityGroupRequest{
-			SecurityGroup: &sg,
+			SecurityGroup: &vncSg,
 		},
 	)
 
@@ -157,12 +186,17 @@ func createDefaultSecurityGroup(
 	return err
 }
 
-func createRule(ingress bool, securityGroup string, prefix string, ethertype string, projectFQNameString string,
+func (sg *SecurityGroup) createRule(
+	ingress bool,
+	securityGroup string,
+	prefix string,
+	ethertype string,
+	projectFQNameString string,
 ) *models.PolicyRuleType {
 
 	uuid := uuid.NewV4().String()
 	localAddr := models.AddressType{
-		SecurityGroup: localSecurityGroup,
+		SecurityGroup: securityGroupLocal,
 	}
 
 	var addr models.AddressType
@@ -183,8 +217,8 @@ func createRule(ingress bool, securityGroup string, prefix string, ethertype str
 
 	rule := models.PolicyRuleType{
 		RuleUUID:  uuid,
-		Direction: egressTrafficContrail,
-		Protocol:  anyProtocol,
+		Direction: egressTrafficVnc,
+		Protocol:  protocolAny,
 		SRCPorts: []*models.PortType{
 			{
 				StartPort: 0,
@@ -210,7 +244,7 @@ func createRule(ingress bool, securityGroup string, prefix string, ethertype str
 	return &rule
 }
 
-func getSecurityGroupsFromDB(
+func (sg *SecurityGroup) getListSecurityGroupsFromDB(
 	ctx context.Context, rp RequestParameters, f Filters,
 ) ([]*models.SecurityGroup, error) {
 	var securityGroupUUIDS []string
@@ -228,17 +262,17 @@ func getSecurityGroupsFromDB(
 		securityGroupTenantUUID = projectIDs
 	}
 
-	return listSecurityGroups(ctx, rp, securityGroupUUIDS, securityGroupTenantUUID)
+	return sg.listSecurityGroups(ctx, rp, securityGroupUUIDS, securityGroupTenantUUID)
 }
 
-func listSecurityGroups(
+func (sg *SecurityGroup) listSecurityGroups(
 	ctx context.Context, rp RequestParameters, uuids []string, tenantUUIDs []string,
 ) ([]*models.SecurityGroup, error) {
 
 	var parentUUIDs []string
 	for _, uuid := range tenantUUIDs {
-		contrailUUID, err := neutronIDToContrailUUID(uuid)
-		parentUUIDs = append(parentUUIDs, contrailUUID)
+		vncUUID, err := neutronIDToVncUUID(uuid)
+		parentUUIDs = append(parentUUIDs, vncUUID)
 		if err != nil {
 			return nil, err
 		}
@@ -258,19 +292,19 @@ func listSecurityGroups(
 	return sgResponse.GetSecurityGroups(), err
 }
 
-func getNeutronSecurityGroups(sgs []*models.SecurityGroup, f Filters) ([]*SecurityGroupResponse, error) {
-
+func (sg *SecurityGroup) neutronFromVncMany(vncSgs []*models.SecurityGroup, f Filters) (
+	[]*SecurityGroupResponse, error) {
 	neutronSGs := make([]*SecurityGroupResponse, 0)
-	for _, sg := range sgs {
-		if basemodels.FQNameEquals(sg.GetFQName(), sgNoRuleFQName) {
+	for _, vncSg := range vncSgs {
+		if basemodels.FQNameEquals(vncSg.GetFQName(), sgNoRuleFQName) {
 			continue
 		}
 
-		if !f.Match("name", getSecurityGroupName(sg)) {
+		if !f.Match("name", sg.getSecurityGroupVncName(vncSg)) {
 			continue
 		}
 
-		neutronSG, err := securityGroupContrailToNeutron(sg)
+		neutronSG, err := sg.neutronFromVnc(vncSg)
 		if err != nil {
 			return nil, err
 		}
@@ -283,46 +317,47 @@ func getNeutronSecurityGroups(sgs []*models.SecurityGroup, f Filters) ([]*Securi
 	return neutronSGs, nil
 }
 
-func getSecurityGroupName(sg *models.SecurityGroup) string {
-	if sg.GetDisplayName() != "" {
-		return sg.GetDisplayName()
+func (sg *SecurityGroup) getSecurityGroupVncName(vncSg *models.SecurityGroup) string {
+	if vncSg.GetDisplayName() != "" {
+		return vncSg.GetDisplayName()
 	}
 
-	return sg.GetName()
+	return vncSg.GetName()
 }
 
-func securityGroupContrailToNeutron(sg *models.SecurityGroup) (*SecurityGroupResponse, error) {
+func (sg *SecurityGroup) neutronFromVnc(vncSg *models.SecurityGroup) (*SecurityGroupResponse, error) {
 
 	sgNeutron := SecurityGroupResponse{
-		ID:          sg.GetUUID(),
-		TenantID:    contrailUUIDToNeutronID(sg.GetParentUUID()),
-		CreatedAt:   sg.GetIDPerms().GetCreated(),
-		UpdatedAt:   sg.GetIDPerms().GetLastModified(),
-		Description: sg.GetIDPerms().GetDescription(),
-		Name:        sg.GetDisplayName(),
-		FQName:      sg.GetFQName(),
+		ID:          vncSg.GetUUID(),
+		TenantID:    vncUUIDToNeutronID(vncSg.GetParentUUID()),
+		CreatedAt:   vncSg.GetIDPerms().GetCreated(),
+		UpdatedAt:   vncSg.GetIDPerms().GetLastModified(),
+		Description: vncSg.GetIDPerms().GetDescription(),
+		Name:        vncSg.GetDisplayName(),
+		FQName:      vncSg.GetFQName(),
 	}
 
 	if sgNeutron.Name == "" {
-		fqName := sg.GetFQName()
+		fqName := vncSg.GetFQName()
 		if l := len(fqName); l >= 1 {
 			sgNeutron.Name = fqName[l-1]
 		}
 	}
 
-	sgr, err := readSecurityGroupRules(sg)
+	sgr, err := sg.readSecurityGroupRules(vncSg)
 	if err != nil {
 		return nil, err
 	}
 	sgNeutron.SecurityGroupRules = sgr
 
-	// TODO: Implement 'if loop' of FQName parameter assignation when contrail extension will be available.
+	// TODO: Implement 'if statement' of FQName parameter assignation when contrail extension will be available.
 	return &sgNeutron, nil
 }
 
-func readSecurityGroupRules(sg *models.SecurityGroup) (rules []*SecurityGroupRuleResponse, err error) {
-	for _, rule := range sg.GetSecurityGroupEntries().GetPolicyRule() {
-		sgr, err := securityGroupRuleContrailToNeutron(sg, rule)
+func (sg *SecurityGroup) readSecurityGroupRules(vncSG *models.SecurityGroup) (
+	rules []*SecurityGroupRuleResponse, err error) {
+	for _, rule := range vncSG.GetSecurityGroupEntries().GetPolicyRule() {
+		sgr, err := (&SecurityGroupRule{}).neutronFromVnc(vncSG, rule)
 		if err != nil {
 			return nil, err
 		}
@@ -332,69 +367,72 @@ func readSecurityGroupRules(sg *models.SecurityGroup) (rules []*SecurityGroupRul
 	return rules, nil
 }
 
-func securityGroupRuleContrailToNeutron(
-	sg *models.SecurityGroup, rule *models.PolicyRuleType,
-) (*SecurityGroupRuleResponse, error) {
-
-	sgr := SecurityGroupRuleResponse{
-		ID:              rule.GetRuleUUID(),
-		TenantID:        contrailUUIDToNeutronID(sg.GetParentUUID()),
-		CreatedAt:       rule.GetCreated(),
-		UpdatedAt:       rule.GetLastModified(),
-		SecurityGroupID: sg.GetUUID(),
-		Ethertype:       rule.GetEthertype(),
-		Protocol:        rule.GetProtocol(),
-		PortRangeMin:    0,
-		PortRangeMax:    65535,
+func (sg *SecurityGroup) getProject(ctx context.Context, rp RequestParameters) (*models.Project, error) {
+	projectID, err := neutronIDToVncUUID(rp.RequestContext.TenantID)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "invalid tenant_id parameter")
 	}
 
-	if err := addressTypeContrailToNeutron(rule, sg, &sgr); err != nil {
+	projectResponse, err := rp.ReadService.GetProject(
+		ctx,
+		&services.GetProjectRequest{
+			ID: projectID,
+			Fields: []string{
+				projectFieldChildrenSecurityGroups,
+			},
+		},
+	)
+	if err != nil {
+		return nil, newSecurityGroupError(err,
+			fmt.Sprintf("can't read project of id '%s' from the database.", projectID))
+	}
+
+	return projectResponse.GetProject(), nil
+}
+
+func (sg *SecurityGroup) vncFromNeutron(ctx context.Context, rp RequestParameters) (
+	*models.SecurityGroup, error) {
+	project, err := sg.getProject(ctx, rp)
+	if err != nil {
 		return nil, err
 	}
 
-	if len(rule.GetDSTPorts()) != 0 {
-		sgr.PortRangeMin = rule.GetDSTPorts()[0].GetStartPort()
-		sgr.PortRangeMax = rule.GetDSTPorts()[0].GetEndPort()
+	idPerms := models.IdPermsType{
+		Enable:      true,
+		Description: sg.Description,
 	}
 
-	return &sgr, nil
+	if err != nil {
+		return nil, errors.Wrapf(err, fmt.Sprintf("can't create security_group, bad id: '%s'", sg.ID))
+	}
+
+	return &models.SecurityGroup{
+		Name:       sg.Name,
+		IDPerms:    &idPerms,
+		ParentUUID: project.GetUUID(),
+		ParentType: models.KindProject,
+	}, nil
 }
 
-func addressTypeContrailToNeutron(
-	rule *models.PolicyRuleType,
-	sg *models.SecurityGroup,
-	sgr *SecurityGroupRuleResponse,
-) error {
-	var addr *models.AddressType
-	srcAddr := rule.GetSRCAddresses()[0]
-	dstAddr := rule.GetDSTAddresses()[0]
-
-	if srcAddr.GetSecurityGroup() == localSecurityGroup {
-		sgr.Direction = egressTrafficNeutron
-		addr = dstAddr
-	} else if dstAddr.GetSecurityGroup() == localSecurityGroup {
-		sgr.Direction = ingressTrafficNeutron
-		addr = srcAddr
-	} else {
-		return newNeutronError(securityGroupRuleNotFound, errorFields{
-			"id": rule.GetRuleUUID(),
-		})
+func assignDefaultSecurityGroupRules(
+	ctx context.Context,
+	rp RequestParameters,
+	vncSg *models.SecurityGroup) error {
+	vncRuleIPv4, err := getDefaultSecurityGroupRuleIPv4().vncFromNeutron(ctx, rp)
+	if err != nil {
+		return errors.Wrapf(err, "can't cast security_group_rule IPv4 into vnc resource")
+	}
+	err = securityGroupRuleCreate(ctx, rp, vncSg, vncRuleIPv4)
+	if err != nil {
+		return err
 	}
 
-	if subnet := addr.GetSubnet(); subnet != nil {
-		sgr.RemoteIPPrefix = getFullNetworkAddress(subnet.GetIPPrefix(), subnet.GetIPPrefixLen())
-	} else if remoteSG := addr.GetSecurityGroup(); remoteSG != "" && remoteSG != "any" && remoteSG != localSecurityGroup {
-		if remoteSG != basemodels.FQNameToString(sg.GetFQName()) {
-			// TODO implement it when service FQNameToID will be available in Neutron package.
-			// Origin python code: /src/config/vnc_openstack/vnc_openstack/neutron_plugin_db.py:1273
-		} else {
-			sgr.RemoteGroupID = sg.GetUUID()
-		}
+	vncRuleIPv6, err := getDefaultSecurityGroupRuleIPv6().vncFromNeutron(ctx, rp)
+	if err != nil {
+		return errors.Wrapf(err, "can't cast security_group_rule IPv6 into vnc resource")
 	}
-
+	if err := securityGroupRuleCreate(ctx, rp, vncSg, vncRuleIPv6); err != nil {
+		return err
+	}
 	return nil
-}
-
-func getFullNetworkAddress(ip string, mask int64) string {
-	return ip + "/" + strconv.FormatInt(mask, 10)
 }
