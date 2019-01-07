@@ -1,12 +1,13 @@
+# TODO: cleanup all resources.
 name: Security Group Test
 description: security group test
 cleanup:
 - path: /security-group/security-group-uuid1
 - kind: security-group
   fq_name: [default-domain, sg_neturon_project_name, default]
+- kind: security-group
+  fq_name: [default-domain, sg_neturon_project_name, my_new_sg]
 - path: /project/92882ca8-f993-42f2-8643-0c05c96e12dd
-
-# TODO: add missing tests. These test covers happy-path only.
 
 test_data:
   project: &project
@@ -56,15 +57,12 @@ test_data:
     security_group_rules:
     - remote_group_id: ''
       direction: ingress
-      remote_ip_prefix: ''
       protocol: any
       ethertype: IPv4
       port_range_max: 65535
-      updated_at: ''
       security_group_id: security-group-uuid1
       port_range_min: 0
       tenant_id: 92882ca8f99342f286430c05c96e12dd
-      created_at: ''
       id: $uuid
     id: security-group-uuid1
     name: sg_name
@@ -85,6 +83,60 @@ test_data:
       operation: READALL
       type: security_group
       tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+  sg_create_request: &sg_create_request
+    data:
+      resource:
+        tenant_id: 92882ca8f99342f286430c05c96e12dd
+        project_id: 92882ca8f99342f286430c05c96e12dd
+        name: my_new_sg
+        description: ''
+    context:
+      user_id: b0ad5cb0783b4380a62e251a252ffd04
+      roles:
+      - admin
+      - heat_stack_owner
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      is_admin: true
+      request_id: req-01fcd861-16d7-45de-89ad-840909b45a3f
+      operation: CREATE
+      type: security_group
+      tenant: 82bbe8daf75f429a87ff80db289e55b3
+  sg_create_response: &sg_create_response
+    fq_name:
+    - default-domain
+    - sg_neturon_project_name
+    - my_new_sg
+    description: ''
+    tenant_id: 92882ca8f99342f286430c05c96e12dd
+    created_at: ""
+    updated_at: ""
+    security_group_rules:
+    - created_at: $datetime_iso
+      updated_at: $datetime_iso
+      direction: egress
+      ethertype: IPv4
+      id: $uuid
+      port_range_max: 65535
+      port_range_min: 0
+      protocol: any
+      remote_group_id: ""
+      remote_ip_prefix: 0.0.0.0/0
+      security_group_id: $uuid
+      tenant_id: $any
+    - created_at: $datetime_iso
+      updated_at: $datetime_iso
+      direction: egress
+      ethertype: IPv6
+      id: $uuid
+      port_range_max: 65535
+      port_range_min: 0
+      protocol: any
+      remote_group_id: ""
+      remote_ip_prefix: ::/0
+      security_group_id: $uuid
+      tenant_id: $any
+    id: $uuid
+    name: my_new_sg
 
 clients:
   default:
@@ -181,3 +233,14 @@ workflow:
     expected:
     - 200
   expect: null
+- name: create security group using neutron endpoint
+  request:
+    path: /neutron/security_group
+    method: POST
+    data: *sg_create_request
+    expected: [200]
+  expect:
+    *sg_create_response
+
+# TODO delete default Security group using FQName (when it will be implemented).
+# TODO delete created Security group using FQName. And then delete the project.

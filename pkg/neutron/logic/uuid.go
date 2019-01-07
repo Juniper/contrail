@@ -7,11 +7,11 @@ import (
 	"github.com/twinj/uuid"
 )
 
-func contrailUUIDToNeutronID(uuid string) string {
+func vncUUIDToNeutronID(uuid string) string {
 	return strings.Replace(uuid, "-", "", -1)
 }
 
-func neutronIDToContrailUUID(id string) (string, error) {
+func neutronIDToVncUUID(id string) (string, error) {
 	if id == "" {
 		return "", nil
 	}
