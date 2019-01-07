@@ -479,7 +479,7 @@ func subnetVncToNeutron(vn *models.VirtualNetwork, subnetVnc *models.IpamSubnetT
 	subnet := &SubnetResponse{
 		ID:         subnetVnc.GetSubnetUUID(),
 		Name:       subnetVnc.GetSubnetName(),
-		TenantID:   contrailUUIDToNeutronID(vn.GetParentUUID()),
+		TenantID:   vncUUIDToNeutronID(vn.GetParentUUID()),
 		NetworkID:  vn.GetUUID(),
 		EnableDHCP: subnetVnc.GetEnableDHCP(),
 		Shared:     vn.GetIsShared() || (vn.GetPerms2() != nil && len(vn.GetPerms2().GetShare()) > 0),
