@@ -8,6 +8,7 @@ import (
 type Object interface {
 	proto.Message
 	GetUUID() string
+	SetUUID(string)
 	GetFQName() []string
 	GetParentUUID() string
 	GetParentType() string
