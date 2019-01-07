@@ -3,7 +3,7 @@ description: security group test
 cleanup:
 - path: /security-group/security-group-uuid1
 - kind: security-group
-  fq_name: [default-domain, sg_neturon_project_name, default]
+  fq_name: [default-domain, neutron_sg_project_name, default]
 - path: /project/92882ca8-f993-42f2-8643-0c05c96e12dd
 
 # TODO: add missing tests. These test covers happy-path only.
@@ -11,8 +11,7 @@ cleanup:
 test_data:
   project: &project
     uuid: 92882ca8-f993-42f2-8643-0c05c96e12dd
-    name: sg_neturon_project_name
-    parent_type: domain
+    name: neutron_sg_project_name
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg
@@ -30,45 +29,42 @@ test_data:
           start_port: 0
         ethertype: "IPv4"
         src_addresses:
-        - security_group: "default:sg_neturon_project_name:sg_name"
+        - security_group: "default:neutron_sg_project_name:sg_name"
         src_ports:
         - end_port: 65535
           start_port: 0
-  sg_read_request: &sg_read_request
+  read_sg_request: &sg_read_request
     data:
       id: security-group-uuid1
     context:
       user_id: 32fc3e2bf6e94e0daa21090e493e7aef
       roles:
       - admin
-      tenant_id: 5595adaac4f6423b930f1f1f66c89507
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-ac841ef9-2c79-4787-b80c-22a7b3263255
       operation: READ
       type: security_group
-      tenant: 5595adaac4f6423b930f1f1f66c89507
-  sg_read_response: &sg_read_response
+      tenant: 92882ca8f99342f286430c05c96e12dd
+  read_sg_response: &sg_read_response
     fq_name:
       - default-domain
-      - sg_neturon_project_name
+      - neutron_sg_project_name
       - sg_name
     tenant_id: 92882ca8f99342f286430c05c96e12dd
     security_group_rules:
     - remote_group_id: ''
       direction: ingress
-      remote_ip_prefix: ''
       protocol: any
       ethertype: IPv4
       port_range_max: 65535
-      updated_at: ''
       security_group_id: security-group-uuid1
       port_range_min: 0
       tenant_id: 92882ca8f99342f286430c05c96e12dd
-      created_at: ''
-      id: ''
+      id: $uuid
     id: security-group-uuid1
     name: sg_name
-  sg_readall_request: &sg_readall_request
+  readall_sg_request: &readall_sg_request
     data:
       fields: []
       filters:
@@ -85,6 +81,36 @@ test_data:
       operation: READALL
       type: security_group
       tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+  create_sg_request: &create_sg_request
+    data:
+      resource:
+        tenant_id: 92882ca8f99342f286430c05c96e12dd
+        project_id: 92882ca8f99342f286430c05c96e12dd
+        name: my_new_sg
+        description: ''
+    context:
+      user_id: b0ad5cb0783b4380a62e251a252ffd04
+      roles:
+      - admin
+      - heat_stack_owner
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      is_admin: true
+      request_id: req-01fcd861-16d7-45de-89ad-840909b45a3f
+      operation: CREATE
+      type: security_group
+      tenant: 82bbe8daf75f429a87ff80db289e55b3
+  sg_create_response: &sg_create_response
+    fq_name:
+    - default-domain
+    - admin
+    - my_new_sg
+    description: ''
+    tenant_id: 92882ca8f99342f286430c05c96e12dd
+    created_at:
+    updated_at:
+    security_group_rules: []
+    id: $uuid
+    name: my_new_sg
 
 clients:
   default:
@@ -111,11 +137,11 @@ workflow:
     path: /neutron/security_group
     method: POST
     expected: [200]
-    data: *sg_readall_request
+    data: *readall_sg_request
   expect:
     - fq_name:
       - default-domain
-      - sg_neturon_project_name
+      - neutron_sg_project_name
       - default
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       name: default
@@ -156,22 +182,22 @@ workflow:
   expect:
     exception: SecurityGroupNotFound
     id: bad-id
-- name: assert READALL security groups of that project
+- name: check READALL security groups of that project
   request:
     path: /neutron/security_group
     method: POST
     expected: [200]
-    data: *sg_readall_request
+    data: *readall_sg_request
   expect:
   - fq_name:
     - default-domain
-    - sg_neturon_project_name
+    - neutron_sg_project_name
     - default
     tenant_id: 92882ca8f99342f286430c05c96e12dd
     name: default
   - fq_name:
     - default-domain
-    - sg_neturon_project_name
+    - neutron_sg_project_name
     - sg_name
     tenant_id: 92882ca8f99342f286430c05c96e12dd
 - name: delete security group uuid1
@@ -181,3 +207,13 @@ workflow:
     expected:
     - 200
   expect: null
+- name: create security group using neutron endpoint
+  request:
+    path: /neutron/security_group
+    method: POST
+    data: *create_sg_request
+    expected: [200]
+  expect:
+    *sg_create_response
+
+# TODO delete default Security group using FQName. And next delete the project
