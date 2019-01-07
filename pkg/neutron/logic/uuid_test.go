@@ -2,7 +2,7 @@ package logic
 
 import "testing"
 
-func TestContrailUUIDToNeutronID(t *testing.T) {
+func TestVncUUIDToNeutronID(t *testing.T) {
 	tests := []struct {
 		input  string
 		output string
@@ -14,7 +14,7 @@ func TestContrailUUIDToNeutronID(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := contrailUUIDToNeutronID(test.input)
+		result := vncUUIDToNeutronID(test.input)
 		if result != test.output {
 			t.Errorf("Tranlating contrail uuid (%s) to neutron was incorrect, got: %s, want: %s.",
 				test.input, result, test.output)
@@ -22,7 +22,7 @@ func TestContrailUUIDToNeutronID(t *testing.T) {
 	}
 }
 
-func TestNeutronIDToContrailUUID(t *testing.T) {
+func TestNeutronIDToVncUUID(t *testing.T) {
 	tests := []struct {
 		input       string
 		output      string
@@ -39,13 +39,13 @@ func TestNeutronIDToContrailUUID(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result, err := neutronIDToContrailUUID(test.input)
+		result, err := neutronIDToVncUUID(test.input)
 
 		if err != nil && !test.expectError {
 			t.Errorf("Expected no error but got: \" %+v\" while parsing \"%s\".", err, test.input)
 		}
 		if result != test.output {
-			t.Errorf("Tranlating neutron id (%s) to contrail uuid was incorrect, got: %s, want: %s.",
+			t.Errorf("Translating neutron id (%s) to contrail uuid was incorrect, got: %s, want: %s.",
 				test.input, result, test.output)
 		}
 	}
