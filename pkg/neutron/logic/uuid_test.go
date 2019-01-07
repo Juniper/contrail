@@ -45,7 +45,7 @@ func TestNeutronIDToContrailUUID(t *testing.T) {
 			t.Errorf("Expected no error but got: \" %+v\" while parsing \"%s\".", err, test.input)
 		}
 		if result != test.output {
-			t.Errorf("Tranlating neutron id (%s) to contrail uuid was incorrect, got: %s, want: %s.",
+			t.Errorf("Translating neutron id (%s) to contrail uuid was incorrect, got: %s, want: %s.",
 				test.input, result, test.output)
 		}
 	}
