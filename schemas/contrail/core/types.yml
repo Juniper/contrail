@@ -1238,9 +1238,11 @@ definitions:
         presence: optional
         type: string
       ip_fabric_service_ip:
-        $ref: types.json#/definitions/IpAddress
         description: Destination ip address to which link local traffic will forwarded
         presence: optional
+        type: array
+        items:
+          $ref: types.json#/definitions/IpAddress
       ip_fabric_service_port:
         description: Destination TCP port number to which link local traffic will
           forwarded
