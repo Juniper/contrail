@@ -10,12 +10,10 @@ import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
+// Possible operations of events.
 const (
-	//OperationCreate for create operation.
 	OperationCreate = "CREATE"
-	//OperationUpdate for update operation.
 	OperationUpdate = "UPDATE"
-	//OperationDelete for delete operation.
 	OperationDelete = "DELETE"
 )
 
@@ -114,7 +112,16 @@ func (e *EventList) Sort() (err error) {
 
 // Process dispatches resource event to call corresponding service functions.
 func (e *Event) Process(ctx context.Context, service Service) (*Event, error) {
-	return e.Request.(CanProcessService).Process(ctx, service)
+	if e == nil {
+		return nil, errors.Errorf("can not process a nil event")
+	}
+	p, ok := e.Request.(CanProcessService)
+	if !ok {
+		return nil, errors.Errorf(
+			"can not process event: %v with request type: %T and operation: %s",
+			e, e.Request, e.Operation())
+	}
+	return p.Process(ctx, service)
 }
 
 // Process process list of events.
@@ -176,4 +183,95 @@ func (e *Event) MarshalJSON() ([]byte, error) {
 //MarshalYAML marshal event to yaml.
 func (e *Event) MarshalYAML() (interface{}, error) {
 	return e.ToMap(), nil
+}
+
+//NewEvent makes event from interface.
+func NewEvent(option *EventOption) (*Event, error) {
+	option.sanitizeKind()
+
+	switch option.getOperationOrDefault() {
+	case OperationCreate:
+		return NewCreateEvent(option)
+	case OperationUpdate:
+		return NewUpdateEvent(option)
+	case OperationDelete:
+		return NewDeleteEvent(option)
+	default:
+		return nil, errors.Errorf("operation %s not supported", option.getOperationOrDefault())
+	}
+}
+
+// CreateEventRequest interface.
+type CreateEventRequest interface {
+	isEvent_Request
+	GetResource() basemodels.Object
+}
+
+// UpdateEventRequest interface.
+type UpdateEventRequest interface {
+	isEvent_Request
+	GetResource() basemodels.Object
+	SetFieldMask(types.FieldMask)
+}
+
+// DeleteEventRequest interface.
+type DeleteEventRequest interface {
+	isEvent_Request
+	SetID(string)
+}
+
+// NewCreateEvent creates new create event.
+func NewCreateEvent(option *EventOption) (*Event, error) {
+	request, err := NewEmptyCreateEventRequest(option.Kind)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
+	}
+	request.GetResource().ApplyMap(option.Data)
+	return &Event{
+		Request: request,
+	}, nil
+}
+
+// NewUpdateEvent creates new update event.
+func NewUpdateEvent(option *EventOption) (*Event, error) {
+	request, err := NewEmptyUpdateEventRequest(option.Kind)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
+	}
+	request.GetResource().ApplyMap(option.Data)
+	request.GetResource().SetUUID(option.UUID)
+	request.SetFieldMask(option.getFieldMask())
+	return &Event{
+		Request: request,
+	}, nil
+}
+
+// NewDeleteEvent creates new delete event.
+func NewDeleteEvent(option *EventOption) (*Event, error) {
+	request, err := NewEmptyDeleteEventRequest(option.Kind)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
+	}
+	request.SetID(option.UUID)
+	return &Event{
+		Request: request,
+	}, nil
+}
+
+func (o *EventOption) getOperationOrDefault() string {
+	if o.Operation == "" {
+		return OperationCreate
+	}
+	return o.Operation
+}
+
+func (o *EventOption) getFieldMask() types.FieldMask {
+	if o.FieldMask == nil {
+		return basemodels.MapToFieldMask(o.Data)
+	}
+	return *o.FieldMask
+}
+
+func (o *EventOption) sanitizeKind() {
+	o.Kind = basemodels.SchemaIDToKind(o.Kind)
 }
