@@ -49,3 +49,18 @@ func (e syncError) Temporary() bool {
 	}
 	return false
 }
+
+type temporaryError struct {
+	causeError
+}
+
+func markTemporaryError(err error) error {
+	if err == nil {
+		return nil
+	}
+	return temporaryError{causeError: causeError{error: err}}
+}
+
+func (e temporaryError) Temporary() bool {
+	return true
+}
