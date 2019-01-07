@@ -197,3 +197,9 @@ func numericProtocolForEthertype(protocol, ethertype string) (numericProtocol st
 	}
 	return numericProtocol, nil
 }
+
+func (*PolicyEntriesType) AddPolicyRule(sgr *PolicyRuleType) {
+	// TODO: can't find implementation of that code in contrail-controller project. Make sure if that implementation is
+	// TODO: correct.
+
+}
