@@ -4,6 +4,7 @@ import (
     "encoding/json"
 
     "github.com/pkg/errors"
+	"github.com/gogo/protobuf/types"
 
     "github.com/Juniper/contrail/pkg/fileutil"
     "github.com/Juniper/contrail/pkg/format"
@@ -43,6 +44,16 @@ func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) Operation() string {
 //Operation returns event type.
 func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
     return OperationDelete
+}
+
+//SetID sets id of the event
+func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) SetID(id string) {
+    e.Delete{{ schema.JSONSchema.GoName }}Request.ID = id
+}
+
+//SetFieldMask sets fieldMask of the event
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.FieldMask) {
+    e.Update{{ schema.JSONSchema.GoName }}Request.FieldMask = mask
 }
 
 {% endif%}{% endfor %}
@@ -89,55 +100,27 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFrom
 }
 {% endif%}{% endfor %}
 
-//NewEvent makes event from interface
-func NewEvent(option *EventOption) (*Event, error) {
-    e := &Event{}
-    schemaID := basemodels.KindToSchemaID(option.Kind)
-    data := option.Data
-    uuid := option.UUID
-    operation := option.Operation
-    if operation == "" {
-        operation = OperationCreate
-    }
-    fm := option.FieldMask
-    switch (schemaID) {
+// NewEmptyRequestEvent makes event from interface
+func NewEmptyRequestEvent(kind, operation string) (isEvent_Request, error) {
+    switch kind {
         {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-        case "{{ schema.ID }}":
-            switch (operation) {
-                case OperationCreate:
-                    obj := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
-                    if uuid != "" {
-                        obj.UUID = uuid
-                    }
-                    e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
-                        Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: obj,
-                        }}
-                case OperationUpdate:
-                    obj := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
-                    if uuid != "" {
-                        obj.UUID = uuid
-                    }
-                    if fm == nil {
-                        f := basemodels.MapToFieldMask(data)
-                        fm = &f
-                    }
-                    e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
-                        Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: obj,
-                            FieldMask: *fm,
-                        }}
-                case OperationDelete:
-                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
-                        Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
-                            ID: uuid,
-                        }}
-            }{% endif%}{% endfor %}
-        default:
-            return nil, errors.Errorf("type %s does not exist", schemaID)
+        case "{{ schema.TypeName }}":
+            switch operation {
+				{{ getEvent(schema, "Create") }}
+				{{ getEvent(schema, "Update") }}
+				{{ getEvent(schema, "Delete") }}
+            }
+		{% endif %}{% endfor %}
     }
-    return e, nil
+	return nil, errors.Errorf("event with operation \"%s\" and kind \"%s\" does not exist", operation, kind)
 }
+
+{% macro getEvent(schema, operation) -%}
+case Operation{{ operation }}:
+	return &Event_{{ operation }}{{ schema.JSONSchema.GoName }}Request{
+		{{ operation }}{{ schema.JSONSchema.GoName }}Request: &{{ operation }}{{ schema.JSONSchema.GoName }}Request{},
+	}, nil
+{%- endmacro %}
 
 // RefUpdateOption contains parameters for NewEventForRefUpdate.
 type RefUpdateOption struct {
