@@ -485,7 +485,7 @@ workflow:
         - 406
       data:
         security-group: *secgrp_blue2
-    expect: null
+    expect: null+
 
   - name: Re-verify security_group blue 2 is not created
     request:
