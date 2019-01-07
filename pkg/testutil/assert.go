@@ -2,10 +2,12 @@ package testutil
 
 import (
 	"fmt"
+	"github.com/Juniper/contrail/pkg/constants"
 	"net"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
@@ -79,7 +81,16 @@ var assertFunctions = map[string]assertFunction{
 			}
 			return nil
 		}
-		return errors.Errorf("expected ip address string string but got %s on path %s", actual, path)
+		return errors.Errorf("expected ip address string but got %s on path %s", actual, path)
+	},
+	"datetime_iso": func(path string, _, actual interface{}) error {
+		if val, ok := actual.(string); ok {
+			if _, err := time.Parse(constants.ISO8601TimeFormat, val); err != nil {
+				return errors.Errorf("expected datetime stamp RFC3339 but got %s on path %s", actual, path)
+			}
+			return nil
+		}
+		return errors.Errorf("expected datetime stamp string but got %s on path %s", actual, path)
 	},
 }
 

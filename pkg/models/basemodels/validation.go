@@ -2,6 +2,7 @@ package basemodels
 
 import (
 	"fmt"
+	"github.com/Juniper/contrail/pkg/constants"
 	"net"
 	"regexp"
 	"strings"
@@ -165,7 +166,7 @@ func (tv *BaseValidator) addDateTimeFormatValidator() error {
 	validator := "date-time"
 
 	tv.AddFormatValidator(validator, func(value string) error {
-		dateTimeFormat := "2006-01-02T15:04:05"
+		dateTimeFormat := constants.ISO8601TimeFormat
 		_, err := time.Parse(dateTimeFormat, value)
 		if err != nil {
 			return errors.Wrapf(err, "Invalid format. Expected: %s", dateTimeFormat)
