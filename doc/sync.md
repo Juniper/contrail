@@ -28,6 +28,42 @@ Sync has two phases of operation:
 - PostgreSQL 10 and above with following configuration:
   - `wal_level=logical`
 
+### Automatic failover
+
+Sync is run in retry loop, which means that in case of DB failover it tries to reconnect to a new master.
+If Sync connects to a DB node that is currently in recovery node, then it retries, because logical replication is not working in such case.
+
+To demonstrate Sync behavior in case of DB failover we can use following scenario:
+
+1. Run ATOM with Postgres configuration.
+   ```
+   $ contrail run -c sample/contrail_postgres.yml
+   ```
+
+2. Wait until dump phase passes. After it's done Sync will log messages like:
+   ```
+   INFO[0053] Sending standby status    logger=postgres-watcher receivedLSN=0/BF98FE8 savedLSN=0/BF98FE8
+   ```
+
+3. In another terminal inspect patroni cluster state. In testenv you can use:
+   ```
+   $ docker exec contrail_haproxy patronictl list
+
+   +-------------+--------------+----------+--------+---------+-----------+
+   |   Cluster   |    Member    |   Host   |  Role  |  State  | Lag in MB |
+   +-------------+--------------+----------+--------+---------+-----------+
+   | testcluster | 9e012d8f9829 | 10.0.4.4 |        | running |         0 |
+   | testcluster | f91edc7c34a8 | 10.0.4.5 | Leader | running |         0 |
+   +-------------+--------------+----------+--------+---------+-----------+
+   ```
+
+   From it's outputs we can identify leader node which is named `f91edc7c34a8`.
+
+4. Restart leader node triggering automatic failover. Then Sync will try to reconnect until recovery mode passes.
+
+5. After few tries, Sync successfully reconnects, dumps the database and starts sending standby statuses like in step 2.
+
+
 ## MySQL
 
 As in PostgreSQL case Sync has two phases of operation:
