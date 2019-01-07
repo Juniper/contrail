@@ -295,7 +295,7 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
+        - 412
       data:
         network-ipam: *network_ipam_magic_blue2
     expect: null
@@ -390,7 +390,7 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
+        - 412
       data:
         virtual-network: *spocknet_blue2
     expect: null
@@ -482,7 +482,7 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
+        - 412
       data:
         security-group: *secgrp_blue2
     expect: null
@@ -578,7 +578,7 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
+        - 412
       data:
         logical-router: *logical_router_blue2
     expect: null
@@ -663,7 +663,7 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
+        - 412
       data:
         loadbalancer-healthmonitor: *loadbalancer_healthmonitor_blue2
     expect: null
@@ -748,7 +748,7 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
+        - 412
       data:
         loadbalancer-pool: *loadbalancer_pool_blue2
     expect: null
@@ -833,7 +833,7 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
+        - 412
       data:
         network-policy: *network_policy_blue2
     expect: null
@@ -918,7 +918,7 @@ workflow:
       method: POST
       expected:
         - 400
-        - 406
+        - 412
       data:
         route-table: *route_table_blue2
     expect: null

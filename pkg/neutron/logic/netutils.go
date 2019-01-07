@@ -2,6 +2,7 @@ package logic
 
 import (
 	"net"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -28,4 +29,19 @@ func getIPVersion(ipAddress string) (int8, error) {
 	}
 
 	return ipV6, nil
+}
+
+func getIPPrefixAndPrefixLen(cidr string) (string, string, int64, error) {
+	ip, netIP, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return "", "", 0, err
+	}
+	prefix := strings.Split(netIP.String(), "/")
+
+	prefixNetIP := prefix[0]
+	prefixLen, err := strconv.ParseInt(prefix[1], 10, 64)
+	if err != nil {
+		return "", "", 0, err
+	}
+	return ip.String(), prefixNetIP, prefixLen, nil
 }

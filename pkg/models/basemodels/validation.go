@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/constants"
 )
 
 //BaseValidator embedding SchemaValidator validator. It enables defining custom validation for each type
@@ -165,7 +167,7 @@ func (tv *BaseValidator) addDateTimeFormatValidator() error {
 	validator := "date-time"
 
 	tv.AddFormatValidator(validator, func(value string) error {
-		dateTimeFormat := "2006-01-02T15:04:05"
+		dateTimeFormat := constants.ISO8601TimeFormat
 		_, err := time.Parse(dateTimeFormat, value)
 		if err != nil {
 			return errors.Wrapf(err, "Invalid format. Expected: %s", dateTimeFormat)
