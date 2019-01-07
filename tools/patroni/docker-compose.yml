@@ -20,7 +20,7 @@ services:
   dbnode:
     image: patroni
     volumes:
-      - ./patroni.yml:/patroni.yml
+      - ./patroni.yml:/patroni.yml:ro
       - ../../tools:/tools
     environment:
       PATRONI_ETCD_URL: http://$HOSTIP:2379
