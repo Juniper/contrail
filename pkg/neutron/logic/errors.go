@@ -39,19 +39,30 @@ func newNeutronError(name errorType, fields errorFields) *Error {
 	return e
 }
 
+func isNeutronError(err error) bool {
+	_, ok := err.(*Error)
+	return ok
+}
+
 // constants for Neutron API exception names
 // https://docs.openstack.org/neutron-lib/queens/reference/modules/neutron_lib.exceptions.html
 const (
-	internalServerError        errorType = "InternalServerError"
-	badRequest                 errorType = "BadRequest"
-	portNotFound               errorType = "PortNotFound"
-	l3PortInUse                errorType = "L3PortInUse"
-	macAddressInUse            errorType = "MacAddressInUse"
-	ipAddressGenerationFailure errorType = "IpAddressGenerationFailure"
-	networkNotFound            errorType = "NetworkNotFound"
-	subnetNotFound             errorType = "SubnetNotFound"
-	securityGroupNotFound      errorType = "SecurityGroupNotFound"
-	securityGroupRuleNotFound  errorType = "SecurityGroupRuleNotFound"
-	networkInUse               errorType = "NetworkInUse"
-	invalidSharedSetting       errorType = "InvalidSharedSetting"
+	internalServerError                       errorType = "InternalServerError"
+	badRequest                                errorType = "BadRequest"
+	overQuota                                 errorType = "OverQuota"
+	portNotFound                              errorType = "PortNotFound"
+	l3PortInUse                               errorType = "L3PortInUse"
+	macAddressInUse                           errorType = "MacAddressInUse"
+	ipAddressGenerationFailure                errorType = "IpAddressGenerationFailure"
+	networkNotFound                           errorType = "NetworkNotFound"
+	subnetNotFound                            errorType = "SubnetNotFound"
+	securityGroupNotFound                     errorType = "SecurityGroupNotFound"
+	securityGroupAlreadyExists                errorType = "SecurityGroupAlreadyExists"
+	securityGroupRemoteGroupAndRemoteIPPrefix errorType = "SecurityGroupRemoteGroupAndRemoteIpPrefix"
+	securityGroupRuleParameterConflict        errorType = "SecurityGroupRuleParameterConflict"
+	securityGroupRuleInvalidProtocol          errorType = "SecurityGroupRuleInvalidProtocol"
+	securityGroupRuleExists                   errorType = "SecurityGroupRuleExists"
+	securityGroupRuleNotFound                 errorType = "SecurityGroupRuleNotFound"
+	networkInUse                              errorType = "NetworkInUse"
+	invalidSharedSetting                      errorType = "InvalidSharedSetting"
 )
