@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -33,6 +34,24 @@ const (
 	egressTrafficNeutron               = "egress"
 	ingressTrafficNeutron              = "ingress"
 )
+
+// Create security group logic.
+func (sg *SecurityGroup) Create(ctx context.Context, rp RequestParameters) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
+
+// Update security group logic.
+func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
+
+// Delete security group logic.
+func (sg *SecurityGroup) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
 
 // Read security group logic.
 func (sg *SecurityGroup) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
@@ -88,6 +107,12 @@ func (sg *SecurityGroup) ReadAll(ctx context.Context, rp RequestParameters, f Fi
 	}
 
 	return response, nil
+}
+
+// ReadCount security group logic.
+func (sg *SecurityGroup) ReadCount(ctx context.Context, rp RequestParameters, f Filters) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
 }
 
 func ensureDefaultSecurityGroupExists(ctx context.Context, rp RequestParameters) error {
