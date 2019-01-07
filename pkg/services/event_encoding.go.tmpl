@@ -1,48 +1,59 @@
 package services
 
 import (
-    "encoding/json"
+	"encoding/json"
 
-    "github.com/pkg/errors"
+	"github.com/pkg/errors"
+	"github.com/gogo/protobuf/types"
 
-    "github.com/Juniper/contrail/pkg/fileutil"
-    "github.com/Juniper/contrail/pkg/format"
-    "github.com/Juniper/contrail/pkg/models/basemodels"
-    "github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/models"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
 //GetResource returns resource.
 func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
-    return e.Create{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
+	return e.Create{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
 }
 
 //GetResource returns resource.
 func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
-    return e.Update{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
+	return e.Update{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
 }
 
 //GetResource returns resource.
 func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
-    return &models.{{ schema.JSONSchema.GoName }}{
-        UUID: e.Delete{{ schema.JSONSchema.GoName }}Request.ID,
-    }
+	return &models.{{ schema.JSONSchema.GoName }}{
+		UUID: e.Delete{{ schema.JSONSchema.GoName }}Request.ID,
+	}
 }
 
 //Operation returns event type.
 func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Operation() string {
-    return OperationCreate
+	return OperationCreate
 }
 
 //Operation returns event type.
 func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) Operation() string {
-    return OperationUpdate
+	return OperationUpdate
 }
 
 //Operation returns event type.
 func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
-    return OperationDelete
+	return OperationDelete
+}
+
+//SetID sets id of the event
+func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) SetID(id string) {
+	e.Delete{{ schema.JSONSchema.GoName }}Request.ID = id
+}
+
+//SetFieldMask sets fieldMask of the event
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.FieldMask) {
+	e.Update{{ schema.JSONSchema.GoName }}Request.FieldMask = mask
 }
 
 {% endif%}{% endfor %}
@@ -50,294 +61,287 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 // ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
 func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
-    {% if schema.References|length == 0 %}
-    return nil, nil
-    {% else %}
-        updateRequest := Update{{ schema.JSONSchema.GoName }}Request{
-            {{ schema.JSONSchema.GoName }}: &models.{{ schema.JSONSchema.GoName }}{},
-        }
-        createRequest := e.Create{{ schema.JSONSchema.GoName }}Request
-        *(updateRequest.{{ schema.JSONSchema.GoName }}) = *(createRequest.{{ schema.JSONSchema.GoName }})
-        {% for _, reference in schema.References %}
-        {% set refList = schema.JSONSchema.GoName| add:"."| add:reference.GoName | add:"Refs" %}
-        createRequest.{{ refList }} = createRequest.{{ refList }}[:0]
-        {% endfor %}
-        optForUpdate := &EventOption {
-            UUID: createRequest.{{ schema.JSONSchema.GoName }}.GetUUID(),
-            Operation: OperationUpdate,
-            Kind: "{{ schema.ID }}",
-            Data: updateRequest.{{ schema.JSONSchema.GoName }}.ToMap(),
-        }
-        updateEvent, err := NewEvent(optForUpdate)
-        if err != nil {
-            return nil, err
-        }
-        e.Create{{ schema.JSONSchema.GoName }}Request = createRequest
-        return updateEvent, nil
-    {% endif %}
+	{% if schema.References|length == 0 %}
+	return nil, nil
+	{% else %}
+		updateRequest := Update{{ schema.JSONSchema.GoName }}Request{
+			{{ schema.JSONSchema.GoName }}: &models.{{ schema.JSONSchema.GoName }}{},
+		}
+		createRequest := e.Create{{ schema.JSONSchema.GoName }}Request
+		*(updateRequest.{{ schema.JSONSchema.GoName }}) = *(createRequest.{{ schema.JSONSchema.GoName }})
+		{% for _, reference in schema.References %}
+		{% set refList = schema.JSONSchema.GoName| add:"."| add:reference.GoName | add:"Refs" %}
+		createRequest.{{ refList }} = createRequest.{{ refList }}[:0]
+		{% endfor %}
+		optForUpdate := &EventOption {
+			UUID: createRequest.{{ schema.JSONSchema.GoName }}.GetUUID(),
+			Operation: OperationUpdate,
+			Kind: "{{ schema.ID }}",
+			Data: updateRequest.{{ schema.JSONSchema.GoName }}.ToMap(),
+		}
+		updateEvent, err := NewEvent(optForUpdate)
+		if err != nil {
+			return nil, err
+		}
+		e.Create{{ schema.JSONSchema.GoName }}Request = createRequest
+		return updateEvent, nil
+	{% endif %}
 }
 
 // ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
 func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
-    return nil, nil
+	return nil, nil
 }
 
 // ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
 func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
-    // TODO: Extract event for removing refs from resource before deleting it
-    return nil, nil
+	// TODO: Extract event for removing refs from resource before deleting it
+	return nil, nil
 }
 {% endif%}{% endfor %}
 
-//NewEvent makes event from interface
-func NewEvent(option *EventOption) (*Event, error) {
-    e := &Event{}
-    schemaID := basemodels.KindToSchemaID(option.Kind)
-    data := option.Data
-    uuid := option.UUID
-    operation := option.Operation
-    if operation == "" {
-        operation = OperationCreate
-    }
-    fm := option.FieldMask
-    switch (schemaID) {
-        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-        case "{{ schema.ID }}":
-            switch (operation) {
-                case OperationCreate:
-                    obj := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
-                    if uuid != "" {
-                        obj.UUID = uuid
-                    }
-                    e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
-                        Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: obj,
-                        }}
-                case OperationUpdate:
-                    obj := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
-                    if uuid != "" {
-                        obj.UUID = uuid
-                    }
-                    if fm == nil {
-                        f := basemodels.MapToFieldMask(data)
-                        fm = &f
-                    }
-                    e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
-                        Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: obj,
-                            FieldMask: *fm,
-                        }}
-                case OperationDelete:
-                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
-                        Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
-                            ID: uuid,
-                        }}
-            }{% endif%}{% endfor %}
-        default:
-            return nil, errors.Errorf("type %s does not exist", schemaID)
-    }
-    return e, nil
+// NewEmptyCreateEventRequest makes new Create Event Request
+func NewEmptyCreateEventRequest(kind string) (CreateEventRequest, error) {
+	switch kind {
+		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+		case "{{ schema.TypeName }}":
+		return &Event_Create{{ schema.JSONSchema.GoName }}Request{
+			Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
+				{{ schema.JSONSchema.GoName }}: &models.{{ schema.JSONSchema.GoName }}{},
+			},
+		}, nil
+		{% endif %}{% endfor %}
+	}
+	return nil, errors.Errorf("create event of kind \"%s\" does not exist", kind)
+}
+
+// NewEmptyUpdateEventRequest makes new Update Event Request
+func NewEmptyUpdateEventRequest(kind string) (UpdateEventRequest, error) {
+	switch kind {
+		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+		case "{{ schema.TypeName }}":
+		return &Event_Update{{ schema.JSONSchema.GoName }}Request{
+			Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+				{{ schema.JSONSchema.GoName }}: &models.{{ schema.JSONSchema.GoName }}{},
+			},
+		}, nil
+		{% endif %}{% endfor %}
+	}
+	return nil, errors.Errorf("update event of kind \"%s\" does not exist", kind)
+}
+
+// NewEmptyDeleteEventRequest makes new Delete Event Request
+func NewEmptyDeleteEventRequest(kind string) (DeleteEventRequest, error) {
+	switch kind {
+		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+		case "{{ schema.TypeName }}":
+		return &Event_Delete{{ schema.JSONSchema.GoName }}Request{
+			Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{},
+		}, nil
+		{% endif %}{% endfor %}
+	}
+	return nil, errors.Errorf("delete event of kind \"%s\" does not exist", kind)
 }
 
 // RefUpdateOption contains parameters for NewEventForRefUpdate.
 type RefUpdateOption struct {
-    ReferenceType string
-    FromUUID, ToUUID string
-    Operation RefOperation
-    AttrData json.RawMessage
+	ReferenceType string
+	FromUUID, ToUUID string
+	Operation RefOperation
+	AttrData json.RawMessage
 }
 
 // NewEventFromRefUpdate creates ref create or delete event for updating ref.
 func NewEventFromRefUpdate(option RefUpdateOption) (*Event, error) {
-    e := &Event{}
-    kind := option.ReferenceType
-    operation := option.Operation
-    if operation == "" {
-        operation = RefOperationAdd
-    }
-    switch (kind) {
+	e := &Event{}
+	kind := option.ReferenceType
+	operation := option.Operation
+	if operation == "" {
+		operation = RefOperationAdd
+	}
+	switch (kind) {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 {% for _, reference in schema.References %}
 {% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
-        case "{{ schema.TypeName }}-{{ reference.LinkTo.TypeName }}":
-            switch (operation) {
-                case RefOperationAdd:
-                    request := &Event_Create{{ refType }}Request{
-                        Create{{ refType }}Request: &Create{{ refType }}Request{
-                                ID: option.FromUUID,
-                                {{ refType }}: &models.{{ refType }}{
-                                    UUID: option.ToUUID,
-                                },
-                            },
-                    }
-                    {% if reference.RefType %}
-                    if len(option.AttrData) > 0 {
-                        err := json.Unmarshal(option.AttrData, &request.Create{{ refType }}Request.{{ refType }}.Attr)
-                        if err != nil {
-                            return nil, errors.Wrap(err, "bad attr data")
-                        }
-                    }
-                    {% endif %}
-                    e.Request = request
-                case RefOperationDelete:
-                    e.Request = &Event_Delete{{ refType }}Request{
-                        Delete{{ refType }}Request: &Delete{{ refType }}Request{
-                                ID: option.FromUUID,
-                                {{ refType }}: &models.{{ refType }}{
-                                    UUID: option.ToUUID,
-                                },
-                            },
-                    }
-            }{% endfor %}{% endif%}{% endfor %}
-        default:
-            return nil, errors.Errorf("ref type %s does not exist", kind)
-    }
-    return e, nil
+		case "{{ schema.TypeName }}-{{ reference.LinkTo.TypeName }}":
+			switch (operation) {
+				case RefOperationAdd:
+					request := &Event_Create{{ refType }}Request{
+						Create{{ refType }}Request: &Create{{ refType }}Request{
+								ID: option.FromUUID,
+								{{ refType }}: &models.{{ refType }}{
+									UUID: option.ToUUID,
+								},
+							},
+					}
+					{% if reference.RefType %}
+					if len(option.AttrData) > 0 {
+						err := json.Unmarshal(option.AttrData, &request.Create{{ refType }}Request.{{ refType }}.Attr)
+						if err != nil {
+							return nil, errors.Wrap(err, "bad attr data")
+						}
+					}
+					{% endif %}
+					e.Request = request
+				case RefOperationDelete:
+					e.Request = &Event_Delete{{ refType }}Request{
+						Delete{{ refType }}Request: &Delete{{ refType }}Request{
+								ID: option.FromUUID,
+								{{ refType }}: &models.{{ refType }}{
+									UUID: option.ToUUID,
+								},
+							},
+					}
+			}{% endfor %}{% endif%}{% endfor %}
+		default:
+			return nil, errors.Errorf("ref type %s does not exist", kind)
+	}
+	return e, nil
 }
 
 
 //UnmarshalJSON unmarshal event.
 func (e *Event) UnmarshalJSON(data []byte) error {
-    raw := make(map[string]json.RawMessage)
-    err := json.Unmarshal(data, &raw)
-    if err != nil {
-        return err
-    }
-    t, ok := raw["kind"]
-    if !ok {
-        return nil
-    }
-    var kind string
-    err = json.Unmarshal(t, &kind)
-    if err != nil {
-        return err
-    }
-    d, ok := raw["data"]
-    if !ok {
-        return nil
-    }
-    o := raw["operation"]
-    var operation string
-    json.Unmarshal(o, &operation)
-    if operation == "" {
-        operation = OperationCreate
-    }
-    switch (kind) {
-        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-        case "{{ schema.ID }}":
-            switch (operation) {
-                case OperationCreate:
-                    m := map[string]interface{}{}
-                    err = json.Unmarshal(d, &m)
-                    if err != nil {
-                        return err
-                    }
-                    e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
-                        Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-                        {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(m),
-                            FieldMask: basemodels.MapToFieldMask(m),
-                        },
-                    }
-                case OperationUpdate:
-                    m := map[string]interface{}{}
-                    err = json.Unmarshal(d, &m)
-                    if err != nil {
-                        return err
-                    }
-                    e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
-                        Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(m),
-                            FieldMask: basemodels.MapToFieldMask(m),
-                        },
-                    }
-                case OperationDelete:
-                    m := map[string]interface{}{}
-                    err = json.Unmarshal(d, &m)
-                    if err != nil {
-                        return err
-                    }
-                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
-                        Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
-                            ID: m["uuid"].(string),
-                        },
-                    }
-            }
-         {% endif%}{% endfor %}
-    }
-    return nil
+	raw := make(map[string]json.RawMessage)
+	err := json.Unmarshal(data, &raw)
+	if err != nil {
+		return err
+	}
+	t, ok := raw["kind"]
+	if !ok {
+		return nil
+	}
+	var kind string
+	err = json.Unmarshal(t, &kind)
+	if err != nil {
+		return err
+	}
+	d, ok := raw["data"]
+	if !ok {
+		return nil
+	}
+	o := raw["operation"]
+	var operation string
+	json.Unmarshal(o, &operation)
+	if operation == "" {
+		operation = OperationCreate
+	}
+	switch (kind) {
+		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+		case "{{ schema.ID }}":
+			switch (operation) {
+				case OperationCreate:
+					m := map[string]interface{}{}
+					err = json.Unmarshal(d, &m)
+					if err != nil {
+						return err
+					}
+					e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
+						Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
+						{{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(m),
+							FieldMask: basemodels.MapToFieldMask(m),
+						},
+					}
+				case OperationUpdate:
+					m := map[string]interface{}{}
+					err = json.Unmarshal(d, &m)
+					if err != nil {
+						return err
+					}
+					e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
+						Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+							{{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(m),
+							FieldMask: basemodels.MapToFieldMask(m),
+						},
+					}
+				case OperationDelete:
+					m := map[string]interface{}{}
+					err = json.Unmarshal(d, &m)
+					if err != nil {
+						return err
+					}
+					e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
+						Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
+							ID: m["uuid"].(string),
+						},
+					}
+			}
+		 {% endif%}{% endfor %}
+	}
+	return nil
 }
 
 //ToMap translate event to map.
 func (e *Event) ToMap() map[string]interface{} {
-    m := map[string]interface{}{}
-    switch t := e.Request.(type) {
-        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-        case *Event_Create{{ schema.JSONSchema.GoName }}Request:
-            m["kind"] = "{{ schema.ID }}"
-            m["operation"] = OperationCreate
-            m["data"] = t.Create{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
-        case *Event_Update{{ schema.JSONSchema.GoName }}Request:
-            m["kind"] = "{{ schema.ID }}"
-            m["operation"] = OperationUpdate
-            m["data"] = t.Update{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
-        case *Event_Delete{{ schema.JSONSchema.GoName }}Request:
-            m["kind"] = "{{ schema.ID }}"
-            m["operation"] = OperationDelete
-            m["data"] = map[string]interface{}{
-                "uuid": t.Delete{{ schema.JSONSchema.GoName }}Request.ID,
-            }
-        {% endif%}{% endfor %}
-    }
-    return m
+	m := map[string]interface{}{}
+	switch t := e.Request.(type) {
+		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+		case *Event_Create{{ schema.JSONSchema.GoName }}Request:
+			m["kind"] = "{{ schema.ID }}"
+			m["operation"] = OperationCreate
+			m["data"] = t.Create{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
+		case *Event_Update{{ schema.JSONSchema.GoName }}Request:
+			m["kind"] = "{{ schema.ID }}"
+			m["operation"] = OperationUpdate
+			m["data"] = t.Update{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
+		case *Event_Delete{{ schema.JSONSchema.GoName }}Request:
+			m["kind"] = "{{ schema.ID }}"
+			m["operation"] = OperationDelete
+			m["data"] = map[string]interface{}{
+				"uuid": t.Delete{{ schema.JSONSchema.GoName }}Request.ID,
+			}
+		{% endif%}{% endfor %}
+	}
+	return m
 }
 
 
 
 //UnmarshalYAML unmarshal event.
 func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
-    var r interface{}
-    err := unmarshal(&r)
-    if err != nil {
-        return err
-    }
-    raw := r.(map[interface{}]interface{})
-    kind := raw["kind"]
-    data := fileutil.YAMLtoJSONCompat(raw["data"])
-    operation := format.InterfaceToString(raw["operation"])
-    if operation == "" {
-        operation = OperationCreate
-    }
-    switch (kind) {
-        {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-        case "{{ schema.ID }}":
-            switch (operation) {
-                case OperationCreate:
-                    m := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
-                    if err != nil {
-                        return err
-                    }
-                    e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
-                        Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: m,
-                            FieldMask: basemodels.MapToFieldMask(data.(map[string]interface{})),
-                        },
-                    }
-                case OperationUpdate:
-                    e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
-                        Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-                            {{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(data),
-                            FieldMask: basemodels.MapToFieldMask(data.(map[string]interface{})),
-                        },
-                    }
-                case OperationDelete:
-                    m := data.(map[string]interface{})
-                    e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
-                        Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
-                            ID: m["uuid"].(string),
-                        },
-                    }
-            }
-         {% endif%}{% endfor %}
-    }
-    return nil
+	var r interface{}
+	err := unmarshal(&r)
+	if err != nil {
+		return err
+	}
+	raw := r.(map[interface{}]interface{})
+	kind := raw["kind"]
+	data := fileutil.YAMLtoJSONCompat(raw["data"])
+	operation := format.InterfaceToString(raw["operation"])
+	if operation == "" {
+		operation = OperationCreate
+	}
+	switch (kind) {
+		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+		case "{{ schema.ID }}":
+			switch (operation) {
+				case OperationCreate:
+					m := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
+					if err != nil {
+						return err
+					}
+					e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
+						Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
+							{{ schema.JSONSchema.GoName }}: m,
+							FieldMask: basemodels.MapToFieldMask(data.(map[string]interface{})),
+						},
+					}
+				case OperationUpdate:
+					e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
+						Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+							{{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(data),
+							FieldMask: basemodels.MapToFieldMask(data.(map[string]interface{})),
+						},
+					}
+				case OperationDelete:
+					m := data.(map[string]interface{})
+					e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
+						Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
+							ID: m["uuid"].(string),
+						},
+					}
+			}
+		 {% endif%}{% endfor %}
+	}
+	return nil
 }

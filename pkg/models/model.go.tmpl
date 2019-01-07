@@ -274,6 +274,11 @@ func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
 	return Kind{{ schema.JSONSchema.GoName }}
 }
 
+// SetUUID sets resource's UUID
+func (m *{{ schema.JSONSchema.GoName }}) SetUUID(uuid string) {
+	m.UUID = uuid
+}
+
 func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
 	{%- if schema.References|length > 0%}
 	if m == nil {
