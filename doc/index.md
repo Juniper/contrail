@@ -262,3 +262,24 @@ YAML test toolkit reads test scenario from YAML files to `TestScenario` struct. 
 This toolkit is used in [API Server tests](../pkg/apisrv/server_test.go). Test scenarios are located in ["test_data" directory](../pkg/apisrv/test_data). Only API Server is tested here by performing various HTTP requests to it.
 
 This toolkit is also used in [Contrail integration tests](../pkg/cmd/contrail/integration_test.go). Test scenarios are located in ["tests" directory](../pkg/cmd/contrail/tests). Those scenarios test not only API Server, but also Sync service, etcd and Intent Compilation service.
+
+#### YAML quirks
+
+FQName like this
+
+```YAML
+fq_name:
+- "a"
+- "b"
+- ""
+```
+after unmarshalling will contain only 2 elements "a" and "b". If you want to empty string define it like this:
+
+```YAML
+fq_name:
+- "a"
+- "b"
+- ``
+```
+
+using single quotes.
