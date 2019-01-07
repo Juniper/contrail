@@ -26,9 +26,11 @@ done
 PASSWORD=contrail123
 SpecialNetworks='bridge none host'
 [[ "$SpecialNetworks" = *"$Network"* ]] || PROJECT=$Network
-docker network create $PROJECT --subnet 10.0.4.0/24 --gateway 10.0.4.1 || true
 NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT down || true
 docker rm -f contrail_mysql contrail_etcd || true
+docker network remove $PROJECT || true
+
+docker network create $PROJECT --subnet 10.0.4.0/24 --gateway 10.0.4.1 || true
 
 run_docker_patroni()
 {
