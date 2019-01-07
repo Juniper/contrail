@@ -157,8 +157,11 @@ func InterfaceTo{{ schema.JSONSchema.GoName }}(i interface{}) *{{ schema.JSONSch
 
 // ApplyMap updates object with values from map.
 func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
-	if len(o) == 0 || m == nil {
+	if len(o) == 0 {
 		return
+	}
+	if m == nil {
+		*m = {{ schema.JSONSchema.GoName }}{}
 	}
 	{% for property in schema.JSONSchema.OrderedProperties %}
 	if val, ok := o["{{ property.ID }}"]; ok && val != nil {
@@ -272,6 +275,11 @@ func (m *{{ schema.JSONSchema.GoName }}) UnmarshalJSON(b []byte) error {
 // Kind returns kind of an resource.
 func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
 	return Kind{{ schema.JSONSchema.GoName }}
+}
+
+// SetUUID sets resource's UUID
+func (m *{{ schema.JSONSchema.GoName }}) SetUUID(uuid string) {
+	m.UUID = uuid
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
