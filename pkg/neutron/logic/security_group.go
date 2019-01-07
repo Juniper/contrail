@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -33,6 +34,31 @@ const (
 	egressTrafficNeutron               = "egress"
 	ingressTrafficNeutron              = "ingress"
 )
+
+// Create security group logic.
+func (sg *SecurityGroup) Create(ctx context.Context, rp RequestParameters) (Response, error) {
+	contrailSecurityGroup, err := securityGroupNeutronToContrail(ctx, rp)
+	if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "security_group",
+			"msg":      fmt.Sprintf("Error while reading security group from database. Error details: %+v", err),
+		})
+	}
+
+	return securityGroupContrailToNeutron(&contrailSecurityGroup) // TODO: make response from contrailSecurityGroup
+}
+
+// Update security group logic.
+func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
+
+// Delete security group logic.
+func (sg *SecurityGroup) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
 
 // Read security group logic.
 func (sg *SecurityGroup) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
@@ -88,6 +114,12 @@ func (sg *SecurityGroup) ReadAll(ctx context.Context, rp RequestParameters, f Fi
 	}
 
 	return response, nil
+}
+
+// ReadCount security group logic.
+func (sg *SecurityGroup) ReadCount(ctx context.Context, rp RequestParameters, f Filters) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
 }
 
 func ensureDefaultSecurityGroupExists(ctx context.Context, rp RequestParameters) error {
@@ -397,4 +429,8 @@ func addressTypeContrailToNeutron(
 
 func getFullNetworkAddress(ip string, mask int64) string {
 	return ip + "/" + strconv.FormatInt(mask, 10)
+}
+
+func securityGroupNeutronToContrail(ctx context.Context, rp RequestParameters) (models.SecurityGroup, error) {
+
 }
