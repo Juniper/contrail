@@ -12,6 +12,9 @@ func contrailUUIDToNeutronID(uuid string) string {
 }
 
 func neutronIDToContrailUUID(id string) (string, error) {
+	if id == "" {
+		return "", nil
+	}
 	uuid, err := uuid.Parse(id)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to translate neutron id to contrail uuid")

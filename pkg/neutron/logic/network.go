@@ -167,7 +167,7 @@ func (n *Network) toVnc() (*models.VirtualNetwork, error) {
 func (n *Network) collectVirtualNetworks(
 	ctx context.Context, rp RequestParameters, filters Filters,
 ) ([]*models.VirtualNetwork, error) {
-	if filters.haveKeys(neutronIDKey) {
+	if len(filters) > 0 && filters.haveKeys(neutronIDKey) {
 		return collectWithoutPrune(ctx, rp, filters[neutronIDKey])
 	}
 
@@ -175,7 +175,7 @@ func (n *Network) collectVirtualNetworks(
 		return collectNonAdminNetworks(ctx, rp, filters)
 	}
 
-	if filters != nil {
+	if len(filters) > 0 {
 		return collectFilteredAdminNetworks(ctx, rp, filters)
 	}
 
@@ -377,12 +377,16 @@ func containsNetworkWithUUID(nns []*NetworkResponse, uuid string) bool {
 }
 
 func prepareVirtualNetworkListSpec(req *listReq) *baseservices.ListSpec {
+	var pUUIDs []string
+	if req.ParentID != "" {
+		pUUIDs = []string{req.ParentID}
+	}
 	return &baseservices.ListSpec{
 		Filters:     req.Filters,
 		Detail:      true,
 		Count:       req.Count,
-		Shared:      true,
-		ParentUUIDs: []string{req.ParentID},
+		Shared:      false, //TODO: change to true after JBE-495
+		ParentUUIDs: pUUIDs,
 		ObjectUUIDs: req.ObjUUIDs,
 	}
 }
