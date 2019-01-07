@@ -8,8 +8,10 @@ cleanup:
 
 test_data:
   qosq: &qosq
-    uuid: uuid-qosq-for-frwdclass
-    name: qosq-ref-for-frwdclass
+    fq_name:
+    - default-global-system-config
+    - default-global-qos-config
+    - ''
     parent_type: global-qos-config
     parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
     min_bandwidth: 100
@@ -22,7 +24,10 @@ test_data:
     parent_type: global-qos-config
     parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
     qos_queue_refs:
-      - uuid: uuid-qosq-for-frwdclass
+      - to:
+        - default-global-system-config
+        - default-global-qos-config
+        - ''
     forwarding_class_id: 1
     forwarding_class_dscp: 63
     forwarding_class_vlan_priority: 7
@@ -48,7 +53,7 @@ test_data:
       - to:
         - default-global-system-config
         - default-global-qos-config
-        - qosq-ref-for-frwdclass
+        - ''
     parent_type: global-qos-config
     forwarding_class_vlan_priority: 4
     perms2:
