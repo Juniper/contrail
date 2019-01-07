@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -33,6 +34,32 @@ const (
 	egressTrafficNeutron               = "egress"
 	ingressTrafficNeutron              = "ingress"
 )
+
+// Create security group logic.
+func (sg *SecurityGroup) Create(ctx context.Context, rp RequestParameters) (Response, error) {
+	contrailSecurityGroup, err := sg.securityGroupNeutronToContrailOnCreate(ctx, rp)
+	if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "security_group",
+			"msg": fmt.Sprintf("Error while casting security group from neutorn to contrail resource."+
+				" Error details: %+v", err),
+		})
+	}
+
+	return securityGroupContrailToNeutron(contrailSecurityGroup) // TODO: make response from contrailSecurityGroup
+}
+
+// Update security group logic.
+func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
+
+// Delete security group logic.
+func (sg *SecurityGroup) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
 
 // Read security group logic.
 func (sg *SecurityGroup) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
@@ -90,32 +117,20 @@ func (sg *SecurityGroup) ReadAll(ctx context.Context, rp RequestParameters, f Fi
 	return response, nil
 }
 
+// ReadCount security group logic.
+func (sg *SecurityGroup) ReadCount(ctx context.Context, rp RequestParameters, f Filters) (Response, error) {
+	return nil, errors.New("not implemented")
+	// TODO implement it.
+}
+
 func ensureDefaultSecurityGroupExists(ctx context.Context, rp RequestParameters) error {
-	projectID, err := neutronIDToContrailUUID(rp.RequestContext.TenantID)
+
+	project, err := getProject(ctx, rp)
 	if err != nil {
-		return newNeutronError(badRequest, errorFields{
-			"resource": "project",
-			"msg":      fmt.Sprintf("Invalid tenant_id parameter. Error message: \n%+v", err),
-		})
-	}
-	projectResponse, err := rp.ReadService.GetProject(
-		ctx,
-		&services.GetProjectRequest{
-			ID: projectID,
-			Fields: []string{
-				projectFieldChildrenSecurityGroups,
-			},
-		},
-	)
-	if err != nil {
-		return newNeutronError(badRequest, errorFields{
-			"resource": "project",
-			"msg": fmt.Sprintf("Error while reading project of id %s from the DB. "+
-				"Error message: \n%+v", projectID, err),
-		})
+		// TODO: think about wrapping this error.
+		return err
 	}
 
-	project := projectResponse.GetProject()
 	for _, sg := range project.GetSecurityGroups() {
 		if l := len(sg.GetFQName()); l > 0 && sg.GetFQName()[len(sg.GetFQName())-1] == defaultSGName {
 			return nil
@@ -397,4 +412,52 @@ func addressTypeContrailToNeutron(
 
 func getFullNetworkAddress(ip string, mask int64) string {
 	return ip + "/" + strconv.FormatInt(mask, 10)
+}
+
+func getProject(ctx context.Context, rp RequestParameters) (*models.Project, error) {
+	projectID, err := neutronIDToContrailUUID(rp.RequestContext.TenantID)
+	if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "project",
+			"msg":      fmt.Sprintf("Invalid tenant_id parameter. Error message: \n%+v", err),
+		})
+	}
+	projectResponse, err := rp.ReadService.GetProject(
+		ctx,
+		&services.GetProjectRequest{
+			ID: projectID,
+			Fields: []string{
+				projectFieldChildrenSecurityGroups,
+			},
+		},
+	)
+	if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "project",
+			"msg": fmt.Sprintf("Error while reading project of id %s from the DB. "+
+				"Error message: \n%+v", projectID, err),
+		})
+	}
+
+	return projectResponse.GetProject(), nil
+}
+
+func (sg *SecurityGroup) securityGroupNeutronToContrailOnCreate(ctx context.Context, rp RequestParameters) (
+	*models.SecurityGroup, error) {
+	project, err := getProject(ctx, rp)
+	if err != nil {
+		// TODO: think about wrapping this error
+		return nil, err
+	}
+
+	idPerms := models.IdPermsType{
+		Enable:      true,
+		Description: sg.Description, // TODO: Ask for get method. (GetDescription()). Maybe it is already developed.
+	}
+
+	// TODO: Finished here -> Python code neutron_plugin_db.py:1212
+	_ = idPerms
+	_ = project // TODO delete later. This is only to avoid panic of unused variables.
+
+	return &models.SecurityGroup{}, nil
 }
