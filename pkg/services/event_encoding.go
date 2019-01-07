@@ -3,19 +3,16 @@ package services
 import (
 	"context"
 	"encoding/json"
-
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
+// Possible operations
 const (
-	//OperationCreate for create operation.
 	OperationCreate = "CREATE"
-	//OperationUpdate for update operation.
 	OperationUpdate = "UPDATE"
-	//OperationDelete for delete operation.
 	OperationDelete = "DELETE"
 )
 
@@ -114,7 +111,11 @@ func (e *EventList) Sort() (err error) {
 
 // Process dispatches resource event to call corresponding service functions.
 func (e *Event) Process(ctx context.Context, service Service) (*Event, error) {
-	return e.Request.(CanProcessService).Process(ctx, service)
+	p, ok := e.Request.(CanProcessService)
+	if !ok {
+		return e, errors.Errorf("can not process event %v", e)
+	}
+	return p.Process(ctx, service)
 }
 
 // Process process list of events.
@@ -176,4 +177,72 @@ func (e *Event) MarshalJSON() ([]byte, error) {
 //MarshalYAML marshal event to yaml.
 func (e *Event) MarshalYAML() (interface{}, error) {
 	return e.ToMap(), nil
+}
+
+//NewEvent makes event from interface
+func NewEvent(option *EventOption) (*Event, error) {
+	request, err := NewEmptyRequestEvent(option.Kind, option.getOperationOrDefault())
+	e := &Event{
+		Request: request,
+	}
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
+	}
+
+	switch e.Operation() {
+	case OperationCreate:
+		e.GetResource().ApplyMap(option.Data)
+	case OperationUpdate:
+		e.GetResource().ApplyMap(option.Data)
+		e.SetFieldMask(option.getFieldMask())
+	case OperationDelete:
+		e.SetID(option.UUID)
+	}
+	return e, nil
+}
+
+// SetFieldMask sets fieldMask of an event if the operation is Update.
+func (e *Event) SetFieldMask(mask types.FieldMask) {
+	if e == nil {
+		return
+	}
+	resourceEvent, ok := e.Request.(UpdateRequest)
+	if !ok {
+		return
+	}
+	resourceEvent.SetFieldMask(mask)
+}
+
+// SetID sets ID of an event if the operation is Delete.
+func (e *Event) SetID(id string) {
+	if e == nil {
+		return
+	}
+	resourceEvent, ok := e.Request.(DeleteRequest)
+	if !ok {
+		return
+	}
+	resourceEvent.SetID(id)
+}
+
+type UpdateRequest interface {
+	SetFieldMask(types.FieldMask)
+}
+
+type DeleteRequest interface {
+	SetID(string)
+}
+
+func (o *EventOption) getOperationOrDefault() string {
+	if o.Operation == "" {
+		return OperationCreate
+	}
+	return o.Operation
+}
+
+func (o *EventOption) getFieldMask() types.FieldMask {
+	if o.FieldMask == nil {
+		return basemodels.MapToFieldMask(o.Data)
+	}
+	return *o.FieldMask
 }
