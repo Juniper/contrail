@@ -37,7 +37,7 @@ var ErrorNotFound = grpc.Errorf(codes.NotFound, "not found")
 //ErrorUnauthenticated for unauthenticated error.
 var ErrorUnauthenticated = grpc.Errorf(codes.Unauthenticated, "Unauthenticated")
 
-//ErrorPermissionDenied for permission denied errror.
+//ErrorPermissionDenied for permission denied error.
 var ErrorPermissionDenied = grpc.Errorf(codes.PermissionDenied, "Permission Denied")
 
 //ErrorInternal for Internal Server Error.
@@ -45,6 +45,9 @@ var ErrorInternal = grpc.Errorf(codes.Internal, "Internal Server Error")
 
 //ErrorConflict is for resource conflict error.
 var ErrorConflict = grpc.Errorf(codes.AlreadyExists, "Resource conflict")
+
+//ErrorQuotaExceeded is for quota exceeded error.
+var ErrorQuotaExceeded = grpc.Errorf(codes.FailedPrecondition, "Quota exceeded")
 
 // CauseCode returns wrapped grpc error code
 func CauseCode(err error) codes.Code {
@@ -64,6 +67,11 @@ func IsConflict(err error) bool {
 // IsBadRequest returns true if error is of BadRequest type.
 func IsBadRequest(err error) bool {
 	return grpc.Code(errors.Cause(err)) == codes.InvalidArgument
+}
+
+// IsQuotaExceeded returns true if error is of QuotaExceeded type.
+func IsQuotaExceeded(err error) bool {
+	return grpc.Code(errors.Cause(err)) == codes.FailedPrecondition
 }
 
 //ErrorForbiddenf makes forbidden error with format.
@@ -121,6 +129,14 @@ func getErrorMessage(err error) string {
 		return ""
 	}
 	return err.Error()
+}
+
+//ErrorQuotaExceededf makes quota exceed error.
+func ErrorQuotaExceededf(format string, a ...interface{}) error {
+	if format == "" {
+		return ErrorQuotaExceeded
+	}
+	return grpc.Errorf(codes.FailedPrecondition, format, a...)
 }
 
 // ToHTTPError translates grpc error to error.

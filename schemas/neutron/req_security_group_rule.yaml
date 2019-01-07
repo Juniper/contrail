@@ -6,6 +6,10 @@ type: request
 schema:
   type: object
   properties:
+    port_range_min:
+      type: integer
+    port_range_max:
+      type: integer
     remote_group_id:
       type: string
       presence: optional
@@ -15,14 +19,10 @@ schema:
       type: string
     remote_ip_prefix:
       type: string
-    port_range_max:
-      type: integer
     security_group_id:
       type: string
     tenant_id:
       type: string
-    port_range_min:
-      type: integer
     ethertype:
       type: string
     project_id:
