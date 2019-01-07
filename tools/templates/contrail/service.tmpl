@@ -96,11 +96,13 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
         }
     }
 {% endif %}
-
-    model.Perms2 = &models.PermType2{
-        OwnerAccess: basemodels.PermsRWX,
+    if model.Perms2 == nil {
+        model.Perms2 = &models.PermType2{}
     }
-    model.Perms2.Owner = auth.ProjectID()
+    model.Perms2.OwnerAccess = basemodels.PermsRWX
+    if model.Perms2.Owner == "" {
+        model.Perms2.Owner = auth.ProjectID()
+    }
 
     if model.IDPerms == nil {
         model.IDPerms = models.NewIDPerms(model.UUID)
