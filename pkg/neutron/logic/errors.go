@@ -48,4 +48,5 @@ const (
 	networkNotFound            = "NetworkNotFound"
 	securityGroupNotFound      = "SecurityGroupNotFound"
 	securityGroupRuleNotFound  = "SecurityGroupRuleNotFound"
+	securityGroupAlreadyExists = "SecurityGroupAlreadyExists"
 )
