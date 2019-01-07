@@ -50,11 +50,11 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 {% endif %}{% endfor %}
 
 {% for type, definition in types sorted %}{% if definition.Type == "object" %}
-{% if type == "KeyValuePair" %}
+{% if type == "KeyValuePair" or type == "LinklocalServiceEntryType" %}
 
-	// Omitempty tag is removed from fields of KeyValuePair type, because it caused issues in REST API clients
+	// Omitempty tag is removed from fields of {{ type }} type, because it caused issues in REST API clients
 	// which expected all fields to be present. To achieve that "gogoproto.jsontag" extension is used.
-	message KeyValuePair {
+	message {{ type }} {
 	{%- for property in definition.OrderedProperties %}
 		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.JSONTag }}\"", (gogoproto.jsontag) = "{{ property.JSONTag }}"]; // {{ property.Description }}
 	{%- endfor %}

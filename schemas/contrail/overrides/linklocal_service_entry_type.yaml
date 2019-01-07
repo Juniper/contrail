@@ -1,0 +1,32 @@
+definitions:
+  LinklocalServiceEntryType:
+    properties:
+      ip_fabric_DNS_service_name:
+        description: DNS name to which link local service will be proxied
+        presence: optional
+        type: string
+      ip_fabric_service_ip:
+        description: Destination ip address to which link local traffic will forwarded
+        presence: optional
+        type: array
+        items:
+          $ref: types.json#/definitions/IpAddress
+      ip_fabric_service_port:
+        description: Destination TCP port number to which link local traffic will
+          forwarded
+        presence: 'true'
+        type: integer
+      linklocal_service_ip:
+        $ref: types.json#/definitions/IpAddress
+        description: ip address of the link local service.
+        presence: 'true'
+      linklocal_service_name:
+        description: Name of the link local service. VM name resolution of this name
+          will result in link local ip address
+        presence: 'true'
+        type: string
+      linklocal_service_port:
+        description: Destination TCP port number of link local service
+        presence: 'true'
+        type: integer
+    type: object
