@@ -79,6 +79,11 @@ func KindToSchemaID(kind string) string {
 	return strings.Replace(kind, "-", "_", -1)
 }
 
+// SchemaIDToKind makes a kebab-case kind from a snake_case schema ID.
+func SchemaIDToKind(kind string) string {
+	return strings.Replace(kind, "_", "-", -1)
+}
+
 // ReferenceKind constructs reference kind for given from and to kinds.
 func ReferenceKind(fromKind, toKind string) string {
 	return fmt.Sprintf("%s-%s", fromKind, toKind)
