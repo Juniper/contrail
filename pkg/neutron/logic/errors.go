@@ -40,12 +40,14 @@ func newNeutronError(name string, fields errorFields) *Error {
 // constants for Neutron API exception names
 // https://docs.openstack.org/neutron-lib/queens/reference/modules/neutron_lib.exceptions.html
 const (
-	badRequest                 = "BadRequest"
-	portNotFound               = "PortNotFound"
-	l3PortInUse                = "L3PortInUse"
-	macAddressInUse            = "MacAddressInUse"
-	ipAddressGenerationFailure = "IpAddressGenerationFailure"
-	networkNotFound            = "NetworkNotFound"
-	securityGroupNotFound      = "SecurityGroupNotFound"
-	securityGroupRuleNotFound  = "SecurityGroupRuleNotFound"
+	badRequest                                = "BadRequest"
+	portNotFound                              = "PortNotFound"
+	l3PortInUse                               = "L3PortInUse"
+	macAddressInUse                           = "MacAddressInUse"
+	ipAddressGenerationFailure                = "IpAddressGenerationFailure"
+	networkNotFound                           = "NetworkNotFound"
+	securityGroupNotFound                     = "SecurityGroupNotFound"
+	securityGroupRuleNotFound                 = "SecurityGroupRuleNotFound"
+	securityGroupAlreadyExists                = "SecurityGroupAlreadyExists"
+	securityGroupRemoteGroupAndRemoteIpPrefix = "SecurityGroupRemoteGroupAndRemoteIpPrefix"
 )
