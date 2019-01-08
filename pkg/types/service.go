@@ -23,6 +23,8 @@ type InTransactionDoer interface {
 
 // IntPoolAllocator (de)allocates integers in an integer pool.
 type IntPoolAllocator interface {
+	CreateIntPool(context.Context, string, int64, int64) error
+	DeleteIntPool(context.Context, string) error
 	AllocateInt(context.Context, string) (int64, error)
 	SetInt(context.Context, string, int64) error
 	DeallocateInt(context.Context, string, int64) error

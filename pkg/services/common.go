@@ -29,6 +29,7 @@ const (
 	SetTagPath               = "set-tag"
 	ChownPath                = "chown"
 	IntPoolPath              = "int-pool"
+	IntPoolsPath             = "int-pools"
 )
 
 // Chain setup chain of services.
@@ -74,6 +75,8 @@ func (*NoTransaction) DoInTransaction(ctx context.Context, do func(context.Conte
 
 // IntPoolAllocator (de)allocates integers in an integer pool.
 type IntPoolAllocator interface {
+	CreateIntPool(context.Context, string, int64, int64) error
+	DeleteIntPool(context.Context, string) error
 	AllocateInt(context.Context, string) (int64, error)
 	DeallocateInt(context.Context, string, int64) error
 	SetInt(context.Context, string, int64) error
@@ -353,6 +356,72 @@ func (service *ContrailService) RESTChown(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{})
+}
+
+// RESTCreateIntPool handles a POST on int-pools requests
+func (service *ContrailService) RESTCreateIntPool(c echo.Context) error {
+	ctx := c.Request().Context()
+	auth := auth.GetAuthCTX(ctx)
+	if !auth.IsAdmin() {
+		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
+	}
+
+	data := &CreateIntPoolRequest{}
+	if err := c.Bind(&data); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+
+	if _, err := service.CreateIntPool(ctx, data); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{})
+}
+
+// RESTDeleteIntPool handles a POST on int-pools requests
+func (service *ContrailService) RESTDeleteIntPool(c echo.Context) error {
+	ctx := c.Request().Context()
+	auth := auth.GetAuthCTX(ctx)
+	if !auth.IsAdmin() {
+		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
+	}
+
+	data := &DeleteIntPoolRequest{}
+	if err := c.Bind(&data); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+
+	if _, err := service.DeleteIntPool(ctx, data); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{})
+}
+
+// CreateIntPool creates empty int pool
+func (service *ContrailService) CreateIntPool(
+	ctx context.Context, r *CreateIntPoolRequest,
+) (*types.Empty, error) {
+
+	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		return service.IntPoolAllocator.CreateIntPool(ctx, r.Pool, r.Start, r.End)
+	}); err != nil {
+		return nil, err
+	}
+
+	return &types.Empty{}, nil
+}
+
+// DeleteIntPool deletes int pool
+func (service *ContrailService) DeleteIntPool(
+	ctx context.Context, r *DeleteIntPoolRequest,
+) (*types.Empty, error) {
+	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		return service.IntPoolAllocator.DeleteIntPool(ctx, r.Pool)
+	}); err != nil {
+		return nil, err
+	}
+	return &types.Empty{}, nil
 }
 
 // RESTIntPoolAllocate handles a POST request on int-pool.
