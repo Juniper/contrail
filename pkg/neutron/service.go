@@ -19,6 +19,7 @@ type Service struct {
 	ReadService     services.ReadService
 	WriteService    services.WriteService
 	UserAgentKV     userAgentKVServer
+	FQNameService   services.FQNameToIDServer
 	IDToTypeService idToTypeServer
 }
 
@@ -53,6 +54,7 @@ func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response,
 		UserAgentKV:     s.UserAgentKV,
 		IDToTypeService: s.IDToTypeService,
 		RequestContext:  r.Context,
+		FQNameService:   s.FQNameService,
 	}
 	switch r.Context.Operation {
 	case "CREATE":
