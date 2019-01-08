@@ -144,9 +144,21 @@ message RelaxRefResponse {
 }
 
 service IPAM {
+    rpc CreateIntPool (CreateIntPoolRequest) returns (google.protobuf.Empty);
+    rpc DeleteIntPool (DeleteIntPoolRequest) returns (google.protobuf.Empty);
     rpc AllocateInt (AllocateIntRequest) returns (AllocateIntResponse);
     rpc SetInt (SetIntRequest) returns (google.protobuf.Empty);
     rpc DeallocateInt (DeallocateIntRequest) returns (google.protobuf.Empty);
+}
+
+message CreateIntPoolRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool",(gogoproto.jsontag) = "pool"];
+    int64 Start = 2 [(gogoproto.customname) = "Start",(gogoproto.jsontag) = "start"];
+    int64 End = 3 [(gogoproto.customname) = "End",(gogoproto.jsontag) = "end"];
+}
+
+message DeleteIntPoolRequest {
+    string Pool = 1 [(gogoproto.customname) = "Pool",(gogoproto.jsontag) = "pool"];
 }
 
 message AllocateIntRequest {
