@@ -73,6 +73,7 @@ type Fields []string
 // RequestParameters structure
 type RequestParameters struct {
 	RequestContext RequestContext
+	FQNameService  services.FQNameToIDServer
 	ReadService    services.ReadService
 	WriteService   services.WriteService
 	UserAgentKV    services.UserAgentKVServer
