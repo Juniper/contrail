@@ -230,7 +230,7 @@
         switch_id:
           description: Switch hostname
           type: string
-          format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+          format: "mac"
         port_id:
           description: Port ID of switch where Baremetal is connected
           type: string
@@ -240,14 +240,14 @@
         port_index:
           description: Port-Id provided by LLDP, This usually maps to SnmpIndex
           type: string
-          format: "^([1-9]+[0-9]*)$"
+          format: "positive_int_as_string"
     BaremetalPortInfo:
       type: "object"
       properties:
         address:
           description: Mac Address of the NIC in Node
           type: string
-          format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+          format: "mac"
           nullable: false
           permission:
           - create
@@ -268,7 +268,7 @@
         address:
           description: Mac Address of the NIC in Node
           type: string
-          format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+          format: "mac"
           nullable: false
           permission:
           - create

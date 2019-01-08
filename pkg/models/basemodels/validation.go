@@ -10,6 +10,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+//BaseValidator embedding SchemaValidator validator. It enables defining custom validation for each type
+type BaseValidator struct {
+	validators map[string]func(string) error
+}
+
 //NewBaseValidatorWithFormat creates new BaseValidator with format validators
 func NewBaseValidatorWithFormat() (*BaseValidator, error) {
 	tv := &BaseValidator{}
@@ -47,6 +52,11 @@ func NewBaseValidatorWithFormat() (*BaseValidator, error) {
 		return nil, err
 	}
 
+	err = tv.addPositiveIntFormatValidator()
+	if err != nil {
+		return nil, err
+	}
+
 	return tv, nil
 }
 
@@ -79,8 +89,6 @@ func (tv *BaseValidator) addHostnameFormatValidator() error {
 	}
 
 	tv.AddFormatValidator(validator, func(value string) error {
-		// Validate hostname
-
 		if len(value) > 255 {
 			return errors.Errorf("Invalid format. Hostname too long.")
 		}
@@ -120,18 +128,33 @@ func (tv *BaseValidator) addIPv4FormatValidator() error {
 }
 
 func (tv *BaseValidator) addMacAddressFormatValidator() error {
-	validator := "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
-	// TODO: We should extend schema for using regexes directly from it or rename such formats (e.g. mac-address)
-	regex, err := regexp.Compile(validator)
+	validator := "mac"
+	macFormat := "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+	regex, err := regexp.Compile(macFormat)
 	if err != nil {
 		return err
 	}
 
 	tv.AddFormatValidator(validator, func(value string) error {
-		// Validate ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$
-
 		if !regex.MatchString(value) {
-			return errors.Errorf("Invalid format. It should match \"%s\"", validator)
+			return errors.Errorf("Invalid MAC format. It should match \"%s\"", macFormat)
+		}
+		return nil
+	})
+	return nil
+}
+
+func (tv *BaseValidator) addPositiveIntFormatValidator() error {
+	validator := "positive_int_as_string"
+	positiveIntFormat := "^([1-9]+[0-9]*)$"
+	regex, err := regexp.Compile(positiveIntFormat)
+	if err != nil {
+		return err
+	}
+
+	tv.AddFormatValidator(validator, func(value string) error {
+		if !regex.MatchString(value) {
+			return errors.Errorf("Invalid numeric format. It should match \"%s\"", positiveIntFormat)
 		}
 		return nil
 	})
@@ -142,7 +165,6 @@ func (tv *BaseValidator) addDateTimeFormatValidator() error {
 	validator := "date-time"
 
 	tv.AddFormatValidator(validator, func(value string) error {
-		// Validate date-time
 		dateTimeFormat := "2006-01-02T15:04:05"
 		_, err := time.Parse(dateTimeFormat, value)
 		if err != nil {
@@ -162,7 +184,6 @@ func (tv *BaseValidator) addServiceInterfaceTypeFormatValidator() error {
 	}
 
 	tv.AddFormatValidator(validator, func(value string) error {
-		// Validate service_interface_type_format
 		restrictions := map[string]struct{}{
 			"management": {},
 			"left":       {},
@@ -183,11 +204,6 @@ func (tv *BaseValidator) addServiceInterfaceTypeFormatValidator() error {
 	})
 
 	return nil
-}
-
-//BaseValidator embedding SchemaValidator validator. It enables defining custom validation for each type
-type BaseValidator struct {
-	validators map[string]func(string) error
 }
 
 //AddFormatValidator adds format validator.
