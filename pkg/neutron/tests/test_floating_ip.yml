@@ -1,6 +1,61 @@
 name: Test Neutron Floating IP
 description: |
   Integration test for neutron floating ip endpoint.
+cleanup:
+  - path: /virtual-network/vn_floating_blue
+  - path: /network-ipam/test_ipam_floating_blue
+
+test_data:
+  admin_project: &admin_project_floating_ip
+    uuid: admin_floating_project_uuid
+    name: admin_floating
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  network_ipam_blue: &network_ipam_blue
+    network_ipam_mgmt:
+      host_routes:
+        route:
+          - prefix: "test_prefix"
+            next_hop: "1.2.3.5"
+    uuid: test_ipam_floating_blue
+    display_name: test_ipam_floating_blue
+    ipam_subnet_method: "user-defined-subnet"
+    parent_type: project
+    parent_uuid: admin_floating_project_uuid
+    fq_name: ["domain","admin","test_ipam_floating_blue"]
+
+  vn_floating_blue: &vn_floating_blue
+    fq_name: ["default", "admin_floating", "vn_floating_blue"]
+    uuid: vn_floating_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_floating_project_uuid
+    address_allocation_mode: user-defined-subnet-only
+    route_target_list:
+      route_target: ["100:200"]
+    network_ipam_refs:
+      - uuid: test_ipam_floating_blue
+        attr:
+          ipam_subnets:
+            - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+              subnet:
+                ip_prefix: "10.0.0.0"
+                ip_prefix_len: 24
+              allocation_pools:
+                - start: "10.0.0.0"
+                  end: "10.0.0.255"
+
+  floating_ip_pool: &floating_ip_pool
+    fq_name: ["default", "admin_floating", "vn_floating_blue", "test_floating_ip_pool"]
+    uuid: "test_floating_ip_pool"
+    display_name: "test_floating_ip_pool"
+    parent_type: "virtual-network"
+    parent_uuid: "vn_floating_blue"
+    floating_ip_pool_subnets:
+      subnet_uuid:
+        - "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
 
 clients:
   default:
@@ -12,6 +67,105 @@ clients:
         name: admin
 
 workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project_floating_ip
+  expect:
+    project: *admin_project_floating_ip
+
+- name: create network ipam blue
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 200
+    data:
+      network-ipam: *network_ipam_blue
+  expect:
+    network-ipam: *network_ipam_blue
+
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_floating_blue
+  expect:
+    virtual-network: *vn_floating_blue
+
+- name: create floating ip pool
+  request:
+    path: /floating-ip-pools
+    method: POST
+    expected:
+    - 200
+    data:
+      floating-ip-pool: *floating_ip_pool
+  expect: null
+
+- name: create floating ip
+  request:
+    path: /floating-ips
+    method: POST
+    expected:
+    - 200
+    data:
+      floating-ip:
+        fq_name: ["default", "admin_floating", "vn_floating_blue", "test_floating_ip_pool", "aaaaaaaa-beef-1dad-aaaa-beefbeefbeef"]
+        uuid: "aaaaaaaa-beef-1dad-aaaa-beefbeefbeef"
+        display_name: "aaaaaaaa-beef-1dad-aaaa-beefbeefbeef"
+        parent_type: "floating-ip-pool"
+        parent_uuid: "test_floating_ip_pool"
+        floating_ip_address: "10.0.0.1"
+        project_refs:
+        - uuid: admin_floating_project_uuid
+  expect:
+    floating-ip:
+      fq_name: ["default", "admin_floating", "vn_floating_blue", "test_floating_ip_pool", "aaaaaaaa-beef-1dad-aaaa-beefbeefbeef"]
+      uuid: "aaaaaaaa-beef-1dad-aaaa-beefbeefbeef"
+      display_name: "aaaaaaaa-beef-1dad-aaaa-beefbeefbeef"
+      parent_type: "floating-ip-pool"
+      parent_uuid: "test_floating_ip_pool"
+      floating_ip_address: "10.0.0.1"
+      project_refs:
+      - uuid: admin_floating_project_uuid
+
+- name: READ floating ip via vnc_openstack
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        id: aaaaaaaa-beef-1dad-aaaa-beefbeefbeef
+        filters:
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+          - admin
+        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
+        is_admin: true
+        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
+        operation: READ
+        type: floatingip
+        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+
+- name: delete floating ip
+  request:
+    path: /floating-ip/aaaaaaaa-beef-1dad-aaaa-beefbeefbeef
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
 - name: Floating IP read all
   request:
     path: /neutron/floatingip
