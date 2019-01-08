@@ -86,14 +86,9 @@ var assertFunctions = map[string]assertFunction{
 // AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
 // For lists and maps, it iterates over expected values, ignoring additional values in actual object.
 func AssertEqual(t *testing.T, expected, actual interface{}, msg ...string) bool {
-	expected = fileutil.YAMLtoJSONCompat(expected)
-	actual = fileutil.YAMLtoJSONCompat(actual)
-
-	err := checkDiff("", expected, actual)
-
 	return assert.NoError(
 		t,
-		err,
+		IsObjectSubsetOf(expected, actual),
 		fmt.Sprintf(
 			"%s: objects not equal:\nexpected: %+v\nactual: %+v",
 			strings.Join(msg, ", "),
@@ -101,6 +96,14 @@ func AssertEqual(t *testing.T, expected, actual interface{}, msg ...string) bool
 			format.MustYAML(actual),
 		),
 	)
+}
+
+// IsObjectSubsetOf verifies if "subset" structure contains all fields described
+// in "of" structure and throws an error in case if it doesn't.
+func IsObjectSubsetOf(subset, of interface{}) error {
+	subset = fileutil.YAMLtoJSONCompat(subset)
+	of = fileutil.YAMLtoJSONCompat(of)
+	return checkDiff("", subset, of)
 }
 
 // nolint: gocyclo

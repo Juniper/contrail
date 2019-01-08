@@ -2,6 +2,7 @@ package integrationetcd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -17,6 +18,7 @@ import (
 
 	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/testutil"
 )
 
 // Integration test settings.
@@ -111,6 +113,70 @@ func (e *EtcdClient) WatchKey(
 	key string, opts ...clientv3.OpOption,
 ) (collect func() []string) {
 	return e.WatchKeyN(key, 0, 0, opts...)
+}
+
+type eventList []map[string]interface{}
+
+func newEventList(events []map[string]interface{}) eventList {
+	copiedEvents := []map[string]interface{}{}
+	for _, m := range events {
+		for k, v := range m {
+			copiedEvents = append(copiedEvents, map[string]interface{}{k: v})
+		}
+	}
+	return eventList(copiedEvents)
+}
+
+func (el *eventList) remove(event interface{}) {
+	for i, e := range *el {
+		if err := testutil.IsObjectSubsetOf(e, event); err == nil {
+			*el = append((*el)[:i], (*el)[i+1:]...)
+			break
+		}
+	}
+}
+
+func (el *eventList) removeFoundEvent(event []byte) {
+	var data interface{}
+	if len(event) > 0 {
+		if err := json.Unmarshal(event, &data); err != nil {
+			logrus.Error("Unexpected error appeared when watching for events: ", err)
+		}
+	}
+	el.remove(data)
+}
+
+// WaitForEvents waits for events to show up before moving to the next task.
+func (e *EtcdClient) WaitForEvents(
+	key string, awaitingEvents []map[string]interface{}, timeout time.Duration, opts ...clientv3.OpOption,
+) (collect func() ([]map[string]interface{}, error)) {
+	resultChan := make(chan []map[string]interface{})
+	ctx, cancel := context.WithCancel(context.Background())
+	wchan := e.Watch(ctx, key, opts...)
+
+	go func() {
+		dataEvents := newEventList(awaitingEvents)
+		for val := range wchan {
+			for _, ev := range val.Events {
+				dataEvents.removeFoundEvent(ev.Kv.Value)
+				if len(dataEvents) == 0 {
+					cancel()
+				}
+			}
+		}
+		resultChan <- dataEvents
+		close(resultChan)
+	}()
+
+	return func() ([]map[string]interface{}, error) {
+		select {
+		case <-ctx.Done():
+		case <-time.After(timeout):
+			cancel()
+		}
+		result := <-resultChan
+		return result, nil
+	}
 }
 
 // WatchKeyN watches value changes for provided key n times and returns collect method
