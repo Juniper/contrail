@@ -1,6 +1,13 @@
 package logic
 
-import "context"
+import (
+	"context"
+)
+
+// Read floating_ip by UUID
+func (fip *Floatingip) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	return FloatingipResponse{}
+}
 
 // ReadAll logic
 func (fip *Floatingip) ReadAll(

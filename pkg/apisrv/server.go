@@ -338,9 +338,10 @@ func (s *Server) Init() (err error) {
 
 func (s *Server) setupNeutronService(cs services.Service) *neutron.Service {
 	n := &neutron.Service{
-		ReadService:  s.DBService,
-		WriteService: cs,
+		ReadService:   s.DBService,
+		WriteService:  cs,
 		UserAgentKV:  s.UserAgentKVServer,
+		FQNameService: cs,
 	}
 	n.RegisterNeutronAPI(s.Echo)
 	return n
