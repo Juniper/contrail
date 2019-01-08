@@ -1,7 +1,7 @@
 name: Test int pool allocation
 description: |
   Integration test for /int-pool endpoint which
-  handles allocating ints in precreated pools
+  handles allocating ints in precreated pools and dynamically created pools
 clients:
   default:
     id: alice
@@ -52,6 +52,15 @@ workflow:
       pool: route_target_number
       value: 8001000
   expect: null
+
+# delete int pool instead of cleanup
+- name: make sure that test int pool is not present instead of cleanup
+  request:
+    path: /int-pools
+    method: DELETE
+    expected: [200]
+    data:
+      pool: test_int_pool
 
 - name: allocate first int
   request:
@@ -190,3 +199,41 @@ workflow:
     data:
       pool: virtual_network_id
   expect: null
+
+- name: create test int pool
+  request:
+    path: /int-pools
+    method: POST
+    expected: [200]
+    data:
+      pool: test_int_pool
+      start: 100
+      end: 200
+
+- name: allocate int in test int pool
+  request:
+    path: /int-pool
+    method: POST
+    expected: [200]
+    data:
+      pool: test_int_pool
+  expect:
+    value: 100
+
+- name: deallocate int from test int pool
+  request:
+    path: /int-pool
+    method: DELETE
+    expected: [200]
+    data:
+      pool: test_int_pool
+      value: 100
+  expect: null
+
+- name: delete test int pool
+  request:
+    path: /int-pools
+    method: DELETE
+    expected: [200]
+    data:
+      pool: test_int_pool

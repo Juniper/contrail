@@ -16,15 +16,13 @@ func TestIntPool(t *testing.T) {
 		func(ctx context.Context) error {
 			poolKey := "testPool"
 
-			err := db.DeleteIntPools(ctx, &IntPool{
-				Key: poolKey,
-			})
+			err := db.DeleteIntPool(ctx, poolKey)
 			assert.NoError(t, err, "clear pool failed")
 
-			err = db.CreateIntPool(ctx, &IntPool{Key: poolKey, Start: 0, End: 2})
+			err = db.CreateIntPool(ctx, poolKey, 0, 2)
 			assert.NoError(t, err, "create pool failed")
 
-			err = db.CreateIntPool(ctx, &IntPool{Key: poolKey, Start: 3, End: 5})
+			err = db.CreateIntPool(ctx, poolKey, 3, 5)
 			assert.NoError(t, err, "create pool failed")
 
 			pools, err := db.GetIntPools(ctx, &IntPool{Key: poolKey})
@@ -80,7 +78,7 @@ func TestIntPool(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, 2, size, "size pool failed")
 
-			err = db.DeleteIntPools(ctx, &IntPool{Key: poolKey})
+			err = db.DeleteIntPool(ctx, poolKey)
 			assert.NoError(t, err, "delete pool failed")
 
 			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})
