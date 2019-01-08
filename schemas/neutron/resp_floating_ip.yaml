@@ -6,17 +6,13 @@ type: response
 schema:
   type: object
   properties:
+    id:
+      type: string
     router_id:
       type: string
     status:
       type: string
-    description:
-      type: string
     tenant_id:
-      type: string
-    created_at:
-      type: string
-    updated_at:
       type: string
     floating_network_id:
       type: string
@@ -26,5 +22,9 @@ schema:
       type: string
     port_id:
       type: string
-    id:
+    created_at:
+      type: string
+    updated_at:
+      type: string
+    description:
       type: string
