@@ -2,11 +2,6 @@ name: Test int pool allocation
 description: |
   Integration test for /int-pool endpoint which
   handles allocating ints in precreated pools
-cleanup:
-- path: /int-pool/virtual_network_id/5
-- path: /int-pool/virtual_network_id/6
-- path: /int-pool/virtual_network_id/1337
-- path: /int-pool/route_target_number/8000100
 clients:
   default:
     id: alice
@@ -17,91 +12,165 @@ clients:
         name: admin
 
 workflow:
+# Four deallocations instead of cleanup
+- name: deallocate first int instead of cleanup
+  request:
+    path: /int-pool
+    method: DELETE
+    expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 5
+  expect: null
+
+- name: deallocate second int instead of cleanup
+  request:
+    path: /int-pool
+    method: DELETE
+    expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 6
+  expect: null
+
+- name: deallocate third int instead of cleanup
+  request:
+    path: /int-pool
+    method: DELETE
+    expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 1337
+  expect: null
+
+- name: deallocate fourth int instead of cleanup
+  request:
+    path: /int-pool
+    method: DELETE
+    expected: [200]
+    data:
+      pool: route_target_number
+      value: 8001000
+  expect: null
+
 - name: allocate first int
   request:
-    path: /int-pool/virtual_network_id
+    path: /int-pool
     method: POST
     expected: [200]
+    data:
+      pool: virtual_network_id
   expect:
     value: 5
 
 - name: allocate next int
   request:
-    path: /int-pool/virtual_network_id
+    path: /int-pool
     method: POST
     expected: [200]
+    data:
+      pool: virtual_network_id
   expect:
     value: 6
 
 - name: deallocate one int
   request:
-    path: /int-pool/virtual_network_id/5
+    path: /int-pool
     method: DELETE
     expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 5
   expect: null
 
 - name: allocate next int again
   request:
-    path: /int-pool/virtual_network_id
+    path: /int-pool
     method: POST
     expected: [200]
+    data:
+      pool: virtual_network_id
   expect:
     value: 5
 
 - name: allocate specified int
   request:
-    path: /int-pool/virtual_network_id/1337
+    path: /int-pool
     method: POST
     expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 1337
   expect:
     value: 1337
 
 - name: fail to allocate same int
   request:
-    path: /int-pool/virtual_network_id/1337
+    path: /int-pool
     method: POST
     expected: [400]
+    data:
+      pool: virtual_network_id
+      value: 1337
   expect: null
 
 - name: deallocate specified int
   request:
-    path: /int-pool/virtual_network_id/1337
+    path: /int-pool
     method: DELETE
     expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 1337
   expect: null
 
 - name: deallocate same int twice should pass
   request:
-    path: /int-pool/virtual_network_id/1337
+    path: /int-pool
     method: DELETE
     expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 1337
   expect: null
 
 - name: deallocate generated int 1
   request:
-    path: /int-pool/virtual_network_id/6
+    path: /int-pool
     method: DELETE
     expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 6
   expect: null
 
 - name: deallocate generated int 2
   request:
-    path: /int-pool/virtual_network_id/5
+    path: /int-pool
     method: DELETE
     expected: [200]
+    data:
+      pool: virtual_network_id
+      value: 5
   expect: null
 
 - name: allocate route target number
   request:
-    path: /int-pool/route_target_number
+    path: /int-pool
     method: POST
     expected: [200]
+    data:
+      pool: route_target_number
+      value: 8001000
   expect:
-    value: 8000100
+    value: 8001000
 
 - name: deallocate allocated route target number
   request:
-    path: /int-pool/route_target_number/8000100
+    path: /int-pool
     method: DELETE
     expected: [200]
+    data:
+      pool: route_target_number
+      value: 8001000
   expect: null
