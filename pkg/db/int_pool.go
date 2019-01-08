@@ -19,8 +19,19 @@ type IntPool struct {
 }
 
 //CreateIntPool creates int pool.
-func (db *Service) CreateIntPool(ctx context.Context, target *IntPool) error {
-	return db.DeallocateIntRange(ctx, target)
+func (db *Service) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
+	return db.DeallocateIntRange(ctx, &IntPool{
+		Key:   pool,
+		Start: start,
+		End:   end,
+	})
+}
+
+//DeleteIntPool deletes int pool.
+func (db *Service) DeleteIntPool(ctx context.Context, pool string) error {
+	return db.deleteIntPools(ctx, &IntPool{
+		Key: pool,
+	})
 }
 
 //GetIntPools gets int pools overlaps in given the range.
@@ -58,27 +69,6 @@ func (db *Service) GetIntPools(ctx context.Context, target *IntPool) ([]*IntPool
 		pools = append(pools, pool)
 	}
 	return pools, nil
-}
-
-//DeleteIntPools deletes int pool overlap with target range. delete all if target.End is zero.
-func (db *Service) DeleteIntPools(ctx context.Context, target *IntPool) error {
-	tx := basedb.GetTransaction(ctx)
-	d := db.Dialect
-	var err error
-	if target.End == 0 {
-		_, err = tx.ExecContext(ctx, "delete from int_pool where "+
-			db.Dialect.Quote("key")+" = "+db.Dialect.Placeholder(1)+";", target.Key)
-	} else {
-		_, err = tx.ExecContext(ctx, "delete from int_pool where "+
-			db.Dialect.Quote("key")+" = "+db.Dialect.Placeholder(1)+" and "+
-			d.Placeholder(2)+"<"+d.Quote("end")+" and "+
-			d.Quote("start")+" < "+d.Placeholder(3),
-			target.Key,
-			target.Start,
-			target.End,
-		)
-	}
-	return errors.Wrap(basedb.FormatDBError(err), "failed to delete int pools")
 }
 
 //AllocateInt allocates integer.
@@ -143,7 +133,7 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 	if len(pools) == 0 {
 		return errutil.ErrorNotFound
 	}
-	err = db.DeleteIntPools(ctx, rangePool)
+	err = db.deleteIntPools(ctx, rangePool)
 	if err != nil {
 		return err
 	}
@@ -226,7 +216,7 @@ func (db *Service) DeallocateIntRange(ctx context.Context, target *IntPool) erro
 
 	// Clear overlapping int pols
 	if len(pools) > 0 {
-		err = db.DeleteIntPools(ctx, mergePool)
+		err = db.deleteIntPools(ctx, mergePool)
 		if err != nil {
 			return err
 		}
@@ -257,4 +247,25 @@ func (db *Service) SizeIntPool(ctx context.Context, key string) (int, error) {
 		return 0, basedb.FormatDBError(err)
 	}
 	return size, nil
+}
+
+//deleteIntPools deletes int pool overlap with target range. delete all if target.End is zero.
+func (db *Service) deleteIntPools(ctx context.Context, target *IntPool) error {
+	tx := basedb.GetTransaction(ctx)
+	d := db.Dialect
+	var err error
+	if target.End == 0 {
+		_, err = tx.ExecContext(ctx, "delete from int_pool where "+
+			db.Dialect.Quote("key")+" = "+db.Dialect.Placeholder(1)+";", target.Key)
+	} else {
+		_, err = tx.ExecContext(ctx, "delete from int_pool where "+
+			db.Dialect.Quote("key")+" = "+db.Dialect.Placeholder(1)+" and "+
+			d.Placeholder(2)+"<"+d.Quote("end")+" and "+
+			d.Quote("start")+" < "+d.Placeholder(3),
+			target.Key,
+			target.Start,
+			target.End,
+		)
+	}
+	return errors.Wrap(basedb.FormatDBError(err), "failed to delete int pools")
 }
