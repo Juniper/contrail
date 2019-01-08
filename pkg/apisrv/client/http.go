@@ -205,6 +205,30 @@ func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{
 	return h.Do(ctx, echo.DELETE, path, nil, nil, output, expected)
 }
 
+// CreateIntPool sends an create int pol request to remote int-pools.
+func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
+	var output struct{}
+	expected := []int{http.StatusOK}
+	request := services.CreateIntPoolRequest{
+		Pool:  pool,
+		Start: start,
+		End:   end,
+	}
+	_, err := h.Do(ctx, echo.POST, "/"+services.IntPoolsPath, nil, &request, &output, expected)
+	return errors.Wrap(err, "error creating pool int in int-pools via HTTP")
+}
+
+// DeleteIntPool sends an delete int pool request to remote int-pools.
+func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
+	var output struct{}
+	expected := []int{http.StatusOK}
+	request := services.DeleteIntPoolRequest{
+		Pool: pool,
+	}
+	_, err := h.Do(ctx, echo.DELETE, "/"+services.IntPoolsPath, nil, &request, &output, expected)
+	return errors.Wrap(err, "error creating pool int in int-pools via HTTP")
+}
+
 // AllocateInt sends an allocate int request to remote int-pool.
 func (h *HTTP) AllocateInt(ctx context.Context, pool string) (int64, error) {
 	var output struct {

@@ -1,7 +1,7 @@
 name: Test int pool allocation
 description: |
   Integration test for /int-pool endpoint which
-  handles allocating ints in precreated pools
+  handles allocating ints in precreated pools and dynamically created pools
 cleanup:
 - path: /int-pool/virtual_network_id/5
 - path: /int-pool/virtual_network_id/6
@@ -105,3 +105,36 @@ workflow:
     method: DELETE
     expected: [200]
   expect: null
+
+- name: create test int pool
+  request:
+    path: /int-pools
+    method: POST
+    expected: [200]
+    data:
+      pool: test_int_pool
+      start: 100
+      end: 200
+
+- name: allocate int in test int pool
+  request:
+    path: /int-pool/test_int_pool
+    method: POST
+    expected: [200]
+  expect:
+    value: 100
+
+- name: deallocate int from test int pool
+  request:
+    path: /int-pool/test_int_pool/100
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete test int pool
+  request:
+    path: /int-pools
+    method: DELETE
+    expected: [200]
+    data:
+      pool: test_int_pool
