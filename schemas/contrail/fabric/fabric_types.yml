@@ -125,13 +125,6 @@
           permission:
           - create
           - update
-        vmdk:
-          description: path for contrailvm
-          type: string
-          nullable: false
-          permission:
-          - create
-          - update
         mac:
           description: mac address for contrailvm
           type: string

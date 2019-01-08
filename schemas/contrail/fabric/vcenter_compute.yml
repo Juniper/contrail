@@ -55,6 +55,30 @@ schema:
       view:
       - create
       - detail
+   vmdk:
+      description: vmdk 
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: ovf location 
+      type: string
+      view:
+      - create
+      - detail
+   dv_portgroup:
+      description: dv portgroup name 
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: dv portgroup 
+      type: string
+      view:
+      - create
+      - detail
   propertiesOrder: []
   required: []
   type: object
