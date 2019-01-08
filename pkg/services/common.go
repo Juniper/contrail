@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
+
 	"time"
 
 	"github.com/gogo/protobuf/types"
@@ -14,6 +14,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -27,7 +28,7 @@ const (
 	RefRelaxForDeletePath    = "ref-relax-for-delete"
 	SetTagPath               = "set-tag"
 	ChownPath                = "chown"
-	IntPoolPath              = "int-pool/:pool-name"
+	IntPoolPath              = "int-pool"
 )
 
 // Chain setup chain of services.
@@ -361,27 +362,40 @@ func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	if !auth.IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
-	pool := c.Param("pool-name")
-	v := c.Param("value")
-	var val int64
-	if v == "" {
+	var allocReq map[string]interface{}
+	var pool string
+	var value int64
+	gotValue := false
+
+	if err := c.Bind(&allocReq); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+	if val, ok := allocReq["value"]; ok && val != nil {
+		value = format.InterfaceToInt64(val)
+		gotValue = true
+	}
+	if val, ok := allocReq["pool"]; ok && val != nil {
+		pool = format.InterfaceToString(val)
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, "pool name is required for int-pool allocation")
+	}
+
+	var allocatedVal int64
+	if !gotValue {
 		resp, err := service.AllocateInt(ctx, &AllocateIntRequest{Pool: pool})
 		if err != nil {
 			return errutil.ToHTTPError(err)
 		}
-		val = resp.Value
+		allocatedVal = resp.Value
 	} else {
 		var err error
-		val, err = strconv.ParseInt(v, 10, 64)
-		if err != nil {
-			return errutil.ToHTTPError(errutil.ErrorBadRequestf("Invalid int to allocate (%v): %s", v, err))
-		}
-		if _, err = service.SetInt(ctx, &SetIntRequest{Pool: pool, Value: val}); err != nil {
+		if _, err = service.SetInt(ctx, &SetIntRequest{Pool: pool, Value: value}); err != nil {
 			return errutil.ToHTTPError(err)
 		}
+		allocatedVal = value
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{"value": val})
+	return c.JSON(http.StatusOK, map[string]interface{}{"value": allocatedVal})
 }
 
 // AllocateInt allocates int in given int-pool.
@@ -421,14 +435,24 @@ func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 	if !auth.IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
-	pool := c.Param("pool-name")
-	v := c.Param("value")
-	i, err := strconv.ParseInt(v, 10, 64)
-	if err != nil {
-		return errutil.ToHTTPError(errutil.ErrorBadRequestf("Invalid int to deallocate (%v): %s", v, err))
+	var allocReq map[string]interface{}
+	var pool string
+	var value int64
+	if err := c.Bind(&allocReq); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+	if val, ok := allocReq["pool"]; ok && val != nil {
+		pool = format.InterfaceToString(val)
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, "pool name is required for int-pool deallocation")
+	}
+	if val, ok := allocReq["value"]; ok && val != nil {
+		value = format.InterfaceToInt64(val)
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, "a value is required for int-pool deallocation")
 	}
 
-	if _, err := service.DeallocateInt(ctx, &DeallocateIntRequest{Pool: pool, Value: i}); err != nil {
+	if _, err := service.DeallocateInt(ctx, &DeallocateIntRequest{Pool: pool, Value: value}); err != nil {
 		return errutil.ToHTTPError(err)
 	}
 
