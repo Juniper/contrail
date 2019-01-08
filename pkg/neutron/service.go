@@ -16,9 +16,10 @@ import (
 
 // Service implementation.
 type Service struct {
-	ReadService  services.ReadService
-	WriteService services.WriteService
-	UserAgentKV  userAgentKVServer
+	ReadService   services.ReadService
+	WriteService  services.WriteService
+	UserAgentKV   userAgentKVServer
+	FQNameService services.FQNameToIDServer
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
@@ -51,6 +52,7 @@ func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response,
 		WriteService:   s.WriteService,
 		UserAgentKV:    s.UserAgentKV,
 		RequestContext: r.Context,
+		FQNameService:  s.FQNameService,
 	}
 	switch r.Context.Operation {
 	case "CREATE":
