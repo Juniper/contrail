@@ -37,6 +37,11 @@ func newNeutronError(name string, fields errorFields) *Error {
 	return e
 }
 
+func isNeutronError(err error) bool {
+	_, ok := err.(*Error)
+	return ok
+}
+
 // constants for Neutron API exception names
 // https://docs.openstack.org/neutron-lib/queens/reference/modules/neutron_lib.exceptions.html
 const (
@@ -49,4 +54,5 @@ const (
 	networkNotFound            = "NetworkNotFound"
 	securityGroupNotFound      = "SecurityGroupNotFound"
 	securityGroupRuleNotFound  = "SecurityGroupRuleNotFound"
+	floatingIPNotFound         = "FloatingIPNotFound"
 )
