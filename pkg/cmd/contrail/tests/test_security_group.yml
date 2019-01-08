@@ -74,7 +74,6 @@ workflow:
       project: *project
   expect:
     project: *project
-  expect: null
   watchers:
     /contrail/project/project_uuid:
       - data: *project
