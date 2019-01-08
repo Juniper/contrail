@@ -1,15 +1,15 @@
 name: Forwarding Class Test
 description:  basic forwarding class test
 cleanup:
-- path: /forwarding-class/uuid-frwdclass-first-model
-- path: /forwarding-class/uuid-frwdclass-second-model
+- path: /forwarding-class/uuid-frwdclass-first
+- path: /forwarding-class/uuid-frwdclass-second
 - path: /forwarding-class/8524f319-afcc-4f82-9132-95c4827e0aed
-- path: /qos-queue/qos-queue-model
+- path: /qos-queue/uuid-qosq-for-frwdclass
 
 test_data:
   qosq: &qosq
     uuid: uuid-qosq-for-frwdclass
-    name: qosq-ref-for-frwdclass
+    name: my-qosq
     parent_type: global-qos-config
     parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
     min_bandwidth: 100
@@ -17,8 +17,8 @@ test_data:
     qos_queue_identifier: 1
 
   forw_class: &forw_class
-    uuid: uuid-frwdclass-first-model
-    name: uuid-frwdclass-first-model
+    uuid: uuid-frwdclass-first
+    name: uuid-frwdclass-first
     parent_type: global-qos-config
     parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
     qos_queue_refs:
@@ -28,19 +28,11 @@ test_data:
     forwarding_class_vlan_priority: 7
     forwarding_class_mpls_exp: 7
 
-  edited_forw_class: &edited_forw_class
-    <<: *forw_class
-    forwarding_class_dscp: 32
-
   forw_class_second: &forw_class_second
     <<: *forw_class
-    uuid: uuid-frwdclass-second-model
-    name: uuid-frwdclass-second-model
+    uuid: uuid-frwdclass-second
+    name: uuid-frwdclass-second
     forwarding_class_id: 2
-
-  forw_class_duplicated_id: &forw_class_duplicated_id
-    <<: *forw_class_second
-    forwarding_class_id: 1
 
   forwarding-class: &demo_frw_class
     display_name: '10'
@@ -48,7 +40,7 @@ test_data:
       - to:
         - default-global-system-config
         - default-global-qos-config
-        - qosq-ref-for-frwdclass
+        - my-qosq
     parent_type: global-qos-config
     forwarding_class_vlan_priority: 4
     perms2:
@@ -84,7 +76,7 @@ workflow:
     data:
       qos-queue: *qosq
 
-- name: successfully create forwarding class
+- name: create forwarding class
   request:
     path: /forwarding-classs
     method: POST
@@ -102,9 +94,11 @@ workflow:
     expected:
     - 400
     data:
-      forwarding-class: *forw_class_duplicated_id
+      forwarding-class:
+        <<: *forw_class_second
+        forwarding_class_id: 1
 
-- name: successfully create second forwarding class
+- name: create second forwarding class
   request:
     path: /forwarding-classs
     method: POST
@@ -115,27 +109,41 @@ workflow:
   expect:
     forwarding-class: *forw_class_second
 
-- name: successfully update forwarding class
+- name: update forwarding class
   request:
-    path: /forwarding-class/uuid-frwdclass-first-model
+    path: /forwarding-class/uuid-frwdclass-first
     method: PUT
     expected:
     - 200
     data:
-      forwarding-class: *edited_forw_class
+      forwarding-class:
+        forwarding_class_dscp: 32
   expect:
-    forwarding-class: *edited_forw_class
+    forwarding-class:
+      forwarding_class_dscp: 32
+
+- name: ensure frwd class has id unchanged
+  request:
+    path: /forwarding-class/uuid-frwdclass-first
+    method: GET
+    expected:
+    - 200
+  expect:
+    forwarding-class:
+      forwarding_class_dscp: 32
+      forwarding_class_id: 1
 
 - name: try to update forwarding class with already used id
   request:
-    path: /forwarding-class/uuid-frwdclass-second-model
+    path: /forwarding-class/uuid-frwdclass-second
     method: PUT
     expected:
     - 400
     data:
-      forwarding-class: *forw_class_duplicated_id
+      forwarding-class:
+        forwarding_class_id: 1
 
-- name: successfully update forwarding class demo
+- name: create forwarding class demo
   request:
     path: /forwarding-classs
     method: POST
@@ -153,3 +161,31 @@ workflow:
       parent_type: global-qos-config
       uuid: 8524f319-afcc-4f82-9132-95c4827e0aed
       name: '10'
+
+- name: delete uuid-frwdclass-first
+  request:
+    path: /forwarding-class/uuid-frwdclass-first
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete uuid-frwdclass-second
+  request:
+    path: /forwarding-class/uuid-frwdclass-second
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete uuid-frwdclass-second
+  request:
+    path: /forwarding-class/8524f319-afcc-4f82-9132-95c4827e0aed
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete qos-queue
+  request:
+    path: /qos-queue/uuid-qosq-for-frwdclass
+    method: DELETE
+    expected:
+    - 200

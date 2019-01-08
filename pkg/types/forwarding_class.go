@@ -6,6 +6,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
@@ -36,9 +37,10 @@ func (sv *ContrailTypeLogicService) UpdateForwardingClass(
 	ctx context.Context,
 	request *services.UpdateForwardingClassRequest,
 ) (*services.UpdateForwardingClassResponse, error) {
-
 	var response *services.UpdateForwardingClassResponse
+
 	forwardingClass := request.GetForwardingClass()
+	fm := request.GetFieldMask()
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
@@ -50,7 +52,9 @@ func (sv *ContrailTypeLogicService) UpdateForwardingClass(
 			}
 
 			reqFrwdClassID := forwardingClass.GetForwardingClassID()
-			if databaseFC.GetForwardingClassID() != reqFrwdClassID {
+			if basemodels.FieldMaskContains(&fm, models.ForwardingClassFieldForwardingClassID) &&
+				databaseFC.GetForwardingClassID() != reqFrwdClassID {
+
 				err = checkForwardingClassID(ctx, sv, reqFrwdClassID)
 				if err != nil {
 					return err
@@ -72,13 +76,14 @@ func checkForwardingClassID(ctx context.Context, sv *ContrailTypeLogicService, f
 					Values: []string{strconv.FormatInt(fcID, 10)},
 				},
 			},
+			Fields: []string{models.ForwardingClassFieldDisplayName},
 		},
 	})
 	if err != nil {
 		return err
 	}
 
-	if listForwardingClassResponse.ForwardingClassCount != 0 {
+	if len(listForwardingClassResponse.ForwardingClasss) > 0 {
 		return errutil.ErrorBadRequestf("Forwarding class %s is configured with a id %d",
 			listForwardingClassResponse.ForwardingClasss[0].DisplayName, fcID)
 	}

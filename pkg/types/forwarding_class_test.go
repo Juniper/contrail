@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
@@ -15,22 +16,22 @@ import (
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 )
 
-type MockedListForwardingClassResponse struct {
+type mockedListForwardingClassResponse struct {
 	forwardingClassResponse *services.ListForwardingClassResponse
 	returnedError           error
 }
 
-type MockedGetForwardingClassResponse struct {
+type mockedGetForwardingClassResponse struct {
 	forwardingClassResponse *services.GetForwardingClassResponse
 	returnedError           error
 }
 
 func TestCreateForwardingClass(t *testing.T) {
 	tests := []struct {
-		name                              string
-		testForwardingClass               *models.ForwardingClass
-		mockedListForwardingClassResponse MockedListForwardingClassResponse
-		errorCode                         codes.Code
+		name                string
+		testForwardingClass *models.ForwardingClass
+		*mockedListForwardingClassResponse
+		errorCode codes.Code
 	}{
 		{
 			name: "Create successfully ForwardingClass",
@@ -38,7 +39,7 @@ func TestCreateForwardingClass(t *testing.T) {
 				UUID:              "forwarding-class-1",
 				ForwardingClassID: 1,
 			},
-			mockedListForwardingClassResponse: MockedListForwardingClassResponse{
+			mockedListForwardingClassResponse: &mockedListForwardingClassResponse{
 				forwardingClassResponse: &services.ListForwardingClassResponse{
 					ForwardingClasss:     []*models.ForwardingClass{},
 					ForwardingClassCount: 0,
@@ -53,7 +54,7 @@ func TestCreateForwardingClass(t *testing.T) {
 				UUID:              "forwarding-class-1",
 				ForwardingClassID: 1,
 			},
-			mockedListForwardingClassResponse: MockedListForwardingClassResponse{
+			mockedListForwardingClassResponse: &mockedListForwardingClassResponse{
 				forwardingClassResponse: &services.ListForwardingClassResponse{
 					ForwardingClasss: []*models.ForwardingClass{
 						{DisplayName: "Mocked_obj_in_db", ForwardingClassID: 1, UUID: "forwarding-class-2"},
@@ -70,7 +71,7 @@ func TestCreateForwardingClass(t *testing.T) {
 				UUID:              "forwarding-class-1",
 				ForwardingClassID: 1,
 			},
-			mockedListForwardingClassResponse: MockedListForwardingClassResponse{
+			mockedListForwardingClassResponse: &mockedListForwardingClassResponse{
 				forwardingClassResponse: &services.ListForwardingClassResponse{},
 				returnedError:           errutil.ErrorInternal, // simulate internal db error
 			},
@@ -88,11 +89,15 @@ func TestCreateForwardingClass(t *testing.T) {
 			paramRequest := services.CreateForwardingClassRequest{ForwardingClass: tt.testForwardingClass}
 			expectedResponse := services.CreateForwardingClassResponse{ForwardingClass: tt.testForwardingClass}
 
-			initCreateForwardingClassMock(service, tt.testForwardingClass)
+			fails := tt.errorCode != codes.OK
+
+			if !fails {
+				initCreateForwardingClassMock(service, tt.testForwardingClass)
+			}
 			initListForwardingClassMock(service, tt.mockedListForwardingClassResponse)
 
 			createForwardingClassResponse, err := service.CreateForwardingClass(ctx, &paramRequest)
-			if tt.errorCode != codes.OK {
+			if fails {
 				assert.Error(t, err)
 				status, ok := status.FromError(err)
 				assert.True(t, ok)
@@ -108,10 +113,10 @@ func TestCreateForwardingClass(t *testing.T) {
 
 func TestUpdateForwardingClass(t *testing.T) {
 	tests := []struct {
-		name                              string
-		request                           services.UpdateForwardingClassRequest // params to be updated
-		mockedListForwardingClassResponse MockedListForwardingClassResponse
-		mockedGetForwardingClassResponse  MockedGetForwardingClassResponse // retruns existing obj in DB
+		name    string
+		request services.UpdateForwardingClassRequest // params to be updated
+		*mockedListForwardingClassResponse
+		*mockedGetForwardingClassResponse // retruns existing obj in DB
 		errorCode                         codes.Code
 	}{
 		{
@@ -121,15 +126,16 @@ func TestUpdateForwardingClass(t *testing.T) {
 					UUID:              "forwarding-class-1",
 					ForwardingClassID: 2,
 				},
+				FieldMask: types.FieldMask{Paths: []string{models.ForwardingClassFieldForwardingClassID}},
 			},
-			mockedListForwardingClassResponse: MockedListForwardingClassResponse{
+			mockedListForwardingClassResponse: &mockedListForwardingClassResponse{
 				forwardingClassResponse: &services.ListForwardingClassResponse{
 					ForwardingClasss:     []*models.ForwardingClass{},
 					ForwardingClassCount: 0,
 				},
 				returnedError: nil,
 			},
-			mockedGetForwardingClassResponse: MockedGetForwardingClassResponse{
+			mockedGetForwardingClassResponse: &mockedGetForwardingClassResponse{
 				forwardingClassResponse: &services.GetForwardingClassResponse{
 					ForwardingClass: &models.ForwardingClass{
 						UUID:              "forwarding-class-1",
@@ -147,8 +153,9 @@ func TestUpdateForwardingClass(t *testing.T) {
 					UUID:              "forwarding-class-1",
 					ForwardingClassID: 1,
 				},
+				FieldMask: types.FieldMask{Paths: []string{models.ForwardingClassFieldForwardingClassID}},
 			},
-			mockedListForwardingClassResponse: MockedListForwardingClassResponse{
+			mockedListForwardingClassResponse: &mockedListForwardingClassResponse{
 				forwardingClassResponse: &services.ListForwardingClassResponse{
 					ForwardingClasss: []*models.ForwardingClass{
 						{DisplayName: "Mocked_obj_in_db", ForwardingClassID: 1, UUID: "forwarding-class-2"},
@@ -157,7 +164,7 @@ func TestUpdateForwardingClass(t *testing.T) {
 				},
 				returnedError: nil,
 			},
-			mockedGetForwardingClassResponse: MockedGetForwardingClassResponse{
+			mockedGetForwardingClassResponse: &mockedGetForwardingClassResponse{
 				forwardingClassResponse: &services.GetForwardingClassResponse{
 					ForwardingClass: &models.ForwardingClass{
 						UUID:              "forwarding-class-1",
@@ -175,19 +182,14 @@ func TestUpdateForwardingClass(t *testing.T) {
 					UUID:              "forwarding-class-1",
 					ForwardingClassID: 1,
 				},
+				FieldMask: types.FieldMask{Paths: []string{models.ForwardingClassFieldForwardingClassID}},
 			},
-			mockedListForwardingClassResponse: MockedListForwardingClassResponse{
-				forwardingClassResponse: &services.ListForwardingClassResponse{
-					ForwardingClasss:     []*models.ForwardingClass{},
-					ForwardingClassCount: 0,
-				},
-				returnedError: nil,
-			},
-			mockedGetForwardingClassResponse: MockedGetForwardingClassResponse{
+			mockedGetForwardingClassResponse: &mockedGetForwardingClassResponse{
 				forwardingClassResponse: nil,
 				returnedError:           errutil.ErrorNotFound,
 			},
-			errorCode: codes.NotFound,
+			mockedListForwardingClassResponse: nil, // list shouldn't be called
+			errorCode:                         codes.NotFound,
 		},
 		{
 			name: "Fail updating ForwardingClass on db error",
@@ -196,12 +198,13 @@ func TestUpdateForwardingClass(t *testing.T) {
 					UUID:              "forwarding-class-1",
 					ForwardingClassID: 1,
 				},
+				FieldMask: types.FieldMask{Paths: []string{models.ForwardingClassFieldForwardingClassID}},
 			},
-			mockedListForwardingClassResponse: MockedListForwardingClassResponse{
+			mockedListForwardingClassResponse: &mockedListForwardingClassResponse{
 				forwardingClassResponse: &services.ListForwardingClassResponse{},
 				returnedError:           errutil.ErrorInternal, // simulate internal db error
 			},
-			mockedGetForwardingClassResponse: MockedGetForwardingClassResponse{
+			mockedGetForwardingClassResponse: &mockedGetForwardingClassResponse{
 				forwardingClassResponse: &services.GetForwardingClassResponse{
 					ForwardingClass: &models.ForwardingClass{
 						UUID:              "forwarding-class-1",
@@ -223,12 +226,16 @@ func TestUpdateForwardingClass(t *testing.T) {
 			ctx := context.Background()
 			expectedResponse := services.UpdateForwardingClassResponse{ForwardingClass: tt.request.ForwardingClass}
 
-			initUpdateForwardingClassMock(service, tt.request.ForwardingClass)
+			fails := tt.errorCode != codes.OK
+
+			if !fails {
+				initUpdateForwardingClassMock(service, tt.request.ForwardingClass)
+			}
 			initListForwardingClassMock(service, tt.mockedListForwardingClassResponse)
 			initGetForwardingClassMock(service, tt.mockedGetForwardingClassResponse)
 
 			updateForwardingClassResponse, err := service.UpdateForwardingClass(ctx, &tt.request)
-			if tt.errorCode != codes.OK {
+			if fails {
 				assert.Error(t, err)
 				status, ok := status.FromError(err)
 				assert.True(t, ok)
@@ -250,7 +257,7 @@ func initCreateForwardingClassMock(service *ContrailTypeLogicService, returnedFo
 		) (response *services.CreateForwardingClassResponse, err error) {
 			return &services.CreateForwardingClassResponse{ForwardingClass: returnedForwardingClass}, nil
 		},
-	).AnyTimes()
+	).Times(1)
 }
 
 func initUpdateForwardingClassMock(service *ContrailTypeLogicService, returnedForwardingClass *models.ForwardingClass) {
@@ -261,29 +268,35 @@ func initUpdateForwardingClassMock(service *ContrailTypeLogicService, returnedFo
 		) (*services.UpdateForwardingClassResponse, error) {
 			return &services.UpdateForwardingClassResponse{ForwardingClass: returnedForwardingClass}, nil
 		},
-	).AnyTimes()
+	).Times(1)
 }
 
-func initListForwardingClassMock(service *ContrailTypeLogicService, mockedResponse MockedListForwardingClassResponse) {
+func initListForwardingClassMock(service *ContrailTypeLogicService, r *mockedListForwardingClassResponse) {
+	if r == nil {
+		return
+	}
 	service.ReadService.(*servicesmock.MockReadService).EXPECT().ListForwardingClass(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
 		func(_ context.Context, _ *services.ListForwardingClassRequest,
 		) (*services.ListForwardingClassResponse, error) {
-			return mockedResponse.forwardingClassResponse,
-				mockedResponse.returnedError
+			return r.forwardingClassResponse,
+				r.returnedError
 		},
-	).AnyTimes()
+	).Times(1)
 }
 
-func initGetForwardingClassMock(service *ContrailTypeLogicService, mockedResponse MockedGetForwardingClassResponse) {
+func initGetForwardingClassMock(service *ContrailTypeLogicService, r *mockedGetForwardingClassResponse) {
+	if r == nil {
+		return
+	}
 	service.ReadService.(*servicesmock.MockReadService).EXPECT().GetForwardingClass(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
 		func(_ context.Context, _ *services.GetForwardingClassRequest,
 		) (*services.GetForwardingClassResponse, error) {
-			return mockedResponse.forwardingClassResponse,
-				mockedResponse.returnedError
+			return r.forwardingClassResponse,
+				r.returnedError
 		},
-	).AnyTimes()
+	).Times(1)
 }
