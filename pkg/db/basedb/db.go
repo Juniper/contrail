@@ -25,7 +25,7 @@ const (
 )
 
 const (
-	dbDSNFormatMySQL      = "%s:%s@tcp(%s:3306)/%s"
+	dbDSNFormatMySQL      = "%s:%s@tcp(%s:%s)/%s"
 	dbDSNFormatPostgreSQL = "sslmode=disable user=%s password=%s host=%s dbname=%s"
 )
 
@@ -254,7 +254,7 @@ func dataSourceName(c *ConnectionConfig) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Name), nil
+	return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Port, c.Name), nil
 }
 
 func getDSNFormat(driver string) (string, error) {
