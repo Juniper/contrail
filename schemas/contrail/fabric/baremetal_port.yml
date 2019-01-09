@@ -9,7 +9,7 @@ schema:
     mac_address:
       description: Mac Address of the NIC of Baremetal
       type: string
-      format: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+      format: "mac"
       nullable: false
       permission:
       - create
