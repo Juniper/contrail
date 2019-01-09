@@ -195,9 +195,6 @@ func (s *Server) Init() (err error) {
 		return err
 	}
 
-	if viper.GetBool("server.enable_vnc_neutron") {
-		s.setupNeutronService(cs)
-	}
 
 	s.Service = cs
 	s.IPAMServer = cs
@@ -207,6 +204,10 @@ func (s *Server) Init() (err error) {
 	s.UserAgentKVServer = s.DBService
 	s.FQNameToIDServer = cs
 
+	if viper.GetBool("server.enable_vnc_neutron") {
+		s.setupNeutronService(cs)
+	}
+	
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second

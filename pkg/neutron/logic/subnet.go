@@ -54,6 +54,33 @@ func (*Subnet) ReadAll(ctx context.Context, rp RequestParameters, filters Filter
 	return response, err
 }
 
+// Read will fetch subnet with specified id.
+func (*Subnet) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	response := &SubnetResponse{}
+
+	kvsResponse, err := rp.UserAgentKV.RetrieveValues(ctx, &services.RetrieveValuesRequest{
+		Keys: []string{id},
+	})
+	if err != nil {
+		return response, err
+	}
+	virtualNetworks, err := listVNByKeyValues(ctx, rp, kvsResponse.GetValues())
+	if err != nil || len(virtualNetworks) == 0 {
+		return response, err
+	}
+
+	for _, vn := range virtualNetworks {
+		for _, ipamRef := range vn.GetNetworkIpamRefs() {
+			for _, subnetVnc := range ipamRef.GetAttr().GetIpamSubnets() {
+				if subnetVnc.GetSubnetUUID() == id {
+					return subnetVncToNeutron(vn, subnetVnc), nil
+				}
+			}
+		}
+	}
+	return response, nil
+}
+
 func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *SubnetResponse) bool {
 	if len(filters) == 0 {
 		return false
@@ -512,16 +539,36 @@ func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filt
 		return listVNByKeyValues(ctx, rp, kvsResponse.GetValues())
 	}
 
+	req := &listReq{}
 	if filters.haveKeys(neutronSharedKey) || filters.haveKeys(neutronRouterExternalKey) {
-		return collectSharedOrRouterExtNetworks(ctx, rp, filters, &listReq{})
+		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
 	}
-	return nil, nil
 
+	var vns []*models.VirtualNetwork
+	if !rp.RequestContext.IsAdmin {
+		req.ParentID = rp.RequestContext.Tenant
+	}
+
+	tenantVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+	vns = append(vns, tenantVNs...)
+
+	req.ParentID = ""
+	addDBFilter(req, isShared, []string{"true"}, false)
+	sharedVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+	vns = append(vns, sharedVNs...)
+
+	return vns, nil
 }
 
 func listVNWithoutFilters(ctx context.Context, rp RequestParameters) ([]*models.VirtualNetwork, error) {
 	req := &listReq{}
-	if rp.RequestContext.IsAdmin {
+	if !rp.RequestContext.IsAdmin {
 		req.ParentID = rp.RequestContext.Tenant
 	}
 
