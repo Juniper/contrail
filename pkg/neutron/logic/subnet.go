@@ -70,6 +70,39 @@ func (*Subnet) ReadAll(ctx context.Context, rp RequestParameters, filters Filter
 	return response, nil
 }
 
+// Read will fetch subnet with specified id.
+func (*Subnet) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	response := &SubnetResponse{}
+
+	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
+	if err != nil {
+		return nil, newNeutronSubnetError(
+			networkNotFound,
+			fmt.Sprintf("failed to fetch networks: %+v", err),
+		)
+	}
+
+	if len(virtualNetworks) == 0 {
+		return response, err
+	}
+
+	return getSubnetResponseFromIpamRef(virtualNetworks, id)
+}
+
+func getSubnetResponseFromIpamRef(vns []*models.VirtualNetwork, id string) (*SubnetResponse, error) {
+	for _, vn := range vns {
+		for _, ipamRef := range vn.GetNetworkIpamRefs() {
+			for _, subnetVnc := range ipamRef.GetAttr().GetIpamSubnets() {
+				if subnetVnc.GetSubnetUUID() == id {
+					return subnetVncToNeutron(vn, subnetVnc), nil
+				}
+			}
+		}
+	}
+
+	return &SubnetResponse{}, nil
+}
+
 func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *SubnetResponse) bool {
 	if len(filters) == 0 {
 		return false
@@ -130,7 +163,7 @@ func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, er
 
 	for _, ipamRef := range virtualNetwork.GetNetworkIpamRefs() {
 		for _, subnet := range ipamRef.GetAttr().GetIpamSubnets() {
-			if ipamCidrEquals(subnet, s.Cidr) {
+			if ipamSubnetCidrEquals(subnet, s.Cidr) {
 				return subnetVncToNeutron(virtualNetwork, subnet), nil
 			}
 		}
@@ -342,8 +375,8 @@ func (s *Subnet) subnetTypeToVnc() (*models.SubnetType, error) {
 	return &models.SubnetType{IPPrefix: prefixIP, IPPrefixLen: prefixLen}, nil
 }
 
-func ipamCidrEquals(ipam *models.IpamSubnetType, cidr string) bool {
-	ipamCidr := fmt.Sprintf("%s/%d", ipam.GetSubnet().GetIPPrefix(), ipam.GetSubnet().GetIPPrefixLen())
+func ipamSubnetCidrEquals(subnetVnc *models.IpamSubnetType, cidr string) bool {
+	ipamCidr := fmt.Sprintf("%s/%d", subnetVnc.GetSubnet().GetIPPrefix(), subnetVnc.GetSubnet().GetIPPrefixLen())
 	return ipamCidr == cidr
 }
 
@@ -359,27 +392,27 @@ func locateNetworkIpamRef(vn *models.VirtualNetwork, ni *models.NetworkIpam) *mo
 	return networkIpamRef
 }
 
-func subnetVncToNeutron(vn *models.VirtualNetwork, ipam *models.IpamSubnetType) *SubnetResponse {
+func subnetVncToNeutron(vn *models.VirtualNetwork, subnetVnc *models.IpamSubnetType) *SubnetResponse {
 	subnet := &SubnetResponse{
-		ID:         ipam.GetSubnetUUID(),
-		Name:       ipam.GetSubnetName(),
+		ID:         subnetVnc.GetSubnetUUID(),
+		Name:       subnetVnc.GetSubnetName(),
 		TenantID:   contrailUUIDToNeutronID(vn.GetParentUUID()),
 		NetworkID:  vn.GetUUID(),
-		EnableDHCP: ipam.GetEnableDHCP(),
+		EnableDHCP: subnetVnc.GetEnableDHCP(),
 		Shared:     vn.GetIsShared() || (vn.GetPerms2() != nil && len(vn.GetPerms2().GetShare()) > 0),
-		CreatedAt:  ipam.GetCreated(),
-		UpdatedAt:  ipam.GetLastModified(),
+		CreatedAt:  subnetVnc.GetCreated(),
+		UpdatedAt:  subnetVnc.GetLastModified(),
 	}
 
-	subnet.CIDRFromVnc(ipam.GetSubnet())
-	subnet.GatewayFromVnc(ipam.GetDefaultGateway())
-	subnet.HostRoutesFromVnc(ipam.GetHostRoutes())
+	subnet.CIDRFromVnc(subnetVnc.GetSubnet())
+	subnet.GatewayFromVnc(subnetVnc.GetDefaultGateway())
+	subnet.HostRoutesFromVnc(subnetVnc.GetHostRoutes())
 
-	subnet.DNSNameServersFromVnc(ipam.GetDHCPOptionList())
-	subnet.DNSServerAddressFromVnc(ipam.GetDNSServerAddress())
+	subnet.DNSNameServersFromVnc(subnetVnc.GetDHCPOptionList())
+	subnet.DNSServerAddressFromVnc(subnetVnc.GetDNSServerAddress())
 
-	ipamHasSubnet := ipam.GetSubnet() != nil
-	subnet.AllocationPoolsFromVnc(ipam.GetAllocationPools(), ipamHasSubnet)
+	ipamHasSubnet := subnetVnc.GetSubnet() != nil
+	subnet.AllocationPoolsFromVnc(subnetVnc.GetAllocationPools(), ipamHasSubnet)
 
 	return subnet
 }
@@ -508,25 +541,39 @@ func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filt
 	}
 
 	if filters.haveKeys(neutronIDKey) {
-		kvsResponse, err := rp.UserAgentKV.RetrieveValues(ctx, &services.RetrieveValuesRequest{
-			Keys: filters[neutronIDKey],
-		})
-		if err != nil {
-			return nil, err
-		}
-		return listVNByKeyValues(ctx, rp, kvsResponse.GetValues())
+		return collectVNsUsingKV(ctx, rp, filters[neutronIDKey])
 	}
 
+	req := &listReq{}
 	if filters.haveKeys(neutronSharedKey) || filters.haveKeys(neutronRouterExternalKey) {
-		return collectSharedOrRouterExtNetworks(ctx, rp, filters, &listReq{})
+		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
 	}
-	return nil, nil
 
+	var vns []*models.VirtualNetwork
+	if !rp.RequestContext.IsAdmin {
+		req.ParentID = rp.RequestContext.Tenant
+	}
+
+	tenantVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+	vns = append(vns, tenantVNs...)
+
+	req.ParentID = ""
+	addDBFilter(req, isShared, []string{"true"}, false)
+	sharedVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+	vns = append(vns, sharedVNs...)
+
+	return vns, nil
 }
 
 func listVNWithoutFilters(ctx context.Context, rp RequestParameters) ([]*models.VirtualNetwork, error) {
 	req := &listReq{}
-	if rp.RequestContext.IsAdmin {
+	if !rp.RequestContext.IsAdmin {
 		req.ParentID = rp.RequestContext.Tenant
 	}
 
@@ -545,6 +592,16 @@ func listVNWithoutFilters(ctx context.Context, rp RequestParameters) ([]*models.
 	vNetworks = append(vNetworks, sharedVNs...)
 
 	return vNetworks, nil
+}
+
+func collectVNsUsingKV(ctx context.Context, rp RequestParameters, keys []string) ([]*models.VirtualNetwork, error) {
+	kvsResponse, err := rp.UserAgentKV.RetrieveValues(ctx, &services.RetrieveValuesRequest{
+		Keys: keys,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return listVNByKeyValues(ctx, rp, kvsResponse.GetValues())
 }
 
 func listVNByKeyValues(ctx context.Context, rp RequestParameters, kvs []string) ([]*models.VirtualNetwork, error) {
