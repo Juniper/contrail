@@ -179,6 +179,45 @@ workflow:
     ip_version: 4
     cidr: 10.0.1.0/24
 
+- name: Subnet readall
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+          network_id: [d9ff46fc-e193-4d40-80ba-0d55c8aed9f2]
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
+        operation: READALL
+        type: subnet
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect:
+  - network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    host_routes: []
+    name: ""
+    enable_dhcp: true
+    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    dns_nameservers: []
+    allocation_pools:
+    - start: 10.0.1.2
+      end: 10.0.1.254
+    gateway_ip: 10.0.1.1
+# TODO(pawel.zadrozny) check dns_server_address when address manager start to reserve dns nameservers
+#    dns_server_address: 10.0.1.2
+    shared: false
+    ip_version: 4
+    cidr: 10.0.1.0/24
+
+
 - name: Network read with subnet
   request:
     path: /neutron/network
