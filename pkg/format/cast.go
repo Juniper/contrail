@@ -104,6 +104,8 @@ func InterfaceToString(i interface{}) string {
 		return string(t)
 	case string:
 		return t
+	case int:
+		return strconv.Itoa(t)
 	}
 	return ""
 }
