@@ -70,6 +70,39 @@ func (*Subnet) ReadAll(ctx context.Context, rp RequestParameters, filters Filter
 	return response, nil
 }
 
+// Read will fetch subnet with specified id.
+func (*Subnet) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	response := &SubnetResponse{}
+
+	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
+	if err != nil {
+		return nil, newNeutronSubnetError(
+			networkNotFound,
+			fmt.Sprintf("failed to fetch networks: %+v", err),
+		)
+	}
+
+	if len(virtualNetworks) == 0 {
+		return response, err
+	}
+
+	return getSubnetResponseFromIpamRef(virtualNetworks, id)
+}
+
+func getSubnetResponseFromIpamRef(vns []*models.VirtualNetwork, id string) (*SubnetResponse, error) {
+	for _, vn := range vns {
+		for _, ipamRef := range vn.GetNetworkIpamRefs() {
+			for _, subnetVnc := range ipamRef.GetAttr().GetIpamSubnets() {
+				if subnetVnc.GetSubnetUUID() == id {
+					return subnetVncToNeutron(vn, subnetVnc), nil
+				}
+			}
+		}
+	}
+
+	return &SubnetResponse{}, nil
+}
+
 func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *SubnetResponse) bool {
 	if len(filters) == 0 {
 		return false
@@ -508,25 +541,39 @@ func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filt
 	}
 
 	if filters.haveKeys(neutronIDKey) {
-		kvsResponse, err := rp.UserAgentKV.RetrieveValues(ctx, &services.RetrieveValuesRequest{
-			Keys: filters[neutronIDKey],
-		})
-		if err != nil {
-			return nil, err
-		}
-		return listVNByKeyValues(ctx, rp, kvsResponse.GetValues())
+		return collectVNsUsingKV(ctx, rp, filters[neutronIDKey])
 	}
 
+	req := &listReq{}
 	if filters.haveKeys(neutronSharedKey) || filters.haveKeys(neutronRouterExternalKey) {
-		return collectSharedOrRouterExtNetworks(ctx, rp, filters, &listReq{})
+		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
 	}
-	return nil, nil
 
+	var vns []*models.VirtualNetwork
+	if !rp.RequestContext.IsAdmin {
+		req.ParentID = rp.RequestContext.Tenant
+	}
+
+	tenantVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+	vns = append(vns, tenantVNs...)
+
+	req.ParentID = ""
+	addDBFilter(req, isShared, []string{"true"}, false)
+	sharedVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+	vns = append(vns, sharedVNs...)
+
+	return vns, nil
 }
 
 func listVNWithoutFilters(ctx context.Context, rp RequestParameters) ([]*models.VirtualNetwork, error) {
 	req := &listReq{}
-	if rp.RequestContext.IsAdmin {
+	if !rp.RequestContext.IsAdmin {
 		req.ParentID = rp.RequestContext.Tenant
 	}
 
@@ -545,6 +592,16 @@ func listVNWithoutFilters(ctx context.Context, rp RequestParameters) ([]*models.
 	vNetworks = append(vNetworks, sharedVNs...)
 
 	return vNetworks, nil
+}
+
+func collectVNsUsingKV(ctx context.Context, rp RequestParameters, keys []string) ([]*models.VirtualNetwork, error) {
+	kvsResponse, err := rp.UserAgentKV.RetrieveValues(ctx, &services.RetrieveValuesRequest{
+		Keys: keys,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return listVNByKeyValues(ctx, rp, kvsResponse.GetValues())
 }
 
 func listVNByKeyValues(ctx context.Context, rp RequestParameters, kvs []string) ([]*models.VirtualNetwork, error) {
