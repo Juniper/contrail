@@ -20,12 +20,13 @@ import (
 
 // Database drivers
 const (
+	DefaultMySQLPort = "3306"
 	DriverMySQL      = "mysql"
 	DriverPostgreSQL = "postgres"
 )
 
 const (
-	dbDSNFormatMySQL      = "%s:%s@tcp(%s:3306)/%s"
+	dbDSNFormatMySQL      = "%s:%s@tcp(%s:%s)/%s"
 	dbDSNFormatPostgreSQL = "sslmode=disable user=%s password=%s host=%s dbname=%s"
 )
 
@@ -157,11 +158,13 @@ func rollbackOnPanic(tx *sql.Tx) {
 
 //ConnectDB connect to the db based on viper configuration.
 func ConnectDB() (*sql.DB, error) {
+	viper.SetDefault("database.port", DefaultMySQLPort)
 	db, err := OpenConnection(ConnectionConfig{
 		Driver:   viper.GetString("database.type"),
 		User:     viper.GetString("database.user"),
 		Password: viper.GetString("database.password"),
 		Host:     viper.GetString("database.host"),
+		Port:     viper.GetString("database.port"),
 		Name:     viper.GetString("database.name"),
 		Debug:    viper.GetBool("database.debug"),
 	})
@@ -192,6 +195,7 @@ type ConnectionConfig struct {
 	User     string
 	Password string
 	Host     string
+	Port     string
 	Name     string
 	Debug    bool
 }
@@ -253,8 +257,14 @@ func dataSourceName(c *ConnectionConfig) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Name), nil
+	switch f {
+	case dbDSNFormatPostgreSQL:
+		return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Name), nil
+	case dbDSNFormatMySQL:
+		return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Port, c.Name), nil
+	default:
+		return "", errors.Errorf("undefined database format: %s", f)
+	}
 }
 
 func getDSNFormat(driver string) (string, error) {

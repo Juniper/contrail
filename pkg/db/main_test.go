@@ -37,6 +37,7 @@ func TestMain(m *testing.M) {
 			User:     config["user"].(string),
 			Password: config["password"].(string),
 			Host:     config["host"].(string),
+			Port:     format.InterfaceToString(config["port"]),
 			Name:     config["name"].(string),
 		})
 		if err != nil {
