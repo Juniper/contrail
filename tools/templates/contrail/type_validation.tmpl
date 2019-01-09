@@ -10,7 +10,7 @@ import (
 {# - string (format, enum) #}
 {# - integer, number (minimum, maximum value) #}
 {# - complex types (calls proper Validate<typename> method) #}
-{% macro validateProperty(jsonSchema, variableName) %}
+{% macro validateProperty(jsonSchema, variableName, property) %}
 	{# validate string property #}
 	{% if jsonSchema.Type == "string" %}
 		{# Check format #}
@@ -24,16 +24,14 @@ import (
 			if err != nil {
 				return err
 			}
-		{% endif %}
+		{% endif -%}
 
-		{# Create restrictions map #}
-		{% if jsonSchema.Enum|length > 0 %}
-		_, present := restrictions[{{variableName}}]
-
-		if !present {
-			return errors.Errorf("{{jsonSchema.ID}} value (%s) must be one of [%s]", {{variableName}}, strings.Join(mapKeys(restrictions), ", "))
+		{# Check enum #}
+		{%- if jsonSchema.Enum|length > 0 -%}
+		if _, ok := {{property}}_set[{{variableName}}]; !ok {
+			return errors.Errorf("{{property}} value (%s) must be one of [%s]", {{variableName}}, strings.Join(mapKeys({{property}}_set), ", "))
 		}
-		{% endif %}
+		{%- endif %}
 		}
 	{# validate integer property #}
 	{# TODO: this validation should be moved past type logic service #}
@@ -50,9 +48,7 @@ import (
 		{% endif %}
 	{% elif jsonSchema.Type == "object" %}
 		if {{variableName}} != nil {
-			err := sv.Validate{{ jsonSchema.GoType }}({{variableName}})
-
-			if err != nil {
+			if err := sv.Validate{{ jsonSchema.GoType }}({{variableName}}); err != nil {
 				return err
 			}
 		}
@@ -82,26 +78,24 @@ import (
 
 		{# Here validation occurs #}
 		{% if validationRequired %}
-		{
-			{# If the string has defined restrictions, create map for checking them #}
-			{% if jsonSchema.Type == "string" and jsonSchema.Enum|length > 0 %}
-				restrictions := map[string]struct {} {
-					{% for restriction in jsonSchema.Enum %}
-					{% autoescape off %}
-					"{{restriction}}": {},
-					{% endautoescape %}
-					{% endfor %}
-				}
-			{% endif %}
+		{# If the string has defined restrictions, create map for checking them #}
+		{% if jsonSchema.Type == "string" and jsonSchema.Enum|length > 0 %}
+			{{property}}_set := map[string]struct {} {
+				{% for restriction in jsonSchema.Enum -%}
+				{% autoescape off -%}
+				"{{restriction}}": {},
+				{% endautoescape %}
+				{%- endfor %}
+			}
+		{% endif %}
 
-			{% if pdef.Type == "array" %}
-				for _, value := range obj.{{pdef.GoName}} {
-					{{ validateProperty(jsonSchema, "value") }}
-				}
-			{% else %}
-				{{ validateProperty(jsonSchema, "obj."|add:pdef.GoName) }}
-			{% endif %}
-		}
+		{% if pdef.Type == "array" %}
+			for _, value := range obj.{{pdef.GoName}} {
+				{{- validateProperty(jsonSchema, "value", property) -}}
+			}
+		{% else %}
+			{{ validateProperty(jsonSchema, "obj."|add:pdef.GoName, property) }}
+		{% endif %}
 		{% endif %}
 	{% endfor %}
 {% endmacro %}
@@ -110,7 +104,7 @@ import (
 {% if definition.Type == "object" %}
 //Validate{{ type }} validation based on information in schema
 func (sv * SchemaValidator) Validate{{ type }}( obj * {{ type }}) error {
-	{{validateProperties(type, definition.Properties)}}
+	{{- validateProperties(type, definition.Properties) -}}
 	return nil
 }{% endif %}
 {% endfor %}
@@ -118,9 +112,7 @@ func (sv * SchemaValidator) Validate{{ type }}( obj * {{ type }}) error {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 //Validate{{ schema.JSONSchema.GoName }} validation based on information in schema
 func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ schema.JSONSchema.GoName }}) error {
-	//Validate Properties
-	{{validateProperties(schema.ID, schema.JSONSchema.Properties)}}
-	//Validate References
+	{{- validateProperties(schema.ID, schema.JSONSchema.Properties) -}}
 	{% for linkTo, reference in schema.References %}
 		{% if reference.RefType %}
 		for _, r := range obj.{{ reference.GoName }}Refs {
@@ -140,19 +132,19 @@ func (sv * SchemaValidator) Validate{{ schema.JSONSchema.GoName }}( obj * {{ sch
 		return errors.Errorf("parent_uuid is required for {{schema.ID}} ")
 	}
 	{% endif %}
-	restrictions := map[string]struct {} {
-		{% for parent, definition in schema.Parents %}
-		{% autoescape off %}
+	parentTypeSet := map[string]struct {} {
+		{% for parent, definition in schema.Parents -%}
+		{% autoescape off -%}
 		"{{definition.LinkTo.Path}}": {},
 		{% endautoescape %}
-		{% endfor %}
+		{%- endfor %}
 	}
-	{% if !schema.IsConfigRootInParents %}
-	if _, present := restrictions[obj.ParentType]; !present {
-	{% else %}
-	if _, present := restrictions[obj.ParentType]; !present && obj.ParentType != "" {
-	{% endif %}
-		return errors.Errorf("parent_type (%s) of {{schema.ID}} must be one of [%s]", obj.ParentType, strings.Join(mapKeys(restrictions), ", "))
+	{% if !schema.IsConfigRootInParents -%}
+	if _, ok := parentTypeSet[obj.ParentType]; !ok {
+	{%- else -%}
+	if _, ok := parentTypeSet[obj.ParentType]; !ok && obj.ParentType != "" {
+	{%- endif %}
+		return errors.Errorf("parent_type (%s) of {{schema.ID}} must be one of [%s]", obj.ParentType, strings.Join(mapKeys(parentTypeSet), ", "))
 	}
 
 	{% endif %}
