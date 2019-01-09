@@ -512,16 +512,36 @@ func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filt
 		return listVNByKeyValues(ctx, rp, kvsResponse.GetValues())
 	}
 
+	req := &listReq{}
 	if filters.haveKeys(neutronSharedKey) || filters.haveKeys(neutronRouterExternalKey) {
-		return collectSharedOrRouterExtNetworks(ctx, rp, filters, &listReq{})
+		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
 	}
-	return nil, nil
 
+	var vns []*models.VirtualNetwork
+	if !rp.RequestContext.IsAdmin {
+		req.ParentID = rp.RequestContext.Tenant
+	}
+
+	tenantVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+	vns = append(vns, tenantVNs...)
+
+	req.ParentID = ""
+	addDBFilter(req, isShared, []string{"true"}, false)
+	sharedVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+	vns = append(vns, sharedVNs...)
+
+	return vns, nil
 }
 
 func listVNWithoutFilters(ctx context.Context, rp RequestParameters) ([]*models.VirtualNetwork, error) {
 	req := &listReq{}
-	if rp.RequestContext.IsAdmin {
+	if !rp.RequestContext.IsAdmin {
 		req.ParentID = rp.RequestContext.Tenant
 	}
 
