@@ -25,7 +25,7 @@ const (
 )
 
 const (
-	dbDSNFormatMySQL      = "%s:%s@tcp(%s:3306)/%s"
+	dbDSNFormatMySQL      = "%s:%s@tcp(%s:%s)/%s"
 	dbDSNFormatPostgreSQL = "sslmode=disable user=%s password=%s host=%s dbname=%s"
 )
 
@@ -162,6 +162,7 @@ func ConnectDB() (*sql.DB, error) {
 		User:     viper.GetString("database.user"),
 		Password: viper.GetString("database.password"),
 		Host:     viper.GetString("database.host"),
+		Port:     viper.GetString("database.port"),
 		Name:     viper.GetString("database.name"),
 		Debug:    viper.GetBool("database.debug"),
 	})
@@ -192,6 +193,7 @@ type ConnectionConfig struct {
 	User     string
 	Password string
 	Host     string
+	Port     string
 	Name     string
 	Debug    bool
 }
@@ -254,7 +256,7 @@ func dataSourceName(c *ConnectionConfig) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Name), nil
+	return fmt.Sprintf(f, c.User, c.Password, c.Host, c.Port, c.Name), nil
 }
 
 func getDSNFormat(driver string) (string, error) {
