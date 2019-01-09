@@ -66,7 +66,7 @@ func (o *objectMappingAdapter) Update(
 		}
 		return o.Sink.Update(ctx, resourceName, pk[0], obj, *fields)
 	case pkLen == 2 && isRef:
-		return errors.New("method UPDATE not available on ref_* resources - this is a bug")
+		return errors.New("method UPDATE not available on ref_* resources - received ref-relax event")
 	}
 	return errors.Errorf("update row: unhandled case with table %v and primary key with %v elements", resourceName, pkLen)
 }
