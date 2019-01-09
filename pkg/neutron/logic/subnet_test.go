@@ -444,6 +444,86 @@ func TestSubnet_ReadAll(t *testing.T) {
 	}
 }
 
+func TestSubnet_Read(t *testing.T) {
+	type mockVN struct {
+		VirtualNetworks *services.ListVirtualNetworkResponse
+		Error           error
+	}
+
+	type mockKVs struct {
+		Response *services.RetrieveValuesResponse
+		Error    error
+	}
+
+	tests := []struct {
+		name string
+		id   string
+
+		expected *logic.SubnetResponse
+
+		mockVN  mockVN
+		mockKVs mockKVs
+	}{
+		{
+			name: "No virtual networks",
+			mockVN: mockVN{
+				VirtualNetworks: &services.ListVirtualNetworkResponse{},
+			},
+			expected: &logic.SubnetResponse{},
+		},
+		{
+			name: "With correct id",
+			id:   "subnet_green_1_uuid",
+			mockVN: mockVN{
+				VirtualNetworks: &services.ListVirtualNetworkResponse{
+					VirtualNetworks: []*models.VirtualNetwork{
+						fakeVirtualNetwork("green", 1, false),
+					},
+				},
+			},
+			expected: &logic.SubnetResponse{
+				NetworkID:       "virtual_network_green",
+				ID:              "subnet_green_1_uuid",
+				Cidr:            "10.0.100.0/24",
+				GatewayIP:       "10.0.100.1",
+				AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
+				HostRoutes:      []*logic.RouteTableType{},
+				DNSNameservers:  []*logic.DnsNameserver{},
+				IPVersion:       4,
+			},
+		},
+		{
+			name: "With incorrect id",
+			id:   "does_not_exist",
+			mockVN: mockVN{
+				VirtualNetworks: &services.ListVirtualNetworkResponse{
+					VirtualNetworks: []*models.VirtualNetwork{
+						fakeVirtualNetwork("green", 1, false),
+					},
+				},
+			},
+			expected: &logic.SubnetResponse{},
+		},
+	}
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rp := logic.RequestParameters{
+				ReadService: mockReadService(mockCtrl, tt.mockVN.VirtualNetworks, tt.mockVN.Error),
+				UserAgentKV: mockUserAgentService(mockCtrl, tt.mockKVs.Response, tt.mockKVs.Error),
+			}
+
+			subnet := &logic.Subnet{}
+			result, err := subnet.Read(context.Background(), rp, tt.id)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func mockReadService(
 	mockCtrl *gomock.Controller,
 	vns *services.ListVirtualNetworkResponse,

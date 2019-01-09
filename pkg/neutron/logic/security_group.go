@@ -117,7 +117,8 @@ func ensureDefaultSecurityGroupExists(ctx context.Context, rp RequestParameters)
 
 	project := projectResponse.GetProject()
 	for _, sg := range project.GetSecurityGroups() {
-		if l := len(sg.GetFQName()); l > 0 && sg.GetFQName()[len(sg.GetFQName())-1] == defaultSGName {
+
+		if l := len(sg.GetFQName()); l > 0 && sg.GetFQName()[l-1] == defaultSGName {
 			return nil
 		}
 	}
@@ -305,8 +306,8 @@ func securityGroupContrailToNeutron(sg *models.SecurityGroup) (*SecurityGroupRes
 
 	if sgNeutron.Name == "" {
 		fqName := sg.GetFQName()
-		if len(fqName) >= 1 {
-			sgNeutron.Name = fqName[len(fqName)-1]
+		if l := len(fqName); l >= 1 {
+			sgNeutron.Name = fqName[l-1]
 		}
 	}
 
