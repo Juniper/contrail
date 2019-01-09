@@ -171,11 +171,11 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
 		{% elif property.GoType == "int64" %}m.{{ property.GoName }} = format.InterfaceToInt64(val)
 		{% elif property.GoType == "uint64" %}m.{{ property.GoName }} = format.InterfaceToUint64(val)
 		{% elif property.GoType == "float" %}m.{{ property.GoName }} = format.InterfaceToFloat(val)
-		{% elif property.Type == "array"%}
+		{% elif property.Type == "array" %}
 			{% if property.Items.Type == "string" %}
 			// string
 				m.{{ property.GoName }} = format.InterfaceToStringList(val)
-			{% elif property.Items.GoType == "int64"%}
+			{% elif property.Items.GoType == "int64" %}
 				m.{{ property.GoName }} = format.InterfaceToInt64List(val)
 			{% elif property.Items.GoType == "uint64"%}
 				m.{{ property.GoName }} = format.InterfaceToUint64List(val)
@@ -194,9 +194,9 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
 		case []interface{}:
 			m.{{ property.GoName }} = InterfaceTo{{ property.GoType }}(v)
 		}
-		{% endif %}
+		{%- endif -%}
 	}
-	{% endfor %}
+	{%- endfor %}
 	{% for linkTo, reference in schema.References %}
 	if val, ok := o["{{ linkTo }}_refs"]; ok {
 		m.{{ reference.GoName }}Refs = InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(val)
@@ -210,9 +210,12 @@ func (m *{{ schema.JSONSchema.GoName }}) ToMap() map[string]interface{} {
 	}
 	return map[string]interface{}{
 	{% for property in schema.JSONSchema.OrderedProperties %}
-		{% if property.GoType == "string" || property.GoType == "[]string" || property.GoType == "[]interface" || property.GoType == "map[string]interface{}" || property.GoType == "map[string]string" || property.GoType == "bool" || property.GoType == "int64" || property.GoType == "uint64" || property.GoType == "float" || property.Type == "array" %} "{{ property.ID }}": m.{{ property.GoName}},
-		{% else %}"{{ property.ID }}": m.{{ property.GoName}}.ToMap(),
-	{% endif %}{% endfor %}
+		{%- if property.GoType == "string" || property.GoType == "[]string" || property.GoType == "[]interface" || property.GoType == "map[string]interface{}" || property.GoType == "map[string]string" || property.GoType == "bool" || property.GoType == "int64" || property.GoType == "uint64" || property.GoType == "float" || property.Type == "array" -%}
+		"{{ property.ID }}": m.{{ property.GoName}},
+		{%- else -%}
+		"{{ property.ID }}": m.{{ property.GoName}}.ToMap(),
+		{%- endif %}
+	{% endfor %}
 	{% for linkTo, reference in schema.References %}
 		"{{ linkTo }}_refs" : {{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsToMap(m.{{ reference.GoName }}Refs),
 	{% endfor %}
