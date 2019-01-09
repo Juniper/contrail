@@ -249,6 +249,30 @@ func TestGRPC(t *testing.T) {
 			Project: project,
 		})
 		assert.NoError(t, err)
+
+		ns := models.MakeNamespace()
+		ns.UUID = uuid.NewV4().String()
+		ns.ParentType = "domain"
+		ns.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
+		ns.Name = "my-namespace"
+
+		_, err = c.CreateNamespace(ctx, &services.CreateNamespaceRequest{
+			Namespace: ns,
+		})
+		assert.NoError(t, err)
+
+		_, err = c.CreateProjectNamespaceRef(ctx, &services.CreateProjectNamespaceRefRequest{
+			ID:                  project.UUID,
+			ProjectNamespaceRef: &models.ProjectNamespaceRef{UUID: ns.UUID},
+		})
+		assert.NoError(t, err)
+
+		_, err = c.DeleteProjectNamespaceRef(ctx, &services.DeleteProjectNamespaceRefRequest{
+			ID:                  project.UUID,
+			ProjectNamespaceRef: &models.ProjectNamespaceRef{UUID: ns.UUID},
+		})
+		assert.NoError(t, err)
+
 		response, err := c.ListProject(ctx, &services.ListProjectRequest{
 			Spec: &baseservices.ListSpec{
 				Limit: 1,
@@ -264,6 +288,11 @@ func TestGRPC(t *testing.T) {
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, getResponse.Project)
+
+		_, err = c.DeleteNamespace(ctx, &services.DeleteNamespaceRequest{
+			ID: ns.UUID,
+		})
+		assert.NoError(t, err)
 
 		_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
 			ID: project.UUID,
