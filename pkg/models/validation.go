@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	errors "github.com/pkg/errors"
+	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
@@ -82,8 +82,7 @@ func (tv *TypeValidator) ValidateCommunityAttributes(obj *CommunityAttributes) e
 	}
 
 	for _, value := range obj.CommunityAttribute {
-		_, present := restrictions[value]
-		if present {
+		if _, ok := restrictions[value]; ok {
 			continue
 		}
 
