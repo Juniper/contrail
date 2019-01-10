@@ -52,6 +52,11 @@ func TestSecurityGroup(t *testing.T) {
 	RunTest(t, "./test_data/test_security_group.yml")
 }
 
+func TestQoSConfig(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_qos_config.yml")
+}
+
 func TestQuotaChecking(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_quota_checking.yml")
