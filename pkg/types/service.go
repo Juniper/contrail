@@ -2,7 +2,6 @@ package types
 
 import (
 	"context"
-
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -43,4 +42,5 @@ type ContrailTypeLogicService struct {
 	IntPoolAllocator  IntPoolAllocator
 	MetadataGetter    baseservices.MetadataGetter
 	WriteService      services.WriteService
+	defaultGSCUUID    string
 }
