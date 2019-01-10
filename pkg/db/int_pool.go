@@ -20,11 +20,22 @@ type IntPool struct {
 
 //CreateIntPool creates int pool.
 func (db *Service) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
-	return db.DeallocateIntRange(ctx, &IntPool{
+	intPool := &IntPool{
 		Key:   pool,
 		Start: start,
 		End:   end,
-	})
+	}
+
+	intPools, err := db.GetIntPools(ctx, intPool)
+	if err != nil {
+		return err
+	}
+
+	if len(intPools) > 0 {
+		return errutil.ErrorConflictf("int pool %+v already in use", intPool)
+	}
+
+	return db.DeallocateIntRange(ctx, intPool)
 }
 
 //DeleteIntPool deletes int pool.

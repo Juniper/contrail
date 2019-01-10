@@ -227,6 +227,16 @@ workflow:
       start: 100
       end: 200
 
+- name: try to create test int pool in already allocated area
+  request:
+    path: /int-pools
+    method: POST
+    expected: [409]
+    data:
+      pool: test_int_pool
+      start: 150
+      end: 160
+
 - name: allocate int in test int pool
   request:
     path: /int-pool
