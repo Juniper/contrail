@@ -140,6 +140,10 @@ func compareGeneratedGatewayCommon(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedGatewayCommonPath())
 }
 
+func compareGeneratedVcentervars(t *testing.T, expected string) bool {
+        return compareFiles(t, expected, generatedVcenterVarsPath())
+}
+
 func verifyCommandsExecuted(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, executedMCCommandPath())
 }
@@ -154,6 +158,10 @@ func generatedInstancesPath() string {
 
 func generatedInventoryPath() string {
 	return defaultWorkRoot + "/" + clusterID + "/inventory.yml"
+}
+
+func generatedVcenterVarsPath() string {
+        return defaultWorkRoot + "/" + clusterID + "/vcenter_vars.yml"
 }
 
 func generatedSecretPath() string {
@@ -903,8 +911,8 @@ func TestKubernetesCluster(t *testing.T) {
 
 //vcenter
 // nolint: gocyclo
-func runvcenterClusterTest(t *testing.T, expectedOutput string,
-	pContext map[string]interface{}, expectedEndpoints map[string]string) {
+func runvcenterClusterTest(t *testing.T, expectedOutput string, expectedVcentervars string,
+	context map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
@@ -955,6 +963,8 @@ func runvcenterClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to manage(create) cluster")
 	assert.True(t, compareGeneratedInstances(t, expectedOutput),
 		"Instance file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedVcentervars(t, expectedVcentervars),
+		"Vcenter_vars file created during cluster create is not as expected")     
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_vcenter.yml"),
 		"Expected list of create playbooks are not executed")
 	// Wait for the in-memory endpoint cache to get updated
@@ -1036,7 +1046,7 @@ func TestVcenterCluster(t *testing.T) {
 		"nodejs":    "https://127.0.0.1:8143",
 		"telemetry": "http://127.0.0.1:8081",
 	}
-	runvcenterClusterTest(t, "./test_data/expected_all_in_one_vcenter_instances.yml", pContext, expectedEndpoints)
+	runvcenterClusterTest(t, "./test_data/expected_all_in_one_vcenter_instances.yml", "./test_data/expected_all_in_one_vcenter_vars.yml", context, expectedEndpoints)
 }
 
 func TestWindowsCompute(t *testing.T) {

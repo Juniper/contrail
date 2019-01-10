@@ -140,7 +140,11 @@ func (a *contrailAnsibleDeployer) getVcenterFile() (instanceFile string) {
 	return filepath.Join(a.getWorkingDir(), defaultVcenterFile)
 }
 
-func (a *contrailAnsibleDeployer) getInventoryTemplate() (inventoryTemplate string) {
+func (a *ansibleProvisioner) getVcenterTemplate() (instanceTemplate string) {
+        return filepath.Join(a.getTemplateRoot(), defaultVcenterTemplate)
+}
+
+func (a *ansibleProvisioner) getInventoryTemplate() (inventoryTemplate string) {
 	return filepath.Join(a.getTemplateRoot(), defaultInventoryTemplate)
 }
 
@@ -241,6 +245,9 @@ func (a *contrailAnsibleDeployer) createInventory() error {
 	if a.clusterData.clusterInfo.DatapathEncryption {
 		return a.createDatapathEncryptionInventory(a.getInventoryFile())
 	}
+        if err := a.createVcenterVarsFile(a.getVcenterFile()); err != nil {
+                return err
+        }
 	return nil
 }
 
@@ -349,7 +356,26 @@ func (a *contrailAnsibleDeployer) createDatapathEncryptionInventory(destination 
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) mockPlay(ansibleArgs []string) error {
+func (a *ansibleProvisioner) createVcenterVarsFile(destination string) error {
+        a.log.Info("Creating vcenter_vars.yml input file for vcenter ansible deployer")
+        context := pongo2.Context{
+		"cluster": a.clusterData.clusterInfo,
+		"vcenter":            a.clusterData.getVCenterClusterInfo(),
+		"nodes":   a.clusterData.getAllNodesInfo(),
+        }
+        content, err := template.Apply(a.getVcenterTemplate(), context)
+        if err != nil {
+                return err
+        }
+        err = fileutil.WriteToFile(destination, content, defaultFilePermRWOnly)
+        if err != nil {
+                return err
+        }
+        a.log.Info("Created vcenter_vars.yml input file for vcenter ansible deployer")
+        return nil
+}
+
+func (a *ansibleProvisioner) mockPlay(ansibleArgs []string) error {
 	playBookIndex := len(ansibleArgs) - 1
 	context := pongo2.Context{
 		"playBook":    ansibleArgs[playBookIndex],

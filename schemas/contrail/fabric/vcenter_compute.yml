@@ -67,7 +67,7 @@ schema:
       view:
       - create
       - detail
-   dv_portgroup:
+   dv_portgroup_name:
       description: dv portgroup name 
       nullable: false
       permission:
@@ -75,6 +75,18 @@ schema:
       - update
       sql: ""
       title: dv portgroup 
+      type: string
+      view:
+      - create
+      - detail
+   number_of_ports:
+      description: number of ports 
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: number of ports 
       type: string
       view:
       - create

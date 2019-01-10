@@ -36,6 +36,9 @@ test_data:
       esxi_name: 10.84.16.11
       username: root
       password: c0ntrail123
+      vcenter_server: 10.84.16.51
+      datastore: qa-ds
+      mac: 00:50:56:00:d0:0b
     hostname: esxi_node
     interface_name: esxi_node_interface
     ip_address: {{MGMT_INT_IP}}
@@ -63,7 +66,10 @@ test_data:
       - uuid: all_in_one_node_uuid
     datacenter: qa-dc
     dvsswitch: qa_dvs
-    cluster_name: qa_cluster
+    cluster_name: qa-cluster
+    vmdk: "http://10.84.5.120/cs-shared/contrail-vcenter/vmdk/centos-7.5/LATEST/ContrailVM.ovf"
+    dv_portgroup_name: qa_pg
+    number_of_ports: "1800"
   vCenter_plugin_nodes: &vCenter_plugin_nodes
     uuid: vCenter_plugin_nodes_uuid
     parent_type: vCenter
@@ -267,7 +273,10 @@ workflow:
         - uuid: all_in_one_node_uuid
       datacenter: qa-dc
       dvsswitch: qa_dvs
-      cluster_name: qa_cluster
+      cluster_name: qa-cluster
+      vmdk: "http://10.84.5.120/cs-shared/contrail-vcenter/vmdk/centos-7.5/LATEST/ContrailVM.ovf"
+      dv_portgroup_name: qa_pg
+      number_of_ports: "1800"
 - name: create vcenter plugin node
   request:
     path: /vCenter-plugin-nodes
