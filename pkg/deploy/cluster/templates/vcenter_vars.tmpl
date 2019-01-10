@@ -1,0 +1,26 @@
+---
+vcenter_servers:
+      hostname: {%if vcenter.Server %}{{vcenter.Server}}{%endif%}
+      username: {%if vcenter.Username %}{{vcenter.Username}}{%endif%}
+      password: {%if vcenter.Password %}{{vcenter.Password}}{%endif%}
+      datacentername: {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.Datacenter}}{%endif%}{%endfor%}
+      clusternames:
+       - {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.ClusterName}}{%endif%}{%endfor%}
+      dv_switch:
+        dv_switch_name: {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.Dvsswitch}}{%endif%}{%endfor%}
+      dv_port_group:
+        number_of_ports: {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.NumberOfPorts}}{%endif%}{%endfor%}
+esxihosts:
+   {% for node in nodes %}
+     {%if node.Type == "esxi" %}
+  - name: {{ node.EsxiInfo.EsxiName }}
+    username: {{ node.EsxiInfo.Username }}
+    password: {{ node.EsxiInfo.Password }}
+    datastore: {{ node.EsxiInfo.Datastore }}
+    datacenter: {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.Datacenter}}{%endif%}{%endfor%}
+    cluster: {% for vcenter_compute in vcenter.VCenterComputes %}{%if vcenter_compute %}{{vcenter_compute.ClusterName}}{%endif%}{%endfor%}
+    contrail_vm:
+      networks:
+        - mac: {{ node.EsxiInfo.Mac }}
+     {%endif%}
+   {%endfor%}

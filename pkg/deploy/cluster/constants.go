@@ -68,6 +68,7 @@ const (
 	defaultWorkRoot                       = "/var/tmp/contrail_cluster"
 	defaultInstanceTemplate               = "instances.tmpl"
 	defaultInstanceFile                   = "instances.yml"
+	defaultVcenterTemplate                = "vcenter_vars.tmpl"
 	defaultVcenterFile                    = "vcenter_vars.yml"
 	mCProvisioner                         = "multi-cloud"
 	defaultDeployer                       = "ansible"

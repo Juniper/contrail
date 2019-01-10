@@ -1,0 +1,22 @@
+---
+vcenter_servers:
+      hostname: 10.84.16.51
+      username: administrator
+      password: Contrail123
+      datacentername: qa-dc
+      clusternames:
+       - qa-cluster
+      dv_switch:
+        dv_switch_name: qa_dvs
+      dv_port_group:
+        number_of_ports: 1800
+esxihosts:
+  - name: 10.84.16.11
+    username: root
+    password: c0ntrail123
+    datastore: qa-ds
+    datacenter: qa-dc
+    cluster: qa-cluster
+    contrail_vm:
+      networks:
+        - mac: 00:50:56:00:d0:0b
