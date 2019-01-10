@@ -2,14 +2,16 @@ package types
 
 import (
 	"context"
-
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
+
+const defaultGSCName = "default-global-system-config"
 
 // CreateGlobalSystemConfig by design should never be called.
 // GlobalSystemConfig can only be created by DBInit, never by user request
@@ -149,4 +151,30 @@ func (sv *ContrailTypeLogicService) checkBgpaasPorts(ctx context.Context, update
 		}
 	}
 	return nil
+}
+
+func (sv *ContrailTypeLogicService) getDefaultGlobalSystemConfigUUID(ctx context.Context) (string, error) {
+	if sv.defaultGSCUUID != "" {
+		return sv.defaultGSCUUID, nil
+	}
+
+	defaultGSCFqName := sv.getDefaultGlobalSystemConfigFqName()
+	defaultGSCMeta, err := sv.MetadataGetter.GetMetadata(
+		ctx,
+		basemodels.Metadata{
+			FQName: defaultGSCFqName,
+			Type:   models.KindGlobalSystemConfig,
+		},
+	)
+	if err != nil {
+		return "", errutil.ErrorBadRequestf("Cannot resolve Global System Config with FQName %v: %v",
+			defaultGSCFqName, err)
+	}
+	
+	sv.defaultGSCUUID = defaultGSCMeta.UUID
+	return sv.defaultGSCUUID, nil
+}
+
+func (sv *ContrailTypeLogicService) getDefaultGlobalSystemConfigFqName() []string {
+	return []string{defaultGSCName}
 }
