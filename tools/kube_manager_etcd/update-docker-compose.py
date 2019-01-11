@@ -6,7 +6,7 @@ docker_compose_path = "/etc/contrail/kubemanager/docker-compose.yaml"
 with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
-docker_compose["services"]["kubemanager"]["image"] = "contrail-kubernetes-kube-manager:etcd"
+docker_compose["services"]["kubemanager"]["image"] = "danielfurmancl/contrail-kubernetes-kube-manager:etcd-client-certs"
 
 etcd_pki_mount = "/etc/kubernetes/pki/etcd:/etc/kubernetes/pki/etcd:ro"
 volumes = docker_compose["services"]["kubemanager"].setdefault("volumes", [])
