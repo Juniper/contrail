@@ -50,6 +50,7 @@ docker exec "$(docker ps -q -f name=contrail_etcd)" sh -c "ETCDCTL_API=3 etcdctl
 # Ensure keystone is listening on localhost
 ensure_keystone_on_localhost
 
+export ORCHESTRATOR=openstack
 # Update control-node docker compose file
 sudo ./tools/control-node_etcd/update-docker-compose.py
 

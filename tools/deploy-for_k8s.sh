@@ -45,9 +45,12 @@ clear_config_database
 make zero_psql
 
 # Drop contrail related content from etcd
-docker exec "$(docker ps -q -f name=k8s_etcd_etcd)" sh -c "ETCDCTL_API=3 etcdctl del /contrail --prefix"
-docker exec "$(docker ps -q -f name=k8s_etcd_etcd)" sh -c "ETCDCTL_API=3 etcdctl del /vnc --prefix"
+etcdctl_tls="etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt \
+    --key=/etc/kubernetes/pki/etcd/peer.key"
+docker exec "$(docker ps -q -f name=k8s_etcd_etcd)" sh -c "ETCDCTL_API=3 $etcdctl_tls del /contrail --prefix"
+docker exec "$(docker ps -q -f name=k8s_etcd_etcd)" sh -c "ETCDCTL_API=3 $etcdctl_tls etcdctl del /vnc --prefix"
 
+export ORCHESTRATOR=k8s
 # Update kube_manager docker compose file
 sudo ./tools/kube_manager_etcd/update-docker-compose.py
 
