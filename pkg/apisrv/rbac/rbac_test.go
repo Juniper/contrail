@@ -12,10 +12,10 @@ import (
 const apiAccessListUUID = "default-api-access-list8_uuid"
 const adminUser = "admin"
 
-// NoAuth is used to create new no auth context
-func userAuth(ctx context.Context) context.Context {
+// Create a new auth context
+func userAuth(ctx context.Context, tenant string) context.Context {
 	Context := auth.NewContext(
-		"default-domain", "default-project", "bob", []string{"Member"}, "")
+		"default-domain", tenant, "bob", []string{"Member"}, "")
 	var authKey interface{} = "auth"
 	return context.WithValue(ctx, authKey, Context)
 }
@@ -32,7 +32,8 @@ func TestCheckPermissions(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	noAuthCtx := auth.NoAuth(ctx)
-	userAuthCtx := userAuth(ctx)
+
+	userAuthCtx := userAuth(ctx, "default-project")
 
 	tests := []struct {
 		name    string
@@ -70,15 +71,59 @@ func TestCheckPermissions(t *testing.T) {
 			},
 		},
 		{
-			name: "rbac project create with rbac enabled and no RBAC rule",
+			name: "rbac project create with  rbac enabled as Member and global RBAC rule",
 			args: args{
 				ctx:     userAuthCtx,
-				l:       nil,
+				l:       globalAccessRuleList(),
 				aaaMode: "rbac",
 				kind:    "project",
 				op:      ActionCreate,
 			},
-			wantErr: true,
+			wantErr: false,
+		},
+		{
+			name: "rbac project create with  rbac enabled as Member and domain RBAC rule",
+			args: args{
+				ctx:     userAuthCtx,
+				l:       domainAccessRuleList(),
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionCreate,
+			},
+			wantErr: false,
+		},
+		{
+			name: "rbac project create with  rbac enabled as Member and project RBAC rule",
+			args: args{
+				ctx:     userAuthCtx,
+				l:       projectAccessRuleList(),
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionCreate,
+			},
+			wantErr: false,
+		},
+		{
+			name: "rbac project create  and project RBAC rule and shared permissions",
+			args: args{
+				ctx:     userAuthCtx,
+				l:       projectAccessRuleList(),
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionCreate,
+			},
+			wantErr: false,
+		},
+		{
+			name: "rbac project create  and project RBAC rule and shared permissions",
+			args: args{
+				ctx:     userAuth(ctx, "project_red_uuid"),
+				l:       globalAccessRuleList(),
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionCreate,
+			},
+			wantErr: false,
 		},
 		{
 			name: "rbac project create with rbac enabled as Member and global RBAC rule",
@@ -124,6 +169,117 @@ func TestCheckPermissions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := CheckPermissions(tt.args.ctx, tt.args.l, tt.args.aaaMode, tt.args.kind, tt.args.op)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ChecktPermissions() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestCheckObjectPermissions(t *testing.T) {
+	type args struct {
+		ctx     context.Context
+		p       *models.PermType2
+		aaaMode string
+		kind    string
+		op      Action
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	//noAuthCtx := auth.NoAuth(ctx)
+
+	userAuthCtx := userAuth(ctx, "default-project")
+	blueAuthCtx := userAuth(ctx, "project_blue_uuid")
+	redAuthCtx := userAuth(ctx, "project_red_uuid")
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "resource  access of owner with full permission",
+			args: args{
+				ctx: blueAuthCtx,
+				p: &models.PermType2{
+					Owner:        "project_blue_uuid",
+					OwnerAccess:  7,
+					GlobalAccess: 0,
+					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+				},
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionRead,
+			},
+		},
+		{
+			name: "resource read by owner with out permission",
+			args: args{
+				ctx: blueAuthCtx,
+				p: &models.PermType2{
+					Owner:        "project_blue_uuid",
+					OwnerAccess:  2,
+					GlobalAccess: 0,
+					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+				},
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionRead,
+			},
+			wantErr: true,
+		},
+		{
+			name: "resource read by owner with out permission",
+			args: args{
+				ctx: blueAuthCtx,
+				p: &models.PermType2{
+					Owner:        "project_blue_uuid",
+					OwnerAccess:  4,
+					GlobalAccess: 0,
+					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+				},
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionRead,
+			},
+		},
+
+		{
+			name: "resource access by the shared project with permission",
+			args: args{
+				ctx: redAuthCtx,
+				p: &models.PermType2{
+					Owner:        "project_blue_uuid",
+					OwnerAccess:  7,
+					GlobalAccess: 0,
+					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+				},
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionUpdate,
+			},
+		},
+		{
+			name: "Project access by no shared project",
+			args: args{
+				ctx: userAuthCtx,
+				p: &models.PermType2{
+					Owner:        "project_blue_uuid",
+					OwnerAccess:  7,
+					GlobalAccess: 0,
+					Share:        []*models.ShareType{{TenantAccess: 7, Tenant: "project:project_red_uuid"}},
+				},
+				aaaMode: "rbac",
+				kind:    "project",
+				op:      ActionDelete,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := CheckObjectPermissions(tt.args.ctx, tt.args.p, tt.args.aaaMode, tt.args.kind, tt.args.op)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CheckPermissions() error = %v, wantErr %v", err, tt.wantErr)
 			}

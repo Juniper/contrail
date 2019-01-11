@@ -8,6 +8,53 @@ test_data:
     name: project_blue_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    perms2:
+        owner_access: 7
+        global_access: 0
+    quota: {}
+  project_red: &project_red_project
+    uuid: project_red_uuid
+    name: project_red_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    perms2:
+        owner_access: 7
+        global_access: 0
+        share: 
+        - tenant: "tenant:demo"
+          tenant_access: 7
+
+  project_red1: &project_red_project1
+    uuid: project_red_uuid
+    name: project_red_project
+    display_name: project_red_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    perms2:
+        owner_access: 7
+        global_access: 0
+        share:
+        - tenant: "tenant:demo"
+          tenant_access: 7
+    quota: {}
+  project_default: &project_default_project
+    uuid: default-project
+    name: project_default_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    perms2:
+        owner_access: 7
+        global_access: 0
+    quota: {}
+
+  project_red: &project_demo_project
+    uuid: demo
+    name: project_demo_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    perms2:
+        owner_access: 7
+        global_access: 0
     quota: {}
   default-api-access-list8: &default-api-access-list8
       display_name: default-api-access-list8
@@ -16,7 +63,9 @@ test_data:
       perms2:
        owner_access: 7
        global_access: 0
-       share: []
+       share:
+        - tenant: "tenant:demo"
+          tenant_access: 7
       api_access_list_entries:
        rbac_rule:
          - rule_object: projects
@@ -63,6 +112,39 @@ workflow:
     expected: [200]
     data:
       project: *project_blue_project
+
+- name: create project demo as admin
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project_demo_project
+
+- name: create project demo as admin
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project_default_project
+
+- name: create project red as admin
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project_red_project
+
+# TODO shared object access is broken with DB code refactoring
+#- name: read project blue as bob
+# client: bob
+#  request:
+#    path: /project/project_blue_uuid
+#    method: GET
+#    expected: [403]
+#  expect: null
 
 - name: delete project as non-admin
   client: bob
@@ -112,6 +194,14 @@ workflow:
   request:
     path: /project/project_blue_project_uuid
     method: DELETE
+    expected: [200]
+  expect: null
+
+- name: read project red as bob
+  client: bob
+  request:
+    path: /project/project_red_uuid
+    method: GET
     expected: [200]
   expect: null
 
