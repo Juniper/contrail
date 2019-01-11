@@ -10,6 +10,7 @@ func listSpecForGet(uuid string, fields []string) *baseservices.ListSpec {
 	return &baseservices.ListSpec{
 		Limit:  1,
 		Detail: true,
+		Shared: true,
 		Fields: fields,
 		Filters: []*baseservices.Filter{
 			{
