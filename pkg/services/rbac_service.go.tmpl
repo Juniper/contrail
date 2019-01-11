@@ -2,9 +2,9 @@ package services
 
 import (
 	"context"
-
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/apisrv/rbac"
+	"github.com/Juniper/contrail/pkg/auth"
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -12,7 +12,7 @@ import (
 func (r *RBACService) Create{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
-	model := models.{{ schema.JSONSchema.GoName }}{}
+	model := request.{{ schema.JSONSchema.GoName }}
 	if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
 		r.AAAMode,model.Kind(),rbac.ActionCreate) ; err != nil {
 		return nil,err
@@ -23,9 +23,14 @@ func (r *RBACService) Create{{ schema.JSONSchema.GoName }}(
 func (r *RBACService) Update{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
-	model := models.{{ schema.JSONSchema.GoName }}{}
+	model := request.{{ schema.JSONSchema.GoName }}
 	if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
 		r.AAAMode,model.Kind(),rbac.ActionUpdate); err != nil {
+		return nil,err
+	}
+	perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID )
+	if err := rbac.CheckObjectPermissions(ctx,perms2,
+		r.AAAMode,model.Kind(),rbac.ActionUpdate) ; err != nil {
 		return nil,err
 	}
 	return r.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -39,6 +44,11 @@ func (r *RBACService) Delete{{ schema.JSONSchema.GoName }}(
 		r.AAAMode,model.Kind(),rbac.ActionDelete); err != nil {
 		return nil,err
 	}
+	perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
+	if err := rbac.CheckObjectPermissions(ctx,perms2,
+		r.AAAMode,model.Kind(),rbac.ActionDelete) ; err != nil {
+		return nil,err
+	}
 	return r.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
@@ -48,6 +58,11 @@ func (r *RBACService) Get{{ schema.JSONSchema.GoName }}(
 	model := models.{{ schema.JSONSchema.GoName }}{}
 	if err := rbac.CheckPermissions(ctx,r.getAllAPIAccessLists(ctx),
 		r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
+		return nil,err
+	}
+	perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,request.GetID())
+	if err := rbac.CheckObjectPermissions(ctx,perms2,
+		r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
 		return nil,err
 	}
 	return r.BaseService.Get{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -61,6 +76,19 @@ func (r *RBACService) List{{ schema.JSONSchema.GoName }}(
 		r.AAAMode,model.Kind(),rbac.ActionRead); err != nil {
 		return nil,err
 	}
+	perms2 := r.Get{{ schema.JSONSchema.GoName }}Perms2(ctx,model.UUID)
+	if err := rbac.CheckObjectPermissions(ctx,perms2,
+		r.AAAMode,model.Kind(),rbac.ActionRead) ; err != nil {
+		return nil,err
+	}
 	return r.BaseService.List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (r *RBACService) Get{{ schema.JSONSchema.GoName }}Perms2(ctx context.Context,uuid string) *models.PermType2 {
+	if result, err := r.ReadService.Get{{ schema.JSONSchema.GoName }}(auth.NoAuth(ctx),  &Get{{ schema.JSONSchema.GoName }}Request{
+                                            ID: uuid, }); err == nil {
+		return result.{{ schema.JSONSchema.GoName }}.GetPerms2()
+	}
+	return nil
 }
 {% endif %}{% endfor %}
