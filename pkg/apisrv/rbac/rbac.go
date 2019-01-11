@@ -242,7 +242,7 @@ func (t tenantPermission) getResourcePermission(rq *request) resourcePermission 
 	if val, ok := t[key]; ok {
 		return val
 	}
-	key = getTenantKey("*", rq.project)
+	key = getTenantKey(rq.domain, "*")
 
 	if val, ok := t[key]; ok {
 		return val
