@@ -2,6 +2,8 @@
   name: Build and test Juniper/contrail
   roles:
     - zuul-include-vars # include variables exported from trusted context
+    - yum-repos-prepare
+    - install-pip-virtualenv
     - install-docker-daemon
     - role: add-insecure-registry
       new_registry: "{{ contrail_docker_registry }}"
