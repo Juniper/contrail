@@ -20,3 +20,4 @@ func (service *RBACService) getAllAPIAccessLists(ctx context.Context) []*models.
 	}
 	return result.APIAccessLists
 }
+
