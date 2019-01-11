@@ -12,10 +12,10 @@ const (
 	PermsX
 	//PermsW for write permission
 	PermsW
-	//PermsR if read permission
-	PermsR
 	//PermsWX for exec and write permission
 	PermsWX
+	//PermsR if read permission
+	PermsR
 	//PermsRX for exec and read permission
 	PermsRX
 	//PermsRW for read and write permission
