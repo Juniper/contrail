@@ -6,19 +6,23 @@ docker_compose_path = "/etc/contrail/kubemanager/docker-compose.yaml"
 with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
-docker_compose["services"]["kubemanager"]["image"] = "danielfurmancl/contrail-kubernetes-kube-manager:61dc46749"
+schema = docker_compose["services"]["kubemanager"]
+schema["image"] = "danielfurmancl/contrail-kubernetes-kube-manager:cd247d549"
 
-environment = docker_compose["services"]["kubemanager"].setdefault("environment", [])
-notification_driver = "NOTIFICATION_DRIVER=etcd"
-if notification_driver not in environment:
-    environment.append(notification_driver)
-
-db_driver = "DB_DRIVER=etcd"
-if db_driver not in environment:
-    environment.append(db_driver)
+environment = schema.setdefault("environment", [])
+for entry in [
+    "NOTIFICATION_DRIVER=etcd",
+    "DB_DRIVER=etcd",
+    "ETCD_USE_SSL=true",
+    "ETCD_SSL_KEYFILE=/etc/kubernetes/pki/etcd/peer.key",
+    "ETCD_SSL_CERTFILE=/etc/kubernetes/pki/etcd/peer.crt",
+    "ETCD_SSL_CA_CERT=/etc/kubernetes/pki/etcd/ca.crt",
+]:
+    if entry not in environment:
+        environment.append(entry)
 
 etcd_pki_mount = "/etc/kubernetes/pki/etcd:/etc/kubernetes/pki/etcd:ro"
-volumes = docker_compose["services"]["kubemanager"].setdefault("volumes", [])
+volumes = schema.setdefault("volumes", [])
 if etcd_pki_mount not in volumes:
     volumes.append(etcd_pki_mount)
 

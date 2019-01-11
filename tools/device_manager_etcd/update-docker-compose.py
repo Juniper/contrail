@@ -8,16 +8,23 @@ with open(docker_compose_path) as f:
 
 schema = docker_compose["services"]["devicemgr"]
 schema["image"] = "pawelzny/contrail-controller-config-devicemgr:R6.0-1"
+
 environment = schema.setdefault("environment", [])
+for entry in [
+    "NOTIFICATION_DRIVER=etcd",
+    "DB_DRIVER=etcd",
+    "ETCD_USE_SSL=true",
+    "ETCD_SSL_KEYFILE=/etc/kubernetes/pki/etcd/peer.key",
+    "ETCD_SSL_CERTFILE=/etc/kubernetes/pki/etcd/peer.crt",
+    "ETCD_SSL_CA_CERT=/etc/kubernetes/pki/etcd/ca.crt",
+]:
+    if entry not in environment:
+        environment.append(entry)
 
-notification_driver = "NOTIFICATION_DRIVER=etcd"
-db_driver = "DB_DRIVER=etcd"
-
-if notification_driver not in environment:
-    environment.append(notification_driver)
-
-if db_driver not in environment:
-    environment.append(db_driver)
+etcd_pki_mount = "/etc/kubernetes/pki/etcd:/etc/kubernetes/pki/etcd:ro"
+volumes = schema.setdefault("volumes", [])
+if etcd_pki_mount not in volumes:
+    volumes.append(etcd_pki_mount)
 
 with open(docker_compose_path, "w") as f:
     yaml.dump(docker_compose, f)
