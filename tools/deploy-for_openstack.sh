@@ -50,17 +50,18 @@ docker exec "$(docker ps -q -f name=contrail_etcd)" sh -c "ETCDCTL_API=3 etcdctl
 # Ensure keystone is listening on localhost
 ensure_keystone_on_localhost
 
+export ORCHESTRATOR=openstack
 # Update control-node docker compose file
-sudo ./tools/control-node_etcd/update-docker-compose.py
+sudo --preserve-env ./tools/control-node_etcd/update-docker-compose.py
 
 # Update schema transformer docker compose file
-sudo ./tools/schema_transformer_etcd/update-docker-compose.py
+sudo --preserve-env ./tools/schema_transformer_etcd/update-docker-compose.py
 
 # Update device manager docker compose file
-sudo ./tools/device_manager_etcd/update-docker-compose.py
+sudo --preserve-env ./tools/device_manager_etcd/update-docker-compose.py
 
 # Update svnmonitor docker compose file
-sudo ./tools/svcmonitor_etcd/update-docker-compose.py
+sudo --preserve-env ./tools/svcmonitor_etcd/update-docker-compose.py
 
 # Load init data to rdbms
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-openstack.yml
