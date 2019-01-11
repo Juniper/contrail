@@ -5,6 +5,9 @@ import (
 	"fmt"
 )
 
+// ErrorFields neutron error fields.
+type errorFields map[string]interface{}
+
 // Error structure.
 type Error struct {
 	fields errorFields
@@ -22,8 +25,6 @@ func (e *Error) Error() string {
 func (e *Error) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.fields)
 }
-
-type errorFields map[string]interface{}
 
 func newNeutronError(name string, fields errorFields) *Error {
 	e := &Error{
@@ -46,4 +47,5 @@ const (
 	ipAddressGenerationFailure = "IpAddressGenerationFailure"
 	networkNotFound            = "NetworkNotFound"
 	securityGroupNotFound      = "SecurityGroupNotFound"
+	securityGroupRuleNotFound  = "SecurityGroupRuleNotFound"
 )
