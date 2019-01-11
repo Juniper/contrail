@@ -7,6 +7,7 @@ import (
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 // CRUD operations rune constants
@@ -58,29 +59,12 @@ type request struct {
 // CheckPermissions checks whether resource operation is allowed based on RBAC config.
 func CheckPermissions(ctx context.Context, l []*models.APIAccessList, aaaMode string, kind string, op Action) error {
 
-	if !isRBACEnabled(aaaMode) {
-		return nil
-	}
-	if ctx == nil {
-
-		return errutil.ErrorForbiddenf("invalid context. access denied")
+	allowed, err := checkConfig(ctx, aaaMode, kind, op)
+	if err != nil || allowed == true {
+		return err
 	}
 
-	authCtx := auth.GetAuthCTX(ctx)
-
-	if authCtx == nil {
-
-		return errutil.ErrorForbiddenf("invalid auth context. access denied ")
-	}
-
-	if validateRole(authCtx) {
-		return nil
-	}
-
-	if isROAccessAllowed(authCtx, op) {
-		return nil
-	}
-
+	request := newRequest(ctx, kind, op)
 	// If no rules to allow access, deny permission
 
 	if len(l) == 0 {
@@ -92,16 +76,43 @@ func CheckPermissions(ctx context.Context, l []*models.APIAccessList, aaaMode st
 	// it will be enhanced to get updated only with a database change for APIAccessList config.
 
 	g := make(tenantPermission)
-	err := g.addAccessList(l)
+	err = g.addAccessList(l)
 	if err != nil {
 		return err
 	}
 
-	if g.validateAPILevel(newRequest(ctx, kind, op)) {
-		return nil
+	if !g.validateAPILevel(request) {
+		return errutil.ErrorForbiddenf("RBAC : no matching  API access list rules. access denied ")
 	}
 
-	return errutil.ErrorForbiddenf("RBAC : no matching  API access list rules. access denied ")
+	return nil
+}
+
+func checkConfig(ctx context.Context, aaaMode string, kind string, op Action) (isAllowed bool, err error) {
+
+	if !isRBACEnabled(aaaMode) {
+		return true, nil
+	}
+	if ctx == nil {
+		return false, errutil.ErrorForbiddenf("invalid context. access denied")
+	}
+
+	authCtx := auth.GetAuthCTX(ctx)
+
+	if authCtx == nil {
+		return false, errutil.ErrorForbiddenf("invalid auth context. access denied ")
+	}
+
+	if validateRole(authCtx) {
+		return true, nil
+	}
+
+	if isROAccessAllowed(authCtx, op) {
+		return true, nil
+	}
+
+	return false, nil
+
 }
 
 // getTenantKey get the Hash key for first level hash.
@@ -271,6 +282,95 @@ func (t *tenantPermission) validateResourceAPILevel(rq *request, kind string) bo
 
 	}
 	return false
+}
+
+func tenantType(tenant string) string {
+
+	if strings.HasPrefix(tenant, "domain") {
+		return models.KindDomain
+	}
+	return models.KindProject
+}
+
+func tenantInfo(tenant string) (projectType string, uuid string) {
+
+	uuid = strings.Split(tenant, ":")[1]
+	if tenantType(tenant) == models.KindDomain {
+		return models.KindDomain, uuid
+	}
+	return models.KindProject, uuid
+}
+
+func actionToPerms(a Action) int64 {
+	var p int64
+
+	switch a {
+	case ActionCreate:
+		p = basemodels.PermsW
+	case ActionDelete:
+		p = basemodels.PermsW
+	case ActionUpdate:
+		p = basemodels.PermsW
+	case ActionRead:
+		p = basemodels.PermsR
+	}
+	return p
+}
+
+func permsAccessAllowed(rq *request, access int64) bool {
+
+	p := actionToPerms(rq.op)
+	if p & access != 0 {
+		return true
+	}
+	return false
+}
+
+// CheckObjectPermissions checks object level (perms2) permissions.
+func CheckObjectPermissions(ctx context.Context, p *models.PermType2, aaaMode string, kind string, op Action) error {
+
+	allowed, err := checkConfig(ctx, aaaMode, kind, op)
+	if err != nil || allowed == true {
+		return err
+	}
+
+	rq := newRequest(ctx, kind, op)
+	oAccess := p.GetOwnerAccess()
+	gAccess := p.GetGlobalAccess()
+
+	// Check whether resource global access permissions allows  the Action.
+	if permsAccessAllowed(rq, gAccess) {
+		return nil
+	}
+
+	owner := p.GetOwner()
+	// Check whether resource owner access  permissions allows the Action.
+	if rq.project == owner {
+		if !permsAccessAllowed(rq, oAccess) {
+			return errutil.ErrorForbiddenf("Object access not allowed. access denied ")
+		}
+		return nil
+	}
+	return checkObjectSharePermissions(ctx, p, rq)
+}
+
+func checkObjectSharePermissions(ctx context.Context, p *models.PermType2, rq *request) error {
+	share := p.GetShare()
+	// Check whether resource is shared with the tenant and Action is allowed.
+	for _, st := range share {
+		tenant := st.GetTenant()
+		tAccess := st.GetTenantAccess()
+		shareType, uuid := tenantInfo(tenant)
+
+		if (shareType == models.KindDomain && uuid == rq.domain) ||
+			(shareType == models.KindProject && uuid == rq.project) {
+			if permsAccessAllowed(rq, tAccess) {
+				return nil
+			}
+		}
+	}
+	return errutil.ErrorForbiddenf("Object access not allowed. access denied ")
+
 }
 
 // validateAPILevel checks whether any resource rules or wildcard allow this operation
