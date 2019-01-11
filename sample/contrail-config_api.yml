@@ -18,7 +18,7 @@ etcd:
   path: contrail
   grpc_insecure: true
   tls:
-    enable: false # TODO(Daniel): enable TLS when client when certificates present in etcd container
+    enabled: true
     certificate_path: /etc/kubernetes/pki/etcd/peer.crt
     key_path: /etc/kubernetes/pki/etcd/peer.key
     trusted_ca_path: /etc/kubernetes/pki/etcd/ca.crt
