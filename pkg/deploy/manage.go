@@ -7,6 +7,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/cluster"
+	"github.com/Juniper/contrail/pkg/deploy/rhospd/undercloud"
 	pkglog "github.com/Juniper/contrail/pkg/log"
 )
 
@@ -52,6 +53,7 @@ func newDeployer(deploy *Deploy) (base.Deployer, error) {
 	switch deploy.config.ResourceType {
 	case "contrail_cluster":
 		c := &cluster.Config{
+			APIServer:                 deploy.APIServer,
 			ClusterID:                 deploy.config.ResourceID,
 			Action:                    deploy.config.Action,
 			TemplateRoot:              deploy.config.TemplateRoot,
@@ -61,13 +63,26 @@ func newDeployer(deploy *Deploy) (base.Deployer, error) {
 			AnsibleFetchURL:           deploy.config.AnsibleFetchURL,
 			AnsibleCherryPickRevision: deploy.config.AnsibleCherryPickRevision,
 			AnsibleRevision:           deploy.config.AnsibleRevision,
-			Test:                      deploy.config.Test,
 		}
 		cluster, err := cluster.NewCluster(c)
 		if err != nil {
 			return nil, err
 		}
 		return cluster.GetDeployer()
+	case "rhospd_cloud_manager":
+		c := &undercloud.Config{
+			APIServer:    deploy.APIServer,
+			ResourceID:   deploy.config.ResourceID,
+			Action:       deploy.config.Action,
+			TemplateRoot: deploy.config.TemplateRoot,
+			LogLevel:     deploy.config.LogLevel,
+			LogFile:      deploy.config.LogFile,
+		}
+		undercloud, err := undercloud.NewUnderCloud(c)
+		if err != nil {
+			return nil, err
+		}
+		return undercloud.GetDeployer()
 	}
 	return nil, errors.New("unsupported resource type")
 }
