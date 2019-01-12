@@ -52,6 +52,7 @@ func newDeployer(deploy *Deploy) (base.Deployer, error) {
 	switch deploy.config.ResourceType {
 	case "contrail_cluster":
 		c := &cluster.Config{
+			APIServer:                 deploy.APIServer,
 			ClusterID:                 deploy.config.ResourceID,
 			Action:                    deploy.config.Action,
 			TemplateRoot:              deploy.config.TemplateRoot,
