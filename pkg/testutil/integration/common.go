@@ -115,7 +115,7 @@ func WithTestDBs(f func(dbType string)) {
 		viper.Set("database.password", config["password"])
 		viper.Set("database.dialect", config["dialect"])
 
-		if val, ok := config["use_sync"]; ok && val != "true" {
+		if val, ok := config["use_sync"]; ok && val == true {
 			viper.Set("server.notify_etcd", false)
 			viper.Set("sync.enabled", true)
 		} else {
@@ -342,8 +342,14 @@ func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv
 
 	ec := integrationetcd.NewEtcdClient(t)
 
+	syncEnabled := viper.GetBool("sync.enabled")
 	for key := range watchers {
-		events := watchers[key]
+		events := filterEvents(watchers[key], func(e Event) bool {
+			if e.SyncOnly {
+				return syncEnabled
+			}
+			return true
+		})
 		collect := ec.WatchKeyN(key, len(events), collectTimeout, append(opts, clientv3.WithPrefix())...)
 		checks = append(checks, createWatchChecker(task, collect, key, events))
 	}
@@ -356,18 +362,20 @@ func StartWatchers(t *testing.T, task string, watchers Watchers, opts ...clientv
 	}
 }
 
+func filterEvents(evs []Event, pred func(Event) bool) []Event {
+	result := make([]Event, 0, len(evs))
+	for _, e := range evs {
+		if pred(e) {
+			result = append(result, e)
+		}
+	}
+	return result
+}
+
 func createWatchChecker(task string, collect func() []string, key string, events []Event) func(t *testing.T) {
 	return func(t *testing.T) {
 		collected := collect()
-		syncEnabled := viper.GetBool("sync.enabled")
 		eventCount := len(events)
-		if !syncEnabled {
-			for _, e := range events {
-				if e.SyncOnly {
-					eventCount--
-				}
-			}
-		}
 		assert.Equal(
 			t, eventCount, len(collected),
 			"etcd emitted not enough events on %s(got %v, expected %v)\n",
@@ -375,9 +383,6 @@ func createWatchChecker(task string, collect func() []string, key string, events
 		)
 
 		for i, e := range events[:len(collected)] {
-			if !syncEnabled && e.SyncOnly {
-				continue
-			}
 			c := collected[i]
 			var data interface{} = map[string]interface{}{}
 			if len(c) > 0 {
