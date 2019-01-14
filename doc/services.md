@@ -21,7 +21,7 @@ The chain overview:
 
 - **Caller:** REST/gRPC framework
 - **Purpose:** Operations on request's payload: common operations, schema-based validation, deserialize payload to resource structure.
-- **Source code:** [service.tmpl](../tools/templates/contrail/service.tmpl) [service_common.tmpl](../tools/templates/contrail/service_common.tmpl)
+- **Source code:** [service.go.tmpl](../pkg/services/service.go.tmpl) [service_common.go.tmpl](../pkg/services/service_common.go.tmpl)
 
 Contrail Service is registered as API request handler.
 
@@ -29,7 +29,7 @@ Contrail Service is registered as API request handler.
 
 - **Caller:** ContrailService
 - **Purpose:** Translate reference update to in-transaction resource update.
-- **Source code:** [service_interface.tmpl](../tools/templates/contrail/service_interface.tmpl)
+- **Source code:** [service_interface.go.tmpl](../pkg/services/service_interface.go.tmpl)
 
 RefUpdate is a special endpoint which is used only for add and delete references.
 It is risky to make such changes outside of transaction. RefUpdateToUpdate
@@ -39,7 +39,7 @@ translates add/delete reference to in-transaction resource update.
 
 - **Caller:** RefUpdateToUpdateService
 - **Purpose:** Fills up missing properties based on resources logic and metadata.
-- **Source code:** [sanitizer_service.tmpl](../tools/templates/contrail/sanitizer_service.tmpl) [sanitizer.go](../pkg/services/sanitizer.go)
+- **Source code:** [sanitizer_service.go.tmpl](../pkg/services/sanitizer_service.go.tmpl) [sanitizer.go](../pkg/services/sanitizer.go)
 
 Sanitizer complement properties like: refs or display name by creating or updating resources.
 
@@ -47,7 +47,7 @@ Sanitizer complement properties like: refs or display name by creating or updati
 
 - **Caller:** Sanitizer service
 - **Purpose:** Check whether resource access is allowed based on RBAC configuration.
-- **Source code:** [rbac_service.tmpl](../tools/templates/contrail/rbac_service.tmpl) [rbac.go](../pkg/services/rbac.go)
+- **Source code:** [rbac_service.go.tmpl](../pkg/services/rbac_service.go.tmpl) [rbac.go](../pkg/services/rbac.go)
 
 RBAC does role based access control on resource operations. If a user has not any role which will allow a particular
 operation, RBAC service won't allow the user to do that resource operation.
@@ -64,7 +64,7 @@ Here lives business logic specific for each type.
 
 - **Caller:** ContrailTypeLogicService
 - **Purpose:** Checks if the resource's quantity has been exceeded.
-- **Source code:** [base_quota_getter.tmpl](../tools/templates/contrail/base_quota_getter.tmpl), [base_quota_counter.tmpl](../tools/templates/contrail/base_quota_counter.tmpl), [quota_checker_service.tmpl](../tools/templates/contrail/quota_checker_service.tmpl)
+- **Source code:** [base_quota_getter.go.tmpl](../pkg/services/base_quota_getter.go.tmpl), [base_quota_counter.go.tmpl](../pkg/services/base_quota_counter.go.tmpl), [quota_checker_service.go.tmpl](../pkg/services/quota_checker_service.go.tmpl)
 
 Quota is a maximum limit for creation new resources.
 
@@ -75,7 +75,7 @@ Limit getter implements quota limit retrieval and counter implements counting lo
 
 - **Caller:** QuotaCheckerService
 - **Purpose:** Notification bus for etcd.
-- **Source code:** [etcdserviceif.tmpl](../tools/templates/contrail/etcdserviceif.tmpl)
+- **Source code:** [etcdserviceif.go.tmpl](../pkg/db/etcd/etcdserviceif.go.tmpl)
 
 Notifier service uses etcd server for pushing change notification.
 Other Contrail microservices can observe etcd events and react on changing resources.

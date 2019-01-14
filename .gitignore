@@ -23,14 +23,8 @@ doc/proto.md
 docker/contrail_go/etc/
 docker/contrail_go/contrail
 docker/contrail_go/contrailcli
-pkg/**/gen_*
-pkg/**/*.pb.go
+**/gen_*
 profile.cov
 profile.tmp
-proto/**/gen*.proto
 public/
 test_output/
-tools/init_mysql.sql
-tools/init_psql.sql
-tools/cleanup_mysql.sql
-tools/cleanup_psql.sql
