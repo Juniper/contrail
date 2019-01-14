@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
@@ -136,7 +135,7 @@ func (e *EventList) Process(ctx context.Context, service Service) (*EventList, e
 
 // GetResource returns event on resource.
 func (e *Event) GetResource() basemodels.Object {
-	if e == nil {
+	if e == nil || e.Request == nil {
 		return nil
 	}
 	resourceEvent, ok := e.Request.(HasResource)
@@ -193,6 +192,31 @@ func NewEvent(option *EventOption) (*Event, error) {
 		return NewDeleteEvent(option)
 	}
 	return nil, errors.Errorf("operation %s not supported", option.getOperationOrDefault())
+}
+
+// ToMap translates event to map.
+func (e *Event) ToMap() map[string]interface{} {
+	r := e.GetResource()
+	if r == nil {
+		return nil
+	}
+
+	m := map[string]interface{}{}
+	m["kind"] = r.Kind()
+	m["operation"] = e.Operation()
+
+	switch e.Operation() {
+	case OperationCreate:
+		m["data"] = r
+	case OperationUpdate:
+		m["data"] = r
+	case OperationDelete:
+		m["data"] = map[string]interface{}{
+			"uuid": r.GetUUID(),
+		}
+	}
+
+	return m
 }
 
 type CreateEventRequest interface {
