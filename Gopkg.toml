@@ -29,3 +29,31 @@
 [[constraint]]
   name = "github.com/hashicorp/terraform"
   version = "0.11.11"
+
+[[constraint]]
+  name = "github.com/mitchellh/gox"
+  version = "0.4.0"
+
+[[constraint]]
+  name = "github.com/mattn/goveralls"
+  version = "0.0.2"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/tools"
+
+[[constraint]]
+  name = "github.com/pseudomuto/protoc-gen-doc"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/gogo/protobuf"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/golang/mock"
+  version = "1.1.1"
+
+[[constraint]]
+  name = "github.com/golang/dep"
+  version = "0.5.0"
