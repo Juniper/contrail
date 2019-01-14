@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
@@ -114,7 +113,7 @@ func (e *EventList) Sort() (err error) {
 func (e *Event) Process(ctx context.Context, service Service) (*Event, error) {
 	p, ok := e.Request.(CanProcessService)
 	if !ok {
-		return e, errors.Errorf("can not process event %v", e)
+		return e, errors.Errorf("can not process event %v with request type %T", e, e.Request)
 	}
 	return p.Process(ctx, service)
 }
@@ -193,6 +192,31 @@ func NewEvent(option *EventOption) (*Event, error) {
 		return NewDeleteEvent(option)
 	}
 	return nil, errors.Errorf("operation %s not supported", option.getOperationOrDefault())
+}
+
+// ToMap translates event to map.
+func (e *Event) ToMap() map[string]interface{} {
+	m := map[string]interface{}{}
+	r := e.GetResource()
+	if r == nil {
+		return m
+	}
+
+	m["kind"] = basemodels.KindToSchemaID(r.Kind())
+	m["operation"] = e.Operation()
+
+	switch e.Operation() {
+	case OperationCreate:
+		m["data"] = r
+	case OperationUpdate:
+		m["data"] = r
+	case OperationDelete:
+		m["data"] = map[string]interface{}{
+			"uuid": r.GetUUID(),
+		}
+	}
+
+	return m
 }
 
 type CreateEventRequest interface {

@@ -213,6 +213,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 }
 
 func TestUnderCloud(t *testing.T) {
+	t.Skip()
 	pContext := pongo2.Context{}
 	expectedSites := "./test_data/expected_site.yml"
 
