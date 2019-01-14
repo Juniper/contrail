@@ -201,6 +201,37 @@ func NewEvent(option *EventOption) (*Event, error) {
 	}
 }
 
+// ToMap translates event to map.
+func (e *Event) ToMap() map[string]interface{} {
+	if e == nil || e.Request == nil {
+		return nil
+	}
+	return map[string]interface{}{
+		"operation": e.Operation(),
+		"kind":      e.kind(),
+		"data":      e.data(),
+	}
+}
+
+func (e *Event) kind() string {
+	return basemodels.KindToSchemaID(e.GetResource().Kind())
+}
+
+func (e *Event) data() interface{} {
+	switch e.Operation() {
+	case OperationCreate:
+		return e.GetResource()
+	case OperationUpdate:
+		return e.GetResource()
+	case OperationDelete:
+		return map[string]interface{}{
+			"uuid": e.GetResource().GetUUID(),
+		}
+	default:
+		return nil
+	}
+}
+
 // CreateEventRequest interface.
 type CreateEventRequest interface {
 	isEvent_Request
