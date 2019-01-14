@@ -29,10 +29,10 @@ func (s *Service) RegisterNeutronAPI(r routeRegistry) {
 func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 	request := &logic.Request{}
 	if err := c.Bind(request); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: '%s'", err))
 	}
 	if t := c.Param("type"); request.GetType() != t {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: %s", t))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: '%s'", t))
 	}
 	response, err := s.handle(c.Request().Context(), request)
 	if err != nil {
@@ -70,7 +70,7 @@ func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response,
 	case "DELINTERFACE":
 		return r.Data.Resource.DeleteInterface(ctx, rp)
 	default:
-		err := errors.Errorf("method %s not supported", r.Context.Operation)
+		err := errors.Errorf("method '%s' is not supported", r.Context.Operation)
 		log.WithError(err).WithField("request", r).Errorf("failed to handle")
 		return nil, err
 	}

@@ -142,7 +142,7 @@ func (m *IpamSubnetType) Validate() error {
 func (m *IpamSubnetType) ValidateSubnetParams() error {
 	subnet, err := m.Subnet.Net()
 	if err != nil {
-		return errutil.ErrorBadRequest("invalid subnet")
+		return errutil.ErrorBadRequestf("invalid subnet: %v", err)
 	}
 
 	for _, allocationPool := range m.AllocationPools {
@@ -174,7 +174,7 @@ func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
 
 	subnet, err := m.Subnet.Net()
 	if err != nil {
-		return false, errors.New("invalid subnet")
+		return false, errors.Errorf("invalid subnet: %v", err)
 	}
 
 	if !subnet.Contains(ip) {
