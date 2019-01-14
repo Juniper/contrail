@@ -1,7 +1,7 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
-DB_FILES := init_mysql.sql init_psql.sql init_data.yaml
+DB_FILES := gen_init_mysql.sql gen_init_psql.sql init_data.yaml
 ifdef ANSIBLE_DEPLOYER_REPO_DIR
   export ANSIBLE_DEPLOYER_REPO_DIR
 else
@@ -49,7 +49,7 @@ format_gen:
 
 fast_generate: generate_pb_go generate_mocks doc/proto.md
 
-generate_pb_go: generate_go pkg/models/generated.pb.go pkg/services/baseservices/base.pb.go pkg/services/generated.pb.go
+generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/baseservices/base.pb.go pkg/services/gen_service.pb.go
 
 generate: fast_generate format_gen
 
@@ -98,18 +98,12 @@ Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 plugins=grpc:$(GOPATH)/src/ $<
 	go tool fix $@
 
-doc/proto.md: $(PROTO_PKG_PATH)/models/generated.proto $(PROTO_PKG_PATH)/services/generated.proto
+doc/proto.md: $(PROTO_PKG_PATH)/models/gen_model.proto $(PROTO_PKG_PATH)/services/gen_service.proto
 	$(PROTO) --doc_out=./doc --doc_opt=markdown,proto.md $^
 
 clean_gen:
 	rm -rf public/[^watch.html]*
-	rm -f tools/init_mysql.sql
-	rm -f tools/init_psql.sql
-	rm -f tools/cleanup_mysql.sql
-	rm -f tools/cleanup_psql.sql
-	find pkg/ -name gen_* -delete
-	find pkg/ -name generated.pb.go -delete
-	find proto/ -name generated.proto -delete
+	find tools/ proto/ pkg/ -name gen_* -delete
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
@@ -140,10 +134,10 @@ zero_psql:
 clean_db: clean_mysql clean_psql init_db ## Truncate all database tables and load initial data
 
 clean_mysql:
-	docker exec -i contrail_mysql mysql -uroot -pcontrail123 contrail_test < tools/cleanup_mysql.sql
+	docker exec -i contrail_mysql mysql -uroot -pcontrail123 contrail_test < tools/gen_cleanup_mysql.sql
 
 clean_psql:
-	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/cleanup_psql.sql
+	docker exec -i contrail_postgres psql -U postgres -d contrail_test < tools/gen_cleanup_psql.sql
 
 init_db: init_mysql init_psql ## Load initial data to databases
 
