@@ -121,3 +121,80 @@ func TestNewEvent(t *testing.T) {
 		})
 	}
 }
+
+func TestEvent_ToMap(t *testing.T) {
+	tests := []struct {
+		name    string
+		Request isEvent_Request
+		want    map[string]interface{}
+	}{
+		{
+			name: "empty event to map",
+		},
+		{
+			name: "create event to map",
+			Request: &Event_CreateProjectRequest{
+				CreateProjectRequest: &CreateProjectRequest{
+					Project: &models.Project{
+						UUID: "hoge",
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"kind":      models.KindProject,
+				"operation": OperationCreate,
+				"data": &Project{
+					UUID: "hoge",
+				},
+			},
+		},
+		{
+			name: "update event to map",
+			Request: &Event_UpdateProjectRequest{
+				UpdateProjectRequest: &UpdateProjectRequest{
+					Project: &models.Project{
+						UUID: "hoge",
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"kind":      models.KindProject,
+				"operation": OperationUpdate,
+				"data": &Project{
+					UUID: "hoge",
+				},
+			},
+		},
+		{
+			name: "delete event to map",
+			Request: &Event_DeleteProjectRequest{
+				DeleteProjectRequest: &DeleteProjectRequest{
+					ID: "hoge",
+				},
+			},
+			want: map[string]interface{}{
+				"kind":      models.KindProject,
+				"operation": OperationDelete,
+				"data": map[string]interface{}{
+					"uuid": "hoge",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &Event{
+				Request: tt.Request,
+			}
+			got := e.ToMap()
+			assert.Equal(t, len(tt.want), len(got),
+				fmt.Sprintf("Event.ToMap() returned invalid number of keys, \nexpected:\n%v\ngot\n%v", tt.want, got))
+			for k, v := range tt.want {
+				gotValue, ok := got[k]
+				if assert.True(t, ok, fmt.Sprintf("missing key: %s with value: %v", k, v)) {
+					assert.Equal(t, v, gotValue, "value under key: %s not equal to expected: %v", k, gotValue)
+				}
+			}
+		})
+	}
+}
