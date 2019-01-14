@@ -121,3 +121,73 @@ func TestNewEvent(t *testing.T) {
 		})
 	}
 }
+
+func TestEvent_ToMap(t *testing.T) {
+	tests := []struct {
+		name    string
+		request isEvent_Request
+		want    map[string]interface{}
+	}{
+		{
+			name: "empty event to map",
+		},
+		{
+			name: "create event to map",
+			request: &Event_CreateProjectRequest{
+				CreateProjectRequest: &CreateProjectRequest{
+					Project: &models.Project{
+						UUID: "hoge",
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"kind":      models.KindProject,
+				"operation": OperationCreate,
+				"data": &Project{
+					UUID: "hoge",
+				},
+			},
+		},
+		{
+			name: "update event to map",
+			request: &Event_UpdateProjectRequest{
+				UpdateProjectRequest: &UpdateProjectRequest{
+					Project: &models.Project{
+						UUID: "hoge",
+					},
+				},
+			},
+			want: map[string]interface{}{
+				"kind":      models.KindProject,
+				"operation": OperationUpdate,
+				"data": &Project{
+					UUID: "hoge",
+				},
+			},
+		},
+		{
+			name: "delete event to map",
+			request: &Event_DeleteProjectRequest{
+				DeleteProjectRequest: &DeleteProjectRequest{
+					ID: "hoge",
+				},
+			},
+			want: map[string]interface{}{
+				"kind":      models.KindProject,
+				"operation": OperationDelete,
+				"data": map[string]interface{}{
+					"uuid": "hoge",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &Event{
+				Request: tt.request,
+			}
+			got := e.ToMap()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
