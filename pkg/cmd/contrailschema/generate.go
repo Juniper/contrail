@@ -1,7 +1,6 @@
 package contrailschema
 
 import (
-	"path/filepath"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -33,7 +32,7 @@ func generateCode() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = schema.ApplyTemplates(api, filepath.Dir(option.TemplateConfPath), templateConf, option); err != nil {
+	if err = schema.ApplyTemplates(api, templateConf, option); err != nil {
 		log.Fatal(err)
 	}
 
