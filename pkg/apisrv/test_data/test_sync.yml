@@ -75,7 +75,7 @@ test_data:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
     - uuid: test_ipam_blue_uuid_test_sync
-  vn_blue_with_detail: &vn_blue_with_detail2
+  vn_blue_with_detail2: &vn_blue_with_detail2
     uuid: vn_blue_test_sync
     display_name: blue2
     parent_type: project
