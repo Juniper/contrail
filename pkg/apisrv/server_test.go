@@ -239,16 +239,60 @@ func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 func TestGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
 		c := services.NewContrailServiceClient(conn)
-		project := models.MakeProject()
-		project.UUID = uuid.NewV4().String()
-		project.FQName = []string{"default-domain", "project", project.UUID}
-		project.ParentType = "domain"
-		project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
-		project.ConfigurationVersion = 1
+		project := models.Project{
+			UUID:                 uuid.NewV4().String(),
+			FQName:               []string{"default-domain", "project", "my-project"},
+			ParentType:           "domain",
+			ParentUUID:           integration.DefaultDomainUUID,
+			ConfigurationVersion: 1,
+		}
 		_, err := c.CreateProject(ctx, &services.CreateProjectRequest{
-			Project: project,
+			Project: &project,
 		})
 		assert.NoError(t, err)
+
+		t.Run("create and delete namespace and project_namespace_ref", testNamespaceRef(ctx, c, project.UUID))
+		t.Run("list and get project", testProjectRead(ctx, c, project.UUID))
+
+		_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
+			ID: project.UUID,
+		})
+		assert.NoError(t, err)
+	})
+}
+func testNamespaceRef(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
+	return func(t *testing.T) {
+		ns := models.Namespace{
+			UUID:       uuid.NewV4().String(),
+			ParentType: "domain",
+			ParentUUID: integration.DefaultDomainUUID,
+			Name:       "my-namespace",
+		}
+		_, err := c.CreateNamespace(ctx, &services.CreateNamespaceRequest{
+			Namespace: &ns,
+		})
+		assert.NoError(t, err)
+		_, err = c.CreateProjectNamespaceRef(ctx, &services.CreateProjectNamespaceRefRequest{
+			ID:                  projectUUID,
+			ProjectNamespaceRef: &models.ProjectNamespaceRef{UUID: ns.UUID},
+		})
+		assert.NoError(t, err)
+
+		_, err = c.DeleteProjectNamespaceRef(ctx, &services.DeleteProjectNamespaceRefRequest{
+			ID:                  projectUUID,
+			ProjectNamespaceRef: &models.ProjectNamespaceRef{UUID: ns.UUID},
+		})
+		assert.NoError(t, err)
+
+		_, err = c.DeleteNamespace(ctx, &services.DeleteNamespaceRequest{
+			ID: ns.UUID,
+		})
+		assert.NoError(t, err)
+	}
+}
+
+func testProjectRead(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
+	return func(t *testing.T) {
 		response, err := c.ListProject(ctx, &services.ListProjectRequest{
 			Spec: &baseservices.ListSpec{
 				Limit: 1,
@@ -260,16 +304,11 @@ func TestGRPC(t *testing.T) {
 		assert.Equal(t, 1, len(response.Projects))
 
 		getResponse, err := c.GetProject(ctx, &services.GetProjectRequest{
-			ID: project.UUID,
+			ID: projectUUID,
 		})
 		assert.NoError(t, err)
 		assert.NotNil(t, getResponse.Project)
-
-		_, err = c.DeleteProject(ctx, &services.DeleteProjectRequest{
-			ID: project.UUID,
-		})
-		assert.NoError(t, err)
-	})
+	}
 }
 
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
@@ -301,7 +340,7 @@ func TestFQNameToIDGRPC(t *testing.T) {
 			})
 			assert.NoError(t, err)
 			assert.NotNil(t, resp)
-			assert.Equal(t, "beefbeef-beef-beef-beef-beefbeef0002", resp.UUID)
+			assert.Equal(t, integration.DefaultDomainUUID, resp.UUID)
 		})
 }
 
@@ -339,7 +378,7 @@ func TestRefRelaxGRPC(t *testing.T) {
 			Project: &models.Project{
 				Name:       fmt.Sprintf("%s_project", t.Name()),
 				ParentType: "domain",
-				ParentUUID: "beefbeef-beef-beef-beef-beefbeef0002",
+				ParentUUID: integration.DefaultDomainUUID,
 			},
 		})
 		require.NoError(t, err)
@@ -431,7 +470,7 @@ func TestRESTClient(t *testing.T) {
 	project.UUID = uuid.NewV4().String()
 	project.FQName = []string{"default-domain", "project", project.UUID}
 	project.ParentType = "domain"
-	project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
+	project.ParentUUID = integration.DefaultDomainUUID
 	project.ConfigurationVersion = 1
 	_, err = restClient.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: project,
