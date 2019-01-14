@@ -704,11 +704,27 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:29b05cf3edac15d4e9229d5bb3aca1c1dbf7b68f2dbc8f160d71a709dac8b405"
+  name = "github.com/mitchellh/gox"
+  packages = ["."]
+  pruneopts = ""
+  revision = "c9740af9c6574448fd48eb30a71f964014c7a837"
+  version = "v0.4.0"
+
+[[projects]]
   digest = "1:387d79bfe8a4f0f300a22d65782108a94861eecfe652ffff30e8f91857ad81bb"
   name = "github.com/mitchellh/hashstructure"
   packages = ["."]
   pruneopts = ""
   revision = "a38c50148365edc8df43c1580c48fb2b3a1e9cd7"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:0a8cd5e720c5f401e451c7506299ac9066eec2f0a2e90f9fedb714d1e7975852"
+  name = "github.com/mitchellh/iochan"
+  packages = ["."]
+  pruneopts = ""
+  revision = "b6e3aadd28864e14dae41ff5c7261455b1242d24"
   version = "v1.0.0"
 
 [[projects]]
@@ -1149,6 +1165,7 @@
     "github.com/labstack/gommon/log",
     "github.com/lib/pq",
     "github.com/mattn/go-shellwords",
+    "github.com/mitchellh/gox",
     "github.com/pkg/errors",
     "github.com/satori/go.uuid",
     "github.com/siddontang/go-mysql/canal",
