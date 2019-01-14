@@ -271,32 +271,6 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-//ToMap translate event to map.
-func (e *Event) ToMap() map[string]interface{} {
-	m := map[string]interface{}{}
-	switch t := e.Request.(type) {
-		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-		case *Event_Create{{ schema.JSONSchema.GoName }}Request:
-			m["kind"] = "{{ schema.ID }}"
-			m["operation"] = OperationCreate
-			m["data"] = t.Create{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
-		case *Event_Update{{ schema.JSONSchema.GoName }}Request:
-			m["kind"] = "{{ schema.ID }}"
-			m["operation"] = OperationUpdate
-			m["data"] = t.Update{{ schema.JSONSchema.GoName }}Request.{{ schema.JSONSchema.GoName }}
-		case *Event_Delete{{ schema.JSONSchema.GoName }}Request:
-			m["kind"] = "{{ schema.ID }}"
-			m["operation"] = OperationDelete
-			m["data"] = map[string]interface{}{
-				"uuid": t.Delete{{ schema.JSONSchema.GoName }}Request.ID,
-			}
-		{% endif%}{% endfor %}
-	}
-	return m
-}
-
-
-
 //UnmarshalYAML unmarshal event.
 func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var r interface{}
