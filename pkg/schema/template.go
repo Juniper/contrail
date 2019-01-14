@@ -33,22 +33,51 @@ type TemplateOption struct {
 	OutputDir         string
 }
 
-func ensureDir(path string) error {
-	return os.MkdirAll(filepath.Dir(path), os.ModePerm)
+// ApplyTemplates writes files with content generated from templates.
+func ApplyTemplates(api *API, config []*TemplateConfig, option *TemplateOption) error {
+	if err := registerCustomFilters(); err != nil {
+		return err
+	}
+
+	for _, tc := range config {
+		if err := tc.resolveOutputPath(); err != nil {
+			return err
+		}
+		if !tc.isOutdated(api) {
+			continue
+		}
+		err := tc.apply(api, option)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (tc *TemplateConfig) load(base string) (*pongo2.Template, error) {
-	path := filepath.Join(base, tc.TemplatePath)
-	templateCode, err := fileutil.GetContent(path)
-	if err != nil {
-		return nil, err
+func (tc *TemplateConfig) resolveOutputPath() error {
+	if tc.OutputPath != "" {
+		return nil
 	}
-	return pongo2.FromString(string(templateCode))
+
+	tc.OutputPath = generatedFilePath(tc.TemplatePath)
+	return nil
+}
+
+func (tc *TemplateConfig) isOutdated(api *API) bool {
+	sourceInfo, err := os.Stat(tc.TemplatePath)
+	if err != nil {
+		return true
+	}
+	targetInfo, err := os.Stat(tc.OutputPath)
+	if err != nil {
+		return true
+	}
+	return sourceInfo.ModTime().After(targetInfo.ModTime()) || api.Timestamp.After(targetInfo.ModTime())
 }
 
 // nolint: gocyclo
-func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateOption) error {
-	tpl, err := tc.load(templateBase)
+func (tc *TemplateConfig) apply(api *API, option *TemplateOption) error {
+	tpl, err := tc.load()
 	if err != nil {
 		return err
 	}
@@ -94,6 +123,14 @@ func (tc *TemplateConfig) apply(templateBase string, api *API, option *TemplateO
 	return nil
 }
 
+func (tc *TemplateConfig) load() (*pongo2.Template, error) {
+	templateCode, err := fileutil.GetContent(tc.TemplatePath)
+	if err != nil {
+		return nil, err
+	}
+	return pongo2.FromString(string(templateCode))
+}
+
 // LoadTemplates loads template configurations from given path.
 func LoadTemplates(path string) ([]*TemplateConfig, error) {
 	var config []*TemplateConfig
@@ -101,40 +138,17 @@ func LoadTemplates(path string) ([]*TemplateConfig, error) {
 	return config, err
 }
 
-// ApplyTemplates writes files with content generated from templates.
-func ApplyTemplates(api *API, templateBase string, config []*TemplateConfig, option *TemplateOption) error {
-	if err := registerCustomFilters(); err != nil {
-		return err
-	}
-
-	for _, templateConfig := range config {
-		if !isOutdated(
-			filepath.Join(templateBase, templateConfig.TemplatePath),
-			filepath.Join(option.OutputDir, templateConfig.OutputPath),
-			api,
-		) {
-			continue
-		}
-		err := templateConfig.apply(templateBase, api, option)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+func generatedFilePath(tmplFilePath string) string {
+	dir, file := filepath.Split(tmplFilePath)
+	return filepath.Join(dir, generatedFileName(file))
 }
 
-func isOutdated(source, target string, api *API) bool {
-	sourceInfo, err := os.Stat(source)
-	if err != nil {
-		return true
-	}
-	targetInfo, err := os.Stat(target)
-	if err != nil {
-		return true
-	}
-	sourceModTime := sourceInfo.ModTime()
-	targetModTime := targetInfo.ModTime()
-	return sourceModTime.After(targetModTime) || api.Timestamp.After(targetModTime)
+func generatedFileName(tmplFile string) string {
+	return "gen_" + strings.TrimSuffix(tmplFile, ".tmpl")
+}
+
+func ensureDir(path string) error {
+	return os.MkdirAll(filepath.Dir(path), os.ModePerm)
 }
 
 func registerCustomFilters() error {

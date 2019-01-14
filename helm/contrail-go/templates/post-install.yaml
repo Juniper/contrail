@@ -34,7 +34,7 @@ spec:
         {{- if .Values.postgresql.enabled }}
         - {{ template "postgres.fullname" . }}
         {{ else }}
-        - {{ .Values.postgresql.postgresHost }} 
+        - {{ .Values.postgresql.postgresHost }}
         {{ end }}
         - "-U"
         - {{ .Values.postgresql.postgresUser }}

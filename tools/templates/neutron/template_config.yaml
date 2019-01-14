@@ -1,3 +1,2 @@
 - type: all
-  template_path: models.tmpl
-  output_path: pkg/neutron/logic/gen_models.go
+  template_path: pkg/neutron/logic/models.go.tmpl
