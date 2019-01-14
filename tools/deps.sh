@@ -5,7 +5,6 @@ set -o errexit
 # TODO: uncomment this once this dep is fixed
 # go get -u github.com/go-openapi/spec
 go get -u github.com/golang/dep/cmd/dep
-go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 go get -u github.com/hashicorp/terraform/terraform
 go get -u github.com/mattn/goveralls
 go get -u github.com/mitchellh/gox
