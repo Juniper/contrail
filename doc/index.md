@@ -1,5 +1,22 @@
 # Documentation index
 
+- [Authentication](authentication.md)
+- [Access Control](policy.md)
+- [Validation](validation.md)
+- [Services](services.md)
+  - [Agent service](agent.md)
+  - [API Server](rest_api.md)
+  - [Cache Database](cache_db.md)
+  - [Cluster service](cluster.md)
+  - [Intent Compilation service](intent_compilation.md)
+  - [Cassandra & AMQP Replicator services](replicator_services.md)
+  - [Sync service](sync.md)
+- [Deployment with k8s](k8s.md)
+- Tools
+  - [contrailutil](contrailutil.md)
+  - [contrailschema](contrailschema.md)
+  - [contrail cli](cli.md)
+
 ## Preface
 
 This is a design document for refactoring Contrail using Go.
