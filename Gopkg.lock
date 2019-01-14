@@ -26,6 +26,22 @@
   revision = "45abb4b1947db48d8205cd4d33b3b4d83f54641f"
 
 [[projects]]
+  branch = "2.x"
+  digest = "1:0e612616721a5da1f8597fe67f521aaaaf4decddd63ccd25aa4bff03468278d2"
+  name = "github.com/Masterminds/semver"
+  packages = ["."]
+  pruneopts = ""
+  revision = "3c92f33da7a84de8314f3ff82e5f919b89fd1492"
+
+[[projects]]
+  digest = "1:feba416f3ee4dff9898e111bf1c6e30caba339cf39e9f38e5c395d156ed19302"
+  name = "github.com/Masterminds/vcs"
+  packages = ["."]
+  pruneopts = ""
+  revision = "6f1c6d150500e452704e9863f68c2559f58616bf"
+  version = "v1.12.0"
+
+[[projects]]
   digest = "1:b0fe84bcee1d0c3579d855029ccd3a76deea187412da2976985e4946289dbb2c"
   name = "github.com/NYTimes/gziphandler"
   packages = ["."]
@@ -147,6 +163,14 @@
   pruneopts = ""
   revision = "2ee87856327ba09384cabd113bc6b5d174e9ec0f"
   version = "v3.5.1"
+
+[[projects]]
+  digest = "1:ed112122ed4a920d944cc99b9d00b0441c11685939c28462c719488d36fe29aa"
+  name = "github.com/boltdb/bolt"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
+  version = "v1.3.1"
 
 [[projects]]
   digest = "1:e85837cb04b78f61688c6eba93ea9d14f60d611e2aaf8319999b1a60d2dafbfa"
@@ -304,19 +328,72 @@
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
+    "plugin/compare",
+    "plugin/defaultcheck",
+    "plugin/description",
+    "plugin/embedcheck",
+    "plugin/enumstringer",
+    "plugin/equal",
+    "plugin/face",
+    "plugin/gostring",
+    "plugin/marshalto",
+    "plugin/oneofcheck",
+    "plugin/populate",
+    "plugin/size",
+    "plugin/stringer",
+    "plugin/testgen",
+    "plugin/union",
+    "plugin/unmarshal",
     "proto",
+    "protoc-gen-gogo",
     "protoc-gen-gogo/descriptor",
+    "protoc-gen-gogo/generator",
+    "protoc-gen-gogo/grpc",
+    "protoc-gen-gogo/plugin",
     "sortkeys",
     "types",
+    "vanity",
+    "vanity/command",
   ]
   pruneopts = ""
   revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:86384944152bd08c9e30c8f21447276b8b0e52800e88aefe54ff86ae033bf586"
+  name = "github.com/golang/dep"
+  packages = [
+    ".",
+    "cmd/dep",
+    "gps",
+    "gps/internal/pb",
+    "gps/paths",
+    "gps/pkgtree",
+    "gps/verify",
+    "internal/feedback",
+    "internal/fs",
+    "internal/importers",
+    "internal/importers/base",
+    "internal/importers/glide",
+    "internal/importers/glock",
+    "internal/importers/godep",
+    "internal/importers/govend",
+    "internal/importers/govendor",
+    "internal/importers/gvt",
+    "internal/importers/vndr",
+  ]
+  pruneopts = ""
+  revision = "224a564abe296670b692fe08bb63a3e4c4ad7978"
+  version = "v0.5.0"
+
+[[projects]]
   digest = "1:73a7106c799f98af4f3da7552906efc6a2570329f4cd2d2f5fb8f9d6c053ff2f"
   name = "github.com/golang/mock"
-  packages = ["gomock"]
+  packages = [
+    "gomock",
+    "mockgen",
+    "mockgen/model",
+  ]
   pruneopts = ""
   revision = "c34cdb4725f4c3844d095133c6e40e448b86589b"
   version = "v1.1.1"
@@ -327,6 +404,8 @@
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
+    "protoc-gen-go/descriptor",
+    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
@@ -530,6 +609,14 @@
   version = "v3.1.0"
 
 [[projects]]
+  digest = "1:dc5126f78aa052ba39be47f4854a29683f29ab5064394646458f49b00bb0fc29"
+  name = "github.com/jmank88/nuts"
+  packages = ["."]
+  pruneopts = ""
+  revision = "8b28145dffc87104e66d074f62ea8080edfad7c8"
+  version = "v0.3.0"
+
+[[projects]]
   digest = "1:13fe471d0ed891e8544eddfeeb0471fd3c9f2015609a1c000aefdedf52a19d40"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -664,6 +751,14 @@
   version = "v1.0.3"
 
 [[projects]]
+  digest = "1:e678dc289d4e9b4fc821b65509adb8df3bb96ce1db027dbf9e1bffda6167b0e7"
+  name = "github.com/mattn/goveralls"
+  packages = ["."]
+  pruneopts = ""
+  revision = "b71a1e4855f87991aff01c2c833a75a07059c61c"
+  version = "v0.0.2"
+
+[[projects]]
   digest = "1:bb7613fa9de3f211f6f09630e6c0a493285c1d2a162abf0d617bd522c3dd622a"
   name = "github.com/mitchellh/cli"
   packages = ["."]
@@ -704,11 +799,27 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:29b05cf3edac15d4e9229d5bb3aca1c1dbf7b68f2dbc8f160d71a709dac8b405"
+  name = "github.com/mitchellh/gox"
+  packages = ["."]
+  pruneopts = ""
+  revision = "c9740af9c6574448fd48eb30a71f964014c7a837"
+  version = "v0.4.0"
+
+[[projects]]
   digest = "1:387d79bfe8a4f0f300a22d65782108a94861eecfe652ffff30e8f91857ad81bb"
   name = "github.com/mitchellh/hashstructure"
   packages = ["."]
   pruneopts = ""
   revision = "a38c50148365edc8df43c1580c48fb2b3a1e9cd7"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:0a8cd5e720c5f401e451c7506299ac9066eec2f0a2e90f9fedb714d1e7975852"
+  name = "github.com/mitchellh/iochan"
+  packages = ["."]
+  pruneopts = ""
+  revision = "b6e3aadd28864e14dae41ff5c7261455b1242d24"
   version = "v1.0.0"
 
 [[projects]]
@@ -726,6 +837,14 @@
   pruneopts = ""
   revision = "eecee6c969c02c8cc2ae48e1e269843ae8590796"
   version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:3adc46876d4d0e4d5bbcfcc44c2116b95d7a5c966e2ee92a219488547fd453f2"
+  name = "github.com/nightlyone/lockfile"
+  packages = ["."]
+  pruneopts = ""
+  revision = "0ad87eef1443f64d3d8c50da647e2b1552851124"
 
 [[projects]]
   digest = "1:d60cfeee185019d4fcd35e8c89c83aff576e4723b6100300bf67b05be961388f"
@@ -765,12 +884,32 @@
   version = "v1.2.1"
 
 [[projects]]
+  digest = "1:b211b8d019751e9e176336f48ebaf9ebc5131114fbf7b7bfd07608d802a95de8"
+  name = "github.com/pseudomuto/protoc-gen-doc"
+  packages = [
+    ".",
+    "cmd/protoc-gen-doc",
+    "parser",
+  ]
+  pruneopts = ""
+  revision = "728a624b38e5ae90bb3e5da5f406e05138f1517c"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:7f569d906bdd20d906b606415b7d794f798f91a62fcfb6a4daa6d50690fb7a3f"
   name = "github.com/satori/go.uuid"
   packages = ["."]
   pruneopts = ""
   revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
   version = "v1.2.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:78c40a73ec84ec6be7665f27464ad8c85248174ce14322335f2f1b5c9a2361dc"
+  name = "github.com/sdboyer/constext"
+  packages = ["."]
+  pruneopts = ""
+  revision = "836a144573533ea4da4e6929c235fd348aed1c80"
 
 [[projects]]
   digest = "1:69240630f5a4a6f16a7d6111884e206b0c5b0a233c9ee5fe54956f06c2fd6ac0"
@@ -1029,6 +1168,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:814474ab808c5e04b9334d046f8a0060fc1724c2c02acfd00a7cc0008d675455"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  pruneopts = ""
+  revision = "37e7f081c4d4c64e13b10787722085407fe5d15f"
+
+[[projects]]
+  branch = "master"
   digest = "1:14f10552445a1c80a1bf1e8f58826aa7115d978df7183dce176637a7e2b3511e"
   name = "golang.org/x/sys"
   packages = [
@@ -1061,6 +1208,28 @@
   ]
   pruneopts = ""
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
+
+[[projects]]
+  branch = "master"
+  digest = "1:5311ea986a1951e855f482152600c86546bc8fff62aee806339b43f22b97893b"
+  name = "golang.org/x/tools"
+  packages = [
+    "cmd/goimports",
+    "cover",
+    "go/ast/astutil",
+    "go/gcexportdata",
+    "go/internal/cgo",
+    "go/internal/gcimporter",
+    "go/internal/packagesdriver",
+    "go/packages",
+    "go/types/typeutil",
+    "imports",
+    "internal/fastwalk",
+    "internal/gopathwalk",
+    "internal/semver",
+  ]
+  pruneopts = ""
+  revision = "bf090417da8b6150dcfe96795325f5aa78fff718"
 
 [[projects]]
   branch = "master"
@@ -1137,8 +1306,11 @@
     "github.com/gocql/gocql",
     "github.com/gogo/protobuf/gogoproto",
     "github.com/gogo/protobuf/proto",
+    "github.com/gogo/protobuf/protoc-gen-gogo",
     "github.com/gogo/protobuf/types",
+    "github.com/golang/dep/cmd/dep",
     "github.com/golang/mock/gomock",
+    "github.com/golang/mock/mockgen",
     "github.com/hashicorp/terraform/terraform",
     "github.com/jackc/pgx",
     "github.com/jackc/pgx/pgtype",
@@ -1149,7 +1321,10 @@
     "github.com/labstack/gommon/log",
     "github.com/lib/pq",
     "github.com/mattn/go-shellwords",
+    "github.com/mattn/goveralls",
+    "github.com/mitchellh/gox",
     "github.com/pkg/errors",
+    "github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc",
     "github.com/satori/go.uuid",
     "github.com/siddontang/go-mysql/canal",
     "github.com/siddontang/go-mysql/mysql",
@@ -1168,6 +1343,7 @@
     "github.com/yudai/gotty/server",
     "github.com/yudai/gotty/utils",
     "golang.org/x/net/websocket",
+    "golang.org/x/tools/cmd/goimports",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/credentials",
