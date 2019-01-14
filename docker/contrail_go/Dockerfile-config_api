@@ -19,8 +19,8 @@ COPY ./contrail /bin/contrail
 COPY ./contrailcli /bin/contrailcli
 COPY ./contrailutil /bin/contrailutil
 COPY ./etc /etc/contrail
-COPY ./etc/init_mysql.sql /usr/share/contrail/
-COPY ./etc/init_psql.sql /usr/share/contrail/
+COPY ./etc/gen_init_mysql.sql /usr/share/contrail/init_mysql.sql
+COPY ./etc/gen_init_psql.sql /usr/share/contrail/init_psql.sql
 COPY ./etc/init_data.yaml /usr/share/contrail/
 COPY ./public /usr/share/contrail/public
 COPY ./templates /usr/share/contrail/templates
