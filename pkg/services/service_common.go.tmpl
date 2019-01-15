@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
@@ -63,4 +64,25 @@ func getObject(ctx context.Context, rs ReadService, typeName, uuid string, field
 		{% endif %}{% endfor %}
 	}
 	return nil, errors.Errorf("unknown type provided: %v", kind)
+}
+
+func (c *PropCollectionChange) SetValue(v interface{}) {
+	switch t := v.(type) {
+	{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
+	{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
+	case {% if itemType != "string" %}*models.{% endif %}{{ itemType }}:
+		c.Value = &PropCollectionChange_{{itemType | capfirst}}Value{t}
+	{% endif %}{% endfor %}
+	}
+}
+
+func (c *PropCollectionChange) ValueAsInterface() interface{} {
+	switch v := c.Value.(type) {
+{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
+{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
+	case *PropCollectionChange_{{itemType | capfirst}}Value:
+		return v.{{itemType | capfirst}}Value
+{% endif %}{% endfor %}
+	}
+	return nil
 }
