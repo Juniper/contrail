@@ -59,6 +59,11 @@ func TestVirtualNetwork(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
+func TestVirtualNetworkVxLANID(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_virtual_network_vxlan_id.yml")
+}
+
 func TestSecurityGroup(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_security_group.yml")
@@ -132,6 +137,11 @@ func TestVirtualMachineInterface(t *testing.T) {
 func TestLogicalRouter(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_logical_router.yml")
+}
+
+func TestLogicalRouterVxLANID(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_logical_router_vxlan_id.yml")
 }
 
 func TestVirtualRouter(t *testing.T) {
