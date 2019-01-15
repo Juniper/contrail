@@ -1,0 +1,37 @@
+name: Test Neutron Router
+description: |
+  Integration test for neutron router endpoint.
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: Router read all
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+          tenant_id:
+          - 8cdb5412f5974b38a69f2f9d1ae969b7
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - heat_stack_owner
+        - admin
+        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
+        is_admin: true
+        request_id: req-4de97c6b-9db7-4ada-9008-7083ec6f3ded
+        operation: READALL
+        type: router
+        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+  expect: []

@@ -72,8 +72,9 @@ type Fields []string
 
 // RequestParameters structure
 type RequestParameters struct {
-	RequestContext RequestContext
-	ReadService    services.ReadService
-	WriteService   services.WriteService
-	UserAgentKV    services.UserAgentKVServer
+	RequestContext  RequestContext
+	ReadService     services.ReadService
+	WriteService    services.WriteService
+	UserAgentKV     services.UserAgentKVServer
+	IDToTypeService services.IDToTypeServer
 }
