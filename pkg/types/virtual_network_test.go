@@ -12,6 +12,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
 	"github.com/Juniper/contrail/pkg/types/ipam"
@@ -26,6 +27,7 @@ type testVn struct {
 	importRouteTargetList           string
 	exportRouteTargetList           string
 	forwardingMode                  string
+	vxlanID                         int64
 	virtualNetworkNetworkID         int64
 	networkIpamRefs                 []*models.VirtualNetworkNetworkIpamRef
 	bgpVPNRefs                      []*models.VirtualNetworkBGPVPNRef
@@ -322,7 +324,6 @@ func TestCreateVirtualNetwork(t *testing.T) {
 					},
 				},
 			},
-			fails: false,
 		},
 		{
 			name: "check for logical routers with bgpvpn refs",
@@ -343,6 +344,12 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			},
 			fails:                 true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
+		},
+		{
+			name: "allocate vxlan id",
+			testVnData: &testVn{
+				vxlanID: 2,
+			},
 		},
 	}
 
@@ -394,6 +401,14 @@ func TestCreateVirtualNetwork(t *testing.T) {
 				virtualNetworkMustCreateSubnet(service)
 			}
 
+			if tt.testVnData.vxlanID != 0 {
+				intPoolAllocator := service.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
+				intPoolAllocator.EXPECT().SetInt(
+					gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+					tt.testVnData.vxlanID, gomock.Not(gomock.Nil()),
+				).Return(nil).Times(1)
+			}
+
 			res, err := service.CreateVirtualNetwork(ctx,
 				&services.CreateVirtualNetworkRequest{
 					VirtualNetwork: vn,
@@ -421,6 +436,7 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 		ipamSubnetMethod      string
 		fails                 bool
 		addressManagerSetup   func(s *ContrailTypeLogicService)
+		intPoolAllocatorSetup func(s *ContrailTypeLogicService)
 		expectedHTTPErrorCode int
 	}{
 		{
@@ -704,6 +720,37 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 				virtualNetworkMustDeleteSubnet(s)
 			},
 		},
+		{
+			name: "update VxLAN ID",
+			testVnData: &testVn{
+				vxlanID: 10,
+			},
+			updateRequest: &services.UpdateVirtualNetworkRequest{
+				VirtualNetwork: &models.VirtualNetwork{
+					UUID: "test_vn_uuid",
+					VirtualNetworkProperties: &models.VirtualNetworkType{
+						VxlanNetworkIdentifier: 11,
+					},
+				},
+				FieldMask: types.FieldMask{
+					Paths: []string{
+						basemodels.JoinPath(
+							models.VirtualNetworkFieldVirtualNetworkProperties,
+							models.VirtualNetworkTypeFieldVxlanNetworkIdentifier,
+						),
+					},
+				},
+			},
+			intPoolAllocatorSetup: func(s *ContrailTypeLogicService) {
+				intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
+				intPoolAllocator.EXPECT().DeallocateInt(
+					gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(10),
+				).Return(nil).Times(1)
+				intPoolAllocator.EXPECT().SetInt(
+					gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(11), gomock.Not(gomock.Nil()),
+				).Return(nil).Times(1)
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -732,6 +779,10 @@ func TestUpdateVirtualNetwork(t *testing.T) {
 
 			if tt.addressManagerSetup != nil {
 				tt.addressManagerSetup(service)
+			}
+
+			if tt.intPoolAllocatorSetup != nil {
+				tt.intPoolAllocatorSetup(service)
 			}
 
 			res, err := service.UpdateVirtualNetwork(ctx, tt.updateRequest)
@@ -778,6 +829,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 						},
 					},
 				},
+				virtualNetworkNetworkID: 20,
 			},
 			deletesSubnet: true,
 		},
@@ -796,7 +848,7 @@ func TestDeleteVirtualNetwork(t *testing.T) {
 			}
 
 			virtualNetworkSetupReadServiceMocks(service)
-			virtualNetworkSetupIntPoolAllocatorMocks(service)
+			virtualNetworkSetupIntPoolAllocatorMocksForDeletion(service)
 
 			if tt.deletesSubnet {
 				virtualNetworkMustDeleteSubnet(service)
@@ -862,6 +914,7 @@ func TestDeleteDefaultRoutingInstance(t *testing.T) {
 
 			virtualNetwork := models.MakeVirtualNetwork()
 			virtualNetwork.UUID = "test_vn_red_uuid"
+			virtualNetwork.VirtualNetworkNetworkID = 20
 			virtualNetwork.RoutingInstances = tt.routingInstances
 			service.ReadService.(*servicesmock.MockReadService).EXPECT( //nolint: errcheck
 			).GetVirtualNetwork(gomock.Not(gomock.Nil()),
@@ -869,7 +922,7 @@ func TestDeleteDefaultRoutingInstance(t *testing.T) {
 					ID: virtualNetwork.UUID,
 				}).Return(&services.GetVirtualNetworkResponse{VirtualNetwork: virtualNetwork}, nil).Times(1)
 
-			virtualNetworkSetupIntPoolAllocatorMocks(service)
+			virtualNetworkSetupIntPoolAllocatorMocksForDeletion(service)
 
 			ctx := context.Background()
 
@@ -927,6 +980,7 @@ func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 	vn.UUID = "test_vn_uuid"
 	vn.FQName = []string{"test_vn_uuid"}
 	vn.VirtualNetworkProperties.ForwardingMode = testVnData.forwardingMode
+	vn.VirtualNetworkProperties.VxlanNetworkIdentifier = testVnData.vxlanID
 
 	return vn
 }
@@ -1058,8 +1112,16 @@ func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
 	intPoolAllocator.EXPECT().AllocateInt(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).Return(int64(13), nil).AnyTimes()
-	intPoolAllocator.EXPECT().DeallocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(0)).Return(
-		nil).AnyTimes()
+}
+
+func virtualNetworkSetupIntPoolAllocatorMocksForDeletion(s *ContrailTypeLogicService) {
+	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
+	intPoolAllocator.EXPECT().AllocateInt(
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+	).Return(int64(13), nil).AnyTimes()
+	intPoolAllocator.EXPECT().DeallocateInt(
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(20),
+	).Return(nil).AnyTimes()
 }
 
 func virtualNetworkMustCreateSubnet(s *ContrailTypeLogicService) {
