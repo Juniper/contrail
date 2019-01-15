@@ -170,6 +170,38 @@ func (port *Port) ReadAll(
 	ctx context.Context, rp RequestParameters, filters Filters, fields Fields,
 ) (Response, error) {
 	// TODO implement ReadAll logic
+	if filters.haveKeys("device_id") {
+		if len(filters["device_id"]) != 1 {
+			return []PortResponse{}, nil
+		}
+
+		vmRes, err := rp.ReadService.GetVirtualMachine(ctx, &services.GetVirtualMachineRequest{
+			ID: filters["device_id"][0],
+		})
+		if err != nil {
+			return []PortResponse{}, nil
+		}
+
+		vm := vmRes.GetVirtualMachine()
+		if vm == nil {
+			return []PortResponse{}, nil
+		}
+
+		vmiBackRefs := vm.GetVirtualMachineInterfaceBackRefs()
+		if len(vmiBackRefs) > 0 {
+			var vmi *models.VirtualMachineInterface
+			var vn *models.VirtualNetwork
+			vmi, vn, err = port.readVNCPort(ctx, rp, vmiBackRefs[0].GetUUID())
+			if err != nil {
+				return nil, newNeutronError(portNotFound, errorFields{
+					"port_id": vmiBackRefs[0].GetUUID(),
+				})
+			}
+
+			return makePortResponse(vn, vmi, vmi.GetInstanceIPBackRefs()), nil
+		}
+
+	}
 	return []PortResponse{}, nil
 }
 

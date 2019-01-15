@@ -21,3 +21,7 @@ func TestPort(t *testing.T) {
 func TestSecurityGroup(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
+
+func TestRouter(t *testing.T) {
+	integration.RunTest(t, t.Name(), server)
+}

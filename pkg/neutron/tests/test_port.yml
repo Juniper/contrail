@@ -268,7 +268,7 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: ''
 
-- name: port read read all
+- name: port read all
   request:
     path: /neutron/port
     method: POST
@@ -388,6 +388,56 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
+
+- name: port read all with device_id
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+          device_id:
+          - c603fa24-81fa-4710-a288-78be45b2c93e
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - heat_stack_owner
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-7ef05a71-0a78-4616-8741-64380919f5df
+        operation: READALL
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect:
+    status: ACTIVE
+    id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    mac_address: $mac_address
+    name: $uuid
+    network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    port_security_enabled: true
+    binding:vif_details:
+      port_filter: true
+    description: ''
+    binding:host_id: ignacy.osetek-spike.novalocal
+    binding:vnic_type: normal
+    binding:vif_type: vrouter
+    device_owner: compute:nova
+    fq_name:
+    - default
+    - admin_project_uuid
+    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    fixed_ips:
+    - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+      ip_address: $ip_address
+    security_groups:
+    - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+    device_id: c603fa24-81fa-4710-a288-78be45b2c93e
+
+
 - name: port delete
   request:
     path: /neutron/port
@@ -427,6 +477,13 @@ workflow:
 - name: delete network ipam
   request:
     path: /network-ipam/1bafd896-f5f9-4150-821a-9e100c2e0ce2
+    method: DELETE
+    expected:
+    - 200
+
+- name: Delete project
+  request:
+    path: /project/886c725d-0461-4dd6-ac27-30c74d4e46fb
     method: DELETE
     expected:
     - 200
