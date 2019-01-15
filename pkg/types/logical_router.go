@@ -2,12 +2,12 @@ package types
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/twinj/uuid"
 
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
@@ -212,9 +212,11 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 	ctx context.Context, logicalRouter *models.LogicalRouter,
 ) (string, error) {
 
+	intOwner := fmt.Sprintf("%v_vxlan", basemodels.ChildFQName(logicalRouter.GetFQName(), logicalRouter.GetInternalVNName()))
+
 	vxlanNetworkID := logicalRouter.GetVxlanNetworkIdentifier()
 	if vxlanNetworkID == "" {
-		id, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey, db.EmptyIntOwner)
+		id, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey, intOwner)
 		return strconv.FormatInt(id, 10), err
 	}
 
@@ -223,7 +225,7 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 		return "", err
 	}
 
-	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id, db.EmptyIntOwner)
+	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id, intOwner)
 	if err != nil {
 		return "", errutil.ErrorBadRequestf("cannot allocate provided vxlan identifier(%s): %v", vxlanNetworkID, err)
 	}
