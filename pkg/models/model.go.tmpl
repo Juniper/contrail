@@ -383,48 +383,46 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveChild(i interface{}) {
 func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels.PropCollectionUpdate) (map[string]interface{}, error) {
 	switch (u.Field) { {% for property in schema.JSONSchema.OrderedProperties %}{% if property.CollectionType %}
 {% set listType = property.OrderedProperties | first %}{% set itemType = listType.Items.GoType %}
+{% if itemType != "string" %}{% set itemType = "*" | add:itemType %}{% endif %}
 {% if property.CollectionType == "list" %}
 	case {{ schema.JSONSchema.GoName }}Field{{ property.GoName }}:
 		pos, err := u.PositionForList()
 		if err != nil {
 			return nil, err
 		}
+		value, ok := u.Value.({{itemType}})
 		switch strings.ToLower(u.Operation) {
 		case basemodels.PropCollectionUpdateOperationAdd:
-			var value {{ itemType }}
-			err := json.Unmarshal(u.Value, &value)
-			if err != nil {
-				return nil, errors.Wrap(err, "malformed value field")
+			if !ok {
+				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
 			}
-			m.{{property.GoName}}.AddInList({% if itemType != "string" %}&{% endif %}value)
+			m.{{property.GoName}}.AddInList(value)
 		case basemodels.PropCollectionUpdateOperationModify:
-			var value {{ itemType }}
-			err := json.Unmarshal(u.Value, &value)
-			if err != nil {
-				return nil, errors.Wrap(err, "malformed value field")
+			if !ok {
+				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
 			}
-			m.{{property.GoName}}.ModifyInList({% if itemType != "string" %}&{% endif %}value, pos)
+			m.{{property.GoName}}.ModifyInList(value, pos)
 		case basemodels.PropCollectionUpdateOperationDelete:
 			m.{{property.GoName}}.DeleteInList(pos)
 		}
 		return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
 {% elif property.CollectionType == "map" %}
 	case {{ schema.JSONSchema.GoName }}Field{{ property.GoName }}:
-		err := u.ValidateForMap()
+		key, err := u.KeyForMap()
 		if err != nil {
 			return nil, err
 		}
 		switch strings.ToLower(u.Operation) {
 		case basemodels.PropCollectionUpdateOperationSet:
-			var value {{ itemType }}
-			if err := json.Unmarshal(u.Value, &value); err != nil {
-				return nil, errors.Wrap(err, "malformed value field")
+			value, ok := u.Value.({{itemType}})
+			if !ok {
+				return nil, errors.Errorf("malformed value field, want {{itemType}} but got %T", u.Value)
 			}
-			if err := m.{{property.GoName}}.SetInMap({% if itemType != "string" %}&{% endif %}value); err != nil {
+			if err := m.{{property.GoName}}.SetInMap(value); err != nil {
 				return nil, err
 			}
 		case basemodels.PropCollectionUpdateOperationDelete:
-			m.{{property.GoName}}.DeleteInMap(u.Position)
+			m.{{property.GoName}}.DeleteInMap(key)
 		}
 		return map[string]interface{}{u.Field: m.{{ property.GoName }}}, nil
 {% endif %}{% endif %}{% endfor %}
