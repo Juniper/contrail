@@ -88,7 +88,7 @@ func TestJWTBad(t *testing.T) {
 	// bad file for private key
 	opts["priv-key"] = "whatever"
 	if _, err := newTokenProviderJWT(opts); err == nil {
-		t.Fatalf("expeceted failure on missing private key")
+		t.Fatalf("expected failure on missing private key")
 	}
 	opts["priv-key"] = jwtPrivKey
 }

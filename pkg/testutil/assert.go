@@ -43,7 +43,7 @@ var assertFunctions = map[string]assertFunction{
 	},
 	"null": func(path string, _, actual interface{}) error {
 		if actual != nil {
-			return errors.Errorf("expeceted null but got %s on path %s", actual, path)
+			return errors.Errorf("expected null but got %s on path %s", actual, path)
 		}
 		return nil
 	},
@@ -52,7 +52,7 @@ var assertFunctions = map[string]assertFunction{
 		case int64, int, float64:
 			return nil
 		}
-		return errors.Errorf("expeceted number but got %s on path %s", actual, path)
+		return errors.Errorf("expected number but got %s on path %s", actual, path)
 	},
 	"uuid": func(path string, _, actual interface{}) error {
 		if val, ok := actual.(string); ok {
