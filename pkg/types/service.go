@@ -45,4 +45,5 @@ type ContrailTypeLogicService struct {
 	IntPoolAllocator  IntPoolAllocator
 	MetadataGetter    baseservices.MetadataGetter
 	WriteService      services.WriteService
+	defaultGSCUUID    string
 }
