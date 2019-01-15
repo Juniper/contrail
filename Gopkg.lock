@@ -327,6 +327,7 @@
   digest = "1:0a3f6a0c68ab8f3d455f8892295503b179e571b7fefe47cc6c556405d1f83411"
   name = "github.com/gogo/protobuf"
   packages = [
+    "codec",
     "gogoproto",
     "proto",
     "protoc-gen-gogo/descriptor",
@@ -1282,6 +1283,7 @@
     "github.com/go-openapi/spec",
     "github.com/go-sql-driver/mysql",
     "github.com/gocql/gocql",
+    "github.com/gogo/protobuf/codec",
     "github.com/gogo/protobuf/gogoproto",
     "github.com/gogo/protobuf/proto",
     "github.com/gogo/protobuf/types",

@@ -293,3 +293,28 @@ message IDToTypeRequest {
 message IDToTypeResponse {
 	string Type = 1 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
 }
+
+service PropCollectionUpdate {
+	rpc PropCollectionUpdate(PropCollectionUpdateRequest) returns (google.protobuf.Empty);
+}
+
+message PropCollectionUpdateRequest {
+	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+	repeated PropCollectionChange Updates = 2 [(gogoproto.jsontag) = "updates"];
+}
+
+message PropCollectionChange {
+	string Field = 1 [(gogoproto.customname) = "Field",(gogoproto.jsontag) = "field"];
+	string Operation = 2 [(gogoproto.customname) = "Operation",(gogoproto.jsontag) = "operation"];
+	oneof Position {
+		int32 PositionInt = 3;
+		string PositionString = 4;
+	};
+	oneof Value {
+ {% set index = 5 %}{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
+	{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
+	{% if itemType != "string" %}github.com.Juniper.contrail.pkg.models.{% endif %}{{ itemType }} {{ itemType }}Value = {{ index }};
+	{% set index = index + 1 %}
+	{% endif %}{% endfor %}
+	};
+}
