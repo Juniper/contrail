@@ -397,21 +397,14 @@ func (db *Service) list{{ schema.JSONSchema.GoName }}(ctx context.Context, reque
 // count {{ schema.JSONSchema.GoName }} counts {{ schema.JSONSchema.GoName }}s using the givne list spec.
 func (db *Service) count{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (response *services.List{{ schema.JSONSchema.GoName }}Response, err error) {
 	qb := db.QueryBuilders["{{ schema.ID }}"]
-	query, values := qb.CountQuery(auth.GetAuthCTX(ctx), request.Spec)
-
-	tx := basedb.GetTransaction(ctx)
-	row := tx.QueryRowContext(ctx, query, values...)
-
-	var count int64
-	if err = row.Scan(&count); err != nil {
-		return nil, errors.Wrap(basedb.FormatDBError(err), "count query failed")
+	count, err := db.count(ctx, qb, request.Spec)
+	if err != nil {
+		return nil, err
 	}
 
-	response = &services.List{{ schema.JSONSchema.GoName }}Response{
+	return &services.List{{ schema.JSONSchema.GoName }}Response{
 		{{ schema.JSONSchema.GoName }}Count: count,
-	}
-
-	return response, nil
+	}, nil
 }
 
 // Update{{ schema.JSONSchema.GoName }} updates a resource
@@ -479,38 +472,8 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
 }
 
 //Check{{ schema.JSONSchema.GoName }}Policy check ownership of resources.
-func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(
-	ctx context.Context,
-	uuid string) error {
-	qb := db.QueryBuilders["{{ schema.ID }}"]
-
-	var err error
-	var count int
-
-	tx := basedb.GetTransaction(ctx)
-	auth := auth.GetAuthCTX(ctx)
-
-	selectQuery := qb.SelectAuthQuery(auth.IsAdmin())
-	if auth.IsAdmin() {
-		row := tx.QueryRowContext(ctx, selectQuery, uuid)
-		if err != nil {
-			return basedb.FormatDBError(err)
-		}
-		row.Scan(&count)
-		if count == 0 {
-		   return errutil.ErrorNotFound
-		}
-	}else{
-		row := tx.QueryRowContext(ctx, selectQuery, uuid, auth.ProjectID() )
-		if err != nil {
-			return basedb.FormatDBError(err)
-		}
-		row.Scan(&count)
-		if count == 0 {
-		   return errutil.ErrorNotFound
-		}
-	}
-	return nil
+func (db *Service) Check{{ schema.JSONSchema.GoName }}Policy(ctx context.Context, uuid string) error {
+	return db.checkPolicy(ctx, db.QueryBuilders["{{ schema.ID }}"], uuid)
 }
 
 // Delete{{ schema.JSONSchema.GoName }} deletes a resource
@@ -651,19 +614,8 @@ func (db *Service) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
 
 //Get{{ schema.JSONSchema.GoName }} a Get request.
 func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (response *services.Get{{ schema.JSONSchema.GoName }}Response, err error) {
-	spec := &baseservices.ListSpec{
-				Limit: 1,
-				Detail: true,
-				Fields: request.Fields,
-				Filters: []*baseservices.Filter{
-					&baseservices.Filter{
-						Key: "uuid",
-						Values: []string{request.ID},
-					},
-				},
-	}
 	listRequest := &services.List{{ schema.JSONSchema.GoName }}Request{
-		Spec: spec,
+		Spec: listSpecForGet(request.ID, request.Fields),
 	}
 	var result *services.List{{ schema.JSONSchema.GoName }}Response
 	if err := db.DoInTransaction(
@@ -677,10 +629,10 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 	if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
 		return nil, errutil.ErrorNotFoundf("No {{ schema.TypeName }}: %s", request.ID)
 	}
-	response = &services.Get{{ schema.JSONSchema.GoName }}Response{
+
+	return &services.Get{{ schema.JSONSchema.GoName }}Response{
 	   {{ schema.JSONSchema.GoName }}: result.{{ schema.JSONSchema.GoName }}s[0],
-	}
-	return response, nil
+	}, nil
 }
 
 //List{{ schema.JSONSchema.GoName }} handles a List service Request.
