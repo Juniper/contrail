@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
@@ -44,22 +45,27 @@ func (m *VirtualNetwork) IsSupportingL3VPNType() bool {
 	return m.GetVirtualNetworkProperties().GetForwardingMode() == L3Mode
 }
 
-//IsValidMultiPolicyServiceChainConfig checks if multi policy service chain config is valid or not.
-func (m *VirtualNetwork) IsValidMultiPolicyServiceChainConfig() bool {
+//ValidateMultiPolicyServiceChainConfig checks if multi policy service chain config is valid
+//and throws an error when it's not.
+func (m *VirtualNetwork) ValidateMultiPolicyServiceChainConfig() error {
 	if !m.MultiPolicyServiceChainsEnabled {
-		return true
+		return nil
 	}
+
+	err := errutil.ErrorBadRequest(
+		"multi policy service chains are not supported, with both import export external route targets")
+
 	if len(m.GetRouteTargetList().GetRouteTarget()) != 0 {
-		return false
+		return err
 	}
 	for _, importRouteTarget := range m.GetImportRouteTargetList().GetRouteTarget() {
 		for _, exportRouteTarget := range m.GetExportRouteTargetList().GetRouteTarget() {
 			if importRouteTarget == exportRouteTarget {
-				return false
+				return err
 			}
 		}
 	}
-	return true
+	return nil
 }
 
 //ShouldIgnoreAllocation checks if there is ip-fabric or link-local address allocation
@@ -126,7 +132,7 @@ func (m *VirtualNetwork) MakeDefaultRoutingInstance() *RoutingInstance {
 		ParentUUID:                m.UUID,
 		RoutingInstanceIsDefault:  true,
 		RoutingInstanceFabricSnat: m.FabricSnat,
-		RouteTargetRefs:           m.MakeImportExportRouteTargetRefs(),
+		RouteTargetRefs:           m.MakeRouteTargetRefs(),
 	}
 }
 
@@ -135,11 +141,11 @@ func (m *VirtualNetwork) DefaultRoutingInstanceFQName() []string {
 	return basemodels.ChildFQName(m.FQName, m.FQName[len(m.FQName)-1])
 }
 
-// MakeImportExportRouteTargetRefs returns refs to RouteTarget's from import and export lists.
-func (m *VirtualNetwork) MakeImportExportRouteTargetRefs() []*RoutingInstanceRouteTargetRef {
+// MakeRouteTargetRefs returns refs to RouteTarget's from import, export and both lists.
+func (m *VirtualNetwork) MakeRouteTargetRefs() []*RoutingInstanceRouteTargetRef {
 	return append(
 		m.GetImportRouteTargetList().AsRefs(&InstanceTargetType{ImportExport: "import"}),
-		m.GetExportRouteTargetList().AsRefs(&InstanceTargetType{ImportExport: "export"})...,
+		m.GetExportRouteTargetList().AsRefs(&InstanceTargetType{ImportExport: "export"})...
 	)
 }
 

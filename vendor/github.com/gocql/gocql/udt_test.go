@@ -89,10 +89,10 @@ func TestUDT_Marshaler(t *testing.T) {
 	}
 
 	if pos.Lat != expLat {
-		t.Errorf("expeceted lat to be be %d got %d", expLat, pos.Lat)
+		t.Errorf("expected lat to be be %d got %d", expLat, pos.Lat)
 	}
 	if pos.Lon != expLon {
-		t.Errorf("expeceted lon to be be %d got %d", expLon, pos.Lon)
+		t.Errorf("expected lon to be be %d got %d", expLon, pos.Lon)
 	}
 	if pos.Padding != pad {
 		t.Errorf("expected to get padding %q got %q\n", pad, pos.Padding)
