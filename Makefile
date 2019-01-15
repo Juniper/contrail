@@ -22,7 +22,9 @@ endif
 GOPATH ?= `go env GOPATH`
 
 # This is needed by generate* targets that works only sequentially
+ifneq ($(filter generate,$(MAKECMDGOALS)),)
 .NOTPARALLEL:
+endif
 
 all: check lint test build
 

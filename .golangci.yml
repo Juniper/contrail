@@ -1,6 +1,6 @@
 run:
   # Concurrency is reduced in order to reduce RAM consumption
-  concurrency: 3
+  concurrency: 2
   deadline: 20m
   skip-dirs: []
 
@@ -26,6 +26,7 @@ linters:
   - megacheck
   - prealloc
   - staticcheck
+  - unparam
 
 linters-settings:
   errcheck:
@@ -40,8 +41,6 @@ linters-settings:
   maligned:
     suggest-new: true
   unused:
-    check-exported: true
-  unparam:
     check-exported: true
   nakedret:
     max-func-lines: 5
