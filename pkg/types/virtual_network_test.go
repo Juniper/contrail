@@ -26,6 +26,7 @@ type testVn struct {
 	importRouteTargetList           string
 	exportRouteTargetList           string
 	forwardingMode                  string
+	vxlanID                         int64
 	virtualNetworkNetworkID         int64
 	networkIpamRefs                 []*models.VirtualNetworkNetworkIpamRef
 	bgpVPNRefs                      []*models.VirtualNetworkBGPVPNRef
@@ -322,7 +323,6 @@ func TestCreateVirtualNetwork(t *testing.T) {
 					},
 				},
 			},
-			fails: false,
 		},
 		{
 			name: "check for logical routers with bgpvpn refs",
@@ -343,6 +343,12 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			},
 			fails:                 true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
+		},
+		{
+			name: "allocate vxlan id",
+			testVnData: &testVn{
+				vxlanID: 2,
+			},
 		},
 	}
 
@@ -392,6 +398,12 @@ func TestCreateVirtualNetwork(t *testing.T) {
 
 			if tt.createsSubnet {
 				virtualNetworkMustCreateSubnet(service)
+			}
+
+			if tt.testVnData.vxlanID != 0 {
+				intPoolAllocator := service.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
+				intPoolAllocator.EXPECT().SetInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), tt.testVnData.vxlanID, gomock.Not(gomock.Nil())).Return(
+					nil).Times(1)
 			}
 
 			res, err := service.CreateVirtualNetwork(ctx,
@@ -927,6 +939,7 @@ func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 	vn.UUID = "test_vn_uuid"
 	vn.FQName = []string{"test_vn_uuid"}
 	vn.VirtualNetworkProperties.ForwardingMode = testVnData.forwardingMode
+	vn.VirtualNetworkProperties.VxlanNetworkIdentifier = testVnData.vxlanID
 
 	return vn
 }
