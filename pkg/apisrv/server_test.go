@@ -551,3 +551,16 @@ func TestPagination(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTestTemplate(t, "./test_data/test_pagination.tmpl", context)
 }
+
+func TestIDToTypeGRPC(t *testing.T) {
+	testGRPCServer(t, t.Name(),
+		func(ctx context.Context, conn *grpc.ClientConn) {
+			c := services.NewIDToTypeClient(conn)
+			resp, err := c.IDToType(ctx, &services.IDToTypeRequest{
+				UUID: integration.DefaultDomainUUID,
+			})
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+			assert.Equal(t, models.KindDomain, resp.Type)
+		})
+}
