@@ -169,8 +169,31 @@ func (port *Port) Read(ctx context.Context, rp RequestParameters, id string) (Re
 func (port *Port) ReadAll(
 	ctx context.Context, rp RequestParameters, filters Filters, fields Fields,
 ) (Response, error) {
-	// TODO implement ReadAll logic
-	return []PortResponse{}, nil
+	// TODO implement rest of ReadAll logic
+	ps := []*PortResponse{}
+	if filters.haveKeys("device_id") {
+		deviceUUIDs := filters["device_id"]
+		if len(deviceUUIDs) != 1 {
+			return ps, nil
+		}
+
+		deviceTypeRes, err := rp.IDToTypeService.IDToType(ctx, &services.IDToTypeRequest{
+			UUID: deviceUUIDs[0],
+		})
+
+		if err != nil {
+			return nil, newNeutronError(badRequest, errorFields{
+				"resource": "port",
+				"msg":      err.Error(),
+			})
+		}
+
+		// TODO handle another resources associated with port using device_id field in filters
+		if deviceTypeRes.GetType() == models.KindVirtualMachine {
+			return port.readPortsAssociatedWithVM(ctx, rp, filters, deviceUUIDs[0])
+		}
+	}
+	return ps, nil
 }
 
 func (port *Port) getAsssociatedVirtualMachineID(vmi *models.VirtualMachineInterface) string {
@@ -183,6 +206,37 @@ func (port *Port) getAsssociatedVirtualMachineID(vmi *models.VirtualMachineInter
 	}
 
 	return ""
+}
+
+func (port *Port) readPortsAssociatedWithVM(ctx context.Context, rp RequestParameters,
+	filters Filters, vmUUID string,
+) ([]*PortResponse, error) {
+	ps := []*PortResponse{}
+
+	vmRes, err := rp.ReadService.GetVirtualMachine(ctx, &services.GetVirtualMachineRequest{
+		ID: vmUUID,
+	})
+	if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "port",
+			"msg":      err.Error(),
+		})
+	}
+
+	vmiBackRefs := vmRes.GetVirtualMachine().GetVirtualMachineInterfaceBackRefs()
+	if len(vmiBackRefs) > 0 {
+		var vmi *models.VirtualMachineInterface
+		var vn *models.VirtualNetwork
+		vmi, vn, err = port.readVNCPort(ctx, rp, vmiBackRefs[0].GetUUID())
+		if err != nil {
+			return nil, newNeutronError(portNotFound, errorFields{
+				"port_id": vmiBackRefs[0].GetUUID(),
+			})
+		}
+
+		ps = append(ps, makePortResponse(vn, vmi, vmi.GetInstanceIPBackRefs()))
+	}
+	return ps, nil
 }
 
 func (port *Port) getAssociatedVirtualNetwork(ctx context.Context, rp RequestParameters,
