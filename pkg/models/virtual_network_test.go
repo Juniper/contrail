@@ -8,15 +8,14 @@ import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
-func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
+func TestCheckMultiPolicyServiceChainConfig(t *testing.T) {
 	var tests = []struct {
 		name           string
 		virtualNetwork *VirtualNetwork
-		expected       bool
+		fails          bool
 	}{
 		{
-			name:     "check for rt",
-			expected: true,
+			name: "check for rt with different RT in import and export list",
 			virtualNetwork: &VirtualNetwork{
 				MultiPolicyServiceChainsEnabled: true,
 				ImportRouteTargetList: &RouteTargetList{
@@ -28,8 +27,8 @@ func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
 			},
 		},
 		{
-			name:     "check for rt",
-			expected: false,
+			name:  "check for rt with the same RT in both import and export list",
+			fails: true,
 			virtualNetwork: &VirtualNetwork{
 				MultiPolicyServiceChainsEnabled: true,
 				ImportRouteTargetList: &RouteTargetList{
@@ -41,8 +40,7 @@ func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
 			},
 		},
 		{
-			name:     "check for multi-policy service chains disabled",
-			expected: true,
+			name: "check for multi-policy service chains disabled",
 			virtualNetwork: &VirtualNetwork{
 				MultiPolicyServiceChainsEnabled: false,
 			},
@@ -51,8 +49,11 @@ func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := tt.virtualNetwork.IsValidMultiPolicyServiceChainConfig()
-			assert.Equal(t, tt.expected, res)
+			if tt.fails {
+				assert.Error(t, tt.virtualNetwork.CheckMultiPolicyServiceChainConfig())
+			} else {
+				assert.NoError(t, tt.virtualNetwork.CheckMultiPolicyServiceChainConfig())
+			}
 		})
 	}
 }
