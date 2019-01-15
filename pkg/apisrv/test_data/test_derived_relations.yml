@@ -1,6 +1,6 @@
 name: Derived relations test
 description: >
-  this test checks derived parent-chil and reference relations.
+  this test checks derived parent-child and reference relations.
   Such relations make it possible to delete parent while leaving derived children.
 test_data:
   admin_project: &admin_project
