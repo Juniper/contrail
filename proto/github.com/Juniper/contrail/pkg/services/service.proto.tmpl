@@ -268,3 +268,16 @@ message FQNameToIDRequest {
 message FQNameToIDResponse {
 	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
 }
+
+
+service IDToType {
+	rpc IDToType(IDToTypeRequest) returns (IDToTypeResponse);
+}
+
+message IDToTypeRequest {
+	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
+}
+
+message IDToTypeResponse {
+	string Type = 1 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
+}
