@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	protocodec "github.com/gogo/protobuf/codec"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/pkg/errors"
@@ -15,12 +16,11 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
-	"github.com/Juniper/contrail/pkg/constants"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
@@ -49,20 +49,21 @@ func RegisterExtension(f func(server *Server) error) {
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo              *echo.Echo
-	GRPCServer        *grpc.Server
-	Keystone          *keystone.Keystone
-	DBService         *db.Service
-	Proxy             *proxyService
-	Service           services.Service
-	IPAMServer        services.IPAMServer
-	ChownServer       services.ChownServer
-	SetTagServer      services.SetTagServer
-	RefRelaxServer    services.RefRelaxServer
-	UserAgentKVServer services.UserAgentKVServer
-	FQNameToIDServer  services.FQNameToIDServer
-	IDToTypeServer    services.IDToTypeServer
-	Cache             *cache.DB
+	Echo                       *echo.Echo
+	GRPCServer                 *grpc.Server
+	Keystone                   *keystone.Keystone
+	DBService                  *db.Service
+	Proxy                      *proxyService
+	Service                    services.Service
+	IPAMServer                 services.IPAMServer
+	ChownServer                services.ChownServer
+	SetTagServer               services.SetTagServer
+	RefRelaxServer             services.RefRelaxServer
+	UserAgentKVServer          services.UserAgentKVServer
+	FQNameToIDServer           services.FQNameToIDServer
+	IDToTypeServer             services.IDToTypeServer
+	PropCollectionUpdateServer services.PropCollectionUpdateServer
+	Cache                      *cache.DB
 }
 
 // NewServer makes a server
@@ -205,6 +206,7 @@ func (s *Server) Init() (err error) {
 	s.UserAgentKVServer = cs
 	s.FQNameToIDServer = cs
 	s.IDToTypeServer = cs
+	s.PropCollectionUpdateServer = cs
 
 	if viper.GetBool("server.enable_vnc_neutron") {
 		s.setupNeutronService(cs)
@@ -275,15 +277,17 @@ func (s *Server) Init() (err error) {
 			log.Fatal("GRPC support requires TLS configuraion.")
 		}
 		log.Debug("enabling grpc")
-		if keystoneAuthURL != "" {
-			s.GRPCServer = grpc.NewServer(
-				grpc.UnaryInterceptor(
-					keystone.AuthInterceptor(keystoneClient, endpointStore)))
-		} else if viper.GetBool("no_auth") {
-			s.GRPCServer = grpc.NewServer(
-				grpc.UnaryInterceptor(
-					noAuthInterceptor()))
+		opts := []grpc.ServerOption{
+			// TODO(Michal): below option potentialy breaks compatibilty for non golang grpc clients.
+			// Ensure it doesn't or find a better solution for un/marshaling `oneof` fields properly.
+			grpc.CustomCodec(protocodec.New(0)),
 		}
+		if keystoneAuthURL != "" {
+			opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(keystoneClient, endpointStore)))
+		} else if viper.GetBool("no_auth") {
+			opts = append(opts, grpc.UnaryInterceptor(noAuthInterceptor()))
+		}
+		s.GRPCServer = grpc.NewServer(opts...)
 		services.RegisterContrailServiceServer(s.GRPCServer, s.Service)
 		services.RegisterIPAMServer(s.GRPCServer, s.IPAMServer)
 		services.RegisterChownServer(s.GRPCServer, s.ChownServer)
@@ -292,6 +296,7 @@ func (s *Server) Init() (err error) {
 		services.RegisterFQNameToIDServer(s.GRPCServer, s.FQNameToIDServer)
 		services.RegisterIDToTypeServer(s.GRPCServer, s.IDToTypeServer)
 		services.RegisterUserAgentKVServer(s.GRPCServer, s.UserAgentKVServer)
+		services.RegisterPropCollectionUpdateServer(s.GRPCServer, s.PropCollectionUpdateServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 
