@@ -94,6 +94,24 @@ test_data:
     bgpvpn_refs:
       - uuid: test_bgpvpn_l3
 
+  conflicting_test_lr: &conflicting_test_lr
+    uuid: conflicting_test_logical_router
+    fq_name: ["default-domain", "admin_lr_project", "conflicting_test_logical_router"]
+    parent_type: project
+    vxlan_network_identifier: "10"
+    virtual_machine_interface_refs:
+      - uuid: 4837041a-2dc0-4e7d-b2f4-d7fe449f8734
+    bgpvpn_refs:
+      - uuid: test_bgpvpn_l3
+
+  conflicting_vn: &conflicting_vn
+    fq_name: ["default", "admin_vn_vxlan_project_uuid", "conflicting_vn"]
+    uuid: conflicting_vn
+    parent_type: project
+    parent_uuid: admin_vn_vxlan_project_uuid
+    virtual_network_properties:
+      vxlan_network_identifier: 10
+
 clients:
   default:
     id: alice
@@ -272,6 +290,47 @@ workflow:
     virtual-networks:
       count: 4
 
+- name: check the created internal virtual network
+  request:
+    path: "/virtual-networks?parent_id=admin_lr_project_uuid&filters=name==__contrail_lr_internal_vn_test_logical_router__&detail=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      - virtual-network:
+          name: __contrail_lr_internal_vn_test_logical_router__
+          parent_uuid: admin_lr_project_uuid
+          parent_type: project
+          virtual_network_properties:
+            vxlan_network_identifier: 10
+            forwarding_mode: l3
+          route_target_list:
+          id_perms:
+            enable: true
+          logical_router_back_refs:
+            - uuid: test_logical_router
+
+- name: fail to create another logical router with the same VxLAN ID
+  request:
+    path: /logical-routers
+    method: POST
+    expected:
+    - 400
+    data:
+      logical-router: *conflicting_test_lr
+  expect: null
+
+- name: fail to create a virtual network with the same VxLAN ID
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 400
+    data:
+      virtual-network: *conflicting_vn
+  expect: null
+
 - name: update logical router fail with bgpvpn l2
   request:
     path: /logical-router/test_logical_router
@@ -342,6 +401,28 @@ workflow:
   expect:
     virtual-networks:
       count: 3
+
+# TODO Extract this to a separate file
+- name: create logical router again
+  request:
+    path: /logical-routers
+    method: POST
+    expected:
+    - 200
+    data:
+      logical-router: *test_lr
+  expect:
+    logical-router: *test_lr
+
+# Test if the internal VN is deleted without trouble
+# if the internal VN ref has not been changed.
+- name: delete logical router again
+  request:
+    path: /logical-router/test_logical_router
+    method: DELETE
+    expected:
+    - 200
+  expect: null
 
 - name: delete virtual machine interface blue
   request:
