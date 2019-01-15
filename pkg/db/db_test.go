@@ -326,7 +326,6 @@ func TestDBCreateRef(t *testing.T) {
 				ID: riUUID,
 				RoutingInstanceRouteTargetRef: &models.RoutingInstanceRouteTargetRef{
 					UUID: rtUUID,
-					Attr: &models.InstanceTargetType{},
 					To:   []string{"default-domain", "default-project", "vn-db-create-ref", "ri-db-create-ref"},
 				},
 			},
