@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
@@ -44,22 +45,38 @@ func (m *VirtualNetwork) IsSupportingL3VPNType() bool {
 	return m.GetVirtualNetworkProperties().GetForwardingMode() == L3Mode
 }
 
-//IsValidMultiPolicyServiceChainConfig checks if multi policy service chain config is valid or not.
-func (m *VirtualNetwork) IsValidMultiPolicyServiceChainConfig() bool {
+// CheckMultiPolicyServiceChainConfig checks if multi policy service chain config is valid.
+func (m *VirtualNetwork) CheckMultiPolicyServiceChainConfig() error {
 	if !m.MultiPolicyServiceChainsEnabled {
-		return true
+		return nil
 	}
+
 	if len(m.GetRouteTargetList().GetRouteTarget()) != 0 {
-		return false
+		return errutil.ErrorBadRequest("Multi Policy Service Chains enabled: " +
+			"Route Target List should be empty")
 	}
-	for _, importRouteTarget := range m.GetImportRouteTargetList().GetRouteTarget() {
-		for _, exportRouteTarget := range m.GetExportRouteTargetList().GetRouteTarget() {
-			if importRouteTarget == exportRouteTarget {
-				return false
-			}
+
+	if m.isAnyRouteTargetInImportAndExportList() {
+		return errutil.ErrorBadRequest("Multi Policy Service Chains enabled: " +
+			"there cannot be same Route Target in Import Route Target List and Export Route Target List")
+	}
+
+	return nil
+}
+
+func (m *VirtualNetwork) isAnyRouteTargetInImportAndExportList() bool {
+	importRTs := make(map[string]bool)
+	for _, importRT := range m.GetImportRouteTargetList().GetRouteTarget() {
+		importRTs[importRT] = true
+	}
+
+	for _, exportRT := range m.GetExportRouteTargetList().GetRouteTarget() {
+		if importRTs[exportRT] {
+			return true
 		}
 	}
-	return true
+
+	return false
 }
 
 //ShouldIgnoreAllocation checks if there is ip-fabric or link-local address allocation
