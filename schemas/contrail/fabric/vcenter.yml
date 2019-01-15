@@ -15,6 +15,18 @@ plural: vCenters
 prefix: /
 schema:
   properties:
+    vcenter_name:
+      description: vCenter server ip address to connect to vCenter server
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: vCenter server name
+      type: string
+      view:
+      - create
+      - detail
     server:
       description: vCenter server ip address to connect to vCenter server
       nullable: false
@@ -22,7 +34,7 @@ schema:
       - create
       - update
       sql: ""
-      title: vCenter
+      title: vCenter server IP
       type: string
       view:
       - create
@@ -73,19 +85,7 @@ schema:
       type: string
       view:
       - create
-      - detail
-    ntp_server:
-      description: NTP server ip address
-      nullable: false
-      permission:
-      - create
       - update
-      sql: ""
-      title: ntp server
-      type: string
-      view:
-      - create
-      - detail
 singular: vCenter
 title: vCenter
 type: ""

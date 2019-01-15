@@ -87,7 +87,7 @@ schema:
       - update
       sql: ""
       title: number of ports
-      type: string
+      type: integer 
       view:
       - create
       - detail

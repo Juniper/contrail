@@ -128,6 +128,7 @@
         mac:
           description: mac address for contrailvm
           type: string
+          format: "mac"
           nullable: false
           permission:
           - create
@@ -141,6 +142,20 @@
           - update
         vcenter_server:
           description: vCenter server
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        datacenter:
+          description: datacenter in vCenter 
+          type: string
+          nullable: false
+          permission:
+          - create
+          - update
+        cluster:
+          description: cluster in vCenter 
           type: string
           nullable: false
           permission:
