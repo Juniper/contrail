@@ -95,6 +95,10 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 
 			currentVN := virtualNetworkResponse.GetVirtualNetwork()
 
+			if err = validateMultiPolicyServiceChainConfigWithUpdate(request, *currentVN); err != nil {
+				return err
+			}
+
 			//TODO: check VirtualNetworkID
 			//TODO: check changes in virtual_network_properties
 			//      we need to read ipam_refs from db and for any ipam
@@ -181,11 +185,43 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 	return response, err
 }
 
+// validateMultiPolicyServiceChainConfigWithUpdate validates if in case of
+// enabled Multi Policy Service Chain Support resource still doesn't contain
+// the same import and export route target.
+func validateMultiPolicyServiceChainConfigWithUpdate(
+	request *services.UpdateVirtualNetworkRequest, oldVN models.VirtualNetwork,
+) error {
+	updateVN := request.GetVirtualNetwork()
+	fm := request.GetFieldMask()
+
+	if basemodels.FieldMaskContains(&fm, models.VirtualNetworkFieldMultiPolicyServiceChainsEnabled) {
+		if !updateVN.MultiPolicyServiceChainsEnabled {
+			return nil
+		}
+	} else {
+		if !oldVN.MultiPolicyServiceChainsEnabled {
+			return nil
+		}
+	}
+
+	if basemodels.FieldMaskContains(&fm, models.VirtualNetworkFieldImportRouteTargetList) {
+		oldVN.ImportRouteTargetList = updateVN.ImportRouteTargetList
+	}
+	if basemodels.FieldMaskContains(&fm, models.VirtualNetworkFieldExportRouteTargetList) {
+		oldVN.ExportRouteTargetList = updateVN.ExportRouteTargetList
+	}
+	if basemodels.FieldMaskContains(&fm, models.VirtualNetworkFieldRouteTargetList) {
+		oldVN.RouteTargetList = updateVN.RouteTargetList
+	}
+
+	oldVN.MultiPolicyServiceChainsEnabled = true
+	return oldVN.ValidateMultiPolicyServiceChainConfig()
+}
+
 func (sv *ContrailTypeLogicService) prevalidateVirtualNetwork(vn *models.VirtualNetwork) error {
 	// check if multiple policy service chain supported
-	if !vn.IsValidMultiPolicyServiceChainConfig() {
-		return errutil.ErrorBadRequest(
-			"multi policy service chains are not supported, with both import export external route targets")
+	if err := vn.ValidateMultiPolicyServiceChainConfig(); err != nil {
+		return err
 	}
 
 	// Does not authorize to set the virtual network ID as it's allocated
