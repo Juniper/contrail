@@ -36,6 +36,9 @@ test_data:
       esxi_name: 10.84.16.11
       username: root
       password: c0ntrail123
+      vcenter_server: SRV1
+      datacenter: qa-dc
+      cluster: qa-cluster
       datastore: qa-ds
       mac: 00:50:56:00:d0:0b
     hostname: esxi_node
@@ -51,12 +54,12 @@ test_data:
     uuid: test_vCenter_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    vcenter_name: SRV1
     server: 10.84.16.51
     username: administrator
     password: Contrail123
     wsdl_path: wsdl
     auth_protocol: https
-    ntp_server: 10.1.1.100
   vCenter_computes: &vCenter_computes
     uuid: vCenter_computes_uuid
     parent_type: vCenter
@@ -66,7 +69,9 @@ test_data:
     datacenter: qa-dc
     dvsswitch: qa_dvs
     cluster_name: qa-cluster
-    number_of_ports: "1800"
+    vmdk: http://10.84.5.120/cs-shared/contrail-vcenter/vmdk/centos-7.5/LATEST/ContrailVM.ovf
+    dv_portgroup_name: qa_pg
+    number_of_ports: 1800
   vCenter_plugin_nodes: &vCenter_plugin_nodes
     uuid: vCenter_plugin_nodes_uuid
     parent_type: vCenter
@@ -186,7 +191,6 @@ workflow:
       password: Contrail123
       wsdl_path: wsdl
       auth_protocol: https
-      ntp_server: 10.1.1.100
 - name: create cluster
   request:
     path: /contrail-clusters
@@ -271,7 +275,9 @@ workflow:
       datacenter: qa-dc
       dvsswitch: qa_dvs
       cluster_name: qa-cluster
-      number_of_ports: "1800"
+      vmdk: http://10.84.5.120/cs-shared/contrail-vcenter/vmdk/centos-7.5/LATEST/ContrailVM.ovf
+      dv_portgroup_name: qa_pg
+      number_of_ports: 1800
 - name: create vcenter plugin node
   request:
     path: /vCenter-plugin-nodes

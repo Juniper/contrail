@@ -1,22 +1,26 @@
 ---
 vcenter_servers:
+  - SRV1:
       hostname: 10.84.16.51
       username: administrator
       password: Contrail123
       datacentername: qa-dc
       clusternames:
        - qa-cluster
+      vmdk: http://10.84.5.120/cs-shared/contrail-vcenter/vmdk/centos-7.5/LATEST/ContrailVM.ovf
       dv_switch:
         dv_switch_name: qa_dvs
       dv_port_group:
+        dv_portgroup_name: qa_pg 
         number_of_ports: 1800
 esxihosts:
   - name: 10.84.16.11
     username: root
     password: c0ntrail123
-    datastore: qa-ds
+    vcenter_server: SRV1
     datacenter: qa-dc
     cluster: qa-cluster
+    datastore: qa-ds
     contrail_vm:
       networks:
         - mac: 00:50:56:00:d0:0b
