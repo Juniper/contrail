@@ -44,6 +44,12 @@ func TestIntPool(t *testing.T) {
 			assert.NoError(t, err, "get int pool owner failed")
 			assert.Equal(t, "firewall", owner, "get int pool owner failed")
 
+			err = db.SetInt(ctx, poolKey, i, "firewall")
+			assert.NoError(t, err, "setting the same id for the same owner failed")
+
+			err = db.SetInt(ctx, poolKey, i, "another_firewall")
+			assert.Error(t, err, "setting the same id for a different owner should fail")
+
 			i, err = db.AllocateInt(ctx, poolKey, IntPoolEmptyOwner)
 			assert.NoError(t, err, "allocate failed")
 			assert.Equal(t, int64(1), i, "allocate failed")
@@ -76,6 +82,9 @@ func TestIntPool(t *testing.T) {
 
 			err = db.SetInt(ctx, poolKey, 4, IntPoolEmptyOwner)
 			assert.NoError(t, err, "set failed")
+
+			err = db.SetInt(ctx, poolKey, 4, IntPoolEmptyOwner)
+			assert.Error(t, err, "setting the same ID should fail")
 
 			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
