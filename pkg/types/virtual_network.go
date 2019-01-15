@@ -33,6 +33,16 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
+			vxLanID := virtualNetwork.GetVirtualNetworkProperties().GetVxlanNetworkIdentifier()
+			// TODO is 0 the same as None?
+			if vxLanID != 0 {
+				err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, vxLanID, virtualNetwork.VxLANIntOwner())
+				if err != nil {
+					return errutil.ErrorBadRequestf("cannot allocate provided vxlan identifier(%v): %v", vxLanID, err)
+				}
+
+			}
+
 			virtualNetwork.VirtualNetworkNetworkID, err = sv.IntPoolAllocator.AllocateInt(
 				ctx,
 				VirtualNetworkIDPoolKey,
@@ -105,6 +115,9 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 			}
 
 			//TODO: check VirtualNetworkID
+
+			err = sv.processVxlanIDUpdate(ctx, currentVN, requestedVN, &request.FieldMask)
+
 			//TODO: check changes in virtual_network_properties
 			//      we need to read ipam_refs from db and for any ipam
 			//      if subnet_method is flat-subnet, network_mode should be l3
@@ -180,6 +193,15 @@ func (sv *ContrailTypeLogicService) DeleteVirtualNetwork(
 			err = sv.deallocateVnSubnetsInAddrMgmt(ctx, vn, subnetsToDelete)
 			if err != nil {
 				return errutil.ErrorBadRequestf("couldn't remove virtual network subnet objects: %v", err)
+			}
+
+			vxLanID := vn.GetVirtualNetworkProperties().GetVxlanNetworkIdentifier()
+			if vxLanID != 0 {
+				err = sv.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, vxLanID)
+				if err != nil {
+					return errutil.ErrorBadRequestf("couldn't deallocate vxlan network id(%v): %v",
+						vxLanID, err)
+				}
 			}
 
 			response, err = sv.BaseService.DeleteVirtualNetwork(ctx, request)
@@ -260,6 +282,42 @@ func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
 		if err != nil {
 			return errors.Wrapf(err,
 				"could not delete default routing instance (uuid: %v) for VN (%v)", ri.UUID, vn.UUID)
+		}
+	}
+
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) processVxlanIDUpdate(
+	ctx context.Context,
+	currentVN *models.VirtualNetwork, requestedVN *models.VirtualNetwork,
+	fieldMask *protobuf.FieldMask) error {
+	if !basemodels.FieldMaskContains(
+		fieldMask,
+		models.VirtualNetworkFieldVirtualNetworkProperties,
+		models.VirtualNetworkTypeFieldVxlanNetworkIdentifier,
+	) {
+		return nil
+	}
+
+	currentVxlanID := currentVN.GetVirtualNetworkProperties().GetVxlanNetworkIdentifier()
+	requestedVxlanID := requestedVN.GetVirtualNetworkProperties().GetVxlanNetworkIdentifier()
+	if currentVxlanID == requestedVxlanID {
+		return nil
+	}
+
+	if currentVxlanID != 0 {
+		err := sv.IntPoolAllocator.DeallocateInt(ctx, VirtualNetworkIDPoolKey, currentVxlanID)
+		if err != nil {
+			return errutil.ErrorBadRequestf("couldn't deallocate vxlan network id(%v): %v",
+				currentVxlanID, err)
+		}
+	}
+
+	if requestedVxlanID != 0 {
+		err := sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, requestedVxlanID, requestedVN.VxLANIntOwner())
+		if err != nil {
+			return errutil.ErrorBadRequestf("cannot allocate provided vxlan identifier(%v): %v", requestedVxlanID, err)
 		}
 	}
 
