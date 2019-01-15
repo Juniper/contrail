@@ -2,12 +2,12 @@ package types
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/twinj/uuid"
 
-	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
@@ -212,9 +212,16 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 	ctx context.Context, logicalRouter *models.LogicalRouter,
 ) (string, error) {
 
+	vnFQName, err := sv.getLRInternalVNFQName(ctx, logicalRouter)
+	if err != nil {
+		return "", err
+	}
+
+	intOwner := fmt.Sprintf("%v_vxlan", basemodels.FQNameToString(vnFQName))
+
 	vxlanNetworkID := logicalRouter.GetVxlanNetworkIdentifier()
 	if vxlanNetworkID == "" {
-		id, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey, db.EmptyIntOwner)
+		id, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey, intOwner)
 		return strconv.FormatInt(id, 10), err
 	}
 
@@ -223,7 +230,7 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 		return "", err
 	}
 
-	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id, db.EmptyIntOwner)
+	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id, intOwner)
 	if err != nil {
 		return "", errutil.ErrorBadRequestf("cannot allocate provided vxlan identifier(%s): %v", vxlanNetworkID, err)
 	}
@@ -542,19 +549,7 @@ func (sv *ContrailTypeLogicService) deleteInternalVirtualNetwork(
 	logicalRouter *models.LogicalRouter,
 ) error {
 
-	projectResponse, err := sv.ReadService.GetProject(
-		ctx,
-		&services.GetProjectRequest{
-			ID:     logicalRouter.GetParentUUID(),
-			Fields: []string{models.ProjectFieldFQName},
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	fqName := projectResponse.GetProject().GetFQName()
-	fqName = append(fqName, logicalRouter.GetInternalVNName())
+	fqName, err := sv.getLRInternalVNFQName(ctx, logicalRouter)
 	m, err := sv.MetadataGetter.GetMetadata(
 		ctx,
 		basemodels.Metadata{
@@ -574,6 +569,26 @@ func (sv *ContrailTypeLogicService) deleteInternalVirtualNetwork(
 	)
 
 	return err
+}
+
+func (sv *ContrailTypeLogicService) getLRInternalVNFQName(
+	ctx context.Context,
+	logicalRouter *models.LogicalRouter,
+) ([]string, error) {
+	projectResponse, err := sv.ReadService.GetProject(
+		ctx,
+		&services.GetProjectRequest{
+			ID:     logicalRouter.GetParentUUID(),
+			Fields: []string{models.ProjectFieldFQName},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return basemodels.ChildFQName(
+		projectResponse.GetProject().GetFQName(),
+		logicalRouter.GetInternalVNName()), nil
 }
 
 func (sv *ContrailTypeLogicService) checkRouterSupportsVPNType(ctx context.Context, lr *models.LogicalRouter) error {
