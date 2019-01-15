@@ -1,0 +1,115 @@
+name: Virtual Network Test for VxLAN IDs
+description: tests that VxLAN IDs are allocated properly
+cleanup:
+- path: /virtual-network/conflicting_vn
+- path: /virtual-network/vn_blue
+- path: /project/admin_vn_vxlan_project_uuid
+test_data:
+  admin_vn_vxlan_project: &admin_vn_vxlan_project
+    fq_name: ["default", "admin_vn_vxlan_project_uuid"]
+    uuid: admin_vn_vxlan_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+  network_policy1: &network_policy1
+    fq_name: ["default", "admin_vn_vxlan_project_uuid", "policy1"]
+    uuid: network_policy_uuid
+    parent_type: project
+    parent_uuid: admin_vn_vxlan_project_uuid
+    network_policy_entries:
+      policy_rule:
+        - direction: ">"
+          protocol: tcp
+          rule_sequence:
+            major: 4
+            minor: 1
+          src_ports: [{}]
+          dst_ports: [{}]
+          ethertype: IPv4
+          src_addresses: [{}]
+          dst_addresses: [{}]
+          action_list:
+            simple_action: pass
+  network_ipam_blue: &network_ipam_blue
+    network_ipam_mgmt:
+      host_routes:
+        route:
+          - prefix: "test_prefix"
+            next_hop: "1.2.3.5"
+    uuid: test_ipam_blue
+    display_name: test_ipam_blue
+    parent_type: project
+    parent_uuid: admin_vn_vxlan_project_uuid
+    fq_name: ["domain","admin_vn_vxlan_project_uuid","test_ipam_blue"]
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin_vn_vxlan_project_uuid", "vn_blue"]
+    uuid: vn_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_vn_vxlan_project_uuid
+    virtual_network_properties:
+      vxlan_network_identifier: 10
+  conflicting_vn: &conflicting_vn
+    fq_name: ["default", "admin_vn_vxlan_project_uuid", "conflicting_vn"]
+    uuid: conflicting_vn
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_vn_vxlan_project_uuid
+    virtual_network_properties:
+      vxlan_network_identifier: 10
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project admin
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_vn_vxlan_project
+  expect:
+    project: *admin_vn_vxlan_project
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+
+- name: fail to create a virtual network with the same VxLAN ID
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 400
+    data:
+      virtual-network: *conflicting_vn
+  expect:
+    virtual-network: *conflicting_vn
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/vn_blue
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+- name: delete project
+  request:
+    path: /project/admin_vn_vxlan_project_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
