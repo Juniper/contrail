@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
@@ -158,4 +160,8 @@ func (m *RouteTargetList) AsRefs(instanceTargetType *InstanceTargetType) (refs [
 func (m *VirtualNetwork) IsLinkLocal() bool {
 	fq := []string{"default-domain", "default-project", "__link_local__"}
 	return basemodels.FQNameEquals(fq, m.GetFQName())
+}
+
+func (m *VirtualNetwork) VxLANIntOwner() string {
+	return fmt.Sprintf("%s_vxlan", basemodels.FQNameToString(m.GetFQName()))
 }

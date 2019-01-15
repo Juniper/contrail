@@ -44,6 +44,12 @@ func TestIntPool(t *testing.T) {
 			assert.NoError(t, err, "get int pool owner failed")
 			assert.Equal(t, "firewall", owner, "get int pool owner failed")
 
+			err = db.SetInt(ctx, poolKey, i, "firewall")
+			assert.NoError(t, err, "setting the same id for the same owner failed")
+
+			err = db.SetInt(ctx, poolKey, i, "another_firewall")
+			assert.Error(t, err, "setting the same id for a different owner should fail")
+
 			i, err = db.AllocateInt(ctx, poolKey, EmptyIntOwner)
 			assert.NoError(t, err, "allocate failed")
 			assert.Equal(t, int64(1), i, "allocate failed")
@@ -77,6 +83,9 @@ func TestIntPool(t *testing.T) {
 			err = db.SetInt(ctx, poolKey, 4, EmptyIntOwner)
 			assert.NoError(t, err, "set failed")
 
+			err = db.SetInt(ctx, poolKey, 4, EmptyIntOwner)
+			assert.Error(t, err, "setting the same ID should fail")
+
 			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
 			assert.Equal(t, 2, len(pools), "get pool failed")
@@ -93,5 +102,36 @@ func TestIntPool(t *testing.T) {
 			assert.Equal(t, 0, len(pools), "get pool failed")
 			return nil
 		})
+	assert.NoError(t, err)
+}
+
+func TestIntPoolSetIntWithSameOwner(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	err := db.DoInTransaction(ctx, func(ctx context.Context) error {
+		poolKey := "testPool"
+		firstOwner := "first_firewall"
+		id := int64(10)
+
+		err := db.DeleteIntPool(ctx, poolKey)
+		assert.NoError(t, err, "clear pool failed")
+
+		err = db.CreateIntPool(ctx, poolKey, 0, 65535)
+		assert.NoError(t, err, "create pool failed")
+
+		err = db.SetInt(ctx, poolKey, id, firstOwner)
+		assert.NoError(t, err, "allocate failed")
+
+		owner, err := db.GetIntOwner(ctx, poolKey, id)
+		assert.NoError(t, err, "get int owner failed")
+		assert.Equal(t, firstOwner, owner)
+
+		err = db.SetInt(ctx, poolKey, id, firstOwner)
+		assert.NoError(t, err, "setting the same id for the same owner failed")
+
+		err = db.DeleteIntPool(ctx, poolKey)
+		assert.NoError(t, err, "delete pool failed")
+		return nil
+	})
 	assert.NoError(t, err)
 }
