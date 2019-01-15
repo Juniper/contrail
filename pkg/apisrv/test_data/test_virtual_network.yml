@@ -18,145 +18,122 @@ cleanup:
   client: bob
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
+    fq_name: ["default-domain", "admin_project_uuid"]
     uuid: admin_project_uuid
-    parent_type: domain
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
+
   demo_project: &demo_project
-    fq_name: ["default", "demo_project_uuid"]
+    fq_name: ["default-domain", "demo_project_uuid"]
     uuid: demo_project_uuid
-    parent_type: domain
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
+
+  host_routes: &host_routes
+    route:
+      - prefix: "test_prefix"
+        next_hop: "1.2.3.5"
+
+  network_ipam_base: &network_ipam_base
+    network_ipam_mgmt:
+        host_routes:
+          <<: *host_routes
+
+  network_policy_entries: &network_policy_entries
+    policy_rule:
+    - direction: ">"
+      protocol: tcp
+      rule_sequence:
+        major: 4
+        minor: 1
+      src_ports: [{}]
+      dst_ports: [{}]
+      ethertype: IPv4
+      src_addresses: [{}]
+      dst_addresses: [{}]
+      action_list:
+        simple_action: pass
+
   network_policy1: &network_policy1
-    fq_name: ["default", "admin_project_uuid", "policy1"]
+    fq_name: ["default-domain", "admin_project_uuid", "policy1"]
     uuid: network_policy_uuid
-    parent_type: project
-    parent_uuid: admin_project_uuid
     network_policy_entries:
-      policy_rule:
-        - direction: ">"
-          protocol: tcp
-          rule_sequence:
-            major: 4
-            minor: 1
-          src_ports: [{}]
-          dst_ports: [{}]
-          ethertype: IPv4
-          src_addresses: [{}]
-          dst_addresses: [{}]
-          action_list:
-            simple_action: pass
+      <<: *network_policy_entries
+
   admin_project_with_network_policy1: &admin_project_with_network_policy1
     <<: *admin_project
     network_policys:
     - <<: *network_policy1
+
   network_policy2: &network_policy2
-    fq_name: ["default", "demo_project_uuid", "policy2"]
+    fq_name: ["default-domain", "demo_project_uuid", "policy2"]
     uuid: network_policy_uuid2
-    parent_type: project
-    parent_uuid: demo_project_uuid
     network_policy_entries:
-      policy_rule:
-        - direction: ">"
-          protocol: tcp
-          rule_sequence:
-            major: 4
-            minor: 1
-          src_ports: [{}]
-          dst_ports: [{}]
-          ethertype: IPv4
-          src_addresses: [{}]
-          dst_addresses: [{}]
-          action_list:
-            simple_action: pass
+      <<: *network_policy_entries
+
   network_ipam_blue: &network_ipam_blue
-    network_ipam_mgmt:
-      host_routes:
-        route:
-          - prefix: "test_prefix"
-            next_hop: "1.2.3.5"
+    <<: *network_ipam_base
     uuid: test_ipam_blue
-    display_name: test_ipam_blue
-    parent_type: project
-    parent_uuid: admin_project_uuid
-    fq_name: ["domain","admin_project_uuid","test_ipam_blue"]
+    fq_name: ["default-domain","admin_project_uuid","test_ipam_blue"]
+
   network_ipam_red: &network_ipam_red
-    network_ipam_mgmt:
-      host_routes:
-        route:
-          - prefix: "test_prefix"
-            next_hop: "1.2.3.5"
+    <<: *network_ipam_base
     uuid: test_ipam_red
-    display_name: test_ipam_red
-    parent_type: project
-    parent_uuid: admin_project_uuid
-    fq_name: ["domain","admin_project_uuid","test_ipam_red"]
-  vn_blue: &vn_blue
-    fq_name: ["default", "admin_project_uuid", "vn_blue"]
-    uuid: vn_blue
-    display_name: blue
-    parent_type: project
-    parent_uuid: admin_project_uuid
-    route_target_list:
-       route_target: ["100:200"]
-    network_policy_refs:
-    - uuid: network_policy_uuid
-      to: ["default", "admin_project_uuid", "policy1"]
-    network_ipam_refs:
-    - uuid: test_ipam_blue
-  vn_blue_ri1: &vn_blue_ri1
+    fq_name: ["default-domain","admin_project_uuid","test_ipam_red"]
+
+  network_ipam_blue_reference: &network_ipam_reference
+    to: ["default-domain","admin_project_uuid","test_ipam_blue"]
+    attr:
+      ipam_subnets:
+        - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+          subnet:
+            ip_prefix: "10.0.0.0"
+            ip_prefix_len: 24
+
+  routing_instance: &routing_instance
     uuid: ri_uuid
-    fq_name: ["default", "admin_project_uuid", "ri1"]
-    parent_type: virtual-network
-    parent_uuid: vn_blue
-  vn_blue_ri_default: &vn_blue_ri_default
-    fq_name: ["default", "admin_project_uuid", "vn_blue", "vn_blue"]
-    parent_type: virtual-network
-    parent_uuid: vn_blue
-  vn_blue_with_detail: &vn_blue_with_detail
-    uuid: vn_blue
-    display_name: blue
-    parent_type: project
-    parent_uuid: admin_project_uuid
-    network_policy_refs:
-    - uuid: network_policy_uuid
-    network_ipam_refs:
-    - uuid: test_ipam_blue
-    routing_instances:
-    - *vn_blue_ri1
-    - *vn_blue_ri_default
-  vn_red: &vn_red
-    uuid: vn_red
-    display_name: red
-    fq_name: ["default", "admin_project_uuid", "vn_red"]
-    parent_type: project
-    parent_uuid: admin_project_uuid
-    network_policy_refs:
-    - uuid: network_policy_uuid
-    network_ipam_refs:
-    - uuid: test_ipam_red
-  vn_red_with_detail: &vn_red_with_detail
-    uuid: vn_red
-    display_name: red
-    parent_type: project
-    parent_uuid: admin_project_uuid
-    network_policy_refs:
-    - uuid: network_policy_uuid
-    network_ipam_refs:
-    - uuid: test_ipam_red
+    fq_name: ["default-domain", "admin_project_uuid", "vn_blue", "ri"]
+
+  routing_instance_default: &routing_instance_default
+    fq_name: ["default-domain", "admin_project_uuid", "vn_blue", "vn_blue"]
+
   vn_blue_simple: &vn_blue_simple
     uuid: vn_blue
     display_name: blue
     parent_type: project
     parent_uuid: admin_project_uuid
+
+  vn_blue: &vn_blue
+    <<: *vn_blue_simple
+    fq_name: ["default-domain", "admin_project_uuid", "vn_blue"]
+    route_target_list:
+       route_target: ["100:200"]
+    network_policy_refs:
+    - uuid: network_policy_uuid
+      to: ["default-domain", "admin_project_uuid", "policy1"]
+    network_ipam_refs:
+    - uuid: test_ipam_blue
+
+  vn_blue_with_detail: &vn_blue_with_detail
+    <<: *vn_blue
+    routing_instances:
+    - *routing_instance
+    - *routing_instance_default
+
   vn_red_simple: &vn_red_simple
     uuid: vn_red
-    display_name: red
-    fq_name: ["default", "admin_project_uuid", "vn_red"]
+    fq_name: ["default-domain", "admin_project_uuid", "vn_red"]
+
+  vn_red: &vn_red
+    <<: *vn_red_simple
+    network_policy_refs:
+    - uuid: network_policy_uuid
+    network_ipam_refs:
+    - uuid: test_ipam_red
+
+  vn_red_with_detail: &vn_red_with_detail
+    <<: *vn_red
     parent_type: project
     parent_uuid: admin_project_uuid
+
 clients:
   default:
     id: alice
@@ -224,7 +201,7 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid2
-      fq_name: ["default", "demo_project_uuid", "policy2"]
+      fq_name: ["default-domain", "demo_project_uuid", "policy2"]
       parent_type: project
       parent_uuid: demo_project_uuid
       perms2:
@@ -257,23 +234,15 @@ workflow:
     - 200
     data:
       network-ipam:
-        network_ipam_mgmt:
-          host_routes:
-            route:
-            - prefix: "test_prefix"
-              next_hop: "1.2.3.5"
+        <<: *network_ipam_base
         uuid: test_ipam1
-        display_name: test_ipam1
-        parent_type: project
-        parent_uuid: admin_project_uuid
-        fq_name: ["domain","admin_project_uuid","test_ipam1"]
+        fq_name: ["default-domain","admin_project_uuid","test_ipam1"]
   expect:
     network-ipam:
       uuid: test_ipam1
-      display_name: test_ipam1
       parent_type: project
       parent_uuid: admin_project_uuid
-      fq_name: ["domain","admin_project_uuid","test_ipam1"]
+      fq_name: ["default-domain","admin_project_uuid","test_ipam1"]
 - name: create network ipam2
   request:
     path: /network-ipams
@@ -282,23 +251,15 @@ workflow:
     - 200
     data:
       network-ipam:
-        network_ipam_mgmt:
-          host_routes:
-            route:
-            - prefix: "test_prefix"
-              next_hop: "1.2.3.5"
+        <<: *network_ipam_base
         uuid: test_ipam2
-        display_name: test_ipam2
-        parent_type: project
-        parent_uuid: admin_project_uuid
-        fq_name: ["domain","admin_project_uuid","test_ipam2"]
+        fq_name: ["default-domain","admin_project_uuid","test_ipam2"]
   expect:
     network-ipam:
       uuid: test_ipam2
-      display_name: test_ipam2
       parent_type: project
       parent_uuid: admin_project_uuid
-      fq_name: ["domain","admin_project_uuid","test_ipam2"]
+      fq_name: ["default-domain","admin_project_uuid","test_ipam2"]
 - name: create virtual network ref
   request:
     path: /virtual-networks
@@ -307,28 +268,24 @@ workflow:
     - 200
     data:
       virtual-network:
-        fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
+        fq_name: ["default-domain", "admin_project_uuid", "vn_test_ref"]
         uuid: "vn_test_ref"
-        display_name: "vn_test_ref"
         parent_type: "project"
         parent_uuid: "admin_project_uuid"
         network_ipam_refs:
-          - to: ["domain","admin_project_uuid","test_ipam1"]
+          - to: ["default-domain","admin_project_uuid","test_ipam1"]
             attr:
               host_routes:
-                route:
-                - prefix: "test_prefix"
-                  next_hop: "1.2.3.5"
+                <<: *host_routes
   expect:
     virtual-network:
-      fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
+      fq_name: ["default-domain", "admin_project_uuid", "vn_test_ref"]
       uuid: vn_test_ref
-      display_name: vn_test_ref
       parent_type: project
       parent_uuid: admin_project_uuid
       network_ipam_refs:
         - uuid: "test_ipam1"
-          to: ["domain","admin_project_uuid","test_ipam1"]
+          to: ["default-domain","admin_project_uuid","test_ipam1"]
 - name: update virtual network ref
   request:
     path: /virtual-network/vn_test_ref
@@ -337,9 +294,8 @@ workflow:
     - 200
     data:
       virtual-network:
-        fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
+        fq_name: ["default-domain", "admin_project_uuid", "vn_test_ref"]
         uuid: "vn_test_ref"
-        display_name: "vn_test_ref"
         parent_type: "project"
         parent_uuid: "admin_project_uuid"
         perms2:
@@ -347,27 +303,23 @@ workflow:
             - tenant: "default:demo"
               tenant_access: 7
         network_ipam_refs:
-          - to: ["domain","admin_project_uuid","test_ipam1"]
+          - to: ["default-domain","admin_project_uuid","test_ipam1"]
           - uuid: "test_ipam2"
-            to: ["domain","admin_project_uuid","test_ipam2"]
+            to: ["default-domain","admin_project_uuid","test_ipam2"]
             attr:
               host_routes:
-                route:
-                  - prefix: "test_prefix"
-                    next_hop: "1.2.3.5"
+                <<: *host_routes
   expect:
     virtual-network:
       uuid: vn_test_ref
       network_ipam_refs:
         - uuid: "test_ipam1"
-          to: ["domain","admin_project_uuid","test_ipam1"]
+          to: ["default-domain","admin_project_uuid","test_ipam1"]
         - uuid: "test_ipam2"
-          to: ["domain","admin_project_uuid","test_ipam2"]
+          to: ["default-domain","admin_project_uuid","test_ipam2"]
           attr:
             host_routes:
-              route:
-                - prefix: "test_prefix"
-                  next_hop: "1.2.3.5"
+              <<: *host_routes
 - name: delete virtual network
   request:
     path: /virtual-network/vn_test_ref
@@ -416,9 +368,9 @@ workflow:
     expected:
     - 200
     data:
-      routing-instance: *vn_blue_ri1
+      routing-instance: *routing_instance
   expect:
-    routing-instance: *vn_blue_ri1
+    routing-instance: *routing_instance
 - name: get network ipam with back reference to virtual network
   request:
     path: /network-ipam/test_ipam_blue?detail=true
@@ -629,24 +581,12 @@ workflow:
       virtual-network:
         uuid: "vn_blue"
         network_ipam_refs:
-          - to: ["domain","admin_project_uuid","test_ipam_blue"]
-            attr:
-              ipam_subnets:
-                - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
-                  subnet:
-                    ip_prefix: "10.0.0.0"
-                    ip_prefix_len: 24
+          - <<: *network_ipam_blue_reference
   expect:
     virtual-network:
       network_ipam_refs:
-        - uuid: test_ipam_blue
-          to: ["domain","admin_project_uuid","test_ipam_blue"]
-          attr:
-            ipam_subnets:
-              - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
-                subnet:
-                  ip_prefix: "10.0.0.0"
-                  ip_prefix_len: 24
+        - <<: *network_ipam_blue_reference
+          uuid: test_ipam_blue
 
 - name: update virtual network properties it shouldn't affect subnets in address manager
   request:
@@ -675,17 +615,17 @@ workflow:
         subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
         instance_ip_address: "10.0.0.1"
         network_ipam_refs:
-        - to: ["domain","admin_project_uuid","test_ipam_blue"]
+        - to: ["default-domain","admin_project_uuid","test_ipam_blue"]
         virtual_network_refs:
-        - to: ["default", "admin_project_uuid", "vn_blue"]
+        - to: ["default-domain", "admin_project_uuid", "vn_blue"]
   expect:
     instance-ip:
       network_ipam_refs:
       - uuid: test_ipam_blue
-        to: ["domain","admin_project_uuid","test_ipam_blue"]
+        to: ["default-domain","admin_project_uuid","test_ipam_blue"]
       virtual_network_refs:
       - uuid: vn_blue
-        to: ["default", "admin_project_uuid", "vn_blue"]
+        to: ["default-domain", "admin_project_uuid", "vn_blue"]
 
 # Virtual Network can't be updated since there is an instance IP attached to it
 - name: try update vn_blue with different subnet
@@ -753,7 +693,7 @@ workflow:
         uuid: "vn_blue"
         virtual_network_refs:
           - uuid: "vn_red"
-          - to: ["default", "admin_project_uuid", "vn_red"]
+          - to: ["default-domain", "admin_project_uuid", "vn_red"]
 - name: delete routing instance
   request:
     path: /routing-instance/ri_uuid
@@ -769,7 +709,7 @@ workflow:
     - 200
   expect:
     routing-instances:
-    - &vn_blue_ri_default
+    - &routing_instance_default
 - name: delete virtual network
   request:
     path: /virtual-network/vn_blue

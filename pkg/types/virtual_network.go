@@ -95,6 +95,11 @@ func (sv *ContrailTypeLogicService) UpdateVirtualNetwork(
 
 			currentVN := virtualNetworkResponse.GetVirtualNetwork()
 
+			if !requestedVN.IsValidMultiPolicyServiceChainConfig() {
+				return errutil.ErrorBadRequest(
+					"multi policy service chains are not supported, with both import export external route targets")
+			}
+
 			//TODO: check VirtualNetworkID
 			//TODO: check changes in virtual_network_properties
 			//      we need to read ipam_refs from db and for any ipam

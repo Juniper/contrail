@@ -53,6 +53,11 @@ func TestVirtualNetwork(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_network.yml")
 }
 
+func TestVirtualNetworkMultiChain(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_virtual_network_multi_chain.yml")
+}
+
 func TestSecurityGroup(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_security_group.yml")

@@ -1,0 +1,243 @@
+name: Virtual Network Test
+description:  basic virtual network test
+cleanup:
+- path: /virtual-network/virtual-network-with-no-route-targets
+- path: /virtual-network/virtual-network-with-different-route-targets
+- path: /virtual-network/virtual-network-with-same-rts-no-multi-chain
+test_data:
+  route_target_a: &route_target_a
+    route_target:
+      - target:1000:103
+
+  route_target_b: &route_target_b
+    route_target:
+      - target:1000:104
+
+  network_ipam: &network_ipam
+    uuid: uuid_ipam_magic_blue1
+    fq_name: ["default-domain", "default-project", "ipam"]
+
+  route_target_test_a: &route_target_test_a
+    uuid: route_target_ref_read_uuid223
+    fq_name: ["target:1000:103"]
+
+  route_target_test_b: &route_target_test_b
+    uuid: route_target_ref_read_uuid233
+    fq_name: ["target:1000:104"]
+
+  virtual_network_base: &virtual_network_base
+    address_allocation_mode: user-defined-subnet-only
+    parent_type: project
+    id_perms:
+      enable: true
+      virtual_network_properties:
+        allow_transit: false
+        rpf: enable
+        mirror_destination: false
+      perms2:
+        owner_access: 7
+        global_access: 0
+        share: []
+    is_shared: false
+    router_external: false
+    pbb_evpn_enable: false
+    flood_unknown_unicast: false
+    layer2_control_word: false
+
+  virtual_network_with_no_route_targets: &virtual_network_with_no_route_targets
+    <<: *virtual_network_base
+    multi_policy_service_chains_enabled: true
+    fq_name:
+    - default-domain
+    - default-project
+    - virtual-network-with-no-route-targets
+    uuid: virtual-network-with-no-route-targets
+    network_ipam_refs:
+    - uuid: uuid_ipam_magic_blue1
+
+  virtual_network_with_different_route_targets: &virtual_network_with_different_route_targets
+    <<: *virtual_network_base
+    multi_policy_service_chains_enabled: true
+    fq_name:
+    - default-domain
+    - default-project
+    - virtual-network-with-different-route-targets
+    import_route_target_list:
+      <<: *route_target_a
+    export_route_target_list:
+      <<: *route_target_b
+    uuid: virtual-network-with-different-route-targets
+
+  virtual_network_with_same_rts_no_multi_chain: &virtual_network_with_same_rts_no_multi_chain
+    <<: *virtual_network_base
+    multi_policy_service_chains_enabled: false
+    fq_name:
+    - default-domain
+    - default-project
+    - virtual-network-with-same-rts-no-multi-chain
+    import_route_target_list:
+      <<: *route_target_a
+    export_route_target_list:
+      <<: *route_target_a
+    uuid: virtual-network-with-same-rts-no-multi-chain
+
+  virtual_network_invalid_update: &virtual_network_invalid_update
+    multi_policy_service_chains_enabled: true
+    fq_name:
+    - default-domain
+    - default-project
+    - virtual-network-with-same-rts-no-multi-chain
+
+  virtual_network_valid_update: &virtual_network_valid_update
+    multi_policy_service_chains_enabled: true
+    export_route_target_list:
+      route_target: []
+    fq_name:
+    - default-domain
+    - default-project
+    - virtual-network-with-same-rts-no-multi-chain
+
+  virtual_network_with_both_route_target: &virtual_network_with_both_route_target
+    <<: *virtual_network_base
+    multi_policy_service_chains_enabled: true
+    fq_name:
+    - default-domain
+    - default-project
+    - invalid-virtual-network
+    route_target_list:
+      <<: *route_target_a
+
+  virtual_network_with_same_import_export_rt: &virtual_network_with_same_import_export_rt
+    <<: *virtual_network_base
+    multi_policy_service_chains_enabled: true
+    fq_name:
+    - default-domain
+    - default-project
+    - invalid-virtual-network
+    import_route_target_list:
+      <<: *route_target_a
+    export_route_target_list:
+      <<: *route_target_a
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create route target a
+  request:
+    path: /route-targets
+    method: POST
+    expected: [200]
+    data:
+      route-target: *route_target_test_a
+  expect:
+    route-target: *route_target_test_a
+
+- name: create route target b
+  request:
+    path: /route-targets
+    method: POST
+    expected: [200]
+    data:
+      route-target: *route_target_test_b
+  expect:
+    route-target: *route_target_test_b
+
+- name: create Network Ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 200
+    data:
+      network-ipam: *network_ipam
+
+- name: create Virtual Network with no Route Targets
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *virtual_network_with_no_route_targets
+
+- name: create Virtual Network with different Route Targets
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *virtual_network_with_different_route_targets
+
+- name: create Virtual Network with the same Route Targets but no multi chain
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *virtual_network_with_same_rts_no_multi_chain
+
+- name: try to update Virtual Network and enable multi chain while it has two the same Route Targets
+  request:
+    path: /virtual-network/virtual-network-with-same-rts-no-multi-chain
+    method: PUT
+    expected:
+    - 400
+    data:
+      virtual-network: *virtual_network_invalid_update
+
+- name: update Virtual Network, enable multi chain and delete one Route Target so it could work
+  request:
+    path: /virtual-network/virtual-network-with-same-rts-no-multi-chain
+    method: PUT
+    expected:
+    - 200
+    data:
+      virtual-network: *virtual_network_invalid_update
+
+- name: try to create Virtual Network with both Route Target and with multi chain
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 400
+    data:
+      virtual-network: *virtual_network_with_both_route_target
+
+- name: try to create Virtual Network with the same import export Route Target and with multi chain
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 400
+    data:
+      virtual-network: *virtual_network_with_same_import_export_rt
+
+- name: delete Virtual Network with no Route Targets
+  request:
+    path: /virtual-network/virtual-network-with-same-rts-no-multi-chain
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete Virtual Network with different Route Targets
+  request:
+    path: /virtual-network/virtual-network-with-different-route-targets
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete Virtual Network with the same Route Targets but no multi chain
+  request:
+    path: /virtual-network/virtual-network-with-no-route-targets
+    method: DELETE
+    expected:
+    - 200
