@@ -1,0 +1,117 @@
+name: Service Template Test
+description: |
+  Basic Service Template Test
+cleanup:
+  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0011
+  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0012
+  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0013
+test_data:
+  service_template: &test_correct_svc_template
+    uuid: beefbeef-beef-beef-beef-beefbeef0011
+    parent_type: domain
+    fq_name:
+      - default-domain
+      - correct-template
+    service_template_properties: *template_properties
+
+  service_template: &test_bad_domain
+    uuid: beefbeef-beef-beef-beef-beefbeef0012
+    parent_type: domain
+    fq_name:
+      - bad-domain
+      - with-bad-domain
+    service_template_properties: *template_properties
+
+  service_template: &test_without_fqname
+    parent_type: domain
+    service_template_properties: *template_properties
+
+  service_template: &test_with_parent_uuid
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    uuid: beefbeef-beef-beef-beef-beefbeef0013
+    name: with-parent-uuid
+    parent_type: domain
+    service_template_properties: *template_properties
+
+  service_template_properties: &template_properties
+    version: 2
+    service_virtualization_type: virtual-machine
+    service_mode: transparent
+    service_type: firewall
+    interface_type:
+      - service_interface_type: left
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create v2 with virtual machine
+  request:
+    path: /service-templates
+    method: POST
+    expected: [200]
+    data:
+      service-template: *test_correct_svc_template
+  expect:
+    service-template: *test_correct_svc_template
+
+- name: create service template with duplicate uuid
+  request:
+    path: /service-templates
+    method: POST
+    expected: [409]
+    data:
+      service-template: *test_correct_svc_template
+  expect:
+    null
+
+- name: create service template with incorrect domain in fq name
+  request:
+    path: /service-templates
+    method: POST
+    expected: [400]
+    data:
+      service-template: *test_bad_domain
+  expect:
+    null
+
+- name: create service template with no fqname
+  request:
+    path: /service-templates
+    method: POST
+    expected: [400]
+    data:
+      service-template: *test_without_fqname
+  expect:
+    null
+
+- name: create service template with parent uuid
+  request:
+    path: /service-templates
+    method: POST
+    expected: [200]
+    data:
+      service-template: *test_with_parent_uuid
+  expect:
+    service-template: *test_with_parent_uuid
+    pp: 123
+
+- name: delete service template v2 VM
+  request:
+    path: /service-template/beefbeef-beef-beef-beef-beefbeef0011
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete service template with parent uuid
+  request:
+    path: /service-template/beefbeef-beef-beef-beef-beefbeef0013
+    method: DELETE
+    expected: [200]
+  expect: null
