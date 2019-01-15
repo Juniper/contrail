@@ -12,6 +12,8 @@ import (
 const (
 	// VirtualNetworkIDPoolKey identifies the int pool of virtual network IDs.
 	VirtualNetworkIDPoolKey = "virtual_network_id"
+	// VxlanNetworkIDPoolKey identifies the int pool of vxlan network IDs.
+	VxlanNetworkIDPoolKey = "vxlan_network_id"
 	// SecurityGroupIDPoolKey identifies the int pool of security group IDs.
 	SecurityGroupIDPoolKey = "security_group_id"
 )
