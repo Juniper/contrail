@@ -17,5 +17,5 @@ kubectl run --rm -i --tty --env ETCDCTL_API=3 --namespace {{ .Release.Namespace 
 
 # See data in etcd
 
-etcdctl --endpoints http://{{ template "etcdclient.fullname" . }}:2379 get --prefix /
+etcdctl --endpoints http://{{ template "etcd.fullname" . }}:2379 get --prefix /
 {{ end }}

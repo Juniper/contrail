@@ -24,20 +24,20 @@ spec:
       restartPolicy: Never
       containers:
       - name: post-install-job
-        image: "{{ .Values.image }}" 
+        image: "{{ .Values.image }}"
         env:
         - name: PGPASSWORD
-          value: {{ .Values.postgresql.postgresPassword }}
+          value: {{ .Values.patroni.credentials.admin }}
         command:
         - psql
         - "-h"
-        {{- if .Values.postgresql.enabled }}
-        - {{ template "postgres.fullname" . }}
+        {{- if .Values.patroni.enabled }}
+        - "{{ template "patroni.fullname" . }}"
         {{ else }}
-        - {{ .Values.postgresql.postgresHost }} 
+        - {{ .Values.patroni.postgresHost }}
         {{ end }}
         - "-U"
-        - {{ .Values.postgresql.postgresUser }}
+        - {{ .Values.patroni.postgresUser | default "admin" }}
         - "-f"
         - /usr/share/contrail/init_psql.sql
-        - {{ .Values.postgresql.postgresDatabase }}
+        - {{ .Values.patroni.postgresDatabase }}

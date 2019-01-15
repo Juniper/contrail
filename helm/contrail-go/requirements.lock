@@ -1,9 +1,9 @@
 dependencies:
-- name: postgresql
-  repository: http://storage.googleapis.com/kubernetes-charts
-  version: 0.9.4
-- name: etcd-operator
-  repository: http://storage.googleapis.com/kubernetes-charts
-  version: 0.4.3
-digest: sha256:44e47106f4658500eca3dfb17f85d696cc35ac6d7ce18419f4e39f425757ae93
-generated: 2018-04-11T11:03:41.161190164-07:00
+- name: etcd
+  repository: http://storage.googleapis.com/kubernetes-charts-incubator
+  version: 0.6.1
+- name: patroni
+  repository: http://storage.googleapis.com/kubernetes-charts-incubator
+  version: 0.10.0
+digest: sha256:3508a1cdca2f4dba3f7acf4e794b8e34f48929a0b54741b48c5d3179e4b6eab7
+generated: 2019-01-14T16:44:48.093495-08:00
