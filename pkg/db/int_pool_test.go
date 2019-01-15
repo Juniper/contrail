@@ -73,6 +73,9 @@ func TestIntPool(t *testing.T) {
 			err = db.SetInt(ctx, poolKey, 4)
 			assert.NoError(t, err, "set failed")
 
+			err = db.SetInt(ctx, poolKey, 4)
+			assert.Error(t, err, "setting the same ID should fail")
+
 			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
 			assert.Equal(t, 2, len(pools), "get pool failed")

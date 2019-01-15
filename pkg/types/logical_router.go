@@ -217,16 +217,6 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 		return strconv.FormatInt(id, 10), err
 	}
 
-	id, err := logicalRouter.ConvertVXLanIDToInt()
-	if err != nil {
-		return "", err
-	}
-
-	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id)
-	if err != nil {
-		return "", errutil.ErrorBadRequestf("cannot allocate provided vxlan identifier(%s): %v", vxlanNetworkID, err)
-	}
-
 	return vxlanNetworkID, nil
 }
 

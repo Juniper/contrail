@@ -26,6 +26,7 @@ type testVn struct {
 	importRouteTargetList           string
 	exportRouteTargetList           string
 	forwardingMode                  string
+	vxlanID                         int64
 	virtualNetworkNetworkID         int64
 	networkIpamRefs                 []*models.VirtualNetworkNetworkIpamRef
 	bgpVPNRefs                      []*models.VirtualNetworkBGPVPNRef
@@ -322,7 +323,6 @@ func TestCreateVirtualNetwork(t *testing.T) {
 					},
 				},
 			},
-			fails: false,
 		},
 		{
 			name: "check for logical routers with bgpvpn refs",
@@ -343,6 +343,12 @@ func TestCreateVirtualNetwork(t *testing.T) {
 			},
 			fails:                 true,
 			expectedHTTPErrorCode: http.StatusBadRequest,
+		},
+		{
+			name: "allocate vxlan id",
+			testVnData: &testVn{
+				vxlanID: 2,
+			},
 		},
 	}
 
@@ -927,6 +933,7 @@ func createTestVn(testVnData *testVn) *models.VirtualNetwork {
 	vn.UUID = "test_vn_uuid"
 	vn.FQName = []string{"test_vn_uuid"}
 	vn.VirtualNetworkProperties.ForwardingMode = testVnData.forwardingMode
+	vn.VirtualNetworkProperties.VxlanNetworkIdentifier = testVnData.vxlanID
 
 	return vn
 }
@@ -1058,6 +1065,10 @@ func virtualNetworkSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
 	intPoolAllocator.EXPECT().AllocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 		int64(13), nil).AnyTimes()
 	intPoolAllocator.EXPECT().DeallocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(0)).Return(
+		nil).AnyTimes()
+	// TODO This should really be in the test structure -
+	// we need to check that this actually happens in one test case.
+	intPoolAllocator.EXPECT().SetInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(2)).Return(
 		nil).AnyTimes()
 }
 
