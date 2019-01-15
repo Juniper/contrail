@@ -20,7 +20,7 @@ workflow:
     expected: [200]
     data:
       pool: virtual_network_id
-      value: 5
+      value: 1
   expect: null
 
 - name: cleanup - deallocate second int
@@ -30,7 +30,7 @@ workflow:
     expected: [200]
     data:
       pool: virtual_network_id
-      value: 6
+      value: 2
   expect: null
 
 - name: cleanup - deallocate third int
@@ -69,7 +69,7 @@ workflow:
     data:
       pool: virtual_network_id
   expect:
-    value: 5
+    value: 1
 
 - name: allocate next int
   request:
@@ -79,7 +79,7 @@ workflow:
     data:
       pool: virtual_network_id
   expect:
-    value: 6
+    value: 2
 
 - name: deallocate one int
   request:
@@ -88,7 +88,7 @@ workflow:
     expected: [200]
     data:
       pool: virtual_network_id
-      value: 5
+      value: 1
   expect: null
 
 - name: allocate next int again
@@ -99,7 +99,7 @@ workflow:
     data:
       pool: virtual_network_id
   expect:
-    value: 5
+    value: 1
 
 - name: allocate specified int
   request:
@@ -149,7 +149,7 @@ workflow:
     expected: [200]
     data:
       pool: virtual_network_id
-      value: 6
+      value: 2
   expect: null
 
 - name: deallocate generated int 2
@@ -159,7 +159,7 @@ workflow:
     expected: [200]
     data:
       pool: virtual_network_id
-      value: 5
+      value: 1
   expect: null
 
 - name: allocate route target number
