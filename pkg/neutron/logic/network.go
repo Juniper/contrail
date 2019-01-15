@@ -161,6 +161,7 @@ func (n *Network) toVnc() (*models.VirtualNetwork, error) {
 	vncNet.Name = n.Name
 	vncNet.ParentType = models.KindProject
 	vncNet.IDPerms = &models.IdPermsType{Enable: true}
+	vncNet.AddressAllocationMode = models.UserDefinedSubnetOnly
 	err := n.updateVnc(vncNet)
 	if err != nil {
 		return nil, err
