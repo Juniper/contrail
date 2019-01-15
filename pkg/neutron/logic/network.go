@@ -161,6 +161,7 @@ func (n *Network) toVnc() (*models.VirtualNetwork, error) {
 	vncNet.Name = n.Name
 	vncNet.ParentType = models.KindProject
 	vncNet.IDPerms = &models.IdPermsType{Enable: true}
+	vncNet.AddressAllocationMode = models.UserDefinedSubnetOnly
 	err := n.updateVnc(vncNet)
 	if err != nil {
 		return nil, err
@@ -193,7 +194,11 @@ func collectWithoutPrune(
 	var vns []*models.VirtualNetwork
 	for _, uuid := range uuids {
 		vnResp, err := rp.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: uuid})
-		if err != nil {
+		if errutil.IsNotFound(err) {
+			return nil, newNeutronError(networkNotFound, errorFields{
+				"net_id": uuid,
+			})
+		} else if err != nil {
 			return nil, err
 		}
 		vns = append(vns, vnResp.GetVirtualNetwork())
