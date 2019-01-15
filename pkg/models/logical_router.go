@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 const (
@@ -24,6 +25,11 @@ func (lr *LogicalRouter) GetVXLanIDInLogicaRouter() string {
 // GetInternalVNName returns proper internal virtual network name
 func (lr *LogicalRouter) GetInternalVNName() string {
 	return internalVNPrefix + lr.GetUUID() + "__"
+}
+
+// GetInternalVNFQName returns internal virtual network fqName
+func (lr *LogicalRouter) GetInternalVNFQName(parentProject *Project) []string {
+	return basemodels.ChildFQName(parentProject.GetFQName(), lr.GetInternalVNName())
 }
 
 // ConvertVXLanIDToInt converts vxlan network id form string to int
