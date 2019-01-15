@@ -2,10 +2,14 @@ package services
 
 import (
 	"context"
+	"fmt"
+	"encoding/json"
 	"strings"
 
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
@@ -62,4 +66,28 @@ func getObject(ctx context.Context, rs ReadService, typeName, uuid string) (base
 		{% endif %}{% endfor %}
 	}
 	return nil, errors.Errorf("unknown type provided: %v", kind)
+}
+
+
+func (c *PropCollectionChange) SetValue(v interface{}) {
+	switch t := v.(type) {
+	{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
+	{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
+	case {% if itemType != "string" %}*models.{% endif %}{{ itemType }}:
+		c.Value = &PropCollectionChange_{{itemType | capfirst}}Value{t}
+	{% endif %}{% endfor %}
+	}
+}
+
+func (v *PropCollectionChange) UnmarshalJSON(b []byte) error {
+	fmt.Printf("%+v %T\n", v.Value, v.Value)
+	switch c := v.Value.(type) {
+{% for type, definition in types %}{% if definition.CollectionType == "map" or definition.CollectionType == "list" %}
+{%- set collectionType = definition.OrderedProperties | first %}{% set itemType = collectionType.Items.ProtoType %}
+	case *PropCollectionChange_{{itemType | capfirst}}Value:
+		return json.Unmarshal(b, &c.{{itemType | capfirst}}Value)
+{% endif %}{% endfor %}
+	default:
+		return errutil.ErrorBadRequestf("bad collection type: %T", c)
+	}
 }
