@@ -23,7 +23,7 @@ test_data:
     parent_uuid: admin_project_network_ipam_uuid
     virtual_network_properties:
       forwarding_mode: "l3"
-      vxlan_network_identifier: 1
+      vxlan_network_identifier: 5
     route_target_list:
       route_target: ["100:200"]
 

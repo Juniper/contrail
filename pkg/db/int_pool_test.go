@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -147,6 +148,33 @@ func TestIntPoolSetIntWithSameOwner(t *testing.T) {
 
 		err = db.SetInt(ctx, poolKey, id, firstOwner)
 		assert.NoError(t, err, "setting the same id for the same owner failed")
+
+		err = db.DeleteIntPool(ctx, poolKey)
+		assert.NoError(t, err, "delete pool failed")
+		return nil
+	})
+	assert.NoError(t, err)
+}
+
+func TestAllocateOutsidePoolRange(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	err := db.DoInTransaction(ctx, func(ctx context.Context) error {
+		poolKey := fmt.Sprintf("%v_test_pool", t.Name())
+		firstInt := int64(5)
+
+		err := db.DeleteIntPool(ctx, poolKey)
+		assert.NoError(t, err, "clear pool failed")
+
+		err = db.CreateIntPool(ctx, poolKey, firstInt, 65535)
+		assert.NoError(t, err, "create pool failed")
+
+		err = db.DeallocateInt(ctx, poolKey, 0)
+		assert.NoError(t, err, "deallocating 0 failed")
+
+		i, err := db.AllocateInt(ctx, poolKey, EmptyIntOwner)
+		assert.NoError(t, err, "allocate failed")
+		assert.Equal(t, int64(0), i, "allocate failed")
 
 		err = db.DeleteIntPool(ctx, poolKey)
 		assert.NoError(t, err, "delete pool failed")
