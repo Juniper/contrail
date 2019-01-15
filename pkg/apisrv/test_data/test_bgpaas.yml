@@ -1,0 +1,146 @@
+name: BGP As a Service test
+
+cleanup:
+  - path: /virtual-network/vn_vmi_blue
+  - path: /network-ipam/test_ipam_vmi_blue
+  - path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
+  - path: /bgp-as-a-service/dd51ee96-6778-4690-bde6-023ae87dfc67
+
+test_data:
+  admin_project: &admin_project_vmi
+    uuid: admin_vmi_project_uuid
+    name: admin_vmi_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  network_ipam_blue: &network_ipam_blue
+    uuid: test_ipam_vmi_blue
+    display_name: test_ipam_vmi_blue
+    parent_type: project
+    parent_uuid: admin_vmi_project_uuid
+
+  vn_vmi_blue: &vn_vmi_blue
+    uuid: vn_vmi_blue
+    name: vn_blue
+    parent_type: project
+    parent_uuid: admin_vmi_project_uuid
+    network_ipam_refs:
+      - uuid: test_ipam_vmi_blue
+
+  virtual-machine-interface: &vmi
+    uuid: e844a53b-9113-4b28-b484-3a7bce34320a
+    fq_name: ["default-domain", "admin_vmi_project", "vmi_blue"]
+    parent_type: project
+    virtual_network_refs:
+      - uuid: vn_vmi_blue
+        to: ["default-domain", "admin_vmi_project", "vn_blue"]
+    port_security_enabled: true
+    display_name: vmi_blue
+
+  bgp-as-a-service: &bgpaas
+    uuid: dd51ee96-6778-4690-bde6-023ae87dfc67
+    name: hogehoge
+    display_name: hogehoge
+    fq_name:
+    - default-domain
+    - admin_vmi_project
+    - hogehoge
+    parent_type: project
+    bgpaas_ip_address: 1.1.1.1
+    autonomous_system: 65512
+    bgpaas_session_attributes:
+      route_origin_override:
+        origin: IGP
+      hold_time: 180
+      address_families:
+        family:
+        - inet
+        - inet6
+      family_attributes:
+      - address_family: inet
+      - address_family: inet6
+    perms2:
+      owner: admin
+      owner_access: 7
+    virtual_machine_interface_refs:
+    - to:
+      - default-domain
+      - admin_vmi_project
+      - vmi_blue
+      uuid: e844a53b-9113-4b28-b484-3a7bce34320a
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [ 200 ]
+    data:
+      project: *admin_project_vmi
+  expect:
+    project: *admin_project_vmi
+
+- name: create network ipam blue
+  request:
+    path: /network-ipams
+    method: POST
+    expected: [ 200 ]
+    data:
+      network-ipam: *network_ipam_blue
+  expect:
+    network-ipam: *network_ipam_blue
+
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [ 200 ]
+    data:
+      virtual-network: *vn_vmi_blue
+  expect:
+    virtual-network: *vn_vmi_blue
+
+- name: create virtual machine interface
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [ 200 ]
+    data:
+      virtual-machine-interface: *vmi
+  expect:
+    virtual-machine-interface: *vmi
+
+- name: create BGPAaS
+  request:
+    path: /bgp-as-a-services
+    method: POST
+    expected: [ 200 ]
+    data:
+      bgp-as-a-service: *bgpaas
+  expect:
+    bgp-as-a-service: *bgpaas
+
+- name: delete BGPAaS
+  request:
+    path: /bgp-as-a-service/dd51ee96-6778-4690-bde6-023ae87dfc67
+    method: DELETE
+    expected: [ 200 ]
+  expect: null
+
+- name: delete virtual machine interface
+  request:
+    path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
+    method: DELETE
+    expected:
+    - 200
+  expect: null
