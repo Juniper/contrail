@@ -51,10 +51,14 @@ func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := tt.virtualNetwork.IsValidMultiPolicyServiceChainConfig()
+			res := IsValidMultiPolicyServiceChainConfig(tt.virtualNetwork)
 			assert.Equal(t, tt.expected, res)
 		})
 	}
+}
+
+func IsValidMultiPolicyServiceChainConfig(vn *VirtualNetwork) bool {
+	return vn.ValidateMultiPolicyServiceChainConfig() == nil
 }
 
 func TestMakeNeutronCompatible(t *testing.T) {
