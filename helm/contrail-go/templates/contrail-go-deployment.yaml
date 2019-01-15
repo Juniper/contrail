@@ -21,10 +21,10 @@ spec:
         - containerPort: 9091
         env:
         - name: CONTRAIL_ETCD_ENABLED
-          value: "{{ .Values.etcd.enabled }}" 
+          value: "{{ .Values.etcd.enabled }}"
         {{- if .Values.etcd.deploy }}
         - name: CONTRAIL_ETCD_ENDPOINTS
-          value: "{{ template "etcdclient.fullname" . }}:2379"
+          value: "{{ template "etcd.fullname" . }}:2379"
         {{- else if .Values.external_config }}
         - name: CONTRAIL_ETCD_NOTIFIER_SERVERS
           valueFrom:
@@ -46,18 +46,18 @@ spec:
         - name: CONTRAIL_CLIENT_ENDPOINT
           value: "https://localhost:9091"
         {{- end }}
-        {{- if .Values.postgresql.enabled }}
+        {{- if .Values.patroni.enabled }}
         - name: CONTRAIL_DATABASE_HOST
-          value: "{{ template "postgres.fullname" . }}"
+          value: "{{ template "patroni.fullname" . }}"
         - name: CONTRAIL_DATABASE_USER
-          value: "{{ .Values.postgresql.postgresUser }}"
+          value: "{{ .Values.patroni.postgresUser | default "admin" }}"
         - name: CONTRAIL_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: "{{ template "postgres.fullname" . }}"
-              key: postgres-password
+              name: "{{ template "patroni.fullname" . }}"
+              key: password-admin
         - name: CONTRAIL_DATABASE_NAME
-          value: "{{ .Values.postgresql.postgresDatabase }}"
+          value: "{{ .Values.patroni.postgresDatabase }}"
         {{- else if .Values.external_config }}
         - name: CONTRAIL_DATABASE_USER
           valueFrom:
@@ -68,7 +68,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: {{ .Values.external_config.rdbms }}
-              key: postgres.ip          
+              key: postgres.ip
         - name: CONTRAIL_DATABASE_PASSWORD
           valueFrom:
             configMapKeyRef:
@@ -86,4 +86,4 @@ spec:
       volumes:
         - name: contrail-go-config
           secret:
-            secretName: {{ template "fullname" . }} 
+            secretName: {{ template "fullname" . }}

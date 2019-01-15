@@ -1,7 +1,12 @@
 dependencies:
-- name: postgresql
-  version: "0.9.4"
-  repository: http://storage.googleapis.com/kubernetes-charts
-  condition: postgresql.enabled
-  tags:
-    - contrail-go-database
+- name: etcd
+  version: "0.6.1"
+  repository: http://storage.googleapis.com/kubernetes-charts-incubator
+  condition: etcd.enabled
+- name: patroni
+  version: "0.10.0"
+  repository: http://storage.googleapis.com/kubernetes-charts-incubator
+  condition: patroni.enabled
+  import-values:
+    child: credentials
+    parent: patroni.credentials
