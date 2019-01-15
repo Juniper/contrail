@@ -1,0 +1,148 @@
+name: Import export route target list
+description: Check if list of import and export route target list is handled properly
+cleanup:
+- path: /route-target/route-target-a
+- path: /route-target/route-target-b
+- path: /route-target/route-target-c
+- path: /virtual-network/virtual-network-with-rts
+
+test_data:
+
+  route_target_a_name: &route_target_a_name
+  - target:100:100
+
+  route_target_b_name: &route_target_b_name
+  - target:101:101
+
+  route_target_c_name: &route_target_c_name
+  - target:102:102
+
+  route_target_a: &route_target_a
+    uuid: route-target-a
+    fq_name: *route_target_a_name
+
+  route_target_b: &route_target_b
+    uuid: route-target-b
+    fq_name: *route_target_b_name
+
+  route_target_c: &route_target_c
+    uuid: route-target-c
+    fq_name: *route_target_c_name
+
+  virtual_network: &virtual_network
+    uuid: virtual-network-with-rts
+    address_allocation_mode: user-defined-subnet-only
+    parent_type: project
+    route_target_list:
+      route_target: *route_target_a_name
+    import_route_target_list:
+      route_target: *route_target_b_name
+    export_route_target_list:
+      route_target: *route_target_c_name
+    fq_name:
+    - default-domain
+    - default-project
+    - virtual-network-with-rts
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+# until virtual network won't be able to create route targets by itself we need to do it ourself
+- name: create route target a
+  request:
+    path: /route-targets
+    method: POST
+    expected:
+    - 200
+    data:
+      route-target: *route_target_a
+  expect:
+    route-target: *route_target_a
+
+- name: create route target b
+  request:
+    path: /route-targets
+    method: POST
+    expected:
+    - 200
+    data:
+      route-target: *route_target_b
+  expect:
+    route-target: *route_target_b
+
+- name: create route target c
+  request:
+    path: /route-targets
+    method: POST
+    expected:
+    - 200
+    data:
+      route-target: *route_target_c
+  expect:
+    route-target: *route_target_c
+
+- name: create virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *virtual_network
+  expect:
+    virtual-network: *virtual_network
+
+- name: check route target refs
+  request:
+    path: /routing-instances?parent_id=virtual-network-with-rts&detail=true
+    method: GET
+    expected:
+    - 200
+  expect:
+    routing-instances:
+    - routing-instance:
+        route_target_refs:
+          - attr: {}
+            to: *route_target_a_name
+          - attr:
+              import_export: import
+            to: *route_target_b_name
+          - attr:
+              import_export: export
+            to: *route_target_c_name
+
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/virtual-network-with-rts
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete route target a
+  request:
+    path: /route-target/route-target-a
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete route target b
+  request:
+    path: /route-target/route-target-b
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete route target c
+  request:
+    path: /route-target/route-target-c
+    method: DELETE
+    expected:
+    - 200
