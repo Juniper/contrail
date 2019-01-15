@@ -25,6 +25,9 @@ func TestIntPool(t *testing.T) {
 			err = db.CreateIntPool(ctx, poolKey, 3, 5)
 			assert.NoError(t, err, "create pool failed")
 
+			err = db.CreateIntPool(ctx, poolKey, 3, 5)
+			assert.Error(t, err, "it shouldn't be possible to create the same pool again")
+
 			pools, err := db.GetIntPools(ctx, &IntPool{Key: poolKey})
 			assert.NoError(t, err)
 			assert.Equal(t, 2, len(pools), "get pool failed")
