@@ -272,6 +272,28 @@ workflow:
     virtual-networks:
       count: 4
 
+- name: check the internal virtual network has been created
+  request:
+    path: "/virtual-networks?parent_id=admin_lr_project_uuid&filters=name==__contrail_lr_internal_vn_test_logical_router__&detail=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    virtual-networks:
+      - virtual-network:
+          name: __contrail_lr_internal_vn_test_logical_router__
+          parent_uuid: admin_lr_project_uuid
+          parent_type: project
+          virtual_network_properties:
+            vxlan_network_identifier: 10
+            forwarding_mode: l3
+          #route_target_list: [] # TODO how to check it is empty?
+          id_perms:
+            enable: true
+            #user_visible: false
+          logical_router_back_refs:
+            - uuid: test_logical_router
+
 - name: update logical router fail with bgpvpn l2
   request:
     path: /logical-router/test_logical_router
