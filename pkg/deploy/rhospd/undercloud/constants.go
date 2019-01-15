@@ -4,7 +4,7 @@ const (
 	defaultResource     = "rhospd-cloud-manager"
 	defaultResourcePath = "/" + defaultResource
 
-	defaultWorkRoot     = "/var/lib/contrail_cloud/config"
+	defaultWorkRoot     = "/var/tmp/rhospd_cloud_manager/"
 	defaultSiteTemplate = "site.tmpl"
 	defaultSiteFile     = "site.yml"
 	defaultWorkingDir   = "/var/lib/contrail_cloud/scripts/"
