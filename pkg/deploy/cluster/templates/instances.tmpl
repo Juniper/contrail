@@ -183,6 +183,11 @@ appformix_configuration:
   {%endif%}
   {%endfor%}
 {%endif%}
+{% if cluster.Orchestrator == "kubernetes" %}
+{% if k8sCluster.KubernetesPublicFipPool %}
+  KUBERNETES_PUBLIC_FIP_POOL: {% autoescape off %}{{ k8sCluster.KubernetesPublicFipPool }}{% endautoescape %}
+{%endif%}
+{%endif%}
 {% if cluster.Orchestrator == "vcenter" %}
   VCENTER_SERVER: {%if vcenter.Server %}{{vcenter.Server}}{%endif%}
   VCENTER_USERNAME: {%if vcenter.Username %}{{vcenter.Username}}{%endif%}

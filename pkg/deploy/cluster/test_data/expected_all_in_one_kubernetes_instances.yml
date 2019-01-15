@@ -28,3 +28,4 @@ contrail_configuration:
   RABBITMQ_NODE_PORT: 5673
   VROUTER_GATEWAY: 127.0.0.254
   ENCAP_PRIORITY: MPLSoGRE,MPLSoUDP,VXLAN
+  KUBERNETES_PUBLIC_FIP_POOL: {'project': 'default', 'domain': 'default-domain', 'name': '__fip_pool_public__', 'network': '__public__'}

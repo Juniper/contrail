@@ -27,6 +27,17 @@ schema:
       view:
       - create
       - detail
+    kubernetes_public_fip_pool:
+      description: Kubernetes Public FIP Pool.
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: text
+      title: Kubernetes Public FIP Pool.
+      type: string
+      view:
+      - detail
 singular: kubernetes_cluster
 title: Kubernetes Cluster
 type: ""
