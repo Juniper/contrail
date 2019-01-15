@@ -23,6 +23,7 @@ create table int_owner (
 alter table int_pool replica identity full;
 
 insert into int_pool ("key", "start", "end") values ('virtual_network_id', 5, 65535);
+insert into int_pool ("key", "start", "end") values ('vxlan_network_id', 1, 65535);
 insert into int_pool ("key", "start", "end") values ('security_group_id', 1, 65535);
 insert into int_pool ("key", "start", "end") values ('tag_id', 2, 65535);
 insert into int_pool ("key", "start", "end") values ('tag_type_id', 255, 65535);
