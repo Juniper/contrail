@@ -1,0 +1,45 @@
+---
+api_style: contrail
+id: router
+prefix: /neutron/
+type: response
+schema:
+  type: object
+  properties:
+    fq_name:
+      type: array
+      items:
+        type: string
+    id:
+      type: string
+    name:
+      type: string
+    description:
+      type: string
+    tenant_id:
+      type: string
+    admin_state_up:
+      type: boolean
+    status:
+      type: string
+    shared:
+      type: boolean
+    gw_port_id:
+      type: string
+    created_at:
+      type: string
+    updated_at:
+      type: string
+    external_gateway_info:
+      type: array
+      items:
+        $ref: resp_router.json#/definitions/ExtGatewayInfo
+
+definitions:
+  ExtGatewayInfo:
+    type: object
+    properties:
+      network_id:
+        type: string
+      enable_snat:
+        type: boolean
