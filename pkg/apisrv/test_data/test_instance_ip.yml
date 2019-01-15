@@ -30,8 +30,6 @@ test_data:
     uuid: vn_instance_ip_blue
     parent_type: project
     parent_uuid: admin_instance_ip_project_uuid
-    route_target_list:
-      route_target: ["100:200"]
     network_ipam_refs:
       - uuid: test_ipam_instance_ip_blue
 

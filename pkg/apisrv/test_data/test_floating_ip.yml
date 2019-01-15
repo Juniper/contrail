@@ -1,6 +1,7 @@
 name: Floating IP Test
 description:  basic floating ip test
 cleanup:
+- path: /route-target/route-target
 - path: /virtual-network/vn_floating_blue
 - path: /network-ipam/test_ipam
 - path: /network-ipam/test_ipam_floating_blue
@@ -16,6 +17,13 @@ test_data:
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
+
+  route_target_name: &route_target_name
+  - target:100:200
+
+  route_target: &route_target
+    uuid: route-target
+    fq_name: *route_target_name
 
   network_ipam_blue: &network_ipam_blue
     network_ipam_mgmt:
@@ -38,7 +46,7 @@ test_data:
     parent_uuid: admin_floating_project_uuid
     address_allocation_mode: user-defined-subnet-only
     route_target_list:
-      route_target: ["100:200"]
+      route_target: *route_target_name
     network_ipam_refs:
       - uuid: test_ipam_floating_blue
         attr:
@@ -88,6 +96,18 @@ workflow:
       project: *admin_project_floating_ip
   expect:
     project: *admin_project_floating_ip
+
+# Until Virtual Network will be able to create all route targets itself we need to create rt ourself
+- name: create route target
+  request:
+    path: /route-targets
+    method: POST
+    expected:
+    - 200
+    data:
+      route-target: *route_target
+  expect:
+    route-target: *route_target
 
 - name: create network ipam blue
   request:
@@ -282,6 +302,14 @@ workflow:
 - name: delete network ipam blue
   request:
     path: /network-ipam/test_ipam_floating_blue
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete route target
+  request:
+    path: /route-target/route-target
     method: DELETE
     expected:
     - 200

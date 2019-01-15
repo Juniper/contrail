@@ -1,6 +1,6 @@
 name: Derived relations test
 description: >
-  this test checks derived parent-chil and reference relations.
+  this test checks derived parent-child and reference relations.
   Such relations make it possible to delete parent while leaving derived children.
 test_data:
   admin_project: &admin_project
@@ -15,8 +15,6 @@ test_data:
     display_name: blue
     parent_type: project
     parent_uuid: admin_project_uuid
-    route_target_list:
-       route_target: ["100:200"]
   vn_blue_ri1: &vn_blue_ri1
     uuid: ri_uuid
     fq_name: ["default", "admin_project_uuid", "ri1"]

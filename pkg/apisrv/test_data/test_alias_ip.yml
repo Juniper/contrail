@@ -8,6 +8,7 @@ cleanup:
 - path: /alias-ip/test_alias_ip
 - path: /alias-ip/test_alias_ip_3
 - path: /project/admin_alias_project_uuid
+- path: /route-target/route-target
 test_data:
 
   admin_project: &admin_project_alias_ip
@@ -30,6 +31,13 @@ test_data:
     parent_uuid: admin_alias_project_uuid
     fq_name: ["domain","admin","test_ipam_alias_blue"]
 
+  route_target_name: &route_target_name
+  - target:100:200
+
+  route_target: &route_target
+    uuid: route-target
+    fq_name: *route_target_name
+
   vn_alias_blue: &vn_alias_blue
     fq_name: ["default", "admin_alias", "vn_alias_blue"]
     uuid: vn_alias_blue
@@ -38,7 +46,7 @@ test_data:
     parent_uuid: admin_alias_project_uuid
     address_allocation_mode: user-defined-subnet-only
     route_target_list:
-      route_target: ["100:200"]
+      route_target: *route_target_name
     network_ipam_refs:
       - uuid: test_ipam_alias_blue
         attr:
@@ -97,6 +105,18 @@ workflow:
       project: *admin_project_alias_ip
   expect:
     project: *admin_project_alias_ip
+
+# Until Virtual Network will be able to create all route targets itself we need to create rt ourself
+- name: create route target
+  request:
+    path: /route-targets
+    method: POST
+    expected:
+    - 200
+    data:
+      route-target: *route_target
+  expect:
+    route-target: *route_target
 
 - name: create network ipam blue
   request:
@@ -201,3 +221,12 @@ workflow:
     expected:
     - 200
   expect: null
+
+- name: delete route target
+  request:
+    path: /route-target/route-target
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+

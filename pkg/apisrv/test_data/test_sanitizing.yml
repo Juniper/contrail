@@ -1,6 +1,7 @@
 name: Sanitizer Service Test
 description: integration test of sanitizer service
 cleanup:
+- path: /route-target/route-target
 - path: /virtual-network/vn_sanitize_blue
 - path: /network-ipam/test_ipam_sanitize_blue
 - path: /instance-ip/test_sanitize_iip
@@ -14,6 +15,13 @@ test_data:
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
+
+  route_target_name: &route_target_name
+  - target:100:200
+
+  route_target: &route_target
+    uuid: route-target
+    fq_name: *route_target_name
 
   network_ipam: &network_ipam_blue
     network_ipam_mgmt:
@@ -33,7 +41,7 @@ test_data:
     parent_type: project
     parent_uuid: admin_sanitize_project_uuid
     route_target_list:
-      route_target: ["100:200"]
+      route_target: *route_target_name
     network_ipam_refs:
       - uuid: test_ipam_sanitize_blue
         attr:
@@ -73,6 +81,18 @@ workflow:
       project: *admin_project_sanitize
   expect:
     project: *admin_project_sanitize
+
+# Until Virtual Network will be able to create all route targets itself we need to create rt ourself
+- name: create route target
+  request:
+    path: /route-targets
+    method: POST
+    expected:
+    - 200
+    data:
+      route-target: *route_target
+  expect:
+    route-target: *route_target
 
 - name: create network ipam
   request:
@@ -248,6 +268,14 @@ workflow:
 - name: delete network ipam
   request:
     path: /network-ipam/test_ipam_sanitize_blue
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete route target
+  request:
+    path: /route-target/route-target
     method: DELETE
     expected:
     - 200

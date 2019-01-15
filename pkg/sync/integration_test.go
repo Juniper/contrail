@@ -520,9 +520,6 @@ func virtualNetworkRed(uuid, parentUUID, networkIPAMUUID string) *models.Virtual
 		ParentUUID: parentUUID,
 		FQName:     []string{integration.DefaultDomainID, integration.AdminProjectID, uuid + "-fq-name"},
 		Perms2:     &models.PermType2{Owner: integration.AdminUserID},
-		RouteTargetList: &models.RouteTargetList{
-			RouteTarget: []string{"100:200"},
-		},
 		DisplayName:        "red",
 		MacLearningEnabled: true,
 		NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{{

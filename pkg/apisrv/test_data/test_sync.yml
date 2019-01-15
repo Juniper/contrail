@@ -48,8 +48,6 @@ test_data:
     display_name: blue
     parent_type: project
     parent_uuid: admin_project_uuid_test_sync
-    route_target_list:
-       route_target: ["100:200"]
     network_policy_refs:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
@@ -69,8 +67,6 @@ test_data:
     display_name: blue2
     parent_type: project
     parent_uuid: admin_project_uuid_test_sync
-    route_target_list:
-       route_target: ["100:200"]
     network_policy_refs:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
