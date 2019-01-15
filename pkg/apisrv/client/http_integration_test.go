@@ -116,18 +116,25 @@ func TestRemoteIntPoolMethods(t *testing.T) {
 	err := hc.Login(context.Background())
 	require.NoError(t, err)
 
-	rt, err := hc.AllocateInt(context.Background(), "route_target_number")
+	err = hc.CreateIntPool(context.Background(), "test_int_pool_806f099f3", 8000100, 8000200)
+	require.NoError(t, err)
 	defer func() {
-		err = hc.DeallocateInt(context.Background(), "route_target_number", rt)
+		err = hc.DeleteIntPool(context.Background(), "test_int_pool_806f099f3")
+		assert.NoError(t, err)
+	}()
+
+	val, err := hc.AllocateInt(context.Background(), "test_int_pool_806f099f3")
+	defer func() {
+		err = hc.DeallocateInt(context.Background(), "test_int_pool_806f099f3", val)
 		assert.NoError(t, err)
 	}()
 
 	assert.NoError(t, err)
-	assert.True(t, rt > 8000099)
+	assert.True(t, val > 8000099)
 
-	err = hc.SetInt(context.Background(), "route_target_number", rt+1)
+	err = hc.SetInt(context.Background(), "test_int_pool_806f099f3", val+1)
 	defer func() {
-		err = hc.DeallocateInt(context.Background(), "route_target_number", rt+1)
+		err = hc.DeallocateInt(context.Background(), "test_int_pool_806f099f3", val+1)
 		assert.NoError(t, err)
 	}()
 
