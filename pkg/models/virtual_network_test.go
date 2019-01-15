@@ -12,11 +12,11 @@ func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
 	var tests = []struct {
 		name           string
 		virtualNetwork *VirtualNetwork
-		expected       bool
+		wantError      bool
 	}{
 		{
-			name:     "check for rt",
-			expected: true,
+			name:      "check for rt",
+			wantError: false,
 			virtualNetwork: &VirtualNetwork{
 				MultiPolicyServiceChainsEnabled: true,
 				ImportRouteTargetList: &RouteTargetList{
@@ -28,8 +28,8 @@ func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
 			},
 		},
 		{
-			name:     "check for rt",
-			expected: false,
+			name:      "check for rt",
+			wantError: true,
 			virtualNetwork: &VirtualNetwork{
 				MultiPolicyServiceChainsEnabled: true,
 				ImportRouteTargetList: &RouteTargetList{
@@ -41,8 +41,8 @@ func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
 			},
 		},
 		{
-			name:     "check for multi-policy service chains disabled",
-			expected: true,
+			name:      "check for multi-policy service chains disabled",
+			wantError: false,
 			virtualNetwork: &VirtualNetwork{
 				MultiPolicyServiceChainsEnabled: false,
 			},
@@ -51,8 +51,8 @@ func TestIsValidMultiPolicyServiceChainConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := tt.virtualNetwork.IsValidMultiPolicyServiceChainConfig()
-			assert.Equal(t, tt.expected, res)
+			isError := tt.virtualNetwork.ValidateMultiPolicyServiceChainConfig() != nil
+			assert.Equal(t, tt.wantError, isError)
 		})
 	}
 }
