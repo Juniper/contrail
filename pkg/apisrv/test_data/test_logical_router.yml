@@ -94,6 +94,24 @@ test_data:
     bgpvpn_refs:
       - uuid: test_bgpvpn_l3
 
+  conflicting_test_lr: &conflicting_test_lr
+    uuid: conflicting_test_logical_router
+    fq_name: ["default-domain", "admin_lr_project", "conflicting_test_logical_router"]
+    parent_type: project
+    vxlan_network_identifier: "10"
+    virtual_machine_interface_refs:
+      - uuid: 4837041a-2dc0-4e7d-b2f4-d7fe449f8734
+    bgpvpn_refs:
+      - uuid: test_bgpvpn_l3
+
+  conflicting_vn: &conflicting_vn
+    fq_name: ["default", "admin_vn_vxlan_project_uuid", "conflicting_vn"]
+    uuid: conflicting_vn
+    parent_type: project
+    parent_uuid: admin_vn_vxlan_project_uuid
+    virtual_network_properties:
+      vxlan_network_identifier: 10
+
 clients:
   default:
     id: alice
