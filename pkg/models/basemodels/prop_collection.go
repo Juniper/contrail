@@ -1,8 +1,7 @@
 package basemodels
 
 import (
-	"encoding/json"
-	"strconv"
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -18,10 +17,10 @@ const (
 
 // PropCollectionUpdate holds update data for collection property (with CollectionType "map" or "list").
 type PropCollectionUpdate struct {
-	Field     string          `json:"field"`
-	Operation string          `json:"operation"`
-	Value     json.RawMessage `json:"value"`
-	Position  string          `json:"position"`
+	Field     string
+	Operation string
+	Value     interface{}
+	Position  interface{}
 }
 
 // PositionForList parses position and validates operation for ListProperty collection update.
@@ -29,50 +28,44 @@ func (u *PropCollectionUpdate) PositionForList() (position int, err error) {
 	op := strings.ToLower(u.Operation)
 	switch op {
 	case PropCollectionUpdateOperationAdd:
-		if len(u.Value) == 0 {
+		if u.Value == nil {
 			return 0, errors.Errorf("add operation needs value")
 		}
 	case PropCollectionUpdateOperationModify:
-		if len(u.Value) == 0 {
+		if u.Value == nil {
 			return 0, errors.Errorf("modify operation needs value")
 		}
-		position, err = parseListPosition(u.Position)
-		if err != nil {
-			return 0, errors.Wrap(err, "modify operation needs position")
+		p, ok := u.Position.(int32)
+		if !ok {
+			return 0, errors.New("modify operation needs position")
 		}
+		position = int(p)
 	case PropCollectionUpdateOperationDelete:
-		position, err = parseListPosition(u.Position)
-		if err != nil {
-			return 0, errors.Wrap(err, "delete operation needs position")
+		p, ok := u.Position.(int32)
+		if !ok {
+			return 0, errors.New("delete operation needs position")
 		}
+		position = int(p)
 	default:
 		return 0, errors.Errorf("unsupported operation: %s", u.Operation)
 	}
 	return position, nil
 }
 
-func parseListPosition(s string) (int, error) {
-	position, err := strconv.Atoi(s)
-	if err != nil {
-		return 0, errors.Wrap(err, "list position must be a base 10 integer")
-	}
-	return position, err
-}
-
-// ValidateForMap validates MapProperty collection update.
-func (u *PropCollectionUpdate) ValidateForMap() error {
+// KeyForMap validates MapProperty collection update.
+func (u *PropCollectionUpdate) KeyForMap() (key string, err error) {
 	op := strings.ToLower(u.Operation)
 	switch op {
 	case PropCollectionUpdateOperationSet:
-		if len(u.Value) == 0 {
-			return errors.Errorf("set operation needs value")
+		if u.Value == nil {
+			return "", errors.Errorf("set operation needs value")
 		}
 	case PropCollectionUpdateOperationDelete:
-		if u.Position == "" {
-			return errors.New("delete operation needs position")
+		if key = fmt.Sprint(u.Position); u.Position == nil || key == "" {
+			return "", errors.New("delete operation needs position")
 		}
 	default:
-		return errors.Errorf("unsupported operation: %s", u.Operation)
+		return "", errors.Errorf("unsupported operation: %s", u.Operation)
 	}
-	return nil
+	return key, nil
 }
