@@ -1,0 +1,207 @@
+name: Service Template Test
+description: |
+  Basic Service Template Test
+cleanup:
+  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0011
+  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0012
+  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0013
+  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0014
+  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0015
+test_data:
+  service_template: &test_v1_VM
+    uuid: beefbeef-beef-beef-beef-beefbeef0011
+    parent_type: domain
+    fq_name:
+      - default-domain
+      - service-template-v1-VM
+    service_template_properties: *properties_v1_VM
+
+  service_template: &test_v1_PM
+    uuid: beefbeef-beef-beef-beef-beefbeef0012
+    parent_type: domain
+    fq_name:
+      - default-domain
+      - service-template-v1-PM
+    service_template_properties: *properties_v1_PM
+    
+  service_template: &test_v2_VM
+    uuid: beefbeef-beef-beef-beef-beefbeef0013
+    parent_type: domain
+    fq_name:
+      - default-domain
+      - service-template-v2-VM
+    service_template_properties: *properties_v2_VM
+    
+  service_template: &test_v2_PM
+    uuid: beefbeef-beef-beef-beef-beefbeef0014
+    parent_type: domain
+    fq_name:
+      - default-domain
+      - service-template-v2-PM
+    service_template_properties: *properties_v2_PM
+
+  service_template: &test_bad_domain
+    uuid: beefbeef-beef-beef-beef-beefbeef0015
+    parent_type: domain
+    fq_name:
+      - bad-domain
+      - service-template-v2-PM
+    service_template_properties: *properties_v2_PM
+
+  service_template: &test_wrong_virtualization_type
+    uuid: beefbeef-beef-beef-beef-beefbeef0015
+    parent_type: domain
+    fq_name:
+      - bad-domain
+      - service-template-v2-PM
+    service_template_properties: *properties_wrong_virtualization_type
+  
+  service_template_properties: &properties_v1_VM
+    version: 1
+    service_virtualization_type: virtual-machine
+    image_name: someImage
+    flavor: someFlavor
+    service_mode: transparent
+    service_type: firewall
+    service_scaling: true
+    interface_type:
+      - service_interface_type: left
+      - shared_ip: true
+      - static_route_enable: true
+
+  service_template_properties: &properties_v1_PM
+    version: 1
+    service_virtualization_type: physical-device
+    service_scaling: true
+    interface_type:
+      - service_interface_type: left
+      - shared_ip: true
+      - static_route_enable: true
+
+  service_template_properties: &properties_v2_VM
+    version: 2
+    service_virtualization_type: virtual-machine
+    service_mode: transparent
+    service_type: firewall
+    interface_type:
+      - service_interface_type: left
+  
+  service_template_properties: &properties_v2_PM
+    version: 2
+    service_virtualization_type: physical-device
+    interface_type:
+      - service_interface_type: left
+
+service_template_properties: &properties_wrong_virtualization_type
+    version: 2
+    service_virtualization_type: wrong-type
+    interface_type:
+      - service_interface_type: left
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create v1 with virtual machine
+  request:
+    path: /service-templates
+    method: POST
+    expected: [200]
+    data:
+      service-template: *test_v1_VM
+  expect:
+    service-template: *test_v1_VM
+
+- name: create v1 with physical device
+  request:
+    path: /service-templates
+    method: POST
+    expected: [200]
+    data:
+      service-template: *test_v1_PM
+  expect:
+    service-template: *test_v1_PM
+
+- name: create v2 with virtual machine
+  request:
+    path: /service-templates
+    method: POST
+    expected: [200]
+    data:
+      service-template: *test_v2_VM
+  expect:
+    service-template: *test_v2_VM
+
+- name: create v2 with physical device
+  request:
+    path: /service-templates
+    method: POST
+    expected: [200]
+    data:
+      service-template: *test_v2_PM
+  expect:
+    service-template: *test_v2_PM
+    
+- name: create service template with duplicate uuid
+  request:
+    path: /service-templates
+    method: POST
+    expected: [409]
+    data:
+      service-template: *test_v2_PM
+  expect:
+    null
+
+- name: create service template with incorrect domain in fq name
+  request:
+    path: /service-templates
+    method: POST
+    expected: [400]
+    data:
+      service-template: *test_bad_domain
+  expect:
+    null   
+
+- name: create service template with incorrect virtualization type
+  request:
+    path: /service-templates
+    method: POST
+    expected: [400]
+    data:
+      service-template: *test_wrong_virtualization_type
+  expect:
+    null   
+    
+- name: delete service template v1 VM
+  request:
+    path: /service-template/beefbeef-beef-beef-beef-beefbeef0011
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete service template V1 PM
+  request:
+    path: /service-template/beefbeef-beef-beef-beef-beefbeef0012
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete service template v2 VM
+  request:
+    path: /service-template/beefbeef-beef-beef-beef-beefbeef0013
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete service template V2 PM
+  request:
+    path: /service-template/beefbeef-beef-beef-beef-beefbeef0014
+    method: DELETE
+    expected: [200]
+  expect: null
