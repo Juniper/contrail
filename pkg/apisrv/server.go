@@ -49,20 +49,21 @@ func RegisterExtension(f func(server *Server) error) {
 
 //Server represents Intent API Server.
 type Server struct {
-	Echo              *echo.Echo
-	GRPCServer        *grpc.Server
-	Keystone          *keystone.Keystone
-	DBService         *db.Service
-	Proxy             *proxyService
-	Service           services.Service
-	IPAMServer        services.IPAMServer
-	ChownServer       services.ChownServer
-	SetTagServer      services.SetTagServer
-	RefRelaxServer    services.RefRelaxServer
-	UserAgentKVServer services.UserAgentKVServer
-	FQNameToIDServer  services.FQNameToIDServer
-	IDToTypeServer    services.IDToTypeServer
-	Cache             *cache.DB
+	Echo                       *echo.Echo
+	GRPCServer                 *grpc.Server
+	Keystone                   *keystone.Keystone
+	DBService                  *db.Service
+	Proxy                      *proxyService
+	Service                    services.Service
+	IPAMServer                 services.IPAMServer
+	ChownServer                services.ChownServer
+	SetTagServer               services.SetTagServer
+	RefRelaxServer             services.RefRelaxServer
+	UserAgentKVServer          services.UserAgentKVServer
+	FQNameToIDServer           services.FQNameToIDServer
+	IDToTypeServer             services.IDToTypeServer
+	PropCollectionUpdateServer services.PropCollectionUpdateServer
+	Cache                      *cache.DB
 }
 
 // NewServer makes a server
@@ -204,6 +205,7 @@ func (s *Server) Init() (err error) {
 	s.UserAgentKVServer = s.DBService
 	s.FQNameToIDServer = cs
 	s.IDToTypeServer = cs
+	s.PropCollectionUpdateServer = cs
 
 	if viper.GetBool("server.enable_vnc_neutron") {
 		s.setupNeutronService(cs)
@@ -290,6 +292,7 @@ func (s *Server) Init() (err error) {
 		services.RegisterRefRelaxServer(s.GRPCServer, s.RefRelaxServer)
 		services.RegisterFQNameToIDServer(s.GRPCServer, s.FQNameToIDServer)
 		services.RegisterIDToTypeServer(s.GRPCServer, s.IDToTypeServer)
+		services.RegisterPropCollectionUpdateServer(s.GRPCServer, s.PropCollectionUpdateServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 

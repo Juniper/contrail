@@ -115,15 +115,25 @@ func TestPropCollectionUpdate_PositionForList(t *testing.T) {
 	}
 }
 
-func TestPropCollectionUpdate_ValidateForMap(t *testing.T) {
+func TestPropCollectionUpdate_KeyForMap(t *testing.T) {
 	correctValue := []byte("value")
 	var emptyValue []byte
 
 	tests := []struct {
 		name   string
 		update *PropCollectionUpdate
+		key    string
 		fails  bool
 	}{
+		{
+			name: "succeeds with correct key for delete",
+			update: &PropCollectionUpdate{
+				Operation: "delete",
+				Value:     correctValue,
+				Position:  string("key"),
+			},
+			key: "key",
+		},
 		{
 			name: "fails for set operation without value",
 			update: &PropCollectionUpdate{
@@ -167,13 +177,15 @@ func TestPropCollectionUpdate_ValidateForMap(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.update.ValidateForMap()
+			key, err := tt.update.KeyForMap()
 
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
+
+			assert.Equal(t, tt.key, key)
 		})
 	}
 }
