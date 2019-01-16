@@ -105,8 +105,8 @@ func CheckPermissions(ctx context.Context, l []*models.APIAccessList, aaaMode st
 }
 
 // getTenantKey get the Hash key for first level hash.
-func getTenantKey(projectName string, domainName string) tenantKey {
-	return tenantKey(projectName + "." + domainName)
+func getTenantKey(domainName string, projectName string) tenantKey {
+	return tenantKey(domainName + "." + projectName)
 }
 
 // addTenantLevelPolicy create a project specific policy.
@@ -242,7 +242,7 @@ func (t tenantPermission) getResourcePermission(rq *request) resourcePermission 
 	if val, ok := t[key]; ok {
 		return val
 	}
-	key = getTenantKey("*", rq.project)
+	key = getTenantKey(rq.domain, "*")
 
 	if val, ok := t[key]; ok {
 		return val
