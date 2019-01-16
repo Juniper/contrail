@@ -4,12 +4,18 @@ cleanup:
 - path: /forwarding-class/uuid-frwdclass-first
 - path: /forwarding-class/uuid-frwdclass-second
 - path: /forwarding-class/8524f319-afcc-4f82-9132-95c4827e0aed
-- path: /qos-queue/uuid-qosq-for-frwdclass
+- fq_name:
+  - default-global-system-config
+  - default-global-qos-config
+  - ''
+  kind: qos-queue
 
 test_data:
   qosq: &qosq
-    uuid: uuid-qosq-for-frwdclass
-    name: my-qosq
+    fq_name:
+    - default-global-system-config
+    - default-global-qos-config
+    - ''
     parent_type: global-qos-config
     parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
     min_bandwidth: 100
@@ -22,7 +28,10 @@ test_data:
     parent_type: global-qos-config
     parent_uuid: be27fe7d-da68-44a5-86c2-4225490c9e13
     qos_queue_refs:
-      - uuid: uuid-qosq-for-frwdclass
+      - to:
+        - default-global-system-config
+        - default-global-qos-config
+        - ''
     forwarding_class_id: 1
     forwarding_class_dscp: 63
     forwarding_class_vlan_priority: 7
@@ -40,7 +49,7 @@ test_data:
       - to:
         - default-global-system-config
         - default-global-qos-config
-        - my-qosq
+        - ''
     parent_type: global-qos-config
     forwarding_class_vlan_priority: 4
     perms2:
@@ -179,13 +188,6 @@ workflow:
 - name: delete uuid-frwdclass-second
   request:
     path: /forwarding-class/8524f319-afcc-4f82-9132-95c4827e0aed
-    method: DELETE
-    expected:
-    - 200
-
-- name: delete qos-queue
-  request:
-    path: /qos-queue/uuid-qosq-for-frwdclass
     method: DELETE
     expected:
     - 200

@@ -231,6 +231,11 @@ func TestDomain(t *testing.T) {
 	RunTest(t, "./test_data/test_domain.yml")
 }
 
+func TestQoS(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_qos.yml")
+}
+
 func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),
