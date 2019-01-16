@@ -50,15 +50,15 @@ func RegisterPluralPaths (register registerFunc) {
 
 // GetObject retrieves object dynamically from ReadService by its schema ID and UUID.
 func GetObject(ctx context.Context, rs ReadService, typeName, uuid string) (basemodels.Object, error) {
-	return getObject(ctx, rs, typeName, uuid)
+	return getObject(ctx, rs, typeName, uuid, nil)
 }
 
-func getObject(ctx context.Context, rs ReadService, typeName, uuid string) (basemodels.Object, error) {
+func getObject(ctx context.Context, rs ReadService, typeName, uuid string, fields []string) (basemodels.Object, error) {
 	kind := strings.Replace(typeName, "_", "-", -1)
 	switch kind {
 		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 	case "{{ schema.TypeName }}":
-		resp, err := rs.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{ID: uuid})
+		resp, err := rs.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{ID: uuid, Fields: fields})
 		return resp.Get{{ schema.JSONSchema.GoName }}(), err
 		{% endif %}{% endfor %}
 	}
