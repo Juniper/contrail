@@ -29,6 +29,8 @@ test_data:
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
+    id_perms:
+      user_visible: true
   network_policy1: &network_policy1
     fq_name: ["default", "admin_project_uuid", "policy1"]
     uuid: network_policy_uuid
@@ -71,6 +73,8 @@ test_data:
           dst_addresses: [{}]
           action_list:
             simple_action: pass
+    id_perms:
+      user_visible: true
   network_ipam_blue: &network_ipam_blue
     network_ipam_mgmt:
       host_routes:

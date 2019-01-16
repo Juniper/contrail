@@ -185,6 +185,7 @@ func (s *Server) Init() (err error) {
 	}
 
 	e.Use(middleware.Recover())
+	e.Binder = &customBinder{}
 
 	s.DBService, err = db.NewServiceFromConfig()
 	if err != nil {

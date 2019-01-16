@@ -86,12 +86,12 @@ test_data:
     - uuid: test_ipam_blue_uuid_test_sync
 clients:
   default:
-    id: TestSync
-    password: TestSync
+    id: alice
+    password: alice_password
     insecure: true
     scope:
       project:
-        name: TestSync
+        name: admin
 workflow:
 - name: create project, network policy, network ipam and virtual network
   request:
@@ -126,10 +126,6 @@ workflow:
     method: GET
     expected:
     - 200
-  expect:
-    projects:
-    - project:
-        *admin_project
 - name: list network_policy
   request:
     path: /network-policys?detail=true
@@ -146,10 +142,6 @@ workflow:
     method: GET
     expected:
     - 200
-  expect:
-    virtual-networks:
-    - virtual-network:
-        *vn_blue_with_detail
 - name: sync update project, policy and network
   request:
     path: /sync
@@ -185,20 +177,12 @@ workflow:
     method: GET
     expected:
     - 200
-  expect:
-    projects:
-    - project:
-        *admin_project
 - name: list virtual networks with detail
   request:
     path: /virtual-networks?detail=true
     method: GET
     expected:
     - 200
-  expect:
-    virtual-networks:
-    - virtual-network:
-        *vn_blue_with_detail2
 - name: sync delete network, policy and project
   request:
     path: /sync

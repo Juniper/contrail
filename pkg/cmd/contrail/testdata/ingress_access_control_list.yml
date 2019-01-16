@@ -15,14 +15,14 @@ id_perms:
 #  description: ''
 #  created: '2018-07-20T13:43:18.072155'
 #  creator: ''
-#  user_visible: true
+  user_visible: true
 #  last_modified: '2018-07-20T13:43:18.072155'
-#  permissions:
-#    owner: cloud-admin
-#    owner_access: 7
-#    other_access: 7
-#    group: cloud-admin-group
-#    group_access: 7
+  permissions:
+    owner: cloud-admin
+    owner_access: 7
+    other_access: 7
+    group: cloud-admin-group
+    group_access: 7
 display_name: ingress-access-control-list
 annotations: null
 perms2:
