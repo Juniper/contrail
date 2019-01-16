@@ -137,6 +137,7 @@ func (p *ServiceEventProcessor) Process(ctx context.Context, event *Event) (*Eve
 type ContrailService struct {
 	BaseService
 
+	DBService          ReadService
 	MetadataGetter     baseservices.MetadataGetter
 	TypeValidator      *models.TypeValidator
 	InTransactionDoer  InTransactionDoer

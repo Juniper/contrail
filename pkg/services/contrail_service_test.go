@@ -43,10 +43,18 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
 				Perms2: &models.PermType2{Owner: "default-project", OwnerAccess: basemodels.PermsRWX},
 				IDPerms: &models.IdPermsType{
-					Enable: true,
+					Enable:      true,
+					UserVisible: true,
 					UUID: &models.UuidType{
 						UUIDMslong: 5154920197859002180,
 						UUIDLslong: 2220099452856583654,
+					},
+					Permissions: &models.PermType{
+						Owner:       "cloud-admin",
+						OwnerAccess: 7,
+						OtherAccess: 7,
+						Group:       "cloud-admin-group",
+						GroupAccess: 7,
 					},
 				},
 			},
@@ -72,10 +80,18 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 				Perms2: &models.PermType2{Owner: "default-project", OwnerAccess: basemodels.PermsRWX},
 				// Default filled fields below
 				IDPerms: &models.IdPermsType{
-					Enable: true,
+					Enable:      true,
+					UserVisible: true,
 					UUID: &models.UuidType{
 						UUIDMslong: 5154920197859002180,
 						UUIDLslong: 2220099452856583654,
+					},
+					Permissions: &models.PermType{
+						Owner:       "cloud-admin",
+						OwnerAccess: 7,
+						OtherAccess: 7,
+						Group:       "cloud-admin-group",
+						GroupAccess: 7,
 					},
 				},
 			},

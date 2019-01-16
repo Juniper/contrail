@@ -129,6 +129,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 
 	cs := &services.ContrailService{
 		BaseService:        services.BaseService{},
+		DBService:          s.DBService,
 		TypeValidator:      tv,
 		MetadataGetter:     s.DBService,
 		InTransactionDoer:  s.DBService,
@@ -186,6 +187,7 @@ func (s *Server) Init() (err error) {
 	}
 
 	e.Use(middleware.Recover())
+	e.Binder = &customBinder{}
 
 	s.DBService, err = db.NewServiceFromConfig()
 	if err != nil {

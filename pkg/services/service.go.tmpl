@@ -11,7 +11,7 @@ import (
 
     "github.com/Juniper/contrail/pkg/auth"
     "github.com/Juniper/contrail/pkg/errutil"
-	"github.com/Juniper/contrail/pkg/format"
+    "github.com/Juniper/contrail/pkg/format"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "github.com/Juniper/contrail/pkg/models/basemodels"
     "github.com/Juniper/contrail/pkg/models"
@@ -45,6 +45,9 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+    isVerified := auth.IsUserVisibleVerified(ctx)
+    ctx = auth.WithUserVisibleVerified(ctx)
+
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
         return nil, errutil.ErrorBadRequest("create body is empty")
@@ -90,7 +93,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
             parentFQName := model.FQName[:l-1]
             metadata, err := service.MetadataGetter.GetMetadata(ctx,  basemodels.Metadata{Type: model.ParentType, FQName: parentFQName})
             if err != nil {
-		  return nil, errutil.ErrorBadRequestf("no parent for {{ schema.JSONSchema.GoName }} found by FQName=(%v): %v", parentFQName, err)            }
+                return nil, errutil.ErrorBadRequestf("no parent for {{ schema.JSONSchema.GoName }} found by FQName=(%v): %v", parentFQName, err)            }
             model.ParentUUID = metadata.UUID
         }
     }
@@ -103,13 +106,16 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
         model.Perms2.Owner = auth.ProjectID()
     }
 
+    if !isVerified {
+        if err := isVisibleObject(ctx, model.IDPerms); err != nil {
+            return nil, errutil.ErrorBadRequestf("%v", err)
+        }
+    }
     if model.IDPerms == nil {
         model.IDPerms = models.NewIDPerms(model.UUID)
+        model.IDPerms.UserVisible = true
     }
-
-    if model.IDPerms.UUID == nil {
-        model.IDPerms.UUID = models.NewUUIDType(model.UUID)
-    }
+    model.IDPerms.EnsureDefault(model.UUID)
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
@@ -187,12 +193,31 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
     ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+    isVerified := auth.IsUserVisibleVerified(ctx)
+    ctx = auth.WithUserVisibleVerified(ctx)
+
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
         return nil, errutil.ErrorBadRequest("update request body is empty")
     }
 
+    storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", model.UUID)
+    if err != nil {
+        return nil, err
+    }
+    if !isVerified {
+        if err := isVisibleObject(ctx, storedIDPerms); err != nil {
+            return nil, errutil.ErrorNotFoundf("%v", err)
+        }
+    }
     model.IDPerms, request.FieldMask.Paths = sanitizeIDPermsUUID(model.GetIDPerms(), request.FieldMask.Paths)
+    if !model.IDPerms.IsUUIDMatch(model.UUID) {
+        log.Warn("UUID mismatch")
+    }
+    if model.IDPerms == nil {
+        model.IDPerms = models.NewIDPerms(model.UUID)
+    }
+    model.IDPerms.Merge(storedIDPerms)
 
     return service.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
@@ -210,6 +235,24 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
     return c.NoContent(http.StatusOK)
 }
 
+// Delete{{ schema.JSONSchema.GoName }} handles a delete request.
+func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
+) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    isVerified := auth.IsUserVisibleVerified(ctx)
+    ctx = auth.WithUserVisibleVerified(ctx)
+    if !isVerified {
+        storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
+        if err != nil {
+            return nil, errutil.ErrorNotFoundf("%v", err)
+        }
+        if err = isVisibleObject(ctx, storedIDPerms); err != nil {
+            return nil, errutil.ErrorNotFoundf("%v", err)
+        }
+    }
+    return service.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
 // RESTGet{{ schema.JSONSchema.GoName }} handles a REST get request.
 func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
     request := &Get{{ schema.JSONSchema.GoName }}Request{
@@ -224,6 +267,24 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
         log.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
+}
+
+// Get{{ schema.JSONSchema.GoName }} handles a get request.
+func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
+    ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
+) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
+    isVerified := auth.IsUserVisibleVerified(ctx)
+    ctx = auth.WithUserVisibleVerified(ctx)
+    if !isVerified {
+        storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
+        if err != nil {
+            return nil, errutil.ErrorNotFoundf("%v", err)
+        }
+        if err = isVisibleObject(ctx, storedIDPerms); err != nil {
+            return nil, errutil.ErrorNotFoundf("%v", err)
+        }
+    }
+    return service.BaseService.Get{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
 // RESTList{{ schema.JSONSchema.GoName }} handles a REST list request.

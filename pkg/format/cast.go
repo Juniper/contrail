@@ -1,6 +1,7 @@
 package format
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -26,33 +27,47 @@ func InterfaceToInt(i interface{}) int {
 		return int(t)
 	case float64:
 		return int(t)
+	default:
+		logrus.Warnf("Could not convert %#v to int", i)
 	}
 	return 0
 }
 
 //InterfaceToInt64 makes an int64 from interface
+// nolint: gocyclo
 func InterfaceToInt64(i interface{}) int64 {
 	if i == nil {
 		return 0
 	}
 	switch t := i.(type) {
 	case []byte:
-		i, err := strconv.ParseInt(string(t), 10, 64)
+		i64, err := strconv.ParseInt(string(t), 10, 64)
 		if err != nil {
 			logrus.WithError(err).Debugf("Could not convert %#v to int64", t)
 		}
-		return i
+		return i64
 	case int:
+		return int64(t)
+	case int32:
 		return int64(t)
 	case int64:
 		return t
 	case float64:
 		return int64(t)
+	case json.Number:
+		i64, err := t.Int64()
+		if err != nil {
+			logrus.WithError(err).Debugf("Could not convert %#v to int64", t)
+		}
+		return i64
+	default:
+		logrus.Warnf("Could not convert (%T) %#v to int64", i, i)
 	}
 	return 0
 }
 
 //InterfaceToUint64 makes an uint64 from interface
+// nolint: gocyclo
 func InterfaceToUint64(i interface{}) uint64 {
 	if i == nil {
 		return 0
@@ -74,6 +89,14 @@ func InterfaceToUint64(i interface{}) uint64 {
 		return t
 	case float64:
 		return uint64(t)
+	case json.Number:
+		i, err := strconv.ParseUint(t.String(), 10, 64)
+		if err != nil {
+			logrus.WithError(err).Debugf("Could not convert %#v to uint64", t)
+		}
+		return i
+	default:
+		logrus.Warnf("Could not convert %#v to uint64", i)
 	}
 	return 0
 }
@@ -93,6 +116,8 @@ func InterfaceToBool(i interface{}) bool {
 		return t == 1
 	case float64:
 		return t == 1
+	default:
+		logrus.Warnf("Could not convert %#v to bool", i)
 	}
 	return false
 }
@@ -104,6 +129,10 @@ func InterfaceToString(i interface{}) string {
 		return string(t)
 	case string:
 		return t
+	case nil:
+		return ""
+	default:
+		logrus.Warnf("Could not convert %#v to string", i)
 	}
 	return ""
 }
@@ -119,6 +148,10 @@ func InterfaceToStringList(i interface{}) []string {
 			result = append(result, InterfaceToString(s))
 		}
 		return result
+	case nil:
+		return nil
+	default:
+		logrus.Warnf("Could not convert %#v to []string", i)
 	}
 	return nil
 }
@@ -134,6 +167,10 @@ func InterfaceToInt64List(i interface{}) []int64 {
 			result = append(result, InterfaceToInt64(s))
 		}
 		return result
+	case nil:
+		return nil
+	default:
+		logrus.Warnf("Could not convert %#v to []int64", i)
 	}
 	return nil
 }
@@ -172,6 +209,10 @@ func InterfaceToFloat(i interface{}) float64 {
 		return float64(t)
 	case float64:
 		return t
+	case nil:
+		return 0
+	default:
+		logrus.Warnf("Could not convert %#v to float64", i)
 	}
 	return t
 }
@@ -183,6 +224,8 @@ func InterfaceToBytes(i interface{}) []byte {
 		return t
 	case string:
 		return []byte(t)
+	default:
+		logrus.Warnf("Could not convert %#v to []byte", i)
 	}
 	return []byte{}
 }
