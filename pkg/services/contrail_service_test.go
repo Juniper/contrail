@@ -48,6 +48,13 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 						UUIDMslong: 5154920197859002180,
 						UUIDLslong: 2220099452856583654,
 					},
+					Permissions: &models.PermType{
+						Owner:       "cloud-admin",
+						OwnerAccess: 7,
+						OtherAccess: 7,
+						Group:       "cloud-admin-group",
+						GroupAccess: 7,
+					},
 				},
 			},
 		},
@@ -76,6 +83,13 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 					UUID: &models.UuidType{
 						UUIDMslong: 5154920197859002180,
 						UUIDLslong: 2220099452856583654,
+					},
+					Permissions: &models.PermType{
+						Owner:       "cloud-admin",
+						OwnerAccess: 7,
+						OtherAccess: 7,
+						Group:       "cloud-admin-group",
+						GroupAccess: 7,
 					},
 				},
 			},

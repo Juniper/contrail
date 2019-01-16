@@ -9,6 +9,8 @@ test_data:
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
+    id_perms:
+      user_visible: true
   default-api-access-list8: &default-api-access-list8
       display_name: default-api-access-list8
       uuid: default-api-access-list8_uuid

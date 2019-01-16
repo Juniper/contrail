@@ -236,6 +236,11 @@ func TestQoS(t *testing.T) {
 	RunTest(t, "./test_data/test_qos.yml")
 }
 
+func TestIsVisible(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_user_visible.yml")
+}
+
 func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),
@@ -488,6 +493,7 @@ func TestRESTClient(t *testing.T) {
 	project.ParentType = "domain"
 	project.ParentUUID = integration.DefaultDomainUUID
 	project.ConfigurationVersion = 1
+	project.IDPerms = &models.IdPermsType{UserVisible: true}
 	_, err = restClient.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: project,
 	})
