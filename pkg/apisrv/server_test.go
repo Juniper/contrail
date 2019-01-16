@@ -261,6 +261,7 @@ func TestGRPC(t *testing.T) {
 			ParentType:           "domain",
 			ParentUUID:           integration.DefaultDomainUUID,
 			ConfigurationVersion: 1,
+			IDPerms:              &models.IdPermsType{UserVisible: true},
 		}
 		_, err := c.CreateProject(ctx, &services.CreateProjectRequest{
 			Project: &project,
@@ -472,10 +473,10 @@ func TestRESTClient(t *testing.T) {
 	restClient := client.NewHTTP(
 		server.URL(),
 		server.URL()+"/keystone/v3",
-		t.Name(),
-		t.Name(),
+		"alice",
+		"alice_password",
 		true,
-		client.GetKeystoneScope("", "default", "", t.Name()),
+		client.GetKeystoneScope("", "default", "", "admin"),
 	)
 	restClient.InSecure = true
 	restClient.Init()

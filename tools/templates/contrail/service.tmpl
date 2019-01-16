@@ -2,8 +2,11 @@ package services
 
 import (
     "context"
+	"encoding/json"
     "fmt"
+	"io"
     "net/http"
+	"strings"
 
     "github.com/labstack/echo"
     uuid "github.com/satori/go.uuid"
@@ -31,6 +34,11 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
         return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
     }
     ctx := c.Request().Context()
+	if requestData.Get{{ schema.JSONSchema.GoName }}() != nil {
+		if err := IsVisibleObject(ctx, requestData.Get{{ schema.JSONSchema.GoName }}().IDPerms); err != nil {
+			return errutil.ToHTTPError(err)
+		}
+	}
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
     if err != nil {
         return errutil.ToHTTPError(err)
@@ -106,10 +114,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     if model.IDPerms == nil {
         model.IDPerms = models.NewIDPerms(model.UUID)
     }
-
-    if model.IDPerms.UUID == nil {
-        model.IDPerms.UUID = models.NewUUIDType(model.UUID)
-    }
+	CreateIDPerms(model.IDPerms, model.UUID)
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
@@ -161,12 +166,25 @@ func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} 
 // RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST update request.
 func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
     var request RESTUpdate{{ schema.JSONSchema.GoName }}Request
-    if err := c.Bind(&request); err != nil {
+    if err := updateBind(&request, c); err != nil {
             return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
     }
 
     model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     model.UUID = c.Param("id")
+	if err := IsPermsUUIDMatch(model.IDPerms, model.UUID); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+	stored, err := service.Get{{ schema.JSONSchema.GoName }}(c.Request().Context(), &Get{{ schema.JSONSchema.GoName }}Request{
+		ID: model.UUID,
+	})
+	if err != nil {
+		return errutil.ToHTTPError(err)
+	}
+	if err := IsVisibleObject(c.Request().Context(), stored.{{ schema.JSONSchema.GoName }}.IDPerms); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
     response, err := service.Update{{ schema.JSONSchema.GoName }}(
         c.Request().Context(),
         &Update{{ schema.JSONSchema.GoName }}Request{
@@ -194,6 +212,15 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 
     model.IDPerms, request.FieldMask.Paths = sanitizeIDPermsUUID(model.GetIDPerms(), request.FieldMask.Paths)
 
+    response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{ID:request.{{ schema.JSONSchema.GoName }}.GetUUID()})
+    if err != nil {
+        return nil, errutil.ToHTTPError(err)
+    }
+    if model.IDPerms == nil {
+        model.IDPerms = models.NewIDPerms(model.UUID)
+    }
+	EnsureIDPerms(model.IDPerms, response.{{ schema.JSONSchema.GoName }}.IDPerms)
+
     return service.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
@@ -203,7 +230,14 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
         ID: c.Param("id"),
     }
     ctx := c.Request().Context()
-     _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+    response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{ID:request.GetID()})
+    if err != nil {
+        return errutil.ToHTTPError(err)
+    }
+	if err = IsVisibleObject(ctx, response.{{ schema.JSONSchema.GoName }}.IDPerms); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+     _, err = service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
     }
@@ -266,4 +300,23 @@ func sanitizeIDPermsUUID(idPerms *models.IdPermsType, paths []string) (*models.I
             "id_perms.uuid.uuid_lslong": {},
         },
     )
+}
+
+func updateBind(i interface{}, c echo.Context) (err error) {
+	rq := c.Request()
+	ct := rq.Header.Get(echo.HeaderContentType)
+	err = echo.ErrUnsupportedMediaType
+	if !strings.HasPrefix(ct, echo.MIMEApplicationJSON) {
+		// default binder
+		db := new(echo.DefaultBinder)
+		return db.Bind(i, c)
+	}
+	// json parsing
+	dec := json.NewDecoder(rq.Body)
+	dec.UseNumber()
+	err = dec.Decode(i)
+	if err != io.EOF {
+		return err
+	}
+	return nil
 }
