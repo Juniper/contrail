@@ -31,6 +31,11 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
         return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
     }
     ctx := c.Request().Context()
+	if requestData.Get{{ schema.JSONSchema.GoName }}() != nil {
+		if err := isVisibleObject(ctx, requestData.Get{{ schema.JSONSchema.GoName }}().IDPerms); err != nil {
+			return errutil.ToHTTPError(err)
+		}
+	}
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
     if err != nil {
         return errutil.ToHTTPError(err)
@@ -106,10 +111,7 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     if model.IDPerms == nil {
         model.IDPerms = models.NewIDPerms(model.UUID)
     }
-
-    if model.IDPerms.UUID == nil {
-        model.IDPerms.UUID = models.NewUUIDType(model.UUID)
-    }
+	model.IDPerms.EnsureDefault(model.UUID)
 
     err := service.TypeValidator.Validate{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     if err != nil {
@@ -167,6 +169,17 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 
     model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
     model.UUID = c.Param("id")
+	if !model.IDPerms.IsUUIDMatch(model.UUID) {
+		log.Warn("UUID mismatch")
+	}
+	storedIDPerms, err := getStoredIDPerms(c.Request().Context(), service, "{{ schema.TypeName }}", model.UUID)
+	if err != nil {
+		return errutil.ToHTTPError(err)
+	}
+	if err := isVisibleObject(c.Request().Context(), storedIDPerms); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
     response, err := service.Update{{ schema.JSONSchema.GoName }}(
         c.Request().Context(),
         &Update{{ schema.JSONSchema.GoName }}Request{
@@ -194,16 +207,32 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 
     model.IDPerms, request.FieldMask.Paths = sanitizeIDPermsUUID(model.GetIDPerms(), request.FieldMask.Paths)
 
+	storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", model.UUID)
+	if err != nil {
+		return nil, errutil.ToHTTPError(err)
+	}
+    if model.IDPerms == nil {
+        model.IDPerms = models.NewIDPerms(model.UUID)
+    }
+	model.IDPerms.Merge(storedIDPerms)
+
     return service.BaseService.Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
 // RESTDelete{{ schema.JSONSchema.GoName }} handles a REST delete request.
 func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+	storedIDPerms, err := getStoredIDPerms(c.Request().Context(), service, "{{ schema.TypeName }}", c.Param("id"))
+	if err != nil {
+		return errutil.ToHTTPError(err)
+	}
+	if err = isVisibleObject(c.Request().Context(), storedIDPerms); err != nil {
+		return errutil.ToHTTPError(err)
+	}
     request := &Delete{{ schema.JSONSchema.GoName }}Request{
         ID: c.Param("id"),
     }
     ctx := c.Request().Context()
-     _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+     _, err = service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
     if err != nil {
         return errutil.ToHTTPError(err)
     }
@@ -220,6 +249,11 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     if err != nil {
         return errutil.ToHTTPError(err)
     }
+    if response.{{ schema.JSONSchema.GoName }} != nil {
+	    if err = isVisibleObject(ctx, response.{{ schema.JSONSchema.GoName }}.IDPerms); err != nil {
+            return errutil.ToHTTPError(err)
+        }
+	}
     if err = response.ApplyHref(c.Request()); err != nil {
         log.WithError(err).Error("Failed to apply href")
     }
