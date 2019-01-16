@@ -34,3 +34,5 @@ tools/init_mysql.sql
 tools/init_psql.sql
 tools/cleanup_mysql.sql
 tools/cleanup_psql.sql
+
+!vendor/**
