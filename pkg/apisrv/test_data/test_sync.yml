@@ -1,9 +1,9 @@
 name: Sync test
 description: network sync test
 cleanup:
-- path: /virtual-network/vn_blue_test_sync
 - path: /network-ipam/test_ipam_blue_uuid_test_sync
 - path: /network-policy/network_policy_uuid_test_sync
+- path: /virtual-network/vn_blue_test_sync
 - path: /project/admin_project_uuid_test_sync
 test_data:
   admin_project: &admin_project

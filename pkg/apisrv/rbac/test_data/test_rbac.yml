@@ -69,7 +69,7 @@ workflow:
   request:
     path: /project/project_blue_project_uuid
     method: DELETE
-    expected: [403]
+    expected: [404]
   expect: null
 
 - name: delete project as admin (cleanup)
