@@ -1,11 +1,13 @@
 package services
 
 import (
-	"fmt"
+	"encoding/json"
+	"gopkg.in/yaml.v2"
 	"testing"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/models"
 )
@@ -113,11 +115,12 @@ func TestNewEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := NewEvent(tt.args.option)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewEvent() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assertEventsAreEqual(t, tt.want, got)
 			}
-			assert.Equal(t, got, tt.want, fmt.Sprintf("NewEvent() go:\n%v\nwant:\n%v", got, tt.want))
 		})
 	}
 }
@@ -190,4 +193,286 @@ func TestEvent_ToMap(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestEvent_UnmarshalJSON(t *testing.T) {
+	tests := []struct {
+		name  string
+		data  []byte
+		want  *Event
+		fails bool
+	}{
+		{
+			name: "basic project create",
+			data: []byte(`{
+					"kind": "project",
+					"data": {
+						"uuid":        "project_uuid",
+						"name":		   "project_name",
+						"fq_name":     ["default-domain", "project_name"],
+						"parent_type": "domain"
+					},
+					"operation": "CREATE"
+				   }`),
+			want: &Event{
+				Request: &Event_CreateProjectRequest{
+					CreateProjectRequest: &CreateProjectRequest{
+						Project: &models.Project{
+							UUID:       "project_uuid",
+							Name:       "project_name",
+							ParentType: "domain",
+							FQName:     []string{"default-domain", "project_name"},
+						},
+						FieldMask: types.FieldMask{
+							Paths: []string{"uuid", "name", "fq_name", "parent_type"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "invalid resource kind",
+			data: []byte(`{
+					"kind": "hoge",
+					"data": {
+						"uuid":        "project_uuid",
+						"name":		   "project_name",
+						"fq_name":     ["default-domain", "project_name"],
+						"parent_type": "domain"
+					}
+				   }`),
+			fails: true,
+		},
+		{
+			name: "invalid data",
+			data: []byte(`{
+					"kind": "project",
+					"data": "hoge"
+				   }`),
+			fails: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ev := &Event{}
+			ensureValidJSON(t, tt.data)
+			err := json.Unmarshal(tt.data, &ev)
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want.GetResource(), ev.GetResource(), "UnmarshalJSON() got:\n%v\nwant:\n%v", ev, tt.want)
+			}
+		})
+	}
+}
+
+func TestEvent_UnmarshalYAML(t *testing.T) {
+	tests := []struct {
+		name  string
+		data  []byte
+		want  *Event
+		fails bool
+	}{
+		{
+			name: "basic project create",
+			data: []byte(`---
+kind: project
+data:
+  uuid: project_uuid
+  name: project_name
+  fq_name:
+  - default-domain
+  - project_name
+  parent_type: domain
+operation: CREATE
+`),
+			want: &Event{
+				Request: &Event_CreateProjectRequest{
+					CreateProjectRequest: &CreateProjectRequest{
+						Project: &models.Project{
+							UUID:       "project_uuid",
+							Name:       "project_name",
+							ParentType: "domain",
+							FQName:     []string{"default-domain", "project_name"},
+						},
+						FieldMask: types.FieldMask{
+							Paths: []string{"uuid", "name", "fq_name", "parent_type"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "invalid resource kind",
+			data: []byte(`---
+kind: hoge
+data:
+  uuid: project_uuid
+  name: project_name
+  fq_name:
+  - default-domain
+  - project_name
+  parent_type: domain
+`),
+			fails: true,
+		},
+		{
+			name: "invalid data",
+			data: []byte(`---
+kind: project
+data: hoge
+`),
+			fails: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ev := &Event{}
+			ensureValidYAML(t, tt.data)
+			err := yaml.Unmarshal(tt.data, ev)
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want.GetResource(), ev.GetResource(), "UnmarshalJSON() got:\n%v\nwant:\n%v", ev, tt.want)
+			}
+		})
+	}
+}
+
+func TestEvent_ApplyMap(t *testing.T) {
+	projectWithUUID := &models.Project{
+		UUID: "hoge",
+	}
+	tests := []struct {
+		name     string
+		m        map[string]interface{}
+		expected Event
+		fails    bool
+	}{
+		{
+			name:  "fail due to empty kind",
+			fails: true,
+		},
+		{
+			name: "fail due to empty data",
+			m: map[string]interface{}{
+				"kind": "project",
+			},
+			fails: true,
+		},
+		{
+			name: "default (create) project event",
+			m: map[string]interface{}{
+				"kind": "project",
+				"data": map[string]interface{}{
+					"uuid": "hoge",
+				},
+			},
+			expected: Event{
+				Request: &Event_CreateProjectRequest{
+					CreateProjectRequest: &CreateProjectRequest{
+						Project: projectWithUUID,
+					},
+				},
+			},
+		},
+		{
+			name: "create project event",
+			m: map[string]interface{}{
+				"kind": "project",
+				"data": map[string]interface{}{
+					"uuid": "hoge",
+				},
+				"operation": OperationCreate,
+			},
+			expected: Event{
+				Request: &Event_CreateProjectRequest{
+					CreateProjectRequest: &CreateProjectRequest{
+						Project: projectWithUUID,
+					},
+				},
+			},
+		},
+		{
+			name: "update project event",
+			m: map[string]interface{}{
+				"kind": "project",
+				"data": map[string]interface{}{
+					"uuid": "hoge",
+				},
+				"operation": OperationUpdate,
+			},
+			expected: Event{
+				Request: &Event_UpdateProjectRequest{
+					UpdateProjectRequest: &UpdateProjectRequest{
+						Project: projectWithUUID,
+					},
+				},
+			},
+		},
+		{
+			name: "delete project event",
+			m: map[string]interface{}{
+				"kind": "project",
+				"data": map[string]interface{}{
+					"uuid": "hoge",
+				},
+				"operation": OperationDelete,
+			},
+			expected: Event{
+				Request: &Event_DeleteProjectRequest{
+					DeleteProjectRequest: &DeleteProjectRequest{
+						ID: "hoge",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Event{}
+			err := got.ApplyMap(tt.m)
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assertEventsAreEqual(t, &tt.expected, &got)
+			}
+		})
+	}
+}
+
+func assertEventsAreEqual(t *testing.T, expected *Event, actual *Event) {
+	assert.Equal(t, expected.GetResource(), actual.GetResource())
+	assert.Equal(t, expected.GetResource().Kind(), actual.GetResource().Kind())
+	assert.Equal(t, expected.Operation(), actual.Operation())
+	for _, p := range getFieldMask(expected).Paths {
+		assert.Contains(t, getFieldMask(actual).Paths, p)
+	}
+}
+
+func getFieldMask(e *Event) types.FieldMask {
+	switch t := e.Request.(type) {
+	case *Event_CreateProjectRequest:
+		return t.CreateProjectRequest.FieldMask
+	case *Event_UpdateProjectRequest:
+		return t.UpdateProjectRequest.FieldMask
+	default:
+		return types.FieldMask{}
+	}
+}
+
+func ensureValidJSON(t *testing.T, b []byte) {
+	var i interface{}
+	err := json.Unmarshal(b, &i)
+	require.NoError(t, err)
+}
+
+func ensureValidYAML(t *testing.T, b []byte) {
+	var i interface{}
+	err := yaml.Unmarshal(b, &i)
+	require.NoError(t, err)
 }
