@@ -121,3 +121,53 @@ func TestNewEvent(t *testing.T) {
 		})
 	}
 }
+
+func TestUnmarshalJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		data    string
+		want    *Event
+		wantErr bool
+	}{
+		{
+			name:  "basic project create",
+			data: `{
+					"kind": "project",
+					"data": {
+						"uuid":        "project_uuid",
+						"name":		   "project_name",
+						"fq_name":     ["default-domain", "project_name"],
+						"parent_type": "domain"
+					},
+					"operation": "CREATE"
+				   }`,
+			want: &Event{
+				Request: &Event_CreateProjectRequest{
+					CreateProjectRequest: &CreateProjectRequest{
+						Project: &models.Project{
+							UUID: "project_uuid",
+							Name: "project_name",
+							ParentType: "domain",
+							FQName: []string{"default-domain", "project_name"},
+						},
+						FieldMask: types.FieldMask{
+							Paths: []string{"uuid", "name", "fq_name", "parent_type"},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ev := &Event{}
+			err := ev.UnmarshalJSON([]byte(tt.data))
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, ev, fmt.Sprintf("UnmarshalJSON() got:\n%v\nwant:\n%v", ev, tt.want))
+		})
+	}
+}
