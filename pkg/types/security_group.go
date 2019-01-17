@@ -107,7 +107,7 @@ func (sv *ContrailTypeLogicService) DeleteSecurityGroup(
 }
 
 func (sv *ContrailTypeLogicService) allocateSecurityGroupID(ctx context.Context) (int64, error) {
-	id, err := sv.IntPoolAllocator.AllocateInt(ctx, SecurityGroupIDPoolKey)
+	id, _, err := sv.IntPoolAllocator.AllocateInt(ctx, SecurityGroupIDPoolKey)
 	if err != nil {
 		return 0, err
 	}

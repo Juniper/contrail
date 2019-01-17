@@ -10,7 +10,8 @@ create index fq_name_index on metadata ("fq_name");
 create table int_pool (
     "key" varchar(255),
     "start" int,
-    "end" int
+    "end" int,
+	"owner" varchar(255) DEFAULT ''
 );
 
 alter table int_pool replica identity full;

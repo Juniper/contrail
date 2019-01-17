@@ -30,7 +30,7 @@ func (sv *ContrailTypeLogicService) CreateTagType(
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			id, err := sv.IntPoolAllocator.AllocateInt(ctx, tagTypeIDPoolKey)
+			id, _, err := sv.IntPoolAllocator.AllocateInt(ctx, tagTypeIDPoolKey)
 			if err != nil {
 				return err
 			}

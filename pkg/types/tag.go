@@ -144,7 +144,7 @@ func (sv *ContrailTypeLogicService) allocateTagID(
 	ctx context.Context,
 	tagTypeID string,
 ) (string, error) {
-	allocInt, err := sv.IntPoolAllocator.AllocateInt(ctx, tagIDPoolKey)
+	allocInt, _, err := sv.IntPoolAllocator.AllocateInt(ctx, tagIDPoolKey)
 	if err != nil {
 		return "", err
 	}

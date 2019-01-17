@@ -61,7 +61,7 @@ func logicalRouterSetupReadServiceMocks(
 func logicalRouterSetupIntPoolAllocatorMocks(s *ContrailTypeLogicService) {
 	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
 	intPoolAllocator.EXPECT().AllocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
-		int64(1), nil).AnyTimes()
+		int64(1), "", nil).AnyTimes()
 	intPoolAllocator.EXPECT().SetInt(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), int64(2),
 	).Return(nil).AnyTimes()

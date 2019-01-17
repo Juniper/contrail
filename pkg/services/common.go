@@ -74,9 +74,9 @@ func (*NoTransaction) DoInTransaction(ctx context.Context, do func(context.Conte
 
 // IntPoolAllocator (de)allocates integers in an integer pool.
 type IntPoolAllocator interface {
-	CreateIntPool(context.Context, string, int64, int64) error
+	CreateIntPool(context.Context, string, int64, int64, string) error
 	DeleteIntPool(context.Context, string) error
-	AllocateInt(context.Context, string) (int64, error)
+	AllocateInt(context.Context, string) (int64, string, error)
 	DeallocateInt(context.Context, string, int64) error
 	SetInt(context.Context, string, int64) error
 }
@@ -410,7 +410,7 @@ func (service *ContrailService) CreateIntPool(
 ) (*types.Empty, error) {
 
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		return service.IntPoolAllocator.CreateIntPool(ctx, r.Pool, r.Start, r.End)
+		return service.IntPoolAllocator.CreateIntPool(ctx, r.Pool, r.Start, r.End, r.Owner)
 	}); err != nil {
 		return nil, err
 	}
@@ -448,12 +448,14 @@ func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
 	}
 	var allocatedVal int64
+	var allocatingOwner string
 	if allocReq.Value == nil {
 		resp, err := service.AllocateInt(ctx, &AllocateIntRequest{Pool: allocReq.Pool})
 		if err != nil {
 			return errutil.ToHTTPError(err)
 		}
 		allocatedVal = resp.Value
+		allocatingOwner = resp.Owner
 	} else {
 		if _, err := service.SetInt(ctx, &SetIntRequest{Pool: allocReq.Pool, Value: *allocReq.Value}); err != nil {
 			return errutil.ToHTTPError(err)
@@ -461,7 +463,7 @@ func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 		allocatedVal = *allocReq.Value
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{"value": allocatedVal})
+	return c.JSON(http.StatusOK, map[string]interface{}{"value": allocatedVal, "owner": allocatingOwner})
 }
 
 // AllocateInt allocates int in given int-pool.
@@ -469,20 +471,21 @@ func (service *ContrailService) AllocateInt(
 	ctx context.Context, request *AllocateIntRequest,
 ) (*AllocateIntResponse, error) {
 	var v int64
+	var o string
 	if request.GetPool() == "" {
 		err := errutil.ErrorBadRequest("Missing pool name for int-pool allocation")
 		return nil, err
 	}
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		var err error
-		if v, err = service.IntPoolAllocator.AllocateInt(ctx, request.GetPool()); err != nil {
+		if v, o, err = service.IntPoolAllocator.AllocateInt(ctx, request.GetPool()); err != nil {
 			return errutil.ErrorBadRequestf("Failed to allocate next int: %s", err)
 		}
 		return nil
 	}); err != nil {
 		return nil, err
 	}
-	return &AllocateIntResponse{Value: v}, nil
+	return &AllocateIntResponse{Value: v, Owner: o}, nil
 }
 
 // SetInt sets int in given int-pool.

@@ -213,7 +213,7 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 
 	vxlanNetworkID := logicalRouter.GetVxlanNetworkIdentifier()
 	if vxlanNetworkID == "" {
-		id, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
+		id, _, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
 		return strconv.FormatInt(id, 10), err
 	}
 

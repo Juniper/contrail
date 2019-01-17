@@ -19,13 +19,13 @@ func TestIntPool(t *testing.T) {
 			err := db.DeleteIntPool(ctx, poolKey)
 			assert.NoError(t, err, "clear pool failed")
 
-			err = db.CreateIntPool(ctx, poolKey, 0, 2)
+			err = db.CreateIntPool(ctx, poolKey, 0, 2, IntPoolEmptyOwner)
 			assert.NoError(t, err, "create pool failed")
 
-			err = db.CreateIntPool(ctx, poolKey, 3, 5)
+			err = db.CreateIntPool(ctx, poolKey, 3, 5, "default-project")
 			assert.NoError(t, err, "create pool failed")
 
-			err = db.CreateIntPool(ctx, poolKey, 3, 5)
+			err = db.CreateIntPool(ctx, poolKey, 3, 5, IntPoolEmptyOwner)
 			assert.Error(t, err, "it shouldn't be possible to create the same pool again")
 
 			pools, err := db.GetIntPools(ctx, &IntPool{Key: poolKey})
@@ -36,17 +36,20 @@ func TestIntPool(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, 4, size, "size pool failed")
 
-			i, err := db.AllocateInt(ctx, poolKey)
+			i, o, err := db.AllocateInt(ctx, poolKey)
 			assert.NoError(t, err, "allocate failed")
 			assert.Equal(t, int64(0), i, "allocate failed")
+			assert.Equal(t, "", o, "allocate failed")
 
-			i, err = db.AllocateInt(ctx, poolKey)
+			i, o, err = db.AllocateInt(ctx, poolKey)
 			assert.NoError(t, err, "allocate failed")
 			assert.Equal(t, int64(1), i, "allocate failed")
+			assert.Equal(t, "", o, "allocate failed")
 
-			i, err = db.AllocateInt(ctx, poolKey)
+			i, o, err = db.AllocateInt(ctx, poolKey)
 			assert.NoError(t, err, "allocate failed")
 			assert.Equal(t, int64(3), i, "allocate failed")
+			assert.Equal(t, "default-project", o, "allocate failed")
 
 			size, err = db.SizeIntPool(ctx, poolKey)
 			assert.NoError(t, err)

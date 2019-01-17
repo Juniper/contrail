@@ -204,7 +204,7 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	mockIntPoolAllocator.EXPECT().AllocateInt(testutil.NotNil(), routeTargetIntPoolID).Return(int64(800002), nil)
+	mockIntPoolAllocator.EXPECT().AllocateInt(testutil.NotNil(), routeTargetIntPoolID).Return(int64(800002), "", nil)
 
 	_, err = service.CreateVirtualNetwork(context.Background(), &services.CreateVirtualNetworkRequest{
 		VirtualNetwork: vn,
@@ -251,5 +251,5 @@ func TestCreateRefToDefaultRouteTargetInRoutingInstance(t *testing.T) {
 }
 
 func expectAllocateInt(mock *typesmock.MockIntPoolAllocator, poolKey string) {
-	mock.EXPECT().AllocateInt(testutil.NotNil(), poolKey).Return(int64(800002), nil)
+	mock.EXPECT().AllocateInt(testutil.NotNil(), poolKey).Return(int64(800002), "", nil)
 }

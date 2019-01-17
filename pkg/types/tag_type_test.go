@@ -251,11 +251,11 @@ func expectAllocateIntToBeCalledOnIntPoolAllocator(s *typesmock.MockIntPoolAlloc
 	s.EXPECT().AllocateInt(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
-		func(_ context.Context, _ string) (int64, error) {
+		func(_ context.Context, _ string) (int64, string, error) {
 			if allocSucceed {
-				return 256, nil
+				return 256, "", nil
 			}
-			return 0, fmt.Errorf("cannot allocate int")
+			return 0, "", fmt.Errorf("cannot allocate int")
 		},
 	).MaxTimes(1)
 }

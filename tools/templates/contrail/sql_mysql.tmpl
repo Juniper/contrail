@@ -12,7 +12,8 @@ create table metadata (
 create table int_pool (
     `key` varchar(255),
     `start` int,
-    `end` int
+    `end` int,
+	`owner` varchar(255) DEFAULT ""
 );
 
 insert into int_pool (`key`, `start`, `end`) values ("virtual_network_id", 5, 65535);

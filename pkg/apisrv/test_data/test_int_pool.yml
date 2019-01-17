@@ -226,6 +226,7 @@ workflow:
       pool: test_int_pool
       start: 100
       end: 200
+      owner: test_int_pool_owner
 
 - name: try to create test int pool in already allocated area
   request:
@@ -246,6 +247,7 @@ workflow:
       pool: test_int_pool
   expect:
     value: 100
+    owner: test_int_pool_owner
 
 - name: deallocate int from test int pool
   request:

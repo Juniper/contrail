@@ -116,14 +116,14 @@ func TestRemoteIntPoolMethods(t *testing.T) {
 	err := hc.Login(context.Background())
 	require.NoError(t, err)
 
-	err = hc.CreateIntPool(context.Background(), "test_int_pool_806f099f3", 8000100, 8000200)
+	err = hc.CreateIntPool(context.Background(), "test_int_pool_806f099f3", 8000100, 8000200, "test_owner_806f099f3")
 	require.NoError(t, err)
 	defer func() {
 		err = hc.DeleteIntPool(context.Background(), "test_int_pool_806f099f3")
 		assert.NoError(t, err)
 	}()
 
-	val, err := hc.AllocateInt(context.Background(), "test_int_pool_806f099f3")
+	val, owner, err := hc.AllocateInt(context.Background(), "test_int_pool_806f099f3")
 	defer func() {
 		err = hc.DeallocateInt(context.Background(), "test_int_pool_806f099f3", val)
 		assert.NoError(t, err)
@@ -131,6 +131,7 @@ func TestRemoteIntPoolMethods(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.True(t, val > 8000099)
+	assert.Equal(t, "test_owner_806f099f3", owner)
 
 	err = hc.SetInt(context.Background(), "test_int_pool_806f099f3", val+1)
 	defer func() {

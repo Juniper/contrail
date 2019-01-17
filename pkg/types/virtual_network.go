@@ -32,7 +32,7 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			virtualNetwork.VirtualNetworkNetworkID, err = sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
+			virtualNetwork.VirtualNetworkNetworkID, _, err = sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
 			if err != nil {
 				return err
 			}

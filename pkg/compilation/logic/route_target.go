@@ -18,7 +18,7 @@ func createDefaultRouteTarget(
 	ctx context.Context,
 	evaluateContext *intent.EvaluateContext,
 ) (*models.RouteTarget, error) {
-	target, err := evaluateContext.IntPoolAllocator.AllocateInt(ctx, routeTargetIntPoolID)
+	target, _, err := evaluateContext.IntPoolAllocator.AllocateInt(ctx, routeTargetIntPoolID)
 	if err != nil {
 		return nil, err
 	}

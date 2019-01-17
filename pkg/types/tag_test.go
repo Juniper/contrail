@@ -160,8 +160,8 @@ func tagSetupIntPoolAllocMock(s *ContrailTypeLogicService) {
 	intPoolAllocator.EXPECT().AllocateInt(
 		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
-		func(_ context.Context, tagTypeIDPoolKey string) (int64, error) {
-			return 1, nil
+		func(_ context.Context, tagTypeIDPoolKey string) (int64, string, error) {
+			return 1, "", nil
 		},
 	).MaxTimes(1)
 }

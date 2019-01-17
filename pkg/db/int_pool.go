@@ -11,19 +11,25 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 )
 
+// IntPoolEmptyOwner is useful for creating pool when owner is not relevant.
+const IntPoolEmptyOwner = ""
+
 // IntPool represents the half-open integer range [Start, End) in the set of integers identified by Key.
+// Optionally, IntPool can have an owner who is the entity requesting the creation of this IntPool.
 type IntPool struct {
 	Key   string
 	Start int64
 	End   int64
+	Owner string
 }
 
 //CreateIntPool creates int pool.
-func (db *Service) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
+func (db *Service) CreateIntPool(ctx context.Context, pool string, start int64, end int64, owner string) error {
 	intPool := &IntPool{
 		Key:   pool,
 		Start: start,
 		End:   end,
+		Owner: owner,
 	}
 
 	intPools, err := db.GetIntPools(ctx, intPool)
@@ -83,23 +89,24 @@ func (db *Service) GetIntPools(ctx context.Context, target *IntPool) ([]*IntPool
 }
 
 //AllocateInt allocates integer.
-func (db *Service) AllocateInt(ctx context.Context, key string) (int64, error) {
+func (db *Service) AllocateInt(ctx context.Context, key string) (int64, string, error) {
 	if key == "" {
-		return 0, errors.New("empty int-pool key provided to allocate")
+		return 0, "", errors.New("empty int-pool key provided to allocate")
 	}
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	query := "select " +
-		d.QuoteSep("start", "end") +
+		d.QuoteSep("start", "end", "owner") +
 		" from int_pool where " +
 		d.Quote("key") + " = " + d.Placeholder(1) +
 		" order by " + d.Quote("start") +
 		" limit 1 for update"
 	row := tx.QueryRowContext(ctx, query, key)
 	var start, end int64
-	err := row.Scan(&start, &end)
+	var owner string
+	err := row.Scan(&start, &end, &owner)
 	if err != nil {
-		return 0, basedb.FormatDBError(err)
+		return 0, "", basedb.FormatDBError(err)
 	}
 	updatedStart := start + 1
 	if updatedStart < end {
@@ -120,9 +127,9 @@ func (db *Service) AllocateInt(ctx context.Context, key string) (int64, error) {
 		)
 	}
 	if err != nil {
-		return 0, basedb.FormatDBError(err)
+		return 0, "", basedb.FormatDBError(err)
 	}
-	return start, nil
+	return start, owner, nil
 }
 
 //SetInt set a id for allocation pool.
@@ -237,9 +244,9 @@ func (db *Service) DeallocateIntRange(ctx context.Context, target *IntPool) erro
 	}
 	_, err = tx.ExecContext(
 		ctx,
-		"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
-			d.Values("key", "start", "end")+");",
-		target.Key, start, end)
+		"insert into int_pool ("+d.QuoteSep("key", "start", "end", "owner")+") values ("+
+			d.Values("key", "start", "end", "owner")+");",
+		target.Key, start, end, target.Owner)
 	return basedb.FormatDBError(err)
 }
 
