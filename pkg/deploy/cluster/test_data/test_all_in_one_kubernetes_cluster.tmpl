@@ -39,16 +39,18 @@ test_data:
     ntp_server: 10.1.1.100
     kubernetes_cluster_refs:
       - uuid: test_kubernetes_cluster_uuid
-    {% if CONTROL_NODES %}
     contrail_configuration:
       key_value_pair:
+    {% if CONTROL_NODES %}
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}
+    {%endif%}
         {% if CONTROLLER_NODES %}
         - key: CONTROLLER_NODES
           value: {{CONTROLLER_NODES}}
         {%endif%}
-    {%endif%}
+        - key: KUBERNETES_PUBLIC_FIP_POOL
+          value: "{'project': 'default', 'domain': 'default-domain', 'name': '__fip_pool_public__', 'network': '__public__'}"
   contrail_config_nodes: &contrail_config_nodes
     uuid: contrail_config_nodes_uuid
     parent_type: contrail-cluster
@@ -109,7 +111,6 @@ test_data:
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     ntp_server: 10.1.1.100
-    kubernetes_public_fip_pool: "{'project': 'default', 'domain': 'default-domain', 'name': '__fip_pool_public__', 'network': '__public__'}"
   kubernetes_master_nodes: &kubernetes_master_nodes
     uuid: kubernetes_master_nodes_uuid
     parent_type: kubernetes-cluster
