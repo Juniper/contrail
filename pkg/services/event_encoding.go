@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
@@ -204,6 +203,7 @@ func NewEvent(option *EventOption) (*Event, error) {
 type CreateEventRequest interface {
 	isEvent_Request
 	GetResource() basemodels.Object
+	SetFieldMask(types.FieldMask)
 }
 
 type UpdateEventRequest interface {
@@ -268,4 +268,111 @@ func (o *EventOption) getFieldMask() types.FieldMask {
 
 func (o *EventOption) sanitizeKind() {
 	o.Kind = basemodels.SchemaIDToKind(o.Kind)
+}
+
+//UnmarshalJSON unmarshal event.
+func (e *Event) UnmarshalJSON(data []byte) error {
+	raw := make(map[string]json.RawMessage)
+	err := json.Unmarshal(data, &raw)
+	if err != nil {
+		return err
+	}
+
+	kind, err := parseKind(raw)
+	if err != nil {
+		return err
+	}
+
+	operation, err := parseOperation(raw)
+	if err != nil {
+		return err
+	}
+
+	m, err := parseData(raw)
+	if err != nil {
+		return err
+	}
+
+	switch operation {
+	case OperationCreate:
+		return unmarshalJSONCreate(e, kind, m)
+	case OperationUpdate:
+		return unmarshalJSONUpdate(e, kind, m)
+	case OperationDelete:
+		return unmarshalJSONDelete(e, kind, m)
+	default:
+		return errors.Errorf("operation %s not supported", operation)
+	}
+
+	return nil
+}
+
+func unmarshalJSONCreate(e *Event, kind string, m map[string]interface{}) error {
+	request, err := NewEmptyCreateEventRequest(kind)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create event from json %v", m)
+	}
+	request.GetResource().ApplyMap(m)
+	request.SetFieldMask(basemodels.MapToFieldMask(m))
+	e.Request = request
+	return nil
+}
+
+func unmarshalJSONUpdate(e *Event, kind string, m map[string]interface{}) error {
+	request, err := NewEmptyUpdateEventRequest(kind)
+	if err != nil {
+		return errors.Wrapf(err, "failed to update event from json %v", m)
+	}
+	request.GetResource().ApplyMap(m)
+	request.SetFieldMask(basemodels.MapToFieldMask(m))
+	e.Request = request
+	return nil
+}
+
+func unmarshalJSONDelete(e *Event, kind string, m map[string]interface{}) error {
+	request, err := NewEmptyDeleteEventRequest(kind)
+	if err != nil {
+		return errors.Wrapf(err, "failed to delete event from json %v", m)
+	}
+	request.SetID(m["uuid"].(string))
+	e.Request = request
+	return nil
+}
+
+func parseKind(raw map[string]json.RawMessage) (string, error){
+	t, ok := raw["kind"]
+	if !ok {
+		return "", errors.Errorf("couldn't retrieve key kind from json")  // originally no error, nil returned
+	}
+	var kind string
+	err := json.Unmarshal(t, &kind)
+	if err != nil {
+		return "", err
+	}
+
+	return basemodels.SchemaIDToKind(kind), nil
+}
+
+func parseData(raw map[string]json.RawMessage) (map[string]interface{}, error){
+	d, ok := raw["data"]
+	if !ok {
+		return nil, errors.Errorf("couldn't retrieve key data from json")  // originally no error, nil returned
+	}
+	m := map[string]interface{}{}
+	err := json.Unmarshal(d, &m)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func parseOperation(raw map[string]json.RawMessage) (string, error){
+	o := raw["operation"]
+	var operation string
+	json.Unmarshal(o, &operation)
+	if operation == "" {
+		operation = OperationCreate
+	}
+	return operation, nil
 }
