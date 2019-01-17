@@ -24,7 +24,7 @@
     nodeset:
       nodes:
         - name: builder
-          label: centos-7-4-builder
+          label: centos-7-4-builder-xxlarge
     vars:
       setup_docker_registry: true
       docker:
