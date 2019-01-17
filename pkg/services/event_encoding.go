@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
@@ -187,9 +189,10 @@ func (e *Event) MarshalYAML() (interface{}, error) {
 
 //NewEvent makes event from interface.
 func NewEvent(option *EventOption) (*Event, error) {
-	option.sanitizeKind()
+	option.Kind = sanitizeKind(option.Kind)
 
-	switch option.getOperationOrDefault() {
+	o := sanitizeOperation(option.Operation)
+	switch o {
 	case OperationCreate:
 		return NewCreateEvent(option)
 	case OperationUpdate:
@@ -197,7 +200,7 @@ func NewEvent(option *EventOption) (*Event, error) {
 	case OperationDelete:
 		return NewDeleteEvent(option)
 	default:
-		return nil, errors.Errorf("operation %s not supported", option.getOperationOrDefault())
+		return nil, errors.Errorf("operation %s not supported", o)
 	}
 }
 
@@ -205,6 +208,7 @@ func NewEvent(option *EventOption) (*Event, error) {
 type CreateEventRequest interface {
 	isEvent_Request
 	GetResource() basemodels.Object
+	SetFieldMask(types.FieldMask)
 }
 
 // UpdateEventRequest interface.
@@ -272,6 +276,84 @@ func (o *EventOption) getFieldMask() types.FieldMask {
 	return *o.FieldMask
 }
 
-func (o *EventOption) sanitizeKind() {
-	o.Kind = basemodels.SchemaIDToKind(o.Kind)
+func sanitizeKind(kind string) string {
+	return basemodels.SchemaIDToKind(kind)
+}
+
+// UnmarshalJSON unmarshal event.
+func (e *Event) UnmarshalJSON(data []byte) error {
+	raw := make(map[string]interface{})
+	err := json.Unmarshal(data, &raw)
+	if err != nil {
+		return err
+	}
+	return e.ApplyMap(raw)
+}
+
+// UnmarshalYAML unmarshal event.
+func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var i interface{}
+	err := unmarshal(&i)
+	if err != nil {
+		return err
+	}
+	m, ok := fileutil.YAMLtoJSONCompat(i).(map[string]interface{})
+	if !ok {
+		return errors.Errorf("failed to unmarshal, got invalid data %v", i)
+	}
+	return e.ApplyMap(m)
+}
+
+// ApplyMap applies map onto event.
+func (e *Event) ApplyMap(m map[string]interface{}) error {
+	o := sanitizeOperation(format.InterfaceToString(m["operation"]))
+	kind := sanitizeKind(format.InterfaceToString(m["kind"]))
+	var r isEvent_Request
+	var err error
+	switch o {
+	case OperationCreate:
+		r, err = NewEmptyCreateEventRequest(kind)
+	case OperationUpdate:
+		r, err = NewEmptyUpdateEventRequest(kind)
+	case OperationDelete:
+		r, err = NewEmptyDeleteEventRequest(kind)
+	default:
+		return errors.Errorf("operation %s not supported", o)
+	}
+	if err != nil {
+		return err
+	}
+	err = applyEventRequest(r, m)
+	if err != nil {
+		return err
+	}
+	e.Request = r
+	return nil
+}
+
+func applyEventRequest(r isEvent_Request, m map[string]interface{}) error {
+	data, ok := m["data"].(map[string]interface{})
+	if !ok {
+		return errors.Errorf("got invalid data %v", m["data"])
+	}
+	switch t := r.(type) {
+	case CreateEventRequest:
+		t.SetFieldMask(basemodels.MapToFieldMask(data))
+		t.GetResource().ApplyMap(data)
+	case UpdateEventRequest:
+		t.SetFieldMask(basemodels.MapToFieldMask(data))
+		t.GetResource().ApplyMap(data)
+	case DeleteEventRequest:
+		t.SetID(format.InterfaceToString(data["uuid"]))
+	default:
+		return errors.Errorf("request of type %T not supported", r)
+	}
+	return nil
+}
+
+func sanitizeOperation(operation string) string {
+	if operation == "" {
+		return OperationCreate
+	}
+	return operation
 }
