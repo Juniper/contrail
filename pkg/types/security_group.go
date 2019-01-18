@@ -6,6 +6,7 @@ import (
 	protobuf "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -107,7 +108,7 @@ func (sv *ContrailTypeLogicService) DeleteSecurityGroup(
 }
 
 func (sv *ContrailTypeLogicService) allocateSecurityGroupID(ctx context.Context) (int64, error) {
-	id, err := sv.IntPoolAllocator.AllocateInt(ctx, SecurityGroupIDPoolKey)
+	id, err := sv.IntPoolAllocator.AllocateInt(ctx, SecurityGroupIDPoolKey, db.IntPoolEmptyOwner)
 	if err != nil {
 		return 0, err
 	}

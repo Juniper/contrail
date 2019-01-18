@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -18,7 +19,7 @@ func createDefaultRouteTarget(
 	ctx context.Context,
 	evaluateContext *intent.EvaluateContext,
 ) (*models.RouteTarget, error) {
-	target, err := evaluateContext.IntPoolAllocator.AllocateInt(ctx, routeTargetIntPoolID)
+	target, err := evaluateContext.IntPoolAllocator.AllocateInt(ctx, routeTargetIntPoolID, db.IntPoolEmptyOwner)
 	if err != nil {
 		return nil, err
 	}

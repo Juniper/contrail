@@ -204,7 +204,7 @@ func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{
 	return h.Do(ctx, echo.DELETE, path, nil, nil, output, expected)
 }
 
-// CreateIntPool sends a create int pol request to remote int-pools.
+// CreateIntPool sends a create int pool request to remote int-pools.
 func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
 	var output struct{}
 	expected := []int{http.StatusOK}
@@ -215,6 +215,20 @@ func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end 
 	}
 	_, err := h.Do(ctx, echo.POST, "/"+services.IntPoolsPath, nil, &request, &output, expected)
 	return errors.Wrap(err, "error creating int pool in int-pools via HTTP")
+}
+
+// GetIntPoolOwner sends a get int pool owner request to remote int-pools.
+func (h *HTTP) GetIntPoolOwner(ctx context.Context, pool string, value int64) (string, error) {
+	var output struct {
+		Owner string `json:"owner"`
+	}
+	expected := []int{http.StatusOK}
+	request := services.GetIntPoolOwnerRequest{
+		Pool:  pool,
+		Value: value,
+	}
+	_, err := h.Do(ctx, echo.POST, "/"+services.IntPoolsPath, nil, &request, &output, expected)
+	return output.Owner, errors.Wrap(err, "error creating int pool in int-pools via HTTP")
 }
 
 // DeleteIntPool sends a delete int pool request to remote int-pools.
@@ -229,8 +243,8 @@ func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
 }
 
 // AllocateInt sends an allocate int request to remote int-pool.
-func (h *HTTP) AllocateInt(ctx context.Context, pool string) (int64, error) {
-	data := services.IntPoolAllocationBody{Pool: pool}
+func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, error) {
+	data := services.IntPoolAllocationBody{Pool: pool, Owner: owner}
 	var output struct {
 		Value int64 `json:"value"`
 	}
@@ -240,8 +254,8 @@ func (h *HTTP) AllocateInt(ctx context.Context, pool string) (int64, error) {
 }
 
 // SetInt sends a set int request to remote int-pool.
-func (h *HTTP) SetInt(ctx context.Context, pool string, value int64) error {
-	data := services.IntPoolAllocationBody{Pool: pool, Value: &value}
+func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner string) error {
+	data := services.IntPoolAllocationBody{Pool: pool, Value: &value, Owner: owner}
 	var output struct{}
 	expected := []int{http.StatusOK}
 	_, err := h.Do(ctx, echo.POST, "/int-pool", nil, &data, &output, expected)

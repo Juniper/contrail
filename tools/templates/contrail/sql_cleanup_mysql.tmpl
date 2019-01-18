@@ -2,6 +2,7 @@ SET FOREIGN_KEY_CHECKS=0;
 
 TRUNCATE TABLE metadata;
 TRUNCATE TABLE int_pool;
+TRUNCATE TABLE int_pool_owner;
 TRUNCATE TABLE ipaddress_pool;
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
