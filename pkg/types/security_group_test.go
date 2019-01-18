@@ -43,8 +43,11 @@ func TestCreateSecurityGroup(t *testing.T) {
 	for _, tt := range tests {
 		runTest(t, tt.name, func(t *testing.T, sv *ContrailTypeLogicService) {
 			allocateCall := sv.IntPoolAllocator.(*typesmock.MockIntPoolAllocator). //nolint: errcheck
-												EXPECT().AllocateInt(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).
-												Return(tt.allocatedInt, nil)
+												EXPECT().AllocateInt(
+				gomock.Not(gomock.Nil()),
+				gomock.Not(gomock.Nil()),
+				gomock.Not(gomock.Nil()),
+			).Return(tt.allocatedInt, nil)
 			createCall := sv.Next().(*servicesmock.MockService).
 				EXPECT().CreateSecurityGroup(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).
 				DoAndReturn(func(_ context.Context, request *services.CreateSecurityGroupRequest) (

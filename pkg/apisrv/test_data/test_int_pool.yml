@@ -244,8 +244,20 @@ workflow:
     expected: [200]
     data:
       pool: test_int_pool
+      owner: test_int_pool_owner
   expect:
     value: 100
+
+- name: get owner of allocated int
+  request:
+    path: /int-pool-owner
+    method: GET
+    expected: [200]
+    data:
+      pool: test_int_pool
+      value: 100
+  expect:
+    owner: test_int_pool_owner
 
 - name: deallocate int from test int pool
   request:

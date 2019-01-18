@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twinj/uuid"
@@ -375,7 +376,10 @@ func TestIPAMGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(),
 		func(ctx context.Context, conn *grpc.ClientConn) {
 			c := services.NewIPAMClient(conn)
-			allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{Pool: types.VirtualNetworkIDPoolKey})
+			allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{
+				Pool:  types.VirtualNetworkIDPoolKey,
+				Owner: db.IntPoolEmptyOwner,
+			})
 			assert.NoError(t, err)
 
 			_, err = c.DeallocateInt(ctx, &services.DeallocateIntRequest{
