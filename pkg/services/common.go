@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
 	"time"
 
 	"github.com/gogo/protobuf/types"
@@ -75,10 +74,11 @@ func (*NoTransaction) DoInTransaction(ctx context.Context, do func(context.Conte
 // IntPoolAllocator (de)allocates integers in an integer pool.
 type IntPoolAllocator interface {
 	CreateIntPool(context.Context, string, int64, int64) error
+	GetIntOwner(context.Context, string, int64) (string, error)
 	DeleteIntPool(context.Context, string) error
-	AllocateInt(context.Context, string) (int64, error)
+	AllocateInt(context.Context, string, string) (int64, error)
+	SetInt(context.Context, string, int64, string) error
 	DeallocateInt(context.Context, string, int64) error
-	SetInt(context.Context, string, int64) error
 }
 
 // RefRelaxer makes references not prevent the referenced resource from being deleted.
@@ -367,8 +367,7 @@ func (service *ContrailService) RESTChown(c echo.Context) error {
 // RESTCreateIntPool handles a POST on int-pools requests
 func (service *ContrailService) RESTCreateIntPool(c echo.Context) error {
 	ctx := c.Request().Context()
-	auth := auth.GetAuthCTX(ctx)
-	if !auth.IsAdmin() {
+	if !auth.GetAuthCTX(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 
@@ -384,11 +383,30 @@ func (service *ContrailService) RESTCreateIntPool(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{})
 }
 
+// RESTGetIntOwner handles a GET on int-owner requests
+func (service *ContrailService) RESTGetIntOwner(c echo.Context) error {
+	ctx := c.Request().Context()
+	if !auth.GetAuthCTX(ctx).IsAdmin() {
+		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
+	}
+
+	data := &GetIntOwnerRequest{}
+	if err := c.Bind(&data); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+
+	response, err := service.GetIntOwner(ctx, data)
+	if err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 // RESTDeleteIntPool handles a POST on int-pools requests
 func (service *ContrailService) RESTDeleteIntPool(c echo.Context) error {
 	ctx := c.Request().Context()
-	auth := auth.GetAuthCTX(ctx)
-	if !auth.IsAdmin() {
+	if !auth.GetAuthCTX(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 
@@ -408,7 +426,6 @@ func (service *ContrailService) RESTDeleteIntPool(c echo.Context) error {
 func (service *ContrailService) CreateIntPool(
 	ctx context.Context, r *CreateIntPoolRequest,
 ) (*types.Empty, error) {
-
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		return service.IntPoolAllocator.CreateIntPool(ctx, r.Pool, r.Start, r.End)
 	}); err != nil {
@@ -416,6 +433,32 @@ func (service *ContrailService) CreateIntPool(
 	}
 
 	return &types.Empty{}, nil
+}
+
+// GetIntOwner returns owner of allocated int in given int-pool.
+func (service *ContrailService) GetIntOwner(
+	ctx context.Context, request *GetIntOwnerRequest,
+) (*GetIntOwnerResponse, error) {
+	if request.GetPool() == "" {
+		return nil, errutil.ErrorBadRequest("Missing pool name for getting int owner")
+	}
+
+	var err error
+	response := &GetIntOwnerResponse{}
+	err = service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		var owner string
+		owner, err = service.IntPoolAllocator.GetIntOwner(ctx, request.GetPool(), request.GetValue())
+		if err != nil {
+			return err
+		}
+		response.Owner = owner
+		return nil
+	})
+
+	if err != nil && !errutil.IsNotFound(err) {
+		return nil, errutil.ErrorBadRequestf("Failed to fetch int owner: %s", err)
+	}
+	return response, nil
 }
 
 // DeleteIntPool deletes int pool
@@ -434,13 +477,13 @@ func (service *ContrailService) DeleteIntPool(
 type IntPoolAllocationBody struct {
 	Pool  string `json:"pool"`
 	Value *int64 `json:"value,omitempty"`
+	Owner string `json:"owner,omitempty"`
 }
 
 // RESTIntPoolAllocate handles a POST request on int-pool.
 func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	ctx := c.Request().Context()
-	auth := auth.GetAuthCTX(ctx)
-	if !auth.IsAdmin() {
+	if !auth.GetAuthCTX(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 	var allocReq IntPoolAllocationBody
@@ -449,13 +492,16 @@ func (service *ContrailService) RESTIntPoolAllocate(c echo.Context) error {
 	}
 	var allocatedVal int64
 	if allocReq.Value == nil {
-		resp, err := service.AllocateInt(ctx, &AllocateIntRequest{Pool: allocReq.Pool})
+		resp, err := service.AllocateInt(ctx, &AllocateIntRequest{Pool: allocReq.Pool, Owner: allocReq.Owner})
 		if err != nil {
 			return errutil.ToHTTPError(err)
 		}
 		allocatedVal = resp.Value
 	} else {
-		if _, err := service.SetInt(ctx, &SetIntRequest{Pool: allocReq.Pool, Value: *allocReq.Value}); err != nil {
+		if _, err := service.SetInt(
+			ctx,
+			&SetIntRequest{Pool: allocReq.Pool, Value: *allocReq.Value, Owner: allocReq.Owner},
+		); err != nil {
 			return errutil.ToHTTPError(err)
 		}
 		allocatedVal = *allocReq.Value
@@ -475,7 +521,7 @@ func (service *ContrailService) AllocateInt(
 	}
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
 		var err error
-		if v, err = service.IntPoolAllocator.AllocateInt(ctx, request.GetPool()); err != nil {
+		if v, err = service.IntPoolAllocator.AllocateInt(ctx, request.GetPool(), request.GetOwner()); err != nil {
 			return errutil.ErrorBadRequestf("Failed to allocate next int: %s", err)
 		}
 		return nil
@@ -492,7 +538,9 @@ func (service *ContrailService) SetInt(ctx context.Context, request *SetIntReque
 		return nil, err
 	}
 	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		if err := service.IntPoolAllocator.SetInt(ctx, request.GetPool(), request.GetValue()); err != nil {
+		if err := service.IntPoolAllocator.SetInt(
+			ctx, request.GetPool(), request.GetValue(), request.GetOwner(),
+		); err != nil {
 			return errutil.ErrorBadRequestf("Failed to allocate specified int: %s", err)
 		}
 		return nil
@@ -505,8 +553,7 @@ func (service *ContrailService) SetInt(ctx context.Context, request *SetIntReque
 // RESTIntPoolDeallocate handles a DELETE request on int-pool.
 func (service *ContrailService) RESTIntPoolDeallocate(c echo.Context) error {
 	ctx := c.Request().Context()
-	auth := auth.GetAuthCTX(ctx)
-	if !auth.IsAdmin() {
+	if !auth.GetAuthCTX(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
 	var allocReq IntPoolAllocationBody
