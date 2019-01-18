@@ -244,8 +244,41 @@ workflow:
     expected: [200]
     data:
       pool: test_int_pool
+      owner: test_int_owner
   expect:
     value: 100
+
+- name: get owner of allocated int
+  request:
+    path: /int-owner
+    method: GET
+    expected: [200]
+    data:
+      pool: test_int_pool
+      value: 100
+  expect:
+    owner: test_int_owner
+
+- name: allocate int in test int pool without owner
+  request:
+    path: /int-pool
+    method: POST
+    expected: [200]
+    data:
+      pool: test_int_pool
+  expect:
+    value: 101
+
+- name: try to get owner of allocated int which not specified owner
+  request:
+    path: /int-owner
+    method: GET
+    expected: [200]
+    data:
+      pool: test_int_pool
+      value: 101
+  expect:
+    owner: null
 
 - name: deallocate int from test int pool
   request:

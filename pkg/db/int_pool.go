@@ -11,6 +11,9 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 )
 
+// EmptyIntOwner is useful for creating pool when owner is not relevant.
+const EmptyIntOwner = ""
+
 // IntPool represents the half-open integer range [Start, End) in the set of integers identified by Key.
 type IntPool struct {
 	Key   string
@@ -18,7 +21,7 @@ type IntPool struct {
 	End   int64
 }
 
-//CreateIntPool creates int pool.
+// CreateIntPool creates int pool.
 func (db *Service) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
 	intPool := &IntPool{
 		Key:   pool,
@@ -38,15 +41,36 @@ func (db *Service) CreateIntPool(ctx context.Context, pool string, start int64, 
 	return db.DeallocateIntRange(ctx, intPool)
 }
 
-//DeleteIntPool deletes int pool.
+// DeleteIntPool deletes int pool.
 func (db *Service) DeleteIntPool(ctx context.Context, pool string) error {
 	return db.deleteIntPools(ctx, &IntPool{
 		Key: pool,
 	})
 }
 
-//GetIntPools gets int pools overlaps in given the range.
-//return all if target.End is zero.
+// GetIntOwner returns owner of an allocated integer
+func (db *Service) GetIntOwner(ctx context.Context, pool string, value int64) (string, error) {
+	var query bytes.Buffer
+	d := db.Dialect
+	tx := basedb.GetTransaction(ctx)
+	query.WriteString("select " + d.QuoteSep("owner") + "from int_owner")
+	query.WriteString(" where " + d.Quote("pool") + " = " + d.Placeholder(1))
+	query.WriteString(" and " + d.Quote("value") + " = " + d.Placeholder(2))
+
+	var owner string
+	err := tx.QueryRowContext(ctx, query.String(), pool, value).Scan(&owner)
+	err = basedb.FormatDBError(err)
+	if err != nil {
+		if err == errutil.ErrorNotFound {
+			return "", err
+		}
+		return "", errors.Wrap(err, "failed to get int owner")
+	}
+	return owner, nil
+}
+
+// GetIntPools gets int pools overlaps in given the range.
+// return all if target.End is zero.
 func (db *Service) GetIntPools(ctx context.Context, target *IntPool) ([]*IntPool, error) {
 	var query bytes.Buffer
 	d := db.Dialect
@@ -82,8 +106,8 @@ func (db *Service) GetIntPools(ctx context.Context, target *IntPool) ([]*IntPool
 	return pools, nil
 }
 
-//AllocateInt allocates integer.
-func (db *Service) AllocateInt(ctx context.Context, key string) (int64, error) {
+// AllocateInt allocates integer.
+func (db *Service) AllocateInt(ctx context.Context, key, owner string) (int64, error) {
 	if key == "" {
 		return 0, errors.New("empty int-pool key provided to allocate")
 	}
@@ -122,11 +146,18 @@ func (db *Service) AllocateInt(ctx context.Context, key string) (int64, error) {
 	if err != nil {
 		return 0, basedb.FormatDBError(err)
 	}
+
+	if owner != "" {
+		if err := db.insertIntOwner(ctx, tx, start, key, owner); err != nil {
+			return 0, basedb.FormatDBError(err)
+		}
+	}
+
 	return start, nil
 }
 
-//SetInt set a id for allocation pool.
-func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
+// SetInt set a id for allocation pool.
+func (db *Service) SetInt(ctx context.Context, key string, id int64, owner string) error {
 	if key == "" {
 		return errors.New("empty int-pool key provided to set")
 	}
@@ -180,16 +211,38 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64) error {
 	if err != nil {
 		return basedb.FormatDBError(err)
 	}
+
+	if err := db.insertIntOwner(ctx, tx, pool.Start, key, owner); err != nil {
+		return basedb.FormatDBError(err)
+	}
 	return nil
 }
 
-//DeallocateInt deallocate integer.
+// DeallocateInt deallocate integer.
 func (db *Service) DeallocateInt(ctx context.Context, key string, id int64) error {
 	return db.DeallocateIntRange(ctx, &IntPool{
 		Key:   key,
 		Start: id,
 		End:   id + 1,
 	})
+}
+
+func (db *Service) insertIntOwner(ctx context.Context, tx *sql.Tx, value int64, pool, owner string) error {
+	d := db.Dialect
+	_, err := tx.ExecContext(ctx,
+		"insert into int_owner ("+d.QuoteSep("pool", "value", "owner")+") values ("+
+			d.Values("pool", "value", "owner")+");", pool, value, owner,
+	)
+	return err
+}
+
+func (db *Service) deleteIntOwner(ctx context.Context, tx *sql.Tx, pool string, value int64) error {
+	d := db.Dialect
+	_, err := tx.ExecContext(ctx,
+		"delete from int_owner where "+d.Quote("pool")+" = "+d.Placeholder(1)+" and "+
+			d.Quote("value")+" = "+d.Placeholder(2), pool, value,
+	)
+	return err
 }
 
 func intMax(a, b int64) int64 {
@@ -206,7 +259,7 @@ func intMin(a, b int64) int64 {
 	return b
 }
 
-//DeallocateIntRange deallocate integer range
+// DeallocateIntRange deallocate integer range
 func (db *Service) DeallocateIntRange(ctx context.Context, target *IntPool) error {
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
@@ -235,6 +288,9 @@ func (db *Service) DeallocateIntRange(ctx context.Context, target *IntPool) erro
 		start = intMin(start, pools[0].Start)
 		end = intMax(end, pools[len(pools)-1].End)
 	}
+	if err = db.deleteIntOwner(ctx, tx, target.Key, target.Start); err != nil {
+		return basedb.FormatDBError(err)
+	}
 	_, err = tx.ExecContext(
 		ctx,
 		"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
@@ -243,7 +299,7 @@ func (db *Service) DeallocateIntRange(ctx context.Context, target *IntPool) erro
 	return basedb.FormatDBError(err)
 }
 
-//SizeIntPool returns size of a int pool.
+// SizeIntPool returns size of a int pool.
 func (db *Service) SizeIntPool(ctx context.Context, key string) (int, error) {
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
@@ -260,7 +316,7 @@ func (db *Service) SizeIntPool(ctx context.Context, key string) (int, error) {
 	return size, nil
 }
 
-//deleteIntPools deletes int pool overlap with target range. delete all if target.End is zero.
+// deleteIntPools deletes int pool overlap with target range. delete all if target.End is zero.
 func (db *Service) deleteIntPools(ctx context.Context, target *IntPool) error {
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
