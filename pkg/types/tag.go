@@ -9,6 +9,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -144,7 +145,7 @@ func (sv *ContrailTypeLogicService) allocateTagID(
 	ctx context.Context,
 	tagTypeID string,
 ) (string, error) {
-	allocInt, err := sv.IntPoolAllocator.AllocateInt(ctx, tagIDPoolKey)
+	allocInt, err := sv.IntPoolAllocator.AllocateInt(ctx, tagIDPoolKey, db.EmptyIntOwner)
 	if err != nil {
 		return "", err
 	}
