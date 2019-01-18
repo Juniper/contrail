@@ -27,34 +27,32 @@ func (c *Cloud) updateIPDetails(data *Data) error {
 func updateInstanceIP(instance *instanceData, tfState *tf.State) error {
 
 	privateIP, err := getIPFromTFState(tfState,
-		fmt.Sprintf("private_ip.%s", instance.info.Name))
+		fmt.Sprintf("%s.private_ip", instance.info.Hostname))
 	if err != nil {
 		return err
 	}
 
 	if gwRoleExists(instance) {
-		portObj, inErr := createPort("private", privateIP, instance.client)
+		portObj, inErr := createPort("private", privateIP,
+			instance.info, instance.client)
 		if inErr != nil {
 			return inErr
 		}
+
 		inErr = addPortToNode(portObj, instance.info, instance.client)
-		if err != nil {
+		if inErr != nil {
 			return inErr
 		}
 
 		publicIP, inErr := getIPFromTFState(tfState,
-			fmt.Sprintf("public_ip.%s", instance.info.Name))
+			fmt.Sprintf("%s.public_ip", instance.info.Hostname))
 		if inErr != nil {
 			return inErr
 		}
-		inErr = addIPToNode(publicIP, instance.info, instance.client)
-		if err != nil {
-			return inErr
-		}
+		return addIPToNode(publicIP, instance.info, instance.client)
 	}
 
 	return addIPToNode(privateIP, instance.info, instance.client)
-
 }
 
 func gwRoleExists(instance *instanceData) bool {
@@ -67,11 +65,35 @@ func gwRoleExists(instance *instanceData) bool {
 }
 
 func createPort(portName string, ip string,
-	client *client.HTTP) (*models.Port, error) {
+	instance *models.Node, client *client.HTTP) (*models.Port, error) {
+
+	if len(instance.Ports) != 0 {
+		for _, p := range instance.Ports {
+			if p.Name == portName && p.IPAddress != ip {
+				request := new(services.UpdatePortRequest)
+				request.Port = p
+				request.Port.IPAddress = ip
+
+				response := new(services.UpdatePortResponse)
+				_, err := client.Update("/port/"+request.Port.UUID, request, response)
+				if err != nil {
+					return nil, err
+				}
+				return response.GetPort(), err
+			} else if p.Name == portName && p.IPAddress == ip {
+				return p, nil
+			}
+		}
+	}
+
+	port := new(models.Port)
+	port.Name = portName
+	port.ParentType = "node"
+	port.ParentUUID = instance.UUID
+	port.IPAddress = ip
 
 	request := new(services.CreatePortRequest)
-	request.Port.Name = portName
-	request.Port.IPAddress = ip
+	request.Port = port
 
 	response := new(services.CreatePortResponse)
 
