@@ -8,6 +8,7 @@ import (
 	protobuf "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
@@ -32,7 +33,11 @@ func (sv *ContrailTypeLogicService) CreateVirtualNetwork(
 	err = sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
-			virtualNetwork.VirtualNetworkNetworkID, err = sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
+			virtualNetwork.VirtualNetworkNetworkID, err = sv.IntPoolAllocator.AllocateInt(
+				ctx,
+				VirtualNetworkIDPoolKey,
+				db.EmptyIntOwner,
+			)
 			if err != nil {
 				return err
 			}

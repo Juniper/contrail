@@ -25,6 +25,7 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.POST(PropCollectionUpdatePath, service.RESTPropCollectionUpdate)
 	r.POST(SetTagPath, service.RESTSetTag)
 	r.POST(ChownPath, service.RESTChown)
+	r.GET(IntPoolPath, service.RESTGetIntOwner)
 	r.POST(IntPoolPath, service.RESTIntPoolAllocate)
 	r.DELETE(IntPoolPath, service.RESTIntPoolDeallocate)
 	r.POST(IntPoolsPath, service.RESTCreateIntPool)
