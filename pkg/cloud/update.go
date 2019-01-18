@@ -29,37 +29,32 @@ func updateInstanceIP(ctx context.Context,
 	instance *instanceData, tfState *tf.State) error {
 
 	privateIP, err := getIPFromTFState(tfState,
-		fmt.Sprintf("private_ip.%s", instance.info.Name))
+		fmt.Sprintf("%s.private_ip", instance.info.Hostname))
 	if err != nil {
 		return err
 	}
 
 	if gwRoleExists(instance) {
-		portObj, inErr := createPort(ctx, "private", privateIP, instance.client)
+		portObj, inErr := createPort(ctx, "private", privateIP,
+			instance.info, instance.client)
 		if inErr != nil {
 			return inErr
 		}
+
 		inErr = addPortToNode(ctx, portObj, instance.info, instance.client)
 		if err != nil {
 			return inErr
 		}
 
 		publicIP, inErr := getIPFromTFState(tfState,
-			fmt.Sprintf("public_ip.%s", instance.info.Name))
+			fmt.Sprintf("%s.public_ip", instance.info.Hostname))
 		if inErr != nil {
 			return inErr
 		}
-		inErr = addIPToNode(ctx, publicIP, instance.info, instance.client)
-		if err != nil {
-			return inErr
-		}
+		return addIPToNode(ctx, publicIP, instance.info, instance.client)
 	}
 
-	err = addIPToNode(ctx, privateIP, instance.info, instance.client)
-	if err != nil {
-		return err
-	}
-	return nil
+	return addIPToNode(ctx, privateIP, instance.info, instance.client)
 }
 
 func gwRoleExists(instance *instanceData) bool {
@@ -72,17 +67,39 @@ func gwRoleExists(instance *instanceData) bool {
 }
 
 func createPort(ctx context.Context, portName string, ip string,
-	client *client.HTTP) (*models.Port, error) {
+	instance *models.Node, client *client.HTTP) (*models.Port, error) {
+
+	if len(instance.Ports) != 0 {
+		for _, p := range instance.Ports {
+			if p.Name == portName && p.IPAddress != ip {
+				request := new(services.UpdatePortRequest)
+				request.Port = p
+				request.Port.IPAddress = ip
+				portResp, err := client.UpdatePort(ctx, request)
+				if err == nil {
+					return nil, err
+				}
+				return portResp.GetPort(), err
+			} else if p.Name == portName && p.IPAddress == ip {
+				return p, nil
+			}
+		}
+	}
+
+	port := new(models.Port)
+	port.Name = portName
+	port.ParentType = "node"
+	port.ParentUUID = instance.UUID
+	port.IPAddress = ip
 
 	request := new(services.CreatePortRequest)
-	request.Port.Name = portName
-	request.Port.IPAddress = ip
+	request.Port = port
 
 	portResp, err := client.CreatePort(ctx, request)
-	if err != nil {
+	if err == nil {
 		return nil, err
 	}
-	return portResp.GetPort(), nil
+	return portResp.GetPort(), err
 }
 
 func addPortToNode(ctx context.Context, port *models.Port,
@@ -91,12 +108,8 @@ func addPortToNode(ctx context.Context, port *models.Port,
 	request := new(services.UpdateNodeRequest)
 	request.Node = instance
 	request.Node.AddPort(port)
-
 	_, err := client.UpdateNode(ctx, request)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func addIPToNode(ctx context.Context, ip string,
