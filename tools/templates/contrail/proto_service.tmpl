@@ -163,6 +163,7 @@ message DeleteIntPoolRequest {
 
 message AllocateIntRequest {
     string Pool = 1 [(gogoproto.customname) = "Pool"];
+	string Owner = 2 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
 }
 
 message AllocateIntResponse {
@@ -172,6 +173,7 @@ message AllocateIntResponse {
 message SetIntRequest {
     string Pool = 1 [(gogoproto.customname) = "Pool"];
     int64 Value = 2 [(gogoproto.customname) = "Value"];
+	string Owner = 3 [(gogoproto.customname) = "Owner",(gogoproto.jsontag) = "owner"];
 }
 
 message DeallocateIntRequest {

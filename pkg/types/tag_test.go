@@ -158,7 +158,7 @@ func tagSetUpWriteServiceMock(s *ContrailTypeLogicService) {
 func tagSetupIntPoolAllocMock(s *ContrailTypeLogicService) {
 	intPoolAllocator := s.IntPoolAllocator.(*typesmock.MockIntPoolAllocator) //nolint: errcheck
 	intPoolAllocator.EXPECT().AllocateInt(
-		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
 		func(_ context.Context, tagTypeIDPoolKey string) (int64, error) {
 			return 1, nil

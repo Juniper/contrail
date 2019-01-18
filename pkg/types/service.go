@@ -25,8 +25,8 @@ type InTransactionDoer interface {
 type IntPoolAllocator interface {
 	CreateIntPool(context.Context, string, int64, int64) error
 	DeleteIntPool(context.Context, string) error
-	AllocateInt(context.Context, string) (int64, error)
-	SetInt(context.Context, string, int64) error
+	AllocateInt(context.Context, string, string) (int64, error)
+	SetInt(context.Context, string, int64, string) error
 	DeallocateInt(context.Context, string, int64) error
 }
 

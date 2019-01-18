@@ -249,7 +249,7 @@ func expectDeleteTagTypeToBeCalledOnNextService(s *servicesmock.MockService) {
 
 func expectAllocateIntToBeCalledOnIntPoolAllocator(s *typesmock.MockIntPoolAllocator, allocSucceed bool) {
 	s.EXPECT().AllocateInt(
-		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
+		gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil()),
 	).DoAndReturn(
 		func(_ context.Context, _ string) (int64, error) {
 			if allocSucceed {

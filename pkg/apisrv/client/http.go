@@ -229,8 +229,8 @@ func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
 }
 
 // AllocateInt sends an allocate int request to remote int-pool.
-func (h *HTTP) AllocateInt(ctx context.Context, pool string) (int64, error) {
-	data := services.IntPoolAllocationBody{Pool: pool}
+func (h *HTTP) AllocateInt(ctx context.Context, pool, owner string) (int64, error) {
+	data := services.IntPoolAllocationBody{Pool: pool, Owner: owner}
 	var output struct {
 		Value int64 `json:"value"`
 	}
@@ -240,8 +240,8 @@ func (h *HTTP) AllocateInt(ctx context.Context, pool string) (int64, error) {
 }
 
 // SetInt sends a set int request to remote int-pool.
-func (h *HTTP) SetInt(ctx context.Context, pool string, value int64) error {
-	data := services.IntPoolAllocationBody{Pool: pool, Value: &value}
+func (h *HTTP) SetInt(ctx context.Context, pool string, value int64, owner string) error {
+	data := services.IntPoolAllocationBody{Pool: pool, Value: &value, Owner: owner}
 	var output struct{}
 	expected := []int{http.StatusOK}
 	_, err := h.Do(ctx, echo.POST, "/int-pool", nil, &data, &output, expected)

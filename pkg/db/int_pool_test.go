@@ -36,15 +36,15 @@ func TestIntPool(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, 4, size, "size pool failed")
 
-			i, err := db.AllocateInt(ctx, poolKey)
+			i, err := db.AllocateInt(ctx, poolKey, IntPoolEmptyOwner)
 			assert.NoError(t, err, "allocate failed")
 			assert.Equal(t, int64(0), i, "allocate failed")
 
-			i, err = db.AllocateInt(ctx, poolKey)
+			i, err = db.AllocateInt(ctx, poolKey, IntPoolEmptyOwner)
 			assert.NoError(t, err, "allocate failed")
 			assert.Equal(t, int64(1), i, "allocate failed")
 
-			i, err = db.AllocateInt(ctx, poolKey)
+			i, err = db.AllocateInt(ctx, poolKey, IntPoolEmptyOwner)
 			assert.NoError(t, err, "allocate failed")
 			assert.Equal(t, int64(3), i, "allocate failed")
 
@@ -70,7 +70,7 @@ func TestIntPool(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, 3, size, "size pool failed")
 
-			err = db.SetInt(ctx, poolKey, 4)
+			err = db.SetInt(ctx, poolKey, 4, IntPoolEmptyOwner)
 			assert.NoError(t, err, "set failed")
 
 			pools, err = db.GetIntPools(ctx, &IntPool{Key: poolKey})

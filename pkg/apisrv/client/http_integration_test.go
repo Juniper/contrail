@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -123,7 +124,7 @@ func TestRemoteIntPoolMethods(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	val, err := hc.AllocateInt(context.Background(), "test_int_pool_806f099f3")
+	val, err := hc.AllocateInt(context.Background(), "test_int_pool_806f099f3", "test_owner_806f099f3")
 	defer func() {
 		err = hc.DeallocateInt(context.Background(), "test_int_pool_806f099f3", val)
 		assert.NoError(t, err)
@@ -132,7 +133,7 @@ func TestRemoteIntPoolMethods(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, val > 8000099)
 
-	err = hc.SetInt(context.Background(), "test_int_pool_806f099f3", val+1)
+	err = hc.SetInt(context.Background(), "test_int_pool_806f099f3", val+1, db.IntPoolEmptyOwner)
 	defer func() {
 		err = hc.DeallocateInt(context.Background(), "test_int_pool_806f099f3", val+1)
 		assert.NoError(t, err)

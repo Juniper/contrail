@@ -7,6 +7,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/twinj/uuid"
 
+	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
@@ -213,7 +214,7 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 
 	vxlanNetworkID := logicalRouter.GetVxlanNetworkIdentifier()
 	if vxlanNetworkID == "" {
-		id, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey)
+		id, err := sv.IntPoolAllocator.AllocateInt(ctx, VirtualNetworkIDPoolKey, db.IntPoolEmptyOwner)
 		return strconv.FormatInt(id, 10), err
 	}
 
@@ -222,7 +223,7 @@ func (sv *ContrailTypeLogicService) allocateVxlanNetworkID(
 		return "", err
 	}
 
-	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id)
+	err = sv.IntPoolAllocator.SetInt(ctx, VirtualNetworkIDPoolKey, id, db.IntPoolEmptyOwner)
 	if err != nil {
 		return "", errutil.ErrorBadRequestf("cannot allocate provided vxlan identifier(%s): %v", vxlanNetworkID, err)
 	}
