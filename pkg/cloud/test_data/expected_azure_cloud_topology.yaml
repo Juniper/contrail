@@ -18,27 +18,30 @@
                   direction: inbound
                   protocol: tcp
           instances:
-          - name: cloud_node_compute
-            roles:
-              - compute
-            provision: true
-            username: centos
-            os: centos7
-            instance_type: F16sv2
-            interface: cloud_node_compute_interface
-          - name: cloud_node_controller
-            roles:
-              - controller
-            provision: true
-            username: centos
-            os: centos7
-            instance_type: F16sv2
-            interface: cloud_node_controller_interface
-          - name: cloud_node_gw
-            roles:
-              - gateway
-            provision: true
-            username: centos
-            os: centos7
-            instance_type: F16sv2
-            interface: cloud_node_gw_interface
+            - name: cloud_node_compute
+              roles:
+                - compute
+              provision: true
+              username: centos
+              os: centos7
+              instance_type: F16sv2
+              subnets: cloud_private_subnet
+              interface: cloud_node_compute_interface
+            - name: cloud_node_controller
+              roles:
+                - controller
+              provision: true
+              username: centos
+              os: centos7
+              instance_type: F16sv2
+              subnets: cloud_private_subnet
+              interface: cloud_node_controller_interface
+            - name: cloud_node_gw
+              roles:
+                - gateway
+              provision: true
+              username: centos
+              os: centos7
+              instance_type: F16sv2
+              subnets: cloud_private_subnet
+              interface: cloud_node_gw_interface
