@@ -106,7 +106,7 @@ agent:
     - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
 
 compilation:
-  enabled: true
+  enabled: false
   # Global configuration
   plugin_directory: 'etc/plugins/'
   number_of_workers: 4

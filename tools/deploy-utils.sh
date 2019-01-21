@@ -19,6 +19,11 @@ ensure_kubemanager_config_nodes()
     fi
 }
 
+schema_transformer_up()
+{
+    docker-compose -f "/etc/contrail/config/docker-compose.yaml" schema up -d
+}
+
 compose_up()
 {
     for docker_dir in "$@"
