@@ -39,6 +39,8 @@ make docker_config_api
 # Stop services using docker-compose
 compose_down config control vrouter
 
+schema_transformer_down
+
 # Clear old config-node databases
 clear_config_database
 
@@ -52,6 +54,9 @@ sudo ./tools/control-node_etcd/update-docker-compose.py
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-config_api.yml
 
 build_and_run_contrail-go_docker
+
+# Start schema transformer
+schema_transformer_up
 
 # Start services using docker-compose
 compose_up control vrouter
