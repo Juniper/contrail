@@ -39,6 +39,8 @@ make docker_config_api
 # Stop services using docker-compose
 compose_down kubemanager config control vrouter
 
+schema_transformer_down()
+
 # Clear old config-node databases
 clear_config_database
 
@@ -64,6 +66,8 @@ build_and_run_contrail-go_docker
 
 GoConfigIP='127.0.0.1' # networking mode 'host'
 ensure_kubemanager_config_nodes "${GoConfigIP}"
+
+schema_transformer_up()
 
 # Start services using docker-compose
 compose_up control vrouter kubemanager

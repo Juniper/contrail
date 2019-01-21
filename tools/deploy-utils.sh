@@ -19,6 +19,16 @@ ensure_kubemanager_config_nodes()
     fi
 }
 
+schema_transformer_up()
+{
+    docker-compose -f "${ContrailRootDir}/docker/schema-transformer/docker-compose.yaml" up -d
+}
+
+schema_transformer_down()
+{
+    docker-compose -f "${ContrailRootDir}/docker/schema-transformer/docker-compose.yaml" down
+}
+
 compose_up()
 {
     for docker_dir in "$@"

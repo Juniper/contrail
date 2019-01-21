@@ -1,0 +1,14 @@
+version: '2'
+services:
+  schema:
+    image: "kaweue/contrail-controller-config-schema:R6.0-1"
+    network_mode: "host"
+    env_file: common_config.env
+    stdin_open: True
+    tty: True
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "10"
