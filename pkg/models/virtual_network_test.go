@@ -314,56 +314,6 @@ func TestVirtualNetworkMakeDefaultRoutingInstance(t *testing.T) {
 				RoutingInstanceFabricSnat: true,
 			},
 		},
-
-		{
-			name: "import and export route targets present",
-			virtualNetwork: &VirtualNetwork{
-				Name:   "test-network",
-				FQName: []string{"test-network"},
-				UUID:   "test-network-uuid",
-				ImportRouteTargetList: &RouteTargetList{
-					RouteTarget: []string{
-						"target:111:1111",
-						"target:111:2222",
-					},
-				},
-				ExportRouteTargetList: &RouteTargetList{
-					RouteTarget: []string{
-						"target:111:3333",
-						"target:111:4444",
-						"target:111:5555",
-					},
-				},
-			},
-			expected: &RoutingInstance{
-				Name:                     "test-network",
-				FQName:                   []string{"test-network", "test-network"},
-				ParentUUID:               "test-network-uuid",
-				RoutingInstanceIsDefault: true,
-				RouteTargetRefs: []*RoutingInstanceRouteTargetRef{
-					{
-						To:   []string{"target:111:1111"},
-						Attr: &InstanceTargetType{ImportExport: "import"},
-					},
-					{
-						To:   []string{"target:111:2222"},
-						Attr: &InstanceTargetType{ImportExport: "import"},
-					},
-					{
-						To:   []string{"target:111:3333"},
-						Attr: &InstanceTargetType{ImportExport: "export"},
-					},
-					{
-						To:   []string{"target:111:4444"},
-						Attr: &InstanceTargetType{ImportExport: "export"},
-					},
-					{
-						To:   []string{"target:111:5555"},
-						Attr: &InstanceTargetType{ImportExport: "export"},
-					},
-				},
-			},
-		},
 	}
 
 	for _, tt := range tests {
