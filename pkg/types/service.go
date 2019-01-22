@@ -47,3 +47,17 @@ type ContrailTypeLogicService struct {
 	WriteService      services.WriteService
 	defaultGSCUUID    string
 }
+
+// FQNameToUUID translates fqName to UUID.
+func (sv *ContrailTypeLogicService) FQNameToUUID(
+	ctx context.Context,
+	fqName []string,
+	resourceType string,
+) (string, error) {
+	metadata, err := sv.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{Type: resourceType, FQName: fqName})
+	if err != nil {
+		return "", err
+	}
+
+	return metadata.UUID, nil
+}

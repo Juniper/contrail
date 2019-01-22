@@ -176,6 +176,11 @@ func TestPropCollectionUpdate(t *testing.T) {
 	RunTest(t, "./test_data/test_prop_collection_update.yml")
 }
 
+func TestServiceTemplate(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_service_template.yml")
+}
+
 func TestTag(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_tag.yml")
