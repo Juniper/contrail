@@ -86,6 +86,13 @@ type RefRelaxer interface {
 	RelaxRef(ctx context.Context, request *RelaxRefRequest) error
 }
 
+type UserAgentKVService interface {
+	StoreKeyValue(ctx context.Context, key string, value string) error
+	RetrieveValues(ctx context.Context, keys []string) (vals []string, err error)
+	DeleteKey(ctx context.Context, key string) error
+	RetrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePair, err error)
+}
+
 // RefUpdateToUpdateService is a service that promotes CreateRef and DeleteRef
 // methods to Update method by fetching the object and updating reference
 // field with fieldmask applied.
@@ -134,6 +141,7 @@ type ContrailService struct {
 	InTransactionDoer InTransactionDoer
 	IntPoolAllocator  IntPoolAllocator
 	RefRelaxer        RefRelaxer
+	UserAgentKVService UserAgentKVService
 }
 
 // RESTSync handles Sync API request.

@@ -134,6 +134,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		InTransactionDoer: s.DBService,
 		IntPoolAllocator:  s.DBService,
 		RefRelaxer:        s.DBService,
+		UserAgentKVService: s.DBService,
 	}
 
 	cs.RegisterRESTAPI(s.Echo)
@@ -201,7 +202,7 @@ func (s *Server) Init() (err error) {
 	s.ChownServer = cs
 	s.SetTagServer = cs
 	s.RefRelaxServer = cs
-	s.UserAgentKVServer = s.DBService
+	s.UserAgentKVServer = cs
 	s.FQNameToIDServer = cs
 	s.IDToTypeServer = cs
 
@@ -290,6 +291,7 @@ func (s *Server) Init() (err error) {
 		services.RegisterRefRelaxServer(s.GRPCServer, s.RefRelaxServer)
 		services.RegisterFQNameToIDServer(s.GRPCServer, s.FQNameToIDServer)
 		services.RegisterIDToTypeServer(s.GRPCServer, s.IDToTypeServer)
+		services.RegisterUserAgentKVServer(s.GRPCServer, s.UserAgentKVServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
 	}
 
@@ -407,7 +409,7 @@ func (s *Server) setupWatchAPI() {
 
 func (s *Server) setupActionResources(cs *services.ContrailService) {
 	s.Echo.POST(FQNameToIDPath, cs.RESTFQNameToUUID)
-	s.Echo.POST(UserAgentKVPath, s.userAgentKVHandler)
+	s.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
 }
 
 // Run runs server.
