@@ -34,6 +34,6 @@
   become_user: root
 
 - name: Create test environment
-  command: "chdir={{ sourcedir }}/src/github.com/Juniper/contrail make testenv"
+  command: "chdir={{ sourcedir }}/src/github.com/Juniper/contrail ./tools/patroni/pull_patroni.sh && make testenv"
   become: yes
   become_user: root
