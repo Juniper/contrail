@@ -33,7 +33,7 @@ func create{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, id 
     model.Perms2.Share = share
 
     {% if schema.HasParents && !schema.ParentOptional %}
-    parent := create{{ schema.DefaultParent.GoName }}(t, ctx, default{{ schema.DefaultParent.GoName }}UUID, false, share)
+    parent := create{{ schema.DefaultParent.GoName }}(t, ctx, uuid.NewV4().String(), false, share)
     model.ParentUUID = parent.UUID
     model.ParentType = "{{ schema.DefaultParent.LinkTo.Path }}"
     {% endif %}
@@ -97,7 +97,7 @@ func delete{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, uui
 }
 
 func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
-    var err error
+
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
 
