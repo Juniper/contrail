@@ -404,7 +404,7 @@ func TestMakeACLRule(t *testing.T) {
 	testCases := []struct {
 		name       string
 		fqNameToSG map[string]*SecurityGroup
-		policyAddressPair
+		addressTypePair
 
 		expectedACLRule *AclRuleType
 		fails           bool
@@ -416,17 +416,17 @@ func TestMakeACLRule(t *testing.T) {
 					SecurityGroupID: 8000002,
 				},
 			},
-			policyAddressPair: policyAddressPair{
+			addressTypePair: addressTypePair{
 				policyRule: &PolicyRuleType{
 					RuleUUID:  "bdf042c0-d2c2-4241-ba15-1c702c896e03",
 					Direction: ">",
 					Protocol:  "any",
 					Ethertype: "IPv4",
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "default-domain:project-blue:default",
 				},
-				destinationAddress: &policyAddress{
+				destinationAddress: &AddressType{
 					SecurityGroup: "local",
 				},
 				sourcePort:      AllPorts(),
@@ -458,17 +458,17 @@ func TestMakeACLRule(t *testing.T) {
 					SecurityGroupID: 8000002,
 				},
 			},
-			policyAddressPair: policyAddressPair{
+			addressTypePair: addressTypePair{
 				policyRule: &PolicyRuleType{
 					RuleUUID:  "1f77914a-0863-4f0d-888a-aee6a1988f6a",
 					Direction: ">",
 					Protocol:  "any",
 					Ethertype: "IPv6",
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "default-domain:project-blue:default",
 				},
-				destinationAddress: &policyAddress{
+				destinationAddress: &AddressType{
 					SecurityGroup: "local",
 				},
 				sourcePort:      AllPorts(),
@@ -495,17 +495,17 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv4, local security group to all addresses",
-			policyAddressPair: policyAddressPair{
+			addressTypePair: addressTypePair{
 				policyRule: &PolicyRuleType{
 					RuleUUID:  "b7c07625-e03e-43b9-a9fc-d11a6c863cc6",
 					Direction: ">",
 					Protocol:  "any",
 					Ethertype: "IPv4",
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: (*policyAddress)(AllIPv4Addresses()),
+				destinationAddress: AllIPv4Addresses(),
 				sourcePort:         AllPorts(),
 				destinationPort:    AllPorts(),
 			},
@@ -528,17 +528,17 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv6, local security group to all addresses",
-			policyAddressPair: policyAddressPair{
+			addressTypePair: addressTypePair{
 				policyRule: &PolicyRuleType{
 					RuleUUID:  "6a5f3026-02bc-4ba1-abde-39abafd21f47",
 					Direction: ">",
 					Protocol:  "any",
 					Ethertype: "IPv6",
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: (*policyAddress)(AllIPv6Addresses()),
+				destinationAddress: AllIPv6Addresses(),
 				sourcePort:         AllPorts(),
 				destinationPort:    AllPorts(),
 			},
@@ -563,7 +563,7 @@ func TestMakeACLRule(t *testing.T) {
 			// Replicates the logic in
 			// https://github.com/Juniper/contrail-controller/blob/474731ce0/src/config/schema-transformer/config_db.py#L2039
 			name: "ActionList with a deny action (should be ignored)",
-			policyAddressPair: policyAddressPair{
+			addressTypePair: addressTypePair{
 				policyRule: &PolicyRuleType{
 					RuleUUID:  "rule2",
 					Direction: ">",
@@ -573,10 +573,10 @@ func TestMakeACLRule(t *testing.T) {
 						SimpleAction: "deny",
 					},
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: (*policyAddress)(AllIPv4Addresses()),
+				destinationAddress: AllIPv4Addresses(),
 				sourcePort:         AllPorts(),
 				destinationPort:    AllPorts(),
 			},
@@ -599,7 +599,7 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv4, unknown protocol",
-			policyAddressPair: policyAddressPair{
+			addressTypePair: addressTypePair{
 				policyRule: &PolicyRuleType{
 					Protocol:  "some unknown protocol",
 					Ethertype: "IPv4",
@@ -610,8 +610,8 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "unknown security group name",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &policyAddress{
+			addressTypePair: addressTypePair{
+				sourceAddress: &AddressType{
 					SecurityGroup: "some:unknown:security-group",
 				},
 			},
@@ -621,7 +621,7 @@ func TestMakeACLRule(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			aclRule, err := makeACLRule(tt.policyAddressPair, tt.fqNameToSG)
+			aclRule, err := makeACLRule(tt.addressTypePair, tt.fqNameToSG)
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
