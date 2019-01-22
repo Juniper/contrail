@@ -28,6 +28,11 @@ func TestKVStore(t *testing.T) {
 	RunTest(t, "./test_data/test_kv_store.yml")
 }
 
+func TestBGPAsAService(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_bgpaas.yml")
+}
+
 func TestFloatingIP(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_floating_ip.yml")
