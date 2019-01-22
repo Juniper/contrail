@@ -47,18 +47,18 @@ func (m *PolicyRuleType) ValidateProtocol() error {
 	return nil
 }
 
-// policyAddressPair is a single combination of source and destination specifications from a PolicyRuleType.
-type policyAddressPair struct {
+// addressTypePair is a single combination of source and destination specifications from a PolicyRuleType.
+type addressTypePair struct {
 	policyRule                        *PolicyRuleType
-	sourceAddress, destinationAddress *policyAddress
+	sourceAddress, destinationAddress *AddressType
 	sourcePort, destinationPort       *PortType
 }
 
-func (pair *policyAddressPair) isIngress() (bool, error) {
+func (pair *addressTypePair) isIngress() (bool, error) {
 	switch {
-	case pair.destinationAddress.isLocal():
+	case pair.destinationAddress.isSecurityGroupLocal():
 		return true, nil
-	case pair.sourceAddress.isLocal():
+	case pair.sourceAddress.isSecurityGroupLocal():
 		return false, nil
 	default:
 		return false, neitherAddressIsLocal{
@@ -68,15 +68,8 @@ func (pair *policyAddressPair) isIngress() (bool, error) {
 	}
 }
 
-// policyAddress is an address from a PolicyRuleType.
-type policyAddress AddressType
-
-func (m *policyAddress) isLocal() bool {
-	return m.SecurityGroup == LocalSecurityGroup
-}
-
 type neitherAddressIsLocal struct {
-	sourceAddress, destinationAddress *policyAddress
+	sourceAddress, destinationAddress *AddressType
 }
 
 func (err neitherAddressIsLocal) Error() string {
@@ -84,17 +77,17 @@ func (err neitherAddressIsLocal) Error() string {
 		err.sourceAddress, err.destinationAddress)
 }
 
-func (m *PolicyRuleType) allAddressCombinations() (pairs []policyAddressPair) {
+func (m *PolicyRuleType) allAddressCombinations() (pairs []addressTypePair) {
 	for _, sourceAddress := range m.SRCAddresses {
 		for _, sourcePort := range m.SRCPorts {
 			for _, destinationAddress := range m.DSTAddresses {
 				for _, destinationPort := range m.DSTPorts {
-					pairs = append(pairs, policyAddressPair{
+					pairs = append(pairs, addressTypePair{
 						policyRule: m,
 
-						sourceAddress:      (*policyAddress)(sourceAddress),
+						sourceAddress:      sourceAddress,
 						sourcePort:         sourcePort,
-						destinationAddress: (*policyAddress)(destinationAddress),
+						destinationAddress: destinationAddress,
 						destinationPort:    destinationPort,
 					})
 				}
@@ -158,12 +151,12 @@ func (m *PolicyRuleType) HasSecurityGroup() bool {
 // 'local' Security Group.
 func (m *PolicyRuleType) IsAnySecurityGroupAddrLocal() bool {
 	for _, addr := range m.GetSRCAddresses() {
-		if (*policyAddress)(addr).isLocal() {
+		if addr.isSecurityGroupLocal() {
 			return true
 		}
 	}
 	for _, addr := range m.GetDSTAddresses() {
-		if (*policyAddress)(addr).isLocal() {
+		if addr.isSecurityGroupLocal() {
 			return true
 		}
 	}

@@ -9,17 +9,17 @@ import (
 func TestIsIngress(t *testing.T) {
 	testCases := []struct {
 		name string
-		policyAddressPair
+		addressTypePair
 		isIngress bool
 		err       error
 	}{
 		{
 			name: "specified security group to local security group",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &policyAddress{
+			addressTypePair: addressTypePair{
+				sourceAddress: &AddressType{
 					SecurityGroup: "default-domain:project-blue:default",
 				},
-				destinationAddress: &policyAddress{
+				destinationAddress: &AddressType{
 					SecurityGroup: "local",
 				},
 			},
@@ -27,31 +27,31 @@ func TestIsIngress(t *testing.T) {
 		},
 		{
 			name: "local security group to all IPv4 addresses",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &policyAddress{
+			addressTypePair: addressTypePair{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: (*policyAddress)(AllIPv4Addresses()),
+				destinationAddress: AllIPv4Addresses(),
 			},
 			isIngress: false,
 		},
 		{
 			name: "local security group to all IPv6 addresses",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &policyAddress{
+			addressTypePair: addressTypePair{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: (*policyAddress)(AllIPv6Addresses()),
+				destinationAddress: AllIPv6Addresses(),
 			},
 			isIngress: false,
 		},
 		{
 			name: "both with local security group",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &policyAddress{
+			addressTypePair: addressTypePair{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: &policyAddress{
+				destinationAddress: &AddressType{
 					SecurityGroup: "local",
 				},
 			},
@@ -60,20 +60,20 @@ func TestIsIngress(t *testing.T) {
 		},
 		{
 			name: "neither with local security group",
-			policyAddressPair: policyAddressPair{
-				sourceAddress:      &policyAddress{},
-				destinationAddress: &policyAddress{},
+			addressTypePair: addressTypePair{
+				sourceAddress:      &AddressType{},
+				destinationAddress: &AddressType{},
 			},
 			err: neitherAddressIsLocal{
-				sourceAddress:      &policyAddress{},
-				destinationAddress: &policyAddress{},
+				sourceAddress:      &AddressType{},
+				destinationAddress: &AddressType{},
 			},
 		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			isIngress, err := tt.policyAddressPair.isIngress()
+			isIngress, err := tt.addressTypePair.isIngress()
 			if tt.err != nil {
 				assert.Equal(t, tt.err, err)
 			} else {
@@ -87,38 +87,38 @@ func TestIsIngress(t *testing.T) {
 func TestIsLocal(t *testing.T) {
 	testCases := []struct {
 		name    string
-		address *policyAddress
+		address *AddressType
 		is      bool
 	}{
 		{
 			name: "local security group",
-			address: &policyAddress{
+			address: &AddressType{
 				SecurityGroup: "local",
 			},
 			is: true,
 		},
 		{
 			name: "specified security group",
-			address: &policyAddress{
+			address: &AddressType{
 				SecurityGroup: "default-domain:project-blue:default",
 			},
 			is: false,
 		},
 		{
 			name:    "all IPv4 addresses",
-			address: (*policyAddress)(AllIPv4Addresses()),
+			address: AllIPv4Addresses(),
 			is:      false,
 		},
 		{
 			name:    "all IPv6 addresses",
-			address: (*policyAddress)(AllIPv6Addresses()),
+			address: AllIPv6Addresses(),
 			is:      false,
 		},
 	}
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.is, tt.address.isLocal())
+			assert.Equal(t, tt.is, tt.address.isSecurityGroupLocal())
 		})
 	}
 }
