@@ -18,10 +18,13 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
         mysql-client \
         postgresql-client \
         git \
-        ansible-2.4.2.0\
         docker \
         python-requests \
         python-pip
+
+RUN yum remove -y PyYAML
+
+RUN pip install ansible==2.4.2.0
 
 EXPOSE 9091
 WORKDIR /etc/contrail
