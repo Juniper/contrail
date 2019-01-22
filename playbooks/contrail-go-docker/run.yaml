@@ -27,13 +27,9 @@
         - name: Run the source code generator
           command: make generate
         - name: Reset databases with latest schema and load initial data
-          command: make reset_db
-        - name: Build the source code
-          command: make build
+          command: make -j reset_db build
         - name: Run tests and linters on the source code in parallel
-          command: make -j test lint
-        - name: Generate Docker files
-          command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
+          command: ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} make -j test lint docker
 
     - name: Fix files ownerships
       file:

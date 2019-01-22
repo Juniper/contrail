@@ -101,6 +101,8 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
 
+    _ = db.DoInTransaction(ctx, func(ctx context.Context) error {
+
     project := createProject(t, ctx, uuid.NewV4().String(), false, nil)
     defer deleteProject(t, ctx, project.UUID)
 
@@ -170,6 +172,8 @@ func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
                 {{ schema.JSONSchema.GoName }}: model})
     assert.Error(t, err, "Raise Error On Duplicate Create failed")
 
+    return err
+    })
     return
 }
 
