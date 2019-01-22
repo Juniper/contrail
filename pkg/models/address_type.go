@@ -33,3 +33,7 @@ func (m *AddressType) IsSecurityGroupNameAReference() bool {
 	return m.SecurityGroup != AnySecurityGroup &&
 		m.SecurityGroup != LocalSecurityGroup && m.SecurityGroup != UnspecifiedSecurityGroup
 }
+
+func (m *AddressType) isSecurityGroupLocal() bool {
+	return m.SecurityGroup == LocalSecurityGroup
+}

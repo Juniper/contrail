@@ -50,15 +50,15 @@ func (m *PolicyRuleType) ValidateProtocol() error {
 // policyAddressPair is a single combination of source and destination specifications from a PolicyRuleType.
 type policyAddressPair struct {
 	policyRule                        *PolicyRuleType
-	sourceAddress, destinationAddress *policyAddress
+	sourceAddress, destinationAddress *AddressType
 	sourcePort, destinationPort       *PortType
 }
 
 func (pair *policyAddressPair) isIngress() (bool, error) {
 	switch {
-	case pair.destinationAddress.isLocal():
+	case pair.destinationAddress.isSecurityGroupLocal():
 		return true, nil
-	case pair.sourceAddress.isLocal():
+	case pair.sourceAddress.isSecurityGroupLocal():
 		return false, nil
 	default:
 		return false, neitherAddressIsLocal{
@@ -68,15 +68,8 @@ func (pair *policyAddressPair) isIngress() (bool, error) {
 	}
 }
 
-// policyAddress is an address from a PolicyRuleType.
-type policyAddress AddressType
-
-func (m *policyAddress) isLocal() bool {
-	return m.SecurityGroup == LocalSecurityGroup
-}
-
 type neitherAddressIsLocal struct {
-	sourceAddress, destinationAddress *policyAddress
+	sourceAddress, destinationAddress *AddressType
 }
 
 func (err neitherAddressIsLocal) Error() string {
@@ -92,9 +85,9 @@ func (m *PolicyRuleType) allAddressCombinations() (pairs []policyAddressPair) {
 					pairs = append(pairs, policyAddressPair{
 						policyRule: m,
 
-						sourceAddress:      (*policyAddress)(sourceAddress),
+						sourceAddress:      sourceAddress,
 						sourcePort:         sourcePort,
-						destinationAddress: (*policyAddress)(destinationAddress),
+						destinationAddress: destinationAddress,
 						destinationPort:    destinationPort,
 					})
 				}
@@ -158,12 +151,12 @@ func (m *PolicyRuleType) HasSecurityGroup() bool {
 // 'local' Security Group.
 func (m *PolicyRuleType) IsAnySecurityGroupAddrLocal() bool {
 	for _, addr := range m.GetSRCAddresses() {
-		if (*policyAddress)(addr).isLocal() {
+		if addr.isSecurityGroupLocal() {
 			return true
 		}
 	}
 	for _, addr := range m.GetDSTAddresses() {
-		if (*policyAddress)(addr).isLocal() {
+		if addr.isSecurityGroupLocal() {
 			return true
 		}
 	}

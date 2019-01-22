@@ -63,11 +63,11 @@ func makeACLRule(pair policyAddressPair, fqNameToSG map[string]*SecurityGroup) (
 		return nil, err
 	}
 
-	sourceAddress, err := policyAddressToACLAddress(pair.sourceAddress, fqNameToSG)
+	sourceAddress, err := addressTypeToACLAddress(pair.sourceAddress, fqNameToSG)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert source address for an ACL")
 	}
-	destinationAddress, err := policyAddressToACLAddress(pair.destinationAddress, fqNameToSG)
+	destinationAddress, err := addressTypeToACLAddress(pair.destinationAddress, fqNameToSG)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert destination address for an ACL")
 	}
@@ -88,15 +88,15 @@ func makeACLRule(pair policyAddressPair, fqNameToSG map[string]*SecurityGroup) (
 	}, nil
 }
 
-func policyAddressToACLAddress(
-	policyAddress *policyAddress, fqNameToSG map[string]*SecurityGroup) (*AddressType, error) {
+func addressTypeToACLAddress(
+	addr *AddressType, fqNameToSG map[string]*SecurityGroup) (*AddressType, error) {
 
-	numericSecurityGroup, err := securityGroupNameToID(policyAddress.SecurityGroup, fqNameToSG)
+	numericSecurityGroup, err := securityGroupNameToID(addr.SecurityGroup, fqNameToSG)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert security group name for an ACL")
 	}
 
-	aclAddress := AddressType(*policyAddress)
+	aclAddress := *addr
 	aclAddress.SecurityGroup = numericSecurityGroup
 	return &aclAddress, nil
 }

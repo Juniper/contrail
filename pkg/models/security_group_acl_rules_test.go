@@ -423,10 +423,10 @@ func TestMakeACLRule(t *testing.T) {
 					Protocol:  "any",
 					Ethertype: "IPv4",
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "default-domain:project-blue:default",
 				},
-				destinationAddress: &policyAddress{
+				destinationAddress: &AddressType{
 					SecurityGroup: "local",
 				},
 				sourcePort:      AllPorts(),
@@ -465,10 +465,10 @@ func TestMakeACLRule(t *testing.T) {
 					Protocol:  "any",
 					Ethertype: "IPv6",
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "default-domain:project-blue:default",
 				},
-				destinationAddress: &policyAddress{
+				destinationAddress: &AddressType{
 					SecurityGroup: "local",
 				},
 				sourcePort:      AllPorts(),
@@ -502,10 +502,10 @@ func TestMakeACLRule(t *testing.T) {
 					Protocol:  "any",
 					Ethertype: "IPv4",
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: (*policyAddress)(AllIPv4Addresses()),
+				destinationAddress: AllIPv4Addresses(),
 				sourcePort:         AllPorts(),
 				destinationPort:    AllPorts(),
 			},
@@ -535,10 +535,10 @@ func TestMakeACLRule(t *testing.T) {
 					Protocol:  "any",
 					Ethertype: "IPv6",
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: (*policyAddress)(AllIPv6Addresses()),
+				destinationAddress: AllIPv6Addresses(),
 				sourcePort:         AllPorts(),
 				destinationPort:    AllPorts(),
 			},
@@ -573,10 +573,10 @@ func TestMakeACLRule(t *testing.T) {
 						SimpleAction: "deny",
 					},
 				},
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: (*policyAddress)(AllIPv4Addresses()),
+				destinationAddress: AllIPv4Addresses(),
 				sourcePort:         AllPorts(),
 				destinationPort:    AllPorts(),
 			},
@@ -611,7 +611,7 @@ func TestMakeACLRule(t *testing.T) {
 		{
 			name: "unknown security group name",
 			policyAddressPair: policyAddressPair{
-				sourceAddress: &policyAddress{
+				sourceAddress: &AddressType{
 					SecurityGroup: "some:unknown:security-group",
 				},
 			},
