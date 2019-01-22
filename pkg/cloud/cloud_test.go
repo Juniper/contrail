@@ -14,12 +14,15 @@ import (
 )
 
 const (
-	allInOneCloudTemplatePath       = "./test_data/test_all_in_one_azure_cloud.tmpl"
-	allInOneCloudDeleteTemplatePath = "./test_data/test_all_in_one_azure_cloud_delete.tmpl"
-	allInOneCloudUpdateTemplatePath = "./test_data/test_all_in_one_azure_cloud_update.tmpl"
+	allInOneCloudTemplatePath       = "./test_data/test_all_in_one_public_cloud.tmpl"
+	allInOneCloudDeleteTemplatePath = "./test_data/test_all_in_one_public_cloud_delete.tmpl"
+	allInOneCloudUpdateTemplatePath = "./test_data/test_all_in_one_public_cloud_update.tmpl"
 	expectedAZCmdForCreateUpdate    = "./test_data/expected_azure_cmd_for_create_update.yaml"
 	expectedAZTopology              = "./test_data/expected_azure_cloud_topology.yaml"
 	expectedAZSecret                = "./test_data/expected_azure_cloud_secret.yaml"
+	expectedAWSCmdForCreateUpdate   = "./test_data/expected_aws_cmd_for_create_update.yaml"
+	expectedAWSTopology             = "./test_data/expected_aws_cloud_topology.yaml"
+	expectedAWSSecret               = "./test_data/expected_aws_cloud_secret.yaml"
 	cloudID                         = "cloud_uuid"
 )
 
@@ -33,6 +36,10 @@ func TestAzureCloud(t *testing.T) {
 	runAllInOneCloudTest(t, azure)
 }
 
+func TestAWSCloud(t *testing.T) {
+	runAllInOneCloudTest(t, aws)
+}
+
 func runAllInOneCloudTest(t *testing.T, cloudType string) {
 
 	context := pongo2.Context{
@@ -43,6 +50,9 @@ func runAllInOneCloudTest(t *testing.T, cloudType string) {
 	case azure:
 		runCloudTest(t, expectedAZTopology, expectedAZSecret,
 			expectedAZCmdForCreateUpdate, context)
+	case aws:
+		runCloudTest(t, expectedAWSTopology, expectedAWSSecret,
+			expectedAWSCmdForCreateUpdate, context)
 	}
 }
 
