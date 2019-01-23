@@ -16,8 +16,6 @@ import (
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
-var default{{ schema.JSONSchema.GoName }}UUID = uuid.NewV4().String()
-
 func create{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, id string, createRef bool, share []*models.ShareType) *models.{{ schema.JSONSchema.GoName }} {
     response, err := db.Get{{ schema.JSONSchema.GoName }}(
             ctx, &services.Get{{ schema.JSONSchema.GoName }}Request{
@@ -33,7 +31,7 @@ func create{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, id 
     model.Perms2.Share = share
 
     {% if schema.HasParents && !schema.ParentOptional %}
-    parent := create{{ schema.DefaultParent.GoName }}(t, ctx, default{{ schema.DefaultParent.GoName }}UUID, false, share)
+    parent := create{{ schema.DefaultParent.GoName }}(t, ctx, uuid.NewV4().String(), false, share)
     model.ParentUUID = parent.UUID
     model.ParentType = "{{ schema.DefaultParent.LinkTo.Path }}"
     {% endif %}
@@ -97,6 +95,7 @@ func delete{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, uui
 }
 
 func Test{{ schema.JSONSchema.GoName }}(t *testing.T) {
+    t.Parallel()
     var err error
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
