@@ -21,7 +21,7 @@ function test_directories {
 for dir in $(test_directories)
 do
 	cd "$dir"
-	go test -parallel 1 ${COVERMODE} ${COVERPROFILE} .
+	go test ${COVERMODE} ${COVERPROFILE} .
 	result=$?
 	if [ $result -ne 0 ]; then
 		rm -f ./profile.tmp
