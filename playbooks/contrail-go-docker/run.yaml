@@ -7,12 +7,18 @@
     - install-docker-daemon
     - role: add-insecure-registry
       new_registry: "{{ contrail_docker_registry }}"
-  vars:
-    workdir: /go/src/github.com/Juniper/contrail
-    sourcedir: "{{ ansible_env.HOME }}"
+  include_vars:
+    file: build-vars.yaml
   tasks:
     - name: Run build setup
       include: build-setup.yaml
+
+    - name: Prepare directory for unittests logs
+      become: yes
+      file:
+        path: "{{ logsdir }}"
+        owner: "{{ ansible_env.USER }}"
+        state: directory
 
     - name: Run build steps in loop
       include: build-step.yaml

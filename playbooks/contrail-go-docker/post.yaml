@@ -1,0 +1,20 @@
+- hosts: builder
+  name: Gather logs from build and test stage
+  roles:
+    - zuul-include-vars # include variables exported from trusted context
+  include_vars:
+    file: build-vars.yaml
+  tasks:
+    - name: Copy logs files
+      copy:
+        src: "{{ contraildir }}/{{ item }}"
+        dest: "{{ logsdir }}/{{ item }}"
+        owner: "{{ ansible_env.USER }}"
+      with_items:
+        - linter.log
+        - unittests.log
+        - coverage.log
+
+- hosts: builder
+  roles:
+    - contrail-upload-logs-unittests
