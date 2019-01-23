@@ -147,13 +147,15 @@ func (w *PostgresWatcher) Watch(ctx context.Context) error {
 	if err != nil {
 		return wrapError(errors.Wrap(err, "error getting replication slot"))
 	}
-	w.log.Debug("consistentPoint: ", pgx.FormatLSN(slotLSN))
-	w.log.Debug("snapshotName: ", snapshotName)
+	w.log.WithFields(logrus.Fields{
+		"consistentPoint": pgx.FormatLSN(slotLSN),
+		"snapshotName: ":  snapshotName,
+	}).Debug("Got replication slot")
 
 	w.lsnCounter.updateReceivedLSN(slotLSN) // TODO(Michal): get receivedLSN from etcd
 
 	if err := w.dumpIfShould(ctx, snapshotName); err != nil {
-		return nil
+		return wrapError(err)
 	}
 
 	w.lsnCounter.txnFinished(slotLSN)
@@ -176,11 +178,11 @@ func (w *PostgresWatcher) dumpIfShould(ctx context.Context, snapshotName string)
 		return nil
 	}
 
-	return w.Dump(ctx, snapshotName)
+	return w.dump(ctx, snapshotName)
 }
 
-// Dump dumps whole db state using provided snapshot name.
-func (w *PostgresWatcher) Dump(ctx context.Context, snapshotName string) error {
+// dump dumps whole db state using provided snapshot name.
+func (w *PostgresWatcher) dump(ctx context.Context, snapshotName string) error {
 	w.log.Debug("Starting dump phase")
 	dumpStart := time.Now()
 
@@ -200,7 +202,7 @@ func (w *PostgresWatcher) Dump(ctx context.Context, snapshotName string) error {
 	}); err != nil {
 		return errors.Wrap(w.muteCancellationError(err), "dumping snapshot failed")
 	}
-	w.log.WithField("dumpTime", time.Since(dumpStart)).Debugf("Dump phase finished - starting replication")
+	w.log.WithField("dumpTime", time.Since(dumpStart)).Debug("Dump phase finished - starting replication")
 
 	return nil
 }
