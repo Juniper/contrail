@@ -7,7 +7,6 @@
         "gofmt",
         "goimports",
         "golint",
-        "gosimple",
         "gotype",
         "gotypex",
         "ineffassign",
@@ -19,7 +18,6 @@
         "structcheck",
         "unconvert",
         "unparam",
-        "unused",
         "varcheck",
         "vet",
         "vetshadow"
