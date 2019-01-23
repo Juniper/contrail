@@ -1,0 +1,14 @@
+- hosts: builder
+  name: Gather logs from build and test stage
+  roles:
+    - zuul-include-vars # include variables exported from trusted context
+  vars:
+    workdir: /go/src/github.com/Juniper/contrail
+    logsdir: "{{ ansible_env.HOME }}/unittests-logs"
+  tasks:
+    - name: Copy logs files
+      command: cp {{ workdir }}/*.log {{ logsdir }}
+
+- hosts: builder
+  roles:
+    - contrail-upload-logs-unittests
