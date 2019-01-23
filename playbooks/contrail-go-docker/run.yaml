@@ -5,14 +5,20 @@
     - yum-repos-prepare
     - install-pip-virtualenv
     - install-docker-daemon
+    - contrail-upload-logs-unittests
     - role: add-insecure-registry
       new_registry: "{{ contrail_docker_registry }}"
   vars:
     workdir: /go/src/github.com/Juniper/contrail
     sourcedir: "{{ ansible_env.HOME }}"
+    logsdir: "{{ ansible_env.HOME }}/unittests-logs/"
   tasks:
     - name: Run build setup
       include: build-setup.yaml
+
+    - name: Prepare directory for unittests logs
+      become: yes
+      command: "mkdir -p {{ ansible_env.HOME }}/unittests-logs"
 
     - name: Run build steps in loop
       include: build-step.yaml
@@ -42,6 +48,9 @@
         owner: "{{ ansible_env.USER }}"
       become: yes
       become_user: root
+
+    - name: Copy logs files
+        command: "cp {{ workdir }}/*.log {{ logsdir }}"
 
 - hosts: builder
   name: Publish containers to the internal registry
