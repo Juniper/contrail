@@ -19,6 +19,10 @@
 - name: Pretend we're using github
   command: mv {{ sourcedir }}/src/review.opencontrail.org {{ sourcedir }}/src/github.com
 
+- name: Prepare unittests logs directory
+  become: yes
+  command: mkdir -p "{{ ansible_env.HOME }}/unittests-logs"
+
 - name: "Start runner docker container in background"
   docker_container:
     name: "{{ docker.0.name|default('runner') }}"

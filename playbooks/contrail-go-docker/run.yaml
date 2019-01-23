@@ -5,11 +5,13 @@
     - yum-repos-prepare
     - install-pip-virtualenv
     - install-docker-daemon
+    - contrail-upload-logs-unittests
     - role: add-insecure-registry
       new_registry: "{{ contrail_docker_registry }}"
   vars:
     workdir: /go/src/github.com/Juniper/contrail
     sourcedir: "{{ ansible_env.HOME }}"
+    logsdir: "{{ ansible_env.HOME }}/unittests-logs/"
   tasks:
     - name: Run build setup
       include: build-setup.yaml
@@ -34,6 +36,8 @@
           command: make -j test lint
         - name: Generate Docker files
           command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
+        - name: Copy logs
+          command: cp "{{ workdir }}/*.log" "{{ logsdir }}"
 
     - name: Fix files ownerships
       file:
