@@ -1,4 +1,4 @@
-name: All in one azure cloud
+name: All in one public cloud
 description: all-in-one azure create test
 cleanup:
 - path: /node/cloud_node_gw_uuid
@@ -31,9 +31,15 @@ test_data:
   cloud_user: &cloud_user
     name: cloud_user
     uuid: cloud_user_uuid
+    {% if "azure" in CLOUD_TYPE %}
     azure_credential:
       username: user
       password: password
+    {% elif "aws" in CLOUD_TYPE %}
+    aws_credential:
+      access_key: XXXXXX
+      secret_key: YYYYYYYYYYY
+    {% endif %}
     credential_refs:
       - uuid: cloud_credential_uuid
   cloud: &cloud
@@ -51,14 +57,16 @@ test_data:
     parent_type: cloud
     parent_uuid: cloud_uuid
   cloud_region: &cloud_region
+    {% if "azure" in CLOUD_TYPE %}
     name: WestUS
+    {% elif "aws" in CLOUD_TYPE %}
+    name: us-west-1
+    {% endif %}
     parent_type: cloud-provider
     parent_uuid: cloud_provider_uuid
     uuid: cloud_region_uuid
     {% if "azure" in CLOUD_TYPE %}
     resource_group: unit_test
-    {% elif "aws" in CLOUD_TYPE %}
-    availability_zone: a
     {% endif %}
   virtual_cloud: &virtual_cloud
     name: virtual_cloud
@@ -70,7 +78,7 @@ test_data:
     name: cloud_private_subnet
     uuid: cloud_private_subnet_uuid
     cidr_block: 192.168.10.0/24
-    {% if CLOUD_TYPE == "aws" %}
+    {% if "aws" in CLOUD_TYPE %}
     availability_zone: a
     {% endif %}
     parent_type: virtual-cloud
@@ -89,20 +97,34 @@ test_data:
     parent_uuid: cloud_security_group_uuid
     direction: ingress
     protocol: tcp
+    {% if "aws" in CLOUD_TYPE %}
+    from_port: 0
+    to_port: 0
+    cidr_block: 0.0.0.0/0
+    {% endif %}
   cloud_node_gw: &cloud_node_gw
     name: cloud_node_gw
     uuid: cloud_node_gw_uuid
     hostname: cloud_node_gw
     interface_name: cloud_node_gw_interface
     cloud_info:
+      {% if "azure" in CLOUD_TYPE %}
       operating_system: centos7
       instance_type: F16sv2
+      {% elif "aws" in CLOUD_TYPE %}
+      machine_id: ami-XXXXXXX
+      instance_type: t2.xlarge
+      {% endif %}
       roles:
         - gateway
     credential_refs:
       - uuid: cloud_credential_uuid
     cloud_private_subnet_refs:
       - uuid: cloud_private_subnet_uuid
+    {% if "aws" in CLOUD_TYPE %}
+    cloud_security_group_refs:
+      - uuid: cloud_security_group_uuid
+    {% endif %}
     parent_type: virtual-cloud
     parent_uuid: virtual_cloud_uuid
   cloud_node_controller: &cloud_node_controller
@@ -111,14 +133,23 @@ test_data:
     hostname: cloud_node_controller
     interface_name: cloud_node_controller_interface
     cloud_info:
+      {% if "azure" in CLOUD_TYPE %}
       operating_system: centos7
       instance_type: F16sv2
+      {% elif "aws" in CLOUD_TYPE %}
+      machine_id: ami-XXXXXXX
+      instance_type: t2.xlarge
+      {% endif %}
       roles:
         - controller
     credential_refs:
       - uuid: cloud_credential_uuid
     cloud_private_subnet_refs:
       - uuid: cloud_private_subnet_uuid
+    {% if "aws" in CLOUD_TYPE %}
+    cloud_security_group_refs:
+      - uuid: cloud_security_group_uuid
+    {% endif %}
     parent_type: virtual-cloud
     parent_uuid: virtual_cloud_uuid
   cloud_node_compute: &cloud_node_compute
@@ -127,14 +158,23 @@ test_data:
     hostname: cloud_node_compute
     interface_name: cloud_node_compute_interface
     cloud_info:
+      {% if "azure" in CLOUD_TYPE %}
       operating_system: centos7
       instance_type: F16sv2
+      {% elif "aws" in CLOUD_TYPE %}
+      machine_id: ami-XXXXXXX
+      instance_type: t2.xlarge
+      {% endif %}
       roles:
         - compute
     credential_refs:
       - uuid: cloud_credential_uuid
     cloud_private_subnet_refs:
       - uuid: cloud_private_subnet_uuid
+    {% if "aws" in CLOUD_TYPE %}
+    cloud_security_group_refs:
+      - uuid: cloud_security_group_uuid
+    {% endif %}
     parent_type: virtual-cloud
     parent_uuid: virtual_cloud_uuid
 
@@ -197,9 +237,15 @@ workflow:
       perms2:
         owner: admin
       uuid: cloud_user_uuid
+      {% if "azure" in CLOUD_TYPE %}
       azure_credential:
         username: user
         password: password
+      {% elif "aws" in CLOUD_TYPE %}
+      aws_credential:
+        access_key: XXXXXX
+        secret_key: YYYYYYYYYYY
+      {% endif %}
       credential_refs:
         - uuid: cloud_credential_uuid
 
@@ -251,14 +297,16 @@ workflow:
     cloud-region:
       perms2:
         owner: admin
+      {% if "azure" in CLOUD_TYPE %}
       name: WestUS
+      {% elif "aws" in CLOUD_TYPE %}
+      name: us-west-1
+      {% endif %}
       uuid: cloud_region_uuid
       parent_type: cloud-provider
       parent_uuid: cloud_provider_uuid
       {% if CLOUD_TYPE == "azure" %}
       resource_group: unit_test
-      {% elif CLOUD_TYPE == "aws" %}
-      availability_zone: a
       {% endif %}
 
 - name: create virtual cloud
@@ -277,6 +325,7 @@ workflow:
       parent_type: cloud-region
       parent_uuid: cloud_region_uuid
       cidr_block: 192.168.10.0/16
+
 - name: create cloud private subnet
   request:
     path: /cloud-private-subnets
@@ -335,6 +384,11 @@ workflow:
       parent_uuid: cloud_security_group_uuid
       direction: ingress
       protocol: tcp
+      {% if "aws" in CLOUD_TYPE %}
+      from_port: 0
+      to_port: 0
+      cidr_block: 0.0.0.0/0
+      {% endif %}
 
 - name: create cloud node gw
   request:
@@ -351,14 +405,23 @@ workflow:
       hostname: cloud_node_gw
       interface_name: cloud_node_gw_interface
       cloud_info:
+        {% if "azure" in CLOUD_TYPE %}
         operating_system: centos7
         instance_type: F16sv2
+        {% elif "aws" in CLOUD_TYPE %}
+        machine_id: ami-XXXXXXX
+        instance_type: t2.xlarge
+        {% endif %}
         roles:
           - gateway
       credential_refs:
         - uuid: cloud_credential_uuid
       cloud_private_subnet_refs:
         - uuid: cloud_private_subnet_uuid
+      {% if "aws" in CLOUD_TYPE %}
+      cloud_security_group_refs:
+        - uuid: cloud_security_group_uuid
+      {% endif %}
       parent_type: virtual-cloud
       parent_uuid: virtual_cloud_uuid
 
@@ -377,14 +440,23 @@ workflow:
       hostname: cloud_node_controller
       interface_name: cloud_node_controller_interface
       cloud_info:
+        {% if "azure" in CLOUD_TYPE %}
         operating_system: centos7
         instance_type: F16sv2
+        {% elif "aws" in CLOUD_TYPE %}
+        machine_id: ami-XXXXXXX
+        instance_type: t2.xlarge
+        {% endif %}
         roles:
           - controller
       credential_refs:
         - uuid: cloud_credential_uuid
       cloud_private_subnet_refs:
         - uuid: cloud_private_subnet_uuid
+      {% if "aws" in CLOUD_TYPE %}
+      cloud_security_group_refs:
+        - uuid: cloud_security_group_uuid
+      {% endif %}
       parent_type: virtual-cloud
       parent_uuid: virtual_cloud_uuid
 
@@ -403,13 +475,22 @@ workflow:
       hostname: cloud_node_compute
       interface_name: cloud_node_compute_interface
       cloud_info:
+        {% if "azure" in CLOUD_TYPE %}
         operating_system: centos7
         instance_type: F16sv2
+        {% elif "aws" in CLOUD_TYPE %}
+        machine_id: ami-XXXXXXX
+        instance_type: t2.xlarge
+        {% endif %}
         roles:
           - compute
       credential_refs:
         - uuid: cloud_credential_uuid
       cloud_private_subnet_refs:
         - uuid: cloud_private_subnet_uuid
+      {% if "aws" in CLOUD_TYPE %}
+      cloud_security_group_refs:
+        - uuid: cloud_security_group_uuid
+      {% endif %}
       parent_type: virtual-cloud
       parent_uuid: virtual_cloud_uuid
