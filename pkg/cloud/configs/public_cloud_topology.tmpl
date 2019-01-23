@@ -32,7 +32,7 @@
               rules:
               {% for sgRule in sg.info.CloudSecurityGroupRules %}
                 - name: {{ sgRule.Name }}
-                  direction: {% if 'ingress' in sgRule.Direction %}inbound{% elif 'egress' in sgRule.Direction %}outbound{% endif %}
+                  direction: {% if "ingress" in sgRule.Direction %}inbound{% elif "egress" in sgRule.Direction %}outbound{% endif %}
                   {% if sgRule.Protocol %}protocol: {{ sgRule.Protocol }}{% endif %}
               {% endfor %}
             {% elif aws in cloudType %}
