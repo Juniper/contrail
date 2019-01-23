@@ -20,8 +20,7 @@ type oner interface {
 }
 
 func TestPostgresWatcherWatch(t *testing.T) {
-	slot, publication, snapshot, lsn := "test-sub", "test-pub", "snapshot-id", uint64(2778)
-	var ctx context.Context
+	const slot, publication, snapshot, lsn = "test-sub", "test-pub", "snapshot-id", uint64(2778)
 	cancel := func() {}
 
 	tests := []struct {
@@ -34,7 +33,16 @@ func TestPostgresWatcherWatch(t *testing.T) {
 			name: "should return error when GetReplicationSlot fails",
 			initMock: func(o oner) {
 				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
-				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(uint64(0), "", assert.AnError).Once()
+				o.On("GetReplicationSlot", mock.Anything).Return(uint64(0), "", assert.AnError).Once()
+			},
+			watchError: true,
+		},
+		{
+			name: "should return error when DoInTransactionSnapshot fails",
+			initMock: func(o oner) {
+				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
+				o.On("GetReplicationSlot", mock.Anything).Return(lsn, snapshot, nil).Once()
+				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(assert.AnError).Once()
 			},
 			watchError: true,
 		},
@@ -42,7 +50,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 			name: "should return error when StartReplication fails",
 			initMock: func(o oner) {
 				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
-				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
+				o.On("GetReplicationSlot", mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(assert.AnError).Once()
 			},
@@ -52,7 +60,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 			name: "should return error when WaitForReplicationMessage returns unknown error",
 			initMock: func(o oner) {
 				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
-				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
+				o.On("GetReplicationSlot", mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
 				o.On("WaitForReplicationMessage", mock.Anything).Return(nil, assert.AnError).Once()
@@ -63,7 +71,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 			name: "should stop on WaitForReplicationMessage when context cancelled",
 			initMock: func(o oner) {
 				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
-				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
+				o.On("GetReplicationSlot", mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
 				o.On("WaitForReplicationMessage", mock.Anything).Run(func(mock.Arguments) {
@@ -76,7 +84,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 			name: "should continue when WaitForReplicationMessage returns context deadline",
 			initMock: func(o oner) {
 				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
-				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
+				o.On("GetReplicationSlot", mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
 				o.On("WaitForReplicationMessage", mock.Anything).Return(nil, context.DeadlineExceeded).Twice()
@@ -91,7 +99,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 			name: "should pass to handler received WAL message",
 			initMock: func(o oner) {
 				o.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
-				o.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
+				o.On("GetReplicationSlot", mock.Anything).Return(lsn, snapshot, nil).Once()
 				o.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
 				o.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
 				o.On("WaitForReplicationMessage", mock.Anything).Return(
@@ -112,17 +120,23 @@ func TestPostgresWatcherWatch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel = context.WithCancel(context.Background())
 			var receivedMsg pgoutput.Message
-			h := func(_ context.Context, m pgoutput.Message) error {
-				receivedMsg = m
-				return nil
-			}
-			m := &mockPostgresWatcherConnection{}
+			pwc := &mockPostgresWatcherConnection{}
 			if tt.initMock != nil {
-				tt.initMock(m)
+				tt.initMock(pwc)
 			}
-			w := givenPostgresWatcher(slot, publication, m, h)
+			w := givenPostgresWatcher(
+				slot,
+				publication,
+				pwc,
+				func(_ context.Context, m pgoutput.Message) error {
+					receivedMsg = m
+					return nil
+				},
+			)
+
+			var ctx context.Context
+			ctx, cancel = context.WithCancel(context.Background())
 
 			err := w.Watch(ctx)
 
@@ -132,7 +146,7 @@ func TestPostgresWatcherWatch(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tt.expectedMessage, receivedMsg)
-			m.AssertExpectations(t)
+			pwc.AssertExpectations(t)
 			cancel()
 		})
 	}
@@ -144,14 +158,14 @@ func TestPostgresWatcherContextCancellation(t *testing.T) {
 
 	closeErr := errors.New("some closing error")
 
-	m := &mockPostgresWatcherConnection{}
-	m.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
-	m.On("GetReplicationSlot", mock.Anything, mock.Anything, mock.Anything).Return(lsn, snapshot, nil).Once()
-	m.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
-	m.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
-	m.On("Close").Return(closeErr).Once()
+	pwc := &mockPostgresWatcherConnection{}
+	pwc.On("IsInRecovery", mock.Anything).Return(false, nil).Once()
+	pwc.On("GetReplicationSlot", mock.Anything).Return(lsn, snapshot, nil).Once()
+	pwc.On("DoInTransactionSnapshot", mock.Anything, snapshot, mock.Anything).Return(nil).Once()
+	pwc.On("StartReplication", slot, publication, uint64(0)).Return(nil).Once()
+	pwc.On("Close").Return(closeErr).Once()
 
-	w := givenPostgresWatcher(slot, publication, m, nil)
+	w := givenPostgresWatcher(slot, publication, pwc, nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -161,7 +175,7 @@ func TestPostgresWatcherContextCancellation(t *testing.T) {
 
 	// then
 	assert.Equal(t, closeErr, errors.Cause(err))
-	m.AssertExpectations(t)
+	pwc.AssertExpectations(t)
 }
 
 func TestPostgresWatcherClose(t *testing.T) {
@@ -209,51 +223,51 @@ type mockPostgresWatcherConnection struct {
 	mock.Mock
 }
 
-func (m *mockPostgresWatcherConnection) Close() error {
-	args := m.MethodCalled("Close")
+func (pwc *mockPostgresWatcherConnection) Close() error {
+	args := pwc.MethodCalled("Close")
 	return args.Error(0)
 }
 
-func (m *mockPostgresWatcherConnection) GetReplicationSlot(
+func (pwc *mockPostgresWatcherConnection) GetReplicationSlot(
 	name string,
 ) (lastLSN uint64, snapshotName string, err error) {
-	args := m.MethodCalled("GetReplicationSlot", name)
+	args := pwc.MethodCalled("GetReplicationSlot", name)
 	return args.Get(0).(uint64), args.String(1), args.Error(2)
 }
 
-func (m *mockPostgresWatcherConnection) RenewPublication(ctx context.Context, name string) error {
-	args := m.MethodCalled("RenewPublication", ctx, name)
+func (pwc *mockPostgresWatcherConnection) RenewPublication(ctx context.Context, name string) error {
+	args := pwc.MethodCalled("RenewPublication", ctx, name)
 	return args.Error(0)
 }
 
-func (m *mockPostgresWatcherConnection) StartReplication(slot string, publication string, startLSN uint64) error {
-	args := m.MethodCalled("StartReplication", slot, publication, startLSN)
+func (pwc *mockPostgresWatcherConnection) StartReplication(slot string, publication string, startLSN uint64) error {
+	args := pwc.MethodCalled("StartReplication", slot, publication, startLSN)
 	return args.Error(0)
 }
 
-func (m *mockPostgresWatcherConnection) WaitForReplicationMessage(
+func (pwc *mockPostgresWatcherConnection) WaitForReplicationMessage(
 	ctx context.Context,
 ) (*pgx.ReplicationMessage, error) {
-	args := m.MethodCalled("WaitForReplicationMessage", ctx)
+	args := pwc.MethodCalled("WaitForReplicationMessage", ctx)
 	if args.Error(1) != nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*pgx.ReplicationMessage), args.Error(1)
 }
 
-func (m *mockPostgresWatcherConnection) SendStatus(receivedLSN, savedLSN uint64) error {
-	args := m.MethodCalled("SendStatus", receivedLSN, savedLSN)
+func (pwc *mockPostgresWatcherConnection) SendStatus(receivedLSN, savedLSN uint64) error {
+	args := pwc.MethodCalled("SendStatus", receivedLSN, savedLSN)
 	return args.Error(0)
 }
-func (m *mockPostgresWatcherConnection) IsInRecovery(ctx context.Context) (bool, error) {
-	args := m.MethodCalled("IsInRecovery", ctx)
+func (pwc *mockPostgresWatcherConnection) IsInRecovery(ctx context.Context) (bool, error) {
+	args := pwc.MethodCalled("IsInRecovery", ctx)
 	return args.Get(0).(bool), args.Error(1)
 }
 
-func (m *mockPostgresWatcherConnection) DoInTransactionSnapshot(
+func (pwc *mockPostgresWatcherConnection) DoInTransactionSnapshot(
 	ctx context.Context, snapshotName string, do func(context.Context) error,
 ) error {
-	args := m.MethodCalled("DoInTransactionSnapshot", ctx, snapshotName, do)
+	args := pwc.MethodCalled("DoInTransactionSnapshot", ctx, snapshotName, do)
 	return args.Error(0)
 }
 
