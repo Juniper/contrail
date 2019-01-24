@@ -437,7 +437,7 @@ func (m *multiCloudProvisioner) createClusterTopologyFile(workDir string) error 
 		if err != nil {
 			return err
 		}
-		err = fileutil.AppendToFile(m.getClusterTopoFile(workDir), onPremTopoContent, defaultFilePermRWOnly)
+		err = fileutil.WriteToFile(m.getClusterTopoFile(workDir), onPremTopoContent, defaultFilePermRWOnly)
 		if err != nil {
 			return err
 		}
@@ -492,7 +492,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile(workDir string) error {
 		if err != nil {
 			return err
 		}
-		err = fileutil.AppendToFile(m.getClusterSecretFile(workDir), secretFileContent, defaultFilePermRWOnly)
+		err = fileutil.WriteToFile(m.getClusterSecretFile(workDir), secretFileContent, defaultFilePermRWOnly)
 		if err != nil {
 			return err
 		}
