@@ -37,7 +37,7 @@ make docker_config_api
 ./tools/testenv.sh --patroni-etcd patroni
 
 # Stop services using docker-compose
-compose_down kubemanager config control vrouter
+compose --down kubemanager config control vrouter
 
 # Clear old config-node databases
 clear_config_database
@@ -60,6 +60,9 @@ sudo ./tools/control-node_etcd/update-docker-compose.py
 # Update schema transformer docker compose file
 sudo ./tools/schema_transformer_etcd/update-docker-compose.py
 
+# Update svnmonitor docker compose file
+sudo ./tools/svcmonitor_etcd/update-docker-compose.py
+
 # Load init data to rdbms
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-config_api.yml
 
@@ -68,8 +71,5 @@ build_and_run_contrail-go_docker
 GoConfigIP='127.0.0.1' # networking mode 'host'
 ensure_kubemanager_config_nodes "${GoConfigIP}"
 
-# Start schema transformer
-schema_transformer_up
-
 # Start services using docker-compose
-compose_up control vrouter kubemanager
+compose --up control vrouter config:schema config:svcmonitor kubemanager

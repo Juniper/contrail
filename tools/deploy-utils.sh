@@ -19,25 +19,27 @@ ensure_kubemanager_config_nodes()
     fi
 }
 
-schema_transformer_up()
+# compose is running docker-compose up or down on list of dirs
+# or dir:service pairs. For each bare dir specified it will work on
+# all services defined in relevant docker-compose.yaml file. 
+# For each dir:service pair it will work on specified service only.
+compose()
 {
-    docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d schema
-}
+    case "$1" in
+        --up ) action="up -d";;
+        --down ) action="down";;
+        * ) echo "Usage: compose (--up|--down) (<dir>|<dir>:<service>)..." && return 1;;
+    esac
+    shift
 
-compose_up()
-{
-    for docker_dir in "$@"
+    for docker_dir_img in "$@"
     do
-        docker-compose -f "/etc/contrail/${docker_dir}/docker-compose.yaml" up -d
+        case "$docker_dir_img" in
+            *:* ) docker-compose -f "/etc/contrail/${docker_dir_img%:*}/docker-compose.yaml" $action ${docker_dir_img#*:};;
+            * ) docker-compose -f "/etc/contrail/${docker_dir_img}/docker-compose.yaml" $action;;
+        esac
     done
-}
 
-compose_down()
-{
-    for docker_dir in "$@"
-    do
-        docker-compose -f "/etc/contrail/${docker_dir}/docker-compose.yaml" down
-    done
 }
 
 clear_config_database()
