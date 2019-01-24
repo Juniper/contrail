@@ -50,7 +50,7 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 {% endif %}{% endfor %}
 
 {% for type, definition in types sorted %}{% if definition.Type == "object" %}
-{% if type == "KeyValuePair" or type == "LinklocalServiceEntryType" or type == "QosIdForwardingClassPair" %}
+{% if type == "KeyValuePair" or type == "LinklocalServiceEntryType" or type == "QosIdForwardingClassPair" or type == "IdPermsType" %}
 
 	// Omitempty tag is removed from fields of {{ type }} type, because it caused issues in REST API clients
 	// which expected all fields to be present. To achieve that "gogoproto.jsontag" extension is used.
