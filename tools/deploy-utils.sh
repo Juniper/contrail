@@ -33,34 +33,27 @@ ensure_keystone_on_localhost()
     docker restart keystone
 }
 
-schema_transformer_up()
-{
-    docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d schema
-}
-
-device_manager_up()
-{
-    docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d devicemgr
-}
-
-node_manager_up()
-{
-    docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d nodemgr
-}
-
-compose_up()
-{
-    for docker_dir in "$@"
-    do
-        docker-compose -f "/etc/contrail/${docker_dir}/docker-compose.yaml" up -d
-    done
-}
-
+# docker-compose down
 compose_down()
 {
     for docker_dir in "$@"
     do
         docker-compose -f "/etc/contrail/${docker_dir}/docker-compose.yaml" down
+    done
+}
+
+# compose_up is running docker-compose up -d on list of dirs
+# or dir:service pairs. For each bare dir specified it will work on
+# all services defined in relevant docker-compose.yaml file.
+# For each dir:service pair it will work on specified service only.
+compose_up()
+{
+    for docker_dir_img in "$@"
+    do
+        case "$docker_dir_img" in
+            *:* ) docker-compose -f "/etc/contrail/${docker_dir_img%:*}/docker-compose.yaml" up -d ${docker_dir_img#*:};;
+            * ) docker-compose -f "/etc/contrail/${docker_dir_img}/docker-compose.yaml" up -d;;
+        esac
     done
 }
 

@@ -63,11 +63,17 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 
 {% else %}
 
-    message {{ type }} {
-    {%- for property in definition.OrderedProperties %}
-        {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.JSONTag }}\""]; // {{ property.Description }}
-    {%- endfor %}
-    }
+	message {{ type }} {
+	{%- for property in definition.OrderedProperties %}
+    {%- if property.ID == "connection_limit" %}
+        //Following property should not have omitempty tag and should have correct default value in schema.
+        //For example "connection_limit" property had default value defined only on WebUI site.
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.JSONTag }}\"", (gogoproto.jsontag) = "{{ property.JSONTag }}"]; // {{ property.Description }}
+    {%- else %}
+		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.JSONTag }}\""]; // {{ property.Description }}
+    {%- endif %}
+	{%- endfor %}
+	}
 
 {% endif %}
 {% endif %}{% endfor %}
