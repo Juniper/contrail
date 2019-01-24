@@ -48,9 +48,6 @@ make zero_psql
 # Drop contrail related content from etcd
 docker exec "$(docker ps -q -f name=k8s_etcd_etcd)" sh -c "ETCDCTL_API=3 etcdctl del /contrail --prefix"
 
-# Build patched kube_manager with etcd support
-docker build "$ContrailRootDir/docker/kube_manager_etcd/" -t contrail-kubernetes-kube-manager:etcd
-
 # Update kube_manager docker compose file
 sudo ./tools/kube_manager_etcd/update-docker-compose.py
 
