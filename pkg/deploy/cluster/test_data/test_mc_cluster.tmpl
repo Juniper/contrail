@@ -108,6 +108,15 @@ test_data:
     orchestrator: kubernetes
     default_gateway: 127.0.0.254
     ntp_server: 10.1.1.100
+    mc_gw_info:
+      AS: 65000
+      openvpn_port: 443
+      vpn_lo_network: 100.65.0.0/16
+      vpn_network: 100.64.0.0/16
+      bfd_interval: 200ms
+      bfd_multiplier: 5
+      bfd_interval_multihop: 500ms
+      bfd_multiplier_multihop: 5
     kubernetes_cluster_refs:
       - uuid: test_kubernetes_cluster_uuid
     cloud_refs:
