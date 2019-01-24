@@ -14,12 +14,12 @@ CONTAINER_REGISTRY: test_registry
 CONTRAIL_MULTICLOUD_VERSION: ocata-5.0-x
 UPGRADE_KERNEL: True
 KERNEL_VERSION: 3.10.0-862.3.2.el7.x86_64
-AS: 
-vpn_lo_network: 
-vpn_network: 
-openvpn_port: 
-bfd_interval: 
-bfd_multiplier: 
-bfd_interval_multihop: 
-bfd_multiplier_multihop: 
+AS: 65000
+vpn_lo_network: 100.65.0.0/16
+vpn_network: 100.64.0.0/16
+openvpn_port: 443
+bfd_interval: 200ms
+bfd_multiplier: 5
+bfd_interval_multihop: 500ms
+bfd_multiplier_multihop: 5
 core_bgp_secret: bgp_secret
