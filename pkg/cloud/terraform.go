@@ -91,7 +91,7 @@ func (c *Cloud) manageTerraform(action string) error {
 func (tf *terraform) createInputFile() error {
 
 	cmd := getGenerateTopologyCmd(tf.mcDir)
-	args := strings.Split(fmt.Sprintf("-t %s -s %s",
+	args := strings.Split(fmt.Sprintf("-t %s -s %s --no_validation",
 		tf.topoFile, tf.secretFile), " ")
 
 	tf.log.Infof("Generating input file (cloudType.tf.json)")
