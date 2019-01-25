@@ -159,8 +159,17 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64, owner strin
 	if key == "" {
 		return errors.New("empty int-pool key provided to set")
 	}
+
+	storedOwner, err := db.GetIntOwner(ctx, key, id)
+	if err != nil && !errutil.IsNotFound(err) {
+		return err
+	}
+
+	if storedOwner == owner {
+		return nil
+	}
+
 	tx := basedb.GetTransaction(ctx)
-	d := db.Dialect
 	rangePool := &IntPool{
 		Key:   key,
 		Start: id,
@@ -178,6 +187,19 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64, owner strin
 		return err
 	}
 	pool := pools[0]
+
+	if err := db.insertIntIntoPool(ctx, tx, key, pool, id); err != nil {
+		return basedb.FormatDBError(err)
+	}
+
+	if err := db.insertIntOwner(ctx, tx, id, key, owner); err != nil {
+		return basedb.FormatDBError(err)
+	}
+	return nil
+}
+
+func (db *Service) insertIntIntoPool(ctx context.Context, tx *sql.Tx, key string, pool *IntPool, id int64) (err error) {
+	d := db.Dialect
 	if pool.Start == id {
 		_, err = tx.ExecContext(
 			ctx,
@@ -190,30 +212,22 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64, owner strin
 			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
 				d.Values("key", "start", "end")+");",
 			key, pool.Start, pool.End-1)
-	} else {
-		// We need divide one pool to two.
-		_, err = tx.ExecContext(
-			ctx,
-			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
-				d.Values("key", "start", "end")+");",
-			key, pool.Start, id)
-		if err != nil {
-			return basedb.FormatDBError(err)
-		}
-		_, err = tx.ExecContext(
-			ctx,
-			"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
-				d.Values("key", "start", "end")+");",
-			key, id+1, pool.End)
 	}
+	// We need divide one pool to two.
+	_, err = tx.ExecContext(
+		ctx,
+		"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
+			d.Values("key", "start", "end")+");",
+		key, pool.Start, id)
 	if err != nil {
 		return basedb.FormatDBError(err)
 	}
-
-	if err := db.insertIntOwner(ctx, tx, id, key, owner); err != nil {
-		return basedb.FormatDBError(err)
-	}
-	return nil
+	_, err = tx.ExecContext(
+		ctx,
+		"insert into int_pool ("+d.QuoteSep("key", "start", "end")+") values ("+
+			d.Values("key", "start", "end")+");",
+		key, id+1, pool.End)
+	return err
 }
 
 // DeallocateInt deallocate integer.
