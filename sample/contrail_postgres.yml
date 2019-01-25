@@ -43,6 +43,9 @@ server:
   # Enable GRPC or not
   enable_grpc: false
 
+  # Enable Neutron Service or not
+  enable_vnc_neutron: true
+
   # Static file config
   # key: URL path
   # value: file path. (absolute path recommended in production)
