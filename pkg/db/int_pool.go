@@ -159,6 +159,16 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64, owner strin
 	if key == "" {
 		return errors.New("empty int-pool key provided to set")
 	}
+
+	storedOwner, err := db.GetIntOwner(ctx, key, id)
+	if err != nil && !errutil.IsNotFound(err) {
+		return err
+	}
+
+	if storedOwner == owner {
+		return nil
+	}
+
 	tx := basedb.GetTransaction(ctx)
 	d := db.Dialect
 	rangePool := &IntPool{
