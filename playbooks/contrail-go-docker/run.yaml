@@ -30,10 +30,8 @@
           command: make reset_db
         - name: Build the source code
           command: make build
-        - name: Run tests and linters on the source code in parallel
-          command: make -j test lint
-        - name: Generate Docker files
-          command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
+        - name: Run tests and linters on the source code in parallel and generate Docker files
+          command: ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} make -j test lint docker
 
     - name: Fix files ownerships
       file:
