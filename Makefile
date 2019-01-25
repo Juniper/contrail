@@ -46,6 +46,9 @@ test: ## Run tests with coverage
 build: ## Build all binaries without producing output
 	go build ./cmd/...
 
+format:
+	./tools/fmt.sh
+
 format_gen:
 	find ./cmd ./pkg -name 'gen_*.go' -exec go fmt {} \;
 
