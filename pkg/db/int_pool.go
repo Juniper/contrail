@@ -159,24 +159,50 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64, owner strin
 	if key == "" {
 		return errors.New("empty int-pool key provided to set")
 	}
+
+	storedOwner, err := db.GetIntOwner(ctx, key, id)
+	if err != nil && !errutil.IsNotFound(err) {
+		return err
+	}
+
+	if owner != "" && storedOwner == owner {
+		return nil
+	}
+
 	tx := basedb.GetTransaction(ctx)
+
+	if err := db.insertIntIntoPool(ctx, tx, key, id); err != nil {
+		return basedb.FormatDBError(err)
+	}
+
+	if err := db.insertIntOwner(ctx, tx, id, key, owner); err != nil {
+		return basedb.FormatDBError(err)
+	}
+	return nil
+}
+
+func (db *Service) insertIntIntoPool(ctx context.Context, tx *sql.Tx, key string, id int64) (err error) {
 	d := db.Dialect
 	rangePool := &IntPool{
 		Key:   key,
 		Start: id,
 		End:   id + 1,
 	}
+
 	pools, err := db.GetIntPools(ctx, rangePool)
 	if err != nil {
 		return err
 	}
+
 	if len(pools) == 0 {
 		return errutil.ErrorNotFound
 	}
+
 	err = db.deleteIntPools(ctx, rangePool)
 	if err != nil {
 		return err
 	}
+
 	pool := pools[0]
 	if pool.Start == id {
 		_, err = tx.ExecContext(
@@ -206,14 +232,8 @@ func (db *Service) SetInt(ctx context.Context, key string, id int64, owner strin
 				d.Values("key", "start", "end")+");",
 			key, id+1, pool.End)
 	}
-	if err != nil {
-		return basedb.FormatDBError(err)
-	}
 
-	if err := db.insertIntOwner(ctx, tx, id, key, owner); err != nil {
-		return basedb.FormatDBError(err)
-	}
-	return nil
+	return err
 }
 
 // DeallocateInt deallocate integer.
