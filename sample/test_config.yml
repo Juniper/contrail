@@ -65,6 +65,7 @@ server:
   # Enable GRPC or not
   enable_grpc: true
 
+  # Enable Neutron Service or not
   enable_vnc_neutron: true
 
   # Static file config
