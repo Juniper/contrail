@@ -267,6 +267,21 @@ func (m *{{ schema.JSONSchema.GoName }}) UnmarshalJSON(b []byte) error {
 	return err
 }
 {% endif %}
+
+{% if schema.TypeName %}
+func (m *{{ schema.JSONSchema.GoName }}) MarshalJSON() ([]byte, error) {
+	type alias {{ schema.JSONSchema.GoName }} // alias is created to avoid infinite recursion
+	obj := struct {
+		*alias
+		To []string `json:"to,omitempty"`
+	}{
+		alias: (*alias)(m),
+		To: m.FQName,
+	}
+	return json.Marshal(obj)
+}
+{% endif %}
+
 {% if schema.TypeName %}
 
 // Kind returns kind of an resource.
