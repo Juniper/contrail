@@ -5,67 +5,50 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
 )
 
 // StoreKeyValue stores a value under given key.
 // Updates the value if key is already present.
-func (db *Service) StoreKeyValue(
-	ctx context.Context,
-	request *services.StoreKeyValueRequest,
-) (*types.Empty, error) {
-	return &types.Empty{}, db.DoInTransaction(ctx, func(ctx context.Context) error {
-		return db.storeKV(ctx, request.Key, request.Value)
+func (db *Service) StoreKeyValue(ctx context.Context, key string, value string,
+) error {
+	return db.DoInTransaction(ctx, func(ctx context.Context) error {
+		return db.storeKV(ctx, key, value)
 	})
 }
 
 // RetrieveValues retrieves values corresponding to the given list of keys.
 // The values are returned in an arbitrary order. Keys not present in the store are ignored.
-func (db *Service) RetrieveValues(
-	ctx context.Context,
-	request *services.RetrieveValuesRequest,
-) (res *services.RetrieveValuesResponse, err error) {
-	err = db.DoInTransaction(ctx, func(ctx context.Context) error {
-		var values []string
-		values, err = db.retrieveValues(ctx, request.Keys)
-		if err == nil {
-			res = &services.RetrieveValuesResponse{Values: values}
-		}
+func (db *Service) RetrieveValues(ctx context.Context, keys []string) (vals []string, err error) {
+	if err = db.DoInTransaction(ctx, func(ctx context.Context) error {
+		vals, err = db.retrieveValues(ctx, keys)
 		return err
-	})
-	return res, err
+	}); err != nil {
+		return nil, err
+	}
+	return vals, nil
 }
 
 // DeleteKey deletes the value under the given key.
 // Nothing happens if the key is not present.
-func (db *Service) DeleteKey(
-	ctx context.Context,
-	request *services.DeleteKeyRequest,
-) (*types.Empty, error) {
-	return &types.Empty{}, db.DoInTransaction(ctx, func(ctx context.Context) error {
-		return db.deleteKey(ctx, request.Key)
+func (db *Service) DeleteKey(ctx context.Context, key string) error {
+	return db.DoInTransaction(ctx, func(ctx context.Context) error {
+		return db.deleteKey(ctx, key)
 	})
 }
 
 // RetrieveKVPs returns the entire store as a list of (key, value) pairs.
-func (db *Service) RetrieveKVPs(
-	ctx context.Context,
-	request *types.Empty,
-) (res *services.RetrieveKVPsResponse, err error) {
-	err = db.DoInTransaction(ctx, func(ctx context.Context) error {
-		var kvps []*models.KeyValuePair
+func (db *Service) RetrieveKVPs(ctx context.Context) (kvps []*models.KeyValuePair, err error) {
+	if err = db.DoInTransaction(ctx, func(ctx context.Context) error {
 		kvps, err = db.retrieveKVPs(ctx)
-		if err == nil {
-			res = &services.RetrieveKVPsResponse{KeyValuePairs: kvps}
-		}
 		return err
-	})
-	return res, err
+	}); err != nil {
+		return nil, err
+	}
+	return kvps, nil
 }
 
 func (db *Service) storeKV(ctx context.Context, key string, value string) error {
