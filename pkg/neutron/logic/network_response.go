@@ -5,7 +5,7 @@ import (
 )
 
 func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork, oper string) *NetworkResponse {
-	parentNeutronUUID := contrailUUIDToNeutronID(vn.GetParentUUID())
+	parentNeutronUUID := ContrailUUIDToNeutronID(vn.GetParentUUID())
 	nn := &NetworkResponse{
 		ID:                      vn.GetUUID(),
 		Name:                    vn.GetDisplayName(),
