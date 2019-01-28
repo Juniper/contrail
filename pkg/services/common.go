@@ -133,6 +133,11 @@ func (p *ServiceEventProcessor) Process(ctx context.Context, event *Event) (*Eve
 	return event.Process(ctx, p.Service)
 }
 
+//ContrailServicePlugins
+type ContrailServicePlugins struct {
+	fqNameToIDPlugins []FQNameToIDServer
+}
+
 // ContrailService implementation.
 type ContrailService struct {
 	BaseService
@@ -143,6 +148,7 @@ type ContrailService struct {
 	IntPoolAllocator   IntPoolAllocator
 	RefRelaxer         RefRelaxer
 	UserAgentKVService UserAgentKVService
+	Plugins            ContrailServicePlugins
 }
 
 // RESTSync handles Sync API request.

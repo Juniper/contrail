@@ -206,10 +206,6 @@ func (s *Server) Init() (err error) {
 	s.FQNameToIDServer = cs
 	s.IDToTypeServer = cs
 
-	if viper.GetBool("server.enable_vnc_neutron") {
-		s.setupNeutronService(cs)
-	}
-
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second
@@ -297,6 +293,12 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("homepage.enabled") {
 		s.setupHomepage()
+	}
+
+	if viper.GetBool("server.enable_vnc_neutron") {
+		// TODO Add keystone client
+		n := s.setupNeutronService(cs)
+		s.Plugins.fqNameToIDPlugins = append(s.Plugins.fqNameToIDPlugins, n)
 	}
 
 	s.setupWatchAPI()

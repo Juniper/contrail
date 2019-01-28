@@ -12,6 +12,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	keystonetypes "github.com/Juniper/contrail/pkg/keystone"
 )
 
 // Service implementation.
@@ -20,11 +22,67 @@ type Service struct {
 	WriteService    services.WriteService
 	UserAgentKV     userAgentKVServer
 	IDToTypeService idToTypeServer
+	Keystone		keystone.Client
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
 func (s *Service) RegisterNeutronAPI(r routeRegistry) {
 	r.POST("/neutron/:type", s.handleNeutronPostRequest)
+}
+
+// FQNameToID neutron plugin may add project
+func (s *Service) FQNameToID(ctx context.Context, r *services.FQNameToIDRequest) (*services.FQNameToIDResponse, error) {
+	if r.GetType() != models.KindProject {
+		return nil, nil
+	}
+
+	// TODO: Check metadata
+
+	// TODO: Add method for getting just one project
+	projects, err := s.Keystone.GetProjects()
+	if err != nil {
+		return nil, err
+	}
+
+	name := r.FQName[len(r.FQName) - 1]
+	for _, p := range projects.Projects {
+		if p.Name != name {
+			continue
+		}
+
+		uuid, err := uuid.Parse(p.ID)
+		if err != nil; {
+			return nil, err
+		}
+		uuidStr := uuid.String()
+		err = s.createProject(ctx, uuidStr, name, r.FQName)
+		if err != nil {
+			return nil, err
+		}
+
+		return &services.FQNameToIDResponse{
+			UUID: uuidStr,
+		}
+	}
+
+	return nil, nil
+}
+
+func (s *Service) createProject(
+	ctx context.Context, k *keystonetypes.Project, uuid string, name string, fqName []string,
+) error {
+	p := &models.Project{
+		FQName: fqName,
+		Name: name,
+		DisplayName: name,
+		UUID: uuid,
+	}
+
+	_, err = s.WriteService.CreateProject(ctx, services.CreateProjectRequest{
+		Project: p,
+	})
+
+	return err
 }
 
 func (s *Service) handleNeutronPostRequest(c echo.Context) error {
