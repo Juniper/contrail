@@ -48,6 +48,8 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 
 	var authKey interface{} = "auth"
 	newCtx := context.WithValue(ctx, authKey, authContext)
+	var tokenKey interface{} = "token"
+	newCtx = context.WithValue(newCtx, tokenKey, tokenString)
 	return newCtx, nil
 }
 
@@ -84,7 +86,7 @@ func GetAuthSkipPaths() ([]string, error) {
 		"/contrail-clusters?fields=uuid,name",
 		"/keystone/v3/auth/tokens",
 		"/proxy/keystone/v3/auth/tokens",
-		"/keystone/v3/auth/projects",
+		"/keystone/v3/projects",
 		"/v3/auth/tokens",
 	}
 	// skip auth for all the static fileutil
