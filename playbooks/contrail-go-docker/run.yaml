@@ -36,8 +36,9 @@
           command: make reset_db
         - name: Build the source code
           command: make build
-        - name: Run tests and linters on the source code in parallel
-          command: make -j test lint
+# Temporary disabled to test if post-run works correctly, will be rolled back in final patchset
+#        - name: Run tests and linters on the source code in parallel
+#          command: make -j test lint
         - name: Generate Docker files
           command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
 

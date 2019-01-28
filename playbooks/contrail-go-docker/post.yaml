@@ -11,6 +11,7 @@
         src: "{{ contraildir }}/{{ item }}"
         dest: "{{ logsdir }}/{{ item }}"
         owner: "{{ ansible_env.USER }}"
+      when: "{{ contraildir }}/{{ item }} | is_file"
       with_items:
         - linter.log
         - unittests.log
