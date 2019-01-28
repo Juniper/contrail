@@ -15,6 +15,7 @@ type Context struct {
 	domainID  string
 	userID    string
 	roles     []string
+	authToken string
 }
 
 const (
@@ -25,12 +26,13 @@ const (
 )
 
 //NewContext makes a authentication context.
-func NewContext(domainID, projectID, userID string, roles []string) *Context {
+func NewContext(domainID, projectID, userID string, roles []string, authToken string) *Context {
 	return &Context{
 		projectID: projectID,
 		domainID:  domainID,
 		userID:    userID,
 		roles:     roles,
+		authToken: authToken,
 	}
 }
 
@@ -74,6 +76,14 @@ func (context *Context) UserID() string {
 	return context.userID
 }
 
+//AuthToken is used to get an auth token of request.
+func (context *Context) AuthToken() string {
+	if context == nil {
+		return ""
+	}
+	return context.authToken
+}
+
 //Roles  is used to get the roles of a user
 func (context *Context) Roles() []string {
 	if context == nil {
@@ -98,7 +108,7 @@ func GetAuthCTX(ctx context.Context) *Context {
 // NoAuth is used to create new no auth context
 func NoAuth(ctx context.Context) context.Context {
 	Context := NewContext(
-		"default-domain", "default-project", "admin", []string{"admin"})
+		"default-domain", "default-project", "admin", []string{"admin"}, "")
 	var authKey interface{} = "auth"
 	return context.WithValue(ctx, authKey, Context)
 }
