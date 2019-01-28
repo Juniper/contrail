@@ -27,7 +27,7 @@ type Keystone struct {
 	Client           *Client
 }
 
-//Init is used to initialize echo with Kesytone capability.
+//Init is used to initialize echo with Keystone capability.
 //This function reads config from viper.
 func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 	keystoneClient *Client) (*Keystone, error) {
@@ -52,7 +52,8 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 	}
 	e.POST("/keystone/v3/auth/tokens", keystone.CreateTokenAPI)
 	e.GET("/keystone/v3/auth/tokens", keystone.ValidateTokenAPI)
-	e.GET("/keystone/v3/auth/projects", keystone.GetProjectAPI)
+	e.GET("/keystone/v3/projects", keystone.GetProjectsAPI)
+	e.GET("/keystone/v3/projects/:id", keystone.GetProjectAPI)
 
 	return keystone, nil
 }
@@ -130,8 +131,58 @@ func (keystone *Keystone) appendStaticProjects(
 	}
 }
 
+func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error) {
+	tokenID := r.Header.Get("X-Auth-Token")
+	if tokenID == "" {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	}
+	token, ok := keystone.Store.ValidateToken(tokenID)
+	if !ok {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	}
+
+	return token, nil
+}
+
 //GetProjectAPI is an API handler to list projects.
-func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyclo
+func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
+	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	if err != nil {
+		logrus.Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	id := c.Param("id")
+	if keystoneEndpoint != "" {
+		keystone.Client.SetAuthURL(keystoneEndpoint)
+		return keystone.Client.GetProject(c, id)
+	}
+
+	token, err := keystone.validateToken(c.Request())
+	if err != nil {
+		return err
+	}
+
+	var project *kscommon.Project
+	user := token.User
+	for _, role := range user.Roles {
+		if role.Project.ID == id {
+			project = role.Project
+			break
+		}
+	}
+
+	if project == nil {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	return c.JSON(http.StatusOK, &ProjectResponse{
+		Project: project,
+	})
+}
+
+//GetProjectsAPI is an API handler to list projects.
+func (keystone *Keystone) GetProjectsAPI(c echo.Context) error { // nolint: gocyclo
 	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
 	if err != nil {
 		logrus.Error(err)
@@ -142,14 +193,11 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 		return keystone.Client.GetProjects(c)
 	}
 
-	tokenID := c.Request().Header.Get("X-Auth-Token")
-	if tokenID == "" {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+	token, err := keystone.validateToken(c.Request())
+	if err != nil {
+		return err
 	}
-	token, ok := keystone.Store.ValidateToken(tokenID)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
-	}
+
 	configEndpoint, err := keystone.setAssignment()
 	if err != nil {
 		return err
