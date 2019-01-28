@@ -40,6 +40,7 @@ const (
 	AdminUserID       = "alice"
 	AdminUserName     = "Alice"
 	AdminUserPassword = "alice_password"
+	NeutronProjectID  = "aa907485e1f94a14834d8c69ed9cb3b2"
 )
 
 // APIServer is embedded API Server for testing purposes.
