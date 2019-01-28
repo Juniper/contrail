@@ -89,7 +89,7 @@ $(IPAM_MOCK): pkg/types/ipam/address_manager.go
 	mkdir -p $(@D)
 	mockgen -destination=$@ -package=ipammock -source $<
 
-$(NEUTRON_LOGIC_MOCK): pkg/neutron/service.go
+$(NEUTRON_LOGIC_MOCK): pkg/neutron/server.go
 	mkdir -p $(@D)
 	mockgen -destination=$@ -package=neutronmock -source $<
 
@@ -182,18 +182,10 @@ endif
 docker: docker_prepare ## Generate Docker files
 	docker build --build-arg GOPATH=$(GOPATH) -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
-# This target creates contrail-go docker that is able to work as a drop-in replacement to original config-api.
-# It depends on 'docker' target to inherit all the necesary steps with minimal changes
-docker_config_api: docker_prepare ## Create contrail-go docker as a drop-in replacement to original config-api
-	## Copy dockerfile because it must be in a build context dir
-	cp -f docker/contrail_go/Dockerfile-config_api $(BUILD_DIR)/docker/contrail_go
-	cp -f sample/contrail-config_api.yml $(BUILD_DIR)/docker/contrail_go/etc/
-	docker build --build-arg GOPATH=$(GOPATH) -t "contrail-go-config" -f $(BUILD_DIR)/docker/contrail_go/Dockerfile-config_api $(BUILD_DIR)/docker/contrail_go
-
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .DEFAULT_GOAL := help
 
-.PHONY: docker_prepare docker_config_api docker generate_go
+.PHONY: docker_prepare docker generate_go
 .SUFFIXES: .go .proto
