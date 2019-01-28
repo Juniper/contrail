@@ -6,11 +6,7 @@
     - build-vars.yaml
   tasks:
     - name: Copy logs files
-      copy:
-        remote_src: yes
-        src: "{{ contraildir }}/{{ item }}"
-        dest: "{{ logsdir }}/{{ item }}"
-        owner: "{{ ansible_env.USER }}"
+      command: find {{ contraildir }} -type f -name "{{ item }}" -exec cp {} {{ logsdir }} \;
       with_items:
         - linter.log
         - unittests.log
