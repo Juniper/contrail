@@ -295,7 +295,7 @@ func securityGroupContrailToNeutron(sg *models.SecurityGroup) (*SecurityGroupRes
 
 	sgNeutron := SecurityGroupResponse{
 		ID:          sg.GetUUID(),
-		TenantID:    contrailUUIDToNeutronID(sg.GetParentUUID()),
+		TenantID:    ContrailUUIDToNeutronID(sg.GetParentUUID()),
 		CreatedAt:   sg.GetIDPerms().GetCreated(),
 		UpdatedAt:   sg.GetIDPerms().GetLastModified(),
 		Description: sg.GetIDPerms().GetDescription(),
@@ -338,7 +338,7 @@ func securityGroupRuleContrailToNeutron(
 
 	sgr := SecurityGroupRuleResponse{
 		ID:              rule.GetRuleUUID(),
-		TenantID:        contrailUUIDToNeutronID(sg.GetParentUUID()),
+		TenantID:        ContrailUUIDToNeutronID(sg.GetParentUUID()),
 		CreatedAt:       rule.GetCreated(),
 		UpdatedAt:       rule.GetLastModified(),
 		SecurityGroupID: sg.GetUUID(),

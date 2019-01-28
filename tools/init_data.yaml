@@ -151,6 +151,42 @@ resources:
     type: project
     uuid: beefbeef-beef-beef-beef-beefbeef0003
   operation: ""
+- kind: security_group
+  data:
+    name: default
+    display_name: default
+    fq_name:
+    - default-domain
+    - default-project
+    - default
+    id_perms:
+      created: 2018-05-23T17:29:57.500625
+      creator: null
+      description: null
+      enable: true
+      last_modified: 2018-05-23T17:29:58.077633
+      permissions:
+        group: cloud-admin-group
+        group_access: 7
+        other_access: 7
+        owner: cloud-admin
+        owner_access: 7
+      user_visible: true
+      uuid:
+        uuid_lslong: 1.317758e+19
+        uuid_mslong: 1.762763e+19
+    parent_type: project
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
+    perms2:
+      global_access: 0
+      owner: cloud-admin
+      owner_access: 7
+      share: []
+    quota:
+      defaults: -1
+    type: security_group
+    uuid: beefbeef-beef-beef-beef-beefbeef0004
+  operation: ""
 - kind: virtual_network
   data:
     fabric_snat: false
@@ -1385,7 +1421,7 @@ resources:
     name: default-credential
     fq_name:
     - default-global-system-config
-    - default-credential 
+    - default-credential
     ssh_user: root
     ssh_password: c0ntrail123
     parent_type: global-system-config

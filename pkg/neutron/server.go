@@ -16,8 +16,8 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-// Service implementation.
-type Service struct {
+// Server implementation.
+type Server struct {
 	ReadService       services.ReadService
 	WriteService      services.WriteService
 	UserAgentKV       userAgentKVServer
@@ -26,11 +26,11 @@ type Service struct {
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
-func (s *Service) RegisterNeutronAPI(r routeRegistry) {
+func (s *Server) RegisterNeutronAPI(r routeRegistry) {
 	r.POST("/neutron/:type", s.handleNeutronPostRequest)
 }
 
-func (s *Service) handleNeutronPostRequest(c echo.Context) error {
+func (s *Server) handleNeutronPostRequest(c echo.Context) error {
 	var requestMap map[string]interface{}
 	if err := c.Bind(&requestMap); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: '%s'", err))
@@ -58,7 +58,7 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response, error) {
+func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, error) {
 	rp := logic.RequestParameters{
 		ReadService:       s.ReadService,
 		WriteService:      s.WriteService,
