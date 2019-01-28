@@ -29,6 +29,7 @@ const (
 type HTTP struct {
 	services.BaseService
 	httpClient *http.Client
+	keystone   *Keystone
 
 	ID        string          `yaml:"id"`
 	Password  string          `yaml:"password"`
@@ -93,71 +94,25 @@ func (h *HTTP) Init() {
 			//TLSHandshakeTimeout: 5 * time.Second,
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
 		}
+		h.keystone = NewKeystone(h.AuthURL, h.InSecure, tr)
 		h.httpClient = &http.Client{
 			Transport: tr,
 			//Timeout:   time.Second * 10,
 		}
 	} else {
+		h.keystone = NewKeystone(h.AuthURL, h.InSecure, nil)
 		h.httpClient = &http.Client{}
 	}
 }
 
 // Login refreshes authentication token.
 func (h *HTTP) Login(ctx context.Context) error {
-	if h.AuthURL == "" {
-		return nil
-	}
-
-	var domain *keystone.Domain
-	if h.Scope.Domain != nil {
-		domain = h.Scope.Domain
-	} else if h.Scope.Project != nil {
-		domain = h.Scope.Project.Domain
-	}
-	dataJSON, err := json.Marshal(&keystone.AuthRequest{
-		Auth: &keystone.Auth{
-			Identity: &keystone.Identity{
-				Methods: []string{"password"},
-				Password: &keystone.Password{
-					User: &keystone.User{
-						Name:     h.ID,
-						Password: h.Password,
-						Domain:   domain,
-					},
-				},
-			},
-			Scope: h.Scope,
-		},
-	})
+	token, err := h.keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
 	if err != nil {
 		return err
 	}
 
-	request, err := http.NewRequest("POST", h.AuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
-	request = request.WithContext(ctx)
-	if err != nil {
-		return err
-	}
-	request.Header.Set("Content-Type", "application/json")
-
-	resp, err := h.httpClient.Do(request)
-	if err != nil {
-		return errorFromResponse(err, resp)
-	}
-	defer resp.Body.Close() // nolint: errcheck
-
-	err = checkStatusCode([]int{200, 201}, resp.StatusCode)
-	if err != nil {
-		return errorFromResponse(err, resp)
-	}
-
-	var authResponse keystone.AuthResponse
-	err = json.NewDecoder(resp.Body).Decode(&authResponse)
-	if err != nil {
-		return errorFromResponse(err, resp)
-	}
-
-	h.AuthToken = resp.Header.Get("X-Subject-Token")
+	h.AuthToken = token
 	return nil
 }
 

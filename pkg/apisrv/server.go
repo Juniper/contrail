@@ -99,6 +99,14 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		ReadService: s.DBService,
 		AAAMode:     viper.GetString("aaa_mode")})
 
+	if viper.GetBool("server.enable_vnc_neutron") {
+		serviceChain = append(serviceChain, neutron.NewNeutronService(
+			viper.GetString("keystone.authurl"),
+			serviceChain[0],
+			s.DBService,
+		))
+	}
+
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.DBService,
 		InTransactionDoer: s.DBService,

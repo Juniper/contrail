@@ -217,8 +217,8 @@ func (s *Subnet) getNetworkIpam(
 ) (*models.NetworkIpam, error) {
 	networkIpam := models.MakeNetworkIpam()
 
-	if s.IpamFQName != "" {
-		networkIpam.FQName = strings.Split(s.IpamFQName, "-")
+	if len(s.IpamFQName) != 0 {
+		networkIpam.FQName = s.IpamFQName
 		return networkIpam, nil
 	}
 
@@ -396,7 +396,7 @@ func subnetVncToNeutron(vn *models.VirtualNetwork, subnetVnc *models.IpamSubnetT
 	subnet := &SubnetResponse{
 		ID:         subnetVnc.GetSubnetUUID(),
 		Name:       subnetVnc.GetSubnetName(),
-		TenantID:   contrailUUIDToNeutronID(vn.GetParentUUID()),
+		TenantID:   ContrailUUIDToNeutronID(vn.GetParentUUID()),
 		NetworkID:  vn.GetUUID(),
 		EnableDHCP: subnetVnc.GetEnableDHCP(),
 		Shared:     vn.GetIsShared() || (vn.GetPerms2() != nil && len(vn.GetPerms2().GetShare()) > 0),

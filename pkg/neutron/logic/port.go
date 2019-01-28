@@ -181,6 +181,10 @@ func (port *Port) ReadAll(
 			UUID: deviceUUIDs[0],
 		})
 
+		if errutil.IsNotFound(err) {
+			return ps, nil
+		}
+
 		if err != nil {
 			return nil, newNeutronError(badRequest, errorFields{
 				"resource": "port",
