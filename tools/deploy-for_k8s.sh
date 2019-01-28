@@ -28,8 +28,7 @@ make deps
 make generate
 make build
 make install
-
-make docker_config_api
+make docker
 
 # Ensure patroni installed
 ./tools/patroni/pull_patroni.sh
@@ -61,7 +60,9 @@ sudo ./tools/schema_transformer_etcd/update-docker-compose.py
 sudo ./tools/device_manager_etcd/update-docker-compose.py
 
 # Load init data to rdbms
-contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-config_api.yml
+contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-k8s.yml
+
+install_config "contrail-k8s"
 
 build_and_run_contrail-go_docker
 

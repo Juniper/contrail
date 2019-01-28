@@ -93,13 +93,6 @@ agent:
     - save:
         dest: "{{ dir }}/{{ resource.uuid }}.yaml"
         format: yaml
-    # - command: pwd
-    #   args:
-    #     chdir: "{{ dir }}"
-    # - command: date
-    # - template:
-    #     src: "./agent/cluster.tmpl"
-    #     dest: "{{ dir }}/cluster.txt"
     - command: echo created
     #  register: date
     on_update:
