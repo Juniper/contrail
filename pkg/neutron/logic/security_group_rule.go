@@ -58,7 +58,7 @@ func (*SecurityGroupRule) neutronFromVnc(
 ) (*SecurityGroupRuleResponse, error) {
 	responseSgr := SecurityGroupRuleResponse{
 		ID:              rule.GetRuleUUID(),
-		TenantID:        vncUUIDToNeutronID(sg.GetParentUUID()),
+		TenantID:        VncUUIDToNeutronID(sg.GetParentUUID()),
 		CreatedAt:       rule.GetCreated(),
 		UpdatedAt:       rule.GetLastModified(),
 		SecurityGroupID: sg.GetUUID(),
