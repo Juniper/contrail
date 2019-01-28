@@ -1,9 +1,11 @@
 package apisrv
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"encoding/json"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"sync"
 	"time"
@@ -98,6 +100,23 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 	serviceChain = append(serviceChain, &services.RBACService{
 		ReadService: s.DBService,
 		AAAMode:     viper.GetString("aaa_mode")})
+
+	if viper.GetBool("server.enable_vnc_neutron") {
+		serviceChain = append(serviceChain, &neutron.Service{
+			Keystone: &client.Keystone{
+				URL: viper.GetString("keystone.authurl"),
+				HTTPClient: &http.Client{
+					Transport: &http.Transport{
+						TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+					},
+				},
+			},
+			WriteService: &services.InternalContextWriteServiceWrapper{
+				WriteService: serviceChain[0],
+			},
+			InTransactionDoer: s.DBService,
+		})
+	}
 
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.DBService,
@@ -352,8 +371,8 @@ func (s *Server) Init() (err error) {
 	return s.applyExtensions()
 }
 
-func (s *Server) setupNeutronService(cs services.Service) *neutron.Service {
-	n := &neutron.Service{
+func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
+	n := &neutron.Server{
 		ReadService:       s.DBService,
 		WriteService:      cs,
 		UserAgentKV:       s.UserAgentKVServer,

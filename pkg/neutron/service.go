@@ -2,106 +2,75 @@ package neutron
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
-	google_protobuf3 "github.com/gogo/protobuf/types"
-	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/format"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-// Service implementation.
+type keystoneClient interface {
+	GetProject(ctx context.Context, token string, id string) (*keystone.Project, error)
+}
+
+// Service handles neutron specific logic
 type Service struct {
-	ReadService       services.ReadService
+	services.BaseService
+	Keystone          keystoneClient
 	WriteService      services.WriteService
-	UserAgentKV       userAgentKVServer
-	IDToFQNameService idToFQNameServer
 	InTransactionDoer services.InTransactionDoer
 }
 
-// RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
-func (s *Service) RegisterNeutronAPI(r routeRegistry) {
-	r.POST("/neutron/:type", s.handleNeutronPostRequest)
-}
+// GetProject gets
+func (sv *Service) GetProject(
+	ctx context.Context, request *services.GetProjectRequest,
+) (*services.GetProjectResponse, error) {
 
-func (s *Service) handleNeutronPostRequest(c echo.Context) error {
-	var requestMap map[string]interface{}
-	if err := c.Bind(&requestMap); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: '%s'", err))
-	}
-	var request *logic.Request
-	if err := format.ApplyMap(requestMap, &request); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("failed to apply map: '%s'", err))
-	}
-	if t := c.Param("type"); request.GetType() != t {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: '%s'", t))
-	}
-	request.Data.FieldMask = basemodels.MapToFieldMask(requestMap)
-	var response logic.Response
-	if err := s.InTransactionDoer.DoInTransaction(c.Request().Context(), func(ctx context.Context) error {
-		var err error
-		response, err = s.handle(ctx, request)
-		return err
-	}); err != nil {
-		e, ok := errors.Cause(err).(*logic.Error)
-		if !ok {
-			return echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-		return echo.NewHTTPError(http.StatusBadRequest, e)
-	}
-	return c.JSON(http.StatusOK, response)
-}
+	var response *services.GetProjectResponse
+	err := sv.InTransactionDoer.DoInTransaction(
+		ctx,
+		func(ctx context.Context) error {
+			var err error
+			response, err = sv.BaseService.GetProject(ctx, request)
+			if errutil.IsNotFound(err) {
+				var tokenKey interface{} = "token"
+				token, ok := ctx.Value(tokenKey).(string)
+				if !ok {
+					return errors.New("expected auth token in context")
+				}
+				p, kerr := sv.Keystone.GetProject(ctx, token, logic.ContrailUUIDToNeutronID(request.GetID()))
+				if kerr != nil {
+					return errors.Wrapf(err, "kerr %v", kerr)
+				}
 
-func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response, error) {
-	rp := logic.RequestParameters{
-		ReadService:       s.ReadService,
-		WriteService:      s.WriteService,
-		UserAgentKV:       s.UserAgentKV,
-		IDToFQNameService: s.IDToFQNameService,
-		RequestContext:    r.Context,
-		FieldMask:         r.Data.FieldMask,
-	}
-	switch r.Context.Operation {
-	case logic.OperationCreate:
-		return r.Data.Resource.Create(ctx, rp)
-	case logic.OperationUpdate:
-		return r.Data.Resource.Update(ctx, rp, r.Data.ID)
-	case logic.OperationDelete:
-		return r.Data.Resource.Delete(ctx, rp, r.Data.ID)
-	case logic.OperationRead:
-		return r.Data.Resource.Read(ctx, rp, r.Data.ID)
-	case logic.OperationReadAll:
-		return r.Data.Resource.ReadAll(ctx, rp, r.Data.Filters, r.Data.Fields)
-	case logic.OperationReadCount:
-		return r.Data.Resource.ReadCount(ctx, rp, r.Data.Filters)
-	case logic.OperationAddInterface:
-		return r.Data.Resource.AddInterface(ctx, rp)
-	case logic.OperationDelInterface:
-		return r.Data.Resource.DeleteInterface(ctx, rp)
-	default:
-		err := errors.Errorf("method '%s' is not supported", r.Context.Operation)
-		logrus.WithError(err).WithField("request", r).Errorf("failed to handle")
-		return nil, err
-	}
-}
+				_, err = sv.WriteService.CreateProject(
+					ctx,
+					&services.CreateProjectRequest{
+						Project: &models.Project{
+							UUID:        request.ID,
+							DisplayName: p.Name,
+							Name:        p.Name,
+							ParentType:  models.KindDomain,
+							FQName:      []string{"default-domain", p.Name},
+						},
+					},
+				)
+				if err != nil {
+					return err
+				}
 
-type userAgentKVServer interface {
-	StoreKeyValue(context.Context, *services.StoreKeyValueRequest) (*google_protobuf3.Empty, error)
-	RetrieveValues(context.Context, *services.RetrieveValuesRequest) (*services.RetrieveValuesResponse, error)
-	RetrieveKVPs(context.Context, *google_protobuf3.Empty) (*services.RetrieveKVPsResponse, error)
-	DeleteKey(context.Context, *services.DeleteKeyRequest) (*google_protobuf3.Empty, error)
-}
+				response, err = sv.BaseService.GetProject(ctx, request)
+			}
 
-type idToFQNameServer interface {
-	IDToFQName(context.Context, *services.IDToFQNameRequest) (*services.IDToFQNameResponse, error)
-}
+			if err != nil {
+				return err
+			}
 
-type routeRegistry interface {
-	POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route
+			return err
+		})
+
+	return response, err
 }
