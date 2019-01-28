@@ -47,6 +47,8 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 
 	var authKey interface{} = "auth"
 	newCtx := context.WithValue(ctx, authKey, authContext)
+	var tokenKey interface{} = "token"
+	newCtx = context.WithValue(newCtx, tokenKey, tokenString)
 	return newCtx, nil
 }
 

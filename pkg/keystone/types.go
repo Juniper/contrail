@@ -1,6 +1,8 @@
 package keystone
 
-import "time"
+import (
+	"time"
+)
 
 //AuthRequest is used to request an authentication.
 type AuthRequest struct {

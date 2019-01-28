@@ -98,6 +98,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 
 		"/keystone/v3/auth/projects",
 		"/keystone/v3/auth/tokens",
+		"/keystone/v3/project/:id",
 	} {
 		routes.add(r)
 	}

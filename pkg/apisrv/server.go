@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"net/url"
 	"sync"
+	"net/http"
 	"time"
+	"crypto/tls"
 
 	protocodec "github.com/gogo/protobuf/codec"
 	"github.com/labstack/echo"
@@ -98,6 +100,23 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 	serviceChain = append(serviceChain, &services.RBACService{
 		ReadService: s.DBService,
 		AAAMode:     viper.GetString("aaa_mode")})
+
+	if viper.GetBool("server.enable_vnc_neutron") {
+		serviceChain = append(serviceChain, &neutron.NeutronService{
+			Keystone: &client.Keystone {
+				URL: viper.GetString("keystone.authurl"),
+				HTTPClient: &http.Client{
+					Transport: &http.Transport{
+						TLSClientConfig: &tls.Config{InsecureSkipVerify: viper.GetBool("server.proxy.insecure")},
+					},
+				},
+			},
+			WriteService: &services.InternalContextWriteServiceWrapper{
+				WriteService: serviceChain[0],
+			},
+			InTransactionDoer: s.DBService,
+		})
+	}
 
 	serviceChain = append(serviceChain, &types.ContrailTypeLogicService{
 		ReadService:       s.DBService,
