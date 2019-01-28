@@ -89,7 +89,7 @@ $(IPAM_MOCK): pkg/types/ipam/address_manager.go
 	mkdir -p $(@D)
 	mockgen -destination=$@ -package=ipammock -source $<
 
-$(NEUTRON_LOGIC_MOCK): pkg/neutron/service.go
+$(NEUTRON_LOGIC_MOCK): pkg/neutron/server.go
 	mkdir -p $(@D)
 	mockgen -destination=$@ -package=neutronmock -source $<
 

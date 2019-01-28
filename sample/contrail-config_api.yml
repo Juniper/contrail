@@ -144,3 +144,10 @@ cassandra:
 
 amqp:
     url: amqp://guest:guest@localhost:5672/
+
+keystone:
+    store:
+        type: memory
+        expire: 3600
+    insecure: true
+    authurl: http://localhost:5000/v3/

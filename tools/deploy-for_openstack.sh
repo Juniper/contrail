@@ -45,6 +45,9 @@ clear_config_database
 # Prepare fresh database in contrail-go
 make zero_psql
 
+# Ensure keystone is listening on localhost
+ensure_keystone_on_localhost
+
 # Update control-node docker compose file
 sudo ./tools/control-node_etcd/update-docker-compose.py
 
