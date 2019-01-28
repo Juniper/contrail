@@ -269,9 +269,15 @@ func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
 	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
-		if err != nil {
-			return nil, errutil.ErrorNotFoundf("%v", err)
+		if errutil.IsNotFound(err) {
+			// Resources may be created on get by resource plugins (Neutron)
+			return service.BaseService.Get{{ schema.JSONSchema.GoName }}(ctx, request)
 		}
+
+		if err != nil {
+			return nil, err
+		}
+
 		if err = isVisibleObject(ctx, storedIDPerms); err != nil {
 			return nil, errutil.ErrorNotFoundf("%v", err)
 		}

@@ -28,8 +28,7 @@ make deps
 make generate
 make build
 make install
-
-make docker_config_api
+make docker
 
 # Ensure patroni installed
 ./tools/patroni/pull_patroni.sh
@@ -45,6 +44,9 @@ clear_config_database
 # Prepare fresh database in contrail-go
 make zero_psql
 
+# Ensure keystone is listening on localhost
+ensure_keystone_on_localhost
+
 # Update control-node docker compose file
 sudo ./tools/control-node_etcd/update-docker-compose.py
 
@@ -55,7 +57,9 @@ sudo ./tools/schema_transformer_etcd/update-docker-compose.py
 sudo ./tools/device_manager_etcd/update-docker-compose.py
 
 # Load init data to rdbms
-contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-config_api.yml
+contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-openstack.yml
+
+install_config "contrail-openstack"
 
 build_and_run_contrail-go_docker
 
