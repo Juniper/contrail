@@ -104,10 +104,6 @@ prepare_test_env()
 	chmod +x ./testrunner.sh
 	docker pull opencontrailnightly/contrail-test-test:latest || { echo 'Fail to pull docker image'; exit 2; }
 	ensure_root_access
-	grep -q 'orchestrator: kubernetes' "$InstancesFile" || cat >> "$InstancesFile" <<EOF
-deployment:
-  orchestrator: kubernetes
-EOF
 }
 
 TestStatusMsg=''

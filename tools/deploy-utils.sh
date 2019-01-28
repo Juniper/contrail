@@ -19,6 +19,13 @@ ensure_kubemanager_config_nodes()
     fi
 }
 
+ensure_keystone_on_localhost()
+{
+    grep -q -x -F "Listen 127.0.0.1:5000" /etc/kolla/keystone/wsgi-keystone.conf || \
+        sudo sh -c 'echo "Listen 127.0.0.1:5000" >> /etc/kolla/keystone/wsgi-keystone.conf'
+    docker restart keystone
+}
+
 schema_transformer_up()
 {
     docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d schema
