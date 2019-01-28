@@ -1,10 +1,17 @@
 #!/bin/bash
 
+install_config()
+{
+    sudo mkdir -p /etc/contrail/cis/
+    sudo cp sample/$1.yml /etc/contrail/cis/contrail.yaml
+}
+
 build_and_run_contrail-go_docker()
 {
-    local ContrailGoDocker='contrail-go-config-node'
+    local ContrailGoDocker='contrail-go'
     [ "$(docker ps -a -f "name=$ContrailGoDocker" --format '{{.ID}}' | wc -l)" -ne 0 ] && docker rm -f "$ContrailGoDocker"
     docker run -d --name "$ContrailGoDocker" --net host --volume /etc/kubernetes/pki/etcd:/etc/kubernetes/pki/etcd:ro \
+        --volume /etc/contrail/cis/contrail.yaml:/etc/contrail/contrail.yml:ro \
         contrail-go-config
 }
 
@@ -17,6 +24,13 @@ ensure_kubemanager_config_nodes()
     if [ $ModifyKubeConfig -eq 1 ]; then
         sudo sed "-ibak$(date +%s)" "s/^CONFIG_NODES=.*/CONFIG_NODES=$GoConfigIP/" /etc/contrail/common_kubemanager.env
     fi
+}
+
+ensure_keystone_on_localhost()
+{
+    grep -q -x -F "Listen 127.0.0.1:5000" /etc/kolla/keystone/wsgi-keystone.conf || \
+        sudo sh -c 'echo "Listen 127.0.0.1:5000" >> /etc/kolla/keystone/wsgi-keystone.conf'
+    docker restart keystone
 }
 
 schema_transformer_up()

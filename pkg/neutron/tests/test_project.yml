@@ -1,0 +1,21 @@
+name: dynamic project creation test
+cleanup:
+- path: /project/aa907485-e1f9-4a14-834d-8c69ed9cb3b2
+test_data:
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: get project
+  request:
+    path: /project/aa907485-e1f9-4a14-834d-8c69ed9cb3b2
+    method: GET
+    expected:
+    - 200

@@ -65,7 +65,7 @@ ThisUser=$(id -nu)
 check_dockers()
 {
 	[ $CheckDockers -eq 0 ] && { echo "WARNING: Skipping contrail-go dockers checking!"; return 0; }
-	dockers='contrail-go-config-node contrail_postgres'
+	dockers='contrail-go contrail_postgres'
 	for d in $dockers; do
 		docker ps | grep -qE "Up.*$d\$" || { echo "Expected docker $d to be running"; exit 2; }
 	done
@@ -73,7 +73,7 @@ check_dockers()
 
 ensure_root_access()
 {
-	type -t yq > /dev/null || { sudo yum install -y jq; sudo pip install yq; type -t yq > /dev/null; } || { echo "Command 'yq' not available - aborting"; exit 2; }
+	type -t yq > /dev/null || { sudo yum install epel-release -y && sudo yum install jq -y; sudo pip install yq; type -t yq > /dev/null; } || { echo "Command 'yq' not available - aborting"; exit 2; }
 	yq -y 'with_entries(select(.key == "provider_config")) | with_entries(.value[] +={ "ssh_user": "root", "ssh_pwd": "contrail123"})' "$InstancesFile" > /tmp/instances-provider.yaml
 	yq -y 'with_entries(select(.key != "provider_config"))' "$InstancesFile" > /tmp/instances-rest.yaml
 	cp -f /tmp/instances-provider.yaml "$InstancesFile"
@@ -104,10 +104,6 @@ prepare_test_env()
 	chmod +x ./testrunner.sh
 	docker pull opencontrailnightly/contrail-test-test:latest || { echo 'Fail to pull docker image'; exit 2; }
 	ensure_root_access
-	grep -q 'orchestrator: kubernetes' "$InstancesFile" || cat >> "$InstancesFile" <<EOF
-deployment:
-  orchestrator: kubernetes
-EOF
 }
 
 TestStatusMsg=''
