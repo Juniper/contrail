@@ -268,15 +268,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
     ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
-    if isVerified := auth.IsInternalRequest(ctx); !isVerified {
-        storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
-        if err != nil {
-            return nil, errutil.ErrorNotFoundf("%v", err)
-        }
-        if err = isVisibleObject(ctx, storedIDPerms); err != nil {
-            return nil, errutil.ErrorNotFoundf("%v", err)
-        }
-    }
+
     return service.BaseService.Get{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
