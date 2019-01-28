@@ -107,6 +107,10 @@ keystone:
           id: demo
           name: demo
           domain: *default
+        neutron: &neutron
+          id: aa907485e1f94a14834d8c69ed9cb3b2
+          name: neutron
+          domain: *default
       users:
         alice:
           id: alice
@@ -118,6 +122,10 @@ keystone:
           - id: admin
             name: admin
             project: *admin
+          - id: aa907485e1f94a14834d8c69ed9cb3b2
+            name: neutron
+            project: *neutron
+
         bob:
           id: bob
           name: Bob
