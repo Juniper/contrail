@@ -7,7 +7,9 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
@@ -35,8 +37,19 @@ func (svc *ContrailService) FQNameToID(
 	request *FQNameToIDRequest,
 ) (*FQNameToIDResponse, error) {
 	metadata, err := svc.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{Type: request.Type, FQName: request.FQName})
+	if errutil.IsNotFound(err) {
+		for _, p := range svc.Plugins.FqNameToIDPlugins {
+			res, err := p.FQNameToID(ctx, request)
+			if err != nil {
+				log.WithError(err).Error("plugin returned error")
+			}
+			if res != nil {
+				return res, nil
+			}
+		}
+	}
+
 	if err != nil {
-		//TODO adding Project
 		errMsg := fmt.Sprintf("Failed to retrieve metadata for FQName %v and Type %v", request.FQName, request.Type)
 		return nil, errors.Wrapf(err, errMsg)
 	}

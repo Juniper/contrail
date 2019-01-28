@@ -107,6 +107,10 @@ keystone:
           id: demo
           name: demo
           domain: *default
+        neutron_project: &neutron_project
+          id: aa907485-e1f9-4a14-834d-8c69ed9cb3b2
+          name: neutron
+          domain: *default
       users:
         alice:
           id: alice
@@ -118,6 +122,9 @@ keystone:
           - id: admin
             name: admin
             project: *admin
+          - id: admin
+            name: admin
+            project: *neutron_project
         bob:
           id: bob
           name: Bob
@@ -133,3 +140,5 @@ keystone:
     expire: 3600
   insecure: true
   authurl: https://localhost:9091/keystone/v3
+  admin: alice
+  password: alice_password

@@ -139,7 +139,12 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 	}
 	if keystoneEndpoint != "" {
 		keystone.Client.SetAuthURL(keystoneEndpoint)
-		return keystone.Client.GetProjects(c)
+		res, err := keystone.Client.GetProjects(c)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, res)
 	}
 
 	tokenID := c.Request().Header.Get("X-Auth-Token")

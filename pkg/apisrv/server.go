@@ -206,10 +206,6 @@ func (s *Server) Init() (err error) {
 	s.FQNameToIDServer = cs
 	s.IDToTypeServer = cs
 
-	if viper.GetBool("server.enable_vnc_neutron") {
-		s.setupNeutronService(cs)
-	}
-
 	readTimeout := viper.GetInt("server.read_timeout")
 	writeTimeout := viper.GetInt("server.write_timeout")
 	e.Server.ReadTimeout = time.Duration(readTimeout) * time.Second
@@ -249,9 +245,8 @@ func (s *Server) Init() (err error) {
 	// serve dynamic proxy based on configured endpoints
 	endpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
 	s.serveDynamicProxy(endpointStore)
-
-	keystoneAuthURL := viper.GetString("keystone.authurl")
 	var keystoneClient *keystone.Client
+	keystoneAuthURL := viper.GetString("keystone.authurl")
 	if keystoneAuthURL != "" {
 		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL,
 			viper.GetBool("keystone.insecure"))
@@ -299,6 +294,12 @@ func (s *Server) Init() (err error) {
 		s.setupHomepage()
 	}
 
+	if viper.GetBool("server.enable_vnc_neutron") {
+		// TODO Add keystone client
+		n := s.setupNeutronService(cs)
+		cs.Plugins.FqNameToIDPlugins = append(cs.Plugins.FqNameToIDPlugins, n)
+	}
+
 	s.setupWatchAPI()
 	s.setupActionResources(cs)
 
@@ -342,11 +343,22 @@ func (s *Server) Init() (err error) {
 }
 
 func (s *Server) setupNeutronService(cs services.Service) *neutron.Service {
+	keystoneClient := client.NewHTTP(
+		viper.GetString("keystone.authurl"),
+		viper.GetString("keystone.authurl"),
+		viper.GetString("keystone.user"),
+		viper.GetString("keystone.password"),
+		true,
+		nil,
+	)
+
+	keystoneClient.Init()
 	n := &neutron.Service{
 		ReadService:     s.DBService,
 		WriteService:    cs,
 		UserAgentKV:     s.UserAgentKVServer,
 		IDToTypeService: s.IDToTypeServer,
+		Keystone: keystoneClient,
 	}
 	n.RegisterNeutronAPI(s.Echo)
 	return n
