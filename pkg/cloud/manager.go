@@ -100,7 +100,7 @@ func NewCloud(c *Config) (*Cloud, error) {
 
 		// as auth is enabled, create ctx with auth
 		varCtx := auth.NewContext(c.DomainID, c.ProjectID,
-			c.ID, []string{c.ProjectName})
+			c.ID, []string{c.ProjectName}, "")
 		var authKey interface{} = "auth"
 		ctx = context.WithValue(context.Background(), authKey, varCtx)
 	}

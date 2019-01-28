@@ -4,6 +4,11 @@ import (
 	types "github.com/Juniper/contrail/pkg/keystone"
 )
 
+//ProjectResponse represents a project list response.
+type ProjectResponse struct {
+	Project *types.Project `json:"project"`
+}
+
 //ProjectListResponse represents a project list response.
 type ProjectListResponse struct {
 	Projects []*types.Project `json:"projects"`

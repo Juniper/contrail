@@ -329,7 +329,7 @@ func (sg *SecurityGroup) vncToNeutron(vncSg *models.SecurityGroup) (*SecurityGro
 
 	sgNeutron := SecurityGroupResponse{
 		ID:          vncSg.GetUUID(),
-		TenantID:    vncUUIDToNeutronID(vncSg.GetParentUUID()),
+		TenantID:    VncUUIDToNeutronID(vncSg.GetParentUUID()),
 		CreatedAt:   vncSg.GetIDPerms().GetCreated(),
 		UpdatedAt:   vncSg.GetIDPerms().GetLastModified(),
 		Description: vncSg.GetIDPerms().GetDescription(),
