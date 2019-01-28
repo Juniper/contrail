@@ -82,6 +82,9 @@ orchestrator_configuration:
   keystone:
     version: "v3"
     password: "contrail123"
+
+deployment:
+    orchestrator: openstack
 ```
 
 ## Deployment
