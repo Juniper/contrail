@@ -3,7 +3,7 @@ package logic
 import "github.com/Juniper/contrail/pkg/models"
 
 func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork) *NetworkResponse {
-	parentNeutronUUID := contrailUUIDToNeutronID(vn.GetParentUUID())
+	parentNeutronUUID := ContrailUUIDToNeutronID(vn.GetParentUUID())
 	nn := &NetworkResponse{
 		ID:                      vn.GetUUID(),
 		Name:                    vn.GetDisplayName(),

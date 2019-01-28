@@ -96,8 +96,9 @@ func TestRoutesAreRegistered(t *testing.T) {
 	for _, r := range []string{
 		"/",
 
-		"/keystone/v3/auth/projects",
+		"/keystone/v3/projects",
 		"/keystone/v3/auth/tokens",
+		"/keystone/v3/project/:id",
 	} {
 		routes.add(r)
 	}

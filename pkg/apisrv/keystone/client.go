@@ -102,7 +102,7 @@ func (k *Client) ValidateToken(c echo.Context) error {
 
 // GetProjects sends project get request to keystone endpoint.
 func (k *Client) GetProjects(c echo.Context) error {
-	projectURL := k.AuthURL + "/auth/projects"
+	projectURL := k.AuthURL + "/projects"
 	request, err := http.NewRequest(echo.GET, projectURL, c.Request().Body)
 	if err != nil {
 		return err
