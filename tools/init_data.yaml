@@ -1413,6 +1413,43 @@ resources:
       owner_access: 7
       share: []
   operation: ""
+- data:
+    uuid: 37d8f070-efd4-4c88-8b4f-f6fbccee77e0
+    name: ""
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
+    parent_type: project
+    fq_name:
+    - default-domain
+    - default-project
+    - __no_rule__
+    id_perms:
+      enable: true
+      description: Security group with no rules
+      created: 2018-08-30T08:26:02.574628
+      creator: ""
+      user_visible: true
+      last_modified: 2018-08-30T08:26:02.574628
+      permissions: null
+      uuid:
+        uuid_mslong: 4024230634906209280
+        uuid_lslong: -9223372036854775808
+    display_name: ""
+    annotations: null
+    perms2:
+      owner: cloud-admin
+      owner_access: 7
+      global_access: 5
+      share: []
+    configuration_version: 0
+    configured_security_group_id: 0
+    security_group_entries:
+      policy_rule: []
+    security_group_id: 0
+    security_logging_object_backrefs: []
+    virtual_machine_interface_backrefs: []
+    access_control_lists: []
+  kind: security_group
+  operation: CREATE
 - kind: api_access_list
   data:
     display_name: default-api-access-list

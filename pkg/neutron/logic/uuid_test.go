@@ -14,7 +14,7 @@ func TestContrailUUIDToNeutronID(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := contrailUUIDToNeutronID(test.input)
+		result := ContrailUUIDToNeutronID(test.input)
 		if result != test.output {
 			t.Errorf("Tranlating contrail uuid (%s) to neutron was incorrect, got: %s, want: %s.",
 				test.input, result, test.output)
