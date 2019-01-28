@@ -7,7 +7,8 @@ import (
 	"github.com/twinj/uuid"
 )
 
-func vncUUIDToNeutronID(uuid string) string {
+// VncUUIDToNeutronID translates contrail vnc uuids into neutron id
+func VncUUIDToNeutronID(uuid string) string {
 	return strings.Replace(uuid, "-", "", -1)
 }
 

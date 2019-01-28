@@ -15,7 +15,7 @@ const adminUser = "admin"
 // NoAuth is used to create new no auth context
 func userAuth(ctx context.Context) context.Context {
 	Context := auth.NewContext(
-		"default-domain", "default-project", "bob", []string{"Member"})
+		"default-domain", "default-project", "bob", []string{"Member"}, "")
 	var authKey interface{} = "auth"
 	return context.WithValue(ctx, authKey, Context)
 }
