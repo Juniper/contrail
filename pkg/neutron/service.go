@@ -5,11 +5,17 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/twinj/uuid"
+
 	google_protobuf3 "github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -20,11 +26,52 @@ type Service struct {
 	WriteService    services.WriteService
 	UserAgentKV     userAgentKVServer
 	IDToTypeService idToTypeServer
+	Keystone        *client.HTTP
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
 func (s *Service) RegisterNeutronAPI(r routeRegistry) {
 	r.POST("/neutron/:type", s.handleNeutronPostRequest)
+}
+
+// FQNameToID neutron plugin may add project
+func (s *Service) FQNameToID(ctx context.Context, r *services.FQNameToIDRequest) (*services.FQNameToIDResponse, error) {
+	if r.GetType() != models.KindProject {
+		return nil, nil
+	}
+	c, _ := ctx.Value("auth").(*auth.Context)
+	uuid, err := uuid.Parse(c.ProjectID())
+	if err != nil {
+		return nil, err
+	}
+	uuidStr := uuid.String()
+	err = s.createProject(ctx, uuidStr, r.FQName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &services.FQNameToIDResponse{
+		UUID: uuidStr,
+	}, nil
+}
+
+func (s *Service) createProject(
+	ctx context.Context, uuid string, fqName []string,
+) error {
+	name := fqName[len(fqName)-1]
+	p := &models.Project{
+		FQName:      fqName,
+		ParentType:  models.KindDomain,
+		Name:        name,
+		DisplayName: name,
+		UUID:        uuid,
+	}
+
+	_, err := s.WriteService.CreateProject(ctx, &services.CreateProjectRequest{
+		Project: p,
+	})
+
+	return err
 }
 
 func (s *Service) handleNeutronPostRequest(c echo.Context) error {

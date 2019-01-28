@@ -1,0 +1,33 @@
+name: FQName to UUID endpoint test
+cleanup:
+- path: /project/aa907485-e1f9-4a14-834d-8c69ed9cb3b2
+test_data:
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: get virtual network uuid from fqname
+  request:
+    path: /fqname-to-id
+    method: POST
+    expected:
+    - 200
+    data:
+      fq_name: ["default-domain", "neutron"]
+      type: project
+  expect:
+    uuid: aa907485-e1f9-4a14-834d-8c69ed9cb3b2
+
+- name: get project
+  request:
+    path: /project/aa907485-e1f9-4a14-834d-8c69ed9cb3b2
+    method: GET
+    expected:
+    - 200

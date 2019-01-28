@@ -101,20 +101,20 @@ func (k *Client) ValidateToken(c echo.Context) error {
 }
 
 // GetProjects sends project get request to keystone endpoint.
-func (k *Client) GetProjects(c echo.Context) error {
+func (k *Client) GetProjects(c echo.Context) (*ProjectListResponse, error) {
 	projectURL := k.AuthURL + "/auth/projects"
 	request, err := http.NewRequest(echo.GET, projectURL, c.Request().Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	request.Header = c.Request().Header
 	resp, err := k.httpClient.Do(request)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	defer resp.Body.Close() // nolint: errcheck
 	projectsResponse := &ProjectListResponse{}
 	_ = json.NewDecoder(resp.Body).Decode(projectsResponse) // nolint: errcheck
 
-	return c.JSON(resp.StatusCode, projectsResponse)
+	return projectsResponse, nil
 }

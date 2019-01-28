@@ -1,0 +1,240 @@
+resources:
+- data:
+    uuid: 2019e176-3ccb-4d9c-bb50-0b2a4fd46c09
+    name: ""
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    parent_type: domain
+    fq_name:
+    - default-domain
+    - k8s-default
+    id_perms:
+      enable: true
+      description: ""
+      created: 2018-08-20T09:19:10.755436
+      creator: ""
+      user_visible: true
+      last_modified: 2018-08-20T09:19:21.158308
+      permissions:
+        owner: cloud-admin
+        owner_access: 7
+        other_access: 7
+        group: cloud-admin-group
+        group_access: 7
+      uuid:
+        uuid_mslong: 2313127781573807616
+        uuid_lslong: -9223372036854775808
+    display_name: k8s-default
+    annotations: null
+    perms2:
+      owner: None
+      owner_access: 7
+      global_access: 0
+      share: []
+    configuration_version: 0
+    vxlan_routing: false
+    alarm_enable: false
+    quota: null
+    enable_security_policy_draft: false
+    alias_ip_pool_refs: []
+    namespace_refs: []
+#    application_policy_set_refs:
+#    - uuid: 6db0f84b-a9e6-4a85-8758-936ef04167a6
+#      to: []
+    floating_ip_pool_refs: []
+    alias_ip_backrefs: []
+    floating_ip_backrefs: []
+    address_groups: []
+    alarms: []
+    api_access_lists: []
+    application_policy_sets: []
+    bgp_as_a_services: []
+    bgpvpns: []
+    firewall_policys: []
+    firewall_rules: []
+    interface_route_tables: []
+    loadbalancer_healthmonitors: []
+    loadbalancer_listeners: []
+    loadbalancer_pools: []
+    loadbalancers: []
+    logical_routers: []
+    network_ipams: []
+    network_policys: []
+    policy_managements: []
+    qos_configs: []
+    route_aggregates: []
+    route_tables: []
+    routing_policys: []
+    security_groups: []
+    security_logging_objects: []
+    service_groups: []
+    service_health_checks: []
+    service_instances: []
+    structured_syslog_configs: []
+    tags: []
+    virtual_ips: []
+    virtual_machine_interfaces: []
+    virtual_networks: []
+  kind: project
+  operation: CREATE
+- data:
+    uuid: 09db69b8-787d-4863-aa66-2f6223ed0533
+    name: ""
+    parent_uuid: 2019e176-3ccb-4d9c-bb50-0b2a4fd46c09
+    parent_type: project
+    fq_name:
+    - default-domain
+    - k8s-default
+    - k8s-pod-ipam
+    id_perms:
+      enable: true
+      description: ""
+      created: 2018-08-20T09:19:11.412752
+      creator: ""
+      user_visible: true
+      last_modified: 2018-08-20T09:19:11.412752
+      permissions:
+        owner: cloud-admin
+        owner_access: 7
+        other_access: 7
+        group: cloud-admin-group
+        group_access: 7
+      uuid:
+        uuid_mslong: 710277607257360512
+        uuid_lslong: -9223372036854775808
+    display_name: k8s-pod-ipam
+    annotations: null
+    perms2:
+      owner: None
+      owner_access: 7
+      global_access: 0
+      share: []
+    configuration_version: 0
+    network_ipam_mgmt: null
+    ipam_subnets:
+      subnets:
+      - subnet:
+          ip_prefix: 10.32.0.0
+          ip_prefix_len: 12
+        addr_from_start: false
+        enable_dhcp: true
+        default_gateway: 10.47.255.254
+        alloc_unit: 1
+        created: ""
+        dns_nameservers: []
+        dhcp_option_list: null
+        subnet_uuid: ""
+        allocation_pools: []
+        last_modified: ""
+        host_routes: null
+        dns_server_address: 10.47.255.253
+        subnet_name: ""
+    ipam_subnet_method: flat-subnet
+    virtual_DNS_refs: []
+    instance_ip_backrefs: []
+    virtual_network_backrefs: []
+    virtual_router_backrefs: []
+  kind: network_ipam
+  operation: CREATE
+- data:
+    uuid: 2e086875-b55d-4c21-bb89-6ebdb787e8cc
+    name: ""
+    parent_uuid: 2019e176-3ccb-4d9c-bb50-0b2a4fd46c09
+    parent_type: project
+    fq_name:
+    - default-domain
+    - k8s-default
+    - k8s-default-pod-network
+    id_perms:
+      enable: true
+      description: ""
+      created: 2018-08-20T09:19:11.500015
+      creator: ""
+      user_visible: true
+      last_modified: 2018-08-20T09:19:20.591053
+      permissions:
+        owner: cloud-admin
+        owner_access: 7
+        other_access: 7
+        group: cloud-admin-group
+        group_access: 7
+      uuid:
+        uuid_mslong: 3317015980321623040
+        uuid_lslong: -9223372036854775808
+    display_name: k8s-default-pod-network
+    annotations: null
+    perms2:
+      owner: None
+      owner_access: 7
+      global_access: 0
+      share: []
+    configuration_version: 0
+    address_allocation_mode: flat-subnet-only
+    virtual_network_fat_flow_protocols: null
+    route_target_list: null
+    mac_learning_enabled: false
+    port_security_enabled: false
+    fabric_snat: false
+    pbb_etree_enable: false
+    mac_aging_time: 0
+    multi_policy_service_chains_enabled: false
+    mac_limit_control: null
+    virtual_network_properties:
+      forwarding_mode: l3
+      allow_transit: false
+      network_id: 0
+      mirror_destination: false
+      vxlan_network_identifier: 0
+      rpf: ""
+    ecmp_hashing_include_fields: null
+    provider_properties: null
+    is_shared: false
+    import_route_target_list: null
+    mac_move_control: null
+    router_external: false
+    is_provider_network: false
+    pbb_evpn_enable: false
+    export_route_target_list: null
+    flood_unknown_unicast: false
+    layer2_control_word: false
+    external_ipam: false
+    multicast_group_refs: []
+    network_ipam_refs:
+    - uuid: 09db69b8-787d-4863-aa66-2f6223ed0533
+      to: []
+      attr:
+        ipam_subnets:
+        - subnet: null
+          addr_from_start: false
+          enable_dhcp: false
+          default_gateway: ""
+          alloc_unit: 0
+          created: ""
+          dns_nameservers: []
+          dhcp_option_list: null
+          subnet_uuid: df44b6c4-4509-461f-9085-6a468425cacf
+          allocation_pools: []
+          last_modified: ""
+          host_routes: null
+          dns_server_address: ""
+          subnet_name: ""
+        host_routes: null
+    virtual_network_refs: []
+    routing_policy_refs: []
+    logical_router_refs: []
+    qos_config_refs: []
+    route_table_refs: []
+    bgpvpn_refs: []
+    security_logging_object_refs: []
+    virtual_network_backrefs: []
+    firewall_rule_backrefs: []
+    instance_ip_backrefs: []
+    logical_router_backrefs: []
+    physical_router_backrefs: []
+    virtual_machine_interface_backrefs: []
+    access_control_lists: []
+    alias_ip_pools: []
+    bridge_domains: []
+    floating_ip_pools: []
+    routing_instances: []
+  kind: virtual_network
+  operation: CREATE
