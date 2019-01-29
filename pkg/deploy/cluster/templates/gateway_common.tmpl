@@ -17,16 +17,16 @@ CONTRAIL_MULTICLOUD_VERSION: {{ cluster.ContrailVersion }}
 UPGRADE_KERNEL: {{ upgradeKernel }}
 KERNEL_VERSION: {{ kernelVersion }}
 
-AS: {{ cluster.MCGWInfo.asn }}
-vpn_lo_network: {{ cluster.MCGWInfo.vpnLoNetwork }}
-vpn_network: {{ cluster.MCGWInfo.vpnNetwork }}
+AS: {{ cluster.MCGWInfo.AS }}
+vpn_lo_network: {{ cluster.MCGWInfo.VPNLoNetwork }}
+vpn_network: {{ cluster.MCGWInfo.VPNNetwork }}
 
-openvpn_port: {{ cluster.MCGWInfo.openvpnPort }}
+openvpn_port: {{ cluster.MCGWInfo.OpenvpnPort }}
 
-bfd_interval: {{ cluster.MCGWInfo.bfdInterval }}
-bfd_multiplier: {{ cluster.MCGWInfo.bfdMultiplier }}
-bfd_interval_multihop: {{ cluster.MCGWInfo.bfdIntervalMultihop }}
-bfd_multiplier_multihop: {{ cluster.MCGWInfo.bfdMultiplierMultihop }}
+bfd_interval: {{ cluster.MCGWInfo.BFDInterval }}
+bfd_multiplier: {{ cluster.MCGWInfo.BFDMultiplier }}
+bfd_interval_multihop: {{ cluster.MCGWInfo.BFDIntervalMultihop }}
+bfd_multiplier_multihop: {{ cluster.MCGWInfo.BFDMultiplierMultihop }}
 core_bgp_secret: {{ bgpSecret }}
 
 {%if cluster.ContainerRegistryUsername and  cluster.ContainerRegistryPassword%}

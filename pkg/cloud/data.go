@@ -137,6 +137,7 @@ func (i *instanceData) getNodeObject() (*models.Node, error) {
 	return instResp.GetNode(), nil
 }
 
+// nolint: gocyclo
 func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, error) {
 
 	inst := &instanceData{
@@ -166,6 +167,10 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 		}
 
 		if inst.info.OpenstackComputeNodeBackRefs != nil {
+			inst.provision = strconv.FormatBool(false)
+		} else if inst.info.ContrailConfigNodeBackRefs != nil {
+			inst.provision = strconv.FormatBool(false)
+		} else if inst.info.OpenstackControlNodeBackRefs != nil {
 			inst.provision = strconv.FormatBool(false)
 		}
 	}
@@ -454,9 +459,12 @@ func (d *Data) updateUsers() error {
 
 func (i *instanceData) updateRoles() error {
 
-	if i.info.ContrailVrouterNodeBackRefs != nil {
+	if i.info.ContrailVrouterNodeBackRefs != nil && i.info.KubernetesNodeBackRefs != nil {
+		i.roles = append(i.roles, "compute_node")
+	} else if i.info.ContrailVrouterNodeBackRefs != nil {
 		i.roles = append(i.roles, "vrouter")
 	}
+
 	if i.info.ContrailConfigNodeBackRefs != nil {
 		i.roles = append(i.roles, "controller")
 	}
@@ -473,37 +481,9 @@ func (i *instanceData) updateRoles() error {
 		i.roles = append(i.roles, "gateway")
 	}
 
+	// [ToDo] Madhukar to enable more roles, as soon as mc deployer supports it
+
 	return nil
-
-	// [To-Do] Madhukar to enable below lines, when multi-cloud-deployer
-	// support that rules
-	//if i.info.ContrailAnalyticsNodeBackRefs != nil {
-	//	i.roles = append(i.roles, "analytics")
-	//}
-
-	//if i.info.KubernetesKubemanagerNodeBackRefs != nil {
-	//	i.roles = append(i.roles, "k8s_master")
-	//}
-
-	//if i.info.ContrailServiceNodeBackRefs != nil {
-	//	i.roles = append(i.roles, "csn")
-	//}
-
-	//if i.info.ContrailControlNodeBackRefs != nil {
-	//	i.roles = append(i.roles, "control")
-	//}
-
-	//if i.info.ContrailConfigDatabaseNodeBackRefs != nil {
-	//	i.roles = append(i.roles, "configdb")
-	//}
-
-	//if i.info.ContrailWebuiNodeBackRefs != nil {
-	//	i.roles = append(i.roles, "webui")
-	//}
-
-	//if i.info.ContrailAnalyticsDatabaseNodeBackRefs != nil {
-	//	i.roles = append(i.roles, "analyticsdb")
-	//}
 
 }
 
