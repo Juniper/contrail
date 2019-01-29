@@ -33,6 +33,14 @@ message ListSpec {
     repeated string backref_uuids = 11 [(gogoproto.customname) = "BackRefUUIDs"]; // Filter by backref UUIDss
     repeated string object_uuids = 12 [(gogoproto.customname) = "ObjectUUIDs"]; // Filter by UUIDs
     repeated string fields = 13 [(gogoproto.customname) = "Fields"]; // limit displayed fields
+    bool exclude_children = 14 [(gogoproto.customname) = "ExcludeChildren"]; // Exclude children parameter
+    bool exclude_backrefs = 15 [(gogoproto.customname) = "ExcludeBackRefs"]; // Exclude back_refs parameter
+}
+
+message GetSpec {
+    repeated string fields = 1 [(gogoproto.customname) = "Fields"]; // limit displayed fields
+    bool exclude_children = 2 [(gogoproto.customname) = "ExcludeChildren"]; // Exclude children parameter
+    bool exclude_backrefs = 3 [(gogoproto.customname) = "ExcludeBackRefs"]; // Exclude back_refs parameter
 }
 
 message Filter {

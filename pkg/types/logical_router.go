@@ -308,8 +308,10 @@ func (sv *ContrailTypeLogicService) isVxlanRoutingEnabled(
 	projectResponse, err := sv.ReadService.GetProject(
 		ctx,
 		&services.GetProjectRequest{
-			ID:     projectUUID,
-			Fields: []string{models.ProjectFieldVxlanRouting},
+			ID: projectUUID,
+			Spec: &baseservices.GetSpec{
+				Fields: []string{models.ProjectFieldVxlanRouting},
+			},
 		},
 	)
 
@@ -350,8 +352,10 @@ func (sv *ContrailTypeLogicService) checkPortGateway(
 		vmiResponse, err := sv.ReadService.GetVirtualMachineInterface(
 			ctx,
 			&services.GetVirtualMachineInterfaceRequest{
-				ID:     vmi.GetUUID(),
-				Fields: []string{models.VirtualMachineInterfaceFieldVirtualNetworkRefs},
+				ID: vmi.GetUUID(),
+				Spec: &baseservices.GetSpec{
+					Fields: []string{models.VirtualMachineInterfaceFieldVirtualNetworkRefs},
+				},
 			},
 		)
 		if err != nil {
@@ -544,8 +548,10 @@ func (sv *ContrailTypeLogicService) deleteInternalVirtualNetwork(
 	projectResponse, err := sv.ReadService.GetProject(
 		ctx,
 		&services.GetProjectRequest{
-			ID:     logicalRouter.GetParentUUID(),
-			Fields: []string{models.ProjectFieldFQName},
+			ID: logicalRouter.GetParentUUID(),
+			Spec: &baseservices.GetSpec{
+				Fields: []string{models.ProjectFieldFQName},
+			},
 		},
 	)
 	if err != nil {
