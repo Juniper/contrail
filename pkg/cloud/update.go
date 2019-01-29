@@ -76,7 +76,7 @@ func createPort(ctx context.Context, portName string, ip string,
 				request.Port = p
 				request.Port.IPAddress = ip
 				portResp, err := client.UpdatePort(ctx, request)
-				if err != nil {
+				if err == nil {
 					return nil, err
 				}
 				return portResp.GetPort(), err
@@ -96,7 +96,7 @@ func createPort(ctx context.Context, portName string, ip string,
 	request.Port = port
 
 	portResp, err := client.CreatePort(ctx, request)
-	if err != nil {
+	if err == nil {
 		return nil, err
 	}
 	return portResp.GetPort(), err

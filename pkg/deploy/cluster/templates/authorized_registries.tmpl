@@ -1,0 +1,6 @@
+{%if cluster.ContainerRegistryUsername and  cluster.ContainerRegistryPassword%}
+authorized_registries:
+  - registry: {{ cluster.ContainerRegistry }}
+    username: {{ cluster.ContainerRegistryUsername }}
+    password: {{ cluster.ContainerRegistryPassword }}
+{%endif%}
