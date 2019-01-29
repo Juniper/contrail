@@ -8,7 +8,7 @@ test_data:
     provisioning_state: NOSTATE
     provisioning_action: UPDATE_CLOUD
     container_registry: test_registry
-    registry_private_insecure: true
+    registry_private_insecure: false
     contrail_version: ocata-5.0-x
     orchestrator: kubernetes
     default_gateway: 127.0.0.254
@@ -53,7 +53,6 @@ workflow:
       provisioning_state: NOSTATE
       uuid: test_cluster_uuid
       container_registry: test_registry
-      registry_private_insecure: true
       contrail_version: ocata-5.0-x
       orchestrator: kubernetes
       default_gateway: 127.0.0.254

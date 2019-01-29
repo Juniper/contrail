@@ -38,6 +38,18 @@ schema:
       view:
       - create
       - detail
+    default_gateway:
+      default: ""
+      description: Default Gateway
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Default Gateway
+      type: string
+      view:
+      - detail
     services:
       operations: "CRUD"
       presence: "optional"

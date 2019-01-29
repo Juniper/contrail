@@ -22,9 +22,19 @@ schema:
       type: string
       view:
       - detail
+    ssh_key_path:
+      description: SSH private key path in the deployer instance
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: text
+      title: SSH public key
+      type: string
+      view:
+      - detail
   required: []
   type: object
 singular: keypair
 title: SSH KeyPair
 type: ""
-

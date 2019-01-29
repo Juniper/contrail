@@ -1198,15 +1198,15 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	assert.NoError(t, err, "failed to manage(update) cluster")
 
 	assert.True(t, compareGeneratedTopology(t, expectedMCClusterTopology),
-		"Topolgy file created during cluster create is not as expected")
+		"Topolgy file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedSecret(t, expectedMCClusterSecret),
-		"Secret file created during cluster create is not as expected")
+		"Secret file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedContrailCommon(t, expectedContrailCommon),
-		"Contrail common file created during cluster create is not as expected")
+		"Contrail common file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
-		"Gateway common file created during cluster create is not as expected")
+		"Gateway common file created during cluster update is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedMCCmdExecuted),
-		"commands executed during cluster create is not as expected")
+		"commands executed during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
 		"Expected list of update playbooks are not executed")
 
