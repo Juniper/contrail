@@ -6,11 +6,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"syscall"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/common"
+	"github.com/Juniper/contrail/pkg/models"
 
 	"github.com/flosch/pongo2"
 )
@@ -20,22 +26,24 @@ const (
 	defaultGatewayCommonTemplate   = "gateway_common.tmpl"
 	defaultTORCommonTemplate       = "tor_common.tmpl"
 	defaultOpenstackConfigTemplate = "openstack_config.tmpl"
+	defaultAuthRegistryTemplate    = "authorized_registries.tmpl"
 
 	mcWorkDir                 = "multi-cloud"
+	mcAnsibleRepo             = "contrail-multi-cloud"
+	defaultSSHKeyRepo         = "keypair"
 	defaultContrailCommonFile = "ansible/contrail/common.yml"
 	defaultTORCommonFile      = "ansible/tor/common.yml"
 	defaultGatewayCommonFile  = "ansible/gateway/common.yml"
 	defaultMCInventoryFile    = "inventories/inventory.yml"
 	defaultTopologyFile       = "topology.yml"
 	defaultSecretFile         = "secret.yml"
+	defaultSSHAgentFile       = "ssh-agent-config.yml"
 
 	defaultContrailUser       = "admin"
 	defaultContrailPassword   = "c0ntrail123"
 	defaultContrailConfigPort = "8082"
 	defaultContrailTenant     = "default-project"
 	pathConfig                = "/etc/multicloud"
-	upgradeKernel             = "True"
-	kernelVersion             = "3.10.0-862.3.2.el7.x86_64"
 	bgpSecret                 = "bgp_secret"
 	debugMCRoutes             = "False"
 	torBGPSecret              = "contrail_secret"
@@ -48,6 +56,7 @@ const (
 	defaultMCKubernetesProvPlay  = "ansible/contrail/playbooks/orchestrator.yml"
 	defaultMCDeployContrail      = "ansible/contrail/playbooks/deploy.yml"
 	defaultMCSetupContrailRoutes = "ansible/contrail/playbooks/add_tunnel_routes.yml"
+	defaultMCFixComputeDNS       = "ansible/contrail/playbooks/fix_compute_dns.yml"
 	defaultMCContrailCleanup     = "ansible/contrail/playbooks/cleanup.yml"
 	defaultMCGatewayCleanup      = "ansible/gateway/playbooks/cleanup.yml"
 	testTemplate                 = "./../cloud/test_data/test_cmd.tmpl"
@@ -61,12 +70,25 @@ const (
 	aws    = "aws"
 	azure  = "azure"
 	onPrem = "private"
-	public = "public"
 )
 
 type multiCloudProvisioner struct {
 	ansibleProvisioner
 	workDir string
+}
+
+// SSHAgentConfig related to ssh-agent process
+type SSHAgentConfig struct {
+	AuthSock string `yaml:"auth_sock"`
+	PID      string `yaml:"pid"`
+}
+
+// PubKeyConfig to read secret file
+type PubKeyConfig struct {
+	Info         map[string]string   `yaml:"public_key"`
+	AwsAccessKey string              `yaml:"aws_access_key"`
+	AwsSecretKey string              `yaml:"aws_secret_key"`
+	AuthReg      []map[string]string `yaml:"authorized_registries"`
 }
 
 func (m *multiCloudProvisioner) provision() error {
@@ -148,6 +170,12 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		return err
 	}
 
+	err = m.manageSSHAgent(m.workDir)
+	if err != nil {
+		m.reporter.ReportStatus(status, defaultResource)
+		return err
+	}
+
 	err = m.runGenerateInventory(m.workDir)
 	if err != nil {
 		m.reporter.ReportStatus(status, defaultResource)
@@ -159,6 +187,11 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		m.reporter.ReportStatus(status, defaultResource)
 		return err
 	}
+	status[statusField] = statusUpdated
+	if m.action == createAction {
+		status[statusField] = statusCreated
+	}
+	m.reporter.ReportStatus(status, defaultResource)
 	return nil
 }
 
@@ -176,6 +209,12 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		return err
 	}
 
+	err = m.manageSSHAgent(m.workDir)
+	if err != nil {
+		m.reporter.ReportStatus(status, defaultResource)
+		return err
+	}
+
 	err = m.runGenerateInventory(m.workDir)
 	if err != nil {
 		m.reporter.ReportStatus(status, defaultResource)
@@ -187,6 +226,8 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		m.reporter.ReportStatus(status, defaultResource)
 		return err
 	}
+	status[statusField] = statusUpdated
+	m.reporter.ReportStatus(status, defaultResource)
 	return nil
 }
 
@@ -195,9 +236,11 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	// best effort cleaning of nodes
-	// nolint: errcheck
-	_ = m.mcPlayBook()
-	return nil
+	err := m.manageSSHAgent(m.workDir)
+	if err != nil {
+		return err
+	}
+	return m.mcPlayBook()
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
@@ -270,7 +313,9 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string) error {
 		return err
 	}
 
-	if m.isOrchestratorOpenstack() {
+	// enabling openstack playbook only for test purposes
+	// because its not yet supported by multi-cloud-deployer
+	if m.isOrchestratorOpenstack() && m.cluster.config.Test {
 		err := m.appendOpenStackConfigToInventory(m.getMCInventoryFile(workDir))
 		if err != nil {
 			return err
@@ -300,7 +345,9 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		}
 		// add tor playbook as well
 
-		if m.isOrchestratorOpenstack() {
+		// enabling openstack playbook only for test purposes
+		// because its not supported by multi-cloud-deployer
+		if m.isOrchestratorOpenstack() && m.cluster.config.Test {
 			openstackArgs := append(args, fmt.Sprintf("-e orchestrator=%s", openstack))
 			if err := m.playOrchestratorProvision(openstackArgs); err != nil {
 				return err
@@ -326,6 +373,8 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
 			return err
 		}
+		return m.playMCFixComputeDNS(args)
+
 	case updateCloud:
 
 		if err := m.playDeployMCGW(args); err != nil {
@@ -338,12 +387,15 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 			return err
 		}
 
-		if m.isOrchestratorOpenstack() {
+		// enabling openstack playbook only for test purposes
+		// because its not supported by multi-cloud-deployer
+		if m.isOrchestratorOpenstack() && m.cluster.config.Test {
 			openstackArgs := append(args, fmt.Sprintf("-e orchestrator=%s", openstack))
 			if err := m.playOrchestratorProvision(openstackArgs); err != nil {
 				return err
 			}
 		}
+
 		// add tor playbook as well
 		if err := m.playMCK8SProvision(args); err != nil {
 			return err
@@ -360,6 +412,8 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
 			return err
 		}
+		return m.playMCFixComputeDNS(args)
+
 	case deleteCloud:
 
 		//best effort cleaning up
@@ -383,7 +437,7 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 		return err
 	}
 
-	err = m.createClusterSecretFile(workDir)
+	err = m.manageClusterSecret(workDir)
 	if err != nil {
 		return err
 	}
@@ -404,28 +458,182 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 
 }
 
-// nolint: gocyclo
-func (m *multiCloudProvisioner) createClusterTopologyFile(workDir string) error {
+func (m *multiCloudProvisioner) readSSHAgentConfig(path string) (*SSHAgentConfig, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	agentConfig := &SSHAgentConfig{}
+	err = yaml.UnmarshalStrict(data, agentConfig)
+	if err != nil {
+		return nil, err
+	}
+	return agentConfig, nil
+}
 
-	cloudInfo := make(map[string]string)
-	for _, cloudRef := range m.clusterData.cloudInfo {
-		for _, p := range cloudRef.CloudProviders {
-			if p.Type == onPrem {
-				cloudInfo[onPrem] = cloudRef.UUID
-				break
+func (m *multiCloudProvisioner) readPubKeyConfig() (*PubKeyConfig, error) {
+
+	secretFilePath := m.getClusterSecretFile(m.workDir)
+	data, err := ioutil.ReadFile(secretFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	pubKeyConfig := &PubKeyConfig{}
+	err = yaml.UnmarshalStrict(data, pubKeyConfig)
+	if err != nil {
+		return nil, err
+	}
+	return pubKeyConfig, nil
+
+}
+
+func (m *multiCloudProvisioner) writeSSHAgentConfig(conf *SSHAgentConfig,
+	dest string) error {
+
+	data, err := yaml.Marshal(conf)
+	if err != nil {
+		return err
+	}
+
+	return common.WriteToFile(dest, data, defaultFilePermRWOnly)
+
+}
+
+func (m *multiCloudProvisioner) runSSHAgent(sshAgentPath string) (*SSHAgentConfig, error) {
+
+	cmd := "ssh-agent"
+	args := []string{"-s"}
+	cmdline := exec.Command(cmd, args...)
+
+	cmdOutput := &bytes.Buffer{}
+	cmdline.Stdout = cmdOutput
+
+	if err := cmdline.Run(); err != nil {
+		return nil, err
+	}
+
+	stdout := string(cmdOutput.Bytes())
+
+	stdoutList := strings.SplitAfterN(stdout, "=", 3)
+	sockIDList := strings.SplitAfterN(stdoutList[1], ";", 2)
+	pidList := strings.SplitAfterN(stdoutList[2], ";", 2)
+
+	sshAgentConf := &SSHAgentConfig{
+		AuthSock: strings.TrimSuffix(sockIDList[0], ";"),
+		PID:      strings.TrimSuffix(pidList[0], ";"),
+	}
+
+	err := m.writeSSHAgentConfig(sshAgentConf, sshAgentPath)
+	if err != nil {
+		return nil, err
+	}
+	return sshAgentConf, nil
+}
+
+// nolint: gocyclo
+func (m *multiCloudProvisioner) manageSSHAgent(workDir string) error {
+
+	// To-Do: to use ssh/agent library to create agent unix process
+	sshAgentConf := &SSHAgentConfig{}
+	sshAgentPath := m.getSSHAgentFile(workDir)
+	_, err := os.Stat(sshAgentPath)
+	if err == nil {
+		sshAgentConf, err = m.readSSHAgentConfig(sshAgentPath)
+		if err != nil {
+			return err
+		}
+		// nolint: vetshadow
+		pid, err := strconv.Atoi(sshAgentConf.PID)
+		if err != nil {
+			return err
+		}
+
+		// check if process is running
+		process, err := os.FindProcess(pid)
+		if err != nil {
+			return err
+		}
+		err = process.Signal(syscall.Signal(0))
+		// if process is not found
+		if err != nil {
+			sshAgentConf, err = m.runSSHAgent(sshAgentPath)
+			if err != nil {
+				return err
 			}
-			if p.Type == aws || p.Type == azure {
-				cloudInfo[public] = cloudRef.UUID
-				break
-			}
+		}
+	} else {
+		sshAgentConf, err = m.runSSHAgent(sshAgentPath)
+		if err != nil {
+			return err
 		}
 	}
 
-	onPremCloudID, ok := cloudInfo[onPrem]
-	if !ok {
-		return errors.New("private cloud object is not created and attached to cluster object")
+	err = os.Setenv("SSH_AUTH_SOCK", sshAgentConf.AuthSock)
+	if err != nil {
+		return err
 	}
-	onPremTopoFile := cloud.GetTopoFile(onPremCloudID)
+
+	err = os.Setenv("SSH_AGENT_PID", sshAgentConf.PID)
+	if err != nil {
+		return err
+	}
+
+	m.log.Debugf("SSH_AUTH_SOCK: %s", os.Getenv("SSH_AUTH_SOCK"))
+	m.log.Debugf("SSH_AGENT_PID: %s", os.Getenv("SSH_AGENT_PID"))
+
+	pubKey, err := m.readPubKeyConfig()
+	if err != nil {
+		return err
+	}
+
+	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		return err
+	}
+	sshKeyRepo := filepath.Join(cloud.GetCloudDir(pubCloudID),
+		defaultSSHKeyRepo)
+
+	sshKeyName, ok := pubKey.Info["name"]
+	if !ok {
+		return errors.New("Secret file format is not valid")
+	}
+	sshPvtKeyPath := filepath.Join(sshKeyRepo, sshKeyName)
+
+	if m.cluster.config.Test {
+		return nil
+	}
+
+	_, err = os.Stat(sshPvtKeyPath)
+	if err != nil {
+		return errors.New("Private key is not generated as expected, please check cloud creation logs")
+	}
+
+	cmd := "ssh-add"
+	args := []string{fmt.Sprintf("%s", sshPvtKeyPath)}
+	m.log.Debugf("Executing command: %s", fmt.Sprintf("%s %s", cmd, sshPvtKeyPath))
+	cmdline := exec.Command(cmd, args...)
+	output, err := cmdline.CombinedOutput()
+	stdout := string(output)
+
+	if err != nil {
+		m.log.Errorf("Error: ssh-add : %s", stdout)
+		return err
+	}
+
+	m.log.Debugf("ssh-add output: %s", stdout)
+	return nil
+}
+
+// nolint: gocyclo
+func (m *multiCloudProvisioner) createClusterTopologyFile(workDir string) error {
+
+	pubCloudID, pvtCloudID, err := m.getPubPvtCloudID()
+	if err != nil {
+		return err
+	}
+
+	onPremTopoFile := cloud.GetTopoFile(pvtCloudID)
 
 	if _, err := os.Stat(onPremTopoFile); err == nil {
 		onPremTopoContent, err := ioutil.ReadFile(onPremTopoFile)
@@ -440,11 +648,7 @@ func (m *multiCloudProvisioner) createClusterTopologyFile(workDir string) error 
 		return errors.New("topology file is not created for onprem cloud")
 	}
 
-	publicCloudID, ok := cloudInfo[public]
-	if !ok {
-		return errors.New("public cloud object is not created and attached to cluster object")
-	}
-	publicTopoFile := cloud.GetTopoFile(publicCloudID)
+	publicTopoFile := cloud.GetTopoFile(pubCloudID)
 
 	if _, err := os.Stat(publicTopoFile); err == nil {
 		publicTopoContent, err := ioutil.ReadFile(publicTopoFile)
@@ -458,30 +662,24 @@ func (m *multiCloudProvisioner) createClusterTopologyFile(workDir string) error 
 	} else {
 		return errors.New("topology file is not created for public cloud")
 	}
-
 	return nil
 }
 
-func (m *multiCloudProvisioner) createClusterSecretFile(workDir string) error {
+func (m *multiCloudProvisioner) manageClusterSecret(workDir string) error {
 
-	var publicCloudID string
-	for _, cloudObj := range m.clusterData.cloudInfo {
-		for _, p := range cloudObj.CloudProviders {
-			if p.Type != onPrem {
-				publicCloudID = cloudObj.UUID
-				break
-			}
-		}
-		if publicCloudID != "" {
-			break
-		}
+	pubCloudID, _, err := m.getPubPvtCloudID()
+	if err != nil {
+		return err
 	}
 
-	if publicCloudID == "" {
-		return errors.New("public cloud object is not created or object is not attached to cluster object")
-	}
+	secretFile := cloud.GetSecretFile(pubCloudID)
 
-	secretFile := cloud.GetSecretFile(publicCloudID)
+	return m.createClusterSecretFile(secretFile, workDir)
+}
+
+func (m *multiCloudProvisioner) createClusterSecretFile(secretFile string,
+	workDir string) error {
+
 	if _, err := os.Stat(secretFile); err == nil {
 		secretFileContent, err := ioutil.ReadFile(secretFile)
 		if err != nil {
@@ -491,11 +689,27 @@ func (m *multiCloudProvisioner) createClusterSecretFile(workDir string) error {
 		if err != nil {
 			return err
 		}
-	} else {
-		return errors.New("secret file is not created for public cloud")
+		authRegcontent, err := m.getAuthRegistryContent(m.clusterData.clusterInfo)
+		if err != nil {
+			return err
+		}
+		return common.AppendToFile(m.getClusterSecretFile(workDir), authRegcontent, defaultFilePermRWOnly)
 	}
 
-	return nil
+	return errors.New("secret file is not created for public cloud")
+
+}
+
+func (m *multiCloudProvisioner) getAuthRegistryContent(cluster *models.ContrailCluster) ([]byte, error) {
+	context := pongo2.Context{
+		"cluster": cluster,
+	}
+
+	content, err := common.Apply(m.getAuthRegistryTemplate(), context)
+	if err != nil {
+		return nil, err
+	}
+	return content, nil
 }
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
@@ -536,11 +750,9 @@ func (m *multiCloudProvisioner) createContrailCommonFile(destination string) err
 func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) error {
 	m.log.Info("Creating gateway/common.yml input file for multi-cloud deployer")
 	context := pongo2.Context{
-		"cluster":       m.clusterData.clusterInfo,
-		"pathConfig":    pathConfig,
-		"upgradeKernel": upgradeKernel,
-		"kernelVersion": kernelVersion,
-		"bgpSecret":     bgpSecret,
+		"cluster":    m.clusterData.clusterInfo,
+		"pathConfig": pathConfig,
+		"bgpSecret":  bgpSecret,
 	}
 	content, err := common.Apply(m.getGatewayCommonTemplate(), context)
 	if err != nil {
@@ -598,6 +810,10 @@ func (m *multiCloudProvisioner) getContrailCommonTemplate() string {
 	return filepath.Join(m.getTemplateRoot(), defaultContrailCommonTemplate)
 }
 
+func (m *multiCloudProvisioner) getAuthRegistryTemplate() string {
+	return filepath.Join(m.getTemplateRoot(), defaultAuthRegistryTemplate)
+}
+
 func (m *multiCloudProvisioner) getGatewayCommonTemplate() string {
 	return filepath.Join(m.getTemplateRoot(), defaultGatewayCommonTemplate)
 }
@@ -633,6 +849,21 @@ func (m *multiCloudProvisioner) getClusterTopoFile(workDir string) string {
 
 func (m *multiCloudProvisioner) getClusterSecretFile(workDir string) string {
 	return filepath.Join(workDir, defaultSecretFile)
+}
+
+func (m *multiCloudProvisioner) getSSHAgentFile(workDir string) string {
+	return filepath.Join(workDir, defaultSSHAgentFile)
+}
+
+func (m *multiCloudProvisioner) getMCDeployerRepoDir() (ansibleRepoDir string) {
+	return filepath.Join(defaultAnsibleRepoDir, mcAnsibleRepo)
+}
+
+func (m *multiCloudProvisioner) play(ansibleArgs []string) error {
+	m.log.Info("playing from mc deployer")
+	repoDir := m.getMCDeployerRepoDir()
+	m.log.Infof("playing from mc repo: %s", repoDir)
+	return m.playFromDir(repoDir, ansibleArgs)
 }
 
 func (m *multiCloudProvisioner) getContrailCommonFile(workDir string) string {
@@ -702,6 +933,11 @@ func (m *multiCloudProvisioner) playMCSetupRemoteGWRoutes(ansibleArgs []string) 
 	return m.play(ansibleArgs)
 }
 
+func (m *multiCloudProvisioner) playMCFixComputeDNS(ansibleArgs []string) error {
+	ansibleArgs = append(ansibleArgs, defaultMCFixComputeDNS)
+	return m.play(ansibleArgs)
+}
+
 func (m *multiCloudProvisioner) playMCContrailCleanup(ansibleArgs []string) {
 	ansibleArgs = append(ansibleArgs, defaultMCContrailCleanup)
 	// nolint: errcheck
@@ -721,4 +957,26 @@ func (m *multiCloudProvisioner) updateMCWorkDir() {
 func getSkipTagArgs(tagsToBeSkipped []string) []string {
 	args := []string{"--skip-tags"}
 	return append(args, strings.Join(tagsToBeSkipped, ","))
+}
+
+func (m *multiCloudProvisioner) getPubPvtCloudID() (string, string, error) {
+
+	var publicCloudID, onPremCloudID string
+	for _, cloudRef := range m.clusterData.cloudInfo {
+		for _, p := range cloudRef.CloudProviders {
+			if p.Type == onPrem {
+				onPremCloudID = cloudRef.UUID
+				continue
+			}
+			if p.Type == aws || p.Type == azure {
+				publicCloudID = cloudRef.UUID
+				continue
+			}
+		}
+	}
+	if publicCloudID == "" || onPremCloudID == "" {
+		return "", "", errors.New("Public or OnPrem cloud is not added to cluster")
+	}
+	return publicCloudID, onPremCloudID, nil
+
 }

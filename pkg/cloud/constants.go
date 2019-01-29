@@ -37,4 +37,8 @@ const (
 	onPrem = "private"
 
 	defaultRWOnlyPerm = 0600
+
+	defaultSSHKeyRepo = "keypair"
+	defaultSSHPvtKey  = "public_cloud_ssh_key"
+	defaultSSHPubKey  = "public_cloud_ssh_key.pub"
 )
