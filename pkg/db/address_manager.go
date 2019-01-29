@@ -206,7 +206,7 @@ func (db *Service) performNetworkBasedIPAllocation(
 	ctx context.Context, request *ipam.AllocateIPRequest,
 ) (address string, subnetUUID string, err error) {
 	virtualNetwork := request.VirtualNetwork
-	subnetUUIDs := virtualNetwork.GetSubnetUUIDs()
+	subnetUUIDs := virtualNetwork.GetIpamSubnets().UUIDs()
 	if request.SubnetUUID != "" {
 		if !format.ContainsString(subnetUUIDs, request.SubnetUUID) {
 			return "", "", errors.Errorf("could not find subnet %s in in virtual network %v", request.SubnetUUID,

@@ -455,7 +455,7 @@ func (sv *ContrailTypeLogicService) deallocateVnSubnetsInAddrMgmt(
 		return errutil.ErrorConflictf("subnets from virtual network %v cannot be deleted: %v", vn.GetUUID(), err)
 	}
 
-	for _, subnetUUID := range vn.GetSubnetUUIDs() {
+	for _, subnetUUID := range vn.GetIpamSubnets().UUIDs() {
 		err := sv.deallocateVnSubnet(ctx, subnetUUID)
 		if err != nil {
 			return err
