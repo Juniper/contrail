@@ -1,4 +1,4 @@
-- provider: private
+- provider: onprem
   organization: dev
   project: test1
   instances:
