@@ -503,8 +503,16 @@ func (db *Service) Delete{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref
 
 //Get{{ schema.JSONSchema.GoName }} a Get request.
 func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Get{{ schema.JSONSchema.GoName }}Request) (response *services.Get{{ schema.JSONSchema.GoName }}Response, err error) {
+	var fields []string
+	if request.Spec != nil {
+		fields = request.Spec.Fields
+	}
 	listRequest := &services.List{{ schema.JSONSchema.GoName }}Request{
-		Spec: listSpecForGet(request.ID, request.Fields),
+		Spec: listSpecForGet(request.ID, fields),
+	}
+	if request.Spec != nil {
+		listRequest.Spec.ExcludeChildren = request.Spec.ExcludeChildren
+		listRequest.Spec.ExcludeBackRefs = request.Spec.ExcludeBackRefs
 	}
 	var result *services.List{{ schema.JSONSchema.GoName }}Response
 	if err := db.DoInTransaction(
