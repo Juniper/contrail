@@ -106,8 +106,10 @@ func (s *RefUpdateToUpdateService) Create{{ refType }}(ctx context.Context, requ
     refField := models.{{ schema.JSONSchema.GoName }}Field{{ reference.GoName }}Refs
     if err := s.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
         objResp, err := s.ReadService.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{
-            ID: request.ID,
-            Fields: []string{refField},
+            ID:   request.ID,
+            Spec: &baseservices.GetSpec{
+                Fields: []string{refField},
+            },
         })
         if err != nil {
             return err
@@ -133,9 +135,11 @@ func (s *RefUpdateToUpdateService) Delete{{ refType }}(ctx context.Context, requ
     refField := models.{{ schema.JSONSchema.GoName }}Field{{ reference.GoName }}Refs
     if err := s.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
         objResp, err := s.ReadService.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{
-            ID: request.ID,
-            Fields: []string{refField},
-        })
+            ID:   request.ID,
+            Spec: &baseservices.GetSpec{
+                Fields: []string{refField},
+            },
+		})
         if err != nil {
             return err
         }
@@ -234,13 +238,15 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
         existing, err := service.Get{{ schema.JSONSchema.GoName }}(ctx,
             &Get{{ schema.JSONSchema.GoName }}Request{
                 ID: uuid,
-                Fields: []string{"uuid"},
+                Spec: &baseservices.GetSpec{
+                    Fields: []string{"uuid"},
+                },
         })
         if err == nil && existing != nil {
             model := request.{{ schema.JSONSchema.GoName }}
             response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
                 {{ schema.JSONSchema.GoName }}: model,
-                FieldMask: request.FieldMask,
+				FieldMask: request.FieldMask,
             })
             if err != nil {
                 return nil, err

@@ -25,6 +25,7 @@ type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
 
 // RESTCreate{{ schema.JSONSchema.GoName }} handles a REST create request.
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+    spec := baseservices.GetListSpec(c)
     requestData := &Create{{ schema.JSONSchema.GoName }}Request{
     }
     if err := c.Bind(requestData); err != nil {
@@ -35,8 +36,10 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request()); err != nil {
-        log.WithError(err).Error("Failed to apply href")
+    if !spec.ExcludeHrefs {
+        if err = response.ApplyHref(c.Request()); err != nil {
+            log.WithError(err).Error("failed to apply href")
+        }
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -166,6 +169,7 @@ func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} 
 
 // RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST update request.
 func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+    spec := baseservices.GetListSpec(c)
     var request RESTUpdate{{ schema.JSONSchema.GoName }}Request
     if err := c.Bind(&request); err != nil {
             return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
@@ -183,8 +187,10 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request()); err != nil {
-        log.WithError(err).Error("Failed to apply href")
+    if !spec.ExcludeHrefs {
+        if err = response.ApplyHref(c.Request()); err != nil {
+            log.WithError(err).Error("failed to apply href")
+        }
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -255,6 +261,7 @@ func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
 
 // RESTGet{{ schema.JSONSchema.GoName }} handles a REST get request.
 func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
+    spec := baseservices.GetListSpec(c)
     request := &Get{{ schema.JSONSchema.GoName }}Request{
         ID: c.Param("id"),
     }
@@ -263,8 +270,10 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request()); err != nil {
-        log.WithError(err).Error("Failed to apply href")
+    if !spec.ExcludeHrefs {
+        if err = response.ApplyHref(c.Request()); err != nil {
+            log.WithError(err).Error("failed to apply href")
+        }
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -299,8 +308,10 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request()); err != nil {
-        log.WithError(err).Error("Failed to apply href")
+    if !spec.ExcludeHrefs {
+        if err = response.ApplyHref(c.Request()); err != nil {
+            log.WithError(err).Error("failed to apply href")
+        }
     }
 
     if spec.Count == true {

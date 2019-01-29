@@ -102,8 +102,10 @@ func ensureDefaultSecurityGroupExists(ctx context.Context, rp RequestParameters)
 		ctx,
 		&services.GetProjectRequest{
 			ID: projectID,
-			Fields: []string{
-				projectFieldChildrenSecurityGroups,
+			Spec: &baseservices.GetSpec{
+				Fields: []string{
+					projectFieldChildrenSecurityGroups,
+				},
 			},
 		},
 	)

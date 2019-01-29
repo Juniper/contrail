@@ -6,6 +6,7 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 // CreateFirewallPolicy performs pre create type specific validation.
@@ -81,7 +82,9 @@ func (sv *ContrailTypeLogicService) getFirewallPolicyFQName(
 		ctx,
 		&services.GetFirewallPolicyRequest{
 			ID:     fp.GetUUID(),
-			Fields: []string{models.FirewallPolicyFieldFQName},
+			Spec: &baseservices.GetSpec{
+				Fields: []string{models.FirewallPolicyFieldFQName},
+			},
 		},
 	)
 

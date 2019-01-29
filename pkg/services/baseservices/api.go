@@ -25,6 +25,8 @@ const (
 	BackrefUUIDsKey = "back_ref_id"
 	ObjectUUIDsKey  = "obj_uuids"
 	FieldsKey       = "fields"
+	ExcludeChildrenKey = "exclude_children"
+	ExcludeBackRefsKey = "exclude_back_refs"
 )
 
 func parsePositiveNumber(query string, defaultValue int64) int64 {
@@ -63,6 +65,8 @@ func GetListSpec(c echo.Context) *ListSpec {
 	parentUUIDs := parseStringList(c.QueryParam(ParentUUIDsKey))
 	backrefUUIDs := parseStringList(c.QueryParam(BackrefUUIDsKey))
 	objectUUIDs := parseStringList(c.QueryParam(ObjectUUIDsKey))
+	excludeChildren := parseBool(c.QueryParam(ExcludeChildrenKey))
+	excludeBackRefs := parseBool(c.QueryParam(ExcludeBackRefsKey))
 	fields := parseStringList(c.QueryParam(FieldsKey))
 	return &ListSpec{
 		Filters:      filters,
@@ -78,6 +82,8 @@ func GetListSpec(c echo.Context) *ListSpec {
 		ParentUUIDs:  parentUUIDs,
 		BackRefUUIDs: backrefUUIDs,
 		ObjectUUIDs:  objectUUIDs,
+		ExcludeChildren: excludeChildren,
+		ExcludeBackRefs: excludeBackRefs,
 	}
 }
 
@@ -104,6 +110,8 @@ func (s *ListSpec) URLQuery() url.Values {
 	addQuery(query, BackrefUUIDsKey, encodeStringList(s.BackRefUUIDs))
 	addQuery(query, ObjectUUIDsKey, encodeStringList(s.ObjectUUIDs))
 	addQuery(query, FieldsKey, encodeStringList(s.Fields))
+	addQueryBool(query, ExcludeChildrenKey, s.ExcludeChildren)
+	addQueryBool(query, ExcludeBackRefsKey, s.ExcludeBackRefs)
 	return query
 }
 
