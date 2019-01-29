@@ -1,12 +1,19 @@
 package cloud
 
 import (
+	"bytes"
+	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
 
 	"github.com/flosch/pongo2"
+	"golang.org/x/crypto/ssh"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/common"
@@ -272,4 +279,32 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 		return errors.New(strings.Join(errList, "\n"))
 	}
 	return nil
+}
+
+func genKeyPair(bits int) ([]byte, []byte, error) {
+
+	// creating private key
+	pvtKey, err := rsa.GenerateKey(rand.Reader, bits)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// encoding private key with PEM format
+	pvtKeyPEM := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(pvtKey),
+	}
+	var encodedPvtKey bytes.Buffer
+	if err = pem.Encode(&encodedPvtKey, pvtKeyPEM); err != nil {
+		return nil, nil, err
+	}
+
+	// creating public key
+	pubKey, err := ssh.NewPublicKey(&pvtKey.PublicKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pub := ssh.MarshalAuthorizedKey(pubKey)
+	return pub, encodedPvtKey.Bytes(), nil
 }

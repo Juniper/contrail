@@ -1,6 +1,8 @@
 global_configuration:
   CONTAINER_REGISTRY: test_registry
-  REGISTRY_PRIVATE_INSECURE: True
+  REGISTRY_PRIVATE_INSECURE: false
+  CONTAINER_REGISTRY_USERNAME: user1
+  CONTAINER_REGISTRY_PASSWORD: password
 contrail_user: admin
 contrail_password: c0ntrail123
 contrail_port: 8082
