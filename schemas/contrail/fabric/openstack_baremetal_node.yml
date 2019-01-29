@@ -17,7 +17,19 @@ parents:
 plural: openstack_baremetal_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    ironic_public_port:
+      description: "Service listen port in the public/external network."
+      default: 6385
+      operations: CRUD
+      presence: optional
+      type: string
+    ironic_private_port:
+      description: "Service listen port in the private/internal network."
+      default: 6385
+      operations: CRUD
+      presence: optional
+      type: string
   propertiesOrder: []
   required: []
   type: object

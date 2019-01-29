@@ -22,7 +22,19 @@ parents:
 plural: contrail_webui_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    public_port:
+      description: "Service listen port in the public/external network."
+      default: 8143
+      operations: CRUD
+      presence: optional
+      type: string
+    private_port:
+      description: "Service listen port in the private/internal network."
+      default: 8143
+      operations: CRUD
+      presence: optional
+      type: string
   propertiesOrder: []
   required: []
   type: object
