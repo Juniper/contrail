@@ -1,0 +1,150 @@
+name: Query parameters test
+description: Tests handling of query exclude parameters
+cleanup:
+- path: /project/test_project_uuid
+- path: /network-ipam/test_network_ipam_uuid
+- path: /virtual-network/test_virtual_network_uuid
+
+test_data:
+  project: &project
+    fq_name:
+    - default-domain
+    - test-project
+    uuid: test_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+
+  network_ipam: &network_ipam
+    fq_name:
+    - default-domain
+    - test-project
+    - test-network-ipam
+    uuid: test_network_ipam_uuid
+    parent_type: project
+    parent_uuid: test_project_uuid
+
+  virtual_network: &virtual_network
+    fq_name:
+    - default-domain
+    - test-project
+    - test-virtual-network
+    uuid: test_virtual_network_uuid
+    display_name: test_virtual_network
+    parent_type: project
+    parent_uuid: test_project_uuid
+    network_ipam_refs:
+      - uuid: test_network_ipam_uuid
+        to: ["default-domain","test-project","test-network-ipam"]
+
+  virtual_network_without_ipam: &virtual_network_without_ipam
+    fq_name:
+    - default-domain
+    - test-project
+    - test-virtual-network
+    uuid: test_virtual_network_uuid
+    display_name: test_virtual_network
+    parent_type: project
+    parent_uuid: test_project_uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project
+  expect:
+    project:
+      <<: *project
+      network_ipams: $null
+
+- name: create network ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected: [200]
+    data:
+      network-ipam: *network_ipam
+  expect:
+    network-ipam: *network_ipam
+
+- name: create virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [200]
+    data:
+      virtual-network: *virtual_network
+  expect:
+    virtual-network: *virtual_network
+
+- name: get project with childred and back refs
+  request:
+    path: /project/test_project_uuid
+    method: GET
+    expected: [200]
+  expect:
+    project:
+      <<: *project
+      network_ipams:
+      - *network_ipam
+
+- name: get project without childred
+  request:
+    path: /project/test_project_uuid?exclude_children=true
+    method: GET
+    expected: [200]
+  expect:
+    project:
+      <<: *project
+      network_ipams: $null
+
+- name: get network ipam with back refs
+  request:
+    path: /network-ipam/test_network_ipam_uuid?exclude_back_refs=false
+    method: GET
+    expected: [200]
+  expect:
+    network-ipam:
+      <<: *network_ipam
+      virtual_network_back_refs:
+      - *virtual_network_without_ipam
+
+- name: get network ipam without back refs
+  request:
+    path: /network-ipam/test_network_ipam_uuid?exclude_back_refs=true
+    method: GET
+    expected: [200]
+  expect:
+    network-ipam:
+      <<: *network_ipam
+      virtual_network_back_refs: $null
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/test_virtual_network_uuid
+    method: DELETE
+    expected: [200]
+
+- name: delete network ipam
+  request:
+    path: /network-ipam/test_network_ipam_uuid
+    method: DELETE
+    expected: [200]
+
+- name: delete project
+  request:
+    path: /project/test_project_uuid
+    method: DELETE
+    expected: [200]
