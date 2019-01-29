@@ -8,6 +8,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 //RegisterRESTAPI register REST API service for path.
@@ -59,7 +60,12 @@ func getObject(ctx context.Context, rs ReadService, typeName, uuid string, field
 	switch kind {
 		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 	case "{{ schema.TypeName }}":
-		resp, err := rs.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{ID: uuid, Fields: fields})
+		resp, err := rs.Get{{ schema.JSONSchema.GoName }}(ctx, &Get{{ schema.JSONSchema.GoName }}Request{
+			ID: uuid,
+			Spec: &baseservices.GetSpec{
+				Fields: fields,
+			},
+		})
 		return resp.Get{{ schema.JSONSchema.GoName }}(), err
 		{% endif %}{% endfor %}
 	}
