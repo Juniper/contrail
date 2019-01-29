@@ -169,7 +169,7 @@ func newDeployerByID(cluster *Cluster) (base.Deployer, error) {
 	var cData *Data
 	var err error
 	if cluster.config.Action == "delete" {
-		cData = &Data{}
+		cData = &Data{client: cluster.APIServer}
 	} else {
 		cData, err = cluster.getClusterDetails(cluster.config.ClusterID)
 	}
