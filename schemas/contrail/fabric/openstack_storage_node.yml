@@ -18,7 +18,13 @@ parents:
 plural: openstack_storage_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    swift_public_port:
+      description: "Service listen port in the public/external network."
+      default: 8080
+      operations: CRUD
+      presence: optional
+      type: string
   propertiesOrder: []
   required: []
   type: object

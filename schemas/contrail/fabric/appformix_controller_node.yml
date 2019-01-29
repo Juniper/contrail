@@ -43,6 +43,12 @@ schema:
       view:
       - create
       - detail
+    public_port:
+      description: "Service listen port in the public/external network."
+      default: 9000
+      operations: CRUD
+      presence: optional
+      type: string
   propertiesOrder: []
   required: []
   type: object
