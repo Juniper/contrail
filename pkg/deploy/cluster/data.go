@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Juniper/contrail/pkg/cloud"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 )
 
@@ -732,6 +733,27 @@ func (o *OpenstackData) getControlNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (o *OpenstackData) getOpenstackControlPorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, controlNode := range o.clusterInfo.OpenstackControlNodes {
+		for _, nodeRef := range controlNode.NodeRefs {
+			for _, node := range o.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					portMap := make(map[string]string)
+					if _, ok := nodePorts[node.IPAddress]; !ok {
+						nodePorts[node.IPAddress] = portMap
+					}
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[identity] = controlNode.KeystonePublicPort
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[nova] = controlNode.NovaPublicPort
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[glance] = controlNode.GlancePublicPort
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[ironic] = controlNode.IronicPublicPort
+				}
+			}
+		}
+	}
+	return nodePorts
+}
+
 func (o *OpenstackData) getStorageNodeIPs() (nodeIPs []string) {
 	for _, storageNode := range o.clusterInfo.OpenstackStorageNodes {
 		for _, nodeRef := range storageNode.NodeRefs {
@@ -743,6 +765,24 @@ func (o *OpenstackData) getStorageNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (o *OpenstackData) getOpenstackStoragePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, storageNode := range o.clusterInfo.OpenstackStorageNodes {
+		for _, nodeRef := range storageNode.NodeRefs {
+			for _, node := range o.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					portMap := make(map[string]string)
+					if _, ok := nodePorts[node.IPAddress]; !ok {
+						nodePorts[node.IPAddress] = portMap
+					}
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[swift] = storageNode.SwiftPublicPort
+				}
+			}
+		}
+	}
+	return nodePorts
 }
 
 func (d *Data) addKeypair(keypair *models.Keypair) {
@@ -1292,6 +1332,24 @@ func (d *Data) getConfigNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (d *Data) getConfigNodePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, configNode := range d.clusterInfo.ContrailConfigNodes {
+		for _, nodeRef := range configNode.NodeRefs {
+			for _, node := range d.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					portMap := make(map[string]string)
+					if _, ok := nodePorts[node.IPAddress]; !ok {
+						nodePorts[node.IPAddress] = portMap
+					}
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[config] = configNode.APIPublicPort
+				}
+			}
+		}
+	}
+	return nodePorts
+}
+
 func (d *Data) getAnalyticsNodeIPs() (nodeIPs []string) {
 	for _, analyticsNode := range d.clusterInfo.ContrailAnalyticsNodes {
 		for _, nodeRef := range analyticsNode.NodeRefs {
@@ -1305,6 +1363,24 @@ func (d *Data) getAnalyticsNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (d *Data) getAnalyticsNodePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, analyticsNode := range d.clusterInfo.ContrailAnalyticsNodes {
+		for _, nodeRef := range analyticsNode.NodeRefs {
+			for _, node := range d.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					portMap := make(map[string]string)
+					if _, ok := nodePorts[node.IPAddress]; !ok {
+						nodePorts[node.IPAddress] = portMap
+					}
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[analytics] = analyticsNode.APIPublicPort
+				}
+			}
+		}
+	}
+	return nodePorts
+}
+
 func (d *Data) getWebuiNodeIPs() (nodeIPs []string) {
 	for _, webuiNode := range d.clusterInfo.ContrailWebuiNodes {
 		for _, nodeRef := range webuiNode.NodeRefs {
@@ -1316,6 +1392,24 @@ func (d *Data) getWebuiNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (d *Data) getWebuiNodePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, webuiNode := range d.clusterInfo.ContrailWebuiNodes {
+		for _, nodeRef := range webuiNode.NodeRefs {
+			for _, node := range d.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					portMap := make(map[string]string)
+					if _, ok := nodePorts[node.IPAddress]; !ok {
+						nodePorts[node.IPAddress] = portMap
+					}
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[webui] = webuiNode.PublicPort
+				}
+			}
+		}
+	}
+	return nodePorts
 }
 
 func (d *Data) getAppformixClusterData() *AppformixData {
@@ -1348,6 +1442,28 @@ func (d *Data) getAppformixControllerNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (d *Data) getAppformixControllerNodePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	appformixClusterInfo := d.getAppformixClusterInfo()
+	if appformixClusterInfo == nil {
+		return nodePorts
+	}
+	for _, appformixControllerNode := range appformixClusterInfo.AppformixControllerNodes {
+		for _, nodeRef := range appformixControllerNode.NodeRefs {
+			for _, node := range d.getAppformixClusterData().nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					portMap := make(map[string]string)
+					if _, ok := nodePorts[node.IPAddress]; !ok {
+						nodePorts[node.IPAddress] = portMap
+					}
+					format.InterfaceToStringMap(nodePorts[node.IPAddress])[appformix] = appformixControllerNode.PublicPort
+				}
+			}
+		}
+	}
+	return nodePorts
 }
 
 func (d *Data) getCloudRefs() ([]*models.Cloud, error) {
