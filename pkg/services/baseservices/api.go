@@ -12,19 +12,21 @@ import (
 
 // Block of constants consumed by client code.
 const (
-	FiltersKey      = "filters"
-	PageMarkerKey   = "page_marker"
-	PageLimitKey    = "page_limit"
-	DetailKey       = "detail"
-	CountKey        = "count"
-	SharedKey       = "shared"
-	ExcludeHRefsKey = "exclude_hrefs"
-	ParentTypeKey   = "parent_type"
-	ParentFQNameKey = "parent_fq_name_str"
-	ParentUUIDsKey  = "parent_id"
-	BackrefUUIDsKey = "back_ref_id"
-	ObjectUUIDsKey  = "obj_uuids"
-	FieldsKey       = "fields"
+	FiltersKey         = "filters"
+	PageMarkerKey      = "page_marker"
+	PageLimitKey       = "page_limit"
+	DetailKey          = "detail"
+	CountKey           = "count"
+	SharedKey          = "shared"
+	ExcludeHRefsKey    = "exclude_hrefs"
+	ParentTypeKey      = "parent_type"
+	ParentFQNameKey    = "parent_fq_name_str"
+	ParentUUIDsKey     = "parent_id"
+	BackrefUUIDsKey    = "back_ref_id"
+	ObjectUUIDsKey     = "obj_uuids"
+	FieldsKey          = "fields"
+	ExcludeChildrenKey = "exclude_children"
+	ExcludeBackRefsKey = "exclude_back_refs"
 )
 
 func parsePositiveNumber(query string, defaultValue int64) int64 {
@@ -63,21 +65,25 @@ func GetListSpec(c echo.Context) *ListSpec {
 	parentUUIDs := parseStringList(c.QueryParam(ParentUUIDsKey))
 	backrefUUIDs := parseStringList(c.QueryParam(BackrefUUIDsKey))
 	objectUUIDs := parseStringList(c.QueryParam(ObjectUUIDsKey))
+	excludeChildren := parseBool(c.QueryParam(ExcludeChildrenKey))
+	excludeBackRefs := parseBool(c.QueryParam(ExcludeBackRefsKey))
 	fields := parseStringList(c.QueryParam(FieldsKey))
 	return &ListSpec{
-		Filters:      filters,
-		Fields:       fields,
-		ParentType:   parentType,
-		ParentFQName: parentFQName,
-		Limit:        pageLimit,
-		Marker:       pageMarker,
-		Detail:       detail,
-		Count:        count,
-		ExcludeHrefs: excludeHrefs,
-		Shared:       shared,
-		ParentUUIDs:  parentUUIDs,
-		BackRefUUIDs: backrefUUIDs,
-		ObjectUUIDs:  objectUUIDs,
+		Filters:         filters,
+		Fields:          fields,
+		ParentType:      parentType,
+		ParentFQName:    parentFQName,
+		Limit:           pageLimit,
+		Marker:          pageMarker,
+		Detail:          detail,
+		Count:           count,
+		ExcludeHrefs:    excludeHrefs,
+		Shared:          shared,
+		ParentUUIDs:     parentUUIDs,
+		BackRefUUIDs:    backrefUUIDs,
+		ObjectUUIDs:     objectUUIDs,
+		ExcludeChildren: excludeChildren,
+		ExcludeBackRefs: excludeBackRefs,
 	}
 }
 
@@ -104,6 +110,8 @@ func (s *ListSpec) URLQuery() url.Values {
 	addQuery(query, BackrefUUIDsKey, encodeStringList(s.BackRefUUIDs))
 	addQuery(query, ObjectUUIDsKey, encodeStringList(s.ObjectUUIDs))
 	addQuery(query, FieldsKey, encodeStringList(s.Fields))
+	addQueryBool(query, ExcludeChildrenKey, s.ExcludeChildren)
+	addQueryBool(query, ExcludeBackRefsKey, s.ExcludeBackRefs)
 	return query
 }
 
