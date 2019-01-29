@@ -312,9 +312,11 @@ func (sv *ContrailTypeLogicService) getLogicalRouterParentProject(
 
 	projectResponse, err := sv.ReadService.GetProject(ctx, &services.GetProjectRequest{
 		ID: projectUUID,
-		Fields: []string{
-			models.ProjectFieldFQName,
-			models.ProjectFieldVxlanRouting,
+		Spec: &baseservices.GetSpec{
+			Fields: []string{
+				models.ProjectFieldFQName,
+				models.ProjectFieldVxlanRouting,
+			},
 		},
 	})
 	return projectResponse.GetProject(), err
@@ -354,8 +356,10 @@ func (sv *ContrailTypeLogicService) checkPortGateway(
 		vmiResponse, err := sv.ReadService.GetVirtualMachineInterface(
 			ctx,
 			&services.GetVirtualMachineInterfaceRequest{
-				ID:     vmi.GetUUID(),
-				Fields: []string{models.VirtualMachineInterfaceFieldVirtualNetworkRefs},
+				ID: vmi.GetUUID(),
+				Spec: &baseservices.GetSpec{
+					Fields: []string{models.VirtualMachineInterfaceFieldVirtualNetworkRefs},
+				},
 			},
 		)
 		if err != nil {
