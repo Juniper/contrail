@@ -12,3 +12,12 @@ func SimpleListSpec(uuids []string, fields ...string) *ListSpec {
 		Fields: fields,
 	}
 }
+
+// ToGetSpec returns corresponding GetSpec associated with ListSpec.
+func (m *ListSpec) ToGetSpec() *GetSpec {
+	return &GetSpec{
+		Fields:          m.Fields,
+		ExcludeChildren: m.ExcludeChildren,
+		ExcludeBackRefs: m.ExcludeBackRefs,
+	}
+}
