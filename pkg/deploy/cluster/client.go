@@ -152,14 +152,14 @@ func (c *Cluster) getCredential(credentialID string, m map[string]bool, d DataSt
 
 func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 	// get contrail cluster information
-	clusterData := &Data{}
+	clusterData := &Data{client: c.APIServer}
 	if err := clusterData.updateClusterDetails(clusterID, c); err != nil {
 		return nil, err
 	}
 
 	// get all referred openstack cluster information
 	for _, openstackClusterRef := range clusterData.clusterInfo.OpenstackClusterRefs {
-		openstakData := &OpenstackData{}
+		openstakData := &OpenstackData{client: c.APIServer}
 		if err := openstakData.updateClusterDetails(
 			openstackClusterRef.UUID, c); err != nil {
 			return nil, err
@@ -170,7 +170,7 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 
 	// get all referred kubernetes cluster information
 	for _, kubernetesClusterRef := range clusterData.clusterInfo.KubernetesClusterRefs {
-		k8sData := &KubernetesData{}
+		k8sData := &KubernetesData{client: c.APIServer}
 		if err := k8sData.updateClusterDetails(
 			kubernetesClusterRef.UUID, c); err != nil {
 			return nil, err
@@ -181,7 +181,7 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 
 	// get all referred vCenter information
 	for _, vcenterRef := range clusterData.clusterInfo.VCenterRefs {
-		vCenterData := &VCenterData{}
+		vCenterData := &VCenterData{client: c.APIServer}
 		if err := vCenterData.updateClusterDetails(
 			vcenterRef.UUID, c); err != nil {
 			return nil, err
@@ -192,7 +192,7 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 
 	// get all referred appformix cluster information
 	for _, appformixClusterRef := range clusterData.clusterInfo.AppformixClusterRefs {
-		appformixData := &AppformixData{}
+		appformixData := &AppformixData{client: c.APIServer}
 		if err := appformixData.updateClusterDetails(
 			appformixClusterRef.UUID, c); err != nil {
 			return nil, err
