@@ -90,9 +90,9 @@ func AllocationPoolsSubtract(
 
 // ContainsIPAddress if ip address string belongs to allocation pool.
 func (m *AllocationPoolType) ContainsIPAddress(ipAddress string) (bool, error) {
-	ip := net.ParseIP(ipAddress)
-	if ip == nil {
-		return false, errors.Errorf("couldn't parse ip address: %v", ipAddress)
+	ip, err := parseIP(ipAddress)
+	if err != nil {
+		return false, err
 	}
 
 	return m.Contains(ip)
@@ -114,17 +114,6 @@ func (m *AllocationPoolType) Contains(ip net.IP) (bool, error) {
 		return true, nil
 	}
 	return false, nil
-}
-
-func isIPInSubnet(subnet *net.IPNet, ipString string) error {
-	ip := net.ParseIP(ipString)
-	if ip == nil {
-		return errors.Errorf("invalid address: " + ipString)
-	}
-	if !subnet.Contains(ip) {
-		return errors.Errorf("address is out of cidr: " + subnet.String())
-	}
-	return nil
 }
 
 // Validate validates ipam subnet configuration.
@@ -196,47 +185,4 @@ func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
 	}
 
 	return false, nil
-}
-
-// Contains checks if IpamSubnets contain provided ip address
-func (m *IpamSubnets) Contains(ipString string) (bool, error) {
-	for _, ipamSubnet := range m.GetSubnets() {
-		ip := net.ParseIP(ipString)
-		if ip == nil {
-			return false, errors.Errorf("invalid address: " + ipString)
-		}
-
-		contains, err := ipamSubnet.Contains(ip)
-		if err != nil {
-			return false, err
-		}
-
-		if contains {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-// Subtract subtracts right set from ipam subnets set and returns the result
-func (m *IpamSubnets) Subtract(rightSet *IpamSubnets) *IpamSubnets {
-	if m == nil {
-		return nil
-	}
-
-	var subnets []*IpamSubnetType
-	rightMap := make(map[string]bool)
-	for _, r := range rightSet.GetSubnets() {
-		rightMap[r.SubnetUUID] = true
-	}
-
-	for _, l := range m.GetSubnets() {
-		if !rightMap[l.SubnetUUID] {
-			subnets = append(subnets, l)
-		}
-	}
-
-	return &IpamSubnets{
-		Subnets: subnets,
-	}
 }
