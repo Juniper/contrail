@@ -11,6 +11,12 @@
         - contrail-go-docker
         - contrail-go-sanity-centos7-k8s
 
+    experimental:
+      jobs:
+        - contrail-vnc-build-package-centos74
+        - contrail-build-test-containers
+        - contrail-go-sanity-centos7-k8s-experimental
+
 - job:
     name: contrail-go-docker
     description: |
@@ -44,3 +50,22 @@
           command: postgres -c wal_level=logical
         - image: gcr.io/etcd-development/etcd:v3.3.2
           name: contrail_etcd
+
+- job:
+    name: contrail-go-sanity-centos7-k8s-experimental
+    parent: contrail-sanity-base
+    run: playbooks/contrail-go-sanity-centos7-k8s/run.yaml
+    description: |
+      A job that first deploys Contrail containers and a Kubernetes cluster
+      using contrail-ansible-deployer, switches Configuration Node components to contrail-go
+      and runs sanity test suite on setup CI.
+    required-projects:
+      - Juniper/contrail
+      - name: Juniper/contrail-ansible-deployer
+        override-checkout: R5.0
+      - Juniper/contrail-test
+    vars:
+      openstack_version: ocata
+      cloud_orchestrator: kubernetes
+      test_target: ci_k8s_sanityci_contrail_go_k8s_sanity
+    nodeset: c7-systest-c-aio

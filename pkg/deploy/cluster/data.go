@@ -7,6 +7,7 @@ import (
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 // DataStore interface to store cluster data
@@ -1437,8 +1438,10 @@ func (d *Data) getAppformixControllerNodeIPs() (nodeIPs []string) {
 
 func getNodeIPAddress(readService services.ReadService, nodeID string) (IPAddress string) {
 	resp, err := readService.GetNode(context.Background(), &services.GetNodeRequest{
-		ID:     nodeID,
-		Fields: []string{"ip_address"},
+		ID: nodeID,
+		Spec: &baseservices.GetSpec{
+			Fields: []string{"ip_address"},
+		},
 	})
 	if err != nil {
 		return ""
