@@ -78,7 +78,7 @@ message List{{ schema.JSONSchema.GoName }}Response {
 
 message Get{{ schema.JSONSchema.GoName }}Request {
 	string id = 1 [(gogoproto.customname) = "ID"];
-	repeated string fields = 13 [(gogoproto.customname) = "Fields"]; // limit displayed fields
+    github.com.Juniper.contrail.pkg.services.baseservices.GetSpec spec = 14 [(gogoproto.customname) = "Spec"];
 }
 
 message Get{{ schema.JSONSchema.GoName }}Response {
