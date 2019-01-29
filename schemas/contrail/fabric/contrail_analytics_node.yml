@@ -22,7 +22,13 @@ parents:
 plural: contrail_analytics_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    api_public_port:
+      description: "Service listen port in the public/external network."
+      default: 8081
+      operations: CRUD
+      presence: optional      
+      type: integer
   propertiesOrder: []
   required: []
   type: object

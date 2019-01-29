@@ -22,7 +22,31 @@ parents:
 plural: openstack_control_nodes
 prefix: /
 schema:
-  properties: {}
+  properties:
+    keystone_public_port:
+      description: "Service listen port in the public/external network."
+      default: 5000
+      operations: CRUD
+      presence: optional
+      type: integer
+    nova_public_port:
+      description: "Service listen port in the public/external network."
+      default: 8774
+      operations: CRUD
+      presence: optional
+      type: integer
+    glance_public_port:
+      description: "Service listen port in the public/external network."
+      default: 9292
+      operations: CRUD
+      presence: optional
+      type: integer
+    ironic_public_port:
+      description: "Service listen port in the public/external network."
+      default: 6385
+      operations: CRUD
+      presence: optional
+      type: integer
   propertiesOrder: []
   required: []
   type: object
