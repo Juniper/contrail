@@ -48,6 +48,36 @@ func (e *EndpointData) endpointToURL(protocol, ip, port string) (endpointURL str
 	return strings.Join([]string{protocol, webSep + ip, port}, pathSep)
 }
 
+func (e *EndpointData) getPort(nodeIP, service) {
+	c := e.clusterData
+	var nodePortMap map[string]interface{}
+	switch service {
+	case config:
+		nodePortMap := c.getConfigNodePorts()
+	case analytics:
+		nodePortMap := c.getAnalyticsNodePorts()
+	case webui:
+		nodePortMap := c.getWebuiNodePorts()
+	case appformix:
+		nodePortMap := c.getAppformixControllerNodePorts()
+	case identity, nova, glance, ironic:
+		o := c.getOpenstackClusterData()
+		nodePortMap := c.getOpenstackControlNodePorts()
+	case storage:
+		o := c.getOpenstackClusterData()
+		nodePortMap := c.getOpenstackStorageNodePorts()
+	}
+	if nodePortMap != nil {
+		if portConfigured, ok := nodePortMap[nodeIp]; ok {
+			if port, ok := portConfigured[service]; ok {
+				return port
+			}
+		}
+	}
+	return portMap[service]
+
+}
+
 func (e *EndpointData) getOpenstackPublicVip() (vip string) {
 	vip = ""
 	o := e.clusterData.getOpenstackClusterData()
@@ -160,7 +190,8 @@ func (e *EndpointData) create() error {
 			if service == webui {
 				endpointProtocol = secureProtocol
 			}
-			publicURL := e.endpointToURL(endpointProtocol, endpointIP, portMap[service])
+			publicURL := e.endpointToURL(
+				endpointProtocol, endpointIP, e.getPort(endpointIP, service))
 			privateURL := publicURL
 			err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
 			if err != nil {
@@ -175,7 +206,8 @@ func (e *EndpointData) create() error {
 		for service, endpointIPs := range openstackEndpoints {
 			e.log.Infof("Creating %s endpoints", service)
 			for _, endpointIP := range endpointIPs {
-				publicURL := e.endpointToURL(protocol, endpointIP, portMap[service])
+				publicURL := e.endpointToURL(
+					protocol, endpointIP, e.getPort(endpointIP, service))
 				privateURL := publicURL
 				err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
 				if err != nil {
@@ -194,7 +226,8 @@ func (e *EndpointData) create() error {
 			if service == appformix {
 				endpointProtocol = secureProtocol
 			}
-			publicURL := e.endpointToURL(endpointProtocol, endpointIP, portMap[service])
+			publicURL := e.endpointToURL(
+				endpointProtocol, endpointIP, e.getPort(endpointIP, service))
 			privateURL := publicURL
 			err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
 			if err != nil {

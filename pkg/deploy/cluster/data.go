@@ -732,6 +732,26 @@ func (o *OpenstackData) getControlNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (o *OpenstackData) getOpenstackControlPorts() (nodePortMap map[string]interface{}) {
+	for _, controlNode := range o.clusterInfo.OpenstackControlNodes {
+		for _, nodeRef := range controlNode.NodeRefs {
+			for _, node := range o.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					var portMap map[string]string
+					if portMap, ok := nodePortMap[node.IPAddress]; !ok {
+						nodePortMap[node.IPAddress] = portMap
+					}
+					portMap[identity] = controlNode.KeystonePublicPort
+					portMap[nova] = controlNode.NovaPublicPort
+					portMap[glance] = controlNode.GlancePublicPort
+					portMap[ironic] = controlNode.IronicPublicPort
+				}
+			}
+		}
+	}
+	return nodePortMap
+}
+
 func (o *OpenstackData) getStorageNodeIPs() (nodeIPs []string) {
 	for _, storageNode := range o.clusterInfo.OpenstackStorageNodes {
 		for _, nodeRef := range storageNode.NodeRefs {
@@ -743,6 +763,23 @@ func (o *OpenstackData) getStorageNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (o *OpenstackData) getOpenstackStoragePorts() (nodePortMap map[string]interface{}) {
+	for _, storageNode := range o.clusterInfo.OpenstackStorageNodes {
+		for _, nodeRef := range storageNode.NodeRefs {
+			for _, node := range o.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					var portMap map[string]string
+					if portMap, ok := nodePortMap[node.IPAddress]; !ok {
+						nodePortMap[node.IPAddress] = portMap
+					}
+					portMap[swift] = storageNode.SwiftPublicPort
+				}
+			}
+		}
+	}
+	return nodePortMap
 }
 
 func (d *Data) addKeypair(keypair *models.Keypair) {
@@ -1292,6 +1329,23 @@ func (d *Data) getConfigNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (d *Data) getConfigNodePorts() (nodePortMap map[string]interface{}) {
+	for _, configNode := range d.clusterInfo.ContrailConfigNodes {
+		for _, nodeRef := range configNode.NodeRefs {
+			for _, node := range d.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					var portMap map[string]string
+					if portMap, ok := nodePortMap[node.IPAddress]; !ok {
+						nodePortMap[node.IPAddress] = portMap
+					}
+					portMap[config] = configNode.APIPublicPort
+				}
+			}
+		}
+	}
+	return nodePortMap
+}
+
 func (d *Data) getAnalyticsNodeIPs() (nodeIPs []string) {
 	for _, analyticsNode := range d.clusterInfo.ContrailAnalyticsNodes {
 		for _, nodeRef := range analyticsNode.NodeRefs {
@@ -1305,6 +1359,23 @@ func (d *Data) getAnalyticsNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (d *Data) getAnalyticsNodePorts() (nodePortMap map[string]interface{}) {
+	for _, analyticsNode := range d.clusterInfo.ContrailAnalyticsNodes {
+		for _, nodeRef := range analyticsNode.NodeRefs {
+			for _, node := range d.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					var portMap map[string]string
+					if portMap, ok := nodePortMap[node.IPAddress]; !ok {
+						nodePortMap[node.IPAddress] = portMap
+					}
+					portMap[analytics] = analyticsNode.APIPublicPort
+				}
+			}
+		}
+	}
+	return nodePortMap
+}
+
 func (d *Data) getWebuiNodeIPs() (nodeIPs []string) {
 	for _, webuiNode := range d.clusterInfo.ContrailWebuiNodes {
 		for _, nodeRef := range webuiNode.NodeRefs {
@@ -1316,6 +1387,23 @@ func (d *Data) getWebuiNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (d *Data) getWebuiNodePorts() (nodePortMap map[string]interface{}) {
+	for _, webuiNode := range d.clusterInfo.ContrailWebuiNodes {
+		for _, nodeRef := range webuiNode.NodeRefs {
+			for _, node := range d.nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					var portMap map[string]string
+					if portMap, ok := nodePortMap[node.IPAddress]; !ok {
+						nodePortMap[node.IPAddress] = portMap
+					}
+					portMap[webui] = webuiNode.PublicPort
+				}
+			}
+		}
+	}
+	return nodePortMap
 }
 
 func (d *Data) getAppformixClusterData() *AppformixData {
@@ -1348,6 +1436,27 @@ func (d *Data) getAppformixControllerNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (d *Data) getAppformixControllerNodePorts() (nodePortMap map[string]interface{}) {
+	appformixClusterInfo := d.getAppformixClusterInfo()
+	if appformixClusterInfo == nil {
+		return nodePortMap
+	}
+	for _, appformixControllerNode := range appformixClusterInfo.AppformixControllerNodes {
+		for _, nodeRef := range appformixControllerNode.NodeRefs {
+			for _, node := range d.getAppformixClusterData().nodesInfo {
+				if nodeRef.UUID == node.UUID {
+					var portMap map[string]string
+					if portMap, ok := nodePortMap[node.IPAddress]; !ok {
+						nodePortMap[node.IPAddress] = portMap
+					}
+					portMap[appformix] = appformixControllerNode.PublicPort
+				}
+			}
+		}
+	}
+	return nodePortMap
 }
 
 func (d *Data) getCloudRefs() ([]*models.Cloud, error) {
