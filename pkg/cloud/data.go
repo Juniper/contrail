@@ -130,7 +130,6 @@ func (i *instanceData) getNodeObject() (*models.Node, error) {
 	return response.GetNode(), nil
 }
 
-// nolint: gocyclo
 func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, error) {
 
 	inst := &instanceData{
@@ -149,20 +148,32 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 
 	data := v.parentRegion.parentProvider.parentCloud
 	if data.isCloudPrivate() {
-		err := inst.updateRoles()
-		if err != nil {
-			return nil, err
+
+		i := inst
+
+		if i.info.ContrailVrouterNodeBackRefs != nil && i.info.KubernetesNodeBackRefs != nil {
+			i.roles = append(i.roles, "compute_node")
+		} else if i.info.ContrailVrouterNodeBackRefs != nil {
+			i.roles = append(i.roles, "vrouter")
 		}
+		if i.info.ContrailConfigNodeBackRefs != nil {
+			i.roles = append(i.roles, "controller")
+		}
+
+		if i.info.KubernetesMasterNodeBackRefs != nil {
+			i.roles = append(i.roles, "k8s_master")
+		}
+
+		if i.info.ContrailMulticloudGWNodeBackRefs != nil {
+			i.roles = append(i.roles, "gateway")
+		}
+
 		err = inst.updatePvtIntf()
 		if err != nil {
 			return nil, err
 		}
 
 		if inst.info.OpenstackComputeNodeBackRefs != nil {
-			inst.provision = strconv.FormatBool(false)
-		} else if inst.info.ContrailConfigNodeBackRefs != nil {
-			inst.provision = strconv.FormatBool(false)
-		} else if inst.info.OpenstackControlNodeBackRefs != nil {
 			inst.provision = strconv.FormatBool(false)
 		}
 	}
@@ -424,46 +435,20 @@ func (d *Data) updateUsers() error {
 		if err != nil {
 			return err
 		}
-		for _, cred := range userObj.CredentialRefs {
-			credObj, err := getCredObject(d.cloud.APIServer, cred.UUID)
-			if err != nil {
-				return err
+
+		// Adding logic to handle a ssh key generation if not added as cred ref
+		if userObj.CredentialRefs != nil {
+			for _, cred := range userObj.CredentialRefs {
+				credObj, err := getCredObject(d.cloud.ctx, d.cloud.APIServer, cred.UUID)
+				if err != nil {
+					return err
+				}
+				d.credentials = append(d.credentials, credObj)
 			}
-			d.credentials = append(d.credentials, credObj)
 		}
 		d.users = append(d.users, userObj)
 	}
 	return nil
-}
-
-func (i *instanceData) updateRoles() error {
-
-	if i.info.ContrailVrouterNodeBackRefs != nil && i.info.KubernetesNodeBackRefs != nil {
-		i.roles = append(i.roles, "compute_node")
-	} else if i.info.ContrailVrouterNodeBackRefs != nil {
-		i.roles = append(i.roles, "vrouter")
-	}
-
-	if i.info.ContrailConfigNodeBackRefs != nil {
-		i.roles = append(i.roles, "controller")
-	}
-
-	if i.info.KubernetesNodeBackRefs != nil {
-		i.roles = append(i.roles, "k8s_node")
-	}
-
-	if i.info.KubernetesMasterNodeBackRefs != nil {
-		i.roles = append(i.roles, "k8s_master")
-	}
-
-	if i.info.ContrailMulticloudGWNodeBackRefs != nil {
-		i.roles = append(i.roles, "gateway")
-	}
-
-	// [ToDo] Madhukar to enable more roles, as soon as mc deployer supports it
-
-	return nil
-
 }
 
 func (i *instanceData) updateProtoModes() error {

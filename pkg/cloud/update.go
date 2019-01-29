@@ -1,13 +1,14 @@
 package cloud
 
 import (
-	"fmt"
+    "context"
+    "fmt"
 
-	tf "github.com/hashicorp/terraform/terraform"
+    tf "github.com/hashicorp/terraform/terraform"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/models"
-	"github.com/Juniper/contrail/pkg/services"
+    "github.com/Juniper/contrail/pkg/apisrv/client"
+    "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/services"
 )
 
 func (c *Cloud) updateIPDetails(data *Data) error {
@@ -56,12 +57,12 @@ func updateInstanceIP(instance *instanceData, tfState *tf.State) error {
 }
 
 func gwRoleExists(instance *instanceData) bool {
-	for _, role := range instance.info.CloudInfo.Roles {
-		if role == "gateway" {
-			return true
-		}
-	}
-	return false
+    for _, role := range instance.info.CloudInfo.Roles {
+        if role == "gateway" {
+            return true
+        }
+    }
+    return false
 }
 
 func createPort(portName string, ip string,
@@ -120,11 +121,12 @@ func addPortToNode(port *models.Port,
 func addIPToNode(ip string,
 	instance *models.Node, client *client.HTTP) error {
 
-	request := new(services.UpdateNodeRequest)
-	request.Node = instance
-	request.Node.IPAddress = ip
+    request := new(services.UpdateNodeRequest)
+    request.Node = instance
+    request.Node.IPAddress = ip
 
 	_, err := client.Update("/node/"+request.Node.UUID,
-		request, new(services.UpdateNodeResponse))
+	request, new(services.UpdateNodeResponse))
 	return err
 }
+
