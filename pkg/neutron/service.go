@@ -48,11 +48,12 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 
 func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response, error) {
 	rp := logic.RequestParameters{
-		ReadService:       s.ReadService,
-		WriteService:      s.WriteService,
-		UserAgentKV:       s.UserAgentKV,
+		ReadService:     s.ReadService,
+		WriteService:    s.WriteService,
+		UserAgentKV:     s.UserAgentKV,
 		IDToFQNameService: s.IDToFQNameService,
-		RequestContext:    r.Context,
+		RequestContext:  r.Context,
+		FieldMask:       r.Data.FieldMask,
 	}
 	switch r.Context.Operation {
 	case "CREATE":
