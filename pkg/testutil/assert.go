@@ -3,6 +3,7 @@ package testutil
 import (
 	"fmt"
 	"net"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -80,6 +81,23 @@ var assertFunctions = map[string]assertFunction{
 			return nil
 		}
 		return errors.Errorf("expected ip address string string but got %s on path %s", actual, path)
+	},
+	"regexp": func(path string, pattern, actual interface{}) error {
+		val, ok := actual.(string)
+		if !ok {
+			return errors.Errorf("expected a string but got %T on path %s", actual, path)
+		}
+		exp, ok := pattern.(string)
+		if !ok {
+			return errors.Errorf("expected pattern to be a string but got %T on pattern arg %s", actual, path)
+		}
+
+		if ok, err := regexp.MatchString(exp, val); err != nil {
+			return errors.Wrapf(err, "regexp error in pattern: %v on path %s", exp, path)
+		} else if ok {
+			return nil
+		}
+		return errors.Errorf("expected value to match regexp pattern '%s', but got '%s' instead on path %s", exp, val, path)
 	},
 }
 
@@ -196,11 +214,11 @@ func runFunction(path string, expected, actual interface{}) (err error) {
 		for key := range t {
 			if isStringFunction(key) {
 				for key, value := range t {
-					assert, err := getAssertFunction(key)
+					checkFn, err := getAssertFunction(key)
 					if err != nil {
 						return err
 					}
-					err = assert(path, value, actual)
+					err = checkFn(path, value, actual)
 					if err != nil {
 						return err
 					}

@@ -71,6 +71,18 @@ test_data:
           - end_port: 65535
             start_port: 0
 
+  virtual-machine-interface: &dummy_vmi
+    parent_type: project
+    parent_uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+    uuid: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    virtual_network_refs:
+       - to: [default, admin_project_uuid, vn_blue]
+         uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    security_group_refs:
+       - to: [default, admin_project_uuid, security_group]
+         uuid: 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+    vrf_assign_table: {}
+
 workflow:
 - name: create project admin
   request:
@@ -115,6 +127,20 @@ workflow:
       virtual-network: *vn_blue
   expect:
     virtual-network: *vn_blue
+
+- name: create vmi - dummy action to catch resource in scenario cleanup
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [ 200 ]
+    data:
+      virtual-machine-interface: *dummy_vmi
+
+- name: delete dummy vmi
+  request:
+    path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    method: DELETE
+    expected: [ 200 ]
 
 - name: port create
   request:
@@ -223,7 +249,7 @@ workflow:
            uuid: 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
       vrf_assign_table: {}
 
-- name: port read
+- name: Neutron port read
   request:
     path: /neutron/port
     method: POST
@@ -268,7 +294,7 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: ''
 
-- name: port read all
+- name: Neutron port read all
   request:
     path: /neutron/port
     method: POST
@@ -292,7 +318,7 @@ workflow:
         tenant: 886c725d04614dd6ac2730c74d4e46fb
   expect: []
 
-- name: port update
+- name: Neutron port update device_owner + device ID
   request:
     path: /neutron/port
     method: POST
@@ -342,7 +368,7 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
-- name: port read after an update
+- name: Neutron port read after an update
   request:
     path: /neutron/port
     method: POST
@@ -388,7 +414,7 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
-- name: port read all with device_id
+- name: Neutron port read all with device_id
   request:
     path: /neutron/port
     method: POST
@@ -436,7 +462,146 @@ workflow:
       - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
       device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
-- name: port delete
+#- name: Neutron port read all with non-existant device_id
+#  request:
+#    path: /neutron/port
+#    method: POST
+#    expected: [200]
+#    data:
+#      data:
+#        fields: []
+#        filters:
+#          device_id:
+#          - c603fa24-beef-face-beef-78be45b2c93e
+#      context:
+#        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+#        roles:
+#        - heat_stack_owner
+#        - admin
+#        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+#        is_admin: true
+#        request_id: req-7ef05a71-0a78-4616-8741-64380919f5df
+#        operation: READALL
+#        type: port
+#        tenant: 886c725d04614dd6ac2730c74d4e46fb
+      #  expect: "[]"
+
+- name: Neutron port update mac_address + port_security_enabled
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          mac_address: 11:22:33:44:55:ff
+          # TODO FieldMask
+          #port_security_enabled: false
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters:
+      context:
+        user_id: e134158cf91b4f7a81b5f613dff8f56a
+        roles:
+        - admin
+        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
+        is_admin: true
+        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
+        operation: UPDATE
+        type: port
+        tenant: 711b9adee0964d3c8ae19fa05854f59e
+  expect:
+    status: ACTIVE
+    id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    mac_address: 11:22:33:44:55:ff
+    name: $uuid
+    network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    # TODO FieldMask
+    #port_security_enabled: false
+    binding:vif_details:
+      port_filter: true
+    description: ''
+    binding:host_id: test-host.novalocal
+    binding:vnic_type: normal
+    binding:vif_type: vrouter
+    device_owner: compute:nova
+    fq_name:
+    - default
+    - admin_project_uuid
+    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    fixed_ips:
+    - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+      ip_address: $ip_address
+    security_groups:
+    - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+    device_id: c603fa24-81fa-4710-a288-78be45b2c93e
+
+- name: Verify VM exist
+  request:
+    path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
+    method: GET
+    expected: [ 200 ]
+
+- name: Neutron port update device ID - set empty
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [ 200 ]
+    data:
+      data:
+        fields: null
+        resource:
+          device_owner: ''
+          binding:host_id:
+          binding:profile:
+          device_id: ''
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters: null
+      context:
+        user_id: e134158cf91b4f7a81b5f613dff8f56a
+        roles:
+        - admin
+        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
+        is_admin: true
+        request_id: req-f5405238-8866-470a-aed2-9b2637c86966
+        operation: UPDATE
+        type: port
+        tenant: 711b9adee0964d3c8ae19fa05854f59e
+  expect:
+    status: DOWN
+    id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    mac_address: 11:22:33:44:55:ff
+    name: $uuid
+    network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    # TODO FieldMask
+    #port_security_enabled: false
+    binding:vif_details:
+      port_filter: true
+    description: ''
+    binding:host_id:
+    binding:vnic_type: normal
+    binding:vif_type: vrouter
+    device_owner: ''
+    fq_name:
+    - default
+    - admin_project_uuid
+    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    fixed_ips:
+    - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+      ip_address: $ip_address
+    security_groups:
+    - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+    device_id: ''
+
+- name: Ensure VM was deleted after setting device_id to empty value
+  request:
+    path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
+    method: GET
+    expected: [ 404 ]
+
+- name: Neutron port delete
   request:
     path: /neutron/port
     method: POST
