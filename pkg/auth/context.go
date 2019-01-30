@@ -6,21 +6,22 @@ import (
 
 type key string
 
-// UserVisibleVerified used in context as additional property
-const userVisibleVerified key = "isUserVisibleVerified"
+const (
+	// internalRequestKey used in context as additional propetry
+	internalRequestKey key = "isInternal"
+)
 
-// WithUserVisibleVerified creates child context with additional information that this context is verified
-func WithUserVisibleVerified(ctx context.Context) context.Context {
-	if v := ctx.Value(userVisibleVerified); v == nil {
-		return context.WithValue(ctx, userVisibleVerified, true)
-	}
-	return ctx
+// WithInternalRequest creates child context with additional information
+// that this context is for internal requests
+func WithInternalRequest(ctx context.Context) context.Context {
+	return context.WithValue(ctx, internalRequestKey, true)
 }
 
-// IsUserVisibleVerified checks if context is verified
-func IsUserVisibleVerified(ctx context.Context) bool {
-	if v := ctx.Value(userVisibleVerified); v != nil {
+// IsInternalRequest checks if context is for internal request
+func IsInternalRequest(ctx context.Context) bool {
+	if v := ctx.Value(internalRequestKey); v != nil {
 		return v.(bool)
 	}
+
 	return false
 }

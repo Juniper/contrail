@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -259,7 +260,7 @@ func setupReadServiceMock(s *ContrailTypeLogicService, databaseFP *models.Firewa
 
 func getContext(isInternalRequest bool) context.Context {
 	if isInternalRequest {
-		return WithInternalRequest(context.Background())
+		return auth.WithInternalRequest(context.Background())
 	}
 
 	return context.Background()

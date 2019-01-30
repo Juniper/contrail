@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -534,7 +535,7 @@ func TestCreateFirewallRule(t *testing.T) {
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
-				ctx = WithInternalRequest(ctx)
+				ctx = auth.WithInternalRequest(ctx)
 			}
 
 			paramRequest := &services.CreateFirewallRuleRequest{FirewallRule: &tt.testFirewallRule}
@@ -866,7 +867,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 
 			ctx := context.Background()
 			if tt.IsInternalRequest {
-				ctx = WithInternalRequest(ctx)
+				ctx = auth.WithInternalRequest(ctx)
 			}
 
 			expectedResponse := &services.UpdateFirewallRuleResponse{
