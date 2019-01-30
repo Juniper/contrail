@@ -29,7 +29,7 @@
         - name: make test
           command: make test
         - name: Make docker
-          command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} docker
+          command: make ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
 
     - name: Fix files ownerships
       file:
@@ -47,4 +47,3 @@
       tag: "{{ packaging.docker_version }}"
       images:
         - { name: contrail-go, tag: latest }
-
