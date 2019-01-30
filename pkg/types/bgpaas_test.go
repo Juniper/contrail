@@ -16,6 +16,8 @@ import (
 func nextServMock(t *testing.T, service *ContrailTypeLogicService, getResp *services.GetBGPAsAServiceResponse) {
 	nextServiceMock, ok := service.Next().(*servicesmock.MockService)
 	assert.True(t, ok)
+	readServiceMock, ok := service.ReadService.(*servicesmock.MockReadService)
+	assert.True(t, ok)
 	nextServiceMock.EXPECT().CreateBGPAsAService(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(
 			_ context.Context, _ *services.CreateBGPAsAServiceRequest,
@@ -28,7 +30,7 @@ func nextServMock(t *testing.T, service *ContrailTypeLogicService, getResp *serv
 		) (response *services.UpdateBGPAsAServiceResponse, err error) {
 			return &services.UpdateBGPAsAServiceResponse{}, nil
 		}).AnyTimes()
-	nextServiceMock.EXPECT().GetBGPAsAService(gomock.Any(), gomock.Any()).DoAndReturn(
+	readServiceMock.EXPECT().GetBGPAsAService(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(
 			_ context.Context, _ *services.GetBGPAsAServiceRequest,
 		) (response *services.GetBGPAsAServiceResponse, err error) {

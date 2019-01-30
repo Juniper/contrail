@@ -7,8 +7,8 @@ import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
-// ComplementRefs checks if to fields in resource refs are filled
-func (sv *ContrailTypeLogicService) ComplementRefs(ctx context.Context, obj basemodels.Object) error {
+// complementRefs checks if to fields in resource refs are filled
+func (sv *ContrailTypeLogicService) complementRefs(ctx context.Context, obj basemodels.Object) error {
 	for _, ref := range obj.GetReferences() {
 		if err := sv.fillToFieldInRef(ctx, ref); err != nil {
 			return err

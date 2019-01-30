@@ -45,8 +45,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
     ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
-    isVerified := auth.IsUserVisibleVerified(ctx)
-    ctx = auth.WithUserVisibleVerified(ctx)
+    isVerified := auth.IsInternalRequest(ctx)
 
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
@@ -193,8 +192,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
     ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
-    isVerified := auth.IsUserVisibleVerified(ctx)
-    ctx = auth.WithUserVisibleVerified(ctx)
+    isVerified := auth.IsInternalRequest(ctx)
 
     model := request.{{ schema.JSONSchema.GoName }}
     if model == nil {
@@ -239,8 +237,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
     ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
-    isVerified := auth.IsUserVisibleVerified(ctx)
-    ctx = auth.WithUserVisibleVerified(ctx)
+    isVerified := auth.IsInternalRequest(ctx)
     if !isVerified {
         storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
         if err != nil {
@@ -273,8 +270,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
     ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
-    isVerified := auth.IsUserVisibleVerified(ctx)
-    ctx = auth.WithUserVisibleVerified(ctx)
+    isVerified := auth.IsInternalRequest(ctx)
     if !isVerified {
         storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
         if err != nil {
