@@ -3,6 +3,7 @@ package types
 import (
 	"context"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
 )
 
@@ -16,7 +17,7 @@ type DraftModeStateChecker interface {
 }
 
 func checkDraftModeState(ctx context.Context, dms draftModeStateGetter) error {
-	if IsInternalRequest(ctx) {
+	if auth.IsInternalRequest(ctx) {
 		return nil
 	}
 
