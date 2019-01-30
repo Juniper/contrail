@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/services"
@@ -77,4 +78,5 @@ type RequestParameters struct {
 	WriteService      services.WriteService
 	UserAgentKV       services.UserAgentKVServer
 	IDToFQNameService services.IDToFQNameServer
+	FieldMask         types.FieldMask
 }

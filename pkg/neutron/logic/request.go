@@ -3,7 +3,10 @@ package logic
 import (
 	"encoding/json"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/format"
 )
 
 // Request defines an API request.
@@ -14,10 +17,11 @@ type Request struct {
 
 // Data defines API request data.
 type Data struct {
-	Filters  Filters  `json:"filters" yaml:"filters"`
-	ID       string   `json:"id" yaml:"id"`
-	Fields   Fields   `json:"fields" yaml:"fields"`
-	Resource Resource `json:"resource" yaml:"resource"`
+	Filters   Filters  `json:"filters" yaml:"filters"`
+	ID        string   `json:"id" yaml:"id"`
+	Fields    Fields   `json:"fields" yaml:"fields"`
+	Resource  Resource `json:"resource" yaml:"resource"`
+	FieldMask types.FieldMask
 }
 
 // GetType returns resource type of the Request.
@@ -27,32 +31,35 @@ func (r *Request) GetType() string {
 
 // UnmarshalJSON custom unmarshalling of Request.
 func (r *Request) UnmarshalJSON(data []byte) error {
-	var rawJSON map[string]json.RawMessage
-	err := json.Unmarshal(data, &rawJSON)
+	var m map[string]interface{}
+	err := json.Unmarshal(data, &m)
 	if err != nil {
 		return err
 	}
+	return r.ApplyMap(m)
+}
 
-	err = parseField(rawJSON, "context", &r.Context)
+func (r *Request) ApplyMap(m map[string]interface{}) error {
+	cm, ok := m["context"].(map[string]interface{})
+	if !ok {
+		return errors.Errorf("got invalid context: %v", m["context"])
+	}
+	err := format.ApplyMap(cm, &r.Context)
 	if err != nil {
 		return err
 	}
-
 	resource, err := MakeResource(r.Context.Type)
 	if err != nil {
 		return err
 	}
-
 	r.Data.Resource = resource
-	return parseField(rawJSON, "data", &r.Data)
-}
-
-func parseField(rawJSON map[string]json.RawMessage, key string, dst interface{}) error {
-	if val, ok := rawJSON[key]; ok {
-		if err := json.Unmarshal(val, dst); err != nil {
-			return errors.Errorf("invalid '%s' format: %v", key, err)
-		}
-		delete(rawJSON, key)
+	dm, ok := m["data"].(map[string]interface{})
+	if !ok {
+		return errors.Errorf("got invalid data: %v", m["data"])
+	}
+	err = format.ApplyMap(dm, &r.Data)
+	if err != nil {
+		return err
 	}
 	return nil
 }
