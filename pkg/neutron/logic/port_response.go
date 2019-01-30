@@ -9,6 +9,7 @@ import (
 func makePortResponse(
 	vn *models.VirtualNetwork, vmi *models.VirtualMachineInterface, iips []*models.InstanceIP,
 ) *PortResponse {
+	logrus.Infof("Making PORT response from %+v", vmi)
 
 	pr := &PortResponse{
 		ID:                  vmi.GetUUID(),
@@ -42,6 +43,10 @@ func (pr *PortResponse) setSecurityGroups(vmi *models.VirtualMachineInterface) {
 }
 
 func (pr *PortResponse) setDeviceID(vmi *models.VirtualMachineInterface) {
+	logrus.Infof("set DEVICE_ID; LR BckRefs = %+v; ParentType = %v; VM Refs = %+v",
+		vmi.GetLogicalRouterBackRefs(),
+		vmi.GetParentType(),
+		vmi.GetVirtualMachineRefs())
 	switch {
 	case len(vmi.GetLogicalRouterBackRefs()) > 0:
 		pr.DeviceID = vmi.GetLogicalRouterBackRefs()[0].GetUUID()
@@ -55,6 +60,11 @@ func (pr *PortResponse) setDeviceID(vmi *models.VirtualMachineInterface) {
 		to := vmi.VirtualMachineRefs[0].GetTo()
 		pr.DeviceID = to[len(to)-1]
 		return
+	default:
+		logrus.Warnf("Not setting DEVICE_ID; LR BckRefs = %+v; ParentType = %v; VM Refs = %+v",
+			vmi.GetLogicalRouterBackRefs(),
+			vmi.GetParentType(),
+			vmi.GetVirtualMachineRefs())
 	}
 }
 
