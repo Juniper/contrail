@@ -97,8 +97,7 @@ func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInt
 	ctx context.Context, vmi *models.VirtualMachineInterface, routingInstance *models.RoutingInstance) error {
 
 	_, err := sv.WriteService.CreateVirtualMachineInterfaceRoutingInstanceRef(
-		WithInternalRequest(ctx),
-		&services.CreateVirtualMachineInterfaceRoutingInstanceRefRequest{
+		ctx, &services.CreateVirtualMachineInterfaceRoutingInstanceRefRequest{
 			ID: vmi.GetUUID(),
 			VirtualMachineInterfaceRoutingInstanceRef: &models.VirtualMachineInterfaceRoutingInstanceRef{
 				UUID: routingInstance.UUID,

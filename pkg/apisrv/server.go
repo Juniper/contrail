@@ -103,7 +103,9 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		AddressManager:    s.DBService,
 		IntPoolAllocator:  s.DBService,
 		MetadataGetter:    s.DBService,
-		WriteService:      serviceChain[0],
+		WriteService: &services.InternalContextWriteServiceWrapper{
+			WriteService: serviceChain[0],
+		},
 	})
 
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.DBService))
