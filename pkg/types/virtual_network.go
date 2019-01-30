@@ -8,6 +8,7 @@ import (
 	protobuf "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
@@ -233,7 +234,7 @@ func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	ctx context.Context, vn *models.VirtualNetwork,
 ) error {
 	_, err := sv.WriteService.CreateRoutingInstance(
-		WithInternalRequest(ctx),
+		auth.WithInternalRequest(ctx),
 		&services.CreateRoutingInstanceRequest{
 			RoutingInstance: vn.MakeDefaultRoutingInstance(),
 		},
@@ -253,7 +254,7 @@ func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
 	if ri := vn.GetDefaultRoutingInstance(); ri != nil {
 		// TODO: delete children of the default routing instance
 		_, err := sv.WriteService.DeleteRoutingInstance(
-			WithInternalRequest(ctx),
+			auth.WithInternalRequest(ctx),
 			&services.DeleteRoutingInstanceRequest{
 				ID: ri.UUID,
 			},

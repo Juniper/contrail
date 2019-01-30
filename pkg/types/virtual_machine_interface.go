@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -97,7 +98,7 @@ func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInt
 	ctx context.Context, vmi *models.VirtualMachineInterface, routingInstance *models.RoutingInstance) error {
 
 	_, err := sv.WriteService.CreateVirtualMachineInterfaceRoutingInstanceRef(
-		WithInternalRequest(ctx),
+		auth.WithInternalRequest(ctx),
 		&services.CreateVirtualMachineInterfaceRoutingInstanceRefRequest{
 			ID: vmi.GetUUID(),
 			VirtualMachineInterfaceRoutingInstanceRef: &models.VirtualMachineInterfaceRoutingInstanceRef{
