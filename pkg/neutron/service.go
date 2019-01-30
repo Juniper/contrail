@@ -3,6 +3,8 @@ package neutron
 import (
 	"context"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"net/http"
 
 	google_protobuf3 "github.com/gogo/protobuf/types"
@@ -28,12 +30,23 @@ func (s *Service) RegisterNeutronAPI(r routeRegistry) {
 }
 
 func (s *Service) handleNeutronPostRequest(c echo.Context) error {
-	request := &logic.Request{}
-	if err := c.Bind(request); err != nil {
+	var requestMap map[string]interface{}
+	if err := c.Bind(&requestMap); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: '%s'", err))
 	}
-	if t := c.Param("type"); request.GetType() != t {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: '%s'", t))
+	resource, err := logic.MakeResource(c.Param("type"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: '%s'", c.Param("type")))
+	}
+	request := &logic.Request{
+		Data: logic.Data{
+			Resource: resource,
+			FieldMask: basemodels.MapToFieldMask(requestMap),
+		},
+	}
+	err = format.ApplyMap(requestMap, request)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: '%s'", err))
 	}
 	response, err := s.handle(c.Request().Context(), request)
 	if err != nil {

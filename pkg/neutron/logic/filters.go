@@ -33,6 +33,14 @@ func (f *Filters) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+	err = f.ApplyMap(m)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (f *Filters) ApplyMap(m map[string]interface{}) error {
 	for k, v := range m {
 		var ss []string
 		switch s := v.(type) {
