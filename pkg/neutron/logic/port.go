@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
 	"github.com/twinj/uuid"
 
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -56,31 +57,35 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 
 	fm := types.FieldMask{}
 
-	if port.Name != "" {
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(MaskPortFieldName)) {
 		vmi.DisplayName = port.Name
 		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldDisplayName)
 	}
 
-	if port.DeviceOwner != "network:router_interface" &&
-		port.DeviceOwner != "network:router_gateway" && port.DeviceID != "" {
-		if err = port.setVMInstance(ctx, rp, vmi); err != nil {
-			return nil, err
-		}
-		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineRefs)
-	}
-
-	if port.DeviceOwner != "" {
-		vmi.VirtualMachineInterfaceDeviceOwner = port.DeviceOwner
-		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceDeviceOwner)
+	if err := port.handleDeviceUpdate(ctx, rp, vmi, fm); err != nil {
+		return nil, err
 	}
 
 	port.setBindings(vmi)
 	basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceBindings)
-	//TODO handle mac address change
-	//TODO port security enabled update
-	//TODO id perms update
+
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(MaskPortFieldMacAddress)) {
+		// TODO Verify if mac address change allowed
+		vmi.VirtualMachineInterfaceMacAddresses = &models.MacAddressesType{
+			MacAddress: []string{port.MacAddress},
+		}
+		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceMacAddresses)
+	}
+
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(MaskPortFieldPortSecurityEnabled)) {
+		vmi.PortSecurityEnabled = port.PortSecurityEnabled
+		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldPortSecurityEnabled)
+	}
+
 	//TODO allowed_address_pairs update
 	//TODO fixed_ips update
+
+	//TODO id perms update (???)
 
 	if _, err = rp.WriteService.UpdateVirtualMachineInterface(ctx, &services.UpdateVirtualMachineInterfaceRequest{
 		VirtualMachineInterface: vmi,
@@ -149,7 +154,6 @@ func (port *Port) Delete(ctx context.Context, rp RequestParameters, id string) (
 	//TODO delete any interface route table associated with the port to handle
 	// subnet host route Neutron extension, un-reference others
 
-	//TODO make correct delete response
 	return &PortResponse{}, nil
 }
 
@@ -194,6 +198,28 @@ func (port *Port) ReadAll(
 		}
 	}
 	return ps, nil
+}
+
+func (port *Port) handleDeviceUpdate(
+	ctx context.Context,
+	rp RequestParameters,
+	vmi *models.VirtualMachineInterface,
+	fm types.FieldMask,
+) error {
+	if port.DeviceOwner != "network:router_interface" &&
+		port.DeviceOwner != "network:router_gateway" &&
+		basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(MaskPortFieldDeviceID)) {
+		if err := port.setVMInstance(ctx, rp, vmi); err != nil {
+			return err
+		}
+		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineRefs)
+	}
+
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(MaskPortFieldDeviceOwner)) {
+		vmi.VirtualMachineInterfaceDeviceOwner = port.DeviceOwner
+		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceDeviceOwner)
+	}
+	return nil
 }
 
 func (port *Port) getAsssociatedVirtualMachineID(vmi *models.VirtualMachineInterface) string {
@@ -420,9 +446,24 @@ func (port *Port) ensureInstanceExists(
 
 func (port *Port) setVMInstance(ctx context.Context, rp RequestParameters,
 	vmi *models.VirtualMachineInterface) error {
-	//TODO: Delete old virtual machine object associated with the port
-
 	if port.DeviceID == "" {
+		for _, vmRef := range vmi.GetVirtualMachineRefs() {
+			vmi.RemoveVirtualMachineRef(vmRef)
+			mask := types.FieldMask{}
+			basemodels.FieldMaskAppend(&mask, models.VirtualMachineInterfaceFieldVirtualMachineRefs)
+			_, err := rp.WriteService.UpdateVirtualMachineInterface(ctx, &services.UpdateVirtualMachineInterfaceRequest{
+				VirtualMachineInterface: vmi,
+				FieldMask:               mask,
+			})
+			if err != nil {
+				return errors.Wrap(err, "failed to update removed VirtualMachine reference")
+			}
+			_, err = rp.WriteService.DeleteVirtualMachine(ctx, &services.DeleteVirtualMachineRequest{ID: vmRef.UUID})
+			if err != nil {
+				return errors.Wrapf(err, "deleting VirtualMachine (as DeviceID) (uuid %v) failed", vmRef.UUID)
+			}
+		}
+
 		vmi.VirtualMachineRefs = nil
 		return nil
 	}
