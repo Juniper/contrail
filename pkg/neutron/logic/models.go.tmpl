@@ -24,6 +24,15 @@ type {{ schema.JSONSchema.GoName }} struct {
 	{{- properties(schema.JSONSchema) -}}
 }
 {{- propertiesConstants(schema.JSONSchema, schema.JSONSchema.GoName) -}}
+
+// Names for FieldMask in {{ schema.JSONSchema.GoName }}
+const (
+{%- for property in schema.JSONSchema.OrderedProperties %}
+	{%- if property.JSONTag != "-" %}
+	Mask{{ schema.JSONSchema.GoName }}Field{{ property.GoName }} = "{{ property.JSONTag }}"
+	{%- endif %}
+{%- endfor %}
+)
 {% endif %}{% endfor %}
 
 {%- for schema in schemas %}{% if schema.Type == "response" %}
