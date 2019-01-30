@@ -11,6 +11,13 @@ type {{ schema.JSONSchema.GoName }} struct {
     {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
 {%- endfor %}
 }
+
+// Names for FieldMask in {{ schema.JSONSchema.GoName }}
+const (
+{%- for property in schema.JSONSchema.OrderedProperties %}
+    Mask{{ schema.JSONSchema.GoName }}Field{{ property.GoName }} = "data.resource.{{ property.JSONTag }}"
+{%- endfor %}
+)
 {% endif %}{% endfor %}
 
 {%- for schema in schemas %}{% if schema.Type == "response" %}

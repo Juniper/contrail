@@ -466,7 +466,7 @@ func runTestScenario(
 			break
 		}
 		response, err := client.DoRequest(ctx, task.Request)
-		assert.NoError(t, err, fmt.Sprintf("In test scenario %q task %q failed", testScenario.Name, task.Name))
+		assert.NoError(t, err, fmt.Sprintf("In  scenario %q task %q failed", testScenario.Name, task.Name))
 		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
 
 		task.Expect = fileutil.YAMLtoJSONCompat(task.Expect)

@@ -44,7 +44,8 @@ etcd:
 
 
 # Log Level
-log_level: info
+log_level: debug
+#log_level: info
 
 # Server configuration
 server:
