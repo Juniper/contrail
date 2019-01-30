@@ -13,7 +13,9 @@ import (
 {% macro propertiesConstants(JSONSchema, prefix) %}
 const (
 {%- for property in JSONSchema.OrderedProperties %}
+	{%- if property.JSONTag != "-" %}
 	{{ prefix }}Field{{ property.GoName }} = "{{ property.JSONTag }}"
+	{%- endif %}
 {%- endfor %}
 )
 {% endmacro %}
@@ -23,7 +25,9 @@ type {{ schema.JSONSchema.GoName }} struct {
 	baseResource
 	{{- properties(schema.JSONSchema) -}}
 }
+// Names for Fields in {{ schema.JSONSchema.GoName }}
 {{- propertiesConstants(schema.JSONSchema, schema.JSONSchema.GoName) -}}
+
 {% endif %}{% endfor %}
 
 {%- for schema in schemas %}{% if schema.Type == "response" %}
