@@ -12,6 +12,7 @@ ADD ./etc/init_data.yaml /usr/share/contrail/
 ADD ./public /usr/share/contrail/public
 ADD ./templates /usr/share/contrail/templates
 COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
+COPY ./contrail-api-client /tmp/contrail-api-client
 
 RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  &&\
         yum install -y \
@@ -20,11 +21,20 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
         git \
         docker \
         python-requests \
-        python-pip
+        python-pip \
+        gcc \
+        scons
 
 RUN yum remove -y PyYAML
 
 RUN pip install ansible==2.4.2.0
+RUN python2 -m pip install lxml saxpy gevent
+
+# logic to install vnc api client needed by multi-cloud
+RUN cd /tmp/contrail-api-client && git fetch --unshallow
+RUN sed -i 's/self.close()/#self.close()/g' /usr/lib64/python2.7/xml/sax/xmlreader.py
+RUN cd /tmp/contrail-api-client && scons
+RUN cd /tmp/contrail-api-client/build/debug/api-lib && python setup.py install
 
 EXPOSE 9091
 WORKDIR /etc/contrail
