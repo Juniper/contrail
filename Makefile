@@ -1,4 +1,5 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
+CONTRAIL_API_CLIENT_REPO := contrail-api-client
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
 DB_FILES := gen_init_mysql.sql gen_init_psql.sql init_data.yaml
@@ -11,6 +12,17 @@ ifdef ANSIBLE_DEPLOYER_BRANCH
   export ANSIBLE_DEPLOYER_BRANCH
 else
   export ANSIBLE_DEPLOYER_BRANCH := master
+endif
+
+ifdef CONTRAIL_API_CLIENT_REPO_DIR
+  export CONTRAIL_API_CLIENT_REPO_DIR
+else
+  export CONTRAIL_API_CLIENT_REPO_DIR := ""
+endif
+ifdef CONTRAIL_API_CLIENT_BRANCH
+  export CONTRAIL_API_CLIENT_BRANCH
+else
+  export CONTRAIL_API_CLIENT_BRANCH := master
 endif
 
 ifdef ANSIBLE_DEPLOYER_REVISION
@@ -177,6 +189,11 @@ ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
 		cd $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && git checkout $(ANSIBLE_DEPLOYER_REVISION)
 else
 		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
+endif
+ifeq ($(CONTRAIL_API_CLIENT_REPO_DIR),"")
+		git clone -b $(CONTRAIL_API_CLIENT_BRANCH) https://github.com/Juniper/$(CONTRAIL_API_CLIENT_REPO).git $(BUILD_DIR)/docker/contrail_go/$(CONTRAIL_API_CLIENT_REPO) --depth 1
+else
+		cp -r $(CONTRAIL_API_CLIENT_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(CONTRAIL_API_CLIENT_REPO)
 endif
 
 docker: docker_prepare ## Generate Docker files
