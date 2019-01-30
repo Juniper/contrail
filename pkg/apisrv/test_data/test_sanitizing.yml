@@ -5,6 +5,7 @@ cleanup:
 - path: /network-ipam/test_ipam_sanitize_blue
 - path: /instance-ip/test_sanitize_iip
 - path: /instance-ip/test_sanitize_iip_2
+- path: /instance-ip/test_sanitize_iip_3
 - path: /access-control-list/test_access_control_list_sanitize_uuid
 test_data:
 
@@ -213,9 +214,40 @@ workflow:
       virtual_network_refs:
       - uuid: vn_sanitize_blue
 
+- name: create instance ip with ref with correct 'to' and missing 'uuid'
+  request:
+    path: /instance-ips
+    method: POST
+    expected:
+    - 200
+    data:
+      instance-ip:
+        fq_name: ["test_sanitize_iip_3"]
+        uuid: "test_sanitize_iip_3"
+        subnet_uuid: "e76ab7ff-c47d-4faf-aec4-80dcc3658f0b"
+        instance_ip_address: "10.0.0.3"
+        network_ipam_refs:
+        - to: ["domain","admin","test_ipam_sanitize_blue"]
+        virtual_network_refs:
+        - to: ["default", "admin_sanitize", "vn_sanitize_blue"]
+  expect:
+    instance-ip:
+      network_ipam_refs:
+      - uuid: test_ipam_sanitize_blue
+      virtual_network_refs:
+      - uuid: vn_sanitize_blue
+
 - name: delete access control list
   request:
     path: /access-control-list/test_access_control_list_sanitize_uuid
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete instance ip
+  request:
+    path: /instance-ip/test_sanitize_iip_3
     method: DELETE
     expected:
     - 200
