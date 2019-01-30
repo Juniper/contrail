@@ -40,7 +40,8 @@ workflow:
     data:
       project: *project_blue_project
   expect:
-    message: "Resource conflict: unique constraint violation"
+    message:
+      $regexp: ".*Resource conflict: unique constraint violation"
 
 - name: delete project
   request:

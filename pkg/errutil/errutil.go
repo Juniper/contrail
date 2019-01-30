@@ -116,6 +116,13 @@ func ErrorInternalf(format string, a ...interface{}) error {
 	return grpc.Errorf(codes.Internal, format, a...)
 }
 
+func getErrorMessage(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
+}
+
 // ToHTTPError translates grpc error to error.
 func ToHTTPError(err error) error {
 	logrus.WithError(err).Debug("Translating to HTTP error") // error translation might lose error description
@@ -123,7 +130,7 @@ func ToHTTPError(err error) error {
 	cause := errors.Cause(err)
 	return echo.NewHTTPError(
 		httpStatusFromCode(grpc.Code(cause)),
-		grpc.ErrorDesc(cause),
+		getErrorMessage(err),
 	)
 }
 
