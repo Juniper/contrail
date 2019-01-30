@@ -2,6 +2,7 @@ package logic
 
 import (
 	"encoding/json"
+	"github.com/gogo/protobuf/types"
 
 	"github.com/pkg/errors"
 )
@@ -14,10 +15,11 @@ type Request struct {
 
 // Data defines API request data.
 type Data struct {
-	Filters  Filters  `json:"filters" yaml:"filters"`
-	ID       string   `json:"id" yaml:"id"`
-	Fields   Fields   `json:"fields" yaml:"fields"`
-	Resource Resource `json:"resource" yaml:"resource"`
+	Filters   Filters  `json:"filters" yaml:"filters"`
+	ID        string   `json:"id" yaml:"id"`
+	Fields    Fields   `json:"fields" yaml:"fields"`
+	Resource  Resource `json:"resource" yaml:"resource"`
+	FieldMask types.FieldMask
 }
 
 // GetType returns resource type of the Request.
