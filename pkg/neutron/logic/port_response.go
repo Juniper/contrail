@@ -9,7 +9,6 @@ import (
 func makePortResponse(
 	vn *models.VirtualNetwork, vmi *models.VirtualMachineInterface, iips []*models.InstanceIP,
 ) *PortResponse {
-
 	pr := &PortResponse{
 		ID:                  vmi.GetUUID(),
 		NetworkID:           vn.GetUUID(),
