@@ -12,6 +12,7 @@ import (
 	"github.com/gogo/protobuf/types"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
@@ -30,77 +31,163 @@ const (
 
 var defaultNetworkIpamFQName = []string{defaultDomainName, defaultProjectName, defaultNetworkIpamName}
 
-func newNeutronSubnetError(name, msg string) error {
-	return newNeutronError(name, errorFields{"resource": "subnet", "msg": msg})
+func newSubnetError(name errorType, format string, args ...interface{}) error {
+	return newNeutronError(name, errorFields{
+		"resource": "subnet",
+		"msg":      fmt.Sprintf(format, args...),
+	})
 }
 
 // ReadAll will fetch all subnets.
-func (*Subnet) ReadAll(ctx context.Context, rp RequestParameters, filters Filters, fields Fields) (Response, error) {
-	virtualNetworks, err := listVirtualNetworks(ctx, rp, filters)
+func (*Subnet) ReadAll(
+	ctx context.Context, rp RequestParameters, filters Filters, fields Fields,
+) (r Response, err error) {
+	var vns []*models.VirtualNetwork
+	vns, err = listVNsForSubnetReadAll(ctx, rp, filters)
 	if err != nil {
-		return nil, newNeutronSubnetError(
+		return nil, newSubnetError(
 			networkNotFound,
 			fmt.Sprintf("failed to fetch networks: %+v", err),
 		)
 	}
 
-	response := make([]*SubnetResponse, 0)
-	if len(virtualNetworks) == 0 {
-		// no error here
-		return response, nil
+	if len(vns) == 0 {
+		return []*SubnetResponse{}, nil
 	}
 
-	visited := make(map[string]bool, len(virtualNetworks))
-	for _, vn := range virtualNetworks {
-		if _, ok := visited[vn.UUID]; ok {
+	vns = uniqueVNs(vns)
+
+	r = getSubnetsFromVNs(vns, filters)
+
+	return r, nil
+}
+
+func listVNsForSubnetReadAll(
+	ctx context.Context, rp RequestParameters, filters Filters,
+) ([]*models.VirtualNetwork, error) {
+	switch {
+	case filters.HaveKeys(idKey):
+		return collectVNsUsingKV(ctx, rp, filters[idKey])
+	case filters.HaveKeys(sharedKey, routerExternalKey):
+		return collectSharedOrRouterExtNetworks(ctx, rp, filters, nil)
+	default:
+		return listVirtualNetworksWithShared(ctx, rp, filters)
+	}
+}
+
+func collectVNsUsingKV(ctx context.Context, rp RequestParameters, keys []string) ([]*models.VirtualNetwork, error) {
+	uuids, err := getVirtualNetworkIDsFromKV(ctx, rp, keys)
+	if err != nil {
+		return nil, err
+	}
+	return listNetworksForProject(ctx, rp, &listReq{ObjUUIDs: uuids})
+}
+
+func getVirtualNetworkIDsFromKV(
+	ctx context.Context, rp RequestParameters, keys []string,
+) (ids []string, err error) {
+	kvsResponse, err := rp.UserAgentKV.RetrieveValues(
+		ctx, &services.RetrieveValuesRequest{Keys: keys},
+	)
+	if err != nil {
+		return nil, err
+	}
+	for _, kv := range kvsResponse.GetValues() {
+		v := strings.Split(kv, " ")
+		if len(v) < 1 {
 			continue
 		}
-		visited[vn.UUID] = true
-		for _, ipamRef := range vn.GetNetworkIpamRefs() {
-			for _, subnetVnc := range ipamRef.GetAttr().GetIpamSubnets() {
-				neutronSN := subnetVncToNeutron(vn, subnetVnc)
-				if shouldSkipSubnet(filters, vn, neutronSN) {
-					continue
-				}
-				response = append(response, neutronSN)
-			}
-		}
+		ids = append(ids, v[0])
 	}
 
-	return response, nil
+	return ids, nil
+}
+
+func listVirtualNetworksWithShared(
+	ctx context.Context, rp RequestParameters, filters Filters,
+) (vns []*models.VirtualNetwork, err error) {
+	req := &listReq{}
+	if !rp.RequestContext.IsAdmin {
+		req.ParentID = rp.RequestContext.Tenant
+	}
+
+	tenantVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+
+	addDBFilter(req, isShared, []string{"true"}, false)
+	sharedVNs, err := listNetworksForProject(ctx, rp, req)
+	if err != nil {
+		return nil, err
+	}
+
+	vns = make([]*models.VirtualNetwork, 0, len(tenantVNs)+len(sharedVNs))
+	vns = append(vns, tenantVNs...)
+	vns = append(vns, sharedVNs...)
+
+	return vns, nil
+}
+
+func uniqueVNs(vns []*models.VirtualNetwork) []*models.VirtualNetwork {
+	idMap := make(map[string]bool, len(vns))
+	result := vns[:0]
+	for _, vn := range vns {
+		if idMap[vn.GetUUID()] {
+			continue
+		}
+		idMap[vn.GetUUID()] = true
+		result = append(result, vn)
+	}
+
+	return result
+}
+
+func getSubnetsFromVNs(vns []*models.VirtualNetwork, f Filters) (s []*SubnetResponse) {
+	s = make([]*SubnetResponse, 0)
+
+	for _, vn := range vns {
+		for _, subnetVnc := range vn.GetIpamSubnets().GetSubnets() {
+			neutronSN := subnetVncToNeutron(vn, subnetVnc)
+			if shouldSkipSubnet(f, vn, neutronSN) {
+				continue
+			}
+			s = append(s, neutronSN)
+		}
+	}
+	return s
 }
 
 // Read will fetch subnet with specified id.
 func (*Subnet) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
-	response := &SubnetResponse{}
-
 	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
 	if err != nil {
-		return nil, newNeutronSubnetError(
-			networkNotFound,
-			fmt.Sprintf("failed to fetch networks: %+v", err),
+		return nil, newSubnetError(
+			subnetNotFound, "failed to fetch networks: %+v", err,
 		)
 	}
 
-	if len(virtualNetworks) == 0 {
-		return response, err
-	}
+	sub, vn := findSubnetInVirtualNetworks(virtualNetworks, id)
 
-	return getSubnetResponseFromIpamRef(virtualNetworks, id)
+	if sub == nil {
+		return nil, newSubnetError(
+			subnetNotFound, "subnet not found in vn subnets: %+v", id,
+		)
+	}
+	return subnetVncToNeutron(vn, sub), nil
 }
 
-func getSubnetResponseFromIpamRef(vns []*models.VirtualNetwork, id string) (*SubnetResponse, error) {
+func findSubnetInVirtualNetworks(
+	vns []*models.VirtualNetwork, subnetUUID string,
+) (found *models.IpamSubnetType, inVN *models.VirtualNetwork) {
 	for _, vn := range vns {
-		for _, ipamRef := range vn.GetNetworkIpamRefs() {
-			for _, subnetVnc := range ipamRef.GetAttr().GetIpamSubnets() {
-				if subnetVnc.GetSubnetUUID() == id {
-					return subnetVncToNeutron(vn, subnetVnc), nil
-				}
-			}
+		if found = vn.GetIpamSubnets().Find(func(ipamS *models.IpamSubnetType) bool {
+			return ipamS.GetSubnetUUID() == subnetUUID
+		}); found != nil {
+			return found, vn
 		}
 	}
-
-	return &SubnetResponse{}, nil
+	return nil, nil
 }
 
 func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *SubnetResponse) bool {
@@ -140,39 +227,37 @@ func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, er
 	// TODO(pawel.zadrozny) validate if CIDR version is equal to ip_version neutron_plugin_db.py:1585
 	virtualNetwork, err := getVirtualNetworkByID(ctx, rp, s.NetworkID)
 	if err != nil {
-		return nil, newNeutronSubnetError(networkNotFound, fmt.Sprintf("failed to fetch network: %+v", err))
+		return nil, newSubnetError(networkNotFound, "failed to fetch network: %+v", err)
 	}
 
 	networkIpam, err := s.getNetworkIpam(ctx, rp, virtualNetwork)
 	if err != nil {
-		return nil, newNeutronSubnetError(badRequest, fmt.Sprintf("failed to fetch network ipam: %+v", err))
+		return nil, newSubnetError(badRequest, "failed to fetch network ipam: %+v", err)
 	}
 
 	err = s.createOrUpdateVirtualNetworkIpamRefs(ctx, rp, virtualNetwork, networkIpam)
 	if err != nil {
-		return nil, newNeutronSubnetError(
-			badRequest,
-			fmt.Sprintf("failed to update network ipam refs: %+v", err),
+		return nil, newSubnetError(badRequest, "failed to update network ipam refs: %+v", err)
+	}
+
+	// read subnet again to get updated values for gw, etc.
+	virtualNetwork, err = getVirtualNetworkByID(ctx, rp, s.NetworkID)
+	if err != nil {
+		return nil, newSubnetError(networkNotFound, "failed to fetch network: %+v", err)
+	}
+
+	// get subnet data processed by the api
+	ipamS := virtualNetwork.GetIpamSubnets().Find(func(sub *models.IpamSubnetType) bool {
+		return sub.GetSubnet().CIDR() == s.Cidr
+	})
+	if ipamS == nil {
+		return nil, newSubnetError(
+			internalServerError,
+			"subnet '%s' create failed for virtual network: '%s'", s.Cidr, virtualNetwork.GetUUID(),
 		)
 	}
 
-	virtualNetwork, err = getVirtualNetworkByID(ctx, rp, s.NetworkID)
-	if err != nil {
-		return nil, newNeutronSubnetError(networkNotFound, fmt.Sprintf("failed to fetch network: %+v", err))
-	}
-
-	for _, ipamRef := range virtualNetwork.GetNetworkIpamRefs() {
-		for _, subnet := range ipamRef.GetAttr().GetIpamSubnets() {
-			if ipamSubnetCidrEquals(subnet, s.Cidr) {
-				return subnetVncToNeutron(virtualNetwork, subnet), nil
-			}
-		}
-	}
-
-	return nil, newNeutronSubnetError(
-		internalServerError,
-		fmt.Sprintf("subnet '%s' create failed for virtual network: '%s'", s.Cidr, virtualNetwork.GetUUID()),
-	)
+	return subnetVncToNeutron(virtualNetwork, ipamS), nil
 }
 
 func (s *Subnet) createOrUpdateVirtualNetworkIpamRefs(
@@ -215,16 +300,14 @@ func (s *Subnet) getNetworkIpam(
 	rp RequestParameters,
 	vn *models.VirtualNetwork,
 ) (*models.NetworkIpam, error) {
-	networkIpam := models.MakeNetworkIpam()
-
 	if s.IpamFQName != "" {
-		networkIpam.FQName = strings.Split(s.IpamFQName, "-")
-		return networkIpam, nil
+		n := models.MakeNetworkIpam()
+		n.FQName = strings.Split(s.IpamFQName, "-")
+		return n, nil
 	}
 
-	ipamFQName := make([]string, 0, 3)
-	ipamFQName = append(ipamFQName, vn.GetFQName()[:len(vn.GetFQName())-1]...)
-	ipamFQName = append(ipamFQName, "default-network-ipam")
+	parentFQName := vn.GetFQName()[:len(vn.GetFQName())-1]
+	ipamFQName := basemodels.ChildFQName(parentFQName, defaultNetworkIpamName)
 
 	networkIpamRes, err := rp.ReadService.ListNetworkIpam(ctx, &services.ListNetworkIpamRequest{
 		Spec: &baseservices.ListSpec{
@@ -237,13 +320,17 @@ func (s *Subnet) getNetworkIpam(
 	if err != nil {
 		return nil, err
 	}
-	if networkIpamRes.Count() == 1 {
-		return networkIpamRes.GetNetworkIpams()[0], nil
+
+	networkIpams := networkIpamRes.GetNetworkIpams()
+	if len(networkIpams) == 0 {
+		n := models.MakeNetworkIpam()
+		n.FQName = defaultNetworkIpamFQName
+		n.Name = defaultNetworkIpamName
+		return n, nil
 	}
 
-	networkIpam.FQName = defaultNetworkIpamFQName
-	networkIpam.Name = defaultNetworkIpamName
-	return networkIpam, nil
+	return networkIpams[0], nil
+
 }
 
 func (s *Subnet) ipamSubnetType() (*models.IpamSubnetType, error) {
@@ -373,11 +460,6 @@ func (s *Subnet) subnetTypeToVnc() (*models.SubnetType, error) {
 	}
 
 	return &models.SubnetType{IPPrefix: prefixIP, IPPrefixLen: prefixLen}, nil
-}
-
-func ipamSubnetCidrEquals(subnetVnc *models.IpamSubnetType, cidr string) bool {
-	ipamCidr := fmt.Sprintf("%s/%d", subnetVnc.GetSubnet().GetIPPrefix(), subnetVnc.GetSubnet().GetIPPrefixLen())
-	return ipamCidr == cidr
 }
 
 // Locate list of subnets to which this subnet has to be appended
@@ -533,91 +615,4 @@ func getVirtualNetworkByID(ctx context.Context, rp RequestParameters, nvID strin
 		return nil, err
 	}
 	return virtualNetworkResponse.GetVirtualNetwork(), nil
-}
-
-func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filters) ([]*models.VirtualNetwork, error) {
-	if len(filters) == 0 {
-		return listVNWithoutFilters(ctx, rp)
-	}
-
-	if filters.HaveKeys(idKey) {
-		return collectVNsUsingKV(ctx, rp, filters[idKey])
-	}
-
-	req := &listReq{}
-	if filters.HaveKeys(sharedKey) || filters.HaveKeys(routerExternalKey) {
-		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
-	}
-
-	var vns []*models.VirtualNetwork
-	if !rp.RequestContext.IsAdmin {
-		req.ParentID = rp.RequestContext.Tenant
-	}
-
-	tenantVNs, err := listNetworksForProject(ctx, rp, req)
-	if err != nil {
-		return nil, err
-	}
-	vns = append(vns, tenantVNs...)
-
-	req.ParentID = ""
-	addDBFilter(req, isShared, []string{"true"}, false)
-	sharedVNs, err := listNetworksForProject(ctx, rp, req)
-	if err != nil {
-		return nil, err
-	}
-	vns = append(vns, sharedVNs...)
-
-	return vns, nil
-}
-
-func listVNWithoutFilters(ctx context.Context, rp RequestParameters) ([]*models.VirtualNetwork, error) {
-	req := &listReq{}
-	if !rp.RequestContext.IsAdmin {
-		req.ParentID = rp.RequestContext.Tenant
-	}
-
-	var vNetworks []*models.VirtualNetwork
-	vn, err := listNetworksForProject(ctx, rp, req)
-	if err != nil {
-		return nil, err
-	}
-	vNetworks = append(vNetworks, vn...)
-
-	addDBFilter(req, isShared, []string{"true"}, false)
-	sharedVNs, err := listNetworksForProject(ctx, rp, req)
-	if err != nil {
-		return nil, err
-	}
-	vNetworks = append(vNetworks, sharedVNs...)
-
-	return vNetworks, nil
-}
-
-func collectVNsUsingKV(ctx context.Context, rp RequestParameters, keys []string) ([]*models.VirtualNetwork, error) {
-	kvsResponse, err := rp.UserAgentKV.RetrieveValues(ctx, &services.RetrieveValuesRequest{
-		Keys: keys,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return listVNByKeyValues(ctx, rp, kvsResponse.GetValues())
-}
-
-func listVNByKeyValues(ctx context.Context, rp RequestParameters, kvs []string) ([]*models.VirtualNetwork, error) {
-	vnIDs := make([]string, 0, len(kvs))
-	for _, kv := range kvs {
-		vnIDs = append(vnIDs, strings.Split(kv, " ")[0])
-	}
-
-	req := &listReq{
-		ObjUUIDs: vnIDs,
-	}
-
-	vNetworks, err := listNetworksForProject(ctx, rp, req)
-	if err != nil {
-		return nil, err
-	}
-
-	return vNetworks, nil
 }
