@@ -459,7 +459,8 @@ func TestSubnet_Read(t *testing.T) {
 		name string
 		id   string
 
-		expected *logic.SubnetResponse
+		expected interface{}
+		fails    bool
 
 		mockVN  mockVN
 		mockKVs mockKVs
@@ -469,7 +470,7 @@ func TestSubnet_Read(t *testing.T) {
 			mockVN: mockVN{
 				VirtualNetworks: &services.ListVirtualNetworkResponse{},
 			},
-			expected: &logic.SubnetResponse{},
+			fails: true,
 		},
 		{
 			name: "With correct id",
@@ -502,7 +503,7 @@ func TestSubnet_Read(t *testing.T) {
 					},
 				},
 			},
-			expected: &logic.SubnetResponse{},
+			fails: true,
 		},
 	}
 
@@ -518,7 +519,11 @@ func TestSubnet_Read(t *testing.T) {
 
 			subnet := &logic.Subnet{}
 			result, err := subnet.Read(context.Background(), rp, tt.id)
-			assert.NoError(t, err)
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 			assert.Equal(t, tt.expected, result)
 		})
 	}
