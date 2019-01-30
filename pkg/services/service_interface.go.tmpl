@@ -6,6 +6,7 @@ import (
     "github.com/gogo/protobuf/types"
     "github.com/pkg/errors"
 
+    "github.com/Juniper/contrail/pkg/auth"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "github.com/Juniper/contrail/pkg/models"
 )
@@ -38,6 +39,35 @@ type ReadService interface {
     List{{ schema.JSONSchema.GoName }}(context.Context, *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error)
 {% endif %}{% endfor %}
 }
+
+type InternalContextWriteServiceWrapper struct {
+    WriteService
+}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (wrapper *InternalContextWriteServiceWrapper) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+    return wrapper.WriteService.Create{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
+}
+
+func (wrapper *InternalContextWriteServiceWrapper) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+    return wrapper.WriteService.Update{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
+}
+
+func (wrapper *InternalContextWriteServiceWrapper) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    return wrapper.WriteService.Delete{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
+}
+
+{% for _, reference in schema.References %}
+{% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+func (wrapper *InternalContextWriteServiceWrapper) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
+    return wrapper.WriteService.Create{{ refType }}(auth.WithInternalRequest(ctx), request)
+}
+
+func (wrapper *InternalContextWriteServiceWrapper) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
+    return wrapper.WriteService.Delete{{ refType }}(auth.WithInternalRequest(ctx), request)
+}
+{% endfor %}
+{% endif%}{% endfor %}
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 

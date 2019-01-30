@@ -121,8 +121,7 @@ func (sv *ContrailTypeLogicService) ensureDefaultApplicationPolicySet(
 	apsName := basemodels.DefaultNameForKind(models.KindApplicationPolicySet)
 
 	response, err := sv.WriteService.CreateApplicationPolicySet(
-		WithInternalRequest(ctx),
-		&services.CreateApplicationPolicySetRequest{
+		ctx, &services.CreateApplicationPolicySetRequest{
 			ApplicationPolicySet: &models.ApplicationPolicySet{
 				FQName:          basemodels.ChildFQName(project.GetFQName(), apsName),
 				ParentType:      project.Kind(),
@@ -146,8 +145,7 @@ func (sv *ContrailTypeLogicService) ensureDefaultApplicationPolicySet(
 		},
 	)
 	_, err = sv.WriteService.UpdateProject(
-		WithInternalRequest(ctx),
-		&services.UpdateProjectRequest{
+		ctx, &services.UpdateProjectRequest{
 			Project:   project,
 			FieldMask: types.FieldMask{Paths: []string{models.ProjectFieldApplicationPolicySetRefs}},
 		},
@@ -162,8 +160,7 @@ func (sv *ContrailTypeLogicService) deleteDefaultApplicationPolicySet(
 	// delete aps refs to make default application policy set deletion possible
 	project.ApplicationPolicySetRefs = project.ApplicationPolicySetRefs[:0]
 	_, err := sv.WriteService.UpdateProject(
-		WithInternalRequest(ctx),
-		&services.UpdateProjectRequest{
+		ctx, &services.UpdateProjectRequest{
 			Project:   project,
 			FieldMask: types.FieldMask{Paths: []string{models.ProjectFieldApplicationPolicySetRefs}},
 		},
@@ -177,8 +174,7 @@ func (sv *ContrailTypeLogicService) deleteDefaultApplicationPolicySet(
 	for _, aps := range project.GetApplicationPolicySets() {
 		if aps.GetName() == defaultAPSName {
 			_, err := sv.WriteService.DeleteApplicationPolicySet(
-				WithInternalRequest(ctx),
-				&services.DeleteApplicationPolicySetRequest{ID: aps.UUID},
+				ctx, &services.DeleteApplicationPolicySetRequest{ID: aps.UUID},
 			)
 			if err != nil {
 				return errors.Wrap(err, "failed to delete child application policy set")
