@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+type errorType string
+
 // ErrorFields neutron error fields.
 type errorFields map[string]interface{}
 
@@ -26,7 +28,7 @@ func (e *Error) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.fields)
 }
 
-func newNeutronError(name string, fields errorFields) *Error {
+func newNeutronError(name errorType, fields errorFields) *Error {
 	e := &Error{
 		fields: fields,
 	}
@@ -40,13 +42,14 @@ func newNeutronError(name string, fields errorFields) *Error {
 // constants for Neutron API exception names
 // https://docs.openstack.org/neutron-lib/queens/reference/modules/neutron_lib.exceptions.html
 const (
-	internalServerError        = "InternalServerError"
-	badRequest                 = "BadRequest"
-	portNotFound               = "PortNotFound"
-	l3PortInUse                = "L3PortInUse"
-	macAddressInUse            = "MacAddressInUse"
-	ipAddressGenerationFailure = "IpAddressGenerationFailure"
-	networkNotFound            = "NetworkNotFound"
-	securityGroupNotFound      = "SecurityGroupNotFound"
-	securityGroupRuleNotFound  = "SecurityGroupRuleNotFound"
+	internalServerError        errorType = "InternalServerError"
+	badRequest                 errorType = "BadRequest"
+	portNotFound               errorType = "PortNotFound"
+	l3PortInUse                errorType = "L3PortInUse"
+	macAddressInUse            errorType = "MacAddressInUse"
+	ipAddressGenerationFailure errorType = "IpAddressGenerationFailure"
+	networkNotFound            errorType = "NetworkNotFound"
+	subnetNotFound             errorType = "SubnetNotFound"
+	securityGroupNotFound      errorType = "SecurityGroupNotFound"
+	securityGroupRuleNotFound  errorType = "SecurityGroupRuleNotFound"
 )
