@@ -45,10 +45,13 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 	request.Data.FieldMask = basemodels.MapToFieldMask(requestMap)
 	response, err := s.handle(c.Request().Context(), request)
 	if err != nil {
+		log.Warnf("Got error from HANDLE function: %v", err)
 		e, ok := errors.Cause(err).(*logic.Error)
 		if !ok {
-			return echo.NewHTTPError(http.StatusInternalServerError, err)
+			log.Warnf("Returning pure error as 500: %v", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
+		log.Warnf("This is LOGIC error from HANDLE function {{ as 400 }}: %v", e)
 		return echo.NewHTTPError(http.StatusBadRequest, e)
 	}
 	return c.JSON(http.StatusOK, response)

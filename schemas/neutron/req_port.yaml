@@ -29,6 +29,9 @@ schema:
     binding_host_id:
       json_tag: "binding:host_id"
       type: string
+    binding_profile:
+      json_tag: "binding:profile"
+      type: string
     binding_vif_type:
       json_tag: "binding:vif_type" 
       type: string
