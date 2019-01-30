@@ -7,8 +7,21 @@ import (
 	"github.com/pkg/errors"
 )
 
+// FilterKey is a type of keys stored in filters.
+type FilterKey string
+
 // Filters used in Neutron read API
-type Filters map[string][]string
+type Filters map[FilterKey][]string
+
+// Keys available in filters.
+const (
+	idKey             FilterKey = "id"
+	nameKey                     = "name"
+	fqNameKey                   = "fq_name"
+	sharedKey                   = "shared"
+	routerExternalKey           = "router:external"
+	tenantIDKey                 = "tenant_id"
+)
 
 // UnmarshalJSON Filters.
 func (f *Filters) UnmarshalJSON(data []byte) error {
@@ -38,14 +51,14 @@ func (f *Filters) UnmarshalJSON(data []byte) error {
 			return errors.Errorf("%T filter not supported", v)
 		}
 
-		(*f)[k] = ss
+		(*f)[FilterKey(k)] = ss
 	}
 	return nil
 }
 
 // haveKeys checks if one or more keys are present in filters.
 // Will return true if at least one key has been defined and all keys are present and not empty.
-func (f Filters) haveKeys(keys ...string) bool {
+func (f Filters) haveKeys(keys ...FilterKey) bool {
 	if len(keys) == 0 {
 		return false
 	}
@@ -61,7 +74,7 @@ func (f Filters) haveKeys(keys ...string) bool {
 }
 
 // checkValue check equality of values in filters struct under specific key and provided sequence of strings
-func (f Filters) checkValue(key string, values ...string) bool {
+func (f Filters) checkValue(key FilterKey, values ...string) bool {
 	if !f.haveKeys(key) {
 		return true
 	}
