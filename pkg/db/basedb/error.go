@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -42,9 +43,13 @@ func getPublicError(err error) error {
 
 	switch err.(type) {
 	case *mysql.MySQLError:
-		return getPublicMySQLError(err.(*mysql.MySQLError))
+		myerr := err.(*mysql.MySQLError)
+		return errors.Wrapf(getPublicMySQLError(myerr), "MySQL msg(%v): %v", myerr.Number, myerr.Message)
 	case *pq.Error:
-		return getPublicPGError(err.(*pq.Error))
+		pqerr := (err.(*pq.Error))
+		return errors.Wrapf(getPublicPGError(pqerr),
+			"PG msg: %v (%v) for table %v in column %v - constraint %v",
+			pqerr.Message, pqerr.Detail, pqerr.Table, pqerr.Column, pqerr.Constraint)
 	default:
 		return nil
 	}

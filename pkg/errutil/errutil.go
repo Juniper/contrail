@@ -123,7 +123,7 @@ func ToHTTPError(err error) error {
 	cause := errors.Cause(err)
 	return echo.NewHTTPError(
 		httpStatusFromCode(grpc.Code(cause)),
-		grpc.ErrorDesc(cause),
+		err.Error(),
 	)
 }
 

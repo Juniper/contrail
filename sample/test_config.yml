@@ -18,13 +18,13 @@ database:
   retry_period: 3
 
 test_database:
-  mysql:
-    type: mysql
-    dialect: mysql
-    host: localhost
-    user: root
-    password: contrail123
-    name: contrail_test
+  # mysql:
+  #   type: mysql
+  #   dialect: mysql
+  #   host: localhost
+  #   user: root
+  #   password: contrail123
+  #   name: contrail_test
   postgres:
     type: postgres
     dialect: postgres
@@ -44,7 +44,7 @@ etcd:
 
 
 # Log Level
-log_level: info
+log_level: debug
 
 # Server configuration
 server:
