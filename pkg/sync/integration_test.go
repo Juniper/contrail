@@ -466,6 +466,8 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 
 	defer integration.RunNoError(t, sync)(t)
 
+	<-sync.DumpDone()
+
 	redEvent := integrationetcd.RetrieveCreateEvent(redCtx, t, vnRedWatch)
 	greenEvent := integrationetcd.RetrieveCreateEvent(greenCtx, t, vnGreenWatch)
 	blueEvent := integrationetcd.RetrieveCreateEvent(blueCtx, t, vnBlueWatch)
