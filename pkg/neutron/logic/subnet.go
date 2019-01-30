@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	neutronNetworkIDKey = "network_id"
-	neutronCIDRKey      = "cidr"
+	networkIDKey = "network_id"
+	cidrKey      = "cidr"
 
 	defaultDomainName      = "default-domain"
 	defaultProjectName     = "default-project"
@@ -108,27 +108,27 @@ func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *Sub
 		return false
 	}
 
-	if filters.haveKeys(neutronSharedKey) && filters.checkValue(neutronSharedKey, "true") && !vn.GetIsShared() {
+	if filters.haveKeys(sharedKey) && filters.checkValue(sharedKey, "true") && !vn.GetIsShared() {
 		return true
 	}
 
-	if !filters.checkValue(neutronIDKey, neutronSN.ID) {
+	if !filters.checkValue(idKey, neutronSN.ID) {
 		return true
 	}
 
-	if !filters.checkValue(neutronTenantIDKey, neutronSN.TenantID) {
+	if !filters.checkValue(tenantIDKey, neutronSN.TenantID) {
 		return true
 	}
 
-	if !filters.checkValue(neutronNetworkIDKey, neutronSN.NetworkID) {
+	if !filters.checkValue(networkIDKey, neutronSN.NetworkID) {
 		return true
 	}
 
-	if !filters.checkValue(neutronNameKey, neutronSN.Name) {
+	if !filters.checkValue(nameKey, neutronSN.Name) {
 		return true
 	}
 
-	if !filters.checkValue(neutronCIDRKey, neutronSN.Cidr) {
+	if !filters.checkValue(cidrKey, neutronSN.Cidr) {
 		return true
 	}
 
@@ -540,12 +540,12 @@ func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filt
 		return listVNWithoutFilters(ctx, rp)
 	}
 
-	if filters.haveKeys(neutronIDKey) {
-		return collectVNsUsingKV(ctx, rp, filters[neutronIDKey])
+	if filters.haveKeys(idKey) {
+		return collectVNsUsingKV(ctx, rp, filters[idKey])
 	}
 
 	req := &listReq{}
-	if filters.haveKeys(neutronSharedKey) || filters.haveKeys(neutronRouterExternalKey) {
+	if filters.haveKeys(sharedKey) || filters.haveKeys(routerExternalKey) {
 		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
 	}
 
