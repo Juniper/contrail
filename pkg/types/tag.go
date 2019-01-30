@@ -52,12 +52,14 @@ func (sv *ContrailTypeLogicService) CreateTag(
 			tagType.AddTagRef(&models.TagTypeTagRef{
 				UUID: tag.GetUUID(),
 			})
-			_, err = sv.WriteService.UpdateTagType(ctx, &services.UpdateTagTypeRequest{
-				TagType: tagType,
-				FieldMask: types.FieldMask{
-					Paths: []string{models.TagTypeFieldTagRefs},
+			_, err = sv.WriteService.UpdateTagType(
+				ctx, &services.UpdateTagTypeRequest{
+					TagType: tagType,
+					FieldMask: types.FieldMask{
+						Paths: []string{models.TagTypeFieldTagRefs},
+					},
 				},
-			})
+			)
 
 			return err
 		})
@@ -110,7 +112,9 @@ func (sv *ContrailTypeLogicService) DeleteTag(
 
 			// Try to delete referenced tag-type if no references left.
 			if tagType != nil && len(tagType.GetReferences()) == 0 {
-				_, err = sv.WriteService.DeleteTagType(ctx, &services.DeleteTagTypeRequest{ID: tagType.GetUUID()})
+				_, err = sv.WriteService.DeleteTagType(
+					ctx, &services.DeleteTagTypeRequest{ID: tagType.GetUUID()},
+				)
 				if err != nil {
 					return err
 				}
@@ -200,11 +204,13 @@ func (sv *ContrailTypeLogicService) createTagTypeFromName(
 	ctx context.Context,
 	tagTypeName string,
 ) (tagType *models.TagType, err error) {
-	tagTypeCreated, err := sv.WriteService.CreateTagType(ctx, &services.CreateTagTypeRequest{
-		TagType: &models.TagType{
-			FQName: []string{tagTypeName},
+	tagTypeCreated, err := sv.WriteService.CreateTagType(
+		ctx, &services.CreateTagTypeRequest{
+			TagType: &models.TagType{
+				FQName: []string{tagTypeName},
+			},
 		},
-	})
+	)
 	if err != nil {
 		return tagType, err
 	}
@@ -234,12 +240,14 @@ func (sv *ContrailTypeLogicService) removeTagTypeTagRef(
 ) (err error) {
 	if tagType != nil {
 		tagType.RemoveTagRef(&models.TagTypeTagRef{UUID: tagUUID})
-		_, err = sv.WriteService.UpdateTagType(ctx, &services.UpdateTagTypeRequest{
-			TagType: tagType,
-			FieldMask: types.FieldMask{
-				Paths: []string{models.TagTypeFieldTagRefs},
+		_, err = sv.WriteService.UpdateTagType(
+			ctx, &services.UpdateTagTypeRequest{
+				TagType: tagType,
+				FieldMask: types.FieldMask{
+					Paths: []string{models.TagTypeFieldTagRefs},
+				},
 			},
-		})
+		)
 	}
 	return err
 }

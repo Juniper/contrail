@@ -21,7 +21,7 @@ func (sv *ContrailTypeLogicService) CreateFirewallPolicy(
 				return err
 			}
 
-			if err = sv.ComplementRefs(ctx, fp); err != nil {
+			if err = sv.complementRefs(ctx, fp); err != nil {
 				return err
 			}
 
@@ -55,7 +55,7 @@ func (sv *ContrailTypeLogicService) UpdateFirewallPolicy(
 				return err
 			}
 
-			if err = sv.ComplementRefs(ctx, fp); err != nil {
+			if err = sv.complementRefs(ctx, fp); err != nil {
 				return err
 			}
 
