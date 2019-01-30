@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"github.com/gogo/protobuf/types"
 
 	"github.com/pkg/errors"
 
@@ -77,4 +78,5 @@ type RequestParameters struct {
 	WriteService    services.WriteService
 	UserAgentKV     services.UserAgentKVServer
 	IDToTypeService services.IDToTypeServer
+	FieldMask       types.FieldMask
 }
