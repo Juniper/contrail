@@ -152,6 +152,7 @@ func TestPortUpdate(t *testing.T) {
 	tests := []struct {
 		name       string
 		port       *Port
+		mask       types.FieldMask
 		expected   *PortResponse
 		wantErr    bool
 		id         string
@@ -167,6 +168,15 @@ func TestPortUpdate(t *testing.T) {
 				DeviceID:      "default-vm",
 				BindingHostID: "ignacy.osetek-spike.novalocal",
 				DeviceOwner:   "compute:nova",
+			},
+			mask: types.FieldMask{
+				Paths: []string{
+					"data.resource." + PortFieldName,
+					"data.resource." + PortFieldID,
+					"data.resource." + PortFieldDeviceID,
+					"data.resource." + PortFieldBindingHostID,
+					"data.resource." + PortFieldDeviceOwner,
+				},
 			},
 			id: "b6283c9b-07ec-4061-941e-3f392844059f",
 			expected: &PortResponse{
@@ -303,6 +313,7 @@ func TestPortUpdate(t *testing.T) {
 			rp := RequestParameters{
 				ReadService:  mockServ,
 				WriteService: mockServ,
+				FieldMask:    tt.mask,
 			}
 
 			readRes, err := tt.port.Update(nil, rp, tt.id)
