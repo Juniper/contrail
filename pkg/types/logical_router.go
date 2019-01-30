@@ -7,6 +7,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/twinj/uuid"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
@@ -432,7 +433,7 @@ func (sv *ContrailTypeLogicService) createInternalVirtualNetwork(
 		VirtualNetwork: internalVN,
 	}
 
-	response, err := sv.WriteService.CreateVirtualNetwork(WithInternalRequest(ctx), request)
+	response, err := sv.WriteService.CreateVirtualNetwork(auth.WithInternalRequest(ctx), request)
 	return response.GetVirtualNetwork(), err
 }
 
@@ -527,7 +528,7 @@ func (sv *ContrailTypeLogicService) updateInternalVirtualNetwork(
 	}
 
 	_, err = sv.WriteService.UpdateVirtualNetwork(
-		WithInternalRequest(ctx),
+		auth.WithInternalRequest(ctx),
 		&services.UpdateVirtualNetworkRequest{
 			VirtualNetwork: updateVN,
 			FieldMask:      types.FieldMask{Paths: updatePaths},
@@ -567,7 +568,7 @@ func (sv *ContrailTypeLogicService) deleteInternalVirtualNetwork(
 	}
 
 	_, err = sv.WriteService.DeleteVirtualNetwork(
-		WithInternalRequest(ctx),
+		auth.WithInternalRequest(ctx),
 		&services.DeleteVirtualNetworkRequest{
 			ID: m.UUID,
 		},
