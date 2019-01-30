@@ -53,14 +53,6 @@ const Version = "1.0"
 	{{ list }} = result
 {% endmacro %}
 
-// NewIDPerms creates new UUIdType instance
-func NewIDPerms(uuid string) *IdPermsType {
-	return &IdPermsType{
-		UUID:   NewUUIDType(uuid),
-		Enable: true,
-	}
-}
-
 // NewUUIDType creates new UUIdType instance from provided uuid.
 func NewUUIDType(uuid string) *UuidType {
 	uuid = strings.Replace(uuid, "-", "", 4)

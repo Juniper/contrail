@@ -252,6 +252,11 @@ func TestQoS(t *testing.T) {
 	RunTest(t, "./test_data/test_qos.yml")
 }
 
+func TestIsVisible(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_user_visible.yml")
+}
+
 func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),
@@ -277,6 +282,7 @@ func TestGRPC(t *testing.T) {
 			ParentType:           "domain",
 			ParentUUID:           integration.DefaultDomainUUID,
 			ConfigurationVersion: 1,
+			IDPerms:              &models.IdPermsType{UserVisible: true},
 		}
 		_, err := c.CreateProject(ctx, &services.CreateProjectRequest{
 			Project: &project,
@@ -299,6 +305,7 @@ func testNamespaceRef(ctx context.Context, c services.ContrailServiceClient, pro
 			ParentType: "domain",
 			ParentUUID: integration.DefaultDomainUUID,
 			Name:       "my-namespace",
+			IDPerms:    &models.IdPermsType{UserVisible: true},
 		}
 		_, err := c.CreateNamespace(ctx, &services.CreateNamespaceRequest{
 			Namespace: &ns,
@@ -414,6 +421,7 @@ func TestRefRelaxGRPC(t *testing.T) {
 				Name:       fmt.Sprintf("%s_project", t.Name()),
 				ParentType: "domain",
 				ParentUUID: integration.DefaultDomainUUID,
+				IDPerms:    &models.IdPermsType{UserVisible: true},
 			},
 		})
 		require.NoError(t, err)
@@ -430,6 +438,7 @@ func TestRefRelaxGRPC(t *testing.T) {
 			NetworkPolicy: &models.NetworkPolicy{
 				ParentType: models.KindProject,
 				ParentUUID: project.GetUUID(),
+				IDPerms:    &models.IdPermsType{UserVisible: true},
 			},
 		})
 		require.NoError(t, err)
@@ -454,6 +463,7 @@ func TestRefRelaxGRPC(t *testing.T) {
 						UUID: policy.GetUUID(),
 					},
 				},
+				IDPerms: &models.IdPermsType{UserVisible: true},
 			},
 		})
 		require.NoError(t, err)
@@ -507,6 +517,7 @@ func TestRESTClient(t *testing.T) {
 	project.ParentType = "domain"
 	project.ParentUUID = integration.DefaultDomainUUID
 	project.ConfigurationVersion = 1
+	project.IDPerms = &models.IdPermsType{UserVisible: true}
 	_, err = restClient.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: project,
 	})
