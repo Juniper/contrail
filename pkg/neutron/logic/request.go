@@ -6,6 +6,18 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Const strings which define  operation in request
+const (
+	OperationCreate       = "CREATE"
+	OperationRead         = "READ"
+	OperationReadAll      = "READALL"
+	OperationUpdate       = "UPDATE"
+	OperationDelete       = "DELETE"
+	OperationReadCount    = "READCOUNT"
+	OperationAddInterface = "ADDINTERFACE"
+	OperationDelInterface = "DELINTERFACE"
+)
+
 // Request defines an API request.
 type Request struct {
 	Data    Data           `json:"data" yaml:"data"`
