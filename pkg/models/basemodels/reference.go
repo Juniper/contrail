@@ -7,7 +7,11 @@ type Reference interface {
 	GetUUID() string
 	GetTo() []string
 	GetReferredKind() string
+	GetAttribute() RefAttribute
 }
+
+// RefAttribute is a reference attribute.
+type RefAttribute interface {}
 
 // References is wrapper type for reference slice.
 type References []Reference
@@ -97,4 +101,15 @@ func (g *genericReference) GetTo() []string {
 
 func (g *genericReference) GetReferredKind() string {
 	return g.kind
+}
+
+func (g *genericReference) GetAttribute() RefAttribute {
+	return nil
+}
+
+func (g *genericReference) ToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"uuid": g.uuid,
+		"to":   g.to,
+	}
 }
