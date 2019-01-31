@@ -6,6 +6,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/errutil"
 
+	"errors"
+
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -20,11 +22,15 @@ const (
 
 	// TODO(pawel.zadrozny) check if this config is still required or can be removed
 	contrailExtensionsEnabled = true
+
+	permsRX   = 5
+	permsRWX  = 7
+	permsNone = 0
 )
 
 // Create logic
 func (n *Network) Create(ctx context.Context, rp RequestParameters) (Response, error) {
-	vncNet, err := n.toVnc()
+	vncNet, err := n.toVnc(ctx, rp)
 	if err != nil {
 		return nil, err
 	}
@@ -35,11 +41,14 @@ func (n *Network) Create(ctx context.Context, rp RequestParameters) (Response, e
 		return nil, err
 	}
 
-	nn := makeNetworkResponse(rp, vnResp.GetVirtualNetwork())
-	if contrailExtensionsEnabled {
-		nn.setResponseRefs(vnResp.GetVirtualNetwork())
+	if vncNet.GetRouterExternal() {
+		err = n.createFloatingIPPool(ctx, rp, vncNet)
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	nn := makeNetworkResponse(rp, vnResp.GetVirtualNetwork(), OperationCreate)
 	return nn, nil
 }
 
@@ -62,7 +71,41 @@ func (n *Network) Read(
 		return nil, err
 	}
 
-	return makeNetworkResponse(rp, vnRes.GetVirtualNetwork()), nil
+	return makeNetworkResponse(rp, vnRes.GetVirtualNetwork(), OperationRead), nil
+}
+
+// Delete logic
+func (n *Network) Delete(
+	ctx context.Context, rp RequestParameters, id string,
+) (Response, error) {
+	if _, err := rp.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: id}); err != nil {
+		if !errutil.IsNotFound(err) {
+			return &NetworkResponse{}, err
+		}
+		return &NetworkResponse{}, nil
+	}
+	fippRes, err := rp.ReadService.ListFloatingIPPool(ctx, &services.ListFloatingIPPoolRequest{
+		Spec: &baseservices.ListSpec{
+			ParentUUIDs: []string{id},
+		},
+	})
+	if err != nil {
+		return &NetworkResponse{}, err
+	}
+
+	for _, fipp := range fippRes.GetFloatingIPPools() {
+		if err = n.DeleteAssociatedFloatingIPsAndPools(ctx, rp, fipp); err != nil {
+			return &NetworkResponse{}, newNeutronError(networkInUse, errorFields{
+				"net_id": id,
+			})
+		}
+	}
+
+	_, err = rp.WriteService.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{
+		ID: id,
+	})
+
+	return &NetworkResponse{}, err
 }
 
 // ReadAll logic
@@ -89,60 +132,35 @@ type listReq struct {
 	ObjUUIDs []string
 }
 
-func (n *Network) updateVnc(vncNet *models.VirtualNetwork) error {
-	var err error
-
-	vncNet.RouterExternal = n.RouterExternal
-	if n.RouterExternal {
-		vncNet.Perms2 = &models.PermType2{ /* TODO - not needed for ping by CREATE */ }
-	}
-	// TODO: For Operation == UPDATE do:
-	// https://github.com/Juniper/contrail-controller/
-	// blob/0b6850b55a63280bfb339113d24bd24c953cf145/src/config/vnc_openstack/vnc_openstack/neutron_plugin_db.py#L1432
+func (n *Network) updateVnc(
+	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork,
+) error {
 	vncNet.IsShared = n.Shared
-	if vncNet.UUID, err = neutronIDToContrailUUID(n.ID); err != nil {
-		return err
-	}
-
-	if vncNet.ParentUUID, err = neutronIDToContrailUUID((n.ProjectID)); err != nil {
-		return err
-	}
-
 	vncNet.DisplayName = n.Name
 
-	// TODO: Handle ProviderProperties L:1441-1445
-	if len(n.ProviderPhysicalNetwork) > 0 || len(n.ProviderSegmentationID) > 0 {
-		var intSegID int
-		if intSegID, err = strconv.Atoi(n.ProviderSegmentationID); err != nil {
-			return err
-		}
+	if len(n.ProviderPhysicalNetwork) > 0 || n.ProviderSegmentationID != 0 {
 
-		segID := int64(intSegID)
-		//PhysicalNetwork string - not needed for ping by CREATE
-		//SegmentationID  int64 - not needed for ping by CREATE
 		vncNet.ProviderProperties = &models.ProviderDetails{
 			PhysicalNetwork: n.ProviderPhysicalNetwork,
-			// TODO: Need to check type of SegmentationID in neutron dumps
-			SegmentationID: segID,
+			SegmentationID:  n.ProviderSegmentationID,
 		}
 	}
 	// TODO: This is a bug for operation UPDATE when Admin state up is not set in request.
 	vncNet.IDPerms = &models.IdPermsType{Enable: n.AdminStateUp}
 
-	// Handle policys L:1452-1467 - not needed for ping by CREATE
-	//TODO: Verify type of 'policys' field with multiple items, currently string but in pytaon array
-
-	// Handle route table L:1469-1478
+	if len(n.Policys) > 0 {
+		//TODO handle policy refs and verify type of 'policys' field with multiple items
+	}
 	if len(n.RouteTable) > 0 {
-		/*
-			resp := n.FQNameService.FQNameToIDService(services.FQNameToIDRequest{
-				FQName: n.RouteTable,
-				Type:   models.KindRouteTable,
-			})*/
-		// TODO: Read route_table by fq_name and set to vncNet - not needed for ping by CREATE
+		if err := n.createRouteTableRef(ctx, rp, vncNet); err != nil {
+			return err
+		}
 	}
 
-	vncNet.PortSecurityEnabled = n.PortSecurityEnabled
+	operation := rp.RequestContext.Operation
+	if operation == OperationCreate || operation == OperationUpdate {
+		vncNet.PortSecurityEnabled = n.PortSecurityEnabled
+	}
 
 	if len(n.Description) > 0 {
 		vncNet.IDPerms.Description = n.Description
@@ -151,18 +169,139 @@ func (n *Network) updateVnc(vncNet *models.VirtualNetwork) error {
 	return nil
 }
 
-func (n *Network) toVnc() (*models.VirtualNetwork, error) {
-	vncNet := models.MakeVirtualNetwork()
+func (n *Network) toVncForCreate(
+	ctx context.Context, rp RequestParameters,
+) (vncNet *models.VirtualNetwork, err error) {
+	vncNet = models.MakeVirtualNetwork()
 	vncNet.Name = n.Name
 	vncNet.ParentType = models.KindProject
+	vncNet.AddressAllocationMode = models.UserDefinedSubnetOnly //TODO find place where it should be set
+	vncNet.RouterExternal = n.RouterExternal
+	vncNet.ParentUUID, err = neutronIDToContrailUUID(n.TenantID)
+	if err != nil {
+		return vncNet, err
+	}
+
 	vncNet.IDPerms = &models.IdPermsType{Enable: true}
-	vncNet.AddressAllocationMode = models.UserDefinedSubnetOnly
-	err := n.updateVnc(vncNet)
+	if n.RouterExternal {
+		vncNet.Perms2 = &models.PermType2{
+			Owner:        vncNet.ParentUUID,
+			OwnerAccess:  permsRWX,
+			GlobalAccess: permsRX,
+		}
+	}
+
+	vncNet.UUID = n.ID
+	return vncNet, nil
+}
+
+func (n *Network) toVncForUpdate(
+	ctx context.Context, rp RequestParameters,
+) (vncNet *models.VirtualNetwork, err error) {
+	vncNetRes, err := rp.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: n.ID})
+	if err != nil {
+		return nil, err
+	}
+	vncNet = vncNetRes.GetVirtualNetwork()
+	vncNet.RouterExternal = n.RouterExternal
+
+	if n.RouterExternal {
+		vncNet.Perms2.GlobalAccess = permsRX
+	} else {
+		vncNet.Perms2.GlobalAccess = permsNone
+	}
+	return vncNet, nil
+
+}
+
+func (n *Network) toVnc(ctx context.Context, rp RequestParameters) (vncNet *models.VirtualNetwork, err error) {
+	if rp.RequestContext.Operation == OperationCreate {
+		vncNet, err = n.toVncForCreate(ctx, rp)
+	} else {
+		vncNet, err = n.toVncForUpdate(ctx, rp)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
+	if err = n.updateVnc(ctx, rp, vncNet); err != nil {
+		return nil, err
+	}
+
 	return vncNet, nil
+}
+
+func (n *Network) DeleteAssociatedFloatingIPsAndPools(
+	ctx context.Context, rp RequestParameters, fipp *models.FloatingIPPool,
+) error {
+	uuids := fipp.GetFloatingIPsUUIDs()
+	fips, err := rp.ReadService.ListFloatingIP(ctx, &services.ListFloatingIPRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: uuids,
+			Fields: []string{
+				models.FloatingIPFieldVirtualMachineInterfaceRefs,
+			},
+			Detail: false,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, fip := range fips.GetFloatingIPs() {
+		if len(fip.GetVirtualMachineInterfaceRefs()) > 0 {
+			return errors.New("floating IP is assosiated with port")
+		}
+		_, err = rp.WriteService.DeleteFloatingIP(ctx, &services.DeleteFloatingIPRequest{
+			ID: fip.GetUUID(),
+		})
+		if err != nil {
+			return err
+		}
+	}
+	_, err = rp.WriteService.DeleteFloatingIPPool(ctx, &services.DeleteFloatingIPPoolRequest{
+		ID: fipp.GetUUID(),
+	})
+	return err
+}
+
+func (n *Network) createFloatingIPPool(
+	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork,
+) error {
+	fipp := models.MakeFloatingIPPool()
+	fipp.Name = models.KindFloatingIPPool
+	fipp.ParentUUID = vncNet.GetUUID()
+	fipp.ParentType = models.KindVirtualNetwork
+	fipp.Perms2 = &models.PermType2{
+		Owner:        vncNet.GetUUID(),
+		OwnerAccess:  permsRWX,
+		GlobalAccess: permsRX,
+	}
+
+	_, err := rp.WriteService.CreateFloatingIPPool(
+		ctx,
+		&services.CreateFloatingIPPoolRequest{
+			FloatingIPPool: fipp,
+		},
+	)
+	return err
+}
+
+func (n *Network) createRouteTableRef(
+	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork,
+) error {
+
+	_, err := rp.WriteService.CreateVirtualNetworkRouteTableRef(
+		ctx,
+		&services.CreateVirtualNetworkRouteTableRefRequest{
+			ID: vncNet.GetUUID(),
+			VirtualNetworkRouteTableRef: &models.VirtualNetworkRouteTableRef{
+				To: n.RouteTable,
+			},
+		},
+	)
+	return err
 }
 
 func (n *Network) collectVirtualNetworks(
@@ -419,13 +558,9 @@ func convertVNsToNeutronResponse(
 			continue
 		}
 
-		nn := makeNetworkResponse(rp, vn)
+		nn := makeNetworkResponse(rp, vn, OperationReadAll)
 		if nn == nil {
 			continue
-		}
-
-		if contrailExtensionsEnabled {
-			nn.setResponseRefs(vn)
 		}
 
 		nns = append(nns, nn)
