@@ -31,6 +31,16 @@ schema:
       type: string
     port_security_enabled:
       type: boolean
+    policys:
+      presence: optional
+      type: array
+      items:
+        type: string
+    route_table:
+      presence: optional
+      type: array
+      items:
+        type: string
     shared:
       type: boolean
     project_id:
