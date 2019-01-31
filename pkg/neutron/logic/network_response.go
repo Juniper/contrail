@@ -1,8 +1,11 @@
 package logic
 
-import "github.com/Juniper/contrail/pkg/models"
+import (
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/neutron"
+)
 
-func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork) *NetworkResponse {
+func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork, oper string) *NetworkResponse {
 	parentNeutronUUID := contrailUUIDToNeutronID(vn.GetParentUUID())
 	nn := &NetworkResponse{
 		ID:                      vn.GetUUID(),
@@ -40,12 +43,40 @@ func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork) *Netwo
 	}
 
 	if prop := vn.GetProviderProperties(); prop != nil {
-		// TODO: Missing fields provider:physical_network and provider:segmentation_id, have in python
+		nn.ProviderPhysicalNetwork = prop.GetPhysicalNetwork()
+		nn.ProviderSegmentationID = prop.GetSegmentationID()
+	}
+
+	if contrailExtensionsEnabled {
+		nn.setResponseRefs(vn, oper)
 	}
 
 	nn.setSubnets(vn)
-	// TODO: Handle field route_table (L1545) - not needed for ping
+
 	return nn
+}
+
+func (r *NetworkResponse) setResponseRefs(vn *models.VirtualNetwork, oper string) {
+	if oper == neutron.OperationRead || oper == neutron.OperationReadAll {
+		r.setPolicys(vn)
+	}
+	r.setRouteTable(vn)
+}
+
+func (r *NetworkResponse) setPolicys(vn *models.VirtualNetwork) {
+	nps := vn.GetNetworkPolicyRefs()
+	// TODO handle array of fqNames in schema and iterate over it
+	if len(nps) > 0 {
+		r.Policys = nps[0].GetTo()
+	}
+}
+
+func (r *NetworkResponse) setRouteTable(vn *models.VirtualNetwork) {
+	rt := vn.GetRouteTableRefs()
+	// TODO handle array of fqNames in schema and iterate over it
+	if len(rt) > 0 {
+		r.RouteTable = rt[0].GetTo()
+	}
 }
 
 func (r *NetworkResponse) setSubnets(vn *models.VirtualNetwork) {
@@ -61,12 +92,5 @@ func (r *NetworkResponse) setSubnets(vn *models.VirtualNetwork) {
 
 			}
 		}
-	}
-}
-
-func (r *NetworkResponse) setResponseRefs(vn *models.VirtualNetwork) {
-	if len(vn.GetNetworkPolicyRefs()) > 0 {
-		// TODO: handle policy refs - not needed for ping by CREATE
-		// This should be set only for oper READ or LIST => L1535
 	}
 }

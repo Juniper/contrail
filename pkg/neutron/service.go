@@ -14,6 +14,17 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
+const (
+	OperationCreate       = "CREATE"
+	OperationRead         = "READ"
+	OperationReadAll      = "READALL"
+	OperationUpdate       = "UPDATE"
+	OperationDelete       = "DELETE"
+	OperationReadCount    = "READCOUNT"
+	OperationAddInterface = "ADDINTERFACE"
+	OperationDelInterface = "DELINTERFACE"
+)
+
 // Service implementation.
 type Service struct {
 	ReadService     services.ReadService
@@ -55,21 +66,21 @@ func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response,
 		RequestContext:  r.Context,
 	}
 	switch r.Context.Operation {
-	case "CREATE":
+	case OperationCreate:
 		return r.Data.Resource.Create(ctx, rp)
-	case "UPDATE":
+	case OperationUpdate:
 		return r.Data.Resource.Update(ctx, rp, r.Data.ID)
-	case "DELETE":
+	case OperationDelete:
 		return r.Data.Resource.Delete(ctx, rp, r.Data.ID)
-	case "READ":
+	case OperationRead:
 		return r.Data.Resource.Read(ctx, rp, r.Data.ID)
-	case "READALL":
+	case OperationReadAll:
 		return r.Data.Resource.ReadAll(ctx, rp, r.Data.Filters, r.Data.Fields)
-	case "READCOUNT":
+	case OperationReadCount:
 		return r.Data.Resource.ReadCount(ctx, rp, r.Data.Filters)
-	case "ADDINTERFACE":
+	case OperationAddInterface:
 		return r.Data.Resource.AddInterface(ctx, rp)
-	case "DELINTERFACE":
+	case OperationDelInterface:
 		return r.Data.Resource.DeleteInterface(ctx, rp)
 	default:
 		err := errors.Errorf("method '%s' is not supported", r.Context.Operation)
