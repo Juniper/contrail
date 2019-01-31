@@ -2,7 +2,7 @@ package logic
 
 import "github.com/Juniper/contrail/pkg/models"
 
-func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork) *NetworkResponse {
+func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork, oper string) *NetworkResponse {
 	parentNeutronUUID := contrailUUIDToNeutronID(vn.GetParentUUID())
 	nn := &NetworkResponse{
 		ID:                      vn.GetUUID(),
@@ -40,12 +40,35 @@ func makeNetworkResponse(rp RequestParameters, vn *models.VirtualNetwork) *Netwo
 	}
 
 	if prop := vn.GetProviderProperties(); prop != nil {
-		// TODO: Missing fields provider:physical_network and provider:segmentation_id, have in python
+		nn.ProviderPhysicalNetwork = prop.GetPhysicalNetwork()
+		nn.ProviderSegmentationID = prop.GetSegmentationID()
+	}
+	//TODO: check if operation is list or read
+	if oper == "READ" || oper == "LIST" {
+		nn.setPolicys(vn)
 	}
 
+	nn.setRouteTable(vn)
 	nn.setSubnets(vn)
+
 	// TODO: Handle field route_table (L1545) - not needed for ping
 	return nn
+}
+
+func (r *NetworkResponse) setPolicys(vn *models.VirtualNetwork) {
+	nps := vn.GetNetworkPolicyRefs()
+	// TODO handle array of fqNames in schema and iterate over it
+	if len(nps) > 0 {
+		r.Policys = nps[0].GetTo()
+	}
+}
+
+func (r *NetworkResponse) setRouteTable(vn *models.VirtualNetwork) {
+	rt := vn.GetRouteTableRefs()
+	// TODO handle array of fqNames in schema and iterate over it
+	if len(rt) > 0 {
+		r.RouteTable = rt[0].GetTo()
+	}
 }
 
 func (r *NetworkResponse) setSubnets(vn *models.VirtualNetwork) {
