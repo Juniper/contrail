@@ -16,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
@@ -23,6 +24,7 @@ import (
 
 const (
 	retryCount = 2
+	xClusterID = "X-Cluster-ID"
 )
 
 // HTTP represents API Server HTTP client.
@@ -135,6 +137,10 @@ func (h *HTTP) Login(ctx context.Context) error {
 
 	request, err := http.NewRequest("POST", h.AuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
 	request = request.WithContext(ctx)
+	clusterID := ctx.Value(xClusterID)
+	if clusterID != nil {
+		request.Header.Set(xClusterID, format.InterfaceToString(clusterID))
+	}
 	if err != nil {
 		return err
 	}
@@ -363,6 +369,10 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 		}).Debug("Executing API Server request")
 	}
 	request = request.WithContext(ctx)
+	clusterID := ctx.Value(xClusterID)
+	if clusterID != nil {
+		request.Header.Set(xClusterID, format.InterfaceToString(clusterID))
+	}
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error

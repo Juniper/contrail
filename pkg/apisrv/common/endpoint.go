@@ -129,16 +129,20 @@ func (e *EndpointStore) GetEndpoint(prefix string) (endpoint string, err error) 
 		keyString, _ := key.(string) // nolint: errcheck
 		keyParts := strings.Split(keyString, pathSep)
 		if keyParts[3] != prefix || keyParts[4] != Private {
-			return true // continue iterating the endpoints
+			endpoints, _ := targets.(*TargetStore) // nolint: errcheck
+			endpoint = endpoints.Next(Private)
+			if endpoint != "" {
+				endpointCount++
+			}
+			//return true // continue iterating the endpoints
 		}
-		endpointCount++
 		if endpointCount > 1 {
 			err = fmt.Errorf("ambiguious, more than one cluster found")
 			return false
 		}
-		endpoints, _ := targets.(*TargetStore) // nolint: errcheck
-		endpoint = endpoints.Next(Private)
-		return false
+		//endpoints, _ := targets.(*TargetStore) // nolint: errcheck
+		//endpoint = endpoints.Next(Private)
+		return true
 
 	})
 
