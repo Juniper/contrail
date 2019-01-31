@@ -1,0 +1,120 @@
+name: ID to FQName endpoint test
+cleanup:
+- path: /virtual-network/vn_endpoint_blue
+- path: /network-ipam/test_ipam_endpoint_blue
+test_data:
+
+  admin_project: &admin_project_endpoint
+    uuid: admin_endpoint_project_uuid
+    name: admin_endpoint_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  network_ipam_blue: &network_ipam_blue
+    uuid: test_ipam_endpoint_blue
+    display_name: test_ipam_endpoint_blue
+    parent_type: project
+    parent_uuid: admin_endpoint_project_uuid
+    fq_name: ["domain","admin","test_ipam_endpoint_blue"]
+
+  vn_endpoint_blue: &vn_endpoint_blue
+    fq_name: ["default", "admin_endpoint", "vn_endpoint_blue"]
+    uuid: vn_endpoint_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_endpoint_project_uuid
+    network_ipam_refs:
+      - uuid: test_ipam_endpoint_blue
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project_endpoint
+  expect:
+    project: *admin_project_endpoint
+
+- name: create network ipam blue
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 200
+    data:
+      network-ipam: *network_ipam_blue
+  expect:
+    network-ipam: *network_ipam_blue
+
+- name: create virtual network blue
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_endpoint_blue
+  expect:
+    virtual-network: *vn_endpoint_blue
+
+- name: get virtual network fqname and type from uuid
+  request:
+    path: /id-to-fqname
+    method: POST
+    expected:
+    - 200
+    data:
+      uuid: "vn_endpoint_blue"
+  expect:
+    fq_name: ["default", "admin_endpoint", "vn_endpoint_blue"]
+    type: virtual-network
+
+- name: get network ipam fqname and type from uuid
+  request:
+    path: /id-to-fqname
+    method: POST
+    expected:
+    - 200
+    data:
+      uuid: "test_ipam_endpoint_blue"
+  expect:
+    fq_name: ["domain","admin","test_ipam_endpoint_blue"]
+    type: network-ipam
+
+- name: get fqname from uuid when it does not exist
+  request:
+    path: /id-to-fqname
+    method: POST
+    expected:
+    - 404
+    data:
+      uuid: "not_existing"
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/vn_endpoint_blue
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete network ipam blue
+  request:
+    path: /network-ipam/test_ipam_endpoint_blue
+    method: DELETE
+    expected:
+    - 200
+  expect: null
