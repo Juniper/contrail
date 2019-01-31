@@ -27,7 +27,7 @@ const (
 	Prefix             = "contrail"
 	ETCDDialTimeout    = 10 * time.Second
 	ETCDRequestTimeout = 10 * time.Second
-	ETCDWatchTimeout   = 10 * time.Second
+	ETCDWatchTimeout   = 60 * time.Second
 
 	AccessControlListSchemaID    = "access_control_list"
 	ApplicationPolicySetSchemaID = "application_policy_set"
