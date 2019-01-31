@@ -25,6 +25,12 @@ cleanup:
   - admin_project_uuid
   - test-vn1
 
+- kind: virtual-network
+  fq_name:
+  - default
+  - admin_project_uuid
+  - test-vn2
+
 - kind: project
   fq_name:
   - default
@@ -42,7 +48,7 @@ workflow:
   expect:
     project: *admin_project
 
-- name: Network create
+- name: Network test-vn1 create
   request:
     path: /neutron/network
     method: POST
@@ -51,7 +57,7 @@ workflow:
       data:
         fields:
         resource:
-          id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2 #todo remove this field from request
+          id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
           router:external: false
           name: test-vn1
           tenant_id: 886c725d04614dd6ac2730c74d4e46fb
@@ -344,16 +350,31 @@ workflow:
     project_id: 886c725d04614dd6ac2730c74d4e46fb
     description: ''
 
-- name: Delete virtual network
+- name: Network delete
   request:
-    path: "/virtual-network/d9ff46fc-e193-4d40-80ba-0d55c8aed9f2"
-    method: DELETE
-    expected:
-    - 200
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+        filters:
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        operation: DELETE
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect: null
 
 - name: Delete project
   request:
-    path: "/project/886c725d-0461-4dd6-ac27-30c74d4e46fb"
+    path: /project/886c725d-0461-4dd6-ac27-30c74d4e46fb
     method: DELETE
     expected:
     - 200
