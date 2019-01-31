@@ -162,15 +162,6 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 	return c.JSON(http.StatusOK, responses.Events)
 }
 
-// RefOperation is enum type for ref-update operation.
-type RefOperation string
-
-// RefOperation values.
-const (
-	RefOperationAdd    RefOperation = "ADD"
-	RefOperationDelete RefOperation = "DELETE"
-)
-
 // RefUpdate represents ref-update input data.
 type RefUpdate struct {
 	Operation RefOperation    `json:"operation"`
@@ -217,7 +208,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 		data.RefUUID = m.UUID
 	}
 
-	e, err := NewEventFromRefUpdate(RefUpdateOption{
+	e, err := NewRefUpdateEvent(RefUpdateOption{
 		ReferenceType: basemodels.ReferenceKind(data.Type, data.RefType),
 		FromUUID:      data.UUID,
 		ToUUID:        data.RefUUID,
