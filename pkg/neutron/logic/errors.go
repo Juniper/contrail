@@ -49,4 +49,5 @@ const (
 	networkNotFound            = "NetworkNotFound"
 	securityGroupNotFound      = "SecurityGroupNotFound"
 	securityGroupRuleNotFound  = "SecurityGroupRuleNotFound"
+	subnetNotFound             = "SubnetNotFound"
 )

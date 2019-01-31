@@ -175,6 +175,68 @@ func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, er
 	)
 }
 
+// Delete subnet.
+func (s *Subnet) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
+	if err != nil {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("failed to fetch networks: %+v", err),
+		)
+	}
+
+	if len(virtualNetworks) == 0 {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", id),
+		)
+	}
+
+	vn := findVirtualNetworkithSubnet(id, virtualNetworks)
+	if vn == nil {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", id),
+		)
+	}
+
+	ipam := findNetworkIpamRefWithSubnet(id, vn.NetworkIpamRefs)
+	ipam.RemoveSubnet(id)
+
+
+	return rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: vn,
+		FieldMask: []string{models.VirtualNetworkFieldNetworkIpamRefs},
+	})
+}
+
+func findVirtualNetworkithSubnet(subnetID string, vns []*models.VirtualNetwork) *models.VirtualNetwork {
+	for _, vn := range vns {
+		if ipam := findNetworkIpamRefWithSubnet(subnetID, vn.GetNetworkIpamRefs()); ipam != nil {
+			return vn
+		}
+	}
+	return nil
+}
+
+func findNetworkIpamRefWithSubnet(
+	subnetID string, refs []*models.VirtualNetworkNetworkIpamRef,
+	) *models.VirtualNetworkNetworkIpamRef {
+	// ref or refs[id]?
+	for _, ref := range refs {
+		s := models.IpamSubnets{
+			Subnets: ref.Attr.IpamSubnets,
+		}
+		found s.Find(func (i *models.IpamSubnetType) bool {
+			return i.SubnetUUID == subnetID
+		})
+		if found != nil {
+			return found
+		}
+	}
+	return nil
+}
+
 func (s *Subnet) createOrUpdateVirtualNetworkIpamRefs(
 	ctx context.Context,
 	rp RequestParameters,
