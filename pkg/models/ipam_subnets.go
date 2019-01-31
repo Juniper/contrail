@@ -20,6 +20,17 @@ func (m *IpamSubnets) Find(pred func(*IpamSubnetType) bool) *IpamSubnetType {
 	return nil
 }
 
+// Filter removes all the values that doesn't match the predicate.
+func (m IpamSubnets) Filter(pred func(*IpamSubnetType) bool) IpamSubnets {
+	result := make([]*IpamSubnetType, 0, len(m.Subnets))
+	for _, s := range m.Subnets {
+		if pred(s) {
+			result = append(result, s)
+		}
+	}
+	return IpamSubnets{Subnets: result}
+}
+
 // Contains checks if IpamSubnets contain provided IP address.
 func (m *IpamSubnets) Contains(ipString string) (ok bool, err error) {
 	ip, err := parseIP(ipString)

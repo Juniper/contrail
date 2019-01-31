@@ -3,6 +3,7 @@ package basemodels
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -22,6 +23,11 @@ const (
 	PermsRW
 	//PermsRWX for all permission
 	PermsRWX
+)
+
+const (
+	vncTimeLenghtWithoutMs = len("yyyy-mm-ddThh:mm:ss")
+	vncTimeLenghtWithMs    = len("yyyy-mm-ddThh:mm:ss.mmmmmm")
 )
 
 // ParseFQName parse string representation of FQName.
@@ -82,4 +88,27 @@ func KindToSchemaID(kind string) string {
 // ReferenceKind constructs reference kind for given from and to kinds.
 func ReferenceKind(fromKind, toKind string) string {
 	return fmt.Sprintf("%s-%s", fromKind, toKind)
+}
+
+// ToVNCTime returns time string in VNC format.
+func ToVNCTime(t time.Time) string {
+	if t.Nanosecond() < 1000 {
+		return t.UTC().Format(time.RFC3339)[0:vncTimeLenghtWithoutMs]
+	} else {
+		date := t.UTC().Format(time.RFC3339Nano)
+		// RGC3339Nano contains Z letter at the end, we need to get rid of it
+		if date = date[0 : len(date)-1]; len(date) >= vncTimeLenghtWithMs {
+			return date[0:vncTimeLenghtWithMs]
+		} else {
+			return date + additionalZeros(vncTimeLenghtWithMs-len(date))
+		}
+	}
+}
+
+func additionalZeros(n int) string {
+	result := ""
+	for i := 0; i < n; i++ {
+		result += "0"
+	}
+	return result
 }

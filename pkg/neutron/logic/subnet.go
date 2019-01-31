@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"context"
 	"fmt"
 	"net"
@@ -23,6 +24,13 @@ const (
 	defaultDomainName      = "default-domain"
 	defaultProjectName     = "default-project"
 	defaultNetworkIpamName = "default-network-ipam"
+
+	subnetFieldName = "name"
+	subnetFieldGatewayIP = "gateway_ip"
+	subnetFieldEnableDHCP = "enable_dhcp"
+	subnetFieldDnsNameservers = "dns_nameservers"
+	subnetFieldAllocationPools = "allocation_pools"
+	subnetFieldHostRoutes = "host_routes"
 
 	// TODO(pawel.zadrozny) check if this config is still required or can be removed
 	strictCompliance = false
@@ -173,6 +181,150 @@ func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, er
 		internalServerError,
 		fmt.Sprintf("subnet '%s' create failed for virtual network: '%s'", s.Cidr, virtualNetwork.GetUUID()),
 	)
+}
+
+func (s *Subnet) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	// TODO: Pass fieldmask
+	if err := prevalidateBeforeUpdate(); err != nil {
+		return nil, err
+	}
+
+	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
+	if err != nil {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("failed to fetch networks: %+v", err),
+		)
+	}
+
+	if len(virtualNetworks) == 0 {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", id),
+		)
+	}
+
+	vn := findVirtualNetworkithSubnet(id, virtualNetworks)
+	if vn == nil {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", id),
+		)
+	}
+
+	ipam := findNetworkIpamRefWithSubnet(id, vn.NetworkIpamRefs)
+	subnet := ipam.FindSubnet(id)
+
+	updateSubnet(subnet, s)
+
+	subnet.LastModified = time.Now().UTC().Format(time.RFC3339Nano)
+}
+
+func updateSubnet(origin *models.IpamSubnetType, data *Subnet, fm types.FieldMask) {
+	if basemodels.FieldMaskContains(&fm, subnetFieldName) {
+		origin.SubnetName = data.Name
+	}
+	// Should we check this situation? Will it ever happen?
+	if basemodels.FieldMaskContains(&fm, subnetFieldGatewayIP) {
+		origin.DefaultGateway = data.GatewayIP
+	}
+	if basemodels.FieldMaskContains(&fm, subnetFieldEnableDHCP) {
+		origin.EnableDHCP = data.EnableDHCP
+	}
+	if basemodels.FieldMaskContains(&fm, subnetFieldDnsNameservers) {
+		if len(data.DNSNameservers) != 0 {
+			// why in python dnsnameservers is string and here it's a struct?!
+
+			// origin.DHCPOptionList = &models.DhcpOptionsListType{
+			// 	DHCPOption: []*models.DhcpOptionType {
+			// 		DHCPOptionName = "6",
+			// 		DHCPOptionValue = strings.Join()
+			// 	},
+			// }
+		} else {
+			origin.DHCPOptionList = &models.DhcpOptionsListType{}
+		}
+	}
+	if basemodels.FieldMaskContains(&fm, subnetFieldHostRoutes) {
+		// TODO: Host routes
+
+		var hostRoutes []*models.RouteAggregate
+		//for _, hr := range data.
+		// ApplySubnetHostRoutes?
+	}
+}
+
+func (s *Subnet) prevalidateBeforeUpdate(fm types.FieldMask) error {
+	// should we check if they are not empty/nil like python?
+	if basemodels.FieldMaskContains(&fm, subnetFieldGatewayIP) {
+		return nil, newNeutronSubnetError(badRequest, "update of gateway is not supported")
+	}
+
+	if basemodels.FieldMaskContains(&fm, subnetFieldAllocationPools) {
+		return nil, newNeutronSubnetError(badRequest, "update of allocation_pools is not allowed")
+	}
+}
+
+// Delete subnet.
+func (s *Subnet) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
+	if err != nil {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("failed to fetch networks: %+v", err),
+		)
+	}
+
+	if len(virtualNetworks) == 0 {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", id),
+		)
+	}
+
+	vn := findVirtualNetworkithSubnet(id, virtualNetworks)
+	if vn == nil {
+		return nil, newNeutronSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", id),
+		)
+	}
+
+	ipam := findNetworkIpamRefWithSubnet(id, vn.NetworkIpamRefs)
+	ipam.RemoveSubnet(id)
+
+
+	return rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: vn,
+		FieldMask: []string{models.VirtualNetworkFieldNetworkIpamRefs},
+	})
+}
+
+func findVirtualNetworkithSubnet(subnetID string, vns []*models.VirtualNetwork) *models.VirtualNetwork {
+	for _, vn := range vns {
+		if ipam := findNetworkIpamRefWithSubnet(subnetID, vn.GetNetworkIpamRefs()); ipam != nil {
+			return vn
+		}
+	}
+	return nil
+}
+
+func findNetworkIpamRefWithSubnet(
+	subnetID string, refs []*models.VirtualNetworkNetworkIpamRef,
+	) *models.VirtualNetworkNetworkIpamRef {
+	// ref or refs[id]?
+	for _, ref := range refs {
+		s := models.IpamSubnets{
+			Subnets: ref.Attr.IpamSubnets,
+		}
+		found s.Find(func (i *models.IpamSubnetType) bool {
+			return i.SubnetUUID == subnetID
+		})
+		if found != nil {
+			return found
+		}
+	}
+	return nil
 }
 
 func (s *Subnet) createOrUpdateVirtualNetworkIpamRefs(
