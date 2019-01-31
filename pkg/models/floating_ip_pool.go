@@ -53,3 +53,10 @@ func (fipp *FloatingIPPool) GetIPsInSubnets(ipamSubnets *IpamSubnets) ([]string,
 
 	return ipsInSubnets, nil
 }
+
+func (fipp *FloatingIPPool) GetFloatingIPsUUIDs() (uuids []string) {
+	for _, fip := range fipp.GetFloatingIPs() {
+		uuids = append(uuids, fip.GetUUID())
+	}
+	return uuids
+}
