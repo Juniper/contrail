@@ -63,6 +63,7 @@ type Server struct {
 	FQNameToIDServer  services.FQNameToIDServer
 	IDToTypeServer    services.IDToTypeServer
 	Cache             *cache.DB
+	Collector         *services.Collector
 }
 
 // NewServer makes a server
@@ -339,6 +340,9 @@ func (s *Server) Init() (err error) {
 			}
 		}))
 	}
+
+	s.Collector = services.NewCollector(viper.GetString("collector.url"), viper.GetInt("collector.queue_size"))
+	s.Echo.Use(middleware.BodyDump(s.Collector.RestAPITrace))
 
 	return s.applyExtensions()
 }
