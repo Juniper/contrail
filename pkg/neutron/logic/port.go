@@ -177,7 +177,7 @@ func (port *Port) ReadAll(
 			return ps, nil
 		}
 
-		deviceTypeRes, err := rp.IDToTypeService.IDToType(ctx, &services.IDToTypeRequest{
+		idToFQNameRes, err := rp.IDToFQNameService.IDToFQName(ctx, &services.IDToFQNameRequest{
 			UUID: deviceUUIDs[0],
 		})
 
@@ -189,7 +189,7 @@ func (port *Port) ReadAll(
 		}
 
 		// TODO handle another resources associated with port using device_id field in filters
-		if deviceTypeRes.GetType() == models.KindVirtualMachine {
+		if idToFQNameRes.GetType() == models.KindVirtualMachine {
 			return port.readPortsAssociatedWithVM(ctx, rp, filters, deviceUUIDs[0])
 		}
 	}
