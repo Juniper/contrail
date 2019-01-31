@@ -26,7 +26,6 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/format"
@@ -638,8 +637,7 @@ func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
 	// Echo instance
 	e := echo.New()
 	keystoneClient := keystone.NewKeystoneClient(keystoneAuthURL, true)
-	endpointStore := apicommon.MakeEndpointStore()
-	k, err := keystone.Init(e, endpointStore, keystoneClient)
+	k, err := keystone.Init(e, nil, keystoneClient)
 	if err != nil {
 		return nil
 	}

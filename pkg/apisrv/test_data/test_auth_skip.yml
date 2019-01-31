@@ -1,0 +1,59 @@
+name: contrail-clusters auth skip test
+description: List contrail-cluster without auth test
+
+cleanup:
+  - path: /contrail-cluster/red_test_cluster_uuid
+  - path: /contrail-cluster/blue_test_cluster_uuid
+
+test_data:
+  red_cluster: &red_cluster
+    name: red_cluster
+    uuid: red_test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  blue_cluster: &blue_cluster
+    name: blue_cluster
+    uuid: blue_test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create red cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *red_cluster
+  expect:
+    contrail-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: red_test_cluster_uuid
+      name: red_cluster
+- name: create blue cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *blue_cluster
+  expect:
+    contrail-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: blue_test_cluster_uuid
+      name: blue_cluster
