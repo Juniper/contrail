@@ -2,13 +2,18 @@ package auth
 
 import (
 	"context"
+	"net/http"
+
+	"github.com/Juniper/contrail/pkg/format"
 )
 
 type key string
 
 const (
 	// internalRequestKey used in context as additional propetry
-	internalRequestKey key = "isInternal"
+	internalRequestKey  key = "isInternal"
+	userVisibleVerified key = "isUserVisibleVerified"
+	xClusterID          key = "X-Cluster-ID"
 )
 
 // WithInternalRequest creates child context with additional information
@@ -24,4 +29,21 @@ func IsInternalRequest(ctx context.Context) bool {
 	}
 
 	return false
+}
+
+// WithXClusterID creates child context with cluster ID
+func WithXClusterID(ctx context.Context, clusterID string) context.Context {
+	if v := ctx.Value(xClusterID); v == nil {
+		return context.WithValue(ctx, xClusterID, clusterID)
+	}
+	return ctx
+}
+
+// SetXClusterIDInHeader sets X-Cluster-ID in the HEADER.
+func SetXClusterIDInHeader(
+	ctx context.Context, request *http.Request) *http.Request {
+	if v := ctx.Value(xClusterID); v != nil {
+		request.Header.Set(string(xClusterID), format.InterfaceToString(v))
+	}
+	return request
 }
