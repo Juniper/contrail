@@ -172,13 +172,11 @@ func writeHTTP(events *services.EventList, url string) (err error) {
 func separateRefUpdateEvents(e *services.EventList) (result []*services.Event, err error) {
 	var refUpdateEvents []*services.Event
 	for i := range e.Events {
-		newEvent, err := e.Events[i].ExtractRefsEventFromEvent()
+		el, err := e.Events[i].ExtractRefEvents()
 		if err != nil {
 			return nil, errors.Wrapf(err, "extracting references update from event failed (event=%v)", e.Events[i])
 		}
-		if newEvent != nil {
-			refUpdateEvents = append(refUpdateEvents, newEvent)
-		}
+		refUpdateEvents = append(refUpdateEvents, el.Events...)
 	}
 
 	result = make([]*services.Event, 0, len(e.Events)+len(refUpdateEvents))

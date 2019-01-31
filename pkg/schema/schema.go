@@ -626,6 +626,7 @@ func (api *API) resolveRef(schema *JSONSchema) error {
 	if err != nil {
 		return errors.Wrapf(err, "resolve ref required by %v (ref: %v)", schema.ID, schema.Ref)
 	}
+
 	schema.Update(definition)
 	return nil
 }

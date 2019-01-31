@@ -302,6 +302,12 @@ func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
 	{%- endif %}
 }
 
+func (m *{{ schema.JSONSchema.GoName }}) RemoveReferences() {
+	{%- for _, reference in schema.References %}
+	m.{{ reference.GoName }}Refs = nil
+	{%- endfor %}
+}
+
 func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() (refs basemodels.References) {
 	for _, ref := range m.GetTagRefs() {
 		refs = append(refs, ref)
@@ -546,6 +552,14 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetTo(to []str
 
 func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetReferredKind() string {
 	return Kind{{ reference.GoName }}
+}
+
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetAttribute() basemodels.RefAttribute {
+	{% if reference.RefType %}
+	return r.Attr
+	{% else %}
+	return nil
+	{% endif %}
 }
 
 func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) ToMap() map[string]interface{} {
