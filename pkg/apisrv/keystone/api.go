@@ -132,7 +132,8 @@ func (keystone *Keystone) appendStaticProjects(
 
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyclo
-	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	clusterID := c.Request().Header.Get("X-Cluster-ID")
+	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
 		log.Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -173,7 +174,8 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 
 //CreateTokenAPI is an API handler for issuing new Token.
 func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
-	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	clusterID := c.Request().Header.Get("X-Cluster-ID")
+	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
 		log.Error(err)
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
@@ -233,7 +235,8 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
-	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	clusterID := c.Request().Header.Get("X-Cluster-ID")
+	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
 		log.Error(err)
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
