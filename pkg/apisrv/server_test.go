@@ -248,6 +248,11 @@ func TestIsVisible(t *testing.T) {
 	RunTest(t, "./test_data/test_user_visible.yml")
 }
 
+func TestIDToFQName(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_id_to_fqname.yml")
+}
+
 func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),
