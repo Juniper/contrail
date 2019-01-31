@@ -16,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
@@ -23,6 +24,7 @@ import (
 
 const (
 	retryCount = 2
+	xClusterID = "X-Cluster-ID"
 )
 
 // HTTP represents API Server HTTP client.
@@ -102,6 +104,14 @@ func (h *HTTP) Init() {
 	}
 }
 
+func (h *HTTP) setRequestHeader(
+	ctx context.Context, xHeaderKey string, request *http.Request) *http.Request {
+	if xHeader := ctx.Value(xHeaderKey); xHeader != nil {
+		request.Header.Set(xHeaderKey, format.InterfaceToString(xHeader))
+	}
+	return request
+}
+
 // Login refreshes authentication token.
 func (h *HTTP) Login(ctx context.Context) error {
 	if h.AuthURL == "" {
@@ -134,10 +144,11 @@ func (h *HTTP) Login(ctx context.Context) error {
 	}
 
 	request, err := http.NewRequest("POST", h.AuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
-	request = request.WithContext(ctx)
 	if err != nil {
 		return err
 	}
+	request = request.WithContext(ctx)
+	request = h.setRequestHeader(ctx, xClusterID, request)
 	request.Header.Set("Content-Type", "application/json")
 
 	resp, err := h.httpClient.Do(request)
@@ -363,6 +374,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 		}).Debug("Executing API Server request")
 	}
 	request = request.WithContext(ctx)
+	request = h.setRequestHeader(ctx, xClusterID, request)
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error

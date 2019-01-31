@@ -22,6 +22,7 @@ const (
 	privatePortList  = "private_port_list"
 	publicPortList   = "public_port_list"
 	testEndpointFile = "./test_data/test_endpoint.tmpl"
+	xClusterIDKey    = "X-Cluster-ID"
 )
 
 type mockPortsResponse struct {
@@ -349,5 +350,110 @@ func TestKeystoneEndpoint(t *testing.T) {
 		break
 	}
 
+	server.ForceProxyUpdate()
+}
+
+func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
+	ctx := context.Background()
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	ksPrivate := integration.MockServerWithKeystone("", keystoneAuthURL)
+	defer ksPrivate.Close()
+
+	ksPublic := integration.MockServerWithKeystone("", keystoneAuthURL)
+	defer ksPublic.Close()
+
+	clusterName := "clusterC"
+	pContext := pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   clusterName + "_keystone",
+		"endpoint_prefix": "keystone",
+		"private_url":     ksPrivate.URL,
+		"public_url":      ksPublic.URL,
+		"manage_parent":   true,
+	}
+
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, testEndpointFile, pContext)
+	assert.NoError(t, err, "failed to load endpoint create test data")
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup()
+
+	server.ForceProxyUpdate()
+
+	// Login to new remote keystone(success)
+	// when one cluster endpoint is present
+	// auth middleware should find the keystone endpoint
+	// even without X-Cluster-ID in the header
+	for _, client := range testScenario.Clients {
+		err = client.Login(ctx)
+		assert.NoError(t, err, "client failed to login remote keystone")
+	}
+	// verify auth (remote keystone)
+	err = verifyKeystoneEndpoint(ctx, &testScenario, false)
+	assert.NoError(t, err,
+		"failed to validate token with remote keystone")
+
+	// Create one more cluster's keystone endpoint
+	keystoneAuthURL = viper.GetString("keystone.authurl")
+	ksPrivateClusterD := integration.MockServerWithKeystone("", keystoneAuthURL)
+	defer ksPrivateClusterD.Close()
+
+	ksPublicClusterD := integration.MockServerWithKeystone("", keystoneAuthURL)
+	defer ksPublicClusterD.Close()
+
+	clusterName = "clusterD"
+	pContext = pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   clusterName + "_keystone",
+		"endpoint_prefix": "keystone",
+		"private_url":     ksPrivateClusterD.URL,
+		"public_url":      ksPublicClusterD.URL,
+		"manage_parent":   true,
+	}
+
+	err = integration.LoadTestScenario(&testScenario, testEndpointFile, pContext)
+	assert.NoError(t, err, "failed to load endpoint create test data")
+	cleanupClusterD := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanupClusterD()
+
+	server.ForceProxyUpdate()
+
+	// Login to new remote keystone(success)
+	// when multiple cluster endpoints are present
+	// auth middleware should find the keystone endpoint
+	// with X-Cluster-ID in the header
+	for _, client := range testScenario.Clients {
+		ctx = context.WithValue(ctx, xClusterIDKey, clusterName+"_uuid")
+		err = client.Login(ctx)
+		assert.NoError(t, err, "client failed to login remote keystone")
+	}
+	// verify auth (remote keystone)
+	err = verifyKeystoneEndpoint(ctx, &testScenario, false)
+	assert.NoError(t, err,
+		"failed to validate token with remote keystone")
+
+	// Login to new remote keystone(failure)
+	// when multiple cluster endpoints are present
+	// auth middleware cannot not find keystone endpoint
+	// without X-Cluster-ID in the header
+	for _, client := range testScenario.Clients {
+		ctx = context.Background()
+		err = client.Login(ctx)
+		assert.Error(t, err, "client logged in to remote keystone unexpectedly")
+	}
+
+	// Delete the clusterD's keystone endpoint
+	for _, client := range testScenario.Clients {
+		ctx = context.WithValue(ctx, xClusterIDKey, clusterName+"_uuid")
+		var response map[string]interface{}
+		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterName)
+		_, err := client.Delete(ctx, url, &response)
+		assert.NoError(t, err, "failed to delete keystone endpoint")
+		break
+	}
+	server.ForceProxyUpdate()
+
+	cleanup()
+	cleanupClusterD()
 	server.ForceProxyUpdate()
 }
