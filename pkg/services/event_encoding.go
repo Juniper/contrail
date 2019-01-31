@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
@@ -186,9 +188,10 @@ func (e *Event) MarshalYAML() (interface{}, error) {
 
 //NewEvent makes event from interface.
 func NewEvent(option *EventOption) (*Event, error) {
-	option.sanitizeKind()
+	option.Kind = sanitizeKind(option.Kind)
 
-	switch option.getOperationOrDefault() {
+	o := sanitizeOperation(option.Operation)
+	switch o {
 	case OperationCreate:
 		return NewCreateEvent(option)
 	case OperationUpdate:
@@ -196,7 +199,7 @@ func NewEvent(option *EventOption) (*Event, error) {
 	case OperationDelete:
 		return NewDeleteEvent(option)
 	default:
-		return nil, errors.Errorf("operation %s not supported", option.getOperationOrDefault())
+		return nil, errors.Errorf("operation %s not supported", o)
 	}
 }
 
@@ -272,113 +275,83 @@ func (o *EventOption) getFieldMask() types.FieldMask {
 	return *o.FieldMask
 }
 
-func (o *EventOption) sanitizeKind() {
-	o.Kind = basemodels.SchemaIDToKind(o.Kind)
+func sanitizeKind(kind string) string {
+	return basemodels.SchemaIDToKind(kind)
 }
 
 //UnmarshalJSON unmarshal event.
 func (e *Event) UnmarshalJSON(data []byte) error {
-	raw := make(map[string]json.RawMessage)
+	raw := make(map[string]interface{})
 	err := json.Unmarshal(data, &raw)
 	if err != nil {
 		return err
 	}
+	return e.ApplyMap(raw)
+}
 
-	kind, err := parseKind(raw)
+//UnmarshalYAML unmarshal event.
+func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var i interface{}
+	err := unmarshal(&i)
 	if err != nil {
 		return err
 	}
-
-	operation, err := parseOperation(raw)
-	if err != nil {
-		return err
+	m, ok := fileutil.YAMLtoJSONCompat(i).(map[string]interface{})
+	if !ok {
+		return errors.Errorf("failed to unmarshal, got invalid data %v", i)
 	}
+	return e.ApplyMap(m)
+}
 
-	m, err := parseData(raw)
-	if err != nil {
-		return err
-	}
-
-	switch operation {
+func (e *Event) ApplyMap(m map[string]interface{}) error {
+	o := sanitizeOperation(format.InterfaceToString(m["operation"]))
+	kind := sanitizeKind(format.InterfaceToString(m["kind"]))
+	var r isEvent_Request
+	var err error
+	switch o {
 	case OperationCreate:
-		return unmarshalJSONCreate(e, kind, m)
+		r, err = NewEmptyCreateEventRequest(kind)
 	case OperationUpdate:
-		return unmarshalJSONUpdate(e, kind, m)
+		r, err = NewEmptyUpdateEventRequest(kind)
 	case OperationDelete:
-		return unmarshalJSONDelete(e, kind, m)
+		r, err = NewEmptyDeleteEventRequest(kind)
 	default:
-		return errors.Errorf("operation %s not supported", operation)
+		return errors.Errorf("operation %s not supported", o)
 	}
-
-	return nil
-}
-
-func unmarshalJSONCreate(e *Event, kind string, m map[string]interface{}) error {
-	request, err := NewEmptyCreateEventRequest(kind)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create event from json %v", m)
+		return err
 	}
-	request.GetResource().ApplyMap(m)
-	request.SetFieldMask(basemodels.MapToFieldMask(m))
-	e.Request = request
-	return nil
-}
-
-func unmarshalJSONUpdate(e *Event, kind string, m map[string]interface{}) error {
-	request, err := NewEmptyUpdateEventRequest(kind)
+	err = applyEventRequest(r, m)
 	if err != nil {
-		return errors.Wrapf(err, "failed to update event from json %v", m)
+		return err
 	}
-	request.GetResource().ApplyMap(m)
-	request.SetFieldMask(basemodels.MapToFieldMask(m))
-	e.Request = request
+	e.Request = r
 	return nil
 }
 
-func unmarshalJSONDelete(e *Event, kind string, m map[string]interface{}) error {
-	request, err := NewEmptyDeleteEventRequest(kind)
-	if err != nil {
-		return errors.Wrapf(err, "failed to delete event from json %v", m)
-	}
-	request.SetID(m["uuid"].(string))
-	e.Request = request
-	return nil
-}
-
-func parseKind(raw map[string]json.RawMessage) (string, error){
-	t, ok := raw["kind"]
+func applyEventRequest(r isEvent_Request, m map[string]interface{}) error {
+	data, ok := m["data"].(map[string]interface{})
 	if !ok {
-		return "", errors.Errorf("couldn't retrieve key kind from json")  // originally no error, nil returned
+		return errors.Errorf("got invalid data %v", m["data"])
 	}
-	var kind string
-	err := json.Unmarshal(t, &kind)
-	if err != nil {
-		return "", err
+	switch t := r.(type) {
+	case CreateEventRequest:
+		t.SetFieldMask(basemodels.MapToFieldMask(data))
+		t.GetResource().ApplyMap(data)
+	case UpdateEventRequest:
+		t.SetFieldMask(basemodels.MapToFieldMask(data))
+		t.GetResource().ApplyMap(data)
+	case DeleteEventRequest:
+		t.SetID(format.InterfaceToString(data["uuid"]))
+	default:
+		return errors.Errorf("request of type %T not supported", r)
 	}
-
-	return basemodels.SchemaIDToKind(kind), nil
+	return nil
 }
 
-func parseData(raw map[string]json.RawMessage) (map[string]interface{}, error){
-	d, ok := raw["data"]
-	if !ok {
-		return nil, errors.Errorf("couldn't retrieve key data from json")  // originally no error, nil returned
-	}
-	m := map[string]interface{}{}
-	err := json.Unmarshal(d, &m)
-	if err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
-
-func parseOperation(raw map[string]json.RawMessage) (string, error){
-	o := raw["operation"]
-	var operation string
-	json.Unmarshal(o, &operation)
+func sanitizeOperation(operation string) string {
 	if operation == "" {
-		operation = OperationCreate
+		return OperationCreate
 	}
-	return operation, nil
+	return operation
 }

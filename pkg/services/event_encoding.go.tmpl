@@ -6,8 +6,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/gogo/protobuf/types"
 
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 )
@@ -44,11 +42,6 @@ func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) Operation() string {
 // Operation returns event type.
 func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
 	return OperationDelete
-}
-
-// SetFieldMask sets fieldMask of the event.
-func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.FieldMask) {
-	e.Update{{ schema.JSONSchema.GoName }}Request.FieldMask = mask
 }
 
 //SetFieldMask sets fieldMask of the event.
@@ -233,53 +226,3 @@ func (e *Event) ToMap() map[string]interface{} {
 	return m
 }
 
-
-
-//UnmarshalYAML unmarshal event.
-func (e *Event) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var r interface{}
-	err := unmarshal(&r)
-	if err != nil {
-		return err
-	}
-	raw := r.(map[interface{}]interface{})
-	kind := raw["kind"]
-	data := fileutil.YAMLtoJSONCompat(raw["data"])
-	operation := format.InterfaceToString(raw["operation"])
-	if operation == "" {
-		operation = OperationCreate
-	}
-	switch (kind) {
-		{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-		case "{{ schema.ID }}":
-			switch (operation) {
-				case OperationCreate:
-					m := models.InterfaceTo{{ schema.JSONSchema.GoName }}(data)
-					if err != nil {
-						return err
-					}
-					e.Request = &Event_Create{{ schema.JSONSchema.GoName }}Request{
-						Create{{ schema.JSONSchema.GoName }}Request: &Create{{ schema.JSONSchema.GoName }}Request{
-							{{ schema.JSONSchema.GoName }}: m,
-							FieldMask: basemodels.MapToFieldMask(data.(map[string]interface{})),
-						},
-					}
-				case OperationUpdate:
-					e.Request = &Event_Update{{ schema.JSONSchema.GoName }}Request{
-						Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-							{{ schema.JSONSchema.GoName }}: models.InterfaceTo{{ schema.JSONSchema.GoName }}(data),
-							FieldMask: basemodels.MapToFieldMask(data.(map[string]interface{})),
-						},
-					}
-				case OperationDelete:
-					m := data.(map[string]interface{})
-					e.Request = &Event_Delete{{ schema.JSONSchema.GoName }}Request{
-						Delete{{ schema.JSONSchema.GoName }}Request: &Delete{{ schema.JSONSchema.GoName }}Request{
-							ID: m["uuid"].(string),
-						},
-					}
-			}
-		 {% endif%}{% endfor %}
-	}
-	return nil
-}
