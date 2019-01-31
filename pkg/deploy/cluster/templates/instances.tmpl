@@ -179,7 +179,7 @@ appformix_configuration:
 {% if cluster.Orchestrator == "vcenter" or cluster.Orchestrator == "kubernetes"%}
 {% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
   {% if key_value.Key && key_value.Value%}
-  {% if key_value.Key == "KUBERNETES_PUBLIC_FIP_POOL" %}
+  {% if key_value.Key == "KUBERNETES_PUBLIC_FIP_POOL" or key_value.Key == "KUBERNETES_CLUSTER_NETWORK" or key_value.Key == "KUBERNETES_CLUSTER_PROJECT"%}
   {{key_value.Key}}: {% autoescape off %}{{key_value.Value}}{% endautoescape %}
   {%else%}{{key_value.Key}}: {{key_value.Value}}
   {%endif%}
