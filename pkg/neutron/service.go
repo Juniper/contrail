@@ -55,21 +55,21 @@ func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response,
 		RequestContext:  r.Context,
 	}
 	switch r.Context.Operation {
-	case "CREATE":
+	case logic.OperationCreate:
 		return r.Data.Resource.Create(ctx, rp)
-	case "UPDATE":
+	case logic.OperationUpdate:
 		return r.Data.Resource.Update(ctx, rp, r.Data.ID)
-	case "DELETE":
+	case logic.OperationDelete:
 		return r.Data.Resource.Delete(ctx, rp, r.Data.ID)
-	case "READ":
+	case logic.OperationRead:
 		return r.Data.Resource.Read(ctx, rp, r.Data.ID)
-	case "READALL":
+	case logic.OperationReadAll:
 		return r.Data.Resource.ReadAll(ctx, rp, r.Data.Filters, r.Data.Fields)
-	case "READCOUNT":
+	case logic.OperationReadCount:
 		return r.Data.Resource.ReadCount(ctx, rp, r.Data.Filters)
-	case "ADDINTERFACE":
+	case logic.OperationAddInterface:
 		return r.Data.Resource.AddInterface(ctx, rp)
-	case "DELINTERFACE":
+	case logic.OperationDelInterface:
 		return r.Data.Resource.DeleteInterface(ctx, rp)
 	default:
 		err := errors.Errorf("method '%s' is not supported", r.Context.Operation)
