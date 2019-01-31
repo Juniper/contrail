@@ -303,6 +303,12 @@ func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
 	{%- endif %}
 }
 
+func (m *{{ schema.JSONSchema.GoName }}) RemoveReferences() {
+	{%- for _, reference in schema.References %}
+	m.{{ reference.GoName }}Refs = nil
+	{%- endfor %}
+}
+
 func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() (refs basemodels.References) {
 	for _, ref := range m.GetTagRefs() {
 		refs = append(refs, ref)

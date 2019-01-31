@@ -58,48 +58,6 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) SetID(id string) {
 
 {% endif%}{% endfor %}
 
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-// ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
-func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
-	{% if schema.References|length == 0 %}
-	return nil, nil
-	{% else %}
-		updateRequest := Update{{ schema.JSONSchema.GoName }}Request{
-			{{ schema.JSONSchema.GoName }}: &models.{{ schema.JSONSchema.GoName }}{},
-		}
-		createRequest := e.Create{{ schema.JSONSchema.GoName }}Request
-		*(updateRequest.{{ schema.JSONSchema.GoName }}) = *(createRequest.{{ schema.JSONSchema.GoName }})
-		{% for _, reference in schema.References %}
-		{% set refList = schema.JSONSchema.GoName| add:"."| add:reference.GoName | add:"Refs" %}
-		createRequest.{{ refList }} = createRequest.{{ refList }}[:0]
-		{% endfor %}
-		optForUpdate := &EventOption {
-			UUID: createRequest.{{ schema.JSONSchema.GoName }}.GetUUID(),
-			Operation: OperationUpdate,
-			Kind: "{{ schema.ID }}",
-			Data: updateRequest.{{ schema.JSONSchema.GoName }}.ToMap(),
-		}
-		updateEvent, err := NewEvent(optForUpdate)
-		if err != nil {
-			return nil, err
-		}
-		e.Create{{ schema.JSONSchema.GoName }}Request = createRequest
-		return updateEvent, nil
-	{% endif %}
-}
-
-// ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
-func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
-	return nil, nil
-}
-
-// ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
-func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) ExtractRefsEventFromEvent() (*Event, error) {
-	// TODO: Extract event for removing refs from resource before deleting it
-	return nil, nil
-}
-{% endif%}{% endfor %}
-
 // NewEmptyCreateEventRequest makes new Create Event Request.
 func NewEmptyCreateEventRequest(kind string) (CreateEventRequest, error) {
 	switch kind {
