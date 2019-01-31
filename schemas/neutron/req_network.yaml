@@ -33,17 +33,20 @@ schema:
       json_tag: "vpc:route_table"
     provider_segmentation_id:
       presence: optional
-      type: string
+      type: integer
       json_tag: "provider:segmentation_id"
     admin_state_up:
       presence: optional
       type: boolean
+     #TODO custom unmarshaler to handle policy field which could be string or array
     policys:
       presence: optional
       type: string
     route_table:
       presence: optional
-      type: string
+      type: array
+      items:
+        type: string
     port_security_enabled:
       presence: optional
       type: boolean
