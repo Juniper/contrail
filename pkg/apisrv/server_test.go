@@ -582,11 +582,11 @@ func TestPagination(t *testing.T) {
 	RunTestTemplate(t, "./test_data/test_pagination.tmpl", context)
 }
 
-func TestIDToTypeGRPC(t *testing.T) {
+func TestIDToFQNameGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(),
 		func(ctx context.Context, conn *grpc.ClientConn) {
-			c := services.NewIDToTypeClient(conn)
-			resp, err := c.IDToType(ctx, &services.IDToTypeRequest{
+			c := services.NewIDToFQNameClient(conn)
+			resp, err := c.IDToFQName(ctx, &services.IDToFQNameRequest{
 				UUID: integration.DefaultDomainUUID,
 			})
 			assert.NoError(t, err)
