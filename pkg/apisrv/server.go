@@ -388,6 +388,7 @@ func (s *Server) setupHomepage() {
 	dh.Register(services.ChownPath, "POST", services.ChownPath, "action")
 	dh.Register(services.IntPoolPath, "GET", services.IntPoolPath, "action")
 	dh.Register(services.IntPoolPath, "POST", services.IntPoolPath, "action")
+	dh.Register(services.IntPoolPath, "DELETE", services.IntPoolPath, "action")
 	dh.Register(services.IntPoolsPath, "POST", services.IntPoolsPath, "action")
 	dh.Register(services.IntPoolsPath, "DELETE", services.IntPoolsPath, "action")
 
