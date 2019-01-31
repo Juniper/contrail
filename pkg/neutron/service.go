@@ -16,10 +16,10 @@ import (
 
 // Service implementation.
 type Service struct {
-	ReadService     services.ReadService
-	WriteService    services.WriteService
-	UserAgentKV     userAgentKVServer
-	IDToTypeService idToTypeServer
+	ReadService       services.ReadService
+	WriteService      services.WriteService
+	UserAgentKV       userAgentKVServer
+	IDToFQNameService idToFQNameServer
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
@@ -48,11 +48,11 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 
 func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response, error) {
 	rp := logic.RequestParameters{
-		ReadService:     s.ReadService,
-		WriteService:    s.WriteService,
-		UserAgentKV:     s.UserAgentKV,
-		IDToTypeService: s.IDToTypeService,
-		RequestContext:  r.Context,
+		ReadService:       s.ReadService,
+		WriteService:      s.WriteService,
+		UserAgentKV:       s.UserAgentKV,
+		IDToFQNameService: s.IDToFQNameService,
+		RequestContext:    r.Context,
 	}
 	switch r.Context.Operation {
 	case "CREATE":
@@ -85,8 +85,8 @@ type userAgentKVServer interface {
 	DeleteKey(context.Context, *services.DeleteKeyRequest) (*google_protobuf3.Empty, error)
 }
 
-type idToTypeServer interface {
-	IDToType(context.Context, *services.IDToTypeRequest) (*services.IDToTypeResponse, error)
+type idToFQNameServer interface {
+	IDToFQName(context.Context, *services.IDToFQNameRequest) (*services.IDToFQNameResponse, error)
 }
 
 type routeRegistry interface {
