@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
@@ -23,8 +24,7 @@ func (svc *ContrailService) RESTFQNameToUUID(c echo.Context) error {
 	response, err := svc.FQNameToID(c.Request().Context(), request)
 	if err != nil {
 		//TODO adding Project
-		errMsg := fmt.Sprintf("Failed to retrieve metadata for FQName %v and Type %v", request.FQName, request.Type)
-		return echo.NewHTTPError(http.StatusNotFound, errMsg)
+		return errutil.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, response)
 }

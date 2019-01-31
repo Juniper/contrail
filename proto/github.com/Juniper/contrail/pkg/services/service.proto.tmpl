@@ -282,16 +282,17 @@ message FQNameToIDResponse {
 	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
 }
 
-service IDToType {
-	rpc IDToType(IDToTypeRequest) returns (IDToTypeResponse);
+service IDToFQName {
+	rpc IDToFQName(IDToFQNameRequest) returns (IDToFQNameResponse);
 }
 
-message IDToTypeRequest {
+message IDToFQNameRequest {
 	string UUID = 1 [(gogoproto.customname) = "UUID",(gogoproto.jsontag) = "uuid"];
 }
 
-message IDToTypeResponse {
-	string Type = 1 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
+message IDToFQNameResponse {
+	repeated string FQName = 1 [(gogoproto.customname) = "FQName",(gogoproto.jsontag) = "fq_name"];
+	string Type = 2 [(gogoproto.customname) = "Type",(gogoproto.jsontag) = "type"];
 }
 
 service PropCollectionUpdate {

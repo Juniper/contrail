@@ -1,4 +1,4 @@
-name: FQName to UUID endpoint test
+name: ID to FQName endpoint test
 cleanup:
 - path: /virtual-network/vn_endpoint_blue
 - path: /network-ipam/test_ipam_endpoint_blue
@@ -71,48 +71,38 @@ workflow:
   expect:
     virtual-network: *vn_endpoint_blue
 
-- name: get virtual network uuid from fqname
+- name: get virtual network fqname and type from uuid
   request:
-    path: /fqname-to-id
+    path: /id-to-fqname
     method: POST
     expected:
     - 200
     data:
-      fq_name: ["default", "admin_endpoint", "vn_endpoint_blue"]
-      type: virtual-network
+      uuid: "vn_endpoint_blue"
   expect:
-    uuid: "vn_endpoint_blue"
+    fq_name: ["default", "admin_endpoint", "vn_endpoint_blue"]
+    type: virtual-network
 
-- name: get network ipam uuid from fqname
+- name: get network ipam fqname and type from uuid
   request:
-    path: /fqname-to-id
+    path: /id-to-fqname
     method: POST
     expected:
     - 200
     data:
-      fq_name: ["domain","admin","test_ipam_endpoint_blue"]
-      type: network-ipam
+      uuid: "test_ipam_endpoint_blue"
   expect:
-    uuid: "test_ipam_endpoint_blue"
+    fq_name: ["domain","admin","test_ipam_endpoint_blue"]
+    type: network-ipam
 
-- name: get uuid from fqname when it does not exist
+- name: get fqname from uuid when it does not exist
   request:
-    path: /fqname-to-id
+    path: /id-to-fqname
     method: POST
     expected:
     - 404
     data:
-      fq_name: ["domain","admin","test"]
-      type: project
-
-- name: get uuid from fqname when bad request
-  request:
-    path: /fqname-to-id
-    method: POST
-    expected:
-    - 400
-    data:
-      fq_name: "domain"
+      uuid: "not_existing"
 
 - name: delete virtual network
   request:
