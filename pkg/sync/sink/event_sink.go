@@ -54,7 +54,7 @@ func (e *EventProcessorSink) CreateRef(
 	if len(pk) != 2 {
 		return errors.Errorf("expecting primary key with 2 items, got %d instead", len(pk))
 	}
-	ev, err := services.NewEventFromRefUpdate(services.RefUpdateOption{
+	ev, err := services.NewRefUpdateEvent(services.RefUpdateOption{
 		Operation:     services.RefOperationAdd,
 		ReferenceType: referenceName,
 		FromUUID:      pk[0],
@@ -102,7 +102,7 @@ func (e *EventProcessorSink) DeleteRef(ctx context.Context, referenceName string
 	if len(pk) != 2 {
 		return errors.Errorf("expecting primary key with 2 items, got %d instead", len(pk))
 	}
-	ev, err := services.NewEventFromRefUpdate(services.RefUpdateOption{
+	ev, err := services.NewRefUpdateEvent(services.RefUpdateOption{
 		Operation:     services.RefOperationDelete,
 		ReferenceType: referenceName,
 		FromUUID:      pk[0],

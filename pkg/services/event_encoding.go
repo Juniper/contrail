@@ -30,7 +30,6 @@ type EventOption struct {
 type HasResource interface {
 	GetResource() basemodels.Object
 	Operation() string
-	ExtractRefsEventFromEvent() (*Event, error)
 }
 
 // CanProcessService is interface for process service.
@@ -163,16 +162,61 @@ func (e *Event) Operation() string {
 	return resourceEvent.Operation()
 }
 
-// ExtractRefsEventFromEvent extracts references and puts them into a newly created event.
-func (e *Event) ExtractRefsEventFromEvent() (*Event, error) {
-	if e.Request.(HasResource) == nil {
-		return nil, errors.Errorf("Cannot extract refs from event %v.", e.ToMap())
+// RefOperation is enum type for ref-update operation.
+type RefOperation string
+
+// RefOperation values.
+const (
+	RefOperationAdd    RefOperation = "ADD"
+	RefOperationDelete RefOperation = "DELETE"
+)
+
+// RefUpdateOption contains parameters for NewRefUpdateEvent.
+type RefUpdateOption struct {
+	ReferenceType    string
+	FromUUID, ToUUID string
+	Operation        RefOperation
+	Attr             basemodels.RefAttribute
+	AttrData         json.RawMessage
+}
+
+// ExtractRefEvents extracts references and puts them into a newly created EventList.
+func (e *Event) ExtractRefEvents() (EventList, error) {
+	switch r := e.Request.(type) {
+	case CreateEventRequest:
+		return extractRefEvents(r.GetResource(), RefOperationAdd)
+	case UpdateEventRequest:
+		return EventList{}, nil
+	case DeleteEventRequest:
+		//	TODO: Extract event for removing refs from resource before deleting it
+		return EventList{}, nil
+	default:
+		return EventList{}, errors.Errorf("cannot extract refs from event %v.", e)
 	}
-	refEvent, err := e.Request.(HasResource).ExtractRefsEventFromEvent()
-	if err != nil {
-		return nil, errors.Wrap(err, "extracting references update from event failed")
+}
+
+func extractRefEvents(r basemodels.Object, o RefOperation) (EventList, error) {
+	el, err := makeRefEventList(r, o)
+	r.RemoveReferences()
+	return el ,err
+}
+
+func makeRefEventList(r basemodels.Object, operation RefOperation)  (EventList, error) {
+	el := EventList{}
+	for _, ref := range r.GetReferences() {
+		e, err := NewRefUpdateEvent(RefUpdateOption{
+			ReferenceType: basemodels.ReferenceKind(r.Kind(), ref.GetReferredKind()),
+			FromUUID:      r.GetUUID(),
+			ToUUID:        ref.GetUUID(),
+			Operation:     operation,
+			Attr:          ref.GetAttribute(),
+		})
+		if err != nil {
+			return EventList{}, err
+		}
+		el.Events = append(el.Events, e)
 	}
-	return refEvent, nil
+	return el, nil
 }
 
 //MarshalJSON marshal event.
