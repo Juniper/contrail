@@ -27,7 +27,11 @@ const (
 	Prefix             = "contrail"
 	ETCDDialTimeout    = 10 * time.Second
 	ETCDRequestTimeout = 10 * time.Second
-	ETCDWatchTimeout   = 10 * time.Second
+
+	// Timeout for watchers on etcd. After it's duration the channel sends
+	// an empty message and closes without error.
+	// On CI dump can take longer than 10 seconds, so 60 seconds should be big enough.
+	ETCDWatchTimeout = 60 * time.Second
 
 	AccessControlListSchemaID    = "access_control_list"
 	ApplicationPolicySetSchemaID = "application_policy_set"
