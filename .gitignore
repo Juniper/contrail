@@ -30,3 +30,4 @@ public/
 test_output/
 
 !vendor/**
+*.log

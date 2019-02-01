@@ -28,8 +28,9 @@ done
 PASSWORD=contrail123
 SpecialNetworks='bridge none host'
 [[ "$SpecialNetworks" = *"$Network"* ]] || PROJECT=$Network
-NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT down || true
+NETWORKNAME=$PROJECT docker-compose -f "$TOOLSDIR/patroni/docker-compose.yml" -p $PROJECT down -v || true
 docker rm -f contrail_mysql contrail_etcd || true
+docker volume rm -f contrail_mysql contrail_etcd || true
 docker network remove $PROJECT || true
 
 docker network create $PROJECT --subnet 10.0.4.0/24 --gateway 10.0.4.1 || true
@@ -50,6 +51,7 @@ run_docker_mysql()
 	docker run -d --name contrail_mysql \
 		--net "$Network" \
 		-v "$SOURCEDIR:/go" \
+		-v "contrail_mysql:/var/lib/mysql" \
 		-p 3306:3306 \
 		-e "MYSQL_ROOT_PASSWORD=$PASSWORD" \
 		circleci/mysql:5.7
@@ -61,6 +63,7 @@ run_docker_etcd()
 		--net "$Network" \
 		-p 2379:2379 \
 		-e "ETCDCTL_API=3" \
+		-v "contrail_etcd:/etcd-data" \
 		gcr.io/etcd-development/etcd:v3.3.2 \
 		etcd --advertise-client-urls http://0.0.0.0:2379 --listen-client-urls http://0.0.0.0:2379
 }
