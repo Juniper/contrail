@@ -12,6 +12,11 @@ import (
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
+const (
+	dialTimeout      = 10 * time.Second
+	shortDialTimeout = 10 * time.Millisecond
+)
+
 func TestNewClient(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -21,14 +26,14 @@ func TestNewClient(t *testing.T) {
 		{
 			name: "succeeds when TLS disabled and correct credentials given",
 			config: &Config{
-				Config: *etcdConfig(),
+				Config: *etcdConfig(dialTimeout),
 			},
 			fails: false,
 		},
 		{
-			name: "fails when TLS enabled no certificates given",
+			name: "fails when TLS enabled and no certificates given",
 			config: &Config{
-				Config: *etcdConfig(),
+				Config: *etcdConfig(shortDialTimeout),
 				TLSConfig: TLSConfig{
 					Enabled: true,
 				},
@@ -38,7 +43,7 @@ func TestNewClient(t *testing.T) {
 		{
 			name: "fails when TLS enabled invalid certificate paths given",
 			config: &Config{
-				Config: *etcdConfig(),
+				Config: *etcdConfig(dialTimeout),
 				TLSConfig: TLSConfig{
 					Enabled:         true,
 					CertificatePath: "invalid-path",
@@ -57,23 +62,17 @@ func TestNewClient(t *testing.T) {
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				defer closeClient(t, c)
-
-				ctx, cancel := context.WithTimeout(context.Background(), integrationetcd.ETCDRequestTimeout)
-				defer cancel()
-
-				_, err = c.ETCD.Maintenance.Status(ctx, integrationetcd.Endpoint)
-				assert.NoError(t, err)
 			}
 		})
 	}
 }
 
-func etcdConfig() *clientv3.Config {
+func etcdConfig(dialTimeout time.Duration) *clientv3.Config {
 	return &clientv3.Config{
 		Endpoints:   []string{integrationetcd.Endpoint},
-		DialTimeout: 10 * time.Millisecond, // TODO: reduce
+		DialTimeout: dialTimeout,
 	}
 }
 
