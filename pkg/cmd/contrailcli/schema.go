@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/schema"
 )
 
@@ -43,7 +44,7 @@ var SchemaCmd = &cobra.Command{
 		}
 		output, err := showSchema(schemaID)
 		if err != nil {
-			log.Fatal(err)
+			pkglog.FatalWithStackTrace(err)
 		}
 		fmt.Println(output)
 	},

@@ -15,12 +15,11 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
-	"github.com/Juniper/contrail/pkg/constants"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
@@ -255,11 +254,12 @@ func (s *Server) Init() (err error) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	var keystoneClient *keystone.Client
 	if keystoneAuthURL != "" {
-		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL,
-			viper.GetBool("keystone.insecure"))
-		skipPaths := keystone.GetAuthSkipPaths()
-		e.Use(keystone.AuthMiddleware(
-			keystoneClient, skipPaths, endpointStore))
+		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL, viper.GetBool("keystone.insecure"))
+		skipPaths, err := keystone.GetAuthSkipPaths()
+		if err != nil {
+			return errors.Wrap(err, "failed to setup paths skipped from authentication")
+		}
+		e.Use(keystone.AuthMiddleware(keystoneClient, skipPaths, endpointStore))
 	} else if viper.GetString("auth_type") == "no-auth" {
 		e.Use(noAuthMiddleware())
 	}
@@ -274,9 +274,10 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("server.enable_grpc") {
 		if !viper.GetBool("server.tls.enabled") {
-			log.Fatal("GRPC support requires TLS configuraion.")
+			return errors.New("GRPC support requires TLS configuration")
 		}
-		log.Debug("enabling grpc")
+		log.Debug("Enabling gRPC server")
+
 		if keystoneAuthURL != "" {
 			s.GRPCServer = grpc.NewServer(
 				grpc.UnaryInterceptor(
@@ -417,31 +418,25 @@ func (s *Server) setupActionResources(cs *services.ContrailService) {
 
 // Run runs server.
 func (s *Server) Run() error {
-	defer func() {
-		err := s.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-	e := s.Echo
-	address := viper.GetString("server.address")
-	tlsEnabled := viper.GetBool("server.tls.enabled")
-	var keyFile, certFile string
-	if tlsEnabled {
-		keyFile = viper.GetString("server.tls.key_file")
-		certFile = viper.GetString("server.tls.cert_file")
+	defer s.Close()
 
-		e.Logger.Fatal(e.StartTLS(address, certFile, keyFile))
-	} else {
-		e.Logger.Fatal(e.Start(address))
+	if viper.GetBool("server.tls.enabled") {
+		return s.Echo.StartTLS(
+			viper.GetString("server.address"),
+			viper.GetString("server.tls.cert_file"),
+			viper.GetString("server.tls.key_file"),
+		)
 	}
-	return nil
+
+	return s.Echo.Start(viper.GetString("server.address"))
 }
 
 //Close closes server resources
-func (s *Server) Close() error {
+func (s *Server) Close() {
 	s.Proxy.stop()
-	return s.DBService.Close()
+	if err := s.DBService.Close(); err != nil {
+		log.Info("Closing DBService failed: %+v", err)
+	}
 }
 
 //DB return db object.

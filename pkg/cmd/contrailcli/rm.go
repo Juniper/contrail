@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 func init() {
@@ -29,7 +30,7 @@ var RmCmd = &cobra.Command{
 		}
 		output, err := deleteResource(schemaID, uuid)
 		if err != nil {
-			log.Fatal(err)
+			log.FatalWithStackTrace(err)
 		}
 		fmt.Println(output)
 	},

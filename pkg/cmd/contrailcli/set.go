@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 func init() {
@@ -35,7 +35,7 @@ var SetCmd = &cobra.Command{
 		}
 		output, err := setResourceParameter(schemaID, uuid, yaml)
 		if err != nil {
-			log.Fatal(err)
+			log.FatalWithStackTrace(err)
 		}
 		fmt.Println(output)
 	},

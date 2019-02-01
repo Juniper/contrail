@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
 
+	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
@@ -77,7 +78,7 @@ var ListCmd = &cobra.Command{
 		}
 		output, err := listResources(schemaID)
 		if err != nil {
-			log.Fatal(err)
+			pkglog.FatalWithStackTrace(err)
 		}
 		fmt.Println(output)
 	},

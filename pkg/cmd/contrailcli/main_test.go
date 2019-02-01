@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
+	pkglog "github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
@@ -20,7 +21,7 @@ func TestMain(m *testing.M) {
 	viper.AddConfigPath("../../../sample")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatal(err)
+		pkglog.FatalWithStackTrace(err)
 	}
 
 	// TODO(Daniel): remove that in order not to depend on Viper and use constructors' parameters instead

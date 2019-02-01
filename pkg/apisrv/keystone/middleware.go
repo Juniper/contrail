@@ -57,7 +57,7 @@ func getKeystoneEndpoint(endpoints *apicommon.EndpointStore) (authEndpoint strin
 }
 
 // GetAuthSkipPaths returns the list of paths which need not be authenticated.
-func GetAuthSkipPaths() []string {
+func GetAuthSkipPaths() ([]string, error) {
 	skipPaths := []string{
 		"/keystone/v3/auth/tokens",
 		"/proxy/keystone/v3/auth/tokens",
@@ -69,7 +69,7 @@ func GetAuthSkipPaths() []string {
 		if prefix == "/" {
 			staticFiles, err := ioutil.ReadDir(root.(string))
 			if err != nil {
-				log.Fatal(err)
+				return nil, errors.WithStack(err)
 			}
 			for _, staticFile := range staticFiles {
 				skipPaths = append(skipPaths,
@@ -79,7 +79,7 @@ func GetAuthSkipPaths() []string {
 			skipPaths = append(skipPaths, prefix)
 		}
 	}
-	return skipPaths
+	return skipPaths, nil
 }
 
 //AuthMiddleware is a keystone v3 authentication middleware for REST API.
