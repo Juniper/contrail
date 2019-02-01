@@ -1,7 +1,7 @@
 package cluster
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 )
 
 type helmDeployer struct {
