@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/Juniper/contrail/pkg/log"
+
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/compilation"
@@ -64,12 +66,12 @@ func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGro
 	}()
 }
 
-func startCassandraReplicator(wg *sync.WaitGroup) {
+func startCassandraReplicator(_ *sync.WaitGroup) {
 	logrus.Debug("Cassandra replication service enabled")
 	cassandraProcessor := cassandra.NewEventProcessor()
 	producer, err := etcd.NewEventProducer(cassandraProcessor, "cassandra-replicator")
 	if err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	err = producer.Start(context.Background())
 	if err != nil {
@@ -77,12 +79,12 @@ func startCassandraReplicator(wg *sync.WaitGroup) {
 	}
 }
 
-func startAmqpReplicator(wg *sync.WaitGroup) {
+func startAmqpReplicator(_ *sync.WaitGroup) {
 	logrus.Debug("AMQP replication service enabled")
 	amqpProcessor := cassandra.NewAmqpEventProcessor()
 	producer, err := etcd.NewEventProducer(amqpProcessor, "amqp-replicator")
 	if err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	err = producer.Start(context.Background())
 	if err != nil {
@@ -111,7 +113,7 @@ func startEtcdWatcher(_ *sync.WaitGroup) {
 	logrus.Debug("etcd watcher enabled for cache")
 	producer, err := etcd.NewEventProducer(cacheDB, "cache-service")
 	if err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	err = producer.Start(context.Background())
 	if err != nil {
@@ -123,7 +125,7 @@ func startRDBMSWatcher(_ *sync.WaitGroup) {
 	logrus.Debug("RDBMS watcher enabled for cache")
 	producer, err := syncp.NewEventProducer(cacheDB)
 	if err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	defer producer.Close()
 	err = producer.Start(context.Background())
@@ -135,14 +137,14 @@ func startRDBMSWatcher(_ *sync.WaitGroup) {
 func startServer(_ *sync.WaitGroup) {
 	server, err := apisrv.NewServer()
 	if err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	server.Cache = cacheDB
 	if err = server.Init(); err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	if err = server.Run(); err != nil {
-		logrus.Warn(err)
+		log.FatalWithStackTrace(err)
 	}
 }
 
@@ -150,7 +152,7 @@ func startSync(_ *sync.WaitGroup) {
 	if err := retry.Do(func() (retry bool, err error) {
 		s, err := syncp.NewService()
 		if err != nil {
-			logrus.Fatal(err)
+			log.FatalWithStackTrace(err)
 		}
 		defer s.Close()
 
@@ -165,7 +167,7 @@ func startSync(_ *sync.WaitGroup) {
 func startCompilationService(_ *sync.WaitGroup) {
 	server, err := compilation.NewIntentCompilationService()
 	if err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -178,7 +180,7 @@ func startCompilationService(_ *sync.WaitGroup) {
 func startAgent(_ *sync.WaitGroup) {
 	a, err := agent.NewAgentByConfig()
 	if err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	for {
 		if err := a.Watch(context.Background()); err != nil {

@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	shellwords "github.com/mattn/go-shellwords"
@@ -96,7 +97,7 @@ func (l *StreamServer) Serve() {
 	// fill server options
 	appOptions := &server.Options{}
 	if err := utils.ApplyDefaultValues(appOptions); err != nil {
-		logrus.Fatal(err)
+		FatalWithStackTrace(err)
 
 	}
 	appOptions.Port = l.listenPort
@@ -104,23 +105,23 @@ func (l *StreamServer) Serve() {
 	// fill command factory backend options
 	backendOptions := &localcommand.Options{}
 	if err := utils.ApplyDefaultValues(backendOptions); err != nil {
-		logrus.Fatal(err)
+		FatalWithStackTrace(err)
 	}
 	args, err := shellwords.Parse(l.terminalCommand)
 	if err != nil {
-		logrus.Fatal(err)
+		FatalWithStackTrace(err)
 	}
 
 	// create command factory
 	factory, err := localcommand.NewFactory(args[0], args[1:], backendOptions)
 	if err != nil {
-		logrus.Fatal(err)
+		FatalWithStackTrace(err)
 	}
 
 	// create server
 	srv, err := server.New(factory, appOptions)
 	if err != nil {
-		logrus.Fatal(err)
+		FatalWithStackTrace(err)
 	}
 
 	// run server
@@ -138,4 +139,11 @@ func (l *StreamServer) Serve() {
 // Close stops serving log server
 func (l *StreamServer) Close() {
 	l.shutDown()
+}
+
+// FatalWithStackTrace logs error with extended format and calls os.Exit(1)
+// If given error is constructed with pkg/errors library, stack trace is printed.
+// See: https://godoc.org/github.com/pkg/errors#hdr-Formatted_printing_of_errors
+func FatalWithStackTrace(err error) {
+	log.Fatalf("%+v", err)
 }

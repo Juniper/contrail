@@ -1,9 +1,10 @@
 package contrailutil
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/log"
 
 	"github.com/Juniper/contrail/pkg/constants"
 
@@ -47,7 +48,7 @@ var convertCmd = &cobra.Command{
 			URL:                     url,
 		})
 		if err != nil {
-			logrus.Fatal(err)
+			log.FatalWithStackTrace(err)
 		}
 	},
 }

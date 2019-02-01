@@ -257,11 +257,12 @@ func (s *Server) Init() (err error) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	var keystoneClient *keystone.Client
 	if keystoneAuthURL != "" {
-		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL,
-			viper.GetBool("keystone.insecure"))
-		skipPaths := keystone.GetAuthSkipPaths()
-		e.Use(keystone.AuthMiddleware(
-			keystoneClient, skipPaths, endpointStore))
+		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL, viper.GetBool("keystone.insecure"))
+		skipPaths, err := keystone.GetAuthSkipPaths()
+		if err != nil {
+			return errors.Wrap(err, "failed to setup paths skipped from authentication")
+		}
+		e.Use(keystone.AuthMiddleware(keystoneClient, skipPaths, endpointStore))
 	} else if viper.GetString("auth_type") == "no-auth" {
 		e.Use(noAuthMiddleware())
 	}
@@ -276,9 +277,9 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("server.enable_grpc") {
 		if !viper.GetBool("server.tls.enabled") {
-			logrus.Fatal("GRPC support requires TLS configuraion.")
+			return errors.New("GRPC support requires TLS configuration")
 		}
-		logrus.Debug("enabling grpc")
+		logrus.Debug("Enabling gRPC server")
 		opts := []grpc.ServerOption{
 			// TODO(Michal): below option potentially breaks compatibility for non golang grpc clients.
 			// Ensure it doesn't or find a better solution for un/marshaling `oneof` fields properly.
@@ -420,36 +421,32 @@ func (s *Server) setupActionResources(cs *services.ContrailService) {
 	s.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
 }
 
-// Run runs server.
+// Run runs Server.
 func (s *Server) Run() error {
 	defer func() {
-		err := s.Close()
-		if err != nil {
-			logrus.Fatal(err)
+		if err := s.Close(); err != nil {
+			logrus.WithError(err).Info("Closing DBService failed")
 		}
 	}()
-	e := s.Echo
-	address := viper.GetString("server.address")
-	tlsEnabled := viper.GetBool("server.tls.enabled")
-	var keyFile, certFile string
-	if tlsEnabled {
-		keyFile = viper.GetString("server.tls.key_file")
-		certFile = viper.GetString("server.tls.cert_file")
 
-		e.Logger.Fatal(e.StartTLS(address, certFile, keyFile))
-	} else {
-		e.Logger.Fatal(e.Start(address))
+	if viper.GetBool("server.tls.enabled") {
+		return s.Echo.StartTLS(
+			viper.GetString("server.address"),
+			viper.GetString("server.tls.cert_file"),
+			viper.GetString("server.tls.key_file"),
+		)
 	}
-	return nil
+
+	return s.Echo.Start(viper.GetString("server.address"))
 }
 
-//Close closes server resources
+// Close closes Server resources.
 func (s *Server) Close() error {
 	s.Proxy.stop()
 	return s.DBService.Close()
 }
 
-//DB return db object.
+// DB returns sql.DB handle.
 func (s *Server) DB() *sql.DB {
 	return s.DBService.DB()
 }
