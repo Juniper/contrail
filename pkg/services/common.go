@@ -9,7 +9,6 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
-	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -269,92 +268,6 @@ func (service *ContrailService) RelaxRef(ctx context.Context, request *RelaxRefR
 		return nil, err
 	}
 	return &RelaxRefResponse{UUID: request.UUID}, nil
-}
-
-// PropCollectionUpdateRequest is input request for /prop-collection-update endpoint.
-type PropCollectionUpdateRequest struct {
-	UUID    string                            `json:"uuid"`
-	Updates []basemodels.PropCollectionUpdate `json:"updates"`
-}
-
-func (p *PropCollectionUpdateRequest) validate() error {
-	if p.UUID == "" {
-		return errutil.ErrorBadRequest("prop-collection-update needs object UUID")
-	}
-	return nil
-}
-
-// RESTPropCollectionUpdate handles a prop-collection-update request.
-func (service *ContrailService) RESTPropCollectionUpdate(c echo.Context) error {
-	var data PropCollectionUpdateRequest
-	if err := c.Bind(&data); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-
-	if err := data.validate(); err != nil {
-		return errutil.ToHTTPError(err)
-	}
-
-	if err := service.updatePropCollection(c.Request().Context(), &data); err != nil {
-		return err
-	}
-
-	return c.NoContent(http.StatusOK)
-}
-
-func (service *ContrailService) updatePropCollection(
-	ctx context.Context,
-	data *PropCollectionUpdateRequest,
-) error {
-	err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
-		m, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{UUID: data.UUID})
-		if err != nil {
-			return errors.Wrap(err, "error getting metadata for provided UUID: %v")
-		}
-
-		o, err := GetObject(ctx, service.Next(), m.Type, data.UUID)
-		if err != nil {
-			return errors.Wrapf(err, "error getting %v with UUID = %v", m.Type, data.UUID)
-		}
-
-		updateMap, err := createUpdateMap(o, data.Updates)
-		if err != nil {
-			return errutil.ErrorBadRequest(err.Error())
-		}
-
-		e, err := NewEvent(&EventOption{
-			Data:      updateMap,
-			Kind:      m.Type,
-			UUID:      data.UUID,
-			Operation: OperationUpdate,
-		})
-		if err != nil {
-			return err
-		}
-
-		_, err = e.Process(ctx, service)
-		return err
-	})
-	if err != nil {
-		return errutil.ToHTTPError(err)
-	}
-	return nil
-}
-
-func createUpdateMap(
-	object basemodels.Object, updates []basemodels.PropCollectionUpdate,
-) (map[string]interface{}, error) {
-	updateMap := map[string]interface{}{}
-	for _, update := range updates {
-		updated, err := object.ApplyPropCollectionUpdate(&update)
-		if err != nil {
-			return nil, err
-		}
-		for key, value := range updated {
-			updateMap[key] = value
-		}
-	}
-	return updateMap, nil
 }
 
 // Chown handles chown request.
