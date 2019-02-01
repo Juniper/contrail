@@ -22,6 +22,7 @@ type Service struct {
 	WriteService      services.WriteService
 	UserAgentKV       userAgentKVServer
 	IDToFQNameService idToFQNameServer
+	InTransactionDoer services.InTransactionDoer
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
@@ -35,16 +36,19 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: '%s'", err))
 	}
 	var request *logic.Request
-	err := format.ApplyMap(requestMap, &request)
-	if err != nil {
+	if err := format.ApplyMap(requestMap, &request); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("failed to apply map: '%s'", err))
 	}
 	if t := c.Param("type"); request.GetType() != t {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: '%s'", t))
 	}
 	request.Data.FieldMask = basemodels.MapToFieldMask(requestMap)
-	response, err := s.handle(c.Request().Context(), request)
-	if err != nil {
+	var response logic.Response
+	if err := s.InTransactionDoer.DoInTransaction(c.Request().Context(), func(ctx context.Context) error {
+		var err error
+		response, err = s.handle(ctx, request)
+		return err
+	}); err != nil {
 		e, ok := errors.Cause(err).(*logic.Error)
 		if !ok {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
