@@ -3,7 +3,6 @@ package cluster
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/cloud"
@@ -20,8 +21,6 @@ import (
 	"github.com/Juniper/contrail/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/osutil"
-
-	"github.com/flosch/pongo2"
 )
 
 const (

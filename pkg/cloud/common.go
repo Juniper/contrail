@@ -7,12 +7,12 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
 
 	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"

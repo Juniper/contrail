@@ -6,6 +6,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	"github.com/Juniper/contrail/pkg/logutil"
+
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/schema"
 )
@@ -25,28 +27,28 @@ func generateCode() {
 	logrus.Info("Generating source code from schema")
 	api, err := schema.MakeAPI(strings.Split(option.SchemasDir, ","), "overrides")
 	if err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 
 	templateConf, err := schema.LoadTemplates(option.TemplateConfPath)
 	if err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 	if err = schema.ApplyTemplates(api, templateConf, option); err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 
 	if err = fileutil.SaveFile(option.SchemaOutputPath, api); err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 
 	openapi, err := api.ToOpenAPI()
 	if err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 
 	if err = fileutil.SaveFile(option.OpenapiOutputPath, openapi); err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 }
 

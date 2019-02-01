@@ -4,9 +4,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/logutil"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -36,13 +37,11 @@ func initConfig() {
 		configFile = viper.GetString("config")
 	}
 	if configFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(configFile)
 	}
 	if err := viper.ReadInConfig(); err != nil {
-		logrus.Fatal("Can't read config: ", err)
+		logutil.FatalWithStackTrace(err)
 	}
-
 }
 
 func getClient() (*client.HTTP, error) {

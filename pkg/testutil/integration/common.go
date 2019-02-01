@@ -49,14 +49,14 @@ func TestMain(m *testing.M, s **APIServer) {
 	WithTestDBs(func(dbType string) {
 		cacheDB, cancelEtcdEventProducer, err := RunCacheDB()
 		if err != nil {
-			logrus.WithError(err).Fatal("Failed to run Cache DB")
+			logutil.FatalWithStackTrace(errors.Wrap(err, "failed to run Cache DB"))
 		}
 		defer testutil.LogFatalIfError(cancelEtcdEventProducer)
 
 		if viper.GetBool("sync.enabled") {
 			sync, err := sync.NewService()
 			if err != nil {
-				logrus.WithError(err).Fatal("Failed to initialize Sync")
+				logutil.FatalWithStackTrace(errors.Wrap(err, "failed to initialize Sync"))
 			}
 			errChan := RunConcurrently(sync)
 			defer CloseFatalIfError(sync, errChan)
@@ -69,7 +69,7 @@ func TestMain(m *testing.M, s **APIServer) {
 			EnableEtcdNotifier: true,
 			CacheDB:            cacheDB,
 		}); err != nil {
-			logrus.WithError(err).Fatal("Failed to initialize API Server")
+			logutil.FatalWithStackTrace(errors.Wrap(err, "failed to initialize API Server"))
 		} else {
 			*s = srv
 		}
@@ -92,15 +92,15 @@ func RunTest(t *testing.T, name string, server *APIServer) {
 // all supported db types.
 func WithTestDBs(f func(dbType string)) {
 	if err := initViperConfig(); err != nil {
-		logrus.WithError(err).Fatal("Failed to initialize Viper config")
+		logutil.FatalWithStackTrace(errors.Wrap(err, "failed to initialize Viper config"))
 	}
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
-		logrus.WithError(err).Fatal()
+		logutil.FatalWithStackTrace(err)
 	}
 
 	testDBs := viper.GetStringMap("test_database")
 	if len(testDBs) == 0 {
-		logrus.Fatal("Test suite expected test database definitions under 'test_database' key")
+		logutil.FatalWithStackTrace(errors.New("test suite expected test database definitions under 'test_database' key"))
 	}
 
 	for _, iConfig := range testDBs {

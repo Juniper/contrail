@@ -23,14 +23,14 @@ func TestMain(m *testing.M) {
 	viper.AddConfigPath("../../sample")
 	err := viper.ReadInConfig()
 	if err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 	viper.SetEnvPrefix("contrail")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	if err = logutil.Configure(viper.GetString("log_level")); err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 
 	for _, iConfig := range viper.GetStringMap("test_database") {
@@ -44,7 +44,7 @@ func TestMain(m *testing.M) {
 			Name:     config["name"].(string),
 		})
 		if err != nil {
-			logrus.Fatal(err)
+			logutil.FatalWithStackTrace(err)
 		}
 		defer closeDB(testDB)
 
@@ -64,6 +64,6 @@ func TestMain(m *testing.M) {
 
 func closeDB(db *sql.DB) {
 	if err := db.Close(); err != nil {
-		logrus.WithError(err).Fatal("Closing test DB failed")
+		logutil.FatalWithStackTrace(err)
 	}
 }

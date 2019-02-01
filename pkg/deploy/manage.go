@@ -1,8 +1,7 @@
 package deploy
 
 import (
-	"errors"
-
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/deploy/base"
