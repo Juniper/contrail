@@ -3,12 +3,13 @@ package integration
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -43,7 +44,7 @@ func CloseNoError(t *testing.T, c Closer, errChan <-chan error) {
 func CloseFatalIfError(c Closer, errChan <-chan error) {
 	c.Close()
 	if err := <-errChan; err != nil {
-		log.Fatalf("unexpected error while closing: %+v", err)
+		log.FatalWithStackTrace(errors.Wrap(err, "unexpected error while closing"))
 	}
 }
 

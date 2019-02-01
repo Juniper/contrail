@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -33,7 +33,7 @@ var ShowCmd = &cobra.Command{
 		}
 		output, err := showResource(schemaID, uuid)
 		if err != nil {
-			logrus.Fatal(err)
+			log.FatalWithStackTrace(err)
 		}
 		fmt.Println(output)
 	},

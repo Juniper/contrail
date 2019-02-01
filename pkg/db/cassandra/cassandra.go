@@ -101,7 +101,7 @@ func (o object) Get(key string) interface{} {
 	var response interface{}
 	err := json.Unmarshal([]byte(data[0].(string)), &response) //nolint: errcheck
 	if err != nil {
-		logrus.Fatal(err)
+		log.FatalWithStackTrace(err)
 	}
 	return response
 }
