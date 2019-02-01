@@ -29,6 +29,7 @@
           label: centos-7-4-builder-xxlarge
     vars:
       setup_docker_registry: true
+      enable_tpc_repo: false
       docker:
         - image: circleci/golang:1.11
         - image: circleci/mysql:5.7
