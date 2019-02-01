@@ -8,10 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
@@ -313,7 +315,9 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	writeString(query, "select ")
 
 	if len(ctx.columnParts) != len(ctx.columns) {
-		logrus.Fatal("unmatch")
+		logutil.FatalWithStackTrace(errors.Errorf(
+			"QueryBuilder: columnParts and columns do not have equal length: qb: %+v, ctx: %+v", qb, ctx),
+		)
 	}
 	WriteStrings(query, strings.Join(ctx.columnParts, ","), " from ", qb.as(qb.Table, qb.TableAlias))
 
@@ -644,7 +648,7 @@ func (qb *QueryBuilder) ScanResourceList(value interface{}) []interface{} {
 			return nil
 		}
 	default:
-		logrus.Fatal("unsupported db dialect")
+		logutil.FatalWithStackTrace(errors.Errorf("unsupported DB dialect: %v", qb.Dialect.Name))
 	}
 	return resources
 }
@@ -678,6 +682,6 @@ func WriteStrings(b *bytes.Buffer, strings ...string) {
 func writeString(b *bytes.Buffer, s string) {
 	_, err := b.WriteString(s)
 	if err != nil {
-		logrus.Fatalf("unexpected bytes.Buffer.WriteString() error: %v", err)
+		logutil.FatalWithStackTrace(errors.Wrapf(err, "bytes.Buffer.WriteString() failed"))
 	}
 }

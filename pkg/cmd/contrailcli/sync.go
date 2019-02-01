@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -26,7 +26,7 @@ Use resource format just like in 'schema' command output`,
 	Run: func(cmd *cobra.Command, args []string) {
 		response, err := syncResources(args[0])
 		if err != nil {
-			logrus.Fatal(err)
+			logutil.FatalWithStackTrace(err)
 		}
 		fmt.Println(response)
 	},

@@ -3,7 +3,6 @@ package contrail
 import (
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -38,10 +37,10 @@ func initConfig() {
 		viper.SetConfigFile(configFile)
 	}
 	if err := viper.ReadInConfig(); err != nil {
-		logrus.Fatal("Failed to read config: ", err)
+		logutil.FatalWithStackTrace(err)
 	}
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 }

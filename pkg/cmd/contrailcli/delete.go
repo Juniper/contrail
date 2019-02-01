@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 func init() {
@@ -22,7 +23,7 @@ var DeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		response, err := deleteResources(args[0])
 		if err != nil {
-			logrus.Fatal(err)
+			logutil.FatalWithStackTrace(err)
 		}
 		fmt.Println(response)
 	},
