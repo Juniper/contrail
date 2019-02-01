@@ -28,5 +28,6 @@ profile.cov
 profile.tmp
 public/
 test_output/
+unittests.log
 
 !vendor/**
