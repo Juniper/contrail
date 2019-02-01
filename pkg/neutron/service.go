@@ -16,10 +16,11 @@ import (
 
 // Service implementation.
 type Service struct {
-	ReadService     services.ReadService
-	WriteService    services.WriteService
-	UserAgentKV     userAgentKVServer
-	IDToTypeService idToTypeServer
+	ReadService       services.ReadService
+	WriteService      services.WriteService
+	UserAgentKV       userAgentKVServer
+	IDToTypeService   idToTypeServer
+	InTransactionDoer services.InTransactionDoer
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
@@ -54,28 +55,34 @@ func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response,
 		IDToTypeService: s.IDToTypeService,
 		RequestContext:  r.Context,
 	}
-	switch r.Context.Operation {
-	case "CREATE":
-		return r.Data.Resource.Create(ctx, rp)
-	case "UPDATE":
-		return r.Data.Resource.Update(ctx, rp, r.Data.ID)
-	case "DELETE":
-		return r.Data.Resource.Delete(ctx, rp, r.Data.ID)
-	case "READ":
-		return r.Data.Resource.Read(ctx, rp, r.Data.ID)
-	case "READALL":
-		return r.Data.Resource.ReadAll(ctx, rp, r.Data.Filters, r.Data.Fields)
-	case "READCOUNT":
-		return r.Data.Resource.ReadCount(ctx, rp, r.Data.Filters)
-	case "ADDINTERFACE":
-		return r.Data.Resource.AddInterface(ctx, rp)
-	case "DELINTERFACE":
-		return r.Data.Resource.DeleteInterface(ctx, rp)
-	default:
-		err := errors.Errorf("method '%s' is not supported", r.Context.Operation)
-		log.WithError(err).WithField("request", r).Errorf("failed to handle")
-		return nil, err
-	}
+	var res logic.Response
+	err := s.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		var err error
+		switch r.Context.Operation {
+		case "CREATE":
+			res, err = r.Data.Resource.Create(ctx, rp)
+		case "UPDATE":
+			res, err = r.Data.Resource.Update(ctx, rp, r.Data.ID)
+		case "DELETE":
+			res, err = r.Data.Resource.Delete(ctx, rp, r.Data.ID)
+		case "READ":
+			res, err = r.Data.Resource.Read(ctx, rp, r.Data.ID)
+		case "READALL":
+			res, err = r.Data.Resource.ReadAll(ctx, rp, r.Data.Filters, r.Data.Fields)
+		case "READCOUNT":
+			res, err = r.Data.Resource.ReadCount(ctx, rp, r.Data.Filters)
+		case "ADDINTERFACE":
+			res, err = r.Data.Resource.AddInterface(ctx, rp)
+		case "DELINTERFACE":
+			res, err = r.Data.Resource.DeleteInterface(ctx, rp)
+		default:
+			err = errors.Errorf("method '%s' is not supported", r.Context.Operation)
+			log.WithError(err).WithField("request", r).Errorf("failed to handle")
+		}
+		return err
+	})
+
+	return res, err
 }
 
 type userAgentKVServer interface {
