@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/flosch/pongo2"
 
@@ -56,12 +57,27 @@ func (a *contrailCloudDeployer) createSiteFile(destination string) error {
 		return err
 	}
 	a.Log.Info("Created instance.yml input file for ansible deployer")
+
+	contrailCloudDir := defaultContrailCloudDir
+	if a.undercloud.config.Test {
+		contrailCloudDir = a.getWorkingDir() + "/config"
+	}
+	siteDestination := strings.Join(
+		[]string{contrailCloudDir, defaultSiteFile}, "/")
+	err = fileutil.WriteToFile(siteDestination, content, filePermRWOnly)
+	if err != nil {
+		return err
+	}
+	a.Log.Info("Copied site.yml to contrail cloud deployer config directory")
 	return nil
 }
 
-func (a *contrailCloudDeployer) mockExec(cmd string) error {
+func (a *contrailCloudDeployer) mockExec(cmd string, args []string) error {
 	destination := filepath.Join(a.getWorkingDir(), "executed_command.yml")
-	err := fileutil.AppendToFile(destination, []byte(cmd), filePermRWOnly)
+	if len(args) > 0 {
+		cmd = cmd + " " + strings.Join(args, " ")
+	}
+	err := fileutil.AppendToFile(destination, []byte(cmd+"\n"), filePermRWOnly)
 	return err
 }
 
@@ -95,13 +111,13 @@ func (a *contrailCloudDeployer) compareSite() (identical bool, err error) {
 	return bytes.Equal(oldSite, newSite), nil
 }
 
-func (a *contrailCloudDeployer) execFromDir(cmdline string) error {
+func (a *contrailCloudDeployer) execFromDir(cmdline string, args []string) error {
 	if a.undercloud.config.Test {
-		return a.mockExec(cmdline)
+		return a.mockExec(cmdline, args)
 	}
-	a.Log.Infof("Executintg command: %s", cmdline)
+	a.Log.Infof("Executing command: %s", cmdline)
 	if err := osutil.ExecCmdAndWait(
-		a.Reporter, cmdline, []string{}, defaultWorkingDir); err != nil {
+		a.Reporter, cmdline, args, a.getWorkingDir()); err != nil {
 		return err
 	}
 	a.Log.Infof("Finished executing command: %s", cmdline)
@@ -109,10 +125,18 @@ func (a *contrailCloudDeployer) execFromDir(cmdline string) error {
 	return nil
 }
 
-func (a *contrailCloudDeployer) playBook() error {
-	switch a.undercloudData.cloudManagerInfo.ProvisioningAction {
+func (a *contrailCloudDeployer) playBook(args []string) error {
+	provisioningAction := provisionProvisioningAction
+	if a.undercloudData.cloudManagerInfo != nil {
+		provisioningAction = a.undercloudData.cloudManagerInfo.ProvisioningAction
+	}
+	switch provisioningAction {
 	case provisionProvisioningAction, "":
-		return a.execFromDir(installContrailCloudCmd + "\n")
+		err := a.execFromDir(addKnownHostsCmd, args)
+		if err != nil {
+			return err
+		}
+		return a.execFromDir(installContrailCloudCmd, args)
 	}
 	return nil
 }
@@ -136,7 +160,7 @@ func (a *contrailCloudDeployer) createUndercloud() error {
 		return err
 	}
 
-	err = a.playBook()
+	err = a.playBook([]string{})
 	if err != nil {
 		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
@@ -182,7 +206,7 @@ func (a *contrailCloudDeployer) updateUndercloud() error {
 		return err
 	}
 
-	err = a.playBook()
+	err = a.playBook([]string{})
 	if err != nil {
 		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
@@ -196,6 +220,10 @@ func (a *contrailCloudDeployer) updateUndercloud() error {
 func (a *contrailCloudDeployer) deleteUndercloud() error {
 	a.Log.Infof("Starting %s of contrail undercloud: %s",
 		a.action, a.undercloud.config.ResourceID)
+	err := a.playBook([]string{"-c"})
+	if err != nil {
+		return err
+	}
 	return a.deleteWorkingDir()
 }
 

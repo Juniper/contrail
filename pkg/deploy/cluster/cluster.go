@@ -22,6 +22,8 @@ type Config struct {
 	LogFile string
 	// Template root directory
 	TemplateRoot string
+	// Work root directory
+	WorkRoot string
 
 	// Optional ansible sudo password
 	AnsibleSudoPass string

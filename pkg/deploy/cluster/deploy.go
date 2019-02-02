@@ -42,8 +42,16 @@ func (p *deployCluster) getTemplateRoot() string {
 	return templateRoot
 }
 
+func (p *deployCluster) getWorkRoot() string {
+	workRoot := p.cluster.config.WorkRoot
+	if workRoot == "" {
+		workRoot = defaultWorkRoot
+	}
+	return workRoot
+}
+
 func (p *deployCluster) getClusterHomeDir() string {
-	dir := filepath.Join(defaultWorkRoot, p.clusterID)
+	dir := filepath.Join(p.getWorkRoot(), p.clusterID)
 	return dir
 }
 
