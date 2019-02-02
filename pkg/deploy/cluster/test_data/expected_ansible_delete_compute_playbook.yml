@@ -1,6 +1,6 @@
 playbooks/configure_instances.yml:
-  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
+  args: -i inventory/ -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
 playbooks/install_openstack.yml:
-  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack -e force_checkout=yes --tags=nova
+  args: -i inventory/ -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack -e force_checkout=yes --tags=nova
 playbooks/install_contrail.yml:
-  args: -i inventory/ -e config_file=/var/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
+  args: -i inventory/ -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
