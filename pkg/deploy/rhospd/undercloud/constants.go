@@ -4,12 +4,15 @@ const (
 	defaultResource     = "rhospd-cloud-manager"
 	defaultResourcePath = "/" + defaultResource
 
-	defaultWorkRoot     = "/var/tmp/rhospd_cloud_manager/"
-	defaultSiteTemplate = "site.tmpl"
-	defaultSiteFile     = "site.yml"
-	defaultWorkingDir   = "/var/lib/contrail_cloud/scripts/"
+	defaultWorkRoot                = "/var/tmp/rhospd_cloud_manager/"
+	defaultSiteTemplate            = "site.tmpl"
+	defaultSiteFile                = "site.yml"
+	defaultContrailCloudDir        = "/var/lib/contrail_cloud/"
+	defaultContrailCloudScriptsDir = defaultContrailCloudDir + "scripts/"
+	defaultContrailCloudConfigDir  = defaultContrailCloudDir + "config/"
 
-	installContrailCloudCmd = "install_contrail_cloud_manager.sh"
+	addKnownHostsCmd        = "ssh-keyscan -H localhost >> ~/.ssh/known_hosts"
+	installContrailCloudCmd = "sudo " + defaultContrailCloudScriptsDir + "install_contrail_cloud_manager.sh"
 
 	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"

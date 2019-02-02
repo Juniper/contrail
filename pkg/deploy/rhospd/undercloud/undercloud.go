@@ -25,6 +25,8 @@ type Config struct {
 
 	// Optional Test var to run command in test mode
 	Test bool
+	// Work root directory
+	WorkRoot string
 }
 
 // UnderCloud represents contrail undercloud manager

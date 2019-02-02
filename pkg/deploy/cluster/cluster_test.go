@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	workRoot                              = "/tmp/contrail_cluster"
 	allInOneClusterTemplatePath           = "./test_data/test_all_in_one_cluster.tmpl"
 	createPlaybooks                       = "./test_data/expected_ansible_create_playbook.yml"
 	createAppformixPlaybooks              = "./test_data/expected_ansible_create_appformix_playbook.yml"
@@ -91,7 +92,7 @@ func verifyEndpoints(t *testing.T, testScenario *integration.TestScenario,
 
 func verifyClusterDeleted() bool {
 	// Make sure working dir is deleted
-	if _, err := os.Stat(defaultWorkRoot + "/" + clusterID); err == nil {
+	if _, err := os.Stat(workRoot + "/" + clusterID); err == nil {
 		// working dir not deleted
 		return false
 	}
@@ -100,7 +101,7 @@ func verifyClusterDeleted() bool {
 
 func verifyMCDeleted() bool {
 	// Make sure mc working dir is deleted
-	if _, err := os.Stat(defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir); err == nil {
+	if _, err := os.Stat(workRoot + "/" + clusterID + "/" + mcWorkDir); err == nil {
 		// mc working dir not deleted
 		return false
 	}
@@ -153,39 +154,39 @@ func verifyPlaybooks(t *testing.T, expected string) bool {
 }
 
 func generatedInstancesPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/instances.yml"
+	return workRoot + "/" + clusterID + "/instances.yml"
 }
 
 func generatedInventoryPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/inventory.yml"
+	return workRoot + "/" + clusterID + "/inventory.yml"
 }
 
 func generatedVcenterVarsPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/vcenter_vars.yml"
+	return workRoot + "/" + clusterID + "/vcenter_vars.yml"
 }
 
 func generatedSecretPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultSecretFile
+	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultSecretFile
 }
 
 func generatedTopologyPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
+	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTopologyFile
 }
 
 func generatedContrailCommonPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
+	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultContrailCommonFile
 }
 
 func generatedGatewayCommonPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultGatewayCommonFile
+	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultGatewayCommonFile
 }
 
 func executedPlaybooksPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
+	return workRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
 }
 
 func executedMCCommandPath() string {
-	return defaultWorkRoot + "/" + clusterID + "/" + mcWorkDir + "/executed_cmd.yml"
+	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/executed_cmd.yml"
 }
 
 func createDummyCloudFiles(t *testing.T) func() {
@@ -344,8 +345,9 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
 		Test:         true,
-		LogFile:      defaultWorkRoot + "/deploy.log",
+		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
@@ -497,8 +499,9 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
 		Test:         true,
-		LogFile:      defaultWorkRoot + "/deploy.log",
+		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
@@ -808,8 +811,9 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
 		Test:         true,
-		LogFile:      defaultWorkRoot + "/deploy.log",
+		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
@@ -945,8 +949,9 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 		Action:       "create",
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
 		Test:         true,
-		LogFile:      defaultWorkRoot + "/deploy.log",
+		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
@@ -1093,7 +1098,9 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
 		Test:         true,
+		LogFile:      workRoot + "/deploy.log",
 	}
 
 	cloudFileCleanup := createDummyCloudFiles(t)

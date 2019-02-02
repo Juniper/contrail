@@ -39,8 +39,16 @@ func (p *deployUnderCloud) getTemplateRoot() string {
 	return templateRoot
 }
 
+func (p *deployUnderCloud) getWorkRoot() string {
+	workRoot := p.undercloud.config.WorkRoot
+	if workRoot == "" {
+		workRoot = defaultWorkRoot
+	}
+	return workRoot
+}
+
 func (p *deployUnderCloud) getUnderCloudHomeDir() string {
-	dir := filepath.Join(defaultWorkRoot, p.undercloudID)
+	dir := filepath.Join(p.getWorkRoot(), p.undercloudID)
 	return dir
 }
 
