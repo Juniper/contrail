@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	workRoot                 = "/tmp/rhospd_cloud_manager/"
 	cloudManagerTemplatePath = "./test_data/test_undercloud.tmpl"
 	createPlaybooks          = "./test_data/expected_ansible_create_command.yml"
 	updatePlaybooks          = "./test_data/expected_ansible_update_command.yml"
@@ -31,7 +32,7 @@ func TestMain(m *testing.M) {
 
 func verifyUnderCloudDeleted() bool {
 	// Make sure working dir is deleted
-	if _, err := os.Stat(defaultWorkRoot + "/" + cloudManagerID); err == nil {
+	if _, err := os.Stat(workRoot + "/" + cloudManagerID); err == nil {
 		// working dir not deleted
 		return false
 	}
@@ -48,7 +49,10 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 }
 
 func compareGeneratedSite(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedSitePath())
+	if !compareFiles(t, expected, generatedSitePath()) {
+		return false
+	}
+	return compareFiles(t, expected, contrailCloudSitePath())
 }
 
 func verifyPlaybooks(t *testing.T, expected string) bool {
@@ -56,11 +60,15 @@ func verifyPlaybooks(t *testing.T, expected string) bool {
 }
 
 func generatedSitePath() string {
-	return defaultWorkRoot + "/" + cloudManagerID + "/site.yml"
+	return workRoot + "/" + cloudManagerID + "/site.yml"
+}
+
+func contrailCloudSitePath() string {
+	return workRoot + "/" + cloudManagerID + "/config/site.yml"
 }
 
 func executedPlaybooksPath() string {
-	return defaultWorkRoot + "/" + cloudManagerID + "/executed_command.yml"
+	return workRoot + "/" + cloudManagerID + "/executed_command.yml"
 }
 
 // nolint: gocyclo
@@ -143,8 +151,9 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
 		Test:         true,
-		LogFile:      defaultWorkRoot + "/deploy.log",
+		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cloudManager
 	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
@@ -213,7 +222,6 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 }
 
 func TestUnderCloud(t *testing.T) {
-	t.Skip()
 	pContext := pongo2.Context{}
 	expectedSites := "./test_data/expected_site.yml"
 
