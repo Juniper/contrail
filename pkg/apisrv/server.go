@@ -20,6 +20,7 @@ import (
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/apisrv/replication"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
@@ -52,6 +53,7 @@ type Server struct {
 	Echo                       *echo.Echo
 	GRPCServer                 *grpc.Server
 	Keystone                   *keystone.Keystone
+	Replication                *replication.Replication
 	DBService                  *db.Service
 	Proxy                      *proxyService
 	Service                    services.Service
@@ -282,6 +284,14 @@ func (s *Server) Init() (err error) {
 		s.Keystone = k
 	}
 
+	if viper.GetBool("server.enable_vnc_replication") {
+		log.Debug("enabling vnc replication")
+
+		s.Replication = replication.New(s.Cache, endpointStore)
+		err := s.Replication.Start()
+		log.Errorf("while starting vnc_replication service: %s", err)
+	}
+
 	if viper.GetBool("server.enable_grpc") {
 		if !viper.GetBool("server.tls.enabled") {
 			log.Fatal("GRPC support requires TLS configuraion.")
@@ -454,6 +464,7 @@ func (s *Server) Run() error {
 //Close closes server resources
 func (s *Server) Close() error {
 	s.Proxy.stop()
+	s.Replication.Stop()
 	return s.DBService.Close()
 }
 
