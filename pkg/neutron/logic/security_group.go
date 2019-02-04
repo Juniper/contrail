@@ -266,7 +266,7 @@ func getNeutronSecurityGroups(sgs []*models.SecurityGroup, f Filters) ([]*Securi
 			continue
 		}
 
-		if !f.checkValue("name", getSecurityGroupName(sg)) {
+		if !f.Match("name", getSecurityGroupName(sg)) {
 			continue
 		}
 
