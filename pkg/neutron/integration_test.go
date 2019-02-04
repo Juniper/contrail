@@ -14,6 +14,10 @@ func TestNetwork(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
 
+func TestSubnet(t *testing.T) {
+	integration.RunTest(t, t.Name(), server)
+}
+
 func TestPort(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }

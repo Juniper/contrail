@@ -1,6 +1,5 @@
-name: Test Neutron Network
-description: |
-  Integration test for neutron network endpoint.
+name: Test Neutron Subnet
+description: Integration test for neutron subnet endpoint.
 
 clients:
   default:
@@ -90,51 +89,6 @@ workflow:
     project_id: 886c725d04614dd6ac2730c74d4e46fb
     description: ''
 
-- name: Get created virtual network
-  request:
-    path: "/virtual-networks?parent_id=admin_project_uuid"
-    method: GET
-    expected:
-    - 200
-
-- name: Network read without subnets
-  request:
-    path: /neutron/network
-    method: POST
-    expected: [200]
-    data:
-      data:
-        fields:
-        id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-        filters:
-      context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-        is_admin: true
-        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
-        operation: READ
-        type: network
-        tenant: 886c725d04614dd6ac2730c74d4e46fb
-  expect:
-    status: ACTIVE
-    id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    router:external: false
-    subnets: []
-    subnet_ipam: []
-    fq_name:
-    - default
-    - admin_project_uuid
-    - test-vn1
-    name: test-vn1
-    admin_state_up: true
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-    port_security_enabled: true
-    shared: false
-    project_id: 886c725d04614dd6ac2730c74d4e46fb
-    description: ''
-
 - name: Create subnet
   request:
     path: /neutron/subnet
@@ -179,61 +133,16 @@ workflow:
     ip_version: 4
     cidr: "10.0.1.0/24"
 
-- name: Network read with subnet
+- name: Subnet readall with network_id
   request:
-    path: /neutron/network
-    method: POST
-    expected: [200]
-    data:
-      data:
-        fields:
-        id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-        filters:
-      context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-        is_admin: true
-        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
-        operation: READ
-        type: network
-        tenant: 886c725d04614dd6ac2730c74d4e46fb
-  expect:
-    status: ACTIVE
-    id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    router:external: false
-    subnets:
-    - $uuid
-    subnet_ipam:
-    - subnet_cidr: "10.0.1.0/24"
-      ipam_fq_name:
-      - default-domain
-      - default-project
-      - default-network-ipam
-    fq_name:
-    - default
-    - admin_project_uuid
-    - test-vn1
-    name: test-vn1
-    admin_state_up: true
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-    port_security_enabled: true
-    shared: false
-    project_id: 886c725d04614dd6ac2730c74d4e46fb
-    description: ''
-
-- name: Network readall with subnet
-  request:
-    path: /neutron/network
+    path: /neutron/subnet
     method: POST
     expected: [200]
     data:
       data:
         fields: []
         filters:
-          shared: [false]
-          tenant_id: [886c725d04614dd6ac2730c74d4e46fb]
+          network_id: [d9ff46fc-e193-4d40-80ba-0d55c8aed9f2]
       context:
         user_id: 06be3763c8224dd5a343e3d95d87c1d2
         roles:
@@ -242,31 +151,62 @@ workflow:
         is_admin: true
         request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
         operation: READALL
-        type: network
+        type: subnet
         tenant: 886c725d04614dd6ac2730c74d4e46fb
   expect:
-  - status: ACTIVE
-    id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    router:external: false
-    subnets:
-    - $uuid
-    subnet_ipam:
-    - subnet_cidr: "10.0.1.0/24"
-      ipam_fq_name:
-      - default-domain
-      - default-project
-      - default-network-ipam
-    fq_name:
-    - default
-    - admin_project_uuid
-    - test-vn1
-    name: test-vn1
-    admin_state_up: true
+  - network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    host_routes: []
+    name: ""
+    enable_dhcp: true
+    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
     tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-    port_security_enabled: true
+    dns_nameservers: []
+    allocation_pools:
+    - start: 10.0.1.2
+      end: 10.0.1.254
+    gateway_ip: 10.0.1.1
+# TODO(pawel.zadrozny) check dns_server_address when address manager start to reserve dns nameservers
+#    dns_server_address: 10.0.1.2
     shared: false
-    project_id: 886c725d04614dd6ac2730c74d4e46fb
-    description: ''
+    ip_version: 4
+    cidr: 10.0.1.0/24
+
+- name: Subnet readall without network_id
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
+        operation: READALL
+        type: subnet
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect:
+  - network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    host_routes: []
+    name: ""
+    enable_dhcp: true
+    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    dns_nameservers: []
+    allocation_pools:
+    - start: 10.0.1.2
+      end: 10.0.1.254
+    gateway_ip: 10.0.1.1
+# TODO(pawel.zadrozny) check dns_server_address when address manager start to reserve dns nameservers
+#    dns_server_address: 10.0.1.2
+    shared: false
+    ip_version: 4
+    cidr: 10.0.1.0/24
 
 - name: Delete virtual network
   request:
