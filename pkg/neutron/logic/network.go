@@ -168,7 +168,7 @@ func (n *Network) toVnc() (*models.VirtualNetwork, error) {
 func (n *Network) collectVirtualNetworks(
 	ctx context.Context, rp RequestParameters, filters Filters,
 ) ([]*models.VirtualNetwork, error) {
-	if len(filters) > 0 && filters.haveKeys(idKey) {
+	if len(filters) > 0 && filters.HasKeys(idKey) {
 		return collectWithoutPrune(ctx, rp, filters[idKey])
 	}
 
@@ -205,12 +205,12 @@ func collectWithoutPrune(
 func collectNonAdminNetworks(
 	ctx context.Context, rp RequestParameters, filters Filters,
 ) ([]*models.VirtualNetwork, error) {
-	if filters.haveKeys(nameKey) {
+	if filters.HasKeys(nameKey) {
 		return collectNetworkForTenant(ctx, rp, filters, rp.RequestContext.Tenant)
 	}
 
 	var req listReq
-	if filters.haveKeys(sharedKey) || filters.haveKeys(routerExternalKey) {
+	if filters.HasKeys(sharedKey) || filters.HasKeys(routerExternalKey) {
 		return collectSharedOrRouterExtNetworks(ctx, rp, filters, &req)
 	}
 
@@ -263,16 +263,16 @@ func addDBFilter(req *listReq, key string, values []string, clearFirst bool) {
 func collectFilteredAdminNetworks(
 	ctx context.Context, rp RequestParameters, filters Filters,
 ) ([]*models.VirtualNetwork, error) {
-	if filters.haveKeys(tenantIDKey) {
+	if filters.HasKeys(tenantIDKey) {
 		return collectUsingTenantID(ctx, rp, filters)
 	}
 
 	req := &listReq{}
-	if filters.haveKeys(nameKey) {
+	if filters.HasKeys(nameKey) {
 		return listNetworksForProject(ctx, rp, req)
 	}
 
-	if filters.haveKeys(sharedKey) || filters.haveKeys(routerExternalKey) {
+	if filters.HasKeys(sharedKey) || filters.HasKeys(routerExternalKey) {
 		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
 	}
 
@@ -299,7 +299,7 @@ func collectUsingTenantID(
 		collectedVNs = append(collectedVNs, vns...)
 	}
 
-	if filters.haveKeys(routerExternalKey) {
+	if filters.HasKeys(routerExternalKey) {
 		req.ParentID = ""
 		addDBFilter(req, routerExternal, filters[routerExternalKey], true)
 		vns, err = listNetworksForProject(ctx, rp, req)
@@ -335,11 +335,11 @@ func collectSharedOrRouterExtNetworks(
 	if req == nil {
 		req = &listReq{}
 	}
-	if filters.haveKeys(sharedKey) {
+	if filters.HasKeys(sharedKey) {
 		addDBFilter(req, isShared, filters[sharedKey], false)
 	}
 
-	if filters.haveKeys(routerExternalKey) {
+	if filters.HasKeys(routerExternalKey) {
 		addDBFilter(req, routerExternal, filters[routerExternalKey], false)
 	}
 
@@ -385,12 +385,12 @@ func containsNetworkWithUUID(nns []*NetworkResponse, uuid string) bool {
 }
 
 func checkIfVNMatchFilters(rp RequestParameters, filters Filters, vn *models.VirtualNetwork) bool {
-	if !filters.checkValue(fqNameKey, vn.GetFQName()...) {
+	if !filters.Match(fqNameKey, vn.GetFQName()...) {
 		return false
 	}
 
-	if !filters.checkValue(nameKey, vn.GetName()) &&
-		!filters.checkValue(nameKey, vn.GetDisplayName()) {
+	if !filters.Match(nameKey, vn.GetName()) &&
+		!filters.Match(nameKey, vn.GetDisplayName()) {
 		return false
 	}
 
@@ -399,7 +399,7 @@ func checkIfVNMatchFilters(rp RequestParameters, filters Filters, vn *models.Vir
 		isShared = true
 	}
 
-	if !filters.checkValue(sharedKey, strconv.FormatBool(isShared)) {
+	if !filters.Match(sharedKey, strconv.FormatBool(isShared)) {
 		return false
 	}
 
