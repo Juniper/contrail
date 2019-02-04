@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/format"
@@ -93,12 +93,12 @@ func (assignment *VNCAPIAssignment) Init(
 	assignment.vncClient.Init()
 	domains, err := assignment.getVncDomains()
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	projects, roles, err := assignment.getVncProjects(domains)
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 

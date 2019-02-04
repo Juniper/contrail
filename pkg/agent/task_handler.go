@@ -10,7 +10,7 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/joho/godotenv"
 	shellwords "github.com/mattn/go-shellwords"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -85,14 +85,14 @@ func commandHandler(handler handler, _ *task, context map[string]interface{}) (i
 	for stdoutScanner.Scan() {
 		m := stdoutScanner.Text()
 		output.WriteString(m)
-		log.Debug(m)
+		logrus.Debug(m)
 	}
 
 	stderrScanner := bufio.NewScanner(stderr)
 	for stderrScanner.Scan() {
 		m := stderrScanner.Text()
 		output.WriteString(m)
-		log.Error(m)
+		logrus.Error(m)
 	}
 
 	err = cmd.Wait()
@@ -240,6 +240,6 @@ func debugHandler(handler handler, _ *task, context map[string]interface{}) (int
 	if err != nil {
 		return nil, err
 	}
-	log.Debug(debugLog)
+	logrus.Debug(debugLog)
 	return nil, nil
 }

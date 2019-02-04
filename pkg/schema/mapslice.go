@@ -3,7 +3,7 @@ package schema
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -105,7 +105,7 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 	for _, property := range properties {
 		key := property.Key.(string) //nolint: errcheck
 		if property.Value == nil {
-			log.Fatal(fmt.Sprintf("Property %s is null on %v", key, schema))
+			logrus.Fatal(fmt.Sprintf("Property %s is null on %v", key, schema))
 		}
 		propertySchema := mapSlice(property.Value.(yaml.MapSlice)).JSONSchema() //nolint: errcheck
 
@@ -114,8 +114,8 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 
 		if (present || propertySchema.Type == "boolean") &&
 			(propertySchema.Presence == "required" || propertySchema.Presence == "true") {
-			log.Warnf("property %s should be optional as it may have zero-value. Update schema.", key)
-			log.Warnf("JSONSCHEMA: %v", propertySchema)
+			logrus.Warnf("property %s should be optional as it may have zero-value. Update schema.", key)
+			logrus.Warnf("JSONSCHEMA: %v", propertySchema)
 			propertySchema.Presence = "optional"
 		}
 

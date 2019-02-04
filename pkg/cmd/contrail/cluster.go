@@ -1,7 +1,7 @@
 package contrail
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/contrail/pkg/deploy"
@@ -22,10 +22,10 @@ var deployerCmd = &cobra.Command{
 func manageCluster() {
 	manager, err := deploy.NewDeployManager(configFile)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	if err := manager.Manage(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }

@@ -12,7 +12,7 @@ import (
 	"context"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Callback from Watch functions
@@ -55,16 +55,16 @@ func (g *Worker) Run() {
 
 			case job := <-g.JobChan:
 				// Received a Job Request, process it
-				log.Infof("Worker: %d, Received job request %d", g.WorkerID, job.JobID)
+				logrus.Infof("Worker: %d, Received job request %d", g.WorkerID, job.JobID)
 
 				g.Callback(job.context, job.operation, job.key, job.value)
 
 				d := 10 * time.Millisecond
 				time.Sleep(d)
-				log.Debugf("Worker: %d, Slept for %s", g.WorkerID, d)
+				logrus.Debugf("Worker: %d, Slept for %s", g.WorkerID, d)
 
 			case <-g.ExitChan:
-				log.Infof("Worker: %d exiting", g.WorkerID)
+				logrus.Infof("Worker: %d exiting", g.WorkerID)
 				return
 
 			}

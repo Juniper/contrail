@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
@@ -101,7 +101,7 @@ func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *h
 	proxyPrefix := p.getProxyPrefixFromURL(urlPath, scope)
 	proxyEndpoint := p.EndpointStore.Read(proxyPrefix)
 	if proxyEndpoint == nil {
-		log.WithField("proxy-prefix", proxyPrefix).Info("Endpoint targets not found for given proxy prefix")
+		logrus.WithField("proxy-prefix", proxyPrefix).Info("Endpoint targets not found for given proxy prefix")
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
 	target := proxyEndpoint.Next(scope)
@@ -112,7 +112,7 @@ func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *h
 
 	u, err := url.Parse(target)
 	if err != nil {
-		log.WithError(err).WithField("target", target).Info("Failed to parse target - ignoring")
+		logrus.WithError(err).WithField("target", target).Info("Failed to parse target - ignoring")
 	}
 
 	server = httputil.NewSingleHostReverseProxy(u)
@@ -150,26 +150,26 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 	p.EndpointStore.Data.Range(func(prefix, proxy interface{}) bool {
 		s, ok := proxy.(*apicommon.TargetStore)
 		if !ok {
-			log.Errorf("Unable to Read cluster(%s)'s proxy data from in-memory store",
+			logrus.Errorf("Unable to Read cluster(%s)'s proxy data from in-memory store",
 				prefix)
 			return true
 		}
 		s.Data.Range(func(id, endpoint interface{}) bool {
 			_, ok := endpoint.(*models.Endpoint)
 			if !ok {
-				log.Errorf("Unable to Read endpoint(%s) data from in-memory store",
+				logrus.Errorf("Unable to Read endpoint(%s) data from in-memory store",
 					id)
 				return true
 			}
 			ids, ok := id.(string)
 			if !ok {
-				log.Errorf("Unable to convert id %v to string when looking EndpointStore", id)
+				logrus.Errorf("Unable to convert id %v to string when looking EndpointStore", id)
 				return true
 			}
 			_, ok = endpoints[ids]
 			if !ok {
 				s.Remove(ids)
-				log.Debugf("deleting dynamic proxy endpoint for id: %s", ids)
+				logrus.Debugf("deleting dynamic proxy endpoint for id: %s", ids)
 			}
 			return true
 		})
@@ -186,7 +186,7 @@ func (p *proxyService) getProxyPrefix(endpoint *models.Endpoint, scope string) (
 	}
 
 	if endpoint.ParentUUID == "" {
-		log.Errorf("Parent uuid missing for endpoint %s(%s)", prefix, endpoint.UUID)
+		logrus.Errorf("Parent uuid missing for endpoint %s(%s)", prefix, endpoint.UUID)
 	}
 	prefixes := []string{"", p.group, endpoint.ParentUUID, prefix, scope}
 	return strings.Join(prefixes, pathSep)
@@ -211,7 +211,7 @@ func (p *proxyService) manageProxyEndpoint(endpoint *models.Endpoint, scope stri
 	proxyPrefix := p.getProxyPrefix(endpoint, scope)
 	s := p.EndpointStore.Read(proxyPrefix)
 	if s == nil {
-		log.Errorf("endpoint store for %s is not found in-memory store",
+		logrus.Errorf("endpoint store for %s is not found in-memory store",
 			proxyPrefix)
 	}
 	e := s.Read(endpoint.UUID)
@@ -256,7 +256,7 @@ func (p *proxyService) serve() {
 		for {
 			select {
 			case <-p.serviceContext.Done():
-				log.Info("Stopping dynamic proxy server")
+				logrus.Info("Stopping dynamic proxy server")
 				return
 			case wait := <-p.forceUpdateChan:
 				p.updateEndpoints()
@@ -271,7 +271,7 @@ func (p *proxyService) serve() {
 func (p *proxyService) updateEndpoints() {
 	endpoints, err := p.readEndpoints()
 	if err != nil {
-		log.WithError(err).Error("Endpoints read failed")
+		logrus.WithError(err).Error("Endpoints read failed")
 		return
 	}
 	p.syncProxyEndpoints(endpoints)

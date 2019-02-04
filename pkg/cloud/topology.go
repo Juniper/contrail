@@ -13,8 +13,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
-	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/log/report"
+	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/logutil/report"
 )
 
 type topology struct {
@@ -38,24 +38,16 @@ func (t *topology) getTopoTemplate() string {
 }
 
 func (c *Cloud) newTopology(data *Data) *topology {
-
-	// create reporter for topology
-	logger := pkglog.NewFileLogger("reporter", c.config.LogFile)
-	pkglog.SetLogLevel(logger, c.config.LogLevel)
-
-	r := report.NewReporter(c.APIServer,
-		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.config.CloudID), logger)
-
-	// create logger for topology
-	logger = pkglog.NewFileLogger("topology", c.config.LogFile)
-	pkglog.SetLogLevel(logger, c.config.LogLevel)
-
 	return &topology{
 		cloudData: data,
 		cloud:     c,
-		log:       logger,
-		reporter:  r,
-		ctx:       c.ctx,
+		log:       logutil.NewFileLogger("topology", c.config.LogFile),
+		reporter: report.NewReporter(
+			c.APIServer,
+			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.config.CloudID),
+			logutil.NewFileLogger("reporter", c.config.LogFile),
+		),
+		ctx: c.ctx,
 	}
 }
 

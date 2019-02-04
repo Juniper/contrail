@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -29,18 +29,18 @@ func init() {
 
 func assertError(err error, message string) {
 	if err != nil {
-		log.Fatalf("%s (%s)", message, err)
+		logrus.Fatalf("%s (%s)", message, err)
 	}
 }
 
 func recordTest() {
 	ctx := context.Background()
-	log.Info("Recording API behavior")
+	logrus.Info("Recording API behavior")
 	var vars map[string]interface{}
 	if variablePath != "" {
 		err := fileutil.LoadFile(variablePath, &vars)
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 	}
 
@@ -62,7 +62,7 @@ func recordTest() {
 	}
 
 	for _, task := range testScenario.Workflow {
-		log.Debug("[Step] ", task.Name)
+		logrus.Debug("[Step] ", task.Name)
 		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
 		clientID := "default"
 		if task.Client != "" {
@@ -77,7 +77,7 @@ func recordTest() {
 
 	err = fileutil.SaveFile(outputPath, testScenario)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
@@ -39,7 +39,7 @@ func LoadVirtualMachineInterfaceIntent(loader intent.Loader, query intent.Query)
 	intent := loader.Load(models.KindVirtualMachineInterface, query)
 	vmiIntent, ok := intent.(*VirtualMachineInterfaceIntent)
 	if ok == false {
-		log.Warning("Cannot cast intent to Virtual Machine Interface Intent")
+		logrus.Warning("Cannot cast intent to Virtual Machine Interface Intent")
 	}
 	return vmiIntent
 }

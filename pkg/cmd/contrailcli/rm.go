@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +29,7 @@ var RmCmd = &cobra.Command{
 		}
 		output, err := deleteResource(schemaID, uuid)
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 		fmt.Println(output)
 	},

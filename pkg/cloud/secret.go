@@ -13,7 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 
@@ -120,18 +120,11 @@ func (s *secret) updateFileConfig(d *Data) error {
 }
 
 func (c *Cloud) newSecret() (*secret, error) {
-
-	// create logger for secret
-	logger := pkglog.NewFileLogger("topology", c.config.LogFile)
-	pkglog.SetLogLevel(logger, c.config.LogLevel)
-
-	sfc := &secretFileConfig{}
-
 	return &secret{
 		cloud:  c,
-		log:    logger,
+		log:    logutil.NewFileLogger("topology", c.config.LogFile),
 		action: c.config.Action,
-		sfc:    sfc,
+		sfc:    &secretFileConfig{},
 		ctx:    c.ctx,
 	}, nil
 }

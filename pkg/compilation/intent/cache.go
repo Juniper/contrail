@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
@@ -54,19 +54,19 @@ func NewCache() *Cache {
 
 // Load loads intent from cache.
 func (c *Cache) Load(kind string, q Query) Intent {
-	log.WithFields(log.Fields{"kind": kind, "query": q}).Debug("Loading from cache")
+	logrus.WithFields(logrus.Fields{"kind": kind, "query": q}).Debug("Loading from cache")
 	return c.intentStore.load(kind, q)
 }
 
 // Store puts intent into cache.
 func (c *Cache) Store(i Intent) {
-	log.WithFields(log.Fields{"kind": i.Kind(), "uuid": i.GetUUID()}).Debug("Storing in cache")
+	logrus.WithFields(logrus.Fields{"kind": i.Kind(), "uuid": i.GetUUID()}).Debug("Storing in cache")
 	c.intentStore.store(i.Kind(), i)
 }
 
 // Delete deletes intent from cache. It accepts kebab-case or CamelCase type name.
 func (c *Cache) Delete(kind string, q Query) {
-	log.WithFields(log.Fields{"kind": kind, "query": q}).Debug("Deleting from cache")
+	logrus.WithFields(logrus.Fields{"kind": kind, "query": q}).Debug("Deleting from cache")
 	c.intentStore.delete(kind, q)
 }
 

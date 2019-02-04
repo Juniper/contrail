@@ -11,7 +11,7 @@ package watch
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // JobRequest hold the Job
@@ -30,14 +30,14 @@ var JobQueue chan JobRequest
 func WatcherInit(numJobs int) {
 	// Initialize the Job-Q with configured number of Jobs permitted
 	JobQueue = make(chan JobRequest, numJobs)
-	log.Printf("Created JobQueue: %d", numJobs)
+	logrus.Printf("Created JobQueue: %d", numJobs)
 }
 
 // AddJob adds a Job to the worker queue
 func AddJob(ctx context.Context, index int64, oper int32, key, value string) {
 	// Filter Job Requests, only interested ones get Queued
 
-	log.Printf("Before Job create, index: %d", index)
+	logrus.Printf("Before Job create, index: %d", index)
 	// Create the JobRequest
 	job := JobRequest{
 		JobID:     index,
@@ -50,5 +50,5 @@ func AddJob(ctx context.Context, index int64, oper int32, key, value string) {
 	// Push it to the JobQueue channel
 	JobQueue <- job
 
-	log.Printf("Job queued, index: %d", index)
+	logrus.Printf("Job queued, index: %d", index)
 }

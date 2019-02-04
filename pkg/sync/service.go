@@ -18,7 +18,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync/replication"
@@ -46,7 +46,7 @@ type Service struct {
 func NewService() (*Service, error) {
 	setViperDefaults()
 
-	if err := log.Configure(viper.GetString("log_level")); err != nil {
+	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
 
@@ -67,7 +67,7 @@ func NewService() (*Service, error) {
 
 	return &Service{
 		watcher: watcher,
-		log:     log.NewLogger("sync-service"),
+		log:     logutil.NewLogger("sync-service"),
 	}, nil
 }
 

@@ -18,11 +18,13 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/Juniper/contrail/pkg/logutil"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -31,7 +33,6 @@ import (
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/format"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/logging"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/sync"
@@ -49,14 +50,14 @@ func TestMain(m *testing.M, s **APIServer) {
 	WithTestDBs(func(dbType string) {
 		cacheDB, cancelEtcdEventProducer, err := RunCacheDB()
 		if err != nil {
-			log.WithError(err).Fatal("Failed to run Cache DB")
+			logrus.WithError(err).Fatal("Failed to run Cache DB")
 		}
 		defer testutil.LogFatalIfError(cancelEtcdEventProducer)
 
 		if viper.GetBool("sync.enabled") {
 			sync, err := sync.NewService()
 			if err != nil {
-				log.WithError(err).Fatal("Failed to initialize Sync")
+				logrus.WithError(err).Fatal("Failed to initialize Sync")
 			}
 			errChan := RunConcurrently(sync)
 			defer CloseFatalIfError(sync, errChan)
@@ -69,7 +70,7 @@ func TestMain(m *testing.M, s **APIServer) {
 			EnableEtcdNotifier: true,
 			CacheDB:            cacheDB,
 		}); err != nil {
-			log.WithError(err).Fatal("Failed to initialize API Server")
+			logrus.WithError(err).Fatal("Failed to initialize API Server")
 		} else {
 			*s = srv
 		}
@@ -91,21 +92,23 @@ func RunTest(t *testing.T, name string, server *APIServer) {
 // WithTestDBs does test setup and run tests for
 // all supported db types.
 func WithTestDBs(f func(dbType string)) {
-	err := initViperConfig()
-	if err != nil {
-		log.WithError(err).Fatal("Failed to initialize Viper config")
+	if err := initViperConfig(); err != nil {
+		logrus.WithError(err).Fatal("Failed to initialize Viper config")
 	}
-	logging.SetLogLevel()
+	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
+		logrus.WithError(err).Fatal()
+	}
+
 	testDBs := viper.GetStringMap("test_database")
 	if len(testDBs) == 0 {
-		log.Fatal("Test suite expected test database definitions under 'test_database' key")
+		logrus.Fatal("Test suite expected test database definitions under 'test_database' key")
 	}
 
 	for _, iConfig := range testDBs {
 		config := format.InterfaceToInterfaceMap(iConfig)
 		dbType, ok := config["type"].(string)
 		if !ok {
-			log.WithFields(log.Fields{
+			logrus.WithFields(logrus.Fields{
 				"db-type": dbType,
 			}).Error("Failed to read test_database.type value")
 		}
@@ -124,9 +127,9 @@ func WithTestDBs(f func(dbType string)) {
 			viper.Set("sync.enabled", false)
 		}
 
-		log.WithField("db-type", dbType).Info("Starting tests with DB")
+		logrus.WithField("db-type", dbType).Info("Starting tests with DB")
 		f(dbType)
-		log.WithField("db-type", dbType).Info("Finished tests with DB")
+		logrus.WithField("db-type", dbType).Info("Finished tests with DB")
 	}
 }
 
@@ -262,7 +265,7 @@ func RunCleanTestScenario(
 	testScenario *TestScenario,
 	server *APIServer,
 ) {
-	log.WithField("test-scenario", testScenario.Name).Debug("Running clean test scenario")
+	logrus.WithField("test-scenario", testScenario.Name).Debug("Running clean test scenario")
 	ctx := context.Background()
 	checkWatchers := StartWatchers(t, testScenario.Name, testScenario.Watchers)
 	stopIC := startIntentCompiler(t, testScenario, server)
@@ -277,7 +280,7 @@ func RunCleanTestScenario(
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
 func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario, server *APIServer) func() {
-	log.WithField("test-scenario", testScenario.Name).Debug("Running dirty test scenario")
+	logrus.WithField("test-scenario", testScenario.Name).Debug("Running dirty test scenario")
 	ctx := context.Background()
 	clients := prepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients, server.APIServer.DBService)
@@ -291,13 +294,13 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 	for _, tr := range tracked {
 		response, err := clients[tr.Client].EnsureDeleted(ctx, tr.Path, nil)
 		if err != nil {
-			log.WithError(err).WithFields(log.Fields{
+			logrus.WithError(err).WithFields(logrus.Fields{
 				"url-path":    tr.Path,
 				"http-client": tr.Client,
 			}).Error("Deleting dirty resource failed - ignoring")
 		}
 		if response.StatusCode == http.StatusOK {
-			log.WithFields(log.Fields{
+			logrus.WithFields(logrus.Fields{
 				"url-path":    tr.Path,
 				"http-client": tr.Client,
 			}).Warn("Test scenario has not deleted resource but should have deleted - test scenario is dirty")
@@ -436,20 +439,20 @@ func runTestScenario(
 	m baseservices.MetadataGetter,
 ) (tracked []trackedResource) {
 	for _, cleanTask := range testScenario.CleanTasks {
-		log.WithFields(log.Fields{
+		logrus.WithFields(logrus.Fields{
 			"test-scenario": testScenario.Name,
 			"clean-task":    cleanTask,
 		}).Debug("Deleting existing resources before test scenario workflow")
 		err := performCleanup(ctx, cleanTask, getClientByID(cleanTask.Client, clients), m)
 		if err != nil {
-			log.WithError(err).WithFields(log.Fields{
+			logrus.WithError(err).WithFields(logrus.Fields{
 				"test-scenario": testScenario.Name,
 				"clean-task":    cleanTask,
 			}).Error("Failed to delete existing resource before running workflow - ignoring")
 		}
 	}
 	for _, task := range testScenario.Workflow {
-		log.WithFields(log.Fields{
+		logrus.WithFields(logrus.Fields{
 			"test-scenario": testScenario.Name,
 			"task":          task.Name,
 		}).Info("Starting task")
@@ -592,7 +595,7 @@ func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResou
 func trackResponse(respDataIf interface{}, clientID string, tracked []trackedResource) []trackedResource {
 	switch respData := respDataIf.(type) {
 	case []interface{}:
-		log.Warn("Not handled SYNC request - yet!")
+		logrus.Warn("Not handled SYNC request - yet!")
 		for _, syncOpIf := range respData {
 			if syncOp, ok := syncOpIf.(map[string]interface{}); ok {
 				tracked = append(tracked, extractSyncOperation(syncOp, clientID)...)

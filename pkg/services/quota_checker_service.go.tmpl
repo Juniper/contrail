@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
@@ -30,7 +30,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 	}
 
 	if limit == NoQuotaLimit {
-		log.Debugf("Quota for {{ name }}(%v) in is not set - continue", obj.GetUUID())
+		logrus.Debugf("Quota for {{ name }}(%v) in is not set - continue", obj.GetUUID())
 		return nil
 	}
 
@@ -39,7 +39,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 		return errors.Wrapf(err, "could not get count for resource {{ name }}(%v)", obj.GetUUID())
 	}
 
-	log.Debugf("Quota limit for {{ name }} is %v, count is %v", limit, count)
+	logrus.Debugf("Quota limit for {{ name }} is %v, count is %v", limit, count)
 
 	if count >= limit {
 		return errutil.ErrorBadRequestf("Quota exceeded for resource {{ name }}(%v); there are already %v resources", obj.GetUUID(), count)
@@ -50,7 +50,7 @@ func (svc *QuotaCheckerService) Handle{{ name }}(ctx context.Context, obj *model
 
 // Create{{ name }} is an implementation of handling quota verification during object creation
 func (svc *QuotaCheckerService) Create{{ name }}(ctx context.Context, request *Create{{ name }}Request) (*Create{{ name }}Response, error) {
-	log.Debugf("Create{{ name }} request = %+v;", request)
+	logrus.Debugf("Create{{ name }} request = %+v;", request)
 	if err := svc.Handle{{ name }}(ctx, request.{{ name }}); err != nil {
 		return nil, err
 	}

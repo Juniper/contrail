@@ -13,9 +13,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/auth"
-	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/log/report"
-	"github.com/Juniper/contrail/pkg/logging"
+	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/logutil/report"
 )
 
 // Config represents cloud configuration needed by cloudManager
@@ -59,7 +58,7 @@ type Cloud struct {
 	APIServer    *client.HTTP
 	log          *logrus.Entry
 	reporter     *report.Reporter
-	streamServer *pkglog.StreamServer
+	streamServer *logutil.StreamServer
 	ctx          context.Context
 }
 
@@ -81,6 +80,10 @@ func NewCloudManager(configPath string) (*Cloud, error) {
 
 // NewCloud returns a new Cloud instance
 func NewCloud(c *Config) (*Cloud, error) {
+	if err := logutil.Configure(c.LogLevel); err != nil {
+		return nil, err
+	}
+
 	s := &client.HTTP{
 		Endpoint: c.Endpoint,
 		InSecure: c.InSecure,
@@ -111,32 +114,22 @@ func NewCloud(c *Config) (*Cloud, error) {
 		return nil, fmt.Errorf("cloudID not specified in the config")
 	}
 
-	//create reporter for cloud
-	logger := pkglog.NewFileLogger("reporter", c.LogFile)
-	pkglog.SetLogLevel(logger, c.LogLevel)
-
-	r := report.NewReporter(s,
-		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID), logger)
-
-	// create logger for cloud
-	logger = pkglog.NewFileLogger("cloud", c.LogFile)
-	pkglog.SetLogLevel(logger, c.LogLevel)
-	streamServer := pkglog.NewStreamServer(c.LogFile)
-
 	return &Cloud{
-		APIServer:    s,
-		config:       c,
-		log:          logger,
-		reporter:     r,
-		streamServer: streamServer,
+		APIServer: s,
+		config:    c,
+		log:       logutil.NewFileLogger("cloud", c.LogFile),
+		reporter: report.NewReporter(
+			s,
+			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID),
+			logutil.NewFileLogger("reporter", c.LogFile),
+		),
+		streamServer: logutil.NewStreamServer(c.LogFile),
 		ctx:          ctx,
 	}, nil
 }
 
 // Manage starts managing the cloud.
 func (c *Cloud) Manage() error {
-	logging.SetLogLevel()
-	// start log server
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
 

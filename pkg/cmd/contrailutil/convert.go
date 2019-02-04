@@ -1,7 +1,7 @@
 package contrailutil
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -47,7 +47,7 @@ var convertCmd = &cobra.Command{
 			URL:                     url,
 		})
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 	},
 }
