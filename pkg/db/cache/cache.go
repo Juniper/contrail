@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -54,7 +54,7 @@ func (w *Watcher) Chan() chan *services.Event {
 //nolint: gocyclo
 func (w *Watcher) watch(ctx context.Context, db *DB) {
 	defer func() {
-		log.Debugf("[Watcher %d] watch stopped", w.id)
+		logrus.Debugf("[Watcher %d] watch stopped", w.id)
 
 		db.watcherMutex.Lock()
 		defer db.watcherMutex.Unlock()
@@ -65,41 +65,41 @@ func (w *Watcher) watch(ctx context.Context, db *DB) {
 		close(w.ch)
 		close(w.updateCh)
 	}()
-	log.Debugf("[Watcher %d] watch started", w.id)
+	logrus.Debugf("[Watcher %d] watch started", w.id)
 
 	for w.node == nil {
-		log.Debugf("[Watcher %d] waiting for first event", w.id)
+		logrus.Debugf("[Watcher %d] waiting for first event", w.id)
 		select {
 		case <-w.updateCh:
-			log.Debugf("[Watcher %d] got first event", w.id)
+			logrus.Debugf("[Watcher %d] got first event", w.id)
 			w.node = db.getFirst()
 		case <-ctx.Done():
-			log.Debugf("[Watcher %d] canceled by context", w.id)
+			logrus.Debugf("[Watcher %d] canceled by context", w.id)
 			return
 		}
 	}
 
 	for {
 		// send out for event.
-		log.Debugf("[Watcher %d] send event %v", w.id, w.node)
+		logrus.Debugf("[Watcher %d] send event %v", w.id, w.node)
 
 		select {
 		case w.ch <- w.node.event:
 		case <-ctx.Done():
-			log.Debugf("[Watcher %d] canceled by context", w.id)
+			logrus.Debugf("[Watcher %d] canceled by context", w.id)
 			return
 		}
 
 		next := w.node.getNext()
 
 		for next == nil {
-			log.Debugf("[Watcher %d] waiting for next event", w.id)
+			logrus.Debugf("[Watcher %d] waiting for next event", w.id)
 			select {
 			case <-w.updateCh:
 				next = w.node.getNext()
-				log.Debugf("[Watcher %d] got next event %v", w.id, next)
+				logrus.Debugf("[Watcher %d] got next event %v", w.id, next)
 			case <-ctx.Done():
-				log.Debugf("[Watcher %d] canceled by context", w.id)
+				logrus.Debugf("[Watcher %d] canceled by context", w.id)
 				return
 			}
 		}
@@ -162,7 +162,7 @@ func (db *DB) update(event *services.Event) {
 		backRefs = oldResource.GetBackReferences()
 		children = oldResource.GetChildren()
 		db.removeDependencies(oldResource)
-		log.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
+		logrus.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
 		if existingNode == db.first {
 			db.first = existingNode.getNext()
 		}
@@ -185,7 +185,7 @@ func (db *DB) update(event *services.Event) {
 	db.updateDependentNodes(event, backRefs, children)
 	db.handleNode(n)
 
-	log.Debugf("node %v updated", n.version)
+	logrus.Debugf("node %v updated", n.version)
 }
 
 func (db *DB) updateDBVersion(n *node) {

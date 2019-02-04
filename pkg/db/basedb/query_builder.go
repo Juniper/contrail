@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/format"
@@ -313,7 +313,7 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 	writeString(query, "select ")
 
 	if len(ctx.columnParts) != len(ctx.columns) {
-		log.Fatal("unmatch")
+		logrus.Fatal("unmatch")
 	}
 	WriteStrings(query, strings.Join(ctx.columnParts, ","), " from ", qb.as(qb.Table, qb.TableAlias))
 
@@ -634,17 +634,17 @@ func (qb *QueryBuilder) ScanResourceList(value interface{}) []interface{} {
 	case MYSQL:
 		err := json.Unmarshal([]byte("["+stringValue+"]"), &resources)
 		if err != nil {
-			log.Debug(err)
+			logrus.Debug(err)
 			return nil
 		}
 	case POSTGRES:
 		err := json.Unmarshal([]byte(stringValue), &resources)
 		if err != nil {
-			log.Debug(err)
+			logrus.Debug(err)
 			return nil
 		}
 	default:
-		log.Fatal("unsupported db dialect")
+		logrus.Fatal("unsupported db dialect")
 	}
 	return resources
 }
@@ -678,6 +678,6 @@ func WriteStrings(b *bytes.Buffer, strings ...string) {
 func writeString(b *bytes.Buffer, s string) {
 	_, err := b.WriteString(s)
 	if err != nil {
-		log.Fatalf("unexpected bytes.Buffer.WriteString() error: %v", err)
+		logrus.Fatalf("unexpected bytes.Buffer.WriteString() error: %v", err)
 	}
 }

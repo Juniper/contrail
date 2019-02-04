@@ -2,9 +2,9 @@ package etcd
 
 import (
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -15,7 +15,7 @@ type NotifierService struct {
 	Path   string
 	Client *Client
 	Codec  models.Codec
-	log    *log.Entry
+	log    *logrus.Entry
 }
 
 // NewNotifierService creates a etcd Notifier Service.
@@ -29,7 +29,7 @@ func NewNotifierService(path string, codec models.Codec) (*NotifierService, erro
 		Path:   path,
 		Client: ec,
 		Codec:  codec,
-		log:    pkglog.NewLogger("etcd-notifier"),
+		log:    logutil.NewLogger("etcd-notifier"),
 	}
 	return service, nil
 }

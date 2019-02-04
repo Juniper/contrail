@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -65,33 +65,33 @@ func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGro
 }
 
 func startCassandraReplicator(wg *sync.WaitGroup) {
-	log.Debug("Cassandra replication service enabled")
+	logrus.Debug("Cassandra replication service enabled")
 	cassandraProcessor := cassandra.NewEventProcessor()
 	producer, err := etcd.NewEventProducer(cassandraProcessor, "cassandra-replicator")
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	err = producer.Start(context.Background())
 	if err != nil {
-		log.Warn(err)
+		logrus.Warn(err)
 	}
 }
 
 func startAmqpReplicator(wg *sync.WaitGroup) {
-	log.Debug("AMQP replication service enabled")
+	logrus.Debug("AMQP replication service enabled")
 	amqpProcessor := cassandra.NewAmqpEventProcessor()
 	producer, err := etcd.NewEventProducer(amqpProcessor, "amqp-replicator")
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	err = producer.Start(context.Background())
 	if err != nil {
-		log.Warn(err)
+		logrus.Warn(err)
 	}
 }
 
 func startCacheService(wg *sync.WaitGroup) {
-	log.Debug("Cache service enabled")
+	logrus.Debug("Cache service enabled")
 	cacheDB = cache.NewDB(uint64(viper.GetInt64("cache.max_history")))
 	MaybeStart("cache.cassandra", startCassandraWatcher, wg)
 	MaybeStart("cache.etcd", startEtcdWatcher, wg)
@@ -99,50 +99,50 @@ func startCacheService(wg *sync.WaitGroup) {
 }
 
 func startCassandraWatcher(_ *sync.WaitGroup) {
-	log.Debug("Cassandra watcher enabled for cache")
+	logrus.Debug("Cassandra watcher enabled for cache")
 	producer := cassandra.NewEventProducer(cacheDB)
 	err := producer.Start(context.Background())
 	if err != nil {
-		log.Warn(err)
+		logrus.Warn(err)
 	}
 }
 
 func startEtcdWatcher(_ *sync.WaitGroup) {
-	log.Debug("etcd watcher enabled for cache")
+	logrus.Debug("etcd watcher enabled for cache")
 	producer, err := etcd.NewEventProducer(cacheDB, "cache-service")
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	err = producer.Start(context.Background())
 	if err != nil {
-		log.Warn(err)
+		logrus.Warn(err)
 	}
 }
 
 func startRDBMSWatcher(_ *sync.WaitGroup) {
-	log.Debug("RDBMS watcher enabled for cache")
+	logrus.Debug("RDBMS watcher enabled for cache")
 	producer, err := syncp.NewEventProducer(cacheDB)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	defer producer.Close()
 	err = producer.Start(context.Background())
 	if err != nil {
-		log.Warn(err)
+		logrus.Warn(err)
 	}
 }
 
 func startServer(_ *sync.WaitGroup) {
 	server, err := apisrv.NewServer()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	server.Cache = cacheDB
 	if err = server.Init(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	if err = server.Run(); err != nil {
-		log.Warn(err)
+		logrus.Warn(err)
 	}
 }
 
@@ -150,39 +150,39 @@ func startSync(_ *sync.WaitGroup) {
 	if err := retry.Do(func() (retry bool, err error) {
 		s, err := syncp.NewService()
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 		defer s.Close()
 
 		err = s.Run()
 
 		return errutil.ShouldRetry(err), err
-	}, retry.WithLog(log.StandardLogger()), retry.WithInterval(syncRetryInterval)); err != nil {
-		log.Warn(err)
+	}, retry.WithLog(logrus.StandardLogger()), retry.WithInterval(syncRetryInterval)); err != nil {
+		logrus.Warn(err)
 	}
 }
 
 func startCompilationService(_ *sync.WaitGroup) {
 	server, err := compilation.NewIntentCompilationService()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	if err = server.Run(ctx); err != nil {
-		log.Warn(err)
+		logrus.Warn(err)
 	}
 }
 
 func startAgent(_ *sync.WaitGroup) {
 	a, err := agent.NewAgentByConfig()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	for {
 		if err := a.Watch(context.Background()); err != nil {
-			log.Warn(err)
+			logrus.Warn(err)
 		}
 	}
 }

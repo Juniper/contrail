@@ -23,7 +23,7 @@ import (
 	"github.com/Juniper/contrail/pkg/compilation/logic"
 	"github.com/Juniper/contrail/pkg/compilation/watch"
 	"github.com/Juniper/contrail/pkg/db/etcd"
-	"github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -95,7 +95,7 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		apiClient: apiClient,
 		Store:     ec,
 		config:    &c,
-		log:       log.NewLogger(serviceName),
+		log:       logutil.NewLogger(serviceName),
 	}, nil
 }
 

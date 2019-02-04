@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -42,7 +42,7 @@ func TestBenchAPI(t *testing.T) {
 	restClient.Init()
 	var err error
 
-	log.Info("Benchmark create:")
+	logrus.Info("Benchmark create:")
 	Benchmark(workerCount, loopCount, func(w, l int) error {
 		// Contact the server and print out its response.
 		project := models.MakeProject()
@@ -56,7 +56,7 @@ func TestBenchAPI(t *testing.T) {
 		return err
 	})
 
-	log.Info("Benchmark list:")
+	logrus.Info("Benchmark list:")
 	Benchmark(workerCount, loopCount, func(w, l int) error {
 		_, err := restClient.ListProject(ctx, &services.ListProjectRequest{
 			Spec: &baseservices.ListSpec{},

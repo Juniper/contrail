@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -22,7 +22,7 @@ func NewEventProducer(processor services.EventProcessor) (*EventProducer, error)
 		return nil, err
 	}
 	return &EventProducer{
-		log:     log.NewLogger("sync-event-producer"),
+		log:     logutil.NewLogger("sync-event-producer"),
 		watcher: watcher,
 	}, nil
 }

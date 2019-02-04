@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 
@@ -25,7 +25,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cache"
 	etcdclient "github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/fileutil"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron"
 	"github.com/Juniper/contrail/pkg/services"
@@ -150,7 +150,7 @@ func etcdNotifier() services.Service {
 	// TODO(Michał): Make the codec configurable
 	en, err := etcdclient.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
 	if err != nil {
-		log.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
+		logrus.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
 		return nil
 	}
 	return en
@@ -165,7 +165,7 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 // nolint: gocyclo
 func (s *Server) Init() (err error) {
 	// TODO (Kamil): should we refactor server to use a local logger?
-	if err = pkglog.Configure(viper.GetString("log_level")); err != nil {
+	if err = logutil.Configure(viper.GetString("log_level")); err != nil {
 		return err
 	}
 
@@ -179,7 +179,7 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("server.log_body") {
 		e.Use(middleware.BodyDump(func(c echo.Context, requestBody, responseBody []byte) {
-			log.WithFields(log.Fields{
+			logrus.WithFields(logrus.Fields{
 				"request-body":  string(requestBody),
 				"response-body": string(responseBody),
 			}).Debug("Request handled")
@@ -225,9 +225,9 @@ func (s *Server) Init() (err error) {
 	cors := viper.GetString("server.cors")
 
 	if cors != "" {
-		log.Printf("Enabling CORS for %s", cors)
+		logrus.Printf("Enabling CORS for %s", cors)
 		if cors == "*" {
-			log.Printf("cors for * have security issue. DO NOT USE THIS IN PRODUCTION")
+			logrus.Printf("cors for * have security issue. DO NOT USE THIS IN PRODUCTION")
 		}
 		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins:  []string{cors},
@@ -279,9 +279,9 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("server.enable_grpc") {
 		if !viper.GetBool("server.tls.enabled") {
-			log.Fatal("GRPC support requires TLS configuraion.")
+			logrus.Fatal("GRPC support requires TLS configuraion.")
 		}
-		log.Debug("enabling grpc")
+		logrus.Debug("enabling grpc")
 		opts := []grpc.ServerOption{
 			// TODO(Michal): below option potentially breaks compatibility for non golang grpc clients.
 			// Ensure it doesn't or find a better solution for un/marshaling `oneof` fields properly.
@@ -322,12 +322,12 @@ func (s *Server) Init() (err error) {
 			var data interface{}
 			err := json.Unmarshal(requestBody, &data)
 			if err != nil {
-				log.Debug("malformed json input")
+				logrus.Debug("malformed json input")
 			}
 			var expected interface{}
 			err = json.Unmarshal(responseBody, &expected)
 			if err != nil {
-				log.Debug("malformed json response")
+				logrus.Debug("malformed json response")
 			}
 			task := &recorderTask{
 				Request: &client.Request{
@@ -343,7 +343,7 @@ func (s *Server) Init() (err error) {
 			scenario.Workflow = append(scenario.Workflow, task)
 			err = fileutil.SaveFile(file, scenario)
 			if err != nil {
-				log.Warn(err)
+				logrus.Warn(err)
 			}
 		}))
 	}
@@ -431,7 +431,7 @@ func (s *Server) Run() error {
 	defer func() {
 		err := s.Close()
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 	}()
 	e := s.Echo

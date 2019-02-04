@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
@@ -97,7 +97,7 @@ func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
 	}
 	configEndpoint, err = getVncConfigEndpoint(keystone.Endpoints)
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	if configEndpoint != "" {
@@ -105,7 +105,7 @@ func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
 		err := apiAssignment.Init(
 			configEndpoint, keystone.staticAssignment.ListUsers())
 		if err != nil {
-			log.Error(err)
+			logrus.Error(err)
 			return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 		keystone.Assignment = apiAssignment
@@ -134,7 +134,7 @@ func (keystone *Keystone) appendStaticProjects(
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyclo
 	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	if keystoneEndpoint != "" {
@@ -175,7 +175,7 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
 	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
 	if keystoneEndpoint != "" {
@@ -184,7 +184,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 	}
 	var authRequest kscommon.AuthRequest
 	if err = c.Bind(&authRequest); err != nil {
-		log.WithField("error", err).Debug("Validation failed")
+		logrus.WithField("error", err).Debug("Validation failed")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 	var user *kscommon.User
@@ -209,18 +209,18 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 			authRequest.Auth.Identity.Password.User.Password,
 		)
 		if err != nil {
-			log.WithField("err", err).Debug("User not found")
+			logrus.WithField("err", err).Debug("User not found")
 			return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 		}
 		if user == nil {
-			log.Debug("User not found")
+			logrus.Debug("User not found")
 			return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 		}
 	}
 	var project *kscommon.Project
 	project, err = filterProject(user, authRequest.Auth.Scope)
 	if err != nil {
-		log.WithField("err", err).Debug("filter project error")
+		logrus.WithField("err", err).Debug("filter project error")
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 	}
 	tokenID, token = keystone.Store.CreateToken(user, project)
@@ -235,7 +235,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
 	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
 	if keystoneEndpoint != "" {

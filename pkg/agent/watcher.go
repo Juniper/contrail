@@ -10,7 +10,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 const (
@@ -107,16 +107,12 @@ func (w *pollingWatcher) watch(ctx context.Context) {
 }
 
 func newPollingWatcher(agent *Agent, task *task, schemaID string) (*pollingWatcher, error) {
-	// create logger for polling watcher
-	logger := pkglog.NewLogger("polling-watcher")
-	pkglog.SetLogLevel(logger, agent.config.LogLevel)
-
 	return &pollingWatcher{
 		agent:     agent,
 		conf:      task,
 		SchemaID:  schemaID,
 		resources: map[string]map[string]interface{}{},
-		log:       logger,
+		log:       logutil.NewLogger("polling-watcher"),
 	}, nil
 }
 

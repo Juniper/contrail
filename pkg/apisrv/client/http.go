@@ -14,7 +14,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
@@ -355,7 +355,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 	ctx context.Context,
 	request *http.Request, data interface{}) (*http.Response, error) {
 	if h.Debug {
-		log.WithFields(log.Fields{
+		logrus.WithFields(logrus.Fields{
 			"method": request.Method,
 			"url":    request.URL,
 			"header": request.Header,

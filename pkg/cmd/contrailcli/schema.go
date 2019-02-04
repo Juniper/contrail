@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/flosch/pongo2"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -43,7 +43,7 @@ var SchemaCmd = &cobra.Command{
 		}
 		output, err := showSchema(schemaID)
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 		fmt.Println(output)
 	},
@@ -91,7 +91,7 @@ func fetchServerAPI(client *client.HTTP, serverSchema string) (*schema.API, erro
 		if err == nil {
 			break
 		}
-		log.WithError(err).Warn("Failed to connect API Server - reconnecting")
+		logrus.WithError(err).Warn("Failed to connect API Server - reconnecting")
 		time.Sleep(time.Second)
 	}
 	return &api, nil

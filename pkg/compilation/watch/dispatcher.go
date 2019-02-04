@@ -9,7 +9,7 @@
 package watch
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // WorkerQueue is a buffered channel of these channel type
@@ -29,7 +29,7 @@ func InitDispatcher(numWorkers int, callback Callback) {
 
 		worker.Run()
 
-		log.Println("Started Worker", idx+1)
+		logrus.Println("Started Worker", idx+1)
 
 	}
 
@@ -44,7 +44,7 @@ func AssignJob(job JobRequest) {
 	// Assign Worker the Job to work on
 	workerChan <- job
 
-	log.Printf("Assigned Job: %d to Worker", job.JobID)
+	logrus.Printf("Assigned Job: %d to Worker", job.JobID)
 
 }
 
@@ -52,7 +52,7 @@ func AssignJob(job JobRequest) {
 func RunDispatcher() {
 	queue := JobQueue
 
-	log.Println("Run Dispatcher")
+	logrus.Println("Run Dispatcher")
 
 	go func() {
 		// Run Forever

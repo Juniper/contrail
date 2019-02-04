@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -43,7 +43,7 @@ type HTTPAPIClient struct {
 
 // NewTestingHTTPClient creates HTTP client of API Server with testing capabilities.
 func NewTestingHTTPClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
-	l := pkglog.NewLogger("http-api-client")
+	l := logutil.NewLogger("http-api-client")
 	l.WithFields(logrus.Fields{"endpoint": apiServerURL}).Debug("Connecting to API Server")
 
 	c, err := NewHTTPClient(apiServerURL)

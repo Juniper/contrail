@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/models"
@@ -28,10 +28,10 @@ func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB) {
 		for i := 0; i < numEvent; i++ {
 			select {
 			case <-ctx.Done():
-				log.Debugf("[watcher %d] time out on test", watcher.id)
+				logrus.Debugf("[watcher %d] time out on test", watcher.id)
 				assert.Fail(t, "timeout")
 			case e := <-watcher.ch:
-				log.Debugf("[watcher %d] got event version %d", watcher.id, e.Version)
+				logrus.Debugf("[watcher %d] got event version %d", watcher.id, e.Version)
 				assert.Equal(t, uint64(i), e.Version)
 			}
 		}
@@ -66,7 +66,7 @@ func notifyDelete(cache *DB, version uint64) { // nolint: interfacer
 }
 
 func TestCache(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	cache := NewDB(1)
 	wg := &sync.WaitGroup{}
 
@@ -120,7 +120,7 @@ type dependecyTestScenario struct {
 }
 
 func TestDependencyResolution(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	cache := NewDB(2)
 
 	vnBlue := &models.VirtualNetwork{
@@ -307,7 +307,7 @@ func TestDependencyResolution(t *testing.T) {
 }
 
 func TestReadInterfaceAndMaxHistory(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	cache := NewDB(1)
 
 	vnBlue := &models.VirtualNetwork{

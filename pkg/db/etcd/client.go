@@ -26,7 +26,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 
 	"github.com/Juniper/contrail/pkg/constants"
-	"github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 const (
@@ -92,7 +92,7 @@ func NewClient(c *Config) (*Client, error) {
 
 	return &Client{
 		ETCD: etcd,
-		log:  log.NewLogger(fmt.Sprint(c.ServiceName, "-etcd-client")),
+		log:  logutil.NewLogger(fmt.Sprint(c.ServiceName, "-etcd-client")),
 	}, nil
 }
 

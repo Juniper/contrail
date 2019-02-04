@@ -1,7 +1,7 @@
 package config
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/constants"
@@ -83,17 +83,17 @@ func ReadConfig() Config {
 		},
 	}
 
-	log.Println("Plugin Directory:", c.DefaultCfg.PluginDirectory)
-	log.Println("Number of Workers:", c.DefaultCfg.NumberOfWorkers)
-	log.Println("Maximum Job Queue Len:", c.DefaultCfg.MaxJobQueueLen)
+	logrus.Println("Plugin Directory:", c.DefaultCfg.PluginDirectory)
+	logrus.Println("Number of Workers:", c.DefaultCfg.NumberOfWorkers)
+	logrus.Println("Maximum Job Queue Len:", c.DefaultCfg.MaxJobQueueLen)
 
-	log.Println("etcd Notifier Servers List:", c.EtcdNotifierCfg.EtcdServers)
-	log.Println("etcd Notifier WatchPath :", "/"+c.EtcdNotifierCfg.WatchPath)
-	log.Println("etcd Notifier MsgQueueLockTime:", c.EtcdNotifierCfg.MsgQueueLockTime)
-	log.Println("etcd Notifier MsgIndexString:", c.EtcdNotifierCfg.MsgIndexString)
-	log.Println("etcd Notifier ReadLockString:", c.EtcdNotifierCfg.ReadLockString)
-	log.Println("etcd Notifier MasterElection:", c.EtcdNotifierCfg.MasterElection)
+	logrus.Println("etcd Notifier Servers List:", c.EtcdNotifierCfg.EtcdServers)
+	logrus.Println("etcd Notifier WatchPath :", "/"+c.EtcdNotifierCfg.WatchPath)
+	logrus.Println("etcd Notifier MsgQueueLockTime:", c.EtcdNotifierCfg.MsgQueueLockTime)
+	logrus.Println("etcd Notifier MsgIndexString:", c.EtcdNotifierCfg.MsgIndexString)
+	logrus.Println("etcd Notifier ReadLockString:", c.EtcdNotifierCfg.ReadLockString)
+	logrus.Println("etcd Notifier MasterElection:", c.EtcdNotifierCfg.MasterElection)
 
-	log.Println("Plugin Handlers:", c.PluginCfg.Handlers)
+	logrus.Println("Plugin Handlers:", c.PluginCfg.Handlers)
 	return c
 }
