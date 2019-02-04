@@ -7,6 +7,7 @@ import (
 
 	"github.com/gogo/protobuf/types"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -134,7 +135,7 @@ func (sv *ContrailTypeLogicService) validateFirewallRule(
 		return err
 	}
 
-	if err := sv.ComplementRefs(ctx, firewallRule); err != nil {
+	if err := sv.complementRefs(ctx, firewallRule); err != nil {
 		return err
 	}
 
@@ -282,7 +283,7 @@ func (sv *ContrailTypeLogicService) setTagProperties(
 	databaseFR *models.FirewallRule,
 	fm *types.FieldMask,
 ) error {
-	if !IsInternalRequest(ctx) && len(fr.GetTagRefs()) > 0 {
+	if !auth.IsInternalRequest(ctx) && len(fr.GetTagRefs()) > 0 {
 		return errutil.ErrorBadRequestf(
 			"cannot directly define Tags reference from a Firewall Rule. " +
 				"Use 'tags' endpoints property in the Firewall Rule")
@@ -419,7 +420,7 @@ func (sv *ContrailTypeLogicService) setAddressGroupRefs(
 	databaseFR *models.FirewallRule,
 	fm *types.FieldMask,
 ) error {
-	if !IsInternalRequest(ctx) && len(fr.GetAddressGroupRefs()) > 0 {
+	if !auth.IsInternalRequest(ctx) && len(fr.GetAddressGroupRefs()) > 0 {
 		return errutil.ErrorBadRequestf(
 			"cannot directly define Address Group reference from a Firewall Rule. " +
 				"Use 'address_group' endpoints property in the Firewall Rule")

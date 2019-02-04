@@ -233,8 +233,7 @@ func (sv *ContrailTypeLogicService) createDefaultRoutingInstance(
 	ctx context.Context, vn *models.VirtualNetwork,
 ) error {
 	_, err := sv.WriteService.CreateRoutingInstance(
-		WithInternalRequest(ctx),
-		&services.CreateRoutingInstanceRequest{
+		ctx, &services.CreateRoutingInstanceRequest{
 			RoutingInstance: vn.MakeDefaultRoutingInstance(),
 		},
 	)
@@ -253,8 +252,7 @@ func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
 	if ri := vn.GetDefaultRoutingInstance(); ri != nil {
 		// TODO: delete children of the default routing instance
 		_, err := sv.WriteService.DeleteRoutingInstance(
-			WithInternalRequest(ctx),
-			&services.DeleteRoutingInstanceRequest{
+			ctx, &services.DeleteRoutingInstanceRequest{
 				ID: ri.UUID,
 			},
 		)

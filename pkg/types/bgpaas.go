@@ -35,7 +35,7 @@ func (sv *ContrailTypeLogicService) UpdateBGPAsAService(
 		func(ctx context.Context) error {
 			fm := request.GetFieldMask()
 			if basemodels.FieldMaskContains(&fm, models.BGPAsAServiceFieldBgpaasShared) {
-				bgpaas, terr := sv.GetBGPAsAService(ctx, &services.GetBGPAsAServiceRequest{ID: id})
+				bgpaas, terr := sv.ReadService.GetBGPAsAService(ctx, &services.GetBGPAsAServiceRequest{ID: id})
 				if terr != nil {
 					return terr
 				}

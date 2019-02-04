@@ -6,6 +6,7 @@ import (
     "github.com/gogo/protobuf/types"
     "github.com/pkg/errors"
 
+    "github.com/Juniper/contrail/pkg/auth"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "github.com/Juniper/contrail/pkg/models"
 )
@@ -39,67 +40,96 @@ type ReadService interface {
 {% endif %}{% endfor %}
 }
 
+type InternalContextWriteServiceWrapper struct {
+    WriteService
+}
+
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+func (w *InternalContextWriteServiceWrapper) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+    return w.WriteService.Create{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
+}
 
-type {{ schema.JSONSchema.GoName }} = models.{{ schema.JSONSchema.GoName }}
+func (w *InternalContextWriteServiceWrapper) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+    return w.WriteService.Update{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
+}
 
-func (service *BaseService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
-    if service.next == nil {
-        return &Create{{ schema.JSONSchema.GoName }}Response{
-            {{ schema.JSONSchema.GoName }}: request.Get{{ schema.JSONSchema.GoName }}(),
-        }, nil
-    }
-    return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
-}
-func (service *BaseService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
-    if service.next == nil {
-        return &Update{{ schema.JSONSchema.GoName }}Response{
-            {{ schema.JSONSchema.GoName }}: request.Get{{ schema.JSONSchema.GoName }}(),
-        }, nil
-    }
-    return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
-}
-func (service *BaseService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
-    if service.next == nil {
-        return &Delete{{ schema.JSONSchema.GoName }}Response{
-            ID: request.ID,
-        }, nil
-    }
-    return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
-}
-func (service *BaseService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
-    if service.next == nil {
-        return nil, nil
-    }
-    return service.Next().Get{{ schema.JSONSchema.GoName }}(ctx, request)
-}
-func (service *BaseService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error) {
-    if service.next == nil {
-        return nil, nil
-    }
-    return service.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
+func (w *InternalContextWriteServiceWrapper) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    return w.WriteService.Delete{{ schema.JSONSchema.GoName }}(auth.WithInternalRequest(ctx), request)
 }
 
 {% for _, reference in schema.References %}
 {% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
-func (service *BaseService) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
-    if service.next == nil {
+func (w *InternalContextWriteServiceWrapper) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
+    return w.WriteService.Create{{ refType }}(auth.WithInternalRequest(ctx), request)
+}
+
+func (w *InternalContextWriteServiceWrapper) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
+    return w.WriteService.Delete{{ refType }}(auth.WithInternalRequest(ctx), request)
+}
+{% endfor %}
+{% endif%}{% endfor %}
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+type {{ schema.JSONSchema.GoName }} = models.{{ schema.JSONSchema.GoName }}
+
+func (s *BaseService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+    if s.next == nil {
+        return &Create{{ schema.JSONSchema.GoName }}Response{
+            {{ schema.JSONSchema.GoName }}: request.Get{{ schema.JSONSchema.GoName }}(),
+        }, nil
+    }
+    return s.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (s *BaseService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+    if s.next == nil {
+        return &Update{{ schema.JSONSchema.GoName }}Response{
+            {{ schema.JSONSchema.GoName }}: request.Get{{ schema.JSONSchema.GoName }}(),
+        }, nil
+    }
+    return s.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (s *BaseService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    if s.next == nil {
+        return &Delete{{ schema.JSONSchema.GoName }}Response{
+            ID: request.ID,
+        }, nil
+    }
+    return s.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (s *BaseService) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
+    if s.next == nil {
+        return nil, nil
+    }
+    return s.Next().Get{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+func (s *BaseService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error) {
+    if s.next == nil {
+        return nil, nil
+    }
+    return s.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+{% for _, reference in schema.References %}
+{% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+func (s *BaseService) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
+    if s.next == nil {
         return &Create{{ refType }}Response{
             ID: request.ID,
             {{ refType }}: request.Get{{ refType }}(),
         }, nil
     }
-    return service.Next().Create{{ refType }}(ctx, request)
+    return s.Next().Create{{ refType }}(ctx, request)
 }
 
-func (service *BaseService) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
-    if service.next == nil {
+func (s *BaseService) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
+    if s.next == nil {
         return &Delete{{ refType }}Response{
             ID: request.ID,
             {{ refType }}: request.Get{{ refType }}(),
         }, nil
     }
-    return service.Next().Delete{{ refType }}(ctx, request)
+    return s.Next().Delete{{ refType }}(ctx, request)
 }
 
 func (s *RefUpdateToUpdateService) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
@@ -157,8 +187,8 @@ func (s *RefUpdateToUpdateService) Delete{{ refType }}(ctx context.Context, requ
 }
 {% endfor %}
 
-func (service *EventProducerService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
-    _, err := service.Processor.Process(
+func (s *EventProducerService) Create{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+    _, err := s.Processor.Process(
         ctx,
         &Event{
             Request: &Event_Create{{ schema.JSONSchema.GoName }}Request{
@@ -168,10 +198,10 @@ func (service *EventProducerService) Create{{ schema.JSONSchema.GoName }}(ctx co
     if err != nil {
         return nil, err
     }
-    return service.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
+    return s.Next().Create{{ schema.JSONSchema.GoName }}(ctx, request)
 }
-func (service *EventProducerService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
-    _, err := service.Processor.Process(
+func (s *EventProducerService) Update{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+    _, err := s.Processor.Process(
         ctx,
         &Event{
             Request: &Event_Update{{ schema.JSONSchema.GoName }}Request{
@@ -181,10 +211,10 @@ func (service *EventProducerService) Update{{ schema.JSONSchema.GoName }}(ctx co
     if err != nil {
         return nil, err
     }
-    return service.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
+    return s.Next().Update{{ schema.JSONSchema.GoName }}(ctx, request)
 }
-func (service *EventProducerService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
-    _, err := service.Processor.Process(
+func (s *EventProducerService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+    _, err := s.Processor.Process(
         ctx,
         &Event{
             Request: &Event_Delete{{ schema.JSONSchema.GoName }}Request{
@@ -194,13 +224,13 @@ func (service *EventProducerService) Delete{{ schema.JSONSchema.GoName }}(ctx co
     if err != nil {
         return nil, err
     }
-    return service.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+    return s.Next().Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
 {% for _, reference in schema.References %}
 {% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
-func (service *EventProducerService) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
-    _, err := service.Processor.Process(
+func (s *EventProducerService) Create{{ refType }}(ctx context.Context, request *Create{{ refType }}Request) (*Create{{ refType }}Response, error) {
+    _, err := s.Processor.Process(
         ctx,
         &Event{Request: &Event_Create{{ refType }}Request{
             Create{{ refType }}Request: request,
@@ -209,11 +239,11 @@ func (service *EventProducerService) Create{{ refType }}(ctx context.Context, re
     if err != nil {
         return nil, err
     }
-    return service.Next().Create{{ refType }}(ctx, request)
+    return s.Next().Create{{ refType }}(ctx, request)
 }
 
-func (service *EventProducerService) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
-    _, err := service.Processor.Process(
+func (s *EventProducerService) Delete{{ refType }}(ctx context.Context, request *Delete{{ refType }}Request) (*Delete{{ refType }}Response, error) {
+    _, err := s.Processor.Process(
         ctx,
         &Event{Request: &Event_Delete{{ refType }}Request{
             Delete{{ refType }}Request: request,
@@ -222,7 +252,7 @@ func (service *EventProducerService) Delete{{ refType }}(ctx context.Context, re
     if err != nil {
         return nil, err
     }
-    return service.Next().Delete{{ refType }}(ctx, request)
+    return s.Next().Delete{{ refType }}(ctx, request)
 }
 {% endfor %}
 
