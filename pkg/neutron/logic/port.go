@@ -171,7 +171,7 @@ func (port *Port) ReadAll(
 ) (Response, error) {
 	// TODO implement rest of ReadAll logic
 	ps := []*PortResponse{}
-	if filters.haveKeys("device_id") {
+	if filters.HaveKeys("device_id") {
 		deviceUUIDs := filters["device_id"]
 		if len(deviceUUIDs) != 1 {
 			return ps, nil
