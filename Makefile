@@ -125,6 +125,7 @@ docker: ## Generate docker files
 	cp pkg/cluster/configs/contrail_common.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
 	cp pkg/cluster/configs/gateway_common.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
 	cp pkg/cluster/configs/tor_common.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
+	cp pkg/cluster/configs/authorized_registries.tmpl $(BUILD_DIR)/docker/contrail_go/templates/
 	mkdir -p $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO) && rm -rf $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)/
 ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
 		git clone -b $(ANSIBLE_DEPLOYER_BRANCH) https://github.com/Juniper/$(ANSIBLE_DEPLOYER_REPO).git $(BUILD_DIR)/docker/contrail_go/contrail-ansible-deployer

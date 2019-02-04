@@ -32,14 +32,14 @@ func (c *Cloud) newTF() (*terraform, error) {
 	secretFile := GetSecretFile(c.config.CloudID)
 	mcDir := GetMultiCloudRepodir()
 
-	logger := pkglog.NewLogger("reporter")
+	logger := pkglog.NewFileLogger("cloud-tf", c.config.LogFile)
 	pkglog.SetLogLevel(logger, c.config.LogLevel)
 
 	r := report.NewReporter(c.APIServer,
 		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.config.CloudID), logger)
 
 	// create logger for secret
-	logger = pkglog.NewLogger("terraform")
+	logger = pkglog.NewFileLogger("cloud-tf", c.config.LogFile)
 	pkglog.SetLogLevel(logger, c.config.LogLevel)
 
 	return &terraform{

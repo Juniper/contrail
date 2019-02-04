@@ -14,6 +14,9 @@ ADD ./templates /usr/share/contrail/templates
 COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
 COPY ./contrail-api-client /tmp/contrail-api-client
 
+# creating link as needed by multi-cloud
+RUN ln -s /usr/share/contrail/contrail-ansible-deployer /tmp/
+
 RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  &&\
         yum install -y \
         mysql-client \
@@ -32,7 +35,6 @@ RUN python2 -m pip install lxml saxpy gevent
 
 # logic to install vnc api client needed by multi-cloud
 RUN cd /tmp/contrail-api-client && git fetch --unshallow
-RUN sed -i 's/self.close()/#self.close()/g' /usr/lib64/python2.7/xml/sax/xmlreader.py
 RUN cd /tmp/contrail-api-client && scons
 RUN cd /tmp/contrail-api-client/build/debug/api-lib && python setup.py install
 

@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/common"
@@ -40,6 +40,8 @@ type Config struct { // nolint: maligned
 	ProvisionerType string `yaml:"provisioner_type,omitempty"`
 	// Logging level
 	LogLevel string `yaml:"log_level"`
+	// Logging  file
+	LogFile string `yaml:"log_file"`
 	// Template root directory
 	TemplateRoot string `yaml:"template_root"`
 
@@ -106,7 +108,7 @@ func NewCluster(c *Config) (*Cluster, error) {
 	}
 
 	// create logger for cluster
-	logger := pkglog.NewLogger("cluster")
+	logger := pkglog.NewFileLogger("cluster", c.LogFile)
 	pkglog.SetLogLevel(logger, c.LogLevel)
 
 	return &Cluster{

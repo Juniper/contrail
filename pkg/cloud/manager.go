@@ -110,14 +110,14 @@ func NewCloud(c *Config) (*Cloud, error) {
 	}
 
 	//create reporter for cloud
-	logger := pkglog.NewLogger("reporter")
+	logger := pkglog.NewFileLogger("cloud", c.LogFile)
 	pkglog.SetLogLevel(logger, c.LogLevel)
 
 	r := report.NewReporter(s,
 		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.CloudID), logger)
 
 	// create logger for cloud
-	logger = pkglog.NewLogger("cloud")
+	logger = pkglog.NewFileLogger("cloud", c.LogFile)
 	pkglog.SetLogLevel(logger, c.LogLevel)
 
 	return &Cloud{

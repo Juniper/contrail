@@ -61,14 +61,14 @@ func (c *Cloud) authenticate(d *Data) error {
 
 func (c *Cloud) newAzureUser(d *Data) (*azureUser, error) {
 
-	logger := pkglog.NewLogger("reporter")
+	logger := pkglog.NewFileLogger("cloud-topology", c.config.LogFile)
 	pkglog.SetLogLevel(logger, c.config.LogLevel)
 
 	r := report.NewReporter(c.APIServer,
 		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.config.CloudID), logger)
 
 	// create logger for topology
-	logger = pkglog.NewLogger("topology")
+	logger = pkglog.NewFileLogger("cloud-topology", c.config.LogFile)
 	pkglog.SetLogLevel(logger, c.config.LogLevel)
 
 	user, err := getCloudUser(d)
