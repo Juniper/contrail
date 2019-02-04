@@ -81,7 +81,14 @@ const (
 
 {% for schema in schemas %}
 
+{% if schema.TypeName %}
 const Kind{{ schema.JSONSchema.GoName }} = "{{ schema.TypeName }}"
+
+// Kind returns kind of an resource.
+func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
+	return Kind{{ schema.JSONSchema.GoName }}
+}
+{% endif %}
 
 {% if schema.JSONSchema.Type == "object" %}
 
@@ -271,14 +278,6 @@ func (m *{{ schema.JSONSchema.GoName }}) MarshalJSON() ([]byte, error) {
 		To: m.FQName,
 	}
 	return json.Marshal(obj)
-}
-{% endif %}
-
-{% if schema.TypeName %}
-
-// Kind returns kind of an resource.
-func (m *{{ schema.JSONSchema.GoName }}) Kind() string {
-	return Kind{{ schema.JSONSchema.GoName }}
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
