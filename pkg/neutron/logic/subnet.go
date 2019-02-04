@@ -108,27 +108,27 @@ func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *Sub
 		return false
 	}
 
-	if filters.haveKeys(sharedKey) && filters.checkValue(sharedKey, "true") && !vn.GetIsShared() {
+	if !vn.GetIsShared() && filters.Match(sharedKey, "true") {
 		return true
 	}
 
-	if !filters.checkValue(idKey, neutronSN.ID) {
+	if !filters.Match(idKey, neutronSN.ID) {
 		return true
 	}
 
-	if !filters.checkValue(tenantIDKey, neutronSN.TenantID) {
+	if !filters.Match(tenantIDKey, neutronSN.TenantID) {
 		return true
 	}
 
-	if !filters.checkValue(networkIDKey, neutronSN.NetworkID) {
+	if !filters.Match(networkIDKey, neutronSN.NetworkID) {
 		return true
 	}
 
-	if !filters.checkValue(nameKey, neutronSN.Name) {
+	if !filters.Match(nameKey, neutronSN.Name) {
 		return true
 	}
 
-	if !filters.checkValue(cidrKey, neutronSN.Cidr) {
+	if !filters.Match(cidrKey, neutronSN.Cidr) {
 		return true
 	}
 
@@ -540,12 +540,12 @@ func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filt
 		return listVNWithoutFilters(ctx, rp)
 	}
 
-	if filters.haveKeys(idKey) {
+	if filters.HasKeys(idKey) {
 		return collectVNsUsingKV(ctx, rp, filters[idKey])
 	}
 
 	req := &listReq{}
-	if filters.haveKeys(sharedKey) || filters.haveKeys(routerExternalKey) {
+	if filters.HasKeys(sharedKey) || filters.HasKeys(routerExternalKey) {
 		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
 	}
 
