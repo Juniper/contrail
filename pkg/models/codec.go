@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"github.com/Juniper/contrail/pkg/format"
 	"path"
 
 	"github.com/gogo/protobuf/proto"
@@ -88,7 +89,7 @@ func UpdateData(c Codec, oldData []byte, update basemodels.Object, fm types.Fiel
 	if !ok {
 		return nil, errors.Errorf("proto.Clone returned bad object type - %T (library bug)", oldObj)
 	}
-	output.ApplyMap(updateData)
+	format.ApplyMap(updateData, output)
 
 	return c.Encode(output)
 }

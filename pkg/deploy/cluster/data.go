@@ -88,15 +88,19 @@ func (a *AppformixData) interfaceToAppformixControllerNode(appformixControllerNo
 	}
 
 	for _, appformixControllerNode := range n {
-		appformixControllerNodeInfo := models.InterfaceToAppformixControllerNode(appformixControllerNode)
+		m, ok := appformixControllerNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var appformixControllerNodeInfo *models.AppformixControllerNode
+		format.ApplyMap(m, &appformixControllerNodeInfo)
 		// Read appformixController role node to get the node refs information
 		appformixControllerNodeData, err := c.getResource(
 			defaultAppformixControllerNodeResPath, appformixControllerNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		appformixControllerNodeInfo = models.InterfaceToAppformixControllerNode(
-			appformixControllerNodeData)
+		format.ApplyMap(appformixControllerNodeData, &appformixControllerNodeInfo)
 		a.clusterInfo.AppformixControllerNodes = append(
 			a.clusterInfo.AppformixControllerNodes, appformixControllerNodeInfo)
 	}
@@ -110,15 +114,19 @@ func (a *AppformixData) interfaceToAppformixBareHostNode(appformixBareHostNodes 
 	}
 
 	for _, appformixBareHostNode := range n {
-		appformixBareHostNodeInfo := models.InterfaceToAppformixBareHostNode(appformixBareHostNode)
+		m, ok := appformixBareHostNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var appformixBareHostNodeInfo *models.AppformixBareHostNode
+		format.ApplyMap(m, &appformixBareHostNodeInfo)
 		// Read appformixBareHost role node to get the node refs information
 		appformixBareHostNodeData, err := c.getResource(
 			defaultAppformixBareHostNodeResPath, appformixBareHostNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		appformixBareHostNodeInfo = models.InterfaceToAppformixBareHostNode(
-			appformixBareHostNodeData)
+		format.ApplyMap(appformixBareHostNodeData, &appformixBareHostNodeInfo)
 		a.clusterInfo.AppformixBareHostNodes = append(
 			a.clusterInfo.AppformixBareHostNodes, appformixBareHostNodeInfo)
 	}
@@ -132,15 +140,19 @@ func (a *AppformixData) interfaceToAppformixOpenstackNode(appformixOpenstackNode
 	}
 
 	for _, appformixOpenstackNode := range n {
-		appformixOpenstackNodeInfo := models.InterfaceToAppformixOpenstackNode(appformixOpenstackNode)
+		m, ok := appformixOpenstackNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var appformixOpenstackNodeInfo *models.AppformixOpenstackNode
+		format.ApplyMap(m, &appformixOpenstackNodeInfo)
 		// Read appformixOpenstack role node to get the node refs information
 		appformixOpenstackNodeData, err := c.getResource(
 			defaultAppformixOpenstackNodeResPath, appformixOpenstackNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		appformixOpenstackNodeInfo = models.InterfaceToAppformixOpenstackNode(
-			appformixOpenstackNodeData)
+		format.ApplyMap(appformixOpenstackNodeData, &appformixOpenstackNodeInfo)
 		a.clusterInfo.AppformixOpenstackNodes = append(
 			a.clusterInfo.AppformixOpenstackNodes, appformixOpenstackNodeInfo)
 	}
@@ -154,15 +166,19 @@ func (a *AppformixData) interfaceToAppformixComputeNode(appformixComputeNodes in
 	}
 
 	for _, appformixComputeNode := range n {
-		appformixComputeNodeInfo := models.InterfaceToAppformixComputeNode(appformixComputeNode)
+		m, ok := appformixComputeNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var appformixComputeNodeInfo *models.AppformixComputeNode
+		format.ApplyMap(m, &appformixComputeNodeInfo)
 		// Read appformixCompute role node to get the node refs information
 		appformixComputeNodeData, err := c.getResource(
 			defaultAppformixComputeNodeResPath, appformixComputeNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		appformixComputeNodeInfo = models.InterfaceToAppformixComputeNode(
-			appformixComputeNodeData)
+		format.ApplyMap(appformixComputeNodeData, &appformixComputeNodeInfo)
 		a.clusterInfo.AppformixComputeNodes = append(
 			a.clusterInfo.AppformixComputeNodes, appformixComputeNodeInfo)
 	}
@@ -209,8 +225,7 @@ func (a *AppformixData) updateClusterDetails(clusterID string, c *Cluster) error
 	if err != nil {
 		return err
 	}
-	a.clusterInfo = models.InterfaceToAppformixCluster(rData)
-
+	format.ApplyMap(rData, &a.clusterInfo)
 	// Expand appformix_controller back ref
 	if appformixControllerNodes, ok := rData["appformix_controller_nodes"]; ok {
 		if err = a.interfaceToAppformixControllerNode(appformixControllerNodes, c); err != nil {
@@ -291,15 +306,19 @@ func (k *KubernetesData) interfaceToKubernetesNode(kubernetesNodes interface{}, 
 	}
 
 	for _, kubernetesNode := range n {
-		kubernetesNodeInfo := models.InterfaceToKubernetesNode(kubernetesNode)
+		m, ok := kubernetesNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var kubernetesNodeInfo *models.KubernetesNode
+		format.ApplyMap(m, &kubernetesNodeInfo)
 		// Read kubernetes role node to get the node refs information
 		kubernetesNodeData, err := c.getResource(
 			defaultKubernetesNodeResPath, kubernetesNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		kubernetesNodeInfo = models.InterfaceToKubernetesNode(
-			kubernetesNodeData)
+		format.ApplyMap(kubernetesNodeData, &kubernetesNodeInfo)
 		k.clusterInfo.KubernetesNodes = append(
 			k.clusterInfo.KubernetesNodes, kubernetesNodeInfo)
 	}
@@ -313,15 +332,19 @@ func (k *KubernetesData) interfaceToKubernetesMasterNode(kubernetesMasterNodes i
 	}
 
 	for _, kubernetesMasterNode := range n {
-		kubernetesMasterNodeInfo := models.InterfaceToKubernetesMasterNode(kubernetesMasterNode)
+		m, ok := kubernetesMasterNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var kubernetesMasterNodeInfo *models.KubernetesMasterNode
+		format.ApplyMap(m, &kubernetesMasterNodeInfo)
 		// Read kubernetesMaster role node to get the node refs information
 		kubernetesMasterNodeData, err := c.getResource(
 			defaultKubernetesMasterNodeResPath, kubernetesMasterNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		kubernetesMasterNodeInfo = models.InterfaceToKubernetesMasterNode(
-			kubernetesMasterNodeData)
+		format.ApplyMap(kubernetesMasterNodeData, &kubernetesMasterNodeInfo)
 		k.clusterInfo.KubernetesMasterNodes = append(
 			k.clusterInfo.KubernetesMasterNodes, kubernetesMasterNodeInfo)
 	}
@@ -337,15 +360,19 @@ func (k *KubernetesData) interfaceToKubernetesKubemanagerNode(
 	}
 
 	for _, kubernetesKubemanagerNode := range n {
-		kubernetesKubemanagerNodeInfo := models.InterfaceToKubernetesKubemanagerNode(kubernetesKubemanagerNode)
+		m, ok := kubernetesKubemanagerNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var kubernetesKubemanagerNodeInfo *models.KubernetesKubemanagerNode
+		format.ApplyMap(m, &kubernetesKubemanagerNodeInfo)
 		// Read kubernetesKubemanager role node to get the node refs information
 		kubernetesKubemanagerNodeData, err := c.getResource(
 			defaultKubernetesKubemanagerNodeResPath, kubernetesKubemanagerNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		kubernetesKubemanagerNodeInfo = models.InterfaceToKubernetesKubemanagerNode(
-			kubernetesKubemanagerNodeData)
+		format.ApplyMap(kubernetesKubemanagerNodeData, &kubernetesKubemanagerNodeInfo)
 		k.clusterInfo.KubernetesKubemanagerNodes = append(
 			k.clusterInfo.KubernetesKubemanagerNodes, kubernetesKubemanagerNodeInfo)
 	}
@@ -357,8 +384,7 @@ func (k *KubernetesData) updateClusterDetails(clusterID string, c *Cluster) erro
 	if err != nil {
 		return err
 	}
-	k.clusterInfo = models.InterfaceToKubernetesCluster(rData)
-
+	format.ApplyMap(rData, &k.clusterInfo)
 	// Expand kubernetes node back ref
 	if kubernetesNodes, ok := rData["kubernetes_nodes"]; ok {
 		if err = k.interfaceToKubernetesNode(kubernetesNodes, c); err != nil {
@@ -429,16 +455,19 @@ func (v *VCenterData) updateNodeDetails(c *Cluster) error {
 func (v *VCenterData) interfaceToVCenterPluginNode(
 	vcenterPluginNodes interface{}, c *Cluster) error {
 	for _, vcenterPluginNode := range vcenterPluginNodes.([]interface{}) {
-		vcenterPluginNodeInfo := models.InterfaceToVCenterPluginNode(
-			vcenterPluginNode.(map[string]interface{}))
+		m, ok := vcenterPluginNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var vcenterPluginNodeInfo *models.VCenterPluginNode
+		format.ApplyMap(m, &vcenterPluginNodeInfo)
 		// Read vcenter_plugin role node to get the node refs information
 		vcenterPluginNodeData, err := c.getResource(
 			defaultVCenterPluginNodeResPath, vcenterPluginNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		vcenterPluginNodeInfo = models.InterfaceToVCenterPluginNode(
-			vcenterPluginNodeData)
+		format.ApplyMap(vcenterPluginNodeData, &vcenterPluginNodeInfo)
 		v.clusterInfo.VCenterPluginNodes = append(
 			v.clusterInfo.VCenterPluginNodes, vcenterPluginNodeInfo)
 	}
@@ -448,16 +477,18 @@ func (v *VCenterData) interfaceToVCenterPluginNode(
 func (v *VCenterData) interfaceToVCenterCompute(
 	vcenterComputes interface{}, c *Cluster) error {
 	for _, vcenterCompute := range vcenterComputes.([]interface{}) {
-		vcenterComputeInfo := models.InterfaceToVCenterCompute(
-			vcenterCompute.(map[string]interface{}))
-		// Read vcenter_compute role node to get the node refs information
+		m, ok := vcenterCompute.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var vcenterComputeInfo *models.VCenterCompute
+		format.ApplyMap(m, &vcenterComputeInfo)
 		vcenterComputeData, err := c.getResource(
 			defaultVCenterComputeResPath, vcenterComputeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		vcenterComputeInfo = models.InterfaceToVCenterCompute(
-			vcenterComputeData)
+		format.ApplyMap(vcenterComputeData, &vcenterComputeInfo)
 		v.clusterInfo.VCenterComputes = append(
 			v.clusterInfo.VCenterComputes, vcenterComputeInfo)
 	}
@@ -467,16 +498,18 @@ func (v *VCenterData) interfaceToVCenterCompute(
 func (v *VCenterData) interfaceToVCenterManagerNode(
 	vcenterManagerNodes interface{}, c *Cluster) error {
 	for _, vcenterManagerNode := range vcenterManagerNodes.([]interface{}) {
-		vcenterManagerNodeInfo := models.InterfaceToVCenterManagerNode(
-			vcenterManagerNode.(map[string]interface{}))
-		// Read vcenter_manager role node to get the node refs information
+		m, ok := vcenterManagerNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var vcenterManagerNodeInfo *models.VCenterManagerNode
+		format.ApplyMap(m, &vcenterManagerNodeInfo)
 		vcenterManagerNodeData, err := c.getResource(
 			defaultVCenterManagerNodeResPath, vcenterManagerNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		vcenterManagerNodeInfo = models.InterfaceToVCenterManagerNode(
-			vcenterManagerNodeData)
+		format.ApplyMap(vcenterManagerNodeData, &vcenterManagerNodeInfo)
 		v.clusterInfo.VCenterManagerNodes = append(
 			v.clusterInfo.VCenterManagerNodes, vcenterManagerNodeInfo)
 	}
@@ -488,8 +521,7 @@ func (v *VCenterData) updateClusterDetails(clusterID string, c *Cluster) error {
 	if err != nil {
 		return err
 	}
-	v.clusterInfo = models.InterfaceToVCenter(rData)
-
+	format.ApplyMap(rData, &v.clusterInfo)
 	// Expand vcenter_plugin back ref
 	if vcenterPluginNodes, ok := rData["vCenter_plugin_nodes"]; ok {
 		if err = v.interfaceToVCenterPluginNode(vcenterPluginNodes, c); err != nil {
@@ -577,15 +609,19 @@ func (o *OpenstackData) interfaceToOpenstackControlNode(openstackControlNodes in
 	}
 
 	for _, openstackControlNode := range n {
-		openstackControlNodeInfo := models.InterfaceToOpenstackControlNode(openstackControlNode)
+		m, ok := openstackControlNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var openstackControlNodeInfo *models.OpenstackControlNode
+		format.ApplyMap(m, &openstackControlNodeInfo)
 		// Read openstackControl role node to get the node refs information
 		openstackControlNodeData, err := c.getResource(
 			defaultOpenstackControlNodeResPath, openstackControlNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		openstackControlNodeInfo = models.InterfaceToOpenstackControlNode(
-			openstackControlNodeData)
+		format.ApplyMap(openstackControlNodeData, &openstackControlNodeInfo)
 		o.clusterInfo.OpenstackControlNodes = append(
 			o.clusterInfo.OpenstackControlNodes, openstackControlNodeInfo)
 	}
@@ -599,15 +635,19 @@ func (o *OpenstackData) interfaceToOpenstackMonitoringNode(openstackMonitoringNo
 	}
 
 	for _, openstackMonitoringNode := range n {
-		openstackMonitoringNodeInfo := models.InterfaceToOpenstackMonitoringNode(openstackMonitoringNode)
+		m, ok := openstackMonitoringNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var openstackMonitoringNodeInfo *models.OpenstackMonitoringNode
+		format.ApplyMap(m, &openstackMonitoringNodeInfo)
 		// Read openstackMonitoring role node to get the node refs information
 		openstackMonitoringNodeData, err := c.getResource(
 			defaultOpenstackMonitoringNodeResPath, openstackMonitoringNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		openstackMonitoringNodeInfo = models.InterfaceToOpenstackMonitoringNode(
-			openstackMonitoringNodeData)
+		format.ApplyMap(openstackMonitoringNodeData, &openstackMonitoringNodeInfo)
 		o.clusterInfo.OpenstackMonitoringNodes = append(
 
 			o.clusterInfo.OpenstackMonitoringNodes, openstackMonitoringNodeInfo)
@@ -622,15 +662,19 @@ func (o *OpenstackData) interfaceToOpenstackNetworkNode(openstackNetworkNodes in
 	}
 
 	for _, openstackNetworkNode := range n {
-		openstackNetworkNodeInfo := models.InterfaceToOpenstackNetworkNode(openstackNetworkNode)
+		m, ok := openstackNetworkNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var openstackNetworkNodeInfo *models.OpenstackNetworkNode
+		format.ApplyMap(m, &openstackNetworkNodeInfo)
 		// Read openstackNetwork role node to get the node refs information
 		openstackNetworkNodeData, err := c.getResource(
 			defaultOpenstackNetworkNodeResPath, openstackNetworkNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		openstackNetworkNodeInfo = models.InterfaceToOpenstackNetworkNode(
-			openstackNetworkNodeData)
+		format.ApplyMap(openstackNetworkNodeData, &openstackNetworkNodeInfo)
 		o.clusterInfo.OpenstackNetworkNodes = append(
 			o.clusterInfo.OpenstackNetworkNodes, openstackNetworkNodeInfo)
 	}
@@ -644,15 +688,19 @@ func (o *OpenstackData) interfaceToOpenstackStorageNode(openstackStorageNodes in
 	}
 
 	for _, openstackStorageNode := range n {
-		openstackStorageNodeInfo := models.InterfaceToOpenstackStorageNode(openstackStorageNode)
+		m, ok := openstackStorageNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var openstackStorageNodeInfo *models.OpenstackStorageNode
+		format.ApplyMap(m, &openstackStorageNodeInfo)
 		// Read openstackStorage role node to get the node refs information
 		openstackStorageNodeData, err := c.getResource(
 			defaultOpenstackStorageNodeResPath, openstackStorageNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		openstackStorageNodeInfo = models.InterfaceToOpenstackStorageNode(
-			openstackStorageNodeData)
+		format.ApplyMap(openstackStorageNodeData, &openstackStorageNodeInfo)
 		o.clusterInfo.OpenstackStorageNodes = append(
 			o.clusterInfo.OpenstackStorageNodes, openstackStorageNodeInfo)
 	}
@@ -666,15 +714,19 @@ func (o *OpenstackData) interfaceToOpenstackComputeNode(openstackComputeNodes in
 	}
 
 	for _, openstackComputeNode := range n {
-		openstackComputeNodeInfo := models.InterfaceToOpenstackComputeNode(openstackComputeNode)
+		m, ok := openstackComputeNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var openstackComputeNodeInfo *models.OpenstackComputeNode
+		format.ApplyMap(m, &openstackComputeNodeInfo)
 		// Read openstackCompute role node to get the node refs information
 		openstackComputeNodeData, err := c.getResource(
 			defaultOpenstackComputeNodeResPath, openstackComputeNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		openstackComputeNodeInfo = models.InterfaceToOpenstackComputeNode(
-			openstackComputeNodeData)
+		format.ApplyMap(openstackComputeNodeData, &openstackComputeNodeInfo)
 		o.clusterInfo.OpenstackComputeNodes = append(
 			o.clusterInfo.OpenstackComputeNodes, openstackComputeNodeInfo)
 	}
@@ -687,8 +739,7 @@ func (o *OpenstackData) updateClusterDetails(clusterID string, c *Cluster) error
 	if err != nil {
 		return err
 	}
-	o.clusterInfo = models.InterfaceToOpenstackCluster(rData)
-
+	format.ApplyMap(rData, &o.clusterInfo)
 	// Expand openstack_compute back ref
 	if openstackComputeNodes, ok := rData["openstack_compute_nodes"]; ok {
 		if err = o.interfaceToOpenstackComputeNode(openstackComputeNodes, c); err != nil {
@@ -804,15 +855,19 @@ func (d *Data) interfaceToContrailVrouterNode(contrailVrouterNodes interface{}, 
 	}
 
 	for _, contrailVrouterNode := range n {
-		contrailVrouterNodeInfo := models.InterfaceToContrailVrouterNode(contrailVrouterNode)
+		m, ok := contrailVrouterNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailVrouterNodeInfo *models.ContrailVrouterNode
+		format.ApplyMap(m, &contrailVrouterNodeInfo)
 		// Read contrailVrouter role node to get the node refs information
 		contrailVrouterNodeData, err := c.getResource(
 			defaultContrailVrouterNodeResPath, contrailVrouterNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailVrouterNodeInfo = models.InterfaceToContrailVrouterNode(
-			contrailVrouterNodeData)
+		format.ApplyMap(contrailVrouterNodeData, &contrailVrouterNodeInfo)
 		d.clusterInfo.ContrailVrouterNodes = append(
 			d.clusterInfo.ContrailVrouterNodes, contrailVrouterNodeInfo)
 	}
@@ -826,15 +881,19 @@ func (d *Data) interfaceToContrailMCGWNode(contrailMCGWNodes interface{}, c *Clu
 	}
 
 	for _, contrailMCGWNode := range n {
-		contrailMCGWNodeInfo := models.InterfaceToContrailMulticloudGWNode(contrailMCGWNode)
+		m, ok := contrailMCGWNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailMCGWNodeInfo *models.ContrailMulticloudGWNode
+		format.ApplyMap(m, &contrailMCGWNodeInfo)
 		// Read ContrailMulticloudGW role node to get the node refs information
 		contrailMCGWNodeData, err := c.getResource(
 			defaultContrailMCGWNodeResPath, contrailMCGWNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailMCGWNodeInfo = models.InterfaceToContrailMulticloudGWNode(
-			contrailMCGWNodeData)
+		format.ApplyMap(contrailMCGWNodeData, &contrailMCGWNodeInfo)
 		d.clusterInfo.ContrailMulticloudGWNodes = append(
 			d.clusterInfo.ContrailMulticloudGWNodes, contrailMCGWNodeInfo)
 	}
@@ -848,15 +907,19 @@ func (d *Data) interfaceToContrailZTPTFTPNode(contrailZTPTFTPNodes interface{}, 
 	}
 
 	for _, contrailZTPTFTPNode := range n {
-		contrailZTPTFTPNodeInfo := models.InterfaceToContrailZTPTFTPNode(contrailZTPTFTPNode)
+		m, ok := contrailZTPTFTPNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailZTPTFTPNodeInfo *models.ContrailZTPTFTPNode
+		format.ApplyMap(m, &contrailZTPTFTPNodeInfo)
 		// Read contrailZTPTFTP role node to get the node refs information
 		contrailZTPTFTPNodeData, err := c.getResource(
 			defaultContrailZTPTFTPNodeResPath, contrailZTPTFTPNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailZTPTFTPNodeInfo = models.InterfaceToContrailZTPTFTPNode(
-			contrailZTPTFTPNodeData)
+		format.ApplyMap(contrailZTPTFTPNodeData, &contrailZTPTFTPNodeInfo)
 		d.clusterInfo.ContrailZTPTFTPNodes = append(
 			d.clusterInfo.ContrailZTPTFTPNodes, contrailZTPTFTPNodeInfo)
 	}
@@ -870,15 +933,19 @@ func (d *Data) interfaceToContrailZTPDHCPNode(contrailZTPDHCPNodes interface{}, 
 	}
 
 	for _, contrailZTPDHCPNode := range n {
-		contrailZTPDHCPNodeInfo := models.InterfaceToContrailZTPDHCPNode(contrailZTPDHCPNode)
+		m, ok := contrailZTPDHCPNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailZTPDHCPNodeInfo *models.ContrailZTPDHCPNode
+		format.ApplyMap(m, &contrailZTPDHCPNodeInfo)
 		// Read contrailZTPDHCP role node to get the node refs information
 		contrailZTPDHCPNodeData, err := c.getResource(
 			defaultContrailZTPDHCPNodeResPath, contrailZTPDHCPNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailZTPDHCPNodeInfo = models.InterfaceToContrailZTPDHCPNode(
-			contrailZTPDHCPNodeData)
+		format.ApplyMap(contrailZTPDHCPNodeData, &contrailZTPDHCPNodeInfo)
 		d.clusterInfo.ContrailZTPDHCPNodes = append(
 			d.clusterInfo.ContrailZTPDHCPNodes, contrailZTPDHCPNodeInfo)
 	}
@@ -892,15 +959,19 @@ func (d *Data) interfaceToContrailServiceNode(contrailServiceNodes interface{}, 
 	}
 
 	for _, contrailServiceNode := range n {
-		contrailServiceNodeInfo := models.InterfaceToContrailServiceNode(contrailServiceNode)
+		m, ok := contrailServiceNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailServiceNodeInfo *models.ContrailServiceNode
+		format.ApplyMap(m, &contrailServiceNodeInfo)
 		// Read contrailService role node to get the node refs information
 		contrailServiceNodeData, err := c.getResource(
 			defaultContrailServiceNodeResPath, contrailServiceNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailServiceNodeInfo = models.InterfaceToContrailServiceNode(
-			contrailServiceNodeData)
+		format.ApplyMap(contrailServiceNodeData, &contrailServiceNodeInfo)
 		d.clusterInfo.ContrailServiceNodes = append(
 			d.clusterInfo.ContrailServiceNodes, contrailServiceNodeInfo)
 	}
@@ -914,15 +985,19 @@ func (d *Data) interfaceToContrailAnalyticsDatabaseNode(contrailAnalyticsDatabas
 	}
 
 	for _, contrailAnalyticsDatabaseNode := range n {
-		contrailAnalyticsDatabaseNodeInfo := models.InterfaceToContrailAnalyticsDatabaseNode(contrailAnalyticsDatabaseNode)
+		m, ok := contrailAnalyticsDatabaseNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailAnalyticsDatabaseNodeInfo *models.ContrailAnalyticsDatabaseNode
+		format.ApplyMap(m, &contrailAnalyticsDatabaseNodeInfo)
 		// Read contrailAnalyticsDatabase role node to get the node refs information
 		contrailAnalyticsDatabaseNodeData, err := c.getResource(
 			defaultContrailAnalyticsDatabaseNodeResPath, contrailAnalyticsDatabaseNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailAnalyticsDatabaseNodeInfo = models.InterfaceToContrailAnalyticsDatabaseNode(
-			contrailAnalyticsDatabaseNodeData)
+		format.ApplyMap(contrailAnalyticsDatabaseNodeData, &contrailAnalyticsDatabaseNodeInfo)
 		d.clusterInfo.ContrailAnalyticsDatabaseNodes = append(
 			d.clusterInfo.ContrailAnalyticsDatabaseNodes, contrailAnalyticsDatabaseNodeInfo)
 	}
@@ -936,15 +1011,19 @@ func (d *Data) interfaceToContrailAnalyticsNode(contrailAnalyticsNodes interface
 	}
 
 	for _, contrailAnalyticsNode := range n {
-		contrailAnalyticsNodeInfo := models.InterfaceToContrailAnalyticsNode(contrailAnalyticsNode)
+		m, ok := contrailAnalyticsNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailAnalyticsNodeInfo *models.ContrailAnalyticsNode
+		format.ApplyMap(m, &contrailAnalyticsNodeInfo)
 		// Read contrailAnalytics role node to get the node refs information
 		contrailAnalyticsNodeData, err := c.getResource(
 			defaultContrailAnalyticsNodeResPath, contrailAnalyticsNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailAnalyticsNodeInfo = models.InterfaceToContrailAnalyticsNode(
-			contrailAnalyticsNodeData)
+		format.ApplyMap(contrailAnalyticsNodeData, &contrailAnalyticsNodeInfo)
 		d.clusterInfo.ContrailAnalyticsNodes = append(
 			d.clusterInfo.ContrailAnalyticsNodes, contrailAnalyticsNodeInfo)
 	}
@@ -958,15 +1037,19 @@ func (d *Data) interfaceToContrailAnalyticsAlarmNode(contrailAnalyticsAlarmNodes
 	}
 
 	for _, contrailAnalyticsAlarmNode := range n {
-		contrailAnalyticsAlarmNodeInfo := models.InterfaceToContrailAnalyticsAlarmNode(contrailAnalyticsAlarmNode)
+		var contrailAnalyticsAlarmNodeInfo *models.ContrailAnalyticsAlarmNode
+		m, ok := contrailAnalyticsAlarmNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		format.ApplyMap(m, &contrailAnalyticsAlarmNodeInfo)
 		// Read contrailAnalyticsAlarm role node to get the node refs information
 		contrailAnalyticsAlarmNodeData, err := c.getResource(
 			defaultContrailAnalyticsAlarmNodeResPath, contrailAnalyticsAlarmNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailAnalyticsAlarmNodeInfo = models.InterfaceToContrailAnalyticsAlarmNode(
-			contrailAnalyticsAlarmNodeData)
+		format.ApplyMap(contrailAnalyticsAlarmNodeData, &contrailAnalyticsAlarmNodeInfo)
 		d.clusterInfo.ContrailAnalyticsAlarmNodes = append(
 			d.clusterInfo.ContrailAnalyticsAlarmNodes, contrailAnalyticsAlarmNodeInfo)
 	}
@@ -980,15 +1063,19 @@ func (d *Data) interfaceToContrailAnalyticsSNMPNode(contrailAnalyticsSNMPNodes i
 	}
 
 	for _, contrailAnalyticsSNMPNode := range n {
-		contrailAnalyticsSNMPNodeInfo := models.InterfaceToContrailAnalyticsSNMPNode(contrailAnalyticsSNMPNode)
+		var contrailAnalyticsSNMPNodeInfo *models.ContrailAnalyticsSNMPNode
+		m, ok := contrailAnalyticsSNMPNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		format.ApplyMap(m, &contrailAnalyticsSNMPNodeInfo)
 		// Read contrailAnalytics role node to get the node refs information
 		contrailAnalyticsSNMPNodeData, err := c.getResource(
 			defaultContrailAnalyticsSNMPNodeResPath, contrailAnalyticsSNMPNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailAnalyticsSNMPNodeInfo = models.InterfaceToContrailAnalyticsSNMPNode(
-			contrailAnalyticsSNMPNodeData)
+		format.ApplyMap(contrailAnalyticsSNMPNodeData, &contrailAnalyticsSNMPNodeInfo)
 		d.clusterInfo.ContrailAnalyticsSNMPNodes = append(
 			d.clusterInfo.ContrailAnalyticsSNMPNodes, contrailAnalyticsSNMPNodeInfo)
 	}
@@ -1002,15 +1089,19 @@ func (d *Data) interfaceToContrailWebuiNode(contrailWebuiNodes interface{}, c *C
 	}
 
 	for _, contrailWebuiNode := range n {
-		contrailWebuiNodeInfo := models.InterfaceToContrailWebuiNode(contrailWebuiNode)
+		m, ok := contrailWebuiNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailWebuiNodeInfo *models.ContrailWebuiNode
+		format.ApplyMap(m, &contrailWebuiNodeInfo)
 		// Read contrailWebui role node to get the node refs information
 		contrailWebuiNodeData, err := c.getResource(
 			defaultContrailWebuiNodeResPath, contrailWebuiNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailWebuiNodeInfo = models.InterfaceToContrailWebuiNode(
-			contrailWebuiNodeData)
+		format.ApplyMap(contrailWebuiNodeData, &contrailWebuiNodeInfo)
 		d.clusterInfo.ContrailWebuiNodes = append(
 			d.clusterInfo.ContrailWebuiNodes, contrailWebuiNodeInfo)
 	}
@@ -1024,16 +1115,19 @@ func (d *Data) interfaceToContrailControlNode(contrailControlNodes interface{}, 
 	}
 
 	for _, contrailControlNode := range n {
-		contrailControlNodeInfo := models.InterfaceToContrailControlNode(contrailControlNode)
+		m, ok := contrailControlNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailControlNodeInfo *models.ContrailControlNode
+		format.ApplyMap(m, &contrailControlNodeInfo)
 		// Read contrailControl role node to get the node refs information
 		contrailControlNodeData, err := c.getResource(
 			defaultContrailControlNodeResPath, contrailControlNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailControlNodeInfo = models.InterfaceToContrailControlNode(
-
-			contrailControlNodeData)
+		format.ApplyMap(contrailControlNodeData, &contrailControlNodeInfo)
 		d.clusterInfo.ContrailControlNodes = append(
 			d.clusterInfo.ContrailControlNodes, contrailControlNodeInfo)
 	}
@@ -1047,15 +1141,19 @@ func (d *Data) interfaceToContrailConfigDatabaseNode(contrailConfigDatabaseNodes
 	}
 
 	for _, contrailConfigDatabaseNode := range n {
-		contrailConfigDatabaseNodeInfo := models.InterfaceToContrailConfigDatabaseNode(contrailConfigDatabaseNode)
+		m, ok := contrailConfigDatabaseNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailConfigDatabaseNodeInfo *models.ContrailConfigDatabaseNode
+		format.ApplyMap(m, &contrailConfigDatabaseNodeInfo)
 		// Read contrailConfigDatabase role node to get the node refs information
 		contrailConfigDatabaseNodeData, err := c.getResource(
 			defaultContrailConfigDatabaseNodeResPath, contrailConfigDatabaseNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailConfigDatabaseNodeInfo = models.InterfaceToContrailConfigDatabaseNode(
-			contrailConfigDatabaseNodeData)
+		format.ApplyMap(contrailConfigDatabaseNodeData, &contrailConfigDatabaseNodeInfo)
 		d.clusterInfo.ContrailConfigDatabaseNodes = append(
 			d.clusterInfo.ContrailConfigDatabaseNodes, contrailConfigDatabaseNodeInfo)
 	}
@@ -1069,15 +1167,19 @@ func (d *Data) interfaceToContrailConfigNode(contrailConfigNodes interface{}, c 
 	}
 
 	for _, contrailConfigNode := range n {
-		contrailConfigNodeInfo := models.InterfaceToContrailConfigNode(contrailConfigNode)
+		m, ok := contrailConfigNode.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		var contrailConfigNodeInfo *models.ContrailConfigNode
+		format.ApplyMap(m, &contrailConfigNodeInfo)
 		// Read contrailConfig role node to get the node refs information
 		contrailConfigNodeData, err := c.getResource(
 			defaultContrailConfigNodeResPath, contrailConfigNodeInfo.UUID)
 		if err != nil {
 			return err
 		}
-		contrailConfigNodeInfo = models.InterfaceToContrailConfigNode(
-			contrailConfigNodeData)
+		format.ApplyMap(contrailConfigNodeData, &contrailConfigNodeInfo)
 		d.clusterInfo.ContrailConfigNodes = append(
 			d.clusterInfo.ContrailConfigNodes, contrailConfigNodeInfo)
 	}
@@ -1184,8 +1286,7 @@ func (d *Data) updateClusterDetails(clusterID string, c *Cluster) error {
 	if err != nil {
 		return err
 	}
-	d.clusterInfo = models.InterfaceToContrailCluster(rData)
-
+	format.ApplyMap(rData, &d.clusterInfo)
 	// Expand config node back ref
 	if configNodes, ok := rData["contrail_config_nodes"]; ok {
 		if err = d.interfaceToContrailConfigNode(configNodes, c); err != nil {

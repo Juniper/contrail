@@ -313,7 +313,7 @@ func NewCreateEvent(option *EventOption) (*Event, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
 	}
-	request.GetResource().ApplyMap(option.Data)
+	format.ApplyMap(option.Data, request.GetResource())
 	request.SetFieldMask(option.getFieldMask())
 	return &Event{
 		Request: request,
@@ -326,7 +326,7 @@ func NewUpdateEvent(option *EventOption) (*Event, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
 	}
-	request.GetResource().ApplyMap(option.Data)
+	format.ApplyMap(option.Data, request.GetResource())
 	request.GetResource().SetUUID(option.UUID)
 	request.SetFieldMask(option.getFieldMask())
 	return &Event{

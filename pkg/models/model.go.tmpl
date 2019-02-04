@@ -11,7 +11,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
@@ -125,81 +124,6 @@ func Make{{ schema.JSONSchema.GoName }}() *{{ schema.JSONSchema.GoName }}{
 		{% for linkTo, reference in schema.References %}{% if reference.Presence == "required" or reference.Presence == "true" %}
 			{{ reference.GoName }}Refs: []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{},{% endif %}{% endfor %}
 	}
-}
-
-// InterfaceTo{{ schema.JSONSchema.GoName }} converts interface to {{ schema.JSONSchema.GoName }}
-func InterfaceTo{{ schema.JSONSchema.GoName }}(i interface{}) *{{ schema.JSONSchema.GoName }}{
-	switch o := i.(type) {
-	case *{{ schema.JSONSchema.GoName }}:
-		return o
-	case {{ schema.JSONSchema.GoName }}:
-		return &o
-	case map[string]interface{}:
-		result := &{{ schema.JSONSchema.GoName }}{}
-		result.ApplyMap(o)
-		return result
-	{% if schema.JSONSchema.CollectionType %}
-	{% set subtype = schema.JSONSchema.OrderedProperties | first %}
-	case []interface{}:
-		return &{{ schema.JSONSchema.GoName }}{
-		{% if subtype.Items.Type == "string" %}
-			{{ subtype.GoName }}: format.InterfaceToStringList(o),
-		{% elif subtype.Items.GoType %}
-			{{ subtype.GoName }}: InterfaceTo{{ subtype.Items.GoType }}Slice(o),
-		{% endif %}
-		}
-	{% endif %}
-	default:
-		return nil
-	}
-}
-
-// ApplyMap updates object with values from map.
-func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
-	if len(o) == 0 || m == nil {
-		return
-	}
-	{% for property in schema.JSONSchema.OrderedProperties %}
-	if val, ok := o["{{ property.ID }}"]; ok && val != nil {
-		{% if property.GoType == "string" %}m.{{ property.GoName }} = format.InterfaceToString(val)
-		{% elif property.GoType == "[]string" %}m.{{ property.GoName }} = format.InterfaceToStringList(val)
-		{% elif property.GoType == "[]interface" %}m.{{ property.GoName }} = format.InterfaceToStringList(val)
-		{% elif property.GoType == "map[string]string" %}m.{{ property.GoName }} = format.InterfaceToStringMap(val)
-		{% elif property.GoType == "map[string]interface{}" %}m.{{ property.GoName }} = format.InterfaceToInterfaceMap(val)
-		{% elif property.GoType == "bool" %}m.{{ property.GoName }} = format.InterfaceToBool(val)
-		{% elif property.GoType == "int64" %}m.{{ property.GoName }} = format.InterfaceToInt64(val)
-		{% elif property.GoType == "uint64" %}m.{{ property.GoName }} = format.InterfaceToUint64(val)
-		{% elif property.GoType == "float" %}m.{{ property.GoName }} = format.InterfaceToFloat(val)
-		{% elif property.Type == "array" %}
-			{% if property.Items.Type == "string" %}
-			// string
-				m.{{ property.GoName }} = format.InterfaceToStringList(val)
-			{% elif property.Items.GoType == "int64" %}
-				m.{{ property.GoName }} = format.InterfaceToInt64List(val)
-			{% elif property.Items.GoType == "uint64" %}
-				m.{{ property.GoName }} = format.InterfaceToUint64List(val)
-			{% elif property.Items.GoType %}
-				m.{{ property.GoName }} = InterfaceTo{{ property.Items.GoType }}Slice(val)
-			{% endif %}
-		{% else %}type toMapper interface {ToMap() map[string]interface{}}
-		if m.{{ property.GoName }} == nil {
-			m.{{ property.GoName }} = &{{ property.GoType }}{}
-		}
-		switch v := val.(type) {
-		case toMapper:
-			m.{{ property.GoName }}.ApplyMap(v.ToMap())
-		case map[string]interface{}:
-			m.{{ property.GoName }}.ApplyMap(v)
-		case []interface{}:
-			m.{{ property.GoName }} = InterfaceTo{{ property.GoType }}(v)
-		}
-		{%- endif -%}
-	}
-	{%- endfor %}
-	{% for linkTo, reference in schema.References %}
-	if val, ok := o["{{ linkTo }}_refs"]; ok {
-		m.{{ reference.GoName }}Refs = InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(val)
-	}{% endfor %}
 }
 
 // ToMap makes map representation of a resource.
@@ -563,35 +487,6 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) ToMap() map[st
 	}
 }
 
-func InterfaceTo{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Refs(i interface{}) []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
-	result := []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{}
-	if ok := basemodels.ForEach(i, func(elem interface{}){
-		switch e := elem.(type) {
-			case map[string]interface{}:
-				result = append(result, &{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{
-					UUID: format.InterfaceToString(e["uuid"]),
-					To: format.InterfaceToStringList(e["to"]),
-					{% if reference.RefType %}
-					Attr: InterfaceTo{{ reference.RefType }}(e["attr"]),
-					{% endif %}
-				})
-			case {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
-				result = append(result, &e)
-			case *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
-				result = append(result, e)
-			case basemodels.Reference:
-				result = append(
-					result,
-					&{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref{UUID: e.GetUUID(), To: e.GetTo()},
-				)
-		}
-	}); !ok {
-		return nil
-	}
-
-	return result
-}
-
 func (m *{{ schema.JSONSchema.GoName }}) Add{{ reference.GoName }}Ref(to *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) {
 	{{ addToList("m."|add:reference.GoName|add:"Refs", "to") }}
 }
@@ -629,27 +524,6 @@ func (m *{{ schema.JSONSchema.GoName }}) Remove{{ linkTo.JSONSchema.GoName }}(ch
 // Make{{ schema.JSONSchema.GoName }}Slice() makes a slice of {{ schema.JSONSchema.GoName }}
 func Make{{ schema.JSONSchema.GoName }}Slice() []{% if schema.JSONSchema.Properties %}*{% endif %}{{ schema.JSONSchema.GoName }} {
 	return []{% if schema.JSONSchema.Properties %}*{% endif %}{{ schema.JSONSchema.GoName }}{}
-}
-
-{% if schema.JSONSchema.Properties %}
-{% set itemType = "*" | add:schema.JSONSchema.GoName %}
-{% else %}
-{% set itemType = schema.JSONSchema.GoName %}
-{% endif %}
-// InterfaceTo{{ schema.JSONSchema.GoName }}Slice() makes a slice of {{ schema.JSONSchema.GoName }}
-func InterfaceTo{{ schema.JSONSchema.GoName }}Slice(s interface{}) []{{ itemType }} {
-	if list, ok := s.([]{{ itemType }}); ok {
-		return list
-	}
-	list := format.InterfaceToInterfaceList(s)
-	if list == nil {
-		return nil
-	}
-	result := make([]{% if schema.JSONSchema.Properties %}*{% endif %}{{ schema.JSONSchema.GoName }}, len(list))
-	for i, item := range list {
-		result[i] = InterfaceTo{{ schema.JSONSchema.GoName }}(item)
-	}
-	return result
 }
 
 {% endif %}

@@ -3,6 +3,7 @@ package cluster
 import (
 	"context"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/format"
 	"net/url"
 	"strings"
 
@@ -35,14 +36,20 @@ func (c *Cluster) getDefaultCredential() (user, password, keypair string, err er
 		return "", "", "", err
 	}
 	for _, rawCred := range credList[defaultCredentialRes+"s"] {
-		cred := models.InterfaceToCredential(rawCred)
+		var cred *models.Credential
+		m, ok := rawCred.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		format.ApplyMap(m, &cred)
 		if cred.Name == "default-credential" {
 			for _, keypairRef := range cred.KeypairRefs {
 				k, err := c.getResource(defaultKeypairResPath, keypairRef.UUID)
 				if err != nil {
 					return "", "", "", err
 				}
-				keypair := models.InterfaceToKeypair(k)
+				var keypair *models.Keypair
+				format.ApplyMap(k, &keypair)
 				if keypair.Name == "default-keypair" {
 					return cred.SSHUser, cred.SSHPassword, keypair.SSHPublicKey, nil
 				}
@@ -105,7 +112,8 @@ func (c *Cluster) getNode(nodeID string, m map[string]bool, d DataStore) error {
 		if err != nil {
 			return err
 		}
-		ni := models.InterfaceToNode(n)
+		var ni *models.Node
+		format.ApplyMap(n, &ni)
 		d.addNode(ni)
 		for _, credRef := range ni.CredentialRefs {
 			// stop iteration after one credential ref
@@ -122,7 +130,9 @@ func (c *Cluster) getKeypair(keypairID string, m map[string]bool, d DataStore) e
 		if err != nil {
 			return err
 		}
-		d.addKeypair(models.InterfaceToKeypair(k))
+		var keypair *models.Keypair
+		format.ApplyMap(k, &keypair)
+		d.addKeypair(keypair)
 		return nil
 	}
 	return nil
@@ -135,7 +145,8 @@ func (c *Cluster) getCredential(credentialID string, m map[string]bool, d DataSt
 		if err != nil {
 			return err
 		}
-		cred := models.InterfaceToCredential(ci)
+		var cred *models.Credential
+		format.ApplyMap(ci, &cred)
 		d.addCredential(cred)
 		for _, keypairRef := range cred.KeypairRefs {
 			// stop iteration after one keypair ref

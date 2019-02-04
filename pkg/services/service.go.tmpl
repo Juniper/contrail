@@ -168,7 +168,9 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
 	}
 
-	model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
+	var model *models.{{ schema.JSONSchema.GoName }}
+	format.ApplyMap(request.{{ schema.JSONSchema.GoName }}, &model)
+
 	model.UUID = c.Param("id")
 	response, err := service.Update{{ schema.JSONSchema.GoName }}(
 		c.Request().Context(),

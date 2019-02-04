@@ -140,7 +140,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 		{% elif JSONSchema.Items.Type == "boolean" -%}
 			{{ path }} = format.InterfaceToBoolList({{arg}})
 		{% elif JSONSchema.Items.Type == "object" -%}
-			{{ path }} = models.InterfaceTo{{ JSONSchema.Items.GoType }}Slice({{arg}})
+			// TODO
 		{% endif -%}
 	{% else -%}
 		{% if JSONSchema.Type == "string" -%}
@@ -152,7 +152,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 		{% elif JSONSchema.Type == "boolean" -%}
 			{{ path }} = format.InterfaceToBool({{arg}})
 		{% elif JSONSchema.Type == "object" -%}
-			{{ path }} = models.InterfaceTo{{ JSONSchema.Items.GoType }}({{arg}})
+			format.ApplyMap({{arg}}, &{{ path }})
 		{% endif -%}
 	{% endif -%}
 {% endmacro %}
