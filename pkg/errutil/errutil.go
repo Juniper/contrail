@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -118,7 +118,7 @@ func ErrorInternalf(format string, a ...interface{}) error {
 
 // ToHTTPError translates grpc error to error.
 func ToHTTPError(err error) error {
-	log.WithError(err).Debug("Translating to HTTP error") // error translation might lose error description
+	logrus.WithError(err).Debug("Translating to HTTP error") // error translation might lose error description
 
 	cause := errors.Cause(err)
 	return echo.NewHTTPError(

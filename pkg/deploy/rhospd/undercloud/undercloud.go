@@ -5,7 +5,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 // Config represents Command configuration.
@@ -36,14 +36,10 @@ type UnderCloud struct {
 
 // NewUnderCloud creates UnderCloud with given configuration.
 func NewUnderCloud(c *Config) (*UnderCloud, error) {
-	// create logger for undercloud
-	logger := pkglog.NewFileLogger("undercloud", c.LogFile)
-	pkglog.SetLogLevel(logger, c.LogLevel)
-
 	return &UnderCloud{
 		config:    c,
 		APIServer: c.APIServer,
-		log:       logger,
+		log:       log.NewFileLogger("undercloud", c.LogFile),
 	}, nil
 }
 

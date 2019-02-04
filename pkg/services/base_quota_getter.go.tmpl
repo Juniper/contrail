@@ -4,7 +4,7 @@ package services
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/models"
 )
@@ -60,7 +60,7 @@ func (_ *DummyQuotaLimitGetter) {{ name }}Limit(_ context.Context, _ *models.{{ 
 // {{ name }}Limit returns the quota limit in the given objects' parent project.
 func (g *SimpleQuotaLimitGetter) {{ name }}Limit(ctx context.Context, obj *models.{{ name }}) (int64, error) {
 	if obj.GetParentUUID() == "" {
-		log.Warnf("orphan resource: %v; assuming no limit for quota", obj.GetUUID())
+		logrus.Warnf("orphan resource: %v; assuming no limit for quota", obj.GetUUID())
 		return NoQuotaLimit, nil
 	}
 

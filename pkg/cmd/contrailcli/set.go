@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
 
@@ -35,7 +35,7 @@ var SetCmd = &cobra.Command{
 		}
 		output, err := setResourceParameter(schemaID, uuid, yaml)
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 		fmt.Println(output)
 	},

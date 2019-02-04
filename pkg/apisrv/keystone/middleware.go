@@ -9,7 +9,7 @@ import (
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -29,7 +29,7 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	}
 	validatedToken, err := auth.Validate(tokenString)
 	if err != nil {
-		log.Errorf("Invalid Token: %s", err)
+		logrus.Errorf("Invalid Token: %s", err)
 		return nil, errutil.ErrorUnauthenticated
 	}
 	roles := []string{}
@@ -38,7 +38,7 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	}
 	project := validatedToken.Project
 	if project == nil {
-		log.Debug("No project in a token")
+		logrus.Debug("No project in a token")
 		return nil, errutil.ErrorUnauthenticated
 	}
 	domain := validatedToken.Project.Domain.ID
@@ -69,7 +69,7 @@ func GetAuthSkipPaths() []string {
 		if prefix == "/" {
 			staticFiles, err := ioutil.ReadDir(root.(string))
 			if err != nil {
-				log.Fatal(err)
+				logrus.Fatal(err)
 			}
 			for _, staticFile := range staticFiles {
 				skipPaths = append(skipPaths,
@@ -107,7 +107,7 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 			}
 			keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
 			if err != nil {
-				log.Errorf("unable to get keystone endpoint: %s", err)
+				logrus.Errorf("unable to get keystone endpoint: %s", err)
 				return errutil.ToHTTPError(errutil.ErrorUnauthenticated)
 			}
 			if keystoneEndpoint != "" {
@@ -126,7 +126,7 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 			}
 			ctx, err := authenticate(r.Context(), auth, tokenString)
 			if err != nil {
-				log.Errorf("Authentication failure: %s", err)
+				logrus.Errorf("Authentication failure: %s", err)
 				return errutil.ToHTTPError(err)
 			}
 			newRequest := r.WithContext(ctx)
@@ -153,7 +153,7 @@ func AuthInterceptor(keystoneClient *Client,
 		}
 		keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
 		if err != nil {
-			log.Error(err)
+			logrus.Error(err)
 			return nil, errutil.ErrorUnauthenticated
 		}
 		if keystoneEndpoint != "" {

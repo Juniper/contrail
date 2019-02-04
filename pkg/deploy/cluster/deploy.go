@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/Juniper/contrail/pkg/deploy/base"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/log/report"
 	"github.com/Juniper/contrail/pkg/models"
 )
@@ -92,75 +92,52 @@ func (p *deployCluster) deleteEndpoints() error {
 }
 
 func newAnsibleDeployer(cluster *Cluster, cData *Data) (base.Deployer, error) {
-	clusterID := cluster.config.ClusterID
-	// create logger for reporter
-	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
-	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
-
-	r := report.NewReporter(cluster.APIServer,
-		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
-
-	// create logger for ansible deployer
-	logger = pkglog.NewFileLogger("contrail-ansible-deployer", cluster.config.LogFile)
-	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
-
 	return &contrailAnsibleDeployer{deployCluster{
 		cluster:     cluster,
-		clusterID:   clusterID,
+		clusterID:   cluster.config.ClusterID,
 		action:      cluster.config.Action,
 		clusterData: cData,
 		Deploy: base.Deploy{
-			Reporter: r,
-			Log:      logger,
+			Reporter: report.NewReporter(
+				cluster.APIServer,
+				fmt.Sprintf("%s/%s", defaultResourcePath, cluster.config.ClusterID),
+				log.NewFileLogger("reporter", cluster.config.LogFile),
+			),
+			Log: log.NewFileLogger("contrail-ansible-deployer", cluster.config.LogFile),
 		},
 	}}, nil
 }
 
 func newMCProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (base.Deployer, error) {
-	// create logger for reporter
-	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
-	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
-
-	r := report.NewReporter(cluster.APIServer,
-		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
-
-	// create logger for multi-cloud provisioner
-	logger = pkglog.NewFileLogger("multi-cloud-provisioner", cluster.config.LogFile)
-	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
-
 	return &multiCloudProvisioner{contrailAnsibleDeployer{deployCluster{
 		cluster:     cluster,
 		clusterID:   clusterID,
 		action:      action,
 		clusterData: cData,
 		Deploy: base.Deploy{
-			Reporter: r,
-			Log:      logger,
+			Reporter: report.NewReporter(
+				cluster.APIServer,
+				fmt.Sprintf("%s/%s", defaultResourcePath, clusterID),
+				log.NewFileLogger("reporter", cluster.config.LogFile),
+			),
+			Log: log.NewFileLogger("multi-cloud-provisioner", cluster.config.LogFile),
 		},
 	}}, ""}, nil
 }
 
 func newHelmDeployer(cluster *Cluster, cData *Data) (base.Deployer, error) {
-	clusterID := cluster.config.ClusterID
-	// create logger for reporter
-	logger := pkglog.NewFileLogger("reporter", cluster.config.LogFile)
-	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
-
-	r := report.NewReporter(cluster.APIServer,
-		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
-
-	// create logger for Helm deployer
-	logger = pkglog.NewFileLogger("helm-deployer", cluster.config.LogFile)
-	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
-
 	return &helmDeployer{deployCluster{
 		cluster:     cluster,
-		clusterID:   clusterID,
+		clusterID:   cluster.config.ClusterID,
 		action:      cluster.config.Action,
 		clusterData: cData,
 		Deploy: base.Deploy{
-			Reporter: r,
-			Log:      logger,
+			Reporter: report.NewReporter(
+				cluster.APIServer,
+				fmt.Sprintf("%s/%s", defaultResourcePath, cluster.config.ClusterID),
+				log.NewFileLogger("reporter", cluster.config.LogFile),
+			),
+			Log: log.NewFileLogger("helm-deployer", cluster.config.LogFile),
 		},
 	}}, nil
 }

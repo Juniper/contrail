@@ -12,7 +12,7 @@ import (
 	"github.com/siddontang/go-mysql/schema"
 	"github.com/sirupsen/logrus"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 type relationSet map[uint32]pgoutput.Relation
@@ -29,7 +29,7 @@ type PgoutputEventHandler struct {
 func NewPgoutputEventHandler(s RowSink) *PgoutputEventHandler {
 	return &PgoutputEventHandler{
 		sink:      s,
-		log:       pkglog.NewLogger("replication-event-handler"),
+		log:       log.NewLogger("replication-event-handler"),
 		relations: relationSet{},
 	}
 }
@@ -147,7 +147,7 @@ type CanalEventHandler struct {
 func NewCanalEventHandler(s RowSink) *CanalEventHandler {
 	return &CanalEventHandler{
 		sink: s,
-		log:  pkglog.NewLogger("canal-event-handler"),
+		log:  log.NewLogger("canal-event-handler"),
 	}
 }
 

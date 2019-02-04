@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/Juniper/contrail/pkg/deploy/base"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/log/report"
 )
 
@@ -58,26 +58,18 @@ func (p *deployUnderCloud) deleteWorkingDir() error {
 }
 
 func newContrailCloudDeployer(undercloud *UnderCloud, cData *Data) (base.Deployer, error) {
-	undercloudID := undercloud.config.ResourceID
-	// create logger for reporter
-	logger := pkglog.NewFileLogger("reporter", undercloud.config.LogFile)
-	pkglog.SetLogLevel(logger, undercloud.config.LogLevel)
-
-	r := report.NewReporter(undercloud.APIServer,
-		fmt.Sprintf("%s/%s", defaultResourcePath, undercloudID), logger)
-
-	// create logger for contrail-cloud deployer
-	logger = pkglog.NewFileLogger("contrail-cloud-deployer", undercloud.config.LogFile)
-	pkglog.SetLogLevel(logger, undercloud.config.LogLevel)
-
 	return &contrailCloudDeployer{deployUnderCloud{
 		undercloud:     undercloud,
-		undercloudID:   undercloudID,
+		undercloudID:   undercloud.config.ResourceID,
 		action:         undercloud.config.Action,
 		undercloudData: cData,
 		Deploy: base.Deploy{
-			Reporter: r,
-			Log:      logger,
+			Reporter: report.NewReporter(
+				undercloud.APIServer,
+				fmt.Sprintf("%s/%s", defaultResourcePath, undercloud.config.ResourceID),
+				log.NewFileLogger("reporter", undercloud.config.LogFile),
+			),
+			Log: log.NewFileLogger("contrail-cloud-deployer", undercloud.config.LogFile),
 		},
 	}}, nil
 }

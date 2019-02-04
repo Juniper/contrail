@@ -9,8 +9,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/logging"
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 // Config represents Deploy configuration.
@@ -66,7 +65,7 @@ type Deploy struct {
 	config       *Config
 	APIServer    *client.HTTP
 	log          *logrus.Entry
-	streamServer *pkglog.StreamServer
+	streamServer *log.StreamServer
 }
 
 // NewDeployManager creates Deploy reading configuration from given file.
@@ -87,12 +86,15 @@ func NewDeployManager(configPath string) (*Deploy, error) {
 
 // NewDeploy creates Deploy with given configuration.
 func NewDeploy(c *Config) (*Deploy, error) {
+	if err := log.Configure(c.LogLevel); err != nil {
+		return nil, err
+	}
+
 	s := &client.HTTP{
 		Endpoint: c.Endpoint,
 		InSecure: c.InSecure,
 	}
 
-	// auth enabled
 	if c.AuthURL != "" {
 		s.AuthURL = c.AuthURL
 		s.ID = c.ID
@@ -111,24 +113,17 @@ func NewDeploy(c *Config) (*Deploy, error) {
 		return nil, fmt.Errorf("resource ID not specified in the config for oneshot manager")
 	}
 
-	// create logger for deploy
-	logger := pkglog.NewFileLogger("deploy", c.LogFile)
-	pkglog.SetLogLevel(logger, c.LogLevel)
-	streamServer := pkglog.NewStreamServer(c.LogFile)
-
 	return &Deploy{
 		managerType:  t,
 		APIServer:    s,
 		config:       c,
-		log:          logger,
-		streamServer: streamServer,
+		log:          log.NewFileLogger("deploy", c.LogFile),
+		streamServer: log.NewStreamServer(c.LogFile),
 	}, nil
 }
 
 // Manage starts managing the resource.
 func (c *Deploy) Manage() error {
-	logging.SetLogLevel()
-	// start log server
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
 	c.log.Infof("start handling %s", c.config.ResourceType)

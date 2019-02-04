@@ -11,11 +11,11 @@ import (
 
 	"github.com/gocql/gocql"
 	uuid "github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -81,7 +81,7 @@ func (t table) makeEventList() *services.EventList {
 		})
 
 		if err != nil {
-			log.Warnf("failed to create event - skipping: %v", err)
+			logrus.Warnf("failed to create event - skipping: %v", err)
 			continue
 		}
 
@@ -101,7 +101,7 @@ func (o object) Get(key string) interface{} {
 	var response interface{}
 	err := json.Unmarshal([]byte(data[0].(string)), &response) //nolint: errcheck
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	return response
 }
@@ -151,7 +151,7 @@ func (o object) convert(uuid string) map[string]interface{} {
 
 //DumpCassandra load all existing cassandra data.
 func DumpCassandra(cfg Config) (*services.EventList, error) {
-	log.Debug("Dumping data from cassandra")
+	logrus.Debug("Dumping data from cassandra")
 	// connect to the cluster
 	cluster := getCluster(cfg)
 	session, err := cluster.CreateSession()
@@ -218,7 +218,7 @@ type EventProducer struct {
 	cassandraConfig Config
 	amqpConfig      AmqpConfig
 
-	log *log.Entry
+	log *logrus.Entry
 }
 
 //NewEventProducer makes event producer and couple it with processor given.
@@ -233,7 +233,7 @@ func NewEventProducer(
 			queueName: getQueueName(),
 		},
 		Processor: processor,
-		log:       pkglog.NewLogger("cassandra-event-producer"),
+		log:       log.NewLogger("cassandra-event-producer"),
 	}
 }
 
@@ -313,7 +313,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 			}
 
 			if _, err = p.Processor.Process(ctx, event); err != nil {
-				p.log.WithError(err).WithFields(log.Fields{
+				p.log.WithError(err).WithFields(logrus.Fields{
 					"context": ctx,
 					"event":   event,
 				}).Warn("Processing event failed - ignoring")
@@ -338,7 +338,7 @@ func (p *EventProducer) Start(ctx context.Context) error {
 
 	for _, e := range events.Events {
 		if _, err = p.Processor.Process(ctx, e); err != nil {
-			p.log.WithError(err).WithFields(log.Fields{
+			p.log.WithError(err).WithFields(logrus.Fields{
 				"context": ctx,
 				"event":   e,
 			}).Warn("Processing event failed - ignoring")
@@ -373,7 +373,7 @@ func getCluster(cfg Config) *gocql.ClusterConfig {
 
 // Process is a method needed to implement service.EventProcessor interface
 func (p *EventProcessor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
-	log.Debugf("Processing event %+v for cassandra", event)
+	logrus.Debugf("Processing event %+v for cassandra", event)
 	// connect to the cluster
 	cluster := getCluster(p.config)
 	session, err := cluster.CreateSession()
@@ -445,7 +445,7 @@ type AmqpMessage struct {
 
 //Process sends msg to amqp exchange
 func (p *AmqpEventProcessor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
-	log.Debugf("Processing event %+v for amqp", event)
+	logrus.Debugf("Processing event %+v for amqp", event)
 
 	conn, err := amqp.Dial(p.config.host)
 	if err != nil {

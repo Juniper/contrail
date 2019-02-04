@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/db"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -32,7 +32,7 @@ type MySQLWatcher struct {
 func NewMySQLWatcher(c abstractCanal) *MySQLWatcher {
 	return &MySQLWatcher{
 		canal: c,
-		log:   pkglog.NewLogger("mysql-watcher"),
+		log:   log.NewLogger("mysql-watcher"),
 	}
 }
 
@@ -101,7 +101,7 @@ func NewPostgresWatcher(
 	processor services.EventProcessor,
 	shouldDump bool,
 ) (*PostgresWatcher, error) {
-	log := pkglog.NewLogger("postgres-watcher")
+	log := log.NewLogger("postgres-watcher")
 	log.WithField("config", fmt.Sprintf("%+v", config)).Debug("Got pgx config")
 
 	conn, err := newPostgresReplicationConnection(dbs, replConn)

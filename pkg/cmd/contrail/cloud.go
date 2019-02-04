@@ -1,7 +1,7 @@
 package contrail
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/contrail/pkg/cloud"
@@ -25,10 +25,10 @@ var cloudCmd = &cobra.Command{
 func manageCloud() {
 	manager, err := cloud.NewCloudManager(configFile)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	if err := manager.Manage(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }

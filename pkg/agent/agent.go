@@ -9,14 +9,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/labstack/gommon/log"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/config"
-	pkglog "github.com/Juniper/contrail/pkg/log"
-	"github.com/Juniper/contrail/pkg/logging"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/schema"
 )
 
@@ -97,6 +95,10 @@ func NewAgentByConfig() (*Agent, error) {
 
 // NewAgent creates Agent with given configuration.
 func NewAgent(c *Config) (*Agent, error) {
+	if err := log.Configure(c.LogLevel); err != nil {
+		return nil, err
+	}
+
 	s := &client.HTTP{
 		Endpoint: c.Endpoint,
 		InSecure: c.InSecure,
@@ -124,17 +126,13 @@ func NewAgent(c *Config) (*Agent, error) {
 		return nil, err
 	}
 
-	// create logger for agent
-	logger := pkglog.NewLogger("agent")
-	pkglog.SetLogLevel(logger, c.LogLevel)
-
 	return &Agent{
 		APIServer: s,
 		config:    c,
 		backend:   b,
 		serverAPI: api,
 		schemas:   buildSchemaMapping(api.Schemas),
-		log:       logger,
+		log:       log.NewLogger("agent"),
 	}, nil
 }
 
@@ -145,7 +143,7 @@ func fetchServerAPI(ctx context.Context, server *client.HTTP, serverSchema strin
 		if err == nil {
 			break
 		}
-		log.Warnf("failed to connect server %v. reconnecting...", err)
+		logrus.Warnf("failed to connect server %v. reconnecting...", err)
 		time.Sleep(time.Second)
 	}
 	return &api, nil
@@ -165,9 +163,6 @@ func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
 
 // Watch starts watching for events on API Server resources.
 func (a *Agent) Watch(ctx context.Context) error {
-	// configure global log level
-	logging.SetLogLevel()
-
 	a.log.Info("Starting watching for events")
 	if a.config.AuthURL != "" {
 		err := a.APIServer.Login(ctx)

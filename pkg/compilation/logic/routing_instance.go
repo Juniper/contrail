@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
@@ -28,7 +28,7 @@ func LoadRoutingInstanceIntent(loader intent.Loader, query intent.Query) *Routin
 	intent := loader.Load(models.KindRoutingInstance, query)
 	riIntent, ok := intent.(*RoutingInstanceIntent)
 	if ok == false {
-		log.Warning("Cannot cast intent to Routing Instance Intent")
+		logrus.Warning("Cannot cast intent to Routing Instance Intent")
 	}
 	return riIntent
 }

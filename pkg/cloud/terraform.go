@@ -6,7 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/log/report"
 	"github.com/Juniper/contrail/pkg/osutil"
 )
@@ -27,25 +27,18 @@ type terraform struct {
 }
 
 func (c *Cloud) newTF() (*terraform, error) {
-
 	topoFile := GetTopoFile(c.config.CloudID)
 	secretFile := GetSecretFile(c.config.CloudID)
 	mcDir := GetMultiCloudRepodir()
 
-	logger := pkglog.NewFileLogger("reporter", c.config.LogFile)
-	pkglog.SetLogLevel(logger, c.config.LogLevel)
-
-	r := report.NewReporter(c.APIServer,
-		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.config.CloudID), logger)
-
-	// create logger for secret
-	logger = pkglog.NewFileLogger("terraform", c.config.LogFile)
-	pkglog.SetLogLevel(logger, c.config.LogLevel)
-
 	return &terraform{
-		cloud:      c,
-		log:        logger,
-		reporter:   r,
+		cloud: c,
+		log:   log.NewFileLogger("terraform", c.config.LogFile),
+		reporter: report.NewReporter(
+			c.APIServer,
+			fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.config.CloudID),
+			log.NewFileLogger("reporter", c.config.LogFile),
+		),
 		action:     c.config.Action,
 		topoFile:   topoFile,
 		secretFile: secretFile,

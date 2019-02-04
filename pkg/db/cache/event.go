@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -31,10 +31,10 @@ func (p *EventProducer) Start(ctx context.Context) {
 		case e := <-watcher.ch:
 			_, err := p.Processor.Process(ctx, e)
 			if err != nil {
-				log.Warn(err)
+				logrus.Warn(err)
 			}
 		case <-ctx.Done():
-			log.Debugf("Process canceled by context")
+			logrus.Debugf("Process canceled by context")
 			return
 		}
 	}

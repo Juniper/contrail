@@ -1,7 +1,7 @@
 package logic
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/models"
 )
@@ -75,7 +75,7 @@ func (pr *PortResponse) setBindings(vmi *models.VirtualMachineInterface) {
 		case "vif_type":
 			pr.BindingVifType = kvp.GetValue()
 		default:
-			log.Warningf("Unsupported vmi binding: %+v", kvp)
+			logrus.Warningf("Unsupported vmi binding: %+v", kvp)
 		}
 	}
 
