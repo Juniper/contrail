@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // PolicyRulesWithRefs is a list of policy rules together with resolved references
@@ -19,13 +19,13 @@ func (rs *PolicyRulesWithRefs) ToACLRules() (ingressRules, egressRules []*AclRul
 	for _, pair := range allAddressCombinations(rs.Rules) {
 		rule, err := makeACLRule(pair, rs.FQNameToSG)
 		if err != nil {
-			log.WithError(err).Error("Ignoring ACL rule")
+			logrus.WithError(err).Error("Ignoring ACL rule")
 			continue
 		}
 
 		isIngress, err := pair.isIngress()
 		if err != nil {
-			log.WithError(err).Error("Ignoring ACL rule")
+			logrus.WithError(err).Error("Ignoring ACL rule")
 			continue
 		}
 

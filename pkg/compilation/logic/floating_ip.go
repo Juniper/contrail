@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
@@ -30,7 +30,7 @@ func LoadFloatingIPIntent(loader intent.Loader, query intent.Query) *FloatingIPI
 	intent := loader.Load(models.KindFloatingIP, query)
 	fipIntent, ok := intent.(*FloatingIPIntent)
 	if ok == false {
-		log.Warning("Cannot cast intent to Floating IP Intent")
+		logrus.Warning("Cannot cast intent to Floating IP Intent")
 	}
 	return fipIntent
 }

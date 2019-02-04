@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 )
@@ -16,14 +16,14 @@ func (s *Service) EvaluateDependencies(
 	i intent.Intent,
 ) error {
 
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"kind": i.Kind(),
 		"uuid": i.GetUUID(),
 	}).Debug("Resolving dependencies.")
 	dependencies := s.dependencyProcessor.GetDependencies(s.cache, i, "self")
 
 	for _, dependency := range dependencies {
-		log.WithFields(log.Fields{
+		logrus.WithFields(logrus.Fields{
 			"kind": dependency.Kind(),
 			"uuid": dependency.GetUUID(),
 		}).Debug("Evaluating intent.")

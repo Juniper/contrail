@@ -3,11 +3,11 @@ package contrailutil
 import (
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/Juniper/contrail/pkg/logging"
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 var configFile string
@@ -33,9 +33,11 @@ func initConfig() {
 		return
 	}
 	viper.SetConfigFile(configFile)
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
+	if err := viper.ReadInConfig(); err != nil {
+		logrus.Fatal(err)
 	}
-	logging.SetLogLevel()
+
+	if err := log.Configure(viper.GetString("log_level")); err != nil {
+		logrus.Fatal(err)
+	}
 }

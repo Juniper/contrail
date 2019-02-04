@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -214,7 +214,7 @@ type JSONSchema struct {
 func (s *JSONSchema) String() string {
 	data, err := json.Marshal(s)
 	if err != nil {
-		log.WithError(err).Debug("Could not stringify JSONSchema")
+		logrus.WithError(err).Debug("Could not stringify JSONSchema")
 	}
 	return string(data)
 }
@@ -507,7 +507,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 				return err
 			}
 			if s.Items == nil {
-				log.Errorf("Got <nil> Items for array in schema '%v': %+#v", name, s)
+				logrus.Errorf("Got <nil> Items for array in schema '%v': %+#v", name, s)
 				goType = "[]string"
 				protoType = "repeated string"
 			} else {
@@ -554,9 +554,9 @@ func (api *API) SchemaByID(id string) *Schema {
 func (api *API) readDefinitionFromDefinitions(schemaFile, typeName string) (*JSONSchema, error) {
 	definitions := api.definitionByFileName(schemaFile)
 	if definitions == nil {
-		log.Info("definitions read from following files:")
+		logrus.Info("definitions read from following files:")
 		for _, d := range api.Definitions {
-			log.Info(d.FileName)
+			logrus.Info(d.FileName)
 		}
 		return nil, fmt.Errorf("can't find file '%s' (with type %s)", schemaFile, typeName)
 	}
@@ -904,7 +904,7 @@ func (api *API) loadSchemaFromPath(path string) (*Schema, error) {
 	if info.ModTime().After(api.Timestamp) {
 		api.Timestamp = info.ModTime()
 	}
-	log.Printf("Loading schema from %v - %v", path, schema.ID)
+	logrus.Printf("Loading schema from %v - %v", path, schema.ID)
 	return &schema, nil
 }
 
@@ -918,7 +918,7 @@ func (api *API) readOverrides(dir string) (*Schema, error) {
 			return err
 		}
 		// This is as a Warning because overrides fixes schema problems that should be fixed in upstream schema definition
-		log.Warnf("Reading overrides from %v file", path)
+		logrus.Warnf("Reading overrides from %v file", path)
 		schema, err := api.loadSchemaFromPath(path)
 		if err == nil && len(schema.DefinitionsSlice) > 0 {
 			for key, def := range schema.DefinitionsSlice {
@@ -1027,7 +1027,7 @@ func MakeAPI(dirs []string, overrideSubdir string) (*API, error) {
 		Definitions: []*Schema{},
 		Types:       map[string]*JSONSchema{},
 	}
-	log.Printf("Making API from schema dirs: %v", dirs)
+	logrus.Printf("Making API from schema dirs: %v", dirs)
 	for _, dir := range dirs {
 		overrides := &Schema{}
 		overridePath := ""

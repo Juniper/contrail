@@ -4,7 +4,7 @@ package services
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -58,7 +58,7 @@ func (_ *DummyQuotaCounter) Count{{ name }}(_ context.Context, _ *models.{{ name
 // Count{{ name }} returns the number of resources of type {{ name }} in the given objects' parent project.
 func (c *SimpleQuotaCounter) Count{{ name }}(ctx context.Context, obj *models.{{ name }}) (int64, error) {
 	if obj.GetParentUUID() == "" {
-		log.Warnf("orphan resource: %v; counting 0 resources for quota", obj.GetUUID())
+		logrus.Warnf("orphan resource: %v; counting 0 resources for quota", obj.GetUUID())
 		return 0, nil
 	}
 

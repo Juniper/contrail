@@ -3,7 +3,7 @@ package logic
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
@@ -38,7 +38,7 @@ func LoadVirtualNetworkIntent(loader intent.Loader, query intent.Query) *Virtual
 	intent := loader.Load(models.KindVirtualNetwork, query)
 	vnIntent, ok := intent.(*VirtualNetworkIntent)
 	if ok == false {
-		log.Warning("Cannot cast intent to Virtual Network Intent")
+		logrus.Warning("Cannot cast intent to Virtual Network Intent")
 	}
 	return vnIntent
 }

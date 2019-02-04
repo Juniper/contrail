@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/lib/pq"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 )
@@ -26,10 +26,10 @@ func FormatDBError(err error) error {
 	}
 
 	if publicErr := getPublicError(err); publicErr != nil {
-		log.Debugf("Database error: %v. Returning: %v", err, publicErr)
+		logrus.Debugf("Database error: %v. Returning: %v", err, publicErr)
 		return publicErr
 	}
-	log.Error("Unknown database error:", err)
+	logrus.Error("Unknown database error:", err)
 	return err
 }
 

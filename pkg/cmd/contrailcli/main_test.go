@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/testutil"
@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	viper.AddConfigPath("../../../sample")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	// TODO(Daniel): remove that in order not to depend on Viper and use constructors' parameters instead
@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 		RepoRootPath:       "../../..",
 		EnableEtcdNotifier: true,
 	}); err != nil {
-		log.Fatalf("Error initializing integration APIServer: %+v", err)
+		logrus.Fatalf("Error initializing integration APIServer: %+v", err)
 	}
 	defer testutil.LogFatalIfError(server.Close)
 

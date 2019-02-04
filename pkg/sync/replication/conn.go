@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 )
 
 type pgxReplicationConn interface {
@@ -42,7 +42,7 @@ func newPostgresReplicationConnection(
 	return &postgresReplicationConnection{
 		db:       db,
 		replConn: replConn,
-		log:      pkglog.NewLogger("postgres-replication-connection"),
+		log:      log.NewLogger("postgres-replication-connection"),
 	}, nil
 }
 

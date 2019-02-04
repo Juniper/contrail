@@ -16,7 +16,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/constants"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/testutil"
 )
@@ -50,7 +50,7 @@ type EtcdClient struct {
 // NewEtcdClient is a constructor of etcd client.
 // After usage Close() needs to be called to close underlying connections.
 func NewEtcdClient(t *testing.T) *EtcdClient {
-	l := pkglog.NewLogger("etcd-client")
+	l := log.NewLogger("etcd-client")
 	l.WithFields(logrus.Fields{"endpoint": Endpoint, "dial-timeout": ETCDDialTimeout}).Debug("Connecting")
 
 	c, err := clientv3.New(clientv3.Config{

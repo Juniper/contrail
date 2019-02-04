@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/constants"
@@ -43,18 +43,18 @@ func NewEventProducer(processor services.EventProcessor, serviceName string) (p 
 func (p *EventProducer) HandleMessage(
 	ctx context.Context, index int64, oper int32, key string, newValue []byte,
 ) {
-	log.Debugf("Index: %d, oper: %d, Got Message %s: %s",
+	logrus.Debugf("Index: %d, oper: %d, Got Message %s: %s",
 		index, oper, key, newValue)
 
 	event, err := ParseEvent(oper, key, newValue)
 	if err != nil {
-		log.WithError(err).Error("Failed to parse etcd event")
+		logrus.WithError(err).Error("Failed to parse etcd event")
 		return
 	}
 
 	_, err = p.Processor.Process(ctx, event)
 	if err != nil {
-		log.WithError(err).Error("Failed to process etcd event")
+		logrus.WithError(err).Error("Failed to process etcd event")
 	}
 }
 
@@ -120,14 +120,14 @@ func parseOperation(etcdOperation int32) (string, error) {
 //Start watch etcd.
 func (p *EventProducer) Start(ctx context.Context) error {
 	eventChan := p.client.WatchRecursive(ctx, "/"+p.WatchPath, int64(0))
-	log.Debug("Starting handle loop")
+	logrus.Debug("Starting handle loop")
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case e, ok := <-eventChan:
 			if !ok {
-				log.Info("event channel unsuspectingly closed, restarting etcd watch")
+				logrus.Info("event channel unsuspectingly closed, restarting etcd watch")
 				eventChan = p.client.WatchRecursive(ctx, "/"+p.WatchPath, int64(0))
 			}
 			p.HandleMessage(ctx, e.Revision, e.Type, e.Key, e.Value)

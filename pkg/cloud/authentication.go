@@ -7,7 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/log"
 	"github.com/Juniper/contrail/pkg/log/report"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/osutil"
@@ -65,16 +65,11 @@ func (c *Cloud) authenticate(d *Data) error {
 }
 
 func (c *Cloud) newAzureUser(d *Data) (*azureUser, error) {
-
-	logger := pkglog.NewFileLogger("reporter", c.config.LogFile)
-	pkglog.SetLogLevel(logger, c.config.LogLevel)
-
-	r := report.NewReporter(c.APIServer,
-		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.config.CloudID), logger)
-
-	// create logger for topology
-	logger = pkglog.NewFileLogger("topology", c.config.LogFile)
-	pkglog.SetLogLevel(logger, c.config.LogLevel)
+	r := report.NewReporter(
+		c.APIServer,
+		fmt.Sprintf("%s/%s", defaultCloudResourcePath, c.config.CloudID),
+		log.NewFileLogger("reporter", c.config.LogFile),
+	)
 
 	user, err := getCloudUser(d)
 	if err != nil {
@@ -93,8 +88,7 @@ func (c *Cloud) newAzureUser(d *Data) (*azureUser, error) {
 		username: username,
 		password: password,
 		reporter: r,
-		log:      logger,
+		log:      log.NewFileLogger("topology", c.config.LogFile),
 		test:     c.config.Test,
 	}, nil
-
 }

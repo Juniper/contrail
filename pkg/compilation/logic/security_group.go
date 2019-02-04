@@ -5,7 +5,7 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -28,7 +28,7 @@ func LoadSecurityGroupIntent(loader intent.Loader, query intent.Query) *Security
 	intent := loader.Load(models.KindSecurityGroup, query)
 	sgIntent, ok := intent.(*SecurityGroupIntent)
 	if ok == false {
-		log.Warning("Cannot cast intent to Security Group Intent")
+		logrus.Warning("Cannot cast intent to Security Group Intent")
 	}
 	return sgIntent
 }
@@ -191,11 +191,11 @@ func (i *SecurityGroupIntent) processReferredSecurityGroups(ec *intent.EvaluateC
 		}
 	}
 	for _, sg := range subtractSGSets(i.referredSGs, referredSGs) {
-		log.Debugf("removing dependent intent: %s-%s %s-%s", sg.Kind(), i.Kind(), sg.GetUUID(), i.GetUUID())
+		logrus.Debugf("removing dependent intent: %s-%s %s-%s", sg.Kind(), i.Kind(), sg.GetUUID(), i.GetUUID())
 		sg.RemoveDependentIntent(i)
 	}
 	for _, sg := range subtractSGSets(referredSGs, i.referredSGs) {
-		log.Debugf("adding dependent intent: %s-%s %s-%s", sg.Kind(), i.Kind(), sg.GetUUID(), i.GetUUID())
+		logrus.Debugf("adding dependent intent: %s-%s %s-%s", sg.Kind(), i.Kind(), sg.GetUUID(), i.GetUUID())
 		sg.AddDependentIntent(i)
 	}
 	i.referredSGs = referredSGs

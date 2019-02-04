@@ -6,12 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/Juniper/contrail/pkg/log"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/format"
-	"github.com/Juniper/contrail/pkg/logging"
 )
 
 var db *Service
@@ -22,13 +23,16 @@ func TestMain(m *testing.M) {
 	viper.AddConfigPath("../../sample")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	viper.SetEnvPrefix("contrail")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
-	logging.SetLogLevel()
+	if err = log.Configure(viper.GetString("log_level")); err != nil {
+		logrus.Fatal(err)
+	}
+
 	for _, iConfig := range viper.GetStringMap("test_database") {
 		config := format.InterfaceToInterfaceMap(iConfig)
 		driver := config["type"].(string) //nolint: errcheck
@@ -40,7 +44,7 @@ func TestMain(m *testing.M) {
 			Name:     config["name"].(string),
 		})
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 		defer closeDB(testDB)
 
@@ -49,9 +53,9 @@ func TestMain(m *testing.M) {
 		}
 		db.initQueryBuilders()
 
-		log.WithField("dbType", config["type"]).Info("Starting tests for DB")
+		logrus.WithField("dbType", config["type"]).Info("Starting tests for DB")
 		code := m.Run()
-		log.WithField("dbType", config["type"]).Info("Finished tests for DB")
+		logrus.WithField("dbType", config["type"]).Info("Finished tests for DB")
 		if code != 0 {
 			os.Exit(code)
 		}
@@ -60,6 +64,6 @@ func TestMain(m *testing.M) {
 
 func closeDB(db *sql.DB) {
 	if err := db.Close(); err != nil {
-		log.WithError(err).Fatal("Closing test DB failed")
+		logrus.WithError(err).Fatal("Closing test DB failed")
 	}
 }
