@@ -108,27 +108,27 @@ func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *Sub
 		return false
 	}
 
-	if filters.haveKeys(sharedKey) && filters.checkValue(sharedKey, "true") && !vn.GetIsShared() {
+	if !vn.GetIsShared() && filters.HaveValues(sharedKey, "true") {
 		return true
 	}
 
-	if !filters.checkValue(idKey, neutronSN.ID) {
+	if !filters.Match(idKey, neutronSN.ID) {
 		return true
 	}
 
-	if !filters.checkValue(tenantIDKey, neutronSN.TenantID) {
+	if !filters.Match(tenantIDKey, neutronSN.TenantID) {
 		return true
 	}
 
-	if !filters.checkValue(networkIDKey, neutronSN.NetworkID) {
+	if !filters.Match(networkIDKey, neutronSN.NetworkID) {
 		return true
 	}
 
-	if !filters.checkValue(nameKey, neutronSN.Name) {
+	if !filters.Match(nameKey, neutronSN.Name) {
 		return true
 	}
 
-	if !filters.checkValue(cidrKey, neutronSN.Cidr) {
+	if !filters.Match(cidrKey, neutronSN.Cidr) {
 		return true
 	}
 
@@ -411,8 +411,8 @@ func subnetVncToNeutron(vn *models.VirtualNetwork, subnetVnc *models.IpamSubnetT
 	subnet.DNSNameServersFromVnc(subnetVnc.GetDHCPOptionList())
 	subnet.DNSServerAddressFromVnc(subnetVnc.GetDNSServerAddress())
 
-	ipamHasSubnet := subnetVnc.GetSubnet() != nil
-	subnet.AllocationPoolsFromVnc(subnetVnc.GetAllocationPools(), ipamHasSubnet)
+	ipamHaveSubnet := subnetVnc.GetSubnet() != nil
+	subnet.AllocationPoolsFromVnc(subnetVnc.GetAllocationPools(), ipamHaveSubnet)
 
 	return subnet
 }
@@ -440,7 +440,7 @@ func (s *SubnetResponse) GatewayFromVnc(gateway string) {
 }
 
 // AllocationPoolsFromVnc converts VNC Allocation Pool Type to Neutron Allocation Pool format.
-func (s *SubnetResponse) AllocationPoolsFromVnc(aps []*models.AllocationPoolType, ipamHasSubnet bool) {
+func (s *SubnetResponse) AllocationPoolsFromVnc(aps []*models.AllocationPoolType, ipamHaveSubnet bool) {
 	for _, ap := range aps {
 		s.AllocationPools = append(s.AllocationPools, &AllocationPool{
 			Start: ap.GetStart(),
@@ -448,12 +448,12 @@ func (s *SubnetResponse) AllocationPoolsFromVnc(aps []*models.AllocationPoolType
 		})
 	}
 
-	if !ipamHasSubnet {
+	if !ipamHaveSubnet {
 		s.AllocationPools = append(s.AllocationPools, &AllocationPool{
 			Start: "0.0.0.0",
 			End:   "255.255.255.255",
 		})
-	} else if ipamHasSubnet && len(s.AllocationPools) == 0 {
+	} else if ipamHaveSubnet && len(s.AllocationPools) == 0 {
 		defaultAllocationPool := subnetDefaultAllocationPool(s.GatewayIP, s.Cidr)
 		if defaultAllocationPool != nil {
 			s.AllocationPools = append(s.AllocationPools, defaultAllocationPool)
@@ -540,12 +540,12 @@ func listVirtualNetworks(ctx context.Context, rp RequestParameters, filters Filt
 		return listVNWithoutFilters(ctx, rp)
 	}
 
-	if filters.haveKeys(idKey) {
+	if filters.HaveKeys(idKey) {
 		return collectVNsUsingKV(ctx, rp, filters[idKey])
 	}
 
 	req := &listReq{}
-	if filters.haveKeys(sharedKey) || filters.haveKeys(routerExternalKey) {
+	if filters.HaveKeys(sharedKey) || filters.HaveKeys(routerExternalKey) {
 		return collectSharedOrRouterExtNetworks(ctx, rp, filters, req)
 	}
 
