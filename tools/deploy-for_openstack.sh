@@ -51,6 +51,9 @@ sudo ./tools/control-node_etcd/update-docker-compose.py
 # Update schema transformer docker compose file
 sudo ./tools/schema_transformer_etcd/update-docker-compose.py
 
+# Update device manager docker compose file
+sudo ./tools/device_manager_etcd/update-docker-compose.py
+
 # Load init data to rdbms
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-config_api.yml
 
@@ -58,6 +61,9 @@ build_and_run_contrail-go_docker
 
 # Start schema transformer
 schema_transformer_up
+
+# Start device manager
+device_manager_up
 
 # Start services using docker-compose
 compose_up control vrouter

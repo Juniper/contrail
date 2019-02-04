@@ -24,6 +24,11 @@ schema_transformer_up()
     docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d schema
 }
 
+device_manager_up()
+{
+    docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d devicemgr
+}
+
 compose_up()
 {
     for docker_dir in "$@"
