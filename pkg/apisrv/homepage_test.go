@@ -111,6 +111,7 @@ func TestRoutesAreRegistered(t *testing.T) {
 	// Action resources are registered in server.go:setupActionResources()
 	// and in service_common.tmpl:RegisterRESTAPI().
 	routes.add(apisrv.FQNameToIDPath)
+	routes.add(apisrv.IDToFQNamePath)
 	routes.add(apisrv.UserAgentKVPath)
 	routes.add(services.PropCollectionUpdatePath)
 

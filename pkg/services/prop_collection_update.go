@@ -122,7 +122,7 @@ func (service *ContrailService) getObjectAndType(
 	ctx context.Context,
 	uuid string,
 ) (basemodels.Object, string, error) {
-	idResp, err := service.IDToType(ctx, &IDToTypeRequest{UUID: uuid})
+	idResp, err := service.IDToFQName(ctx, &IDToFQNameRequest{UUID: uuid})
 	if err != nil {
 		return nil, "", errors.Wrapf(err, "error getting type for provided UUID: %v", uuid)
 	}

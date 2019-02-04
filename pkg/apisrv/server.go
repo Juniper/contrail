@@ -35,6 +35,7 @@ import (
 // Server HTTP paths.
 const (
 	FQNameToIDPath  = "fqname-to-id"
+	IDToFQNamePath  = "id-to-fqname"
 	UserAgentKVPath = "useragent-kv"
 	WatchPath       = "watch"
 )
@@ -61,7 +62,7 @@ type Server struct {
 	RefRelaxServer             services.RefRelaxServer
 	UserAgentKVServer          services.UserAgentKVServer
 	FQNameToIDServer           services.FQNameToIDServer
-	IDToTypeServer             services.IDToTypeServer
+	IDToFQNameServer           services.IDToFQNameServer
 	PropCollectionUpdateServer services.PropCollectionUpdateServer
 	Cache                      *cache.DB
 }
@@ -207,7 +208,7 @@ func (s *Server) Init() (err error) {
 	s.RefRelaxServer = cs
 	s.UserAgentKVServer = cs
 	s.FQNameToIDServer = cs
-	s.IDToTypeServer = cs
+	s.IDToFQNameServer = cs
 	s.PropCollectionUpdateServer = cs
 
 	if viper.GetBool("server.enable_vnc_neutron") {
@@ -296,7 +297,7 @@ func (s *Server) Init() (err error) {
 		services.RegisterSetTagServer(s.GRPCServer, s.SetTagServer)
 		services.RegisterRefRelaxServer(s.GRPCServer, s.RefRelaxServer)
 		services.RegisterFQNameToIDServer(s.GRPCServer, s.FQNameToIDServer)
-		services.RegisterIDToTypeServer(s.GRPCServer, s.IDToTypeServer)
+		services.RegisterIDToFQNameServer(s.GRPCServer, s.IDToFQNameServer)
 		services.RegisterUserAgentKVServer(s.GRPCServer, s.UserAgentKVServer)
 		services.RegisterPropCollectionUpdateServer(s.GRPCServer, s.PropCollectionUpdateServer)
 		e.Use(gRPCMiddleware(s.GRPCServer))
@@ -350,10 +351,10 @@ func (s *Server) Init() (err error) {
 
 func (s *Server) setupNeutronService(cs services.Service) *neutron.Service {
 	n := &neutron.Service{
-		ReadService:     s.DBService,
-		WriteService:    cs,
-		UserAgentKV:     s.UserAgentKVServer,
-		IDToTypeService: s.IDToTypeServer,
+		ReadService:       s.DBService,
+		WriteService:      cs,
+		UserAgentKV:       s.UserAgentKVServer,
+		IDToFQNameService: s.IDToFQNameServer,
 	}
 	n.RegisterNeutronAPI(s.Echo)
 	return n
@@ -385,6 +386,7 @@ func (s *Server) setupHomepage() {
 	})
 
 	dh.Register(FQNameToIDPath, "POST", "name-to-id", "action")
+	dh.Register(IDToFQNamePath, "POST", "id-to-name", "action")
 	dh.Register(UserAgentKVPath, "POST", UserAgentKVPath, "action")
 	dh.Register(services.RefUpdatePath, "POST", services.RefUpdatePath, "action")
 	dh.Register(services.RefRelaxForDeletePath, "POST", services.RefRelaxForDeletePath, "action")
@@ -418,6 +420,7 @@ func (s *Server) setupWatchAPI() {
 
 func (s *Server) setupActionResources(cs *services.ContrailService) {
 	s.Echo.POST(FQNameToIDPath, cs.RESTFQNameToUUID)
+	s.Echo.POST(IDToFQNamePath, cs.RESTIDToFQName)
 	s.Echo.POST(UserAgentKVPath, cs.RESTUserAgentKV)
 }
 
