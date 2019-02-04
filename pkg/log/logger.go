@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 )
@@ -36,6 +37,33 @@ func Configure(level string) error {
 
 // NewLogger creates configured logrus.Entry instance.
 func NewLogger(loggerName string) *logrus.Entry {
+	return newLogger(loggerName, writer)
+}
+
+// NewFileLogger creates configured logrus.Entry instance.
+func NewFileLogger(loggerName string, filename string) *logrus.Entry {
+
+	// create the log directory if it doesnt exist
+	err := os.MkdirAll(filepath.Dir(filename), os.ModeDir)
+	if err != nil {
+		logrus.Error(err)
+		logrus.Info("fall back to stdout writer")
+		return newLogger(loggerName, writer)
+	}
+
+	// Create the log file if doesn't exist.
+	// append if already exists.
+	w, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
+	if err != nil {
+		logrus.Error(err)
+		logrus.Info("fall back to stdout writer")
+		return newLogger(loggerName, writer)
+	}
+	return newLogger(loggerName, w)
+}
+
+// NewLogger creates configured logrus.Entry instance.
+func newLogger(loggerName string, writer io.Writer) *logrus.Entry {
 	l := &logrus.Logger{
 		Out:       writer,
 		Formatter: new(logrus.TextFormatter),

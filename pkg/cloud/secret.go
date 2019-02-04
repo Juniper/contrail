@@ -114,7 +114,7 @@ func (s *secret) updateFileConfig(d *Data) error {
 func (c *Cloud) newSecret() (*secret, error) {
 
 	// create logger for secret
-	logger := pkglog.NewLogger("topology")
+	logger := pkglog.NewFileLogger("cloud-secret", c.config.LogFile)
 	pkglog.SetLogLevel(logger, c.config.LogLevel)
 
 	sfc := &secretFileConfig{}

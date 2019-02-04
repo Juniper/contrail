@@ -94,14 +94,14 @@ func (p *provisionCommon) deleteEndpoints() error {
 
 func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
 	// create logger for reporter
-	logger := pkglog.NewLogger("reporter")
+	logger := pkglog.NewFileLogger("ansible-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	r := report.NewReporter(cluster.APIServer,
 		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
 
 	// create logger for ansible provisioner
-	logger = pkglog.NewLogger("ansible-provisioner")
+	logger = pkglog.NewFileLogger("ansible-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	return &ansibleProvisioner{provisionCommon{
@@ -116,14 +116,14 @@ func newAnsibleProvisioner(cluster *Cluster, cData *Data, clusterID string, acti
 
 func newMCProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
 	// create logger for reporter
-	logger := pkglog.NewLogger("reporter")
+	logger := pkglog.NewFileLogger("multi-cloud-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	r := report.NewReporter(cluster.APIServer,
 		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
 
 	// create logger for multi-cloud provisioner
-	logger = pkglog.NewLogger("multi-cloud-provisioner")
+	logger = pkglog.NewFileLogger("multi-cloud-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	return &multiCloudProvisioner{ansibleProvisioner{provisionCommon{
@@ -138,14 +138,14 @@ func newMCProvisioner(cluster *Cluster, cData *Data, clusterID string, action st
 
 func newHelmProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (provisioner, error) {
 	// create logger for reporter
-	logger := pkglog.NewLogger("reporter")
+	logger := pkglog.NewFileLogger("helm-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	r := report.NewReporter(cluster.APIServer,
 		fmt.Sprintf("%s/%s", defaultResourcePath, clusterID), logger)
 
 	// create logger for Helm provisioner
-	logger = pkglog.NewLogger("helm-provisioner")
+	logger = pkglog.NewFileLogger("helm-provisioner", cluster.config.LogFile)
 	pkglog.SetLogLevel(logger, cluster.config.LogLevel)
 
 	return &helmProvisioner{provisionCommon{
