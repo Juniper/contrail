@@ -31,3 +31,4 @@ test_output/
 unittests.log
 
 !vendor/**
+*.log

@@ -16,12 +16,15 @@ services:
       PATRONI_ETCD_URL: http://$ETCDIP:2379
       PATRONI_SCOPE: testcluster
     command: --confd
+    volumes:
+      - haproxy_db:/var/lib/postgresql/data
 
   dbnode:
     image: patroni
     volumes:
       - ./patroni.yml:/patroni.yml:ro
       - ../../tools:/tools
+      - patroni_dbnode:/var/lib/postgresql/data
     environment:
       PATRONI_ETCD_URL: http://$ETCDIP:2379
       PATRONI_SCOPE: testcluster
@@ -32,3 +35,7 @@ networks:
   default:
     external:
       name: $NETWORKNAME
+
+volumes:
+  haproxy_db:
+  patroni_dbnode:
