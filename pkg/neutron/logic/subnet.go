@@ -147,7 +147,7 @@ func listVirtualNetworksWithShared(
 		return nil, err
 	}
 
-	addDBFilter(req, isShared, []string{"true"}, false)
+	addDBFilter(req, models.VirtualNetworkFieldIsShared, []string{"true"}, false)
 	sharedVNs, err := listNetworksForProject(ctx, rp, req)
 	if err != nil {
 		return nil, err
