@@ -39,7 +39,7 @@ func (s *Service) handleNeutronPostRequest(c echo.Context) error {
 	if err != nil {
 		e, ok := errors.Cause(err).(*logic.Error)
 		if !ok {
-			return echo.NewHTTPError(http.StatusInternalServerError, err)
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 		return echo.NewHTTPError(http.StatusBadRequest, e)
 	}
