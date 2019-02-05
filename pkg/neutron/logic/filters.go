@@ -25,13 +25,22 @@ const (
 
 // UnmarshalJSON Filters.
 func (f *Filters) UnmarshalJSON(data []byte) error {
-	if *f == nil {
-		*f = Filters{}
+	if f == nil {
+		return nil
 	}
 	var m map[string]interface{}
 	err := json.Unmarshal(data, &m)
 	if err != nil {
 		return err
+	}
+
+	return f.ApplyMap(m)
+}
+
+// ApplyMap applies map onto filters.
+func (f *Filters) ApplyMap(m map[string]interface{}) error {
+	if *f == nil {
+		*f = Filters{}
 	}
 	for k, v := range m {
 		var ss []string
