@@ -34,6 +34,7 @@ test_data:
         src_ports:
         - end_port: 65535
           start_port: 0
+
   sg_read_request: &sg_read_request
     data:
       id: security-group-uuid1
@@ -65,6 +66,7 @@ test_data:
       id: $uuid
     id: security-group-uuid1
     name: sg_name
+
   sg_readall_request: &sg_readall_request
     data:
       fields: []
@@ -82,6 +84,7 @@ test_data:
       operation: READALL
       type: security_group
       tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+
   sg_create_request: &sg_create_request
     data:
       resource:
@@ -136,6 +139,35 @@ test_data:
       tenant_id: $any
     id: $uuid
     name: my_new_sg
+
+  sg_update_request: &sg_update_request
+    data:
+      fields: null
+      resource:
+        name: "new updated name"
+        description: ''
+      id: security-group-uuid1
+      filters: null
+    context:
+      user_id: b0ad5cb0783b4380a62e251a252ffd04
+      roles:
+      - admin
+      - heat_stack_owner
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      is_admin: true
+      request_id: req-8a39b4f1-0c6e-4d40-8116-77843f577772
+      operation: UPDATE
+      type: security_group
+      tenant: 92882ca8f99342f286430c05c96e12dd
+  sg_update_response: &sg_update_response
+    fq_name:
+    - default-domain
+      - sg_neturon_project_name
+      - new updated name
+    description: ''
+    tenant_id: 92882ca8f99342f286430c05c96e12dd
+    id: security-group-uuid1
+    name: new updated name
 
 clients:
   default:
@@ -195,6 +227,14 @@ workflow:
     expected: [200]
     data: *sg_read_request
   expect: *sg_read_response
+- name: update default security group
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [200]
+    data: *sg_update_request
+  expect:
+    *sg_update_response
 - name: try to read invalid security group
   request:
     path: /neutron/security_group
