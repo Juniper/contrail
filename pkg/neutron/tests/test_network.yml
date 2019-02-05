@@ -274,6 +274,118 @@ workflow:
     project_id: 886c725d04614dd6ac2730c74d4e46fb
     description: ''
 
+- name: Network readall with id filter
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+          id: [d9ff46fc-e193-4d40-80ba-0d55c8aed9f2]
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
+        operation: READALL
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect:
+  - status: ACTIVE
+    id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    router:external: false
+    subnets:
+    - $uuid
+    subnet_ipam:
+    - subnet_cidr: "10.0.1.0/24"
+      ipam_fq_name:
+      - default-domain
+      - default-project
+      - default-network-ipam
+    fq_name:
+    - default
+    - admin_project_uuid
+    - test-vn1
+    name: test-vn1
+    admin_state_up: true
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    port_security_enabled: true
+    shared: false
+    project_id: 886c725d04614dd6ac2730c74d4e46fb
+    description: ''
+
+- name: Network readall with multiple filters
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+          shared: [true]
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
+        operation: READALL
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect: []
+
+- name: Network read count with tenant id filter
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        filters:
+          tenant_id: [886c725d04614dd6ac2730c74d4e46fb]
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        operation: READCOUNT
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect: 1
+
+- name: Network read count with multiple filters
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        filters:
+          id: [d9ff46fc-e193-4d40-80ba-0d55c8aed9f2]
+          tenant_id: [886c725d04614dd6ac2730c74d4e46fb]
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        operation: READCOUNT
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect: 1
+
+
 - name: Network delete
   request:
     path: /neutron/network
@@ -295,6 +407,30 @@ workflow:
         type: network
         tenant: 886c725d04614dd6ac2730c74d4e46fb
   expect: null
+
+- name: Network readall with multiple filters
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: []
+        filters:
+          tenant_id: [886c725d04614dd6ac2730c74d4e46fb]
+          name: [test-vn1]
+          router:external: [true]
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
+        operation: READALL
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+  expect: []
 
 - name: Delete project
   request:

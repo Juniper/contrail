@@ -53,4 +53,5 @@ const (
 	securityGroupNotFound      errorType = "SecurityGroupNotFound"
 	securityGroupRuleNotFound  errorType = "SecurityGroupRuleNotFound"
 	networkInUse               errorType = "NetworkInUse"
+	invalidSharedSettings      errorType = "InvalidSharedSetting"
 )
