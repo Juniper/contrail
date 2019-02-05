@@ -5,6 +5,10 @@ import (
 )
 
 {%- for schema in schemas %}{% if schema.Type == "request" %}
+const (
+	{% for property in schema.JSONSchema.OrderedProperties %}{{ schema.JSONSchema.GoName }}Field{{ property.GoName }} = "{{ property.ID }}"
+	{% endfor %}
+)
 type {{ schema.JSONSchema.GoName }} struct {
 	baseResource
 {%- for property in schema.JSONSchema.OrderedProperties %}
