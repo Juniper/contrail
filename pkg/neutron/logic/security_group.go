@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/twinj/uuid"
 
@@ -73,8 +74,42 @@ func (sg *SecurityGroup) Create(ctx context.Context, rp RequestParameters) (Resp
 
 // Update security group logic.
 func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
-	return nil, errors.New("not implemented")
-	// TODO implement it.
+	sgVnc, err := sg.neutronToVnc(ctx, rp)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "can't convert security group from neutron to vnc")
+	}
+	sgVnc.UUID = id
+	if err = sg.update(ctx, rp, sgVnc); err != nil {
+		return nil, newSecurityGroupError(err, fmt.Sprintf("can't update security group: '%s'", sg.ID))
+	}
+	response, err := rp.ReadService.GetSecurityGroup(ctx, &services.GetSecurityGroupRequest{ID: id})
+	if err != nil {
+		return nil, err
+	}
+	resp, err := sg.vncToNeutron(response.SecurityGroup)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "can't cast contrail security_group resource into neutron one")
+	}
+
+	return resp, nil
+}
+
+func (sg *SecurityGroup) update(ctx context.Context, rp RequestParameters, sgVnc *models.SecurityGroup) error {
+	var fm types.FieldMask
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(SecurityGroupFieldDescription)) {
+		basemodels.FieldMaskAppend(&fm, models.SecurityGroupFieldIDPerms, models.IdPermsTypeFieldDescription)
+	}
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(SecurityGroupFieldName)) {
+		basemodels.FieldMaskAppend(&fm, models.SecurityGroupFieldName)
+		basemodels.FieldMaskAppend(&fm, models.SecurityGroupFieldDisplayName)
+	}
+
+	_, err := rp.WriteService.UpdateSecurityGroup(ctx, &services.UpdateSecurityGroupRequest{
+		SecurityGroup: sgVnc,
+		FieldMask:     fm,
+	})
+
+	return err
 }
 
 // Delete security group logic.
@@ -432,10 +467,11 @@ func (sg *SecurityGroup) neutronToVnc(ctx context.Context, rp RequestParameters)
 	}
 
 	return &models.SecurityGroup{
-		Name:       sg.Name,
-		IDPerms:    &idPerms,
-		ParentUUID: project.GetUUID(),
-		ParentType: models.KindProject,
+		Name:        sg.Name,
+		DisplayName: sg.Name,
+		IDPerms:     &idPerms,
+		ParentUUID:  project.GetUUID(),
+		ParentType:  models.KindProject,
 	}, nil
 }
 
