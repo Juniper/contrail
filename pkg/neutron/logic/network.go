@@ -6,15 +6,17 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/gogo/protobuf/types"
+
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 const (
-	isShared       = "is_shared"
-	routerExternal = "router_external"
+	isAdminFieldKey = "is_admin"
 
 	netStatusActive = "ACTIVE"
 	netStatusDown   = "DOWN"
@@ -29,7 +31,7 @@ const (
 
 // Create logic
 func (n *Network) Create(ctx context.Context, rp RequestParameters) (Response, error) {
-	vncNet, err := n.toVnc(ctx, rp)
+	vncNet, err := n.toVncForCreate(ctx, rp)
 	if err != nil {
 		return nil, err
 	}
@@ -128,49 +130,177 @@ func (n *Network) ReadAll(
 	return convertVNsToNeutronResponse(rp, filters, vncNets), nil
 }
 
+// ReadCount logic
+func (n *Network) ReadCount(
+	ctx context.Context, rp RequestParameters, filters Filters,
+) (Response, error) {
+	if vnCount, err := n.getCountByTenantIDs(ctx, rp, filters); err != nil {
+		return &NetworkResponse{}, err
+	} else if vnCount != nil {
+		return *vnCount, nil
+	}
+
+	rp.RequestContext = RequestContext{}
+	nn, err := n.ReadAll(ctx, rp, filters, Fields{})
+	if err != nil {
+		return nil, err
+	}
+	ns, ok := nn.([]*NetworkResponse)
+	if !ok {
+		return 0, nil
+	}
+
+	return len(ns), nil
+}
+
+// Update logic
+func (n *Network) Update(
+	ctx context.Context, rp RequestParameters, id string,
+) (Response, error) {
+	oldVNRes, err := rp.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+		ID: id,
+	})
+	if err != nil {
+		return nil, newNeutronError(networkNotFound, errorFields{
+			"net_id": id,
+			"msg":    err.Error(),
+		})
+	}
+	n.ID = id
+	oldVN := oldVNRes.GetVirtualNetwork()
+	oldShared := oldVN.GetIsShared()
+	oldRouterExternal := oldVN.GetRouterExternal()
+	var newVN *models.VirtualNetwork
+	fm := types.FieldMask{}
+	newVN, err = n.toVncForUpdate(ctx, rp, oldVN, &fm)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = n.validateSharedChange(ctx, rp, newVN, oldShared); err != nil {
+		return nil, err
+	}
+
+	if err = n.validateRouterExternalChange(ctx, rp, newVN, oldRouterExternal, &fm); err != nil {
+		return nil, err
+	}
+
+	if _, err = rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: newVN,
+		FieldMask:      fm,
+	}); err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "network",
+			"msg":      err.Error(),
+		})
+	}
+
+	return makeNetworkResponse(rp, newVN, OperationRead), nil
+}
+
+func (n *Network) getCountByTenantIDs(
+	ctx context.Context, rp RequestParameters, filters Filters,
+) (*int64, error) {
+	if len(filters) != 1 || !filters.HaveKeys(tenantIDKey) {
+		return nil, nil
+	}
+
+	var pUUIDs []string
+	for _, tenantID := range filters[tenantIDKey] {
+		uuid, err := neutronIDToContrailUUID(tenantID)
+		if err != nil {
+			return nil, err
+		}
+		pUUIDs = append(pUUIDs, uuid)
+	}
+
+	vnCount, err := rp.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
+		Spec: &baseservices.ListSpec{
+			Count:       true,
+			ParentUUIDs: pUUIDs,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &vnCount.VirtualNetworkCount, nil
+}
+
+func (n *Network) validateSharedChange(
+	ctx context.Context,
+	rp RequestParameters,
+	newVN *models.VirtualNetwork,
+	oldShared bool,
+) error {
+	if oldShared && !newVN.GetIsShared() {
+		extPortsAssociated, err := n.checkIfExternalPortsAreAssociated(ctx, rp, newVN)
+		if err != nil {
+			return err
+		}
+		if extPortsAssociated {
+			return newNeutronError(invalidSharedSettings, errorFields{
+				"network": newVN.GetDisplayName(),
+			})
+		}
+	}
+	return nil
+}
+
+func (n *Network) checkIfExternalPortsAreAssociated(
+	ctx context.Context, rp RequestParameters, vn *models.VirtualNetwork,
+) (bool, error) {
+	for _, vmi := range vn.GetVirtualMachineInterfaceBackRefs() {
+		vmiRes, err := rp.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{
+			ID: vmi.GetUUID(),
+		})
+		if err != nil {
+			return false, err
+		}
+
+		if vmiRes.GetVirtualMachineInterface().GetParentType() == models.KindProject &&
+			vmiRes.GetVirtualMachineInterface().GetParentUUID() != vn.GetParentUUID() {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (n *Network) validateRouterExternalChange(
+	ctx context.Context,
+	rp RequestParameters,
+	newVN *models.VirtualNetwork,
+	oldRouterExternal bool,
+	fm *types.FieldMask,
+) error {
+	if newVN.GetRouterExternal() == oldRouterExternal {
+		return nil
+	}
+
+	if newVN.GetRouterExternal() {
+		err := n.createFloatingIPPool(ctx, rp, newVN)
+		if err != nil {
+			return err
+		}
+	} else {
+		for _, fipp := range newVN.GetFloatingIPPools() {
+			if err := n.deleteAssociatedFloatingIPsAndPools(ctx, rp, fipp); err != nil {
+				return newNeutronError(networkInUse, errorFields{
+					"net_id": newVN.GetUUID(),
+					"msg":    err.Error(),
+				})
+			}
+		}
+	}
+	return nil
+}
+
 type listReq struct {
 	ParentID string
 	Filters  []*baseservices.Filter
 	Detail   bool
 	Count    bool
 	ObjUUIDs []string
-}
-
-func (n *Network) updateVnc(
-	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork,
-) error {
-	vncNet.IsShared = n.Shared
-	vncNet.DisplayName = n.Name
-
-	if len(n.ProviderPhysicalNetwork) > 0 || n.ProviderSegmentationID != 0 {
-
-		vncNet.ProviderProperties = &models.ProviderDetails{
-			PhysicalNetwork: n.ProviderPhysicalNetwork,
-			SegmentationID:  n.ProviderSegmentationID,
-		}
-	}
-	// TODO: This is a bug for operation UPDATE when Admin state up is not set in request.
-	vncNet.IDPerms = &models.IdPermsType{Enable: n.AdminStateUp}
-
-	if len(n.Policys) > 0 {
-		//TODO handle policy refs and verify type of 'policys' field with multiple items
-	}
-	if len(n.RouteTable) > 0 {
-		if err := n.createRouteTableRef(ctx, rp, vncNet); err != nil {
-			return err
-		}
-	}
-
-	operation := rp.RequestContext.Operation
-	if operation == OperationCreate || operation == OperationUpdate {
-		vncNet.PortSecurityEnabled = n.PortSecurityEnabled
-	}
-
-	if len(n.Description) > 0 {
-		vncNet.IDPerms.Description = n.Description
-	}
-
-	return nil
 }
 
 func (n *Network) toVncForCreate(
@@ -196,44 +326,91 @@ func (n *Network) toVncForCreate(
 	}
 
 	vncNet.UUID = n.ID
+	if err = n.updateVnc(ctx, rp, vncNet, nil); err != nil {
+		return nil, err
+	}
+
 	return vncNet, nil
 }
 
 func (n *Network) toVncForUpdate(
-	ctx context.Context, rp RequestParameters,
-) (vncNet *models.VirtualNetwork, err error) {
-	vncNetRes, err := rp.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{ID: n.ID})
-	if err != nil {
-		return nil, err
+	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork, fm *types.FieldMask,
+) (*models.VirtualNetwork, error) {
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldRouterExternal)) {
+		vncNet.RouterExternal = n.RouterExternal
+		basemodels.FieldMaskAppend(fm, models.VirtualNetworkFieldRouterExternal)
 	}
-	vncNet = vncNetRes.GetVirtualNetwork()
-	vncNet.RouterExternal = n.RouterExternal
 
 	if n.RouterExternal {
 		vncNet.Perms2.GlobalAccess = permsRX
 	} else {
 		vncNet.Perms2.GlobalAccess = permsNone
 	}
+	basemodels.FieldMaskAppend(fm, models.VirtualNetworkFieldPerms2, models.PermType2FieldGlobalAccess)
+
+	if err := n.updateVnc(ctx, rp, vncNet, fm); err != nil {
+		return nil, err
+	}
 	return vncNet, nil
 
 }
 
-func (n *Network) toVnc(ctx context.Context, rp RequestParameters) (vncNet *models.VirtualNetwork, err error) {
-	if rp.RequestContext.Operation == OperationCreate {
-		vncNet, err = n.toVncForCreate(ctx, rp)
-	} else {
-		vncNet, err = n.toVncForUpdate(ctx, rp)
+func (n *Network) updateVnc(
+	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork, vncFm *types.FieldMask,
+) error {
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(nameKey)) {
+		vncNet.DisplayName = n.Name
+		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldDisplayName)
 	}
 
-	if err != nil {
-		return nil, err
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(sharedKey)) {
+		vncNet.IsShared = n.Shared
+		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIsShared)
 	}
 
-	if err = n.updateVnc(ctx, rp, vncNet); err != nil {
-		return nil, err
+	if len(n.ProviderPhysicalNetwork) > 0 || n.ProviderSegmentationID != 0 {
+		vncNet.ProviderProperties = &models.ProviderDetails{
+			PhysicalNetwork: n.ProviderPhysicalNetwork,
+			SegmentationID:  n.ProviderSegmentationID,
+		}
+		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldProviderProperties)
 	}
 
-	return vncNet, nil
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldAdminStateUp)) {
+		vncNet.IDPerms.Enable = n.AdminStateUp
+		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIDPerms, models.IdPermsTypeFieldEnable)
+	}
+
+	if err := n.setVncRefs(ctx, rp, vncNet, vncFm); err != nil {
+		return err
+	}
+
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPortSecurityEnabled)) {
+		vncNet.PortSecurityEnabled = n.PortSecurityEnabled
+		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldPortSecurityEnabled)
+	}
+
+	if len(n.Description) > 0 {
+		vncNet.IDPerms.Description = n.Description
+		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldIDPerms, models.IdPermsTypeFieldDescription)
+	}
+
+	return nil
+}
+
+func (n *Network) setVncRefs(ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork, vncFm *types.FieldMask) error {
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPolicys)) &&
+		len(n.Policys) > 0 {
+		//TODO handle policy refs and verify type of 'policys' field with multiple items
+	}
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldRouteTable)) &&
+		len(n.RouteTable) > 0 {
+		if err := n.createRouteTableRef(ctx, rp, vncNet); err != nil {
+			return err
+		}
+		basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldRouteTableRefs)
+	}
+	return nil
 }
 
 func (n *Network) deleteAssociatedFloatingIPsAndPools(
@@ -315,7 +492,7 @@ func (n *Network) collectVirtualNetworks(
 		return collectWithoutPrune(ctx, rp, filters[idKey])
 	}
 
-	if !rp.RequestContext.IsAdmin {
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildContextPath(isAdminFieldKey)) && !rp.RequestContext.IsAdmin {
 		return collectNonAdminNetworks(ctx, rp, filters)
 	}
 
@@ -378,14 +555,14 @@ func collectNetworkForTenant(
 		return vns, nil
 	}
 
-	addDBFilter(req, isShared, []string{"true"}, false)
+	addDBFilter(req, models.VirtualNetworkFieldIsShared, []string{"true"}, false)
 	sharedVNs, err := listNetworksForProject(ctx, rp, req)
 	if err != nil {
 		return nil, err
 	}
 	vns = append(vns, sharedVNs...)
 
-	addDBFilter(req, routerExternal, []string{"true"}, true)
+	addDBFilter(req, NetworkFieldRouterExternal, []string{"true"}, true)
 	rtExtVNs, err := listNetworksForProject(ctx, rp, req)
 	if err != nil {
 		return nil, err
@@ -444,7 +621,7 @@ func collectUsingTenantID(
 
 	if filters.HaveKeys(routerExternalKey) {
 		req.ParentID = ""
-		addDBFilter(req, routerExternal, filters[routerExternalKey], true)
+		addDBFilter(req, NetworkFieldRouterExternal, filters[routerExternalKey], true)
 		vns, err = listNetworksForProject(ctx, rp, req)
 		if err != nil {
 			return nil, nil
@@ -479,11 +656,11 @@ func collectSharedOrRouterExtNetworks(
 		req = &listReq{}
 	}
 	if filters.HaveKeys(sharedKey) {
-		addDBFilter(req, isShared, filters[sharedKey], false)
+		addDBFilter(req, models.VirtualNetworkFieldIsShared, filters[sharedKey], false)
 	}
 
 	if filters.HaveKeys(routerExternalKey) {
-		addDBFilter(req, routerExternal, filters[routerExternalKey], false)
+		addDBFilter(req, NetworkFieldRouterExternal, filters[routerExternalKey], false)
 	}
 
 	return listNetworksForProject(ctx, rp, req)
