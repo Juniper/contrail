@@ -70,8 +70,29 @@ func (sg *SecurityGroup) Create(ctx context.Context, rp RequestParameters) (Resp
 
 // Update security group logic.
 func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
-	return nil, errors.New("not implemented")
-	// TODO implement it.
+	sgVnc, err := sg.vncFromNeutron(ctx, rp)
+	sgVnc, err := sg.update(sgVnc)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "can't update security group")
+	}
+	return sg.securityGroupContrailToNeutron(sgVnc), nil
+}
+
+func (sg *SecurityGroup) vncFromNeutron(ctx context.Context, rp RequestParameters) (*models.SecurityGroup, error) {
+	id, err := neutronIDToContrailUUID(sg.ID)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "can't convert neutron ID to vnc UUID")
+	}
+
+	sgVncRes, err := rp.ReadService.GetSecurityGroup(ctx, &services.GetSecurityGroupRequest{ID: id})
+	if err != nil {
+		return nil, newSecurityGroupError(err, fmt.Sprintf("can't fetch seucurity group: '%s'", id))
+	}
+	return sgVncRes.GetSecurityGroup(), nil
+}
+
+func (sg *SecurityGroup) update(sgVnc *models.SecurityGroup) (*models.SecurityGroup, error) {
+	return nil, nil
 }
 
 // Delete security group logic.
