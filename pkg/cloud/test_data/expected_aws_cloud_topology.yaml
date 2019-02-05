@@ -22,7 +22,7 @@
           instances:
             - name: cloud_node_compute
               roles:
-                - compute
+                - compute_node
               provision: true
               username: centos
               instance_type: t2.xlarge
