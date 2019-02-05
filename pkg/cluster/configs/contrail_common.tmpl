@@ -1,8 +1,3 @@
-global_configuration:
-  CONTAINER_REGISTRY: {%if cluster.ContainerRegistry %}{{ cluster.ContainerRegistry }}{%else%}opencontrailnightly{%endif%}
-  REGISTRY_PRIVATE_INSECURE: {%if cluster.RegistryPrivateInsecure %}{{cluster.RegistryPrivateInsecure}}{%else%}false{%endif%}
-  {%if cluster.ContainerRegistryUsername %}CONTAINER_REGISTRY_USERNAME: {{ cluster.ContainerRegistryUsername }}{%endif%}
-  {%if cluster.ContainerRegistryPassword %}CONTAINER_REGISTRY_PASSWORD: {{ cluster.ContainerRegistryPassword }}{%endif%}
 contrail_user: {{ defaultContrailUser }}
 contrail_password: {{ defaultContrailPassword }}
 contrail_port: {{ defaultContrailConfigPort }}
@@ -17,13 +12,11 @@ provider_config:
 
 contrail_configuration:
   CONTRAIL_VERSION: {%if cluster.ContrailVersion %}{{ cluster.ContrailVersion }}{%else%}latest{%endif%}
-  RABBITMQ_NODE_PORT: {%if cluster.RabbitMQPort %}{{ cluster.RabbitMQPort }}{%else%}5673{%endif%}
-  {%if cluster.DefaultGateway != "" %}VROUTER_GATEWAY: {{ cluster.DefaultGateway }}{%endif%}
   ENCAP_PRIORITY: {%if cluster.EncapPriority %}{{cluster.EncapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
   CLOUD_ORCHESTRATOR: kubernetes
   {% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
   {% if key_value.Key && key_value.Value%}
-  {% if key_value.Key != "CLOUD_ORCHESTRATOR" %}
+  {% if key_value.Key == "VROUTER_ENCRYPTION" %}
   {{key_value.Key}}: {{key_value.Value}}
   {%endif%}
   {%endif%}
