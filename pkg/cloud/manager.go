@@ -2,11 +2,8 @@ package cloud
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -291,33 +288,15 @@ func (c *Cloud) delete() error {
 		return err
 	}
 
-	// taking delete action by best-effort
-	// errList will store all the erros, it encountered while deleting the cloud
-	var errList []string
 	if data.isCloudPublic() {
 		err = c.manageTerraform(deleteAction)
-		// log the error and continue
 		if err != nil {
-			errList = append(errList, err.Error())
+			return err
 		}
 	}
 
 	// delete all the objects referred/in-tree of this cloud object
-	err = c.deleteAPIObjects(data)
-	if err != nil {
-		errList = append(errList, err.Error())
-	}
-
-	err = os.RemoveAll(GetCloudDir(c.config.CloudID))
-	if err != nil {
-		errList = append(errList, err.Error())
-	}
-
-	// join all the errors and return it
-	if len(errList) > 0 {
-		return errors.New(strings.Join(errList, "\n"))
-	}
-	return nil
+	return c.deleteAPIObjects(data)
 
 }
 

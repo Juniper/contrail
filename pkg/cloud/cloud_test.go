@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Juniper/build/docker/contrail_go/src/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/apisrv"
 )
 
@@ -23,6 +24,7 @@ const (
 	expectedAWSCmdForCreateUpdate   = "./test_data/expected_aws_cmd_for_create_update.yaml"
 	expectedAWSTopology             = "./test_data/expected_aws_cloud_topology.yaml"
 	expectedAWSSecret               = "./test_data/expected_aws_cloud_secret.yaml"
+	expectedPvtKey                  = "./test_data/cloud_keypair"
 	cloudID                         = "cloud_uuid"
 )
 
@@ -95,6 +97,10 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 			assert.NoError(t, err, "failed to delete executed commands yaml")
 		}
 	}
+
+	pvtKeycleanup := createDummyPvtKeyFile(t)
+	defer pvtKeycleanup()
+
 	cloud, err := NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct")
 
@@ -107,6 +113,9 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 		"secret file created during cloud create is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
 		"Expected list of create commands are not executed")
+	// check if ssh keys are created
+	assert.True(t, verifyGeneratedSSHKeyFile(t),
+		"Expected ssh key file are not generated")
 
 	// Wait for the in-memory endpoint cache to get updated
 	apisrv.APIServer.ForceProxyUpdate()
@@ -197,6 +206,29 @@ func compareGeneratedSecret(t *testing.T, expectedSecretFile string) bool {
 
 func verifyCommandsExecuted(t *testing.T, expectedCmdForCreateUpdate string) bool {
 	return compareFiles(t, expectedCmdForCreateUpdate, executedCommandsPath())
+}
+
+func verifyGeneratedSSHKeyFile(t *testing.T) bool {
+	pvtKeyPath := getCloudSSHKeyPath(cloudID, "cloud_keypair")
+	return compareFiles(t, expectedPvtKey, pvtKeyPath)
+}
+
+func createDummyPvtKeyFile(t *testing.T) func() {
+	// create public cloud topology.yaml
+	publicTopoData, err := fileutil.GetContent("file://" + expectedPvtKey)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to read file: %s", expectedPvtKey)
+	}
+	err = fileutil.WriteToFile("/tmp/cloud_keypair", publicTopoData, defaultRWOnlyPerm)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to write file: %s", "/tmp/cloud_keypair")
+	}
+
+	return func() {
+		// best effort method of deleting all the files
+		// nolint: errcheck
+		_ = os.Remove("/tmp/cloud_keypair")
+	}
 }
 
 func generatedTopoPath() string {

@@ -20,7 +20,7 @@
           instances:
             - name: cloud_node_compute
               roles:
-                - compute
+                - compute_node
               provision: true
               username: centos
               os: centos7
