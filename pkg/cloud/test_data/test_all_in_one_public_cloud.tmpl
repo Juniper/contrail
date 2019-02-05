@@ -13,6 +13,7 @@ cleanup:
 - path: /cloud-user/cloud_user_uuid
 - path: /credential/cloud_credential_uuid
 - path: /keypair/cloud_keypair_uuid
+- path: /tag/public_cloud_tag_uuid
 test_data:
   cloud_keypair: &cloud_keypair
     name: cloud_keypair
@@ -68,12 +69,19 @@ test_data:
     {% if "azure" in CLOUD_TYPE %}
     resource_group: unit_test
     {% endif %}
+  vc_tag: &vc_tag
+    name: public_cloud_tag
+    uuid: public_cloud_tag_uuid
+    tag_type_name: namespace
+    tag_value: vc1
   virtual_cloud: &virtual_cloud
     name: virtual_cloud
     uuid: virtual_cloud_uuid
     parent_type: cloud-region
     parent_uuid: cloud_region_uuid
     cidr_block: 192.168.10.0/16
+    tag_refs:
+      - uuid: public_cloud_tag_uuid
   cloud_private_subnet: &cloud_private_subnet
     name: cloud_private_subnet
     uuid: cloud_private_subnet_uuid
@@ -125,8 +133,10 @@ test_data:
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
     {% endif %}
-    parent_type: virtual-cloud
-    parent_uuid: virtual_cloud_uuid
+    tag_refs:
+      - uuid: public_cloud_tag_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
   cloud_node_controller: &cloud_node_controller
     name: cloud_node_controller
     uuid: cloud_node_controller_uuid
@@ -150,8 +160,10 @@ test_data:
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
     {% endif %}
-    parent_type: virtual-cloud
-    parent_uuid: virtual_cloud_uuid
+    tag_refs:
+      - uuid: public_cloud_tag_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
   cloud_node_compute: &cloud_node_compute
     name: cloud_node_compute
     uuid: cloud_node_compute_uuid
@@ -175,8 +187,10 @@ test_data:
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
     {% endif %}
-    parent_type: virtual-cloud
-    parent_uuid: virtual_cloud_uuid
+    tag_refs:
+      - uuid: public_cloud_tag_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 
 clients:
   default:
@@ -309,6 +323,17 @@ workflow:
       resource_group: unit_test
       {% endif %}
 
+- name: create virtual cloud tag
+  request:
+    path: /tags
+    method: POST
+    expected:
+    - 200
+    data:
+      tag: *vc_tag
+  expect:
+    tag: *vc_tag
+
 - name: create virtual cloud
   request:
     path: /virtual-clouds
@@ -325,6 +350,8 @@ workflow:
       parent_type: cloud-region
       parent_uuid: cloud_region_uuid
       cidr_block: 192.168.10.0/16
+      tag_refs:
+        - uuid: public_cloud_tag_uuid
 
 - name: create cloud private subnet
   request:
@@ -422,8 +449,10 @@ workflow:
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
       {% endif %}
-      parent_type: virtual-cloud
-      parent_uuid: virtual_cloud_uuid
+      tag_refs:
+        - uuid: public_cloud_tag_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 
 - name: create cloud node controller
   request:
@@ -457,8 +486,10 @@ workflow:
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
       {% endif %}
-      parent_type: virtual-cloud
-      parent_uuid: virtual_cloud_uuid
+      tag_refs:
+        - uuid: public_cloud_tag_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 
 - name: create cloud node compute
   request:
@@ -492,5 +523,7 @@ workflow:
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
       {% endif %}
-      parent_type: virtual-cloud
-      parent_uuid: virtual_cloud_uuid
+      tag_refs:
+        - uuid: public_cloud_tag_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
