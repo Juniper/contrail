@@ -128,6 +128,161 @@ func (n *Network) ReadAll(
 	return convertVNsToNeutronResponse(rp, filters, vncNets), nil
 }
 
+// ReadCount logic
+func (n *Network) ReadCount(
+	ctx context.Context, rp RequestParameters, filters Filters,
+) (Response, error) {
+	if vnCount, err := n.getCountByTenantIDs(ctx, rp, filters); err != nil {
+		return &NetworkResponse{}, err
+	} else if vnCount != nil {
+		return *vnCount, nil
+	}
+
+	rp.RequestContext = RequestContext{}
+	nn, err := n.ReadAll(ctx, rp, filters, Fields{})
+	if err != nil {
+		return nil, err
+	}
+	ns, ok := nn.([]*NetworkResponse)
+	if !ok {
+		return 0, nil
+	}
+
+	return len(ns), nil
+}
+
+// Update logic
+func (n *Network) Update(
+	ctx context.Context, rp RequestParameters, id string,
+) (Response, error) {
+	oldVNRes, err := rp.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+		ID: id,
+	})
+	if err != nil {
+		return nil, newNeutronError(networkNotFound, errorFields{
+			"net_id": id,
+			"msg":    err.Error(),
+		})
+	}
+	n.ID = id
+	var newVN *models.VirtualNetwork
+	newVN, err = n.toVnc(ctx, rp)
+	if err != nil {
+		return nil, err
+	}
+
+	oldVN := oldVNRes.GetVirtualNetwork()
+	if err = n.validateSharedChange(ctx, rp, oldVN, newVN); err != nil {
+		return nil, err
+	}
+
+	if err = n.validateRouterExternalChange(ctx, rp, oldVN, newVN); err != nil {
+		return nil, err
+	}
+
+	if _, err = rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: newVN,
+		FieldMask:      rp.FieldMask,
+	}); err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "network",
+			"msg":      err.Error(),
+		})
+	}
+
+	return makeNetworkResponse(rp, newVN, OperationRead), nil
+}
+
+func (n *Network) getCountByTenantIDs(
+	ctx context.Context, rp RequestParameters, filters Filters,
+) (*int64, error) {
+	if len(filters) != 1 || !filters.HaveKeys(tenantIDKey) {
+		return nil, nil
+	}
+
+	var pUUIDs []string
+	for _, tenantID := range filters[tenantIDKey] {
+		uuid, err := neutronIDToContrailUUID(tenantID)
+		if err != nil {
+			return nil, err
+		}
+		pUUIDs = append(pUUIDs, uuid)
+	}
+
+	vnCount, err := rp.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
+		Spec: &baseservices.ListSpec{
+			Count:       true,
+			ParentUUIDs: pUUIDs,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &vnCount.VirtualNetworkCount, nil
+}
+
+func (n *Network) validateSharedChange(
+	ctx context.Context, rp RequestParameters, oldVN *models.VirtualNetwork,newVN *models.VirtualNetwork,
+) error {
+	if oldVN.GetIsShared() && !newVN.GetIsShared() {
+		extPortsAssociated, err := n.checkIfExternalPortsAreAssociated(ctx, rp, newVN)
+		if err != nil {
+			return err
+		}
+		if extPortsAssociated {
+			return newNeutronError(invalidSharedSettings, errorFields{
+				"network": newVN.GetDisplayName(),
+			})
+		}
+	}
+	return nil
+}
+
+func (n *Network) checkIfExternalPortsAreAssociated(
+	ctx context.Context, rp RequestParameters, vn *models.VirtualNetwork,
+) (bool, error) {
+	for _, vmi := range vn.GetVirtualMachineInterfaceBackRefs() {
+		vmiRes, err := rp.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{
+			ID: vmi.GetUUID(),
+		})
+		if err != nil {
+			return false, err
+		}
+
+		if vmiRes.GetVirtualMachineInterface().GetParentType() == models.KindProject &&
+			vmiRes.GetVirtualMachineInterface().GetParentUUID() == vn.GetParentUUID() {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (n *Network) validateRouterExternalChange(
+	ctx context.Context, rp RequestParameters, oldVN *models.VirtualNetwork,newVN *models.VirtualNetwork,
+) error {
+	if newVN.GetRouterExternal() == oldVN.GetRouterExternal() {
+		return nil
+	}
+
+	if newVN.GetRouterExternal() {
+		err := n.createFloatingIPPool(ctx, rp, newVN)
+		if err != nil {
+			return err
+		}
+	} else {
+		for _, fipp := range oldVN.GetFloatingIPPools() {
+			if err := n.deleteAssociatedFloatingIPsAndPools(ctx, rp, fipp); err != nil {
+				return  newNeutronError(networkInUse, errorFields{
+					"net_id": oldVN.GetUUID(),
+					"msg":    err.Error(),
+				})
+			}
+		}
+	}
+	return nil
+}
+
 type listReq struct {
 	ParentID string
 	Filters  []*baseservices.Filter
