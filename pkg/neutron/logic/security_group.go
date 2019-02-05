@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/twinj/uuid"
 
@@ -75,8 +76,30 @@ func (sg *SecurityGroup) Create(ctx context.Context, rp RequestParameters) (Resp
 
 // Update security group logic.
 func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
-	return nil, errors.New("not implemented")
-	// TODO implement it.
+	sgVnc, err := sg.vncFromNeutron(ctx, rp)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "can't convert security group from neutron to vnc")
+	}
+	sgVnc.UUID = id
+	if err = sg.update(ctx, rp, sgVnc); err != nil {
+		return nil, newSecurityGroupError(err, fmt.Sprintf("can't update security group: '%s'", sg.ID))
+	}
+	resp, err := sg.neutronFromVnc(sgVnc)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "can't cast contrail security_group resource into neutron one")
+	}
+
+	return resp, nil
+}
+
+func (sg *SecurityGroup) update(ctx context.Context, rp RequestParameters, sgVnc *models.SecurityGroup) error {
+	_, err := rp.WriteService.UpdateSecurityGroup(ctx, &services.UpdateSecurityGroupRequest{
+		SecurityGroup: sgVnc,
+		FieldMask: types.FieldMask{
+			Paths: []string{models.SecurityGroupFieldName, models.SecurityGroupFieldDisplayName},
+		},
+	})
+	return err
 }
 
 // Delete security group logic.
@@ -436,10 +459,11 @@ func (sg *SecurityGroup) vncFromNeutron(ctx context.Context, rp RequestParameter
 	}
 
 	return &models.SecurityGroup{
-		Name:       sg.Name,
-		IDPerms:    &idPerms,
-		ParentUUID: project.GetUUID(),
-		ParentType: models.KindProject,
+		Name:        sg.Name,
+		DisplayName: sg.Name,
+		IDPerms:     &idPerms,
+		ParentUUID:  project.GetUUID(),
+		ParentType:  models.KindProject,
 	}, nil
 }
 
