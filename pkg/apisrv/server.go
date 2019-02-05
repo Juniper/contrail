@@ -20,6 +20,7 @@ import (
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
@@ -65,6 +66,7 @@ type Server struct {
 	IDToFQNameServer           services.IDToFQNameServer
 	PropCollectionUpdateServer services.PropCollectionUpdateServer
 	Cache                      *cache.DB
+	Collector                  *collector.Collector
 }
 
 // NewServer makes a server
@@ -197,6 +199,9 @@ func (s *Server) Init() (err error) {
 	if err != nil {
 		return err
 	}
+
+	s.Collector = collector.NewCollectorFromConfig()
+	s.Echo.Use(middleware.BodyDump(s.Collector.RESTAPITrace))
 
 	cs, err := s.setupService()
 	if err != nil {
