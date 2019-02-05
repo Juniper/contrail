@@ -7,15 +7,6 @@
       public_ip: {{ instance.info.IPAddress }}
       private_ip: {{ instance.pvtIntf.IPAddress }}
       interface: {{ instance.pvtIntf.Name }}
-      {% if "gateway" in instance.roles %}
-      private_subnet:
-      {% for subnet in cloud.subnets %}
-        - {{ subnet.info.CidrBlock }}
-      {% endfor %}
-      {% endif %}
-      {% if "gateway" in instance.roles %}{% if "" not in instance.info.DefaultGateway %}
-      gateway: {{ instance.info.DefaultGateway }}
-      {% endif %}{% endif %}
       provision: {{ instance.provision }}
       {% for cred in cloud.credentials %}{% for cred_ref in instance.info.CredentialRefs %}{%if cred_ref.UUID in cred.UUID %}
       username: {{ cred.SSHUser }}
@@ -36,6 +27,13 @@
       protocols_mode:
       {% for mode in instance.protocolsMode %}
         - {{ mode }}
+      {% endfor %}
+      {% endif %}
+      {% if instance.gateway %}
+      gateway: {{ instance.gateway }}
+      private_subnet:
+      {% for subnet in cloud.subnets %}
+        - {{ subnet.info.CidrBlock }}
       {% endfor %}
       {% endif %}
   {% endfor %}

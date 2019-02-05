@@ -17,9 +17,10 @@ test_data:
   cloud_keypair: &cloud_keypair
     name: cloud_keypair
     uuid: cloud_keypair_uuid
-    ssh_public_key: test_ssh_key
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    ssh_public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0O/hslq9Jyp1aRmtLbC4+PuJicFDW+3BY2ZLqtg6M1n9QQ0ACDaR8NlYqDRB2ywuTpdEbqMNt2bGjPvB2BJ/OEz/cLuP9V+DxJwjipdG7fTghZR+1lgVf9OBzzkgxi5hbFmnhMzsPIrEOUWR/93or9IJej/9/3zaYYDy7ltIl6ArjA0ZsJ1xJbczbmiWqih1kMWE9yNHN7d5DCSVppCvIfezi4hlcfjJOxfU7nDlFaUQ4+5ZSEbvmAryrWPE5fMeF3WY+ns6XlKxuheie1MUFLNnWjc0L2hw7HHjMok7lXjs/4+O0LkQa+/ozOjfg1s/Q4wbUtOkTqOG9Ayr0rLLV"
+    ssh_key_path: /tmp/
   cloud_credential: &cloud_credential
     name: cloud_credential
     uuid: cloud_credential_uuid
@@ -205,7 +206,8 @@ workflow:
       uuid: cloud_keypair_uuid
       parent_type: global-system-config
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-      ssh_public_key: test_ssh_key
+      ssh_public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0O/hslq9Jyp1aRmtLbC4+PuJicFDW+3BY2ZLqtg6M1n9QQ0ACDaR8NlYqDRB2ywuTpdEbqMNt2bGjPvB2BJ/OEz/cLuP9V+DxJwjipdG7fTghZR+1lgVf9OBzzkgxi5hbFmnhMzsPIrEOUWR/93or9IJej/9/3zaYYDy7ltIl6ArjA0ZsJ1xJbczbmiWqih1kMWE9yNHN7d5DCSVppCvIfezi4hlcfjJOxfU7nDlFaUQ4+5ZSEbvmAryrWPE5fMeF3WY+ns6XlKxuheie1MUFLNnWjc0L2hw7HHjMok7lXjs/4+O0LkQa+/ozOjfg1s/Q4wbUtOkTqOG9Ayr0rLLV"
+      ssh_key_path: /tmp/
 
 - name: create cloud credential
   request:
