@@ -64,6 +64,7 @@ const (
 	testTemplate                 = "./../../cloud/test_data/test_cmd.tmpl"
 
 	openstack = "openstack"
+	setupRoutesPlayRetry = 3
 
 	addCloud    = "ADD_CLOUD"
 	updateCloud = "UPDATE_CLOUD"
@@ -111,15 +112,9 @@ func (m *multiCloudProvisioner) Deploy() error {
 		if updated {
 			return nil
 		}
-		err = m.updateMCCluster()
-		if err != nil {
-			return err
-		}
+		return m.updateMCCluster()
 	case deleteCloud:
-		err := m.deleteMCCluster()
-		if err != nil {
-			return err
-		}
+		return m.deleteMCCluster()
 	}
 	return nil
 }
@@ -172,7 +167,7 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		return err
 	}
 
-	err = m.manageSSHAgent(m.workDir)
+	err = m.manageSSHAgent(m.workDir, createAction)
 	if err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
@@ -211,7 +206,7 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		return err
 	}
 
-	err = m.manageSSHAgent(m.workDir)
+	err = m.manageSSHAgent(m.workDir, updateAction)
 	if err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
@@ -237,8 +232,11 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
-	// best effort cleaning of nodes
-	err := m.manageSSHAgent(m.workDir)
+	// nolint: errcheck
+  defer m.manageSSHAgent(m.workDir, deleteAction)
+  // best effort cleaning of nodes
+  // need to export ssh-agent variables before killing the process
+  err := m.manageSSHAgent(m.workDir, updateAction)
 	if err != nil {
 		return err
 	}
@@ -369,12 +367,30 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		if err := m.playMCDeployContrail(args, skipRoles); err != nil {
 			return err
 		}
-		if err := m.playMCSetupControllerGWRoutes(args); err != nil {
-			return err
+
+		for i := 0; i < setupRoutesPlayRetry; i++ {
+				m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
+				if err := m.playMCSetupControllerGWRoutes(args); err != nil {
+						if i == setupRoutesPlayRetry-1 {
+								return err
+						}
+						continue
+				} else {
+						break
+				}
 		}
-		if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
-			return err
+		for i := 0; i < setupRoutesPlayRetry; i++ {
+				m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
+				if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
+						if i == setupRoutesPlayRetry-1 {
+								return err
+						}
+						continue
+				} else {
+						break
+				}
 		}
+
 		return m.playMCFixComputeDNS(args)
 
 	case updateCloud:
@@ -382,9 +398,19 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		if err := m.playDeployMCGW(args); err != nil {
 			return err
 		}
-		if err := m.playMCSetupControllerGWRoutes(args); err != nil {
-			return err
+
+		for i := 0; i < setupRoutesPlayRetry; i++ {
+				m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
+				if err := m.playMCSetupControllerGWRoutes(args); err != nil {
+						if i == setupRoutesPlayRetry-1 {
+								return err
+						}
+						continue
+				} else {
+						break
+				}
 		}
+
 		if err := m.playMCInstancesConfig(args); err != nil {
 			return err
 		}
@@ -411,22 +437,37 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		if err := m.playMCDeployContrail(args, skipRoles); err != nil {
 			return err
 		}
-		if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
-			return err
+
+		for i := 0; i < setupRoutesPlayRetry; i++ {
+				m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
+				if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
+						if i == setupRoutesPlayRetry-1 {
+								return err
+						}
+						continue
+				} else {
+						break
+				}
 		}
+
 		return m.playMCFixComputeDNS(args)
 
 	case deleteCloud:
 
+		status := make(map[string]interface{})
+		if m.action != deleteAction {
+				status[statusField] = statusUpdateProgress
+				m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+				status[statusField] = statusUpdated
+		}
 		//best effort cleaning up
-		// nolint: errcheck
-		_ = m.playMCContrailCleanup(args)
-		return m.playMCGatewayCleanup(args)
-	}
+		m.playMCContrailCleanup(args)
+		m.playMCGatewayCleanup(args)
 
-	if m.cluster.config.Action == deleteAction {
-		// nolint: errcheck
-		os.RemoveAll(m.getWorkingDir())
+		if m.action != deleteAction {
+				m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		}
+		return nil
 	}
 
 	return nil
@@ -460,17 +501,17 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 
 }
 
-func (m *multiCloudProvisioner) readSSHAgentConfig(path string) (*SSHAgentConfig, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	agentConfig := &SSHAgentConfig{}
-	err = yaml.UnmarshalStrict(data, agentConfig)
-	if err != nil {
-		return nil, err
-	}
-	return agentConfig, nil
+func readSSHAgentConfig(path string) (*SSHAgentConfig, error) {
+  data, err := ioutil.ReadFile(path)
+  if err != nil {
+      return nil, err
+  }
+  agentConfig := &SSHAgentConfig{}
+  err = yaml.UnmarshalStrict(data, agentConfig)
+  if err != nil {
+      return nil, err
+  }
+  return agentConfig, nil
 }
 
 func (m *multiCloudProvisioner) readPubKeyConfig() (*PubKeyConfig, error) {
@@ -534,40 +575,40 @@ func (m *multiCloudProvisioner) runSSHAgent(workDir string, sshAgentPath string)
 }
 
 // nolint: gocyclo
-func (m *multiCloudProvisioner) manageSSHAgent(workDir string) error {
+func (m *multiCloudProvisioner) manageSSHAgent(workDir string,
+	action string) error {
 
 	// To-Do: to use ssh/agent library to create agent unix process
-	sshAgentConf := &SSHAgentConfig{}
 	sshAgentPath := m.getSSHAgentFile(workDir)
 	_, err := os.Stat(sshAgentPath)
 	if err != nil {
-		sshAgentConf, err = m.runSSHAgent(workDir, sshAgentPath)
+		if action == deleteAction {
+				return nil
+		}
+		_, err = m.runSSHAgent(workDir, sshAgentPath)
 		if err != nil {
 			return err
 		}
 	} else {
-		sshAgentConf, err = m.readSSHAgentConfig(sshAgentPath)
+		process, err := isSSHAgentProcessRunning(sshAgentPath) //nolint: vetshadow
 		if err != nil {
-			return err
-		}
-		pid, err := strconv.Atoi(sshAgentConf.PID) // nolint: govet
-		if err != nil {
-			return err
+				_, err = m.runSSHAgent(workDir, sshAgentPath)
+				if err != nil {
+						return err
+				}
 		}
 
-		// check if process is running
-		process, err := os.FindProcess(pid)
-		if err != nil {
+		if action == deleteAction && err == nil {
+				return process.Kill()
+		}
+	}
+	if m.cluster.config.Test {
+			return nil
+	}
+
+	sshAgentConf, err := readSSHAgentConfig(sshAgentPath)
+	if err != nil {
 			return err
-		}
-		err = process.Signal(syscall.Signal(0))
-		// if process is not found
-		if err != nil {
-			sshAgentConf, err = m.runSSHAgent(workDir, sshAgentPath)
-			if err != nil {
-				return err
-			}
-		}
 	}
 
 	err = os.Setenv("SSH_AUTH_SOCK", sshAgentConf.AuthSock)
@@ -592,38 +633,86 @@ func (m *multiCloudProvisioner) manageSSHAgent(workDir string) error {
 	if err != nil {
 		return err
 	}
-	sshKeyRepo := filepath.Join(cloud.GetCloudDir(pubCloudID),
-		defaultSSHKeyRepo)
 
+	pubCloudSSHKeyDir := filepath.Join(cloud.GetCloudDir(pubCloudID),
+			defaultSSHKeyRepo)
+
+	clusterSSHKeyDir := filepath.Join(m.getMCWorkingDir(m.getWorkingDir()), defaultSSHKeyRepo)
 	sshKeyName, ok := pubKey.Info["name"]
+
+	err = copySSHKeyPair(pubCloudSSHKeyDir, clusterSSHKeyDir, sshKeyName)
+	if err != nil {
+			return err
+	}
+
 	if !ok {
-		return errors.New("secret file format is not valid")
+			return errors.New("Secret file format is not valid")
 	}
-	sshPvtKeyPath := filepath.Join(sshKeyRepo, sshKeyName)
+	sshPvtKeyPath := filepath.Join(clusterSSHKeyDir, sshKeyName)
 
-	if m.cluster.config.Test {
-		return nil
-	}
+	return m.addPvtKeyToSSHAgent(sshPvtKeyPath)
+}
 
-	_, err = os.Stat(sshPvtKeyPath)
-	if err != nil {
-		return errors.New("private key is not generated as expected, please check cloud creation logs")
-	}
+func (m *multiCloudProvisioner) addPvtKeyToSSHAgent(keyPath string) error {
 
-	cmd := "ssh-add"
-	args := []string{fmt.Sprintf("%s", sshPvtKeyPath)}
-	m.Log.Debugf("Executing command: %s", fmt.Sprintf("%s %s", cmd, sshPvtKeyPath))
-	cmdline := exec.Command(cmd, args...)
-	output, err := cmdline.CombinedOutput()
-	stdout := string(output)
+    cmd := "ssh-add"
+    args := []string{"-d", fmt.Sprintf("%s", keyPath)}
+    m.Log.Debugf("Executing command: %s", fmt.Sprintf("%s %s", cmd, keyPath))
 
-	if err != nil {
-		m.Log.Errorf("Error: ssh-add : %s", stdout)
-		return err
-	}
+    if m.cluster.config.Test {
+        return cloud.TestCmdHelper(cmd, args, m.workDir, testTemplate)
+    }
+    // ignore if there is an error while deleting key,
+    // this step is to make sure that updated keys are loaded to agent
+    _ = osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.workDir) // nolint: errcheck
 
-	m.Log.Debugf("ssh-add output: %s", stdout)
-	return nil
+    // readd the key
+    args = []string{fmt.Sprintf("%s", keyPath)}
+    m.Log.Debugf("Executing command: %s", fmt.Sprintf("%s %s", cmd, keyPath))
+
+    if m.cluster.config.Test {
+        return cloud.TestCmdHelper(cmd, args, m.workDir, testTemplate)
+    }
+    return osutil.ExecCmdAndWait(m.Reporter, cmd, args, m.workDir)
+}
+
+func copySSHKeyPair(srcSSHKeyDir string,
+    destSSHKeyDir string, keyName string) error {
+
+    srcSSHPvtKeyPath := filepath.Join(srcSSHKeyDir, keyName)
+    srcSSHPubKeyPath := filepath.Join(srcSSHKeyDir, keyName+".pub")
+
+    pvtKeyFileInfo, err := os.Stat(srcSSHPvtKeyPath)
+    if err != nil {
+        return err
+    }
+    pvtKey, err := fileutil.GetContent("file://" + srcSSHPvtKeyPath)
+    if err != nil {
+        return err
+    }
+
+    pubKeyFileInfo, err := os.Stat(srcSSHPubKeyPath)
+    if err != nil {
+        return err
+    }
+    pubKey, err := fileutil.GetContent("file://" + srcSSHPubKeyPath)
+    if err != nil {
+        return err
+    }
+
+    destSSHPvtKeyPath := filepath.Join(destSSHKeyDir, keyName)
+    destSSHPubKeyPath := filepath.Join(destSSHKeyDir, keyName+".pub")
+
+    if err = fileutil.WriteToFile(destSSHPvtKeyPath, pvtKey,
+        pvtKeyFileInfo.Mode()); err != nil {
+        return err
+    }
+
+    if err = fileutil.WriteToFile(destSSHPubKeyPath, pubKey,
+        pubKeyFileInfo.Mode()); err != nil {
+        return err
+    }
+    return nil
 }
 
 // nolint: gocyclo
@@ -982,4 +1071,26 @@ func (m *multiCloudProvisioner) getPubPvtCloudID() (string, string, error) {
 	}
 	return publicCloudID, onPremCloudID, nil
 
+}
+
+func isSSHAgentProcessRunning(sshAgentPath string) (*os.Process, error) {
+
+  sshAgentConf, err := readSSHAgentConfig(sshAgentPath)
+  if err != nil {
+      return nil, err
+  }
+  pid, err := strconv.Atoi(sshAgentConf.PID) // nolint: vetshadow
+  if err != nil {
+      return nil, err
+  }
+  // check if process is running
+  process, err := os.FindProcess(pid)
+  if err != nil {
+      return nil, err
+  }
+  err = process.Signal(syscall.Signal(0))
+  if err != nil {
+      return nil, err
+  }
+  return process, nil
 }
