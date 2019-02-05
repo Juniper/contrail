@@ -9,6 +9,18 @@ import (
 	"github.com/Juniper/contrail/pkg/format"
 )
 
+// Neutron API request operations
+const (
+	OperationCreate       = "CREATE"
+	OperationRead         = "READ"
+	OperationReadAll      = "READALL"
+	OperationUpdate       = "UPDATE"
+	OperationDelete       = "DELETE"
+	OperationReadCount    = "READCOUNT"
+	OperationAddInterface = "ADDINTERFACE"
+	OperationDelInterface = "DELINTERFACE"
+)
+
 // Request defines an API request.
 type Request struct {
 	Data    Data           `json:"data" yaml:"data"`
