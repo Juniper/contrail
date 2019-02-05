@@ -38,4 +38,7 @@
         - {{ mode }}
       {% endfor %}
       {% endif %}
+      {% if instance.gateway %}
+      gateway: {{ instance.gateway }}
+      {% endif %}
   {% endfor %}
