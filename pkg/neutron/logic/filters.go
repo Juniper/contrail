@@ -56,9 +56,9 @@ func (f *Filters) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// haveKeys checks if one or more keys are present in filters.
+// HaveKeys checks if one or more keys are present in filters.
 // Will return true if at least one key has been defined and all keys are present and not empty.
-func (f Filters) haveKeys(keys ...FilterKey) bool {
+func (f Filters) HaveKeys(keys ...FilterKey) bool {
 	if len(keys) == 0 {
 		return false
 	}
@@ -73,11 +73,18 @@ func (f Filters) haveKeys(keys ...FilterKey) bool {
 	return true
 }
 
-// checkValue check equality of values in filters struct under specific key and provided sequence of strings
-func (f Filters) checkValue(key FilterKey, values ...string) bool {
-	if !f.haveKeys(key) {
-		return true
+// Match checks if filters should accept values for given key.
+// If key does not exist then it accepts every value and Match returns true.
+func (f Filters) Match(key FilterKey, values ...string) bool {
+	if !f.HaveKeys(key) {
+		return true // This is intentional - if filters don't contain key, then we are not filtering out.
 	}
+
+	return f.HaveValues(key, values...)
+}
+
+// HaveValues check equality of values in filters struct under specific key and provided sequence of strings.
+func (f Filters) HaveValues(key FilterKey, values ...string) bool {
 	if len(f[key]) != len(values) {
 		return false
 	}
