@@ -124,6 +124,57 @@ func (n *Network) ReadAll(
 	return convertVNsToNeutronResponse(rp, filters, vncNets), nil
 }
 
+// ReadCount logic
+func (n *Network) ReadCount(
+	ctx context.Context, rp RequestParameters, filters Filters,
+) (Response, error) {
+	if vnCount, err := n.getCountOptimized(ctx, rp, filters); err != nil {
+		return &NetworkResponse{}, err
+	} else if vnCount != nil {
+		return *vnCount, nil
+	}
+
+	nn, err := n.ReadAll(ctx, RequestParameters{}, filters, Fields{})
+	if err != nil {
+		return nil, err
+	}
+	ns, ok := nn.([]*NetworkResponse)
+	if !ok {
+		return 0, nil
+	}
+
+	return len(ns), nil
+}
+
+func (n *Network) getCountOptimized(
+	ctx context.Context, rp RequestParameters, filters Filters,
+) (*int64, error) {
+	if len(filters) != 1 || !filters.haveKeys(tenantIDKey) {
+		return nil, nil
+	}
+
+	var pUUIDs []string
+	for _, tenantID := range filters[tenantIDKey] {
+		uuid, err := neutronIDToContrailUUID(tenantID)
+		if err != nil {
+			return nil, err
+		}
+		pUUIDs = append(pUUIDs, uuid)
+	}
+
+	vnCount, err := rp.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
+		Spec: &baseservices.ListSpec{
+			Count:       true,
+			ParentUUIDs: pUUIDs,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &vnCount.VirtualNetworkCount, nil
+}
+
 type listReq struct {
 	ParentID string
 	Filters  []*baseservices.Filter
