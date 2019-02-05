@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gogo/protobuf/types"
+	"github.com/pkg/errors"
 	"github.com/twinj/uuid"
 
 	"github.com/Juniper/contrail/pkg/errutil"
