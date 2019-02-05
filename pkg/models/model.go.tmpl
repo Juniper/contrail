@@ -280,6 +280,11 @@ func (m *{{ schema.JSONSchema.GoName }}) MarshalJSON() ([]byte, error) {
 	return json.Marshal(obj)
 }
 
+// SetUUID sets resource's UUID.
+func (m *{{ schema.JSONSchema.GoName }}) SetUUID(uuid string) {
+	m.UUID = uuid
+}
+
 func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
 	{%- if schema.References|length > 0%}
 	if m == nil {
