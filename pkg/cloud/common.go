@@ -117,16 +117,15 @@ func GetTFStateFile(cloudID string) string {
 }
 
 func deleteNodeObjects(client *client.HTTP,
-	nodeList []*instanceData) []string {
+	nodeList []*instanceData) error {
 
-	var errList []string
 	// Delete Node related dependencies and node itself
 	for _, node := range nodeList {
 		if node.info.PortGroups != nil {
 			for _, portGroup := range node.info.PortGroups {
 				_, err := client.Delete("/port-group/"+portGroup.UUID, nil)
 				if err != nil {
-					errList = append(errList, err.Error())
+					return err
 				}
 			}
 		}
@@ -134,85 +133,83 @@ func deleteNodeObjects(client *client.HTTP,
 			for _, port := range node.info.Ports {
 				_, err := client.Delete("/port/"+port.UUID, nil)
 				if err != nil {
-					errList = append(errList, err.Error())
+					return err
 				}
 			}
 		}
 		_, err := client.Delete("/node/"+node.info.UUID, nil)
 		if err != nil {
-			errList = append(errList, err.Error())
+			return err
 		}
 	}
-	return errList
+	return nil
 }
 
-func deleteSGObjects(client *client.HTTP, sgList []*sgData) []string {
-
-	var errList []string
+func deleteSGObjects(client *client.HTTP, sgList []*sgData) error {
 
 	// Delete CloudSecurityGroup related dependencies and CloudSecurityGroup itself
 	for _, sg := range sgList {
 		for _, sgRule := range sg.info.CloudSecurityGroupRules {
 			_, err := client.Delete("/cloud-security-group-rule/"+sgRule.UUID, nil)
 			if err != nil {
-				errList = append(errList, err.Error())
+				return err
 			}
 		}
 		_, err := client.Delete("/cloud-security-group/"+sg.info.UUID, nil)
 		if err != nil {
-			errList = append(errList, err.Error())
+			return err
 		}
 	}
-	return errList
+	return nil
 }
 
 func deletePvtSubnetObjects(client *client.HTTP,
-	subnetList []*subnetData) []string {
-
-	var errList []string
+	subnetList []*subnetData) error {
 
 	// Delete CloudPrivateSubnet related dependencies and CloudPrivateSubnet itself
 	for _, pvtsubnet := range subnetList {
 		_, err := client.Delete("/cloud-private-subnet/"+pvtsubnet.info.UUID, nil)
 		if err != nil {
-			errList = append(errList, err.Error())
+			return err
 		}
 	}
-	return errList
+	return nil
 }
 
 func deleteCloudProviderAndDeps(client *client.HTTP,
-	providerList []*providerData) []string {
-
-	var errList []string
+	providerList []*providerData) error {
 
 	// Delete Provider dependencies and iteslf
 	for _, provider := range providerList {
 		for _, region := range provider.regions {
 			for _, vc := range region.virtualClouds {
 
-				sgErrList := deleteSGObjects(client, vc.sgs)
-				errList = append(errList, sgErrList...)
-
-				pvtSubnetErrList := deletePvtSubnetObjects(client, vc.subnets)
-				errList = append(errList, pvtSubnetErrList...)
-
-				_, err := client.Delete("/virtual-cloud/"+vc.info.UUID, nil)
+				err := deleteSGObjects(client, vc.sgs)
 				if err != nil {
-					errList = append(errList, err.Error())
+					return err
+				}
+
+				err = deletePvtSubnetObjects(client, vc.subnets)
+				if err != nil {
+					return err
+				}
+
+				_, err = client.Delete("/virtual-cloud/"+vc.info.UUID, nil)
+				if err != nil {
+					return err
 				}
 			}
 			_, err := client.Delete("/cloud-region/"+region.info.UUID, nil)
 			if err != nil {
-				errList = append(errList, err.Error())
+				return err
 			}
 		}
 		_, err := client.Delete("/cloud-provider/"+provider.info.UUID, nil)
 		if err != nil {
-			errList = append(errList, err.Error())
+			return err
 		}
 	}
-	return errList
+	return nil
 }
 
 func deleteCloudUsers(client *client.HTTP,
@@ -252,20 +249,31 @@ func deleteCredentialAndDeps(client *client.HTTP,
 
 func (c *Cloud) deleteAPIObjects(d *Data) error {
 
-	var errList []string
-
-	nodeErrList := deleteNodeObjects(c.APIServer, d.instances)
-	errList = append(errList, nodeErrList...)
-
-	providerErrList := deleteCloudProviderAndDeps(c.APIServer, d.providers)
-	errList = append(errList, providerErrList...)
-
-	_, err := c.APIServer.Delete("/cloud/"+d.cloud.config.CloudID, nil)
-	if err != nil {
-		errList = append(errList, err.Error())
+	if d.isCloudPublic() {
+		err := deleteNodeObjects(c.APIServer, d.instances)
+		if err != nil {
+			return err
+		}
 	}
 
+	err := deleteCloudProviderAndDeps(c.APIServer, d.providers)
+	if err != nil {
+		c.log.Error("error while trying to delete cloud provider & deps")
+		return err
+	}
+
+	_, err = c.APIServer.Delete("/cloud/"+d.cloud.config.CloudID, nil)
+	if err != nil {
+		c.log.Errorf("error while trying to delete cloud: %s",
+			d.cloud.config.CloudID)
+		return err
+	}
+
+	var errList []string
+
 	cloudUserErrList := deleteCloudUsers(c.APIServer, d.users)
+	if cloudUserErrList != nil {
+	}
 	errList = append(errList, cloudUserErrList...)
 
 	if d.isCloudPublic() {
