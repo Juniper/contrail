@@ -52,7 +52,11 @@
             - name: {{ instance.info.Hostname }}
               roles:
               {% for role in instance.info.CloudInfo.Roles %}
+                {% if "compute" in role %}
+                - compute_node
+                {% else %}
                 - {{ role }}
+                {% endif %}
               {% endfor %}
               provision: true
               {% for cred in cloud.credentials %}{% for cred_ref in instance.info.CredentialRefs %}{%if cred_ref.UUID in cred.UUID %}
