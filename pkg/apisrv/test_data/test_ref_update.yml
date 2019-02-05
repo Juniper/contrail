@@ -265,7 +265,8 @@ workflow:
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
   expect:
-    message: 'ref type does-not-exist-route-target does not exist'
+    message:
+      $contains: 'ref type does-not-exist-route-target does not exist'
 
 - name: send bad operation value
   request:
@@ -279,7 +280,8 @@ workflow:
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
   expect:
-    message: 'operation should be ADD or DELETE, was BAD'
+    message:
+      $contains: 'operation should be ADD or DELETE, was BAD'
 
 - name: send empty operation value
   request:
@@ -292,7 +294,8 @@ workflow:
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
   expect:
-    message: 'uuid/type/ref-type/operation is null: routing_instance_ref_update_uuid, routing-instance, route-target, '
+    message:
+      $contains: 'uuid/type/ref-type/operation is null: routing_instance_ref_update_uuid, routing-instance, route-target, '
 
 - name: try to create with bad attr data
   request:
@@ -307,7 +310,8 @@ workflow:
       ref-uuid: route_target_ref_update_uuid
       attr: bad data
   expect:
-    message: 'bad attr data: json: cannot unmarshal string into Go value of type models.InstanceTargetType'
+    message:
+      $contains: 'bad attr data: json: cannot unmarshal string into Go value of type models.InstanceTargetType'
 
 - name: try to create without UUID
   request:
@@ -320,7 +324,8 @@ workflow:
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
   expect:
-    message: 'uuid/type/ref-type/operation is null: , routing-instance, route-target, ADD'
+    message:
+      $contains: 'uuid/type/ref-type/operation is null: , routing-instance, route-target, ADD'
 
 - name: try to create with bad UUID
   request:
@@ -334,7 +339,8 @@ workflow:
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
   expect:
-    message: 'No routing-instance: bad-uuid'
+    message:
+      $contains: 'No routing-instance: bad-uuid'
 
 - name: try to create without ref UUID
   request:
@@ -347,7 +353,8 @@ workflow:
       uuid: routing_instance_ref_update_uuid
       ref-type: route-target
   expect:
-    message: 'error resolving ref-uuid using ref-fq-name: failed to get metadata: uuid or pair
+    message:
+      $contains: 'error resolving ref-uuid using ref-fq-name: failed to get metadata: uuid or pair
     of fq_name and type is required'
 
 - name: try to link vn with with non-provider network using ref-update (trigger type logic error)
@@ -362,7 +369,8 @@ workflow:
       ref-type: virtual-network
       ref-uuid: virtual_network_ref_update_uuid
   expect:
-    message: 'non-provider VN (virtual_network_ref_update_uuid) can be connected to one provider VN but not to ([])'
+    message:
+      $contains: 'non-provider VN (virtual_network_ref_update_uuid) can be connected to one provider VN but not to ([])'
 
 - name: delete routing instance
   request:
