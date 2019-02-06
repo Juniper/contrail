@@ -17,10 +17,12 @@
       {{ key }}: {{ value }}
       {% endfor %}
       {% endif %}
+      {% set isGatewayRole = "false"}
       {% if instance.roles %}
       roles:
       {% for role in instance.roles %}
         - {{ role }}
+      {% if "gateway" in role %}{% set isGatewayRole = "true"}{% endif %}
       {% endfor %}
       {% endif %}
       {% if instance.protocolsMode %}
@@ -31,6 +33,8 @@
       {% endif %}
       {% if instance.gateway %}
       gateway: {{ instance.gateway }}
+      {% endif %}
+      {% if "true" in isGatewayRole %}
       private_subnet:
       {% for subnet in cloud.subnets %}
         - {{ subnet.info.CidrBlock }}

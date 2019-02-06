@@ -10,6 +10,11 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
+const (
+	gatewayRole = "gateway"
+	computeRole = "compute"
+
+)
 //Data for cloud provider data
 type Data struct {
 	cloud          *Cloud
@@ -167,7 +172,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 		}
 
 		if i.info.ContrailMulticloudGWNodeBackRefs != nil {
-			i.roles = append(i.roles, "gateway")
+			i.roles = append(i.roles, gatewayRole)
 		}
 
 		err = inst.updatePvtIntf()
@@ -193,7 +198,14 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 		if err != nil {
 			return nil, err
 		}
-		err = inst.updateVrouterGW()
+		err = inst.updateVrouterGW(gatewayRole)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if inst.info.ContrailVrouterNodeBackRefs != nil {
+		err = inst.updateVrouterGW(computeRole)
 		if err != nil {
 			return nil, err
 		}
@@ -472,19 +484,45 @@ func (i *instanceData) updateProtoModes() error {
 	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
 }
 
-func (i *instanceData) updateVrouterGW() error {
-	for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
-		response := new(services.GetContrailMulticloudGWNodeResponse)
-		_, err := i.client.Read("/contrail-multicloud-gw-node/"+gwNodeRef.UUID,
-			response)
-		if err != nil {
-			return err
-		}
+func (i *instanceData) updateVrouterGW(role string) error {
+	if role == gatewayRole {
+		for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
+			response := new(services.GetContrailMulticloudGWNodeResponse)
+			_, err := i.client.Read("/contrail-multicloud-gw-node/"+gwNodeRef.UUID,
+				response)
+			if err != nil {
+				return err
+			}
 
-		i.gateway = response.GetContrailMulticloudGWNode().DefaultGateway
-		return nil
+			i.gateway = response.GetContrailMulticloudGWNode().DefaultGateway
+			return nil
+		}
+		return errors.New("instance does not have a contrail-multicloud-gw-node ref")
 	}
-	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
+
+	if role == computeRole {
+		for _, vrouterNodeRef := range i.info.ContrailVrouterNodeBackRefs {
+			response := new(services.GetContrailVrouterNodeResponse)
+			_, err := i.client.Read("/contrail-vrouter-node/"+vrouterNodeRef.UUID,
+				response)
+			if err != nil {
+				return err
+			}
+
+			vrouterNode := response.ContrailVrouterNode
+			if vrouterNode.DefaultGateway == "" {
+				response := new(services.GetContrailClusterResponse)
+				_, err := i.client.Read("/contrail-cluster/"+vrouterNode.ParentUUID,
+					response)
+				if err != nil {
+					return err
+				}
+				i.gateway = response.ContrailCluster.DefaultGateway
+			}
+			return nil
+		}
+	}
+
 
 }
 
