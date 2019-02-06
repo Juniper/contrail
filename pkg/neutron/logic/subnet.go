@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"regexp"
@@ -11,6 +12,7 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/gogo/protobuf/types"
 
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -36,6 +38,32 @@ func newSubnetError(name errorType, format string, args ...interface{}) error {
 		"resource": "subnet",
 		"msg":      fmt.Sprintf(format, args...),
 	})
+}
+
+func (s *Subnet) UnmarshalJSON(data []byte) error {
+	type alias Subnet
+	obj := struct {
+		*alias
+		IpamFQName interface{} `json:"ipam_fq_name"`
+	}{alias: (*alias)(s)}
+
+	if err := json.Unmarshal(data, s); err != nil {
+		return err
+	}
+
+	if ipamFQName, ok := obj.IpamFQName.([]string); ok {
+		s.IpamFQName = ipamFQName
+	}
+	return nil
+}
+
+func (s *Subnet) ApplyMap(m map[string]interface{}) error {
+	_, ok := m[SubnetFieldIpamFQName].(string)
+	if ok {
+		delete(m, SubnetFieldIpamFQName)
+	}
+	type alias Subnet
+	return format.ApplyMap(m, (*alias)(s))
 }
 
 // ReadAll will fetch all subnets.
@@ -301,9 +329,9 @@ func (s *Subnet) getNetworkIpam(
 	rp RequestParameters,
 	vn *models.VirtualNetwork,
 ) (*models.NetworkIpam, error) {
-	if s.IpamFQName != "" {
+	if len(s.IpamFQName) > 0 {
 		n := models.MakeNetworkIpam()
-		n.FQName = strings.Split(s.IpamFQName, "-")
+		n.FQName = s.IpamFQName
 		return n, nil
 	}
 
