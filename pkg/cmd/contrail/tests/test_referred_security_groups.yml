@@ -88,7 +88,7 @@ test_data:
             security_group: '8000001'
           src_port:
             end_port: 65535
-  egress_acl: &egress_acl_referring
+  egress_acl_referring: &egress_acl_referring
     name: egress-access-control-list
     parent_uuid: beefbeef-beef-beef-beef-beefbeef1002
   ingress_acl_referring_update: &ingress_acl_referring_update
