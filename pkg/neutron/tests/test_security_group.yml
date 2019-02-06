@@ -15,6 +15,15 @@ test_data:
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
+
+  vn_blue: &vn_blue
+    fq_name: ["default", "sg_neturon_project_name", "vn_blue"]
+    uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    display_name: blue
+    parent_type: project
+    port_security_enabled: true
+    parent_uuid: 92882ca8-f993-42f2-8643-0c05c96e12dd
+
   sg: &sg
     uuid: security-group-uuid1
     name: sg_name
@@ -34,6 +43,7 @@ test_data:
         src_ports:
         - end_port: 65535
           start_port: 0
+
   sg_read_request: &sg_read_request
     data:
       id: security-group-uuid1
@@ -41,12 +51,12 @@ test_data:
       user_id: 32fc3e2bf6e94e0daa21090e493e7aef
       roles:
       - admin
-      tenant_id: 5595adaac4f6423b930f1f1f66c89507
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-ac841ef9-2c79-4787-b80c-22a7b3263255
       operation: READ
       type: security_group
-      tenant: 5595adaac4f6423b930f1f1f66c89507
+      tenant: 92882ca8f99342f286430c05c96e12dd
   sg_read_response: &sg_read_response
     fq_name:
       - default-domain
@@ -65,6 +75,7 @@ test_data:
       id: $uuid
     id: security-group-uuid1
     name: sg_name
+
   sg_readall_request: &sg_readall_request
     data:
       fields: []
@@ -82,6 +93,7 @@ test_data:
       operation: READALL
       type: security_group
       tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+
   sg_create_request: &sg_create_request
     data:
       resource:
@@ -137,6 +149,69 @@ test_data:
     id: $uuid
     name: my_new_sg
 
+  sg_delete_request: &sg_delete_request
+    data:
+      fields:
+      id: security-group-uuid1
+      filters:
+    context:
+      user_id: 32fc3e2bf6e94e0daa21090e493e7aef
+      roles:
+      - admin
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      is_admin: true
+      request_id: req-ac841ef9-2b12-8231-b80c-22a7b3263255
+      operation: DELETE
+      type: security_group
+      tenant: 92882ca8f99342f286430c05c96e12dd
+
+  port_refered_to_sg_create_request: &port_referring_to_sg_create_request
+    data:
+      fields:
+      resource:
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        description: ''
+        admin_state_up: true
+        network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+        tenant_id: 92882ca8f99342f286430c05c96e12dd
+        extra_dhcp_opts:
+        name: ''
+        device_owner: ''
+        binding:vnic_type: normal
+        project_id: 92882ca8f99342f286430c05c96e12dd
+        security_groups: [security-group-uuid1, ]
+        device_id: ''
+      filters:
+    context:
+      user_id: 32fc3e2bf6e94e0daa21090e493e7aef
+      roles:
+      - admin
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      is_admin: true
+      request_id: req-db7a6a99-6dd0-236ae-9b61-a675e99ab70e
+      operation: CREATE
+      type: port
+      tenant: 92882ca8f99342f286430c05c96e12dd
+  port_referring_to_sg_create_response: &port_referring_to_sg_create_response
+    security_groups:
+      - security-group-uuid1
+
+  port_refered_to_sg_delete_request: &port_referring_to_sg_delete_request
+    data:
+      fields:
+      id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      filters:
+    context:
+      user_id: 32fc3e2bf6e94e0daa21090e493e7aef
+      roles:
+      - admin
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      is_admin: true
+      request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+      operation: DELETE
+      type: port
+      tenant: 92882ca8f99342f286430c05c96e12dd
+
 clients:
   default:
     id: alice
@@ -157,6 +232,7 @@ workflow:
       project: *project
   expect:
     project: *project
+
 - name: check if default security group is auto-created on READALL operation
   request:
     path: /neutron/security_group
@@ -170,6 +246,7 @@ workflow:
       - default
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       name: default
+
 - name: check if security group is empty
   request:
     path: /neutron/security_group
@@ -179,7 +256,8 @@ workflow:
   expect:
     exception: SecurityGroupNotFound
     id: security-group-uuid1
-- name: create security group
+
+- name: create security group mock
   request:
     path: /security-groups
     method: POST
@@ -188,6 +266,7 @@ workflow:
       security-group: *sg
   expect:
     security-group: *sg
+
 - name: read default security group
   request:
     path: /neutron/security_group
@@ -195,6 +274,7 @@ workflow:
     expected: [200]
     data: *sg_read_request
   expect: *sg_read_response
+
 - name: try to read invalid security group
   request:
     path: /neutron/security_group
@@ -207,6 +287,7 @@ workflow:
   expect:
     exception: SecurityGroupNotFound
     id: bad-id
+
 - name: assert READALL security groups of that project
   request:
     path: /neutron/security_group
@@ -225,13 +306,59 @@ workflow:
     - sg_neturon_project_name
     - sg_name
     tenant_id: 92882ca8f99342f286430c05c96e12dd
-- name: delete security group uuid1
+
+- name: create virtual network blue
   request:
-    path: /security-group/security-group-uuid1
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+
+- name: create port with reference to security group
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data: *port_referring_to_sg_create_request
+  expect: *port_referring_to_sg_create_response
+
+- name: assert if referenced security group won't deleted
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [400]
+    data: *sg_delete_request
+  expect:
+    exception: SecurityGroupInUse
+    id: security-group-uuid1
+
+- name: delete port referenced to security group
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data: *port_referring_to_sg_delete_request
+  expect: null
+
+- name: delete virtual network
+  request:
+    path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
     method: DELETE
     expected:
     - 200
-  expect: null
+
+- name: delete security group uuid1 using neutron endpoint
+  request:
+    path: /neutron/security_group
+    method: POST
+    expected: [200]
+    data: *sg_delete_request
+  expect: $null
+
 - name: create security group using neutron endpoint
   request:
     path: /neutron/security_group

@@ -209,7 +209,7 @@ func (n *Network) getCountByTenantIDs(
 
 	var pUUIDs []string
 	for _, tenantID := range filters[tenantIDKey] {
-		uuid, err := neutronIDToContrailUUID(tenantID)
+		uuid, err := neutronIDToVncUUID(tenantID)
 		if err != nil {
 			return nil, err
 		}
