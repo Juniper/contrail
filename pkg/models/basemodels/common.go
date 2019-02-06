@@ -3,6 +3,7 @@ package basemodels
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -87,4 +88,13 @@ func SchemaIDToKind(kind string) string {
 // ReferenceKind constructs reference kind for given from and to kinds.
 func ReferenceKind(fromKind, toKind string) string {
 	return fmt.Sprintf("%s-%s", fromKind, toKind)
+}
+
+// ToVNCTime returns time string in VNC format.
+func ToVNCTime(t time.Time) string {
+	if t.Nanosecond() < 1000 {
+		return t.UTC().Format("2006-01-02T15:04:05")
+	} else {
+		return t.UTC().Format("2006-01-02T15:04:05.000000")
+	}
 }

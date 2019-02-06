@@ -24,7 +24,7 @@ schema:
     dns_nameservers:
       type: array
       items:
-        $ref: req_subnet.json#/definitions/DnsNameserver
+        type: string
       presence: optional
     updated_at:
       type: string
