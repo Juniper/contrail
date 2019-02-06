@@ -7,7 +7,7 @@ import (
 
     "github.com/labstack/echo"
     uuid "github.com/satori/go.uuid"
-    log "github.com/sirupsen/logrus"
+    "github.com/sirupsen/logrus"
 
     "github.com/Juniper/contrail/pkg/auth"
     "github.com/Juniper/contrail/pkg/errutil"
@@ -36,7 +36,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
         return errutil.ToHTTPError(err)
     }
     if err = response.ApplyHref(c.Request()); err != nil {
-        log.WithError(err).Error("Failed to apply href")
+        logrus.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -182,7 +182,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
         return errutil.ToHTTPError(err)
     }
     if err = response.ApplyHref(c.Request()); err != nil {
-        log.WithError(err).Error("Failed to apply href")
+        logrus.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -209,7 +209,7 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 
     model.IDPerms, request.FieldMask.Paths = sanitizeIDPermsUUID(model.GetIDPerms(), request.FieldMask.Paths)
     if !model.IDPerms.IsUUIDMatch(model.UUID) {
-        log.Warn("UUID mismatch")
+        logrus.Warn("UUID mismatch")
     }
     if model.IDPerms == nil {
         model.IDPerms = models.NewIDPerms(model.UUID)
@@ -259,7 +259,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
         return errutil.ToHTTPError(err)
     }
     if err = response.ApplyHref(c.Request()); err != nil {
-        log.WithError(err).Error("Failed to apply href")
+        logrus.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -293,7 +293,7 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
         return errutil.ToHTTPError(err)
     }
     if err = response.ApplyHref(c.Request()); err != nil {
-        log.WithError(err).Error("Failed to apply href")
+        logrus.WithError(err).Error("Failed to apply href")
     }
 
     if spec.Count == true {

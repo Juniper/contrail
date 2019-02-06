@@ -8,7 +8,7 @@ import (
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/deploy/cluster"
 	"github.com/Juniper/contrail/pkg/deploy/rhospd/undercloud"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 // manager inerface to manage resources
@@ -30,13 +30,9 @@ func (o *oneShotManager) manage() error {
 }
 
 func newOneShotManager(deploy *Deploy) (*oneShotManager, error) {
-	// create logger for oneshot manager
-	logger := pkglog.NewLogger("oneshot-manager")
-	pkglog.SetLogLevel(logger, deploy.config.LogLevel)
-
 	return &oneShotManager{
 		deploy: deploy,
-		log:    logger,
+		log:    logutil.NewLogger("oneshot-manager"),
 	}, nil
 }
 

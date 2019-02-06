@@ -17,7 +17,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/testutil"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
@@ -74,7 +74,7 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	setDefaultViperConfig(c)
 
-	if err := pkglog.Configure(viper.GetString("log_level")); err != nil {
+	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
 
@@ -94,7 +94,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	return &APIServer{
 		APIServer:  s,
 		TestServer: ts,
-		log:        pkglog.NewLogger("api-server"),
+		log:        logutil.NewLogger("api-server"),
 	}, nil
 }
 

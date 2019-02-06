@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/db"
@@ -159,7 +159,7 @@ func writeHTTP(events *services.EventList, url string) (err error) {
 	for _, event := range events.Events {
 		_, err = event.Process(context.Background(), s)
 		if err != nil {
-			log.Error(err)
+			logrus.Error(err)
 			failed++
 		}
 	}

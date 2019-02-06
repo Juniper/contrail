@@ -5,7 +5,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
-	pkglog "github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 // Config represents Command configuration.
@@ -44,14 +44,10 @@ type Cluster struct {
 
 // NewCluster creates Cluster with given configuration.
 func NewCluster(c *Config) (*Cluster, error) {
-	// create logger for cluster
-	logger := pkglog.NewFileLogger("cluster", c.LogFile)
-	pkglog.SetLogLevel(logger, c.LogLevel)
-
 	return &Cluster{
 		config:    c,
 		APIServer: c.APIServer,
-		log:       logger,
+		log:       logutil.NewFileLogger("cluster", c.LogFile),
 	}, nil
 }
 

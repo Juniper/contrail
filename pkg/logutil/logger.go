@@ -1,8 +1,8 @@
-// Package log facilitates creating of configured Logrus logger.
+// Package logutil facilitates creating of configured Logrus logger.
 // Logger created with NewLogger() should be preferred over global Logger.
-// Use log.Debug() and log.Info() forms of logging.
-// Use log.WithField() and log.WithFields() methods with "dash-case" keys for additional log parameters.
-package log
+// Use logutil.Debug() and logutil.Info() forms of logging.
+// Use logutil.WithField() and logutil.WithFields() methods with "dash-case" keys for additional logutil parameters.
+package logutil
 
 import (
 	"context"
@@ -31,7 +31,7 @@ const (
 // Configure configures global Logrus logger and sets configuration for new logger instances.
 func Configure(level string) error {
 	if level == "" {
-		level = "debug"
+		level = logrus.DebugLevel.String()
 	}
 
 	l, err := logrus.ParseLevel(level)
@@ -72,25 +72,6 @@ func newLogger(loggerName string, writer io.Writer) *logrus.Entry {
 		Level:     minimalLevel,
 	}
 	return l.WithField(loggerKey, loggerName)
-}
-
-// SetLogLevel configure any level for any logger
-// TODO(Daniel): remove that and use Configure() only
-func SetLogLevel(log *logrus.Entry, level string) {
-	switch level {
-	case "panic":
-		log.Logger.SetLevel(logrus.PanicLevel)
-	case "fatal":
-		log.Logger.SetLevel(logrus.FatalLevel)
-	case "error":
-		log.Logger.SetLevel(logrus.ErrorLevel)
-	case "warn":
-		log.Logger.SetLevel(logrus.WarnLevel)
-	case "debug":
-		log.Logger.SetLevel(logrus.DebugLevel)
-	default:
-		log.Logger.SetLevel(logrus.InfoLevel)
-	}
 }
 
 // StreamServer represents log streaming server

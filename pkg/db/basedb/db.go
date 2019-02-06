@@ -12,7 +12,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -177,11 +177,11 @@ func ConnectDB() (*sql.DB, error) {
 	for i := 0; i < retries; i++ {
 		err = db.Ping()
 		if err == nil {
-			log.Debug("Connected to the database")
+			logrus.Debug("Connected to the database")
 			return db, nil
 		}
 		time.Sleep(period)
-		log.WithError(err).Debug("DB connection error. Retrying...")
+		logrus.WithError(err).Debug("DB connection error. Retrying...")
 	}
 	return nil, fmt.Errorf("failed to open DB connection")
 }
@@ -215,7 +215,7 @@ func OpenConnection(c ConnectionConfig) (*sql.DB, error) {
 }
 
 func logQuery(_ context.Context, command string, args ...interface{}) {
-	log.Debug(command, args)
+	logrus.Debug(command, args)
 }
 
 func wrapDriver(driver string) string {

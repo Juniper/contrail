@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -40,7 +40,7 @@ func initConfig() {
 		viper.SetConfigFile(configFile)
 	}
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal("Can't read config: ", err)
+		logrus.Fatal("Can't read config: ", err)
 	}
 
 }

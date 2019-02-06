@@ -11,7 +11,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/format"
-	"github.com/Juniper/contrail/pkg/log"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
@@ -26,7 +26,7 @@ type EventProcessorSink struct {
 func NewEventProcessorSink(processor services.EventProcessor) *EventProcessorSink {
 	return &EventProcessorSink{
 		processor: processor,
-		log:       log.NewLogger("event-processor-sink"),
+		log:       logutil.NewLogger("event-processor-sink"),
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/compilation/intent"
 	"github.com/Juniper/contrail/pkg/models"
@@ -46,7 +46,7 @@ func LoadLogicalRouterIntent(loader intent.Loader, query intent.Query) *LogicalR
 	intent := loader.Load(models.KindLogicalRouter, query)
 	lrIntent, ok := intent.(*LogicalRouterIntent)
 	if ok == false {
-		log.Warning("Cannot cast intent to Logical Router Intent")
+		logrus.Warning("Cannot cast intent to Logical Router Intent")
 	}
 	return lrIntent
 }
@@ -132,7 +132,7 @@ func (i *LogicalRouterIntent) resolveVxLan(
 	})
 
 	if err != nil {
-		log.Errorf("failed to retrieve project for LogicalRouter with uuid %s", i.GetUUID())
+		logrus.Errorf("failed to retrieve project for LogicalRouter with uuid %s", i.GetUUID())
 	}
 
 	if r.GetProject() != nil {
@@ -188,7 +188,7 @@ func (i *LogicalRouterIntent) handleDeletedNetworks(
 	for _, vn := range i.getDeletedNetworks(ctx, evaluateCtx, vnRefs) {
 		ri := vn.GetPrimaryRoutingInstanceIntent(ctx, evaluateCtx)
 		if ri == nil {
-			log.Errorf("Primary RI is None for VN: %s", vn.GetUUID())
+			logrus.Errorf("Primary RI is None for VN: %s", vn.GetUUID())
 			continue
 		}
 		// TODO handle delete
@@ -207,7 +207,7 @@ func (i *LogicalRouterIntent) handleAddedNetworks(
 	for _, vn := range i.getAddedNetworks(ctx, evaluateCtx, vnRefs) {
 		ri := vn.GetPrimaryRoutingInstanceIntent(ctx, evaluateCtx)
 		if ri == nil {
-			log.Errorf("Primary RI is None for VN: %s", vn.GetUUID())
+			logrus.Errorf("Primary RI is None for VN: %s", vn.GetUUID())
 			continue
 		}
 		// TODO handle all route targets
@@ -236,7 +236,7 @@ func (i *LogicalRouterIntent) getDeletedNetworks(
 		if _, ok := vnRefs[uuid]; !ok {
 			vn := LoadVirtualNetworkIntent(evaluateCtx.IntentLoader, intent.ByUUID(vnref.UUID))
 			if vn == nil {
-				log.Errorf("Failed to load VN with uuid %s", vnref.UUID)
+				logrus.Errorf("Failed to load VN with uuid %s", vnref.UUID)
 				continue
 			}
 			vns = append(vns, vn)
@@ -255,7 +255,7 @@ func (i *LogicalRouterIntent) getAddedNetworks(
 		if _, ok := i.virtualNetworks[uuid]; !ok {
 			vn := LoadVirtualNetworkIntent(evaluateCtx.IntentLoader, intent.ByUUID(vnRef.UUID))
 			if vn == nil {
-				log.Errorf("failed to retrieve VN with uuid %s", vnRef.UUID)
+				logrus.Errorf("failed to retrieve VN with uuid %s", vnRef.UUID)
 				continue
 			}
 			vns = append(vns, vn)

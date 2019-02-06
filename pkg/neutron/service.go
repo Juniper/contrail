@@ -8,7 +8,7 @@ import (
 	google_protobuf3 "github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -82,7 +82,7 @@ func (s *Service) handle(ctx context.Context, r *logic.Request) (logic.Response,
 		return r.Data.Resource.DeleteInterface(ctx, rp)
 	default:
 		err := errors.Errorf("method '%s' is not supported", r.Context.Operation)
-		log.WithError(err).WithField("request", r).Errorf("failed to handle")
+		logrus.WithError(err).WithField("request", r).Errorf("failed to handle")
 		return nil, err
 	}
 }

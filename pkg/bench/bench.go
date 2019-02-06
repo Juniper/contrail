@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // an utility tool for benchmark.
@@ -30,7 +30,7 @@ func (w *worker) run(t task, loopCount int) {
 		startTime := time.Now()
 		err := t(w.id, i)
 		if err != nil {
-			log.Debugf("[WorkerID: %d, Loop: %d] %s", w.id, i, err)
+			logrus.Debugf("[WorkerID: %d, Loop: %d] %s", w.id, i, err)
 		}
 		w.stats = append(w.stats, &stat{
 			duration: time.Now().Sub(startTime),
@@ -58,11 +58,11 @@ func (ws workers) stats() {
 		}
 	}
 	totalCount := successCount + errorCount
-	log.Info("Success Count: ", successCount)
-	log.Info("Error Count: ", errorCount)
-	log.Info("Success rate: ", float64(successCount)/float64(totalCount)*100)
-	log.Info("Total time: ", totalTime)
-	log.Info("Request per sec: ", math.Floor(float64(totalCount)/totalTime.Seconds()))
+	logrus.Info("Success Count: ", successCount)
+	logrus.Info("Error Count: ", errorCount)
+	logrus.Info("Success rate: ", float64(successCount)/float64(totalCount)*100)
+	logrus.Info("Total time: ", totalTime)
+	logrus.Info("Request per sec: ", math.Floor(float64(totalCount)/totalTime.Seconds()))
 }
 
 func newWorker(id int) *worker {
