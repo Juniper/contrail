@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
@@ -29,7 +31,7 @@ func init() {
 
 func assertError(err error, message string) {
 	if err != nil {
-		logrus.Fatalf("%s (%s)", message, err)
+		logutil.FatalWithStackTrace(errors.Wrapf(err, "%s (%s)", message, err))
 	}
 }
 
@@ -40,7 +42,7 @@ func recordTest() {
 	if variablePath != "" {
 		err := fileutil.LoadFile(variablePath, &vars)
 		if err != nil {
-			logrus.Fatal(err)
+			logutil.FatalWithStackTrace(err)
 		}
 	}
 
@@ -77,7 +79,7 @@ func recordTest() {
 
 	err = fileutil.SaveFile(outputPath, testScenario)
 	if err != nil {
-		logrus.Fatal(err)
+		logutil.FatalWithStackTrace(err)
 	}
 }
 

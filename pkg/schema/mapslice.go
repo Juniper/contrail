@@ -1,10 +1,11 @@
 package schema
 
 import (
-	"fmt"
-
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/Juniper/contrail/pkg/logutil"
 )
 
 type mapSlice yaml.MapSlice
@@ -105,7 +106,7 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 	for _, property := range properties {
 		key := property.Key.(string) //nolint: errcheck
 		if property.Value == nil {
-			logrus.Fatal(fmt.Sprintf("Property %s is null on %v", key, schema))
+			logutil.FatalWithStackTrace(errors.Errorf("property %s is null on %v", key, schema))
 		}
 		propertySchema := mapSlice(property.Value.(yaml.MapSlice)).JSONSchema() //nolint: errcheck
 
