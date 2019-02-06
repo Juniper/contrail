@@ -82,8 +82,37 @@ func (sg *SecurityGroup) Update(ctx context.Context, rp RequestParameters, id st
 
 // Delete security group logic.
 func (sg *SecurityGroup) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
-	return nil, errors.New("not implemented")
-	// TODO implement it.
+	resp, err := rp.ReadService.GetSecurityGroup(ctx, &services.GetSecurityGroupRequest{
+		ID: id,
+	})
+	if err != nil {
+		return nil, newSecurityGroupError(err, "error while reading security_group from database")
+	}
+	vncSg := resp.GetSecurityGroup()
+
+	projectUUID, err := neutronIDToVncUUID(rp.RequestContext.TenantID)
+	if err != nil {
+		return nil, newSecurityGroupError(err, "invalid tenant id")
+	}
+
+	if vncSg.GetName() == securityGroupDefault && vncSg.GetParentUUID() == projectUUID {
+		return nil, newNeutronError(securityGroupCannotRemoveDefault, errorFields{})
+	}
+
+	_, err = rp.WriteService.DeleteSecurityGroup(ctx, &services.DeleteSecurityGroupRequest{
+		ID: id,
+	})
+	if err != nil {
+		if errutil.IsConflict(err) {
+			return nil, newNeutronError(securityGroupInUse, errorFields{
+				"id": id,
+			})
+		}
+		return nil, newSecurityGroupError(err,
+			fmt.Sprintf("can't delete resource %s of id %s", securityGroupResourceName, id))
+	}
+
+	return nil, nil
 }
 
 // Read security group logic.
