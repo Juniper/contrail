@@ -18,7 +18,9 @@ schema:
       type: string
       presence: optional
     ipam_fq_name:
-      type: string
+      type: array
+      items:
+        type: string
     ip_version:
       type: integer
       presence: optional
