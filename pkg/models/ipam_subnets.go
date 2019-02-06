@@ -9,6 +9,17 @@ func (m *IpamSubnets) UUIDs() (uuids []string) {
 	return uuids
 }
 
+// Filter removes all the values that doesn't match the predicate.
+func (m IpamSubnets) Filter(pred func(*IpamSubnetType) bool) IpamSubnets {
+	result := make([]*IpamSubnetType, 0, len(m.Subnets))
+	for _, s := range m.Subnets {
+		if pred(s) {
+			result = append(result, s)
+		}
+	}
+	return IpamSubnets{Subnets: result}
+}
+
 // Find returns first subnet in IpamSubnets that matches given predicate.
 // If no subnet is found, nil is returned.
 func (m *IpamSubnets) Find(pred func(*IpamSubnetType) bool) *IpamSubnetType {
