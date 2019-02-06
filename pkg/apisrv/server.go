@@ -358,6 +358,7 @@ func (s *Server) setupNeutronService(cs services.Service) *neutron.Service {
 		WriteService:      cs,
 		UserAgentKV:       s.UserAgentKVServer,
 		IDToFQNameService: s.IDToFQNameServer,
+		InTransactionDoer: s.DBService,
 	}
 	n.RegisterNeutronAPI(s.Echo)
 	return n
