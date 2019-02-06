@@ -301,9 +301,9 @@ func (s *Subnet) getNetworkIpam(
 	rp RequestParameters,
 	vn *models.VirtualNetwork,
 ) (*models.NetworkIpam, error) {
-	if s.IpamFQName != "" {
+	if len(s.IpamFQName) > 0 {
 		n := models.MakeNetworkIpam()
-		n.FQName = strings.Split(s.IpamFQName, "-")
+		n.FQName = s.IpamFQName
 		return n, nil
 	}
 
