@@ -59,6 +59,8 @@ const (
 	securityGroupNotFound                     errorType = "SecurityGroupNotFound"
 	securityGroupAlreadyExists                errorType = "SecurityGroupAlreadyExists"
 	securityGroupRemoteGroupAndRemoteIPPrefix errorType = "SecurityGroupRemoteGroupAndRemoteIpPrefix"
+	securityGroupCannotRemoveDefault          errorType = "SecurityGroupCannotRemoveDefault"
+	securityGroupInUse                        errorType = "SecurityGroupInUse"
 	securityGroupRuleParameterConflict        errorType = "SecurityGroupRuleParameterConflict"
 	securityGroupRuleInvalidProtocol          errorType = "SecurityGroupRuleInvalidProtocol"
 	securityGroupRuleExists                   errorType = "SecurityGroupRuleExists"
