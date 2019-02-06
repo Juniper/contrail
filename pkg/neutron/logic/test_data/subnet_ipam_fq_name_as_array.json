@@ -1,0 +1,14 @@
+{
+    "data": {
+        "resource": {
+            "ipam_fq_name": [
+                "default-domain",
+                "default-project",
+                "default-network-ipam"
+            ]
+        }
+    },
+    "context": {
+        "type": "subnet"
+    }
+}

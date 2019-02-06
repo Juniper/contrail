@@ -1,0 +1,10 @@
+{
+    "data": {
+        "resource": {
+            "ipam_fq_name": ""
+        }
+    },
+    "context": {
+        "type": "subnet"
+    }
+}
