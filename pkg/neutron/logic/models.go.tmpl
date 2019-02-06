@@ -4,37 +4,47 @@ import (
 	"github.com/pkg/errors"
 )
 
+{% macro properties(JSONSchema) %}
+{%- for property in JSONSchema.OrderedProperties %}
+    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"` {#- TODO use ID as json tag #}
+{%- endfor %}
+{% endmacro %}
+
+{% macro propertiesConstants(JSONSchema, prefix) %}
+const (
+{%- for property in JSONSchema.OrderedProperties %}
+	{{ prefix }}Field{{ property.GoName }} = "{{ property.JSONTag }}"
+{%- endfor %}
+)
+{% endmacro %}
+
 {%- for schema in schemas %}{% if schema.Type == "request" %}
 type {{ schema.JSONSchema.GoName }} struct {
 	baseResource
-{%- for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
-{%- endfor %}
+	{{- properties(schema.JSONSchema) -}}
 }
+{{- propertiesConstants(schema.JSONSchema, schema.JSONSchema.GoName) -}}
 {% endif %}{% endfor %}
 
 {%- for schema in schemas %}{% if schema.Type == "response" %}
 type {{ schema.JSONSchema.GoName }}Response struct {
-{%- for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
-{%- endfor %}
+	{{- properties(schema.JSONSchema) -}}
 }
+{{- propertiesConstants(schema.JSONSchema, schema.JSONSchema.GoName|add:"Response") -}}
 {% endif %}{% endfor %}
 
 {%- for schema in schemas %}{% if schema.Type == "object" %}
 type {{ schema.JSONSchema.GoName }} struct {
-{%- for property in schema.JSONSchema.OrderedProperties %}
-    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
-{%- endfor %}
+	{{- properties(schema.JSONSchema) -}}
 }
+{{- propertiesConstants(schema.JSONSchema, schema.JSONSchema.GoName) -}}
 {% endif %}{% endfor %}
 
 {% for type, definition in types %}{% if definition.Type == "object" %}
 type {{ type }} struct {
-{%- for property in definition.OrderedProperties %}
-    {{ property.GoName }} {{ property.GoType }} `json:"{{ property.JSONTag }}" yaml:"{{ property.ID }}"`
-{%- endfor %}
+	{{- properties(definition) -}}
 }
+{{- propertiesConstants(definition, type) -}}
 {% endif %}{% endfor %}
 
 

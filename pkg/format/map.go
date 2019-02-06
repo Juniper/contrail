@@ -12,6 +12,7 @@ type mapApplier interface {
 }
 
 // ApplyMap applies map onto interface which holds a struct.
+// TODO(j.woloch) handle embedded struct fields
 func ApplyMap(m map[string]interface{}, object interface{}) error {
 	if len(m) == 0 {
 		return nil
@@ -118,11 +119,11 @@ func useMapApplierIfAvailable(v reflect.Value, i interface{}) (bool, error) {
 
 func applySlice(v reflect.Value, i interface{}) error {
 	vv := reflect.ValueOf(i)
-	if vv.IsNil() {
-		return nil
-	}
 	if !(vv.Type().Kind() == reflect.Array || vv.Type().Kind() == reflect.Slice) {
 		return errors.Errorf("cannot apply %T onto %T", i, v.Interface())
+	}
+	if vv.IsNil() {
+		return nil
 	}
 	for n := 0; n < vv.Len(); n++ {
 		tmp := reflect.New(v.Type().Elem())
