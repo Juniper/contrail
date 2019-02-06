@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/Juniper/contrail/pkg/cloud"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 // DataStore interface to store cluster data
@@ -22,6 +24,7 @@ type OpenstackData struct {
 	nodesInfo    []*models.Node
 	keypairsInfo []*models.Keypair
 	credsInfo    []*models.Credential
+	Reader       services.ReadService
 }
 
 // KubernetesData is the representation of kubernetes cluster details.
@@ -30,6 +33,7 @@ type KubernetesData struct {
 	nodesInfo    []*models.Node
 	keypairsInfo []*models.Keypair
 	credsInfo    []*models.Credential
+	Reader       services.ReadService
 }
 
 // VCenterData is the representation of VCenter details.
@@ -38,6 +42,7 @@ type VCenterData struct {
 	nodesInfo    []*models.Node
 	keypairsInfo []*models.Keypair
 	credsInfo    []*models.Credential
+	Reader       services.ReadService
 }
 
 // AppformixData is the representation of appformix cluster details.
@@ -46,6 +51,7 @@ type AppformixData struct {
 	nodesInfo    []*models.Node
 	keypairsInfo []*models.Keypair
 	credsInfo    []*models.Credential
+	Reader       services.ReadService
 }
 
 // Data is the representation of cluster details.
@@ -59,6 +65,7 @@ type Data struct {
 	vcenterData           []*VCenterData
 	kubernetesClusterData []*KubernetesData
 	appformixClusterData  []*AppformixData
+	Reader                services.ReadService
 	// TODO (ijohnson): Add gce/aws/kvm info
 }
 
@@ -732,6 +739,24 @@ func (o *OpenstackData) getControlNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (o *OpenstackData) getOpenstackControlPorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, controlNode := range o.clusterInfo.OpenstackControlNodes {
+		for _, nodeRef := range controlNode.NodeRefs {
+			nodeIPAddress := getNodeIPAddress(o.Reader, nodeRef.UUID)
+			portMap := make(map[string]int64)
+			if _, ok := nodePorts[nodeIPAddress]; !ok {
+				nodePorts[nodeIPAddress] = portMap
+			}
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[identity] = controlNode.KeystonePublicPort
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[nova] = controlNode.NovaPublicPort
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[glance] = controlNode.GlancePublicPort
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[ironic] = controlNode.IronicPublicPort
+		}
+	}
+	return nodePorts
+}
+
 func (o *OpenstackData) getStorageNodeIPs() (nodeIPs []string) {
 	for _, storageNode := range o.clusterInfo.OpenstackStorageNodes {
 		for _, nodeRef := range storageNode.NodeRefs {
@@ -743,6 +768,21 @@ func (o *OpenstackData) getStorageNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (o *OpenstackData) getOpenstackStoragePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, storageNode := range o.clusterInfo.OpenstackStorageNodes {
+		for _, nodeRef := range storageNode.NodeRefs {
+			nodeIPAddress := getNodeIPAddress(o.Reader, nodeRef.UUID)
+			portMap := make(map[string]int64)
+			if _, ok := nodePorts[nodeIPAddress]; !ok {
+				nodePorts[nodeIPAddress] = portMap
+			}
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[swift] = storageNode.SwiftPublicPort
+		}
+	}
+	return nodePorts
 }
 
 func (d *Data) addKeypair(keypair *models.Keypair) {
@@ -1292,6 +1332,21 @@ func (d *Data) getConfigNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (d *Data) getConfigNodePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, configNode := range d.clusterInfo.ContrailConfigNodes {
+		for _, nodeRef := range configNode.NodeRefs {
+			nodeIPAddress := getNodeIPAddress(d.Reader, nodeRef.UUID)
+			portMap := make(map[string]int64)
+			if _, ok := nodePorts[nodeIPAddress]; !ok {
+				nodePorts[nodeIPAddress] = portMap
+			}
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[config] = configNode.APIPublicPort
+		}
+	}
+	return nodePorts
+}
+
 func (d *Data) getAnalyticsNodeIPs() (nodeIPs []string) {
 	for _, analyticsNode := range d.clusterInfo.ContrailAnalyticsNodes {
 		for _, nodeRef := range analyticsNode.NodeRefs {
@@ -1305,6 +1360,21 @@ func (d *Data) getAnalyticsNodeIPs() (nodeIPs []string) {
 	return nodeIPs
 }
 
+func (d *Data) getAnalyticsNodePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, analyticsNode := range d.clusterInfo.ContrailAnalyticsNodes {
+		for _, nodeRef := range analyticsNode.NodeRefs {
+			nodeIPAddress := getNodeIPAddress(d.Reader, nodeRef.UUID)
+			portMap := make(map[string]int64)
+			if _, ok := nodePorts[nodeIPAddress]; !ok {
+				nodePorts[nodeIPAddress] = portMap
+			}
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[analytics] = analyticsNode.APIPublicPort
+		}
+	}
+	return nodePorts
+}
+
 func (d *Data) getWebuiNodeIPs() (nodeIPs []string) {
 	for _, webuiNode := range d.clusterInfo.ContrailWebuiNodes {
 		for _, nodeRef := range webuiNode.NodeRefs {
@@ -1316,6 +1386,21 @@ func (d *Data) getWebuiNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func (d *Data) getWebuiNodePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	for _, webuiNode := range d.clusterInfo.ContrailWebuiNodes {
+		for _, nodeRef := range webuiNode.NodeRefs {
+			nodeIPAddress := getNodeIPAddress(d.Reader, nodeRef.UUID)
+			portMap := make(map[string]int64)
+			if _, ok := nodePorts[nodeIPAddress]; !ok {
+				nodePorts[nodeIPAddress] = portMap
+			}
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[webui] = webuiNode.PublicPort
+		}
+	}
+	return nodePorts
 }
 
 func (d *Data) getAppformixClusterData() *AppformixData {
@@ -1348,6 +1433,36 @@ func (d *Data) getAppformixControllerNodeIPs() (nodeIPs []string) {
 		}
 	}
 	return nodeIPs
+}
+
+func getNodeIPAddress(readService services.ReadService, nodeID string) (IPAddress string) {
+	resp, err := readService.GetNode(context.Background(), &services.GetNodeRequest{
+		ID:     nodeID,
+		Fields: []string{"ip_address"},
+	})
+	if err != nil {
+		return ""
+	}
+	return resp.GetNode().IPAddress
+}
+
+func (d *Data) getAppformixControllerNodePorts() (nodePorts map[string]interface{}) {
+	nodePorts = make(map[string]interface{})
+	appformixClusterInfo := d.getAppformixClusterInfo()
+	if appformixClusterInfo == nil {
+		return nodePorts
+	}
+	for _, appformixControllerNode := range appformixClusterInfo.AppformixControllerNodes {
+		for _, nodeRef := range appformixControllerNode.NodeRefs {
+			nodeIPAddress := getNodeIPAddress(d.Reader, nodeRef.UUID)
+			portMap := make(map[string]int64)
+			if _, ok := nodePorts[nodeIPAddress]; !ok {
+				nodePorts[nodeIPAddress] = portMap
+			}
+			format.InterfaceToInt64Map(nodePorts[nodeIPAddress])[appformix] = appformixControllerNode.PublicPort
+		}
+	}
+	return nodePorts
 }
 
 func (d *Data) getCloudRefs() ([]*models.Cloud, error) {

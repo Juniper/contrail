@@ -187,6 +187,12 @@ func InterfaceToStringMap(i interface{}) map[string]string {
 	return t
 }
 
+//InterfaceToInt64Map makes a string map.
+func InterfaceToInt64Map(i interface{}) map[string]int64 {
+	t, _ := i.(map[string]int64) //nolint: errcheck
+	return t
+}
+
 //InterfaceToInterfaceMap makes a interface map.
 func InterfaceToInterfaceMap(i interface{}) map[string]interface{} {
 	t, _ := i.(map[string]interface{}) //nolint: errcheck
