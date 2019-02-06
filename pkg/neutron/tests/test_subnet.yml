@@ -1,6 +1,4 @@
 name: Test Neutron Subnet
-description: Integration test for neutron subnet endpoint.
-
 clients:
   default:
     id: alice
@@ -9,39 +7,100 @@ clients:
     scope:
       project:
         name: admin
-test_data:
-  admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
-    uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
-    parent_type: domain
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
-    quota: {}
 
 cleanup:
 - kind: virtual-network
   fq_name:
   - default
-  - admin_project_uuid
-  - test-vn1
-
+  - test-subnet-project
+  - test-vn
 - kind: project
   fq_name:
   - default
-  - admin_project_uuid
+  - test-subnet-project
+
+test_data:
+  project: &project
+    fq_name: ["default", "test-subnet-project"]
+    uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  vn_uuid: &vn_uuid
+    d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+
+  vn_path: &vn_path
+    /virtual-network/d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+
+  vn_get_request: &vn_get_request
+    path: *vn_path
+    method: GET
+    expected: [200]
+
+  base_context: &base_context
+    tenant: 886c725d04614dd6ac2730c74d4e46fb
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    user_id: 06be3763c8224dd5a343e3d95d87c1d2
+    roles:
+      - admin
+    is_admin: true
+    request_id: req-2e00f3a3-d9a3-4016-abb3-f74ad1ea9bf0
+
+  expected_test_subnet: &expected_test_subnet
+    host_routes: []
+    name: test-subnet
+    enable_dhcp: true
+    network_id: *vn_uuid
+    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    dns_nameservers: []
+    allocation_pools:
+      - start: 10.0.1.2
+        end: 10.0.1.254
+    gateway_ip: 10.0.1.1
+    # TODO(pawel.zadrozny) check dns_server_address when address manager start to reserve dns nameservers
+    #    dns_server_address: 10.0.1.2
+    shared: false
+    ip_version: 4
+    cidr: 10.0.1.0/24
+
+  subnet_a_uuid: &subnet_a_uuid
+    d5ff46fc-e193-4d40-80ba-0d55c8aed9f2
+
+  subnet_a: &subnet_a
+    subnet_uuid: *subnet_a_uuid
+    subnet:
+      ip_prefix: 10.0.0.0
+      ip_prefix_len: 24
+    allocation_pools:
+      - start: 10.0.0.0
+        end: 10.0.0.255
+
+  subnet_b_uuid: &subnet_b_uuid
+    d5ff46fc-e193-4d40-80ba-0d55c8aed9f3
+
+  subnet_b: &subnet_b
+    subnet_uuid: *subnet_b_uuid
+    subnet:
+      ip_prefix: 11.0.0.0
+      ip_prefix_len: 24
+    allocation_pools:
+      - start: 11.0.0.0
+        end: 11.0.0.255
 
 workflow:
-- name: Create project admin
+# Set up
+- name: Create "test-subnet-project" project
   request:
     path: /projects
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
-      project: *admin_project
+      project: *project
   expect:
-    project: *admin_project
+    project: *project
 
-- name: Network create
+- name: Create "test-vn" network
   request:
     path: /neutron/network
     method: POST
@@ -50,28 +109,18 @@ workflow:
       data:
         fields:
         resource:
-          id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2 #todo remove this field from request
+          id: *vn_uuid #todo remove this field from request
           router:external: false
-          name: test-vn1
+          name: test-vn
           tenant_id: 886c725d04614dd6ac2730c74d4e46fb
           admin_state_up: true
-          policys: ''
-          vpc:route_table: ''
           shared: false
           port_security_enabled: true
           project_id: 886c725d04614dd6ac2730c74d4e46fb
-          description: ''
-        filters:
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-        is_admin: true
-        request_id: req-ac841ef9-2c79-4787-b80c-22a7b3263255
+        <<: *base_context
         operation: CREATE
         type: network
-        tenant: 886c725d04614dd6ac2730c74d4e46fb
   expect:
     status: ACTIVE
     router:external: false
@@ -79,17 +128,18 @@ workflow:
     subnet_ipam: []
     fq_name:
     - default
-    - admin_project_uuid
-    - test-vn1
-    name: test-vn1
+    - test-subnet-project
+    - test-vn
+    name: test-vn
     admin_state_up: true
     tenant_id: 886c725d04614dd6ac2730c74d4e46fb
     port_security_enabled: true
     shared: false
     project_id: 886c725d04614dd6ac2730c74d4e46fb
-    description: ''
 
-- name: Create subnet
+# Subnet create
+
+- name: Create "test-subnet" subnet within "test-vn" network
   request:
     path: /neutron/subnet
     method: POST
@@ -97,43 +147,38 @@ workflow:
     data:
       data:
         resource:
-          name: ''
+          name: test-subnet
           enable_dhcp: true
-          network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+          network_id: *vn_uuid
           tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-          ipam_fq_name: ''
           ip_version: 4
-          cidr: "10.0.1.0/24"
+          cidr: 10.0.1.0/24
           project_id: 886c725d04614dd6ac2730c74d4e46fb
-          description: ''
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-        is_admin: true
-        request_id: req-2e00f3a3-d9a3-4016-abb3-f74ad1ea9bf0
-        "operation": CREATE
-        "type": subnet
-        "tenant": 886c725d04614dd6ac2730c74d4e46fb
-  expect:
-    host_routes: []
-    name: ""
-    enable_dhcp: true
-    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-    dns_nameservers: []
-    allocation_pools:
-    - start: 10.0.1.2
-      end: 10.0.1.254
-    gateway_ip: 10.0.1.1
-# TODO(pawel.zadrozny) check dns_server_address when address manager start to reserve dns nameservers
-#    dns_server_address: 10.0.1.2
-    shared: false
-    ip_version: 4
-    cidr: "10.0.1.0/24"
+        <<: *base_context
+        operation: CREATE
+        type: subnet
+  expect: *expected_test_subnet
 
-- name: Subnet readall with network_id
+# Subnet readall
+
+- name: Read all subnets with network_id filter set to "test-vn" network
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          network_id: [*vn_uuid]
+      context:
+        <<: *base_context
+        operation: READALL
+        type: subnet
+  expect:
+  - *expected_test_subnet
+
+- name: Read all subnets without filters
   request:
     path: /neutron/subnet
     method: POST
@@ -141,83 +186,109 @@ workflow:
     data:
       data:
         fields: []
-        filters:
-          network_id: [d9ff46fc-e193-4d40-80ba-0d55c8aed9f2]
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-        is_admin: true
-        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
+        <<: *base_context
         operation: READALL
         type: subnet
-        tenant: 886c725d04614dd6ac2730c74d4e46fb
   expect:
-  - network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    host_routes: []
-    name: ""
-    enable_dhcp: true
-    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-    dns_nameservers: []
-    allocation_pools:
-    - start: 10.0.1.2
-      end: 10.0.1.254
-    gateway_ip: 10.0.1.1
-# TODO(pawel.zadrozny) check dns_server_address when address manager start to reserve dns nameservers
-#    dns_server_address: 10.0.1.2
-    shared: false
-    ip_version: 4
-    cidr: 10.0.1.0/24
+    - *expected_test_subnet
 
-- name: Subnet readall without network_id
+# Set up for subnet delete
+
+- name: Add subnets A and B to default IPAM of "test-vn" virtual network
+  request:
+    path: *vn_path
+    method: PUT
+    expected: [200]
+    data:
+      virtual-network:
+        network_ipam_refs:
+          - to:
+              - default-domain
+              - default-project
+              - default-network-ipam
+            attr:
+              ipam_subnets:
+                - *subnet_a
+                - *subnet_b
+
+- name: Ensure "test-vn" virtual network has both subnets in default IPAM
+  request: *vn_get_request
+  expect:
+    virtual-network:
+      network_ipam_refs:
+        - to:
+            - default-domain
+            - default-project
+            - default-network-ipam
+          attr:
+            ipam_subnets:
+              - *subnet_a
+              - *subnet_b
+
+# Subnet delete
+
+- name: Delete subnet A
   request:
     path: /neutron/subnet
     method: POST
     expected: [200]
     data:
       data:
-        fields: []
-        filters:
+        id: *subnet_a_uuid
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-        is_admin: true
-        request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
-        operation: READALL
+        <<: *base_context
         type: subnet
-        tenant: 886c725d04614dd6ac2730c74d4e46fb
+        operation: DELETE
+
+- name: Ensure "test-vn" virtual network has only subnet B in default IPAM
+  request: *vn_get_request
   expect:
-  - network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    host_routes: []
-    name: ""
-    enable_dhcp: true
-    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
-    dns_nameservers: []
-    allocation_pools:
-    - start: 10.0.1.2
-      end: 10.0.1.254
-    gateway_ip: 10.0.1.1
-# TODO(pawel.zadrozny) check dns_server_address when address manager start to reserve dns nameservers
-#    dns_server_address: 10.0.1.2
-    shared: false
-    ip_version: 4
-    cidr: 10.0.1.0/24
+    virtual-network:
+      network_ipam_refs:
+        - to:
+            - default-domain
+            - default-project
+            - default-network-ipam
+          attr:
+            ipam_subnets:
+              - *subnet_b
 
-- name: Delete virtual network
+- name: Delete subnet B
   request:
-    path: "/virtual-network/d9ff46fc-e193-4d40-80ba-0d55c8aed9f2"
-    method: DELETE
-    expected:
-    - 200
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        id: *subnet_b_uuid
+      context:
+        <<: *base_context
+        type: subnet
+        operation: DELETE
 
-- name: Delete project
+- name: Ensure "test-vn" virtual network has no subnets in default IPAM
+  request: *vn_get_request
+  expect:
+    virtual-network:
+      network_ipam_refs:
+        - to:
+            - default-domain
+            - default-project
+            - default-network-ipam
+          attr:
+            ipam_subnets: $null
+
+# Tear down
+
+- name: Delete "test-vn" virtual network
   request:
-    path: "/project/886c725d-0461-4dd6-ac27-30c74d4e46fb"
+    path: *vn_path
     method: DELETE
-    expected:
-    - 200
+    expected: [200]
+
+- name: Delete "test-subnet-project" project
+  request:
+    path: /project/886c725d-0461-4dd6-ac27-30c74d4e46fb
+    method: DELETE
+    expected: [200]
