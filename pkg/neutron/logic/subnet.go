@@ -261,6 +261,69 @@ func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, er
 	return subnetVncToNeutron(virtualNetwork, ipamS), nil
 }
 
+// Delete subnet with specified id.
+func (s *Subnet) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
+	if err != nil {
+		return nil, newSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("failed to fetch networks: %+v", err),
+		)
+	}
+
+	if len(virtualNetworks) == 0 {
+		return nil, newSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", id),
+		)
+	}
+
+	vn := findVirtualNetworkWithSubnet(id, virtualNetworks)
+	if vn == nil {
+		return nil, newSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", id),
+		)
+	}
+
+	ipam := findNetworkIpamRefWithSubnet(id, vn.NetworkIpamRefs)
+	ipam.RemoveSubnet(id)
+
+	_, err = rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: vn,
+		FieldMask: types.FieldMask{
+			Paths: []string{models.VirtualNetworkFieldNetworkIpamRefs},
+		},
+	})
+	return nil, err
+}
+
+func findVirtualNetworkWithSubnet(subnetID string, vns []*models.VirtualNetwork) *models.VirtualNetwork {
+	for _, vn := range vns {
+		if ipam := findNetworkIpamRefWithSubnet(subnetID, vn.GetNetworkIpamRefs()); ipam != nil {
+			return vn
+		}
+	}
+	return nil
+}
+
+func findNetworkIpamRefWithSubnet(
+	subnetID string, refs []*models.VirtualNetworkNetworkIpamRef,
+) *models.VirtualNetworkNetworkIpamRef {
+	for _, ref := range refs {
+		s := models.IpamSubnets{
+			Subnets: ref.Attr.IpamSubnets,
+		}
+		found := s.Find(func(i *models.IpamSubnetType) bool {
+			return i.SubnetUUID == subnetID
+		})
+		if found != nil {
+			return ref
+		}
+	}
+	return nil
+}
+
 func (s *Subnet) createOrUpdateVirtualNetworkIpamRefs(
 	ctx context.Context,
 	rp RequestParameters,
@@ -368,6 +431,10 @@ func (s *Subnet) toVnc() (*models.Subnet, error) {
 	}
 
 	subnet := models.MakeSubnet()
+
+	if s.ID != "" {
+		subnet.UUID = s.ID
+	}
 	subnet.Name = s.Name
 	subnet.ParentUUID = s.NetworkID
 	subnet.SubnetIPPrefix = subnetIPPrefix
