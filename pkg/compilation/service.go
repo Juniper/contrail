@@ -162,7 +162,7 @@ func (ics *IntentCompilationService) putStoredIndex(ctx context.Context, index i
 func (ics *IntentCompilationService) Run(ctx context.Context) error {
 	ics.log.Debug("Running Service")
 
-	err := ics.apiClient.Login(ctx)
+	_, err := ics.apiClient.Login(ctx)
 	if err != nil {
 		return err
 	}

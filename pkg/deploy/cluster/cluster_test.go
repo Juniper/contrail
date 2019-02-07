@@ -337,7 +337,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
-	err = s.Login(context.Background())
+	_, err = s.Login(context.Background())
 	assert.NoError(t, err, "failed to login")
 	config := &Config{
 		APIServer:    s,
@@ -491,7 +491,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
-	err = s.Login(context.Background())
+	_, err = s.Login(context.Background())
 	assert.NoError(t, err, "failed to login")
 	config := &Config{
 		APIServer:    s,
@@ -803,7 +803,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
-	err = s.Login(context.Background())
+	_, err = s.Login(context.Background())
 	assert.NoError(t, err, "failed to login")
 	config := &Config{
 		APIServer:    s,
@@ -941,7 +941,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
-	err = s.Login(context.Background())
+	_, err = s.Login(context.Background())
 	assert.NoError(t, err, "failed to login")
 	config := &Config{
 		APIServer:    s,
@@ -1089,7 +1089,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
-	err = s.Login(context.Background())
+	_, err = s.Login(context.Background())
 	assert.NoError(t, err, "failed to login")
 	// create cluster config
 	config := &Config{
