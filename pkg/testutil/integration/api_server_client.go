@@ -68,7 +68,8 @@ func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 	)
 	c.Debug = true
 
-	return c, c.Login(context.Background())
+	_, err := c.Login(context.Background())
+	return c, err
 }
 
 type fqNameToIDLegacyRequest struct {

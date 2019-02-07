@@ -59,7 +59,7 @@ func recordTest() {
 
 		clients[key] = client
 
-		err = clients[key].Login(ctx)
+		_, err = clients[key].Login(ctx)
 		assertError(err, "client can't login")
 	}
 
