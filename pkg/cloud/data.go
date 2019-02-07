@@ -12,6 +12,11 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
+const (
+	gatewayRole = "gateway"
+	computeRole = "compute"
+)
+
 //Data for cloud provider data
 type Data struct {
 	cloud          *Cloud
@@ -194,7 +199,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 	}
 
 	if inst.info.ContrailMulticloudGWNodeBackRefs != nil {
-		err := inst.updateProtoModes()
+		err := inst.updateProtoModes() //nolint: govet
 		if err != nil {
 			return nil, err
 		}
@@ -202,7 +207,14 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 		if err != nil {
 			return nil, err
 		}
-		err = inst.updateVrouterGW()
+		err = inst.updateVrouterGW(gatewayRole)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if inst.info.ContrailVrouterNodeBackRefs != nil {
+		err = inst.updateVrouterGW(computeRole)
 		if err != nil {
 			return nil, err
 		}
@@ -496,20 +508,50 @@ func (i *instanceData) updateProtoModes() error {
 	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
 }
 
-func (i *instanceData) updateVrouterGW() error {
-	for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
-		response := new(services.GetContrailMulticloudGWNodeResponse)
-		_, err := i.client.GetContrailMulticloudGWNode(i.ctx,
-			&services.GetContrailMulticloudGWNodeRequest{
-				ID: gwNodeRef.UUID,
-			},
-		)
-		if err != nil {
-			return err
-		}
+func (i *instanceData) updateVrouterGW(role string) error {
+	if role == gatewayRole {
+		for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
+			response := new(services.GetContrailMulticloudGWNodeResponse)
+			_, err := i.client.GetContrailMulticloudGWNode(i.ctx,
+				&services.GetContrailMulticloudGWNodeRequest{
+					ID: gwNodeRef.UUID,
+				},
+			)
+			if err != nil {
+				return err
+			}
 
-		i.gateway = response.GetContrailMulticloudGWNode().DefaultGateway
-		return nil
+			i.gateway = response.GetContrailMulticloudGWNode().DefaultGateway
+			return nil
+		}
+	}
+	if role == computeRole {
+		for _, vrouterNodeRef := range i.info.ContrailVrouterNodeBackRefs {
+			response := new(services.GetContrailVrouterNodeResponse)
+			_, err := i.client.GetContrailVrouterNode(i.ctx,
+				&services.GetContrailVrouterNodeRequest{
+					ID: vrouterNodeRef.UUID,
+				},
+			)
+			if err != nil {
+				return err
+			}
+
+			vrouterNode := response.ContrailVrouterNode
+			if vrouterNode.DefaultGateway == "" {
+				response := new(services.GetContrailClusterResponse)
+				_, err := i.client.GetContrailCluster(i.ctx,
+					&services.GetContrailClusterRequest{
+						ID: vrouterNode.ParentUUID,
+					},
+				)
+				if err != nil {
+					return err
+				}
+				i.gateway = response.ContrailCluster.DefaultGateway
+			}
+			return nil
+		}
 	}
 	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
 
