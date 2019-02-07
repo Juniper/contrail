@@ -165,7 +165,7 @@ func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
 func (a *Agent) Watch(ctx context.Context) error {
 	a.log.Info("Starting watching for events")
 	if a.config.AuthURL != "" {
-		err := a.APIServer.Login(ctx)
+		_, err := a.APIServer.Login(ctx)
 		if err != nil {
 			return fmt.Errorf("login to API Server failed: %s", err)
 		}
