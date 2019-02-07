@@ -173,6 +173,14 @@ func (p *proxyService) checkDeleted(endpoints map[string]*models.Endpoint) {
 			}
 			return true
 		})
+		if s.Count() == 0 {
+			prefixStr, ok := prefix.(string)
+			if !ok {
+				logrus.Errorf("Unable to convert prefix %v to string", id)
+			}
+			p.EndpointStore.Remove(prefixStr)
+			logrus.Debugf("deleting dynamic proxy endpoint prefix: %s", prefixStr)
+		}
 		return true
 	})
 }

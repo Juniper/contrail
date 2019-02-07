@@ -114,7 +114,7 @@ func TestRemoteIntPoolMethods(t *testing.T) {
 	})
 	defer s.CloseT(t)
 	hc := integration.NewTestingHTTPClient(t, s.URL())
-	err := hc.Login(context.Background())
+	_, err := hc.Login(context.Background())
 	require.NoError(t, err)
 
 	err = hc.CreateIntPool(context.Background(), "test_int_pool_806f099f3", 8000100, 8000200)
