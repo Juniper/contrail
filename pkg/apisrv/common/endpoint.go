@@ -128,17 +128,18 @@ func (e *EndpointStore) GetEndpoint(prefix string) (endpoint string, err error) 
 	e.Data.Range(func(key, targets interface{}) bool {
 		keyString, _ := key.(string) // nolint: errcheck
 		keyParts := strings.Split(keyString, pathSep)
-		if keyParts[3] != prefix || keyParts[4] != Private {
-			return true // continue iterating the endpoints
+		if keyParts[3] == prefix && keyParts[4] == Private {
+			endpoints, _ := targets.(*TargetStore) // nolint: errcheck
+			endpoint = endpoints.Next(Private)
+			if endpoint != "" {
+				endpointCount++
+			}
 		}
-		endpointCount++
 		if endpointCount > 1 {
-			err = fmt.Errorf("ambiguious, more than one cluster found")
+			err = fmt.Errorf("multiple clusters found; use X-Cluster-ID header to select a cluster")
 			return false
 		}
-		endpoints, _ := targets.(*TargetStore) // nolint: errcheck
-		endpoint = endpoints.Next(Private)
-		return false
+		return true
 
 	})
 

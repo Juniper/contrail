@@ -16,6 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
@@ -103,9 +104,9 @@ func (h *HTTP) Init() {
 }
 
 // Login refreshes authentication token.
-func (h *HTTP) Login(ctx context.Context) error {
+func (h *HTTP) Login(ctx context.Context) (*http.Response, error) {
 	if h.AuthURL == "" {
-		return nil
+		return nil, nil
 	}
 
 	var domain *keystone.Domain
@@ -130,35 +131,36 @@ func (h *HTTP) Login(ctx context.Context) error {
 		},
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	request, err := http.NewRequest("POST", h.AuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
-	request = request.WithContext(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	request = request.WithContext(ctx)
+	request = auth.SetXClusterIDInHeader(ctx, request)
 	request.Header.Set("Content-Type", "application/json")
 
 	resp, err := h.httpClient.Do(request)
 	if err != nil {
-		return errorFromResponse(err, resp)
+		return resp, errorFromResponse(err, resp)
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
 	err = checkStatusCode([]int{200, 201}, resp.StatusCode)
 	if err != nil {
-		return errorFromResponse(err, resp)
+		return resp, errorFromResponse(err, resp)
 	}
 
 	var authResponse keystone.AuthResponse
 	err = json.NewDecoder(resp.Body).Decode(&authResponse)
 	if err != nil {
-		return errorFromResponse(err, resp)
+		return resp, errorFromResponse(err, resp)
 	}
 
 	h.AuthToken = resp.Header.Get("X-Subject-Token")
-	return nil
+	return resp, nil
 }
 
 // Create send a create API request.
@@ -291,7 +293,7 @@ func (h *HTTP) Do(ctx context.Context,
 
 	resp, err := h.doHTTPRequestRetryingOn401(ctx, request, data)
 	if err != nil {
-		return nil, errorFromResponse(err, resp)
+		return resp, errorFromResponse(err, resp)
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
@@ -363,12 +365,13 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 		}).Debug("Executing API Server request")
 	}
 	request = request.WithContext(ctx)
+	request = auth.SetXClusterIDInHeader(ctx, request)
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error
 		resp, err = h.httpClient.Do(request)
 		if err != nil {
-			return nil, errors.Wrap(err, "issuing HTTP request failed")
+			return resp, errors.Wrap(err, "issuing HTTP request failed")
 		}
 		if resp.StatusCode != 401 {
 			break
@@ -378,13 +381,13 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 		if i < retryCount-1 {
 			err = resp.Body.Close()
 			if err != nil {
-				return nil, errors.Wrap(err, "closing response body failed")
+				return resp, errors.Wrap(err, "closing response body failed")
 			}
 
 			// refresh token and use the new token in request header
-			err = h.Login(ctx)
+			resp, err = h.Login(ctx)
 			if err != nil {
-				return nil, err
+				return resp, err
 			}
 			if h.AuthToken != "" {
 				request.Header.Set("X-Auth-Token", h.AuthToken)
