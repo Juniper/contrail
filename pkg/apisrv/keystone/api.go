@@ -16,6 +16,7 @@ import (
 
 const (
 	configService = "config"
+	xClusterIDKey = "X-Cluster-ID"
 )
 
 //Keystone is used to represents Keystone Controller.
@@ -132,7 +133,8 @@ func (keystone *Keystone) appendStaticProjects(
 
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyclo
-	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
 		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -173,7 +175,8 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error { // nolint: gocyc
 
 //CreateTokenAPI is an API handler for issuing new Token.
 func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
-	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
 		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
@@ -233,7 +236,8 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
-	keystoneEndpoint, err := getKeystoneEndpoint(keystone.Endpoints)
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
 		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
