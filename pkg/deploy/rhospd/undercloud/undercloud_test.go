@@ -143,7 +143,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
-	err = s.Login(context.Background())
+	_, err = s.Login(context.Background())
 	assert.NoError(t, err, "failed to login")
 	config := &Config{
 		APIServer:    s,
