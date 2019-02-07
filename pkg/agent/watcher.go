@@ -101,7 +101,7 @@ func (w *pollingWatcher) watch(ctx context.Context) {
 		time.Sleep(time.Second)
 		err := w.Sync(ctx)
 		if err != nil {
-			w.agent.APIServer.Login(ctx) // nolint: errcheck
+			_, _ := w.agent.APIServer.Login(ctx) // nolint: errcheck
 		}
 	}
 }

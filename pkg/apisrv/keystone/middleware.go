@@ -2,6 +2,7 @@ package keystone
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -50,8 +51,29 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	return newCtx, nil
 }
 
-func getKeystoneEndpoint(endpoints *apicommon.EndpointStore) (authEndpoint string, err error) {
-	authEndpoint, err = endpoints.GetEndpoint(keystoneService)
+func getKeystoneEndpoint(clusterID string, endpoints *apicommon.EndpointStore) (authEndpoint string, err error) {
+	if endpoints == nil {
+		// getKeystoneEndpoint called from CreateTokenAPI,
+		// ValidateTokenAPI or GetProjectAPI of the mock keystone
+		return "", nil
+	}
+	if clusterID != "" {
+		scope := "private"
+		endpointKey := strings.Join([]string{"/proxy", clusterID, keystoneService, scope}, "/")
+		keystoneTargets := endpoints.Read(endpointKey)
+		if keystoneTargets == nil {
+			return "", fmt.Errorf("keystone targets not found for: %s", endpointKey)
+		}
+		authEndpoint = keystoneTargets.Next(scope)
+		if authEndpoint == "" {
+			return "", fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
+		}
+	} else {
+		authEndpoint, err = endpoints.GetEndpoint(keystoneService)
+		if err != nil {
+			return "", fmt.Errorf("unable to get keystone endpoint: %s", err)
+		}
+	}
 	return authEndpoint, err
 
 }
@@ -59,6 +81,7 @@ func getKeystoneEndpoint(endpoints *apicommon.EndpointStore) (authEndpoint strin
 // GetAuthSkipPaths returns the list of paths which need not be authenticated.
 func GetAuthSkipPaths() ([]string, error) {
 	skipPaths := []string{
+		"/contrail-clusters?fields=uuid,name",
 		"/keystone/v3/auth/tokens",
 		"/proxy/keystone/v3/auth/tokens",
 		"/keystone/v3/auth/projects",
@@ -90,12 +113,18 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 		keystoneClient.AuthURL = keystoneClient.LocalAuthURL
 		auth := keystoneClient.NewAuth()
 		return func(c echo.Context) error {
-			for _, path := range skipPath {
+			for _, pathQuery := range skipPath {
 				switch c.Request().URL.Path {
 				case "/":
 					return next(c)
 				default:
-					if strings.Contains(c.Request().URL.Path, path) {
+					if strings.Contains(pathQuery, "?") {
+						paths := strings.Split(pathQuery, "?")
+						if strings.Contains(c.Request().URL.Path, paths[0]) &&
+							strings.Compare(c.Request().URL.RawQuery, paths[1]) == 0 {
+							return next(c)
+						}
+					} else if strings.Contains(c.Request().URL.Path, pathQuery) {
 						return next(c)
 					}
 				}
@@ -105,7 +134,8 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 				// Skip grpc
 				return next(c)
 			}
-			keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
+			clusterID := r.Header.Get(xClusterIDKey)
+			keystoneEndpoint, err := getKeystoneEndpoint(clusterID, endpoints)
 			if err != nil {
 				logrus.Errorf("unable to get keystone endpoint: %s", err)
 				return errutil.ToHTTPError(errutil.ErrorUnauthenticated)
@@ -151,7 +181,12 @@ func AuthInterceptor(keystoneClient *Client,
 		if len(token) == 0 {
 			return nil, errutil.ErrorUnauthenticated
 		}
-		keystoneEndpoint, err := getKeystoneEndpoint(endpoints)
+		var clusterID string
+		xClusterID := md[xClusterIDKey]
+		if len(xClusterID) == 1 {
+			clusterID = xClusterID[0]
+		}
+		keystoneEndpoint, err := getKeystoneEndpoint(clusterID, endpoints)
 		if err != nil {
 			logrus.Error(err)
 			return nil, errutil.ErrorUnauthenticated

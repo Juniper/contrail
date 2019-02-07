@@ -26,7 +26,6 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/format"
@@ -424,10 +423,26 @@ func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenari
 
 		clients[key] = client
 
-		err := clients[key].Login(ctx)
-		assert.NoError(t, err, fmt.Sprintf("client %q failed to login", client.ID))
+		if client.ID != "" {
+			_, err := clients[key].Login(ctx)
+			assert.NoError(t, err, fmt.Sprintf("client %q failed to login", client.ID))
+		}
 	}
 	return clients
+}
+
+func isErrorCode(statusCode int) bool {
+	errorCodeList := []int{401}
+	return isStatusCodeInExpectedList(statusCode, errorCodeList)
+}
+
+func isStatusCodeInExpectedList(statusCode int, expected []int) bool {
+	for _, e := range expected {
+		if e == statusCode {
+			return true
+		}
+	}
+	return false
 }
 
 func runTestScenario(
@@ -468,7 +483,10 @@ func runTestScenario(
 			break
 		}
 		response, err := client.DoRequest(ctx, task.Request)
-		assert.NoError(t, err, fmt.Sprintf("In test scenario %q task %q failed", testScenario.Name, task.Name))
+		if !isErrorCode(response.StatusCode) ||
+			!isStatusCodeInExpectedList(response.StatusCode, task.Request.Expected) {
+			assert.NoError(t, err, fmt.Sprintf("In test scenario %q task %q failed", testScenario.Name, task.Name))
+		}
 		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
 
 		task.Expect = fileutil.YAMLtoJSONCompat(task.Expect)
@@ -640,8 +658,7 @@ func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
 	// Echo instance
 	e := echo.New()
 	keystoneClient := keystone.NewKeystoneClient(keystoneAuthURL, true)
-	endpointStore := apicommon.MakeEndpointStore()
-	k, err := keystone.Init(e, endpointStore, keystoneClient)
+	k, err := keystone.Init(e, nil, keystoneClient)
 	if err != nil {
 		return nil
 	}
