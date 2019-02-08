@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/gogo/protobuf/types"
@@ -26,6 +27,13 @@ const (
 	defaultDomainName      = "default-domain"
 	defaultProjectName     = "default-project"
 	defaultNetworkIpamName = "default-network-ipam"
+
+	subnetFieldName            = "name"
+	subnetFieldGatewayIP       = "gateway_ip"
+	subnetFieldEnableDHCP      = "enable_dhcp"
+	subnetFieldDNSNameservers  = "dns_nameservers"
+	subnetFieldAllocationPools = "allocation_pools"
+	subnetFieldHostRoutes      = "host_routes"
 
 	// TODO(pawel.zadrozny) check if this config is still required or can be removed
 	strictCompliance = false
@@ -253,7 +261,7 @@ func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *Sub
 	return false
 }
 
-// Create new subnet for given network
+// Create new subnet for given network.
 func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, error) {
 	// TODO(pawel.zadrozny) validate if CIDR version is equal to ip_version neutron_plugin_db.py:1585
 	virtualNetwork, err := getVirtualNetworkByID(ctx, rp, s.NetworkID)
@@ -291,6 +299,112 @@ func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, er
 	return subnetVncToNeutron(virtualNetwork, ipamS), nil
 }
 
+// Update specific subnet.
+func (s *Subnet) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	if err := s.prevalidateBeforeUpdate(rp.FieldMask); err != nil {
+		return nil, err
+	}
+
+	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
+	if err != nil {
+		return nil, newSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("failed to fetch networks: %v", err),
+		)
+	}
+
+	if len(virtualNetworks) == 0 {
+		return nil, newSubnetError(
+			subnetNotFound,
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %v", id),
+		)
+	}
+
+	vn, err := findVirtualNetworkWithSubnet(id, virtualNetworks)
+	if err != nil {
+		return nil, err
+	}
+
+	ipam := findNetworkIpamRefWithSubnet(id, vn.NetworkIpamRefs)
+	subnet := ipam.FindSubnet(id)
+
+	updateSubnet(subnet, s, rp.FieldMask)
+	subnet.LastModified = basemodels.ToVNCTime(time.Now().UTC())
+
+	_, err = rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: vn,
+		FieldMask: types.FieldMask{
+			Paths: []string{models.VirtualNetworkFieldNetworkIpamRefs},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return subnetVncToNeutron(vn, subnet), nil
+}
+
+func updateSubnet(origin *models.IpamSubnetType, data *Subnet, fm types.FieldMask) {
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(subnetFieldName)) {
+		origin.SubnetName = data.Name
+	}
+	// Should we check this situation? Will it ever happen?
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(subnetFieldGatewayIP)) {
+		origin.DefaultGateway = data.GatewayIP
+	}
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(subnetFieldEnableDHCP)) {
+		origin.EnableDHCP = data.EnableDHCP
+	}
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(subnetFieldDNSNameservers)) {
+		if len(data.DNSNameservers) != 0 {
+			origin.DHCPOptionList = &models.DhcpOptionsListType{
+				DHCPOption: []*models.DhcpOptionType{
+					{
+						DHCPOptionName:  "6",
+						DHCPOptionValue: strings.Join(data.DNSNameservers, " "),
+					},
+				},
+			}
+		} else {
+			origin.DHCPOptionList = &models.DhcpOptionsListType{}
+		}
+	}
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(subnetFieldHostRoutes)) {
+		hostRoutes := make([]*RouteTableType, 0, len(data.HostRoutes))
+		for i, hr := range data.HostRoutes {
+			hostRoutes[i].Destination = hr.Destination
+			hostRoutes[i].Nexthop = hr.Nexthop
+		}
+		// TODO: Handle apply subnet host routes situation.
+
+		// Should make them nil if there is no host routes?
+		origin.HostRoutes = neutronHostRoutesToModelsHostRoutes(hostRoutes)
+	}
+}
+
+func neutronHostRoutesToModelsHostRoutes(hr []*RouteTableType) *models.RouteTableType {
+	rts := make([]*models.RouteType, 0, len(hr))
+	for i, r := range hr {
+		rts[i].Prefix = r.Destination
+		rts[i].NextHop = r.Nexthop
+	}
+	return &models.RouteTableType{
+		Route: rts,
+	}
+}
+
+func (s *Subnet) prevalidateBeforeUpdate(fm types.FieldMask) error {
+	// should we check if they are not empty/nil like python?
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(subnetFieldGatewayIP)) {
+		return newSubnetError(badRequest, "update of gateway is not supported")
+	}
+
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(subnetFieldAllocationPools)) {
+		return newSubnetError(badRequest, "update of allocation_pools is not allowed")
+	}
+
+	return nil
+}
+
 // Delete subnet with specified id.
 func (s *Subnet) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
 	vns, err := collectVNsUsingKV(ctx, rp, []string{id})
@@ -322,7 +436,7 @@ func findVirtualNetworkWithSubnet(subnetID string, vns []*models.VirtualNetwork)
 	if len(vns) == 0 {
 		return nil, newSubnetError(
 			subnetNotFound,
-			fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", subnetID),
+			fmt.Sprintf("no Virtual Network with Subnet uuid: %v", subnetID),
 		)
 	}
 	for _, vn := range vns {
@@ -332,7 +446,7 @@ func findVirtualNetworkWithSubnet(subnetID string, vns []*models.VirtualNetwork)
 	}
 	return nil, newSubnetError(
 		subnetNotFound,
-		fmt.Sprintf("no Virtual Network with Subnet uuid: %+v", subnetID),
+		fmt.Sprintf("no Virtual Network with Subnet uuid: %v", subnetID),
 	)
 }
 
@@ -475,7 +589,7 @@ func (s *Subnet) dhcpOptionListToVnc() *models.DhcpOptionsListType {
 
 	var optVal []string
 	for _, nameserver := range s.DNSNameservers {
-		optVal = append(optVal, nameserver.Address)
+		optVal = append(optVal, nameserver)
 	}
 
 	return &models.DhcpOptionsListType{
@@ -513,7 +627,7 @@ func (s *Subnet) dnsServerAddressToVnc() string {
 		return s.GatewayIP
 	}
 
-	return s.DNSNameservers[0].Address
+	return s.DNSNameservers[0]
 }
 
 // allocationPoolType converts Neutron request to allocation pools VNC format.
@@ -659,7 +773,7 @@ func subnetDefaultAllocationPool(gateway, subnetCIDR string) *AllocationPool {
 
 // DNSNameServersFromVnc converts VNC DHCP Option List Type to Neutron DNS Nameservers format.
 func (s *SubnetResponse) DNSNameServersFromVnc(dhcpOptions *models.DhcpOptionsListType) {
-	s.DNSNameservers = make([]*DnsNameserver, 0)
+	s.DNSNameservers = make([]string, 0)
 	if dhcpOptions == nil {
 		return
 	}
@@ -668,10 +782,7 @@ func (s *SubnetResponse) DNSNameServersFromVnc(dhcpOptions *models.DhcpOptionsLi
 		if opt.GetDHCPOptionName() == "6" {
 			dnsServers := splitter.FindAllString(opt.GetDHCPOptionValue(), -1)
 			for _, dnsServer := range dnsServers {
-				s.DNSNameservers = append(s.DNSNameservers, &DnsNameserver{
-					Address:  dnsServer,
-					SubnetID: s.ID,
-				})
+				s.DNSNameservers = append(s.DNSNameservers, dnsServer)
 			}
 		}
 	}
