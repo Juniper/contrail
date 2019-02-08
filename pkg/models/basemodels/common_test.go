@@ -2,6 +2,7 @@ package basemodels
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -97,6 +98,42 @@ func TestKindToSchemaID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.kind, func(t *testing.T) {
 			assert.Equal(t, tt.schemaID, KindToSchemaID(tt.kind))
+		})
+	}
+}
+
+func TestToVNCTime(t *testing.T) {
+	tests := []struct {
+		name string
+		arg  time.Time
+		want string
+	}{
+		{
+			name: "Time without nanoseconds",
+			arg:  time.Date(2000, 10, 1, 0, 0, 0, 0, time.UTC),
+			want: "2000-10-01T00:00:00",
+		},
+		{
+			name: "Time with nanoseconds but no microseconds",
+			arg:  time.Date(2000, 10, 1, 0, 0, 0, 999, time.UTC),
+			want: "2000-10-01T00:00:00",
+		},
+		{
+			name: "Time with microseconds",
+			arg:  time.Date(2000, 10, 1, 0, 0, 0, 1234567, time.UTC),
+			want: "2000-10-01T00:00:00.001234",
+		},
+		{
+			name: "Time with microseconds with 0 at the end",
+			arg:  time.Date(2000, 10, 1, 0, 0, 0, 10000, time.UTC),
+			want: "2000-10-01T00:00:00.000010",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ToVNCTime(tt.arg); got != tt.want {
+				t.Errorf("ToVNCTime() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
