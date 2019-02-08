@@ -3,6 +3,7 @@ package basemodels
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 // CommonFieldPerms2 is a resource field that stores PermType2 data.
@@ -109,4 +110,20 @@ func isEmpty(i interface{}) bool {
 		return v == 0
 	}
 	return false
+}
+
+const (
+	vncFormatWithoutNanoseconds = "2006-01-02T15:04:05"
+	vncFormatWithNanoseconds    = "2006-01-02T15:04:05.000000"
+)
+
+// ToVNCTime returns time string in VNC format.
+func ToVNCTime(t time.Time) string {
+	var format string
+	if t.Nanosecond() < 1000 {
+		format = vncFormatWithoutNanoseconds
+	} else {
+		format = vncFormatWithNanoseconds
+	}
+	return t.UTC().Format(format)
 }

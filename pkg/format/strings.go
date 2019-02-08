@@ -65,3 +65,19 @@ func RemoveFromStringSlice(slice []string, values map[string]struct{}) []string 
 
 	return append(trimmedSlice, slice[lowerBound:]...)
 }
+
+// StringSetsEqual compares two string slices and returns true if they are equal.
+func StringSetsEqual(a []string, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	mapB := BoolMap(b)
+	for _, aa := range a {
+		if !mapB[aa] {
+			return false
+		}
+	}
+
+	return true
+}

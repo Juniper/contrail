@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	neutronmock "github.com/Juniper/contrail/pkg/neutron/mock"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSubnetResponse_CIDRFromVnc(t *testing.T) {
@@ -147,13 +146,13 @@ func TestSubnetResponse_DNSNameServersFromVnc(t *testing.T) {
 		name        string
 		dhcpOptions *models.DhcpOptionsListType
 		sr          *logic.SubnetResponse
-		expected    []*logic.DnsNameserver
+		expected    []string
 	}{
 		{
 			name:        "DHCP options does not exist",
 			dhcpOptions: nil,
 			sr:          &logic.SubnetResponse{},
-			expected:    []*logic.DnsNameserver{},
+			expected:    []string{},
 		},
 		{
 			name: "DHCP with option 1",
@@ -166,7 +165,7 @@ func TestSubnetResponse_DNSNameServersFromVnc(t *testing.T) {
 				},
 			},
 			sr:       &logic.SubnetResponse{},
-			expected: []*logic.DnsNameserver{},
+			expected: []string{},
 		},
 		{
 			name: "DHCP with option 6",
@@ -178,13 +177,8 @@ func TestSubnetResponse_DNSNameServersFromVnc(t *testing.T) {
 					},
 				},
 			},
-			sr: &logic.SubnetResponse{ID: "fake-subnet-id"},
-			expected: []*logic.DnsNameserver{
-				{
-					Address:  "10.0.2.1",
-					SubnetID: "fake-subnet-id",
-				},
-			},
+			sr:       &logic.SubnetResponse{ID: "fake-subnet-id"},
+			expected: []string{"10.0.2.1"},
 		},
 		{
 			name: "DHCP with option 6 and multiple values",
@@ -196,25 +190,8 @@ func TestSubnetResponse_DNSNameServersFromVnc(t *testing.T) {
 					},
 				},
 			},
-			sr: &logic.SubnetResponse{ID: "fake-subnet-id"},
-			expected: []*logic.DnsNameserver{
-				{
-					Address:  "10.0.2.2",
-					SubnetID: "fake-subnet-id",
-				},
-				{
-					Address:  "10.0.3.12",
-					SubnetID: "fake-subnet-id",
-				},
-				{
-					Address:  "10.0.4.12",
-					SubnetID: "fake-subnet-id",
-				},
-				{
-					Address:  "10.0.5.5",
-					SubnetID: "fake-subnet-id",
-				},
-			},
+			sr:       &logic.SubnetResponse{ID: "fake-subnet-id"},
+			expected: []string{"10.0.2.2", "10.0.3.12", "10.0.4.12", "10.0.5.5"},
 		},
 	}
 
@@ -324,7 +301,7 @@ func TestSubnet_ReadAll(t *testing.T) {
 					GatewayIP:       "10.0.100.1",
 					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
 					HostRoutes:      []*logic.RouteTableType{},
-					DNSNameservers:  []*logic.DnsNameserver{},
+					DNSNameservers:  []string{},
 					IPVersion:       4,
 				},
 				{
@@ -334,7 +311,7 @@ func TestSubnet_ReadAll(t *testing.T) {
 					GatewayIP:       "10.0.101.1",
 					AllocationPools: []*logic.AllocationPool{{Start: "10.0.101.2", End: "10.0.101.254"}},
 					HostRoutes:      []*logic.RouteTableType{},
-					DNSNameservers:  []*logic.DnsNameserver{},
+					DNSNameservers:  []string{},
 					IPVersion:       4,
 				},
 				{
@@ -344,7 +321,7 @@ func TestSubnet_ReadAll(t *testing.T) {
 					GatewayIP:       "10.0.100.1",
 					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
 					HostRoutes:      []*logic.RouteTableType{},
-					DNSNameservers:  []*logic.DnsNameserver{},
+					DNSNameservers:  []string{},
 					IPVersion:       4,
 				},
 			},
@@ -367,7 +344,7 @@ func TestSubnet_ReadAll(t *testing.T) {
 					GatewayIP:       "10.0.100.1",
 					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
 					HostRoutes:      []*logic.RouteTableType{},
-					DNSNameservers:  []*logic.DnsNameserver{},
+					DNSNameservers:  []string{},
 					IPVersion:       4,
 				},
 			},
@@ -394,7 +371,7 @@ func TestSubnet_ReadAll(t *testing.T) {
 					GatewayIP:       "10.0.100.1",
 					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
 					HostRoutes:      []*logic.RouteTableType{},
-					DNSNameservers:  []*logic.DnsNameserver{},
+					DNSNameservers:  []string{},
 					IPVersion:       4,
 				},
 			},
@@ -419,7 +396,7 @@ func TestSubnet_ReadAll(t *testing.T) {
 					GatewayIP:       "10.0.100.1",
 					AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
 					HostRoutes:      []*logic.RouteTableType{},
-					DNSNameservers:  []*logic.DnsNameserver{},
+					DNSNameservers:  []string{},
 					IPVersion:       4,
 				},
 			},
@@ -489,7 +466,7 @@ func TestSubnet_Read(t *testing.T) {
 				GatewayIP:       "10.0.100.1",
 				AllocationPools: []*logic.AllocationPool{{Start: "10.0.100.2", End: "10.0.100.254"}},
 				HostRoutes:      []*logic.RouteTableType{},
-				DNSNameservers:  []*logic.DnsNameserver{},
+				DNSNameservers:  []string{},
 				IPVersion:       4,
 			},
 		},
