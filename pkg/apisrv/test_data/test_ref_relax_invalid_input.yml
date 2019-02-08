@@ -95,7 +95,8 @@ workflow:
     expected: [400]
     data: {}
   expect:
-    message: 'bad request: both uuid and ref-uuid should be specified: , '
+    message:
+      $contains: 'bad request: both uuid and ref-uuid should be specified: , '
 
 - name: try without specifying uuid
   request:
@@ -105,7 +106,8 @@ workflow:
     data:
       ref-uuid: network_policy_uuid
   expect:
-    message: 'bad request: both uuid and ref-uuid should be specified: , network_policy_uuid'
+    message:
+      $contains: 'bad request: both uuid and ref-uuid should be specified: , network_policy_uuid'
 
 - name: try without specifying ref-uuid
   request:
@@ -115,7 +117,8 @@ workflow:
     data:
       uuid: vn_blue
   expect:
-    message: 'bad request: both uuid and ref-uuid should be specified: vn_blue, '
+    message:
+      $contains: 'bad request: both uuid and ref-uuid should be specified: vn_blue, '
 
 - name: try with a nonexistent uuid
   request:

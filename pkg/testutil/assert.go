@@ -81,6 +81,21 @@ var assertFunctions = map[string]assertFunction{
 		}
 		return errors.Errorf("expected ip address string string but got %s on path %s", actual, path)
 	},
+	"contains": func(path string, pattern, actual interface{}) error {
+		val, ok := actual.(string)
+		if !ok {
+			return errors.Errorf("expected a string but got %T on path %s", actual, path)
+		}
+		substr, ok := pattern.(string)
+		if !ok {
+			return errors.Errorf("expected pattern to be a string but got %T on pattern arg %s", actual, path)
+		}
+
+		if strings.Contains(val, substr) {
+			return nil
+		}
+		return errors.Errorf("expected value to contain substring '%s', but value is '%s' on path %s", substr, val, path)
+	},
 }
 
 // AssertEqual asserts that expected and actual objects are equal, performing comparison recursively.
@@ -196,11 +211,11 @@ func runFunction(path string, expected, actual interface{}) (err error) {
 		for key := range t {
 			if isStringFunction(key) {
 				for key, value := range t {
-					assert, err := getAssertFunction(key)
+					checkFn, err := getAssertFunction(key)
 					if err != nil {
 						return err
 					}
-					err = assert(path, value, actual)
+					err = checkFn(path, value, actual)
 					if err != nil {
 						return err
 					}
