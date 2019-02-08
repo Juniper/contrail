@@ -1,0 +1,31 @@
+description: Contrail Analytics Alarm Node
+extends:
+- base
+- has_status
+id: contrail_analytics_alarm_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this analytics alarm node."
+      presence: "optional"
+    rhospd_flavor:
+      operations: "CRUD"
+      description: "Reference to rhospd_flavor object for this analytics alarm node."
+      presence: "optional"
+parents:
+  contrail_cluster:
+    operations: "CRUD"
+    description: "Parent of this analytics alarm node."
+    presence: "optional"
+plural: contrail_analytics_alarm_nodes
+prefix: /
+schema:
+  properties: {}
+  propertiesOrder: []
+  required: []
+  type: object
+singular: contrail_analytics_alarm_node
+title: Contrail Analytics Alarm Node
+type: ""
