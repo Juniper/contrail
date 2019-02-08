@@ -6,7 +6,7 @@ docker_compose_path = "/etc/contrail/kubemanager/docker-compose.yaml"
 with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
-docker_compose["services"]["kubemanager"]["image"] = "danielfurmancl/contrail-kubernetes-kube-manager:61dc46749"
+docker_compose["services"]["kubemanager"]["image"] = "mateumann/contrail-kubernetes-kube-manager:queens-dev-with-R6.0-1"
 
 environment = docker_compose["services"]["kubemanager"].setdefault("environment", [])
 notification_driver = "NOTIFICATION_DRIVER=etcd"
