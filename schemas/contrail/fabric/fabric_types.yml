@@ -306,7 +306,7 @@
           - detail
         properties:
           presence: "optional"
-          description: "Key/value properties related to the port group’s configuration."
+          description: "Key/value properties related to the port group's configuration."
           $ref: "fabric_types.json#/definitions/PortGroupProperties"
     PortGroupProperties:
       type: "object"
