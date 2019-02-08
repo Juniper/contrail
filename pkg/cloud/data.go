@@ -216,7 +216,12 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 
 func (v *virtualCloudData) updateInstances() error {
 
-	for _, instance := range v.info.Nodes {
+	nodes, err := v.getInstancesWithTag(v.info.TagRefs)
+	if err != nil {
+		return err
+	}
+
+	for _, instance := range nodes {
 		newI, err := v.newInstance(instance)
 		if err != nil {
 			return err
@@ -227,6 +232,31 @@ func (v *virtualCloudData) updateInstances() error {
 	data := v.parentRegion.parentProvider.parentCloud
 	data.instances = append(data.instances, v.instances...)
 	return nil
+}
+
+func (v *virtualCloudData) getTag(tagID string) (*models.Tag, error) {
+	response := new(services.GetTagResponse)
+	_, err := s.client.Read("/tag/"+tagID, response)
+	if err != nil {
+		return nil, err
+	}
+	return response.GetTag(), nil
+}
+
+func (v *virtualCloudData) getInstancesWithTag(tagRefs []*models.VirtualCloudTagRef) ([]*models.Node, error) {
+	var nodesOfVC []*models.Node
+
+	for _, tag := range tagRefs {
+		tagResp, err := v.detTag(tag.UUID)
+		if err != nil {
+			return nil, err
+		}
+		nodesOfVC = append(nodesOfVC, tagResp.NodeBackRefs...)
+	}
+	if len(nodesOfVC) == 0 {
+		return nil, errors.New("virtual cloud tag is not used by any nodes")
+	}
+	return nodesOfVC, nil
 }
 
 func (sg *sgData) getSGObject() (*models.CloudSecurityGroup, error) {
