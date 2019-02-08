@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/format"
 )
 
 const (
@@ -48,7 +49,7 @@ func (m PolicyRuleType) EqualRule(other PolicyRuleType) bool {
 
 var avaiableProtocols = []string{AnyProtocol, ICMPProtocol, TCPProtocol, UDPProtocol, ICMP6Protocol}
 
-var isAvailableProtocol = boolMap(avaiableProtocols)
+var isAvailableProtocol = format.BoolMap(avaiableProtocols)
 
 // ValidateProtocol checks if protocol is valid rule protocol.
 func (m *PolicyRuleType) ValidateProtocol() error {
