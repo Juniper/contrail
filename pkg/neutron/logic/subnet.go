@@ -7,6 +7,7 @@ import (
 	"net"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/gogo/protobuf/types"
@@ -26,6 +27,8 @@ const (
 	defaultDomainName      = "default-domain"
 	defaultProjectName     = "default-project"
 	defaultNetworkIpamName = "default-network-ipam"
+
+	interfaceRouteTablePrefix = "NEUTRON_IFACE_RT"
 
 	// TODO(pawel.zadrozny) check if this config is still required or can be removed
 	strictCompliance = false
@@ -253,7 +256,7 @@ func shouldSkipSubnet(filters Filters, vn *models.VirtualNetwork, neutronSN *Sub
 	return false
 }
 
-// Create new subnet for given network
+// Create new subnet for given network.
 func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, error) {
 	// TODO(pawel.zadrozny) validate if CIDR version is equal to ip_version neutron_plugin_db.py:1585
 	virtualNetwork, err := getVirtualNetworkByID(ctx, rp, s.NetworkID)
@@ -291,6 +294,378 @@ func (s *Subnet) Create(ctx context.Context, rp RequestParameters) (Response, er
 	return subnetVncToNeutron(virtualNetwork, ipamS), nil
 }
 
+// Update specific subnet.
+func (s *Subnet) Update(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	if err := s.checkNotUpdatableFields(rp.FieldMask); err != nil {
+		return nil, err
+	}
+
+	virtualNetworks, err := collectVNsUsingKV(ctx, rp, []string{id})
+	if err != nil {
+		return nil, newSubnetError(subnetNotFound, "failed to fetch networks: %v", err)
+	}
+
+	vn, err := findVirtualNetworkWithSubnet(id, virtualNetworks)
+	if err != nil {
+		return nil, err
+	}
+
+	subnet := findNetworkIpamRefWithSubnet(id, vn.NetworkIpamRefs).FindSubnetByID(id)
+
+	err = s.applyChangesToVncSubnet(ctx, &rp, subnet, id, vn.GetUUID())
+	if err != nil {
+		return nil, err
+	}
+	subnet.LastModified = basemodels.ToVNCTime(time.Now())
+
+	_, err = rp.WriteService.UpdateVirtualNetwork(ctx, &services.UpdateVirtualNetworkRequest{
+		VirtualNetwork: vn,
+		FieldMask: types.FieldMask{
+			Paths: []string{models.VirtualNetworkFieldNetworkIpamRefs},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return subnetVncToNeutron(vn, subnet), nil
+}
+
+func (s *Subnet) checkNotUpdatableFields(fm types.FieldMask) error {
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(SubnetFieldGatewayIP)) {
+		return newSubnetError(badRequest, "update of gateway is not supported")
+	}
+
+	if basemodels.FieldMaskContains(&fm, buildDataResourcePath(SubnetFieldAllocationPools)) {
+		return newSubnetError(badRequest, "update of allocation_pools is not allowed")
+	}
+
+	return nil
+}
+
+func findVirtualNetworkWithSubnet(
+	subnetID string, vns []*models.VirtualNetwork,
+) (*models.VirtualNetwork, error) {
+	for _, vn := range vns {
+		if ipam := findNetworkIpamRefWithSubnet(subnetID, vn.GetNetworkIpamRefs()); ipam != nil {
+			return vn, nil
+		}
+	}
+	return nil, errors.Errorf("no Virtual Network with Subnet uuid: %v", subnetID)
+}
+
+func findNetworkIpamRefWithSubnet(
+	subnetID string, refs []*models.VirtualNetworkNetworkIpamRef,
+) *models.VirtualNetworkNetworkIpamRef {
+	for _, ref := range refs {
+		if ref.FindSubnetByID(subnetID) != nil {
+			return ref
+		}
+	}
+	return nil
+}
+
+func (s *Subnet) applyChangesToVncSubnet(
+	ctx context.Context, rp *RequestParameters, vncSubnet *models.IpamSubnetType,
+	subnetUUID, vnUUID string,
+) error {
+	fm := &rp.FieldMask
+	if basemodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldName)) {
+		vncSubnet.SubnetName = s.Name
+	}
+	if basemodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldEnableDHCP)) {
+		vncSubnet.EnableDHCP = s.EnableDHCP
+	}
+	if basemodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldDNSNameservers)) {
+		vncSubnet.SetDNSNameservers(s.DNSNameservers)
+	}
+	if basemodels.FieldMaskContains(fm, buildDataResourcePath(SubnetFieldHostRoutes)) {
+		if applySubnetHostRoutes() {
+			cidr := vncSubnet.GetSubnet().CIDR()
+			oldHostRoutes := vncHostRoutesToNeutronHostRoutes(vncSubnet.GetHostRoutes())
+			err := portUpdateIfaceRouteTable(ctx, rp, vnUUID, cidr, subnetUUID, s.HostRoutes, oldHostRoutes)
+			if err != nil {
+				return err
+			}
+		}
+
+		vncSubnet.HostRoutes = neutronHostRoutesToVncHostRoutes(s.HostRoutes)
+	}
+	return nil
+}
+
+// TODO: implement_apply_subnet_host_routes variable from neutron_plugin_db.py
+func applySubnetHostRoutes() bool {
+	return true
+}
+
+func vncHostRoutesToNeutronHostRoutes(rtt *models.RouteTableType) []*RouteTableType {
+	if rtt == nil {
+		return nil
+	}
+	rts := make([]*RouteTableType, len(rtt.Route))
+	for i, r := range rtt.Route {
+		rts[i].Destination = r.Prefix
+		rts[i].Nexthop = r.NextHop
+	}
+	return rts
+}
+
+func portUpdateIfaceRouteTable(
+	ctx context.Context, rp *RequestParameters, vnUUID, subnetCIDR, subnetID string,
+	newHR []*RouteTableType, oldHR []*RouteTableType,
+) error {
+	hostPrefixesToDelete, hostPrefixesToAdd, err := extractPrefixesRequiredForUpdate(newHR, oldHR, subnetCIDR)
+	if err != nil {
+		return err
+	}
+
+	if hostPrefixesToAdd.isEmpty() && hostPrefixesToDelete.isEmpty() {
+		// nothing to do
+		return nil
+	}
+
+	ipsResponse, err := rp.ReadService.ListInstanceIP(ctx, &services.ListInstanceIPRequest{
+		Spec: &baseservices.ListSpec{
+			Fields: []string{
+				models.InstanceIPFieldInstanceIPAddress,
+				models.InstanceIPFieldVirtualMachineInterfaceRefs,
+			},
+			BackRefUUIDs: []string{vnUUID},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	ips := ipsResponse.GetInstanceIPs()
+	if err = handleDeprecatedHostPrefixes(ctx, rp, ips, hostPrefixesToDelete, subnetID); err != nil {
+		return err
+	}
+
+	return handleNewHostPrefixes(ctx, rp, ips, hostPrefixesToAdd, subnetID)
+}
+
+func extractPrefixesRequiredForUpdate(
+	newHostRoutes, oldHostRoutes []*RouteTableType, subnetCIDR string,
+) (hostPrefixes, hostPrefixes, error) {
+	hostPrefixesToDelete, err := getHostPrefixes(oldHostRoutes, subnetCIDR)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	hostPrefixesToAdd, err := getHostPrefixes(newHostRoutes, subnetCIDR)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, nexthop := range hostPrefixesToDelete.getIPAddresses() {
+		if hostPrefixesToAdd.hasAnyDestinationsForIP(nexthop) {
+			oldDestinations := hostPrefixesToDelete.getDestinationsForIP(nexthop)
+			newDestinations := hostPrefixesToAdd.getDestinationsForIP(nexthop)
+			if format.StringSetsEqual(oldDestinations, newDestinations) {
+				// Nothing changed for this nexthop address so there is no need to change it.
+				hostPrefixesToAdd.removeDestinationsForIP(nexthop)
+			}
+			// There are still destinations for this nexthop address so we don't want to delete it.
+			hostPrefixesToDelete.removeDestinationsForIP(nexthop)
+		}
+	}
+
+	return hostPrefixesToDelete, hostPrefixesToAdd, nil
+}
+
+func handleDeprecatedHostPrefixes(
+	ctx context.Context, rp *RequestParameters, ips []*models.InstanceIP, prefixes hostPrefixes, subnetID string,
+) error {
+	for _, ip := range ips {
+		addr := ip.GetInstanceIPAddress()
+		if prefixes.hasAnyDestinationsForIP(addr) {
+			if err := portRemoveIfaceRouteTable(ctx, rp, ip, subnetID); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func portRemoveIfaceRouteTable(
+	ctx context.Context, rp *RequestParameters, ip *models.InstanceIP, subnetUUID string,
+) error {
+	portRefs := ip.GetVirtualMachineInterfaceRefs()
+
+	for _, port := range portRefs {
+		vmiResp, err := rp.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{
+			ID: port.GetUUID(),
+		})
+		if err != nil {
+			return err
+		}
+
+		vmi := vmiResp.VirtualMachineInterface
+
+		irtName := getInterfaceRouteTableName(subnetUUID, vmi.GetUUID())
+
+		irt := vmi.FindInterfaceRouteTableRef(func(ref *models.VirtualMachineInterfaceInterfaceRouteTableRef) bool {
+			return basemodels.FQNameToName(ref.To) == irtName
+		})
+
+		if irt == nil {
+			continue
+		}
+
+		vmi.RemoveInterfaceRouteTableRef(irt)
+
+		_, err = rp.WriteService.UpdateVirtualMachineInterface(ctx, &services.UpdateVirtualMachineInterfaceRequest{
+			VirtualMachineInterface: vmi,
+			FieldMask: types.FieldMask{
+				Paths: []string{models.VirtualMachineInterfaceFieldInterfaceRouteTableRefs},
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = rp.WriteService.DeleteInterfaceRouteTable(ctx, &services.DeleteInterfaceRouteTableRequest{
+			ID: irt.UUID,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func handleNewHostPrefixes(
+	ctx context.Context, rp *RequestParameters, ips []*models.InstanceIP, prefixes hostPrefixes, subnetID string,
+) error {
+	for _, ip := range ips {
+		addr := ip.GetInstanceIPAddress()
+		if !prefixes.hasAnyDestinationsForIP(addr) {
+			continue
+		}
+		vmiBackRefs := ip.GetVirtualMachineInterfaceRefs()
+		for _, ref := range vmiBackRefs {
+			vmi, err := rp.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{
+				ID: ref.UUID,
+			})
+			if err != nil {
+				return err
+			}
+			destinations := prefixes.getDestinationsForIP(addr)
+			err = portAddIfaceRouteTable(ctx, rp, vmi.VirtualMachineInterface, subnetID, destinations)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func portAddIfaceRouteTable(
+	ctx context.Context, rp *RequestParameters, vmi *models.VirtualMachineInterface,
+	subnetUUID string, prefixes []string,
+) error {
+
+	irt, err := locateInterfaceRouteTableWithSubnet(ctx, rp, subnetUUID, vmi)
+	if err != nil {
+		return nil
+	}
+
+	irt.SetPrefixes(prefixes)
+
+	_, err = rp.WriteService.UpdateInterfaceRouteTable(ctx, &services.UpdateInterfaceRouteTableRequest{
+		InterfaceRouteTable: irt,
+	})
+	if err != nil {
+		return err
+	}
+
+	vmi.AddInterfaceRouteTableRef(&models.VirtualMachineInterfaceInterfaceRouteTableRef{
+		UUID: irt.UUID,
+		To:   irt.FQName,
+	})
+
+	_, err = rp.WriteService.UpdateVirtualMachineInterface(ctx, &services.UpdateVirtualMachineInterfaceRequest{
+		VirtualMachineInterface: vmi,
+	})
+	return err
+}
+
+func locateInterfaceRouteTableWithSubnet(
+	ctx context.Context, rp *RequestParameters, subnetUUID string, vmi *models.VirtualMachineInterface,
+) (*models.InterfaceRouteTable, error) {
+	// TODO: Ensure that vmi object always contain valid fqname
+	irtName := getInterfaceRouteTableName(subnetUUID, vmi.GetUUID())
+	irtFQName := basemodels.ChildFQName(vmi.GetFQName(), irtName)
+
+	if irt, err := findInterfaceRouteTable(ctx, rp, irtFQName); err != nil {
+		return nil, err
+	} else if irt != nil {
+		return irt, nil
+	}
+
+	return createInterfaceRouteTable(ctx, rp, irtName, vmi.ParentUUID)
+}
+
+func findInterfaceRouteTable(
+	ctx context.Context, rp *RequestParameters, FQName []string,
+) (*models.InterfaceRouteTable, error) {
+	irts, err := rp.ReadService.ListInterfaceRouteTable(ctx, &services.ListInterfaceRouteTableRequest{
+		Spec: &baseservices.ListSpec{
+			Filters: []*baseservices.Filter{
+				{
+					Key:    models.FabricFieldFQName,
+					Values: FQName,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(irts.InterfaceRouteTables) > 0 {
+		return nil, nil
+	}
+	return irts.InterfaceRouteTables[0], nil
+}
+
+func createInterfaceRouteTable(
+	ctx context.Context, rp *RequestParameters, name string, parentUUID string,
+) (*models.InterfaceRouteTable, error) {
+	irt, err := rp.WriteService.CreateInterfaceRouteTable(ctx, &services.CreateInterfaceRouteTableRequest{
+		InterfaceRouteTable: &models.InterfaceRouteTable{
+			Name:       name,
+			ParentType: models.KindProject,
+			ParentUUID: parentUUID,
+			InterfaceRouteTableRoutes: &models.RouteTableType{
+				Route: []*models.RouteType{},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return irt.InterfaceRouteTable, nil
+}
+
+func neutronHostRoutesToVncHostRoutes(hr []*RouteTableType) *models.RouteTableType {
+	rts := make([]*models.RouteType, len(hr))
+	for i, r := range hr {
+		rts[i] = &models.RouteType{}
+		rts[i].Prefix = r.Destination
+		rts[i].NextHop = r.Nexthop
+	}
+	return &models.RouteTableType{
+		Route: rts,
+	}
+}
+
+func getInterfaceRouteTableName(subnetUUID, vmiUUID string) string {
+	return strings.Join([]string{interfaceRouteTablePrefix, subnetUUID, vmiUUID}, "_")
+}
+
 // Delete subnet with specified id.
 func (s *Subnet) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
 	vns, err := collectVNsUsingKV(ctx, rp, []string{id})
@@ -315,32 +690,6 @@ func (s *Subnet) Delete(ctx context.Context, rp RequestParameters, id string) (R
 		return nil, newSubnetError(internalServerError, "cannot update virtual network: %v", err)
 	}
 	return nil, nil
-}
-
-func findVirtualNetworkWithSubnet(subnetID string, vns []*models.VirtualNetwork) (*models.VirtualNetwork, error) {
-	for _, vn := range vns {
-		if ipam := findNetworkIpamRefWithSubnet(subnetID, vn.GetNetworkIpamRefs()); ipam != nil {
-			return vn, nil
-		}
-	}
-	return nil, errors.Errorf("no Virtual Network with Subnet uuid: %v", subnetID)
-}
-
-func findNetworkIpamRefWithSubnet(
-	subnetID string, refs []*models.VirtualNetworkNetworkIpamRef,
-) *models.VirtualNetworkNetworkIpamRef {
-	for _, ref := range refs {
-		s := models.IpamSubnets{
-			Subnets: ref.Attr.IpamSubnets,
-		}
-		found := s.Find(func(i *models.IpamSubnetType) bool {
-			return i.SubnetUUID == subnetID
-		})
-		if found != nil {
-			return ref
-		}
-	}
-	return nil
 }
 
 func (s *Subnet) createOrUpdateVirtualNetworkIpamRefs(
@@ -465,7 +814,7 @@ func (s *Subnet) dhcpOptionListToVnc() *models.DhcpOptionsListType {
 
 	var optVal []string
 	for _, nameserver := range s.DNSNameservers {
-		optVal = append(optVal, nameserver.Address)
+		optVal = append(optVal, nameserver)
 	}
 
 	return &models.DhcpOptionsListType{
@@ -503,7 +852,7 @@ func (s *Subnet) dnsServerAddressToVnc() string {
 		return s.GatewayIP
 	}
 
-	return s.DNSNameservers[0].Address
+	return s.DNSNameservers[0]
 }
 
 // allocationPoolType converts Neutron request to allocation pools VNC format.
@@ -524,8 +873,7 @@ func (s *Subnet) allocationPoolType() []*models.AllocationPoolType {
 
 // routeTableType converts Neutron request to  host routes VNC format.
 func (s *Subnet) routeTableType() *models.RouteTableType {
-	// TODO - not needed for ping by CREATE
-	return nil
+	return neutronHostRoutesToVncHostRoutes(s.HostRoutes)
 }
 
 // subnetTypeToVnc converts Neutron request to subnet type VNC format.
@@ -642,7 +990,7 @@ func subnetDefaultAllocationPool(gateway, subnetCIDR string) *AllocationPool {
 
 // DNSNameServersFromVnc converts VNC DHCP Option List Type to Neutron DNS Nameservers format.
 func (s *SubnetResponse) DNSNameServersFromVnc(dhcpOptions *models.DhcpOptionsListType) {
-	s.DNSNameservers = make([]*DnsNameserver, 0)
+	s.DNSNameservers = make([]string, 0)
 	if dhcpOptions == nil {
 		return
 	}
@@ -651,10 +999,7 @@ func (s *SubnetResponse) DNSNameServersFromVnc(dhcpOptions *models.DhcpOptionsLi
 		if opt.GetDHCPOptionName() == "6" {
 			dnsServers := splitter.FindAllString(opt.GetDHCPOptionValue(), -1)
 			for _, dnsServer := range dnsServers {
-				s.DNSNameservers = append(s.DNSNameservers, &DnsNameserver{
-					Address:  dnsServer,
-					SubnetID: s.ID,
-				})
+				s.DNSNameservers = append(s.DNSNameservers, dnsServer)
 			}
 		}
 	}

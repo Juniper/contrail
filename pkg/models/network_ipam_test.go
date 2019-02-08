@@ -267,7 +267,7 @@ func TestCheckIfSubnetParamsAreValid(t *testing.T) {
 				subnet:    &SubnetType{IPPrefix: "10.0.0.0", IPPrefixLen: 24},
 				dnsServer: "11.0.0.2",
 			},
-			fails: true,
+			fails: false,
 		},
 		{
 			name: "Validate succeeds with UUID provided",

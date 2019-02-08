@@ -172,3 +172,11 @@ func indirect(t reflect.Type) reflect.Type {
 	}
 	return t
 }
+
+func BoolMap(ss []string) map[string]bool {
+	r := map[string]bool{}
+	for _, s := range ss {
+		r[s] = true
+	}
+	return r
+}
