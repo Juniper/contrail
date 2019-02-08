@@ -97,6 +97,8 @@ const (
 	{% endfor %}
 	{% for linkTo, reference in schema.References %}{{ schema.JSONSchema.GoName }}Field{{ reference.GoName }}Refs = "{{ linkTo }}_refs"
 	{% endfor %}
+	{% for linkTo, reference in schema.BackReferences %}{{ schema.JSONSchema.GoName }}Field{{ reference.LinkTo.JSONSchema.GoName }}BackRefs = "{{ linkTo }}_back_refs"
+	{% endfor %}
 )
 
 // Make{{ schema.JSONSchema.GoName }} makes {{ schema.JSONSchema.GoName }}
