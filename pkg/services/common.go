@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -168,13 +167,13 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 
 // RefUpdate represents ref-update input data.
 type RefUpdate struct {
-	Operation RefOperation    `json:"operation"`
-	Type      string          `json:"type"`
-	UUID      string          `json:"uuid"`
-	RefType   string          `json:"ref-type"`
-	RefUUID   string          `json:"ref-uuid"`
-	RefFQName []string        `json:"ref-fq-name"`
-	Attr      json.RawMessage `json:"attr"`
+	Operation RefOperation           `json:"operation"`
+	Type      string                 `json:"type"`
+	UUID      string                 `json:"uuid"`
+	RefType   string                 `json:"ref-type"`
+	RefUUID   string                 `json:"ref-uuid"`
+	RefFQName []string               `json:"ref-fq-name"`
+	Attr      map[string]interface{} `json:"attr"`
 }
 
 func (r *RefUpdate) validate() error {
@@ -217,7 +216,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 		FromUUID:      data.UUID,
 		ToUUID:        data.RefUUID,
 		Operation:     data.Operation,
-		AttrData:      data.Attr,
+		Attr:          data.Attr,
 	})
 	if err != nil {
 		return errutil.ToHTTPError(errutil.ErrorBadRequest(err.Error()))

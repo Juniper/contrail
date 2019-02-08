@@ -311,7 +311,7 @@ workflow:
       attr: bad data
   expect:
     message:
-      $contains: 'bad attr data: json: cannot unmarshal string into Go value of type models.InstanceTargetType'
+      $contains: 'invalid JSON format: json: cannot unmarshal string into Go struct field RefUpdate.attr of type map[string]interface {}'
 
 - name: try to create without UUID
   request:
