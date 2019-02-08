@@ -226,6 +226,70 @@ workflow:
               - *subnet_a
               - *subnet_b
 
+# Subnet update
+
+- name: Try to update gateway_ip within subnet
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [400]
+    data:
+      data:
+        id: *subnet_a_uuid
+        resource:
+          gateway_ip: 10.0.0.1
+      context:
+        <<: *base_context
+        type: subnet
+        operation: UPDATE
+
+- name: Try to update allocation_pools within subnet
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [400]
+    data:
+      data:
+        id: *subnet_a_uuid
+        resource:
+          allocation_pools:
+          - start: 10.0.1.2
+            end: 10.0.1.254
+      context:
+        <<: *base_context
+        type: subnet
+        operation: UPDATE
+
+- name: Update subnet - disable dhcp
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        id: *subnet_a_uuid
+        resource:
+          enable_dhcp: false
+      context:
+        <<: *base_context
+        type: subnet
+        operation: UPDATE
+
+- name: Ensure "test-vn" virtual network has disabled DHCP in subnet A
+  request: *vn_get_request
+  expect:
+    virtual-network:
+      network_ipam_refs:
+        - to:
+            - default-domain
+            - default-project
+            - default-network-ipam
+          attr:
+            ipam_subnets:
+            - <<: *subnet_a
+              enable_dhcp: $null
+            - *subnet_b
+
 # Subnet delete
 
 - name: Try to delete non existing subnet
