@@ -50,14 +50,13 @@ schema:
     dns_nameservers:
       type: array
       items:
-        $ref: req_subnet.json#/definitions/DnsNameserver
+        type: string
       presence: optional
-    destination:
-      type: string
-      presence: true
-    nexthop:
-      type: string
-      presence: true
+    host_routes:
+      type: array
+      items:
+        $ref: resp_subnet.json#/definitions/RouteTableType
+      presence: optional
     routes:
       type: string
       presence: optional
@@ -85,12 +84,3 @@ definitions:
       end:
         type: string
         presence: true
-  DnsNameserver:
-    type: object
-    properties:
-      address:
-        type: string
-        presence: true
-      subnet_id:
-        type: string
-        presence: optional
