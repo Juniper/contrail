@@ -8,3 +8,12 @@ func (m *VirtualNetworkNetworkIpamRef) RemoveSubnet(id string) {
 		return s.SubnetUUID != id
 	}).Subnets
 }
+
+// FindSubnet removes IpamSubnetType from IpamSubnets with specified id.
+func (m *VirtualNetworkNetworkIpamRef) FindSubnet(id string) *IpamSubnetType {
+	return (&(IpamSubnets{
+		Subnets: m.Attr.IpamSubnets,
+	})).Find(func(s *IpamSubnetType) bool {
+		return s.SubnetUUID == id
+	})
+}
