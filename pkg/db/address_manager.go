@@ -29,6 +29,13 @@ func (db *Service) CreateIpamSubnet(
 	}
 
 	// TODO: check allocation pool
+	subnet, err := request.IpamSubnet.GetSubnet().Net()
+	if err != nil {
+		return "", errors.Errorf("cannot get subnet cidr from subnet with uuid %s", subnetUUID)
+	}
+	if err = checkAllocationPools(subnet, request.IpamSubnet.GetAllocationPools()); err != nil {
+		return "", err
+	}
 	// TODO: check and reserve service addr
 	// TODO: check and reserve dns nameservers
 	// TODO: check allocation units
@@ -58,21 +65,31 @@ func (db *Service) CreateIpamSubnet(
 	return subnetUUID, nil
 }
 
+func checkAllocationPools(subnet *net.IPNet, pools []*models.AllocationPoolType) error {
+	for _, pool := range pools {
+		start := net.ParseIP(pool.Start)
+		end := net.ParseIP(pool.End)
+		if start == nil || end == nil {
+			return errors.Errorf("subnet %s has Invalid Ip address in Allocation Pool %v",
+				subnet.String(), pool)
+		}
+		if !subnet.Contains(start) || !subnet.Contains(end) {
+			return errors.Errorf("subnet %s allocation pool %v is out of CIDR",
+				subnet.String(), pool)
+		}
+		// TODO: Check if ip start is not lower than ip end.
+	}
+
+	return nil
+}
+
 func (db *Service) allocateDefaultGateway(
 	ctx context.Context,
 	ipamSubnet *models.IpamSubnetType,
 	subnetUUID string,
 ) (err error) {
-	var ipDefaultGateway string
-	if gw := ipamSubnet.GetDefaultGateway(); gw != "" {
-		ipDefaultGateway = gw
-	} else {
-		ipDefaultGateway, err = getFirstIPForGW(ipamSubnet)
-		if err != nil {
-			return err
-		}
-	}
-	_, err = db.allocateIPForSubnetUUID(ctx, subnetUUID, ipDefaultGateway)
+	// TODO: Validate if it works when gateway is requested - not empty string
+	_, err = db.allocateIPForSubnetUUID(ctx, subnetUUID, ipamSubnet.GetDefaultGateway())
 	return err
 }
 
@@ -295,13 +312,4 @@ func prepareIPPools(ipamSubnet *models.IpamSubnetType, subnetUUID string) ([]*ip
 	}
 
 	return ipPools, nil
-}
-
-func getFirstIPForGW(ipamSubnet *models.IpamSubnetType) (string, error) {
-	ipNet, err := ipamSubnet.GetSubnet().Net()
-	if err != nil {
-		return "", err
-	}
-	firstIP := cidr.Inc(ipNet.IP)
-	return firstIP.String(), nil
 }
