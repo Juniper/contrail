@@ -7,10 +7,6 @@ parents:
     operations: "CRUD"
     description: "Parent of this node resource."
     presence: "optional"
-  virtual_cloud:
-    operations: "CRUD"
-    description: "Parent for node"
-    presence: "optional"
 references:
     credential:
       operations: "CRUD"
