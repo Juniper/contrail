@@ -11,7 +11,9 @@ type Reference interface {
 }
 
 // RefAttribute is a reference attribute.
-type RefAttribute interface{}
+type RefAttribute interface{
+	toMapper
+}
 
 // References is wrapper type for reference slice.
 type References []Reference

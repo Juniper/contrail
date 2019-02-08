@@ -1,11 +1,10 @@
 package services
 
 import (
-	"encoding/json"
-
 	"github.com/pkg/errors"
 	"github.com/gogo/protobuf/types"
 
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/models"
 )
@@ -128,18 +127,8 @@ func NewRefUpdateEvent(option RefUpdateOption) (*Event, error) {
 							},
 					}
 					{% if reference.RefType %}
-					switch {
-					case len(option.AttrData) > 0:
-						err := json.Unmarshal(option.AttrData, &request.Create{{ refType }}Request.{{ refType }}.Attr)
-						if err != nil {
-							return nil, errors.Wrap(err, "bad attr data")
-						}
-					case option.Attr != nil:
-						attr, ok := option.Attr.(*models.{{ reference.RefType }})
-						if !ok {
-							return nil, errors.Errorf("bad attr data: %v", option.Attr)
-						}
-						request.Create{{ refType }}Request.{{ refType }}.Attr = attr
+					if option.Attr != nil {
+						format.ApplyMap(option.Attr, &request.Create{{ refType }}Request.{{ refType }}.Attr)
 					}
 					{% endif %}
 					e.Request = request

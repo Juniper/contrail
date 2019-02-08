@@ -2,7 +2,6 @@ package sink
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/gogo/protobuf/types"
@@ -10,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -59,7 +57,7 @@ func (e *EventProcessorSink) CreateRef(
 		ReferenceType: referenceName,
 		FromUUID:      pk[0],
 		ToUUID:        pk[1],
-		AttrData:      json.RawMessage(format.MustJSON(attr)),
+		Attr:          attr.ToMap(),
 	})
 	if err != nil {
 		return err

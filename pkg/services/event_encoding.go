@@ -178,8 +178,7 @@ type RefUpdateOption struct {
 	ReferenceType    string
 	FromUUID, ToUUID string
 	Operation        RefOperation
-	Attr             basemodels.RefAttribute
-	AttrData         json.RawMessage
+	Attr             map[string]interface{}
 }
 
 // ExtractRefEvents extracts references and puts them into a newly created EventList.
@@ -211,7 +210,7 @@ func makeRefEventList(r basemodels.Object, operation RefOperation) (EventList, e
 			FromUUID:      r.GetUUID(),
 			ToUUID:        ref.GetUUID(),
 			Operation:     operation,
-			Attr:          ref.GetAttribute(),
+			Attr:          ref.GetAttribute().ToMap(),
 		})
 		if err != nil {
 			return EventList{}, err
