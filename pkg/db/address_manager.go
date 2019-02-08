@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"github.com/apparentlymart/go-cidr/cidr"
@@ -28,7 +29,13 @@ func (db *Service) CreateIpamSubnet(
 		subnetUUID = uuid.NewV4().String()
 	}
 
-	// TODO: check allocation pool
+	subnet, err := request.IpamSubnet.GetSubnet().Net()
+	if err != nil {
+		return "", errors.Errorf("cannot get subnet cidr from subnet with uuid %s", subnetUUID)
+	}
+	if err = checkAllocationPools(subnet, request.IpamSubnet.GetAllocationPools()); err != nil {
+		return "", err
+	}
 	// TODO: check and reserve service addr
 	// TODO: check and reserve dns nameservers
 	// TODO: check allocation units
@@ -58,11 +65,30 @@ func (db *Service) CreateIpamSubnet(
 	return subnetUUID, nil
 }
 
+func checkAllocationPools(subnet *net.IPNet, pools []*models.AllocationPoolType) error {
+	for _, pool := range pools {
+		start := net.ParseIP(pool.Start)
+		end := net.ParseIP(pool.End)
+		if start == nil || end == nil {
+			return errors.Errorf("subnet %s has Invalid Ip address in Allocation Pool %v",
+				subnet.String(), pool)
+		}
+		if !subnet.Contains(start) || !subnet.Contains(end) {
+			return errors.Errorf("subnet %s allocation pool %v is out of CIDR",
+				subnet.String(), pool)
+		}
+		// TODO: Check if ip start is not lower than ip end.
+	}
+
+	return nil
+}
+
 func (db *Service) allocateDefaultGateway(
 	ctx context.Context,
 	ipamSubnet *models.IpamSubnetType,
 	subnetUUID string,
 ) (err error) {
+	//TODO: Default Gateway doesn't need to be within allocation pool.
 	var ipDefaultGateway string
 	if gw := ipamSubnet.GetDefaultGateway(); gw != "" {
 		ipDefaultGateway = gw
@@ -72,8 +98,16 @@ func (db *Service) allocateDefaultGateway(
 			return err
 		}
 	}
-	_, err = db.allocateIPForSubnetUUID(ctx, subnetUUID, ipDefaultGateway)
-	return err
+	return db.allocateDefaultGatewayForSubnetUUID(ctx, subnetUUID, ipDefaultGateway, ipamSubnet)
+}
+
+func getFirstIPForGW(ipamSubnet *models.IpamSubnetType) (string, error) {
+	ipNet, err := ipamSubnet.GetSubnet().Net()
+	if err != nil {
+		return "", err
+	}
+	firstIP := cidr.Inc(ipNet.IP)
+	return firstIP.String(), nil
 }
 
 // CheckIfIpamSubnetExists checks if subnet with provided subnet UUID already exists
@@ -265,9 +299,31 @@ func (db *Service) allocateIPForSubnetUUID(
 	ip, err := db.allocateIP(ctx, subnetUUID)
 	if err != nil {
 		return "", err
-	}
+	})
 	return ip.String(), nil
 
+}
+
+func (db *Service) allocateDefaultGatewayForSubnetUUID(
+	ctx context.Context, subnetUUID, gatewayIP string, subnet *models.IpamSubnetType,
+) error {
+	ip := net.ParseIP(gatewayIP)
+	if ip == nil {
+		return errors.Errorf("cannot parse default gateway ip: %v", gatewayIP)
+	}
+	if contains, err := subnet.ContainsWithinSubnetCIDR(ip); err != nil {
+		return err
+	} else if !contains {
+		return errors.Errorf("default gateway ip %s is out of subnet CIDR %s/%s", gatewayIP, subnet.Subnet.CIDR())
+	}
+
+	if contains, err := subnet.ContainsWithinAllocationPools(ip); err != nil {
+		return nil
+	} else if contains {
+		return db.setIP(ctx, subnetUUID, ip)
+	}
+
+	return nil
 }
 
 func prepareIPPools(ipamSubnet *models.IpamSubnetType, subnetUUID string) ([]*ipPool, error) {
@@ -295,13 +351,4 @@ func prepareIPPools(ipamSubnet *models.IpamSubnetType, subnetUUID string) ([]*ip
 	}
 
 	return ipPools, nil
-}
-
-func getFirstIPForGW(ipamSubnet *models.IpamSubnetType) (string, error) {
-	ipNet, err := ipamSubnet.GetSubnet().Net()
-	if err != nil {
-		return "", err
-	}
-	firstIP := cidr.Inc(ipNet.IP)
-	return firstIP.String(), nil
 }
