@@ -162,6 +162,15 @@ func TestApplyMap(t *testing.T) {
 			fails: true,
 		},
 		{
+			name: "apply_integer_to_array",
+			args: args{
+				m: map[string]interface{}{
+					"str_array": 1,
+				},
+			},
+			fails: true,
+		},
+		{
 			name: "pointer_to_non_struct",
 			args: args{
 				o: &someInt,
