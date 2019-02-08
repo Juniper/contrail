@@ -147,7 +147,7 @@ func (m *IpamSubnetType) ValidateSubnetParams() error {
 		}
 	}
 	if m.DNSServerAddress != "" {
-		err = isIPInSubnet(subnet, m.DNSServerAddress)
+		_, err = parseIP(m.DNSServerAddress)
 		if err != nil {
 			return errutil.ErrorBadRequest("DNS server " + err.Error())
 		}
@@ -157,6 +157,18 @@ func (m *IpamSubnetType) ValidateSubnetParams() error {
 
 // Contains checks if IpamSubnet contains provided ip
 func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
+	if contains, err := m.ContainsWithinSubnetCIDR(ip); !contains || err != nil {
+		return false, nil
+	}
+
+	if len(m.GetAllocationPools()) == 0 {
+		return true, nil
+	}
+	return m.ContainsWithinAllocationPools(ip)
+}
+
+// ContainsWithinSubnetCIDR checks if given IP exists within SubnetCIDR
+func (m *IpamSubnetType) ContainsWithinSubnetCIDR(ip net.IP) (bool, error) {
 	if m.Subnet == nil {
 		return false, nil
 	}
@@ -166,14 +178,11 @@ func (m *IpamSubnetType) Contains(ip net.IP) (bool, error) {
 		return false, errors.Errorf("invalid subnet: %v", err)
 	}
 
-	if !subnet.Contains(ip) {
-		return false, nil
-	}
+	return subnet.Contains(ip), nil
+}
 
-	if len(m.GetAllocationPools()) == 0 {
-		return true, nil
-	}
-
+// ContainsWithinAllocationPools checks if given IP exists within Allocation Pools
+func (m *IpamSubnetType) ContainsWithinAllocationPools(ip net.IP) (bool, error) {
 	for _, pool := range m.GetAllocationPools() {
 		contains, err := pool.Contains(ip)
 		if err != nil {

@@ -75,6 +75,9 @@ func (db *Service) getIPPools(ctx context.Context, target *ipPool) ([]*ipPool, e
 		}
 		var start, end string
 		err := rows.Scan(&start, &end)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan ip pool")
+		}
 		pool.start = stringToIP(start)
 		pool.end = stringToIP(end)
 		err = basedb.FormatDBError(err)

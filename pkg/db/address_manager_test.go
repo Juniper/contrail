@@ -70,6 +70,32 @@ func TestAddressManagerAllocations(t *testing.T) {
 			expectedDefaultGateway: "10.0.0.1",
 		},
 		{
+			name: "Test subnet with default gateway out of allocation pools",
+			ipamSubnet: &models.IpamSubnetType{
+				Subnet: &models.SubnetType{
+					IPPrefix:    "10.0.0.0",
+					IPPrefixLen: 24,
+				},
+				AllocationPools: []*models.AllocationPoolType{
+					{
+						Start: "10.0.0.5",
+						End:   "10.0.0.255",
+					},
+				},
+				DefaultGateway: "10.0.0.1",
+			},
+			allocationMode: models.UserDefinedSubnetOnly,
+			expectedValidIPs: []string{
+				"10.0.0.10",
+				"10.0.0.254",
+			},
+			expectedInvalidIPs: []string{
+				"10.1.0.0",
+				"127.0.0.1",
+			},
+			expectedDefaultGateway: "10.0.0.1",
+		},
+		{
 			name: "Test subnet with provided subnetUUID",
 			ipamSubnet: &models.IpamSubnetType{
 				SubnetUUID: "uuid-1",
