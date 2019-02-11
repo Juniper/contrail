@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/gocql/gocql"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/streadway/amqp"
@@ -297,7 +297,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 				p.log.WithError(err).WithField("data", string(d.Body)).Warn("Decoding failed - ignoring")
 				continue
 			}
-			operation, _ := data["oper"].(string)               //nolint: errcheck
+			operation, _ := data["oper"].(services.EventOperation)               //nolint: errcheck
 			kind, _ := data["type"].(string)                    //nolint: errcheck
 			uuid, _ := data["uuid"].(string)                    //nolint: errcheck
 			obj, _ := data["obj_dict"].(map[string]interface{}) //nolint: errcheck
@@ -394,28 +394,49 @@ func (p *EventProcessor) Process(ctx context.Context, event *services.Event) (*s
 	return event, nil
 }
 
+type Insertable interface {
+	GetUUID() string
+	Kind() string
+	ToMap() map[string]interface{}
+}
+
+type Deletable interface {
+	GetID() string
+	Kind() string
+}
+
 func getQuery(session *gocql.Session, event *services.Event) (qry *gocql.Query, err error) { // nolint: interfacer
-	rsrc := event.GetResource()
-	switch event.Operation() {
-	case services.OperationCreate, services.OperationUpdate:
-		rsrcJSON, err := json.Marshal(rsrc.ToMap())
-		if err != nil {
-			return nil, err
-		}
-		qry = session.Query(
-			"INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)",
-			rsrc.GetUUID(),
-			rsrc.Kind(),
-			rsrcJSON,
-		)
-	case services.OperationDelete:
-		qry = session.Query(
-			"DELETE FROM obj_uuid_table WHERE key=? and column1=?",
-			rsrc.GetUUID(),
-			rsrc.Kind(),
-		)
+	switch r := event.Request.(type) {
+	case services.CreateEventRequest:
+		return getInsertQuery(session, r.GetRequest().GetResource())
+	case services.UpdateEventRequest:
+		return getInsertQuery(session, r.GetRequest().GetResource())
+	case services.DeleteEventRequest:
+		return getDeleteQuery(session, r.GetRequest()), nil
 	}
 	return qry, nil
+}
+
+func getInsertQuery(session *gocql.Session, i Insertable) (qry *gocql.Query, err error) {
+	m, err := json.Marshal(i.ToMap())
+	if err != nil {
+		return nil, err
+	}
+	qry = session.Query(
+		"INSERT INTO obj_uuid_table (key, column1, value) VALUES (?, ?, ?)",
+		i.GetUUID(),
+		i.Kind(),
+		m,
+	)
+	return qry, nil
+}
+
+func getDeleteQuery(session *gocql.Session, d Deletable) *gocql.Query {
+	return session.Query(
+		"DELETE FROM obj_uuid_table WHERE key=? and column1=?",
+		d.GetID(),
+		d.Kind(),
+	)
 }
 
 //AmqpEventProcessor implements EventProcessor
@@ -443,7 +464,7 @@ type AmqpMessage struct {
 	Data      json.RawMessage `json:"obj_dict"`
 }
 
-//Process sends msg to amqp exchange
+// Process sends msg to amqp exchange.
 func (p *AmqpEventProcessor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
 	logrus.Debugf("Processing event %+v for amqp", event)
 
@@ -459,21 +480,10 @@ func (p *AmqpEventProcessor) Process(ctx context.Context, event *services.Event)
 	}
 	defer ch.Close() // nolint: errcheck
 
-	rsrc := event.GetResource()
-	data, err := json.Marshal(rsrc.ToMap())
+	msg, err := getAmqpMessage(event)
 	if err != nil {
 		return nil, err
 	}
-
-	msg := AmqpMessage{
-		RequestID: fmt.Sprintf("req-%s", uuid.NewV4().String()),
-		Oper:      event.Operation(),
-		Type:      rsrc.Kind(),
-		UUID:      rsrc.GetUUID(),
-		FqName:    rsrc.GetFQName(),
-		Data:      json.RawMessage(data),
-	}
-
 	msgJSON, err := json.Marshal(msg)
 	if err != nil {
 		return nil, err
@@ -493,4 +503,27 @@ func (p *AmqpEventProcessor) Process(ctx context.Context, event *services.Event)
 		return nil, err
 	}
 	return event, nil
+}
+
+func getAmqpMessage(e *services.Event) (*AmqpMessage, error) {
+	var fqName []string
+	switch r := e.Request.(type) {
+	case services.CreateEventRequest:
+		fqName = r.GetRequest().GetResource().GetFQName()
+	case services.UpdateEventRequest:
+		fqName = r.GetRequest().GetResource().GetFQName()
+	}
+
+	b, err := json.Marshal(e.Data())
+	if err != nil {
+		return nil, err
+	}
+	return &AmqpMessage{
+		RequestID: fmt.Sprintf("req-%s", uuid.NewV4().String()),
+		Oper:      string(e.Operation()),
+		Type:      e.Kind(),
+		UUID:      e.GetUUID(),
+		FqName:    fqName,
+		Data:      json.RawMessage(b),
+	}, nil
 }

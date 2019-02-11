@@ -314,7 +314,7 @@ func TestDependencyResolution(t *testing.T) {
 				r := e.GetResource()
 				assert.Equal(t, result, e)
 				assert.Equal(t, services.OperationDelete, e.Operation())
-				assert.NotEqual(t, vnBlue.ParentUUID, r.GetParentUUID())
+				assert.Nil(t, r)
 
 				e = cache.Get(ri2.UUID)
 				assert.Nil(t, e)

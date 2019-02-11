@@ -38,7 +38,7 @@ func TestCreateEventJSONEncoding(t *testing.T) {
 
 	d2, err := NewEvent(&EventOption{
 		Kind:      i["kind"].(string),
-		Operation: i["operation"].(string),
+		Operation: i["operation"].(EventOperation),
 		Data:      i["data"].(map[string]interface{}),
 	})
 	if assert.NoError(t, err) {
@@ -100,7 +100,7 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	i = fileutil.YAMLtoJSONCompat(i).(map[string]interface{}) //nolint: errcheck
 	d2, err := NewEvent(&EventOption{
 		Kind:      i["kind"].(string),
-		Operation: i["operation"].(string),
+		Operation: i["operation"].(EventOperation),
 		Data:      fileutil.YAMLtoJSONCompat(i["data"]).(map[string]interface{}),
 	})
 	if assert.NoError(t, err) {

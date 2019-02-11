@@ -64,7 +64,7 @@ func (h *HTTP) Delete{{ refType }}(
     return (*services.Delete{{ refType }}Response)(request), nil
 }
 
-func getRefUpdateFromRequest{{ refType }} (request *services.Create{{ refType }}Request, operation services.RefOperation) interface{}{
+func getRefUpdateFromRequest{{ refType }} (request *services.Create{{ refType }}Request, operation services.RefEventOperation) interface{}{
     id := request.GetID()
     reference := request.Get{{ refType }}()
 
