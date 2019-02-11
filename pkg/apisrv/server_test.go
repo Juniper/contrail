@@ -274,7 +274,7 @@ func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	)
 	restClient.InSecure = true
 	restClient.Init()
-	err := restClient.Login(ctx)
+	_, err := restClient.Login(ctx)
 	require.NoError(t, err)
 	return restClient.AuthToken
 }
@@ -292,7 +292,7 @@ func TestRESTClient(t *testing.T) {
 	)
 	restClient.InSecure = true
 	restClient.Init()
-	err := restClient.Login(ctx)
+	_, err := restClient.Login(ctx)
 	// Contact the server and print out its response.
 	assert.NoError(t, err)
 	project := models.MakeProject()
