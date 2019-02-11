@@ -7,20 +7,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-// FilterKey is a type of keys stored in filters.
-type FilterKey string
-
 // Filters used in Neutron read API
-type Filters map[FilterKey][]string
+type Filters map[string][]string
 
 // Keys available in filters.
 const (
-	idKey             FilterKey = "id"
-	nameKey           FilterKey = "name"
-	fqNameKey         FilterKey = "fq_name"
-	sharedKey         FilterKey = "shared"
-	routerExternalKey FilterKey = "router:external"
-	tenantIDKey       FilterKey = "tenant_id"
+	idKey             = "id"
+	nameKey           = "name"
+	fqNameKey         = "fq_name"
+	sharedKey         = "shared"
+	routerExternalKey = "router:external"
+	tenantIDKey       = "tenant_id"
 )
 
 // UnmarshalJSON Filters.
@@ -60,14 +57,14 @@ func (f *Filters) ApplyMap(m map[string]interface{}) error {
 			return errors.Errorf("%T filter not supported", v)
 		}
 
-		(*f)[FilterKey(k)] = ss
+		(*f)[k] = ss
 	}
 	return nil
 }
 
 // HaveKeys checks if one or more keys are present in filters.
 // Will return true if at least one key has been defined and all keys are present and not empty.
-func (f Filters) HaveKeys(keys ...FilterKey) bool {
+func (f Filters) HaveKeys(keys ...string) bool {
 	if len(keys) == 0 {
 		return false
 	}
@@ -84,7 +81,7 @@ func (f Filters) HaveKeys(keys ...FilterKey) bool {
 
 // Match checks if filters should accept values for given key.
 // If key does not exist then it accepts every value and Match returns true.
-func (f Filters) Match(key FilterKey, values ...string) bool {
+func (f Filters) Match(key string, values ...string) bool {
 	if !f.HaveKeys(key) {
 		return true // This is intentional - if filters don't contain key, then we are not filtering out.
 	}
@@ -93,7 +90,7 @@ func (f Filters) Match(key FilterKey, values ...string) bool {
 }
 
 // HaveValues check equality of values in filters struct under specific key and provided sequence of strings.
-func (f Filters) HaveValues(key FilterKey, values ...string) bool {
+func (f Filters) HaveValues(key string, values ...string) bool {
 	if len(f[key]) != len(values) {
 		return false
 	}
