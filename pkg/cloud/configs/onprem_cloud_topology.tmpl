@@ -22,6 +22,13 @@
       {% for role in instance.roles %}
         - {{ role }}
       {% endfor %}
+      {% for role in instance.roles %}
+      {% if "gateway" in role %}
+      private_subnet:
+      {% for subnet in cloud.subnets %}
+        - {{ subnet.info.CidrBlock }}
+      {% endfor %}
+      {% endif %}
       {% endif %}
       {% if instance.protocolsMode %}
       protocols_mode:
@@ -31,9 +38,5 @@
       {% endif %}
       {% if instance.gateway %}
       gateway: {{ instance.gateway }}
-      private_subnet:
-      {% for subnet in cloud.subnets %}
-        - {{ subnet.info.CidrBlock }}
-      {% endfor %}
       {% endif %}
   {% endfor %}
