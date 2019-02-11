@@ -152,24 +152,21 @@ func (db *DB) update(event *services.Event) {
 		prev:  db.last,
 		event: event,
 	}
-	resource := event.GetResource()
-	if resource == nil {
-		return
-	}
 
-	existingNode, ok := db.idMap[resource.GetUUID()]
+	existingNode, ok := db.idMap[event.GetUUID()]
 	var backRefs, children []basemodels.Object
 	if ok {
 		// We should consider throwing error if operation is create here
-		oldResource := existingNode.event.GetResource()
-		backRefs = oldResource.GetBackReferences()
-		children = oldResource.GetChildren()
-		db.removeDependencies(oldResource)
-		logrus.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
+		if r := existingNode.event.GetResource(); r != nil {
+			backRefs = r.GetBackReferences()
+			children = r.GetChildren()
+			db.removeDependencies(r)
+		}
+		logrus.Debugf("Update id map for key: %s,  event version: %d", event.GetUUID(), event.Version)
 		if existingNode == db.first {
 			db.first = existingNode.getNext()
 		}
-		delete(db.idMap, existingNode.event.GetResource().GetUUID())
+		delete(db.idMap, existingNode.event.GetUUID())
 		delete(db.versionMap, existingNode.version)
 		existingNode.pop()
 	}
@@ -183,7 +180,7 @@ func (db *DB) update(event *services.Event) {
 	db.updateDBVersion(n)
 	db.removeTooOldNodesIfNeeded()
 	// This is done after removing too old objects as the uuid is same regardless of operation type
-	db.idMap[resource.GetUUID()] = n
+	db.idMap[event.GetUUID()] = n
 
 	db.updateDependentNodes(event, backRefs, children)
 	db.handleNode(n)
@@ -210,7 +207,7 @@ func (db *DB) removeTooOldNodesIfNeeded() {
 	if len(db.deleted) > 0 && db.lastIndex-db.deleted[0].version > db.maxHistory {
 		compactedNode := db.deleted[0]
 		db.deleted = db.deleted[1:]
-		delete(db.idMap, compactedNode.event.GetResource().GetUUID())
+		delete(db.idMap, compactedNode.event.GetUUID())
 		delete(db.versionMap, compactedNode.version)
 		compactedNode.pop()
 	}
@@ -229,13 +226,17 @@ func (db *DB) addDependencies(
 	for _, ref := range resource.GetReferences() {
 		dependentNode, ok := db.idMap[ref.GetUUID()]
 		if ok {
-			dependentNode.event.GetResource().AddBackReference(resource)
+			if r := dependentNode.event.GetResource(); r != nil {
+				r.AddBackReference(resource)
+			}
 		}
 	}
 	if resource.GetParentUUID() != "" {
 		dependentNode, ok := db.idMap[resource.GetParentUUID()]
 		if ok {
-			dependentNode.event.GetResource().AddChild(resource)
+			if r := dependentNode.event.GetResource(); r != nil {
+				r.AddChild(resource)
+			}
 		}
 	}
 }
@@ -250,7 +251,9 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 	for _, ref := range resource.GetReferences() {
 		dependentNode, ok := db.idMap[ref.GetUUID()]
 		if ok {
-			dependentNode.event.GetResource().RemoveBackReference(resource)
+			if r := dependentNode.event.GetResource(); r != nil {
+				r.RemoveBackReference(resource)
+			}
 			dependentNode.pop()
 			db.append(dependentNode)
 		}
@@ -258,7 +261,9 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 	if resource.GetParentUUID() != "" {
 		dependentNode, ok := db.idMap[resource.GetParentUUID()]
 		if ok {
-			dependentNode.event.GetResource().RemoveChild(resource)
+			if r := dependentNode.event.GetResource(); r != nil {
+				r.RemoveChild(resource)
+			}
 			dependentNode.pop()
 			db.append(dependentNode)
 		}
@@ -266,11 +271,13 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 }
 
 func (db *DB) updateDependentNodes(
-	event services.HasResource,
+	event *services.Event,
 	backRefs, children []basemodels.Object,
 ) {
 	if event.Operation() == services.OperationCreate || event.Operation() == services.OperationUpdate {
-		db.addDependencies(event.GetResource(), backRefs, children)
+		if r := event.GetResource(); r != nil {
+			db.addDependencies(r, backRefs, children)
+		}
 	}
 }
 
@@ -360,9 +367,8 @@ func (n *node) pop() {
 
 func (db *DB) handleNode(n *node) {
 	e := n.event
-	r := e.GetResource()
-	k := r.Kind()
-	uuid := r.GetUUID()
+	k := e.Kind()
+	uuid := e.GetUUID()
 
 	switch e.Operation() {
 	case services.OperationCreate, services.OperationUpdate:
