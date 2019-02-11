@@ -52,4 +52,5 @@
   template_path: pkg/apisrv/client/client_http.go.tmpl
 - type: all
   template_path: pkg/apisrv/client/client_grpc.go.tmpl
-
+- type: all
+  template_path: pkg/db/db_statistic.go.tmpl
