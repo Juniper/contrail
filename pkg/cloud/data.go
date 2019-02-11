@@ -59,6 +59,7 @@ type instanceData struct {
 	protocolsMode []string
 	provision     string
 	pvtIntf       *models.Port
+	gateway       string
 	tags          map[string]string
 	apiServer
 }
@@ -198,6 +199,10 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 			return nil, err
 		}
 		err = inst.updateMCGWTags()
+		if err != nil {
+			return nil, err
+		}
+		err = inst.updateVrouterGW()
 		if err != nil {
 			return nil, err
 		}
@@ -509,7 +514,26 @@ func (i *instanceData) updateProtoModes() error {
 		i.protocolsMode = gwNodeResp.GetContrailMulticloudGWNode().ProtocolsMode
 		return nil
 	}
-	return nil
+	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
+}
+
+func (i *instanceData) updateVrouterGW() error {
+	for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
+		response := new(services.GetContrailMulticloudGWNodeResponse)
+		_, err := i.client.GetContrailMulticloudGWNode(i.ctx,
+			&services.GetContrailMulticloudGWNodeRequest{
+				ID: gwNodeRef.UUID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		i.gateway = response.GetContrailMulticloudGWNode().DefaultGateway
+		return nil
+	}
+	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
+
 }
 
 func (i *instanceData) updatePvtIntf() error {
