@@ -40,13 +40,12 @@ func deleteResources(dataPath string) (string, error) {
 	}
 	for i := len(request.Events) - 1; i >= 0; i-- {
 		event := request.Events[i]
-		resource := event.GetResource()
-		uuid := resource.GetUUID()
+		uuid := event.GetUUID()
 		if err != nil {
 			return "", err
 		}
 		var output interface{}
-		response, err := client.Delete(context.Background(), path(resource.Kind(), uuid), &output)
+		response, err := client.Delete(context.Background(), path(event.Kind(), uuid), &output)
 		if response.StatusCode != http.StatusNotFound && err != nil {
 			return "", err
 		}
