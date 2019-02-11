@@ -477,6 +477,11 @@ func TestDeleteLogicalRouter(t *testing.T) {
 				&services.DeleteLogicalRouterResponse{}, nil,
 			)
 
+			deleteVNRefCall := service.WriteService.(*servicesmock.MockWriteService).EXPECT( //nolint: errcheck
+			).DeleteLogicalRouterVirtualNetworkRef(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
+				&services.DeleteLogicalRouterVirtualNetworkRefResponse{}, nil,
+			)
+
 			deleteVNCall := service.WriteService.(*servicesmock.MockWriteService).EXPECT( //nolint: errcheck
 			).DeleteVirtualNetwork(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return(
 				&services.DeleteVirtualNetworkResponse{}, nil,
@@ -499,9 +504,11 @@ func TestDeleteLogicalRouter(t *testing.T) {
 			if tt.errorCode == codes.OK && tt.vxlanEnabled {
 				deleteVNCall.Times(1)
 				metadataCall.Times(1)
+				deleteVNRefCall.Times(1)
 			} else {
 				deleteVNCall.MaxTimes(1)
 				metadataCall.MaxTimes(1)
+				deleteVNRefCall.MaxTimes(1)
 			}
 
 			ctx := context.Background()
