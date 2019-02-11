@@ -1,0 +1,73 @@
+package db
+
+import (
+	"context"
+
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/models"
+)
+
+{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
+
+//Create{{ schema.JSONSchema.GoName }} handle a Create API
+func (s *StatisticService) Create{{ schema.JSONSchema.GoName }}(
+	ctx context.Context,
+	request *services.Create{{ schema.JSONSchema.GoName }}Request) (*services.Create{{ schema.JSONSchema.GoName }}Response, error) {
+	resp, err := s.Service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
+	if err == nil {
+		type alias models.{{ schema.JSONSchema.GoName }}
+		obj := struct{
+			*alias
+			Type string `json:"type"`
+		}{
+			alias: (*alias)(resp.{{ schema.JSONSchema.GoName }}),
+			Type:  "{{ schema.TypeName }}",
+		}
+		s.collector.DBRequestTrace("create", obj)
+	}
+	return resp, err
+}
+
+//Update{{ schema.JSONSchema.GoName }} handles a Update request.
+func (s *StatisticService) Update{{ schema.JSONSchema.GoName }}(
+	ctx context.Context,
+	request *services.Update{{ schema.JSONSchema.GoName }}Request) (*services.Update{{ schema.JSONSchema.GoName }}Response, error) {
+	resp, err := s.Service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
+	if err == nil {
+		type alias models.{{ schema.JSONSchema.GoName }}
+		obj := struct{
+			*alias
+			Type string `json:"type"`
+		}{
+			alias: (*alias)(resp.{{ schema.JSONSchema.GoName }}),
+			Type:  "{{ schema.TypeName }}",
+		}
+		s.collector.DBRequestTrace("update", obj)
+	}
+	return resp, err
+}
+
+//Delete{{ schema.JSONSchema.GoName }} delete a resource.
+func (s *StatisticService) Delete{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+	var obj interface{}
+	response, err := s.Service.Get{{ schema.JSONSchema.GoName }}(ctx, &services.Get{{ schema.JSONSchema.GoName }}Request{
+		ID: request.ID,
+	})
+	if err == nil {
+		type alias models.{{ schema.JSONSchema.GoName }}
+		obj = struct{
+			*alias
+			Type string `json:"type"`
+		}{
+			alias: (*alias)(response.{{ schema.JSONSchema.GoName }}),
+			Type:  "{{ schema.TypeName }}",
+		}
+	}
+	resp, err := s.Service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+	if err == nil && obj != nil {
+		s.collector.DBRequestTrace("delete", obj)
+	}
+	return resp, err
+}
+
+{% endif %}{% endfor %}
