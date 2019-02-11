@@ -264,9 +264,6 @@ workflow:
       uuid: routing_instance_ref_update_uuid
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
-  expect:
-    message:
-      $contains: 'ref type does-not-exist-route-target does not exist'
 
 - name: send bad operation value
   request:
@@ -309,9 +306,6 @@ workflow:
       ref-type: route-target
       ref-uuid: route_target_ref_update_uuid
       attr: bad data
-  expect:
-    message:
-      $contains: 'bad attr data: json: cannot unmarshal string into Go value of type models.InstanceTargetType'
 
 - name: try to create without UUID
   request:

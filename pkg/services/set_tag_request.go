@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	strings "strings"
+	"strings"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
@@ -119,11 +119,11 @@ func (t *SetTagRequest) parseTagAttrs(rawJSON map[string]json.RawMessage) error 
 	return nil
 }
 
-func (t *SetTagRequest) tagRefEvent(tagUUID string, operation RefOperation) (*Event, error) {
-	return NewRefUpdateEvent(RefUpdateOption{
-		ReferenceType: basemodels.ReferenceKind(t.ObjType, models.KindTag),
+func (t *SetTagRequest) tagRefEvent(tagUUID string, operation RefEventOperation) (*Event, error) {
+	return NewRefEvent(&RefEventOption{
+		RefType:      basemodels.ReferenceKind(t.ObjType, models.KindTag),
 		FromUUID:      t.ObjUUID,
-		ToUUID:        tagUUID,
-		Operation:     operation,
+		ToUUID:    tagUUID,
+		Operation: operation,
 	})
 }

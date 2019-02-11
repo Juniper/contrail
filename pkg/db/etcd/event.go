@@ -104,7 +104,7 @@ func parseKey(key string) (kind string, uuid string, err error) {
 	return kind, uuid, nil
 }
 
-func parseOperation(etcdOperation int32) (string, error) {
+func parseOperation(etcdOperation int32) (services.EventOperation, error) {
 	switch etcdOperation {
 	case MessageCreate:
 		return services.OperationCreate, nil

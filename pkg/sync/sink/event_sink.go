@@ -2,7 +2,6 @@ package sink
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/gogo/protobuf/types"
@@ -10,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -54,12 +52,16 @@ func (e *EventProcessorSink) CreateRef(
 	if len(pk) != 2 {
 		return errors.Errorf("expecting primary key with 2 items, got %d instead", len(pk))
 	}
-	ev, err := services.NewRefUpdateEvent(services.RefUpdateOption{
-		Operation:     services.RefOperationAdd,
-		ReferenceType: referenceName,
-		FromUUID:      pk[0],
-		ToUUID:        pk[1],
-		AttrData:      json.RawMessage(format.MustJSON(attr)),
+	var m map[string]interface{}
+	if attr != nil {
+		m = attr.ToMap()
+	}
+	ev, err := services.NewRefEvent(&services.RefEventOption{
+		Operation: services.RefOperationAdd,
+		RefType:   referenceName,
+		FromUUID:  pk[0],
+		ToUUID:    pk[1],
+		Attr:      m,
 	})
 	if err != nil {
 		return err
@@ -102,11 +104,11 @@ func (e *EventProcessorSink) DeleteRef(ctx context.Context, referenceName string
 	if len(pk) != 2 {
 		return errors.Errorf("expecting primary key with 2 items, got %d instead", len(pk))
 	}
-	ev, err := services.NewRefUpdateEvent(services.RefUpdateOption{
-		Operation:     services.RefOperationDelete,
-		ReferenceType: referenceName,
-		FromUUID:      pk[0],
-		ToUUID:        pk[1],
+	ev, err := services.NewRefEvent(&services.RefEventOption{
+		Operation: services.RefOperationDelete,
+		RefType:   referenceName,
+		FromUUID:  pk[0],
+		ToUUID:    pk[1],
 	})
 	if err != nil {
 		return err

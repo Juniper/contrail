@@ -64,7 +64,7 @@ type processor struct {
 }
 
 func (p *processor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
-	p.collector.Send(MessageBusNotifyTrace(ctx, event.Operation(), event.GetResource()))
+	p.collector.Send(MessageBusNotifyTrace(ctx, string(event.Operation()), event.GetResource()))
 	return nil, nil
 }
 
