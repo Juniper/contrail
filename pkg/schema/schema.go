@@ -120,32 +120,33 @@ func (c ColumnConfigs) shortenColumn() {
 
 //Schema represents a data model
 type Schema struct {
-	FileName         string                    `yaml:"-" json:"-"`
-	ID               string                    `yaml:"id" json:"id,omitempty"`
-	Plural           string                    `yaml:"plural" json:"plural,omitempty"`
-	Type             string                    `yaml:"type" json:"type,omitempty"`
-	Title            string                    `yaml:"title" json:"title,omitempty"`
-	Description      string                    `yaml:"description" json:"description,omitempty"`
-	Parents          map[string]*Reference     `yaml:"-" json:"parents,omitempty"`
-	ParentsSlice     yaml.MapSlice             `yaml:"parents" json:"-"`
-	References       map[string]*Reference     `yaml:"-" json:"references,omitempty"`
-	BackReferences   map[string]*BackReference `yaml:"-" json:"back_references,omitempty"`
-	ReferencesSlice  yaml.MapSlice             `yaml:"references" json:"-"`
-	Prefix           string                    `yaml:"prefix" json:"prefix,omitempty"`
-	JSONSchema       *JSONSchema               `yaml:"-" json:"schema,omitempty"`
-	JSONSchemaSlice  yaml.MapSlice             `yaml:"schema" json:"-"`
-	Definitions      map[string]*JSONSchema    `yaml:"-" json:"-"`
-	DefinitionsSlice map[string]yaml.MapSlice  `yaml:"definitions" json:"-"`
-	Extends          []string                  `yaml:"extends" json:"extends,omitempty"`
-	Columns          ColumnConfigs             `yaml:"-" json:"-"`
-	TypeName         string                    `yaml:"-" json:"-"`
-	Path             string                    `yaml:"-" json:"-"`
-	PluralPath       string                    `yaml:"-" json:"-"`
-	Children         []*BackReference          `yaml:"-" json:"-"`
-	Index            int                       `yaml:"-" json:"-"`
-	ParentOptional   bool                      `yaml:"-" json:"-"`
-	HasParents       bool                      `yaml:"-" json:"-"`
-	DefaultParent    *Reference                `yaml:"-" json:"-"`
+	FileName              string                    `yaml:"-" json:"-"`
+	ID                    string                    `yaml:"id" json:"id,omitempty"`
+	Plural                string                    `yaml:"plural" json:"plural,omitempty"`
+	Type                  string                    `yaml:"type" json:"type,omitempty"`
+	Title                 string                    `yaml:"title" json:"title,omitempty"`
+	Description           string                    `yaml:"description" json:"description,omitempty"`
+	Parents               map[string]*Reference     `yaml:"-" json:"parents,omitempty"`
+	ParentsSlice          yaml.MapSlice             `yaml:"parents" json:"-"`
+	References            map[string]*Reference     `yaml:"-" json:"references,omitempty"`
+	BackReferences        map[string]*BackReference `yaml:"-" json:"back_references,omitempty"`
+	ReferencesSlice       yaml.MapSlice             `yaml:"references" json:"-"`
+	Prefix                string                    `yaml:"prefix" json:"prefix,omitempty"`
+	JSONSchema            *JSONSchema               `yaml:"-" json:"schema,omitempty"`
+	JSONSchemaSlice       yaml.MapSlice             `yaml:"schema" json:"-"`
+	Definitions           map[string]*JSONSchema    `yaml:"-" json:"-"`
+	DefinitionsSlice      map[string]yaml.MapSlice  `yaml:"definitions" json:"-"`
+	Extends               []string                  `yaml:"extends" json:"extends,omitempty"`
+	Columns               ColumnConfigs             `yaml:"-" json:"-"`
+	TypeName              string                    `yaml:"-" json:"-"`
+	Path                  string                    `yaml:"-" json:"-"`
+	PluralPath            string                    `yaml:"-" json:"-"`
+	Children              []*BackReference          `yaml:"-" json:"-"`
+	Index                 int                       `yaml:"-" json:"-"`
+	ParentOptional        bool                      `yaml:"-" json:"-"`
+	IsConfigRootInParents bool                      `yaml:"-" json:"-"`
+	HasParents            bool                      `yaml:"-" json:"-"`
+	DefaultParent         *Reference                `yaml:"-" json:"-"`
 }
 
 //JSONSchema is a standard JSONSchema representation plus data for code generation.
@@ -621,9 +622,11 @@ func (api *API) resolveAllRelation() error {
 			}
 			reference.Table = ReferenceTableName(RefPrefix, s.ID, linkTo)
 		}
+		s.IsConfigRootInParents = false
 		for _, m := range mapSlice(s.ParentsSlice) {
 			linkTo := m.Key.(string)
 			if linkTo == configRoot {
+				s.IsConfigRootInParents = true
 				s.ParentOptional = true
 				continue
 			}
