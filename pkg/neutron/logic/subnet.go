@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/apparentlymart/go-cidr/cidr"
@@ -478,19 +477,12 @@ func (s *Subnet) routeTableType() *models.RouteTableType {
 
 // subnetTypeToVnc converts Neutron request to subnet type VNC format.
 func (s *Subnet) subnetTypeToVnc() (*models.SubnetType, error) {
-	_, netIP, err := net.ParseCIDR(s.Cidr)
-	if err != nil {
-		return nil, err
-	}
-	prefix := strings.Split(netIP.String(), "/")
-
-	prefixIP := prefix[0]
-	prefixLen, err := strconv.ParseInt(prefix[1], 10, 64)
+	_, subnetPrefixIP, prefixLen, err := getIPPrefixAndPrefixLen(s.Cidr)
 	if err != nil {
 		return nil, err
 	}
 
-	return &models.SubnetType{IPPrefix: prefixIP, IPPrefixLen: prefixLen}, nil
+	return &models.SubnetType{IPPrefix: subnetPrefixIP, IPPrefixLen: prefixLen}, nil
 }
 
 // Locate list of subnets to which this subnet has to be appended
@@ -509,7 +501,7 @@ func subnetVncToNeutron(vn *models.VirtualNetwork, subnetVnc *models.IpamSubnetT
 	subnet := &SubnetResponse{
 		ID:         subnetVnc.GetSubnetUUID(),
 		Name:       subnetVnc.GetSubnetName(),
-		TenantID:   contrailUUIDToNeutronID(vn.GetParentUUID()),
+		TenantID:   vncUUIDToNeutronID(vn.GetParentUUID()),
 		NetworkID:  vn.GetUUID(),
 		EnableDHCP: subnetVnc.GetEnableDHCP(),
 		Shared:     vn.GetIsShared() || (vn.GetPerms2() != nil && len(vn.GetPerms2().GetShare()) > 0),

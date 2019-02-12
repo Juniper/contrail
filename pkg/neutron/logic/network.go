@@ -209,7 +209,7 @@ func (n *Network) getCountByTenantIDs(
 
 	var pUUIDs []string
 	for _, tenantID := range filters[tenantIDKey] {
-		uuid, err := neutronIDToContrailUUID(tenantID)
+		uuid, err := neutronIDToVncUUID(tenantID)
 		if err != nil {
 			return nil, err
 		}
@@ -313,7 +313,7 @@ func (n *Network) toVncForCreate(
 	vncNet.ParentType = models.KindProject
 	vncNet.AddressAllocationMode = models.UserDefinedSubnetOnly //TODO find place where it should be set
 	vncNet.RouterExternal = n.RouterExternal
-	vncNet.ParentUUID, err = neutronIDToContrailUUID(n.TenantID)
+	vncNet.ParentUUID, err = neutronIDToVncUUID(n.TenantID)
 	if err != nil {
 		return vncNet, err
 	}
@@ -616,7 +616,7 @@ func collectUsingTenantID(
 	req := &listReq{}
 
 	for _, p := range projects {
-		if req.ParentID, err = neutronIDToContrailUUID(p); err != nil {
+		if req.ParentID, err = neutronIDToVncUUID(p); err != nil {
 			return nil, err
 		}
 		vns, err = listNetworksForProject(ctx, rp, req)
