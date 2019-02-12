@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -52,7 +51,7 @@ type proxySender struct {
 // NewCollector makes a collector
 func NewCollector(cfg *Config) (*Collector, error) {
 	if !cfg.Enable {
-		logrus.Warn("collector is disabled")
+		ignoreAPIMessage().Warn("collector is disabled")
 		return &Collector{
 			sender: &noSender{},
 		}, nil
@@ -81,7 +80,7 @@ func newProxySender(cfg *Config) (sender, error) {
 
 func (s *proxySender) sendMessage(m *message) {
 	if err := s.postMessage(m); err != nil {
-		logrus.WithError(err).Warn("send message to collector failed")
+		ignoreAPIMessage().WithError(err).Warn("send message to collector failed")
 	}
 	// sendMessage does not return an error, since asynchronous postMessage usage is suggested
 }
