@@ -7,6 +7,7 @@ type Reference interface {
 	GetUUID() string
 	GetTo() []string
 	GetReferredKind() string
+	SetHref(string)
 }
 
 // References is wrapper type for reference slice.
@@ -97,4 +98,8 @@ func (g *genericReference) GetTo() []string {
 
 func (g *genericReference) GetReferredKind() string {
 	return g.kind
+}
+
+func (g *genericReference) SetHref(string) {
+	return
 }
