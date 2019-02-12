@@ -17,6 +17,7 @@ type Object interface {
 	GetTagReferences() References
 	GetBackReferences() []Object
 	GetChildren() []Object
+	SetHref(string)
 	AddBackReference(interface{})
 	AddChild(interface{})
 	RemoveBackReference(interface{})
