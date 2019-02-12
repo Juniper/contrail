@@ -6,10 +6,15 @@ import (
 
 	"github.com/labstack/echo"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 const (
 	typeRESTAPITrace = "RestApiTrace"
+	typeVncAPIDebug  = "VncApiDebug"
+	typeVncAPIInfo   = "VncApiInfo"
+	typeVncAPINotice = "VncApiNotice"
+	typeVncAPIError  = "VncApiError"
 )
 
 type payloadRESTAPITrace struct {
@@ -20,6 +25,10 @@ type payloadRESTAPITrace struct {
 	Status       string `json:"status"`
 	ResponseBody string `json:"response_body"`
 	RequestError string `json:"request_error"`
+}
+
+type payloadAPIMessage struct {
+	Message string `json:"api_msg"`
 }
 
 // RESTAPITrace sends message with type RestApiTrace
@@ -37,6 +46,29 @@ func (c *Collector) RESTAPITrace(ctx echo.Context, reqBody, resBody []byte) {
 			Status:       strconv.Itoa(ctx.Response().Status) + " " + http.StatusText(ctx.Response().Status),
 			ResponseBody: string(resBody),
 			RequestError: "",
+		},
+	})
+}
+
+// APIMessage sends message with type VncApiDebug, VncApiInfo, VncApiNotice or
+// VncApiError depends on level
+func (c *Collector) APIMessage(entry *logrus.Entry) {
+	var messageType string
+	switch entry.Level {
+	case logrus.DebugLevel:
+		messageType = typeVncAPIDebug
+	case logrus.InfoLevel:
+		messageType = typeVncAPIInfo
+	case logrus.WarnLevel:
+		messageType = typeVncAPINotice
+	default:
+		messageType = typeVncAPIError
+	}
+
+	c.sendMessage(&message{
+		SandeshType: messageType,
+		Payload: &payloadAPIMessage{
+			Message: entry.Message,
 		},
 	})
 }

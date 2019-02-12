@@ -81,7 +81,7 @@ func newProxySender(cfg *Config) (sender, error) {
 
 func (s *proxySender) sendMessage(m *message) {
 	if err := s.postMessage(m); err != nil {
-		logrus.WithError(err).Warn("send message to collector failed")
+		NotCollectorLogger().WithError(err).Warn("send message to collector failed")
 	}
 	// sendMessage does not return an error, since asynchronous postMessage usage is suggested
 }
