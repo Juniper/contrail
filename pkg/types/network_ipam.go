@@ -13,6 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/types/ipam"
 )
 
 func isSubnetOverlap(subnet1, subnet2 *net.IPNet) bool {
@@ -71,6 +72,12 @@ func (sv *ContrailTypeLogicService) CreateNetworkIpam(
 
 			for _, ipamSubnet := range ipamSubnets.GetSubnets() {
 				err = ipamSubnet.ValidateSubnetParams()
+				if err != nil {
+					return err
+				}
+				_, _, err = sv.AddressManager.AllocateIP(ctx, &ipam.AllocateIPRequest{
+					IPAddress: ipamSubnet.GetDefaultGateway(),
+				})
 				if err != nil {
 					return err
 				}
