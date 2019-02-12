@@ -25,8 +25,7 @@ type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
 
 // RESTCreate{{ schema.JSONSchema.GoName }} handles a REST create request.
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
-    requestData := &Create{{ schema.JSONSchema.GoName }}Request{
-    }
+    requestData := &Create{{ schema.JSONSchema.GoName }}Request{}
     if err := c.Bind(requestData); err != nil {
         return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
     }
@@ -35,8 +34,8 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request()); err != nil {
-        logrus.WithError(err).Error("Failed to apply href")
+    if err = applyHref(response.{{ schema.JSONSchema.GoName }}, c.Request()); err != nil {
+        log.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
 }
@@ -181,7 +180,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request()); err != nil {
+    if err = applyHref(model, c.Request()); err != nil {
         logrus.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
@@ -209,7 +208,7 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 
     model.IDPerms, request.FieldMask.Paths = sanitizeIDPermsUUID(model.GetIDPerms(), request.FieldMask.Paths)
     if !model.IDPerms.IsUUIDMatch(model.UUID) {
-        logrus.Warn("UUID mismatch")
+        logrus.us.Warn("UUID mismatch")
     }
     if model.IDPerms == nil {
         model.IDPerms = models.NewIDPerms(model.UUID)
@@ -258,7 +257,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request()); err != nil {
+    if err = applyHref(response.{{ schema.JSONSchema.GoName }}, c.Request()); err != nil {
         logrus.WithError(err).Error("Failed to apply href")
     }
     return c.JSON(http.StatusOK, response)
@@ -292,9 +291,11 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
     if err != nil {
         return errutil.ToHTTPError(err)
     }
-    if err = response.ApplyHref(c.Request()); err != nil {
-        logrus.WithError(err).Error("Failed to apply href")
-    }
+	for _, r := range response.{{ schema.JSONSchema.GoName }}s {
+		if err = applyHref(r, c.Request()); err != nil {
+			logrus.WithError(err).Error("Failed to apply href")
+		}
+	}
 
     if spec.Count == true {
         return c.JSON(http.StatusOK, response.Count())
