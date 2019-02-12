@@ -21,6 +21,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -574,11 +575,25 @@ func deleteVirtualNetworksFromAPIServer(t *testing.T, hc *integration.HTTPAPICli
 
 func checkSyncedVirtualNetwork(t *testing.T, event *clientv3.Event, expectedVN *models.VirtualNetwork) {
 	syncedVN := decodeVirtualNetworkJSON(t, event.Kv.Value)
-	assert.Equal(t, expectedVN.NoServiceProperties(), syncedVN, "synced VN does not match created VN")
+	removeHrefsFromResource(expectedVN)
+	assert.Equal(t, expectedVN, syncedVN, "synced VN does not match created VN")
 }
 
 func decodeVirtualNetworkJSON(t *testing.T, vnBytes []byte) *models.VirtualNetwork {
 	var vn models.VirtualNetwork
 	assert.NoError(t, json.Unmarshal(vnBytes, &vn))
 	return &vn
+}
+
+func removeHrefsFromResource(object basemodels.Object) {
+	object.SetHref("")
+	for _, ref := range object.GetReferences() {
+		ref.SetHref("")
+	}
+	for _, backRef := range object.GetBackReferences() {
+		backRef.SetHref("")
+	}
+	for _, child := range object.GetChildren() {
+		child.SetHref("")
+	}
 }

@@ -285,6 +285,10 @@ func (m *{{ schema.JSONSchema.GoName }}) SetUUID(uuid string) {
 	m.UUID = uuid
 }
 
+func (m *{{ schema.JSONSchema.GoName }}) SetHref(href string) {
+	m.Href = href
+}
+
 func (m *{{ schema.JSONSchema.GoName }}) GetReferences() basemodels.References {
 	{%- if schema.References|length > 0%}
 	if m == nil {
@@ -448,23 +452,6 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyPropCollectionUpdate(u *basemodels
 	}
 }
 
-func (m *{{ schema.JSONSchema.GoName }}) NoServiceProperties() *{{ schema.JSONSchema.GoName }} {
-	return &{{ schema.JSONSchema.GoName }} {
-	{%- for property in schema.JSONSchema.OrderedProperties %}
-		{% if property.Presence != "service" %}{{ property.GoName }}: m.{{ property.GoName }},{% endif %}
-    {%- endfor %}
-	{%- for _, reference in schema.References %}
-		{% if reference.Presence != "service" %}{{ reference.GoName }}Refs: m.{{ reference.GoName }}Refs,{% endif %}
-	{%- endfor %}
-	{%- for _, backref in schema.BackReferences %}{% set linkTo = backref.LinkTo %}
-		{% if linkTo.JSONSchema.Presence != "service" %}{{ linkTo.JSONSchema.GoName }}BackRefs: m.{{ linkTo.JSONSchema.GoName }}BackRefs,{% endif %}
-	{%- endfor %}
-	{%- for backref in schema.Children %}{% set child = backref.LinkTo %}
-		{% if child.JSONSchema.Presence != "service" %}{{ child.JSONSchema.GoName }}s: m.{{ child.JSONSchema.GoName }}s,{% endif %}
-	{%- endfor %}
-	}
-}
-
 {% endif %}
 
 {% if schema.JSONSchema.CollectionType == "map" %}
@@ -544,6 +531,10 @@ func {{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsToMap(l []*{{ schem
 
 func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetUUID(uuid string) {
 	r.UUID = uuid
+}
+
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetHref(href string) {
+	r.Href = href
 }
 
 func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetTo(to []string) {

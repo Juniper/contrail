@@ -55,7 +55,7 @@ func (sv *ContrailTypeLogicService) CreateNetworkIpam(
 		ctx,
 		func(ctx context.Context) error {
 			ipamSubnets := networkIpam.GetIpamSubnets()
-			if ipamSubnets == nil {
+			if ipamSubnets == nil || len(ipamSubnets.Subnets) == 0 {
 				response, err = sv.BaseService.CreateNetworkIpam(ctx, request)
 				return err
 			}
