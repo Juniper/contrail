@@ -9,6 +9,7 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -263,19 +264,67 @@ func (service *ContrailService) RelaxRef(ctx context.Context, request *RelaxRefR
 
 // Chown handles chown request.
 func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest) (*types.Empty, error) {
-	// TODO: implement chown logic.
+	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		var fm types.FieldMask
+		basemodels.FieldMaskAppend(&fm, basemodels.CommonFieldPerms2, models.PermType2FieldOwner)
+
+		metadata, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{UUID: request.GetUUID()})
+		if err != nil {
+			return errors.Wrapf(err, "failed to change the owner of the resource with UUID '%v'", request.GetUUID())
+		}
+
+		// TODO add permissions check, see https://github.com/Juniper/contrail-controller/blob/137e2a08025e1ae7084621c0f081f7b99d1b04cd/src/config/api-server/vnc_cfg_api_server/vnc_cfg_api_server.py#L2409
+
+		event, err := NewEvent(&EventOption{
+			UUID:      request.GetUUID(),
+			Kind:      metadata.Type,
+			Operation: OperationUpdate,
+			Data: map[string]interface{}{
+				"perms2": map[string]interface{}{
+					"owner": request.GetOwner(),
+				},
+			},
+			FieldMask: &fm,
+		})
+		if err != nil {
+			return errors.Wrapf(err, "failed to change the owner of '%v' with UUID '%v'", metadata.Type, request.GetUUID())
+		}
+
+		_, err = event.Process(ctx, service)
+		return errors.Wrapf(err, "failed to change the owner of '%v' with UUID '%v'", metadata.Type, request.GetUUID())
+	}); err != nil {
+		return nil, err
+	}
+
 	return &types.Empty{}, nil
 }
 
 // RESTChown handles chown request.
 func (service *ContrailService) RESTChown(c echo.Context) error {
-	// TODO: bind request
+	var data ChownRequest
+	if err := c.Bind(&data); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+
+	if err := validateChownRequest(&data); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
 	ctx := c.Request().Context()
-	if _, err := service.Chown(ctx, &ChownRequest{}); err != nil {
-		return err
+	if _, err := service.Chown(ctx, &data); err != nil {
+		return errutil.ToHTTPError(err)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{})
+}
+
+func validateChownRequest(r *ChownRequest) error {
+	if r == nil || r.UUID == "" || r.Owner == "" {
+		return errutil.ErrorBadRequestf(
+			"bad request: both uuid and owner should be specified: %s, %s", r.GetUUID(), r.GetOwner())
+	}
+	// TODO check UUID for proper format
+	return nil
 }
 
 // RESTCreateIntPool handles a POST on int-pools requests
