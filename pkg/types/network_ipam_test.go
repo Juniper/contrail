@@ -85,7 +85,11 @@ func TestCreateNetworkIpam(t *testing.T) {
 			testNetIpamParams: &testNetIpamParams{
 				uuid:             "uuid",
 				ipamSubnetMethod: "notFlat",
-				ipamSubnets:      &models.IpamSubnets{},
+				ipamSubnets:      &models.IpamSubnets{
+					Subnets: []*models.IpamSubnetType{
+						{},
+					},
+				},
 			},
 			errorCode: codes.InvalidArgument,
 		},
