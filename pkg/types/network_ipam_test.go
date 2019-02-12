@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"github.com/Juniper/contrail/pkg/types/ipam/mock"
 	"testing"
 
 	"github.com/gogo/protobuf/types"
@@ -59,6 +60,12 @@ func networkIpamNextServMocks(service *ContrailTypeLogicService) {
 		}).AnyTimes()
 }
 
+
+func mockAddressManager(service *ContrailTypeLogicService) {
+	service.AddressManager.(*ipammock.MockAddressManager). // nolint: errcheck
+		EXPECT().AllocateIP(gomock.Not(gomock.Nil()), gomock.Not(gomock.Nil())).Return("", "", nil).AnyTimes()
+}
+
 func TestCreateNetworkIpam(t *testing.T) {
 	tests := []struct {
 		name              string
@@ -106,6 +113,7 @@ func TestCreateNetworkIpam(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			service := makeMockedContrailTypeLogicService(mockCtrl)
 			networkIpamNextServMocks(service)
+			mockAddressManager(service)
 
 			ctx := context.Background()
 
