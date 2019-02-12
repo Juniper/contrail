@@ -173,7 +173,7 @@ workflow:
         display_name: "floating_ip_pool"
         parent_type: "floating-ip-pool"
         parent_uuid: "test_floating_ip_pool"
-        floating_ip_address: "10.0.0.1"
+        floating_ip_address: "10.0.0.2"
         project_refs:
         - uuid: admin_floating_project_uuid
   expect:
@@ -183,7 +183,7 @@ workflow:
       display_name: "floating_ip_pool"
       parent_type: "floating-ip-pool"
       parent_uuid: "test_floating_ip_pool"
-      floating_ip_address: "10.0.0.1"
+      floating_ip_address: "10.0.0.2"
       project_refs:
       - uuid: admin_floating_project_uuid
 
@@ -200,7 +200,7 @@ workflow:
         display_name: "test_floating_ip"
         parent_type: "floating-ip-pool"
         parent_uuid: "test_floating_ip_pool"
-        floating_ip_address: "10.0.0.1"
+        floating_ip_address: "10.0.0.2"
         project_refs:
         - uuid: admin_floating_project_uuid
 
@@ -217,7 +217,7 @@ workflow:
         display_name: "floating_ip_pool"
         parent_type: "floating-ip-pool"
         parent_uuid: "test_floating_ip_pool_without_subnets"
-        floating_ip_address: "10.0.0.2"
+        floating_ip_address: "10.0.0.3"
         project_refs:
         - uuid: admin_floating_project_uuid
   expect:
@@ -227,7 +227,7 @@ workflow:
       display_name: "floating_ip_pool"
       parent_type: "floating-ip-pool"
       parent_uuid: "test_floating_ip_pool_without_subnets"
-      floating_ip_address: "10.0.0.2"
+      floating_ip_address: "10.0.0.3"
       project_refs:
       - uuid: admin_floating_project_uuid
 

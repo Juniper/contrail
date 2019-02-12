@@ -673,7 +673,7 @@ workflow:
       instance-ip:
         uuid: "test_instance_ip"
         subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
-        instance_ip_address: "10.0.0.1"
+        instance_ip_address: "10.0.0.2"
         network_ipam_refs:
         - to: ["domain","admin_project_uuid","test_ipam_blue"]
         virtual_network_refs:

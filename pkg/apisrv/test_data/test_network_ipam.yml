@@ -118,7 +118,7 @@ test_data:
     display_name: "floating_ip_pool"
     parent_type: "floating-ip-pool"
     parent_uuid: "test_floating_ip_pool"
-    floating_ip_address: "10.0.0.1"
+    floating_ip_address: "10.0.0.2"
     project_refs:
     - uuid: admin_project_network_ipam_uuid
 

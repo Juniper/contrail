@@ -64,7 +64,7 @@ test_data:
     display_name: "alias_ip_pool"
     parent_type: "alias-ip-pool"
     parent_uuid: "test_alias_ip_pool"
-    alias_ip_address: "10.0.0.1"
+    alias_ip_address: "10.0.0.2"
     project_refs:
     - uuid: admin_alias_project_uuid
 
