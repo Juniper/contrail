@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 )
@@ -84,4 +86,66 @@ func TestRESTAPITrace(t *testing.T) {
 			assert.Equal(t, m.ResponseBody, tt.response)
 		})
 	}
+}
+
+func TestVNCAPIMessage(t *testing.T) {
+	tests := []struct {
+		call    func()
+		level   string
+		message string
+	}{
+		{
+			call: func() {
+				logrus.Debugf("debug message")
+			},
+			level:   typeVNCAPIDebug,
+			message: "debug message",
+		},
+		{
+			call: func() {
+				logrus.Infof("message")
+			},
+			level:   typeVNCAPIInfo,
+			message: "message",
+		},
+		{
+			call: func() {
+				logrus.Warnf("warning message")
+			},
+			level:   typeVNCAPINotice,
+			message: "warning message",
+		},
+		{
+			call: func() {
+				logrus.Errorf("error message")
+			},
+			level:   typeVNCAPIError,
+			message: "error message",
+		},
+	}
+
+	c, err := NewCollector(&Config{})
+	assert.NoError(t, err)
+	s := &mockSender{}
+	c.sender = s
+
+	AddLoggerHook(c)
+	logrus.SetLevel(logrus.DebugLevel)
+
+	for _, tt := range tests {
+		t.Run("APIMessage", func(t *testing.T) {
+			tt.call()
+			assert.NotNil(t, s.message)
+			assert.Equal(t, s.message.SandeshType, tt.level)
+			m, ok := s.message.Payload.(*payloadAPIMessage)
+			assert.True(t, ok)
+			assert.Equal(t, m.Message, tt.message)
+		})
+	}
+
+	s.message = nil
+	ignoreAPIMessage().Errorf("message")
+	assert.Nil(t, s.message)
+	ignoreAPIMessage().Warn("warning message")
+	assert.Nil(t, s.message)
 }
