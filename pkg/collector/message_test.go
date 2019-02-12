@@ -26,6 +26,59 @@ func (s *mockSender) sendMessage(m *message) {
 	s.message = m
 }
 
+func TestDBRequestTrace(t *testing.T) {
+	tests := []struct {
+		name      string
+		operation string
+		v         map[string]interface{}
+	}{
+		{
+			name:      "Create DBRequestTrace message",
+			operation: "create",
+			v: map[string]interface{}{
+				"type":   "project",
+				"uuid":   "created_project_uuid",
+				"fqname": []string{"default-domain", "default-project"},
+			},
+		},
+		{
+			name:      "Update DBRequestTrace message",
+			operation: "update",
+			v: map[string]interface{}{
+				"type":   "project",
+				"uuid":   "updated_project_uuid",
+				"fqname": []string{"default-domain", "default-project"},
+			},
+		},
+		{
+			name:      "Delete DBRequestTrace message",
+			operation: "delete",
+			v: map[string]interface{}{
+				"type":   "project",
+				"uuid":   "deleted_project_uuid",
+				"fqname": []string{"default-domain", "default-project"},
+			},
+		},
+	}
+
+	c, err := NewCollector(&Config{})
+	assert.NoError(t, err)
+	s := &mockSender{}
+	c.sender = s
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c.DBRequestTrace(tt.operation, tt.v)
+
+			assert.Equal(t, s.message.SandeshType, typeDBRequestTrace)
+			m, ok := s.message.Payload.(*payloadDBRequestTrace)
+			assert.True(t, ok)
+			assert.Equal(t, m.Operation, tt.operation)
+			assert.Equal(t, m.Body, tt.v)
+		})
+	}
+}
+
 func TestRESTAPITrace(t *testing.T) {
 	tests := []struct {
 		name     string

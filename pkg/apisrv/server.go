@@ -121,7 +121,7 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		}
 	}
 
-	serviceChain = append(serviceChain, s.DBService)
+	serviceChain = append(serviceChain, db.NewStatisticService(s.DBService, s.Collector))
 
 	services.Chain(serviceChain...)
 	return cs, nil
