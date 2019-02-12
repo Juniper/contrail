@@ -41,8 +41,9 @@ message {{ schema.JSONSchema.GoName }} {
 message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
     string uuid = 1 [(gogoproto.customname) = "UUID", (gogoproto.moretags) = "yaml:\"uuid\""];
     repeated string to = 2 [(gogoproto.customname) = "To", (gogoproto.moretags) = "yaml:\"to\""];
+    string href = 3 [(gogoproto.customname) = "Href", (gogoproto.moretags) = "yaml:\"href\""];
     {% if reference.RefType %}
-    {{ reference.RefType }} attr = 3 [(gogoproto.customname) = "Attr", (gogoproto.moretags) = "yaml:\"attr\""];
+    {{ reference.RefType }} attr = 4 [(gogoproto.customname) = "Attr", (gogoproto.moretags) = "yaml:\"attr\""];
     {% endif %}
 }
 {% endfor %}
@@ -52,21 +53,21 @@ message {{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref {
 {% for type, definition in types sorted %}{% if definition.Type == "object" %}
 {% if type == "KeyValuePair" or type == "LinklocalServiceEntryType" or type == "QosIdForwardingClassPair" %}
 
-	// Omitempty tag is removed from fields of {{ type }} type, because it caused issues in REST API clients
-	// which expected all fields to be present. To achieve that "gogoproto.jsontag" extension is used.
-	message {{ type }} {
-	{%- for property in definition.OrderedProperties %}
-		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.JSONTag }}\"", (gogoproto.jsontag) = "{{ property.JSONTag }}"]; // {{ property.Description }}
-	{%- endfor %}
-	}
+    // Omitempty tag is removed from fields of {{ type }} type, because it caused issues in REST API clients
+    // which expected all fields to be present. To achieve that "gogoproto.jsontag" extension is used.
+    message {{ type }} {
+    {%- for property in definition.OrderedProperties %}
+        {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.JSONTag }}\"", (gogoproto.jsontag) = "{{ property.JSONTag }}"]; // {{ property.Description }}
+    {%- endfor %}
+    }
 
 {% else %}
 
-	message {{ type }} {
-	{%- for property in definition.OrderedProperties %}
-		{{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.JSONTag }}\""]; // {{ property.Description }}
-	{%- endfor %}
-	}
+    message {{ type }} {
+    {%- for property in definition.OrderedProperties %}
+        {{ property.ProtoType }} {{ property.ID }} = {{ property.Index }} [(gogoproto.customname) = "{{ property.GoName }}", (gogoproto.moretags) = "yaml:\"{{ property.JSONTag }}\""]; // {{ property.Description }}
+    {%- endfor %}
+    }
 
 {% endif %}
 {% endif %}{% endfor %}
