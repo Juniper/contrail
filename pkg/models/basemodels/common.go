@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+// CommonFieldPerms2 is a database field that stores PermType2 data.
+const CommonFieldPerms2 = "perms2"
+
 const (
 	//PermsNone for no permission
 	PermsNone = iota
