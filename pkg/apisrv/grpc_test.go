@@ -18,6 +18,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -119,14 +120,67 @@ func TestFQNameToIDGRPC(t *testing.T) {
 }
 
 func TestChownGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(),
-		func(ctx context.Context, conn *grpc.ClientConn) {
-			c := services.NewChownClient(conn)
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := client.NewGRPC(services.NewContrailServiceClient(conn))
 
-			// This is only a stub implementation
-			_, err := c.Chown(ctx, &services.ChownRequest{})
-			assert.NoError(t, err)
+		otherProjectName := uuid.NewV4().String()
+		integration.AddKeystoneProjectAndUser(server.APIServer, otherProjectName)
+		otherProjectCTX := metadata.NewOutgoingContext(ctx,
+			metadata.Pairs("X-Auth-Token", restLogin(ctx, t, otherProjectName)))
+
+		_, otherProjectCleanup := createProject(t, ctx, c, otherProjectName)
+		defer otherProjectCleanup(t)
+
+		project, cleanup := createProject(t, ctx, c, "")
+		defer cleanup(t)
+
+		networkResponse, err := c.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
+			VirtualNetwork: &models.VirtualNetwork{
+				ParentType: models.KindProject,
+				ParentUUID: project.GetUUID(),
+			},
 		})
+		require.NoError(t, err, "creating network failed")
+		network := networkResponse.GetVirtualNetwork()
+
+		defer func() {
+			_, err = c.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{
+				ID: network.GetUUID(),
+			})
+			assert.NoError(t, err, "deleting network failed")
+		}()
+
+		ch := services.NewChownClient(conn)
+		// TODO Check not providing Owner or UUID as well.
+		_, err = ch.Chown(ctx, &services.ChownRequest{
+			UUID:  network.GetUUID(),
+			Owner: otherProjectName,
+		})
+		assert.NoError(t, err, "chown failed")
+
+		_, err = c.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+			ID: network.GetUUID(),
+		})
+		assert.True(t, errutil.IsNotFound(err), "getting network after chown should fail")
+
+		_, err = c.GetVirtualNetwork(otherProjectCTX, &services.GetVirtualNetworkRequest{
+			ID: network.GetUUID(),
+		})
+		assert.NoError(t, err, "the new owner should be able to get the network")
+
+		_, err = ch.Chown(otherProjectCTX, &services.ChownRequest{
+			UUID: network.GetUUID(),
+			// TODO Make it reject Owner that isn't a UUID
+			// TODO Make the Owner a UUID
+			Owner: t.Name(),
+		})
+		assert.NoError(t, err, "chown back to the original owner failed")
+
+		_, err = c.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+			ID: network.GetUUID(),
+		})
+		assert.NoError(t, err, "the original owner should be able to get the network")
+	})
 }
 
 func TestIPAMGRPC(t *testing.T) {
@@ -151,7 +205,7 @@ func TestRefRelaxGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
 		c := client.NewGRPC(services.NewContrailServiceClient(conn))
 
-		project, cleanup := createProject(t, ctx, c)
+		project, cleanup := createProject(t, ctx, c, "")
 		defer cleanup(t)
 
 		policyResponse, err := c.CreateNetworkPolicy(ctx, &services.CreateNetworkPolicyRequest{
@@ -232,7 +286,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 	testGRPCServer(t, t.Name(),
 		func(ctx context.Context, conn *grpc.ClientConn) {
 			gc := client.NewGRPC(services.NewContrailServiceClient(conn))
-			project, cleanup := createProject(t, ctx, gc)
+			project, cleanup := createProject(t, ctx, gc, "")
 			defer cleanup(t)
 
 			r := &services.PropCollectionUpdateRequest{
@@ -287,7 +341,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
 	integration.AddKeystoneProjectAndUser(server.APIServer, testName)
-	authToken := restLogin(ctx, t)
+	authToken := restLogin(ctx, t, testName)
 
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
@@ -309,11 +363,15 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 
 // nolint: golint
 func createProject(
-	t *testing.T, ctx context.Context, c *client.GRPC,
+	t *testing.T, ctx context.Context, c *client.GRPC, name string,
 ) (project *models.Project, cleanup func(t *testing.T)) {
+	if name == "" {
+		name = fmt.Sprintf("%s_project", t.Name())
+	}
+
 	r, err := c.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: &models.Project{
-			Name:       fmt.Sprintf("%s_project", t.Name()),
+			Name:       name,
 			ParentType: "domain",
 			ParentUUID: integration.DefaultDomainUUID,
 			IDPerms:    &models.IdPermsType{UserVisible: true},
