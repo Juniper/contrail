@@ -9,6 +9,7 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
+	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -80,6 +81,11 @@ type IntPoolAllocator interface {
 	DeallocateInt(context.Context, string, int64) error
 }
 
+// Chowner changes owner of an object given its uuid and type.
+type Chowner interface {
+	Chown(context.Context, string, string, string) error
+}
+
 // RefRelaxer makes references not prevent the referenced resource from being deleted.
 type RefRelaxer interface {
 	RelaxRef(ctx context.Context, request *RelaxRefRequest) error
@@ -141,6 +147,7 @@ type ContrailService struct {
 	TypeValidator      *models.TypeValidator
 	InTransactionDoer  InTransactionDoer
 	IntPoolAllocator   IntPoolAllocator
+	Chowner            Chowner
 	RefRelaxer         RefRelaxer
 	UserAgentKVService UserAgentKVService
 }
@@ -160,6 +167,15 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, responses.Events)
 }
+
+// RefOperation is enum type for ref-update operation.
+type RefOperation string
+
+// RefOperation values.
+const (
+	RefOperationAdd    RefOperation = "ADD"
+	RefOperationDelete RefOperation = "DELETE"
+)
 
 // RefUpdate represents ref-update input data.
 type RefUpdate struct {
@@ -207,7 +223,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 		data.RefUUID = m.UUID
 	}
 
-	e, err := NewRefUpdateEvent(RefUpdateOption{
+	e, err := NewEventFromRefUpdate(RefUpdateOption{
 		ReferenceType: basemodels.ReferenceKind(data.Type, data.RefType),
 		FromUUID:      data.UUID,
 		ToUUID:        data.RefUUID,
@@ -263,19 +279,47 @@ func (service *ContrailService) RelaxRef(ctx context.Context, request *RelaxRefR
 
 // Chown handles chown request.
 func (service *ContrailService) Chown(ctx context.Context, request *ChownRequest) (*types.Empty, error) {
-	// TODO: implement chown logic.
+	metadata, err := service.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{UUID: request.UUID})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to retrieve metadata for UUID %v", request.UUID)
+	}
+
+	// TODO add permissions check, see vnc_cfg_api_server.py L2403
+
+	if err := service.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		return service.Chowner.Chown(ctx, request.GetUUID(), metadata.Type, request.GetOwner())
+	}); err != nil {
+		return nil, err
+	}
+
 	return &types.Empty{}, nil
 }
 
 // RESTChown handles chown request.
 func (service *ContrailService) RESTChown(c echo.Context) error {
-	// TODO: bind request
+	var data ChownRequest
+	if err := c.Bind(&data); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	}
+
+	if err := validateChownRequest(&data); err != nil {
+		return errutil.ToHTTPError(err)
+	}
+
 	ctx := c.Request().Context()
-	if _, err := service.Chown(ctx, &ChownRequest{}); err != nil {
-		return err
+	if _, err := service.Chown(ctx, &data); err != nil {
+		return errutil.ToHTTPError(err)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{})
+}
+
+func validateChownRequest(r *ChownRequest) error {
+	if r == nil || r.UUID == "" || r.Owner == "" {
+		return errutil.ErrorBadRequestf(
+			"bad request: both uuid and owner should be specified: %s, %s", r.GetUUID(), r.GetOwner())
+	}
+	return nil
 }
 
 // RESTCreateIntPool handles a POST on int-pools requests

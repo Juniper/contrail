@@ -55,11 +55,6 @@ func TestVirtualNetworkMultiChain(t *testing.T) {
 	RunTest(t, "./test_data/test_virtual_network_multi_chain.yml")
 }
 
-func TestVirtualNetworkVxLANID(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_virtual_network_vxlan_id.yml")
-}
-
 func TestSecurityGroup(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_security_group.yml")
@@ -133,11 +128,6 @@ func TestVirtualMachineInterface(t *testing.T) {
 func TestLogicalRouter(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_logical_router.yml")
-}
-
-func TestLogicalRouterVxLANID(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_logical_router_vxlan_id.yml")
 }
 
 func TestVirtualRouter(t *testing.T) {
@@ -263,6 +253,11 @@ func TestIDToFQName(t *testing.T) {
 	RunTest(t, "./test_data/test_id_to_fqname.yml")
 }
 
+func TestChown(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_chown.yml")
+}
+
 func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),
@@ -274,7 +269,7 @@ func restLogin(ctx context.Context, t *testing.T) (authToken string) {
 	)
 	restClient.InSecure = true
 	restClient.Init()
-	_, err := restClient.Login(ctx)
+	err := restClient.Login(ctx)
 	require.NoError(t, err)
 	return restClient.AuthToken
 }
@@ -292,7 +287,7 @@ func TestRESTClient(t *testing.T) {
 	)
 	restClient.InSecure = true
 	restClient.Init()
-	_, err := restClient.Login(ctx)
+	err := restClient.Login(ctx)
 	// Contact the server and print out its response.
 	assert.NoError(t, err)
 	project := models.MakeProject()
