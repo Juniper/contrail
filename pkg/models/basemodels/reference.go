@@ -8,6 +8,7 @@ type Reference interface {
 	GetTo() []string
 	GetReferredKind() string
 	GetAttribute() RefAttribute
+	SetHref(string)
 }
 
 // RefAttribute is a reference attribute.
@@ -113,3 +114,5 @@ func (g *genericReference) ToMap() map[string]interface{} {
 		"to":   g.to,
 	}
 }
+
+func (g *genericReference) SetHref(string) {}
