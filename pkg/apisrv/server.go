@@ -138,6 +138,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		MetadataGetter:     s.DBService,
 		InTransactionDoer:  s.DBService,
 		IntPoolAllocator:   s.DBService,
+		Chowner:            s.DBService,
 		RefRelaxer:         s.DBService,
 		UserAgentKVService: s.DBService,
 	}

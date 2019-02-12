@@ -119,14 +119,38 @@ func TestFQNameToIDGRPC(t *testing.T) {
 }
 
 func TestChownGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(),
-		func(ctx context.Context, conn *grpc.ClientConn) {
-			c := services.NewChownClient(conn)
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := client.NewGRPC(services.NewContrailServiceClient(conn))
 
-			// This is only a stub implementation
-			_, err := c.Chown(ctx, &services.ChownRequest{})
-			assert.NoError(t, err)
+		project, cleanup := createProject(t, ctx, c)
+		defer cleanup(t)
+
+		networkResponse, err := c.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
+			VirtualNetwork: &models.VirtualNetwork{
+				ParentType: models.KindProject,
+				ParentUUID: project.GetUUID(),
+			},
 		})
+		require.NoError(t, err, "creating network failed")
+		network := networkResponse.GetVirtualNetwork()
+
+		defer func() {
+			_, err = c.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{
+				ID: network.GetUUID(),
+			})
+			assert.NoError(t, err, "deleting network failed")
+		}()
+
+		ch := services.NewChownClient(conn)
+		// TODO Check not providing Owner or UUID as well.
+		_, err = ch.Chown(ctx, &services.ChownRequest{
+			UUID:  network.GetUUID(),
+			Owner: "e3f6d82f-9028-445c-a31f-0388f68acb24",
+		})
+		assert.NoError(t, err, "chown failed")
+
+		// TODO Check if the owner has changed.
+	})
 }
 
 func TestIPAMGRPC(t *testing.T) {
