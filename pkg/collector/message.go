@@ -10,8 +10,9 @@ import (
 
 // message types in alphabetical order
 const (
-	typeDBRequestTrace = "DBRequestTrace"
-	typeRESTAPITrace   = "RestApiTrace"
+	typeDBRequestTrace        = "DBRequestTrace"
+	typeMessageBusNotifyTrace = "MessageBusNotifyTrace"
+	typeRESTAPITrace          = "RestApiTrace"
 )
 
 type payloadDBRequestTrace struct {
@@ -19,6 +20,21 @@ type payloadDBRequestTrace struct {
 	Operation string      `json:"operation"`
 	Body      interface{} `json:"body"`
 	Error     string      `json:"error"`
+}
+
+type payloadMessageBusNotifyTrace struct {
+	RequestID string                     `json:"request_id"`
+	Operation string                     `json:"operation"`
+	Body      *bodyMessageBusNotifyTrace `json:"body"`
+	Error     string                     `json:"error"`
+}
+
+type bodyMessageBusNotifyTrace struct {
+	Operation string   `json:"oper"`
+	RequestID string   `json:"request-id"`
+	Type      string   `json:"type"`
+	UUID      string   `json:"uuid"`
+	FQName    []string `json:"fq_name"`
 }
 
 type payloadRESTAPITrace struct {
@@ -40,6 +56,26 @@ func (c *Collector) DBRequestTrace(operation string, v interface{}) {
 			Operation: operation,
 			Body:      v,
 			Error:     "",
+		},
+	})
+}
+
+// MessageBusNotifyTrace sends message with type MessageBusNotifyTrace
+func (c *Collector) MessageBusNotifyTrace(operation string, typeName string, objUUID string, objFQName []string) {
+	requestID := "req-" + uuid.NewV4().String()
+	c.sendMessage(&message{
+		SandeshType: typeMessageBusNotifyTrace,
+		Payload: &payloadMessageBusNotifyTrace{
+			RequestID: requestID,
+			Operation: operation,
+			Body: &bodyMessageBusNotifyTrace{
+				Operation: operation,
+				RequestID: requestID,
+				Type:      typeName,
+				UUID:      objUUID,
+				FQName:    objFQName,
+			},
+			Error: "",
 		},
 	})
 }

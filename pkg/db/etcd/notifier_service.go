@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
@@ -12,10 +13,11 @@ import (
 // NotifierService is a service that performs writes to etcd.
 type NotifierService struct {
 	services.BaseService
-	Path   string
-	Client *Client
-	Codec  models.Codec
-	log    *logrus.Entry
+	Path      string
+	Client    *Client
+	Codec     models.Codec
+	log       *logrus.Entry
+	collector *collector.Collector
 }
 
 // NewNotifierService creates a etcd Notifier Service.
@@ -32,4 +34,9 @@ func NewNotifierService(path string, codec models.Codec) (*NotifierService, erro
 		log:    logutil.NewLogger("etcd-notifier"),
 	}
 	return service, nil
+}
+
+// SetCollector connects service to Collector
+func (ns *NotifierService) SetCollector(c *collector.Collector) {
+	ns.collector = c
 }
