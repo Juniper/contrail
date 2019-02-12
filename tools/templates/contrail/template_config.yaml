@@ -35,8 +35,6 @@
 - type: all
   template_path: pkg/services/service.go.tmpl
 - type: all
-  template_path: pkg/services/response_href.go.tmpl
-- type: all
   template_path: pkg/services/rbac_service.go.tmpl
 - type: all
   template_path: pkg/db/etcd/etcd_notifier_service.go.tmpl
