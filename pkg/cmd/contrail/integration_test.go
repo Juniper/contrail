@@ -127,7 +127,7 @@ func testCreateProjectAndSecurityGroup(
 		require.NoError(t, err)
 		defer integration.DeleteSecurityGroup(t, hc, sgResp.SecurityGroup.UUID)
 
-		hc.Chown(t, project.UUID, sg.UUID)
+		hc.Chown(t, project.UUID, sgResp.SecurityGroup.UUID)
 
 		req := &services.UpdateProjectRequest{}
 		readJSONFile(t, demoProjectQuotaUpdatePath, &req)
