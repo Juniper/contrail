@@ -122,7 +122,7 @@ workflow:
         uuid: "test_sanitize_iip"
         name: "test_sanitize_iip"
         subnet_uuid: "e76ab7ff-c47d-4faf-aec4-80dcc3658f0b"
-        instance_ip_address: "10.0.0.1"
+        instance_ip_address: "10.0.0.2"
         network_ipam_refs:
         - to: ["domain","admin","test_ipam_sanitize_blue"]
         virtual_network_refs:
