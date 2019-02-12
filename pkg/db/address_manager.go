@@ -29,7 +29,6 @@ func (db *Service) CreateIpamSubnet(
 	}
 
 	// TODO: check allocation pool
-	// TODO: check and reserve gw
 	// TODO: check and reserve service addr
 	// TODO: check and reserve dns nameservers
 	// TODO: check allocation units
@@ -53,7 +52,33 @@ func (db *Service) CreateIpamSubnet(
 		}
 	}
 
+	err = db.allocateDefaultGateway(ctx, request.IpamSubnet, subnetUUID)
+	if err != nil {
+		return "", err
+	}
+
 	return subnetUUID, err
+}
+
+func (db *Service) allocateDefaultGateway(
+	ctx context.Context,
+	ipamSubnet *models.IpamSubnetType,
+	subnetUUID string,
+) (err error) {
+	var ipDefaultGateway string
+	if gw := ipamSubnet.GetDefaultGateway(); gw != "" {
+		ipDefaultGateway = gw
+	} else {
+		ipDefaultGateway, err = getFirstIPForGW(ipamSubnet)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = db.allocateIPForSubnetUUID(ctx, subnetUUID, ipDefaultGateway)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // CheckIfIpamSubnetExists checks if subnet with provided subnet UUID already exists
@@ -275,4 +300,13 @@ func prepareIPPools(ipamSubnet *models.IpamSubnetType, subnetUUID string) ([]*ip
 	}
 
 	return ipPools, nil
+}
+
+func getFirstIPForGW(ipamSubnet *models.IpamSubnetType) (string, error) {
+	ipNet, err := ipamSubnet.GetSubnet().Net()
+	if err != nil {
+		return "", err
+	}
+	firstIP := cidr.Inc(ipNet.IP)
+	return firstIP.String(), nil
 }

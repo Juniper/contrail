@@ -15,11 +15,12 @@ import (
 
 func TestAddressManagerAllocations(t *testing.T) {
 	tests := []struct {
-		name               string
-		ipamSubnet         *models.IpamSubnetType
-		allocationMode     string
-		expectedValidIPs   []string
-		expectedInvalidIPs []string
+		name                   string
+		ipamSubnet             *models.IpamSubnetType
+		allocationMode         string
+		expectedValidIPs       []string
+		expectedInvalidIPs     []string
+		expectedDefaultGateway string
 	}{
 		{
 			name: "Test subnet without allocations pools",
@@ -29,6 +30,7 @@ func TestAddressManagerAllocations(t *testing.T) {
 					IPPrefix:    "10.0.0.0",
 					IPPrefixLen: 24,
 				},
+				DefaultGateway: "10.0.0.5",
 			},
 			allocationMode: models.UserDefinedSubnetOnly,
 			expectedValidIPs: []string{
@@ -40,6 +42,7 @@ func TestAddressManagerAllocations(t *testing.T) {
 				"10.1.0.0",
 				"127.0.0.1",
 			},
+			expectedDefaultGateway: "10.0.0.5",
 		},
 		{
 			name: "Test subnet with any subnetUUID",
@@ -57,13 +60,14 @@ func TestAddressManagerAllocations(t *testing.T) {
 			},
 			allocationMode: models.UserDefinedSubnetOnly,
 			expectedValidIPs: []string{
-				"10.0.0.0",
+				"10.0.0.2",
 				"10.0.0.254",
 			},
 			expectedInvalidIPs: []string{
 				"10.1.0.0",
 				"127.0.0.1",
 			},
+			expectedDefaultGateway: "10.0.0.1",
 		},
 		{
 			name: "Test subnet with provided subnetUUID",
@@ -82,9 +86,10 @@ func TestAddressManagerAllocations(t *testing.T) {
 			},
 			allocationMode: models.UserDefinedSubnetOnly,
 			expectedValidIPs: []string{
-				"10.0.0.0",
+				"10.0.0.2",
 				"10.0.0.254",
 			},
+			expectedDefaultGateway: "10.0.0.1",
 		},
 		{
 			name: "Test subnet with multiple allocation pools",
@@ -106,7 +111,7 @@ func TestAddressManagerAllocations(t *testing.T) {
 			},
 			allocationMode: models.UserDefinedSubnetOnly,
 			expectedValidIPs: []string{
-				"10.0.0.0",
+				"10.0.0.2",
 				"10.0.0.254",
 				"10.0.3.0",
 				"10.0.3.254",
@@ -116,11 +121,11 @@ func TestAddressManagerAllocations(t *testing.T) {
 				"10.0.4.1",
 				"127.0.0.1",
 			},
+			expectedDefaultGateway: "10.0.0.1",
 		},
 
 		// TODO: Add test cases:
 		// TODO: check allocation pool
-		// TODO: check gw
 		// TODO: check service addr
 		// TODO: check dns nameservers
 		// TODO: check allocation units
@@ -143,6 +148,13 @@ func TestAddressManagerAllocations(t *testing.T) {
 						request.IpamSubnet,
 					})
 					virtualNetwork.AddressAllocationMode = tt.allocationMode
+
+					gwAllocated, err := db.IsIPAllocated(ctx, &ipam.IsIPAllocatedRequest{
+						IPAddress:      tt.expectedDefaultGateway,
+						VirtualNetwork: virtualNetwork,
+					})
+					assert.True(t, gwAllocated)
+					assert.NoError(t, err)
 
 					for _, invalidIP := range tt.expectedInvalidIPs {
 						_, inErr := db.IsIPAllocated(ctx, &ipam.IsIPAllocatedRequest{
@@ -216,7 +228,6 @@ func TestAddressManagerAllocations(t *testing.T) {
 }
 
 func TestAddressManagerAllocateIP(t *testing.T) {
-
 	tests := []struct {
 		name           string
 		ipamSubnet     *models.IpamSubnetType
@@ -279,7 +290,7 @@ func TestAddressManagerAllocateIP(t *testing.T) {
 				AllocationPools: []*models.AllocationPoolType{
 					{
 						Start: "10.0.0.0",
-						End:   "10.0.0.2",
+						End:   "10.0.0.3",
 					},
 				},
 			},
