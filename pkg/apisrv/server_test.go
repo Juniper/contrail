@@ -263,14 +263,19 @@ func TestIDToFQName(t *testing.T) {
 	RunTest(t, "./test_data/test_id_to_fqname.yml")
 }
 
-func restLogin(ctx context.Context, t *testing.T) (authToken string) {
+func TestChown(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_chown.yml")
+}
+
+func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),
 		server.URL()+"/keystone/v3",
-		t.Name(),
-		t.Name(),
+		projectName,
+		projectName,
 		true,
-		client.GetKeystoneScope("", "default", "", t.Name()),
+		client.GetKeystoneScope("", "default", "", projectName),
 	)
 	restClient.InSecure = true
 	restClient.Init()
