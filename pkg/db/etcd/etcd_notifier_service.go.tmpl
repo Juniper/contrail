@@ -39,7 +39,7 @@ func (ns *NotifierService) Create{{ schema.JSONSchema.GoName }}(
 	}
 
 	o := response.Get{{ schema.JSONSchema.GoName }}()
-    key := models.ResourceKey("{{ schema.ID }}", o.UUID)
+	key := models.ResourceKey("{{ schema.ID }}", o.UUID)
 
 	jsonStr, err := ns.Codec.Encode(o)
 	if err != nil {
@@ -49,6 +49,10 @@ func (ns *NotifierService) Create{{ schema.JSONSchema.GoName }}(
 	err = ns.Client.Put(ctx, key, jsonStr)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create {{ schema.JSONSchema.GoName }} with UUID %q in etcd", o.UUID)
+	}
+
+	if ns.collector != nil {
+		ns.collector.MessageBusNotifyTrace("CREATE", "{{ schema.TypeName }}", o.GetUUID(), o.GetFQName())
 	}
 
 	ns.log.WithField("uuid", o.UUID).Debug("Created {{ schema.JSONSchema.GoName }} in etcd")
@@ -64,10 +68,10 @@ func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
 	}
 
 	o := response.Get{{ schema.JSONSchema.GoName }}()
-    key := models.ResourceKey("{{ schema.ID }}", o.UUID)
+	key := models.ResourceKey("{{ schema.ID }}", o.UUID)
 
 	ns.log.WithField("uuid", o.UUID).Debug("Updating {{ schema.JSONSchema.GoName }} in etcd")
-	return response, ns.Client.InTransaction(ctx, func(ctx context.Context) error {
+	err = ns.Client.InTransaction(ctx, func(ctx context.Context) error {
 		txn := GetTxn(ctx)
 		oldData := txn.Get(key)
 		newData, err := models.UpdateData(ns.Codec, oldData, o, request.GetFieldMask())
@@ -77,11 +81,25 @@ func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
 		txn.Put(key, newData)
 		return nil
 	})
+
+	if ns.collector != nil && err == nil {
+		ns.collector.MessageBusNotifyTrace("UPDATE", "{{ schema.TypeName }}", o.GetUUID(), o.GetFQName())
+	}
+
+	return response, err
 }
 
 func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *services.Delete{{ schema.JSONSchema.GoName }}Request,
 ) (*services.Delete{{ schema.JSONSchema.GoName }}Response, error) {
+	getResp, err := ns.BaseService.Get{{ schema.JSONSchema.GoName }}(ctx, &services.Get{{ schema.JSONSchema.GoName }}Request{
+		ID:     request.ID,
+		Fields: []string{models.AccessControlListFieldUUID, models.AccessControlListFieldFQName},
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	response, err := ns.BaseService.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
 		return nil, err
@@ -90,6 +108,11 @@ func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
 	err = ns.Client.Delete(ctx, models.ResourceKey("{{ schema.ID }}", response.GetID()))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to delete {{ schema.JSONSchema.GoName }} with UUID %q in etcd", response.GetID())
+	}
+
+	if ns.collector != nil {
+		obj := getResp.{{ schema.JSONSchema.GoName }}
+		ns.collector.MessageBusNotifyTrace("DELETE", "{{ schema.TypeName }}", obj.GetUUID(), obj.GetFQName())
 	}
 
 	ns.log.WithField("uuid", response.GetID()).Debug("Deleted {{ schema.JSONSchema.GoName }} in etcd")

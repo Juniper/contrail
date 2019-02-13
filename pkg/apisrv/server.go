@@ -115,7 +115,7 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.DBService))
 
 	if viper.GetBool("server.notify_etcd") {
-		en := etcdNotifier()
+		en := s.etcdNotifier()
 		if en != nil {
 			serviceChain = append(serviceChain, en)
 		}
@@ -148,13 +148,14 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	return cs, nil
 }
 
-func etcdNotifier() services.Service {
+func (s *Server) etcdNotifier() services.Service {
 	// TODO(Michał): Make the codec configurable
 	en, err := etcdclient.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
 		return nil
 	}
+	en.SetCollector(s.Collector)
 	return en
 }
 
