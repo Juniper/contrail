@@ -31,7 +31,10 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
 
 RUN yum remove -y PyYAML
 
-RUN pip install ansible==2.4.2.0
+# Latest versions of ansible (>2.6) and lower versions (<2.5) have issues with
+# adding a new compute to a cluster. Stick with 2.5.2.0 until Ansible fixes the
+# issues. Refer: https://bugs.launchpad.net/kolla-ansible/+bug/1784123
+RUN pip install ansible==2.5.2.0
 RUN python2 -m pip install lxml saxpy gevent
 
 # logic to install vnc api client needed by multi-cloud
