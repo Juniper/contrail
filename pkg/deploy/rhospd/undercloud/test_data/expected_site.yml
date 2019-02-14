@@ -61,6 +61,6 @@ overcloud:
       default_route: 10.87.78.126
       pool:
         start: 10.87.78.51
-        end: 10.87.78.70
+        end: 10.87.78.127
       mtu: 1500
       vip: 10.1.1.1

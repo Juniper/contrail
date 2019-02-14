@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-goimports -v -w $(find . -type f -name '*.go' -not -path "./vendor/*" -not -path "*gen*")
+gofiles=$(find . -type f -name '*.go' -not -path "./vendor/*" -not -path "*gen*")
+goimports -v -w ${gofiles}
+gofmt -s -w ${gofiles}
