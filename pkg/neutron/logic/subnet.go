@@ -465,7 +465,7 @@ func (s *Subnet) dhcpOptionListToVnc() *models.DhcpOptionsListType {
 
 	var optVal []string
 	for _, nameserver := range s.DNSNameservers {
-		optVal = append(optVal, nameserver.Address)
+		optVal = append(optVal, nameserver)
 	}
 
 	return &models.DhcpOptionsListType{
@@ -503,7 +503,7 @@ func (s *Subnet) dnsServerAddressToVnc() string {
 		return s.GatewayIP
 	}
 
-	return s.DNSNameservers[0].Address
+	return s.DNSNameservers[0]
 }
 
 // allocationPoolType converts Neutron request to allocation pools VNC format.
@@ -642,7 +642,7 @@ func subnetDefaultAllocationPool(gateway, subnetCIDR string) *AllocationPool {
 
 // DNSNameServersFromVnc converts VNC DHCP Option List Type to Neutron DNS Nameservers format.
 func (s *SubnetResponse) DNSNameServersFromVnc(dhcpOptions *models.DhcpOptionsListType) {
-	s.DNSNameservers = make([]*DnsNameserver, 0)
+	s.DNSNameservers = make([]string, 0)
 	if dhcpOptions == nil {
 		return
 	}
@@ -651,10 +651,7 @@ func (s *SubnetResponse) DNSNameServersFromVnc(dhcpOptions *models.DhcpOptionsLi
 		if opt.GetDHCPOptionName() == "6" {
 			dnsServers := splitter.FindAllString(opt.GetDHCPOptionValue(), -1)
 			for _, dnsServer := range dnsServers {
-				s.DNSNameservers = append(s.DNSNameservers, &DnsNameserver{
-					Address:  dnsServer,
-					SubnetID: s.ID,
-				})
+				s.DNSNameservers = append(s.DNSNameservers, dnsServer)
 			}
 		}
 	}
