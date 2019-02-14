@@ -18,6 +18,8 @@ instances:
       webui:
       analytics:
       analytics_database:
+      analytics_alarm:
+      analytics_snmp:
       vrouter:
         SRIOV: true
         SRIOV_VF: 10

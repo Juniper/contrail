@@ -951,6 +951,50 @@ func (d *Data) interfaceToContrailAnalyticsNode(contrailAnalyticsNodes interface
 	return nil
 }
 
+func (d *Data) interfaceToContrailAnalyticsAlarmNode(contrailAnalyticsAlarmNodes interface{}, c *Cluster) error {
+	n, ok := contrailAnalyticsAlarmNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailAnalyticsAlarmNode := range n {
+		contrailAnalyticsAlarmNodeInfo := models.InterfaceToContrailAnalyticsAlarmNode(contrailAnalyticsAlarmNode)
+		// Read contrailAnalyticsAlarm role node to get the node refs information
+		contrailAnalyticsAlarmNodeData, err := c.getResource(
+			defaultContrailAnalyticsAlarmNodeResPath, contrailAnalyticsAlarmNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		contrailAnalyticsAlarmNodeInfo = models.InterfaceToContrailAnalyticsAlarmNode(
+			contrailAnalyticsAlarmNodeData)
+		d.clusterInfo.ContrailAnalyticsAlarmNodes = append(
+			d.clusterInfo.ContrailAnalyticsAlarmNodes, contrailAnalyticsAlarmNodeInfo)
+	}
+	return nil
+}
+
+func (d *Data) interfaceToContrailAnalyticsSNMPNode(contrailAnalyticsSNMPNodes interface{}, c *Cluster) error {
+	n, ok := contrailAnalyticsSNMPNodes.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, contrailAnalyticsSNMPNode := range n {
+		contrailAnalyticsSNMPNodeInfo := models.InterfaceToContrailAnalyticsSNMPNode(contrailAnalyticsSNMPNode)
+		// Read contrailAnalytics role node to get the node refs information
+		contrailAnalyticsSNMPNodeData, err := c.getResource(
+			defaultContrailAnalyticsSNMPNodeResPath, contrailAnalyticsSNMPNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		contrailAnalyticsSNMPNodeInfo = models.InterfaceToContrailAnalyticsSNMPNode(
+			contrailAnalyticsSNMPNodeData)
+		d.clusterInfo.ContrailAnalyticsSNMPNodes = append(
+			d.clusterInfo.ContrailAnalyticsSNMPNodes, contrailAnalyticsSNMPNodeInfo)
+	}
+	return nil
+}
+
 func (d *Data) interfaceToContrailWebuiNode(contrailWebuiNodes interface{}, c *Cluster) error {
 	n, ok := contrailWebuiNodes.([]interface{})
 	if !ok {
@@ -1085,6 +1129,20 @@ func (d *Data) updateNodeDetails(c *Cluster) error {
 			}
 		}
 	}
+	for _, node := range d.clusterInfo.ContrailAnalyticsAlarmNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, d); err != nil {
+				return err
+			}
+		}
+	}
+	for _, node := range d.clusterInfo.ContrailAnalyticsSNMPNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := c.getNode(nodeRef.UUID, m, d); err != nil {
+				return err
+			}
+		}
+	}
 	for _, node := range d.clusterInfo.ContrailVrouterNodes {
 		for _, nodeRef := range node.NodeRefs {
 			if err := c.getNode(nodeRef.UUID, m, d); err != nil {
@@ -1161,6 +1219,18 @@ func (d *Data) updateClusterDetails(clusterID string, c *Cluster) error {
 	// Expand analytics database node back ref
 	if analyticsDBNodes, ok := rData["contrail_analytics_database_nodes"]; ok {
 		if err = d.interfaceToContrailAnalyticsDatabaseNode(analyticsDBNodes, c); err != nil {
+			return err
+		}
+	}
+	// Expand analytics alarm node back ref
+	if analyticsAlarmNodes, ok := rData["contrail_analytics_alarm_nodes"]; ok {
+		if err = d.interfaceToContrailAnalyticsAlarmNode(analyticsAlarmNodes, c); err != nil {
+			return err
+		}
+	}
+	// Expand analytics snmp node back ref
+	if analyticsSNMPNodes, ok := rData["contrail_analytics_snmp_nodes"]; ok {
+		if err = d.interfaceToContrailAnalyticsSNMPNode(analyticsSNMPNodes, c); err != nil {
 			return err
 		}
 	}
