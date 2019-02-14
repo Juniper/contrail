@@ -31,6 +31,8 @@ instances:
       {% for webui_node in cluster.ContrailWebuiNodes %}{% for node_ref in webui_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}webui:{%endif%}{%endfor%}{%endfor%}
       {% for analytics_node in cluster.ContrailAnalyticsNodes %}{% for node_ref in analytics_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics:{%endif%}{%endfor%}{%endfor%}
       {% for analyticsdb_node in cluster.ContrailAnalyticsDatabaseNodes %}{% for node_ref in analyticsdb_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics_database:{%endif%}{%endfor%}{%endfor%}
+      {% for analytics_alarm_node in cluster.ContrailAnalyticsAlarmNodes %}{% for node_ref in analytics_alarm_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics_alarm:{%endif%}{%endfor%}{%endfor%}
+      {% for analytics_snmp_node in cluster.ContrailAnalyticsSNMPNodes %}{% for node_ref in analytics_snmp_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}analytics_snmp:{%endif%}{%endfor%}{%endfor%}
       {% for vrouter_node in cluster.ContrailVrouterNodes %}{% for node_ref in vrouter_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}vrouter:
         {%if vrouter_node.DefaultGateway != "" %}VROUTER_GATEWAY: {{ vrouter_node.DefaultGateway }}{%endif%}
         {%if vrouter_node.Type == "dpdk" %}
