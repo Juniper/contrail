@@ -443,6 +443,7 @@ func (s *Server) setupCollector() error {
 	if s.Collector, err = collector.NewCollector(cfg); err != nil {
 		return errors.Wrap(err, "failed to create collector")
 	}
+	collector.AddLoggerHook(s.Collector)
 	s.Echo.Use(middleware.BodyDump(s.Collector.RESTAPITrace))
 	return nil
 }
