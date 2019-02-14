@@ -147,9 +147,9 @@ func (m *IpamSubnetType) ValidateSubnetParams() error {
 		}
 	}
 	if m.DNSServerAddress != "" {
-		err = isIPInSubnet(subnet, m.DNSServerAddress)
+		_, err = parseIP(m.DNSServerAddress)
 		if err != nil {
-			return errutil.ErrorBadRequest("DNS server " + err.Error())
+			return errutil.ErrorBadRequest("invalid DNS server: " + err.Error())
 		}
 	}
 	return nil
