@@ -32,6 +32,10 @@ const (
 	defaultContrailAnalyticsNodeResPath         = "/" + defaultContrailAnalyticsNodeRes
 	defaultContrailAnalyticsDatabaseNodeRes     = "contrail-analytics-database-node"
 	defaultContrailAnalyticsDatabaseNodeResPath = "/" + defaultContrailAnalyticsDatabaseNodeRes
+	defaultContrailAnalyticsAlarmNodeRes        = "contrail-analytics-alarm-node"
+	defaultContrailAnalyticsAlarmNodeResPath    = "/" + defaultContrailAnalyticsAlarmNodeRes
+	defaultContrailAnalyticsSnmpNodeRes         = "contrail-analytics-snmp-node"
+	defaultContrailAnalyticsSnmpNodeResPath     = "/" + defaultContrailAnalyticsSnmpNodeRes
 	defaultContrailVrouterNodeRes               = "contrail-vrouter-node"
 	defaultContrailVrouterNodeResPath           = "/" + defaultContrailVrouterNodeRes
 	defaultContrailMCGWNodeRes                  = "contrail-multicloud-gw-node"

@@ -18,6 +18,8 @@ instances:
       webui:
       analytics:
       analytics_database:
+      analytics_alarm:
+      analytics_snmp:
       vrouter:
         CPU_CORE_MASK: 0xff
         DPDK_UIO_DRIVER: vfio-pci
