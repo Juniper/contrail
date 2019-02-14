@@ -151,7 +151,7 @@ func getPvtKeyIfValid(kp *models.Keypair) ([]byte, error) {
 	if _, err := os.Stat(filepath.Join(kp.SSHKeyPath, kp.Name)); err != nil {
 		return nil, errors.New("ssh private key path given in keypair is not valid")
 	}
-	pvtKeyPem, err := common.GetContent("file://" + kp.SSHKeyPath + kp.Name)
+	pvtKeyPem, err := common.GetContent("file://" + filepath.Join(kp.SSHKeyPath, kp.Name))
 	if err != nil {
 		return nil, err
 	}
