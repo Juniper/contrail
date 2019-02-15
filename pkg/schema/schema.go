@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/format"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 //Version is version for schema format.
@@ -152,26 +152,21 @@ type Schema struct {
 	Title                 string                    `yaml:"title" json:"title,omitempty"`
 	Table                 string                    `yaml:"table" json:"table,omitempty"`
 	Description           string                    `yaml:"description" json:"description,omitempty"`
-	Parents               map[string]*Reference     `yaml:"-" json:"parents,omitempty"`
-	ParentsSlice          yaml.MapSlice             `yaml:"parents" json:"-"`
-	References            map[string]*Reference     `yaml:"-" json:"references,omitempty"`
+	Parents               map[string]*Reference     `yaml:"parents" json:"parents,omitempty"`
+	References            map[string]*Reference     `yaml:"references" json:"references,omitempty"`
 	BackReferences        map[string]*BackReference `yaml:"-" json:"back_references,omitempty"`
-	ReferencesSlice       yaml.MapSlice             `yaml:"references" json:"-"`
 	Prefix                string                    `yaml:"prefix" json:"prefix,omitempty"`
-	JSONSchema            *JSONSchema               `yaml:"-" json:"schema,omitempty"`
-	JSONSchemaSlice       yaml.MapSlice             `yaml:"schema" json:"-"`
-	Definitions           map[string]*JSONSchema    `yaml:"-" json:"-"`
-	DefinitionsSlice      map[string]yaml.MapSlice  `yaml:"definitions" json:"-"`
+	JSONSchema            *JSONSchema               `yaml:"schema" json:"schema,omitempty"`
+	Definitions           map[string]*JSONSchema    `yaml:"definitions" json:"-"`
 	Extends               []string                  `yaml:"extends" json:"extends,omitempty"`
 	Columns               ColumnConfigs             `yaml:"-" json:"-"`
 	TypeName              string                    `yaml:"-" json:"-"`
 	Path                  string                    `yaml:"-" json:"-"`
 	PluralPath            string                    `yaml:"-" json:"-"`
-	Children              []*BackReference          `yaml:"-" json:"-"`
+	Children              map[string]*BackReference `yaml:"-" json:"-"`
 	Index                 int                       `yaml:"-" json:"-"`
 	ParentOptional        bool                      `yaml:"-" json:"-"`
 	IsConfigRootInParents bool                      `yaml:"-" json:"-"`
-	HasParents            bool                      `yaml:"-" json:"-"`
 	DefaultParent         *Reference                `yaml:"-" json:"-"`
 }
 
@@ -189,7 +184,6 @@ type JSONSchema struct {
 	Type              string                 `yaml:"type" json:"type,omitempty"`
 	Permission        []string               `yaml:"permission" json:"permission,omitempty"`
 	Properties        map[string]*JSONSchema `yaml:"properties" json:"properties,omitempty"`
-	PropertiesOrder   []string               `yaml:"-" json:"propertiesOrder,omitempty"`
 	OrderedProperties []*JSONSchema          `yaml:"-" json:"-"`
 	Enum              []string               `yaml:"enum" json:"enum,omitempty"`
 	Minimum           interface{}            `yaml:"minimum" json:"minimum,omitempty"`
@@ -255,8 +249,7 @@ type Reference struct {
 	Derived     bool          `yaml:"derived" json:"derived,omitempty"`
 	RefType     string        `yaml:"-" json:"-"`
 	Columns     ColumnConfigs `yaml:"-" json:"-"`
-	Attr        *JSONSchema   `yaml:"-" json:"attr"`
-	AttrSlice   yaml.MapSlice `yaml:"attr" json:"-"`
+	Attr        *JSONSchema   `yaml:"attr" json:"attr"`
 	LinkTo      *Schema       `yaml:"-" json:"-"`
 	Ref         string        `yaml:"$ref" json:"$ref,omitempty"`
 }
@@ -338,11 +331,14 @@ func (s *JSONSchema) Update(s2 *JSONSchema) {
 		}
 	}
 	s.Required = append(s2.Required, s.Required...)
-	s.PropertiesOrder = append(s2.PropertiesOrder, s.PropertiesOrder...)
-	s.OrderedProperties = []*JSONSchema{}
-	for _, id := range s.PropertiesOrder {
-		s.OrderedProperties = append(s.OrderedProperties, s.Properties[id])
+	var props []*JSONSchema
+	for _, p := range s2.OrderedProperties {
+		props = append(props, s.Properties[p.ID])
 	}
+	for _, p := range s.OrderedProperties {
+		props = append(props, s.Properties[p.ID])
+	}
+	s.OrderedProperties = props
 	if s.Type == "" {
 		s.Type = s2.Type
 	}
@@ -375,12 +371,8 @@ func (s *JSONSchema) Walk(do func(s2 *JSONSchema) error) error {
 	if err != nil {
 		return err
 	}
-	if s.Properties == nil {
-		return nil
-	}
 	for _, property := range s.Properties {
-		err = property.Walk(do)
-		if err != nil {
+		if err = property.Walk(do); err != nil {
 			return err
 		}
 	}
@@ -655,7 +647,7 @@ func (api *API) resolveAllSQL() error {
 func (api *API) resolveRelation(linkToSchema *Schema, reference *Reference) error {
 	linkTo := linkToSchema.ID
 	reference.GoName = format.SnakeToCamel(linkTo)
-	reference.Attr = mapSlice(reference.AttrSlice).JSONSchema()
+	reference.Attr.applyOverridenTypes()
 
 	reference.LinkTo = linkToSchema
 	ref := reference.Ref
@@ -674,6 +666,103 @@ func (api *API) resolveRelation(linkToSchema *Schema, reference *Reference) erro
 		return err
 	}
 	return definition.resolveSQL([]string{}, "", "", "", "", &reference.Columns)
+}
+
+// UnmarshalYAML unmarshals Schema and sets default parent.
+func (s *Schema) UnmarshalYAML(unmarshal func(i interface{}) error) (err error) {
+	type Alias Schema
+	a := struct {
+		Alias `yaml:",inline"`
+	}{}
+	if err := unmarshal(&a); err != nil {
+		return err
+	}
+	*s = Schema(a.Alias)
+	if s.DefaultParent, err = s.getDefaultParent(unmarshal); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Schema) getDefaultParent(unmarshal func(i interface{}) error) (*Reference, error) {
+	p := struct {
+		ParentsSlice yaml.MapSlice `yaml:"parents"`
+	}{}
+	if err := unmarshal(&p); err != nil {
+		return nil, err
+	}
+	if len(p.ParentsSlice) > 0 {
+		parentKey, ok := p.ParentsSlice[0].Key.(string)
+		if !ok {
+			return nil, errors.Errorf("invalid parent key: %v", p.ParentsSlice[0].Key)
+		}
+		return s.Parents[parentKey], nil
+	}
+	return nil, nil
+}
+
+// UnmarshalYAML unmarshals JSONSchema and preserves properties' order.
+func (s *JSONSchema) UnmarshalYAML(unmarshal func(i interface{}) error) (err error) {
+	type Alias JSONSchema
+	a := struct {
+		Alias `yaml:",inline"`
+	}{}
+	if err := unmarshal(&a); err != nil {
+		return err
+	}
+	*s = JSONSchema(a.Alias)
+	var op []*JSONSchema
+	if op, err = s.makeOrderedProperties(unmarshal); err != nil {
+		return err
+	}
+	s.OrderedProperties = op
+	s.applyOverridenTypes()
+	return nil
+}
+
+func (s *JSONSchema) makeOrderedProperties(unmarshal func(i interface{}) error) ([]*JSONSchema, error) {
+	p := struct {
+		PropertiesSlice yaml.MapSlice `yaml:"properties"`
+	}{}
+	if err := unmarshal(&p); err != nil {
+		return nil, err
+	}
+	var op []*JSONSchema
+	for _, p := range p.PropertiesSlice {
+		key, ok := p.Key.(string)
+		if !ok {
+			return nil, errors.Errorf("got invalid property key, string expected, got: %+v", p.Key)
+		}
+		op = append(op, s.Properties[key])
+	}
+	return op, nil
+}
+
+var overridenTypes = map[string]struct{}{
+	"types.json#/definitions/AccessType":       {},
+	"types.json#/definitions/L4PortType":       {},
+	"types.json#/definitions/IpAddressType":    {},
+	"types.json#/definitions/MacAddressesType": {},
+}
+
+// JSONSchema creates JSONSchema using mapSlice data.
+func (s *JSONSchema) applyOverridenTypes() {
+	if s == nil {
+		return
+	}
+	for key, property := range s.Properties {
+		// TODO: remove this workaround when js is updated for zero-value required properties
+		_, present := overridenTypes[property.Ref]
+
+		if (present || property.Type == "boolean") &&
+			(property.Presence == "required" || property.Presence == "true") {
+			logrus.Warnf("property %s should be optional as it may have zero-value. Update js.", key)
+			logrus.Warnf("JSONSCHEMA: %v", property)
+			property.Presence = "optional"
+		}
+		// TODO(j.woloch) investigate proper location of this logic
+		property.ID = key
+	}
 }
 
 func makeShort(id string) string {
@@ -711,56 +800,52 @@ func (api *API) resolveAllRelation() error {
 		if s.Type == AbstractType {
 			continue
 		}
-		s.References = map[string]*Reference{}
-
-		s.Parents = map[string]*Reference{}
-		for _, m := range mapSlice(s.ReferencesSlice) {
-			linkTo := m.Key.(string)                          //nolint: errcheck
-			referenceMap := mapSlice(m.Value.(yaml.MapSlice)) //nolint: errcheck
-			reference := referenceMap.Reference()
-			s.References[linkTo] = reference
-			linkToSchema := api.SchemaByID(linkTo)
-			if linkToSchema == nil {
-				return fmt.Errorf("missing linked schema '%s' for reference '%v' in schema %v [%v]",
-					linkTo, linkTo, s.ID, s.FileName)
-			}
-			linkToSchema.BackReferences[s.ID] = &BackReference{
-				LinkTo:      s,
-				Description: reference.Description,
-			}
-			if err := api.resolveRelation(linkToSchema, reference); err != nil {
+		for linkTo, reference := range s.References {
+			reference.Table = ReferenceTableName(RefPrefix, s.Table, linkTo)
+			referenceSchema, err := api.resolveReference(s, reference, linkTo)
+			if err != nil {
 				return err
 			}
-			reference.Table = ReferenceTableName(RefPrefix, s.Table, linkTo)
+			referenceSchema.BackReferences[s.ID] = &BackReference{LinkTo: s, Description: reference.Description}
 		}
-		s.IsConfigRootInParents = false
-		for _, m := range mapSlice(s.ParentsSlice) {
-			linkTo := m.Key.(string) //nolint: errcheck
+		for linkTo, parent := range s.Parents {
 			if linkTo == configRoot {
 				s.IsConfigRootInParents = true
-				s.ParentOptional = true
 				continue
 			}
-			referenceMap := mapSlice(m.Value.(yaml.MapSlice)) //nolint: errcheck
-			reference := referenceMap.Reference()
-			s.DefaultParent = reference
-			if reference.Presence == optional {
+			if parent.Presence == optional {
 				s.ParentOptional = true
 			}
-			s.Parents[linkTo] = reference
-			reference.Table = ReferenceTableName(ParentPrefix, s.Table, linkTo)
-			parentSchema := api.SchemaByID(linkTo)
-			if parentSchema == nil {
-				return fmt.Errorf("parent schema %s not found", linkTo)
-			}
-			if err := api.resolveRelation(parentSchema, reference); err != nil {
+			s.DefaultParent = parent
+			parent.Table = ReferenceTableName(ParentPrefix, s.Table, linkTo)
+			parentSchema, err := api.resolveReference(s, parent, linkTo)
+			if err != nil {
 				return err
 			}
-			parentSchema.Children = append(parentSchema.Children, &BackReference{LinkTo: s, Description: reference.Description})
+			parentSchema.Children[s.ID] = &BackReference{LinkTo: s, Description: parent.Description}
 		}
-		s.HasParents = len(s.Parents) > 0
+		if s.IsConfigRootInParents {
+			delete(s.Parents, configRoot)
+		}
 	}
 	return nil
+}
+
+// HasParents returns whether schema has any parent.
+func (s *Schema) HasParents() bool {
+	return len(s.Parents) > 0
+}
+
+func (api *API) resolveReference(from *Schema, to *Reference, toID string) (*Schema, error) {
+	linkToSchema := api.SchemaByID(toID)
+	if linkToSchema == nil {
+		return nil, fmt.Errorf("missing linked schema '%s' for reference '%v' in schema %v [%v]",
+			toID, toID, from.ID, from.FileName)
+	}
+	if err := api.resolveRelation(linkToSchema, to); err != nil {
+		return nil, err
+	}
+	return linkToSchema, nil
 }
 
 func (api *API) resolveIndex() error {
@@ -777,7 +862,7 @@ func (api *API) resolveIndex() error {
 			index++
 		}
 		index = index + propertyIndexOffset
-		for _, key := range mapSlice(s.ReferencesSlice).keys() {
+		for _, key := range sortedReferenceIDs(s.References) {
 			reference := s.References[key]
 			reference.Index = index
 			index++
@@ -801,6 +886,15 @@ func (api *API) resolveIndex() error {
 	return nil
 }
 
+func sortedReferenceIDs(refs map[string]*Reference) []string {
+	var keys []string
+	for k := range refs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 func (api *API) resolveAllGoName() error {
 	for _, s := range api.Schemas {
 		err := s.JSONSchema.resolveGoName(s.ID)
@@ -819,10 +913,20 @@ func (api *API) resolveExtend() error {
 				continue
 			}
 			s.JSONSchema.Update(baseSchema.JSONSchema)
-			s.ReferencesSlice = append(s.ReferencesSlice, baseSchema.ReferencesSlice...)
+			s.extendReferences(baseSchema)
 		}
 	}
 	return nil
+}
+
+func (s *Schema) extendReferences(by *Schema) {
+	for k, v := range by.References {
+		if s.References == nil {
+			s.References = map[string]*Reference{}
+		}
+		c := *v
+		s.References[k] = &c
+	}
 }
 
 func (api *API) resolveAllJSONTag() error {
@@ -905,12 +1009,12 @@ func (api *API) loadSchemaFromPath(path string) (*Schema, error) {
 	if info.ModTime().After(api.Timestamp) {
 		api.Timestamp = info.ModTime()
 	}
-	logrus.Printf("Loading schema from %v - %v", path, schema.ID)
+	logrus.Debugf("Loading schema from %v - %v", path, schema.ID)
 	return &schema, nil
 }
 
 func (api *API) readOverrides(dir string) (*Schema, error) {
-	var schemaOverrides = &Schema{DefinitionsSlice: map[string]yaml.MapSlice{}}
+	s := &Schema{}
 	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if (f != nil && f.IsDir()) || err != nil {
 			if os.IsNotExist(err) {
@@ -921,25 +1025,27 @@ func (api *API) readOverrides(dir string) (*Schema, error) {
 		// This is as a Warning because overrides fixes schema problems that should be fixed in upstream schema definition
 		logrus.Warnf("Reading overrides from %v file", path)
 		schema, err := api.loadSchemaFromPath(path)
-		if err == nil && len(schema.DefinitionsSlice) > 0 {
-			for key, def := range schema.DefinitionsSlice {
-				schemaOverrides.DefinitionsSlice[key] = def
+		if err == nil && len(schema.Definitions) > 0 {
+			if s.Definitions == nil {
+				s.Definitions = map[string]*JSONSchema{}
+			}
+			for key, def := range schema.Definitions {
+				s.Definitions[key] = def
 			}
 		}
 		return err
 	})
-	return schemaOverrides, err
+	return s, err
 }
 
 func processSchema(schema, overrides *Schema, api *API) error {
-	schema.JSONSchema = mapSlice(schema.JSONSchemaSlice).JSONSchema()
-	schema.Definitions = map[string]*JSONSchema{}
-	for key, definitionSlice := range schema.DefinitionsSlice {
-		schema.Definitions[key] = mapSlice(definitionSlice).JSONSchema()
-		overDef, ok := overrides.DefinitionsSlice[key]
+	schema.JSONSchema.applyOverridenTypes()
+	for key := range schema.Definitions {
+		overDef, ok := overrides.Definitions[key]
 		if ok {
-			schema.Definitions[key] = mapSlice(overDef).JSONSchema()
+			schema.Definitions[key] = overDef
 		}
+		schema.Definitions[key].applyOverridenTypes()
 	}
 	schema.TypeName = strings.Replace(schema.ID, "_", "-", -1)
 	if schema.Table == "" {
@@ -948,6 +1054,7 @@ func processSchema(schema, overrides *Schema, api *API) error {
 	schema.Path = schema.TypeName
 	schema.PluralPath = strings.Replace(schema.Plural, "_", "-", -1)
 	schema.BackReferences = map[string]*BackReference{}
+	schema.Children = map[string]*BackReference{}
 	if schema.ID != "" {
 		api.Schemas = append(api.Schemas, schema)
 	}
