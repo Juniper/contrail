@@ -23,7 +23,6 @@ schema:
       presence: required
       description: "UnderCloud VM details"
       $ref: "rhospd_types.json#/definitions/UnderCloudVMInfo"
-  propertiesOrder: []
   required: []
   type: object
 singular: rhospd_undercloud_node

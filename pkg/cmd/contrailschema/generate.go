@@ -11,15 +11,21 @@ import (
 	"github.com/Juniper/contrail/pkg/schema"
 )
 
-var option = &schema.TemplateOption{}
+type templateOption struct {
+	SchemasDir        string
+	TemplateConfPath  string
+	SchemaOutputPath  string
+	OpenAPIOutputPath string
+}
+
+var option = templateOption{}
 
 func init() {
 	ContrailSchema.AddCommand(generateCmd)
 	generateCmd.Flags().StringVarP(&option.SchemasDir, "schemas", "s", "", "Schema Directory")
 	generateCmd.Flags().StringVarP(&option.TemplateConfPath, "templates", "t", "", "Template Configuration")
-	generateCmd.Flags().StringVarP(&option.OutputDir, "output-dir", "", "./", "output dir")
 	generateCmd.Flags().StringVarP(&option.SchemaOutputPath, "schema-output", "", "", "Schema Output path")
-	generateCmd.Flags().StringVarP(&option.OpenapiOutputPath, "openapi-output", "", "", "OpenAPI Output path")
+	generateCmd.Flags().StringVarP(&option.OpenAPIOutputPath, "openapi-output", "", "", "OpenAPI Output path")
 }
 
 func generateCode() {
@@ -33,7 +39,7 @@ func generateCode() {
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	if err = schema.ApplyTemplates(api, templateConf, option); err != nil {
+	if err = schema.ApplyTemplates(api, templateConf); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 
@@ -46,7 +52,7 @@ func generateCode() {
 		logutil.FatalWithStackTrace(err)
 	}
 
-	if err = fileutil.SaveFile(option.OpenapiOutputPath, openapi); err != nil {
+	if err = fileutil.SaveFile(option.OpenAPIOutputPath, openapi); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 }

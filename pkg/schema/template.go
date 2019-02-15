@@ -24,17 +24,8 @@ type TemplateConfig struct {
 	OutputPath   string `yaml:"output_path"`
 }
 
-// TemplateOption contains options for template.
-type TemplateOption struct {
-	SchemasDir        string
-	TemplateConfPath  string
-	SchemaOutputPath  string
-	OpenapiOutputPath string
-	OutputDir         string
-}
-
 // ApplyTemplates writes files with content generated from templates.
-func ApplyTemplates(api *API, config []*TemplateConfig, option *TemplateOption) error {
+func ApplyTemplates(api *API, config []*TemplateConfig) error {
 	if err := registerCustomFilters(); err != nil {
 		return err
 	}
@@ -46,7 +37,7 @@ func ApplyTemplates(api *API, config []*TemplateConfig, option *TemplateOption) 
 		if !tc.isOutdated(api) {
 			continue
 		}
-		err := tc.apply(api, option)
+		err := tc.apply(api)
 		if err != nil {
 			return err
 		}
@@ -76,7 +67,7 @@ func (tc *TemplateConfig) isOutdated(api *API) bool {
 }
 
 // nolint: gocyclo
-func (tc *TemplateConfig) apply(api *API, option *TemplateOption) error {
+func (tc *TemplateConfig) apply(api *API) error {
 	tpl, err := tc.load()
 	if err != nil {
 		return err
@@ -85,8 +76,9 @@ func (tc *TemplateConfig) apply(api *API, option *TemplateOption) error {
 		return err
 	}
 	if tc.TemplateType == "all" {
-		output, err := tpl.Execute(pongo2.Context{"schemas": api.Schemas, "types": api.Types,
-			"option": option,
+		output, err := tpl.Execute(pongo2.Context{
+			"schemas": api.Schemas,
+			"types":   api.Types,
 		})
 		if err != nil {
 			return err
@@ -101,7 +93,7 @@ func (tc *TemplateConfig) apply(api *API, option *TemplateOption) error {
 			typeJSONSchema.GoName = typeName
 			schemas = append(schemas, &Schema{
 				JSONSchema:     typeJSONSchema,
-				Children:       []*BackReference{},
+				Children:       map[string]*BackReference{},
 				BackReferences: map[string]*BackReference{},
 			})
 		}
@@ -111,7 +103,9 @@ func (tc *TemplateConfig) apply(api *API, option *TemplateOption) error {
 			}
 			schemas = append(schemas, schema)
 		}
-		output, err := tpl.Execute(pongo2.Context{"schemas": schemas, "option": option})
+		output, err := tpl.Execute(pongo2.Context{
+			"schemas": schemas,
+		})
 		if err != nil {
 			return err
 		}
