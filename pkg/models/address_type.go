@@ -1,17 +1,20 @@
 package models
 
-// Non-reference security group names.
 const (
+	// Non-reference security group names.
 	AnySecurityGroup         = "any"
 	LocalSecurityGroup       = "local"
 	UnspecifiedSecurityGroup = ""
+
+	IPv4ZeroValue = "0.0.0.0"
+	IPv6ZeroValue = "::"
 )
 
 // AllIPv4Addresses returns an AddressType with a subnet of all possible IPv4 addresses.
 func AllIPv4Addresses() *AddressType {
 	return &AddressType{
 		Subnet: &SubnetType{
-			IPPrefix:    "0.0.0.0",
+			IPPrefix:    IPv4ZeroValue,
 			IPPrefixLen: 0,
 		},
 	}
@@ -21,7 +24,7 @@ func AllIPv4Addresses() *AddressType {
 func AllIPv6Addresses() *AddressType {
 	return &AddressType{
 		Subnet: &SubnetType{
-			IPPrefix:    "::",
+			IPPrefix:    IPv6ZeroValue,
 			IPPrefixLen: 0,
 		},
 	}
