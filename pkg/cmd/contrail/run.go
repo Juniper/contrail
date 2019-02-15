@@ -13,6 +13,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apisrv"
+	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
@@ -52,6 +53,7 @@ func StartProcesses(wg *sync.WaitGroup) {
 	MaybeStart("agent", startAgent, wg)
 	MaybeStart("sync", startSync, wg)
 	MaybeStart("compilation", startCompilationService, wg)
+	MaybeStart("collector", startCollectorWatcher, wg)
 }
 
 //MaybeStart runs process if it is enabled.
@@ -186,5 +188,21 @@ func startAgent(_ *sync.WaitGroup) {
 		if err := a.Watch(context.Background()); err != nil {
 			logrus.Warn(err)
 		}
+	}
+}
+
+func startCollectorWatcher(_ *sync.WaitGroup) {
+	cfg := &collector.Config{}
+	if err := viper.UnmarshalKey("collector", cfg); err != nil {
+		logrus.WithError(err).Warn("failed to unmarshal collector config")
+		return
+	}
+	c, err := collector.NewCollector(cfg)
+	if err != nil {
+		logrus.WithError(err).Warn("failed to create collector")
+		return
+	}
+	if err = collector.NewMessageBusProcessor(c); err != nil {
+		logrus.WithError(err).Warn("failed to create collector")
 	}
 }

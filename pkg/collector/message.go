@@ -28,31 +28,36 @@ type payloadRESTAPITrace struct {
 }
 
 type payloadVNCAPIMessage struct {
-	Message string `json:"api_msg"`
+	messageType string
+	Message     string `json:"api_msg"`
 }
 
 // RESTAPITrace sends message with type RestApiTrace
-func (c *Collector) RESTAPITrace(ctx echo.Context, reqBody, resBody []byte) {
+func RESTAPITrace(ctx echo.Context, reqBody, resBody []byte) MessageBuilder {
 	if ctx.Request().Method == "GET" {
-		return
+		return NewEmptyMessageBuilder()
 	}
-	c.sendMessage(&message{
+	return &payloadRESTAPITrace{
+		RequestID:    "req-" + uuid.NewV4().String(),
+		URL:          ctx.Request().URL.String(),
+		Method:       ctx.Request().Method,
+		RequestData:  string(reqBody),
+		Status:       strconv.Itoa(ctx.Response().Status) + " " + http.StatusText(ctx.Response().Status),
+		ResponseBody: string(resBody),
+		RequestError: "",
+	}
+}
+
+func (p *payloadRESTAPITrace) Build() *Message {
+	return &Message{
 		SandeshType: typeRESTAPITrace,
-		Payload: &payloadRESTAPITrace{
-			RequestID:    "req-" + uuid.NewV4().String(),
-			URL:          ctx.Request().URL.String(),
-			Method:       ctx.Request().Method,
-			RequestData:  string(reqBody),
-			Status:       strconv.Itoa(ctx.Response().Status) + " " + http.StatusText(ctx.Response().Status),
-			ResponseBody: string(resBody),
-			RequestError: "",
-		},
-	})
+		Payload:     p,
+	}
 }
 
 // VNCAPIMessage sends message with type VncApiDebug, VncApiInfo, VncApiNotice or
 // VncApiError depends on level
-func (c *Collector) VNCAPIMessage(entry *logrus.Entry) {
+func VNCAPIMessage(entry *logrus.Entry) MessageBuilder {
 	var messageType string
 	switch entry.Level {
 	case logrus.DebugLevel:
@@ -64,11 +69,15 @@ func (c *Collector) VNCAPIMessage(entry *logrus.Entry) {
 	default:
 		messageType = typeVNCAPIError
 	}
+	return &payloadVNCAPIMessage{
+		messageType: messageType,
+		Message:     entry.Message,
+	}
+}
 
-	c.sendMessage(&message{
-		SandeshType: messageType,
-		Payload: &payloadVNCAPIMessage{
-			Message: entry.Message,
-		},
-	})
+func (p *payloadVNCAPIMessage) Build() *Message {
+	return &Message{
+		SandeshType: p.messageType,
+		Payload:     p,
+	}
 }

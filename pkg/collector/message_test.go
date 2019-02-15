@@ -20,12 +20,12 @@ func (m *mockEcho) Response() *echo.Response {
 	return m.response
 }
 
-type mockSender struct {
-	message *message
+type mockCollector struct {
+	message *Message
 }
 
-func (s *mockSender) sendMessage(m *message) {
-	s.message = m
+func (c *mockCollector) Send(b MessageBuilder) {
+	c.message = b.Build()
 }
 
 func TestRESTAPITrace(t *testing.T) {
@@ -55,11 +55,6 @@ func TestRESTAPITrace(t *testing.T) {
 		},
 	}
 
-	c, err := NewCollector(&Config{})
-	assert.NoError(t, err)
-	s := &mockSender{}
-	c.sender = s
-
 	e := echo.New()
 
 	for _, tt := range tests {
@@ -74,10 +69,10 @@ func TestRESTAPITrace(t *testing.T) {
 				response: resp,
 			}
 
-			c.RESTAPITrace(mockEchoContent, []byte(tt.request), []byte(tt.response))
+			message := RESTAPITrace(mockEchoContent, []byte(tt.request), []byte(tt.response)).Build()
 
-			assert.Equal(t, s.message.SandeshType, typeRESTAPITrace)
-			m, ok := s.message.Payload.(*payloadRESTAPITrace)
+			assert.Equal(t, message.SandeshType, typeRESTAPITrace)
+			m, ok := message.Payload.(*payloadRESTAPITrace)
 			assert.True(t, ok)
 			assert.Equal(t, m.URL, tt.url)
 			assert.Equal(t, m.Method, tt.method)
@@ -124,28 +119,24 @@ func TestVNCAPIMessage(t *testing.T) {
 		},
 	}
 
-	c, err := NewCollector(&Config{})
-	assert.NoError(t, err)
-	s := &mockSender{}
-	c.sender = s
-
+	c := &mockCollector{}
 	AddLoggerHook(c)
 	logrus.SetLevel(logrus.DebugLevel)
 
 	for _, tt := range tests {
 		t.Run("APIMessage", func(t *testing.T) {
 			tt.call()
-			assert.NotNil(t, s.message)
-			assert.Equal(t, s.message.SandeshType, tt.level)
-			m, ok := s.message.Payload.(*payloadVNCAPIMessage)
+			assert.NotNil(t, c.message)
+			assert.Equal(t, c.message.SandeshType, tt.level)
+			m, ok := c.message.Payload.(*payloadVNCAPIMessage)
 			assert.True(t, ok)
 			assert.Equal(t, m.Message, tt.message)
 		})
 	}
 
-	s.message = nil
+	c.message = nil
 	ignoreAPIMessage().Errorf("message")
-	assert.Nil(t, s.message)
+	assert.Nil(t, c.message)
 	ignoreAPIMessage().Warn("warning message")
-	assert.Nil(t, s.message)
+	assert.Nil(t, c.message)
 }
