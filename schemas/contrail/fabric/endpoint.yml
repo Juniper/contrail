@@ -62,6 +62,16 @@ schema:
       view:
       - create
       - detail
+    username:
+      description: Username to access the endpoint
+      operations: CRUD
+      presence: optional
+      type: string
+    password:
+      description: Password to access the endpoint
+      operations: CRUD
+      presence: optional
+      type: string
   required: []
   type: object
 singular: endpoint
