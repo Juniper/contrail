@@ -79,3 +79,27 @@ func (sv *Service) getProjectFromKeystone(ctx context.Context, id string) (*keys
 
 	return p, nil
 }
+
+// CreateProject creates the project and ensures its default security group exists.
+func (sv *Service) CreateProject(
+	ctx context.Context, request *services.CreateProjectRequest,
+) (*services.CreateProjectResponse, error) {
+	var response *services.CreateProjectResponse
+	err := sv.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		var err error
+		response, err = sv.BaseService.CreateProject(ctx, request)
+		if err != nil {
+			return err
+		}
+
+		project := response.GetProject()
+		defaultSG := project.DefaultSecurityGroup()
+
+		// TODO Don't create it if it already exists.
+		_, err = sv.WriteService.CreateSecurityGroup(ctx, &services.CreateSecurityGroupRequest{
+			SecurityGroup: defaultSG,
+		})
+		return err
+	})
+	return response, err
+}
