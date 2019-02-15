@@ -56,17 +56,14 @@ func TestReferencesExtendBase(t *testing.T) {
 
 	base := api.SchemaByID("base")
 	require.NotNil(t, base, "Base object can't be <nil>")
-	assert.Equal(t, 1, len(base.ReferencesSlice))
-	assert.Equal(t, 0, len(base.References)) // References in base schemas are not processed
+	assert.Equal(t, 1, len(base.References))
 
 	zeroRefObj := api.SchemaByID("derived_object")
 	require.NotNil(t, zeroRefObj, "derived_object schema shouldn't be <nil>")
-	assert.Equal(t, 1, len(zeroRefObj.ReferencesSlice))
 	assert.Equal(t, 1, len(zeroRefObj.References))
 
 	ownRefObj := api.SchemaByID("derived_own_refs_object")
 	require.NotNil(t, ownRefObj, "derived_own_refs_object schema shouldn't be <nil>")
-	assert.Equal(t, 2, len(ownRefObj.ReferencesSlice))
 	assert.Equal(t, 2, len(ownRefObj.References))
 }
 
