@@ -19,7 +19,6 @@ plural: contrail_ztp_dhcp_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: contrail_ztp_dhcp_node

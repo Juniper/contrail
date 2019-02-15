@@ -19,7 +19,6 @@ plural: kubernetes_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: kubernetes_node

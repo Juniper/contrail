@@ -19,7 +19,6 @@ plural: mesos_agent_private_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: mesos_agent_private_node
