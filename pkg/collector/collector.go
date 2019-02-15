@@ -2,7 +2,7 @@ package collector
 
 /* to use add to config.yml a section:
 collector:
-  enable: true
+  enabled: true
   url: http://collectorproxyhost:port/url
 */
 
@@ -24,24 +24,24 @@ type message struct {
 	Payload     interface{} `json:"payload"`
 }
 
-type sender interface {
-	sendMessage(m *message)
+type messager interface {
+	Get() *message
 }
 
 // Config represents parameters of Сollector in the config file
 type Config struct {
-	Enable bool
-	URL    string
+	Enabled bool
+	URL     string
 }
 
 // Collector represent interface to Json2Sandesh proxy
-type Collector struct {
-	sender
+type Collector interface {
+	Send(m messager)
 }
 
 type noSender struct{}
 
-func (*noSender) sendMessage(m *message) {}
+func (*noSender) Send(i messager) {}
 
 type proxySender struct {
 	url    string
@@ -49,23 +49,15 @@ type proxySender struct {
 }
 
 // NewCollector makes a collector
-func NewCollector(cfg *Config) (*Collector, error) {
-	if !cfg.Enable {
+func NewCollector(cfg *Config) (Collector, error) {
+	if !cfg.Enabled {
 		ignoreAPIMessage().Warn("collector is disabled")
-		return &Collector{
-			sender: &noSender{},
-		}, nil
+		return &noSender{}, nil
 	}
-	s, err := newProxySender(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return &Collector{
-		sender: s,
-	}, nil
+	return newProxySender(cfg)
 }
 
-func newProxySender(cfg *Config) (sender, error) {
+func newProxySender(cfg *Config) (Collector, error) {
 	if cfg.URL == "" {
 		return nil, errors.New("collector.url is undefined")
 	}
@@ -78,10 +70,17 @@ func newProxySender(cfg *Config) (sender, error) {
 	return s, nil
 }
 
-func (s *proxySender) sendMessage(m *message) {
-	if err := s.postMessage(m); err != nil {
-		ignoreAPIMessage().WithError(err).Warn("send message to collector failed")
+// Send sends a message to Json2Sandesh
+func (s *proxySender) Send(i messager) {
+	m := i.Get()
+	if m == nil {
+		return
 	}
+	go func() {
+		if err := s.postMessage(m); err != nil {
+			ignoreAPIMessage().WithError(err).Warn("send message to collector failed")
+		}
+	}()
 	// sendMessage does not return an error, since asynchronous postMessage usage is suggested
 }
 
