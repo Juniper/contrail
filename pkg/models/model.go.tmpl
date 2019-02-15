@@ -342,7 +342,7 @@ func (m *{{ schema.JSONSchema.GoName }}) GetChildren() []basemodels.Object {
 		return nil
 	}
 	var children []basemodels.Object
-	{% for reference in schema.Children %}
+	{% for _, reference in schema.Children %}
 	for _, child := range m.{{ reference.LinkTo.JSONSchema.GoName }}s {
 		children = append(children, child)
 	}
@@ -379,7 +379,7 @@ func (m *{{ schema.JSONSchema.GoName }}) AddBackReference(i interface{}) {
 func (m *{{ schema.JSONSchema.GoName }}) AddChild(i interface{}) {
 	{%- if schema.Children|length > 0 %}
 	switch resource := i.(type) {
-		{%- for child in schema.Children -%}
+		{%- for _, child in schema.Children -%}
 			{%- set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.Add{{ linkTo.JSONSchema.GoName }}(resource)
@@ -414,7 +414,7 @@ func (m *{{ schema.JSONSchema.GoName }}) RemoveBackReference(i interface{}) {
 func (m *{{ schema.JSONSchema.GoName }}) RemoveChild(i interface{}) {
 	{%- if schema.Children|length > 0 %}
 	switch resource := i.(type) {
-		{%- for child in schema.Children -%}
+		{%- for _, child in schema.Children -%}
 			{%- set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.Remove{{ linkTo.JSONSchema.GoName }}(resource)
@@ -643,7 +643,7 @@ func (m *{{ schema.JSONSchema.GoName }}) Remove{{ linkTo.JSONSchema.GoName }}Bac
 
 {% endfor %}
 
-{% for child in schema.Children %}{% set linkTo = child.LinkTo %}
+{% for _, child in schema.Children %}{% set linkTo = child.LinkTo %}
 
 func (m *{{ schema.JSONSchema.GoName }}) Add{{ linkTo.JSONSchema.GoName }}(child *{{ linkTo.JSONSchema.GoName }}) {
 	{{ addToList("m."|add:linkTo.JSONSchema.GoName|add:"s", "child") }}

@@ -23,7 +23,6 @@ plural: contrail_analytics_database_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: contrail_analytics_database_node

@@ -79,7 +79,7 @@ generate_go:
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
 	go run  cmd/contrailschema/main.go generate \
-	    --schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
+		--schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
 MOCKS := pkg/types/mock/service.go \

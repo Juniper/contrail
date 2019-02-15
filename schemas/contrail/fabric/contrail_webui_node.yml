@@ -29,7 +29,6 @@ schema:
       operations: CRUD
       presence: optional
       type: integer
-  propertiesOrder: []
   required: []
   type: object
 singular: contrail_webui_node

@@ -19,7 +19,6 @@ plural: mesos_master_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: mesos_master_node

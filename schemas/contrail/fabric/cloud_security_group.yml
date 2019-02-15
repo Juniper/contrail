@@ -18,7 +18,6 @@ plural: cloud_security_groups
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   type: object
 singular: cloud_security_group
 title: Cloud Security Group
