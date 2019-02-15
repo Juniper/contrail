@@ -10,6 +10,21 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 )
 
+const (
+	// SRCToDSTDirection is the standard direction in PolicyRuleType.
+	SRCToDSTDirection = ">"
+
+	// TODO: Generate these from the enum in the schema.
+
+	// IPv6Ethertype is the Ethertype for IPv6.
+	IPv6Ethertype = "IPv6"
+	// IPv4Ethertype is the Ethertype for IPv4.
+	IPv4Ethertype = "IPv4"
+
+	// AnyProtocol matches any protocol in PolicyRuleType.
+	AnyProtocol = "any"
+)
+
 // EqualRule checks if rule contains same data as other rule.
 func (m PolicyRuleType) EqualRule(other PolicyRuleType) bool {
 	m.RuleUUID = ""
@@ -23,7 +38,7 @@ func (m PolicyRuleType) EqualRule(other PolicyRuleType) bool {
 	return reflect.DeepEqual(m, other)
 }
 
-var avaiableProtocols = []string{"any", "icmp", "tcp", "udp", "icmp6"}
+var avaiableProtocols = []string{AnyProtocol, "icmp", "tcp", "udp", "icmp6"}
 
 var isAvailableProtocol = boolMap(avaiableProtocols)
 
@@ -111,9 +126,6 @@ var ipV4ProtocolStringToNumber = map[string]string{
 	"udp":   "17",
 }
 
-// TODO: Generate this from the enum in the schema.
-const ipv6Ethertype = "IPv6"
-
 // ValidateSubnetsWithEthertype validates if every subnet
 // within source and destination addresses matches rule ethertype.
 func (m *PolicyRuleType) ValidateSubnetsWithEthertype() error {
@@ -168,7 +180,7 @@ func (m *PolicyRuleType) ACLProtocol() (string, error) {
 	protocol := m.GetProtocol()
 	ethertype := m.GetEthertype()
 
-	if protocol == "" || protocol == "any" || isNumeric(protocol) {
+	if protocol == "" || protocol == AnyProtocol || isNumeric(protocol) {
 		return protocol, nil
 	}
 
@@ -186,7 +198,7 @@ func isNumeric(s string) bool {
 
 func numericProtocolForEthertype(protocol, ethertype string) (numericProtocol string, err error) {
 	var ok bool
-	if ethertype == ipv6Ethertype {
+	if ethertype == IPv6Ethertype {
 		numericProtocol, ok = ipV6ProtocolStringToNumber[protocol]
 	} else {
 		numericProtocol, ok = ipV4ProtocolStringToNumber[protocol]
