@@ -9,6 +9,11 @@ parents:
     operations: "CRUD"
     description: "Parent for cloud virtual cloud"
     presence: "optional"
+references:
+    physical_router:
+      operations: "CRUD"
+      description: "Reference to TOR represented by physical router."
+      presence: "optional"
 plural: virtual_clouds
 prefix: /
 schema:
