@@ -11,7 +11,15 @@ import (
 	"github.com/Juniper/contrail/pkg/schema"
 )
 
-var option = &schema.TemplateOption{}
+type templateOption struct {
+	SchemasDir        string
+	TemplateConfPath  string
+	SchemaOutputPath  string
+	OpenapiOutputPath string
+	OutputDir         string
+}
+
+var option = templateOption{}
 
 func init() {
 	ContrailSchema.AddCommand(generateCmd)
@@ -33,7 +41,7 @@ func generateCode() {
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	if err = schema.ApplyTemplates(api, templateConf, option); err != nil {
+	if err = schema.ApplyTemplates(api, templateConf); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
 

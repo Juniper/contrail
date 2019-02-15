@@ -30,7 +30,7 @@ func create{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, id 
     model.Perms2.Owner = "admin"
     model.Perms2.Share = share
 
-    {% if schema.HasParents && !schema.ParentOptional %}
+    {% if schema.HasParents() && !schema.ParentOptional %}
     parent := create{{ schema.DefaultParent.GoName }}(t, ctx, uuid.NewV4().String(), false, share)
     model.ParentUUID = parent.UUID
     model.ParentType = "{{ schema.DefaultParent.LinkTo.Path }}"
@@ -87,7 +87,7 @@ func delete{{ schema.JSONSchema.GoName }}(t *testing.T, ctx context.Context, uui
         delete{{ reference.GoName }}(t, ctx, ref.UUID)
     }
 
-    {% if schema.HasParents && !schema.ParentOptional %}
+    {% if schema.HasParents() && !schema.ParentOptional %}
     delete{{ schema.DefaultParent.GoName }}(t, ctx, model.ParentUUID)
     {% endif %}
 

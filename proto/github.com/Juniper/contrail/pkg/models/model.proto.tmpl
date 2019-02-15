@@ -31,7 +31,7 @@ message {{ schema.JSONSchema.GoName }} {
     {% set linkTo = backref.LinkTo %}
     repeated {{ linkTo.JSONSchema.GoName }} {{ linkTo.ID }}_back_refs = {{ backref.Index }} [(gogoproto.customname) = "{{ linkTo.JSONSchema.GoName }}BackRefs", (gogoproto.moretags) = "yaml:\"{{ linkTo.ID }}_back_refs\""]; // {{ backref.Description }}
 {%- endfor %}
-{%- for backref in schema.Children sorted %}
+{%- for _, backref in schema.Children sorted %}
     {% set child = backref.LinkTo %}
     repeated {{ child.JSONSchema.GoName }} {{ child.Plural }} = {{ backref.Index }} [(gogoproto.customname) = "{{ child.JSONSchema.GoName }}s", (gogoproto.moretags) = "yaml:\"{{ child.Plural }}\""]; // {{ backref.Description }}
 {%- endfor %}
