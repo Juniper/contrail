@@ -1,0 +1,70 @@
+
+- provider: private
+  organization: unit_test
+  project: test2
+  regions:
+    - name: us-west-1
+      vpc:
+        - name: virtual_cloud
+          cidr_block: 192.168.10.0/16
+          subnets:
+            - name: cloud_private_subnet
+              cidr_block: 192.168.10.0/24
+              availability_zone: a
+          security_groups:
+              - name: cloud_security_group_rule
+                ingress:
+                  from_port: 0
+                  to_port: 0
+                  protocol: tcp
+                  cidr_blocks:
+                  - 0.0.0.0/0
+          instances:
+            - name: cloud_node_compute
+              roles:
+                - compute_node
+              provision: true
+              username: centos
+              instance_type: t2.xlarge
+              machine_id: ami-XXXXXXX
+              subnets: cloud_private_subnet
+              availability_zone: a
+              security_groups:
+                - cloud_security_group_rule
+              interface: cloud_node_compute_interface
+            - name: cloud_node_controller
+              roles:
+                - controller
+              provision: true
+              username: centos
+              instance_type: t2.xlarge
+              machine_id: ami-XXXXXXX
+              subnets: cloud_private_subnet
+              availability_zone: a
+              security_groups:
+                - cloud_security_group_rule
+              interface: cloud_node_controller_interface
+            - name: cloud_node_gw
+              roles:
+                - gateway
+              provision: true
+              username: centos
+              instance_type: t2.xlarge
+              machine_id: ami-XXXXXXX
+              subnets: cloud_private_subnet
+              availability_zone: a
+              security_groups:
+                - cloud_security_group_rule
+              interface: cloud_node_gw_interface
+            - name: mx60
+              public_ip: 20.20.20.200
+              private_ip: 10.10.10.100
+              roles:
+                - tor
+              provision: true
+              username: test
+              password: test123
+              interface: irb.20
+              AS: 6500
+              protocols_mode:
+                - bgp
