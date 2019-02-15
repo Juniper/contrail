@@ -14,6 +14,7 @@ cleanup:
 - path: /kubernetes-node/kubernetes_nodes_uuid
 - path: /kubernetes-kubemanager-node/kubernetes_kubemanager_nodes_uuid
 - path: /kubernetes-cluster/test_kubernetes_cluster_uuid
+- path: /physical-router/tor_device_uuid
 - path: /node/all_in_one_node_uuid
 - path: /node/cloud_node_gw_uuid
 - path: /cloud-provider/pvt_cloud_provider_uuid
@@ -41,6 +42,23 @@ test_data:
       - uuid: all_in_one_keypair_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  tor_device: &tor_device
+    uuid: tor_device_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    name: mx60
+    physical_router_product_name: "mx60"
+    physical_router_management_ip: 20.20.20.200
+    physical_router_dataplane_ip: 10.10.10.100
+    physical_router_user_credentials:
+      username: test
+      password: test123
+    annotations:
+      key_value_pair:
+        - key: autonomous_system
+          value: "6500"
+        - key: interface
+          value: irb.20
   all_in_one_node: &all_in_one_node
     uuid: all_in_one_node_uuid
     hostname: all_in_one_node
@@ -392,6 +410,32 @@ workflow:
       cloud_refs:
         - uuid: pvt_cloud_uuid
         - uuid: public_cloud_uuid
+- name: create TOR device
+  request:
+    path: /physical-routers
+    method: POST
+    expected:
+    - 200
+    data:
+      physical-router: *tor_device
+  expect:
+    physical-router:
+      perms2:
+        owner: admin
+      uuid: tor_device_uuid
+      name: mx60
+      physical_router_product_name: "mx60"
+      physical_router_management_ip: 20.20.20.200
+      physical_router_dataplane_ip: 10.10.10.100
+      physical_router_user_credentials:
+        username: test
+        password: test123
+      annotations:
+        key_value_pair:
+          - key: autonomous_system
+            value: "6500"
+          - key: interface
+            value: irb.20
 - name: create node
   request:
     path: /nodes

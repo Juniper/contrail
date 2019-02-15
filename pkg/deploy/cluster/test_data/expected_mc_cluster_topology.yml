@@ -56,3 +56,15 @@
             os: centos7
             instance_type: Standard_F16s_v2
             interface: eth0
+          - name: mx60
+            public_ip: 20.20.20.200
+            private_ip: 10.10.10.100
+            roles:
+              - tor
+            provision: true
+            username: test
+            password: test123
+            interface: irb.20
+            AS: 6500
+            protocols_mode:
+              - bgp
