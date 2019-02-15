@@ -20,6 +20,7 @@ import (
 
 const (
 	securityGroupRuleResourceName = "security_group_rule"
+	maskZeroValue                 = "/0"
 	defaultPortMin                = 0
 	defaultPortMax                = 65535
 	protoNameICMP                 = "icmp"
@@ -35,21 +36,21 @@ func getGenericDefaultSecurityGroupRule() *SecurityGroupRule {
 		PortRangeMin: defaultPortMin,
 		PortRangeMax: defaultPortMax,
 		Direction:    egressTrafficNeutron,
-		Protocol:     protocolAny,
+		Protocol:     models.AnyProtocol,
 	}
 }
 
 func getDefaultSecurityGroupRuleIPv4() *SecurityGroupRule {
 	sgr := getGenericDefaultSecurityGroupRule()
-	sgr.Ethertype = ethertypeIPv4
-	sgr.RemoteIPPrefix = ipv4ZeroValue + maskZeroValue
+	sgr.Ethertype = models.IPv4Ethertype
+	sgr.RemoteIPPrefix = models.IPv4ZeroValue + maskZeroValue
 	return sgr
 }
 
 func getDefaultSecurityGroupRuleIPv6() *SecurityGroupRule {
 	sgr := getGenericDefaultSecurityGroupRule()
-	sgr.Ethertype = ethertypeIPv6
-	sgr.RemoteIPPrefix = ipv6ZeroValue + maskZeroValue
+	sgr.Ethertype = models.IPv6Ethertype
+	sgr.RemoteIPPrefix = models.IPv6ZeroValue + maskZeroValue
 	return sgr
 }
 
@@ -86,7 +87,7 @@ func (sgr *SecurityGroupRule) vncFromNeutron(
 	nowISOFormat := time.Now().Format(constants.ISO8601TimeFormat)
 	vncSgr := &models.PolicyRuleType{
 		RuleUUID:     uuid.NewV4().String(),
-		Direction:    egressTrafficVnc,
+		Direction:    models.SRCToDSTDirection,
 		SRCPorts:     []*models.PortType{{StartPort: defaultPortMin, EndPort: defaultPortMax}},
 		Created:      nowISOFormat,
 		LastModified: nowISOFormat,
@@ -108,11 +109,11 @@ func (sgr *SecurityGroupRule) vncFromNeutron(
 	}
 	vncSgr.Protocol = sgr.Protocol
 	if vncSgr.Protocol == "" {
-		vncSgr.Protocol = protocolAny
+		vncSgr.Protocol = models.AnyProtocol
 	}
 
 	if sgr.Ethertype == "" && sgr.RemoteGroupID == "" && sgr.RemoteIPPrefix == "" {
-		vncSgr.Ethertype = ethertypeIPv4
+		vncSgr.Ethertype = models.IPv4Ethertype
 	} else {
 		vncSgr.Ethertype = sgr.Ethertype
 	}
@@ -139,7 +140,7 @@ func (sgr *SecurityGroupRule) initAddressType(
 	ctx context.Context, rp RequestParameters, vncSgr *models.PolicyRuleType,
 ) error {
 	var addrType *models.AddressType
-	addrType = &models.AddressType{SecurityGroup: securityGroupAny}
+	addrType = &models.AddressType{SecurityGroup: models.AnySecurityGroup}
 
 	if sgr.RemoteIPPrefix != "" {
 		ipPrefix, ipPrefixLen, err := sgr.getIPPrefixWithLen()
@@ -166,9 +167,9 @@ func (sgr *SecurityGroupRule) initAddressType(
 
 	if sgr.Direction == ingressTrafficNeutron {
 		vncSgr.SRCAddresses = []*models.AddressType{addrType}
-		vncSgr.DSTAddresses = []*models.AddressType{{SecurityGroup: securityGroupLocal}}
+		vncSgr.DSTAddresses = []*models.AddressType{{SecurityGroup: models.LocalSecurityGroup}}
 	} else {
-		vncSgr.SRCAddresses = []*models.AddressType{{SecurityGroup: securityGroupLocal}}
+		vncSgr.SRCAddresses = []*models.AddressType{{SecurityGroup: models.LocalSecurityGroup}}
 		vncSgr.DSTAddresses = []*models.AddressType{addrType}
 	}
 
@@ -183,8 +184,8 @@ func (sgr *SecurityGroupRule) getIPPrefixWithLen() (string, int64, error) {
 		return "", 0, errors.Wrapf(err, "can't determinate ip version of the IP: '%s'", sgr.RemoteIPPrefix)
 	}
 
-	if (ipNetworkVersion == 4 && etherType != ethertypeIPv4) ||
-		(ipNetworkVersion == 6 && etherType != ethertypeIPv6) {
+	if (ipNetworkVersion == 4 && etherType != models.IPv4Ethertype) ||
+		(ipNetworkVersion == 6 && etherType != models.IPv6Ethertype) {
 		return "", 0, newNeutronError(securityGroupRuleParameterConflict, errorFields{
 			"ethertype": etherType,
 			"cidr":      sgr.RemoteIPPrefix,
@@ -204,10 +205,12 @@ func addressTypeNeutronFromVnc(
 	srcAddr := rule.GetSRCAddresses()[0]
 	dstAddr := rule.GetDSTAddresses()[0]
 
-	if srcAddr.GetSecurityGroup() == securityGroupLocal {
+	// TODO Use srcAddr.isSecurityGroupLocal()
+	// or models.policyAddressPair{..., src..., dst...}.isIngress()
+	if srcAddr.GetSecurityGroup() == models.LocalSecurityGroup {
 		responseSgr.Direction = egressTrafficNeutron
 		addr = dstAddr
-	} else if dstAddr.GetSecurityGroup() == securityGroupLocal {
+	} else if dstAddr.GetSecurityGroup() == models.LocalSecurityGroup {
 		responseSgr.Direction = ingressTrafficNeutron
 		addr = srcAddr
 	} else {
@@ -218,9 +221,10 @@ func addressTypeNeutronFromVnc(
 
 	if subnet := addr.GetSubnet(); subnet != nil {
 		responseSgr.RemoteIPPrefix = getFullNetworkAddress(subnet.GetIPPrefix(), subnet.GetIPPrefixLen())
+		// TODO Use addr.IsSecurityGroupNameAReference()
 	} else if remoteSG := addr.GetSecurityGroup(); remoteSG != "" &&
-		remoteSG != securityGroupAny &&
-		remoteSG != securityGroupLocal {
+		remoteSG != models.AnySecurityGroup &&
+		remoteSG != models.LocalSecurityGroup {
 		if remoteSG != basemodels.FQNameToString(sg.GetFQName()) {
 			// TODO implement it when service FQNameToID will be available in Neutron package.
 			// Origin python code: /src/config/vnc_openstack/vnc_openstack/neutron_plugin_db.py:1273
@@ -291,7 +295,7 @@ func findConflictedRuleUUID(err error, rules []*models.PolicyRuleType) string {
 }
 
 func (sgr *SecurityGroupRule) parseProtocolParameter() error {
-	protos := []string{protocolAny, protoNameTCP, protoNameUDP, protoNameICMP}
+	protos := []string{models.AnyProtocol, protoNameTCP, protoNameUDP, protoNameICMP}
 
 	if protocol, err := strconv.ParseInt(sgr.Protocol, 10, 64); err == nil {
 		if protocolMinValue < protocol && protocol < protocolMaxValue {
