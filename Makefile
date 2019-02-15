@@ -70,7 +70,7 @@ generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/baseservices
 
 generate: fast_generate format_gen
 
-generate_go:
+generate_go: $(shell find pkg/schema)
 	# Generate for contrail resources.
 	@mkdir -p public/
 	go run cmd/contrailschema/main.go generate \
