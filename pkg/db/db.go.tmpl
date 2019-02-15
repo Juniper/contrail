@@ -37,7 +37,7 @@ var {{ schema.JSONSchema.GoName }}RefFields = map[string][]string{
 
 // {{ schema.JSONSchema.GoName }}ChildFields is db child fields for {{ schema.JSONSchema.GoName }}
 var {{ schema.JSONSchema.GoName }}ChildFields = map[string][]string{
-   {% for backref in schema.Children %}
+   {% for _, backref in schema.Children %}
    {% set child = backref.LinkTo %}
    "{{ child.Table }}": []string{
 		{% for column in child.Columns %}"{{ column.Column }}",
@@ -104,7 +104,7 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 	}
 	{% endif %}
 
-	{% if schema.HasParents %}
+	{% if schema.HasParents() %}
 	err = db.createParentReference(ctx, request.{{ schema.JSONSchema.GoName }}, qb, {{ schema.JSONSchema.GoName }}Parents, {% if schema.ParentOptional %}true{% else %}false{% endif %})
 	if err != nil {
 		return errors.Wrap(err, "creating parent reference for {{ schema.JSONSchema.GoName }} failed")
@@ -216,7 +216,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(
 		}
 	}
 	{% endfor %}
-	{%- for definition in schema.Children %}
+	{%- for _, definition in schema.Children %}
 	{% set child = definition.LinkTo %}
 	if value, ok := values[schema.ChildColumnName("{{ child.Table }}", "{{ schema.ID }}")]; ok {
 		childResources := qb.ScanResourceList(value)
