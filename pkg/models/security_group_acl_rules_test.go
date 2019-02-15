@@ -21,19 +21,19 @@ func TestToACLRules(t *testing.T) {
 			policyRules: &PolicyRulesWithRefs{
 				Rules: []*PolicyRuleType{
 					{
-						Direction: ">",
-						Protocol:  "any",
+						Direction: SRCToDSTDirection,
+						Protocol:  AnyProtocol,
 						RuleUUID:  "rule1",
-						Ethertype: "IPv4",
+						Ethertype: IPv4Ethertype,
 						SRCAddresses: []*AddressType{
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						DSTAddresses: []*AddressType{
 							AllIPv4Addresses(),
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 							AllIPv4Addresses(),
 						},
@@ -49,8 +49,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv4",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv4Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: &AddressType{},
 					},
@@ -66,8 +66,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv4",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv4Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: AllIPv4Addresses(),
 					},
@@ -80,8 +80,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv4",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv4Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: AllIPv4Addresses(),
 					},
@@ -99,13 +99,13 @@ func TestToACLRules(t *testing.T) {
 			policyRules: &PolicyRulesWithRefs{
 				Rules: []*PolicyRuleType{
 					{
-						Direction: ">",
-						Protocol:  "any",
+						Direction: SRCToDSTDirection,
+						Protocol:  AnyProtocol,
 						RuleUUID:  "rule1",
-						Ethertype: "IPv4",
+						Ethertype: IPv4Ethertype,
 						SRCAddresses: []*AddressType{
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 							AllIPv4Addresses(),
 						},
@@ -126,8 +126,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv4",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv4Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: AllIPv4Addresses(),
 					},
@@ -145,13 +145,13 @@ func TestToACLRules(t *testing.T) {
 			policyRules: &PolicyRulesWithRefs{
 				Rules: []*PolicyRuleType{
 					{
-						Direction: ">",
-						Protocol:  "any",
+						Direction: SRCToDSTDirection,
+						Protocol:  AnyProtocol,
 						RuleUUID:  "rule1",
-						Ethertype: "IPv4",
+						Ethertype: IPv4Ethertype,
 						SRCAddresses: []*AddressType{
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 							AllIPv4Addresses(),
 						},
@@ -172,8 +172,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv4",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv4Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: AllIPv4Addresses(),
 					},
@@ -189,19 +189,19 @@ func TestToACLRules(t *testing.T) {
 			policyRules: &PolicyRulesWithRefs{
 				Rules: []*PolicyRuleType{
 					{
-						Direction: ">",
+						Direction: SRCToDSTDirection,
 						Protocol:  "some unknown protocol",
 						RuleUUID:  "rule1",
-						Ethertype: "IPv4",
+						Ethertype: IPv4Ethertype,
 						SRCAddresses: []*AddressType{
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						DSTAddresses: []*AddressType{
 							AllIPv4Addresses(),
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						SRCPorts: []*PortType{AllPorts()},
@@ -221,35 +221,35 @@ func TestToACLRules(t *testing.T) {
 					{
 						Protocol:  "unknown protocol 1",
 						RuleUUID:  "rule1",
-						Ethertype: "IPv4",
+						Ethertype: IPv4Ethertype,
 						SRCAddresses: []*AddressType{
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						DSTAddresses: []*AddressType{
 							AllIPv4Addresses(),
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						SRCPorts: []*PortType{AllPorts()},
 						DSTPorts: []*PortType{AllPorts()},
 					},
 					{
-						Direction: ">",
-						Protocol:  "any",
+						Direction: SRCToDSTDirection,
+						Protocol:  AnyProtocol,
 						RuleUUID:  "rule2",
-						Ethertype: "IPv6",
+						Ethertype: IPv6Ethertype,
 						SRCAddresses: []*AddressType{
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						DSTAddresses: []*AddressType{
 							AllIPv6Addresses(),
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						SRCPorts: []*PortType{AllPorts()},
@@ -264,8 +264,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv6",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv6Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: &AddressType{},
 					},
@@ -280,8 +280,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv6",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv6Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: AllIPv6Addresses(),
 					},
@@ -297,13 +297,13 @@ func TestToACLRules(t *testing.T) {
 			policyRules: &PolicyRulesWithRefs{
 				Rules: []*PolicyRuleType{
 					{
-						Direction: ">",
-						Protocol:  "any",
+						Direction: SRCToDSTDirection,
+						Protocol:  AnyProtocol,
 						RuleUUID:  "rule1",
-						Ethertype: "IPv6",
+						Ethertype: IPv6Ethertype,
 						SRCAddresses: []*AddressType{
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						DSTAddresses: []*AddressType{
@@ -326,8 +326,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv6",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv6Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: AllIPv6Addresses(),
 					},
@@ -343,13 +343,13 @@ func TestToACLRules(t *testing.T) {
 			policyRules: &PolicyRulesWithRefs{
 				Rules: []*PolicyRuleType{
 					{
-						Direction: ">",
-						Protocol:  "any",
+						Direction: SRCToDSTDirection,
+						Protocol:  AnyProtocol,
 						RuleUUID:  "rule1",
-						Ethertype: "IPv6",
+						Ethertype: IPv6Ethertype,
 						SRCAddresses: []*AddressType{
 							{
-								SecurityGroup: "local",
+								SecurityGroup: LocalSecurityGroup,
 							},
 						},
 						DSTAddresses: []*AddressType{
@@ -376,8 +376,8 @@ func TestToACLRules(t *testing.T) {
 					MatchCondition: &MatchConditionType{
 						SRCPort:    AllPorts(),
 						DSTPort:    AllPorts(),
-						Protocol:   "any",
-						Ethertype:  "IPv6",
+						Protocol:   AnyProtocol,
+						Ethertype:  IPv6Ethertype,
 						SRCAddress: &AddressType{},
 						DSTAddress: &AddressType{SecurityGroup: "8000002"},
 					},
@@ -404,7 +404,7 @@ func TestMakeACLRule(t *testing.T) {
 	testCases := []struct {
 		name       string
 		fqNameToSG map[string]*SecurityGroup
-		policyAddressPair
+		PolicyAddressPair
 
 		expectedACLRule *AclRuleType
 		fails           bool
@@ -416,21 +416,21 @@ func TestMakeACLRule(t *testing.T) {
 					SecurityGroupID: 8000002,
 				},
 			},
-			policyAddressPair: policyAddressPair{
-				policyRule: &PolicyRuleType{
+			PolicyAddressPair: PolicyAddressPair{
+				PolicyRule: &PolicyRuleType{
 					RuleUUID:  "bdf042c0-d2c2-4241-ba15-1c702c896e03",
-					Direction: ">",
-					Protocol:  "any",
-					Ethertype: "IPv4",
+					Direction: SRCToDSTDirection,
+					Protocol:  AnyProtocol,
+					Ethertype: IPv4Ethertype,
 				},
-				sourceAddress: &AddressType{
+				SourceAddress: &AddressType{
 					SecurityGroup: "default-domain:project-blue:default",
 				},
-				destinationAddress: &AddressType{
-					SecurityGroup: "local",
+				DestinationAddress: &AddressType{
+					SecurityGroup: LocalSecurityGroup,
 				},
-				sourcePort:      AllPorts(),
-				destinationPort: AllPorts(),
+				SourcePort:      AllPorts(),
+				DestinationPort: AllPorts(),
 			},
 
 			expectedACLRule: &AclRuleType{
@@ -438,8 +438,8 @@ func TestMakeACLRule(t *testing.T) {
 				MatchCondition: &MatchConditionType{
 					SRCPort:   AllPorts(),
 					DSTPort:   AllPorts(),
-					Protocol:  "any",
-					Ethertype: "IPv4",
+					Protocol:  AnyProtocol,
+					Ethertype: IPv4Ethertype,
 					SRCAddress: &AddressType{
 						SecurityGroup: "8000002",
 					},
@@ -458,21 +458,21 @@ func TestMakeACLRule(t *testing.T) {
 					SecurityGroupID: 8000002,
 				},
 			},
-			policyAddressPair: policyAddressPair{
-				policyRule: &PolicyRuleType{
+			PolicyAddressPair: PolicyAddressPair{
+				PolicyRule: &PolicyRuleType{
 					RuleUUID:  "1f77914a-0863-4f0d-888a-aee6a1988f6a",
-					Direction: ">",
-					Protocol:  "any",
-					Ethertype: "IPv6",
+					Direction: SRCToDSTDirection,
+					Protocol:  AnyProtocol,
+					Ethertype: IPv6Ethertype,
 				},
-				sourceAddress: &AddressType{
+				SourceAddress: &AddressType{
 					SecurityGroup: "default-domain:project-blue:default",
 				},
-				destinationAddress: &AddressType{
-					SecurityGroup: "local",
+				DestinationAddress: &AddressType{
+					SecurityGroup: LocalSecurityGroup,
 				},
-				sourcePort:      AllPorts(),
-				destinationPort: AllPorts(),
+				SourcePort:      AllPorts(),
+				DestinationPort: AllPorts(),
 			},
 
 			expectedACLRule: &AclRuleType{
@@ -480,8 +480,8 @@ func TestMakeACLRule(t *testing.T) {
 				MatchCondition: &MatchConditionType{
 					SRCPort:   AllPorts(),
 					DSTPort:   AllPorts(),
-					Protocol:  "any",
-					Ethertype: "IPv6",
+					Protocol:  AnyProtocol,
+					Ethertype: IPv6Ethertype,
 					SRCAddress: &AddressType{
 						SecurityGroup: "8000002",
 					},
@@ -495,19 +495,19 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv4, local security group to all addresses",
-			policyAddressPair: policyAddressPair{
-				policyRule: &PolicyRuleType{
+			PolicyAddressPair: PolicyAddressPair{
+				PolicyRule: &PolicyRuleType{
 					RuleUUID:  "b7c07625-e03e-43b9-a9fc-d11a6c863cc6",
-					Direction: ">",
-					Protocol:  "any",
-					Ethertype: "IPv4",
+					Direction: SRCToDSTDirection,
+					Protocol:  AnyProtocol,
+					Ethertype: IPv4Ethertype,
 				},
-				sourceAddress: &AddressType{
-					SecurityGroup: "local",
+				SourceAddress: &AddressType{
+					SecurityGroup: LocalSecurityGroup,
 				},
-				destinationAddress: AllIPv4Addresses(),
-				sourcePort:         AllPorts(),
-				destinationPort:    AllPorts(),
+				DestinationAddress: AllIPv4Addresses(),
+				SourcePort:         AllPorts(),
+				DestinationPort:    AllPorts(),
 			},
 
 			expectedACLRule: &AclRuleType{
@@ -515,8 +515,8 @@ func TestMakeACLRule(t *testing.T) {
 				MatchCondition: &MatchConditionType{
 					SRCPort:    AllPorts(),
 					DSTPort:    AllPorts(),
-					Protocol:   "any",
-					Ethertype:  "IPv4",
+					Protocol:   AnyProtocol,
+					Ethertype:  IPv4Ethertype,
 					SRCAddress: &AddressType{},
 					DSTAddress: AllIPv4Addresses(),
 				},
@@ -528,19 +528,19 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv6, local security group to all addresses",
-			policyAddressPair: policyAddressPair{
-				policyRule: &PolicyRuleType{
+			PolicyAddressPair: PolicyAddressPair{
+				PolicyRule: &PolicyRuleType{
 					RuleUUID:  "6a5f3026-02bc-4ba1-abde-39abafd21f47",
-					Direction: ">",
-					Protocol:  "any",
-					Ethertype: "IPv6",
+					Direction: SRCToDSTDirection,
+					Protocol:  AnyProtocol,
+					Ethertype: IPv6Ethertype,
 				},
-				sourceAddress: &AddressType{
-					SecurityGroup: "local",
+				SourceAddress: &AddressType{
+					SecurityGroup: LocalSecurityGroup,
 				},
-				destinationAddress: AllIPv6Addresses(),
-				sourcePort:         AllPorts(),
-				destinationPort:    AllPorts(),
+				DestinationAddress: AllIPv6Addresses(),
+				SourcePort:         AllPorts(),
+				DestinationPort:    AllPorts(),
 			},
 
 			expectedACLRule: &AclRuleType{
@@ -548,8 +548,8 @@ func TestMakeACLRule(t *testing.T) {
 				MatchCondition: &MatchConditionType{
 					SRCPort:    AllPorts(),
 					DSTPort:    AllPorts(),
-					Protocol:   "any",
-					Ethertype:  "IPv6",
+					Protocol:   AnyProtocol,
+					Ethertype:  IPv6Ethertype,
 					SRCAddress: &AddressType{},
 					DSTAddress: AllIPv6Addresses(),
 				},
@@ -563,22 +563,22 @@ func TestMakeACLRule(t *testing.T) {
 			// Replicates the logic in
 			// https://github.com/Juniper/contrail-controller/blob/474731ce0/src/config/schema-transformer/config_db.py#L2039
 			name: "ActionList with a deny action (should be ignored)",
-			policyAddressPair: policyAddressPair{
-				policyRule: &PolicyRuleType{
+			PolicyAddressPair: PolicyAddressPair{
+				PolicyRule: &PolicyRuleType{
 					RuleUUID:  "rule2",
-					Direction: ">",
-					Protocol:  "any",
-					Ethertype: "IPv4",
+					Direction: SRCToDSTDirection,
+					Protocol:  AnyProtocol,
+					Ethertype: IPv4Ethertype,
 					ActionList: &ActionListType{
 						SimpleAction: "deny",
 					},
 				},
-				sourceAddress: &AddressType{
-					SecurityGroup: "local",
+				SourceAddress: &AddressType{
+					SecurityGroup: LocalSecurityGroup,
 				},
-				destinationAddress: AllIPv4Addresses(),
-				sourcePort:         AllPorts(),
-				destinationPort:    AllPorts(),
+				DestinationAddress: AllIPv4Addresses(),
+				SourcePort:         AllPorts(),
+				DestinationPort:    AllPorts(),
 			},
 
 			expectedACLRule: &AclRuleType{
@@ -586,8 +586,8 @@ func TestMakeACLRule(t *testing.T) {
 				MatchCondition: &MatchConditionType{
 					SRCPort:    AllPorts(),
 					DSTPort:    AllPorts(),
-					Protocol:   "any",
-					Ethertype:  "IPv4",
+					Protocol:   AnyProtocol,
+					Ethertype:  IPv4Ethertype,
 					SRCAddress: &AddressType{},
 					DSTAddress: AllIPv4Addresses(),
 				},
@@ -599,10 +599,10 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "IPv4, unknown protocol",
-			policyAddressPair: policyAddressPair{
-				policyRule: &PolicyRuleType{
+			PolicyAddressPair: PolicyAddressPair{
+				PolicyRule: &PolicyRuleType{
 					Protocol:  "some unknown protocol",
-					Ethertype: "IPv4",
+					Ethertype: IPv4Ethertype,
 				},
 			},
 			fails: true,
@@ -610,8 +610,8 @@ func TestMakeACLRule(t *testing.T) {
 
 		{
 			name: "unknown security group name",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &AddressType{
+			PolicyAddressPair: PolicyAddressPair{
+				SourceAddress: &AddressType{
 					SecurityGroup: "some:unknown:security-group",
 				},
 			},
@@ -621,7 +621,7 @@ func TestMakeACLRule(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			aclRule, err := makeACLRule(tt.policyAddressPair, tt.fqNameToSG)
+			aclRule, err := makeACLRule(tt.PolicyAddressPair, tt.fqNameToSG)
 			if tt.fails {
 				assert.Error(t, err)
 			} else {
@@ -643,7 +643,7 @@ func TestSecurityGroupNameToID(t *testing.T) {
 	}{
 		{
 			name:                    "local",
-			securityGroupName:       "local",
+			securityGroupName:       LocalSecurityGroup,
 			expectedSecurityGroupID: "",
 		},
 
@@ -655,7 +655,7 @@ func TestSecurityGroupNameToID(t *testing.T) {
 
 		{
 			name:                    "any",
-			securityGroupName:       "any",
+			securityGroupName:       AnySecurityGroup,
 			expectedSecurityGroupID: "-1",
 		},
 

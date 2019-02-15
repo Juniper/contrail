@@ -10,6 +10,29 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 )
 
+const (
+	// SRCToDSTDirection is the standard direction in PolicyRuleType.
+	SRCToDSTDirection = ">"
+
+	// TODO: Generate these from the enum in the schema.
+
+	// IPv6Ethertype is the Ethertype for IPv6.
+	IPv6Ethertype = "IPv6"
+	// IPv4Ethertype is the Ethertype for IPv4.
+	IPv4Ethertype = "IPv4"
+
+	// AnyProtocol matches any protocol in PolicyRuleType.
+	AnyProtocol = "any"
+	// ICMPProtocol matches ICMP protocol in PolicyRuleType.
+	ICMPProtocol = "icmp"
+	// TCPProtocol matches TCP protocol in PolicyRuleType.
+	TCPProtocol = "tcp"
+	// UDPProtocol matches UDP protocol in PolicyRuleType.
+	UDPProtocol = "udp"
+	// ICMP6Protocol matches ICMPv6 protocol in PolicyRuleType.
+	ICMP6Protocol = "icmp6"
+)
+
 // EqualRule checks if rule contains same data as other rule.
 func (m PolicyRuleType) EqualRule(other PolicyRuleType) bool {
 	m.RuleUUID = ""
@@ -23,7 +46,7 @@ func (m PolicyRuleType) EqualRule(other PolicyRuleType) bool {
 	return reflect.DeepEqual(m, other)
 }
 
-var avaiableProtocols = []string{"any", "icmp", "tcp", "udp", "icmp6"}
+var avaiableProtocols = []string{AnyProtocol, ICMPProtocol, TCPProtocol, UDPProtocol, ICMP6Protocol}
 
 var isAvailableProtocol = boolMap(avaiableProtocols)
 
@@ -47,23 +70,24 @@ func (m *PolicyRuleType) ValidateProtocol() error {
 	return nil
 }
 
-// policyAddressPair is a single combination of source and destination specifications from a PolicyRuleType.
-type policyAddressPair struct {
-	policyRule                        *PolicyRuleType
-	sourceAddress, destinationAddress *AddressType
-	sourcePort, destinationPort       *PortType
+// PolicyAddressPair is a single combination of source and destination specifications from a PolicyRuleType.
+type PolicyAddressPair struct {
+	PolicyRule                        *PolicyRuleType
+	SourceAddress, DestinationAddress *AddressType
+	SourcePort, DestinationPort       *PortType
 }
 
-func (pair *policyAddressPair) isIngress() (bool, error) {
+// IsIngress checks whether the pair is ingress (remote to local addresses) or egress (local to remote addresses).
+func (pair *PolicyAddressPair) IsIngress() (bool, error) {
 	switch {
-	case pair.destinationAddress.isSecurityGroupLocal():
+	case pair.DestinationAddress.IsSecurityGroupLocal():
 		return true, nil
-	case pair.sourceAddress.isSecurityGroupLocal():
+	case pair.SourceAddress.IsSecurityGroupLocal():
 		return false, nil
 	default:
 		return false, neitherAddressIsLocal{
-			sourceAddress:      pair.sourceAddress,
-			destinationAddress: pair.destinationAddress,
+			sourceAddress:      pair.SourceAddress,
+			destinationAddress: pair.DestinationAddress,
 		}
 	}
 }
@@ -77,18 +101,18 @@ func (err neitherAddressIsLocal) Error() string {
 		err.sourceAddress, err.destinationAddress)
 }
 
-func (m *PolicyRuleType) allAddressCombinations() (pairs []policyAddressPair) {
+func (m *PolicyRuleType) allAddressCombinations() (pairs []PolicyAddressPair) {
 	for _, sourceAddress := range m.SRCAddresses {
 		for _, sourcePort := range m.SRCPorts {
 			for _, destinationAddress := range m.DSTAddresses {
 				for _, destinationPort := range m.DSTPorts {
-					pairs = append(pairs, policyAddressPair{
-						policyRule: m,
+					pairs = append(pairs, PolicyAddressPair{
+						PolicyRule: m,
 
-						sourceAddress:      sourceAddress,
-						sourcePort:         sourcePort,
-						destinationAddress: destinationAddress,
-						destinationPort:    destinationPort,
+						SourceAddress:      sourceAddress,
+						SourcePort:         sourcePort,
+						DestinationAddress: destinationAddress,
+						DestinationPort:    destinationPort,
 					})
 				}
 			}
@@ -98,21 +122,18 @@ func (m *PolicyRuleType) allAddressCombinations() (pairs []policyAddressPair) {
 }
 
 var ipV6ProtocolStringToNumber = map[string]string{
-	"icmp":  "58",
-	"icmp6": "58",
-	"tcp":   "6",
-	"udp":   "17",
+	ICMPProtocol:  "58",
+	ICMP6Protocol: "58",
+	TCPProtocol:   "6",
+	UDPProtocol:   "17",
 }
 
 var ipV4ProtocolStringToNumber = map[string]string{
-	"icmp":  "1",
-	"icmp6": "58",
-	"tcp":   "6",
-	"udp":   "17",
+	ICMPProtocol:  "1",
+	ICMP6Protocol: "58",
+	TCPProtocol:   "6",
+	UDPProtocol:   "17",
 }
-
-// TODO: Generate this from the enum in the schema.
-const ipv6Ethertype = "IPv6"
 
 // ValidateSubnetsWithEthertype validates if every subnet
 // within source and destination addresses matches rule ethertype.
@@ -151,12 +172,12 @@ func (m *PolicyRuleType) HasSecurityGroup() bool {
 // 'local' Security Group.
 func (m *PolicyRuleType) IsAnySecurityGroupAddrLocal() bool {
 	for _, addr := range m.GetSRCAddresses() {
-		if addr.isSecurityGroupLocal() {
+		if addr.IsSecurityGroupLocal() {
 			return true
 		}
 	}
 	for _, addr := range m.GetDSTAddresses() {
-		if addr.isSecurityGroupLocal() {
+		if addr.IsSecurityGroupLocal() {
 			return true
 		}
 	}
@@ -168,7 +189,7 @@ func (m *PolicyRuleType) ACLProtocol() (string, error) {
 	protocol := m.GetProtocol()
 	ethertype := m.GetEthertype()
 
-	if protocol == "" || protocol == "any" || isNumeric(protocol) {
+	if protocol == "" || protocol == AnyProtocol || isNumeric(protocol) {
 		return protocol, nil
 	}
 
@@ -186,7 +207,7 @@ func isNumeric(s string) bool {
 
 func numericProtocolForEthertype(protocol, ethertype string) (numericProtocol string, err error) {
 	var ok bool
-	if ethertype == ipv6Ethertype {
+	if ethertype == IPv6Ethertype {
 		numericProtocol, ok = ipV6ProtocolStringToNumber[protocol]
 	} else {
 		numericProtocol, ok = ipV4ProtocolStringToNumber[protocol]

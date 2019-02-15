@@ -23,7 +23,7 @@ func (rs *PolicyRulesWithRefs) ToACLRules() (ingressRules, egressRules []*AclRul
 			continue
 		}
 
-		isIngress, err := pair.isIngress()
+		isIngress, err := pair.IsIngress()
 		if err != nil {
 			logrus.WithError(err).Error("Ignoring ACL rule")
 			continue
@@ -50,37 +50,37 @@ func (m *SecurityGroup) MakeChildACL(name string, rules []*AclRuleType) *AccessC
 	}
 }
 
-func allAddressCombinations(rs []*PolicyRuleType) (pairs []policyAddressPair) {
+func allAddressCombinations(rs []*PolicyRuleType) (pairs []PolicyAddressPair) {
 	for _, r := range rs {
 		pairs = append(pairs, r.allAddressCombinations()...)
 	}
 	return pairs
 }
 
-func makeACLRule(pair policyAddressPair, fqNameToSG map[string]*SecurityGroup) (*AclRuleType, error) {
-	protocol, err := pair.policyRule.ACLProtocol()
+func makeACLRule(pair PolicyAddressPair, fqNameToSG map[string]*SecurityGroup) (*AclRuleType, error) {
+	protocol, err := pair.PolicyRule.ACLProtocol()
 	if err != nil {
 		return nil, err
 	}
 
-	sourceAddress, err := addressTypeToACLAddress(pair.sourceAddress, fqNameToSG)
+	sourceAddress, err := addressTypeToACLAddress(pair.SourceAddress, fqNameToSG)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert source address for an ACL")
 	}
-	destinationAddress, err := addressTypeToACLAddress(pair.destinationAddress, fqNameToSG)
+	destinationAddress, err := addressTypeToACLAddress(pair.DestinationAddress, fqNameToSG)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert destination address for an ACL")
 	}
 
 	return &AclRuleType{
-		RuleUUID: pair.policyRule.GetRuleUUID(),
+		RuleUUID: pair.PolicyRule.GetRuleUUID(),
 		MatchCondition: &MatchConditionType{
-			Ethertype:  pair.policyRule.GetEthertype(),
+			Ethertype:  pair.PolicyRule.GetEthertype(),
 			Protocol:   protocol,
 			SRCAddress: sourceAddress,
 			DSTAddress: destinationAddress,
-			SRCPort:    pair.sourcePort,
-			DSTPort:    pair.destinationPort,
+			SRCPort:    pair.SourcePort,
+			DSTPort:    pair.DestinationPort,
 		},
 		ActionList: &ActionListType{
 			SimpleAction: "pass",

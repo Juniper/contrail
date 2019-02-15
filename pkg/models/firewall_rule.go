@@ -20,10 +20,10 @@ const (
 )
 
 var protocolIDs = map[string]int64{
-	"any":  0,
-	"icmp": 1,
-	"tcp":  6,
-	"udp":  17,
+	AnyProtocol:  0,
+	ICMPProtocol: 1,
+	TCPProtocol:  6,
+	UDPProtocol:  17,
 }
 
 // CheckAssociatedRefsInSameScope checks scope of Firewall Rule references.
