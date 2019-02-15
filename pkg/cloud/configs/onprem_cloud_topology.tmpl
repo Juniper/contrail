@@ -29,6 +29,7 @@
         - {{ subnet.info.CidrBlock }}
       {% endfor %}
       {% endif %}
+      {% endfor %}
       {% endif %}
       {% if instance.protocolsMode %}
       protocols_mode:
@@ -40,3 +41,18 @@
       gateway: {{ instance.gateway }}
       {% endif %}
   {% endfor %}
+  {% for tor in cloud.tors %}
+    - name: {{ tor.info.Name }}
+      public_ip: {{ tor.info.PhysicalRouterManagementIP }}
+      private_ip: {{ tor.info.PhysicalRouterDataplaneIP }}
+      roles:
+       - tor
+      provision: {{ tor.provision }}
+      username: {{ tor.info.PhysicalRouterUserCredentials.Username }}
+      password: {{ tor.info.PhysicalRouterUserCredentials.Password }}
+      interface: {{ tor.interfaceName }}
+      AS: {{ tor.autonomousSystemNumber }}
+      protocols_mode:
+       - bgp
+  {% endfor %}
+

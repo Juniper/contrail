@@ -1,9 +1,15 @@
-name: All in one public cloud
-description: all-in-one azure create test
+name: cloud test
+description: cloud create test
 cleanup:
+- path: /port/cloud_node_gw_pvt_port_uuid
+- path: /port/cloud_node_controller_pvt_port_uuid
+- path: /port/cloud_node_compute_pvt_port_uuid
 - path: /node/cloud_node_gw_uuid
 - path: /node/cloud_node_controller_uuid
 - path: /node/cloud_node_compute_uuid
+{% if "private" in CLOUD_TYPE %}
+- path: /physical-router/tor_device_uuid
+{% endif %}
 - path: /cloud-private-subnet/cloud_private_subnet_uuid
 - path: /cloud-security-group/cloud_security_group_uuid
 - path: /virtual-cloud/virtual_cloud_uuid
@@ -111,6 +117,27 @@ test_data:
     to_port: 0
     cidr_block: 0.0.0.0/0
     {% endif %}
+{% if "private" in CLOUD_TYPE %}
+  tor_device: &tor_device
+    uuid: tor_device_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    name: mx60
+    physical_router_product_name: "mx60"
+    physical_router_management_ip: 20.20.20.200
+    physical_router_dataplane_ip: 10.10.10.100
+    physical_router_user_credentials:
+      username: test
+      password: test123
+    annotations:
+      key_value_pair:
+        - key: autonomous_system
+          value: "6500"
+        - key: interface
+          value: irb.20
+    tag_refs:
+      - uuid: public_cloud_tag_uuid
+{% endif %}
   cloud_node_gw: &cloud_node_gw
     name: cloud_node_gw
     uuid: cloud_node_gw_uuid
@@ -138,6 +165,14 @@ test_data:
       - uuid: public_cloud_tag_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+{% if "private" in CLOUD_TYPE %}
+  cloud_node_gw_pvt_port: &cloud_node_gw_pvt_port
+    name: cloud_node_gw_pvt_port
+    uuid: cloud_node_gw_pvt_port_uuid
+    parent_type: node
+    parent_uuid: cloud_node_gw_uuid
+    ip_address: 10.10.10.10
+{% endif %}
   cloud_node_controller: &cloud_node_controller
     name: cloud_node_controller
     uuid: cloud_node_controller_uuid
@@ -165,6 +200,14 @@ test_data:
       - uuid: public_cloud_tag_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+{% if "private" in CLOUD_TYPE %}
+  cloud_node_controller_pvt_port: &cloud_node_controller_pvt_port
+    name: cloud_node_controller_pvt_port
+    uuid: cloud_node_controller_pvt_port_uuid
+    parent_type: node
+    parent_uuid: cloud_node_controller_uuid
+    ip_address: 10.10.10.11
+{% endif %}
   cloud_node_compute: &cloud_node_compute
     name: cloud_node_compute
     uuid: cloud_node_compute_uuid
@@ -192,6 +235,14 @@ test_data:
       - uuid: public_cloud_tag_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+{% if "private" in CLOUD_TYPE %}
+  cloud_node_compute_pvt_port: &cloud_node_compute_pvt_port
+    name: cloud_node_compute_pvt_port
+    uuid: cloud_node_compute_pvt_port_uuid
+    parent_type: node
+    parent_uuid: cloud_node_compute_uuid
+    ip_address: 10.10.10.12
+{% endif %}
 
 clients:
   default:
@@ -418,7 +469,34 @@ workflow:
       to_port: 0
       cidr_block: 0.0.0.0/0
       {% endif %}
-
+{% if "private" in CLOUD_TYPE %}
+- name: create TOR device
+  request:
+    path: /physical-routers
+    method: POST
+    expected:
+    - 200
+    data:
+      physical-router: *tor_device
+  expect:
+    physical-router:
+      perms2:
+        owner: admin
+      uuid: tor_device_uuid
+      name: mx60
+      physical_router_product_name: "mx60"
+      physical_router_management_ip: 20.20.20.200
+      physical_router_dataplane_ip: 10.10.10.100
+      physical_router_user_credentials:
+        username: test
+        password: test123
+      annotations:
+        key_value_pair:
+          - key: autonomous_system
+            value: "6500"
+          - key: interface
+            value: irb.20
+{% endif %}
 - name: create cloud node gw
   request:
     path: /nodes
@@ -529,3 +607,39 @@ workflow:
         - uuid: public_cloud_tag_uuid
       parent_type: global-system-config
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+- name: create cloud node gw private port
+  request:
+    path: /ports
+    method: POST
+    expected:
+    - 200
+    data:
+      port: *cloud_node_gw_pvt_port
+  expect:
+    port:
+      name: cloud_node_gw_pvt_port
+      uuid: cloud_node_gw_pvt_port_uuid
+- name: create cloud node controller private port
+  request:
+    path: /ports
+    method: POST
+    expected:
+    - 200
+    data:
+      port: *cloud_node_controller_pvt_port
+  expect:
+    port:
+      name: cloud_node_controller_pvt_port
+      uuid: cloud_node_controller_pvt_port_uuid
+- name: create cloud node compute private port
+  request:
+    path: /ports
+    method: POST
+    expected:
+    - 200
+    data:
+      port: *cloud_node_compute_pvt_port
+  expect:
+    port:
+      name: cloud_node_compute_pvt_port
+      uuid: cloud_node_compute_pvt_port_uuid
