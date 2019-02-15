@@ -3,11 +3,9 @@ package logic
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
-	"github.com/twinj/uuid"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
@@ -21,17 +19,7 @@ var sgNoRuleFQName = []string{defaultDomainName, defaultProjectName, noRuleSecur
 const (
 	securityGroupResourceName          = "security_group"
 	projectFieldChildrenSecurityGroups = "security_groups"
-	securityGroupAny                   = "any"
-	securityGroupDefault               = "default"
-	securityGroupLocal                 = "local"
 	noRuleSecurityGroup                = "__no_rule__"
-	egressTrafficVnc                   = ">"
-	protocolAny                        = "any"
-	ethertypeIPv4                      = "IPv4"
-	ethertypeIPv6                      = "IPv6"
-	ipv4ZeroValue                      = "0.0.0.0"
-	ipv6ZeroValue                      = "::"
-	maskZeroValue                      = "/0"
 	egressTrafficNeutron               = "egress"
 	ingressTrafficNeutron              = "ingress"
 )
@@ -43,7 +31,7 @@ func (sg *SecurityGroup) Create(ctx context.Context, rp RequestParameters) (Resp
 		return nil, newSecurityGroupError(err, "error while casting security_group from neutron into vnc resource")
 	}
 
-	if sg.Name == securityGroupDefault {
+	if sg.Name == models.DefaultSecurityGroupName {
 		if err = sg.ensureDefaultSecurityGroupExists(ctx, rp); err != nil {
 			return nil, newSecurityGroupError(err, "can't ensure default security_group")
 		}
@@ -127,7 +115,7 @@ func (sg *SecurityGroup) Delete(ctx context.Context, rp RequestParameters, id st
 		return nil, newSecurityGroupError(err, "invalid tenant id")
 	}
 
-	if vncSg.GetName() == securityGroupDefault && vncSg.GetParentUUID() == projectUUID {
+	if vncSg.GetName() == models.DefaultSecurityGroupName && vncSg.GetParentUUID() == projectUUID {
 		return nil, newNeutronError(securityGroupCannotRemoveDefault, errorFields{})
 	}
 
@@ -208,7 +196,7 @@ func (sg *SecurityGroup) ensureDefaultSecurityGroupExists(ctx context.Context, r
 	}
 
 	for _, sg := range project.GetSecurityGroups() {
-		if l := len(sg.GetFQName()); l > 0 && sg.GetFQName()[l-1] == securityGroupDefault {
+		if l := len(sg.GetFQName()); l > 0 && sg.GetFQName()[l-1] == models.DefaultSecurityGroupName {
 			return nil
 		}
 	}
@@ -219,92 +207,15 @@ func (sg *SecurityGroup) ensureDefaultSecurityGroupExists(ctx context.Context, r
 func (sg *SecurityGroup) createDefaultSecurityGroup(
 	ctx context.Context, rp RequestParameters, project *models.Project,
 ) error {
-	projectFQNameString := basemodels.FQNameToString(project.GetFQName())
-	vncSg := models.SecurityGroup{
-		Name:       securityGroupDefault,
-		ParentUUID: project.GetUUID(),
-		ParentType: models.KindProject,
-		IDPerms: &models.IdPermsType{
-			Enable:      true,
-			Description: "Default security group",
-		},
-		SecurityGroupEntries: &models.PolicyEntriesType{
-			PolicyRule: []*models.PolicyRuleType{
-				sg.createRule(true, securityGroupDefault, "", ethertypeIPv4, projectFQNameString),
-				sg.createRule(true, securityGroupDefault, "", ethertypeIPv6, projectFQNameString),
-				sg.createRule(false, "", ipv4ZeroValue, ethertypeIPv4, projectFQNameString),
-				sg.createRule(false, "", ipv6ZeroValue, ethertypeIPv6, projectFQNameString),
-			},
-		},
-	}
-
 	_, err := rp.WriteService.CreateSecurityGroup(
 		ctx,
 		&services.CreateSecurityGroupRequest{
-			SecurityGroup: &vncSg,
+			SecurityGroup: project.DefaultSecurityGroup(),
 		},
 	)
 
 	// TODO chown(sqResponse.GetSecurityGroup().GetUUID(), project.GetUUID())
 	return err
-}
-
-func (sg *SecurityGroup) createRule(
-	ingress bool,
-	securityGroup string,
-	prefix string,
-	ethertype string,
-	projectFQNameString string,
-) *models.PolicyRuleType {
-
-	uuid := uuid.NewV4().String()
-	localAddr := models.AddressType{
-		SecurityGroup: securityGroupLocal,
-	}
-
-	var addr models.AddressType
-	if securityGroup != "" {
-		addr = models.AddressType{
-			SecurityGroup: strings.Join([]string{projectFQNameString, securityGroup}, ":"),
-		}
-	}
-
-	if prefix != "" {
-		addr = models.AddressType{
-			Subnet: &models.SubnetType{
-				IPPrefix:    prefix,
-				IPPrefixLen: 0,
-			},
-		}
-	}
-
-	rule := models.PolicyRuleType{
-		RuleUUID:  uuid,
-		Direction: egressTrafficVnc,
-		Protocol:  protocolAny,
-		SRCPorts: []*models.PortType{
-			{
-				StartPort: 0,
-				EndPort:   65535,
-			},
-		},
-		DSTPorts: []*models.PortType{
-			{
-				StartPort: 0,
-				EndPort:   65535,
-			},
-		},
-		Ethertype: ethertype,
-	}
-	if ingress {
-		rule.SRCAddresses = []*models.AddressType{&addr}
-		rule.DSTAddresses = []*models.AddressType{&localAddr}
-		return &rule
-	}
-
-	rule.SRCAddresses = []*models.AddressType{&localAddr}
-	rule.DSTAddresses = []*models.AddressType{&addr}
-	return &rule
 }
 
 func (sg *SecurityGroup) getSecurityGroupsFromDB(

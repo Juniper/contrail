@@ -133,9 +133,9 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "any",
 			policyRule: &PolicyRuleType{
-				Protocol: "any",
+				Protocol: AnyProtocol,
 			},
-			expectedACLProtocol: "any",
+			expectedACLProtocol: AnyProtocol,
 		},
 
 		{
