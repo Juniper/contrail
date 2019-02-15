@@ -22,7 +22,6 @@ schema:
       presence: "optional"
       description: "Details of the RHOSPD control hosts"
       $ref: "rhospd_types.json#/definitions/ControlHostsInfo"
-  propertiesOrder: []
   required: []
   type: object
 singular: rhospd_cloud_manager

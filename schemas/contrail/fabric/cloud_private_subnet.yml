@@ -37,7 +37,6 @@ schema:
       view:
       - create
       - detail
-  propertiesOrder: []
   required: []
   type: object
 singular: cloud_private_subnet

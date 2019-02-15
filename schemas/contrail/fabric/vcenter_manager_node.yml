@@ -42,7 +42,6 @@ schema:
       view:
       - create
       - detail
-  propertiesOrder: []
   required: []
   type: object
 singular: vCenter_manager_node

@@ -5,6 +5,56 @@ plural: has_status
 prefix: /
 schema:
   properties:
+    provisioning_state:
+      default: NOSTATE
+      description: Provisioning Status
+      enum:
+        - NOSTATE
+        - CREATED
+        - CREATE_IN_PROGRESS
+        - CREATE_FAILED
+        - UPDATED
+        - UPDATE_IN_PROGRESS
+        - UPDATE_FAILED
+        - DELETED
+        - DELETE_IN_PROGRESS
+        - DELETE_FAILED
+      nullable: false
+      permission:
+        - create
+        - update
+      sql: ""
+      title: Provisioning Status
+      type: string
+      view:
+        - list
+        - detail
+    provisioning_progress_stage:
+      default: ""
+      description: Provisioning Progress Stage
+      nullable: false
+      permission:
+        - create
+        - update
+      sql: ""
+      title: Provisioning Progress Stage
+      type: string
+      view:
+        - list
+        - detail
+    provisioning_progress:
+      default: 0
+      description: Provisioning progress 0 - 100%
+      nullable: false
+      permission:
+        - create
+        - update
+      sql: int
+      title: Provisioning Progress
+      type: integer
+      view:
+        - list
+        - detail
     provisioning_log:
       default: ""
       description: Provisioning Log
@@ -18,32 +68,6 @@ schema:
       view:
       - list
       - detail
-    provisioning_progress:
-      default: 0
-      description: Provisioning progress 0 - 100%
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: int
-      title: Provisioning Progress
-      type: integer
-      view:
-      - list
-      - detail
-    provisioning_progress_stage:
-      default: ""
-      description: Provisioning Progress Stage
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Provisioning Progress Stage
-      type: string
-      view:
-      - list
-      - detail
     provisioning_start_time:
       default: ""
       description: Time provisioning started
@@ -53,30 +77,6 @@ schema:
       - update
       sql: ""
       title: Time provisioning started
-      type: string
-      view:
-      - list
-      - detail
-    provisioning_state:
-      default: NOSTATE
-      description: Provisioning Status
-      enum:
-      - NOSTATE
-      - CREATED
-      - CREATE_IN_PROGRESS
-      - CREATE_FAILED
-      - UPDATED
-      - UPDATE_IN_PROGRESS
-      - UPDATE_FAILED
-      - DELETED
-      - DELETE_IN_PROGRESS
-      - DELETE_FAILED
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Provisioning Status
       type: string
       view:
       - list
@@ -103,12 +103,6 @@ schema:
       view:
       - create
       - detail
-  propertiesOrder:
-  - provisioning_state
-  - provisioning_progress_stage
-  - provisioning_progress
-  - provisioning_log
-  - provisioning_start_time
   required: []
   type: object
 singular: has_status
