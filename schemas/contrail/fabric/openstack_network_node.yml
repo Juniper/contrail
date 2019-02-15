@@ -23,7 +23,6 @@ plural: openstack_network_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: openstack_network_node

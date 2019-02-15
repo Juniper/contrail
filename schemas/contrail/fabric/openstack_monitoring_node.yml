@@ -23,7 +23,6 @@ plural: openstack_monitoring_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: openstack_monitoring_node

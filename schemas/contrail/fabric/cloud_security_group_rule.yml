@@ -76,7 +76,6 @@ schema:
       view:
       - create
       - detail
-  propertiesOrder: []
   type: object
 singular: cloud_security_group_rule
 title: Cloud Security Group Rule
