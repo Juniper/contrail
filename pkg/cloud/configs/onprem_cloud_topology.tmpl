@@ -40,3 +40,18 @@
       gateway: {{ instance.gateway }}
       {% endif %}
   {% endfor %}
+  {% for tor in cloud.tors %}
+      {% for bgp_router in tor.bgpRouters %}
+      - name: {{ tor.info.PhysicalRouterProductName }}
+      public_ip: {{ tor.info.PhysicalRouterManagementIP }}
+      private_ip: {{ tor.info.PhysicalRouterDataplaneIP }}
+      roles:
+        - tor
+      provision: {{ tor.provision }}
+      username: {{ tor.info.PhysicalRouterUserCredentials.Username }}
+      password: {{ tor.info.PhysicalRouterUserCredentials.Password }}
+      AS: {{ bgp_router.bgpRouterParameters.AutonomousSystem}}
+      {% endfor %}
+      protocols_mode:
+       - bgp
+  {% endfor %}
