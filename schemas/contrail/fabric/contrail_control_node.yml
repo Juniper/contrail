@@ -23,7 +23,6 @@ plural: contrail_control_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: contrail_control_node

@@ -49,7 +49,6 @@ schema:
       operations: CRUD
       presence: optional
       type: integer
-  propertiesOrder: []
   required: []
   type: object
 singular: appformix_controller_node

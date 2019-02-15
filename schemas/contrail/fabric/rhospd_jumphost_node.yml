@@ -28,7 +28,6 @@ schema:
       presence: required
       description: "Network details of Jump Host"
       $ref: "rhospd_types.json#/definitions/JumpHostNetworkInfo"
-  propertiesOrder: []
   required: []
   type: object
 singular: rhospd_jumphost_node

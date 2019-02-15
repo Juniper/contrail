@@ -19,7 +19,6 @@ plural: openstack_compute_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: openstack_compute_node

@@ -27,7 +27,6 @@ schema:
       presence: required
       description: "Information used to generate the SSL certificates"
       $ref: "rhospd_types.json#/definitions/OverCloudTLSInfo"
-  propertiesOrder: []
   required: []
   type: object
 singular: rhospd_overcloud_node

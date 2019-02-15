@@ -18,7 +18,6 @@ plural: openstack_baremetal_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: openstack_baremetal_node

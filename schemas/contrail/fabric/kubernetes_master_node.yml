@@ -19,7 +19,6 @@ plural: kubernetes_master_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: kubernetes_master_node

@@ -19,7 +19,6 @@ plural: contrail_ztp_tftp_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: contrail_ztp_tftp_node

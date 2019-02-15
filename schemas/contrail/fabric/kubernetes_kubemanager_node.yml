@@ -19,7 +19,6 @@ plural: kubernetes_kubemanager_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: kubernetes_kubemanager_node
