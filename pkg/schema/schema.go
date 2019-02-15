@@ -152,11 +152,9 @@ type Schema struct {
 	Title                 string                    `yaml:"title" json:"title,omitempty"`
 	Table                 string                    `yaml:"table" json:"table,omitempty"`
 	Description           string                    `yaml:"description" json:"description,omitempty"`
-	Parents               map[string]*Reference     `yaml:"-" json:"parents,omitempty"`
-	ParentsSlice          yaml.MapSlice             `yaml:"parents" json:"-"`
-	References            map[string]*Reference     `yaml:"-" json:"references,omitempty"`
+	Parents               map[string]*Reference     `yaml:"parents" json:"parents,omitempty"`
+	References            map[string]*Reference     `yaml:"references" json:"references,omitempty"`
 	BackReferences        map[string]*BackReference `yaml:"-" json:"back_references,omitempty"`
-	ReferencesSlice       yaml.MapSlice             `yaml:"references" json:"-"`
 	Prefix                string                    `yaml:"prefix" json:"prefix,omitempty"`
 	JSONSchema            *JSONSchema               `yaml:"-" json:"schema,omitempty"`
 	JSONSchemaSlice       yaml.MapSlice             `yaml:"schema" json:"-"`
@@ -711,14 +709,8 @@ func (api *API) resolveAllRelation() error {
 		if s.Type == AbstractType {
 			continue
 		}
-		s.References = map[string]*Reference{}
-
 		s.Parents = map[string]*Reference{}
-		for _, m := range mapSlice(s.ReferencesSlice) {
-			linkTo := m.Key.(string)                          //nolint: errcheck
-			referenceMap := mapSlice(m.Value.(yaml.MapSlice)) //nolint: errcheck
-			reference := referenceMap.Reference()
-			s.References[linkTo] = reference
+		for linkTo, reference := range s.References {
 			linkToSchema := api.SchemaByID(linkTo)
 			if linkToSchema == nil {
 				return fmt.Errorf("missing linked schema '%s' for reference '%v' in schema %v [%v]",
@@ -734,29 +726,25 @@ func (api *API) resolveAllRelation() error {
 			reference.Table = ReferenceTableName(RefPrefix, s.Table, linkTo)
 		}
 		s.IsConfigRootInParents = false
-		for _, m := range mapSlice(s.ParentsSlice) {
-			linkTo := m.Key.(string) //nolint: errcheck
+		for linkTo, parent := range s.Parents {
 			if linkTo == configRoot {
 				s.IsConfigRootInParents = true
 				s.ParentOptional = true
 				continue
 			}
-			referenceMap := mapSlice(m.Value.(yaml.MapSlice)) //nolint: errcheck
-			reference := referenceMap.Reference()
-			s.DefaultParent = reference
-			if reference.Presence == optional {
+			s.DefaultParent = parent
+			if parent.Presence == optional {
 				s.ParentOptional = true
 			}
-			s.Parents[linkTo] = reference
-			reference.Table = ReferenceTableName(ParentPrefix, s.Table, linkTo)
+			parent.Table = ReferenceTableName(ParentPrefix, s.Table, linkTo)
 			parentSchema := api.SchemaByID(linkTo)
 			if parentSchema == nil {
 				return fmt.Errorf("parent schema %s not found", linkTo)
 			}
-			if err := api.resolveRelation(parentSchema, reference); err != nil {
+			if err := api.resolveRelation(parentSchema, parent); err != nil {
 				return err
 			}
-			parentSchema.Children = append(parentSchema.Children, &BackReference{LinkTo: s, Description: reference.Description})
+			parentSchema.Children = append(parentSchema.Children, &BackReference{LinkTo: s, Description: parent.Description})
 		}
 		s.HasParents = len(s.Parents) > 0
 	}
@@ -777,7 +765,7 @@ func (api *API) resolveIndex() error {
 			index++
 		}
 		index = index + propertyIndexOffset
-		for _, key := range mapSlice(s.ReferencesSlice).keys() {
+		for _, key := range sortedReferenceIDs(s.References) {
 			reference := s.References[key]
 			reference.Index = index
 			index++
@@ -801,6 +789,15 @@ func (api *API) resolveIndex() error {
 	return nil
 }
 
+func sortedReferenceIDs(refs map[string]*Reference) []string {
+	var keys []string
+	for k, _ := range refs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 func (api *API) resolveAllGoName() error {
 	for _, s := range api.Schemas {
 		err := s.JSONSchema.resolveGoName(s.ID)
@@ -819,10 +816,20 @@ func (api *API) resolveExtend() error {
 				continue
 			}
 			s.JSONSchema.Update(baseSchema.JSONSchema)
-			s.ReferencesSlice = append(s.ReferencesSlice, baseSchema.ReferencesSlice...)
+			s.extendReferences(baseSchema)
 		}
 	}
 	return nil
+}
+
+func (s *Schema) extendReferences(by *Schema) {
+	for k, v := range by.References {
+		if s.References == nil {
+			s.References = map[string]*Reference{}
+		}
+		c := *v
+		s.References[k] = &c
+	}
 }
 
 func (api *API) resolveAllJSONTag() error {

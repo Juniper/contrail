@@ -128,19 +128,3 @@ func (s mapSlice) JSONSchema() *JSONSchema {
 	schema.Items = items.JSONSchema()
 	return schema
 }
-
-//Reference convert a mapslice for reference
-func (s mapSlice) Reference() *Reference {
-	if s == nil {
-		return nil
-	}
-	reference := &Reference{
-		Description: s.getString("description"),
-		Operations:  s.getString("operations"),
-		Presence:    s.getString("presence"),
-		Derived:     s.getBool("derived"),
-		Ref:         s.getString("$ref"),
-		AttrSlice:   yaml.MapSlice(s.getMapSlice("attr")),
-	}
-	return reference
-}
