@@ -105,14 +105,14 @@ func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *h
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
 	target := proxyEndpoint.Next(scope)
-	if target == "" {
+	if target == nil {
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
 	insecure := true //TODO:(ijohnson) add insecure to endpoint schema
 
-	u, err := url.Parse(target)
+	u, err := url.Parse(target.URL)
 	if err != nil {
-		logrus.WithError(err).WithField("target", target).Info("Failed to parse target - ignoring")
+		logrus.WithError(err).WithField("target", target.URL).Info("Failed to parse target - ignoring")
 	}
 
 	server = httputil.NewSingleHostReverseProxy(u)

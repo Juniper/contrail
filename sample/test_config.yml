@@ -50,8 +50,8 @@ log_level: info
 server:
   read_timeout: 10
   write_timeout: 5
-  log_api: false
-  log_body: false
+  log_api: true
+  log_body: true
 
   # Bind addresss
   address: ":9091"
