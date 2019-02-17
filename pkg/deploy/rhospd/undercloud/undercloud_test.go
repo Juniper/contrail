@@ -22,6 +22,8 @@ const (
 	createPlaybooks          = "./test_data/expected_ansible_create_command.yml"
 	updatePlaybooks          = "./test_data/expected_ansible_update_command.yml"
 	cloudManagerID           = "test_rhospd_cloud_manager_uuid"
+	controlHostOneID         = "control_host1_node_uuid"
+	controlHostTwoID         = "control_host2_node_uuid"
 )
 
 var server *integration.APIServer
@@ -69,6 +71,39 @@ func contrailCloudSitePath() string {
 
 func executedPlaybooksPath() string {
 	return workRoot + "/" + cloudManagerID + "/executed_command.yml"
+}
+
+func verifyPorts(t *testing.T, testScenario integration.TestScenario,
+	nodeID string, expectedPorts []string) error {
+	createdPorts := map[string]string{}
+	var httpClient *client.HTTP
+	for _, httpClient = range testScenario.Clients {
+		var response map[string][]interface{}
+		url := fmt.Sprintf("/ports?parent_uuid=%s", nodeID)
+		_, err := httpClient.Read(context.Background(), url, &response)
+		assert.NoError(t, err, "Unable to list ports of the node")
+		for _, port := range response["ports"] {
+			p := port.(map[string]interface{})                    //nolint: errcheck
+			createdPorts[p["name"].(string)] = p["uuid"].(string) //nolint: errcheck
+		}
+		break
+	}
+	for _, p := range expectedPorts {
+		if portID, ok := createdPorts[p]; ok {
+			url := fmt.Sprintf("/port/%s", portID)
+			var response interface{}
+			_, err := httpClient.Delete(context.Background(), url, &response)
+			assert.NoErrorf(t, err, "Unable to delete port: %s ", portID)
+		} else {
+			keys := make([]string, len(createdPorts))
+			for k := range createdPorts {
+				keys = append(keys, k)
+			}
+			return fmt.Errorf("port expected: %s, actual: %s for node %s",
+				expectedPorts, keys, nodeID)
+		}
+	}
+	return nil
 }
 
 // nolint: gocyclo
@@ -174,6 +209,14 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 	assert.True(t, verifyPlaybooks(t, createPlaybooks),
 		"Expected list of create playbooks are not executed")
 
+	// verify ports
+	controlHostOnePorts := []string{"ens2f1", "ens2f0"}
+	controlHostTwoPorts := []string{"ens2f1"}
+	err = verifyPorts(t, testScenario, controlHostOneID, controlHostOnePorts)
+	assert.NoError(t, err, "failed to verify and delete ports")
+	err = verifyPorts(t, testScenario, controlHostTwoID, controlHostTwoPorts)
+	assert.NoError(t, err, "failed to verify and delete ports")
+
 	// update cloudManager
 	config.Action = updateAction
 	// remove site.yml to trriger cloudManager update
@@ -199,8 +242,20 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 	assert.True(t, verifyPlaybooks(t, updatePlaybooks),
 		"Expected list of update playbooks are not executed")
 
+	// verify ports
+	err = verifyPorts(t, testScenario, controlHostOneID, controlHostOnePorts)
+	assert.NoError(t, err, "failed to verify and delete ports")
+	err = verifyPorts(t, testScenario, controlHostTwoID, controlHostTwoPorts)
+	assert.NoError(t, err, "failed to verify and delete ports")
+
 	// IMPORT test (expected to create endpoints without triggering playbooks)
 	runUnderCloudActionTest(t, testScenario, config, importProvisioningAction, "", "")
+
+	// verify ports
+	err = verifyPorts(t, testScenario, controlHostOneID, controlHostOnePorts)
+	assert.NoError(t, err, "failed to verify and delete ports")
+	err = verifyPorts(t, testScenario, controlHostTwoID, controlHostTwoPorts)
+	assert.NoError(t, err, "failed to verify and delete ports")
 
 	// delete cloudManager
 	config.Action = deleteAction
