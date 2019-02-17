@@ -51,27 +51,28 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	return newCtx, nil
 }
 
-func getKeystoneEndpoint(clusterID string, endpoints *apicommon.EndpointStore) (authEndpoint string, err error) {
+func getKeystoneEndpoint(clusterID string, endpoints *apicommon.EndpointStore) (
+	authEndpoint *apicommon.Endpoint, err error) {
 	if endpoints == nil {
 		// getKeystoneEndpoint called from CreateTokenAPI,
 		// ValidateTokenAPI or GetProjectAPI of the mock keystone
-		return "", nil
+		return nil, nil
 	}
 	if clusterID != "" {
 		scope := "private"
 		endpointKey := strings.Join([]string{"/proxy", clusterID, keystoneService, scope}, "/")
 		keystoneTargets := endpoints.Read(endpointKey)
 		if keystoneTargets == nil {
-			return "", fmt.Errorf("keystone targets not found for: %s", endpointKey)
+			return nil, fmt.Errorf("keystone targets not found for: %s", endpointKey)
 		}
 		authEndpoint = keystoneTargets.Next(scope)
-		if authEndpoint == "" {
-			return "", fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
+		if authEndpoint == nil {
+			return nil, fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
 		}
 	} else {
 		authEndpoint, err = endpoints.GetEndpoint(keystoneService)
 		if err != nil {
-			return "", fmt.Errorf("unable to get keystone endpoint: %s", err)
+			return nil, fmt.Errorf("unable to get keystone endpoint: %s", err)
 		}
 	}
 	return authEndpoint, err
@@ -141,8 +142,8 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 				logrus.Errorf("unable to get keystone endpoint: %s", err)
 				return errutil.ToHTTPError(errutil.ErrorUnauthenticated)
 			}
-			if keystoneEndpoint != "" {
-				keystoneClient.SetAuthURL(keystoneEndpoint)
+			if keystoneEndpoint != nil {
+				keystoneClient.SetAuthURL(keystoneEndpoint.URL)
 				auth = keystoneClient.NewAuth()
 			}
 			tokenString := r.Header.Get("X-Auth-Token")
@@ -192,8 +193,8 @@ func AuthInterceptor(keystoneClient *Client,
 			logrus.Error(err)
 			return nil, errutil.ErrorUnauthenticated
 		}
-		if keystoneEndpoint != "" {
-			keystoneClient.SetAuthURL(keystoneEndpoint)
+		if keystoneEndpoint != nil {
+			keystoneClient.SetAuthURL(keystoneEndpoint.URL)
 			auth = keystoneClient.NewAuth()
 		}
 		newCtx, err := authenticate(ctx, auth, token[0])

@@ -11,19 +11,21 @@ import (
 )
 
 const (
-	pathSep        = ":"
-	webSep         = "//"
-	protocol       = "http"
-	secureProtocol = "https"
-	config         = "config"
-	analytics      = "telemetry"
-	webui          = "nodejs"
-	identity       = "keystone"
-	nova           = "compute"
-	ironic         = "baremetal"
-	glance         = "glance"
-	swift          = "swift"
-	appformix      = "appformix"
+	pathSep              = ":"
+	webSep               = "//"
+	protocol             = "http"
+	secureProtocol       = "https"
+	config               = "config"
+	analytics            = "telemetry"
+	webui                = "nodejs"
+	identity             = "keystone"
+	nova                 = "compute"
+	ironic               = "baremetal"
+	glance               = "glance"
+	swift                = "swift"
+	appformix            = "appformix"
+	defaultAdminUser     = "admin"
+	defaultAdminPassword = "contrail123"
 )
 
 var portMap = map[string]string{
@@ -93,6 +95,32 @@ func (e *EndpointData) getOpenstackPublicVip() (vip string) {
 	}
 
 	return vip
+}
+
+func (e *EndpointData) getkeystoneAdminCredential() (adminUser, adminPassword string) {
+	var k []*models.KeyValuePair
+	if o := e.clusterData.getOpenstackClusterInfo(); o != nil {
+		if g := o.GetKollaPasswords(); g != nil {
+			k = g.GetKeyValuePair()
+			for _, keyValuePair := range k {
+				switch keyValuePair.Key {
+				case "keystone_admin_user":
+					adminUser = keyValuePair.Value
+				case "keystone_admin_password":
+					adminPassword = keyValuePair.Value
+				}
+			}
+		}
+	}
+
+	if adminUser == "" {
+		adminUser = defaultAdminUser
+	}
+	if adminPassword == "" {
+		adminPassword = defaultAdminPassword
+	}
+
+	return adminUser, adminPassword
 }
 
 func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]string) {
@@ -198,7 +226,13 @@ func (e *EndpointData) create() error {
 			publicURL := e.endpointToURL(
 				endpointProtocol, endpointIP, e.getPort(endpointIP, service))
 			privateURL := publicURL
-			err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
+			endpointData := map[string]string{
+				"parent_uuid": e.clusterID,
+				"name":        service,
+				"public_url":  publicURL,
+				"private_url": privateURL,
+			}
+			err := e.cluster.createEndpoint(endpointData)
 			if err != nil {
 				return err
 			}
@@ -214,7 +248,18 @@ func (e *EndpointData) create() error {
 				publicURL := e.endpointToURL(
 					protocol, endpointIP, e.getPort(endpointIP, service))
 				privateURL := publicURL
-				err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
+				endpointData := map[string]string{
+					"parent_uuid": e.clusterID,
+					"name":        service,
+					"public_url":  publicURL,
+					"private_url": privateURL,
+				}
+				if service == identity {
+					adminUser, adminPassword := e.getkeystoneAdminCredential()
+					endpointData["username"] = adminUser
+					endpointData["password"] = adminPassword
+				}
+				err := e.cluster.createEndpoint(endpointData)
 				if err != nil {
 					return err
 				}
@@ -234,7 +279,13 @@ func (e *EndpointData) create() error {
 			publicURL := e.endpointToURL(
 				endpointProtocol, endpointIP, e.getPort(endpointIP, service))
 			privateURL := publicURL
-			err := e.cluster.createEndpoint(e.clusterID, service, publicURL, privateURL)
+			endpointData := map[string]string{
+				"parent_uuid": e.clusterID,
+				"name":        service,
+				"public_url":  publicURL,
+				"private_url": privateURL,
+			}
+			err := e.cluster.createEndpoint(endpointData)
 			if err != nil {
 				return err
 			}
