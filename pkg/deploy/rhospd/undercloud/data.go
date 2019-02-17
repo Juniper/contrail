@@ -12,6 +12,7 @@ import (
 type Data struct {
 	cloudManagerInfo  *models.RhospdCloudManager
 	overcloudNetworks []*OvercloudNetworkData
+	overcloudNodes    []*models.Node
 	client            *client.HTTP
 }
 
@@ -40,16 +41,6 @@ func NewOvercloudNetworkData(overcloudNetwork *models.RhospdOvercloudNetwork,
 }
 
 func (d *Data) getCloudManagerDetails(undercloudID string) error {
-	if err := d.updateUndercloudDetails(undercloudID); err != nil {
-		return err
-	}
-	if err := d.updateOvercloudNetworkDetails(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *Data) updateUndercloudDetails(undercloudID string) error {
 	request := new(services.GetRhospdCloudManagerRequest)
 	request.ID = undercloudID
 
@@ -58,27 +49,48 @@ func (d *Data) updateUndercloudDetails(undercloudID string) error {
 		return err
 	}
 	d.cloudManagerInfo = resp.GetRhospdCloudManager()
-	if err := d.updateOvercloudChildren(); err != nil {
+	if err = d.updateOvercloudDetails(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *Data) updateOvercloudChildren() error {
-	for i, overcloud := range d.cloudManagerInfo.RhospdOverclouds {
-		request := new(services.GetRhospdOvercloudRequest)
+func (d *Data) updateOvercloudDetails() error {
+	for i, overcloud := range d.cloudManagerInfo.RhospdOvercloudNodes {
+		request := new(services.GetRhospdOvercloudNodeRequest)
 		request.ID = overcloud.UUID
-		resp, err := d.client.GetRhospdOvercloud(context.Background(), request)
+		resp, err := d.client.GetRhospdOvercloudNode(context.Background(), request)
 		if err != nil {
 			return err
 		}
-		d.cloudManagerInfo.RhospdOverclouds[i] = resp.GetRhospdOvercloud()
+		d.cloudManagerInfo.RhospdOvercloudNodes[i] = resp.GetRhospdOvercloudNode()
+	}
+	if err := d.updateOvercloudNodes(); err != nil {
+		return err
+	}
+	if err := d.updateOvercloudNetworkDetails(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Data) updateOvercloudNodes() error {
+	overcloudNodes := d.cloudManagerInfo.RhospdOvercloudNodes[0].NodeRefs
+	for _, overcloudNode := range overcloudNodes {
+		request := new(services.GetNodeRequest)
+		request.ID = overcloudNode.UUID
+
+		resp, err := d.client.GetNode(context.Background(), request)
+		if err != nil {
+			return err
+		}
+		d.overcloudNodes = append(d.overcloudNodes, resp.GetNode())
 	}
 	return nil
 }
 
 func (d *Data) updateOvercloudNetworkDetails() error {
-	overcloudNetworks := d.cloudManagerInfo.RhospdOverclouds[0].RhospdOvercloudNetworks
+	overcloudNetworks := d.cloudManagerInfo.RhospdOvercloudNodes[0].RhospdOvercloudNetworks
 	for _, overcloudNetwork := range overcloudNetworks {
 		request := new(services.GetRhospdOvercloudNetworkRequest)
 		request.ID = overcloudNetwork.UUID
