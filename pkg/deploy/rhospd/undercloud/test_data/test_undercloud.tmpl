@@ -3,9 +3,12 @@ description: RHOSPD undercloud CRUD test
 cleanup:
 - path: /rhospd-jumphost-node/rhospd_jumphost_nodes_uuid
 - path: /rhospd-undercloud-node/rhospd_undercloud_nodes_uuid
-- path: /rhospd-overcloud/rhospd_overcloud_uuid
+- path: /rhospd-overcloud-node/rhospd_overcloud_nodes_uuid
 - path: /rhospd-overcloud-network/test_rhospd_overcloud_network_external_uuid
 - path: /node/all_in_one_node_uuid
+- path: /node/control_host1_uuid
+- path: /node/control_host2_uuid
+- path: /node/control_host3_uuid
 - path: /rhospd-cloud-manager/test_rhospd_cloud_manager_uuid
 - path: /virtual-network/virtual_network_external_uuid
 - path: /network-ipam/ipam_external_uuid
@@ -60,10 +63,46 @@ test_data:
     ip_address: localhost
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  control_host1_node: &control_host1_node
+    uuid: control_host1_node_uuid
+    hostname: control_host1
+    name: control_host1
+    type: baremetal
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    bms_info:
+      driver_info:
+        ipmi_address: 1.1.1.1
+        ipmi_username: ADMIN1
+        ipmi_password: ADMIN1
+  control_host2_node: &control_host2_node
+    uuid: control_host2_node_uuid
+    hostname: control_host2
+    name: control_host2
+    type: baremetal
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    bms_info:
+      driver_info:
+        ipmi_address: 1.1.1.2
+        ipmi_username: ADMIN2
+        ipmi_password: ADMIN2
+  control_host3_node: &control_host3_node
+    uuid: control_host3_node_uuid
+    hostname: control_host3
+    name: control_host3
+    type: baremetal
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    bms_info:
+      driver_info:
+        ipmi_address: 1.1.1.3
+        ipmi_username: ADMIN3
+        ipmi_password: ADMIN3
   rhospd_overcloud_network_external: &rhospd_overcloud_network_external
     uuid: test_rhospd_overcloud_network_external_uuid
-    parent_type: rhospd-overcloud
-    parent_uuid: rhospd_overcloud_uuid
+    parent_type: rhospd-overcloud-node
+    parent_uuid: rhospd_overcloud_nodes_uuid
     mtu: "1500"
     vip: 10.1.1.1
     virtual_network_refs:
@@ -131,8 +170,8 @@ test_data:
       cpu: 16
       vnc:
         password: testvmvnc123
-  rhospd_overcloud: &rhospd_overcloud
-    uuid: rhospd_overcloud_uuid
+  rhospd_overcloud_nodes: &rhospd_overcloud_nodes
+    uuid: rhospd_overcloud_nodes_uuid
     parent_type: rhospd-cloud-manager
     parent_uuid: test_rhospd_cloud_manager_uuid
     tls:
@@ -144,6 +183,10 @@ test_data:
     image:
       user: testimageuser
       password: testimage123
+    node_refs:
+      - uuid: control_host1_node_uuid
+      - uuid: control_host2_node_uuid
+      - uuid: control_host3_node_uuid
 clients:
   default:
     id: alice
@@ -243,6 +286,74 @@ workflow:
       interface_name: all_in_one_node_interface
       ip_address: localhost
 
+- name: create control host1 node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *control_host1_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: control_host1_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: control_host1
+      name: control_host1
+      bms_info:
+        driver_info:
+          ipmi_address: 1.1.1.1
+          ipmi_username: ADMIN1
+          ipmi_password: ADMIN1
+
+- name: create control host2 node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *control_host2_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: control_host2_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: control_host2
+      name: control_host2
+      bms_info:
+        driver_info:
+          ipmi_address: 1.1.1.2
+          ipmi_username: ADMIN2
+          ipmi_password: ADMIN2
+
+- name: create control host3 node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *control_host3_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: control_host3_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: control_host3
+      name: control_host3
+      bms_info:
+        driver_info:
+          ipmi_address: 1.1.1.3
+          ipmi_username: ADMIN3
+          ipmi_password: ADMIN3
 - name: create rhospd jumphost node
   request:
     path: /rhospd-jumphost-nodes
@@ -273,19 +384,23 @@ workflow:
       parent_uuid: test_rhospd_cloud_manager_uuid
       node_refs:
         - uuid: all_in_one_node_uuid
-- name: create rhospd overcloud
+- name: create rhospd overcloud node
   request:
-    path: /rhospd-overclouds
+    path: /rhospd-overcloud-nodes
     method: POST
     expected:
     - 200
     data:
-      rhospd-overcloud: *rhospd_overcloud
+      rhospd-overcloud-node: *rhospd_overcloud_nodes
   expect:
-    rhospd-overcloud:
-      uuid: rhospd_overcloud_uuid
+    rhospd-overcloud-node:
+      uuid: rhospd_overcloud_nodes_uuid
       parent_type: rhospd-cloud-manager
       parent_uuid: test_rhospd_cloud_manager_uuid
+      node_refs:
+        - uuid: control_host1_node_uuid
+        - uuid: control_host2_node_uuid
+        - uuid: control_host3_node_uuid
 - name: create overcloud external network
   request:
     path: /rhospd-overcloud-networks
@@ -299,5 +414,5 @@ workflow:
       perms2:
         owner: admin
       uuid: test_rhospd_overcloud_network_external_uuid
-      parent_type: rhospd-overcloud
-      parent_uuid: rhospd_overcloud_uuid
+      parent_type: rhospd-overcloud-node
+      parent_uuid: rhospd_overcloud_nodes_uuid

@@ -1,0 +1,12 @@
+{
+	"ipmi_address": "1.1.1.1",
+	"numa_topology": {
+		"nics": [{
+			"numa_node": 1,
+			"name": "ens2f1"
+		}, {
+			"numa_node": 1,
+			"name": "ens2f0"
+		}]
+	}
+}
