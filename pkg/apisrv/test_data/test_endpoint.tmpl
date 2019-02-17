@@ -20,6 +20,10 @@ test_data:
     prefix: {{ endpoint_prefix }}
     {%if private_url %}private_url: {{private_url}}{%endif%}
     public_url: {{public_url}}
+    {%if admin_user %}
+    username: {{ admin_user }}
+    password: {{ admin_user }}
+    {%endif%}
 clients:
   default:
     id: alice

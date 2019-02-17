@@ -636,14 +636,41 @@ func NewWellKnownServer(serve string, handler http.Handler) *httptest.Server {
 	}
 }
 
+//addKeystoneUser adds Keystone user in mock keystone.
+func addKeystoneUser(k *keystone.Keystone, testID string) {
+	assignment := k.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
+	assignment.Users = map[string]*kscommon.User{}
+	assignment.Users[testID] = &kscommon.User{
+		Domain:   assignment.Domains[defaultDomainID],
+		ID:       testID,
+		Name:     testID,
+		Password: testID,
+		Roles: []*kscommon.Role{
+			{
+				ID:      "admin",
+				Name:    "Admin",
+				Project: assignment.Projects["admin"],
+			},
+		},
+	}
+}
+
 // MockServerWithKeystone mocks keystone server
 func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
+	return MockServerWithKeystoneTestUser(serve, keystoneAuthURL, "")
+}
+
+// MockServerWithKeystoneTestUser mocks keystone server with test users
+func MockServerWithKeystoneTestUser(serve, keystoneAuthURL, testUser string) *httptest.Server {
 	// Echo instance
 	e := echo.New()
 	keystoneClient := keystone.NewKeystoneClient(keystoneAuthURL, true)
 	k, err := keystone.Init(e, nil, keystoneClient)
 	if err != nil {
 		return nil
+	}
+	if len(testUser) > 0 {
+		addKeystoneUser(k, testUser)
 	}
 
 	// Routes

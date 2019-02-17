@@ -16,6 +16,22 @@ const (
 	pathSep = "/"
 )
 
+// Endpoint represents an endpoint url with its credentials
+type Endpoint struct {
+	URL      string
+	Username string
+	Password string
+}
+
+// NewEndpoint returns endoint struct with credential
+func NewEndpoint(url, user, password string) *Endpoint {
+	return &Endpoint{
+		URL:      url,
+		Username: user,
+		Password: password,
+	}
+}
+
 // TargetStore is used to store service specific endpoint targets in-memory
 type TargetStore struct {
 	Data       *sync.Map
@@ -61,14 +77,13 @@ func (t *TargetStore) Write(id string, endpoint *models.Endpoint) {
 }
 
 //Next endpoint target from memory is read(roundrobin)
-func (t *TargetStore) Next(scope string) (endpointURL string) {
-	endpointURL = ""
+func (t *TargetStore) Next(scope string) (endpointData *Endpoint) {
 	t.Data.Range(func(id, endpoint interface{}) bool {
 		ids := id.(string) // nolint: errcheck
 		if t.nextTarget == "" {
 			t.nextTarget = ids
 		}
-		if endpointURL != "" {
+		if endpointData != nil {
 			t.nextTarget = ids
 			// exit Range iteration as next target is identified
 			return false
@@ -76,16 +91,19 @@ func (t *TargetStore) Next(scope string) (endpointURL string) {
 		switch scope {
 		case Public:
 			if ids == t.nextTarget {
-				endpointURL = endpoint.(*models.Endpoint).PublicURL
+				e := endpoint.(*models.Endpoint)
+				endpointData = NewEndpoint(e.PublicURL, e.Username, e.Password)
 				// let Range iterate till nextServer is identified
 				return true
 			}
 		case Private:
 			if ids == t.nextTarget {
-				endpointURL = endpoint.(*models.Endpoint).PrivateURL
-				if endpointURL == "" {
+				e := endpoint.(*models.Endpoint)
+				endpointData = NewEndpoint(e.PrivateURL, e.Username, e.Password)
+				if endpointData == nil {
 					// no private url configured, use public url
-					endpointURL = endpoint.(*models.Endpoint).PublicURL
+					e := endpoint.(*models.Endpoint)
+					endpointData = NewEndpoint(e.PublicURL, e.Username, e.Password)
 				}
 				// let Range iterate till nextServer is identified
 				return true
@@ -93,7 +111,7 @@ func (t *TargetStore) Next(scope string) (endpointURL string) {
 		}
 		return true
 	})
-	return endpointURL
+	return endpointData
 }
 
 //Remove endpoint target from memory
@@ -137,16 +155,15 @@ func (e *EndpointStore) Remove(prefix string) {
 }
 
 //GetEndpoint by prefix
-func (e *EndpointStore) GetEndpoint(prefix string) (endpoint string, err error) {
+func (e *EndpointStore) GetEndpoint(prefix string) (endpoint *Endpoint, err error) {
 	endpointCount := 0
-	endpoint = ""
 	e.Data.Range(func(key, targets interface{}) bool {
 		keyString, _ := key.(string) // nolint: errcheck
 		keyParts := strings.Split(keyString, pathSep)
 		if keyParts[3] == prefix && keyParts[4] == Private {
 			endpoints, _ := targets.(*TargetStore) // nolint: errcheck
 			endpoint = endpoints.Next(Private)
-			if endpoint != "" {
+			if endpoint != nil {
 				endpointCount++
 			}
 		}

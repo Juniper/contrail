@@ -13,18 +13,13 @@ import (
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
-func (c *Cluster) createEndpoint(parentUUID, name, publicURL, privateURL string) error {
-	endpoint := map[string]string{
-		"parent_type":  defaultResource,
-		"parent_uuid":  parentUUID,
-		"name":         fmt.Sprintf("%s-%s", name, uuid.NewV4().String()),
-		"display_name": name,
-		"prefix":       name,
-		"public_url":   publicURL,
-		"private_url":  privateURL,
-	}
+func (c *Cluster) createEndpoint(endpoint map[string]string) error {
+	endpoint["parent_type"] = defaultResource
+	endpoint["display_name"] = endpoint["name"]
+	endpoint["prefix"] = endpoint["name"]
+	endpoint["name"] = fmt.Sprintf("%s-%s", endpoint["name"], uuid.NewV4().String())
 	endpointData := map[string]map[string]string{"endpoint": endpoint}
-	c.log.Infof("Creating endpoint: %s, %s", name, publicURL)
+	c.log.Infof("Creating endpoint: %s, %s", endpoint["display_name"], endpoint["public_url"])
 	var endpointResponse map[string]interface{}
 	resURI := fmt.Sprintf("%ss", defaultEndpointResPath)
 	_, err := c.APIServer.Create(context.Background(), resURI, &endpointData, &endpointResponse)
