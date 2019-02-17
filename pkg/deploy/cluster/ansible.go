@@ -246,12 +246,12 @@ func (a *contrailAnsibleDeployer) createInventory() error {
 	if err := a.createInstancesFile(a.getInstanceFile()); err != nil {
 		return err
 	}
-	if a.clusterData.clusterInfo.Orchestrator == orchestratorVcenter {
+	if a.clusterData.ClusterInfo.Orchestrator == orchestratorVcenter {
 		if err := a.createVcenterVarsFile(a.getVcenterFile()); err != nil {
 			return err
 		}
 	}
-	if a.clusterData.clusterInfo.DatapathEncryption {
+	if a.clusterData.ClusterInfo.DatapathEncryption {
 		return a.createDatapathEncryptionInventory(a.getInventoryFile())
 	}
 	return nil
@@ -260,7 +260,7 @@ func (a *contrailAnsibleDeployer) createInventory() error {
 // nolint: gocyclo
 func (a *contrailAnsibleDeployer) getOpenstackDerivedVars() *openstackVariables {
 	openstackVars := openstackVariables{}
-	cluster := a.clusterData.getOpenstackClusterInfo()
+	cluster := a.clusterData.GetOpenstackClusterInfo()
 	// Enable haproxy when multiple openstack control nodes present in cluster
 	if (cluster != nil) && (len(cluster.OpenstackControlNodes) > 1) {
 		openstackVars.enableHaproxy = enable
@@ -268,7 +268,7 @@ func (a *contrailAnsibleDeployer) getOpenstackDerivedVars() *openstackVariables 
 	}
 	// get CONTROL_NODES from contrail configuration
 	openstackControlNodes := []string{}
-	if c := a.clusterData.clusterInfo.GetContrailConfiguration(); c != nil {
+	if c := a.clusterData.ClusterInfo.GetContrailConfiguration(); c != nil {
 		for _, keyValuePair := range c.GetKeyValuePair() {
 			if keyValuePair.Key == "OPENSTACK_NODES" {
 				openstackControlNodes = strings.Split(keyValuePair.Value, ",")
@@ -279,7 +279,7 @@ func (a *contrailAnsibleDeployer) getOpenstackDerivedVars() *openstackVariables 
 	// get openstack control node ip when single node is present
 	if len(openstackControlNodes) != 0 {
 		openstackManagementIP := ""
-		for _, node := range a.clusterData.nodesInfo {
+		for _, node := range a.clusterData.NodesInfo {
 			if node.UUID == cluster.OpenstackControlNodes[0].NodeRefs[0].UUID {
 				openstackManagementIP = node.IPAddress
 				break
@@ -313,24 +313,20 @@ func (a *contrailAnsibleDeployer) getOpenstackDerivedVars() *openstackVariables 
 
 func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error {
 	a.Log.Info("Creating instance.yml input file for ansible deployer")
-	SSHUser, SSHPassword, SSHKey, err := a.cluster.getDefaultCredential()
-	if err != nil {
-		return err
-	}
 	context := pongo2.Context{
-		"cluster":            a.clusterData.clusterInfo,
-		"openstackCluster":   a.clusterData.getOpenstackClusterInfo(),
-		"k8sCluster":         a.clusterData.getK8sClusterInfo(),
-		"vcenter":            a.clusterData.getVCenterClusterInfo(),
-		"appformixCluster":   a.clusterData.getAppformixClusterInfo(),
-		"xflowCluster":       a.clusterData.getXflowData(),
-		"nodes":              a.clusterData.getAllNodesInfo(),
-		"credentials":        a.clusterData.getAllCredsInfo(),
-		"keypairs":           a.clusterData.getAllKeypairsInfo(),
+		"cluster":            a.clusterData.ClusterInfo,
+		"openstackCluster":   a.clusterData.GetOpenstackClusterInfo(),
+		"k8sCluster":         a.clusterData.GetK8sClusterInfo(),
+		"vcenter":            a.clusterData.GetVCenterClusterInfo(),
+		"appformixCluster":   a.clusterData.GetAppformixClusterInfo(),
+		"xflowCluster":       a.clusterData.GetXflowData(),
+		"nodes":              a.clusterData.GetAllNodesInfo(),
+		"credentials":        a.clusterData.GetAllCredsInfo(),
+		"keypairs":           a.clusterData.GetAllKeypairsInfo(),
 		"openstack":          a.getOpenstackDerivedVars(),
-		"defaultSSHUser":     SSHUser,
-		"defaultSSHPassword": SSHPassword,
-		"defaultSSHKey":      SSHKey,
+		"defaultSSHUser":     a.clusterData.DefaultSSHUser,
+		"defaultSSHPassword": a.clusterData.DefaultSSHPassword,
+		"defaultSSHKey":      a.clusterData.DefaultSSHKey,
 	}
 	content, err := template.Apply(a.getInstanceTemplate(), context)
 	if err != nil {
@@ -348,8 +344,8 @@ func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error 
 func (a *contrailAnsibleDeployer) createDatapathEncryptionInventory(destination string) error {
 	a.Log.Info("Creating inventory.yml input file for datapath encryption ansible deployer")
 	context := pongo2.Context{
-		"cluster": a.clusterData.clusterInfo,
-		"nodes":   a.clusterData.getAllNodesInfo(),
+		"cluster": a.clusterData.ClusterInfo,
+		"nodes":   a.clusterData.GetAllNodesInfo(),
 	}
 	content, err := template.Apply(a.getInventoryTemplate(), context)
 	if err != nil {
@@ -366,9 +362,9 @@ func (a *contrailAnsibleDeployer) createDatapathEncryptionInventory(destination 
 func (a *contrailAnsibleDeployer) createVcenterVarsFile(destination string) error {
 	a.Log.Info("Creating vcenter_vars.yml input file for vcenter ansible deployer")
 	context := pongo2.Context{
-		"cluster": a.clusterData.clusterInfo,
-		"vcenter": a.clusterData.getVCenterClusterInfo(),
-		"nodes":   a.clusterData.getAllNodesInfo(),
+		"cluster": a.clusterData.ClusterInfo,
+		"vcenter": a.clusterData.GetVCenterClusterInfo(),
+		"nodes":   a.clusterData.GetAllNodesInfo(),
 	}
 	content, err := template.Apply(a.getVcenterTemplate(), context)
 	if err != nil {
@@ -435,10 +431,10 @@ func (a *contrailAnsibleDeployer) playInstancesConfig(ansibleArgs []string) erro
 
 func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string) error {
 	// play orchestrator provisioning playbook
-	switch a.clusterData.clusterInfo.Orchestrator {
+	switch a.clusterData.ClusterInfo.Orchestrator {
 	case orchestratorOpenstack:
 		ansibleArgs = append(ansibleArgs, "-e force_checkout=yes")
-		switch a.clusterData.clusterInfo.ProvisioningAction {
+		switch a.clusterData.ClusterInfo.ProvisioningAction {
 		case addComputeProvisioningAction, deleteComputeProvisioningAction:
 			ansibleArgs = append(ansibleArgs, "--tags=nova")
 		}
@@ -458,7 +454,7 @@ func (a *contrailAnsibleDeployer) playContrailProvision(ansibleArgs []string) er
 }
 
 func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
-	if a.clusterData.clusterInfo.DatapathEncryption {
+	if a.clusterData.ClusterInfo.DatapathEncryption {
 		inventory := filepath.Join(a.getWorkingDir(), "inventory.yml")
 		ansibleArgs := []string{"-i", inventory, defaultContrailDatapathEncryptionPlay}
 		return a.playFromDir(a.getAnsibleDatapathEncryptionRepoDir(), ansibleArgs)
@@ -467,9 +463,9 @@ func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
 }
 
 func (a *contrailAnsibleDeployer) playAppformixProvision() error {
-	if a.clusterData.getAppformixClusterInfo() != nil {
-		AppformixUsername := a.clusterData.getAppformixClusterInfo().AppformixUsername
-		AppformixPassword := a.clusterData.getAppformixClusterInfo().AppformixPassword
+	if a.clusterData.GetAppformixClusterInfo() != nil {
+		AppformixUsername := a.clusterData.GetAppformixClusterInfo().AppformixUsername
+		AppformixPassword := a.clusterData.GetAppformixClusterInfo().AppformixPassword
 		if AppformixUsername != "" {
 			err := os.Setenv("APPFORMIX_USERNAME", AppformixUsername)
 			if err != nil {
@@ -482,12 +478,12 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 				return err
 			}
 		}
-		AppformixVersion := a.clusterData.getAppformixClusterInfo().AppformixVersion
+		AppformixVersion := a.clusterData.GetAppformixClusterInfo().AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
 			"-e", "appformix_version=" + AppformixVersion}
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
-		imageDir := a.clusterData.getAppformixClusterInfo().AppformixImageDir
+		imageDir := a.clusterData.GetAppformixClusterInfo().AppformixImageDir
 		if _, err := os.Stat(imageDir); os.IsNotExist(err) {
 			a.Log.Errorf("imageDir %s does not exist, %s", imageDir, err)
 		}
@@ -503,7 +499,7 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 }
 
 func (a *contrailAnsibleDeployer) playXflowProvision() error {
-	if a.clusterData.getXflowData() != nil && a.clusterData.getXflowData().ClusterInfo != nil {
+	if a.clusterData.GetXflowData() != nil && a.clusterData.GetXflowData().ClusterInfo != nil {
 		xflowDir := a.getXflowDeployerDir()
 		if _, err := os.Stat(xflowDir); os.IsNotExist(err) {
 			return err
@@ -524,18 +520,18 @@ func (a *contrailAnsibleDeployer) playXflowProvision() error {
 func (a *contrailAnsibleDeployer) playBook() error {
 	args := []string{"-i", "inventory/", "-e",
 		"config_file=" + a.getInstanceFile(),
-		"-e orchestrator=" + a.clusterData.clusterInfo.Orchestrator}
+		"-e orchestrator=" + a.clusterData.ClusterInfo.Orchestrator}
 	if a.cluster.config.AnsibleSudoPass != "" {
 		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
 		args = append(args, sudoArg)
 	}
 
-	switch a.clusterData.clusterInfo.ProvisioningAction {
+	switch a.clusterData.ClusterInfo.ProvisioningAction {
 	case provisionProvisioningAction, "":
 		if err := a.playInstancesProvision(args); err != nil {
 			return err
 		}
-		if a.clusterData.clusterInfo.Orchestrator == orchestratorVcenter {
+		if a.clusterData.ClusterInfo.Orchestrator == orchestratorVcenter {
 			if err := a.playOrchestratorProvision(args); err != nil {
 				return err
 			}
@@ -573,7 +569,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 			return err
 		}
 	case addComputeProvisioningAction:
-		if a.clusterData.clusterInfo.Orchestrator == orchestratorVcenter {
+		if a.clusterData.ClusterInfo.Orchestrator == orchestratorVcenter {
 			if err := a.playOrchestratorProvision(args); err != nil {
 				return err
 			}
@@ -626,7 +622,7 @@ func (a *contrailAnsibleDeployer) playBook() error {
 
 // nolint: gocyclo
 func (a *contrailAnsibleDeployer) createCluster() error {
-	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.ClusterInfo.FQName)
 	status := map[string]interface{}{statusField: statusCreateProgress}
 	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
 
@@ -678,7 +674,7 @@ func (a *contrailAnsibleDeployer) createCluster() error {
 }
 
 func (a *contrailAnsibleDeployer) isUpdated() (updated bool, err error) {
-	if a.clusterData.clusterInfo.ProvisioningState == statusNoState {
+	if a.clusterData.ClusterInfo.ProvisioningState == statusNoState {
 		return false, nil
 	}
 	status := map[string]interface{}{}
@@ -690,7 +686,7 @@ func (a *contrailAnsibleDeployer) isUpdated() (updated bool, err error) {
 			return false, err
 		}
 		if ok {
-			a.Log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.clusterInfo.FQName)
+			a.Log.Infof("contrail cluster: %s is already up-to-date", a.clusterData.ClusterInfo.FQName)
 			return true, nil
 		}
 	}
@@ -698,7 +694,7 @@ func (a *contrailAnsibleDeployer) isUpdated() (updated bool, err error) {
 }
 
 func (a *contrailAnsibleDeployer) updateCluster() error {
-	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.clusterInfo.FQName)
+	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.ClusterInfo.FQName)
 	status := map[string]interface{}{}
 	status[statusField] = statusUpdateProgress
 	a.Reporter.ReportStatus(context.Background(), status, defaultResource)

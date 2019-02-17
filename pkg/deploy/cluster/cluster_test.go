@@ -21,6 +21,8 @@ import (
 )
 
 const (
+	defaultAdminUser                      = "admin"
+	defaultAdminPassword                  = "contrail123"
 	workRoot                              = "/tmp/contrail_cluster"
 	allInOneClusterTemplatePath           = "./test_data/test_all_in_one_cluster.tmpl"
 	createPlaybooks                       = "./test_data/expected_ansible_create_playbook.yml"

@@ -1,0 +1,89 @@
+# Copyright 2018 Juniper Networks, Inc. All rights reserved.
+# Licensed under the Juniper Networks Script Software License (the "License").
+# You may not use this script file except in compliance with the License, which is located at
+# http://www.juniper.net/support/legal/scriptlicense/
+# Unless required by applicable law or otherwise agreed to in writing by the parties,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+#
+#
+
+# List of nodes to use as control host role
+# Each list item contains:
+#    name: name of a node in the inventory
+#    ip_address: address on Control Plane network.  Choose a value outside the DHCP range.
+#    other optional ad hoc variables: these variables can be refered with "{{ host.<variable> }}"
+#        external_ip_netmask:  address on an infrastructure network
+control_host_nodes:
+  - name: "5b10s37-node2-control-host1"
+    control_ip_netmask: "192.0.2.5/24"
+    external_ip_netmask: "10.87.78.2/25"
+  - name: "5b10s37-node3-control-host2"
+    control_ip_netmask: "192.0.2.6/24"
+    external_ip_netmask: "10.87.78.3/25"
+  - name: "5b10s37-node4-control-host3"
+    control_ip_netmask: "192.0.2.7/24"
+    external_ip_netmask: "10.87.78.4/25"
+
+# Template for network layout on all control host nodes
+# This follows the os-net-config syntax
+# See https://github.com/openstack/os-net-config/tree/stable/queens
+
+control_host_nodes_network_config:
+  - type: ovs_bridge
+    name: br-ens2f1
+    use_dhcp: true
+    mtu: 9000
+    members:
+      -
+        type: interface
+        name: ens2f1
+  - type: ovs_bridge
+    name: br-ens2f0
+    use_dhcp: false
+    addresses:
+    -
+      ip_netmask: "{{ host.external_ip_netmask }}"
+    mtu: 9000
+    members:
+      -
+        type: interface
+        name: ens2f0
+  - type: ovs_bridge
+    name: br-bond0
+    use_dhcp: false
+    mtu: 9000
+    members:
+      -
+        type: ovs_bond
+        name: bond0
+        ovs_options: "bond_mode=balance-slb lacp=active other_config:lacp-time=fast other_config:bond-detect-mode=miimon other_config:bond-miimon-interval=100"
+        use_dhcp: false
+        members:
+          -
+            type: interface
+            name: ens5f0
+          -
+            type: interface
+            name: ens5f1
+  - type: ovs_bridge
+    name: br-ens5f2
+    use_dhcp: true
+    mtu: 9000
+    members:
+      -
+        type: interface
+        name: ens5f2
+
+control_hosts:
+  # The mapping from control host interfaces to the control VM interfaces
+  # The first interface (eth0) must always be the Control Plane network to allow the VM to PXE boot
+  # VM interface names must be sequential with no gaps (e.g. eth0, eth1, eth2,...)
+  vm_interfaces:
+    - interface: eth0
+      bridge: br-ens2f1
+    - interface: eth1
+      bridge: br-ens2f0
+    - interface: eth2
+      bridge: br-bond0

@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/deploy/base"
+	"github.com/Juniper/contrail/pkg/deploy/rhospd/overcloud"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/models"
@@ -22,11 +23,11 @@ type deployCluster struct {
 	cluster     *Cluster
 	clusterID   string
 	action      string
-	clusterData *Data
+	clusterData *base.Data
 }
 
 func (p *deployCluster) isCreated() bool {
-	state := p.clusterData.clusterInfo.ProvisioningState
+	state := p.clusterData.ClusterInfo.ProvisioningState
 	if p.action == "create" && (state == statusNoState || state == "") {
 		return false
 	}
@@ -69,38 +70,38 @@ func (p *deployCluster) deleteWorkingDir() error {
 }
 
 func (p *deployCluster) createEndpoints() error {
-	e := &EndpointData{
-		clusterID:   p.clusterID,
-		cluster:     p.cluster,
-		clusterData: p.clusterData,
-		log:         p.Log,
+	e := &base.EndpointData{
+		ClusterID:   p.clusterID,
+		ResManager:  base.NewResourceManager(p.cluster.APIServer, p.cluster.config.LogFile),
+		ClusterData: p.clusterData,
+		Log:         p.Log,
 	}
 
-	return e.create()
+	return e.Create()
 }
 
 func (p *deployCluster) updateEndpoints() error {
-	e := &EndpointData{
-		clusterID:   p.clusterID,
-		cluster:     p.cluster,
-		clusterData: p.clusterData,
-		log:         p.Log,
+	e := &base.EndpointData{
+		ClusterID:   p.clusterID,
+		ResManager:  base.NewResourceManager(p.cluster.APIServer, p.cluster.config.LogFile),
+		ClusterData: p.clusterData,
+		Log:         p.Log,
 	}
 
-	return e.update()
+	return e.Update()
 }
 
 func (p *deployCluster) deleteEndpoints() error {
-	e := &EndpointData{
-		clusterID: p.clusterID,
-		cluster:   p.cluster,
-		log:       p.Log,
+	e := &base.EndpointData{
+		ClusterID:  p.clusterID,
+		ResManager: base.NewResourceManager(p.cluster.APIServer, p.cluster.config.LogFile),
+		Log:        p.Log,
 	}
 
-	return e.remove()
+	return e.Remove()
 }
 
-func newAnsibleDeployer(cluster *Cluster, cData *Data) (base.Deployer, error) {
+func newAnsibleDeployer(cluster *Cluster, cData *base.Data) (base.Deployer, error) {
 	return &contrailAnsibleDeployer{deployCluster{
 		cluster:     cluster,
 		clusterID:   cluster.config.ClusterID,
@@ -117,7 +118,7 @@ func newAnsibleDeployer(cluster *Cluster, cData *Data) (base.Deployer, error) {
 	}}, nil
 }
 
-func newMCProvisioner(cluster *Cluster, cData *Data, clusterID string, action string) (base.Deployer, error) {
+func newMCProvisioner(cluster *Cluster, cData *base.Data, clusterID string, action string) (base.Deployer, error) {
 	return &multiCloudProvisioner{contrailAnsibleDeployer{deployCluster{
 		cluster:     cluster,
 		clusterID:   clusterID,
@@ -134,7 +135,7 @@ func newMCProvisioner(cluster *Cluster, cData *Data, clusterID string, action st
 	}}, ""}, nil
 }
 
-func newHelmDeployer(cluster *Cluster, cData *Data) (base.Deployer, error) {
+func newHelmDeployer(cluster *Cluster, cData *base.Data) (base.Deployer, error) {
 	return &helmDeployer{deployCluster{
 		cluster:     cluster,
 		clusterID:   cluster.config.ClusterID,
@@ -151,20 +152,22 @@ func newHelmDeployer(cluster *Cluster, cData *Data) (base.Deployer, error) {
 	}}, nil
 }
 
+// nolint: gocyclo
 func newDeployerByID(cluster *Cluster) (base.Deployer, error) {
-	var cData *Data
+	var cData *base.Data
 	var err error
 	if cluster.config.Action == "delete" {
-		cData = &Data{Reader: cluster.APIServer}
+		cData = &base.Data{Reader: cluster.APIServer}
 	} else {
-		cData, err = cluster.getClusterDetails(cluster.config.ClusterID)
+		r := base.NewResourceManager(cluster.APIServer, cluster.config.LogFile)
+		cData, err = r.GetClusterDetails(cluster.config.ClusterID)
 	}
 	if err != nil {
 		return nil, err
 	}
 	deployerType := defaultDeployer
-	if cData.clusterInfo != nil && cData.clusterInfo.ProvisionerType != "" {
-		deployerType = cData.clusterInfo.ProvisionerType
+	if cData.ClusterInfo != nil && cData.ClusterInfo.ProvisionerType != "" {
+		deployerType = cData.ClusterInfo.ProvisionerType
 	}
 
 	// Check if cloudbackrefs are present
@@ -175,6 +178,20 @@ func newDeployerByID(cluster *Cluster) (base.Deployer, error) {
 	}
 
 	switch deployerType {
+	case "rhospd":
+		c := &overcloud.Config{
+			APIServer:    cluster.APIServer,
+			ResourceID:   cluster.config.ClusterID,
+			Action:       cluster.config.Action,
+			TemplateRoot: cluster.config.TemplateRoot,
+			LogLevel:     cluster.config.LogLevel,
+			LogFile:      cluster.config.LogFile,
+		}
+		overcloud, err := overcloud.NewOverCloud(c)
+		if err != nil {
+			return nil, err
+		}
+		return overcloud.GetDeployer()
 	case "ansible":
 		return newAnsibleDeployer(cluster, cData)
 	case "helm":
@@ -185,28 +202,28 @@ func newDeployerByID(cluster *Cluster) (base.Deployer, error) {
 	return nil, errors.New("unsupported deployer type")
 }
 
-func hasCloudRefs(cData *Data) bool {
+func hasCloudRefs(cData *base.Data) bool {
 
-	if cData.cloudInfo != nil {
+	if cData.CloudInfo != nil {
 		return true
 	}
 	return false
 
 }
 
-func hasMCGWNodes(clusterInfo *models.ContrailCluster) bool {
+func hasMCGWNodes(ClusterInfo *models.ContrailCluster) bool {
 
-	if clusterInfo.ContrailMulticloudGWNodes != nil {
+	if ClusterInfo.ContrailMulticloudGWNodes != nil {
 		return true
 	}
 	return false
 }
 
-func isMCProvisioner(cData *Data) bool {
+func isMCProvisioner(cData *base.Data) bool {
 
-	state := cData.clusterInfo.ProvisioningState
-	if hasCloudRefs(cData) && hasMCGWNodes(cData.clusterInfo) && (state == "NOSTATE" || state == "") {
-		switch cData.clusterInfo.ProvisioningAction {
+	state := cData.ClusterInfo.ProvisioningState
+	if hasCloudRefs(cData) && hasMCGWNodes(cData.ClusterInfo) && (state == "NOSTATE" || state == "") {
+		switch cData.ClusterInfo.ProvisioningAction {
 		case "ADD_CLOUD":
 			return true
 		case "UPDATE_CLOUD":

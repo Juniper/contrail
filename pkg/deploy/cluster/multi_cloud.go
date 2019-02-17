@@ -97,7 +97,7 @@ type PubKeyConfig struct {
 func (m *multiCloudProvisioner) Deploy() error {
 
 	m.updateMCWorkDir()
-	switch m.clusterData.clusterInfo.ProvisioningAction {
+	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
 		err := m.createMCCluster()
 		if err != nil {
@@ -123,8 +123,8 @@ func (m *multiCloudProvisioner) Deploy() error {
 func (m *multiCloudProvisioner) createMCCluster() error {
 
 	m.Log.Infof("Starting %s of contrail cluster: %s",
-		m.clusterData.clusterInfo.ProvisioningAction,
-		m.clusterData.clusterInfo.FQName)
+		m.clusterData.ClusterInfo.ProvisioningAction,
+		m.clusterData.ClusterInfo.FQName)
 
 	status := map[string]interface{}{statusField: statusUpdateProgress}
 	if m.action == createAction {
@@ -193,7 +193,7 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 }
 
 func (m *multiCloudProvisioner) updateMCCluster() error {
-	m.Log.Infof("Starting %s of contrail cluster: %s", m.action, m.clusterData.clusterInfo.FQName)
+	m.Log.Infof("Starting %s of contrail cluster: %s", m.action, m.clusterData.ClusterInfo.FQName)
 
 	status := map[string]interface{}{}
 	status[statusField] = statusUpdateProgress
@@ -335,7 +335,7 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		args = append(args, sudoArg)
 	}
 
-	switch m.clusterData.clusterInfo.ProvisioningAction {
+	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
 		if err := m.playDeployMCGW(args); err != nil {
 			return err
@@ -781,7 +781,7 @@ func (m *multiCloudProvisioner) createClusterSecretFile(secretFile string,
 		if err != nil {
 			return err
 		}
-		authRegcontent, err := m.getAuthRegistryContent(m.clusterData.clusterInfo)
+		authRegcontent, err := m.getAuthRegistryContent(m.clusterData.ClusterInfo)
 		if err != nil {
 			return err
 		}
@@ -806,21 +806,17 @@ func (m *multiCloudProvisioner) getAuthRegistryContent(cluster *models.ContrailC
 
 func (m *multiCloudProvisioner) createContrailCommonFile(destination string) error {
 	m.Log.Info("Creating contrail/common.yml input file for multi-cloud deployer")
-	SSHUser, SSHPassword, SSHKey, err := m.cluster.getDefaultCredential()
-	if err != nil {
-		return err
-	}
 	contrailPassword, err := m.getContrailPassword()
 	if err != nil {
 		return err
 	}
 
 	context := pongo2.Context{
-		"cluster":                   m.clusterData.clusterInfo,
-		"k8sCluster":                m.clusterData.getK8sClusterInfo(),
-		"defaultSSHUser":            SSHUser,
-		"defaultSSHPassword":        SSHPassword,
-		"defaultSSHKey":             SSHKey,
+		"cluster":                   m.clusterData.ClusterInfo,
+		"k8sCluster":                m.clusterData.GetK8sClusterInfo(),
+		"defaultSSHUser":            m.clusterData.DefaultSSHUser,
+		"defaultSSHPassword":        m.clusterData.DefaultSSHPassword,
+		"defaultSSHKey":             m.clusterData.DefaultSSHKey,
 		"defaultContrailUser":       defaultContrailUser,
 		"defaultContrailPassword":   contrailPassword,
 		"defaultContrailConfigPort": defaultContrailConfigPort,
@@ -842,7 +838,7 @@ func (m *multiCloudProvisioner) createContrailCommonFile(destination string) err
 func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) error {
 	m.Log.Info("Creating gateway/common.yml input file for multi-cloud deployer")
 	context := pongo2.Context{
-		"cluster":    m.clusterData.clusterInfo,
+		"cluster":    m.clusterData.ClusterInfo,
 		"pathConfig": pathConfig,
 		"bgpSecret":  bgpSecret,
 	}
@@ -884,7 +880,7 @@ func (m *multiCloudProvisioner) appendOpenStackConfigToInventory(destination str
 	m.Log.Info("Appending openstack config to inventory file")
 
 	context := pongo2.Context{
-		"openstackCluster": m.clusterData.getOpenstackClusterInfo(),
+		"openstackCluster": m.clusterData.GetOpenstackClusterInfo(),
 	}
 	content, err := template.Apply(m.getOpenstackConfigTemplate(), context)
 	if err != nil {
@@ -921,7 +917,7 @@ func (m *multiCloudProvisioner) getOpenstackConfigTemplate() string {
 
 func (m *multiCloudProvisioner) getTFStateFile() string {
 
-	for _, c := range m.clusterData.cloudInfo {
+	for _, c := range m.clusterData.CloudInfo {
 		for _, prov := range c.CloudProviders {
 			if prov.Type != onPrem {
 				return cloud.GetTFStateFile(c.UUID)
@@ -977,7 +973,7 @@ func (m *multiCloudProvisioner) getMCWorkingDir(clusterWorkDir string) string {
 
 func (m *multiCloudProvisioner) getContrailPassword() (string, error) {
 	if m.isOrchestratorOpenstack() {
-		openStackClusterInfo := m.clusterData.getOpenstackClusterInfo()
+		openStackClusterInfo := m.clusterData.GetOpenstackClusterInfo()
 		for _, v := range openStackClusterInfo.KollaPasswords.KeyValuePair {
 			if v.Key == "keystone_admin_password" {
 				return v.Value, nil
@@ -988,7 +984,7 @@ func (m *multiCloudProvisioner) getContrailPassword() (string, error) {
 }
 
 func (m *multiCloudProvisioner) isOrchestratorOpenstack() bool {
-	if strings.ToLower(m.clusterData.clusterInfo.Orchestrator) == openstack {
+	if strings.ToLower(m.clusterData.ClusterInfo.Orchestrator) == openstack {
 		return true
 	}
 	return false
@@ -1056,7 +1052,7 @@ func getSkipTagArgs(tagsToBeSkipped []string) []string {
 func (m *multiCloudProvisioner) getPubPvtCloudID() (string, string, error) {
 
 	var publicCloudID, onPremCloudID string
-	for _, cloudRef := range m.clusterData.cloudInfo {
+	for _, cloudRef := range m.clusterData.CloudInfo {
 		for _, p := range cloudRef.CloudProviders {
 			if p.Type == onPrem {
 				onPremCloudID = cloudRef.UUID
