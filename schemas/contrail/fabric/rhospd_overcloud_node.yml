@@ -1,8 +1,8 @@
-description: RHOSPD Overcloud
+description: RHOSPD Overcloud Node
 extends:
 - base
 - has_status
-id: rhospd_overcloud
+id: rhospd_overcloud_node
 metadata:
   category: cluster
 references:
@@ -15,7 +15,7 @@ parents:
     operations: "CRUD"
     description: "Parent of this overcloud node."
     presence: "optional"
-plural: rhospd_overclouds
+plural: rhospd_overcloud_nodes
 prefix: /
 schema:
   properties:
@@ -30,6 +30,6 @@ schema:
   propertiesOrder: []
   required: []
   type: object
-singular: rhospd_overcloud
-title: RHOSPD Overcloud
+singular: rhospd_overcloud_node
+title: RHOSPD Overcloud Node
 type: ""

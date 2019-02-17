@@ -1,0 +1,8 @@
+inventory_nodes:
+{% for node in nodes %}
+  - name: {{ node.HostName }}
+    pm_addr: {{ node.BmsInfo.DriverInfo.IPMIAddress }}
+    pm_type: "pxe_ipmitool"
+    pm_user: {{ node.BmsInfo.DriverInfo.IPMIUserName }}
+    pm_password: {{ node.BmsInfo.DriverInfo.IPMIPassword }}
+{% endfor %}
