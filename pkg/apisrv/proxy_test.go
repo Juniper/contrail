@@ -356,13 +356,14 @@ func TestKeystoneEndpoint(t *testing.T) {
 func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	ctx := context.Background()
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPrivate := integration.MockServerWithKeystone("", keystoneAuthURL)
+	clusterCName := "clusterC"
+	clusterCUser := clusterCName + "_admin"
+	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, clusterCUser)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystone("", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, clusterCUser)
 	defer ksPublic.Close()
 
-	clusterCName := "clusterC"
 	pContext := pongo2.Context{
 		"cluster_name":    clusterCName,
 		"endpoint_name":   clusterCName + "_keystone",
@@ -370,6 +371,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 		"private_url":     ksPrivate.URL,
 		"public_url":      ksPublic.URL,
 		"manage_parent":   true,
+		"admin_user":      clusterCUser,
 	}
 
 	var testScenario integration.TestScenario
@@ -395,13 +397,14 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 
 	// Create one more cluster's keystone endpoint
 	keystoneAuthURL = viper.GetString("keystone.authurl")
-	ksPrivateClusterD := integration.MockServerWithKeystone("", keystoneAuthURL)
+	clusterDName := "clusterD"
+	clusterDUser := clusterDName + "_admin"
+	ksPrivateClusterD := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, clusterDUser)
 	defer ksPrivateClusterD.Close()
 
-	ksPublicClusterD := integration.MockServerWithKeystone("", keystoneAuthURL)
+	ksPublicClusterD := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, clusterDUser)
 	defer ksPublicClusterD.Close()
 
-	clusterDName := "clusterD"
 	pContext = pongo2.Context{
 		"cluster_name":    clusterDName,
 		"endpoint_name":   clusterDName + "_keystone",
@@ -409,6 +412,7 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 		"private_url":     ksPrivateClusterD.URL,
 		"public_url":      ksPublicClusterD.URL,
 		"manage_parent":   true,
+		"admin_user":      clusterDUser,
 	}
 
 	err = integration.LoadTestScenario(&testScenario, testEndpointFile, pContext)

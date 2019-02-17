@@ -1,8 +1,10 @@
 package keystone
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"io/ioutil"
 	"net"
 	"net/http"
 
@@ -50,6 +52,15 @@ func (k *Client) Init() {
 // SetAuthURL uses specified auth url in the keystone auth.
 func (k *Client) SetAuthURL(authURL string) {
 	k.AuthURL = authURL + "/" + keystoneVersion
+}
+
+// SetAuthIdentity uses specified auth creds in the keystone auth request.
+func (k *Client) SetAuthIdentity(
+	c echo.Context, authRequest *kscommon.AuthRequest) echo.Context {
+	b, _ := json.Marshal(authRequest) // nolint: errcheck
+	c.Request().Body = ioutil.NopCloser(bytes.NewReader(b))
+	c.Request().ContentLength = int64(len(b))
+	return c
 }
 
 // NewAuth creates new keystone auth
