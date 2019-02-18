@@ -9,8 +9,10 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 type keystoneClient interface {
@@ -21,6 +23,8 @@ type keystoneClient interface {
 type Service struct {
 	services.BaseService
 	Keystone          keystoneClient
+	ReadService       services.ReadService
+	MetadataGetter    baseservices.MetadataGetter
 	WriteService      services.WriteService
 	InTransactionDoer services.InTransactionDoer
 }
@@ -78,4 +82,73 @@ func (sv *Service) getProjectFromKeystone(ctx context.Context, id string) (*keys
 	}
 
 	return p, nil
+}
+
+// CreateProject creates the project and ensures its default security group exists.
+func (sv *Service) CreateProject(
+	ctx context.Context, request *services.CreateProjectRequest,
+) (*services.CreateProjectResponse, error) {
+	var response *services.CreateProjectResponse
+	err := sv.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		var err error
+		response, err = sv.BaseService.CreateProject(ctx, request)
+		if err != nil {
+			return err
+		}
+
+		project := response.GetProject()
+
+		_, err = sv.WriteService.CreateSecurityGroup(ctx, &services.CreateSecurityGroupRequest{
+			SecurityGroup: project.DefaultSecurityGroup(),
+		})
+		return err
+	})
+	return response, err
+}
+
+// DeleteProject deletes the project with its default security group.
+func (sv *Service) DeleteProject(
+	ctx context.Context, request *services.DeleteProjectRequest,
+) (*services.DeleteProjectResponse, error) {
+	var response *services.DeleteProjectResponse
+
+	err := sv.InTransactionDoer.DoInTransaction(
+		ctx,
+		func(ctx context.Context) error {
+			var err error
+
+			if err = sv.deleteDefaultSecurityGroup(ctx, request.GetID()); err != nil {
+				return err
+			}
+
+			// TODO: Delete neutron firewall default group policy.
+
+			response, err = sv.BaseService.DeleteProject(ctx, request)
+			return err
+		})
+
+	return response, err
+}
+
+func (sv *Service) deleteDefaultSecurityGroup(ctx context.Context, projectUUID string) error {
+	projectResponse, err := sv.ReadService.GetProject(ctx, &services.GetProjectRequest{
+		ID:     projectUUID,
+		Fields: []string{models.ProjectFieldFQName},
+	})
+	if err != nil {
+		return err
+	}
+
+	metadata, err := sv.MetadataGetter.GetMetadata(ctx, basemodels.Metadata{
+		FQName: projectResponse.GetProject().DefaultSecurityGroupFQName(),
+		Type:   models.KindSecurityGroup,
+	})
+	if err != nil {
+		return errors.Wrap(err, "default SecurityGroup not found")
+	}
+
+	_, err = sv.WriteService.DeleteSecurityGroup(ctx, &services.DeleteSecurityGroupRequest{
+		ID: metadata.UUID,
+	})
+	return err
 }
