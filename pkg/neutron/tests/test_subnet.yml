@@ -11,8 +11,8 @@ clients:
         name: admin
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
-    uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+    fq_name: ["default", "neutron_subnet_admin_project"]
+    uuid: 58b739ad-5b1c-40ac-9d93-0d1db046d73d
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -21,13 +21,13 @@ cleanup:
 - kind: virtual-network
   fq_name:
   - default
-  - admin_project_uuid
+  - neutron_subnet_admin_project
   - test-vn1
 
 - kind: project
   fq_name:
   - default
-  - admin_project_uuid
+  - neutron_subnet_admin_project
 
 workflow:
 - name: Create project admin
@@ -53,25 +53,25 @@ workflow:
           id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2 #todo remove this field from request
           router:external: false
           name: test-vn1
-          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
           admin_state_up: true
           policys: ''
           vpc:route_table: ''
           shared: false
           port_security_enabled: true
-          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          project_id: 58b739ad5b1c40ac9d930d1db046d73d
           description: ''
         filters:
       context:
         user_id: 06be3763c8224dd5a343e3d95d87c1d2
         roles:
         - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
         is_admin: true
         request_id: req-ac841ef9-2c79-4787-b80c-22a7b3263255
         operation: CREATE
         type: network
-        tenant: 886c725d04614dd6ac2730c74d4e46fb
+        tenant: 58b739ad5b1c40ac9d930d1db046d73d
   expect:
     status: ACTIVE
     router:external: false
@@ -79,14 +79,14 @@ workflow:
     subnet_ipam: []
     fq_name:
     - default
-    - admin_project_uuid
+    - neutron_subnet_admin_project
     - test-vn1
     name: test-vn1
     admin_state_up: true
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
     port_security_enabled: true
     shared: false
-    project_id: 886c725d04614dd6ac2730c74d4e46fb
+    project_id: 58b739ad5b1c40ac9d930d1db046d73d
     description: ''
 
 - name: Create subnet
@@ -100,28 +100,28 @@ workflow:
           name: ''
           enable_dhcp: true
           network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
           ipam_fq_name: ''
           ip_version: 4
           cidr: "10.0.1.0/24"
-          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          project_id: 58b739ad5b1c40ac9d930d1db046d73d
           description: ''
       context:
         user_id: 06be3763c8224dd5a343e3d95d87c1d2
         roles:
         - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
         is_admin: true
         request_id: req-2e00f3a3-d9a3-4016-abb3-f74ad1ea9bf0
         "operation": CREATE
         "type": subnet
-        "tenant": 886c725d04614dd6ac2730c74d4e46fb
+        "tenant": 58b739ad5b1c40ac9d930d1db046d73d
   expect:
     host_routes: []
     name: ""
     enable_dhcp: true
     network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
     dns_nameservers: []
     allocation_pools:
     - start: 10.0.1.2
@@ -147,19 +147,19 @@ workflow:
         user_id: 06be3763c8224dd5a343e3d95d87c1d2
         roles:
         - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
         is_admin: true
         request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
         operation: READALL
         type: subnet
-        tenant: 886c725d04614dd6ac2730c74d4e46fb
+        tenant: 58b739ad5b1c40ac9d930d1db046d73d
   expect:
   - network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
     host_routes: []
     name: ""
     enable_dhcp: true
     network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
     dns_nameservers: []
     allocation_pools:
     - start: 10.0.1.2
@@ -184,19 +184,19 @@ workflow:
         user_id: 06be3763c8224dd5a343e3d95d87c1d2
         roles:
         - admin
-        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
         is_admin: true
         request_id: req-bdde67ed-1a62-42ee-9c27-142645d09be7
         operation: READALL
         type: subnet
-        tenant: 886c725d04614dd6ac2730c74d4e46fb
+        tenant: 58b739ad5b1c40ac9d930d1db046d73d
   expect:
   - network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
     host_routes: []
     name: ""
     enable_dhcp: true
     network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
     dns_nameservers: []
     allocation_pools:
     - start: 10.0.1.2
@@ -217,7 +217,7 @@ workflow:
 
 - name: Delete project
   request:
-    path: "/project/886c725d-0461-4dd6-ac27-30c74d4e46fb"
+    path: "/project/58b739ad-5b1c-40ac-9d93-0d1db046d73d"
     method: DELETE
     expected:
     - 200

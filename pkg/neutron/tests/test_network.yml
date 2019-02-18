@@ -12,7 +12,7 @@ clients:
         name: admin
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
+    fq_name: ["default", "neutron_network_admin_project"]
     uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
@@ -22,19 +22,19 @@ cleanup:
 - kind: virtual-network
   fq_name:
   - default
-  - admin_project_uuid
+  - neutron_network_admin_project
   - test-vn1
 
 - kind: virtual-network
   fq_name:
   - default
-  - admin_project_uuid
+  - neutron_network_admin_project
   - test-vn2
 
 - kind: project
   fq_name:
   - default
-  - admin_project_uuid
+  - neutron_network_admin_project
 
 workflow:
 - name: Create project admin
@@ -86,7 +86,7 @@ workflow:
     subnet_ipam: []
     fq_name:
     - default
-    - admin_project_uuid
+    - neutron_network_admin_project
     - test-vn1
     name: test-vn1
     admin_state_up: true
@@ -98,7 +98,7 @@ workflow:
 
 - name: Get created virtual network
   request:
-    path: "/virtual-networks?parent_id=admin_project_uuid"
+    path: "/virtual-networks?parent_id=neutron_network_admin_project"
     method: GET
     expected:
     - 200
@@ -131,7 +131,7 @@ workflow:
     subnet_ipam: []
     fq_name:
     - default
-    - admin_project_uuid
+    - neutron_network_admin_project
     - test-vn1
     name: test-vn1
     admin_state_up: true
@@ -219,7 +219,7 @@ workflow:
       - default-network-ipam
     fq_name:
     - default
-    - admin_project_uuid
+    - neutron_network_admin_project
     - test-vn1
     name: test-vn1
     admin_state_up: true
@@ -264,7 +264,7 @@ workflow:
       - default-network-ipam
     fq_name:
     - default
-    - admin_project_uuid
+    - neutron_network_admin_project
     - test-vn1
     name: test-vn1
     admin_state_up: true
@@ -308,7 +308,7 @@ workflow:
       - default-network-ipam
     fq_name:
     - default
-    - admin_project_uuid
+    - neutron_network_admin_project
     - test-vn1
     name: test-vn1
     admin_state_up: true
