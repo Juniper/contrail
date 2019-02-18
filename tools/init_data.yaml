@@ -92,6 +92,7 @@ resources:
   data:
     fq_name:
     - default-domain
+    name: default-domain
     id_perms:
       created: 2018-05-23T17:29:57.482383
       creator: null
@@ -123,6 +124,7 @@ resources:
     fq_name:
     - default-domain
     - default-project
+    name: default-project
     id_perms:
       created: 2018-05-23T17:29:57.500625
       creator: null

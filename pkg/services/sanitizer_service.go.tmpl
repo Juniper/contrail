@@ -8,7 +8,11 @@ import (
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-func (sv *SanitizerService) sanitize{{ schema.JSONSchema.GoName }}DisplayName(ctx context.Context, m *models.{{ schema.JSONSchema.GoName }}) {
+func (sv *SanitizerService) sanitize{{ schema.JSONSchema.GoName }}DisplayNameAndName(ctx context.Context, m *models.{{ schema.JSONSchema.GoName }}) {
+	if m.Name == "" {
+		m.Name = m.FQName[len(m.FQName)-1]
+	}
+
 	if m.DisplayName == "" {
 		m.DisplayName = m.Name
 	}
@@ -18,7 +22,7 @@ func (sv *SanitizerService) Create{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
 	m := request.Get{{ schema.JSONSchema.GoName }}()
-	sv.sanitize{{ schema.JSONSchema.GoName }}DisplayName(ctx, m)
+	sv.sanitize{{ schema.JSONSchema.GoName }}DisplayNameAndName(ctx, m)
 
 	{% if schema.References | length != 0 %}
 	if err := sv.sanitizeRefs(ctx, m.GetReferences()); err != nil {
