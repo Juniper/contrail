@@ -60,6 +60,7 @@ done
 [ $# -ne 0 ] && { Usage; exit 1; }
 
 InstancesFile="$HOME/contrail-ansible-deployer/config/instances.yaml"
+InstancesFileBackup="$InstancesFile.backup"
 ThisUser=$(id -nu)
 
 check_dockers()
@@ -143,7 +144,23 @@ finalize_test_run()
 	done
 }
 
+backup_instances_yaml()
+{
+	if [ ! -f "$InstancesFileBackup" ]; then
+		cp "$InstancesFile" "$InstancesFileBackup"
+	fi
+}
+
+rollback_instances_yaml()
+{
+	if [ -s "$InstancesFile" ]; then
+		cp "$InstancesFileBackup" "$InstancesFile"
+	fi
+}
+
+backup_instances_yaml
 check_dockers
+rollback_instances_yaml
 prepare_test_env
 run_contrail_test
 status=$?
