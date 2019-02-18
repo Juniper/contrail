@@ -2,6 +2,9 @@ package types
 
 import (
 	"context"
+	"fmt"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/types/mock"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -12,7 +15,7 @@ import (
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
-	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
+	"github.com/Juniper/contrail/pkg/services/mock"
 )
 
 func virtualMachineInterfaceSetupNextServiceMocks(s *ContrailTypeLogicService) {
@@ -212,6 +215,154 @@ func TestCreateVirtualMachineInterface(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, &expectedResponse, createVirtualMachineInterfaceResponse)
+			}
+		})
+	}
+}
+
+func mockNoVMIs(s *ContrailTypeLogicService) {
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
+
+	readService.EXPECT().GetVirtualMachineInterface(
+		gomock.Not(gomock.Nil()), &services.GetVirtualMachineInterfaceRequest{ID: "311a1e01-b65c-421b-93a9-8de29a08bb66"},
+	).Return(
+		nil, errutil.ErrorNotFoundf("no VirtualMachineInterface found with uuid 311a1e01-b65c-421b-93a9-8de29a08bb66"),
+	).AnyTimes()
+}
+
+func mockDeleteVMINextSerive(s *ContrailTypeLogicService, vmiUUID string) {
+	nextService := s.Next().(*servicesmock.MockService) //nolint: errcheck
+	nextService.EXPECT().DeleteVirtualMachineInterface(
+		context.Background(), &services.DeleteVirtualMachineInterfaceRequest{ID: vmiUUID},
+	).Return(
+		&services.DeleteVirtualMachineInterfaceResponse{ID: vmiUUID}, nil,
+	).AnyTimes()
+}
+
+func mockVMINoBindings(s *ContrailTypeLogicService) {
+	vmiUUID := "2d9ebd36-709e-450a-8825-581997d06090"
+
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
+	readService.EXPECT().GetVirtualMachineInterface(
+		gomock.Not(gomock.Nil()), &services.GetVirtualMachineInterfaceRequest{ID: vmiUUID},
+	).Return(
+		&services.GetVirtualMachineInterfaceResponse{
+			VirtualMachineInterface: &models.VirtualMachineInterface{
+				UUID: vmiUUID,
+				Name: "VMI mock one",
+			},
+		}, nil,
+	).AnyTimes()
+
+	mockDeleteVMINextSerive(s, vmiUUID)
+}
+
+func mockVMIVRouterInBindings(s *ContrailTypeLogicService) {
+	vmiUUID := "60fd88d6-2a2f-4421-8732-3e41f57a820d"
+
+	readService := s.ReadService.(*servicesmock.MockReadService) //nolint: errcheck
+	readService.EXPECT().GetVirtualMachineInterface(
+		gomock.Not(gomock.Nil()), &services.GetVirtualMachineInterfaceRequest{ID: vmiUUID},
+	).Return(
+		&services.GetVirtualMachineInterfaceResponse{
+			VirtualMachineInterface: &models.VirtualMachineInterface{
+				UUID: vmiUUID,
+				Name: "VMI mock one",
+				VirtualMachineInterfaceBindings: &models.KeyValuePairs{
+					KeyValuePair: []*models.KeyValuePair{
+						{
+							Key:   "host_id",
+							Value: "host-id0001-352d23",
+						},
+					},
+				},
+				VirtualMachineRefs: []*models.VirtualMachineInterfaceVirtualMachineRef{
+					{
+						// TODO: make sure what should be here...
+						UUID: "4bec6c76-d96c-49f9-95bc-fbe823480750",
+						To:   []string{""},
+						Href: "",
+					},
+				},
+			},
+		}, nil).AnyTimes()
+
+	metadataGetterService := s.MetadataGetter.(*typesmock.MockMetadataGetter) //nolint: errcheck
+	metadataGetterService.EXPECT().GetMetadata(
+		gomock.Not(gomock.Nil()), basemodels.Metadata{Type: "virtual_router", FQName: []string{defaultGSCName, "host-id0001-352d23"}},
+	).Return(&basemodels.Metadata{UUID: "5c40eeea-a8f9-4ef4-98b0-64c5b855222f"}, nil).AnyTimes() // TODO change virtual_router into constant
+
+	writeService := s.WriteService.(*servicesmock.MockWriteService) //nolint: errcheck
+	writeService.EXPECT().DeleteVirtualRouterVirtualMachineRef(
+		gomock.Not(gomock.Nil()), &services.DeleteVirtualRouterVirtualMachineRefRequest{
+			ID: "5c40eeea-a8f9-4ef4-98b0-64c5b855222f",
+			VirtualRouterVirtualMachineRef: &models.VirtualRouterVirtualMachineRef{
+				UUID: "4bec6c76-d96c-49f9-95bc-fbe823480750",
+			},
+		}).Times(1)
+
+	mockDeleteVMINextSerive(s, vmiUUID)
+}
+
+func TestDeleteVirtualMachineInterface(t *testing.T) {
+	tests := []struct {
+		name        string
+		vmiID       string
+		expectedErr string
+		mockSetUp   func(service *ContrailTypeLogicService)
+		statusCode  codes.Code
+	}{
+		{
+			name:        "Try to delete not existing VMI",
+			vmiID:       "311a1e01-b65c-421b-93a9-8de29a08bb66",
+			expectedErr: "no VirtualMachineInterface found",
+			mockSetUp: func(service *ContrailTypeLogicService) {
+				mockNoVMIs(service)
+			},
+			statusCode: codes.NotFound,
+		},
+		{
+			name:        "Delete VMI with empty VirtualMachineInterfaceBindings",
+			vmiID:       "2d9ebd36-709e-450a-8825-581997d06090",
+			expectedErr: "",
+			mockSetUp: func(service *ContrailTypeLogicService) {
+				mockVMINoBindings(service)
+			},
+			statusCode: codes.OK,
+		},
+		{
+			name:        "Delete VMI with vRouter in VirtualMachineInterfaceBindings",
+			vmiID:       "60fd88d6-2a2f-4421-8732-3e41f57a820d",
+			expectedErr: "",
+			mockSetUp: func(service *ContrailTypeLogicService) {
+				mockVMIVRouterInBindings(service)
+			},
+			statusCode: codes.OK,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			service := makeMockedContrailTypeLogicService(mockCtrl)
+
+			tt.mockSetUp(service)
+
+			ctx := context.Background()
+			result, err := service.DeleteVirtualMachineInterface(ctx,
+				&services.DeleteVirtualMachineInterfaceRequest{ID: tt.vmiID})
+
+			if statusCode, ok := status.FromError(err); ok {
+				assert.EqualValues(t, tt.statusCode, statusCode.Code())
+			}
+
+			if tt.expectedErr == "" {
+				assert.NotNil(t, result)
+
+			} else {
+				assert.Error(t, err)
+				assert.Contains(t, fmt.Sprintf("%s", err), tt.expectedErr)
 			}
 		})
 	}
