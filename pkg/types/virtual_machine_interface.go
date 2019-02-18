@@ -3,11 +3,16 @@ package types
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+)
+
+const (
+	vnicTypeDirect = "direct"
 )
 
 // CreateVirtualMachineInterface validates if there is at least one virtual-network
@@ -47,6 +52,62 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 			return sv.createRoutingInstanceRefForVirtualMachineInterface(ctx, vmi, ri)
 		})
 
+	return response, err
+}
+
+func (sv *ContrailTypeLogicService) UpdateVirtualMachineInterface(
+	ctx context.Context, request *services.UpdateVirtualMachineInterfaceRequest,
+) (*services.UpdateVirtualMachineInterfaceResponse, error) {
+	// TODO: make it in transaction
+	// TODO: make it prettier (refactor it)
+	vmi := request.GetVirtualMachineInterface()
+	oldVMIResp, err := sv.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{ // TODO: make sure if that shouldn't be db service
+		ID: vmi.GetUUID(),
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "can't read virtual_machine_interface of id = '%s' from database", vmi.GetUUID())
+	}
+
+	oldVMI := oldVMIResp.GetVirtualMachineInterface()
+	kvps := oldVMI.GetVirtualMachineInterfaceBindings()
+	if kvps.KeyExists(vnicTypeDirect) {
+		sv.addVRouterLink()
+	}
+
+	//nolint: lll
+	//TODO: implement rest of pre_dbe_update() logic (python code: https://github.com/Juniper/contrail-controller/blob/b8a2231cfd64f7d2898ea5e1e5bbabb52c7c53ff/src/config/api-server/vnc_cfg_api_server/resources/virtual_machine_interface.py#L574)
+
+	response, err := sv.BaseService.UpdateVirtualMachineInterface(ctx, request)
+
+	//nolint: lll
+	//TODO: implement post_dbe_update() logic (python code: https://github.com/Juniper/contrail-controller/blob/b8a2231cfd64f7d2898ea5e1e5bbabb52c7c53ff/src/config/api-server/vnc_cfg_api_server/resources/virtual_machine_interface.py#L885)
+	return response, err
+}
+
+func (sv *ContrailTypeLogicService) DeleteVirtualMachineInterface(
+	ctx context.Context, request *services.DeleteVirtualMachineInterfaceRequest,
+) (*services.DeleteVirtualMachineInterfaceResponse, error) {
+	// TODO make it in transaction
+
+	vmiResp, err := sv.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{
+		ID: request.GetID(),
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "can't read virtual_machine_interface of id ='%s' from database", request.GetID())
+	}
+	vmi := vmiResp.GetVirtualMachineInterface()
+
+	if vmi.GetVirtualMachineInterfaceBindings() != nil {
+		sv.deleteVRouterLink(ctx, vmi)
+	}
+
+	//nolint: lll
+	//TODO: implement rest of pre_dbe_delete() logic (python code: https://github.com/Juniper/contrail-controller/blob/b8a2231cfd64f7d2898ea5e1e5bbabb52c7c53ff/src/config/api-server/vnc_cfg_api_server/resources/virtual_machine_interface.py#L923)
+
+	response, err := sv.BaseService.DeleteVirtualMachineInterface(ctx, request)
+
+	//nolint: lll
+	//TODO: implement post_dbe_delete() logic (python code: https://github.com/Juniper/contrail-controller/blob/b8a2231cfd64f7d2898ea5e1e5bbabb52c7c53ff/src/config/api-server/vnc_cfg_api_server/resources/virtual_machine_interface.py#L941)
 	return response, err
 }
 
@@ -113,4 +174,41 @@ func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInt
 	}
 
 	return nil
+}
+
+func (sv *ContrailTypeLogicService) addVRouterLink() {
+	// TODO implement it.
+	//sv.WriteService.CreateVirtualRouterVirtualMachineRef()
+}
+
+// TODO: think about moving it into vmi model package
+func (sv *ContrailTypeLogicService) deleteVRouterLink(ctx context.Context, vmi *models.VirtualMachineInterface) {
+	vRouterUUID, err := sv.getVRouterID(ctx, vmi.GetVirtualMachineInterfaceBindings()) // TODO: mock - implement proper logic
+	if err != nil {
+		return
+	}
+
+	vmiRefs := vmi.GetVirtualMachineRefs()
+	if len(vmiRefs) <= 0 {
+		return
+	}
+
+	sv.WriteService.DeleteVirtualRouterVirtualMachineRef(ctx, &services.DeleteVirtualRouterVirtualMachineRefRequest{
+		ID: vRouterUUID,
+		VirtualRouterVirtualMachineRef: &models.VirtualRouterVirtualMachineRef{
+			UUID: vmiRefs[0].GetUUID(),
+		},
+	})
+	// TODO write test to it!
+}
+
+// TODO maybe move it into package models
+func (sv *ContrailTypeLogicService) getVRouterID(ctx context.Context, kvps *models.KeyValuePairs) (string, error) {
+	hostID, err := kvps.GetValue("host_id") // TODO: change it into constant
+	if err != nil {
+		return "", err
+	}
+
+	vRouterFQName := []string{defaultGSCName, hostID}
+	return sv.FQNameToUUID(ctx, vRouterFQName, "virtual_router") // TODO: change it into constant
 }
