@@ -7,7 +7,7 @@ import (
 const doNotSendCollectorKey = "no-collector"
 
 type collectorLoggerHook struct {
-	collector *Collector
+	collector Collector
 }
 
 func (h *collectorLoggerHook) Fire(entry *logrus.Entry) error {
@@ -15,7 +15,7 @@ func (h *collectorLoggerHook) Fire(entry *logrus.Entry) error {
 		return nil
 	}
 
-	h.collector.VNCAPIMessage(entry)
+	h.collector.Send(VNCAPIMessage(entry))
 	return nil
 }
 
@@ -24,7 +24,7 @@ func (h *collectorLoggerHook) Levels() []logrus.Level {
 }
 
 // AddLoggerHook setup logrus logger to send entries to collector
-func AddLoggerHook(c *Collector) {
+func AddLoggerHook(c Collector) {
 	logrus.AddHook(&collectorLoggerHook{
 		collector: c,
 	})

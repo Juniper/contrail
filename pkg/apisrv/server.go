@@ -66,7 +66,7 @@ type Server struct {
 	IDToFQNameServer           services.IDToFQNameServer
 	PropCollectionUpdateServer services.PropCollectionUpdateServer
 	Cache                      *cache.DB
-	Collector                  *collector.Collector
+	Collector                  collector.Collector
 }
 
 // NewServer makes a server
@@ -444,7 +444,11 @@ func (s *Server) setupCollector() error {
 		return errors.Wrap(err, "failed to create collector")
 	}
 	collector.AddLoggerHook(s.Collector)
-	s.Echo.Use(middleware.BodyDump(s.Collector.RESTAPITrace))
+	s.Echo.Use(middleware.BodyDump(func(
+		ctx echo.Context, reqBody, resBody []byte,
+	) {
+		s.Collector.Send(collector.RESTAPITrace(ctx, reqBody, resBody))
+	}))
 	return nil
 }
 

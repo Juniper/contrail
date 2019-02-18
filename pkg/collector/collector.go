@@ -2,7 +2,7 @@ package collector
 
 /* to use add to config.yml a section:
 collector:
-  enable: true
+  enabled: true
   url: http://collectorproxyhost:port/url
 */
 
@@ -19,29 +19,38 @@ const (
 	defaultTimeout = 30 * time.Second
 )
 
-type message struct {
+// Message represents a message to Json2Sandesh proxy
+type Message struct {
 	SandeshType string      `json:"sandesh_type"`
 	Payload     interface{} `json:"payload"`
 }
 
-type sender interface {
-	sendMessage(m *message)
+// MessageBuilder is interface to build the message
+type MessageBuilder interface {
+	Build() *Message
 }
+
+type emptyMessageBuilder struct{}
+
+// NewEmptyMessageBuilder returns nil message builder
+func NewEmptyMessageBuilder() MessageBuilder { return &emptyMessageBuilder{} }
+
+func (*emptyMessageBuilder) Build() *Message { return nil }
 
 // Config represents parameters of Сollector in the config file
 type Config struct {
-	Enable bool
-	URL    string
+	Enabled bool
+	URL     string
 }
 
 // Collector represent interface to Json2Sandesh proxy
-type Collector struct {
-	sender
+type Collector interface {
+	Send(m MessageBuilder)
 }
 
 type noSender struct{}
 
-func (*noSender) sendMessage(m *message) {}
+func (*noSender) Send(_ MessageBuilder) {}
 
 type proxySender struct {
 	url    string
@@ -49,23 +58,15 @@ type proxySender struct {
 }
 
 // NewCollector makes a collector
-func NewCollector(cfg *Config) (*Collector, error) {
-	if !cfg.Enable {
+func NewCollector(cfg *Config) (Collector, error) {
+	if !cfg.Enabled {
 		ignoreAPIMessage().Warn("collector is disabled")
-		return &Collector{
-			sender: &noSender{},
-		}, nil
+		return &noSender{}, nil
 	}
-	s, err := newProxySender(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return &Collector{
-		sender: s,
-	}, nil
+	return newProxySender(cfg)
 }
 
-func newProxySender(cfg *Config) (sender, error) {
+func newProxySender(cfg *Config) (Collector, error) {
 	if cfg.URL == "" {
 		return nil, errors.New("collector.url is undefined")
 	}
@@ -78,17 +79,23 @@ func newProxySender(cfg *Config) (sender, error) {
 	return s, nil
 }
 
-func (s *proxySender) sendMessage(m *message) {
-	if err := s.postMessage(m); err != nil {
-		ignoreAPIMessage().WithError(err).Warn("send message to collector failed")
+func (s *proxySender) Send(b MessageBuilder) {
+	m := b.Build()
+	if m == nil {
+		return
 	}
+	go func() {
+		if err := s.postMessage(m); err != nil {
+			ignoreAPIMessage().WithError(err).Warn("send Message to collector failed")
+		}
+	}()
 	// sendMessage does not return an error, since asynchronous postMessage usage is suggested
 }
 
-func (s *proxySender) postMessage(m *message) error {
+func (s *proxySender) postMessage(m *Message) error {
 	data, err := json.Marshal(m)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal message")
+		return errors.Wrap(err, "failed to marshal Message")
 	}
 	resp, err := s.client.Post(s.url, "application/json; charset=UTF-8", bytes.NewReader(data))
 	if err != nil {
