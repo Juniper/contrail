@@ -27,6 +27,34 @@ workflow:
     expected:
     - 404
 
+- name: get a project that exists in Keystone - ensure admin project exists
+  request:
+    path: /project/admin
+    method: GET
+    expected:
+    - 200
+  expect:
+    project:
+      fq_name:
+      - default-domain
+      - admin
+
+- name: check that the default security group has been created
+  request:
+    path: /fqname-to-id
+    method: POST
+    data:
+      fq_name:
+      - default-domain
+      - admin
+      - default
+      type: security-group
+    expected:
+    - 200
+
+# TODO Check the security group's contents (using List with FQName)
+# TODO Delete the security group
+
 - name: delete neutron project
   request:
     path: /project/aa907485-e1f9-4a14-834d-8c69ed9cb3b2

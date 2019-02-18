@@ -8,6 +8,11 @@ cleanup:
 - path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
 - path: /security-group/79ce33bf-1bac-48d5-8bbb-5782e26b3db8
 - path: /network-ipam/1bafd896-f5f9-4150-821a-9e100c2e0ce2
+- kind: security-group
+  fq_name:
+  - default
+  - neutron_port_admin_project
+  - default
 - path: /project/b9ce3ccf-26a1-4403-b309-ab28891b89e9
 
 clients:
@@ -478,6 +483,8 @@ workflow:
     method: DELETE
     expected:
     - 200
+
+# TODO Delete the project's default security group.
 
 - name: Delete project
   request:
