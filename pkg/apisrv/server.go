@@ -113,6 +113,8 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 					},
 				},
 			},
+			ReadService:    s.DBService,
+			MetadataGetter: s.DBService,
 			WriteService: &services.InternalContextWriteServiceWrapper{
 				WriteService: serviceChain[0],
 			},
