@@ -74,7 +74,7 @@ func (sv *Service) getProjectFromKeystone(ctx context.Context, id string) (*keys
 	}
 	p, kerr := sv.Keystone.GetProject(ctx, token, logic.VncUUIDToNeutronID(id))
 	if kerr != nil {
-		return nil, errors.Wrap(kerr, "couldn't get project from keystone:")
+		return nil, errors.Wrap(kerr, "couldn't get project from keystone")
 	}
 
 	return p, nil
