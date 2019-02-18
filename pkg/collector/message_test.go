@@ -2,7 +2,6 @@ package collector
 
 import (
 	"net/http"
-	"strconv"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -69,9 +68,17 @@ func TestRESTAPITrace(t *testing.T) {
 				response: resp,
 			}
 
-			message := RESTAPITrace(mockEchoContent, []byte(tt.request), []byte(tt.response)).Build()
+			messageBuilder := RESTAPITrace(mockEchoContent, []byte(tt.request), []byte(tt.response))
+			assert.NotNil(t, messageBuilder)
+			message := messageBuilder.Build()
+			assert.Nil(t, message)
 
+			/* TODO: Should be reverted as introspect service for Intent API will be introduced.
 			assert.Equal(t, message.SandeshType, typeRESTAPITrace)
+			messageBuilder := RESTAPITrace(mockEchoContent, []byte(tt.request), []byte(tt.response))
+			assert.NotNil(t, messageBuilder)
+			message := messageBuilder.Build()
+			assert.NotNil(t, message)
 			m, ok := message.Payload.(*payloadRESTAPITrace)
 			assert.True(t, ok)
 			assert.Equal(t, m.URL, tt.url)
@@ -79,6 +86,7 @@ func TestRESTAPITrace(t *testing.T) {
 			assert.Equal(t, m.RequestData, tt.request)
 			assert.Equal(t, m.Status, strconv.Itoa(tt.status)+" "+http.StatusText(tt.status))
 			assert.Equal(t, m.ResponseBody, tt.response)
+			*/
 		})
 	}
 }

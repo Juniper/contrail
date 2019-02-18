@@ -1,7 +1,6 @@
 package collector
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,15 +51,23 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run("RESTAPITrace", func(t *testing.T) {
+		t.Run("MessageBusNotifyTrace", func(t *testing.T) {
 			obj := &mockBaseObject{
 				typeName: tt.typeName,
 				uuid:     tt.uuid,
 				fqName:   tt.fqName,
 			}
 
-			message := MessageBusNotifyTrace(tt.operation, obj).Build()
+			messageBuilder := MessageBusNotifyTrace(tt.operation, obj)
+			assert.NotNil(t, messageBuilder)
+			message := messageBuilder.Build()
+			assert.Nil(t, message)
 
+			/* TODO: Should be reverted as introspect service for Intent API will be introduced.
+			messageBuilder := MessageBusNotifyTrace(tt.operation, obj)
+			assert.NotNil(t, messageBuilder)
+			message := messageBuilder.Build()
+			assert.NotNil(t, message)
 			assert.Equal(t, message.SandeshType, typeMessageBusNotifyTrace)
 			m, ok := message.Payload.(*payloadMessageBusNotifyTrace)
 			assert.True(t, ok)
@@ -71,6 +78,7 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 			assert.Equal(t, m.Body.FQName, tt.fqName)
 			assert.True(t, strings.HasPrefix(m.RequestID, "req-"))
 			assert.Equal(t, m.RequestID, m.Body.RequestID)
+			*/
 		})
 	}
 }
