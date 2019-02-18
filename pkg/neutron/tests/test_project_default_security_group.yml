@@ -1,0 +1,141 @@
+name: Test for Project creating the default Security Group
+cleanup:
+- path: /project/admin
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: ensure admin project exists
+  request:
+    path: /project/admin
+    method: GET
+    expected:
+    - 200
+  expect:
+    project:
+      fq_name:
+      - default-domain
+      - admin
+
+- name: check that the default security group has been created
+  request:
+    path: /fqname-to-id
+    method: POST
+    data:
+      fq_name:
+      - default-domain
+      - admin
+      - default
+      type: security-group
+    expected:
+    - 200
+
+- name: check the default security group
+  request:
+    path: "/security-groups?parent_id=admin&filters=name==default"
+    method: GET
+    expected:
+    - 200
+  expect:
+    security-groups:
+    - fq_name:
+      - default-domain
+      - admin
+      - default
+      name: default
+      parent_uuid: admin
+      parent_type: project
+      id_perms:
+        enable: true
+        description: "Default security group"
+      security_group_entries:
+        policy_rule:
+        - direction: ">"
+          protocol: any
+          src_addresses:
+          - security_group: default-domain:admin:default
+          dst_addresses:
+          - security_group: local
+          src_ports:
+          - start_port: 0
+            end_port: 65535
+          dst_ports:
+          - start_port: 0
+            end_port: 65535
+          ethertype: IPv4
+          rule_uuid: $uuid
+        - direction: ">"
+          protocol: any
+          src_addresses:
+          - security_group: default-domain:admin:default
+          dst_addresses:
+          - security_group: local
+          src_ports:
+          - start_port: 0
+            end_port: 65535
+          dst_ports:
+          - start_port: 0
+            end_port: 65535
+          ethertype: IPv6
+          rule_uuid: $uuid
+        - direction: ">"
+          protocol: any
+          src_addresses:
+          - security_group: local
+          dst_addresses:
+          - security_group: $null
+            subnet:
+              ip_prefix: 0.0.0.0
+              ip_prefix_len: 0
+          src_ports:
+          - start_port: 0
+            end_port: 65535
+          dst_ports:
+          - start_port: 0
+            end_port: 65535
+          ethertype: IPv4
+          rule_uuid: $uuid
+        - direction: ">"
+          protocol: any
+          src_addresses:
+          - security_group: local
+          dst_addresses:
+          - security_group: $null
+            subnet:
+              ip_prefix: "::"
+              ip_prefix_len: 0
+          src_ports:
+          - start_port: 0
+            end_port: 65535
+          dst_ports:
+          - start_port: 0
+            end_port: 65535
+          ethertype: IPv6
+          rule_uuid: $uuid
+
+- name: delete project
+  request:
+    path: /project/admin
+    method: DELETE
+    expected:
+    - 200
+
+- name: check that the default security group has been deleted
+  request:
+    path: /fqname-to-id
+    method: POST
+    data:
+      fq_name:
+      - default-domain
+      - admin
+      - default
+      type: security-group
+    expected:
+    - 404

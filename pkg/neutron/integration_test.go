@@ -30,6 +30,10 @@ func TestProject(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
 
+func TestProjectDefaultSecurityGroup(t *testing.T) {
+	integration.RunTest(t, t.Name(), server)
+}
+
 func TestRouter(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
