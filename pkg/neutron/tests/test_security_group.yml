@@ -3,21 +3,21 @@ description: security group test
 cleanup:
 - path: /security-group/security-group-uuid1
 - kind: security-group
-  fq_name: [default-domain, sg_neturon_project_name, default]
+  fq_name: [default-domain, neutron_security_group_admin_project, default]
 - kind: security-group
-  fq_name: [default-domain, sg_neturon_project_name, my_new_sg]
+  fq_name: [default-domain, neutron_security_group_admin_project, my_new_sg]
 - path: /project/92882ca8-f993-42f2-8643-0c05c96e12dd
 
 test_data:
   project: &project
     uuid: 92882ca8-f993-42f2-8643-0c05c96e12dd
-    name: sg_neturon_project_name
+    name: neutron_security_group_admin_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
 
   vn_blue: &vn_blue
-    fq_name: ["default", "sg_neturon_project_name", "vn_blue"]
+    fq_name: ["default", "neutron_security_group_admin_project", "vn_blue"]
     uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
     display_name: blue
     parent_type: project
@@ -39,7 +39,7 @@ test_data:
           start_port: 0
         ethertype: "IPv4"
         src_addresses:
-        - security_group: "default:sg_neturon_project_name:sg_name"
+        - security_group: "default:neutron_security_group_admin_project:sg_name"
         src_ports:
         - end_port: 65535
           start_port: 0
@@ -60,7 +60,7 @@ test_data:
   sg_read_response: &sg_read_response
     fq_name:
       - default-domain
-      - sg_neturon_project_name
+      - neutron_security_group_admin_project
       - sg_name
     tenant_id: 92882ca8f99342f286430c05c96e12dd
     security_group_rules:
@@ -115,7 +115,7 @@ test_data:
   sg_create_response: &sg_create_response
     fq_name:
     - default-domain
-    - sg_neturon_project_name
+    - neutron_security_group_admin_project
     - my_new_sg
     description: ''
     tenant_id: 92882ca8f99342f286430c05c96e12dd
@@ -292,7 +292,7 @@ workflow:
   expect:
     - fq_name:
       - default-domain
-      - sg_neturon_project_name
+      - neutron_security_group_admin_project
       - default
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       name: default
@@ -373,13 +373,13 @@ workflow:
   expect:
   - fq_name:
     - default-domain
-    - sg_neturon_project_name
+    - neutron_security_group_admin_project
     - default
     tenant_id: 92882ca8f99342f286430c05c96e12dd
     name: default
   - fq_name:
     - default-domain
-    - sg_neturon_project_name
+    - neutron_security_group_admin_project
     - sg_name
     tenant_id: 92882ca8f99342f286430c05c96e12dd
 
