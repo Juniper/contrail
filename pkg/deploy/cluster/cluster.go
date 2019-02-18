@@ -35,6 +35,8 @@ type Config struct {
 	AnsibleRevision string
 	// Optional Test var to run command in test mode
 	Test bool
+	// Optional Test template root directory to store test templates
+	TestTemplateRoot string
 }
 
 // Cluster represents contrail cluster manager

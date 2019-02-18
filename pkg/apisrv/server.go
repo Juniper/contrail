@@ -55,6 +55,7 @@ func RegisterExtension(f func(server *Server) error) {
 type Server struct {
 	Echo                       *echo.Echo
 	GRPCServer                 *grpc.Server
+	EndpointStore              *apicommon.EndpointStore
 	Keystone                   *keystone.Keystone
 	DBService                  *db.Service
 	Proxy                      *proxyService
@@ -279,8 +280,8 @@ func (s *Server) Init() (err error) {
 		g.Use(proxyMiddleware(t, viper.GetBool("server.proxy.insecure")))
 	}
 	// serve dynamic proxy based on configured endpoints
-	endpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
-	s.serveDynamicProxy(endpointStore)
+	s.EndpointStore = apicommon.MakeEndpointStore() // sync map to store proxy endpoints
+	s.serveDynamicProxy(s.EndpointStore)
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	var keystoneClient *keystone.Client
@@ -290,13 +291,13 @@ func (s *Server) Init() (err error) {
 		if err != nil {
 			return errors.Wrap(err, "failed to setup paths skipped from authentication")
 		}
-		e.Use(keystone.AuthMiddleware(keystoneClient, skipPaths, endpointStore))
+		e.Use(keystone.AuthMiddleware(keystoneClient, skipPaths, s.EndpointStore))
 	} else if viper.GetString("auth_type") == "no-auth" {
 		e.Use(noAuthMiddleware())
 	}
 	localKeystone := viper.GetBool("keystone.local")
 	if localKeystone {
-		k, err := keystone.Init(e, endpointStore, keystoneClient)
+		k, err := keystone.Init(e, s.EndpointStore, keystoneClient)
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
@@ -314,7 +315,7 @@ func (s *Server) Init() (err error) {
 			grpc.CustomCodec(protocodec.New(0)),
 		}
 		if keystoneAuthURL != "" {
-			opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(keystoneClient, endpointStore)))
+			opts = append(opts, grpc.UnaryInterceptor(keystone.AuthInterceptor(keystoneClient, s.EndpointStore)))
 		} else if viper.GetBool("no_auth") {
 			opts = append(opts, grpc.UnaryInterceptor(noAuthInterceptor()))
 		}
