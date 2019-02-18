@@ -114,3 +114,7 @@ func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInt
 
 	return nil
 }
+
+func checkVRouterLink() {
+	// TODO implement it.
+}
