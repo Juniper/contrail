@@ -55,9 +55,9 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 	e.GET("/keystone/v3/auth/tokens", keystone.ValidateTokenAPI)
 
 	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
-	e.GET("/keystone/v3/auth/projects", keystone.GetProjectsAPI)
+	e.GET("/keystone/v3/auth/projects", keystone.ListProjectsAPI)
 
-	e.GET("/keystone/v3/projects", keystone.GetProjectsAPI)
+	e.GET("/keystone/v3/projects", keystone.ListProjectsAPI)
 	e.GET("/keystone/v3/projects/:id", keystone.GetProjectAPI)
 
 	return keystone, nil
@@ -181,8 +181,8 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, nil)
 }
 
-//GetProjectsAPI is an API handler to list projects.
-func (keystone *Keystone) GetProjectsAPI(c echo.Context) error { // nolint: gocyclo
+//ListProjectsAPI is an API handler to list projects.
+func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {

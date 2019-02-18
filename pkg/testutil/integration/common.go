@@ -651,9 +651,9 @@ func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
 	e.GET("/v3/auth/tokens", k.ValidateTokenAPI)
 
 	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
-	e.GET("/v3/auth/projects", k.GetProjectsAPI)
+	e.GET("/v3/auth/projects", k.ListProjectsAPI)
 
-	e.GET("/v3/projects", k.GetProjectsAPI)
+	e.GET("/v3/projects", k.ListProjectsAPI)
 	e.GET("/v3/project/:id", k.GetProjectAPI)
 	mockServer := NewWellKnownServer(serve, e)
 	mockServer.Start()
