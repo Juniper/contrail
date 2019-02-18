@@ -227,16 +227,12 @@ func (db *DB) addDependencies(
 		dependentNode, ok := db.idMap[ref.GetUUID()]
 		if ok {
 			dependentNode.event.GetResource().AddBackReference(resource)
-			dependentNode.pop()
-			db.append(dependentNode)
 		}
 	}
 	if resource.GetParentUUID() != "" {
 		dependentNode, ok := db.idMap[resource.GetParentUUID()]
 		if ok {
 			dependentNode.event.GetResource().AddChild(resource)
-			dependentNode.pop()
-			db.append(dependentNode)
 		}
 	}
 }

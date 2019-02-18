@@ -13,6 +13,8 @@ import (
 
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apisrv"
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	"github.com/Juniper/contrail/pkg/apisrv/replication"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/db/cache"
@@ -28,6 +30,7 @@ const (
 )
 
 var cacheDB *cache.DB
+var endpointStore *apicommon.EndpointStore
 
 func init() {
 	Contrail.AddCommand(processCmd)
@@ -51,6 +54,7 @@ func StartProcesses(wg *sync.WaitGroup) {
 	MaybeStart("cache", startCacheService, wg)
 	MaybeStart("server", startServer, wg)
 	MaybeStart("agent", startAgent, wg)
+	MaybeStart("server.enable_vnc_replication", startVNCReplication, wg)
 	MaybeStart("sync", startSync, wg)
 	MaybeStart("compilation", startCompilationService, wg)
 	MaybeStart("collector", startCollectorWatcher, wg)
@@ -145,7 +149,24 @@ func startServer(_ *sync.WaitGroup) {
 	if err = server.Init(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
+	endpointStore = server.EndpointStore
 	if err = server.Run(); err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+
+}
+
+func startVNCReplication(_ *sync.WaitGroup) {
+	r, err := replication.New(cacheDB, endpointStore)
+	if err != nil {
+		logrus.Errorf("while initializing vnc replication service: %v", err)
+		logutil.FatalWithStackTrace(err)
+	}
+	defer r.Stop()
+
+	err = r.Start()
+	if err != nil {
+		logrus.Errorf("while starting vnc replication service: %v", err)
 		logutil.FatalWithStackTrace(err)
 	}
 }

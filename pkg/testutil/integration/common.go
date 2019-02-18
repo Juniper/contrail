@@ -659,3 +659,35 @@ func MockServerWithKeystone(serve, keystoneAuthURL string) *httptest.Server {
 	mockServer.Start()
 	return mockServer
 }
+
+// VerifyEndpoints verifies endpoint created against expected endpoints arg
+func VerifyEndpoints(t *testing.T, clusterID string, testScenario *TestScenario,
+	expectedEndpoints map[string]string) error {
+	createdEndpoints := map[string]string{}
+	for _, client := range testScenario.Clients {
+		var response map[string][]interface{}
+		url := fmt.Sprintf("/endpoints?parent_uuid=%s", clusterID)
+		_, err := client.Read(context.Background(), url, &response)
+		assert.NoError(t, err, "Unable to list endpoints of the cluster")
+		for _, endpoint := range response["endpoints"] {
+			e := endpoint.(map[string]interface{}) //nolint: errcheck
+			// TODO(ijohnson) remove using DisplayName as prefix
+			// once UI takes prefix as input.
+			var prefix = e["display_name"]
+			if v, ok := e["prefix"]; ok {
+				prefix = v
+			}
+			createdEndpoints[prefix.(string)] = e["public_url"].(string) //nolint: errcheck
+		}
+	}
+	for k, e := range expectedEndpoints {
+		if v, ok := createdEndpoints[k]; ok {
+			if e != v {
+				return fmt.Errorf("endpoint expected: %s, actual: %s for service %s", e, v, k)
+			}
+		} else {
+			return fmt.Errorf("missing endpoint for service %s", k)
+		}
+	}
+	return nil
+}

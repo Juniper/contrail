@@ -383,7 +383,8 @@ func (a *contrailAnsibleDeployer) mockPlay(ansibleArgs []string) error {
 		"playBook":    ansibleArgs[playBookIndex],
 		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
 	}
-	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", context)
+	content, err := template.Apply(filepath.Join(
+		a.getTestTemplateRoot(), "test_ansible_playbook.tmpl"), context)
 	if err != nil {
 		return err
 	}

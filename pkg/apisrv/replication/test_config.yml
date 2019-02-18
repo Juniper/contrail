@@ -53,8 +53,6 @@ server:
   log_api: false
   log_body: false
 
-  enable_vnc_replication: true
-
   # Bind addresss
   address: ":9091"
 
@@ -70,19 +68,26 @@ server:
   # Enable Neutron Service or not
   enable_vnc_neutron: true
 
+  # Enable replication to vnc db for few resources
+  enable_vnc_replication: true
+
   # Static file config
   # key: URL path
   # value: file path. (absolute path recommended in production)
   static_files:
     public: ../../public
 
-  dynamic_proxy_path: proxy
   # API Proxy configuration
   # key: URL path
   # value: String list of backend host
   proxy:
     /contrail:
     - http://localhost:8082
+
+  # API Dynamic Proxy configuration
+  dynamic_proxy:
+    enabled: true
+    path: proxy
 
 sync:
   storage: json
@@ -109,10 +114,6 @@ keystone:
           id: demo
           name: demo
           domain: *default
-        neutron: &neutron
-          id: aa907485e1f94a14834d8c69ed9cb3b2
-          name: neutron
-          domain: *default
       users:
         alice:
           id: alice
@@ -124,10 +125,6 @@ keystone:
           - id: admin
             name: admin
             project: *admin
-          - id: aa907485e1f94a14834d8c69ed9cb3b2
-            name: neutron
-            project: *neutron
-
         bob:
           id: bob
           name: Bob
@@ -143,3 +140,11 @@ keystone:
     expire: 3600
   insecure: true
   authurl: https://localhost:9091/keystone/v3
+
+cache:
+  enabled: true
+  timeout: 10s
+  # how long revision deleted event preserved.
+  max_history: 100000
+  rdbms:
+    enabled: true

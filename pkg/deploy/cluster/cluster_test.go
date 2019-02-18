@@ -59,37 +59,6 @@ func TestMain(m *testing.M) {
 	integration.TestMain(m, &server)
 }
 
-func verifyEndpoints(t *testing.T, testScenario *integration.TestScenario,
-	expectedEndpoints map[string]string) error {
-	createdEndpoints := map[string]string{}
-	for _, client := range testScenario.Clients {
-		var response map[string][]interface{}
-		url := fmt.Sprintf("/endpoints?parent_uuid=%s", clusterID)
-		_, err := client.Read(context.Background(), url, &response)
-		assert.NoError(t, err, "Unable to list endpoints of the cluster")
-		for _, endpoint := range response["endpoints"] {
-			e := endpoint.(map[string]interface{}) //nolint: errcheck
-			// TODO(ijohnson) remove using DisplayName as prefix
-			// once UI takes prefix as input.
-			var prefix = e["display_name"]
-			if v, ok := e["prefix"]; ok {
-				prefix = v
-			}
-			createdEndpoints[prefix.(string)] = e["public_url"].(string) //nolint: errcheck
-		}
-	}
-	for k, e := range expectedEndpoints {
-		if v, ok := createdEndpoints[k]; ok {
-			if e != v {
-				return fmt.Errorf("endpoint expected: %s, actual: %s for service %s", e, v, k)
-			}
-		} else {
-			return fmt.Errorf("missing endpoint for service %s", k)
-		}
-	}
-	return nil
-}
-
 func verifyClusterDeleted() bool {
 	// Make sure working dir is deleted
 	if _, err := os.Stat(workRoot + "/" + clusterID); err == nil {
@@ -304,7 +273,7 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -345,6 +314,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		TestTemplateRoot: "test_data/",
 		WorkRoot:     workRoot,
 		Test:         true,
 		LogFile:      workRoot + "/deploy.log",
@@ -377,7 +347,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -416,7 +386,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -499,6 +469,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		TestTemplateRoot: "test_data/",
 		WorkRoot:     workRoot,
 		Test:         true,
 		LogFile:      workRoot + "/deploy.log",
@@ -531,7 +502,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -570,7 +541,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -811,6 +782,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		TestTemplateRoot: "test_data/",
 		WorkRoot:     workRoot,
 		Test:         true,
 		LogFile:      workRoot + "/deploy.log",
@@ -836,7 +808,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -868,7 +840,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -946,9 +918,10 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
-		Action:       "create",
+		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		TestTemplateRoot: "test_data/",
 		WorkRoot:     workRoot,
 		Test:         true,
 		LogFile:      workRoot + "/deploy.log",
@@ -976,7 +949,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -1008,7 +981,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -1098,6 +1071,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
+		TestTemplateRoot: "test_data/",
 		WorkRoot:     workRoot,
 		Test:         true,
 		LogFile:      workRoot + "/deploy.log",
@@ -1144,7 +1118,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -1221,7 +1195,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = integration.VerifyEndpoints(t, clusterID, &testScenario, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
