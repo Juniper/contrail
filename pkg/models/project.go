@@ -34,6 +34,11 @@ func (m *Project) DefaultSecurityGroup() *SecurityGroup {
 	}
 }
 
+// DefaultSecurityGroupFQName returns the FQName of the project's default SecurityGroup.
+func (m *Project) DefaultSecurityGroupFQName() []string {
+	return basemodels.ChildFQName(m.GetFQName(), DefaultSecurityGroupName)
+}
+
 // MakeSecurityGroupPolicyRule makes a policy rule for a SecurityGroup.
 func MakeSecurityGroupPolicyRule(
 	ingress bool,

@@ -66,7 +66,7 @@ server:
   enable_grpc: true
 
   # Enable Neutron Service or not
-  enable_vnc_neutron: false
+  enable_vnc_neutron: true
 
   # Static file config
   # key: URL path
