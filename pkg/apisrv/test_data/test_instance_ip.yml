@@ -35,12 +35,6 @@ test_data:
     network_ipam_refs:
       - uuid: test_ipam_instance_ip_blue
 
-  virtual_router: &virtual_router_blue
-    fq_name: ["default-global-system-config", "test_virtual_router_blue"]
-    uuid: test_virtual_router _blue
-    parent_type: global_system_config
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
-
 clients:
   default:
     id: alice

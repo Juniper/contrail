@@ -26,6 +26,27 @@ test_data:
     network_ipam_refs:
       - uuid: test_ipam_vmi_blue
 
+  vmi_base_setup: &vmi_base_setup
+    uuid: 171b8975-9784-4cc7-aa79-6e5efb672221
+    fq_name: ["default-domain", "admin_vmi_project", "vmi_test"]
+    parent_type: project
+    virtual_network_refs:
+      - uuid: vn_vmi_blue
+        to: ["default-domain", "admin_vmi_project", "vn_blue"]
+    port_security_enabled: true
+    display_name: vmi_test
+
+  virtual_router_blue: &virtual_router_blue
+    virtual-router:
+      uuid: test_virtual_router_uuid
+      parent_type: global-system-config
+      fq_name:
+        - default-global-system-config
+        - test-virtual-router
+      virtual_router_ip_address: 192.168.0.14
+    network_ipam_refs:
+      - uuid: test_ipam_vmi_blue
+
 clients:
   default:
     id: alice
@@ -40,8 +61,7 @@ workflow:
   request:
     path: /projects
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
       project: *admin_project_vmi
   expect:
@@ -51,8 +71,7 @@ workflow:
   request:
     path: /network-ipams
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
       network-ipam: *network_ipam_blue
   expect:
@@ -62,19 +81,25 @@ workflow:
   request:
     path: /virtual-networks
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
       virtual-network: *vn_vmi_blue
   expect:
     virtual-network: *vn_vmi_blue
 
+- name: create virtual router in the blue virutal network
+  request:
+    path: /virtual-routers
+    method: POST
+    expected: [200]
+    data: *virtual_router_blue
+
+# Tests of Create operation
 - name: create virtual machine interface
   request:
     path: /virtual-machine-interfaces
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
       virtual-machine-interface:
         uuid: e844a53b-9113-4b28-b484-3a7bce34320a
@@ -112,22 +137,181 @@ workflow:
   request:
     path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
     method: DELETE
-    expected:
-    - 200
-  expect: null
+    expected: [200]
+
+# Test Update operation
+- name: create minimal setup virtual machine interface
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [200]
+    data:
+      virtual-machine-interface: *vmi_base_setup
+
+- name: update display_name virtual machine interface
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: PUT
+    expected: [200]
+    data:
+      virtual-machine-interface:
+        <<: *vmi_base_setup
+        display_name: "new name"
+  expect:
+    virtual-machine-interface:
+      <<: *vmi_base_setup
+      display_name: "new name"
+
+- name: delete virtual machine interface
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: DELETE
+    expected: [200]
+
+- name: create virtual machine interface with vrouter linked by bidings
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [200]
+    data:
+      virtual-machine-interface:
+        <<: *vmi_base_setup
+        virtual_machine_interface_bindings:
+          key_value_pair:
+            - key: vnic_type
+              value: "direct"
+            - key: host_id
+              value: "test-virtual-router"
+
+- name: update virtual machine interface - add ref to non existing virtual machine
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: PUT
+    expected: [409]
+    data:
+      virtual-machine-interface:
+        virtual_machine_refs:
+          - to: ["default-domain", "admin_vmi_project", "non-existing-vm"]
+            uuid: uuid-non-exisitng-vm-uuid
+  expect:
+    message:
+      $contains: "VirtualMachineRefs create failed"
+
+- name: create virtual machine
+  request:
+    path: /virtual-machines
+    method: POST
+    expected: [200]
+    data:
+      virtual-machine:
+        display_name: default-vm
+        fq_name: ["default-domain", "admin_vmi_project", "default-vm"]
+        uuid: default-vm-uuid
+
+- name: update virtual machine interface - add ref to virtual machine
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: PUT
+    expected: [200]
+    data:
+      virtual-machine-interface:
+        virtual_machine_refs:
+          - to: ["default-domain", "admin_vmi_project", "default-vm"]
+            uuid: default-vm-uuid
+  expect:
+    virtual-machine-interface:
+      virtual_machine_refs:
+        - to: ["default-domain", "admin_vmi_project", "default-vm"]
+          uuid: default-vm-uuid
+
+- name: GET virtual machine interface to make sure that ref to virtual machine is added
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: GET
+    expected: [200]
+  expect:
+    virtual-machine-interface:
+      virtual_machine_refs:
+        - href: $any
+          to: ["default-domain", "admin_vmi_project", "default-vm"]
+          uuid: default-vm-uuid
+
+- name: update virtual machine interface - delete ref to virtual machine
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: PUT
+    expected: [200]
+    data:
+      virtual-machine-interface:
+        virtual_machine_refs: []
+
+- name: GET virtual machine interface to make sure that ref to virtual machine is deleted
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: GET
+    expected: [200]
+  expect:
+    virtual-machine-interface:
+      virtual_machine_refs: $null
+
+- name: delete virtual machine interface
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: DELETE
+    expected: [200]
+
+# Tests of Delete operation
+- name: create virtual machine interface with vrouter linked by bidings and with asssigned virtual machine
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [200]
+    data:
+      virtual-machine-interface:
+        <<: *vmi_base_setup
+        virtual_machine_interface_bindings:
+          key_value_pair:
+            - key: vnic_type
+              value: "direct"
+            - key: host_id
+              value: "test-virtual-router"
+        virtual_machine_refs:
+          - to: ["default-domain", "admin_vmi_project", "default-vm"]
+            uuid: default-vm-uuid
+
+- name: try to delete VMI with assined VRouter and VM
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: DELETE
+    expected: [200]
+
+# Clean resources
+- name: delete default virtual machine
+  request:
+    path: /virtual-machine/default-vm-uuid
+    method: DELETE
+    expected: [200]
+
+- name: delete virtual router blue
+  request:
+    path: /virtual-router/test_virtual_router_uuid
+    method: DELETE
+    expected: [200]
 
 - name: delete virtual network
   request:
     path: /virtual-network/vn_vmi_blue
     method: DELETE
-    expected:
-    - 200
-  expect: null
+    expected: [200]
 
 - name: delete network ipam blue
   request:
     path: /network-ipam/test_ipam_vmi_blue
     method: DELETE
-    expected:
-    - 200
-  expect: null
+    expected: [200]
+
+- name: delete project
+  request:
+    path: /project/admin_vmi_project_uuid
+    method: DELETE
+    expected: [200]
