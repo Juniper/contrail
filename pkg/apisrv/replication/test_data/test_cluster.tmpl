@@ -1,0 +1,243 @@
+name: Replication init cluster test template
+description: replication init test to create contrail cluster
+cleanup:
+- path: /contrail-config-node/contrail_config_nodes_uuid
+- path: /contrail-config-database-node/contrail_config_database_nodes_uuid
+- path: /contrail-analytics-node/contrail_analytics_nodes_uuid
+- path: /contrail-analytics-database-node/contrail_analytics_database_nodes_uuid
+- path: /contrail-webui-node/contrail_webui_nodes_uuid
+- path: /contrail-control-node/contrail_control_nodes_uuid
+- path: /contrail-vrouter-node/contrail_vrouter_nodes_uuid
+- path: /node/all_in_one_node_uuid
+- path: /contrail-cluster/test_cluster_uuid
+test_data:
+  all_in_one_node: &all_in_one_node
+    uuid: all_in_one_node_uuid
+    hostname: all_in_one_node
+    interface_name: all_in_one_node_interface
+    ip_address: 127.0.0.1
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  all_in_one_cluster: &all_in_one_cluster
+    uuid: test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    container_registry: test_registry
+    registry_private_insecure: true
+    contrail_version: ocata-5.0-x
+    provisioner_type: ansible
+    orchestrator: kubernetes
+    default_gateway: 127.0.0.254
+    ntp_server: 10.1.1.100
+    encap_priority: VXLAN,MPLSoUDP,MPLSoGRE
+    contrail_configuration:
+      key_value_pair:
+        - key: CONFIG_NODES
+          value: 127.0.0.1
+  contrail_config_nodes: &contrail_config_nodes
+    uuid: contrail_config_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    api_public_port: {{ config_port }}
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_config_database_nodes: &contrail_config_database_nodes
+    uuid: contrail_config_database_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_nodes: &contrail_analytics_nodes
+    uuid: contrail_analytics_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_database_nodes: &contrail_analytics_database_nodes
+    uuid: contrail_analytics_database_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_webui_nodes: &contrail_webui_nodes
+    uuid: contrail_webui_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_control_nodes: &contrail_control_nodes
+    uuid: contrail_control_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_vrouter_nodes: &contrail_vrouter_nodes
+    uuid: contrail_vrouter_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *all_in_one_cluster
+  expect:
+    contrail-cluster:
+      perms2:
+        owner: admin
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      uuid: test_cluster_uuid
+      container_registry: test_registry
+      registry_private_insecure: true
+      contrail_version: ocata-5.0-x
+      provisioner_type: ansible
+      orchestrator: kubernetes
+      default_gateway: 127.0.0.254
+      ntp_server: 10.1.1.100
+
+- name: create node
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *all_in_one_node
+  expect:
+    node:
+      perms2:
+        owner: admin
+      uuid: all_in_one_node_uuid
+      parent_type: global-system-config
+      parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+      hostname: all_in_one_node
+      interface_name: all_in_one_node_interface
+      ip_address: 127.0.0.1
+
+- name: create config node
+  request:
+    path: /contrail-config-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-config-node: *contrail_config_nodes
+  expect:
+    contrail-config-node:
+      uuid: contrail_config_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+
+- name: create config database node
+  request:
+    path: /contrail-config-database-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-config-database-node: *contrail_config_database_nodes
+  expect:
+    contrail-config-database-node:
+      uuid: contrail_config_database_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+
+- name: create analytics node
+  request:
+    path: /contrail-analytics-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-node: *contrail_analytics_nodes
+  expect:
+    contrail-analytics-node:
+      uuid: contrail_analytics_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+
+- name: create analytics database node
+  request:
+    path: /contrail-analytics-database-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-database-node: *contrail_analytics_database_nodes
+  expect:
+    contrail-analytics-database-node:
+      uuid: contrail_analytics_database_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+
+- name: create webui node
+  request:
+    path: /contrail-webui-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-webui-node: *contrail_webui_nodes
+  expect:
+    contrail-webui-node:
+      uuid: contrail_webui_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+       - uuid: all_in_one_node_uuid
+
+- name: create control node
+  request:
+    path: /contrail-control-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-control-node: *contrail_control_nodes
+  expect:
+    contrail-control-node:
+      uuid: contrail_control_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+
+- name: create vrouter node
+  request:
+    path: /contrail-vrouter-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-vrouter-node: *contrail_vrouter_nodes
+  expect:
+    contrail-vrouter-node:
+      uuid: contrail_vrouter_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid

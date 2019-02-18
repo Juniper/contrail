@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	defaultTemplateRoot = "./pkg/cluster/configs"
+	defaultTemplateRoot = "./pkg/deploy/cluster/templates"
+	defaultTestTemplateRoot = "./pkg/deploy/cluster/test_data"
 )
 
 type deployCluster struct {
@@ -48,6 +49,14 @@ func (p *deployCluster) getWorkRoot() string {
 		workRoot = defaultWorkRoot
 	}
 	return workRoot
+}
+
+func (p *deployCluster) getTestTemplateRoot() string {
+	testTemplateRoot := p.cluster.config.TestTemplateRoot
+	if testTemplateRoot == "" {
+		testTemplateRoot = defaultTestTemplateRoot
+	}
+	return testTemplateRoot
 }
 
 func (p *deployCluster) getClusterHomeDir() string {
