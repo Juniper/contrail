@@ -468,6 +468,7 @@ func (s *Server) setupCollector() error {
 	) {
 		s.Collector.Send(collector.RESTAPITrace(ctx, reqBody, resBody))
 	}))
+	s.Collector.Send(collector.ModuleCPUStateTrace(viper.GetString("server.address")))
 	return nil
 }
 
