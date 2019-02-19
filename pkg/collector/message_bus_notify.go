@@ -3,8 +3,6 @@ package collector
 import (
 	"context"
 
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -37,6 +35,7 @@ func (p *payloadMessageBusNotifyTrace) Build() *Message {
 
 // MessageBusNotifyTrace sends message with type MessageBusNotifyTrace
 func MessageBusNotifyTrace(operation string, obj basemodels.Object) MessageBuilder {
+	/* TODO: Should be reverted as introspect service for Intent API will be introduced.
 	requestID := "req-" + uuid.NewV4().String()
 	var objDict interface{}
 	if operation != services.OperationUpdate {
@@ -55,6 +54,8 @@ func MessageBusNotifyTrace(operation string, obj basemodels.Object) MessageBuild
 		},
 		Error: "",
 	}
+	*/
+	return NewEmptyMessageBuilder()
 }
 
 type processor struct {

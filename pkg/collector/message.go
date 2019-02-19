@@ -1,11 +1,7 @@
 package collector
 
 import (
-	"net/http"
-	"strconv"
-
 	"github.com/labstack/echo"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,6 +30,7 @@ type payloadVNCAPIMessage struct {
 
 // RESTAPITrace sends message with type RestApiTrace
 func RESTAPITrace(ctx echo.Context, reqBody, resBody []byte) MessageBuilder {
+	/* TODO: Should be reverted as introspect service for Intent API will be introduced.
 	if ctx.Request().Method == "GET" {
 		return NewEmptyMessageBuilder()
 	}
@@ -46,6 +43,8 @@ func RESTAPITrace(ctx echo.Context, reqBody, resBody []byte) MessageBuilder {
 		ResponseBody: string(resBody),
 		RequestError: "",
 	}
+	*/
+	return NewEmptyMessageBuilder()
 }
 
 func (p *payloadRESTAPITrace) Build() *Message {
