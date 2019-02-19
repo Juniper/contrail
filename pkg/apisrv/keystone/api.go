@@ -222,6 +222,14 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 
 //CreateTokenAPI is an API handler for issuing new Token.
 func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
+	var authRequest kscommon.AuthRequest
+	if err := c.Bind(&authRequest); err != nil {
+		logrus.WithField("error", err).Debug("Validation failed")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
+	if authRequest.Auth.Identity.Cluster != nil {
+		keystone.getAuthRequest
+	}
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
@@ -231,11 +239,6 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 	if keystoneEndpoint != "" {
 		keystone.Client.SetAuthURL(keystoneEndpoint)
 		return keystone.Client.CreateToken(c)
-	}
-	var authRequest kscommon.AuthRequest
-	if err = c.Bind(&authRequest); err != nil {
-		logrus.WithField("error", err).Debug("Validation failed")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 	var user *kscommon.User
 	var token *kscommon.Token
