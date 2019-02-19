@@ -265,19 +265,23 @@ func verifyProxies(
 func TestKeystoneEndpoint(t *testing.T) {
 	ctx := context.Background()
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPrivate := integration.MockServerWithKeystone("", keystoneAuthURL)
+
+	clusterCName := "clusterC"
+	clusterCUser := clusterCName + "_admin"
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"", keystoneAuthURL, clusterCUser, clusterCUser)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystone("", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"", keystoneAuthURL, clusterCUser, clusterCUser)
 	defer ksPublic.Close()
-
-	clusterName := "clusterC"
 	context := pongo2.Context{
-		"cluster_name":  clusterName,
-		"endpoint_name": clusterName + "_keystone",
+		"cluster_name":  clusterCName,
+		"endpoint_name": clusterCName + "_keystone",
 		"private_url":   ksPrivate.URL,
 		"public_url":    ksPublic.URL,
 		"manage_parent": true,
+		"admin_user":    clusterCUser,
 	}
 
 	var testScenario integration.TestScenario
@@ -301,7 +305,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	// Delete endpoint test
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
-		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterName)
+		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterCName)
 		_, err = client.Delete(ctx, url, &response)
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
@@ -320,9 +324,10 @@ func TestKeystoneEndpoint(t *testing.T) {
 
 	// Recreate endpoint
 	context = pongo2.Context{
-		"cluster_name":  clusterName,
-		"endpoint_name": clusterName + "_keystone",
+		"cluster_name":  clusterCName,
+		"endpoint_name": clusterCName + "_keystone",
 		"public_url":    ksPublic.URL,
+		"admin_user":    clusterCName,
 	}
 	err = integration.LoadTestScenario(&testScenario, testEndpointFile, context)
 	assert.NoError(t, err, "failed to load endpoint create test data")
@@ -344,7 +349,7 @@ func TestKeystoneEndpoint(t *testing.T) {
 	// Cleanup endpoint test
 	for _, client := range testScenario.Clients {
 		var response map[string]interface{}
-		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterName)
+		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterCName)
 		_, err = client.Delete(ctx, url, &response)
 		assert.NoError(t, err, "failed to delete keystone endpoint")
 		break
