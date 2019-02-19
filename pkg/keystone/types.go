@@ -37,6 +37,7 @@ type Identity struct {
 	Methods  []string   `json:"methods"`
 	Password *Password  `json:"password,omitempty"`
 	Token    *UserToken `json:"token,omitempty"`
+	Cluster  *Cluster   `json:"cluster,omitempty"`
 }
 
 //Password represents a password.
@@ -64,6 +65,13 @@ type Role struct {
 	ID      string   `json:"id"`
 	Name    string   `json:"name"`
 	Project *Project `json:"project"`
+}
+
+//Cluster represent a cluster object sent by user
+//to get new token using cluster token
+type Cluster struct {
+	ID    string     `json:"id"`
+	Token *UserToken `json:"token,omitempty"`
 }
 
 //UserToken represent a token object sent by user to get new token
