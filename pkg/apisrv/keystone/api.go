@@ -220,28 +220,79 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	return c.JSON(http.StatusOK, projectsResponse)
 }
 
+func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
+	scope := kscommon.GetScope(
+		viper.GetString("client.domain_id"),
+		viper.GetString("client.domain_name"),
+		viper.GetString("client.project_id"),
+		viper.GetString("client.project_name"),
+	)
+	authRequest := kscommon.AuthRequest{
+		Auth: &kscommon.Auth{
+			Identity: &kscommon.Identity{
+				Methods: []string{"password"},
+				Password: &kscommon.Password{
+					User: &kscommon.User{
+						Name:     viper.GetString("client.id"),
+						Password: viper.GetString("client.password"),
+						Domain:   scope.GetDomain(),
+					},
+				},
+			},
+			Scope: scope,
+		},
+	}
+	return authRequest
+}
+
 //CreateTokenAPI is an API handler for issuing new Token.
-func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
+func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 	var authRequest kscommon.AuthRequest
 	if err := c.Bind(&authRequest); err != nil {
 		logrus.WithField("error", err).Debug("Validation failed")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
-	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return echo.NewHTTPError(http.StatusUnauthorized, err)
-	}
-	if keystoneEndpoint != nil {
-		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
-		if authRequest.Auth.Identity.Password != nil {
-			authRequest.Auth.Identity.Password.User.Name = keystoneEndpoint.Username
-			authRequest.Auth.Identity.Password.User.Password = keystoneEndpoint.Password
-			c = keystone.Client.SetAuthIdentity(c, &authRequest)
+	if authRequest.Auth.Identity.Cluster != nil {
+		clusterID := authRequest.Auth.Identity.Cluster.ID
+		keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+		if err != nil {
+			logrus.Error(err)
+			return echo.NewHTTPError(http.StatusUnauthorized, err)
 		}
-		return keystone.Client.CreateToken(c)
+		if keystoneEndpoint != nil {
+			keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+			err := keystone.Client.ValidateToken(c)
+			if err != nil {
+				return err
+			}
+		}
+		// Get token from local keystone
+		return keystone.createToken(c, keystone.newLocalAuthRequest())
+	} else {
+		clusterID := c.Request().Header.Get(xClusterIDKey)
+		keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+		if err != nil {
+			logrus.Error(err)
+			return echo.NewHTTPError(http.StatusUnauthorized, err)
+		}
+		if keystoneEndpoint != nil {
+			// Get token from the cluster's keystone
+			keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+			if authRequest.Auth.Identity.Password != nil {
+				authRequest.Auth.Identity.Password.User.Name = keystoneEndpoint.Username
+				authRequest.Auth.Identity.Password.User.Password = keystoneEndpoint.Password
+				c = keystone.Client.SetAuthIdentity(c, &authRequest)
+			}
+			return keystone.Client.CreateToken(c)
+		}
+		// No cluster endpoint found for service keystone
+		// Get token from local keystone
+		return keystone.createToken(c, authRequest)
 	}
+}
+
+func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthRequest) error {
+	var err error
 	var user *kscommon.User
 	var token *kscommon.Token
 	tokenID := ""
