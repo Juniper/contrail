@@ -13,7 +13,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/collector"
+	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/compilation"
 	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/db/cassandra"
@@ -192,17 +192,17 @@ func startAgent(_ *sync.WaitGroup) {
 }
 
 func startCollectorWatcher(_ *sync.WaitGroup) {
-	cfg := &collector.Config{}
+	cfg := &analytics.Config{}
 	if err := viper.UnmarshalKey("collector", cfg); err != nil {
 		logrus.WithError(err).Warn("failed to unmarshal collector config")
 		return
 	}
-	c, err := collector.NewCollector(cfg)
+	c, err := analytics.NewCollector(cfg)
 	if err != nil {
 		logrus.WithError(err).Warn("failed to create collector")
 		return
 	}
-	if err = collector.NewMessageBusProcessor(c); err != nil {
+	if err = analytics.NewMessageBusProcessor(c); err != nil {
 		logrus.WithError(err).Warn("failed to create collector")
 	}
 }

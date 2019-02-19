@@ -13,6 +13,7 @@ import (
 	"github.com/twinj/uuid"
 
 	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -145,6 +146,7 @@ type ContrailService struct {
 	IntPoolAllocator   IntPoolAllocator
 	RefRelaxer         RefRelaxer
 	UserAgentKVService UserAgentKVService
+	Collector          collector.Collector
 }
 
 // RESTSync handles Sync API request.
@@ -575,4 +577,33 @@ func GetRequestSchema(r *http.Request) string {
 		return "https://"
 	}
 	return "http://"
+}
+
+var requestIDKey interface{} = "requestIDKey"
+
+// WithRequestID assign new request_id to context if there is no one in.
+func WithRequestID(ctx context.Context, requestID string) context.Context {
+	if ctx.Value(requestIDKey) != nil {
+		return ctx
+	}
+
+	if requestID == "" {
+		requestID = "req-" + uuid.NewV4().String()
+	}
+
+	return context.WithValue(ctx, requestIDKey, requestID)
+}
+
+func GetRequestID(ctx context.Context) string {
+	value := ctx.Value(requestIDKey)
+	if value == nil {
+		return "NO-REQUESTID"
+	}
+
+	requestID, ok := value.(string)
+	if !ok {
+		return "NO-REQUESTID"
+	}
+
+	return requestID
 }

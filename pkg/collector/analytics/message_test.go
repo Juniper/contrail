@@ -1,4 +1,4 @@
-package collector
+package analytics
 
 import (
 	"net/http"
@@ -9,6 +9,8 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Juniper/contrail/pkg/collector"
 )
 
 type mockEcho struct {
@@ -21,10 +23,10 @@ func (m *mockEcho) Response() *echo.Response {
 }
 
 type mockCollector struct {
-	message *Message
+	message *collector.Message
 }
 
-func (c *mockCollector) Send(b MessageBuilder) {
+func (c *mockCollector) Send(b collector.MessageBuilder) {
 	c.message = b.Build()
 }
 
