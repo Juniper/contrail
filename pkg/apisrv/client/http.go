@@ -51,26 +51,6 @@ type Request struct {
 	Output   interface{} `yaml:"output,omitempty"`
 }
 
-// GetKeystoneScope returns the project/domain scope
-func GetKeystoneScope(domainID, domainName, projectID, projectName string) *keystone.Scope {
-	scope := &keystone.Scope{
-		Project: &keystone.Project{
-			Domain: &keystone.Domain{},
-		},
-	}
-	if domainID != "" {
-		scope.Project.Domain.ID = domainID
-	} else if domainName != "" {
-		scope.Project.Domain.Name = domainName
-	}
-	if projectID != "" {
-		scope.Project.ID = projectID
-	} else if projectName != "" {
-		scope.Project.Name = projectName
-	}
-	return scope
-}
-
 // NewHTTP makes API Server HTTP client.
 func NewHTTP(endpoint, authURL, id, password string, insecure bool, scope *keystone.Scope) *HTTP {
 	c := &HTTP{
