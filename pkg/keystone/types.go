@@ -4,7 +4,7 @@ import "time"
 
 //AuthRequest is used to request an authentication.
 type AuthRequest interface {
-	SetUser(string, string)
+	SetCredential(string, string)
 	GetIdentity() *Identity
 	GetScope() *Scope
 }
@@ -14,8 +14,8 @@ type UnScopedAuthRequest struct {
 	Auth *UnScopedAuth `json:"auth"`
 }
 
-//SetUser uses given user in the auth request
-func (u UnScopedAuthRequest) SetUser(user, password string) {
+//SetCredential uses given user in the auth request
+func (u UnScopedAuthRequest) SetCredential(user, password string) {
 	u.Auth.Identity.Password.User.Name = user
 	u.Auth.Identity.Password.User.Password = password
 }
@@ -40,8 +40,8 @@ type ScopedAuthRequest struct {
 	Auth *ScopedAuth `json:"auth"`
 }
 
-//SetUser uses given user in the auth request
-func (s ScopedAuthRequest) SetUser(user, password string) {
+//SetCredential uses given user in the auth request
+func (s ScopedAuthRequest) SetCredential(user, password string) {
 	s.Auth.Identity.Password.User.Name = user
 	s.Auth.Identity.Password.User.Password = password
 }
@@ -86,6 +86,7 @@ type Identity struct {
 	Methods  []string   `json:"methods"`
 	Password *Password  `json:"password,omitempty"`
 	Token    *UserToken `json:"token,omitempty"`
+	Cluster  *Cluster   `json:"cluster,omitempty"`
 }
 
 //Password represents a password.
@@ -113,6 +114,13 @@ type Role struct {
 	ID      string   `json:"id"`
 	Name    string   `json:"name"`
 	Project *Project `json:"project"`
+}
+
+//Cluster represent a cluster object sent by user
+//to get new token using cluster token
+type Cluster struct {
+	ID    string     `json:"id"`
+	Token *UserToken `json:"token,omitempty"`
 }
 
 //UserToken represent a token object sent by user to get new token
