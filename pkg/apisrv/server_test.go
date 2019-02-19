@@ -9,6 +9,7 @@ import (
 	"github.com/twinj/uuid"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -280,7 +281,7 @@ func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken
 		projectName,
 		projectName,
 		true,
-		client.GetKeystoneScope("", "default", "", projectName),
+		keystone.GetScope("", "default", "", projectName),
 	)
 	restClient.InSecure = true
 	restClient.Init()
@@ -298,7 +299,7 @@ func TestRESTClient(t *testing.T) {
 		t.Name(),
 		t.Name(),
 		true,
-		client.GetKeystoneScope("", "default", "", t.Name()),
+		keystone.GetScope("", "default", "", t.Name()),
 	)
 	restClient.InSecure = true
 	restClient.Init()
