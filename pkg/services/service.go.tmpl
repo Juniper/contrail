@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -29,7 +30,8 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 	if err := c.Bind(requestData); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
 	}
-	ctx := c.Request().Context()
+	req := c.Request()
+	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
 	if err != nil {
 		return errutil.ToHTTPError(err)
@@ -44,6 +46,7 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Create{{ schema.JSONSchema.GoName }}Request,
 ) (*Create{{ schema.JSONSchema.GoName }}Response, error) {
+	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
 	model := request.{{ schema.JSONSchema.GoName }}
 	if model == nil {
 		return nil, errutil.ErrorBadRequest("create body is empty")
@@ -168,10 +171,12 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
 	}
 
+	req := c.Request()
+	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
 	model.UUID = c.Param("id")
 	response, err := service.Update{{ schema.JSONSchema.GoName }}(
-		c.Request().Context(),
+		ctx,
 		&Update{{ schema.JSONSchema.GoName }}Request{
 			{{ schema.JSONSchema.GoName }}: model,
 			FieldMask: basemodels.MapToFieldMask(request.{{ schema.JSONSchema.GoName }}),
@@ -190,6 +195,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Update{{ schema.JSONSchema.GoName }}Request,
 ) (*Update{{ schema.JSONSchema.GoName }}Response, error) {
+	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
 	model := request.{{ schema.JSONSchema.GoName }}
 	if model == nil {
 		return nil, errutil.ErrorBadRequest("update request body is empty")
@@ -223,7 +229,8 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 	request := &Delete{{ schema.JSONSchema.GoName }}Request{
 		ID: c.Param("id"),
 	}
-	ctx := c.Request().Context()
+	req := c.Request()
+	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	 _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
 		return errutil.ToHTTPError(err)
@@ -235,6 +242,7 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Delete{{ schema.JSONSchema.GoName }}Request,
 ) (*Delete{{ schema.JSONSchema.GoName }}Response, error) {
+	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
 	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
 		if err != nil {
@@ -252,7 +260,8 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 	request := &Get{{ schema.JSONSchema.GoName }}Request{
 		ID: c.Param("id"),
 	}
-	ctx := c.Request().Context()
+	req := c.Request()
+	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
 		return errutil.ToHTTPError(err)
@@ -267,6 +276,7 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 	ctx context.Context, request *Get{{ schema.JSONSchema.GoName }}Request,
 ) (*Get{{ schema.JSONSchema.GoName }}Response, error) {
+	ctx = WithRequestID(collector.WithContext(ctx, service.Collector), "")
 	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
 		storedIDPerms, err := getStoredIDPerms(ctx, service, "{{ schema.TypeName }}", request.ID)
 		if errutil.IsNotFound(err) {
@@ -282,6 +292,7 @@ func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 			return nil, errutil.ErrorNotFoundf("%v", err)
 		}
 	}
+
 	return service.BaseService.Get{{ schema.JSONSchema.GoName }}(ctx, request)
 }
 
@@ -292,7 +303,8 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
 	request := &List{{ schema.JSONSchema.GoName }}Request{
 		Spec: spec,
 	}
-	ctx := c.Request().Context()
+	req := c.Request()
+	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
 		return errutil.ToHTTPError(err)

@@ -1,13 +1,15 @@
-package collector
+package analytics
 
 import (
 	"github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/collector"
 )
 
 const doNotSendCollectorKey = "no-collector"
 
 type collectorLoggerHook struct {
-	collector Collector
+	c collector.Collector
 }
 
 func (h *collectorLoggerHook) Fire(entry *logrus.Entry) error {
@@ -15,7 +17,7 @@ func (h *collectorLoggerHook) Fire(entry *logrus.Entry) error {
 		return nil
 	}
 
-	h.collector.Send(VNCAPIMessage(entry))
+	h.c.Send(VNCAPIMessage(entry))
 	return nil
 }
 
@@ -24,9 +26,9 @@ func (h *collectorLoggerHook) Levels() []logrus.Level {
 }
 
 // AddLoggerHook setup logrus logger to send entries to collector
-func AddLoggerHook(c Collector) {
+func AddLoggerHook(c collector.Collector) {
 	logrus.AddHook(&collectorLoggerHook{
-		collector: c,
+		c: c,
 	})
 }
 

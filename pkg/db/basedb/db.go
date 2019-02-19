@@ -7,6 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/collector"
+	"github.com/Juniper/contrail/pkg/collector/analytics"
+
 	"github.com/ExpansiveWorlds/instrumentedsql"
 	"github.com/go-sql-driver/mysql"
 	"github.com/gogo/protobuf/proto"
@@ -107,11 +110,18 @@ func (db *BaseDB) DoInTransactionWithOpts(
 		return err
 	}
 
+	commitStartedAt := time.Now()
 	err = tx.Commit()
+	commitDurationInUsec := time.Since(commitStartedAt) / time.Microsecond
 	if err != nil {
 		tx.Rollback() // nolint: errcheck
 		return FormatDBError(err)
 	}
+
+	if c := collector.FromContext(ctx); c != nil {
+		c.Send(analytics.VncAPILatencyStatsLog(ctx, "COMMIT", "SQL", int64(commitDurationInUsec)))
+	}
+
 	return nil
 }
 
