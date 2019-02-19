@@ -18,6 +18,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/db"
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -119,14 +120,99 @@ func TestFQNameToIDGRPC(t *testing.T) {
 }
 
 func TestChownGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(),
-		func(ctx context.Context, conn *grpc.ClientConn) {
-			c := services.NewChownClient(conn)
+	firstProjectName := uuid.NewV4().String()
+	testGRPCServer(t, firstProjectName, func(firstProjectCTX context.Context, conn *grpc.ClientConn) {
+		c := client.NewGRPC(services.NewContrailServiceClient(conn))
 
-			// This is only a stub implementation
-			_, err := c.Chown(ctx, &services.ChownRequest{})
-			assert.NoError(t, err)
+		project, cleanup := createProjectWithName(t, firstProjectCTX, c, firstProjectName)
+		defer cleanup(t)
+
+		otherProjectName := uuid.NewV4().String()
+		integration.AddKeystoneProjectAndUser(server.APIServer, otherProjectName)
+		otherProjectCTX := metadata.NewOutgoingContext(firstProjectCTX,
+			metadata.Pairs("X-Auth-Token", restLogin(firstProjectCTX, t, otherProjectName)))
+
+		_, cleanup = createProjectWithName(t, otherProjectCTX, c, otherProjectName)
+		defer cleanup(t)
+
+		networkResponse, err := c.CreateVirtualNetwork(firstProjectCTX, &services.CreateVirtualNetworkRequest{
+			VirtualNetwork: &models.VirtualNetwork{
+				ParentType: models.KindProject,
+				ParentUUID: project.GetUUID(),
+			},
 		})
+		require.NoError(t, err, "creating network failed")
+		network := networkResponse.GetVirtualNetwork()
+
+		defer func() {
+			_, err = c.DeleteVirtualNetwork(firstProjectCTX, &services.DeleteVirtualNetworkRequest{
+				ID: network.GetUUID(),
+			})
+			assert.NoError(t, err, "deleting network failed")
+		}()
+
+		ch := services.NewChownClient(conn)
+
+		_, err = ch.Chown(firstProjectCTX, &services.ChownRequest{})
+		assert.True(t, errutil.IsBadRequest(err), "chown with an empty request should fail")
+
+		_, err = ch.Chown(firstProjectCTX, &services.ChownRequest{
+			Owner: otherProjectName,
+		})
+		assert.True(t, errutil.IsBadRequest(err), "chown with an empty UUID should fail")
+
+		_, err = ch.Chown(firstProjectCTX, &services.ChownRequest{
+			UUID: network.GetUUID(),
+		})
+		assert.True(t, errutil.IsBadRequest(err), "chown with an empty Owner should fail")
+
+		_, err = ch.Chown(firstProjectCTX, &services.ChownRequest{
+			UUID:  "not a UUID",
+			Owner: otherProjectName,
+		})
+		assert.True(t, errutil.IsBadRequest(err), "chown with a non-UUID UUID should fail")
+
+		_, err = ch.Chown(firstProjectCTX, &services.ChownRequest{
+			UUID:  network.GetUUID(),
+			Owner: "not a UUID",
+		})
+		assert.True(t, errutil.IsBadRequest(err), "chown with a non-UUID Owner should fail")
+
+		_, err = ch.Chown(firstProjectCTX, &services.ChownRequest{
+			UUID:  uuid.NewV4().String(),
+			Owner: otherProjectName,
+		})
+		assert.Error(t, err, "chown of a nonexistent resource should fail")
+
+		_, err = ch.Chown(firstProjectCTX, &services.ChownRequest{
+			UUID:  network.GetUUID(),
+			Owner: otherProjectName,
+		})
+		assert.NoError(t, err, "chown failed")
+
+		_, err = c.GetVirtualNetwork(firstProjectCTX, &services.GetVirtualNetworkRequest{
+			ID: network.GetUUID(),
+		})
+		assert.True(t, errutil.IsNotFound(err), "the old owner should not be able to get the network after chown")
+
+		chownedNetworkResponse, err := c.GetVirtualNetwork(otherProjectCTX, &services.GetVirtualNetworkRequest{
+			ID: network.GetUUID(),
+		})
+		assert.NoError(t, err, "the new owner should be able to get the network")
+		assert.Equal(t, otherProjectName, chownedNetworkResponse.GetVirtualNetwork().GetPerms2().GetOwner())
+
+		_, err = ch.Chown(otherProjectCTX, &services.ChownRequest{
+			UUID:  network.GetUUID(),
+			Owner: firstProjectName,
+		})
+		assert.NoError(t, err, "chown back to the original owner failed")
+
+		chownedBackNetworkResponse, err := c.GetVirtualNetwork(firstProjectCTX, &services.GetVirtualNetworkRequest{
+			ID: network.GetUUID(),
+		})
+		assert.NoError(t, err, "the original owner should be able to get the network")
+		assert.Equal(t, firstProjectName, chownedBackNetworkResponse.GetVirtualNetwork().GetPerms2().GetOwner())
+	})
 }
 
 func TestIPAMGRPC(t *testing.T) {
@@ -287,7 +373,7 @@ func TestPropCollectionUpdateGRPC(t *testing.T) {
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
 	integration.AddKeystoneProjectAndUser(server.APIServer, testName)
-	authToken := restLogin(ctx, t)
+	authToken := restLogin(ctx, t, testName)
 
 	creds := credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
@@ -311,9 +397,16 @@ func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Con
 func createProject(
 	t *testing.T, ctx context.Context, c *client.GRPC,
 ) (project *models.Project, cleanup func(t *testing.T)) {
+	return createProjectWithName(t, ctx, c, fmt.Sprintf("%s_project", t.Name()))
+}
+
+// nolint: golint
+func createProjectWithName(
+	t *testing.T, ctx context.Context, c *client.GRPC, name string,
+) (project *models.Project, cleanup func(t *testing.T)) {
 	r, err := c.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: &models.Project{
-			Name:       fmt.Sprintf("%s_project", t.Name()),
+			Name:       name,
 			ParentType: "domain",
 			ParentUUID: integration.DefaultDomainUUID,
 			IDPerms:    &models.IdPermsType{UserVisible: true},
