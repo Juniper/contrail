@@ -5,11 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
 	"github.com/Juniper/contrail/pkg/auth"
+	"github.com/Juniper/contrail/pkg/collector"
+	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/keystone"
 )
 
@@ -84,10 +87,17 @@ func (k *Keystone) ObtainToken(
 	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
 	request.Header.Set("Content-Type", "application/json")
 
+	startedAt := time.Now()
 	resp, err := k.HTTPClient.Do(request)
+	durationInUsec := time.Since(startedAt) / time.Microsecond
 	if err != nil {
 		return nil, errorFromResponse(err, resp)
 	}
+
+	if c := collector.FromContext(ctx); c != nil {
+		c.Send(analytics.VncAPILatencyStatsLog(ctx, "VALIDATE", "KEYSTONE", int64(durationInUsec)))
+	}
+
 	defer resp.Body.Close() // nolint: errcheck
 
 	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
