@@ -30,6 +30,7 @@ const (
 	private                 = apicommon.Private
 	pathSep                 = "/"
 	limit                   = 100
+	xClusterIDKey           = "X-Cluster-ID"
 )
 
 type proxyService struct {
@@ -133,6 +134,11 @@ func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
+			paths := strings.Split(r.URL.Path, pathSep)
+			//set clusterID in proxy request, so that the
+			//proxy endpoints can use it to get server's
+			//keystone token.
+			r.Header.Set(xClusterIDKey, paths[2])
 			prefix, server := p.getReverseProxy(r.URL.Path)
 			if server == nil {
 				return echo.NewHTTPError(http.StatusInternalServerError,
