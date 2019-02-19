@@ -1,8 +1,10 @@
-package collector
+package analytics
 
 import (
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
+
+	"github.com/Juniper/contrail/pkg/collector"
 )
 
 const (
@@ -29,10 +31,10 @@ type payloadVNCAPIMessage struct {
 }
 
 // RESTAPITrace sends message with type RestApiTrace
-func RESTAPITrace(ctx echo.Context, reqBody, resBody []byte) MessageBuilder {
+func RESTAPITrace(ctx echo.Context, reqBody, resBody []byte) collector.MessageBuilder {
 	/* TODO: Should be reverted as introspect service for Intent API will be introduced.
 	if ctx.Request().Method == "GET" {
-		return NewEmptyMessageBuilder()
+		return collector.NewEmptyMessageBuilder()
 	}
 	return &payloadRESTAPITrace{
 		RequestID:    "req-" + uuid.NewV4().String(),
@@ -44,11 +46,11 @@ func RESTAPITrace(ctx echo.Context, reqBody, resBody []byte) MessageBuilder {
 		RequestError: "",
 	}
 	*/
-	return NewEmptyMessageBuilder()
+	return collector.NewEmptyMessageBuilder()
 }
 
-func (p *payloadRESTAPITrace) Build() *Message {
-	return &Message{
+func (p *payloadRESTAPITrace) Build() *collector.Message {
+	return &collector.Message{
 		SandeshType: typeRESTAPITrace,
 		Payload:     p,
 	}
@@ -56,7 +58,7 @@ func (p *payloadRESTAPITrace) Build() *Message {
 
 // VNCAPIMessage sends message with type VncApiDebug, VncApiInfo, VncApiNotice or
 // VncApiError depends on level
-func VNCAPIMessage(entry *logrus.Entry) MessageBuilder {
+func VNCAPIMessage(entry *logrus.Entry) collector.MessageBuilder {
 	var messageType string
 	switch entry.Level {
 	case logrus.DebugLevel:
@@ -74,8 +76,8 @@ func VNCAPIMessage(entry *logrus.Entry) MessageBuilder {
 	}
 }
 
-func (p *payloadVNCAPIMessage) Build() *Message {
-	return &Message{
+func (p *payloadVNCAPIMessage) Build() *collector.Message {
+	return &collector.Message{
 		SandeshType: p.messageType,
 		Payload:     p,
 	}
