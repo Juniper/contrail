@@ -1,8 +1,9 @@
-package collector
+package analytics
 
 import (
 	"context"
 
+	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -26,17 +27,17 @@ type bodyMessageBusNotifyTrace struct {
 	ObjDict   interface{} `json:"obj_dict,omitempty"`
 }
 
-func (p *payloadMessageBusNotifyTrace) Build() *Message {
-	return &Message{
+func (p *payloadMessageBusNotifyTrace) Build() *collector.Message {
+	return &collector.Message{
 		SandeshType: typeMessageBusNotifyTrace,
 		Payload:     p,
 	}
 }
 
 // MessageBusNotifyTrace sends message with type MessageBusNotifyTrace
-func MessageBusNotifyTrace(operation string, obj basemodels.Object) MessageBuilder {
+func MessageBusNotifyTrace(ctx context.Context, operation string, obj basemodels.Object) collector.MessageBuilder {
 	/* TODO: Should be reverted as introspect service for Intent API will be introduced.
-	requestID := "req-" + uuid.NewV4().String()
+	requestID := services.GetRequestID(ctx)
 	var objDict interface{}
 	if operation != services.OperationUpdate {
 		objDict = obj
@@ -59,16 +60,16 @@ func MessageBusNotifyTrace(operation string, obj basemodels.Object) MessageBuild
 }
 
 type processor struct {
-	collector Collector
+	collector collector.Collector
 }
 
 func (p *processor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
-	p.collector.Send(MessageBusNotifyTrace(event.Operation(), event.GetResource()))
+	p.collector.Send(MessageBusNotifyTrace(ctx, event.Operation(), event.GetResource()))
 	return nil, nil
 }
 
 // NewMessageBusProcessor runs etcd events watcher
-func NewMessageBusProcessor(collector Collector) error {
+func NewMessageBusProcessor(collector collector.Collector) error {
 	v := &processor{
 		collector: collector,
 	}

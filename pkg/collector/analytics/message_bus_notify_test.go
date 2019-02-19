@@ -1,6 +1,7 @@
-package collector
+package analytics
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,7 @@ func (o *mockBaseObject) GetFQName() []string { return o.fqName }
 func TestMessageBusNotifyTrace(t *testing.T) {
 	tests := []struct {
 		name      string
+		requestID string
 		operation string
 		typeName  string
 		uuid      string
@@ -29,6 +31,7 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 	}{
 		{
 			name:      "create MessageBusNotifyTrace message",
+			requestID: "req-1",
 			operation: "create",
 			typeName:  "project",
 			uuid:      "created_project_uuid",
@@ -36,6 +39,7 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 		},
 		{
 			name:      "update MessageBusNotifyTrace message",
+			requestID: "req-2",
 			operation: "update",
 			typeName:  "project",
 			uuid:      "updated_project_uuid",
@@ -43,6 +47,7 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 		},
 		{
 			name:      "delete MessageBusNotifyTrace message",
+			requestID: "458978934",
 			operation: "delete",
 			typeName:  "project",
 			uuid:      "deleted_project_uuid",
@@ -58,7 +63,7 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 				fqName:   tt.fqName,
 			}
 
-			messageBuilder := MessageBusNotifyTrace(tt.operation, obj)
+			messageBuilder := MessageBusNotifyTrace(context.Background(), tt.operation, obj)
 			assert.NotNil(t, messageBuilder)
 			message := messageBuilder.Build()
 			assert.Nil(t, message)
@@ -76,7 +81,7 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 			assert.Equal(t, m.Body.Type, tt.typeName)
 			assert.Equal(t, m.Body.UUID, tt.uuid)
 			assert.Equal(t, m.Body.FQName, tt.fqName)
-			assert.True(t, strings.HasPrefix(m.RequestID, "req-"))
+			assert.Equal(t, m.RequestID, tt.requestID)
 			assert.Equal(t, m.RequestID, m.Body.RequestID)
 			*/
 		})
