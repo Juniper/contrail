@@ -6,7 +6,7 @@ id: rhospd_overcloud_network
 metadata:
   category: cluster
 parents:
-  rhospd_overcloud:
+  rhospd_overcloud_node:
     operations: "CRUD"
     description: "Parent of this overcloud_network."
     presence: "optional"
