@@ -14,6 +14,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
@@ -333,7 +334,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		AuthURL:  server.URL() + "/keystone/v3",
 		ID:       "alice",
 		Password: "alice_password",
-		Scope: client.GetKeystoneScope(
+		Scope: keystone.GetScope(
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
@@ -487,7 +488,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 		AuthURL:  server.URL() + "/keystone/v3",
 		ID:       "alice",
 		Password: "alice_password",
-		Scope: client.GetKeystoneScope(
+		Scope: keystone.GetScope(
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
@@ -799,7 +800,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		AuthURL:  server.URL() + "/keystone/v3",
 		ID:       "alice",
 		Password: "alice_password",
-		Scope: client.GetKeystoneScope(
+		Scope: keystone.GetScope(
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
@@ -937,7 +938,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 		AuthURL:  server.URL() + "/keystone/v3",
 		ID:       "alice",
 		Password: "alice_password",
-		Scope: client.GetKeystoneScope(
+		Scope: keystone.GetScope(
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()
@@ -1085,7 +1086,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		AuthURL:  server.URL() + "/keystone/v3",
 		ID:       "alice",
 		Password: "alice_password",
-		Scope: client.GetKeystoneScope(
+		Scope: keystone.GetScope(
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()

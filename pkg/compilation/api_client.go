@@ -3,6 +3,7 @@ package compilation
 import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/compilation/config"
+	"github.com/Juniper/contrail/pkg/keystone"
 )
 
 func newAPIClient(config config.Config) *client.HTTP {
@@ -13,7 +14,7 @@ func newAPIClient(config config.Config) *client.HTTP {
 		c.ID,
 		c.Password,
 		c.Insecure,
-		client.GetKeystoneScope(
+		keystone.GetScope(
 			c.DomainID, c.DomainName, c.ProjectID, c.ProjectName,
 		),
 	)
