@@ -68,7 +68,7 @@ fast_generate: generate_pb_go generate_mocks doc/proto.md
 
 generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/baseservices/base.pb.go pkg/services/gen_service.pb.go
 
-generate: fast_generate format_gen
+generate: fast_generate format_gen build_version
 
 generate_go:
 	# Generate for contrail resources.
@@ -81,6 +81,9 @@ generate_go:
 	go run  cmd/contrailschema/main.go generate \
 	    --schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
+
+build_version: pkg/version/gen_version_build.go
+	./tools/build_version.sh
 
 TYPES_MOCK := pkg/types/mock/gen_service_mock.go
 SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
