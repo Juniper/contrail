@@ -12,17 +12,17 @@ cleanup:
 - kind: virtual-network
   fq_name:
   - default
-  - test-subnet-project
+  - neutron_subnet_admin_project
   - test-vn
 - kind: project
   fq_name:
   - default
-  - test-subnet-project
+  - neutron_subnet_admin_project
 
 test_data:
   project: &project
-    fq_name: ["default", "test-subnet-project"]
-    uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+    fq_name: ["default", "neutron_subnet_admin_project"]
+    uuid: 58b739ad-5b1c-40ac-9d93-0d1db046d73d
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -39,8 +39,8 @@ test_data:
     expected: [200]
 
   base_context: &base_context
-    tenant: 886c725d04614dd6ac2730c74d4e46fb
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    tenant: 58b739ad5b1c40ac9d930d1db046d73d
+    tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
     user_id: 06be3763c8224dd5a343e3d95d87c1d2
     roles:
       - admin
@@ -52,7 +52,7 @@ test_data:
     name: test-subnet
     enable_dhcp: true
     network_id: *vn_uuid
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
     dns_nameservers: []
     allocation_pools:
       - start: 10.0.1.2
@@ -90,7 +90,7 @@ test_data:
 
 workflow:
 # Set up
-- name: Create "test-subnet-project" project
+- name: Create "neutron_subnet_admin_project" project
   request:
     path: /projects
     method: POST
@@ -112,11 +112,11 @@ workflow:
           id: *vn_uuid #todo remove this field from request
           router:external: false
           name: test-vn
-          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
           admin_state_up: true
           shared: false
           port_security_enabled: true
-          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          project_id: 58b739ad5b1c40ac9d930d1db046d73d
       context:
         <<: *base_context
         operation: CREATE
@@ -128,14 +128,14 @@ workflow:
     subnet_ipam: []
     fq_name:
     - default
-    - test-subnet-project
+    - neutron_subnet_admin_project
     - test-vn
     name: test-vn
     admin_state_up: true
-    tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+    tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
     port_security_enabled: true
     shared: false
-    project_id: 886c725d04614dd6ac2730c74d4e46fb
+    project_id: 58b739ad5b1c40ac9d930d1db046d73d
 
 # Subnet create
 
@@ -150,10 +150,10 @@ workflow:
           name: test-subnet
           enable_dhcp: true
           network_id: *vn_uuid
-          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          tenant_id: 58b739ad5b1c40ac9d930d1db046d73d
           ip_version: 4
           cidr: 10.0.1.0/24
-          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          project_id: 58b739ad5b1c40ac9d930d1db046d73d
       context:
         <<: *base_context
         operation: CREATE
@@ -317,8 +317,8 @@ workflow:
     method: DELETE
     expected: [200]
 
-- name: Delete "test-subnet-project" project
+- name: Delete "neutron_subnet_admin_project" project
   request:
-    path: /project/886c725d-0461-4dd6-ac27-30c74d4e46fb
+    path: /project/58b739ad-5b1c-40ac-9d93-0d1db046d73d
     method: DELETE
     expected: [200]
