@@ -12,3 +12,23 @@ func (s *Scope) GetDomain() *Domain {
 	}
 	return nil
 }
+
+// GetScope returns the project/domain scope
+func GetScope(domainID, domainName, projectID, projectName string) *Scope {
+	scope := &Scope{
+		Project: &Project{
+			Domain: &Domain{},
+		},
+	}
+	if domainID != "" {
+		scope.Project.Domain.ID = domainID
+	} else if domainName != "" {
+		scope.Project.Domain.Name = domainName
+	}
+	if projectID != "" {
+		scope.Project.ID = projectID
+	} else if projectName != "" {
+		scope.Project.Name = projectName
+	}
+	return scope
+}

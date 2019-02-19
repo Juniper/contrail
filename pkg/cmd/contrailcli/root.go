@@ -9,6 +9,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -45,7 +46,7 @@ func initConfig() {
 
 func getClient() (*client.HTTP, error) {
 	authURL := viper.GetString("keystone.authurl")
-	scope := client.GetKeystoneScope(
+	scope := keystone.GetScope(
 		viper.GetString("client.domain_id"),
 		viper.GetString("client.domain_name"),
 		viper.GetString("client.project_id"),

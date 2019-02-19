@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -63,7 +64,7 @@ func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 		AdminUserID,
 		AdminUserPassword,
 		true,
-		client.GetKeystoneScope(DefaultDomainID, "",
+		keystone.GetScope(DefaultDomainID, "",
 			AdminProjectID, AdminProjectName),
 	)
 	c.Debug = true
