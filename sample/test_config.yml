@@ -82,6 +82,14 @@ server:
     /contrail:
     - http://localhost:8082
 
+client:
+  id: alice
+  password: alice_password
+  project_id: admin
+  domain_id: default
+  schema_root: /public
+  endpoint: https://localhost:9091
+
 sync:
   storage: json
 

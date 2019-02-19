@@ -14,6 +14,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/config"
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/schema"
 )
@@ -108,7 +109,7 @@ func NewAgent(c *Config) (*Agent, error) {
 		s.AuthURL = c.AuthURL
 		s.ID = c.ID
 		s.Password = c.Password
-		s.Scope = client.GetKeystoneScope(c.DomainID, c.DomainName,
+		s.Scope = keystone.GetScope(c.DomainID, c.DomainName,
 			c.ProjectID, c.ProjectName)
 	}
 	s.Init()
