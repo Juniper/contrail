@@ -1,6 +1,7 @@
 package keystone
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -220,8 +221,86 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	return c.JSON(http.StatusOK, projectsResponse)
 }
 
+func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
+	scope := kscommon.GetScope(
+		viper.GetString("client.domain_id"),
+		viper.GetString("client.domain_name"),
+		viper.GetString("client.project_id"),
+		viper.GetString("client.project_name"),
+	)
+	authRequest := kscommon.ScopedAuthRequest{
+		Auth: &kscommon.ScopedAuth{
+			Identity: &kscommon.Identity{
+				Methods: []string{"password"},
+				Password: &kscommon.Password{
+					User: &kscommon.User{
+						Name:     viper.GetString("client.id"),
+						Password: viper.GetString("client.password"),
+						Domain:   scope.GetDomain(),
+					},
+				},
+			},
+			Scope: scope,
+		},
+	}
+	return authRequest
+}
+
+func (keystone *Keystone) fetchServerTokenWithClusterToken(
+	c echo.Context, identity *kscommon.Identity) error {
+	clusterID := identity.Cluster.ID
+	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if err != nil {
+		logrus.Error(err)
+		return echo.NewHTTPError(http.StatusUnauthorized, err)
+	}
+	if keystoneEndpoint != nil {
+		tokenURL := keystoneEndpoint.URL + "/v3/auth/tokens"
+		request, err := http.NewRequest(echo.GET, tokenURL, nil)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+		request.Header.Set("X-Auth-Token", identity.Cluster.Token.ID)
+		request.Header.Set("X-Subject-Token", identity.Cluster.Token.ID)
+		resp, err := keystone.Client.httpClient.Do(request)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+		defer resp.Body.Close() // nolint: errcheck
+		validateTokenResponse := &kscommon.ValidateTokenResponse{}
+		if err = json.NewDecoder(resp.Body).Decode(validateTokenResponse); err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
+		}
+		if resp.StatusCode != 200 {
+			return c.JSON(resp.StatusCode, validateTokenResponse)
+		}
+	}
+	// Get token from local keystone
+	return keystone.createToken(c, keystone.newLocalAuthRequest())
+}
+
+func (keystone *Keystone) fetchClusterToken(c echo.Context,
+	identity *kscommon.Identity, authRequest kscommon.AuthRequest,
+	keystoneEndpoint *apicommon.Endpoint) error {
+	keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+	if identity.Password != nil {
+		if authRequest.GetScope() == nil {
+			unScopedRequest := kscommon.UnScopedAuthRequest{
+				Auth: &kscommon.UnScopedAuth{
+					Identity: identity,
+				},
+			}
+			authRequest = unScopedRequest
+		}
+		authRequest.SetCredential(
+			keystoneEndpoint.Username, keystoneEndpoint.Password)
+	}
+	c = keystone.Client.SetAuthIdentity(c, authRequest)
+	return keystone.Client.CreateToken(c)
+}
+
 //CreateTokenAPI is an API handler for issuing new Token.
-func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
+func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 	var authRequest kscommon.AuthRequest
 	scopedRequest := kscommon.ScopedAuthRequest{}
 	if err := c.Bind(&scopedRequest); err != nil {
@@ -230,6 +309,9 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 	}
 	authRequest = scopedRequest
 	identity := authRequest.GetIdentity()
+	if identity.Cluster != nil {
+		return keystone.fetchServerTokenWithClusterToken(c, identity)
+	}
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
@@ -237,22 +319,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
 	if keystoneEndpoint != nil {
-		// Get token from the cluster's keystone
-		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
-		if identity.Password != nil {
-			if authRequest.GetScope() == nil {
-				unScopedRequest := kscommon.UnScopedAuthRequest{
-					Auth: &kscommon.UnScopedAuth{
-						Identity: scopedRequest.GetIdentity(),
-					},
-				}
-				authRequest = unScopedRequest
-			}
-			identity = authRequest.GetIdentity()
-			authRequest.SetUser(keystoneEndpoint.Username, keystoneEndpoint.Password)
-		}
-		c = keystone.Client.SetAuthIdentity(c, authRequest)
-		return keystone.Client.CreateToken(c)
+		return keystone.fetchClusterToken(c, identity, authRequest, keystoneEndpoint)
 	}
 	return keystone.createToken(c, authRequest)
 }

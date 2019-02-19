@@ -1,6 +1,9 @@
 package config
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -52,6 +55,8 @@ type Config struct {
 func ReadConfig() Config {
 	viper.SetDefault("compilation.service_name", "intent-compilation-service")
 
+	authURL := viper.GetString("keystone.authurl")
+	endpoint := strings.TrimSuffix(authURL, "/keystone/v3")
 	c := Config{
 		DefaultCfg: DefaultConfig{
 			PluginDirectory: viper.GetString("compilation.plugin_directory"),
@@ -67,7 +72,7 @@ func ReadConfig() Config {
 			MasterElection:   viper.GetBool("compilation.master_election"),
 		},
 		APIClientConfig: APIClientConfig{
-			URL:         viper.GetString("client.endpoint"),
+			URL:         endpoint,
 			ID:          viper.GetString("client.id"),
 			Password:    viper.GetString("client.password"),
 			ProjectID:   viper.GetString("client.project_id"),
@@ -75,7 +80,7 @@ func ReadConfig() Config {
 			DomainID:    viper.GetString("client.domain_id"),
 			DomainName:  viper.GetString("client.domain_name"),
 
-			AuthURL:  viper.GetString("keystone.authurl"),
+			AuthURL:  authURL,
 			Insecure: viper.GetBool("insecure"),
 		},
 		PluginCfg: PluginConfig{
