@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
@@ -123,7 +122,6 @@ type EventProcessor interface {
 type EventProducerService struct {
 	BaseService
 	Processor EventProcessor
-	Timeout   time.Duration
 }
 
 //ServiceEventProcessor dispatch event to method call.
