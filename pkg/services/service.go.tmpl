@@ -26,6 +26,7 @@ type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
 
 // RESTCreate{{ schema.JSONSchema.GoName }} handles a REST create request.
 func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+	c.Set(collector.KeyVNCAPIStatsLogObjectType, "{{ schema.TypeName }}")
 	requestData := &Create{{ schema.JSONSchema.GoName }}Request{}
 	if err := c.Bind(requestData); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
@@ -166,6 +167,7 @@ func (service *ContrailService) sanitizeFQNameFor{{ schema.JSONSchema.GoName }} 
 
 // RESTUpdate{{ schema.JSONSchema.GoName }} handles a REST update request.
 func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+	c.Set(collector.KeyVNCAPIStatsLogObjectType, "{{ schema.TypeName }}")
 	var request RESTUpdate{{ schema.JSONSchema.GoName }}Request
 	if err := c.Bind(&request); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %s", err))
@@ -226,6 +228,7 @@ func (service *ContrailService) Update{{ schema.JSONSchema.GoName }}(
 
 // RESTDelete{{ schema.JSONSchema.GoName }} handles a REST delete request.
 func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.Context) error {
+	c.Set(collector.KeyVNCAPIStatsLogObjectType, "{{ schema.TypeName }}")
 	request := &Delete{{ schema.JSONSchema.GoName }}Request{
 		ID: c.Param("id"),
 	}
@@ -257,6 +260,7 @@ func (service *ContrailService) Delete{{ schema.JSONSchema.GoName }}(
 
 // RESTGet{{ schema.JSONSchema.GoName }} handles a REST get request.
 func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
+	c.Set(collector.KeyVNCAPIStatsLogObjectType, "{{ schema.TypeName }}")
 	request := &Get{{ schema.JSONSchema.GoName }}Request{
 		ID: c.Param("id"),
 	}
@@ -298,6 +302,7 @@ func (service *ContrailService) Get{{ schema.JSONSchema.GoName }}(
 
 // RESTList{{ schema.JSONSchema.GoName }} handles a REST list request.
 func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Context) (error) {
+	c.Set(collector.KeyVNCAPIStatsLogObjectType, "{{ schema.TypeName }}")
 	var err error
 	spec := baseservices.GetListSpec(c)
 	request := &List{{ schema.JSONSchema.GoName }}Request{
