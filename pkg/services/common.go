@@ -4,13 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"time"
-
 	"github.com/gogo/protobuf/types"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/twinj/uuid"
+	"net/http"
 
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -121,7 +119,6 @@ type EventProcessor interface {
 type EventProducerService struct {
 	BaseService
 	Processor EventProcessor
-	Timeout   time.Duration
 }
 
 //ServiceEventProcessor dispatch event to method call.
