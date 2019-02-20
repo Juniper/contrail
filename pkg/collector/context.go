@@ -7,6 +7,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	// KeyVNCAPIStatsLogTimeStamp is time stamp for VncApiStatsLog message
+	KeyVNCAPIStatsLogTimeStamp = "VNCAPIStatsLogTimeStamp"
+	// KeyVNCAPIStatsLogObjectType is object type for VncApiStatsLog message
+	KeyVNCAPIStatsLogObjectType = "VNCAPIStatsLogObjectType"
+)
+
 var collectorKey interface{} = "collectorKey"
 
 // WithContext returns new context with stored collector

@@ -467,6 +467,12 @@ func (s *Server) setupCollector() error {
 		return errors.Wrap(err, "failed to create collector")
 	}
 	analytics.AddLoggerHook(s.Collector)
+	s.Echo.Use(analytics.VNCAPIStatsLogStamp)
+	s.Echo.Use(middleware.BodyDump(func(
+		ctx echo.Context, reqBody, resBody []byte,
+	) {
+		s.Collector.Send(analytics.VNCAPIStatsLog(ctx, reqBody, resBody))
+	}))
 	s.Echo.Use(middleware.BodyDump(func(
 		ctx echo.Context, reqBody, resBody []byte,
 	) {
