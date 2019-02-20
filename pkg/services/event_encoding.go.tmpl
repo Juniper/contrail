@@ -72,6 +72,8 @@ func (r *Event_Create{{ refType }}Request) GetRequest() RefAddRequest { return r
 func (r *Create{{ refType }}Request) isRefAddRequest() {}
 // SetID sets referencing object's uuid.
 func (r *Create{{ refType }}Request) SetID(id string) {r.ID = id}
+// GetFromKind returns from kind.
+func (r *Create{{ refType }}Request) GetFromKind() string { return "{{ schema.TypeName }}" }
 // SetToUUID sets referenced object's uuid.
 func (r *Create{{ refType }}Request) SetToUUID(uuid string) {r.Get{{ refType }}().SetUUID(uuid)}
 // GetAttr returns reference's attribute.
@@ -82,6 +84,8 @@ func (r *Event_Delete{{ refType }}Request) GetRequest() RefDeleteRequest { retur
 func (r *Delete{{ refType }}Request) isRefDeleteRequest() {}
 // SetID sets referencing object's uuid.
 func (r *Delete{{ refType }}Request) SetID(id string) {r.ID = id}
+// GetFromKind returns from kind.
+func (r *Delete{{ refType }}Request) GetFromKind() string { return "{{ schema.TypeName }}" }
 // SetToUUID sets referenced object's uuid.
 func (r *Delete{{ refType }}Request) SetToUUID(uuid string) {r.Get{{ refType }}().SetUUID(uuid)}
 {% endfor %}

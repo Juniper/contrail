@@ -64,7 +64,7 @@ func (j protoCodec) Key() string {
 	return "proto"
 }
 
-// ResourceKey constructs key for given codec, resource name and pk.
+// ResourceKey constructs key for given codec, resource name (schema ID) and pk.
 func ResourceKey(resourceName, pk string) string {
 	return path.Join("/", viper.GetString(constants.ETCDPathVK), resourceName, pk)
 }

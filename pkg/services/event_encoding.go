@@ -447,6 +447,9 @@ type DeleteRequest interface {
 type RefAddRequest interface {
 	isRefAddRequest()
 	SetID(string)
+	GetID() string
+	GetFromKind() string
+	GetToKind() string
 	SetToUUID(string)
 	GetAttr() basemodels.RefAttribute
 }
@@ -455,6 +458,9 @@ type RefAddRequest interface {
 type RefDeleteRequest interface {
 	isRefDeleteRequest()
 	SetID(string)
+	GetID() string
+	GetFromKind() string
+	GetToKind() string
 	SetToUUID(string)
 }
 
