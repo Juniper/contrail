@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
@@ -14,6 +15,8 @@ import (
 
 const (
 	keystoneVersion = "v3"
+	authPrefix      = "/keystone/" + keystoneVersion
+	pathSep         = "/"
 )
 
 // Client represents a client.
@@ -102,7 +105,7 @@ func (k *Client) ValidateToken(c echo.Context) error {
 
 // GetProjects sends project get request to keystone endpoint.
 func (k *Client) GetProjects(c echo.Context) error {
-	projectURL := k.AuthURL + "/projects"
+	projectURL := k.AuthURL + strings.TrimPrefix(c.Request().URL.Path, authPrefix)
 	request, err := http.NewRequest(echo.GET, projectURL, c.Request().Body)
 	if err != nil {
 		return err
@@ -121,7 +124,9 @@ func (k *Client) GetProjects(c echo.Context) error {
 
 // GetProject sends project get request to keystone endpoint.
 func (k *Client) GetProject(c echo.Context, id string) error {
-	projectURL := k.AuthURL + "/projects/" + id
+	urlParts := []string{
+		k.AuthURL, strings.TrimPrefix(c.Request().URL.Path, authPrefix), id}
+	projectURL := strings.Join(urlParts, pathSep)
 	request, err := http.NewRequest(echo.GET, projectURL, c.Request().Body)
 	if err != nil {
 		return err
