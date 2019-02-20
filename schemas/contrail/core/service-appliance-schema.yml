@@ -12,7 +12,7 @@ plural: service_appliances
 prefix: /
 references:
   physical_interface:
-    $ref: types.json#/definitions/ServiceApplianceInterfaceType
+    $ref: types.json#definitions/ServiceApplianceInterfaceType
     description: Reference to physical interface that can be used as (service interface
       type)left, right, management OR other.
     operations: CRUD
@@ -33,6 +33,12 @@ schema:
     service_appliance_user_credentials:
       $ref: types.json#/definitions/UserCredentials
       description: Authentication credentials for driver to access service appliance.
+      operations: CRUD
+      presence: optional
+    service_appliance_virtualization_type:
+      $ref: types.json#/definitions/ServiceVirtualizationType
+      description: Service virtualization type decides how individual service instances
+        are instantiated
       operations: CRUD
       presence: optional
   required:

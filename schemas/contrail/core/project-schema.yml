@@ -25,7 +25,7 @@ references:
     operations: CRUD
     presence: optional
   namespace:
-    $ref: types.json#/definitions/SubnetType
+    $ref: types.json#definitions/SubnetType
     description: Reference to network namespace of this project.
     operations: CRUD
     presence: optional

@@ -12,14 +12,14 @@ plural: fabrics
 prefix: /
 references:
   node_profile:
-    $ref: types.json#/definitions/SerialNumListType
+    $ref: types.json#definitions/SerialNumListType
     description: node profiles assignd to the fabric. The serial number list on the
       link is used to auto assign node-profile during ZTP so that port channelization
       could be bootstrapped based on the hardware spec in the node profile.
     operations: CRUD
     presence: optional
   virtual_network:
-    $ref: types.json#/definitions/FabricNetworkTag
+    $ref: types.json#definitions/FabricNetworkTag
     description: Similar to using virtual-machine to model the bare metal server,
       we are using virtual-network to model various underlay networks such as the
       management network and IP fabric network. This would allow us the re-use the

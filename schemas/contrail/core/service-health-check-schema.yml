@@ -14,7 +14,7 @@ plural: service_health_checks
 prefix: /
 references:
   service_instance:
-    $ref: types.json#/definitions/ServiceInterfaceTag
+    $ref: types.json#definitions/ServiceInterfaceTag
     derived: true
     description: Reference to service instance using this service health check.
     operations: CRUD

@@ -17,6 +17,11 @@ references:
       the system.
     operations: CRUD
     presence: system-only
+  control_node_zone:
+    $ref: types.json#definitions/BGPaaSControlNodeZoneAttributes
+    description: Reference to control-node-zone for bgp-peer selection
+    operations: CRUD
+    presence: optional
   service_health_check:
     description: Reference to health check object attached to BGPaaS object, used
       to enable BFD health check over active BGPaaS VMI.

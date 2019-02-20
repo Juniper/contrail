@@ -1,0 +1,22 @@
+api_style: contrail
+extends:
+- base
+id: analytics_alarm_node
+parents:
+  global_system_config:
+    description: Analytics node is object representing a logical node in system which
+      serves operational API and analytics collector.
+    operations: CRUD
+    presence: admin-only
+plural: analytics_alarm_nodes
+prefix: /
+references: {}
+schema:
+  properties:
+    analytics_alarm_node_ip_address:
+      $ref: types.json#/definitions/IpAddressType
+      description: Ip address of the analytics alarm node, set while provisioning.
+      operations: CRUD
+      presence: admin-only
+  required: []
+  type: object

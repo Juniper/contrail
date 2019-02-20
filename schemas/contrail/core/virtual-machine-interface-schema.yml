@@ -26,7 +26,7 @@ references:
     operations: CRUD
     presence: required
   bridge_domain:
-    $ref: types.json#/definitions/BridgeDomainMembershipType
+    $ref: types.json#definitions/BridgeDomainMembershipType
     description: Virtual Machine interface maps to a bridge-domain by defaultor based
       on in coming 802.1Q vlan tag
     operations: CRUD
@@ -49,7 +49,7 @@ references:
     operations: CRUD
     presence: optional
   routing_instance:
-    $ref: types.json#/definitions/PolicyBasedForwardingRuleType
+    $ref: types.json#definitions/PolicyBasedForwardingRuleType
     description: Automatically generated Forwarding policy. This will be deprecated
       in future in favour of VRF assign rules.
     operations: CRUD

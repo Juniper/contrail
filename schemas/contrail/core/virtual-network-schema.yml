@@ -26,13 +26,13 @@ references:
     operations: CRUD
     presence: optional
   network_ipam:
-    $ref: types.json#/definitions/VnSubnetsType
+    $ref: types.json#definitions/VnSubnetsType
     description: Reference to network-ipam this network is using. It has list of subnets
       that are to be used as property of the reference.
     operations: CRUD
     presence: required
   network_policy:
-    $ref: types.json#/definitions/VirtualNetworkPolicyType
+    $ref: types.json#definitions/VirtualNetworkPolicyType
     description: Reference to network-policy attached to this network. It has sequence
       number to specify attachment order.
     operations: CRUD
@@ -46,7 +46,7 @@ references:
     operations: CRUD
     presence: optional
   routing_policy:
-    $ref: types.json#/definitions/RoutingPolicyType
+    $ref: types.json#definitions/RoutingPolicyType
     description: List of references of routing policy objects. imported by user.
     operations: CRUD
     presence: optional
@@ -186,6 +186,13 @@ schema:
       operations: CRUD
       presence: optional
       type: boolean
+    virtual_network_category:
+      $ref: types.json#/definitions/VirtualNetworkCategory
+      description: This attribute is to differentiate the infrastructure networks
+        from the tenant networks. Infra-networks could be in-band network for management
+        and control traffic
+      operations: CRUD
+      presence: optional
     virtual_network_fat_flow_protocols:
       $ref: types.json#/definitions/FatFlowProtocols
       collectionType: list

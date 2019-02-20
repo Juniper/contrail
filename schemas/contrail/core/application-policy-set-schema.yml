@@ -17,7 +17,7 @@ plural: application_policy_sets
 prefix: /
 references:
   firewall_policy:
-    $ref: types.json#/definitions/FirewallSequence
+    $ref: types.json#definitions/FirewallSequence
     description: Reference to firewall-policy attached to this application-policy
     operations: CRUD
     presence: required

@@ -14,7 +14,7 @@ plural: service_instances
 prefix: /
 references:
   instance_ip:
-    $ref: types.json#/definitions/ServiceInterfaceTag
+    $ref: types.json#definitions/ServiceInterfaceTag
     description: Reference to ip address, which is used as nexthop pointing to (service
       instance, service interface).
     operations: CRUD
@@ -25,6 +25,12 @@ references:
     presence: required
 schema:
   properties:
+    service_instance_bgp_enabled:
+      default: true
+      description: Enable BGP routing for this service instance
+      operations: CRUD
+      presence: optional
+      type: boolean
     service_instance_bindings:
       $ref: types.json#/definitions/KeyValuePairs
       collectionType: map

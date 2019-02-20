@@ -16,12 +16,12 @@ plural: security_logging_objects
 prefix: /
 references:
   network_policy:
-    $ref: types.json#/definitions/SecurityLoggingObjectRuleListType
+    $ref: types.json#definitions/SecurityLoggingObjectRuleListType
     description: Reference to network-policy attached to this security-logging-object
     operations: CRUD
     presence: optional
   security_group:
-    $ref: types.json#/definitions/SecurityLoggingObjectRuleListType
+    $ref: types.json#definitions/SecurityLoggingObjectRuleListType
     description: Reference to security-group attached to this security-logging-object
     operations: CRUD
     presence: optional

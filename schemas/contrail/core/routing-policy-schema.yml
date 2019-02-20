@@ -12,14 +12,14 @@ plural: routing_policys
 prefix: /
 references:
   routing_instance:
-    $ref: types.json#/definitions/RoutingPolicyType
+    $ref: types.json#definitions/RoutingPolicyType
     description: ''
     operations: CRUD
     presence: Reference to internal routing instance object automatically generated
       by system. Reference has property of sequence number which is order of in which
       routing policies are applied to given routing instance.
   service_instance:
-    $ref: types.json#/definitions/RoutingPolicyServiceInstanceType
+    $ref: types.json#definitions/RoutingPolicyServiceInstanceType
     description: Reference to routing policy attached to (service instance, interface).
     operations: CRUD
     presence: optional

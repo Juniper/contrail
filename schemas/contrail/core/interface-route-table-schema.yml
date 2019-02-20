@@ -12,7 +12,7 @@ plural: interface_route_tables
 prefix: /
 references:
   service_instance:
-    $ref: types.json#/definitions/ServiceInterfaceTag
+    $ref: types.json#definitions/ServiceInterfaceTag
     derived: true
     description: Reference to interface route table attached to (service instance,
       interface), This is used to add interface static routes to service instance

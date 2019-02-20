@@ -16,12 +16,12 @@ plural: firewall_policys
 prefix: /
 references:
   firewall_rule:
-    $ref: types.json#/definitions/FirewallSequence
+    $ref: types.json#definitions/FirewallSequence
     description: Reference to firewall-rule attached to this firewall-policy
     operations: CRUD
     presence: optional
   security_logging_object:
-    $ref: types.json#/definitions/SloRateType
+    $ref: types.json#definitions/SloRateType
     description: Reference to security-logging-object attached to this firewall-policy
     operations: CRUD
     presence: optional

@@ -43,7 +43,7 @@ references:
     operations: CRUD
     presence: optional
   virtual_network:
-    $ref: types.json#/definitions/LogicalRouterVirtualNetworkType
+    $ref: types.json#definitions/LogicalRouterVirtualNetworkType
     description: Reference to a virtual network. Please refer to link attribute for
       additional details
     operations: CRUD

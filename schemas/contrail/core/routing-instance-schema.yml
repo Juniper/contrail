@@ -13,12 +13,12 @@ plural: routing_instances
 prefix: /
 references:
   route_target:
-    $ref: types.json#/definitions/InstanceTargetType
+    $ref: types.json#definitions/InstanceTargetType
     description: ''
     operations: CRUD
     presence: optional
   routing_instance:
-    $ref: types.json#/definitions/ConnectionType
+    $ref: types.json#definitions/ConnectionType
     description: ''
     operations: CRUD
     presence: optional

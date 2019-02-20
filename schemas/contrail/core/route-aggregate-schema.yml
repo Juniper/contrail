@@ -17,7 +17,7 @@ references:
     operations: CRUD
     presence: system-only
   service_instance:
-    $ref: types.json#/definitions/ServiceInterfaceTag
+    $ref: types.json#definitions/ServiceInterfaceTag
     description: Reference to route-aggregate policy attached to (service instance,
       interface).
     operations: CRUD

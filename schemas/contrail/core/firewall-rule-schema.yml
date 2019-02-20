@@ -19,7 +19,7 @@ references:
     operations: R
     presence: optional
   security_logging_object:
-    $ref: types.json#/definitions/SloRateType
+    $ref: types.json#definitions/SloRateType
     description: Reference to security-logging-object attached to this firewall-rule
     operations: CRUD
     presence: optional

@@ -12,7 +12,7 @@ plural: virtual_routers
 prefix: /
 references:
   network_ipam:
-    $ref: types.json#/definitions/VirtualRouterNetworkIpamType
+    $ref: types.json#definitions/VirtualRouterNetworkIpamType
     description: Reference to network-ipam this virtual-router is using. It has list
       of virtual-router specific allocation-pools and cidrs that are to be used as
       property of the reference.
