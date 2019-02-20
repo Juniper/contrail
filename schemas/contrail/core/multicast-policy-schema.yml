@@ -2,7 +2,12 @@ api_style: contrail
 extends:
 - base
 id: multicast_policy
-parents: {}
+parents:
+  project:
+    description: List of references of child multicast policy objects. automatically
+      maintained by system.
+    operations: CRUD
+    presence: optional
 plural: multicast_policys
 prefix: /
 references: {}

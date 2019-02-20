@@ -15,6 +15,11 @@ references:
       interface.
     operations: CRUD
     presence: optional
+  port:
+    description: This link represents physical connection from access port of a switch
+      to the server port
+    operations: CRUD
+    presence: optional
 schema:
   properties:
     ethernet_segment_identifier:

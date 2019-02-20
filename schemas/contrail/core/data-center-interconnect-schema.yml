@@ -2,13 +2,23 @@ api_style: contrail
 extends:
 - base
 id: data_center_interconnect
-parents: {}
+parents:
+  global_system_config:
+    description: List of DCI Objects in the system. Each DCI represents an interconnect
+      of Multiple Fabrics.
+    operations: CRUD
+    presence: optional
 plural: data_center_interconnects
 prefix: /
 references:
   logical_router:
     description: List of LRs one from each fabric participating in the DCI, each LR
       belongs to different fabric
+    operations: CRUD
+    presence: optional
+  virtual_network:
+    description: reference to auto created internal virtual network, used for connecting
+      different data centers
     operations: CRUD
     presence: optional
 schema:
@@ -22,6 +32,17 @@ schema:
       $ref: types.json#/definitions/BgpHoldTime
       description: BGP hold time in seconds [0-65535], Max time to detect liveliness
         to peer. Value 0 will result in default value of 90 seconds.
+      operations: CRUD
+      presence: optional
+    data_center_interconnect_configured_route_target_list:
+      $ref: types.json#/definitions/RouteTargetList
+      description: List of route targets that represent this logical router, all virtual
+        networks connected to this DCI will have this as their route target list.
+      operations: CRUD
+      presence: optional
+    data_center_interconnect_mode:
+      $ref: types.json#/definitions/DataCenterInterconnectModes
+      description: Data center interconnect mode one of L2 stretch or L3
       operations: CRUD
       presence: optional
   required: []

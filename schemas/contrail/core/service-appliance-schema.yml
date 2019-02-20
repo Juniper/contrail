@@ -35,6 +35,12 @@ schema:
       description: Authentication credentials for driver to access service appliance.
       operations: CRUD
       presence: optional
+    service_appliance_virtualization_type:
+      $ref: types.json#/definitions/ServiceVirtualizationType
+      description: Service virtualization type decides how individual service instances
+        are instantiated
+      operations: CRUD
+      presence: optional
   required:
   - service_appliance_ip_address
   - service_appliance_properties

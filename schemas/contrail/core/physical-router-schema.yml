@@ -44,6 +44,13 @@ references:
     presence: optional
 schema:
   properties:
+    physical_router_chassis_id:
+      description: Device chassis identifier which is used in LLDP protocol to identify
+        the peer device. This attribute can be either discovered via the fabric on-boarding
+        workflow or manually specified by the user
+      operations: CRUD
+      presence: optional
+      type: string
     physical_router_dataplane_ip:
       $ref: types.json#/definitions/IpAddress
       description: This is ip address in the ip-fabric(underlay) network that can
@@ -57,6 +64,12 @@ schema:
         for device management
       operations: CRUD
       presence: required
+      type: string
+    physical_router_hostname:
+      description: Device host name that can be either discovered during via fabric
+        on-boarding workflow or manually set by the user
+      operations: CRUD
+      presence: optional
       type: string
     physical_router_junos_service_ports:
       $ref: types.json#/definitions/JunosServicePorts
@@ -81,6 +94,12 @@ schema:
         manager to perform netconf and by SNMP collector if enabled.
       operations: CRUD
       presence: required
+    physical_router_os_version:
+      description: os version for this physical router. It is updated when device
+        is imported or device image is successfully upgraded
+      operations: CRUD
+      presence: optional
+      type: string
     physical_router_product_name:
       description: Model name of the physical router (e.g juniper). Used by the device
         manager to select driver.
@@ -110,6 +129,14 @@ schema:
       description: SNMP credentials for the physical router used by SNMP collector.
       operations: CRUD
       presence: optional
+    physical_router_underlay_managed:
+      default: false
+      description: Set to true if underlay is configured by device manager. The greenfield
+        ZTP workflow sets this attribute to true. The brownfield on-boarding sets
+        this attribute to false.
+      operations: CRUD
+      presence: optional
+      type: boolean
     physical_router_user_credentials:
       $ref: types.json#/definitions/UserCredentials
       description: Username and password for netconf to the physical router by device

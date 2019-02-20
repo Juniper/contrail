@@ -1,0 +1,47 @@
+api_style: contrail
+extends:
+- base
+id: virtual_port_group
+parents:
+  fabric:
+    description: List of link aggregation groups in this fabric.
+    operations: CRUD
+    presence: optional
+plural: virtual_port_groups
+prefix: /
+references:
+  physical_interface:
+    description: All the physical interfaces that belong to this link aggregation
+      group. The physical interface could belong to the same or different physical
+      router
+    operations: CRUD
+    presence: optional
+  virtual_machine_interface:
+    description: list of virtual machine interfaces that are part of this virtual
+      port group
+    operations: CRUD
+    presence: optional
+schema:
+  properties:
+    virtual_port_group_lacp_enabled:
+      description: Flag to turn on or off Link Aggregation Control Protocol (LACP)
+        on this link aggregation group.
+      operations: CRUD
+      presence: required
+      type: boolean
+    virtual_port_group_trunk_port_id:
+      description: id of the port that enables multi valn trunking.
+      operations: CR
+      presence: required
+      type: string
+    virtual_port_group_user_created:
+      default: true
+      description: Flag to be set to True when its externally created and False when
+        created internally. Default is set to True
+      operations: CRUD
+      presence: optional
+      type: boolean
+  required:
+  - virtual_port_group_lacp_enabled
+  - virtual_port_group_trunk_port_id
+  type: object
