@@ -315,9 +315,11 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 
 	// Create the cluster and related objects
@@ -469,9 +471,11 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 
 	// Create the cluster and related objects
@@ -782,9 +786,11 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
 	var testScenario integration.TestScenario
@@ -920,9 +926,11 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
 	var testScenario integration.TestScenario
@@ -1068,9 +1076,11 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
 	var testScenario integration.TestScenario

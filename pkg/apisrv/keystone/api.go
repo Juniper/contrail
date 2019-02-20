@@ -92,8 +92,8 @@ func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Projec
 }
 
 func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint string, err error) {
-	configEndpoint, err = endpoints.GetEndpoint(configService)
-	return configEndpoint, err
+	endpoint, err := endpoints.GetEndpoint(configService)
+	return endpoint.URL, err
 }
 
 func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
@@ -159,8 +159,8 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 	}
 
 	id := c.Param("id")
-	if keystoneEndpoint != "" {
-		keystone.Client.SetAuthURL(keystoneEndpoint)
+	if keystoneEndpoint != nil {
+		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
 		return keystone.Client.GetProject(c, id)
 	}
 
@@ -189,8 +189,8 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	if keystoneEndpoint != "" {
-		keystone.Client.SetAuthURL(keystoneEndpoint)
+	if keystoneEndpoint != nil {
+		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
 		return keystone.Client.GetProjects(c)
 	}
 
@@ -222,20 +222,25 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 
 //CreateTokenAPI is an API handler for issuing new Token.
 func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
+	var authRequest kscommon.AuthRequest
+	if err := c.Bind(&authRequest); err != nil {
+		logrus.WithField("error", err).Debug("Validation failed")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
+	}
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
 		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
-	if keystoneEndpoint != "" {
-		keystone.Client.SetAuthURL(keystoneEndpoint)
+	if keystoneEndpoint != nil {
+		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+		if authRequest.Auth.Identity.Password != nil {
+			authRequest.Auth.Identity.Password.User.Name = keystoneEndpoint.Username
+			authRequest.Auth.Identity.Password.User.Password = keystoneEndpoint.Password
+			c = keystone.Client.SetAuthIdentity(c, &authRequest)
+		}
 		return keystone.Client.CreateToken(c)
-	}
-	var authRequest kscommon.AuthRequest
-	if err = c.Bind(&authRequest); err != nil {
-		logrus.WithField("error", err).Debug("Validation failed")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
 	var user *kscommon.User
 	var token *kscommon.Token
@@ -289,8 +294,8 @@ func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
 		logrus.Error(err)
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
-	if keystoneEndpoint != "" {
-		keystone.Client.SetAuthURL(keystoneEndpoint)
+	if keystoneEndpoint != nil {
+		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
 		return keystone.Client.ValidateToken(c)
 	}
 
