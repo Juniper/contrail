@@ -74,6 +74,10 @@ check_dockers()
 ensure_root_access()
 {
 	type -t yq > /dev/null || { sudo yum install epel-release -y && sudo yum install jq -y; sudo pip install yq; type -t yq > /dev/null; } || { echo "Command 'yq' not available - aborting"; exit 2; }
+	yq -y 'with_entries(select(.key == "provider_config")) | with_entries(.value[] +={ "ssh_user": "root", "ssh_pwd": "contrail123"})' "$InstancesFile" > /tmp/instances-provider.yaml
+	yq -y 'with_entries(select(.key != "provider_config"))' "$InstancesFile" > /tmp/instances-rest.yaml
+	cp -f /tmp/instances-provider.yaml "$InstancesFile"
+	cat /tmp/instances-rest.yaml >> "$InstancesFile"
 	modify_sshd=0
 	sudo grep '^PasswordAuthentication yes$' /etc/ssh/sshd_config || modify_sshd=1
 	sudo grep '^PermitRootLogin yes$' /etc/ssh/sshd_config || modify_sshd=1
