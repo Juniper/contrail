@@ -559,7 +559,9 @@ func (i *instanceData) updateVrouterGW(role string) error {
 			}
 
 			vrouterNode := response.ContrailVrouterNode
-			if vrouterNode.DefaultGateway == "" {
+			if vrouterNode.DefaultGateway != "" {
+				i.gateway = vrouterNode.DefaultGateway
+			} else {
 				response := new(services.GetContrailClusterResponse)
 				_, err := i.client.GetContrailCluster(i.ctx,
 					&services.GetContrailClusterRequest{
