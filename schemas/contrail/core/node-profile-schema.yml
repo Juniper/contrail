@@ -22,6 +22,12 @@ schema:
       operations: CRUD
       presence: required
       type: string
+    node_profile_hitless_upgrade:
+      description: if set to false, do not perform hitless image upgrade on devices
+        using this node profile
+      operations: CRUD
+      presence: required
+      type: boolean
     node_profile_roles:
       $ref: types.json#/definitions/NodeProfileRolesType
       description: List of capable physical and routing-bridging role combinations
@@ -29,6 +35,12 @@ schema:
         this node profile.
       operations: CRUD
       presence: required
+    node_profile_type:
+      $ref: types.json#/definitions/NodeProfileType
+      description: Node profile type to differentiate the node profile network devices
+        from server node profiles.
+      operations: CRUD
+      presence: optional
     node_profile_vendor:
       description: Vendor name (e.g. Juniper) that this node profile can be used for.
       operations: CRUD
@@ -37,5 +49,6 @@ schema:
   required:
   - node_profile_vendor
   - node_profile_device_family
+  - node_profile_hitless_upgrade
   - node_profile_roles
   type: object

@@ -1,0 +1,23 @@
+api_style: contrail
+extends:
+- base
+id: webui_node
+parents:
+  global_system_config:
+    description: WebUI node is object representing a logical node in system which
+      hosts the Contrail UI.
+    operations: CRUD
+    presence: required
+plural: webui_nodes
+prefix: /
+references: {}
+schema:
+  properties:
+    webui_node_ip_address:
+      $ref: types.json#/definitions/IpAddressType
+      description: Ip address of the webui node, set while provisioning.
+      operations: CRUD
+      presence: required
+  required:
+  - webui_node_ip_address
+  type: object

@@ -20,6 +20,11 @@ schema:
         be only one playbook execution running against the same device at the time. '
       operations: CRUD
       presence: required
+    job_template_description:
+      description: A detailed description of what the job template functionality is
+      operations: CRUD
+      presence: optional
+      type: string
     job_template_input_schema:
       description: 'JSON schema of the job input parameters which will be used to
         validate the job input json or generate UI form for user to enter the job
@@ -31,17 +36,25 @@ schema:
       operations: CRUD
       presence: optional
       type: string
-    job_template_multi_device_job:
-      description: if set to true, the "/execute-job" action url allows device list
-        as additional parameter to run the job template on multiple device in one
-        job
+    job_template_input_ui_schema:
+      description: UI JSON schema of the job input that could be used by UI to render
+        the input form with certain nice-to-have features like ordering of the input
+        fields, placeholders etc. This property stores the UI JSON schema content
+        as string.
       operations: CRUD
-      presence: required
-      type: boolean
+      presence: optional
+      type: string
     job_template_output_schema:
       description: JSON schema of the job output that describes the output from the
         job and could be used by UI to render the output automatically. This property
         stores the JSON schema content as string.
+      operations: CRUD
+      presence: optional
+      type: string
+    job_template_output_ui_schema:
+      description: UI JSON schema of the job output that could be used by UI to render
+        the input form with certain nice-to-have features like ordering of the output
+        fields etc. This property stores the UI JSON schema content as string.
       operations: CRUD
       presence: optional
       type: string
@@ -63,9 +76,19 @@ schema:
       operations: CRUD
       presence: required
       type: boolean
+    job_template_type:
+      $ref: types.json#/definitions/JobTemplateType
+      description: This attribute is to identify the template type. This property
+        is mainly needed to list all generic device operations in the UI. There are
+        at present 4 types. Workflow based (e.g. fabric onboarding, existing fabric
+        onboarding), device operation based (standalone like e.g. device discovery,
+        device import, discover role), config based (e.g. role_assignment, fabric_config)
+        and device command based (for generic device operations)
+      operations: CRUD
+      presence: required
   required:
-  - job_template_multi_device_job
   - job_template_synchronous_job
+  - job_template_type
   - job_template_concurrency_level
   - job_template_playbooks
   type: object
