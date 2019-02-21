@@ -59,7 +59,7 @@ func (k *Client) SetAuthURL(authURL string) {
 
 // SetAuthIdentity uses specified auth creds in the keystone auth request.
 func (k *Client) SetAuthIdentity(
-	c echo.Context, authRequest *kscommon.AuthRequest) echo.Context {
+	c echo.Context, authRequest kscommon.AuthRequest) echo.Context {
 	b, _ := json.Marshal(authRequest) // nolint: errcheck
 	c.Request().Body = ioutil.NopCloser(bytes.NewReader(b))
 	c.Request().ContentLength = int64(len(b))
