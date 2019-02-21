@@ -223,10 +223,13 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 //CreateTokenAPI is an API handler for issuing new Token.
 func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocyclo
 	var authRequest kscommon.AuthRequest
-	if err := c.Bind(&authRequest); err != nil {
+	scopedRequest := kscommon.ScopedAuthRequest{}
+	if err := c.Bind(&scopedRequest); err != nil {
 		logrus.WithField("error", err).Debug("Validation failed")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid JSON format")
 	}
+	authRequest = scopedRequest
+	identity := authRequest.GetIdentity()
 	clusterID := c.Request().Header.Get(xClusterIDKey)
 	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if err != nil {
@@ -234,19 +237,34 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 		return echo.NewHTTPError(http.StatusUnauthorized, err)
 	}
 	if keystoneEndpoint != nil {
+		// Get token from the cluster's keystone
 		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
-		if authRequest.Auth.Identity.Password != nil {
-			authRequest.Auth.Identity.Password.User.Name = keystoneEndpoint.Username
-			authRequest.Auth.Identity.Password.User.Password = keystoneEndpoint.Password
-			c = keystone.Client.SetAuthIdentity(c, &authRequest)
+		if identity.Password != nil {
+			if authRequest.GetScope() == nil {
+				unScopedRequest := kscommon.UnScopedAuthRequest{
+					Auth: &kscommon.UnScopedAuth{
+						Identity: scopedRequest.GetIdentity(),
+					},
+				}
+				authRequest = unScopedRequest
+			}
+			identity = authRequest.GetIdentity()
+			authRequest.SetUser(keystoneEndpoint.Username, keystoneEndpoint.Password)
 		}
+		c = keystone.Client.SetAuthIdentity(c, authRequest)
 		return keystone.Client.CreateToken(c)
 	}
+	return nil
+}
+
+func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthRequest) error {
+	var err error
 	var user *kscommon.User
 	var token *kscommon.Token
 	tokenID := ""
-	if authRequest.Auth.Identity.Token != nil {
-		tokenID = authRequest.Auth.Identity.Token.ID
+	identity := authRequest.GetIdentity()
+	if identity.Token != nil {
+		tokenID = identity.Token.ID
 	}
 	if tokenID != "" { // user trying to get a token from token
 		token, err = keystone.Store.RetrieveToken(tokenID)
@@ -260,8 +278,8 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 			return err
 		}
 		user, err = keystone.Assignment.FetchUser(
-			authRequest.Auth.Identity.Password.User.Name,
-			authRequest.Auth.Identity.Password.User.Password,
+			identity.Password.User.Name,
+			identity.Password.User.Password,
 		)
 		if err != nil {
 			logrus.WithField("err", err).Debug("User not found")
@@ -273,7 +291,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error { // nolint: gocy
 		}
 	}
 	var project *kscommon.Project
-	project, err = filterProject(user, authRequest.Auth.Scope)
+	project, err = filterProject(user, authRequest.GetScope())
 	if err != nil {
 		logrus.WithField("err", err).Debug("filter project error")
 		return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
