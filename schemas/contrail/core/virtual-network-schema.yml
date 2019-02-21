@@ -186,6 +186,13 @@ schema:
       operations: CRUD
       presence: optional
       type: boolean
+    virtual_network_category:
+      $ref: types.json#/definitions/VirtualNetworkCategory
+      description: This attribute is to differentiate the infrastructure networks
+        from the tenant networks. Infra-networks could be in-band network for management
+        and control traffic
+      operations: CRUD
+      presence: optional
     virtual_network_fat_flow_protocols:
       $ref: types.json#/definitions/FatFlowProtocols
       collectionType: list

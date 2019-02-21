@@ -7,6 +7,13 @@ plural: cards
 prefix: /
 references: {}
 schema:
-  properties: {}
-  required: []
+  properties:
+    interface_map:
+      $ref: types.json#/definitions/InterfaceMapType
+      description: Interface map of all the physical ports on a physical interface
+        card.
+      operations: CRUD
+      presence: required
+  required:
+  - interface_map
   type: object

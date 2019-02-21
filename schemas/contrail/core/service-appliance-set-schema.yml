@@ -29,5 +29,11 @@ schema:
         opaque to system.
       operations: CRUD
       presence: optional
+    service_appliance_set_virtualization_type:
+      $ref: types.json#/definitions/ServiceVirtualizationType
+      description: Service virtualization type decides how individual service instances
+        are instantiated
+      operations: CRUD
+      presence: optional
   required: []
   type: object
