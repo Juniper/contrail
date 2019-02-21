@@ -109,7 +109,7 @@ PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
 
 pkg/%.pb.go: $(PROTO_PKG_PATH)/%.proto
-	$(PROTO) --gogo_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,\
+	$(PROTO) --gogofaster_out=Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/wrappers.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 plugins=grpc:$(GOPATH)/src/ $<

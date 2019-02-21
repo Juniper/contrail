@@ -8,7 +8,7 @@ go install ./vendor/github.com/mattn/goveralls
 go install ./vendor/github.com/mitchellh/gox
 go install ./vendor/github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 go install ./vendor/golang.org/x/tools/cmd/goimports
-go install ./vendor/github.com/gogo/protobuf/protoc-gen-gogo
+go install ./vendor/github.com/gogo/protobuf/protoc-gen-gogofaster
 go install ./vendor/github.com/golang/mock/mockgen
 
 curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | \
