@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 type mockBaseObject struct {
@@ -86,4 +87,77 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 			*/
 		})
 	}
+}
+
+type configTraceTestInfo struct {
+	name       string
+	kind       string
+	operation  string
+	table      string
+	uuid       string
+	fqName     []string
+	resultName string
+	deleted    bool
+}
+
+func TestContrailConfigTrace(t *testing.T) {
+	var tests []configTraceTestInfo
+	for kind, info := range uveTables {
+		if info.IsGlobal == true {
+			tests = append(tests, configTraceTestInfo{
+				name:       "ContrailConfigTrace: check global type " + kind,
+				kind:       kind,
+				operation:  services.OperationCreate,
+				table:      info.TableName,
+				uuid:       kind + "_uuid",
+				fqName:     []string{"default-domain", "default-project", kind + "_name"},
+				resultName: kind + "_name",
+				deleted:    false,
+			})
+		} else {
+			tests = append(tests, configTraceTestInfo{
+				name:       "ContrailConfigTrace: check type " + kind,
+				kind:       kind,
+				operation:  services.OperationDelete,
+				table:      info.TableName,
+				uuid:       kind + "_uuid",
+				fqName:     []string{"default-domain", "default-project", kind + "_name"},
+				resultName: "default-domain:default-project:" + kind + "_name",
+				deleted:    true,
+			})
+		}
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			obj := &mockBaseObject{
+				typeName: tt.kind,
+				uuid:     tt.uuid,
+				fqName:   tt.fqName,
+			}
+
+			messageBuilder := ContrailConfigTrace(tt.operation, obj)
+			assert.NotNil(t, messageBuilder)
+			message := messageBuilder.Build()
+			assert.NotNil(t, message)
+
+			assert.Equal(t, message.SandeshType, typeContrailConfigTrace)
+			m, ok := message.Payload.(*payloadContrailConfigTrace)
+			assert.True(t, ok)
+			assert.Equal(t, m.Table, tt.table)
+			assert.Equal(t, m.Name, tt.resultName)
+			assert.Equal(t, m.Deleted, tt.deleted)
+		})
+	}
+
+	obj := &mockBaseObject{
+		typeName: "global_config",
+		uuid:     "global_config_uuid",
+		fqName:   []string{"default-domain", "default-project", "global_config_name"},
+	}
+
+	messageBuilder := ContrailConfigTrace(services.OperationUpdate, obj)
+	assert.NotNil(t, messageBuilder)
+	message := messageBuilder.Build()
+	assert.Nil(t, message)
 }

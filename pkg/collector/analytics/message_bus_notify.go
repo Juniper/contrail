@@ -5,11 +5,15 @@ import (
 
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-const typeMessageBusNotifyTrace = "MessageBusNotifyTrace"
+const (
+	typeContrailConfigTrace   = "ContrailConfigTrace"
+	typeMessageBusNotifyTrace = "MessageBusNotifyTrace"
+)
 
 type payloadMessageBusNotifyTrace struct {
 	RequestID string                     `json:"request_id"`
@@ -34,7 +38,7 @@ func (p *payloadMessageBusNotifyTrace) Build() *collector.Message {
 	}
 }
 
-// MessageBusNotifyTrace sends message with type MessageBusNotifyTrace
+// MessageBusNotifyTrace sends message of MessageBusNotifyTrace type
 func MessageBusNotifyTrace(ctx context.Context, operation string, obj basemodels.Object) collector.MessageBuilder {
 	/* TODO: Should be reverted as introspect service for Intent API will be introduced.
 	requestID := services.GetRequestID(ctx)
@@ -59,12 +63,93 @@ func MessageBusNotifyTrace(ctx context.Context, operation string, obj basemodels
 	return collector.NewEmptyMessageBuilder()
 }
 
+type payloadContrailConfigTrace struct {
+	Table    string      `json:"table"`
+	Name     string      `json:"name"`
+	Elements interface{} `json:"elements"`
+	Deleted  bool        `json:"deleted"`
+}
+
+func (p *payloadContrailConfigTrace) Build() *collector.Message {
+	return &collector.Message{
+		SandeshType: typeContrailConfigTrace,
+		Payload:     p,
+	}
+}
+
+type uveTableInfo struct {
+	TableName string
+	IsGlobal  bool
+}
+
+var uveTables = map[string]uveTableInfo{
+	basemodels.KindToSchemaID(models.KindAddressGroup): {
+		TableName: "ObjectAddressGroupTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindAnalyticsNode): {
+		TableName: "ObjectCollectorInfo", IsGlobal: true},
+	basemodels.KindToSchemaID(models.KindApplicationPolicySet): {
+		TableName: "ObjectApplicationPolicySetTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindBGPRouter): {
+		TableName: "ObjectBgpRouter", IsGlobal: true},
+	basemodels.KindToSchemaID(models.KindConfigNode): {
+		TableName: "ObjectConfigNode", IsGlobal: true},
+	basemodels.KindToSchemaID(models.KindDatabaseNode): {
+		TableName: "ObjectDatabaseInfo", IsGlobal: true},
+	basemodels.KindToSchemaID(models.KindFirewallPolicy): {
+		TableName: "ObjectFirewallPolicyTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindFirewallRule): {
+		TableName: "ObjectFirewallRuleTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindPhysicalRouter): {
+		TableName: "ObjectPRouter", IsGlobal: true},
+	basemodels.KindToSchemaID(models.KindProject): {
+		TableName: "ObjectProjectTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindServiceGroup): {
+		TableName: "ObjectServiceGroupTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindServiceInstance): {
+		TableName: "ObjectSITable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindTag): {
+		TableName: "ObjectTagTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindVirtualMachineInterface): {
+		TableName: "ObjectVMITable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindVirtualMachine): {
+		TableName: "ObjectVMTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindVirtualNetwork): {
+		TableName: "ObjectVNTable", IsGlobal: false},
+	basemodels.KindToSchemaID(models.KindVirtualRouter): {
+		TableName: "ObjectVRouter", IsGlobal: true},
+	// TODO: Introduce KindServiceChain
+	"service_chain": {TableName: "ServiceChain", IsGlobal: false},
+}
+
+// ContrailConfigTrace sends message of ContrailConfigTrace type
+func ContrailConfigTrace(operation string, obj basemodels.Object) collector.MessageBuilder {
+	info, ok := uveTables[obj.Kind()]
+	if !ok {
+		return collector.NewEmptyMessageBuilder()
+	}
+
+	result := &payloadContrailConfigTrace{
+		Table:    info.TableName,
+		Elements: obj,
+		Deleted:  operation == services.OperationDelete,
+	}
+
+	if info.IsGlobal {
+		result.Name = basemodels.FQNameToName(obj.GetFQName())
+	} else {
+		result.Name = basemodels.FQNameToString(obj.GetFQName())
+	}
+
+	return result
+}
+
 type processor struct {
 	collector collector.Collector
 }
 
 func (p *processor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
 	p.collector.Send(MessageBusNotifyTrace(ctx, event.Operation(), event.GetResource()))
+	p.collector.Send(ContrailConfigTrace(event.Operation(), event.GetResource()))
 	return nil, nil
 }
 
