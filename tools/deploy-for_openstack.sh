@@ -44,6 +44,9 @@ clear_config_database
 # Prepare fresh database in contrail-go
 make zero_psql
 
+# Drop etcd content
+docker exec "$(docker ps -q -f name=contrail_etcd)" sh -c "ETCDCTL_API=3 etcdctl del /contrail --prefix"
+
 # Ensure keystone is listening on localhost
 ensure_keystone_on_localhost
 
