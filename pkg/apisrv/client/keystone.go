@@ -58,8 +58,8 @@ func (k *Keystone) ObtainToken(
 		return nil, nil
 	}
 
-	dataJSON, err := json.Marshal(&keystone.AuthRequest{
-		Auth: &keystone.Auth{
+	dataJSON, err := json.Marshal(&keystone.ScopedAuthRequest{
+		Auth: &keystone.ScopedAuth{
 			Identity: &keystone.Identity{
 				Methods: []string{"password"},
 				Password: &keystone.Password{
