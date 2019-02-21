@@ -18,6 +18,10 @@ references:
       peering attributes.
     operations: CRUD
     presence: optional
+  control_node_zone:
+    description: This bgp-router belongs to the referenced control-node-zone.
+    operations: CRUD
+    presence: optional
   sub_cluster:
     description: Reference of bgp-router to sub-cluster .
     operations: CRUD

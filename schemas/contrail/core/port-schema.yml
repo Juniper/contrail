@@ -1,0 +1,38 @@
+api_style: contrail
+extends:
+- base
+id: port
+parents:
+  node:
+    description: Parent of this port.
+    operations: CRUD
+    presence: optional
+plural: ports
+prefix: /
+references: {}
+schema:
+  properties:
+  properties:
+    ip_address:
+      default: ""
+      description: IP Address
+      operations: CRUD
+      presence: optional
+      type: string
+    bms_port_info:
+      $ref: types.json#/definitions/BaremetalPortInfo
+      description: Details of the baremetal server port
+      operations: CRUD
+      presence: optional
+    label:
+      description: Label of the interface representing the use of the interface.
+      operations: CRUD
+      presence: optional
+      type: string
+    port_group_uuid:
+      description: UUID of the port group in which this port belongs
+      operations: CRUD
+      presence: optional
+      type: string
+  required: []
+  type: object

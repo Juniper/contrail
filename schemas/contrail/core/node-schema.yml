@@ -1,0 +1,65 @@
+api_style: contrail
+extends:
+- base
+id: node
+parents:
+  global_system_config:
+    description: Parent of this node resource.
+    operations: CRUD
+    presence: optional
+plural: nodes
+prefix: /
+references:
+  node_profile:
+    description: Reference to matching node-profile object for this node
+    operations: CRUD
+    presence: optional
+schema:
+  properties:
+    bms_info:
+      $ref: types.json#/definitions/BaremetalServerInfo
+      description: Details of the baremetal server
+      operations: CRUD
+      presence: optional
+    cloud_info:
+      $ref: types.json#/definitions/CloudInstanceInfo
+      description: Information related to cloud
+      operations: CRUD
+      presence: optional
+    disk_partition:
+      description: Comma seperated disk partition to use.
+      operations: CRUD
+      presence: optional
+      type: string
+    esxi_info:
+      $ref: types.json#/definitions/ESXIHostInfo
+      description: Details of the ESXI host
+      operations: CRUD
+      presence: optional
+    hostname:
+      description: Fully qualified host name
+      operations: CRUD
+      presence: optional
+      type: string
+    interface_name:
+      description: Name of the Management interface
+      operations: CRUD
+      presence: optional
+      type: string
+    ip_address:
+      description: IP Address of the Management interface
+      operations: CRUD
+      presence: optional
+      type: string
+    mac_address:
+      description: Provisioning Interface MAC Address
+      operations: CRUD
+      presence: optional
+      type: string
+    type:
+      $ref: types.json#/definitions/EndSystemType
+      description: Type of machine resource
+      operations: CRUD
+      presence: optional
+  required: []
+  type: object

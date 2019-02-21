@@ -1,0 +1,25 @@
+api_style: contrail
+extends:
+- base
+id: port_group
+parents:
+  node:
+    description: Parent of this port group.
+    operations: CRUD
+    presence: optional
+plural: port_groups
+prefix: /
+references:
+  port:
+    description: Reference to port object which are part of this port group.
+    operations: CRUD
+    presence: optional
+schema:
+  properties:
+    bms_port_group_info:
+      $ref: types.json#/definitions/BaremetalPortGroupInfo
+      description: Details of the baremetal server port group
+      operations: CRUD
+      presence: optional
+  required: []
+  type: object
