@@ -63,6 +63,7 @@ format:
 
 format_gen:
 	find ./cmd ./pkg -name 'gen_*.go' -exec go fmt {} \;
+	./tools/rm_pb_comment.sh
 
 fast_generate: generate_pb_go generate_mocks doc/proto.md
 
