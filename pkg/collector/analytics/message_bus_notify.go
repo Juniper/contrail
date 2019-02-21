@@ -5,11 +5,15 @@ import (
 
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/db/etcd"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-const typeMessageBusNotifyTrace = "MessageBusNotifyTrace"
+const (
+	typeContrailConfigTrace   = "ContrailConfigTrace"
+	typeMessageBusNotifyTrace = "MessageBusNotifyTrace"
+)
 
 type payloadMessageBusNotifyTrace struct {
 	RequestID string                     `json:"request_id"`
@@ -34,7 +38,7 @@ func (p *payloadMessageBusNotifyTrace) Build() *collector.Message {
 	}
 }
 
-// MessageBusNotifyTrace sends message with type MessageBusNotifyTrace
+// MessageBusNotifyTrace sends message of MessageBusNotifyTrace type
 func MessageBusNotifyTrace(ctx context.Context, operation string, obj basemodels.Object) collector.MessageBuilder {
 	/* TODO: Should be reverted as introspect service for Intent API will be introduced.
 	requestID := services.GetRequestID(ctx)
@@ -59,12 +63,76 @@ func MessageBusNotifyTrace(ctx context.Context, operation string, obj basemodels
 	return collector.NewEmptyMessageBuilder()
 }
 
+type payloadContrailConfigTrace struct {
+	Table    string      `json:"table"`
+	Name     string      `json:"name"`
+	Elements interface{} `json:"elements"`
+	Deleted  bool        `json:"deleted"`
+}
+
+func (p *payloadContrailConfigTrace) Build() *collector.Message {
+	return &collector.Message{
+		SandeshType: typeContrailConfigTrace,
+		Payload:     p,
+	}
+}
+
+type uveTableInfo struct {
+	TableName string
+	IsGlobal  bool
+}
+
+var uveTables = map[string]uveTableInfo{
+	models.KindAddressGroup:            {TableName: "ObjectAddressGroupTable", IsGlobal: false},
+	models.KindAnalyticsNode:           {TableName: "ObjectCollectorInfo", IsGlobal: true},
+	models.KindApplicationPolicySet:    {TableName: "ObjectApplicationPolicySetTable", IsGlobal: false},
+	models.KindBGPRouter:               {TableName: "ObjectBgpRouter", IsGlobal: true},
+	models.KindConfigNode:              {TableName: "ObjectConfigNode", IsGlobal: true},
+	models.KindDatabaseNode:            {TableName: "ObjectDatabaseInfo", IsGlobal: true},
+	models.KindFirewallPolicy:          {TableName: "ObjectFirewallPolicyTable", IsGlobal: false},
+	models.KindFirewallRule:            {TableName: "ObjectFirewallRuleTable", IsGlobal: false},
+	models.KindPhysicalRouter:          {TableName: "ObjectPRouter", IsGlobal: true},
+	models.KindProject:                 {TableName: "ObjectProjectTable", IsGlobal: false},
+	models.KindServiceGroup:            {TableName: "ObjectServiceGroupTable", IsGlobal: false},
+	models.KindServiceInstance:         {TableName: "ObjectSITable", IsGlobal: false},
+	models.KindTag:                     {TableName: "ObjectTagTable", IsGlobal: false},
+	models.KindVirtualMachineInterface: {TableName: "ObjectVMITable", IsGlobal: false},
+	models.KindVirtualMachine:          {TableName: "ObjectVMTable", IsGlobal: false},
+	models.KindVirtualNetwork:          {TableName: "ObjectVNTable", IsGlobal: false},
+	models.KindVirtualRouter:           {TableName: "ObjectVRouter", IsGlobal: true},
+	// TODO: Introduce KindServiceChain
+	"service-chain": {TableName: "ServiceChain", IsGlobal: false},
+}
+
+// ContrailConfigTrace sends message of ContrailConfigTrace type
+func ContrailConfigTrace(operation string, obj basemodels.Object) collector.MessageBuilder {
+	info, ok := uveTables[obj.Kind()]
+	if !ok {
+		return collector.NewEmptyMessageBuilder()
+	}
+
+	result := &payloadContrailConfigTrace{
+		Table:    info.TableName,
+		Elements: obj,
+		Deleted:  operation == services.OperationDelete,
+	}
+
+	if info.IsGlobal {
+		result.Name = basemodels.FQNameToName(obj.GetFQName())
+	} else {
+		result.Name = basemodels.FQNameToString(obj.GetFQName())
+	}
+
+	return result
+}
+
 type processor struct {
 	collector collector.Collector
 }
 
 func (p *processor) Process(ctx context.Context, event *services.Event) (*services.Event, error) {
 	p.collector.Send(MessageBusNotifyTrace(ctx, event.Operation(), event.GetResource()))
+	p.collector.Send(ContrailConfigTrace(event.Operation(), event.GetResource()))
 	return nil, nil
 }
 
@@ -77,8 +145,5 @@ func NewMessageBusProcessor(collector collector.Collector) error {
 	if err != nil {
 		return err
 	}
-	if err = p.Start(context.Background()); err != nil {
-		return err
-	}
-	return nil
+	return p.Start(context.Background())
 }
