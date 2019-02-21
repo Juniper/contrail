@@ -15,7 +15,7 @@
         - contrail-go-sanity-centos7-kolla-ocata:
             voting: False
             vars:
-              contrail_version: master-520
+              contrail_version: master-latest
               contrail_docker_registry: 10.84.5.81:5000
     gate:
       jobs:
