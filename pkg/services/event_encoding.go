@@ -30,6 +30,7 @@ type EventOption struct {
 
 // HasResource defines methods that might be implemented by Event.
 type HasResource interface {
+	GetKind() string
 	GetResource() basemodels.Object
 	Operation() string
 }
@@ -138,6 +139,18 @@ func (e *EventList) Process(ctx context.Context, service Service) (*EventList, e
 	return &EventList{
 		Events: responses,
 	}, nil
+}
+
+// GetKind returns kind of resource in event.
+func (e *Event) GetKind() string {
+	if e == nil {
+		return ""
+	}
+	resourceEvent, ok := e.Request.(HasResource)
+	if !ok {
+		return ""
+	}
+	return resourceEvent.GetKind()
 }
 
 // GetResource returns event on resource.

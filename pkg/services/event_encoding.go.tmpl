@@ -12,6 +12,21 @@ import (
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
+// GetKind returns kind of resource
+func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) GetKind() string {
+	return "{{ schema.ID }}"
+}
+
+// GetKind returns kind of resource
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) GetKind() string {
+	return "{{ schema.ID }}"
+}
+
+// GetKind returns kind of resource
+func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) GetKind() string {
+	return "{{ schema.ID }}"
+}
+
 // GetResource returns resource.
 func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
 	return e.Create{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
