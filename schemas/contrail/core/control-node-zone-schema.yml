@@ -1,0 +1,16 @@
+api_style: contrail
+extends:
+- base
+id: control_node_zone
+parents:
+  global_system_config:
+    description: List of references to all control-node-zones in systems.
+    operations: CRUD
+    presence: optional
+plural: control_node_zones
+prefix: /
+references: {}
+schema:
+  properties: {}
+  required: []
+  type: object

@@ -10,7 +10,18 @@ parents:
     presence: optional
 plural: port_tuples
 prefix: /
-references: {}
+references:
+  logical_router:
+    description: list of tenant logical routers to be attached to the service left
+      or right attachment point
+    operations: CRUD
+    presence: optional
+  virtual_network:
+    description: Internal virtual networks for PNF left or right service attachment
+      points are used to internally to allocate route targets for the left and right
+      service VRFs on the spine device
+    operations: CRUD
+    presence: optional
 schema:
   properties: {}
   required: []
