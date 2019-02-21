@@ -25,6 +25,12 @@ references:
     presence: required
 schema:
   properties:
+    service_instance_bgp_enabled:
+      default: true
+      description: Enable BGP routing for this service instance
+      operations: CRUD
+      presence: optional
+      type: boolean
     service_instance_bindings:
       $ref: types.json#/definitions/KeyValuePairs
       collectionType: map

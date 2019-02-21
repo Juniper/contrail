@@ -18,6 +18,12 @@ references:
     presence: optional
 schema:
   properties:
+    service_config_managed:
+      default: false
+      description: Enable whether service config for PNFs needs to be managed by Contrail
+      operations: CRUD
+      presence: optional
+      type: boolean
     service_template_properties:
       $ref: types.json#/definitions/ServiceTemplateType
       description: Service template configuration parameters.

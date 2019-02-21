@@ -16,6 +16,11 @@ references:
       to the regular interfaces.
     operations: CRUD
     presence: optional
+  virtual_machine_interface:
+    description: list of virtual machine interfaces connected to this link aggregation
+      group
+    operations: CRUD
+    presence: optional
 schema:
   properties:
     link_aggregation_group_lacp_enabled:
