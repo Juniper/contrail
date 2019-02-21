@@ -43,6 +43,11 @@ device_manager_up()
     docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d devicemgr
 }
 
+node_manager_up()
+{
+    docker-compose -f "/etc/contrail/config/docker-compose.yaml" up -d nodemgr
+}
+
 compose_up()
 {
     for docker_dir in "$@"

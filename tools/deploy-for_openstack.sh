@@ -63,6 +63,9 @@ install_config "contrail-openstack"
 
 build_and_run_contrail-go_docker
 
+# Start node manager
+node_manager_up
+
 # Start schema transformer
 schema_transformer_up
 
