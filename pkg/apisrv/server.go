@@ -472,6 +472,11 @@ func (s *Server) setupCollector() error {
 	) {
 		s.Collector.Send(analytics.RESTAPITrace(ctx, reqBody, resBody))
 	}))
+	s.Echo.Use(middleware.BodyDump(func(
+		ctx echo.Context, reqBody, resBody []byte,
+	) {
+		s.Collector.Send(analytics.VNCAPIConfigLog(ctx, reqBody, resBody))
+	}))
 	return nil
 }
 

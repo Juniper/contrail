@@ -7,6 +7,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	// KeyVNCAPIConfigLogMetadata is metadata for VncApiConfigLog message
+	KeyVNCAPIConfigLogMetadata = "VNCAPIConfigLogMetadata"
+	// KeyVNCAPIConfigLogOperation is operation for VncApiConfigLog message
+	KeyVNCAPIConfigLogOperation = "VNCAPIConfigLogOperation"
+	// KeyVNCAPIConfigLogError is error string for VncApiConfigLog message
+	KeyVNCAPIConfigLogError = "VNCAPIConfigLogError"
+)
+
 var collectorKey interface{} = "collectorKey"
 
 // WithContext returns new context with stored collector
