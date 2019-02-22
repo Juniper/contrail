@@ -1349,9 +1349,11 @@ definitions:
         description: DHCP options list to be sent via DHCP for  VM(s) in this subnet
         presence: optional
       dhcp_relay_server:
-        $ref: types.json#/definitions/IpAddressType
         description: DHCP relay server IP
         presence: optional
+        items:
+          $ref: types.json#/definitions/IpAddressType
+        type: array
       dns_nameservers:
         description: Tenant DNS servers ip address in tenant DNS method
         items:
