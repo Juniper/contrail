@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
@@ -84,19 +85,28 @@ func (service *ContrailService) RESTPropCollectionUpdate(c echo.Context) error {
 		return errutil.ToHTTPError(err)
 	}
 
+	metadata, err := service.MetadataGetter.GetMetadata(c.Request().Context(), basemodels.Metadata{UUID: data.UUID})
+	if err == nil {
+		c.Set(collector.KeyVNCAPIConfigLogMetadata, metadata)
+		c.Set(collector.KeyVNCAPIConfigLogOperation, "prop-collection-update")
+	}
+
 	if err := service.InTransactionDoer.DoInTransaction(c.Request().Context(), func(ctx context.Context) error {
 		obj, objType, err := service.getObjectAndType(ctx, data.UUID)
 		if err != nil {
+			c.Set(collector.KeyVNCAPIConfigLogError, err.Error())
 			return err
 		}
 
 		p, err := data.toPropCollectionUpdateRequest(obj)
 		if err != nil {
+			c.Set(collector.KeyVNCAPIConfigLogError, err.Error())
 			return errutil.ErrorBadRequestf("error resolving request: %v", err)
 		}
 
 		return service.updatePropCollection(ctx, &p, obj, objType)
 	}); err != nil {
+		c.Set(collector.KeyVNCAPIConfigLogError, err.Error())
 		return errutil.ToHTTPError(err)
 	}
 

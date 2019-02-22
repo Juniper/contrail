@@ -1,5 +1,14 @@
 package collector
 
+const (
+	// KeyVNCAPIConfigLogMetadata is metadata for VncApiConfigLog message
+	KeyVNCAPIConfigLogMetadata = "VNCAPIConfigLogMetadata"
+	// KeyVNCAPIConfigLogOperation is operation for VncApiConfigLog message
+	KeyVNCAPIConfigLogOperation = "VNCAPIConfigLogOperation"
+	// KeyVNCAPIConfigLogError is error string for VncApiConfigLog message
+	KeyVNCAPIConfigLogError = "VNCAPIConfigLogError"
+)
+
 // Message represents a message to Json2Sandesh proxy
 type Message struct {
 	SandeshType string      `json:"sandesh_type"`

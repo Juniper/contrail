@@ -34,6 +34,12 @@ func (service *ContrailService) RESTCreate{{ schema.JSONSchema.GoName }}(c echo.
 	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, requestData)
 	if err != nil {
+		c.Set(collector.KeyVNCAPIConfigLogMetadata, &basemodels.Metadata{
+			Type: "{{ schema.TypeName }}",
+			FQName: requestData.{{ schema.JSONSchema.GoName }}.GetFQName(),
+		})
+		c.Set(collector.KeyVNCAPIConfigLogOperation, "post")
+		c.Set(collector.KeyVNCAPIConfigLogError, err.Error())
 		return errutil.ToHTTPError(err)
 	}
 	if err = applyHref(response.{{ schema.JSONSchema.GoName }}, c.Request()); err != nil {
@@ -175,6 +181,11 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	model := models.InterfaceTo{{ schema.JSONSchema.GoName }}(request.{{ schema.JSONSchema.GoName }})
 	model.UUID = c.Param("id")
+	metadata, err := service.MetadataGetter.GetMetadata(c.Request().Context(), basemodels.Metadata{UUID: model.UUID})
+	if err == nil {
+		c.Set(collector.KeyVNCAPIConfigLogMetadata, metadata)
+		c.Set(collector.KeyVNCAPIConfigLogOperation, "http_put")
+	}
 	response, err := service.Update{{ schema.JSONSchema.GoName }}(
 		ctx,
 		&Update{{ schema.JSONSchema.GoName }}Request{
@@ -183,6 +194,7 @@ func (service *ContrailService) RESTUpdate{{ schema.JSONSchema.GoName }}(c echo.
 		},
 	)
 	if err != nil {
+		c.Set(collector.KeyVNCAPIConfigLogError, err.Error())
 		return errutil.ToHTTPError(err)
 	}
 	if err = applyHref(model, c.Request()); err != nil {
@@ -229,10 +241,16 @@ func (service *ContrailService) RESTDelete{{ schema.JSONSchema.GoName }}(c echo.
 	request := &Delete{{ schema.JSONSchema.GoName }}Request{
 		ID: c.Param("id"),
 	}
+	metadata, err := service.MetadataGetter.GetMetadata(c.Request().Context(), basemodels.Metadata{UUID: request.ID})
+	if err == nil {
+		c.Set(collector.KeyVNCAPIConfigLogMetadata, metadata)
+		c.Set(collector.KeyVNCAPIConfigLogOperation, "delete")
+	}
 	req := c.Request()
 	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
-	 _, err := service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
+	 _, err = service.Delete{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
+		c.Set(collector.KeyVNCAPIConfigLogError, err.Error())
 		return errutil.ToHTTPError(err)
 	}
 	return c.NoContent(http.StatusOK)
@@ -264,6 +282,12 @@ func (service *ContrailService) RESTGet{{ schema.JSONSchema.GoName }}(c echo.Con
 	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	response, err := service.Get{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
+		c.Set(collector.KeyVNCAPIConfigLogMetadata, &basemodels.Metadata{
+			UUID: request.ID,
+			Type: "{{ schema.TypeName }}",
+		})
+		c.Set(collector.KeyVNCAPIConfigLogOperation, "http_get")
+		c.Set(collector.KeyVNCAPIConfigLogError, err.Error())
 		return errutil.ToHTTPError(err)
 	}
 	if err = applyHref(response.{{ schema.JSONSchema.GoName }}, c.Request()); err != nil {
@@ -307,6 +331,11 @@ func (service *ContrailService) RESTList{{ schema.JSONSchema.GoName }}(c echo.Co
 	ctx := WithRequestID(req.Context(), req.Header.Get("X-Request-Id"))
 	response, err := service.List{{ schema.JSONSchema.GoName }}(ctx, request)
 	if err != nil {
+		c.Set(collector.KeyVNCAPIConfigLogMetadata, &basemodels.Metadata{
+			Type: "{{ schema.TypeName }}s",
+		})
+		c.Set(collector.KeyVNCAPIConfigLogOperation, "dbe_list")
+		c.Set(collector.KeyVNCAPIConfigLogError, err.Error())
 		return errutil.ToHTTPError(err)
 	}
 	for _, r := range response.{{ schema.JSONSchema.GoName }}s {
