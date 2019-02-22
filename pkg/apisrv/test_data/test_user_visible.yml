@@ -51,6 +51,15 @@ workflow:
   expect:
     project: *red_project_omitempty
 
+- name: create red project again
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 409
+    data:
+      project: *red_project
+
 - name: update red project
   request:
     path: /project/red_project_uuid

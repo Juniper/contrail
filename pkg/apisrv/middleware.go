@@ -79,6 +79,7 @@ func gRPCMiddleware(grpcServer http.Handler) func(next echo.HandlerFunc) echo.Ha
 			}
 			if err := next(c); err != nil {
 				c.Error(err)
+				return err
 			}
 			return nil
 		}
