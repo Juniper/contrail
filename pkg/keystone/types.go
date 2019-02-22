@@ -3,12 +3,61 @@ package keystone
 import "time"
 
 //AuthRequest is used to request an authentication.
-type AuthRequest struct {
-	Auth *Auth `json:"auth"`
+type AuthRequest interface {
+	SetUser(string, string)
+	GetIdentity() *Identity
+	GetScope() *Scope
 }
 
-//Auth is used to request an authentication.
-type Auth struct {
+//UnScopedAuthRequest is used to request an authentication.
+type UnScopedAuthRequest struct {
+	Auth *UnScopedAuth `json:"auth"`
+}
+
+//SetUser uses given user in the auth request
+func (u UnScopedAuthRequest) SetUser(user, password string) {
+	u.Auth.Identity.Password.User.Name = user
+	u.Auth.Identity.Password.User.Password = password
+}
+
+//GetIdentity is to get the identify details from the token reques
+func (u UnScopedAuthRequest) GetIdentity() *Identity {
+	return u.Auth.Identity
+}
+
+//GetScope is to get the scope details from the token reques
+func (u UnScopedAuthRequest) GetScope() *Scope {
+	return nil
+}
+
+//UnScopedAuth is used to request an authentication.
+type UnScopedAuth struct {
+	Identity *Identity `json:"identity"`
+}
+
+//ScopedAuthRequest is used to request an authentication.
+type ScopedAuthRequest struct {
+	Auth *ScopedAuth `json:"auth"`
+}
+
+//SetUser uses given user in the auth request
+func (s ScopedAuthRequest) SetUser(user, password string) {
+	s.Auth.Identity.Password.User.Name = user
+	s.Auth.Identity.Password.User.Password = password
+}
+
+//GetIdentity is to get the identify details from the token reques
+func (s ScopedAuthRequest) GetIdentity() *Identity {
+	return s.Auth.Identity
+}
+
+//GetScope is to get the scope details from the token reques
+func (s ScopedAuthRequest) GetScope() *Scope {
+	return s.Auth.Scope
+}
+
+//ScopedAuth is used to request an authentication.
+type ScopedAuth struct {
 	Identity *Identity `json:"identity"`
 	Scope    *Scope    `json:"scope"`
 }
