@@ -209,6 +209,12 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 		data.RefUUID = m.UUID
 	}
 
+	metadata, err := service.MetadataGetter.GetMetadata(c.Request().Context(), basemodels.Metadata{UUID: data.UUID})
+	if err == nil {
+		c.Set("VNCAPIConfigLogMetadata", metadata)
+		c.Set("VNCAPIConfigLogOperation", "ref-update")
+	}
+
 	e, err := NewRefUpdateEvent(RefUpdateOption{
 		ReferenceType: basemodels.ReferenceKind(data.Type, data.RefType),
 		FromUUID:      data.UUID,
@@ -217,9 +223,11 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 		AttrData:      data.Attr,
 	})
 	if err != nil {
+		c.Set("VNCAPIConfigLogError", err.Error())
 		return errutil.ToHTTPError(errutil.ErrorBadRequest(err.Error()))
 	}
 	if _, err = e.Process(ctx, service); err != nil {
+		c.Set("VNCAPIConfigLogError", err.Error())
 		return errutil.ToHTTPError(err)
 	}
 
@@ -237,8 +245,15 @@ func (service *ContrailService) RESTRefRelaxForDelete(c echo.Context) error {
 		return errutil.ToHTTPError(err)
 	}
 
+	metadata, err := service.MetadataGetter.GetMetadata(c.Request().Context(), basemodels.Metadata{UUID: data.UUID})
+	if err == nil {
+		c.Set("VNCAPIConfigLogMetadata", metadata)
+		c.Set("VNCAPIConfigLogOperation", "ref-relax-for-delete")
+	}
+
 	response, err := service.RelaxRef(c.Request().Context(), &data)
 	if err != nil {
+		c.Set("VNCAPIConfigLogError", err.Error())
 		return errutil.ToHTTPError(err)
 	}
 

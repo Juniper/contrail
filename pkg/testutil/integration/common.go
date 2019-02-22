@@ -459,6 +459,8 @@ func runTestScenario(
 		checkWatchers := StartWatchers(t, task.Name, task.Watchers)
 		checkWaiters := StartWaiters(t, testScenario.Name, task.Waiters)
 		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
+		//temp, _ := json.Marshal(task.Request.Data)
+		//fmt.Println("REQUEST", string(temp))
 		clientID := defaultClientID
 		if task.Client != "" {
 			clientID = task.Client
