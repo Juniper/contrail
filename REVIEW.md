@@ -49,33 +49,37 @@ Function signatures that are too long (120 chars) should be split.
 Below is a list of possible formattings:
 1.  Single line - if everything fits in 120 chars
 
-    ```go
+```go
 func numericProtocolForEthertype(protocol, ethertype string) (numericProtocol string, err error) {
 	// ...
 }
-    ```
+```
 
 2.  Multiline short - if function name with arguments is too long, but arguments
     alone aren't longer than 120 chars.
 
-    ```go
+```go
 func decodeRowData(
 	relation pgoutput.Relation, row []pgoutput.Tuple,
 ) (pk string, err error) {
-    ```
+	// ...
+}
+```
 
 3. Multiline long - if input or output arguments (or both) are longer than 120 chars.
 
-    ```go
+```go
 func decodeRowData(
 	relation pgoutput.Relation,
 	row []pgoutput.Tuple,
 ) (pk string, data map[string]interface{}, err error) {
-    ```
+	// ...
+}
+```
 
-    or even
+or even
 
-    ```go
+```go
 func decodeRowData(
 	relation pgoutput.Relation,
 	row []pgoutput.Tuple,
@@ -84,7 +88,9 @@ func decodeRowData(
 	data map[string]interface{},
 	err error,
 ) {
-    ```
+	// ...
+}
+```
 
 ## Common mistakes
 
