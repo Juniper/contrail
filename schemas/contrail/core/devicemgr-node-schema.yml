@@ -1,0 +1,22 @@
+api_style: contrail
+extends:
+- base
+id: devicemgr_node
+parents:
+  global_system_config:
+    description: devicemgr node is object representing a logical node in system for
+      configuring physical devices.
+    operations: CRUD
+    presence: admin-only
+plural: devicemgr_nodes
+prefix: /
+references: {}
+schema:
+  properties:
+    devicemgr_node_ip_address:
+      $ref: types.json#/definitions/IpAddressType
+      description: Ip address of the devicemgr node, set while provisioning.
+      operations: CRUD
+      presence: admin-only
+  required: []
+  type: object

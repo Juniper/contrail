@@ -45,6 +45,15 @@ definitions:
       set:
         $ref: types.json#/definitions/CommunityListType
     type: object
+  ActionExtCommunityType:
+    properties:
+      add:
+        $ref: types.json#/definitions/ExtCommunityListType
+      remove:
+        $ref: types.json#/definitions/ExtCommunityListType
+      set:
+        $ref: types.json#/definitions/ExtCommunityListType
+    type: object
   ActionListType:
     properties:
       alert:
@@ -97,7 +106,7 @@ definitions:
       community:
         $ref: types.json#/definitions/ActionCommunityType
       extcommunity:
-        $ref: types.json#/definitions/ActionCommunityType
+        $ref: types.json#/definitions/ActionExtCommunityType
       local_pref:
         type: integer
       med:
@@ -278,13 +287,17 @@ definitions:
     type: object
   AttachmentInfoType:
     properties:
-      _static:
+      static:
         $ref: types.json#/definitions/ProtocolStaticType
       bgp:
         $ref: types.json#/definitions/ProtocolBgpType
       ospf:
         $ref: types.json#/definitions/ProtocolOspfType
       state:
+        enum:
+        - up
+        - down
+        - adminDown
         type: string
     type: object
   AuthenticationData:
@@ -324,12 +337,97 @@ definitions:
       asn:
         $ref: types.json#/definitions/AutonomousSystemType
     type: object
+  BGPaaSControlNodeZoneAttributes:
+    properties:
+      bgpaas_control_node_zone_type:
+        $ref: types.json#/definitions/BGPaaSControlNodeZoneType
+        description: Specifies BGPaaSControlNodeZoneType. If bgpaas uses             x.x.x.1
+          ip for peering, BGPaaSControlNodeZoneType should be set to             primary.
+          If it is x.x.x.2 ip for peering, BGPaaSControlNodeZoneType             should
+          be secondary
+        presence: optional
+    type: object
+  BGPaaSControlNodeZoneType:
+    enum:
+    - primary
+    - secondary
+    type: string
   BGPaaServiceParametersType:
     properties:
       port_end:
         $ref: types.json#/definitions/L4PortType
       port_start:
         $ref: types.json#/definitions/L4PortType
+    type: object
+  BaremetalPortGroupInfo:
+    properties:
+      address:
+        description: Mac Address of the NIC in Node
+        type: string
+      mode:
+        description: Mode of the port group
+        type: string
+      node_uuid:
+        description: UUID of the parent node where this port is connected
+        type: string
+      properties:
+        $ref: types.json#/definitions/PortGroupProperties
+        description: Key/value properties related to the port group's configuration.
+      standalone_ports_supported:
+        description: Indicates whether ports that are members of this portgroup can
+          be used as stand-alone ports.
+        type: boolean
+    type: object
+  BaremetalPortInfo:
+    properties:
+      address:
+        description: Mac Address of the NIC in Node
+        type: string
+      local_link_connection:
+        $ref: types.json#/definitions/LocalLinkConnection
+        description: The Port binding profile
+      node_uuid:
+        description: UUID of the parent node where this port is connected
+        type: string
+      pxe_enabled:
+        description: Indicates whether PXE is enabled or disabled on the Port.
+        type: boolean
+    type: object
+  BaremetalProperties:
+    properties:
+      capabilities:
+        description: Boot option
+        type: string
+      cpu_arch:
+        description: Architecture of the baremetal server
+        type: string
+      cpus:
+        description: Number of CPU cores on the baremetal
+        type: integer
+      local_gb:
+        description: Disk size of root device (in GB)
+        type: integer
+      memory_mb:
+        description: RAM of the Baremetal server (in MB)
+        type: integer
+    type: object
+  BaremetalServerInfo:
+    properties:
+      driver:
+        description: IPMI driver
+        type: string
+      driver_info:
+        $ref: types.json#/definitions/DriverInfo
+        description: Details of the driver for power management
+      name:
+        description: Name of the Baremetal server
+        type: string
+      network_interface:
+        description: Networking interface
+        type: string
+      properties:
+        $ref: types.json#/definitions/BaremetalProperties
+        description: Details of baremetal hardware for scheduler
     type: object
   BgpAsPathLoopCount:
     maximum: 16
@@ -573,6 +671,32 @@ definitions:
         description: VLAN tag of the incoming packet that maps the                      virtual-machine-interface
           to bridge domain
     type: object
+  CloudInstanceInfo:
+    properties:
+      availability_zone:
+        description: Availability zone to which the instance belongs to
+        type: string
+      instance_type:
+        description: size of instance
+        type: string
+      machine_id:
+        description: image (ami) id of instance
+        type: string
+      operating_system:
+        description: Name of operating system, ex - centos7 or ubuntu16
+        type: string
+      os_version:
+        description: specific version of operating system
+        type: string
+      roles:
+        description: Roles of the cloud instance
+        items:
+          type: string
+        type: array
+      volume_size:
+        description: Size of the volume for the cloud instance
+        type: integer
+    type: object
   CommunityAttribute:
     items:
       type: string
@@ -612,6 +736,10 @@ definitions:
         description: DSCP value for DNS traffic
         presence: optional
     type: object
+  DataCenterInterconnectModes:
+    enum:
+    - l3
+    type: string
   DefaultProtocolType:
     properties:
       bgp:
@@ -763,6 +891,27 @@ definitions:
     - updated
     - deleted
     type: string
+  DriverInfo:
+    properties:
+      deploy_kernel:
+        description: UUID of the deploy kernel
+        type: string
+      deploy_ramdisk:
+        description: UUID of the deploy initrd/ramdisk
+        type: string
+      ipmi_address:
+        description: IPMI address of the server to manage boot device and power management
+        type: string
+      ipmi_password:
+        description: Password to access IPMI
+        type: string
+      ipmi_port:
+        description: Remote IPMI RMCP port
+        type: string
+      ipmi_username:
+        description: Username to access IPMI
+        type: string
+    type: object
   DscpValueType:
     maximum: 63
     minimum: 0
@@ -773,6 +922,33 @@ definitions:
     - point-to-list
     - multi-point-to-multi-point
     type: string
+  ESXIHostInfo:
+    properties:
+      cluster:
+        description: cluster in vCenter
+        type: string
+      datacenter:
+        description: datacenter in vCenter
+        type: string
+      datastore:
+        description: datastore in vCenter
+        type: string
+      esxi_name:
+        description: ESXI host name(ip)
+        type: string
+      mac:
+        description: mac address for contrailvm
+        type: string
+      password:
+        description: ESXI host password
+        type: string
+      username:
+        description: username
+        type: string
+      vcenter_server:
+        description: vCenter server
+        type: string
+    type: object
   EcmpHashingIncludeFields:
     properties:
       destination_ip:
@@ -841,11 +1017,24 @@ definitions:
     maximum: 4095
     minimum: 0
     type: integer
+  EndSystemType:
+    enum:
+    - private
+    - baremetal
+    - esxi
+    type: string
   EtherType:
     enum:
     - IPv4
     - IPv6
     type: string
+  ExtCommunityListType:
+    properties:
+      community:
+        items:
+          type: string
+        type: array
+    type: object
   FabricNetworkTag:
     properties:
       network_type:
@@ -856,6 +1045,7 @@ definitions:
     - management
     - loopback
     - ip-fabric
+    - pnf-servicechain
     type: string
   FatFlowIgnoreAddressType:
     enum:
@@ -1059,6 +1249,13 @@ definitions:
       import_export:
         $ref: types.json#/definitions/ImportExportType
     type: object
+  InterfaceMapType:
+    properties:
+      port_info:
+        items:
+          $ref: types.json#/definitions/PortInfoType
+        type: array
+    type: object
   InterfaceMirrorType:
     properties:
       mirror_to:
@@ -1071,6 +1268,17 @@ definitions:
           both
         presence: 'true'
     type: object
+  InterfaceType:
+    enum:
+    - fc
+    - ge
+    - xe
+    - xle
+    - et
+    - fte
+    - me
+    - em
+    type: string
   IpAddress:
     type: string
   IpAddressFamilyType:
@@ -1140,6 +1348,10 @@ definitions:
         $ref: types.json#/definitions/DhcpOptionsListType
         description: DHCP options list to be sent via DHCP for  VM(s) in this subnet
         presence: optional
+      dhcp_relay_server:
+        $ref: types.json#/definitions/IpAddressType
+        description: DHCP relay server IP
+        presence: optional
       dns_nameservers:
         description: Tenant DNS servers ip address in tenant DNS method
         items:
@@ -1182,6 +1394,10 @@ definitions:
           for fabric peer network
         presence: optional
         type: string
+      vlan_tag:
+        description: vlan this subnet belongs to
+        presence: optional
+        type: integer
     type: object
   IpamSubnets:
     properties:
@@ -1219,6 +1435,12 @@ definitions:
     enum:
     - fabric
     - device
+    type: string
+  JobTemplateType:
+    enum:
+    - workflow
+    - device_operation
+    - config
     type: string
   JunosServicePorts:
     properties:
@@ -1431,6 +1653,21 @@ definitions:
         description: Subnet UUID of the subnet of VIP, representing virtual network.
         presence: required
     type: object
+  LocalLinkConnection:
+    properties:
+      port_id:
+        description: Port ID of switch where Baremetal is connected
+        type: string
+      port_index:
+        description: Port-Id provided by LLDP, This usually maps to SnmpIndex
+        type: string
+      switch_id:
+        description: Switch hostname
+        type: string
+      switch_info:
+        description: UUID of the Physical-Port with contrail database
+        type: string
+    type: object
   LogicalInterfaceType:
     enum:
     - l2
@@ -1526,6 +1763,10 @@ definitions:
         description: Range of source port for layer 4 protocol
         presence: 'true'
     type: object
+  MaxFlowsType:
+    maximum: 4294967296
+    minimum: 0
+    type: integer
   MirrorActionType:
     properties:
       analyzer_ip_address:
@@ -1655,6 +1896,12 @@ definitions:
           $ref: types.json#/definitions/NodeProfileRoleType
         type: array
     type: object
+  NodeProfileType:
+    default: physical-router
+    enum:
+    - physical-router
+    - end-system
+    type: string
   PathSourceType:
     items:
       enum:
@@ -1686,6 +1933,7 @@ definitions:
     - e2-provider
     - e2-internet
     - e2-vrr
+    - pnf
     type: string
   PlaybookInfoListType:
     properties:
@@ -1702,10 +1950,14 @@ definitions:
         type: string
       job_completion_weightage:
         description: Job percentage completion when this playbook is completed. This
-          atttribute value should 100 if there is only one playbook defined in the
+          attribute value should 100 if there is only one playbook defined in the
           job template. The job-completion-weigtages for all playbooks in the same
           job-template should add up to 100 exact.
         type: integer
+      multi_device_playbook:
+        description: if set to true, the execute-job action url uses the job-template
+          parameter 'device-list' to execute the playbook in parallel
+        type: boolean
       playbook_uri:
         description: uri to the playbook location on the file server
         presence: 'true'
@@ -1840,6 +2092,35 @@ definitions:
       term_match_condition:
         $ref: types.json#/definitions/TermMatchConditionType
     type: object
+  PortGroupProperties:
+    properties:
+      miimon:
+        description: Specifies the MII link monitoring frequency in milliseconds.
+        type: integer
+      xmit_hash_policy:
+        description: Transmit hash policy to use for slave selection in balance-xor,
+          802.3ad, and tlb modes.
+        type: string
+    type: object
+  PortInfoType:
+    properties:
+      channelized:
+        type: boolean
+      channelized_port_speed:
+        $ref: types.json#/definitions/PortSpeedType
+      labels:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      port_group:
+        type: string
+      port_speed:
+        $ref: types.json#/definitions/PortSpeedType
+      type_:
+        $ref: types.json#/definitions/InterfaceType
+    type: object
   PortMap:
     properties:
       dst_port:
@@ -1856,6 +2137,13 @@ definitions:
           $ref: types.json#/definitions/PortMap
         type: array
     type: object
+  PortSpeedType:
+    enum:
+    - 1G
+    - 10G
+    - 40G
+    - 100G
+    type: string
   PortTranslationPool:
     properties:
       port_count:
@@ -1991,6 +2279,18 @@ definitions:
         type: integer
       defaults:
         description: Need to clarify
+        presence: optional
+        type: integer
+      firewall_group:
+        description: Maximum number of application policy set
+        presence: optional
+        type: integer
+      firewall_policy:
+        description: Maximum number of firewall policy
+        presence: optional
+        type: integer
+      firewall_rule:
+        description: Maximum number of firewall rule
         presence: optional
         type: integer
       floating_ip:
@@ -2447,6 +2747,11 @@ definitions:
         $ref: types.json#/definitions/ServiceScaleOutType
         description: Number of virtual machines in this service instance, used in
           version 1 (V1) only
+        presence: optional
+      service_virtualization_type:
+        $ref: types.json#/definitions/ServiceVirtualizationType
+        description: Service virtualization type decides how individual service instances
+          are instantiated
         presence: optional
       virtual_router_id:
         description: UUID of a virtual-router on which this service instance need
@@ -2912,6 +3217,10 @@ definitions:
           higher value is higher preference
         presence: optional
         type: integer
+      max_flows:
+        $ref: types.json#/definitions/MaxFlowsType
+        description: Maximum number of flows permitted on VMI
+        presence: optional
       service_interface_type:
         $ref: types.json#/definitions/ServiceInterfaceType
         description: This interface belongs to Service Instance and is tagged as left,
@@ -2923,6 +3232,13 @@ definitions:
         presence: optional
         type: integer
     type: object
+  VirtualNetworkCategory:
+    default: tenant
+    enum:
+    - infra
+    - tenant
+    - internal
+    type: string
   VirtualNetworkPolicyType:
     properties:
       sequence:
@@ -2943,15 +3259,10 @@ definitions:
         $ref: types.json#/definitions/ForwardingModeType
         description: Packet forwarding mode for this virtual network
         presence: optional
-      max_flow_rate:
-        description: Maximum flow rate in flows per second to be permitted on each
-          VMI of the VN
-        presence: optional
-        type: integer
       max_flows:
+        $ref: types.json#/definitions/MaxFlowsType
         description: Maximum number of flows permitted on each VMI of the VN
         presence: optional
-        type: integer
       mirror_destination:
         description: Flag to mark the virtual network as mirror destination network
         presence: optional
