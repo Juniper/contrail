@@ -7,7 +7,7 @@ with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
 schema = docker_compose["services"]["schema"]
-schema["image"] = "mateumann/contrail-controller-config-schema:R6.0-2"
+schema["image"] = "pawelzny/contrail-controller-config-schema:R6.0-3"
 environment = schema.setdefault("environment", [])
 
 notification_driver = "NOTIFICATION_DRIVER=etcd"
