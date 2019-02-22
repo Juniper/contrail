@@ -16,7 +16,7 @@ Currently, this project is
 POC stage so any external/internal API or design subject to change up
 to community discussion.
 
-## Development setup
+## Development  setup
 
 ### Step1. Install Go, Docker and Docker Compose
 
