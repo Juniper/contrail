@@ -395,19 +395,6 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 
 	server.ForceProxyUpdate()
 
-	// Login to new remote keystone(success)
-	// when one cluster endpoint is present
-	// auth middleware should find the keystone endpoint
-	// even without X-Cluster-ID in the header
-	for _, client := range testScenario.Clients {
-		_, err = client.Login(ctx)
-		assert.NoError(t, err, "client failed to login remote keystone")
-	}
-	// verify auth (remote keystone)
-	err = verifyKeystoneEndpoint(ctx, &testScenario, false)
-	assert.NoError(t, err,
-		"failed to validate token with remote keystone")
-
 	// Create one more cluster's keystone endpoint
 	keystoneAuthURL = viper.GetString("keystone.authurl")
 	clusterDName := "clusterD"
@@ -441,8 +428,15 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	// when multiple cluster endpoints are present
 	// auth middleware should find the keystone endpoint
 	// with X-Cluster-ID in the header
-	for _, client := range testScenario.Clients {
+	var clientScenario integration.TestScenario
+	err = integration.LoadTestScenario(&clientScenario, testEndpointFile, pContext)
+	assert.NoError(t, err, "failed to load endpoint create test data")
+	clients := integration.PrepareClients(ctx, t, &clientScenario, server)
+	for _, client := range clients {
 		ctx = auth.WithXClusterID(ctx, clusterDName+"_uuid")
+		client.ID = clusterDUser
+		client.Password = clusterDUser
+		client.Scope = nil
 		_, err = client.Login(ctx)
 		assert.NoError(t, err, "client failed to login remote keystone")
 	}
@@ -455,15 +449,17 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	// when multiple cluster endpoints are present
 	// auth middleware cannot not find keystone endpoint
 	// without X-Cluster-ID in the header
-	for _, client := range testScenario.Clients {
+	for _, client := range clients {
 		ctx = context.Background()
+		client.ID = clusterDUser
+		client.Password = clusterDUser
+		client.Scope = nil
 		_, err = client.Login(ctx)
 		assert.Error(t, err, "client logged in to remote keystone unexpectedly")
 	}
 
 	// Delete the clusterD's keystone endpoint
 	for _, client := range testScenario.Clients {
-		ctx = auth.WithXClusterID(ctx, clusterDName+"_uuid")
 		var response map[string]interface{}
 		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterDName)
 		_, err := client.Delete(ctx, url, &response)

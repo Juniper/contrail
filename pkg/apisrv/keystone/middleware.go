@@ -69,11 +69,6 @@ func getKeystoneEndpoint(clusterID string, endpoints *apicommon.EndpointStore) (
 		if authEndpoint == nil {
 			return nil, fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
 		}
-	} else {
-		authEndpoint, err = endpoints.GetEndpoint(keystoneService)
-		if err != nil {
-			return nil, fmt.Errorf("unable to get keystone endpoint: %s", err)
-		}
 	}
 	return authEndpoint, err
 
@@ -137,10 +132,12 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 				return next(c)
 			}
 			clusterID := r.Header.Get(xClusterIDKey)
+			if clusterID == "" {
+				clusterID = apicommon.GetClusterIDFromProxyURL(r.URL.Path)
+			}
 			keystoneEndpoint, err := getKeystoneEndpoint(clusterID, endpoints)
 			if err != nil {
-				logrus.Errorf("unable to get keystone endpoint: %s", err)
-				return errutil.ToHTTPError(errutil.ErrorUnauthenticated)
+				logrus.Warnf("keystone endpoint not found: %s", err)
 			}
 			if keystoneEndpoint != nil {
 				keystoneClient.SetAuthURL(keystoneEndpoint.URL)
