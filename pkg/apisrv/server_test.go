@@ -281,7 +281,7 @@ func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken
 		projectName,
 		projectName,
 		true,
-		keystone.GetScope("", "default", "", projectName),
+		keystone.NewScope("", "default", "", projectName),
 	)
 	restClient.InSecure = true
 	restClient.Init()
@@ -299,7 +299,7 @@ func TestRESTClient(t *testing.T) {
 		t.Name(),
 		t.Name(),
 		true,
-		keystone.GetScope("", "default", "", t.Name()),
+		keystone.NewScope("", "default", "", t.Name()),
 	)
 	restClient.InSecure = true
 	restClient.Init()

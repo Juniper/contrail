@@ -64,7 +64,7 @@ func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
 		AdminUserID,
 		AdminUserPassword,
 		true,
-		keystone.GetScope(DefaultDomainID, "",
+		keystone.NewScope(DefaultDomainID, "",
 			AdminProjectID, AdminProjectName),
 	)
 	c.Debug = true

@@ -14,7 +14,7 @@ func newAPIClient(config config.Config) *client.HTTP {
 		c.ID,
 		c.Password,
 		c.Insecure,
-		keystone.GetScope(
+		keystone.NewScope(
 			c.DomainID, c.DomainName, c.ProjectID, c.ProjectName,
 		),
 	)

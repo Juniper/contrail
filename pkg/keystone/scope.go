@@ -13,8 +13,8 @@ func (s *Scope) GetDomain() *Domain {
 	return nil
 }
 
-// GetScope returns the project/domain scope
-func GetScope(domainID, domainName, projectID, projectName string) *Scope {
+// NewScope returns the project/domain scope
+func NewScope(domainID, domainName, projectID, projectName string) *Scope {
 	scope := &Scope{
 		Project: &Project{
 			Domain: &Domain{},

@@ -187,7 +187,7 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 		AuthURL:  server.URL() + "/keystone/v3",
 		ID:       "alice",
 		Password: "alice_password",
-		Scope: keystone.GetScope(
+		Scope: keystone.NewScope(
 			"default", "default", "admin", "admin"),
 	}
 	s.Init()

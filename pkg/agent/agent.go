@@ -109,7 +109,7 @@ func NewAgent(c *Config) (*Agent, error) {
 		s.AuthURL = c.AuthURL
 		s.ID = c.ID
 		s.Password = c.Password
-		s.Scope = keystone.GetScope(c.DomainID, c.DomainName,
+		s.Scope = keystone.NewScope(c.DomainID, c.DomainName,
 			c.ProjectID, c.ProjectName)
 	}
 	s.Init()

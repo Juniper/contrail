@@ -96,7 +96,7 @@ func NewCloud(c *Config) (*Cloud, error) {
 		s.AuthURL = c.AuthURL
 		s.ID = c.ID
 		s.Password = c.Password
-		s.Scope = keystone.GetScope(c.DomainID, c.DomainName,
+		s.Scope = keystone.NewScope(c.DomainID, c.DomainName,
 			c.ProjectID, c.ProjectName)
 
 		// as auth is enabled, create ctx with auth

@@ -255,7 +255,8 @@ type trackedResource struct {
 	Client string
 }
 
-type clientsList map[string]*client.HTTP
+// ClientsList is the list of clients used in test
+type ClientsList map[string]*client.HTTP
 
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
 func RunCleanTestScenario(
@@ -269,7 +270,7 @@ func RunCleanTestScenario(
 	stopIC := startIntentCompiler(t, testScenario, server)
 	defer stopIC()
 
-	clients := prepareClients(ctx, t, testScenario, server)
+	clients := PrepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients, server.APIServer.DBService)
 	cleanupTrackedResources(ctx, tracked, clients)
 
@@ -280,7 +281,7 @@ func RunCleanTestScenario(
 func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario, server *APIServer) func() {
 	logrus.WithField("test-scenario", testScenario.Name).Debug("Running dirty test scenario")
 	ctx := context.Background()
-	clients := prepareClients(ctx, t, testScenario, server)
+	clients := PrepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients, server.APIServer.DBService)
 	cleanupFunc := func() {
 		cleanupTrackedResources(ctx, tracked, clients)
@@ -410,8 +411,9 @@ func startIntentCompiler(
 	return func() {}
 }
 
-func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) clientsList {
-	clients := clientsList{}
+// PrepareClients logins to the server
+func PrepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) ClientsList {
+	clients := ClientsList{}
 
 	for key, client := range testScenario.Clients {
 		client.AuthURL = server.TestServer.URL + "/keystone/v3"
@@ -435,7 +437,7 @@ func runTestScenario(
 	ctx context.Context,
 	t *testing.T,
 	testScenario *TestScenario,
-	clients clientsList,
+	clients ClientsList,
 	m baseservices.MetadataGetter,
 ) (tracked []trackedResource) {
 	for _, cleanTask := range testScenario.CleanTasks {
@@ -507,7 +509,7 @@ func performCleanup(
 	}
 }
 
-func getClientByID(clientID string, clients clientsList) *client.HTTP {
+func getClientByID(clientID string, clients ClientsList) *client.HTTP {
 	if clientID == "" {
 		clientID = defaultClientID
 	}
