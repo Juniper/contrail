@@ -8,6 +8,7 @@ cleanup:
     {%endif%}
 test_data:
   {{ cluster_name }}: &{{ cluster_name }}
+    name: {{ cluster_name }}
     fq_name: ["default-global-system-config", "{{ cluster_name }}"]
     uuid: {{ cluster_name }}_uuid
     parent_type: global-system-config
