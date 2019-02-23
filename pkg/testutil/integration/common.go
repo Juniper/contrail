@@ -269,7 +269,7 @@ func RunCleanTestScenario(
 	stopIC := startIntentCompiler(t, testScenario, server)
 	defer stopIC()
 
-	clients := prepareClients(ctx, t, testScenario, server)
+	clients := PrepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients, server.APIServer.DBService)
 	cleanupTrackedResources(ctx, tracked, clients)
 
@@ -280,7 +280,7 @@ func RunCleanTestScenario(
 func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario, server *APIServer) func() {
 	logrus.WithField("test-scenario", testScenario.Name).Debug("Running dirty test scenario")
 	ctx := context.Background()
-	clients := prepareClients(ctx, t, testScenario, server)
+	clients := PrepareClients(ctx, t, testScenario, server)
 	tracked := runTestScenario(ctx, t, testScenario, clients, server.APIServer.DBService)
 	cleanupFunc := func() {
 		cleanupTrackedResources(ctx, tracked, clients)
@@ -410,7 +410,8 @@ func startIntentCompiler(
 	return func() {}
 }
 
-func prepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) clientsList {
+// PrepareClients logins to the server
+func PrepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) clientsList {
 	clients := clientsList{}
 
 	for key, client := range testScenario.Clients {

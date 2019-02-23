@@ -37,7 +37,7 @@ func TestBenchAPI(t *testing.T) {
 		testName,
 		testName,
 		true,
-		keystone.GetScope("", "default", "", testName),
+		keystone.NewScope("", "default", "", testName),
 	)
 	restClient.InSecure = true
 	restClient.Init()

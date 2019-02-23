@@ -222,7 +222,7 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 }
 
 func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
-	scope := kscommon.GetScope(
+	scope := kscommon.NewScope(
 		viper.GetString("client.domain_id"),
 		viper.GetString("client.domain_name"),
 		viper.GetString("client.project_id"),
