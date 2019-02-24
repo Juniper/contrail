@@ -50,8 +50,12 @@ log_level: info
 server:
   read_timeout: 10
   write_timeout: 5
-  log_api: false
-  log_body: false
+  log_api: true
+  log_body: true
+
+  enable_vnc_replication: true
+
+  enable_vnc_replication: true
 
   # Bind addresss
   address: ":9091"
@@ -149,3 +153,13 @@ keystone:
     expire: 3600
   insecure: true
   authurl: https://localhost:9091/keystone/v3
+
+insecure: true
+
+cache:
+  enabled: true
+  timeout: 10s
+  # how long revision deleted event preserved.
+  max_history: 100000
+  rdbms:
+    enabled: true

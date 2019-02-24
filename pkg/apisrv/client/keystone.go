@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -21,6 +22,10 @@ type Keystone struct {
 
 type projectResponse struct {
 	Project keystone.Project `json:"project"`
+}
+
+type projectListResponse struct {
+	Projects []*keystone.Project `json:"projects"`
 }
 
 // GetProject gets project.
@@ -100,4 +105,43 @@ func (k *Keystone) ObtainToken(
 	}
 
 	return resp, nil
+}
+
+// GetProjectIDByName finds project id using project name.
+func (k *Keystone) GetProjectIDByName(ctx context.Context,
+	id, password, projectName string) (string, error) {
+	// Fetch unscoped token
+	resp, err := k.ObtainToken(ctx, id, password, nil)
+	if err != nil {
+		return "", errorFromResponse(err, resp)
+	}
+	token := resp.Header.Get("X-Subject-Token")
+	// Get project list with unscoped token
+	request, err := http.NewRequest(echo.GET, getURL(k.URL, "/auth/projects"), nil)
+	if err != nil {
+		return "", errors.Wrap(err, "creating HTTP request failed")
+	}
+	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	request.Header.Set("X-Auth-Token", token)
+	var output *projectListResponse
+	resp, err = k.HTTPClient.Do(request)
+	if err != nil {
+		return "", errors.Wrap(err, "issuing HTTP request failed")
+	}
+	defer resp.Body.Close() // nolint: errcheck
+
+	if err = checkStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
+		return "", errorFromResponse(err, resp)
+	}
+
+	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
+		return "", errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+	}
+
+	for _, project := range output.Projects {
+		if project.Name == projectName {
+			return project.ID, nil
+		}
+	}
+	return "", fmt.Errorf("'%s' not a valid project name", projectName)
 }
