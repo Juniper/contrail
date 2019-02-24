@@ -2,6 +2,7 @@ package contrail
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -24,7 +25,8 @@ import (
 )
 
 const (
-	syncRetryInterval = 3 * time.Second
+	syncRetryInterval  = 3 * time.Second
+	cacheRetryInterval = 1 * time.Second
 )
 
 var cacheDB *cache.DB
@@ -46,9 +48,9 @@ var processCmd = &cobra.Command{
 
 //StartProcesses starts processes based on config.
 func StartProcesses(wg *sync.WaitGroup) {
+	MaybeStart("cache", startCacheService, wg)
 	MaybeStart("replication.cassandra", startCassandraReplicator, wg)
 	MaybeStart("replication.amqp", startAmqpReplicator, wg)
-	MaybeStart("cache", startCacheService, wg)
 	MaybeStart("server", startServer, wg)
 	MaybeStart("agent", startAgent, wg)
 	MaybeStart("sync", startSync, wg)
@@ -141,7 +143,15 @@ func startServer(_ *sync.WaitGroup) {
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	server.Cache = cacheDB
+	if err := retry.Do(func() (retry bool, err error) {
+		if viper.GetBool("cache.enabled") && cacheDB == nil {
+			return true, fmt.Errorf("cache DB is not initialized")
+		}
+		server.Cache = cacheDB
+		return false, nil
+	}, retry.WithLog(logrus.StandardLogger()), retry.WithInterval(cacheRetryInterval)); err != nil {
+		logrus.Warn(err)
+	}
 	if err = server.Init(); err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
