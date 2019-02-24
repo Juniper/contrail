@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strconv"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -31,7 +30,7 @@ const (
 type HTTP struct {
 	services.BaseService
 	httpClient *http.Client
-	keystone   *Keystone
+	Keystone   *Keystone
 
 	ID        string          `yaml:"id"`
 	Password  string          `yaml:"password"`
@@ -76,7 +75,7 @@ func (h *HTTP) Init() {
 			//TLSHandshakeTimeout: 5 * time.Second,
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
 		}
-		h.keystone = &Keystone{
+		h.Keystone = &Keystone{
 			HTTPClient: &http.Client{
 				Transport: tr,
 			},
@@ -87,7 +86,7 @@ func (h *HTTP) Init() {
 			//Timeout:   time.Second * 10,
 		}
 	} else {
-		h.keystone = &Keystone{
+		h.Keystone = &Keystone{
 			URL: h.AuthURL,
 		}
 		h.httpClient = &http.Client{}
@@ -96,7 +95,7 @@ func (h *HTTP) Init() {
 
 // Login refreshes authentication token.
 func (h *HTTP) Login(ctx context.Context) (*http.Response, error) {
-	resp, err := h.keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
+	resp, err := h.Keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
 	if err != nil {
 		return resp, err
 	}
@@ -166,14 +165,12 @@ func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end 
 
 // GetIntOwner sends a get int pool owner request to remote int-owner.
 func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (string, error) {
-	q := make(url.Values)
-	q.Set("pool", pool)
-	q.Set("value", strconv.FormatInt(value, 10))
+	request := services.GetIntOwnerRequest{Pool: pool, Value: value}
 	var output struct {
 		Owner string `json:"owner"`
 	}
 	expected := []int{http.StatusOK}
-	_, err := h.Do(ctx, echo.GET, "/"+services.IntPoolPath, q, nil, &output, expected)
+	_, err := h.Do(ctx, echo.GET, "/"+services.IntPoolPath, nil, &request, &output, expected)
 	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
 }
 
