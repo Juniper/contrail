@@ -92,6 +92,9 @@ func TestRoutesAreRegistered(t *testing.T) {
 		routes.add(resolve(proxyPath))
 		routes.add(resolve(proxyPath, "*"))
 	}
+	if viper.GetBool("cache.enabled") {
+		routes.add(apisrv.WatchPath)
+	}
 
 	for _, r := range []string{
 		"/",
