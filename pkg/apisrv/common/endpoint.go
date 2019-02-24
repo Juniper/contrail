@@ -177,3 +177,20 @@ func (e *EndpointStore) GetEndpoint(prefix string) (endpoint *Endpoint, err erro
 
 	return endpoint, err
 }
+
+//GetAllEndpoint for a given prefix
+func (e *EndpointStore) GetAllEndpoint(prefix string) (endpoints map[string]*Endpoint) {
+	e.Data.Range(func(key, targets interface{}) bool {
+		keyString, _ := key.(string) // nolint: errcheck
+		keyParts := strings.Split(keyString, pathSep)
+		if keyParts[3] == prefix && keyParts[4] == Private {
+			targetStore, _ := targets.(*TargetStore) // nolint: errcheck
+			endpoint := targetStore.Next(Private)
+			if endpoint != nil {
+				endpoints[keyParts[2]] = endpoint
+			}
+		}
+		return true
+	})
+	return endpoints
+}
