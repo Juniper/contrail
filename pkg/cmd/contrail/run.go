@@ -2,6 +2,7 @@ package contrail
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -24,10 +25,12 @@ import (
 )
 
 const (
-	syncRetryInterval = 3 * time.Second
+	syncRetryInterval  = 3 * time.Second
+	cacheRetryInterval = 1 * time.Second
 )
 
 var cacheDB *cache.DB
+var cacheDBWaitGroup *sync.WaitGroup
 
 func init() {
 	Contrail.AddCommand(processCmd)
@@ -46,9 +49,9 @@ var processCmd = &cobra.Command{
 
 //StartProcesses starts processes based on config.
 func StartProcesses(wg *sync.WaitGroup) {
+	MaybeStart("cache", startCacheService, wg)
 	MaybeStart("replication.cassandra", startCassandraReplicator, wg)
 	MaybeStart("replication.amqp", startAmqpReplicator, wg)
-	MaybeStart("cache", startCacheService, wg)
 	MaybeStart("server", startServer, wg)
 	MaybeStart("agent", startAgent, wg)
 	MaybeStart("sync", startSync, wg)
@@ -95,8 +98,11 @@ func startAmqpReplicator(_ *sync.WaitGroup) {
 }
 
 func startCacheService(wg *sync.WaitGroup) {
+	cacheDBWaitGroup = &sync.WaitGroup{}
+	cacheDBWaitGroup.Add(1)
 	logrus.Debug("Cache service enabled")
 	cacheDB = cache.NewDB(uint64(viper.GetInt64("cache.max_history")))
+	cacheDBWaitGroup.Done()
 	MaybeStart("cache.cassandra", startCassandraWatcher, wg)
 	MaybeStart("cache.etcd", startEtcdWatcher, wg)
 	MaybeStart("cache.rdbms", startRDBMSWatcher, wg)
@@ -141,6 +147,7 @@ func startServer(_ *sync.WaitGroup) {
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
+	cacheDBWaitGroup.Wait()
 	server.Cache = cacheDB
 	if err = server.Init(); err != nil {
 		logutil.FatalWithStackTrace(err)

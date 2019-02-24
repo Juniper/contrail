@@ -91,6 +91,7 @@ func determineCodecType() models.Codec {
 }
 
 func createWatcher(processor services.EventProcessor) (watchCloser, error) {
+	setViperDefaults()
 	sqlDB, err := basedb.ConnectDB()
 	if err != nil {
 		return nil, err
@@ -131,7 +132,6 @@ func createPostgreSQLWatcher(
 	if err != nil {
 		return nil, err
 	}
-
 	conf := replication.PostgresSubscriptionConfig{
 		Slot:          replication.PostgreSQLReplicationSlotName,
 		Publication:   replication.PostgreSQLPublicationName,
