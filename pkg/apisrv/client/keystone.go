@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -24,6 +25,10 @@ type Keystone struct {
 
 type projectResponse struct {
 	Project keystone.Project `json:"project"`
+}
+
+type projectListResponse struct {
+	Projects []*keystone.Project `json:"projects"`
 }
 
 // GetProject gets project.
@@ -55,27 +60,55 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 
 // ObtainToken gets authentication token.
 func (k *Keystone) ObtainToken(
-	ctx context.Context, id string, password string, scope *keystone.Scope,
+	ctx context.Context, id, password string, scope *keystone.Scope,
 ) (*http.Response, error) {
+	return k.FetchToken(ctx, id, password, nil, scope)
+}
+
+// FetchToken gets scoped/unscoped authentication token.
+func (k *Keystone) FetchToken(
+	ctx context.Context, id, password string, domain *keystone.Domain,
+	scope *keystone.Scope) (*http.Response, error) {
 	if k.URL == "" {
 		return nil, nil
 	}
 
-	dataJSON, err := json.Marshal(&keystone.ScopedAuthRequest{
-		Auth: &keystone.ScopedAuth{
-			Identity: &keystone.Identity{
-				Methods: []string{"password"},
-				Password: &keystone.Password{
-					User: &keystone.User{
-						Name:     id,
-						Password: password,
-						Domain:   scope.GetDomain(),
+	var err error
+	var dataJSON []byte
+	if scope != nil {
+		dataJSON, err = json.Marshal(&keystone.ScopedAuthRequest{
+			Auth: &keystone.ScopedAuth{
+				Identity: &keystone.Identity{
+					Methods: []string{"password"},
+					Password: &keystone.Password{
+						User: &keystone.User{
+							Name:     id,
+							Password: password,
+							Domain:   scope.GetDomain(),
+						},
+					},
+				},
+				Scope: scope,
+			},
+		})
+	} else if domain != nil {
+		dataJSON, err = json.Marshal(&keystone.UnScopedAuthRequest{
+			Auth: &keystone.UnScopedAuth{
+				Identity: &keystone.Identity{
+					Methods: []string{"password"},
+					Password: &keystone.Password{
+						User: &keystone.User{
+							Name:     id,
+							Password: password,
+							Domain:   domain,
+						},
 					},
 				},
 			},
-			Scope: scope,
-		},
-	})
+		})
+	} else {
+		return nil, errors.Wrap(err, "unable to determine token type")
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -110,4 +143,43 @@ func (k *Keystone) ObtainToken(
 	}
 
 	return resp, nil
+}
+
+// GetProjectIDByName finds project id using project name.
+func (k *Keystone) GetProjectIDByName(ctx context.Context,
+	id, password, projectName string, domain *keystone.Domain) (string, error) {
+	// Fetch unscoped token
+	resp, err := k.FetchToken(ctx, id, password, domain, nil)
+	if err != nil {
+		return "", errorFromResponse(err, resp)
+	}
+	token := resp.Header.Get("X-Subject-Token")
+	// Get project list with unscoped token
+	request, err := http.NewRequest(echo.GET, getURL(k.URL, "/auth/projects"), nil)
+	if err != nil {
+		return "", errors.Wrap(err, "creating HTTP request failed")
+	}
+	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
+	request.Header.Set("X-Auth-Token", token)
+	var output *projectListResponse
+	resp, err = k.HTTPClient.Do(request)
+	if err != nil {
+		return "", errors.Wrap(err, "issuing HTTP request failed")
+	}
+	defer resp.Body.Close() // nolint: errcheck
+
+	if err = checkStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
+		return "", errorFromResponse(err, resp)
+	}
+
+	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
+		return "", errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+	}
+
+	for _, project := range output.Projects {
+		if project.Name == projectName {
+			return project.ID, nil
+		}
+	}
+	return "", fmt.Errorf("'%s' not a valid project name", projectName)
 }

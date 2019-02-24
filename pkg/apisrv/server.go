@@ -22,6 +22,7 @@ import (
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/apisrv/replication"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
@@ -70,6 +71,7 @@ type Server struct {
 	PropCollectionUpdateServer services.PropCollectionUpdateServer
 	Cache                      *cache.DB
 	Collector                  collector.Collector
+	VNCReplicator              *replication.Replicator
 }
 
 // NewServer makes a server
@@ -186,6 +188,18 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 	s.Proxy.serve()
 }
 
+func (s *Server) startVNCReplicator(endpointStore *apicommon.EndpointStore) (err error) {
+	s.VNCReplicator, err = replication.New(s.Cache, endpointStore)
+	if err != nil {
+		return err
+	}
+	err = s.VNCReplicator.Start()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //Init setup the server.
 // nolint: gocyclo
 func (s *Server) Init() (err error) {
@@ -285,6 +299,12 @@ func (s *Server) Init() (err error) {
 	// serve dynamic proxy based on configured endpoints
 	endpointStore := apicommon.MakeEndpointStore() // sync map to store proxy endpoints
 	s.serveDynamicProxy(endpointStore)
+
+	if viper.GetBool("server.enable_vnc_replication") {
+		if err := s.startVNCReplicator(endpointStore); err != nil {
+			return err
+		}
+	}
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	var keystoneClient *keystone.Client
@@ -496,6 +516,7 @@ func (s *Server) Run() error {
 
 // Close closes Server resources.
 func (s *Server) Close() error {
+	s.VNCReplicator.Stop()
 	s.Proxy.stop()
 	return s.DBService.Close()
 }
