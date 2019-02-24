@@ -592,7 +592,7 @@ func (m *multiCloudProvisioner) manageSSHAgent(workDir string,
 			return err
 		}
 	} else {
-		process, err := isSSHAgentProcessRunning(sshAgentPath) //nolint: vetshadow
+		process, err := isSSHAgentProcessRunning(sshAgentPath) //nolint: govet
 		if err != nil {
 			_, err = m.runSSHAgent(workDir, sshAgentPath)
 			if err != nil {
@@ -1081,7 +1081,7 @@ func isSSHAgentProcessRunning(sshAgentPath string) (*os.Process, error) {
 	if err != nil {
 		return nil, err
 	}
-	pid, err := strconv.Atoi(sshAgentConf.PID) // nolint: vetshadow
+	pid, err := strconv.Atoi(sshAgentConf.PID) // nolint: govet
 	if err != nil {
 		return nil, err
 	}
