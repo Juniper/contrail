@@ -30,7 +30,7 @@ const (
 type HTTP struct {
 	services.BaseService
 	httpClient *http.Client
-	keystone   *Keystone
+	Keystone   *Keystone
 
 	ID        string          `yaml:"id"`
 	Password  string          `yaml:"password"`
@@ -75,7 +75,7 @@ func (h *HTTP) Init() {
 			//TLSHandshakeTimeout: 5 * time.Second,
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
 		}
-		h.keystone = &Keystone{
+		h.Keystone = &Keystone{
 			HTTPClient: &http.Client{
 				Transport: tr,
 			},
@@ -86,7 +86,7 @@ func (h *HTTP) Init() {
 			//Timeout:   time.Second * 10,
 		}
 	} else {
-		h.keystone = &Keystone{
+		h.Keystone = &Keystone{
 			URL: h.AuthURL,
 		}
 		h.httpClient = &http.Client{}
@@ -95,7 +95,7 @@ func (h *HTTP) Init() {
 
 // Login refreshes authentication token.
 func (h *HTTP) Login(ctx context.Context) (*http.Response, error) {
-	resp, err := h.keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
+	resp, err := h.Keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
 	if err != nil {
 		return resp, err
 	}
