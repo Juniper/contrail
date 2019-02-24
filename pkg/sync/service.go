@@ -131,7 +131,7 @@ func createPostgreSQLWatcher(
 	if err != nil {
 		return nil, err
 	}
-
+	viper.SetDefault("database.replication_status_timeout", "10s")
 	conf := replication.PostgresSubscriptionConfig{
 		Slot:          replication.PostgreSQLReplicationSlotName,
 		Publication:   replication.PostgreSQLPublicationName,
