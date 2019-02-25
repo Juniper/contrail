@@ -46,7 +46,7 @@ func initConfig() {
 
 func getClient() (*client.HTTP, error) {
 	authURL := viper.GetString("keystone.authurl")
-	scope := keystone.GetScope(
+	scope := keystone.NewScope(
 		viper.GetString("client.domain_id"),
 		viper.GetString("client.domain_name"),
 		viper.GetString("client.project_id"),

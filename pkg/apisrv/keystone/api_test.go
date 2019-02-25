@@ -5,7 +5,9 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/flosch/pongo2"
@@ -106,6 +108,25 @@ func TestClusterTokenMethod(t *testing.T) {
 	// Fetch command keystone token with cluster keystone token
 	commandServerToken := FetchCommandServerToken(t, clusterName+"_uuid", token)
 	assert.NotEmpty(t, commandServerToken)
+	// Verfiy token
+	url := strings.Join(
+		[]string{server.URL(), "contrail-cluster", clusterName + "_uuid"}, "/")
+	c := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+		},
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	assert.NoError(t, err)
+	req.Header.Set("X-Auth-Token", commandServerToken)
+	res, err := c.Do(req)
+	assert.NoError(t, err)
+	defer res.Body.Close() // nolint: errcheck
+	assert.NoError(t, err)
+	contents, err := ioutil.ReadAll(res.Body)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, contents)
 
 	// Cleanup test
 	integration.RunCleanTestScenario(t, &testScenario, server)

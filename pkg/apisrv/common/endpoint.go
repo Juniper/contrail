@@ -16,6 +16,15 @@ const (
 	pathSep = "/"
 )
 
+// GetClusterIDFromProxyURL parses the proxy url to retrieve clusterID
+func GetClusterIDFromProxyURL(url string) (clusterID string) {
+	paths := strings.Split(url, pathSep)
+	if len(paths) > 3 && paths[1] == "proxy" {
+		clusterID = paths[2]
+	}
+	return clusterID
+}
+
 // Endpoint represents an endpoint url with its credentials
 type Endpoint struct {
 	URL      string

@@ -86,6 +86,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 
 	ts := testutil.NewTestHTTPServer(s.Echo)
 	viper.Set("keystone.authurl", ts.URL+authEndpointSuffix)
+	viper.Set("client.endpoint", ts.URL)
 
 	if err = s.Init(); err != nil {
 		return nil, errors.Wrapf(err, "initialization of test API Server failed")

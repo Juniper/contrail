@@ -47,7 +47,7 @@ func setupClient(testID string) {
 	viper.SetDefault("client.password", testID)
 	viper.SetDefault("client.project_id", testID)
 	viper.SetDefault("client.domain_id", "default")
-	viper.Set("client.endpoint", server.TestServer.URL)
+	viper.SetDefault("client.endpoint", server.TestServer.URL)
 	viper.SetDefault("client.schema_root", "/public")
 	viper.SetDefault("insecure", true)
 }
