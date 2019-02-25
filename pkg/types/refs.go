@@ -37,3 +37,23 @@ func (sv *ContrailTypeLogicService) fillToFieldInRef(ctx context.Context, ref ba
 	ref.SetTo(m.FQName)
 	return nil
 }
+
+func (sv *ContrailTypeLogicService) fillUUIDFieldInRef(ctx context.Context, ref basemodels.Reference) error {
+	if ref.GetUUID() != "" {
+		return nil
+	}
+
+	m, err := sv.MetadataGetter.GetMetadata(
+		ctx,
+		basemodels.Metadata{
+			FQName: ref.GetTo(),
+			Type:   ref.GetReferredKind(),
+		},
+	)
+	if err != nil {
+		return errutil.ErrorNotFoundf("cannot find %s ref with fq_name %s: %v", ref.GetReferredKind(), ref.GetTo(), err)
+	}
+
+	ref.SetUUID(m.UUID)
+	return nil
+}
