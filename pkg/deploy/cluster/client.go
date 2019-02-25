@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -197,6 +197,15 @@ func (c *Cluster) getClusterDetails(clusterID string) (*Data, error) {
 			appformixClusterRef.UUID, c); err != nil {
 			return nil, err
 		}
+
+		for _, appformixFlows := range appformixData.clusterInfo.AppformixFlowsBackRefs {
+			xflowData := NewXflowData()
+			if err := xflowData.updateClusterDetails(context.Background(), appformixFlows.UUID, c); err != nil {
+				return nil, err
+			}
+			clusterData.xflowData = append(clusterData.xflowData, xflowData)
+		}
+
 		clusterData.appformixClusterData = append(
 			clusterData.appformixClusterData, appformixData)
 	}
