@@ -1,0 +1,143 @@
+name: Xflow cluster test
+description: Xflow cluster test
+test_data:
+  node1: &node1
+    name: node1
+    hostname: xflow-node1
+    uuid: {{ nodeUUID }}
+    ip_address: 1.2.3.4
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+  appformix-flows-node: &appformix-flows-node
+    name: appformix-flows-node1
+    uuid: {{ appformixFlowsNodeUUID }}
+    parent_type: appformix-flows
+    parent_uuid: {{ appformixFlowsUUID }}
+    node_refs:
+    - uuid: {{ nodeUUID }}
+  appformix-cluster: &appformix-cluster
+    name: appformix-cluster
+    uuid: {{ appformixClusterUUID }}
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+  openstack-cluster: &openstack-cluster
+    name: openstack-cluster
+    uuid: {{ openstackClusterUUID }}
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+  contrail-cluster: &contrail-cluster
+    name: cluster1
+    uuid: {{ contrailClusterUUID }}
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+    appformix_cluster_refs:
+    - uuid: {{ appformixClusterUUID }}
+    openstack_cluster_refs:
+    - uuid: {{ openstackClusterUUID }}
+  appformix-flows: &appformix-flows
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+    name: x1
+    uuid: {{ appformixFlowsUUID }}
+    openstack_cluster_refs:
+    - uuid: {{ openstackClusterUUID }}
+    appformix_cluster_refs:
+    - uuid: {{ appformixClusterUUID }}
+    docker_images_tar: /opt/xflow/xflow-1.4.0.tar.gz
+    xflow_license: /opt/xflow/xflow_license.sig
+    keepalived_shared_ip: 10.84.5.20
+    xflow:
+      iface_public: enp2s0
+      iface_internal: enp2s0
+    clickhouse:
+      retention_period_secs: 7200
+      retention_size_bytes: 0
+	appformix_flows_configuration:
+      key_value_pair:
+      - key: clickhouse_volumes_host_path
+        value: ""
+      - key: kafka_volumes_host_path
+        value: ""
+      - key: kafka_replication_factor
+        value: "1"
+      - key: clickhouse_replication_factor
+        value: "1"
+      - key: xflow_base_distro
+        value: ubuntu
+      - key: keystone_username
+        value: admin
+      - key: keystone_domain_id
+        value: default
+      - key: appformix_auth_type
+        value: openstack
+      - key: docker_pull_images
+        value: "false"
+      - key: xflow_log_level
+        value: "info"
+      - key: kafka_flows_topic_retention_ms
+        value: "7200000"
+      - key: apiserver_allowed_origins
+        value: '["*"]'
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: create node1
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *node1
+- name: create appformix-cluster
+  request:
+    path: /appformix-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-cluster: *appformix-cluster
+- name: create openstack-cluster
+  request:
+    path: /openstack-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      openstack-cluster: *openstack-cluster
+- name: create appformix-flows
+  request:
+    path: /appformix-flows
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-flows: *appformix-flows
+- name: create contrail cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *contrail-cluster
+- name: create appformix flows node
+  request:
+    path: /appformix-flows-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-flows-node: *appformix-flows-node
+cleanup:
+- path: /appformix-flows/{{ appformixFlowsUUID }}
+- path: /node/{{ nodeUUID }}
+- path: /contrail-cluster/{{ contrailClusterUUID }}
+- path: /appformix-flows-node//{{ appformixFlowsNodeUUID }}
+- path: /openstack-cluster//{{ openstackClusterUUID }}
