@@ -84,6 +84,8 @@ instances:
           connection: {{ appformix_compute_node.AnsibleConnection }}
       {%endif%}{%endfor%}{%endfor%}
       {%endif%}
+      {% if node.UUID in xflowCluster.NodesInfo %}appformix_flows:
+      {% endif %}
     {%endfor%}
 
 contrail_configuration:
@@ -198,3 +200,18 @@ appformix_configuration:
   VCENTER_AUTH_PROTOCOL: {%if vcenter.AuthProtocol %}{{vcenter.AuthProtocol}}{%endif%}
 {%endif%}
 
+{% if xflowCluster %}
+{% with x=xflowCluster.ClusterInfo %}
+xflow_configuration:
+  docker_images_tar: {{ x.DockerImagesTar }}
+  {% if x.XflowLicense %}xflow_license: {{ x.XflowLicense }}{% endif %}
+  keepalived_shared_ip: {{ x.KeepalivedSharedIP }}
+  {% if x.Xflow.IfacePublic %}xflow_iface_public: {{ x.Xflow.IfacePublic }}{% endif %}
+  {% if x.Xflow.IfaceInternal %}xflow_iface_internal: {{ x.Xflow.IfaceInternal }}{% endif %}
+  {% if x.Clickhouse.RetentionPeriodSecs %}clickhouse_retention_period_secs: {{ x.Clickhouse.RetentionPeriodSecs }}{% endif %}
+  {% if x.Clickhouse.RetentionSizeBytes %}clickhouse_retention_size_bytes: {{ x.Clickhouse.RetentionSizeBytes }}{% endif %}
+  {% for kv in x.Config.KeyValuePair %}
+  {{ kv.Key }}: {% autoescape off %}{{ kv.Value }}{% endautoescape %}
+  {% endfor %}
+{% endwith %}
+{% endif %}
