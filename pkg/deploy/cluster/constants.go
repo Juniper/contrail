@@ -10,8 +10,6 @@ const (
 	defaultOpenstackResourcePath                = "/" + defaultOpenstackResource
 	defaultVCenterResource                      = "vCenter"
 	defaultVCenterResourcePath                  = "/" + defaultVCenterResource
-	defaultAppformixResource                    = "appformix-cluster"
-	defaultAppformixResourcePath                = "/" + defaultAppformixResource
 	defaultEndpointRes                          = "endpoint"
 	defaultEndpointResPath                      = "/" + defaultEndpointRes
 	defaultNodeRes                              = "node"
@@ -100,6 +98,7 @@ const (
 	defaultAppformixOpenstackNodeResPath  = "/" + defaultAppformixOpenstackNodeRes
 	defaultAppformixComputeNodeRes        = "appformix-compute-node"
 	defaultAppformixComputeNodeResPath    = "/" + defaultAppformixComputeNodeRes
+	defaultXflowDir                       = "xflow/"
 
 	defaultFilePermRWOnly = 0600
 
