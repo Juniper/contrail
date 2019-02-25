@@ -9,17 +9,17 @@ import (
 func TestIsIngress(t *testing.T) {
 	testCases := []struct {
 		name string
-		policyAddressPair
+		PolicyAddressPair
 		isIngress bool
 		err       error
 	}{
 		{
 			name: "specified security group to local security group",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &AddressType{
+			PolicyAddressPair: PolicyAddressPair{
+				SourceAddress: &AddressType{
 					SecurityGroup: "default-domain:project-blue:default",
 				},
-				destinationAddress: &AddressType{
+				DestinationAddress: &AddressType{
 					SecurityGroup: "local",
 				},
 			},
@@ -27,31 +27,31 @@ func TestIsIngress(t *testing.T) {
 		},
 		{
 			name: "local security group to all IPv4 addresses",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &AddressType{
+			PolicyAddressPair: PolicyAddressPair{
+				SourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: AllIPv4Addresses(),
+				DestinationAddress: AllIPv4Addresses(),
 			},
 			isIngress: false,
 		},
 		{
 			name: "local security group to all IPv6 addresses",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &AddressType{
+			PolicyAddressPair: PolicyAddressPair{
+				SourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: AllIPv6Addresses(),
+				DestinationAddress: AllIPv6Addresses(),
 			},
 			isIngress: false,
 		},
 		{
 			name: "both with local security group",
-			policyAddressPair: policyAddressPair{
-				sourceAddress: &AddressType{
+			PolicyAddressPair: PolicyAddressPair{
+				SourceAddress: &AddressType{
 					SecurityGroup: "local",
 				},
-				destinationAddress: &AddressType{
+				DestinationAddress: &AddressType{
 					SecurityGroup: "local",
 				},
 			},
@@ -60,9 +60,9 @@ func TestIsIngress(t *testing.T) {
 		},
 		{
 			name: "neither with local security group",
-			policyAddressPair: policyAddressPair{
-				sourceAddress:      &AddressType{},
-				destinationAddress: &AddressType{},
+			PolicyAddressPair: PolicyAddressPair{
+				SourceAddress:      &AddressType{},
+				DestinationAddress: &AddressType{},
 			},
 			err: neitherAddressIsLocal{
 				sourceAddress:      &AddressType{},
@@ -73,7 +73,7 @@ func TestIsIngress(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			isIngress, err := tt.policyAddressPair.isIngress()
+			isIngress, err := tt.PolicyAddressPair.IsIngress()
 			if tt.err != nil {
 				assert.Equal(t, tt.err, err)
 			} else {
@@ -118,7 +118,7 @@ func TestIsLocal(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.is, tt.address.isSecurityGroupLocal())
+			assert.Equal(t, tt.is, tt.address.IsSecurityGroupLocal())
 		})
 	}
 }
@@ -133,9 +133,9 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "any",
 			policyRule: &PolicyRuleType{
-				Protocol: "any",
+				Protocol: AnyProtocol,
 			},
-			expectedACLProtocol: "any",
+			expectedACLProtocol: AnyProtocol,
 		},
 
 		{
@@ -158,7 +158,7 @@ func TestACLProtocol(t *testing.T) {
 			name: "unknown IPv6 protocol",
 			policyRule: &PolicyRuleType{
 				Protocol:  "some unknown protocol",
-				Ethertype: "IPv6",
+				Ethertype: IPv6Ethertype,
 			},
 			fails: true,
 		},
@@ -167,7 +167,7 @@ func TestACLProtocol(t *testing.T) {
 			name: "unknown IPv4 protocol",
 			policyRule: &PolicyRuleType{
 				Protocol:  "some unknown protocol",
-				Ethertype: "IPv4",
+				Ethertype: IPv4Ethertype,
 			},
 			fails: true,
 		},
@@ -184,8 +184,8 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "icmp ipv6",
 			policyRule: &PolicyRuleType{
-				Protocol:  "icmp",
-				Ethertype: "IPv6",
+				Protocol:  ICMPProtocol,
+				Ethertype: IPv6Ethertype,
 			},
 			expectedACLProtocol: "58",
 		},
@@ -193,8 +193,8 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "icmp ipv4",
 			policyRule: &PolicyRuleType{
-				Protocol:  "icmp",
-				Ethertype: "IPv4",
+				Protocol:  ICMPProtocol,
+				Ethertype: IPv4Ethertype,
 			},
 			expectedACLProtocol: "1",
 		},
@@ -203,8 +203,8 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "icmp6 ipv6",
 			policyRule: &PolicyRuleType{
-				Protocol:  "icmp6",
-				Ethertype: "IPv6",
+				Protocol:  ICMP6Protocol,
+				Ethertype: IPv6Ethertype,
 			},
 			expectedACLProtocol: "58",
 		},
@@ -212,8 +212,8 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "icmp6 ipv4",
 			policyRule: &PolicyRuleType{
-				Protocol:  "icmp6",
-				Ethertype: "IPv4",
+				Protocol:  ICMP6Protocol,
+				Ethertype: IPv4Ethertype,
 			},
 			expectedACLProtocol: "58",
 		},
@@ -221,8 +221,8 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "tcp ipv6",
 			policyRule: &PolicyRuleType{
-				Protocol:  "tcp",
-				Ethertype: "IPv6",
+				Protocol:  TCPProtocol,
+				Ethertype: IPv6Ethertype,
 			},
 			expectedACLProtocol: "6",
 		},
@@ -230,8 +230,8 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "tcp ipv4",
 			policyRule: &PolicyRuleType{
-				Protocol:  "tcp",
-				Ethertype: "IPv4",
+				Protocol:  TCPProtocol,
+				Ethertype: IPv4Ethertype,
 			},
 			expectedACLProtocol: "6",
 		},
@@ -239,8 +239,8 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "udp ipv6",
 			policyRule: &PolicyRuleType{
-				Protocol:  "udp",
-				Ethertype: "IPv6",
+				Protocol:  UDPProtocol,
+				Ethertype: IPv6Ethertype,
 			},
 			expectedACLProtocol: "17",
 		},
@@ -248,8 +248,8 @@ func TestACLProtocol(t *testing.T) {
 		{
 			name: "udp ipv4",
 			policyRule: &PolicyRuleType{
-				Protocol:  "udp",
-				Ethertype: "IPv4",
+				Protocol:  UDPProtocol,
+				Ethertype: IPv4Ethertype,
 			},
 			expectedACLProtocol: "17",
 		},

@@ -1,17 +1,24 @@
 package models
 
-// Non-reference security group names.
 const (
-	AnySecurityGroup         = "any"
-	LocalSecurityGroup       = "local"
+	// AnySecurityGroup matches any security group in AddressType.
+	AnySecurityGroup = "any"
+	// LocalSecurityGroup matches the local security group in AddressType.
+	LocalSecurityGroup = "local"
+	// UnspecifiedSecurityGroup doesn't match against the security group in AddressType.
 	UnspecifiedSecurityGroup = ""
+
+	// IPv4ZeroValue is the zero IPv4 address.
+	IPv4ZeroValue = "0.0.0.0"
+	// IPv6ZeroValue is the zero IPv6 address.
+	IPv6ZeroValue = "::"
 )
 
 // AllIPv4Addresses returns an AddressType with a subnet of all possible IPv4 addresses.
 func AllIPv4Addresses() *AddressType {
 	return &AddressType{
 		Subnet: &SubnetType{
-			IPPrefix:    "0.0.0.0",
+			IPPrefix:    IPv4ZeroValue,
 			IPPrefixLen: 0,
 		},
 	}
@@ -21,7 +28,7 @@ func AllIPv4Addresses() *AddressType {
 func AllIPv6Addresses() *AddressType {
 	return &AddressType{
 		Subnet: &SubnetType{
-			IPPrefix:    "::",
+			IPPrefix:    IPv6ZeroValue,
 			IPPrefixLen: 0,
 		},
 	}
@@ -34,6 +41,7 @@ func (m *AddressType) IsSecurityGroupNameAReference() bool {
 		m.SecurityGroup != LocalSecurityGroup && m.SecurityGroup != UnspecifiedSecurityGroup
 }
 
-func (m *AddressType) isSecurityGroupLocal() bool {
+// IsSecurityGroupLocal checks if the address specifies the local Security Group.
+func (m *AddressType) IsSecurityGroupLocal() bool {
 	return m.SecurityGroup == LocalSecurityGroup
 }

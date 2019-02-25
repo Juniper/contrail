@@ -322,7 +322,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			name: "Try to create when multiple endpoint types enabled",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
-					Protocol: "icmp",
+					Protocol: models.ICMPProtocol,
 				},
 				Endpoint1: &models.FirewallRuleEndpointType{
 					Any:            true,
@@ -337,7 +337,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			name: "Try to create with label match-tag",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
-					Protocol: "tcp",
+					Protocol: models.TCPProtocol,
 				},
 				MatchTags: &models.FirewallRuleMatchTagsType{
 					TagList: []string{"Label"},
@@ -349,7 +349,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			name: "Try to create with tag references definied",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
-					Protocol: "tcp",
+					Protocol: models.TCPProtocol,
 				},
 				TagRefs: []*models.FirewallRuleTagRef{
 					{
@@ -364,7 +364,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			name: "Try to create with improper tag name",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
-					Protocol: "tcp",
+					Protocol: models.TCPProtocol,
 				},
 				Endpoint1: &models.FirewallRuleEndpointType{
 					Tags: []string{"namespace"},
@@ -378,7 +378,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			testFirewallRule: models.FirewallRule{
 				ParentType: models.KindVirtualNetwork,
 				Service: &models.FirewallServiceType{
-					Protocol: "tcp",
+					Protocol: models.TCPProtocol,
 				},
 				Endpoint1: &models.FirewallRuleEndpointType{
 					Tags: []string{"namespace=default"},
@@ -392,7 +392,7 @@ func TestCreateFirewallRule(t *testing.T) {
 				FQName:     []string{"domain-uuid", "project-uuid", "firewall-rule-uuid"},
 				ParentType: models.KindProject,
 				Service: &models.FirewallServiceType{
-					Protocol: "tcp",
+					Protocol: models.TCPProtocol,
 				},
 				Endpoint1: &models.FirewallRuleEndpointType{
 					Tags: []string{"namespace=default"},
@@ -405,7 +405,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			name: "Try to create with address group references definied",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
-					Protocol: "tcp",
+					Protocol: models.TCPProtocol,
 				},
 				AddressGroupRefs: []*models.FirewallRuleAddressGroupRef{
 					{
@@ -420,7 +420,7 @@ func TestCreateFirewallRule(t *testing.T) {
 			name: "Try to create with non existing address-group",
 			testFirewallRule: models.FirewallRule{
 				Service: &models.FirewallServiceType{
-					Protocol: "tcp",
+					Protocol: models.TCPProtocol,
 				},
 				Endpoint1: &models.FirewallRuleEndpointType{
 					AddressGroup: "address-group-uuid-1",
@@ -435,7 +435,7 @@ func TestCreateFirewallRule(t *testing.T) {
 				FQName:     []string{"firewall-rule-uuid"},
 				ParentType: models.KindProject,
 				Service: &models.FirewallServiceType{
-					Protocol: "tcp",
+					Protocol: models.TCPProtocol,
 				},
 				Endpoint1: &models.FirewallRuleEndpointType{
 					Tags: []string{"global:namespace=contrail"},
@@ -457,7 +457,7 @@ func TestCreateFirewallRule(t *testing.T) {
 					TagType: []int64{1},
 				},
 				Service: &models.FirewallServiceType{
-					Protocol:   "tcp",
+					Protocol:   models.TCPProtocol,
 					ProtocolID: 6,
 				},
 				Endpoint1: &models.FirewallRuleEndpointType{
@@ -707,7 +707,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 			request: services.UpdateFirewallRuleRequest{
 				FirewallRule: &models.FirewallRule{
 					Service: &models.FirewallServiceType{
-						Protocol: "tcp",
+						Protocol: models.TCPProtocol,
 					},
 				},
 				FieldMask: types.FieldMask{
@@ -721,7 +721,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 			},
 			expected: &models.FirewallRule{
 				Service: &models.FirewallServiceType{
-					Protocol:   "tcp",
+					Protocol:   models.TCPProtocol,
 					ProtocolID: 6,
 				},
 				MatchTagTypes: &models.FirewallRuleMatchTagsTypeIdList{
@@ -761,7 +761,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 			},
 			databaseFR: &models.FirewallRule{
 				Service: &models.FirewallServiceType{
-					Protocol:   "tcp",
+					Protocol:   models.TCPProtocol,
 					ProtocolID: 6,
 				},
 			},
@@ -807,7 +807,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 					TagIds: []int64{0x00ff0002},
 				},
 				Service: &models.FirewallServiceType{
-					Protocol:   "tcp",
+					Protocol:   models.TCPProtocol,
 					ProtocolID: 6,
 				},
 			},
@@ -851,7 +851,7 @@ func TestUpdateFirewallRule(t *testing.T) {
 					TagIds: []int64{0x00ff0002},
 				},
 				Service: &models.FirewallServiceType{
-					Protocol:   "tcp",
+					Protocol:   models.TCPProtocol,
 					ProtocolID: 6,
 				},
 			},
