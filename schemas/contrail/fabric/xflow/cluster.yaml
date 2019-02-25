@@ -1,0 +1,47 @@
+description: Appformix flows
+api_style: contrail
+extends:
+- base
+- has_status
+id: appformix_flows
+plural: appformix_flows
+parents:
+  global_system_config:
+    operations: CRUD
+    description: Appformix flows # this describes the parent's child
+                                 # (meaning this object) field and not
+                                 # the parent itself
+    presence: optional
+prefix: /
+references:
+  appformix_cluster:
+    operation: CRUD
+    presence: required
+    nullable: false
+  openstack_cluster:
+    operation: CRUD
+    presence: optional
+schema:
+  properties:
+    docker_images_tar:
+      type: string
+      presence: required
+      nullable: false
+    xflow_license:
+      type: string
+      presence: optional
+    keepalived_shared_ip:
+      type: string
+      presence: required
+      nullable: false
+    xflow:
+      $ref: "xflow_types.json#/definitions/XflowType"
+      presence: optional
+    clickhouse:
+      $ref: "xflow_types.json#/definitions/ClickhouseType"
+      presence: optional
+    appformix_flows_configuration:
+      $ref: "types.json#/definitions/KeyValuePairs"
+      presence: optional
+  type: object
+type: object
