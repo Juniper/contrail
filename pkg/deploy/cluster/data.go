@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"context"
-
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
@@ -54,6 +53,17 @@ type AppformixData struct {
 	Reader       services.ReadService
 }
 
+type XflowData struct {
+	ClusterInfo *models.AppformixFlows
+	NodesInfo   map[string]*models.Node
+}
+
+func NewXflowData() *XflowData {
+	return &XflowData{
+		NodesInfo: make(map[string]*models.Node),
+	}
+}
+
 // Data is the representation of cluster details.
 type Data struct {
 	clusterInfo           *models.ContrailCluster
@@ -65,6 +75,7 @@ type Data struct {
 	vcenterData           []*VCenterData
 	kubernetesClusterData []*KubernetesData
 	appformixClusterData  []*AppformixData
+	xflowData             []*XflowData
 	Reader                services.ReadService
 	// TODO (ijohnson): Add gce/aws/kvm info
 }
@@ -205,38 +216,35 @@ func (a *AppformixData) updateNodeDetails(c *Cluster) error {
 
 // nolint: gocyclo
 func (a *AppformixData) updateClusterDetails(clusterID string, c *Cluster) error {
-	rData, err := c.getResource(defaultAppformixResourcePath, clusterID)
+	ctx := context.Background()
+	resp, err := c.APIServer.GetAppformixCluster(ctx, &services.GetAppformixClusterRequest{ID: clusterID})
 	if err != nil {
 		return err
 	}
-	a.clusterInfo = models.InterfaceToAppformixCluster(rData)
+	a.clusterInfo = resp.AppformixCluster
 
 	// Expand appformix_controller back ref
-	if appformixControllerNodes, ok := rData["appformix_controller_nodes"]; ok {
-		if err = a.interfaceToAppformixControllerNode(appformixControllerNodes, c); err != nil {
-			return err
-		}
+
+	if err = a.interfaceToAppformixControllerNode(a.clusterInfo.AppformixControllerNodes, c); err != nil {
+		return err
 	}
 
 	// Expand appformix_bare_host back ref
-	if appformixBareHostNodes, ok := rData["appformix_bare_host_nodes"]; ok {
-		if err = a.interfaceToAppformixBareHostNode(appformixBareHostNodes, c); err != nil {
-			return err
-		}
+
+	if err = a.interfaceToAppformixBareHostNode(a.clusterInfo.AppformixBareHostNodes, c); err != nil {
+		return err
 	}
 
 	// Expand appformix_openstack back ref
-	if appformixOpenstackNodes, ok := rData["appformix_openstack_nodes"]; ok {
-		if err = a.interfaceToAppformixOpenstackNode(appformixOpenstackNodes, c); err != nil {
-			return err
-		}
+
+	if err = a.interfaceToAppformixOpenstackNode(a.clusterInfo.AppformixOpenstackNodes, c); err != nil {
+		return err
 	}
 
 	// Expand appformix_compute back ref
-	if appformixComputeNodes, ok := rData["appformix_compute_nodes"]; ok {
-		if err = a.interfaceToAppformixComputeNode(appformixComputeNodes, c); err != nil {
-			return err
-		}
+
+	if err = a.interfaceToAppformixComputeNode(a.clusterInfo.AppformixComputeNodes, c); err != nil {
+		return err
 	}
 
 	// get all nodes information
@@ -1376,6 +1384,10 @@ func (d *Data) getAllNodesInfo() []*models.Node {
 		nodes = append(nodes, d.getAppformixClusterData().nodesInfo...)
 	}
 
+	if d.getXflowData() != nil {
+		nodes = append(nodes, d.getXflowData().getNodes()...)
+	}
+
 	var uniqueNodes []*models.Node
 	m := make(map[string]bool)
 
@@ -1488,6 +1500,23 @@ func (d *Data) getAppformixClusterInfo() *models.AppformixCluster {
 	return nil
 }
 
+func (d *Data) getXflowData() *XflowData {
+	if len(d.xflowData) > 0 {
+		return d.xflowData[0]
+	}
+
+	return nil
+}
+
+func (d *XflowData) getNodes() []*models.Node {
+	res := make([]*models.Node, 0, len(d.NodesInfo))
+	for _, n := range d.NodesInfo {
+		res = append(res, n)
+	}
+
+	return res
+}
+
 func (d *Data) getAppformixControllerNodeIPs() (nodeIPs []string) {
 	appformixClusterInfo := d.getAppformixClusterInfo()
 	if appformixClusterInfo == nil {
@@ -1537,4 +1566,52 @@ func (d *Data) getAppformixControllerNodePorts() (nodePorts map[string]interface
 
 func (d *Data) getCloudRefs() ([]*models.Cloud, error) {
 	return nil, nil
+}
+
+func (x *XflowData) updateClusterDetails(ctx context.Context, uuid string, c *Cluster) error {
+	resp, err := c.APIServer.GetAppformixFlows(ctx, &services.GetAppformixFlowsRequest{ID: uuid})
+
+	if err != nil {
+		return err
+	}
+
+	x.ClusterInfo = resp.AppformixFlows
+
+	for _, appformixFlowsNode := range x.ClusterInfo.AppformixFlowsNodes {
+		err = x.updateAppformixFlowsNode(ctx, appformixFlowsNode.UUID, c)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (x *XflowData) updateAppformixFlowsNode(ctx context.Context, uuid string, c *Cluster) error {
+	resp, err := c.APIServer.GetAppformixFlowsNode(ctx, &services.GetAppformixFlowsNodeRequest{ID: uuid})
+
+	if err != nil {
+		return err
+	}
+
+	for _, nodeRef := range resp.AppformixFlowsNode.NodeRefs {
+		err = x.updateNodeInfo(ctx, nodeRef.UUID, c)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (x *XflowData) updateNodeInfo(ctx context.Context, nodeUuid string, c *Cluster) error {
+	resp, err := c.APIServer.GetNode(ctx, &services.GetNodeRequest{ID: nodeUuid})
+
+	if err != nil {
+		return err
+	}
+
+	x.NodesInfo[nodeUuid] = resp.Node
+
+	return nil
 }

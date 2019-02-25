@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/flosch/pongo2"
-	shellwords "github.com/mattn/go-shellwords"
+	"github.com/mattn/go-shellwords"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
@@ -158,6 +158,10 @@ func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoDir() (ansibleRepoDir st
 
 func (a *contrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
 	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo)
+}
+
+func (a *contrailAnsibleDeployer) getXflowDeployerDir() (xflowDir string) {
+	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultXflowDir)
 }
 
 func (a *contrailAnsibleDeployer) getAnsibleDatapathEncryptionRepoDir() (ansibleRepoDir string) {
@@ -319,6 +323,7 @@ func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error 
 		"k8sCluster":         a.clusterData.getK8sClusterInfo(),
 		"vcenter":            a.clusterData.getVCenterClusterInfo(),
 		"appformixCluster":   a.clusterData.getAppformixClusterInfo(),
+		"xflowCluster":       a.clusterData.getXflowData(),
 		"nodes":              a.clusterData.getAllNodesInfo(),
 		"credentials":        a.clusterData.getAllCredsInfo(),
 		"keypairs":           a.clusterData.getAllKeypairsInfo(),
@@ -500,6 +505,24 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 	return nil
 }
 
+func (a *contrailAnsibleDeployer) playXflowProvision() error {
+	if a.clusterData.getXflowData() != nil {
+		xflowDir := a.getXflowDeployerDir()
+		if _, err := os.Stat(xflowDir); os.IsNotExist(err) {
+			return err
+		}
+
+		cmd := "bash"
+		cmdArgs := []string{"deploy_xflow.sh", a.getInstanceFile()}
+		a.Log.Infof("provisioning xflow: %s %s", cmd, strings.Join(cmdArgs, " "))
+		if err := osutil.ExecCmdAndWait(a.Reporter, cmd, cmdArgs, xflowDir); err != nil {
+			return err
+		}
+		a.Log.Infof("Finished provisioning xflow")
+	}
+	return nil
+}
+
 // nolint: gocyclo
 func (a *contrailAnsibleDeployer) playBook() error {
 	args := []string{"-i", "inventory/", "-e",
@@ -537,6 +560,9 @@ func (a *contrailAnsibleDeployer) playBook() error {
 			return err
 		}
 		if err := a.playAppformixProvision(); err != nil {
+			return err
+		}
+		if err := a.playXflowProvision(); err != nil {
 			return err
 		}
 	case upgradeProvisioningAction:
