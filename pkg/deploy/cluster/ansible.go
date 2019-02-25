@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/flosch/pongo2"
-	shellwords "github.com/mattn/go-shellwords"
+	"github.com/mattn/go-shellwords"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
@@ -319,6 +319,7 @@ func (a *contrailAnsibleDeployer) createInstancesFile(destination string) error 
 		"k8sCluster":         a.clusterData.getK8sClusterInfo(),
 		"vcenter":            a.clusterData.getVCenterClusterInfo(),
 		"appformixCluster":   a.clusterData.getAppformixClusterInfo(),
+		"xflowCluster":       a.clusterData.getXflowData(),
 		"nodes":              a.clusterData.getAllNodesInfo(),
 		"credentials":        a.clusterData.getAllCredsInfo(),
 		"keypairs":           a.clusterData.getAllKeypairsInfo(),
