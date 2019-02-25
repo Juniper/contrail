@@ -1,0 +1,6 @@
+insecure: true
+resource_type: contrail_cluster
+resource_action: update
+resource_id: contrail-cluster-uuid
+endpoint: https://localhost:9091
+template_root: ./pkg/deploy/cluster/templates

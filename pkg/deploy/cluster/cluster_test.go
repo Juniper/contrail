@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/deploy/base"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -108,17 +110,54 @@ func verifyMCDeleted() bool {
 	return true
 }
 
+func unmarshalYaml(t *testing.T, yamlFile string) map[string]interface{} {
+	var yamlMap map[string]interface{}
+
+	yamlBytes, err := ioutil.ReadFile(yamlFile)
+	assert.NoError(t, err, "Error when reading expected yaml file")
+	err = yaml.Unmarshal(yamlBytes, &yamlMap)
+	assert.NoError(t, err, "Unable to unmarshal expected yaml file")
+
+	return yamlMap
+}
+
+func assertYamlFileContainsOther(
+	t *testing.T,
+	expectedContainedYamlFile, actualYamlFile string,
+	msgAndArgs ...interface{}) bool {
+
+	expectedMap := unmarshalYaml(t, expectedContainedYamlFile)
+	actualMap := unmarshalYaml(t, actualYamlFile)
+
+	ok := true
+
+	for k, v := range expectedMap {
+		ok = assert.Contains(t, actualMap, k, msgAndArgs...) && assert.Equal(t, v, actualMap[k], msgAndArgs...) && ok
+	}
+
+	return ok
+}
+
+func assertYamlFilesAreEqual(t *testing.T, expectedYamlFile, actualYamlFile string, msgAndArgs ...interface{}) bool {
+	expectedMap := unmarshalYaml(t, expectedYamlFile)
+	actualMap := unmarshalYaml(t, actualYamlFile)
+	return assert.Equal(t, expectedMap, actualMap, msgAndArgs...)
+}
+
 func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	generatedData, err := ioutil.ReadFile(generatedFile)
 	assert.NoErrorf(t, err, "Unable to read generated: %s", generatedFile)
 	expectedData, err := ioutil.ReadFile(expectedFile)
 	assert.NoErrorf(t, err, "Unable to read expected: %s", expectedFile)
 	return bytes.Equal(generatedData, expectedData)
-
 }
 
-func compareGeneratedInstances(t *testing.T, expected string) bool {
-	return compareFiles(t, expected, generatedInstancesPath())
+func assertGeneratedInstancesContainExpected(t *testing.T, expected string, msgAndArgs ...interface{}) {
+	assertYamlFileContainsOther(t, expected, generatedInstancesPath(), msgAndArgs...)
+}
+
+func assertGeneratedInstancesAreExpected(t *testing.T, expected string, msgAndArgs ...interface{}) {
+	assertYamlFilesAreEqual(t, expected, generatedInstancesPath(), msgAndArgs...)
 }
 
 func compareGeneratedInventory(t *testing.T, expected string) bool {
@@ -294,8 +333,8 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 	err = deployer.Deploy()
 	assert.NoErrorf(t, err, "failed to manage(%s) cluster", action)
 	if expectedInstance != "" {
-		assert.True(t, compareGeneratedInstances(t, expectedInstance),
-			fmt.Sprintf("Instance file created during cluster %s is not as expected", action))
+		assertGeneratedInstancesAreExpected(t, expectedInstance,
+			"Instance file created during cluster %s is not as expected", action)
 	}
 	if expectedPlaybooks != "" {
 		assert.True(t, verifyPlaybooks(t, expectedPlaybooks),
@@ -363,7 +402,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedInstance),
+	assertGeneratedInstancesAreExpected(t, expectedInstance,
 		"Instance file created during cluster create is not as expected")
 	if expectedInventory != "" {
 		assert.True(t, compareGeneratedInventory(t, expectedInventory),
@@ -402,7 +441,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedInstance),
+	assertGeneratedInstancesAreExpected(t, expectedInstance,
 		"Instance file created during cluster update is not as expected")
 	if expectedInventory != "" {
 		assert.True(t, compareGeneratedInventory(t, expectedInventory),
@@ -464,6 +503,31 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
 
+func getClusterDeployer(t *testing.T, config *Config) base.Deployer {
+	cluster, err := NewCluster(config)
+	assert.NoError(t, err, "failed to create cluster manager to create cluster")
+	deployer, err := cluster.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	return deployer
+}
+
+func getConfig(apiserver *client.HTTP, klusterID string) *Config {
+	if klusterID == "" {
+		klusterID = clusterID
+	}
+
+	return &Config{
+		APIServer:    apiserver,
+		ClusterID:    klusterID,
+		Action:       "create",
+		LogLevel:     "debug",
+		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
+		Test:         true,
+		LogFile:      workRoot + "/deploy.log",
+	}
+}
+
 // nolint: gocyclo
 func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
@@ -517,7 +581,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedInstance),
+	assertGeneratedInstancesAreExpected(t, expectedInstance,
 		"Instance file created during cluster create is not as expected")
 	if expectedInventory != "" {
 		assert.True(t, compareGeneratedInventory(t, expectedInventory),
@@ -556,7 +620,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedInstance),
+	assertGeneratedInstancesAreExpected(t, expectedInstance,
 		"Instance file created during cluster update is not as expected")
 	if expectedInventory != "" {
 		assert.True(t, compareGeneratedInventory(t, expectedInventory),
@@ -673,6 +737,40 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 	}
 
 	runAppformixClusterTest(t, expectedInstances, "", context, expectedEndpoints)
+}
+
+func TestXflow(t *testing.T) {
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(
+		&testScenario,
+		"test_data/test_xflow_cluster.tmpl",
+		map[string]interface{}{
+			"appformixFlowsUUID":     "f0151fa2-2db7-476f-b4a9-58fcda2130b7",
+			"nodeUUID":               "d63c420a-d4af-49d2-a7de-dd0665f2134a",
+			"contrailClusterUUID":    clusterID,
+			"appformixClusterUUID":   "appformix-cluster-uuid",
+			"openstackClusterUUID":   "openstack-cluster-uuid",
+			"appformixFlowsNodeUUID": "appformix-flows-node-uuid",
+		},
+	)
+	if err != nil {
+		t.Error("Unable to load test scenario", err)
+	}
+
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup()
+
+	config := getConfig(testScenario.Clients["default"], "")
+
+	contrailDeployer := getClusterDeployer(t, config).(*contrailAnsibleDeployer)
+
+	err = contrailDeployer.createInventory()
+	assert.NoError(t, err, "unable to create inventory")
+
+	expectedInstance := "test_data/expected_xflow_instances.yaml"
+
+	assertGeneratedInstancesContainExpected(t, expectedInstance,
+		"Instance file created during cluster create is not as expected")
 }
 
 func TestAllInOneCluster(t *testing.T) {
@@ -829,7 +927,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+	assertGeneratedInstancesAreExpected(t, expectedOutput,
 		"Instance file created during cluster create is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_playbook_kubernetes.yml"),
 		"Expected list of create playbooks are not executed")
@@ -861,7 +959,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+	assertGeneratedInstancesAreExpected(t, expectedOutput,
 		"Instance file created during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_kubernetes.yml"),
 		"Expected list of update playbooks are not executed")
@@ -967,7 +1065,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+	assertGeneratedInstancesAreExpected(t, expectedOutput,
 		"Instance file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedVcentervars(t, expectedVcentervars),
 		"Vcenter_vars file created during cluster create is not as expected")
@@ -1001,7 +1099,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(update) cluster")
-	assert.True(t, compareGeneratedInstances(t, expectedOutput),
+	assertGeneratedInstancesAreExpected(t, expectedOutput,
 		"Instance file created during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_playbook_vcenter.yml"),
 		"Expected list of update playbooks are not executed")

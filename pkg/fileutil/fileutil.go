@@ -27,7 +27,7 @@ func SaveFile(file string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(file, bytes, os.ModePerm)
+	return ioutil.WriteFile(file, bytes, 0644)
 }
 
 //LoadFile loads object from file. suffix of filepath will be
