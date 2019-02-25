@@ -1,0 +1,25 @@
+instances:
+  xflow-node1:
+    ip: 1.2.3.4
+    provider: bms
+    roles:
+      appformix_flows:
+xflow_configuration:
+  docker_images_tar: /opt/xflow/xflow-1.4.0.tar.gz
+  xflow_license: /opt/xflow/xflow_license.sig
+  keepalived_shared_ip: 10.84.5.20
+  xflow_iface_public: enp2s0
+  xflow_iface_internal: enp2s0
+  clickhouse_retention_period_secs: 7200
+  kafka_volumes_host_path:
+  clickhouse_volumes_host_path:
+  kafka_replication_factor: 1
+  clickhouse_replication_factor: 1
+  xflow_base_distro: ubuntu
+  keystone_username: admin
+  keystone_domain_id: default
+  appformix_auth_type: openstack
+  docker_pull_images: false
+  xflow_log_level: info
+  kafka_flows_topic_retention_ms: 7200000
+  apiserver_allowed_origins: ["*"]
