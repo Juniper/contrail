@@ -77,7 +77,7 @@ func TestObjectMappingAdapterCreate(t *testing.T) {
 
 func TestObjectMappingAdapterRefCreate(t *testing.T) {
 	resourceName, correctPK, props := "ref_from_to", []string{"1", "2"}, map[string]interface{}{}
-	fields := types.FieldMask{[]string{"ref_from_to"}}
+	fields := types.FieldMask{Paths: []string{"ref_from_to"}}
 	referenceName := "from-to"
 	attr := &dummyMessage{}
 
