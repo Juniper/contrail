@@ -100,6 +100,7 @@ const (
 	defaultAppformixOpenstackNodeResPath  = "/" + defaultAppformixOpenstackNodeRes
 	defaultAppformixComputeNodeRes        = "appformix-compute-node"
 	defaultAppformixComputeNodeResPath    = "/" + defaultAppformixComputeNodeRes
+	defaultXflowDir                       = "xflow/"
 
 	defaultFilePermRWOnly = 0600
 
