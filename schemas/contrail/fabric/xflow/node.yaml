@@ -1,0 +1,18 @@
+description: Appformix flows node
+api_style: contrail
+title: Appformix flows node
+extends:
+- base
+id: appformix_flows_node
+plural: appformix_flows_nodes
+prefix: /
+parents:
+  appformix_flows:
+    operation: CRUD
+    description: Appformix flows node
+    presence: optional
+references:
+  node:
+    description: Appformix flows Node
+schema:
+  properties:
