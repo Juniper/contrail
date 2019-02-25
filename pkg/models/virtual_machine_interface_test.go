@@ -122,3 +122,46 @@ func TestVirtualMachineInterfaceApplyMap(t *testing.T) {
 		})
 	}
 }
+
+func TestVirtualMachineInterface_GetMacAddressesType(t *testing.T) {
+	tests := []struct {
+		name                                string
+		UUID                                string
+		VirtualMachineInterfaceMacAddresses *MacAddressesType
+		want                                *MacAddressesType
+		fails                               bool
+	}{
+		{name: "empty", fails: true},
+		{
+			name:                                "mac in mac addresses type with colons",
+			VirtualMachineInterfaceMacAddresses: &MacAddressesType{MacAddress: []string{"be:ef:be:ef:be:ef"}},
+			want:                                &MacAddressesType{MacAddress: []string{"be:ef:be:ef:be:ef"}},
+		},
+		{
+			name:                                "mac in mac addresses type with dashes",
+			VirtualMachineInterfaceMacAddresses: &MacAddressesType{MacAddress: []string{"be-ef-be-ef-be-ef"}},
+			want:                                &MacAddressesType{MacAddress: []string{"be:ef:be:ef:be:ef"}},
+		},
+		{
+			name: "mac from uuid",
+			UUID: "01234567890",
+			want: &MacAddressesType{MacAddress: []string{"02:01:23:45:67:90"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &VirtualMachineInterface{
+				UUID:                                tt.UUID,
+				VirtualMachineInterfaceMacAddresses: tt.VirtualMachineInterfaceMacAddresses,
+			}
+			got, err := m.GetMacAddressesType()
+
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
+			}
+		})
+	}
+}

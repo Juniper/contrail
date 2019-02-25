@@ -2,8 +2,6 @@ package types
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/pkg/errors"
 
@@ -27,6 +25,7 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 ) (*services.CreateVirtualMachineInterfaceResponse, error) {
 	var response *services.CreateVirtualMachineInterfaceResponse
 	vmi := request.GetVirtualMachineInterface()
+
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
@@ -38,8 +37,12 @@ func (sv *ContrailTypeLogicService) CreateVirtualMachineInterface(
 
 			//TODO further validation
 
-			vmi.VirtualMachineInterfaceMacAddresses, err = calculateMacAddresses(vmi)
+			vmi.VirtualMachineInterfaceMacAddresses, err = vmi.GetMacAddressesType()
 			if err != nil {
+				return err
+			}
+
+			if err = sv.checkVirtualMachineInterfaceServiceHealthCheckType(ctx, nil, vmi); err != nil {
 				return err
 			}
 
@@ -64,24 +67,30 @@ func (sv *ContrailTypeLogicService) UpdateVirtualMachineInterface(
 	ctx context.Context, request *services.UpdateVirtualMachineInterfaceRequest,
 ) (*services.UpdateVirtualMachineInterfaceResponse, error) {
 	var response *services.UpdateVirtualMachineInterfaceResponse
-	updatedVmi := request.GetVirtualMachineInterface()
+	newVMI := request.GetVirtualMachineInterface()
 	fm := request.GetFieldMask()
 
 	err := sv.InTransactionDoer.DoInTransaction(
 		ctx,
 		func(ctx context.Context) error {
 			vmiResp, err := sv.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{
-				ID: updatedVmi.GetUUID(),
+				ID: newVMI.GetUUID(),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "can't read virtual machine interface from database")
 			}
-			vmi := vmiResp.GetVirtualMachineInterface()
-			kvps := vmi.GetVirtualMachineInterfaceBindings()
+			oldVMI := vmiResp.GetVirtualMachineInterface()
+			kvps := oldVMI.GetVirtualMachineInterfaceBindings()
 
 			if basemodels.FieldMaskContains(&fm, models.VirtualMachineInterfaceFieldVirtualMachineRefs) &&
 				kvps.GetValue(vnicKeyName) == vnicTypeDirect {
-				if err = sv.updateVirtualRouterToVirtualMachinesRefLinks(ctx, vmi, updatedVmi); err != nil {
+				if err = sv.updateVirtualRouterToVirtualMachinesRefLinks(ctx, oldVMI, newVMI); err != nil {
+					return err
+				}
+			}
+
+			if basemodels.FieldMaskContains(&fm, models.VirtualMachineInterfaceFieldServiceHealthCheckRefs) {
+				if err = sv.checkVirtualMachineInterfaceServiceHealthCheckType(ctx, oldVMI, newVMI); err != nil {
 					return err
 				}
 			}
@@ -150,26 +159,51 @@ func (sv *ContrailTypeLogicService) getVirtualNetworkFromVirtualMachineInterface
 	return response.GetVirtualNetwork(), nil
 }
 
-func calculateMacAddresses(vmi *models.VirtualMachineInterface) (*models.MacAddressesType, error) {
-	addrs := len(vmi.GetVirtualMachineInterfaceMacAddresses().GetMacAddress())
-
-	if addrs == 1 {
-		oldMacAddress := vmi.VirtualMachineInterfaceMacAddresses.GetMacAddress()[0]
-		newMacAddress := strings.Replace(oldMacAddress, "-", ":", -1)
-		return &models.MacAddressesType{
-			MacAddress: []string{newMacAddress},
-		}, nil
+func (sv *ContrailTypeLogicService) checkVirtualMachineInterfaceServiceHealthCheckType(
+	ctx context.Context, oldVMI, newVMI *models.VirtualMachineInterface,
+) error {
+	if len(newVMI.GetPortTupleRefs()) > 0 {
+		return nil
+	}
+	if len(oldVMI.GetPortTupleRefs()) > 0 {
+		return nil
 	}
 
-	uuid := vmi.GetUUID()
-	if len(uuid) < 11 {
-		return nil, errutil.ErrorBadRequestf("could not generate mac address: vn uuid (%v) too short", uuid)
+	for _, shcRef := range newVMI.GetServiceHealthCheckRefs() {
+		if err := sv.fillUUIDFieldInRef(ctx, shcRef); err != nil {
+			return err
+		}
+		shcProps, err := sv.getServiceHealthCheckProperties(ctx, shcRef.GetUUID())
+		if err != nil {
+			return err
+		}
+		if shcProps.GetHealthCheckType() != models.ServiceHealthCheckLinkLocalType {
+			return errutil.ErrorBadRequestf(
+				"Virtual machine interface(%s) of non service vm can only refer link-local type service health check",
+				newVMI.GetUUID(),
+			)
+		}
 	}
 
-	macAddress := fmt.Sprintf("02:%s:%s:%s:%s:%s", uuid[0:2], uuid[2:4], uuid[4:6], uuid[6:8], uuid[9:11])
-	return &models.MacAddressesType{
-		MacAddress: []string{macAddress},
-	}, nil
+	return nil
+}
+
+func (sv *ContrailTypeLogicService) getServiceHealthCheckProperties(
+	ctx context.Context, uuid string,
+) (*models.ServiceHealthCheckType, error) {
+
+	response, err := sv.ReadService.GetServiceHealthCheck(
+		ctx,
+		&services.GetServiceHealthCheckRequest{
+			ID:     uuid,
+			Fields: []string{models.ServiceHealthCheckFieldServiceHealthCheckProperties},
+		},
+	)
+	if err != nil {
+		return nil, errutil.ErrorBadRequestf("missing service-health-check with uuid %s: %v", uuid, err)
+	}
+
+	return response.GetServiceHealthCheck().GetServiceHealthCheckProperties(), nil
 }
 
 func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInterface(
@@ -196,7 +230,7 @@ func (sv *ContrailTypeLogicService) createRoutingInstanceRefForVirtualMachineInt
 }
 
 func (sv *ContrailTypeLogicService) updateVirtualRouterToVirtualMachinesRefLinks(
-	ctx context.Context, vmi *models.VirtualMachineInterface, updatedVmi *models.VirtualMachineInterface,
+	ctx context.Context, vmi *models.VirtualMachineInterface, newVMI *models.VirtualMachineInterface,
 ) error {
 	vRouterUUID, err := sv.getVRouterUUID(ctx, vmi.GetVirtualMachineInterfaceBindings())
 	if err != nil {
@@ -207,7 +241,7 @@ func (sv *ContrailTypeLogicService) updateVirtualRouterToVirtualMachinesRefLinks
 	}
 
 	vmRefs := vmi.GetVirtualMachineRefs()
-	updatedVMRefs := updatedVmi.GetVirtualMachineRefs()
+	updatedVMRefs := newVMI.GetVirtualMachineRefs()
 
 	if len(vmRefs) == 0 && len(updatedVMRefs) == 0 {
 		return nil
