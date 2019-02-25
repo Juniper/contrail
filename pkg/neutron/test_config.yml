@@ -7,10 +7,6 @@ database:
   user: root
   password: contrail123
   name: contrail_test
-  # Postgres example
-  # connection: "user=root dbname=contrail_test sslmode=disable"
-  # type: pgx
-  # dialect: postgres
 
   # Max Open Connections for DB Server
   max_open_conn: 100
@@ -66,7 +62,7 @@ server:
   enable_grpc: true
 
   # Enable Neutron Service or not
-  enable_vnc_neutron: false
+  enable_vnc_neutron: true
 
   # Static file config
   # key: URL path
@@ -81,14 +77,6 @@ server:
   proxy:
     /contrail:
     - http://localhost:8082
-
-client:
-  id: alice
-  password: alice_password
-  project_id: admin
-  domain_id: default
-  schema_root: /public
-  endpoint: https://localhost:9091
 
 sync:
   storage: json

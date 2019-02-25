@@ -444,5 +444,5 @@ workflow:
   expect:
     *sg_create_response
 
-# TODO delete default Security group using FQName (when it will be implemented).
-# TODO delete created Security group using FQName. And then delete the project.
+# TODO delete created Security group using FQName (when it will be implemented),
+# then delete the project.
