@@ -14,17 +14,22 @@ import (
 )
 
 const (
-	allInOneCloudTemplatePath       = "./test_data/test_all_in_one_public_cloud.tmpl"
-	allInOneCloudDeleteTemplatePath = "./test_data/test_all_in_one_public_cloud_delete.tmpl"
-	allInOneCloudUpdateTemplatePath = "./test_data/test_all_in_one_public_cloud_update.tmpl"
-	expectedAZCmdForCreateUpdate    = "./test_data/expected_azure_cmd_for_create_update.yaml"
-	expectedAZTopology              = "./test_data/expected_azure_cloud_topology.yaml"
-	expectedAZSecret                = "./test_data/expected_azure_cloud_secret.yaml"
-	expectedAWSCmdForCreateUpdate   = "./test_data/expected_aws_cmd_for_create_update.yaml"
-	expectedAWSTopology             = "./test_data/expected_aws_cloud_topology.yaml"
-	expectedAWSSecret               = "./test_data/expected_aws_cloud_secret.yaml"
-	expectedPvtKey                  = "./test_data/cloud_keypair"
-	cloudID                         = "cloud_uuid"
+	allInOneCloudTemplatePath        = "./test_data/test_all_in_one_public_cloud.tmpl"
+	allInOneCloudDeleteTemplatePath  = "./test_data/test_all_in_one_public_cloud_delete.tmpl"
+	allInOneCloudUpdateTemplatePath  = "./test_data/test_all_in_one_public_cloud_update.tmpl"
+	expectedAZCmdForCreateUpdate     = "./test_data/expected_azure_cmd_for_create_update.yaml"
+	expectedAZTopology               = "./test_data/expected_azure_cloud_topology.yaml"
+	expectedAZSecret                 = "./test_data/expected_azure_cloud_secret.yaml"
+	expectedAWSCmdForCreateUpdate    = "./test_data/expected_aws_cmd_for_create_update.yaml"
+	expectedAWSTopology              = "./test_data/expected_aws_cloud_topology.yaml"
+	expectedAWSSecret                = "./test_data/expected_aws_cloud_secret.yaml"
+	expectedOnPremTopology           = "./test_data/expected_onprem_cloud_topology.yaml"
+	expectedOnPremSecret             = "./test_data/expected_onprem_cloud_secret.yaml"
+	expectedOnPremCmdForCreateUpdate = "./test_data/expected_onprem_cmd_for_create_update.yaml"
+	expectedPvtKey                   = "./test_data/cloud_keypair"
+	cloudID                          = "cloud_uuid"
+	defaultAdminUser                 = "admin"
+	defaultAdminPassword             = "contrail123"
 )
 
 var server *integration.APIServer
@@ -33,28 +38,28 @@ func TestMain(m *testing.M) {
 	integration.TestMain(m, &server)
 }
 
+func TestOnPremCloud(t *testing.T) {
+	context := pongo2.Context{
+		"CLOUD_TYPE": onPrem,
+	}
+	runCloudTest(t, expectedOnPremTopology, expectedOnPremSecret,
+		expectedOnPremCmdForCreateUpdate, context)
+}
 func TestAzureCloud(t *testing.T) {
-	runAllInOneCloudTest(t, azure)
+	context := pongo2.Context{
+		"CLOUD_TYPE": azure,
+	}
+	runCloudTest(t, expectedAZTopology, expectedAZSecret,
+		expectedAZCmdForCreateUpdate, context)
 }
 
 func TestAWSCloud(t *testing.T) {
-	runAllInOneCloudTest(t, aws)
-}
-
-func runAllInOneCloudTest(t *testing.T, cloudType string) {
-
 	context := pongo2.Context{
-		"CLOUD_TYPE": cloudType,
+		"CLOUD_TYPE": aws,
 	}
 
-	switch cloudType {
-	case azure:
-		runCloudTest(t, expectedAZTopology, expectedAZSecret,
-			expectedAZCmdForCreateUpdate, context)
-	case aws:
-		runCloudTest(t, expectedAWSTopology, expectedAWSSecret,
-			expectedAWSCmdForCreateUpdate, context)
-	}
+	runCloudTest(t, expectedAWSTopology, expectedAWSSecret,
+		expectedAWSCmdForCreateUpdate, context)
 }
 
 func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
@@ -62,9 +67,11 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
-	ksPublic := integration.MockServerWithKeystone("127.0.0.1:35357", keystoneAuthURL)
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:35357", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPublic.Close()
-	ksPrivate := integration.MockServerWithKeystone("127.0.0.1:5000", keystoneAuthURL)
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 
 	// create cloud related objects
@@ -85,7 +92,7 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 		InSecure:     true,
 		CloudID:      cloudID,
 		Action:       createAction,
-		LogLevel:     "debug",
+		LogLevel:     "info",
 		TemplateRoot: "configs/",
 		Test:         true,
 	}
@@ -110,6 +117,9 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 
 	assert.True(t, compareGeneratedTopology(t, expectedTopology),
 		"topology file created during cloud create is not as expected")
+	if context["CLOUD_TYPE"] == onPrem {
+		return
+	}
 	assert.True(t, compareGeneratedSecret(t, expectedSecret),
 		"secret file created during cloud create is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
