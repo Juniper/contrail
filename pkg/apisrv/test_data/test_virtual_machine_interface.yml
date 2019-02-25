@@ -2,6 +2,8 @@ name: Virtual Machine Interface test
 cleanup:
 - path: /virtual-network/vn_vmi_blue
 - path: /network-ipam/test_ipam_vmi_blue
+- path: /service-health-check/test_service_health_check_local
+- path: /service-health-check/test_service_health_check_segment
 - path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
 
 test_data:
@@ -47,6 +49,36 @@ test_data:
     network_ipam_refs:
       - uuid: test_ipam_vmi_blue
 
+  service_health_check_properties: &service_health_check_properties
+    timeout: 5
+    timeoutUsecs: 0
+    enabled: true
+    delay: 3
+    expected_codes: null
+    max_retries: 2
+    http_method: null
+    delayUsecs: 0
+    url_path: local-ip
+    monitor_type: PING
+
+  service_health_check_local: &service_health_check_local
+    uuid: test_service_health_check_local
+    name: local
+    parent_type: project
+    parent_uuid: admin_vmi_project_uuid
+    service_health_check_properties:
+      <<: *service_health_check_properties
+      health_check_type: link-local
+
+  service_health_check_segment: &service_health_check_segment
+    uuid: test_service_health_check_segment
+    name: segment
+    parent_type: project
+    parent_uuid: admin_vmi_project_uuid
+    service_health_check_properties:
+      <<: *service_health_check_properties
+      health_check_type: segment
+
 clients:
   default:
     id: alice
@@ -66,6 +98,26 @@ workflow:
       project: *admin_project_vmi
   expect:
     project: *admin_project_vmi
+
+- name: create service health check local
+  request:
+    path: /service-health-checks
+    method: POST
+    expected: [200]
+    data:
+      service-health-check: *service_health_check_local
+  expect:
+    service-health-check: *service_health_check_local
+
+- name: create service health check segment
+  request:
+    path: /service-health-checks
+    method: POST
+    expected: [200]
+    data:
+      service-health-check: *service_health_check_segment
+  expect:
+    service-health-check: *service_health_check_segment
 
 - name: create network ipam blue
   request:
@@ -95,6 +147,17 @@ workflow:
     data: *virtual_router_blue
 
 # Tests of Create operation
+- name: try to create VMI with ref to segment health check without port tuple ref
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [400]
+    data:
+      virtual-machine-interface:
+        <<: *vmi_base_setup
+        service_health_check_refs:
+          - uuid: test_service_health_check_segment
+
 - name: create virtual machine interface
   request:
     path: /virtual-machine-interfaces
@@ -161,6 +224,30 @@ workflow:
     virtual-machine-interface:
       <<: *vmi_base_setup
       display_name: "new name"
+
+- name: add ref to local service health check in virtual machine interface
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: PUT
+    expected: [200]
+    data:
+      virtual-machine-interface:
+        service_health_check_refs:
+          - uuid: test_service_health_check_local
+  expect:
+    virtual-machine-interface:
+      service_health_check_refs:
+        - uuid: test_service_health_check_local
+
+- name: add ref to segment service health check without port tuple
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: PUT
+    expected: [400]
+    data:
+      virtual-machine-interface:
+        service_health_check_refs:
+          - uuid: test_service_health_check_segment
 
 - name: delete virtual machine interface
   request:
@@ -362,6 +449,18 @@ workflow:
 - name: delete virtual network
   request:
     path: /virtual-network/vn_vmi_blue
+    method: DELETE
+    expected: [200]
+
+- name: delete service health check local
+  request:
+    path: /service-health-check/test_service_health_check_local
+    method: DELETE
+    expected: [200]
+
+- name: delete service health check segment
+  request:
+    path: /service-health-check/test_service_health_check_segment
     method: DELETE
     expected: [200]
 
