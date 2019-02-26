@@ -1,0 +1,16 @@
+---
+api_style: contrail
+id: svc_instance
+prefix: /neutron/
+type: request
+schema:
+  type: object
+  properties:
+    tenant_id:
+      type: string
+    name:
+      presence: optional
+      type: string
+    net_id:
+      presence: optional
+      type: string

@@ -39,7 +39,9 @@ func (s *Server) handleNeutronPostRequest(c echo.Context) error {
 	if err := format.ApplyMap(requestMap, &request); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("failed to apply map: '%s'", err))
 	}
-	if t := c.Param("type"); request.GetType() != t {
+
+	t := translateURL(c.Param("type"))
+	if request.GetType() != t {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid Resource type: '%s'", t))
 	}
 	request.Data.FieldMask = basemodels.MapToFieldMask(requestMap)
@@ -89,6 +91,14 @@ func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, 
 		logrus.WithError(err).WithField("request", r).Errorf("failed to handle")
 		return nil, err
 	}
+}
+
+func translateURL(url string) string {
+	switch url {
+	case "nat_instance":
+		return "svc_instance"
+	}
+	return url
 }
 
 type userAgentKVServer interface {
