@@ -1,6 +1,7 @@
-package collector
+package analytics
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,27 +23,31 @@ func (o *mockBaseObject) GetFQName() []string { return o.fqName }
 func TestMessageBusNotifyTrace(t *testing.T) {
 	tests := []struct {
 		name      string
+		requestID string
 		operation string
 		typeName  string
 		uuid      string
 		fqName    []string
 	}{
 		{
-			name:      "create MessageBusNotifyTrace message",
+			name:      "MessageBusNotifyTrace: create MessageBusNotifyTrace message",
+			requestID: "req-1",
 			operation: "create",
 			typeName:  "project",
 			uuid:      "created_project_uuid",
 			fqName:    []string{"default-domain", "default-project"},
 		},
 		{
-			name:      "update MessageBusNotifyTrace message",
+			name:      "MessageBusNotifyTrace: update MessageBusNotifyTrace message",
+			requestID: "req-2",
 			operation: "update",
 			typeName:  "project",
 			uuid:      "updated_project_uuid",
 			fqName:    []string{"default-domain", "default-project"},
 		},
 		{
-			name:      "delete MessageBusNotifyTrace message",
+			name:      "MessageBusNotifyTrace: delete MessageBusNotifyTrace message",
+			requestID: "458978934",
 			operation: "delete",
 			typeName:  "project",
 			uuid:      "deleted_project_uuid",
@@ -51,14 +56,14 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run("MessageBusNotifyTrace", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			obj := &mockBaseObject{
 				typeName: tt.typeName,
 				uuid:     tt.uuid,
 				fqName:   tt.fqName,
 			}
 
-			messageBuilder := MessageBusNotifyTrace(tt.operation, obj)
+			messageBuilder := MessageBusNotifyTrace(context.Background(), tt.operation, obj)
 			assert.NotNil(t, messageBuilder)
 			message := messageBuilder.Build()
 			assert.Nil(t, message)
@@ -76,7 +81,7 @@ func TestMessageBusNotifyTrace(t *testing.T) {
 			assert.Equal(t, m.Body.Type, tt.typeName)
 			assert.Equal(t, m.Body.UUID, tt.uuid)
 			assert.Equal(t, m.Body.FQName, tt.fqName)
-			assert.True(t, strings.HasPrefix(m.RequestID, "req-"))
+			assert.Equal(t, m.RequestID, tt.requestID)
 			assert.Equal(t, m.RequestID, m.Body.RequestID)
 			*/
 		})

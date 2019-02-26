@@ -23,6 +23,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/discovery"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/collector"
+	"github.com/Juniper/contrail/pkg/collector/analytics"
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/db/cache"
@@ -163,6 +164,7 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 		IntPoolAllocator:   s.DBService,
 		RefRelaxer:         s.DBService,
 		UserAgentKVService: s.DBService,
+		Collector:          s.Collector,
 	}
 
 	cs.RegisterRESTAPI(s.Echo)
@@ -456,19 +458,19 @@ func (s *Server) setupActionResources(cs *services.ContrailService) {
 }
 
 func (s *Server) setupCollector() error {
-	cfg := &collector.Config{}
+	cfg := &analytics.Config{}
 	var err error
 	if err = viper.UnmarshalKey("collector", cfg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal collector config")
 	}
-	if s.Collector, err = collector.NewCollector(cfg); err != nil {
+	if s.Collector, err = analytics.NewCollector(cfg); err != nil {
 		return errors.Wrap(err, "failed to create collector")
 	}
-	collector.AddLoggerHook(s.Collector)
+	analytics.AddLoggerHook(s.Collector)
 	s.Echo.Use(middleware.BodyDump(func(
 		ctx echo.Context, reqBody, resBody []byte,
 	) {
-		s.Collector.Send(collector.RESTAPITrace(ctx, reqBody, resBody))
+		s.Collector.Send(analytics.RESTAPITrace(ctx, reqBody, resBody))
 	}))
 	return nil
 }
