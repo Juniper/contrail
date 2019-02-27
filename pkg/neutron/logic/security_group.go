@@ -160,7 +160,7 @@ func (sg *SecurityGroup) ReadAll(
 		return nil, newSecurityGroupError(err, "error while processing default security_group. ")
 	}
 
-	sgs, err := sg.getSecurityGroupsFromDB(ctx, rp, f)
+	sgs, err := listSecurityGroups(ctx, rp, f)
 	if err != nil {
 		return nil, newSecurityGroupError(err, "can't read security groups from database")
 	}
@@ -218,33 +218,11 @@ func (sg *SecurityGroup) createDefaultSecurityGroup(
 	return err
 }
 
-func (sg *SecurityGroup) getSecurityGroupsFromDB(
-	ctx context.Context, rp RequestParameters, f Filters,
+func listSecurityGroups(
+	ctx context.Context, rp RequestParameters, filter Filters,
 ) ([]*models.SecurityGroup, error) {
-	var securityGroupUUIDS []string
-	var securityGroupTenantUUID []string
-
-	if ids, ok := f["id"]; ok {
-		securityGroupUUIDS = ids
-	}
-
-	if !rp.RequestContext.IsAdmin {
-		securityGroupTenantUUID = []string{rp.RequestContext.Tenant}
-	}
-
-	if projectIDs, ok := f["tenant_id"]; ok {
-		securityGroupTenantUUID = projectIDs
-	}
-
-	return sg.listSecurityGroups(ctx, rp, securityGroupUUIDS, securityGroupTenantUUID)
-}
-
-func (sg *SecurityGroup) listSecurityGroups(
-	ctx context.Context, rp RequestParameters, uuids []string, tenantUUIDs []string,
-) ([]*models.SecurityGroup, error) {
-
 	var parentUUIDs []string
-	for _, uuid := range tenantUUIDs {
+	for _, uuid := range getFilterProjectIDS(ctx, rp, filter) {
 		vncUUID, err := neutronIDToVncUUID(uuid)
 		parentUUIDs = append(parentUUIDs, vncUUID)
 		if err != nil {
@@ -256,7 +234,7 @@ func (sg *SecurityGroup) listSecurityGroups(
 		ctx,
 		&services.ListSecurityGroupRequest{
 			Spec: &baseservices.ListSpec{
-				ObjectUUIDs: uuids,
+				ObjectUUIDs: filter[SecurityGroupFieldID],
 				ParentUUIDs: parentUUIDs,
 				Detail:      true,
 			},
@@ -264,6 +242,13 @@ func (sg *SecurityGroup) listSecurityGroups(
 	)
 
 	return sgResponse.GetSecurityGroups(), err
+}
+
+func getFilterProjectIDS(ctx context.Context, rp RequestParameters, f Filters) []string {
+	if !rp.RequestContext.IsAdmin {
+		return []string{rp.RequestContext.Tenant}
+	}
+	return f[tenantIDKey]
 }
 
 func (sg *SecurityGroup) convertVncSecurityGroupsToNeutron(
