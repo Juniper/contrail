@@ -2,6 +2,11 @@ name: Test Neutron Router
 description: |
   Integration test for neutron router endpoint.
 
+cleanup:
+- path: /logical-router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+- path: /virtual-network/eeee7a2e-94f2-44a7-a879-e812e072feef
+- path: /project/fc73d84f-b578-44d8-9cea-3e76f0493e81
+
 clients:
   default:
     id: alice
@@ -11,7 +16,75 @@ clients:
       project:
         name: admin
 
+test_data:
+  project: &project
+    uuid: fc73d84f-b578-44d8-9cea-3e76f0493e81
+    name: neutron_router_admin_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  context: &context
+    user_id: 9bd9578b25844d1ea74ddf59d2c6de8a
+    roles:
+    - admin
+    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    is_admin: true
+    tenant: fc73d84fb57844d89cea3e76f0493e81
+
+  create_router_request_resource: &create_router_request_resource
+    # Note: id is not passed in the sanity test.
+    id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+    external_gateway_info:
+    description: ''
+    admin_state_up: true
+    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    project_id: fc73d84fb57844d89cea3e76f0493e81
+    name: ctest-router1-27286582
+
+  router_response: &router_response
+    status: ACTIVE
+    external_gateway_info:
+    fq_name:
+    - default-domain
+    - neutron_router_admin_project
+    - ctest-router1-27286582
+    name: ctest-router1-27286582
+    gw_port_id:
+    admin_state_up: true
+    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    # TODO: IDPerms.{Created,LastModified} aren't filled on creation.
+    #created_at: $datetime_iso
+    #updated_at: $datetime_iso
+    shared: false
+    id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+    description: ''
+
+  expected_logical_router: &expected_logical_router
+    uuid: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+    parent_uuid: fc73d84f-b578-44d8-9cea-3e76f0493e81
+    parent_type: project
+    name: ctest-router1-27286582
+    display_name: ctest-router1-27286582
+    fq_name:
+    - default-domain
+    - neutron_router_admin_project
+    - ctest-router1-27286582
+    id_perms:
+      enable: true
+
 workflow:
+- name: Create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *project
+  expect:
+    project: *project
+
 - name: Router read all
   request:
     path: /neutron/router
@@ -22,16 +95,270 @@ workflow:
         fields: []
         filters:
           tenant_id:
-          - 8cdb5412f5974b38a69f2f9d1ae969b7
+          - fc73d84fb57844d89cea3e76f0493e81
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        <<: *context
         roles:
         - heat_stack_owner
         - admin
-        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
-        is_admin: true
         request_id: req-4de97c6b-9db7-4ada-9008-7083ec6f3ded
         operation: READALL
         type: router
-        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
   expect: []
+
+- name: Create router
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          *create_router_request_resource
+        filters:
+      context:
+        <<: *context
+        request_id: req-509281de-2e5f-4ce9-a682-06cb05916a70
+        operation: CREATE
+        type: router
+  expect:
+    *router_response
+
+- name: Check the created logical router
+  request:
+    path: /logical-router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+    method: GET
+    expected: [200]
+  expect:
+    logical-router:
+      *expected_logical_router
+
+- name: Read router, specifying all the fields
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        - status
+        - fq_name
+        - tenant_id
+        - tags
+        - project_id
+        - id
+        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        filters:
+      context:
+        <<: *context
+        request_id: req-a948a397-a7b9-46a4-893f-ab64f4486f35
+        operation: READ
+        type: router
+  expect:
+    *router_response
+
+- name: Create network
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          # Note: id is not passed in the sanity test.
+          id: eeee7a2e-94f2-44a7-a879-e812e072feef
+          router:external: true
+          description: ''
+          tenant_id: fc73d84fb57844d89cea3e76f0493e81
+          admin_state_up: true
+          policys: ''
+          vpc:route_table: ''
+          shared: false
+          port_security_enabled: true
+          project_id: fc73d84fb57844d89cea3e76f0493e81
+          name: ctest-ext_vn-18679439
+        filters:
+      context:
+        <<: *context
+        request_id: req-e745949a-064b-4611-b99e-d1fe8932223d
+        operation: CREATE
+        type: network
+  expect:
+    status: ACTIVE
+    router:external: true
+    subnets: []
+    fq_name:
+    - default-domain
+    - neutron_router_admin_project
+    - ctest-ext_vn-18679439
+    name: ctest-ext_vn-18679439
+    admin_state_up: true
+    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    created_at:
+    updated_at:
+    port_security_enabled: true
+    shared: false
+    project_id: fc73d84fb57844d89cea3e76f0493e81
+    id: eeee7a2e-94f2-44a7-a879-e812e072feef
+    description: ''
+
+- name: Update router external gateway
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          external_gateway_info:
+            network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        filters:
+      context:
+        <<: *context
+        request_id: req-d8becf44-d071-44ae-a3ee-7ba1502dafaf
+        operation: UPDATE
+        type: router
+  expect:
+    <<: *router_response
+    external_gateway_info:
+      network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+      enable_snat: true
+
+- name: Check the updated logical router
+  request:
+    path: /logical-router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+    method: GET
+    expected: [200]
+  expect:
+    logical-router:
+      <<: *expected_logical_router
+      virtual_network_refs:
+      - uuid: eeee7a2e-94f2-44a7-a879-e812e072feef
+
+- name: Read router without specifying fields
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        filters:
+      context:
+        <<: *context
+        request_id: req-a948a397-a7b9-46a4-893f-ab64f4486f35
+        operation: READ
+        type: router
+  expect:
+    <<: *router_response
+    external_gateway_info:
+      network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+      enable_snat: true
+
+# TODO: POST /neutron/router with ADDINTERFACE
+# TODO: POST /neutron/router with READ
+# TODO: POST /neutron/router with DELINTERFACE
+
+- name: Delete router
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        filters:
+      context:
+        <<: *context
+        request_id: req-bb7afe67-8806-4e47-ad5c-ee1a63416f5c
+        operation: DELETE
+        type: router
+  expect: null
+
+- name: Create router with external gateway
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          <<: *create_router_request_resource
+          external_gateway_info:
+            network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+            enable_snat: true
+        filters:
+      context:
+        <<: *context
+        request_id: req-1bed8c5b-9971-48c7-914f-bc9e2056dc72
+        operation: CREATE
+        type: router
+  expect:
+    <<: *router_response
+    external_gateway_info:
+      network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+      enable_snat: true
+
+- name: Check the created logical router's virtual network refs
+  request:
+    path: /logical-router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+    method: GET
+    expected: [200]
+  expect:
+    logical-router:
+      <<: *expected_logical_router
+      virtual_network_refs:
+      - uuid: eeee7a2e-94f2-44a7-a879-e812e072feef
+
+- name: Delete router (again)
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        filters:
+      context:
+        <<: *context
+        request_id: req-9f455d95-f336-4125-be48-42b603051f43
+        operation: DELETE
+        type: router
+  expect: null
+
+- name: Delete network
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: eeee7a2e-94f2-44a7-a879-e812e072feef
+        filters:
+      context:
+        <<: *context
+        request_id: req-36c2ed1d-9fe5-4b21-b647-8dd6039f60e0
+        operation: DELETE
+        type: network
+  expect: null
+
+- name: Check that the logical-router has been deleted
+  request:
+    path: /logical-router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+    method: GET
+    expected: [404]
+
+- name: Delete project
+  request:
+    path: /project/fc73d84f-b578-44d8-9cea-3e76f0493e81
+    method: DELETE
+    expected: [200]
