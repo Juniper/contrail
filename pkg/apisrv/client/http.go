@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -165,12 +166,14 @@ func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end 
 
 // GetIntOwner sends a get int pool owner request to remote int-owner.
 func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (string, error) {
-	request := services.GetIntOwnerRequest{Pool: pool, Value: value}
+	q := make(url.Values)
+	q.Set("pool", pool)
+	q.Set("value", strconv.FormatInt(value, 10))
 	var output struct {
 		Owner string `json:"owner"`
 	}
 	expected := []int{http.StatusOK}
-	_, err := h.Do(ctx, echo.GET, "/"+services.IntPoolPath, nil, &request, &output, expected)
+	_, err := h.Do(ctx, echo.GET, "/"+services.IntPoolPath, q, nil, &output, expected)
 	return output.Owner, errors.Wrap(err, "error getting int pool owner via HTTP")
 }
 
