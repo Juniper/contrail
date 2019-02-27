@@ -445,4 +445,4 @@ workflow:
     *sg_create_response
 
 # TODO delete created Security group using FQName (when it will be implemented),
-# then delete the project.
+# then delete the project, now we can't because of security are still attached
