@@ -1,0 +1,146 @@
+name: Security Group Rules Test
+description: security group rules test
+cleanup:
+- path: /project/bee123ef-b2ad-4a15-896b-4011cb4d00b3
+
+test_data:
+  project: &project
+    uuid: bee123ef-b2ad-4a15-896b-4011cb4d00b3
+    name: neutron_security_group_rule_admin_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  default_security_group_rules: &default_security_group_rules
+    - remote_group_id: $uuid
+      direction: ingress
+      remote_ip_prefix:
+      protocol: any
+      ethertype: IPv4
+      port_range_max: 65535
+      updated_at: ""
+      security_group_id: $uuid
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      created_at: ""
+      id: $uuid
+    - remote_group_id: $uuid
+      direction: ingress
+      remote_ip_prefix:
+      protocol: any
+      ethertype: IPv6
+      port_range_max: 65535
+      updated_at: ""
+      security_group_id: $uuid
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      created_at: ""
+      id: $uuid
+    - remote_group_id: ""
+      direction: egress
+      remote_ip_prefix: 0.0.0.0/0
+      protocol: any
+      ethertype: IPv4
+      port_range_max: 65535
+      updated_at: ""
+      security_group_id: $uuid
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      created_at: ""
+      id: $uuid
+    - remote_group_id: ""
+      direction: egress
+      remote_ip_prefix: "::/0"
+      protocol: any
+      ethertype: IPv6
+      port_range_max: 65535
+      updated_at: ""
+      security_group_id: $uuid
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      created_at: ""
+      id: $uuid
+
+  sgr_request_bare_minimum_request: &sgr_request_bare_minimum_request
+    data:
+      fields: []
+    context:
+      roles:
+        - admin
+      is_admin: true
+      operation: READALL
+      type: security_group_rule
+
+  sgr_request_no_admin: &sgr_request_no_admin
+    data:
+      fields: []
+    context:
+      operation: READALL
+      type: security_group_rule
+
+  sgr_readall_request: &sgr_readall_request
+    data:
+      fields: []
+      filters:
+        tenant_id:
+          - bee123efb2ad4a15896b4011cb4d00b3
+    context:
+      user_id: 87e9e49b21e547baac78b6d81430aa9b
+      roles:
+        - admin
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      is_admin: true
+      request_id: req-bf656685-7960-4f7c-9239-5d2f20d3fb4b
+      operation: READALL
+      type: security_group_rule
+      tenant: bee123efb2ad4a15896b4011cb4d00b3
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project
+  expect:
+    project: *project
+
+- name: readall security group rules with minimal parameter set
+  request:
+    path: /neutron/security_group_rule
+    method: POST
+    expected: [200]
+    data: *sgr_request_bare_minimum_request
+  expect: *default_security_group_rules
+
+- name: readall security group rules for non admin user
+  request:
+    path: /neutron/security_group_rule
+    method: POST
+    expected: [200]
+    data: *sgr_request_no_admin
+  expect: []
+
+- name: read default security group rules using request from sanity tests
+  request:
+    path: /neutron/security_group_rule
+    method: POST
+    expected: [200]
+    data: *sgr_readall_request
+  expect: *default_security_group_rules
+
+- name: Delete project
+  request:
+    path: /project/bee123ef-b2ad-4a15-896b-4011cb4d00b3
+    method: DELETE
+    expected: [200]
