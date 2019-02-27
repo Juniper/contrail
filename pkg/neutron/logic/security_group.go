@@ -160,7 +160,7 @@ func (sg *SecurityGroup) ReadAll(
 		return nil, newSecurityGroupError(err, "error while processing default security_group. ")
 	}
 
-	sgs, err := sg.getSecurityGroupsFromDB(ctx, rp, f)
+	sgs, err := sg.listSecurityGroups(ctx, rp, f)
 	if err != nil {
 		return nil, newSecurityGroupError(err, "can't read security groups from database")
 	}
@@ -218,33 +218,23 @@ func (sg *SecurityGroup) createDefaultSecurityGroup(
 	return err
 }
 
-func (sg *SecurityGroup) getSecurityGroupsFromDB(
-	ctx context.Context, rp RequestParameters, f Filters,
-) ([]*models.SecurityGroup, error) {
-	var securityGroupUUIDS []string
-	var securityGroupTenantUUID []string
-
-	if ids, ok := f["id"]; ok {
-		securityGroupUUIDS = ids
-	}
-
+func (*SecurityGroup) getProjectIDS(ctx context.Context, rp RequestParameters, f Filters) []string {
 	if !rp.RequestContext.IsAdmin {
-		securityGroupTenantUUID = []string{rp.RequestContext.Tenant}
+		return []string{rp.RequestContext.Tenant}
 	}
 
 	if projectIDs, ok := f["tenant_id"]; ok {
-		securityGroupTenantUUID = projectIDs
+		return projectIDs
 	}
 
-	return sg.listSecurityGroups(ctx, rp, securityGroupUUIDS, securityGroupTenantUUID)
+	return []string{}
 }
 
 func (sg *SecurityGroup) listSecurityGroups(
-	ctx context.Context, rp RequestParameters, uuids []string, tenantUUIDs []string,
+	ctx context.Context, rp RequestParameters, f Filters,
 ) ([]*models.SecurityGroup, error) {
-
 	var parentUUIDs []string
-	for _, uuid := range tenantUUIDs {
+	for _, uuid := range sg.getProjectIDS(ctx, rp, f) {
 		vncUUID, err := neutronIDToVncUUID(uuid)
 		parentUUIDs = append(parentUUIDs, vncUUID)
 		if err != nil {
@@ -252,11 +242,16 @@ func (sg *SecurityGroup) listSecurityGroups(
 		}
 	}
 
+	var securityGroupUUIDS []string
+	if ids, ok := f["id"]; ok {
+		securityGroupUUIDS = ids
+	}
+
 	sgResponse, err := rp.ReadService.ListSecurityGroup(
 		ctx,
 		&services.ListSecurityGroupRequest{
 			Spec: &baseservices.ListSpec{
-				ObjectUUIDs: uuids,
+				ObjectUUIDs: securityGroupUUIDS,
 				ParentUUIDs: parentUUIDs,
 				Detail:      true,
 			},
