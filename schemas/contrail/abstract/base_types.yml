@@ -106,10 +106,10 @@ definitions:
     type: object
     properties:
       uuid_mslong:
-        type: integer
+        type: "uint64"
         proto_type: "uint64"
         go_type: "uint64"
       uuid_lslong:
-        type: integer
+        type: "uint64"
         proto_type: "uint64"
         go_type: "uint64"

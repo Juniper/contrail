@@ -3,6 +3,7 @@ package integration
 // TODO(Michał): Split this file and refactor some functions.
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -389,7 +390,9 @@ func createWatchChecker(task string, collect func() []string, key string, events
 			c := collected[i]
 			var data interface{} = map[string]interface{}{}
 			if len(c) > 0 {
-				err := json.Unmarshal([]byte(c), &data)
+				d := json.NewDecoder(bytes.NewReader([]byte(c)))
+				d.UseNumber()
+				err := d.Decode(&data)
 				assert.NoError(t, err)
 			}
 			testutil.AssertEqual(t, e.Data, data, fmt.Sprintf("task: %s\netcd event not equal for %s[%v]", task, key, i))
