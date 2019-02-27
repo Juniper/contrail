@@ -1,0 +1,137 @@
+name: Virtual Network Test
+description: basic virtual network test
+cleanup:
+  - path: /virtual-network/dfa1e2b9-a200-4263-a431-d85b2dbfb2e3
+  - path: /virtual-network/93458d3c-e3bd-461b-b2f7-18d8d3273044
+  - path: /project/ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+
+test_data:
+  admin_project: &admin_project
+    fq_name:
+      - default
+      - ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+    uuid: ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  vn_blue: &vn_blue
+  # wrong because of negative uuid_lslong and uuid_mslong
+    fq_name:
+      - default
+      - ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+      - aafe1c76-98d3-4e69-8cf8-8814bfc2586b
+    uuid: aafe1c76-98d3-4e69-8cf8-8814bfc2586b
+    display_name: blue
+    parent_type: project
+    parent_uuid: ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+    id_perms:
+      uuid:
+        uuid_lslong: -6924440694687329815
+        uuid_mslong: -8781174687101797614
+
+  vn_red: &vn_red
+    fq_name:
+      - default
+      - ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+      - dfa1e2b9-a200-4263-a431-d85b2dbfb2e3
+    uuid: dfa1e2b9-a200-4263-a431-d85b2dbfb2e3
+    display_name: red
+    parent_type: project
+    parent_uuid: ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+    id_perms:
+      uuid:
+        uuid_lslong: 11831475582200165091
+        uuid_mslong: 16114410228623098467
+
+  vn_green: &vn_green
+    fq_name:
+      - default
+      - ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+      - 93458d3c-e3bd-461b-b2f7-18d8d3273044
+    uuid: 93458d3c-e3bd-461b-b2f7-18d8d3273044
+    display_name: red
+    parent_type: project
+    parent_uuid: ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+  - name: create project admin
+    request:
+      path: /projects
+      method: POST
+      expected:
+        - 200
+      data:
+        project: *admin_project
+    expect:
+      project: *admin_project
+
+  - name: create resource with negative int64 id_perms uuids should fail
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 400
+      data:
+        virtual-network: *vn_blue
+    expect: null
+
+  - name: create resource with uint64 id_perms uuids should success
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 200
+      data:
+        virtual-network: *vn_red
+    expect:
+        virtual-network: *vn_red
+
+  - name: create resource without id_perms should be created
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 200
+      data:
+        virtual-network: *vn_green
+    expect:
+      virtual-network:
+        <<: *vn_green
+        id_perms:
+          uuid:
+            uuid_lslong: 12895803377533268036
+            uuid_mslong: 10612043389626828315
+
+  - name: delete virtual network red
+    request:
+      path: /virtual-network/dfa1e2b9-a200-4263-a431-d85b2dbfb2e3
+      method: DELETE
+      expected:
+        - 200
+    expect: null
+
+  - name: delete virtual network green
+    request:
+      path: /virtual-network/93458d3c-e3bd-461b-b2f7-18d8d3273044
+      method: DELETE
+      expected:
+        - 200
+    expect: null
+
+  - name: delete project admin
+    request:
+      path: /project/ed897d2e-7138-47b4-9a16-5cdb5f2b3b49
+      method: DELETE
+      expected:
+        - 200
+    expect: null

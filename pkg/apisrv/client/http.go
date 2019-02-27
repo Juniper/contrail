@@ -249,8 +249,9 @@ func (h *HTTP) Do(ctx context.Context,
 		return resp, errorFromResponse(err, resp)
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&output)
-	if err == io.EOF {
+	d := json.NewDecoder(resp.Body)
+	d.UseNumber()
+	if err = d.Decode(&output); err == io.EOF {
 		return resp, nil
 	} else if err != nil {
 		return resp, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
