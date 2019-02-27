@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gogo/protobuf/types"
@@ -365,13 +366,21 @@ func (service *ContrailService) RESTGetIntOwner(c echo.Context) error {
 	if !auth.GetAuthCTX(ctx).IsAdmin() {
 		return errutil.ToHTTPError(errutil.ErrorPermissionDenied)
 	}
-
-	data := &GetIntOwnerRequest{}
-	if err := c.Bind(&data); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
+	aValue := c.QueryParam("value")
+	if aValue == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request: missing value for getting int owner")
 	}
-
-	response, err := service.GetIntOwner(ctx, data)
+	iValue, err := strconv.Atoi(aValue)
+	if err != nil || iValue < 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid request: invalid value (%v) for getting int owner", aValue))
+	}
+	value := int64(iValue)
+	pool := c.QueryParam("pool")
+	if pool == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request: missing pool name for getting int owner")
+	}
+	data := GetIntOwnerRequest{Pool: pool, Value: value}
+	response, err := service.GetIntOwner(ctx, &data)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
