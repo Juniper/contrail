@@ -28,6 +28,31 @@ const (
 	protocolMaxValue              = 255
 )
 
+// ReadAll security group rule logic.
+func (sgr *SecurityGroupRule) ReadAll(
+	ctx context.Context, rp RequestParameters, f Filters, fields Fields,
+) (Response, error) {
+	// TODO: implement it when Read operation will be available
+	sgs := sgr.collectSecurityGroups(f)
+
+	// TODO: for every seg group collect sg rules by sg.readSecurityGroupRules() make sure that there are implemented
+	//       functions for OPER=LIST
+
+	// TODO: Return it as list
+
+	_ = sgs // TODO: debug only to fool the compiler
+	return nil, nil
+}
+
+func (sgr *SecurityGroupRule) collectSecurityGroups(filters Filters) []*SecurityGroup {
+	if len(filters) > 0 && filters.HaveKeys(SecurityGroupRuleFieldTenantID) {
+		// TODO: if 'tenant_id' in filters than collect all sg withing projects ids
+	}
+
+	// TODO: rest of python code: neutron_plugin_db.py:4884 with no filters
+	return nil
+}
+
 func getGenericDefaultSecurityGroupRule() *SecurityGroupRule {
 	return &SecurityGroupRule{
 		PortRangeMin: defaultPortMin,

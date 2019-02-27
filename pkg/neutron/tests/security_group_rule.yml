@@ -1,0 +1,139 @@
+name: Security Group Rules Test
+description: security group rules test
+
+test_data:
+  project: &project
+    uuid: 92882ca8-f993-42f2-8643-0c05c96e12dd
+    name: neutron_security_group_admin_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  sgr_readall_request: &sgr_readall_request
+    data:
+      fields: []
+      filters:
+        tenant_id:
+          - bee123efb2ad4a15896b5088cb4d00b3
+    context:
+      user_id: 87e9e49b21e547baac78b6d81430aa9b
+      roles:
+        - admin
+      tenant_id: bee123efb2ad4a15896b5088cb4d00b3
+      is_admin: true
+      request_id: req-bf656685-7960-4f7c-9239-5d2f20d3fb4b
+      operation: READALL
+      type: security_group_rule
+      tenant: bee123efb2ad4a15896b5088cb4d00b3
+
+  # TODO: these are dumps from sanity tests. Remove / reformat data that for sure will not be the same eg. uuids
+  sgr_readall_response: &sgr_readall_response
+    - remote_group_id: a3a92ec1-fc33-41c8-aa14-89a83df8b1b1
+      direction: ingress
+      remote_ip_prefix:
+      protocol: any
+      ethertype: IPv4
+      port_range_max: 65535
+      updated_at:
+      security_group_id: a3a92ec1-fc33-41c8-aa14-89a83df8b1b1
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b5088cb4d00b3
+      created_at:
+      id: 2d5bb796-4146-4e21-b4dc-e196b13d53dc
+    - remote_group_id: a3a92ec1-fc33-41c8-aa14-89a83df8b1b1
+      direction: ingress
+      remote_ip_prefix:
+      protocol: any
+      ethertype: IPv6
+      port_range_max: 65535
+      updated_at:
+      security_group_id: a3a92ec1-fc33-41c8-aa14-89a83df8b1b1
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b5088cb4d00b3
+      created_at:
+      id: f0506f9a-63c5-4815-a192-765acc9f20fb
+    - remote_group_id:
+      direction: egress
+      remote_ip_prefix: 0.0.0.0/0
+      protocol: any
+      ethertype: IPv4
+      port_range_max: 65535
+      updated_at:
+      security_group_id: a3a92ec1-fc33-41c8-aa14-89a83df8b1b1
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b5088cb4d00b3
+      created_at:
+      id: c0b0495a-3d5f-4b1b-b014-2b0a7a619032
+    - remote_group_id:
+      direction: egress
+      remote_ip_prefix: "::/0"
+      protocol: any
+      ethertype: IPv6
+      port_range_max: 65535
+      updated_at:
+      security_group_id: a3a92ec1-fc33-41c8-aa14-89a83df8b1b1
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b5088cb4d00b3
+      created_at:
+      id: 01333b91-4a2b-4fc2-ad38-2b669937a2f4
+    - remote_group_id:
+      direction: egress
+      remote_ip_prefix: 0.0.0.0/0
+      protocol: any
+      ethertype: IPv4
+      port_range_max: 65535
+      updated_at: '2018-12-04T12:02:39.954989'
+      security_group_id: 3265190f-6468-4544-b1af-88eab39f808f
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b5088cb4d00b3
+      created_at: '2018-12-04T12:02:39.954989'
+      id: c7967987-38bf-4ec2-a503-891563f96679
+    - remote_group_id:
+      direction: egress
+      remote_ip_prefix: "::/0"
+      protocol: any
+      ethertype: IPv6
+      port_range_max: 65535
+      updated_at: '2018-12-04T12:02:40.048314'
+      security_group_id: 3265190f-6468-4544-b1af-88eab39f808f
+      port_range_min: 0
+      tenant_id: bee123efb2ad4a15896b5088cb4d00b3
+      created_at: '2018-12-04T12:02:40.048314'
+      id: 07887369-2226-4f9c-9c2b-add0726ba0d0
+
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project
+  expect:
+    project: *project
+
+- name: read default security group
+  request:
+    path: /neutron/security_group_rule
+    method: POST
+    expected: [200]
+    data: *sgr_readall_request
+  expect: *sgr_readall_response
+
+
+
+- name: delete red project as non-admin
+  request:
+    path: /project/92882ca8-f993-42f2-8643-0c05c96e12dd
+    method: DELETE
+    expected: [200]
