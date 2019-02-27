@@ -274,6 +274,11 @@ func TestKeystone(t *testing.T) {
 	RunTest(t, "./test_data/test_keystone.yml")
 }
 
+func TestParseIDPermsUUIDs(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_parse_id_perms_uuid.yml")
+}
+
 func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
 	restClient := client.NewHTTP(
 		server.URL(),

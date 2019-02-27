@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/gogo/protobuf/types"
@@ -90,8 +91,18 @@ func (db *Service) create{{ schema.JSONSchema.GoName }}(
 	qb := db.QueryBuilders["{{ schema.ID }}"]
 	tx := basedb.GetTransaction(ctx)
 	model := request.{{ schema.JSONSchema.GoName }}
-	_, err := tx.ExecContext(ctx, qb.CreateQuery(), {% for column in schema.Columns %}{% if column.Bind == "json" %}format.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %}{% if not forloop.Last %},
-	{% endif %}{% endfor %})
+	_, err := tx.ExecContext(ctx, qb.CreateQuery(),
+	{% for column in schema.Columns %}
+		{%- if column.Bind == "json" -%}
+		format.MustJSON(model{{ column.GetPath }})
+		{%- elif column.Bind == "uint64" -%}
+		fmt.Sprint({{ column.Bind }}(model{{ column.GetPath }}))
+		{%- elif column.Bind -%}
+		{{ column.Bind }}(model{{ column.GetPath }})
+		{%- else -%}
+		model{{ column.GetPath }}
+		{%- endif -%},
+	{% endfor %})
 	if err != nil {
 		err = basedb.FormatDBError(err)
 		return errors.Wrap(err, "creating {{ schema.JSONSchema.GoName }} failed")
@@ -175,7 +186,7 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(
 		}
 		{%- elif column.Bind == "int" -%}
 			m{{ column.Path }} = format.InterfaceToInt64(value)
-		{%- elif column.Bind == "uint" -%}
+		{%- elif column.Bind == "uint64" -%}
 			m{{ column.Path }} = format.InterfaceToUint64(value)
 		{%- elif column.Bind == "bool" -%}
 			m{{ column.Path }} = format.InterfaceToBool(value)
@@ -357,7 +368,16 @@ func (db *Service) update{{ schema.JSONSchema.GoName }}(
 			{% for column in schema.Columns %}
 			case "{{ column.UpdatePath }}":
 				columns = append(columns, "{{ column.Column }}")
-				values = append(values, {% if column.Bind == "json" %}format.MustJSON(model{{ column.GetPath }}){% elif column.Bind %}{{ column.Bind }}(model{{ column.GetPath }}){% else %}model{{ column.GetPath }}{% endif %} )
+				values = append(values,
+					{%- if column.Bind == "json" -%}
+					format.MustJSON(model{{ column.GetPath }})
+					{%- elif column.Bind == "uint64" -%}
+					fmt.Sprint({{ column.Bind }}(model{{ column.GetPath }}))
+					{%- elif column.Bind -%}
+					{{ column.Bind }}(model{{ column.GetPath }})
+					{%- else -%}
+					model{{ column.GetPath }}
+					{%- endif -%} )
 			{%- endfor %}
 			{% for linkTo, reference in schema.References %}
 			case "{{ linkTo | lower }}_refs":
