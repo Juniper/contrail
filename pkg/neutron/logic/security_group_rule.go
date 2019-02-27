@@ -28,6 +28,40 @@ const (
 	protocolMaxValue              = 255
 )
 
+// ReadAll security group rule logic.
+func (sgr *SecurityGroupRule) ReadAll(
+	ctx context.Context, rp RequestParameters, f Filters, _ Fields,
+) (Response, error) {
+	response, err := listSecurityGroupRules(ctx, rp, f)
+	if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": securityGroupRuleResourceName,
+			"msg":      err,
+		})
+	}
+	return response, nil
+}
+
+func listSecurityGroupRules(
+	ctx context.Context, rp RequestParameters, f Filters,
+) ([]*SecurityGroupRuleResponse, error) {
+	securityGroups, err := listSecurityGroups(ctx, rp, Filters{tenantIDKey: f[tenantIDKey]})
+	if err != nil {
+		return nil, errors.Wrapf(err, "can't read security groups")
+	}
+
+	securityGroupRules := make([]*SecurityGroupRuleResponse, 0)
+	for _, sg := range securityGroups {
+		sgr, err := (&SecurityGroup{}).readSecurityGroupRules(sg)
+		if err != nil {
+			return nil, errors.Wrapf(err, "can't read security group rules")
+		}
+		securityGroupRules = append(securityGroupRules, sgr...)
+	}
+
+	return securityGroupRules, nil
+}
+
 func getGenericDefaultSecurityGroupRule() *SecurityGroupRule {
 	return &SecurityGroupRule{
 		PortRangeMin: defaultPortMin,
