@@ -10,6 +10,7 @@ import (
 )
 
 //InterfaceToInt makes an int from interface
+// nolint: gocyclo
 func InterfaceToInt(i interface{}) int {
 	if i == nil {
 		return 0
@@ -33,6 +34,12 @@ func InterfaceToInt(i interface{}) int {
 		return int(t)
 	case float64:
 		return int(t)
+	case json.Number:
+		i64, err := t.Int64()
+		if err != nil {
+			logrus.WithError(err).Debugf("Could not convert %#v to int", t)
+		}
+		return int(i64)
 	default:
 		logrus.Warnf("Could not convert %#v to int", i)
 	}
@@ -224,6 +231,7 @@ func InterfaceToInterfaceMap(i interface{}) map[string]interface{} {
 }
 
 //InterfaceToFloat makes a float.
+// nolint: gocyclo
 func InterfaceToFloat(i interface{}) float64 {
 	t, _ := i.(float64) //nolint: errcheck
 	switch t := i.(type) {
@@ -247,6 +255,12 @@ func InterfaceToFloat(i interface{}) float64 {
 		return t
 	case nil:
 		return 0
+	case json.Number:
+		f64, err := t.Float64()
+		if err != nil {
+			logrus.WithError(err).Debugf("Could not convert %#v to float64", t)
+		}
+		return f64
 	default:
 		logrus.Warnf("Could not convert %#v to float64", i)
 	}
