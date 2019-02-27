@@ -55,6 +55,8 @@ const (
 	macAddressInUse                           errorType = "MacAddressInUse"
 	ipAddressGenerationFailure                errorType = "IpAddressGenerationFailure"
 	networkNotFound                           errorType = "NetworkNotFound"
+	routerNotFound                            errorType = "RouterNotFound"
+	routerInUse                               errorType = "RouterInUse"
 	subnetNotFound                            errorType = "SubnetNotFound"
 	securityGroupNotFound                     errorType = "SecurityGroupNotFound"
 	securityGroupAlreadyExists                errorType = "SecurityGroupAlreadyExists"
