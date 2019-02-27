@@ -152,8 +152,8 @@ const testResource string = `{
       "group_access": 7
     },
     "uuid": {
-      "uuid_mslong": -9223372036854776000,
-      "uuid_lslong": -9223372036854776000
+      "uuid_mslong": 16515797057514128654,
+      "uuid_lslong": 13477633922358598808
     }
   },
   "display_name": "k8s-default-service-network",
