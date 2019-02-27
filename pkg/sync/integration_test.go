@@ -59,8 +59,9 @@ func TestSyncService(t *testing.T) {
 									"group_access": 7,
 								},
 								"uuid": map[string]interface{}{
-									"uuid_mslong": 6278211400000000000,
-									"uuid_lslong": float64(13655262000000000000)},
+									"uuid_mslong": float64(6278211192026973935),
+									"uuid_lslong": float64(13655261412632939815),
+								},
 							},
 							"perms2": map[string]interface{}{
 								"owner":        "cloud-admin",
