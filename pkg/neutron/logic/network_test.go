@@ -447,7 +447,14 @@ func TestNetworkUpdate(t *testing.T) {
 						PortSecurityEnabled: true,
 						RouterExternal:      true,
 						FloatingIPPools: []*models.FloatingIPPool{
-							{UUID: "test-fipp"},
+							{
+								UUID: "test-fipp",
+								FloatingIPs: []*models.FloatingIP{
+									{
+										UUID: "test-fip",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -462,6 +469,66 @@ func TestNetworkUpdate(t *testing.T) {
 			deleteData: &deleteData{
 				fippReq: &services.DeleteFloatingIPPoolRequest{ID: "test-fipp"},
 				fipReq:  &services.DeleteFloatingIPRequest{ID: "test-fip"},
+			},
+			writeData: &writeData{},
+		},
+		{
+			name: "update network succeeds and does not cause unrelated floating ip deletion",
+			n: &Network{
+				RouterExternal: false,
+			},
+			fm: types.FieldMask{
+				Paths: []string{
+					buildDataResourcePath(NetworkFieldRouterExternal),
+				},
+			},
+			expected: &NetworkResponse{
+				Status:              netStatusActive,
+				RouterExternal:      false,
+				FQName:              []string{"test-project", "test-vn"},
+				Name:                "test-vn",
+				AdminStateUp:        true,
+				TenantID:            "testproject",
+				ProjectID:           "testproject",
+				CreatedAt:           "data1",
+				UpdatedAt:           "data2",
+				PortSecurityEnabled: true,
+				Shared:              false,
+				ID:                  "test-vn",
+				Subnets:             []string{},
+				SubnetIpam:          []*SubnetIpam{},
+			},
+			fail: false,
+			id:   "test-vn",
+			readData: &readData{
+				vnRes: &services.GetVirtualNetworkResponse{
+					VirtualNetwork: &models.VirtualNetwork{
+						UUID:        "test-vn",
+						ParentType:  "project",
+						FQName:      []string{"test-project", "test-vn"},
+						ParentUUID:  "test-project",
+						DisplayName: "test-vn",
+						IDPerms: &models.IdPermsType{
+							Enable:       true,
+							Created:      "data1",
+							LastModified: "data2",
+						},
+						Perms2:              models.MakePermType2(),
+						PortSecurityEnabled: true,
+						RouterExternal:      true,
+						FloatingIPPools: []*models.FloatingIPPool{
+							{
+								UUID:        "test-fipp",
+								FloatingIPs: []*models.FloatingIP{},
+							},
+						},
+					},
+				},
+				fipsRes: nil,
+			},
+			deleteData: &deleteData{
+				fippReq: &services.DeleteFloatingIPPoolRequest{ID: "test-fipp"},
+				fipReq:  nil,
 			},
 			writeData: &writeData{},
 		},
