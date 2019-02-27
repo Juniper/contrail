@@ -2,6 +2,10 @@ name: Test Neutron Router
 description: |
   Integration test for neutron router endpoint.
 
+cleanup:
+- path: /router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+- path: /project/fc73d84f-b578-44d8-9cea-3e76f0493e81
+
 clients:
   default:
     id: alice
@@ -11,7 +15,26 @@ clients:
       project:
         name: admin
 
+test_data:
+  project: &project
+    uuid: fc73d84f-b578-44d8-9cea-3e76f0493e81
+    name: neutron_router_admin_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
 workflow:
+- name: Create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *project
+  expect:
+    project: *project
+
 - name: Router read all
   request:
     path: /neutron/router
@@ -22,16 +45,158 @@ workflow:
         fields: []
         filters:
           tenant_id:
-          - 8cdb5412f5974b38a69f2f9d1ae969b7
+          - fc73d84fb57844d89cea3e76f0493e81
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        user_id: 9bd9578b25844d1ea74ddf59d2c6de8a
         roles:
         - heat_stack_owner
         - admin
-        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
+        tenant_id: fc73d84fb57844d89cea3e76f0493e81
         is_admin: true
         request_id: req-4de97c6b-9db7-4ada-9008-7083ec6f3ded
         operation: READALL
         type: router
-        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+        tenant: fc73d84fb57844d89cea3e76f0493e81
   expect: []
+
+- name: Create router
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          # Note: id is not passed in the sanity test.
+          id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+          external_gateway_info:
+          description: ''
+          admin_state_up: true
+          tenant_id: fc73d84fb57844d89cea3e76f0493e81
+          project_id: fc73d84fb57844d89cea3e76f0493e81
+          name: ctest-router1-27286582
+        filters:
+      context:
+        user_id: 9bd9578b25844d1ea74ddf59d2c6de8a
+        roles:
+        - admin
+        tenant_id: fc73d84fb57844d89cea3e76f0493e81
+        is_admin: true
+        request_id: req-509281de-2e5f-4ce9-a682-06cb05916a70
+        operation: CREATE
+        type: router
+        tenant: fc73d84fb57844d89cea3e76f0493e81
+  expect:
+    status: ACTIVE
+    external_gateway_info:
+    fq_name:
+    - default-domain
+    - neutron_router_admin_project
+    - ctest-router1-27286582
+    name: ctest-router1-27286582
+    gw_port_id:
+    admin_state_up: true
+    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    # TODO: IDPerms.{Created,LastModified} aren't filled on creation.
+    #created_at: $datetime_iso
+    #updated_at: $datetime_iso
+    shared: false
+    id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+    description: ''
+
+- name: Check the created logical router
+  request:
+    path: /logical-router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+    method: GET
+    expected: [200]
+  expect:
+    logical-router:
+      uuid: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+      parent_uuid: fc73d84f-b578-44d8-9cea-3e76f0493e81
+      parent_type: project
+      name: ctest-router1-27286582
+      display_name: ctest-router1-27286582
+      fq_name:
+      - default-domain
+      - neutron_router_admin_project
+      - ctest-router1-27286582
+      id_perms:
+        enable: true
+
+- name: Read router, passing all the fields
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        - status
+        - fq_name
+        - tenant_id
+        - tags
+        - project_id
+        - id
+        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        filters:
+      context:
+        user_id: 9bd9578b25844d1ea74ddf59d2c6de8a
+        roles:
+        - admin
+        tenant_id: fc73d84fb57844d89cea3e76f0493e81
+        is_admin: true
+        request_id: req-a948a397-a7b9-46a4-893f-ab64f4486f35
+        operation: READ
+        type: router
+        tenant: fc73d84fb57844d89cea3e76f0493e81
+  expect:
+    status: ACTIVE
+    external_gateway_info:
+    fq_name:
+    - default-domain
+    - neutron_router_admin_project
+    - ctest-router1-27286582
+    name: ctest-router1-27286582
+    gw_port_id:
+    admin_state_up: true
+    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    # TODO: IDPerms.{Created,LastModified} aren't filled on creation.
+    #created_at: $datetime_iso
+    #updated_at: $datetime_iso
+    shared: false
+    id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+    description: ''
+
+- name: Delete router
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        filters:
+      context:
+        user_id: 9bd9578b25844d1ea74ddf59d2c6de8a
+        roles:
+        - admin
+        tenant_id: fc73d84fb57844d89cea3e76f0493e81
+        is_admin: true
+        request_id: req-bb7afe67-8806-4e47-ad5c-ee1a63416f5c
+        operation: DELETE
+        type: router
+        tenant: fc73d84fb57844d89cea3e76f0493e81
+
+- name: Check that the logical-router has been deleted
+  request:
+    path: /logical-router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+    method: GET
+    expected: [404]
+
+- name: Delete project
+  request:
+    path: /project/fc73d84f-b578-44d8-9cea-3e76f0493e81
+    method: DELETE
+    expected: [200]
