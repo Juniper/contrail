@@ -1,0 +1,62 @@
+name: Virtual Network Test
+description: basic virtual network test
+cleanup:
+  - path: /project/admin_project_uuid
+
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin_project_uuid"]
+    uuid: admin_project_uuid
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin_project_uuid", "vn_blue"]
+    uuid: vn_blue
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_project_uuid
+    id_perms:
+      uuid:
+        uuid_lslong: -6924440694687329815
+        uuid_mslong: -8781174687101797614
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+  - name: create project admin
+    request:
+      path: /projects
+      method: POST
+      expected:
+        - 200
+      data:
+        project: *admin_project
+    expect:
+      project: *admin_project
+
+  - name: create virtual network blue
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 400
+      data:
+        virtual-network: *vn_blue
+    expect: null
+
+  - name: delete project admin
+    request:
+      path: /project/admin_project_uuid
+      method: DELETE
+      expected:
+        - 200
+    expect: null

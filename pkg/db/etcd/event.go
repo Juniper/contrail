@@ -2,7 +2,7 @@ package etcd
 
 import (
 	"context"
-	"encoding/json"
+	"github.com/Juniper/contrail/pkg/format"
 	"strings"
 	"time"
 
@@ -75,7 +75,7 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 
 	var data map[string]interface{}
 	if operation == services.OperationCreate || operation == services.OperationUpdate {
-		err = json.Unmarshal(newValue, &data)
+		err = format.UnmarshalUseNumeric(newValue, &data)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to decode %s", string(newValue))
 		}

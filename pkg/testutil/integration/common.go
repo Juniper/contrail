@@ -4,7 +4,6 @@ package integration
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -22,7 +21,7 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -35,7 +34,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil"
-	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 const (
@@ -389,7 +388,7 @@ func createWatchChecker(task string, collect func() []string, key string, events
 			c := collected[i]
 			var data interface{} = map[string]interface{}{}
 			if len(c) > 0 {
-				err := json.Unmarshal([]byte(c), &data)
+				err := format.UnmarshalUseNumeric([]byte(c), &data)
 				assert.NoError(t, err)
 			}
 			testutil.AssertEqual(t, e.Data, data, fmt.Sprintf("task: %s\netcd event not equal for %s[%v]", task, key, i))

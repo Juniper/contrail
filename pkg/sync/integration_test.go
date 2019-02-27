@@ -59,8 +59,9 @@ func TestSyncService(t *testing.T) {
 									"group_access": 7,
 								},
 								"uuid": map[string]interface{}{
-									"uuid_mslong": 6278211400000000000,
-									"uuid_lslong": float64(13655262000000000000)},
+									"uuid_mslong": uint64(6278211192026973935),
+									"uuid_lslong": uint64(13655261412632939815),
+								},
 							},
 							"perms2": map[string]interface{}{
 								"owner":        "cloud-admin",
@@ -93,8 +94,8 @@ func TestSyncService(t *testing.T) {
 						Name: "vn_blue",
 						IDPerms: &models.IdPermsType{
 							UUID: &models.UuidType{
-								UUIDMslong: 1,
-								UUIDLslong: 2,
+								UUIDMslong: uint64(1),
+								UUIDLslong: uint64(2),
 							},
 						},
 					},
@@ -128,8 +129,8 @@ func TestSyncService(t *testing.T) {
 							"name": "vn_blue",
 							"id_perms": map[string]interface{}{
 								"uuid": map[string]interface{}{
-									"uuid_mslong": float64(1),
-									"uuid_lslong": float64(2),
+									"uuid_mslong": uint64(1),
+									"uuid_lslong": uint64(2),
 								},
 							},
 						},
@@ -139,8 +140,8 @@ func TestSyncService(t *testing.T) {
 							"name": "vn_bluuee",
 							"id_perms": map[string]interface{}{
 								"uuid": map[string]interface{}{
-									"uuid_mslong": float64(1337),
-									"uuid_lslong": float64(2778),
+									"uuid_mslong": uint64(1337),
+									"uuid_lslong": uint64(2778),
 								},
 							},
 						},

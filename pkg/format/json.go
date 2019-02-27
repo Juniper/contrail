@@ -82,3 +82,9 @@ func getPathAsList(path string, delimiter string) ([]string, string) {
 	pathAsList = pathAsList[:len(pathAsList)-1]
 	return pathAsList, attributeName
 }
+
+func UnmarshalUseNumeric(in []byte, out interface{}) error {
+	d := json.NewDecoder(strings.NewReader(string(in)))
+	d.UseNumber()
+	return d.Decode(&out)
+}

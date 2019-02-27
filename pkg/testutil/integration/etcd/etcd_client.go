@@ -2,8 +2,8 @@ package integrationetcd
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"github.com/Juniper/contrail/pkg/format"
 	"testing"
 	"time"
 
@@ -143,7 +143,7 @@ func (el *eventList) remove(event interface{}) {
 func (el *eventList) removeFoundEvent(event []byte) {
 	var data interface{}
 	if len(event) > 0 {
-		if err := json.Unmarshal(event, &data); err != nil {
+		if err := format.UnmarshalUseNumeric(event, &data); err != nil {
 			logrus.Error("Unexpected error appeared when watching for events: ", err)
 		}
 	}

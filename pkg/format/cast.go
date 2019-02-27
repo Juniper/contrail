@@ -33,6 +33,12 @@ func InterfaceToInt(i interface{}) int {
 		return int(t)
 	case float64:
 		return int(t)
+	case json.Number:
+		i64, err := t.Int64()
+		if err != nil {
+			logrus.WithError(err).Errorf("Could not convert %#v to int", t)
+		}
+		return int(i64)
 	default:
 		logrus.Warnf("Could not convert %#v to int", i)
 	}
