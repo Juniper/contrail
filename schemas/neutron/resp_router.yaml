@@ -31,15 +31,4 @@ schema:
     updated_at:
       type: string
     external_gateway_info:
-      type: array
-      items:
-        $ref: resp_router.json#/definitions/ExtGatewayInfo
-
-definitions:
-  ExtGatewayInfo:
-    type: object
-    properties:
-      network_id:
-        type: string
-      enable_snat:
-        type: boolean
+      $ref: req_router.json#/definitions/ExtGatewayInfo
