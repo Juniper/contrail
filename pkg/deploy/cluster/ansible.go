@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/flosch/pongo2"
-	"github.com/mattn/go-shellwords"
+	shellwords "github.com/mattn/go-shellwords"
 
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"

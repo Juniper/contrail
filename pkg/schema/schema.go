@@ -72,7 +72,7 @@ const (
 var sqlTypeMap = map[string]string{
 	ObjectType:  "json",
 	IntegerType: "bigint",
-	UintType:    "bigint",
+	UintType:    "numeric(21)",
 	ArrayType:   "json",
 	BooleanType: "bool",
 	NumberType:  "float",
@@ -83,7 +83,7 @@ var sqlTypeMap = map[string]string{
 var sqlBindMap = map[string]string{
 	ObjectType:  "json",
 	IntegerType: "int",
-	UintType:    "uint",
+	UintType:    "uint64",
 	ArrayType:   "json",
 	BooleanType: "bool",
 	NumberType:  "float",
@@ -402,10 +402,10 @@ func (s *JSONSchema) resolveSQLForArray(
 	if s.SQL == "" {
 		s.SQL = sqlTypeMap[s.Type]
 	}
-	bind := ""
+	var bind string
 	if s.GoType != "" {
 		if s.IsUint() {
-			bind = "uint"
+			bind = "uint64"
 		} else {
 			bind = sqlBindMap[s.Type]
 		}
