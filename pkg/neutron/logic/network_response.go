@@ -65,9 +65,10 @@ func (r *NetworkResponse) setResponseRefs(vn *models.VirtualNetwork, oper string
 func (r *NetworkResponse) setPolicys(vn *models.VirtualNetwork) {
 	nps := vn.GetNetworkPolicyRefs()
 	// TODO handle array of fqNames in schema and iterate over it
-	if len(nps) > 0 {
-		r.Policys = nps[0].GetTo()
+	for _, np := range nps {
+		r.Policys = append(r.Policys, np.GetTo())
 	}
+
 }
 
 func (r *NetworkResponse) setRouteTable(vn *models.VirtualNetwork) {
