@@ -5,6 +5,8 @@ cleanup:
 - path: /contrail-config-database-node/contrail_config_database_nodes_uuid
 - path: /contrail-analytics-node/contrail_analytics_nodes_uuid
 - path: /contrail-analytics-database-node/contrail_analytics_database_nodes_uuid
+- path: /contrail-analytics-alarm-node/contrail_analytics_alarm_nodes_uuid
+- path: /contrail-analytics-snmp-node/contrail_analytics_snmp_nodes_uuid
 - path: /contrail-webui-node/contrail_webui_nodes_uuid
 - path: /contrail-control-node/contrail_control_nodes_uuid
 - path: /contrail-vrouter-node/contrail_vrouter_nodes_uuid
@@ -75,9 +77,6 @@ test_data:
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
-    nova_public_port: 8775
-    glance_public_port: 9293
-    ironic_public_port: 6386
   openstack_monitoring_nodes: &openstack_monitoring_nodes
     uuid: openstack_monitoring_nodes_uuid
     parent_type: openstack-cluster
@@ -96,7 +95,6 @@ test_data:
     parent_uuid: test_openstack_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
-    swift_public_port: 8081
   openstack_compute_nodes: &openstack_compute_nodes
     uuid: openstack_compute_nodes_uuid
     parent_type: openstack-cluster
@@ -194,7 +192,6 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
-    api_public_port: 9100
   {% if ZTP_ROLE %}
   contrail_ztp_dhcp_nodes: &contrail_ztp_dhcp_nodes
     uuid: contrail_ztp_dhcp_nodes_uuid
@@ -221,9 +218,20 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
-    api_public_port: 9101
   contrail_analytics_database_nodes: &contrail_analytics_database_nodes
     uuid: contrail_analytics_database_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_alarm_nodes: &contrail_analytics_alarm_nodes
+    uuid: contrail_analytics_alarm_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_snmp_nodes: &contrail_analytics_snmp_nodes
+    uuid: contrail_analytics_snmp_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
@@ -234,7 +242,6 @@ test_data:
     parent_uuid: test_cluster_uuid
     node_refs:
       - uuid: all_in_one_node_uuid
-    public_port: 8144
   contrail_control_nodes: &contrail_control_nodes
     uuid: contrail_control_nodes_uuid
     parent_type: contrail-cluster
@@ -505,6 +512,36 @@ workflow:
   expect:
     contrail-analytics-database-node:
       uuid: contrail_analytics_database_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+- name: create analytics alarm node
+  request:
+    path: /contrail-analytics-alarm-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-alarm-node: *contrail_analytics_alarm_nodes
+  expect:
+    contrail-analytics-alarm-node:
+      uuid: contrail_analytics_alarm_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+- name: create analytics snmp node
+  request:
+    path: /contrail-analytics-snmp-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-snmp-node: *contrail_analytics_snmp_nodes
+  expect:
+    contrail-analytics-snmp-node:
+      uuid: contrail_analytics_snmp_nodes_uuid
       parent_type: contrail-cluster
       parent_uuid: test_cluster_uuid
       node_refs:
