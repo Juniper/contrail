@@ -22,6 +22,7 @@ type Server struct {
 	WriteService      services.WriteService
 	UserAgentKV       userAgentKVServer
 	IDToFQNameService idToFQNameServer
+	FQNameToIDService fqNameToIDServer
 	InTransactionDoer services.InTransactionDoer
 }
 
@@ -64,6 +65,7 @@ func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, 
 		WriteService:      s.WriteService,
 		UserAgentKV:       s.UserAgentKV,
 		IDToFQNameService: s.IDToFQNameService,
+		FQNameToIDService: s.FQNameToIDService,
 		RequestContext:    r.Context,
 		FieldMask:         r.Data.FieldMask,
 	}
@@ -100,6 +102,10 @@ type userAgentKVServer interface {
 
 type idToFQNameServer interface {
 	IDToFQName(context.Context, *services.IDToFQNameRequest) (*services.IDToFQNameResponse, error)
+}
+
+type fqNameToIDServer interface {
+	FQNameToID(context.Context, *services.FQNameToIDRequest) (*services.FQNameToIDResponse, error)
 }
 
 type routeRegistry interface {
