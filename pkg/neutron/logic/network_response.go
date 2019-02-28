@@ -59,22 +59,20 @@ func (r *NetworkResponse) setResponseRefs(vn *models.VirtualNetwork, oper string
 	if oper == OperationRead || oper == OperationReadAll {
 		r.setPolicys(vn)
 	}
-	r.setRouteTable(vn)
+	r.setRouteTables(vn)
 }
 
 func (r *NetworkResponse) setPolicys(vn *models.VirtualNetwork) {
 	nps := vn.GetNetworkPolicyRefs()
-	// TODO handle array of fqNames in schema and iterate over it
-	if len(nps) > 0 {
-		r.Policys = nps[0].GetTo()
+	for _, np := range nps {
+		r.Policys = append(r.Policys, np.GetTo())
 	}
 }
 
-func (r *NetworkResponse) setRouteTable(vn *models.VirtualNetwork) {
-	rt := vn.GetRouteTableRefs()
-	// TODO handle array of fqNames in schema and iterate over it
-	if len(rt) > 0 {
-		r.RouteTable = rt[0].GetTo()
+func (r *NetworkResponse) setRouteTables(vn *models.VirtualNetwork) {
+	rts := vn.GetRouteTableRefs()
+	for _, rt := range rts {
+		r.RouteTable = append(r.RouteTable, rt.GetTo())
 	}
 }
 
