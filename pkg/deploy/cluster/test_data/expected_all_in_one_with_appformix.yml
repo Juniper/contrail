@@ -18,6 +18,8 @@ instances:
       webui:
       analytics:
       analytics_database:
+      analytics_alarm:
+      analytics_snmp:
       vrouter:
       openstack_control:
       openstack_network:

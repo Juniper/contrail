@@ -659,13 +659,13 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 		"OPENSTACK_NODES": "",
 	}
 	expectedEndpoints := map[string]string{
-		"config":    "http://127.0.0.1:9100",
-		"nodejs":    "https://127.0.0.1:8144",
-		"telemetry": "http://127.0.0.1:9101",
-		"baremetal": "http://127.0.0.1:6386",
-		"swift":     "http://127.0.0.1:8081",
-		"glance":    "http://127.0.0.1:9293",
-		"compute":   "http://127.0.0.1:8775",
+		"config":    "http://127.0.0.1:8082",
+		"nodejs":    "https://127.0.0.1:8143",
+		"telemetry": "http://127.0.0.1:8081",
+		"baremetal": "http://127.0.0.1:6385",
+		"swift":     "http://127.0.0.1:8080",
+		"glance":    "http://127.0.0.1:9292",
+		"compute":   "http://127.0.0.1:8774",
 		"keystone":  "http://127.0.0.1:5000",
 		"appformix": "https://127.0.0.1:9001",
 	}
