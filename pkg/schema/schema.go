@@ -512,7 +512,7 @@ func (s *JSONSchema) resolveGoName(name string) error {
 				protoType = "repeated string"
 			} else {
 				if s.Items.Type == IntegerType || s.Items.Type == NumberType || s.Items.Type == BooleanType ||
-					s.Items.Type == StringType {
+					s.Items.Type == StringType || s.Items.Type == ArrayType {
 					goType = "[]" + s.Items.GoType
 				} else {
 					goType = "[]*" + s.Items.GoType

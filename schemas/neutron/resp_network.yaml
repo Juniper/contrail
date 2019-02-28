@@ -35,12 +35,16 @@ schema:
       presence: optional
       type: array
       items:
-        type: string
+        type: array
+        items:
+          type: string
     route_table:
       presence: optional
       type: array
       items:
-        type: string
+        type: array
+        items:
+          type: string
     shared:
       type: boolean
     project_id:
