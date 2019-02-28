@@ -41,7 +41,11 @@ schema:
      #TODO custom unmarshaler to handle policy field which could be string or array
     policys:
       presence: optional
-      type: string
+      type: array
+      items:
+        type: array
+        items:
+          type: string
     route_table:
       presence: optional
       type: array
