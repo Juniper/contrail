@@ -2,7 +2,6 @@ package keystone
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -52,25 +51,25 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 }
 
 func getKeystoneEndpoint(clusterID string, endpoints *apicommon.EndpointStore) (
-	authEndpoint *apicommon.Endpoint, err error) {
+	authEndpoint *apicommon.Endpoint) {
 	if endpoints == nil {
 		// getKeystoneEndpoint called from CreateTokenAPI,
 		// ValidateTokenAPI or GetProjectAPI of the mock keystone
-		return nil, nil
+		return nil
 	}
 	if clusterID != "" {
 		scope := "private"
 		endpointKey := strings.Join([]string{"/proxy", clusterID, keystoneService, scope}, "/")
 		keystoneTargets := endpoints.Read(endpointKey)
 		if keystoneTargets == nil {
-			return nil, fmt.Errorf("keystone targets not found for: %s", endpointKey)
+			return nil
 		}
 		authEndpoint = keystoneTargets.Next(scope)
 		if authEndpoint == nil {
-			return nil, fmt.Errorf("unable to get keystone endpoint for: %s", endpointKey)
+			return nil
 		}
 	}
-	return authEndpoint, err
+	return authEndpoint
 
 }
 
@@ -135,10 +134,7 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 			if clusterID == "" {
 				clusterID = apicommon.GetClusterIDFromProxyURL(r.URL.Path)
 			}
-			keystoneEndpoint, err := getKeystoneEndpoint(clusterID, endpoints)
-			if err != nil {
-				logrus.Warnf("keystone endpoint not found: %s", err)
-			}
+			keystoneEndpoint := getKeystoneEndpoint(clusterID, endpoints)
 			if keystoneEndpoint != nil {
 				keystoneClient.SetAuthURL(keystoneEndpoint.URL)
 				auth = keystoneClient.NewAuth()
@@ -185,11 +181,7 @@ func AuthInterceptor(keystoneClient *Client,
 		if len(xClusterID) == 1 {
 			clusterID = xClusterID[0]
 		}
-		keystoneEndpoint, err := getKeystoneEndpoint(clusterID, endpoints)
-		if err != nil {
-			logrus.Error(err)
-			return nil, errutil.ErrorUnauthenticated
-		}
+		keystoneEndpoint := getKeystoneEndpoint(clusterID, endpoints)
 		if keystoneEndpoint != nil {
 			keystoneClient.SetAuthURL(keystoneEndpoint.URL)
 			auth = keystoneClient.NewAuth()
