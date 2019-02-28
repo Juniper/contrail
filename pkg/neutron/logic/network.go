@@ -2,13 +2,14 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
-	"github.com/gogo/protobuf/types"
-
 	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -28,6 +29,41 @@ const (
 	permsRWX  = 7
 	permsNone = 0
 )
+
+// UnmarshalJSON unmarshals json into network.
+func (n *Network) UnmarshalJSON(data []byte) error {
+	type alias Network
+	obj := struct {
+		*alias
+		Policys interface{} `json:"policys"`
+	}{alias: (*alias)(n)}
+
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
+	}
+
+	if policys, ok := obj.Policys.([]interface{}); ok {
+		for _, policy := range policys {
+			if p, ok := policy.([]string); ok {
+				n.Policys = append(n.Policys, p)
+			} else {
+				n.Policys = [][]string{}
+				break
+			}
+		}
+	}
+	return nil
+}
+
+// ApplyMap applies map onto network.
+func (n *Network) ApplyMap(m map[string]interface{}) error {
+	_, ok := m[NetworkFieldPolicys].(string)
+	if ok {
+		delete(m, NetworkFieldPolicys)
+	}
+	type alias Network
+	return format.ApplyMap(m, (*alias)(n))
+}
 
 // Create logic
 func (n *Network) Create(ctx context.Context, rp RequestParameters) (Response, error) {
@@ -408,7 +444,7 @@ func (n *Network) setVncRefs(
 ) error {
 	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldPolicys)) &&
 		len(n.Policys) > 0 {
-		//TODO handle policy refs and verify type of 'policys' field with multiple items
+		n.createNetworkPolicyRef(ctx, rp, vncNet, vncFm)
 	}
 	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(NetworkFieldRouteTable)) &&
 		len(n.RouteTable) > 0 {
@@ -474,6 +510,18 @@ func (n *Network) createFloatingIPPool(
 		},
 	)
 	return err
+}
+
+func (n *Network) createNetworkPolicyRef(
+	ctx context.Context, rp RequestParameters, vncNet *models.VirtualNetwork, vncFm *types.FieldMask,
+) {
+	vncNet.NetworkPolicyRefs = []*models.VirtualNetworkNetworkPolicyRef{}
+	for _, policy := range n.Policys {
+		vncNet.AddNetworkPolicyRef(&models.VirtualNetworkNetworkPolicyRef{
+			To: policy,
+		})
+	}
+	basemodels.FieldMaskAppend(vncFm, models.VirtualNetworkFieldNetworkPolicyRefs)
 }
 
 func (n *Network) createRouteTableRef(
