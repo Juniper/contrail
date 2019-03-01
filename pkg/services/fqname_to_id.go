@@ -12,6 +12,11 @@ import (
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
+// FQNameToIDService interface.
+type FQNameToIDService interface {
+	FQNameToID(context.Context, *FQNameToIDRequest) (*FQNameToIDResponse, error)
+}
+
 // RESTFQNameToUUID is a REST handler for translating FQName to UUID
 func (svc *ContrailService) RESTFQNameToUUID(c echo.Context) error {
 	var request *FQNameToIDRequest
