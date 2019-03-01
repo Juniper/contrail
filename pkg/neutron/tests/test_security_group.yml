@@ -1,12 +1,12 @@
 name: Security Group Test
 description: security group test
 cleanup:
-- path: /security-group/security-group-uuid1
-- kind: security-group
-  fq_name: [default-domain, neutron_security_group_admin_project, default]
-- kind: security-group
-  fq_name: [default-domain, neutron_security_group_admin_project, my_new_sg]
-- path: /project/92882ca8-f993-42f2-8643-0c05c96e12dd
+  - path: /port/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+  - path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
+  - path: /security-group/277d4371-03a6-4915-8918-8bbc369538d4
+  - kind: security-group
+    fq_name: [default-domain, neutron_security_group_admin_project, default]
+  - path: /project/92882ca8-f993-42f2-8643-0c05c96e12dd
 
 test_data:
   project: &project
@@ -24,33 +24,13 @@ test_data:
     port_security_enabled: true
     parent_uuid: 92882ca8-f993-42f2-8643-0c05c96e12dd
 
-  sg: &sg
-    uuid: security-group-uuid1
-    name: sg_name
-    parent_uuid: 92882ca8-f993-42f2-8643-0c05c96e12dd
-    security_group_entries:
-      policy_rule:
-      - direction: ">"
-        protocol: "any"
-        dst_addresses:
-        - security_group: "local"
-        dst_ports:
-        - end_port: 65535
-          start_port: 0
-        ethertype: "IPv4"
-        src_addresses:
-        - security_group: "default:neutron_security_group_admin_project:sg_name"
-        src_ports:
-        - end_port: 65535
-          start_port: 0
-
   sg_read_request: &sg_read_request
     data:
-      id: security-group-uuid1
+      id: 277d4371-03a6-4915-8918-8bbc369538d4
     context:
       user_id: 32fc3e2bf6e94e0daa21090e493e7aef
       roles:
-      - admin
+        - admin
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-ac841ef9-2c79-4787-b80c-22a7b3263255
@@ -61,42 +41,58 @@ test_data:
     fq_name:
       - default-domain
       - neutron_security_group_admin_project
-      - sg_name
+      - my_new_sg
     tenant_id: 92882ca8f99342f286430c05c96e12dd
     security_group_rules:
-    - remote_group_id: ''
-      direction: ingress
-      protocol: any
-      ethertype: IPv4
-      port_range_max: 65535
-      security_group_id: security-group-uuid1
-      port_range_min: 0
-      tenant_id: 92882ca8f99342f286430c05c96e12dd
-      id: $uuid
-    id: security-group-uuid1
-    name: sg_name
+      - created_at: $datetime_iso
+        updated_at: $datetime_iso
+        direction: egress
+        ethertype: IPv4
+        id: $uuid
+        port_range_max: 65535
+        port_range_min: 0
+        protocol: any
+        remote_group_id: ""
+        remote_ip_prefix: 0.0.0.0/0
+        security_group_id: 277d4371-03a6-4915-8918-8bbc369538d4
+        tenant_id: $any
+      - created_at: $datetime_iso
+        updated_at: $datetime_iso
+        direction: egress
+        ethertype: IPv6
+        id: $uuid
+        port_range_max: 65535
+        port_range_min: 0
+        protocol: any
+        remote_group_id: ""
+        remote_ip_prefix: ::/0
+        security_group_id: 277d4371-03a6-4915-8918-8bbc369538d4
+        tenant_id: $any
+    id: 277d4371-03a6-4915-8918-8bbc369538d4
+    name: my_new_sg
 
   sg_readall_request: &sg_readall_request
     data:
       fields: []
       filters:
         tenant_id:
-        - 92882ca8f99342f286430c05c96e12dd
+          - 92882ca8f99342f286430c05c96e12dd
     context:
       user_id: 06be3763c8224dd5a343e3d95d87c1d2
       roles:
-      - heat_stack_owner
-      - admin
+        - heat_stack_owner
+        - admin
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-051612ac-45e4-4df9-b36e-93190210bee8
       operation: READALL
       type: security_group
-      tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
+      tenant: 92882ca8f99342f286430c05c96e12dd
 
   sg_create_request: &sg_create_request
     data:
       resource:
+        id: 277d4371-03a6-4915-8918-8bbc369538d4
         tenant_id: 92882ca8f99342f286430c05c96e12dd
         project_id: 92882ca8f99342f286430c05c96e12dd
         name: my_new_sg
@@ -104,8 +100,8 @@ test_data:
     context:
       user_id: b0ad5cb0783b4380a62e251a252ffd04
       roles:
-      - admin
-      - heat_stack_owner
+        - admin
+        - heat_stack_owner
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-01fcd861-16d7-45de-89ad-840909b45a3f
@@ -114,39 +110,39 @@ test_data:
       tenant: 82bbe8daf75f429a87ff80db289e55b3
   sg_create_response: &sg_create_response
     fq_name:
-    - default-domain
-    - neutron_security_group_admin_project
-    - my_new_sg
+      - default-domain
+      - neutron_security_group_admin_project
+      - my_new_sg
     description: ''
     tenant_id: 92882ca8f99342f286430c05c96e12dd
     created_at: ""
     updated_at: ""
     security_group_rules:
-    - created_at: $datetime_iso
-      updated_at: $datetime_iso
-      direction: egress
-      ethertype: IPv4
-      id: $uuid
-      port_range_max: 65535
-      port_range_min: 0
-      protocol: any
-      remote_group_id: ""
-      remote_ip_prefix: 0.0.0.0/0
-      security_group_id: $uuid
-      tenant_id: $any
-    - created_at: $datetime_iso
-      updated_at: $datetime_iso
-      direction: egress
-      ethertype: IPv6
-      id: $uuid
-      port_range_max: 65535
-      port_range_min: 0
-      protocol: any
-      remote_group_id: ""
-      remote_ip_prefix: ::/0
-      security_group_id: $uuid
-      tenant_id: $any
-    id: $uuid
+      - created_at: $datetime_iso
+        updated_at: $datetime_iso
+        direction: egress
+        ethertype: IPv4
+        id: $uuid
+        port_range_max: 65535
+        port_range_min: 0
+        protocol: any
+        remote_group_id: ""
+        remote_ip_prefix: 0.0.0.0/0
+        security_group_id: 277d4371-03a6-4915-8918-8bbc369538d4
+        tenant_id: $any
+      - created_at: $datetime_iso
+        updated_at: $datetime_iso
+        direction: egress
+        ethertype: IPv6
+        id: $uuid
+        port_range_max: 65535
+        port_range_min: 0
+        protocol: any
+        remote_group_id: ""
+        remote_ip_prefix: ::/0
+        security_group_id: 277d4371-03a6-4915-8918-8bbc369538d4
+        tenant_id: $any
+    id: 277d4371-03a6-4915-8918-8bbc369538d4
     name: my_new_sg
 
   sg_update_request: &sg_update_request
@@ -155,13 +151,13 @@ test_data:
       resource:
         name: "new updated name"
         description: ''
-      id: security-group-uuid1
+      id: 277d4371-03a6-4915-8918-8bbc369538d4
       filters: null
     context:
       user_id: b0ad5cb0783b4380a62e251a252ffd04
       roles:
-      - admin
-      - heat_stack_owner
+        - admin
+        - heat_stack_owner
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-8a39b4f1-0c6e-4d40-8116-77843f577772
@@ -171,7 +167,7 @@ test_data:
   sg_update_response: &sg_update_response
     description: ''
     tenant_id: 92882ca8f99342f286430c05c96e12dd
-    id: security-group-uuid1
+    id: 277d4371-03a6-4915-8918-8bbc369538d4
     name: "new updated name"
 
   sg_update_no_name_param_request: &sg_update_no_name_param_request
@@ -179,34 +175,35 @@ test_data:
       fields: null
       resource:
         description: ''
-      id: security-group-uuid1
+      id: 277d4371-03a6-4915-8918-8bbc369538d4
       filters: null
     context:
-        user_id: b0ad5cb0783b4380a62e251a252ffd04
-        roles:
+      user_id: b0ad5cb0783b4380a62e251a252ffd04
+      roles:
         - admin
         - heat_stack_owner
-        tenant_id: 92882ca8f99342f286430c05c96e12dd
-        is_admin: true
-        request_id: req-8a3923f1-0c6e-4d40-8116-77843f577772
-        operation: UPDATE
-        type: security_group
-        tenant: 92882ca8f99342f286430c05c96e12dd
+      tenant_id: 92882ca8f99342f286430c05c96e12dd
+      is_admin: true
+      request_id: req-8a3923f1-0c6e-4d40-8116-77843f577772
+      operation: UPDATE
+      type: security_group
+      tenant: 92882ca8f99342f286430c05c96e12dd
   sg_update_no_name_param_response: &sg_update_no_name_param_response
     description: ''
     tenant_id: 92882ca8f99342f286430c05c96e12dd
-    id: security-group-uuid1
+    id: 277d4371-03a6-4915-8918-8bbc369538d4
     name: "new updated name"
 
   sg_delete_request: &sg_delete_request
     data:
       fields:
-      id: security-group-uuid1
+      id: 277d4371-03a6-4915-8918-8bbc369538d4
       filters:
     context:
       user_id: 32fc3e2bf6e94e0daa21090e493e7aef
       roles:
-      - admin
+        - admin
+        - heat_stack_owner
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-ac841ef9-2b12-8231-b80c-22a7b3263255
@@ -229,13 +226,13 @@ test_data:
         binding:vnic_type: normal
         project_id: 92882ca8f99342f286430c05c96e12dd
         security_groups:
-          - security-group-uuid1
+          - 277d4371-03a6-4915-8918-8bbc369538d4
         device_id: ''
       filters:
     context:
       user_id: 32fc3e2bf6e94e0daa21090e493e7aef
       roles:
-      - admin
+        - admin
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-db7a6a99-6dd0-236ae-9b61-a675e99ab70e
@@ -244,7 +241,7 @@ test_data:
       tenant: 92882ca8f99342f286430c05c96e12dd
   port_referring_to_sg_create_response: &port_referring_to_sg_create_response
     security_groups:
-      - security-group-uuid1
+      - 277d4371-03a6-4915-8918-8bbc369538d4
 
   port_refered_to_sg_delete_request: &port_refered_to_sg_delete_request
     data:
@@ -254,7 +251,7 @@ test_data:
     context:
       user_id: 32fc3e2bf6e94e0daa21090e493e7aef
       roles:
-      - admin
+        - admin
       tenant_id: 92882ca8f99342f286430c05c96e12dd
       is_admin: true
       request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
@@ -272,177 +269,170 @@ clients:
         name: admin
 
 workflow:
-- name: create project
-  request:
-    path: /projects
-    method: POST
-    expected:
-    - 200
-    data:
-      project: *project
-  expect:
-    project: *project
-
-- name: check if default security group is auto-created on READALL operation
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [200]
-    data: *sg_readall_request
-  expect:
-    - fq_name:
-      - default-domain
-      - neutron_security_group_admin_project
-      - default
-      tenant_id: 92882ca8f99342f286430c05c96e12dd
-      name: default
-
-- name: check if security group is empty
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [400]
-    data: *sg_read_request
-  expect:
-    exception: SecurityGroupNotFound
-    id: security-group-uuid1
-
-- name: create security group
-  request:
-    path: /security-groups
-    method: POST
-    expected: [200]
-    data:
-      security-group: *sg
-  expect:
-    security-group: *sg
-
-- name: read default security group
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [200]
-    data: *sg_read_request
-  expect: *sg_read_response
-
-- name: update default security group
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [200]
-    data: *sg_update_request
-  expect:
-    *sg_update_response
-
-- name: update default security group with empty name parameter
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [200]
-    data: *sg_update_no_name_param_request
-  expect: *sg_update_no_name_param_response
-
-- name: read again default security group to check if first update worked and second won't
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [200]
-    data: *sg_read_request
-  expect:
-    name: "new updated name"
-
-- name: try to read invalid security group
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [400]
-    data:
-      <<: *sg_read_request
+  - name: create project
+    request:
+      path: /projects
+      method: POST
+      expected: [200]
       data:
-        id: bad-id
-  expect:
-    exception: SecurityGroupNotFound
-    id: bad-id
+        project: *project
+    expect:
+      project: *project
 
-- name: assert READALL security groups of that project
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [200]
-    data: *sg_readall_request
-  expect:
-  - fq_name:
-    - default-domain
-    - neutron_security_group_admin_project
-    - default
-    tenant_id: 92882ca8f99342f286430c05c96e12dd
-    name: default
-  - fq_name:
-    - default-domain
-    - neutron_security_group_admin_project
-    - sg_name
-    tenant_id: 92882ca8f99342f286430c05c96e12dd
+  - name: check if default security group is auto-created on READALL operation
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [200]
+      data: *sg_readall_request
+    expect:
+      - fq_name:
+          - default-domain
+          - neutron_security_group_admin_project
+          - default
+        tenant_id: 92882ca8f99342f286430c05c96e12dd
+        name: default
 
-- name: create virtual network blue
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 200
-    data:
+  - name: check if security group exists before create
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [400]
+      data: *sg_read_request
+    expect:
+      exception: SecurityGroupNotFound
+      id: 277d4371-03a6-4915-8918-8bbc369538d4
+
+  - name: create security group
+    request:
+      path: /neutron/security_group
+      method: POST
+      data: *sg_create_request
+      expected: [200]
+    expect:
+      *sg_create_response
+
+  - name: read security group
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [200]
+      data: *sg_read_request
+    expect: *sg_read_response
+
+  - name: update security group
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [200]
+      data: *sg_update_request
+    expect:
+      *sg_update_response
+
+  - name: update security group with empty name
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [200]
+      data: *sg_update_no_name_param_request
+    expect: *sg_update_no_name_param_response
+
+  - name: read again default security group to check if first update worked and second won't
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [200]
+      data: *sg_read_request
+    expect:
+      name: "new updated name"
+
+  - name: try to read invalid security group
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [400]
+      data:
+        <<: *sg_read_request
+        data:
+          id: bad-id
+    expect:
+      exception: SecurityGroupNotFound
+      id: bad-id
+
+  - name: assert READALL security groups of that project
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [200]
+      data: *sg_readall_request
+    expect:
+      - fq_name:
+          - default-domain
+          - neutron_security_group_admin_project
+          - default
+        tenant_id: 92882ca8f99342f286430c05c96e12dd
+        name: default
+      - fq_name:
+          - default-domain
+          - neutron_security_group_admin_project
+          - my_new_sg
+        tenant_id: 92882ca8f99342f286430c05c96e12dd
+
+  - name: create virtual network blue
+    request:
+      path: /virtual-networks
+      method: POST
+      expected:
+        - 200
+      data:
+        virtual-network: *vn_blue
+    expect:
       virtual-network: *vn_blue
-  expect:
-    virtual-network: *vn_blue
 
-- name: create port with reference to security group
-  request:
-    path: /neutron/port
-    method: POST
-    expected: [200]
-    data: *port_referring_to_sg_create_request
-  expect: *port_referring_to_sg_create_response
+  - name: create port with reference to security group
+    request:
+      path: /neutron/port
+      method: POST
+      expected: [200]
+      data: *port_referring_to_sg_create_request
+    expect: *port_referring_to_sg_create_response
 
-- name: fail to delete the referenced security group
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [400]
-    data: *sg_delete_request
-  expect:
-    exception: SecurityGroupInUse
-    id: security-group-uuid1
+  - name: fail to delete the referenced security group
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [400]
+      data: *sg_delete_request
+    expect:
+      exception: SecurityGroupInUse
+      id: 277d4371-03a6-4915-8918-8bbc369538d4
 
-- name: delete port referring to security group
-  request:
-    path: /neutron/port
-    method: POST
-    expected: [200]
-    data: *port_refered_to_sg_delete_request
-  expect: null
+  - name: delete port referring to security group
+    request:
+      path: /neutron/port
+      method: POST
+      expected: [200]
+      data: *port_refered_to_sg_delete_request
+    expect: null
 
-- name: delete virtual network
-  request:
-    path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
-    method: DELETE
-    expected:
-    - 200
+  - name: delete virtual network
+    request:
+      path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
+      method: DELETE
+      expected:
+        - 200
 
-- name: delete security group uuid1 using neutron endpoint
-  request:
-    path: /neutron/security_group
-    method: POST
-    expected: [200]
-    data: *sg_delete_request
-  expect: $null
+  - name: delete security group
+    request:
+      path: /neutron/security_group
+      method: POST
+      expected: [200]
+      data: *sg_delete_request
+    expect: null
 
-- name: create security group using neutron endpoint
-  request:
-    path: /neutron/security_group
-    method: POST
-    data: *sg_create_request
-    expected: [200]
-  expect:
-    *sg_create_response
-
-# TODO delete created Security group using FQName (when it will be implemented),
-# then delete the project, now we can't because of security groups are still being attached
+  - name: delete project
+    request:
+      path: /project/92882ca8-f993-42f2-8643-0c05c96e12dd
+      method: DELETE
+      expected: [200]
+    expect: null
