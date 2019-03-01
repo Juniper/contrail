@@ -33,3 +33,11 @@ func (m *VirtualMachineInterface) FindInterfaceRouteTableRef(
 	}
 	return nil
 }
+
+// GetRouterID returns UUID of VMI's LR.
+func (m *VirtualMachineInterface) GetRouterID() string {
+	if len(m.GetLogicalRouterBackRefs()) == 0 {
+		return ""
+	}
+	return m.GetLogicalRouterBackRefs()[0].GetUUID()
+}
