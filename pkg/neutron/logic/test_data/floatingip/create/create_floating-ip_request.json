@@ -1,0 +1,40 @@
+{
+    "floating-ip": {
+        "project_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235"
+                ],
+                "uuid": "8a5e9e61-0938-4238-a4a5-fd5f23bebea4"
+            }
+        ],
+        "fq_name": [
+            "default-domain",
+            "ctest-FloatingipBasicTestSanity-99684235",
+            "ctest-fvn-50778358",
+            "ctest-some-pool-21034020",
+            "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+        ],
+        "uuid": "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+        "parent_type": "floating-ip-pool",
+        "virtual_machine_interface_refs": [],
+        "perms2": {
+            "owner": "8a5e9e61-0938-4238-a4a5-fd5f23bebea4",
+            "owner_access": 7,
+            "global_access": 0,
+            "share": []
+        },
+        "id_perms": {
+            "enable": true,
+            "description": "",
+            "creator": null,
+            "created": null,
+            "uuid": null,
+            "user_visible": true,
+            "last_modified": null,
+            "permissions": null
+        },
+        "floating_ip_fixed_ip_address": null
+    }
+}

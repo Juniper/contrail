@@ -78,5 +78,6 @@ type RequestParameters struct {
 	WriteService      services.WriteService
 	UserAgentKV       services.UserAgentKVServer
 	IDToFQNameService services.IDToFQNameServer
+	FQNameToIDService services.FQNameToIDService
 	FieldMask         types.FieldMask
 }
