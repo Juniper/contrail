@@ -17,9 +17,9 @@ func neutronIDToVncUUID(id string) (string, error) {
 		return "", nil
 	}
 
-	uuid, err := uuid.Parse(id)
+	u, err := uuid.Parse(id)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to translate neutron id to contrail uuid")
 	}
-	return uuid.String(), nil
+	return u.String(), nil
 }
