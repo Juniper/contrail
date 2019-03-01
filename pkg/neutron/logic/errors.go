@@ -70,4 +70,5 @@ const (
 	securityGroupRuleNotFound                 errorType = "SecurityGroupRuleNotFound"
 	networkInUse                              errorType = "NetworkInUse"
 	invalidSharedSetting                      errorType = "InvalidSharedSetting"
+	floatingIPNotFound                        errorType = "FloatingIPNotFound"
 )
