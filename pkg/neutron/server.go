@@ -21,8 +21,8 @@ type Server struct {
 	ReadService       services.ReadService
 	WriteService      services.WriteService
 	UserAgentKV       userAgentKVServer
-	IDToFQNameService idToFQNameServer
-	FQNameToIDService fqNameToIDServer
+	IDToFQNameService services.IDToFQNameService
+	FQNameToIDService services.FQNameToIDService
 	InTransactionDoer services.InTransactionDoer
 	Log               *logrus.Entry
 }
@@ -103,14 +103,6 @@ type userAgentKVServer interface {
 	RetrieveValues(context.Context, *services.RetrieveValuesRequest) (*services.RetrieveValuesResponse, error)
 	RetrieveKVPs(context.Context, *google_protobuf3.Empty) (*services.RetrieveKVPsResponse, error)
 	DeleteKey(context.Context, *services.DeleteKeyRequest) (*google_protobuf3.Empty, error)
-}
-
-type idToFQNameServer interface {
-	IDToFQName(context.Context, *services.IDToFQNameRequest) (*services.IDToFQNameResponse, error)
-}
-
-type fqNameToIDServer interface {
-	FQNameToID(context.Context, *services.FQNameToIDRequest) (*services.FQNameToIDResponse, error)
 }
 
 type routeRegistry interface {

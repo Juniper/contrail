@@ -73,4 +73,5 @@ const (
 	invalidSharedSetting                      errorType = "InvalidSharedSetting"
 	routerInterfaceNotFound                   errorType = "RouterInterfaceNotFound"
 	routerInterfaceNotFoundForSubnet          errorType = "RouterInterfaceNotFoundForSubnet"
+	floatingIPNotFound                        errorType = "FloatingIPNotFound"
 )
