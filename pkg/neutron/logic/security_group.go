@@ -363,6 +363,7 @@ func (sg *SecurityGroup) neutronToVnc(ctx context.Context, rp RequestParameters)
 	}
 
 	return &models.SecurityGroup{
+		UUID:        sg.ID,
 		Name:        sg.Name,
 		DisplayName: sg.Name,
 		IDPerms:     &idPerms,
