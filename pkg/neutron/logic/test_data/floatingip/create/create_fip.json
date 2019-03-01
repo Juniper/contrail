@@ -1,0 +1,28 @@
+{
+    "data": {
+        "fields": null,
+        "resource": {
+            "description": "",
+            "subnet_id": null,
+            "tenant_id": "8a5e9e61-0938-4238-a4a5-fd5f23bebea4",
+            "floating_network_id": "0a673570-47eb-4b88-b648-5de06c65a37e",
+            "fixed_ip_address": null,
+            "floating_ip_address": null,
+            "project_id": "8a5e9e61-0938-4238-a4a5-fd5f23bebea4",
+            "port_id": null
+        },
+        "filters": null
+    },
+    "context": {
+        "user_id": "c8a48c44a047493995f29af752ce6ece",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "8a5e9e6109384238a4a5fd5f23bebea4",
+        "is_admin": true,
+        "request_id": "req-c8d2d8b3-d76f-4cc1-8ba1-e70eca006376",
+        "operation": "CREATE",
+        "type": "floatingip",
+        "tenant": "8a5e9e6109384238a4a5fd5f23bebea4"
+    }
+}

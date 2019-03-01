@@ -21,3 +21,11 @@ func (m *VirtualMachineInterface) GetMacAddressesType() (*MacAddressesType, erro
 		MacAddress: []string{macAddress},
 	}, err
 }
+
+// GetRouterID returns UUID of VMI's LR.
+func (vmi *VirtualMachineInterface) GetRouterID() string {
+	if len(vmi.GetLogicalRouterBackRefs()) == 0 {
+		return ""
+	}
+	return vmi.GetLogicalRouterBackRefs()[0].GetUUID()
+}

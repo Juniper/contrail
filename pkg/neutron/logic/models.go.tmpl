@@ -25,6 +25,7 @@ type {{ schema.JSONSchema.GoName }} struct {
 	baseResource
 	{{- properties(schema.JSONSchema) -}}
 }
+const Kind{{ schema.JSONSchema.GoName }} = "{{schema.ID}}"
 // Names for Fields in {{ schema.JSONSchema.GoName }}
 {{- propertiesConstants(schema.JSONSchema, schema.JSONSchema.GoName) -}}
 
