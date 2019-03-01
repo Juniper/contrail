@@ -82,28 +82,23 @@ generate_go:
 	    --schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
-TYPES_MOCK := pkg/types/mock/gen_service_mock.go
-SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
-IPAM_MOCK := pkg/types/ipam/mock/gen_address_manager_mock.go
-NEUTRON_LOGIC_MOCK := pkg/neutron/mock/gen_neutron_mock.go
+MOCKS := pkg/types/mock/gen_service_mock.go:pkg/types/service.go:typesmock \
+	pkg/services/mock/gen_service_mock.go:pkg/services/gen_service_interface.go:servicesmock \
+	pkg/services/mock/gen_fqname_to_id.go:pkg/services/fqname_to_id.go:servicesmock \
+	pkg/services/mock/gen_id_to_fqname.go:pkg/services/id_to_fqname.go:servicesmock \
+	pkg/types/ipam/mock/gen_address_manager_mock.go:pkg/types/ipam/address_manager.go:ipammock \
+	pkg/neutron/mock/gen_neutron_mock.go:pkg/neutron/server.go:neutronmock
 
-generate_mocks: $(TYPES_MOCK) $(SERVICES_MOCK) $(IPAM_MOCK) $(NEUTRON_LOGIC_MOCK)
+define create-generate-mock-target
+  $(word 1,$(subst :, ,$1)): $(word 2,$(subst :, ,$1))
+	mkdir -p $(dir $(word 1,$(subst :, ,$1)))
+	mockgen -destination=$(word 1,$(subst :, ,$1)) -package=$(word 3,$(subst :, ,$1)) -source $(word 2,$(subst :, ,$1))
+endef
 
-$(TYPES_MOCK): pkg/types/service.go
-	mkdir -p $(@D)
-	mockgen -destination=$@ -package=typesmock -source $<
+$(foreach mock,$(MOCKS),$(eval $(call create-generate-mock-target,$(mock))))
 
-$(SERVICES_MOCK): pkg/services/gen_service_interface.go
-	mkdir -p $(@D)
-	mockgen -destination=$@ -package=servicesmock -source $<
-
-$(IPAM_MOCK): pkg/types/ipam/address_manager.go
-	mkdir -p $(@D)
-	mockgen -destination=$@ -package=ipammock -source $<
-
-$(NEUTRON_LOGIC_MOCK): pkg/neutron/server.go
-	mkdir -p $(@D)
-	mockgen -destination=$@ -package=neutronmock -source $<
+generate_mocks:
+	$(foreach mock,$(MOCKS),$(MAKE) $(word 1,$(subst :, ,$(mock)));)
 
 PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg

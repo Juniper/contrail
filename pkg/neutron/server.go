@@ -24,6 +24,7 @@ type Server struct {
 	IDToFQNameService idToFQNameServer
 	FQNameToIDService fqNameToIDServer
 	InTransactionDoer services.InTransactionDoer
+	FQNameToIDService services.FQNameToIDService
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
