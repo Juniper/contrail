@@ -1,0 +1,183 @@
+{
+    "virtual-machine-interface": {
+        "routing_instance_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235",
+                    "ctest-vn1-33771181",
+                    "ctest-vn1-33771181"
+                ],
+                "attr": {
+                    "dst_mac": null,
+                    "protocol": null,
+                    "ipv6_service_chain_address": null,
+                    "direction": "both",
+                    "mpls_label": null,
+                    "vlan_tag": null,
+                    "src_mac": null,
+                    "service_chain_address": null
+                },
+                "uuid": "ab301a07-fc2c-42c9-b0dd-f3afdf4d61f4"
+            }
+        ],
+        "virtual_machine_interface_mac_addresses": {
+            "mac_address": [
+                "02:5c:58:29:af:83"
+            ]
+        },
+        "virtual_machine_interface_bindings": {
+            "key_value_pair": [
+                {
+                    "value": "normal",
+                    "key": "vnic_type"
+                },
+                {
+                    "key": "host_id",
+                    "value": "maciej.lastawiecki-stack-is-open.novalocal"
+                }
+            ]
+        },
+        "parent_type": "project",
+        "perms2": {
+            "owner": "8a5e9e6109384238a4a5fd5f23bebea4",
+            "owner_access": 7,
+            "global_access": 0,
+            "share": []
+        },
+        "virtual_machine_refs": [
+            {
+                "to": [
+                    "4963f3d8-e82a-4ee8-975e-0663a3b8fc66"
+                ],
+                "attr": null,
+                "uuid": "4963f3d8-e82a-4ee8-975e-0663a3b8fc66"
+            }
+        ],
+        "virtual_machine_interface_device_owner": "compute:nova",
+        "port_security_enabled": true,
+        "display_name": "5c5829af-8331-4e19-b3c3-d307ec619e95",
+        "name": "5c5829af-8331-4e19-b3c3-d307ec619e95",
+        "fq_name": [
+            "default-domain",
+            "ctest-FloatingipBasicTestSanity-99684235",
+            "5c5829af-8331-4e19-b3c3-d307ec619e95"
+        ],
+        "uuid": "5c5829af-8331-4e19-b3c3-d307ec619e95",
+        "security_group_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235",
+                    "default"
+                ],
+                "attr": null,
+                "uuid": "6492d407-e8f7-4902-9e1d-2ccbbba08c03"
+            }
+        ],
+        "parent_uuid": "8a5e9e61-0938-4238-a4a5-fd5f23bebea4",
+        "floating_ip_back_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235",
+                    "ctest-fvn-50778358",
+                    "ctest-some-pool-21034020",
+                    "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+                ],
+                "attr": null,
+                "uuid": "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+            }
+        ],
+        "virtual_network_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235",
+                    "ctest-vn1-33771181"
+                ],
+                "attr": null,
+                "uuid": "61949cbd-ee2a-46bb-b7b4-1ab4cff0cbf6"
+            }
+        ],
+        "id_perms": {
+            "enable": true,
+            "uuid": {
+                "uuid_mslong": 6654114283236970009,
+                "uuid_lslong": 12953428984231730837
+            },
+            "created": "2019-02-28T16:25:49.971384",
+            "description": "",
+            "creator": null,
+            "user_visible": true,
+            "last_modified": "2019-02-28T16:25:50.922553",
+            "permissions": {
+                "owner": "ctest-FloatingipBasicTestSanity-99684235",
+                "owner_access": 7,
+                "other_access": 7,
+                "group": "admin",
+                "group_access": 7
+            }
+        },
+        "instance_ip_back_refs": [
+            {
+                "display_name": "9e564158-3b8d-4594-a958-d3d0064ad3c4",
+                "uuid": "9e564158-3b8d-4594-a958-d3d0064ad3c4",
+                "instance_ip_address": "46.149.151.3",
+                "virtual_machine_interface_refs": [
+                    {
+                        "to": [
+                            "default-domain",
+                            "ctest-FloatingipBasicTestSanity-99684235",
+                            "5c5829af-8331-4e19-b3c3-d307ec619e95"
+                        ],
+                        "attr": null,
+                        "uuid": "5c5829af-8331-4e19-b3c3-d307ec619e95"
+                    }
+                ],
+                "virtual_network_refs": [
+                    {
+                        "to": [
+                            "default-domain",
+                            "ctest-FloatingipBasicTestSanity-99684235",
+                            "ctest-vn1-33771181"
+                        ],
+                        "attr": null,
+                        "uuid": "61949cbd-ee2a-46bb-b7b4-1ab4cff0cbf6"
+                    }
+                ],
+                "subnet_uuid": "f3420408-6d93-471e-8d56-3d89a1d52570",
+                "perms2": {
+                    "owner": "8a5e9e6109384238a4a5fd5f23bebea4",
+                    "owner_access": 7,
+                    "global_access": 0,
+                    "share": []
+                },
+                "instance_ip_family": "v4",
+                "id_perms": {
+                    "enable": true,
+                    "description": null,
+                    "creator": null,
+                    "created": "2019-02-28T16:25:50.156837",
+                    "user_visible": true,
+                    "last_modified": "2019-02-28T16:25:50.156837",
+                    "permissions": {
+                        "owner": "cloud-admin",
+                        "owner_access": 7,
+                        "other_access": 7,
+                        "group": "cloud-admin-group",
+                        "group_access": 7
+                    },
+                    "uuid": {
+                        "uuid_mslong": 11409378553201771924,
+                        "uuid_lslong": 12202736080772584388
+                    }
+                },
+                "fq_name": [
+                    "9e564158-3b8d-4594-a958-d3d0064ad3c4"
+                ],
+                "name": "9e564158-3b8d-4594-a958-d3d0064ad3c4"
+            }
+        ]
+    }
+}

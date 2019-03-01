@@ -1,0 +1,22 @@
+{
+    "floating-ip": {
+        "virtual_machine_interface_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235",
+                    "5c5829af-8331-4e19-b3c3-d307ec619e95"
+                ],
+                "uuid": "5c5829af-8331-4e19-b3c3-d307ec619e95"
+            }
+        ],
+        "uuid": "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+        "floating_ip_fixed_ip_address": "46.149.151.3"
+    },
+    "field_mask": {
+        "paths": [
+            "floating_ip_fixed_ip_address",
+            "virtual_machine_interface_refs"
+        ]
+    }
+}
