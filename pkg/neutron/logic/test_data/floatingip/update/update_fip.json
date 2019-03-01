@@ -1,0 +1,22 @@
+{
+    "data": {
+        "fields": null,
+        "resource": {
+            "port_id": "5c5829af-8331-4e19-b3c3-d307ec619e95"
+        },
+        "id": "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+        "filters": null
+    },
+    "context": {
+        "user_id": "c8a48c44a047493995f29af752ce6ece",
+        "roles": [
+            "admin"
+        ],
+        "tenant_id": "8a5e9e6109384238a4a5fd5f23bebea4",
+        "is_admin": true,
+        "request_id": "req-7e4178bd-84b7-4999-a57c-6baf1756ac45",
+        "operation": "UPDATE",
+        "type": "floatingip",
+        "tenant": "8a5e9e6109384238a4a5fd5f23bebea4"
+    }
+}
