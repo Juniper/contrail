@@ -519,7 +519,7 @@ func getClientByID(clientID string, clients ClientsList) *client.HTTP {
 func cleanPath(ctx context.Context, path string, client *client.HTTP) error {
 	response, err := client.EnsureDeleted(ctx, path, nil)
 	if err != nil && response.StatusCode != http.StatusNotFound {
-		return fmt.Errorf("failed to delete resource, got status code %v", response.StatusCode)
+		return errors.Wrapf(err, "failed to delete resource, got status code %v", response.StatusCode)
 	}
 	return nil
 }
