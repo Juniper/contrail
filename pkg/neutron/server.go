@@ -23,6 +23,7 @@ type Server struct {
 	UserAgentKV       userAgentKVServer
 	IDToFQNameService idToFQNameServer
 	InTransactionDoer services.InTransactionDoer
+	FQNameToIDService services.FQNameToIDService
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
@@ -64,6 +65,7 @@ func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, 
 		WriteService:      s.WriteService,
 		UserAgentKV:       s.UserAgentKV,
 		IDToFQNameService: s.IDToFQNameService,
+		FQNameToIDService: s.FQNameToIDService,
 		RequestContext:    r.Context,
 		FieldMask:         r.Data.FieldMask,
 	}
