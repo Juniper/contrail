@@ -1,0 +1,52 @@
+{
+    "floating-ip": {
+        "project_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235"
+                ],
+                "attr": null,
+                "uuid": "8a5e9e61-0938-4238-a4a5-fd5f23bebea4"
+            }
+        ],
+        "fq_name": [
+            "default-domain",
+            "ctest-FloatingipBasicTestSanity-99684235",
+            "ctest-fvn-50778358",
+            "ctest-some-pool-21034020",
+            "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+        ],
+        "uuid": "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+        "parent_uuid": "c894d6c0-d8d2-403f-97a0-7d3e8fea207b",
+        "parent_type": "floating-ip-pool",
+        "perms2": {
+            "owner": "8a5e9e61-0938-4238-a4a5-fd5f23bebea4",
+            "owner_access": 7,
+            "global_access": 0,
+            "share": []
+        },
+        "floating_ip_address": "207.93.253.4",
+        "id_perms": {
+            "enable": true,
+            "description": "",
+            "creator": null,
+            "created": "2019-02-28T16:32:43.098011",
+            "user_visible": true,
+            "last_modified": "2019-02-28T16:32:43.098011",
+            "permissions": {
+                "owner": "ctest-FloatingipBasicTestSanity-99684235",
+                "owner_access": 7,
+                "other_access": 7,
+                "group": "admin",
+                "group_access": 7
+            },
+            "uuid": {
+                "uuid_mslong": 17642353848589109933,
+                "uuid_lslong": 10052986869457104453
+            }
+        },
+        "display_name": "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+        "name": "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+    }
+}

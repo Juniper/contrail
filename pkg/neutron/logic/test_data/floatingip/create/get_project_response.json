@@ -1,0 +1,61 @@
+{
+    "project": {
+        "floating_ip_pool_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235",
+                    "ctest-fvn-50778358",
+                    "ctest-some-pool-21034020"
+                ],
+                "attr": null,
+                "uuid": "c894d6c0-d8d2-403f-97a0-7d3e8fea207b"
+            }
+        ],
+        "display_name": "ctest-FloatingipBasicTestSanity-99684235",
+        "uuid": "8a5e9e61-0938-4238-a4a5-fd5f23bebea4",
+        "application_policy_set_refs": [
+            {
+                "to": [
+                    "default-domain",
+                    "ctest-FloatingipBasicTestSanity-99684235",
+                    "default-application-policy-set"
+                ],
+                "attr": null,
+                "uuid": "0b1a5978-84e4-46af-b054-82f7f445537f"
+            }
+        ],
+        "parent_uuid": "26646212-4fe7-4e36-b171-5a7f6b9c3ce5",
+        "parent_type": "domain",
+        "perms2": {
+            "owner": "8a5e9e6109384238a4a5fd5f23bebea4",
+            "owner_access": 7,
+            "global_access": 0,
+            "share": []
+        },
+        "id_perms": {
+            "enable": true,
+            "uuid": {
+                "uuid_mslong": 9970580764648555064,
+                "uuid_lslong": 11864167378440863396
+            },
+            "creator": null,
+            "created": "2019-02-28T16:25:29.689044",
+            "user_visible": true,
+            "last_modified": "2019-02-28T16:32:42.950565",
+            "permissions": {
+                "owner": "admin",
+                "owner_access": 7,
+                "other_access": 7,
+                "group": "admin",
+                "group_access": 7
+            },
+            "description": null
+        },
+        "fq_name": [
+            "default-domain",
+            "ctest-FloatingipBasicTestSanity-99684235"
+        ],
+        "name": "ctest-FloatingipBasicTestSanity-99684235"
+    }
+}
