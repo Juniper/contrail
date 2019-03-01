@@ -1,0 +1,40 @@
+{
+    "floating-ip-pool": {
+        "fq_name": [
+            "default-domain",
+            "ctest-FloatingipBasicTestSanity-99684235",
+            "ctest-fvn-50778358",
+            "ctest-some-pool-21034020"
+        ],
+        "uuid": "c894d6c0-d8d2-403f-97a0-7d3e8fea207b",
+        "parent_uuid": "0a673570-47eb-4b88-b648-5de06c65a37e",
+        "parent_type": "virtual-network",
+        "perms2": {
+            "owner": "8a5e9e6109384238a4a5fd5f23bebea4",
+            "owner_access": 7,
+            "global_access": 0,
+            "share": []
+        },
+        "id_perms": {
+            "enable": true,
+            "description": null,
+            "creator": null,
+            "created": "2019-02-28T16:25:52.266630",
+            "user_visible": true,
+            "last_modified": "2019-02-28T16:25:52.266630",
+            "permissions": {
+                "owner": "ctest-FloatingipBasicTestSanity-99684235",
+                "owner_access": 7,
+                "other_access": 7,
+                "group": "admin",
+                "group_access": 7
+            },
+            "uuid": {
+                "uuid_mslong": 14453413227898486847,
+                "uuid_lslong": 10925870403656753275
+            }
+        },
+        "display_name": "ctest-some-pool-21034020",
+        "name": "ctest-some-pool-21034020"
+    }
+}
