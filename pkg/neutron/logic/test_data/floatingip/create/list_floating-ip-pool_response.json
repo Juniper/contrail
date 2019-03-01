@@ -1,0 +1,13 @@
+{
+    "floating-ip-pools": [
+        {
+            "fq_name": [
+                "default-domain",
+                "ctest-FloatingipBasicTestSanity-99684235",
+                "ctest-fvn-50778358",
+                "ctest-some-pool-21034020"
+            ],
+            "uuid": "c894d6c0-d8d2-403f-97a0-7d3e8fea207b"
+        }
+    ]
+}

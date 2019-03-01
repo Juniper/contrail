@@ -82,28 +82,24 @@ generate_go:
 	    --schemas schemas/neutron --templates tools/templates/neutron/template_config.yaml \
 		--schema-output public/neutron/schema.json --openapi-output public/neutron/openapi.json
 
-TYPES_MOCK := pkg/types/mock/gen_service_mock.go
-SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
-IPAM_MOCK := pkg/types/ipam/mock/gen_address_manager_mock.go
-NEUTRON_LOGIC_MOCK := pkg/neutron/mock/gen_neutron_mock.go
+MOCKS := pkg/types/mock/service.go \
+	pkg/services/mock/gen_service_interface.go \
+	pkg/services/mock/fqname_to_id.go \
+	pkg/services/mock/id_to_fqname.go \
+	pkg/types/ipam/mock/address_manager.go \
+	pkg/neutron/mock/server.go
 
-generate_mocks: $(TYPES_MOCK) $(SERVICES_MOCK) $(IPAM_MOCK) $(NEUTRON_LOGIC_MOCK)
+define create-generate-mock-target
+  $1: $(shell dirname $(shell dirname $1))/$(shell basename $1)
+	mkdir -p $(shell dirname $1)
+	mockgen -destination=$1 \
+	-package=$(shell basename $(shell dirname $(shell dirname $1)))mock \
+	-source $(shell dirname $(shell dirname $1))/$(shell basename $1)
+endef
 
-$(TYPES_MOCK): pkg/types/service.go
-	mkdir -p $(@D)
-	mockgen -destination=$@ -package=typesmock -source $<
+$(foreach mock,$(MOCKS),$(eval $(call create-generate-mock-target,$(mock))))
 
-$(SERVICES_MOCK): pkg/services/gen_service_interface.go
-	mkdir -p $(@D)
-	mockgen -destination=$@ -package=servicesmock -source $<
-
-$(IPAM_MOCK): pkg/types/ipam/address_manager.go
-	mkdir -p $(@D)
-	mockgen -destination=$@ -package=ipammock -source $<
-
-$(NEUTRON_LOGIC_MOCK): pkg/neutron/server.go
-	mkdir -p $(@D)
-	mockgen -destination=$@ -package=neutronmock -source $<
+generate_mocks: $(MOCKS)
 
 PROTO := ./bin/protoc -I ./vendor/ -I ./vendor/github.com/gogo/protobuf/protobuf -I ./proto
 PROTO_PKG_PATH := proto/github.com/Juniper/contrail/pkg
@@ -121,6 +117,7 @@ doc/proto.md: $(PROTO_PKG_PATH)/models/gen_model.proto $(PROTO_PKG_PATH)/service
 clean_gen:
 	rm -rf public/[^watch.html]*
 	find tools/ proto/ pkg/ -name gen_* -delete
+	find pkg -name 'mock' -type d -exec rm -rf '{}' +
 
 package: ## Generate the packages
 	go run cmd/contrailutil/main.go package
