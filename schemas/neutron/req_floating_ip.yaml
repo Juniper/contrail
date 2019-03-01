@@ -6,6 +6,8 @@ type: request
 schema:
   type: object
   properties:
+    id:
+      type: string
     description:
       presence: optional
       type: string
