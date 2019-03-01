@@ -84,16 +84,21 @@ generate_go:
 
 TYPES_MOCK := pkg/types/mock/gen_service_mock.go
 SERVICES_MOCK := pkg/services/mock/gen_service_mock.go
+FQNAMETOID_MOCK := pkg/services/mock/gen_fq_name_to_id.go
 IPAM_MOCK := pkg/types/ipam/mock/gen_address_manager_mock.go
 NEUTRON_LOGIC_MOCK := pkg/neutron/mock/gen_neutron_mock.go
 
-generate_mocks: $(TYPES_MOCK) $(SERVICES_MOCK) $(IPAM_MOCK) $(NEUTRON_LOGIC_MOCK)
+generate_mocks: $(TYPES_MOCK) $(SERVICES_MOCK) $(IPAM_MOCK) $(NEUTRON_LOGIC_MOCK) $(FQNAMETOID_MOCK)
 
 $(TYPES_MOCK): pkg/types/service.go
 	mkdir -p $(@D)
 	mockgen -destination=$@ -package=typesmock -source $<
 
 $(SERVICES_MOCK): pkg/services/gen_service_interface.go
+	mkdir -p $(@D)
+	mockgen -destination=$@ -package=servicesmock -source $<
+
+$(FQNAMETOID_MOCK): pkg/services/fqname_to_id.go
 	mkdir -p $(@D)
 	mockgen -destination=$@ -package=servicesmock -source $<
 
