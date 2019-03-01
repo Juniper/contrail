@@ -42,6 +42,29 @@ func (sgr *SecurityGroupRule) ReadAll(
 	return response, nil
 }
 
+// Create security group rule.
+func (sgr *SecurityGroupRule) Create(ctx context.Context, rp RequestParameters) (Response, error){
+	var sgRes *services.GetSecurityGroupResponse
+	var err error
+
+	if sgRes, err = rp.ReadService.GetSecurityGroup(ctx, &services.GetSecurityGroupRequest{
+		ID: sgr.SecurityGroupID,
+	}); err != nil {
+		return nil, err
+	}
+
+	var rule *models.PolicyRuleType
+	if rule, err = sgr.vncFromNeutron(ctx, rp); err != nil {
+		return nil, err
+	}
+
+	if err = securityGroupRuleCreate(ctx, rp, sgRes.GetSecurityGroup(), rule); err != nil {
+		return nil, err
+	}
+
+	return sgr.neutronFromVnc(sgRes.GetSecurityGroup(), rule)
+}
+
 func listSecurityGroupRules(
 	ctx context.Context, rp RequestParameters, f Filters,
 ) ([]*SecurityGroupRuleResponse, error) {
@@ -115,9 +138,13 @@ func (*SecurityGroupRule) neutronFromVnc(
 func (sgr *SecurityGroupRule) vncFromNeutron(
 	ctx context.Context, rp RequestParameters,
 ) (*models.PolicyRuleType, error) {
+	if sgr.ID == "" {
+		sgr.ID = uuid.NewV4().String()
+	}
+
 	nowISOFormat := time.Now().Format(constants.ISO8601TimeFormat)
 	vncSgr := &models.PolicyRuleType{
-		RuleUUID:     uuid.NewV4().String(),
+		RuleUUID:     sgr.ID,
 		Direction:    models.SRCToDSTDirection,
 		SRCPorts:     []*models.PortType{{StartPort: defaultPortMin, EndPort: defaultPortMax}},
 		Created:      nowISOFormat,

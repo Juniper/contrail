@@ -6,6 +6,9 @@ type: request
 schema:
   type: object
   properties:
+    id:
+      type: string
+      presence: optional
     port_range_min:
       type: integer
     port_range_max:

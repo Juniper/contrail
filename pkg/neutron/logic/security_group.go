@@ -372,13 +372,17 @@ func (sg *SecurityGroup) neutronToVnc(ctx context.Context, rp RequestParameters)
 		Description: sg.Description,
 	}
 
-	return &models.SecurityGroup{
+	sgVnc := &models.SecurityGroup{
 		Name:        sg.Name,
 		DisplayName: sg.Name,
 		IDPerms:     &idPerms,
 		ParentUUID:  project.GetUUID(),
 		ParentType:  models.KindProject,
-	}, nil
+	}
+	if sg.ID != "" {
+		sgVnc.UUID = sg.ID
+	}
+	return sgVnc, nil
 }
 
 func (SecurityGroup) assignDefaultSecurityGroupRules(
