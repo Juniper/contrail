@@ -24,6 +24,7 @@ docker/contrail_go/etc/
 docker/contrail_go/contrail
 docker/contrail_go/contrailcli
 **/gen_*
+pkg/**/mock/*
 profile.cov
 profile.tmp
 public/
