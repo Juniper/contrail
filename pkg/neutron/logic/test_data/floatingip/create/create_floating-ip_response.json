@@ -1,0 +1,17 @@
+{
+    "floating-ip": {
+        "fq_name": [
+            "default-domain",
+            "ctest-FloatingipBasicTestSanity-99684235",
+            "ctest-fvn-50778358",
+            "ctest-some-pool-21034020",
+            "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+        ],
+        "parent_uuid": "c894d6c0-d8d2-403f-97a0-7d3e8fea207b",
+        "parent_href": "http://maciej.novalocal:8082/floating-ip-pool/c894d6c0-d8d2-403f-97a0-7d3e8fea207b",
+        "parent_type": "floating-ip-pool",
+        "uuid": "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+        "href": "http://maciej.novalocal:8082/floating-ip/f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+        "name": "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+    }
+}
