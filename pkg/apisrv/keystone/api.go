@@ -153,11 +153,7 @@ func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
+	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 
 	id := c.Param("id")
 	if keystoneEndpoint != nil {
@@ -185,11 +181,7 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 //ListProjectsAPI is an API handler to list projects.
 func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
+	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
 		return keystone.Client.GetProjects(c)
@@ -249,11 +241,7 @@ func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
 func (keystone *Keystone) fetchServerTokenWithClusterToken(
 	c echo.Context, identity *kscommon.Identity) error {
 	clusterID := identity.Cluster.ID
-	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return echo.NewHTTPError(http.StatusUnauthorized, err)
-	}
+	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		tokenURL := keystoneEndpoint.URL + "/v3/auth/tokens"
 		request, err := http.NewRequest(echo.GET, tokenURL, nil)
@@ -313,11 +301,7 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 		return keystone.fetchServerTokenWithClusterToken(c, identity)
 	}
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return echo.NewHTTPError(http.StatusUnauthorized, err)
-	}
+	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		return keystone.fetchClusterToken(c, identity, authRequest, keystoneEndpoint)
 	}
@@ -374,11 +358,7 @@ func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthR
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint, err := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return echo.NewHTTPError(http.StatusUnauthorized, err)
-	}
+	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
 		return keystone.Client.ValidateToken(c)
