@@ -16,6 +16,10 @@ schema:
       type: boolean
     name:
       type: string
+    port_id:
+      type: string
+    subnet_id:
+      type: string
     external_gateway_info:
       $ref: req_router.json#/definitions/ExtGatewayInfo
 
