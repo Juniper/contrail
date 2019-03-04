@@ -18,6 +18,7 @@ const (
 	sharedKey         = "shared"
 	routerExternalKey = "router:external"
 	tenantIDKey       = "tenant_id"
+	deviceIDKey	      = "device_id"
 )
 
 // UnmarshalJSON Filters.
