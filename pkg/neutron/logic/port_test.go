@@ -7,7 +7,10 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
+	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	servicesmock "github.com/Juniper/contrail/pkg/services/mock"
@@ -50,7 +53,7 @@ func TestPortRead(t *testing.T) {
 				},
 				ID:             "b6283c9b-07ec-4061-941e-3f392844059f",
 				SecurityGroups: []string{"79ce33bf-1bac-48d5-8bbb-5782e26b3db8"},
-				DeviceID:       "default-vm",
+				DeviceID:       "d51094ce-3f69-11e9-8faf-d70c75a42a13",
 			},
 			readData: &readData{
 				vnReq: &services.GetVirtualNetworkResponse{
@@ -81,7 +84,7 @@ func TestPortRead(t *testing.T) {
 							{UUID: "623666e6-3929-4cb9-bedb-1dd98f63c569"},
 						},
 						VirtualMachineRefs: []*models.VirtualMachineInterfaceVirtualMachineRef{
-							{UUID: "12321431-3242-1234-bedb-4dd38f63c569", To: []string{"default", "default-vm"}},
+							{UUID: "12321431-3242-1234-bedb-4dd38f63c569", To: []string{"default", "d51094ce-3f69-11e9-8faf-d70c75a42a13"}},
 						},
 						VirtualMachineInterfaceBindings: &models.KeyValuePairs{
 							KeyValuePair: []*models.KeyValuePair{
@@ -128,7 +131,7 @@ func TestPortRead(t *testing.T) {
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
-				assert.EqualValues(t, tt.expected, readRes)
+				assert.Equal(t, tt.expected, readRes)
 			}
 		})
 	}
@@ -136,8 +139,8 @@ func TestPortRead(t *testing.T) {
 
 func TestPortUpdate(t *testing.T) {
 	type readData struct {
-		vnReq  *services.GetVirtualNetworkResponse
-		vmiReq *services.GetVirtualMachineInterfaceResponse
+		vnResp  *services.GetVirtualNetworkResponse
+		vmiResp *services.GetVirtualMachineInterfaceResponse
 	}
 
 	type updateData struct {
@@ -145,27 +148,30 @@ func TestPortUpdate(t *testing.T) {
 	}
 
 	type writeData struct {
-		vmReq *services.CreateVirtualMachineRequest
-		vmRes *services.CreateVirtualMachineResponse
+		vmReq  *services.CreateVirtualMachineRequest
+		vmResp *services.CreateVirtualMachineResponse
 	}
+
+	const portID = "b6283c9b-07ec-4061-941e-3f392844059f"
+	const deviceID = "d51094ce-3f69-11e9-8faf-d70c75a42a13"
+	const networkID = "623666e6-3929-4cb9-bedb-1dd98f63c569"
+	const tenantID = "9933f4ed73f742f9a2bfe4bf4dd5f4df"
 
 	tests := []struct {
 		name       string
 		port       *Port
 		mask       types.FieldMask
 		expected   *PortResponse
-		wantErr    bool
 		id         string
 		readData   *readData
 		updateData *updateData
 		writeData  *writeData
 	}{
 		{
-			name: "Update device id, binding host ip and device owner",
+			name: "Update name, device ID, binding host IP and device owner",
 			port: &Port{
 				Name:          "hoge-hoge",
-				ID:            "b6283c9b-07ec-4061-941e-3f392844059f",
-				DeviceID:      "default-vm",
+				DeviceID:      deviceID,
 				BindingHostID: "ignacy.osetek-spike.novalocal",
 				DeviceOwner:   "compute:nova",
 			},
@@ -178,7 +184,7 @@ func TestPortUpdate(t *testing.T) {
 					"data.resource." + PortFieldDeviceOwner,
 				},
 			},
-			id: "b6283c9b-07ec-4061-941e-3f392844059f",
+			id: portID,
 			expected: &PortResponse{
 				Status: "ACTIVE",
 				BindingVifDetails: BindingVifDetails{
@@ -189,16 +195,16 @@ func TestPortUpdate(t *testing.T) {
 				BindingVnicType: "normal",
 				BindingVifType:  "vrouter",
 				Name:            "hoge-hoge",
-				NetworkID:       "623666e6-3929-4cb9-bedb-1dd98f63c569",
-				TenantID:        "9933f4ed73f742f9a2bfe4bf4dd5f4df",
+				NetworkID:       networkID,
+				TenantID:        tenantID,
 				MacAddress:      "00:0A:E6:3E:FD:EF",
 				FQName:          []string{"default-project", "default-vmi"},
 				FixedIps: []*FixedIp{
 					{SubnetID: "a46ff943-72cd-41dc-b92b-a997c1287856", IPAddress: "10.0.1.3"},
 				},
-				ID:             "b6283c9b-07ec-4061-941e-3f392844059f",
+				ID:             portID,
 				SecurityGroups: []string{"79ce33bf-1bac-48d5-8bbb-5782e26b3db8"},
-				DeviceID:       "default-vm",
+				DeviceID:       deviceID,
 			},
 			updateData: &updateData{
 				vmiReq: &services.UpdateVirtualMachineInterfaceRequest{
@@ -215,39 +221,40 @@ func TestPortUpdate(t *testing.T) {
 			writeData: &writeData{
 				vmReq: &services.CreateVirtualMachineRequest{
 					VirtualMachine: &models.VirtualMachine{
-						Name:       "default-vm",
+						UUID:       deviceID,
+						Name:       deviceID,
 						ServerType: "virtual-server",
 						Perms2: &models.PermType2{
-							Owner: "9933f4ed73f742f9a2bfe4bf4dd5f4df",
+							Owner: tenantID,
 						},
 					},
 				},
-				vmRes: &services.CreateVirtualMachineResponse{
+				vmResp: &services.CreateVirtualMachineResponse{
 					VirtualMachine: &models.VirtualMachine{
-						Name:       "default-vm",
+						Name:       deviceID,
 						ServerType: "virtual-server",
 						Perms2: &models.PermType2{
-							Owner: "9933f4ed73f742f9a2bfe4bf4dd5f4df",
+							Owner: tenantID,
 						},
-						FQName: []string{"default", "default-vm"},
+						FQName: []string{"default", deviceID},
 					},
 				},
 			},
 			readData: &readData{
-				vnReq: &services.GetVirtualNetworkResponse{
+				vnResp: &services.GetVirtualNetworkResponse{
 					VirtualNetwork: &models.VirtualNetwork{
-						UUID:                "623666e6-3929-4cb9-bedb-1dd98f63c569",
+						UUID:                networkID,
 						PortSecurityEnabled: true,
 					},
 				},
-				vmiReq: &services.GetVirtualMachineInterfaceResponse{
+				vmiResp: &services.GetVirtualMachineInterfaceResponse{
 					VirtualMachineInterface: &models.VirtualMachineInterface{
 						Name:       "hoge-hoge",
-						UUID:       "b6283c9b-07ec-4061-941e-3f392844059f",
+						UUID:       portID,
 						FQName:     []string{"default-project", "default-vmi"},
 						ParentType: models.KindProject,
 						Perms2: &models.PermType2{
-							Owner: "9933f4ed73f742f9a2bfe4bf4dd5f4df",
+							Owner: tenantID,
 						},
 						VirtualMachineInterfaceMacAddresses: &models.MacAddressesType{
 							MacAddress: []string{"00:0A:E6:3E:FD:EF"},
@@ -257,7 +264,7 @@ func TestPortUpdate(t *testing.T) {
 							Enable: true,
 						},
 						VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
-							{UUID: "623666e6-3929-4cb9-bedb-1dd98f63c569"},
+							{UUID: networkID},
 						},
 						VirtualMachineInterfaceBindings: &models.KeyValuePairs{
 							KeyValuePair: []*models.KeyValuePair{
@@ -280,26 +287,35 @@ func TestPortUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
-			mockServ := servicesmock.NewMockService(mockCtrl)
+			service := servicesmock.NewMockService(mockCtrl)
 
-			if tt.readData.vnReq != nil {
-				mockServ.EXPECT().GetVirtualNetwork(gomock.Any(), gomock.Any()).Return(
-					tt.readData.vnReq, nil,
-				)
+			var call *gomock.Call
+			if tt.readData.vmiResp != nil {
+				call = service.EXPECT().GetVirtualMachineInterface(gomock.Any(), gomock.Any()).Return(
+					tt.readData.vmiResp, nil,
+				).Times(1)
 			}
-			if tt.readData.vmiReq != nil {
-				mockServ.EXPECT().GetVirtualMachineInterface(gomock.Any(), gomock.Any()).Return(
-					tt.readData.vmiReq, nil,
-				)
+			if tt.readData.vnResp != nil {
+				call = service.EXPECT().GetVirtualNetwork(gomock.Any(), gomock.Any()).Return(
+					tt.readData.vnResp, nil,
+				).Times(1).After(call)
 			}
+			call = service.EXPECT().GetVirtualMachine(
+				gomock.Any(),
+				gomock.Eq(&services.GetVirtualMachineRequest{ID: deviceID}),
+			).Return(
+				nil, status.Error(codes.NotFound, "not found"),
+			).Times(1).After(call)
 			if tt.writeData.vmReq != nil {
-				mockServ.EXPECT().CreateVirtualMachine(gomock.Any(), tt.writeData.vmReq).Return(
-					tt.writeData.vmRes, nil,
-				)
+				call = service.EXPECT().CreateVirtualMachine(gomock.Any(), tt.writeData.vmReq).Return(
+					tt.writeData.vmResp, nil,
+				).Times(1).After(call)
 			}
 			if tt.updateData.vmiReq != nil {
-				mockServ.EXPECT().UpdateVirtualMachineInterface(gomock.Any(), gomock.Any()).DoAndReturn(
-					func(_ context.Context, vmiReq *services.UpdateVirtualMachineInterfaceRequest,
+				call = service.EXPECT().UpdateVirtualMachineInterface(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(
+						_ context.Context,
+						vmiReq *services.UpdateVirtualMachineInterfaceRequest,
 					) (*services.UpdateVirtualMachineInterfaceResponse, error) {
 						assert.NotNil(t, vmiReq.GetVirtualMachineInterface())
 						assert.Equal(t, tt.updateData.vmiReq.GetFieldMask(), vmiReq.GetFieldMask())
@@ -307,22 +323,22 @@ func TestPortUpdate(t *testing.T) {
 							VirtualMachineInterface: vmiReq.GetVirtualMachineInterface(),
 						}, nil
 					},
-				)
+				).Times(1).After(call)
 			}
 
-			rp := RequestParameters{
-				ReadService:  mockServ,
-				WriteService: mockServ,
-				FieldMask:    tt.mask,
-			}
+			r, err := tt.port.Update(
+				nil,
+				RequestParameters{
+					ReadService:  service,
+					WriteService: service,
+					FieldMask:    tt.mask,
+					Log:          logutil.NewLogger("test"),
+				},
+				tt.id,
+			)
 
-			readRes, err := tt.port.Update(nil, rp, tt.id)
-
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.EqualValues(t, tt.expected, readRes)
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, r)
 		})
 	}
 }
@@ -379,7 +395,7 @@ func TestPortDelete(t *testing.T) {
 							{UUID: "623666e6-3929-4cb9-bedb-1dd98f63c569"},
 						},
 						VirtualMachineRefs: []*models.VirtualMachineInterfaceVirtualMachineRef{
-							{UUID: "12321431-3242-1234-bedb-4dd38f63c569", To: []string{"default", "default-vm"}},
+							{UUID: "12321431-3242-1234-bedb-4dd38f63c569", To: []string{"default", "d51094ce-3f69-11e9-8faf-d70c75a42a13"}},
 						},
 						InstanceIPBackRefs: []*models.InstanceIP{
 							{
@@ -429,7 +445,7 @@ func TestPortDelete(t *testing.T) {
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
-				assert.EqualValues(t, tt.expected, readRes)
+				assert.Equal(t, tt.expected, readRes)
 			}
 		})
 	}
