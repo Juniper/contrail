@@ -409,6 +409,7 @@ func (s *Server) setupNeutronService(cs services.Service) *neutron.Server {
 		IDToFQNameService: s.IDToFQNameServer,
 		FQNameToIDService: s.FQNameToIDServer,
 		InTransactionDoer: s.DBService,
+		Log:               logutil.NewLogger("neutron-server"),
 	}
 	n.RegisterNeutronAPI(s.Echo)
 	return n
