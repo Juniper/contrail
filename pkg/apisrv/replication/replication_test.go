@@ -179,9 +179,14 @@ func runReplicationTest(t *testing.T) {
 	cleanup := integration.RunDirtyTestScenario(t, testScenario, server)
 	defer cleanup()
 
+	time.Sleep(5 * time.Second)
 	//verify create objects
 	verifyVNCReqStore(t, postReq, vncReqStoreA, testScenario)
 	verifyVNCReqStore(t, postReq, vncReqStoreB, testScenario)
+
+	//verify put reqs, to check ref updates
+	verifyVNCReqStore(t, putReq, vncReqStoreA, testScenario)
+
 }
 
 // nolint: gocyclo
@@ -197,7 +202,11 @@ func verifyVNCReqStore(t *testing.T, req string,
 				expectMap, _ := task.Expect.(map[string]interface{})
 				reqData, schemaPresent := (*eachReq)["node-profile"]
 				if schemaPresent && task.Request.Path == "/node-profiles" {
-
+					//nolint: errcheck
+					expectedNodeProfile, _ := expectMap["node-profile"].(map[string]interface{})
+					if req == postReq && expectedNodeProfile["hardware_refs"] != nil {
+						delete(expectedNodeProfile, "hardware_refs")
+					}
 					_ = testutil.AssertEqual(t, expectMap["node-profile"], reqData,
 						fmt.Sprintf("node-profile req not replicated to vnc server"))
 				}
@@ -221,7 +230,8 @@ func verifyVNCReqStore(t *testing.T, req string,
 			}
 		}
 	}
-	assert.True(t, ok, "post req not found in test replication store")
+	assert.True(t, ok,
+		fmt.Sprintf("%s req not found in test replication store", req))
 }
 
 func TestReplication(t *testing.T) {

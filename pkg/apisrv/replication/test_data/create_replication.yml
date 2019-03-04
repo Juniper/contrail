@@ -1,10 +1,16 @@
 name: Replication create objects
 description: replication test to create objects
 cleanup:
+- path: /hardware/test_hardware_uuid
 - path: /node-profile/test_create_node_profile_uuid
 - path: /node/test_create_node_uuid
 - path: /port/test_create_port_uuid
 test_data:
+  test_hardware: &test_hardware
+    uuid: test_hardware_uuid
+    name: juniper-70
+    fq_name:
+      - juniper-70
   test_create_node_profile: &test_create_node_profile
     uuid: test_create_node_profile_uuid
     parent_type: global-system-config
@@ -14,6 +20,8 @@ test_data:
       role_mappings:
       -  physical_role: cat123
     node_profile_vendor: juniper
+    hardware_refs:
+      - uuid: test_hardware_uuid
   test_create_node: &test_create_node
     uuid: test_create_node_uuid
     name: test-create-node
@@ -41,6 +49,17 @@ clients:
         name: admin
 
 workflow:
+- name: create test hardware
+  request:
+    path: /hardwares
+    method: POST
+    expected:
+    - 200
+    data:
+      hardware: *test_hardware
+  expect:
+    hardware: *test_hardware
+
 - name: create test replicate node profile
   request:
     path: /node-profiles
