@@ -30,7 +30,7 @@ server:
   enabled: true
   read_timeout: 10
   write_timeout: 5
-  log_api: false
+  log_api: true
   address: ":9091"
   # Enable gzip on output
   enable_gzip: false
