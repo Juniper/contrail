@@ -56,6 +56,7 @@ const (
 	ipAddressGenerationFailure                errorType = "IpAddressGenerationFailure"
 	networkNotFound                           errorType = "NetworkNotFound"
 	subnetNotFound                            errorType = "SubnetNotFound"
+	subnetMismatchForPort                     errorType = "SubnetMismatchForPort"
 	securityGroupNotFound                     errorType = "SecurityGroupNotFound"
 	securityGroupAlreadyExists                errorType = "SecurityGroupAlreadyExists"
 	securityGroupRemoteGroupAndRemoteIPPrefix errorType = "SecurityGroupRemoteGroupAndRemoteIpPrefix"
@@ -67,4 +68,6 @@ const (
 	securityGroupRuleNotFound                 errorType = "SecurityGroupRuleNotFound"
 	networkInUse                              errorType = "NetworkInUse"
 	invalidSharedSetting                      errorType = "InvalidSharedSetting"
+	routerInterfaceNotFound                   errorType = "RouterInterfaceNotFound"
+	routerInterfaceNotFoundForSubnet          errorType = "RouterInterfaceNotFoundForSubnet"
 )
