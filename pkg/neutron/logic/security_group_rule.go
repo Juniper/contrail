@@ -84,6 +84,57 @@ func listSecurityGroupRules(
 	return securityGroupRules, nil
 }
 
+// Read security group rule logic.
+func (sgr *SecurityGroupRule) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	var projectUUID string
+	if !rp.RequestContext.IsAdmin {
+		projectUUID = VncUUIDToNeutronID(rp.RequestContext.TenantID)
+		// Trigger a project read to ensure project sync
+		if _, err := rp.ReadService.GetProject(ctx, &services.GetProjectRequest{ID: projectUUID}); err != nil {
+			return nil, newNeutronError(badRequest, errorFields{
+				"resource": securityGroupRuleResourceName,
+				"msg":      err,
+			})
+		}
+	}
+	securityGroups, err := (&SecurityGroup{}).listSecurityGroups(ctx, rp, Filters{
+		"tenant_id": []string{projectUUID},
+	})
+	if err != nil {
+		return nil, newNeutronError(securityGroupNotFound, errorFields{
+			"resource": securityGroupRuleResourceName,
+			"msg":      err,
+		})
+	}
+	for _, sg := range securityGroups {
+		sgrResponses, err := (&SecurityGroup{}).readSecurityGroupRules(sg)
+		if err != nil {
+			return nil, errors.Wrapf(err, "can't read security group rules")
+		}
+		for _, sgrResponse := range sgrResponses {
+			if sgrResponse.ID == id {
+				return sgrResponse, nil
+			}
+		}
+	}
+
+	return nil, newNeutronError(securityGroupRuleNotFound, nil)
+}
+
+// Delete security group rule logic.
+func (sgr *SecurityGroupRule) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) { // *SecurityGroupRuleResponse ?
+	// sgr, err :=
+	// response, err := listSecurityGroupRules(ctx, rp, f)
+	// if err != nil {
+	// 	return SecurityGroupRuleResponse{}, newNeutronError(badRequest, errorFields{
+	// 		"resource": securityGroupRuleResourceName,
+	// 		"msg":      err,
+	// 	})
+	// }
+	// return response, nil
+	return nil, nil
+}
+
 func getGenericDefaultSecurityGroupRule() *SecurityGroupRule {
 	return &SecurityGroupRule{
 		PortRangeMin: defaultPortMin,

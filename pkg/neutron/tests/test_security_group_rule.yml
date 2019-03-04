@@ -142,6 +142,34 @@ test_data:
       type: security_group_rule
       tenant: bee123efb2ad4a15896b4011cb4d00b3
 
+  # sgr_read_request: &sgr_read_request
+  #   data:
+  #     fields: []
+  #     id: 32ad456e-16ae-44c9-b93e-e4cf9708a3d2
+  #     filters:
+  #   context:
+  #     user_id: 87e9e49b21e547baac78b6d81430aa9b
+  #     roles:
+  #       - admin
+  #     tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+  #     is_admin: true
+  #     request_id: req-bf656685-7960-4f7c-9239-5d2f20d3fb4b
+  #     operation: READ
+  #     type: security_group_rule
+  #     tenant: bee123efb2ad4a15896b4011cb4d00b3
+
+  # sgr_read_response: &sgr_read_response
+  #   remote_group_id:
+  #   direction: egress
+  #   remote_ip_prefix: 0.0.0.0/0
+  #   protocol: any
+  #   ethertype: IPv4
+  #   port_range_max: 65535
+  #   security_group_id: 3265190f-6468-4544-b1af-88eab39f808f
+  #   port_range_min: 0
+  #   tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+  #   id: 32ad456e-16ae-44c9-b93e-e4cf9708a3d2
+
 clients:
   default:
     id: alice
@@ -179,6 +207,14 @@ workflow:
     expected: [200]
     data: *sgr_create_request
   expect: *sgr_create_response
+
+# - name: read a security group rules with given id
+#   request:
+#     path: /neutron/security_group_rule
+#     method: POST
+#     expected: [200]
+#     data: *sgr_read_request
+#   expect: *sgr_read_response
 
 - name: readall security group rules with minimal parameter set
   request:

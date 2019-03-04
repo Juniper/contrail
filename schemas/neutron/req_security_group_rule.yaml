@@ -30,4 +30,3 @@ schema:
       type: string
     project_id:
       type: string
-
