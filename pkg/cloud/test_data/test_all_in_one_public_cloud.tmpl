@@ -142,7 +142,6 @@ test_data:
     name: cloud_node_gw
     uuid: cloud_node_gw_uuid
     hostname: cloud_node_gw
-    interface_name: cloud_node_gw_interface
     cloud_info:
       {% if "azure" in CLOUD_TYPE %}
       operating_system: centos7
@@ -177,7 +176,6 @@ test_data:
     name: cloud_node_controller
     uuid: cloud_node_controller_uuid
     hostname: cloud_node_controller
-    interface_name: cloud_node_controller_interface
     cloud_info:
       {% if "azure" in CLOUD_TYPE %}
       operating_system: centos7
@@ -212,7 +210,6 @@ test_data:
     name: cloud_node_compute
     uuid: cloud_node_compute_uuid
     hostname: cloud_node_compute
-    interface_name: cloud_node_compute_interface
     cloud_info:
       {% if "azure" in CLOUD_TYPE %}
       operating_system: centos7
@@ -510,7 +507,6 @@ workflow:
       name: cloud_node_gw
       uuid: cloud_node_gw_uuid
       hostname: cloud_node_gw
-      interface_name: cloud_node_gw_interface
       cloud_info:
         {% if "azure" in CLOUD_TYPE %}
         operating_system: centos7
@@ -547,7 +543,6 @@ workflow:
       name: cloud_node_controller
       uuid: cloud_node_controller_uuid
       hostname: cloud_node_controller
-      interface_name: cloud_node_controller_interface
       cloud_info:
         {% if "azure" in CLOUD_TYPE %}
         operating_system: centos7
@@ -584,7 +579,6 @@ workflow:
       name: cloud_node_compute
       uuid: cloud_node_compute_uuid
       hostname: cloud_node_compute
-      interface_name: cloud_node_compute_interface
       cloud_info:
         {% if "azure" in CLOUD_TYPE %}
         operating_system: centos7
