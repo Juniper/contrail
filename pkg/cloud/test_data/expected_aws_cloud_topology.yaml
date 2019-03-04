@@ -31,7 +31,6 @@
               availability_zone: a
               security_groups:
                 - cloud_security_group_rule
-              interface: cloud_node_compute_interface
             - name: cloud_node_controller
               roles:
                 - controller
@@ -43,7 +42,6 @@
               availability_zone: a
               security_groups:
                 - cloud_security_group_rule
-              interface: cloud_node_controller_interface
             - name: cloud_node_gw
               roles:
                 - gateway
@@ -55,4 +53,3 @@
               availability_zone: a
               security_groups:
                 - cloud_security_group_rule
-              interface: cloud_node_gw_interface
