@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
@@ -56,18 +57,18 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 	if err != nil {
 		return nil, newNeutronError(portNotFound, errorFields{
 			"port_id": id,
+			"msg":     err.Error(),
 		})
 	}
 
 	fm := types.FieldMask{}
-
 	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldName)) {
 		vmi.DisplayName = port.Name
 		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldDisplayName)
 	}
 
 	if err = port.handleDeviceUpdate(ctx, rp, vmi, &fm); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to handle device update")
 	}
 
 	if port.setBindings(vmi) {
@@ -103,7 +104,7 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 	}); err != nil {
 		return nil, newNeutronError(badRequest, errorFields{
 			"resource": "port",
-			"msg":      err.Error(),
+			"msg":      fmt.Sprintf("failed to update virtual machine interface: %s", err.Error()),
 		})
 	}
 
@@ -116,6 +117,7 @@ func (port *Port) Delete(ctx context.Context, rp RequestParameters, id string) (
 	if err != nil {
 		return nil, newNeutronError(portNotFound, errorFields{
 			"port_id": id,
+			"msg":     err.Error(),
 		})
 	}
 
@@ -173,6 +175,7 @@ func (port *Port) Read(ctx context.Context, rp RequestParameters, id string) (Re
 	if err != nil {
 		return nil, newNeutronError(portNotFound, errorFields{
 			"port_id": id,
+			"msg":     err.Error(),
 		})
 	}
 
@@ -354,11 +357,9 @@ func (port *Port) handleDeviceUpdate(
 	vmi *models.VirtualMachineInterface,
 	fm *types.FieldMask,
 ) error {
-	if port.DeviceOwner != "network:router_interface" &&
-		port.DeviceOwner != "network:router_gateway" &&
-		basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldDeviceID)) {
+	if shouldChangeDevice(port.DeviceOwner, &rp.FieldMask) {
 		if err := port.setVMInstance(ctx, rp, vmi); err != nil {
-			return err
+			return errors.Wrapf(err, "failed to set virtual machine (device) to %q", port.DeviceID)
 		}
 		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineRefs)
 	}
@@ -368,6 +369,12 @@ func (port *Port) handleDeviceUpdate(
 		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceDeviceOwner)
 	}
 	return nil
+}
+
+func shouldChangeDevice(deviceOwner string, fm *types.FieldMask) bool {
+	return basemodels.FieldMaskContains(fm, buildDataResourcePath(PortFieldDeviceID)) &&
+		deviceOwner != "network:router_interface" &&
+		deviceOwner != "network:router_gateway"
 }
 
 // updateMacAddress modify mac address only for baremetal deployments or when port is not attached to any VM
@@ -407,6 +414,7 @@ func (port *Port) readPortsAssociatedWithVM(
 		if err != nil {
 			return nil, newNeutronError(portNotFound, errorFields{
 				"port_id": vmiBackRefs[0].GetUUID(),
+				"msg":     err.Error(),
 			})
 		}
 
@@ -440,7 +448,6 @@ func (port *Port) readVNCPort(
 	vmiRes, err := rp.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{
 		ID: id,
 	})
-
 	if err != nil {
 		return nil, nil, newNeutronError(badRequest, errorFields{
 			"resource": "port",
@@ -450,15 +457,8 @@ func (port *Port) readVNCPort(
 
 	vmi := vmiRes.GetVirtualMachineInterface()
 	vn, err := port.getAssociatedVirtualNetwork(ctx, rp, vmi)
-	if errutil.IsNotFound(err) {
-		return nil, nil, newNeutronError(networkNotFound, errorFields{
-			"net_id": id,
-		})
-	} else if err != nil {
-		return nil, nil, newNeutronError(badRequest, errorFields{
-			"resource": "port",
-			"msg":      err.Error(),
-		})
+	if err != nil {
+		return nil, nil, err
 	}
 
 	return vmi, vn, nil
@@ -524,79 +524,21 @@ func (port *Port) getVirtualNetwork(
 	res, err := rp.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
 		ID: port.NetworkID,
 	})
-
 	if err != nil {
 		return nil, newNeutronError(networkNotFound, errorFields{
 			"net_id": port.NetworkID,
+			"msg":    err.Error(),
 		})
 	}
 
 	return res.GetVirtualNetwork(), err
 }
 
-func (port *Port) getProjectID() string {
-	uuid, err := uuid.Parse(port.TenantID)
-	if err != nil {
-		return ""
-	}
-	return uuid.String()
-}
-
-func (port *Port) parseDeviceID() string {
-	uuid, err := uuid.Parse(port.DeviceID)
-	if err != nil {
-		return ""
-	}
-	return uuid.String()
-
-}
-
-func (port *Port) ensureInstanceExists(
-	ctx context.Context, rp RequestParameters, tenantID string,
-) (*models.VirtualMachine, error) {
-	vm := &models.VirtualMachine{
-		Name: port.DeviceID,
-		UUID: port.parseDeviceID(),
-		Perms2: &models.PermType2{
-			Owner: tenantID,
-		},
-	}
-
-	//TODO: Handle baremetal
-	vm.ServerType = "virtual-server"
-
-	createRes, err := rp.WriteService.CreateVirtualMachine(ctx, &services.CreateVirtualMachineRequest{
-		VirtualMachine: vm,
-	})
-
-	if errutil.IsConflict(err) {
-		var vmRes *services.GetVirtualMachineResponse
-		vmRes, err = rp.ReadService.GetVirtualMachine(ctx, &services.GetVirtualMachineRequest{
-			ID: vm.GetUUID(),
-		})
-
-		if err != nil {
-			return nil, newNeutronError(badRequest, errorFields{
-				"resource": "port",
-				"msg":      err.Error(),
-			})
-		}
-		//TODO: Handle baremetal
-		vm = vmRes.GetVirtualMachine()
-	} else if err != nil {
-		return nil, newNeutronError(badRequest, errorFields{
-			"resource": "port",
-			"msg":      err.Error(),
-		})
-	} else {
-		vm = createRes.GetVirtualMachine()
-	}
-
-	return vm, nil
-}
-
-func (port *Port) setVMInstance(ctx context.Context, rp RequestParameters,
-	vmi *models.VirtualMachineInterface) error {
+func (port *Port) setVMInstance(
+	ctx context.Context,
+	rp RequestParameters,
+	vmi *models.VirtualMachineInterface,
+) error {
 	if port.DeviceID == "" {
 		for _, vmRef := range vmi.GetVirtualMachineRefs() {
 			vmi.RemoveVirtualMachineRef(vmRef)
@@ -619,12 +561,9 @@ func (port *Port) setVMInstance(ctx context.Context, rp RequestParameters,
 		return nil
 	}
 
-	vm, err := port.ensureInstanceExists(ctx, rp, vmi.GetPerms2().GetOwner())
+	vm, err := port.ensureVMInstanceExists(ctx, rp, vmi.GetPerms2().GetOwner())
 	if err != nil {
-		return newNeutronError(badRequest, errorFields{
-			"resource": "port",
-			"msg":      err.Error(),
-		})
+		return err
 	}
 
 	vmi.AddVirtualMachineRef(&models.VirtualMachineInterfaceVirtualMachineRef{
@@ -633,6 +572,46 @@ func (port *Port) setVMInstance(ctx context.Context, rp RequestParameters,
 	})
 
 	return nil
+}
+
+func (port *Port) ensureVMInstanceExists(
+	ctx context.Context, rp RequestParameters, tenantID string,
+) (*models.VirtualMachine, error) {
+	// TODO: Handle bare metal
+	uuid := parseUUID(port.DeviceID)
+	gr, err := rp.ReadService.GetVirtualMachine(ctx, &services.GetVirtualMachineRequest{
+		ID: uuid,
+	})
+	if errutil.IsNotFound(err) {
+		rp.Log.WithField("uuid", uuid).Debug("No virtual machine for port - creating new one")
+		cr, cErr := rp.WriteService.CreateVirtualMachine(ctx, &services.CreateVirtualMachineRequest{
+			VirtualMachine: &models.VirtualMachine{
+				UUID: uuid,
+				Name: port.DeviceID,
+				Perms2: &models.PermType2{
+					Owner: tenantID,
+				},
+				ServerType: "virtual-server", // TODO: Handle bare metal
+			},
+		})
+		if cErr != nil {
+			return nil, errors.Wrapf(err, "failed to create new virtual machine (device) %q", uuid)
+		}
+
+		return cr.GetVirtualMachine(), nil
+	} else if err != nil {
+		return nil, errors.Wrapf(err, "failed to get virtual machine (device) %q", uuid)
+	}
+
+	return gr.GetVirtualMachine(), nil
+}
+
+func parseUUID(rawUUID string) string {
+	uuid, err := uuid.Parse(rawUUID)
+	if err != nil {
+		return ""
+	}
+	return uuid.String()
 }
 
 func (port *Port) setPortSecurity(
@@ -654,6 +633,7 @@ func (port *Port) setPortSecurity(
 		// TODO add information which group is missing
 		return newNeutronError(securityGroupNotFound, errorFields{
 			"device_owner": "network:router_interface",
+			"msg":          err.Error(),
 		})
 	} else if err != nil {
 		return newNeutronError(badRequest, errorFields{
@@ -687,7 +667,7 @@ func (port *Port) createVirtualMachineInterface(
 	vmi := &models.VirtualMachineInterface{
 		UUID:       port.ID,
 		ParentType: models.KindProject,
-		ParentUUID: port.getProjectID(),
+		ParentUUID: parseUUID(port.TenantID),
 		IDPerms: &models.IdPermsType{
 			Enable: true,
 		},
