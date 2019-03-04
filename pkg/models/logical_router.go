@@ -42,3 +42,12 @@ func (lr *LogicalRouter) ConvertVXLanIDToInt() (int64, error) {
 
 	return id, nil
 }
+
+func (lr *LogicalRouter) RemoveVirtualMachineInterfaceRefWithID(uuid string) {
+	for i, ref := range lr.GetVirtualMachineInterfaceRefs() {
+		if uuid == ref.UUID {
+			lr.VirtualMachineInterfaceRefs = append(lr.VirtualMachineInterfaceRefs[:i],
+				lr.VirtualMachineInterfaceRefs[i+1:]...)
+		}
+	}
+}
