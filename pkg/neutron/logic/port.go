@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
@@ -52,6 +53,7 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 	if err != nil {
 		return nil, newNeutronError(portNotFound, errorFields{
 			"port_id": id,
+			"msg":     err.Error(),
 		})
 	}
 
@@ -63,7 +65,7 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 	}
 
 	if err = port.handleDeviceUpdate(ctx, rp, vmi, &fm); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "handle device update failed")
 	}
 
 	if port.setBindings(vmi) {
@@ -94,7 +96,7 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 	}); err != nil {
 		return nil, newNeutronError(badRequest, errorFields{
 			"resource": "port",
-			"msg":      err.Error(),
+			"msg":      fmt.Sprintf("failed to update virtual machine interface: %s", err.Error()),
 		})
 	}
 
@@ -107,6 +109,7 @@ func (port *Port) Delete(ctx context.Context, rp RequestParameters, id string) (
 	if err != nil {
 		return nil, newNeutronError(portNotFound, errorFields{
 			"port_id": id,
+			"msg":     err.Error(),
 		})
 	}
 
@@ -164,6 +167,7 @@ func (port *Port) Read(ctx context.Context, rp RequestParameters, id string) (Re
 	if err != nil {
 		return nil, newNeutronError(portNotFound, errorFields{
 			"port_id": id,
+			"msg":     err.Error(),
 		})
 	}
 
@@ -261,6 +265,7 @@ func (port *Port) readPortsAssociatedWithVM(
 		if err != nil {
 			return nil, newNeutronError(portNotFound, errorFields{
 				"port_id": vmiBackRefs[0].GetUUID(),
+				"msg":     err.Error(),
 			})
 		}
 
@@ -294,7 +299,6 @@ func (port *Port) readVNCPort(
 	vmiRes, err := rp.ReadService.GetVirtualMachineInterface(ctx, &services.GetVirtualMachineInterfaceRequest{
 		ID: id,
 	})
-
 	if err != nil {
 		return nil, nil, newNeutronError(badRequest, errorFields{
 			"resource": "port",
@@ -304,15 +308,8 @@ func (port *Port) readVNCPort(
 
 	vmi := vmiRes.GetVirtualMachineInterface()
 	vn, err := port.getAssociatedVirtualNetwork(ctx, rp, vmi)
-	if errutil.IsNotFound(err) {
-		return nil, nil, newNeutronError(networkNotFound, errorFields{
-			"net_id": id,
-		})
-	} else if err != nil {
-		return nil, nil, newNeutronError(badRequest, errorFields{
-			"resource": "port",
-			"msg":      err.Error(),
-		})
+	if err != nil {
+		return nil, nil, err
 	}
 
 	return vmi, vn, nil
@@ -378,10 +375,10 @@ func (port *Port) getVirtualNetwork(
 	res, err := rp.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
 		ID: port.NetworkID,
 	})
-
 	if err != nil {
 		return nil, newNeutronError(networkNotFound, errorFields{
 			"net_id": port.NetworkID,
+			"msg":    err.Error(),
 		})
 	}
 
@@ -405,7 +402,7 @@ func (port *Port) parseDeviceID() string {
 
 }
 
-func (port *Port) ensureInstanceExists(
+func (port *Port) ensureVMInstanceExists(
 	ctx context.Context, rp RequestParameters, tenantID string,
 ) (*models.VirtualMachine, error) {
 	vm := &models.VirtualMachine{
@@ -428,20 +425,14 @@ func (port *Port) ensureInstanceExists(
 		vmRes, err = rp.ReadService.GetVirtualMachine(ctx, &services.GetVirtualMachineRequest{
 			ID: vm.GetUUID(),
 		})
-
 		if err != nil {
-			return nil, newNeutronError(badRequest, errorFields{
-				"resource": "port",
-				"msg":      err.Error(),
-			})
+			return nil, errors.Wrap(err, "cannot create (conflict error) nor get virtual machine")
 		}
+
 		//TODO: Handle baremetal
 		vm = vmRes.GetVirtualMachine()
 	} else if err != nil {
-		return nil, newNeutronError(badRequest, errorFields{
-			"resource": "port",
-			"msg":      err.Error(),
-		})
+		return nil, errors.Wrap(err, "cannot create virtual machine")
 	} else {
 		vm = createRes.GetVirtualMachine()
 	}
@@ -473,12 +464,9 @@ func (port *Port) setVMInstance(ctx context.Context, rp RequestParameters,
 		return nil
 	}
 
-	vm, err := port.ensureInstanceExists(ctx, rp, vmi.GetPerms2().GetOwner())
+	vm, err := port.ensureVMInstanceExists(ctx, rp, vmi.GetPerms2().GetOwner())
 	if err != nil {
-		return newNeutronError(badRequest, errorFields{
-			"resource": "port",
-			"msg":      err.Error(),
-		})
+		return errors.Wrap(err, "virtual machine instance error")
 	}
 
 	vmi.AddVirtualMachineRef(&models.VirtualMachineInterfaceVirtualMachineRef{
@@ -508,6 +496,7 @@ func (port *Port) setPortSecurity(
 		// TODO add information which group is missing
 		return newNeutronError(securityGroupNotFound, errorFields{
 			"device_owner": "network:router_interface",
+			"msg":          err.Error(),
 		})
 	} else if err != nil {
 		return newNeutronError(badRequest, errorFields{
