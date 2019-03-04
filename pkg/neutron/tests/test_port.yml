@@ -1,9 +1,7 @@
 name: Test Neutron Port
-description: |
-  Integration test for neutron floating ip endpoint.
-
 cleanup:
 - path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
+- path: /virtual-machine/d51739cf-5176-481b-91d9-ad313a5096d2
 - path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
 - path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
 - path: /security-group/79ce33bf-1bac-48d5-8bbb-5782e26b3db8
@@ -71,7 +69,7 @@ test_data:
           - end_port: 65535
             start_port: 0
 
-  virtual-machine-interface: &dummy_vmi
+  dummy_vmi: &dummy_vmi
     parent_type: project
     parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
     uuid: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
@@ -83,17 +81,19 @@ test_data:
          uuid: 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     vrf_assign_table: {}
 
-  operation-context: &operation_context
-    user_id: e134158cf91b4f7a81b5f613dff8f56a
+  base_port_context: &base_port_context
+    user_id: 06be3763c8224dd5a343e3d95d87c1d2
     roles:
-    - admin
-    tenant_id: 711b9adee0964d3c8ae19fa05854f59e
+      - heat_stack_owner
+      - admin
+    tenant_id: b9ce3ccf26a14403b309ab28891b89e9
     is_admin: true
-    request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
+    request_id: req-db7a6a99-6dd0-46ae-9b61-a675e99ab70e
     type: port
-    tenant: 711b9adee0964d3c8ae19fa05854f59e
+    tenant: b9ce3ccf26a14403b309ab28891b89e9
 
 workflow:
+# Set up
 - name: create project admin
   request:
     path: /projects
@@ -105,7 +105,7 @@ workflow:
   expect:
     project: *admin_project
 
-- name: create network ipam
+- name: create network IPAM
   request:
     path: /network-ipams
     method: POST
@@ -138,7 +138,7 @@ workflow:
   expect:
     virtual-network: *vn_blue
 
-- name: create vmi - dummy action to catch resource in scenario cleanup
+- name: create VMI - dummy action to catch resource in scenario cleanup
   request:
     path: /virtual-machine-interfaces
     method: POST
@@ -146,11 +146,13 @@ workflow:
     data:
       virtual-machine-interface: *dummy_vmi
 
-- name: delete dummy vmi
+- name: delete dummy VMI
   request:
     path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     method: DELETE
     expected: [ 200 ]
+
+# Port create
 
 - name: port create
   request:
@@ -159,7 +161,6 @@ workflow:
     expected: [200]
     data:
       data:
-        fields:
         resource:
           id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
           description: ''
@@ -176,16 +177,9 @@ workflow:
           device_id: ''
         filters:
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - heat_stack_owner
-        - admin
-        tenant_id: b9ce3ccf26a14403b309ab28891b89e9
-        is_admin: true
+        <<: *base_port_context
         request_id: req-db7a6a99-6dd0-46ae-9b61-a675e99ab70e
         operation: CREATE
-        type: port
-        tenant: b9ce3ccf26a14403b309ab28891b89e9
   expect:
     status: DOWN
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
@@ -259,6 +253,8 @@ workflow:
            uuid: 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
       vrf_assign_table: {}
 
+# Port read, read all, update
+
 - name: Neutron port read
   request:
     path: /neutron/port
@@ -270,7 +266,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
         operation: READ
   expect:
     status: DOWN
@@ -309,19 +306,12 @@ workflow:
           tenant_id:
           - b9ce3ccf26a14403b309ab28891b89e9
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - heat_stack_owner
-        - admin
-        tenant_id: b9ce3ccf26a14403b309ab28891b89e9
-        is_admin: true
+        <<: *base_port_context
         request_id: req-7ef05a71-0a78-4616-8741-64380919f5af
         operation: READALL
-        type: port
-        tenant: b9ce3ccf26a14403b309ab28891b89e9
   expect: []
 
-- name: Neutron port update device_owner + device ID
+- name: Neutron port update device_owner and device_id that refers to non-existent device
   request:
     path: /neutron/port
     method: POST
@@ -336,7 +326,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
         operation: UPDATE
   expect:
     status: ACTIVE
@@ -364,6 +355,12 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
+- name: Verify that virtual machine was created during port update
+  request:
+    path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
+    method: GET
+    expected: [ 200 ]
+
 - name: Neutron port read after an update
   request:
     path: /neutron/port
@@ -375,7 +372,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
         operation: READ
   expect:
     status: ACTIVE
@@ -416,7 +414,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
         operation: UPDATE
   expect: # "no rule security group" is expected
     security_groups:
@@ -433,7 +432,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
         operation: READ
   expect: # "no rule security group" is expected
     security_groups:
@@ -453,7 +453,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
         operation: UPDATE
   expect:
     security_groups:
@@ -470,13 +471,14 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
         operation: READ
   expect:
     security_groups:
       - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
 
-- name: Neutron port read all with device_id
+- name: Neutron port read all with device_id filter
   request:
     path: /neutron/port
     method: POST
@@ -488,16 +490,9 @@ workflow:
           device_id:
           - c603fa24-81fa-4710-a288-78be45b2c93e
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - heat_stack_owner
-        - admin
-        tenant_id: b9ce3ccf26a14403b309ab28891b89e9
-        is_admin: true
+        <<: *base_port_context
         request_id: req-7ef05a71-0a78-4616-8741-64380919f5df
         operation: READALL
-        type: port
-        tenant: b9ce3ccf26a14403b309ab28891b89e9
   expect:
     - status: ACTIVE
       id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
@@ -524,7 +519,7 @@ workflow:
       - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
       device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
-- name: Neutron port read all with non-existant device_id
+- name: Neutron port read all with non-existent device_id
   request:
     path: /neutron/port
     method: POST
@@ -534,18 +529,11 @@ workflow:
         fields: []
         filters:
           device_id:
-          - c603fa24-beef-face-beef-78be45b2c93e
+          - a2db4822-3f74-11e9-aa46-472b888c0dd9
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - heat_stack_owner
-        - admin
-        tenant_id: b9ce3ccf-26a1-4403-b309-ab28891b89e9
-        is_admin: true
+        <<: *base_port_context
         request_id: req-7ef05a71-0a78-4616-8741-64380919f5df
         operation: READALL
-        type: port
-        tenant: b9ce3ccf-26a1-4403-b309-ab28891b89e9
   expect: []
 
 - name: Neutron port update mac_address + port_security_enabled
@@ -562,7 +550,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
         operation: UPDATE
   expect:
     status: ACTIVE
@@ -590,13 +579,7 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
-- name: Verify VM exist
-  request:
-    path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
-    method: GET
-    expected: [ 200 ]
-
-- name: Neutron port update device ID - set empty
+- name: Neutron port update device_id - set empty
   request:
     path: /neutron/port
     method: POST
@@ -612,7 +595,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters: null
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-f5405238-8866-470a-aed2-9b2637c86966
         operation: UPDATE
   expect:
     status: DOWN
@@ -640,6 +624,12 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: ''
 
+- name: Verify that virtual machine was deleted after setting device_id to empty value
+  request:
+    path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
+    method: GET
+    expected: [404]
+
 - name: Neutron port update AllowedAddresPairs and FixedIP
   request:
     path: /neutron/port
@@ -660,7 +650,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters: null
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-f5405238-8866-470a-aed2-9b2637c86966
         operation: UPDATE
   expect:
     status: DOWN
@@ -683,21 +674,75 @@ workflow:
       - ip_address: 2.2.2.2
         mac_address: 22:22:22:22:22:22
     fq_name:
-    - default
-    - neutron_port_admin_project
-    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      - default
+      - neutron_port_admin_project
+      - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     fixed_ips:
-    - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
-      ip_address: $ip_address
+      - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+        ip_address: $ip_address
     security_groups:
-    - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+      - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: ''
 
-- name: Ensure VM was deleted after setting device_id to empty value
+- name: Create virtual machine for next port update
   request:
-    path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
-    method: GET
-    expected: [ 404 ]
+    path: /virtual-machines
+    method: POST
+    expected: [200]
+    data:
+      virtual-machine:
+        display_name: default-vm
+        fq_name:
+          - default
+          - neutron_port_admin_project
+          - d51739cf-5176-481b-91d9-ad313a5096d2
+        uuid: d51739cf-5176-481b-91d9-ad313a5096d2
+
+- name: Neutron port update with device_id that refers to existent device
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          device_owner: compute:nova
+          binding:host_id: test-host.novalocal
+          device_id: d51739cf-5176-481b-91d9-ad313a5096d2
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters:
+      context:
+        <<: *base_port_context
+        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
+        operation: UPDATE
+  expect:
+    status: ACTIVE
+    id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    mac_address: 11:22:33:44:55:ff
+    name: $uuid
+    network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    tenant_id: b9ce3ccf26a14403b309ab28891b89e9
+    port_security_enabled: false
+    binding:vif_details:
+      port_filter: true
+    description: ''
+    binding:host_id: test-host.novalocal
+    binding:vnic_type: normal
+    binding:vif_type: vrouter
+    device_owner: compute:nova
+    fq_name:
+      - default
+      - neutron_port_admin_project
+      - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    fixed_ips:
+      - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+        ip_address: $ip_address
+    security_groups:
+      - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+    device_id: d51739cf-5176-481b-91d9-ad313a5096d2
+
+# Port delete
 
 - name: Neutron port delete
   request:
@@ -710,9 +755,12 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        <<: *operation_context
+        <<: *base_port_context
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
         operation: DELETE
   expect: null
+
+# Tear down
 
 - name: delete virtual network
   request:
