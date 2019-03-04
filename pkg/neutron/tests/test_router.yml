@@ -2,6 +2,12 @@ name: Test Neutron Router
 description: |
   Integration test for neutron router endpoint.
 
+cleanup:
+- path: /logical-router/304cfcfb-f950-4ec1-8a90-fbce922dd5b7
+- path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1003
+- path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1002
+- path: /project/fc73d84f-b578-44d8-9cea-3e76f0493e81
+
 clients:
   default:
     id: alice
@@ -11,7 +17,95 @@ clients:
       project:
         name: admin
 
+test_data:
+  project_uuid: &project_uuid fc73d84f-b578-44d8-9cea-3e76f0493e81
+  tenant_id: &tenant_id fc73d84fb57844d89cea3e76f0493e81
+  ipam_uuid: &ipam_uuid beefbeef-beef-beef-beef-beefbeef1002
+  vn_uuid: &vn_uuid beefbeef-beef-beef-beef-beefbeef1003
+  subnet_uuid: &subnet_uuid 471b32d0-4e6d-4a6c-979b-39ac8aaab4b8
+  router_uuid: &router_uuid 304cfcfb-f950-4ec1-8a90-fbce922dd5b7
+
+  project_blue: &project_blue
+    uuid: *project_uuid
+    name: project_blue
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  ipam_blue: &ipam_blue
+    uuid: *ipam_uuid
+    display_name: ipam_blue
+    ipam_subnet_method: "user-defined-subnet"
+    parent_type: project
+    fq_name:
+      - default-domain
+      - project_blue
+      - ipam_blue
+
+  vn_blue: &vn_blue
+    fq_name:
+      - default-domain
+      - project_blue
+      - vn_blue
+    uuid: *vn_uuid
+    display_name: blue
+    parent_type: project
+    address_allocation_mode: user-defined-subnet-only
+    network_ipam_refs:
+      - uuid: *ipam_uuid
+        to:
+          - default-domain
+          - project_blue
+          - ipam_blue
+        attr:
+          ipam_subnets:
+            - subnet_uuid: *subnet_uuid
+              subnet:
+                ip_prefix: "10.0.0.0"
+                ip_prefix_len: 24
+              default_gateway: "10.0.0.1"
+
+  context: &context
+    user_id: 06be3763c8224dd5a343e3d95d87c1d2
+    roles:
+    - admin
+    tenant_id: *tenant_id
+    is_admin: true
+    tenant: *tenant_id
+
 workflow:
+#Set up
+- name: Create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *project_blue
+  expect:
+    project: *project_blue
+
+- name: Create ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected: [200]
+    data:
+      network-ipam: *ipam_blue
+  expect:
+    network-ipam: *ipam_blue
+
+- name: Create virtual network with subnet
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [200]
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+
+# Router tests
 - name: Router read all
   request:
     path: /neutron/router
@@ -22,16 +116,112 @@ workflow:
         fields: []
         filters:
           tenant_id:
-          - 8cdb5412f5974b38a69f2f9d1ae969b7
+          - *tenant_id
       context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        <<: *context
         roles:
         - heat_stack_owner
         - admin
-        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
-        is_admin: true
-        request_id: req-4de97c6b-9db7-4ada-9008-7083ec6f3ded
+        request_id: req-4ce0a688-48e5-417f-adf8-15fd5131215a
         operation: READALL
         type: router
-        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
   expect: []
+
+- name: Create router
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        resource:
+          id: *router_uuid
+          admin_state_up: true
+          tenant_id: *tenant_id
+          project_id: *project_uuid
+          name: test-logical-router
+      context:
+        <<: *context
+        request_id: req-b3ad35ed-525f-425b-b99c-43898269df00
+        operation: CREATE
+        type: router
+  expect:
+    status: ACTIVE
+    fq_name:
+    - default-domain
+    - project_blue
+    - test-logical-router
+    admin_state_up: true
+    tenant_id: *tenant_id
+    shared: false
+    id: *router_uuid
+
+- name: Router add interface
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          subnet_id: *subnet_uuid
+        id: *router_uuid
+        filters:
+      context:
+        <<: *context
+        request_id: req-79d7b75c-a990-4a79-b8e9-5e6d05b058dd
+        operation: ADDINTERFACE
+        type: router
+  expect:
+    subnet_id: *subnet_uuid
+    tenant_id: *tenant_id
+#    port_id: f7274d2b-bd18-438f-8bed-076d3de2f825
+    id: *router_uuid
+
+- name: Router delete interface
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          subnet_id: *subnet_uuid
+        id: *router_uuid
+        filters:
+      context:
+        <<: *context
+        request_id: req-79d7b75c-a990-4a79-dddd-5e6d05b058dd
+        operation: DELINTERFACE
+        type: router
+  expect:
+    subnet_id: *subnet_uuid
+    tenant_id: *tenant_id
+#    port_id: f7274d2b-bd18-438f-8bed-076d3de2f825
+    id: *router_uuid
+
+- name: Delete router
+  request:
+    path: /logical-router/304cfcfb-f950-4ec1-8a90-fbce922dd5b7
+    method: DELETE
+    expected: [200]
+
+- name: Delete virtual network
+  request:
+    path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1003
+    method: DELETE
+    expected: [200]
+
+- name: Delete ipam
+  request:
+    path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1002
+    method: DELETE
+    expected: [200]
+
+- name: Delete project
+  request:
+    path: /project/fc73d84f-b578-44d8-9cea-3e76f0493e81
+    method: DELETE
+    expected: [200]

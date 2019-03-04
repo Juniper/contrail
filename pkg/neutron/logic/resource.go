@@ -17,8 +17,8 @@ type Resource interface {
 	Read(ctx context.Context, rp RequestParameters, id string) (Response, error)
 	ReadAll(ctx context.Context, rp RequestParameters, filters Filters, fields Fields) (Response, error)
 	ReadCount(ctx context.Context, rp RequestParameters, filters Filters) (Response, error)
-	AddInterface(ctx context.Context, rp RequestParameters) (Response, error)
-	DeleteInterface(ctx context.Context, rp RequestParameters) (Response, error)
+	AddInterface(ctx context.Context, rp RequestParameters, id string) (Response, error)
+	DeleteInterface(ctx context.Context, rp RequestParameters, id string) (Response, error)
 }
 
 // Response interface returned from Neutron API operations
@@ -59,12 +59,12 @@ func (b *baseResource) ReadCount(ctx context.Context, rp RequestParameters, f Fi
 }
 
 // AddInterface default implementation
-func (b *baseResource) AddInterface(ctx context.Context, rp RequestParameters) (Response, error) {
+func (b *baseResource) AddInterface(ctx context.Context, rp RequestParameters, id string) (Response, error) {
 	return nil, errors.New("not implemented")
 }
 
 // DeleteInterface default implementation
-func (b *baseResource) DeleteInterface(ctx context.Context, rp RequestParameters) (Response, error) {
+func (b *baseResource) DeleteInterface(ctx context.Context, rp RequestParameters, id string) (Response, error) {
 	return nil, errors.New("not implemented")
 }
 
