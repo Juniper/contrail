@@ -250,12 +250,9 @@ workflow:
 
 - name: get owner of allocated int
   request:
-    path: /int-pool
+    path: /int-pool?pool=test_int_pool&value=100
     method: GET
     expected: [200]
-    data:
-      pool: test_int_pool
-      value: 100
   expect:
     owner: test_int_owner
 
@@ -271,12 +268,9 @@ workflow:
 
 - name: try to get owner of allocated int which not specified owner
   request:
-    path: /int-pool
+    path: /int-pool?pool=test_int_pool&value=101
     method: GET
     expected: [200]
-    data:
-      pool: test_int_pool
-      value: 101
   expect:
     owner: null
 
