@@ -81,7 +81,7 @@ func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, 
 	case logic.OperationReadCount:
 		return r.Data.Resource.ReadCount(ctx, rp, r.Data.Filters)
 	case logic.OperationAddInterface:
-		return r.Data.Resource.AddInterface(ctx, rp)
+		return r.Data.Resource.AddInterface(ctx, rp, r.Data.ID)
 	case logic.OperationDelInterface:
 		return r.Data.Resource.DeleteInterface(ctx, rp)
 	default:
