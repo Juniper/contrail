@@ -24,3 +24,21 @@ func isIPInSubnet(subnet *net.IPNet, ipString string) error {
 	}
 	return nil
 }
+
+// CheckSubnetsOverlap checks if subnets overlaps.
+func CheckSubnetsOverlap(cidr1, cidr2 string) (bool, error) {
+	ip1, sub1, err := net.ParseCIDR(cidr1)
+	if err != nil {
+		return false, err
+	}
+
+	ip2, sub2, err := net.ParseCIDR(cidr2)
+	if err != nil {
+		return false, err
+	}
+
+	if sub1.Contains(ip2) || sub2.Contains(ip1) {
+		return true, nil
+	}
+	return false, nil
+}

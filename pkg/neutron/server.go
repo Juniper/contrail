@@ -83,9 +83,9 @@ func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, 
 	case logic.OperationReadCount:
 		return r.Data.Resource.ReadCount(ctx, rp, r.Data.Filters)
 	case logic.OperationAddInterface:
-		return r.Data.Resource.AddInterface(ctx, rp)
+		return r.Data.Resource.AddInterface(ctx, rp, r.Data.ID)
 	case logic.OperationDelInterface:
-		return r.Data.Resource.DeleteInterface(ctx, rp)
+		return r.Data.Resource.DeleteInterface(ctx, rp, r.Data.ID)
 	default:
 		err := errors.Errorf("method '%s' is not supported", r.Context.Operation)
 		logrus.WithError(err).WithField("request", r).Errorf("failed to handle")
