@@ -4,7 +4,10 @@ description: |
 
 cleanup:
 - path: /logical-router/85e05429-aebc-4d37-be73-a2a4f689c1f1
+- path: /virtual-machine-interface/cbd7abe4-f21c-4e30-964d-cab629cbe657
 - path: /virtual-network/eeee7a2e-94f2-44a7-a879-e812e072feef
+- path: /virtual-network/a29cd288-12be-4b95-b56e-a564f86d5722
+- path: /network-ipam/64f88144-42ae-42d5-b515-53bd0e9ef949
 - path: /project/fc73d84f-b578-44d8-9cea-3e76f0493e81
 
 clients:
@@ -17,8 +20,17 @@ clients:
         name: admin
 
 test_data:
+  project_uuid: &project_uuid fc73d84f-b578-44d8-9cea-3e76f0493e81
+  tenant_id: &tenant_id fc73d84fb57844d89cea3e76f0493e81
+  ipam_uuid: &ipam_uuid 64f88144-42ae-42d5-b515-53bd0e9ef949
+  vn_uuid: &vn_uuid eeee7a2e-94f2-44a7-a879-e812e072feef
+  vn_blue_uuid: &vn_blue_uuid a29cd288-12be-4b95-b56e-a564f86d5722
+  subnet_uuid: &subnet_uuid 471b32d0-4e6d-4a6c-979b-39ac8aaab4b8
+  port_uuid: &port_uuid cbd7abe4-f21c-4e30-964d-cab629cbe657
+  router_uuid: &router_uuid 85e05429-aebc-4d37-be73-a2a4f689c1f1
+
   project: &project
-    uuid: fc73d84f-b578-44d8-9cea-3e76f0493e81
+    uuid: *project_uuid
     name: neutron_router_admin_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
@@ -28,18 +40,18 @@ test_data:
     user_id: 9bd9578b25844d1ea74ddf59d2c6de8a
     roles:
     - admin
-    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    tenant_id: *tenant_id
     is_admin: true
-    tenant: fc73d84fb57844d89cea3e76f0493e81
+    tenant: *tenant_id
 
   create_router_request_resource: &create_router_request_resource
     # Note: id is not passed in the sanity test.
-    id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+    id: *router_uuid
     external_gateway_info:
     description: ''
     admin_state_up: true
-    tenant_id: fc73d84fb57844d89cea3e76f0493e81
-    project_id: fc73d84fb57844d89cea3e76f0493e81
+    tenant_id: *tenant_id
+    project_id: *tenant_id
     name: ctest-router1-27286582
 
   router_response: &router_response
@@ -52,17 +64,17 @@ test_data:
     name: ctest-router1-27286582
     gw_port_id:
     admin_state_up: true
-    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    tenant_id: *tenant_id
     # TODO: IDPerms.{Created,LastModified} aren't filled on creation.
     #created_at: $datetime_iso
     #updated_at: $datetime_iso
     shared: false
-    id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+    id: *router_uuid
     description: ''
 
   expected_logical_router: &expected_logical_router
-    uuid: 85e05429-aebc-4d37-be73-a2a4f689c1f1
-    parent_uuid: fc73d84f-b578-44d8-9cea-3e76f0493e81
+    uuid: *router_uuid
+    parent_uuid: *project_uuid
     parent_type: project
     name: ctest-router1-27286582
     display_name: ctest-router1-27286582
@@ -73,18 +85,104 @@ test_data:
     id_perms:
       enable: true
 
+  ipam_blue: &ipam_blue
+    uuid: *ipam_uuid
+    display_name: ipam_blue
+    ipam_subnet_method: "user-defined-subnet"
+    parent_type: project
+    fq_name:
+      - default-domain
+      - neutron_router_admin_project
+      - ipam_blue
+
+  vn_blue: &vn_blue
+    fq_name:
+      - default-domain
+      - neutron_router_admin_project
+      - vn_blue
+    uuid: *vn_blue_uuid
+    display_name: blue
+    parent_type: project
+    address_allocation_mode: user-defined-subnet-only
+    network_ipam_refs:
+      - uuid: *ipam_uuid
+        to:
+          - default-domain
+          - neutron_router_admin_project
+          - ipam_blue
+        attr:
+          ipam_subnets:
+            - subnet_uuid: *subnet_uuid
+              subnet:
+                ip_prefix: "10.0.0.0"
+                ip_prefix_len: 24
+              default_gateway: "10.0.0.1"
+
+  port_blue: &port_blue
+    id: *port_uuid
+    network_id: *vn_blue_uuid
+    tenant_id: *tenant_id
+    # project_id: *tenant_id
+
+
 workflow:
+#Set up
 - name: Create project
   request:
     path: /projects
     method: POST
-    expected:
-    - 200
+    expected: [200]
     data:
       project: *project
   expect:
     project: *project
 
+- name: Create ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected: [200]
+    data:
+      network-ipam: *ipam_blue
+  expect:
+    network-ipam: *ipam_blue
+
+- name: Create virtual network with subnet
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [200]
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+
+- name: Create vmi
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          <<: *port_blue
+          admin_state_up: true
+        filters:
+      context:
+        <<: *context
+        roles:
+          - heat_stack_owner
+          - admin
+        type: port
+        operation: CREATE
+  expect:
+    <<: *port_blue
+    fixed_ips:
+      - subnet_id: *subnet_uuid
+        ip_address: $ip_address
+
+# Router tests
 - name: Router read all
   request:
     path: /neutron/router
@@ -95,7 +193,7 @@ workflow:
         fields: []
         filters:
           tenant_id:
-          - fc73d84fb57844d89cea3e76f0493e81
+          - *tenant_id
       context:
         <<: *context
         roles:
@@ -148,7 +246,7 @@ workflow:
         - tags
         - project_id
         - id
-        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        id: *router_uuid
         filters:
       context:
         <<: *context
@@ -168,16 +266,16 @@ workflow:
         fields:
         resource:
           # Note: id is not passed in the sanity test.
-          id: eeee7a2e-94f2-44a7-a879-e812e072feef
+          id: *vn_uuid
           router:external: true
           description: ''
-          tenant_id: fc73d84fb57844d89cea3e76f0493e81
+          tenant_id: *tenant_id
           admin_state_up: true
           policys: ''
           vpc:route_table: ''
           shared: false
           port_security_enabled: true
-          project_id: fc73d84fb57844d89cea3e76f0493e81
+          project_id: *tenant_id
           name: ctest-ext_vn-18679439
         filters:
       context:
@@ -195,13 +293,13 @@ workflow:
     - ctest-ext_vn-18679439
     name: ctest-ext_vn-18679439
     admin_state_up: true
-    tenant_id: fc73d84fb57844d89cea3e76f0493e81
+    tenant_id: *tenant_id
     created_at:
     updated_at:
     port_security_enabled: true
     shared: false
-    project_id: fc73d84fb57844d89cea3e76f0493e81
-    id: eeee7a2e-94f2-44a7-a879-e812e072feef
+    project_id: *tenant_id
+    id: *vn_uuid
     description: ''
 
 - name: Update router external gateway
@@ -214,8 +312,8 @@ workflow:
         fields:
         resource:
           external_gateway_info:
-            network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
-        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+            network_id: *vn_uuid
+        id: *router_uuid
         filters:
       context:
         <<: *context
@@ -225,7 +323,7 @@ workflow:
   expect:
     <<: *router_response
     external_gateway_info:
-      network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+      network_id: *vn_uuid
       enable_snat: true
 
 - name: Check the updated logical router
@@ -237,7 +335,7 @@ workflow:
     logical-router:
       <<: *expected_logical_router
       virtual_network_refs:
-      - uuid: eeee7a2e-94f2-44a7-a879-e812e072feef
+      - uuid: *vn_uuid
 
 - name: Read router without specifying fields
   request:
@@ -247,7 +345,7 @@ workflow:
     data:
       data:
         fields:
-        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        id: *router_uuid
         filters:
       context:
         <<: *context
@@ -257,12 +355,110 @@ workflow:
   expect:
     <<: *router_response
     external_gateway_info:
-      network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+      network_id: *vn_uuid
       enable_snat: true
 
-# TODO: POST /neutron/router with ADDINTERFACE
-# TODO: POST /neutron/router with READ
-# TODO: POST /neutron/router with DELINTERFACE
+- name: Router add interface with subnet
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          subnet_id: *subnet_uuid
+        id: *router_uuid
+        filters:
+      context:
+        <<: *context
+        request_id: req-79d7b75c-a990-4a79-b8e9-5e6d05b058dd
+        operation: ADDINTERFACE
+        type: router
+  expect:
+    subnet_id: *subnet_uuid
+    tenant_id: *tenant_id
+    port_id: $uuid
+    id: *router_uuid
+
+- name: Router delete interface with subnet
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          subnet_id: *subnet_uuid
+        id: *router_uuid
+        filters:
+      context:
+        <<: *context
+        request_id: req-79d7b75c-a990-4a79-dddd-5e6d05b058dd
+        operation: DELINTERFACE
+        type: router
+  expect:
+    subnet_id: *subnet_uuid
+    tenant_id: *tenant_id
+    port_id: $uuid
+    id: *router_uuid
+
+- name: Router add interface with port
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          port_id: *port_uuid
+        id: *router_uuid
+        filters:
+      context:
+        <<: *context
+        request_id: req-79d7b75c-a990-4a79-b8e9-5e6d05b058dd
+        operation: ADDINTERFACE
+        type: router
+  expect:
+    subnet_id: $uuid
+    tenant_id: *tenant_id
+    port_id: *port_uuid
+    id: *router_uuid
+
+- name: Router delete interface with port
+  request:
+    path: /neutron/router
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          port_id: *port_uuid
+        id: *router_uuid
+        filters:
+      context:
+        <<: *context
+        request_id: req-79d7b75c-a990-4a79-dddd-5e6d05b058dd
+        operation: DELINTERFACE
+        type: router
+  expect:
+    subnet_id: $uuid
+    tenant_id: *tenant_id
+    port_id: *port_uuid
+    id: *router_uuid
+
+# TODO: ADDINTERFACE to non-existing router
+# TODO: DELINTERFACE from non-existing router
+
+# TODO: ADDINTERFACE with invalid port
+# TODO: ADDINTERFACE with invalid subnet
+
+# TODO: ADDINTERFACE with duplicate subnet
+
+
 
 - name: Delete router
   request:
@@ -272,7 +468,7 @@ workflow:
     data:
       data:
         fields:
-        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        id: *router_uuid
         filters:
       context:
         <<: *context
@@ -298,7 +494,7 @@ workflow:
         resource:
           <<: *create_router_request_resource
           external_gateway_info:
-            network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+            network_id: *vn_uuid
             enable_snat: true
         filters:
       context:
@@ -309,7 +505,7 @@ workflow:
   expect:
     <<: *router_response
     external_gateway_info:
-      network_id: eeee7a2e-94f2-44a7-a879-e812e072feef
+      network_id: *vn_uuid
       enable_snat: true
 
 - name: Check the created logical router's virtual network refs
@@ -321,7 +517,7 @@ workflow:
     logical-router:
       <<: *expected_logical_router
       virtual_network_refs:
-      - uuid: eeee7a2e-94f2-44a7-a879-e812e072feef
+      - uuid: *vn_uuid
 
 - name: Delete router (again)
   request:
@@ -331,7 +527,7 @@ workflow:
     data:
       data:
         fields:
-        id: 85e05429-aebc-4d37-be73-a2a4f689c1f1
+        id: *router_uuid
         filters:
       context:
         <<: *context
@@ -354,7 +550,7 @@ workflow:
     data:
       data:
         fields:
-        id: eeee7a2e-94f2-44a7-a879-e812e072feef
+        id: *vn_uuid
         filters:
       context:
         <<: *context
@@ -362,6 +558,18 @@ workflow:
         operation: DELETE
         type: network
   expect: null
+
+- name: Delete virtual network
+  request:
+    path: /virtual-network/a29cd288-12be-4b95-b56e-a564f86d5722
+    method: DELETE
+    expected: [200]
+
+- name: Delete ipam
+  request:
+    path: /network-ipam/64f88144-42ae-42d5-b515-53bd0e9ef949
+    method: DELETE
+    expected: [200]
 
 - name: Delete project
   request:
