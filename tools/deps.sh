@@ -3,7 +3,6 @@
 set -o errexit
 
 go install ./vendor/github.com/golang/dep/cmd/dep
-go install ./vendor/github.com/hashicorp/terraform/terraform
 go install ./vendor/github.com/mattn/goveralls
 go install ./vendor/github.com/mitchellh/gox
 go install ./vendor/github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
