@@ -132,6 +132,21 @@ clients:
 
 workflow:
 # TODO: add other provisioning resources
+- name: update global system config
+  request:
+    path: /global-system-config/beefbeef-beef-beef-beef-beefbeef0001
+    method: PUT
+    expected: [200]
+    data:
+      global-system-config:
+        ibgp_auto_mesh: true
+        uuid: beefbeef-beef-beef-beef-beefbeef0001
+        autonomous_system: "64512"
+  expect:
+    global-system-config:
+      ibgp_auto_mesh: true
+      autonomous_system: 64512
+
 - name: create bgp router
   request:
     path: /bgp-routers
@@ -259,3 +274,15 @@ workflow:
     expected:
     - 200
   expect: null
+
+- name: restore global system config
+  request:
+    path: /global-system-config/beefbeef-beef-beef-beef-beefbeef0001
+    method: PUT
+    expected: [200]
+    data:
+      global-system-config:
+        ibgp_auto_mesh: false
+  expect:
+    global-system-config:
+      ibgp_auto_mesh: $null
