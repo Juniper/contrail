@@ -41,6 +41,7 @@ func InterfaceToInt64(i interface{}) int64 {
 	}
 	switch t := i.(type) {
 	case []byte:
+	case string:
 		i64, err := strconv.ParseInt(string(t), 10, 64)
 		if err != nil {
 			logrus.WithError(err).Debugf("Could not convert %#v to int64", t)
@@ -74,6 +75,7 @@ func InterfaceToUint64(i interface{}) uint64 {
 	}
 	switch t := i.(type) {
 	case []byte:
+	case string:
 		i, err := strconv.ParseUint(string(t), 10, 64)
 		if err != nil {
 			logrus.WithError(err).Debugf("Could not convert %#v to uint64", t)
