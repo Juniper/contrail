@@ -165,6 +165,22 @@ test_data:
       type: security_group_rule
       tenant: bee123efb2ad4a15896b4011cb4d00b3
 
+  sgr_read_request: &sgr_read_request
+    data:
+      fields: []
+      id: 32ad456e-16ae-44c9-b93e-e4cf9708a3d2
+      filters:
+    context:
+      user_id: 87e9e49b21e547baac78b6d81430aa9b
+      roles:
+        - admin
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      is_admin: true
+      request_id: req-bf656685-7960-4f7c-9239-5d2f20d3fb4b
+      operation: READ
+      type: security_group_rule
+      tenant: bee123efb2ad4a15896b4011cb4d00b3
+
 clients:
   default:
     id: alice
@@ -243,6 +259,36 @@ workflow:
     expected: [200]
     data: *sgr_readall_request
   expect: *custom_sg_rule
+
+- name: Read a security group rules with given id
+  request:
+    path: /neutron/security_group_rule
+    method: POST
+    expected: [200]
+    data: *sgr_read_request
+  expect: *sgr_create_response
+
+- name: Read a security group rules with non-existent id
+  request:
+    path: /neutron/security_group_rule
+    method: POST
+    expected: [400]
+    data:
+      data:
+        fields: []
+        id: 20e1f066-625b-41ab-b07f-5f7c5d545508
+        filters:
+      context:
+        user_id: 87e9e49b21e547baac78b6d81430aa9b
+        roles:
+          - admin
+        tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+        is_admin: true
+        request_id: req-bf656685-7960-4f7c-9239-5d2f20d3fb4b
+        operation: READ
+        type: security_group_rule
+        tenant: bee123efb2ad4a15896b4011cb4d00b3
+  expect: null
 
 - name: Delete security group
   request:
