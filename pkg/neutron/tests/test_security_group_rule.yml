@@ -56,6 +56,22 @@ test_data:
     tenant_id: bee123efb2ad4a15896b4011cb4d00b3
     id: 32ad456e-16ae-44c9-b93e-e4cf9708a3d2
 
+  sgr_delete_request: &sgr_delete_request
+    data:
+      fields:
+      id: 32ad456e-16ae-44c9-b93e-e4cf9708a3d2
+      filters:
+    context:
+      user_id: a31e0ebced7e41879141c3969bab6647
+      roles:
+        - admin
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      is_admin: true
+      request_id: req-6d5a3330-190d-40fe-8d03-cfa4ea17c032
+      operation: DELETE
+      type: security_group_rule
+      tenant: bee123efb2ad4a15896b4011cb4d00b3
+
   default_security_group_rules: &default_security_group_rules
     - created_at: ""
       direction: ingress
@@ -294,7 +310,32 @@ workflow:
     expect:
       exception: SecurityGroupRuleNotFound
 
-  - name: Delete security group
+  - name: delete security group rule
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [200]
+      data: *sgr_delete_request
+    expect: null
+
+  - name: delete security group rule again
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [400]
+      data: *sgr_delete_request
+    expect:
+      exception: SecurityGroupRuleNotFound
+
+  - name: read all security group rules to check if custom does not exist
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [200]
+      data: *sgr_readall_request
+    expect: *default_security_group_rules
+
+  - name: delete security group
     request:
       path: /security-group/703ebf8e-c8cd-4d4e-bbc1-d1e059cf73a4
       method: DELETE
