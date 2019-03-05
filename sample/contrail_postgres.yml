@@ -89,7 +89,7 @@ server:
 #               email: alice@juniper.nets
 #               roles:
 #               - id: admin
-#                 name: Admin
+#                 name: admin
 #                 project: *admin
 #             bob:
 #               id: bob
