@@ -69,6 +69,44 @@ func (sgr *SecurityGroupRule) Create(ctx context.Context, rp RequestParameters) 
 	return sgr.neutronFromVnc(sgRes.GetSecurityGroup(), rule)
 }
 
+// Read security group rule logic.
+func (sgr *SecurityGroupRule) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	var f Filters
+	if !rp.RequestContext.IsAdmin {
+		projectUUID := VncUUIDToNeutronID(rp.RequestContext.TenantID)
+		// Trigger a project read to ensure project sync
+		if _, err := rp.ReadService.GetProject(ctx, &services.GetProjectRequest{ID: projectUUID}); err != nil {
+			return nil, newNeutronError(badRequest, errorFields{
+				"resource": securityGroupRuleResourceName,
+				"msg":      err,
+			})
+		}
+		f = Filters{tenantIDKey: []string{projectUUID}}
+	}
+
+	sgrResponses, err := listSecurityGroupRules(ctx, rp, f)
+	if err != nil {
+		if errutil.IsNotFound(err) {
+			return nil, newNeutronError(securityGroupNotFound, errorFields{
+				"resource": securityGroupRuleResourceName,
+				"msg":      err,
+			})
+		}
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": securityGroupRuleResourceName,
+			"msg":      err,
+		})
+	}
+
+	for _, sgrResponse := range sgrResponses {
+		if sgrResponse.ID == id {
+			return sgrResponse, nil
+		}
+	}
+
+	return nil, newNeutronError(securityGroupRuleNotFound, nil)
+}
+
 func listSecurityGroupRules(
 	ctx context.Context, rp RequestParameters, f Filters,
 ) ([]*SecurityGroupRuleResponse, error) {
