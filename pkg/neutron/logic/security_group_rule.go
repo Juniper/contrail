@@ -71,6 +71,52 @@ func (sgr *SecurityGroupRule) Create(ctx context.Context, rp RequestParameters) 
 
 // Read security group rule logic.
 func (sgr *SecurityGroupRule) Read(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	sgrResponses, err := sgr.getFilterSecurityGroupRules(ctx, rp, id)
+	if err != nil {
+		return nil, err
+	}
+	for _, sgrResponse := range sgrResponses {
+		if sgrResponse.ID == id {
+			return sgrResponse, nil
+		}
+	}
+
+	return nil, newNeutronError(securityGroupRuleNotFound, nil)
+}
+
+// Delete security group rule.
+func (sgr *SecurityGroupRule) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	sg, err := sgr.findSecurityGroupByRuleID(ctx, rp, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if sg == nil {
+		return nil, newNeutronError(securityGroupNotFound, errorFields{
+			"security_group_rule_id": id,
+		})
+	}
+
+	var rules []*models.PolicyRuleType
+	for _, r := range sg.GetSecurityGroupEntries().GetPolicyRule() {
+		if r.RuleUUID != id {
+			rules = append(rules, r)
+		}
+	}
+	sg.SecurityGroupEntries.PolicyRule = rules
+	return rp.WriteService.UpdateSecurityGroup(ctx, &services.UpdateSecurityGroupRequest{
+		SecurityGroup: sg,
+		FieldMask: types.FieldMask{
+			Paths: []string{models.SecurityGroupFieldSecurityGroupEntries},
+		},
+	})
+}
+
+func (sgr *SecurityGroupRule) getFilterSecurityGroupRules(
+	ctx context.Context,
+	rp RequestParameters,
+	id string,
+) ([]*SecurityGroupRuleResponse, error) {
 	var f Filters
 	if !rp.RequestContext.IsAdmin {
 		projectUUID, err := neutronIDToVncUUID(rp.RequestContext.TenantID)
@@ -94,8 +140,9 @@ func (sgr *SecurityGroupRule) Read(ctx context.Context, rp RequestParameters, id
 	if err != nil {
 		if errutil.IsNotFound(err) {
 			return nil, newNeutronError(securityGroupNotFound, errorFields{
-				"resource": securityGroupRuleResourceName,
-				"msg":      err,
+				"resource":               securityGroupRuleResourceName,
+				"security_group_rule_id": id,
+				"msg":                    err,
 			})
 		}
 		return nil, newNeutronError(badRequest, errorFields{
@@ -103,14 +150,47 @@ func (sgr *SecurityGroupRule) Read(ctx context.Context, rp RequestParameters, id
 			"msg":      err,
 		})
 	}
+	return sgrResponses, nil
+}
 
+func (sgr *SecurityGroupRule) findSecurityGroupByRuleID(
+	ctx context.Context,
+	rp RequestParameters,
+	id string,
+) (*models.SecurityGroup, error) {
+	sgrResponses, err := sgr.getFilterSecurityGroupRules(ctx, rp, id)
+	if err != nil {
+		return nil, err
+	}
 	for _, sgrResponse := range sgrResponses {
 		if sgrResponse.ID == id {
-			return sgrResponse, nil
+			var sgResponse *services.GetSecurityGroupResponse
+			sgResponse, err = rp.ReadService.GetSecurityGroup(ctx, &services.GetSecurityGroupRequest{
+				ID: sgrResponse.SecurityGroupID,
+			})
+			if err != nil {
+				if errutil.IsNotFound(err) {
+					return nil, newNeutronError(securityGroupNotFound, errorFields{
+						"resource":               securityGroupRuleResourceName,
+						"security_group_rule_id": id,
+						"msg":                    err,
+					})
+				}
+				return nil, newNeutronError(badRequest, errorFields{
+					"resource":               securityGroupRuleResourceName,
+					"security_group_rule_id": id,
+					"msg":                    err,
+				})
+			}
+			return sgResponse.GetSecurityGroup(), nil
 		}
 	}
 
-	return nil, newNeutronError(securityGroupRuleNotFound, nil)
+	return nil, newNeutronError(securityGroupNotFound, errorFields{
+		"resource":               securityGroupRuleResourceName,
+		"security_group_rule_id": id,
+		"msg":                    err,
+	})
 }
 
 func listSecurityGroupRules(
