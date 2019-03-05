@@ -69,6 +69,61 @@ func (sgr *SecurityGroupRule) Create(ctx context.Context, rp RequestParameters) 
 	return sgr.neutronFromVnc(sgRes.GetSecurityGroup(), rule)
 }
 
+// Delete security group rule.
+func (sgr *SecurityGroupRule) Delete(ctx context.Context, rp RequestParameters, id string) (Response, error) {
+	sg, err := sgr.findSecurityGroupByRuleID(ctx, rp, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if sg == nil {
+		return nil, newNeutronError(securityGroupRuleNotFound, errorFields{
+			"security_group_rule_id": id,
+		})
+	}
+
+	var rules []*models.PolicyRuleType
+	for _, r := range sg.GetSecurityGroupEntries().GetPolicyRule() {
+		if r.RuleUUID != id {
+			rules = append(rules, r)
+		}
+	}
+	sg.SecurityGroupEntries.PolicyRule = rules
+	return rp.WriteService.UpdateSecurityGroup(ctx, &services.UpdateSecurityGroupRequest{
+		SecurityGroup: sg,
+		FieldMask: types.FieldMask{
+			Paths: []string{models.SecurityGroupFieldSecurityGroupEntries},
+		},
+	})
+}
+
+func (sgr *SecurityGroupRule) findSecurityGroupByRuleID(
+	ctx context.Context,
+	rp RequestParameters,
+	id string,
+) (*models.SecurityGroup, error) {
+	projectUUID, err := neutronIDToVncUUID(rp.RequestContext.TenantID)
+	if err != nil {
+		return nil, newNeutronError(invalidTenantID, errorFields{
+			"tenant_id": rp.RequestContext.TenantID,
+		})
+	}
+	prRes, err := rp.ReadService.GetProject(ctx, &services.GetProjectRequest{ID: projectUUID})
+	if err != nil {
+		return nil, newNeutronError(projectNotFound, errorFields{
+			"project_id": projectUUID,
+		})
+	}
+	for _, sg := range prRes.GetProject().GetSecurityGroups() {
+		for _, r := range sg.GetSecurityGroupEntries().GetPolicyRule() {
+			if r.RuleUUID == id {
+				return sg, nil
+			}
+		}
+	}
+	return nil, nil
+}
+
 func listSecurityGroupRules(
 	ctx context.Context, rp RequestParameters, f Filters,
 ) ([]*SecurityGroupRuleResponse, error) {
