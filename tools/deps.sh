@@ -8,7 +8,6 @@ go get -u github.com/golang/dep/cmd/dep
 go get -u github.com/alecthomas/gometalinter
 go get -u github.com/mitchellh/gox
 go get -u github.com/mattn/goveralls
-go get -u github.com/hashicorp/terraform/terraform
 go get -u github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
 go get -u github.com/go-openapi/spec
 go install ./vendor/github.com/gogo/protobuf/protoc-gen-gogo
