@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/gogo/protobuf/types"
+
+	"github.com/Juniper/contrail/pkg/format"
 )
 
 // MapToFieldMask returns updated fields masks.
@@ -137,4 +139,19 @@ func FieldMaskAppend(fm *types.FieldMask, fields ...string) {
 	}
 	path := JoinPath(fields...)
 	fm.Paths = append(fm.Paths, path)
+}
+
+// FieldMaskRemove removes given values from field mask.
+func FieldMaskRemove(fm *types.FieldMask, fields ...string) {
+	if fm == nil {
+		return
+	}
+	paths := make([]string, 0, len(fm.Paths))
+	for _, val := range fm.Paths {
+		if format.ContainsString(fields, val) {
+			continue
+		}
+		paths = append(paths, val)
+	}
+	fm.Paths = paths
 }
