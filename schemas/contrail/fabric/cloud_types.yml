@@ -1,32 +1,5 @@
 ---
   definitions:
-    CloudCredential:
-      type: "object"
-      properties:
-        username:
-          description: username of the cloud account
-          type: string
-          nullable: false
-          permission:
-          - create
-          - update
-          sql: ""
-          title: Cloud Account Username
-          type: string
-          view:
-          - detail
-        password:
-          description: password of the cloud account
-          type: string
-          nullable: false
-          permission:
-          - create
-          - update
-          sql: ""
-          title: Cloud Account Password
-          type: string
-          view:
-          - detail
     AWSCredential:
       type: "object"
       properties:

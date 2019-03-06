@@ -7,7 +7,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -38,26 +37,6 @@ func (c *Cloud) getTemplateRoot() string {
 		templateRoot = defaultTemplateRoot
 	}
 	return templateRoot
-}
-
-func getCloudUser(d *Data) (*models.CloudUser, error) {
-
-	if d.users != nil {
-		return d.users[0], nil
-	}
-	return nil, fmt.Errorf("cloud user not found")
-}
-
-func getUserCred(user *models.CloudUser) (username string, password string, err error) {
-
-	username = user.AzureCredential.Username
-	password = user.AzureCredential.Password
-
-	if username == "" || password == "" {
-		return username, password, fmt.Errorf("username or password not found for user uuid: %s", user.UUID)
-	}
-
-	return username, password, nil
 }
 
 // GetMultiCloudRepodir returns path to multi-cloud directory
