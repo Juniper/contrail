@@ -28,10 +28,34 @@ type EventOption struct {
 	FieldMask *types.FieldMask
 }
 
-// HasResource defines methods that might be implemented by Event.
-type HasResource interface {
+// ResourceEvent is an event that relates to a resource.
+type ResourceEvent interface {
 	GetResource() basemodels.Object
 	Operation() string
+}
+
+// ReferenceEvent is an event that relates to a reference.
+type ReferenceEvent interface {
+	GetID() string
+	GetReference() basemodels.Reference
+	Operation() string
+}
+
+// NewRefUpdateFromEvent creates RefUpdate from ReferenceEvent.
+func NewRefUpdateFromEvent(e ReferenceEvent) RefUpdate {
+	ref := e.GetReference()
+	u := RefUpdate{
+		Operation: ParseRefOperation(e.Operation()),
+		Type:      ref.GetFromKind(),
+		UUID:      e.GetID(),
+		RefType:   ref.GetToKind(),
+		RefUUID:   ref.GetUUID(),
+	}
+
+	if attr := ref.GetAttribute(); attr != nil {
+		u.Attr = json.RawMessage(format.MustJSON(attr))
+	}
+	return u
 }
 
 // CanProcessService is interface for process service.
@@ -145,7 +169,7 @@ func (e *Event) GetResource() basemodels.Object {
 	if e == nil {
 		return nil
 	}
-	resourceEvent, ok := e.Request.(HasResource)
+	resourceEvent, ok := e.Request.(ResourceEvent)
 	if !ok {
 		return nil
 	}
@@ -157,11 +181,24 @@ func (e *Event) Operation() string {
 	if e == nil {
 		return ""
 	}
-	resourceEvent, ok := e.Request.(HasResource)
+	resourceEvent, ok := e.Request.(ResourceEvent)
 	if !ok {
 		return ""
 	}
 	return resourceEvent.Operation()
+}
+
+// SetFieldMask sets field mask on request if event is of create or update type.
+func (e *Event) SetFieldMask(fm types.FieldMask) {
+	type fieldMaskSetter interface {
+		SetFieldMask(types.FieldMask)
+	}
+
+	s, ok := e.Request.(fieldMaskSetter)
+	if !ok {
+		return
+	}
+	s.SetFieldMask(fm)
 }
 
 // RefOperation is enum type for ref-update operation.
@@ -172,6 +209,18 @@ const (
 	RefOperationAdd    RefOperation = "ADD"
 	RefOperationDelete RefOperation = "DELETE"
 )
+
+// ParseRefOperation parses RefOperation from string value.
+func ParseRefOperation(s string) (op RefOperation) {
+	switch s {
+	case OperationCreate:
+		return RefOperationAdd
+	case OperationDelete:
+		return RefOperationDelete
+	default:
+		return RefOperation(s)
+	}
+}
 
 // RefUpdateOption contains parameters for NewRefUpdateEvent.
 type RefUpdateOption struct {
@@ -207,7 +256,7 @@ func makeRefEventList(r basemodels.Object, operation RefOperation) (EventList, e
 	el := EventList{}
 	for _, ref := range r.GetReferences() {
 		e, err := NewRefUpdateEvent(RefUpdateOption{
-			ReferenceType: basemodels.ReferenceKind(r.Kind(), ref.GetReferredKind()),
+			ReferenceType: basemodels.ReferenceKind(r.Kind(), ref.GetToKind()),
 			FromUUID:      r.GetUUID(),
 			ToUUID:        ref.GetUUID(),
 			Operation:     operation,

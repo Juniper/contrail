@@ -18,8 +18,10 @@ type Object interface {
 	GetBackReferences() []Object
 	GetChildren() []Object
 	SetHref(string)
+	AddReference(interface{})
 	AddBackReference(interface{})
 	AddChild(interface{})
+	RemoveReference(interface{})
 	RemoveBackReference(interface{})
 	RemoveChild(interface{})
 	RemoveReferences()

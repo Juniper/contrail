@@ -91,3 +91,22 @@ func SchemaIDToKind(kind string) string {
 func ReferenceKind(fromKind, toKind string) string {
 	return fmt.Sprintf("%s-%s", fromKind, toKind)
 }
+
+// OmitEmpty removes map field that should be removed if empty.
+func OmitEmpty(m map[string]interface{}) {
+	for _, key := range []string{"parent_type", "parent_uuid"} {
+		if v, ok := m[key]; ok && isEmpty(v) {
+			delete(m, key)
+		}
+	}
+}
+
+func isEmpty(i interface{}) bool {
+	switch v := i.(type) {
+	case string:
+		return v == ""
+	case int:
+		return v == 0
+	}
+	return false
+}

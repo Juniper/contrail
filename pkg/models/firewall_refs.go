@@ -41,7 +41,7 @@ func checkRefInSameScope(obj basemodels.Object, ref basemodels.Reference, fqName
 		formatResourceKind(obj.Kind()),
 		basemodels.FQNameToString(fqName),
 		obj.GetUUID(),
-		formatResourceKind(ref.GetReferredKind()),
+		formatResourceKind(ref.GetToKind()),
 		basemodels.FQNameToString(ref.GetTo()),
 		ref.GetUUID(),
 	)

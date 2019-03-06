@@ -226,3 +226,38 @@ func TestJoinPath(t *testing.T) {
 		})
 	}
 }
+
+func TestFieldMaskRemove(t *testing.T) {
+	tests := []struct {
+		name     string
+		fm       *types.FieldMask
+		fields   []string
+		expected []string
+	}{
+		{name: "empty"},
+		{
+			name:     "does not contain desired string",
+			fm:       &types.FieldMask{Paths: []string{"asd"}},
+			fields:   nil,
+			expected: []string{"asd"},
+		},
+		{
+			name:     "contains desired string",
+			fm:       &types.FieldMask{Paths: []string{"field", "asd", "path"}},
+			fields:   []string{"asd"},
+			expected: []string{"field", "path"},
+		},
+		{
+			name:     "multiple values",
+			fm:       &types.FieldMask{Paths: []string{"field", "asd", "path"}},
+			fields:   []string{"asd", "field"},
+			expected: []string{"path"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			basemodels.FieldMaskRemove(tt.fm, tt.fields...)
+			assert.Equal(t, tt.expected, tt.fm.GetPaths())
+		})
+	}
+}
