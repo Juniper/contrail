@@ -74,9 +74,8 @@ func listSecurityGroupRules(
 ) ([]*SecurityGroupRuleResponse, error) {
 	securityGroups, err := listSecurityGroups(ctx, rp, Filters{
 		tenantIDKey: f[tenantIDKey],
-		idKey:       f[SecurityGroupRuleFieldSecurityGroupID],
+		idKey:       f[securityGroupIdKey],
 	})
-	// TODO: add test to cover SecurityGroupRuleFieldSecurityGroupID filtering case.
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't read security groups")
