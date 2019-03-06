@@ -27,11 +27,11 @@ func (sv *ContrailTypeLogicService) fillToFieldInRef(ctx context.Context, ref ba
 		ctx,
 		basemodels.Metadata{
 			UUID: ref.GetUUID(),
-			Type: ref.GetReferredKind(),
+			Type: ref.GetToKind(),
 		},
 	)
 	if err != nil {
-		return errutil.ErrorNotFoundf("cannot find %s ref with uuid %s: %v", ref.GetReferredKind(), ref.GetUUID(), err)
+		return errutil.ErrorNotFoundf("cannot find %s ref with uuid %s: %v", ref.GetToKind(), ref.GetUUID(), err)
 	}
 
 	ref.SetTo(m.FQName)

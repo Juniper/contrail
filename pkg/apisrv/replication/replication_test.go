@@ -76,11 +76,18 @@ func handleDelete(t *testing.T, w http.ResponseWriter,
 	}
 }
 
-func createMockVNCServer(t *testing.T) (*httptest.Server, map[string][]*httpBodyStore) {
+func createMockVNCServer(t *testing.T, expectedCount int) (
+	*httptest.Server, map[string][]*httpBodyStore, chan struct{},
+) {
 	vncReqStore := map[string][]*httpBodyStore{}
+	done := make(chan struct{})
 	vncServer := httptest.NewServer(
 		// NewServer takes a handler.
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if expectedCount == 0 {
+				close(done)
+			}
+			expectedCount--
 			switch r.Method {
 			case postReq:
 				handleCreate(t, w, r, vncReqStore)
@@ -93,7 +100,7 @@ func createMockVNCServer(t *testing.T) (*httptest.Server, map[string][]*httpBody
 			}
 		}),
 	)
-	return vncServer, vncReqStore
+	return vncServer, vncReqStore, done
 }
 
 //nolint: govet
@@ -124,9 +131,10 @@ func processReqBody(t *testing.T, w http.ResponseWriter,
 	writeJSONResponse(t, w, 200, httpBodyStore{})
 }
 
-// create cluster and its endpoints
-func initTestCluster(t *testing.T, clusterName string) (
-	func(), map[string][]*httpBodyStore) {
+// create cluster and its endpoint
+func initTestCluster(
+	t *testing.T, clusterName string, expectedCount int,
+) (func(), map[string][]*httpBodyStore, chan struct{}) {
 
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	clusterUser := clusterName + "_admin"
@@ -137,7 +145,7 @@ func initTestCluster(t *testing.T, clusterName string) (
 	ksPublic := integration.MockServerWithKeystoneTestUser(
 		"", keystoneAuthURL, clusterUser, clusterUser)
 
-	vncServer, vncReqStore := createMockVNCServer(t)
+	vncServer, vncReqStore, done := createMockVNCServer(t, expectedCount)
 
 	pContext := pongo2.Context{
 		"cluster_name":    clusterName,
@@ -162,26 +170,35 @@ func initTestCluster(t *testing.T, clusterName string) (
 		defer ksPublic.Close()
 		defer vncServer.Close()
 	}
-	return cleanupTestCluster, vncReqStore
+	return cleanupTestCluster, vncReqStore, done
 }
 
 func runReplicationTest(t *testing.T) {
 	//create test clusters with keystone/config endpoint.
-	cleanupTestClusterA, vncReqStoreA := initTestCluster(t, "clusterA")
+	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, "clusterA", 2)
 	defer cleanupTestClusterA()
-	cleanupTestClusterB, vncReqStoreB := initTestCluster(t, "clusterB")
+	cleanupTestClusterB, vncReqStoreB, doneB := initTestCluster(t, "clusterB", 2)
 	defer cleanupTestClusterB()
 
-	time.Sleep(5 * time.Second)
 	//create node-profile, node, port object
 	testScenario, err := integration.LoadTest(createReplicationTestFile, nil)
 	assert.NoError(t, err, "failed to load test data")
 	cleanup := integration.RunDirtyTestScenario(t, testScenario, server)
 	defer cleanup()
 
+	assertCloses(t, doneA)
+	assertCloses(t, doneB)
 	//verify create objects
 	verifyVNCReqStore(t, postReq, vncReqStoreA, testScenario)
 	verifyVNCReqStore(t, postReq, vncReqStoreB, testScenario)
+}
+
+func assertCloses(t *testing.T, c chan struct{}) {
+	select {
+	case <-time.After(5 * time.Second):
+		assert.Fail(t, "timeout passed waiting for channel to close")
+	case <-c:
+	}
 }
 
 // nolint: gocyclo
