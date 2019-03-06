@@ -1,12 +1,15 @@
 package basemodels
 
+import "strings"
+
 // Reference is a generic reference instance.
 type Reference interface {
 	SetUUID(uuid string)
 	SetTo(to []string)
 	GetUUID() string
 	GetTo() []string
-	GetReferredKind() string
+	GetFromKind() string
+	GetToKind() string
 	GetAttribute() RefAttribute
 	SetHref(string)
 }
@@ -16,6 +19,11 @@ type RefAttribute interface{}
 
 // References is wrapper type for reference slice.
 type References []Reference
+
+// ReferenceFieldName returns name of a field that is used to store the reference.
+func ReferenceFieldName(r Reference) string {
+	return strings.Replace(r.GetToKind(), "-", "_", -1) + "_refs"
+}
 
 // Find returns first reference that fulfils the predicate.
 func (r References) Find(pred func(Reference) bool) Reference {
@@ -100,7 +108,11 @@ func (g *genericReference) GetTo() []string {
 	return g.to
 }
 
-func (g *genericReference) GetReferredKind() string {
+func (g *genericReference) GetFromKind() string {
+	return g.kind
+}
+
+func (g *genericReference) GetToKind() string {
 	return g.kind
 }
 

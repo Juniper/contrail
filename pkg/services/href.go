@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/pkg/errors"
+
+	"github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
 type withHref interface {
@@ -74,5 +75,5 @@ func newRefToHrefAdapter(r basemodels.Reference) *refToHrefAdapter {
 }
 
 func (r *refToHrefAdapter) Kind() string {
-	return r.GetReferredKind()
+	return r.GetToKind()
 }
