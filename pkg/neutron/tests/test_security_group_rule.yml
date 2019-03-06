@@ -1,8 +1,8 @@
 name: Security Group Rules Test
 description: security group rules test
 cleanup:
-- path: /security-group/703ebf8e-c8cd-4d4e-bbc1-d1e059cf73a4
-- path: /project/bee123ef-b2ad-4a15-896b-4011cb4d00b3
+  - path: /security-group/703ebf8e-c8cd-4d4e-bbc1-d1e059cf73a4
+  - path: /project/bee123ef-b2ad-4a15-896b-4011cb4d00b3
 
 test_data:
   project: &project
@@ -44,7 +44,7 @@ test_data:
       type: security_group_rule
       tenant: bee123efb2ad4a15896b4011cb4d00b3
 
-  sgr_create_response: &sgr_create_response
+  sgr_response: &sgr_response
     remote_group_id:
     direction: egress
     remote_ip_prefix: 83.44.189.0/24
@@ -165,6 +165,39 @@ test_data:
       type: security_group_rule
       tenant: bee123efb2ad4a15896b4011cb4d00b3
 
+  sgr_read_request: &sgr_read_request
+    data:
+      fields: []
+      id: 32ad456e-16ae-44c9-b93e-e4cf9708a3d2
+      filters:
+    context:
+      user_id: 87e9e49b21e547baac78b6d81430aa9b
+      roles:
+        - admin
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      is_admin: true
+      request_id: req-bf656685-7960-4f7c-9239-5d2f20d3fb4b
+      operation: READ
+      type: security_group_rule
+      tenant: bee123efb2ad4a15896b4011cb4d00b3
+
+  sgr_read_nonexistent_request: &sgr_read_nonexistent_request
+    data:
+      fields: []
+      id: 20e1f066-625b-41ab-b07f-5f7c5d545508
+      filters:
+    context:
+      user_id: 87e9e49b21e547baac78b6d81430aa9b
+      roles:
+        - admin
+      tenant_id: bee123efb2ad4a15896b4011cb4d00b3
+      is_admin: true
+      request_id: req-bf656685-7960-4f7c-9239-5d2f20d3fb4b
+      operation: READ
+      type: security_group_rule
+      tenant: bee123efb2ad4a15896b4011cb4d00b3
+
+
 clients:
   default:
     id: alice
@@ -175,85 +208,102 @@ clients:
         name: admin
 
 workflow:
-- name: create project
-  request:
-    path: /projects
-    method: POST
-    expected: [200]
-    data:
+  - name: create project
+    request:
+      path: /projects
+      method: POST
+      expected: [200]
+      data:
+        project: *project
+    expect:
       project: *project
-  expect:
-    project: *project
 
-- name: create security group
-  request:
-    path: /security-groups
-    method: POST
-    expected: [200]
-    data:
+  - name: create security group
+    request:
+      path: /security-groups
+      method: POST
+      expected: [200]
+      data:
+        security-group: *sg
+    expect:
       security-group: *sg
-  expect:
-    security-group: *sg
 
-- name: readall security group rules with minimal parameter set
-  request:
-    path: /neutron/security_group_rule
-    method: POST
-    expected: [200]
-    data: *bare_minimum_readall_request
-  expect: *default_security_group_rules
+  - name: readall security group rules with minimal parameter set
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [200]
+      data: *bare_minimum_readall_request
+    expect: *default_security_group_rules
 
-- name: readall security group rules for non admin user
-  request:
-    path: /neutron/security_group_rule
-    method: POST
-    expected: [200]
-    data: *non_admin_readall_request
-  expect: []
+  - name: readall security group rules for non admin user
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [200]
+      data: *non_admin_readall_request
+    expect: []
 
-- name: read default security group rules using request from sanity tests
-  request:
-    path: /neutron/security_group_rule
-    method: POST
-    expected: [200]
-    data: *sgr_readall_request
-  expect: *default_security_group_rules
+  - name: read default security group rules using request from sanity tests
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [200]
+      data: *sgr_readall_request
+    expect: *default_security_group_rules
 
-- name: create security group rule
-  request:
-    path: /neutron/security_group_rule
-    method: POST
-    expected: [200]
-    data: *sgr_create_request
-  expect: *sgr_create_response
+  - name: create security group rule
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [200]
+      data: *sgr_create_request
+    expect: *sgr_response
 
-- name: create again should fail with already exists error
-  request:
-    path: /neutron/security_group_rule
-    method: POST
-    expected: [400]
-    data: *sgr_create_request
-  expect:
-    exception: SecurityGroupRuleExists
+  - name: create again should fail with already exists error
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [400]
+      data: *sgr_create_request
+    expect:
+      exception: SecurityGroupRuleExists
 
-- name: read all with new security group rule
-  request:
-    path: /neutron/security_group_rule
-    method: POST
-    expected: [200]
-    data: *sgr_readall_request
-  expect: *custom_sg_rule
+  - name: read all with new security group rule
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [200]
+      data: *sgr_readall_request
+    expect: *custom_sg_rule
 
-- name: Delete security group
-  request:
-    path: /security-group/703ebf8e-c8cd-4d4e-bbc1-d1e059cf73a4
-    method: DELETE
-    expected: [200]
-  expect: null
+  - name: Read a security group rule with given ID
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [200]
+      data: *sgr_read_request
+    expect: *sgr_response
 
-- name: Delete project
-  request:
-    path: /project/bee123ef-b2ad-4a15-896b-4011cb4d00b3
-    method: DELETE
-    expected: [200]
-  expect: null
+  - name: Read a security group rule with nonexistent ID
+    request:
+      path: /neutron/security_group_rule
+      method: POST
+      expected: [400]
+      data: *sgr_read_nonexistent_request
+    expect:
+      exception: SecurityGroupRuleNotFound
+
+  - name: Delete security group
+    request:
+      path: /security-group/703ebf8e-c8cd-4d4e-bbc1-d1e059cf73a4
+      method: DELETE
+      expected: [200]
+    expect: null
+
+  - name: Delete project
+    request:
+      path: /project/bee123ef-b2ad-4a15-896b-4011cb4d00b3
+      method: DELETE
+      expected: [200]
+    expect: null
