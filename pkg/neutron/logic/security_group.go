@@ -234,7 +234,7 @@ func listSecurityGroups(
 		ctx,
 		&services.ListSecurityGroupRequest{
 			Spec: &baseservices.ListSpec{
-				ObjectUUIDs: filter[SecurityGroupFieldID],
+				ObjectUUIDs: filter[idKey],
 				ParentUUIDs: parentUUIDs,
 				Detail:      true,
 			},
