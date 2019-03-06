@@ -39,11 +39,7 @@ test_data:
   cloud_user: &cloud_user
     name: cloud_user
     uuid: cloud_user_uuid
-    {% if "azure" in CLOUD_TYPE %}
-    azure_credential:
-      username: user
-      password: password
-    {% elif "aws" in CLOUD_TYPE %}
+    {% if "aws" in CLOUD_TYPE %}
     aws_credential:
       access_key: XXXXXX
       secret_key: YYYYYYYYYYY
@@ -304,11 +300,7 @@ workflow:
       perms2:
         owner: admin
       uuid: cloud_user_uuid
-      {% if "azure" in CLOUD_TYPE %}
-      azure_credential:
-        username: user
-        password: password
-      {% elif "aws" in CLOUD_TYPE %}
+      {% if "aws" in CLOUD_TYPE %}
       aws_credential:
         access_key: XXXXXX
         secret_key: YYYYYYYYYYY
