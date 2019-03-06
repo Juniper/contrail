@@ -117,6 +117,9 @@ func (r *Replicator) vnToVNCVirtualNetwork(vn *models.VirtualNetwork) interface{
 
 func (r *Replicator) process(e *services.Event) { //nolint: gocyclo
 	r.log.Infof("Received event: %v", e)
+	if e == nil {
+		return
+	}
 	switch event := e.Request.(type) {
 	// watch endpoint event and prepare clients
 	case *services.Event_CreateEndpointRequest:
