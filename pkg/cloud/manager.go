@@ -331,13 +331,6 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 		}
 	}
 
-	if data.hasProviderAzure() {
-		err = c.authenticate(data)
-		if err != nil {
-			return nil, nil, nil, err
-		}
-	}
-
 	return topo, secret, data, nil
 }
 
