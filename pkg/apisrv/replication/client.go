@@ -3,9 +3,11 @@ package replication
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
+	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -287,6 +289,12 @@ func (v *vncAPI) replicate(action, url string, data interface{}, response interf
 		_, err := v.client.Delete(v.ctx, proxyURL, response)
 		if err != nil {
 			v.log.Errorf("while deleting %s on vncAPI: %v", proxyURL, err)
+		}
+	case refUpdateAction:
+		expected := []int{http.StatusOK}
+		_, err := v.client.Do(v.ctx, echo.POST, proxyURL, nil, data, response, expected)
+		if err != nil {
+			v.log.Errorf("while updating ref %v on vncAPI: %v", data, err)
 		}
 	}
 }

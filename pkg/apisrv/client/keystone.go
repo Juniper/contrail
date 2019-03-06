@@ -23,6 +23,10 @@ type Keystone struct {
 	HTTPClient *http.Client
 }
 
+func (k *Keystone) getURL(path string) string {
+	return k.URL + path
+}
+
 type projectResponse struct {
 	Project keystone.Project `json:"project"`
 }
@@ -33,7 +37,7 @@ type projectListResponse struct {
 
 // GetProject gets project.
 func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*keystone.Project, error) {
-	request, err := http.NewRequest(echo.GET, getURL(k.URL, "/projects/"+id), nil)
+	request, err := http.NewRequest(echo.GET, k.getURL("/projects/"+id), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating HTTP request failed")
 	}
@@ -68,7 +72,7 @@ func (k *Keystone) GetProjectIDByName(ctx context.Context,
 	}
 	token := resp.Header.Get("X-Subject-Token")
 	// Get project list with unscoped token
-	request, err := http.NewRequest(echo.GET, getURL(k.URL, "/auth/projects"), nil)
+	request, err := http.NewRequest(echo.GET, k.getURL("/auth/projects"), nil)
 	if err != nil {
 		return "", errors.Wrap(err, "creating HTTP request failed")
 	}

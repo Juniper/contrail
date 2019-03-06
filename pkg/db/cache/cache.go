@@ -266,7 +266,7 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 }
 
 func (db *DB) updateDependentNodes(
-	event services.HasResource,
+	event services.ResourceEvent,
 	backRefs, children []basemodels.Object,
 ) {
 	if event.Operation() == services.OperationCreate || event.Operation() == services.OperationUpdate {

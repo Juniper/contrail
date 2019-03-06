@@ -320,7 +320,7 @@ func (m *{{ schema.JSONSchema.GoName }}) GetTagReferences() (refs basemodels.Ref
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object {
-	{%- if schema.References|length > 0%}
+	{%- if schema.BackReferences|length > 0%}
 	if m == nil {
 		return nil
 	}
@@ -337,7 +337,7 @@ func (m *{{ schema.JSONSchema.GoName }}) GetBackReferences() []basemodels.Object
 }
 
 func (m *{{ schema.JSONSchema.GoName }}) GetChildren() []basemodels.Object {
-	{%- if schema.References|length > 0%}
+	{%- if schema.Children|length > 0%}
 	if m == nil {
 		return nil
 	}
@@ -350,6 +350,17 @@ func (m *{{ schema.JSONSchema.GoName }}) GetChildren() []basemodels.Object {
 	return children
 	{%- else %}
 	return nil
+	{%- endif %}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) AddReference(i interface{}) {
+	{% if schema.References|length > 0 -%}
+	switch ref := i.(type) {
+		{%- for _, reference in schema.References %}
+			case *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
+				m.Add{{ reference.GoName }}Ref(ref)
+		{%- endfor %}
+	}
 	{%- endif %}
 }
 
@@ -372,6 +383,17 @@ func (m *{{ schema.JSONSchema.GoName }}) AddChild(i interface{}) {
 			{%- set linkTo = child.LinkTo %}
 			case *{{ linkTo.JSONSchema.GoName }}:
 				m.Add{{ linkTo.JSONSchema.GoName }}(resource)
+		{%- endfor %}
+	}
+	{%- endif %}
+}
+
+func (m *{{ schema.JSONSchema.GoName }}) RemoveReference(i interface{}) {
+	{% if schema.References|length > 0 -%}
+	switch ref := i.(type) {
+		{%- for _, reference in schema.References %}
+			case *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref:
+				m.Remove{{ reference.GoName }}Ref(ref)
 		{%- endfor %}
 	}
 	{%- endif %}
@@ -522,7 +544,10 @@ func (m *{{ schema.JSONSchema.GoName }}) DeleteInList(position int) {
 {% for linkTo, reference in schema.References %}
 
 func {{ schema.JSONSchema.GoName }}{{ reference.GoName }}RefsToMap(l []*{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) []interface{} {
-	var result []interface{}
+	if l == nil {
+		return nil
+	}
+	result := []interface{}{}
 	for _, i := range l {
 		result = append(result, i.ToMap())
 	}
@@ -541,7 +566,11 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) SetTo(to []str
 	r.To = to
 }
 
-func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetReferredKind() string {
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetFromKind() string {
+	return Kind{{ schema.JSONSchema.GoName }}
+}
+
+func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetToKind() string {
 	return Kind{{ reference.GoName }}
 }
 
