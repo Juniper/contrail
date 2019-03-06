@@ -142,7 +142,7 @@ func (h *HTTP) Delete(ctx context.Context, path string, output interface{}) (*ht
 // RefUpdate sends a create/update API request/
 func (h *HTTP) RefUpdate(ctx context.Context, data interface{}, output interface{}) (*http.Response, error) {
 	expected := []int{http.StatusOK}
-	return h.Do(ctx, echo.POST, "/ref-update", nil, data, output, expected)
+	return h.Do(ctx, echo.POST, "/"+services.RefUpdatePath, nil, data, output, expected)
 }
 
 // EnsureDeleted send a delete API request.
@@ -263,7 +263,7 @@ func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query u
 	var request *http.Request
 	if data == nil {
 		var err error
-		request, err = http.NewRequest(method, getURL(h.Endpoint, path), nil)
+		request, err = http.NewRequest(method, h.getURL(path), nil)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
@@ -274,7 +274,7 @@ func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query u
 			return nil, errors.Wrap(err, "encoding request data failed")
 		}
 
-		request, err = http.NewRequest(method, getURL(h.Endpoint, path), bytes.NewBuffer(dataJSON))
+		request, err = http.NewRequest(method, h.getURL(path), bytes.NewBuffer(dataJSON))
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
@@ -291,8 +291,8 @@ func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query u
 	return request, nil
 }
 
-func getURL(endpoint, path string) string {
-	return endpoint + path
+func (h *HTTP) getURL(path string) string {
+	return h.Endpoint + path
 }
 
 func (h *HTTP) getProtocol() string {

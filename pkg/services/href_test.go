@@ -59,7 +59,7 @@ func TestApplyHref(t *testing.T) {
 			{
 				name: "network ipam reference href",
 				href: ipamRef.Href,
-				kind: ipamRef.GetReferredKind(),
+				kind: ipamRef.GetToKind(),
 				uuid: ipamRef.GetUUID(),
 			},
 			{

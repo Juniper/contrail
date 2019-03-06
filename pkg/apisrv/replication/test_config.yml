@@ -18,13 +18,14 @@ database:
   retry_period: 3
 
 test_database:
-  mysql:
-    type: mysql
-    dialect: mysql
-    host: localhost
-    user: root
-    password: contrail123
-    name: contrail_test
+  # mysql is disabled because replicator uses sync watcher
+  #mysql:
+    #type: mysql
+    #dialect: mysql
+    #host: localhost
+    #user: root
+    #password: contrail123
+    #name: contrail_test
   postgres:
     type: postgres
     dialect: postgres
@@ -155,7 +156,7 @@ keystone:
 insecure: true
 
 cache:
-  enabled: true
+  enabled: false
   timeout: 10s
   # how long revision deleted event preserved.
   max_history: 100000
