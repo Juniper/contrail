@@ -94,7 +94,10 @@ func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Projec
 
 func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint string, err error) {
 	endpoint, err := endpoints.GetEndpoint(configService)
-	return endpoint.URL, err
+	if endpoint != nil {
+		return endpoint.URL, err
+	}
+	return "", nil
 }
 
 func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
