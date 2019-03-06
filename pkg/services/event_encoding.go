@@ -28,9 +28,16 @@ type EventOption struct {
 	FieldMask *types.FieldMask
 }
 
-// HasResource defines methods that might be implemented by Event.
-type HasResource interface {
+// ResourceEvent is an event that relates to a resource.
+type ResourceEvent interface {
 	GetResource() basemodels.Object
+	Operation() string
+}
+
+// ReferenceEvent is an event that relates to a reference.
+type ReferenceEvent interface {
+	GetID() string
+	GetReference() basemodels.Reference
 	Operation() string
 }
 
@@ -145,7 +152,7 @@ func (e *Event) GetResource() basemodels.Object {
 	if e == nil {
 		return nil
 	}
-	resourceEvent, ok := e.Request.(HasResource)
+	resourceEvent, ok := e.Request.(ResourceEvent)
 	if !ok {
 		return nil
 	}
@@ -157,11 +164,24 @@ func (e *Event) Operation() string {
 	if e == nil {
 		return ""
 	}
-	resourceEvent, ok := e.Request.(HasResource)
+	resourceEvent, ok := e.Request.(ResourceEvent)
 	if !ok {
 		return ""
 	}
 	return resourceEvent.Operation()
+}
+
+// SetFieldMask sets field mask on request if event is of create or update type.
+func (e *Event) SetFieldMask(fm types.FieldMask) {
+	type fieldMaskSetter interface {
+		SetFieldMask(types.FieldMask)
+	}
+
+	s, ok := e.Request.(fieldMaskSetter)
+	if !ok {
+		return
+	}
+	s.SetFieldMask(fm)
 }
 
 // RefOperation is enum type for ref-update operation.

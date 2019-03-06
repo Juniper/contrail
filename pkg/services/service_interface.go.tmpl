@@ -2,6 +2,7 @@ package services
 
 import (
     "context"
+    "encoding/json"
 
     "github.com/gogo/protobuf/types"
     "github.com/pkg/errors"
@@ -9,8 +10,10 @@ import (
     "github.com/Juniper/contrail/pkg/auth"
     "github.com/Juniper/contrail/pkg/services/baseservices"
     "github.com/Juniper/contrail/pkg/models"
+    "github.com/Juniper/contrail/pkg/models/basemodels"
 )
 
+// Service is a generic service that can be placed in chain.
 type Service interface {
     Next() Service
     SetNext(Service)
@@ -38,10 +41,6 @@ type ReadService interface {
     Get{{ schema.JSONSchema.GoName }}(context.Context, *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error)
     List{{ schema.JSONSchema.GoName }}(context.Context, *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error)
 {% endif %}{% endfor %}
-}
-
-type InternalContextWriteServiceWrapper struct {
-    WriteService
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
@@ -108,6 +107,26 @@ func (s *BaseService) List{{ schema.JSONSchema.GoName }}(ctx context.Context, re
         return nil, nil
     }
     return s.Next().List{{ schema.JSONSchema.GoName }}(ctx, request)
+}
+
+func (r Create{{ schema.JSONSchema.GoName }}Request) MarshalJSON() ([]byte, error) {
+    if len(r.FieldMask.Paths) == 0 {
+        type alias Create{{ schema.JSONSchema.GoName }}Request
+        return json.Marshal(alias(r))
+    }
+    m := r.{{ schema.JSONSchema.GoName }}.ToMap()
+    m = basemodels.ApplyFieldMask(m, r.FieldMask)
+    return json.Marshal(map[string]interface{}{"{{ schema.Path }}": m})
+}
+
+func (r Update{{ schema.JSONSchema.GoName }}Request) MarshalJSON() ([]byte, error) {
+    if len(r.FieldMask.Paths) == 0 {
+        type alias Update{{ schema.JSONSchema.GoName }}Request
+        return json.Marshal(alias(r))
+    }
+    m := r.{{ schema.JSONSchema.GoName }}.ToMap()
+    m = basemodels.ApplyFieldMask(m, r.FieldMask)
+    return json.Marshal(map[string]interface{}{"{{ schema.Path }}": m})
 }
 
 {% for _, reference in schema.References %}
@@ -267,21 +286,8 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
                 Fields: []string{"uuid"},
         })
         if err == nil && existing != nil {
-            model := request.{{ schema.JSONSchema.GoName }}
-            response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, &Update{{ schema.JSONSchema.GoName }}Request{
-                {{ schema.JSONSchema.GoName }}: model,
-                FieldMask: request.FieldMask,
-            })
-            if err != nil {
-                return nil, err
-            }
-            return &Event{
-                Request: &Event_Update{{ schema.JSONSchema.GoName }}Request{
-                    Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
-                        {{ schema.JSONSchema.GoName }}: response.Get{{ schema.JSONSchema.GoName }}(),
-                    },
-                },
-            }, nil
+            update := e.ToUpdateEvent()
+            return update.Process(ctx, service)
         }
     }
     response, err := service.Create{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -297,6 +303,19 @@ func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
     }, nil
 }
 
+func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) ToUpdateEvent() *Event {
+    request := e.Create{{ schema.JSONSchema.GoName }}Request
+    model := request.{{ schema.JSONSchema.GoName }}
+    return &Event{
+        Request: &Event_Update{{ schema.JSONSchema.GoName }}Request{
+            Update{{ schema.JSONSchema.GoName }}Request: &Update{{ schema.JSONSchema.GoName }}Request{
+                {{ schema.JSONSchema.GoName }}: model,
+                FieldMask: request.FieldMask,
+            },
+        },
+    }
+}
+
 func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) Process(ctx context.Context, service Service) (*Event, error) {
     request := e.Update{{ schema.JSONSchema.GoName }}Request
     response, err := service.Update{{ schema.JSONSchema.GoName }}(ctx, request)
@@ -310,6 +329,10 @@ func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) Process(ctx context.
             },
         },
     }, nil
+}
+
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) ToUpdateEvent() *Event {
+    return &Event{Request: e}
 }
 
 func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Process(ctx context.Context, service Service) (*Event, error) {
