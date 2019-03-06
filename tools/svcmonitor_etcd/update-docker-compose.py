@@ -7,12 +7,18 @@ docker_compose_path = "/etc/contrail/config/docker-compose.yaml"
 with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
+<<<<<<< HEAD
 svc_monitor = docker_compose["services"]["svcmonitor"]
 svc_monitor["image"] = "kaweue/contrail-controller-config-svcmonitor:6.0-1"
 config = [
     "NOTIFICATION_DRIVER=etcd",
     "DB_DRIVER=etcd",
 ]
+=======
+schema = docker_compose["services"]["svcmonitor"]
+schema["image"] = "kaweue/contrail-controller-config-svcmonitor:R6.0-7"
+environment = schema.setdefault("environment", [])
+>>>>>>> 82ff1cc7... [DNM] Sanity check
 
 if os.environ.get('ORCHESTRATOR') == "k8s":
     config += [

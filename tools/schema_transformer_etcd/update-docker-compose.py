@@ -8,11 +8,8 @@ with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
 schema = docker_compose["services"]["schema"]
-schema["image"] = "mateumann/contrail-controller-config-schema:R6.0-5"
-config = [
-    "NOTIFICATION_DRIVER=etcd",
-    "DB_DRIVER=etcd",
-]
+schema["image"] = "pawelzny/contrail-controller-config-schema:R6.0-8"
+environment = schema.setdefault("environment", [])
 
 if os.environ.get('ORCHESTRATOR') == "k8s":
     config += [
