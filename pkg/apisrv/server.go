@@ -189,7 +189,7 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 }
 
 func (s *Server) startVNCReplicator(endpointStore *apicommon.EndpointStore) (err error) {
-	s.VNCReplicator, err = replication.New(s.Cache, endpointStore)
+	s.VNCReplicator, err = replication.New(endpointStore)
 	if err != nil {
 		return err
 	}

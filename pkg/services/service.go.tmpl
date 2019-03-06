@@ -19,7 +19,6 @@ import (
 )
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-
 type RESTUpdate{{ schema.JSONSchema.GoName }}Request struct{
 	{{ schema.JSONSchema.GoName }} map[string]interface{} `json:"{{ schema.Path }}"`
 }

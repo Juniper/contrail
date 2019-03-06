@@ -8,10 +8,10 @@ import (
 	"github.com/spf13/viper"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
-	"github.com/Juniper/contrail/pkg/db/cache"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
 const (
@@ -31,31 +31,28 @@ const (
 	updateEndSystemURL      = "end-system/"
 	updateHardwareURL       = "hardware/"
 	updateCardURL           = "card/"
-	vnIDKey                 = "virtual_network_network_id"
 
-	deleteAction = "delete"
-	createAction = "create"
-	updateAction = "update"
+	deleteAction    = "delete"
+	createAction    = "create"
+	updateAction    = "update"
+	refUpdateAction = "ref-update"
 )
 
 // Replicator is an implementation to replicate objects to python API
 type Replicator struct {
 	serviceWaitGroup   *sync.WaitGroup
 	stopServiceContext context.CancelFunc
-	producer           *cache.DB
 	vncAPIHandle       *vncAPIHandle
 	log                *logrus.Entry
 }
 
 // New initializes replication data
-func New(cacheDB *cache.DB,
-	epStore *apicommon.EndpointStore) (*Replicator, error) {
+func New(epStore *apicommon.EndpointStore) (*Replicator, error) {
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
 	return &Replicator{
-		producer:         cacheDB,
 		serviceWaitGroup: &sync.WaitGroup{},
 		vncAPIHandle:     newVncAPIHandle(epStore),
 		log:              logutil.NewLogger("vnc_replication"),
@@ -64,60 +61,61 @@ func New(cacheDB *cache.DB,
 
 // Start replication service
 func (r *Replicator) Start() error {
-
-	var serviceContext context.Context
-	serviceContext, r.stopServiceContext = context.WithCancel(context.Background())
-	watcher, err := r.producer.AddWatcher(serviceContext, 0)
+	producer, err := syncp.NewEventProducer("replicator-watcher", r)
 	if err != nil {
 		return err
 	}
+
+	var ctx context.Context
+	ctx, r.stopServiceContext = context.WithCancel(context.Background())
+
 	r.serviceWaitGroup.Add(1)
 	go func() {
 		defer r.serviceWaitGroup.Done()
-		for {
-			select {
-			case <-serviceContext.Done():
-				r.log.Info("Stopping VNC API replication service")
-				return
-			case e := <-watcher.Chan():
-				r.process(e)
-			}
-		}
+		defer producer.Close()
+
+		err = producer.Start(ctx)
 	}()
-	return nil
+	<-producer.Watcher.DumpDone()
+
+	return err
 }
 
 func (r *Replicator) nodeToVNCEndSystem(node *models.Node) interface{} {
-	endSystem := node.ToMap()
-	if hostname, ok := endSystem["hostname"]; ok {
-		endSystem["end_system_hostname"] = hostname
-	}
-	output := map[string]map[string]interface{}{"end-system": endSystem}
+	endSystem := struct {
+		*models.Node
+		EndSystemHostname string `json:"end_system_hostname,omitempty"`
+	}{Node: node, EndSystemHostname: node.Hostname}
+
+	output := map[string]interface{}{"end-system": endSystem}
 	return output
 }
 
 func (r *Replicator) portToVNCPort(port *models.Port) interface{} {
-	portVNC := port.ToMap()
-	portVNC["parent_type"] = "end-system"
-	if bmsPortInfo, ok := portVNC["bms_port_info"]; ok {
-		portVNC["port_bms_port_info"] = bmsPortInfo
-	}
-	output := map[string]map[string]interface{}{"port": portVNC}
+	port.ParentType = "end-system"
+	portVNC := struct {
+		*models.Port
+		PortBMSPortInfo *models.BaremetalPortInfo `json:"port_bms_port_info,omitempty"`
+	}{Port: port, PortBMSPortInfo: port.BMSPortInfo}
+
+	output := map[string]interface{}{"port": portVNC}
 	return output
 }
 
-func (r *Replicator) vnToVNCVirtualNetwork(vn *models.VirtualNetwork) interface{} {
-	vnVNC := vn.ToMap()
-	if _, ok := vnVNC[vnIDKey]; ok {
-		delete(vnVNC, vnIDKey)
-	}
-	output := map[string]map[string]interface{}{"virtual-network": vnVNC}
-	return output
-}
-
-func (r *Replicator) process(e *services.Event) { //nolint: gocyclo
+// Process processes event by sending requests to all registered clusters.
+func (r *Replicator) Process(ctx context.Context, e *services.Event) (*services.Event, error) { //nolint: gocyclo
 	r.log.Infof("Received event: %v", e)
+	if e == nil {
+		return nil, nil
+	}
 	switch event := e.Request.(type) {
+	case services.ReferenceEvent:
+		r.vncAPIHandle.replicate(
+			refUpdateAction,
+			services.RefUpdatePath,
+			services.NewRefUpdateFromEvent(event),
+			map[string]interface{}{},
+		)
 	// watch endpoint event and prepare clients
 	case *services.Event_CreateEndpointRequest:
 		ep := event.CreateEndpointRequest.Endpoint
@@ -146,13 +144,13 @@ func (r *Replicator) process(e *services.Event) { //nolint: gocyclo
 	case *services.Event_CreateVirtualNetworkRequest:
 		event.CreateVirtualNetworkRequest.VirtualNetwork.VirtualNetworkNetworkID = 0
 		r.vncAPIHandle.replicate(createAction, createVirtualNetworkURL,
-			r.vnToVNCVirtualNetwork(event.CreateVirtualNetworkRequest.VirtualNetwork),
+			event.CreateVirtualNetworkRequest,
 			&services.CreateVirtualNetworkResponse{})
 	case *services.Event_UpdateVirtualNetworkRequest:
 		event.UpdateVirtualNetworkRequest.VirtualNetwork.VirtualNetworkNetworkID = 0
 		objID := event.UpdateVirtualNetworkRequest.VirtualNetwork.UUID
 		r.vncAPIHandle.replicate(updateAction, updateVirtualNetworkURL+objID,
-			r.vnToVNCVirtualNetwork(event.UpdateVirtualNetworkRequest.VirtualNetwork),
+			event.UpdateVirtualNetworkRequest,
 			&services.UpdateVirtualNetworkResponse{})
 	case *services.Event_DeleteVirtualNetworkRequest:
 		objID := event.DeleteVirtualNetworkRequest.ID
@@ -235,6 +233,8 @@ func (r *Replicator) process(e *services.Event) { //nolint: gocyclo
 		r.vncAPIHandle.replicate(deleteAction, updateCardURL+objID,
 			event.DeleteCardRequest, &services.DeleteCardResponse{})
 	}
+
+	return e, nil
 }
 
 // Stop replication routine
