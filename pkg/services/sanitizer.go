@@ -42,7 +42,7 @@ func (sv *SanitizerService) sanitizeRefs(
 func listNotFoundEvents(notFound basemodels.References) string {
 	var results []string
 	for _, ref := range notFound {
-		results = append(results, fmt.Sprintf("{type: %v, to: %v}", ref.GetReferredKind(), ref.GetTo()))
+		results = append(results, fmt.Sprintf("{type: %v, to: %v}", ref.GetToKind(), ref.GetTo()))
 	}
 	return strings.Join(results, " ")
 }
@@ -79,7 +79,7 @@ func refsToMetadatas(refs basemodels.References) []*basemodels.Metadata {
 	for _, ref := range refs {
 		metadatas = append(metadatas, &basemodels.Metadata{
 			FQName: ref.GetTo(),
-			Type:   ref.GetReferredKind(),
+			Type:   ref.GetToKind(),
 		})
 	}
 	return metadatas

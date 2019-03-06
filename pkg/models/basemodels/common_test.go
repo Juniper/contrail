@@ -100,3 +100,34 @@ func TestKindToSchemaID(t *testing.T) {
 		})
 	}
 }
+
+func TestOmitEmpty(t *testing.T) {
+	tests := []struct {
+		name string
+		m    map[string]interface{}
+		want map[string]interface{}
+	}{
+		{name: "empty"},
+		{
+			name: "map that don't have omitted keys",
+			m:    map[string]interface{}{"key": "val"},
+			want: map[string]interface{}{"key": "val"},
+		},
+		{
+			name: "map that have omitted keys but not empty",
+			m:    map[string]interface{}{"key": "val", "parent_uuid": "xyz"},
+			want: map[string]interface{}{"key": "val", "parent_uuid": "xyz"},
+		},
+		{
+			name: "map that have omitted keys empty",
+			m:    map[string]interface{}{"key": "val", "parent_uuid": ""},
+			want: map[string]interface{}{"key": "val"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			OmitEmpty(tt.m)
+			assert.Equal(t, tt.want, tt.m)
+		})
+	}
+}

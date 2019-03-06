@@ -59,6 +59,34 @@ func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) SetID(id string) {
 	e.Delete{{ schema.JSONSchema.GoName }}Request.ID = id
 }
 
+{% for _, reference in schema.References %}
+{% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+
+func (e *Event_Create{{ refType }}Request) GetID() string {
+	return e.Create{{refType}}Request.GetID()
+}
+
+func (e *Event_Delete{{ refType }}Request) GetID() string {
+	return e.Delete{{refType}}Request.GetID()
+}
+
+func (e *Event_Create{{ refType }}Request) GetReference() Reference {
+	return e.Create{{refType}}Request.Get{{ refType }}()
+}
+
+func (e *Event_Delete{{ refType }}Request) GetReference() Reference {
+	return e.Delete{{refType}}Request.Get{{ refType }}()
+}
+
+func (e *Event_Create{{ refType }}Request) Operation() string {
+	return OperationCreate
+}
+
+func (e *Event_Delete{{ refType }}Request) Operation() string {
+	return OperationDelete
+}
+
+{% endfor %}
 {% endif%}{% endfor %}
 
 // NewEmptyCreateEventRequest makes new Create Event Request.
