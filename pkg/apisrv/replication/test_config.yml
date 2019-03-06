@@ -53,6 +53,8 @@ server:
   log_api: false
   log_body: false
 
+  enable_vnc_replication: true
+
   # Bind addresss
   address: ":9091"
 
