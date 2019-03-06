@@ -8,12 +8,11 @@ with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
 schema = docker_compose["services"]["schema"]
-schema["image"] = "kaweue/contrail-controller-config-schema:R6.0-7"
+schema["image"] = "pawelzny/contrail-controller-config-schema:R6.0-8"
 config = [
     "NOTIFICATION_DRIVER=etcd",
     "DB_DRIVER=etcd",
 ]
-
 if os.environ.get('ORCHESTRATOR') == "k8s":
     config += [
         "ETCD_USE_SSL=true",

@@ -1,7 +1,7 @@
 # Code review guidelines
 
 This file contains guidelines for commiters and code reviewers.
-It is open for updates.
+It is open for updates. :)
 
 ## References
 
