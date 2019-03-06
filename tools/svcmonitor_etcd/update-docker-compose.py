@@ -8,7 +8,7 @@ with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
 svc_monitor = docker_compose["services"]["svcmonitor"]
-svc_monitor["image"] = "kaweue/contrail-controller-config-svcmonitor:6.0-1"
+svc_monitor["image"] = "kaweue/contrail-controller-config-svcmonitor:R6.0-6"
 config = [
     "NOTIFICATION_DRIVER=etcd",
     "DB_DRIVER=etcd",
