@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/gogo/protobuf/types"
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/errutil"
@@ -145,33 +146,55 @@ func (db *DB) AddWatcher(ctx context.Context, versionID uint64) (*Watcher, error
 	return watcher, nil
 }
 
+type toUpdater interface {
+	ToUpdateEvent() *services.Event
+}
+
 func (db *DB) update(event *services.Event) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-	n := &node{
-		prev:  db.last,
-		event: event,
+
+	var resource basemodels.Object
+
+	if req, ok := event.Request.(services.ReferenceEvent); ok {
+		if existingNode, ok := db.idMap[req.GetID()]; ok {
+
+			if u, ok := existingNode.event.Request.(toUpdater); ok {
+				op := req.Operation()
+				updateEvent := u.ToUpdateEvent()
+				event.Request = updateEvent.Request
+
+				ref := req.GetReference()
+				switch op {
+				case services.OperationCreate:
+					event.GetResource().AddReference(ref)
+				case services.OperationDelete:
+					event.GetResource().RemoveReference(ref)
+				}
+				event.SetFieldMask(types.FieldMask{Paths: []string{basemodels.ReferenceFieldName(ref)}})
+			}
+		}
 	}
-	resource := event.GetResource()
+	resource = event.GetResource()
 	if resource == nil {
 		return
 	}
 
-	existingNode, ok := db.idMap[resource.GetUUID()]
+	n := &node{
+		prev:  db.last,
+		event: event,
+	}
+
 	var backRefs, children []basemodels.Object
-	if ok {
-		// We should consider throwing error if operation is create here
+	if existingNode, ok := db.idMap[resource.GetUUID()]; ok {
 		oldResource := existingNode.event.GetResource()
 		backRefs = oldResource.GetBackReferences()
 		children = oldResource.GetChildren()
-		db.removeDependencies(oldResource)
-		logrus.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
-		if existingNode == db.first {
-			db.first = existingNode.getNext()
+		logrus.Debugf("Update id map for key: %s, event version: %d", resource.GetUUID(), event.Version)
+		if existingNode == db.last {
+			existingNode.next = n
 		}
-		delete(db.idMap, existingNode.event.GetResource().GetUUID())
-		delete(db.versionMap, existingNode.version)
-		existingNode.pop()
+		db.handleExistingNode(existingNode)
 	}
 
 	if event.Operation() == services.OperationDelete {
@@ -185,10 +208,22 @@ func (db *DB) update(event *services.Event) {
 	// This is done after removing too old objects as the uuid is same regardless of operation type
 	db.idMap[resource.GetUUID()] = n
 
-	db.updateDependentNodes(event, backRefs, children)
+	db.updateDependentNodes(resource, event.Operation(), backRefs, children)
 	db.handleNode(n)
 
 	logrus.Debugf("node %v updated", n.version)
+}
+
+func (db *DB) handleExistingNode(existingNode *node) {
+	// We should consider throwing error if operation is create here
+	oldResource := existingNode.event.GetResource()
+	db.removeDependencies(oldResource)
+	if existingNode == db.first {
+		db.first = existingNode.getNext()
+	}
+	delete(db.idMap, existingNode.event.GetResource().GetUUID())
+	delete(db.versionMap, existingNode.version)
+	existingNode.pop()
 }
 
 func (db *DB) updateDBVersion(n *node) {
@@ -266,11 +301,12 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 }
 
 func (db *DB) updateDependentNodes(
-	event services.ResourceEvent,
+	obj basemodels.Object,
+	operation string,
 	backRefs, children []basemodels.Object,
 ) {
-	if event.Operation() == services.OperationCreate || event.Operation() == services.OperationUpdate {
-		db.addDependencies(event.GetResource(), backRefs, children)
+	if operation == services.OperationCreate || operation == services.OperationUpdate {
+		db.addDependencies(obj, backRefs, children)
 	}
 }
 
@@ -354,7 +390,6 @@ func (n *node) pop() {
 	next := n.getNext()
 	prev.setNext(next)
 	next.setPrev(prev)
-	n.next = nil
 	n.prev = nil
 }
 
