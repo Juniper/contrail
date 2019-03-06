@@ -33,6 +33,18 @@ const (
 	IntPoolsPath             = "int-pools"
 )
 
+// Service is a generic service that can be placed in chain.
+type Service interface {
+	Next() Service
+	SetNext(Service)
+
+	WriteService
+	ReadService
+}
+
+// Reference is a generic reference that can be retrieved from ref update event.
+type Reference = basemodels.Reference
+
 // Chain setup chain of services.
 func Chain(services ...Service) {
 	if len(services) < 2 {
@@ -59,6 +71,12 @@ func (service *BaseService) Next() Service {
 // SetNext sets next service in service chain.
 func (service *BaseService) SetNext(next Service) {
 	service.next = next
+}
+
+// InternalContextWriteServiceWrapper is a WriteService that marks it requests
+// with internal request context.
+type InternalContextWriteServiceWrapper struct {
+	WriteService
 }
 
 // InTransactionDoer executes do function atomically.
