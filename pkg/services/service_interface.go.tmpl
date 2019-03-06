@@ -11,14 +11,6 @@ import (
     "github.com/Juniper/contrail/pkg/models"
 )
 
-type Service interface {
-    Next() Service
-    SetNext(Service)
-
-    WriteService
-    ReadService
-}
-
 type WriteService interface {
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
     Create{{ schema.JSONSchema.GoName }}(context.Context, *Create{{ schema.JSONSchema.GoName }}Request) (*Create{{ schema.JSONSchema.GoName }}Response, error)
@@ -38,10 +30,6 @@ type ReadService interface {
     Get{{ schema.JSONSchema.GoName }}(context.Context, *Get{{ schema.JSONSchema.GoName }}Request) (*Get{{ schema.JSONSchema.GoName }}Response, error)
     List{{ schema.JSONSchema.GoName }}(context.Context, *List{{ schema.JSONSchema.GoName }}Request) (*List{{ schema.JSONSchema.GoName }}Response, error)
 {% endif %}{% endfor %}
-}
-
-type InternalContextWriteServiceWrapper struct {
-    WriteService
 }
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}

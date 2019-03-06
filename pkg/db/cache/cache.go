@@ -148,30 +148,34 @@ func (db *DB) AddWatcher(ctx context.Context, versionID uint64) (*Watcher, error
 func (db *DB) update(event *services.Event) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-	n := &node{
-		prev:  db.last,
-		event: event,
+
+	var resource basemodels.Object
+
+	if req, ok := event.Request.(services.ReferenceEvent); ok {
+		if existingNode, ok := db.idMap[req.GetID()]; ok {
+			ref := req.GetReference()
+
+			event.Request = existingNode.event.Request
+			event.GetResource().AddReference(ref)
+		}
 	}
-	resource := event.GetResource()
+	resource = event.GetResource()
 	if resource == nil {
 		return
 	}
 
-	existingNode, ok := db.idMap[resource.GetUUID()]
+	n := &node{
+		prev:  db.last,
+		event: event,
+	}
+
 	var backRefs, children []basemodels.Object
-	if ok {
-		// We should consider throwing error if operation is create here
+	if existingNode, ok := db.idMap[resource.GetUUID()]; ok {
 		oldResource := existingNode.event.GetResource()
 		backRefs = oldResource.GetBackReferences()
 		children = oldResource.GetChildren()
-		db.removeDependencies(oldResource)
-		logrus.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
-		if existingNode == db.first {
-			db.first = existingNode.getNext()
-		}
-		delete(db.idMap, existingNode.event.GetResource().GetUUID())
-		delete(db.versionMap, existingNode.version)
-		existingNode.pop()
+		logrus.Debugf("Update id map for key: %s, event version: %d", resource.GetUUID(), event.Version)
+		db.handleExistingNode(existingNode)
 	}
 
 	if event.Operation() == services.OperationDelete {
@@ -185,10 +189,22 @@ func (db *DB) update(event *services.Event) {
 	// This is done after removing too old objects as the uuid is same regardless of operation type
 	db.idMap[resource.GetUUID()] = n
 
-	db.updateDependentNodes(event, backRefs, children)
+	db.updateDependentNodes(resource, event.Operation(), backRefs, children)
 	db.handleNode(n)
 
 	logrus.Debugf("node %v updated", n.version)
+}
+
+func (db *DB) handleExistingNode(existingNode *node) {
+	// We should consider throwing error if operation is create here
+	oldResource := existingNode.event.GetResource()
+	db.removeDependencies(oldResource)
+	if existingNode == db.first {
+		db.first = existingNode.getNext()
+	}
+	delete(db.idMap, existingNode.event.GetResource().GetUUID())
+	delete(db.versionMap, existingNode.version)
+	existingNode.pop()
 }
 
 func (db *DB) updateDBVersion(n *node) {
@@ -266,11 +282,12 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 }
 
 func (db *DB) updateDependentNodes(
-	event services.HasResource,
+	obj basemodels.Object,
+	operation string,
 	backRefs, children []basemodels.Object,
 ) {
-	if event.Operation() == services.OperationCreate || event.Operation() == services.OperationUpdate {
-		db.addDependencies(event.GetResource(), backRefs, children)
+	if operation == services.OperationCreate || operation == services.OperationUpdate {
+		db.addDependencies(obj, backRefs, children)
 	}
 }
 

@@ -14,11 +14,12 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-const timeOut = 10 * time.Second
+const timeout = 10 * time.Second
 
 func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB, numEvent int) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
-	watcher, _ := cache.AddWatcher(ctx, 0) // nolint: errcheck
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	watcher, err := cache.AddWatcher(ctx, 0)
+	assert.NoError(t, err)
 	wg.Add(1)
 
 	go func() {
@@ -35,6 +36,15 @@ func addWatcher(t *testing.T, wg *sync.WaitGroup, cache *DB, numEvent int) {
 			}
 		}
 	}()
+}
+
+func requireEvent(t *testing.T, watcher *Watcher) (event *services.Event) {
+	select {
+	case <-time.After(time.Second):
+		assert.Fail(t, "timeout exeeded")
+	case event = <-watcher.Chan():
+	}
+	return event
 }
 
 func notifyEvent(cache *DB, version uint64) { // nolint: interfacer
@@ -64,6 +74,22 @@ func notifyDependentEvent(cache *DB, version uint64) { // nolint: interfacer
 		},
 	}
 	cache.Process(context.Background(), event) // nolint: errcheck
+}
+
+func notifyRefEvent(cache *DB, from, to string) error {
+	event := &services.Event{
+		//Version: version,
+		Request: &services.Event_CreateVirtualNetworkVirtualNetworkRefRequest{
+			CreateVirtualNetworkVirtualNetworkRefRequest: &services.CreateVirtualNetworkVirtualNetworkRefRequest{
+				ID: from,
+				VirtualNetworkVirtualNetworkRef: &models.VirtualNetworkVirtualNetworkRef{
+					UUID: to,
+				},
+			},
+		},
+	}
+	_, err := cache.Process(context.Background(), event)
+	return err
 }
 
 // nolint: unused, deadcode
@@ -130,6 +156,49 @@ func TestCache(t *testing.T) {
 
 	// _, ok := cache.idMap["vn0"]
 	// assert.Equal(t, false, ok, "compaction failed")
+}
+
+func TestCacheReferenceHandling(t *testing.T) {
+	logrus.SetLevel(logrus.DebugLevel)
+	cache := NewDB(1)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	watcher, err := cache.AddWatcher(ctx, 0)
+	assert.NoError(t, err)
+
+	var event *services.Event
+
+	notifyEvent(cache, 0)
+	event = requireEvent(t, watcher)
+	assert.Equal(
+		t,
+		&models.VirtualNetwork{UUID: "vn0"},
+		event.Request.(*services.Event_CreateVirtualNetworkRequest).CreateVirtualNetworkRequest.VirtualNetwork,
+	)
+
+	notifyEvent(cache, 1)
+	event = requireEvent(t, watcher)
+	assert.Equal(
+		t,
+		&models.VirtualNetwork{UUID: "vn1"},
+		event.Request.(*services.Event_CreateVirtualNetworkRequest).CreateVirtualNetworkRequest.VirtualNetwork,
+	)
+
+	notifyRefEvent(cache, "vn0", "vn1")
+	event = requireEvent(t, watcher)
+	assert.Equal(
+		t,
+		&models.VirtualNetwork{
+			UUID: "vn0",
+			VirtualNetworkRefs: []*models.VirtualNetworkVirtualNetworkRef{
+				{UUID: "vn1"},
+			},
+		},
+		event.Request.(*services.Event_CreateVirtualNetworkRequest).CreateVirtualNetworkRequest.VirtualNetwork,
+	)
+
 }
 
 type dependencyTestAssertion func(
