@@ -102,7 +102,7 @@ func startEtcdWatcher() {
 
 func startRDBMSWatcher() {
 	logrus.Debug("RDBMS watcher enabled for cache")
-	producer, err := syncp.NewEventProducer(cacheDB)
+	producer, err := syncp.NewEventProducer("cache-watcher", cacheDB)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
