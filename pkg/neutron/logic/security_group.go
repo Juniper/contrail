@@ -132,7 +132,7 @@ func (sg *SecurityGroup) Delete(ctx context.Context, rp RequestParameters, id st
 			fmt.Sprintf("can't delete resource security_group of id '%s'", id))
 	}
 
-	return nil, nil
+	return &SecurityGroupResponse{}, nil
 }
 
 // Read security group logic.
@@ -222,7 +222,7 @@ func listSecurityGroups(
 	ctx context.Context, rp RequestParameters, filter Filters,
 ) ([]*models.SecurityGroup, error) {
 	var parentUUIDs []string
-	for _, uuid := range getFilterProjectIDS(ctx, rp, filter) {
+	for _, uuid := range getFilterProjectIDS(rp, filter) {
 		vncUUID, err := neutronIDToVncUUID(uuid)
 		parentUUIDs = append(parentUUIDs, vncUUID)
 		if err != nil {
@@ -244,7 +244,7 @@ func listSecurityGroups(
 	return sgResponse.GetSecurityGroups(), err
 }
 
-func getFilterProjectIDS(ctx context.Context, rp RequestParameters, f Filters) []string {
+func getFilterProjectIDS(rp RequestParameters, f Filters) []string {
 	if !rp.RequestContext.IsAdmin {
 		return []string{rp.RequestContext.Tenant}
 	}
