@@ -12,12 +12,13 @@ type Filters map[string][]string
 
 // Keys available in filters.
 const (
-	idKey             = "id"
-	nameKey           = "name"
-	fqNameKey         = "fq_name"
-	sharedKey         = "shared"
-	routerExternalKey = "router:external"
-	tenantIDKey       = "tenant_id"
+	idKey              = "id"
+	nameKey            = "name"
+	fqNameKey          = "fq_name"
+	sharedKey          = "shared"
+	routerExternalKey  = "router:external"
+	tenantIDKey        = "tenant_id"
+	securityGroupIDKey = "security_group_id"
 )
 
 // UnmarshalJSON Filters.
