@@ -129,7 +129,7 @@ func startEtcdWatcher(_ *sync.WaitGroup) {
 
 func startRDBMSWatcher(_ *sync.WaitGroup) {
 	logrus.Debug("RDBMS watcher enabled for cache")
-	producer, err := syncp.NewEventProducer(cacheDB)
+	producer, err := syncp.NewEventProducer("rdbms-watcher", cacheDB)
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}

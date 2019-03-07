@@ -16,8 +16,9 @@ type EventProducer struct {
 }
 
 // NewEventProducer makes EventProducer based RDBMS updates.
-func NewEventProducer(processor services.EventProcessor) (*EventProducer, error) {
-	watcher, err := createWatcher(processor)
+// Every EventProducer must have unique id.
+func NewEventProducer(id string, processor services.EventProcessor) (*EventProducer, error) {
+	watcher, err := createWatcher(id, processor)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,18 @@
 package replication
 
 import (
+	"strings"
 	"sync"
 )
+
+const (
+	// PostgreSQLPublicationName contains name of publication created in database.
+	PostgreSQLPublicationName = "syncpub"
+)
+
+func GetReplicationSlotName(id string) string {
+	return strings.ReplaceAll(id, "-", "_")
+}
 
 type lsnCounter struct {
 	// receivedLSN holds max WAL LSN value received from master.

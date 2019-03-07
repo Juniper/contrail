@@ -27,6 +27,7 @@ import (
 
 const (
 	mysqlDefaultPort = "3306"
+	syncID           = "sync-service"
 )
 
 type watchCloser interface {
@@ -44,7 +45,6 @@ type Service struct {
 // NewService creates Sync service with given configuration.
 // Close needs to be explicitly called on service teardown.
 func NewService() (*Service, error) {
-	setViperDefaults()
 
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
@@ -60,14 +60,14 @@ func NewService() (*Service, error) {
 		return nil, err
 	}
 
-	watcher, err := createWatcher(&services.ServiceEventProcessor{Service: etcdNotifierService})
+	watcher, err := createWatcher(syncID, &services.ServiceEventProcessor{Service: etcdNotifierService})
 	if err != nil {
 		return nil, err
 	}
 
 	return &Service{
 		watcher: watcher,
-		log:     logutil.NewLogger("sync-service"),
+		log:     logutil.NewLogger(syncID),
 	}, nil
 }
 
@@ -90,7 +90,7 @@ func determineCodecType() models.Codec {
 	}
 }
 
-func createWatcher(processor services.EventProcessor) (watchCloser, error) {
+func createWatcher(id string, processor services.EventProcessor) (watchCloser, error) {
 	setViperDefaults()
 	sqlDB, err := basedb.ConnectDB()
 	if err != nil {
@@ -108,7 +108,7 @@ func createWatcher(processor services.EventProcessor) (watchCloser, error) {
 	driver := viper.GetString("database.type")
 	switch driver {
 	case basedb.DriverPostgreSQL:
-		return createPostgreSQLWatcher(rowSink, dbService, processor)
+		return createPostgreSQLWatcher(id, rowSink, dbService, processor)
 	case basedb.DriverMySQL:
 		return createMySQLWatcher(rowSink)
 	default:
@@ -117,7 +117,7 @@ func createWatcher(processor services.EventProcessor) (watchCloser, error) {
 }
 
 func createPostgreSQLWatcher(
-	sink replication.RowSink, dbService *db.Service, processor services.EventProcessor,
+	id string, sink replication.RowSink, dbService *db.Service, processor services.EventProcessor,
 ) (watchCloser, error) {
 	handler := replication.NewPgoutputEventHandler(sink)
 
@@ -133,7 +133,7 @@ func createPostgreSQLWatcher(
 		return nil, err
 	}
 	conf := replication.PostgresSubscriptionConfig{
-		Slot:          replication.PostgreSQLReplicationSlotName,
+		Slot:          replication.GetReplicationSlotName(id),
 		Publication:   replication.PostgreSQLPublicationName,
 		StatusTimeout: viper.GetDuration("database.replication_status_timeout"),
 	}
