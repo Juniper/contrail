@@ -21,7 +21,6 @@ func makePortResponse(
 	pr.setMacAddress(vmi)
 	pr.setBindings(vmi)
 	//TODO handle dhcp options
-	//TODO handle allowed address pairs
 	pr.setFixedIP(iips)
 	pr.setSecurityGroups(vmi)
 	pr.setDeviceID(vmi)
@@ -31,6 +30,16 @@ func makePortResponse(
 	//TODO make contrail extensions customizable
 	pr.setContrailExtensions(vmi)
 
+	if vmi.VirtualMachineInterfaceAllowedAddressPairs != nil {
+		for _, ap := range vmi.VirtualMachineInterfaceAllowedAddressPairs.AllowedAddressPair {
+			if ap.IP == nil {
+				continue
+			}
+			pr.AllowedAddressPairs = append(pr.AllowedAddressPairs, &AllowedAddressPair{
+				IPAddress:  ap.IP.IPPrefix,
+				MacAddress: ap.Mac})
+		}
+	}
 	return pr
 }
 
