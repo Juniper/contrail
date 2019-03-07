@@ -1,0 +1,309 @@
+resources:
+- data:
+    name: server1-9d03e841-3fd8-439c-bdb2-ff5800497579
+    uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+    hostname: server1
+    ip_address: 10.84.5.27
+  kind: node
+- data:
+    name: server2-9d03e842-3fd2-4392-bdb2-ff5800497572
+    uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+    hostname: server2
+    ip_address: 10.84.5.19
+  kind: node
+- data:
+    uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    name: fabric_test-cda6f70d-5cfc-4b6a-a831-25bff0b87744
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+    perms2:
+      owner: admin
+    openstack_registry: default
+    openstack_release: ocata
+    openstack_internal_vip: 10.84.5.27
+    openstack_external_vip: 10.84.5.27
+    kolla_globals:
+      key_value_pair:
+      - value: 'no'
+        key: enable_haproxy
+      - value: 'no'
+        key: enable_swift
+      - value: 'no'
+        key: enable_ironic
+      - value: 'no'
+        key: enable_barbican
+      - value: '50'
+        key: keepalived_virtual_router_id
+      - value: 10.84.5.27
+        key: contrail_api_interface_address
+  kind: openstack_cluster
+- data:
+    provisioning_state: NOSTATE
+    uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    name: appfmx_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+    perms2:
+      owner: admin
+    appformix_version: 2.19.3
+    appformix_image_dir: /opt/software/appformix/
+    appformix_license: /opt/software/appformix/AppFormixLicense.sig
+    appformix_username: appformix
+    appformix_password: Appformix12
+    appformix_kvm_instance_discovery: true
+    appformix_network_device_monitoring_enabled: true
+    appformix_jti_network_device_monitoring_enabled: true
+    appformix_remote_host_monitoring_enabled: true
+    contrail_analytics_url: 'http://192.168.34.10:8081'
+    contrail_config_url: 'http://192.168.34.10:8082'
+    contrail_cluster_name: 'ContrailCluster1'
+    network_device_discovery_enabled: false
+    openstack_platform_enabled: true
+    openstack_cluster_refs:
+    - uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    appformix_configuration:
+      - value: '8200'
+        key: appformix_haproxy_datamanager_port_http
+      - value: '8201'
+        key: appformix_haproxy_datamanager_port_https
+  kind: appformix_cluster
+##########
+- data:
+    provisioning_state: NOSTATE
+    uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    name: fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+    perms2:
+      owner: admin
+    container_registry: ci-repo.englab.juniper.net:5010
+    registry_private_insecure: true
+    contrail_version: latest
+    #default_gateway: 10.84.7.254
+    ntp_server: 10.84.5.100
+    domain_suffix: us-west1.compute.internal
+    encap_priority: VXLAN,MPLSoUDP,MPLSoGRE
+    contrail_configuration:
+      key_value_pair:
+      - value: ocata
+        key: OPENSTACK_VERSION
+      - value: '2'
+        key: CONFIG_NODEMGR__DEFAULTS__minimum_diskGB
+      - value: '2'
+        key: DATABASE_NODEMGR__DEFAULTS__minimum_diskGB
+    orchestrator: openstack
+    openstack_cluster_refs:
+    - uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    appformix_cluster_refs:
+    - uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+  kind: contrail_cluster
+- data:
+    uuid: 459c9cd3-1e8a-4a15-b160-b16f809d27e1
+    name: 459c9cd3-1e8a-4a15-b160-b16f809d27e1
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_config_node
+- data:
+    uuid: 07715a18-6cc2-4f58-bcdd-b7857db0015b
+    name: 07715a18-6cc2-4f58-bcdd-b7857db0015b
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_config_database_node
+- data:
+    uuid: b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bb
+    name: b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bb
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_analytics_node
+- data:
+    uuid: 7f99df11-4dc6-44c7-9cc5-81ca03983c67
+    name: 7f99df11-4dc6-44c7-9cc5-81ca03983c67
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_analytics_database_node
+- data:
+    uuid: 999f49a9-c985-466f-ab1f-896575e52653
+    name: 999f49a9-c985-466f-ab1f-896575e52653
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_control_node
+- data:
+    uuid: 3e77005b-b7ba-489b-9891-8472cee9eadf
+    name: 3e77005b-b7ba-489b-9891-8472cee9eadf
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_webui_node
+- data:
+    uuid: 4e77005b-b7ba-489b-9891-8472cee9eadf
+    name: 4e77005b-b7ba-489b-9891-8472cee9eadf
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_vrouter_node
+- data:
+    uuid: 5e77005b-b7ba-489b-9891-8472cee9eadf
+    name: 5e77005b-b7ba-489b-9891-8472cee9eadf
+    parent_uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    parent_type: openstack-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: openstack_compute_node
+- data:
+    uuid: 6e77005b-b7ba-489b-9891-8472cee9eadf
+    name: 6e77005b-b7ba-489b-9891-8472cee9eadf
+    parent_uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    parent_type: openstack-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: openstack_control_node
+- data:
+    uuid: 7e77005b-b7ba-489b-9891-8472cee9eadf
+    name: 7e77005b-b7ba-489b-9891-8472cee9eadf
+    parent_uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    parent_type: openstack-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: openstack_network_node
+- data:
+    uuid: 8e77005b-b7ba-489b-9891-8472cee9eadf
+    name: 8e77005b-b7ba-489b-9891-8472cee9eadf
+    parent_uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    parent_type: openstack-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: openstack_storage_node
+- data:
+    uuid: 9e77005b-b7ba-489b-9891-8472cee9eadf
+    name: 9e77005b-b7ba-489b-9891-8472cee9eadf
+    parent_uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    parent_type: openstack-cluster
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: openstack_monitoring_node
+- data:
+    uuid: 9e770059-b7b9-4899-9899-8472cee9ead9
+    name: 9e770059-b7b9-4899-9899-8472cee9ead9
+    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: appformix-cluster
+    perms2:
+      owner: admin
+    ansible_connection: ssh
+    node_refs:
+    - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
+  kind: appformix_controller_node
+- data:
+    uuid: 9e77005c-b7bc-489c-989c-8472cee9eadc
+    name: 9e77005c-b7bc-489c-989c-8472cee9eadc
+    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: appformix-cluster
+    perms2:
+      owner: admin
+    ansible_connection: ssh
+    node_refs:
+    - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
+  kind: appformix_bare_host_node
+- data:
+    uuid: ca77d056-cab6-ca96-ca96-ca72cee9ead6
+    name: ca770056-cab6-ca96-ca96-ca72cee9ead6
+    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: appformix-cluster
+    perms2:
+      owner: admin
+    ansible_connection: ssh
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: appformix_openstack_node
+- data:
+    uuid: be770056-b7b6-b896-b896-b472cee9ead6
+    name: be770056-b7b6-b896-b896-b472cee9ead6
+    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: appformix-cluster
+    perms2:
+      owner: admin
+    ansible_connection: ssh
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: appformix_compute_node
+- data:
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    parent_type: global-system-config
+    perms2:
+      owner: admin
+    name: x1
+    uuid: appformix-flows-uuid
+    openstack_cluster_refs:
+    - uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
+    appformix_cluster_refs:
+    - uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    docker_images_tar: /opt/software/xflow/xflow-dev-latest.tar.gz
+    xflow_license: /opt/software/xflow/xflow_license.sig
+    keepalived_shared_ip: 10.84.5.23
+    xflow:
+      iface_public:
+      iface_internal:
+    clickhouse:
+      retention_period_secs: 7200
+      retention_size_bytes: 0
+    config:
+      key_value_pair:
+      - key: appformix_address
+        value: "http://10.84.5.19:5001"
+      - key: keystone_auth_url
+        value: "http://10.84.5.19:5000/v3"
+      - key: keystone_username
+        value: "alice"
+      - key: keystone_password
+        value: "alice_password"
+  kind: appformix-flows
+- data:
+    name: appformix-flows-node1
+    uuid: appformix-flows-node-uuid
+    parent_type: appformix-flows
+    parent_uuid: appformix-flows-uuid
+    perms2:
+      owner: admin
+    ansible_connection: ssh
+    node_refs:
+    - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
+  kind: appformix-flows-node
