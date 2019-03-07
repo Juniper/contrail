@@ -28,7 +28,7 @@ const (
 )
 
 var cacheDB *cache.DB
-var cacheDBWaitGroup *sync.WaitGroup
+var cacheDBWaitGroup sync.WaitGroup
 
 func init() {
 	Contrail.AddCommand(processCmd)
@@ -96,7 +96,6 @@ func startAmqpReplicator(_ *sync.WaitGroup) {
 }
 
 func startCacheService(wg *sync.WaitGroup) {
-	cacheDBWaitGroup = &sync.WaitGroup{}
 	cacheDBWaitGroup.Add(1)
 	logrus.Debug("Cache service enabled")
 	cacheDB = cache.NewDB(uint64(viper.GetInt64("cache.max_history")))
