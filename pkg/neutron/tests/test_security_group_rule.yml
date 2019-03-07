@@ -442,7 +442,7 @@ workflow:
       method: POST
       expected: [200]
       data: *sg_blue_delete_request
-    expect: $null
+    expect: null
 
   - name: create security group
     request:
