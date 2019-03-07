@@ -27,6 +27,7 @@ const (
 	expectedOnPremSecret             = "./test_data/expected_onprem_cloud_secret.yaml"
 	expectedOnPremCmdForCreateUpdate = "./test_data/expected_onprem_cmd_for_create_update.yaml"
 	expectedPvtKey                   = "./test_data/cloud_keypair"
+	expectedPubKey                   = "./test_data/cloud_keypair.pub"
 	cloudID                          = "cloud_uuid"
 	defaultAdminUser                 = "admin"
 	defaultAdminPassword             = "contrail123"
@@ -106,8 +107,8 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 		}
 	}
 
-	pvtKeycleanup := createDummyPvtKeyFile(t)
-	defer pvtKeycleanup()
+	sshKeycleanup := createDummySSHKeyFiles(t)
+	defer sshKeycleanup()
 
 	cloud, err := NewCloud(config)
 	assert.NoError(t, err, "failed to create cloud struct")
@@ -125,7 +126,7 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 	assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
 		"Expected list of create commands are not executed")
 	// check if ssh keys are created
-	assert.True(t, verifyGeneratedSSHKeyFile(t),
+	assert.True(t, verifyGeneratedSSHKeyFiles(t),
 		"Expected ssh key file are not generated")
 
 	// Wait for the in-memory endpoint cache to get updated
@@ -219,18 +220,30 @@ func verifyCommandsExecuted(t *testing.T, expectedCmdForCreateUpdate string) boo
 	return compareFiles(t, expectedCmdForCreateUpdate, executedCommandsPath())
 }
 
-func verifyGeneratedSSHKeyFile(t *testing.T) bool {
+func verifyGeneratedSSHKeyFiles(t *testing.T) bool {
 	pvtKeyPath := getCloudSSHKeyPath(cloudID, "cloud_keypair")
-	return compareFiles(t, expectedPvtKey, pvtKeyPath)
+	pubKeyPath := getCloudSSHKeyPath(cloudID, "cloud_keypair.pub")
+	return compareFiles(t, expectedPvtKey,
+		pvtKeyPath) && compareFiles(t, expectedPubKey, pubKeyPath)
 }
 
-func createDummyPvtKeyFile(t *testing.T) func() {
-	// create public cloud topology.yaml
-	publicTopoData, err := fileutil.GetContent("file://" + expectedPvtKey)
+func createDummySSHKeyFiles(t *testing.T) func() {
+	// create ssh pub key
+	pubKeyData, err := fileutil.GetContent("file://" + expectedPubKey)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to read file: %s", expectedPubKey)
+	}
+
+	err = fileutil.WriteToFile("/tmp/cloud_keypair.pub", pubKeyData, sshPubKeyPerm)
+	if err != nil {
+		assert.NoErrorf(t, err, "Unable to write file: %s", "/tmp/cloud_keypair.pub")
+	}
+
+	pvtKeyData, err := fileutil.GetContent("file://" + expectedPvtKey)
 	if err != nil {
 		assert.NoErrorf(t, err, "Unable to read file: %s", expectedPvtKey)
 	}
-	err = fileutil.WriteToFile("/tmp/cloud_keypair", publicTopoData, defaultRWOnlyPerm)
+	err = fileutil.WriteToFile("/tmp/cloud_keypair", pvtKeyData, defaultRWOnlyPerm)
 	if err != nil {
 		assert.NoErrorf(t, err, "Unable to write file: %s", "/tmp/cloud_keypair")
 	}
@@ -239,6 +252,9 @@ func createDummyPvtKeyFile(t *testing.T) func() {
 		// best effort method of deleting all the files
 		// nolint: errcheck
 		_ = os.Remove("/tmp/cloud_keypair")
+		// nolint: errcheck
+		_ = os.Remove("/tmp/cloud_keypair.pub")
+
 	}
 }
 
