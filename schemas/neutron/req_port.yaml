@@ -54,8 +54,20 @@ schema:
       type: array
       items:
         $ref: resp_port.json#/definitions/FixedIp
+    allowed_address_pairs:
+      type: array
+      items:
+        $ref: req_port.json#/definitions/AllowedAddressPair
 
 definitions:
   SecurityGroup:
     type: string
     description: fixed ip
+  AllowedAddressPair:
+    type: object
+    properties:
+      mac_address:
+        type: string
+      ip_address:
+        type: string
+
