@@ -28,7 +28,6 @@ const (
 )
 
 var cacheDB *cache.DB
-var cacheDBWaitGroup *sync.WaitGroup
 
 func init() {
 	Contrail.AddCommand(processCmd)
@@ -47,7 +46,7 @@ var processCmd = &cobra.Command{
 
 //StartProcesses starts processes based on config.
 func StartProcesses(wg *sync.WaitGroup) {
-	MaybeStart("cache", startCacheService, wg)
+	MaybeStartCache(wg)
 	MaybeStart("replication.cassandra", startCassandraReplicator, wg)
 	MaybeStart("replication.amqp", startAmqpReplicator, wg)
 	MaybeStart("server", startServer, wg)
@@ -58,55 +57,34 @@ func StartProcesses(wg *sync.WaitGroup) {
 }
 
 //MaybeStart runs process if it is enabled.
-func MaybeStart(serviceName string, f func(wg *sync.WaitGroup), wg *sync.WaitGroup) {
+func MaybeStart(serviceName string, f func(), wg *sync.WaitGroup) {
 	if !viper.GetBool(serviceName + ".enabled") {
 		return
 	}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		f(wg)
+		f()
 	}()
 }
 
-func startCassandraReplicator(_ *sync.WaitGroup) {
-	logrus.Debug("Cassandra replication service enabled")
-	cassandraProcessor := cassandra.NewEventProcessor()
-	producer, err := etcd.NewEventProducer(cassandraProcessor, "cassandra-replicator")
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
+//MaybeStartCache runs cache service
+func MaybeStartCache(wg *sync.WaitGroup) {
+	if !viper.GetBool("cache.enabled") {
+		return
 	}
-	err = producer.Start(context.Background())
-	if err != nil {
-		logrus.Warn(err)
-	}
-}
-
-func startAmqpReplicator(_ *sync.WaitGroup) {
-	logrus.Debug("AMQP replication service enabled")
-	amqpProcessor := cassandra.NewAmqpEventProcessor()
-	producer, err := etcd.NewEventProducer(amqpProcessor, "amqp-replicator")
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-	err = producer.Start(context.Background())
-	if err != nil {
-		logrus.Warn(err)
-	}
+	startCacheService(wg)
 }
 
 func startCacheService(wg *sync.WaitGroup) {
-	cacheDBWaitGroup = &sync.WaitGroup{}
-	cacheDBWaitGroup.Add(1)
 	logrus.Debug("Cache service enabled")
 	cacheDB = cache.NewDB(uint64(viper.GetInt64("cache.max_history")))
-	cacheDBWaitGroup.Done()
 	MaybeStart("cache.cassandra", startCassandraWatcher, wg)
 	MaybeStart("cache.etcd", startEtcdWatcher, wg)
 	MaybeStart("cache.rdbms", startRDBMSWatcher, wg)
 }
 
-func startCassandraWatcher(_ *sync.WaitGroup) {
+func startCassandraWatcher() {
 	logrus.Debug("Cassandra watcher enabled for cache")
 	producer := cassandra.NewEventProducer(cacheDB)
 	err := producer.Start(context.Background())
@@ -115,7 +93,7 @@ func startCassandraWatcher(_ *sync.WaitGroup) {
 	}
 }
 
-func startEtcdWatcher(_ *sync.WaitGroup) {
+func startEtcdWatcher() {
 	logrus.Debug("etcd watcher enabled for cache")
 	producer, err := etcd.NewEventProducer(cacheDB, "cache-service")
 	if err != nil {
@@ -127,7 +105,7 @@ func startEtcdWatcher(_ *sync.WaitGroup) {
 	}
 }
 
-func startRDBMSWatcher(_ *sync.WaitGroup) {
+func startRDBMSWatcher() {
 	logrus.Debug("RDBMS watcher enabled for cache")
 	producer, err := syncp.NewEventProducer(cacheDB)
 	if err != nil {
@@ -140,12 +118,37 @@ func startRDBMSWatcher(_ *sync.WaitGroup) {
 	}
 }
 
-func startServer(_ *sync.WaitGroup) {
+func startCassandraReplicator() {
+	logrus.Debug("Cassandra replication service enabled")
+	cassandraProcessor := cassandra.NewEventProcessor()
+	producer, err := etcd.NewEventProducer(cassandraProcessor, "cassandra-replicator")
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	err = producer.Start(context.Background())
+	if err != nil {
+		logrus.Warn(err)
+	}
+}
+
+func startAmqpReplicator() {
+	logrus.Debug("AMQP replication service enabled")
+	amqpProcessor := cassandra.NewAmqpEventProcessor()
+	producer, err := etcd.NewEventProducer(amqpProcessor, "amqp-replicator")
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	err = producer.Start(context.Background())
+	if err != nil {
+		logrus.Warn(err)
+	}
+}
+
+func startServer() {
 	server, err := apisrv.NewServer()
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
-	cacheDBWaitGroup.Wait()
 	server.Cache = cacheDB
 	if err = server.Init(); err != nil {
 		logutil.FatalWithStackTrace(err)
@@ -155,7 +158,7 @@ func startServer(_ *sync.WaitGroup) {
 	}
 }
 
-func startSync(_ *sync.WaitGroup) {
+func startSync() {
 	if err := retry.Do(func() (retry bool, err error) {
 		s, err := syncp.NewService()
 		if err != nil {
@@ -171,7 +174,7 @@ func startSync(_ *sync.WaitGroup) {
 	}
 }
 
-func startCompilationService(_ *sync.WaitGroup) {
+func startCompilationService() {
 	server, err := compilation.NewIntentCompilationService()
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
@@ -184,7 +187,7 @@ func startCompilationService(_ *sync.WaitGroup) {
 	}
 }
 
-func startAgent(_ *sync.WaitGroup) {
+func startAgent() {
 	a, err := agent.NewAgentByConfig()
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
@@ -196,7 +199,7 @@ func startAgent(_ *sync.WaitGroup) {
 	}
 }
 
-func startCollectorWatcher(_ *sync.WaitGroup) {
+func startCollectorWatcher() {
 	cfg := &analytics.Config{}
 	if err := viper.UnmarshalKey("collector", cfg); err != nil {
 		logrus.WithError(err).Warn("failed to unmarshal collector config")
