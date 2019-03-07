@@ -7,7 +7,7 @@ with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
 schema = docker_compose["services"]["kubemanager"]
-schema["image"] = "danielfurmancl/contrail-kubernetes-kube-manager:cd247d549"
+schema["image"] = "kaweue/contrail-kubernetes-kube-manager:R6.0-7"
 
 environment = schema.setdefault("environment", [])
 for entry in [
