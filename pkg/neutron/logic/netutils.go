@@ -13,6 +13,30 @@ const (
 	ipV6 = 6
 )
 
+type cidrInfo struct {
+	IP        string
+	netIP     string
+	prefixLen int64
+	ver       int8
+}
+
+func decodeIP(address string) (cidrInfo, error) {
+	if strings.Index(address, "/") == -1 {
+		address = address + "/0"
+	}
+	out := cidrInfo{}
+	var err error
+	out.IP, out.netIP, out.prefixLen, err = getIPPrefixAndPrefixLen(address)
+	if err != nil {
+		return out, err
+	}
+	out.ver, err = getIPVersion(out.IP)
+	if err != nil {
+		return out, err
+	}
+	return out, nil
+}
+
 func getIPVersionFromCIDR(cidr string) (int8, error) {
 	prefix := strings.Split(cidr, "/")
 	return getIPVersion(prefix[0])
