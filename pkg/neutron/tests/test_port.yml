@@ -592,6 +592,63 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: ''
 
+- name: Neutron port update AllowedAddresPairs
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [ 200 ]
+    data:
+      data:
+        fields: null
+        resource:
+          allowed_address_pairs:
+            - ip_address: 1.1.1.1
+              mac_address: 11:11:11:11:11:11
+            - ip_address: 2.2.2.2
+              mac_address: 22:22:22:22:22:22
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters: null
+      context:
+        user_id: e134158cf91b4f7a81b5f613dff8f56a
+        roles:
+        - admin
+        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
+        is_admin: true
+        request_id: req-f5405238-8866-470a-aed2-9b2637c86966
+        operation: UPDATE
+        type: port
+        tenant: 711b9adee0964d3c8ae19fa05854f59e
+  expect:
+    status: DOWN
+    id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    mac_address: 11:22:33:44:55:ff
+    name: $uuid
+    network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    tenant_id: b9ce3ccf26a14403b309ab28891b89e9
+    port_security_enabled: false
+    binding:vif_details:
+      port_filter: true
+    description: ''
+    binding:host_id:
+    binding:vnic_type: normal
+    binding:vif_type: vrouter
+    device_owner: ''
+    allowed_address_pairs:
+      - ip_address: 1.1.1.1
+        mac_address: 11:11:11:11:11:11
+      - ip_address: 2.2.2.2
+        mac_address: 22:22:22:22:22:22
+    fq_name:
+    - default
+    - neutron_port_admin_project
+    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    fixed_ips:
+    - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+      ip_address: $ip_address
+    security_groups:
+    - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+    device_id: ''
+
 - name: Ensure VM was deleted after setting device_id to empty value
   request:
     path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
