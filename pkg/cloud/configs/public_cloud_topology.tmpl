@@ -5,7 +5,7 @@
   project: {{ cloud.info.Project }}
   regions:
   {% for region in provider.regions %}
-    - name: {{ region.info.Name }}
+    - name: {{ region.info.DisplayName }}
     {% if az in cloudType %}
       resource_group: {{ region.info.ResourceGroup }}
     {% endif %}
