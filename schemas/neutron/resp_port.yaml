@@ -33,7 +33,7 @@ schema:
     allowed_address_pairs:
       type: array
       items:
-        type: string
+        $ref: req_port.json#/definitions/AllowedAddressPair
     admin_state_up:
       type: boolean
     network_id:
