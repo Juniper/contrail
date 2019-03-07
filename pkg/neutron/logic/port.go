@@ -84,6 +84,12 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 	}
 
 	//TODO allowed_address_pairs update
+	if err := port.handleAllowedAddessPairs(rp, vmi, &fm); err != nil {
+		return nil, err
+	}
+	if err := port.checkFixedIPs(rp, vmi, &fm, true); err != nil {
+		return nil, err
+	}
 	//TODO fixed_ips update
 
 	//TODO id perms update (???)
@@ -205,6 +211,111 @@ func (port *Port) ReadAll(
 	return ps, nil
 }
 
+func (port *Port) handleAllowedAddessPairs(
+	rp RequestParameters,
+	vmi *models.VirtualMachineInterface,
+	fm *types.FieldMask,
+) error {
+	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldAllowedAddressPairs)) {
+		return nil
+	}
+	pairs := models.AllowedAddressPairs{}
+	for i, pair := range port.AllowedAddressPairs {
+		ipVer, err := getIPVersionFromCIDR(pair.IPAddress)
+		if err != nil {
+			return newNeutronError(badRequest, errorFields{
+				"resource": "port",
+				"msg":      "Invalid address pair argument",
+				"pairIdx":  i,
+				"err":      err.Error(),
+			})
+		}
+		ip, _, mask, err := getIPPrefixAndPrefixLen(pair.IPAddress)
+		subnet := models.SubnetType{IPPrefix: ip}
+		if ipVer == ipV4 {
+			subnet.IPPrefixLen = mask
+		} else {
+			subnet.IPPrefixLen = 128
+		}
+		pairs.AllowedAddressPair = append(pairs.AllowedAddressPair, &models.AllowedAddressPair{
+			AddressMode: "active-standby",
+			Mac:         pair.MacAddress,
+			IP:          &subnet,
+		})
+	}
+	if len(pairs.AllowedAddressPair) > 0 {
+		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceAllowedAddressPairs)
+		vmi.VirtualMachineInterfaceAllowedAddressPairs = &pairs
+	}
+	return nil
+}
+
+func (port *Port) checkFixedIPs(
+	rp RequestParameters,
+	vmi *models.VirtualMachineInterface,
+	fm *types.FieldMask,
+	update bool,
+) error {
+	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldAllowedAddressPairs)) {
+		return nil
+	}
+	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldAllowedAddressPairs, AllowedAddressPairFieldIPAddress)) {
+		return nil
+	}
+
+	/*
+		if 'fixed_ips' in port_q and port_q['fixed_ips'] is not None:
+			net_id =(port_q.get('network_id') or port_obj.get_virtual_network_refs()[0]['uuid'])
+			port_obj_ips = None
+			for fixed_ip in port_q.get('fixed_ips', []):
+				if 'ip_address' in fixed_ip:
+					# read instance ip addrs on port only once
+					if port_obj_ips is None:
+						port_obj_ips = []
+						ip_back_refs = getattr(port_obj, 'instance_ip_back_refs', None)
+						if ip_back_refs:
+							for ip_back_ref in ip_back_refs:
+								try:
+									ip_obj = self._instance_ip_read(
+										instance_ip_id=ip_back_ref['uuid'])
+								except NoIdError:
+									continue
+								port_obj_ips.append(ip_obj.get_instance_ip_address())
+					ip_addr = fixed_ip['ip_address']
+					if ip_addr in port_obj_ips:
+						continue
+					if oper == UPDATE:
+						self._raise_contrail_exception('BadRequest', resource='port',
+							msg='Fixed ip cannot be updated on a port')
+					if self._ip_addr_in_net_id(ip_addr, net_id):
+						self._raise_contrail_exception('IpAddressInUse', net_id=net_id,
+							ip_address=ip_addr)
+	*/
+	IPs := map[string]struct{}{}
+	for _, ip := range vmi.GetInstanceIPBackRefs() {
+		IPs[ip.GetInstanceIPAddress()] = struct{}{}
+	}
+
+	for _, fxip := range port.FixedIps {
+		if _, ok := IPs[fxip.IPAddress]; ok {
+			continue
+		}
+		if update {
+			return newNeutronError(badRequest, errorFields{
+				"resource": "port",
+				"msg":      "Fixed IP cannot be updated on a port",
+			})
+		}
+		/*
+			if self._ip_addr_in_net_id(ip_addr, net_id):
+				self._raise_contrail_exception('IpAddressInUse', net_id=net_id,
+					ip_address=ip_addr)
+		*/
+
+	}
+	return nil
+}
+
 func (port *Port) handleDeviceUpdate(
 	ctx context.Context,
 	rp RequestParameters,
@@ -227,6 +338,9 @@ func (port *Port) handleDeviceUpdate(
 	return nil
 }
 
+// updateMacAddress modify mac addres only for baremetal deployments or when port is not attached to any VM
+	// Here nil is returned - same as original config node
+	// However this silently discards mac address update request if not allowed
 func (port *Port) getAsssociatedVirtualMachineID(vmi *models.VirtualMachineInterface) string {
 	if vmi.GetParentType() == models.KindVirtualMachine {
 		return vmi.GetParentUUID()

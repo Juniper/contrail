@@ -27,6 +27,7 @@ func TestGetIPPrefixAndPrefixLen(t *testing.T) {
 		{"wrong ip - invalid separator", "137.105.215.54:23", "", "", 0, true},
 		{"wrong ip - invalid mask", "137.105.215.54/23a", "", "", 0, true},
 		{"wrong ip - random chars", "abcd", "", "", 0, true},
+		//{"ipv4 good without mask len", "1.1.1.1", "1.1.1.1", "0.0.0.0", 32, false},
 	}
 
 	for _, tt := range tests {
