@@ -283,8 +283,18 @@ func (keystone *Keystone) fetchClusterToken(c echo.Context,
 			}
 			authRequest = unScopedRequest
 		}
-		authRequest.SetCredential(
-			keystoneEndpoint.Username, keystoneEndpoint.Password)
+		if !identity.Password.User.HasCredential() {
+			tokenID := c.Request().Header.Get("X-Auth-Token")
+			if tokenID == "" {
+				return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+			}
+			_, ok := keystone.Store.ValidateToken(tokenID)
+			if !ok {
+				return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
+			}
+			authRequest.SetCredential(
+				keystoneEndpoint.Username, keystoneEndpoint.Password)
+		}
 	}
 	c = keystone.Client.SetAuthIdentity(c, authRequest)
 	return keystone.Client.CreateToken(c)

@@ -109,6 +109,14 @@ type User struct {
 	Roles    []*Role `json:"roles"`
 }
 
+//HasCredential is to check the presence of credential
+func (u *User) HasCredential() bool {
+	if u.Name == "" && u.Password == "" {
+		return false
+	}
+	return true
+}
+
 //Role represents a user role.
 type Role struct {
 	ID      string   `json:"id"`
