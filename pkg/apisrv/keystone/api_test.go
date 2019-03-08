@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
@@ -127,6 +128,90 @@ func TestClusterTokenMethod(t *testing.T) {
 	contents, err := ioutil.ReadAll(res.Body)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, contents)
+
+	// Cleanup test
+	integration.RunCleanTestScenario(t, &testScenario, server)
+}
+
+func TestClusterLogin(t *testing.T) {
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	clusterName := "clusterB"
+	ksPrivate := integration.MockServerWithKeystoneTestUser(
+		"", keystoneAuthURL, defaultUser, defaultPassword)
+	defer ksPrivate.Close()
+
+	ksPublic := integration.MockServerWithKeystoneTestUser(
+		"", keystoneAuthURL, defaultUser, defaultPassword)
+	defer ksPublic.Close()
+	pContext := pongo2.Context{
+		"cluster_name":  clusterName,
+		"endpoint_name": clusterName + "_keystone",
+		"private_url":   ksPrivate.URL,
+		"public_url":    ksPublic.URL,
+	}
+
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, testClusterTokenAPIFile, pContext)
+	assert.NoError(t, err, "failed to load endpoint create test data")
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup()
+
+	server.ForceProxyUpdate()
+
+	// Login to cluster with correct credentials
+	ctx := context.Background()
+	var clientScenario integration.TestScenario
+	err = integration.LoadTestScenario(&clientScenario, testClusterTokenAPIFile, pContext)
+	assert.NoError(t, err, "failed to load endpoint create test data")
+	clients := integration.PrepareClients(ctx, t, &clientScenario, server)
+
+	// preserve  infra token
+	var infraToken string
+	for _, client := range clients {
+		infraToken = client.AuthToken
+		break
+	}
+
+	// Login to cluster with correct credentials
+	for _, client := range clients {
+		ctx = auth.WithXClusterID(ctx, clusterName+"_uuid")
+		client.ID = defaultUser
+		client.Password = defaultPassword
+		client.Scope = nil
+		_, err = client.Login(ctx)
+		assert.NoError(t, err, "client failed to login cluster keystone")
+	}
+
+	// Login to cluster with incorrect credentials
+	for _, client := range clients {
+		ctx = auth.WithXClusterID(ctx, clusterName+"_uuid")
+		client.ID = defaultUser
+		client.Password = "hacker"
+		client.Scope = nil
+		_, err = client.Login(ctx)
+		assert.Error(t, err, "hacker logged in to cluster keystone !!")
+	}
+
+	// Login to cluster with no credentials and no infra(superuser) token
+	for _, client := range clients {
+		ctx = auth.WithXClusterID(ctx, clusterName+"_uuid")
+		client.ID = ""
+		client.Password = ""
+		client.Scope = nil
+		_, err = client.Login(ctx)
+		assert.Error(t, err, "hacker logged in to cluster keystone without credentials!!")
+	}
+
+	// Login to cluster with no credentials and with infra(superuser) token
+	for _, client := range clients {
+		ctx = auth.WithXClusterID(ctx, clusterName+"_uuid")
+		ctx = auth.WithXAuthToken(ctx, infraToken)
+		client.ID = ""
+		client.Password = ""
+		client.Scope = nil
+		_, err = client.Login(ctx)
+		assert.NoError(t, err, "client failed to login cluster keystone with token")
+	}
 
 	// Cleanup test
 	integration.RunCleanTestScenario(t, &testScenario, server)

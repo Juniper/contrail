@@ -165,6 +165,7 @@ func (k *Keystone) FetchToken(ctx context.Context, dataJSON []byte,
 	if err != nil {
 		return nil, err
 	}
+	request = auth.SetXAuthTokenInHeader(ctx, request.WithContext(ctx))
 	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
 	request.Header.Set("Content-Type", "application/json")
 
