@@ -24,6 +24,7 @@ const (
 	glance               = "glance"
 	swift                = "swift"
 	appformix            = "appformix"
+	xflow                = "xflow"
 	defaultAdminUser     = "admin"
 	defaultAdminPassword = "contrail123"
 )
@@ -38,6 +39,7 @@ var portMap = map[string]string{
 	glance:    "9292",
 	swift:     "8080",
 	appformix: "9000",
+	xflow:     "8090",
 }
 
 // EndpointData is the representation of cluster endpoints.
@@ -212,6 +214,26 @@ func (e *EndpointData) getAppformixEndpointNodes() (endpointNodes map[string][]s
 	return endpointNodes
 }
 
+func (e *EndpointData) getXflowEndpointNodes() (endpointNodes map[string][]string) {
+	endpointNodes = make(map[string][]string)
+	xflowData := e.clusterData.getXflowData()
+	if xflowData != nil && xflowData.ClusterInfo != nil {
+		endpointNodes[xflow] = []string{xflowData.ClusterInfo.KeepalivedSharedIP}
+	}
+	return endpointNodes
+}
+
+func mergeEndpoints(map1 map[string][]string, map2 map[string][]string) map[string][]string {
+	merged := make(map[string][]string)
+	for k, v := range map1 {
+		merged[k] = v
+	}
+	for k, v := range map2 {
+		merged[k] = append(merged[k], v...)
+	}
+	return merged
+}
+
 // nolint: gocyclo
 func (e *EndpointData) create() error {
 	e.log.Infof("Creating service endpoints for cluster: %s", e.clusterID)
@@ -267,9 +289,9 @@ func (e *EndpointData) create() error {
 		}
 	}
 
-	// appformix endpoints
-	appformixEndpoints := e.getAppformixEndpointNodes()
-	for service, endpointIPs := range appformixEndpoints {
+	// appformix and xflow endpoints
+	endpoints := mergeEndpoints(e.getAppformixEndpointNodes(), e.getXflowEndpointNodes())
+	for service, endpointIPs := range endpoints {
 		e.log.Infof("Creating %s endpoints:%s", service, endpointIPs)
 		for _, endpointIP := range endpointIPs {
 			endpointProtocol := protocol
