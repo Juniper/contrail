@@ -107,6 +107,125 @@ func TestQueryBuilder(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Listing virtual networks with no child fields",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+					// TODO Test with non-mandatory fields here.
+				},
+				childFields: map[string][]string{
+					"access_control_list": []string{
+						"uuid",
+					},
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select " +
+						"`virtual_network_t`.`uuid` " +
+						"from virtual_network as virtual_network_t " +
+						"order by `virtual_network_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: `select ` +
+						`"virtual_network_t"."uuid" ` +
+						`from virtual_network as virtual_network_t ` +
+						`order by "virtual_network_t"."uuid"`,
+					values: []interface{}{},
+				},
+			},
+		},
+		{
+			name: "Listing virtual networks with only one child field",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+				},
+				childFields: map[string][]string{
+					"access_control_list": []string{
+						"uuid",
+					},
+					// TODO Test with multiple kinds of children here.
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{
+				Fields: []string{
+					"access_control_lists",
+				},
+			},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select " +
+						"`virtual_network_t`.`uuid`," +
+						"(select group_concat(JSON_OBJECT('uuid',`access_control_list_t`.`uuid`)) as `access_control_list_ref` " +
+						"from `access_control_list` as access_control_list_t " +
+						"where `virtual_network_t`.`uuid` = `access_control_list_t`.`parent_uuid` " +
+						"group by `access_control_list_t`.`parent_uuid` ) " +
+						"from virtual_network as virtual_network_t " +
+						"order by `virtual_network_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: `select ` +
+						`"virtual_network_t"."uuid",` +
+						`(select json_agg(row_to_json("access_control_list_t")) as "access_control_list_ref" ` +
+						`from "access_control_list" as access_control_list_t ` +
+						`where "virtual_network_t"."uuid" = "access_control_list_t"."parent_uuid" ` +
+						`group by "access_control_list_t"."parent_uuid" ) ` +
+						`from virtual_network as virtual_network_t ` +
+						`order by "virtual_network_t"."uuid"`,
+					values: []interface{}{},
+				},
+			},
+		},
+		{
+			name: "Listing virtual networks with Detail",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+				},
+				childFields: map[string][]string{
+					"access_control_list": []string{
+						"uuid",
+					},
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{
+				Detail: true,
+			},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select " +
+						"`virtual_network_t`.`uuid`," +
+						"(select group_concat(JSON_OBJECT('uuid',`access_control_list_t`.`uuid`)) as `access_control_list_ref` " +
+						"from `access_control_list` as access_control_list_t " +
+						"where `virtual_network_t`.`uuid` = `access_control_list_t`.`parent_uuid` " +
+						"group by `access_control_list_t`.`parent_uuid` ) " +
+						"from virtual_network as virtual_network_t " +
+						"order by `virtual_network_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: `select ` +
+						`"virtual_network_t"."uuid",` +
+						`(select json_agg(row_to_json("access_control_list_t")) as "access_control_list_ref" ` +
+						`from "access_control_list" as access_control_list_t ` +
+						`where "virtual_network_t"."uuid" = "access_control_list_t"."parent_uuid" ` +
+						`group by "access_control_list_t"."parent_uuid" ) ` +
+						`from virtual_network as virtual_network_t ` +
+						`order by "virtual_network_t"."uuid"`,
+					values: []interface{}{},
+				},
+			},
+		},
+		// TODO Test backrefs as well.
+		// TODO Test refs as well.
 	}
 
 	for _, tt := range tests {
