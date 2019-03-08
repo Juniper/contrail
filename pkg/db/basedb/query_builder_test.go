@@ -107,6 +107,47 @@ func TestQueryBuilder(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Listing virtual networks with only one child field",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{},
+				childFields: map[string][]string{
+					"access_control_list": []string{
+						"uuid",
+					},
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{
+				// TODO Test without Detail.
+				Detail: true,
+				Fields: []string{
+					"access_control_lists",
+				},
+			},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select " +
+						"(select group_concat(JSON_OBJECT('uuid',`access_control_list_t`.`uuid`)) as `access_control_list_ref` " +
+						"from `access_control_list` as access_control_list_t " +
+						"where `virtual_network_t`.`uuid` = `access_control_list_t`.`parent_uuid` " +
+						"group by `access_control_list_t`.`parent_uuid` ) " +
+						"from virtual_network as virtual_network_t " +
+						"order by `virtual_network_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: `select ` +
+						`(select json_agg(row_to_json("access_control_list_t")) as "access_control_list_ref" ` +
+						`from "access_control_list" as access_control_list_t ` +
+						`where "virtual_network_t"."uuid" = "access_control_list_t"."parent_uuid" ` +
+						`group by "access_control_list_t"."parent_uuid" ) ` +
+						`from virtual_network as virtual_network_t ` +
+						`order by "virtual_network_t"."uuid"`,
+					values: []interface{}{},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

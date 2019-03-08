@@ -419,6 +419,7 @@ func (d *Dialect) jsonAggRef(table string, params ...string) string {
 
 func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 	spec := ctx.spec
+	// TODO This skips listing children altogether
 	if !spec.Detail {
 		return
 	}
@@ -486,9 +487,6 @@ func (qb *QueryBuilder) buildColumns(ctx *queryContext) {
 	spec := ctx.spec
 	fields := qb.Fields
 
-	if len(spec.Fields) > 0 && qb.checkRequestedFields(ctx) {
-		fields = spec.Fields
-	}
 
 	if spec.Shared || len(spec.BackRefUUIDs) > 0 {
 		for _, column := range fields {
