@@ -14,6 +14,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 func TestFieldMaskPaths(t *testing.T) {
@@ -494,3 +495,61 @@ func TestDBDeleteRef(t *testing.T) {
 		})
 	}
 }
+
+func TestDBListWithChildren(t *testing.T) {
+	vnUUID, riUUID := exampleVN.UUID, exampleRI.UUID
+
+	setup := func(t *testing.T) {
+		ctx := context.Background()
+		_, err := db.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{VirtualNetwork: exampleVN})
+		require.NoError(t, err)
+		_, err = db.CreateRoutingInstance(ctx, &services.CreateRoutingInstanceRequest{RoutingInstance: exampleRI})
+		require.NoError(t, err)
+	}
+	teardown := func(t *testing.T) {
+		ctx := context.Background()
+		_, err := db.DeleteRoutingInstance(ctx, &services.DeleteRoutingInstanceRequest{ID: riUUID})
+		assert.NoError(t, err)
+		_, err = db.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{ID: vnUUID})
+		assert.NoError(t, err)
+	}
+
+	defer teardown(t)
+	setup(t)
+
+	ctx := context.Background()
+
+	// TODO Make this a table test.
+
+	response, err := db.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: []string{vnUUID},
+			Fields: []string{
+				models.VirtualNetworkFieldRoutingInstances,
+			},
+		},
+	})
+	assert.NoError(t, err)
+	assert.Len(t, response.GetVirtualNetworks()[0].GetRoutingInstances(), 1)
+
+	response, err = db.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: []string{vnUUID},
+			Detail:      true,
+		},
+	})
+	assert.NoError(t, err)
+	// TODO Test with 2 child types.
+	assert.Len(t, response.GetVirtualNetworks()[0].GetRoutingInstances(), 1)
+
+	response, err = db.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: []string{vnUUID},
+		},
+	})
+	assert.NoError(t, err)
+	// TODO Test with 2 child types.
+	assert.Empty(t, response.GetVirtualNetworks()[0].GetRoutingInstances())
+}
+
+// TODO Test listing backrefs as well.
