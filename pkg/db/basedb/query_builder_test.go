@@ -147,6 +147,217 @@ func TestQueryBuilder(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Listing virtual networks with no child fields",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+					// TODO: Test with non-mandatory fields here.
+				},
+				childFields: map[string][]string{
+					"access_control_list": []string{
+						"uuid",
+					},
+				},
+				backRefFields: map[string][]string{
+					"virtual_machine_interface": []string{
+						"uuid",
+					},
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select" +
+						" `virtual_network_t`.`uuid`" +
+						" from virtual_network as virtual_network_t" +
+						" order by `virtual_network_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: `select` +
+						` "virtual_network_t"."uuid"` +
+						` from virtual_network as virtual_network_t` +
+						` order by "virtual_network_t"."uuid"`,
+					values: []interface{}{},
+				},
+			},
+		},
+		{
+			name: "Listing virtual networks with one child field",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+				},
+				childFields: map[string][]string{
+					"access_control_list": []string{
+						"uuid",
+					},
+					"floating_ip_pool": []string{
+						"uuid",
+					},
+				},
+				backRefFields: map[string][]string{
+					"virtual_machine_interface": []string{
+						"uuid",
+					},
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{
+				Fields: []string{
+					"access_control_lists",
+				},
+			},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select" +
+						" `virtual_network_t`.`uuid`" +
+						",(select group_concat(JSON_OBJECT('uuid',`access_control_list_t`.`uuid`)) as `access_control_list_ref`" +
+						" from `access_control_list` as access_control_list_t" +
+						" where `virtual_network_t`.`uuid` = `access_control_list_t`.`parent_uuid`" +
+						" group by `access_control_list_t`.`parent_uuid` )" +
+						" from virtual_network as virtual_network_t" +
+						" order by `virtual_network_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: `select` +
+						` "virtual_network_t"."uuid"` +
+						`,(select json_agg(row_to_json("access_control_list_t")) as "access_control_list_ref"` +
+						` from "access_control_list" as access_control_list_t` +
+						` where "virtual_network_t"."uuid" = "access_control_list_t"."parent_uuid"` +
+						` group by "access_control_list_t"."parent_uuid" )` +
+						` from virtual_network as virtual_network_t` +
+						` order by "virtual_network_t"."uuid"`,
+					values: []interface{}{},
+				},
+			},
+		},
+		{
+			name: "Listing virtual networks with one backref field",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+				},
+				childFields: map[string][]string{
+					"access_control_list": []string{
+						"uuid",
+					},
+					"floating_ip_pool": []string{
+						"uuid",
+					},
+				},
+				backRefFields: map[string][]string{
+					"virtual_machine_interface": []string{
+						"uuid",
+					},
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{
+				Fields: []string{
+					"virtual_machine_interface_back_refs",
+				},
+			},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select" +
+						" `virtual_network_t`.`uuid`" +
+
+						",(select group_concat(JSON_OBJECT('uuid',`virtual_machine_interface_t`.`uuid`)) as `ref_virtual_machine_interface_virtual_network_backref`" +
+						" from `virtual_machine_interface` as virtual_machine_interface_t" +
+						" inner join ref_virtual_machine_interface_virtual_network as ref_virtual_machine_interface_virtual_network_t" +
+						" on `ref_virtual_machine_interface_virtual_network_t`.`from` = `virtual_machine_interface_t`.`uuid`" +
+						" where `ref_virtual_machine_interface_virtual_network_t`.`to` = `virtual_network_t`.`uuid` )" +
+
+						" from virtual_network as virtual_network_t" +
+						" order by `virtual_network_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: `select` +
+						` "virtual_network_t"."uuid"` +
+
+						`,(select json_agg(row_to_json("virtual_machine_interface_t")) as "ref_virtual_machine_interface_virtual_network_backref"` +
+						` from "virtual_machine_interface" as virtual_machine_interface_t` +
+						` inner join ref_virtual_machine_interface_virtual_network as ref_virtual_machine_interface_virtual_network_t` +
+						` on "ref_virtual_machine_interface_virtual_network_t"."from" = "virtual_machine_interface_t"."uuid"` +
+						` where "ref_virtual_machine_interface_virtual_network_t"."to" = "virtual_network_t"."uuid" )` +
+
+						` from virtual_network as virtual_network_t` +
+						` order by "virtual_network_t"."uuid"`,
+					values: []interface{}{},
+				},
+			},
+		},
+		{
+			name: "Listing virtual networks with Detail",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+				},
+				childFields: map[string][]string{
+					"access_control_list": []string{
+						"uuid",
+					},
+					// TODO: Test with multiple child types.
+					// A simple comparison of the whole query won't work,
+					// as the subqueries for the different child types are in a random order.
+				},
+				backRefFields: map[string][]string{
+					"virtual_machine_interface": []string{
+						"uuid",
+					},
+				},
+				table: "virtual_network",
+			},
+			spec: baseservices.ListSpec{
+				Detail: true,
+			},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select" +
+						" `virtual_network_t`.`uuid`" +
+
+						",(select group_concat(JSON_OBJECT('uuid',`access_control_list_t`.`uuid`)) as `access_control_list_ref`" +
+						" from `access_control_list` as access_control_list_t" +
+						" where `virtual_network_t`.`uuid` = `access_control_list_t`.`parent_uuid`" +
+						" group by `access_control_list_t`.`parent_uuid` )" +
+
+						",(select group_concat(JSON_OBJECT('uuid',`virtual_machine_interface_t`.`uuid`)) as `ref_virtual_machine_interface_virtual_network_backref`" +
+						" from `virtual_machine_interface` as virtual_machine_interface_t" +
+						" inner join ref_virtual_machine_interface_virtual_network as ref_virtual_machine_interface_virtual_network_t" +
+						" on `ref_virtual_machine_interface_virtual_network_t`.`from` = `virtual_machine_interface_t`.`uuid`" +
+						" where `ref_virtual_machine_interface_virtual_network_t`.`to` = `virtual_network_t`.`uuid` )" +
+
+						" from virtual_network as virtual_network_t" +
+						" order by `virtual_network_t`.`uuid`",
+					values: []interface{}{},
+				},
+				POSTGRES: {
+					query: `select` +
+						` "virtual_network_t"."uuid"` +
+
+						`,(select json_agg(row_to_json("access_control_list_t")) as "access_control_list_ref"` +
+						` from "access_control_list" as access_control_list_t` +
+						` where "virtual_network_t"."uuid" = "access_control_list_t"."parent_uuid"` +
+						` group by "access_control_list_t"."parent_uuid" )` +
+
+						`,(select json_agg(row_to_json("virtual_machine_interface_t")) as "ref_virtual_machine_interface_virtual_network_backref"` +
+						` from "virtual_machine_interface" as virtual_machine_interface_t` +
+						` inner join ref_virtual_machine_interface_virtual_network as ref_virtual_machine_interface_virtual_network_t` +
+						` on "ref_virtual_machine_interface_virtual_network_t"."from" = "virtual_machine_interface_t"."uuid"` +
+						` where "ref_virtual_machine_interface_virtual_network_t"."to" = "virtual_network_t"."uuid" )` +
+
+						` from virtual_network as virtual_network_t` +
+						` order by "virtual_network_t"."uuid"`,
+					values: []interface{}{},
+				},
+			},
+		},
+		// TODO: Test refs as well.
 	}
 
 	for _, tt := range tests {
