@@ -291,9 +291,11 @@ func (c *Cloud) delete() error {
 	}
 
 	if data.isCloudPublic() {
-		err = c.manageTerraform(deleteAction)
-		if err != nil {
-			return err
+		if tfStateOutputExists(c.config.CloudID) {
+			err = c.manageTerraform(deleteAction)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
