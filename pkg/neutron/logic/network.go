@@ -125,7 +125,11 @@ func (n *Network) Delete(
 	fippRes, err := rp.ReadService.ListFloatingIPPool(ctx, &services.ListFloatingIPPoolRequest{
 		Spec: &baseservices.ListSpec{
 			ParentUUIDs: []string{id},
-			Detail:      true,
+			// TODO Don't use Detail.
+			Detail: true,
+			Fields: []string{
+				"floating_ips", // TODO models.FloatingIPPoolFieldFloatingIPs,
+			},
 		},
 	})
 	if err != nil {
