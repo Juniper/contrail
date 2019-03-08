@@ -1,0 +1,242 @@
+name: Test List with Fields
+description: |
+  Check that List returns children and backrefs
+  if the respective fields or detail=true is specified.
+
+test_data:
+  project_uuid: &project_uuid 675b0041-1cda-49cf-a4b7-bb7d8c9a2e21
+  project_path: &project_path /project/675b0041-1cda-49cf-a4b7-bb7d8c9a2e21
+  project: &project
+    uuid: *project_uuid
+    name: apisrv_list_fields_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+
+  virtual_network_uuid: &virtual_network_uuid 9506a0eb-1b1a-433c-b7ae-63622c7cf11e
+  virtual_network_path: &virtual_network_path /virtual-network/9506a0eb-1b1a-433c-b7ae-63622c7cf11e
+  virtual_network: &virtual_network
+    uuid: *virtual_network_uuid
+    name: apisrv_list_fields_virtual_network
+    parent_type: project
+    parent_uuid: *project_uuid
+
+  floating_ip_pool_uuid: &floating_ip_pool_uuid 73e30009-1861-4a7f-a085-9ee09c2ec149
+  floating_ip_pool_path: &floating_ip_pool_path /floating-ip-pool/73e30009-1861-4a7f-a085-9ee09c2ec149
+  floating_ip_pool: &floating_ip_pool
+    uuid: *floating_ip_pool_uuid
+    name: apisrv_list_fields_floating_ip_pool
+    parent_type: virtual-network
+    parent_uuid: *virtual_network_uuid
+
+  access_control_list_uuid: &access_control_list_uuid 2abd427a-f8e7-4975-a062-80f453bec146
+  access_control_list_path: &access_control_list_path /access-control-list/2abd427a-f8e7-4975-a062-80f453bec146
+  access_control_list: &access_control_list
+    uuid: *access_control_list_uuid
+    name: apisrv_list_fields_access_control_list
+    parent_type: virtual-network
+    parent_uuid: *virtual_network_uuid
+
+  virtual_machine_interface_uuid: &virtual_machine_interface_uuid e23a96b9-a4bd-4269-a5a5-211f5738d270
+  virtual_machine_interface_path: &virtual_machine_interface_path /virtual-machine-interface/e23a96b9-a4bd-4269-a5a5-211f5738d270
+  virtual_machine_interface: &virtual_machine_interface
+    uuid: *virtual_machine_interface_uuid
+    name: apisrv_list_fields_virtual_machine_interface
+    parent_type: project
+    parent_uuid: *project_uuid
+    virtual_network_refs:
+    - uuid: *virtual_network_uuid
+
+cleanup:
+  - path: *virtual_machine_interface_path
+  - path: *access_control_list_path
+  - path: *floating_ip_pool_path
+  - path: *virtual_network_path
+  - path: *project_path
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *project
+  expect:
+    project: *project
+
+- name: create virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *virtual_network
+  expect:
+    virtual-network: *virtual_network
+
+- name: create floating ip pool
+  request:
+    path: /floating-ip-pools
+    method: POST
+    expected: [200]
+    data:
+      floating-ip-pool: *floating_ip_pool
+  expect:
+    floating-ip-pool: *floating_ip_pool
+
+- name: create access control list
+  request:
+    path: /access-control-lists
+    method: POST
+    expected: [200]
+    data:
+      access-control-list: *access_control_list
+  expect:
+    access-control-list: *access_control_list
+
+- name: create virtual machine interface
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [200]
+    data:
+      virtual-machine-interface: *virtual_machine_interface
+  expect:
+    virtual-machine-interface: *virtual_machine_interface
+
+
+- name: list virtual networks without options
+  request:
+    path: /virtual-networks?parent_id=675b0041-1cda-49cf-a4b7-bb7d8c9a2e21
+    method: GET
+    expected: [200]
+  expect:
+    virtual-networks:
+    - <<: *virtual_network
+      floating_ip_pools: $null
+      access_control_lists: $null
+      virtual_machine_interface_back_refs: $null
+
+- name: list virtual networks with detail
+  request:
+    path: /virtual-networks?parent_id=675b0041-1cda-49cf-a4b7-bb7d8c9a2e21&detail=true
+    method: GET
+    expected: [200]
+  expect:
+    virtual-networks:
+    - virtual-network:
+        <<: *virtual_network
+        floating_ip_pools:
+        - *floating_ip_pool
+        access_control_lists:
+        - *access_control_list
+        virtual_machine_interface_back_refs:
+        - <<: *virtual_machine_interface
+          virtual_network_refs: $null
+
+- name: list virtual networks with floating ip pool, access control list children, and virtual machine interface backrefs
+  request:
+    path: /virtual-networks?parent_id=675b0041-1cda-49cf-a4b7-bb7d8c9a2e21&fields=floating_ip_pools,access_control_lists,virtual_machine_interface_back_refs
+    method: GET
+    expected: [200]
+  expect:
+    virtual-networks:
+    - <<: *virtual_network
+      floating_ip_pools:
+      - *floating_ip_pool
+      access_control_lists:
+      - *access_control_list
+      virtual_machine_interface_back_refs:
+      - <<: *virtual_machine_interface
+        virtual_network_refs: $null
+
+- name: list virtual networks with floating ip pool and access control list children
+  request:
+    path: /virtual-networks?parent_id=675b0041-1cda-49cf-a4b7-bb7d8c9a2e21&fields=floating_ip_pools,access_control_lists
+    method: GET
+    expected: [200]
+  expect:
+    virtual-networks:
+    - <<: *virtual_network
+      floating_ip_pools:
+      - *floating_ip_pool
+      access_control_lists:
+      - *access_control_list
+      virtual_machine_interface_back_refs: $null
+
+- name: list virtual networks with only floating ip pool children
+  request:
+    path: /virtual-networks?parent_id=675b0041-1cda-49cf-a4b7-bb7d8c9a2e21&fields=floating_ip_pools
+    method: GET
+    expected: [200]
+  expect:
+    virtual-networks:
+    - <<: *virtual_network
+      floating_ip_pools:
+      - *floating_ip_pool
+      access_control_lists: $null
+      virtual_machine_interface_back_refs: $null
+
+- name: list virtual networks with only virtual machine interface backrefs
+  request:
+    path: /virtual-networks?parent_id=675b0041-1cda-49cf-a4b7-bb7d8c9a2e21&fields=virtual_machine_interface_back_refs
+    method: GET
+    expected: [200]
+  expect:
+    virtual-networks:
+    - <<: *virtual_network
+      floating_ip_pools: $null
+      access_control_lists: $null
+      virtual_machine_interface_back_refs:
+      - <<: *virtual_machine_interface
+        virtual_network_refs: $null
+
+
+- name: delete virtual machine interface
+  request:
+    path: *virtual_machine_interface_path
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete access control list
+  request:
+    path: *access_control_list_path
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete floating ip pool
+  request:
+    path: *floating_ip_pool_path
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete virtual network
+  request:
+    path: *virtual_network_path
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete project
+  request:
+    path: *project_path
+    method: DELETE
+    expected:
+    - 200
+  expect: null

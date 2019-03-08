@@ -14,6 +14,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
 func TestFieldMaskPaths(t *testing.T) {
@@ -294,6 +295,25 @@ var exampleRT = &models.RouteTarget{
 	FQName: []string{"default-domain", "default-project", "vn-db-create-ref", "rt-db-create-ref"},
 }
 
+var exampleACL = &models.AccessControlList{
+	UUID:       "acl_uuid",
+	ParentType: "virtual-network",
+	ParentUUID: "vn_uuid",
+	FQName:     []string{"default-domain", "default-project", "vn-db-create-ref", "acl-db-create-ref"},
+}
+
+var exampleVMI = &models.VirtualMachineInterface{
+	UUID:       "vmi_uuid",
+	ParentType: "project",
+	ParentUUID: "beefbeef-beef-beef-beef-beefbeef0003",
+	FQName:     []string{"default-domain", "default-project", "vmi-db-create-ref"},
+	VirtualNetworkRefs: []*models.VirtualMachineInterfaceVirtualNetworkRef{
+		{
+			UUID: exampleVN.GetUUID(),
+		},
+	},
+}
+
 func TestDBCreateRef(t *testing.T) {
 	vnUUID, riUUID, rtUUID := exampleVN.UUID, exampleRI.UUID, exampleRT.UUID
 
@@ -490,6 +510,152 @@ func TestDBDeleteRef(t *testing.T) {
 				} else {
 					assert.Len(t, getResp.RoutingInstance.RouteTargetRefs, 0)
 				}
+			}
+		})
+	}
+}
+
+func TestDBListWithChildren(t *testing.T) {
+	type specParams struct {
+		fields []string
+		detail bool
+	}
+	type expectedFields struct {
+		riChildren  bool
+		aclChildren bool
+		vmiBackRefs bool
+	}
+
+	tests := []struct {
+		name       string
+		specParams specParams
+		shouldHave expectedFields
+	}{
+		{name: "no extra options"},
+
+		{
+			name: "only RoutingInstance children",
+			specParams: specParams{
+				fields: []string{
+					models.VirtualNetworkFieldRoutingInstances,
+				},
+			},
+			shouldHave: expectedFields{
+				riChildren: true,
+			},
+		},
+
+		{
+			name: "only VirtualMachineInterface backrefs",
+			specParams: specParams{
+				fields: []string{
+					models.VirtualNetworkFieldVirtualMachineInterfaceBackRefs,
+				},
+			},
+			shouldHave: expectedFields{
+				vmiBackRefs: true,
+			},
+		},
+
+		{
+			name: "RI and ACL children and VMI backrefs",
+			specParams: specParams{
+				fields: []string{
+					models.VirtualNetworkFieldRoutingInstances,
+					models.VirtualNetworkFieldAccessControlLists,
+					models.VirtualNetworkFieldVirtualMachineInterfaceBackRefs,
+				},
+			},
+			shouldHave: expectedFields{
+				riChildren:  true,
+				aclChildren: true,
+				vmiBackRefs: true,
+			},
+		},
+
+		{
+			name: "detail",
+			specParams: specParams{
+				detail: true,
+			},
+			shouldHave: expectedFields{
+				riChildren:  true,
+				aclChildren: true,
+				vmiBackRefs: true,
+			},
+		},
+	}
+
+	ctx := context.Background()
+
+	setup := func(t *testing.T) {
+		_, err := db.CreateVirtualNetwork(ctx, &services.CreateVirtualNetworkRequest{
+			VirtualNetwork: exampleVN,
+		})
+		require.NoError(t, err)
+		_, err = db.CreateRoutingInstance(ctx, &services.CreateRoutingInstanceRequest{
+			RoutingInstance: exampleRI,
+		})
+		require.NoError(t, err)
+		_, err = db.CreateAccessControlList(ctx, &services.CreateAccessControlListRequest{
+			AccessControlList: exampleACL,
+		})
+		require.NoError(t, err)
+		_, err = db.CreateVirtualMachineInterface(ctx, &services.CreateVirtualMachineInterfaceRequest{
+			VirtualMachineInterface: exampleVMI,
+		})
+		require.NoError(t, err)
+	}
+	teardown := func(t *testing.T) {
+		_, err := db.DeleteVirtualMachineInterface(ctx, &services.DeleteVirtualMachineInterfaceRequest{
+			ID: exampleVMI.GetUUID(),
+		})
+		assert.NoError(t, err)
+		_, err = db.DeleteAccessControlList(ctx, &services.DeleteAccessControlListRequest{
+			ID: exampleACL.GetUUID(),
+		})
+		assert.NoError(t, err)
+		_, err = db.DeleteRoutingInstance(ctx, &services.DeleteRoutingInstanceRequest{
+			ID: exampleRI.GetUUID(),
+		})
+		assert.NoError(t, err)
+		_, err = db.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{
+			ID: exampleVN.GetUUID(),
+		})
+		assert.NoError(t, err)
+	}
+
+	defer teardown(t)
+	setup(t)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response, err := db.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
+				Spec: &baseservices.ListSpec{
+					ObjectUUIDs: []string{exampleVN.GetUUID()},
+					Fields:      tt.specParams.fields,
+					Detail:      tt.specParams.detail,
+				},
+			})
+			assert.NoError(t, err)
+			vn := response.GetVirtualNetworks()[0]
+
+			if tt.shouldHave.riChildren {
+				assert.Len(t, vn.GetRoutingInstances(), 1)
+			} else {
+				assert.Empty(t, vn.GetRoutingInstances())
+			}
+
+			if tt.shouldHave.aclChildren {
+				assert.Len(t, vn.GetAccessControlLists(), 1)
+			} else {
+				assert.Empty(t, vn.GetAccessControlLists())
+			}
+
+			if tt.shouldHave.vmiBackRefs {
+				assert.Len(t, vn.GetVirtualMachineInterfaceBackRefs(), 1)
+			} else {
+				assert.Empty(t, vn.GetVirtualMachineInterfaceBackRefs())
 			}
 		})
 	}
