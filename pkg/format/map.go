@@ -172,3 +172,15 @@ func indirect(t reflect.Type) reflect.Type {
 	}
 	return t
 }
+
+// MergeMultimap creates map of slices merged from two other maps of slices
+func MergeMultimap(map1 map[string][]string, map2 map[string][]string) map[string][]string {
+	merged := make(map[string][]string)
+	for k, v := range map1 {
+		merged[k] = v
+	}
+	for k, v := range map2 {
+		merged[k] = append(merged[k], v...)
+	}
+	return merged
+}
