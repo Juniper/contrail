@@ -1,0 +1,381 @@
+name: Test Neutron Network deleting Floating IPs
+description: |
+  Checks that Neutron Network creates and deletes floating IPs and pools.
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+test_data:
+  project: &project
+    uuid: 3a36aca6-4838-453d-abb0-5c07e0f75ea2
+    name: neutron_network_floating_ip_admin_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  context: &context
+    user_id: 9bd9578b25844d1ea74ddf59d2c6de8a
+    roles:
+    - admin
+    tenant_id: 3a36aca64838453dabb05c07e0f75ea2
+    is_admin: true
+    tenant: 3a36aca64838453dabb05c07e0f75ea2
+
+  network_ipam: &network_ipam
+    uuid: f0987043-47b4-4ab5-84f9-bb01aa9f0ed4
+    name: neutron_network_floating_ip_network_ipam
+    parent_type: project
+    parent_uuid: 3a36aca6-4838-453d-abb0-5c07e0f75ea2
+    network_ipam_mgmt:
+      host_routes:
+        route:
+          - prefix: "test_prefix"
+            next_hop: "1.2.3.5"
+    ipam_subnet_method: "user-defined-subnet"
+
+  related_floating_ip: &related_floating_ip
+    uuid: 4bb8b567-0e36-4693-b475-818cb07fa02c
+    fq_name:
+    - default-domain
+    - neutron_network_floating_ip_admin_project
+    - neutron_network_floating_ip_network
+    - floating-ip-pool
+    - neutron_network_floating_ip_related_floating_ip
+    parent_type: floating-ip-pool
+    floating_ip_address: 10.0.0.2
+    project_refs:
+    - uuid: 3a36aca6-4838-453d-abb0-5c07e0f75ea2
+
+  unrelated_network_ipam: &unrelated_network_ipam
+    uuid: 33394569-22e0-4ff1-b132-a3eeffbe266d
+    name: neutron_network_floating_ip_unrelated_network_ipam
+    parent_type: project
+    parent_uuid: 3a36aca6-4838-453d-abb0-5c07e0f75ea2
+    network_ipam_mgmt:
+      host_routes:
+        route:
+          - prefix: "test_prefix"
+            next_hop: "1.2.3.5"
+    ipam_subnet_method: "user-defined-subnet"
+
+  unrelated_virtual_network: &unrelated_virtual_network
+    uuid: 91d4303b-f47c-4ce5-b0ac-6d420f82c3ed
+    name: neutron_network_floating_ip_unrelated_virtual_network
+    parent_type: project
+    parent_uuid: 3a36aca6-4838-453d-abb0-5c07e0f75ea2
+    address_allocation_mode: user-defined-subnet-only
+    route_target_list:
+      route_target: ["100:200"]
+    network_ipam_refs:
+    - uuid: 33394569-22e0-4ff1-b132-a3eeffbe266d
+      attr:
+        ipam_subnets:
+        - subnet_uuid: 427d5e98-91f0-422a-8b53-abd442c1d09e
+          subnet:
+            ip_prefix: "11.0.0.0"
+            ip_prefix_len: 24
+          allocation_pools:
+          - start: "11.0.0.0"
+            end: "11.0.0.255"
+
+  unrelated_floating_ip_pool: &unrelated_floating_ip_pool
+    uuid: 014c76a6-d084-4a20-ab69-06e754f4fc3a
+    name: neutron_network_floating_ip_unrelated_floating_ip_pool
+    parent_type: virtual-network
+    parent_uuid: 91d4303b-f47c-4ce5-b0ac-6d420f82c3ed
+    floating_ip_pool_subnets:
+      subnet_uuid:
+      - 427d5e98-91f0-422a-8b53-abd442c1d09e
+
+  unrelated_floating_ip: &unrelated_floating_ip
+    uuid: 3539dc03-7f66-448e-960c-7b8b86928006
+    name: neutron_network_floating_ip_unrelated_floating_ip
+    parent_uuid: 014c76a6-d084-4a20-ab69-06e754f4fc3a
+    parent_type: floating-ip-pool
+    floating_ip_address: 11.0.0.2
+    project_refs:
+    - uuid: 3a36aca6-4838-453d-abb0-5c07e0f75ea2
+
+cleanup:
+- path: /floating-ip/014c76a6-d084-4a20-ab69-06e754f4fc3a
+- path: /floating-ip-pool/014c76a6-d084-4a20-ab69-06e754f4fc3a
+- path: /virtual-network/91d4303b-f47c-4ce5-b0ac-6d420f82c3ed
+- path: /network-ipam/33394569-22e0-4ff1-b132-a3eeffbe266d
+
+- path: /floating-ip/4bb8b567-0e36-4693-b475-818cb07fa02c
+- path: /virtual-network/27d96cf9-b94a-4480-b5a3-1bf39ab8dd15
+- path: /network-ipam/f0987043-47b4-4ab5-84f9-bb01aa9f0ed4
+
+- path: /project/3a36aca6-4838-453d-abb0-5c07e0f75ea2
+
+workflow:
+- name: Create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *project
+  expect:
+    project: *project
+
+- name: Create neutron network
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          id: 27d96cf9-b94a-4480-b5a3-1bf39ab8dd15
+          router:external: true
+          description: ''
+          tenant_id: 3a36aca64838453dabb05c07e0f75ea2
+          admin_state_up: true
+          policys: ''
+          vpc:route_table: ''
+          shared: false
+          port_security_enabled: true
+          project_id: 3a36aca64838453dabb05c07e0f75ea2
+          name: neutron_network_floating_ip_network
+        filters:
+      context:
+        <<: *context
+        request_id: req-e745949a-064b-4611-b99e-d1fe8932223d
+        operation: CREATE
+        type: network
+  expect:
+    status: ACTIVE
+    router:external: true
+    subnets: []
+    fq_name:
+    - default-domain
+    - neutron_network_floating_ip_admin_project
+    - neutron_network_floating_ip_network
+    name: neutron_network_floating_ip_network
+    admin_state_up: true
+    tenant_id: 3a36aca64838453dabb05c07e0f75ea2
+    created_at:
+    updated_at:
+    port_security_enabled: true
+    shared: false
+    project_id: 3a36aca64838453dabb05c07e0f75ea2
+    id: 27d96cf9-b94a-4480-b5a3-1bf39ab8dd15
+    description: ''
+
+- name: check the created floating IP pool
+  request:
+    path: "/floating-ip-pools?parent_id=27d96cf9-b94a-4480-b5a3-1bf39ab8dd15&filters=name==floating-ip-pool"
+    method: GET
+    expected:
+    - 200
+  expect:
+    floating-ip-pools:
+    - name: floating-ip-pool
+      fq_name:
+      - default-domain
+      - neutron_network_floating_ip_admin_project
+      - neutron_network_floating_ip_network
+      - floating-ip-pool
+      parent_uuid: 27d96cf9-b94a-4480-b5a3-1bf39ab8dd15
+      parent_type: virtual-network
+      perms2:
+        owner: 27d96cf9-b94a-4480-b5a3-1bf39ab8dd15
+        owner_access: 7
+        global_access: 5
+
+- name: create network ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 200
+    data:
+      network-ipam: *network_ipam
+  expect:
+    network-ipam: *network_ipam
+
+- name: update the network with a subnet
+  request:
+    path: /virtual-network/27d96cf9-b94a-4480-b5a3-1bf39ab8dd15
+    method: PUT
+    expected: [200]
+    data:
+      virtual-network:
+        network_ipam_refs:
+        - uuid: f0987043-47b4-4ab5-84f9-bb01aa9f0ed4
+          attr:
+            ipam_subnets:
+            - subnet_uuid: 19164ce9-59b8-4fcf-9c82-7e22ae954165
+              subnet:
+                ip_prefix: "10.0.0.0"
+                ip_prefix_len: 24
+              allocation_pools:
+              - start: "10.0.0.0"
+                end: "10.0.0.255"
+  expect:
+    virtual-network:
+      network_ipam_refs:
+      - uuid: f0987043-47b4-4ab5-84f9-bb01aa9f0ed4
+
+- name: create a "related" floating IP in the network's pool
+  request:
+    path: /floating-ips
+    method: POST
+    expected:
+    - 200
+    data:
+      floating-ip:
+        *related_floating_ip
+  expect:
+    floating-ip:
+      *related_floating_ip
+
+- name: check that the network's pool has the IP as a child
+  request:
+    path: "/floating-ip-pools?parent_id=27d96cf9-b94a-4480-b5a3-1bf39ab8dd15&filters=name==floating-ip-pool&detail=true"
+    method: GET
+    expected:
+    - 200
+  expect:
+    floating-ip-pools:
+    - floating-ip-pool:
+        fq_name:
+        - default-domain
+        - neutron_network_floating_ip_admin_project
+        - neutron_network_floating_ip_network
+        - floating-ip-pool
+        floating_ips:
+        - uuid: 4bb8b567-0e36-4693-b475-818cb07fa02c
+          name: neutron_network_floating_ip_related_floating_ip
+
+- name: create an "unrelated" network ipam
+  request:
+    path: /network-ipams
+    method: POST
+    expected:
+    - 200
+    data:
+      network-ipam: *unrelated_network_ipam
+  expect:
+    network-ipam: *unrelated_network_ipam
+
+- name: create an "unrelated" virtual network
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *unrelated_virtual_network
+  expect:
+    virtual-network: *unrelated_virtual_network
+
+- name: create an "unrelated" floating ip pool
+  request:
+    path: /floating-ip-pools
+    method: POST
+    expected:
+    - 200
+    data:
+      floating-ip-pool: *unrelated_floating_ip_pool
+  expect: null
+
+- name: create an "unrelated" floating IP outside the network's pool
+  request:
+    path: /floating-ips
+    method: POST
+    expected:
+    - 200
+    data:
+      floating-ip:
+        *unrelated_floating_ip
+  expect:
+    floating-ip:
+      *unrelated_floating_ip
+
+- name: Delete neutron network
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: 27d96cf9-b94a-4480-b5a3-1bf39ab8dd15
+        filters:
+      context:
+        <<: *context
+        request_id: req-36c2ed1d-9fe5-4b21-b647-8dd6039f60e0
+        operation: DELETE
+        type: network
+  expect: null
+
+- name: check that the related floating IP has been deleted
+  request:
+    path: /floating-ip/4bb8b567-0e36-4693-b475-818cb07fa02c
+    method: GET
+    expected:
+    - 404
+
+- name: check that the "unrelated" floating IP is not deleted
+  request:
+    path: /floating-ip/3539dc03-7f66-448e-960c-7b8b86928006
+    method: GET
+    expected:
+    - 200
+
+
+- name: delete unrelated floating ip
+  request:
+    path: /floating-ip/3539dc03-7f66-448e-960c-7b8b86928006
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete unrelated floating ip pool
+  request:
+    path: /floating-ip-pool/014c76a6-d084-4a20-ab69-06e754f4fc3a
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete unrelated virtual network
+  request:
+    path: /virtual-network/91d4303b-f47c-4ce5-b0ac-6d420f82c3ed
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete unrelated network ipam
+  request:
+    path: /network-ipam/33394569-22e0-4ff1-b132-a3eeffbe266d
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: delete network ipam
+  request:
+    path: /network-ipam/f0987043-47b4-4ab5-84f9-bb01aa9f0ed4
+    method: DELETE
+    expected:
+    - 200
+  expect: null
+
+- name: Delete project
+  request:
+    path: /project/3a36aca6-4838-453d-abb0-5c07e0f75ea2
+    method: DELETE
+    expected: [200]
