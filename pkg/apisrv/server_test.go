@@ -159,6 +159,11 @@ func TestFQNameToID(t *testing.T) {
 	RunTest(t, "./test_data/test_fqname_to_id.yml")
 }
 
+func TestListFields(t *testing.T) {
+	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
+	RunTest(t, "./test_data/test_list_fields.yml")
+}
+
 func TestRefRead(t *testing.T) {
 	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTest(t, "./test_data/test_ref_read.yml")

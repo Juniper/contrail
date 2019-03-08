@@ -97,6 +97,10 @@ const (
 	{% endfor %}
 	{% for linkTo, reference in schema.References %}{{ schema.JSONSchema.GoName }}Field{{ reference.GoName }}Refs = "{{ linkTo }}_refs"
 	{% endfor %}
+	{% for _, definition in schema.BackReferences %}{% set backref = definition.LinkTo %}{{ schema.JSONSchema.GoName }}Field{{ backref.JSONSchema.GoName }}BackRefs = "{{ backref.ID }}_back_refs"
+	{% endfor %}
+	{% for _, definition in schema.Children %}{% set child = definition.LinkTo %}{{ schema.JSONSchema.GoName }}Field{{ child.JSONSchema.GoName }}s = "{{ child.Plural }}"
+	{% endfor %}
 )
 
 // Make{{ schema.JSONSchema.GoName }} makes {{ schema.JSONSchema.GoName }}

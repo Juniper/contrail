@@ -377,7 +377,7 @@ func (qb *QueryBuilder) buildQuery(ctx *queryContext) {
 
 func (qb *QueryBuilder) islinkToInField(ctx *queryContext, linkTo string) bool {
 	spec := ctx.spec
-	if len(spec.Fields) == 0 {
+	if spec.Detail {
 		return true
 	}
 	for _, field := range spec.Fields {
@@ -447,10 +447,6 @@ func (d *Dialect) jsonAggRef(table string, params ...string) string {
 }
 
 func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
-	spec := ctx.spec
-	if !spec.Detail {
-		return
-	}
 	for child, childFields := range qb.ChildFields {
 		if !qb.islinkToInField(ctx, child+"s") {
 			continue
@@ -469,12 +465,8 @@ func (qb *QueryBuilder) buildChildQuery(ctx *queryContext) {
 }
 
 func (qb *QueryBuilder) buildBackRefQuery(ctx *queryContext) {
-	spec := ctx.spec
-	if !spec.Detail {
-		return
-	}
 	for backrefTable, backrefFields := range qb.BackRefFields {
-		if !qb.islinkToInField(ctx, backrefTable+"back_refs") {
+		if !qb.islinkToInField(ctx, backrefTable+"_back_refs") {
 			continue
 		}
 		refTable := schema.ReferenceTableName(schema.RefPrefix, backrefTable, qb.Table)
