@@ -125,6 +125,7 @@ func (n *Network) Delete(
 	fippRes, err := rp.ReadService.ListFloatingIPPool(ctx, &services.ListFloatingIPPoolRequest{
 		Spec: &baseservices.ListSpec{
 			ParentUUIDs: []string{id},
+			Detail:      true,
 		},
 	})
 	if err != nil {
@@ -457,21 +458,12 @@ func (n *Network) setVncRefs(
 func (n *Network) deleteAssociatedFloatingIPsAndPools(
 	ctx context.Context, rp RequestParameters, fipp *models.FloatingIPPool,
 ) error {
-	uuids := fipp.GetFloatingIPsUUIDs()
-	fips, err := rp.ReadService.ListFloatingIP(ctx, &services.ListFloatingIPRequest{
-		Spec: &baseservices.ListSpec{
-			ObjectUUIDs: uuids,
-			Fields: []string{
-				models.FloatingIPFieldVirtualMachineInterfaceRefs,
-			},
-			Detail: false,
-		},
-	})
+	fips, err := n.listAssociatedFloatingIPs(ctx, rp, fipp)
 	if err != nil {
 		return err
 	}
 
-	for _, fip := range fips.GetFloatingIPs() {
+	for _, fip := range fips {
 		if len(fip.GetVirtualMachineInterfaceRefs()) > 0 {
 			return errors.Errorf("floating IP(uuid: %v) is assosiated with a port", fip.GetUUID())
 		}
@@ -486,6 +478,25 @@ func (n *Network) deleteAssociatedFloatingIPsAndPools(
 		ID: fipp.GetUUID(),
 	})
 	return err
+}
+
+func (n *Network) listAssociatedFloatingIPs(
+	ctx context.Context, rp RequestParameters, fipp *models.FloatingIPPool,
+) ([]*models.FloatingIP, error) {
+	uuids := fipp.GetFloatingIPsUUIDs()
+	if len(uuids) == 0 {
+		return nil, nil
+	}
+
+	response, err := rp.ReadService.ListFloatingIP(ctx, &services.ListFloatingIPRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: uuids,
+			Fields: []string{
+				models.FloatingIPFieldVirtualMachineInterfaceRefs,
+			},
+		},
+	})
+	return response.GetFloatingIPs(), err
 }
 
 func (n *Network) createFloatingIPPool(

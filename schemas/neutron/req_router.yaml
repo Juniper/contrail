@@ -16,3 +16,14 @@ schema:
       type: boolean
     name:
       type: string
+    external_gateway_info:
+      $ref: req_router.json#/definitions/ExtGatewayInfo
+
+definitions:
+  ExtGatewayInfo:
+    type: object
+    properties:
+      network_id:
+        type: string
+      enable_snat:
+        type: boolean
