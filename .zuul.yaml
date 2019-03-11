@@ -17,6 +17,11 @@
             vars:
               contrail_version: master-latest
               contrail_docker_registry: 10.84.5.81:5000
+              control_plane_common_roles:
+                - config_database
+                - config
+                - control
+                - webui
     gate:
       jobs:
         - contrail-go-docker
