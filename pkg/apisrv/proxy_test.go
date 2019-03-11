@@ -440,10 +440,6 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 		_, err = client.Login(ctx)
 		assert.NoError(t, err, "client failed to login remote keystone")
 	}
-	// verify auth (remote keystone)
-	err = verifyKeystoneEndpoint(ctx, &testScenario, false)
-	assert.NoError(t, err,
-		"failed to validate token with remote keystone")
 
 	// Login to new remote keystone(failure)
 	// when multiple cluster endpoints are present
