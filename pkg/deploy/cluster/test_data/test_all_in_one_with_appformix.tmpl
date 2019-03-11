@@ -2,9 +2,15 @@ name: All in one appformix cluster test
 description: all-in-one appformix cluster CRUD test
 cleanup:
 - path: /contrail-config-node/contrail_config_nodes_uuid
+{% if ZTP_ROLE %}
+- path: /contrail-ztp-dhcp-node/contrail_ztp_dhcp_nodes_uuid
+- path: /contrail-ztp-tftp-node/contrail_ztp_tftp_nodes_uuid
+{% endif %}
 - path: /contrail-config-database-node/contrail_config_database_nodes_uuid
 - path: /contrail-analytics-node/contrail_analytics_nodes_uuid
 - path: /contrail-analytics-database-node/contrail_analytics_database_nodes_uuid
+- path: /contrail-analytics-alarm-node/contrail_analytics_alarm_nodes_uuid
+- path: /contrail-analytics-snmp-node/contrail_analytics_snmp_nodes_uuid
 - path: /contrail-webui-node/contrail_webui_nodes_uuid
 - path: /contrail-control-node/contrail_control_nodes_uuid
 - path: /contrail-vrouter-node/contrail_vrouter_nodes_uuid
@@ -224,6 +230,18 @@ test_data:
     api_public_port: 9101
   contrail_analytics_database_nodes: &contrail_analytics_database_nodes
     uuid: contrail_analytics_database_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_alarm_nodes: &contrail_analytics_alarm_nodes
+    uuid: contrail_analytics_alarm_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  contrail_analytics_snmp_nodes: &contrail_analytics_snmp_nodes
+    uuid: contrail_analytics_snmp_nodes_uuid
     parent_type: contrail-cluster
     parent_uuid: test_cluster_uuid
     node_refs:
@@ -505,6 +523,36 @@ workflow:
   expect:
     contrail-analytics-database-node:
       uuid: contrail_analytics_database_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+- name: create analytics alarm node
+  request:
+    path: /contrail-analytics-alarm-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-alarm-node: *contrail_analytics_alarm_nodes
+  expect:
+    contrail-analytics-alarm-node:
+      uuid: contrail_analytics_alarm_nodes_uuid
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      node_refs:
+        - uuid: all_in_one_node_uuid
+- name: create analytics snmp node
+  request:
+    path: /contrail-analytics-snmp-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-analytics-snmp-node: *contrail_analytics_snmp_nodes
+  expect:
+    contrail-analytics-snmp-node:
+      uuid: contrail_analytics_snmp_nodes_uuid
       parent_type: contrail-cluster
       parent_uuid: test_cluster_uuid
       node_refs:

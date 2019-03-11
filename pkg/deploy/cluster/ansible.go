@@ -485,21 +485,18 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 		AppformixVersion := a.clusterData.getAppformixClusterInfo().AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
 			"-e", "appformix_version=" + AppformixVersion}
-		if a.clusterData.clusterInfo.Orchestrator == orchestratorOpenstack {
-			ansibleArgs = append(ansibleArgs,
-				"-e @/etc/kolla/external/admin-openrc.yml")
-		}
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
-		repoDir := a.getAppformixAnsibleDeployerRepoDir()
-		if _, err := os.Stat(repoDir); os.IsNotExist(err) {
-			srcPath := a.clusterData.getAppformixClusterInfo().AppformixImageDir
-			srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
-			er := a.untar(srcPath+srcFile, repoDir)
-			if er != nil {
-				a.Log.Errorf("Error while untar file: %s", er)
-			}
+		imageDir := a.clusterData.getAppformixClusterInfo().AppformixImageDir
+		if _, err := os.Stat(imageDir); os.IsNotExist(err) {
+			a.Log.Errorf("imageDir %s does not exist, %s", imageDir, err)
 		}
+		srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
+		err := a.untar(imageDir+srcFile, imageDir)
+		if err != nil {
+			a.Log.Errorf("Error while untar file: %s", err)
+		}
+		repoDir := a.getAppformixAnsibleDeployerRepoDir()
 		return a.playFromDir(repoDir, ansibleArgs)
 	}
 	return nil
