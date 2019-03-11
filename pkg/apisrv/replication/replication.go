@@ -82,24 +82,28 @@ func (r *Replicator) Start() error {
 }
 
 func (r *Replicator) nodeToVNCEndSystem(node *models.Node) interface{} {
+	if node == nil {
+		return map[string]interface{}{"end-system": nil}
+	}
 	endSystem := struct {
-		*models.Node
+		models.Node
 		EndSystemHostname string `json:"end_system_hostname,omitempty"`
-	}{Node: node, EndSystemHostname: node.Hostname}
+	}{Node: *node, EndSystemHostname: node.Hostname}
 
-	output := map[string]interface{}{"end-system": endSystem}
-	return output
+	return map[string]interface{}{"end-system": endSystem}
 }
 
 func (r *Replicator) portToVNCPort(port *models.Port) interface{} {
+	if port == nil {
+		return map[string]interface{}{"port": nil}
+	}
 	port.ParentType = "end-system"
 	portVNC := struct {
-		*models.Port
+		models.Port
 		PortBMSPortInfo *models.BaremetalPortInfo `json:"port_bms_port_info,omitempty"`
-	}{Port: port, PortBMSPortInfo: port.BMSPortInfo}
+	}{Port: *port, PortBMSPortInfo: port.BMSPortInfo}
 
-	output := map[string]interface{}{"port": portVNC}
-	return output
+	return map[string]interface{}{"port": portVNC}
 }
 
 // Process processes event by sending requests to all registered clusters.
