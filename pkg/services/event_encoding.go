@@ -213,7 +213,7 @@ const (
 // ParseRefOperation parses RefOperation from string value.
 func ParseRefOperation(s string) (op RefOperation) {
 	switch s {
-	case OperationCreate:
+	case OperationCreate, string(RefOperationAdd):
 		return RefOperationAdd
 	case OperationDelete:
 		return RefOperationDelete
