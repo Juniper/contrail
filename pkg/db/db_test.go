@@ -162,9 +162,16 @@ func TestDBScanRow(t *testing.T) {
 		expected   proto.Message
 		expectedFM *types.FieldMask
 	}{
-		{name: "empty", fails: true},
+		{name: "nil", fails: true},
+		{
+			name:     "nil with valid schemaID",
+			schemaID: "logical_interface",
+			expected: (*models.LogicalInterface)(nil),
+		},
+		{name: "empty", row: map[string]interface{}{}, fails: true},
 		{
 			name:       "empty with valid schemaID",
+			row:        map[string]interface{}{},
 			schemaID:   "logical_interface",
 			expected:   models.MakeLogicalInterface(),
 			expectedFM: &types.FieldMask{},
