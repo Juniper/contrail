@@ -1,0 +1,13 @@
+services:
+  schema:
+    env_file: common_config.env
+    environment: [NOTIFICATION_DRIVER=etcd, DB_DRIVER=etcd]
+    image: kaweue/contrail-controller-config-schema:R6.0-8
+    logging:
+      driver: json-file
+      options: {max-file: '10', max-size: 50m}
+    network_mode: host
+    stdin_open: true
+    tty: true
+    volumes: ['/home/kaweue/work/site-packages:/lib/python2.7/site-packages']
+version: '2'
