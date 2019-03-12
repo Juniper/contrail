@@ -84,6 +84,7 @@ references:
     description: This interface is member of the referenced virtual network.
     operations: CRUD
     presence: required
+    derived: true
 schema:
   properties:
     ecmp_hashing_include_fields:

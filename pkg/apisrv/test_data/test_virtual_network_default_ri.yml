@@ -1,0 +1,99 @@
+name: Virtual Machine Interface test
+cleanup:
+- path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+- path: /virtual-network/vn_blue_uuid
+- path: /project/admin_project_vn_default_ri_uuid
+
+test_data:
+  admin_project: &admin_project_vn_default_ri
+    fq_name: ["default", "admin_project_vn_default_ri"]
+    uuid: admin_project_vn_default_ri_uuid
+    name: admin_project_vn_default_ri
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  vn_blue: &vn_blue
+      fq_name: ["default", "admin_project_vn_default_ri", "vn_blue"]
+      uuid: vn_blue_uuid
+      display_name: vn_blue
+      parent_type: project
+      parent_uuid: admin_project_vn_default_ri_uuid
+
+#  vn_blue_ri1: &vn_blue_ri1
+#    uuid: ri_uuid
+#    fq_name: ["default", "admin_project_vn_default_ri", "vn_blue", "vn_blue"]
+#    parent_type: virtual-network
+#    parent_uuid: vn_blue
+#
+  vmi_blue: &vmi_blue
+    uuid: 171b8975-9784-4cc7-aa79-6e5efb672221
+    fq_name: ["default", "admin_project_vn_default_ri", "vmi_blue"]
+    parent_type: project
+    virtual_network_refs:
+      - uuid: vn_blue_uuid
+        to: ["default", "admin_project_vn_default_ri", "vn_blue"]
+    port_security_enabled: true
+    display_name: vmi_blue
+
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected: [200]
+    data:
+      project: *admin_project_vn_default_ri
+  expect:
+    project: *admin_project_vn_default_ri
+
+- name: create vn
+  request:
+    path: /virtual-networks
+    method: POST
+    expected: [200]
+    data:
+      virtual-network: *vn_blue
+  expect:
+    virtual-network: *vn_blue
+
+- name: create vmi
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [200]
+    data:
+      virtual-machine-interface: *vmi_blue
+  expect:
+    virtual-machine-interface: *vmi_blue
+
+- name: delete vn
+  request:
+    path: /virtual-network/vn_blue_uuid
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete vmi
+  request:
+    path: /virtual-machine-interface/171b8975-9784-4cc7-aa79-6e5efb672221
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete project
+  request:
+    path: /project/admin_project_vn_default_ri_uuid
+    method: DELETE
+    expected: [200]
+  expect: null

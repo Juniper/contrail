@@ -131,6 +131,7 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 		AddressManager:    s.DBService,
 		IntPoolAllocator:  s.DBService,
 		MetadataGetter:    s.DBService,
+		RefRelaxer:        s.DBService,
 		WriteService: &services.InternalContextWriteServiceWrapper{
 			WriteService: serviceChain[0],
 		},

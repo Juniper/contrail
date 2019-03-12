@@ -271,7 +271,24 @@ func (sv *ContrailTypeLogicService) deleteDefaultRoutingInstance(
 	// Delete native/VN-default routing instance if it hasn't been deleted by the user
 	if ri := vn.GetDefaultRoutingInstance(); ri != nil {
 		// TODO: delete children of the default routing instance
-		_, err := sv.WriteService.DeleteRoutingInstance(
+		dbRI, err := sv.ReadService.GetRoutingInstance(ctx, &services.GetRoutingInstanceRequest{
+			ID: ri.GetUUID(),
+		})
+		if err != nil {
+			return err
+		}
+
+		for _, backRef := range dbRI.GetRoutingInstance().GetBackReferences() {
+			err := sv.RefRelaxer.RelaxRef(ctx, &services.RelaxRefRequest{
+				UUID:    backRef.GetUUID(),
+				RefUUID: ri.GetUUID(),
+			})
+			if err != nil {
+				return errors.Wrapf(err,
+					"could not delete ref(uuid: %v) to default routing instance: %v", backRef.GetUUID(), ri.GetUUID())
+			}
+		}
+		_, err = sv.WriteService.DeleteRoutingInstance(
 			ctx, &services.DeleteRoutingInstanceRequest{
 				ID: ri.UUID,
 			},
