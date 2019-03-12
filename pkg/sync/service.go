@@ -22,7 +22,6 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync/replication"
-	"github.com/Juniper/contrail/pkg/sync/sink"
 )
 
 const (
@@ -102,24 +101,21 @@ func createWatcher(id string, processor services.EventProcessor) (watchCloser, e
 		return nil, err
 	}
 
-	s := sink.NewEventProcessorSink(processor)
-	rowSink := replication.NewObjectMappingAdapter(s, dbService)
-
 	driver := viper.GetString("database.type")
 	switch driver {
 	case basedb.DriverPostgreSQL:
-		return createPostgreSQLWatcher(id, rowSink, dbService, processor)
+		return createPostgreSQLWatcher(id, dbService, processor)
 	case basedb.DriverMySQL:
-		return createMySQLWatcher(rowSink)
+		return createMySQLWatcher(dbService, processor)
 	default:
 		return nil, errors.Errorf("invalid database driver: %v", driver)
 	}
 }
 
 func createPostgreSQLWatcher(
-	id string, sink replication.RowSink, dbService *db.Service, processor services.EventProcessor,
+	id string, dbService *db.Service, processor services.EventProcessor,
 ) (watchCloser, error) {
-	handler := replication.NewPgoutputEventHandler(sink)
+	handler := replication.NewPgoutputEventHandler(processor, dbService)
 
 	connConfig := pgx.ConnConfig{
 		Host:     viper.GetString("database.host"),
@@ -148,14 +144,14 @@ func createPostgreSQLWatcher(
 	)
 }
 
-func createMySQLWatcher(sink replication.RowSink) (watchCloser, error) {
+func createMySQLWatcher(eventDecoder replication.EventDecoder, processor services.EventProcessor) (watchCloser, error) {
 	conf := canalConfig()
 
 	canal, err := mysqlcanal.NewCanal(conf)
 	if err != nil {
 		return nil, fmt.Errorf("error creating canal: %v", err)
 	}
-	canal.SetEventHandler(replication.NewCanalEventHandler(sink))
+	canal.SetEventHandler(replication.NewCanalEventHandler(processor, eventDecoder))
 
 	return replication.NewMySQLWatcher(canal), nil
 }
