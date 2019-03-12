@@ -162,6 +162,9 @@ func (db *Service) scan{{ schema.JSONSchema.GoName }}(
 ) (
 	*models.{{ schema.JSONSchema.GoName }}, *types.FieldMask, error,
 ) {
+	if values == nil {
+		return nil, nil, nil
+	}
 	m := models.Make{{ schema.JSONSchema.GoName }}()
 	var paths []string
 	{% for column in schema.Columns %}
