@@ -33,17 +33,17 @@
               {% for sgRule in sg.info.CloudSecurityGroupRules %}
                 - name: {{ sgRule.Name }}
                   direction: {% if "ingress" in sgRule.Direction %}inbound{% elif "egress" in sgRule.Direction %}outbound{% endif %}
-                  {% if sgRule.Protocol %}protocol: {{ sgRule.Protocol }}{% endif %}
+                  {% if sgRule.Protocol %}protocol: {% if "ANY" in sgRule.Protocol %}*{% else %}{{ sgRule.Protocol|default:"*" }}{% endif %}{% endif %}
               {% endfor %}
             {% elif aws in cloudType %}
               {% for sgRule in sg.info.CloudSecurityGroupRules %}
               - name: {{ sgRule.Name }}
                 {{ sgRule.Direction }}:
-                  from_port: {{ sgRule.FromPort }}
-                  to_port: {{ sgRule.ToPort }}
-                  protocol: {{ sgRule.Protocol }}
+                  from_port: {{ sgRule.FromPort|default:0 }}
+                  to_port: {{ sgRule.ToPort|default:0}}
+                  protocol: {% if "ANY" in sgRule.Protocol %}-1{% else %}{{ sgRule.Protocol|default:"-1" }}{% endif %}
                   cidr_blocks:
-                  - {{ sgRule.CidrBlock }}
+                  - {{ sgRule.CidrBlock|default:"0.0.0.0/0" }}
               {% endfor %}
             {% endif %}
           {% endfor %}
