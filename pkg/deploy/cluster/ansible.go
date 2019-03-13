@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -404,19 +406,52 @@ func (a *contrailAnsibleDeployer) play(ansibleArgs []string) error {
 
 func (a *contrailAnsibleDeployer) playFromDir(
 	repoDir string, ansibleArgs []string) error {
+	return a.playFromDirInVenv(repoDir, ansibleArgs, "")
+}
+
+func (a *contrailAnsibleDeployer) playFromDirInVenv(
+	repoDir string,
+	ansibleArgs []string,
+	venvDir string) error {
+
 	if a.cluster.config.Test {
 		return a.mockPlay(ansibleArgs)
 	}
-	cmdline := "ansible-playbook"
-	a.Log.Infof("Playing playbook: %s %s",
-		cmdline, strings.Join(ansibleArgs, " "))
 
-	err := osutil.ExecCmdAndWait(a.Reporter, cmdline, ansibleArgs, repoDir)
+	var venvLogString string
+	if venvDir != "" {
+		venvLogString = fmt.Sprintf(" in venv %s", venvDir)
+	}
+
+	cmdline := "ansible-playbook"
+	a.Log.Infof("Playing playbook: %s %s%s",
+		cmdline, strings.Join(ansibleArgs, " "), venvLogString)
+
+	var cmd *exec.Cmd
+
+	if venvDir != "" {
+		var err error
+		cmd = &exec.Cmd{Path: cmdline, Args: append([]string{cmdline}, ansibleArgs...)}
+		cmd.Env = os.Environ()
+		cmd, err = osutil.Venv(cmd, venvDir)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		cmd = exec.Command(cmdline, ansibleArgs...)
+	}
+
+	cmd.Dir = repoDir
+
+	err := osutil.ExecAndWait(a.Reporter, cmd)
 	if err != nil {
+		a.Log.Errorf("error when running playbook: %s", err)
 		return err
 	}
-	a.Log.Infof("Finished playing playbook: %s %s",
-		cmdline, strings.Join(ansibleArgs, " "))
+
+	a.Log.Infof("Finished playing playbook: %s %s%s",
+		cmdline, strings.Join(ansibleArgs, " "), venvLogString)
 
 	return nil
 }
@@ -424,13 +459,17 @@ func (a *contrailAnsibleDeployer) playFromDir(
 func (a *contrailAnsibleDeployer) playInstancesProvision(ansibleArgs []string) error {
 	// play instances provisioning playbook
 	ansibleArgs = append(ansibleArgs, defaultInstanceProvPlay)
-	return a.play(ansibleArgs)
+	a.Log.Warn("NOT PLAYING INSTANCES PROVISION")
+	return nil
+	// return a.play(ansibleArgs) // todo: uncomment
 }
 
 func (a *contrailAnsibleDeployer) playInstancesConfig(ansibleArgs []string) error {
 	// play instances configuration playbook
 	ansibleArgs = append(ansibleArgs, defaultInstanceConfPlay)
-	return a.play(ansibleArgs)
+	a.Log.Warn("NOT PLAYING INSTANCES CONFIG")
+	return nil
+	// return a.play(ansibleArgs) //todo: uncomment
 }
 
 func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string) error {
@@ -448,13 +487,17 @@ func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string
 	case orchestratorVcenter:
 		ansibleArgs = append(ansibleArgs, defaultvCenterProvPlay)
 	}
-	return a.play(ansibleArgs)
+	a.Log.Warn("NOT PLAYING ORCHERSTRATOR PROVISION")
+	return nil
+	//return a.play(ansibleArgs) //todo: uncommnet
 }
 
 func (a *contrailAnsibleDeployer) playContrailProvision(ansibleArgs []string) error {
 	// play contrail provisioning playbook
 	ansibleArgs = append(ansibleArgs, defaultContrailProvPlay)
-	return a.play(ansibleArgs)
+	a.Log.Warn("JUST FOR TESTING - NOT PLAYING CONTRAIL PROVISION") // todo: remove
+	return nil                                                      //todo: remove
+	// return a.play(ansibleArgs) //todo: uncomment
 }
 
 func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
@@ -466,8 +509,62 @@ func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
 	return nil
 }
 
+func (a *contrailAnsibleDeployer) apprormixVenvDir() string {
+	return filepath.Join(a.getWorkingDir(), "appformix-venv")
+}
+
+func (a *contrailAnsibleDeployer) createAppfromixVenv() error {
+	err := osutil.ExecCmdAndWait(
+		a.Reporter,
+		"pip",
+		[]string{"install", "virtualenv"},
+		"",
+	) //todo - make virtualenv program available in docker
+
+	if err != nil {
+		return err
+	}
+
+	venvDir := a.apprormixVenvDir()
+
+	createVenvCmd := exec.Command("virtualenv", venvDir)
+	err = osutil.ExecAndWait(a.Reporter, createVenvCmd)
+
+	if err != nil {
+		return err
+	}
+
+	// not using full path to pip here nor exec.Command call (which will try to resolve the path for us)
+	// so that later call to Venv will find the one inside the virtual env
+	// also - the first arg is the name of the program (that's a different convention than with exec.Command call)
+	installAnsibleReqsInVenvCmd := &exec.Cmd{Path: "pip", Args: []string{
+		"pip",
+		"install",
+		"ansible==2.4.2.0",
+		"requests=2.21.0",
+	}}
+
+	installAnsibleReqsInVenvCmd.Env = os.Environ()
+	installAnsibleReqsInVenvCmd, err = osutil.Venv(installAnsibleReqsInVenvCmd, venvDir)
+
+	if err != nil {
+		return err
+	}
+
+	err = osutil.ExecAndWait(a.Reporter, installAnsibleReqsInVenvCmd)
+
+	return err
+}
+
 func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 	if a.clusterData.getAppformixClusterInfo() != nil {
+
+		err := a.createAppfromixVenv()
+
+		if err != nil {
+			return err
+		}
+
 		AppformixUsername := a.clusterData.getAppformixClusterInfo().AppformixUsername
 		AppformixPassword := a.clusterData.getAppformixClusterInfo().AppformixPassword
 		if AppformixUsername != "" {
@@ -492,12 +589,12 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 			a.Log.Errorf("imageDir %s does not exist, %s", imageDir, err)
 		}
 		srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
-		err := a.untar(imageDir+srcFile, imageDir)
+		err = a.untar(imageDir+srcFile, imageDir)
 		if err != nil {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
 		repoDir := a.getAppformixAnsibleDeployerRepoDir()
-		return a.playFromDir(repoDir, ansibleArgs)
+		return a.playFromDirInVenv(repoDir, ansibleArgs, a.apprormixVenvDir())
 	}
 	return nil
 }
