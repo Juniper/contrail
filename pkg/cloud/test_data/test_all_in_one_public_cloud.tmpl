@@ -107,7 +107,7 @@ test_data:
     parent_type: cloud-security-group
     parent_uuid: cloud_security_group_uuid
     direction: ingress
-    protocol: tcp
+    protocol: ANY
     {% if "aws" in CLOUD_TYPE %}
     from_port: 0
     to_port: 0
@@ -452,7 +452,7 @@ workflow:
       parent_type: cloud-security-group
       parent_uuid: cloud_security_group_uuid
       direction: ingress
-      protocol: tcp
+      protocol: ANY
       {% if "aws" in CLOUD_TYPE %}
       from_port: 0
       to_port: 0
