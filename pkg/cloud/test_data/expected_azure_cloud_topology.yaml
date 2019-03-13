@@ -14,9 +14,12 @@
           security_groups:
             - name: cloud_security_group
               rules:
+                - name: cloud_security_group_rule_tcp
+                  direction: outbound
+                  protocol: tcp
                 - name: cloud_security_group_rule
                   direction: inbound
-                  protocol: tcp
+                  protocol: *
           instances:
             - name: cloud_node_compute
               roles:

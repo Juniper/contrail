@@ -12,11 +12,18 @@
               cidr_block: 192.168.10.0/24
               availability_zone: a
           security_groups:
+              - name: cloud_security_group_rule_tcp
+                egress:
+                  from_port: 0
+                  to_port: 0
+                  protocol: tcp
+                  cidr_blocks:
+                  - 0.0.0.0/0
               - name: cloud_security_group_rule
                 ingress:
                   from_port: 0
                   to_port: 0
-                  protocol: tcp
+                  protocol: -1
                   cidr_blocks:
                   - 0.0.0.0/0
           instances:
@@ -30,6 +37,7 @@
               subnets: cloud_private_subnet
               availability_zone: a
               security_groups:
+                - cloud_security_group_rule_tcp
                 - cloud_security_group_rule
             - name: cloud_node_controller
               roles:
@@ -41,6 +49,7 @@
               subnets: cloud_private_subnet
               availability_zone: a
               security_groups:
+                - cloud_security_group_rule_tcp
                 - cloud_security_group_rule
             - name: cloud_node_gw
               roles:
@@ -52,4 +61,5 @@
               subnets: cloud_private_subnet
               availability_zone: a
               security_groups:
+                - cloud_security_group_rule_tcp
                 - cloud_security_group_rule
