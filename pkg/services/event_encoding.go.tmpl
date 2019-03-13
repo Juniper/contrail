@@ -54,6 +54,16 @@ func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask ty
 	e.Update{{ schema.JSONSchema.GoName }}Request.FieldMask = mask
 }
 
+// FieldMask gets fieldMask of the event.
+func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) FieldMask() types.FieldMask {
+	return e.Create{{ schema.JSONSchema.GoName }}Request.FieldMask
+}
+
+// FieldMask gets fieldMask of the event.
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) FieldMask() types.FieldMask {
+	return e.Update{{ schema.JSONSchema.GoName }}Request.FieldMask
+}
+
 // SetID sets id of the event.
 func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) SetID(id string) {
 	e.Delete{{ schema.JSONSchema.GoName }}Request.ID = id
