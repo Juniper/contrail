@@ -43,6 +43,8 @@ func handleCreate(t *testing.T, w http.ResponseWriter,
 		processReqBody(t, w, r, postReq, vncReqStore)
 	case "/end-systems":
 		processReqBody(t, w, r, postReq, vncReqStore)
+	case "/ref-update":
+		processReqBody(t, w, r, postReq, vncReqStore)
 	default:
 		writeJSONResponse(t, w, 404, nil)
 	}

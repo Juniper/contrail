@@ -73,3 +73,17 @@ workflow:
       port: *test_create_port
   expect:
     port: *test_create_port
+
+- name: create node to node-profile ref using ref-update
+  request:
+    path: /ref-update
+    method: POST
+    expected: [200]
+    data:
+      operation: ADD
+      type: node
+      uuid: test_create_node_uuid
+      ref-type: node-profile
+      ref-uuid: test_create_node_profile_uuid
+  expect:
+    uuid: test_create_node_uuid
