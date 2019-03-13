@@ -635,8 +635,7 @@ func (i *instanceData) updateProtoModes() error {
 func (i *instanceData) updateVrouterGW(role string) error {
 	if role == gatewayRole {
 		for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
-			response := new(services.GetContrailMulticloudGWNodeResponse)
-			_, err := i.client.GetContrailMulticloudGWNode(i.ctx,
+			response, err := i.client.GetContrailMulticloudGWNode(i.ctx,
 				&services.GetContrailMulticloudGWNodeRequest{
 					ID: gwNodeRef.UUID,
 				},
@@ -645,14 +644,15 @@ func (i *instanceData) updateVrouterGW(role string) error {
 				return err
 			}
 
-			i.gateway = response.GetContrailMulticloudGWNode().DefaultGateway
+			if response != nil {
+				i.gateway = response.ContrailMulticloudGWNode.DefaultGateway
+			}
 			return nil
 		}
 	}
 	if role == computeRole {
 		for _, vrouterNodeRef := range i.info.ContrailVrouterNodeBackRefs {
-			response := new(services.GetContrailVrouterNodeResponse)
-			_, err := i.client.GetContrailVrouterNode(i.ctx,
+			response, err := i.client.GetContrailVrouterNode(i.ctx,
 				&services.GetContrailVrouterNodeRequest{
 					ID: vrouterNodeRef.UUID,
 				},
@@ -661,12 +661,12 @@ func (i *instanceData) updateVrouterGW(role string) error {
 				return err
 			}
 
-			vrouterNode := response.ContrailVrouterNode
-			if vrouterNode.DefaultGateway != "" {
-				i.gateway = vrouterNode.DefaultGateway
-			} else {
-				response := new(services.GetContrailClusterResponse)
-				_, err := i.client.GetContrailCluster(i.ctx,
+			if response != nil {
+				if response.ContrailVrouterNode.DefaultGateway != "" {
+					i.gateway = vrouterNode.DefaultGateway
+					return nil
+				}
+				response, err = i.client.GetContrailCluster(i.ctx,
 					&services.GetContrailClusterRequest{
 						ID: vrouterNode.ParentUUID,
 					},
@@ -679,7 +679,7 @@ func (i *instanceData) updateVrouterGW(role string) error {
 			return nil
 		}
 	}
-	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
+	return fmt.Errorf("instance does not have a %s ref", role)
 
 }
 
