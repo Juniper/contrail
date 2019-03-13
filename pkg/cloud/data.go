@@ -230,16 +230,20 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 		if err != nil {
 			return nil, err
 		}
-		err = inst.updateVrouterGW(gatewayRole)
-		if err != nil {
-			return nil, err
+		if v.parentRegion.parentProvider.parentCloud.isCloudPrivate() {
+			err = inst.updateVrouterGW(gatewayRole)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	if inst.info.ContrailVrouterNodeBackRefs != nil {
-		err = inst.updateVrouterGW(computeRole)
-		if err != nil {
-			return nil, err
+		if v.parentRegion.parentProvider.parentCloud.isCloudPrivate() {
+			err = inst.updateVrouterGW(computeRole)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -633,54 +637,86 @@ func (i *instanceData) updateProtoModes() error {
 }
 
 func (i *instanceData) updateVrouterGW(role string) error {
-	if role == gatewayRole {
-		for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
-			response := new(services.GetContrailMulticloudGWNodeResponse)
-			_, err := i.client.GetContrailMulticloudGWNode(i.ctx,
-				&services.GetContrailMulticloudGWNodeRequest{
-					ID: gwNodeRef.UUID,
-				},
-			)
-			if err != nil {
-				return err
-			}
 
-			i.gateway = response.GetContrailMulticloudGWNode().DefaultGateway
-			return nil
-		}
+	switch role {
+	case gatewayRole:
+		return i.setMultiCloudGWNodeDefaultGW()
+	case computeRole:
+		return i.setVrouterNodeDefaultGW()
 	}
-	if role == computeRole {
-		for _, vrouterNodeRef := range i.info.ContrailVrouterNodeBackRefs {
-			response := new(services.GetContrailVrouterNodeResponse)
-			_, err := i.client.GetContrailVrouterNode(i.ctx,
-				&services.GetContrailVrouterNodeRequest{
-					ID: vrouterNodeRef.UUID,
-				},
-			)
-			if err != nil {
-				return err
-			}
 
+	return fmt.Errorf("instance does not have a %s ref", role)
+
+}
+
+func (i *instanceData) setMultiCloudGWNodeDefaultGW() error {
+
+	for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
+		response, err := i.client.GetContrailMulticloudGWNode(i.ctx,
+			&services.GetContrailMulticloudGWNodeRequest{
+				ID: gwNodeRef.UUID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		if response != nil {
+			i.gateway = response.ContrailMulticloudGWNode.DefaultGateway
+		}
+		if i.gateway == "" {
+			return fmt.Errorf(
+				"default gateway is not set for contrail_multicloud_gw_node uuid: %s",
+				gwNodeRef.UUID)
+		}
+		return nil
+	}
+
+	return fmt.Errorf(
+		"contrailMulticloudGWNodeBackRefs are not present for instance: %s",
+		i.info.UUID)
+}
+
+func (i *instanceData) setVrouterNodeDefaultGW() error {
+
+	for _, vrouterNodeRef := range i.info.ContrailVrouterNodeBackRefs {
+		response, err := i.client.GetContrailVrouterNode(i.ctx,
+			&services.GetContrailVrouterNodeRequest{
+				ID: vrouterNodeRef.UUID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		if response != nil {
 			vrouterNode := response.ContrailVrouterNode
 			if vrouterNode.DefaultGateway != "" {
 				i.gateway = vrouterNode.DefaultGateway
-			} else {
-				response := new(services.GetContrailClusterResponse)
-				_, err := i.client.GetContrailCluster(i.ctx,
-					&services.GetContrailClusterRequest{
-						ID: vrouterNode.ParentUUID,
-					},
-				)
-				if err != nil {
-					return err
-				}
-				i.gateway = response.ContrailCluster.DefaultGateway
+				return nil
+			}
+			response, err := i.client.GetContrailCluster(i.ctx,
+				&services.GetContrailClusterRequest{
+					ID: vrouterNode.ParentUUID,
+				},
+			)
+			if err != nil {
+				return err
+			}
+			i.gateway = response.ContrailCluster.DefaultGateway
+
+			if i.gateway == "" {
+				return fmt.Errorf(
+					`default gateway is neither set for vrouter_node uuid: %s
+					nor for contrail_cluster uuid: %s`,
+					vrouterNodeRef.UUID, vrouterNode.ParentUUID)
 			}
 			return nil
 		}
 	}
-	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
-
+	return fmt.Errorf(
+		"contrailVrouterNodeBackRefs are not present for instance: %s",
+		i.info.UUID)
 }
 
 func (i *instanceData) updatePvtIntf() error {
