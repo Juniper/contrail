@@ -35,7 +35,7 @@ RUN yum remove -y PyYAML
 # adding a new compute to a cluster. Stick with 2.5.2.0 until Ansible fixes the
 # issues. Refer: https://bugs.launchpad.net/kolla-ansible/+bug/1784123
 RUN pip install ansible==2.5.2.0
-RUN python2 -m pip install lxml saxpy gevent
+RUN python2 -m pip install lxml saxpy gevent virtualenv==16.4.3
 
 # logic to install vnc api client needed by multi-cloud
 RUN cd /tmp/contrail-api-client && git fetch --unshallow
