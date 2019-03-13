@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -157,7 +159,7 @@ func (a *contrailAnsibleDeployer) getAnsibleDeployerRepoDir() (ansibleRepoDir st
 }
 
 func (a *contrailAnsibleDeployer) getAppformixAnsibleDeployerRepoDir() (ansibleRepoDir string) {
-	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo)
+	return filepath.Join(defaultAppformixAnsibleRepoDir, defaultAppformixAnsibleRepo, defaultAppformixDir)
 }
 
 func (a *contrailAnsibleDeployer) getXflowDeployerDir() (xflowDir string) {
@@ -400,19 +402,50 @@ func (a *contrailAnsibleDeployer) play(ansibleArgs []string) error {
 
 func (a *contrailAnsibleDeployer) playFromDir(
 	repoDir string, ansibleArgs []string) error {
+	return a.playFromDirInVenv(repoDir, ansibleArgs, "")
+}
+
+func (a *contrailAnsibleDeployer) playFromDirInVenv(
+	repoDir string,
+	ansibleArgs []string,
+	venvDir string) error {
+
 	if a.cluster.config.Test {
 		return a.mockPlay(ansibleArgs)
 	}
-	cmdline := "ansible-playbook"
-	a.Log.Infof("Playing playbook: %s %s",
-		cmdline, strings.Join(ansibleArgs, " "))
 
-	err := osutil.ExecCmdAndWait(a.Reporter, cmdline, ansibleArgs, repoDir)
+	var venvLogString string
+	if venvDir != "" {
+		venvLogString = fmt.Sprintf(" in venv %s", venvDir)
+	}
+
+	cmdline := "ansible-playbook"
+	a.Log.Infof("Playing playbook: %s %s%s",
+		cmdline, strings.Join(ansibleArgs, " "), venvLogString)
+
+	var cmd *exec.Cmd
+
+	if venvDir != "" {
+		var err error
+		cmd, err = osutil.VenvCommand(venvDir, cmdline, ansibleArgs...)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		cmd = exec.Command(cmdline, ansibleArgs...)
+	}
+
+	cmd.Dir = repoDir
+
+	err := osutil.ExecAndWait(a.Reporter, cmd)
 	if err != nil {
+		a.Log.Errorf("error when running playbook: %s", err)
 		return err
 	}
-	a.Log.Infof("Finished playing playbook: %s %s",
-		cmdline, strings.Join(ansibleArgs, " "))
+
+	a.Log.Infof("Finished playing playbook: %s %s%s",
+		cmdline, strings.Join(ansibleArgs, " "), venvLogString)
 
 	return nil
 }
@@ -444,6 +477,7 @@ func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string
 	case orchestratorVcenter:
 		ansibleArgs = append(ansibleArgs, defaultvCenterProvPlay)
 	}
+
 	return a.play(ansibleArgs)
 }
 
@@ -460,6 +494,14 @@ func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
 		return a.playFromDir(a.getAnsibleDatapathEncryptionRepoDir(), ansibleArgs)
 	}
 	return nil
+}
+
+func (a *contrailAnsibleDeployer) appformixVenvDir() string {
+	return filepath.Join(a.getAppformixAnsibleDeployerRepoDir(), "venv")
+}
+
+func (a *contrailAnsibleDeployer) xflowVenvDir() string {
+	return filepath.Join(a.getXflowDeployerDir(), "venv")
 }
 
 func (a *contrailAnsibleDeployer) playAppformixProvision() error {
@@ -493,13 +535,15 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
 		repoDir := a.getAppformixAnsibleDeployerRepoDir()
-		return a.playFromDir(repoDir, ansibleArgs)
+		return a.playFromDirInVenv(repoDir, ansibleArgs, a.appformixVenvDir())
 	}
 	return nil
 }
 
 func (a *contrailAnsibleDeployer) playXflowProvision() error {
 	if a.clusterData.GetXflowData() != nil && a.clusterData.GetXflowData().ClusterInfo != nil {
+		venvDir := a.xflowVenvDir()
+
 		xflowDir := a.getXflowDeployerDir()
 		if _, err := os.Stat(xflowDir); os.IsNotExist(err) {
 			return err
@@ -508,7 +552,16 @@ func (a *contrailAnsibleDeployer) playXflowProvision() error {
 		cmd := "bash"
 		cmdArgs := []string{"deploy_xflow.sh", a.getInstanceFile()}
 		a.Log.Infof("provisioning xflow: %s %s", cmd, strings.Join(cmdArgs, " "))
-		if err := osutil.ExecCmdAndWait(a.Reporter, cmd, cmdArgs, xflowDir); err != nil {
+		command, err := osutil.VenvCommand(venvDir, cmd, cmdArgs...)
+		if err != nil {
+			a.Log.Errorf("Error when creating preparing command to run in venv %s: %s", venvDir, err)
+			return err
+		}
+
+		command.Dir = xflowDir
+
+		if err := osutil.ExecAndWait(a.Reporter, command); err != nil {
+			a.Log.Errorf("Error when running command in venv %s: %s", venvDir, err)
 			return err
 		}
 		a.Log.Infof("Finished provisioning xflow")
@@ -566,6 +619,9 @@ func (a *contrailAnsibleDeployer) playBook() error {
 			return err
 		}
 		if err := a.playAppformixProvision(); err != nil {
+			return err
+		}
+		if err := a.playXflowProvision(); err != nil {
 			return err
 		}
 	case addComputeProvisioningAction:
