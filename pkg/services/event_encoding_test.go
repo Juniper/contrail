@@ -341,6 +341,260 @@ data: hoge
 	}
 }
 
+func TestEventList_Deduplicate(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    Events
+		expected Events
+	}{
+		{name: "empty"},
+		{
+			name:     "single create",
+			input:    Events{createVNEvent(&models.VirtualNetwork{UUID: "some-uuid"})},
+			expected: Events{createVNEvent(&models.VirtualNetwork{UUID: "some-uuid"})},
+		},
+		{
+			name: "different types are not merged",
+			input: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid"}),
+				updateIpamEvent(&models.NetworkIpam{UUID: "some-uuid"}, types.FieldMask{Paths: []string{"name"}}),
+			},
+			expected: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid"}),
+				updateIpamEvent(&models.NetworkIpam{UUID: "some-uuid"}, types.FieldMask{Paths: []string{"name"}}),
+			},
+		},
+		{
+			name: "different ids are not merged",
+			input: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid"}),
+				updateVNEvent(&models.VirtualNetwork{UUID: "other-uuid"}, types.FieldMask{Paths: []string{"name"}}),
+			},
+			expected: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid"}),
+				updateVNEvent(&models.VirtualNetwork{UUID: "other-uuid"}, types.FieldMask{Paths: []string{"name"}}),
+			},
+		},
+		{
+			name: "create after create",
+			input: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid", Name: "first"}),
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid", Name: "second"}),
+			},
+			expected: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid", Name: "first"}),
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid", Name: "second"}),
+			},
+		},
+		{
+			name: "update after create",
+			input: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid", Name: "first"}),
+				updateVNEvent(
+					&models.VirtualNetwork{UUID: "some-uuid", Name: "second"},
+					types.FieldMask{Paths: []string{"name"}},
+				),
+			},
+			expected: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid", Name: "second"}),
+			},
+		},
+		{
+			name: "create after update",
+			input: Events{
+				updateVNEvent(
+					&models.VirtualNetwork{UUID: "some-uuid", Name: "first"},
+					types.FieldMask{Paths: []string{"name"}},
+				),
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid", Name: "second"}),
+			},
+			expected: Events{
+				updateVNEvent(
+					&models.VirtualNetwork{UUID: "some-uuid", Name: "first"},
+					types.FieldMask{Paths: []string{"name"}},
+				),
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid", Name: "second"}),
+			},
+		},
+		{
+			name: "ref update is added to create event",
+			input: Events{
+				createVNEvent(&models.VirtualNetwork{UUID: "some-uuid"}),
+				createVNIpamRefEvent("some-uuid", "ipam-uuid"),
+			},
+			expected: Events{
+				createVNEvent(
+					&models.VirtualNetwork{
+						UUID:            "some-uuid",
+						NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{{UUID: "ipam-uuid"}},
+					},
+				),
+			},
+		},
+		{
+			name: "ref update is not added to update event that doesn't modify the refs",
+			input: Events{
+				updateVNEvent(&models.VirtualNetwork{UUID: "some-uuid"}, types.FieldMask{}),
+				createVNIpamRefEvent("some-uuid", "ipam-uuid"),
+			},
+			expected: Events{
+				updateVNEvent(&models.VirtualNetwork{UUID: "some-uuid"}, types.FieldMask{}),
+				createVNIpamRefEvent("some-uuid", "ipam-uuid"),
+			},
+		},
+		{
+			name: "ref update is added to update event that modifies the refs",
+			input: Events{
+				updateVNEvent(
+					&models.VirtualNetwork{UUID: "some-uuid"},
+					types.FieldMask{Paths: []string{"network_ipam_refs"}},
+				),
+				createVNIpamRefEvent("some-uuid", "ipam-uuid"),
+				createVNIpamRefEvent("some-uuid", "other-ipam-uuid"),
+			},
+			expected: Events{
+				updateVNEvent(
+					&models.VirtualNetwork{
+						UUID: "some-uuid",
+						NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+							{UUID: "ipam-uuid"},
+							{UUID: "other-ipam-uuid"},
+						},
+					},
+					types.FieldMask{Paths: []string{"network_ipam_refs"}},
+				),
+			},
+		},
+		{
+			name: "add and remove refs are added to update event",
+			input: Events{
+				updateVNEvent(
+					&models.VirtualNetwork{UUID: "some-uuid"},
+					types.FieldMask{Paths: []string{"network_ipam_refs"}},
+				),
+				createVNIpamRefEvent("some-uuid", "ipam-uuid"),
+				deleteVNIpamRefEvent("some-uuid", "ipam-uuid"),
+			},
+			expected: Events{
+				updateVNEvent(
+					&models.VirtualNetwork{
+						UUID:            "some-uuid",
+						NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{},
+					},
+					types.FieldMask{Paths: []string{"network_ipam_refs"}},
+				),
+			},
+		},
+		{
+			name: "remove and add refs are added to update event",
+			input: Events{
+				updateVNEvent(
+					&models.VirtualNetwork{UUID: "some-uuid"},
+					types.FieldMask{Paths: []string{"network_ipam_refs"}},
+				),
+				deleteVNIpamRefEvent("some-uuid", "ipam-uuid"),
+				createVNIpamRefEvent("some-uuid", "ipam-uuid"),
+			},
+			expected: Events{
+				updateVNEvent(
+					&models.VirtualNetwork{
+						UUID: "some-uuid",
+						NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+							{UUID: "ipam-uuid"},
+						},
+					},
+					types.FieldMask{Paths: []string{"network_ipam_refs"}},
+				),
+			},
+		},
+		{
+			name: "ref update is not merged with delete event",
+			input: Events{
+				deleteVNEvent("some-uuid"),
+				createVNIpamRefEvent("some-uuid", "ipam-uuid"),
+			},
+			expected: Events{
+				deleteVNEvent("some-uuid"),
+				createVNIpamRefEvent("some-uuid", "ipam-uuid"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.input.Deduplicate())
+		})
+	}
+}
+
+func createVNEvent(vn *models.VirtualNetwork) *Event {
+	return &Event{
+		Request: &Event_CreateVirtualNetworkRequest{
+			CreateVirtualNetworkRequest: &CreateVirtualNetworkRequest{VirtualNetwork: vn},
+		},
+	}
+}
+
+func updateVNEvent(vn *models.VirtualNetwork, fm types.FieldMask) *Event {
+	return &Event{
+		Request: &Event_UpdateVirtualNetworkRequest{
+			UpdateVirtualNetworkRequest: &UpdateVirtualNetworkRequest{
+				VirtualNetwork: vn,
+				FieldMask:      fm,
+			},
+		},
+	}
+}
+
+func updateIpamEvent(ipam *models.NetworkIpam, fm types.FieldMask) *Event {
+	return &Event{
+		Request: &Event_UpdateNetworkIpamRequest{
+			UpdateNetworkIpamRequest: &UpdateNetworkIpamRequest{
+				NetworkIpam: ipam,
+				FieldMask:   fm,
+			},
+		},
+	}
+}
+
+func deleteVNEvent(id string) *Event {
+	return &Event{
+		Request: &Event_DeleteVirtualNetworkRequest{
+			DeleteVirtualNetworkRequest: &DeleteVirtualNetworkRequest{
+				ID: id,
+			},
+		},
+	}
+}
+
+func createVNIpamRefEvent(from, to string) *Event {
+	return &Event{
+		Request: &Event_CreateVirtualNetworkNetworkIpamRefRequest{
+			CreateVirtualNetworkNetworkIpamRefRequest: &CreateVirtualNetworkNetworkIpamRefRequest{
+				ID:                           from,
+				VirtualNetworkNetworkIpamRef: &models.VirtualNetworkNetworkIpamRef{UUID: to},
+			},
+		},
+	}
+}
+
+func deleteVNIpamRefEvent(from, to string) *Event {
+	return &Event{
+		Request: &Event_DeleteVirtualNetworkNetworkIpamRefRequest{
+			DeleteVirtualNetworkNetworkIpamRefRequest: &DeleteVirtualNetworkNetworkIpamRefRequest{
+				ID:                           from,
+				VirtualNetworkNetworkIpamRef: &models.VirtualNetworkNetworkIpamRef{UUID: to},
+			},
+		},
+	}
+}
+
+func makeVNWithUUIDAndName(uuid, name string) *models.VirtualNetwork {
+	vn := models.MakeVirtualNetwork()
+	vn.UUID = uuid
+	vn.Name = name
+	return vn
+}
+
 func TestEvent_ApplyMap(t *testing.T) {
 	projectWithUUID := &models.Project{
 		UUID: "hoge",

@@ -71,6 +71,10 @@ func NewUUIDType(uuid string) *UuidType {
 	}
 }
 
+type toMapper interface {
+	ToMap() map[string]interface{}
+}
+
 const (
 {% for schema in schemas %}
 {% if schema.JSONSchema.Type == "integer" and schema.JSONSchema.Minimum %}
@@ -181,8 +185,7 @@ func (m *{{ schema.JSONSchema.GoName }}) ApplyMap(o map[string]interface{}) {
 			{% elif property.Items.GoType %}
 				m.{{ property.GoName }} = InterfaceTo{{ property.Items.GoType }}Slice(val)
 			{% endif %}
-		{% else %}type toMapper interface {ToMap() map[string]interface{}}
-		if m.{{ property.GoName }} == nil {
+		{% else %}if m.{{ property.GoName }} == nil {
 			m.{{ property.GoName }} = &{{ property.GoType }}{}
 		}
 		switch v := val.(type) {

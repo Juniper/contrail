@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
@@ -63,9 +64,11 @@ type CanProcessService interface {
 	Process(ctx context.Context, service Service) (*Event, error)
 }
 
+type Events []*Event
+
 // EventList has multiple rest requests.
 type EventList struct {
-	Events []*Event `json:"resources" yaml:"resources"`
+	Events `json:"resources" yaml:"resources"`
 }
 
 type state int
@@ -104,13 +107,19 @@ func visitResource(uuid string, sorted []*Event,
 	return sorted, nil
 }
 
+func (e *EventList) Sort() error {
+	sorted, err := e.Events.Sort()
+	e.Events = sorted
+	return err
+}
+
 // Sort sorts Events by parent-child dependency using Tarjan algorithm.
 // It doesn't verify reference cycles.
-func (e *EventList) Sort() (err error) {
+func (e Events) Sort() (result Events, err error) {
 	var sorted []*Event
 	stateGraph := map[string]state{}
 	eventMap := map[string]*Event{}
-	for _, event := range e.Events {
+	for _, event := range e {
 		uuid := event.GetResource().GetUUID()
 		stateGraph[uuid] = notVisited
 		eventMap[uuid] = event
@@ -118,21 +127,112 @@ func (e *EventList) Sort() (err error) {
 	foundNotVisited := true
 	for foundNotVisited {
 		foundNotVisited = false
-		for _, event := range e.Events {
+		for _, event := range e {
 			uuid := event.GetResource().GetUUID()
 			state := stateGraph[uuid]
 			if state == notVisited {
 				sorted, err = visitResource(uuid, sorted, eventMap, stateGraph)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				foundNotVisited = true
 				break
 			}
 		}
 	}
-	e.Events = sorted
-	return nil
+	return sorted, nil
+}
+
+func (e Events) Deduplicate() Events {
+	var result Events
+	bases := map[string]*Event{}
+	for _, ev := range e {
+		key := fmt.Sprintf("%s/%s", ev.getPrimaryKind(), ev.getPrimaryID())
+
+		if base, ok := bases[key]; ok {
+			if base.Merge(ev) {
+				continue
+			}
+		} else {
+			bases[key] = ev
+		}
+
+		result = append(result, ev)
+	}
+
+	return result
+}
+
+func (e *Event) getPrimaryKind() string {
+	switch r := e.GetRequest().(type) {
+	case ResourceEvent:
+		return r.GetResource().Kind()
+	case ReferenceEvent:
+		return r.GetReference().GetFromKind()
+	}
+	return ""
+}
+
+func (e *Event) getPrimaryID() string {
+	switch r := e.GetRequest().(type) {
+	case ResourceEvent:
+		return r.GetResource().GetUUID()
+	case ReferenceEvent:
+		return r.GetID()
+	}
+	return ""
+}
+
+type fieldMasker interface {
+	FieldMask() types.FieldMask
+}
+
+// Merge merges two events.
+func (e *Event) Merge(ev *Event) (merged bool) {
+	switch r := ev.GetRequest().(type) {
+	case ResourceEvent:
+		return e.mergeResource(r)
+	case ReferenceEvent:
+		return e.mergeReference(r)
+	}
+	return false
+}
+
+func (e *Event) mergeResource(r ResourceEvent) (merged bool) {
+	data := r.GetResource().ToMap()
+	if f, ok := r.(fieldMasker); ok && len(f.FieldMask().Paths) > 0 {
+		data = basemodels.ApplyFieldMask(data, f.FieldMask())
+		if prevRes := e.GetResource(); prevRes != nil {
+			prevRes.ApplyMap(data)
+		}
+		return true
+	}
+	return false
+}
+
+func (e *Event) mergeReference(r ReferenceEvent) (merged bool) {
+	ref := r.GetReference()
+
+	if e.Operation() == OperationCreate || e.fieldMaskContains(basemodels.ReferenceFieldName(ref)) {
+		switch r.Operation() {
+		case OperationCreate:
+			e.GetResource().AddReference(ref)
+		case OperationDelete:
+			e.GetResource().RemoveReference(ref)
+		}
+		return true
+	}
+	return false
+}
+
+func (e *Event) fieldMaskContains(field string) bool {
+	f, ok := e.GetRequest().(fieldMasker)
+	if !ok {
+		return false
+	}
+
+	fm := f.FieldMask()
+	return basemodels.FieldMaskContains(&fm, field)
 }
 
 // Process dispatches resource event to call corresponding service functions.
