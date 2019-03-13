@@ -33,3 +33,5 @@ unittests.log
 
 !vendor/**
 *.log
+
+.idea
