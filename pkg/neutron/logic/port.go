@@ -61,41 +61,13 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 
 	fm := types.FieldMask{}
 
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldName)) {
-		vmi.DisplayName = port.Name
-		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldDisplayName)
-	}
-
-	if err = port.handleDeviceUpdate(ctx, rp, vmi, &fm); err != nil {
+	if err = port.handleUpdateOfFields(ctx, rp, vmi, vn, &fm); err != nil {
 		return nil, err
 	}
 
-	if port.setBindings(vmi) {
-		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceBindings)
-	}
-
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldMacAddress)) {
-		// TODO Verify if mac address change allowed
-		vmi.VirtualMachineInterfaceMacAddresses = &models.MacAddressesType{
-			MacAddress: []string{port.MacAddress},
-		}
-		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceMacAddresses)
-	}
-
-	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldPortSecurityEnabled)) {
-		vmi.PortSecurityEnabled = port.PortSecurityEnabled
-		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldPortSecurityEnabled)
-	}
-
-	if err = port.handleAllowedAddressPairs(rp, vmi, &fm); err != nil {
+	if err = port.handleUpdateOfReferences(ctx, rp, vmi, vn, &fm); err != nil {
 		return nil, err
 	}
-
-	if err = port.checkFixedIPs(ctx, rp, vmi, true); err != nil {
-		return nil, err
-	}
-
-	//TODO id perms update (???)
 
 	if _, err = rp.WriteService.UpdateVirtualMachineInterface(ctx, &services.UpdateVirtualMachineInterfaceRequest{
 		VirtualMachineInterface: vmi,
@@ -212,6 +184,65 @@ func (port *Port) ReadAll(
 		}
 	}
 	return ps, nil
+}
+
+func (port *Port) handleUpdateOfFields(
+	ctx context.Context,
+	rp RequestParameters,
+	vmi *models.VirtualMachineInterface,
+	vn *models.VirtualNetwork,
+	fm *types.FieldMask,
+) error {
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldName)) {
+		vmi.DisplayName = port.Name
+		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldDisplayName)
+	}
+
+	if port.setBindings(vmi) {
+		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceBindings)
+	}
+
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldMacAddress)) {
+		// TODO Verify if mac address change allowed
+		vmi.VirtualMachineInterfaceMacAddresses = &models.MacAddressesType{
+			MacAddress: []string{port.MacAddress},
+		}
+		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceMacAddresses)
+	}
+
+	if basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldPortSecurityEnabled)) {
+		vmi.PortSecurityEnabled = port.PortSecurityEnabled
+		basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldPortSecurityEnabled)
+	}
+
+	if err := port.handleAllowedAddressPairs(rp, vmi, fm); err != nil {
+		return err
+	}
+
+	if err := port.checkFixedIPs(ctx, rp, vmi, true); err != nil {
+		return err
+	}
+
+	//TODO id perms update (???)
+
+	return nil
+}
+
+func (port *Port) handleUpdateOfReferences(
+	ctx context.Context,
+	rp RequestParameters,
+	vmi *models.VirtualMachineInterface,
+	vn *models.VirtualNetwork,
+	fm *types.FieldMask,
+) error {
+	if err := port.handleDeviceUpdate(ctx, rp, vmi, fm); err != nil {
+		return err
+	}
+
+	if err := port.handleSecurityGroupUpdate(ctx, rp, vmi, vn, fm); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (port *Port) handleAllowedAddressPairs(
@@ -346,6 +377,25 @@ func (port *Port) getNetworkID(ctx context.Context, rp RequestParameters) (strin
 		netID = net.GetUUID()
 	}
 	return netID, nil
+}
+
+func (port *Port) handleSecurityGroupUpdate(
+	ctx context.Context,
+	rp RequestParameters,
+	vmi *models.VirtualMachineInterface,
+	vn *models.VirtualNetwork,
+	fm *types.FieldMask,
+) error {
+	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldSecurityGroups)) {
+		return nil
+	}
+
+	if err := port.setPortSecurity(ctx, rp, vmi, vn); err != nil {
+		return err
+	}
+	basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldSecurityGroupRefs)
+
+	return nil
 }
 
 func (port *Port) handleDeviceUpdate(
@@ -635,6 +685,34 @@ func (port *Port) setVMInstance(ctx context.Context, rp RequestParameters,
 	return nil
 }
 
+func (port *Port) listSecurityGroups(
+	ctx context.Context, rp RequestParameters, uuids []string, fields []string,
+) ([]*models.SecurityGroup, error) {
+
+	if len(uuids) == 0 {
+		return nil, nil
+	}
+
+	res, err := rp.ReadService.ListSecurityGroup(ctx, &services.ListSecurityGroupRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: uuids,
+			Fields:      fields,
+		},
+	})
+	if errutil.IsNotFound(err) {
+		// TODO add information which group is missing
+		return nil, newNeutronError(securityGroupNotFound, errorFields{
+			"msg": err.Error(),
+		})
+	} else if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "port",
+			"msg":      err.Error(),
+		})
+	}
+	return res.GetSecurityGroups(), nil
+}
+
 func (port *Port) setPortSecurity(
 	ctx context.Context, rp RequestParameters, vmi *models.VirtualMachineInterface, vn *models.VirtualNetwork,
 ) error {
@@ -643,26 +721,12 @@ func (port *Port) setPortSecurity(
 		vmi.PortSecurityEnabled = vn.PortSecurityEnabled
 	}
 
-	res, err := rp.ReadService.ListSecurityGroup(ctx, &services.ListSecurityGroupRequest{
-		Spec: &baseservices.ListSpec{
-			ObjectUUIDs: port.SecurityGroups,
-			Fields:      []string{"uuid", "fqname"},
-		},
-	})
-
-	if errutil.IsNotFound(err) {
-		// TODO add information which group is missing
-		return newNeutronError(securityGroupNotFound, errorFields{
-			"device_owner": "network:router_interface",
-		})
-	} else if err != nil {
-		return newNeutronError(badRequest, errorFields{
-			"resource": "port",
-			"msg":      err.Error(),
-		})
+	securityGroups, err := port.listSecurityGroups(ctx, rp, port.SecurityGroups, []string{"uuid", "fqname"})
+	if err != nil {
+		return err
 	}
 
-	securityGroups := res.GetSecurityGroups()
+	vmi.SecurityGroupRefs = nil
 	for _, sc := range securityGroups {
 		vmi.AddSecurityGroupRef(&models.VirtualMachineInterfaceSecurityGroupRef{
 			UUID: sc.GetUUID(),
@@ -670,6 +734,7 @@ func (port *Port) setPortSecurity(
 	}
 
 	if len(vmi.SecurityGroupRefs) == 0 && vmi.PortSecurityEnabled {
+		// When there is no security group for a port, the internal no_rule group should be used
 		vmi.AddSecurityGroupRef(&models.VirtualMachineInterfaceSecurityGroupRef{
 			To: sgNoRuleFQName,
 		})
