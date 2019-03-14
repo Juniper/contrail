@@ -1,0 +1,15 @@
+[
+    {
+        "router_id": null,
+        "status": "DOWN",
+        "description": "",
+        "tenant_id": "8a5e9e6109384238a4a5fd5f23bebea4",
+        "created_at": "2019-02-28T16:32:43.098011",
+        "updated_at": "2019-02-28T16:32:43.098011",
+        "floating_network_id": "0a673570-47eb-4b88-b648-5de06c65a37e",
+        "fixed_ip_address": null,
+        "floating_ip_address": "207.93.253.4",
+        "port_id": null,
+        "id": "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+    }
+]

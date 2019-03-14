@@ -21,6 +21,7 @@ const (
 	testDataDirectory = "test_data/floatingip/"
 	createDirectory   = testDataDirectory + "create/"
 	readDirectory     = testDataDirectory + "read/"
+	readallDirectory  = testDataDirectory + "readall/"
 	updateDirectory   = testDataDirectory + "update/"
 )
 
@@ -90,6 +91,14 @@ func TestFloatingip_Create(t *testing.T) {
 				).Return(loadFQNameToIDResponse(t, readDirectory+"network_fqname-to-id_response.json"), nil)
 			},
 			expected: loadFloatingipResponse(t, readDirectory+"read_fip_response.json"),
+		},
+		{
+			name:    "readall",
+			request: loadNeutronRequest(t, readallDirectory+"readall_fip_request.json"),
+			expectedCalls: func() {
+				read.EXPECT().ListFloatingIP(gomock.Any(), gomock.Any()).Return(loadListFloatingIPResponse(t, readallDirectory+"list_floating-ip_response.json"), nil)
+			},
+			expected: loadListFloatingipResponse(t, readallDirectory+"readall_fip_response.json"),
 		},
 		{
 			name: "update",
@@ -206,7 +215,17 @@ func loadFloatingipResponse(t *testing.T, path string) (r *FloatingipResponse) {
 	return r
 }
 
+func loadListFloatingipResponse(t *testing.T, path string) (r []*FloatingipResponse) {
+	require.NoError(t, fileutil.LoadFile(path, &r))
+	return r
+}
+
 func loadListFloatingIPPoolResponse(t *testing.T, path string) (r *services.ListFloatingIPPoolResponse) {
+	require.NoError(t, fileutil.LoadFile(path, &r))
+	return r
+}
+
+func loadListFloatingIPResponse(t *testing.T, path string) (r *services.ListFloatingIPResponse) {
 	require.NoError(t, fileutil.LoadFile(path, &r))
 	return r
 }

@@ -1,0 +1,67 @@
+{
+   "floating_ip_count": 1,
+   "floating_ips" : [
+      {
+         "perms2" : {
+            "global_access" : 0,
+            "share" : [],
+            "owner_access" : 7,
+            "owner" : "8a5e9e61-0938-4238-a4a5-fd5f23bebea4"
+         },
+         "project_refs" : [
+            {
+               "attr" : null,
+               "uuid" : "8a5e9e61-0938-4238-a4a5-fd5f23bebea4",
+               "to" : [
+                  "default-domain",
+                  "ctest-FloatingipBasicTestSanity-99684235"
+               ]
+            }
+         ],
+         "floating_ip_fixed_ip_address" : "46.149.151.3",
+         "virtual_machine_interface_refs" : [
+            {
+               "attr" : null,
+               "to" : [
+                  "default-domain",
+                  "ctest-FloatingipBasicTestSanity-99684235",
+                  "5c5829af-8331-4e19-b3c3-d307ec619e95"
+               ],
+               "uuid" : "5c5829af-8331-4e19-b3c3-d307ec619e95"
+            }
+         ],
+         "parent_type" : "floating-ip-pool",
+         "parent_uuid" : "c894d6c0-d8d2-403f-97a0-7d3e8fea207b",
+         "floating_ip_address" : "207.93.253.4",
+         "uuid" : "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+         "id_perms" : {
+            "uuid" : {
+               "uuid_lslong" : 10052986869457104453,
+               "uuid_mslong" : 17642353848589109933
+            },
+            "created" : "2019-02-28T16:32:43.098011",
+            "user_visible" : true,
+            "creator" : null,
+            "description" : "",
+            "permissions" : {
+               "group" : "admin",
+               "owner" : "ctest-FloatingipBasicTestSanity-99684235",
+               "owner_access" : 7,
+               "other_access" : 7,
+               "group_access" : 7
+            },
+            "enable" : true,
+            "last_modified" : "2019-02-28T16:32:43.676592"
+         },
+         "display_name" : "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+         "name" : "f4d63b5a-22e6-4aad-8b83-624b75a82e45",
+         "fq_name" : [
+            "default-domain",
+            "ctest-FloatingipBasicTestSanity-99684235",
+            "ctest-fvn-50778358",
+            "ctest-some-pool-21034020",
+            "f4d63b5a-22e6-4aad-8b83-624b75a82e45"
+         ]
+      }
+   ]
+}

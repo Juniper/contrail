@@ -31,8 +31,9 @@ message ListSpec {
     string parent_type = 9  [(gogoproto.customname) = "ParentType"]; // Filter by parent type
     repeated string parent_uuids = 10 [(gogoproto.customname) = "ParentUUIDs"]; // Filter by parent UUIDs
     repeated string backref_uuids = 11 [(gogoproto.customname) = "BackRefUUIDs"]; // Filter by backref UUIDss
-    repeated string object_uuids = 12 [(gogoproto.customname) = "ObjectUUIDs"]; // Filter by UUIDs
-    repeated string fields = 13 [(gogoproto.customname) = "Fields"]; // limit displayed fields
+    repeated string ref_uuids = 12 [(gogoproto.customname) = "RefUUIDs"]; // Filter by ref UUIDss
+    repeated string object_uuids = 13 [(gogoproto.customname) = "ObjectUUIDs"]; // Filter by UUIDs
+    repeated string fields = 14 [(gogoproto.customname) = "Fields"]; // limit displayed fields
 }
 
 message Filter {

@@ -1,0 +1,25 @@
+{
+   "data" : {
+      "fields" : [],
+      "filters" : {
+         "fixed_ip_address" : [
+            "46.149.151.3"
+         ],
+         "port_id" : [
+            "5c5829af-8331-4e19-b3c3-d307ec619e95"
+         ]
+      }
+   },
+   "context" : {
+      "operation" : "READALL",
+      "type" : "floatingip",
+      "tenant" : "779d028222e8435baa440490fead9402",
+      "user_id" : "20984009640c4a1e81345be9dec78a9c",
+      "roles" : [
+         "admin"
+      ],
+      "request_id" : "req-e0364a73-4e79-4004-be2c-e9a11afad68c",
+      "is_admin" : true,
+      "tenant_id" : "779d028222e8435baa440490fead9402"
+   }
+}
