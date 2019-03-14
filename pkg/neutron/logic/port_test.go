@@ -205,9 +205,9 @@ func TestPortUpdate(t *testing.T) {
 					FieldMask: types.FieldMask{
 						Paths: []string{
 							models.VirtualMachineInterfaceFieldDisplayName,
+							models.VirtualMachineInterfaceFieldVirtualMachineInterfaceBindings,
 							models.VirtualMachineInterfaceFieldVirtualMachineRefs,
 							models.VirtualMachineInterfaceFieldVirtualMachineInterfaceDeviceOwner,
-							models.VirtualMachineInterfaceFieldVirtualMachineInterfaceBindings,
 						},
 					},
 				},
