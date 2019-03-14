@@ -91,6 +91,10 @@ func (pr *PortResponse) setBindings(vmi *models.VirtualMachineInterface) {
 	if pr.BindingVnicType == "" {
 		pr.BindingVnicType = "normal"
 	}
+
+	if pr.BindingHostID == "" {
+		pr.BindingVifType = "unbound"
+	}
 }
 
 func (pr *PortResponse) setTimeStamps(idPerms *models.IdPermsType) {

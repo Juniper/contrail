@@ -188,7 +188,7 @@ workflow:
       port_filter: true
     description: ''
     binding:vnic_type: normal
-    binding:vif_type: vrouter
+    binding:vif_type: unbound
     device_owner: ''
     fq_name:
     - default
@@ -281,7 +281,7 @@ workflow:
       port_filter: true
     description: ''
     binding:vnic_type: normal
-    binding:vif_type: vrouter
+    binding:vif_type: unbound
     device_owner: ''
     fq_name:
     - default
