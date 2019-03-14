@@ -15,13 +15,35 @@ import (
 )
 
 func TestGetProject(t *testing.T) {
-	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
+	defer runAPIServer(t).CloseT(t)
+	keystone, token := keystoneClientAndToken(t)
+
+	p, err := keystone.GetProject(context.Background(), token, integration.AdminProjectID)
+	assert.NoError(t, err)
+	assert.Equal(t, integration.AdminProjectID, p.ID)
+	assert.Equal(t, integration.AdminProjectName, p.Name)
+}
+
+func TestGetProjects(t *testing.T) {
+	defer runAPIServer(t).CloseT(t)
+	keystone, token := keystoneClientAndToken(t)
+
+	projects, err := keystone.GetProjects(context.Background(), token)
+	assert.NoError(t, err)
+	assert.Len(t, projects, 1)
+	assert.Equal(t, integration.AdminProjectID, projects[0].ID)
+	assert.Equal(t, integration.AdminProjectName, projects[0].Name)
+}
+
+func runAPIServer(t *testing.T) *integration.APIServer {
+	return integration.NewRunningAPIServer(t, &integration.APIServerConfig{
 		DBDriver:           basedb.DriverPostgreSQL,
 		RepoRootPath:       "../../..",
 		EnableEtcdNotifier: false,
 	})
-	defer s.CloseT(t)
+}
 
+func keystoneClientAndToken(t *testing.T) (*client.Keystone, string) {
 	k := &client.Keystone{
 		URL: viper.GetString("keystone.authurl"),
 		HTTPClient: &http.Client{
@@ -36,8 +58,5 @@ func TestGetProject(t *testing.T) {
 	token := resp.Header.Get("X-Subject-Token")
 	assert.NotEmpty(t, token)
 
-	p, err := k.GetProject(context.Background(), token, integration.AdminProjectID)
-	assert.NoError(t, err)
-	assert.Equal(t, integration.AdminProjectID, p.ID)
-	assert.Equal(t, integration.AdminProjectName, p.Name)
+	return k, token
 }

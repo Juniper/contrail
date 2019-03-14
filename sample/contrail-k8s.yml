@@ -47,7 +47,8 @@ server:
   enable_grpc: false
 
   # Enable Neutron Service or not
-  enable_vnc_neutron: true
+  # Neutron must be disabled when deploy with k8s
+  enable_vnc_neutron: false
 
   # Static file config
   # key: URL path

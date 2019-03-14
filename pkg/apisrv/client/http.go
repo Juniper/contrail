@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -88,15 +89,41 @@ func (h *HTTP) Init() {
 		}
 	} else {
 		h.Keystone = &Keystone{
-			URL: h.AuthURL,
+			HTTPClient: &http.Client{},
+			URL:        h.AuthURL,
 		}
 		h.httpClient = &http.Client{}
 	}
 }
 
+// InitTimeout initializes a client with timeout value for HTTP Client
+func (h *HTTP) InitTimeout(http time.Duration) {
+	h.httpClient.Timeout = http
+}
+
 // Login refreshes authentication token.
 func (h *HTTP) Login(ctx context.Context) (*http.Response, error) {
 	resp, err := h.Keystone.ObtainToken(ctx, h.ID, h.Password, h.Scope)
+	if err != nil {
+		return resp, err
+	}
+
+	if resp != nil {
+		h.AuthToken = resp.Header.Get("X-Subject-Token")
+	}
+
+	return resp, nil
+}
+
+// Login refreshes authentication token wit use of UnScoped Auth request.
+func (h *HTTP) LoginUnscoped(ctx context.Context) (*http.Response, error) {
+	if h.Scope == nil {
+		return nil, errors.Errorf("got nil keystone scope when doing LoginUnscoped to %v", h.AuthURL)
+	}
+	if h.Scope.Project == nil {
+		return nil, errors.Errorf("got nil keystone Project in scope when doing LoginUnscoped to %v", h.AuthURL)
+	}
+	resp, err := h.Keystone.ObtainUnScopedToken(ctx, h.ID, h.Password, h.Scope.Project.Domain)
 	if err != nil {
 		return resp, err
 	}
