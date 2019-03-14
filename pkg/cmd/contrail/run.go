@@ -19,6 +19,7 @@ import (
 	"github.com/Juniper/contrail/pkg/db/cassandra"
 	"github.com/Juniper/contrail/pkg/db/etcd"
 	"github.com/Juniper/contrail/pkg/errutil"
+	"github.com/Juniper/contrail/pkg/keystone/watcher"
 	"github.com/Juniper/contrail/pkg/retry"
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
@@ -54,6 +55,7 @@ func StartProcesses(wg *sync.WaitGroup) {
 	MaybeStart("sync", startSync, wg)
 	MaybeStart("compilation", startCompilationService, wg)
 	MaybeStart("collector", startCollectorWatcher, wg)
+	maybeStartKeystoneWatcher(wg)
 }
 
 //MaybeStart runs process if it is enabled.
@@ -207,5 +209,33 @@ func startCollectorWatcher() {
 	}
 	if err = analytics.NewMessageBusProcessor(c); err != nil {
 		logrus.WithError(err).Warn("failed to create collector")
+	}
+}
+
+// maybeStartKeystoneWatcher starts keystone watcher only if it is used by OpenStack
+// keystone fed Openstack provide accurate dynamic list of existing projects
+func maybeStartKeystoneWatcher(wg *sync.WaitGroup) {
+	if !viper.GetBool("server.enable_vnc_neutron") {
+		return
+	}
+	if viper.GetBool("keystone.local") {
+		return
+	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		startKeystoneWatcher()
+	}()
+}
+
+func startKeystoneWatcher() {
+	watcher, err := watcher.NewKeystoneWatcherByConfig()
+	if err != nil {
+		logutil.FatalWithStackTrace(err)
+	}
+	for {
+		if err := watcher.Watch(context.Background()); err != nil {
+			logrus.Warn(err)
+		}
 	}
 }
