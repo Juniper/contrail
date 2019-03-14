@@ -17,6 +17,7 @@ import (
 
 type keystoneClient interface {
 	GetProject(ctx context.Context, token string, id string) (*keystone.Project, error)
+	GetProjects(ctx context.Context, token string) ([]*keystone.Project, error)
 }
 
 // Service handles neutron specific logic
