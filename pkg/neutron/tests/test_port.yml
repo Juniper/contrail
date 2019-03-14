@@ -1,9 +1,14 @@
 name: Test Neutron Port
 cleanup:
-- path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e
-- path: /virtual-machine/d51739cf-5176-481b-91d9-ad313a5096d2
-- path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
-- path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
+- path: /virtual-machine/0b06b2f2-90c6-497d-b35d-015b19dcbcca # VM for ports red and green
+- path: /virtual-machine/d51739cf-5176-481b-91d9-ad313a5096d2 # VM attached to port blue
+- path: /virtual-machine/c603fa24-81fa-4710-a288-78be45b2c93e # second VM attached to port blue
+- path: /virtual-machine-interface/f648d18e-b205-418a-bbed-6095ffd722a3 # dummy VMI with port red id
+- path: /virtual-machine-interface/5af01dd4-be3f-49e1-9e2a-5681a98251c0 # dummy VMI with port red id
+- path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c # dummy VMI with port blue id
+- path: /virtual-network/fbc87c8f-8106-4670-bdce-b2a7cbb380dc # VN red
+- path: /virtual-network/4ab3fd51-35fe-45cb-a055-db4ab3ed61f8 # VN green
+- path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d # VN blue
 - path: /security-group/79ce33bf-1bac-48d5-8bbb-5782e26b3db8
 - path: /network-ipam/1bafd896-f5f9-4150-821a-9e100c2e0ce2
 - path: /project/b9ce3ccf-26a1-4403-b309-ab28891b89e9
@@ -27,16 +32,31 @@ test_data:
 
   network_ipam_blue: &network_ipam_blue
     uuid: 1bafd896-f5f9-4150-821a-9e100c2e0ce2
-    display_name: test_ipam_blue
     parent_type: project
     parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
     fq_name: ["domain","neutron_port_admin_project","test_ipam_blue"]
+
+  vn_red: &vn_red
+    fq_name: ["default", "neutron_port_admin_project", "vn_red"]
+    uuid: fbc87c8f-8106-4670-bdce-b2a7cbb380dc
+    address_allocation_mode: user-defined-subnet-only
+    parent_type: project
+    port_security_enabled: true
+    parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
+    # TODO: verify if IPAM is needed for IP allocation :(
+
+  vn_green: &vn_green
+    fq_name: ["default", "neutron_port_admin_project", "vn_green"]
+    uuid: 4ab3fd51-35fe-45cb-a055-db4ab3ed61f8
+    address_allocation_mode: user-defined-subnet-only
+    parent_type: project
+    port_security_enabled: true
+    parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
 
   vn_blue: &vn_blue
     fq_name: ["default", "neutron_port_admin_project", "vn_blue"]
     uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
     address_allocation_mode: user-defined-subnet-only
-    display_name: blue
     parent_type: project
     port_security_enabled: true
     parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
@@ -44,7 +64,7 @@ test_data:
       - to: ["domain","neutron_port_admin_project","test_ipam_blue"]
         attr:
           ipam_subnets:
-            - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
+            - subnet_uuid: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
               subnet:
                 ip_prefix: "10.0.0.0"
                 ip_prefix_len: 24
@@ -69,16 +89,35 @@ test_data:
           - end_port: 65535
             start_port: 0
 
-  dummy_vmi: &dummy_vmi
+  dummy_vmi_red: &dummy_vmi_red
+    parent_type: project
+    parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
+    uuid: f648d18e-b205-418a-bbed-6095ffd722a3
+    virtual_network_refs:
+      - to: [default, neutron_port_admin_project, vn_red]
+        uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    security_group_refs:
+      - to: [default, neutron_port_admin_project, security_group]
+    vrf_assign_table: {}
+
+  dummy_vmi_green: &dummy_vmi_green
+    parent_type: project
+    parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
+    uuid: 5af01dd4-be3f-49e1-9e2a-5681a98251c0
+    virtual_network_refs:
+      - to: [default, neutron_port_admin_project, vn_green]
+    security_group_refs:
+      - to: [default, neutron_port_admin_project, security_group]
+    vrf_assign_table: {}
+
+  dummy_vmi_blue: &dummy_vmi_blue
     parent_type: project
     parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
     uuid: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     virtual_network_refs:
        - to: [default, neutron_port_admin_project, vn_blue]
-         uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
     security_group_refs:
        - to: [default, neutron_port_admin_project, security_group]
-         uuid: 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     vrf_assign_table: {}
 
   base_port_context: &base_port_context
@@ -127,6 +166,28 @@ workflow:
   expect:
     security-group: *sg
 
+- name: create virtual network red
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+      - 200
+    data:
+      virtual-network: *vn_red
+  expect:
+    virtual-network: *vn_red
+
+- name: create virtual network green
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+      - 200
+    data:
+      virtual-network: *vn_green
+  expect:
+    virtual-network: *vn_green
+
 - name: create virtual network blue
   request:
     path: /virtual-networks
@@ -138,15 +199,43 @@ workflow:
   expect:
     virtual-network: *vn_blue
 
-- name: create VMI - dummy action to catch resource in scenario cleanup
+- name: create VMI red - dummy action to catch resource in scenario cleanup
   request:
     path: /virtual-machine-interfaces
     method: POST
     expected: [ 200 ]
     data:
-      virtual-machine-interface: *dummy_vmi
+      virtual-machine-interface: *dummy_vmi_red
 
-- name: delete dummy VMI
+- name: delete dummy VMI red
+  request:
+    path: /virtual-machine-interface/f648d18e-b205-418a-bbed-6095ffd722a3
+    method: DELETE
+    expected: [ 200 ]
+
+- name: create VMI green - dummy action to catch resource in scenario cleanup
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [ 200 ]
+    data:
+      virtual-machine-interface: *dummy_vmi_green
+
+- name: delete dummy VMI green
+  request:
+    path: /virtual-machine-interface/5af01dd4-be3f-49e1-9e2a-5681a98251c0
+    method: DELETE
+    expected: [ 200 ]
+
+- name: create VMI blue - dummy action to catch resource in scenario cleanup
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected: [ 200 ]
+    data:
+      virtual-machine-interface: *dummy_vmi_blue
+
+- name: delete dummy VMI blue
   request:
     path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     method: DELETE
@@ -154,7 +243,113 @@ workflow:
 
 # Port create
 
-- name: port create
+- name: create port red with device
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: null
+        resource:
+          id: f648d18e-b205-418a-bbed-6095ffd722a3
+          admin_state_up: true
+          network_id: fbc87c8f-8106-4670-bdce-b2a7cbb380dc
+          tenant_id: b9ce3ccf26a14403b309ab28891b89e9
+          extra_dhcp_opts: null
+          name: red
+          device_owner: compute:nova
+          binding:host_id: test-host.novalocal
+          binding:vnic_type: normal
+          project_id: b9ce3ccf26a14403b309ab28891b89e9
+          security_groups:
+            - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+          device_id: 0b06b2f2-90c6-497d-b35d-015b19dcbcca
+        filters: null
+      context:
+        <<: *base_port_context
+        request_id: req-54c3fc32-74d7-425b-af27-367616639686
+        operation: CREATE
+  expect:
+    status: ACTIVE
+    port_security_enabled: true
+    binding:host_id: test-host.novalocal
+    name: red
+    # admin_state_up: true TODO: implement
+    network_id: fbc87c8f-8106-4670-bdce-b2a7cbb380dc
+    tenant_id: b9ce3ccf26a14403b309ab28891b89e9
+    binding:vif_details:
+      port_filter: true
+    binding:vnic_type: normal
+    binding:vif_type: vrouter
+    device_owner: compute:nova
+    mac_address: $mac_address
+    fq_name:
+      - default
+      - neutron_port_admin_project
+      - red
+    fixed_ips:
+      - subnet_id: '' # no IPAM subnets within VN red
+        ip_address: $ip_address
+    id: f648d18e-b205-418a-bbed-6095ffd722a3
+    security_groups:
+      - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+    device_id: 0b06b2f2-90c6-497d-b35d-015b19dcbcca
+
+- name: create port green with device
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: null
+        resource:
+          id: 5af01dd4-be3f-49e1-9e2a-5681a98251c0
+          # admin_state_up: true TODO: implement
+          network_id: 4ab3fd51-35fe-45cb-a055-db4ab3ed61f8
+          tenant_id: b9ce3ccf26a14403b309ab28891b89e9
+          extra_dhcp_opts: null
+          name: green
+          device_owner: compute:nova
+          binding:vnic_type: normal
+          project_id: b9ce3ccf26a14403b309ab28891b89e9
+          security_groups:
+            - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+          device_id: 0b06b2f2-90c6-497d-b35d-015b19dcbcca
+        filters: null
+      context:
+        <<: *base_port_context
+        request_id: req-2637fe53-b6b3-49de-b542-39e63c2aaa12
+        operation: CREATE
+  expect:
+    status: ACTIVE
+    port_security_enabled: true
+    binding:host_id: test-host.novalocal
+    name: green
+    admin_state_up: true
+    network_id: 4ab3fd51-35fe-45cb-a055-db4ab3ed61f8
+    tenant_id: b9ce3ccf26a14403b309ab28891b89e9
+    binding:vif_details:
+      port_filter: true
+    description: ''
+    binding:vnic_type: normal
+    binding:vif_type: vrouter
+    device_owner: compute:nova
+    mac_address: $mac_address
+    fq_name:
+      - default
+      - neutron_port_admin_project
+      - green
+    fixed_ips:
+      - subnet_id: '' # no IPAM subnets within VN green
+        ip_address: $ip_address
+    id: 5af01dd4-be3f-49e1-9e2a-5681a98251c0
+    security_groups:
+      - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+    device_id: 0b06b2f2-90c6-497d-b35d-015b19dcbcca
+
+- name: create port blue without device
   request:
     path: /neutron/port
     method: POST
@@ -168,12 +363,12 @@ workflow:
           network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
           tenant_id: b9ce3ccf26a14403b309ab28891b89e9
           extra_dhcp_opts:
-          name: ''
+          name: blue
           device_owner: ''
           binding:vnic_type: normal
           project_id: b9ce3ccf26a14403b309ab28891b89e9
           security_groups:
-          - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+            - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
           device_id: ''
         filters:
       context:
@@ -184,7 +379,7 @@ workflow:
     status: DOWN
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     mac_address: $mac_address
-    name: $uuid
+    name: blue
     network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
     tenant_id: b9ce3ccf26a14403b309ab28891b89e9
     port_security_enabled: true
@@ -195,14 +390,14 @@ workflow:
     binding:vif_type: vrouter
     device_owner: ''
     fq_name:
-    - default
-    - neutron_port_admin_project
-    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      - default
+      - neutron_port_admin_project
+      - blue
     fixed_ips:
-    - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
-      ip_address: $ip_address
+      - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+        ip_address: $ip_address
     security_groups:
-    - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+      - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: ''
 
 - name: check if virtual machine interface has been created
@@ -214,16 +409,16 @@ workflow:
   expect:
     virtual-machine-interface:
       annotations: {}
-      display_name: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      display_name: blue
       ecmp_hashing_include_fields: {}
       fq_name:
       - default
       - neutron_port_admin_project
-      - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      - blue
       id_perms:
         enable: true
         permissions: {}
-      name: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      name: blue
       parent_type: project
       parent_uuid: b9ce3ccf-26a1-4403-b309-ab28891b89e9
       perms2:
@@ -273,7 +468,7 @@ workflow:
     status: DOWN
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     mac_address: $mac_address
-    name: $uuid
+    name: blue
     network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
     tenant_id: b9ce3ccf26a14403b309ab28891b89e9
     port_security_enabled: true
@@ -286,7 +481,7 @@ workflow:
     fq_name:
     - default
     - neutron_port_admin_project
-    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    - blue
     fixed_ips:
     - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
       ip_address: $ip_address
@@ -294,7 +489,7 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: ''
 
-- name: Neutron port read all
+- name: Neutron port read all with tenant_id filter should return no ports
   request:
     path: /neutron/port
     method: POST
@@ -333,7 +528,7 @@ workflow:
     status: ACTIVE
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     mac_address: $mac_address
-    name: $uuid
+    name: blue
     network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
     tenant_id: b9ce3ccf26a14403b309ab28891b89e9
     port_security_enabled: true
@@ -347,7 +542,7 @@ workflow:
     fq_name:
     - default
     - neutron_port_admin_project
-    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    - blue
     fixed_ips:
     - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
       ip_address: $ip_address
@@ -379,7 +574,7 @@ workflow:
     status: ACTIVE
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     mac_address: $mac_address
-    name: $uuid
+    name: blue
     network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
     tenant_id: b9ce3ccf26a14403b309ab28891b89e9
     port_security_enabled: true
@@ -393,7 +588,7 @@ workflow:
     fq_name:
     - default
     - neutron_port_admin_project
-    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    - blue
     fixed_ips:
     - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
       ip_address: $ip_address
@@ -401,6 +596,7 @@ workflow:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
+# TODO: Three ports should be returned here
 - name: Neutron port read all with device_id filter
   request:
     path: /neutron/port
@@ -420,7 +616,7 @@ workflow:
     - status: ACTIVE
       id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
       mac_address: $mac_address
-      name: $uuid
+      name: blue
       network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
       tenant_id: b9ce3ccf26a14403b309ab28891b89e9
       port_security_enabled: true
@@ -434,7 +630,7 @@ workflow:
       fq_name:
       - default
       - neutron_port_admin_project
-      - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      - blue
       fixed_ips:
       - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
         ip_address: $ip_address
@@ -442,7 +638,7 @@ workflow:
       - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
       device_id: c603fa24-81fa-4710-a288-78be45b2c93e
 
-- name: Neutron port read all with non-existent device_id
+- name: Neutron port read all with non-existent device_id filter
   request:
     path: /neutron/port
     method: POST
@@ -452,7 +648,7 @@ workflow:
         fields: []
         filters:
           device_id:
-          - a2db4822-3f74-11e9-aa46-472b888c0dd9
+          - a2db4822-3f74-11e9-aa46-472b888c0dd9 # non-existent
       context:
         <<: *base_port_context
         request_id: req-7ef05a71-0a78-4616-8741-64380919f5df
@@ -480,7 +676,7 @@ workflow:
     status: ACTIVE
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     mac_address: 11:22:33:44:55:ff
-    name: $uuid
+    name: blue
     network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
     tenant_id: b9ce3ccf26a14403b309ab28891b89e9
     port_security_enabled: false
@@ -494,7 +690,7 @@ workflow:
     fq_name:
     - default
     - neutron_port_admin_project
-    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    - blue
     fixed_ips:
     - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
       ip_address: $ip_address
@@ -525,7 +721,7 @@ workflow:
     status: DOWN
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     mac_address: 11:22:33:44:55:ff
-    name: $uuid
+    name: blue
     network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
     tenant_id: b9ce3ccf26a14403b309ab28891b89e9
     port_security_enabled: false
@@ -539,7 +735,7 @@ workflow:
     fq_name:
     - default
     - neutron_port_admin_project
-    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    - blue
     fixed_ips:
     - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
       ip_address: $ip_address
@@ -589,7 +785,7 @@ workflow:
     status: ACTIVE
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     mac_address: 11:22:33:44:55:ff
-    name: $uuid
+    name: blue
     network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
     tenant_id: b9ce3ccf26a14403b309ab28891b89e9
     port_security_enabled: false
@@ -603,7 +799,7 @@ workflow:
     fq_name:
       - default
       - neutron_port_admin_project
-      - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      - blue
     fixed_ips:
       - subnet_id: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
         ip_address: $ip_address
@@ -613,7 +809,7 @@ workflow:
 
 # Port delete
 
-- name: Neutron port delete
+- name: Delete Neutron port blue
   request:
     path: /neutron/port
     method: POST
@@ -629,32 +825,78 @@ workflow:
         operation: DELETE
   expect: null
 
+- name: Delete Neutron port red
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: f648d18e-b205-418a-bbed-6095ffd722a3
+        filters:
+      context:
+        <<: *base_port_context
+        request_id: req-02afdde2-4675-11e9-ac8f-ab1f3d305cd9
+        operation: DELETE
+  expect: null
+
+- name: Delete Neutron port green
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: 5af01dd4-be3f-49e1-9e2a-5681a98251c0
+        filters:
+      context:
+        <<: *base_port_context
+        request_id: req-fef04868-4674-11e9-ba0c-13c06be53fa6
+        operation: DELETE
+  expect: null
+
 # Tear down
 
-- name: delete virtual network
+- name: delete virtual network red
+  request:
+    path: /virtual-network/fbc87c8f-8106-4670-bdce-b2a7cbb380dc
+    method: DELETE
+    expected:
+      - 200
+
+- name: delete virtual network green
+  request:
+    path: /virtual-network/4ab3fd51-35fe-45cb-a055-db4ab3ed61f8
+    method: DELETE
+    expected:
+      - 200
+
+- name: delete virtual network blue
   request:
     path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
     method: DELETE
     expected:
-    - 200
+      - 200
 
 - name: delete security group
   request:
     path: /security-group/79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     method: DELETE
     expected:
-    - 200
+      - 200
 
 - name: delete network ipam
   request:
     path: /network-ipam/1bafd896-f5f9-4150-821a-9e100c2e0ce2
     method: DELETE
     expected:
-    - 200
+      - 200
 
 - name: Delete project
   request:
     path: /project/b9ce3ccf-26a1-4403-b309-ab28891b89e9
     method: DELETE
     expected:
-    - 200
+      - 200
