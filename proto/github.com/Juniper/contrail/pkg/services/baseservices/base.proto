@@ -18,6 +18,9 @@ option (gogoproto.protosizer_all) = false;
 
 option go_package = "baseservices";
 
+message UUIDs {
+    repeated string uuids = 1 [(gogoproto.customname) = "UUIDs"]; // UUIDs for refs and backrefs
+}
 
 message ListSpec {
     repeated Filter filters = 1 [(gogoproto.customname) = "Filters"]; // QueryFilter
@@ -31,8 +34,9 @@ message ListSpec {
     string parent_type = 9  [(gogoproto.customname) = "ParentType"]; // Filter by parent type
     repeated string parent_uuids = 10 [(gogoproto.customname) = "ParentUUIDs"]; // Filter by parent UUIDs
     repeated string backref_uuids = 11 [(gogoproto.customname) = "BackRefUUIDs"]; // Filter by backref UUIDss
-    repeated string object_uuids = 12 [(gogoproto.customname) = "ObjectUUIDs"]; // Filter by UUIDs
-    repeated string fields = 13 [(gogoproto.customname) = "Fields"]; // limit displayed fields
+    map<string, UUIDs> ref_uuids = 12 [(gogoproto.customname) = "RefUUIDs"]; // Filter by ref UUIDss
+    repeated string object_uuids = 13 [(gogoproto.customname) = "ObjectUUIDs"]; // Filter by UUIDs
+    repeated string fields = 14 [(gogoproto.customname) = "Fields"]; // limit displayed fields
 }
 
 message Filter {
