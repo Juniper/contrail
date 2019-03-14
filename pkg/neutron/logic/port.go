@@ -70,6 +70,10 @@ func (port *Port) Update(ctx context.Context, rp RequestParameters, id string) (
 		return nil, err
 	}
 
+	if err = port.handleSecurityGroupUpdate(ctx, rp, vmi, vn, &fm); err != nil {
+		return nil, err
+	}
+
 	if port.setBindings(vmi) {
 		basemodels.FieldMaskAppend(&fm, models.VirtualMachineInterfaceFieldVirtualMachineInterfaceBindings)
 	}
@@ -346,6 +350,25 @@ func (port *Port) getNetworkID(ctx context.Context, rp RequestParameters) (strin
 		netID = net.GetUUID()
 	}
 	return netID, nil
+}
+
+func (port *Port) handleSecurityGroupUpdate(
+	ctx context.Context,
+	rp RequestParameters,
+	vmi *models.VirtualMachineInterface,
+	vn *models.VirtualNetwork,
+	fm *types.FieldMask,
+) error {
+	if !basemodels.FieldMaskContains(&rp.FieldMask, buildDataResourcePath(PortFieldSecurityGroups)) {
+		return nil
+	}
+
+	if err := port.setPortSecurity(ctx, rp, vmi, vn); err != nil {
+		return err
+	}
+	basemodels.FieldMaskAppend(fm, models.VirtualMachineInterfaceFieldSecurityGroupRefs)
+
+	return nil
 }
 
 func (port *Port) handleDeviceUpdate(
@@ -635,6 +658,34 @@ func (port *Port) setVMInstance(ctx context.Context, rp RequestParameters,
 	return nil
 }
 
+func (port *Port) listSecurityGroups(
+	ctx context.Context, rp RequestParameters, uuids []string, fields []string,
+) ([]*models.SecurityGroup, error) {
+
+	if len(uuids) == 0 {
+		return nil, nil
+	}
+
+	res, err := rp.ReadService.ListSecurityGroup(ctx, &services.ListSecurityGroupRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: uuids,
+			Fields:      fields,
+		},
+	})
+	if errutil.IsNotFound(err) {
+		// TODO add information which group is missing
+		return nil, newNeutronError(securityGroupNotFound, errorFields{
+			"msg": err.Error(),
+		})
+	} else if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"resource": "port",
+			"msg":      err.Error(),
+		})
+	}
+	return res.GetSecurityGroups(), nil
+}
+
 func (port *Port) setPortSecurity(
 	ctx context.Context, rp RequestParameters, vmi *models.VirtualMachineInterface, vn *models.VirtualNetwork,
 ) error {
@@ -643,26 +694,12 @@ func (port *Port) setPortSecurity(
 		vmi.PortSecurityEnabled = vn.PortSecurityEnabled
 	}
 
-	res, err := rp.ReadService.ListSecurityGroup(ctx, &services.ListSecurityGroupRequest{
-		Spec: &baseservices.ListSpec{
-			ObjectUUIDs: port.SecurityGroups,
-			Fields:      []string{"uuid", "fqname"},
-		},
-	})
-
-	if errutil.IsNotFound(err) {
-		// TODO add information which group is missing
-		return newNeutronError(securityGroupNotFound, errorFields{
-			"device_owner": "network:router_interface",
-		})
-	} else if err != nil {
-		return newNeutronError(badRequest, errorFields{
-			"resource": "port",
-			"msg":      err.Error(),
-		})
+	securityGroups, err := port.listSecurityGroups(ctx, rp, port.SecurityGroups, []string{"uuid", "fqname"})
+	if err != nil {
+		return err
 	}
 
-	securityGroups := res.GetSecurityGroups()
+	vmi.SecurityGroupRefs = nil
 	for _, sc := range securityGroups {
 		vmi.AddSecurityGroupRef(&models.VirtualMachineInterfaceSecurityGroupRef{
 			UUID: sc.GetUUID(),
@@ -670,6 +707,7 @@ func (port *Port) setPortSecurity(
 	}
 
 	if len(vmi.SecurityGroupRefs) == 0 && vmi.PortSecurityEnabled {
+		// When there is no security group for a port, the internal no_rule group should be used
 		vmi.AddSecurityGroupRef(&models.VirtualMachineInterfaceSecurityGroupRef{
 			To: sgNoRuleFQName,
 		})
