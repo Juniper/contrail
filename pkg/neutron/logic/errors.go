@@ -54,6 +54,7 @@ const (
 	l3PortInUse                               errorType = "L3PortInUse"
 	macAddressInUse                           errorType = "MacAddressInUse"
 	ipAddressGenerationFailure                errorType = "IpAddressGenerationFailure"
+	ipAddressInUse                            errorType = "ipAddressInUse"
 	networkNotFound                           errorType = "NetworkNotFound"
 	routerNotFound                            errorType = "RouterNotFound"
 	routerInUse                               errorType = "RouterInUse"
