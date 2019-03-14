@@ -11,6 +11,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/collector"
 	"github.com/Juniper/contrail/pkg/collector/analytics"
@@ -35,31 +37,49 @@ type projectListResponse struct {
 	Projects []*keystone.Project `json:"projects"`
 }
 
-// GetProject gets project.
-func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*keystone.Project, error) {
-	request, err := http.NewRequest(echo.GET, k.getURL("/projects/"+id), nil)
+// GetProjects fetch all projects.
+func (k *Keystone) GetProjects(ctx context.Context, token string) ([]*keystone.Project, error) {
+	var response projectListResponse
+	err := k.makeProjectRequest(ctx, token, "/projects", &response)
 	if err != nil {
-		return nil, errors.Wrap(err, "creating HTTP request failed")
+		return nil, err
+	}
+	return response.Projects, nil
+}
+
+// GetProject fetch single project by ID.
+func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*keystone.Project, error) {
+	var response projectResponse
+	err := k.makeProjectRequest(ctx, token, "/projects/"+id, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response.Project, nil
+}
+
+func (k *Keystone) makeProjectRequest(ctx context.Context, token, url string, out interface{}) error {
+	request, err := http.NewRequest(echo.GET, k.getURL(url), nil)
+	if err != nil {
+		return errors.Wrap(err, "creating HTTP request failed")
 	}
 	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
 	request.Header.Set("X-Auth-Token", token)
-	var output projectResponse
 
 	resp, err := k.HTTPClient.Do(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "issuing HTTP request failed")
+		return errors.Wrap(err, "issuing HTTP request failed")
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
 	if err = checkStatusCode([]int{http.StatusOK}, resp.StatusCode); err != nil {
-		return nil, errorFromResponse(err, resp)
+		return errorFromResponse(err, resp)
 	}
 
-	if err = json.NewDecoder(resp.Body).Decode(&output); err != nil {
-		return nil, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+	if err = json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
 	}
 
-	return &output.Project, nil
+	return nil
 }
 
 // GetProjectIDByName finds project id using project name.
@@ -166,6 +186,7 @@ func (k *Keystone) ObtainUnScopedToken(
 func (k *Keystone) FetchToken(ctx context.Context, dataJSON []byte,
 ) (*http.Response, error) {
 	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewBuffer(dataJSON))
+	log.Warnf("Fetch KEYSTONE TOKEN ------=========>>>>>>> %v", string(dataJSON))
 	if err != nil {
 		return nil, err
 	}

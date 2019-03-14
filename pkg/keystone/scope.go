@@ -25,6 +25,7 @@ func NewScope(domainID, domainName, projectID, projectName string) *Scope {
 	} else if domainName != "" {
 		scope.Project.Domain.Name = domainName
 	}
+	scope.Domain = scope.Project.Domain
 	if projectID != "" {
 		scope.Project.ID = projectID
 	} else if projectName != "" {
