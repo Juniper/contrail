@@ -1,0 +1,270 @@
+name: Test Neutron Network reffered by port
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "neutron_network_reffered_admin_project"]
+    uuid: 316dc378-4649-11e9-b210-d663bd873d93
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+cleanup:
+- kind: virtual-machine-interface
+  fq_name:
+  - default
+  - neutron_port_admin_project
+  - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+
+- kind: virtual-network
+  fq_name:
+  - default
+  - neutron_network_reffered_admin_project
+  - test-vn1
+
+- kind: project
+  fq_name:
+  - default
+  - neutron_network_reffered_admin_project
+
+workflow:
+- name: Create project admin
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+
+- name: Network test-vn1 create
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+          router:external: false
+          name: test-vn1
+          tenant_id: 316dc378464911e9b210d663bd873d93
+          admin_state_up: true
+          policys: ''
+          vpc:route_table: ''
+          shared: false
+          port_security_enabled: true
+          project_id: 316dc378464911e9b210d663bd873d93
+          description: ''
+        filters:
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 316dc378464911e9b210d663bd873d93
+        is_admin: true
+        request_id: req-ac841ef9-2c79-4787-b80c-22a7b3263255
+        operation: CREATE
+        type: network
+        tenant: 316dc378464911e9b210d663bd873d93
+  expect:
+    status: ACTIVE
+    router:external: false
+    subnets: []
+    subnet_ipam: []
+    fq_name:
+    - default
+    - neutron_network_reffered_admin_project
+    - test-vn1
+    name: test-vn1
+    admin_state_up: true
+    tenant_id: 316dc378464911e9b210d663bd873d93
+    port_security_enabled: true
+    shared: false
+    project_id: 316dc378464911e9b210d663bd873d93
+    description: ''
+
+- name: Create subnet
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        resource:
+          name: ''
+          enable_dhcp: true
+          network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+          tenant_id: 316dc378464911e9b210d663bd873d93
+          ipam_fq_name:
+          - default-domain
+          - default-project
+          - default-network-ipam
+          ip_version: 4
+          cidr: "10.0.1.0/24"
+          project_id: 316dc378464911e9b210d663bd873d93
+          description: ''
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 316dc378464911e9b210d663bd873d93
+        is_admin: true
+        request_id: req-2e00f3a3-d9a3-4016-abb3-f74ad1ea9bf0
+        operation: CREATE
+        type: subnet
+        tenant: 316dc378464911e9b210d663bd873d93
+  expect:
+    host_routes: []
+    name: ""
+    enable_dhcp: true
+    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    tenant_id: 316dc378464911e9b210d663bd873d93
+    dns_nameservers: []
+    allocation_pools:
+    - start: 10.0.1.2
+      end: 10.0.1.254
+    gateway_ip: 10.0.1.1
+    shared: false
+    ip_version: 4
+    cidr: "10.0.1.0/24"
+
+- name: Create port
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+          description: ''
+          admin_state_up: true
+          network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+          tenant_id: 316dc378464911e9b210d663bd873d93
+          extra_dhcp_opts:
+          name: ''
+          device_owner: ''
+          binding:vnic_type: normal
+          project_id: 316dc378464911e9b210d663bd873d93
+          device_id: ''
+        filters:
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - heat_stack_owner
+        - admin
+        tenant_id: 316dc378464911e9b210d663bd873d93
+        is_admin: true
+        request_id: req-db7a6a99-6dd0-46ae-9b61-a675e99ab70e
+        operation: CREATE
+        type: port
+        tenant: 316dc378464911e9b210d663bd873d93
+  expect:
+    status: DOWN
+    id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    mac_address: $mac_address
+    name: $uuid
+    network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+    tenant_id: 316dc378464911e9b210d663bd873d93
+    port_security_enabled: true
+    binding:vif_details:
+      port_filter: true
+    description: ''
+    binding:vnic_type: normal
+    binding:vif_type: vrouter
+    device_owner: ''
+    fq_name:
+    - default
+    - neutron_network_reffered_admin_project
+    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    fixed_ips:
+    - subnet_id: $uuid
+      ip_address: $ip_address
+    device_id: ''
+
+- name: Network delete
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [400]
+    data:
+      data:
+        fields:
+        id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+        filters:
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 316dc378464911e9b210d663bd873d93
+        is_admin: true
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        operation: DELETE
+        type: network
+        tenant: 316dc378464911e9b210d663bd873d93
+  expect:
+    exception: NetworkInUse
+    net_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+
+- name: Neutron port delete
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters:
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 316dc378464911e9b210d663bd873d93
+        is_admin: true
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        operation: DELETE
+        type: port
+        tenant: 316dc378464911e9b210d663bd873d93
+  expect: null
+
+- name: Network delete
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
+        filters:
+      context:
+        user_id: 06be3763c8224dd5a343e3d95d87c1d2
+        roles:
+        - admin
+        tenant_id: 316dc378464911e9b210d663bd873d93
+        is_admin: true
+        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        operation: DELETE
+        type: network
+        tenant: 316dc378464911e9b210d663bd873d93
+  expect: null
+
+- name: Delete project
+  request:
+    path: /project/316dc378-4649-11e9-b210-d663bd873d93
+    method: DELETE
+    expected:
+    - 200
