@@ -470,16 +470,24 @@ func runTestScenario(
 		}
 		client, ok := clients[clientID]
 		if !assert.True(t, ok,
-			"Client %q not defined in test scenario %q task %q", clientID, testScenario.Name, task.Name) {
+			"Client %q not defined in task %q of scenario %q", clientID, task.Name, testScenario.Name) {
 			break
 		}
 		response, err := client.DoRequest(ctx, task.Request)
-		assert.NoError(t, err, fmt.Sprintf("In scenario %q task %q failed", testScenario.Name, task.Name))
+		assert.NoError(
+			t,
+			err,
+			fmt.Sprintf("HTTP request failed in task %q of scenario %q", task.Name, testScenario.Name),
+		)
 		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
 
 		task.Expect = fileutil.YAMLtoJSONCompat(task.Expect)
-		ok = testutil.AssertEqual(t, task.Expect, task.Request.Output,
-			fmt.Sprintf("In test scenario %q task %q failed", testScenario.Name, task.Name))
+		ok = testutil.AssertEqual(
+			t,
+			task.Expect,
+			task.Request.Output,
+			fmt.Sprintf("Invalid response body in task %q of scenario %q", task.Name, testScenario.Name),
+		)
 		checkWatchers(t)
 		checkWaiters(t)
 		if !ok {
