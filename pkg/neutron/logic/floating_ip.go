@@ -3,11 +3,11 @@ package logic
 import (
 	"context"
 	"fmt"
-
-	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -106,8 +106,51 @@ func (fip *Floatingip) Read(ctx context.Context, rp RequestParameters, id string
 func (fip *Floatingip) ReadAll(
 	ctx context.Context, rp RequestParameters, filters Filters, fields Fields,
 ) (Response, error) {
-	// TODO implement ReadAll logic
-	return []FloatingipResponse{}, nil
+
+	refs := []string{}
+	if !rp.RequestContext.IsAdmin {
+		refs = append(refs, rp.RequestContext.TenantID)
+	} else if projects, ok := filters["tenant_id"]; ok {
+		for _, p := range projects {
+			uuid, err := neutronIDToVncUUID(p)
+			if err != nil {
+				continue
+			}
+			refs = append(refs, uuid)
+		}
+	}
+
+	if vmis, ok := filters["port_id"]; ok {
+		refs = append(refs, vmis...)
+	}
+
+	vncFilters := createVncFilters(rp.RequestContext, filters)
+
+	listResponse, err := rp.ReadService.ListFloatingIP(ctx, &services.ListFloatingIPRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs:  filters["id"],
+			Filters: vncFilters,
+			RefUUIDs: refs,
+			Detail: true,
+		},
+	})
+	if err != nil {
+		return nil, newNeutronError("FloatingIPListFailed", errorFields{
+			"filters": filters,
+		})
+	}
+
+	response := []*FloatingipResponse{}
+	for _, fip := range listResponse.GetFloatingIPs() {
+		nfip, err := floatingipVncToNeutron(ctx, rp, fip)
+		if err != nil {
+			logrus.Warnf("Failed to convert floating ip (id: %s) from vnc to neutron: %s", fip.GetUUID(), err)
+			continue
+		}
+		response = append(response, nfip)
+
+	}
+	return response, nil
 }
 
 // Update logic.
@@ -159,6 +202,19 @@ func (fip *Floatingip) Delete(ctx context.Context, rp RequestParameters, id stri
 	default:
 		return nil, err
 	}
+}
+
+func createVncFilters(rc RequestContext, f Filters) []*baseservices.Filter {
+	var filters []*baseservices.Filter
+	if ip, ok := f["floating_ip_address"]; ok {
+		filters = append(filters, &baseservices.Filter{
+			Key: models.FloatingIPFieldFloatingIPAddress,
+			Values: ip,
+		})
+	}
+
+
+	return filters
 }
 
 func createFieldMaskForUpdate(rp RequestParameters) types.FieldMask {

@@ -21,6 +21,7 @@ const (
 	testDataDirectory = "test_data/floatingip/"
 	createDirectory   = testDataDirectory + "create/"
 	readDirectory     = testDataDirectory + "read/"
+	readallDirectory  = testDataDirectory + "readall/"
 	updateDirectory   = testDataDirectory + "update/"
 )
 
@@ -206,7 +207,17 @@ func loadFloatingipResponse(t *testing.T, path string) (r *FloatingipResponse) {
 	return r
 }
 
+func loadListFloatingipResponse(t *testing.T, path string) (r []*FloatingipResponse) {
+	require.NoError(t, fileutil.LoadFile(path, &r))
+	return r
+}
+
 func loadListFloatingIPPoolResponse(t *testing.T, path string) (r *services.ListFloatingIPPoolResponse) {
+	require.NoError(t, fileutil.LoadFile(path, &r))
+	return r
+}
+
+func loadListFloatingIPResponse(t *testing.T, path string) (r *services.ListFloatingIPResponse) {
 	require.NoError(t, fileutil.LoadFile(path, &r))
 	return r
 }

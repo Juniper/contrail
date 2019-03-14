@@ -276,6 +276,18 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 		ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
 	}
 
+	// use join if refuuids
+	if len(spec.RefUUIDs) > 0 {
+		where := []string{}
+		for refTable := range qb.RefFields {
+			refTable := schema.ReferenceTableName(schema.RefPrefix, qb.Table, refTable)
+			ctx.joins = append(ctx.joins, qb.join(refTable, "from", qb.TableAlias))
+			wherePart := qb.buildFilterParts(ctx, qb.Quote(refTable, "to"), spec.RefUUIDs)
+			where = append(where, wherePart)
+		}
+		ctx.where = append(ctx.where, "("+strings.Join(where, " and ")+")")
+	}
+
 	// Add condition to start query items from next to markered item's uuid
 	if spec.Marker != "" {
 		ctx.values = append(ctx.values, spec.Marker)
