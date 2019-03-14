@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
@@ -88,10 +89,16 @@ func (h *HTTP) Init() {
 		}
 	} else {
 		h.Keystone = &Keystone{
-			URL: h.AuthURL,
+			HTTPClient: &http.Client{},
+			URL:        h.AuthURL,
 		}
 		h.httpClient = &http.Client{}
 	}
+}
+
+// InitTimeout initializes a client with timeout value for HTTP Client
+func (h *HTTP) InitTimeout(http time.Duration) {
+	h.httpClient.Timeout = http
 }
 
 // Login refreshes authentication token.
