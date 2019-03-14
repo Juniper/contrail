@@ -101,17 +101,9 @@ func (port *Port) Delete(ctx context.Context, rp RequestParameters, id string) (
 		})
 	}
 
-	// release instance IP address
-	for _, iip := range vmi.GetInstanceIPBackRefs() {
-		// TODO handle shared ip case
-		if _, err = rp.WriteService.DeleteInstanceIP(ctx, &services.DeleteInstanceIPRequest{
-			ID: iip.GetUUID(),
-		}); err != nil {
-			// instance ip could be deleted by svc monitor if it is
-			// a shared ip. Ignore this error
-		}
+	if err = releaseIPAddresses(ctx, rp, vmi); err != nil {
+		return nil, err
 	}
-
 	//TODO disassociate any floating IP used by instance
 
 	if _, err = rp.WriteService.DeleteVirtualMachineInterface(ctx, &services.DeleteVirtualMachineInterfaceRequest{
@@ -123,23 +115,76 @@ func (port *Port) Delete(ctx context.Context, rp RequestParameters, id string) (
 		})
 	}
 
-	if vmID := port.getAsssociatedVirtualMachineID(vmi); vmID != "" {
-		_, err = rp.WriteService.DeleteVirtualMachine(ctx, &services.DeleteVirtualMachineRequest{
-			ID: vmID,
-		})
-		// delete instance if this was the last port
-		if err != nil && !errutil.IsNotFound(err) && !errutil.IsConflict(err) {
-			return nil, newNeutronError(badRequest, errorFields{
-				"resource": "port",
-				"msg":      err.Error(),
-			})
-		}
+	vmID := port.getAsssociatedVirtualMachineID(vmi)
+
+	if err = removeVirtualMachineIfNoPortsLeft(ctx, rp, vmID); err != nil {
+		return nil, err
 	}
 
 	//TODO delete any interface route table associated with the port to handle
 	// subnet host route Neutron extension, un-reference others
 
 	return &PortResponse{}, nil
+}
+
+func releaseIPAddresses(ctx context.Context, rp RequestParameters, vmi *models.VirtualMachineInterface) error {
+	for _, iip := range vmi.GetInstanceIPBackRefs() {
+		// TODO handle shared ip case
+
+		response, err := rp.ReadService.ListInstanceIP(ctx, &services.ListInstanceIPRequest{
+			Spec: &baseservices.ListSpec{
+				ObjectUUIDs: []string{iip.GetUUID()},
+			},
+		})
+		if err != nil {
+			return nil
+		}
+
+		if len(response.InstanceIPs) == 0 {
+			// shared ip can be removed by svc monitor so neutron does not need to do that
+			continue
+		}
+
+		_, err = rp.WriteService.DeleteInstanceIP(ctx, &services.DeleteInstanceIPRequest{
+			ID: iip.GetUUID(),
+		})
+		if err != nil {
+			return nil
+		}
+	}
+	return nil
+}
+
+func removeVirtualMachineIfNoPortsLeft(ctx context.Context, rp RequestParameters, id string) error {
+	if id == "" {
+		return nil
+	}
+
+	vmRes, err := rp.ReadService.GetVirtualMachine(ctx, &services.GetVirtualMachineRequest{ID: id})
+	if err != nil {
+		return err
+	}
+
+	vm := vmRes.GetVirtualMachine()
+
+	if len(vm.GetVirtualMachineInterfaceBackRefs()) != 0 {
+		return nil
+	}
+
+	return deleteVM(ctx, rp, id)
+}
+
+func deleteVM(ctx context.Context, rp RequestParameters, id string) error {
+	_, err := rp.WriteService.DeleteVirtualMachine(ctx, &services.DeleteVirtualMachineRequest{
+		ID: id,
+	})
+	if err != nil {
+		return newNeutronError(badRequest, errorFields{
+			"resource": "port",
+			"msg":      err.Error(),
+		})
+	}
+	return nil
 }
 
 // Read handles port read requests.
@@ -458,13 +503,13 @@ func (port *Port) readPortsAssociatedWithVM(
 
 	ps := []*PortResponse{}
 	vmiBackRefs := vmRes.GetVirtualMachine().GetVirtualMachineInterfaceBackRefs()
-	if len(vmiBackRefs) > 0 {
+	for _, vmiRef := range vmiBackRefs {
 		var vmi *models.VirtualMachineInterface
 		var vn *models.VirtualNetwork
-		vmi, vn, err = port.readVNCPort(ctx, rp, vmiBackRefs[0].GetUUID())
+		vmi, vn, err = port.readVNCPort(ctx, rp, vmiRef.GetUUID())
 		if err != nil {
 			return nil, newNeutronError(portNotFound, errorFields{
-				"port_id": vmiBackRefs[0].GetUUID(),
+				"port_id": vmiRef.GetUUID(),
 				"msg":     err.Error(),
 			})
 		}
