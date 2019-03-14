@@ -144,6 +144,12 @@ func (n *Network) Delete(
 	_, err = rp.WriteService.DeleteVirtualNetwork(ctx, &services.DeleteVirtualNetworkRequest{
 		ID: id,
 	})
+	if errutil.IsConflict(err) {
+		return nil, newNeutronError(networkInUse, errorFields{
+			"net_id": id,
+			"msg":    err.Error(),
+		})
+	}
 	if err != nil {
 		return nil, err
 	}
