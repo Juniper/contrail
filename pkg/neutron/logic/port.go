@@ -458,13 +458,13 @@ func (port *Port) readPortsAssociatedWithVM(
 
 	ps := []*PortResponse{}
 	vmiBackRefs := vmRes.GetVirtualMachine().GetVirtualMachineInterfaceBackRefs()
-	if len(vmiBackRefs) > 0 {
+	for _, vmiRef := range vmiBackRefs {
 		var vmi *models.VirtualMachineInterface
 		var vn *models.VirtualNetwork
-		vmi, vn, err = port.readVNCPort(ctx, rp, vmiBackRefs[0].GetUUID())
+		vmi, vn, err = port.readVNCPort(ctx, rp, vmiRef.GetUUID())
 		if err != nil {
 			return nil, newNeutronError(portNotFound, errorFields{
-				"port_id": vmiBackRefs[0].GetUUID(),
+				"port_id": vmiRef.GetUUID(),
 				"msg":     err.Error(),
 			})
 		}
