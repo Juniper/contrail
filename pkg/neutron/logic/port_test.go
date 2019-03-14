@@ -347,8 +347,13 @@ func TestPortUpdate(t *testing.T) {
 
 func TestPortDelete(t *testing.T) {
 	type readData struct {
-		vnReq  *services.GetVirtualNetworkResponse
-		vmiReq *services.GetVirtualMachineInterfaceResponse
+		vnResp  *services.GetVirtualNetworkResponse
+		vmResp  *services.GetVirtualMachineResponse
+		vmiResp *services.GetVirtualMachineInterfaceResponse
+	}
+
+	type listData struct {
+		iipResp *services.ListInstanceIPResponse
 	}
 
 	type deleteData struct {
@@ -365,6 +370,7 @@ func TestPortDelete(t *testing.T) {
 		id         string
 		readData   *readData
 		deleteData *deleteData
+		listData   *listData
 	}{
 		{
 			name:     "Delete port",
@@ -376,14 +382,24 @@ func TestPortDelete(t *testing.T) {
 				iipReq: &services.DeleteInstanceIPRequest{ID: "a21186f0-d871-4ab4-b63c-cd8b27b556f0"},
 				vmReq:  &services.DeleteVirtualMachineRequest{ID: "12321431-3242-1234-bedb-4dd38f63c569"},
 			},
+			listData: &listData{
+				iipResp: &services.ListInstanceIPResponse{
+					InstanceIPs: []*models.InstanceIP{
+						{
+							UUID:              "a21186f0-d871-4ab4-b63c-cd8b27b556f0",
+							InstanceIPAddress: "10.0.1.3",
+						},
+					},
+				},
+			},
 			readData: &readData{
-				vnReq: &services.GetVirtualNetworkResponse{
+				vnResp: &services.GetVirtualNetworkResponse{
 					VirtualNetwork: &models.VirtualNetwork{
 						UUID:                "623666e6-3929-4cb9-bedb-1dd98f63c569",
 						PortSecurityEnabled: true,
 					},
 				},
-				vmiReq: &services.GetVirtualMachineInterfaceResponse{
+				vmiResp: &services.GetVirtualMachineInterfaceResponse{
 					VirtualMachineInterface: &models.VirtualMachineInterface{
 						Name:       "hoge-hoge",
 						UUID:       "b6283c9b-07ec-4061-941e-3f392844059f",
@@ -408,6 +424,11 @@ func TestPortDelete(t *testing.T) {
 						},
 					},
 				},
+				vmResp: &services.GetVirtualMachineResponse{
+					VirtualMachine: &models.VirtualMachine{
+						UUID: "12321431-3242-1234-bedb-4dd38f63c569",
+					},
+				},
 			},
 		},
 	}
@@ -417,14 +438,24 @@ func TestPortDelete(t *testing.T) {
 			defer mockCtrl.Finish()
 			mockServ := servicesmock.NewMockService(mockCtrl)
 
-			if tt.readData.vnReq != nil {
+			if tt.readData.vnResp != nil {
 				mockServ.EXPECT().GetVirtualNetwork(gomock.Any(), gomock.Any()).Return(
-					tt.readData.vnReq, nil,
+					tt.readData.vnResp, nil,
 				)
 			}
-			if tt.readData.vmiReq != nil {
+			if tt.readData.vmiResp != nil {
 				mockServ.EXPECT().GetVirtualMachineInterface(gomock.Any(), gomock.Any()).Return(
-					tt.readData.vmiReq, nil,
+					tt.readData.vmiResp, nil,
+				)
+			}
+			if tt.readData.vmResp != nil {
+				mockServ.EXPECT().GetVirtualMachine(gomock.Any(), gomock.Any()).Return(
+					tt.readData.vmResp, nil,
+				)
+			}
+			if tt.listData.iipResp != nil {
+				mockServ.EXPECT().ListInstanceIP(gomock.Any(), gomock.Any()).Return(
+					tt.listData.iipResp, nil,
 				)
 			}
 			if tt.deleteData.vmiReq != nil {
