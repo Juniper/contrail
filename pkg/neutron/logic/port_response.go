@@ -26,6 +26,7 @@ func makePortResponse(
 	pr.setSecurityGroups(vmi)
 	pr.setDeviceID(vmi)
 	pr.setStatus()
+	pr.AdminStateUp = vmi.GetIDPerms().GetEnable()
 	pr.Description = vmi.GetIDPerms().GetDescription()
 	pr.setTimeStamps(vmi.GetIDPerms())
 	//TODO make contrail extensions customizable

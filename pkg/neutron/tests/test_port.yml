@@ -179,6 +179,7 @@ workflow:
   expect:
     status: DOWN
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    admin_state_up: true
     mac_address: $mac_address
     name: $uuid
     network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
