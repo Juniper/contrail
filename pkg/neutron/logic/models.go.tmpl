@@ -65,7 +65,7 @@ func MakeResource(id string) (Resource, error) {
 	}
 }
 
-// MakeResponse returns zero value resource
+// MakeResponse returns zero value response
 func MakeResponse(id string) (Response, error) {
 	switch id {
 	{%- for schema in schemas %}{% if schema.Type == "response" %}
