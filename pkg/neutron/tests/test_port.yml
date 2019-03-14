@@ -83,6 +83,17 @@ test_data:
          uuid: 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     vrf_assign_table: {}
 
+    operation-context: &operation_context
+      user_id: e134158cf91b4f7a81b5f613dff8f56a
+      roles:
+      - admin
+      tenant_id: 711b9adee0964d3c8ae19fa05854f59e
+      is_admin: true
+      request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
+      operation: UPDATE
+      type: port
+      tenant: 711b9adee0964d3c8ae19fa05854f59e
+
 workflow:
 - name: create project admin
   request:
@@ -260,15 +271,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        user_id: e134158cf91b4f7a81b5f613dff8f56a
-        roles:
-        - admin
-        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
-        is_admin: true
-        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        <<: *operation_context
         operation: READ
-        type: port
-        tenant: 711b9adee0964d3c8ae19fa05854f59e
   expect:
     status: DOWN
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
@@ -333,15 +337,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        user_id: e134158cf91b4f7a81b5f613dff8f56a
-        roles:
-        - admin
-        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
-        is_admin: true
-        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
+        <<: *operation_context
         operation: UPDATE
-        type: port
-        tenant: 711b9adee0964d3c8ae19fa05854f59e
   expect:
     status: ACTIVE
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
@@ -379,15 +376,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        user_id: e134158cf91b4f7a81b5f613dff8f56a
-        roles:
-        - admin
-        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
-        is_admin: true
-        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        <<: *operation_context
         operation: READ
-        type: port
-        tenant: 711b9adee0964d3c8ae19fa05854f59e
   expect:
     status: ACTIVE
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
@@ -413,6 +403,79 @@ workflow:
     security_groups:
     - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
     device_id: c603fa24-81fa-4710-a288-78be45b2c93e
+
+- name: Neutron port update - remove security-group
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          security_groups: []
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters:
+      context:
+        <<: *operation_context
+        operation: UPDATE
+  expect: # No rule security group is expected
+    security_groups:
+      - 730c5ebe-465c-4f77-84f4-d69660ef39d2
+
+- name: Neutron port read after removing security-group
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters:
+      context:
+        <<: *operation_context
+        operation: READ
+  expect: # No rule security group is expected
+    security_groups:
+      - 730c5ebe-465c-4f77-84f4-d69660ef39d2
+
+- name: Neutron port update - add security-group
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        resource:
+          security_groups:
+            - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters:
+      context:
+        <<: *operation_context
+        operation: UPDATE
+  expect:
+    security_groups:
+      - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
+
+- name: Neutron port read after adding a security-group
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields:
+        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        filters:
+      context:
+        <<: *operation_context
+        operation: READ
+  expect:
+    security_groups:
+      - 79ce33bf-1bac-48d5-8bbb-5782e26b3db8
 
 - name: Neutron port read all with device_id
   request:
@@ -500,15 +563,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        user_id: e134158cf91b4f7a81b5f613dff8f56a
-        roles:
-        - admin
-        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
-        is_admin: true
-        request_id: req-55a3c4d3-f76f-44e1-bc35-99612cd34ce6
+        <<: *operation_context
         operation: UPDATE
-        type: port
-        tenant: 711b9adee0964d3c8ae19fa05854f59e
   expect:
     status: ACTIVE
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
@@ -557,15 +613,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters: null
       context:
-        user_id: e134158cf91b4f7a81b5f613dff8f56a
-        roles:
-        - admin
-        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
-        is_admin: true
-        request_id: req-f5405238-8866-470a-aed2-9b2637c86966
+        <<: *operation_context
         operation: UPDATE
-        type: port
-        tenant: 711b9adee0964d3c8ae19fa05854f59e
   expect:
     status: DOWN
     id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
@@ -609,15 +658,8 @@ workflow:
         id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
         filters:
       context:
-        user_id: e134158cf91b4f7a81b5f613dff8f56a
-        roles:
-        - admin
-        tenant_id: 711b9adee0964d3c8ae19fa05854f59e
-        is_admin: true
-        request_id: req-661e2554-756d-44aa-84f9-3a96f08cf4e0
+        <<: *operation_context
         operation: DELETE
-        type: port
-        tenant: 711b9adee0964d3c8ae19fa05854f59e
   expect: null
 
 - name: delete virtual network
