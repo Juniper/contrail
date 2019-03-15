@@ -51,10 +51,10 @@ run_docker_mysql()
 	docker run -d --name contrail_mysql \
 		--net "$Network" \
 		-v "$SOURCEDIR:/go" \
-		-v "contrail_mysql:/var/lib/mysql" \
+		--shm-size 2G \
 		-p 3306:3306 \
 		-e "MYSQL_ROOT_PASSWORD=$PASSWORD" \
-		circleci/mysql:5.7
+		circleci/mysql:5.7-ram
 }
 
 run_docker_etcd()
