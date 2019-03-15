@@ -1,7 +1,6 @@
 package cloud
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -147,17 +146,37 @@ func (s *secret) getKeypair(d *Data) (*models.Keypair, error) {
 	return keypair, err
 }
 
-func getPvtKeyIfValid(kp *models.Keypair) ([]byte, error) {
+func getSSHKeyIfValid(kp *models.Keypair, keyType string) ([]byte, error) {
 
-	if _, err := os.Stat(filepath.Join(kp.SSHKeyPath, kp.Name)); err != nil {
-		return nil, errors.New("ssh private key path given in keypair is not valid")
+	var sshKeyFileName string
+	if keyType == pubSSHKey {
+		sshKeyFileName = filepath.Join(kp.SSHKeyDirPath, kp.DisplayName+".pub")
+	} else if keyType == privateSSHKey {
+		sshKeyFileName = filepath.Join(kp.SSHKeyDirPath, kp.DisplayName)
+	} else {
+		return nil, fmt.Errorf("key type: %s is not valid", keyType)
 	}
-	pvtKeyPem, err := fileutil.GetContent("file://" + kp.SSHKeyPath + kp.Name)
+
+	if _, err := os.Stat(sshKeyFileName); err != nil {
+		return nil, fmt.Errorf("ssh key file %s is not located", sshKeyFileName)
+	}
+
+	if keyType == privateSSHKey {
+		pvtKeyPem, err := fileutil.GetContent("file://" + sshKeyFileName)
+		if err != nil {
+			return nil, err
+		}
+		_, err = ssh.ParseRawPrivateKey(pvtKeyPem)
+		return pvtKeyPem, err
+	}
+
+	pubKey, err := fileutil.GetContent("file://" + sshKeyFileName)
 	if err != nil {
 		return nil, err
 	}
-	_, err = ssh.ParseRawPrivateKey(pvtKeyPem)
-	return pvtKeyPem, err
+
+	_, _, _, _, err = ssh.ParseAuthorizedKey(pubKey)
+	return pubKey, err
 }
 
 func getCloudSSHKeyDir(cloudID string) string {
@@ -181,41 +200,8 @@ func (s *secret) getCredKeyPairIfExists(d *Data,
 				}
 
 				// create random ssh key if keypath and pubkey is not given
-				if keypair.SSHKeyPath == "" && keypair.SSHPublicKey == "" {
-					err = createSSHKey(cloudID, keypair.Name)
-					if err != nil {
-						s.log.Errorf("error while creating ssh keys: %v", err)
-						return nil, err
-					}
-					// get pub key content
-					pubKey, err := fileutil.GetContent("file://" + getCloudSSHKeyPath(cloudID, keypair.Name+".pub")) //nolint: govet
-					if err != nil {
-						return nil, err
-					}
-					// update keypair
-					keypair.SSHPublicKey = bytes.NewBuffer(pubKey).String()
-					keypair.SSHKeyPath = getCloudSSHKeyDir(cloudID)
-
-					kpUpdateReq := new(services.UpdateKeypairRequest)
-					kpUpdateReq.Keypair = keypair
-
-					_, err = s.cloud.APIServer.UpdateKeypair(s.ctx,
-						&services.UpdateKeypairRequest{
-							Keypair: keypair,
-						},
-					)
-					return keypair, err
-
-				}
-
-				if keypair.SSHKeyPath == "" || keypair.SSHPublicKey == "" {
-					return nil, errors.New(`ssh private key path and public key
-						both needs to be given in keypair object
-						attached to cloud: ` + cloudID)
-				}
-
-				if ifKeyFileAlreadyExists(keypair, cloudID) {
-					return keypair, nil
+				if keypair.SSHKeyDirPath == "" {
+					return nil, errors.New("ssh_key_dir_path field is empty")
 				}
 
 				err = copySHHKeyPairIfValid(keypair, cloudID)
@@ -224,57 +210,81 @@ func (s *secret) getCredKeyPairIfExists(d *Data,
 				}
 				return keypair, nil
 			}
+
+			// if keypair object is not attached to credential object
+			// create keypair and attach it cred obj as ref
+			keypair := new(models.Keypair)
+			err := createSSHKey(cloudID, keypair)
+			if err != nil {
+				s.log.Errorf("error while creating ssh keys: %v", err)
+				return nil, err
+			}
+
+			keypair.SSHKeyDirPath = getCloudSSHKeyDir(cloudID)
+			_, err = s.cloud.APIServer.CreateKeypair(s.ctx,
+				&services.CreateKeypairRequest{
+					Keypair: keypair,
+				},
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			// update cred object with keypair ref
+			cred.KeypairRefs = append(cred.KeypairRefs,
+				&models.CredentialKeypairRef{
+					UUID: keypair.UUID,
+				},
+			)
+			_, err = s.cloud.APIServer.UpdateCredential(s.ctx,
+				&services.UpdateCredentialRequest{
+					Credential: cred,
+				},
+			)
+			return keypair, err
 		}
 	}
 
 	return nil, errors.New("credential object is not referred by cloud")
 }
 
-func ifKeyFileAlreadyExists(keypair *models.Keypair, cloudID string) bool {
-
-	if keypair.SSHKeyPath == "" || keypair.SSHPublicKey == "" {
-		return false
-	}
-	objKeyByte := bytes.NewBufferString(keypair.SSHPublicKey).Bytes()
-	pubKey, err := fileutil.GetContent("file://" + getCloudSSHKeyPath(cloudID, keypair.Name+".pub"))
-	if err != nil {
-		return false
-	}
-	return bytes.Equal(objKeyByte, pubKey)
-
-}
-
 func copySHHKeyPairIfValid(keypair *models.Keypair, cloudID string) error {
 
 	// check if pub key is valid
-	rawPubkey := []byte(keypair.SSHPublicKey)
-
-	if err := fileutil.WriteToFile(getCloudSSHKeyPath(cloudID,
-		keypair.Name+".pub"), rawPubkey, sshPubKeyPerm); err != nil {
-		return err
-	}
-
-	// check if pvt key is valid
-	rawPvtKey, err := getPvtKeyIfValid(keypair)
+	rawPubkey, err := getSSHKeyIfValid(keypair, pubSSHKey)
 	if err != nil {
 		return err
 	}
 
-	return fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, keypair.Name),
+	if err = fileutil.WriteToFile(getCloudSSHKeyPath(cloudID,
+		keypair.DisplayName+".pub"), rawPubkey, sshPubKeyPerm); err != nil {
+		return err
+	}
+
+	keypair.SSHPublicKey = string(rawPubkey)
+
+	// check if pvt key is valid
+	rawPvtKey, err := getSSHKeyIfValid(keypair, privateSSHKey)
+	if err != nil {
+		return err
+	}
+
+	return fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, keypair.DisplayName),
 		rawPvtKey, defaultRWOnlyPerm)
 }
 
-func createSSHKey(cloudID string, name string) error {
+func createSSHKey(cloudID string, keypair *models.Keypair) error {
 	// logic to handle a ssh key generation if not added as cred ref
 	pubKey, pvtKey, err := genKeyPair(bits)
 	if err != nil {
 		return err
 	}
+	keypair.SSHPublicKey = string(pubKey)
 
-	if err = fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, name),
+	if err = fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, keypair.DisplayName),
 		pvtKey, defaultRWOnlyPerm); err != nil {
 		return err
 	}
-	return fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, name+".pub"),
+	return fileutil.WriteToFile(getCloudSSHKeyPath(cloudID, keypair.DisplayName+".pub"),
 		pubKey, sshPubKeyPerm)
 }

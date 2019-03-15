@@ -22,8 +22,8 @@ schema:
       type: string
       view:
       - detail
-    ssh_key_path:
-      description: SSH private key path in the deployer instance
+    ssh_key_dir_path:
+      description: Dir path to the SSH key in the deployer instance
       nullable: false
       permission:
       - create

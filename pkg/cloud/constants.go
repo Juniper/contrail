@@ -38,4 +38,7 @@ const (
 
 	defaultRWOnlyPerm = 0600
 	defaultSSHKeyRepo = "keypair"
+
+	pubSSHKey     = "PUBLIC_SSH_KEY"
+	privateSSHKey = "PRIVATE_SSH_KEY"
 )
