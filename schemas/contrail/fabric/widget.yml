@@ -13,7 +13,7 @@ schema:
       permission:
       - create
       - update
-      sql: ""
+      sql: "text"
       title: Container Config
       type: string
     content_config:
@@ -22,7 +22,7 @@ schema:
       permission:
       - create
       - update
-      sql: ""
+      sql: "text"
       title: Content Config
       type: string
     layout_config:
@@ -31,7 +31,7 @@ schema:
       permission:
       - create
       - update
-      sql: ""
+      sql: "text"
       title: Layout Config
       type: string
   propertiesOrder:
