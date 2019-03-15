@@ -21,9 +21,10 @@ func TestAddressManagerAllocations(t *testing.T) {
 		expectedValidIPs       []string
 		expectedInvalidIPs     []string
 		expectedDefaultGateway string
+		isGatewayAllocated     bool
 	}{
 		{
-			name: "Test subnet without allocations pools",
+			name: "Test subnet without allocation pools",
 			ipamSubnet: &models.IpamSubnetType{
 				SubnetUUID: "uuid-1",
 				Subnet: &models.SubnetType{
@@ -43,6 +44,7 @@ func TestAddressManagerAllocations(t *testing.T) {
 				"127.0.0.1",
 			},
 			expectedDefaultGateway: "10.0.0.5",
+			isGatewayAllocated:     true,
 		},
 		{
 			name: "Test subnet with any subnetUUID",
@@ -61,6 +63,33 @@ func TestAddressManagerAllocations(t *testing.T) {
 			allocationMode: models.UserDefinedSubnetOnly,
 			expectedValidIPs: []string{
 				"10.0.0.2",
+				"10.0.0.254",
+			},
+			expectedInvalidIPs: []string{
+				"10.1.0.0",
+				"127.0.0.1",
+			},
+			expectedDefaultGateway: "10.0.0.1",
+			isGatewayAllocated:     true,
+		},
+		{
+			name: "Test subnet with default gateway out of allocation pools",
+			ipamSubnet: &models.IpamSubnetType{
+				Subnet: &models.SubnetType{
+					IPPrefix:    "10.0.0.0",
+					IPPrefixLen: 24,
+				},
+				AllocationPools: []*models.AllocationPoolType{
+					{
+						Start: "10.0.0.5",
+						End:   "10.0.0.255",
+					},
+				},
+				DefaultGateway: "10.0.0.1",
+			},
+			allocationMode: models.UserDefinedSubnetOnly,
+			expectedValidIPs: []string{
+				"10.0.0.10",
 				"10.0.0.254",
 			},
 			expectedInvalidIPs: []string{
@@ -90,6 +119,7 @@ func TestAddressManagerAllocations(t *testing.T) {
 				"10.0.0.254",
 			},
 			expectedDefaultGateway: "10.0.0.1",
+			isGatewayAllocated:     true,
 		},
 		{
 			name: "Test subnet with multiple allocation pools",
@@ -122,6 +152,7 @@ func TestAddressManagerAllocations(t *testing.T) {
 				"127.0.0.1",
 			},
 			expectedDefaultGateway: "10.0.0.1",
+			isGatewayAllocated:     true,
 		},
 
 		// TODO: Add test cases:
@@ -149,12 +180,15 @@ func TestAddressManagerAllocations(t *testing.T) {
 					})
 					virtualNetwork.AddressAllocationMode = tt.allocationMode
 
-					gwAllocated, err := db.IsIPAllocated(ctx, &ipam.IsIPAllocatedRequest{
-						IPAddress:      tt.expectedDefaultGateway,
-						VirtualNetwork: virtualNetwork,
-					})
-					assert.True(t, gwAllocated)
-					assert.NoError(t, err)
+					if tt.isGatewayAllocated {
+						var isGwAllocated bool
+						isGwAllocated, err = db.IsIPAllocated(ctx, &ipam.IsIPAllocatedRequest{
+							IPAddress:      tt.expectedDefaultGateway,
+							VirtualNetwork: virtualNetwork,
+						})
+						assert.True(t, isGwAllocated)
+						assert.NoError(t, err)
+					}
 
 					for _, invalidIP := range tt.expectedInvalidIPs {
 						_, inErr := db.IsIPAllocated(ctx, &ipam.IsIPAllocatedRequest{

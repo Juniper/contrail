@@ -16,3 +16,12 @@ func filterIpamSubnets(subnets []*IpamSubnetType, predicate func(*IpamSubnetType
 	}
 	return filtered
 }
+
+// FindSubnetByID finds IpamSubnetType from IpamSubnets with specified id.
+func (m *VirtualNetworkNetworkIpamRef) FindSubnetByID(id string) *IpamSubnetType {
+	return (&(IpamSubnets{
+		Subnets: m.Attr.IpamSubnets,
+	})).Find(func(s *IpamSubnetType) bool {
+		return s.GetSubnetUUID() == id
+	})
+}

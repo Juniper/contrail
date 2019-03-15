@@ -184,3 +184,12 @@ func MergeMultimap(map1 map[string][]string, map2 map[string][]string) map[strin
 	}
 	return merged
 }
+
+// BoolMap creates map that holds "true" value for existing keys.
+func BoolMap(ss []string) map[string]bool {
+	r := map[string]bool{}
+	for _, s := range ss {
+		r[s] = true
+	}
+	return r
+}
