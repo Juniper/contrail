@@ -9,6 +9,9 @@
       provision: true
       username: centos
       password: 
+      roles:
+        - vrouter
+      gateway: 2.2.2.2
     - name: cloud_node_controller
       public_ip: 
       private_ip: 10.10.10.11
@@ -16,6 +19,8 @@
       provision: true
       username: centos
       password: 
+      roles:
+        - controller
     - name: cloud_node_gw
       public_ip: 
       private_ip: 10.10.10.10
@@ -23,6 +28,13 @@
       provision: true
       username: centos
       password: 
+      roles:
+        - gateway
+      private_subnet:
+        - 192.168.10.0/24
+      protocols_mode:
+        - ssl_client
+      gateway: 1.1.1.1
     - name: mx60
       public_ip: 20.20.20.200
       private_ip: 10.10.10.100

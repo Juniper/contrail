@@ -195,7 +195,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 		} else if i.info.ContrailVrouterNodeBackRefs != nil {
 			i.roles = append(i.roles, "vrouter")
 		}
-		if i.info.ContrailConfigNodeBackRefs != nil {
+		if i.info.ContrailConfigNodeBackRefs != nil || i.info.ContrailControlNodeBackRefs != nil {
 			i.roles = append(i.roles, "controller")
 		}
 
@@ -351,6 +351,18 @@ func (v *virtualCloudData) getInstancesWithTag(tagRefs []*models.VirtualCloudTag
 	if len(nodesOfVC) == 0 {
 		return nil, errors.New("virtual cloud tag is not used by any nodes")
 	}
+
+	for i, node := range nodesOfVC {
+		nodeResp, err := v.client.GetNode(v.ctx,
+			&services.GetNodeRequest{
+				ID: node.UUID,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+		nodesOfVC[i] = nodeResp.Node
+	}
 	return nodesOfVC, nil
 }
 
@@ -422,6 +434,204 @@ func (v *virtualCloudData) getVCloudObject() (*models.VirtualCloud, error) {
 	return vCloudResp.GetVirtualCloud(), nil
 }
 
+func (v *virtualCloudData) updateNodeWithTag(
+	nodeUUID string, nTagRefs []*models.NodeTagRef) error {
+
+	getNodeResp, err := v.client.GetNode(v.ctx,
+		&services.GetNodeRequest{
+			ID: nodeUUID,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, nTagRef := range nTagRefs {
+		getNodeResp.Node.AddTagRef(nTagRef)
+	}
+
+	_, err = v.client.UpdateNode(v.ctx,
+		&services.UpdateNodeRequest{
+			Node: getNodeResp.Node,
+		},
+	)
+	return err
+}
+
+func (v *virtualCloudData) updateControlNodeWithTag(
+	controlNodes []*models.ContrailControlNode) error {
+
+	if controlNodes == nil {
+		return fmt.Errorf("cluster does not have control nodes")
+	}
+
+	for _, controlNode := range controlNodes {
+		getControlResp, err := v.client.GetContrailControlNode(v.ctx,
+			&services.GetContrailControlNodeRequest{
+				ID: controlNode.UUID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		for _, nodeRef := range getControlResp.ContrailControlNode.NodeRefs {
+			var nodeTagRefs []*models.NodeTagRef
+			for _, vTagRef := range v.info.TagRefs {
+				nodeTagRef := new(models.NodeTagRef)
+				nodeTagRef.UUID = vTagRef.UUID
+				nodeTagRef.To = vTagRef.To
+				nodeTagRef.Href = vTagRef.Href
+				nodeTagRefs = append(nodeTagRefs, nodeTagRef)
+			}
+			err := v.updateNodeWithTag(nodeRef.UUID, nodeTagRefs)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (v *virtualCloudData) updateConfigNodeWithTag(
+	configNodes []*models.ContrailConfigNode) error {
+
+	if configNodes == nil {
+		return fmt.Errorf("cluster does not have config nodes")
+	}
+
+	for _, configNode := range configNodes {
+		getConfigResp, err := v.client.GetContrailConfigNode(v.ctx,
+			&services.GetContrailConfigNodeRequest{
+				ID: configNode.UUID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		for _, nodeRef := range getConfigResp.ContrailConfigNode.NodeRefs {
+			var nodeTagRefs []*models.NodeTagRef
+			for _, vTagRef := range v.info.TagRefs {
+				nodeTagRef := new(models.NodeTagRef)
+				nodeTagRef.UUID = vTagRef.UUID
+				nodeTagRef.To = vTagRef.To
+				nodeTagRef.Href = vTagRef.Href
+				nodeTagRefs = append(nodeTagRefs, nodeTagRef)
+			}
+			err := v.updateNodeWithTag(nodeRef.UUID, nodeTagRefs)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (v *virtualCloudData) updateVrouterNodeWithTag(
+	vrouterNodes []*models.ContrailVrouterNode) error {
+
+	if vrouterNodes == nil {
+		return fmt.Errorf("cluster does not have vrouter nodes")
+	}
+
+	for _, vrouterNode := range vrouterNodes {
+		getVrouterResp, err := v.client.GetContrailVrouterNode(v.ctx,
+			&services.GetContrailVrouterNodeRequest{
+				ID: vrouterNode.UUID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		for _, nodeRef := range getVrouterResp.ContrailVrouterNode.NodeRefs {
+			var nodeTagRefs []*models.NodeTagRef
+			for _, vTagRef := range v.info.TagRefs {
+				nodeTagRef := new(models.NodeTagRef)
+				nodeTagRef.UUID = vTagRef.UUID
+				nodeTagRef.To = vTagRef.To
+				nodeTagRef.Href = vTagRef.Href
+				nodeTagRefs = append(nodeTagRefs, nodeTagRef)
+			}
+			err := v.updateNodeWithTag(nodeRef.UUID, nodeTagRefs)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (v *virtualCloudData) updateClusterNodeWithTag(
+	mcGWNode *models.ContrailMulticloudGWNode) error {
+
+	ccResp, err := v.client.GetContrailCluster(v.ctx,
+		&services.GetContrailClusterRequest{
+			ID: mcGWNode.ParentUUID,
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	contrailCluster := ccResp.GetContrailCluster()
+	if contrailCluster.ContrailControlNodes != nil {
+		err = v.updateControlNodeWithTag(contrailCluster.GetContrailControlNodes())
+		if err != nil {
+			return err
+		}
+	}
+	if contrailCluster.ContrailConfigNodes != nil {
+		err = v.updateConfigNodeWithTag(contrailCluster.GetContrailConfigNodes())
+		if err != nil {
+			return err
+		}
+	}
+	if contrailCluster.ContrailConfigNodes == nil &&
+		contrailCluster.ContrailControlNodes == nil {
+		return fmt.Errorf("cluster %s does not have control nodes or config nodes",
+			contrailCluster.UUID)
+	}
+
+	return v.updateVrouterNodeWithTag(contrailCluster.GetContrailVrouterNodes())
+
+}
+
+func (v *virtualCloudData) getMCGWNodeRole(
+	instances []*models.Node) (*models.ContrailMulticloudGWNode, error) {
+
+	for _, i := range instances {
+		if i.GetContrailMulticloudGWNodeBackRefs() != nil {
+			mcGWNodeRefs := i.GetContrailMulticloudGWNodeBackRefs()
+			for _, m := range mcGWNodeRefs {
+				getMCGWResp, err := v.client.GetContrailMulticloudGWNode(v.ctx,
+					&services.GetContrailMulticloudGWNodeRequest{
+						ID: m.UUID,
+					},
+				)
+				return getMCGWResp.GetContrailMulticloudGWNode(), err
+			}
+		}
+	}
+	return nil, fmt.Errorf(
+		"instances list does not have multicloud gw node back refs")
+}
+
+func (v *virtualCloudData) getTagsAndUpdateClusterNodes() error {
+
+	instances, err := v.getInstancesWithTag(v.info.TagRefs)
+	if err != nil {
+		return err
+	}
+
+	mcGWNodeRole, err := v.getMCGWNodeRole(instances)
+	if err != nil {
+		return err
+	}
+
+	return v.updateClusterNodeWithTag(mcGWNodeRole)
+
+}
+
 func (r *regionData) newVCloud(vCloud *models.VirtualCloud) (*virtualCloudData, error) {
 
 	vc := &virtualCloudData{
@@ -454,6 +664,13 @@ func (r *regionData) updateVClouds() error {
 		err = newVC.updateSGs()
 		if err != nil {
 			return err
+		}
+
+		if r.parentProvider.parentCloud.isCloudPrivate() {
+			err = newVC.getTagsAndUpdateClusterNodes()
+			if err != nil {
+				return err
+			}
 		}
 
 		err = newVC.updateInstances()
