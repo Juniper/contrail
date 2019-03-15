@@ -157,6 +157,20 @@ func (i *instanceData) getNodeObject() (*models.Node, error) {
 	return instResp.GetNode(), nil
 }
 
+func (i *instanceData) updateInstType(instance *models.Node) error {
+
+	if instance.Type == "" {
+		instance.Type = "private"
+		_, err := i.client.UpdateNode(i.ctx,
+			&services.UpdateNodeRequest{
+				Node: instance,
+			},
+		)
+		return err
+	}
+	return nil
+}
+
 func (i *torData) getTorObject() (*models.PhysicalRouter, error) {
 
 	request := new(services.GetPhysicalRouterRequest)
@@ -237,6 +251,13 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 			if err != nil {
 				return nil, err
 			}
+		}
+	}
+
+	if data.isCloudPublic() {
+		err = inst.updateInstType(instObj)
+		if err != nil {
+			return nil, err
 		}
 	}
 
