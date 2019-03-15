@@ -189,8 +189,11 @@ test_data:
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
     {% endif %}
+    {% if "private" in CLOUD_TYPE %}
+    {% else %}
     tag_refs:
       - uuid: public_cloud_tag_uuid
+    {% endif %}
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 {% if "private" in CLOUD_TYPE %}
@@ -223,8 +226,11 @@ test_data:
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
     {% endif %}
+    {% if "private" in CLOUD_TYPE %}
+    {% else %}
     tag_refs:
       - uuid: public_cloud_tag_uuid
+    {% endif %}
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 {% if "private" in CLOUD_TYPE %}
@@ -551,8 +557,11 @@ workflow:
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
       {% endif %}
+      {% if "private" in CLOUD_TYPE %}
+      {% else %}
       tag_refs:
         - uuid: public_cloud_tag_uuid
+      {% endif %}
       parent_type: global-system-config
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 
@@ -587,8 +596,11 @@ workflow:
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
       {% endif %}
+      {% if "private" in CLOUD_TYPE %}
+      {% else %}
       tag_refs:
         - uuid: public_cloud_tag_uuid
+      {% endif %}
       parent_type: global-system-config
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 {% if "private" in CLOUD_TYPE %}
