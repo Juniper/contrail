@@ -284,9 +284,6 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 		e.Log.Infof("Creating %s endpoints:%s", service, endpointIPs)
 		for _, endpointIP := range endpointIPs {
 			endpointProtocol := protocol
-			if service == appformix {
-				endpointProtocol = secureProtocol
-			}
 			publicURL := e.endpointToURL(
 				endpointProtocol, endpointIP, e.getPort(endpointIP, service))
 			privateURL := publicURL
