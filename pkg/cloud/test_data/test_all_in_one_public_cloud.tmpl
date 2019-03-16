@@ -2,6 +2,10 @@ name: cloud test
 description: cloud create test
 cleanup:
 {% if "private" in CLOUD_TYPE %}
+- path: /contrail-multicloud-gw-node/contrail_multicloud_gw_node_uuid
+- path: /contrail-control-node/contrail_control_nodes_uuid
+- path: /contrail-vrouter-node/contrail_vrouter_nodes_uuid
+- path: /contrail-cluster/test_cluster_uuid
 - path: /physical-router/tor_device_uuid
 - path: /port/cloud_node_gw_pvt_port_uuid
 - path: /port/cloud_node_controller_pvt_port_uuid
@@ -189,8 +193,11 @@ test_data:
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
     {% endif %}
+    {% if "private" in CLOUD_TYPE %}
+    {% else %}
     tag_refs:
       - uuid: public_cloud_tag_uuid
+    {% endif %}
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 {% if "private" in CLOUD_TYPE %}
@@ -223,8 +230,11 @@ test_data:
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
     {% endif %}
+    {% if "private" in CLOUD_TYPE %}
+    {% else %}
     tag_refs:
       - uuid: public_cloud_tag_uuid
+    {% endif %}
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 {% if "private" in CLOUD_TYPE %}
@@ -234,6 +244,34 @@ test_data:
     parent_type: node
     parent_uuid: cloud_node_compute_uuid
     ip_address: 10.10.10.12
+  test_cluster: &test_cluster
+    fq_name: ["default-global-system-config", "test_cluster"]
+    uuid: test_cluster_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    default_gateway: 2.2.2.2
+  contrail_control_nodes: &contrail_control_nodes
+    uuid: contrail_control_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: cloud_node_controller_uuid
+  contrail_vrouter_nodes: &contrail_vrouter_nodes
+    uuid: contrail_vrouter_nodes_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    node_refs:
+      - uuid: cloud_node_compute_uuid
+  contrail_multicloud_gw_node: &contrail_multicloud_gw_node
+    uuid: contrail_multicloud_gw_node_uuid
+    parent_type: contrail-cluster
+    parent_uuid: test_cluster_uuid
+    default_gateway: 1.1.1.1
+    node_refs:
+      - uuid: cloud_node_gw_uuid
+    protocols_mode:
+      - ssl_client
+
 {% endif %}
 
 clients:
@@ -551,8 +589,11 @@ workflow:
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
       {% endif %}
+      {% if "private" in CLOUD_TYPE %}
+      {% else %}
       tag_refs:
         - uuid: public_cloud_tag_uuid
+      {% endif %}
       parent_type: global-system-config
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 
@@ -587,8 +628,11 @@ workflow:
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
       {% endif %}
+      {% if "private" in CLOUD_TYPE %}
+      {% else %}
       tag_refs:
         - uuid: public_cloud_tag_uuid
+      {% endif %}
       parent_type: global-system-config
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
 {% if "private" in CLOUD_TYPE %}
@@ -628,4 +672,46 @@ workflow:
     port:
       name: cloud_node_compute_pvt_port
       uuid: cloud_node_compute_pvt_port_uuid
+
+- name: create test cluster
+  request:
+    path: /contrail-clusters
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-cluster: *test_cluster
+  expect:
+    contrail-cluster: *test_cluster
+
+- name: create multi cloud gateway node
+  request:
+    path: /contrail-multicloud-gw-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-multicloud-gw-node: *contrail_multicloud_gw_node
+  expect:
+    contrail-multicloud-gw-node: *contrail_multicloud_gw_node
+- name: create control node
+  request:
+    path: /contrail-control-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-control-node: *contrail_control_nodes
+  expect:
+    contrail-control-node: *contrail_control_nodes
+- name: create vrouter node
+  request:
+    path: /contrail-vrouter-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      contrail-vrouter-node: *contrail_vrouter_nodes
+  expect:
+    contrail-vrouter-node: *contrail_vrouter_nodes
 {% endif %}
