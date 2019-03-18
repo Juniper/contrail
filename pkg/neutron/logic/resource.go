@@ -5,6 +5,7 @@ import (
 
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -80,4 +81,5 @@ type RequestParameters struct {
 	IDToFQNameService services.IDToFQNameServer
 	FQNameToIDService services.FQNameToIDServer
 	FieldMask         types.FieldMask
+	Log               *logrus.Entry
 }

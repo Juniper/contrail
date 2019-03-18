@@ -24,6 +24,7 @@ type Server struct {
 	IDToFQNameService idToFQNameServer
 	FQNameToIDService fqNameToIDServer
 	InTransactionDoer services.InTransactionDoer
+	Log               *logrus.Entry
 }
 
 // RegisterNeutronAPI registers Neutron endpoints on given routeRegistry.
@@ -68,6 +69,10 @@ func (s *Server) handle(ctx context.Context, r *logic.Request) (logic.Response, 
 		FQNameToIDService: s.FQNameToIDService,
 		RequestContext:    r.Context,
 		FieldMask:         r.Data.FieldMask,
+		Log: s.Log.WithFields(logrus.Fields{
+			"type":       r.Context.Type,
+			"request-id": r.Context.RequestID,
+		}),
 	}
 	switch r.Context.Operation {
 	case logic.OperationCreate:
