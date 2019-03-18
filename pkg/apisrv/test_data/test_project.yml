@@ -41,13 +41,8 @@ workflow:
     project: *project_blue_project
   watchers:
     /contrail/project/project_blue_project_uuid:
-      - data: *project_blue_project       # requested project was created
       - data:
-          <<: *project_blue_project   # project is updated with default-application-policy-set
-          application_policy_set_refs:
-            - uuid: $uuid
-              # TODO(Michał): reenable below when sync fills ref fq_names (JBE-605)
-              #to: [default-domain, project_blue_project, default-application-policy-set]
+          <<: *project_blue_project   # requested project was created with default-application-policy-set
 
 - name: check if default-application-policy-set was created
   request:
@@ -121,3 +116,4 @@ watchers:
   /contrail/application_policy_set/my_custom_application_policy_set_uuid:
     - data:
         name: my-custom-aps
+    - data: {uuid: $null}  # empty event is emitted in case of deletion

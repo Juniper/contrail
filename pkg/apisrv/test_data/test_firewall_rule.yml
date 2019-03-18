@@ -172,10 +172,8 @@ workflow:
           endpoint_2:
             tag_ids:
             - 0x00ff0002
-      - data:
           tag_refs:
             - uuid: test_tag_blue_uuid
-        sync_only: true
 
 - name: try to update firewall rule
   request:
@@ -220,15 +218,6 @@ workflow:
         tag_ids: $null
   watchers:
     /contrail/firewall_rule/test_firewall_rule_blue_uuid:
-      - data:
-          <<: *test_firewall_rule_blue
-          tag_refs: $null
-        sync_only: true
-      - data:
-          <<: *test_firewall_rule_blue
-          tag_refs:
-            - uuid: test_tag_blue_uuid
-        sync_only: true
       - data:
           <<: *test_firewall_rule_blue
           endpoint_1:
@@ -280,10 +269,8 @@ workflow:
   watchers:
     /contrail/firewall_rule/test_firewall_rule_blue_uuid:
       - data:
-          tag_refs: $null
-        sync_only: true
-      - data:
           uuid: test_firewall_rule_blue_uuid
+          tag_refs: $null
           endpoint_1:
             subnet:
               ip_prefix: "10.0.0.0"
