@@ -65,7 +65,7 @@ func NewService() (*Service, error) {
 	}
 
 	watcher, err := createWatcher(syncID, &services.EventListProcessor{
-		EventProcessor:    &services.ServiceEventProcessor{Service: etcdNotifierService},
+		EventProcessor:    NewFQNameCache(&services.ServiceEventProcessor{Service: etcdNotifierService}),
 		InTransactionDoer: etcdNotifierService.Client,
 	})
 	if err != nil {
@@ -123,7 +123,7 @@ func createWatcher(id string, processor eventProcessor) (watchCloser, error) {
 func createPostgreSQLWatcher(
 	id string, dbService *db.Service, processor eventProcessor,
 ) (watchCloser, error) {
-	handler := replication.NewPgoutputEventHandler(processor, dbService)
+	handler := replication.NewPgoutputHandler(processor, dbService)
 
 	connConfig := pgx.ConnConfig{
 		Host:     viper.GetString("database.host"),
@@ -159,7 +159,7 @@ func createMySQLWatcher(d replication.EventDecoder, p services.EventProcessor) (
 	if err != nil {
 		return nil, fmt.Errorf("error creating canal: %v", err)
 	}
-	canal.SetEventHandler(replication.NewCanalEventHandler(p, d))
+	canal.SetEventHandler(replication.NewCanalHandler(p, d))
 
 	return replication.NewMySQLWatcher(canal), nil
 }
