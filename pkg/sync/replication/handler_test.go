@@ -13,6 +13,8 @@ import (
 	"github.com/siddontang/go-mysql/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 func TestPgoutputEventHandlerHandle(t *testing.T) {
@@ -84,7 +86,9 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		{
 			name: "correct insert message",
 			initMock: func(m oner) {
-				m.On("Create", "test-resource", []string{"foo"}, exampleRowData).Return(nil).Once()
+				m.On("DecodeRowEvent", services.OperationCreate, "test-resource", []string{"foo"}, exampleRowData).Return(
+					&services.Event{Version: 1}, nil,
+				).Once()
 			},
 			initialRels: relationSet{1: exampleRelation},
 			message:     pgoutput.Insert{RelationID: 1, Row: exampleRow},
@@ -92,7 +96,9 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		{
 			name: "correct update message",
 			initMock: func(m oner) {
-				m.On("Update", "test-resource", []string{"foo"}, exampleRowData).Return(nil).Once()
+				m.On("DecodeRowEvent", services.OperationUpdate, "test-resource", []string{"foo"}, exampleRowData).Return(
+					&services.Event{Version: 1}, nil,
+				).Once()
 			},
 			initialRels: relationSet{1: exampleRelation},
 			message:     pgoutput.Update{RelationID: 1, Row: exampleRow},
@@ -100,7 +106,9 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 		{
 			name: "correct delete message",
 			initMock: func(m oner) {
-				m.On("Delete", "test-resource", []string{"foo"}).Return(nil).Once()
+				m.On("DecodeRowEvent", services.OperationDelete, "test-resource", []string{"foo"}, exampleRowData).Return(
+					&services.Event{Version: 1}, nil,
+				).Once()
 			},
 			initialRels: relationSet{1: exampleRelation},
 			message:     pgoutput.Delete{RelationID: 1, Row: exampleRow},
@@ -110,12 +118,13 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// given
-			m := newRowSinkMock()
+			m := &rowSinkMock{}
 			if tt.initMock != nil {
 				tt.initMock(m)
 			}
+			pm := &eventProcessorMock{}
 
-			h := NewPgoutputEventHandler(m)
+			h := NewPgoutputEventHandler(pm, m)
 			if tt.initialRels != nil {
 				h.relations = tt.initialRels
 			}
@@ -140,7 +149,7 @@ func TestPgoutputEventHandlerHandle(t *testing.T) {
 }
 
 func TestOnRowFailsWhenInvalidActionGiven(t *testing.T) {
-	h := NewCanalEventHandler(&rowSinkMock{})
+	h := NewCanalEventHandler(&eventProcessorMock{}, &rowSinkMock{})
 	err := h.OnRow(givenRowsEvent("invalid-action"))
 	assert.Error(t, err)
 }
@@ -148,7 +157,7 @@ func TestOnRowFailsWhenInvalidActionGiven(t *testing.T) {
 func TestOnRowFailsWhenInvalidTablePrimaryKeyGiven(t *testing.T) {
 	for _, action := range []string{canal.InsertAction, canal.UpdateAction, canal.DeleteAction} {
 		t.Run(action, func(t *testing.T) {
-			h := NewCanalEventHandler(&rowSinkMock{})
+			h := NewCanalEventHandler(&eventProcessorMock{}, &rowSinkMock{})
 			e := givenRowsEvent(action)
 			e.Table.PKColumns = []int{}
 
@@ -162,7 +171,7 @@ func TestOnRowFailsWhenInvalidTablePrimaryKeyGiven(t *testing.T) {
 func TestOnRowFailsWhenTableWithMultiColumnPrimaryKeyGiven(t *testing.T) {
 	for _, action := range []string{canal.InsertAction, canal.UpdateAction, canal.DeleteAction} {
 		t.Run(action, func(t *testing.T) {
-			h := NewCanalEventHandler(&rowSinkMock{})
+			h := NewCanalEventHandler(&eventProcessorMock{}, &rowSinkMock{})
 			e := givenRowsEvent(action)
 			e.Table.PKColumns = []int{0, 1}
 
@@ -176,7 +185,7 @@ func TestOnRowFailsWhenTableWithMultiColumnPrimaryKeyGiven(t *testing.T) {
 func TestOnRowFailsWhenEmptyPrimaryKeyValueGiven(t *testing.T) {
 	for _, action := range []string{canal.InsertAction, canal.UpdateAction, canal.DeleteAction} {
 		t.Run(action, func(t *testing.T) {
-			h := NewCanalEventHandler(&rowSinkMock{})
+			h := NewCanalEventHandler(&eventProcessorMock{}, &rowSinkMock{})
 			e := givenRowsEvent(action)
 			e.Rows = [][]interface{}{{"", 1337, 1.337}}
 
@@ -201,7 +210,7 @@ func TestOnRowFailsWhenInvalidTableColumnTypeGiven(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprint(test.action, test.columnType), func(t *testing.T) {
-			h := NewCanalEventHandler(&rowSinkMock{})
+			h := NewCanalEventHandler(&eventProcessorMock{}, &rowSinkMock{})
 			e := givenRowsEvent(test.action)
 			e.Table.Columns = []schema.TableColumn{
 				{Name: "string-property", Type: schema.TYPE_STRING},
@@ -232,9 +241,11 @@ func TestOnRow(t *testing.T) {
 		fails    bool
 	}{
 		{
-			name: "sink create fails",
+			name: "decode create fails",
 			initMock: func(m oner) {
-				m.On("Create", mock.Anything, mock.AnythingOfType("[]string"), mock.Anything).Return(assert.AnError).Once()
+				m.On("DecodeRowEvent", "CREATE", mock.Anything, mock.AnythingOfType("[]string"), mock.Anything).Return(
+					(*services.Event)(nil), assert.AnError,
+				).Once()
 			},
 			action: canal.InsertAction,
 			fails:  true,
@@ -242,17 +253,25 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "insert 3 rows correctly",
 			initMock: func(m oner) {
-				m.On("Create", "test-resource", []string{"foo"}, exampleRowsData[0]).Return(nil).Once()
-				m.On("Create", "test-resource", []string{"bar"}, exampleRowsData[1]).Return(nil).Once()
-				m.On("Create", "test-resource", []string{"baz"}, exampleRowsData[2]).Return(nil).Once()
+				m.On("DecodeRowEvent", "CREATE", "test-resource", []string{"foo"}, exampleRowsData[0]).Return(
+					(*services.Event)(nil), nil,
+				).Once()
+				m.On("DecodeRowEvent", "CREATE", "test-resource", []string{"bar"}, exampleRowsData[1]).Return(
+					(*services.Event)(nil), nil,
+				).Once()
+				m.On("DecodeRowEvent", "CREATE", "test-resource", []string{"baz"}, exampleRowsData[2]).Return(
+					(*services.Event)(nil), nil,
+				).Once()
 			},
 			action: canal.InsertAction,
 			rows:   exampleRows,
 		},
 		{
-			name: "sink update fails",
+			name: "decode update fails",
 			initMock: func(m oner) {
-				m.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
+				m.On("DecodeRowEvent", "UPDATE", mock.Anything, mock.AnythingOfType("[]string"), mock.Anything).Return(
+					(*services.Event)(nil), assert.AnError,
+				).Once()
 			},
 			action: canal.UpdateAction,
 			fails:  true,
@@ -260,17 +279,25 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "update 3 rows correctly",
 			initMock: func(m oner) {
-				m.On("Update", "test-resource", []string{"foo"}, exampleRowsData[0]).Return(nil).Once()
-				m.On("Update", "test-resource", []string{"bar"}, exampleRowsData[1]).Return(nil).Once()
-				m.On("Update", "test-resource", []string{"baz"}, exampleRowsData[2]).Return(nil).Once()
+				m.On("DecodeRowEvent", "UPDATE", "test-resource", []string{"foo"}, exampleRowsData[0]).Return(
+					(*services.Event)(nil), nil,
+				).Once()
+				m.On("DecodeRowEvent", "UPDATE", "test-resource", []string{"bar"}, exampleRowsData[1]).Return(
+					(*services.Event)(nil), nil,
+				).Once()
+				m.On("DecodeRowEvent", "UPDATE", "test-resource", []string{"baz"}, exampleRowsData[2]).Return(
+					(*services.Event)(nil), nil,
+				).Once()
 			},
 			action: canal.UpdateAction,
 			rows:   exampleRows,
 		},
 		{
-			name: "sink delete fails",
+			name: "decode delete fails",
 			initMock: func(m oner) {
-				m.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
+				m.On("DecodeRowEvent", "DELETE", mock.Anything, mock.AnythingOfType("[]string"), mock.Anything).Return(
+					(*services.Event)(nil), assert.AnError,
+				).Once()
 			},
 			action: canal.DeleteAction,
 			fails:  true,
@@ -278,9 +305,15 @@ func TestOnRow(t *testing.T) {
 		{
 			name: "delete 3 rows correctly",
 			initMock: func(m oner) {
-				m.On("Delete", "test-resource", []string{"foo"}).Return(nil).Once()
-				m.On("Delete", "test-resource", []string{"bar"}).Return(nil).Once()
-				m.On("Delete", "test-resource", []string{"baz"}).Return(nil).Once()
+				m.On("DecodeRowEvent", "DELETE", "test-resource", []string{"foo"}, (map[string]interface{})(nil)).Return(
+					(*services.Event)(nil), nil,
+				).Once()
+				m.On("DecodeRowEvent", "DELETE", "test-resource", []string{"bar"}, (map[string]interface{})(nil)).Return(
+					(*services.Event)(nil), nil,
+				).Once()
+				m.On("DecodeRowEvent", "DELETE", "test-resource", []string{"baz"}, (map[string]interface{})(nil)).Return(
+					(*services.Event)(nil), nil,
+				).Once()
 			},
 			action: canal.DeleteAction,
 			rows:   exampleRows,
@@ -291,7 +324,7 @@ func TestOnRow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &rowSinkMock{}
 			tt.initMock(m)
-			h := NewCanalEventHandler(m)
+			h := NewCanalEventHandler(&eventProcessorMock{}, m)
 
 			e := givenRowsEvent(tt.action)
 			if tt.rows != nil {
@@ -328,65 +361,49 @@ func givenRowsEvent(action string) *canal.RowsEvent {
 }
 
 func TestOnRotateEventIsSkipped(t *testing.T) {
-	h := NewCanalEventHandler(nil)
+	h := NewCanalEventHandler(&eventProcessorMock{}, nil)
 	err := h.OnRotate(&replication.RotateEvent{})
 	assert.NoError(t, err)
 }
 
 func TestOnDDLEventIsSkipped(t *testing.T) {
-	h := NewCanalEventHandler(nil)
+	h := NewCanalEventHandler(&eventProcessorMock{}, nil)
 	err := h.OnDDL(mysql.Position{}, &replication.QueryEvent{})
 	assert.NoError(t, err)
 }
 
 func TestOnXIDEventIsSkipped(t *testing.T) {
-	h := NewCanalEventHandler(nil)
+	h := NewCanalEventHandler(&eventProcessorMock{}, nil)
 	err := h.OnXID(mysql.Position{})
 	assert.NoError(t, err)
 }
 
 func TestOnGTIDEventIsSkipped(t *testing.T) {
-	h := NewCanalEventHandler(nil)
+	h := NewCanalEventHandler(&eventProcessorMock{}, nil)
 	err := h.OnGTID(&mysql.MysqlGTIDSet{})
 	assert.NoError(t, err)
 }
 
 func TestOnPosSyncedEventIsSkipped(t *testing.T) {
-	h := NewCanalEventHandler(nil)
+	h := NewCanalEventHandler(&eventProcessorMock{}, nil)
 	err := h.OnPosSynced(mysql.Position{}, false)
 	assert.NoError(t, err)
-}
-
-func TestStringerReturnsHandlerName(t *testing.T) {
-	h := NewCanalEventHandler(nil)
-	assert.Equal(t, "canalEventHandler", h.String())
 }
 
 type rowSinkMock struct {
 	mock.Mock
 }
 
-func newRowSinkMock() *rowSinkMock {
-	return &rowSinkMock{}
+func (m *rowSinkMock) DecodeRowEvent(
+	operation, resourceName string, pk []string, properties map[string]interface{},
+) (*services.Event, error) {
+	args := m.Called(operation, resourceName, pk, properties)
+	return args.Get(0).(*services.Event), args.Error(1)
 }
 
-func (m *rowSinkMock) Create(
-	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
-) error {
-	args := m.Called(resourceName, pk, properties)
-	return args.Error(0)
+type eventProcessorMock struct {
 }
 
-func (m *rowSinkMock) Update(
-	ctx context.Context, resourceName string, pk []string, properties map[string]interface{},
-) error {
-	args := m.Called(resourceName, pk, properties)
-	return args.Error(0)
-}
-
-func (m *rowSinkMock) Delete(
-	ctx context.Context, resourceName string, pk []string,
-) error {
-	args := m.Called(resourceName, pk)
-	return args.Error(0)
+func (m *eventProcessorMock) Process(ctx context.Context, e *services.Event) (*services.Event, error) {
+	return nil, nil
 }

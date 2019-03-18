@@ -13,28 +13,36 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 type relationSet map[uint32]pgoutput.Relation
 
-// PgoutputEventHandler handles replication messages by pushing it to sink.
+// EventDecoder is capable of decoding row data in form of map into an Event.
+type EventDecoder interface {
+	DecodeRowEvent(operation, resourceName string, pk []string, properties map[string]interface{}) (*services.Event, error)
+}
+
+// PgoutputEventHandler handles replication messages by decoding them as events and passing them to processor.
 type PgoutputEventHandler struct {
-	sink RowSink
-	log  *logrus.Entry
+	decoder   EventDecoder
+	processor services.EventProcessor
+	log       *logrus.Entry
 
 	relations relationSet
 }
 
-// NewPgoutputEventHandler creates new ReplicationEventHandler using sink provided as an argument.
-func NewPgoutputEventHandler(s RowSink) *PgoutputEventHandler {
+// NewPgoutputEventHandler creates new ReplicationEventHandler with provided decoder and processor.
+func NewPgoutputEventHandler(p services.EventProcessor, d EventDecoder) *PgoutputEventHandler {
 	return &PgoutputEventHandler{
-		sink:      s,
+		decoder:   d,
+		processor: p,
 		log:       logutil.NewLogger("replication-event-handler"),
 		relations: relationSet{},
 	}
 }
 
-// Handle handles provided message by passing its contents to sink or returns an error
+// Handle handles provided message by passing decoding its contents passing them to processor.
 func (h *PgoutputEventHandler) Handle(ctx context.Context, msg pgoutput.Message) error {
 
 	switch v := msg.(type) {
@@ -43,18 +51,20 @@ func (h *PgoutputEventHandler) Handle(ctx context.Context, msg pgoutput.Message)
 		h.relations[v.ID] = v
 	case pgoutput.Insert:
 		h.log.Debug("received INSERT message")
-		return h.handleCreate(ctx, v.RelationID, v.Row)
+		return h.handleDataEvent(ctx, services.OperationCreate, v.RelationID, v.Row)
 	case pgoutput.Update:
 		h.log.Debug("received UPDATE message")
-		return h.handleUpdate(ctx, v.RelationID, v.Row)
+		return h.handleDataEvent(ctx, services.OperationUpdate, v.RelationID, v.Row)
 	case pgoutput.Delete:
 		h.log.Debug("received DELETE message")
-		return h.handleDelete(ctx, v.RelationID, v.Row)
+		return h.handleDataEvent(ctx, services.OperationDelete, v.RelationID, v.Row)
 	}
 	return nil
 }
 
-func (h *PgoutputEventHandler) handleCreate(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
+func (h *PgoutputEventHandler) handleDataEvent(
+	ctx context.Context, operation string, relationID uint32, row []pgoutput.Tuple,
+) error {
 	relation, ok := h.relations[relationID]
 	if !ok {
 		return fmt.Errorf("no relation for %d", relationID)
@@ -68,41 +78,13 @@ func (h *PgoutputEventHandler) handleCreate(ctx context.Context, relationID uint
 		return fmt.Errorf("no primary key specified for row: %v", row)
 	}
 
-	return h.sink.Create(ctx, relation.Name, pk, data)
-}
-
-func (h *PgoutputEventHandler) handleUpdate(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
-	relation, ok := h.relations[relationID]
-	if !ok {
-		return fmt.Errorf("no relation for %d", relationID)
-	}
-
-	pk, data, err := decodeRowData(relation, row)
+	ev, err := h.decoder.DecodeRowEvent(operation, relation.Name, pk, data)
 	if err != nil {
-		return fmt.Errorf("error decoding row: %v", err)
-	}
-	if len(pk) == 0 {
-		return fmt.Errorf("no primary key specified for row: %v", row)
+		return err
 	}
 
-	return h.sink.Update(ctx, relation.Name, pk, data)
-}
-
-func (h *PgoutputEventHandler) handleDelete(ctx context.Context, relationID uint32, row []pgoutput.Tuple) error {
-	relation, ok := h.relations[relationID]
-	if !ok {
-		return fmt.Errorf("no relation for %d", relationID)
-	}
-
-	pk, _, err := decodeRowData(relation, row)
-	if err != nil {
-		return fmt.Errorf("error decoding row: %v", err)
-	}
-	if len(pk) == 0 {
-		return fmt.Errorf("no primary key specified for row: %v", row)
-	}
-
-	return h.sink.Delete(ctx, relation.Name, pk)
+	_, err = h.processor.Process(ctx, ev)
+	return err
 }
 
 func decodeRowData(
@@ -137,17 +119,19 @@ func decodeRowData(
 	return pk, data, nil
 }
 
-// CanalEventHandler handles canal events by pushing it to sink.
+// CanalEventHandler handles canal events by decoding them as events and passing them to processor.
 type CanalEventHandler struct {
-	sink RowSink
-	log  *logrus.Entry
+	decoder   EventDecoder
+	processor services.EventProcessor
+	log       *logrus.Entry
 }
 
-// NewCanalEventHandler creates new CanalEventHandler with given sink.
-func NewCanalEventHandler(s RowSink) *CanalEventHandler {
+// NewCanalEventHandler creates new CanalEventHandler with given decoder and processor.
+func NewCanalEventHandler(p services.EventProcessor, d EventDecoder) *CanalEventHandler {
 	return &CanalEventHandler{
-		sink: s,
-		log:  logutil.NewLogger("canal-event-handler"),
+		decoder:   d,
+		processor: p,
+		log:       logutil.NewLogger("canal-event-handler"),
 	}
 }
 
@@ -173,13 +157,11 @@ func (h *CanalEventHandler) OnRow(e *canal.RowsEvent) error {
 	}
 }
 
-type handlerFunc func(context.Context, string, []string, map[string]interface{}) error
-
 func (h *CanalEventHandler) handleOperation(
 	ctx context.Context,
 	rows [][]interface{},
 	t *schema.Table,
-	hndl handlerFunc,
+	operation string,
 ) error {
 	for _, row := range rows {
 		pk, err := getPrimaryKeyValue(row, t)
@@ -190,7 +172,11 @@ func (h *CanalEventHandler) handleOperation(
 		if err != nil {
 			return fmt.Errorf("table %s error: %s", t, err)
 		}
-		if err := hndl(ctx, t.Name, []string{pk}, kvs); err != nil {
+		ev, err := h.decoder.DecodeRowEvent(operation, t.Name, []string{pk}, kvs)
+		if err != nil {
+			return err
+		}
+		if _, err = h.processor.Process(ctx, ev); err != nil {
 			return err
 		}
 	}
@@ -199,11 +185,11 @@ func (h *CanalEventHandler) handleOperation(
 }
 
 func (h *CanalEventHandler) handleCreate(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
-	return errors.Wrap(h.handleOperation(ctx, rows, t, h.sink.Create), "operation CREATE")
+	return errors.Wrap(h.handleOperation(ctx, rows, t, services.OperationCreate), "operation CREATE")
 }
 
 func (h *CanalEventHandler) handleUpdate(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
-	return errors.Wrap(h.handleOperation(ctx, rows, t, h.sink.Update), "operation UPDATE")
+	return errors.Wrap(h.handleOperation(ctx, rows, t, services.OperationUpdate), "operation UPDATE")
 }
 
 func (h *CanalEventHandler) handleDelete(ctx context.Context, rows [][]interface{}, t *schema.Table) error {
@@ -213,7 +199,11 @@ func (h *CanalEventHandler) handleDelete(ctx context.Context, rows [][]interface
 			return errors.Wrapf(err, "delete from %v", t.Name)
 		}
 
-		if err := h.sink.Delete(ctx, t.Name, []string{pk}); err != nil {
+		ev, err := h.decoder.DecodeRowEvent(services.OperationDelete, t.Name, []string{pk}, nil)
+		if err != nil {
+			return err
+		}
+		if _, err = h.processor.Process(ctx, ev); err != nil {
 			return err
 		}
 	}
