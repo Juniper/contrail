@@ -16,13 +16,6 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-type relationSet map[uint32]pgoutput.Relation
-
-// EventDecoder is capable of decoding row data in form of map into an Event.
-type EventDecoder interface {
-	DecodeRowEvent(operation, resourceName string, pk []string, properties map[string]interface{}) (*services.Event, error)
-}
-
 // PgoutputEventHandler handles replication messages by decoding them as events and passing them to processor.
 type PgoutputEventHandler struct {
 	decoder   EventDecoder
@@ -85,38 +78,6 @@ func (h *PgoutputEventHandler) handleDataEvent(
 
 	_, err = h.processor.Process(ctx, ev)
 	return err
-}
-
-func decodeRowData(
-	relation pgoutput.Relation,
-	row []pgoutput.Tuple,
-) (pk []string, data map[string]interface{}, err error) {
-	keys, data := []interface{}{}, map[string]interface{}{}
-
-	if t, c := len(row), len(relation.Columns); t != c {
-		return nil, nil, fmt.Errorf("malformed message or relation columns, got %d values but relation has %d columns", t, c)
-	}
-
-	for i, tuple := range row {
-		col := relation.Columns[i]
-		decoder := col.Decoder()
-		if err = decoder.DecodeText(nil, tuple.Value); err != nil {
-			return nil, nil, fmt.Errorf("error decoding column '%v': %s", col.Name, err)
-		}
-		value := decoder.Get()
-		data[col.Name] = value
-		if col.Key {
-			keys = append(keys, value)
-		}
-
-	}
-
-	pk, err = primaryKeyToStringSlice(keys)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error creating PK: %v", err)
-	}
-
-	return pk, data, nil
 }
 
 // CanalEventHandler handles canal events by decoding them as events and passing them to processor.
