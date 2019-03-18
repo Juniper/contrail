@@ -115,7 +115,7 @@ func createWatcher(id string, processor services.EventProcessor) (watchCloser, e
 func createPostgreSQLWatcher(
 	id string, dbService *db.Service, processor services.EventProcessor,
 ) (watchCloser, error) {
-	handler := replication.NewPgoutputEventHandler(processor, dbService)
+	handler := replication.NewPgOutputEventHandler(processor, dbService)
 
 	connConfig := pgx.ConnConfig{
 		Host:     viper.GetString("database.host"),

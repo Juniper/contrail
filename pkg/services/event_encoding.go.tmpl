@@ -74,8 +74,8 @@ func (r *Create{{ refType }}Request) isCreateRefRequest() {}
 func (r *Create{{ refType }}Request) SetID(id string) {r.ID = id}
 // SetRefUUID sets referenced object's uuid.
 func (r *Create{{ refType }}Request) SetRefUUID(uuid string) {r.Get{{ refType }}().SetUUID(uuid)}
-// GetAttr returns reference's attribute.
-func (r *Create{{ refType }}Request) GetAttr() basemodels.RefAttribute {return r.Get{{ refType }}().GetAttribute()}
+// GetReference returns reference.
+func (r *Create{{ refType }}Request) GetReference() basemodels.Reference {return r.Get{{ refType }}()}
 // GetRequest returns underlying request.
 func (r *Event_Delete{{ refType }}Request) GetRequest() DeleteRefRequest { return r.Delete{{ refType }}Request }
 // isDeleteRefRequest determines delete request.
