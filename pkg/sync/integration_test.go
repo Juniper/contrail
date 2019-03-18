@@ -25,7 +25,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/sync"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
-	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	"github.com/Juniper/contrail/pkg/testutil/integration/etcd"
 )
 
 func TestSyncService(t *testing.T) {
@@ -165,8 +165,9 @@ func TestSyncService(t *testing.T) {
 
 				_, err = sv.CreateNetworkIpam(ctx, &services.CreateNetworkIpamRequest{
 					NetworkIpam: &models.NetworkIpam{
-						UUID: "ni-blue",
-						Name: "ni_blue",
+						UUID:   "ni-blue",
+						Name:   "ni_blue",
+						FQName: []string{"ni-blue"},
 					},
 				})
 				assert.NoError(t, err, "create Network IPAM failed")
@@ -221,13 +222,16 @@ func TestSyncService(t *testing.T) {
 							"name": "vn_blue",
 							"network_ipam_refs": []interface{}{map[string]interface{}{
 								"uuid": "ni-blue",
+								"to":   []interface{}{"ni-blue"},
 								"attr": map[string]interface{}{
 									"ipam_subnets": nil,
 									"host_routes": map[string]interface{}{
-										"route": []interface{}{map[string]interface{}{
-											"next_hop": "1.2.3.5",
-											"prefix":   "test_prefix",
-										}},
+										"route": []interface{}{
+											map[string]interface{}{
+												"next_hop": "1.2.3.5",
+												"prefix":   "test_prefix",
+											},
+										},
 									},
 								},
 							}},

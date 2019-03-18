@@ -453,9 +453,9 @@ type DeleteRequest interface {
 // CreateRefRequest interface.
 type CreateRefRequest interface {
 	GetID() string
+	GetReference() basemodels.Reference
 	SetID(string)
 	SetRefUUID(string)
-	GetAttr() basemodels.RefAttribute
 	isCreateRefRequest()
 }
 
@@ -514,7 +514,7 @@ func NewCreateRefEvent(option *RefUpdateOption) (*Event, error) {
 	}
 	r.GetRequest().SetID(option.FromUUID)
 	r.GetRequest().SetRefUUID(option.ToUUID)
-	if attr, ok := r.GetRequest().GetAttr().(basemodels.RefAttribute); ok && option.AttrData != nil {
+	if attr, ok := r.GetRequest().GetReference().GetAttribute().(basemodels.RefAttribute); ok && option.AttrData != nil {
 		err = json.Unmarshal(option.AttrData, attr)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to unmarshal reference attribute data %v, error %v", option.AttrData, err)
