@@ -60,7 +60,7 @@ type Store interface {
 	Put(context.Context, string, []byte) error
 	Get(context.Context, string) ([]byte, error)
 	WatchRecursive(context.Context, string, int64) chan etcd.Message
-	InTransaction(ctx context.Context, do func(context.Context) error) error
+	DoInTransaction(ctx context.Context, do func(context.Context) error) error
 	Close() error
 }
 
@@ -108,7 +108,7 @@ func (ics *IntentCompilationService) handleMessage(
 		index, oper, key, newValue)
 
 	var skipMessage bool
-	if err := ics.Store.InTransaction(ctx, func(ctx context.Context) error {
+	if err := ics.Store.DoInTransaction(ctx, func(ctx context.Context) error {
 		skipMessage = true
 		storedIndex, err := ics.getStoredIndex(ctx)
 		if err != nil {

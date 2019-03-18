@@ -44,11 +44,8 @@ workflow:
     project: *project_blue_project
   watchers:
     /contrail/project/project_blue_project_uuid:
-      - data: *project_blue_project       # requested project was created
-      # TODO(Michał): Uncomment this when sync and etcd.Notifier handles ref in the same way
-      #- <<: *project_blue_project   # project is updated with default-application-policy-set
-      #  application_policy_set_refs:
-      #    - to: [default-domain, project_blue_project, default-application-policy-set]
+      - data:
+          <<: *project_blue_project
 
     /contrail/application_policy_set/:
       - data:
@@ -134,4 +131,4 @@ watchers:
     - data:
         <<: *user_made_application_policy_set_project
         name: my-custom-aps
-    - data: {uuid: $null}  # empty event is emmited in case of deletion
+    - data: {uuid: $null}  # empty event is emitted in case of deletion

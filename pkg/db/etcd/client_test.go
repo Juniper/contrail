@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -80,7 +81,8 @@ func closeClient(t *testing.T, c *Client) {
 	assert.NoError(t, c.Close())
 }
 
-func TestClient_InTransaction(t *testing.T) {
+func TestClient_DoInTransaction(t *testing.T) {
+	testKey := "in_transaction_test_key"
 	tests := []struct {
 		name    string
 		ctx     context.Context
@@ -88,28 +90,52 @@ func TestClient_InTransaction(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "transaction already in context function returns no error",
+			name:    "transaction is already in context, function returns no error",
 			ctx:     WithTxn(context.Background(), &stmTxn{}),
 			do:      func(context.Context) error { return nil },
 			wantErr: false,
 		},
 		{
-			name:    "transaction already in context function returns error",
+			name:    "transaction is already in context, function returns error",
 			ctx:     WithTxn(context.Background(), &stmTxn{}),
 			do:      func(context.Context) error { return assert.AnError },
 			wantErr: true,
+		},
+		{
+			name: "get the key twice",
+			ctx:  context.Background(),
+			do: func(ctx context.Context) error {
+				txn := GetTxn(ctx)
+
+				txn.Put(testKey, []byte("some value"))
+				v1 := txn.Get(testKey)
+				if string(v1) != "some value" {
+					return errors.New("value should be updated")
+				}
+
+				txn.Put(testKey, []byte("newer value"))
+				v2 := txn.Get(testKey)
+				if string(v2) != "newer value" {
+					return errors.New("value should be updated again")
+				}
+				return nil
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, err := NewClient(&Config{
-				Client:      &clientv3.Client{},
+				Config:      *etcdConfig(shortDialTimeout),
 				ServiceName: t.Name(),
 			})
 			require.NoError(t, err)
+			defer func() {
+				err = c.Delete(context.Background(), string(testKey))
+				require.NoError(t, err)
+			}()
 
-			err = c.InTransaction(tt.ctx, tt.do)
+			err = c.DoInTransaction(tt.ctx, tt.do)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

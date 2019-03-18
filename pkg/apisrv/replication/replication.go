@@ -61,7 +61,11 @@ func New(epStore *apicommon.EndpointStore) (*Replicator, error) {
 
 // Start replication service
 func (r *Replicator) Start() error {
-	producer, err := syncp.NewEventProducer("replicator-watcher", r)
+	processor := &services.EventListProcessor{
+		EventProcessor:    r,
+		InTransactionDoer: services.NoTransaction,
+	}
+	producer, err := syncp.NewEventProducer("replicator-watcher", processor)
 	if err != nil {
 		return err
 	}

@@ -328,12 +328,6 @@ func TestSyncService(t *testing.T) {
 				"/test/virtual_network/vn-red": []integration.Event{
 					{
 						Data: map[string]interface{}{
-							"name":              "vn_red",
-							"network_ipam_refs": "$null",
-						},
-					},
-					{
-						Data: map[string]interface{}{
 							"name": "vn_red",
 							"network_ipam_refs": []interface{}{map[string]interface{}{
 								"uuid": "ni-red",
