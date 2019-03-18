@@ -199,8 +199,8 @@ func (c *Client) Watch(
 	return resultChan
 }
 
-// InTransaction wraps clientv3 transaction and wraps conc.STM with own Txn.
-func (c *Client) InTransaction(ctx context.Context, do func(context.Context) error) error {
+// DoInTransaction wraps clientv3 transaction and wraps conc.STM with own Txn.
+func (c *Client) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
 	if txn := GetTxn(ctx); txn != nil {
 		// Transaction already in context
 		return do(ctx)
