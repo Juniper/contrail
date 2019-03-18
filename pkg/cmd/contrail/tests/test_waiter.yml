@@ -99,8 +99,9 @@ workflow:
         - default-project
         - vn1
         - vn1
-        route_target_refs:
-          - null
+        # TODO(Michal): reenable when IC handles transactions properly (JBE-993)
+        #route_target_refs:
+        #  - null
 
 - name: check if routing instance has route target ref already
   request:
@@ -111,8 +112,9 @@ workflow:
   expect:
     routing-instances:
       - routing-instance:
-          route_target_refs:
-          - null
+          # TODO(Michal): reenable when IC handles transactions properly (JBE-993)
+          #route_target_refs:
+          #- null
 
 - name: delete virtual network a
   request:

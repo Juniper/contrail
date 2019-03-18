@@ -272,7 +272,7 @@ func (s *blockingStore) InTransaction(ctx context.Context, do func(ctx context.C
 		return do(ctx)
 	}
 
-	err := s.Store.InTransaction(ctx, wrappedDo)
+	err := s.Store.DoInTransaction(ctx, wrappedDo)
 	close(s.TransactionInProgress)
 	return err
 }

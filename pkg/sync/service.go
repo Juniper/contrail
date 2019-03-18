@@ -35,6 +35,11 @@ type watchCloser interface {
 	Close()
 }
 
+type eventProcessor interface {
+	services.EventProcessor
+	ProcessList(context.Context, *services.EventList) (*services.EventList, error)
+}
+
 // Service represents Sync service.
 type Service struct {
 	watcher watchCloser
@@ -59,7 +64,10 @@ func NewService() (*Service, error) {
 		return nil, err
 	}
 
-	watcher, err := createWatcher(syncID, &services.ServiceEventProcessor{Service: etcdNotifierService})
+	watcher, err := createWatcher(syncID, &services.EventListProcessor{
+		EventProcessor:    &services.ServiceEventProcessor{Service: etcdNotifierService},
+		InTransactionDoer: etcdNotifierService.Client,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +97,7 @@ func determineCodecType() models.Codec {
 	}
 }
 
-func createWatcher(id string, processor services.EventProcessor) (watchCloser, error) {
+func createWatcher(id string, processor eventProcessor) (watchCloser, error) {
 	setViperDefaults()
 	sqlDB, err := basedb.ConnectDB()
 	if err != nil {
@@ -113,7 +121,7 @@ func createWatcher(id string, processor services.EventProcessor) (watchCloser, e
 }
 
 func createPostgreSQLWatcher(
-	id string, dbService *db.Service, processor services.EventProcessor,
+	id string, dbService *db.Service, processor eventProcessor,
 ) (watchCloser, error) {
 	handler := replication.NewPgoutputEventHandler(processor, dbService)
 
@@ -144,7 +152,7 @@ func createPostgreSQLWatcher(
 	)
 }
 
-func createMySQLWatcher(eventDecoder replication.EventDecoder, processor services.EventProcessor) (watchCloser, error) {
+func createMySQLWatcher(eventDecoder replication.EventDecoder, processor eventProcessor) (watchCloser, error) {
 	conf := canalConfig()
 
 	canal, err := mysqlcanal.NewCanal(conf)
