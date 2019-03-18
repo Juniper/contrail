@@ -8,7 +8,7 @@ with open(docker_compose_path) as f:
     docker_compose = yaml.load(f)
 
 schema = docker_compose["services"]["schema"]
-schema["image"] = "kaweue/contrail-controller-config-schema:R6.0-7"
+schema["image"] = "kaweue/contrail-controller-config-schema:R6.0-9"
 config = [
     "NOTIFICATION_DRIVER=etcd",
     "DB_DRIVER=etcd",
