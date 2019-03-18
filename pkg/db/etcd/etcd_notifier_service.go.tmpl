@@ -46,7 +46,10 @@ func (ns *NotifierService) Create{{ schema.JSONSchema.GoName }}(
 		return nil, errors.New("error encoding create data")
 	}
 
-	err = ns.Client.Put(ctx, key, jsonStr)
+	err = ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
+		GetTxn(ctx).Put(key, []byte(jsonStr))
+		return nil
+	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create {{ schema.JSONSchema.GoName }} with UUID %q in etcd", o.UUID)
 	}
@@ -67,7 +70,7 @@ func (ns *NotifierService) Update{{ schema.JSONSchema.GoName }}(
     key := models.ResourceKey("{{ schema.ID }}", o.UUID)
 
 	ns.log.WithField("uuid", o.UUID).Debug("Updating {{ schema.JSONSchema.GoName }} in etcd")
-	return response, ns.Client.InTransaction(ctx, func(ctx context.Context) error {
+	return response, ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
 		txn := GetTxn(ctx)
 		oldData := txn.Get(key)
 		newData, err := models.UpdateData(ns.Codec, oldData, o, request.GetFieldMask())
@@ -87,7 +90,12 @@ func (ns *NotifierService) Delete{{ schema.JSONSchema.GoName }}(
 		return nil, err
 	}
 
-	err = ns.Client.Delete(ctx, models.ResourceKey("{{ schema.ID }}", response.GetID()))
+	key := models.ResourceKey("{{ schema.ID }}", response.GetID())
+
+	err = ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
+		GetTxn(ctx).Delete(key)
+		return nil
+	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to delete {{ schema.JSONSchema.GoName }} with UUID %q in etcd", response.GetID())
 	}
@@ -112,7 +120,7 @@ func (ns *NotifierService) Create{{ refType }}(
 	toKey := models.ResourceKey("{{ reference.LinkTo.ID }}", ref.UUID)
 
 	ns.log.WithField("from-key", fromKey).WithField("to-key", toKey).Debug("Creating {{ refType }} in etcd")
-	return response, ns.Client.InTransaction(ctx, func(ctx context.Context) error {
+	return response, ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
 		newFrom, newTo := &models.{{ schema.JSONSchema.GoName }}{}, &models.{{ reference.GoName }}{}
 		err := ns.handleRefWrapper(ctx, fromKey, newFrom, func() {
 			newFrom.Add{{ reference.GoName }}Ref(ref)
@@ -140,7 +148,7 @@ func (ns *NotifierService) Delete{{ refType }}(
 	toKey := models.ResourceKey("{{ reference.LinkTo.ID }}", ref.UUID)
 
 	ns.log.WithField("from-key", fromKey).WithField("to-key", toKey).Debug("Deleting {{ refType }} in etcd")
-	return response, ns.Client.InTransaction(ctx, func(ctx context.Context) error {
+	return response, ns.Client.DoInTransaction(ctx, func(ctx context.Context) error {
 		newFrom, newTo := &models.{{ schema.JSONSchema.GoName }}{}, &models.{{ reference.GoName }}{}
 		err := ns.handleRefWrapper(ctx, fromKey, newFrom, func() {
 			newFrom.Remove{{ reference.GoName }}Ref(ref)

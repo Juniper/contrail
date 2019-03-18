@@ -6,7 +6,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/services"
 )
 
 // EventProducer based on RDBMS updates.
@@ -17,7 +16,7 @@ type EventProducer struct {
 
 // NewEventProducer makes EventProducer based RDBMS updates.
 // Every EventProducer must have a unique id.
-func NewEventProducer(id string, processor services.EventProcessor) (*EventProducer, error) {
+func NewEventProducer(id string, processor eventProcessor) (*EventProducer, error) {
 	Watcher, err := createWatcher(id, processor)
 	if err != nil {
 		return nil, err
