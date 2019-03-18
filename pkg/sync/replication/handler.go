@@ -26,14 +26,16 @@ type EventDecoder interface {
 // PgoutputEventHandler handles replication messages by decoding them as events and passing them to processor.
 type PgoutputEventHandler struct {
 	decoder   EventDecoder
-	processor services.EventProcessor
+	processor eventListProcessor
 	log       *logrus.Entry
+
+	txnInProgress *transaction
 
 	relations relationSet
 }
 
 // NewPgoutputEventHandler creates new ReplicationEventHandler with provided decoder and processor.
-func NewPgoutputEventHandler(p services.EventProcessor, d EventDecoder) *PgoutputEventHandler {
+func NewPgoutputEventHandler(p eventListProcessor, d EventDecoder) *PgoutputEventHandler {
 	return &PgoutputEventHandler{
 		decoder:   d,
 		processor: p,
@@ -49,6 +51,12 @@ func (h *PgoutputEventHandler) Handle(ctx context.Context, msg pgoutput.Message)
 	case pgoutput.Relation:
 		h.log.Debug("received RELATION message")
 		h.relations[v.ID] = v
+	case pgoutput.Begin:
+		h.log.Debug("received BEGIN message")
+		h.txnInProgress = beginTransaction(h.processor)
+	case pgoutput.Commit:
+		h.log.Debug("received COMMIT message")
+		return h.txnInProgress.Commit(ctx)
 	case pgoutput.Insert:
 		h.log.Debug("received INSERT message")
 		return h.handleDataEvent(ctx, services.OperationCreate, v.RelationID, v.Row)
@@ -83,8 +91,17 @@ func (h *PgoutputEventHandler) handleDataEvent(
 		return err
 	}
 
-	_, err = h.processor.Process(ctx, ev)
-	return err
+	return h.process(ctx, ev)
+}
+
+func (h *PgoutputEventHandler) process(ctx context.Context, e *services.Event) error {
+	if h.txnInProgress == nil {
+		_, err := h.processor.ProcessList(ctx, &services.EventList{Events: []*services.Event{e}})
+		return err
+	}
+
+	h.txnInProgress.add(e)
+	return nil
 }
 
 func decodeRowData(

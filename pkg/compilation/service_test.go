@@ -258,7 +258,7 @@ func (s *blockingStore) WatchRecursive(
 	return c
 }
 
-func (s *blockingStore) InTransaction(ctx context.Context, do func(ctx context.Context) error) error {
+func (s *blockingStore) DoInTransaction(ctx context.Context, do func(ctx context.Context) error) error {
 	s.TransactionInProgress = make(chan struct{})
 	wrappedDo := func(ctx context.Context) error {
 		txn := blockingTxn{
@@ -272,7 +272,7 @@ func (s *blockingStore) InTransaction(ctx context.Context, do func(ctx context.C
 		return do(ctx)
 	}
 
-	err := s.Store.InTransaction(ctx, wrappedDo)
+	err := s.Store.DoInTransaction(ctx, wrappedDo)
 	close(s.TransactionInProgress)
 	return err
 }
