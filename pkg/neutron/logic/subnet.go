@@ -404,6 +404,7 @@ func vncHostRoutesToNeutronHostRoutes(rtt *models.RouteTableType) []*RouteTableT
 	}
 	rts := make([]*RouteTableType, len(rtt.Route))
 	for i, r := range rtt.Route {
+		rts[i] = &RouteTableType{}
 		rts[i].Destination = r.Prefix
 		rts[i].Nexthop = r.NextHop
 	}
@@ -689,7 +690,7 @@ func (s *Subnet) Delete(ctx context.Context, rp RequestParameters, id string) (R
 	if err != nil {
 		return nil, newSubnetError(internalServerError, "cannot update virtual network: %v", err)
 	}
-	return nil, nil
+	return &SubnetResponse{}, nil
 }
 
 func (s *Subnet) createOrUpdateVirtualNetworkIpamRefs(
