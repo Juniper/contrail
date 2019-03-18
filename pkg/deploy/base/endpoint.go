@@ -1,4 +1,4 @@
-package cluster
+package base
 
 import (
 	"strconv"
@@ -44,10 +44,10 @@ var portMap = map[string]string{
 
 // EndpointData is the representation of cluster endpoints.
 type EndpointData struct {
-	clusterID   string
-	cluster     *Cluster
-	clusterData *Data
-	log         *logrus.Entry
+	ClusterID   string
+	ResManager  *ResourceManager
+	ClusterData *Data
+	Log         *logrus.Entry
 }
 
 func (e *EndpointData) endpointToURL(protocol, ip, port string) (endpointURL string) {
@@ -56,7 +56,7 @@ func (e *EndpointData) endpointToURL(protocol, ip, port string) (endpointURL str
 
 // nolint: gocyclo
 func (e *EndpointData) getPort(nodeIP, service string) string {
-	c := e.clusterData
+	c := e.ClusterData
 	var nodePortMap map[string]interface{}
 	switch service {
 	case config:
@@ -89,11 +89,11 @@ func (e *EndpointData) getPort(nodeIP, service string) string {
 
 func (e *EndpointData) getOpenstackPublicVip() (vip string) {
 	vip = ""
-	o := e.clusterData.getOpenstackClusterData()
-	if o.clusterInfo.OpenstackExternalVip != "" {
-		vip = o.clusterInfo.OpenstackExternalVip
-	} else if o.clusterInfo.OpenstackInternalVip != "" {
-		vip = o.clusterInfo.OpenstackInternalVip
+	o := e.ClusterData.getOpenstackClusterData()
+	if o.ClusterInfo.OpenstackExternalVip != "" {
+		vip = o.ClusterInfo.OpenstackExternalVip
+	} else if o.ClusterInfo.OpenstackInternalVip != "" {
+		vip = o.ClusterInfo.OpenstackInternalVip
 	}
 
 	return vip
@@ -101,7 +101,7 @@ func (e *EndpointData) getOpenstackPublicVip() (vip string) {
 
 func (e *EndpointData) getkeystoneAdminCredential() (adminUser, adminPassword string) {
 	var k []*models.KeyValuePair
-	if o := e.clusterData.getOpenstackClusterInfo(); o != nil {
+	if o := e.ClusterData.GetOpenstackClusterInfo(); o != nil {
 		if g := o.GetKollaPasswords(); g != nil {
 			k = g.GetKeyValuePair()
 			for _, keyValuePair := range k {
@@ -127,7 +127,7 @@ func (e *EndpointData) getkeystoneAdminCredential() (adminUser, adminPassword st
 
 func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]string) {
 	var k []*models.KeyValuePair
-	if o := e.clusterData.getOpenstackClusterInfo(); o != nil {
+	if o := e.ClusterData.GetOpenstackClusterInfo(); o != nil {
 		if g := o.GetKollaGlobals(); g != nil {
 			k = g.GetKeyValuePair()
 		}
@@ -155,7 +155,7 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 		if vip != "" {
 			openstackControlNodes = []string{vip}
 		} else {
-			o := e.clusterData.getOpenstackClusterData()
+			o := e.ClusterData.getOpenstackClusterData()
 			openstackControlNodes = o.getControlNodeIPs()
 		}
 		endpointNodes[identity] = openstackControlNodes
@@ -169,7 +169,7 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 		if vip != "" {
 			openstackStorageNodes = []string{vip}
 		} else {
-			o := e.clusterData.getOpenstackClusterData()
+			o := e.ClusterData.getOpenstackClusterData()
 			openstackStorageNodes = o.getStorageNodeIPs()
 		}
 		endpointNodes[swift] = openstackStorageNodes
@@ -179,7 +179,7 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 
 func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]string) {
 	endpointNodes = make(map[string][]string)
-	if c := e.clusterData.clusterInfo.GetContrailConfiguration(); c != nil {
+	if c := e.ClusterData.ClusterInfo.GetContrailConfiguration(); c != nil {
 		for _, keyValuePair := range c.GetKeyValuePair() {
 			IPAddresses := strings.Split(keyValuePair.Value, ",")
 			switch keyValuePair.Key {
@@ -197,38 +197,38 @@ func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]st
 		}
 	}
 	if _, ok := endpointNodes[config]; !ok {
-		endpointNodes[config] = e.clusterData.getConfigNodeIPs()
+		endpointNodes[config] = e.ClusterData.getConfigNodeIPs()
 	}
 	if _, ok := endpointNodes[analytics]; !ok {
-		endpointNodes[analytics] = e.clusterData.getAnalyticsNodeIPs()
+		endpointNodes[analytics] = e.ClusterData.getAnalyticsNodeIPs()
 	}
 	if _, ok := endpointNodes[webui]; !ok {
-		endpointNodes[webui] = e.clusterData.getWebuiNodeIPs()
+		endpointNodes[webui] = e.ClusterData.getWebuiNodeIPs()
 	}
 	return endpointNodes
 }
 
 func (e *EndpointData) getAppformixEndpointNodes() (endpointNodes map[string][]string) {
 	endpointNodes = make(map[string][]string)
-	endpointNodes[appformix] = e.clusterData.getAppformixControllerNodeIPs()
+	endpointNodes[appformix] = e.ClusterData.getAppformixControllerNodeIPs()
 	return endpointNodes
 }
 
 func (e *EndpointData) getXflowEndpointNodes() (endpointNodes map[string][]string) {
 	endpointNodes = make(map[string][]string)
-	xflowData := e.clusterData.getXflowData()
+	xflowData := e.ClusterData.GetXflowData()
 	if xflowData != nil && xflowData.ClusterInfo != nil {
 		endpointNodes[xflow] = []string{xflowData.ClusterInfo.KeepalivedSharedIP}
 	}
 	return endpointNodes
 }
 
-// nolint: gocyclo
-func (e *EndpointData) create() error {
-	e.log.Infof("Creating service endpoints for cluster: %s", e.clusterID)
+// Create endpoint
+func (e *EndpointData) Create() error { //nolint: gocyclo
+	e.Log.Infof("Creating service endpoints for cluster: %s", e.ClusterID)
 	contrailEndpoints := e.getContrailEndpointNodes()
 	for service, endpointIPs := range contrailEndpoints {
-		e.log.Infof("Creating %s endpoints", service)
+		e.Log.Infof("Creating %s endpoints", service)
 		for _, endpointIP := range endpointIPs {
 			endpointProtocol := protocol
 			if service == webui {
@@ -238,12 +238,12 @@ func (e *EndpointData) create() error {
 				endpointProtocol, endpointIP, e.getPort(endpointIP, service))
 			privateURL := publicURL
 			endpointData := map[string]string{
-				"parent_uuid": e.clusterID,
+				"parent_uuid": e.ClusterID,
 				"name":        service,
 				"public_url":  publicURL,
 				"private_url": privateURL,
 			}
-			err := e.cluster.createEndpoint(endpointData)
+			err := e.ResManager.createEndpoint(endpointData)
 			if err != nil {
 				return err
 			}
@@ -251,16 +251,16 @@ func (e *EndpointData) create() error {
 	}
 
 	// openstack endpoints
-	if e.clusterData.clusterInfo.Orchestrator == "openstack" {
+	if e.ClusterData.ClusterInfo.Orchestrator == "openstack" {
 		openstackEndpoints := e.getOpenstackEndpointNodes()
 		for service, endpointIPs := range openstackEndpoints {
-			e.log.Infof("Creating %s endpoints", service)
+			e.Log.Infof("Creating %s endpoints", service)
 			for _, endpointIP := range endpointIPs {
 				publicURL := e.endpointToURL(
 					protocol, endpointIP, e.getPort(endpointIP, service))
 				privateURL := publicURL
 				endpointData := map[string]string{
-					"parent_uuid": e.clusterID,
+					"parent_uuid": e.ClusterID,
 					"name":        service,
 					"public_url":  publicURL,
 					"private_url": privateURL,
@@ -270,7 +270,7 @@ func (e *EndpointData) create() error {
 					endpointData["username"] = adminUser
 					endpointData["password"] = adminPassword
 				}
-				err := e.cluster.createEndpoint(endpointData)
+				err := e.ResManager.createEndpoint(endpointData)
 				if err != nil {
 					return err
 				}
@@ -281,7 +281,7 @@ func (e *EndpointData) create() error {
 	// appformix and xflow endpoints
 	endpoints := format.MergeMultimap(e.getAppformixEndpointNodes(), e.getXflowEndpointNodes())
 	for service, endpointIPs := range endpoints {
-		e.log.Infof("Creating %s endpoints:%s", service, endpointIPs)
+		e.Log.Infof("Creating %s endpoints:%s", service, endpointIPs)
 		for _, endpointIP := range endpointIPs {
 			endpointProtocol := protocol
 			if service == appformix {
@@ -291,12 +291,12 @@ func (e *EndpointData) create() error {
 				endpointProtocol, endpointIP, e.getPort(endpointIP, service))
 			privateURL := publicURL
 			endpointData := map[string]string{
-				"parent_uuid": e.clusterID,
+				"parent_uuid": e.ClusterID,
 				"name":        service,
 				"public_url":  publicURL,
 				"private_url": privateURL,
 			}
-			err := e.cluster.createEndpoint(endpointData)
+			err := e.ResManager.createEndpoint(endpointData)
 			if err != nil {
 				return err
 			}
@@ -305,24 +305,26 @@ func (e *EndpointData) create() error {
 	return nil
 }
 
-func (e *EndpointData) update() error {
-	e.log.Infof("Updating service endpoints for cluster: %s", e.clusterID)
-	err := e.remove()
+// Update endpoint
+func (e *EndpointData) Update() error {
+	e.Log.Infof("Updating service endpoints for cluster: %s", e.ClusterID)
+	err := e.Remove()
 	if err != nil {
 		return err
 	}
-	err = e.create()
+	err = e.Create()
 	return err
 }
 
-func (e *EndpointData) remove() error {
-	e.log.Infof("Deleting service endpoints for cluster: %s", e.clusterID)
-	endpointIDs, err := e.cluster.getEndpoints([]string{e.clusterID})
+// Remove endpoint
+func (e *EndpointData) Remove() error {
+	e.Log.Infof("Deleting service endpoints for cluster: %s", e.ClusterID)
+	endpointIDs, err := e.ResManager.getEndpoints([]string{e.ClusterID})
 	if err != nil {
 		return err
 	}
 	for _, endpointID := range endpointIDs {
-		err = e.cluster.deleteEndpoint(endpointID)
+		err = e.ResManager.deleteEndpoint(endpointID)
 		if err != nil {
 			return err
 		}

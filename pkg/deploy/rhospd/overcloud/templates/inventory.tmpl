@@ -1,0 +1,30 @@
+# Copyright 2018 Juniper Networks, Inc. All rights reserved.
+# Licensed under the Juniper Networks Script Software License (the "License").
+# You may not use this script file except in compliance with the License, which
+is located at
+# http://www.juniper.net/support/legal/scriptlicense/
+# Unless required by applicable law or otherwise agreed to in writing by the
+parties,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+#
+#
+# List of baremetal server nodes that can be used for the deploying roles
+# Each list item contains:
+# name: logical name to assign this resource
+# pm_addr: IP address for resourceIPMI interface
+# pm_type: Ironic driver to interface with this resource (typically
+pxe_ipmitool)
+Copyright © 2018, Juniper Networks, Inc. 17
+Chapter 1: Contrail Cloud Deployment Guide
+# pm_user: IPMI user account
+# pm_password: IPMI account user password
+inventory_nodes:
+{% for node in nodes %}
+  - name: {{ node.HostName }}
+    pm_addr: {{ node.BmsInfo.DriverInfo.IPMIAddress }}
+    pm_type: "pxe_ipmitool"
+    pm_user: {{ node.BmsInfo.DriverInfo.IPMIUserName }}
+    pm_password: {{ node.BmsInfo.DriverInfo.IPMIPassword }}
+{% endfor %}

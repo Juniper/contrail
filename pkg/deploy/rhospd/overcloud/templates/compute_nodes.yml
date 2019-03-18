@@ -1,0 +1,29 @@
+# Copyright 2018 Juniper Networks, Inc. All rights reserved.
+# Licensed under the Juniper Networks Script Software License (the "License").
+# You may not use this script file except in compliance with the License, which is located at
+# http://www.juniper.net/support/legal/scriptlicense/
+# Unless required by applicable law or otherwise agreed to in writing by the parties,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+#
+#
+
+# List of nodes to use as compute role using Contrail DPDK vRouter
+# Each list item contains:
+#    name: name of a node in the inventory
+#compute_nodes_dpdk:
+#  - name: compute_dpdk1
+
+# List of nodes to use as compute role using Contrail kernel vRouter
+# Each list item contains:
+#    name: name of a node in the inventory
+
+compute_nodes_kernel:
+  - name: 5b10s39-node1-compute1
+  - name: 5b10s39-node2-compute2
+  - name: 5b10s39-node3-compute3
+
+compute_nodes_dpdk:
+  - name: 5b10s39-node4-compute4
+  - name: 5b10s41-node4-compute5

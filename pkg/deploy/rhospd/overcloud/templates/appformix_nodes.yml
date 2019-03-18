@@ -1,0 +1,64 @@
+# Copyright 2018 Juniper Networks, Inc. All rights reserved.
+# Licensed under the Juniper Networks Script Software License (the "License").
+# You may not use this script file except in compliance with the License, which is located at
+# http://www.juniper.net/support/legal/scriptlicense/
+# Unless required by applicable law or otherwise agreed to in writing by the parties,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+#
+#
+
+# List of nodes to use as appformix server role
+# Each list item contains:
+#    name: name of a node in the inventory
+#    hostname: hostname to assign the node after it is imaged
+#    ip_address: address on Control Plane network.   Choose a value outside the DHCP range.
+#    other optional ad hoc variables: these variables can be refered with "{{ host.<variable> }}"
+#        external_ip_netmask:  address on an infrastructure network
+#        external_ip_gateway:  gateway on an infrastructure network
+appformix_nodes:
+  - name: appformix-controller-192_0_2_5
+    hostname: "afx1"
+    control_ip_netmask: "192.0.2.10/24"
+    external_ip_netmask: "10.87.78.66/25"
+    external_ip_gateway: "10.87.78.126"
+  - name: appformix-controller-192_0_2_6
+    hostname: "afx2"
+    control_ip_netmask: "192.0.2.11/24"
+    external_ip_netmask: "10.87.78.67/25"
+    external_ip_gateway: "10.87.78.126"
+  - name: appformix-controller-192_0_2_7
+    hostname: "afx3"
+    control_ip_netmask: "192.0.2.12/24"
+    external_ip_netmask: "10.87.78.68/25"
+    external_ip_gateway: "10.87.78.126"
+
+# Template for network layout on all appformix server nodes
+# This follows the os-net-config syntax
+# See https://github.com/openstack/os-net-config/tree/stable/queens
+appformix_nodes_network_config:
+  - type: interface
+    name: eth0
+    use_dhcp: true
+    mtu: 9000
+  - type: interface
+    name: eth1
+    use_dhcp: false
+    addresses:
+    -
+      ip_netmask: "{{ host.external_ip_netmask }}"
+    routes:
+      -
+        ip_netmask: 0.0.0.0/0
+        next_hop: "{{ host.external_ip_gateway }}"
+        default: true
+    mtu: 9000
+  - type: interface
+    name: eth2
+    use_dhcp: false
+    mtu: 9000
+  - type: interface
+    name: eth3
+    use_dhcp: false
+    mtu: 9000

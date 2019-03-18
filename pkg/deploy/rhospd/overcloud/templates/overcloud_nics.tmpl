@@ -1,0 +1,355 @@
+#opyright 2018 Juniper Networks, Inc. All rights reserved.
+# Licensed under the Juniper Networks Script Software License (the "License").
+# You may not use this script file except in compliance with the License, which is located at
+# http://www.juniper.net/support/legal/scriptlicense/
+# Unless required by applicable law or otherwise agreed to in writing by the parties,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+#
+#
+
+
+###################################################
+
+# Overcloud Host Nic Layouts for each role
+
+###################################################
+
+
+
+# Template for network layout on all contrail control roles (Config, Analytics, Analytics Database)
+# This follows the os-net-config syntax
+# See https://github.com/openstack/os-net-config/tree/stable/queens
+contrail_network_config:
+  - type: interface
+    name: eth0
+    dns_servers:
+      get_param: DnsServers
+    mtu:
+      get_param: ControlPlaneNetworkMtu
+    addresses:
+    - ip_netmask:
+        list_join:
+          - '/'
+          - - get_param: ControlPlaneIp
+            - get_param: ControlPlaneSubnetCidr
+    use_dhcp: false
+    routes:
+    -
+      ip_netmask: 169.254.169.254/32
+      next_hop:
+        get_param: EC2MetadataIp
+    -
+      default: True
+      next_hop:
+        get_param: ControlPlaneDefaultRoute
+  - type: interface
+    name: eth1
+    use_dhcp: false
+  - type: vlan
+    device: eth1
+    vlan_id:
+      get_param: InternalApiNetworkVlanID
+    mtu:
+      get_param: InternalApiNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: InternalApiIpSubnet
+#    routes:
+#    -
+#      next_hop:
+#        get_param: InternalApiInterfaceDefaultRoute
+    use_dhcp: false
+  - type: interface
+    name: eth1
+    use_dhcp: false
+  - type: vlan
+    device: eth2
+    vlan_id:
+      get_param: TenantNetworkVlanID
+    mtu:
+      get_param: TenantNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: TenantIpSubnet
+    use_dhcp: false
+# Template for network layout on all openstack control roles
+# This follows the os-net-config syntax
+# See https://github.com/openstack/os-net-config/tree/stable/queens
+controller_network_config:
+  - type: interface
+    name: eth0
+    dns_servers:
+      get_param: DnsServers
+    mtu:
+      get_param: ControlPlaneNetworkMtu
+    addresses:
+    - ip_netmask:
+        list_join:
+          - '/'
+          - - get_param: ControlPlaneIp
+            - get_param: ControlPlaneSubnetCidr
+    use_dhcp: false
+    routes:
+    -
+      ip_netmask: 169.254.169.254/32
+      next_hop:
+        get_param: EC2MetadataIp
+  - type: interface
+    name: eth1
+    use_dhcp: false
+    mtu:
+      get_param: ExternalNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: ExternalIpSubnet
+    routes:
+    -
+      default: True
+      next_hop:
+        get_param: ExternalInterfaceDefaultRoute
+  - type: vlan
+    device: eth1
+    vlan_id:
+      get_param: InternalApiNetworkVlanID
+    mtu:
+      get_param: InternalApiNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: InternalApiIpSubnet
+#    routes:
+#    -
+#      next_hop:
+#        get_param: InternalApiInterfaceDefaultRoute
+    use_dhcp: false
+  - type: vlan
+    device: eth1
+    use_dhcp: false
+    vlan_id:
+      get_param: StorageMgmtNetworkVlanID
+    mtu:
+      get_param: StorageMgmtNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: StorageMgmtIpSubnet
+  - type: vlan
+    device: eth1
+    use_dhcp: false
+    vlan_id:
+      get_param: StorageNetworkVlanID
+    mtu:
+      get_param: StorageNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: StorageIpSubnet
+
+# Template for network layout on all compute role nodes using Contrail kernel vRouter
+# This follows the os-net-config syntax
+# See https://github.com/openstack/os-net-config/tree/stable/queens
+compute_network_config:
+  - type: interface
+    name: ens2f1
+    dns_servers:
+      get_param: DnsServers
+    use_dhcp: false
+    mtu:
+      get_param: ControlPlaneNetworkMtu
+    addresses:
+    - ip_netmask:
+        list_join:
+          - '/'
+          - - get_param: ControlPlaneIp
+            - get_param: ControlPlaneSubnetCidr
+    routes:
+    -
+      ip_netmask: 169.254.169.254/32
+      next_hop:
+        get_param: EC2MetadataIp
+    -
+      default: True
+      next_hop:
+        get_param: ControlPlaneDefaultRoute
+  - type: interface
+    name: ens5f2
+    use_dhcp: false
+  - type: interface
+    name: ens2f0
+    use_dhcp: false
+  - type: vlan
+    device: ens2f0
+    vlan_id:
+      get_param: InternalApiNetworkVlanID
+    mtu:
+      get_param: InternalApiNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: InternalApiIpSubnet
+#    routes:
+#    -
+#      next_hop:
+#        get_param: InternalApiInterfaceDefaultRoute
+  - type: vlan
+    device: ens2f0
+    vlan_id:
+      get_param: StorageNetworkVlanID
+    mtu:
+      get_param: StorageNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: StorageIpSubnet
+  - type: linux_bond
+    name: bond0
+    use_dhcp: false
+    bonding_options: "mode=802.3ad xmit_hash_policy=layer3+4 lacp_rate=fast updelay=1000 miimon=100"
+    members:
+    - type: interface
+      name: ens5f0
+      primary: true
+    - type: interface
+      name: ens5f1
+  - type: vlan
+    device: bond0
+    vlan_id:
+      get_param: TenantNetworkVlanID
+  - type: contrail_vrouter
+    name: vhost0
+    members:
+    - type: interface
+      name: bond0
+    mtu:
+      get_param: TenantNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: TenantIpSubnet
+# Template for network layout on all storage role nodes using Contrail DPDK vRouter
+# This follows the os-net-config syntax
+# See https://github.com/openstack/os-net-config/tree/stable/queens
+storage_network_config:
+  - type: interface
+    name: ens2f1
+    dns_servers:
+      get_param: DnsServers
+    use_dhcp: false
+    mtu:
+      get_param: ControlPlaneNetworkMtu
+    addresses:
+    - ip_netmask:
+        list_join:
+          - '/'
+          - - get_param: ControlPlaneIp
+            - get_param: ControlPlaneSubnetCidr
+    routes:
+    -
+      ip_netmask: 169.254.169.254/32
+      next_hop:
+        get_param: EC2MetadataIp
+    -
+      default: True
+      next_hop:
+        get_param: ControlPlaneDefaultRoute
+  - type: interface
+    name: ens5f2
+    use_dhcp: false
+  - type: interface
+    name: ens2f0
+    use_dhcp: false
+  - type: vlan
+    device: ens2f0
+    vlan_id:
+      get_param: StorageMgmtNetworkVlanID
+    mtu:
+      get_param: StorageMgmtNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: StorageMgmtIpSubnet
+  - type: vlan
+    device: ens2f0
+    vlan_id:
+      get_param: StorageNetworkVlanID
+    mtu:
+      get_param: StorageNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: StorageIpSubnet
+  - type: linux_bond
+    name: bond0
+    use_dhcp: false
+    bonding_options: "mode=802.3ad xmit_hash_policy=layer3+4 lacp_rate=fast updelay=1000 miimon=100"
+    members:
+    - type: interface
+      name: ens5f0
+      primary: true
+    - type: interface
+      name: ens5f1
+# Template for network layout on all compute role nodes using Contrail DPDK vRouter
+# This follows the os-net-config syntax
+# See https://github.com/openstack/os-net-config/tree/stable/queens
+compute_dpdk_network_config:
+  - type: interface
+    name: ens2f1
+    dns_servers:
+      get_param: DnsServers
+    use_dhcp: false
+    mtu:
+      get_param: ControlPlaneNetworkMtu
+    addresses:
+    - ip_netmask:
+        list_join:
+          - '/'
+          - - get_param: ControlPlaneIp
+            - get_param: ControlPlaneSubnetCidr
+    routes:
+    -
+      ip_netmask: 169.254.169.254/32
+      next_hop:
+        get_param: EC2MetadataIp
+    -
+      default: True
+      next_hop:
+        get_param: ControlPlaneDefaultRoute
+  - type: interface
+    name: ens5f2
+    use_dhcp: false
+  - type: interface
+    name: ens2f0
+    use_dhcp: false
+  - type: vlan
+    device: ens2f0
+    vlan_id:
+      get_param: InternalApiNetworkVlanID
+    mtu:
+      get_param: InternalApiNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: InternalApiIpSubnet
+  - type: vlan
+    device: ens2f0
+    vlan_id:
+      get_param: StorageNetworkVlanID
+    mtu:
+      get_param: StorageNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: StorageIpSubnet
+  - type: contrail_vrouter_dpdk
+    name: vhost0
+    vlan_id:
+      get_param: TenantNetworkVlanID
+    driver: "{{ overcloud['contrail']['vrouter']['dpdk']['driver'] }}"
+    bond_mode: 4
+    cpu_list: 0-7
+    two_mb: 4096
+    one_gb: 100
+
+    bond_policy: layer2+3
+    members:
+    - type: interface
+      name: ens5f0
+    - type: interface
+      name: ens5f1
+    mtu:
+      get_param: TenantNetworkMtu
+    addresses:
+    - ip_netmask:
+        get_param: TenantIpSubnet
