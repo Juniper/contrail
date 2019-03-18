@@ -18,7 +18,7 @@ const (
 	testResourceInitialValue = "test-initial-value"
 )
 
-func TestInTransactionEtcdDataRace(t *testing.T) {
+func TestDoInTransactionEtcdDataRace(t *testing.T) {
 	e := integrationetcd.NewEtcdClient(t)
 	defer e.Close(t)
 
@@ -41,7 +41,7 @@ func TestInTransactionEtcdDataRace(t *testing.T) {
 	interrupterProcess := func() error {
 		var value []byte
 
-		err = client.InTransaction(context.Background(), func(ctx context.Context) error {
+		err = client.DoInTransaction(context.Background(), func(ctx context.Context) error {
 			txn := etcd.GetTxn(ctx)
 			value = txn.Get(testResourceKey)
 
@@ -67,7 +67,7 @@ func TestInTransactionEtcdDataRace(t *testing.T) {
 	// First process is etcd user who got interrupted by interrupter before updating value.
 	firstProcess := func() error {
 		var value []byte
-		err = client.InTransaction(context.Background(), func(ctx context.Context) error {
+		err = client.DoInTransaction(context.Background(), func(ctx context.Context) error {
 			txn := etcd.GetTxn(ctx)
 
 			value = txn.Get(testResourceKey)

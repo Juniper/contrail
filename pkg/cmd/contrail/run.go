@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/services"
 
 	"github.com/Juniper/contrail/pkg/agent"
 	"github.com/Juniper/contrail/pkg/apisrv"
@@ -102,7 +103,10 @@ func startEtcdWatcher() {
 
 func startRDBMSWatcher() {
 	logrus.Debug("RDBMS watcher enabled for cache")
-	producer, err := syncp.NewEventProducer("cache-watcher", cacheDB)
+	producer, err := syncp.NewEventProducer("cache-watcher", &services.EventListProcessor{
+		EventProcessor:    cacheDB,
+		InTransactionDoer: services.NoTransaction,
+	})
 	if err != nil {
 		logutil.FatalWithStackTrace(err)
 	}
