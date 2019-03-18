@@ -470,8 +470,7 @@ type createRefEventRequest interface {
 type CreateRefRequest interface {
 	GetID() string
 	SetID(string)
-	SetRefUUID(string)
-	GetAttr() basemodels.RefAttribute
+	GetReference() basemodels.Reference
 	isCreateRefRequest()
 }
 
@@ -485,7 +484,7 @@ type deleteRefEventRequest interface {
 type DeleteRefRequest interface {
 	GetID() string
 	SetID(string)
-	SetRefUUID(string)
+	GetReference() basemodels.Reference
 	isDeleteRefRequest()
 }
 
@@ -538,9 +537,9 @@ func NewCreateRefEvent(option RefUpdateOption) (*Event, error) {
 	}
 	r := er.GetRequest()
 	r.SetID(option.FromUUID)
-	r.SetRefUUID(option.ToUUID)
-	if err = format.ApplyMap(option.Attr, er.GetRequest().GetAttr()); err != nil {
-		return nil, errors.Wrapf(err, "failed to unmarshal reference attribute data %v, error %v", option.Attr, err)
+	r.GetReference().SetUUID(option.ToUUID)
+	if err = format.ApplyMap(option.Attr, r.GetReference().GetAttribute()); err != nil {
+		return nil, errors.Wrapf(err, "failed to apply attribute data %v, error %v", option.Attr, err)
 	}
 
 	return &Event{
@@ -556,7 +555,7 @@ func NewDeleteRefEvent(option RefUpdateOption) (*Event, error) {
 	}
 	r := er.GetRequest()
 	r.SetID(option.FromUUID)
-	r.SetRefUUID(option.ToUUID)
+	r.GetReference().SetUUID(option.ToUUID)
 	return &Event{
 		Request: er,
 	}, nil
