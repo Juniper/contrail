@@ -1,8 +1,11 @@
 package replication
 
 import (
+	"context"
 	"strings"
 	"sync"
+
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (
@@ -13,6 +16,33 @@ const (
 // SlotName transforms watcher ID to replication slot name.
 func SlotName(id string) string {
 	return strings.Replace(id, "-", "_", -1)
+}
+
+type eventListProcessor interface {
+	ProcessList(context.Context, *services.EventList) (*services.EventList, error)
+}
+
+type transaction struct {
+	events    services.EventList
+	processor eventListProcessor
+}
+
+func beginTransaction(p eventListProcessor) *transaction {
+	return &transaction{
+		processor: p,
+	}
+}
+
+func (t *transaction) add(e *services.Event) {
+	t.events.Events = append(t.events.Events, e)
+}
+
+func (t *transaction) Commit(ctx context.Context) error {
+	if t == nil {
+		return nil
+	}
+	_, err := t.processor.ProcessList(ctx, &t.events)
+	return err
 }
 
 type lsnCounter struct {
