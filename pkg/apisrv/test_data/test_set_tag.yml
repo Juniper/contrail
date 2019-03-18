@@ -100,7 +100,6 @@ workflow:
   watchers:
     /contrail/project/admin_project_uuid:
       - data: *admin_project
-      - data: *admin_project # with APS
 
 - name: create virtual network
   request:

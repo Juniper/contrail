@@ -76,10 +76,12 @@ type InTransactionDoer interface {
 }
 
 // NoTransaction executes do function non-atomically.
-type NoTransaction struct{}
+var NoTransaction = noTransaction{}
+
+type noTransaction struct{}
 
 // DoInTransaction just runs do.
-func (*NoTransaction) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
+func (noTransaction) DoInTransaction(ctx context.Context, do func(context.Context) error) error {
 	return do(ctx)
 }
 
@@ -143,6 +145,32 @@ type ServiceEventProcessor struct {
 //Process processes event.
 func (p *ServiceEventProcessor) Process(ctx context.Context, event *Event) (*Event, error) {
 	return event.Process(ctx, p.Service)
+}
+
+// EventListProcessor processes event lists in transaction.
+type EventListProcessor struct {
+	EventProcessor
+	InTransactionDoer InTransactionDoer
+}
+
+// ProcessList processes list of events.
+func (p *EventListProcessor) ProcessList(ctx context.Context, e *EventList) (*EventList, error) {
+	var result []*Event
+	if err := p.InTransactionDoer.DoInTransaction(ctx, func(ctx context.Context) error {
+		for _, event := range e.Events {
+			r, err := p.Process(ctx, event)
+			if err != nil {
+				return err
+			}
+			result = append(result, r)
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return &EventList{
+		Events: result,
+	}, nil
 }
 
 // ContrailService implementation.

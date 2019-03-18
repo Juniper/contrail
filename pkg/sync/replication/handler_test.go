@@ -407,3 +407,7 @@ type eventProcessorMock struct {
 func (m *eventProcessorMock) Process(ctx context.Context, e *services.Event) (*services.Event, error) {
 	return nil, nil
 }
+
+func (m *eventProcessorMock) ProcessList(ctx context.Context, e *services.EventList) (*services.EventList, error) {
+	return nil, nil
+}
