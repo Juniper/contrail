@@ -59,6 +59,7 @@ const (
 	routerNotFound                            errorType = "RouterNotFound"
 	routerInUse                               errorType = "RouterInUse"
 	subnetNotFound                            errorType = "SubnetNotFound"
+	subnetMismatchForPort                     errorType = "SubnetMismatchForPort"
 	securityGroupNotFound                     errorType = "SecurityGroupNotFound"
 	securityGroupAlreadyExists                errorType = "SecurityGroupAlreadyExists"
 	securityGroupRemoteGroupAndRemoteIPPrefix errorType = "SecurityGroupRemoteGroupAndRemoteIpPrefix"
@@ -70,4 +71,6 @@ const (
 	securityGroupRuleNotFound                 errorType = "SecurityGroupRuleNotFound"
 	networkInUse                              errorType = "NetworkInUse"
 	invalidSharedSetting                      errorType = "InvalidSharedSetting"
+	routerInterfaceNotFound                   errorType = "RouterInterfaceNotFound"
+	routerInterfaceNotFoundForSubnet          errorType = "RouterInterfaceNotFoundForSubnet"
 )
