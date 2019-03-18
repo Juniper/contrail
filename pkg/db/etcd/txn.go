@@ -11,6 +11,7 @@ import (
 type Txn interface {
 	Get(key string) []byte
 	Put(key string, val []byte)
+	Delete(key string)
 }
 
 var txnKey interface{} = "etcd-txn"
@@ -42,4 +43,10 @@ func (s stmTxn) Put(key string, val []byte) {
 	s.log.WithFields(logrus.Fields{"key": key}).Debugf(
 		"Putting resource in etcd in transaction")
 	s.STM.Put(key, string(val))
+}
+
+func (s stmTxn) Delete(key string) {
+	s.log.WithFields(logrus.Fields{"key": key}).Debugf(
+		"Deleting resource in etcd in transaction")
+	s.STM.Del(key)
 }
