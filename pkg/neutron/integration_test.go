@@ -18,6 +18,10 @@ func TestNetworkReferredByPort(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
 
+func TestNetworkFloatingIP(t *testing.T) {
+	integration.RunTest(t, t.Name(), server)
+}
+
 func TestPort(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
