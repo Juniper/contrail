@@ -211,7 +211,7 @@ func (r *ResourceManager) GetClusterDetails(clusterID string) (*Data, error) { /
 			return nil, err
 		}
 
-		for _, appformixFlows := range appformixData.ClusterInfo.AppformixFlowss {
+		for _, appformixFlows := range appformixData.ClusterInfo.AppformixFlows {
 			xflowData := NewXflowData()
 			if err := xflowData.updateClusterDetails(context.Background(), appformixFlows.UUID, r); err != nil {
 				return nil, err

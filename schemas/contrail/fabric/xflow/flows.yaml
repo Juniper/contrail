@@ -1,14 +1,14 @@
-description: Appformix flows
+description: Appformix flow
 api_style: contrail
 extends:
 - base
 - has_status
-id: appformix_flows
+id: appformix_flow
 plural: appformix_flows
 parents:
   appformix_cluster:
     operations: CRUD
-    description: Appformix flows
+    description: Appformix flow
 prefix: /
 references:
   openstack_cluster:
