@@ -213,15 +213,21 @@ func (s *secret) getCredKeyPairIfExists(d *Data,
 
 			// if keypair object is not attached to credential object
 			// create keypair and attach it cred obj as ref
-			keypair := new(models.Keypair)
+			kpName := fmt.Sprintf("keypair-%s", cred.UUID)
+			keypair := &models.Keypair{
+				Name:        kpName,
+				DisplayName: kpName,
+				FQName:      []string{"default-global-system-config", kpName},
+				ParentType:  "global-system-config",
+			}
+
 			err := createSSHKey(cloudID, keypair)
 			if err != nil {
 				s.log.Errorf("error while creating ssh keys: %v", err)
 				return nil, err
 			}
-
 			keypair.SSHKeyDirPath = getCloudSSHKeyDir(cloudID)
-			_, err = s.cloud.APIServer.CreateKeypair(s.ctx,
+			kpResp, err := s.cloud.APIServer.CreateKeypair(s.ctx,
 				&services.CreateKeypairRequest{
 					Keypair: keypair,
 				},
@@ -233,7 +239,7 @@ func (s *secret) getCredKeyPairIfExists(d *Data,
 			// update cred object with keypair ref
 			cred.KeypairRefs = append(cred.KeypairRefs,
 				&models.CredentialKeypairRef{
-					UUID: keypair.UUID,
+					UUID: kpResp.Keypair.UUID,
 				},
 			)
 			_, err = s.cloud.APIServer.UpdateCredential(s.ctx,
