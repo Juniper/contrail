@@ -1,4 +1,4 @@
-# [POC] Go code base for Contrail projects
+# [POC] Go hoge and hoge
 
 This repository holds Go implementation for Contrail projects.
 The goal of this project is
@@ -18,13 +18,13 @@ to community discussion.
 
 ## Development setup
 
-### Step1. Install Go, Docker and Docker Compose
+### Step1. Go Hoge
 
 - [Go](https://golang.org/doc/install)
 - [Docker](https://docs.docker.com/install/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
-### Step2. Go get Contrail
+### Step2. More Hoge
 
 ```bash
 go get -u github.com/Juniper/contrail
