@@ -56,7 +56,7 @@ type AppformixData struct {
 
 // XflowData is the representation of Appformix Flows cluster details.
 type XflowData struct {
-	ClusterInfo *models.AppformixFlows
+	ClusterInfo *models.AppformixFlow
 	NodesInfo   map[string]*models.Node
 }
 
@@ -1587,15 +1587,15 @@ func (d *Data) getCloudRefs() ([]*models.Cloud, error) {
 }
 
 func (x *XflowData) updateClusterDetails(ctx context.Context, uuid string, r *ResourceManager) error {
-	resp, err := r.APIServer.GetAppformixFlows(ctx, &services.GetAppformixFlowsRequest{ID: uuid})
+	resp, err := r.APIServer.GetAppformixFlow(ctx, &services.GetAppformixFlowRequest{ID: uuid})
 
 	if err != nil {
 		return err
 	}
 
-	x.ClusterInfo = resp.AppformixFlows
+	x.ClusterInfo = resp.AppformixFlow
 
-	for _, appformixFlowsNode := range x.ClusterInfo.AppformixFlowsNodes {
+	for _, appformixFlowsNode := range x.ClusterInfo.AppformixFlowNodes {
 		err = x.updateAppformixFlowsNode(ctx, appformixFlowsNode.UUID, r)
 		if err != nil {
 			return err
@@ -1606,13 +1606,13 @@ func (x *XflowData) updateClusterDetails(ctx context.Context, uuid string, r *Re
 }
 
 func (x *XflowData) updateAppformixFlowsNode(ctx context.Context, uuid string, r *ResourceManager) error {
-	resp, err := r.APIServer.GetAppformixFlowsNode(ctx, &services.GetAppformixFlowsNodeRequest{ID: uuid})
+	resp, err := r.APIServer.GetAppformixFlowNode(ctx, &services.GetAppformixFlowNodeRequest{ID: uuid})
 
 	if err != nil {
 		return err
 	}
 
-	for _, nodeRef := range resp.AppformixFlowsNode.NodeRefs {
+	for _, nodeRef := range resp.AppformixFlowNode.NodeRefs {
 		err = x.updateNodeInfo(ctx, nodeRef.UUID, r)
 		if err != nil {
 			return err

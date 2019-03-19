@@ -8,10 +8,10 @@ test_data:
     ip_address: 1.2.3.4
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     parent_type: global-system-config
-  appformix-flows-node: &appformix-flows-node
-    name: appformix-flows-node1
+  appformix-flow-node: &appformix-flow-node
+    name: appformix-flow-node1
     uuid: {{ appformixFlowsNodeUUID }}
-    parent_type: appformix-flows
+    parent_type: appformix-flow
     parent_uuid: {{ appformixFlowsUUID }}
     node_refs:
     - uuid: {{ nodeUUID }}
@@ -34,7 +34,7 @@ test_data:
     - uuid: {{ appformixClusterUUID }}
     openstack_cluster_refs:
     - uuid: {{ openstackClusterUUID }}
-  appformix-flows: &appformix-flows
+  appformix-flow: &appformix-flow
     parent_uuid: {{ appformixClusterUUID }}
     parent_type: appformix-cluster
     name: x1
@@ -50,7 +50,7 @@ test_data:
     clickhouse:
       retention_period_secs: 7200
       retention_size_bytes: 0
-    appformix_flows_configuration:
+    appformix_flow_configuration:
       key_value_pair:
       - key: clickhouse_volumes_host_path
         value: ""
@@ -109,14 +109,14 @@ workflow:
     - 200
     data:
       openstack-cluster: *openstack-cluster
-- name: create appformix-flows
+- name: create appformix-flow
   request:
     path: /appformix-flows
     method: POST
     expected:
     - 200
     data:
-      appformix-flows: *appformix-flows
+      appformix-flow: *appformix-flow
 - name: create contrail cluster
   request:
     path: /contrail-clusters
@@ -127,15 +127,15 @@ workflow:
       contrail-cluster: *contrail-cluster
 - name: create appformix flows node
   request:
-    path: /appformix-flows-nodes
+    path: /appformix-flow-nodes
     method: POST
     expected:
     - 200
     data:
-      appformix-flows-node: *appformix-flows-node
+      appformix-flow-node: *appformix-flow-node
 cleanup:
-- path: /appformix-flows/{{ appformixFlowsUUID }}
+- path: /appformix-flow/{{ appformixFlowsUUID }}
 - path: /node/{{ nodeUUID }}
 - path: /contrail-cluster/{{ contrailClusterUUID }}
-- path: /appformix-flows-node//{{ appformixFlowsNodeUUID }}
+- path: /appformix-flow-node//{{ appformixFlowsNodeUUID }}
 - path: /openstack-cluster//{{ openstackClusterUUID }}

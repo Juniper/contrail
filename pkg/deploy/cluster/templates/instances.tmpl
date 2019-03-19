@@ -210,7 +210,7 @@ xflow_configuration:
   {% if x.Xflow.IfaceInternal %}xflow_iface_internal: {{ x.Xflow.IfaceInternal }}{% endif %}
   {% if x.Clickhouse.RetentionPeriodSecs %}clickhouse_retention_period_secs: {{ x.Clickhouse.RetentionPeriodSecs }}{% endif %}
   {% if x.Clickhouse.RetentionSizeBytes %}clickhouse_retention_size_bytes: {{ x.Clickhouse.RetentionSizeBytes }}{% endif %}
-  {% for kv in x.AppformixFlowsConfiguration.KeyValuePair %}
+  {% for kv in x.AppformixFlowConfiguration.KeyValuePair %}
   {{ kv.Key }}: {% autoescape off %}{{ kv.Value }}{% endautoescape %}
   {% endfor %}
 {% endwith %}
