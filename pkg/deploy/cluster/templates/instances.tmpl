@@ -135,6 +135,8 @@ kolla_config:
   {%endif%}
 {% if appformixCluster %}
 appformix_configuration:
+    ansible_user: {%if defaultSSHUser %}{{defaultSSHUser}}{%else%}root{%endif%}
+    ansible_ssh_pass: {%if defaultSSHPassword %}{{defaultSSHPassword}}{%else%}c0ntrail123{%endif%}
     {% if appformixCluster.AppformixVip %}
     appformix_vip: {{ appformixCluster.AppformixVip }}
     {%endif%}
