@@ -1,0 +1,79 @@
+name: obj_perms Test
+
+description: |
+  Integration test for /obj-perms endpoint
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+cleanup:
+  - path: /virtual-network/2b8f94e1-cb6e-4ca6-8f80-09bb161d11e2
+  - path: /project/fd8a8e68-df02-49f0-b444-31def29f3763
+
+test_data:
+  admin_obj_perms_project: &admin_obj_perms_project
+    uuid: fd8a8e68-df02-49f0-b444-31def29f3763
+    name: admin_obj_perms_project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+workflow:
+  - name: create project
+    request:
+      path: /projects
+      method: POST
+      expected: [200]
+      data:
+        project: *admin_obj_perms_project
+    expect:
+      project: *admin_obj_perms_project
+
+  - name: methods other than GET should fail (POST)
+    request:
+      path: /obj-perms
+      method: POST
+      expected: [405]
+      data:
+    expect: null
+
+  - name: methods other than GET should fail (PUT)
+    request:
+      path: /obj-perms
+      method: PUT
+      expected: [405]
+      data:
+    expect: null
+
+  - name: methods other than GET should fail (PATCH)
+    request:
+      path: /obj-perms
+      method: PATCH
+      expected: [405]
+      data:
+    expect: null
+
+  - name: methods other than GET should fail (DELETE)
+    request:
+      path: /obj-perms
+      method: DELETE
+      expected: [405]
+      data:
+    expect: null
+
+  - name: GET object perms
+    request:
+      path: /obj-perms
+      method: GET
+      expected: [200]
+      data:
+    expect:
+      token:
+        field1: "abcd"
+        field2: "efgh"
