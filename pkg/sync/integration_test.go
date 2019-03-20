@@ -235,7 +235,7 @@ func TestSyncService(t *testing.T) {
 					},
 					{
 						Data: map[string]interface{}{
-							"name": "vn_bluuee",
+							//"name": "vn_bluuee",
 							"network_ipam_refs": []interface{}{map[string]interface{}{
 								"uuid": "ni-blue",
 								"attr": map[string]interface{}{
@@ -252,7 +252,7 @@ func TestSyncService(t *testing.T) {
 					},
 					{
 						Data: map[string]interface{}{
-							"name":              "vn_bluuee",
+							//"name":              "vn_bluuee",
 							"network_ipam_refs": "$null",
 						},
 					},
