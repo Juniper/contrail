@@ -142,7 +142,6 @@ func TestDecodeRowEvent(t *testing.T) {
 								HostRoutes: &models.RouteTableType{
 									Route: []*models.RouteType{{Prefix: "10"}},
 								},
-								IpamSubnets: []*models.IpamSubnetType{},
 							},
 						},
 					},
