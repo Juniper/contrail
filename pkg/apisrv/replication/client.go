@@ -162,7 +162,7 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 	}
 	// as auth is enabled, create ctx with auth
 	varCtx := auth.NewContext(defaultDomainID, projectID,
-		apiClient.ID, []string{defaultProjectName}, "")
+		apiClient.ID, []string{defaultProjectName}, "", nil)
 	var authKey interface{} = "auth"
 	ctx = context.WithValue(ctx, authKey, varCtx)
 	return ctx

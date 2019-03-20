@@ -14,7 +14,7 @@ const adminUser = "admin"
 
 func userAuth(ctx context.Context, tenant string) context.Context {
 	Context := auth.NewContext(
-		"default-domain", tenant, "bob", []string{"Member"}, "")
+		"default-domain", tenant, "bob", []string{"Member"}, "", nil)
 	var authKey interface{} = "auth"
 	return context.WithValue(ctx, authKey, Context)
 }

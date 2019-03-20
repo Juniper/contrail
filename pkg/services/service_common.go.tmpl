@@ -20,6 +20,7 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.DELETE("{{ schema.Prefix }}{{ schema.Path }}/:id", service.RESTDelete{{ schema.JSONSchema.GoName }})
 {% endif%}{% endfor %}
 
+// TODO: refactor this. Move below code into seperate .go file to get more readable code.
 	r.POST(SyncPath, service.RESTSync)
 	r.POST(RefUpdatePath, service.RESTRefUpdate)
 	r.POST(RefRelaxForDeletePath, service.RESTRefRelaxForDelete)
@@ -31,6 +32,7 @@ func (service *ContrailService) RegisterRESTAPI(r routeRegistry) {
 	r.DELETE(IntPoolPath, service.RESTIntPoolDeallocate)
 	r.POST(IntPoolsPath, service.RESTCreateIntPool)
 	r.DELETE(IntPoolsPath, service.RESTDeleteIntPool)
+	r.GET(ObjPerms, service.RESTGetObjPerms)
 }
 
 type registerFunc func(path string, name string)

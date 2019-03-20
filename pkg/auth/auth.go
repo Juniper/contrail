@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-
 	"github.com/labstack/echo"
 
 	"github.com/Juniper/contrail/pkg/format"
@@ -11,11 +10,17 @@ import (
 //Context is used to represents Context.
 // API layer and DB layer depends on this.
 type Context struct {
-	projectID string
-	domainID  string
-	userID    string
-	roles     []string
-	authToken string
+	projectID   string
+	domainID    string
+	userID      string
+	roles       []string
+	authToken   string
+	objectPerms *ObjectPerms // *services.ObjectPerms
+}
+
+type ObjectPerms struct {
+	// TODO: add proper fields
+	token string
 }
 
 const (
@@ -26,13 +31,16 @@ const (
 )
 
 //NewContext makes a authentication context.
-func NewContext(domainID, projectID, userID string, roles []string, authToken string) *Context {
+func NewContext(
+	domainID, projectID, userID string, roles []string, authToken string, objectPerms *ObjectPerms,
+) *Context {
 	return &Context{
-		projectID: projectID,
-		domainID:  domainID,
-		userID:    userID,
-		roles:     roles,
-		authToken: authToken,
+		projectID:   projectID,
+		domainID:    domainID,
+		userID:      userID,
+		roles:       roles,
+		authToken:   authToken,
+		objectPerms: objectPerms,
 	}
 }
 
@@ -107,8 +115,7 @@ func GetAuthCTX(ctx context.Context) *Context {
 
 // NoAuth is used to create new no auth context
 func NoAuth(ctx context.Context) context.Context {
-	Context := NewContext(
-		"default-domain", "default-project", "admin", []string{"admin"}, "")
+	Context := NewContext("default-domain", "default-project", "admin", []string{"admin"}, "", nil)
 	var authKey interface{} = "auth"
 	return context.WithValue(ctx, authKey, Context)
 }

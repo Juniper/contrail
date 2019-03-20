@@ -31,7 +31,11 @@ const (
 	ChownPath                = "chown"
 	IntPoolPath              = "int-pool"
 	IntPoolsPath             = "int-pools"
+	ObjPerms                 = "obj-perms"
 )
+
+// TODO: this file is too big and it implements too many not correlated functionalities. Refactor this.
+//	Put it into separate files.
 
 // Reference is a generic reference that can be retrieved from ref update event.
 type Reference = basemodels.Reference
