@@ -1,0 +1,679 @@
+data:
+  fields: 
+  resource:
+    router:external: false
+    name: ctest-mgmt_vn-18838131
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    admin_state_up: true
+    policys: ''
+    vpc:route_table: ''
+    shared: false
+    port_security_enabled: true
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    description: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-65ca28db-28d6-47b6-ab6a-f5bc61c41c73
+  operation: CREATE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+data:
+  fields: 
+  resource:
+    description: ''
+    enable_dhcp: true
+    network_id: bb2a01b8-99a2-4b71-80a7-04b8af23cc45
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    ipam_fq_name:
+    - default-domain
+    - default-project
+    - default-network-ipam
+    ip_version: 4
+    cidr: 155.60.127.0/24
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    name: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-83e7495f-0ffc-4219-8117-86de13e29bc2
+  operation: CREATE
+  type: subnet
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+data:
+  fields: 
+  resource:
+    router:external: false
+    name: ctest-left_vn-93580614
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    admin_state_up: true
+    policys: ''
+    vpc:route_table: ''
+    shared: false
+    port_security_enabled: true
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    description: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-70fcb7d1-cedd-454e-b6a6-0172c5f7678e
+  operation: CREATE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+---
+data:
+  fields: 
+  resource:
+    description: ''
+    enable_dhcp: true
+    network_id: f7203774-14d6-45cd-b2a5-5ee0a7dcfec6
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    ipam_fq_name:
+    - default-domain
+    - default-project
+    - default-network-ipam
+    ip_version: 4
+    cidr: 142.1.231.0/24
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    name: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-82ccbb83-ac87-449b-a749-29ae8f4961ec
+  operation: CREATE
+  type: subnet
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+---
+data:
+  fields: 
+  resource:
+    router:external: false
+    name: ctest-right_vn-65919931
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    admin_state_up: true
+    policys: ''
+    vpc:route_table: ''
+    shared: false
+    port_security_enabled: true
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    description: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-9bdd781f-9ab5-4f62-ab85-7e92a6b78604
+  operation: CREATE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+---
+data:
+  fields: 
+  resource:
+    description: ''
+    enable_dhcp: true
+    network_id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    ipam_fq_name:
+    - default-domain
+    - default-project
+    - default-network-ipam
+    ip_version: 4
+    cidr: 11.134.244.0/24
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    name: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-764475f0-5640-452a-8c4c-98281b9694fa
+  operation: CREATE
+  type: subnet
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+---
+data:
+  fields: 
+  resource:
+    description: ''
+    admin_state_up: true
+    network_id: f7203774-14d6-45cd-b2a5-5ee0a7dcfec6
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    extra_dhcp_opts: 
+    name: ''
+    device_owner: ''
+    binding:vnic_type: normal
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    device_id: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-cfa8e3af-75c6-4fb7-959e-5f2279b664c5
+  operation: CREATE
+  type: port
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+
+---
+data:
+  fields: 
+  resource:
+    device_owner: compute:nova
+    binding:host_id: ignacy.osetek-test-openstack.novalocal
+    device_id: cd4f2014-0873-4a03-9ef1-4c7523c5d88f
+  id: c1a9ea12-ef4b-4b06-b217-95b4b806fdde
+  filters: 
+context:
+  user_id: b251c230b95043c3805030b79d607292
+  roles:
+  - admin
+  tenant_id: 3c7daa740903400c806eb186ba7d025f
+  is_admin: true
+  request_id: req-34ca79e8-5831-4d7c-b43d-9c6a106cba13
+  operation: UPDATE
+  type: port
+  tenant: 3c7daa740903400c806eb186ba7d025f
+
+
+
+  ---
+data:
+  fields: 
+  resource:
+    description: ''
+    admin_state_up: true
+    network_id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    extra_dhcp_opts: 
+    name: ''
+    device_owner: ''
+    binding:vnic_type: normal
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    device_id: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-b3b056b7-8d31-4b79-bcc5-21adb7f34230
+  operation: CREATE
+  type: port
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+
+
+  ---
+data:
+  fields: 
+  resource:
+    device_owner: compute:nova
+    binding:host_id: ignacy.osetek-test-openstack.novalocal
+    device_id: 9b6c66c9-5c03-4723-83e3-923678a881b6
+  id: a9cfdbfd-bd44-4201-ba9a-509f7a77773e
+  filters: 
+context:
+  user_id: b251c230b95043c3805030b79d607292
+  roles:
+  - admin
+  tenant_id: 3c7daa740903400c806eb186ba7d025f
+  is_admin: true
+  request_id: req-ff1c01f4-0fcf-4cc1-90d7-23d9c6bac9b8
+  operation: UPDATE
+  type: port
+  tenant: 3c7daa740903400c806eb186ba7d025f
+
+
+  ---
+data:
+  fields: 
+  resource:
+    description: ''
+    admin_state_up: true
+    network_id: bb2a01b8-99a2-4b71-80a7-04b8af23cc45
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    extra_dhcp_opts: 
+    name: ''
+    device_owner: ''
+    binding:vnic_type: normal
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    device_id: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-2535c224-4d24-487c-9932-e4c1cfa878e5
+  operation: CREATE
+  type: port
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+  ---
+data:
+  fields: 
+  resource:
+    description: ''
+    admin_state_up: true
+    network_id: f7203774-14d6-45cd-b2a5-5ee0a7dcfec6
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    extra_dhcp_opts: 
+    name: ''
+    device_owner: ''
+    binding:vnic_type: normal
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    device_id: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-9a08a74f-4bec-4334-a156-72cbb7b4f79b
+  operation: CREATE
+  type: port
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+---
+data:
+  fields: 
+  resource:
+    description: ''
+    admin_state_up: true
+    network_id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+    tenant_id: b9520fa33bf04faa942d8cccf3941b54
+    extra_dhcp_opts: 
+    name: ''
+    device_owner: ''
+    binding:vnic_type: normal
+    project_id: b9520fa33bf04faa942d8cccf3941b54
+    device_id: ''
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-21876ac6-96e6-4670-8731-3ec1afa8c4f0
+  operation: CREATE
+  type: port
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+  ---
+data:
+  fields: 
+  resource:
+    device_owner: compute:nova
+    binding:host_id: ignacy.osetek-test-openstack.novalocal
+    device_id: 044694c5-5ed5-471b-b279-f9244a3161a8
+  id: ba177627-e08d-447e-b458-e81c877e5224
+  filters: 
+context:
+  user_id: b251c230b95043c3805030b79d607292
+  roles:
+  - admin
+  tenant_id: 3c7daa740903400c806eb186ba7d025f
+  is_admin: true
+  request_id: req-0e12331a-ad1f-425c-b4ef-83f2b90c803c
+  operation: UPDATE
+  type: port
+  tenant: 3c7daa740903400c806eb186ba7d025f
+
+
+---
+data:
+  fields: 
+  resource:
+    device_owner: compute:nova
+    binding:host_id: ignacy.osetek-test-openstack.novalocal
+    device_id: 044694c5-5ed5-471b-b279-f9244a3161a8
+  id: dfaf5bf9-19b5-47ab-a6f3-91eb0a6a7fa5
+  filters: 
+context:
+  user_id: b251c230b95043c3805030b79d607292
+  roles:
+  - admin
+  tenant_id: 3c7daa740903400c806eb186ba7d025f
+  is_admin: true
+  request_id: req-29f1ab0e-41c4-423a-bbb6-b19f0d186a6d
+  operation: UPDATE
+  type: port
+  tenant: 3c7daa740903400c806eb186ba7d025f
+
+
+
+  ---
+data:
+  fields: 
+  resource:
+    device_owner: compute:nova
+    binding:host_id: ignacy.osetek-test-openstack.novalocal
+    device_id: 044694c5-5ed5-471b-b279-f9244a3161a8
+  id: 6971aeeb-5620-4dc7-8b67-fb3fc464d138
+  filters: 
+context:
+  user_id: b251c230b95043c3805030b79d607292
+  roles:
+  - admin
+  tenant_id: 3c7daa740903400c806eb186ba7d025f
+  is_admin: true
+  request_id: req-3ec6a94f-651c-4595-bc7b-2d34af1f88e1
+  operation: UPDATE
+  type: port
+  tenant: 3c7daa740903400c806eb186ba7d025f
+
+
+
+  ---
+data:
+  fields: 
+  id: ba177627-e08d-447e-b458-e81c877e5224
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-bc29d943-0d13-43a4-8138-922f95201070
+  operation: DELETE
+  type: port
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-6d7f2d1e-cdbb-419f-91a1-e66b660781b0
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+  ---
+data:
+  fields: 
+  id: a9cfdbfd-bd44-4201-ba9a-509f7a77773e
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-4ec398c0-b289-4946-82ac-954b671c7bf2
+  operation: DELETE
+  type: port
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+
+  ---
+data:
+  fields: 
+  id: c1a9ea12-ef4b-4b06-b217-95b4b806fdde
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-b36e6564-b864-49ee-9a5b-03239ac4b6d7
+  operation: DELETE
+  type: port
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-3a1341e0-c096-4d07-bc39-d7eb9d3bd308
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-e23fc4e1-60c3-4284-bc8b-e913732f01ac
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-afd7a5c7-2d27-4d19-9c0d-9f61efe96d25
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-3bfed4a1-d03f-4cd2-9412-1cf0c7bf842f
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-e698e3ea-319e-4fc4-aa0f-761a106dcabc
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-0befd0c8-1a43-4c69-be4f-f9cfed06f46d
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-f7222569-2357-4a19-8aa0-672c1d942faa
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-dcdcf2b7-d76b-431f-8350-d107aaad9531
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-e3809356-8479-41b4-9cb0-01644235d6a1
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+  ---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-c87feb1c-85f7-4408-904c-36fd9bec344d
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54
+
+
+
+---
+data:
+  fields: 
+  id: 5fb0063f-ab11-4632-a7b2-2a95e571f527
+  filters: 
+context:
+  user_id: b7a36a34821d4e538b929c135d272f47
+  roles:
+  - admin
+  tenant_id: b9520fa33bf04faa942d8cccf3941b54
+  is_admin: true
+  request_id: req-244fdfe5-66b4-4eee-aaf2-1c372d0c83e1
+  operation: DELETE
+  type: network
+  tenant: b9520fa33bf04faa942d8cccf3941b54

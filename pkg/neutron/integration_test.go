@@ -45,3 +45,7 @@ func TestSecurityGroupRule(t *testing.T) {
 func TestSubnet(t *testing.T) {
 	integration.RunTest(t, t.Name(), server)
 }
+
+func TestHealthCheck(t *testing.T) {
+	integration.RunTest(t, t.Name(), server)
+}

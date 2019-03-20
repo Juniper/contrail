@@ -800,6 +800,11 @@ func (s *Subnet) toVnc() (*models.Subnet, error) {
 	}
 
 	subnet := models.MakeSubnet()
+
+	if s.ID != "" {
+		subnet.UUID = s.ID
+	}
+
 	subnet.Name = s.Name
 	subnet.ParentUUID = s.NetworkID
 	subnet.SubnetIPPrefix = subnetIPPrefix

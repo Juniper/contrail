@@ -1,0 +1,755 @@
+name: Test health check
+description: |
+  yep
+
+# cleanup:
+#   - 
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "neutron_network_admin_project"]
+    uuid: 886c725d-0461-4dd6-ac27-30c74d4e46fb
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  admin_project2: &admin_project2
+    fq_name: ["default", "neutron_network_admin_project2"]
+    uuid: fdce1321-c8ef-4fd6-ab4a-d2f90e3c2441
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+workflow:
+- name: Create project admin
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project
+  expect:
+    project: *admin_project
+
+- name: Create project admin2
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *admin_project2
+  expect:
+    project: *admin_project2
+
+- name: network create
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          # DODANE
+          id: 6c52e44d-ed68-43ee-a795-dd31511198a0
+          router:external: false
+          name: ctest-mgmt_vn-55820870
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          admin_state_up: true
+          policys: ''
+          vpc:route_table: ''
+          shared: false
+          port_security_enabled: true
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          description: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-e8b5347d-9e29-4fe1-89c1-f175a35a46b4
+        operation: CREATE
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+
+- name: subnet create
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          description: ''
+          enable_dhcp: true
+          network_id: 6c52e44d-ed68-43ee-a795-dd31511198a0
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          ipam_fq_name:
+          - default-domain
+          - default-project
+          - default-network-ipam
+          ip_version: 4
+          cidr: 180.108.154.0/24
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          name: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-d4f8d08f-081a-4fc5-800e-29d813b31989
+        operation: CREATE
+        type: subnet
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+
+- name: network create
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          # DODANE
+          id: bf483b47-9665-46bb-ac46-5a5689789a04
+          router:external: false
+          name: ctest-left_vn-92498140
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          admin_state_up: true
+          policys: ''
+          vpc:route_table: ''
+          shared: false
+          port_security_enabled: true
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          description: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-655f1b9c-9a3f-4efa-a6c3-c6f54dc87c67
+        operation: CREATE
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+
+
+- name: subnet create
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          description: ''
+          enable_dhcp: true
+          network_id: bf483b47-9665-46bb-ac46-5a5689789a04
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          ipam_fq_name:
+          - default-domain
+          - default-project
+          - default-network-ipam
+          ip_version: 4
+          cidr: 13.149.223.0/24
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          name: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-3d87cb45-f73f-4041-8eb9-3ba8847844df
+        operation: CREATE
+        type: subnet
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+
+- name: network create
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          # DODANE
+          id: c7d42698-5758-4e67-8f10-d864f223bc4b
+          router:external: false
+          name: ctest-right_vn-98495076
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          admin_state_up: true
+          policys: ''
+          vpc:route_table: ''
+          shared: false
+          port_security_enabled: true
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          description: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-22f52787-e065-4dad-81f5-07ccc3312549
+        operation: CREATE
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+
+
+- name: subnet create
+  request:
+    path: /neutron/subnet
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          description: ''
+          enable_dhcp: true
+          network_id: c7d42698-5758-4e67-8f10-d864f223bc4b
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          ipam_fq_name:
+          - default-domain
+          - default-project
+          - default-network-ipam
+          ip_version: 4
+          cidr: 154.15.165.0/24
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          name: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-21690512-1b10-4376-be68-22fa385e57fd
+        operation: CREATE
+        type: subnet
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port create
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          # DODANE
+          id: 22cd251e-da3d-401b-b4f5-6b36f131ef53
+          description: ''
+          admin_state_up: true
+          network_id: bf483b47-9665-46bb-ac46-5a5689789a04
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          extra_dhcp_opts: 
+          name: ''
+          device_owner: ''
+          binding:vnic_type: normal
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          device_id: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-6f160623-6fa4-49d7-92e9-ec5e9e3dcbfd
+        operation: CREATE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port update
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          device_owner: compute:nova
+          binding:host_id: daniel.furman-default.novalocal
+          device_id: e5bf857a-8d17-4169-869c-01d8d0876d06
+        id: 22cd251e-da3d-401b-b4f5-6b36f131ef53
+        filters: 
+      context:
+        user_id: 5feb34fb641c47588b8fb983f83514e1
+        roles:
+        - admin
+        tenant_id: fdce1321c8ef4fd6ab4ad2f90e3c2441
+        is_admin: true
+        request_id: req-577a8d7a-6c8a-426e-aec6-f376e5f8bd8d
+        operation: UPDATE
+        type: port
+        tenant: fdce1321c8ef4fd6ab4ad2f90e3c2441
+
+
+- name: port create
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          # DODANE
+          id: cf79e1c4-ac3d-4196-9e58-773f2b3be92f
+          description: ''
+          admin_state_up: true
+          network_id: c7d42698-5758-4e67-8f10-d864f223bc4b
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          extra_dhcp_opts: 
+          name: ''
+          device_owner: ''
+          binding:vnic_type: normal
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          device_id: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-7d3fba39-c93a-4a8b-b20e-b7cfc018de23
+        operation: CREATE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port update
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          device_owner: compute:nova
+          binding:host_id: daniel.furman-default.novalocal
+          device_id: ff304206-31e0-460a-b69a-8b515bbd175a
+        id: cf79e1c4-ac3d-4196-9e58-773f2b3be92f
+        filters: 
+      context:
+        user_id: 5feb34fb641c47588b8fb983f83514e1
+        roles:
+        - admin
+        tenant_id: fdce1321c8ef4fd6ab4ad2f90e3c2441
+        is_admin: true
+        request_id: req-78c86312-e4b8-4647-9c49-d16db8bb7599
+        operation: UPDATE
+        type: port
+        tenant: fdce1321c8ef4fd6ab4ad2f90e3c2441
+
+- name: port create
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          # DODANE
+          id: f958e36d-253a-4e39-bb2a-ad44c6971ef3
+          description: ''
+          admin_state_up: true
+          network_id: 6c52e44d-ed68-43ee-a795-dd31511198a0
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          extra_dhcp_opts: 
+          name: ''
+          device_owner: ''
+          binding:vnic_type: normal
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          device_id: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-3777df8f-94e3-4cf5-aa29-84cebd7d695a
+        operation: CREATE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port create
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          #dodane
+          id: fff99a4f-6faa-46dd-91bd-e16aca0c1582
+          description: ''
+          admin_state_up: true
+          network_id: bf483b47-9665-46bb-ac46-5a5689789a04
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          extra_dhcp_opts: 
+          name: ''
+          device_owner: ''
+          binding:vnic_type: normal
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          device_id: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-3f841130-385f-47ef-8b34-b571bf780a21
+        operation: CREATE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port create
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          # DODANE
+          id: 17c43773-8113-404a-bf85-f9cbf7c067f0
+          description: ''
+          admin_state_up: true
+          network_id: c7d42698-5758-4e67-8f10-d864f223bc4b
+          tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+          extra_dhcp_opts: 
+          name: ''
+          device_owner: ''
+          binding:vnic_type: normal
+          project_id: 886c725d04614dd6ac2730c74d4e46fb
+          device_id: ''
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-34333196-db0b-4356-a9b7-d23afb83395c
+        operation: CREATE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port update
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          device_owner: compute:nova
+          binding:host_id: daniel.furman-default.novalocal
+          device_id: 6ab71420-28f9-46ed-879a-abedba95e4de
+        id: f958e36d-253a-4e39-bb2a-ad44c6971ef3
+        filters: 
+      context:
+        user_id: 5feb34fb641c47588b8fb983f83514e1
+        roles:
+        - admin
+        tenant_id: fdce1321c8ef4fd6ab4ad2f90e3c2441
+        is_admin: true
+        request_id: req-b2d40150-04a8-43be-99f0-a61a4338c1f2
+        operation: UPDATE
+        type: port
+        tenant: fdce1321c8ef4fd6ab4ad2f90e3c2441
+
+- name: port update
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          device_owner: compute:nova
+          binding:host_id: daniel.furman-default.novalocal
+          device_id: 6ab71420-28f9-46ed-879a-abedba95e4de
+        id: fff99a4f-6faa-46dd-91bd-e16aca0c1582
+        filters: 
+      context:
+        user_id: 5feb34fb641c47588b8fb983f83514e1
+        roles:
+        - admin
+        tenant_id: fdce1321c8ef4fd6ab4ad2f90e3c2441
+        is_admin: true
+        request_id: req-248f1928-b05f-4191-90f6-a5b64468af16
+        operation: UPDATE
+        type: port
+        tenant: fdce1321c8ef4fd6ab4ad2f90e3c2441
+
+- name: port update
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        resource:
+          device_owner: compute:nova
+          binding:host_id: daniel.furman-default.novalocal
+          device_id: 6ab71420-28f9-46ed-879a-abedba95e4de
+        id: 17c43773-8113-404a-bf85-f9cbf7c067f0
+        filters: 
+      context:
+        user_id: 5feb34fb641c47588b8fb983f83514e1
+        roles:
+        - admin
+        tenant_id: fdce1321c8ef4fd6ab4ad2f90e3c2441
+        is_admin: true
+        request_id: req-4d8044fa-1e26-470c-8fc5-0bf588df8926
+        operation: UPDATE
+        type: port
+        tenant: fdce1321c8ef4fd6ab4ad2f90e3c2441
+
+# To sie raczej powinno WYJEBAĆ
+- name: network delete
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [400]
+    data:
+      data:
+        fields: 
+        id: c7d42698-5758-4e67-8f10-d864f223bc4b
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-93c474bf-b155-45c4-a5a8-744c7ec2b87b
+        operation: DELETE
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port delete
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        id: cf79e1c4-ac3d-4196-9e58-773f2b3be92f
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-91f31cd6-0283-4cbe-afff-48f341dad460
+        operation: DELETE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port delete
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        id: f958e36d-253a-4e39-bb2a-ad44c6971ef3
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-7039d913-54dd-4e8b-b9a1-b4f2ea18894e
+        operation: DELETE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: port delete
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        id: 22cd251e-da3d-401b-b4f5-6b36f131ef53
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-e3fed794-13f5-4841-98ba-67a16a0848e9
+        operation: DELETE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+- name: port delete
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        id: fff99a4f-6faa-46dd-91bd-e16aca0c1582
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-88b858a6-748f-4148-a575-257bf48d7825
+        operation: DELETE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+- name: port delete
+  request:
+    path: /neutron/port
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        id: 17c43773-8113-404a-bf85-f9cbf7c067f0
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-b2dbe9f8-de87-4789-8955-271df9b8e3e7
+        operation: DELETE
+        type: port
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: network delete
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        id: c7d42698-5758-4e67-8f10-d864f223bc4b
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-ff8ec871-c871-4fbf-bedc-ac0da3fe408e
+        operation: DELETE
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: network delete
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        id: bf483b47-9665-46bb-ac46-5a5689789a04
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-476f166f-bab9-49cd-ae89-c9ac453203aa
+        operation: DELETE
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb
+
+
+- name: network delete
+  request:
+    path: /neutron/network
+    method: POST
+    expected: [200]
+    data:
+      data:
+        fields: 
+        id: 6c52e44d-ed68-43ee-a795-dd31511198a0
+        filters: 
+      context:
+        user_id: d9673887b94c471982299e643d3b029f
+        roles:
+        - admin
+        tenant_id: 886c725d04614dd6ac2730c74d4e46fb
+        is_admin: true
+        request_id: req-0a198e1a-10ff-4a74-841b-cdc21e38f6a7
+        operation: DELETE
+        type: network
+        tenant: 886c725d04614dd6ac2730c74d4e46fb

@@ -9,6 +9,9 @@ schema:
     description:
       type: string
       presence: optional
+    id:
+      type: string
+      presence: optional
     enable_dhcp:
       type: boolean
     network_id:
