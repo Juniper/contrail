@@ -152,12 +152,12 @@ func (db *DB) update(event *services.Event) {
 		prev:  db.last,
 		event: event,
 	}
-	resource := event.GetResource()
-	if resource == nil {
+	uuid := event.GetUUID()
+	if uuid == "" {
 		return
 	}
 
-	existingNode, ok := db.idMap[resource.GetUUID()]
+	existingNode, ok := db.idMap[uuid]
 	var backRefs, children []basemodels.Object
 	if ok {
 		// We should consider throwing error if operation is create here
@@ -165,7 +165,7 @@ func (db *DB) update(event *services.Event) {
 		backRefs = oldResource.GetBackReferences()
 		children = oldResource.GetChildren()
 		db.removeDependencies(oldResource)
-		logrus.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
+		logrus.Debugf("Update id map for key: %s,  event version: %d", uuid, event.Version)
 		if existingNode == db.first {
 			db.first = existingNode.getNext()
 		}
@@ -183,7 +183,7 @@ func (db *DB) update(event *services.Event) {
 	db.updateDBVersion(n)
 	db.removeTooOldNodesIfNeeded()
 	// This is done after removing too old objects as the uuid is same regardless of operation type
-	db.idMap[resource.GetUUID()] = n
+	db.idMap[uuid] = n
 
 	db.updateDependentNodes(event, backRefs, children)
 	db.handleNode(n)
@@ -210,7 +210,7 @@ func (db *DB) removeTooOldNodesIfNeeded() {
 	if len(db.deleted) > 0 && db.lastIndex-db.deleted[0].version > db.maxHistory {
 		compactedNode := db.deleted[0]
 		db.deleted = db.deleted[1:]
-		delete(db.idMap, compactedNode.event.GetResource().GetUUID())
+		delete(db.idMap, compactedNode.event.GetUUID())
 		delete(db.versionMap, compactedNode.version)
 		compactedNode.pop()
 	}
@@ -360,17 +360,14 @@ func (n *node) pop() {
 
 func (db *DB) handleNode(n *node) {
 	e := n.event
-	r := e.GetResource()
-	k := r.Kind()
-	uuid := r.GetUUID()
 
 	switch e.Operation() {
 	case services.OperationCreate, services.OperationUpdate:
-		if db.resources[k] == nil {
-			db.resources[k] = map[string]*node{}
+		if db.resources[e.Kind()] == nil {
+			db.resources[e.Kind()] = map[string]*node{}
 		}
-		db.resources[k][uuid] = n
+		db.resources[e.Kind()][e.GetUUID()] = n
 	case services.OperationDelete:
-		delete(db.resources[k], uuid)
+		delete(db.resources[e.Kind()], e.GetUUID())
 	}
 }

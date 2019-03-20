@@ -1,8 +1,6 @@
 package services
 
 import (
-	"encoding/json"
-
 	"github.com/pkg/errors"
 	"github.com/gogo/protobuf/types"
 
@@ -12,80 +10,80 @@ import (
 
 {% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
 
-// GetResource returns resource.
-func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
-	return e.Create{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
+// GetRequest underlying request.
+func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) GetRequest() CreateRequest {
+	return e.Create{{ schema.JSONSchema.GoName }}Request
 }
 
-// GetResource returns resource.
-func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
-	return e.Update{{ schema.JSONSchema.GoName }}Request.Get{{ schema.JSONSchema.GoName }}()
-}
-
-// GetResource returns resource.
-func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
-	return &models.{{ schema.JSONSchema.GoName }}{
-		UUID: e.Delete{{ schema.JSONSchema.GoName }}Request.ID,
-	}
-}
-
-// Operation returns event type.
-func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) Operation() string {
-	return OperationCreate
-}
-
-// Operation returns event type.
-func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) Operation() string {
-	return OperationUpdate
-}
-
-// Operation returns event type.
-func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
-	return OperationDelete
+// GetResource underlying request.
+func (r *Create{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
+	return r.Get{{ schema.JSONSchema.GoName }}()
 }
 
 // SetFieldMask sets fieldMask of the event.
-func (e *Event_Create{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.FieldMask) {
-	e.Create{{ schema.JSONSchema.GoName }}Request.FieldMask = mask
+func (r *Create{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.FieldMask) {
+	r.FieldMask = mask
+}
+
+// isCreateRequest determines create request.
+func (r *Create{{ schema.JSONSchema.GoName }}Request) isCreateRequest() {}
+
+// GetRequest underlying request.
+func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) GetRequest() UpdateRequest {
+	return e.Update{{ schema.JSONSchema.GoName }}Request
+}
+
+// GetResource underlying request.
+func (r *Update{{ schema.JSONSchema.GoName }}Request) GetResource() basemodels.Object {
+	return r.Get{{ schema.JSONSchema.GoName }}()
 }
 
 // SetFieldMask sets fieldMask of the event.
-func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.FieldMask) {
-	e.Update{{ schema.JSONSchema.GoName }}Request.FieldMask = mask
+func (r *Update{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.FieldMask) {
+	r.FieldMask = mask
+}
+
+// isUpdateRequest determines update request.
+func (r *Update{{ schema.JSONSchema.GoName }}Request) isUpdateRequest() {}
+
+// GetRequest underlying request.
+func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) GetRequest() DeleteRequest {
+	return e.Delete{{ schema.JSONSchema.GoName }}Request
 }
 
 // SetID sets id of the event.
-func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) SetID(id string) {
-	e.Delete{{ schema.JSONSchema.GoName }}Request.ID = id
+func (r *Delete{{ schema.JSONSchema.GoName }}Request) SetID(id string) {
+	r.ID = id
 }
+
+// Kind returns resource id.
+func (r *Delete{{ schema.JSONSchema.GoName }}Request) Kind() string {
+	return "{{ schema.ID }}"
+}
+
+// isDeleteRequest determines delete request.
+func (r *Delete{{ schema.JSONSchema.GoName }}Request) isDeleteRequest() {}
 
 {% for _, reference in schema.References %}
 {% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
-
-func (e *Event_Create{{ refType }}Request) GetID() string {
-	return e.Create{{refType}}Request.GetID()
-}
-
-func (e *Event_Delete{{ refType }}Request) GetID() string {
-	return e.Delete{{refType}}Request.GetID()
-}
-
-func (e *Event_Create{{ refType }}Request) GetReference() Reference {
-	return e.Create{{refType}}Request.Get{{ refType }}()
-}
-
-func (e *Event_Delete{{ refType }}Request) GetReference() Reference {
-	return e.Delete{{refType}}Request.Get{{ refType }}()
-}
-
-func (e *Event_Create{{ refType }}Request) Operation() string {
-	return OperationCreate
-}
-
-func (e *Event_Delete{{ refType }}Request) Operation() string {
-	return OperationDelete
-}
-
+// GetRequest returns underlying request.
+func (r *Event_Create{{ refType }}Request) GetRequest() CreateRefRequest { return r.Create{{ refType }}Request }
+// isCreateRefRequest determines delete request.
+func (r *Create{{ refType }}Request) isCreateRefRequest() {}
+// SetID sets referencing object's uuid.
+func (r *Create{{ refType }}Request) SetID(id string) {r.ID = id}
+// SetRefUUID sets referenced object's uuid.
+func (r *Create{{ refType }}Request) SetRefUUID(uuid string) {r.Get{{ refType }}().SetUUID(uuid)}
+// GetAttr returns reference's attribute.
+func (r *Create{{ refType }}Request) GetAttr() basemodels.RefAttribute {return r.Get{{ refType }}().GetAttribute()}
+// GetRequest returns underlying request.
+func (r *Event_Delete{{ refType }}Request) GetRequest() DeleteRefRequest { return r.Delete{{ refType }}Request }
+// isDeleteRefRequest determines delete request.
+func (r *Delete{{ refType }}Request) isDeleteRefRequest() {}
+// SetID sets referencing object's uuid.
+func (r *Delete{{ refType }}Request) SetID(id string) {r.ID = id}
+// SetRefUUID sets referenced object's uuid.
+func (r *Delete{{ refType }}Request) SetRefUUID(uuid string) {r.Get{{ refType }}().SetUUID(uuid)}
 {% endfor %}
 {% endif%}{% endfor %}
 
@@ -132,57 +130,42 @@ func NewEmptyDeleteEventRequest(kind string) (DeleteEventRequest, error) {
 	return nil, errors.Errorf("delete event of kind \"%s\" does not exist", kind)
 }
 
-// NewRefUpdateEvent creates ref create or delete event for updating ref.
-func NewRefUpdateEvent(option RefUpdateOption) (*Event, error) {
-	e := &Event{}
-	kind := option.ReferenceType
-	operation := option.Operation
-	if operation == "" {
-		operation = RefOperationAdd
+// NewEmptyRefAddEventEventRequest makes new Ref Add Event Request.
+func NewEmptyRefAddEventEventRequest(kind string) (CreateRefEventRequest, error) {
+	switch kind {
+{%- for schema in schemas %}{% if schema.Type != "abstract" and schema.ID -%}
+{%- for _, reference in schema.References -%}
+{%- set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+	case "{{ schema.TypeName }}-{{ reference.LinkTo.TypeName }}":
+		return &Event_Create{{ refType }}Request{
+			Create{{ refType }}Request: &Create{{ refType }}Request{
+				{{ refType }}: &models.{{ refType }}{
+					{%- if reference.RefType %}
+					Attr: &models.{{ reference.RefType }}{},
+					{%- endif %}
+				},
+			},
+		}, nil
+{%- endfor %}{% endif%}{% endfor %}
+	default:
+		return nil, errors.Errorf("create ref event of kind \"%s\" does not exist", kind)
 	}
-	switch (kind) {
-{% for schema in schemas %}{% if schema.Type != "abstract" and schema.ID %}
-{% for _, reference in schema.References %}
-{% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
-		case "{{ schema.TypeName }}-{{ reference.LinkTo.TypeName }}":
-			switch (operation) {
-				case RefOperationAdd:
-					request := &Event_Create{{ refType }}Request{
-						Create{{ refType }}Request: &Create{{ refType }}Request{
-								ID: option.FromUUID,
-								{{ refType }}: &models.{{ refType }}{
-									UUID: option.ToUUID,
-								},
-							},
-					}
-					{% if reference.RefType %}
-					switch {
-					case len(option.AttrData) > 0:
-						err := json.Unmarshal(option.AttrData, &request.Create{{ refType }}Request.{{ refType }}.Attr)
-						if err != nil {
-							return nil, errors.Wrap(err, "bad attr data")
-						}
-					case option.Attr != nil:
-						attr, ok := option.Attr.(*models.{{ reference.RefType }})
-						if !ok {
-							return nil, errors.Errorf("bad attr data: %v", option.Attr)
-						}
-						request.Create{{ refType }}Request.{{ refType }}.Attr = attr
-					}
-					{% endif %}
-					e.Request = request
-				case RefOperationDelete:
-					e.Request = &Event_Delete{{ refType }}Request{
-						Delete{{ refType }}Request: &Delete{{ refType }}Request{
-								ID: option.FromUUID,
-								{{ refType }}: &models.{{ refType }}{
-									UUID: option.ToUUID,
-								},
-							},
-					}
-			}{% endfor %}{% endif%}{% endfor %}
-		default:
-			return nil, errors.Errorf("ref type %s does not exist", kind)
+}
+
+// NewEmptyRefDeleteEventEventRequest makes new Ref Delete Event Request.
+func NewEmptyRefDeleteEventEventRequest(kind string) (DeleteRefEventRequest, error) {
+	switch kind {
+{%- for schema in schemas %}{% if schema.Type != "abstract" and schema.ID -%}
+{%- for _, reference in schema.References -%}
+{%- set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
+	case "{{ schema.TypeName }}-{{ reference.LinkTo.TypeName }}":
+		return &Event_Delete{{ refType }}Request{
+			Delete{{ refType }}Request: &Delete{{ refType }}Request{
+				{{ refType }}: &models.{{ refType }}{},
+			},
+		}, nil
+{%- endfor %}{% endif%}{% endfor %}
+	default:
+		return nil, errors.Errorf("delete ref event of kind \"%s\" does not exist", kind)
 	}
-	return e, nil
 }
