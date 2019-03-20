@@ -311,10 +311,8 @@ func TestDependencyResolution(t *testing.T) {
 			},
 			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
 				e := cache.Get(vnBlue.UUID)
-				r := e.GetResource()
 				assert.Equal(t, result, e)
 				assert.Equal(t, services.OperationDelete, e.Operation())
-				assert.NotEqual(t, vnBlue.ParentUUID, r.GetParentUUID())
 
 				e = cache.Get(ri2.UUID)
 				assert.Nil(t, e)
