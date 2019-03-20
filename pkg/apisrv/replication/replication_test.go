@@ -41,7 +41,7 @@ func handleCreate(t *testing.T, w http.ResponseWriter,
 		processReqBody(t, w, r, postReq, vncReqStore)
 	case "/node-profiles":
 		processReqBody(t, w, r, postReq, vncReqStore)
-	case "/end-systems":
+	case "/nodes":
 		processReqBody(t, w, r, postReq, vncReqStore)
 	case "/ref-update":
 		processReqBody(t, w, r, postReq, vncReqStore)
@@ -57,7 +57,7 @@ func handleUpdate(t *testing.T, w http.ResponseWriter,
 		processReqBody(t, w, r, putReq, vncReqStore)
 	case "/node-profile/:id":
 		processReqBody(t, w, r, putReq, vncReqStore)
-	case "/end-system/:id":
+	case "/node/:id":
 		processReqBody(t, w, r, putReq, vncReqStore)
 	default:
 		writeJSONResponse(t, w, 404, nil)
@@ -71,7 +71,7 @@ func handleDelete(t *testing.T, w http.ResponseWriter,
 		processReqBody(t, w, r, deleteReq, vncReqStore)
 	case "/node-profile/:id":
 		processReqBody(t, w, r, deleteReq, vncReqStore)
-	case "/end-system/:id":
+	case "/node/:id":
 		processReqBody(t, w, r, deleteReq, vncReqStore)
 	default:
 		writeJSONResponse(t, w, 404, nil)
@@ -221,7 +221,7 @@ func verifyVNCReqStore(t *testing.T, req string,
 						fmt.Sprintf("node-profile req not replicated to vnc server"))
 				}
 
-				reqData, schemaPresent = (*eachReq)["end-system"]
+				reqData, schemaPresent = (*eachReq)["node"]
 				if schemaPresent && task.Request.Path == "/nodes" {
 					_ = testutil.AssertEqual(t, expectMap["node"], reqData,
 						fmt.Sprintf("node req not replicated to vnc server"))
@@ -231,9 +231,7 @@ func verifyVNCReqStore(t *testing.T, req string,
 				if schemaPresent && task.Request.Path == "/ports" {
 					//nolint: errcheck
 					expectedPort, _ := expectMap["port"].(map[string]interface{})
-					if expectedPort["parent_type"] == "node" {
-						expectedPort["parent_type"] = "end-system"
-					}
+					expectedPort["parent_type"] = "node"
 					_ = testutil.AssertEqual(t, expectedPort, reqData,
 						fmt.Sprintf("port req not replicated to vnc server"))
 				}
