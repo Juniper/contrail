@@ -377,9 +377,6 @@ func (v *virtualCloudData) getTorInstancesWithTag(
 		}
 		torOfVC = append(torOfVC, tagResp.Tag.PhysicalRouterBackRefs...)
 	}
-	if len(torOfVC) == 0 {
-		return nil, errors.New("virtual cloud tag is not used by any Tor")
-	}
 	return torOfVC, nil
 }
 
