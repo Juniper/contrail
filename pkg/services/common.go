@@ -221,7 +221,7 @@ func (service *ContrailService) RESTRefUpdate(c echo.Context) error {
 		data.RefUUID = m.UUID
 	}
 
-	e, err := NewRefUpdateEvent(RefUpdateOption{
+	e, err := NewRefUpdateEvent(&RefUpdateOption{
 		ReferenceType: basemodels.ReferenceKind(data.Type, data.RefType),
 		FromUUID:      data.UUID,
 		ToUUID:        data.RefUUID,
