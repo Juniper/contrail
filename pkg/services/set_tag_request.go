@@ -120,7 +120,7 @@ func (t *SetTagRequest) parseTagAttrs(rawJSON map[string]json.RawMessage) error 
 }
 
 func (t *SetTagRequest) tagRefEvent(tagUUID string, operation RefOperation) (*Event, error) {
-	return NewRefUpdateEvent(RefUpdateOption{
+	return NewRefUpdateEvent(&RefUpdateOption{
 		ReferenceType: basemodels.ReferenceKind(t.ObjType, models.KindTag),
 		FromUUID:      t.ObjUUID,
 		ToUUID:        tagUUID,

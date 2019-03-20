@@ -92,7 +92,11 @@ func visitResource(uuid string, sorted []*Event,
 		stateGraph[uuid] = visited
 		return sorted, nil
 	}
-	parentUUID := event.GetResource().GetParentUUID()
+	r := event.GetResource()
+	var parentUUID string
+	if r != nil {
+		parentUUID = r.GetParentUUID()
+	}
 
 	sorted, err = visitResource(parentUUID, sorted, eventMap, stateGraph)
 	if err != nil {
@@ -111,7 +115,7 @@ func (e *EventList) Sort() (err error) {
 	stateGraph := map[string]state{}
 	eventMap := map[string]*Event{}
 	for _, event := range e.Events {
-		uuid := event.GetResource().GetUUID()
+		uuid := event.GetUUID()
 		stateGraph[uuid] = notVisited
 		eventMap[uuid] = event
 	}
@@ -119,7 +123,7 @@ func (e *EventList) Sort() (err error) {
 	for foundNotVisited {
 		foundNotVisited = false
 		for _, event := range e.Events {
-			uuid := event.GetResource().GetUUID()
+			uuid := event.GetUUID()
 			state := stateGraph[uuid]
 			if state == notVisited {
 				sorted, err = visitResource(uuid, sorted, eventMap, stateGraph)
@@ -169,11 +173,35 @@ func (e *Event) GetResource() basemodels.Object {
 	if e == nil {
 		return nil
 	}
-	resourceEvent, ok := e.Request.(ResourceEvent)
-	if !ok {
+	switch er := e.Request.(type) {
+	case CreateEventRequest:
+		return er.GetRequest().GetResource()
+	case UpdateEventRequest:
+		return er.GetRequest().GetResource()
+	default:
 		return nil
 	}
-	return resourceEvent.GetResource()
+}
+
+// GetUUID returns event on resource.
+func (e *Event) GetUUID() string {
+	if e == nil {
+		return ""
+	}
+	switch er := e.Request.(type) {
+	case CreateEventRequest:
+		return er.GetRequest().GetResource().GetUUID()
+	case UpdateEventRequest:
+		return er.GetRequest().GetResource().GetUUID()
+	case DeleteEventRequest:
+		return er.GetRequest().GetID()
+	case CreateRefEventRequest:
+		return er.GetRequest().GetID()
+	case DeleteRefEventRequest:
+		return er.GetRequest().GetID()
+	default:
+		return ""
+	}
 }
 
 // Operation returns operation type.
@@ -181,11 +209,20 @@ func (e *Event) Operation() string {
 	if e == nil {
 		return ""
 	}
-	resourceEvent, ok := e.Request.(ResourceEvent)
-	if !ok {
+	switch e.Request.(type) {
+	case CreateEventRequest:
+		return OperationCreate
+	case UpdateEventRequest:
+		return OperationUpdate
+	case DeleteEventRequest:
+		return OperationDelete
+	case CreateRefEventRequest:
+		return string(RefOperationAdd)
+	case DeleteRefEventRequest:
+		return string(RefOperationDelete)
+	default:
 		return ""
 	}
-	return resourceEvent.Operation()
 }
 
 // SetFieldMask sets field mask on request if event is of create or update type.
@@ -227,7 +264,6 @@ type RefUpdateOption struct {
 	ReferenceType    string
 	FromUUID, ToUUID string
 	Operation        RefOperation
-	Attr             basemodels.RefAttribute
 	AttrData         json.RawMessage
 }
 
@@ -235,7 +271,7 @@ type RefUpdateOption struct {
 func (e *Event) ExtractRefEvents() (EventList, error) {
 	switch r := e.Request.(type) {
 	case CreateEventRequest:
-		return extractRefEvents(r.GetResource(), RefOperationAdd)
+		return extractRefEvents(r.GetRequest().GetResource(), RefOperationAdd)
 	case UpdateEventRequest:
 		return EventList{}, nil
 	case DeleteEventRequest:
@@ -255,12 +291,12 @@ func extractRefEvents(r basemodels.Object, o RefOperation) (EventList, error) {
 func makeRefEventList(r basemodels.Object, operation RefOperation) (EventList, error) {
 	el := EventList{}
 	for _, ref := range r.GetReferences() {
-		e, err := NewRefUpdateEvent(RefUpdateOption{
+		e, err := NewRefUpdateEvent(&RefUpdateOption{
 			ReferenceType: basemodels.ReferenceKind(r.Kind(), ref.GetToKind()),
 			FromUUID:      r.GetUUID(),
 			ToUUID:        ref.GetUUID(),
 			Operation:     operation,
-			Attr:          ref.GetAttribute(),
+			AttrData:      json.RawMessage(format.MustJSON(ref.GetAttribute())),
 		})
 		if err != nil {
 			return EventList{}, err
@@ -296,6 +332,18 @@ func NewEvent(option *EventOption) (*Event, error) {
 	}
 }
 
+// NewRefUpdateEvent makes ref update event from RefUpdateOption.
+func NewRefUpdateEvent(option *RefUpdateOption) (*Event, error) {
+	switch option.Operation {
+	case RefOperationAdd:
+		return NewCreateRefEvent(option)
+	case RefOperationDelete:
+		return NewDeleteRefEvent(option)
+	default:
+		return nil, errors.Errorf("operation %s not supported", option.Operation)
+	}
+}
+
 // ToMap translates event to map.
 func (e *Event) ToMap() map[string]interface{} {
 	if e == nil || e.Request == nil {
@@ -303,22 +351,34 @@ func (e *Event) ToMap() map[string]interface{} {
 	}
 	return map[string]interface{}{
 		"operation": e.Operation(),
-		"kind":      e.kind(),
+		"kind":      basemodels.KindToSchemaID(e.Kind()),
 		"data":      e.data(),
 	}
 }
 
-func (e *Event) kind() string {
-	return basemodels.KindToSchemaID(e.GetResource().Kind())
+// Kind returns kind of a resource inside event. If the event has no resource it returns empty string.
+func (e *Event) Kind() string {
+	switch er := e.Request.(type) {
+	case CreateEventRequest:
+		return er.GetRequest().GetResource().Kind()
+	case UpdateEventRequest:
+		return er.GetRequest().GetResource().Kind()
+	case DeleteEventRequest:
+		return er.GetRequest().Kind()
+	default:
+		return ""
+	}
 }
 
 func (e *Event) data() interface{} {
-	switch e.Operation() {
-	case OperationCreate, OperationUpdate:
-		return e.GetResource()
-	case OperationDelete:
+	switch er := e.Request.(type) {
+	case CreateEventRequest:
+		return er.GetRequest().GetResource()
+	case UpdateEventRequest:
+		return er.GetRequest().GetResource()
+	case DeleteEventRequest:
 		return map[string]interface{}{
-			"uuid": e.GetResource().GetUUID(),
+			"uuid": er.GetRequest().GetID(),
 		}
 	default:
 		return nil
@@ -339,59 +399,143 @@ func sanitizeOperation(operation string) string {
 // CreateEventRequest interface.
 type CreateEventRequest interface {
 	isEvent_Request
-	GetResource() basemodels.Object
-	SetFieldMask(types.FieldMask)
+	GetRequest() CreateRequest
 }
 
 // UpdateEventRequest interface.
 type UpdateEventRequest interface {
 	isEvent_Request
-	GetResource() basemodels.Object
-	SetFieldMask(types.FieldMask)
+	GetRequest() UpdateRequest
 }
 
 // DeleteEventRequest interface.
 type DeleteEventRequest interface {
 	isEvent_Request
+	GetRequest() DeleteRequest
+}
+
+// CreateRefEventRequest interface.
+type CreateRefEventRequest interface {
+	isEvent_Request
+	GetRequest() CreateRefRequest
+}
+
+// DeleteRefEventRequest interface.
+type DeleteRefEventRequest interface {
+	isEvent_Request
+	GetRequest() DeleteRefRequest
+}
+
+// CreateRequest interface.
+type CreateRequest interface {
+	GetResource() basemodels.Object
+	GetFieldMask() types.FieldMask
+	SetFieldMask(types.FieldMask)
+	isCreateRequest()
+}
+
+// UpdateRequest interface.
+type UpdateRequest interface {
+	GetResource() basemodels.Object
+	GetFieldMask() types.FieldMask
+	SetFieldMask(types.FieldMask)
+	isUpdateRequest()
+}
+
+// DeleteRequest interface.
+type DeleteRequest interface {
+	GetID() string
 	SetID(string)
+	Kind() string
+	isDeleteRequest()
+}
+
+// CreateRefRequest interface.
+type CreateRefRequest interface {
+	GetID() string
+	SetID(string)
+	SetRefUUID(string)
+	GetAttr() basemodels.RefAttribute
+	isCreateRefRequest()
+}
+
+// DeleteRefRequest interface.
+type DeleteRefRequest interface {
+	GetID() string
+	SetID(string)
+	SetRefUUID(string)
+	isDeleteRefRequest()
 }
 
 // NewCreateEvent creates new create event.
 func NewCreateEvent(option *EventOption) (*Event, error) {
-	request, err := NewEmptyCreateEventRequest(option.Kind)
+	er, err := NewEmptyCreateEventRequest(option.Kind)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
 	}
-	request.GetResource().ApplyMap(option.Data)
-	request.SetFieldMask(option.getFieldMask())
+	er.GetRequest().GetResource().ApplyMap(option.Data)
+	er.GetRequest().SetFieldMask(option.getFieldMask())
 	return &Event{
-		Request: request,
+		Request: er,
 	}, nil
 }
 
 // NewUpdateEvent creates new update event.
 func NewUpdateEvent(option *EventOption) (*Event, error) {
-	request, err := NewEmptyUpdateEventRequest(option.Kind)
+	er, err := NewEmptyUpdateEventRequest(option.Kind)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
 	}
-	request.GetResource().ApplyMap(option.Data)
-	request.GetResource().SetUUID(option.UUID)
-	request.SetFieldMask(option.getFieldMask())
+	er.GetRequest().GetResource().ApplyMap(option.Data)
+	er.GetRequest().GetResource().SetUUID(option.UUID)
+	er.GetRequest().SetFieldMask(option.getFieldMask())
 	return &Event{
-		Request: request,
+		Request: er,
 	}, nil
 }
 
 // NewDeleteEvent creates new delete event.
 func NewDeleteEvent(option *EventOption) (*Event, error) {
-	request, err := NewEmptyDeleteEventRequest(option.Kind)
+	er, err := NewEmptyDeleteEventRequest(option.Kind)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
 	}
-	request.SetID(option.UUID)
+	er.GetRequest().SetID(option.UUID)
 	return &Event{
-		Request: request,
+		Request: er,
+	}, nil
+}
+
+// NewCreateRefEvent creates new new create ref event.
+func NewCreateRefEvent(option *RefUpdateOption) (*Event, error) {
+	r, err := NewEmptyCreateRefEventRequest(option.ReferenceType)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
+	}
+	r.GetRequest().SetID(option.FromUUID)
+	r.GetRequest().SetRefUUID(option.ToUUID)
+	if attr, ok := r.GetRequest().GetAttr().(basemodels.RefAttribute); ok && option.AttrData != nil {
+		err = json.Unmarshal(option.AttrData, attr)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to unmarshal reference attribute data %v, error %v", option.AttrData, err)
+		}
+	}
+
+	return &Event{
+		Request: r,
+	}, nil
+}
+
+// NewDeleteRefEvent creates new new delete ref event.
+func NewDeleteRefEvent(option *RefUpdateOption) (*Event, error) {
+	r, err := NewEmptyDeleteRefEventRequest(option.ReferenceType)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create event from option %v", option)
+	}
+	r.GetRequest().SetID(option.FromUUID)
+	r.GetRequest().SetRefUUID(option.ToUUID)
+	return &Event{
+		Request: r,
 	}, nil
 }
 
