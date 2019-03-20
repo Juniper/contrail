@@ -101,7 +101,7 @@ func testProjectRead(ctx context.Context, c services.ContrailServiceClient, proj
 			ID: projectUUID,
 		})
 		assert.NoError(t, err)
-		assert.NotNil(t, getResponse.Project)
+		assert.NotNil(t, getResponse.GetProject())
 	}
 }
 

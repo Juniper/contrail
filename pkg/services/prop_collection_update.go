@@ -145,7 +145,7 @@ func (service *ContrailService) updatePropCollection(
 		return errutil.ErrorBadRequest(err.Error())
 	}
 
-	e, err := NewEvent(&EventOption{
+	e, err := NewEvent(EventOption{
 		Data:      updateMap,
 		Kind:      objType,
 		UUID:      request.UUID,
