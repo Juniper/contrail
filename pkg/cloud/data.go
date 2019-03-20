@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -77,6 +78,7 @@ type torData struct {
 	provision              string
 	autonomousSystemNumber int
 	interfaceName          string
+	privateSubnets         []string
 	apiServer
 }
 
@@ -277,6 +279,8 @@ func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torDat
 			tor.autonomousSystemNumber, err = strconv.Atoi(keyValuePair.Value)
 		case "interface":
 			tor.interfaceName = keyValuePair.Value
+		case "private_subnets":
+			tor.privateSubnets = strings.Split(keyValuePair.Value, ",")
 		}
 	}
 
@@ -376,9 +380,6 @@ func (v *virtualCloudData) getTorInstancesWithTag(
 			return nil, err
 		}
 		torOfVC = append(torOfVC, tagResp.Tag.PhysicalRouterBackRefs...)
-	}
-	if len(torOfVC) == 0 {
-		return nil, errors.New("virtual cloud tag is not used by any Tor")
 	}
 	return torOfVC, nil
 }
