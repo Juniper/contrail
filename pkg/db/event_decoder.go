@@ -7,7 +7,6 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/schema"
 	"github.com/Juniper/contrail/pkg/services"
@@ -35,32 +34,39 @@ func (db *Service) DecodeRowEvent(
 	)
 }
 
+type toMapper interface {
+	ToMap() map[string]interface{}
+}
+
 func decodeResourceEvent(
-	operation, resourceName string, pk []string, obj basedb.Object, fm *types.FieldMask,
+	operation, resourceName string, pk []string, obj toMapper, fm *types.FieldMask,
 ) (*services.Event, error) {
 	m := obj.ToMap()
 	if fm != nil {
 		m = basemodels.ApplyFieldMask(m, *fm)
 	}
-	return services.NewEvent(&services.EventOption{
+	return services.NewEvent(services.EventOption{
 		UUID:      pk[0],
 		Kind:      resourceName,
 		Data:      m,
-		Operation: operation,
 		FieldMask: fm,
 	})
 }
 
-func decodeReferenceEvent(operation, resourceName string, pk []string, attr basedb.Object) (*services.Event, error) {
+func decodeReferenceEvent(operation, resourceName string, pk []string, attr toMapper) (*services.Event, error) {
 	if operation == services.OperationUpdate {
 		return nil, errors.New("method UPDATE not available on ref_* resources - received ref-relax event")
+	}
+	var attrMap map[string]interface{}
+	if attr != nil {
+		attrMap = attr.ToMap()
 	}
 	return services.NewRefUpdateEvent(services.RefUpdateOption{
 		Operation:     services.ParseRefOperation(operation),
 		ReferenceType: refTableNameToReferenceName(resourceName),
 		FromUUID:      pk[0],
 		ToUUID:        pk[1],
-		Attr:          attr,
+		Attr:          attrMap,
 	})
 }
 
