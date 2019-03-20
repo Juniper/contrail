@@ -35,15 +35,18 @@
       protocols_mode:
         - ssl_client
       gateway: 1.1.1.1
-    - name: mx60
-      public_ip: 20.20.20.200
-      private_ip: 10.10.10.100
-      roles:
-       - tor
-      provision: true
-      username: test
-      password: test123
-      interface: irb.20
-      AS: 6500
-      protocols_mode:
-       - bgp
+    - name: mx60
+      public_ip: 20.20.20.200
+      private_ip: 10.10.10.100
+      private_subnet:
+        - 10.10.10.0/24
+        - 30.10.10.0/24
+      roles:
+        - tor
+      provision: true
+      username: test
+      password: test123
+      interface: irb.20
+      AS: 6500
+      protocols_mode:
+        - bgp

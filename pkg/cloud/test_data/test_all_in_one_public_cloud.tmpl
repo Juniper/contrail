@@ -143,6 +143,10 @@ test_data:
           value: "6500"
         - key: interface
           value: irb.20
+        - key: private_subnet
+          value:
+            - 10.10.10.0/24
+            - 30.10.10.0/24
     tag_refs:
       - uuid: public_cloud_tag_uuid
 {% endif %}
@@ -549,6 +553,10 @@ workflow:
             value: "6500"
           - key: interface
             value: irb.20
+          - key: private_subnet
+            value:
+              - 10.10.10.0/24
+              - 30.10.10.0/24
 {% endif %}
 - name: create cloud node gw
   request:
