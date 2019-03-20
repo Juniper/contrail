@@ -14,7 +14,7 @@ import (
 
 func TestNewEvent(t *testing.T) {
 	type args struct {
-		option *EventOption
+		option EventOption
 	}
 	tests := []struct {
 		name    string
@@ -25,14 +25,14 @@ func TestNewEvent(t *testing.T) {
 		{
 			name: "try to create event with empty option",
 			args: args{
-				option: &EventOption{},
+				option: EventOption{},
 			},
 			wantErr: true,
 		},
 		{
 			name: "create event with default (Create) operation",
 			args: args{
-				option: &EventOption{
+				option: EventOption{
 					Kind: models.KindProject,
 				},
 			},
@@ -47,7 +47,7 @@ func TestNewEvent(t *testing.T) {
 		{
 			name: "create event with Create operation",
 			args: args{
-				option: &EventOption{
+				option: EventOption{
 					Operation: OperationCreate,
 					Kind:      models.KindProject,
 					Data: map[string]interface{}{
@@ -68,7 +68,7 @@ func TestNewEvent(t *testing.T) {
 		{
 			name: "create event with Update operation",
 			args: args{
-				option: &EventOption{
+				option: EventOption{
 					Operation: OperationUpdate,
 					Kind:      models.KindProject,
 					UUID:      "hoge",
@@ -97,7 +97,7 @@ func TestNewEvent(t *testing.T) {
 		{
 			name: "create event with Delete operation",
 			args: args{
-				option: &EventOption{
+				option: EventOption{
 					Operation: OperationDelete,
 					Kind:      models.KindProject,
 					UUID:      "hoge",
@@ -447,7 +447,7 @@ func TestEvent_ApplyMap(t *testing.T) {
 
 func assertEventsAreEqual(t *testing.T, expected *Event, actual *Event) {
 	assert.Equal(t, expected.GetResource(), actual.GetResource())
-	assert.Equal(t, expected.GetResource().Kind(), actual.GetResource().Kind())
+	assert.Equal(t, expected.Kind(), actual.Kind())
 	assert.Equal(t, expected.Operation(), actual.Operation())
 	for _, p := range getFieldMask(expected).Paths {
 		assert.Contains(t, getFieldMask(actual).Paths, p)
