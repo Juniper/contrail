@@ -43,7 +43,9 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 	}
 	domain := validatedToken.Project.Domain.ID
 	user := validatedToken.User
-	authContext := auth2.NewContext(domain, project.ID, user.ID, roles, tokenString)
+
+	objPerms := auth2.NewObjPerms(validatedToken)
+	authContext := auth2.NewContext(domain, project.ID, user.ID, roles, tokenString, objPerms)
 
 	var authKey interface{} = "auth"
 	newCtx := context.WithValue(ctx, authKey, authContext)
