@@ -148,30 +148,35 @@ func (db *DB) AddWatcher(ctx context.Context, versionID uint64) (*Watcher, error
 func (db *DB) update(event *services.Event) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-	n := &node{
-		prev:  db.last,
-		event: event,
-	}
-	resource := event.GetResource()
-	if resource == nil {
+
+	uuid := event.GetUUID()
+	if uuid == "" {
+		logrus.Debugf("skipping event with empty uuid: %v", event)
 		return
 	}
 
-	existingNode, ok := db.idMap[resource.GetUUID()]
+	existingNode, ok := db.idMap[uuid]
 	var backRefs, children []basemodels.Object
 	if ok {
 		// We should consider throwing error if operation is create here
 		oldResource := existingNode.event.GetResource()
-		backRefs = oldResource.GetBackReferences()
-		children = oldResource.GetChildren()
-		db.removeDependencies(oldResource)
-		logrus.Debugf("Update id map for key: %s,  event version: %d", resource.GetUUID(), event.Version)
+		if oldResource != nil {
+			backRefs = oldResource.GetBackReferences()
+			children = oldResource.GetChildren()
+			db.removeDependencies(oldResource)
+		}
+		logrus.Debugf("Update id map for key: %s,  event version: %d", uuid, event.Version)
 		if existingNode == db.first {
 			db.first = existingNode.getNext()
 		}
-		delete(db.idMap, existingNode.event.GetResource().GetUUID())
+		delete(db.idMap, existingNode.event.GetUUID())
 		delete(db.versionMap, existingNode.version)
 		existingNode.pop()
+	}
+
+	n := &node{
+		prev:  db.last,
+		event: event,
 	}
 
 	if event.Operation() == services.OperationDelete {
@@ -183,7 +188,7 @@ func (db *DB) update(event *services.Event) {
 	db.updateDBVersion(n)
 	db.removeTooOldNodesIfNeeded()
 	// This is done after removing too old objects as the uuid is same regardless of operation type
-	db.idMap[resource.GetUUID()] = n
+	db.idMap[uuid] = n
 
 	db.updateDependentNodes(event, backRefs, children)
 	db.handleNode(n)
@@ -210,7 +215,7 @@ func (db *DB) removeTooOldNodesIfNeeded() {
 	if len(db.deleted) > 0 && db.lastIndex-db.deleted[0].version > db.maxHistory {
 		compactedNode := db.deleted[0]
 		db.deleted = db.deleted[1:]
-		delete(db.idMap, compactedNode.event.GetResource().GetUUID())
+		delete(db.idMap, compactedNode.event.GetUUID())
 		delete(db.versionMap, compactedNode.version)
 		compactedNode.pop()
 	}
@@ -229,13 +234,17 @@ func (db *DB) addDependencies(
 	for _, ref := range resource.GetReferences() {
 		dependentNode, ok := db.idMap[ref.GetUUID()]
 		if ok {
-			dependentNode.event.GetResource().AddBackReference(resource)
+			if r := dependentNode.event.GetResource(); r != nil {
+				r.AddBackReference(resource)
+			}
 		}
 	}
 	if resource.GetParentUUID() != "" {
 		dependentNode, ok := db.idMap[resource.GetParentUUID()]
 		if ok {
-			dependentNode.event.GetResource().AddChild(resource)
+			if r := dependentNode.event.GetResource(); r != nil {
+				r.AddChild(resource)
+			}
 		}
 	}
 }
@@ -250,7 +259,9 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 	for _, ref := range resource.GetReferences() {
 		dependentNode, ok := db.idMap[ref.GetUUID()]
 		if ok {
-			dependentNode.event.GetResource().RemoveBackReference(resource)
+			if r := dependentNode.event.GetResource(); r != nil {
+				r.RemoveBackReference(resource)
+			}
 			dependentNode.pop()
 			db.append(dependentNode)
 		}
@@ -258,7 +269,9 @@ func (db *DB) removeDependencies(resource basemodels.Object) {
 	if resource.GetParentUUID() != "" {
 		dependentNode, ok := db.idMap[resource.GetParentUUID()]
 		if ok {
-			dependentNode.event.GetResource().RemoveChild(resource)
+			if r := dependentNode.event.GetResource(); r != nil {
+				r.RemoveChild(resource)
+			}
 			dependentNode.pop()
 			db.append(dependentNode)
 		}
@@ -360,17 +373,14 @@ func (n *node) pop() {
 
 func (db *DB) handleNode(n *node) {
 	e := n.event
-	r := e.GetResource()
-	k := r.Kind()
-	uuid := r.GetUUID()
 
 	switch e.Operation() {
 	case services.OperationCreate, services.OperationUpdate:
-		if db.resources[k] == nil {
-			db.resources[k] = map[string]*node{}
+		if db.resources[e.Kind()] == nil {
+			db.resources[e.Kind()] = map[string]*node{}
 		}
-		db.resources[k][uuid] = n
+		db.resources[e.Kind()][e.GetUUID()] = n
 	case services.OperationDelete:
-		delete(db.resources[k], uuid)
+		delete(db.resources[e.Kind()], e.GetUUID())
 	}
 }

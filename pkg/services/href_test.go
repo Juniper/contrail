@@ -87,7 +87,7 @@ func TestApplyHref(t *testing.T) {
 
 // nolint: golint
 func deleteResource(t *testing.T, ctx context.Context, client services.Service, object basemodels.Object) {
-	e, err := services.NewEvent(&services.EventOption{
+	e, err := services.NewEvent(services.EventOption{
 		UUID:      object.GetUUID(),
 		Kind:      object.Kind(),
 		Operation: services.OperationDelete,
@@ -104,7 +104,7 @@ func createResource(
 	client services.Service,
 	object basemodels.Object,
 ) (basemodels.Object, func()) {
-	e, err := services.NewEvent(&services.EventOption{
+	e, err := services.NewEvent(services.EventOption{
 		UUID: object.GetUUID(),
 		Kind: object.Kind(),
 		Data: object.ToMap(),
