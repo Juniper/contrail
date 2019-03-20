@@ -62,7 +62,7 @@ func (service *ContrailService) SetTag(ctx context.Context, setTag *SetTagReques
 			return nil, err
 		}
 	}
-	e, err := NewEvent(&EventOption{
+	e, err := NewEvent(EventOption{
 		Data:      map[string]interface{}{"tag_refs": references.Unique()},
 		Kind:      obj.Kind(),
 		UUID:      obj.GetUUID(),
