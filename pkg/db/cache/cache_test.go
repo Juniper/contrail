@@ -311,10 +311,8 @@ func TestDependencyResolution(t *testing.T) {
 			},
 			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
 				e := cache.Get(vnBlue.UUID)
-				r := e.GetResource()
 				assert.Equal(t, result, e)
 				assert.Equal(t, services.OperationDelete, e.Operation())
-				assert.NotEqual(t, vnBlue.ParentUUID, r.GetParentUUID())
 
 				e = cache.Get(ri2.UUID)
 				assert.Nil(t, e)
@@ -355,8 +353,8 @@ func TestReadInterfaceAndMaxHistory(t *testing.T) {
 			assertion: func(t *testing.T, event *services.Event, result *services.Event, cache *DB) {
 				listResponse, err := cache.ListVirtualNetwork(context.Background(), &services.ListVirtualNetworkRequest{})
 				assert.NoError(t, err)
-				assert.Equal(t, listResponse.VirtualNetworkCount, int64(1))
-				assert.Equal(t, listResponse.VirtualNetworks[0].UUID, vnBlue.UUID)
+				assert.Equal(t, int64(1), listResponse.VirtualNetworkCount)
+				assert.Equal(t, vnBlue.UUID, listResponse.VirtualNetworks[0].UUID)
 
 				getResponse, err := cache.GetVirtualNetwork(context.Background(), &services.GetVirtualNetworkRequest{
 					ID: vnBlue.UUID,
@@ -382,7 +380,7 @@ func TestReadInterfaceAndMaxHistory(t *testing.T) {
 
 				r, err := cache.ListVirtualNetwork(context.Background(), &services.ListVirtualNetworkRequest{})
 				assert.NoError(t, err)
-				assert.Equal(t, r.VirtualNetworkCount, int64(0))
+				assert.Equal(t, int64(0), r.VirtualNetworkCount)
 
 				_, err = cache.AddWatcher(context.Background(), 1)
 				assert.NoError(t, err)
