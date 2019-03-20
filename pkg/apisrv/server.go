@@ -453,6 +453,7 @@ func (s *Server) setupHomepage() {
 	dh.Register(services.IntPoolPath, "DELETE", services.IntPoolPath, "action")
 	dh.Register(services.IntPoolsPath, "POST", services.IntPoolsPath, "action")
 	dh.Register(services.IntPoolsPath, "DELETE", services.IntPoolsPath, "action")
+	dh.Register(services.ObjPerms, "GET", services.ObjPerms, "action")
 
 	// TODO: register sync?
 

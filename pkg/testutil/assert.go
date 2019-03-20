@@ -86,6 +86,15 @@ var assertFunctions = map[string]assertFunction{
 	"datetime_iso": func(path string, _, actual interface{}) error {
 		if val, ok := actual.(string); ok {
 			if _, err := time.Parse(constants.ISO8601TimeFormat, val); err != nil {
+				return errors.Errorf("expected datetime stamp ISO8601 but got %s on path %s", actual, path)
+			}
+			return nil
+		}
+		return errors.Errorf("expected datetime stamp string but got %s on path %s", actual, path)
+	},
+	"datetime_RFC3339": func(path string, _, actual interface{}) error {
+		if val, ok := actual.(string); ok {
+			if _, err := time.Parse(time.RFC3339, val); err != nil {
 				return errors.Errorf("expected datetime stamp RFC3339 but got %s on path %s", actual, path)
 			}
 			return nil
