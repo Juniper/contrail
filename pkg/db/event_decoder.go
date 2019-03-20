@@ -1,9 +1,11 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
@@ -55,12 +57,12 @@ func decodeReferenceEvent(operation, resourceName string, pk []string, attr base
 	if operation == services.OperationUpdate {
 		return nil, errors.New("method UPDATE not available on ref_* resources - received ref-relax event")
 	}
-	return services.NewRefUpdateEvent(services.RefUpdateOption{
+	return services.NewRefUpdateEvent(&services.RefUpdateOption{
 		Operation:     services.ParseRefOperation(operation),
 		ReferenceType: refTableNameToReferenceName(resourceName),
 		FromUUID:      pk[0],
 		ToUUID:        pk[1],
-		Attr:          attr,
+		AttrData:      json.RawMessage(format.MustJSON(attr)),
 	})
 }
 
