@@ -45,6 +45,7 @@
     - name: {{ tor.info.Name }}
       public_ip: {{ tor.info.PhysicalRouterManagementIP }}
       private_ip: {{ tor.info.PhysicalRouterDataplaneIP }}
+      private_subnet: {{ tor.privateSubnet }}
       roles:
        - tor
       provision: {{ tor.provision }}

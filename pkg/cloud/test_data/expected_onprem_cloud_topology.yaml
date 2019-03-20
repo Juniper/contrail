@@ -38,6 +38,7 @@
     - name: mx60
       public_ip: 20.20.20.200
       private_ip: 10.10.10.100
+      private_subnet: 10.10.10.0/24
       roles:
        - tor
       provision: true
