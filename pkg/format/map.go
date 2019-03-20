@@ -136,12 +136,31 @@ func applySlice(v reflect.Value, i interface{}) error {
 	return nil
 }
 
-func applyStruct(i interface{}, s interface{}) error {
+func applyStruct(i interface{}, onto interface{}) error {
 	sm, ok := i.(map[string]interface{})
-	if !ok {
-		return errors.Errorf("cannot apply %T onto %T", i, s)
+	if ok {
+		return ApplyMap(sm, onto)
 	}
-	return ApplyMap(sm, s)
+	iv := reflect.ValueOf(i)
+	v, err := getSettableStructValue(onto)
+	if err != nil {
+		return errors.Wrapf(err, "failed to apply onto a struct: %v", onto)
+	}
+	if !underlyingTypesCompatible(iv, v) {
+		return errors.Errorf("cannot apply incompatible types: %T and %T", i, onto)
+	}
+	v.Set(reflect.Indirect(iv))
+	return nil
+}
+
+func underlyingTypesCompatible(a, b reflect.Value) bool {
+	if reflect.Indirect(a).Kind() != reflect.Indirect(b).Kind() {
+		return false
+	}
+	if reflect.Indirect(a).Type() != reflect.Indirect(b).Type() {
+		return false
+	}
+	return true
 }
 
 func applyInterface(v reflect.Value, i interface{}) error {

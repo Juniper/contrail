@@ -3,12 +3,15 @@ package format
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 //MustJSON Marshal json
 func MustJSON(data interface{}) string {
 	b, err := json.Marshal(data)
 	if err != nil {
+		logrus.WithError(err).Debug("failed to marshal")
 		return ""
 	}
 	return string(b)
