@@ -22,6 +22,28 @@ schema:
       type: string
       view:
       - detail
+    fingerprint:
+      description: FingerPrint of the key
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: text
+      title: Key FingerPrint
+      type: string
+      view:
+      - detail
+    ssh_private_key:
+      description: SSH Private Key
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: text
+      title: SSH Private key
+      type: string
+      view:
+      - detail
     ssh_key_dir_path:
       description: Dir path to the SSH key in the deployer instance
       nullable: false
