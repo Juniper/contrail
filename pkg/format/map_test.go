@@ -44,29 +44,29 @@ func TestApplyMapWithJSONUnmarshalMaps(t *testing.T) {
 		fails    bool
 	}{
 		{
-			name: "nil_object",
+			name: "nil object",
 		},
 		{
-			name: "pointer_to_non_struct_field",
+			name: "pointer to non struct field",
 			expected: &StructWithPointerToNonStruct{
 				PointerToString: &someString,
 			},
 			fails: true,
 		},
 		{
-			name: "integer_field",
+			name: "integer field",
 			expected: &SomeStruct{
 				Integer: 234,
 			},
 		},
 		{
-			name: "array_field",
+			name: "array field",
 			expected: &SomeStruct{
 				ArrayOfStrings: []string{"aa", "bb"},
 			},
 		},
 		{
-			name: "struct_field",
+			name: "struct field",
 			expected: &SomeStruct{
 				Struct: AnotherStruct{
 					A: "hoge",
@@ -74,7 +74,7 @@ func TestApplyMapWithJSONUnmarshalMaps(t *testing.T) {
 			},
 		},
 		{
-			name: "struct_array_field",
+			name: "struct array field",
 			expected: &SomeStruct{
 				ArrayOfStructs: []AnotherStruct{
 					{
@@ -87,7 +87,7 @@ func TestApplyMapWithJSONUnmarshalMaps(t *testing.T) {
 			},
 		},
 		{
-			name: "pointer_to_struct_array_field",
+			name: "pointer to struct array field",
 			expected: &SomeStruct{
 				ArrayOfPointersToStructs: []*AnotherStruct{
 					{
@@ -100,7 +100,7 @@ func TestApplyMapWithJSONUnmarshalMaps(t *testing.T) {
 			},
 		},
 		{
-			name: "pointer_to_struct_field",
+			name: "pointer to struct field",
 			expected: &SomeStruct{
 				PointerToStruct: &AnotherStruct{
 					A: "hoge",
@@ -150,10 +150,10 @@ func TestApplyMap(t *testing.T) {
 		fails    bool
 	}{
 		{
-			name: "apply_nil_map_to_nil",
+			name: "apply nil map to nil",
 		},
 		{
-			name: "apply_non_nil_map_to_nil",
+			name: "apply_non nil map to nil",
 			args: args{
 				m: map[string]interface{}{
 					"hoge": "hoge",
@@ -162,7 +162,7 @@ func TestApplyMap(t *testing.T) {
 			fails: true,
 		},
 		{
-			name: "apply_integer_to_array",
+			name: "apply integer to array",
 			args: args{
 				m: map[string]interface{}{
 					"str_array": 1,
@@ -171,7 +171,7 @@ func TestApplyMap(t *testing.T) {
 			fails: true,
 		},
 		{
-			name: "pointer_to_non_struct",
+			name: "pointer to non struct",
 			args: args{
 				o: &someInt,
 				m: map[string]interface{}{
@@ -182,7 +182,7 @@ func TestApplyMap(t *testing.T) {
 			fails:    true,
 		},
 		{
-			name: "non_struct",
+			name: "non struct",
 			args: args{
 				o: someInt,
 				m: map[string]interface{}{
@@ -203,7 +203,7 @@ func TestApplyMap(t *testing.T) {
 			expected: &SomeStruct{},
 		},
 		{
-			name: "pointer_to_nil_struct",
+			name: "pointer to nil struct",
 			args: args{
 				o: &nilStruct,
 				m: map[string]interface{}{
@@ -213,7 +213,7 @@ func TestApplyMap(t *testing.T) {
 			expected: &nilStruct,
 		},
 		{
-			name: "apply_fields",
+			name: "apply fields",
 			args: args{
 				o: &SomeStruct{},
 				m: map[string]interface{}{
@@ -229,7 +229,7 @@ func TestApplyMap(t *testing.T) {
 			},
 		},
 		{
-			name: "pointer_to_struct_under_interface_field",
+			name: "pointer_to struct under interface field",
 			args: args{
 				o: &SomeStruct{
 					Interface: &AnotherStruct{},
@@ -245,7 +245,7 @@ func TestApplyMap(t *testing.T) {
 			},
 		},
 		{
-			name: "struct_under_interface_field",
+			name: "struct under interface field",
 			args: args{
 				o: &SomeStruct{
 					Interface: AnotherStruct{},
@@ -262,7 +262,7 @@ func TestApplyMap(t *testing.T) {
 			fails: true,
 		},
 		{
-			name: "apply_invalid_value_to_integer_field",
+			name: "apply_invalid value to integer field",
 			args: args{
 				o: &SomeStruct{},
 				m: map[string]interface{}{
@@ -272,7 +272,7 @@ func TestApplyMap(t *testing.T) {
 			expected: &SomeStruct{},
 		},
 		{
-			name: "apply_invalid_value_to_string_field",
+			name: "apply_invalid value to string field",
 			args: args{
 				o: &SomeStruct{},
 				m: map[string]interface{}{
@@ -280,6 +280,72 @@ func TestApplyMap(t *testing.T) {
 				},
 			},
 			expected: &SomeStruct{},
+		},
+		{
+			name: "apply []A to []A",
+			args: args{
+				o: &SomeStruct{},
+				m: map[string]interface{}{
+					"struct_array": []AnotherStruct{
+						{
+							A: "hoge",
+						},
+					},
+				},
+			},
+			expected: &SomeStruct{
+				ArrayOfStructs: []AnotherStruct{
+					{
+						A: "hoge",
+					},
+				},
+			},
+		},
+		{
+			name: "try to apply []A to []B",
+			args: args{
+				o: &SomeStruct{},
+				m: map[string]interface{}{
+					"struct_array": []SomeStruct{
+						{},
+					},
+				},
+			},
+			expected: &SomeStruct{},
+			fails:    true,
+		},
+		{
+			name: "apply []*A to []*A",
+			args: args{
+				o: &SomeStruct{},
+				m: map[string]interface{}{
+					"pointer_to_struct_array": []*AnotherStruct{
+						{
+							A: "hoge",
+						},
+					},
+				},
+			},
+			expected: &SomeStruct{
+				ArrayOfPointersToStructs: []*AnotherStruct{
+					{
+						A: "hoge",
+					},
+				},
+			},
+		},
+		{
+			name: "try to apply []*A to []*B",
+			args: args{
+				o: &SomeStruct{},
+				m: map[string]interface{}{
+					"pointer_to_struct_array": []*SomeStruct{
+						{},
+					},
+				},
+			},
+			expected: &SomeStruct{},
+			fails:    true,
 		},
 	}
 	for _, tt := range tests {

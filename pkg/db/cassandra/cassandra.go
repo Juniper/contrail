@@ -74,7 +74,7 @@ func (t table) makeEventList() *services.EventList {
 	for uuid, data := range t {
 		kind := data["type"].(string) //nolint: errcheck
 		data["uuid"] = uuid
-		event, err := services.NewEvent(&services.EventOption{
+		event, err := services.NewEvent(services.EventOption{
 			Kind: kind,
 			Data: data,
 			UUID: uuid,
@@ -301,7 +301,7 @@ func (p *EventProducer) WatchAMQP(ctx context.Context) error {
 			kind, _ := data["type"].(string)                    //nolint: errcheck
 			uuid, _ := data["uuid"].(string)                    //nolint: errcheck
 			obj, _ := data["obj_dict"].(map[string]interface{}) //nolint: errcheck
-			event, err := services.NewEvent(&services.EventOption{
+			event, err := services.NewEvent(services.EventOption{
 				Operation: operation,
 				Data:      obj,
 				Kind:      kind,

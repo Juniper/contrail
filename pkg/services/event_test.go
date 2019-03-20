@@ -36,7 +36,7 @@ func TestCreateEventJSONEncoding(t *testing.T) {
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 
-	d2, err := NewEvent(&EventOption{
+	d2, err := NewEvent(EventOption{
 		Kind:      i["kind"].(string),
 		Operation: i["operation"].(string),
 		Data:      i["data"].(map[string]interface{}),
@@ -98,7 +98,7 @@ func TestCreateEventYAMLEncoding(t *testing.T) {
 	request := d.GetCreateVirtualNetworkRequest()
 	assert.Equal(t, "vn_uuid", request.GetVirtualNetwork().GetUUID())
 	i = fileutil.YAMLtoJSONCompat(i).(map[string]interface{}) //nolint: errcheck
-	d2, err := NewEvent(&EventOption{
+	d2, err := NewEvent(EventOption{
 		Kind:      i["kind"].(string),
 		Operation: i["operation"].(string),
 		Data:      fileutil.YAMLtoJSONCompat(i["data"]).(map[string]interface{}),
