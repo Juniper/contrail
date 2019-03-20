@@ -42,7 +42,7 @@ func decodeResourceEvent(
 	if fm != nil {
 		m = basemodels.ApplyFieldMask(m, *fm)
 	}
-	return services.NewEvent(&services.EventOption{
+	return services.NewEvent(services.EventOption{
 		UUID:      pk[0],
 		Kind:      resourceName,
 		Data:      m,
@@ -55,12 +55,16 @@ func decodeReferenceEvent(operation, resourceName string, pk []string, attr base
 	if operation == services.OperationUpdate {
 		return nil, errors.New("method UPDATE not available on ref_* resources - received ref-relax event")
 	}
+	var attrMap map[string]interface{}
+	if attr != nil {
+		attrMap = attr.ToMap()
+	}
 	return services.NewRefUpdateEvent(services.RefUpdateOption{
 		Operation:     services.ParseRefOperation(operation),
 		ReferenceType: refTableNameToReferenceName(resourceName),
 		FromUUID:      pk[0],
 		ToUUID:        pk[1],
-		Attr:          attr,
+		Attr:          attrMap,
 	})
 }
 

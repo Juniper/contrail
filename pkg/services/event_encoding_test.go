@@ -447,7 +447,7 @@ func TestEvent_ApplyMap(t *testing.T) {
 
 func assertEventsAreEqual(t *testing.T, expected *Event, actual *Event) {
 	assert.Equal(t, expected.GetResource(), actual.GetResource())
-	assert.Equal(t, expected.GetResource().Kind(), actual.GetResource().Kind())
+	assert.Equal(t, expected.Kind(), actual.Kind())
 	assert.Equal(t, expected.Operation(), actual.Operation())
 	for _, p := range getFieldMask(expected).Paths {
 		assert.Contains(t, getFieldMask(actual).Paths, p)
