@@ -2,20 +2,114 @@ package auth
 
 import (
 	"context"
-
-	"github.com/labstack/echo"
-
 	"github.com/Juniper/contrail/pkg/format"
+	"github.com/databus23/keystone"
+	"github.com/labstack/echo"
+	"time"
 )
 
 //Context is used to represents Context.
 // API layer and DB layer depends on this.
 type Context struct {
-	projectID string
-	domainID  string
-	userID    string
-	roles     []string
-	authToken string
+	projectID   string
+	domainID    string
+	userID      string
+	roles       []string
+	authToken   string
+	objectPerms *ObjectPerms // *services.ObjectPerms
+}
+
+type Identification struct {
+	ID   string `yaml:"id" json:"id"`
+	Name string `yaml:"name" json:"name"`
+}
+
+type Token struct {
+	IsDomain  bool             `json:"is_domain"`
+	AuthToken string           `json:"auth_token"`
+	ExpiresAt string           `json:"expires_at"`
+	IssuedAt  string           `json:"issued_at"`
+	Version   string           `json:"version"`
+	Roles     []Identification `json:"roles"`
+	Project   struct {
+		Identification
+		Domain Identification `json:"domain"`
+	} `json:"project"`
+	User struct {
+		Identification
+		Domain Identification `json:"domain"`
+	} `json:"domain"`
+}
+
+type ObjectPerms struct {
+	IsGlobalReadOnlyRole bool `json:"is_global_read_only_role"`
+	IsCloudAdminRole     bool `json:"is_cloud_admin_role"`
+	TokenInfo            struct {
+		Token Token `json:"token"`
+	} `json:"token_info"`
+}
+
+func NewObjPerms(token *keystone.Token) *ObjectPerms {
+	if token == nil {
+		return &ObjectPerms{}
+	}
+
+	objPerms := &ObjectPerms{
+		TokenInfo: struct {
+			Token Token `json:"token"`
+		}{
+			Token: Token{
+				ExpiresAt: token.ExpiresAt.Format(time.RFC3339),
+				IssuedAt:  token.IssuedAt.Format(time.RFC3339),
+				Version:   "", // TODO(pawel.drapiewski): find the way to get this information if needed
+				Roles:     TokenRolesToObjectPermsRoles(token.Roles),
+				Project: struct {
+					Identification
+					Domain Identification `json:"domain"`
+				}{
+					Identification: Identification{
+						ID:   token.Project.ID,
+						Name: token.Project.Name,
+					},
+					Domain: Identification{
+						ID:   token.Project.Domain.ID,
+						Name: token.Project.Domain.Name,
+					},
+				},
+				User: struct {
+					Identification
+					Domain Identification `json:"domain"`
+				}{
+					Identification: Identification{
+						ID:   token.User.ID,
+						Name: token.User.Name,
+					},
+					Domain: Identification{
+						ID:   token.User.Domain.ID,
+						Name: token.User.Domain.Name,
+					},
+				},
+			},
+		},
+	}
+
+	if token.Domain != nil {
+		objPerms.TokenInfo.Token.IsDomain = token.Domain.Enabled
+	}
+
+	return objPerms
+}
+
+func TokenRolesToObjectPermsRoles(tokenRoles []struct {
+	ID   string
+	Name string
+}) []Identification {
+	var identifications []Identification
+	for _, role := range tokenRoles {
+		identifications = append(identifications, Identification{ID: role.ID, Name: role.Name})
+		_ = role
+	}
+	return identifications
 }
 
 const (
@@ -23,17 +117,43 @@ const (
 	AdminRole = "admin"
 	//GlobalReadOnlyRole string
 	GlobalReadOnlyRole = "RO"
+	// CloudAdminRole string
+	CloudAdminRole = "cloud_admin"
 )
 
 //NewContext makes a authentication context.
-func NewContext(domainID, projectID, userID string, roles []string, authToken string) *Context {
-	return &Context{
-		projectID: projectID,
-		domainID:  domainID,
-		userID:    userID,
-		roles:     roles,
-		authToken: authToken,
+func NewContext(
+	domainID, projectID, userID string, roles []string, authToken string, objectPerms *ObjectPerms,
+) *Context {
+	ctx := &Context{
+		projectID:   projectID,
+		domainID:    domainID,
+		userID:      userID,
+		roles:       roles,
+		authToken:   authToken,
+		objectPerms: objectPerms,
 	}
+	ctx.substituteObjectPerms()
+	return ctx
+}
+
+func (context *Context) substituteObjectPerms() {
+	context.objectPerms.IsGlobalReadOnlyRole = context.IsGlobalRORole()
+	context.objectPerms.IsCloudAdminRole = context.IsCloudAdminRole()
+	context.objectPerms.TokenInfo.Token.AuthToken = context.AuthToken()
+}
+
+// IsCloudAdminRole is used to check if this context is cloud admin role
+func (context *Context) IsCloudAdminRole() bool {
+	if context == nil {
+		return true
+	}
+	return format.ContainsString(context.roles, CloudAdminRole)
+}
+
+//GetObjPerms returns object perms
+func (context *Context) GetObjPerms() *ObjectPerms {
+	return context.objectPerms
 }
 
 //IsAdmin is used to check if this is admin context
@@ -108,7 +228,13 @@ func GetAuthCTX(ctx context.Context) *Context {
 // NoAuth is used to create new no auth context
 func NoAuth(ctx context.Context) context.Context {
 	Context := NewContext(
-		"default-domain", "default-project", "admin", []string{"admin"}, "")
+		"default-domain",
+		"default-project",
+		"admin",
+		[]string{"admin"},
+		"",
+		NewObjPerms(nil),
+	)
 	var authKey interface{} = "auth"
 	return context.WithValue(ctx, authKey, Context)
 }
