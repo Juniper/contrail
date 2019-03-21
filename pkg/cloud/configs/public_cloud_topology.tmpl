@@ -9,12 +9,12 @@
     {% if az in cloudType %}
       resource_group: {{ region.info.ResourceGroup }}
     {% endif %}
-    {% for vcloud in region.virtualClouds %}
-      {% if az in cloudType %}
+    {% if az in cloudType %}
       vnet:
-      {% elif aws in cloudType %}
+    {% elif aws in cloudType %}
       vpc:
-      {% endif %}
+    {% endif %}
+    {% for vcloud in region.virtualClouds %}
         - name: {{ vcloud.info.Name }}
           cidr_block: {{ vcloud.info.CidrBlock }}
           subnets:
