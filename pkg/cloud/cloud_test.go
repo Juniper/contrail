@@ -18,10 +18,12 @@ const (
 	allInOneCloudDeleteTemplatePath  = "./test_data/test_all_in_one_public_cloud_delete.tmpl"
 	allInOneCloudUpdateTemplatePath  = "./test_data/test_all_in_one_public_cloud_update.tmpl"
 	expectedAZCmdForCreateUpdate     = "./test_data/expected_azure_cmd_for_create_update.yaml"
-	expectedAZTopology               = "./test_data/expected_azure_cloud_topology.yaml"
+	expectedAZTopology1              = "./test_data/expected_azure_cloud_topology_1.yaml"
+	expectedAZTopology2              = "./test_data/expected_azure_cloud_topology_2.yaml"
 	expectedAZSecret                 = "./test_data/expected_azure_cloud_secret.yaml"
 	expectedAWSCmdForCreateUpdate    = "./test_data/expected_aws_cmd_for_create_update.yaml"
-	expectedAWSTopology              = "./test_data/expected_aws_cloud_topology.yaml"
+	expectedAWSTopology1             = "./test_data/expected_aws_cloud_topology_1.yaml"
+	expectedAWSTopology2             = "./test_data/expected_aws_cloud_topology_2.yaml"
 	expectedAWSSecret                = "./test_data/expected_aws_cloud_secret.yaml"
 	expectedOnPremTopology           = "./test_data/expected_onprem_cloud_topology.yaml"
 	expectedOnPremSecret             = "./test_data/expected_onprem_cloud_secret.yaml"
@@ -43,14 +45,18 @@ func TestOnPremCloud(t *testing.T) {
 	context := pongo2.Context{
 		"CLOUD_TYPE": onPrem,
 	}
-	runCloudTest(t, expectedOnPremTopology, expectedOnPremSecret,
+
+	expectedTopologies := []string{expectedOnPremTopology}
+	runCloudTest(t, expectedTopologies, expectedOnPremSecret,
 		expectedOnPremCmdForCreateUpdate, context)
 }
 func TestAzureCloud(t *testing.T) {
 	context := pongo2.Context{
 		"CLOUD_TYPE": azure,
 	}
-	runCloudTest(t, expectedAZTopology, expectedAZSecret,
+
+	expectedTopologies := []string{expectedAZTopology1, expectedAZTopology2}
+	runCloudTest(t, expectedTopologies, expectedAZSecret,
 		expectedAZCmdForCreateUpdate, context)
 }
 
@@ -59,12 +65,14 @@ func TestAWSCloud(t *testing.T) {
 		"CLOUD_TYPE": aws,
 	}
 
-	runCloudTest(t, expectedAWSTopology, expectedAWSSecret,
+	expectedTopologies := []string{expectedAWSTopology1, expectedAWSTopology2}
+	runCloudTest(t, expectedTopologies, expectedAWSSecret,
 		expectedAWSCmdForCreateUpdate, context)
 }
 
-func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
-	expectedCmdForCreateUpdate string, context map[string]interface{}) {
+func runCloudTest(t *testing.T, expectedTopologies []string,
+	expectedSecret string, expectedCmdForCreateUpdate string,
+	context map[string]interface{}) {
 
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
@@ -116,7 +124,7 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 	err = cloud.Manage()
 	assert.NoError(t, err, "failed to manage cloud, while creating cloud")
 
-	assert.True(t, compareGeneratedTopology(t, expectedTopology),
+	assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 		"topology file created during cloud create is not as expected")
 	if context["CLOUD_TYPE"] == onPrem {
 		return
@@ -166,7 +174,7 @@ func runCloudTest(t *testing.T, expectedTopology, expectedSecret string,
 	err = cloud.Manage()
 	assert.NoError(t, err, "failed to manage cloud, while updating cloud")
 
-	assert.True(t, compareGeneratedTopology(t, expectedTopology),
+	assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 		"topology file created during cloud update is not as expected")
 	assert.True(t, compareGeneratedSecret(t, expectedSecret),
 		"secret file created during cloud update is not as expected")
@@ -208,8 +216,14 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 
 }
 
-func compareGeneratedTopology(t *testing.T, expectedTopology string) bool {
-	return compareFiles(t, expectedTopology, generatedTopoPath())
+func compareGeneratedTopology(t *testing.T, expectedTopologies []string) bool {
+
+	for _, topo := range expectedTopologies {
+		if compareFiles(t, topo, generatedTopoPath()) {
+			return true
+		}
+	}
+	return false
 }
 
 func compareGeneratedSecret(t *testing.T, expectedSecretFile string) bool {

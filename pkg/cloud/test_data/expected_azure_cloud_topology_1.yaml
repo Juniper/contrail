@@ -6,6 +6,34 @@
     - name: WestUS
       resource_group: unit_test
       vnet:
+        - name: virtual_cloud_vpc2
+          cidr_block: 172.16.10.0/16
+          subnets:
+            - name: cloud_private_subnet_vpc2
+              cidr_block: 172.16.10.0/24
+              security_group: cloud_security_group_vpc2
+          security_groups:
+            - name: cloud_security_group_vpc2
+              rules:
+                - name: cloud_security_group_rule_vpc2
+                  direction: inbound
+          instances:
+            - name: cloud_node_compute_vpc2
+              roles:
+                - compute_node
+              provision: true
+              username: centos
+              os: centos7
+              instance_type: F16sv2
+              subnets: cloud_private_subnet_vpc2
+            - name: cloud_node_gw_vpc2
+              roles:
+                - gateway
+              provision: true
+              username: centos
+              os: centos7
+              instance_type: F16sv2
+              subnets: cloud_private_subnet_vpc2
         - name: virtual_cloud
           cidr_block: 192.168.10.0/16
           subnets:
