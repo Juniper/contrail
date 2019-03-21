@@ -11,16 +11,21 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/osutil"
+	"github.com/Juniper/contrail/pkg/retry"
+	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (
@@ -73,6 +78,8 @@ const (
 	aws    = "aws"
 	azure  = "azure"
 	onPrem = "private"
+
+	statusRetryInterval = 3 * time.Second
 )
 
 type multiCloudProvisioner struct {
@@ -99,12 +106,20 @@ func (m *multiCloudProvisioner) Deploy() error {
 	m.updateMCWorkDir()
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
-		err := m.createMCCluster()
+		err := m.verifyCloudStatus()
+		if err != nil {
+			return err
+		}
+		err = m.createMCCluster()
 		if err != nil {
 			return err
 		}
 		return m.createEndpoints()
 	case updateCloud:
+		err := m.verifyCloudStatus()
+		if err != nil {
+			return err
+		}
 		updated, err := m.isMCUpdated()
 		if err != nil {
 			return err
@@ -258,6 +273,17 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func (m *multiCloudProvisioner) verifyCloudStatus() error {
+	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
+		err := waitForCloudStatusToBeUpdated(context.Background(), m.cluster.log,
+			m.cluster.APIServer, cloudRef.UUID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (m *multiCloudProvisioner) compareMCInventoryFile() (bool, error) {
@@ -1091,4 +1117,45 @@ func isSSHAgentProcessRunning(sshAgentPath string) (*os.Process, error) {
 		return nil, err
 	}
 	return process, nil
+}
+
+func waitForCloudStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
+	httpClient *client.HTTP, cloudUUID string) error {
+
+	return retry.Do(func() (retry bool, err error) {
+
+		cloudResp, err := httpClient.GetCloud(ctx, &services.GetCloudRequest{
+			ID: cloudUUID,
+		},
+		)
+		if err != nil {
+			return false, err
+		}
+
+		switch cloudResp.Cloud.ProvisioningState {
+		case statusCreateProgress:
+			return true, fmt.Errorf("waiting for create cloud %s to complete",
+				cloudUUID)
+		case statusUpdateProgress:
+			return true, fmt.Errorf("waiting for update cloud %s to complete",
+				cloudUUID)
+		case statusNoState:
+			return true, fmt.Errorf("waiting for cloud %s to complete processing",
+				cloudUUID)
+		case statusCreated:
+			return false, nil
+		case statusUpdated:
+			return false, nil
+		case statusCreateFailed:
+			return false, fmt.Errorf("cloud %s status has failed in creating",
+				cloudUUID)
+		case statusUpdateFailed:
+			return false, fmt.Errorf("cloud %s status has failed in updating",
+				cloudUUID)
+		}
+
+		return false, fmt.Errorf("unknown cloud status %s for cloud %s",
+			cloudResp.Cloud.ProvisioningState, cloudUUID)
+	}, retry.WithLog(log.Logger),
+		retry.WithInterval(statusRetryInterval))
 }
