@@ -1,0 +1,30 @@
+name: Multi cloud  update test
+description: multi cloud  update test
+test_data:
+  pvt_cloud: &pvt_cloud
+    name: pvt_cloud
+    uuid: pvt_cloud_uuid
+    organization: pvt_unit_test
+    project: pvt_test2
+    cloud_user_refs:
+      - uuid: pvt_cloud_user_uuid
+    provisioning_state: NOSTATE
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: update cloud
+  request:
+    path: /cloud/pvt_cloud_uuid
+    method: PUT
+    expected:
+    - 200
+    data:
+      cloud: *pvt_cloud
+  expect:
+    cloud: *pvt_cloud

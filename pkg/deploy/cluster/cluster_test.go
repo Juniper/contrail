@@ -11,7 +11,7 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
@@ -48,6 +48,7 @@ const (
 	allInOneMCClusterTemplatePath         = "./test_data/test_mc_cluster.tmpl"
 	allInOneMCClusterUpdateTemplatePath   = "./test_data/test_mc_update_cluster.tmpl"
 	allInOneMCClusterDeleteTemplatePath   = "./test_data/test_mc_delete_cluster.tmpl"
+	allInOneMCCloudUpdateTemplatePath     = "./test_data/test_mc_update_pvt_cloud.tmpl"
 	allInOneClusterAppformixTemplatePath  = "./test_data/test_all_in_one_with_appformix.tmpl"
 	clusterID                             = "test_cluster_uuid"
 
@@ -1236,6 +1237,18 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	clusterDeployer, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
+	assert.NoError(t, err, "failed to create deployer")
+	err = deployer.Deploy()
+	assert.Error(t, err,
+		"mc deployment should fail because cloud provisioning has failed")
+
+	var updateCloudTestScenario integration.TestScenario
+	err = integration.LoadTestScenario(&updateCloudTestScenario, allInOneMCCloudUpdateTemplatePath, pContext)
+	assert.NoError(t, err, "failed to load mc pvt cloud update test data")
+	_ = integration.RunDirtyTestScenario(t, &updateCloudTestScenario, server)
+
+	// now get cluster data again
+	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(create) cluster")
