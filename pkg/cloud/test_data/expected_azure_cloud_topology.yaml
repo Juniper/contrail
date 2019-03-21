@@ -19,7 +19,7 @@
                   protocol: tcp
                 - name: cloud_security_group_rule
                   direction: inbound
-                  protocol: *
+                  protocol: "*"
           instances:
             - name: cloud_node_compute
               roles:
