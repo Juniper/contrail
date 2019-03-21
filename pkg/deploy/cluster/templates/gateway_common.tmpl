@@ -10,6 +10,7 @@ PATH_INTERFACE_CONFIG: "/etc/network/interfaces.d"
 PATH_FW_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/firewall"
 PATH_GCP_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/gcp"
 PATH_SECRET_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/secret"
+PATH_VXLAN_CONFIG: "{% templatetag openvariable %} PATH_CONFIG {% templatetag closevariable %}/vxlan"
 
 CONTAINER_REGISTRY: {{ cluster.ContainerRegistry }}
 {% if cluster.ContrailVersion %}
