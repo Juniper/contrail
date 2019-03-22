@@ -69,7 +69,12 @@ schema:
       presence: optional
       type: string
     type:
-      $ref: types.json#/definitions/EndSystemType
+      $ref: types.json#/definitions/NodeType
+      description: Type of machine resource (deprecated)
+      operations: CRUD
+      presence: optional
+    node_type:
+      $ref: types.json#/definitions/NodeType
       description: Type of machine resource
       operations: CRUD
       presence: optional

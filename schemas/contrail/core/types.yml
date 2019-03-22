@@ -1017,7 +1017,7 @@ definitions:
     maximum: 4095
     minimum: 0
     type: integer
-  EndSystemType:
+  NodeType:
     enum:
     - private
     - baremetal
