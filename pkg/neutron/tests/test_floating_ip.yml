@@ -3,19 +3,16 @@ description: |
   Integration test for neutron floating ip endpoint.
 
 cleanup:
-  - kind: instance-ip
-    fq_name: ["test_instance_ip"]
-  - kind: floating-ip
-    fq_name: ["default", "floating_ip_project", "vn_floating_blue", "test_floating_ip_pool", "29a7f9e8-45a8-11e9-b210-d663bd873d93"]
+  - path: /floating-ip/29a7f9e8-45a8-11e9-b210-d663bd873d93"
+  - path: /floating-ip/2aef7c74-e375-4c49-8efe-cb5ade65a07f
+  - path: /instance-ip/a3734c5d-489b-4784-8975-da1fe0350522
+  - path: /instance-ip/1bfb839d-754c-4b95-be33-6a9bedc9cfcc
   - path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
-  - kind: floating-ip-pool
-    fq_name: ["default", "floating_ip_project", "vn_floating_blue", "test_floating_ip_pool"]
-  - kind: virtual-network
-    fq_name: ["default", "floating_ip_project", "vn_floating_blue"]
-  - kind: network-ipam
-    fq_name: ["default","floating_ip_project","test_ipam_floating_blue"]
-  - kind: project
-    fq_name: ["default", "floating_ip_project"]
+  - path: /virtual-machine-interface/d2048e39-e03e-4b96-835d-be2e9d04cf22
+  - path: /floating-ip-pool/beefbeef-beef-beef-beef-beefbeef1003
+  - path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1002
+  - path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1001
+  - path: /project/29a7f614-45a8-11e9-b210-d663bd873d93
 
 clients:
   default:
@@ -79,35 +76,13 @@ test_data:
     virtual_network_refs:
       - to: ["default", "floating_ip_project", "vn_floating_blue"]
   instance-ip: &instance_ip
+    uuid: a3734c5d-489b-4784-8975-da1fe0350522
     fq_name: ["test_instance_ip"]
     instance_ip_address: "10.0.0.2"
     virtual_machine_interface_refs:
       - uuid: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
-workflow:
-- name: Floating IP read all
-  request:
-    path: /neutron/floatingip
-    method: POST
-    expected: [200]
-    data:
-      data:
-        fields: []
-        filters:
-          tenant_id:
-          - 8cdb5412f5974b38a69f2f9d1ae969b7
-      context:
-        user_id: 06be3763c8224dd5a343e3d95d87c1d2
-        roles:
-        - heat_stack_owner
-        - admin
-        tenant_id: 8cdb5412f5974b38a69f2f9d1ae969b7
-        is_admin: true
-        request_id: req-c4fcfcc2-7437-45f0-ad86-16561905617b
-        operation: READALL
-        type: floatingip
-        tenant: 8cdb5412f5974b38a69f2f9d1ae969b7
-  expect: []
 
+workflow:
 - name: create floating ip project
   request:
     path: /projects
@@ -203,7 +178,6 @@ workflow:
     method: GET
     expected: [200]
 
-
 - name: read floating ip
   request:
     path: /neutron/floatingip
@@ -230,7 +204,6 @@ workflow:
         operation: READ
         type: floatingip
         tenant: 29a7f61445a811e9b210d663bd873d93
-
   expect:
     router_id:
     status: DOWN
@@ -269,7 +242,36 @@ workflow:
     port_id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
     id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
 
-- name: delete floating ip
+- name: create port 2
+  request:
+    path: /virtual-machine-interfaces
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-machine-interface:
+        name: "red"
+        uuid: d2048e39-e03e-4b96-835d-be2e9d04cf22
+        parent_type: project
+        parent_uuid: 29a7f614-45a8-11e9-b210-d663bd873d93
+        virtual_network_refs:
+        - to: ["default", "floating_ip_project", "vn_floating_blue"]
+  expect: null
+
+- name: create instance ip 2
+  request:
+    path: /instance-ips
+    method: POST
+    expected: [200]
+    data:
+      instance-ip:
+        uuid: 1bfb839d-754c-4b95-be33-6a9bedc9cfcc
+        fq_name: ["test_instance_ip_2"]
+        instance_ip_address: "10.0.1.2"
+        virtual_machine_interface_refs:
+        - uuid: d2048e39-e03e-4b96-835d-be2e9d04cf22
+
+- name: create floating ip 2
   request:
     path: /neutron/floatingip
     method: POST
@@ -277,8 +279,281 @@ workflow:
     data:
       data:
         fields:
-        id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
+        resource:
+          id: 2aef7c74-e375-4c49-8efe-cb5ade65a07f
+          tenant_id: 29a7f614-45a8-11e9-b210-d663bd873d93
+          floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+          project_id: 29a7f614-45a8-11e9-b210-d663bd873d93
         filters:
+      context:
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        operation: CREATE
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect:
+    status: DOWN
+    tenant_id: 29a7f61445a811e9b210d663bd873d93
+    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    #floating_ip_address: 10.0.0.1
+
+- name: readall floating ip all filters
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
+          floating_ip_address : [10.0.0.0]
+          port_id : [f57aa10d-9c8d-424f-b88b-e64e08b71f8c]
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect:
+  - router_id:
+    status: ACTIVE
+    description: ''
+    tenant_id: 29a7f61445a811e9b210d663bd873d93
+    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    fixed_ip_address: 10.0.0.2
+    floating_ip_address: 10.0.0.0
+    id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
+
+- name: readall floating ip id filter
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect:
+  - router_id:
+    status: ACTIVE
+    description: ''
+    tenant_id: 29a7f61445a811e9b210d663bd873d93
+    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    fixed_ip_address: 10.0.0.2
+    floating_ip_address: 10.0.0.0
+    id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
+
+- name: readall floating ip floating_ip_address filter
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          floating_ip_address : [10.0.0.0]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect:
+  - router_id:
+    status: ACTIVE
+    description: ''
+    tenant_id: 29a7f61445a811e9b210d663bd873d93
+    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    fixed_ip_address: 10.0.0.2
+    floating_ip_address: 10.0.0.0
+    id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
+
+- name: readall floating ip port_id filter
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          port_id : [f57aa10d-9c8d-424f-b88b-e64e08b71f8c]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect:
+  - router_id:
+    status: ACTIVE
+    description: ''
+    tenant_id: 29a7f61445a811e9b210d663bd873d93
+    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    fixed_ip_address: 10.0.0.2
+    floating_ip_address: 10.0.0.0
+    id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
+
+- name: readall floating ip tenant_id filters
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect:
+  - router_id:
+    status: ACTIVE
+    description: ''
+    tenant_id: 29a7f61445a811e9b210d663bd873d93
+    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    fixed_ip_address: 10.0.0.2
+    floating_ip_address: 10.0.0.0
+    id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
+  - status: DOWN
+    tenant_id: 29a7f61445a811e9b210d663bd873d93
+    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+
+- name: readall floating ip id filter out
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          id: [deadc0de-45a8-11e9-b210-d663bd873d93]
+          floating_ip_address : [10.0.0.0]
+          port_id : [f57aa10d-9c8d-424f-b88b-e64e08b71f8c]
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect: []
+
+- name: readall floating ip tenant_id filter out
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
+          floating_ip_address : [10.0.0.0]
+          port_id : [f57aa10d-9c8d-424f-b88b-e64e08b71f8c]
+          tenant_id: [baadc0de45a811e9b210d663bd873d93]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect: []
+
+- name: readall floating ip port_id filter out
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
+          floating_ip_address : [10.0.0.0]
+          port_id : [deadc0de-9c8d-424f-b88b-e64e08b71f8c]
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect: []
+
+- name: readall floating ip address filter out
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        filters:
+          id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
+          floating_ip_address : [10.0.0.100]
+          port_id : [f57aa10d-9c8d-424f-b88b-e64e08b71f8c]
+          tenant_id: [29a7f61445a811e9b210d663bd873d93]
+      context:
+        user_id: c8a48c44a047493995f29af752ce6ece
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        request_id: req-7e4178bd-84b7-4999-a57c-6baf1756ac45
+        operation: READALL
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+  expect: []
+
+- name: delete floating ip
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
       context:
         roles:
           - admin
@@ -287,3 +562,76 @@ workflow:
         operation: DELETE
         type: floatingip
         tenant: 29a7f61445a811e9b210d663bd873d93
+
+- name: delete floating ip 2
+  request:
+    path: /neutron/floatingip
+    method: POST
+    expected: [200]
+    data:
+      data:
+        id: 2aef7c74-e375-4c49-8efe-cb5ade65a07f
+      context:
+        roles:
+        - admin
+        tenant_id: 29a7f61445a811e9b210d663bd873d93
+        is_admin: true
+        operation: DELETE
+        type: floatingip
+        tenant: 29a7f61445a811e9b210d663bd873d93
+
+- name: delete instance ip 2
+  request:
+    path: /instance-ip/1bfb839d-754c-4b95-be33-6a9bedc9cfcc
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete port 2
+  request:
+    path: /virtual-machine-interface/d2048e39-e03e-4b96-835d-be2e9d04cf22
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete instance ip
+  request:
+    path: /instance-ip/a3734c5d-489b-4784-8975-da1fe0350522
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete port
+  request:
+    path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete floating-ip-pool
+  request:
+    path: /floating-ip-pool/beefbeef-beef-beef-beef-beefbeef1003
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete virtual-network
+  request:
+    path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1002
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete network-ipam
+  request:
+    path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1001
+    method: DELETE
+    expected: [200]
+  expect: null
+
+- name: delete project
+  request:
+    path: /project/29a7f614-45a8-11e9-b210-d663bd873d93
+    method: DELETE
+    expected: [200]
+  expect: null
