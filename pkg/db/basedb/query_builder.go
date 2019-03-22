@@ -264,23 +264,52 @@ func (qb *QueryBuilder) buildFilterQuery(ctx *queryContext) {
 		where := qb.buildFilterParts(ctx, column, filter.Values)
 		ctx.where = append(ctx.where, where)
 	}
-	// use join if backrefuuids
-	if len(spec.BackRefUUIDs) > 0 {
-		where := []string{}
-		for backrefTable := range qb.BackRefFields {
-			refTable := schema.ReferenceTableName(schema.RefPrefix, backrefTable, qb.Table)
-			ctx.joins = append(ctx.joins, qb.join(refTable, "to", qb.TableAlias))
-			wherePart := qb.buildFilterParts(ctx, qb.Quote(refTable, "from"), spec.BackRefUUIDs)
-			where = append(where, wherePart)
-		}
-		ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
-	}
+
+	qb.buildBackrefFilterQuery(ctx)
+
+	qb.buildRefFilterQuery(ctx)
 
 	// Add condition to start query items from next to markered item's uuid
 	if spec.Marker != "" {
 		ctx.values = append(ctx.values, spec.Marker)
 		ctx.where = append(ctx.where,
 			fmt.Sprintf("%s > %s", qb.Quote(qb.TableAlias, "uuid"), qb.Placeholder(len(ctx.values))))
+	}
+}
+
+func (qb *QueryBuilder) buildBackrefFilterQuery(ctx *queryContext) {
+	spec := ctx.spec
+	if len(spec.BackRefUUIDs) == 0 {
+		return
+	}
+	where := []string{}
+	for backrefTable := range qb.BackRefFields {
+		refTable := schema.ReferenceTableName(schema.RefPrefix, backrefTable, qb.Table)
+		ctx.joins = append(ctx.joins, qb.join(refTable, "to", qb.TableAlias))
+		wherePart := qb.buildFilterParts(ctx, qb.Quote(refTable, "from"), spec.BackRefUUIDs)
+		where = append(where, wherePart)
+	}
+	ctx.where = append(ctx.where, "("+strings.Join(where, " or ")+")")
+}
+
+func (qb *QueryBuilder) buildRefFilterQuery(ctx *queryContext) {
+	spec := ctx.spec
+	if len(spec.RefUUIDs) == 0 {
+		return
+	}
+	where := []string{}
+	for refField := range qb.RefFields {
+		rus, ok := spec.RefUUIDs[refField+"_refs"]
+		if !ok {
+			continue
+		}
+		refTable := schema.ReferenceTableName(schema.RefPrefix, qb.Table, refField)
+		ctx.joins = append(ctx.joins, qb.join(refTable, "from", qb.TableAlias))
+		wherePart := qb.buildFilterParts(ctx, qb.Quote(refTable, "to"), rus.UUIDs)
+		where = append(where, wherePart)
+	}
+	if len(where) > 0 {
+		ctx.where = append(ctx.where, "("+strings.Join(where, " and ")+")")
 	}
 }
 
