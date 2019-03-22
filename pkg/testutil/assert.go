@@ -189,6 +189,10 @@ func checkDiff(path string, expected, actual interface{}) error {
 		if float64(t) != format.InterfaceToFloat(actual) {
 			return errorWithFields(t, actual, path)
 		}
+	case uint, uint64:
+		if format.InterfaceToUint64(t) != format.InterfaceToUint64(actual) {
+			return errorWithFields(t, actual, path)
+		}
 	default:
 		if t != actual {
 			return errorWithFields(t, actual, path)

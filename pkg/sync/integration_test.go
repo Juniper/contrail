@@ -9,9 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gogo/protobuf/types"
+
 	"github.com/coreos/etcd/clientv3"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gogo/protobuf/types"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -59,8 +60,9 @@ func TestSyncService(t *testing.T) {
 									"group_access": 7,
 								},
 								"uuid": map[string]interface{}{
-									"uuid_mslong": 6278211400000000000,
-									"uuid_lslong": float64(13655262000000000000)},
+									"uuid_mslong": uint64(6278211192026973935),
+									"uuid_lslong": uint64(13655261412632939815),
+								},
 							},
 							"perms2": map[string]interface{}{
 								"owner":        "cloud-admin",
@@ -128,8 +130,8 @@ func TestSyncService(t *testing.T) {
 							"name": "vn_blue",
 							"id_perms": map[string]interface{}{
 								"uuid": map[string]interface{}{
-									"uuid_mslong": float64(1),
-									"uuid_lslong": float64(2),
+									"uuid_mslong": 1,
+									"uuid_lslong": 2,
 								},
 							},
 						},
@@ -139,8 +141,8 @@ func TestSyncService(t *testing.T) {
 							"name": "vn_bluuee",
 							"id_perms": map[string]interface{}{
 								"uuid": map[string]interface{}{
-									"uuid_mslong": float64(1337),
-									"uuid_lslong": float64(2778),
+									"uuid_mslong": 1337,
+									"uuid_lslong": 2778,
 								},
 							},
 						},
