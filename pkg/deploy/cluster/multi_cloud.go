@@ -186,7 +186,7 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir)
+	err = m.runGenerateInventory(m.workDir, addCloud)
 	if err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
@@ -231,7 +231,7 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir)
+	err = m.runGenerateInventory(m.workDir, updateCloud)
 	if err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
@@ -306,7 +306,7 @@ func (m *multiCloudProvisioner) compareMCInventoryFile() (bool, error) {
 		return false, err
 	}
 
-	err = m.runGenerateInventory(tmpDir)
+	err = m.runGenerateInventory(tmpDir, updateCloud)
 	if err != nil {
 		return false, err
 	}
@@ -322,13 +322,24 @@ func (m *multiCloudProvisioner) compareMCInventoryFile() (bool, error) {
 	return bytes.Equal(oldInventory, newInventory), nil
 }
 
-func (m *multiCloudProvisioner) runGenerateInventory(workDir string) error {
+func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
+	cloudAction string) error {
 
 	cmd := cloud.GetGenInventoryCmd(cloud.GetMultiCloudRepodir())
+	var args []string
 
-	args := strings.Split(fmt.Sprintf("-t %s -s %s -ts %s --instate %s --outstate %s",
-		m.getClusterTopoFile(workDir), m.getClusterSecretFile(workDir), m.getTFStateFile(),
-		mcState, mcState), " ")
+	switch cloudAction {
+	case addCloud:
+		args = strings.Split(fmt.Sprintf("-t %s -s %s",
+			m.getClusterTopoFile(workDir), m.getClusterSecretFile(workDir)), " ")
+	case updateCloud:
+		args = strings.Split(fmt.Sprintf("-t %s -s %s -ts %s --instate %s --outstate %s",
+			m.getClusterTopoFile(workDir), m.getClusterSecretFile(workDir), m.getTFStateFile(),
+			mcState, mcState), " ")
+	default:
+		return fmt.Errorf("%s action not supported by generate inventory",
+			cloudAction)
+	}
 
 	m.Log.Info("Generating inventory file multi-cloud provisioner")
 	m.Log.Debugf("Command executed: %s %s", cmd,
