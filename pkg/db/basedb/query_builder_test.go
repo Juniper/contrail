@@ -78,6 +78,46 @@ func TestQueryBuilder(t *testing.T) {
 			},
 		},
 		{
+			name: "Test one ref filter from three ref fields",
+			queryBuilderParams: queryBuilderParams{
+				fields: []string{
+					"uuid",
+					"name",
+				},
+				refFields: map[string][]string{
+					"project": nil,
+					"vmi":     nil,
+					"tag":     nil,
+				},
+				table: "floating_ip",
+			},
+			spec: baseservices.ListSpec{
+				RefUUIDs: map[string]*baseservices.UUIDs{
+					"project_refs": {[]string{"proj_ref_uuid", "proj_ref_uuid_2"}},
+				},
+			},
+			expected: map[string]expectedResult{
+				MYSQL: {
+					query: "select `floating_ip_t`.`uuid`,`floating_ip_t`.`name` from floating_ip as floating_ip_t " +
+						"left join `ref_floating_ip_project` on `floating_ip_t`.`uuid` = `ref_floating_ip_project`.`from` " +
+						"where (CONVERT(`ref_floating_ip_project`.`to` USING utf8) in (?,?)) order by `floating_ip_t`.`uuid`",
+					values: []interface{}{
+						"proj_ref_uuid",
+						"proj_ref_uuid_2",
+					},
+				},
+				POSTGRES: {
+					query: "select \"floating_ip_t\".\"uuid\",\"floating_ip_t\".\"name\" from floating_ip as floating_ip_t " +
+						"left join \"ref_floating_ip_project\" on \"floating_ip_t\".\"uuid\" = \"ref_floating_ip_project\".\"from\" " +
+						"where (\"ref_floating_ip_project\".\"to\" :: TEXT in ($1,$2)) order by \"floating_ip_t\".\"uuid\"",
+					values: []interface{}{
+						"proj_ref_uuid",
+						"proj_ref_uuid_2",
+					},
+				},
+			},
+		},
+		{
 			name: "Collecion of virtual networks are limited and started with marker",
 			queryBuilderParams: queryBuilderParams{
 				fields: []string{
