@@ -226,17 +226,16 @@ func (c *Cloud) update() error {
 	}
 
 	if !data.isCloudUpdateRequest() {
-		return nil
-	}
-
-	topoUpdated, err := topo.isUpdated(defaultCloudResource)
-	if err != nil {
-		status[statusField] = statusUpdateFailed
-		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-		return err
-	}
-	if topoUpdated {
-		return nil
+		var topoIsAlreadyUpdated bool
+		topoIsAlreadyUpdated, err = topo.isUpdated(defaultCloudResource)
+		if err != nil {
+			status[statusField] = statusUpdateFailed
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
+		if topoIsAlreadyUpdated {
+			return nil
+		}
 	}
 
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)

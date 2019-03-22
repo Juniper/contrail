@@ -263,6 +263,9 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
+	if m.clusterData.ClusterInfo.ProvisioningState == statusNoState {
+		return false, nil
+	}
 	status := map[string]interface{}{}
 	if _, err := os.Stat(m.getMCInventoryFile(m.workDir)); err == nil {
 		ok, err := m.compareMCInventoryFile()
