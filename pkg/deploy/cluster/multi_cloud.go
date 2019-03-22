@@ -101,6 +101,7 @@ type PubKeyConfig struct {
 	AuthReg      []map[string]string `yaml:"authorized_registries"`
 }
 
+// nolint: gocyclo
 func (m *multiCloudProvisioner) Deploy() error {
 
 	m.updateMCWorkDir()
@@ -108,20 +109,47 @@ func (m *multiCloudProvisioner) Deploy() error {
 	case addCloud:
 		err := m.createMCCluster()
 		if err != nil {
+			m.Log.Errorf("add cloud failed with err: %s", err)
 			return err
 		}
-		return m.createEndpoints()
+		err = m.createEndpoints()
+		if err != nil {
+			m.Log.Errorf("add cloud failed with err: %s", err)
+			return err
+		}
 	case updateCloud:
 		updated, err := m.isMCUpdated()
 		if err != nil {
+			m.Log.Errorf("update cloud failed with err: %s", err)
 			return err
 		}
 		if updated {
 			return nil
 		}
-		return m.updateMCCluster()
+		err = m.updateMCCluster()
+		if err != nil {
+			m.Log.Errorf("update cloud failed with err: %s", err)
+			return err
+		}
+		err = m.createEndpoints()
+		if err != nil {
+			m.Log.Errorf("update cloud failed with err: %s", err)
+			return err
+		}
 	case deleteCloud:
-		return m.deleteMCCluster()
+		status := map[string]interface{}{}
+		status[statusField] = statusUpdateProgress
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+
+		err := m.deleteMCCluster()
+		if err != nil {
+			status[statusField] = statusUpdateFailed
+			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			m.Log.Errorf("delete cloud failed with err: %s", err)
+			return err
+		}
+		status[statusField] = statusUpdated
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	}
 	return nil
 }
