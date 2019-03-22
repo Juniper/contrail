@@ -11,7 +11,7 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
@@ -51,11 +51,12 @@ const (
 	allInOneClusterAppformixTemplatePath  = "./test_data/test_all_in_one_with_appformix.tmpl"
 	clusterID                             = "test_cluster_uuid"
 
-	expectedMCClusterTopology = "./test_data/expected_mc_cluster_topology.yml"
-	expectedMCClusterSecret   = "./test_data/expected_mc_cluster_secret.yml"
-	expectedContrailCommon    = "./test_data/expected_mc_contrail_common.yml"
-	expectedGatewayCommon     = "./test_data/expected_mc_gateway_common.yml"
-	expectedMCCmdExecuted     = "./test_data/expected_mc_cmd_executed.yml"
+	expectedMCClusterTopology   = "./test_data/expected_mc_cluster_topology.yml"
+	expectedMCClusterSecret     = "./test_data/expected_mc_cluster_secret.yml"
+	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
+	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
+	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
+	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
 )
 
 var server *integration.APIServer
@@ -1248,7 +1249,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		"Contrail common file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster create is not as expected")
-	assert.True(t, verifyCommandsExecuted(t, expectedMCCmdExecuted),
+	assert.True(t, verifyCommandsExecuted(t, expectedMCCreateCmdExecuted),
 		"commands executed during cluster create is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_mc_playbook.yml"),
 		"Expected list of update playbooks are not executed")
@@ -1325,7 +1326,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		"Contrail common file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster update is not as expected")
-	assert.True(t, verifyCommandsExecuted(t, expectedMCCmdExecuted),
+	assert.True(t, verifyCommandsExecuted(t, expectedMCUpdateCmdExecuted),
 		"commands executed during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
 		"Expected list of update playbooks are not executed")
