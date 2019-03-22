@@ -132,19 +132,33 @@ func (c *Cloud) Manage() error {
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
 
-	if isDeleteReq, err := c.isCloudDeleteRequest(); err == nil && isDeleteReq {
-		return c.delete()
+	isDeleteReq, err := c.isCloudDeleteRequest()
+	if err != nil {
+		c.log.Errorf("cloud %s processing failed with error: %s",
+			c.config.CloudID, err)
+		return err
+	} else if err == nil && isDeleteReq {
+		err = c.delete()
+		if err != nil {
+			c.log.Errorf("delete cloud %s failed with error: %s",
+				c.config.CloudID, err)
+		}
+		return err
 	}
 
 	switch c.config.Action {
 	case createAction:
-		err := c.create()
+		err = c.create()
 		if err != nil {
+			c.log.Errorf("create cloud %s failed with error: %s",
+				c.config.CloudID, err)
 			return err
 		}
 	case updateAction:
-		err := c.update()
+		err = c.update()
 		if err != nil {
+			c.log.Errorf("update cloud %s failed with error: %s",
+				c.config.CloudID, err)
 			return err
 		}
 	}
