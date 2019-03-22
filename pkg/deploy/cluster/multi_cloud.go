@@ -330,8 +330,9 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
 
 	switch cloudAction {
 	case addCloud:
-		args = strings.Split(fmt.Sprintf("-t %s -s %s",
-			m.getClusterTopoFile(workDir), m.getClusterSecretFile(workDir)), " ")
+		args = strings.Split(fmt.Sprintf("-t %s -s %s -ts %s",
+			m.getClusterTopoFile(workDir), m.getClusterSecretFile(workDir),
+			m.getTFStateFile()), " ")
 	case updateCloud:
 		args = strings.Split(fmt.Sprintf("-t %s -s %s -ts %s --instate %s --outstate %s",
 			m.getClusterTopoFile(workDir), m.getClusterSecretFile(workDir), m.getTFStateFile(),
