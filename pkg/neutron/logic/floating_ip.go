@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 
+	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -106,8 +106,40 @@ func (fip *Floatingip) Read(ctx context.Context, rp RequestParameters, id string
 func (fip *Floatingip) ReadAll(
 	ctx context.Context, rp RequestParameters, filters Filters, fields Fields,
 ) (Response, error) {
-	// TODO implement ReadAll logic
-	return []FloatingipResponse{}, nil
+	rf, err := createRefFilters(rp.RequestContext, filters)
+	if err != nil {
+		return nil, newNeutronError(badRequest, errorFields{
+			"filters": filters,
+			"msg":     errors.Wrapf(err, "failed to create correct filters"),
+		})
+	}
+
+	listResponse, err := rp.ReadService.ListFloatingIP(ctx, &services.ListFloatingIPRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: filters["id"],
+			Filters:     createVncFilters(filters),
+			RefUUIDs:    rf,
+			Detail:      true,
+		},
+	})
+	if err != nil {
+		return nil, newNeutronError(floatingIPNotFound, errorFields{
+			"filters": filters,
+			"msg":     errors.Wrapf(err, "failed to list floating ips"),
+		})
+	}
+
+	response := []*FloatingipResponse{}
+	for _, fip := range listResponse.GetFloatingIPs() {
+		nfip, err := floatingipVncToNeutron(ctx, rp, fip)
+		if err != nil {
+			rp.Log.Warnf("Failed to convert floating ip (id: %s) from vnc to neutron: %s", fip.GetUUID(), err)
+			continue
+		}
+		response = append(response, nfip)
+
+	}
+	return response, nil
 }
 
 // Update logic.
@@ -159,6 +191,43 @@ func (fip *Floatingip) Delete(ctx context.Context, rp RequestParameters, id stri
 	default:
 		return nil, err
 	}
+}
+
+func createRefFilters(rc RequestContext, f Filters) (map[string]*baseservices.UUIDs, error) {
+	refs := make(map[string]*baseservices.UUIDs)
+	if !rc.IsAdmin {
+		refs[models.FloatingIPFieldProjectRefs] = &baseservices.UUIDs{
+			UUIDs: []string{rc.TenantID},
+		}
+	} else if projects, ok := f["tenant_id"]; ok {
+		ps, err := neutronIDsToVncUUIDs(projects)
+		if err != nil {
+			return nil, err
+		}
+		refs[models.FloatingIPFieldProjectRefs] = &baseservices.UUIDs{
+			UUIDs: ps,
+		}
+	}
+
+	if vmis, ok := f["port_id"]; ok {
+		refs[models.FloatingIPFieldVirtualMachineInterfaceRefs] = &baseservices.UUIDs{
+			UUIDs: vmis,
+		}
+	}
+
+	return refs, nil
+}
+
+func createVncFilters(f Filters) []*baseservices.Filter {
+	var filters []*baseservices.Filter
+	if ip, ok := f["floating_ip_address"]; ok {
+		filters = append(filters, &baseservices.Filter{
+			Key:    models.FloatingIPFieldFloatingIPAddress,
+			Values: ip,
+		})
+	}
+
+	return filters
 }
 
 func createFieldMaskForUpdate(rp RequestParameters) types.FieldMask {
