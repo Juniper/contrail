@@ -9,7 +9,6 @@ import (
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
@@ -20,7 +19,7 @@ const (
 	createNetworkIpamURL    = "network-ipams"
 	createPortURL           = "ports"
 	createNodeProfileURL    = "node-profiles"
-	createEndSystemURL      = "end-systems"
+	createNodeURL           = "nodes"
 	createHardwareURL       = "hardwares"
 	createCardURL           = "cards"
 	updateTagURL            = "tag/"
@@ -28,7 +27,7 @@ const (
 	updateNetworkIpamURL    = "network-ipam/"
 	updatePortURL           = "port/"
 	updateNodeProfileURL    = "node-profile/"
-	updateEndSystemURL      = "end-system/"
+	updateNodeURL           = "node/"
 	updateHardwareURL       = "hardware/"
 	updateCardURL           = "card/"
 
@@ -79,31 +78,6 @@ func (r *Replicator) Start() error {
 	<-producer.Watcher.DumpDone()
 
 	return err
-}
-
-func (r *Replicator) nodeToVNCEndSystem(node *models.Node) interface{} {
-	if node == nil {
-		return map[string]interface{}{"end-system": nil}
-	}
-	endSystem := struct {
-		models.Node
-		EndSystemHostname string `json:"end_system_hostname,omitempty"`
-	}{Node: *node, EndSystemHostname: node.Hostname}
-
-	return map[string]interface{}{"end-system": endSystem}
-}
-
-func (r *Replicator) portToVNCPort(port *models.Port) interface{} {
-	if port == nil {
-		return map[string]interface{}{"port": nil}
-	}
-	port.ParentType = "end-system"
-	portVNC := struct {
-		models.Port
-		PortBMSPortInfo *models.BaremetalPortInfo `json:"port_bms_port_info,omitempty"`
-	}{Port: *port, PortBMSPortInfo: port.BMSPortInfo}
-
-	return map[string]interface{}{"port": portVNC}
 }
 
 // Process processes event by sending requests to all registered clusters.
@@ -188,30 +162,26 @@ func (r *Replicator) Process(ctx context.Context, e *services.Event) (*services.
 		objID := event.DeleteNodeProfileRequest.ID
 		r.vncAPIHandle.replicate(deleteAction, updateNodeProfileURL+objID,
 			event.DeleteNodeProfileRequest, &services.DeleteNodeProfileResponse{})
-	// handle nodes(end-systems)
+	// handle nodes
 	case *services.Event_CreateNodeRequest:
-		r.vncAPIHandle.replicate(createAction, createEndSystemURL,
-			r.nodeToVNCEndSystem(event.CreateNodeRequest.Node),
-			&services.CreateNodeResponse{})
+		r.vncAPIHandle.replicate(createAction, createNodeURL,
+			event.CreateNodeRequest, &services.CreateNodeResponse{})
 	case *services.Event_UpdateNodeRequest:
 		objID := event.UpdateNodeRequest.Node.UUID
-		r.vncAPIHandle.replicate(updateAction, updateEndSystemURL+objID,
-			r.nodeToVNCEndSystem(event.UpdateNodeRequest.Node),
-			&services.UpdateNodeResponse{})
+		r.vncAPIHandle.replicate(updateAction, updateNodeURL+objID,
+			event.UpdateNodeRequest, &services.UpdateNodeResponse{})
 	case *services.Event_DeleteNodeRequest:
 		objID := event.DeleteNodeRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updateEndSystemURL+objID,
+		r.vncAPIHandle.replicate(deleteAction, updateNodeURL+objID,
 			event.DeleteNodeRequest, &services.DeleteNodeResponse{})
 	// handle ports
 	case *services.Event_CreatePortRequest:
 		r.vncAPIHandle.replicate(createAction, createPortURL,
-			r.portToVNCPort(event.CreatePortRequest.Port),
-			&services.CreatePortResponse{})
+			event.CreatePortRequest, &services.CreatePortResponse{})
 	case *services.Event_UpdatePortRequest:
 		objID := event.UpdatePortRequest.Port.UUID
 		r.vncAPIHandle.replicate(updateAction, updatePortURL+objID,
-			r.portToVNCPort(event.UpdatePortRequest.Port),
-			&services.UpdatePortResponse{})
+			event.UpdatePortRequest, &services.UpdatePortResponse{})
 	case *services.Event_DeletePortRequest:
 		objID := event.DeletePortRequest.ID
 		r.vncAPIHandle.replicate(deleteAction, updatePortURL+objID,
