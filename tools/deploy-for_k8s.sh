@@ -63,6 +63,9 @@ sudo --preserve-env ./tools/schema_transformer_etcd/update-docker-compose.py
 # Update svnmonitor docker compose file
 sudo --preserve-env ./tools/svcmonitor_etcd/update-docker-compose.py
 
+# Update devicemgr docker compose file
+sudo --preserve-env ./tools/device_manager_etcd/update-docker-compose.py
+
 # Load init data to rdbms
 contrailutil convert --intype yaml --in tools/init_data.yaml --outtype rdbms -c sample/contrail-k8s.yml
 
