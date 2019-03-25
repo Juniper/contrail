@@ -1,12 +1,5 @@
 - hosts: builder
   name: Build and test Juniper/contrail
-  roles:
-    - zuul-include-vars # include variables exported from trusted context
-    - yum-repos-prepare
-    - install-pip-virtualenv
-    - install-docker-daemon
-    - role: add-insecure-registry
-      new_registry: "{{ contrail_docker_registry }}"
   vars_files:
     - build-vars.yaml
   tasks:
@@ -49,11 +42,5 @@
       become: yes
       become_user: root
 
-- hosts: builder
-  name: Publish containers to the internal registry
-  roles:
-    - role: publish-container-images
-      registry: "{{ contrail_docker_registry }}"
-      tag: "{{ packaging.docker_version }}"
-      images:
-        - { name: contrail-go, tag: latest }
+    - name: Tag container images in preparation for push that is done in a post-run playbook
+      command: docker tag contrail-go {{ contrail_docker_registry }}/contrail-go:{{ packaging.docker_version }}
