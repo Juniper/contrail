@@ -7,14 +7,10 @@
     name: contrail-go-docker
     description: |
       Job that builds and tests Juniper/contrail project.
-    voting: True
-    parent: contrail-base2
+    parent: contrail-docker-push-base
     timeout: 5400
-    required-projects:
-      - Juniper/contrail
     run: playbooks/contrail-go-docker/run.yaml
-    post-run:
-      - playbooks/contrail-go-docker/post.yaml
+    post-run: playbooks/contrail-go-docker/post.yaml
     nodeset:
       nodes:
         - name: builder
