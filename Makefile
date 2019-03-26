@@ -70,12 +70,21 @@ generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/baseservices
 
 generate: fast_generate format_gen
 
+CONTRAIL_OPENAPI_PATH=public/openapi.json
+
+$(CONTRAIL_OPENAPI_PATH):
+	$(MAKE) generate_go
+
+apidoc: $(CONTRAIL_OPENAPI_PATH)
+	@echo "Open http://localhost:5000 to explore the doc"
+	docker run -p 5000:8080 --rm -e SWAGGER_JSON=/$(CONTRAIL_OPENAPI_PATH) -v `pwd`/$(CONTRAIL_OPENAPI_PATH):/$(CONTRAIL_OPENAPI_PATH)/ swaggerapi/swagger-ui
+
 generate_go:
 	# Generate for contrail resources.
 	@mkdir -p public/
 	go run cmd/contrailschema/main.go generate \
 		--schemas schemas/contrail --templates tools/templates/contrail/template_config.yaml \
-		--schema-output public/schema.json --openapi-output public/openapi.json
+		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
 	go run  cmd/contrailschema/main.go generate \
