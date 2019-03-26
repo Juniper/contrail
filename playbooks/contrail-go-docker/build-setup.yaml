@@ -1,25 +1,44 @@
-- name: "Install docker"
+- name: Install docker
   pip:
     name: docker
   become: yes
-  become_user: root
 
-- name: "Install docker-compose"
+- name: Install docker-compose
   pip:
     name: docker-compose
   become: yes
-  become_user: root
+
+- name: Install npm
+  yum:
+    name: npm
+    state: present
+  become: true
+
+- name: Install spectacle
+  npm:
+    name: spectacle-docs
+    global: true
+    production: yes
+    path: /usr/local/bin
+  become: yes
+
+- name: debug
+  command: 'ls /usr/local/bin'
+  become: yes
+
+- name: debug2
+  command: 'compgen -c | grep spec'
+  become: yes
 
 - name: Disable selinux for the build
   selinux:
     state: disabled
   become: yes
-  become_user: root
 
 - name: Pretend we're using github
   command: mv {{ sourcedir }}/src/review.opencontrail.org {{ sourcedir }}/src/github.com
 
-- name: "Start runner docker container in background"
+- name: Start runner docker container in background
   docker_container:
     name: "{{ docker.0.name|default('runner') }}"
     image: "{{ docker.0.image }}"
@@ -31,9 +50,7 @@
       - "{{ sourcedir }}:/go"
       - "/var/run/docker.sock:/var/run/docker.sock"
   become: yes
-  become_user: root
 
 - name: Create test environment
   command: "chdir={{ sourcedir }}/src/github.com/Juniper/contrail make testenv"
   become: yes
-  become_user: root
