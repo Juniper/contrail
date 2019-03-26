@@ -4,5 +4,5 @@ playbooks/install_openstack.yml:
   args: -i inventory/ -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack -e force_checkout=yes --tags=nova
 playbooks/install_contrail.yml:
   args: -i inventory/ -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
-playbooks/install_appformix.yml:
+appformix/playbooks/install_appformix.yml:
   args: -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e appformix_version=2.18.1
