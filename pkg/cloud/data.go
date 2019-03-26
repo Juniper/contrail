@@ -78,7 +78,7 @@ type torData struct {
 	info                   *models.PhysicalRouter
 	provision              string
 	autonomousSystemNumber int
-	interfaceName          string
+	interfaceNames         []string
 	privateSubnets         []string
 	apiServer
 }
@@ -281,7 +281,7 @@ func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torDat
 		case "autonomous_system":
 			tor.autonomousSystemNumber, err = strconv.Atoi(keyValuePair.Value)
 		case "interface":
-			tor.interfaceName = keyValuePair.Value
+			tor.interfaceNames = strings.Split(keyValuePair.Value, ",")
 		case "private_subnet":
 			tor.privateSubnets = strings.Split(keyValuePair.Value, ",")
 		}

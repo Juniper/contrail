@@ -1,33 +1,33 @@
 - provider: onprem
   organization: unit_test
-  project: 
+  project:
   instances:
     - name: cloud_node_compute
-      public_ip: 
+      public_ip:
       private_ip: 10.10.10.12
       interface: cloud_node_compute_pvt_port
       provision: true
       username: centos
-      password: 
+      password:
       roles:
         - vrouter
       gateway: 2.2.2.2
     - name: cloud_node_controller
-      public_ip: 
+      public_ip:
       private_ip: 10.10.10.11
       interface: cloud_node_controller_pvt_port
       provision: false
       username: centos
-      password: 
+      password:
       roles:
         - controller
     - name: cloud_node_gw
-      public_ip: 
+      public_ip:
       private_ip: 10.10.10.10
       interface: cloud_node_gw_pvt_port
       provision: true
       username: centos
-      password: 
+      password:
       roles:
         - gateway
       private_subnet:
@@ -46,7 +46,9 @@
       provision: true
       username: test
       password: test123
-      interface: irb.20
+      interface:
+        - irb.20
+        - irb.21
       AS: 6500
       protocols_mode:
         - bgp
