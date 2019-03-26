@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9f5c4f37_8689bf27",
+        "filename": "playbooks/contrail-go-docker/run.yaml",
+        "patchSetId": 5
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 565
+      },
+      "writtenOn": "2019-03-26T16:58:24Z",
+      "side": 1,
+      "message": "Why was this moved from line 17?",
+      "range": {
+        "startLine": 16,
+        "startChar": 0,
+        "endLine": 16,
+        "endChar": 18
+      },
+      "revId": "0dd40cda0038695860961753828e56badf00fa45",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    }
+  ]
+}
