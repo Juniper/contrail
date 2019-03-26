@@ -396,11 +396,7 @@ func (s *JSONSchema) resolveSQLForArray(
 	}
 	var bind string
 	if s.GoType != "" {
-		if s.IsUint() {
-			bind = sqlBindMap[UintType]
-		} else {
-			bind = sqlBindMap[s.Type]
-		}
+		bind = sqlBindMap[s.Type]
 	}
 
 	*columns = append(*columns, &ColumnConfig{
