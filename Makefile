@@ -3,6 +3,7 @@ CONTRAIL_API_CLIENT_REPO := contrail-api-client
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
 DB_FILES := gen_init_mysql.sql gen_init_psql.sql init_data.yaml
+
 ifdef ANSIBLE_DEPLOYER_REPO_DIR
   export ANSIBLE_DEPLOYER_REPO_DIR
 else
@@ -70,12 +71,15 @@ generate_pb_go: generate_go pkg/models/gen_model.pb.go pkg/services/baseservices
 
 generate: fast_generate format_gen
 
+CONTRAIL_OPENAPI_PATH=public/openapi.json
+CONTRAIL_APIDOC_PATH=public/doc/index.html
+
 generate_go:
 	# Generate for contrail resources.
 	@mkdir -p public/
 	go run cmd/contrailschema/main.go generate \
 		--schemas schemas/contrail --templates tools/templates/contrail/template_config.yaml \
-		--schema-output public/schema.json --openapi-output public/openapi.json
+		--schema-output public/schema.json --openapi-output $(CONTRAIL_OPENAPI_PATH)
 	# Generate for openstack api resources.
 	@mkdir -p public/neutron
 	go run  cmd/contrailschema/main.go generate \
@@ -193,11 +197,27 @@ else
 		cp -r $(CONTRAIL_API_CLIENT_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(CONTRAIL_API_CLIENT_REPO)
 endif
 
-docker: docker_prepare ## Generate Docker files
+docker: apidoc docker_prepare ## Generate Docker files
 	docker build --build-arg GOPATH=$(GOPATH) -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+$(CONTRAIL_OPENAPI_PATH):
+	$(MAKE) generate_go
+
+$(CONTRAIL_APIDOC_PATH): $(CONTRAIL_OPENAPI_PATH)
+ifeq (, $(shell which spectacle))
+	$(info No spectacle in $(PATH), running docker.)
+	docker run --rm node:10.15.3-alpine sh -c \
+		"npm install --unsafe-perm -g spectacle-docs@1.0.7 && spectacle -1 -t $(PWD)/$(dir $(CONTRAIL_APIDOC_PATH)) $(PWD)/$(CONTRAIL_OPENAPI_PATH)"
+else
+	mkdir -p $(dir $(CONTRAIL_APIDOC_PATH))
+	spectacle -1 -t $(dir $(CONTRAIL_APIDOC_PATH)) $(CONTRAIL_OPENAPI_PATH)
+endif
+
+
+apidoc: $(CONTRAIL_APIDOC_PATH)
 
 .DEFAULT_GOAL := help
 
