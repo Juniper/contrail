@@ -20,7 +20,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 			Produces: []string{"application/json"},
 			Info: &spec.Info{
 				InfoProps: spec.InfoProps{
-					Version: "4.0",
+					Version: "5.1",
 					Title:   "Contrail API OpenAPI2.0 Definitions",
 					License: &spec.License{
 						Name: "Apache2.0",
@@ -119,6 +119,16 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 
 		pathItem := spec.PathItem{
 			PathItemProps: spec.PathItemProps{
+				Parameters: []spec.Parameter{
+					{
+						SimpleSchema: spec.SimpleSchema{Type: StringType},
+						ParamProps: spec.ParamProps{
+							Name:     "id",
+							Required: true,
+							In:       "path",
+						},
+					},
+				},
 				Get: &spec.Operation{
 					OperationProps: spec.OperationProps{
 						//TODO Parameters:
@@ -198,6 +208,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Parameters: []spec.Parameter{
 							{
 								ParamProps: spec.ParamProps{
+									Name:     apiSchema.TypeName,
 									Required: true,
 									In:       "body",
 									Schema: &spec.Schema{
@@ -260,6 +271,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Parameters: []spec.Parameter{
 							{
 								ParamProps: spec.ParamProps{
+									Name:     apiSchema.TypeName,
 									In:       "body",
 									Required: true,
 									Schema: &spec.Schema{
@@ -317,6 +329,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 					OperationProps: spec.OperationProps{
 						Parameters: []spec.Parameter{
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "parent_id",
@@ -325,6 +338,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "parent_fq_name_str",
@@ -333,6 +347,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "pobj_uuids",
@@ -341,6 +356,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "detail",
@@ -349,6 +365,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "back_ref_id",
@@ -357,22 +374,25 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "page_marker",
-									Description: "Pagenation start marker",
+									Description: "Pagination start marker",
 									Required:    false,
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "page_limit",
-									Description: "Pagenation limit",
+									Description: "Pagination limit",
 									Required:    false,
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "count",
@@ -381,14 +401,16 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "fields",
-									Description: " Comma separated object field list you are interested in",
+									Description: "Comma separated object field list you are interested in",
 									Required:    false,
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "shared",
@@ -397,6 +419,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "filters",
@@ -405,6 +428,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "exclude_hrefs",
@@ -532,11 +556,10 @@ func (s *JSONSchema) ToOpenAPI() (*spec.Schema, error) {
 		}
 		properties[key] = *p
 	}
-	return &spec.Schema{
+	result := &spec.Schema{
 		SchemaProps: spec.SchemaProps{
-			ID:          s.ID,
 			Description: s.Description,
-			Type:        spec.StringOrArray([]string{s.Type}),
+			Type:        spec.StringOrArray([]string{typeToOpenAPI(s.Type)}),
 			Title:       s.Title,
 			//TODO(nati) support this.
 			//Format: s.Format,
@@ -544,12 +567,26 @@ func (s *JSONSchema) ToOpenAPI() (*spec.Schema, error) {
 			//Minimum: s.Minimum,
 			//Pattern: s.Pattern,
 			//Enum: s.Enum,
-			Default:  s.Default,
-			Required: s.Required,
-			Items: &spec.SchemaOrArray{
-				Schema: items,
-			},
+			Default:    s.Default,
+			Required:   s.Required,
 			Properties: properties,
 		},
-	}, nil
+	}
+
+	if items != nil {
+		result.Items = &spec.SchemaOrArray{
+			Schema: items,
+		}
+	}
+
+	return result, nil
+}
+
+func typeToOpenAPI(t string) string {
+	switch t {
+	case UintType:
+		return IntegerType
+	default:
+		return t
+	}
 }
