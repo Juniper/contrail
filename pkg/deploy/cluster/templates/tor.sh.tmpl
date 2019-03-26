@@ -1,0 +1,3 @@
+#!/bin/bash
+source /multicloud_tor_config/bin/activate
+ansible-playbook -i {{ inventoryFile }} {{ torPlayFile }}

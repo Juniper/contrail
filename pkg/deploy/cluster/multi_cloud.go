@@ -32,19 +32,23 @@ const (
 	defaultContrailCommonTemplate  = "contrail_common.tmpl"
 	defaultGatewayCommonTemplate   = "gateway_common.tmpl"
 	defaultTORCommonTemplate       = "tor_common.tmpl"
+	defaultTORScriptTemplate       = "tor.sh.tmpl"
 	defaultOpenstackConfigTemplate = "openstack_config.tmpl"
 	defaultAuthRegistryTemplate    = "authorized_registries.tmpl"
 
-	mcWorkDir                 = "multi-cloud"
-	mcAnsibleRepo             = "contrail-multi-cloud"
-	defaultSSHKeyRepo         = "keypair"
-	defaultContrailCommonFile = "ansible/contrail/common.yml"
-	defaultTORCommonFile      = "ansible/tor/common.yml"
-	defaultGatewayCommonFile  = "ansible/gateway/common.yml"
-	defaultMCInventoryFile    = "inventories/inventory.yml"
-	defaultTopologyFile       = "topology.yml"
-	defaultSecretFile         = "secret.yml"
-	defaultSSHAgentFile       = "ssh-agent-config.yml"
+	mcWorkDir                  = "multi-cloud"
+	mcAnsibleRepo              = "contrail-multi-cloud"
+	defaultSSHKeyRepo          = "keypair"
+	defaultContrailCommonFile  = "ansible/contrail/common.yml"
+	defaultTORCommonFile       = "ansible/tor/common.yml"
+	defaultGatewayCommonFile   = "ansible/gateway/common.yml"
+	defaultMCInventoryFile     = "inventories/inventory.yml"
+	defaultMCTORScriptFile     = "tor.sh"
+	defaultTORConfigVirtualEnv = "/multicloud_tor_config/bin/activate"
+	defaultTopologyFile        = "topology.yml"
+	defaultSecretFile          = "secret.yml"
+	defaultSSHAgentFile        = "ssh-agent-config.yml"
+	defaultWriteExecFilePerm   = 0700
 
 	defaultContrailUser       = "admin"
 	defaultContrailPassword   = "c0ntrail123"
@@ -61,6 +65,7 @@ const (
 	defaultMCGWDeployPlay        = "ansible/gateway/playbooks/deploy_and_run_all.yml"
 	defaultMCInstanceConfPlay    = "ansible/contrail/playbooks/configure.yml"
 	defaultMCKubernetesProvPlay  = "ansible/contrail/playbooks/orchestrator.yml"
+	defaultMCTORPlay             = "ansible/tor/playbooks/deploy_and_run_all.yml"
 	defaultMCDeployContrail      = "ansible/contrail/playbooks/deploy.yml"
 	defaultMCSetupContrailRoutes = "ansible/contrail/playbooks/add_tunnel_routes.yml"
 	defaultMCFixComputeDNS       = "ansible/contrail/playbooks/fix_compute_dns.yml"
@@ -416,17 +421,14 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 		if err := m.playMCInstancesConfig(args); err != nil {
 			return err
 		}
-		// add tor playbook as well
 
-		// enabling openstack playbook only for test purposes
-		// because its not supported by multi-cloud-deployer
-		if m.isOrchestratorOpenstack() && m.cluster.config.Test {
-			openstackArgs := append(args, fmt.Sprintf("-e orchestrator=%s", openstack))
-			if err := m.playOrchestratorProvision(openstackArgs); err != nil {
-				return err
-			}
+		if err := m.runTorScript(); err != nil {
+			return err
 		}
-		if err := m.playMCK8SProvision(args); err != nil {
+
+		k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
+			orchestratorKubernetes))
+		if err := m.playMCK8SProvision(k8sArgs); err != nil {
 			return err
 		}
 
@@ -488,17 +490,13 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 			return err
 		}
 
-		// enabling openstack playbook only for test purposes
-		// because its not supported by multi-cloud-deployer
-		if m.isOrchestratorOpenstack() && m.cluster.config.Test {
-			openstackArgs := append(args, fmt.Sprintf("-e orchestrator=%s", openstack))
-			if err := m.playOrchestratorProvision(openstackArgs); err != nil {
-				return err
-			}
+		if err := m.runTorScript(); err != nil {
+			return err
 		}
 
-		// add tor playbook as well
-		if err := m.playMCK8SProvision(args); err != nil {
+		k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
+			orchestratorKubernetes))
+		if err := m.playMCK8SProvision(k8sArgs); err != nil {
 			return err
 		}
 		skipRoles := []string{"vrouter"}
@@ -968,6 +966,45 @@ func (m *multiCloudProvisioner) appendOpenStackConfigToInventory(destination str
 	return nil
 }
 
+func createTORScript(destination string, torTemplate string,
+	inventoryFile string, torPlayFile string) error {
+
+	context := pongo2.Context{
+		"inventoryFile": inventoryFile,
+		"torPlayFile":   torPlayFile,
+	}
+
+	content, err := template.Apply(torTemplate, context)
+	if err != nil {
+		return err
+	}
+
+	return fileutil.WriteToFile(destination, content, defaultWriteExecFilePerm)
+
+}
+
+func (m *multiCloudProvisioner) runTorScript() error {
+
+	torScriptExecFile := m.getTorScriptFile(m.workDir)
+	err := createTORScript(torScriptExecFile, m.getTORScriptTemplate(),
+		m.getMCInventoryFile(m.workDir), defaultMCTORPlay)
+	if err != nil {
+		return err
+	}
+	m.Log.Debug("created tor script")
+
+	args := []string{}
+	workDir := m.getMCDeployerRepoDir()
+	m.Log.Debugf("Executing command: %s", torScriptExecFile)
+
+	if m.cluster.config.Test {
+		return cloud.TestCmdHelper(torScriptExecFile, args, m.workDir, testTemplate)
+	}
+
+	return osutil.ExecCmdAndWait(m.Reporter, torScriptExecFile, args, workDir)
+
+}
+
 func (m *multiCloudProvisioner) getContrailCommonTemplate() string {
 	return filepath.Join(m.getTemplateRoot(), defaultContrailCommonTemplate)
 }
@@ -982,6 +1019,10 @@ func (m *multiCloudProvisioner) getGatewayCommonTemplate() string {
 
 func (m *multiCloudProvisioner) getTORCommonTemplate() string {
 	return filepath.Join(m.getTemplateRoot(), defaultTORCommonTemplate)
+}
+
+func (m *multiCloudProvisioner) getTORScriptTemplate() string {
+	return filepath.Join(m.getTemplateRoot(), defaultTORScriptTemplate)
 }
 
 func (m *multiCloudProvisioner) getOpenstackConfigTemplate() string {
@@ -1002,6 +1043,10 @@ func (m *multiCloudProvisioner) getTFStateFile() string {
 
 func (m *multiCloudProvisioner) getMCInventoryFile(workDir string) string {
 	return filepath.Join(workDir, defaultMCInventoryFile)
+}
+
+func (m *multiCloudProvisioner) getTorScriptFile(workDir string) string {
+	return filepath.Join(workDir, defaultMCTORScriptFile)
 }
 
 // use topology constant from cloud pkg
