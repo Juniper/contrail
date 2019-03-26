@@ -1,6 +1,6 @@
 - name: "{{ item.name|default(item.command) }}"
   shell: >
-    docker exec --user=$(id -u) {{ docker.0.name|default('runner') }} bash -ec
+    docker exec -e "SORUCEDIR={{ sourcedir }}" --user=$(id -u) {{ docker.0.name|default('runner') }} bash -ec
     "cd {{ workdir }}; {{ item.command }}"
   become: yes
   become_user: root
