@@ -10,6 +10,12 @@
   become: yes
   become_user: root
 
+- name: "Install spectacle"
+  npm:
+    name: spectacle-docs
+  become: yes
+  become_user: root
+
 - name: Disable selinux for the build
   selinux:
     state: disabled
