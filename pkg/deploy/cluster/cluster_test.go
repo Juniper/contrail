@@ -28,6 +28,7 @@ const (
 	createPlaybooks                       = "./test_data/expected_ansible_create_playbook.yml"
 	createAppformixPlaybooks              = "./test_data/expected_ansible_create_appformix_playbook.yml"
 	updatePlaybooks                       = "./test_data/expected_ansible_update_playbook.yml"
+	deletePlaybooks                       = "./test_data/expected_ansible_delete_playbook.yml"
 	updateAppformixPlaybooks              = "./test_data/expected_ansible_update_appformix_playbook.yml"
 	upgradePlaybooks                      = "./test_data/expected_ansible_upgrade_playbook.yml"
 	upgradeAppformixPlaybooks             = "./test_data/expected_ansible_upgrade_appformix_playbook.yml"
@@ -225,7 +226,16 @@ func generatedGatewayCommonPath() string {
 }
 
 func executedPlaybooksPath() string {
-	return workRoot + "/" + clusterID + "/executed_ansible_playbook.yml"
+	return workRoot + "/executed_ansible_playbook.yml"
+}
+
+func cleanupExecutedPlaybooks(t *testing.T) {
+	if _, err := os.Stat(executedPlaybooksPath()); err == nil {
+		err := os.Remove(executedPlaybooksPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete executed playbooks")
+		}
+	}
 }
 
 func executedMCCommandPath() string {
@@ -323,17 +333,12 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 		assert.NoErrorf(t, err, "failed to set %s action in contrail cluster", action)
 		break
 	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err := NewCluster(config)
 	assert.NoErrorf(t, err, "failed to create cluster manager to %s cluster", config.Action)
 	deployer, err := clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
+	cleanupExecutedPlaybooks(t)
 	err = deployer.Deploy()
 	assert.NoErrorf(t, err, "failed to manage(%s) cluster", action)
 	if expectedInstance != "" {
@@ -395,13 +400,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
@@ -434,13 +433,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	if err != nil {
 		assert.NoError(t, err, "failed to delete instances.yml")
 	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -492,19 +485,15 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 
 	// delete cluster
 	config.Action = deleteAction
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
 	assert.NoError(t, err, "failed to create deployer")
 	err = deployer.Deploy()
 	assert.NoError(t, err, "failed to manage(delete) cluster")
+	assert.True(t, verifyPlaybooks(t, deletePlaybooks),
+		"Expected list of delete playbooks are not executed")
 	// make sure cluster is removed
 	assert.True(t, verifyClusterDeleted(), "Instance file is not deleted during cluster delete")
 }
@@ -576,13 +565,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
@@ -615,13 +598,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	if err != nil {
 		assert.NoError(t, err, "failed to delete instances.yml")
 	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -673,13 +650,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 
 	// delete cluster
 	config.Action = deleteAction
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -925,13 +896,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
@@ -957,13 +922,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	if err != nil {
 		assert.NoError(t, err, "failed to delete instances.yml")
 	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -993,13 +952,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 
 	// delete cluster
 	config.Action = deleteAction
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -1065,13 +1018,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 		LogFile:      workRoot + "/deploy.log",
 	}
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup old executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err := NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to create cluster")
 	deployer, err := clusterDeployer.GetDeployer()
@@ -1099,13 +1046,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	if err != nil {
 		assert.NoError(t, err, "failed to delete instances.yml")
 	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -1135,13 +1076,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 
 	// delete cluster
 	config.Action = "delete"
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cluster")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -1219,13 +1154,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	cloudFileCleanup := createDummyCloudFiles(t)
 	defer cloudFileCleanup()
 	// create cluster
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	if _, err = os.Stat(executedMCCommandPath()); err == nil {
 		// cleanup old executed playbook file
 		err = os.Remove(executedMCCommandPath())
@@ -1277,13 +1206,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	// update cluster
 	config.Action = updateAction
 	//cleanup all the files
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	if _, err = os.Stat(executedMCCommandPath()); err == nil {
 		// cleanup executed playbook file
 		err = os.Remove(executedMCCommandPath())
@@ -1360,13 +1283,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 			assert.NoError(t, err, "failed to delete executed mc command file")
 		}
 	}
-	if _, err = os.Stat(executedPlaybooksPath()); err == nil {
-		// cleanup executed playbook file
-		err = os.Remove(executedPlaybooksPath())
-		if err != nil {
-			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
-		}
-	}
+	cleanupExecutedPlaybooks(t)
 	var deleteTestScenario integration.TestScenario
 	err = integration.LoadTestScenario(&deleteTestScenario, allInOneMCClusterDeleteTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load mc cluster test data")

@@ -388,7 +388,7 @@ func (a *contrailAnsibleDeployer) mockPlay(ansibleArgs []string) error {
 	if err != nil {
 		return err
 	}
-	destination := filepath.Join(a.getWorkingDir(), "executed_ansible_playbook.yml")
+	destination := filepath.Join(a.getWorkRoot(), "executed_ansible_playbook.yml")
 	err = fileutil.AppendToFile(destination, content, defaultFilePermRWOnly)
 	return err
 }
@@ -516,106 +516,161 @@ func (a *contrailAnsibleDeployer) playXflowProvision() error {
 	return nil
 }
 
-// nolint: gocyclo
-func (a *contrailAnsibleDeployer) playBook() error {
-	args := []string{"-i", "inventory/", "-e",
-		"config_file=" + a.getInstanceFile(),
-		"-e orchestrator=" + a.clusterData.ClusterInfo.Orchestrator}
-	if a.cluster.config.AnsibleSudoPass != "" {
-		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
-		args = append(args, sudoArg)
-	}
-
-	switch a.clusterData.ClusterInfo.ProvisioningAction {
-	case provisionProvisioningAction, "":
-		if err := a.playInstancesProvision(args); err != nil {
+func (a *contrailAnsibleDeployer) playOrchestratorPlayBook(args []string) error {
+	if a.clusterData.ClusterInfo.Orchestrator == orchestratorVcenter {
+		if err := a.playOrchestratorProvision(args); err != nil {
 			return err
 		}
-		if a.clusterData.ClusterInfo.Orchestrator == orchestratorVcenter {
-			if err := a.playOrchestratorProvision(args); err != nil {
-				return err
-			}
-			if err := a.playInstancesConfig(args); err != nil {
-				return err
-			}
-		} else {
-			if err := a.playInstancesConfig(args); err != nil {
-				return err
-			}
-			if err := a.playOrchestratorProvision(args); err != nil {
-				return err
-			}
-		}
-		if err := a.playContrailProvision(args); err != nil {
+		if err := a.playInstancesConfig(args); err != nil {
 			return err
 		}
-		if err := a.playContrailDatapathEncryption(); err != nil {
-			return err
-		}
-		if err := a.playAppformixProvision(); err != nil {
-			return err
-		}
-		if err := a.playXflowProvision(); err != nil {
-			return err
-		}
-	case upgradeProvisioningAction:
-		if err := a.playContrailProvision(args); err != nil {
-			return err
-		}
-		if err := a.playContrailDatapathEncryption(); err != nil {
-			return err
-		}
-		if err := a.playAppformixProvision(); err != nil {
-			return err
-		}
-	case addComputeProvisioningAction:
-		if a.clusterData.ClusterInfo.Orchestrator == orchestratorVcenter {
-			if err := a.playOrchestratorProvision(args); err != nil {
-				return err
-			}
-			if err := a.playInstancesConfig(args); err != nil {
-				return err
-			}
-		} else {
-			if err := a.playInstancesConfig(args); err != nil {
-				return err
-			}
-			if err := a.playOrchestratorProvision(args); err != nil {
-				return err
-			}
-		}
-		if err := a.playContrailProvision(args); err != nil {
-			return err
-		}
-		if err := a.playContrailDatapathEncryption(); err != nil {
-			return err
-		}
-		if err := a.playAppformixProvision(); err != nil {
-			return err
-		}
-	case deleteComputeProvisioningAction:
+	} else {
 		if err := a.playInstancesConfig(args); err != nil {
 			return err
 		}
 		if err := a.playOrchestratorProvision(args); err != nil {
 			return err
 		}
-		if err := a.playContrailProvision(args); err != nil {
-			return err
+	}
+	return nil
+}
+
+func (a *contrailAnsibleDeployer) playManagePlayBook(args []string) error {
+	if err := a.playInstancesProvision(args); err != nil {
+		return err
+	}
+	if err := a.playOrchestratorPlayBook(args); err != nil {
+		return err
+	}
+	if err := a.playContrailProvision(args); err != nil {
+		return err
+	}
+	if err := a.playContrailDatapathEncryption(); err != nil {
+		return err
+	}
+	if err := a.playAppformixProvision(); err != nil {
+		return err
+	}
+	if err := a.playXflowProvision(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *contrailAnsibleDeployer) playUpgradePlayBook(args []string) error {
+	if err := a.playContrailProvision(args); err != nil {
+		return err
+	}
+	if err := a.playContrailDatapathEncryption(); err != nil {
+		return err
+	}
+	if err := a.playAppformixProvision(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *contrailAnsibleDeployer) playOrchestratorDestroy(ansibleArgs []string) error {
+	switch a.clusterData.ClusterInfo.Orchestrator {
+	case orchestratorOpenstack:
+		ansibleArgs = append(ansibleArgs, defaultOpenstackDestroyPlay)
+		return a.play(ansibleArgs)
+	}
+	return nil
+}
+
+func (a *contrailAnsibleDeployer) playContrailDestroy(ansibleArgs []string) error {
+	ansibleArgs = append(ansibleArgs, defaultContrailDestroyPlay)
+	return a.play(ansibleArgs)
+}
+
+func (a *contrailAnsibleDeployer) playDeletePlayBook(args []string) error {
+	if err := a.playOrchestratorDestroy(args); err != nil {
+		return err
+	}
+	if err := a.playContrailDestroy(args); err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (a *contrailAnsibleDeployer) playBook() error {
+	args := []string{"-i", "inventory/", "-e",
+		"config_file=" + a.getInstanceFile()}
+	var provisioningAction string
+	if a.clusterData.ClusterInfo != nil {
+		orchestratorArg := "-e orchestrator=" + a.clusterData.ClusterInfo.Orchestrator
+		args = append(args, orchestratorArg)
+		provisioningAction = a.clusterData.ClusterInfo.ProvisioningAction
+	} else {
+		provisioningAction = ""
+	}
+	if a.cluster.config.AnsibleSudoPass != "" {
+		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
+		args = append(args, sudoArg)
+	}
+
+	switch provisioningAction {
+	case provisionProvisioningAction, "":
+		switch a.action {
+		case deleteAction:
+			return a.playDeletePlayBook(args)
+		default:
+			return a.playManagePlayBook(args)
 		}
-		if err := a.playAppformixProvision(); err != nil {
-			return err
-		}
+	case upgradeProvisioningAction:
+		return a.playUpgradePlayBook(args)
+	case addComputeProvisioningAction:
+		return a.playAddComputePlayBook(args)
+	case deleteComputeProvisioningAction:
+		return a.playDeleteComputePlayBook(args)
 	case addCSNProvisioningAction:
-		if err := a.playInstancesConfig(args); err != nil {
-			return err
-		}
-		if err := a.playContrailProvision(args); err != nil {
-			return err
-		}
-		if err := a.playAppformixProvision(); err != nil {
-			return err
-		}
+		return a.playAddCSNPlayBook(args)
+	}
+	return nil
+}
+
+func (a *contrailAnsibleDeployer) playAddComputePlayBook(args []string) error {
+	if err := a.playOrchestratorPlayBook(args); err != nil {
+		return err
+	}
+	if err := a.playContrailProvision(args); err != nil {
+		return err
+	}
+	if err := a.playContrailDatapathEncryption(); err != nil {
+		return err
+	}
+	if err := a.playAppformixProvision(); err != nil {
+		return err
+	}
+	return nil
+}
+func (a *contrailAnsibleDeployer) playDeleteComputePlayBook(args []string) error {
+	if err := a.playInstancesConfig(args); err != nil {
+		return err
+	}
+	if err := a.playOrchestratorProvision(args); err != nil {
+		return err
+	}
+	if err := a.playContrailProvision(args); err != nil {
+		return err
+	}
+	if err := a.playAppformixProvision(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *contrailAnsibleDeployer) playAddCSNPlayBook(args []string) error {
+	if err := a.playInstancesConfig(args); err != nil {
+		return err
+	}
+	if err := a.playContrailProvision(args); err != nil {
+		return err
+	}
+	if err := a.playAppformixProvision(); err != nil {
+		return err
 	}
 	return nil
 }
@@ -719,6 +774,10 @@ func (a *contrailAnsibleDeployer) updateCluster() error {
 func (a *contrailAnsibleDeployer) deleteCluster() error {
 	a.Log.Infof("Starting %s of contrail cluster: %s",
 		a.action, a.cluster.config.ClusterID)
+	a.clusterData.UpdateClusterFromInstances(a.getInstanceFile())
+	if err := a.playBook(); err != nil {
+		return err
+	}
 	return a.deleteWorkingDir()
 }
 

@@ -20,6 +20,8 @@ const (
 	defaultInstanceConfPlay               = "playbooks/configure_instances.yml"
 	defaultOpenstackProvPlay              = "playbooks/install_openstack.yml"
 	defaultKubernetesProvPlay             = "playbooks/install_k8s.yml"
+	defaultOpenstackDestroyPlay           = "playbooks/openstack_destroy.yml"
+	defaultContrailDestroyPlay            = "playbooks/contrail_destroy.yml"
 	defaultAnsibleDatapathEncryptionRepo  = "contrail-datapath-encryption/ansible"
 	defaultContrailDatapathEncryptionPlay = "playbooks/deploy_and_run_all.yml"
 	defaultInventoryTemplate              = "inventory.tmpl"

@@ -2,6 +2,9 @@ package base
 
 import (
 	"context"
+	"io/ioutil"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/format"
@@ -84,6 +87,14 @@ type Data struct {
 	DefaultSSHKey         string
 	Reader                services.ReadService
 	// TODO (ijohnson): Add gce/aws/kvm info
+}
+
+type instancesData struct {
+	ProviderConfig        map[string]interface{} `yaml:"provider_config,omitempty"`
+	GlobalConfiguration   map[string]interface{} `yaml:"global_configuration,omitempty"`
+	Instances             map[string]interface{} `yaml:"instances,omitempty"`
+	ContrailConfiguration map[string]interface{} `yaml:"contrail_configuration"`
+	KollaConfig           map[string]interface{} `yaml:"kolla_config,omitempty"`
 }
 
 func (a *AppformixData) addKeypair(keypair *models.Keypair) {
@@ -788,6 +799,22 @@ func (o *OpenstackData) getOpenstackStoragePorts() (nodePorts map[string]interfa
 		}
 	}
 	return nodePorts
+}
+
+func (d *Data) UpdateClusterFromInstances(instancesFile string) error {
+	data, err := ioutil.ReadFile(instancesFile)
+	if err != nil {
+		return err
+	}
+
+	var i instancesData
+	err = yaml.Unmarshal(data, &i)
+	if err != nil {
+		return err
+	}
+	d.ClusterInfo = models.MakeContrailCluster()
+	d.ClusterInfo.Orchestrator = i.ContrailConfiguration["CLOUD_ORCHESTRATOR"].(string)
+	return nil
 }
 
 func (d *Data) addKeypair(keypair *models.Keypair) {

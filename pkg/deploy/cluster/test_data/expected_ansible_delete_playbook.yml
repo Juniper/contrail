@@ -1,0 +1,4 @@
+playbooks/openstack_destroy.yml:
+  args: -i inventory/ -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
+playbooks/contrail_destroy.yml:
+  args: -i inventory/ -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
