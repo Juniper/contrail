@@ -54,9 +54,11 @@
       provision: {{ tor.provision }}
       username: {{ tor.info.PhysicalRouterUserCredentials.Username }}
       password: {{ tor.info.PhysicalRouterUserCredentials.Password }}
-      interface: {{ tor.interfaceName }}
+      interface:
+      {% for intf in tor.interfaceNames %}
+        - {{ intf }}
+      {% endfor %}
       AS: {{ tor.autonomousSystemNumber }}
       protocols_mode:
         - bgp
   {% endfor %}
-

@@ -3,11 +3,11 @@ ansible/gateway/playbooks/deploy_and_run_all.yml:
 ansible/contrail/playbooks/configure.yml:
   args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml
 ansible/contrail/playbooks/orchestrator.yml:
-  args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml
+  args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml -e orchestrator=kubernetes
 ansible/contrail/playbooks/deploy.yml:
-  args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml --skip-tags vrouter
+  args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml --limit all:!tors --skip-tags vrouter
 ansible/contrail/playbooks/deploy.yml:
-  args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml --skip-tags config_database,config,control,webui,analytics,analytics_database,k8s
+  args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml --limit all:!tors --skip-tags config_database,config,control,webui,analytics,analytics_database,k8s
 ansible/contrail/playbooks/add_tunnel_routes.yml:
   args: -i /tmp/contrail_cluster/test_cluster_uuid/multi-cloud/inventories/inventory.yml --skip-tags remotegw
 ansible/contrail/playbooks/add_tunnel_routes.yml:
