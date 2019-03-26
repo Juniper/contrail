@@ -27,7 +27,7 @@ const (
 
 	defaultAppformixAnsibleRepoDir = "/usr/share/contrail/"
 	defaultAppformixAnsibleRepo    = "appformix-ansible-deployer"
-	defaultAppformixProvPlay       = "playbooks/install_appformix.yml"
+	defaultAppformixProvPlay       = "appformix/playbooks/install_appformix.yml"
 	defaultXflowDir                = "xflow/"
 
 	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
