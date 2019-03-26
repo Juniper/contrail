@@ -113,6 +113,18 @@ Run all tests with coverage:
 make test
 ```
 
+## API doc
+
+OpenAPI specification file is generated during every run of `make generate` and it is located in `./public/openapi.json`.
+
+You can also run API doc server on local machine using:
+
+```bash
+make apidoc
+```
+
+The doc will be available on [localhost:5000](http://localhost:5000).
+
 ## How to contribute
 
 - Follow [Openstack review process](https://docs.openstack.org/infra/manual/developers.html)
