@@ -20,7 +20,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 			Produces: []string{"application/json"},
 			Info: &spec.Info{
 				InfoProps: spec.InfoProps{
-					Version: "4.0",
+					Version: "5.1",
 					Title:   "Contrail API OpenAPI2.0 Definitions",
 					License: &spec.License{
 						Name: "Apache2.0",
@@ -42,18 +42,19 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 		// add reference and back ref
 
 		for _, reference := range apiSchema.References {
-			referenceSchema := spec.Schema{
+			referenceSchema := &spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Description: reference.Description,
 					Properties: map[string]spec.Schema{
 						"uuid": {
 							SchemaProps: spec.SchemaProps{
-								Type: spec.StringOrArray([]string{"string"}),
+								Description: "UUID of the referenced resource.",
+								Type:        spec.StringOrArray([]string{"string"}),
 							},
 						},
 						"to": {
 							SchemaProps: spec.SchemaProps{
-								Type: spec.StringOrArray([]string{"array"}),
+								Description: "FQName of the referenced resource.",
+								Type:        spec.StringOrArray([]string{"array"}),
 								Items: &spec.SchemaOrArray{
 									Schema: &spec.Schema{
 										SchemaProps: spec.SchemaProps{
@@ -66,30 +67,38 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 					},
 				},
 			}
-			var ref spec.Ref
-			ref, err = spec.NewRef("#/definitions/" + reference.RefType)
-			if err != nil {
-				return nil, err
-			}
 			if reference.RefType != "" {
+				var ref spec.Ref
+				ref, err = spec.NewRef("#/definitions/" + reference.RefType)
+				if err != nil {
+					return nil, err
+				}
 				referenceSchema.Properties["attr"] = spec.Schema{
 					SchemaProps: spec.SchemaProps{
 						Ref: ref,
 					},
 				}
 			}
-			d.Properties[reference.LinkTo.ID+"_ref"] = referenceSchema
+			d.Properties[reference.LinkTo.ID+"_refs"] = spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: reference.Description,
+					Type:        spec.StringOrArray([]string{"array"}),
+					Items: &spec.SchemaOrArray{
+						Schema: referenceSchema,
+					},
+				},
+			}
 		}
 
-		for _, backref := range apiSchema.Children {
+		for _, child := range apiSchema.Children {
 			var ref spec.Ref
-			ref, err = spec.NewRef("#/definitions/" + backref.LinkTo.JSONSchema.GoName + "APIType")
+			ref, err = spec.NewRef("#/definitions/" + child.LinkTo.JSONSchema.GoName + "APIType")
 			if err != nil {
 				return nil, err
 			}
-			d.Properties[backref.LinkTo.ID+"s"] = spec.Schema{
+			d.Properties[child.LinkTo.ID+"s"] = spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Description: backref.Description,
+					Description: child.Description,
 					Type:        spec.StringOrArray([]string{"array"}),
 					Items: &spec.SchemaOrArray{
 						Schema: &spec.Schema{
@@ -119,6 +128,16 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 
 		pathItem := spec.PathItem{
 			PathItemProps: spec.PathItemProps{
+				Parameters: []spec.Parameter{
+					{
+						SimpleSchema: spec.SimpleSchema{Type: StringType},
+						ParamProps: spec.ParamProps{
+							Name:     "id",
+							Required: true,
+							In:       "path",
+						},
+					},
+				},
 				Get: &spec.Operation{
 					OperationProps: spec.OperationProps{
 						//TODO Parameters:
@@ -198,6 +217,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Parameters: []spec.Parameter{
 							{
 								ParamProps: spec.ParamProps{
+									Name:     apiSchema.TypeName,
 									Required: true,
 									In:       "body",
 									Schema: &spec.Schema{
@@ -260,6 +280,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						Parameters: []spec.Parameter{
 							{
 								ParamProps: spec.ParamProps{
+									Name:     apiSchema.TypeName,
 									In:       "body",
 									Required: true,
 									Schema: &spec.Schema{
@@ -317,6 +338,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 					OperationProps: spec.OperationProps{
 						Parameters: []spec.Parameter{
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "parent_id",
@@ -325,6 +347,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "parent_fq_name_str",
@@ -333,6 +356,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "pobj_uuids",
@@ -341,6 +365,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "detail",
@@ -349,6 +374,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "back_ref_id",
@@ -357,22 +383,25 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "page_marker",
-									Description: "Pagenation start marker",
+									Description: "Pagination start marker",
 									Required:    false,
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "page_limit",
-									Description: "Pagenation limit",
+									Description: "Pagination limit",
 									Required:    false,
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "count",
@@ -381,14 +410,16 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "fields",
-									Description: " Comma separated object field list you are interested in",
+									Description: "Comma separated object field list you are interested in",
 									Required:    false,
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "shared",
@@ -397,6 +428,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "filters",
@@ -405,6 +437,7 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 								},
 							},
 							{
+								SimpleSchema: spec.SimpleSchema{Type: StringType},
 								ParamProps: spec.ParamProps{
 									In:          "query",
 									Name:        "exclude_hrefs",
@@ -532,11 +565,10 @@ func (s *JSONSchema) ToOpenAPI() (*spec.Schema, error) {
 		}
 		properties[key] = *p
 	}
-	return &spec.Schema{
+	result := &spec.Schema{
 		SchemaProps: spec.SchemaProps{
-			ID:          s.ID,
 			Description: s.Description,
-			Type:        spec.StringOrArray([]string{s.Type}),
+			Type:        spec.StringOrArray([]string{typeToOpenAPI(s.Type)}),
 			Title:       s.Title,
 			//TODO(nati) support this.
 			//Format: s.Format,
@@ -544,12 +576,26 @@ func (s *JSONSchema) ToOpenAPI() (*spec.Schema, error) {
 			//Minimum: s.Minimum,
 			//Pattern: s.Pattern,
 			//Enum: s.Enum,
-			Default:  s.Default,
-			Required: s.Required,
-			Items: &spec.SchemaOrArray{
-				Schema: items,
-			},
+			Default:    s.Default,
+			Required:   s.Required,
 			Properties: properties,
 		},
-	}, nil
+	}
+
+	if items != nil {
+		result.Items = &spec.SchemaOrArray{
+			Schema: items,
+		}
+	}
+
+	return result, nil
+}
+
+func typeToOpenAPI(t string) string {
+	switch t {
+	case UintType:
+		return IntegerType
+	default:
+		return t
+	}
 }
