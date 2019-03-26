@@ -298,7 +298,7 @@ func (c *Cloud) update() error {
 func (c *Cloud) delete() error {
 
 	// get cloud data
-	data, err := c.getCloudData()
+	data, err := c.getCloudData(true)
 	if err != nil {
 		return err
 	}
@@ -324,7 +324,7 @@ func (c *Cloud) delete() error {
 
 func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 
-	data, err := c.getCloudData()
+	data, err := c.getCloudData(false)
 	if err != nil {
 		return nil, nil, nil, err
 	}

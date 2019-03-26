@@ -29,6 +29,7 @@ type Data struct {
 	providers      []*providerData
 	instances      []*instanceData
 	tors           []*torData
+	delRequest     bool
 }
 
 type apiServer struct {
@@ -170,7 +171,8 @@ func (i *torData) getTorObject() (*models.PhysicalRouter, error) {
 }
 
 // nolint: gocyclo
-func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, error) {
+func (v *virtualCloudData) newInstance(instance *models.Node,
+	isDelRequest bool) (*instanceData, error) {
 
 	inst := &instanceData{
 		parentVC: v,
@@ -209,7 +211,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 			i.roles = append(i.roles, "gateway")
 		}
 
-		err = inst.updatePvtIntf()
+		err = inst.updatePvtIntf(isDelRequest)
 		if err != nil {
 			return nil, err
 		}
@@ -224,7 +226,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 	}
 
 	if inst.info.ContrailMulticloudGWNodeBackRefs != nil {
-		err := inst.updateProtoModes() //nolint: govet
+		err := inst.updateProtoModes(isDelRequest) //nolint: govet
 		if err != nil {
 			return nil, err
 		}
@@ -233,7 +235,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 			return nil, err
 		}
 		if v.parentRegion.parentProvider.parentCloud.isCloudPrivate() {
-			err = inst.updateVrouterGW(gatewayRole)
+			err = inst.updateVrouterGW(gatewayRole, isDelRequest)
 			if err != nil {
 				return nil, err
 			}
@@ -242,7 +244,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 
 	if inst.info.ContrailVrouterNodeBackRefs != nil {
 		if v.parentRegion.parentProvider.parentCloud.isCloudPrivate() {
-			err = inst.updateVrouterGW(computeRole)
+			err = inst.updateVrouterGW(computeRole, isDelRequest)
 			if err != nil {
 				return nil, err
 			}
@@ -290,15 +292,15 @@ func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torDat
 	return tor, nil
 }
 
-func (v *virtualCloudData) updateInstances() error {
+func (v *virtualCloudData) updateInstances(isdelRequest bool) error {
 
-	nodes, err := v.getInstancesWithTag(v.info.TagRefs)
+	nodes, err := v.getInstancesWithTag(v.info.TagRefs, isdelRequest)
 	if err != nil {
 		return err
 	}
 
 	for _, instance := range nodes {
-		newI, err := v.newInstance(instance)
+		newI, err := v.newInstance(instance, isdelRequest)
 		if err != nil {
 			return err
 		}
@@ -342,7 +344,8 @@ func (sg *sgData) getSGObject() (*models.CloudSecurityGroup, error) {
 	return sgResp.GetCloudSecurityGroup(), nil
 }
 
-func (v *virtualCloudData) getInstancesWithTag(tagRefs []*models.VirtualCloudTagRef) ([]*models.Node, error) {
+func (v *virtualCloudData) getInstancesWithTag(tagRefs []*models.VirtualCloudTagRef,
+	isDelRequest bool) ([]*models.Node, error) {
 	var nodesOfVC []*models.Node
 
 	for _, tag := range tagRefs {
@@ -352,7 +355,7 @@ func (v *virtualCloudData) getInstancesWithTag(tagRefs []*models.VirtualCloudTag
 		}
 		nodesOfVC = append(nodesOfVC, tagResp.Tag.NodeBackRefs...)
 	}
-	if len(nodesOfVC) == 0 {
+	if len(nodesOfVC) == 0 && !isDelRequest {
 		return nil, errors.New("virtual cloud tag is not used by any nodes")
 	}
 
@@ -619,7 +622,8 @@ func (v *virtualCloudData) getMCGWNodeRole(
 
 func (v *virtualCloudData) getTagsAndUpdateClusterNodes() error {
 
-	instances, err := v.getInstancesWithTag(v.info.TagRefs)
+	instances, err := v.getInstancesWithTag(v.info.TagRefs,
+		v.parentRegion.parentProvider.parentCloud.delRequest)
 	if err != nil {
 		return err
 	}
@@ -654,6 +658,7 @@ func (r *regionData) newVCloud(vCloud *models.VirtualCloud) (*virtualCloudData, 
 	return vc, nil
 }
 
+// nolint: gocyclo
 func (r *regionData) updateVClouds() error {
 
 	for _, vc := range r.info.VirtualClouds {
@@ -667,14 +672,16 @@ func (r *regionData) updateVClouds() error {
 			return err
 		}
 
-		if r.parentProvider.parentCloud.isCloudPrivate() {
+		isDelRequest := r.parentProvider.parentCloud.delRequest
+
+		if r.parentProvider.parentCloud.isCloudPrivate() && !isDelRequest {
 			err = newVC.getTagsAndUpdateClusterNodes()
 			if err != nil {
 				return err
 			}
 		}
 
-		err = newVC.updateInstances()
+		err = newVC.updateInstances(isDelRequest)
 		if err != nil {
 			return err
 		}
@@ -837,7 +844,7 @@ func (d *Data) updateUsers() error {
 	return nil
 }
 
-func (i *instanceData) updateProtoModes() error {
+func (i *instanceData) updateProtoModes(isDelRequest bool) error {
 	for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
 		gwNodeResp, err := i.client.GetContrailMulticloudGWNode(i.ctx,
 			&services.GetContrailMulticloudGWNodeRequest{
@@ -851,23 +858,26 @@ func (i *instanceData) updateProtoModes() error {
 		i.protocolsMode = gwNodeResp.GetContrailMulticloudGWNode().ProtocolsMode
 		return nil
 	}
+	if isDelRequest {
+		return nil
+	}
 	return errors.New("instance does not have a contrail-multicloud-gw-node ref")
 }
 
-func (i *instanceData) updateVrouterGW(role string) error {
+func (i *instanceData) updateVrouterGW(role string, isDelRequest bool) error {
 
 	switch role {
 	case gatewayRole:
-		return i.setMultiCloudGWNodeDefaultGW()
+		return i.setMultiCloudGWNodeDefaultGW(isDelRequest)
 	case computeRole:
-		return i.setVrouterNodeDefaultGW()
+		return i.setVrouterNodeDefaultGW(isDelRequest)
 	}
 
 	return fmt.Errorf("instance does not have a %s ref", role)
 
 }
 
-func (i *instanceData) setMultiCloudGWNodeDefaultGW() error {
+func (i *instanceData) setMultiCloudGWNodeDefaultGW(isDelRequest bool) error {
 
 	for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
 		response, err := i.client.GetContrailMulticloudGWNode(i.ctx,
@@ -882,11 +892,15 @@ func (i *instanceData) setMultiCloudGWNodeDefaultGW() error {
 		if response != nil {
 			i.gateway = response.ContrailMulticloudGWNode.DefaultGateway
 		}
-		if i.gateway == "" {
+		if i.gateway == "" && !isDelRequest {
 			return fmt.Errorf(
 				"default gateway is not set for contrail_multicloud_gw_node uuid: %s",
 				gwNodeRef.UUID)
 		}
+		return nil
+	}
+
+	if isDelRequest {
 		return nil
 	}
 
@@ -895,7 +909,7 @@ func (i *instanceData) setMultiCloudGWNodeDefaultGW() error {
 		i.info.UUID)
 }
 
-func (i *instanceData) setVrouterNodeDefaultGW() error {
+func (i *instanceData) setVrouterNodeDefaultGW(isDelRequest bool) error {
 
 	for _, vrouterNodeRef := range i.info.ContrailVrouterNodeBackRefs {
 		response, err := i.client.GetContrailVrouterNode(i.ctx,
@@ -923,7 +937,7 @@ func (i *instanceData) setVrouterNodeDefaultGW() error {
 			}
 			i.gateway = response.ContrailCluster.DefaultGateway
 
-			if i.gateway == "" {
+			if i.gateway == "" && !isDelRequest {
 				return fmt.Errorf(
 					`default gateway is neither set for vrouter_node uuid: %s
 					nor for contrail_cluster uuid: %s`,
@@ -932,14 +946,20 @@ func (i *instanceData) setVrouterNodeDefaultGW() error {
 			return nil
 		}
 	}
+	if isDelRequest {
+		return nil
+	}
 	return fmt.Errorf(
 		"contrailVrouterNodeBackRefs are not present for instance: %s",
 		i.info.UUID)
 }
 
-func (i *instanceData) updatePvtIntf() error {
+func (i *instanceData) updatePvtIntf(isDelRequest bool) error {
 	for _, port := range i.info.Ports {
 		i.pvtIntf = port
+		return nil
+	}
+	if isDelRequest {
 		return nil
 	}
 	return fmt.Errorf("onprem node %s should have private ip address",
@@ -966,14 +986,14 @@ func (i *instanceData) updateMCGWTags() error {
 	return nil
 }
 
-func (c *Cloud) getCloudData() (*Data, error) {
+func (c *Cloud) getCloudData(isDelRequest bool) (*Data, error) {
 
 	cloudData, err := c.newCloudData()
 	if err != nil {
 		return nil, err
 	}
 
-	err = cloudData.update()
+	err = cloudData.update(isDelRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -997,8 +1017,9 @@ func (c *Cloud) newCloudData() (*Data, error) {
 
 }
 
-func (d *Data) update() error {
+func (d *Data) update(isDelRequest bool) error {
 
+	d.delRequest = isDelRequest
 	err := d.updateProviders()
 	if err != nil {
 		return err
@@ -1074,4 +1095,16 @@ func (d *Data) getDefaultCloudUser() (*models.CloudUser, error) {
 		return user, nil
 	}
 	return nil, errors.New("cloudUser ref not found with cloud object")
+}
+
+func (d *Data) getGatewayNodes() []*instanceData {
+	gwNodes := []*instanceData{}
+	for _, inst := range d.instances {
+		for _, role := range inst.roles {
+			if role == "gateway" {
+				gwNodes = append(gwNodes, inst)
+			}
+		}
+	}
+	return gwNodes
 }

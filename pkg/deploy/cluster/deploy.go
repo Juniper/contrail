@@ -221,14 +221,13 @@ func hasMCGWNodes(ClusterInfo *models.ContrailCluster) bool {
 
 func isMCProvisioner(cData *base.Data) bool {
 
-	state := cData.ClusterInfo.ProvisioningState
-	if hasCloudRefs(cData) && hasMCGWNodes(cData.ClusterInfo) && (state == "NOSTATE" || state == "") {
+	if hasCloudRefs(cData) && hasMCGWNodes(cData.ClusterInfo) {
 		switch cData.ClusterInfo.ProvisioningAction {
-		case "ADD_CLOUD":
+		case addCloud:
 			return true
-		case "UPDATE_CLOUD":
+		case updateCloud:
 			return true
-		case "DELETE_CLOUD":
+		case deleteCloud:
 			return true
 		}
 	}

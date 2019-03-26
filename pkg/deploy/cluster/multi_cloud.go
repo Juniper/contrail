@@ -277,6 +277,11 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
 
+	status := make(map[string]interface{})
+	if m.action != deleteAction {
+		status[statusField] = statusUpdateProgress
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	}
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	// nolint: errcheck
@@ -287,7 +292,22 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	if err != nil {
 		return err
 	}
-	return m.mcPlayBook()
+
+	// nolint: errcheck
+	_ = m.mcPlayBook()
+
+	if m.action != deleteAction {
+		err = m.removeCloudDetailsFromCluster()
+		if err != nil {
+			status[statusField] = statusUpdateFailed
+			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			return err
+		}
+		status[statusField] = statusUpdated
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	}
+	return nil
+
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
@@ -527,21 +547,12 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 
 	case deleteCloud:
 
-		status := make(map[string]interface{})
-		if m.action != deleteAction {
-			status[statusField] = statusUpdateProgress
-			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-			status[statusField] = statusUpdated
-		}
 		//best effort cleaning up
 		// nolint: errcheck
 		_ = m.playMCContrailCleanup(args)
 		// nolint: errcheck
 		_ = m.playMCGatewayCleanup(args)
 
-		if m.action != deleteAction {
-			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-		}
 		return nil
 	}
 
@@ -574,6 +585,20 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 	}
 	return nil
 
+}
+
+func (m *multiCloudProvisioner) removeCloudDetailsFromCluster() error {
+
+	clusterObj := m.clusterData.ClusterInfo
+	clusterObj.ProvisioningAction = ""
+	clusterObj.CloudRefs = []*models.ContrailClusterCloudRef{}
+
+	_, err := m.cluster.APIServer.UpdateContrailCluster(context.Background(),
+		&services.UpdateContrailClusterRequest{
+			ContrailCluster: clusterObj,
+		},
+	)
+	return err
 }
 
 func readSSHAgentConfig(path string) (*SSHAgentConfig, error) {
