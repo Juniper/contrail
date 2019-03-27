@@ -1267,14 +1267,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_mc_playbook.yml"),
 		"Expected list of update playbooks are not executed")
 
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
-	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
-
 	// update cluster
 	config.Action = updateAction
 	//cleanup all the files
@@ -1343,14 +1335,6 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		"commands executed during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
 		"Expected list of update playbooks are not executed")
-
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
-	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
-	if err != nil {
-		assert.NoError(t, err, err.Error())
-	}
 
 	// delete cloud secanrio
 	//cleanup all the files

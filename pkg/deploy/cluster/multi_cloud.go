@@ -112,11 +112,6 @@ func (m *multiCloudProvisioner) Deploy() error {
 			m.Log.Errorf("add cloud failed with err: %s", err)
 			return err
 		}
-		err = m.createEndpoints()
-		if err != nil {
-			m.Log.Errorf("add cloud failed with err: %s", err)
-			return err
-		}
 	case updateCloud:
 		updated, err := m.isMCUpdated()
 		if err != nil {
@@ -127,11 +122,6 @@ func (m *multiCloudProvisioner) Deploy() error {
 			return nil
 		}
 		err = m.updateMCCluster()
-		if err != nil {
-			m.Log.Errorf("update cloud failed with err: %s", err)
-			return err
-		}
-		err = m.createEndpoints()
 		if err != nil {
 			m.Log.Errorf("update cloud failed with err: %s", err)
 			return err

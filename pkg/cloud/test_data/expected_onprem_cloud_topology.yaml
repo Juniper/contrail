@@ -16,7 +16,7 @@
       public_ip: 
       private_ip: 10.10.10.11
       interface: cloud_node_controller_pvt_port
-      provision: true
+      provision: false
       username: centos
       password: 
       roles:
