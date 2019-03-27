@@ -169,6 +169,14 @@ func (db *Service) AllocateIP(
 	}
 
 	// TODO: we don't really allocate an IP for other methods
+	if request.IPAddress == "" && request.SubnetUUID != "" {
+		ip, err := db.allocateIP(ctx, request.SubnetUUID)
+		if err != nil {
+			return "", "", err
+		}
+		request.IPAddress = ip.String()
+	}
+
 	return request.IPAddress, request.SubnetUUID, nil
 }
 

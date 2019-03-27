@@ -3,6 +3,9 @@ package types
 import (
 	"context"
 
+	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/gogo/protobuf/types"
+
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
@@ -291,6 +294,10 @@ func (sv *ContrailTypeLogicService) allocateIPAddress(
 		return "", "", errutil.ErrorBadRequest("Allocation for requested IP from a network_ipam is not supported")
 	}
 
+	if subnetUUID == "" {
+		subnetUUID = sv.veryNotCoolMethodToGetSubnetUUID(ctx, instanceIP)
+	}
+
 	allocateIPParams := &ipam.AllocateIPRequest{
 		VirtualNetwork:               virtualNetwork,
 		IPAddress:                    ipAddress,
@@ -301,6 +308,95 @@ func (sv *ContrailTypeLogicService) allocateIPAddress(
 	}
 
 	return sv.AddressManager.AllocateIP(ctx, allocateIPParams)
+}
+
+func (sv *ContrailTypeLogicService) veryNotCoolMethodToGetSubnetUUID(ctx context.Context, instanceIP *models.InstanceIP) string {
+	if len(instanceIP.GetNetworkIpamRefs()) == 0 {
+		return ""
+	}
+	ipams, _ := sv.ReadService.ListNetworkIpam(ctx, &services.ListNetworkIpamRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: []string{instanceIP.GetNetworkIpamRefs()[0].GetUUID()},
+		},
+	})
+	if len(ipams.GetNetworkIpams()) == 0 {
+		return ""
+	}
+
+	if ipams.GetNetworkIpams()[0].GetUUID() == "" {
+		return ""
+	}
+
+	ipam, _ := sv.ReadService.GetNetworkIpam(ctx, &services.GetNetworkIpamRequest{
+		ID: ipams.GetNetworkIpams()[0].GetUUID(),
+	})
+
+	if try := sv.tryToGetFromIpam(ctx, ipam.GetNetworkIpam()); try != "" {
+		return try
+	}
+
+	if len(ipam.GetNetworkIpam().GetVirtualNetworkBackRefs()) == 0 {
+		return ""
+	}
+
+	vns, _ := sv.ReadService.ListVirtualNetwork(ctx, &services.ListVirtualNetworkRequest{
+		Spec: &baseservices.ListSpec{
+			ObjectUUIDs: []string{ipam.GetNetworkIpam().GetVirtualNetworkBackRefs()[0].GetUUID()},
+		},
+	})
+
+	if len(vns.GetVirtualNetworks()) == 0 {
+		return ""
+	}
+
+	if vns.GetVirtualNetworks()[0].GetUUID() == "" {
+		return ""
+	}
+
+	vn, _ := sv.ReadService.GetVirtualNetwork(ctx, &services.GetVirtualNetworkRequest{
+		ID: vns.GetVirtualNetworks()[0].GetUUID(),
+	})
+
+	if len(vn.GetVirtualNetwork().GetNetworkIpamRefs()) == 0 {
+		return ""
+	}
+
+	if vn.GetVirtualNetwork().GetNetworkIpamRefs()[0].GetAttr() == nil {
+		return ""
+	}
+
+	if len(vn.GetVirtualNetwork().GetNetworkIpamRefs()[0].GetAttr().GetIpamSubnets()) == 0 {
+		return ""
+	}
+
+	return vn.GetVirtualNetwork().GetNetworkIpamRefs()[0].GetAttr().GetIpamSubnets()[0].GetSubnetUUID()
+}
+
+func (sv *ContrailTypeLogicService) tryToGetFromIpam(ctx context.Context, ipam *models.NetworkIpam) string {
+	if ipam.GetIpamSubnets() == nil {
+		return ""
+	}
+	if len(ipam.GetIpamSubnets().GetSubnets()) == 0 {
+		return ""
+	}
+	if ipam.GetIpamSubnets().GetSubnets()[0].GetSubnetUUID() == "" {
+		subnets := ipam.GetIpamSubnets()
+		for id := range ipam.GetIpamSubnets().GetSubnets() {
+			sUUID, _ := sv.allocateVnSubnet(ctx, ipam.GetIpamSubnets().GetSubnets()[id])
+			subnets.Subnets[id].SubnetUUID = sUUID
+		}
+
+		sv.WriteService.UpdateNetworkIpam(ctx, &services.UpdateNetworkIpamRequest{
+			FieldMask: types.FieldMask{
+				Paths: []string{models.NetworkIpamFieldIpamSubnets},
+			},
+			NetworkIpam: &models.NetworkIpam{
+				UUID:        ipam.GetUUID(),
+				IpamSubnets: subnets,
+			},
+		})
+	}
+	return ipam.GetIpamSubnets().GetSubnets()[0].GetSubnetUUID()
 }
 
 func (sv *ContrailTypeLogicService) getInstanceIP(

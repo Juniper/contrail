@@ -69,11 +69,16 @@ func (sv *ContrailTypeLogicService) CreateNetworkIpam(
 				return errutil.ErrorBadRequest(err.Error())
 			}
 
-			for _, ipamSubnet := range ipamSubnets.GetSubnets() {
+			for id, ipamSubnet := range ipamSubnets.GetSubnets() {
 				err = ipamSubnet.ValidateSubnetParams()
 				if err != nil {
 					return err
 				}
+				sUUID, err := sv.allocateVnSubnet(ctx, ipamSubnet)
+				if err != nil {
+					return err
+				}
+				ipamSubnets.Subnets[id].SubnetUUID = sUUID
 			}
 
 			response, err = sv.BaseService.CreateNetworkIpam(ctx, request)

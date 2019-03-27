@@ -682,38 +682,41 @@ resources:
         uuid_mslong: 2623730205149580709
     ipam_subnet_method: flat-subnet
     ipam_subnets:
-    - addr_from_start: null
-      alloc_unit: 1
-      allocation_pools: []
-      created: null
-      default_gateway: null
-      dhcp_option_list: null
-      dns_nameservers: []
-      dns_server_address: null
-      enable_dhcp: true
-      host_routes: null
-      last_modified: null
-      subnet:
-        ip_prefix: 0.0.0.0
-        ip_prefix_len: 8
-      subnet_name: null
-      subnet_uuid: null
-    - addr_from_start: null
-      alloc_unit: 1
-      allocation_pools: []
-      created: null
-      default_gateway: null
-      dhcp_option_list: null
-      dns_nameservers: []
-      dns_server_address: null
-      enable_dhcp: true
-      host_routes: null
-      last_modified: null
-      subnet:
-        ip_prefix: ::ffff
-        ip_prefix_len: 104
-      subnet_name: null
-      subnet_uuid: null
+      subnets:
+      - addr_from_start: null
+        alloc_unit: 1
+        allocation_pools: []
+        created: null
+        default_gateway: null
+        dhcp_option_list: null
+        dns_nameservers: []
+        dns_server_address: null
+        enable_dhcp: true
+        host_routes: null
+        last_modified: null
+        subnet:
+          ip_prefix: 0.0.0.0
+          ip_prefix_len: 8
+        subnet_name: null
+        # subnet_uuid: b0937abf-df54-4859-a60d-1d92a5936a37
+        subnet_uuid: null
+      - addr_from_start: null
+        alloc_unit: 1
+        allocation_pools: []
+        created: null
+        default_gateway: null
+        dhcp_option_list: null
+        dns_nameservers: []
+        dns_server_address: null
+        enable_dhcp: true
+        host_routes: null
+        last_modified: null
+        subnet:
+          ip_prefix: ::ffff
+          ip_prefix_len: 104
+        subnet_name: null
+        # subnet_uuid: d7ff34b8-0d15-4c84-9d05-cadbcf0b4ed7
+        subnet_uuid: null
     parent_type: project
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     perms2:
