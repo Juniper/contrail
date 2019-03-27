@@ -11,7 +11,15 @@ provider_config:
     domainsuffix: {%if cluster.DomainSuffix %}{{ cluster.DomainSuffix }}{%else%}local{%endif%}
 
 contrail_configuration:
-  CONTRAIL_VERSION: {%if cluster.ContrailVersion %}{{ cluster.ContrailVersion }}{%else%}latest{%endif%}
+  {% if cluster.ContrailVersion %}
+  CONTRAIL_VERSION: {{ cluster.ContrailVersion }}
+  {% else %}
+  {% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
+  {% if "CONTRAIL_CONTAINER_TAG" in key_value.Key %}
+  CONTRAIL_VERSION: {{ key_value.Value }}
+  {% endif %}
+  {% endfor %}
+  {% endif %}
   ENCAP_PRIORITY: {%if cluster.EncapPriority %}{{cluster.EncapPriority}}{%else%}MPLSoGRE,MPLSoUDP,VXLAN{%endif%}
   CLOUD_ORCHESTRATOR: kubernetes
   {% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
