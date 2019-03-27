@@ -296,7 +296,7 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 	}
 	status := map[string]interface{}{}
 	if _, err := os.Stat(m.getMCInventoryFile(m.workDir)); err == nil {
-		ok, err := m.compareMCInventoryFile()
+		ok, err := m.compareClusterTopologyFile()
 		if err != nil {
 			status[statusField] = statusUpdateFailed
 			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
@@ -321,36 +321,32 @@ func (m *multiCloudProvisioner) verifyCloudStatus() error {
 	return nil
 }
 
-func (m *multiCloudProvisioner) compareMCInventoryFile() (bool, error) {
+func (m *multiCloudProvisioner) compareClusterTopologyFile() (bool, error) {
 
-	tmpDir, err := ioutil.TempDir("", "inventory")
+	tmpDir, err := ioutil.TempDir("", "topology")
 	if err != nil {
 		return false, err
 	}
 
 	// nolint: errcheck
 	defer os.RemoveAll(tmpDir)
-	m.Log.Debugf("Creating temperory inventory at dir %s", tmpDir)
+	m.Log.Debugf("Creating temperory topology at dir %s", tmpDir)
 
-	err = m.createFiles(tmpDir)
-	if err != nil {
-		return false, err
-	}
-
-	err = m.runGenerateInventory(tmpDir, updateCloud)
-	if err != nil {
-		return false, err
-	}
-	newInventory, err := ioutil.ReadFile(m.getMCInventoryFile(tmpDir))
+	err = m.createClusterTopologyFile(tmpDir)
 	if err != nil {
 		return false, err
 	}
 
-	oldInventory, err := ioutil.ReadFile(m.getMCInventoryFile(m.workDir))
+	newTopology, err := ioutil.ReadFile(m.getClusterTopoFile(tmpDir))
 	if err != nil {
 		return false, err
 	}
-	return bytes.Equal(oldInventory, newInventory), nil
+
+	oldTopology, err := ioutil.ReadFile(m.getClusterTopoFile(m.workDir))
+	if err != nil {
+		return false, err
+	}
+	return bytes.Equal(oldTopology, newTopology), nil
 }
 
 func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
