@@ -199,6 +199,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node) (*instanceData, er
 		}
 		if i.info.ContrailConfigNodeBackRefs != nil || i.info.ContrailControlNodeBackRefs != nil {
 			i.roles = append(i.roles, "controller")
+			i.provision = strconv.FormatBool(false)
 		}
 
 		if i.info.KubernetesMasterNodeBackRefs != nil {
