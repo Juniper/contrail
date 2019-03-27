@@ -34,6 +34,12 @@ test_data:
       route_target: ["100:200"]
     network_ipam_refs:
       - uuid: test_ipam_instance_ip_blue
+        attr:
+          ipam_subnets:
+          - subnet_uuid: 054ca01e-cef3-444e-b4d5-4ac16554ac3d
+            subnet:
+              ip_prefix: "17.0.0.0"
+              ip_prefix_len: 24
 
 clients:
   default:
@@ -100,6 +106,7 @@ workflow:
       - uuid: test_ipam_instance_ip_blue
       virtual_network_refs:
       - uuid: vn_instance_ip_blue
+      instance_ip_address: 17.0.0.2
 
 - name: update instance ip ip-family
   request:
