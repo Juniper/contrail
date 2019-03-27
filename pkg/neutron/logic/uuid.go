@@ -12,6 +12,18 @@ func VncUUIDToNeutronID(uuid string) string {
 	return strings.Replace(uuid, "-", "", -1)
 }
 
+func neutronIDsToVncUUIDs(ids []string) ([]string, error) {
+	var res []string
+	for _, id := range ids {
+		vncID, err := neutronIDToVncUUID(id)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to translate neutron id: %v to contrail uuid", id)
+		}
+		res = append(res, vncID)
+	}
+	return res, nil
+}
+
 func neutronIDToVncUUID(id string) (string, error) {
 	if id == "" {
 		return "", nil
