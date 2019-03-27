@@ -114,6 +114,33 @@ func (k *Client) ValidateToken(c echo.Context) error {
 	return c.JSON(resp.StatusCode, validateTokenResponse)
 }
 
+// Authenticate
+func (k *Client) Authenticate(c echo.Context, tokenString string) (context.Context, error) {
+	resp, err := k.tokenRequest(echo.GET, c)
+	if err != nil {
+		return nil, err
+	}
+	validatedToken := resp.Token
+	roles := []string{}
+	for _, r := range validatedToken.Roles {
+		roles = append(roles, r.Name)
+	}
+	project := validatedToken.Project
+	if project == nil {
+		logrus.Debug("No project in a token")
+		return nil, errutil.ErrorUnauthenticated
+	}
+	domain := validatedToken.Project.Domain.ID
+	user := validatedToken.User
+
+	objPerms := auth2.NewObjPerms(validatedToken)
+	authContext := auth2.NewContext(domain, project.ID, user.ID, roles, tokenString, objPerms)
+
+	var authKey interface{} = "auth"
+	newCtx := context.WithValue(ctx, authKey, authContext)
+	return newCtx, nil
+}
+
 // GetProjects sends project get request to keystone endpoint.
 func (k *Client) GetProjects(c echo.Context) error {
 	projectURL := k.AuthURL + strings.TrimPrefix(c.Request().URL.Path, authPrefix)

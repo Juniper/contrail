@@ -132,15 +132,6 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 				// Skip grpc
 				return next(c)
 			}
-			clusterID := r.Header.Get(xClusterIDKey)
-			if clusterID == "" {
-				clusterID = apicommon.GetClusterIDFromProxyURL(r.URL.Path)
-			}
-			keystoneEndpoint := getKeystoneEndpoint(clusterID, endpoints)
-			if keystoneEndpoint != nil {
-				keystoneClient.SetAuthURL(keystoneEndpoint.URL)
-				auth = keystoneClient.NewAuth()
-			}
 			tokenString := r.Header.Get("X-Auth-Token")
 			if tokenString == "" {
 				cookie, _ := r.Cookie("x-auth-token") // nolint: errcheck
@@ -151,7 +142,17 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 					tokenString = c.QueryParam("auth_token")
 				}
 			}
-			ctx, err := authenticate(r.Context(), auth, tokenString)
+			clusterID := r.Header.Get(xClusterIDKey)
+			if clusterID == "" {
+				clusterID = apicommon.GetClusterIDFromProxyURL(r.URL.Path)
+			}
+			keystoneEndpoint := getKeystoneEndpoint(clusterID, endpoints)
+			if keystoneEndpoint != nil {
+				keystoneClient.SetAuthURL(keystoneEndpoint.URL)
+				ctx, err := keystoneClient.Authenticate(r.Context(), tokenString)
+			} else {
+				ctx, err := authenticate(r.Context(), auth, tokenString)
+			}
 			if err != nil {
 				logrus.Errorf("Authentication failure: %s", err)
 				return errutil.ToHTTPError(err)
