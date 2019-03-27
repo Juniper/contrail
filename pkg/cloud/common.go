@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -99,8 +100,9 @@ func GetTFStateFile(cloudID string) string {
 }
 
 func deleteNodeObjects(ctx context.Context,
-	client *client.HTTP, nodeList []*instanceData) error {
+	client *client.HTTP, nodeList []*instanceData) []string {
 
+	var errList []string
 	// Delete Node related dependencies and node itself
 	for _, node := range nodeList {
 		if node.info.PortGroups != nil {
@@ -111,7 +113,9 @@ func deleteNodeObjects(ctx context.Context,
 					},
 				)
 				if err != nil {
-					return err
+					errList = append(errList, fmt.Sprintf(
+						"failed deleting PortGroup %s err_msg: %s",
+						portGroup.UUID, err))
 				}
 			}
 		}
@@ -123,7 +127,9 @@ func deleteNodeObjects(ctx context.Context,
 					},
 				)
 				if err != nil {
-					return err
+					errList = append(errList, fmt.Sprintf(
+						"failed deleting Port %s err_msg: %s",
+						port.UUID, err))
 				}
 			}
 		}
@@ -133,15 +139,64 @@ func deleteNodeObjects(ctx context.Context,
 			},
 		)
 		if err != nil {
-			return err
+			errList = append(errList, fmt.Sprintf(
+				"failed deleting Node %s err_msg: %s",
+				node.info.UUID, err))
 		}
 	}
-	return nil
+	return errList
+}
+
+func removePvtSubnetRefFromNodes(ctx context.Context,
+	client *client.HTTP, nodeList []*instanceData) []string {
+
+	var errList []string
+	for _, node := range nodeList {
+		if node.info.CloudPrivateSubnetRefs != nil {
+			node.info.CloudPrivateSubnetRefs = []*models.NodeCloudPrivateSubnetRef{}
+			_, err := client.UpdateNode(ctx,
+				&services.UpdateNodeRequest{
+					Node: node.info,
+				},
+			)
+			if err != nil {
+				errList = append(errList, fmt.Sprintf(
+					"failed removing CloudPrivateSubnet from Node %s err_msg: %s",
+					node.info.UUID, err))
+			}
+		}
+	}
+
+	return errList
+}
+
+func deleteContrailMCGWRole(ctx context.Context,
+	client *client.HTTP, nodeList []*instanceData) []string {
+
+	var errList []string
+	for _, node := range nodeList {
+		if node.info.ContrailMulticloudGWNodeBackRefs != nil {
+			for _, mcGWNodeBackRef := range node.info.ContrailMulticloudGWNodeBackRefs {
+				_, err := client.DeleteContrailMulticloudGWNode(ctx,
+					&services.DeleteContrailMulticloudGWNodeRequest{
+						ID: mcGWNodeBackRef.UUID,
+					},
+				)
+				if err != nil {
+					errList = append(errList, fmt.Sprintf(
+						"failed deleting ContrailMulticloudGWNode %s err_msg: %s",
+						mcGWNodeBackRef.UUID, err))
+				}
+			}
+		}
+	}
+	return errList
 }
 
 func deleteSGObjects(ctx context.Context,
-	client *client.HTTP, sgList []*sgData) error {
+	client *client.HTTP, sgList []*sgData) []string {
 
+	errList := []string{}
 	// Delete CloudSecurityGroup related dependencies and CloudSecurityGroup itself
 	for _, sg := range sgList {
 		for _, sgRule := range sg.info.CloudSecurityGroupRules {
@@ -151,7 +206,9 @@ func deleteSGObjects(ctx context.Context,
 				},
 			)
 			if err != nil {
-				return err
+				errList = append(errList, fmt.Sprintf(
+					"failed deleting CloudSecurityGroupRule %s err_msg: %s",
+					sgRule.UUID, err))
 			}
 		}
 		_, err := client.DeleteCloudSecurityGroup(ctx,
@@ -160,15 +217,18 @@ func deleteSGObjects(ctx context.Context,
 			},
 		)
 		if err != nil {
-			return err
+			errList = append(errList, fmt.Sprintf(
+				"failed deleting CloudSecurityGroup %s err_msg: %s",
+				sg.info.UUID, err))
 		}
 	}
-	return nil
+	return errList
 }
 
 func deletePvtSubnetObjects(ctx context.Context,
-	client *client.HTTP, subnetList []*subnetData) error {
+	client *client.HTTP, subnetList []*subnetData) []string {
 
+	errList := []string{}
 	// Delete CloudPrivateSubnet related dependencies and CloudPrivateSubnet itself
 	for _, pvtsubnet := range subnetList {
 		_, err := client.DeleteCloudPrivateSubnet(ctx,
@@ -177,37 +237,42 @@ func deletePvtSubnetObjects(ctx context.Context,
 			},
 		)
 		if err != nil {
-			return err
+			errList = append(errList, fmt.Sprintf(
+				"failed deleting CloudPrivateSubnet %s err_msg: %s",
+				pvtsubnet.info.UUID, err))
 		}
 	}
-	return nil
+	return errList
 }
 
 func deleteCloudProviderAndDeps(ctx context.Context,
-	client *client.HTTP, providerList []*providerData) error {
+	client *client.HTTP, providerList []*providerData) []string {
 
+	errList := []string{}
 	// Delete Provider dependencies and iteslf
 	for _, provider := range providerList {
 		for _, region := range provider.regions {
 			for _, vc := range region.virtualClouds {
 
-				err := deleteSGObjects(ctx, client, vc.sgs)
-				if err != nil {
-					return err
+				retErrList := deleteSGObjects(ctx, client, vc.sgs)
+				if retErrList != nil {
+					errList = append(errList, retErrList...)
 				}
 
-				err = deletePvtSubnetObjects(ctx, client, vc.subnets)
-				if err != nil {
-					return err
+				retErrList = deletePvtSubnetObjects(ctx, client, vc.subnets)
+				if retErrList != nil {
+					errList = append(errList, retErrList...)
 				}
 
-				_, err = client.DeleteVirtualCloud(ctx,
+				_, err := client.DeleteVirtualCloud(ctx,
 					&services.DeleteVirtualCloudRequest{
 						ID: vc.info.UUID,
 					},
 				)
 				if err != nil {
-					return err
+					errList = append(errList, fmt.Sprintf(
+						"failed deleting VirtualCloud %s err_msg: %s",
+						vc.info.UUID, err))
 				}
 			}
 			_, err := client.DeleteCloudRegion(ctx,
@@ -216,7 +281,9 @@ func deleteCloudProviderAndDeps(ctx context.Context,
 				},
 			)
 			if err != nil {
-				return err
+				errList = append(errList, fmt.Sprintf(
+					"failed deleting CloudRegion %s err_msg: %s",
+					region.info.UUID, err))
 			}
 		}
 		_, err := client.DeleteCloudProvider(ctx,
@@ -225,10 +292,12 @@ func deleteCloudProviderAndDeps(ctx context.Context,
 			},
 		)
 		if err != nil {
-			return err
+			errList = append(errList, fmt.Sprintf(
+				"failed deleting CloudProvider %s err_msg: %s",
+				provider.info.UUID, err))
 		}
 	}
-	return nil
+	return errList
 }
 
 func deleteCloudUsers(ctx context.Context,
@@ -279,34 +348,48 @@ func deleteCredentialAndDeps(ctx context.Context,
 	return errList
 }
 
+// nolint: gocyclo
 func (c *Cloud) deleteAPIObjects(d *Data) error {
 
+	var errList []string
+
+	retErrList := deleteContrailMCGWRole(c.ctx,
+		c.APIServer, d.getGatewayNodes())
+
+	if retErrList != nil {
+		errList = append(errList, retErrList...)
+	}
+
 	if d.isCloudPublic() {
-		err := deleteNodeObjects(c.ctx, c.APIServer, d.instances)
-		if err != nil {
-			return err
+		retErrList = deleteNodeObjects(c.ctx, c.APIServer, d.instances)
+		if retErrList != nil {
+			errList = append(errList, retErrList...)
 		}
 	}
 
-	err := deleteCloudProviderAndDeps(c.ctx,
-		c.APIServer, d.providers)
-	if err != nil {
-		c.log.Error("error while trying to delete cloud provider & deps")
-		return err
+	if d.isCloudPrivate() {
+		retErrList = removePvtSubnetRefFromNodes(c.ctx, c.APIServer, d.getGatewayNodes())
+		if retErrList != nil {
+			errList = append(errList, retErrList...)
+		}
 	}
 
-	_, err = c.APIServer.DeleteCloud(c.ctx,
+	retErrList = deleteCloudProviderAndDeps(c.ctx,
+		c.APIServer, d.providers)
+	if retErrList != nil {
+		errList = append(errList, retErrList...)
+	}
+
+	_, err := c.APIServer.DeleteCloud(c.ctx,
 		&services.DeleteCloudRequest{
-			ID: d.cloud.config.CloudID,
+			ID: d.info.UUID,
 		},
 	)
 	if err != nil {
-		c.log.Errorf("error while trying to delete cloud: %s",
-			d.cloud.config.CloudID)
-		return err
+		errList = append(errList, fmt.Sprintf(
+			"failed deleting Cloud %s err_msg: %s",
+			d.info.UUID, err))
 	}
-
-	var errList []string
 
 	cloudUserErrList := deleteCloudUsers(c.ctx, c.APIServer, d.users)
 	if cloudUserErrList != nil {
