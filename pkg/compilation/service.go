@@ -60,7 +60,7 @@ type Store interface {
 	Put(context.Context, string, []byte) error
 	Get(context.Context, string) ([]byte, error)
 	WatchRecursive(context.Context, string, int64) chan etcd.Message
-	InTransaction(ctx context.Context, do func(context.Context) error) error
+	DoInTransaction(ctx context.Context, do func(context.Context) error) error
 	Close() error
 }
 
@@ -100,6 +100,13 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 }
 
 // handleMessage handles message received from etcd pubsub.
+// TODO(Michal): [FIXME] Handle etcd transaction events.
+// When sync does a etcd transaction all events are sent at once,
+// with equal revision. This is handled in etcd.Client.Watch by splitting the list
+// into separate events. However handleMessage relies on revision value and
+// events having same revision are discarded. That causes that only one event
+// from single transaction could be handled.
+// Jira-Bug: JBE-993
 func (ics *IntentCompilationService) handleMessage(
 	ctx context.Context, index int64, oper int32, key string, newValue []byte,
 ) {
@@ -108,7 +115,7 @@ func (ics *IntentCompilationService) handleMessage(
 		index, oper, key, newValue)
 
 	var skipMessage bool
-	if err := ics.Store.InTransaction(ctx, func(ctx context.Context) error {
+	if err := ics.Store.DoInTransaction(ctx, func(ctx context.Context) error {
 		skipMessage = true
 		storedIndex, err := ics.getStoredIndex(ctx)
 		if err != nil {
