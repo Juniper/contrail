@@ -54,7 +54,7 @@ type Request struct {
 
 // NewHTTP makes API Server HTTP client.
 func NewHTTP(endpoint, authURL, id, password string, insecure bool, scope *keystone.Scope) *HTTP {
-	c := &HTTP{
+	h := &HTTP{
 		ID:       id,
 		Password: password,
 		AuthURL:  authURL,
@@ -62,36 +62,30 @@ func NewHTTP(endpoint, authURL, id, password string, insecure bool, scope *keyst
 		Scope:    scope,
 		InSecure: insecure,
 	}
-	c.Init()
-	return c
+	h.Init()
+	return h
 }
 
 //Init is used to initialize a client.
 func (h *HTTP) Init() {
 	if h.getProtocol() == "https" {
 		tr := &http.Transport{
-			Dial: (&net.Dialer{
-				//Timeout: 5 * time.Second,
-			}).Dial,
-			//TLSHandshakeTimeout: 5 * time.Second,
+			Dial:            (&net.Dialer{}).Dial,
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
 		}
 		h.Keystone = &Keystone{
-			HTTPClient: &http.Client{
-				Transport: tr,
-			},
-			URL: h.AuthURL,
+			HTTPClient: &http.Client{Transport: tr},
+			URL:        h.AuthURL,
 		}
-		h.httpClient = &http.Client{
-			Transport: tr,
-			//Timeout:   time.Second * 10,
-		}
-	} else {
-		h.Keystone = &Keystone{
-			URL: h.AuthURL,
-		}
-		h.httpClient = &http.Client{}
+		h.httpClient = &http.Client{Transport: tr}
+		return
 	}
+	h.Keystone = &Keystone{
+		HTTPClient: &http.Client{},
+		URL:        h.AuthURL,
+	}
+	h.httpClient = &http.Client{}
+
 }
 
 // Login refreshes authentication token.
@@ -153,13 +147,13 @@ func (h *HTTP) EnsureDeleted(ctx context.Context, path string, output interface{
 
 // CreateIntPool sends a create int pool request to remote int-pools.
 func (h *HTTP) CreateIntPool(ctx context.Context, pool string, start int64, end int64) error {
-	var output struct{}
 	expected := []int{http.StatusOK}
 	request := services.CreateIntPoolRequest{
 		Pool:  pool,
 		Start: start,
 		End:   end,
 	}
+	var output struct{}
 	_, err := h.Do(ctx, echo.POST, "/"+services.IntPoolsPath, nil, &request, &output, expected)
 	return errors.Wrap(err, "error creating int pool in int-pools via HTTP")
 }
@@ -179,11 +173,11 @@ func (h *HTTP) GetIntOwner(ctx context.Context, pool string, value int64) (strin
 
 // DeleteIntPool sends a delete int pool request to remote int-pools.
 func (h *HTTP) DeleteIntPool(ctx context.Context, pool string) error {
-	var output struct{}
-	expected := []int{http.StatusOK}
 	request := services.DeleteIntPoolRequest{
 		Pool: pool,
 	}
+	var output struct{}
+	expected := []int{http.StatusOK}
 	_, err := h.Do(ctx, echo.DELETE, "/"+services.IntPoolsPath, nil, &request, &output, expected)
 	return errors.Wrap(err, "error deleting int pool in int-pools via HTTP")
 }
@@ -231,8 +225,8 @@ func (h *HTTP) NeutronPost(ctx context.Context, r *logic.Request, expected []int
 }
 
 // Do issues an API request.
-func (h *HTTP) Do(ctx context.Context,
-	method, path string, query url.Values, data interface{}, output interface{}, expected []int) (*http.Response, error) {
+func (h *HTTP) Do(ctx context.Context, method, path string, query url.Values,
+	data interface{}, output interface{}, expected []int) (*http.Response, error) {
 	request, err := h.prepareHTTPRequest(method, path, data, query)
 	if err != nil {
 		return nil, err
@@ -251,40 +245,37 @@ func (h *HTTP) Do(ctx context.Context,
 
 	d := json.NewDecoder(resp.Body)
 	d.UseNumber()
-	if err = d.Decode(&output); err == io.EOF {
-		return resp, nil
-	} else if err != nil {
+	err = d.Decode(&output)
+	switch err {
+	default:
 		return resp, errors.Wrapf(errorFromResponse(err, resp), "decoding response body failed")
+	case io.EOF:
+	case nil:
 	}
-
 	return resp, nil
 }
 
 func (h *HTTP) prepareHTTPRequest(method, path string, data interface{}, query url.Values) (*http.Request, error) {
 	var request *http.Request
-	if data == nil {
+	if data != nil {
+		dataJSON, err := json.Marshal(data)
+		if err != nil {
+			return nil, errors.Wrap(err, "encoding request data failed")
+		}
+		request, err = http.NewRequest(method, h.getURL(path), bytes.NewBuffer(dataJSON))
+		if err != nil {
+			return nil, errors.Wrap(err, "creating HTTP request failed")
+		}
+	} else {
 		var err error
 		request, err = http.NewRequest(method, h.getURL(path), nil)
 		if err != nil {
 			return nil, errors.Wrap(err, "creating HTTP request failed")
 		}
-	} else {
-		var dataJSON []byte
-		dataJSON, err := json.Marshal(data)
-		if err != nil {
-			return nil, errors.Wrap(err, "encoding request data failed")
-		}
-
-		request, err = http.NewRequest(method, h.getURL(path), bytes.NewBuffer(dataJSON))
-		if err != nil {
-			return nil, errors.Wrap(err, "creating HTTP request failed")
-		}
 	}
-
 	if len(query) > 0 {
 		request.URL.RawQuery = query.Encode()
 	}
-
 	request.Header.Set("Content-Type", "application/json")
 	if h.AuthToken != "" {
 		request.Header.Set("X-Auth-Token", h.AuthToken)
@@ -301,8 +292,7 @@ func (h *HTTP) getProtocol() string {
 	return u.Scheme
 }
 
-func (h *HTTP) doHTTPRequestRetryingOn401(
-	ctx context.Context,
+func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
 	request *http.Request, data interface{}) (*http.Response, error) {
 	if h.Debug {
 		logrus.WithFields(logrus.Fields{
@@ -312,8 +302,7 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 			"data":   data,
 		}).Debug("Executing API Server request")
 	}
-	request = request.WithContext(ctx)
-	request = auth.SetXClusterIDInHeader(ctx, request)
+	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
 		var err error
@@ -321,8 +310,12 @@ func (h *HTTP) doHTTPRequestRetryingOn401(
 		if err != nil {
 			return resp, errors.Wrap(err, "issuing HTTP request failed")
 		}
-		if resp.StatusCode != 401 || h.ID == "" {
+		if resp.StatusCode != http.StatusUnauthorized || h.ID == "" {
 			break
+		}
+		// If there is no keystone scope setup then the retry won't help.
+		if resp.StatusCode == http.StatusUnauthorized && h.Scope == nil {
+			return resp, errors.Wrap(err, "no keystone present cannot reauth")
 		}
 		// token might be expired, refresh token and retry
 		// skip refresh token after last retry
@@ -356,6 +349,9 @@ func checkStatusCode(expected []int, actual int) error {
 
 // DoRequest requests based on request object.
 func (h *HTTP) DoRequest(ctx context.Context, request *Request) (*http.Response, error) {
+	if request == nil {
+		return nil, fmt.Errorf("request cannot be nil")
+	}
 	return h.Do(ctx, request.Method, request.Path, nil, request.Data, &request.Output, request.Expected)
 }
 
