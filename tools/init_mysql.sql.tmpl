@@ -1,9 +1,10 @@
 SET GLOBAL group_concat_max_len=100000;
 
+-- TODO store fq_name as json and in db pkg read and concatenate to string
 create table metadata (
 	`uuid` varchar(255),
 	`type` varchar(255),
-	`fq_name` varchar(255),
+	`fq_name` varchar(512),
 	primary key (`uuid`),
 	UNIQUE(`type`, `fq_name`),
 	index fq_name_index (`fq_name`)
