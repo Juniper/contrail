@@ -5,4 +5,4 @@ playbooks/install_openstack.yml:
 playbooks/install_contrail.yml:
   args: -i inventory/ -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e orchestrator=openstack
 playbooks/install_appformix.yml:
-  args: -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e appformix_version=2.18.1
+  args: -e config_file=/tmp/contrail_cluster/test_cluster_uuid/instances.yml -e appformix_version=2.18.1 --skip-tags=install_docker
