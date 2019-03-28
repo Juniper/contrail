@@ -782,6 +782,9 @@ func (a *contrailAnsibleDeployer) Deploy() error {
 	switch a.action {
 	case createAction:
 		if a.isCreated() {
+			if err := a.createInventory(); err != nil {
+				return err
+			}
 			return a.updateEndpoints()
 		}
 		err := a.createCluster()
