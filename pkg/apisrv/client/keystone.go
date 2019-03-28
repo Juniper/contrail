@@ -63,8 +63,8 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 }
 
 // GetProjectIDByName finds project id using project name.
-func (k *Keystone) GetProjectIDByName(ctx context.Context,
-	id, password, projectName string, domain *keystone.Domain) (string, error) {
+func (k *Keystone) GetProjectIDByName(ctx context.Context, id, password, projectName string,
+	domain *keystone.Domain) (string, error) {
 	// Fetch unscoped token
 	resp, err := k.ObtainUnScopedToken(ctx, id, password, domain)
 	if err != nil {
@@ -102,16 +102,12 @@ func (k *Keystone) GetProjectIDByName(ctx context.Context,
 }
 
 // ObtainToken gets authentication token.
-func (k *Keystone) ObtainToken(
-	ctx context.Context, id, password string, scope *keystone.Scope,
-) (*http.Response, error) {
+func (k *Keystone) ObtainToken(ctx context.Context, id, password string,
+	scope *keystone.Scope) (*http.Response, error) {
 	if k.URL == "" {
 		return nil, nil
 	}
-
-	var err error
-	var dataJSON []byte
-	dataJSON, err = json.Marshal(&keystone.ScopedAuthRequest{
+	dataJSON, err := json.Marshal(&keystone.ScopedAuthRequest{
 		Auth: &keystone.ScopedAuth{
 			Identity: &keystone.Identity{
 				Methods: []string{"password"},
@@ -133,16 +129,12 @@ func (k *Keystone) ObtainToken(
 }
 
 // ObtainUnScopedToken gets unscoped authentication token.
-func (k *Keystone) ObtainUnScopedToken(
-	ctx context.Context, id, password string, domain *keystone.Domain,
-) (*http.Response, error) {
+func (k *Keystone) ObtainUnScopedToken(ctx context.Context, id, password string,
+	domain *keystone.Domain) (*http.Response, error) {
 	if k.URL == "" {
 		return nil, nil
 	}
-
-	var err error
-	var dataJSON []byte
-	dataJSON, err = json.Marshal(&keystone.UnScopedAuthRequest{
+	dataJSON, err := json.Marshal(&keystone.UnScopedAuthRequest{
 		Auth: &keystone.UnScopedAuth{
 			Identity: &keystone.Identity{
 				Methods: []string{"password"},
@@ -163,8 +155,7 @@ func (k *Keystone) ObtainUnScopedToken(
 }
 
 // FetchToken gets scoped/unscoped token
-func (k *Keystone) FetchToken(ctx context.Context, dataJSON []byte,
-) (*http.Response, error) {
+func (k *Keystone) FetchToken(ctx context.Context, dataJSON []byte) (*http.Response, error) {
 	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewBuffer(dataJSON))
 	if err != nil {
 		return nil, err
@@ -176,16 +167,14 @@ func (k *Keystone) FetchToken(ctx context.Context, dataJSON []byte,
 
 	startedAt := time.Now()
 	resp, err := k.HTTPClient.Do(request)
-	durationInUsec := time.Since(startedAt) / time.Microsecond
 	if err != nil {
 		return nil, errorFromResponse(err, resp)
 	}
+	defer resp.Body.Close() // nolint: errcheck
 
 	if c := collector.FromContext(ctx); c != nil {
-		c.Send(analytics.VncAPILatencyStatsLog(ctx, "VALIDATE", "KEYSTONE", int64(durationInUsec)))
+		c.Send(analytics.VncAPILatencyStatsLog(ctx, "VALIDATE", "KEYSTONE", int64(time.Since(startedAt)/time.Microsecond)))
 	}
-
-	defer resp.Body.Close() // nolint: errcheck
 
 	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
 		return resp, errorFromResponse(err, resp)
