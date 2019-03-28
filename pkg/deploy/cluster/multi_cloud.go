@@ -55,6 +55,7 @@ const (
 	defaultContrailTenant     = "default-project"
 	pathConfig                = "/etc/multicloud"
 	bgpSecret                 = "bgp_secret"
+	bgpMCRoutesForController  = "False"
 	debugMCRoutes             = "False"
 	torBGPSecret              = "contrail_secret"
 	torOSPFSecret             = "contrail_secret"
@@ -111,7 +112,15 @@ func (m *multiCloudProvisioner) Deploy() error {
 	m.updateMCWorkDir()
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
-		err := m.createMCCluster()
+		updated, err := m.isMCUpdated()
+		if err != nil {
+			m.Log.Errorf("add cloud failed with err: %s", err)
+			return err
+		}
+		if updated {
+			return nil
+		}
+		err = m.createMCCluster()
 		if err != nil {
 			m.Log.Errorf("add cloud failed with err: %s", err)
 			return err
@@ -311,7 +320,7 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 		return false, nil
 	}
 	status := map[string]interface{}{}
-	if _, err := os.Stat(m.getMCInventoryFile(m.workDir)); err == nil {
+	if _, err := os.Stat(m.getClusterTopoFile(m.workDir)); err == nil {
 		ok, err := m.compareClusterTopologyFile()
 		if err != nil {
 			status[statusField] = statusUpdateFailed
@@ -319,7 +328,7 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 			return true, err
 		}
 		if ok {
-			m.Log.Infof("%s inventory file is already up-to-date", defaultResource)
+			m.Log.Infof("%s topology file is already up-to-date", defaultResource)
 			return true, nil
 		}
 	}
@@ -445,7 +454,7 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 			return err
 		}
 
-		contrailArgs := append(args, "--limit 'all:!tors'")
+		contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
 		skipRoles := []string{"vrouter"}
 		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
 			return err
@@ -520,7 +529,7 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 			return err
 		}
 
-		contrailArgs := append(args, "--limit 'all:!tors'")
+		contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
 		skipRoles := []string{"vrouter"}
 		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
 			return err
@@ -957,9 +966,10 @@ func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) erro
 func (m *multiCloudProvisioner) createTORCommonFile(destination string) error {
 	m.Log.Info("Creating tor/common.yml input file for multi-cloud deployer")
 	context := pongo2.Context{
-		"torBGPSecret":  torBGPSecret,
-		"torOSPFSecret": torOSPFSecret,
-		"debugMCRoutes": debugMCRoutes,
+		"torBGPSecret":             torBGPSecret,
+		"torOSPFSecret":            torOSPFSecret,
+		"debugMCRoutes":            debugMCRoutes,
+		"bgpMCRoutesForController": bgpMCRoutesForController,
 	}
 
 	content, err := template.Apply(m.getTORCommonTemplate(), context)
