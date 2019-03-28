@@ -55,6 +55,7 @@ const (
 	defaultContrailTenant     = "default-project"
 	pathConfig                = "/etc/multicloud"
 	bgpSecret                 = "bgp_secret"
+	bgpMCRoutesForController  = "False"
 	debugMCRoutes             = "False"
 	torBGPSecret              = "contrail_secret"
 	torOSPFSecret             = "contrail_secret"
@@ -957,9 +958,10 @@ func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) erro
 func (m *multiCloudProvisioner) createTORCommonFile(destination string) error {
 	m.Log.Info("Creating tor/common.yml input file for multi-cloud deployer")
 	context := pongo2.Context{
-		"torBGPSecret":  torBGPSecret,
-		"torOSPFSecret": torOSPFSecret,
-		"debugMCRoutes": debugMCRoutes,
+		"torBGPSecret":             torBGPSecret,
+		"torOSPFSecret":            torOSPFSecret,
+		"debugMCRoutes":            debugMCRoutes,
+		"bgpMCRoutesForController": bgpMCRoutesForController,
 	}
 
 	content, err := template.Apply(m.getTORCommonTemplate(), context)
