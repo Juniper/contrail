@@ -331,6 +331,11 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 			assert.NoError(t, err, "failed to delete instances.yml")
 		}
 	case importProvisioningAction:
+		// cleanup instances.yml
+		err = os.Remove(generatedInstancesPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete instances.yml")
+		}
 		config.Action = createAction
 		cluster["provisioning_action"] = ""
 	}
@@ -507,7 +512,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 
 	// IMPORT test (expected to create endpoints without triggering playbooks)
 	runClusterActionTest(t, testScenario, config,
-		importProvisioningAction, "", "", "", expectedEndpoints)
+		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
 
 	// delete cluster
 	config.Action = deleteAction
@@ -688,7 +693,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 
 	// IMPORT test (expected to create endpoints without triggering playbooks)
 	runClusterActionTest(t, testScenario, config,
-		importProvisioningAction, "", "", "", expectedEndpoints)
+		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
 
 	// delete cluster
 	config.Action = deleteAction
@@ -1008,7 +1013,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
 	runClusterActionTest(t, testScenario, config,
-		importProvisioningAction, "", "", "", expectedEndpoints)
+		importProvisioningAction, expectedOutput, "", "", expectedEndpoints)
 
 	// delete cluster
 	config.Action = deleteAction
@@ -1150,7 +1155,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
 	runClusterActionTest(t, testScenario, config,
-		"IMPORT", "", "", "", expectedEndpoints)
+		"IMPORT", expectedOutput, "", "", expectedEndpoints)
 
 	// delete cluster
 	config.Action = "delete"
