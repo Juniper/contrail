@@ -55,6 +55,7 @@ const (
 	defaultContrailTenant     = "default-project"
 	pathConfig                = "/etc/multicloud"
 	bgpSecret                 = "bgp_secret"
+	bgpMCRoutesForController  = "False"
 	debugMCRoutes             = "False"
 	torBGPSecret              = "contrail_secret"
 	torOSPFSecret             = "contrail_secret"
@@ -311,7 +312,7 @@ func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
 		return false, nil
 	}
 	status := map[string]interface{}{}
-	if _, err := os.Stat(m.getMCInventoryFile(m.workDir)); err == nil {
+	if _, err := os.Stat(m.getClusterTopoFile(m.workDir)); err == nil {
 		ok, err := m.compareClusterTopologyFile()
 		if err != nil {
 			status[statusField] = statusUpdateFailed
@@ -957,9 +958,10 @@ func (m *multiCloudProvisioner) createGatewayCommonFile(destination string) erro
 func (m *multiCloudProvisioner) createTORCommonFile(destination string) error {
 	m.Log.Info("Creating tor/common.yml input file for multi-cloud deployer")
 	context := pongo2.Context{
-		"torBGPSecret":  torBGPSecret,
-		"torOSPFSecret": torOSPFSecret,
-		"debugMCRoutes": debugMCRoutes,
+		"torBGPSecret":             torBGPSecret,
+		"torOSPFSecret":            torOSPFSecret,
+		"debugMCRoutes":            debugMCRoutes,
+		"bgpMCRoutesForController": bgpMCRoutesForController,
 	}
 
 	content, err := template.Apply(m.getTORCommonTemplate(), context)

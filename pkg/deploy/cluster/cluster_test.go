@@ -56,6 +56,7 @@ const (
 	expectedMCClusterSecret     = "./test_data/expected_mc_cluster_secret.yml"
 	expectedContrailCommon      = "./test_data/expected_mc_contrail_common.yml"
 	expectedGatewayCommon       = "./test_data/expected_mc_gateway_common.yml"
+	expectedTORCommon           = "./test_data/expected_mc_tor_common.yml"
 	expectedTORScript           = "./test_data/expected_tor_script.sh"
 	expectedMCCreateCmdExecuted = "./test_data/expected_mc_create_cmd_executed.yml"
 	expectedMCUpdateCmdExecuted = "./test_data/expected_mc_update_cmd_executed.yml"
@@ -190,6 +191,10 @@ func compareGeneratedTORScript(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedTORScriptPath())
 }
 
+func compareGeneratedTORCommon(t *testing.T, expected string) bool {
+	return compareFiles(t, expected, generatedTORCommon())
+}
+
 func compareGeneratedVcentervars(t *testing.T, expected string) bool {
 	return compareFiles(t, expected, generatedVcenterVarsPath())
 }
@@ -232,6 +237,10 @@ func generatedGatewayCommonPath() string {
 
 func generatedTORScriptPath() string {
 	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultMCTORScriptFile
+}
+
+func generatedTORCommon() string {
+	return workRoot + "/" + clusterID + "/" + mcWorkDir + "/" + defaultTORCommonFile
 }
 
 func executedPlaybooksPath() string {
@@ -1271,6 +1280,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		"Contrail common file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedGatewayCommon(t, expectedGatewayCommon),
 		"Gateway common file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedTORCommon(t, expectedTORCommon),
+		"TOR common file created during cluster create is not as expected")
 	assert.True(t, compareGeneratedTORScript(t, expectedTORScript),
 		"Gateway common file created during cluster create is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedMCCreateCmdExecuted),
@@ -1352,6 +1363,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		"Gateway common file created during cluster update is not as expected")
 	assert.True(t, compareGeneratedTORScript(t, expectedTORScript),
 		"Gateway common file created during cluster create is not as expected")
+	assert.True(t, compareGeneratedTORCommon(t, expectedTORCommon),
+		"TOR common file created during cluster create is not as expected")
 	assert.True(t, verifyCommandsExecuted(t, expectedMCUpdateCmdExecuted),
 		"commands executed during cluster update is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_update_mc_playbook.yml"),
