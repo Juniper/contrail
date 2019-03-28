@@ -1,7 +1,8 @@
+-- TODO store fq_name as json and in db pkg read and concatenate to string
 create table metadata (
 	"uuid" varchar(255),
 	"type" varchar(255),
-	"fq_name" varchar(255),
+	"fq_name" varchar(1024),
 	unique("type", "fq_name"),
 	primary key ("uuid")
 );
