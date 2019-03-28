@@ -16,15 +16,6 @@ schema:
       sql: "text"
       title: Container Config
       type: string
-    content_config:
-      description: ""
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: "text"
-      title: Content Config
-      type: string
     layout_config:
       description: ""
       nullable: false
@@ -34,10 +25,15 @@ schema:
       sql: "text"
       title: Layout Config
       type: string
-  propertiesOrder:
-  - container_config
-  - layout_config
-  - content_config
+    content_config:
+      description: ""
+      nullable: false
+      permission:
+      - create
+      - update
+      sql: "text"
+      title: Content Config
+      type: string
   required: []
   type: object
 singular: widget

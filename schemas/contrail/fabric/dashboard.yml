@@ -19,8 +19,6 @@ schema:
       view:
       - create
       - detail
-  propertiesOrder:
-  - container_config
   required: []
   type: object
 singular: dashboard

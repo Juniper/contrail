@@ -19,7 +19,6 @@ plural: vCenter_plugin_nodes
 prefix: /
 schema:
   properties: {}
-  propertiesOrder: []
   required: []
   type: object
 singular: vCenter_plugin_node
