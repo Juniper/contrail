@@ -31,6 +31,7 @@ const (
 	ChownPath                = "chown"
 	IntPoolPath              = "int-pool"
 	IntPoolsPath             = "int-pools"
+	ObjPerms                 = "obj-perms"
 )
 
 // Reference is a generic reference that can be retrieved from ref update event.
