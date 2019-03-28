@@ -46,7 +46,9 @@
       provision: true
       username: test
       password: test123
-      interface: irb.20
+      interface:
+        - irb.20
+        - irb.21
       AS: 6500
       protocols_mode:
         - bgp
