@@ -522,7 +522,8 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 		}
 		AppformixVersion := a.clusterData.GetAppformixClusterInfo().AppformixVersion
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
-			"-e", "appformix_version=" + AppformixVersion}
+			"-e", "appformix_version=" + AppformixVersion,
+			"--skip-tags=install_docker"}
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
 		imageDir := a.clusterData.GetAppformixClusterInfo().AppformixImageDir
