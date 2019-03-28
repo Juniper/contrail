@@ -779,36 +779,51 @@ func (a *contrailAnsibleDeployer) deleteCluster() error {
 	return a.deleteWorkingDir()
 }
 
-func (a *contrailAnsibleDeployer) Deploy() error {
-	switch a.action {
-	case createAction:
-		if a.isCreated() {
-			return a.updateEndpoints()
-		}
-		err := a.createCluster()
-		if err != nil {
-			return err
-		}
-		return a.createEndpoints()
-	case updateAction:
-		updated, err := a.isUpdated()
-		if err != nil {
-			return err
-		}
-		if updated {
-			return nil
-		}
-		err = a.updateCluster()
-		if err != nil {
+func (a *contrailAnsibleDeployer) handleCreate() error {
+	if a.isCreated() {
+		if err := a.createInventory(); err != nil {
 			return err
 		}
 		return a.updateEndpoints()
+	}
+	err := a.createCluster()
+	if err != nil {
+		return err
+	}
+	return a.createEndpoints()
+}
+
+func (a *contrailAnsibleDeployer) handleUpdate() error {
+	updated, err := a.isUpdated()
+	if err != nil {
+		return err
+	}
+	if updated {
+		return nil
+	}
+	err = a.updateCluster()
+	if err != nil {
+		return err
+	}
+	return a.updateEndpoints()
+}
+
+func (a *contrailAnsibleDeployer) handleDelete() error {
+	err := a.deleteCluster()
+	if err != nil {
+		return err
+	}
+	return a.deleteEndpoints()
+}
+
+func (a *contrailAnsibleDeployer) Deploy() error {
+	switch a.action {
+	case createAction:
+		a.handleCreate()
+	case updateAction:
+		a.handleUpdate()
 	case deleteAction:
-		err := a.deleteCluster()
-		if err != nil {
-			return err
-		}
-		return a.deleteEndpoints()
+		a.handleDelete()
 	}
 	return nil
 }
