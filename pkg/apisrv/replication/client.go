@@ -286,6 +286,10 @@ func (v *vncAPI) replicate(action, url string, data interface{}, response interf
 			v.log.Errorf("while updating %s on vncAPI: %v", proxyURL, err)
 		}
 	case deleteAction:
+		urlParts := strings.Split(url, "/")
+		if urlParts[0] == "port" {
+			v.deletePhysicaInterfaceToPortRefs(proxyURL, urlParts[1])
+		}
 		_, err := v.client.Delete(v.ctx, proxyURL, response)
 		if err != nil {
 			v.log.Errorf("while deleting %s on vncAPI: %v", proxyURL, err)
@@ -293,6 +297,34 @@ func (v *vncAPI) replicate(action, url string, data interface{}, response interf
 	case refUpdateAction:
 		expected := []int{http.StatusOK}
 		_, err := v.client.Do(v.ctx, echo.POST, proxyURL, nil, data, response, expected)
+		if err != nil {
+			v.log.Errorf("while updating ref %v on vncAPI: %v", data, err)
+		}
+	}
+}
+
+func (v *vncAPI) deletePhysicaInterfaceToPortRefs(portURL, portID string) {
+	// Read physical-interface back_refs from vnc_api
+	response := &services.GetPortResponse{}
+	_, err := v.client.Read(v.ctx, portURL, response)
+	if err != nil {
+		v.log.Errorf("while reading %v in vncAPI: %v", portURL, err)
+	}
+	// Delete physical-interface to this port ref
+	refUpdateURL := strings.Join([]string{
+		"/proxy", v.clusterID, configService, services.RefUpdatePath}, "/")
+	for _, physicalInterface := range response.Port.PhysicalInterfaceBackRefs {
+		data := services.RefUpdate{
+			Operation: "DELETE",
+			Type:      "physical-interface",
+			UUID:      physicalInterface.UUID,
+			RefType:   "port",
+			RefUUID:   portID,
+		}
+		expected := []int{http.StatusOK}
+		_, err := v.client.Do(
+			v.ctx, echo.POST, refUpdateURL, nil, data, map[string]interface{}{}, expected,
+		)
 		if err != nil {
 			v.log.Errorf("while updating ref %v on vncAPI: %v", data, err)
 		}
