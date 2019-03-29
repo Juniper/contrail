@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -24,6 +25,7 @@ const (
 	postReq   = "POST"
 	putReq    = "PUT"
 	deleteReq = "DELETE"
+	readReq   = "GET"
 )
 
 var server *integration.APIServer
@@ -32,6 +34,11 @@ type httpBodyStore map[string]interface{}
 
 func TestMain(m *testing.M) {
 	integration.TestMain(m, &server)
+}
+
+func handleRead(t *testing.T, w http.ResponseWriter,
+	r *http.Request, vncReqStore map[string][]*httpBodyStore) {
+	processReqBody(t, w, r, readReq, vncReqStore)
 }
 
 func handleCreate(t *testing.T, w http.ResponseWriter,
@@ -97,6 +104,8 @@ func createMockVNCServer(t *testing.T, expectedCount int) (
 				handleUpdate(t, w, r, vncReqStore)
 			case deleteReq:
 				handleDelete(t, w, r, vncReqStore)
+			case readReq:
+				handleRead(t, w, r, vncReqStore)
 			default:
 				writeJSONResponse(t, w, 404, nil)
 			}
@@ -126,11 +135,31 @@ func processReqBody(t *testing.T, w http.ResponseWriter,
 	assert.NoError(t, err, "while reading REST req body")
 
 	reqBody := &httpBodyStore{}
-	err = json.Unmarshal(body, reqBody)
-	assert.NoError(t, err, "while converting vnc req body to json")
+	if len(body) > 0 {
+		err = json.Unmarshal(body, reqBody)
+		assert.NoError(t, err, "while converting vnc req body to json")
+	}
 
 	vncReqStore[reqType] = append(vncReqStore[reqType], reqBody)
-	writeJSONResponse(t, w, 200, httpBodyStore{})
+	var resp httpBodyStore
+	if reqType == readReq {
+		urlParts := strings.Split(r.URL.Path, "/")
+		switch urlParts[1] {
+		case "port":
+			var pi []interface{}
+			pi = append(pi, map[string]string{
+				"uuid": "test_pi_uuid",
+			})
+			resp = httpBodyStore{
+				"port": map[string]interface{}{
+					"physical_interface_back_refs": pi,
+				},
+			}
+		}
+	} else {
+		resp = httpBodyStore{}
+	}
+	writeJSONResponse(t, w, 200, resp)
 }
 
 // create cluster and its endpoint
