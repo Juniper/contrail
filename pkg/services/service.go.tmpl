@@ -103,6 +103,9 @@ func (service *ContrailService) Create{{ schema.JSONSchema.GoName }}(
 	if model.Perms2.Owner == "" {
 		model.Perms2.Owner = authCTX.ProjectID()
 	}
+	if model.Perms2.Share == nil {
+		model.Perms2.Share = []*models.ShareType{}
+	}
 
 	if isVerified := auth.IsInternalRequest(ctx); !isVerified {
 		if err := isVisibleObject(ctx, model.IDPerms); err != nil {

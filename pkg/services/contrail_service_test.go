@@ -41,7 +41,11 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 				Name: "default-access-control-list",
 				FQName: []string{
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
-				Perms2: &models.PermType2{Owner: "default-project", OwnerAccess: basemodels.PermsRWX},
+				Perms2: &models.PermType2{
+					Owner:       "default-project",
+					OwnerAccess: basemodels.PermsRWX,
+					Share:       []*models.ShareType{},
+				},
 				IDPerms: &models.IdPermsType{
 					Enable:      true,
 					UserVisible: true,
@@ -77,7 +81,11 @@ func TestBasePropertiesGetDefaultValuesOnCreate(t *testing.T) {
 				Name:       "some-name",
 				FQName: []string{
 					"default-domain", "default-project", "default-virtual-network", "default-access-control-list"},
-				Perms2: &models.PermType2{Owner: "default-project", OwnerAccess: basemodels.PermsRWX},
+				Perms2: &models.PermType2{
+					Owner:       "default-project",
+					OwnerAccess: basemodels.PermsRWX,
+					Share:       []*models.ShareType{},
+				},
 				// Default filled fields below
 				IDPerms: &models.IdPermsType{
 					Enable:      true,
