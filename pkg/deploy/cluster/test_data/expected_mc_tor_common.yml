@@ -1,0 +1,4 @@
+tor_bgp_secret: contrail_secret
+tor_ospf_secret: contrail_secret
+DEBUG_MULTI_CLOUD_ROUTES: False
+BGP_MULTI_CLOUD_ROUTES_FOR_CONTROLLER: False
