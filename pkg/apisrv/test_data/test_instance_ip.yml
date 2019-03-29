@@ -1,40 +1,4 @@
-name: Instance IP Test
-description:  basic instance ip test
-cleanup:
-- path: /virtual-network/vn_instance_ip_blue
-- path: /network-ipam/test_ipam_instance_ip_blue
-- path: /instance-ip/test_instance_ip
-test_data:
-
-  admin_project: &admin_project_instance_ip
-    uuid: admin_instance_ip_project_uuid
-    name: admin_instance_ip_project
-    parent_type: domain
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
-    quota: {}
-
-  network_ipam: &network_ipam_blue
-    network_ipam_mgmt:
-      host_routes:
-        route:
-          - prefix: "test_prefix"
-            next_hop: "1.2.3.5"
-    uuid: test_ipam_instance_ip_blue
-    display_name: test_ipam_instance_ip_blue
-    parent_type: project
-    parent_uuid: admin_instance_ip_project_uuid
-    fq_name: ["domain","admin","test_ipam_instance_ip_blue"]
-
-  vn_instance_ip: &vn_instance_ip_blue
-    fq_name: ["default", "admin_instance_ip", "vn_instance_ip_blue"]
-    uuid: vn_instance_ip_blue
-    parent_type: project
-    parent_uuid: admin_instance_ip_project_uuid
-    route_target_list:
-      route_target: ["100:200"]
-    network_ipam_refs:
-      - uuid: test_ipam_instance_ip_blue
-
+name: Instance IP test
 clients:
   default:
     id: alice
@@ -44,95 +8,174 @@ clients:
       project:
         name: admin
 
+cleanup:
+  - kind: instance-ip
+    fq_name:
+      - instance_ip_blue
+  - kind: instance-ip
+    fq_name:
+      - instance_ip_red
+  - kind: virtual-network
+    fq_name:
+      - default
+      - project_test_instance_ip
+      - vn_blue
+  - kind: network-ipam
+    fq_name:
+      - default-domain
+      - project_test_instance_ip
+      - network_ipam_blue
+  - kind: project
+    fq_name:
+      - default-domain
+      - project_test_instance_ip
+
+test_data:
+  project_test_instance_ip: &project_test_instance_ip
+    fq_name:
+      - default-domain
+      - project_test_instance_ip
+    uuid: e5fbc51c-5227-11e9-ac29-bf30f095076f
+    parent_type: domain
+    quota: {}
+
+  network_ipam_blue: &network_ipam_blue
+    fq_name:
+      - default-domain
+      - project_test_instance_ip
+      - network_ipam_blue
+    uuid: b235f222-522a-11e9-a316-17dea8376489
+    parent_type: project
+    parent_uuid: e5fbc51c-5227-11e9-ac29-bf30f095076f
+
+  vn_blue: &vn_blue
+    fq_name:
+      - default-domain
+      - project_test_instance_ip
+      - vn_blue
+    uuid: fd3edee6-522a-11e9-9d8b-67a35525c795
+    parent_type: project
+    parent_uuid: e5fbc51c-5227-11e9-ac29-bf30f095076f
+    route_target_list:
+      route_target: ["100:200"]
+    network_ipam_refs:
+      - uuid: b235f222-522a-11e9-a316-17dea8376489
+
+  instance_ip_blue: &instance_ip_blue
+    fq_name:
+      - instance_ip_blue
+    uuid: ef0ee38e-522a-11e9-b17a-a3a01eb2b7e6
+    network_ipam_refs:
+      - uuid: b235f222-522a-11e9-a316-17dea8376489
+    virtual_network_refs:
+      - uuid: fd3edee6-522a-11e9-9d8b-67a35525c795
+
+  instance_ip_red: &instance_ip_red
+    fq_name:
+      - instance_ip_red
+    uuid: 0b6e0fb8-86e3-4ee7-bdc3-d3b84f3c33b5
+    instance_ip_mode: active-active
+    instance_ip_family: v4
+    service_instance_ip: true
+    instance_ip_secondary: true
+    network_ipam_refs:
+      - to:
+          - default-domain
+          - default-project
+          - service-chain-flat-ipam
+        uuid: 24695cb8-7067-4da5-9256-9584621ffd28
+
+  instance_ip_red_with_ip_address: &instance_ip_red_with_ip_address
+    <<: *instance_ip_red
+    name: instance_ip_red
+    display_name: instance_ip_red
+#    instance_ip_address: $ip_address # 0.255.255.252 in sanity test scenario TODO: implement
+
 workflow:
-- name: create project
-  request:
-    path: /projects
-    method: POST
-    expected:
-    - 200
-    data:
-      project: *admin_project_instance_ip
-  expect:
-    project: *admin_project_instance_ip
+  # Set up
+  - name: Create project "project_test_instance_ip"
+    request:
+      path: /projects
+      method: POST
+      expected: [200]
+      data:
+        project: *project_test_instance_ip
+    expect:
+      project: *project_test_instance_ip
 
-- name: create network ipam
-  request:
-    path: /network-ipams
-    method: POST
-    expected:
-    - 200
-    data:
+  - name: Create network IPAM blue
+    request:
+      path: /network-ipams
+      method: POST
+      expected: [200]
+      data:
+        network-ipam: *network_ipam_blue
+    expect:
       network-ipam: *network_ipam_blue
-  expect:
-    network-ipam: *network_ipam_blue
 
-- name: create virtual network
-  request:
-    path: /virtual-networks
-    method: POST
-    expected:
-    - 200
-    data:
-      virtual-network: *vn_instance_ip_blue
-  expect:
-    virtual-network: *vn_instance_ip_blue
+  - name: Create virtual network blue
+    request:
+      path: /virtual-networks
+      method: POST
+      expected: [200]
+      data:
+        virtual-network: *vn_blue
+    expect:
+      virtual-network: *vn_blue
 
-- name: create instance ip
-  request:
-    path: /instance-ips
-    method: POST
-    expected:
-    - 200
-    data:
+  # Instance IP create, update, delete
+
+  - name: Create instance IP blue
+    request:
+      path: /instance-ips
+      method: POST
+      expected: [200]
+      data:
+        instance-ip: *instance_ip_blue
+    expect:
+      instance-ip: *instance_ip_blue
+
+  - name: Update instance IP blue with field InstanceIPFamily
+    request:
+      path: /instance-ip/ef0ee38e-522a-11e9-b17a-a3a01eb2b7e6
+      method: PUT
+      expected: [200]
+      data:
+        instance-ip:
+          uuid: ef0ee38e-522a-11e9-b17a-a3a01eb2b7e6
+          InstanceIPFamily: v6
+    expect:
       instance-ip:
-        fq_name: ["test_instance_ip"]
-        uuid: "test_instance_ip"
-        network_ipam_refs:
-        - uuid: test_ipam_instance_ip_blue
-        virtual_network_refs:
-        - uuid: vn_instance_ip_blue
-  expect:
-    instance-ip:
-      fq_name: ["test_instance_ip"]
-      uuid: "test_instance_ip"
-      network_ipam_refs:
-      - uuid: test_ipam_instance_ip_blue
-      virtual_network_refs:
-      - uuid: vn_instance_ip_blue
+        uuid: ef0ee38e-522a-11e9-b17a-a3a01eb2b7e6
 
-- name: update instance ip ip-family
-  request:
-    path: /instance-ip/test_instance_ip
-    method: PUT
-    expected:
-    - 200
-    data:
-      instance-ip:
-        uuid: "test_instance_ip"
-        InstanceIPFamily: "v6"
-  expect: null
+  - name: Delete instance IP blue
+    request:
+      path: /instance-ip/ef0ee38e-522a-11e9-b17a-a3a01eb2b7e6
+      method: DELETE
+      expected: [200]
+    expect: $null
 
-- name: delete instance ip
-  request:
-    path: /instance-ip/test_instance_ip
-    method: DELETE
-    expected:
-    - 200
-  expect: null
+  - name: Create instance IP red with reference to "service-chain-flat-ipam" Network IPAM
+    request:
+      path: /instance-ips
+      method: POST
+      expected: [200]
+      data:
+        instance-ip: *instance_ip_red
+    expect:
+      instance-ip: *instance_ip_red_with_ip_address
 
-- name: delete virtual network
-  request:
-    path: /virtual-network/vn_instance_ip_blue
-    method: DELETE
-    expected:
-    - 200
-  expect: null
+  - name: Verify that created instance IP red contains allocated IP address
+    request:
+      path: /instance-ip/0b6e0fb8-86e3-4ee7-bdc3-d3b84f3c33b5
+      method: GET
+      expected: [200]
+    expect:
+      instance-ip: *instance_ip_red_with_ip_address
 
-- name: delete network ipam
-  request:
-    path: /network-ipam/test_ipam_instance_ip_blue
-    method: DELETE
-    expected:
-    - 200
-  expect: null
+  - name: Delete instance IP red
+    request:
+      path: /instance-ip/0b6e0fb8-86e3-4ee7-bdc3-d3b84f3c33b5
+      method: DELETE
+      expected: [200]
+    expect: $null
