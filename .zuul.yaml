@@ -4,6 +4,7 @@
       jobs:
         - contrail-go-docker
         - contrail-go-sanity-centos7-k8s:
+            voting: False
             vars:
               control_plane_common_roles:
                 - config_database
