@@ -22,6 +22,6 @@ func SetDefaultSyncConfig(shouldDump bool) {
 		"database.max_open_conn":      100,
 		"database.connection_retries": 10,
 		"database.retry_period":       3,
-		"database.debug":              true,
+		"database.debug":              false,
 	})
 }
