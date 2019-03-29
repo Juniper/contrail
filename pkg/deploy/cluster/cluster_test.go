@@ -744,7 +744,7 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 		"glance":    "http://127.0.0.1:9293",
 		"compute":   "http://127.0.0.1:8775",
 		"keystone":  "http://127.0.0.1:5000",
-		"appformix": "https://127.0.0.1:9001",
+		"appformix": "http://127.0.0.1:9001",
 	}
 	expectedInstances := "./test_data/expected_all_in_one_with_appformix.yml"
 	switch computeType {
