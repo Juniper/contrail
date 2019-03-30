@@ -353,6 +353,13 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 
 	var errList []string
 
+	if d.isCloudPrivate() {
+		retErrList := removePvtSubnetRefFromNodes(c.ctx, c.APIServer, d.getGatewayNodes())
+		if retErrList != nil {
+			errList = append(errList, retErrList...)
+		}
+	}
+
 	retErrList := deleteContrailMCGWRole(c.ctx,
 		c.APIServer, d.getGatewayNodes())
 
@@ -362,13 +369,6 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 
 	if d.isCloudPublic() {
 		retErrList = deleteNodeObjects(c.ctx, c.APIServer, d.instances)
-		if retErrList != nil {
-			errList = append(errList, retErrList...)
-		}
-	}
-
-	if d.isCloudPrivate() {
-		retErrList = removePvtSubnetRefFromNodes(c.ctx, c.APIServer, d.getGatewayNodes())
 		if retErrList != nil {
 			errList = append(errList, retErrList...)
 		}

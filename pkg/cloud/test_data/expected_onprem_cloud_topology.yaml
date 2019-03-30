@@ -28,6 +28,7 @@
       provision: true
       username: centos
       password: 
+      services: bgp_rr
       roles:
         - gateway
       private_subnet:

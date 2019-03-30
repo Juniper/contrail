@@ -977,6 +977,7 @@ func (i *instanceData) updateMCGWTags() error {
 		if err != nil {
 			return err
 		}
+		i.tags = make(map[string]string)
 		gwNode := gwNodeResp.GetContrailMulticloudGWNode()
 		if gwNode.Services.KeyValuePair != nil {
 			for _, v := range gwNode.Services.KeyValuePair {
