@@ -93,9 +93,6 @@ func (r *Replicator) Process(ctx context.Context, e *services.Event) (*services.
 	switch event := e.Request.(type) {
 	case services.ReferenceEvent:
 		refUpdate := services.NewRefUpdateFromEvent(event)
-		if refUpdate.Type == "node" {
-			refUpdate.Type = "end-system"
-		}
 		r.vncAPIHandle.replicate(
 			refUpdateAction,
 			services.RefUpdatePath,
