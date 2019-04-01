@@ -81,7 +81,7 @@ func ParseEvent(oper int32, key string, newValue []byte) (*services.Event, error
 		}
 	}
 
-	event, err := services.NewEvent(&services.EventOption{
+	event, err := services.NewEvent(services.EventOption{
 		UUID:      uuid,
 		Kind:      kind,
 		Operation: operation,
