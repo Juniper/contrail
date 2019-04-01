@@ -12,9 +12,10 @@
       username: {{ cred.SSHUser }}
       password: {{ cred.SSHPassword }}
       {% endif %}{% endfor %}{% endfor %}
-      {% if instance.tags %}
-      {% for key, value in instance.tags %}
-      {{ key }}: {{ value }}
+      {% if instance.services %}
+      services:
+      {% for svc in instance.services %}
+        - {{ svc }}
       {% endfor %}
       {% endif %}
       {% if instance.roles %}

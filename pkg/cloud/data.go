@@ -69,7 +69,7 @@ type instanceData struct {
 	provision     string
 	pvtIntf       *models.Port
 	gateway       string
-	tags          map[string]string
+	services      []string
 	apiServer
 }
 
@@ -231,7 +231,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		if err != nil {
 			return nil, err
 		}
-		err = inst.updateMCGWTags()
+		err = inst.updateMCGWServices()
 		if err != nil {
 			return nil, err
 		}
@@ -967,7 +967,7 @@ func (i *instanceData) updatePvtIntf(isDelRequest bool) error {
 		i.info.Name)
 }
 
-func (i *instanceData) updateMCGWTags() error {
+func (i *instanceData) updateMCGWServices() error {
 	for _, gwNodeRef := range i.info.ContrailMulticloudGWNodeBackRefs {
 		gwNodeResp, err := i.client.GetContrailMulticloudGWNode(i.ctx,
 			&services.GetContrailMulticloudGWNodeRequest{
@@ -977,11 +977,10 @@ func (i *instanceData) updateMCGWTags() error {
 		if err != nil {
 			return err
 		}
-		i.tags = make(map[string]string)
 		gwNode := gwNodeResp.GetContrailMulticloudGWNode()
-		if gwNode.Services.KeyValuePair != nil {
-			for _, v := range gwNode.Services.KeyValuePair {
-				i.tags[v.Key] = v.Value
+		if gwNode.Services != nil {
+			for _, v := range gwNode.Services {
+				i.services = append(i.services, v)
 			}
 		}
 	}
