@@ -52,9 +52,21 @@ schema:
       - detail
     services:
       operations: "CRUD"
-      presence: "optional"
-      description: "Custom gateway services. Specified as list of Key:Value pairs."
-      $ref: "types.json#/definitions/KeyValuePairs"
+      description: "Custom gateway services. Specified as list of strings"
+      nullable: false
+      type: "array"
+      items:
+        type: "string"
+        enum:
+        - bgp_rr
+      permission:
+      - create
+      - update
+      sql: ""
+      title: Gateway Services
+      view:
+      - create
+      - detail
 required: []
 type: object
 singular: contrail_multicloud_gw_node
