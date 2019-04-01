@@ -416,9 +416,9 @@ func newCreateRefEvent(option RefUpdateOption) (*Event, error) {
 	}
 	r := er.GetRequest()
 	r.SetID(option.FromUUID)
-	r.SetRefUUID(option.ToUUID)
-	if err = format.ApplyMap(option.Attr, er.GetRequest().GetAttr()); err != nil {
-		return nil, errors.Wrapf(err, "failed to unmarshal reference attribute data %v, error %v", option.Attr, err)
+	r.GetReference().SetUUID(option.ToUUID)
+	if err = format.ApplyMap(option.Attr, r.GetReference().GetAttribute()); err != nil {
+		return nil, errors.Wrapf(err, "failed to apply attribute data %v, error %v", option.Attr, err)
 	}
 
 	return &Event{
@@ -433,7 +433,7 @@ func newDeleteRefEvent(option RefUpdateOption) (*Event, error) {
 	}
 	r := er.GetRequest()
 	r.SetID(option.FromUUID)
-	r.SetRefUUID(option.ToUUID)
+	r.GetReference().SetUUID(option.ToUUID)
 	return &Event{
 		Request: er,
 	}, nil
@@ -544,8 +544,7 @@ type CreateRefRequest interface {
 	proto.Message
 	GetID() string
 	SetID(string)
-	SetRefUUID(string)
-	GetAttr() basemodels.RefAttribute
+	GetReference() basemodels.Reference
 	isCreateRefRequest()
 }
 
@@ -559,7 +558,7 @@ type DeleteRefRequest interface {
 	proto.Message
 	GetID() string
 	SetID(string)
-	SetRefUUID(string)
+	GetReference() basemodels.Reference
 	isDeleteRefRequest()
 }
 
