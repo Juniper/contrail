@@ -21,9 +21,10 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/db/basedb"
-	kscommon "github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+
+	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
 const (
@@ -51,8 +52,7 @@ func TestMain(m *testing.M) {
 	integration.TestMain(m, &server)
 }
 
-func FetchCommandServerToken(
-	t *testing.T, clusterID string, clusterToken string) string {
+func FetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
 	dataJSON, err := json.Marshal(&kscommon.UnScopedAuthRequest{
 		Auth: &kscommon.UnScopedAuth{
 			Identity: &kscommon.Identity{
@@ -77,8 +77,7 @@ func FetchCommandServerToken(
 			},
 		},
 	}
-	request, err := http.NewRequest(
-		"POST", keystoneAuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
+	request, err := http.NewRequest("POST", keystoneAuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
 	assert.NoError(t, err, "failed to create new http request")
 	request.Header.Set("Content-Type", "application/json")
 
@@ -93,12 +92,10 @@ func FetchCommandServerToken(
 func TestClusterTokenMethod(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	clusterName := "clusterA"
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, defaultUser, defaultPassword)
+	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, defaultUser, defaultPassword)
+	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPublic.Close()
 	pContext := pongo2.Context{
 		"cluster_name":  clusterName,
@@ -120,17 +117,15 @@ func TestClusterTokenMethod(t *testing.T) {
 		URL:        ksPrivate.URL + "/v3",
 		HTTPClient: &http.Client{},
 	}
-	resp, err := k.ObtainToken(
-		context.Background(), defaultUser, defaultPassword, nil)
+	resp, err := k.ObtainToken(context.Background(), defaultUser, defaultPassword, nil)
 	assert.NoError(t, err)
 	token := resp.Header.Get("X-Subject-Token")
 	assert.NotEmpty(t, token)
 	// Fetch command keystone token with cluster keystone token
 	commandServerToken := FetchCommandServerToken(t, clusterName+"_uuid", token)
 	assert.NotEmpty(t, commandServerToken)
-	// Verfiy token
-	url := strings.Join(
-		[]string{server.URL(), "contrail-cluster", clusterName + "_uuid"}, "/")
+	// Verify token
+	url := strings.Join([]string{server.URL(), "contrail-cluster", clusterName + "_uuid"}, "/")
 	c := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -155,12 +150,10 @@ func TestClusterTokenMethod(t *testing.T) {
 func TestClusterLogin(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	clusterName := "clusterB"
-	ksPrivate := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, defaultUser, defaultPassword)
+	ksPrivate := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPrivate.Close()
 
-	ksPublic := integration.MockServerWithKeystoneTestUser(
-		"", keystoneAuthURL, defaultUser, defaultPassword)
+	ksPublic := integration.MockServerWithKeystoneTestUser("", keystoneAuthURL, defaultUser, defaultPassword)
 	defer ksPublic.Close()
 	pContext := pongo2.Context{
 		"cluster_name":  clusterName,
@@ -183,93 +176,57 @@ func TestClusterLogin(t *testing.T) {
 	assert.NoError(t, err, "failed to load endpoint create test data")
 	clients := integration.PrepareClients(ctx, t, &clientScenario, server)
 
-	// preserve  infra token
+	// preserve infra token
 	var infraToken string
 	for _, client := range clients {
 		infraToken = client.AuthToken
 		break
 	}
 	clusterID := clusterName + "_uuid"
-	t.Run(
-		"login cluster with correct credentials",
-		testClusterLoginWithCorrectCredential(ctx, clients, clusterID),
-	)
-	t.Run(
-		"login to cluster with incorrect credentials",
-		testClusterLoginWithIncorrectCredential(ctx, clients, clusterID),
-	)
-	t.Run(
-		"login cluster with no credentials and no infra(superuser) token",
-		testClusterLoginWithoutCredentialAndSuperUserToken(ctx, clients, clusterID),
-	)
-	t.Run(
-		"login cluster with no credentials and with infra(superuser) token",
-		testClusterLoginWithSuperUserToken(ctx, clients, clusterID, infraToken),
-	)
+	tests := []struct {
+		desc     string
+		id       string
+		password string
+		token    string
+		wantErr  bool
+	}{{
+		desc:     "login cluster with correct credentials",
+		id:       defaultUser,
+		password: defaultPassword,
+	}, {
+		desc:     "login to cluster with incorrect credentials",
+		id:       defaultUser,
+		password: "hacker",
+		wantErr:  true,
+	}, {
+		desc:    "login cluster with no credentials and no infra(superuser) token",
+		wantErr: true,
+	}, {
+		desc:  "login cluster with no credentials and with infra(superuser) token",
+		token: infraToken,
+	}}
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			for _, client := range clients {
+				ctx = auth.WithXClusterID(ctx, clusterID)
+				if tt.token != "" {
+					ctx = auth.WithXAuthToken(ctx, tt.token)
+				}
+				client.ID = tt.id
+				client.Password = tt.password
+				client.Scope = nil
+				_, err := client.Login(ctx)
+				if !tt.wantErr {
+					assert.NoError(t, err, "unexpected error")
+				} else {
+					assert.Error(t, err, "got error")
+				}
+			}
+		})
+	}
 
 	// Cleanup test
 	integration.RunCleanTestScenario(t, &testScenario, server)
-}
-
-func testClusterLoginWithCorrectCredential(
-	ctx context.Context, clients integration.ClientsList, clusterID string,
-) func(*testing.T) {
-	return func(t *testing.T) {
-		for _, client := range clients {
-			ctx = auth.WithXClusterID(ctx, clusterID)
-			client.ID = defaultUser
-			client.Password = defaultPassword
-			client.Scope = nil
-			_, err := client.Login(ctx)
-			assert.NoError(t, err, "client failed to login cluster keystone")
-		}
-	}
-}
-
-func testClusterLoginWithIncorrectCredential(
-	ctx context.Context, clients integration.ClientsList, clusterID string,
-) func(*testing.T) {
-	return func(t *testing.T) {
-		for _, client := range clients {
-			ctx = auth.WithXClusterID(ctx, clusterID)
-			client.ID = defaultUser
-			client.Password = "hacker"
-			client.Scope = nil
-			_, err := client.Login(ctx)
-			assert.Error(t, err, "hacker logged in to cluster keystone !!")
-		}
-	}
-}
-
-func testClusterLoginWithoutCredentialAndSuperUserToken(
-	ctx context.Context, clients integration.ClientsList, clusterID string,
-) func(*testing.T) {
-	return func(t *testing.T) {
-		for _, client := range clients {
-			ctx = auth.WithXClusterID(ctx, clusterID)
-			client.ID = ""
-			client.Password = ""
-			client.Scope = nil
-			_, err := client.Login(ctx)
-			assert.Error(t, err, "hacker logged in to cluster keystone without credentials!!")
-		}
-	}
-}
-
-func testClusterLoginWithSuperUserToken(
-	ctx context.Context, clients integration.ClientsList, clusterID, token string,
-) func(*testing.T) {
-	return func(t *testing.T) {
-		for _, client := range clients {
-			ctx = auth.WithXClusterID(ctx, clusterID)
-			ctx = auth.WithXAuthToken(ctx, token)
-			client.ID = ""
-			client.Password = ""
-			client.Scope = nil
-			_, err := client.Login(ctx)
-			assert.NoError(t, err, "client failed to login cluster keystone with token")
-		}
-	}
 }
 
 func verifyBasicAuthDomains(
@@ -283,18 +240,18 @@ func verifyBasicAuthDomains(
 			return false
 		}
 		if len(domainList.Domains) != 1 {
-			fmt.Printf("Unexpected domains: %s", domainList)
+			fmt.Printf("Unexpected domains: %v", domainList)
 			return false
 		}
 		ok := testutil.AssertEqual(
 			t, clusterName, domainList.Domains[0].Name,
-			fmt.Sprintf("Unexpected name in domain: %s", domainList))
+			fmt.Sprintf("Unexpected name in domain: %v", domainList))
 		if !ok {
 			return ok
 		}
 		ok = testutil.AssertEqual(
 			t, clusterName+"_uuid", domainList.Domains[0].ID,
-			fmt.Sprintf("Unexpected uuid in domain: %s", domainList))
+			fmt.Sprintf("Unexpected uuid in domain: %v", domainList))
 		if !ok {
 			return ok
 		}
@@ -309,35 +266,34 @@ func verifyBasicAuthProjects(
 		projectList := keystone.ProjectListResponse{}
 		_, err := client.Read(ctx, url, &projectList)
 		if err != nil {
-			fmt.Printf("Reading: %s, Response: %s", url, err)
+			fmt.Printf("Reading: %s, Response: %v", url, err)
 			return false
 		}
 		if len(projectList.Projects) != 1 {
-			fmt.Printf("Unexpected projects: %s", projectList)
+			fmt.Printf("Unexpected projects: %v", projectList)
 			return false
 		}
 		ok := testutil.AssertEqual(
 			t, clusterName, projectList.Projects[0].Name,
-			fmt.Sprintf("Unexpected name in project: %s", projectList))
+			fmt.Sprintf("Unexpected name in project: %v", projectList))
 		if !ok {
 			return ok
 		}
 		ok = testutil.AssertEqual(
 			t, clusterName+"_uuid", projectList.Projects[0].ID,
-			fmt.Sprintf("Unexpected uuid in project: %s", projectList))
+			fmt.Sprintf("Unexpected uuid in project: %v", projectList))
 		if !ok {
 			return ok
 		}
 		ok = testutil.AssertEqual(
 			t, clusterName+"_uuid", projectList.Projects[0].ParentID,
-			fmt.Sprintf("Unexpected parent_id in project: %s", projectList))
+			fmt.Sprintf("Unexpected parent_id in project: %v", projectList))
 		if !ok {
 			return ok
 		}
 	}
 	return true
 }
-
 func TestBasicAuth(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
 		DBDriver:           basedb.DriverPostgreSQL,

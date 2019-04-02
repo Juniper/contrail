@@ -64,8 +64,7 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 
 // GetProjectIDByName finds project id using project name.
 func (k *Keystone) GetProjectIDByName(
-	ctx context.Context, id, password, projectName string, domain *keystone.Domain,
-) (string, error) {
+	ctx context.Context, id, password, projectName string, domain *keystone.Domain) (string, error) {
 	// Fetch unscoped token
 	resp, err := k.ObtainUnScopedToken(ctx, id, password, domain)
 	if err != nil {
@@ -104,8 +103,7 @@ func (k *Keystone) GetProjectIDByName(
 
 // ObtainToken gets authentication token.
 func (k *Keystone) ObtainToken(
-	ctx context.Context, id, password string, scope *keystone.Scope,
-) (*http.Response, error) {
+	ctx context.Context, id, password string, scope *keystone.Scope) (*http.Response, error) {
 	if k.URL == "" {
 		return nil, nil
 	}
@@ -132,8 +130,7 @@ func (k *Keystone) ObtainToken(
 
 // ObtainUnScopedToken gets unscoped authentication token.
 func (k *Keystone) ObtainUnScopedToken(
-	ctx context.Context, id, password string, domain *keystone.Domain,
-) (*http.Response, error) {
+	ctx context.Context, id, password string, domain *keystone.Domain) (*http.Response, error) {
 	if k.URL == "" {
 		return nil, nil
 	}
@@ -176,7 +173,8 @@ func (k *Keystone) FetchToken(ctx context.Context, dataJSON []byte) (*http.Respo
 	defer resp.Body.Close() // nolint: errcheck
 
 	if c := collector.FromContext(ctx); c != nil {
-		c.Send(analytics.VncAPILatencyStatsLog(ctx, "VALIDATE", "KEYSTONE", int64(time.Since(startedAt)/time.Microsecond)))
+		c.Send(analytics.VncAPILatencyStatsLog(
+			ctx, "VALIDATE", "KEYSTONE", int64(time.Since(startedAt)/time.Microsecond)))
 	}
 
 	if err = checkStatusCode([]int{200, 201}, resp.StatusCode); err != nil {
