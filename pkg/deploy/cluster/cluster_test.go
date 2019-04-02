@@ -804,6 +804,23 @@ func TestXflow(t *testing.T) {
 
 	assertGeneratedInstancesContainExpected(t, expectedInstance,
 		"Instance file created during cluster create is not as expected")
+
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:9100",
+		"nodejs":    "https://127.0.0.1:8144",
+		"telemetry": "http://127.0.0.1:9101",
+		"baremetal": "http://127.0.0.1:6386",
+		"swift":     "http://127.0.0.1:8081",
+		"glance":    "http://127.0.0.1:9293",
+		"compute":   "http://127.0.0.1:8775",
+		"keystone":  "http://127.0.0.1:5000",
+		"appformix": "http://127.0.0.1:9001",
+		"xflow":     "http://127.0.0.1:8090",
+	}
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
 }
 
 func TestAllInOneCluster(t *testing.T) {
