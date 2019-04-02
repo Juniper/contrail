@@ -12,6 +12,7 @@ import (
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/format"
+
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
@@ -55,7 +56,7 @@ func (assignment *StaticAssignment) FetchUser(name, password string) (*kscommon.
 
 //ListProjects is used to list projects
 func (assignment *StaticAssignment) ListProjects() []*kscommon.Project {
-	projects := []*kscommon.Project{}
+	var projects []*kscommon.Project
 	for _, project := range assignment.Projects {
 		projects = append(projects, project)
 	}
@@ -76,7 +77,7 @@ func (assignment *VNCAPIAssignment) FetchUser(name, password string) (*kscommon.
 
 //ListProjects is used to list projects
 func (assignment *VNCAPIAssignment) ListProjects() []*kscommon.Project {
-	projects := []*kscommon.Project{}
+	var projects []*kscommon.Project
 	for _, project := range assignment.Projects {
 		projects = append(projects, project)
 	}
@@ -84,8 +85,7 @@ func (assignment *VNCAPIAssignment) ListProjects() []*kscommon.Project {
 }
 
 //Init the VNCAPI assignment with vnc api-server projects/domains
-func (assignment *VNCAPIAssignment) Init(
-	configEndpoint string, staticUsers map[string]*kscommon.User) error {
+func (assignment *VNCAPIAssignment) Init(configEndpoint string, staticUsers map[string]*kscommon.User) error {
 	if assignment.vncClient == nil {
 		assignment.vncClient = client.NewHTTP("", "", "", "", true, nil)
 	}
@@ -104,7 +104,7 @@ func (assignment *VNCAPIAssignment) Init(
 
 	assignment.Domains = domains
 	assignment.Projects = projects
-	VNCAPIUsers := make(map[string]*kscommon.User)
+	VNCAPIUsers := map[string]*kscommon.User{}
 	for name, user := range staticUsers {
 		VNCAPIUser := &kscommon.User{
 			Domain:   user.Domain,
@@ -123,18 +123,16 @@ func (assignment *VNCAPIAssignment) Init(
 	return nil
 }
 
-func (assignment *VNCAPIAssignment) getVncProjects(
-	domains map[string]*kscommon.Domain) (map[string]*kscommon.Project, []*kscommon.Role, error) {
+func (assignment *VNCAPIAssignment) getVncProjects(domains map[string]*kscommon.Domain) (map[string]*kscommon.Project, []*kscommon.Role, error) {
 	projectURI := "/projects"
 	query := url.Values{"detail": []string{"True"}}
 	vncProjectsResponse := &VncProjectListResponse{}
-	_, err := assignment.vncClient.ReadWithQuery(
-		context.Background(), projectURI, query, vncProjectsResponse)
+	_, err := assignment.vncClient.ReadWithQuery(context.Background(), projectURI, query, vncProjectsResponse)
 	if err != nil {
 		return nil, nil, err
 	}
 	projects := map[string]*kscommon.Project{}
-	roles := []*kscommon.Role{}
+	var roles []*kscommon.Role
 	for _, vncProject := range vncProjectsResponse.Projects {
 		project := &kscommon.Project{
 			Name:   vncProject.Project.Name,
@@ -156,8 +154,7 @@ func (assignment *VNCAPIAssignment) getVncDomains() (map[string]*kscommon.Domain
 	domainURI := "/domains"
 	query := url.Values{"detail": []string{"True"}}
 	vncDomainsResponse := &VncDomainListResponse{}
-	_, err := assignment.vncClient.ReadWithQuery(
-		context.Background(), domainURI, query, vncDomainsResponse)
+	_, err := assignment.vncClient.ReadWithQuery(context.Background(), domainURI, query, vncDomainsResponse)
 	if err != nil {
 		return nil, err
 	}
