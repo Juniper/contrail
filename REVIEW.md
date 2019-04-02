@@ -13,11 +13,17 @@ Code should be compliant with rules from:
 
 ### Organizing imports
 
-Imports should be split into 3 groups:
-1.  standard library packages, e.g. `net/http`;
-2.  third-party library packages, e.g. `github.com/pkg/errors`;
-3.  packages under `github.com/Juniper/contrail`,
-    e.g. `github.com/Juniper/contrail/pkg/models`;
+Imports should be split into 4 groups:
+1.  standard library packages, e.g. `net/http`
+2.  repo packages, e.g.:
+`github.com/pkg/errors`
+`github.com/Juniper/contrail`
+3. renamed imports: 
+    e.g. `apicommon "github.com/Juniper/contrail/pkg/apisrv/common"`
+4. "_" imports (these should only exist in main or tests)
+    e.g. `_ "github.com/Juniper/contrail/pkg/apisrv/common"`
+
+
 
 Additionally, each of the groups should be sorted alphabetically -
 `goimports` will do it for you.
@@ -28,9 +34,10 @@ Additionally, each of the groups should be sorted alphabetically -
 -	"fmt"
 -
 -	"net/http"
--
+- 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 -	"github.com/Juniper/contrail/pkg/models/basemodels"
 -	"github.com/labstack/echo"
+-   _ "github.com/Juniper/contrail/pkg/keystone"
 -)
 +// Do
 +import (
@@ -38,8 +45,11 @@ Additionally, each of the groups should be sorted alphabetically -
 +	"net/http"
 +
 +	"github.com/labstack/echo"
-+
 +	"github.com/Juniper/contrail/pkg/models/basemodels"
++
++  	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
++
++   _ "github.com/Juniper/contrail/pkg/keystone"
 +)
 ```
 
