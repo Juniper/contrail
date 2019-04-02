@@ -23,6 +23,8 @@
               cidr_block: {{ subnet.info.CidrBlock }}
               {% if aws in cloudType %}
               availability_zone: {{ subnet.info.AvailabilityZone }}
+              {% elif az in cloudType %}
+              {% if vcloud.info.CloudSecurityGroups %}security_group: {{ vcloud.info.CloudSecurityGroups.0.Name }}{% endif %}
               {% endif %}
           {% endfor %}
           security_groups:

@@ -11,6 +11,7 @@
           subnets:
             - name: cloud_private_subnet
               cidr_block: 192.168.10.0/24
+              security_group: cloud_security_group
           security_groups:
             - name: cloud_security_group
               rules:
