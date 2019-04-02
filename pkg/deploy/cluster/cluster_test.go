@@ -87,12 +87,21 @@ func verifyEndpoints(t *testing.T, testScenario *integration.TestScenario,
 			createdEndpoints[prefix.(string)] = e["public_url"].(string) //nolint: errcheck
 		}
 	}
+
+	if len(createdEndpoints) == 0 && len(expectedEndpoints) != 0 {
+		return fmt.Errorf("no endpoints received")
+	}
+
 	for k, e := range expectedEndpoints {
 		if v, ok := createdEndpoints[k]; ok {
 			if e != v {
 				return fmt.Errorf("endpoint expected: %s, actual: %s for service %s", e, v, k)
 			}
 		} else {
+			fmt.Printf("created endpoints:")
+			for k, e := range createdEndpoints {
+				fmt.Printf("endpoint %s: %s", k, e)
+			}
 			return fmt.Errorf("missing endpoint for service %s", k)
 		}
 	}
@@ -549,7 +558,7 @@ func getConfig(apiserver *client.HTTP, klusterID string) *Config {
 	return &Config{
 		APIServer:    apiserver,
 		ClusterID:    klusterID,
-		Action:       "create",
+		Action:       createAction,
 		LogLevel:     "debug",
 		TemplateRoot: "templates/",
 		WorkRoot:     workRoot,
@@ -797,13 +806,31 @@ func TestXflow(t *testing.T) {
 	contrailDeployer, ok := getClusterDeployer(t, config).(*contrailAnsibleDeployer)
 	assert.True(t, ok, "unable to cast deployer to contrailAnsibleDeployer")
 
-	err = contrailDeployer.createInventory()
-	assert.NoError(t, err, "unable to create inventory")
+	err = contrailDeployer.Deploy()
+	assert.NoError(t, err, "failed to manage(create) cluster")
 
 	expectedInstance := "test_data/expected_xflow_instances.yaml"
 
 	assertGeneratedInstancesContainExpected(t, expectedInstance,
 		"Instance file created during cluster create is not as expected")
+
+	expectedEndpoints := map[string]string{
+		"config":    "http://127.0.0.1:9100",
+		"nodejs":    "https://127.0.0.1:8144",
+		"telemetry": "http://127.0.0.1:9101",
+		"baremetal": "http://127.0.0.1:6386",
+		"swift":     "http://127.0.0.1:8081",
+		"glance":    "http://127.0.0.1:9293",
+		"compute":   "http://127.0.0.1:8775",
+		"keystone":  "http://127.0.0.1:5000",
+		"appformix": "http://127.0.0.1:9001",
+		"xflow":     "http://127.0.0.1:8090",
+	}
+
+	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	if err != nil {
+		assert.NoError(t, err, err.Error())
+	}
 }
 
 func TestAllInOneCluster(t *testing.T) {
