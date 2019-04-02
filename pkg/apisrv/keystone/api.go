@@ -10,8 +10,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/config"
+
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
@@ -22,11 +23,12 @@ const (
 
 //Keystone is used to represents Keystone Controller.
 type Keystone struct {
-	Store            Store
+	Store      Store
+	Assignment Assignment
+	Endpoints  *apicommon.EndpointStore
+	Client     *Client
+
 	staticAssignment *StaticAssignment
-	Assignment       Assignment
-	Endpoints        *apicommon.EndpointStore
-	Client           *Client
 }
 
 //Init is used to initialize echo with Keystone capability.
