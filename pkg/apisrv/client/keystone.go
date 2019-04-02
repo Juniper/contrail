@@ -63,8 +63,11 @@ func (k *Keystone) GetProject(ctx context.Context, token string, id string) (*ke
 }
 
 // GetProjectIDByName finds project id using project name.
-func (k *Keystone) GetProjectIDByName(ctx context.Context,
-	id, password, projectName string, domain *keystone.Domain) (string, error) {
+func (k *Keystone) GetProjectIDByName(
+	ctx context.Context,
+	id, password, projectName string,
+	domain *keystone.Domain,
+) (string, error) {
 	// Fetch unscoped token
 	resp, err := k.ObtainUnScopedToken(ctx, id, password, domain)
 	if err != nil {
@@ -163,7 +166,8 @@ func (k *Keystone) ObtainUnScopedToken(
 }
 
 // FetchToken gets scoped/unscoped token
-func (k *Keystone) FetchToken(ctx context.Context, dataJSON []byte,
+func (k *Keystone) FetchToken(
+	ctx context.Context, dataJSON []byte,
 ) (*http.Response, error) {
 	request, err := http.NewRequest("POST", k.URL+"/auth/tokens", bytes.NewBuffer(dataJSON))
 	if err != nil {
