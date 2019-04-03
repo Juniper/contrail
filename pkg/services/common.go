@@ -187,22 +187,6 @@ type ContrailService struct {
 	Collector          collector.Collector
 }
 
-// RESTSync handles Sync API request.
-func (service *ContrailService) RESTSync(c echo.Context) error {
-	events := &EventList{}
-	if err := c.Bind(events); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
-	}
-
-	// TODO: Call events.Sort()
-
-	responses, err := events.Process(c.Request().Context(), service)
-	if err != nil {
-		return errutil.ToHTTPError(err)
-	}
-	return c.JSON(http.StatusOK, responses.Events)
-}
-
 // RefUpdate represents ref-update input data.
 type RefUpdate struct {
 	Operation RefOperation           `json:"operation"`

@@ -158,10 +158,11 @@ func (e *Event) Process(ctx context.Context, service Service) (*Event, error) {
 // Process process list of events.
 func (e *EventList) Process(ctx context.Context, service Service) (*EventList, error) {
 	var responses []*Event
-	for _, event := range e.Events {
+	for i, event := range e.Events {
 		response, err := event.Process(ctx, service)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to process event at index: %v, operation: '%v', kind '%v', uuid '%v'",
+				i, event.Operation(), event.Kind(), event.GetUUID())
 		}
 		responses = append(responses, response)
 	}
