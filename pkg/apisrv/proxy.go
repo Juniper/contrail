@@ -33,6 +33,8 @@ const (
 	xClusterIDKey           = "X-Cluster-ID"
 )
 
+var serverErrorCodes = []int{502, 503, 504}
+
 type proxyService struct {
 	group         string
 	echoServer    *echo.Echo
@@ -92,7 +94,7 @@ func (p *proxyService) getProxyPrefixFromURL(urlPath string, scope string) (prox
 	return strings.Join(prefixes, pathSep)
 }
 
-func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *httputil.ReverseProxy) {
+func (p *proxyService) getReverseProxies(urlPath string) (prefix string, servers []*httputil.ReverseProxy) {
 	var scope string
 	if strings.Contains(urlPath, private) {
 		scope = private
@@ -105,29 +107,57 @@ func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *h
 		logrus.WithField("proxy-prefix", proxyPrefix).Info("Endpoint targets not found for given proxy prefix")
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
-	target := proxyEndpoint.Next(scope)
-	if target == nil {
+	targets := proxyEndpoint.ReadAll(scope)
+	if targets == nil {
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
 	insecure := true //TODO:(ijohnson) add insecure to endpoint schema
 
-	u, err := url.Parse(target.URL)
-	if err != nil {
-		logrus.WithError(err).WithField("target", target.URL).Info("Failed to parse target - ignoring")
-	}
+	for _, target := range targets {
+		u, err := url.Parse(target.URL)
+		if err != nil {
+			logrus.WithError(err).WithField("target", target.URL).Info("Failed to parse target - ignoring")
+		}
 
-	server = httputil.NewSingleHostReverseProxy(u)
-	if u.Scheme == "https" {
-		server.Transport = &http.Transport{
-			Dial: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure},
-			TLSHandshakeTimeout: 10 * time.Second,
+		server := httputil.NewSingleHostReverseProxy(u)
+		if u.Scheme == "https" {
+			server.Transport = &http.Transport{
+				Dial: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).Dial,
+				TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure},
+				TLSHandshakeTimeout: 10 * time.Second,
+			}
+		}
+		servers = append(servers, server)
+	}
+	return strings.TrimSuffix(proxyPrefix, public), servers
+}
+
+func (p *proxyService) isServerError(statusCode int) bool {
+	for _, serverErrorCode := range serverErrorCodes {
+		if statusCode == serverErrorCode {
+			return true
 		}
 	}
-	return strings.TrimSuffix(proxyPrefix, public), server
+	return false
+}
+
+func (p *proxyService) getEndpointCount(urlPath string) int {
+	var scope string
+	if strings.Contains(urlPath, private) {
+		scope = private
+	} else {
+		scope = public
+	}
+	proxyPrefix := p.getProxyPrefixFromURL(urlPath, scope)
+	proxyEndpoint := p.EndpointStore.Read(proxyPrefix)
+	if proxyEndpoint == nil {
+		return 0
+	}
+
+	return proxyEndpoint.Count()
 }
 
 func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -144,14 +174,20 @@ func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo
 				return echo.NewHTTPError(http.StatusInternalServerError,
 					"Cluster ID not found in proxy URL")
 			}
-			prefix, server := p.getReverseProxy(r.URL.Path)
-			if server == nil {
+			prefix, servers := p.getReverseProxies(r.URL.Path)
+			if servers == nil {
 				return echo.NewHTTPError(http.StatusInternalServerError,
 					"Proxy endpoint not found in endpoint store")
 			}
-			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
-			w := c.Response()
-			server.ServeHTTP(w, r)
+			urlPath := strings.TrimPrefix(r.URL.Path, prefix)
+			for _, server := range servers {
+				r.URL.Path = urlPath
+				w := c.Response()
+				server.ServeHTTP(w, r)
+				if !p.isServerError(w.Status) {
+					return nil
+				}
+			}
 			return nil
 		}
 	}
