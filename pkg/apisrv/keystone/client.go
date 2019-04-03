@@ -7,13 +7,12 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"strings"
 
 	"github.com/databus23/keystone"
 	"github.com/labstack/echo"
 
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
@@ -25,16 +24,15 @@ const (
 
 // Client represents a client.
 type Client struct {
-	AuthURL      string `yaml:"authurl"`
-	LocalAuthURL string `yaml:"local_authurl"`
-	httpClient   *http.Client
-	InSecure     bool `yaml:"insecure"`
+	AuthEndpoints []*apicommon.Endpoint `yaml:"auth_endpoints"`
+	LocalAuthURL  string                `yaml:"local_authurl"`
+	httpClient    *http.Client
+	InSecure      bool `yaml:"insecure"`
 }
 
 // NewKeystoneClient makes keystone client.
 func NewKeystoneClient(authURL string, insecure bool) *Client {
 	c := &Client{
-		AuthURL:      authURL,
 		LocalAuthURL: authURL,
 		InSecure:     insecure,
 	}
@@ -54,9 +52,12 @@ func (k *Client) Init() {
 	k.httpClient = client
 }
 
-// SetAuthURL uses specified auth url in the keystone auth.
-func (k *Client) SetAuthURL(authURL string) {
-	k.AuthURL = authURL + "/" + keystoneVersion
+// SetAuthEndpoint uses specified auth url in the keystone auth.
+func (k *Client) SetAuthEndpoint(authEndpoints []*apicommon.Endpoint) {
+	for _, endpoint := range authEndpoints {
+		endpoint.URL = endpoint.URL + "/" + keystoneVersion
+	}
+	k.AuthEndpoints = authEndpoints
 }
 
 // SetAuthIdentity uses specified auth creds in the keystone auth request.
@@ -70,7 +71,7 @@ func (k *Client) SetAuthIdentity(
 
 // NewAuth creates new keystone auth
 func (k *Client) NewAuth() *keystone.Auth {
-	auth := keystone.New(k.AuthURL)
+	auth := keystone.New(k.LocalAuthURL)
 	auth.Client = k.httpClient
 	return auth
 }
@@ -78,12 +79,8 @@ func (k *Client) NewAuth() *keystone.Auth {
 func (k *Client) tokenRequest(c echo.Context) error {
 	r := c.Request()
 	r.URL.Path = "/auth/tokens"
-	tokenURL, err := url.Parse(k.AuthURL)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	server := httputil.NewSingleHostReverseProxy(tokenURL)
-	server.ServeHTTP(c.Response(), r)
+	servers := apicommon.NewReverseProxyPool(k.AuthEndpoints)
+	servers.ServeHTTP(c.Response(), r)
 	return nil
 }
 
@@ -101,12 +98,8 @@ func (k *Client) ValidateToken(c echo.Context) error {
 func (k *Client) GetDomains(c echo.Context) error {
 	r := c.Request()
 	r.URL.Path = strings.TrimPrefix(r.URL.Path, authPrefix)
-	projectURL, err := url.Parse(k.AuthURL)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
-	server.ServeHTTP(c.Response(), r)
+	servers := apicommon.NewReverseProxyPool(k.AuthEndpoints)
+	servers.ServeHTTP(c.Response(), r)
 	return nil
 }
 
@@ -114,12 +107,8 @@ func (k *Client) GetDomains(c echo.Context) error {
 func (k *Client) GetProjects(c echo.Context) error {
 	r := c.Request()
 	r.URL.Path = strings.TrimPrefix(r.URL.Path, authPrefix)
-	projectURL, err := url.Parse(k.AuthURL)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
-	server.ServeHTTP(c.Response(), r)
+	servers := apicommon.NewReverseProxyPool(k.AuthEndpoints)
+	servers.ServeHTTP(c.Response(), r)
 	return nil
 }
 
@@ -129,11 +118,7 @@ func (k *Client) GetProject(c echo.Context, id string) error {
 	urlParts := []string{
 		strings.TrimPrefix(r.URL.Path, authPrefix), id}
 	r.URL.Path = strings.Join(urlParts, pathSep)
-	projectURL, err := url.Parse(k.AuthURL)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	server := httputil.NewSingleHostReverseProxy(projectURL)
-	server.ServeHTTP(c.Response(), r)
+	servers := apicommon.NewReverseProxyPool(k.AuthEndpoints)
+	servers.ServeHTTP(c.Response(), r)
 	return nil
 }
