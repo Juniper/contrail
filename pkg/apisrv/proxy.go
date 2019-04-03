@@ -33,6 +33,8 @@ const (
 	xClusterIDKey           = "X-Cluster-ID"
 )
 
+var serverErrorCodes = []int{502, 503, 504}
+
 type proxyService struct {
 	group         string
 	echoServer    *echo.Echo
@@ -130,11 +132,36 @@ func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *h
 	return strings.TrimSuffix(proxyPrefix, public), server
 }
 
+func (p *proxyService) isServerError(statusCode int) bool {
+	for _, serverErrorCode := range serverErrorCodes {
+		if statusCode == serverErrorCode {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *proxyService) getEndpointCount(urlPath string) int {
+	var scope string
+	if strings.Contains(urlPath, private) {
+		scope = private
+	} else {
+		scope = public
+	}
+	proxyPrefix := p.getProxyPrefixFromURL(urlPath, scope)
+	proxyEndpoint := p.EndpointStore.Read(proxyPrefix)
+	if proxyEndpoint == nil {
+		return 0
+	}
+
+	return proxyEndpoint.Count()
+}
+
 func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
-			clusterID := apicommon.GetClusterIDFromProxyURL(r.URL.Path)
+			clusterID := apicommon.GetClusterIDFromProxyURL(r.Path.URL)
 			if clusterID != "" {
 				//set clusterID in proxy request, so that the
 				//proxy endpoints can use it to get server's
@@ -144,15 +171,21 @@ func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo
 				return echo.NewHTTPError(http.StatusInternalServerError,
 					"Cluster ID not found in proxy URL")
 			}
-			prefix, server := p.getReverseProxy(r.URL.Path)
-			if server == nil {
-				return echo.NewHTTPError(http.StatusInternalServerError,
-					"Proxy endpoint not found in endpoint store")
+			serverCount := 1
+			for {
+				prefix, server := p.getReverseProxy(r.RequestURI)
+				if server == nil {
+					return echo.NewHTTPError(http.StatusInternalServerError,
+						"Proxy endpoint not found in endpoint store")
+				}
+				r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
+				w := c.Response()
+				server.ServeHTTP(w, r)
+				if !p.isServerError(w.Status) || serverCount == p.getEndpointCount(r.RequestURI) {
+					return nil
+				}
+				serverCount++
 			}
-			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
-			w := c.Response()
-			server.ServeHTTP(w, r)
-			return nil
 		}
 	}
 }
