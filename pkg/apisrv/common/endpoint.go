@@ -85,6 +85,25 @@ func (t *TargetStore) Write(id string, endpoint *models.Endpoint) {
 	t.Data.Store(id, endpoint)
 }
 
+//ReadAll endpoint target from memory
+func (t *TargetStore) ReadAll(scope string) (endpointData []*Endpoint) {
+	t.Data.Range(func(id, endpoint interface{}) bool {
+		e := endpoint.(*models.Endpoint) // nolint: errcheck
+		switch scope {
+		case Public:
+			endpointData = append(endpointData, NewEndpoint(e.PublicURL, e.Username, e.Password))
+		case Private:
+			if e.PrivateURL != "" {
+				endpointData = append(endpointData, NewEndpoint(e.PrivateURL, e.Username, e.Password))
+			} else {
+				endpointData = append(endpointData, NewEndpoint(e.PublicURL, e.Username, e.Password))
+			}
+		}
+		return true
+	})
+	return endpointData
+}
+
 //Next endpoint target from memory is read(roundrobin)
 func (t *TargetStore) Next(scope string) (endpointData *Endpoint) {
 	t.Data.Range(func(id, endpoint interface{}) bool {
