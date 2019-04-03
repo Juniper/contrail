@@ -266,7 +266,7 @@ workflow:
       ref-uuid: route_target_ref_update_uuid
   expect:
     message:
-      $contains: 'create ref event of kind "does-not-exist-route-target" does not exist'
+      $contains: 'invalid kind "does-not-exist-route-target" of ref create event'
 
 - name: send bad operation value
   request:
