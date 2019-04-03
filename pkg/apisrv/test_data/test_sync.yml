@@ -237,3 +237,53 @@ workflow:
       data:
         uuid: admin_project_uuid_test_sync
       operation: DELETE
+
+- name: invalid create request (invalid kind)
+  request:
+    path: /sync
+    method: POST
+    expected:
+      - 400
+    data:
+      resources:
+        - kind: invalid_resource
+          data: *vn_blue2
+          operation: CREATE
+  expect:
+    message:
+      $contains: "create event of kind \"invalid-resource\" does not exist"
+
+- name: try to delete non existing resource
+  request:
+    path: /sync
+    method: POST
+    expected:
+      - 404
+    data:
+      resources:
+        - kind: project
+          data:
+            uuid: does_not_exists
+          operation: DELETE
+  expect:
+    message:
+      $contains: 'failed to process event at index: 0, operation: ''DELETE'', kind ''project'', uuid ''does_not_exists'':
+       rpc error: code = NotFound desc = rpc error: code = NotFound desc = No project: does_not_exists'
+
+- name: try to create project with invalid parent UUID
+  request:
+    path: /sync
+    method: POST
+    expected:
+      - 409
+    data:
+      resources:
+        - kind: project
+          data:
+            <<: *admin_project
+            parent_uuid: bad_uuid
+  expect:
+    message:
+      $contains: "failed to process event at index: 0, operation: 'CREATE', kind 'project', uuid 'admin_project_uuid_test_sync':
+       creating parent reference for Project failed: creating resource *models.Project with UUID 'admin_project_uuid_test_sync' in DB failed:
+        rpc error: code = AlreadyExists desc = Resource conflict: foreign key constraint violation"
