@@ -7,9 +7,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	syncp "github.com/Juniper/contrail/pkg/sync"
 )
 
@@ -37,11 +39,18 @@ const (
 	refUpdateAction = "ref-update"
 )
 
+type handler interface {
+	replicate(action, url string, data interface{}, response interface{})
+	createClient(e *models.Endpoint)
+	updateClient(e *models.Endpoint)
+	deleteClient(id string)
+}
+
 // Replicator is an implementation to replicate objects to python API
 type Replicator struct {
 	serviceWaitGroup   *sync.WaitGroup
 	stopServiceContext context.CancelFunc
-	vncAPIHandle       *vncAPIHandle
+	handler            handler
 	log                *logrus.Entry
 }
 
@@ -53,7 +62,7 @@ func New(epStore *apicommon.EndpointStore) (*Replicator, error) {
 	}
 	return &Replicator{
 		serviceWaitGroup: &sync.WaitGroup{},
-		vncAPIHandle:     newVncAPIHandle(epStore),
+		handler:          newVncAPIHandle(epStore),
 		log:              logutil.NewLogger("vnc_replication"),
 	}, nil
 }
@@ -90,126 +99,130 @@ func (r *Replicator) Process(ctx context.Context, e *services.Event) (*services.
 	if e == nil {
 		return nil, nil
 	}
-	switch event := e.Request.(type) {
-	case services.ReferenceEvent:
-		refUpdate := services.NewRefUpdateFromEvent(event)
-		r.vncAPIHandle.replicate(
+
+	if re, ok := e.Unwrap().(services.ReferenceEvent); ok {
+		refUpdate := services.NewRefUpdateFromEvent(re)
+		r.handler.replicate(
 			refUpdateAction,
 			services.RefUpdatePath,
 			refUpdate,
 			map[string]interface{}{},
 		)
+		return e, nil
+	}
+
+	switch event := e.Request.(type) {
 	// watch endpoint event and prepare clients
 	case *services.Event_CreateEndpointRequest:
 		ep := event.CreateEndpointRequest.Endpoint
-		r.vncAPIHandle.createClient(ep)
+		r.handler.createClient(ep)
 	case *services.Event_UpdateEndpointRequest:
 		ep := event.UpdateEndpointRequest.Endpoint
-		r.vncAPIHandle.updateClient(ep)
+		r.handler.updateClient(ep)
 	case *services.Event_DeleteEndpointRequest:
 		id := event.DeleteEndpointRequest.ID
-		r.vncAPIHandle.deleteClient(id)
+		r.handler.deleteClient(id)
 		// handle tag
 	case *services.Event_CreateTagRequest:
 		event.CreateTagRequest.Tag.TagID = ""
-		r.vncAPIHandle.replicate(createAction, createTagURL,
+		r.handler.replicate(createAction, createTagURL,
 			event.CreateTagRequest, &services.CreateTagResponse{})
 	case *services.Event_UpdateTagRequest:
 		event.UpdateTagRequest.Tag.TagID = ""
 		objID := event.UpdateTagRequest.Tag.UUID
-		r.vncAPIHandle.replicate(updateAction, updateTagURL+objID,
+		r.handler.replicate(updateAction, updateTagURL+objID,
 			event.UpdateTagRequest, &services.UpdateTagResponse{})
 	case *services.Event_DeleteTagRequest:
 		objID := event.DeleteTagRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updateTagURL+objID,
+		r.handler.replicate(deleteAction, updateTagURL+objID,
 			event.DeleteTagRequest, &services.DeleteTagResponse{})
 	// handle virtual-network
 	case *services.Event_CreateVirtualNetworkRequest:
 		event.CreateVirtualNetworkRequest.VirtualNetwork.VirtualNetworkNetworkID = 0
-		r.vncAPIHandle.replicate(createAction, createVirtualNetworkURL,
+		r.handler.replicate(createAction, createVirtualNetworkURL,
 			event.CreateVirtualNetworkRequest,
 			&services.CreateVirtualNetworkResponse{})
 	case *services.Event_UpdateVirtualNetworkRequest:
 		event.UpdateVirtualNetworkRequest.VirtualNetwork.VirtualNetworkNetworkID = 0
 		objID := event.UpdateVirtualNetworkRequest.VirtualNetwork.UUID
-		r.vncAPIHandle.replicate(updateAction, updateVirtualNetworkURL+objID,
+		r.handler.replicate(updateAction, updateVirtualNetworkURL+objID,
 			event.UpdateVirtualNetworkRequest,
 			&services.UpdateVirtualNetworkResponse{})
 	case *services.Event_DeleteVirtualNetworkRequest:
 		objID := event.DeleteVirtualNetworkRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updateVirtualNetworkURL+objID,
+		r.handler.replicate(deleteAction, updateVirtualNetworkURL+objID,
 			event.DeleteVirtualNetworkRequest, &services.DeleteVirtualNetworkResponse{})
 		// handle network-ipam
 	case *services.Event_CreateNetworkIpamRequest:
-		r.vncAPIHandle.replicate(createAction, createNetworkIpamURL,
+		r.handler.replicate(createAction, createNetworkIpamURL,
 			event.CreateNetworkIpamRequest, &services.CreateNetworkIpamResponse{})
 	case *services.Event_UpdateNetworkIpamRequest:
 		objID := event.UpdateNetworkIpamRequest.NetworkIpam.UUID
-		r.vncAPIHandle.replicate(updateAction, updateNetworkIpamURL+objID,
+		r.handler.replicate(updateAction, updateNetworkIpamURL+objID,
 			event.UpdateNetworkIpamRequest, &services.UpdateNetworkIpamResponse{})
 	case *services.Event_DeleteNetworkIpamRequest:
 		objID := event.DeleteNetworkIpamRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updateNetworkIpamURL+objID,
+		r.handler.replicate(deleteAction, updateNetworkIpamURL+objID,
 			event.DeleteNetworkIpamRequest, &services.DeleteNetworkIpamResponse{})
 	// handle node-profile
 	case *services.Event_CreateNodeProfileRequest:
-		r.vncAPIHandle.replicate(createAction, createNodeProfileURL,
+		r.handler.replicate(createAction, createNodeProfileURL,
 			event.CreateNodeProfileRequest, &services.CreateNodeProfileResponse{})
 	case *services.Event_UpdateNodeProfileRequest:
 		objID := event.UpdateNodeProfileRequest.NodeProfile.UUID
-		r.vncAPIHandle.replicate(updateAction, updateNodeProfileURL+objID,
+		r.handler.replicate(updateAction, updateNodeProfileURL+objID,
 			event.UpdateNodeProfileRequest, &services.UpdateNodeProfileResponse{})
 	case *services.Event_DeleteNodeProfileRequest:
 		objID := event.DeleteNodeProfileRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updateNodeProfileURL+objID,
+		r.handler.replicate(deleteAction, updateNodeProfileURL+objID,
 			event.DeleteNodeProfileRequest, &services.DeleteNodeProfileResponse{})
 	// handle nodes
 	case *services.Event_CreateNodeRequest:
-		r.vncAPIHandle.replicate(createAction, createNodeURL,
+		r.handler.replicate(createAction, createNodeURL,
 			event.CreateNodeRequest, &services.CreateNodeResponse{})
 	case *services.Event_UpdateNodeRequest:
 		objID := event.UpdateNodeRequest.Node.UUID
-		r.vncAPIHandle.replicate(updateAction, updateNodeURL+objID,
+		r.handler.replicate(updateAction, updateNodeURL+objID,
 			event.UpdateNodeRequest, &services.UpdateNodeResponse{})
 	case *services.Event_DeleteNodeRequest:
 		objID := event.DeleteNodeRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updateNodeURL+objID,
+		r.handler.replicate(deleteAction, updateNodeURL+objID,
 			event.DeleteNodeRequest, &services.DeleteNodeResponse{})
 	// handle ports
 	case *services.Event_CreatePortRequest:
-		r.vncAPIHandle.replicate(createAction, createPortURL,
+		r.handler.replicate(createAction, createPortURL,
 			event.CreatePortRequest, &services.CreatePortResponse{})
 	case *services.Event_UpdatePortRequest:
 		objID := event.UpdatePortRequest.Port.UUID
-		r.vncAPIHandle.replicate(updateAction, updatePortURL+objID,
+		r.handler.replicate(updateAction, updatePortURL+objID,
 			event.UpdatePortRequest, &services.UpdatePortResponse{})
 	case *services.Event_DeletePortRequest:
 		objID := event.DeletePortRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updatePortURL+objID,
+		r.handler.replicate(deleteAction, updatePortURL+objID,
 			event.DeletePortRequest, &services.DeletePortResponse{})
 	// handle hardware
 	case *services.Event_CreateHardwareRequest:
-		r.vncAPIHandle.replicate(createAction, createHardwareURL,
+		r.handler.replicate(createAction, createHardwareURL,
 			event.CreateHardwareRequest, &services.CreateHardwareResponse{})
 	case *services.Event_UpdateHardwareRequest:
 		objID := event.UpdateHardwareRequest.Hardware.UUID
-		r.vncAPIHandle.replicate(updateAction, updateHardwareURL+objID,
+		r.handler.replicate(updateAction, updateHardwareURL+objID,
 			event.UpdateHardwareRequest, &services.UpdateHardwareResponse{})
 	case *services.Event_DeleteHardwareRequest:
 		objID := event.DeleteHardwareRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updateHardwareURL+objID,
+		r.handler.replicate(deleteAction, updateHardwareURL+objID,
 			event.DeleteHardwareRequest, &services.DeleteHardwareResponse{})
 		// handle card
 	case *services.Event_CreateCardRequest:
-		r.vncAPIHandle.replicate(createAction, createCardURL,
+		r.handler.replicate(createAction, createCardURL,
 			event.CreateCardRequest, &services.CreateCardResponse{})
 	case *services.Event_UpdateCardRequest:
 		objID := event.UpdateCardRequest.Card.UUID
-		r.vncAPIHandle.replicate(updateAction, updateCardURL+objID,
+		r.handler.replicate(updateAction, updateCardURL+objID,
 			event.UpdateCardRequest, &services.UpdateCardResponse{})
 	case *services.Event_DeleteCardRequest:
 		objID := event.DeleteCardRequest.ID
-		r.vncAPIHandle.replicate(deleteAction, updateCardURL+objID,
+		r.handler.replicate(deleteAction, updateCardURL+objID,
 			event.DeleteCardRequest, &services.DeleteCardResponse{})
 	}
 

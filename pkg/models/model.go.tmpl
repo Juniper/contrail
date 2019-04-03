@@ -576,7 +576,7 @@ func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetToKind() st
 
 func (r *{{ schema.JSONSchema.GoName }}{{ reference.GoName }}Ref) GetAttribute() basemodels.RefAttribute {
 	{%- if reference.RefType %}
-	return r.Attr
+	return r.GetAttr()
 	{%- else %}
 	return nil
 	{%- endif %}
