@@ -437,3 +437,11 @@ Body
   ]
 }
 ```
+
+### Error handling
+
+Sync API returns following errors:
+
+1. 400 - events has circular dependencies (cannot be sorted)
+1. 404, 409, 400 - if there was an error while processing an event (return code is the same as it would be if using resource's endpoint)
+1. 500 - there was en error in calling Process method on event (in case of bug in event_encoding)

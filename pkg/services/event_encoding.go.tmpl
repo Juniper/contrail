@@ -142,7 +142,7 @@ func newEmptyCreateEventRequest(kind string) (createEventRequest, error) {
 		}, nil
 		{% endif %}{% endfor %}
 	}
-	return nil, errors.Errorf("create event of kind \"%s\" does not exist", kind)
+	return nil, errors.Errorf("invalid kind \"%s\" of create event", kind)
 }
 
 func newEmptyUpdateEventRequest(kind string) (updateEventRequest, error) {
@@ -156,7 +156,7 @@ func newEmptyUpdateEventRequest(kind string) (updateEventRequest, error) {
 		}, nil
 		{% endif %}{% endfor %}
 	}
-	return nil, errors.Errorf("update event of kind \"%s\" does not exist", kind)
+	return nil, errors.Errorf("invalid kind \"%s\" of update event", kind)
 }
 
 func newEmptyDeleteEventRequest(kind string) (deleteEventRequest, error) {
@@ -168,7 +168,7 @@ func newEmptyDeleteEventRequest(kind string) (deleteEventRequest, error) {
 		}, nil
 		{% endif %}{% endfor %}
 	}
-	return nil, errors.Errorf("delete event of kind \"%s\" does not exist", kind)
+	return nil, errors.Errorf("invalid kind \"%s\" of delete event", kind)
 }
 
 func newEmptyCreateRefEventRequest(kind string) (createRefEventRequest, error) {
@@ -188,7 +188,7 @@ func newEmptyCreateRefEventRequest(kind string) (createRefEventRequest, error) {
 		}, nil
 {%- endfor %}{% endif%}{% endfor %}
 	default:
-		return nil, errors.Errorf("create ref event of kind \"%s\" does not exist", kind)
+		return nil, errors.Errorf("invalid kind \"%s\" of ref create event", kind)
 	}
 }
 
@@ -205,6 +205,6 @@ func newEmptyDeleteRefEventRequest(kind string) (deleteRefEventRequest, error) {
 		}, nil
 {%- endfor %}{% endif%}{% endfor %}
 	default:
-		return nil, errors.Errorf("delete ref event of kind \"%s\" does not exist", kind)
+		return nil, errors.Errorf("invalid kind \"%s\" of ref delete event", kind)
 	}
 }
