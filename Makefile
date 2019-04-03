@@ -3,6 +3,7 @@ CONTRAIL_API_CLIENT_REPO := contrail-api-client
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
 DB_FILES := gen_init_mysql.sql gen_init_psql.sql init_data.yaml
+
 ifdef ANSIBLE_DEPLOYER_REPO_DIR
   export ANSIBLE_DEPLOYER_REPO_DIR
 else
