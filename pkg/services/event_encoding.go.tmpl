@@ -28,6 +28,11 @@ func (r *Create{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.Fi
 // isCreateRequest determines create request.
 func (r *Create{{ schema.JSONSchema.GoName }}Request) isCreateRequest() {}
 
+// Operation returns operation that is performed by the request.
+func (r *Create{{ schema.JSONSchema.GoName }}Request) Operation() string {
+	return OperationCreate
+}
+
 // GetRequest underlying request.
 func (e *Event_Update{{ schema.JSONSchema.GoName }}Request) GetRequest() UpdateRequest {
 	return e.Update{{ schema.JSONSchema.GoName }}Request
@@ -46,6 +51,11 @@ func (r *Update{{ schema.JSONSchema.GoName }}Request) SetFieldMask(mask types.Fi
 // isUpdateRequest determines update request.
 func (r *Update{{ schema.JSONSchema.GoName }}Request) isUpdateRequest() {}
 
+// Operation returns operation that is performed by the request.
+func (r *Update{{ schema.JSONSchema.GoName }}Request) Operation() string {
+	return OperationUpdate
+}
+
 // GetRequest underlying request.
 func (e *Event_Delete{{ schema.JSONSchema.GoName }}Request) GetRequest() DeleteRequest {
 	return e.Delete{{ schema.JSONSchema.GoName }}Request
@@ -63,6 +73,11 @@ func (r *Delete{{ schema.JSONSchema.GoName }}Request) Kind() string {
 
 // isDeleteRequest determines delete request.
 func (r *Delete{{ schema.JSONSchema.GoName }}Request) isDeleteRequest() {}
+
+// Operation returns operation that is performed by the request.
+func (r *Delete{{ schema.JSONSchema.GoName }}Request) Operation() string {
+	return OperationDelete
+}
 
 {% for _, reference in schema.References %}
 {% set refType = schema.JSONSchema.GoName| add:reference.GoName | add:"Ref" %}
@@ -85,6 +100,11 @@ func (r *Create{{ refType }}Request) GetReference() basemodels.Reference {
 	return r.Get{{ refType }}()
 }
 
+// Operation returns operation that is performed by the request.
+func (r *Create{{ refType }}Request) Operation() string {
+	return OperationCreate
+}
+
 // GetRequest returns underlying request.
 func (r *Event_Delete{{ refType }}Request) GetRequest() DeleteRefRequest {
 	return r.Delete{{ refType }}Request
@@ -101,6 +121,11 @@ func (r *Delete{{ refType }}Request) SetID(id string) {
 // GetReference returns reference.
 func (r *Delete{{ refType }}Request) GetReference() basemodels.Reference {
 	return r.Get{{ refType }}()
+}
+
+// Operation returns operation that is performed by the request.
+func (r *Delete{{ refType }}Request) Operation() string {
+	return OperationDelete
 }
 
 {% endfor %}
