@@ -8,7 +8,7 @@ provider_config:
     ssh_pwd: {%if defaultSSHPassword %}{{defaultSSHPassword}}{%else%}c0ntrail123{%endif%}
     {%if defaultSSHKey %}ssh_public_key: {{ defaultSSHKey }}{%endif%}
     ntpserver: {{ cluster.NTPServer }}
-    domainsuffix: {%if cluster.DomainSuffix %}{{ cluster.DomainSuffix }}{%else%}local{%endif%}
+    {% if cluster.DomainSuffix %}domainsuffix: {{ cluster.DomainSuffix }}{%endif%}
 
 contrail_configuration:
   {% if cluster.ContrailVersion %}
