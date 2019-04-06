@@ -7,6 +7,7 @@ provider_config:
     ssh_user: root
     ssh_pwd: c0ntrail123
     ntpserver: 10.1.1.100
+    manage_etc_hosts: false
 contrail_configuration:
   CONTRAIL_VERSION: ocata-5.0-x
   ENCAP_PRIORITY: MPLSoGRE,MPLSoUDP,VXLAN

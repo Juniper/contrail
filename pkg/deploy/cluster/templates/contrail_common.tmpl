@@ -9,6 +9,7 @@ provider_config:
     {%if defaultSSHKey %}ssh_public_key: {{ defaultSSHKey }}{%endif%}
     ntpserver: {{ cluster.NTPServer }}
     {% if cluster.DomainSuffix %}domainsuffix: {{ cluster.DomainSuffix }}{%endif%}
+    manage_etc_hosts: false
 
 contrail_configuration:
   {% if cluster.ContrailVersion %}
