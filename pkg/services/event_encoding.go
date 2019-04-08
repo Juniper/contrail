@@ -110,6 +110,168 @@ func visitResource(uuid string, sorted []*Event,
 	return sorted, nil
 }
 
+type eventNode struct {
+	event *Event
+	refs []*eventNode
+}
+
+func eventsToEventNodes(events []*Event) ([]*eventNode, error) {
+	
+	translator, err := getTranslatorToEvents(events)
+	if err != nil {
+		return nil, err
+	}
+
+	eventToEventNode := make(map[*Event]*eventNode)
+	eventNodes := []*eventNode{}
+
+	// Prepare event Nodes and create map that finds eventNode when known event
+	for id, e := range events {
+		node := &eventNode{
+			event: events[id],
+		}
+		eventToEventNode[e] = node
+	}
+
+	return fillEventNodesReferences(eventNodes, translator, eventToEventNode)
+}
+
+func fillEventNodesReferences(
+	eventNodes []*eventNode, translator eventTranslator, eventToEventNode map[*Event]*eventNode,
+) ([]*eventNode) {
+	for id, node := range eventNodes {
+		event := node.event
+		refs, err := event.getRefs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, ref := range refs {
+			if ref.toUUID != "" {
+				refEv := translator.uuidToEvent(ref.toUUID)
+				if refEv == nil {
+					// Referenced event is not from the chain of events. It can be ignored.
+					continue
+				}
+				refNode := eventToEventNode[refEv]
+				eventNodes[id].refs = append(eventNodes[id].refs, refNode)
+			} else if ref.toFQNAME != "" {
+				refEv := translator.fqNameToEvent[ref.toFQNAME]
+				if refEv == nil {
+					// Referenced event is not from the chain of events. It can be ignored.
+					continue
+				}
+				refNode := eventToEventNode[refEv]
+				eventNodes[id].refs = append(eventNodes[id].refs, refNode)
+			} else {
+				// TODO: What in case if both are empty?
+			}
+		}
+	}
+}
+
+type eventTranslator struct {
+	fromUUIDToEvent map[string]*Event
+	fromFQNameToEvent map[string]*Event
+}
+
+func (t *eventTranslator) uuidToEvent(uuid string) *Event {
+	return t.fromUUIDToEvent[uuid]
+}
+
+func (t *eventTranslator) fqNameToEvent(fqname []string) *Event {
+	return t.fromFQNameToEvent[basemodels.FQNameToString(fqname)]
+}
+
+func getTranslatorToEvents(events []*Event) (*eventTranslator, error) {
+	uuidToEvent := make(map[string]*Event)
+	fqNameToEvent := make(map[string]*Event)
+
+	for id, e := range events {
+		res := e.GetResource()
+
+		if res == nil {
+			// it might be ref update. Verify that
+			return nil, errors.Errorf("Invalid event")
+		}
+
+		if res.GetUUID() != "" {
+			uuidToEvent[res.GetUUID()] = events[id]
+		}
+		if len(res.GetFQName()) != 0 {
+			fqNameToEvent[basemodels.FQNameToString(res.GetFQName())] = events[id]
+		}
+		// TODO: What if there is no uuid and no fqname? Should we throw an error or something?
+	}
+
+	translator := &eventTranslator{
+		fromFQNameToEvent: fqNameToEvent,
+		fromUUIDToEvent: uuidToEvent,
+	}
+
+	return translator, nil
+}
+
+type ref struct {
+	toUUID string
+	toFQNAME string
+}
+
+func (r *ref) isEmpty() bool {
+	return r.toUUID == "" && r.toFQNAME == ""
+}
+
+func (e *Event) getRefs() ([]*ref, error) {
+	res := e.GetResource()
+
+	if res == nil {
+		// it might be ref update. Verify that
+		return nil, errors.Errorf("Invalid event")
+	}
+
+	parentRef, err := parentToRef(res)
+	if err != nil {
+		return nil, err
+	}
+
+	refs := res.GetReferences()
+	otherRefs, err := parseRefs(refs)
+	if err != nil {
+		return nil, err
+	}
+
+	refsWithParent := []*ref{parentRef}
+	refsWithParent = append(refsWithParent, otherRefs...)
+	return refsWithParent, nil
+}
+
+func parseRefs(refs basemodels.References) ([]*ref, error) {
+	result := []*ref{}
+	for _, r := range refs {
+		parsedRef := &ref{
+			toUUID: r.GetUUID(),
+			toFQNAME: basemodels.FQNameToString(r.GetTo()),
+		}
+		if !parsedRef.isEmpty() {
+			result = append(result, parsedRef)
+		} else {
+			return nil, errors.Errorf("Cannot get reference UUID or FQName: %v", r)
+		}
+	}
+	return result, nil
+}
+
+func parentToRef(o basemodels.Object) (*ref, error) {
+	ref := &ref{
+		toUUID: o.GetParentUUID(),
+		toFQNAME: basemodels.FQNameToString(basemodels.ParentFQName(o.GetFQName())),
+	}
+	if !ref.isEmpty() {
+		return nil, errors.Errorf("Cannot get parent UUID or FQName: %v", o.String())
+	}
+	return ref, nil
+}
+
 // Sort sorts Events by parent-child dependency using Tarjan algorithm.
 // It doesn't verify reference cycles.
 func (e *EventList) Sort() (err error) {
@@ -299,6 +461,7 @@ func (e *Event) ExtractRefEvents() (EventList, error) {
 		return EventList{}, nil
 	case DeleteRequest:
 		//	TODO: Extract event for removing refs from resource before deleting it
+		logrus.Warn("Extracting references from DELETE event is not supported yet.")
 		return EventList{}, nil
 	default:
 		return EventList{}, errors.Errorf("cannot extract refs from event %v.", e)
