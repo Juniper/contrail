@@ -110,6 +110,88 @@ func visitResource(uuid string, sorted []*Event,
 	return sorted, nil
 }
 
+type ref struct {
+	toUUID string
+	toFQNAME string
+}
+
+func (r *ref) isEmpty() bool {
+	return r.toUUID == "" && r.toFQNAME == ""
+}
+
+type eventNode struct {
+	event *Event
+	refs []*ref
+}
+
+func parseRefs(refs basemodels.References) ([]*ref, error) {
+	result := []*ref{}
+	for _, r := range refs {
+		parsedRef := &ref{
+			toUUID: r.GetUUID(),
+			toFQNAME: basemodels.FQNameToString(r.GetTo()),
+		}
+		if !parsedRef.isEmpty() {
+			result = append(result, parsedRef)
+		} else {
+			return nil, errors.Errorf("Cannot get reference UUID or FQName: %v", r)
+		}
+	}
+	return result, nil
+}
+
+func parentToRef(o basemodels.Object) (*ref, error) {
+	ref := &ref{
+		toUUID: o.GetParentUUID(),
+		toFQNAME: basemodels.FQNameToString(basemodels.ParentFQName(o.GetFQName())),
+	}
+	if !ref.isEmpty() {
+		return nil, errors.Errorf("Cannot get parent UUID or FQName: %v", o.String())
+	}
+	return ref, nil
+}
+
+func (e *Event) getRefs() ([]*ref, error) {
+	res := e.GetResource()
+
+	if res == nil {
+		// it might be ref update. Verify that
+		return nil, errors.Errorf("Invalid event")
+	}
+
+	parentRef, err := parentToRef(res)
+	if err != nil {
+		return nil, err
+	}
+
+	refs := res.GetReferences()
+	otherRefs, err := parseRefs(refs)
+	if err != nil {
+		return nil, err
+	}
+
+	refsWithParent := []*ref{parentRef}
+	refsWithParent = append(refsWithParent, otherRefs...)
+	return refsWithParent, nil
+}
+
+// TODO: Handle this for delete events
+// TODO: Handle createRef and deleteRef events
+func getUuidToEventMap(events []*Event) (map[string]eventNode, error) {
+	result := make(map[string]eventNode)
+	for id, e := range events {
+		// refs := e.GetReferences()
+		
+
+		// if e.GetResource()
+
+		node := eventNode{
+			event: events[id],
+			// refs: refs,
+		}
+	}
+}
+
 // Sort sorts Events by parent-child dependency using Tarjan algorithm.
 // It doesn't verify reference cycles.
 func (e *EventList) Sort() (err error) {
@@ -299,6 +381,7 @@ func (e *Event) ExtractRefEvents() (EventList, error) {
 		return EventList{}, nil
 	case DeleteRequest:
 		//	TODO: Extract event for removing refs from resource before deleting it
+		logrus.Warn("Extracting references from DELETE event is not supported yet.")
 		return EventList{}, nil
 	default:
 		return EventList{}, errors.Errorf("cannot extract refs from event %v.", e)

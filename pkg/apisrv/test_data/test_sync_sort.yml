@@ -1,0 +1,131 @@
+name: Sync test
+description: network sync test
+cleanup:
+- path: /project/project_uuid
+# - path: /network-ipam/network_ipam_uuid
+- path: /virtual-network/virtual_network_uuid
+- path: /floating-ip-pool/floating_ip_pool_uuid
+
+test_data:
+  project: &project
+    uuid: project_uuid
+    name: project
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+    floating_ip_pool_refs:
+    - uuid: floating_ip_pool_uuid
+
+  virtual_network: &virtual_network
+    uuid: virtual_network_uuid
+    name: virtual_network
+    parent_type: project
+    parent_uuid: project_uuid
+
+  floating_ip_pool: &floating_ip_pool
+    uuid: floating_ip_pool_uuid
+    name: floating_ip_pool
+    parent_type: virtual-network
+    parent_uuid: virtual_network_uuid
+
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+
+# - name: create ipam
+#   request:
+#     path: /network-ipams
+#     method: POST
+#     expected:
+#     - 200
+#     data:
+#       network-ipam: *network_ipam
+
+workflow:
+- name: create project
+  request:
+    path: /projects
+    method: POST
+    expected:
+    - 200
+    data:
+      project: *project
+
+- name: create vn
+  request:
+    path: /virtual-networks
+    method: POST
+    expected:
+    - 200
+    data:
+      virtual-network: *virtual_network
+
+- name: create fip pool
+  request:
+    path: /floating-ip-pools
+    method: POST
+    expected:
+    - 200
+    data:
+      floating-ip-pool: *floating_ip_pool
+
+- name: update project
+  request:
+    path: /project/project_uuid
+    method: PUT
+    expected:
+    - 200
+    data:
+      project:
+        floating_ip_pool_refs:
+        - uuid: floating_ip_pool_uuid
+
+- name: delete fip pool
+  request:
+    path: /floating-ip-pool/floating_ip_pool_uuid
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete vn
+  request:
+    path: /virtual-network/virtual_network_uuid
+    method: DELETE
+    expected:
+    - 200
+
+- name: delete project
+  request:
+    path: /project/project_uuid
+    method: DELETE
+    expected:
+    - 200
+
+# - name: create vn2
+#   request:
+#     path: /virtual-networks
+#     method: POST
+#     expected:
+#     - 200
+#     data:
+#       virtual-network:
+#         uuid: virtual_network_b_uuid
+#         name: virtual_network_b
+#         parent_type: project
+#         parent_uuid: project_uuid
+#         network_ipam_refs:
+#         - uuid: network_ipam_uuid
+
+# - name: update vn2
+#   request:
+#     path: /virtual-network/virtual_network_b_uuid
+#     method: PUT
+#     expected:
+#     - 200
+#     data:
+#       virtual-network: *virtual_network_b

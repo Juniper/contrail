@@ -194,13 +194,41 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid JSON format: %v", err))
 	}
 
-	// TODO: Call events.Sort()
+	fmt.Println(len(events.Events))
+
+	evs, err := separateRefUpdateEvents(events)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(len(evs))
+
+	events = &EventList{
+		Events: evs,
+	}
+	events.Sort()
 
 	responses, err := events.Process(c.Request().Context(), service)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
 	return c.JSON(http.StatusOK, responses.Events)
+}
+
+func separateRefUpdateEvents(e *EventList) (result []*Event, err error) {
+	var refUpdateEvents []*Event
+	for i := range e.Events {
+		el, err := e.Events[i].ExtractRefEvents()
+		if err != nil {
+			return nil, errors.Wrapf(err, "extracting references update from event failed (event=%v)", e.Events[i])
+		}
+		refUpdateEvents = append(refUpdateEvents, el.Events...)
+	}
+
+	result = make([]*Event, 0, len(e.Events)+len(refUpdateEvents))
+	result = append(result, e.Events...)
+	result = append(result, refUpdateEvents...)
+	return result, nil
 }
 
 // RefUpdate represents ref-update input data.
