@@ -2,12 +2,16 @@ package cloud
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"os"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -136,6 +140,10 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 	// check if ssh keys are created
 	assert.True(t, verifyGeneratedSSHKeyFiles(t),
 		"Expected ssh key file are not generated")
+
+	assert.True(t, verifyNodeType(cloud.ctx, t,
+		cloud.APIServer, &cloudTestScenario),
+		"public cloud nodes are not updated as type private")
 
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
@@ -270,6 +278,34 @@ func createDummySSHKeyFiles(t *testing.T) func() {
 		_ = os.Remove("/tmp/cloud_keypair.pub")
 
 	}
+}
+
+func verifyNodeType(ctx context.Context, t *testing.T,
+	httpClient *client.HTTP, testScenario *integration.TestScenario) bool {
+
+	for _, task := range testScenario.Workflow {
+		if task.Request.Path == "/nodes" {
+			//nolint: errcheck
+			expectMap, _ := task.Expect.(map[string]interface{})
+			//nolint: errcheck
+			nodeData, _ := expectMap["node"].(map[string]interface{})
+			//nolint: errcheck
+			nodeUUID, _ := nodeData["uuid"].(string)
+
+			nodeResp, err := httpClient.GetNode(ctx,
+				&services.GetNodeRequest{
+					ID: nodeUUID,
+				},
+			)
+			if err != nil {
+				return false
+			}
+			if nodeResp.Node.Type != "private" {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func generatedTopoPath() string {
