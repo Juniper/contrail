@@ -78,6 +78,37 @@ const (
 	temporaryVisited
 )
 
+// Sort sorts Events by parent-child dependency using Tarjan algorithm.
+// It doesn't verify reference cycles.
+func (e *EventList) Sort() (err error) {
+	var sorted []*Event
+	stateGraph := map[string]state{}
+	eventMap := map[string]*Event{}
+	for _, event := range e.Events {
+		uuid := event.GetUUID()
+		stateGraph[uuid] = notVisited
+		eventMap[uuid] = event
+	}
+	foundNotVisited := true
+	for foundNotVisited {
+		foundNotVisited = false
+		for _, event := range e.Events {
+			uuid := event.GetUUID()
+			st := stateGraph[uuid]
+			if st == notVisited {
+				sorted, err = visitResource(uuid, sorted, eventMap, stateGraph)
+				if err != nil {
+					return err
+				}
+				foundNotVisited = true
+				break
+			}
+		}
+	}
+	e.Events = sorted
+	return nil
+}
+
 //reorder request using Tarjan's algorithm
 func visitResource(uuid string, sorted []*Event,
 	eventMap map[string]*Event, stateGraph map[string]state,
@@ -110,35 +141,149 @@ func visitResource(uuid string, sorted []*Event,
 	return sorted, nil
 }
 
-// Sort sorts Events by parent-child dependency using Tarjan algorithm.
-// It doesn't verify reference cycles.
-func (e *EventList) Sort() (err error) {
-	var sorted []*Event
-	stateGraph := map[string]state{}
-	eventMap := map[string]*Event{}
-	for _, event := range e.Events {
-		uuid := event.GetUUID()
-		stateGraph[uuid] = notVisited
-		eventMap[uuid] = event
+func eventsToEventNodes(events []*Event) ([]*eventNode, error) {
+	eventToEventNode := map[*Event]*eventNode{}
+	eventNodes := make([]*eventNode, 0, len(events))
+
+	// Prepare event Nodes and create map that finds eventNode when known event
+	for _, e := range events {
+		node := &eventNode{
+			event: e,
+		}
+		eventNodes = append(eventNodes, node)
+		eventToEventNode[e] = node
 	}
-	foundNotVisited := true
-	for foundNotVisited {
-		foundNotVisited = false
-		for _, event := range e.Events {
-			uuid := event.GetUUID()
-			state := stateGraph[uuid]
-			if state == notVisited {
-				sorted, err = visitResource(uuid, sorted, eventMap, stateGraph)
-				if err != nil {
-					return err
-				}
-				foundNotVisited = true
-				break
+
+	translator, err := getTranslatorToEvents(events)
+	if err != nil {
+		return nil, err
+	}
+
+	return fillEventNodesReferences(eventNodes, translator, eventToEventNode)
+}
+
+type eventNode struct {
+	event *Event
+	referencesAndChildren  []*eventNode
+}
+
+func fillEventNodesReferences(
+	eventNodes []*eventNode, translator *eventTranslator, eventToEventNode map[*Event]*eventNode,
+) ([]*eventNode, error) {
+	for _, node := range eventNodes {
+		refs, err := node.event.getRefs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, ref := range refs {
+			refNode, err := getEventNode(ref, translator, eventToEventNode)
+			if err != nil {
+				return nil, err
+			}
+			if refNode != nil {
+				node.referencesAndChildren = append(node.referencesAndChildren, refNode)
 			}
 		}
 	}
-	e.Events = sorted
-	return nil
+	return eventNodes, nil
+}
+
+type eventTranslator struct {
+	fromUUIDToEvent   map[string]*Event
+	fromFQNameToEvent map[string]*Event
+}
+
+func getTranslatorToEvents(events []*Event) (*eventTranslator, error) {
+	uuidToEvent := map[string]*Event{}
+	fqNameToEvent := map[string]*Event{}
+
+	for _, event := range events {
+		res := event.GetResource()
+		if res == nil {
+			// TODO: Handle other events than Create Resource.
+			logrus.Warn("Method eventsToEventNodes() is implemented for CREATE events only.")
+			return nil, errors.Errorf("Cannot extract resource from event: %s", event.String())
+		}
+
+		if res.GetUUID() != "" {
+			uuidToEvent[res.GetUUID()] = event
+		}
+		if len(res.GetFQName()) != 0 {
+			fqNameToEvent[basemodels.FQNameToString(res.GetFQName())] = event
+		}
+
+		if res.GetUUID() == "" && len(res.GetFQName()) == 0 {
+			// TODO: Handle events with no UUID or FQ Name.
+			logrus.Warn("Method eventsToEventNodes() is implemented for CREATE events only")
+			return nil, errors.Errorf(
+				"Cannot create translator because resource has no uuid and no FQ Name: %s", event.String())
+		}
+	}
+
+	translator := &eventTranslator{
+		fromFQNameToEvent: fqNameToEvent,
+		fromUUIDToEvent:   uuidToEvent,
+	}
+
+	return translator, nil
+}
+
+func (t *eventTranslator) uuidToEvent(uuid string) *Event {
+	return t.fromUUIDToEvent[uuid]
+}
+
+func (t *eventTranslator) fqNameToEvent(fqname []string) *Event {
+	return t.fromFQNameToEvent[basemodels.FQNameToString(fqname)]
+}
+
+func (e *Event) getRefs() (basemodels.References, error) {
+	res := e.GetResource()
+	if res == nil {
+		// TODO: Handle other events than Create Resource.
+		logrus.Warn("Method eventsToEventNodes() is implemented for CREATE events only.")
+		return nil, errors.Errorf("Invalid event. Cannot extract resource from event: %s", e.String())
+	}
+
+	refs := res.GetReferences()
+
+	parentUUID := res.GetParentUUID()
+	parentFQName := basemodels.ParentFQName(res.GetFQName())
+
+	if parentUUID != "" || len(parentFQName) != 0 {
+		parentType := res.GetParentType()
+		parentRef := basemodels.NewReference(parentUUID, parentFQName, parentType)
+		refs = append(refs, parentRef)
+	}
+
+	return refs, nil
+}
+
+func getEventNode(ref basemodels.Reference, translator *eventTranslator, eventToEventNode map[*Event]*eventNode) (*eventNode, error) {
+	uuid := ref.GetUUID()
+	fqname := ref.GetTo()
+
+	var refEv *Event
+
+	if uuid != "" {
+		refEv = translator.uuidToEvent(uuid)
+	}
+
+	if len(fqname) != 0 && refEv == nil {
+		refEv = translator.fqNameToEvent(fqname)
+	}
+
+	if refEv == nil {
+		// Referenced event is not from the chain of events. It can be ignored.
+		return nil, nil
+	}
+
+	refNode := eventToEventNode[refEv]
+	if refNode == nil {
+		return nil, errors.Errorf(
+			"Cannot resolve Event Node with UUID: %s and FQ Name: %v", uuid, fqname)
+	}
+	return refNode, nil
 }
 
 // Process dispatches resource event to call corresponding service functions.
@@ -300,6 +445,7 @@ func (e *Event) ExtractRefEvents() (EventList, error) {
 		return EventList{}, nil
 	case DeleteRequest:
 		//	TODO: Extract event for removing refs from resource before deleting it
+		logrus.Warn("Extracting references from DELETE event is not supported yet.")
 		return EventList{}, nil
 	default:
 		return EventList{}, errors.Errorf("cannot extract refs from event %v.", e)
