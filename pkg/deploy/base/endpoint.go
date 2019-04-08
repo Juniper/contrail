@@ -196,6 +196,16 @@ func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]st
 			}
 		}
 	}
+	if a := e.ClusterData.ClusterInfo.GetAnnotations(); a != nil {
+		for _, keyValuePair := range a.GetKeyValuePair() {
+			switch keyValuePair.Key {
+			case "contrail_external_vip":
+				endpointNodes[config] = []string{keyValuePair.Value}
+				endpointNodes[analytics] = []string{keyValuePair.Value}
+				endpointNodes[webui] = []string{keyValuePair.Value}
+			}
+		}
+	}
 	if _, ok := endpointNodes[config]; !ok {
 		endpointNodes[config] = e.ClusterData.getConfigNodeIPs()
 	}
