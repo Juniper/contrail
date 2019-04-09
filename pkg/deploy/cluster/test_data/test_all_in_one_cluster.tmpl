@@ -106,6 +106,12 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
     container_registry: test_registry
     registry_private_insecure: true
+    {% if CONTAINER_REGISTRY_USERNAME %}
+    container_registry_username: {{CONTAINER_REGISTRY_USERNAME}}
+    {%endif%}
+    {% if CONTAINER_REGISTRY_PASSWORD %}
+    container_registry_password: {{CONTAINER_REGISTRY_PASSWORD}}
+    {%endif%}
     contrail_version: ocata-5.0-x
     provisioner_type: ansible
     orchestrator: openstack
@@ -273,6 +279,12 @@ workflow:
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
       uuid: test_cluster_uuid
       container_registry: test_registry
+      {% if CONTAINER_REGISTRY_USERNAME %}
+      container_registry_username: {{CONTAINER_REGISTRY_USERNAME}}
+      {%endif%}
+      {% if CONTAINER_REGISTRY_PASSWORD %}
+      container_registry_password: {{CONTAINER_REGISTRY_PASSWORD}}
+      {%endif%}
       registry_private_insecure: true
       contrail_version: ocata-5.0-x
       provisioner_type: ansible

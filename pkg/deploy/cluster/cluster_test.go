@@ -862,13 +862,15 @@ func TestClusterWithDeploymentNetworkAsControlDataNet(t *testing.T) {
 
 func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 	pContext := pongo2.Context{
-		"MGMT_INT_IP":            "10.1.1.1",
-		"CONTROL_NODES":          "127.0.0.1",
-		"CONTROLLER_NODES":       "127.0.0.1",
-		"OPENSTACK_NODES":        "127.0.0.1",
-		"OPENSTACK_INTERNAL_VIP": "127.0.0.1",
-		"CONTRAIL_EXTERNAL_VIP":  "10.1.1.100",
-		"ZTP_ROLE":               true,
+		"MGMT_INT_IP":                 "10.1.1.1",
+		"CONTROL_NODES":               "127.0.0.1",
+		"CONTROLLER_NODES":            "127.0.0.1",
+		"OPENSTACK_NODES":             "127.0.0.1",
+		"OPENSTACK_INTERNAL_VIP":      "127.0.0.1",
+		"CONTRAIL_EXTERNAL_VIP":       "10.1.1.100",
+		"CONTAINER_REGISTRY_USERNAME": "testRegistry",
+		"CONTAINER_REGISTRY_PASSWORD": "testRegistry123",
+		"ZTP_ROLE":                    true,
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://10.1.1.100:8082",

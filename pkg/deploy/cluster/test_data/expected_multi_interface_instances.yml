@@ -1,5 +1,7 @@
 global_configuration:
   CONTAINER_REGISTRY: test_registry
+  CONTAINER_REGISTRY_USERNAME: testRegistry
+  CONTAINER_REGISTRY_PASSWORD: testRegistry123
   REGISTRY_PRIVATE_INSECURE: True
 provider_config:
   bms:
