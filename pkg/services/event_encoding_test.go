@@ -520,7 +520,7 @@ func Test_eventsToEventNodes(t *testing.T) {
 		},
 	}
 
-	eventNodes, err := eventsToEventNodes(events)
+	eventNodes, err := EventsToEventNodes(events)
 
 	assert.NoError(t, err)
 

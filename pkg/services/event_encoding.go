@@ -141,9 +141,97 @@ func visitResource(uuid string, sorted []*Event,
 	return sorted, nil
 }
 
+type eventGraph struct {
+	nodes []*eventNode
+}
+
+//NewEventGraph creates new event graph.
+func NewEventGraph(nodes []*eventNode) *eventGraph {
+	return &eventGraph{nodes: nodes}
+}
+
 type eventNode struct {
 	event *Event
 	refs  []*eventNode
+}
+
+//SortEvents sorts events by reference chain.
+func (g *eventGraph) SortEvents() EventList {
+	visited := make(map[*eventNode]bool)
+	sorted := make([]*eventNode, 0, len(g.nodes))
+
+	for _, e := range g.nodes {
+		if !visited[e] {
+			sorted = g.sortUtil(e, sorted, visited)
+		}
+	}
+
+	list := EventList{}
+	for _, s := range sorted {
+		list.Events = append(list.Events, s.event)
+	}
+	return list
+}
+
+func (g *eventGraph) sortUtil(node *eventNode, sorted []*eventNode, visited map[*eventNode]bool) []*eventNode {
+	if visited[node] {
+		return sorted
+	}
+	visited[node] = true
+
+	if len(node.refs) == 0 {
+		return append(sorted, node)
+	}
+
+	for _, r := range node.refs {
+		sorted = g.sortUtil(r, sorted, visited)
+	}
+	return append(sorted, node)
+}
+
+//CheckCycle checks if there is cycle in events references.
+func (g *eventGraph) CheckCycle() bool {
+	visited := make(map[*eventNode]bool)
+	parsingStack := make(map[*eventNode]bool)
+	for _, n := range g.nodes {
+		if !visited[n] && g.cycleUtil(n, visited, parsingStack) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *eventGraph) cycleUtil(node *eventNode, visited, parsingStack map[*eventNode]bool) bool {
+	visited[node] = true
+	parsingStack[node] = true
+	for _, neighbour := range node.refs {
+		if parsingStack[neighbour] {
+			return true
+		}
+
+		if !visited[neighbour] && g.cycleUtil(neighbour, visited, parsingStack) {
+			return true
+		}
+	}
+	parsingStack[node] = false
+	return false
+}
+
+//CheckOperationType checks if all operations have the same type
+func (e *EventList) CheckOperationType() string {
+	if len(e.Events) == 0 {
+		logrus.Warn("Unhandled situation for empty event list.")
+		return "EMPTY"
+	}
+
+	operation := e.Events[0].Operation()
+
+	for _, ev := range e.Events {
+		if operation != ev.Operation() {
+			return "MIXED"
+		}
+	}
+	return operation
 }
 
 type eventTranslator struct {
@@ -168,7 +256,8 @@ func (r *ref) isEmpty() bool {
 	return r.toUUID == "" && len(r.toFQNAME) == 0
 }
 
-func eventsToEventNodes(events []*Event) ([]*eventNode, error) {
+//EventsToEventNodes translates event list to list of event nodes.
+func EventsToEventNodes(events []*Event) ([]*eventNode, error) {
 	translator, err := getTranslatorToEvents(events)
 	if err != nil {
 		return nil, err
