@@ -141,13 +141,103 @@ func visitResource(uuid string, sorted []*Event,
 	return sorted, nil
 }
 
+//SortEvents sorts events by reference chain
+func (g *eventGraph) SortEvents() EventList {
+	visited := make(map[*eventNode]bool)
+	sorted := make([]*eventNode, 0, len(g.nodes))
+
+	for _, e := range g.nodes {
+		if visited[e] == false {
+			sorted = g.sortUtil(e, sorted, visited)
+		}
+	}
+
+	list := EventList{}
+	for _, s := range sorted {
+		list.Events = append(list.Events, s.event)
+	}
+	return list
+}
+func (g *eventGraph) sortUtil(node *eventNode, sorted []*eventNode, visited map[*eventNode]bool) []*eventNode {
+	if visited[node] == true {
+		return sorted
+	}
+	visited[node] = true
+
+	if len(node.refs) == 0 {
+		return append(sorted, node)
+	}
+
+	for _, r := range node.refs {
+		sorted = g.sortUtil(r, sorted, visited)
+	}
+	return append(sorted, node)
+}
+
+//CheckCycle checks fi there is cycle in events references
+func (g *eventGraph) CheckCycle() bool {
+	visited := make(map[*eventNode]bool)
+	recStack := make(map[*eventNode]bool)
+	for _, n := range g.nodes {
+		if visited[n] == false {
+			t := g.cycleUtil(n, visited, recStack)
+			if t == true {
+				return true
+			}
+		}
+	}
+	return false
+}
+func (g *eventGraph) cycleUtil(n *eventNode, visited, recStack map[*eventNode]bool) bool {
+	visited[n] = true
+	recStack[n] = true
+	for _, neighbour := range n.refs {
+		if recStack[neighbour] == true {
+			return true
+		}
+
+		if visited[neighbour] == false {
+			if g.cycleUtil(neighbour, visited, recStack) == true {
+				return true
+			}
+		}
+	}
+	recStack[n] = false
+	return false
+}
+
+//CheckOperationType checks if all operations have the same type
+func (e *EventList) CheckOperationType() (string, error) {
+	if len(e.Events) == 0 {
+		logrus.Warn("Unhandled situation for empty event list.")
+		return "", errors.New("event list cannot be empty for operation type check")
+	}
+
+	operation := e.Events[0].Operation()
+
+	for _, ev := range e.Events {
+		if operation != ev.Operation() {
+			return "MIXED", nil
+		}
+	}
+	return operation, nil
+}
+
+type eventGraph struct {
+	nodes []*eventNode
+}
+
+func NewEventGraph(nodes []*eventNode) *eventGraph {
+	return &eventGraph{nodes: nodes}
+}
+
 type eventNode struct {
 	event *Event
-	refs []*eventNode
+	refs  []*eventNode
 }
 
 type eventTranslator struct {
-	fromUUIDToEvent map[string]*Event
+	fromUUIDToEvent   map[string]*Event
 	fromFQNameToEvent map[string]*Event
 }
 
@@ -160,7 +250,7 @@ func (t *eventTranslator) fqNameToEvent(fqname []string) *Event {
 }
 
 type ref struct {
-	toUUID string
+	toUUID   string
 	toFQNAME []string
 }
 
@@ -168,7 +258,7 @@ func (r *ref) isEmpty() bool {
 	return r.toUUID == "" && len(r.toFQNAME) == 0
 }
 
-func eventsToEventNodes(events []*Event) ([]*eventNode, error) {
+func EventsToEventNodes(events []*Event) ([]*eventNode, error) {
 	translator, err := getTranslatorToEvents(events)
 	if err != nil {
 		return nil, err
@@ -218,7 +308,7 @@ func getTranslatorToEvents(events []*Event) (*eventTranslator, error) {
 
 	translator := &eventTranslator{
 		fromFQNameToEvent: fqNameToEvent,
-		fromUUIDToEvent: uuidToEvent,
+		fromUUIDToEvent:   uuidToEvent,
 	}
 
 	return translator, nil
@@ -286,7 +376,7 @@ func (e *Event) getRefs() ([]*ref, error) {
 	result := []*ref{}
 
 	parentRef := &ref{
-		toUUID: res.GetParentUUID(),
+		toUUID:   res.GetParentUUID(),
 		toFQNAME: basemodels.ParentFQName(res.GetFQName()),
 	}
 	if !parentRef.isEmpty() {
@@ -306,7 +396,7 @@ func parseRefs(refs basemodels.References) ([]*ref, error) {
 	result := []*ref{}
 	for _, r := range refs {
 		parsedRef := &ref{
-			toUUID: r.GetUUID(),
+			toUUID:   r.GetUUID(),
 			toFQNAME: r.GetTo(),
 		}
 		if !parsedRef.isEmpty() {
