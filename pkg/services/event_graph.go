@@ -12,6 +12,15 @@ type eventNode struct {
 	referencesAndParent  []*eventNode
 }
 
+type eventGraph struct {
+	nodes []*eventNode
+}
+
+func newEventGraph(events []*Event) (*eventGraph, error) {
+	nodes, err := eventsToEventNodes(events)
+	return &eventGraph{nodes: nodes}, err
+}
+
 func eventsToEventNodes(events []*Event) ([]*eventNode, error) {
 	eventToEventNode := map[*Event]*eventNode{}
 	eventNodes := make([]*eventNode, 0, len(events))
@@ -36,6 +45,83 @@ func eventsToEventNodes(events []*Event) ([]*eventNode, error) {
 type referenceToEvent struct {
 	fromUUIDToEvent   map[string]*Event
 	fromFQNameToEvent map[string]*Event
+}
+
+func (g *eventGraph) sortEvents() EventList {
+	visited := make(map[*eventNode]bool)
+	sorted := make([]*eventNode, 0, len(g.nodes))
+
+	for _, e := range g.nodes {
+		if !visited[e] {
+			sorted = g.sortUtil(e, sorted, visited)
+		}
+	}
+
+	list := EventList{}
+	for _, s := range sorted {
+		list.Events = append(list.Events, s.event)
+	}
+	return list
+}
+
+func (g *eventGraph) sortUtil(node *eventNode, sorted []*eventNode, visited map[*eventNode]bool) []*eventNode {
+	if visited[node] {
+		return sorted
+	}
+	visited[node] = true
+
+	if len(node.referencesAndParent) == 0 {
+		return append(sorted, node)
+	}
+
+	for _, r := range node.referencesAndParent {
+		sorted = g.sortUtil(r, sorted, visited)
+	}
+	return append(sorted, node)
+}
+
+func (g *eventGraph) checkCycle() bool {
+	visited := make(map[*eventNode]bool)
+	parsingStack := make(map[*eventNode]bool)
+	for _, n := range g.nodes {
+		if !visited[n] && g.cycleUtil(n, visited, parsingStack) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *eventGraph) cycleUtil(node *eventNode, visited, parsingStack map[*eventNode]bool) bool {
+	visited[node] = true
+	parsingStack[node] = true
+	for _, neighbour := range node.referencesAndParent {
+		if parsingStack[neighbour] {
+			return true
+		}
+
+		if !visited[neighbour] && g.cycleUtil(neighbour, visited, parsingStack) {
+			return true
+		}
+	}
+	parsingStack[node] = false
+	return false
+}
+
+//CheckOperationType checks if all operations have the same type
+func (e *EventList) CheckOperationType() string {
+	if len(e.Events) == 0 {
+		logrus.Warn("Unhandled situation for empty event list.")
+		return "EMPTY"
+	}
+
+	operation := e.Events[0].Operation()
+
+	for _, ev := range e.Events {
+		if operation != ev.Operation() {
+			return "MIXED"
+		}
+	}
+	return operation
 }
 
 func newReferenceToEventParser(events []*Event) (*referenceToEvent, error) {
@@ -112,7 +198,6 @@ func (e *Event) getReferences() (basemodels.References, error) {
 func extractParentAsRef(o basemodels.Object) basemodels.Reference {
 	parentUUID := o.GetParentUUID()
 	parentFQName := basemodels.ParentFQName(o.GetFQName())
-
 	if parentUUID == "" && len(parentFQName) == 0 {
 		return nil
 	}
