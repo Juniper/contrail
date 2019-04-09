@@ -12,6 +12,65 @@ type eventNode struct {
 	referencesAndParent []*eventNode
 }
 
+type eventGraph struct {
+	nodes        []*eventNode
+	nodeByUUID   map[string]*eventNode
+	nodeByFQName map[string]*eventNode
+}
+
+func newEventGraph(events []*Event, referencesMap map[*Event]basemodels.References) (*eventGraph, error) {
+	g := &eventGraph{}
+	g.initEventNodes(events)
+	g.fillGraph(referencesMap)
+	return g, nil
+}
+
+func (g *eventGraph) getNodeByUUID(uuid string) *eventNode {
+	if g == nil || uuid == "" {
+		return nil
+	}
+	return g.nodeByUUID[uuid]
+}
+
+func (g *eventGraph) getNodeByFQName(fqName []string) *eventNode {
+	if g == nil || len(fqName) == 0 {
+		return nil
+	}
+	return g.nodeByFQName[basemodels.FQNameToString(fqName)]
+}
+
+func (g *eventGraph) initEventNodes(events []*Event) {
+	g.nodes = make([]*eventNode, 0, len(events))
+	g.nodeByUUID = make(map[string]*eventNode)
+	g.nodeByFQName = make(map[string]*eventNode)
+
+	for _, e := range events {
+		node := &eventNode{event: e}
+		g.nodes = append(g.nodes, node)
+		if e.GetUUID() != "" {
+			g.nodeByUUID[e.GetUUID()] = node
+		}
+		fqName := e.GetResource().GetFQName()
+		if len(fqName) != 0 {
+			g.nodeByFQName[basemodels.FQNameToString(fqName)] = node
+		}
+	}
+	return
+}
+
+func (g *eventGraph) fillGraph(refMap map[*Event]basemodels.References) {
+	for _, node := range g.nodes {
+		refs := refMap[node.event]
+		for _, ref := range refs {
+			if n := g.getNodeByUUID(ref.GetUUID()); n != nil {
+				node.referencesAndParent = append(node.referencesAndParent, n)
+			} else if n := g.getNodeByFQName(ref.GetTo()); n != nil {
+				node.referencesAndParent = append(node.referencesAndParent, n)
+			}
+		}
+	}
+}
+
 func eventsToEventNodes(events []*Event) ([]*eventNode, error) {
 	eventToEventNode := map[*Event]*eventNode{}
 	eventNodes := make([]*eventNode, 0, len(events))
@@ -36,6 +95,83 @@ func eventsToEventNodes(events []*Event) ([]*eventNode, error) {
 type referenceToEvent struct {
 	fromUUIDToEvent   map[string]*Event
 	fromFQNameToEvent map[string]*Event
+}
+
+func (g *eventGraph) sortEvents() EventList {
+	visited := make(map[*eventNode]bool)
+	sorted := make([]*eventNode, 0, len(g.nodes))
+
+	for _, e := range g.nodes {
+		if !visited[e] {
+			sorted = g.sortUtil(e, sorted, visited)
+		}
+	}
+
+	list := EventList{}
+	for _, s := range sorted {
+		list.Events = append(list.Events, s.event)
+	}
+	return list
+}
+
+func (g *eventGraph) sortUtil(node *eventNode, sorted []*eventNode, visited map[*eventNode]bool) []*eventNode {
+	if visited[node] {
+		return sorted
+	}
+	visited[node] = true
+
+	if len(node.referencesAndParent) == 0 {
+		return append(sorted, node)
+	}
+
+	for _, r := range node.referencesAndParent {
+		sorted = g.sortUtil(r, sorted, visited)
+	}
+	return append(sorted, node)
+}
+
+func (g *eventGraph) checkCycle() bool {
+	visited := make(map[*eventNode]bool)
+	parsingStack := make(map[*eventNode]bool)
+	for _, n := range g.nodes {
+		if !visited[n] && g.cycleUtil(n, visited, parsingStack) {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *eventGraph) cycleUtil(node *eventNode, visited, parsingStack map[*eventNode]bool) bool {
+	visited[node] = true
+	parsingStack[node] = true
+	for _, neighbour := range node.referencesAndParent {
+		if parsingStack[neighbour] {
+			return true
+		}
+
+		if !visited[neighbour] && g.cycleUtil(neighbour, visited, parsingStack) {
+			return true
+		}
+	}
+	parsingStack[node] = false
+	return false
+}
+
+//CheckOperationType checks if all operations have the same type
+func (e *EventList) CheckOperationType() string {
+	if len(e.Events) == 0 {
+		logrus.Warn("Unhandled situation for empty event list.")
+		return "EMPTY"
+	}
+
+	operation := e.Events[0].Operation()
+
+	for _, ev := range e.Events {
+		if operation != ev.Operation() {
+			return "MIXED"
+		}
+	}
+	return operation
 }
 
 func newReferenceToEventParser(events []*Event) (*referenceToEvent, error) {
@@ -112,7 +248,6 @@ func (e *Event) getReferences() (basemodels.References, error) {
 func extractParentAsRef(o basemodels.Object) basemodels.Reference {
 	parentUUID := o.GetParentUUID()
 	parentFQName := basemodels.ParentFQName(o.GetFQName())
-
 	if parentUUID == "" && len(parentFQName) == 0 {
 		return nil
 	}
