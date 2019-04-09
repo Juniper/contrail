@@ -867,12 +867,13 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 		"CONTROLLER_NODES":       "127.0.0.1",
 		"OPENSTACK_NODES":        "127.0.0.1",
 		"OPENSTACK_INTERNAL_VIP": "127.0.0.1",
+		"CONTRAIL_EXTERNAL_VIP":  "10.1.1.100",
 		"ZTP_ROLE":               true,
 	}
 	expectedEndpoints := map[string]string{
-		"config":    "http://127.0.0.1:8082",
-		"nodejs":    "https://127.0.0.1:8143",
-		"telemetry": "http://127.0.0.1:8081",
+		"config":    "http://10.1.1.100:8082",
+		"nodejs":    "https://10.1.1.100:8143",
+		"telemetry": "http://10.1.1.100:8081",
 		"baremetal": "http://127.0.0.1:6385",
 		"swift":     "http://127.0.0.1:8080",
 		"glance":    "http://127.0.0.1:9292",

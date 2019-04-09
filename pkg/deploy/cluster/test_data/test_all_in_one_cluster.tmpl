@@ -135,6 +135,12 @@ test_data:
           value: {{OPENSTACK_NODES}}
         {%endif%}
     {%endif%}
+    {% if CONTRAIL_EXTERNAL_VIP %}
+    annotations:
+      key_value_pair:
+        - key: contrail_external_vip
+          value: {{CONTRAIL_EXTERNAL_VIP}}
+    {%endif%}
   contrail_config_nodes: &contrail_config_nodes
     uuid: contrail_config_nodes_uuid
     parent_type: contrail-cluster

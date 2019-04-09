@@ -177,6 +177,7 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 	return endpointNodes
 }
 
+// nolint: gocyclo
 func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]string) {
 	endpointNodes = make(map[string][]string)
 	if c := e.ClusterData.ClusterInfo.GetContrailConfiguration(); c != nil {
@@ -193,6 +194,16 @@ func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]st
 				endpointNodes[analytics] = IPAddresses
 			case "WEBUI_NODES":
 				endpointNodes[webui] = IPAddresses
+			}
+		}
+	}
+	if a := e.ClusterData.ClusterInfo.GetAnnotations(); a != nil {
+		for _, keyValuePair := range a.GetKeyValuePair() {
+			switch keyValuePair.Key {
+			case "contrail_external_vip":
+				endpointNodes[config] = []string{keyValuePair.Value}
+				endpointNodes[analytics] = []string{keyValuePair.Value}
+				endpointNodes[webui] = []string{keyValuePair.Value}
 			}
 		}
 	}
