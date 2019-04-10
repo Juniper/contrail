@@ -273,3 +273,47 @@ func parseRefs(refs basemodels.References) ([]*ref, error) {
 	}
 	return result, nil
 }
+
+func (e *EventList) IsSortRequired() bool {
+	resUUIDs := make(map[string]bool)
+	parsedUUIDs := make(map[string]bool)
+	for _, event := range e.Events {
+		resUUIDs[event.GetUUID()] = true
+	}
+
+	for _, event := range e.Events {
+		refs, err := event.getRefs()
+		_ = err // TODO: remove error silencing
+		for _, r := range refs {
+			if resUUIDs[r.toUUID] && !parsedUUIDs[r.toUUID] {
+				return true
+			}
+		}
+		parsedUUIDs[event.GetUUID()] = true
+	}
+
+	return false
+}
+
+func (e *EventList) SortCreateNoCycle() error {
+	if e.CheckOperationType() != OperationCreate {
+		return errors.New("This sort works only on CREATE operation")
+	}
+
+	if !e.IsSortRequired() {
+		return nil
+	}
+
+	graph, err := NewEventGraph(e.Events)
+	if err != nil {
+		return err
+	}
+
+	if graph.CheckCycle() {
+		return errors.New("This sort doesn't work with cycles")
+	}
+
+	sorted := graph.SortEvents()
+	*e = sorted
+	return nil
+}
