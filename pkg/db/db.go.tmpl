@@ -540,7 +540,7 @@ func (db *Service) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, reques
 		return nil, errutil.ErrorInternal
 	}
 	if len(result.{{ schema.JSONSchema.GoName }}s) == 0 {
-		return nil, errutil.ErrorNotFoundf("No {{ schema.TypeName }}: %s", request.ID)
+		return nil, errutil.ErrorNotFoundf("{{ schema.TypeName }} with uuid: '%s' does not exists", request.ID)
 	}
 
 	return &services.Get{{ schema.JSONSchema.GoName }}Response{
