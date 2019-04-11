@@ -322,3 +322,114 @@ func TestOperationKind(t *testing.T) {
 		})
 	}
 }
+
+func TestSortDeleteNoCycle(t *testing.T) {
+	projectEvent := &Event{
+		Request: &Event_DeleteProjectRequest{
+			DeleteProjectRequest: &DeleteProjectRequest{
+				ID: "Project",
+			},
+		},
+	}
+
+	projectWithRefEvent := &Event{
+		Request: &Event_CreateProjectRequest{
+			CreateProjectRequest: &CreateProjectRequest{
+				Project: &models.Project{
+					UUID: "Project",
+					FloatingIPPoolRefs: []*models.ProjectFloatingIPPoolRef{
+						{UUID: "FloatingIPPool"},
+					},
+				},
+			},
+		},
+	}
+
+	vnEvent := &Event{
+		Request: &Event_DeleteVirtualNetworkRequest{
+			DeleteVirtualNetworkRequest: &DeleteVirtualNetworkRequest{
+				ID: "VirtualNetwork",
+				//VirtualNetwork: &models.VirtualNetwork{
+				//	UUID:       "VirtualNetwork",
+				//	ParentUUID: "Project",
+				//	NetworkIpamRefs: []*models.VirtualNetworkNetworkIpamRef{
+				//		{UUID: "NetworkIpam"},
+				//	},
+				//},
+			},
+		},
+	}
+
+	ipamEvent := &Event{
+		Request: &Event_DeleteNetworkIpamRequest{
+			DeleteNetworkIpamRequest: &DeleteNetworkIpamRequest{
+				ID: "NetworkIpam",
+			//	NetworkIpam: &models.NetworkIpam{
+			//		UUID:       "NetworkIpam",
+			//		ParentUUID: "Project",
+			//	},
+			},
+		},
+	}
+
+	fippEvent := &Event{
+		Request: &Event_DeleteFloatingIPPoolRequest{
+			DeleteFloatingIPPoolRequest: &DeleteFloatingIPPoolRequest{
+				ID: "FloatingIPPool",
+				//FloatingIPPool: &models.FloatingIPPool{
+				//	UUID:       "FloatingIPPool",
+				//	ParentUUID: "VirtualNetwork",
+				//},
+			},
+		},
+	}
+	var tests = []struct {
+		name     string
+		events   []*Event
+		expected EventList
+		fails    bool
+	}{
+		{
+			name: "happy scenario",
+			events: []*Event{
+				projectEvent,
+				ipamEvent,
+				vnEvent,
+				fippEvent,
+			},
+			expected: EventList{
+				Events: []*Event{
+					fippEvent,
+					vnEvent,
+					ipamEvent,
+					projectEvent,
+				},
+			},
+		},
+		{
+			name:  "ref cycle",
+			fails: true,
+			events: []*Event{
+				projectWithRefEvent,
+				vnEvent,
+				ipamEvent,
+				fippEvent,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			list := EventList{
+				Events: tt.events,
+			}
+			err := list.Sortv2()
+			if tt.fails {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, list)
+			}
+		})
+	}
+}

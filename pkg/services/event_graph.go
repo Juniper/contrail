@@ -239,3 +239,60 @@ func (t *referenceToEvent) toEvent(ref basemodels.Reference) *Event {
 
 	return refEv
 }
+
+func (e *EventList) isSortRequired() bool {
+	resUUIDs := make(map[string]bool)
+	parsedUUIDs := make(map[string]bool)
+	for _, event := range e.Events {
+		resUUIDs[event.GetUUID()] = true
+	}
+
+	for _, event := range e.Events {
+		refs, err := event.getReferences()
+		_ = err // TODO: remove error silencing
+		for _, r := range refs {
+			if !resUUIDs[r.GetUUID()] {
+				continue
+			}
+
+			if event.Operation() == OperationDelete && parsedUUIDs[r.GetUUID()] {
+				return true
+			}
+		}
+		parsedUUIDs[event.GetUUID()] = true
+	}
+
+	return false
+}
+
+func (e *EventList) Sortv2() error {
+	if e.CheckOperationType() != OperationDelete {
+		return errors.New("just delete operation considered")
+	}
+
+	//if !e.isSortRequired() {
+	//	return nil
+	//}
+
+	//graph, err := newEventGraph(e.Events)
+	//if err != nil {
+	//	return err
+	//}
+
+	//if graph.checkCycle() {
+	//	return errors.New("cycles are not resolved yet")
+	//}
+
+	//sorted := graph.sortEvents()
+	e.Events = reverseList(e.Events)
+	//*e = sorted
+	return nil
+}
+
+func reverseList(events []*Event) []*Event {
+	for i := len(events)/2 - 1; i >= 0; i-- {
+		opp := len(events) - 1 - i
+		events[i], events[opp] = events[opp], events[i]
+	}
+	return events
+}
