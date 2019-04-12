@@ -127,7 +127,7 @@ func writeRDBMS(events *services.EventList) (err error) {
 
 	return dbService.DoWithoutConstraints(context.Background(), func(ctx context.Context) error {
 		return dbService.DoInTransaction(ctx, func(ctx context.Context) error {
-			_, err = events.Process(ctx, dbService)
+			_, err = events.Process(ctx, dbService, services.NoTransaction)
 			return err
 		})
 	},
@@ -142,7 +142,7 @@ func writeEtcd(events *services.EventList, etcdNotifierPath string) error {
 
 	etcdNotifierService.SetNext(&services.BaseService{})
 
-	_, err = events.Process(context.Background(), etcdNotifierService)
+	_, err = events.Process(context.Background(), etcdNotifierService, services.NoTransaction)
 	return errors.Wrap(err, "processing events on etcdNotifierService failed")
 }
 
