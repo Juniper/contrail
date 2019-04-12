@@ -1,5 +1,5 @@
 name: Sync test
-description: network sync test
+description: sync test
 cleanup:
 - path: /network-ipam/test_ipam_blue_uuid_test_sync
 - path: /network-policy/network_policy_uuid_test_sync
@@ -287,3 +287,44 @@ workflow:
       $contains: "failed to process event at index: 0, operation: 'CREATE', kind 'project', uuid 'admin_project_uuid_test_sync':
        creating parent reference for Project failed: creating resource *models.Project with UUID 'admin_project_uuid_test_sync' in DB failed:
         rpc error: code = AlreadyExists desc = Resource conflict: foreign key constraint violation"
+
+- name: Test transaction sync rollback - fail create project, network policy, network ipam and virtual network
+  request:
+    path: /sync
+    method: POST
+    expected: [ 404 ]
+    data:
+      resources:
+      - kind: project
+        data: *admin_project
+      - kind: network_policy
+        data: *network_policy1
+      - kind: network_ipam
+        data: *network_ipam_blue
+      - kind: virtual_network
+        data:
+          <<: *vn_blue
+          parent_uuid: bad_uuid
+  expect:
+    message:
+      $contains: "project with uuid: 'bad_uuid' does not exists"
+
+- name: Verify project rollback
+  request:
+    path: /project/admin_project_uuid_test_sync
+    method: DELETE
+    expected: [ 404 ]
+  expect: null
+
+- name: Verify network_policy rollback
+  request:
+    path: /network_policy/network_policy_uuid_test_sync
+    method: DELETE
+    expected: [ 404 ]
+  expect: null
+
+- name: Verify network_ipam rollback
+  request:
+    path: /network_ipam/test_ipam_blue_uuid_test_sync
+    method: DELETE
+    expected: [ 404 ]
