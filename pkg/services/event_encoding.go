@@ -156,19 +156,23 @@ func (e *Event) Process(ctx context.Context, service Service) (*Event, error) {
 }
 
 // Process process list of events.
-func (e *EventList) Process(ctx context.Context, service Service) (*EventList, error) {
+func (e *EventList) Process(ctx context.Context, service Service, doer InTransactionDoer) (*EventList, error) {
 	var responses []*Event
-	for i, event := range e.Events {
-		response, err := event.Process(ctx, service)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to process event at index: %v, operation: '%v', kind '%v', uuid '%v'",
-				i, event.Operation(), event.Kind(), event.GetUUID())
-		}
-		responses = append(responses, response)
-	}
-	return &EventList{
-		Events: responses,
-	}, nil
+	err := doer.DoInTransaction(
+		ctx,
+		func(ctx context.Context) error {
+			for i, event := range e.Events {
+				response, err := event.Process(ctx, service)
+				if err != nil {
+					return errors.Wrapf(err, "failed to process event at index: %v, operation: '%v', kind '%v', uuid '%v'",
+						i, event.Operation(), event.Kind(), event.GetUUID())
+				}
+				responses = append(responses, response)
+			}
+			return nil
+		})
+
+	return &EventList{Events: responses}, err
 }
 
 // GetResource returns event on resource.
