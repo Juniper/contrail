@@ -148,26 +148,22 @@ func deleteNodeObjects(ctx context.Context,
 }
 
 func removePvtSubnetRefFromNodes(ctx context.Context,
-	client *client.HTTP, nodeList []*instanceData) []string {
+	client *client.HTTP, nodeList []*instanceData) error {
 
-	var errList []string
 	for _, node := range nodeList {
-		if node.info.CloudPrivateSubnetRefs != nil {
-			node.info.CloudPrivateSubnetRefs = []*models.NodeCloudPrivateSubnetRef{}
-			_, err := client.UpdateNode(ctx,
-				&services.UpdateNodeRequest{
-					Node: node.info,
+		for _, cloudPvtSubnetRef := range node.info.CloudPrivateSubnetRefs {
+			_, err := client.DeleteNodeCloudPrivateSubnetRef(ctx,
+				&services.DeleteNodeCloudPrivateSubnetRefRequest{
+					ID:                        node.info.UUID,
+					NodeCloudPrivateSubnetRef: cloudPvtSubnetRef,
 				},
 			)
 			if err != nil {
-				errList = append(errList, fmt.Sprintf(
-					"failed removing CloudPrivateSubnet from Node %s err_msg: %s",
-					node.info.UUID, err))
+				return err
 			}
 		}
 	}
-
-	return errList
+	return nil
 }
 
 func deleteContrailMCGWRole(ctx context.Context,
@@ -351,14 +347,14 @@ func deleteCredentialAndDeps(ctx context.Context,
 // nolint: gocyclo
 func (c *Cloud) deleteAPIObjects(d *Data) error {
 
-	var errList []string
-
 	if d.isCloudPrivate() {
-		retErrList := removePvtSubnetRefFromNodes(c.ctx, c.APIServer, d.getGatewayNodes())
-		if retErrList != nil {
-			errList = append(errList, retErrList...)
+		err := removePvtSubnetRefFromNodes(c.ctx, c.APIServer, d.getGatewayNodes())
+		if err != nil {
+			return err
 		}
 	}
+
+	var errList []string
 
 	retErrList := deleteContrailMCGWRole(c.ctx,
 		c.APIServer, d.getGatewayNodes())

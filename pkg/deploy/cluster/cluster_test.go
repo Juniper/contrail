@@ -17,6 +17,7 @@ import (
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
@@ -108,13 +109,25 @@ func verifyClusterDeleted() bool {
 	return true
 }
 
-func verifyMCDeleted() bool {
+func verifyMCDeleted(httpClient *client.HTTP) bool {
 	// Make sure mc working dir is deleted
 	if _, err := os.Stat(workRoot + "/" + clusterID + "/" + mcWorkDir); err == nil {
 		// mc working dir not deleted
 		return false
 	}
-	return true
+	clusterObjResp, err := httpClient.GetContrailCluster(context.Background(),
+		&services.GetContrailClusterRequest{
+			ID: clusterID,
+		},
+	)
+	if err != nil {
+		return false
+	}
+
+	if clusterObjResp.ContrailCluster.CloudRefs == nil {
+		return true
+	}
+	return false
 }
 
 func unmarshalYaml(t *testing.T, yamlFile string) map[string]interface{} {
@@ -1407,7 +1420,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_delete_mc_playbook.yml"),
 		"Expected list of delete playbooks are not executed")
 	// make sure cluster is removed
-	assert.True(t, verifyMCDeleted(), "MC folder is not deleted during cluster delete")
+	assert.True(t, verifyMCDeleted(clusterDeployer.APIServer), "MC folder is not deleted during cluster delete")
 
 	// delete cluster itself
 	config.Action = deleteAction

@@ -130,64 +130,67 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 
 	assert.True(t, compareGeneratedTopology(t, expectedTopologies),
 		"topology file created during cloud create is not as expected")
-	if context["CLOUD_TYPE"] == onPrem {
-		return
-	}
-	assert.True(t, compareGeneratedSecret(t, expectedSecret),
-		"secret file created during cloud create is not as expected")
-	assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
-		"Expected list of create commands are not executed")
-	// check if ssh keys are created
-	assert.True(t, verifyGeneratedSSHKeyFiles(t),
-		"Expected ssh key file are not generated")
 
-	assert.True(t, verifyNodeType(cloud.ctx, t,
-		cloud.APIServer, &cloudTestScenario),
-		"public cloud nodes are not updated as type private")
+	if context["CLOUD_TYPE"] != onPrem {
 
-	// Wait for the in-memory endpoint cache to get updated
-	server.ForceProxyUpdate()
+		assert.True(t, verifyNodeType(cloud.ctx, t,
+			cloud.APIServer, &cloudTestScenario),
+			"public cloud nodes are not updated as type private")
 
-	//update cloud
-	config.Action = updateAction
+		assert.True(t, compareGeneratedSecret(t, expectedSecret),
+			"secret file created during cloud create is not as expected")
+		assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
+			"Expected list of create commands are not executed")
+		// check if ssh keys are created
+		assert.True(t, verifyGeneratedSSHKeyFiles(t),
+			"Expected ssh key file are not generated")
 
-	var cloudUpdateTestScenario integration.TestScenario
-	err = integration.LoadTestScenario(&cloudUpdateTestScenario, allInOneCloudUpdateTemplatePath, context)
-	assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudUpdateTemplatePath)
-	_ = integration.RunDirtyTestScenario(t, &cloudUpdateTestScenario, server)
+		// Wait for the in-memory endpoint cache to get updated
+		server.ForceProxyUpdate()
 
-	// delete previously created files
+		//update cloud
+		config.Action = updateAction
 
-	// Remove topology file and secret file
-	err = os.Remove(generatedTopoPath())
-	if err != nil {
-		assert.NoError(t, err, "failed to delete topology.yml file, during update")
-	}
-	err = os.Remove(generatedSecretPath())
-	if err != nil {
-		assert.NoError(t, err, "failed to delete secret.yml file, during update")
-	}
+		var cloudUpdateTestScenario integration.TestScenario
+		err = integration.LoadTestScenario(&cloudUpdateTestScenario, allInOneCloudUpdateTemplatePath, context)
+		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudUpdateTemplatePath)
+		_ = integration.RunDirtyTestScenario(t, &cloudUpdateTestScenario, server)
 
-	if _, err = os.Stat(executedCommandsPath()); err == nil {
-		// cleanup old executed command file
-		err = os.Remove(executedCommandsPath())
+		// delete previously created files
+
+		// Remove topology file and secret file
+		err = os.Remove(generatedTopoPath())
 		if err != nil {
-			assert.NoError(t, err, "failed to delete executed cmd yml, during update")
+			assert.NoError(t, err, "failed to delete topology.yml file, during update")
 		}
+		err = os.Remove(generatedSecretPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete secret.yml file, during update")
+		}
+
+		if _, err = os.Stat(executedCommandsPath()); err == nil {
+			// cleanup old executed command file
+			err = os.Remove(executedCommandsPath())
+			if err != nil {
+				assert.NoError(t, err, "failed to delete executed cmd yml, during update")
+			}
+		}
+
+		cloud, err = NewCloud(config)
+		assert.NoError(t, err, "failed to create cloud struct for update action")
+
+		err = cloud.Manage()
+		assert.NoError(t, err, "failed to manage cloud, while updating cloud")
+
+		assert.True(t, compareGeneratedTopology(t, expectedTopologies),
+			"topology file created during cloud update is not as expected")
+		assert.True(t, compareGeneratedSecret(t, expectedSecret),
+			"secret file created during cloud update is not as expected")
+		assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
+			"Expected list of update commands are not executed")
+	} else {
+		config.Action = updateAction
 	}
-
-	cloud, err = NewCloud(config)
-	assert.NoError(t, err, "failed to create cloud struct for update action")
-
-	err = cloud.Manage()
-	assert.NoError(t, err, "failed to manage cloud, while updating cloud")
-
-	assert.True(t, compareGeneratedTopology(t, expectedTopologies),
-		"topology file created during cloud update is not as expected")
-	assert.True(t, compareGeneratedSecret(t, expectedSecret),
-		"secret file created during cloud update is not as expected")
-	assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
-		"Expected list of update commands are not executed")
 
 	// delete cloud
 	var cloudDeleteTestScenario integration.TestScenario
@@ -211,7 +214,7 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 	assert.NoError(t, err, "failed to manage cloud, while deleting cloud")
 
 	// make sure cloud is removed
-	assert.True(t, verifyCloudDeleted(), "Topo/Secret file is not deleted during cloud delete")
+	assert.True(t, verifyCloudDeleted(cloud.ctx, cloud.APIServer), "Cloud dir/Cloud object is not deleted during cloud delete")
 
 }
 
@@ -322,10 +325,19 @@ func executedCommandsPath() string {
 	return defaultWorkRoot + "/" + cloudID + "/" + executedCmdTestFile
 }
 
-func verifyCloudDeleted() bool {
+func verifyCloudDeleted(ctx context.Context, httpClient *client.HTTP) bool {
 
 	if _, err := os.Stat(defaultWorkRoot + "/" + cloudID); err == nil {
 		// working dir not deleted
+		return false
+	}
+
+	_, err := httpClient.GetCloud(ctx,
+		&services.GetCloudRequest{
+			ID: cloudID,
+		},
+	)
+	if err == nil {
 		return false
 	}
 	return true

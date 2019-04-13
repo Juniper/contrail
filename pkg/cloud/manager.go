@@ -357,7 +357,8 @@ func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 	}
 
 	if c.config.Action == updateAction &&
-		(cloudObj.ProvisioningAction == deleteCloudAction) {
+		cloudObj.ProvisioningAction == deleteCloudAction &&
+		cloudObj.ProvisioningState == statusNoState {
 		return true, nil
 	}
 	return false, nil
