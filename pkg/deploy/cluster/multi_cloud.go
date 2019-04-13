@@ -140,6 +140,9 @@ func (m *multiCloudProvisioner) Deploy() error {
 			return err
 		}
 	case deleteCloud:
+		if !m.isMCDeleteRequest() {
+			return nil
+		}
 		status := map[string]interface{}{}
 		status[statusField] = statusUpdateProgress
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
@@ -280,12 +283,6 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
 
-	status := make(map[string]interface{})
-	if m.action != deleteAction {
-		status[statusField] = statusUpdateProgress
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-	}
-
 	// best effort cleaning of nodes
 	// need to export ssh-agent variables before killing the process
 	err := m.manageSSHAgent(m.workDir, updateAction)
@@ -297,22 +294,25 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	_ = m.mcPlayBook()
 
 	if m.action != deleteAction {
-		err = m.removeCloudDetailsFromCluster()
+		err = m.removeCloudRefFromCluster()
 		if err != nil {
-			status[statusField] = statusUpdateFailed
-			m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 			return err
 		}
-		// nolint: errcheck
-		defer m.manageSSHAgent(m.workDir, deleteAction)
-		// nolint: errcheck
-		defer os.RemoveAll(m.workDir)
-
-		status[statusField] = statusUpdated
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	}
+	// nolint: errcheck
+	defer m.manageSSHAgent(m.workDir, deleteAction)
+	// nolint: errcheck
+	defer os.RemoveAll(m.workDir)
 	return nil
 
+}
+
+func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
+	if m.clusterData.ClusterInfo.ProvisioningState == statusNoState &&
+		m.clusterData.ClusterInfo.ProvisioningAction == deleteCloud {
+		return true
+	}
+	return false
 }
 
 func (m *multiCloudProvisioner) isMCUpdated() (bool, error) {
@@ -597,18 +597,20 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 
 }
 
-func (m *multiCloudProvisioner) removeCloudDetailsFromCluster() error {
+func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
 
-	clusterObj := m.clusterData.ClusterInfo
-	clusterObj.ProvisioningAction = ""
-	clusterObj.CloudRefs = []*models.ContrailClusterCloudRef{}
-
-	_, err := m.cluster.APIServer.UpdateContrailCluster(context.Background(),
-		&services.UpdateContrailClusterRequest{
-			ContrailCluster: clusterObj,
-		},
-	)
-	return err
+	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
+		_, err := m.cluster.APIServer.DeleteContrailClusterCloudRef(
+			context.Background(), &services.DeleteContrailClusterCloudRefRequest{
+				ID:                      m.clusterData.ClusterInfo.UUID,
+				ContrailClusterCloudRef: cloudRef,
+			},
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func readSSHAgentConfig(path string) (*SSHAgentConfig, error) {
@@ -661,6 +663,8 @@ func (m *multiCloudProvisioner) runSSHAgent(workDir string, sshAgentPath string)
 
 	cmdOutput := &bytes.Buffer{}
 	cmdline.Stdout = cmdOutput
+	// set pgid enables creation of all child process with pgid of parent process
+	cmdline.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	if err := cmdline.Run(); err != nil {
 		return nil, err
@@ -709,7 +713,9 @@ func (m *multiCloudProvisioner) manageSSHAgent(workDir string,
 		}
 
 		if action == deleteAction && err == nil {
-			return process.Kill()
+			// sends signal to pgid if pid is a negative number
+			// this helps in killing all the child (zombie leftover process)
+			return syscall.Kill(-process.Pid, syscall.SIGKILL)
 		}
 	}
 	if m.cluster.config.Test {

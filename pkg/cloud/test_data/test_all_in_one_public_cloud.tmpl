@@ -207,8 +207,11 @@ test_data:
         - controller
     credential_refs:
       - uuid: cloud_credential_uuid
+    {% if "private" in CLOUD_TYPE %}
+    {% else %}
     cloud_private_subnet_refs:
       - uuid: cloud_private_subnet_uuid
+    {% endif %}
     {% if "aws" in CLOUD_TYPE %}
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
@@ -244,8 +247,11 @@ test_data:
         - compute
     credential_refs:
       - uuid: cloud_credential_uuid
+    {% if "private" in CLOUD_TYPE %}
+    {% else %}
     cloud_private_subnet_refs:
       - uuid: cloud_private_subnet_uuid
+    {% endif %}
     {% if "aws" in CLOUD_TYPE %}
     cloud_security_group_refs:
       - uuid: cloud_security_group_uuid
@@ -719,8 +725,11 @@ workflow:
           - controller
       credential_refs:
         - uuid: cloud_credential_uuid
+      {% if "private" in CLOUD_TYPE %}
+      {% else %}
       cloud_private_subnet_refs:
         - uuid: cloud_private_subnet_uuid
+      {% endif %}
       {% if "aws" in CLOUD_TYPE %}
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
@@ -758,8 +767,11 @@ workflow:
           - compute
       credential_refs:
         - uuid: cloud_credential_uuid
+      {% if "private" in CLOUD_TYPE %}
+      {% else %}
       cloud_private_subnet_refs:
         - uuid: cloud_private_subnet_uuid
+      {% endif %}
       {% if "aws" in CLOUD_TYPE %}
       cloud_security_group_refs:
         - uuid: cloud_security_group_uuid
