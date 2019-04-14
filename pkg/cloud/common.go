@@ -10,21 +10,26 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/flosch/pongo2"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/retry"
 	"github.com/Juniper/contrail/pkg/services"
 )
 
 const (
 	testTemplate        = "./test_data/test_cmd.tmpl"
 	executedCmdTestFile = "executed_cmd.yml"
+
+	statusRetryInterval = 3 * time.Second
 )
 
 // GetCloudDir gets directory of cloud
@@ -354,7 +359,7 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 		}
 	}
 
-	var errList []string
+	var errList, warnList []string
 
 	retErrList := deleteContrailMCGWRole(c.ctx,
 		c.APIServer, d.getGatewayNodes())
@@ -389,14 +394,19 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 
 	cloudUserErrList := deleteCloudUsers(c.ctx, c.APIServer, d.users)
 	if cloudUserErrList != nil {
+		warnList = append(warnList, cloudUserErrList...)
 	}
-	errList = append(errList, cloudUserErrList...)
 
 	if d.isCloudPublic() {
 		credErrList := deleteCredentialAndDeps(c.ctx, c.APIServer, d.credentials)
-		errList = append(errList, credErrList...)
+		warnList = append(warnList, credErrList...)
 	}
 
+	// log the warning messages
+	if len(warnList) > 0 {
+		c.log.Warnf("could not delete cloud refs deps because of errors: %s",
+			strings.Join(warnList, "\n"))
+	}
 	// join all the errors and return it
 	if len(errList) > 0 {
 		return errors.New(strings.Join(errList, "\n"))
@@ -444,4 +454,51 @@ func tfStateOutputExists(cloudID string) bool {
 		return false
 	}
 	return true
+}
+
+func waitForClusterStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
+	httpClient *client.HTTP, clusterUUID string) error {
+
+	return retry.Do(func() (retry bool, err error) {
+
+		clusterResp, err := httpClient.GetContrailCluster(ctx,
+			&services.GetContrailClusterRequest{
+				ID: clusterUUID,
+			},
+		)
+		if err != nil {
+			return false, err
+		}
+
+		if clusterResp.ContrailCluster.ProvisioningAction == "DELETE_CLOUD" {
+			switch clusterResp.ContrailCluster.ProvisioningState {
+			case statusCreateProgress:
+				return true, fmt.Errorf("waiting for create cluster %s to complete",
+					clusterUUID)
+			case statusUpdateProgress:
+				return true, fmt.Errorf("waiting for update cluster %s to complete",
+					clusterUUID)
+			case statusNoState:
+				return true, fmt.Errorf("waiting for cluster %s to complete processing",
+					clusterUUID)
+			case statusCreated:
+				return false, nil
+			case statusUpdated:
+				return false, nil
+			case statusCreateFailed:
+				return false, fmt.Errorf("cluster %s status has failed in creating",
+					clusterUUID)
+			case statusUpdateFailed:
+				return false, fmt.Errorf("cluster %s status has failed in updating",
+					clusterUUID)
+			}
+			return false, fmt.Errorf("unknown cluster status %s for cluster %s",
+				clusterResp.ContrailCluster.ProvisioningState, clusterUUID)
+
+		}
+
+		return false, fmt.Errorf("contrail-cluster %s does not have provisioning_action set to DELETE_CLOUD",
+			clusterUUID)
+	}, retry.WithLog(log.Logger),
+		retry.WithInterval(statusRetryInterval))
 }

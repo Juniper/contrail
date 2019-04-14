@@ -303,10 +303,21 @@ func (c *Cloud) delete() error {
 		return err
 	}
 
+	status := map[string]interface{}{statusField: statusUpdateFailed}
+
+	if data.isCloudPrivate() {
+		err = c.verifyContrailClusterStatus(data)
+		if err != nil {
+			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			return err
+		}
+	}
+
 	if data.isCloudPublic() {
 		if tfStateOutputExists(c.config.CloudID) {
 			err = c.manageTerraform(deleteAction)
 			if err != nil {
+				c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 				return err
 			}
 		}
@@ -315,11 +326,24 @@ func (c *Cloud) delete() error {
 	// delete all the objects referred/in-tree of this cloud object
 	err = c.deleteAPIObjects(data)
 	if err != nil {
+		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 		return err
 	}
 
 	return os.RemoveAll(GetCloudDir(c.config.CloudID))
 
+}
+
+func (c *Cloud) verifyContrailClusterStatus(data *Data) error {
+
+	for _, clusterRef := range data.info.ContrailClusterBackRefs {
+		err := waitForClusterStatusToBeUpdated(c.ctx, c.log,
+			c.APIServer, clusterRef.UUID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
