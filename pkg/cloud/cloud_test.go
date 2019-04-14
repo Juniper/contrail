@@ -21,6 +21,8 @@ const (
 	allInOneCloudTemplatePath        = "./test_data/test_all_in_one_public_cloud.tmpl"
 	allInOneCloudDeleteTemplatePath  = "./test_data/test_all_in_one_public_cloud_delete.tmpl"
 	allInOneCloudUpdateTemplatePath  = "./test_data/test_all_in_one_public_cloud_update.tmpl"
+	clusterUpdateFailedTemplatePath  = "./test_data/test_update_failed_cluster.tmpl"
+	clusterUpdatedTemplatePath       = "./test_data/test_updated_cluster.tmpl"
 	expectedAZCmdForCreateUpdate     = "./test_data/expected_azure_cmd_for_create_update.yaml"
 	expectedAZTopology1              = "./test_data/expected_azure_cloud_topology_1.yaml"
 	expectedAZTopology2              = "./test_data/expected_azure_cloud_topology_2.yaml"
@@ -74,6 +76,7 @@ func TestAWSCloud(t *testing.T) {
 		expectedAWSCmdForCreateUpdate, context)
 }
 
+// nolint: gocyclo
 func runCloudTest(t *testing.T, expectedTopologies []string,
 	expectedSecret string, expectedCmdForCreateUpdate string,
 	context map[string]interface{}) {
@@ -211,6 +214,39 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 	assert.NoError(t, err, "failed to create cloud struct for delete action")
 
 	err = cloud.Manage()
+	if context["CLOUD_TYPE"] == onPrem {
+		assert.Error(t, err,
+			"delete cloud should fail because cluster p_action is not set to DELETE_CLOUD")
+
+		// updates p_a of cluster to DELETE_CLOUD
+		// sets p_s of cluster to UPDATE_FAILED
+		var updateClusterFailedScenario integration.TestScenario
+		err = integration.LoadTestScenario(&updateClusterFailedScenario, clusterUpdateFailedTemplatePath, context)
+		assert.NoError(t, err, "failed to load cluster update failed test data")
+		_ = integration.RunDirtyTestScenario(t, &updateClusterFailedScenario, server)
+
+		// now delete the cloud again with update failed cluster status
+		cloud, err = NewCloud(config)
+		assert.NoError(t, err, "failed to create cloud struct for delete action")
+
+		err = cloud.Manage()
+		//expect error
+		assert.Error(t, err,
+			"delete cloud should fail because cluster p_a is not set to DELETE_CLOUD but p_s is UPDATE_FAILED")
+
+		// updates p_a of cluster to DELETE_CLOUD
+		// sets p_s of cluster to UPDATED
+		var updatedClusterScenario integration.TestScenario
+		err = integration.LoadTestScenario(&updatedClusterScenario, clusterUpdatedTemplatePath, context)
+		assert.NoError(t, err, "failed to load updated cluster test data")
+		_ = integration.RunDirtyTestScenario(t, &updatedClusterScenario, server)
+
+		// now delete the cloud again with updated cluster status
+		cloud, err = NewCloud(config)
+		assert.NoError(t, err, "failed to create cloud struct for delete action")
+
+		err = cloud.Manage()
+	}
 	assert.NoError(t, err, "failed to manage cloud, while deleting cloud")
 
 	// make sure cloud is removed
