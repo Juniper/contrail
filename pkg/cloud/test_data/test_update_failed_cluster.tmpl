@@ -1,0 +1,39 @@
+name: cluster update failed test
+description: cluster update failed test
+test_data:
+  all_in_one_cluster: &all_in_one_cluster
+    uuid: test_cluster_uuid
+    provisioning_state: UPDATE_FAILED
+    provisioning_action: DELETE_CLOUD
+  cloud: &cloud
+    provisioning_state: NOSTATE
+    uuid: cloud_uuid
+clients:
+  default:
+    id: alice
+    password: alice_password
+    insecure: true
+    scope:
+      project:
+        name: admin
+workflow:
+- name: update cloud
+  request:
+    path: /cloud/cloud_uuid
+    method: PUT
+    expected:
+    - 200
+    data:
+      cloud: *cloud
+  expect:
+    cloud: *cloud
+- name: update provisioning_state and provisioning_action of contrail-cluster
+  request:
+    path: /contrail-cluster/test_cluster_uuid
+    method: PUT
+    expected:
+    - 200
+    data:
+      contrail-cluster: *all_in_one_cluster
+  expect:
+    contrail-cluster: *all_in_one_cluster
