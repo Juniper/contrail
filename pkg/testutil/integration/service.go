@@ -207,6 +207,76 @@ func GetVirtualNetwork(t *testing.T, s services.ReadService, id string) *models.
 	return resp.GetVirtualNetwork()
 }
 
+// CreateRoutingInstance creates a routing instance resource from given service.
+func CreateRoutingInstance(t *testing.T, s services.WriteService, obj *models.RoutingInstance) *models.RoutingInstance {
+	resp, err := s.CreateRoutingInstance(context.Background(), &services.CreateRoutingInstanceRequest{RoutingInstance: obj})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("creating RoutingInstance failed\n requested: %+v\n "+
+			"response: %+v\n", obj, resp),
+	)
+	return resp.GetRoutingInstance()
+}
+
+// DeleteRoutingInstance deletes a routing instance resource from given service.
+func DeleteRoutingInstance(t *testing.T, s services.WriteService, id string) {
+	resp, err := s.DeleteRoutingInstance(context.Background(), &services.DeleteRoutingInstanceRequest{ID: id})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("deleting RoutingInstance failed\n UUID: %+v\n "+
+			"response: %+v\n", id, resp),
+	)
+}
+
+// GetRoutingInstance gets a routing instance resource from given service.
+func GetRoutingInstance(t *testing.T, s services.ReadService, id string) *models.RoutingInstance {
+	resp, err := s.GetRoutingInstance(context.Background(), &services.GetRoutingInstanceRequest{ID: id})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("getting RoutingInstance failed\n id: %+v\n "+
+			"response: %+v\n", id, resp),
+	)
+	return resp.GetRoutingInstance()
+}
+
+// CreateRouteTarget creates a route target resource from given service.
+func CreateRouteTarget(t *testing.T, s services.WriteService, obj *models.RouteTarget) *models.RouteTarget {
+	resp, err := s.CreateRouteTarget(context.Background(), &services.CreateRouteTargetRequest{RouteTarget: obj})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("creating RouteTarget failed\n requested: %+v\n "+
+			"response: %+v\n", obj, resp),
+	)
+	return resp.GetRouteTarget()
+}
+
+// DeleteRouteTarget deletes a route target resource from given service.
+func DeleteRouteTarget(t *testing.T, s services.WriteService, id string) {
+	resp, err := s.DeleteRouteTarget(context.Background(), &services.DeleteRouteTargetRequest{ID: id})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("deleting RouteTarget failed\n UUID: %+v\n "+
+			"response: %+v\n", id, resp),
+	)
+}
+
+// GetRouteTarget gets a route target resource from given service.
+func GetRouteTarget(t *testing.T, s services.ReadService, id string) *models.RouteTarget {
+	resp, err := s.GetRouteTarget(context.Background(), &services.GetRouteTargetRequest{ID: id})
+	require.NoError(
+		t,
+		err,
+		fmt.Sprintf("getting RouteTarget failed\n id: %+v\n "+
+			"response: %+v\n", id, resp),
+	)
+	return resp.GetRouteTarget()
+}
+
 // DeleteSecurityGroup deletes a security group resource from given service.
 func DeleteSecurityGroup(t *testing.T, s services.WriteService, id string) {
 	resp, err := s.DeleteSecurityGroup(context.Background(), &services.DeleteSecurityGroupRequest{ID: id})
