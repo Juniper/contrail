@@ -5,6 +5,32 @@
   regions:
     - name: us-west-1
       vpc:
+        - name: virtual_cloud_vpc2
+          cidr_block: 172.16.10.0/16
+          subnets:
+            - name: cloud_private_subnet_vpc2
+              cidr_block: 172.16.10.0/24
+              availability_zone: a
+          security_groups:
+              - name: cloud_security_group_rule_vpc2
+                ingress:
+                  from_port: 0
+                  to_port: 0
+                  protocol: tcp
+                  cidr_blocks:
+                  - 0.0.0.0/0
+          instances:
+            - name: cloud_node_gw_vpc2
+              roles:
+                - gateway
+              provision: true
+              username: ec2-user
+              os: rhel75
+              instance_type: t2.xlarge
+              subnets: cloud_private_subnet_vpc2
+              availability_zone: a
+              security_groups:
+                - cloud_security_group_rule_vpc2
         - name: virtual_cloud
           cidr_block: 192.168.10.0/16
           subnets:

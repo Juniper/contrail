@@ -12,13 +12,6 @@
               cidr_block: 192.168.10.0/24
               availability_zone: a
           security_groups:
-              - name: cloud_security_group_rule_tcp
-                egress:
-                  from_port: 0
-                  to_port: 0
-                  protocol: tcp
-                  cidr_blocks:
-                  - 0.0.0.0/0
               - name: cloud_security_group_rule
                 ingress:
                   from_port: 0
@@ -31,37 +24,23 @@
               roles:
                 - compute_node
               provision: true
-              username: centos
+              username: ec2-user
+              os: rhel75
               instance_type: t2.xlarge
-              machine_id: ami-XXXXXXX
               subnets: cloud_private_subnet
               availability_zone: a
               security_groups:
-                - cloud_security_group_rule_tcp
-                - cloud_security_group_rule
-            - name: cloud_node_controller
-              roles:
-                - controller
-              provision: true
-              username: centos
-              instance_type: t2.xlarge
-              machine_id: ami-XXXXXXX
-              subnets: cloud_private_subnet
-              availability_zone: a
-              security_groups:
-                - cloud_security_group_rule_tcp
                 - cloud_security_group_rule
             - name: cloud_node_gw
               roles:
                 - gateway
               provision: true
-              username: centos
+              username: ec2-user
+              os: rhel75
               instance_type: t2.xlarge
-              machine_id: ami-XXXXXXX
               subnets: cloud_private_subnet
               availability_zone: a
               security_groups:
-                - cloud_security_group_rule_tcp
                 - cloud_security_group_rule
         - name: virtual_cloud_vpc2
           cidr_block: 172.16.10.0/16
@@ -74,28 +53,17 @@
                 ingress:
                   from_port: 0
                   to_port: 0
-                  protocol: -1
+                  protocol: tcp
                   cidr_blocks:
                   - 0.0.0.0/0
           instances:
-            - name: cloud_node_compute_vpc2
-              roles:
-                - compute_node
-              provision: true
-              username: centos
-              instance_type: t2.xlarge
-              machine_id: ami-XXXXXXX
-              subnets: cloud_private_subnet_vpc2
-              availability_zone: a
-              security_groups:
-                - cloud_security_group_rule_vpc2
             - name: cloud_node_gw_vpc2
               roles:
                 - gateway
               provision: true
-              username: centos
+              username: ec2-user
+              os: rhel75
               instance_type: t2.xlarge
-              machine_id: ami-XXXXXXX
               subnets: cloud_private_subnet_vpc2
               availability_zone: a
               security_groups:
