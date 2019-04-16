@@ -70,6 +70,7 @@ type instanceData struct {
 	pvtIntf       *models.Port
 	gateway       string
 	services      []string
+	username      string
 	apiServer
 }
 
@@ -262,6 +263,10 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		if err != nil {
 			return nil, err
 		}
+		err = inst.updateInstanceUsername()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if inst.info.ContrailVrouterNodeBackRefs != nil {
@@ -274,6 +279,26 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 	}
 
 	return inst, nil
+}
+
+func (i *instanceData) updateInstanceUsername() error {
+
+	switch i.info.CloudInfo.OperatingSystem {
+	case "ubuntu16":
+		i.username = "ubuntu"
+	case "ubuntu18":
+		i.username = "ubuntu"
+	case "centos7":
+		i.username = "centos"
+	case "redhat":
+		i.username = "redhat"
+	case "rhel75":
+		i.username = "ec2-user"
+	default:
+		return fmt.Errorf("instance %s operating system %s is not valid",
+			i.info.UUID, i.info.CloudInfo.OperatingSystem)
+	}
+	return nil
 }
 
 func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torData, err error) {

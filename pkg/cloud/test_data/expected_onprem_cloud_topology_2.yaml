@@ -1,0 +1,56 @@
+- provider: onprem
+  organization: unit_test
+  project: 
+  instances:
+    - name: cloud_node_gw
+      public_ip: 
+      private_ip: 10.10.10.10
+      interface: cloud_node_gw_pvt_port
+      provision: true
+      username: centos
+      password: 
+      services:
+        - bgp_rr
+      roles:
+        - gateway
+      private_subnet:
+        - 192.168.10.0/24
+      protocols_mode:
+        - ssl_client
+      gateway: 1.1.1.1
+    - name: cloud_node_controller
+      public_ip: 
+      private_ip: 10.10.10.11
+      interface: cloud_node_controller_pvt_port
+      provision: false
+      username: centos
+      password: 
+      roles:
+        - controller
+    - name: cloud_node_compute
+      public_ip: 
+      private_ip: 10.10.10.12
+      interface: cloud_node_compute_pvt_port
+      provision: true
+      username: centos
+      password: 
+      roles:
+        - vrouter
+      gateway: 2.2.2.2
+    - name: mx60
+      public_ip: 20.20.20.200
+      private_ip: 10.10.10.100
+      private_subnet:
+        - 10.10.10.0/24
+        - 30.10.10.0/24
+      roles:
+        - tor
+      provision: true
+      username: test
+      password: test123
+      interface:
+        - irb.20
+        - irb.21
+      AS: 6500
+      protocols_mode:
+        - bgp
