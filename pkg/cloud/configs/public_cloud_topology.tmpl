@@ -60,16 +60,9 @@
                 {% endif %}
               {% endfor %}
               provision: true
-              {% for cred in cloud.credentials %}{% for cred_ref in instance.info.CredentialRefs %}{%if cred_ref.UUID in cred.UUID %}
-              username: {{ cred.SSHUser }}
-              {% endif %}{% endfor %}{% endfor %}
-              {% if az in cloudType %}
+              username: {{ instance.username }}
               os: {{ instance.info.CloudInfo.OperatingSystem }}
-              {% endif %}
               instance_type: {{ instance.info.CloudInfo.InstanceType }}
-              {% if aws in cloudType %}
-              machine_id: {{ instance.info.CloudInfo.MachineID }}
-              {% endif %}
               {% for subnet in cloud.subnets %}{% for subnet_ref in instance.info.CloudPrivateSubnetRefs %}{% if subnet_ref.UUID in subnet.info.UUID %}
               subnets: {{ subnet.info.Name }}
               {% if aws in cloudType %}
