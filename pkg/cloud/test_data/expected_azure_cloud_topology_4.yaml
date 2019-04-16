@@ -18,17 +18,17 @@
                 - name: cloud_security_group_rule
                   direction: inbound
           instances:
-            - name: cloud_node_compute
+            - name: cloud_node_gw
               roles:
-                - compute_node
+                - gateway
               provision: true
               username: redhat
               os: redhat
               instance_type: F16sv2
               subnets: cloud_private_subnet
-            - name: cloud_node_gw
+            - name: cloud_node_compute
               roles:
-                - gateway
+                - compute_node
               provision: true
               username: redhat
               os: redhat
