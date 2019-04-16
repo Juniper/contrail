@@ -24,14 +24,19 @@ const (
 	clusterUpdateFailedTemplatePath  = "./test_data/test_update_failed_cluster.tmpl"
 	clusterUpdatedTemplatePath       = "./test_data/test_updated_cluster.tmpl"
 	expectedAZCmdForCreateUpdate     = "./test_data/expected_azure_cmd_for_create_update.yaml"
-	expectedAZTopology1              = "./test_data/expected_azure_cloud_topology_1.yaml"
-	expectedAZTopology2              = "./test_data/expected_azure_cloud_topology_2.yaml"
+	expectedAZTopologyCreate1        = "./test_data/expected_azure_cloud_topology_1.yaml"
+	expectedAZTopologyUpdate1        = "./test_data/expected_azure_cloud_topology_2.yaml"
+	expectedAZTopologyCreate2        = "./test_data/expected_azure_cloud_topology_3.yaml"
+	expectedAZTopologyUpdate2        = "./test_data/expected_azure_cloud_topology_4.yaml"
 	expectedAZSecret                 = "./test_data/expected_azure_cloud_secret.yaml"
 	expectedAWSCmdForCreateUpdate    = "./test_data/expected_aws_cmd_for_create_update.yaml"
-	expectedAWSTopology1             = "./test_data/expected_aws_cloud_topology_1.yaml"
-	expectedAWSTopology2             = "./test_data/expected_aws_cloud_topology_2.yaml"
+	expectedAWSTopologyCreate1       = "./test_data/expected_aws_cloud_topology_1.yaml"
+	expectedAWSTopologyUpdate1       = "./test_data/expected_aws_cloud_topology_2.yaml"
+	expectedAWSTopologyCreate2       = "./test_data/expected_aws_cloud_topology_3.yaml"
+	expectedAWSTopologyUpdate2       = "./test_data/expected_aws_cloud_topology_3.yaml"
 	expectedAWSSecret                = "./test_data/expected_aws_cloud_secret.yaml"
-	expectedOnPremTopology           = "./test_data/expected_onprem_cloud_topology.yaml"
+	expectedOnPremTopology1          = "./test_data/expected_onprem_cloud_topology_1.yaml"
+	expectedOnPremTopology2          = "./test_data/expected_onprem_cloud_topology_2.yaml"
 	expectedOnPremSecret             = "./test_data/expected_onprem_cloud_secret.yaml"
 	expectedOnPremCmdForCreateUpdate = "./test_data/expected_onprem_cmd_for_create_update.yaml"
 	expectedPvtKey                   = "./test_data/cloud_keypair"
@@ -52,7 +57,7 @@ func TestOnPremCloud(t *testing.T) {
 		"CLOUD_TYPE": onPrem,
 	}
 
-	expectedTopologies := []string{expectedOnPremTopology}
+	expectedTopologies := []string{expectedOnPremTopology1, expectedOnPremTopology2}
 	runCloudTest(t, expectedTopologies, expectedOnPremSecret,
 		expectedOnPremCmdForCreateUpdate, context)
 }
@@ -61,7 +66,8 @@ func TestAzureCloud(t *testing.T) {
 		"CLOUD_TYPE": azure,
 	}
 
-	expectedTopologies := []string{expectedAZTopology1, expectedAZTopology2}
+	expectedTopologies := []string{expectedAZTopologyCreate1, expectedAZTopologyCreate2,
+		expectedAZTopologyUpdate1, expectedAZTopologyUpdate2}
 	runCloudTest(t, expectedTopologies, expectedAZSecret,
 		expectedAZCmdForCreateUpdate, context)
 }
@@ -71,7 +77,8 @@ func TestAWSCloud(t *testing.T) {
 		"CLOUD_TYPE": aws,
 	}
 
-	expectedTopologies := []string{expectedAWSTopology1, expectedAWSTopology2}
+	expectedTopologies := []string{expectedAWSTopologyCreate1, expectedAWSTopologyCreate2,
+		expectedAWSTopologyUpdate1, expectedAWSTopologyUpdate2}
 	runCloudTest(t, expectedTopologies, expectedAWSSecret,
 		expectedAWSCmdForCreateUpdate, context)
 }
@@ -157,7 +164,8 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 		var cloudUpdateTestScenario integration.TestScenario
 		err = integration.LoadTestScenario(&cloudUpdateTestScenario, allInOneCloudUpdateTemplatePath, context)
 		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudUpdateTemplatePath)
-		_ = integration.RunDirtyTestScenario(t, &cloudUpdateTestScenario, server)
+		updateCleanup := integration.RunDirtyTestScenario(t, &cloudUpdateTestScenario, server)
+		defer updateCleanup()
 
 		// delete previously created files
 
