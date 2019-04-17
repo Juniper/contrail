@@ -1,0 +1,120 @@
+name: Sync test
+description: network sync test
+cleanup:
+  - path: /network-ipam/test_ipam_blue_uuid_test_sync
+  - path: /network-policy/network_policy_uuid_test_sync
+  - path: /virtual-network/vn_blue_test_sync
+  - path: /project/admin_project_uuid_test_sync
+test_data:
+  admin_project: &admin_project
+    fq_name: ["default", "admin_project_uuid_test_sync"]
+    uuid: admin_project_uuid_test_sync
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    quota: {}
+
+  network_policy: &network_policy
+    fq_name: ["default", "admin_project_uuid_test_sync", "policy1"]
+    uuid: network_policy_uuid_test_sync
+    parent_type: project
+    parent_uuid: admin_project_uuid_test_sync
+
+  network_ipam_blue: &network_ipam_blue
+    uuid: test_ipam_blue_uuid_test_sync
+    display_name: test_ipam_blue
+    parent_type: project
+    parent_uuid: admin_project_uuid_test_sync
+    fq_name: ["default", "admin_project_uuid_test_sync","test_ipam_blue_uuid_test_sync"]
+
+  vn_blue: &vn_blue
+    fq_name: ["default", "admin_project_uuid_test_sync", "vn_blue_test_sync"]
+    uuid: vn_blue_test_sync
+    display_name: blue
+    parent_type: project
+    parent_uuid: admin_project_uuid_test_sync
+    network_policy_refs:
+      - uuid: network_policy_uuid_test_sync
+    network_ipam_refs:
+      - uuid: test_ipam_blue_uuid_test_sync
+
+clients:
+  default:
+    id: TestSyncSort
+    password: TestSyncSort
+    insecure: true
+    scope:
+      project:
+        name: TestSyncSort
+workflow:
+  - name: sort create project, network policy, network ipam and virtual network
+    request:
+      path: /sync
+      method: POST
+      expected:
+        - 200
+      data:
+        resources:
+          - kind: virtual_network
+            data: *vn_blue
+          - kind: project
+            data: *admin_project
+          - kind: network_policy
+            data: *network_policy
+          - kind: network_ipam
+            data: *network_ipam_blue
+    expect:
+      - kind: project
+        data: *admin_project
+      - kind: network_policy
+        data: *network_policy
+      - kind: network_ipam
+        data: *network_ipam_blue
+      - kind: virtual_network
+        data: *vn_blue
+
+  - name: sync on empty empty list should return 200
+    request:
+      path: /sync
+      method: POST
+      expected:
+        - 200
+      data:
+        resources:
+
+  - name: sort delete network, policy and project
+    request:
+      path: /sync
+      method: POST
+      expected:
+        - 200
+      data:
+        resources:
+          - kind: project
+            data: *admin_project
+            operation: DELETE
+          - kind: virtual_network
+            data: *vn_blue
+            operation: DELETE
+          - kind: network_ipam
+            data: *network_ipam_blue
+            operation: DELETE
+          - kind: network_policy
+            data: *network_policy
+            operation: DELETE
+    expect:
+      - kind: virtual_network
+        data:
+          uuid: vn_blue_test_sync
+        operation: DELETE
+      - kind: network_ipam
+        data:
+          uuid: test_ipam_blue_uuid_test_sync
+        operation: DELETE
+      - kind: network_policy
+        data:
+          uuid: network_policy_uuid_test_sync
+        operation: DELETE
+      - kind: project
+        data:
+          uuid: admin_project_uuid_test_sync
+        operation: DELETE
