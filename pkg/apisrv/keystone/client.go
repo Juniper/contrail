@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 
 	"github.com/databus23/keystone"
@@ -73,83 +75,52 @@ func (k *Client) NewAuth() *keystone.Auth {
 	return auth
 }
 
-func (k *Client) tokenRequest(method string, c echo.Context) (*http.Response, error) {
-	tokenURL := k.AuthURL + "/auth/tokens"
-	request, err := http.NewRequest(method, tokenURL, c.Request().Body)
+func (k *Client) tokenRequest(c echo.Context) error {
+	r := c.Request()
+	r.URL.Path = "/auth/tokens"
+	tokenURL, err := url.Parse(k.AuthURL)
 	if err != nil {
-		return nil, err
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	request.Header = c.Request().Header
-	request.ContentLength = c.Request().ContentLength
-	resp, err := k.httpClient.Do(request)
-
-	return resp, err
+	server := httputil.NewSingleHostReverseProxy(tokenURL)
+	server.ServeHTTP(c.Response(), r)
+	return nil
 }
 
 // CreateToken sends token create request to keystone endpoint.
 func (k *Client) CreateToken(c echo.Context) error {
-	resp, err := k.tokenRequest(echo.POST, c)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	defer resp.Body.Close() // nolint: errcheck
-	c.Response().Header().Set("X-Subject-Token",
-		resp.Header.Get("X-Subject-Token"))
-	authResponse := &kscommon.AuthResponse{}
-	_ = json.NewDecoder(resp.Body).Decode(authResponse) // nolint: errcheck
-
-	return c.JSON(resp.StatusCode, authResponse)
+	return k.tokenRequest(c)
 }
 
 // ValidateToken sends validate token request to keystone endpoint.
 func (k *Client) ValidateToken(c echo.Context) error {
-	resp, err := k.tokenRequest(echo.GET, c)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	defer resp.Body.Close() // nolint: errcheck
-	validateTokenResponse := &kscommon.ValidateTokenResponse{}
-	_ = json.NewDecoder(resp.Body).Decode(validateTokenResponse) // nolint: errcheck
-
-	return c.JSON(resp.StatusCode, validateTokenResponse)
+	return k.tokenRequest(c)
 }
 
 // GetProjects sends project get request to keystone endpoint.
 func (k *Client) GetProjects(c echo.Context) error {
-	projectURL := k.AuthURL + strings.TrimPrefix(c.Request().URL.Path, authPrefix)
-	request, err := http.NewRequest(echo.GET, projectURL, c.Request().Body)
-	if err != nil {
-		return err
-	}
-	request.Header = c.Request().Header
-	resp, err := k.httpClient.Do(request)
+	r := c.Request()
+	r.URL.Path = strings.TrimPrefix(r.URL.Path, authPrefix)
+	projectURL, err := url.Parse(k.AuthURL)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	defer resp.Body.Close() // nolint: errcheck
-	projectsResponse := &ProjectListResponse{}
-	_ = json.NewDecoder(resp.Body).Decode(projectsResponse) // nolint: errcheck
-
-	return c.JSON(resp.StatusCode, projectsResponse)
+	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server.ServeHTTP(c.Response(), r)
+	return nil
 }
 
 // GetProject sends project get request to keystone endpoint.
 func (k *Client) GetProject(c echo.Context, id string) error {
+	r := c.Request()
 	urlParts := []string{
-		k.AuthURL, strings.TrimPrefix(c.Request().URL.Path, authPrefix), id}
-	projectURL := strings.Join(urlParts, pathSep)
-	request, err := http.NewRequest(echo.GET, projectURL, c.Request().Body)
-	if err != nil {
-		return err
-	}
-	request.Header = c.Request().Header
-	resp, err := k.httpClient.Do(request)
+		strings.TrimPrefix(r.URL.Path, authPrefix), id}
+	r.URL.Path = strings.Join(urlParts, pathSep)
+	projectURL, err := url.Parse(k.AuthURL)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	defer resp.Body.Close() // nolint: errcheck
-	projectResponse := &ProjectResponse{}
-	_ = json.NewDecoder(resp.Body).Decode(projectResponse) // nolint: errcheck
-
-	return c.JSON(resp.StatusCode, projectResponse)
+	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server.ServeHTTP(c.Response(), r)
+	return nil
 }
