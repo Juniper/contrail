@@ -19,6 +19,8 @@ const (
 	OperationCreate = "CREATE"
 	OperationUpdate = "UPDATE"
 	OperationDelete = "DELETE"
+	OperationMixed  = "MIXED"
+	EmptyEventList  = "EMPTY"
 )
 
 // EventOption contains options for Event.
@@ -78,6 +80,52 @@ const (
 	temporaryVisited
 )
 
+// Sort sorts Events by parent-child dependency using Tarjan algorithm.
+// It doesn't verify reference cycles.
+func (e *EventList) Sort() (err error) {
+	var sorted []*Event
+	stateGraph := map[string]state{}
+	eventMap := map[string]*Event{}
+	for _, event := range e.Events {
+		uuid := event.GetUUID()
+		stateGraph[uuid] = notVisited
+		eventMap[uuid] = event
+	}
+	foundNotVisited := true
+	for foundNotVisited {
+		foundNotVisited = false
+		for _, event := range e.Events {
+			uuid := event.GetUUID()
+			st := stateGraph[uuid]
+			if st == notVisited {
+				sorted, err = visitResource(uuid, sorted, eventMap, stateGraph)
+				if err != nil {
+					return err
+				}
+				foundNotVisited = true
+				break
+			}
+		}
+	}
+	e.Events = sorted
+	return nil
+}
+
+//OperationType checks if all operations have the same type.
+func (e *EventList) OperationType() string {
+	if len(e.Events) == 0 {
+		return EmptyEventList
+	}
+
+	operation := e.Events[0].Operation()
+	for _, ev := range e.Events {
+		if operation != ev.Operation() {
+			return OperationMixed
+		}
+	}
+	return operation
+}
+
 //reorder request using Tarjan's algorithm
 func visitResource(uuid string, sorted []*Event,
 	eventMap map[string]*Event, stateGraph map[string]state,
@@ -108,37 +156,6 @@ func visitResource(uuid string, sorted []*Event,
 	stateGraph[uuid] = visited
 	sorted = append(sorted, event)
 	return sorted, nil
-}
-
-// Sort sorts Events by parent-child dependency using Tarjan algorithm.
-// It doesn't verify reference cycles.
-func (e *EventList) Sort() (err error) {
-	var sorted []*Event
-	stateGraph := map[string]state{}
-	eventMap := map[string]*Event{}
-	for _, event := range e.Events {
-		uuid := event.GetUUID()
-		stateGraph[uuid] = notVisited
-		eventMap[uuid] = event
-	}
-	foundNotVisited := true
-	for foundNotVisited {
-		foundNotVisited = false
-		for _, event := range e.Events {
-			uuid := event.GetUUID()
-			state := stateGraph[uuid]
-			if state == notVisited {
-				sorted, err = visitResource(uuid, sorted, eventMap, stateGraph)
-				if err != nil {
-					return err
-				}
-				foundNotVisited = true
-				break
-			}
-		}
-	}
-	e.Events = sorted
-	return nil
 }
 
 // Process dispatches resource event to call corresponding service functions.
@@ -184,6 +201,20 @@ func (e *Event) GetResource() basemodels.Object {
 	default:
 		return nil
 	}
+}
+
+func (e *Event) getReferences() basemodels.References {
+	res := e.GetResource()
+	if res == nil {
+		return nil
+	}
+
+	refs := res.GetReferences()
+
+	if parentRef := extractParentAsRef(res); parentRef != nil {
+		refs = append(refs, parentRef)
+	}
+	return refs
 }
 
 // Unwrap returns request wrapped by isEvent_Request interface.
@@ -300,6 +331,7 @@ func (e *Event) ExtractRefEvents() (EventList, error) {
 		return EventList{}, nil
 	case DeleteRequest:
 		//	TODO: Extract event for removing refs from resource before deleting it
+		logrus.Warn("Extracting references from DELETE event is not supported yet.")
 		return EventList{}, nil
 	default:
 		return EventList{}, errors.Errorf("cannot extract refs from event %v.", e)

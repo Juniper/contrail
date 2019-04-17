@@ -83,9 +83,14 @@ func ForEach(slice interface{}, f func(interface{})) bool {
 	return true
 }
 
-// NewReference creates new generic reference that can be processed into proper reference type.
-func NewReference(uuid, kind string) Reference {
+// NewUUIDReference creates new generic reference by uuid that can be processed into proper reference type.
+func NewUUIDReference(uuid string, kind string) Reference {
 	return &genericReference{uuid: uuid, kind: kind}
+}
+
+// NewFQNameReference creates new generic reference by fq name that can be processed into proper reference type.
+func NewFQNameReference(fqname []string, kind string) Reference {
+	return &genericReference{to: fqname, kind: kind}
 }
 
 type genericReference struct {
