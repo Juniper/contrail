@@ -46,6 +46,14 @@ func DefaultNameForKind(kind string) string {
 	return fmt.Sprintf("default-%s", kind)
 }
 
+// ParentFQName gets parent fqName.
+func ParentFQName(fqName []string) []string {
+	if len(fqName) > 1 {
+		return fqName[:len(fqName)-1]
+	}
+	return []string{}
+}
+
 // ChildFQName constructs fqName for child.
 func ChildFQName(parentFQName []string, childName string) []string {
 	result := make([]string, 0, len(parentFQName)+1)
