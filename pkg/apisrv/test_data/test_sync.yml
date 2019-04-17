@@ -101,14 +101,14 @@ workflow:
     - 200
     data:
       resources:
+      - kind: virtual_network
+        data: *vn_blue
       - kind: project
         data: *admin_project
       - kind: network_policy
         data: *network_policy1
       - kind: network_ipam
         data: *network_ipam_blue
-      - kind: virtual_network
-        data: *vn_blue
   expect:
     - kind: project
       data: *admin_project
@@ -207,6 +207,10 @@ workflow:
     - 200
     data:
       resources:
+      - kind: project
+        data:
+          uuid: admin_project_uuid_test_sync
+        operation: DELETE
       - kind: virtual_network
         data: *vn_blue2
         operation: DELETE
@@ -215,10 +219,6 @@ workflow:
         operation: DELETE
       - kind: network_policy
         data: *network_policy1
-        operation: DELETE
-      - kind: project
-        data:
-          uuid: admin_project_uuid_test_sync
         operation: DELETE
   expect:
     - kind: virtual_network
@@ -267,8 +267,9 @@ workflow:
           operation: DELETE
   expect:
     message:
-      $contains: "failed to process event at index: 0, operation: 'DELETE', kind 'project', uuid 'does_not_exists':
-       rpc error: code = NotFound desc = rpc error: code = NotFound desc = project with uuid: 'does_not_exists' does not exists"
+      $contains: "failed to retrieve object for event at index: 0, operation: 'DELETE', kind 'project', uuid 'does_not_exists':
+        error getting type for provided UUID: does_not_exists:
+         failed to retrieve metadata for UUID does_not_exists: rpc error: code = NotFound desc = not found"
 
 - name: try to create project with invalid parent UUID
   request:
