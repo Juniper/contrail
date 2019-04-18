@@ -679,18 +679,25 @@ definitions:
       instance_type:
         description: size of instance
         type: string
-      machine_id:
-        description: image (ami) id of instance
-        type: string
       operating_system:
         description: Name of operating system, ex - centos7 or ubuntu16
-        type: string
-      os_version:
-        description: specific version of operating system
+        enum:
+        - ubuntu16
+        - ubuntu18
+        - centos7
+        - redhat
+        - rhel75
         type: string
       roles:
         description: Roles of the cloud instance
         items:
+          enum:
+          - compute
+          - controller
+          - gateway
+          - k8s_master
+          - k8s_node
+          - vrouter
           type: string
         type: array
       volume_size:

@@ -20,9 +20,9 @@
                   cidr_blocks:
                   - 0.0.0.0/0
           instances:
-            - name: cloud_node_compute
+            - name: cloud_node_gw
               roles:
-                - compute_node
+                - gateway
               provision: true
               username: ec2-user
               os: rhel75
@@ -31,9 +31,9 @@
               availability_zone: a
               security_groups:
                 - cloud_security_group_rule
-            - name: cloud_node_gw
+            - name: cloud_node_compute
               roles:
-                - gateway
+                - compute_node
               provision: true
               username: ec2-user
               os: rhel75
