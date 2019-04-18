@@ -3,6 +3,7 @@ package cloud
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -17,6 +18,12 @@ const (
 	gatewayRole = "gateway"
 	computeRole = "compute"
 )
+
+type dataInterface interface {
+	hasInfo() bool
+}
+
+type dataList []dataInterface
 
 //Data for cloud provider data
 type Data struct {
@@ -108,6 +115,10 @@ func (s *subnetData) getPvtSubnetObject() (*models.CloudPrivateSubnet, error) {
 	return subnetResp.GetCloudPrivateSubnet(), nil
 }
 
+func (s *subnetData) hasInfo() bool {
+	return s.info != nil
+}
+
 func (v *virtualCloudData) newSubnet(subnet *models.CloudPrivateSubnet) (*subnetData, error) {
 
 	s := &subnetData{
@@ -130,6 +141,7 @@ func (v *virtualCloudData) newSubnet(subnet *models.CloudPrivateSubnet) (*subnet
 
 func (v *virtualCloudData) updateSubnets() error {
 
+	var unSortedSubnet dataList
 	for _, subnet := range v.info.CloudPrivateSubnets {
 		newSubnet, err := v.newSubnet(subnet)
 		if err != nil {
@@ -139,7 +151,12 @@ func (v *virtualCloudData) updateSubnets() error {
 		if err != nil {
 			return err
 		}
-		v.subnets = append(v.subnets, newSubnet)
+		unSortedSubnet = append(unSortedSubnet, newSubnet)
+	}
+
+	sort.Sort(unSortedSubnet)
+	for _, sortedSubnet := range unSortedSubnet {
+		v.subnets = append(v.subnets, sortedSubnet.(*subnetData))
 	}
 
 	data := v.parentRegion.parentProvider.parentCloud
@@ -183,6 +200,10 @@ func (i *torData) getTorObject() (*models.PhysicalRouter, error) {
 		return nil, err
 	}
 	return torResp.GetPhysicalRouter(), nil
+}
+
+func (i *torData) hasInfo() bool {
+	return i.info != nil
 }
 
 // nolint: gocyclo
@@ -301,6 +322,10 @@ func (i *instanceData) updateInstanceUsername() error {
 	return nil
 }
 
+func (i *instanceData) hasInfo() bool {
+	return i.info != nil
+}
+
 func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torData, err error) {
 	data := v.parentRegion.parentProvider.parentCloud
 	if !data.isCloudPrivate() {
@@ -341,6 +366,7 @@ func (v *virtualCloudData) newTorInstance(p *models.PhysicalRouter) (tor *torDat
 
 func (v *virtualCloudData) updateInstances(isdelRequest bool) error {
 
+	var unsortedInstances dataList
 	nodes, err := v.getInstancesWithTag(v.info.TagRefs, isdelRequest)
 	if err != nil {
 		return err
@@ -351,7 +377,11 @@ func (v *virtualCloudData) updateInstances(isdelRequest bool) error {
 		if err != nil {
 			return err
 		}
-		v.instances = append(v.instances, newI)
+		unsortedInstances = append(unsortedInstances, newI)
+	}
+	sort.Sort(unsortedInstances)
+	for _, sortedI := range unsortedInstances {
+		v.instances = append(v.instances, sortedI.(*instanceData))
 	}
 
 	data := v.parentRegion.parentProvider.parentCloud
@@ -361,6 +391,7 @@ func (v *virtualCloudData) updateInstances(isdelRequest bool) error {
 
 func (v *virtualCloudData) updateTorInstances() error {
 
+	var unSortedTOR dataList
 	physicalRouters, err := v.getTorInstancesWithTag(v.info.TagRefs)
 	if err != nil {
 		return err
@@ -371,9 +402,13 @@ func (v *virtualCloudData) updateTorInstances() error {
 		if err != nil {
 			return err
 		}
-		v.tors = append(v.tors, newI)
+		unSortedTOR = append(unSortedTOR, newI)
 	}
 
+	sort.Sort(unSortedTOR)
+	for _, sortedTOR := range unSortedTOR {
+		v.tors = append(v.tors, sortedTOR.(*torData))
+	}
 	data := v.parentRegion.parentProvider.parentCloud
 	data.tors = append(data.tors, v.tors...)
 	return nil
@@ -454,8 +489,13 @@ func (v *virtualCloudData) newSG(mSG *models.CloudSecurityGroup) (*sgData, error
 	return sg, nil
 }
 
+func (sg *sgData) hasInfo() bool {
+	return sg.info != nil
+}
+
 func (v *virtualCloudData) updateSGs() error {
 
+	var unSortedSG dataList
 	for _, sg := range v.info.CloudSecurityGroups {
 		newSG, err := v.newSG(sg)
 		if err != nil {
@@ -465,9 +505,13 @@ func (v *virtualCloudData) updateSGs() error {
 		if err != nil {
 			return err
 		}
-		v.sgs = append(v.sgs, newSG)
+		unSortedSG = append(unSortedSG, newSG)
 	}
 
+	sort.Sort(unSortedSG)
+	for _, sortedVC := range unSortedSG {
+		v.sgs = append(v.sgs, sortedVC.(*sgData))
+	}
 	data := v.parentRegion.parentProvider.parentCloud
 	data.securityGroups = append(data.securityGroups, v.sgs...)
 	return nil
@@ -684,6 +728,10 @@ func (v *virtualCloudData) getTagsAndUpdateClusterNodes() error {
 
 }
 
+func (v *virtualCloudData) hasInfo() bool {
+	return v.info != nil
+}
+
 func (r *regionData) newVCloud(vCloud *models.VirtualCloud) (*virtualCloudData, error) {
 
 	vc := &virtualCloudData{
@@ -708,6 +756,7 @@ func (r *regionData) newVCloud(vCloud *models.VirtualCloud) (*virtualCloudData, 
 // nolint: gocyclo
 func (r *regionData) updateVClouds() error {
 
+	var unSortedVCloud dataList
 	for _, vc := range r.info.VirtualClouds {
 		newVC, err := r.newVCloud(vc)
 		if err != nil {
@@ -745,7 +794,12 @@ func (r *regionData) updateVClouds() error {
 			return err
 		}
 
-		r.virtualClouds = append(r.virtualClouds, newVC)
+		unSortedVCloud = append(unSortedVCloud, newVC)
+
+	}
+	sort.Sort(unSortedVCloud)
+	for _, sortedVC := range unSortedVCloud {
+		r.virtualClouds = append(r.virtualClouds, sortedVC.(*virtualCloudData))
 	}
 	return nil
 }
@@ -762,6 +816,10 @@ func (r *regionData) getRegionObject() (*models.CloudRegion, error) {
 
 	return regResp.GetCloudRegion(), nil
 
+}
+
+func (r *regionData) hasInfo() bool {
+	return r.info != nil
 }
 
 func (p *providerData) newRegion(region *models.CloudRegion) (*regionData, error) {
@@ -799,6 +857,10 @@ func (p *providerData) getProviderObject() (*models.CloudProvider, error) {
 
 }
 
+func (p *providerData) hasInfo() bool {
+	return p.info != nil
+}
+
 func (d *Data) newProvider(provider *models.CloudProvider) (*providerData, error) {
 
 	prov := &providerData{
@@ -822,6 +884,7 @@ func (d *Data) newProvider(provider *models.CloudProvider) (*providerData, error
 
 func (p *providerData) updateRegions() error {
 
+	var unSortedRegion dataList
 	for _, region := range p.info.CloudRegions {
 		newRegion, err := p.newRegion(region)
 		if err != nil {
@@ -832,13 +895,18 @@ func (p *providerData) updateRegions() error {
 		if err != nil {
 			return err
 		}
+		unSortedRegion = append(unSortedRegion, newRegion)
+	}
 
-		p.regions = append(p.regions, newRegion)
+	sort.Sort(unSortedRegion)
+	for _, sortedReg := range unSortedRegion {
+		p.regions = append(p.regions, sortedReg.(*regionData))
 	}
 	return nil
 }
 
 func (d *Data) updateProviders() error {
+	var unSortedProvider dataList
 	for _, provider := range d.info.CloudProviders {
 		newProvider, err := d.newProvider(provider)
 		if err != nil {
@@ -850,7 +918,11 @@ func (d *Data) updateProviders() error {
 			return err
 		}
 
-		d.providers = append(d.providers, newProvider)
+		unSortedProvider = append(unSortedProvider, newProvider)
+	}
+	sort.Sort(unSortedProvider)
+	for _, sortedProv := range unSortedProvider {
+		d.providers = append(d.providers, sortedProv.(*providerData))
 	}
 	return nil
 }
@@ -1152,4 +1224,33 @@ func (d *Data) getGatewayNodes() []*instanceData {
 		}
 	}
 	return gwNodes
+}
+
+func (l dataList) Swap(i, j int) {
+	l[i], l[j] = l[j], l[i]
+}
+
+func (l dataList) Len() int {
+	return len(l)
+}
+
+func (l dataList) Less(i, j int) bool {
+	switch l[i].(type) {
+	case *providerData:
+		return l[i].(*providerData).info.Name < l[j].(*providerData).info.Name
+	case *regionData:
+		return l[i].(*regionData).info.Name < l[j].(*regionData).info.Name
+	case *virtualCloudData:
+		return l[i].(*virtualCloudData).info.Name < l[j].(*virtualCloudData).info.Name
+	case *instanceData:
+		return l[i].(*instanceData).info.Name < l[j].(*instanceData).info.Name
+	case *torData:
+		return l[i].(*torData).info.Name < l[j].(*torData).info.Name
+	case *subnetData:
+		return l[i].(*subnetData).info.Name < l[j].(*subnetData).info.Name
+	case *sgData:
+		return l[i].(*sgData).info.Name < l[j].(*sgData).info.Name
+	default:
+		return false
+	}
 }
