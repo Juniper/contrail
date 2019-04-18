@@ -18,7 +18,7 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 
 	// TODO: Call events.Sort()
 
-	responses, err := events.Process(c.Request().Context(), service)
+	responses, err := events.Process(c.Request().Context(), service, service.InTransactionDoer)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
