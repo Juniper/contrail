@@ -34,22 +34,6 @@ schema:
       view:
       - create
       - detail
-    appformix_plugins:
-      description: Appformix Plugins
-      operations: "CRUD"
-      presence: "optional"
-      nullable: true
-      permission:
-      - create
-      - update
-      sql: ""
-      title: Appformix Plugins
-      type: "array"
-      items:
-        type: "string"
-      view:
-      - create
-      - detail
     appformix_configuration:
       operations: "CRUD"
       presence: "optional"
