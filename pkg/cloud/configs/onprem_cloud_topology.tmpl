@@ -1,6 +1,7 @@
 - provider: onprem
   organization: {{ cloud.info.Organization }}
   project: {{ cloud.projectName }}
+  {% if cloud.instances|length >= 1 %}
   instances:
   {% for instance in cloud.instances %}
     - name: {{ instance.info.Hostname }}
@@ -42,6 +43,8 @@
       gateway: {{ instance.gateway }}
       {% endif %}
   {% endfor %}
+  {% endif %}
+  {% if cloud.tors|length >= 1 %}
   {% for tor in cloud.tors %}
     - name: {{ tor.info.Name }}
       public_ip: {{ tor.info.PhysicalRouterManagementIP }}
@@ -63,3 +66,4 @@
       protocols_mode:
         - bgp
   {% endfor %}
+  {% endif %}
