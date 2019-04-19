@@ -145,12 +145,6 @@ appformix_configuration:
       {{ appformixCluster.AppformixImageDir }}appformix-network_device-images-{{ appformixCluster.AppformixVersion }}.tar.gz
       {{ appformixCluster.AppformixImageDir }}appformix-openstack-images-{{ appformixCluster.AppformixVersion }}.tar.gz
     {%endif%}
-    {% if appformixCluster.AppformixPlugins %}
-    appformix_plugins:
-    {% for plugin in appformixCluster.AppformixPlugins %}
-      {{ plugin }}
-    {%endfor %}
-    {%endif%}
     appformix_version:  {{ appformixCluster.AppformixVersion }}
     appformix_license:  {{ appformixCluster.AppformixLicense }}
     {% if appformixCluster.AppformixDockerRegistry %}
