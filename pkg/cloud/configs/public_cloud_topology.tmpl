@@ -1,14 +1,17 @@
+{% if cloud.providers|length >= 1 %}
 {% for provider in cloud.providers %}
 {% with provider.info.Type as cloudType "azure" as az "aws" as aws %}
 - provider: {{ cloudType }}
   organization: {{ cloud.info.Organization }}
   project: {{ cloud.info.Project }}
+  {% if provider.regions|length >= 1 %}
   regions:
   {% for region in provider.regions %}
     - name: {{ region.info.DisplayName }}
     {% if az in cloudType %}
       resource_group: {{ region.info.ResourceGroup }}
     {% endif %}
+    {% if region.virtualClouds|length >= 1 %}
     {% if az in cloudType %}
       vnet:
     {% elif aws in cloudType %}
@@ -17,6 +20,7 @@
     {% for vcloud in region.virtualClouds %}
         - name: {{ vcloud.info.Name }}
           cidr_block: {{ vcloud.info.CidrBlock }}
+          {% if vcloud.subnets|length >= 1 %}
           subnets:
           {% for subnet in vcloud.subnets %}
             - name: {{ subnet.info.Name }}
@@ -27,6 +31,8 @@
               {% if vcloud.info.CloudSecurityGroups %}security_group: {{ vcloud.info.CloudSecurityGroups.0.Name }}{% endif %}
               {% endif %}
           {% endfor %}
+          {% endif %}
+          {% if vcloud.sgs|length >= 1 %}
           security_groups:
           {% for sg in vcloud.sgs %}
             {% if az in cloudType %}
@@ -48,6 +54,8 @@
               {% endfor %}
             {% endif %}
           {% endfor %}
+          {% endif %}
+          {% if vcloud.instances|length >= 1 %}
           instances:
           {% for instance in vcloud.instances %}
             - name: {{ instance.info.Hostname }}
@@ -85,7 +93,11 @@
               {% endif %}{% endfor %}{% endfor %}
               {% endif %}{% endif %}
           {% endfor %}
+          {% endif %}
     {% endfor %}
+    {% endif %}
   {% endfor %}
+  {% endif %}
 {% endwith %}
 {% endfor %}
+{% endif %}

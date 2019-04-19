@@ -21,15 +21,18 @@ const (
 	allInOneCloudTemplatePath        = "./test_data/test_all_in_one_public_cloud.tmpl"
 	allInOneCloudDeleteTemplatePath  = "./test_data/test_all_in_one_public_cloud_delete.tmpl"
 	allInOneCloudUpdateTemplatePath  = "./test_data/test_all_in_one_public_cloud_update.tmpl"
+	deleteVPCTemplatePath            = "./test_data/test_vpc_delete.tmpl"
 	clusterUpdateFailedTemplatePath  = "./test_data/test_update_failed_cluster.tmpl"
 	clusterUpdatedTemplatePath       = "./test_data/test_updated_cluster.tmpl"
 	expectedAZCmdForCreateUpdate     = "./test_data/expected_azure_cmd_for_create_update.yaml"
 	expectedAZTopologyCreate         = "./test_data/expected_azure_cloud_topology_create.yaml"
 	expectedAZTopologyUpdate         = "./test_data/expected_azure_cloud_topology_update.yaml"
+	expectedAZTopologyDeleteVPC      = "./test_data/expected_azure_cloud_delete_vpc.yaml"
 	expectedAZSecret                 = "./test_data/expected_azure_cloud_secret.yaml"
 	expectedAWSCmdForCreateUpdate    = "./test_data/expected_aws_cmd_for_create_update.yaml"
 	expectedAWSTopologyCreate        = "./test_data/expected_aws_cloud_topology_create.yaml"
 	expectedAWSTopologyUpdate        = "./test_data/expected_aws_cloud_topology_update.yaml"
+	expectedAWSTopologyDeleteVPC     = "./test_data/expected_aws_cloud_delete_vpc.yaml"
 	expectedAWSSecret                = "./test_data/expected_aws_cloud_secret.yaml"
 	expectedOnPremTopology           = "./test_data/expected_onprem_cloud_topology.yaml"
 	expectedOnPremSecret             = "./test_data/expected_onprem_cloud_secret.yaml"
@@ -62,7 +65,7 @@ func TestAzureCloud(t *testing.T) {
 	}
 
 	expectedTopologies := []string{expectedAZTopologyCreate,
-		expectedAZTopologyUpdate}
+		expectedAZTopologyUpdate, expectedAZTopologyDeleteVPC}
 	runCloudTest(t, expectedTopologies, expectedAZSecret,
 		expectedAZCmdForCreateUpdate, context)
 }
@@ -73,7 +76,7 @@ func TestAWSCloud(t *testing.T) {
 	}
 
 	expectedTopologies := []string{expectedAWSTopologyCreate,
-		expectedAWSTopologyUpdate}
+		expectedAWSTopologyUpdate, expectedAWSTopologyDeleteVPC}
 	runCloudTest(t, expectedTopologies, expectedAWSSecret,
 		expectedAWSCmdForCreateUpdate, context)
 }
@@ -194,6 +197,45 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 			"secret file created during cloud update is not as expected")
 		assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
 			"Expected list of update commands are not executed")
+
+		// delete vpc and compare topology
+		var cloudDeleteVPVTestScenario integration.TestScenario
+		err = integration.LoadTestScenario(&cloudDeleteVPVTestScenario,
+			deleteVPCTemplatePath, context)
+		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s",
+			deleteVPCTemplatePath)
+		deleteVPC := integration.RunDirtyTestScenario(t, &cloudDeleteVPVTestScenario, server)
+		deleteVPC()
+
+		// delete previously created files
+
+		// Remove topology file and secret file
+		err = os.Remove(generatedTopoPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete topology.yml file, during vpc delete")
+		}
+		err = os.Remove(generatedSecretPath())
+		if err != nil {
+			assert.NoError(t, err, "failed to delete secret.yml file, during vpc delete")
+		}
+
+		if _, err = os.Stat(executedCommandsPath()); err == nil {
+			// cleanup old executed command file
+			err = os.Remove(executedCommandsPath())
+			if err != nil {
+				assert.NoError(t, err, "failed to delete executed cmd yml, during vpc delete")
+			}
+		}
+
+		cloud, err = NewCloud(config)
+		assert.NoError(t, err, "failed to create cloud struct for update action")
+
+		err = cloud.Manage()
+		assert.NoError(t, err, "failed to manage cloud, while updating cloud")
+
+		assert.True(t, compareGeneratedTopology(t, expectedTopologies),
+			"topology file created during cloud delete vpc is not as expected")
+
 	} else {
 		config.Action = updateAction
 	}
