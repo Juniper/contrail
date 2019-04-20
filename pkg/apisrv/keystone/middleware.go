@@ -80,7 +80,7 @@ func GetAuthSkipPaths() ([]string, error) {
 	skipPaths := []string{
 		"/contrail-clusters?fields=uuid,name",
 		"/keystone/v3/auth/tokens",
-		"/proxy/keystone/v3/auth/tokens",
+		"/proxy/",
 		"/keystone/v3/projects",
 		"/keystone/v3/auth/projects", // TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
 		"/v3/auth/tokens",
@@ -132,15 +132,6 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 				// Skip grpc
 				return next(c)
 			}
-			clusterID := r.Header.Get(xClusterIDKey)
-			if clusterID == "" {
-				clusterID = apicommon.GetClusterIDFromProxyURL(r.URL.Path)
-			}
-			keystoneEndpoint := getKeystoneEndpoint(clusterID, endpoints)
-			if keystoneEndpoint != nil {
-				keystoneClient.SetAuthURL(keystoneEndpoint.URL)
-				auth = keystoneClient.NewAuth()
-			}
 			tokenString := r.Header.Get("X-Auth-Token")
 			if tokenString == "" {
 				cookie, _ := r.Cookie("x-auth-token") // nolint: errcheck
@@ -177,16 +168,6 @@ func AuthInterceptor(keystoneClient *Client,
 		token := md["x-auth-token"]
 		if len(token) == 0 {
 			return nil, errutil.ErrorUnauthenticated
-		}
-		var clusterID string
-		xClusterID := md[xClusterIDKey]
-		if len(xClusterID) == 1 {
-			clusterID = xClusterID[0]
-		}
-		keystoneEndpoint := getKeystoneEndpoint(clusterID, endpoints)
-		if keystoneEndpoint != nil {
-			keystoneClient.SetAuthURL(keystoneEndpoint.URL)
-			auth = keystoneClient.NewAuth()
 		}
 		newCtx, err := authenticate(ctx, auth, token[0])
 		if err != nil {
