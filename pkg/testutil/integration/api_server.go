@@ -23,6 +23,7 @@ import (
 )
 
 const (
+	defaultAuthType    = "keystone"
 	authEndpointSuffix = "/keystone/v3"
 	dbUser             = "root"
 	dbPassword         = "contrail123"
@@ -58,6 +59,7 @@ type APIServerConfig struct {
 	EnableEtcdNotifier bool
 	DisableLogAPI      bool
 	EnableRBAC         bool
+	AuthType           string
 }
 
 // NewRunningAPIServer creates new running test API Server for testing purposes.
@@ -100,6 +102,9 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 }
 
 func setDefaultViperConfig(c *APIServerConfig) {
+	if c.AuthType == "" {
+		c.AuthType = defaultAuthType
+	}
 	setViperConfig(map[string]interface{}{
 		"database.type":               c.DBDriver,
 		"database.host":               "localhost",
@@ -119,6 +124,7 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"keystone.store.expire":       3600,
 		"keystone.insecure":           true,
 		"log_level":                   c.LogLevel,
+		"auth_type":                   c.AuthType,
 		"server.notify_etcd":          c.EnableEtcdNotifier,
 		"server.read_timeout":         10,
 		"server.write_timeout":        5,
