@@ -252,3 +252,26 @@ func testClusterLoginWithSuperUserToken(
 		}
 	}
 }
+
+func TestBasicAuth(t *testing.T) {
+	pContext := pongo2.Context{
+		"cluster_name":  clusterName,
+		"endpoint_name": clusterName + "_config",
+		"private_url":   ksPrivate.URL,
+		"public_url":    ksPublic.URL,
+	}
+	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
+		DBDriver:           basedb.DriverPostgreSQL,
+		RepoRootPath:       "../../..",
+		EnableEtcdNotifier: false,
+	})
+	defer s.CloseT(t)
+
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, testClusterTokenAPIFile, pContext)
+	assert.NoError(t, err, "failed to load endpoint create test data")
+	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup()
+
+	server.ForceProxyUpdate()
+}

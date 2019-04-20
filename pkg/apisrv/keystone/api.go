@@ -57,9 +57,11 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 
 	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
 	e.GET("/keystone/v3/auth/projects", keystone.ListProjectsAPI)
+	e.GET("/keystone/v3/auth/domains", keystone.ListDomainsAPI)
 
 	e.GET("/keystone/v3/projects", keystone.ListProjectsAPI)
 	e.GET("/keystone/v3/projects/:id", keystone.GetProjectAPI)
+	e.GET("/keystone/v3/domains", keystone.ListDomainsAPI)
 
 	return keystone, nil
 }
@@ -140,6 +142,15 @@ func (keystone *Keystone) appendStaticProjects(
 	}
 }
 
+func (keystone *Keystone) appendStaticDomains(
+	configEndpoint string, domains *[]*kscommon.Domain) {
+	authType := viper.GetString("auth_type")
+	if authType == "basic-auth" && configEndpoint != "" {
+		staticDomains := keystone.staticAssignment.ListDomains()
+		*domains = append(*domains, staticDomains...)
+	}
+}
+
 func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error) {
 	tokenID := r.Header.Get("X-Auth-Token")
 	if tokenID == "" {
@@ -179,6 +190,25 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusNotFound, nil)
+}
+
+//ListDomainsAPI is an API handler to list domains.
+func (keystone *Keystone) ListDomainsAPI(c echo.Context) error {
+	token, err := keystone.validateToken(c.Request())
+	if err != nil {
+		return err
+	}
+
+	configEndpoint, err := keystone.setAssignment()
+	if err != nil {
+		return err
+	}
+	domains := keystone.Assignment.ListDomains()
+	keystone.appendStaticProjects(configEndpoint, &domains, user)
+	domainsResponse := &DomainListResponse{
+		Domains: domains,
+	}
+	return c.JSON(http.StatusOK, domainsResponse)
 }
 
 //ListProjectsAPI is an API handler to list projects.

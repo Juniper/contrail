@@ -74,6 +74,15 @@ func (assignment *VNCAPIAssignment) FetchUser(name, password string) (*kscommon.
 	return user, nil
 }
 
+//ListDomains is used to list domains
+func (assignment *VNCAPIAssignment) ListDomains() []*kscommon.Domain {
+	domains := []*kscommon.Domain{}
+	for _, domain := range assignment.Domains {
+		domain = append(domains, domain)
+	}
+	return projects
+}
+
 //ListProjects is used to list projects
 func (assignment *VNCAPIAssignment) ListProjects() []*kscommon.Project {
 	projects := []*kscommon.Project{}
