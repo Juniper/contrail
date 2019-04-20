@@ -97,6 +97,19 @@ func (k *Client) ValidateToken(c echo.Context) error {
 	return k.tokenRequest(c)
 }
 
+// GetDomains sends domain get request to keystone endpoint.
+func (k *Client) GetDomains(c echo.Context) error {
+	r := c.Request()
+	r.URL.Path = strings.TrimPrefix(r.URL.Path, authPrefix)
+	projectURL, err := url.Parse(k.AuthURL)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	server := httputil.NewSingleHostReverseProxy(projectURL)
+	server.ServeHTTP(c.Response(), r)
+	return nil
+}
+
 // GetProjects sends project get request to keystone endpoint.
 func (k *Client) GetProjects(c echo.Context) error {
 	r := c.Request()

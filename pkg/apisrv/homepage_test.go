@@ -100,8 +100,10 @@ func TestRoutesAreRegistered(t *testing.T) {
 		"/",
 
 		"/keystone/v3/projects",
+		"/keystone/v3/domains",
 		"/keystone/v3/projects/:id",
 		"/keystone/v3/auth/projects", // TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
+		"/keystone/v3/auth/domains",  // TODO: Remove this, since "/keystone/v3/domains" is a keystone endpoint
 		"/keystone/v3/auth/tokens",
 	} {
 		routes.add(r)
