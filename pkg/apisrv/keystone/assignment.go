@@ -19,6 +19,7 @@ import (
 type Assignment interface {
 	FetchUser(id, password string) (*kscommon.User, error)
 	ListProjects() []*kscommon.Project
+	ListDomains() []*kscommon.Domain
 }
 
 //StaticAssignment is an implementation of Assignment based on static file.
@@ -53,6 +54,15 @@ func (assignment *StaticAssignment) FetchUser(name, password string) (*kscommon.
 	return user, nil
 }
 
+//ListDomains is used to list domains
+func (assignment *StaticAssignment) ListDomains() []*kscommon.Domain {
+	domains := []*kscommon.Domain{}
+	for _, domain := range assignment.Domains {
+		domains = append(domains, domain)
+	}
+	return domains
+}
+
 //ListProjects is used to list projects
 func (assignment *StaticAssignment) ListProjects() []*kscommon.Project {
 	projects := []*kscommon.Project{}
@@ -72,6 +82,15 @@ func (assignment *VNCAPIAssignment) FetchUser(name, password string) (*kscommon.
 		return nil, fmt.Errorf("invalid Credentials")
 	}
 	return user, nil
+}
+
+//ListDomains is used to list domains
+func (assignment *VNCAPIAssignment) ListDomains() []*kscommon.Domain {
+	domains := []*kscommon.Domain{}
+	for _, domain := range assignment.Domains {
+		domains = append(domains, domain)
+	}
+	return domains
 }
 
 //ListProjects is used to list projects

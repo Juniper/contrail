@@ -9,6 +9,11 @@ type ProjectResponse struct {
 	Project *types.Project `json:"project"`
 }
 
+//DomainListResponse represents a domain list response.
+type DomainListResponse struct {
+	Domains []*types.Domain `json:"domains"`
+}
+
 //ProjectListResponse represents a project list response.
 type ProjectListResponse struct {
 	Projects []*types.Project `json:"projects"`
