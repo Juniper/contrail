@@ -57,9 +57,11 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 
 	// TODO: Remove this, since "/keystone/v3/projects" is a keystone endpoint
 	e.GET("/keystone/v3/auth/projects", keystone.ListProjectsAPI)
+	e.GET("/keystone/v3/auth/domains", keystone.ListDomainsAPI)
 
 	e.GET("/keystone/v3/projects", keystone.ListProjectsAPI)
 	e.GET("/keystone/v3/projects/:id", keystone.GetProjectAPI)
+	e.GET("/keystone/v3/domains", keystone.ListDomainsAPI)
 
 	return keystone, nil
 }
@@ -125,21 +127,6 @@ func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
 	return configEndpoint, nil
 }
 
-func (keystone *Keystone) appendStaticProjects(
-	configEndpoint string, userProjects *[]*kscommon.Project, user *kscommon.User) {
-	authType := viper.GetString("auth_type")
-	if authType == "basic-auth" && configEndpoint != "" {
-		staticProjects := keystone.staticAssignment.ListProjects()
-		for _, project := range staticProjects {
-			for _, role := range user.Roles {
-				if role.Project.Name == project.Name {
-					*userProjects = append(*userProjects, role.Project)
-				}
-			}
-		}
-	}
-}
-
 func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error) {
 	tokenID := r.Header.Get("X-Auth-Token")
 	if tokenID == "" {
@@ -181,6 +168,30 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 	return c.JSON(http.StatusNotFound, nil)
 }
 
+//ListDomainsAPI is an API handler to list domains.
+func (keystone *Keystone) ListDomainsAPI(c echo.Context) error {
+	clusterID := c.Request().Header.Get(xClusterIDKey)
+	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if keystoneEndpoint != nil {
+		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+		return keystone.Client.GetDomains(c)
+	}
+
+	_, err := keystone.validateToken(c.Request())
+	if err != nil {
+		return err
+	}
+	_, err = keystone.setAssignment()
+	if err != nil {
+		return err
+	}
+	domains := keystone.Assignment.ListDomains()
+	domainsResponse := &DomainListResponse{
+		Domains: domains,
+	}
+	return c.JSON(http.StatusOK, domainsResponse)
+}
+
 //ListProjectsAPI is an API handler to list projects.
 func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
@@ -194,7 +205,6 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
 	configEndpoint, err := keystone.setAssignment()
 	if err != nil {
 		return err
@@ -202,14 +212,17 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	userProjects := []*kscommon.Project{}
 	user := token.User
 	projects := keystone.Assignment.ListProjects()
-	for _, project := range projects {
-		for _, role := range user.Roles {
-			if role.Project.Name == project.Name {
-				userProjects = append(userProjects, role.Project)
+	if configEndpoint == "" {
+		for _, project := range projects {
+			for _, role := range user.Roles {
+				if role.Project.Name == project.Name {
+					userProjects = append(userProjects, role.Project)
+				}
 			}
 		}
+	} else {
+		userProjects = append(userProjects, projects...)
 	}
-	keystone.appendStaticProjects(configEndpoint, &userProjects, user)
 	projectsResponse := &ProjectListResponse{
 		Projects: userProjects,
 	}
