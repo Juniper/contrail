@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -23,7 +24,7 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 		return c.JSON(http.StatusOK, "Received empty EventList")
 	}
 
-	events, err := service.sortEvents(c, events)
+	events, err := sortEvents(c.Request().Context(), service, events)
 	if err != nil {
 		return errutil.ToHTTPError(err)
 	}
@@ -35,37 +36,35 @@ func (service *ContrailService) RESTSync(c echo.Context) error {
 	return c.JSON(http.StatusOK, responses.Events)
 }
 
-func (service *ContrailService) sortEvents(c echo.Context, events *EventList) (*EventList, error) {
+func sortEvents(c context.Context, service *ContrailService, events *EventList) (*EventList, error) {
 	switch events.OperationType() {
-	case OperationCreate:
-		refMap := getRefMapFromEvents(events.Events)
-		return syncSort(events, refMap)
 	case OperationDelete:
-		refMap, err := service.getRefMapFromObjects(c, events.Events)
-		if err != nil {
-			return nil, err
-		}
-		return syncSort(events, refMap)
+		return sortDelete(c, service, events)
+	case OperationCreate, OperationMixed:
+		return sortMixed(events)
 	default:
-		logrus.Warn("Sort for operation of other type than CREATE or DELETE is not supported")
 		return events, nil
 	}
 }
 
-func getRefMapFromEvents(events []*Event) map[*Event]basemodels.References {
-	refMap := map[*Event]basemodels.References{}
-	for _, ev := range events {
-		refMap[ev] = ev.getReferences()
+func sortDelete(c context.Context, service *ContrailService, e *EventList) (*EventList, error) {
+	refMap, err := getRefMapFromObjects(c, service, e.Events)
+	if err != nil {
+		return nil, err
 	}
-	return refMap
+	events, err := syncSort(e, refMap)
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
 }
 
-func (service *ContrailService) getRefMapFromObjects(
-	c echo.Context, events []*Event,
+func getRefMapFromObjects(
+	c context.Context, service *ContrailService, events []*Event,
 ) (map[*Event]basemodels.References, error) {
 	refMap := make(map[*Event]basemodels.References)
 	for i, ev := range events {
-		obj, _, err := service.getObjectAndType(c.Request().Context(), ev.GetUUID())
+		obj, _, err := service.getObjectAndType(c, ev.GetUUID())
 		if err != nil {
 			return nil, errors.Wrapf(err,
 				"failed to retrieve object for event at index: %v, operation: '%v', kind '%v', uuid '%v'",
@@ -90,4 +89,50 @@ func syncSort(events *EventList, refMap map[*Event]basemodels.References) (*Even
 	}
 
 	return g.SortEvents(), nil
+}
+
+func sortMixed(events *EventList) (*EventList, error) {
+	createsList, updatesList, deletesList := events.separateListByOperation()
+
+	if len(deletesList.Events) != 0 {
+		logrus.Warn("Sort for events mixed with deletes is not supported.")
+		return events, nil
+	}
+
+	if len(createsList.Events) != 0 {
+		var err error
+		refMap := getRefMapFromEvents(events.Events)
+		events, err = syncSort(events, refMap)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if len(updatesList.Events) != 0 {
+		events.Events = append(events.Events, updatesList.Events...)
+	}
+	return events, nil
+}
+
+func (e *EventList) separateListByOperation() (EventList, EventList, EventList) {
+	var createList, updateList, deleteList EventList
+	for _, event := range e.Events {
+		switch event.Operation() {
+		case OperationCreate:
+			createList.Events = append(createList.Events, event)
+		case OperationUpdate:
+			updateList.Events = append(updateList.Events, event)
+		case OperationDelete:
+			deleteList.Events = append(deleteList.Events, event)
+		}
+	}
+	return createList, updateList, deleteList
+}
+
+func getRefMapFromEvents(events []*Event) map[*Event]basemodels.References {
+	refMap := map[*Event]basemodels.References{}
+	for _, ev := range events {
+		refMap[ev] = ev.getReferences()
+	}
+	return refMap
 }
