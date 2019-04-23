@@ -205,7 +205,7 @@ appformix_configuration:
 xflow_configuration:
   docker_images_tar: {{ x.DockerImagesTar }}
   {% if x.XflowLicense %}xflow_license: {{ x.XflowLicense }}{% endif %}
-  keepalived_shared_ip: {{ x.KeepalivedSharedIP }}
+  {% if x.KeepalivedSharedIP %}keepalived_shared_ip: {{ x.KeepalivedSharedIP }}{% endif %}
   {% if x.Xflow.IfacePublic %}xflow_iface_public: {{ x.Xflow.IfacePublic }}{% endif %}
   {% if x.Xflow.IfaceInternal %}xflow_iface_internal: {{ x.Xflow.IfaceInternal }}{% endif %}
   {% if x.Clickhouse.RetentionPeriodSecs %}clickhouse_retention_period_secs: {{ x.Clickhouse.RetentionPeriodSecs }}{% endif %}

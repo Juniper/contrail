@@ -25,8 +25,7 @@ schema:
       presence: optional
     keepalived_shared_ip:
       type: string
-      presence: required
-      nullable: false
+      presence: optional
     xflow:
       $ref: "xflow_types.json#/definitions/XflowType"
       presence: optional
