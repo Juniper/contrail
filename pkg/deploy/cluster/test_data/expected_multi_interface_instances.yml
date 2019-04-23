@@ -43,6 +43,7 @@ contrail_configuration:
   CONTROL_NODES: 127.0.0.1
   CONTROLLER_NODES: 127.0.0.1
   OPENSTACK_NODES: 127.0.0.1
+  SSL_ENABLE: True
 kolla_config:
   kolla_globals:
     enable_haproxy: yes

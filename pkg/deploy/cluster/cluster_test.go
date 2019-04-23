@@ -884,9 +884,10 @@ func TestClusterWithSeperateDeploymentAndControlDataNet(t *testing.T) {
 		"CONTAINER_REGISTRY_USERNAME": "testRegistry",
 		"CONTAINER_REGISTRY_PASSWORD": "testRegistry123",
 		"ZTP_ROLE":                    true,
+		"SSL_ENABLE":                  true,
 	}
 	expectedEndpoints := map[string]string{
-		"config":    "http://10.1.1.100:8082",
+		"config":    "https://10.1.1.100:8082",
 		"nodejs":    "https://10.1.1.100:8143",
 		"telemetry": "http://10.1.1.100:8081",
 		"baremetal": "http://127.0.0.1:6385",

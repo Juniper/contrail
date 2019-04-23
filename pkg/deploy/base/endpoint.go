@@ -177,6 +177,22 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 	return endpointNodes
 }
 
+func (e *EndpointData) isSSLEnabled() bool {
+	if c := e.ClusterData.ClusterInfo.GetContrailConfiguration(); c != nil {
+		for _, keyValuePair := range c.GetKeyValuePair() {
+			switch keyValuePair.Key {
+			case "SSL_ENABLE":
+				if strings.ToLower(keyValuePair.Value) == "true" {
+					return true
+				} else {
+					return false
+				}
+			}
+		}
+	}
+	return false
+}
+
 // nolint: gocyclo
 func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]string) {
 	endpointNodes = make(map[string][]string)
@@ -242,8 +258,13 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 		e.Log.Infof("Creating %s endpoints", service)
 		for _, endpointIP := range endpointIPs {
 			endpointProtocol := protocol
-			if service == webui {
+			switch service {
+			case webui:
 				endpointProtocol = secureProtocol
+			case config:
+				if e.isSSLEnabled() {
+					endpointProtocol = secureProtocol
+				}
 			}
 			publicURL := e.endpointToURL(
 				endpointProtocol, endpointIP, e.getPort(endpointIP, service))

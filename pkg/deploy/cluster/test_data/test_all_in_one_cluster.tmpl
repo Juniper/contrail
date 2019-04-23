@@ -140,6 +140,10 @@ test_data:
         - key: OPENSTACK_NODES
           value: {{OPENSTACK_NODES}}
         {%endif%}
+        {% if SSL_ENABLE %}
+        - key: SSL_ENABLE
+          value: "True"
+        {%endif%}
     {%endif%}
     {% if CONTRAIL_EXTERNAL_VIP %}
     annotations:
