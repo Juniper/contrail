@@ -143,7 +143,7 @@ func (g *EventGraph) SortEvents() *EventList {
 
 func reverseEventsSlice(events []*Event) []*Event {
 	reversed := make([]*Event, len(events))
-	for i := len(events)/2 - 1; i >= 0; i-- {
+	for i := len(events) / 2; i >= 0; i-- {
 		opp := len(events) - 1 - i
 		reversed[i], reversed[opp] = events[opp], events[i]
 	}
