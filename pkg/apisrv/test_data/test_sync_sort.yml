@@ -3,6 +3,7 @@ description: network sync test
 cleanup:
   - path: /network-ipam/test_ipam_blue_uuid_test_sync
   - path: /network-policy/network_policy_uuid_test_sync
+  - path: /network-policy/network_policy_uuid_test_sync_2
   - path: /virtual-network/vn_blue_test_sync
   - path: /project/admin_project_uuid_test_sync
 test_data:
@@ -11,7 +12,6 @@ test_data:
     uuid: admin_project_uuid_test_sync
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
-    quota: {}
 
   network_policy: &network_policy
     fq_name: ["default", "admin_project_uuid_test_sync", "policy1"]
@@ -19,21 +19,36 @@ test_data:
     parent_type: project
     parent_uuid: admin_project_uuid_test_sync
 
+  network_policy2: &network_policy2
+    fq_name: ["default", "admin_project_uuid_test_sync", "policy2"]
+    uuid: network_policy_uuid_test_sync_2
+    parent_type: project
+    parent_uuid: admin_project_uuid_test_sync
+
   network_ipam_blue: &network_ipam_blue
+    fq_name: ["default", "admin_project_uuid_test_sync","test_ipam_blue_uuid_test_sync"]
     uuid: test_ipam_blue_uuid_test_sync
     display_name: test_ipam_blue
     parent_type: project
     parent_uuid: admin_project_uuid_test_sync
-    fq_name: ["default", "admin_project_uuid_test_sync","test_ipam_blue_uuid_test_sync"]
 
   vn_blue: &vn_blue
     fq_name: ["default", "admin_project_uuid_test_sync", "vn_blue_test_sync"]
     uuid: vn_blue_test_sync
-    display_name: blue
     parent_type: project
     parent_uuid: admin_project_uuid_test_sync
     network_policy_refs:
       - uuid: network_policy_uuid_test_sync
+    network_ipam_refs:
+      - uuid: test_ipam_blue_uuid_test_sync
+
+  vn_blue_updated: &vn_blue_updated
+    fq_name: ["default", "admin_project_uuid_test_sync", "vn_blue_test_sync"]
+    uuid: vn_blue_test_sync
+    parent_type: project
+    parent_uuid: admin_project_uuid_test_sync
+    network_policy_refs:
+      - uuid: network_policy_uuid_test_sync_2
     network_ipam_refs:
       - uuid: test_ipam_blue_uuid_test_sync
 
@@ -63,14 +78,78 @@ workflow:
           - kind: network_ipam
             data: *network_ipam_blue
     expect:
-      - kind: project
-        data: *admin_project
       - kind: network_policy
         data: *network_policy
-      - kind: network_ipam
-        data: *network_ipam_blue
       - kind: virtual_network
         data: *vn_blue
+      - kind: network_ipam
+        data: *network_ipam_blue
+      - kind: project
+        data: *admin_project
+
+  - name: sort update project, network policy, network ipam and virtual network
+    request:
+      path: /sync
+      method: POST
+      expected:
+        - 200
+      data:
+        resources:
+          - kind: virtual_network
+            data: *vn_blue
+            operation: UPDATE
+          - kind: project
+            data: *admin_project
+            operation: UPDATE
+          - kind: network_policy
+            data: *network_policy
+            operation: UPDATE
+          - kind: network_ipam
+            data: *network_ipam_blue
+            operation: UPDATE
+    expect:
+      - kind: virtual_network
+        data: *vn_blue
+        operation: UPDATE
+      - kind: project
+        data: *admin_project
+        operation: UPDATE
+      - kind: network_policy
+        data: *network_policy
+        operation: UPDATE
+      - kind: network_ipam
+        data: *network_ipam_blue
+        operation: UPDATE
+
+  - name: sort create + update project, network policy, network ipam and virtual network
+    request:
+      path: /sync
+      method: POST
+      expected:
+        - 200
+      data:
+        resources:
+          - kind: virtual_network
+            data: *vn_blue_updated
+          - kind: project
+            data: *admin_project
+            operation: UPDATE
+          - kind: network_policy
+            data: *network_policy2
+          - kind: network_ipam
+            data: *network_ipam_blue
+    expect:
+      - kind: network_policy
+        data: *network_policy2
+      - kind: virtual_network
+        data: *vn_blue_updated
+        operation: UPDATE
+      - kind: project
+        data: *admin_project
+        operation: UPDATE
+      - kind: network_ipam
+        data: *network_ipam_blue
+        operation: UPDATE
 
   - name: sort delete network, policy and project
     request:
@@ -84,13 +163,16 @@ workflow:
             data: *admin_project
             operation: DELETE
           - kind: virtual_network
-            data: *vn_blue
+            data: *vn_blue_updated
             operation: DELETE
           - kind: network_ipam
             data: *network_ipam_blue
             operation: DELETE
           - kind: network_policy
             data: *network_policy
+            operation: DELETE
+          - kind: network_policy
+            data: *network_policy2
             operation: DELETE
     expect:
       - kind: virtual_network
@@ -104,6 +186,10 @@ workflow:
       - kind: network_policy
         data:
           uuid: network_policy_uuid_test_sync
+        operation: DELETE
+      - kind: network_policy
+        data:
+          uuid: network_policy_uuid_test_sync_2
         operation: DELETE
       - kind: project
         data:
