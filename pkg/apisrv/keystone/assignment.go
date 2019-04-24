@@ -155,10 +155,12 @@ func (assignment *VNCAPIAssignment) getVncProjects(
 	projects := map[string]*kscommon.Project{}
 	roles := []*kscommon.Role{}
 	for _, vncProject := range vncProjectsResponse.Projects {
+		domain := domains[vncProject.Project.FQName[0]]
 		project := &kscommon.Project{
-			Name:   vncProject.Project.Name,
-			ID:     strings.Replace(vncProject.Project.UUID, "-", "", -1),
-			Domain: domains[vncProject.Project.FQName[0]],
+			Name:     vncProject.Project.Name,
+			ID:       strings.Replace(vncProject.Project.UUID, "-", "", -1),
+			Domain:   domain,
+			ParentID: domain.ID,
 		}
 
 		projects[vncProject.Project.Name] = project
