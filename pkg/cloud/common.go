@@ -8,6 +8,8 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -16,11 +18,14 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
+	"github.com/Juniper/contrail/pkg/logutil/report"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/retry"
 	"github.com/Juniper/contrail/pkg/services"
 )
@@ -29,8 +34,21 @@ const (
 	testTemplate        = "./test_data/test_cmd.tmpl"
 	executedCmdTestFile = "executed_cmd.yml"
 
+	defaultContrailClusterRoot = "/var/tmp/contrail_cluster"
+	clusterMCWorkDir           = "multi-cloud"
+	defaultClusterSSHAgentFile = "ssh-agent-config.yml"
+	defaultClusterInvFile      = "inventories/inventory.yml"
+	defaultHouseKeeperScript   = "housekeeper.sh"
+	defaultOnceClickDep        = "one-click-deployer"
+
 	statusRetryInterval = 3 * time.Second
 )
+
+// SSHAgentConfig related to ssh-agent process
+type SSHAgentConfig struct {
+	AuthSock string `yaml:"auth_sock"`
+	PID      string `yaml:"pid"`
+}
 
 // GetCloudDir gets directory of cloud
 func GetCloudDir(cloudID string) string {
@@ -52,6 +70,14 @@ func GetMultiCloudRepodir() string {
 
 func getGenerateTopologyCmd(mcDir string) string {
 	return filepath.Join(mcDir, defaultGenTopoScript)
+}
+
+func getHouseKeeperScript(mcDir string) string {
+	return filepath.Join(getOneClickDepDir(mcDir), defaultHouseKeeperScript)
+}
+
+func getOneClickDepDir(mcDir string) string {
+	return filepath.Join(mcDir, defaultOnceClickDep)
 }
 
 // GetGenInventoryCmd get generate inventory command
@@ -501,4 +527,136 @@ func waitForClusterStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
 			clusterUUID)
 	}, retry.WithLog(log.Logger),
 		retry.WithInterval(statusRetryInterval))
+}
+
+func (c *Cloud) runHouseKeeperScript(d *Data) error {
+
+	var clusterSSHAgentFile, clusterMCInvFile string
+	tfStateFile := GetTFStateFile(c.config.CloudID)
+	cloudTopoFile := GetTopoFile(c.config.CloudID)
+
+	for _, cluster := range d.info.ContrailClusterBackRefs {
+		clusterSSHAgentFile = getMCClusterSSHAgentFile(cluster.UUID)
+		clusterMCInvFile = getMCClusterInventoryFile(cluster.UUID)
+		break
+	}
+	_, err := os.Stat(clusterSSHAgentFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", clusterSSHAgentFile)
+		return nil
+	}
+
+	_, err = os.Stat(tfStateFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", tfStateFile)
+		return nil
+	}
+
+	_, err = os.Stat(cloudTopoFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", cloudTopoFile)
+		return nil
+	}
+
+	_, err = os.Stat(clusterMCInvFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", clusterMCInvFile)
+		return nil
+	}
+
+	err = exportSSHAgentEnvVars(clusterSSHAgentFile)
+	if err != nil {
+		return err
+	}
+
+	err = executeHouseKeeperScript(c.reporter, c.config.Test, tfStateFile,
+		cloudTopoFile, clusterMCInvFile)
+	if err != nil {
+		return err
+	}
+
+	c.log.Infof("successfully executed housekeeper script")
+	return nil
+}
+
+func executeHouseKeeperScript(reporter *report.Reporter, test bool,
+	tfStateFile string, topologyFile string, mcInventoryFile string) error {
+
+	mcRepoDir := GetMultiCloudRepodir()
+	workDir := getOneClickDepDir(mcRepoDir)
+	cmd := getHouseKeeperScript(mcRepoDir)
+	args := []string{}
+
+	err := os.Setenv("TF_STATE", tfStateFile)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("TOPOLOGY", topologyFile)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("INVENTORY", mcInventoryFile)
+	if err != nil {
+		return err
+	}
+
+	if test {
+		return TestCmdHelper(cmd, args, workDir, testTemplate)
+	}
+
+	err = osutil.ExecCmdAndWait(reporter, cmd, args, workDir)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func exportSSHAgentEnvVars(sshAgentPath string) error {
+
+	sshAgentConf, err := readSSHAgentConfig(sshAgentPath)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("SSH_AUTH_SOCK", sshAgentConf.AuthSock)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("SSH_AGENT_PID", sshAgentConf.PID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func readSSHAgentConfig(path string) (*SSHAgentConfig, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	agentConfig := &SSHAgentConfig{}
+	err = yaml.UnmarshalStrict(data, agentConfig)
+	if err != nil {
+		return nil, err
+	}
+	return agentConfig, nil
+}
+
+func getClusterDir(clusterUUID string) string {
+	return filepath.Join(defaultContrailClusterRoot, clusterUUID)
+}
+
+func getMCClusterDir(clusterUUID string) string {
+	return filepath.Join(getClusterDir(clusterUUID), clusterMCWorkDir)
+}
+
+func getMCClusterSSHAgentFile(clusterUUID string) string {
+	return filepath.Join(getMCClusterDir(clusterUUID), defaultClusterSSHAgentFile)
+}
+
+func getMCClusterInventoryFile(clusterUUID string) string {
+	return filepath.Join(getMCClusterDir(clusterUUID), defaultClusterInvFile)
 }
