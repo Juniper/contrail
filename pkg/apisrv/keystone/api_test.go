@@ -328,6 +328,12 @@ func verifyBasicAuthProjects(
 		if !ok {
 			return ok
 		}
+		ok = testutil.AssertEqual(
+			t, clusterName+"_uuid", projectList.Projects[0].ParentID,
+			fmt.Sprintf("Unexpected parent_id in project: %s", projectList))
+		if !ok {
+			return ok
+		}
 	}
 	return true
 }
