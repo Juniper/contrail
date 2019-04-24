@@ -6,6 +6,13 @@
     gate:
       jobs:
         - contrail-go-docker
+    experimental:
+      jobs:
+        - noop
+        - build-variables-init
+        - contrail-go-docker:
+          dependencies:
+              - build-variables-init
 
 - job:
     name: contrail-go-docker
@@ -16,6 +23,7 @@
     timeout: 5400
     required-projects:
       - Juniper/contrail
+      - Juniper/contrail-project-config
     run: playbooks/contrail-go-docker/run.yaml
     post-run:
       - playbooks/contrail-go-docker/post.yaml
