@@ -6,6 +6,10 @@
     gate:
       jobs:
         - contrail-go-docker
+    experimental:
+      jobs:
+        - noop
+        - contrail-go-docker
 
 - job:
     name: contrail-go-docker
