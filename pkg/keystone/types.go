@@ -76,9 +76,10 @@ type Domain struct {
 
 //Project represents project object.
 type Project struct {
-	Domain *Domain `json:"domain,omitempty"`
-	ID     string  `json:"id,omitempty"`
-	Name   string  `json:"name,omitempty"`
+	Domain   *Domain `json:"domain,omitempty"`
+	ID       string  `json:"id,omitempty"`
+	Name     string  `json:"name,omitempty"`
+	ParentID string  `json:"parent_id,omitempty"`
 }
 
 //Identity represents a auth methods.
