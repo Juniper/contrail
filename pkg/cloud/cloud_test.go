@@ -24,12 +24,14 @@ const (
 	deleteVPCTemplatePath            = "./test_data/test_vpc_delete.tmpl"
 	clusterUpdateFailedTemplatePath  = "./test_data/test_update_failed_cluster.tmpl"
 	clusterUpdatedTemplatePath       = "./test_data/test_updated_cluster.tmpl"
-	expectedAZCmdForCreateUpdate     = "./test_data/expected_azure_cmd_for_create_update.yaml"
+	expectedAZCmdForCreate           = "./test_data/expected_azure_cmd_for_create.yaml"
+	expectedAZCmdForUpdate           = "./test_data/expected_azure_cmd_for_update.yaml"
 	expectedAZTopologyCreate         = "./test_data/expected_azure_cloud_topology_create.yaml"
 	expectedAZTopologyUpdate         = "./test_data/expected_azure_cloud_topology_update.yaml"
 	expectedAZTopologyDeleteVPC      = "./test_data/expected_azure_cloud_delete_vpc.yaml"
 	expectedAZSecret                 = "./test_data/expected_azure_cloud_secret.yaml"
-	expectedAWSCmdForCreateUpdate    = "./test_data/expected_aws_cmd_for_create_update.yaml"
+	expectedAWSCmdForCreate          = "./test_data/expected_aws_cmd_for_create.yaml"
+	expectedAWSCmdForUpdate          = "./test_data/expected_aws_cmd_for_update.yaml"
 	expectedAWSTopologyCreate        = "./test_data/expected_aws_cloud_topology_create.yaml"
 	expectedAWSTopologyUpdate        = "./test_data/expected_aws_cloud_topology_update.yaml"
 	expectedAWSTopologyDeleteVPC     = "./test_data/expected_aws_cloud_delete_vpc.yaml"
@@ -56,8 +58,9 @@ func TestOnPremCloud(t *testing.T) {
 	}
 
 	expectedTopologies := []string{expectedOnPremTopology}
+	expectedCmdList := []string{expectedOnPremCmdForCreateUpdate}
 	runCloudTest(t, expectedTopologies, expectedOnPremSecret,
-		expectedOnPremCmdForCreateUpdate, context)
+		expectedCmdList, context)
 }
 func TestAzureCloud(t *testing.T) {
 	context := pongo2.Context{
@@ -66,8 +69,9 @@ func TestAzureCloud(t *testing.T) {
 
 	expectedTopologies := []string{expectedAZTopologyCreate,
 		expectedAZTopologyUpdate, expectedAZTopologyDeleteVPC}
+	expectedCmdList := []string{expectedAZCmdForCreate, expectedAZCmdForUpdate}
 	runCloudTest(t, expectedTopologies, expectedAZSecret,
-		expectedAZCmdForCreateUpdate, context)
+		expectedCmdList, context)
 }
 
 func TestAWSCloud(t *testing.T) {
@@ -77,13 +81,14 @@ func TestAWSCloud(t *testing.T) {
 
 	expectedTopologies := []string{expectedAWSTopologyCreate,
 		expectedAWSTopologyUpdate, expectedAWSTopologyDeleteVPC}
+	expectedCmdList := []string{expectedAWSCmdForCreate, expectedAWSCmdForUpdate}
 	runCloudTest(t, expectedTopologies, expectedAWSSecret,
-		expectedAWSCmdForCreateUpdate, context)
+		expectedCmdList, context)
 }
 
 // nolint: gocyclo
 func runCloudTest(t *testing.T, expectedTopologies []string,
-	expectedSecret string, expectedCmdForCreateUpdate string,
+	expectedSecret string, expectedCmdFiles []string,
 	context map[string]interface{}) {
 
 	// mock keystone to let access server after cluster create
@@ -147,7 +152,7 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 
 		assert.True(t, compareGeneratedSecret(t, expectedSecret),
 			"secret file created during cloud create is not as expected")
-		assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
+		assert.True(t, verifyCommandsExecuted(t, expectedCmdFiles),
 			"Expected list of create commands are not executed")
 		// check if ssh keys are created
 		assert.True(t, verifyGeneratedSSHKeyFiles(t),
@@ -195,7 +200,7 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 			"topology file created during cloud update is not as expected")
 		assert.True(t, compareGeneratedSecret(t, expectedSecret),
 			"secret file created during cloud update is not as expected")
-		assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
+		assert.True(t, verifyCommandsExecuted(t, expectedCmdFiles),
 			"Expected list of update commands are not executed")
 
 		// delete vpc and compare topology
@@ -323,8 +328,14 @@ func compareGeneratedSecret(t *testing.T, expectedSecretFile string) bool {
 	return compareFiles(t, expectedSecretFile, generatedSecretPath())
 }
 
-func verifyCommandsExecuted(t *testing.T, expectedCmdForCreateUpdate string) bool {
-	return compareFiles(t, expectedCmdForCreateUpdate, executedCommandsPath())
+func verifyCommandsExecuted(t *testing.T, expectedCmdFiles []string) bool {
+
+	for _, expectedCmd := range expectedCmdFiles {
+		if compareFiles(t, expectedCmd, executedCommandsPath()) {
+			return true
+		}
+	}
+	return false
 }
 
 func verifyGeneratedSSHKeyFiles(t *testing.T) bool {

@@ -257,6 +257,13 @@ func (c *Cloud) update() error {
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 	status[statusField] = statusUpdateFailed
 
+	if data.isCloudPublic() && data.info.ContrailClusterBackRefs != nil {
+		err = c.runHouseKeeperScript(data)
+		if err != nil {
+			return err
+		}
+	}
+
 	err = topo.createTopologyFile(GetTopoFile(topo.cloud.config.CloudID))
 	if err != nil {
 		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
