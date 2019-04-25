@@ -122,6 +122,10 @@ test_data:
     {% if CONTROL_NODES %}
     contrail_configuration:
       key_value_pair:
+        {% if WEBUI_NODES %}
+        - key: WEBUI_NODES
+          value: {{WEBUI_NODES}}
+        {%endif%}
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}
         {% if CONTROLLER_NODES %}
