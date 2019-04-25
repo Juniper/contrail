@@ -110,6 +110,7 @@ func (e *EndpointData) getOpenstackEndpointNodes() (endpointNodes map[string][]s
 	return endpointNodes
 }
 
+// nolint: gocyclo
 func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]string) {
 	endpointNodes = make(map[string][]string)
 	if c := e.clusterData.clusterInfo.GetContrailConfiguration(); c != nil {
@@ -117,9 +118,15 @@ func (e *EndpointData) getContrailEndpointNodes() (endpointNodes map[string][]st
 			IPAddresses := strings.Split(keyValuePair.Value, ",")
 			switch keyValuePair.Key {
 			case "CONTROLLER_NODES":
-				endpointNodes[config] = IPAddresses
-				endpointNodes[analytics] = IPAddresses
-				endpointNodes[webui] = IPAddresses
+				if _, ok := endpointNodes[config]; !ok {
+					endpointNodes[config] = IPAddresses
+				}
+				if _, ok := endpointNodes[analytics]; !ok {
+					endpointNodes[analytics] = IPAddresses
+				}
+				if _, ok := endpointNodes[webui]; !ok {
+					endpointNodes[webui] = IPAddresses
+				}
 			case "CONFIG_NODES":
 				endpointNodes[config] = IPAddresses
 			case "ANALYTICS_NODES":

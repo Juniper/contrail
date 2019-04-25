@@ -497,6 +497,7 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 	context := pongo2.Context{
 		"MGMT_INT_IP":            "10.1.1.1",
 		"CONTROL_NODES":          "127.0.0.1",
+		"WEBUI_NODES":            "10.1.1.35",
 		"CONTROLLER_NODES":       "127.0.0.1",
 		"OPENSTACK_NODES":        "127.0.0.1",
 		"OPENSTACK_INTERNAL_VIP": "127.0.0.1",
@@ -504,7 +505,7 @@ func TestClusterWithSeperateManagementAndControlDataNet(t *testing.T) {
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
-		"nodejs":    "https://127.0.0.1:8143",
+		"nodejs":    "https://10.1.1.35:8143",
 		"telemetry": "http://127.0.0.1:8081",
 		"baremetal": "http://127.0.0.1:6385",
 		"swift":     "http://127.0.0.1:8080",

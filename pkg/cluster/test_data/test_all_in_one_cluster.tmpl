@@ -124,6 +124,10 @@ test_data:
       key_value_pair:
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}
+        {% if WEBUI_NODES %}
+        - key: WEBUI_NODES
+          value: {{WEBUI_NODES}}
+        {%endif%}
         {% if CONTROLLER_NODES %}
         - key: CONTROLLER_NODES
           value: {{CONTROLLER_NODES}}
