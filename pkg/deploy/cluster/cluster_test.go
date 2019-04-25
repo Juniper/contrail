@@ -906,13 +906,14 @@ func TestCredAllInOneClusterTest(t *testing.T) {
 		"CREDS":           true,
 		"TYPE":            "",
 		"MGMT_INT_IP":     "127.0.0.1",
-		"CONTROL_NODES":   "",
+		"CONTROL_NODES":   "127.0.0.1",
 		"OPENSTACK_NODES": "",
 		"ENABLE_ZTP":      true,
+		"WEBUI_NODES":     "10.1.1.35",
 	}
 	expectedEndpoints := map[string]string{
 		"config":    "http://127.0.0.1:8082",
-		"nodejs":    "https://127.0.0.1:8143",
+		"nodejs":    "https://10.1.1.35:8143",
 		"telemetry": "http://127.0.0.1:8081",
 		"baremetal": "http://127.0.0.1:6385",
 		"swift":     "http://127.0.0.1:8080",
