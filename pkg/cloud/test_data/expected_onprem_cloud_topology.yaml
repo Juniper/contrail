@@ -37,6 +37,15 @@
       protocols_mode:
         - ssl_client
       gateway: 1.1.1.1
+    - name: k8s_node
+      public_ip: 4.4.4.4
+      private_ip: 10.10.10.13
+      interface: k8s_node_port
+      provision: true
+      username: centos
+      password: 
+      roles:
+        - k8s_master
     - name: mx60
       public_ip: 20.20.20.200
       private_ip: 10.10.10.100

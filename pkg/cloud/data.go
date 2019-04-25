@@ -621,6 +621,60 @@ func (v *virtualCloudData) updateConfigNodeWithTag(
 	return nil
 }
 
+func (v *virtualCloudData) updateK8sClusterNodesWithTag(
+	k8sClusterUUID string) error {
+
+	k8sClusterObj, err := v.client.GetKubernetesCluster(v.ctx,
+		&services.GetKubernetesClusterRequest{
+			ID: k8sClusterUUID,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	k8sCluster := k8sClusterObj.KubernetesCluster
+
+	if k8sCluster.KubernetesMasterNodes != nil {
+		err = v.updateK8sMasterNodeWithTag(k8sCluster.GetKubernetesMasterNodes())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (v *virtualCloudData) updateK8sMasterNodeWithTag(
+	k8sMasterNodes []*models.KubernetesMasterNode) error {
+
+	for _, k8sMaster := range k8sMasterNodes {
+		getK8sMasterNodeResp, err := v.client.GetKubernetesMasterNode(v.ctx,
+			&services.GetKubernetesMasterNodeRequest{
+				ID: k8sMaster.UUID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		for _, nodeRef := range getK8sMasterNodeResp.KubernetesMasterNode.NodeRefs {
+			var nodeTagRefs []*models.NodeTagRef
+			for _, vTagRef := range v.info.TagRefs {
+				nodeTagRef := new(models.NodeTagRef)
+				nodeTagRef.UUID = vTagRef.UUID
+				nodeTagRef.To = vTagRef.To
+				nodeTagRef.Href = vTagRef.Href
+				nodeTagRefs = append(nodeTagRefs, nodeTagRef)
+			}
+			err := v.updateNodeWithTag(nodeRef.UUID, nodeTagRefs)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (v *virtualCloudData) updateVrouterNodeWithTag(
 	vrouterNodes []*models.ContrailVrouterNode) error {
 
@@ -655,6 +709,7 @@ func (v *virtualCloudData) updateVrouterNodeWithTag(
 	return nil
 }
 
+// nolint: gocyclo
 func (v *virtualCloudData) updateClusterNodeWithTag(
 	mcGWNode *models.ContrailMulticloudGWNode) error {
 
@@ -685,6 +740,15 @@ func (v *virtualCloudData) updateClusterNodeWithTag(
 		contrailCluster.ContrailControlNodes == nil {
 		return fmt.Errorf("cluster %s does not have control nodes or config nodes",
 			contrailCluster.UUID)
+	}
+
+	if contrailCluster.KubernetesClusterRefs != nil {
+		for _, k8sCluster := range contrailCluster.KubernetesClusterRefs {
+			err = v.updateK8sClusterNodesWithTag(k8sCluster.UUID)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return v.updateVrouterNodeWithTag(contrailCluster.GetContrailVrouterNodes())
