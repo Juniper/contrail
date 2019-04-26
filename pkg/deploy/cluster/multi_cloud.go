@@ -1232,8 +1232,18 @@ func (m *multiCloudProvisioner) playDeployMCGW(ansibleArgs []string) error {
 }
 
 func (m *multiCloudProvisioner) playMCInstancesConfig(ansibleArgs []string) error {
-	ansibleArgs = append(ansibleArgs, defaultMCInstanceConfPlay)
-	return m.play(ansibleArgs)
+	// configure compute node instances first
+	computeArgs := append(ansibleArgs, strings.Split("--limit all:!gateways", " ")...)
+	computeArgs = append(computeArgs, defaultMCInstanceConfPlay)
+	err := m.play(computeArgs)
+	if err != nil {
+		return err
+	}
+
+	// now configure gateway node instances
+	gatewayArgs := append(ansibleArgs, strings.Split("--limit all:!compute_nodes", " ")...)
+	gatewayArgs = append(gatewayArgs, defaultMCInstanceConfPlay)
+	return m.play(gatewayArgs)
 }
 
 func (m *multiCloudProvisioner) playMCK8SProvision(ansibleArgs []string) error {
