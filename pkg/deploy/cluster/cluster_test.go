@@ -44,6 +44,8 @@ const (
 	addComputeEncryptPlaybooks            = "./test_data/expected_ansible_add_compute_encrypt_playbook.yml"
 	allInOneKubernetesClusterTemplatePath = "./test_data/test_all_in_one_kubernetes_cluster.tmpl"
 	upgradePlaybooksKubernetes            = "./test_data/expected_ansible_upgrade_playbook_kubernetes.yml"
+	addComputePlaybooksKubernetes         = "./test_data/expected_ansible_add_kubernetes_compute.yml"
+	deleteComputePlaybooksKubernetes      = "./test_data/expected_ansible_delete_kubernetes_compute.yml"
 	allInOnevcenterClusterTemplatePath    = "./test_data/test_all_in_one_vcenter_server.tmpl"
 	upgradePlaybooksvcenter               = "./test_data/expected_ansible_upgrade_playbook_vcenter.yml"
 	allInOneMCClusterTemplatePath         = "./test_data/test_mc_cluster.tmpl"
@@ -1028,6 +1030,16 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	runClusterActionTest(t, testScenario, config,
 		upgradeProvisioningAction, expectedOutput, "",
 		upgradePlaybooksKubernetes, expectedEndpoints)
+
+	// ADD_COMPUTE  test
+	runClusterActionTest(t, testScenario, config,
+		addComputeProvisioningAction, expectedOutput, "",
+		addComputePlaybooksKubernetes, expectedEndpoints)
+
+	// DELETE_COMPUTE  test
+	runClusterActionTest(t, testScenario, config,
+		deleteComputeProvisioningAction, expectedOutput, "",
+		deleteComputePlaybooksKubernetes, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
 	runClusterActionTest(t, testScenario, config,
