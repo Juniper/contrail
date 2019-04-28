@@ -4,35 +4,13 @@ BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
 DB_FILES := gen_init_mysql.sql gen_init_psql.sql init_data.yaml
 
-ifdef ANSIBLE_DEPLOYER_REPO_DIR
-  export ANSIBLE_DEPLOYER_REPO_DIR
-else
-  export ANSIBLE_DEPLOYER_REPO_DIR := ""
-endif
-ifdef ANSIBLE_DEPLOYER_BRANCH
-  export ANSIBLE_DEPLOYER_BRANCH
-else
-  export ANSIBLE_DEPLOYER_BRANCH := master
-endif
-
-ifdef CONTRAIL_API_CLIENT_REPO_DIR
-  export CONTRAIL_API_CLIENT_REPO_DIR
-else
-  export CONTRAIL_API_CLIENT_REPO_DIR := ""
-endif
-ifdef CONTRAIL_API_CLIENT_BRANCH
-  export CONTRAIL_API_CLIENT_BRANCH
-else
-  export CONTRAIL_API_CLIENT_BRANCH := master
-endif
-
-ifdef ANSIBLE_DEPLOYER_REVISION
-  export ANSIBLE_DEPLOYER_REVISION
-else
-  export ANSIBLE_DEPLOYER_REVISION := HEAD
-endif
-
+ANSIBLE_DEPLOYER_REPO_DIR ?= ""
+ANSIBLE_DEPLOYER_BRANCH ?= master
+CONTRAIL_API_CLIENT_REPO_DIR ?= ""
+CONTRAIL_API_CLIENT_BRANCH ?= master
+ANSIBLE_DEPLOYER_REVISION ?= HEAD
 GOPATH ?= `go env GOPATH`
+SOURCEDIR ?= $(GOPATH)
 
 # This is needed by generate* targets that works only sequentially
 ifneq ($(filter generate,$(MAKECMDGOALS)),)
@@ -206,11 +184,12 @@ help: ## Display help message
 $(CONTRAIL_OPENAPI_PATH):
 	$(MAKE) generate_go
 
+DOCKER_GO_SRC_DIR := /go/src/github.com/Juniper/contrail
 $(CONTRAIL_APIDOC_PATH): $(CONTRAIL_OPENAPI_PATH)
 ifeq (, $(shell which spectacle))
 	$(info No spectacle in $(PATH) consider installing it. Running in docker.)
 	docker run --rm -v $(SOURCEDIR):/go node:10.15.3-alpine sh -c \
-		"npm install --unsafe-perm -g spectacle-docs@1.0.7 && spectacle -1 -t $(PWD)/$(dir $(CONTRAIL_APIDOC_PATH)) $(PWD)/$(CONTRAIL_OPENAPI_PATH)"
+		"npm install --unsafe-perm -g spectacle-docs@1.0.7 && spectacle -1 -t $(DOCKER_GO_SRC_DIR)/$(dir $(CONTRAIL_APIDOC_PATH)) $(DOCKER_GO_SRC_DIR)/$(CONTRAIL_OPENAPI_PATH)"
 else
 	mkdir -p $(dir $(CONTRAIL_APIDOC_PATH))
 	spectacle -1 -t $(dir $(CONTRAIL_APIDOC_PATH)) $(CONTRAIL_OPENAPI_PATH)
