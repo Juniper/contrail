@@ -206,11 +206,12 @@ help: ## Display help message
 $(CONTRAIL_OPENAPI_PATH):
 	$(MAKE) generate_go
 
+DOCKER_GO_SRC_DIR := /go/src/github.com/Juniper/contrail
 $(CONTRAIL_APIDOC_PATH): $(CONTRAIL_OPENAPI_PATH)
 ifeq (, $(shell which spectacle))
 	$(info No spectacle in $(PATH) consider installing it. Running in docker.)
-	docker run --rm -v $(SOURCEDIR):/go node:10.15.3-alpine sh -c \
-		"npm install --unsafe-perm -g spectacle-docs@1.0.7 && spectacle -1 -t $(PWD)/$(dir $(CONTRAIL_APIDOC_PATH)) $(PWD)/$(CONTRAIL_OPENAPI_PATH)"
+	docker run --rm -v $(GOPATH):/go node:10.15.3-alpine sh -c \
+		"npm install --unsafe-perm -g spectacle-docs@1.0.7 && spectacle -1 -t $(DOCKER_GO_SRC_DIR)/$(dir $(CONTRAIL_APIDOC_PATH)) $(DOCKER_GO_SRC_DIR)/$(CONTRAIL_OPENAPI_PATH)"
 else
 	mkdir -p $(dir $(CONTRAIL_APIDOC_PATH))
 	spectacle -1 -t $(dir $(CONTRAIL_APIDOC_PATH)) $(CONTRAIL_OPENAPI_PATH)
