@@ -108,6 +108,9 @@ func (api *API) ToOpenAPI() (*spec.Swagger, error) {
 						},
 					},
 				},
+				SwaggerSchemaProps: spec.SwaggerSchemaProps{
+					Example: []string{},
+				},
 			}
 		}
 		definitions[apiSchema.JSONSchema.GoName+"APIType"] = *d
