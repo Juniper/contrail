@@ -3,8 +3,6 @@
   organization: unit_test
   project: test2
   regions:
-    - name: EastUS
-      resource_group: unit_test
     - name: WestUS
       resource_group: unit_test
       vnet:

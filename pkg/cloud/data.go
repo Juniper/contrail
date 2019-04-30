@@ -288,6 +288,11 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		if err != nil {
 			return nil, err
 		}
+
+		if hasCloudRole(inst.info.CloudInfo.Roles, "none") {
+			inst.info.CloudInfo.Roles = []string{"compute_node"}
+			inst.provision = strconv.FormatBool(false)
+		}
 	}
 
 	if inst.info.ContrailVrouterNodeBackRefs != nil {
@@ -300,6 +305,15 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 	}
 
 	return inst, nil
+}
+
+func hasCloudRole(roles []string, nodeRole string) bool {
+	for _, role := range roles {
+		if role == nodeRole {
+			return true
+		}
+	}
+	return false
 }
 
 func (i *instanceData) updateInstanceUsername() error {
