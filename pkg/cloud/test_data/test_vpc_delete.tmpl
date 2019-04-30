@@ -3,10 +3,12 @@ description: delete vpc cloud and dependencies
 {% if !("private" in CLOUD_TYPE) %}
 cleanup:
 - path: /node/cloud_node_gw_vpc2_uuid
+- path: /node/cloud_node_comp_vpc2_uuid
 - path: /cloud-security-group-rule/cloud_security_group_rule_vpc2_uuid
 - path: /cloud-security-group/cloud_security_group_vpc2_uuid
 - path: /cloud-private-subnet/cloud_private_subnet_vpc2_uuid
 - path: /virtual-cloud/virtual_cloud_vpc2_uuid
+- path: /cloud-region/cloud_region_vpc2_uuid
 {% endif %}
 clients:
   default:

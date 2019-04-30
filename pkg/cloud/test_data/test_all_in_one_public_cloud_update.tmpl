@@ -84,6 +84,30 @@ test_data:
       - uuid: public_cloud_tag_vpc2_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+  cloud_node_comp_vpc2: &cloud_node_comp_vpc2
+    name: cloud_node_comp_vpc2
+    uuid: cloud_node_comp_vpc2_uuid
+    hostname: cloud_node_comp_vpc2
+    cloud_info:
+      {% if "azure" in CLOUD_TYPE %}
+      operating_system: redhat
+      instance_type: F16sv2
+      {% elif "aws" in CLOUD_TYPE %}
+      operating_system: rhel75
+      instance_type: t2.xlarge
+      {% endif %}
+      roles:
+        - none
+    cloud_private_subnet_refs:
+      - uuid: cloud_private_subnet_vpc2_uuid
+    {% if "aws" in CLOUD_TYPE %}
+    cloud_security_group_refs:
+      - uuid: cloud_security_group_vpc2_uuid
+    {% endif %}
+    tag_refs:
+      - uuid: public_cloud_tag_vpc2_uuid
+    parent_type: global-system-config
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
   {% endif %}
   cloud: &cloud
     provisioning_state: NOSTATE
@@ -176,6 +200,17 @@ workflow:
       node: *cloud_node_gw_vpc2
   expect:
     node: *cloud_node_gw_vpc2
+
+- name: create cloud node compute 2
+  request:
+    path: /nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      node: *cloud_node_comp_vpc2
+  expect:
+    node: *cloud_node_comp_vpc2
 {% endif %}
 
 - name: update cloud
