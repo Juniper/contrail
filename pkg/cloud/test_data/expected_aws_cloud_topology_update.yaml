@@ -62,6 +62,7 @@
             - name: cloud_node_gw
               roles:
                 - gateway
+                - vrouter: false
               provision: true
               username: ec2-user
               os: rhel75

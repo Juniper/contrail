@@ -1296,6 +1296,9 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	assert.Error(t, err,
 		"mc deployment should fail because cloud provisioning has failed")
 
+	assert.NoError(t, verifyNodeProvisionExists(t, &testScenario,
+		clusterDeployer.APIServer, true))
+
 	var updateCloudTestScenario integration.TestScenario
 	err = integration.LoadTestScenario(&updateCloudTestScenario, allInOneMCCloudUpdateTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load mc pvt cloud update test data")
@@ -1457,4 +1460,44 @@ func TestMCCluster(t *testing.T) {
 		"telemetry": "http://1.1.1.1:8081",
 	}
 	runMCClusterTest(t, context, expectedEndpoints)
+}
+
+func verifyNodeProvisionExists(t *testing.T, ts *integration.TestScenario,
+	httpClient *client.HTTP, provisionExists bool) error {
+
+	for _, task := range ts.Workflow {
+		if task.Request.Path == "/nodes" {
+			nodeResp, err := httpClient.GetNode(context.Background(),
+				&services.GetNodeRequest{
+					ID: task.Request.Data.uuid,
+				},
+			)
+			if err != nil {
+				return err
+			}
+			if nodeResp.Node.Annotations != nil && provisionExists {
+				for _, kp := range nodeResp.Node.Annotations.KeyValuePair {
+					if kp.Key == "provision" && kp.Value == "false" {
+						return nil
+					}
+				}
+				return fmt.Errorf(
+					"provision key/value is not as expected in node %s annotation",
+					nodeResp.Node.UUID)
+			} else if nodeResp.Node.Annotations == nil && provisionExists {
+				return fmt.Errorf("annotation does not exist in node %s",
+					nodeResp.Node.UUID)
+			} else if nodeResp.Node.Annotations != nil && !provisionExists {
+				for _, kp := range nodeResp.Node.Annotations.KeyValuePair {
+					if kp.Key == "provision" && kp.Value == "true" {
+						return nil
+					}
+				}
+				return fmt.Errorf(
+					"provision key/value is not as expected in node %s annotation",
+					nodeResp.Node.UUID)
+			}
+		}
+	}
+	return nil
 }

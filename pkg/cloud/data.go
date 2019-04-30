@@ -224,28 +224,27 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		return nil, err
 	}
 	inst.info = instObj
+	inst.provision = getInstProvisionFlag(instObj)
 
 	data := v.parentRegion.parentProvider.parentCloud
 	if data.isCloudPrivate() {
 
-		i := inst
-
-		if i.info.ContrailVrouterNodeBackRefs != nil && i.info.KubernetesNodeBackRefs != nil {
-			i.roles = append(i.roles, "compute_node")
-		} else if i.info.ContrailVrouterNodeBackRefs != nil {
-			i.roles = append(i.roles, "vrouter")
+		if inst.info.ContrailVrouterNodeBackRefs != nil && inst.info.KubernetesNodeBackRefs != nil {
+			inst.roles = append(inst.roles, "compute_node")
+		} else if inst.info.ContrailVrouterNodeBackRefs != nil {
+			inst.roles = append(inst.roles, "vrouter")
 		}
-		if i.info.ContrailConfigNodeBackRefs != nil || i.info.ContrailControlNodeBackRefs != nil {
-			i.roles = append(i.roles, "controller")
-			i.provision = strconv.FormatBool(false)
+		if inst.info.ContrailConfigNodeBackRefs != nil || inst.info.ContrailControlNodeBackRefs != nil {
+			inst.roles = append(inst.roles, "controller")
+			inst.provision = strconv.FormatBool(false)
 		}
 
-		if i.info.KubernetesMasterNodeBackRefs != nil {
-			i.roles = append(i.roles, "k8s_master")
+		if inst.info.KubernetesMasterNodeBackRefs != nil {
+			inst.roles = append(inst.roles, "k8s_master")
 		}
 
-		if i.info.ContrailMulticloudGWNodeBackRefs != nil {
-			i.roles = append(i.roles, "gateway")
+		if inst.info.ContrailMulticloudGWNodeBackRefs != nil {
+			inst.roles = append(inst.roles, "gateway")
 		}
 
 		err = inst.updatePvtIntf(isDelRequest)
@@ -258,11 +257,13 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		}
 	}
 
-	if inst.provision == "" {
-		inst.provision = strconv.FormatBool(true)
-	}
-
 	if inst.info.ContrailMulticloudGWNodeBackRefs != nil {
+		// if provision is set to false then add vrouter role and provision as false
+		if inst.provision == "false" {
+			inst.roles = append(inst.roles, "vrouter: false")
+			inst.provision = "true"
+		}
+
 		err := inst.updateProtoModes(isDelRequest) //nolint: govet
 		if err != nil {
 			return nil, err
@@ -284,6 +285,14 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		if err != nil {
 			return nil, err
 		}
+
+		if hasCloudRole(inst.info, "gateway") && inst.provision == "false" {
+			// if provision is set to false then add vrouter role and provision as false
+			// set provision of gateway to true
+			inst.info.CloudInfo.Roles = append(inst.info.CloudInfo.Roles, "vrouter: false")
+			inst.provision = "true"
+		}
+
 		err = inst.updateInstanceUsername()
 		if err != nil {
 			return nil, err
@@ -300,6 +309,31 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 	}
 
 	return inst, nil
+}
+
+func getInstProvisionFlag(inst *models.Node) string {
+	for _, kp := range inst.Annotations.KeyValuePair {
+		if kp.Key == "provision" {
+			switch strings.ToLower(kp.Value) {
+			case "true":
+				return strconv.FormatBool(true)
+			case "false":
+				return strconv.FormatBool(false)
+			default:
+				return strconv.FormatBool(true)
+			}
+		}
+	}
+	return strconv.FormatBool(true)
+}
+
+func hasCloudRole(inst *models.Node, nodeRole string) bool {
+	for _, role := range inst.CloudInfo.Roles {
+		if role == nodeRole {
+			return true
+		}
+	}
+	return false
 }
 
 func (i *instanceData) updateInstanceUsername() error {
