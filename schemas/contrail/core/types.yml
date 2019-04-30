@@ -698,6 +698,7 @@ definitions:
           - k8s_master
           - k8s_node
           - vrouter
+          - none
           type: string
         type: array
       volume_size:

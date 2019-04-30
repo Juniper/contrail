@@ -3,7 +3,6 @@
   organization: unit_test
   project: test2
   regions:
-    - name: us-east-1
     - name: us-west-1
       vpc:
         - name: virtual_cloud

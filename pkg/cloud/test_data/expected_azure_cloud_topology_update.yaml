@@ -18,6 +18,14 @@
                 - name: cloud_security_group_rule_vpc2
                   direction: inbound
           instances:
+            - name: cloud_node_comp_vpc2
+              roles:
+                - compute_node
+              provision: false
+              username: redhat
+              os: redhat
+              instance_type: F16sv2
+              subnets: cloud_private_subnet_vpc2
             - name: cloud_node_gw_vpc2
               roles:
                 - gateway
