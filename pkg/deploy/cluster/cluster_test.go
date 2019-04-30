@@ -1323,6 +1323,8 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		"commands executed during cluster create is not as expected")
 	assert.True(t, verifyPlaybooks(t, "./test_data/expected_ansible_create_mc_playbook.yml"),
 		"Expected list of playbooks are not executed during create")
+	assert.NoError(t, verifyNodeProvisionExists(t, &testScenario,
+		clusterDeployer.APIServer, true))
 
 	// update cluster
 	config.Action = updateAction
@@ -1457,4 +1459,47 @@ func TestMCCluster(t *testing.T) {
 		"telemetry": "http://1.1.1.1:8081",
 	}
 	runMCClusterTest(t, context, expectedEndpoints)
+}
+
+func verifyNodeProvisionExists(t *testing.T, ts *integration.TestScenario,
+	httpClient *client.HTTP, provisionExists bool) error {
+
+	for _, task := range ts.Workflow {
+		if task.Request.Path == "/nodes" {
+			expectMap, _ := task.Expect.(map[string]interface{})
+			expectNode, _ := expectMap["node"].(map[string]interface{})
+			nodeUUID, _ := expectNode["uuid"].(string)
+			nodeResp, err := httpClient.GetNode(context.Background(),
+				&services.GetNodeRequest{
+					ID: nodeUUID,
+				},
+			)
+			if err != nil {
+				return err
+			}
+			if nodeResp.Node.Annotations != nil && provisionExists {
+				for _, kp := range nodeResp.Node.Annotations.KeyValuePair {
+					if kp.Key == "provision" && kp.Value == "false" {
+						return nil
+					}
+				}
+				return fmt.Errorf(
+					"provision key/value is not as expected in node %s annotation",
+					nodeResp.Node.UUID)
+			} else if nodeResp.Node.Annotations == nil && provisionExists {
+				return fmt.Errorf("annotation does not exist in node %s",
+					nodeResp.Node.UUID)
+			} else if nodeResp.Node.Annotations != nil && !provisionExists {
+				for _, kp := range nodeResp.Node.Annotations.KeyValuePair {
+					if kp.Key == "provision" && kp.Value == "true" {
+						return nil
+					}
+				}
+				return fmt.Errorf(
+					"provision key/value is not as expected in node %s annotation",
+					nodeResp.Node.UUID)
+			}
+		}
+	}
+	return nil
 }

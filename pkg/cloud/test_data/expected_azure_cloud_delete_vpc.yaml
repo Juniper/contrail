@@ -29,6 +29,7 @@
             - name: cloud_node_gw
               roles:
                 - gateway
+                - vrouter: false
               provision: true
               username: redhat
               os: redhat

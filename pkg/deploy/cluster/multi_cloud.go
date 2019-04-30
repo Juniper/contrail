@@ -231,6 +231,13 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
+
+	err = m.setNodeProvisionFlag(context.Background(), false)
+	if err != nil {
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		return err
+	}
+
 	status[statusField] = statusUpdated
 	if m.action == createAction {
 		status[statusField] = statusCreated
@@ -276,6 +283,13 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
+
+	err = m.setNodeProvisionFlag(context.Background(), false)
+	if err != nil {
+		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		return err
+	}
+
 	status[statusField] = statusUpdated
 	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	return nil
@@ -294,7 +308,7 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	_ = m.mcPlayBook()
 
 	if m.action != deleteAction {
-		err = m.removeCloudRefFromCluster()
+		err = m.removeCloudRefFromCluster(context.Background())
 		if err != nil {
 			return err
 		}
@@ -597,11 +611,45 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 
 }
 
-func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
+func (m *multiCloudProvisioner) setNodeProvisionFlag(
+	ctx context.Context, provisionFlag bool) error {
+
+	pubCloudID, pvtCloudID, err := m.getPubPvtCloudID()
+	if err != nil {
+		return err
+	}
+
+	tags, err := getTagOfCloud(context.Background(),
+		m.cluster.APIServer, pvtCloudID)
+
+	tagsPub, err := getTagOfCloud(context.Background(),
+		m.cluster.APIServer, pubCloudID)
+
+	tags = append(tags, tagsPub...)
+
+	for _, tag := range tags {
+		if tag.NodeBackRefs != nil {
+			for _, node := range tag.NodeBackRefs {
+				setNodeAnnotation(node, "provision", provisionFlag)
+				_, err = m.cluster.APIServer.UpdateNode(context.Background(),
+					&services.UpdateNodeRequest{
+						Node: node,
+					},
+				)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (m *multiCloudProvisioner) removeCloudRefFromCluster(ctx context.Context) error {
 
 	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
 		_, err := m.cluster.APIServer.DeleteContrailClusterCloudRef(
-			context.Background(), &services.DeleteContrailClusterCloudRefRequest{
+			ctx, &services.DeleteContrailClusterCloudRefRequest{
 				ID:                      m.clusterData.ClusterInfo.UUID,
 				ContrailClusterCloudRef: cloudRef,
 			},
@@ -1034,71 +1082,80 @@ func (m *multiCloudProvisioner) checkIfTORExists() (bool, error) {
 		return false, err
 	}
 
-	tag, err := getTagOfPvtCloud(context.Background(),
+	tags, err := getTagOfCloud(context.Background(),
 		m.cluster.APIServer, pvtCloudID)
-	if err != nil {
-		return false, err
-	}
-	if tag.PhysicalRouterBackRefs != nil {
-		return true, nil
-	}
-	return false, nil
 
+	for _, tag := range tags {
+		if tag.PhysicalRouterBackRefs != nil {
+			return true, err
+		}
+	}
+	return false, err
 }
 
-func getTagOfPvtCloud(ctx context.Context,
-	client *client.HTTP, cloudID string) (*models.Tag, error) {
+func getTagOfCloud(ctx context.Context,
+	client *client.HTTP, cloudID string) ([]*models.Tag, error) {
 
+	var tagList []*models.Tag
 	cloudObj, err := cloud.GetCloud(ctx, client, cloudID)
 	if err != nil {
 		return nil, err
 	}
 
 	if cloudObj.CloudProviders != nil {
-		cloudProvObj, err := client.GetCloudProvider(ctx,
-			&services.GetCloudProviderRequest{
-				ID: cloudObj.CloudProviders[0].UUID,
-			},
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		if cloudProvObj.CloudProvider.CloudRegions != nil {
-			cloudRegObj, err := client.GetCloudRegion(ctx,
-				&services.GetCloudRegionRequest{
-					ID: cloudProvObj.CloudProvider.CloudRegions[0].UUID,
+		for _, provider := range cloudObj.CloudProviders {
+			cloudProvObj, err := client.GetCloudProvider(ctx,
+				&services.GetCloudProviderRequest{
+					ID: provider.UUID,
 				},
 			)
 			if err != nil {
 				return nil, err
 			}
 
-			if cloudRegObj.CloudRegion.VirtualClouds != nil {
-				vCloudObj, err := client.GetVirtualCloud(ctx,
-					&services.GetVirtualCloudRequest{
-						ID: cloudRegObj.CloudRegion.VirtualClouds[0].UUID,
-					},
-				)
-				if err != nil {
-					return nil, err
-				}
-
-				if vCloudObj.VirtualCloud.TagRefs != nil {
-					tagObj, err := client.GetTag(ctx,
-						&services.GetTagRequest{
-							ID: vCloudObj.VirtualCloud.TagRefs[0].UUID,
+			if cloudProvObj.CloudProvider.CloudRegions != nil {
+				for _, region := range cloudProvObj.CloudProvider.CloudRegions {
+					cloudRegObj, err := client.GetCloudRegion(ctx,
+						&services.GetCloudRegionRequest{
+							ID: region.UUID,
 						},
 					)
 					if err != nil {
 						return nil, err
 					}
-					return tagObj.Tag, nil
+
+					if cloudRegObj.CloudRegion.VirtualClouds != nil {
+						for _, vCloud := range cloudRegObj.CloudRegion.VirtualClouds {
+							vCloudObj, err := client.GetVirtualCloud(ctx,
+								&services.GetVirtualCloudRequest{
+									ID: vCloud.UUID,
+								},
+							)
+							if err != nil {
+								return nil, err
+							}
+
+							if vCloudObj.VirtualCloud.TagRefs != nil {
+								tagObj, err := client.GetTag(ctx,
+									&services.GetTagRequest{
+										ID: vCloudObj.VirtualCloud.TagRefs[0].UUID,
+									},
+								)
+								if err != nil {
+									return nil, err
+								}
+								tagList = append(tagList, tagObj.Tag)
+							}
+						}
+					}
 				}
 			}
 		}
 	}
-	return nil, fmt.Errorf("tag not found in cloud %s", cloudID)
+	if tagList == nil {
+		return tagList, fmt.Errorf("tag not found in cloud %s", cloudID)
+	}
+	return tagList, nil
 }
 
 func (m *multiCloudProvisioner) runTORScript() error {
@@ -1378,4 +1435,22 @@ func waitForCloudStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
 			cloudResp.Cloud.ProvisioningState, cloudUUID)
 	}, retry.WithLog(log.Logger),
 		retry.WithInterval(statusRetryInterval))
+}
+
+func setNodeAnnotation(node *models.Node, key string, val bool) {
+	provisionKeyFound := false
+	for _, kp := range node.Annotations.KeyValuePair {
+		if kp.Key == key {
+			kp.Value = strconv.FormatBool(val)
+			provisionKeyFound = true
+		}
+	}
+	if !provisionKeyFound {
+		node.Annotations.KeyValuePair = append(node.Annotations.KeyValuePair,
+			&models.KeyValuePair{
+				Key:   key,
+				Value: strconv.FormatBool(val),
+			},
+		)
+	}
 }

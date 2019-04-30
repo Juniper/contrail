@@ -199,12 +199,12 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 			"Expected list of update commands are not executed")
 
 		// delete vpc and compare topology
-		var cloudDeleteVPVTestScenario integration.TestScenario
-		err = integration.LoadTestScenario(&cloudDeleteVPVTestScenario,
+		var cloudDeleteVPCTestScenario integration.TestScenario
+		err = integration.LoadTestScenario(&cloudDeleteVPCTestScenario,
 			deleteVPCTemplatePath, context)
 		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s",
 			deleteVPCTemplatePath)
-		deleteVPC := integration.RunDirtyTestScenario(t, &cloudDeleteVPVTestScenario, server)
+		deleteVPC := integration.RunDirtyTestScenario(t, &cloudDeleteVPCTestScenario, server)
 		deleteVPC()
 
 		// delete previously created files
