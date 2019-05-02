@@ -60,7 +60,8 @@
           {% for instance in vcloud.instances %}
             - name: {{ instance.info.Hostname }}
               roles:
-              {% for role in instance.info.CloudInfo.Roles %}
+              {% if instance.roles %}{% set roles = instance.roles %}{% else %}{% set roles = instance.info.CloudInfo.Roles %}{% endif %}
+              {% for role in roles %}
                 {% if "compute" in role %}
                 - compute_node
                 {% else %}

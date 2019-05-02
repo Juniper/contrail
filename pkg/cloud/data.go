@@ -290,7 +290,7 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		}
 
 		if hasCloudRole(inst.info.CloudInfo.Roles, "none") {
-			inst.info.CloudInfo.Roles = []string{"compute_node"}
+			inst.roles = []string{"compute_node"}
 			inst.provision = strconv.FormatBool(false)
 		}
 	}
