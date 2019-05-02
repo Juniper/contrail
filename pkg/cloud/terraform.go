@@ -14,6 +14,7 @@ import (
 const (
 	tfCommand     = "terraform"
 	tfParallelism = "-parallelism=50"
+	tfRefresh     = "-refresh=false"
 )
 
 type terraform struct {
@@ -127,7 +128,7 @@ func (tf *terraform) initalize() error {
 }
 
 func (tf *terraform) apply() error {
-	args := []string{"apply", "-auto-approve", tfParallelism}
+	args := []string{"apply", "-auto-approve", tfParallelism, tfRefresh}
 
 	tf.log.Infof("Creating cloud infra using terraform")
 
@@ -151,7 +152,7 @@ func (tf *terraform) destroy() error {
 
 	// teardown terraform
 
-	args := []string{"destroy", "-force", tfParallelism}
+	args := []string{"destroy", "-force", tfParallelism, tfRefresh}
 
 	tf.log.Debugf("Command being executed : %s %s", tfCommand,
 		strings.Join(args, " "))
