@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/format"
@@ -248,13 +249,29 @@ func (e *EndpointData) getAppformixEndpointNodes() (endpointNodes map[string][]s
 	return endpointNodes
 }
 
-func (e *EndpointData) getXflowEndpointNodes() (endpointNodes map[string][]string) {
-	endpointNodes = make(map[string][]string)
-	xflowData := e.ClusterData.GetXflowData()
-	if xflowData != nil && xflowData.ClusterInfo != nil {
-		endpointNodes[xflow] = []string{xflowData.ClusterInfo.KeepalivedSharedIP}
+func getXflowEndpointAddress(xflowData *XflowData) (string, error) {
+	if xflowData.ClusterInfo.KeepalivedSharedIP != "" {
+		return xflowData.ClusterInfo.KeepalivedSharedIP, nil
 	}
-	return endpointNodes
+	if len(xflowData.NodesInfo) == 1 {
+		for _, nodeInfo := range xflowData.NodesInfo {
+			return nodeInfo.IPAddress, nil
+		}
+	}
+	return "", errors.New("failed to find xflow node IP Address")
+}
+
+func (e *EndpointData) getXflowEndpointNodes() (map[string][]string, error) {
+	endpointNodes := make(map[string][]string)
+	xflowData := e.ClusterData.GetXflowData()
+	if xflowData != nil && xflowData.ClusterInfo != nil && len(xflowData.ClusterInfo.AppformixFlowsNodes) > 0 {
+		xflowAddress, err := getXflowEndpointAddress(xflowData)
+		if err != nil {
+			return nil, err
+		}
+		endpointNodes[xflow] = []string{xflowAddress}
+	}
+	return endpointNodes, nil
 }
 
 // Create endpoint
@@ -318,7 +335,11 @@ func (e *EndpointData) Create() error { //nolint: gocyclo
 	}
 
 	// appformix and xflow endpoints
-	endpoints := format.MergeMultimap(e.getAppformixEndpointNodes(), e.getXflowEndpointNodes())
+	xflowEndpoints, err := e.getXflowEndpointNodes()
+	if err != nil {
+		return err
+	}
+	endpoints := format.MergeMultimap(e.getAppformixEndpointNodes(), xflowEndpoints)
 	for service, endpointIPs := range endpoints {
 		e.Log.Infof("Creating %s endpoints:%s", service, endpointIPs)
 		for _, endpointIP := range endpointIPs {
