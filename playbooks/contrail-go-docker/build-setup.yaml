@@ -3,12 +3,32 @@
     name: docker
   become: yes
   become_user: root
+  when:
+    - ansible_os_family != 'RedHat'
 
 - name: "Install docker-compose"
   pip:
     name: docker-compose
   become: yes
   become_user: root
+  when:
+    - ansible_os_family != 'RedHat'
+
+- name: "Install docker rpm"
+  yum:
+    name: docker
+  become: yes
+  become_user: root
+  when:
+    - ansible_os_family == 'RedHat'
+
+- name: "Install docker-compose rpm"
+  yum:
+    name: docker-compose
+  become: yes
+  become_user: root
+  when:
+    - ansible_os_family == 'RedHat'
 
 - name: Disable selinux for the build
   selinux:

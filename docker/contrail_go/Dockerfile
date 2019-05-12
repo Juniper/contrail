@@ -1,4 +1,8 @@
-FROM centos:7.4.1708
+ARG REGISTRY="opencontrailnigtly"
+ARG REPOSITORY="contrail-base"
+ARG TAG="latest"
+FROM ${REGISTRY}/${REPOSITORY}:${TAG}
+
 ARG GOPATH
 MAINTAINER Nachi Ueno nueno@juniper.net
 
@@ -13,7 +17,6 @@ ADD ./etc/init_data.yaml /usr/share/contrail/
 ADD ./public /usr/share/contrail/public
 ADD ./templates /usr/share/contrail/templates
 COPY ./contrail-ansible-deployer /usr/share/contrail/contrail-ansible-deployer
-COPY ./contrail-api-client /tmp/contrail-api-client
 
 # creating link as needed by multi-cloud
 RUN ln -s /usr/share/contrail/contrail-ansible-deployer /tmp/
@@ -35,11 +38,6 @@ RUN yum remove -y PyYAML
 # issues. Refer: https://bugs.launchpad.net/kolla-ansible/+bug/1784123
 RUN pip install ansible==2.5.2.0
 RUN python2 -m pip install lxml saxpy gevent
-
-# logic to install vnc api client needed by multi-cloud
-RUN cd /tmp/contrail-api-client && git fetch --unshallow
-RUN cd /tmp/contrail-api-client && scons
-RUN cd /tmp/contrail-api-client/build/debug/api-lib && python setup.py install
 
 EXPOSE 9091
 WORKDIR /etc/contrail
