@@ -1,16 +1,19 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
-CONTRAIL_API_CLIENT_REPO := contrail-api-client
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
 DB_FILES := gen_init_mysql.sql gen_init_psql.sql init_data.yaml
 
 ANSIBLE_DEPLOYER_REPO_DIR ?= ""
 ANSIBLE_DEPLOYER_BRANCH ?= master
-CONTRAIL_API_CLIENT_REPO_DIR ?= ""
-CONTRAIL_API_CLIENT_BRANCH ?= master
 ANSIBLE_DEPLOYER_REVISION ?= HEAD
+
+BASE_IMAGE_REGISTRY ?= opencontrailnightly
+BASE_IMAGE_REPOSITORY ?= contrail-base
+BASE_IMAGE_TAG ?= latest
+
 GOPATH ?= `go env GOPATH`
 SOURCEDIR ?= $(GOPATH)
+DOCKER_FILE := $(BUILD_DIR)/docker/contrail_go/Dockerfile
 
 # This is needed by generate* targets that works only sequentially
 ifneq ($(filter generate,$(MAKECMDGOALS)),)
@@ -169,14 +172,20 @@ ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
 else
 		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
 endif
-ifeq ($(CONTRAIL_API_CLIENT_REPO_DIR),"")
-		git clone -b $(CONTRAIL_API_CLIENT_BRANCH) https://github.com/Juniper/$(CONTRAIL_API_CLIENT_REPO).git $(BUILD_DIR)/docker/contrail_go/$(CONTRAIL_API_CLIENT_REPO) --depth 1
-else
-		cp -r $(CONTRAIL_API_CLIENT_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(CONTRAIL_API_CLIENT_REPO)
-endif
 
-docker: apidoc docker_prepare ## Generate Docker files
-	docker build --build-arg GOPATH=$(GOPATH) -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
+docker: apidoc docker_prepare docker_build ## Build contrail-go Docker image
+
+docker_build:
+	# Remove ARG and modify FROM (workaround for bug https://bugzilla.redhat.com/show_bug.cgi?id=1572019)
+	sed -i \
+	   	-e '/FROM/,$$!d' \
+	   	-e 's/FROM $${BASE_IMAGE_REGISTRY}\/$${BASE_IMAGE_REPOSITORY}:$${BASE_IMAGE_TAG}/FROM ${BASE_IMAGE_REGISTRY}\/${BASE_IMAGE_REPOSITORY}:${BASE_IMAGE_TAG}/' ${DOCKER_FILE}
+	docker build \
+		--build-arg BASE_IMAGE_REGISTRY=$(BASE_IMAGE_REGISTRY) \
+		--build-arg BASE_IMAGE_REPOSITORY=$(BASE_IMAGE_REPOSITORY) \
+		--build-arg BASE_IMAGE_TAG=$(BASE_IMAGE_TAG) \
+		--build-arg GOPATH=$(GOPATH) \
+		-t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
