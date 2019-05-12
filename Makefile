@@ -1,36 +1,16 @@
 ANSIBLE_DEPLOYER_REPO := contrail-ansible-deployer
-CONTRAIL_API_CLIENT_REPO := contrail-api-client
 BUILD_DIR := ../build
 SRC_DIRS := cmd pkg vendor
 DB_FILES := gen_init_mysql.sql gen_init_psql.sql init_data.yaml
 
-ifdef ANSIBLE_DEPLOYER_REPO_DIR
-  export ANSIBLE_DEPLOYER_REPO_DIR
-else
-  export ANSIBLE_DEPLOYER_REPO_DIR := ""
-endif
-ifdef ANSIBLE_DEPLOYER_BRANCH
-  export ANSIBLE_DEPLOYER_BRANCH
-else
-  export ANSIBLE_DEPLOYER_BRANCH := master
-endif
+ANSIBLE_DEPLOYER_REPO_DIR ?= ""
+ANSIBLE_DEPLOYER_BRANCH ?= master
+CONTRAIL_API_CLIENT_BRANCH ?= master
+ANSIBLE_DEPLOYER_REVISION ?= HEAD
 
-ifdef CONTRAIL_API_CLIENT_REPO_DIR
-  export CONTRAIL_API_CLIENT_REPO_DIR
-else
-  export CONTRAIL_API_CLIENT_REPO_DIR := ""
-endif
-ifdef CONTRAIL_API_CLIENT_BRANCH
-  export CONTRAIL_API_CLIENT_BRANCH
-else
-  export CONTRAIL_API_CLIENT_BRANCH := master
-endif
-
-ifdef ANSIBLE_DEPLOYER_REVISION
-  export ANSIBLE_DEPLOYER_REVISION
-else
-  export ANSIBLE_DEPLOYER_REVISION := HEAD
-endif
+CONTAINER_REGISTRY ?= launcher.gcr.io
+CONTAINER_REPOSITORY ?= google/centos7
+CONTAINER_TAG ?= latest
 
 GOPATH ?= `go env GOPATH`
 
@@ -191,14 +171,16 @@ ifeq ($(ANSIBLE_DEPLOYER_REPO_DIR),"")
 else
 		cp -r $(ANSIBLE_DEPLOYER_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(ANSIBLE_DEPLOYER_REPO)
 endif
-ifeq ($(CONTRAIL_API_CLIENT_REPO_DIR),"")
-		git clone -b $(CONTRAIL_API_CLIENT_BRANCH) https://github.com/Juniper/$(CONTRAIL_API_CLIENT_REPO).git $(BUILD_DIR)/docker/contrail_go/$(CONTRAIL_API_CLIENT_REPO) --depth 1
-else
-		cp -r $(CONTRAIL_API_CLIENT_REPO_DIR) $(BUILD_DIR)/docker/contrail_go/$(CONTRAIL_API_CLIENT_REPO)
-endif
 
 docker: apidoc docker_prepare ## Generate Docker files
-	docker build --build-arg GOPATH=$(GOPATH) -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
+
+docker_build:
+	docker build \
+		--build-arg REGISTRY=$(CONTAINER_REGISTRY) \
+		--build-arg REPOSITORY=$(CONTAINER_REPOSITORY) \
+		--build-arg TAG=$(CONTAINER_TAG) \
+		--build-arg GOPATH=$(GOPATH) \
+		-t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
