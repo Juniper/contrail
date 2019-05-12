@@ -1,3 +1,11 @@
+- name: "Install python2 requests"
+  yum:
+    name:  python2-requests
+  become: yes
+  become_user: root
+  when:
+    - ansible_distribution == 'RedHat'
+
 - name: "Install docker"
   pip:
     name: docker
