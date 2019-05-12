@@ -39,7 +39,7 @@
         - name: Run tests and linters on the source code in parallel
           command: make -j test lint
         - name: Generate Docker files
-          command: make SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
+          command: make CONTAINER_REGISTRY={{ contrail_docker_registry }} CONTAINER_REPOSITORY={{ repository }} CONTAINER_TAG={{ packaging.docker_version }} SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
 
     - name: Fix files ownerships
       file:

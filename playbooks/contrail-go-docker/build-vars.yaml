@@ -3,3 +3,4 @@ workdir: /go/src/github.com/Juniper/contrail
 sourcedir: "{{ ansible_env.HOME }}"
 logsdir: "{{ ansible_env.HOME }}/unittests-logs"
 contraildir: "{{ ansible_env.HOME }}/src/github.com/Juniper/contrail"
+repository: contrail-base

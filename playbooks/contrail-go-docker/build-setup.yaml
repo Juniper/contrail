@@ -3,6 +3,16 @@
     name: docker
   become: yes
   become_user: root
+  when:
+    - ansible_distribution != 'RedHat'
+
+- name: "Install docker rpm"
+  yum:
+    name: docker
+  become: yes
+  become_user: root
+  when:
+    - ansible_distribution == 'RedHat'
 
 - name: "Install docker-compose"
   pip:
