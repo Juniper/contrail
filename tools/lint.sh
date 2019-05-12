@@ -14,4 +14,4 @@ function run_go_tool_fix() {
 
 run_go_tool_fix || exit 1
 
-golangci-lint --config .golangci.yml --verbose run ./... 2>&1 | tee -a "$TOP/linter.log" || exit 1
+GOGC=30 golangci-lint --config .golangci.yml --verbose run ./... 2>&1 | tee -a "$TOP/linter.log" || exit 1
