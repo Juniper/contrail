@@ -1,4 +1,8 @@
-FROM centos:7.4.1708
+ARG REGISTRY="docker.io"
+ARG REPOSITORY="centos"
+ARG TAG="7.4.1708"
+FROM ${REGISTRY}/${REPOSITORY}:${TAG}
+
 ARG GOPATH
 MAINTAINER Nachi Ueno nueno@juniper.net
 

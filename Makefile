@@ -32,6 +32,24 @@ else
   export ANSIBLE_DEPLOYER_REVISION := HEAD
 endif
 
+ifdef CONTAINER_REGISTRY
+  export CONTAINER_REGISTRY
+else
+	export CONTAINER_REGISTRY := docker.io
+endif
+
+ifdef CONTAINER_REPOSITORY
+  export CONTAINER_REPOSITORY
+else
+	export CONTAINER_REPOSITORY := centos
+endif
+
+ifdef CONTAINER_TAG
+  export CONTAINER_TAG
+else
+	export CONTAINER_TAG := 7.4.1708
+endif
+
 GOPATH ?= `go env GOPATH`
 
 # This is needed by generate* targets that works only sequentially
@@ -198,7 +216,12 @@ else
 endif
 
 docker: apidoc docker_prepare ## Generate Docker files
-	docker build --build-arg GOPATH=$(GOPATH) -t "contrail-go" $(BUILD_DIR)/docker/contrail_go
+	docker build \
+		--build-arg REGISTRY=$(CONTAINER_REGISTRY) \
+		--build-arg REPOSITORY=$(CONTAINER_REPOSITORY) \
+		--build-arg TAG=$(CONTAINER_TAG) \
+		--build-arg GOPATH=$(GOPATH) \
+		-t "contrail-go" $(BUILD_DIR)/docker/contrail_go
 
 help: ## Display help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
