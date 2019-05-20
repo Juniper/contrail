@@ -9,6 +9,7 @@ import (
 	tf "github.com/hashicorp/terraform/terraform"
 )
 
+// readStateFile reads terraform state file and return content of it
 func readStateFile(tfStateFile string) (*tf.State, error) {
 
 	if _, err := os.Stat(tfStateFile); err == nil {
@@ -30,6 +31,7 @@ func readStateFile(tfStateFile string) (*tf.State, error) {
 	return nil, fmt.Errorf("tf state file: %s does not exist", tfStateFile)
 }
 
+// getIPFromTFState gets IP details of instances from terraform state file
 func getIPFromTFState(tfState *tf.State, outputKey string) (string, error) {
 
 	mState := tfState.RootModule()

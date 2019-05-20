@@ -11,6 +11,7 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
+// updateIPDetails update IP details of public cloud instances
 func (c *Cloud) updateIPDetails(ctx context.Context, data *Data) error {
 	tfState, err := readStateFile(GetTFStateFile(c.config.CloudID))
 	if err != nil {
@@ -25,6 +26,7 @@ func (c *Cloud) updateIPDetails(ctx context.Context, data *Data) error {
 	return nil
 }
 
+// updateInstanceIP updates instance IP for the given instance
 func updateInstanceIP(ctx context.Context,
 	instance *instanceData, tfState *tf.State) error {
 
@@ -57,6 +59,7 @@ func updateInstanceIP(ctx context.Context,
 	return addIPToNode(ctx, privateIP, instance.info, instance.client)
 }
 
+// gwRoleExists checks if gw role exists
 func gwRoleExists(instance *instanceData) bool {
 	for _, role := range instance.info.CloudInfo.Roles {
 		if role == "gateway" {
@@ -66,6 +69,7 @@ func gwRoleExists(instance *instanceData) bool {
 	return false
 }
 
+// createPort creates port for the given instance
 func createPort(ctx context.Context, portName string, ip string,
 	instance *models.Node, client *client.HTTP) (*models.Port, error) {
 
@@ -102,6 +106,7 @@ func createPort(ctx context.Context, portName string, ip string,
 	return portResp.GetPort(), err
 }
 
+// addPortToNode add given port to the node object
 func addPortToNode(ctx context.Context, port *models.Port,
 	instance *models.Node, client *client.HTTP) error {
 
@@ -112,6 +117,7 @@ func addPortToNode(ctx context.Context, port *models.Port,
 	return err
 }
 
+// addIPToNode add IP address to node schema object
 func addIPToNode(ctx context.Context, ip string,
 	instance *models.Node, client *client.HTTP) error {
 

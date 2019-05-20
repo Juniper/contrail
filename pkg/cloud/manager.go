@@ -17,6 +17,7 @@ import (
 )
 
 // Config represents cloud configuration needed by cloudManager
+// this config is read from the yaml file </var/tmp/cloud/config/<uuid>/contrail-cloud-config.yml
 type Config struct { // nolint: maligned
 	// ID of cloud
 	ID string `yaml:"id"`
@@ -51,7 +52,7 @@ type Config struct { // nolint: maligned
 	Test bool `yaml:"test"`
 }
 
-// Cloud represents cloud service.
+// Cloud represents fields needed to process a cloud request
 type Cloud struct {
 	config       *Config
 	APIServer    *client.HTTP
@@ -61,7 +62,8 @@ type Cloud struct {
 	ctx          context.Context
 }
 
-// NewCloudManager creates cloud fields by reading config from given configPath
+// NewCloudManager returns cloud field by reading the config file
+// which is needed to process a cloud request
 func NewCloudManager(configPath string) (*Cloud, error) {
 	data, err := ioutil.ReadFile(configPath)
 	if err != nil {
@@ -83,6 +85,7 @@ func NewCloud(c *Config) (*Cloud, error) {
 		return nil, err
 	}
 
+	// initialize the apiserver client
 	s := &client.HTTP{
 		Endpoint: c.Endpoint,
 		InSecure: c.InSecure,
@@ -127,11 +130,13 @@ func NewCloud(c *Config) (*Cloud, error) {
 	}, nil
 }
 
-// Manage starts managing the cloud.
+// Manage acts on every cloud request trigerred by agent
 func (c *Cloud) Manage() error {
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
 
+	// check if request is a delete cloud request
+	// and trigger delete cloud workflow if its a delete cloud request
 	isDeleteReq, err := c.isCloudDeleteRequest()
 	if err != nil {
 		c.log.Errorf("cloud %s processing failed with error: %s",
@@ -148,6 +153,7 @@ func (c *Cloud) Manage() error {
 
 	switch c.config.Action {
 	case createAction:
+		// trigger cloud create workflow
 		err = c.create()
 		if err != nil {
 			c.log.Errorf("create cloud %s failed with error: %s",
@@ -155,6 +161,7 @@ func (c *Cloud) Manage() error {
 			return err
 		}
 	case updateAction:
+		// trigger cloud update workflow
 		err = c.update()
 		if err != nil {
 			c.log.Errorf("update cloud %s failed with error: %s",
@@ -166,12 +173,12 @@ func (c *Cloud) Manage() error {
 	return nil
 }
 
-// handles creation of cloud
+// create executes create cloud workflow
 func (c *Cloud) create() error {
 
 	status := map[string]interface{}{statusField: statusCreateProgress}
 
-	// Run pre-install steps
+	// initializes all data
 	topo, secret, data, err := c.initialize()
 	if err != nil {
 		status[statusField] = statusCreateFailed
@@ -179,7 +186,9 @@ func (c *Cloud) create() error {
 		return err
 	}
 
-	if data.isCloudCreated() {
+	// skip is cloud is already created
+	if isCloudCreated(c.config.Action, data) {
+		c.log.Infof("Cloud %s already created", c.config.CloudID)
 		return nil
 	}
 
@@ -188,24 +197,11 @@ func (c *Cloud) create() error {
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 	status[statusField] = statusCreateFailed
 
-	err = topo.createTopologyFile(GetTopoFile(c.config.CloudID))
+	// create input files and builds public cloud infra using terraform
+	err = c.execMCDeployerWorkflow(data.isCloudPublic(), topo, secret)
 	if err != nil {
 		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 		return err
-	}
-
-	if data.isCloudPublic() {
-		err = secret.createSecretFile()
-		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-			return err
-		}
-		// depending upon the config action, it takes respective terraform action
-		err = c.manageTerraform(c.config.Action)
-		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-			return err
-		}
 	}
 
 	// update IP details only when cloud is public
@@ -218,6 +214,7 @@ func (c *Cloud) create() error {
 		}
 	}
 
+	// report the status to be created
 	status[statusField] = statusCreated
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 
@@ -231,7 +228,7 @@ func (c *Cloud) update() error {
 
 	status := map[string]interface{}{statusField: statusUpdateProgress}
 
-	// Run pre-install steps
+	// initializes all data
 	topo, secret, data, err := c.initialize()
 	if err != nil {
 		status[statusField] = statusUpdateFailed
@@ -239,7 +236,9 @@ func (c *Cloud) update() error {
 		return err
 	}
 
-	if !data.isCloudUpdateRequest() {
+	// check if update request is valid by comparing the topology file
+	// skip this request if there is no change in topology file
+	if !isCloudUpdateRequest(c.config.Action, data) {
 		var topoIsAlreadyUpdated bool
 		topoIsAlreadyUpdated, err = topo.isUpdated(defaultCloudResource)
 		if err != nil {
@@ -257,39 +256,22 @@ func (c *Cloud) update() error {
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 	status[statusField] = statusUpdateFailed
 
-	err = topo.createTopologyFile(GetTopoFile(topo.cloud.config.CloudID))
+	// create input files and builds public cloud infra using terraform
+	err = c.execMCDeployerWorkflow(data.isCloudPublic(), topo, secret)
 	if err != nil {
 		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 		return err
 	}
 
-	//TODO(madhukar) handle if key-pair changes or aws-key
-
-	if data.isCloudPublic() {
-
-		err = secret.createSecretFile()
-		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-			return err
-		}
-
-		// depending upon the config action, it takes respective terraform action
-		err = c.manageTerraform(c.config.Action)
-		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-			return err
-		}
-	}
-
-	//update IP address
 	if data.isCloudPublic() && (!c.config.Test) {
+		// update IP address for nodes created on public clouds
 		err = c.updateIPDetails(c.ctx, data)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
 		}
 	}
-
+	// report the status to be updated
 	status[statusField] = statusUpdated
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 	return nil
@@ -298,7 +280,7 @@ func (c *Cloud) update() error {
 func (c *Cloud) delete() error {
 
 	// get cloud data
-	data, err := c.getCloudData(true)
+	data, err := GetCloudData(c.ctx, c.config.CloudID, c.APIServer, true)
 	if err != nil {
 		return err
 	}
@@ -306,6 +288,7 @@ func (c *Cloud) delete() error {
 	status := map[string]interface{}{statusField: statusUpdateFailed}
 
 	if data.isCloudPrivate() {
+		// wait for the contrail cluster(back ref of cloud) to complete processing
 		err = c.verifyContrailClusterStatus(data)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -315,6 +298,7 @@ func (c *Cloud) delete() error {
 
 	if data.isCloudPublic() {
 		if tfStateOutputExists(c.config.CloudID) {
+			// depending upon the config action, it takes respective terraform action
 			err = c.manageTerraform(deleteAction)
 			if err != nil {
 				c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -334,6 +318,7 @@ func (c *Cloud) delete() error {
 
 }
 
+// verifyContrailClusterStatus verifies and wait for cluster status to be updated
 func (c *Cloud) verifyContrailClusterStatus(data *Data) error {
 
 	for _, clusterRef := range data.info.ContrailClusterBackRefs {
@@ -346,19 +331,22 @@ func (c *Cloud) verifyContrailClusterStatus(data *Data) error {
 	return nil
 }
 
+// initialize inits data, topology and secret receiver
 func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
-
-	data, err := c.getCloudData(false)
+	// get cloud data
+	data, err := GetCloudData(c.ctx, c.config.CloudID, c.APIServer, false)
 	if err != nil {
 		return nil, nil, nil, err
 	}
+
+	// initialize topo receiver
 	topo := c.newTopology(data)
 
 	if data.isCloudPrivate() {
 		return topo, nil, data, nil
 	}
 
-	// initialize secret struct
+	// initialize secret receiver
 	secret, err := c.newSecret()
 	if data.isCloudPublic() {
 		if err != nil {
@@ -373,6 +361,7 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 	return topo, secret, data, nil
 }
 
+// isCloudDeleteRequest check if request is delete
 func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 
 	cloudObj, err := GetCloud(c.ctx, c.APIServer, c.config.CloudID)
@@ -386,4 +375,34 @@ func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+// execMCDeployerWorkflow executes deployer workflow which includes of
+// 1. create/update topology file
+// 2. create/update secret file
+// 3. for public cloud type, run generate topology and execute terraform commands
+func (c *Cloud) execMCDeployerWorkflow(isPublic bool, topo *topology, secret *secret) error {
+
+	// create topology file(/var/tmp/cloud/<uuid>topology.yml) for cloud
+	err := topo.createTopologyFile(GetTopoFile(topo.cloud.config.CloudID))
+	if err != nil {
+		return err
+	}
+
+	//TODO(madhukar) handle if key-pair changes or aws-key
+
+	if isPublic {
+		// create secret file(/var/tmp/cloud/<uuid>topology.yml) for public cloud only
+		err = secret.createSecretFile()
+		if err != nil {
+			return err
+		}
+
+		// depending upon the config action, it takes respective terraform action
+		err = c.manageTerraform(c.config.Action)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

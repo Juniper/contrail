@@ -37,6 +37,7 @@ func GetCloudDir(cloudID string) string {
 	return filepath.Join(defaultWorkRoot, cloudID)
 }
 
+// getTemplateRoot returns path to the directory where cloud templates are stored
 func (c *Cloud) getTemplateRoot() string {
 	templateRoot := c.config.TemplateRoot
 	if templateRoot == "" {
@@ -50,6 +51,7 @@ func GetMultiCloudRepodir() string {
 	return filepath.Join(defaultMultiCloudDir, defaultMultiCloudRepo)
 }
 
+// getGenerateTopologyCmd returns generate topology command of mc deployer
 func getGenerateTopologyCmd(mcDir string) string {
 	return filepath.Join(mcDir, defaultGenTopoScript)
 }
@@ -104,6 +106,8 @@ func GetTFStateFile(cloudID string) string {
 	return filepath.Join(GetCloudDir(cloudID), defaultTFStateFile)
 }
 
+// deleteNodeObjects deletes all the node objects given as input
+// returns list of error
 func deleteNodeObjects(ctx context.Context,
 	client *client.HTTP, nodeList []*instanceData) []string {
 
@@ -152,6 +156,7 @@ func deleteNodeObjects(ctx context.Context,
 	return errList
 }
 
+// removePvtSubnetRefFromNodes remove cloud-private-subnet refs from node
 func removePvtSubnetRefFromNodes(ctx context.Context,
 	client *client.HTTP, nodeList []*instanceData) error {
 
@@ -171,6 +176,7 @@ func removePvtSubnetRefFromNodes(ctx context.Context,
 	return nil
 }
 
+// deleteContrailMCGWRole deletes contrail-contrail-multicloud-node role object associated with the instances
 func deleteContrailMCGWRole(ctx context.Context,
 	client *client.HTTP, nodeList []*instanceData) []string {
 
@@ -194,6 +200,7 @@ func deleteContrailMCGWRole(ctx context.Context,
 	return errList
 }
 
+// deleteSGObjects deletes given cloud-security-group objects
 func deleteSGObjects(ctx context.Context,
 	client *client.HTTP, sgList []*sgData) []string {
 
@@ -226,6 +233,7 @@ func deleteSGObjects(ctx context.Context,
 	return errList
 }
 
+// deletePvtSubnetObjects deletes cloud-private-subnet-objecs
 func deletePvtSubnetObjects(ctx context.Context,
 	client *client.HTTP, subnetList []*subnetData) []string {
 
@@ -246,6 +254,7 @@ func deletePvtSubnetObjects(ctx context.Context,
 	return errList
 }
 
+// deleteCloudProviderAndDeps deletes cloud-providers and its dependencies
 func deleteCloudProviderAndDeps(ctx context.Context,
 	client *client.HTTP, providerList []*providerData) []string {
 
@@ -301,6 +310,7 @@ func deleteCloudProviderAndDeps(ctx context.Context,
 	return errList
 }
 
+// deleteCloudUsers deletes given cloud users
 func deleteCloudUsers(ctx context.Context,
 	client *client.HTTP, userList []*models.CloudUser) []string {
 
@@ -319,6 +329,7 @@ func deleteCloudUsers(ctx context.Context,
 	return errList
 }
 
+// deleteCredentialAndDeps delete credentials and dependencies associated with it
 func deleteCredentialAndDeps(ctx context.Context,
 	client *client.HTTP, credList []*models.Credential) []string {
 
@@ -350,6 +361,7 @@ func deleteCredentialAndDeps(ctx context.Context,
 }
 
 // nolint: gocyclo
+// deleteAPIObjects deletes all the schema objects associated with cloud (children and refs and there deps)
 func (c *Cloud) deleteAPIObjects(d *Data) error {
 
 	if d.isCloudPrivate() {
@@ -414,6 +426,7 @@ func (c *Cloud) deleteAPIObjects(d *Data) error {
 	return nil
 }
 
+// genKeyPair generates ssh keypair
 func genKeyPair(bits int) ([]byte, []byte, error) {
 
 	// creating private key
@@ -442,6 +455,7 @@ func genKeyPair(bits int) ([]byte, []byte, error) {
 	return pub, encodedPvtKey.Bytes(), nil
 }
 
+// tfStateOutputExists checks if terrafrom state file exists in cloud work dir
 func tfStateOutputExists(cloudID string) bool {
 
 	tfState, err := readStateFile(GetTFStateFile(cloudID))
@@ -456,6 +470,8 @@ func tfStateOutputExists(cloudID string) bool {
 	return true
 }
 
+// waitForClusterStatusToBeUpdated waits for contrail-cluster processing to complete
+// only waits if cluster's status is showing as "UPDATE_IN_PROGRESS" or "CREATE_IN_PROGRESS"
 func waitForClusterStatusToBeUpdated(ctx context.Context, log *logrus.Entry,
 	httpClient *client.HTTP, clusterUUID string) error {
 

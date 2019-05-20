@@ -25,10 +25,12 @@ type topology struct {
 	ctx       context.Context
 }
 
+// getTmplFilePath gets path to cloud template files
 func (t *topology) getTmplFilePath() string {
 	return filepath.Join(t.cloud.getTemplateRoot(), t.getTopoTemplate())
 }
 
+// getTopoTemplate gets path to toplogy template file
 func (t *topology) getTopoTemplate() string {
 
 	if t.cloudData.isCloudPrivate() {
@@ -37,6 +39,7 @@ func (t *topology) getTopoTemplate() string {
 	return defaultPublicCloudTopoTemplate
 }
 
+// newTopology creates new topology
 func (c *Cloud) newTopology(data *Data) *topology {
 	return &topology{
 		cloudData: data,
@@ -51,6 +54,7 @@ func (c *Cloud) newTopology(data *Data) *topology {
 	}
 }
 
+// createTopologyFile creates topology file of cloud and writes it to the topoFile path
 func (t *topology) createTopologyFile(topoFile string) error {
 
 	context := pongo2.Context{
@@ -69,7 +73,8 @@ func (t *topology) createTopologyFile(topoFile string) error {
 	return nil
 }
 
-//TODO(madhukar) common func logic in cluster and cloud pkg
+//TODO() common func logic in cluster and cloud pkg
+// compareTopoFile compares topolgy file and sees if there is any diff
 func (t *topology) compareTopoFile() (bool, error) {
 
 	tmpfile, err := ioutil.TempFile("", "topology")
@@ -101,6 +106,7 @@ func (t *topology) compareTopoFile() (bool, error) {
 	return bytes.Equal(oldTopoFile, newTopoFile), nil
 }
 
+// isUpdated check if topology file is updated
 func (t *topology) isUpdated(resource string) (bool, error) {
 
 	status := map[string]interface{}{}

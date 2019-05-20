@@ -25,6 +25,7 @@ const (
 	sshPubKeyPerm = 0644
 )
 
+// secretFileConfig content will be written into /var/tmp/cloud/<uuid>secret.yml file
 type secretFileConfig struct {
 	keypair      *models.Keypair
 	awsAccessKey string
@@ -39,10 +40,12 @@ type secret struct {
 	ctx    context.Context
 }
 
+// getSecretTemplate gets cloud secret template file
 func (s *secret) getSecretTemplate() string {
 	return filepath.Join(s.cloud.getTemplateRoot(), defaultSecretTemplate)
 }
 
+// createSecretFile creates secret file in the work directory of cloud
 func (s *secret) createSecretFile() error {
 	secretFile := GetSecretFile(s.cloud.config.CloudID)
 
@@ -63,6 +66,7 @@ func (s *secret) createSecretFile() error {
 	return nil
 }
 
+// getCredObject gets credential schema object from db using method provided by api-server
 func getCredObject(ctx context.Context, client *client.HTTP,
 	uuid string) (*models.Credential, error) {
 
@@ -77,6 +81,7 @@ func getCredObject(ctx context.Context, client *client.HTTP,
 	return credResp.GetCredential(), nil
 }
 
+// getKeyPairObject gets keypair schema object from db using method provided by api-server
 func getKeyPairObject(ctx context.Context, uuid string,
 	c *Cloud) (*models.Keypair, error) {
 
@@ -92,6 +97,7 @@ func getKeyPairObject(ctx context.Context, uuid string,
 
 }
 
+// updateFileConfig updates sfc field of secret
 func (s *secret) updateFileConfig(d *Data) error {
 
 	keypair, err := s.getKeypair(d)
@@ -118,6 +124,7 @@ func (s *secret) updateFileConfig(d *Data) error {
 	return nil
 }
 
+// newSecret creates new secret struct
 func (c *Cloud) newSecret() (*secret, error) {
 	return &secret{
 		cloud:  c,
@@ -128,9 +135,10 @@ func (c *Cloud) newSecret() (*secret, error) {
 	}, nil
 }
 
+// getKeypair get keypair associated with the cloud
 func (s *secret) getKeypair(d *Data) (*models.Keypair, error) {
 
-	// TODO(madhukar) - optimize handling of multiple cloud users
+	// TODO - optimize handling of multiple cloud users
 	cloudID := d.info.UUID
 	if err := os.MkdirAll(getCloudSSHKeyDir(cloudID), sshDirPerm); err != nil {
 		return nil, err
@@ -146,6 +154,7 @@ func (s *secret) getKeypair(d *Data) (*models.Keypair, error) {
 	return keypair, err
 }
 
+// getSSHKeyIfValid get user provided ssh keypair if format is valid
 func getSSHKeyIfValid(kp *models.Keypair, keyType string) ([]byte, error) {
 
 	var sshKeyFileName string
@@ -179,15 +188,18 @@ func getSSHKeyIfValid(kp *models.Keypair, keyType string) ([]byte, error) {
 	return pubKey, err
 }
 
+// getCloudSSHKeyDir get cloud sshkey directory
 func getCloudSSHKeyDir(cloudID string) string {
 	return filepath.Join(GetCloudDir(cloudID), defaultSSHKeyRepo)
 }
 
+// getCloudSSHKeyPath gets cloud sshkey path
 func getCloudSSHKeyPath(cloudID string, name string) string {
 	return filepath.Join(getCloudSSHKeyDir(cloudID), name)
 }
 
 //nolint: gocyclo
+// getCredKeyPairIfExists get if credential if its referred by cloud-user object
 func (s *secret) getCredKeyPairIfExists(d *Data,
 	cloudID string) (*models.Keypair, error) {
 
@@ -254,6 +266,7 @@ func (s *secret) getCredKeyPairIfExists(d *Data,
 	return nil, errors.New("credential object is not referred by cloud")
 }
 
+// copySHHKeyPairIfValid copies ssh keypair to keypair directory of the cloud
 func copySHHKeyPairIfValid(keypair *models.Keypair, cloudID string) error {
 
 	// check if pub key is valid
@@ -279,6 +292,7 @@ func copySHHKeyPairIfValid(keypair *models.Keypair, cloudID string) error {
 		rawPvtKey, defaultRWOnlyPerm)
 }
 
+// createSSHKey creates ssh key, this is done when user has not provide any ssh key
 func createSSHKey(cloudID string, keypair *models.Keypair) error {
 	// logic to handle a ssh key generation if not added as cred ref
 	pubKey, pvtKey, err := genKeyPair(bits)

@@ -28,6 +28,7 @@ type terraform struct {
 	test       bool
 }
 
+// newTF creates new terraform struct
 func (c *Cloud) newTF() (*terraform, error) {
 	topoFile := GetTopoFile(c.config.CloudID)
 	secretFile := GetSecretFile(c.config.CloudID)
@@ -49,6 +50,7 @@ func (c *Cloud) newTF() (*terraform, error) {
 	}, nil
 }
 
+// manageTerraform manages terraofrm command as per the action
 func (c *Cloud) manageTerraform(action string) error {
 
 	tf, err := c.newTF()
@@ -69,7 +71,7 @@ func (c *Cloud) manageTerraform(action string) error {
 		return err
 	}
 
-	err = tf.initalize()
+	err = tf.initialize()
 	if err != nil {
 		return err
 	}
@@ -83,6 +85,9 @@ func (c *Cloud) manageTerraform(action string) error {
 
 }
 
+// createInputFile runs generate topology command. This command takes topology file as input
+// and creates a terraform json file which is understood by terraform
+// later this file would be used as input for running terraform commands
 func (tf *terraform) createInputFile() error {
 
 	cmd := getGenerateTopologyCmd(tf.mcDir)
@@ -107,7 +112,8 @@ func (tf *terraform) createInputFile() error {
 	return nil
 }
 
-func (tf *terraform) initalize() error {
+// initialize executes terraform init command from cloud's work directory
+func (tf *terraform) initialize() error {
 
 	args := []string{"init"}
 
@@ -127,6 +133,7 @@ func (tf *terraform) initalize() error {
 	return nil
 }
 
+// apply executes terraform apply command from cloud's work directory
 func (tf *terraform) apply() error {
 	args := []string{"apply", "-auto-approve", tfParallelism, tfRefresh}
 
@@ -148,6 +155,7 @@ func (tf *terraform) apply() error {
 	return nil
 }
 
+// destroy executes terraform destroy command from cloud's work directory
 func (tf *terraform) destroy() error {
 
 	// teardown terraform
