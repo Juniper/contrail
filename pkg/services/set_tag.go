@@ -88,7 +88,7 @@ func (service *ContrailService) handleTagAttr(
 
 		uuid, err := service.getTagUUIDInScope(ctx, tagAttr.GetType(), tagAttr.GetValue().GetValue(), tagAttr.IsGlobal, obj)
 
-		return append(refs, basemodels.NewReference(uuid, models.KindTag)), err
+		return append(refs, basemodels.NewUUIDReference(uuid, models.KindTag)), err
 	case tagAttr.hasAddValues():
 		for _, tagValue := range tagAttr.AddValues {
 			uuid, err := service.getTagUUIDInScope(ctx, tagAttr.GetType(), tagValue, tagAttr.IsGlobal, obj)
@@ -96,7 +96,7 @@ func (service *ContrailService) handleTagAttr(
 				return nil, err
 			}
 
-			refs = append(refs, basemodels.NewReference(uuid, models.KindTag))
+			refs = append(refs, basemodels.NewUUIDReference(uuid, models.KindTag))
 		}
 		return refs, nil
 	case tagAttr.hasDeleteValues():
