@@ -23,7 +23,6 @@ RUN yum update -y &&  yum install -y https://dl.fedoraproject.org/pub/epel/epel-
         mysql-client \
         postgresql-client \
         git \
-        docker \
         python-requests \
         python-pip \
         gcc \
