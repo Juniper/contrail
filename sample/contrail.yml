@@ -1,4 +1,3 @@
-# Database configuration. MySQL/PostgreSQL supported
 database:
   type: mysql
   dialect: mysql
@@ -6,15 +5,13 @@ database:
   user: root
   password: contrail123
   name: contrail_test
-
-  # Max Open Connections for DB Server
   max_open_conn: 100
   connection_retries: 10
   retry_period: 3s
 
 etcd:
   endpoints:
-  - localhost:2379
+    - localhost:2379
   username: ""
   password: ""
   path: contrail
@@ -25,89 +22,26 @@ log_level: debug
 homepage:
   enabled: true
 
-# Server configuration
 server:
   enabled: true
   read_timeout: 10
   write_timeout: 5
   log_api: true
   address: ":9091"
-  # Enable gzip on output
   enable_gzip: false
-  # TLS Configuration
   tls:
     enabled: false
     key_file: tools/server.key
     cert_file: tools/server.crt
-
-  # Enable GRPC or not
   enable_grpc: false
-
-  # Enable Neutron Service or not
   enable_vnc_neutron: true
-
-  # Static file config
-  # key: URL path
-  # value: file path. (absolute path recommended in production)
   static_files:
     public: public
-
-  # API Proxy configuration
-  # key: URL path
-  # value: String list of backend host
   proxy:
     /contrail:
-    - http://localhost:8082
-
+      - http://localhost:8082
   notify_etcd: true
 
-# Keystone configuration
-# keystone:
-#   local: true # Enable local keystone v3. This is only for testing now.
-#   assignment:
-#     type: static
-#     data:
-#       domains:
-#         default: &default
-#           id: default
-#           name: default
-#       projects:
-#         admin: &admin
-#           id: admin
-#           name: admin
-#           domain: *default
-#         demo: &demo
-#           id: demo
-#           name: demo
-#           domain: *default
-#       users:
-#         alice:
-#           id: alice
-#           name: Alice
-#           domain: *default
-#           password: alice_password
-#           email: alice@juniper.nets
-#           roles:
-#           - id: admin
-#             name: admin
-#             project: *admin
-#         bob:
-#           id: bob
-#           name: Bob
-#           domain: *default
-#           password: bob_password
-#           email: bob@juniper.net
-#           roles:
-#           - id: Member
-#             name: Member
-#             project: *demo
-#   store:
-#     type: memory
-#     expire: 3600
-#   insecure: true
-#   authurl: https://localhost:9091/keystone/v3
-
-# disable authentication with auth_type set to no-auth and comment out keystone configuraion.
 auth_type: no-auth
 insecure: true
 
@@ -129,33 +63,24 @@ agent:
   backend: file
   watcher: polling
   tasks:
-  - schema_id: virtual_network
-    common:
-    - vars:
-        dir: "./work/virtual_networks/"
-    on_create:
-    - command: mkdir -p "{{ dir }}"
-    - save:
-        dest: "{{ dir }}/{{ resource.uuid }}.yaml"
-        format: yaml
-    # - command: pwd
-    #   args:
-    #     chdir: "{{ dir }}"
-    # - command: date
-    # - template:
-    #     src: "./agent/cluster.tmpl"
-    #     dest: "{{ dir }}/cluster.txt"
-    - command: echo created
-    #  register: date
-    on_update:
-    - command: "echo updated"
-    on_delete:
-    - command: "echo deleted"
-    - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
+    - schema_id: virtual_network
+      common:
+        - vars:
+            dir: "./work/virtual_networks/"
+      on_create:
+        - command: mkdir -p "{{ dir }}"
+        - save:
+            dest: "{{ dir }}/{{ resource.uuid }}.yaml"
+            format: yaml
+        - command: echo created
+      on_update:
+        - command: "echo updated"
+      on_delete:
+        - command: "echo deleted"
+        - command: "rm -rf {{ dir }}/virtual_networks/{{ resource.uuid }}.yaml"
 
 compilation:
   enabled: true
-  # Global configuration
   plugin_directory: 'etc/plugins/'
   number_of_workers: 4
   max_job_queue_len: 5
@@ -163,8 +88,6 @@ compilation:
   msg_index_string: 'MsgIndex'
   read_lock_string: "MsgReadLock"
   master_election: true
-
-  # Plugin configuration
   plugin:
     handlers:
       create_handler: 'HandleCreate'
@@ -174,7 +97,6 @@ compilation:
 cache:
   enabled: true
   timeout: 10s
-  # how long revision deleted event preserved.
   max_history: 100000
   cassandra:
     enabled: true
