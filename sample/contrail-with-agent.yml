@@ -1,21 +1,13 @@
-# Database configuration. MySQL/PostgreSQL supported
 database:
-    # MySQL example
-    type: mysql
-    dialect: mysql
-    host: localhost
-    user: root
-    password: contrail123
-    name: contrail_test
-    # Postgres example
-    # connection: "user=root dbname=contrail_test sslmode=disable"
-    # type: pgx
-    # dialect: postgres
-
-    # Max Open Connections for DB Server
-    max_open_conn: 100
-    connection_retries: 10
-    retry_period: 3s
+  type: mysql
+  dialect: mysql
+  host: localhost
+  user: root
+  password: contrail123
+  name: contrail_test
+  max_open_conn: 100
+  connection_retries: 10
+  retry_period: 3s
 
 etcd:
   endpoints:
@@ -24,93 +16,70 @@ etcd:
   password: ""
   path: contrail
 
-# Log Level
 log_level: debug
 
-# Server configuration
 server:
   enabled: true
   read_timeout: 10
   write_timeout: 5
   log_api: true
-  #log_api: false
   address: ":9091"
-
-  # TLS Configuration
   tls:
-      enabled: true
-      #key_file: /root/go/src/github.com/Juniper/contrail-ui/docker/ssl/cs-key.pem
-      #cert_file: /root/go/src/github.com/Juniper/contrail-ui/docker/ssl/cs-cert.pem
-      key_file: /root/go/src/github.com/Juniper/contrail/tools/server.key
-      cert_file: /root/go/src/github.com/Juniper/contrail/tools/server.crt
-
-  # Enable GRPC or not
+    enabled: true
+    key_file: /root/go/src/github.com/Juniper/contrail/tools/server.key
+    cert_file: /root/go/src/github.com/Juniper/contrail/tools/server.crt
   enable_grpc: false
-
-  # Static file config
-  # key: URL path
-  # value: file path. (absolute path recommended in production)
   static_files:
-      /: /root/go/src/github.com/Juniper/contrail/public
-
-  # API Proxy configuration
-  # key: URL path
-  # value: String list of backend host
-  #proxy:
-  #    /contrail:
-  #    - http://localhost:8082
-
+    /: /root/go/src/github.com/Juniper/contrail/public
   notify_etcd: false
 
-# Keystone configuration
 keystone:
-    local: true # Enable local keystone v3. This is only for testing now.
-    assignment:
-        type: static
-        data:
-          domains:
-            default: &default
-              id: default
-              name: default
-          projects:
-            admin: &admin
-              id: admin
+  local: true # Enable local keystone v3. This is only for testing now.
+  assignment:
+    type: static
+    data:
+      domains:
+        default: &default
+          id: default
+          name: default
+      projects:
+        admin: &admin
+          id: admin
+          name: admin
+          domain: *default
+        demo: &demo
+          id: demo
+          name: demo
+          domain: *default
+      users:
+        alice:
+          id: alice
+          name: Alice
+          domain: *default
+          password: alice_password
+          email: alice@juniper.nets
+          roles:
+            - id: admin
               name: admin
-              domain: *default
-            demo: &demo
-              id: demo
-              name: demo
-              domain: *default
-          users:
-            alice:
-              id: alice
-              name: Alice
-              domain: *default
-              password: alice_password
-              email: alice@juniper.nets
-              roles:
-              - id: admin
-                name: admin
-                project: *admin
-            bob:
-              id: bob
-              name: Bob
-              domain: *default
-              password: bob_password
-              email: bob@juniper.net
-              roles:
-              - id: Member
-                name: Member
-                project: *demo
-    store:
-        type: memory
-        expire: 3600
-    insecure: true
-    auth_url: https://localhost:9091/keystone/v3
-    authurl: https://localhost:9091/keystone/v3
+              project: *admin
+        bob:
+          id: bob
+          name: Bob
+          domain: *default
+          password: bob_password
+          email: bob@juniper.net
+          roles:
+            - id: Member
+              name: Member
+              project: *demo
+  store:
+    type: memory
+    expire: 3600
+  insecure: true
+  auth_url: https://localhost:9091/keystone/v3
+  authurl: https://localhost:9091/keystone/v3
 
-# disable authentication with no_auth true and comment out keystone configuraion.
-#no_auth: true
+no_auth: false
 insecure: true
 domain_id: default
 
@@ -119,9 +88,7 @@ watcher:
   storage: json
 
 client:
-  #id: admin
   id: alice
-  #password: contrail123
   password: alice_password
   project_id: admin
   domain_id: default
@@ -135,43 +102,40 @@ agent:
   schema_root: /
   log_level: debug
   tasks:
-  - schema_id: contrail_cluster
-    common:
-    - vars:
-        src_dir: "pkg/cluster/configs"
-        dir: "/var/tmp/{{ resource.schema_id }}/config/{{ resource.uuid }}"
-    on_create:
-    - debug: "AGENT creating {{ dir }}"
-    - command: mkdir -p "{{ dir }}"
-    - debug: "AGENT created {{ dir }}"
-    - template:
-        src: "{{ src_dir }}/contrail-cluster-config.tmpl"
-        dest: "{{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT creating cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
-    - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
-    #- command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT cluster create complete"
-    on_update:
-    - template:
-        src: "{{ src_dir }}/contrail-cluster-config.tmpl"
-        dest: "{{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT updating cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
-    - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
-    #- command: "go run cmd/contrail/main.go cluster -c {{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT cluster update complete"
-    on_delete:
-    - template:
-        src: "{{ src_dir }}/contrail-cluster-config.tmpl"
-        dest: "{{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT deleting cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
-    - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT deleting {{ dir }}"
-    - command: "rm -rf  {{ dir }}"
-    - debug: "AGENT deleted {{ dir }}"
+    - schema_id: contrail_cluster
+      common:
+        - vars:
+            src_dir: "pkg/cluster/configs"
+            dir: "/var/tmp/{{ resource.schema_id }}/config/{{ resource.uuid }}"
+      on_create:
+        - debug: "AGENT creating {{ dir }}"
+        - command: mkdir -p "{{ dir }}"
+        - debug: "AGENT created {{ dir }}"
+        - template:
+            src: "{{ src_dir }}/contrail-cluster-config.tmpl"
+            dest: "{{ dir }}/contrail-cluster-config.yml"
+        - debug: "AGENT creating cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
+        - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+        - debug: "AGENT cluster create complete"
+      on_update:
+        - template:
+            src: "{{ src_dir }}/contrail-cluster-config.tmpl"
+            dest: "{{ dir }}/contrail-cluster-config.yml"
+        - debug: "AGENT updating cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
+        - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+        - debug: "AGENT cluster update complete"
+      on_delete:
+        - template:
+            src: "{{ src_dir }}/contrail-cluster-config.tmpl"
+            dest: "{{ dir }}/contrail-cluster-config.yml"
+        - debug: "AGENT deleting cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
+        - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+        - debug: "AGENT deleting {{ dir }}"
+        - command: "rm -rf  {{ dir }}"
+        - debug: "AGENT deleted {{ dir }}"
 
 compilation:
   enabled: false
-  # Global configuration
   plugin_directory: 'etc/plugins/'
   number_of_workers: 4
   max_job_queue_len: 5
@@ -179,36 +143,32 @@ compilation:
   msg_index_string: 'MsgIndex'
   read_lock_string: "MsgReadLock"
   master_election: true
-
-  # Plugin configuration
   plugin:
-      handlers:
-          create_handler: 'HandleCreate'
-          update_handler: 'HandleUpdate'
-          delete_handler: 'HandleDelete'
-
+    handlers:
+      create_handler: 'HandleCreate'
+      update_handler: 'HandleUpdate'
+      delete_handler: 'HandleDelete'
 
 cache:
+  enabled: false
+  timeout: 10s
+  max_history: 100000
+  cassandra:
     enabled: false
-    timeout: 10s
-    #how long revistion deleted event preserved.
-    max_history: 100000
-    cassandra:
-        enabled: false
-    etcd:
-        enabled: false
+  etcd:
+    enabled: false
 
 replication:
-    cassandra:
-        enabled: false
-    amqp:
-        enabled: false
+  cassandra:
+    enabled: false
+  amqp:
+    enabled: false
 
 cassandra:
-    host: localhost
-    port: 9042
-    timeout: 3600s
-    connect_timeout: 600ms
+  host: localhost
+  port: 9042
+  timeout: 3600s
+  connect_timeout: 600ms
 
 amqp:
-    url: amqp://guest:guest@localhost:5672/
+  url: amqp://guest:guest@localhost:5672/
