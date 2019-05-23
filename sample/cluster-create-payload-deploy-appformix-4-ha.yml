@@ -70,9 +70,9 @@ resources:
         key: enable_swift
       - value: '50'
         key: keepalived_virtual_router_id
-# leave the following commented per Ram Not required
-#- value: enp1s0f0
-#  key: network_interface
+      # leave the following commented per Ram Not required
+      #- value: enp1s0f0
+      #  key: network_interface
       - value: 10.87.68.52
         key: contrail_api_interface_address
   kind: openstack_cluster
