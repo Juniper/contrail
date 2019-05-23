@@ -1,20 +1,17 @@
-# Database configuration.
 database:
-    type: postgres
-    dialect: postgres
-    host: localhost
-    user: root
-    password: contrail123
-    name: contrail_test
-
-    # Max Open Connections for DB Server
-    max_open_conn: 100
-    connection_retries: 10
-    retry_period: 3s
+  type: postgres
+  dialect: postgres
+  host: localhost
+  user: root
+  password: contrail123
+  name: contrail_test
+  max_open_conn: 100
+  connection_retries: 10
+  retry_period: 3s
 
 etcd:
   endpoints:
-    - localhost:2379
+  - localhost:2379
   path: contrail
   grpc_insecure: true
   tls:
@@ -26,9 +23,8 @@ etcd:
 log_level: debug
 
 homepage:
-    enabled: true
+  enabled: true
 
-# Server configuration
 server:
   enabled: true
   read_timeout: 10
@@ -36,33 +32,16 @@ server:
   log_api: true
   log_body: true
   address: ":8082"
-
-  # TLS Configuration
   tls:
-      enabled: false
-      key_file: tools/server.key
-      cert_file: tools/server.crt
-
-  # Enable GRPC or not
+    enabled: false
+    key_file: tools/server.key
+    cert_file: tools/server.crt
   enable_grpc: false
-
-  # Enable Neutron Service or not
   enable_vnc_neutron: true
-
-  # Static file config
-  # key: URL path
-  # value: file path. (absolute path recommended in production)
   static_files:
-      public: public
-
-  # API Proxy configuration
-  # key: URL path
-  # value: String list of backend host
-  proxy:
-
+    public: public
   notify_etcd: false
 
-# disable authentication with auth_type set to no-auth  and comment out keystone configuraion.
 auth_type: no-auth
 insecure: true
 
@@ -102,7 +81,6 @@ agent:
 
 compilation:
   enabled: false
-  # Global configuration
   plugin_directory: 'etc/plugins/'
   number_of_workers: 4
   max_job_queue_len: 5
@@ -110,36 +88,33 @@ compilation:
   msg_index_string: 'MsgIndex'
   read_lock_string: "MsgReadLock"
   master_election: true
-
-  # Plugin configuration
   plugin:
-      handlers:
-          create_handler: 'HandleCreate'
-          update_handler: 'HandleUpdate'
-          delete_handler: 'HandleDelete'
+    handlers:
+      create_handler: 'HandleCreate'
+      update_handler: 'HandleUpdate'
+      delete_handler: 'HandleDelete'
 
 cache:
+  enabled: true
+  timeout: 10s
+  max_history: 100000
+  cassandra:
+    enabled: false
+  etcd:
     enabled: true
-    timeout: 10s
-    #how long revistion deleted event preserved.
-    max_history: 100000
-    cassandra:
-        enabled: false
-    etcd:
-        enabled: true
 
 cassandra:
-    host: localhost
-    port: 9042
-    timeout: 3600s
-    connect_timeout: 600ms
+  host: localhost
+  port: 9042
+  timeout: 3600s
+  connect_timeout: 600ms
 
 amqp:
-    url: amqp://guest:guest@localhost:5672/
+  url: amqp://guest:guest@localhost:5672/
 
 keystone:
-    store:
-        type: memory
-        expire: 3600
-    insecure: true
-    authurl: http://localhost:5000/v3/
+  store:
+    type: memory
+    expire: 3600
+  insecure: true
+  authurl: http://localhost:5000/v3/
