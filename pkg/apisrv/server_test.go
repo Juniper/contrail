@@ -8,319 +8,89 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/twinj/uuid"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
-func TestKVStore(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_kv_store.yml")
+func TestTypeLogic(t *testing.T) {
+	for _, testName := range []string{
+		"alarm",
+		"alias_ip",
+		"bgpaas",
+		"domain",
+		"floating_ip",
+		"firewall_policy",
+		"firewall_rule",
+		"forwarding_class",
+		"instance_ip",
+		"k8s_instance_ip_alloc",
+		"logical_interface",
+		"logical_router",
+		"logical_router_vxlan_id",
+		"network_ipam",
+		"network_policy",
+		"physical_interface",
+		"project",
+		"provisioning",
+		"qos",
+		"qos_config",
+		"security_group",
+		"service_template",
+		"set_tag",
+		"tag",
+		"tag_type",
+		"virtual_machine_interface",
+		"virtual_network",
+		"virtual_network_multi_chain",
+		"virtual_network_vxlan_id",
+		"virtual_router",
+	} {
+		t.Run(testName, func(t *testing.T) {
+			RunTest(t, "./test_data/test_"+testName+".yml")
+		})
+	}
 }
 
-func TestBGPAsAService(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_bgpaas.yml")
-}
-
-func TestFloatingIP(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_floating_ip.yml")
-}
-
-func TestForwardingClass(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, "TestAPIServer")
-	RunTest(t, "./test_data/test_forwarding_class.yml")
-}
-
-func TestNetworkIpam(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_network_ipam.yml")
-}
-
-func TestNetworkPolicy(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_network_policy.yml")
-}
-
-func TestVirtualNetwork(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_virtual_network.yml")
-}
-
-func TestVirtualNetworkMultiChain(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_virtual_network_multi_chain.yml")
-}
-
-func TestVirtualNetworkVxLANID(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_virtual_network_vxlan_id.yml")
-}
-
-func TestSecurityGroup(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_security_group.yml")
-}
-
-func TestQoSConfig(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_qos_config.yml")
-}
-
-func TestQuotaChecking(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_quota_checking.yml")
-}
-
-func TestSync(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_sync.yml")
-}
-
-func TestSyncSort(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_sync_sort.yml")
-}
-
-func TestTagType(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_tag_type.yml")
-}
-
-func TestValidation(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_validation.yml")
-}
-
-func TestNameUnique(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_name_unique.yml")
-}
-
-func TestBaseProperties(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_base_properties.yml")
-}
-
-func TestBasePropsTwoParents(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_base_props_two_parents.yml")
-}
-
-func TestBaseWithConfigRootInParents(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_base_config_root_parent.yml")
-}
-
-func TestProject(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_project.yml")
-}
-
-func TestProjectConflict(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_project_conflict.yml")
-}
-
-func TestInstanceIP(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_instance_ip.yml")
-}
-
-func TestVirtualMachineInterface(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_virtual_machine_interface.yml")
-}
-
-func TestLogicalRouter(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_logical_router.yml")
-}
-
-func TestLogicalRouterVxLANID(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_logical_router_vxlan_id.yml")
-}
-
-func TestVirtualRouter(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_virtual_router.yml")
-}
-
-func TestFirewallPolicy(t *testing.T) {
-	RunTest(t, "./test_data/test_firewall_policy.yml")
-}
-
-func TestFirewallRule(t *testing.T) {
-	RunTest(t, "./test_data/test_firewall_rule.yml")
-}
-
-func TestFQNameToID(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_fqname_to_id.yml")
-}
-
-func TestRefRead(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_ref_read.yml")
-}
-
-func TestRefUpdate(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_ref_update.yml")
-}
-
-func TestRefRelaxForDelete(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_ref_relax.yml")
-}
-
-func TestRefRelaxForDeleteInvalidInput(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_ref_relax_invalid_input.yml")
-}
-
-func TestPropCollectionUpdate(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_prop_collection_update.yml")
-}
-
-func TestServiceTemplate(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_service_template.yml")
-}
-
-func TestTag(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_tag.yml")
-}
-
-func TestSetTag(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_set_tag.yml")
-}
-
-func TestK8sInstanceIP(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_k8s_instance_ip_alloc.yml")
-}
-
-func TestSanitizing(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_sanitizing.yml")
-}
-
-func TestProvisioning(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_provisioning.yml")
-}
-
-func TestIntPool(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_int_pool.yml")
-}
-
-func TestDerivedRelations(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_derived_relations.yml")
-}
-
-func TestAlarm(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_alarm.yml")
-}
-
-func TestAliasIP(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_alias_ip.yml")
-}
-
-func TestPhysicalInterface(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_physical_interface.yml")
-}
-
-func TestLogicalInterface(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_logical_interface.yml")
-}
-
-func TestDomain(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_domain.yml")
-}
-
-func TestQoS(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_qos.yml")
-}
-
-func TestIsVisible(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_user_visible.yml")
-}
-
-func TestIDToFQName(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_id_to_fqname.yml")
-}
-
-func TestChown(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_chown.yml")
-}
-
-func TestKeystone(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_keystone.yml")
-}
-
-func TestObjPerms(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_obj_perms.yml")
-}
-
-func TestParseIDPermsUUIDs(t *testing.T) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	RunTest(t, "./test_data/test_parse_id_perms_uuid.yml")
-}
-
-func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
-	restClient := client.NewHTTP(
-		server.URL(),
-		server.URL()+"/keystone/v3",
-		projectName,
-		projectName,
-		true,
-		keystone.NewScope("", "default", "", projectName),
-	)
-	restClient.InSecure = true
-	restClient.Init()
-	_, err := restClient.Login(ctx)
-	require.NoError(t, err)
-	return restClient.AuthToken
+func TestServer(t *testing.T) {
+	for _, test := range []string{
+		"base_config_root_parent",
+		"base_properties",
+		"base_props_two_parents",
+		"chown",
+		"derived_relations",
+		"fqname_to_id",
+		"id_to_fqname",
+		"int_pool",
+		"keystone",
+		"kv_store",
+		"name_unique",
+		"obj_perms",
+		"parse_id_perms_uuid",
+		"project_conflict",
+		"prop_collection_update",
+		"quota_checking",
+		"ref_read",
+		"ref_relax",
+		"ref_relax_invalid_input",
+		"ref_update",
+		"sanitizing",
+		"sync",
+		"sync_sort",
+		"user_visible",
+		"validation",
+	} {
+		t.Run(test, func(t *testing.T) {
+			RunTest(t, "./test_data/test_"+test+".yml")
+		})
+	}
 }
 
 func TestRESTClient(t *testing.T) {
-	ctx := context.Background()
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
-	restClient := client.NewHTTP(
-		server.URL(),
-		server.URL()+"/keystone/v3",
-		t.Name(),
-		t.Name(),
-		true,
-		keystone.NewScope("", "default", "", t.Name()),
-	)
-	restClient.InSecure = true
-	restClient.Init()
-	_, err := restClient.Login(ctx)
-	// Contact the server and print out its response.
-	assert.NoError(t, err)
+	restClient, err := integration.NewHTTPClient(server.URL())
+	require.NoError(t, err)
+
 	project := models.MakeProject()
 	project.UUID = uuid.NewV4().String()
 	project.FQName = []string{"default-domain", "project", project.UUID}
@@ -328,6 +98,7 @@ func TestRESTClient(t *testing.T) {
 	project.ParentUUID = integration.DefaultDomainUUID
 	project.ConfigurationVersion = 1
 	project.IDPerms = &models.IdPermsType{UserVisible: true}
+	ctx := context.Background()
 	_, err = restClient.CreateProject(ctx, &services.CreateProjectRequest{
 		Project: project,
 	})
@@ -388,6 +159,5 @@ func TestPagination(t *testing.T) {
 		},
 	}
 
-	integration.AddKeystoneProjectAndUser(server.APIServer, t.Name())
 	RunTestTemplate(t, "./test_data/test_pagination.tmpl", context)
 }
