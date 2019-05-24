@@ -41,12 +41,11 @@ func TestMain(m *testing.M) {
 	}
 }
 
-func setupClient(testID string) {
-	integration.AddKeystoneProjectAndUser(server.APIServer, testID)
-	viper.SetDefault("client.id", testID)
-	viper.SetDefault("client.password", testID)
-	viper.SetDefault("client.project_id", testID)
-	viper.SetDefault("client.domain_id", "default")
+func setupClient() {
+	viper.SetDefault("client.id", integration.AdminUserID)
+	viper.SetDefault("client.password", integration.AdminUserPassword)
+	viper.SetDefault("client.project_id", integration.AdminProjectID)
+	viper.SetDefault("client.domain_id", integration.DefaultDomainID)
 	viper.SetDefault("client.endpoint", server.TestServer.URL)
 	viper.SetDefault("client.schema_root", "/public")
 	viper.SetDefault("insecure", true)

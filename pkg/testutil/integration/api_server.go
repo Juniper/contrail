@@ -32,15 +32,26 @@ const (
 
 // Keystone credentials
 const (
-	DefaultDomainID   = "default"
-	DefaultDomainName = "DefaultDomain"
-	AdminProjectID    = "admin"
-	AdminProjectName  = "AdminProject"
-	AdminRoleID       = "admin"
-	AdminRoleName     = "admin"
-	AdminUserID       = "alice"
-	AdminUserName     = "Alice"
-	AdminUserPassword = "alice_password"
+	DefaultDomainID    = "default"
+	DefaultDomainName  = "DefaultDomain"
+	AdminProjectID     = "admin"
+	AdminProjectName   = "AdminProject"
+	DemoProjectID      = "demo"
+	DemoProjectName    = "demo"
+	NeutronProjectID   = "aa907485e1f94a14834d8c69ed9cb3b2"
+	NeutronProjectName = "neutron"
+	AdminRoleID        = "admin"
+	AdminRoleName      = "admin"
+	NeutronRoleID      = "aa907485e1f94a14834d8c69ed9cb3b2"
+	NeutronRoleName    = "neutron"
+	MemberRoleID       = "Member"
+	MemberRoleName     = "Member"
+	AdminUserID        = "alice"
+	AdminUserName      = "Alice"
+	AdminUserPassword  = "alice_password"
+	BobUserID          = "bob"
+	BobUserName        = "Bob"
+	BobUserPassword    = "bob_password"
 )
 
 // APIServer is embedded API Server for testing purposes.
@@ -160,6 +171,16 @@ func keystoneAssignment() *keystone.StaticAssignment {
 		ID:     AdminProjectID,
 		Name:   AdminProjectName,
 	}
+	a.Projects[DemoProjectID] = &kscommon.Project{
+		Domain: a.Domains[DefaultDomainID],
+		ID:     DemoProjectID,
+		Name:   DemoProjectName,
+	}
+	a.Projects[NeutronProjectID] = &kscommon.Project{
+		Domain: a.Domains[DefaultDomainID],
+		ID:     NeutronProjectID,
+		Name:   NeutronProjectName,
+	}
 	a.Users[AdminUserID] = &kscommon.User{
 		Domain:   a.Domains[DefaultDomainID],
 		ID:       AdminUserID,
@@ -170,6 +191,24 @@ func keystoneAssignment() *keystone.StaticAssignment {
 				ID:      AdminRoleID,
 				Name:    AdminRoleName,
 				Project: a.Projects[AdminProjectID],
+			},
+			{
+				ID:      NeutronRoleID,
+				Name:    NeutronRoleName,
+				Project: a.Projects[NeutronProjectID],
+			},
+		},
+	}
+	a.Users[BobUserID] = &kscommon.User{
+		Domain:   a.Domains[DefaultDomainID],
+		ID:       BobUserID,
+		Name:     BobUserName,
+		Password: BobUserPassword,
+		Roles: []*kscommon.Role{
+			{
+				ID:      MemberRoleID,
+				Name:    MemberRoleName,
+				Project: a.Projects[DemoProjectID],
 			},
 		},
 	}

@@ -18,7 +18,7 @@ import (
 )
 
 func TestHomepageResources(t *testing.T) {
-	c := integration.NewTestingHTTPClient(t, server.URL())
+	c := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
 
 	var response map[string]interface{}
 	r, err := c.Read(context.Background(), "/", &response)
@@ -55,7 +55,7 @@ func TestHomepageResources(t *testing.T) {
 }
 
 func TestRoutesAreRegistered(t *testing.T) {
-	c := integration.NewTestingHTTPClient(t, server.URL())
+	c := integration.NewTestingHTTPClient(t, server.URL(), integration.BobUserID)
 
 	var response map[string]interface{}
 	r, err := c.Read(context.Background(), "/", &response)

@@ -4,10 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -15,7 +14,8 @@ const (
 )
 
 func TestPredefinedTagTypes(t *testing.T) {
-	c := integration.NewTestingHTTPClient(t, server.URL())
+	c := integration.NewTestingHTTPClient(t, server.URL(), integration.AdminUserID)
+
 	predefinedTags := []struct {
 		fqName    []string
 		tagTypeID string
@@ -41,7 +41,6 @@ func TestPredefinedTagTypes(t *testing.T) {
 			tagTypeID: "0x0004",
 		},
 	}
-
 	for _, tag := range predefinedTags {
 		uuid := c.FQNameToID(t, tag.fqName, tagTypeTypeName)
 		assert.NotEmpty(t, uuid)
@@ -50,5 +49,4 @@ func TestPredefinedTagTypes(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, tag.tagTypeID, resp.GetTagType().GetTagTypeID())
 	}
-
 }

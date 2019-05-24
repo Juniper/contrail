@@ -1,10 +1,12 @@
 name: Sync test
 description: sync test
+
 cleanup:
 - path: /network-ipam/test_ipam_blue_uuid_test_sync
 - path: /network-policy/network_policy_uuid_test_sync
 - path: /virtual-network/vn_blue_test_sync
 - path: /project/admin_project_uuid_test_sync
+
 test_data:
   admin_project: &admin_project
     fq_name: ["default", "admin_project_uuid_test_sync"]
@@ -12,31 +14,31 @@ test_data:
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
-  network_policy1: &network_policy1
-    fq_name: ["default", "admin_project_uuid_test_sync", "policy1"]
+  network_policy: &network_policy
+    fq_name: ["default", "admin_project_uuid_test_sync", "policy"]
     uuid: network_policy_uuid_test_sync
     parent_type: project
     parent_uuid: admin_project_uuid_test_sync
     network_policy_entries:
       policy_rule:
-        - direction: ">"
-          protocol: tcp
-          rule_sequence:
-            major: 4
-            minor: 1
-          src_ports: [{}]
-          dst_ports: [{}]
-          ethertype: IPv4
-          src_addresses: [{}]
-          dst_addresses: [{}]
-          action_list:
-            simple_action: pass
+      - direction: ">"
+        protocol: tcp
+        rule_sequence:
+          major: 4
+          minor: 1
+        src_ports: [{}]
+        dst_ports: [{}]
+        ethertype: IPv4
+        src_addresses: [{}]
+        dst_addresses: [{}]
+        action_list:
+          simple_action: pass
   network_ipam_blue: &network_ipam_blue
     network_ipam_mgmt:
       host_routes:
         route:
-          - prefix: "test_prefix"
-            next_hop: "1.2.3.5"
+        - prefix: "test_prefix"
+          next_hop: "1.2.3.5"
     uuid: test_ipam_blue_uuid_test_sync
     display_name: test_ipam_blue
     parent_type: project
@@ -49,7 +51,7 @@ test_data:
     parent_type: project
     parent_uuid: admin_project_uuid_test_sync
     route_target_list:
-       route_target: ["100:200"]
+      route_target: ["100:200"]
     network_policy_refs:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
@@ -70,7 +72,7 @@ test_data:
     parent_type: project
     parent_uuid: admin_project_uuid_test_sync
     route_target_list:
-       route_target: ["100:200"]
+      route_target: ["100:200"]
     network_policy_refs:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
@@ -84,16 +86,18 @@ test_data:
     - uuid: network_policy_uuid_test_sync
     network_ipam_refs:
     - uuid: test_ipam_blue_uuid_test_sync
+
 clients:
   default:
-    id: TestSync
-    password: TestSync
+    id: alice
+    password: alice_password
     insecure: true
     scope:
       project:
-        name: TestSync
+        name: admin
+
 workflow:
-- name: create project, network policy, network ipam and virtual network
+- name: Create project, network policy, network ipam and virtual network
   request:
     path: /sync
     method: POST
@@ -104,53 +108,51 @@ workflow:
       - kind: project
         data: *admin_project
       - kind: network_policy
-        data: *network_policy1
+        data: *network_policy
       - kind: network_ipam
         data: *network_ipam_blue
       - kind: virtual_network
         data: *vn_blue
   expect:
-    - kind: project
-      data: *admin_project
-    - kind: network_policy
-      data: *network_policy1
-    - kind: network_ipam
-      data: *network_ipam_blue
-    - kind: virtual_network
-      data:
-        <<: *vn_blue
-        virtual_network_network_id: 5
-- name: list project
+  - kind: project
+    data: *admin_project
+  - kind: network_policy
+    data: *network_policy
+  - kind: network_ipam
+    data: *network_ipam_blue
+  - kind: virtual_network
+    data:
+      <<: *vn_blue
+      virtual_network_network_id: 5
+
+- name: Get project admin_project_uuid_test_sync
   request:
-    path: /projects?detail=true
+    path: /project/admin_project_uuid_test_sync
     method: GET
     expected:
     - 200
   expect:
-    projects:
-    - project:
-        *admin_project
-- name: list network_policy
+    project: *admin_project
+
+- name: Get network policy network_policy_uuid_test_sync
   request:
-    path: /network-policys?detail=true
+    path: /network-policy/network_policy_uuid_test_sync
     method: GET
     expected:
     - 200
   expect:
-    network-policys:
-    - network-policy:
-        *network_policy1
-- name: list virtual networks with detail
+    network-policy: *network_policy
+
+- name: Get virtual network vn_blue_test_sync
   request:
-    path: /virtual-networks?detail=true
+    path: /virtual-network/vn_blue_test_sync
     method: GET
     expected:
     - 200
   expect:
-    virtual-networks:
-    - virtual-network:
-        *vn_blue_with_detail
-- name: sync update project, policy and network
+    virtual-network: *vn_blue_with_detail
+
+- name: Sync update project, policy and network
   request:
     path: /sync
     method: POST
@@ -161,45 +163,44 @@ workflow:
       - kind: project
         data: *admin_project
       - kind: network_policy
-        data: *network_policy1
+        data: *network_policy
       - kind: network_ipam
         data: *network_ipam_blue
       - kind: virtual_network
         data: *vn_blue2
   expect:
-    - kind: project
-      data: *admin_project
-      operation: UPDATE
-    - kind: network_policy
-      data: *network_policy1
-      operation: UPDATE
-    - kind: network_ipam
-      data: *network_ipam_blue
-      operation: UPDATE
-    - kind: virtual_network
-      data: *vn_blue2
-      operation: UPDATE
-- name: list project
+  - kind: project
+    data: *admin_project
+    operation: UPDATE
+  - kind: network_policy
+    data: *network_policy
+    operation: UPDATE
+  - kind: network_ipam
+    data: *network_ipam_blue
+    operation: UPDATE
+  - kind: virtual_network
+    data: *vn_blue2
+    operation: UPDATE
+
+- name: Get project admin_project_uuid_test_sync
   request:
-    path: /projects?detail=true
+    path: /project/admin_project_uuid_test_sync
     method: GET
     expected:
     - 200
   expect:
-    projects:
-    - project:
-        *admin_project
-- name: list virtual networks with detail
+    project: *admin_project
+
+- name: Get virtual network vn_blue_test_sync
   request:
-    path: /virtual-networks?detail=true
+    path: /virtual-network/vn_blue_test_sync
     method: GET
     expected:
     - 200
   expect:
-    virtual-networks:
-    - virtual-network:
-        *vn_blue_with_detail2
-- name: sync delete network, policy and project
+    virtual-network: *vn_blue_with_detail2
+
+- name: Sync delete network, policy and project
   request:
     path: /sync
     method: POST
@@ -214,75 +215,75 @@ workflow:
         data: *network_ipam_blue
         operation: DELETE
       - kind: network_policy
-        data: *network_policy1
+        data: *network_policy
         operation: DELETE
       - kind: project
         data:
           uuid: admin_project_uuid_test_sync
         operation: DELETE
   expect:
-    - kind: virtual_network
-      data:
-        uuid: vn_blue_test_sync
-      operation: DELETE
-    - kind: network_ipam
-      data:
-        uuid: test_ipam_blue_uuid_test_sync
-      operation: DELETE
-    - kind: network_policy
-      data:
-        uuid: network_policy_uuid_test_sync
-      operation: DELETE
-    - kind: project
-      data:
-        uuid: admin_project_uuid_test_sync
-      operation: DELETE
+  - kind: virtual_network
+    data:
+      uuid: vn_blue_test_sync
+    operation: DELETE
+  - kind: network_ipam
+    data:
+      uuid: test_ipam_blue_uuid_test_sync
+    operation: DELETE
+  - kind: network_policy
+    data:
+      uuid: network_policy_uuid_test_sync
+    operation: DELETE
+  - kind: project
+    data:
+      uuid: admin_project_uuid_test_sync
+    operation: DELETE
 
-- name: invalid create request (invalid kind)
+- name: Invalid create request (invalid kind)
   request:
     path: /sync
     method: POST
     expected:
-      - 400
+    - 400
     data:
       resources:
-        - kind: invalid_resource
-          data: *vn_blue2
-          operation: CREATE
+      - kind: invalid_resource
+        data: *vn_blue2
+        operation: CREATE
   expect:
     message:
       $contains: "invalid kind \"invalid-resource\" of create event"
 
-- name: try to delete non existing resource
+- name: Try to delete non existing resource
   request:
     path: /sync
     method: POST
     expected:
-      - 404
+    - 404
     data:
       resources:
-        - kind: project
-          data:
-            uuid: does_not_exists
-          operation: DELETE
+      - kind: project
+        data:
+          uuid: does_not_exists
+        operation: DELETE
   expect:
     message:
       $contains: "failed to retrieve object for event at index: 0, operation: 'DELETE', kind 'project', uuid 'does_not_exists':
         error getting type for provided UUID: does_not_exists:
          failed to retrieve metadata for UUID does_not_exists: rpc error: code = NotFound desc = not found"
 
-- name: try to create project with invalid parent UUID
+- name: Try to create project with invalid parent UUID
   request:
     path: /sync
     method: POST
     expected:
-      - 409
+    - 409
     data:
       resources:
-        - kind: project
-          data:
-            <<: *admin_project
-            parent_uuid: bad_uuid
+      - kind: project
+        data:
+          <<: *admin_project
+          parent_uuid: bad_uuid
   expect:
     message:
       $contains: "failed to process event at index: 0, operation: 'CREATE', kind 'project', uuid 'admin_project_uuid_test_sync':
@@ -299,7 +300,7 @@ workflow:
       - kind: project
         data: *admin_project
       - kind: network_policy
-        data: *network_policy1
+        data: *network_policy
       - kind: network_ipam
         data: *network_ipam_blue
       - kind: virtual_network

@@ -43,11 +43,21 @@ type HTTPAPIClient struct {
 }
 
 // NewTestingHTTPClient creates HTTP client of API Server with testing capabilities.
-func NewTestingHTTPClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
+// It logs in with given userID, such as "alice" and "bob".
+func NewTestingHTTPClient(t *testing.T, apiServerURL string, userID string) *HTTPAPIClient {
 	l := logutil.NewLogger("http-api-client")
 	l.WithFields(logrus.Fields{"endpoint": apiServerURL}).Debug("Connecting to API Server")
 
-	c, err := NewHTTPClient(apiServerURL)
+	var c *client.HTTP
+	var err error
+	switch userID {
+	case AdminUserID:
+		c, err = NewAdminHTTPClient(apiServerURL)
+	case BobUserID:
+		c, err = NewHTTPClient(apiServerURL)
+	default:
+		require.FailNowf(t, "Invalid user ID: %v, only %v and %v are supported now", userID, AdminUserID, BobUserID)
+	}
 	require.NoError(t, err, "connecting to API Server failed")
 
 	return &HTTPAPIClient{
@@ -56,16 +66,41 @@ func NewTestingHTTPClient(t *testing.T, apiServerURL string) *HTTPAPIClient {
 	}
 }
 
-// NewHTTPClient creates HTTP client of API Server using default testing configuration.
-func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
+// NewAdminHTTPClient creates HTTP client of API Server using Alice user (admin) credentials.
+func NewAdminHTTPClient(apiServerURL string) (*client.HTTP, error) {
 	c := client.NewHTTP(
 		apiServerURL,
 		apiServerURL+authEndpointSuffix,
 		AdminUserID,
 		AdminUserPassword,
 		true,
-		keystone.NewScope(DefaultDomainID, "",
-			AdminProjectID, AdminProjectName),
+		keystone.NewScope(
+			DefaultDomainID,
+			DefaultDomainName,
+			AdminProjectID,
+			AdminProjectName,
+		),
+	)
+	c.Debug = true
+
+	_, err := c.Login(context.Background())
+	return c, err
+}
+
+// NewHTTPClient creates HTTP client of API Server using Bob user credentials.
+func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
+	c := client.NewHTTP(
+		apiServerURL,
+		apiServerURL+authEndpointSuffix,
+		BobUserID,
+		BobUserPassword,
+		true,
+		keystone.NewScope(
+			DefaultDomainID,
+			DefaultDomainName,
+			DemoProjectID,
+			DemoProjectName,
+		),
 	)
 	c.Debug = true
 
