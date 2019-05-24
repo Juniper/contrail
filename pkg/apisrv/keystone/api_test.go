@@ -143,7 +143,7 @@ func TestClusterTokenMethod(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, contents)
 
-	// Cleanup test
+	// Cleanup test TODO: Fix cleanup to remove all resources
 	integration.RunCleanTestScenario(t, &testScenario, server)
 }
 

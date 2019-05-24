@@ -27,14 +27,14 @@ const (
 )
 
 func TestCLISchema(t *testing.T) {
-	setupClient(t.Name())
+	setupClient()
 	schema, err := showSchema(vnSchemaID)
 	assert.NoError(t, err)
 	checkDataEqual(t, virtualNetworkSchema, schema)
 }
 
 func TestCLIHelpMessagesWhenGivenEmptySchemaID(t *testing.T) {
-	setupClient(t.Name())
+	setupClient()
 	o, err := showResource("", "")
 	assert.NoError(t, err)
 	assert.Contains(t, o, "contrail show virtual_network $UUID")
@@ -55,7 +55,7 @@ func TestCLIHelpMessagesWhenGivenEmptySchemaID(t *testing.T) {
 func TestCLI(t *testing.T) {
 	t.Skip("Skipping failing test") // TODO: fix test
 
-	setupClient(t.Name())
+	setupClient()
 	o, err := deleteResources(virtualNetworks)
 	assert.NoError(t, err)
 	assert.Equal(t, "", o)
