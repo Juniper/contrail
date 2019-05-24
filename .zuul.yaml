@@ -1,11 +1,17 @@
 - project:
     name: Juniper/contrail
+    templates:
+      - build-container
     check:
       jobs:
         - contrail-go-docker
+            dependencies:
+              - build-container
+        - contrail-go-docker-rhel7
     gate:
       jobs:
         - contrail-go-docker
+        - contrail-go-docker-rhel7
 
 - job:
     name: contrail-go-docker
@@ -23,6 +29,40 @@
       nodes:
         - name: builder
           label: centos-7-4-builder-xxlarge
+    vars:
+      setup_docker_registry: true
+      enable_tpc_repo: false
+      docker:
+        - image: circleci/golang:1.11
+        - image: circleci/mysql:5.7
+          name: contrail_mysql
+          environment:
+            MYSQL_ROOT_PASSWORD: contrail123
+        - image: circleci/postgres:10.3-alpine
+          name: contrail_postgres
+          environment:
+            POSTGRES_USER: root
+            POSTGRES_DB: contrail123
+          command: postgres -c wal_level=logical
+        - image: gcr.io/etcd-development/etcd:v3.3.2
+          name: contrail_etcd
+
+- job:
+    name: contrail-go-docker-rhel7
+    description: |
+      Job that builds and tests Juniper/contrail project.
+    voting: True
+    parent: contrail-base2
+    timeout: 5400
+    required-projects:
+      - Juniper/contrail
+    run: playbooks/contrail-go-docker/run.yaml
+    post-run:
+      - playbooks/contrail-go-docker/post.yaml
+    nodeset:
+      nodes:
+        - name: builder
+          label: rhel-7-builder
     vars:
       setup_docker_registry: true
       enable_tpc_repo: false
