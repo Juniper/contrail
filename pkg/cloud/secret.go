@@ -29,6 +29,7 @@ type secretFileConfig struct {
 	keypair      *models.Keypair
 	awsAccessKey string
 	awsSecretKey string
+	providerType string
 }
 
 type secret struct {
@@ -114,6 +115,9 @@ func (s *secret) updateFileConfig(d *Data) error {
 			return fmt.Errorf("aws secret key not specified")
 		}
 		s.sfc.awsSecretKey = user.AwsCredential.SecretKey
+	}
+	if d.hasProviderGCP() {
+		s.sfc.providerType = gcp
 	}
 	return nil
 }

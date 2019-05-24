@@ -71,6 +71,9 @@ test_data:
       {% elif "aws" in CLOUD_TYPE %}
       operating_system: rhel75
       instance_type: t2.xlarge
+      {% elif "gcp" in CLOUD_TYPE %}
+      operating_system: rhel75
+      instance_type: n1-standard-1
       {% endif %}
       roles:
         - gateway
@@ -95,6 +98,9 @@ test_data:
       {% elif "aws" in CLOUD_TYPE %}
       operating_system: rhel75
       instance_type: t2.xlarge
+      {% elif "gcp" in CLOUD_TYPE %}
+      operating_system: rhel75
+      instance_type: n1-standard-1
       {% endif %}
       roles:
         - none

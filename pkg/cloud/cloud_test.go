@@ -34,6 +34,11 @@ const (
 	expectedAWSTopologyUpdate        = "./test_data/expected_aws_cloud_topology_update.yaml"
 	expectedAWSTopologyDeleteVPC     = "./test_data/expected_aws_cloud_delete_vpc.yaml"
 	expectedAWSSecret                = "./test_data/expected_aws_cloud_secret.yaml"
+	expectedGCPCmdForCreateUpdate    = "./test_data/expected_gcp_cmd_for_create_update.yaml"
+	expectedGCPTopologyCreate        = "./test_data/expected_gcp_cloud_topology_create.yaml"
+	expectedGCPTopologyUpdate        = "./test_data/expected_gcp_cloud_topology_update.yaml"
+	expectedGCPTopologyDeleteVPC     = "./test_data/expected_gcp_cloud_delete_vpc.yaml"
+	expectedGCPSecret                = "./test_data/expected_gcp_cloud_secret.yaml"
 	expectedOnPremTopology           = "./test_data/expected_onprem_cloud_topology.yaml"
 	expectedOnPremSecret             = "./test_data/expected_onprem_cloud_secret.yaml"
 	expectedOnPremCmdForCreateUpdate = "./test_data/expected_onprem_cmd_for_create_update.yaml"
@@ -79,6 +84,17 @@ func TestAWSCloud(t *testing.T) {
 		expectedAWSTopologyUpdate, expectedAWSTopologyDeleteVPC}
 	runCloudTest(t, expectedTopologies, expectedAWSSecret,
 		expectedAWSCmdForCreateUpdate, context)
+}
+
+func TestGCPCloud(t *testing.T) {
+	context := pongo2.Context{
+		"CLOUD_TYPE": gcp,
+	}
+
+	expectedTopologies := []string{expectedGCPTopologyCreate,
+		expectedGCPTopologyUpdate, expectedGCPTopologyDeleteVPC}
+	runCloudTest(t, expectedTopologies, expectedGCPSecret,
+		expectedGCPCmdForCreateUpdate, context)
 }
 
 // nolint: gocyclo
