@@ -7,16 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	protocodec "github.com/gogo/protobuf/codec"
-	"github.com/gogo/protobuf/proto"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/twinj/uuid"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
-
+	"github.com/Juniper/contrail/pkg/apisrv"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/db"
 	"github.com/Juniper/contrail/pkg/errutil"
 	"github.com/Juniper/contrail/pkg/models"
@@ -26,6 +19,17 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/Juniper/contrail/pkg/types"
+	"github.com/gogo/protobuf/proto"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/twinj/uuid"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
+
+	kscommon "github.com/Juniper/contrail/pkg/keystone"
+	pkgkeystone "github.com/Juniper/contrail/pkg/keystone"
+	protocodec "github.com/gogo/protobuf/codec"
 )
 
 func TestGRPC(t *testing.T) {
@@ -53,6 +57,7 @@ func TestGRPC(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
 func testNamespaceRef(ctx context.Context, c services.ContrailServiceClient, projectUUID string) func(*testing.T) {
 	return func(t *testing.T) {
 		ns := models.Namespace{
@@ -106,29 +111,28 @@ func testProjectRead(ctx context.Context, c services.ContrailServiceClient, proj
 }
 
 func TestFQNameToIDGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(),
-		func(ctx context.Context, conn *grpc.ClientConn) {
-			c := services.NewFQNameToIDClient(conn)
-			resp, err := c.FQNameToID(ctx, &services.FQNameToIDRequest{
-				FQName: []string{"default-domain"},
-				Type:   "domain",
-			})
-			assert.NoError(t, err)
-			assert.NotNil(t, resp)
-			assert.Equal(t, integration.DefaultDomainUUID, resp.UUID)
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := services.NewFQNameToIDClient(conn)
+		resp, err := c.FQNameToID(ctx, &services.FQNameToIDRequest{
+			FQName: []string{"default-domain"},
+			Type:   "domain",
 		})
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, integration.DefaultDomainUUID, resp.UUID)
+	})
 }
 
 func TestChownGRPC(t *testing.T) {
 	firstProjectName := uuid.NewV4().String()
-	testGRPCServer(t, firstProjectName, func(firstProjectCTX context.Context, conn *grpc.ClientConn) {
+	testGRPCServer(t, t.Name(), func(firstProjectCTX context.Context, conn *grpc.ClientConn) {
 		c := client.NewGRPC(services.NewContrailServiceClient(conn))
 
 		project, cleanup := createProjectWithName(t, firstProjectCTX, c, firstProjectName)
 		defer cleanup(t)
 
 		otherProjectName := uuid.NewV4().String()
-		integration.AddKeystoneProjectAndUser(server.APIServer, otherProjectName)
+		addKeystoneProjectAndUser(server.APIServer, otherProjectName)
 		otherProjectCTX := metadata.NewOutgoingContext(firstProjectCTX,
 			metadata.Pairs("X-Auth-Token", restLogin(firstProjectCTX, t, otherProjectName)))
 
@@ -216,21 +220,20 @@ func TestChownGRPC(t *testing.T) {
 }
 
 func TestIPAMGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(),
-		func(ctx context.Context, conn *grpc.ClientConn) {
-			c := services.NewIPAMClient(conn)
-			allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{
-				Pool:  types.VirtualNetworkIDPoolKey,
-				Owner: db.EmptyIntOwner,
-			})
-			assert.NoError(t, err)
-
-			_, err = c.DeallocateInt(ctx, &services.DeallocateIntRequest{
-				Pool:  types.VirtualNetworkIDPoolKey,
-				Value: allocateResp.GetValue(),
-			})
-			assert.NoError(t, err)
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := services.NewIPAMClient(conn)
+		allocateResp, err := c.AllocateInt(ctx, &services.AllocateIntRequest{
+			Pool:  types.VirtualNetworkIDPoolKey,
+			Owner: db.EmptyIntOwner,
 		})
+		assert.NoError(t, err)
+
+		_, err = c.DeallocateInt(ctx, &services.DeallocateIntRequest{
+			Pool:  types.VirtualNetworkIDPoolKey,
+			Value: allocateResp.GetValue(),
+		})
+		assert.NoError(t, err)
+	})
 }
 
 func TestRefRelaxGRPC(t *testing.T) {
@@ -302,95 +305,134 @@ func TestRefRelaxGRPC(t *testing.T) {
 }
 
 func TestIDToFQNameGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(),
-		func(ctx context.Context, conn *grpc.ClientConn) {
-			c := services.NewIDToFQNameClient(conn)
-			resp, err := c.IDToFQName(ctx, &services.IDToFQNameRequest{
-				UUID: integration.DefaultDomainUUID,
-			})
-			assert.NoError(t, err)
-			assert.NotNil(t, resp)
-			assert.Equal(t, models.KindDomain, resp.Type)
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		c := services.NewIDToFQNameClient(conn)
+		resp, err := c.IDToFQName(ctx, &services.IDToFQNameRequest{
+			UUID: integration.DefaultDomainUUID,
 		})
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, models.KindDomain, resp.Type)
+	})
 }
 
 func TestPropCollectionUpdateGRPC(t *testing.T) {
-	testGRPCServer(t, t.Name(),
-		func(ctx context.Context, conn *grpc.ClientConn) {
-			gc := client.NewGRPC(services.NewContrailServiceClient(conn))
-			project, cleanup := createProject(t, ctx, gc)
-			defer cleanup(t)
+	testGRPCServer(t, t.Name(), func(ctx context.Context, conn *grpc.ClientConn) {
+		gc := client.NewGRPC(services.NewContrailServiceClient(conn))
+		project, cleanup := createProject(t, ctx, gc)
+		defer cleanup(t)
 
-			r := &services.PropCollectionUpdateRequest{
-				UUID: project.UUID,
-				Updates: []*services.PropCollectionChange{{
-					Field:     models.DomainFieldAnnotations,
-					Operation: basemodels.PropCollectionUpdateOperationSet,
-					Value: &services.PropCollectionChange_KeyValuePairValue{
-						KeyValuePairValue: &models.KeyValuePair{
-							Key:   "some-key",
-							Value: "some-value",
-						},
+		r := &services.PropCollectionUpdateRequest{
+			UUID: project.UUID,
+			Updates: []*services.PropCollectionChange{{
+				Field:     models.DomainFieldAnnotations,
+				Operation: basemodels.PropCollectionUpdateOperationSet,
+				Value: &services.PropCollectionChange_KeyValuePairValue{
+					KeyValuePairValue: &models.KeyValuePair{
+						Key:   "some-key",
+						Value: "some-value",
 					},
-				}},
-			}
-			b, err := proto.Marshal(r)
-			fmt.Println(b, len(b), err)
-			r1 := &services.PropCollectionUpdateRequest{}
-			err = proto.Unmarshal(b, r1)
-			fmt.Println(r1, err)
+				},
+			}},
+		}
+		b, err := proto.Marshal(r)
+		fmt.Println(b, len(b), err)
+		r1 := &services.PropCollectionUpdateRequest{}
+		err = proto.Unmarshal(b, r1)
+		fmt.Println(r1, err)
 
-			c := services.NewPropCollectionUpdateClient(conn)
-			_, err = c.PropCollectionUpdate(ctx, &services.PropCollectionUpdateRequest{
-				UUID: project.UUID,
-				Updates: []*services.PropCollectionChange{{
-					Field:     models.DomainFieldAnnotations,
-					Operation: basemodels.PropCollectionUpdateOperationSet,
-					Value: &services.PropCollectionChange_KeyValuePairValue{
-						KeyValuePairValue: &models.KeyValuePair{
-							Key:   "some-key",
-							Value: "some-value",
-						},
+		c := services.NewPropCollectionUpdateClient(conn)
+		_, err = c.PropCollectionUpdate(ctx, &services.PropCollectionUpdateRequest{
+			UUID: project.UUID,
+			Updates: []*services.PropCollectionChange{{
+				Field:     models.DomainFieldAnnotations,
+				Operation: basemodels.PropCollectionUpdateOperationSet,
+				Value: &services.PropCollectionChange_KeyValuePairValue{
+					KeyValuePairValue: &models.KeyValuePair{
+						Key:   "some-key",
+						Value: "some-value",
 					},
-				}},
-			})
-			assert.NoError(t, err)
-
-			_, err = c.PropCollectionUpdate(ctx, &services.PropCollectionUpdateRequest{
-				UUID: project.UUID,
-				Updates: []*services.PropCollectionChange{{
-					Field:     models.DomainFieldAnnotations,
-					Operation: basemodels.PropCollectionUpdateOperationDelete,
-					Position: &services.PropCollectionChange_PositionString{
-						PositionString: "some-key",
-					},
-				}},
-			})
-			assert.NoError(t, err)
+				},
+			}},
 		})
+		assert.NoError(t, err)
+
+		_, err = c.PropCollectionUpdate(ctx, &services.PropCollectionUpdateRequest{
+			UUID: project.UUID,
+			Updates: []*services.PropCollectionChange{{
+				Field:     models.DomainFieldAnnotations,
+				Operation: basemodels.PropCollectionUpdateOperationDelete,
+				Position: &services.PropCollectionChange_PositionString{
+					PositionString: "some-key",
+				},
+			}},
+		})
+		assert.NoError(t, err)
+	})
 }
 
 func testGRPCServer(t *testing.T, testName string, testBody func(ctx context.Context, conn *grpc.ClientConn)) {
 	ctx := context.Background()
-	integration.AddKeystoneProjectAndUser(server.APIServer, testName)
+	addKeystoneProjectAndUser(server.APIServer, testName)
 	authToken := restLogin(ctx, t, testName)
 
-	creds := credentials.NewTLS(&tls.Config{
-		InsecureSkipVerify: true,
-	})
-	dial := strings.TrimPrefix(server.URL(), "https://")
-
 	conn, err := grpc.Dial(
-		dial,
-		grpc.WithTransportCredentials(creds),
+		strings.TrimPrefix(server.URL(), "https://"),
+		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})),
 		grpc.WithDefaultCallOptions(grpc.CallCustomCodec(protocodec.New(0))),
 	)
 	assert.NoError(t, err)
 	defer testutil.LogFatalIfError(conn.Close)
-	md := metadata.Pairs("X-Auth-Token", authToken)
-	ctx = metadata.NewOutgoingContext(ctx, md)
 
-	testBody(ctx, conn)
+	testBody(
+		metadata.NewOutgoingContext(context.Background(), metadata.Pairs("X-Auth-Token", authToken)),
+		conn,
+	)
+}
+
+// addKeystoneProjectAndUser adds Keystone project and user in Server internal state.
+// TODO: Remove that, because it modifies internal state of SUT.
+// TODO: Use pre-created Server's keystone assignment.
+func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
+	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
+	assignment.Projects[testID] = &kscommon.Project{
+		Domain: assignment.Domains[integration.DefaultDomainID],
+		ID:     testID,
+		Name:   testID,
+	}
+
+	assignment.Users[testID] = &kscommon.User{
+		Domain:   assignment.Domains[integration.DefaultDomainID],
+		ID:       testID,
+		Name:     testID,
+		Password: testID,
+		Roles: []*kscommon.Role{
+			{
+				ID:      "member",
+				Name:    "Member",
+				Project: assignment.Projects[testID],
+			},
+		},
+	}
+}
+
+// TODO: remove
+func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
+	restClient := client.NewHTTP(
+		server.URL(),
+		server.URL()+"/keystone/v3",
+		projectName,
+		projectName,
+		true,
+		pkgkeystone.NewScope("", "default", "", projectName),
+	)
+	restClient.InSecure = true
+	restClient.Init()
+	_, err := restClient.Login(ctx)
+	require.NoError(t, err)
+	return restClient.AuthToken
 }
 
 // nolint: golint

@@ -15,6 +15,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
+	"github.com/Juniper/contrail/pkg/fileutil"
+	"github.com/Juniper/contrail/pkg/format"
+	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/models/basemodels"
+	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/Juniper/contrail/pkg/sync"
+	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/flosch/pongo2"
 	"github.com/labstack/echo"
@@ -23,20 +32,10 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
 
-	"github.com/Juniper/contrail/pkg/apisrv"
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/apisrv/keystone"
-	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/format"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/models/basemodels"
-	"github.com/Juniper/contrail/pkg/services/baseservices"
-	"github.com/Juniper/contrail/pkg/sync"
-	"github.com/Juniper/contrail/pkg/testutil"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -152,30 +151,6 @@ const (
 	defaultClientID = "default"
 	defaultDomainID = "default"
 )
-
-//AddKeystoneProjectAndUser adds Keystone project and user in Server internal state.
-func AddKeystoneProjectAndUser(s *apisrv.Server, testID string) {
-	assignment := s.Keystone.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
-	assignment.Projects[testID] = &kscommon.Project{
-		Domain: assignment.Domains[defaultDomainID],
-		ID:     testID,
-		Name:   testID,
-	}
-
-	assignment.Users[testID] = &kscommon.User{
-		Domain:   assignment.Domains[defaultDomainID],
-		ID:       testID,
-		Name:     testID,
-		Password: testID,
-		Roles: []*kscommon.Role{
-			{
-				ID:      "member",
-				Name:    "Member",
-				Project: assignment.Projects[testID],
-			},
-		},
-	}
-}
 
 // Event represents event received from etcd watch.
 type Event struct {
@@ -649,7 +624,7 @@ func NewWellKnownServer(serve string, handler http.Handler) *httptest.Server {
 	}
 }
 
-//addKeystoneUser adds Keystone user in mock keystone.
+// addKeystoneUser adds Keystone user in mock keystone.
 func addKeystoneUser(k *keystone.Keystone, testUser, testPassword string) {
 	assignment := k.Assignment.(*keystone.StaticAssignment) // nolint: errcheck
 	assignment.Users = map[string]*kscommon.User{}

@@ -143,7 +143,7 @@ func runTest(t *testing.T, test func(*testing.T, *integration.HTTPAPIClient, *in
 				assert.NoError(t, s.Close())
 			}()
 
-			test(t, integration.NewTestingHTTPClient(t, s.URL()), s)
+			test(t, integration.NewTestingHTTPClient(t, s.URL()), s, integration.BobUserID)
 		}()
 	}
 }

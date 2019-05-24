@@ -86,12 +86,12 @@ test_data:
     - uuid: test_ipam_blue_uuid_test_sync
 clients:
   default:
-    id: TestSync
-    password: TestSync
+    id: alice
+    password: alice_password
     insecure: true
     scope:
       project:
-        name: TestSync
+        name: admin
 workflow:
 - name: create project, network policy, network ipam and virtual network
   request:

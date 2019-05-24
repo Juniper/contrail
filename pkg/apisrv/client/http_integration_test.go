@@ -21,7 +21,7 @@ func TestCreateRefMethod(t *testing.T) {
 		EnableEtcdNotifier: false,
 	})
 	defer s.CloseT(t)
-	hc := integration.NewTestingHTTPClient(t, s.URL())
+	hc := integration.NewTestingHTTPClient(t, s.URL(), integration.BobUserID)
 
 	testID := "test"
 	projectUUID := testID + "_project"
@@ -113,7 +113,7 @@ func TestRemoteIntPoolMethods(t *testing.T) {
 		EnableEtcdNotifier: false,
 	})
 	defer s.CloseT(t)
-	hc := integration.NewTestingHTTPClient(t, s.URL())
+	hc := integration.NewTestingHTTPClient(t, s.URL(), integration.BobUserID)
 	_, err := hc.Login(context.Background())
 	require.NoError(t, err)
 

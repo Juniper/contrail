@@ -421,7 +421,7 @@ func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 		EnableEtcdNotifier: false,
 	})
 	defer s.CloseT(t)
-	hc := integration.NewTestingHTTPClient(t, s.URL())
+	hc := integration.NewTestingHTTPClient(t, s.URL(), integration.BobUserID)
 	ec := integrationetcd.NewEtcdClient(t)
 	defer ec.Close(t)
 
