@@ -3,7 +3,7 @@ description: basic set-tag test
 
 cleanup:
 - path: /virtual_network/virtual_network_uuid
-- path: /project/admin_project_uuid
+- path: /project/admin_project_test_set_tag
 - path: /tag/tag_namespace_uuid
 - path: /tag/tag_namespace_uuid_kube
 - path: /tag/tag_application_uuid
@@ -12,8 +12,8 @@ cleanup:
 
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
-    uuid: admin_project_uuid
+    fq_name: ["default", "admin_project_test_set_tag"]
+    uuid: admin_project_test_set_tag
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -23,7 +23,7 @@ test_data:
     uuid: virtual_network_uuid
     display_name: virtual_network
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: admin_project_test_set_tag
     virtual_network_properties:
       forwarding_mode: "l3"
       vxlan_network_identifier: 5
@@ -61,7 +61,7 @@ test_data:
     tag_type_name: label
 
   set_tag_project: &set_tag_project
-    obj_uuid: admin_project_uuid
+    obj_uuid: admin_project_test_set_tag
     obj_type: project
 
   set_tag_correct: &set_tag_correct
@@ -98,7 +98,7 @@ workflow:
   expect:
     project: *admin_project
   watchers:
-    /contrail/project/admin_project_uuid:
+    /contrail/project/admin_project_test_set_tag:
       - data: *admin_project
 
 - name: create virtual network
@@ -171,7 +171,7 @@ workflow:
 
 - name: check added tags
   request:
-    path: /project/admin_project_uuid
+    path: /project/admin_project_test_set_tag
     method: GET
     expected: [200]
   expect:
@@ -195,7 +195,7 @@ workflow:
 
 - name: check changed tag
   request:
-    path: /project/admin_project_uuid
+    path: /project/admin_project_test_set_tag
     method: GET
     expected: [200]
   expect:
@@ -219,7 +219,7 @@ workflow:
 
 - name: check if tag was unset
   request:
-    path: /project/admin_project_uuid
+    path: /project/admin_project_test_set_tag
     method: GET
     expected: [200]
   expect:
@@ -244,7 +244,7 @@ workflow:
 
 - name: check added label tags
   request:
-    path: /project/admin_project_uuid
+    path: /project/admin_project_test_set_tag
     method: GET
     expected: [200]
   expect:
@@ -274,7 +274,7 @@ workflow:
 
 - name: check removed tags
   request:
-    path: /project/admin_project_uuid
+    path: /project/admin_project_test_set_tag
     method: GET
     expected: [200]
   expect:
@@ -336,7 +336,7 @@ workflow:
 
 - name: delete project admin
   request:
-    path: /project/admin_project_uuid
+    path: /project/admin_project_test_set_tag
     method: DELETE
     expected: [200]
   expect: null
