@@ -1,9 +1,16 @@
 {% if cloud.providers|length >= 1 %}
 {% for provider in cloud.providers %}
-{% with provider.info.Type as cloudType "azure" as az "aws" as aws %}
+{% with provider.info.Type as cloudType "azure" as az "aws" as aws "gcp" as gcp %}
 - provider: {{ cloudType }}
   organization: {{ cloud.info.Organization }}
-  project: {{ cloud.info.Project }}
+  project: {{ provider.info.Project }}
+  {% if gcp in cloudType %}
+  prebuild: nightly
+  tags:
+    owner: juniper
+    Project: contrail_multicloud
+    build_id: latest
+  {% endif %}
   {% if provider.regions|length >= 1 %}
   regions:
   {% for region in provider.regions %}
@@ -32,6 +39,38 @@
               {% endif %}
           {% endfor %}
           {% endif %}
+          {% if gcp in cloudType %}
+          firewalls_external:
+            - name: default-wan-tcp
+              allow:
+                protocol: tcp
+                ports:
+                  - 22
+                  - 443
+          {% if vcloud.sgs|length >= 1 %}
+          {% for sg in vcloud.sgs %}
+          firewalls_internal:
+            {% for sgRule in sg.info.CloudSecurityGroupRules %}
+            - name: {{ sgRule.Name }}
+              allow:
+                protocol: {% if "ANY" in sgRule.Protocol %}all{% else %}{{ sgRule.Protocol|default:"all" }}{% endif %}
+                {% if sgRule.Ports|length >= 1 %}
+                ports:
+                  {% for port in sgRule.Ports %}
+                  - {{ port }}
+                  {% endfor %}
+                {% endif %}
+              {% if sgRule.Direction %}direction: {{ sgRule.Direction | upper }}{% endif %}
+              {% if "ingress" in sgRule.Direction %}
+              source_ranges:
+              {% else %}
+              destination_ranges:
+              {% endif %}
+                - {{ sgRule.CidrBlock|default:"0.0.0.0/0"}}
+            {% endfor %}
+          {% endfor %}
+          {% endif %}
+          {% else %}
           {% if vcloud.sgs|length >= 1 %}
           security_groups:
           {% for sg in vcloud.sgs %}
@@ -54,6 +93,7 @@
               {% endfor %}
             {% endif %}
           {% endfor %}
+          {% endif %}
           {% endif %}
           {% if vcloud.instances|length >= 1 %}
           instances:

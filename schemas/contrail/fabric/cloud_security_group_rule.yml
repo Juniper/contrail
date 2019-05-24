@@ -29,29 +29,18 @@ schema:
       - create
       - detail
     from_port:
-      description: From port number
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: From Port
-      type: integer
-      view:
-      - create
-      - detail
+      description: From L4 port number
+      $ref: types.json#/definitions/L4PortType
+      presence: optional
     to_port:
-      description: To port number
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: To Port
-      type: integer
-      view:
-      - create
-      - detail
+      description: To L4 port number
+      $ref: types.json#/definitions/L4PortType
+      presence: optional
+    ports:
+      description: List of ports to allow
+      items:
+        $ref: types.json#/definitions/L4PortType
+      type: array
     protocol:
       description: Protocol
       nullable: false

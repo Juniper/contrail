@@ -78,7 +78,6 @@ test_data:
     name: pvt_cloud
     uuid: pvt_cloud_uuid
     organization: pvt_unit_test
-    project: pvt_test2
     cloud_user_refs:
       - uuid: pvt_cloud_user_uuid
     provisioning_state: CREATE_FAILED
@@ -86,7 +85,6 @@ test_data:
     name: public_cloud
     uuid: public_cloud_uuid
     organization: public_unit_test
-    project: public_test2
     cloud_user_refs:
       - uuid: public_cloud_user_uuid
     provisioning_state: CREATED
@@ -94,12 +92,14 @@ test_data:
     name: pvt_cloud_provider
     uuid: pvt_cloud_provider_uuid
     type: private
+    project: pvt_test2
     parent_type: cloud
     parent_uuid: pvt_cloud_uuid
   cloud_provider: &public_cloud_provider
     name: public_cloud_provider
     uuid: public_cloud_provider_uuid
     type: azure
+    project: public_test2
     parent_type: cloud
     parent_uuid: public_cloud_uuid
   cloud_region: &cloud_region
@@ -358,7 +358,6 @@ workflow:
       name: pvt_cloud
       uuid: pvt_cloud_uuid
       organization: pvt_unit_test
-      project: pvt_test2
       cloud_user_refs:
         - uuid: pvt_cloud_user_uuid
 - name: create public cloud
@@ -374,7 +373,6 @@ workflow:
       name: public_cloud
       uuid: public_cloud_uuid
       organization: public_unit_test
-      project: public_test2
       cloud_user_refs:
         - uuid: public_cloud_user_uuid
 - name: create pvt cloud provider
@@ -391,6 +389,7 @@ workflow:
         owner: admin
       uuid: pvt_cloud_provider_uuid
       type: private
+      project: pvt_test2
       parent_type: cloud
       parent_uuid: pvt_cloud_uuid
 - name: create public cloud provider
@@ -407,6 +406,7 @@ workflow:
         owner: admin
       uuid: public_cloud_provider_uuid
       type: azure
+      project: public_test2
       parent_type: cloud
       parent_uuid: public_cloud_uuid
 

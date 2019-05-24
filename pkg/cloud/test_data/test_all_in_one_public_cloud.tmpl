@@ -59,7 +59,6 @@ test_data:
     name: cloud
     uuid: cloud_uuid
     organization: unit_test
-    project: test2
     cloud_user_refs:
       - uuid: cloud_user_uuid
   cloud_provider: &cloud_provider
@@ -68,11 +67,14 @@ test_data:
     type: {{ CLOUD_TYPE }}
     parent_type: cloud
     parent_uuid: cloud_uuid
+    project: test2
   cloud_region: &cloud_region
     {% if "azure" in CLOUD_TYPE %}
     name: WestUS
     {% elif "aws" in CLOUD_TYPE %}
     name: us-west-1
+    {% elif "gcp" in CLOUD_TYPE %}
+    name: us-west1
     {% endif %}
     parent_type: cloud-provider
     parent_uuid: cloud_provider_uuid
@@ -120,6 +122,11 @@ test_data:
     from_port: 0
     to_port: 0
     cidr_block: 0.0.0.0/0
+    {% elif "gcp" in CLOUD_TYPE %}
+    ports:
+      - 6654
+      - 8888
+    cidr_block: 10.0.10.0/24
     {% endif %}
 {% if "private" in CLOUD_TYPE %}
   tor_device: &tor_device
@@ -155,6 +162,9 @@ test_data:
       {% elif "aws" in CLOUD_TYPE %}
       operating_system: rhel75
       instance_type: t2.xlarge
+      {% elif "gcp" in CLOUD_TYPE %}
+      operating_system: rhel75
+      instance_type: n1-standard-1
       {% endif %}
       roles:
         - gateway
@@ -190,6 +200,9 @@ test_data:
       {% elif "aws" in CLOUD_TYPE %}
       operating_system: rhel75
       instance_type: t2.xlarge
+      {% elif "gcp" in CLOUD_TYPE %}
+      operating_system: rhel75
+      instance_type: n1-standard-1
       {% endif %}
       roles:
         - controller
@@ -226,6 +239,9 @@ test_data:
       {% elif "aws" in CLOUD_TYPE %}
       operating_system: rhel75
       instance_type: t2.xlarge
+      {% elif "gcp" in CLOUD_TYPE %}
+      operating_system: rhel75
+      instance_type: n1-standard-1
       {% endif %}
       roles:
         - compute
@@ -399,7 +415,6 @@ workflow:
       provisioning_state: NOSTATE
       uuid: cloud_uuid
       organization: unit_test
-      project: test2
       cloud_user_refs:
         - uuid: cloud_user_uuid
 
@@ -419,6 +434,7 @@ workflow:
       type: {{ CLOUD_TYPE }}
       parent_type: cloud
       parent_uuid: cloud_uuid
+      project: test2
 
 - name: create cloud region
   request:
@@ -588,6 +604,9 @@ workflow:
         {% elif "aws" in CLOUD_TYPE %}
         operating_system: rhel75
         instance_type: t2.xlarge
+        {% elif "gcp" in CLOUD_TYPE %}
+        operating_system: rhel75
+        instance_type: n1-standard-1
         {% endif %}
         roles:
           - gateway
@@ -627,6 +646,9 @@ workflow:
         {% elif "aws" in CLOUD_TYPE %}
         operating_system: rhel75
         instance_type: t2.xlarge
+        {% elif "gcp" in CLOUD_TYPE %}
+        operating_system: rhel75
+        instance_type: n1-standard-1
         {% endif %}
         roles:
           - controller
@@ -670,6 +692,9 @@ workflow:
         {% elif "aws" in CLOUD_TYPE %}
         operating_system: rhel75
         instance_type: t2.xlarge
+        {% elif "gcp" in CLOUD_TYPE %}
+        operating_system: rhel75
+        instance_type: n1-standard-1
         {% endif %}
         roles:
           - compute

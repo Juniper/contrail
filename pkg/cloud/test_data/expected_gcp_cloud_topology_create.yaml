@@ -1,0 +1,50 @@
+
+- provider: gcp
+  organization: unit_test
+  project: test2
+  prebuild: nightly
+  tags:
+    owner: juniper
+    Project: contrail_multicloud
+    build_id: latest
+  regions:
+    - name: us-west1
+        - name: virtual_cloud
+          cidr_block: 192.168.10.0/16
+          subnets:
+            - name: cloud_private_subnet
+              cidr_block: 192.168.10.0/24
+          firewalls_external:
+            - name: default-wan-tcp
+              allow:
+                protocol: tcp
+                ports:
+                  - 22
+                  - 443
+          firewalls_internal:
+            - name: cloud_security_group_rule
+              allow:
+                protocol: all
+                ports:
+                  - 6654
+                  - 8888
+              direction: INGRESS
+              source_ranges:
+                - 10.0.10.0/24
+          instances:
+            - name: cloud_node_compute
+              roles:
+                - compute_node
+              provision: true
+              username: redhat
+              os: rhel75
+              instance_type: n1-standard-1
+              subnets: cloud_private_subnet
+            - name: cloud_node_gw
+              roles:
+                - gateway
+              provision: true
+              username: redhat
+              os: rhel75
+              instance_type: n1-standard-1
+              subnets: cloud_private_subnet
