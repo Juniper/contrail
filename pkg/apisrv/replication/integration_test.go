@@ -15,6 +15,7 @@ import (
 	"github.com/flosch/pongo2"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -271,4 +272,24 @@ func verifyVNCReqStore(t *testing.T, req string,
 
 func TestReplication(t *testing.T) {
 	runReplicationTest(t)
+}
+
+func TestReplicateAlreadyCreatedResources(t *testing.T) {
+	//create node-profile, node, port object
+	testScenario, err := integration.LoadTest(createReplicationTestFile, nil)
+	require.NoError(t, err, "failed to load test data")
+	cleanup := integration.RunDirtyTestScenario(t, testScenario, server)
+	defer cleanup()
+
+	//create test clusters with keystone/config endpoint.
+	cleanupTestClusterA, vncReqStoreA, doneA := initTestCluster(t, "clusterA", 2)
+	defer cleanupTestClusterA()
+	cleanupTestClusterB, vncReqStoreB, doneB := initTestCluster(t, "clusterB", 2)
+	defer cleanupTestClusterB()
+
+	assertCloses(t, doneA)
+	assertCloses(t, doneB)
+	//verify create objects
+	verifyVNCReqStore(t, postReq, vncReqStoreA, testScenario)
+	verifyVNCReqStore(t, postReq, vncReqStoreB, testScenario)
 }
