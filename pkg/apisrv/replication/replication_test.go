@@ -83,6 +83,7 @@ type handlerMock struct {
 	last *replicateCall
 }
 
+func (h *handlerMock) await() {}
 func (h *handlerMock) createClient(ep *models.Endpoint) {}
 func (h *handlerMock) updateClient(ep *models.Endpoint) {}
 func (h *handlerMock) deleteClient(endpointID string)   {}

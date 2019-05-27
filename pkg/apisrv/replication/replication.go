@@ -4,12 +4,11 @@ import (
 	"context"
 	"sync"
 
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	syncp "github.com/Juniper/contrail/pkg/sync"
@@ -40,6 +39,7 @@ const (
 )
 
 type handler interface {
+	await()
 	replicate(action, url string, data interface{}, response interface{})
 	createClient(e *models.Endpoint)
 	updateClient(e *models.Endpoint)
@@ -56,7 +56,6 @@ type Replicator struct {
 
 // New initializes replication data
 func New(epStore *apicommon.EndpointStore) (*Replicator, error) {
-
 	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
 		return nil, err
 	}
@@ -86,6 +85,7 @@ func (r *Replicator) Start() error {
 		defer r.serviceWaitGroup.Done()
 		defer producer.Close()
 
+		r.handler.await()
 		err = producer.Start(ctx)
 	}()
 	<-producer.Watcher.DumpDone()
