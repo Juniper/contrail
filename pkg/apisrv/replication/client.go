@@ -58,6 +58,28 @@ func newVncAPIHandle(epStore *apicommon.EndpointStore) *vncAPIHandle {
 	return handle
 }
 
+func (h *vncAPIHandle) await() {
+	for {
+		var err error
+		for _, vncAPI := range h.clients {
+			var out interface{}
+			_, err = vncAPI.client.Read(context.Background(), vncAPI.getClientEndpoint(), out)
+			if err != nil {
+				break
+			}
+		}
+		if err == nil {
+			return
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func (v *vncAPI) getClientEndpoint() string {
+	return strings.Join([]string{"/proxy", v.clusterID, configService}, "/")
+}
+
 func (h *vncAPIHandle) initialize() (err error) {
 	if err = h.initClient(); err != nil {
 		return err
@@ -278,12 +300,12 @@ func (v *vncAPI) replicate(action, url string, data interface{}, response interf
 	case createAction:
 		_, err := v.client.Create(v.ctx, proxyURL, data, response)
 		if err != nil {
-			v.log.Errorf("while creating %s on vncAPI: %v", proxyURL, err)
+			v.log.WithError(err).Errorf("while creating %s on vncAPI", proxyURL)
 		}
 	case updateAction:
 		_, err := v.client.Update(v.ctx, proxyURL, data, response)
 		if err != nil {
-			v.log.Errorf("while updating %s on vncAPI: %v", proxyURL, err)
+			v.log.WithError(err).Errorf("while updating %s on vncAPI", proxyURL)
 		}
 	case deleteAction:
 		urlParts := strings.Split(url, "/")
@@ -292,13 +314,13 @@ func (v *vncAPI) replicate(action, url string, data interface{}, response interf
 		}
 		_, err := v.client.Delete(v.ctx, proxyURL, response)
 		if err != nil {
-			v.log.Errorf("while deleting %s on vncAPI: %v", proxyURL, err)
+			v.log.WithError(err).Errorf("while deleting %s on vncAPI", proxyURL)
 		}
 	case refUpdateAction:
 		expected := []int{http.StatusOK}
 		_, err := v.client.Do(v.ctx, echo.POST, proxyURL, nil, data, response, expected)
 		if err != nil {
-			v.log.Errorf("while updating ref %v on vncAPI: %v", data, err)
+			v.log.WithError(err).Errorf("while updating ref %v on vncAPI", data)
 		}
 	}
 }
