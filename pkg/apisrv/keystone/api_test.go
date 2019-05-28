@@ -12,17 +12,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/flosch/pongo2"
-	"github.com/labstack/echo"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/flosch/pongo2"
+	"github.com/labstack/echo"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
@@ -33,61 +32,6 @@ const (
 	testClusterTokenAPIFile = "./test_data/test_cluster_token_method.yml"
 	testBasicAuthFile       = "./test_data/test_basic_auth.yml"
 )
-
-var server *integration.APIServer
-
-func mockServer(routes map[string]interface{}) *httptest.Server {
-	// Echo instance
-	e := echo.New()
-
-	// Routes
-	for route, handler := range routes {
-		e.GET(route, handler.(echo.HandlerFunc))
-	}
-	mockServer := httptest.NewServer(e)
-	return mockServer
-}
-
-func TestMain(m *testing.M) {
-	integration.TestMain(m, &server)
-}
-
-func FetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
-	dataJSON, err := json.Marshal(&kscommon.UnScopedAuthRequest{
-		Auth: &kscommon.UnScopedAuth{
-			Identity: &kscommon.Identity{
-				Methods: []string{"cluster_token"},
-				Cluster: &kscommon.Cluster{
-					ID: clusterID,
-					Token: &kscommon.UserToken{
-						ID: clusterToken,
-					},
-				},
-			},
-		},
-	})
-	assert.NoError(t, err, "failed to marshal cluster_token request")
-	keystoneAuthURL := viper.GetString("keystone.authurl")
-	k := &client.Keystone{
-		URL: keystoneAuthURL,
-		HTTPClient: &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: viper.GetBool("keystone.insecure")},
-			},
-		},
-	}
-	request, err := http.NewRequest("POST", keystoneAuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
-	assert.NoError(t, err, "failed to create new http request")
-	request.Header.Set("Content-Type", "application/json")
-
-	resp, err := k.HTTPClient.Do(request)
-	assert.NoError(t, err, "failed to create new http request")
-	defer resp.Body.Close() // nolint: errcheck
-
-	token := resp.Header.Get("X-Subject-Token")
-	return token
-}
 
 func TestClusterTokenMethod(t *testing.T) {
 	keystoneAuthURL := viper.GetString("keystone.authurl")
@@ -122,7 +66,7 @@ func TestClusterTokenMethod(t *testing.T) {
 	token := resp.Header.Get("X-Subject-Token")
 	assert.NotEmpty(t, token)
 	// Fetch command keystone token with cluster keystone token
-	commandServerToken := FetchCommandServerToken(t, clusterName+"_uuid", token)
+	commandServerToken := fetchCommandServerToken(t, clusterName+"_uuid", token)
 	assert.NotEmpty(t, commandServerToken)
 	// Verify token
 	url := strings.Join([]string{server.URL(), "contrail-cluster", clusterName + "_uuid"}, "/")
@@ -145,6 +89,43 @@ func TestClusterTokenMethod(t *testing.T) {
 
 	// Cleanup test TODO: Fix cleanup to remove all resources
 	integration.RunCleanTestScenario(t, &testScenario, server)
+}
+
+func fetchCommandServerToken(t *testing.T, clusterID string, clusterToken string) string {
+	dataJSON, err := json.Marshal(&kscommon.UnScopedAuthRequest{
+		Auth: &kscommon.UnScopedAuth{
+			Identity: &kscommon.Identity{
+				Methods: []string{"cluster_token"},
+				Cluster: &kscommon.Cluster{
+					ID: clusterID,
+					Token: &kscommon.UserToken{
+						ID: clusterToken,
+					},
+				},
+			},
+		},
+	})
+	assert.NoError(t, err, "failed to marshal cluster_token request")
+	keystoneAuthURL := viper.GetString("keystone.authurl")
+	k := &client.Keystone{
+		URL: keystoneAuthURL,
+		HTTPClient: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: viper.GetBool("keystone.insecure")},
+			},
+		},
+	}
+	request, err := http.NewRequest("POST", keystoneAuthURL+"/auth/tokens", bytes.NewBuffer(dataJSON))
+	assert.NoError(t, err, "failed to create new http request")
+	request.Header.Set("Content-Type", "application/json")
+
+	resp, err := k.HTTPClient.Do(request)
+	assert.NoError(t, err, "failed to create new http request")
+	defer resp.Body.Close() // nolint: errcheck
+
+	token := resp.Header.Get("X-Subject-Token")
+	return token
 }
 
 func TestClusterLogin(t *testing.T) {
@@ -259,41 +240,6 @@ func verifyBasicAuthDomains(
 	return true
 }
 
-func verifyBasicAuthProjects(
-	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
-	url string, clusterName string) bool {
-	for _, client := range testScenario.Clients {
-		projectList := keystone.ProjectListResponse{}
-		_, err := client.Read(ctx, url, &projectList)
-		if err != nil {
-			fmt.Printf("Reading: %s, Response: %v", url, err)
-			return false
-		}
-		if len(projectList.Projects) != 1 {
-			fmt.Printf("Unexpected projects: %v", projectList)
-			return false
-		}
-		ok := testutil.AssertEqual(
-			t, clusterName, projectList.Projects[0].Name,
-			fmt.Sprintf("Unexpected name in project: %v", projectList))
-		if !ok {
-			return ok
-		}
-		ok = testutil.AssertEqual(
-			t, clusterName+"_uuid", projectList.Projects[0].ID,
-			fmt.Sprintf("Unexpected uuid in project: %v", projectList))
-		if !ok {
-			return ok
-		}
-		ok = testutil.AssertEqual(
-			t, clusterName+"_uuid", projectList.Projects[0].ParentID,
-			fmt.Sprintf("Unexpected parent_id in project: %v", projectList))
-		if !ok {
-			return ok
-		}
-	}
-	return true
-}
 func TestBasicAuth(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
 		DBDriver:           basedb.DriverPostgreSQL,
@@ -357,4 +303,52 @@ func TestBasicAuth(t *testing.T) {
 	url = "/keystone/v3/auth/domains"
 	ok = verifyBasicAuthDomains(ctx, t, &testScenario, url, clusterName)
 	assert.True(t, ok, "failed to get domain list from config %s", url)
+}
+
+func mockServer(routes map[string]interface{}) *httptest.Server {
+	// Echo instance
+	e := echo.New()
+
+	// Routes
+	for route, handler := range routes {
+		e.GET(route, handler.(echo.HandlerFunc))
+	}
+	mockServer := httptest.NewServer(e)
+	return mockServer
+}
+
+func verifyBasicAuthProjects(
+	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
+	url string, clusterName string) bool {
+	for _, client := range testScenario.Clients {
+		projectList := keystone.ProjectListResponse{}
+		_, err := client.Read(ctx, url, &projectList)
+		if err != nil {
+			fmt.Printf("Reading: %s, Response: %v", url, err)
+			return false
+		}
+		if len(projectList.Projects) != 1 {
+			fmt.Printf("Unexpected projects: %v", projectList)
+			return false
+		}
+		ok := testutil.AssertEqual(
+			t, clusterName, projectList.Projects[0].Name,
+			fmt.Sprintf("Unexpected name in project: %v", projectList))
+		if !ok {
+			return ok
+		}
+		ok = testutil.AssertEqual(
+			t, clusterName+"_uuid", projectList.Projects[0].ID,
+			fmt.Sprintf("Unexpected uuid in project: %v", projectList))
+		if !ok {
+			return ok
+		}
+		ok = testutil.AssertEqual(
+			t, clusterName+"_uuid", projectList.Projects[0].ParentID,
+			fmt.Sprintf("Unexpected parent_id in project: %v", projectList))
+		if !ok {
+			return ok
+		}
+	}
+	return true
 }

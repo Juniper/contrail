@@ -16,40 +16,11 @@ const (
 	pathSep = "/"
 )
 
-// GetClusterIDFromProxyURL parses the proxy url to retrieve clusterID
-func GetClusterIDFromProxyURL(url string) (clusterID string) {
-	paths := strings.Split(url, pathSep)
-	if len(paths) > 3 && paths[1] == "proxy" {
-		clusterID = paths[2]
-	}
-	return clusterID
-}
-
-// Endpoint represents an endpoint url with its credentials
-type Endpoint struct {
-	URL      string
-	Username string
-	Password string
-}
-
-// NewEndpoint returns endoint struct with credential
-func NewEndpoint(url, user, password string) *Endpoint {
-	return &Endpoint{
-		URL:      url,
-		Username: user,
-		Password: password,
-	}
-}
-
 // TargetStore is used to store service specific endpoint targets in-memory
+// TODO(Daniel): move TargetStore code where it is used.
 type TargetStore struct {
 	Data       *sync.Map
 	nextTarget string
-}
-
-// EndpointStore is used to store cluster specific endpoints in-memory
-type EndpointStore struct {
-	Data *sync.Map
 }
 
 //MakeTargetStore is used to make an in-memory endpoint target store.
@@ -57,13 +28,6 @@ func MakeTargetStore() *TargetStore {
 	return &TargetStore{
 		Data:       new(sync.Map),
 		nextTarget: "",
-	}
-}
-
-//MakeEndpointStore is used to make an in-memory endpoint store.
-func MakeEndpointStore() *EndpointStore {
-	return &EndpointStore{
-		Data: new(sync.Map),
 	}
 }
 
@@ -83,6 +47,39 @@ func (t *TargetStore) Read(id string) *models.Endpoint {
 //Write endpoint target in-memory
 func (t *TargetStore) Write(id string, endpoint *models.Endpoint) {
 	t.Data.Store(id, endpoint)
+}
+
+//ReadAll endpoint target from memory
+func (t *TargetStore) ReadAll(scope string) (endpointData []*Endpoint) {
+	var nextEndpoint *Endpoint
+	t.Data.Range(func(id, endpoint interface{}) bool {
+		e := endpoint.(*models.Endpoint) // nolint: errcheck
+		var d *Endpoint
+		switch scope {
+		case Public:
+			d = NewEndpoint(e.PublicURL, e.Username, e.Password)
+		case Private:
+			if e.PrivateURL != "" {
+				d = NewEndpoint(e.PrivateURL, e.Username, e.Password)
+			} else {
+				d = NewEndpoint(e.PublicURL, e.Username, e.Password)
+			}
+		}
+		if t.nextTarget == e.UUID {
+			nextEndpoint = d
+		} else {
+			endpointData = append(endpointData, d)
+		}
+		return true
+	})
+	// Return the next target as first entry in the list
+	// so that the proxy service will loadbalance the
+	// requests among available endpoints starting from
+	// the next target
+	if nextEndpoint != nil {
+		endpointData = append([]*Endpoint{nextEndpoint}, endpointData...)
+	}
+	return endpointData
 }
 
 //Next endpoint target from memory is read(roundrobin)
@@ -142,6 +139,18 @@ func (t *TargetStore) Count() int {
 	return count
 }
 
+// EndpointStore is used to store cluster specific endpoints in-memory
+type EndpointStore struct {
+	Data *sync.Map
+}
+
+//MakeEndpointStore is used to make an in-memory endpoint store.
+func MakeEndpointStore() *EndpointStore {
+	return &EndpointStore{
+		Data: new(sync.Map),
+	}
+}
+
 //Read endpoint targets store from memory
 func (e *EndpointStore) Read(endpointKey string) *TargetStore {
 	p, ok := e.Data.Load(endpointKey)
@@ -185,4 +194,20 @@ func (e *EndpointStore) GetEndpoint(prefix string) (endpoint *Endpoint, err erro
 	})
 
 	return endpoint, err
+}
+
+// Endpoint represents an endpoint URL with its credentials.
+type Endpoint struct {
+	URL      string
+	Username string
+	Password string
+}
+
+// NewEndpoint returns endpoint with given credentials.
+func NewEndpoint(url, user, password string) *Endpoint {
+	return &Endpoint{
+		URL:      url,
+		Username: user,
+		Password: password,
+	}
 }

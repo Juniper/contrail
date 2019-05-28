@@ -11,7 +11,8 @@ database:
     max_open_conn: 100
     connection_retries: 10
     retry_period: 3s
-    replication_status_timeout: 10s
+    replication_status_timeout:
+    debug: false
 
 etcd:
   endpoints:
@@ -31,7 +32,8 @@ server:
   enabled: true
   read_timeout: 10
   write_timeout: 5
-  log_api: false
+  log_api: true
+  log_body: true
   address: ":9091"
 
   # TLS Configuration
