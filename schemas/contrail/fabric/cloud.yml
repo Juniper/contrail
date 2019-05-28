@@ -27,18 +27,6 @@ schema:
       view:
       - create
       - detail
-    project:
-      description: Name of the project
-      nullable: false
-      permission:
-      - create
-      - update
-      sql: ""
-      title: project name
-      type: string
-      view:
-      - create
-      - detail
   type: object
 singular: cloud
 title: Cloud

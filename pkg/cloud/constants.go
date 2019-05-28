@@ -34,6 +34,7 @@ const (
 
 	aws    = "aws"
 	azure  = "azure"
+	gcp    = "gcp"
 	onPrem = "private"
 
 	defaultRWOnlyPerm = 0600

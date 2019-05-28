@@ -17,6 +17,7 @@ import (
 const (
 	gatewayRole = "gateway"
 	computeRole = "compute"
+	redhat      = "redhat"
 )
 
 type dataInterface interface {
@@ -284,7 +285,8 @@ func (v *virtualCloudData) newInstance(instance *models.Node,
 		if err != nil {
 			return nil, err
 		}
-		err = inst.updateInstanceUsername()
+
+		err = inst.updateInstanceUsername(v.parentRegion.parentProvider.info.Type)
 		if err != nil {
 			return nil, err
 		}
@@ -316,7 +318,7 @@ func hasCloudRole(roles []string, nodeRole string) bool {
 	return false
 }
 
-func (i *instanceData) updateInstanceUsername() error {
+func (i *instanceData) updateInstanceUsername(providerType string) error {
 
 	switch i.info.CloudInfo.OperatingSystem {
 	case "ubuntu16":
@@ -325,10 +327,13 @@ func (i *instanceData) updateInstanceUsername() error {
 		i.username = "ubuntu"
 	case "centos7":
 		i.username = "centos"
-	case "redhat":
-		i.username = "redhat"
+	case redhat:
+		i.username = redhat
 	case "rhel75":
 		i.username = "ec2-user"
+		if providerType == gcp {
+			i.username = redhat
+		}
 	default:
 		return fmt.Errorf("instance %s operating system %s is not valid",
 			i.info.UUID, i.info.CloudInfo.OperatingSystem)
@@ -1281,6 +1286,15 @@ func (d *Data) hasProviderAWS() bool {
 func (d *Data) hasProviderAzure() bool {
 	for _, prov := range d.providers {
 		if prov.info.Type == azure {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *Data) hasProviderGCP() bool {
+	for _, prov := range d.providers {
+		if prov.info.Type == gcp {
 			return true
 		}
 	}
