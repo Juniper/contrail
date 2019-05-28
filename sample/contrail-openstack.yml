@@ -11,6 +11,7 @@ database:
     max_open_conn: 100
     connection_retries: 10
     retry_period: 3s
+    debug: false
 
 etcd:
   endpoints:
