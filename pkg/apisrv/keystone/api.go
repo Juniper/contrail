@@ -1,7 +1,7 @@
 package keystone
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -145,11 +145,11 @@ func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoints := getKeystoneEndpoint(clusterID, keystone.Endpoints)
 
 	id := c.Param("id")
-	if keystoneEndpoint != nil {
-		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+	if keystoneEndpoints != nil {
+		keystone.Client.SetAuthEndpoint(keystoneEndpoints)
 		return keystone.Client.GetProject(c, id)
 	}
 
@@ -173,9 +173,9 @@ func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
 //ListDomainsAPI is an API handler to list domains.
 func (keystone *Keystone) ListDomainsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if keystoneEndpoint != nil {
-		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+	keystoneEndpoints := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if keystoneEndpoints != nil {
+		keystone.Client.SetAuthEndpoint(keystoneEndpoints)
 		return keystone.Client.GetDomains(c)
 	}
 
@@ -197,9 +197,9 @@ func (keystone *Keystone) ListDomainsAPI(c echo.Context) error {
 //ListProjectsAPI is an API handler to list projects.
 func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if keystoneEndpoint != nil {
-		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+	keystoneEndpoints := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if keystoneEndpoints != nil {
+		keystone.Client.SetAuthEndpoint(keystoneEndpoints)
 		return keystone.Client.GetProjects(c)
 	}
 
@@ -259,26 +259,26 @@ func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
 func (keystone *Keystone) fetchServerTokenWithClusterToken(
 	c echo.Context, identity *kscommon.Identity) error {
 	clusterID := identity.Cluster.ID
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if keystoneEndpoint != nil {
-		tokenURL := keystoneEndpoint.URL + "/v3/auth/tokens"
+	keystoneEndpoints := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if keystoneEndpoints != nil {
+		tokenURL := "/v3/auth/tokens"
 		request, err := http.NewRequest(echo.GET, tokenURL, nil)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 		request.Header.Set("X-Auth-Token", identity.Cluster.Token.ID)
 		request.Header.Set("X-Subject-Token", identity.Cluster.Token.ID)
-		resp, err := keystone.Client.httpClient.Do(request)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-		defer resp.Body.Close() // nolint: errcheck
-		validateTokenResponse := &kscommon.ValidateTokenResponse{}
-		if err = json.NewDecoder(resp.Body).Decode(validateTokenResponse); err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-		if resp.StatusCode != 200 {
-			return c.JSON(resp.StatusCode, validateTokenResponse)
+		keystone.Client.SetAuthEndpoint(keystoneEndpoints)
+		servers := apicommon.NewReverseProxy(keystoneEndpoints)
+		resp := c.Response()
+		servers.ServeHTTP(resp, request)
+
+		//validateTokenResponse := &kscommon.ValidateTokenResponse{}
+		//if err = json.NewDecoder(resp.Body).Decode(validateTokenResponse); err != nil {
+		//	return echo.NewHTTPError(http.StatusInternalServerError, err)
+		//}
+		if resp.Status != 200 {
+			return c.JSON(resp.Status, resp)
 		}
 	}
 	// Get token from local keystone
@@ -287,8 +287,8 @@ func (keystone *Keystone) fetchServerTokenWithClusterToken(
 
 func (keystone *Keystone) fetchClusterToken(c echo.Context,
 	identity *kscommon.Identity, authRequest kscommon.AuthRequest,
-	keystoneEndpoint *apicommon.Endpoint) error {
-	keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+	keystoneEndpoints []*apicommon.Endpoint) error {
+	keystone.Client.SetAuthEndpoint(keystoneEndpoints)
 	if identity.Password != nil {
 		if authRequest.GetScope() == nil {
 			unScopedRequest := kscommon.UnScopedAuthRequest{
@@ -308,7 +308,7 @@ func (keystone *Keystone) fetchClusterToken(c echo.Context,
 				return echo.NewHTTPError(http.StatusUnauthorized, "Failed to authenticate")
 			}
 			authRequest.SetCredential(
-				keystoneEndpoint.Username, keystoneEndpoint.Password)
+				keystoneEndpoints[0].Username, keystoneEndpoints[0].Password)
 		}
 	}
 	c = keystone.Client.SetAuthIdentity(c, authRequest)
@@ -329,9 +329,9 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 		return keystone.fetchServerTokenWithClusterToken(c, identity)
 	}
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if keystoneEndpoint != nil {
-		return keystone.fetchClusterToken(c, identity, authRequest, keystoneEndpoint)
+	keystoneEndpoints := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if keystoneEndpoints != nil {
+		return keystone.fetchClusterToken(c, identity, authRequest, keystoneEndpoints)
 	}
 	return keystone.createToken(c, authRequest)
 }
@@ -386,9 +386,9 @@ func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthR
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
 	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
-	if keystoneEndpoint != nil {
-		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
+	keystoneEndpoints := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	if keystoneEndpoints != nil {
+		keystone.Client.SetAuthEndpoint(keystoneEndpoints)
 		return keystone.Client.ValidateToken(c)
 	}
 

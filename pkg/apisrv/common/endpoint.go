@@ -85,6 +85,39 @@ func (t *TargetStore) Write(id string, endpoint *models.Endpoint) {
 	t.Data.Store(id, endpoint)
 }
 
+//ReadAll endpoint target from memory
+func (t *TargetStore) ReadAll(scope string) (endpointData []*Endpoint) {
+	var nextEndpoint *Endpoint
+	t.Data.Range(func(id, endpoint interface{}) bool {
+		e := endpoint.(*models.Endpoint) // nolint: errcheck
+		var d *Endpoint
+		switch scope {
+		case Public:
+			d = NewEndpoint(e.PublicURL, e.Username, e.Password)
+		case Private:
+			if e.PrivateURL != "" {
+				d = NewEndpoint(e.PrivateURL, e.Username, e.Password)
+			} else {
+				d = NewEndpoint(e.PublicURL, e.Username, e.Password)
+			}
+		}
+		if t.nextTarget == e.UUID {
+			nextEndpoint = d
+		} else {
+			endpointData = append(endpointData, d)
+		}
+		return true
+	})
+	// Return the next target as first entry in the list
+	// so that the proxy service will loadbalance the
+	// requests among available endpoints starting from
+	// the next target
+	if nextEndpoint != nil {
+		endpointData = append([]*Endpoint{nextEndpoint}, endpointData...)
+	}
+	return endpointData
+}
+
 //Next endpoint target from memory is read(roundrobin)
 func (t *TargetStore) Next(scope string) (endpointData *Endpoint) {
 	t.Data.Range(func(id, endpoint interface{}) bool {

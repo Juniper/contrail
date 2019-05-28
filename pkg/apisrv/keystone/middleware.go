@@ -53,7 +53,7 @@ func authenticate(ctx context.Context, auth *keystone.Auth, tokenString string) 
 }
 
 func getKeystoneEndpoint(clusterID string, endpoints *apicommon.EndpointStore) (
-	authEndpoint *apicommon.Endpoint) {
+	authEndpoints []*apicommon.Endpoint) {
 	if endpoints == nil {
 		// getKeystoneEndpoint called from CreateTokenAPI,
 		// ValidateTokenAPI or GetProjectAPI of the mock keystone
@@ -66,12 +66,12 @@ func getKeystoneEndpoint(clusterID string, endpoints *apicommon.EndpointStore) (
 		if keystoneTargets == nil {
 			return nil
 		}
-		authEndpoint = keystoneTargets.Next(scope)
-		if authEndpoint == nil {
+		authEndpoints = keystoneTargets.ReadAll(scope)
+		if authEndpoints == nil {
 			return nil
 		}
 	}
-	return authEndpoint
+	return authEndpoints
 
 }
 
@@ -108,7 +108,6 @@ func GetAuthSkipPaths() ([]string, error) {
 func AuthMiddleware(keystoneClient *Client, skipPath []string,
 	endpoints *apicommon.EndpointStore) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		keystoneClient.AuthURL = keystoneClient.LocalAuthURL
 		auth := keystoneClient.NewAuth()
 		return func(c echo.Context) error {
 			for _, pathQuery := range skipPath {
@@ -157,7 +156,6 @@ func AuthMiddleware(keystoneClient *Client, skipPath []string,
 //AuthInterceptor for Auth process for gRPC based apps.
 func AuthInterceptor(keystoneClient *Client,
 	endpoints *apicommon.EndpointStore) grpc.UnaryServerInterceptor {
-	keystoneClient.AuthURL = keystoneClient.LocalAuthURL
 	auth := keystoneClient.NewAuth()
 	return func(ctx context.Context, req interface{},
 		info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {

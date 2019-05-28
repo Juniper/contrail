@@ -2,11 +2,8 @@ package apisrv
 
 import (
 	"context"
-	"crypto/tls"
-	"net"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"reflect"
 	"strings"
 	"sync"
@@ -16,11 +13,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 )
 
 const (
@@ -92,7 +90,7 @@ func (p *proxyService) getProxyPrefixFromURL(urlPath string, scope string) (prox
 	return strings.Join(prefixes, pathSep)
 }
 
-func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *httputil.ReverseProxy) {
+func (p *proxyService) getReverseProxy(urlPath string) (prefix string, proxy *httputil.ReverseProxy) {
 	var scope string
 	if strings.Contains(urlPath, private) {
 		scope = private
@@ -105,29 +103,29 @@ func (p *proxyService) getReverseProxy(urlPath string) (prefix string, server *h
 		logrus.WithField("proxy-prefix", proxyPrefix).Info("Endpoint targets not found for given proxy prefix")
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
-	target := proxyEndpoint.Next(scope)
-	if target == nil {
+	targets := proxyEndpoint.ReadAll(scope)
+	if targets == nil {
 		return strings.TrimSuffix(proxyPrefix, public), nil
 	}
-	insecure := true //TODO:(ijohnson) add insecure to endpoint schema
 
-	u, err := url.Parse(target.URL)
-	if err != nil {
-		logrus.WithError(err).WithField("target", target.URL).Info("Failed to parse target - ignoring")
+	proxy = apicommon.NewReverseProxy(targets)
+	return strings.TrimSuffix(proxyPrefix, public), proxy
+}
+
+func (p *proxyService) getEndpointCount(urlPath string) int {
+	var scope string
+	if strings.Contains(urlPath, private) {
+		scope = private
+	} else {
+		scope = public
+	}
+	proxyPrefix := p.getProxyPrefixFromURL(urlPath, scope)
+	proxyEndpoint := p.EndpointStore.Read(proxyPrefix)
+	if proxyEndpoint == nil {
+		return 0
 	}
 
-	server = httputil.NewSingleHostReverseProxy(u)
-	if u.Scheme == "https" {
-		server.Transport = &http.Transport{
-			Dial: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: insecure},
-			TLSHandshakeTimeout: 10 * time.Second,
-		}
-	}
-	return strings.TrimSuffix(proxyPrefix, public), server
+	return proxyEndpoint.Count()
 }
 
 func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -144,14 +142,13 @@ func (p *proxyService) dynamicProxyMiddleware() func(next echo.HandlerFunc) echo
 				return echo.NewHTTPError(http.StatusInternalServerError,
 					"Cluster ID not found in proxy URL")
 			}
-			prefix, server := p.getReverseProxy(r.URL.Path)
-			if server == nil {
+			prefix, proxy := p.getReverseProxy(r.URL.Path)
+			if proxy == nil {
 				return echo.NewHTTPError(http.StatusInternalServerError,
 					"Proxy endpoint not found in endpoint store")
 			}
 			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
-			w := c.Response()
-			server.ServeHTTP(w, r)
+			proxy.ServeHTTP(c.Response(), r)
 			return nil
 		}
 	}

@@ -475,3 +475,93 @@ func TestMultipleClusterKeystoneEndpoint(t *testing.T) {
 	}
 	server.ForceProxyUpdate()
 }
+
+func TestRetryProxyEndpoint(t *testing.T) {
+	ctx := context.Background()
+	// Create a cluster and its config endpoints(multiple)
+	// unavailable endpoint
+	clusterName := "dead_cluster"
+	routes := map[string]interface{}{
+		"/virtual-networks": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusServiceUnavailable,
+				&mockPortsResponse{Name: clusterName + "_serviceUnavailable"})
+		}),
+	}
+	api1 := mockServer(routes)
+	defer api1.Close()
+	context := pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config1", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     api1.URL,
+		"public_url":      api1.URL,
+		"manage_parent":   true,
+	}
+
+	var testScenario integration.TestScenario
+	err := integration.LoadTestScenario(&testScenario, testEndpointFile, context)
+	assert.NoError(t, err, "failed to load test data")
+	cleanup1 := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup1()
+
+	// bad gateway endpoint
+	routes = map[string]interface{}{
+		"/virtual-networks": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusBadGateway,
+				&mockPortsResponse{Name: clusterName + "_badGateway"})
+		}),
+	}
+	api2 := mockServer(routes)
+	defer api2.Close()
+	context = pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config2", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     api2.URL,
+		"public_url":      api2.URL,
+		"manage_parent":   false,
+	}
+
+	err = integration.LoadTestScenario(&testScenario, testEndpointFile, context)
+	assert.NoError(t, err, "failed to load test data")
+	cleanup2 := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup2()
+
+	// endpoint with gateway timeout
+	routes = map[string]interface{}{
+		"/virtual-networks": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&mockPortsResponse{Name: clusterName})
+		}),
+	}
+	api3 := mockServer(routes)
+	defer api3.Close()
+	context = pongo2.Context{
+		"cluster_name":    clusterName,
+		"endpoint_name":   fmt.Sprintf("%s_config3", clusterName),
+		"endpoint_prefix": "config",
+		"private_url":     api3.URL,
+		"public_url":      api3.URL,
+		"manage_parent":   false,
+	}
+
+	err = integration.LoadTestScenario(&testScenario, testEndpointFile, context)
+	assert.NoError(t, err, "failed to load test data")
+	cleanup3 := integration.RunDirtyTestScenario(t, &testScenario, server)
+	defer cleanup3()
+
+	server.ForceProxyUpdate()
+
+	// verify proxies, expected to fail as all the endpoints are down
+	url := "/proxy/" + clusterName + "_uuid/config/virtual-networks"
+	for _, client := range testScenario.Clients {
+		var response map[string]interface{}
+		_, err := client.Read(ctx, url, &response)
+		assert.NoError(t, err, fmt.Sprintf("Reading: %s, Response: %s", url, err))
+
+		testutil.AssertEqual(t,
+			map[string]interface{}{key: clusterName},
+			response,
+			fmt.Sprintf("Unexpected Response: %s", response))
+	}
+}
