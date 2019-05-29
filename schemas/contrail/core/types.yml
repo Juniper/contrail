@@ -1678,6 +1678,15 @@ definitions:
         description: UUID of the Physical-Port with contrail database
         type: string
     type: object
+  ESXIProperties:
+    properties:
+      dvs_name:
+        description: Name of the Distributed Virtual Switch(DVS) assigned to Port.
+        type: string
+      dvs_id:
+        description: MOid of the Distributed Virtual Switch(DVS) assigned to Port.
+        type: string
+    type: object
   LogicalInterfaceType:
     enum:
     - l2

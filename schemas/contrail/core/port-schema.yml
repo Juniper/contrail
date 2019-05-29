@@ -23,6 +23,11 @@ schema:
       description: Details of the baremetal server port
       operations: CRUD
       presence: optional
+    esxi_port_info:
+      description: Information related to Port-ESXi/vCenter.
+      $ref: types.json#/definitions/ESXIProperties
+      presence: optional
+      operations: CRUD
     label:
       description: Label of the interface representing the use of the interface.
       operations: CRUD
