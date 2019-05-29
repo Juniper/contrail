@@ -4,31 +4,25 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
-
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var server *integration.APIServer
 
 func TestMain(m *testing.M) {
-	viper.SetConfigType("yml")
-	viper.SetConfigName("test_config")
-	viper.AddConfigPath("../../../sample")
-	err := viper.ReadInConfig()
-	if err != nil {
-		logutil.FatalWithStackTrace(err)
-	}
-
 	// TODO(Daniel): remove that in order not to depend on Viper and use constructors' parameters instead
 	viper.Set("server.static_files.public", "../../../public")
 
+	var err error
 	if server, err = integration.NewRunningServer(&integration.APIServerConfig{
-		DBDriver:           viper.GetString("type"),
+		DBDriver:           basedb.DriverPostgreSQL,
 		RepoRootPath:       "../../..",
 		EnableEtcdNotifier: true,
 	}); err != nil {

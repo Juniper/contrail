@@ -9,8 +9,8 @@ resources:
     network_ipam_mgmt:
       host_routes:
         route:
-          - prefix: "test_prefix"
-            next_hop: "1.2.3.5"
+        - prefix: "test_prefix"
+          next_hop: "1.2.3.5"
 - kind: network_policy
   data:
     uuid: sample_network_policy
@@ -20,18 +20,18 @@ resources:
     display_name: sample_network_policy
     network_policy_entries:
       policy_rule:
-        - direction: ">"
-          protocol: tcp
-          rule_sequence:
-            major: 4
-            minor: 1
-          src_ports: [{}]
-          dst_ports: [{}]
-          ethertype: IPv4
-          src_addresses: [{}]
-          dst_addresses: [{}]
-          action_list:
-            simple_action: pass
+      - direction: ">"
+        protocol: tcp
+        rule_sequence:
+          major: 4
+          minor: 1
+        src_ports: [{}]
+        dst_ports: [{}]
+        ethertype: IPv4
+        src_addresses: [{}]
+        dst_addresses: [{}]
+        action_list:
+          simple_action: pass
 - kind: virtual_network
   data:
     uuid: sample_virtual_network
