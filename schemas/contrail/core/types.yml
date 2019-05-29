@@ -392,6 +392,9 @@ definitions:
       pxe_enabled:
         description: Indicates whether PXE is enabled or disabled on the Port.
         type: boolean
+      esxi_info:
+        description: Information related to Port-ESXi/vCenter.
+        $ref: types.json#/definitions/ESXiInfo
     type: object
   BaremetalProperties:
     properties:
@@ -1678,6 +1681,11 @@ definitions:
         description: UUID of the Physical-Port with contrail database
         type: string
     type: object
+  ESXiInfo:
+    properties:
+      dvs_name:
+        description: Name of the Distributed Virtual Switch(DVS) assigned to Port.
+        type: string
   LogicalInterfaceType:
     enum:
     - l2
