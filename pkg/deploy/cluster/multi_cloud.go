@@ -76,9 +76,11 @@ const (
 	openstack            = "openstack"
 	setupRoutesPlayRetry = 3
 
-	addCloud    = "ADD_CLOUD"
-	updateCloud = "UPDATE_CLOUD"
-	deleteCloud = "DELETE_CLOUD"
+	addCloud                           = "ADD_CLOUD"
+	addCloudScaleNonVrouterComputes    = "ADD_CLOUD_SCALE_NON_VROUTER_COMPUTES"
+	updateCloud                        = "UPDATE_CLOUD"
+	updateCloudScaleNonVrouterComputes = "UPDATE_CLOUD_SCALE_NON_VROUTER_COMPUTES"
+	deleteCloud                        = "DELETE_CLOUD"
 
 	aws    = "aws"
 	azure  = "azure"
@@ -421,152 +423,186 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
 	return nil
 }
 
-// nolint: gocyclo
 func (m *multiCloudProvisioner) mcPlayBook() error {
-	args := []string{"-i", m.getMCInventoryFile(m.workDir)}
-	if m.cluster.config.AnsibleSudoPass != "" {
-		sudoArg := "-e ansible_sudo_pass=" + m.cluster.config.AnsibleSudoPass
-		args = append(args, sudoArg)
-	}
-
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
-		if err := m.playDeployMCGW(args); err != nil {
-			return err
-		}
-		if err := m.playMCInstancesConfig(args); err != nil {
-			return err
-		}
-
-		torExists, err := m.checkIfTORExists()
-		if err != nil {
-			return err
-		}
-		if torExists {
-			if err := m.runTORScript(); err != nil {
-				return err
-			}
-		}
-
-		k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
-			orchestratorKubernetes))
-		if err := m.playMCK8SProvision(k8sArgs); err != nil {
-			return err
-		}
-
-		contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
-		skipRoles := []string{"vrouter"}
-		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
-			return err
-		}
-
-		skipRoles = []string{"config_database", "config,control", "webui",
-			"analytics", "analytics_database", "k8s"}
-		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
-			return err
-		}
-
-		for i := 0; i < setupRoutesPlayRetry; i++ {
-			m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
-			if err := m.playMCSetupControllerGWRoutes(args); err != nil {
-				if i == setupRoutesPlayRetry-1 {
-					return err
-				}
-				continue
-			} else {
-				break
-			}
-		}
-		for i := 0; i < setupRoutesPlayRetry; i++ {
-			m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
-			if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
-				if i == setupRoutesPlayRetry-1 {
-					return err
-				}
-				continue
-			} else {
-				break
-			}
-		}
-
-		return m.playMCFixComputeDNS(args)
-
+		return m.addCloud(m.mcPlayBookArguments())
+	case addCloudScaleNonVrouterComputes:
+		return m.addCloudScaleNonVrouterComputes(m.mcPlayBookArguments()) // TODO(Daniel): implement
 	case updateCloud:
-
-		if err := m.playDeployMCGW(args); err != nil {
-			return err
-		}
-
-		for i := 0; i < setupRoutesPlayRetry; i++ {
-			m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
-			if err := m.playMCSetupControllerGWRoutes(args); err != nil {
-				if i == setupRoutesPlayRetry-1 {
-					return err
-				}
-				continue
-			} else {
-				break
-			}
-		}
-
-		if err := m.playMCInstancesConfig(args); err != nil {
-			return err
-		}
-
-		torExists, err := m.checkIfTORExists()
-		if err != nil {
-			return err
-		}
-		if torExists {
-			if err := m.runTORScript(); err != nil {
-				return err
-			}
-		}
-
-		k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
-			orchestratorKubernetes))
-		if err := m.playMCK8SProvision(k8sArgs); err != nil {
-			return err
-		}
-
-		contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
-		skipRoles := []string{"vrouter"}
-		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
-			return err
-		}
-
-		skipRoles = []string{"config_database", "config,control", "webui",
-			"analytics", "analytics_database", "k8s"}
-		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
-			return err
-		}
-
-		for i := 0; i < setupRoutesPlayRetry; i++ {
-			m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
-			if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
-				if i == setupRoutesPlayRetry-1 {
-					return err
-				}
-				continue
-			} else {
-				break
-			}
-		}
-
-		return m.playMCFixComputeDNS(args)
-
+		return m.updateCloud(m.mcPlayBookArguments())
+	case updateCloudScaleNonVrouterComputes:
+		return m.updateCloudScaleNonVrouterComputes(m.mcPlayBookArguments()) // TODO(Daniel): implement
 	case deleteCloud:
-
-		//best effort cleaning up
-		// nolint: errcheck
-		_ = m.playMCContrailCleanup(args)
-		// nolint: errcheck
-		_ = m.playMCGatewayCleanup(args)
-
+		m.deleteCloud(m.mcPlayBookArguments()) // deleteCloud ignores errors
 		return nil
+	default:
+		return errors.Errorf("unknown cluster provisioning action: %v", m.clusterData.ClusterInfo.ProvisioningAction)
+	}
+}
+
+func (m *multiCloudProvisioner) mcPlayBookArguments() []string {
+	args := []string{"-i", m.getMCInventoryFile(m.workDir)}
+	if m.cluster.config.AnsibleSudoPass != "" {
+		args = append(args, "-e ansible_sudo_pass="+m.cluster.config.AnsibleSudoPass)
+	}
+	return args
+}
+
+// nolint: errcheck
+func (m *multiCloudProvisioner) addCloud(args []string) error {
+	if err := m.playDeployMCGW(args); err != nil {
+		return err
+	}
+	if err := m.playMCInstancesConfig(args); err != nil {
+		return err
 	}
 
+	torExists, err := m.checkIfTORExists()
+	if err != nil {
+		return err
+	}
+	if torExists {
+		if err := m.runTORScript(); err != nil {
+			return err
+		}
+	}
+
+	k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
+		orchestratorKubernetes))
+	if err := m.playMCK8SProvision(k8sArgs); err != nil {
+		return err
+	}
+
+	contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
+	skipRoles := []string{"vrouter"}
+	if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
+		return err
+	}
+
+	skipRoles = []string{"config_database", "config,control", "webui",
+		"analytics", "analytics_database", "k8s"}
+	if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
+		return err
+	}
+
+	for i := 0; i < setupRoutesPlayRetry; i++ {
+		m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
+		if err := m.playMCSetupControllerGWRoutes(args); err != nil {
+			if i == setupRoutesPlayRetry-1 {
+				return err
+			}
+			continue
+		} else {
+			break
+		}
+	}
+	for i := 0; i < setupRoutesPlayRetry; i++ {
+		m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
+		if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
+			if i == setupRoutesPlayRetry-1 {
+				return err
+			}
+			continue
+		} else {
+			break
+		}
+	}
+
+	return m.playMCFixComputeDNS(args)
+}
+
+func (m *multiCloudProvisioner) addCloudScaleNonVrouterComputes(args []string) error {
+	// TODO(Daniel): Copy logic from bottom of "deploy_scale_non_vrouter_computes" file
+	// See: contrail-multi-cloud/one-click-deployer/deploy_scale_non_vrouter_computes.sh
+
 	return nil
+}
+
+// nolint: errcheck
+func (m *multiCloudProvisioner) updateCloud(args []string) error {
+	if err := m.playDeployMCGW(args); err != nil {
+		return err
+	}
+
+	for i := 0; i < setupRoutesPlayRetry; i++ {
+		m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
+		if err := m.playMCSetupControllerGWRoutes(args); err != nil {
+			if i == setupRoutesPlayRetry-1 {
+				return err
+			}
+			continue
+		} else {
+			break
+		}
+	}
+
+	if err := m.playMCInstancesConfig(args); err != nil {
+		return err
+	}
+
+	torExists, err := m.checkIfTORExists()
+	if err != nil {
+		return err
+	}
+	if torExists {
+		if err := m.runTORScript(); err != nil {
+			return err
+		}
+	}
+
+	k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
+		orchestratorKubernetes))
+	if err := m.playMCK8SProvision(k8sArgs); err != nil {
+		return err
+	}
+
+	contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
+	skipRoles := []string{"vrouter"}
+	if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
+		return err
+	}
+
+	skipRoles = []string{"config_database", "config,control", "webui",
+		"analytics", "analytics_database", "k8s"}
+	if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
+		return err
+	}
+
+	for i := 0; i < setupRoutesPlayRetry; i++ {
+		m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
+		if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
+			if i == setupRoutesPlayRetry-1 {
+				return err
+			}
+			continue
+		} else {
+			break
+		}
+	}
+
+	return m.playMCFixComputeDNS(args)
+}
+
+func (m *multiCloudProvisioner) updateCloudScaleNonVrouterComputes(args []string) error {
+	// TODO(Daniel): Copy logic from bottom of "modify_scale_non_vrouter_computes" file
+	// See: contrail-multi-cloud/one-click-deployer/modify_scale_non_vrouter_computes.sh
+
+	return nil
+}
+
+func (m *multiCloudProvisioner) deleteCloud(args []string) {
+	err := m.playMCContrailCleanup(args)
+	m.Log.WithError(err).WithFields(logrus.Fields{
+		"args":     args,
+		"playbook": defaultMCContrailCleanup,
+	}).Info("Running playbook failed - ignoring")
+
+	err = m.playMCGatewayCleanup(args)
+	m.Log.WithError(err).WithFields(logrus.Fields{
+		"args":     args,
+		"playbook": defaultMCGatewayCleanup,
+	}).Info("Running playbook failed - ignoring")
 }
 
 func (m *multiCloudProvisioner) createFiles(workDir string) error {
