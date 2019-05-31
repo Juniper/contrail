@@ -1,0 +1,38 @@
+description: Appformix Network Agent Node
+extends:
+- base
+- has_status
+id: appformix_network_agents_node
+metadata:
+  category: cluster
+references:
+    node:
+      operations: "CRUD"
+      description: "Reference to node object for this appformix network agents node."
+      presence: "optional"
+parents:
+  appformix_cluster:
+    operations: "CRUD"
+    description: "Parent of this appformix network agents node."
+    presence: "optional"
+plural: appformix_network_agents_nodes
+prefix: /
+schema:
+  properties:
+    ansible_connection:
+      description: Ansbile Connection
+      default: "ssh"
+      nullable: false
+      permission:
+      - create
+      - update
+      title: Ansible Connection
+      type: "string"
+      view:
+      - create
+      - detail
+  required: []
+  type: object
+singular: appformix_network_agents_node
+title: Appformix Network Agent Node
+type: ""

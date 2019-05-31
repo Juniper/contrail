@@ -72,16 +72,19 @@ instances:
           {% if appformixCluster.AppformixVip %}
           keepalived_vrrp_interface: {{ appformix_controller_node.KeepalivedVRRPInterface }}
           {%endif%}
-          connection: {{ appformix_controller_node.AnsibleConnection }}
+          {%if appformix_controller_node.AnsibleConnection %} connection: {{ appformix_controller_node.AnsibleConnection }} {%endif%}
       {%endif%}{%endfor%}{%endfor%}
       {% for appformix_bare_host_node in appformixCluster.AppformixBareHostNodes %}{% for node_ref in appformix_bare_host_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_bare_host:
-          connection: {{ appformix_bare_host_node.AnsibleConnection }}
+          {%if appformix_bare_host_node.AnsibleConnection %} connection: {{ appformix_bare_host_node.AnsibleConnection }} {%endif%}
       {%endif%}{%endfor%}{%endfor%}
       {% for appformix_openstack_node in appformixCluster.AppformixOpenstackNodes %}{% for node_ref in appformix_openstack_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_openstack_controller:
-          connection: {{ appformix_openstack_node.AnsibleConnection }}
+          {%if appformix_openstack_node.AnsibleConnection %} connection: {{ appformix_openstack_node.AnsibleConnection }} {%endif%}
       {%endif%}{%endfor%}{%endfor%}
       {% for appformix_compute_node in appformixCluster.AppformixComputeNodes %}{% for node_ref in appformix_compute_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_compute:
-          connection: {{ appformix_compute_node.AnsibleConnection }}
+          {%if appformix_compute_node.AnsibleConnection %} connection: {{ appformix_compute_node.AnsibleConnection }} {%endif%}
+      {%endif%}{%endfor%}{%endfor%}
+      {% for appformix_network_agents_node in appformixCluster.AppformixNetworkAgentsNodes %}{% for node_ref in appformix_network_agents_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_network_agents:
+          {%if appformix_network_agents_node.AnsibleConnection %} connection: {{ appformix_network_agents_node.AnsibleConnection }} {%endif%}
       {%endif%}{%endfor%}{%endfor%}
       {%endif%}
       {% if node.UUID in xflowCluster.NodesInfo %}appformix_flows:

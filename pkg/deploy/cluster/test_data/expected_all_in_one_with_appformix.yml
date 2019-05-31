@@ -34,6 +34,8 @@ instances:
           connection: ssh
       appformix_compute:
           connection: ssh
+      appformix_network_agents:
+          connection: ssh
 contrail_configuration:
   CONTRAIL_VERSION: ocata-5.0-x
   CLOUD_ORCHESTRATOR: openstack
