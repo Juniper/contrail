@@ -9,13 +9,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"path/filepath"
-	"strings"
 	"time"
-
-	"github.com/flosch/pongo2"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -23,6 +17,9 @@ import (
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/retry"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/flosch/pongo2"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -35,14 +32,6 @@ const (
 // GetCloudDir gets directory of cloud
 func GetCloudDir(cloudID string) string {
 	return filepath.Join(defaultWorkRoot, cloudID)
-}
-
-func (c *Cloud) getTemplateRoot() string {
-	templateRoot := c.config.TemplateRoot
-	if templateRoot == "" {
-		templateRoot = defaultTemplateRoot
-	}
-	return templateRoot
 }
 
 // GetMultiCloudRepodir returns path to multi-cloud directory
@@ -61,12 +50,10 @@ func GetGenInventoryCmd(mcDir string) string {
 
 // TestCmdHelper helps to write cmd to a file (instead of executing)
 func TestCmdHelper(cmd string, args []string, workDir string, testTemplate string) error {
-	context := pongo2.Context{
+	content, err := template.Apply(testTemplate, pongo2.Context{
 		"cmd":  cmd,
 		"args": args,
-	}
-
-	content, err := template.Apply(testTemplate, context)
+	})
 	if err != nil {
 		return err
 	}
@@ -197,7 +184,7 @@ func deleteContrailMCGWRole(ctx context.Context,
 func deleteSGObjects(ctx context.Context,
 	client *client.HTTP, sgList []*sgData) []string {
 
-	errList := []string{}
+	var errList []string
 	// Delete CloudSecurityGroup related dependencies and CloudSecurityGroup itself
 	for _, sg := range sgList {
 		for _, sgRule := range sg.info.CloudSecurityGroupRules {
@@ -229,7 +216,7 @@ func deleteSGObjects(ctx context.Context,
 func deletePvtSubnetObjects(ctx context.Context,
 	client *client.HTTP, subnetList []*subnetData) []string {
 
-	errList := []string{}
+	var errList []string
 	// Delete CloudPrivateSubnet related dependencies and CloudPrivateSubnet itself
 	for _, pvtsubnet := range subnetList {
 		_, err := client.DeleteCloudPrivateSubnet(ctx,
@@ -249,7 +236,7 @@ func deletePvtSubnetObjects(ctx context.Context,
 func deleteCloudProviderAndDeps(ctx context.Context,
 	client *client.HTTP, providerList []*providerData) []string {
 
-	errList := []string{}
+	var errList []string
 	// Delete Provider dependencies and iteslf
 	for _, provider := range providerList {
 		for _, region := range provider.regions {
@@ -349,73 +336,7 @@ func deleteCredentialAndDeps(ctx context.Context,
 	return errList
 }
 
-// nolint: gocyclo
-func (c *Cloud) deleteAPIObjects(d *Data) error {
-
-	if d.isCloudPrivate() {
-		err := removePvtSubnetRefFromNodes(c.ctx, c.APIServer, d.getGatewayNodes())
-		if err != nil {
-			return err
-		}
-	}
-
-	var errList, warnList []string
-
-	retErrList := deleteContrailMCGWRole(c.ctx,
-		c.APIServer, d.getGatewayNodes())
-
-	if retErrList != nil {
-		errList = append(errList, retErrList...)
-	}
-
-	if d.isCloudPublic() {
-		retErrList = deleteNodeObjects(c.ctx, c.APIServer, d.instances)
-		if retErrList != nil {
-			errList = append(errList, retErrList...)
-		}
-	}
-
-	retErrList = deleteCloudProviderAndDeps(c.ctx,
-		c.APIServer, d.providers)
-	if retErrList != nil {
-		errList = append(errList, retErrList...)
-	}
-
-	_, err := c.APIServer.DeleteCloud(c.ctx,
-		&services.DeleteCloudRequest{
-			ID: d.info.UUID,
-		},
-	)
-	if err != nil {
-		errList = append(errList, fmt.Sprintf(
-			"failed deleting Cloud %s err_msg: %s",
-			d.info.UUID, err))
-	}
-
-	cloudUserErrList := deleteCloudUsers(c.ctx, c.APIServer, d.users)
-	if cloudUserErrList != nil {
-		warnList = append(warnList, cloudUserErrList...)
-	}
-
-	if d.isCloudPublic() {
-		credErrList := deleteCredentialAndDeps(c.ctx, c.APIServer, d.credentials)
-		warnList = append(warnList, credErrList...)
-	}
-
-	// log the warning messages
-	if len(warnList) > 0 {
-		c.log.Warnf("could not delete cloud refs deps because of errors: %s",
-			strings.Join(warnList, "\n"))
-	}
-	// join all the errors and return it
-	if len(errList) > 0 {
-		return errors.New(strings.Join(errList, "\n"))
-	}
-	return nil
-}
-
 func genKeyPair(bits int) ([]byte, []byte, error) {
-
 	// creating private key
 	pvtKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
@@ -443,7 +364,6 @@ func genKeyPair(bits int) ([]byte, []byte, error) {
 }
 
 func tfStateOutputExists(cloudID string) bool {
-
 	tfState, err := readStateFile(GetTFStateFile(cloudID))
 	if err != nil {
 		return false

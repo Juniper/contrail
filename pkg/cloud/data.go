@@ -1188,37 +1188,6 @@ func (i *instanceData) updateMCGWServices() error {
 	return nil
 }
 
-func (c *Cloud) getCloudData(isDelRequest bool) (*Data, error) {
-
-	cloudData, err := c.newCloudData()
-	if err != nil {
-		return nil, err
-	}
-
-	err = cloudData.update(isDelRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	return cloudData, nil
-
-}
-
-func (c *Cloud) newCloudData() (*Data, error) {
-
-	data := Data{}
-	data.cloud = c
-
-	cloudObject, err := GetCloud(c.ctx, c.APIServer, c.config.CloudID)
-	if err != nil {
-		return nil, err
-	}
-
-	data.info = cloudObject
-	return &data, nil
-
-}
-
 func (d *Data) update(isDelRequest bool) error {
 
 	d.delRequest = isDelRequest
