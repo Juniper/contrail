@@ -92,7 +92,7 @@ type multiCloudProvisioner struct {
 	workDir string
 }
 
-// SSHAgentConfig related to ssh-agent process
+// sshAgentConfig related to ssh-agent process
 type SSHAgentConfig struct {
 	AuthSock string `yaml:"auth_sock"`
 	PID      string `yaml:"pid"`
@@ -108,7 +108,6 @@ type PubKeyConfig struct {
 
 // nolint: gocyclo
 func (m *multiCloudProvisioner) Deploy() error {
-
 	m.updateMCWorkDir()
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
@@ -347,7 +346,6 @@ func (m *multiCloudProvisioner) verifyCloudStatus() error {
 }
 
 func (m *multiCloudProvisioner) compareClusterTopologyFile() (bool, error) {
-
 	tmpDir, err := ioutil.TempDir("", "topology")
 	if err != nil {
 		return false, err
@@ -570,7 +568,6 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 }
 
 func (m *multiCloudProvisioner) createFiles(workDir string) error {
-
 	err := m.createClusterTopologyFile(workDir)
 	if err != nil {
 		return err
@@ -594,11 +591,9 @@ func (m *multiCloudProvisioner) createFiles(workDir string) error {
 		return err
 	}
 	return nil
-
 }
 
 func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
-
 	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
 		_, err := m.cluster.APIServer.DeleteContrailClusterCloudRef(
 			context.Background(), &services.DeleteContrailClusterCloudRefRequest{
