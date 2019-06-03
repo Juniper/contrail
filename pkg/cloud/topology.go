@@ -37,7 +37,7 @@ func (t *topology) getTopoTemplate() string {
 	return defaultPublicCloudTopoTemplate
 }
 
-func (c *Cloud) newTopology(data *Data) *topology {
+func newTopology(c *Cloud, data *Data) *topology {
 	return &topology{
 		cloudData: data,
 		cloud:     c,
@@ -52,7 +52,6 @@ func (c *Cloud) newTopology(data *Data) *topology {
 }
 
 func (t *topology) createTopologyFile(topoFile string) error {
-
 	context := pongo2.Context{
 		"cloud": t.cloudData,
 	}

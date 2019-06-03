@@ -14,12 +14,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/flosch/pongo2"
-	"github.com/mattn/go-shellwords"
-
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/osutil"
+	"github.com/flosch/pongo2"
+	shellwords "github.com/mattn/go-shellwords"
 )
 
 const (
@@ -380,31 +379,15 @@ func (a *contrailAnsibleDeployer) createVcenterVarsFile(destination string) erro
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) mockPlay(ansibleArgs []string) error {
-	playBookIndex := len(ansibleArgs) - 1
-	context := pongo2.Context{
-		"playBook":    ansibleArgs[playBookIndex],
-		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
-	}
-	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", context)
-	if err != nil {
-		return err
-	}
-	destination := filepath.Join(a.getWorkingDir(), "executed_ansible_playbook.yml")
-	err = fileutil.AppendToFile(destination, content, defaultFilePermRWOnly)
-	return err
-}
-
 func (a *contrailAnsibleDeployer) play(ansibleArgs []string) error {
-	repoDir := a.getAnsibleDeployerRepoDir()
-	return a.playFromDir(repoDir, ansibleArgs)
+	return a.playFromDir(a.getAnsibleDeployerRepoDir(), ansibleArgs)
 }
 
-func (a *contrailAnsibleDeployer) playFromDir(
-	repoDir string, ansibleArgs []string) error {
+func (a *contrailAnsibleDeployer) playFromDir(repoDir string, ansibleArgs []string) error {
 	return a.playFromDirInVenv(repoDir, ansibleArgs, "")
 }
 
+// TODO(Daniel): move to pkg/ansible/player.go
 func (a *contrailAnsibleDeployer) playFromDirInVenv(
 	repoDir string,
 	ansibleArgs []string,
@@ -448,6 +431,21 @@ func (a *contrailAnsibleDeployer) playFromDirInVenv(
 		cmdline, strings.Join(ansibleArgs, " "), venvLogString)
 
 	return nil
+}
+
+func (a *contrailAnsibleDeployer) mockPlay(ansibleArgs []string) error {
+	playBookIndex := len(ansibleArgs) - 1
+	context := pongo2.Context{
+		"playBook":    ansibleArgs[playBookIndex],
+		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
+	}
+	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", context)
+	if err != nil {
+		return err
+	}
+	destination := filepath.Join(a.getWorkingDir(), "executed_ansible_playbook.yml")
+	err = fileutil.AppendToFile(destination, content, defaultFilePermRWOnly)
+	return err
 }
 
 func (a *contrailAnsibleDeployer) playInstancesProvision(ansibleArgs []string) error {

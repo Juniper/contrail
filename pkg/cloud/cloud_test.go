@@ -49,59 +49,62 @@ const (
 	defaultAdminPassword             = "contrail123"
 )
 
-var server *integration.APIServer
-
-func TestMain(m *testing.M) {
-	integration.TestMain(m, &server)
-}
-
 func TestOnPremCloud(t *testing.T) {
-	context := pongo2.Context{
-		"CLOUD_TYPE": onPrem,
-	}
-
-	expectedTopologies := []string{expectedOnPremTopology}
-	runCloudTest(t, expectedTopologies, expectedOnPremSecret,
-		expectedOnPremCmdForCreateUpdate, context)
+	runCloudTest(
+		t,
+		[]string{expectedOnPremTopology},
+		expectedOnPremSecret,
+		expectedOnPremCmdForCreateUpdate,
+		pongo2.Context{
+			"CLOUD_TYPE": onPrem,
+		},
+	)
 }
-func TestAzureCloud(t *testing.T) {
-	context := pongo2.Context{
-		"CLOUD_TYPE": azure,
-	}
 
-	expectedTopologies := []string{expectedAZTopologyCreate,
-		expectedAZTopologyUpdate, expectedAZTopologyDeleteVPC}
-	runCloudTest(t, expectedTopologies, expectedAZSecret,
-		expectedAZCmdForCreateUpdate, context)
+func TestAzureCloud(t *testing.T) {
+	runCloudTest(
+		t,
+		[]string{expectedAZTopologyCreate, expectedAZTopologyUpdate, expectedAZTopologyDeleteVPC},
+		expectedAZSecret,
+		expectedAZCmdForCreateUpdate,
+		pongo2.Context{
+			"CLOUD_TYPE": azure,
+		},
+	)
 }
 
 func TestAWSCloud(t *testing.T) {
-	context := pongo2.Context{
-		"CLOUD_TYPE": aws,
-	}
-
-	expectedTopologies := []string{expectedAWSTopologyCreate,
-		expectedAWSTopologyUpdate, expectedAWSTopologyDeleteVPC}
-	runCloudTest(t, expectedTopologies, expectedAWSSecret,
-		expectedAWSCmdForCreateUpdate, context)
+	runCloudTest(
+		t,
+		[]string{expectedAWSTopologyCreate, expectedAWSTopologyUpdate, expectedAWSTopologyDeleteVPC},
+		expectedAWSSecret,
+		expectedAWSCmdForCreateUpdate,
+		pongo2.Context{
+			"CLOUD_TYPE": aws,
+		},
+	)
 }
 
 func TestGCPCloud(t *testing.T) {
-	context := pongo2.Context{
-		"CLOUD_TYPE": gcp,
-	}
-
-	expectedTopologies := []string{expectedGCPTopologyCreate,
-		expectedGCPTopologyUpdate, expectedGCPTopologyDeleteVPC}
-	runCloudTest(t, expectedTopologies, expectedGCPSecret,
-		expectedGCPCmdForCreateUpdate, context)
+	runCloudTest(
+		t,
+		[]string{expectedGCPTopologyCreate, expectedGCPTopologyUpdate, expectedGCPTopologyDeleteVPC},
+		expectedGCPSecret,
+		expectedGCPCmdForCreateUpdate,
+		pongo2.Context{
+			"CLOUD_TYPE": gcp,
+		},
+	)
 }
 
 // nolint: gocyclo
-func runCloudTest(t *testing.T, expectedTopologies []string,
-	expectedSecret string, expectedCmdForCreateUpdate string,
-	context map[string]interface{}) {
-
+func runCloudTest(
+	t *testing.T,
+	expectedTopologies []string,
+	expectedSecret string,
+	expectedCmdFile string,
+	context map[string]interface{},
+) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := integration.MockServerWithKeystoneTestUser(
@@ -157,13 +160,12 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 
 	if context["CLOUD_TYPE"] != onPrem {
 
-		assert.True(t, verifyNodeType(cloud.ctx, t,
-			cloud.APIServer, &cloudTestScenario),
+		assert.True(t, verifyNodeType(cloud.ctx, cloud.APIServer, &cloudTestScenario),
 			"public cloud nodes are not updated as type private")
 
 		assert.True(t, compareGeneratedSecret(t, expectedSecret),
 			"secret file created during cloud create is not as expected")
-		assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
+		assert.True(t, verifyCommandsExecuted(t, expectedCmdFile),
 			"Expected list of create commands are not executed")
 		// check if ssh keys are created
 		assert.True(t, verifyGeneratedSSHKeyFiles(t),
@@ -211,7 +213,7 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 			"topology file created during cloud update is not as expected")
 		assert.True(t, compareGeneratedSecret(t, expectedSecret),
 			"secret file created during cloud update is not as expected")
-		assert.True(t, verifyCommandsExecuted(t, expectedCmdForCreateUpdate),
+		assert.True(t, verifyCommandsExecuted(t, expectedCmdFile),
 			"Expected list of update commands are not executed")
 
 		// delete vpc and compare topology
@@ -291,7 +293,6 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 		assert.NoError(t, err, "failed to create cloud struct for delete action")
 
 		err = cloud.Manage()
-		//expect error
 		assert.Error(t, err,
 			"delete cloud should fail because cluster p_a is not set to DELETE_CLOUD but p_s is UPDATE_FAILED")
 
@@ -313,7 +314,6 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 	// make sure cloud is removed
 	assert.True(t, verifyCloudDeleted(cloud.ctx, cloud.APIServer),
 		"Cloud dir/Cloud object is not deleted during cloud delete")
-
 }
 
 func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
@@ -322,11 +322,9 @@ func compareFiles(t *testing.T, expectedFile, generatedFile string) bool {
 	expectedData, err := ioutil.ReadFile(expectedFile)
 	assert.NoErrorf(t, err, "unable to read expected: %s", expectedFile)
 	return bytes.Equal(generatedData, expectedData)
-
 }
 
 func compareGeneratedTopology(t *testing.T, expectedTopologies []string) bool {
-
 	for _, topo := range expectedTopologies {
 		if compareFiles(t, topo, generatedTopoPath()) {
 			return true
@@ -339,8 +337,8 @@ func compareGeneratedSecret(t *testing.T, expectedSecretFile string) bool {
 	return compareFiles(t, expectedSecretFile, generatedSecretPath())
 }
 
-func verifyCommandsExecuted(t *testing.T, expectedCmdForCreateUpdate string) bool {
-	return compareFiles(t, expectedCmdForCreateUpdate, executedCommandsPath())
+func verifyCommandsExecuted(t *testing.T, expectedCmdFile string) bool {
+	return compareFiles(t, expectedCmdFile, executedCommandsPath())
 }
 
 func verifyGeneratedSSHKeyFiles(t *testing.T) bool {
@@ -377,13 +375,10 @@ func createDummySSHKeyFiles(t *testing.T) func() {
 		_ = os.Remove("/tmp/cloud_keypair")
 		// nolint: errcheck
 		_ = os.Remove("/tmp/cloud_keypair.pub")
-
 	}
 }
 
-func verifyNodeType(ctx context.Context, t *testing.T,
-	httpClient *client.HTTP, testScenario *integration.TestScenario) bool {
-
+func verifyNodeType(ctx context.Context, httpClient *client.HTTP, testScenario *integration.TestScenario) bool {
 	for _, task := range testScenario.Workflow {
 		if task.Request.Path == "/nodes" {
 			//nolint: errcheck
@@ -413,8 +408,6 @@ func generatedTopoPath() string {
 	return defaultWorkRoot + "/" + cloudID + "/topology.yml"
 }
 
-//new-comment
-
 func generatedSecretPath() string {
 	return defaultWorkRoot + "/" + cloudID + "/secret.yml"
 }
@@ -424,7 +417,6 @@ func executedCommandsPath() string {
 }
 
 func verifyCloudDeleted(ctx context.Context, httpClient *client.HTTP) bool {
-
 	if _, err := os.Stat(defaultWorkRoot + "/" + cloudID); err == nil {
 		// working dir not deleted
 		return false
@@ -439,5 +431,4 @@ func verifyCloudDeleted(ctx context.Context, httpClient *client.HTTP) bool {
 		return false
 	}
 	return true
-
 }
