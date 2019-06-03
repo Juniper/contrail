@@ -52,7 +52,7 @@
     nodeset:
       nodes:
         - name: builder
-          label: rhel-7-builder
+          label: rhel-7-builder-xxlarge
     vars:
       setup_docker_registry: true
       enable_tpc_repo: false
