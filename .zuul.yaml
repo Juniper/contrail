@@ -53,7 +53,7 @@
     nodeset:
       nodes:
         - name: builder
-          label: rhel-7-builder
+          label: rhel-7-builder-xxlarge
     vars:
       PLAT: 'rhel-queens-'
       setup_docker_registry: true
