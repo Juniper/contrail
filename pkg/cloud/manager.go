@@ -5,15 +5,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-
-	"github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"path/filepath"
+	"strings"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/osutil"
+	"github.com/Juniper/contrail/pkg/services"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // Config represents cloud configuration needed by cloudManager
@@ -134,41 +138,47 @@ func (c *Cloud) Manage() error {
 
 	isDeleteReq, err := c.isCloudDeleteRequest()
 	if err != nil {
-		c.log.Errorf("cloud %s processing failed with error: %s",
-			c.config.CloudID, err)
 		return err
-	} else if err == nil && isDeleteReq {
-		err = c.delete()
-		if err != nil {
-			c.log.Errorf("delete cloud %s failed with error: %s",
-				c.config.CloudID, err)
+	} else if isDeleteReq {
+		if err = c.delete(); err != nil {
+			return errors.Wrapf(err, "failed to delete cloud with CloudID %v", c.config.CloudID)
 		}
-		return err
+		return nil
 	}
 
 	switch c.config.Action {
 	case createAction:
-		err = c.create()
-		if err != nil {
-			c.log.Errorf("create cloud %s failed with error: %s",
-				c.config.CloudID, err)
-			return err
+		if err = c.create(); err != nil {
+			return errors.Wrapf(err, "failed to create cloud with CloudID %v", c.config.CloudID)
 		}
 	case updateAction:
-		err = c.update()
-		if err != nil {
-			c.log.Errorf("update cloud %s failed with error: %s",
-				c.config.CloudID, err)
-			return err
+		if err = c.update(); err != nil {
+			return errors.Wrapf(err, "failed to update cloud with CloudID %v", c.config.CloudID)
 		}
+	default:
+		c.log.WithFields(logrus.Fields{
+			"cloud-id": c.config.CloudID,
+			"action":   c.config.Action,
+		}).Info("Invalid action - ignoring")
 	}
-
 	return nil
 }
 
-// handles creation of cloud
-func (c *Cloud) create() error {
+func (c *Cloud) isCloudDeleteRequest() (bool, error) {
+	cloudObj, err := GetCloud(c.ctx, c.APIServer, c.config.CloudID)
+	if err != nil {
+		return false, err
+	}
 
+	if c.config.Action == updateAction &&
+		cloudObj.ProvisioningAction == deleteCloudAction &&
+		cloudObj.ProvisioningState == statusNoState {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (c *Cloud) create() error {
 	status := map[string]interface{}{statusField: statusCreateProgress}
 
 	// Run pre-install steps
@@ -201,7 +211,7 @@ func (c *Cloud) create() error {
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
-		err = c.manageTerraform(c.config.Action)
+		err = manageTerraform(c, c.config.Action)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -211,7 +221,7 @@ func (c *Cloud) create() error {
 	// update IP details only when cloud is public
 	// basically when instances created by terraform
 	if data.isCloudPublic() && (!c.config.Test) {
-		err = c.updateIPDetails(c.ctx, data)
+		err = updateIPDetails(c.ctx, c.config.CloudID, data)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -222,13 +232,10 @@ func (c *Cloud) create() error {
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 
 	return nil
-
 }
 
-// handles update of cloud
 // nolint: gocyclo
 func (c *Cloud) update() error {
-
 	status := map[string]interface{}{statusField: statusUpdateProgress}
 
 	// Run pre-install steps
@@ -257,6 +264,8 @@ func (c *Cloud) update() error {
 	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 	status[statusField] = statusUpdateFailed
 
+	//c.runHouseKeeperIfNeeded(data) // TODO(Daniel): uncomment when tests pass
+
 	err = topo.createTopologyFile(GetTopoFile(topo.cloud.config.CloudID))
 	if err != nil {
 		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -266,7 +275,6 @@ func (c *Cloud) update() error {
 	//TODO(madhukar) handle if key-pair changes or aws-key
 
 	if data.isCloudPublic() {
-
 		err = secret.createSecretFile()
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
@@ -274,7 +282,7 @@ func (c *Cloud) update() error {
 		}
 
 		// depending upon the config action, it takes respective terraform action
-		err = c.manageTerraform(c.config.Action)
+		err = manageTerraform(c, c.config.Action)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -283,7 +291,7 @@ func (c *Cloud) update() error {
 
 	//update IP address
 	if data.isCloudPublic() && (!c.config.Test) {
-		err = c.updateIPDetails(c.ctx, data)
+		err = updateIPDetails(c.ctx, c.config.CloudID, data)
 		if err != nil {
 			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 			return err
@@ -295,8 +303,197 @@ func (c *Cloud) update() error {
 	return nil
 }
 
-func (c *Cloud) delete() error {
+func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
+	data, err := c.getCloudData(false)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	topo := newTopology(c, data)
 
+	if data.isCloudPrivate() {
+		return topo, nil, data, nil
+	}
+
+	// initialize secret struct
+	secret, err := newSecret(c)
+	if data.isCloudPublic() {
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		err = secret.updateFileConfig(data)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
+	return topo, secret, data, nil
+}
+
+// Constants related to housekeeper
+const (
+	defaultContrailClusterRoot = "/var/tmp/contrail_cluster"
+	clusterMCWorkDir           = "multi-cloud"
+	defaultClusterSSHAgentFile = "ssh-agent-config.yml"
+	defaultClusterInvFile      = "inventories/inventory.yml"
+	defaultHouseKeeperScript   = "housekeeper.sh"
+	defaultOnceClickDep        = "one-click-deployer"
+)
+
+func (c *Cloud) runHouseKeeperIfNeeded(d *Data) error {
+	if d.isCloudPublic() && d.info.ContrailClusterBackRefs != nil {
+		return c.runHouseKeeper(d)
+	}
+	return nil
+}
+
+func (c *Cloud) runHouseKeeper(d *Data) error {
+	c.log.Debug("Running housekeeper")
+
+	var clusterSSHAgentFile, clusterMCInvFile string
+	tfStateFile := GetTFStateFile(c.config.CloudID)
+	cloudTopoFile := GetTopoFile(c.config.CloudID)
+
+	for _, cluster := range d.info.ContrailClusterBackRefs {
+		clusterSSHAgentFile = getMCClusterSSHAgentFile(cluster.UUID)
+		clusterMCInvFile = getMCClusterInventoryFile(cluster.UUID)
+		break
+	}
+	_, err := os.Stat(clusterSSHAgentFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", clusterSSHAgentFile)
+		return nil
+	}
+
+	_, err = os.Stat(tfStateFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", tfStateFile)
+		return nil
+	}
+
+	_, err = os.Stat(cloudTopoFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", cloudTopoFile)
+		return nil
+	}
+
+	_, err = os.Stat(clusterMCInvFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", clusterMCInvFile)
+		return nil
+	}
+
+	err = exportSSHAgentEnvVars(clusterSSHAgentFile)
+	if err != nil {
+		return err
+	}
+
+	err = executeHouseKeeper(c.reporter, c.config.Test, tfStateFile,
+		cloudTopoFile, clusterMCInvFile)
+	if err != nil {
+		return err
+	}
+
+	c.log.Infof("successfully executed housekeeper script")
+	return nil
+}
+
+func getMCClusterSSHAgentFile(clusterUUID string) string {
+	return filepath.Join(getMCClusterDir(clusterUUID), defaultClusterSSHAgentFile)
+}
+
+func getMCClusterInventoryFile(clusterUUID string) string {
+	return filepath.Join(getMCClusterDir(clusterUUID), defaultClusterInvFile)
+}
+
+func getMCClusterDir(clusterUUID string) string {
+	return filepath.Join(getClusterDir(clusterUUID), clusterMCWorkDir)
+}
+
+func getClusterDir(clusterUUID string) string {
+	return filepath.Join(defaultContrailClusterRoot, clusterUUID)
+}
+
+func exportSSHAgentEnvVars(sshAgentPath string) error {
+	sshAgentConf, err := readSSHAgentConfig(sshAgentPath)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("SSH_AUTH_SOCK", sshAgentConf.AuthSock)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("SSH_AGENT_PID", sshAgentConf.PID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// sshAgentConfig related to ssh-agent process.
+type sshAgentConfig struct {
+	AuthSock string `yaml:"auth_sock"`
+	PID      string `yaml:"pid"`
+}
+
+func readSSHAgentConfig(path string) (*sshAgentConfig, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	agentConfig := &sshAgentConfig{}
+	err = yaml.UnmarshalStrict(data, agentConfig)
+	if err != nil {
+		return nil, err
+	}
+	return agentConfig, nil
+}
+
+// executeHouseKeeper executes "housekeeper" script.
+// TODO(Daniel): Run Ansible playbook instead.
+func executeHouseKeeper(reporter *report.Reporter, test bool,
+	tfStateFile string, topologyFile string, mcInventoryFile string) error {
+
+	mcRepoDir := GetMultiCloudRepodir()
+	workDir := getOneClickDepDir(mcRepoDir)
+	cmd := getHouseKeeperScript(mcRepoDir)
+
+	err := os.Setenv("TF_STATE", tfStateFile)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("TOPOLOGY", topologyFile)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("INVENTORY", mcInventoryFile)
+	if err != nil {
+		return err
+	}
+
+	if test {
+		return TestCmdHelper(cmd, []string{}, workDir, testTemplate)
+	}
+
+	err = osutil.ExecCmdAndWait(reporter, cmd, []string{}, workDir)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getHouseKeeperScript(mcDir string) string {
+	return filepath.Join(getOneClickDepDir(mcDir), defaultHouseKeeperScript)
+}
+
+func getOneClickDepDir(mcDir string) string {
+	return filepath.Join(mcDir, defaultOnceClickDep)
+}
+
+func (c *Cloud) delete() error {
 	// get cloud data
 	data, err := c.getCloudData(true)
 	if err != nil {
@@ -315,7 +512,7 @@ func (c *Cloud) delete() error {
 
 	if data.isCloudPublic() {
 		if tfStateOutputExists(c.config.CloudID) {
-			err = c.manageTerraform(deleteAction)
+			err = manageTerraform(c, deleteAction)
 			if err != nil {
 				c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
 				return err
@@ -331,11 +528,100 @@ func (c *Cloud) delete() error {
 	}
 
 	return os.RemoveAll(GetCloudDir(c.config.CloudID))
+}
 
+func (c *Cloud) getCloudData(isDelRequest bool) (*Data, error) {
+	cloudData, err := c.newCloudData()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cloudData.update(isDelRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return cloudData, nil
+}
+
+func (c *Cloud) newCloudData() (*Data, error) {
+	data := Data{}
+	data.cloud = c
+
+	cloudObject, err := GetCloud(c.ctx, c.APIServer, c.config.CloudID)
+	if err != nil {
+		return nil, err
+	}
+
+	data.info = cloudObject
+	return &data, nil
+}
+
+// nolint: gocyclo
+func (c *Cloud) deleteAPIObjects(d *Data) error {
+	if d.isCloudPrivate() {
+		err := removePvtSubnetRefFromNodes(c.ctx, c.APIServer, d.getGatewayNodes())
+		if err != nil {
+			return err
+		}
+	}
+
+	var errList, warnList []string
+
+	retErrList := deleteContrailMCGWRole(c.ctx,
+		c.APIServer, d.getGatewayNodes())
+
+	if retErrList != nil {
+		errList = append(errList, retErrList...)
+	}
+
+	if d.isCloudPublic() {
+		retErrList = deleteNodeObjects(c.ctx, c.APIServer, d.instances)
+		if retErrList != nil {
+			errList = append(errList, retErrList...)
+		}
+	}
+
+	retErrList = deleteCloudProviderAndDeps(c.ctx,
+		c.APIServer, d.providers)
+	if retErrList != nil {
+		errList = append(errList, retErrList...)
+	}
+
+	_, err := c.APIServer.DeleteCloud(c.ctx,
+		&services.DeleteCloudRequest{
+			ID: d.info.UUID,
+		},
+	)
+	if err != nil {
+		errList = append(errList, fmt.Sprintf(
+			"failed deleting Cloud %s err_msg: %s",
+			d.info.UUID, err))
+	}
+
+	cloudUserErrList := deleteCloudUsers(c.ctx, c.APIServer, d.users)
+	if cloudUserErrList != nil {
+		warnList = append(warnList, cloudUserErrList...)
+	}
+
+	if d.isCloudPublic() {
+		credErrList := deleteCredentialAndDeps(c.ctx, c.APIServer, d.credentials)
+		warnList = append(warnList, credErrList...)
+	}
+
+	// log the warning messages
+	if len(warnList) > 0 {
+		c.log.Warnf("could not delete cloud refs deps because of errors: %s",
+			strings.Join(warnList, "\n"))
+	}
+	// join all the errors and return it
+	if len(errList) > 0 {
+		return errors.New(strings.Join(errList, "\n"))
+	}
+	return nil
 }
 
 func (c *Cloud) verifyContrailClusterStatus(data *Data) error {
-
 	for _, clusterRef := range data.info.ContrailClusterBackRefs {
 		err := waitForClusterStatusToBeUpdated(c.ctx, c.log,
 			c.APIServer, clusterRef.UUID)
@@ -346,44 +632,10 @@ func (c *Cloud) verifyContrailClusterStatus(data *Data) error {
 	return nil
 }
 
-func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
-
-	data, err := c.getCloudData(false)
-	if err != nil {
-		return nil, nil, nil, err
+func (c *Cloud) getTemplateRoot() string {
+	templateRoot := c.config.TemplateRoot
+	if templateRoot == "" {
+		templateRoot = defaultTemplateRoot
 	}
-	topo := c.newTopology(data)
-
-	if data.isCloudPrivate() {
-		return topo, nil, data, nil
-	}
-
-	// initialize secret struct
-	secret, err := c.newSecret()
-	if data.isCloudPublic() {
-		if err != nil {
-			return nil, nil, nil, err
-		}
-		err = secret.updateFileConfig(data)
-		if err != nil {
-			return nil, nil, nil, err
-		}
-	}
-
-	return topo, secret, data, nil
-}
-
-func (c *Cloud) isCloudDeleteRequest() (bool, error) {
-
-	cloudObj, err := GetCloud(c.ctx, c.APIServer, c.config.CloudID)
-	if err != nil {
-		return false, err
-	}
-
-	if c.config.Action == updateAction &&
-		cloudObj.ProvisioningAction == deleteCloudAction &&
-		cloudObj.ProvisioningState == statusNoState {
-		return true, nil
-	}
-	return false, nil
+	return templateRoot
 }
