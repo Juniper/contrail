@@ -39,7 +39,7 @@
         - name: Run tests and linters on the source code in parallel
           command: make -j test lint
         - name: Generate Docker files
-          command: make BASE_IMAGE_REGISTRY={{ contrail_docker_registry }} BASE_IMAGE_REPOSITORY={{ repository }} BASE_IMAGE_TAG={{ packaging.docker_version }} SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
+          command: make BASE_IMAGE_REGISTRY={{ contrail_docker_registry }} BASE_IMAGE_REPOSITORY={{ repository }} BASE_IMAGE_TAG='{{PLAT}}{{ packaging.docker_version }}' SOURCEDIR={{ sourcedir }} ANSIBLE_DEPLOYER_BRANCH={{ zuul.branch }} CONTRAIL_API_CLIENT_BRANCH={{ zuul.branch }} docker
 
     - name: Fix files ownerships
       file:
@@ -54,6 +54,6 @@
   roles:
     - role: publish-container-images
       registry: "{{ contrail_docker_registry }}"
-      tag: "{{ packaging.docker_version }}"
+      tag: "{{PLAT}}{{ packaging.docker_version }}"
       images:
         - { name: contrail-go, tag: latest }
