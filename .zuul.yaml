@@ -20,6 +20,7 @@
         - name: builder
           label: centos-7-4-builder-xxlarge
     vars:
+      PLAT: ''
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
@@ -54,6 +55,7 @@
         - name: builder
           label: rhel-7-builder
     vars:
+      PLAT: 'rhel-'
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
