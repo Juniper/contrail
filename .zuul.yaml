@@ -41,7 +41,7 @@
     name: contrail-go-docker-rhel7
     description: |
       Job that builds and tests Juniper/contrail project.
-    voting: False
+    voting: True
     parent: contrail-base2
     timeout: 5400
     required-projects:
