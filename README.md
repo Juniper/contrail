@@ -17,7 +17,6 @@ POC stage so any external/internal API or design subject to change up
 to community discussion.
 
 ## Development setup
-
 ### Step1. Install Go, Docker and Docker Compose
 
 - [Go](https://golang.org/doc/install)
