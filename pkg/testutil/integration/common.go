@@ -116,6 +116,7 @@ func WithTestDBs(f func(dbType string)) {
 		viper.Set("database.name", config["name"])
 		viper.Set("database.password", config["password"])
 		viper.Set("database.dialect", config["dialect"])
+		viper.Set("database.debug", config["debug"])
 
 		if val, ok := config["use_sync"]; ok && cast.ToBool(val) == true {
 			viper.Set("server.notify_etcd", false)
