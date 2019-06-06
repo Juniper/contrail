@@ -8,7 +8,7 @@
   prebuild: nightly
   tags:
     owner: juniper
-    Project: contrail_multicloud
+    project: contrail_multicloud
     build_id: latest
   {% endif %}
   {% if provider.regions|length >= 1 %}
@@ -21,7 +21,7 @@
     {% if region.virtualClouds|length >= 1 %}
     {% if az in cloudType %}
       vnet:
-    {% elif aws in cloudType %}
+    {% elif aws in cloudType or gcp in cloudType%}
       vpc:
     {% endif %}
     {% for vcloud in region.virtualClouds %}
