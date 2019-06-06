@@ -126,7 +126,7 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"database.max_open_conn":      100,
 		"database.connection_retries": 10,
 		"database.retry_period":       3,
-		"database.debug":              true,
+		"database.debug":              false,
 		constants.ETCDPathVK:          integrationetcd.Prefix,
 		"keystone.local":              true,
 		"keystone.assignment.type":    "static",

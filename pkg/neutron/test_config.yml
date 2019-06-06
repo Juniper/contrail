@@ -21,6 +21,7 @@ test_database:
     user: root
     password: contrail123
     name: contrail_test
+    debug: false
   postgres:
     type: postgres
     dialect: postgres
@@ -29,6 +30,7 @@ test_database:
     password: contrail123
     name: contrail_test
     use_sync: true
+    debug: false
 
 etcd:
   endpoints:
@@ -40,14 +42,14 @@ etcd:
 
 
 # Log Level
-log_level: info
+log_level: debug
 
 # Server configuration
 server:
   read_timeout: 10
   write_timeout: 5
-  log_api: false
-  log_body: false
+  log_api: true
+  log_body: true
 
   # Bind addresss
   address: ":9091"
