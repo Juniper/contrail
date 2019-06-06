@@ -7,6 +7,7 @@ ARG GOPATH
 MAINTAINER Nachi Ueno nueno@juniper.net
 
 COPY ./src/ $GOPATH/src/github.com/Juniper/
+RUN  unlink /bin/contrail
 ADD ./contrail /bin/contrail
 ADD ./contrailcli /bin/contrailcli
 ADD ./contrailutil /bin/contrailutil
