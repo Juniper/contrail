@@ -174,6 +174,25 @@ func (a *AppformixData) interfaceToAppformixComputeNode(
 	return nil
 }
 
+func (a *AppformixData) interfaceToAppformixNetworkAgentsNode(
+	appformixNetworkAgentsNodes []*models.AppformixNetworkAgentsNode, r *ResourceManager) error {
+	a.ClusterInfo.AppformixNetworkAgentsNodes = nil
+	for _, appformixNetworkAgentsNode := range appformixNetworkAgentsNodes {
+		appformixNetworkAgentsNodeInfo := models.InterfaceToAppformixNetworkAgentsNode(appformixNetworkAgentsNode)
+		// Read appformixNetworkAgent role node to get the node refs information
+		appformixNetworkAgentsNodeData, err := r.getResource(
+			defaultAppformixNetworkAgentsNodeResPath, appformixNetworkAgentsNodeInfo.UUID)
+		if err != nil {
+			return err
+		}
+		appformixNetworkAgentsNodeInfo = models.InterfaceToAppformixNetworkAgentsNode(
+			appformixNetworkAgentsNodeData)
+		a.ClusterInfo.AppformixNetworkAgentsNodes = append(
+			a.ClusterInfo.AppformixNetworkAgentsNodes, appformixNetworkAgentsNodeInfo)
+	}
+	return nil
+}
+
 // nolint: gocyclo
 func (a *AppformixData) updateNodeDetails(r *ResourceManager) error {
 	m := make(map[string]bool)
@@ -199,6 +218,13 @@ func (a *AppformixData) updateNodeDetails(r *ResourceManager) error {
 		}
 	}
 	for _, node := range a.ClusterInfo.AppformixComputeNodes {
+		for _, nodeRef := range node.NodeRefs {
+			if err := r.getNode(nodeRef.UUID, m, a); err != nil {
+				return err
+			}
+		}
+	}
+	for _, node := range a.ClusterInfo.AppformixNetworkAgentsNodes {
 		for _, nodeRef := range node.NodeRefs {
 			if err := r.getNode(nodeRef.UUID, m, a); err != nil {
 				return err
@@ -238,6 +264,12 @@ func (a *AppformixData) updateClusterDetails(clusterID string, r *ResourceManage
 	// Expand appformix_compute back ref
 
 	if err = a.interfaceToAppformixComputeNode(a.ClusterInfo.AppformixComputeNodes, r); err != nil {
+		return err
+	}
+
+	// Expand appformix_network_agents back ref
+
+	if err = a.interfaceToAppformixNetworkAgentsNode(a.ClusterInfo.AppformixNetworkAgentsNodes, r); err != nil {
 		return err
 	}
 

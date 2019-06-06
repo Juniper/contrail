@@ -22,6 +22,7 @@ cleanup:
 - path: /appformix-controller-node/appformix_controller_node_uuid
 - path: /appformix-openstack-node/appformix_openstack_node_uuid
 - path: /appformix-compute-node/appformix_compute_node_uuid
+- path: /appformix-network-agents-node/appformix_network_agents_node_uuid
 - path: /appformix-bare-host-node/appformix_bare_host_node_uuid
 - path: /keypair/all_in_one_keypair_uuid
 - path: /credential/all_in_one_credential_uuid
@@ -145,6 +146,13 @@ test_data:
       - uuid: all_in_one_node_uuid
   appformix_compute_nodes: &appformix_compute_nodes
     uuid: appformix_compute_nodes_uuid
+    parent_type: appformix-cluster
+    parent_uuid: test_appformix_cluster_uuid
+    ansible_connection: ssh
+    node_refs:
+      - uuid: all_in_one_node_uuid
+  appformix_network_agents_nodes: &appformix_network_agents_nodes
+    uuid: appformix_network_agents_nodes_uuid
     parent_type: appformix-cluster
     parent_uuid: test_appformix_cluster_uuid
     ansible_connection: ssh
@@ -733,6 +741,22 @@ workflow:
   expect:
     appformix-compute-node:
       uuid: appformix_compute_nodes_uuid
+      parent_type: appformix-cluster
+      parent_uuid: test_appformix_cluster_uuid
+      ansible_connection: ssh
+      node_refs:
+        - uuid: all_in_one_node_uuid
+- name: create appformix network agents node
+  request:
+    path: /appformix-network-agents-nodes
+    method: POST
+    expected:
+    - 200
+    data:
+      appformix-network-agents-node: *appformix_network_agents_nodes
+  expect:
+    appformix-network-agents-node:
+      uuid: appformix_network_agents_nodes_uuid
       parent_type: appformix-cluster
       parent_uuid: test_appformix_cluster_uuid
       ansible_connection: ssh

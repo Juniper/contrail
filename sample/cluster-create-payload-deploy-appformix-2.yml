@@ -44,16 +44,16 @@ resources:
         key: enable_haproxy
       - value: 'no'
         key: enable_swift
+      - value: 'no'
+        key: enable_ironic
+      - value: 'no'
+        key: enable_barbican
       - value: '50'
         key: keepalived_virtual_router_id
-      # leave the following commented per Ram Not required
-      #- value: enp1s0f0
-      #  key: network_interface
       - value: 10.84.24.44
         key: contrail_api_interface_address
   kind: openstack_cluster
   operation: CREATE
-#####APP TRY ###
 - data:
     provisioning_state: NOSTATE
     uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
@@ -69,8 +69,6 @@ resources:
     appformix_version: 2.18.1
     appformix_license: /opt/software/appformix/appformix-internal-openstack-2.18.sig
     appformix_docker_registry: registry.juniper.net/appformix/
-    appformix_username: appformix
-    appformix_password: appformix12
     appformix_kvm_instance_discovery: true
     appformix_network_device_monitoring_enabled: true
     appformix_jti_network_device_monitoring_enabled: true
@@ -90,7 +88,6 @@ resources:
         key: appformix_haproxy_datamanager_port_https
   kind: appformix_cluster
   operation: CREATE
-##########
 - data:
     provisioning_state: NOSTATE
     uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
@@ -107,7 +104,7 @@ resources:
     registry_private_insecure: true
     contrail_version: latest
     default_gateway: 10.84.24.254
-    ntp_server: 10.84.5.100
+    ntp_server: 10.84.5.101
     domain_suffix: englab.juniper.net
     encap_priority: VXLAN,MPLSoUDP,MPLSoGRE
     contrail_configuration:
@@ -118,8 +115,6 @@ resources:
         key: CONFIG_NODEMGR__DEFAULTS__minimum_diskGB
       - value: '2'
         key: DATABASE_NODEMGR__DEFAULTS__minimum_diskGB
-      - value: enp1s0f0
-        key: PHYSICAL_INTERFACE
     orchestrator: openstack
     openstack_cluster_refs:
     - uuid: 4bd887b1-3f65-59c1-bc2f-dfbaeac570d8
@@ -174,6 +169,38 @@ resources:
     node_refs:
     - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
   kind: contrail_analytics_node
+  operation: CREATE
+- data:
+    uuid: b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bc
+    name: b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bc
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    fq_name:
+    - default-global-system-config
+    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
+    - b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bc
+    display_name: b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bc
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_analytics_snmp_node
+  operation: CREATE
+- data:
+    uuid: b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bd
+    name: b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bd
+    parent_uuid: dfb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: contrail-cluster
+    fq_name:
+    - default-global-system-config
+    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
+    - b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bd
+    display_name: b3a0b0fe-cbec-43e0-b319-1c0f6d98e0bd
+    perms2:
+      owner: admin
+    node_refs:
+    - uuid: 9d03e841-3fd8-439c-bdb2-ff5800497579
+  kind: contrail_analytics_alarm_node
   operation: CREATE
 - data:
     uuid: 7f99df11-4dc6-44c7-9cc5-81ca03983c67
@@ -386,4 +413,21 @@ resources:
     node_refs:
     - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
   kind: appformix_compute_node
+  operation: CREATE
+- data:
+    uuid: be770056-b7b6-b896-b896-b472cee9ead7
+    name: be770056-b7b6-b896-b896-b472cee9ead7
+    parent_uuid: afb40e0d-c9f4-47cd-bd5c-1efdd28fd4fc
+    parent_type: appformix-cluster
+    fq_name:
+    - default-global-system-config
+    - fabric_test-519eee6e-9614-40ce-978a-e5e7232c0cc2
+    - be770056-b7b6-b896-b896-b472cee9ead7
+    display_name: be770056-b7b6-b896-b896-b472cee9ead7
+    perms2:
+      owner: admin
+    ansible_connection: ssh
+    node_refs:
+    - uuid: 9d03e842-3fd2-4392-bdb2-ff5800497572
+  kind: appformix_network_agents_node
   operation: CREATE
