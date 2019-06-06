@@ -5,3 +5,5 @@ client:
   schema_root: /public
   domain_id: default
   endpoint: http://localhost:9091
+
+log_level: debug
