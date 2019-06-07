@@ -1,11 +1,14 @@
 package cluster
 
 import (
-	"github.com/sirupsen/logrus"
-
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
+	"github.com/Juniper/contrail/pkg/deploy/rhospd/overcloud"
 	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/models"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // Config represents Command configuration.
@@ -54,6 +57,114 @@ func NewCluster(c *Config) (*Cluster, error) {
 }
 
 // GetDeployer creates new deployer based on the type
+// TODO(Daniel): this should not be Cluster's method
 func (c *Cluster) GetDeployer() (base.Deployer, error) {
-	return newDeployerByID(c)
+	cData, err := data(c)
+	if err != nil {
+		return nil, err
+	}
+
+	switch deployerType(cData, c.config.Action) {
+	case "rhospd":
+		return newOvercloudDeployer(c)
+	case "ansible":
+		return newAnsibleDeployer(c, cData), nil
+	case mCProvisioner:
+		return newMCProvisioner(c, cData), nil
+	case "helm":
+		return newHelmDeployer(c, cData), nil
+	}
+	return nil, errors.New("unsupported deployer type")
+}
+
+func data(c *Cluster) (*base.Data, error) {
+	if c.config.Action == "delete" {
+		return &base.Data{Reader: c.APIServer}, nil
+	}
+	return base.NewResourceManager(c.APIServer, c.config.LogFile).GetClusterDetails(c.config.ClusterID)
+}
+
+func deployerType(cData *base.Data, action string) string {
+	if cData.ClusterInfo != nil && cData.ClusterInfo.ProvisionerType != "" {
+		return cData.ClusterInfo.ProvisionerType
+	}
+
+	if action != deleteAction && isMCProvisioner(cData) {
+		return mCProvisioner
+	}
+
+	return defaultDeployer
+}
+
+func isMCProvisioner(cData *base.Data) bool {
+	if hasCloudRefs(cData) && hasMCGWNodes(cData.ClusterInfo) {
+		switch cData.ClusterInfo.ProvisioningAction {
+		case addCloud:
+			return true
+		case updateCloud:
+			return true
+		case deleteCloud:
+			return true
+		}
+	}
+	return false
+}
+
+func hasCloudRefs(d *base.Data) bool {
+	return d.CloudInfo != nil
+}
+
+func hasMCGWNodes(cc *models.ContrailCluster) bool {
+	return cc.ContrailMulticloudGWNodes != nil
+}
+
+func newOvercloudDeployer(c *Cluster) (base.Deployer, error) {
+	o, err := overcloud.NewOverCloud(&overcloud.Config{
+		APIServer:    c.APIServer,
+		ResourceID:   c.config.ClusterID,
+		Action:       c.config.Action,
+		TemplateRoot: c.config.TemplateRoot,
+		LogLevel:     c.config.LogLevel,
+		LogFile:      c.config.LogFile,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return o.GetDeployer()
+}
+
+func newAnsibleDeployer(c *Cluster, cData *base.Data) *contrailAnsibleDeployer {
+	d := newDeployCluster(c, cData, "contrail-ansible-deployer")
+	return &contrailAnsibleDeployer{
+		deployCluster: *d,
+		ansibleClient: ansible.NewCLIClient(
+			d.Reporter,
+			c.config.LogFile,
+			d.getWorkingDir(),
+			c.config.Test,
+		),
+	}
+}
+
+func newMCProvisioner(c *Cluster, cData *base.Data) *multiCloudProvisioner {
+	d := newDeployCluster(c, cData, "multi-cloud-provisioner")
+	return &multiCloudProvisioner{
+		contrailAnsibleDeployer: contrailAnsibleDeployer{
+			deployCluster: *d,
+			ansibleClient: ansible.NewCLIClient(
+				d.Reporter,
+				c.config.LogFile,
+				d.getWorkingDir(),
+				c.config.Test,
+			),
+		},
+		workDir: "",
+	}
+}
+
+func newHelmDeployer(c *Cluster, cData *base.Data) *helmDeployer {
+	return &helmDeployer{
+		deployCluster: *newDeployCluster(c, cData, "helm-deployer"),
+	}
 }

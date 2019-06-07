@@ -5,21 +5,20 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/flosch/pongo2"
-	"github.com/mattn/go-shellwords"
-
+	"github.com/Juniper/contrail/pkg/ansible"
 	"github.com/Juniper/contrail/pkg/fileutil"
 	"github.com/Juniper/contrail/pkg/fileutil/template"
 	"github.com/Juniper/contrail/pkg/osutil"
+	"github.com/flosch/pongo2"
+
+	shellwords "github.com/mattn/go-shellwords"
 )
 
 const (
@@ -44,6 +43,7 @@ type openstackVariables struct {
 
 type contrailAnsibleDeployer struct {
 	deployCluster
+	ansibleClient *ansible.CLIClient
 }
 
 // nolint: gocyclo
@@ -380,90 +380,26 @@ func (a *contrailAnsibleDeployer) createVcenterVarsFile(destination string) erro
 	return nil
 }
 
-func (a *contrailAnsibleDeployer) mockPlay(ansibleArgs []string) error {
-	playBookIndex := len(ansibleArgs) - 1
-	context := pongo2.Context{
-		"playBook":    ansibleArgs[playBookIndex],
-		"ansibleArgs": strings.Join(ansibleArgs[:playBookIndex], " "),
-	}
-	content, err := template.Apply("./test_data/test_ansible_playbook.tmpl", context)
-	if err != nil {
-		return err
-	}
-	destination := filepath.Join(a.getWorkingDir(), "executed_ansible_playbook.yml")
-	err = fileutil.AppendToFile(destination, content, defaultFilePermRWOnly)
-	return err
-}
-
 func (a *contrailAnsibleDeployer) play(ansibleArgs []string) error {
-	repoDir := a.getAnsibleDeployerRepoDir()
-	return a.playFromDir(repoDir, ansibleArgs)
+	return a.playFromDirectory(a.getAnsibleDeployerRepoDir(), ansibleArgs)
 }
 
-func (a *contrailAnsibleDeployer) playFromDir(
-	repoDir string, ansibleArgs []string) error {
-	return a.playFromDirInVenv(repoDir, ansibleArgs, "")
-}
-
-func (a *contrailAnsibleDeployer) playFromDirInVenv(
-	repoDir string,
-	ansibleArgs []string,
-	venvDir string) error {
-
-	if a.cluster.config.Test {
-		return a.mockPlay(ansibleArgs)
-	}
-
-	var venvLogString string
-	if venvDir != "" {
-		venvLogString = fmt.Sprintf(" in venv %s", venvDir)
-	}
-
-	cmdline := "ansible-playbook"
-	a.Log.Infof("Playing playbook: %s %s%s",
-		cmdline, strings.Join(ansibleArgs, " "), venvLogString)
-
-	var cmd *exec.Cmd
-
-	if venvDir != "" {
-		var err error
-		cmd, err = osutil.VenvCommand(venvDir, cmdline, ansibleArgs...)
-
-		if err != nil {
-			return err
-		}
-	} else {
-		cmd = exec.Command(cmdline, ansibleArgs...)
-	}
-
-	cmd.Dir = repoDir
-
-	err := osutil.ExecAndWait(a.Reporter, cmd)
-	if err != nil {
-		a.Log.Errorf("error when running playbook: %s", err)
-		return err
-	}
-
-	a.Log.Infof("Finished playing playbook: %s %s%s",
-		cmdline, strings.Join(ansibleArgs, " "), venvLogString)
-
-	return nil
+func (a *contrailAnsibleDeployer) playFromDirectory(directory string, ansibleArgs []string) error {
+	a.Log.WithField("directory", directory).Info("Running playbook")
+	return a.ansibleClient.Play(directory, ansibleArgs, "")
 }
 
 func (a *contrailAnsibleDeployer) playInstancesProvision(ansibleArgs []string) error {
-	// play instances provisioning playbook
 	ansibleArgs = append(ansibleArgs, defaultInstanceProvPlay)
 	return a.play(ansibleArgs)
 }
 
 func (a *contrailAnsibleDeployer) playInstancesConfig(ansibleArgs []string) error {
-	// play instances configuration playbook
 	ansibleArgs = append(ansibleArgs, defaultInstanceConfPlay)
 	return a.play(ansibleArgs)
 }
 
 func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string) error {
-	// play orchestrator provisioning playbook
 	switch a.clusterData.ClusterInfo.Orchestrator {
 	case orchestratorOpenstack:
 		ansibleArgs = append(ansibleArgs, "-e force_checkout=yes")
@@ -482,7 +418,6 @@ func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string
 }
 
 func (a *contrailAnsibleDeployer) playContrailProvision(ansibleArgs []string) error {
-	// play contrail provisioning playbook
 	ansibleArgs = append(ansibleArgs, defaultContrailProvPlay)
 	return a.play(ansibleArgs)
 }
@@ -491,7 +426,7 @@ func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
 	if a.clusterData.ClusterInfo.DatapathEncryption {
 		inventory := filepath.Join(a.getWorkingDir(), "inventory.yml")
 		ansibleArgs := []string{"-i", inventory, defaultContrailDatapathEncryptionPlay}
-		return a.playFromDir(a.getAnsibleDatapathEncryptionRepoDir(), ansibleArgs)
+		return a.playFromDirectory(a.getAnsibleDatapathEncryptionRepoDir(), ansibleArgs)
 	}
 	return nil
 }
@@ -536,7 +471,7 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
 		repoDir := a.getAppformixAnsibleDeployerRepoDir()
-		return a.playFromDirInVenv(repoDir, ansibleArgs, a.appformixVenvDir())
+		return a.ansibleClient.Play(repoDir, ansibleArgs, a.appformixVenvDir())
 	}
 	return nil
 }
