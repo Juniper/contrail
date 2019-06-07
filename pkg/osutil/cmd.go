@@ -6,7 +6,17 @@ import (
 	"github.com/Juniper/contrail/pkg/logutil/report"
 )
 
-// ExecAndWait execs cmd, reports the stdout & stderr and waits for cmd to complete
+// ExecCmdAndWait execs cmd, reports the stdout & stderr and waits for cmd to complete.
+func ExecCmdAndWait(r *report.Reporter, cmd string, args []string, dir string) error {
+	cmdline := exec.Command(cmd, args...)
+	if dir != "" {
+		cmdline.Dir = dir
+	}
+
+	return ExecAndWait(r, cmdline)
+}
+
+// ExecAndWait execs cmd, reports the stdout & stderr and waits for cmd to complete.
 func ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error {
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -23,19 +33,5 @@ func ExecAndWait(r *report.Reporter, cmd *exec.Cmd) error {
 	go r.ReportLog(stdout)
 	go r.ReportLog(stderr)
 
-	// wait for command to complete
 	return cmd.Wait()
-}
-
-// ExecCmdAndWait execs cmd, reports the stdout & stderr and waits for cmd to complete
-func ExecCmdAndWait(r *report.Reporter, cmd string,
-	args []string, dir string) error {
-
-	cmdline := exec.Command(cmd, args...)
-	if dir != "" {
-		cmdline.Dir = dir
-	}
-
-	return ExecAndWait(r, cmdline)
-
 }

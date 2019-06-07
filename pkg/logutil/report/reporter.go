@@ -20,7 +20,6 @@ type Reporter struct {
 
 // NewReporter creates a reporter object
 func NewReporter(apiServer *client.HTTP, resource string, logger *logrus.Entry) *Reporter {
-
 	return &Reporter{
 		api:      apiServer,
 		resource: resource,

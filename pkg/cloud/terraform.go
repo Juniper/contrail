@@ -28,7 +28,7 @@ type terraform struct {
 	test       bool
 }
 
-func (c *Cloud) newTF() (*terraform, error) {
+func newTF(c *Cloud) (*terraform, error) {
 	topoFile := GetTopoFile(c.config.CloudID)
 	secretFile := GetSecretFile(c.config.CloudID)
 	mcDir := GetMultiCloudRepodir()
@@ -49,14 +49,13 @@ func (c *Cloud) newTF() (*terraform, error) {
 	}, nil
 }
 
-func (c *Cloud) manageTerraform(action string) error {
-
-	tf, err := c.newTF()
+func manageTerraform(c *Cloud, action string) error {
+	tf, err := newTF(c)
 	if err != nil {
 		return err
 	}
 
-	if action == deleteAction {
+	if c.config.Action == deleteAction {
 		err = tf.destroy()
 		if err != nil {
 			return err
@@ -80,11 +79,9 @@ func (c *Cloud) manageTerraform(action string) error {
 	}
 
 	return nil
-
 }
 
 func (tf *terraform) createInputFile() error {
-
 	cmd := getGenerateTopologyCmd(tf.mcDir)
 	args := strings.Split(fmt.Sprintf("-t %s -s %s --no_validation",
 		tf.topoFile, tf.secretFile), " ")
@@ -108,7 +105,6 @@ func (tf *terraform) createInputFile() error {
 }
 
 func (tf *terraform) initalize() error {
-
 	args := []string{"init"}
 
 	tf.log.Debugf("Command being executed : %s %s", tfCommand,
@@ -149,7 +145,6 @@ func (tf *terraform) apply() error {
 }
 
 func (tf *terraform) destroy() error {
-
 	// teardown terraform
 
 	args := []string{"destroy", "-force", tfParallelism, tfRefresh}
