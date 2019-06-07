@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -12,6 +13,7 @@ import (
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/logutil/report"
+	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -327,6 +329,184 @@ func (c *Cloud) initialize() (*topology, *secret, *Data, error) {
 
 	return topo, secret, data, nil
 }
+
+// cleanupContrailConfigs perform cleanup (a.k.a. housekeeping) of Multicloud objects in Contrail Config database.
+func (c *Cloud) cleanupContrailConfigDB() {
+	// TODO(Daniel): discoverDeletedInstances
+	// ansible-playbook -e topo_file_path=$_TOPOLOGY -e tf_file_path=$_TFSTATE -i $_INVFILE ansible/contrail/playbooks/housekeeper.yml
+
+	// TODO(Daniel): cleanupContrail
+	// ansible-playbook -i inventories/inventory.yml ansible/contrail/playbooks/cleanup.yml --limit 'deleted_instances,controllers'
+
+	// TODO(Daniel): cleanupGateway
+	// ansible-playbook -i inventories/inventory.yml ansible/gateway/playbooks/cleanup.yml --limit 'deleted_instances,controllers'
+}
+
+// TODO(Daniel): remove code below when cleanupContrailConfigDB is proved to be correct approach
+
+// Constants related to housekeeper.sh
+const (
+	defaultContrailClusterRoot = "/var/tmp/contrail_cluster"
+	clusterMCWorkDir           = "multi-cloud"
+	defaultClusterSSHAgentFile = "ssh-agent-config.yml"
+	defaultClusterInvFile      = "inventories/inventory.yml"
+	defaultHouseKeeperScript   = "housekeeper.sh"
+	defaultOnceClickDep        = "one-click-deployer"
+)
+
+func (c *Cloud) runHouseKeeperIfNeeded(d *Data) error {
+	if d.isCloudPublic() && d.info.ContrailClusterBackRefs != nil {
+		return c.runHouseKeeper(d)
+	}
+	return nil
+}
+
+func (c *Cloud) runHouseKeeper(d *Data) error {
+	c.log.Debug("Running housekeeper")
+
+	var clusterSSHAgentFile, clusterMCInvFile string
+	tfStateFile := GetTFStateFile(c.config.CloudID)
+	cloudTopoFile := GetTopoFile(c.config.CloudID)
+
+	for _, cluster := range d.info.ContrailClusterBackRefs {
+		clusterSSHAgentFile = getMCClusterSSHAgentFile(cluster.UUID)
+		clusterMCInvFile = getMCClusterInventoryFile(cluster.UUID)
+		break
+	}
+	_, err := os.Stat(clusterSSHAgentFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", clusterSSHAgentFile)
+		return nil
+	}
+
+	_, err = os.Stat(tfStateFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", tfStateFile)
+		return nil
+	}
+
+	_, err = os.Stat(cloudTopoFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", cloudTopoFile)
+		return nil
+	}
+
+	_, err = os.Stat(clusterMCInvFile)
+	if err != nil {
+		c.log.Warnf("cannot find file %s", clusterMCInvFile)
+		return nil
+	}
+
+	err = exportSSHAgentEnvVars(clusterSSHAgentFile)
+	if err != nil {
+		return err
+	}
+
+	err = executeHouseKeeper(c.reporter, c.config.Test, tfStateFile,
+		cloudTopoFile, clusterMCInvFile)
+	if err != nil {
+		return err
+	}
+
+	c.log.Infof("successfully executed housekeeper script")
+	return nil
+}
+
+func getMCClusterSSHAgentFile(clusterUUID string) string {
+	return filepath.Join(getMCClusterDir(clusterUUID), defaultClusterSSHAgentFile)
+}
+
+func getMCClusterInventoryFile(clusterUUID string) string {
+	return filepath.Join(getMCClusterDir(clusterUUID), defaultClusterInvFile)
+}
+
+func getMCClusterDir(clusterUUID string) string {
+	return filepath.Join(getClusterDir(clusterUUID), clusterMCWorkDir)
+}
+
+func getClusterDir(clusterUUID string) string {
+	return filepath.Join(defaultContrailClusterRoot, clusterUUID)
+}
+
+func exportSSHAgentEnvVars(sshAgentPath string) error {
+	sshAgentConf, err := readSSHAgentConfig(sshAgentPath)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("SSH_AUTH_SOCK", sshAgentConf.AuthSock)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("SSH_AGENT_PID", sshAgentConf.PID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// sshAgentConfig related to ssh-agent process.
+type sshAgentConfig struct {
+	AuthSock string `yaml:"auth_sock"`
+	PID      string `yaml:"pid"`
+}
+
+func readSSHAgentConfig(path string) (*sshAgentConfig, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	agentConfig := &sshAgentConfig{}
+	err = yaml.UnmarshalStrict(data, agentConfig)
+	if err != nil {
+		return nil, err
+	}
+	return agentConfig, nil
+}
+
+// executeHouseKeeper executes "housekeeper" script.
+func executeHouseKeeper(reporter *report.Reporter, test bool,
+	tfStateFile string, topologyFile string, mcInventoryFile string) error {
+
+	mcRepoDir := GetMultiCloudRepodir()
+	workDir := getOneClickDepDir(mcRepoDir)
+	cmd := getHouseKeeperScript(mcRepoDir)
+
+	err := os.Setenv("TF_STATE", tfStateFile)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("TOPOLOGY", topologyFile)
+	if err != nil {
+		return err
+	}
+
+	err = os.Setenv("INVENTORY", mcInventoryFile)
+	if err != nil {
+		return err
+	}
+
+	if test {
+		return TestCmdHelper(cmd, []string{}, workDir, testTemplate)
+	}
+
+	err = osutil.ExecCmdAndWait(reporter, cmd, []string{}, workDir)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getHouseKeeperScript(mcDir string) string {
+	return filepath.Join(getOneClickDepDir(mcDir), defaultHouseKeeperScript)
+}
+
+func getOneClickDepDir(mcDir string) string {
+	return filepath.Join(mcDir, defaultOnceClickDep)
+}
+
 func (c *Cloud) delete() error {
 	// get cloud data
 	data, err := c.getCloudData(true)
