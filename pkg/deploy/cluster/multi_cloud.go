@@ -13,11 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/flosch/pongo2"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/fileutil"
@@ -26,6 +21,11 @@ import (
 	"github.com/Juniper/contrail/pkg/osutil"
 	"github.com/Juniper/contrail/pkg/retry"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/flosch/pongo2"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -1185,13 +1185,6 @@ func (m *multiCloudProvisioner) getMCDeployerRepoDir() (ansibleRepoDir string) {
 	return filepath.Join(defaultAnsibleRepoDir, mcAnsibleRepo)
 }
 
-func (m *multiCloudProvisioner) play(ansibleArgs []string) error {
-	m.Log.Info("playing from mc deployer")
-	repoDir := m.getMCDeployerRepoDir()
-	m.Log.Infof("playing from mc repo: %s", repoDir)
-	return m.playFromDir(repoDir, ansibleArgs)
-}
-
 func (m *multiCloudProvisioner) getContrailCommonFile(workDir string) string {
 	return filepath.Join(workDir, defaultContrailCommonFile)
 }
@@ -1285,6 +1278,10 @@ func (m *multiCloudProvisioner) playMCContrailCleanup(ansibleArgs []string) erro
 func (m *multiCloudProvisioner) playMCGatewayCleanup(ansibleArgs []string) error {
 	ansibleArgs = append(ansibleArgs, defaultMCGatewayCleanup)
 	return m.play(ansibleArgs)
+}
+
+func (m *multiCloudProvisioner) play(ansibleArgs []string) error {
+	return m.playFromDirectory(m.getMCDeployerRepoDir(), ansibleArgs)
 }
 
 func (m *multiCloudProvisioner) updateMCWorkDir() {

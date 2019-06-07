@@ -122,7 +122,7 @@ func (s *secret) updateFileConfig(d *Data) error {
 	return nil
 }
 
-func (c *Cloud) newSecret() (*secret, error) {
+func newSecret(c *Cloud) (*secret, error) {
 	return &secret{
 		cloud:  c,
 		log:    logutil.NewFileLogger("topology", c.config.LogFile),

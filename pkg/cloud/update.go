@@ -11,8 +11,8 @@ import (
 	"github.com/Juniper/contrail/pkg/services"
 )
 
-func (c *Cloud) updateIPDetails(ctx context.Context, data *Data) error {
-	tfState, err := readStateFile(GetTFStateFile(c.config.CloudID))
+func updateIPDetails(ctx context.Context, cloudID string, data *Data) error {
+	tfState, err := readStateFile(GetTFStateFile(cloudID))
 	if err != nil {
 		return err
 	}
