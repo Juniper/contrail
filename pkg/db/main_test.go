@@ -41,6 +41,7 @@ func TestMain(m *testing.M) {
 			Password: config["password"].(string),
 			Host:     config["host"].(string),
 			Name:     config["name"].(string),
+			Debug:    config["debug"].(bool),
 		})
 		if err != nil {
 			logutil.FatalWithStackTrace(err)

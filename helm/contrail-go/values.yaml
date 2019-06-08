@@ -9,7 +9,7 @@ image: opencontrailnightly/contrail-go
 
 # TLS Configuration
 tls:
-    enabled: true 
+    enabled: true
     key: |
         -----BEGIN RSA PRIVATE KEY-----
         MIIEowIBAAKCAQEAvdXC9gZX8O3J1N3brMh+D7izXyxh550Awxf40LHlkmW0fAwy
@@ -65,7 +65,7 @@ tls:
 config:
     # Database configuration. MySQL/PostgreSQL supported
     database:
-        type: postgres 
+        type: postgres
         dialect: postgres
         # host: localhost
         # user: root
@@ -76,6 +76,7 @@ config:
         max_open_conn: 100
         connection_retries: 10
         retry_period: 3s
+        debug: false
 
     etcd:
         endpoints:
@@ -85,14 +86,15 @@ config:
         path: json
 
     # Log Level
-    log_level: debug 
+    log_level: debug
 
     # Server configuration
     server:
         enabled: true
         read_timeout: 10
         write_timeout: 5
-        log_api: false 
+        log_api: true
+        log_body: true
         address: ":9091"
 
         # TLS Configuration
@@ -118,7 +120,7 @@ config:
             - http://localhost:8082
 
         notify_etcd: true
-    
+
     # Keystone configuration
     #keystone:
     #    local: true # Enable local keystone v3. This is only for testing now.
@@ -150,7 +152,7 @@ config:
         backend: file
         watcher: polling
         tasks:
-        - schema_id: virtual_network 
+        - schema_id: virtual_network
           common:
           - vars:
               dir: "./work/virtual_networks/"
@@ -198,11 +200,11 @@ postgresql:
     imageTag: latest
     postgresHost: localhost
     postgresUser: contrail
-    postgresPassword: contrail123    
+    postgresPassword: contrail123
     postgresDatabase: contrail
 
 external_config:
-    enabled: false 
+    enabled: false
     rdbms: ""
     etcd: ""
 
@@ -227,7 +229,7 @@ etcd:
 
 # Provistion keystone for test
 keystone:
-  enabled: false 
+  enabled: false
   password: contrail123
   # TODO: use kolla keystone
   image: stephenhsu/keystone:9.1.0

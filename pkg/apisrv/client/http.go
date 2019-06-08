@@ -373,11 +373,11 @@ func (h *HTTP) Batch(ctx context.Context, requests []*Request) error {
 
 func errorFromResponse(e error, r *http.Response) error {
 	if r == nil {
-		return errors.Wrap(e, "response is nil, error")
+		return errors.Wrap(e, "HTTP response is nil, error")
 	}
 	b, err := httputil.DumpResponse(r, true)
 	if err != nil {
-		return errors.Wrapf(e, "response: failed to dump (%s)", err)
+		return errors.Wrapf(e, "HTTP response: failed to dump (%s)", err)
 	}
-	return errors.Wrapf(e, "response:\n%v", string(b))
+	return errors.Wrapf(e, "HTTP response:\n%v", string(b))
 }
