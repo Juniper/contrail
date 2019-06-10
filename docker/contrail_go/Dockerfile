@@ -7,8 +7,7 @@ ARG GOPATH
 MAINTAINER Nachi Ueno nueno@juniper.net
 
 COPY ./src/ $GOPATH/src/github.com/Juniper/
-RUN  unlink /bin/contrail
-ADD ./contrail /bin/contrail
+ADD ./contrail /bin/contrailgo
 ADD ./contrailcli /bin/contrailcli
 ADD ./contrailutil /bin/contrailutil
 ADD ./etc /etc/contrail
@@ -31,4 +30,4 @@ RUN pip install ansible==2.7.11
 
 EXPOSE 9091
 WORKDIR /etc/contrail
-ENTRYPOINT ["/bin/contrail", "-c", "/etc/contrail/contrail.yml", "run"]
+ENTRYPOINT ["/bin/contrailgo", "-c", "/etc/contrail/contrail.yml", "run"]
