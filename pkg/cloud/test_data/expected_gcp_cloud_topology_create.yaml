@@ -5,10 +5,11 @@
   prebuild: nightly
   tags:
     owner: juniper
-    Project: contrail_multicloud
+    project: contrail_multicloud
     build_id: latest
   regions:
     - name: us-west1
+      vpc:
         - name: virtual_cloud
           cidr_block: 192.168.10.0/16
           subnets:
