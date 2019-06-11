@@ -20,22 +20,22 @@ tasks:
   - template:
       src: "/etc/contrail/contrail-cloud-config.tmpl"
       dest: "{{ dir }}/contrail-cloud-config.yml"
-  - debug: "AGENT creating cloud (contrail cloud -c {{ dir }}/contrail-cloud-config.yml)"
-  - command: "contrail cloud -c {{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT creating cloud (contrailgo cloud -c {{ dir }}/contrail-cloud-config.yml)"
+  - command: "contrailgo cloud -c {{ dir }}/contrail-cloud-config.yml"
   - debug: "AGENT cloud create complete"
   on_update:
   - template:
       src: "/etc/contrail/contrail-cloud-config.tmpl"
       dest: "{{ dir }}/contrail-cloud-config.yml"
-  - debug: "AGENT updating cloud (contrail cloud -c {{ dir }}/contrail-cloud-config.yml)"
-  - command: "contrail cloud -c {{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT updating cloud (contrailgo cloud -c {{ dir }}/contrail-cloud-config.yml)"
+  - command: "contrailgo cloud -c {{ dir }}/contrail-cloud-config.yml"
   - debug: "AGENT cloud update complete"
   on_delete:
   - template:
       src: "/etc/contrail/contrail-cloud-config.tmpl"
       dest: "{{ dir }}/contrail-cloud-config.yml"
-  - debug: "AGENT deleting cloud (contrail cloud -c {{ dir }}/contrail-cloud-config.yml)"
-  - command: "contrail cloud -c {{ dir }}/contrail-cloud-config.yml"
+  - debug: "AGENT deleting cloud (contrailgo cloud -c {{ dir }}/contrail-cloud-config.yml)"
+  - command: "contrailgo cloud -c {{ dir }}/contrail-cloud-config.yml"
   - debug: "AGENT deleting {{ dir }}"
   - command: "rm -rf  {{ dir }}"
   - debug: "AGENT deleted {{ dir }}"
