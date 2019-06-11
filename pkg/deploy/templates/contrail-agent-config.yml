@@ -23,24 +23,24 @@ tasks:
   - template:
       src: "/etc/contrail/contrail-deploy-config.tmpl"
       dest: "{{ dir }}/contrail-deploy-config.yml"
-  - debug: "AGENT creating {{ res_type }}(contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
-  - command: "contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT creating {{ res_type }}(contrailgo deploy -c {{ dir }}/contrail-deploy-config.yml)"
+  - command: "contrailgo deploy -c {{ dir }}/contrail-deploy-config.yml"
     #- command: "go run cmd/contrail/main.go deploy -c {{ dir }}/contrail-deploy-config.yml"
   - debug: "AGENT {{ res_type }} create complete"
   on_update:
   - template:
       src: "/etc/contrail/contrail-deploy-config.tmpl"
       dest: "{{ dir }}/contrail-deploy-config.yml"
-  - debug: "AGENT updating {{ res_type }}(contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
-  - command: "contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT updating {{ res_type }}(contrailgo deploy -c {{ dir }}/contrail-deploy-config.yml)"
+  - command: "contrailgo deploy -c {{ dir }}/contrail-deploy-config.yml"
     #- command: "go run cmd/contrail/main.go deploy -c {{ dir }}/contrail-deploy-config.yml"
   - debug: "AGENT {{ res_type }} update complete"
   on_delete:
   - template:
       src: "/etc/contrail/contrail-deploy-config.tmpl"
       dest: "{{ dir }}/contrail-deploy-config.yml"
-  - debug: "AGENT deleting {{ res_type }}(contrail deploy -c {{ dir }}/contrail-deploy-config.yml)"
-  - command: "contrail deploy -c {{ dir }}/contrail-deploy-config.yml"
+  - debug: "AGENT deleting {{ res_type }}(contrailgo deploy -c {{ dir }}/contrail-deploy-config.yml)"
+  - command: "contrailgo deploy -c {{ dir }}/contrail-deploy-config.yml"
   - debug: "AGENT deleting {{ dir }}"
   - command: "rm -rf  {{ dir }}"
   - debug: "AGENT deleted {{ dir }}"
