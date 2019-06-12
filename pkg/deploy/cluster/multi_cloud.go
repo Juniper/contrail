@@ -82,6 +82,7 @@ const (
 
 	aws    = "aws"
 	azure  = "azure"
+	gcp    = "gcp"
 	onPrem = "private"
 
 	statusRetryInterval = 3 * time.Second
@@ -635,7 +636,7 @@ func (m *multiCloudProvisioner) readPubKeyConfig() (*PubKeyConfig, error) {
 	}
 
 	pubKeyConfig := &PubKeyConfig{}
-	err = yaml.UnmarshalStrict(data, pubKeyConfig)
+	err = yaml.Unmarshal(data, pubKeyConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -1304,7 +1305,7 @@ func (m *multiCloudProvisioner) getPubPvtCloudID() (string, string, error) {
 				onPremCloudID = cloudRef.UUID
 				continue
 			}
-			if p.Type == aws || p.Type == azure {
+			if p.Type == aws || p.Type == azure || p.Type == gcp {
 				publicCloudID = cloudRef.UUID
 				continue
 			}
