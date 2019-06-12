@@ -1,5 +1,5 @@
 
-- provider: gcp
+- provider: google
   organization: unit_test
   project: test2
   prebuild: nightly
