@@ -20,7 +20,6 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 
@@ -104,10 +103,9 @@ func TestClusterTokenMethod(t *testing.T) {
 		"public_url":    ksPublic.URL,
 	}
 
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, testClusterTokenAPIFile, pContext)
+	ts, err := integration.LoadTest(testClusterTokenAPIFile, pContext)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
 	server.ForceProxyUpdate()
@@ -144,7 +142,7 @@ func TestClusterTokenMethod(t *testing.T) {
 	assert.NotEmpty(t, contents)
 
 	// Cleanup test TODO: Fix cleanup to remove all resources
-	integration.RunCleanTestScenario(t, &testScenario, server)
+	integration.RunCleanTestScenario(t, ts, server)
 }
 
 func TestClusterLogin(t *testing.T) {
@@ -162,19 +160,17 @@ func TestClusterLogin(t *testing.T) {
 		"public_url":    ksPublic.URL,
 	}
 
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, testClusterTokenAPIFile, pContext)
+	ts, err := integration.LoadTest(testClusterTokenAPIFile, pContext)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
 	server.ForceProxyUpdate()
 
 	ctx := context.Background()
-	var clientScenario integration.TestScenario
-	err = integration.LoadTestScenario(&clientScenario, testClusterTokenAPIFile, pContext)
+	ts, err = integration.LoadTest(testClusterTokenAPIFile, pContext)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	clients := integration.PrepareClients(ctx, t, &clientScenario, server)
+	clients := integration.PrepareClients(ctx, t, ts, server)
 
 	// preserve infra token
 	var infraToken string
@@ -226,7 +222,7 @@ func TestClusterLogin(t *testing.T) {
 	}
 
 	// Cleanup test
-	integration.RunCleanTestScenario(t, &testScenario, server)
+	integration.RunCleanTestScenario(t, ts, server)
 }
 
 func verifyBasicAuthDomains(
@@ -296,10 +292,8 @@ func verifyBasicAuthProjects(
 }
 func TestBasicAuth(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		DBDriver:           basedb.DriverPostgreSQL,
-		RepoRootPath:       "../../..",
-		EnableEtcdNotifier: false,
-		AuthType:           "basic-auth",
+		RepoRootPath: "../../..",
+		AuthType:     "basic-auth",
 	})
 	defer s.CloseT(t)
 
@@ -341,20 +335,19 @@ func TestBasicAuth(t *testing.T) {
 		"private_url":   configService.URL,
 		"public_url":    configService.URL,
 	}
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, testBasicAuthFile, pContext)
+	ts, err := integration.LoadTest(testBasicAuthFile, pContext)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
 	server.ForceProxyUpdate()
 
 	ctx := context.Background()
 	url := "/keystone/v3/auth/projects"
-	ok := verifyBasicAuthProjects(ctx, t, &testScenario, url, clusterName)
+	ok := verifyBasicAuthProjects(ctx, t, ts, url, clusterName)
 	assert.True(t, ok, "failed to get project list from config %s", url)
 
 	url = "/keystone/v3/auth/domains"
-	ok = verifyBasicAuthDomains(ctx, t, &testScenario, url, clusterName)
+	ok = verifyBasicAuthDomains(ctx, t, ts, url, clusterName)
 	assert.True(t, ok, "failed to get domain list from config %s", url)
 }
