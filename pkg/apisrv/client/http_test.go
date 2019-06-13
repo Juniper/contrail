@@ -15,28 +15,29 @@ import (
 
 func TestNewHTTP(t *testing.T) {
 	tests := []struct {
-		desc     string
-		url      string
-		protocol string
+		desc string
+		url  string
 	}{{
-		desc:     "http client test",
-		url:      "http://fake_endpoint/",
-		protocol: "http",
+		desc: "http client test",
+		url:  "http://fake_endpoint/",
 	}, {
-		desc:     "https client test",
-		url:      "https://fake_endpoint/",
-		protocol: "https",
+		desc: "https client test",
+		url:  "https://fake_endpoint/",
 	}}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			h := NewHTTP(tt.url, tt.url, "fake_client", "fake_password", true, nil)
-			h.Init()
+			h := NewHTTP(&HTTPConfig{
+				ID:       "fake_client",
+				Password: "fake_password",
+				Endpoint: tt.url,
+				AuthURL:  tt.url,
+				Insecure: true,
+			})
+
 			assert.Equal(t, tt.url+"foo", h.getURL("foo"), "getURL failed")
 			assert.Equal(t, tt.url, h.AuthURL, "invalid auth URL")
-			assert.Equal(t, tt.protocol, h.getProtocol(), "getProtocol failed")
 		})
 	}
-
 }
 
 type httpResp struct {
@@ -118,8 +119,16 @@ func TestDoRequest(t *testing.T) {
 		t.Run(tt.desc, func(t *testing.T) {
 			ts := fakeHTTP(tt.resps)
 			defer ts.Close()
-			h := NewHTTP(ts.URL, ts.URL, "fake_client", "fake_password", true, tt.keystone)
-			h.Init()
+
+			h := NewHTTP(&HTTPConfig{
+				ID:       "fake_client",
+				Password: "fake_password",
+				Endpoint: ts.URL,
+				AuthURL:  ts.URL,
+				Scope:    tt.keystone,
+				Insecure: true,
+			})
+
 			var got testResp
 			if tt.req != nil {
 				tt.req.Output = &got

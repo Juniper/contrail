@@ -63,6 +63,7 @@ type Server struct {
 	Cache                      *cache.DB
 	Collector                  collector.Collector
 	VNCReplicator              *replication.Replicator
+	log                        *logrus.Entry
 }
 
 type recorderTask struct {
@@ -81,10 +82,10 @@ func NewServer() (*Server, error) {
 // Init setups the Server.
 // nolint: gocyclo
 func (s *Server) Init() (err error) {
-	// TODO (Kamil): should we refactor server to use a local logger?
 	if err = logutil.Configure(viper.GetString("log_level")); err != nil {
 		return err
 	}
+	s.log = logutil.NewLogger("api-server")
 
 	// TODO: integrate Echo's logger with logrus
 	if viper.GetBool("server.log_api") {
@@ -95,10 +96,13 @@ func (s *Server) Init() (err error) {
 
 	if viper.GetBool("server.log_body") {
 		s.Echo.Use(middleware.BodyDump(func(c echo.Context, requestBody, responseBody []byte) {
-			logrus.WithFields(logrus.Fields{
+			if len(responseBody) > 10000 {
+				responseBody = responseBody[0:10000] // trim too long entries
+			}
+			s.log.WithFields(logrus.Fields{
 				"request-body":  string(requestBody),
 				"response-body": string(responseBody),
-			}).Debug("Request handled")
+			}).Debug("HTTP request handled")
 		}))
 	}
 
@@ -145,9 +149,9 @@ func (s *Server) Init() (err error) {
 	cors := viper.GetString("server.cors")
 
 	if cors != "" {
-		logrus.Printf("Enabling CORS for %s", cors)
+		s.log.WithField("cors", cors).Debug("Enabling CORS")
 		if cors == "*" {
-			logrus.Printf("cors for * have security issue. DO NOT USE THIS IN PRODUCTION")
+			s.log.Warn("cors for * have security issue. DO NOT USE THIS IN PRODUCTION")
 		}
 		s.Echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins:  []string{cors},
@@ -200,7 +204,7 @@ func (s *Server) Init() (err error) {
 		if !viper.GetBool("server.tls.enabled") {
 			return errors.New("GRPC support requires TLS configuration")
 		}
-		logrus.Debug("Enabling gRPC server")
+		s.log.Debug("Enabling gRPC server")
 		opts := []grpc.ServerOption{
 			// TODO(Michal): below option potentially breaks compatibility for non golang grpc clients.
 			// Ensure it doesn't or find a better solution for un/marshaling `oneof` fields properly.
@@ -241,12 +245,12 @@ func (s *Server) Init() (err error) {
 			var data interface{}
 			err := json.Unmarshal(requestBody, &data)
 			if err != nil {
-				logrus.Debug("malformed json input")
+				s.log.WithError(err).Error("Malformed JSON input")
 			}
 			var expected interface{}
 			err = json.Unmarshal(responseBody, &expected)
 			if err != nil {
-				logrus.Debug("malformed json response")
+				s.log.WithError(err).Error("Malformed JSON response")
 			}
 			task := &recorderTask{
 				Request: &client.Request{
@@ -262,7 +266,7 @@ func (s *Server) Init() (err error) {
 			scenario.Workflow = append(scenario.Workflow, task)
 			err = fileutil.SaveFile(file, scenario)
 			if err != nil {
-				logrus.Warn(err)
+				s.log.WithError(err).Error("Failed to save scenario to file")
 			}
 		}))
 	}
@@ -343,7 +347,7 @@ func (s *Server) setupService() (*services.ContrailService, error) {
 	serviceChain = append(serviceChain, services.NewQuotaCheckerService(s.DBService))
 
 	if viper.GetBool("server.notify_etcd") {
-		en := etcdNotifier()
+		en := s.etcdNotifier()
 		if en != nil {
 			serviceChain = append(serviceChain, en)
 		}
@@ -377,11 +381,11 @@ func (s *Server) contrailService() (*services.ContrailService, error) {
 	return cs, nil
 }
 
-func etcdNotifier() services.Service {
+func (s *Server) etcdNotifier() services.Service {
 	// TODO(Michał): Make the codec configurable
 	en, err := etcdclient.NewNotifierService(viper.GetString(constants.ETCDPathVK), models.JSONCodec)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
+		s.log.WithError(err).Error("Failed to add etcd Notifier Service - ignoring")
 		return nil
 	}
 	return en
@@ -486,7 +490,7 @@ func (s *Server) setupActionResources(cs *services.ContrailService) {
 func (s *Server) Run() error {
 	defer func() {
 		if err := s.Close(); err != nil {
-			logrus.WithError(err).Info("Closing DBService failed")
+			s.log.WithError(err).Error("Closing DBService failed")
 		}
 	}()
 
