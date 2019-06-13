@@ -36,5 +36,5 @@ Which will be used by agent to generate the cluster config file.
 Start cluster service in one-shot mode by specifying configuration file path:
 
 ```bash
-contrail cluster -c config-file-path
+contrailgo deploy -c config-file-path
 ```
