@@ -11,15 +11,15 @@ import (
 )
 
 func init() {
-	ContrailCLI.AddCommand(RmCmd)
+	ContrailCLI.AddCommand(rmCmd)
 }
 
 const removeHelpTemplate = `Remove command possible usages:
 {% for schema in schemas %}contrail rm {{ schema.ID }} $UUID
 {% endfor %}`
 
-// RmCmd defines rm command.
-var RmCmd = &cobra.Command{
+// rmCmd defines rm command.
+var rmCmd = &cobra.Command{
 	Use:   "rm [SchemaID] [UUID]",
 	Short: "Remove a resource with specified UUID",
 	Long:  "Invoke command with empty SchemaID in order to show possible usages",
@@ -40,7 +40,7 @@ func deleteResource(schemaID, uuid string) (string, error) {
 	if schemaID == "" || uuid == "" {
 		return showHelp(schemaID, removeHelpTemplate)
 	}
-	client, err := getClient()
+	client, err := newHTTPClient()
 	if err != nil {
 		return "", nil
 	}

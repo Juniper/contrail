@@ -57,7 +57,7 @@ const (
 // APIServer is embedded API Server for testing purposes.
 type APIServer struct {
 	APIServer  *apisrv.Server
-	TestServer *httptest.Server
+	testServer *httptest.Server
 	log        *logrus.Entry
 }
 
@@ -87,7 +87,7 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 	setDefaultViperConfig(c)
 
-	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
+	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
 
@@ -107,7 +107,7 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 
 	return &APIServer{
 		APIServer:  s,
-		TestServer: ts,
+		testServer: ts,
 		log:        logutil.NewLogger("api-server"),
 	}, nil
 }
@@ -217,13 +217,13 @@ func keystoneAssignment() *keystone.StaticAssignment {
 
 func setViperConfig(config map[string]interface{}) {
 	for k, v := range config {
-		viper.SetDefault(k, v)
+		viper.Set(k, v)
 	}
 }
 
 // URL returns server base URL.
 func (s *APIServer) URL() string {
-	return s.TestServer.URL
+	return s.testServer.URL
 }
 
 // CloseT closes server.
@@ -236,7 +236,7 @@ func (s *APIServer) CloseT(t *testing.T) {
 
 // Close closes server.
 func (s *APIServer) Close() error {
-	s.TestServer.Close()
+	s.testServer.Close()
 	return s.APIServer.Close()
 }
 

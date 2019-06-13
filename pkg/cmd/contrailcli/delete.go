@@ -11,11 +11,10 @@ import (
 )
 
 func init() {
-	ContrailCLI.AddCommand(DeleteCmd)
+	ContrailCLI.AddCommand(deleteCmd)
 }
 
-// DeleteCmd defines delete command.
-var DeleteCmd = &cobra.Command{
+var deleteCmd = &cobra.Command{
 	Use:   "delete [FilePath]",
 	Short: "Delete resources specified in given YAML file",
 	Long:  "Use resource format just like in 'schema' command output",
@@ -30,7 +29,7 @@ var DeleteCmd = &cobra.Command{
 }
 
 func deleteResources(dataPath string) (string, error) {
-	client, err := getClient()
+	client, err := newHTTPClient()
 	if err != nil {
 		return "", nil
 	}

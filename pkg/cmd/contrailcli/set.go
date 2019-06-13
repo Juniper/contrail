@@ -12,15 +12,14 @@ import (
 )
 
 func init() {
-	ContrailCLI.AddCommand(SetCmd)
+	ContrailCLI.AddCommand(setCmd)
 }
 
 const setHelpTemplate = `Set command possible usages:
 {% for schema in schemas %}contrail set {{ schema.ID }} $UUID $YAML
 {% endfor %}`
 
-// SetCmd defines set command.
-var SetCmd = &cobra.Command{
+var setCmd = &cobra.Command{
 	Use:   "set [SchemaID] [UUID] [Properties to update in YAML format]",
 	Short: "Set properties of specified resource",
 	Long:  "Invoke command with empty SchemaID in order to show possible usages",
@@ -45,7 +44,7 @@ func setResourceParameter(schemaID, uuid, yamlString string) (string, error) {
 	if schemaID == "" || uuid == "" {
 		return showHelp(schemaID, setHelpTemplate)
 	}
-	client, err := getClient()
+	client, err := newHTTPClient()
 	if err != nil {
 		return "", nil
 	}

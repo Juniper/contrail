@@ -12,15 +12,14 @@ import (
 )
 
 func init() {
-	ContrailCLI.AddCommand(ShowCmd)
+	ContrailCLI.AddCommand(showCmd)
 }
 
 const showHelpTemplate = `Show command possible usages:
 {% for schema in schemas %}contrail show {{ schema.ID }} $UUID
 {% endfor %}`
 
-// ShowCmd defines show command.
-var ShowCmd = &cobra.Command{
+var showCmd = &cobra.Command{
 	Use:   "show [SchemaID] [UUID]",
 	Short: "Show data of specified resource",
 	Long:  "Invoke command with empty SchemaID in order to show possible usages",
@@ -43,7 +42,7 @@ func showResource(schemaID, uuid string) (string, error) {
 	if schemaID == "" || uuid == "" {
 		return showHelp(schemaID, showHelpTemplate)
 	}
-	client, err := getClient()
+	client, err := newHTTPClient()
 	if err != nil {
 		return "", nil
 	}

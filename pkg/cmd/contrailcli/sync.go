@@ -12,11 +12,10 @@ import (
 )
 
 func init() {
-	ContrailCLI.AddCommand(SyncCmd)
+	ContrailCLI.AddCommand(syncCmd)
 }
 
-// SyncCmd defines sync command.
-var SyncCmd = &cobra.Command{
+var syncCmd = &cobra.Command{
 	Use:   "sync [FilePath]",
 	Short: "Synchronise resources with data defined in given YAML file",
 	Long: `
@@ -33,7 +32,7 @@ Use resource format just like in 'schema' command output`,
 }
 
 func syncResources(dataPath string) (string, error) {
-	client, err := getClient()
+	client, err := newHTTPClient()
 	if err != nil {
 		return "", nil
 	}

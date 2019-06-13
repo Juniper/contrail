@@ -29,11 +29,10 @@ const schemaTemplate = `
 const retryMax = 5
 
 func init() {
-	ContrailCLI.AddCommand(SchemaCmd)
+	ContrailCLI.AddCommand(schemaCmd)
 }
 
-// SchemaCmd defines schema command.
-var SchemaCmd = &cobra.Command{
+var schemaCmd = &cobra.Command{
 	Use:   "schema [SchemaID]",
 	Short: "Show schema for specified resource",
 	Args:  cobra.ExactArgs(1),
@@ -55,7 +54,7 @@ func showSchema(schemaID string) (string, error) {
 }
 
 func showHelp(schemaID string, template string) (string, error) {
-	client, err := getClient()
+	client, err := newHTTPClient()
 	if err != nil {
 		return "", nil
 	}
