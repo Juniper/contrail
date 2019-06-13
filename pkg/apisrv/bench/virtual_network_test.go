@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -79,11 +78,9 @@ func BenchmarkVirtualNetworkCreate(b *testing.B) {
 
 func withServerAndClient(t testing.TB, test func(*client.HTTP)) {
 	s, err := integration.NewRunningServer(&integration.APIServerConfig{
-		DBDriver:           basedb.DriverPostgreSQL,
-		RepoRootPath:       "../../..",
-		LogLevel:           "warn",
-		EnableEtcdNotifier: false,
-		DisableLogAPI:      true,
+		RepoRootPath:  "../../..",
+		LogLevel:      "warn",
+		DisableLogAPI: true,
 	})
 	if err != nil {
 		t.Fatal("creating API server failed", err)

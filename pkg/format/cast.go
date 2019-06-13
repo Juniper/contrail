@@ -41,7 +41,7 @@ func InterfaceToInt(i interface{}) int {
 		}
 		return int(i64)
 	default:
-		logrus.Warnf("Could not convert %#v to int", i)
+		logrus.Debugf("Could not convert %#v to int", i)
 	}
 	return 0
 }
@@ -80,7 +80,7 @@ func InterfaceToInt64(i interface{}) int64 {
 		}
 		return i64
 	default:
-		logrus.Warnf("Could not convert (%T) %#v to int64", i, i)
+		logrus.Debugf("Could not convert (%T) %#v to int64", i, i)
 	}
 	return 0
 }
@@ -121,7 +121,7 @@ func InterfaceToUint64(i interface{}) uint64 {
 		}
 		return i
 	default:
-		logrus.Warnf("Could not convert %#v to uint64", i)
+		logrus.Debugf("Could not convert %#v to uint64", i)
 	}
 	return 0
 }
@@ -148,7 +148,7 @@ func InterfaceToBool(i interface{}) bool {
 	case float64:
 		return t == 1
 	default:
-		logrus.Warnf("Could not convert %#v to bool", i)
+		logrus.Debugf("Could not convert %#v to bool", i)
 	}
 	return false
 }
@@ -163,7 +163,7 @@ func InterfaceToString(i interface{}) string {
 	case nil:
 		return ""
 	default:
-		logrus.Warnf("Could not convert %#v to string", i)
+		logrus.Debugf("Could not convert %#v to string", i)
 	}
 	return ""
 }
@@ -182,7 +182,7 @@ func InterfaceToStringList(i interface{}) []string {
 	case nil:
 		return nil
 	default:
-		logrus.Warnf("Could not convert %#v to []string", i)
+		logrus.Debugf("Could not convert %#v to []string", i)
 	}
 	return nil
 }
@@ -201,7 +201,7 @@ func InterfaceToInt64List(i interface{}) []int64 {
 	case nil:
 		return nil
 	default:
-		logrus.Warnf("Could not convert %#v to []int64", i)
+		logrus.Debugf("Could not convert %#v to []int64", i)
 	}
 	return nil
 }
@@ -262,7 +262,7 @@ func InterfaceToFloat(i interface{}) float64 {
 		}
 		return f64
 	default:
-		logrus.Warnf("Could not convert %#v to float64", i)
+		logrus.Debugf("Could not convert %#v to float64", i)
 	}
 	return t
 }
@@ -275,7 +275,7 @@ func InterfaceToBytes(i interface{}) []byte {
 	case string:
 		return []byte(t)
 	default:
-		logrus.Warnf("Could not convert %#v to []byte", i)
+		logrus.Debugf("Could not convert %#v to []byte", i)
 	}
 	return []byte{}
 }

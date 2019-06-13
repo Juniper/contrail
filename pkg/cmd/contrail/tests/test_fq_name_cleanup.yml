@@ -6,7 +6,7 @@ cleanup:
 - kind: project
   fq_name:
   - default-domain
-  - project_blue_project
+  - 7f2cdce2-9bef-11e9-95fd-ff6ba1f29a62
 
 clients:
   default:
@@ -18,9 +18,8 @@ clients:
         name: admin
 
 test_data:
-  project_blue: &project_blue_project
-    uuid: 7f2cdce2-9bef-11e9-95fd-ff6ba1f29a62
-    name: project_blue_project
+  project: &project
+    name: 7f2cdce2-9bef-11e9-95fd-ff6ba1f29a62
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -32,6 +31,6 @@ workflow:
     method: POST
     expected: [200]
     data:
-      project: *project_blue_project
+      project: *project
   expect:
-    project: *project_blue_project
+    project: *project

@@ -1297,6 +1297,7 @@
     "github.com/golang/dep/cmd/dep",
     "github.com/golang/mock/gomock",
     "github.com/golang/mock/mockgen",
+    "github.com/hashicorp/go-cleanhttp",
     "github.com/hashicorp/terraform/terraform",
     "github.com/jackc/pgx",
     "github.com/jackc/pgx/pgtype",
