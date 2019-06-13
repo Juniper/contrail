@@ -40,7 +40,7 @@ type proxySender struct {
 // NewCollector makes a collector
 func NewCollector(cfg *Config) (collector.Collector, error) {
 	if !cfg.Enabled {
-		ignoreAPIMessage().Warn("collector is disabled")
+		ignoreAPIMessage().Info("Collector is disabled")
 		return &noSender{}, nil
 	}
 	return newProxySender(cfg)

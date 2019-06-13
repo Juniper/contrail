@@ -188,10 +188,9 @@ func initTestCluster(
 		"config_url":      vncServer.URL,
 	}
 
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, testReplicationTmpl, pContext)
+	ts, err := integration.LoadTest(testReplicationTmpl, pContext)
 	assert.NoError(t, err, "failed to load replication test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	server.ForceProxyUpdate()
 
 	cleanupTestCluster := func() {

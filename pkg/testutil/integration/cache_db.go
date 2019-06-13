@@ -15,7 +15,7 @@ const (
 
 // RunCacheDB runs DB Cache with etcd event producer.
 func RunCacheDB() (*cache.DB, func() error, error) {
-	setViperConfig(map[string]interface{}{
+	setViper(map[string]interface{}{
 		"cache.timeout":           "10s",
 		constants.ETCDEndpointsVK: []string{integrationetcd.Endpoint},
 	})
