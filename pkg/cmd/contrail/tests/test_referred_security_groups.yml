@@ -3,16 +3,16 @@ description: this tests checks whether referred security groups are handled prop
 intent_compiler_enabled: true
 cleanup:
 - kind:  access-control-list
-  fq_name: ["default-domain", "blue", "sg_referring", "ingress-access-control-list"]
+  fq_name: ["default-domain", "e6c621c2-9bec-11e9-a388-872a56dc754f", "sg_referring", "ingress-access-control-list"]
 - kind:  access-control-list
-  fq_name: ["default-domain", "blue", "sg_referring", "egress-access-control-list"]
+  fq_name: ["default-domain", "e6c621c2-9bec-11e9-a388-872a56dc754f", "sg_referring", "egress-access-control-list"]
 - path: /security-group/dd2fe27e-9bec-11e9-a098-ffa8f87266f5
 - path: /security-group/d1961d0c-9bec-11e9-8401-cf38a6f73cf4
 - path: /project/e6c621c2-9bec-11e9-a388-872a56dc754f
 test_data:
   project: &project
     uuid: e6c621c2-9bec-11e9-a388-872a56dc754f
-    name: blue
+    name: e6c621c2-9bec-11e9-a388-872a56dc754f
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg
@@ -49,7 +49,7 @@ test_data:
           start_port: 0
         ethertype: IPv4
         src_addresses:
-        - security_group: default-domain:blue:sg
+        - security_group: default-domain:e6c621c2-9bec-11e9-a388-872a56dc754f:sg
         src_ports:
         - end_port: 65535
           start_port: 0

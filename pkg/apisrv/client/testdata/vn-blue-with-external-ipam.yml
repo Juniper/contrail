@@ -1,0 +1,13 @@
+resources:
+- kind: virtual_network
+  data:
+    external_ipam: true
+    fq_name:
+    - default-domain
+    - project-cli-test
+    - vn-blue
+    parent_type: project
+    parent_uuid: project-cli-test-uuid
+    perms2:
+      owner: TestCLI
+    uuid: efb6aa60-9d8e-11e9-b056-13df9df3688a

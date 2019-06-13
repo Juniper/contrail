@@ -125,7 +125,7 @@ func AssertEqual(t *testing.T, expected, actual interface{}, msg ...string) bool
 		t,
 		IsObjectSubsetOf(expected, actual),
 		fmt.Sprintf(
-			"%s: objects not equal:\nexpected: %+v\nactual: %+v",
+			"%s: objects not equal:\nexpected:\n%+v\nactual:\n%+v",
 			strings.Join(msg, ", "),
 			format.MustYAML(expected),
 			format.MustYAML(actual),

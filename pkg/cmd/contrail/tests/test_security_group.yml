@@ -1,18 +1,31 @@
 name: Security Group Test
 description: security group test
 intent_compiler_enabled: true
+
 cleanup:
-# TODO(Michał): implement cleanup by fq_name for ACLs
-- path: /security-group/sg_uuid
+- kind: access-control-list
+  fq_name:
+  - default-domain
+  - 8e896740-9bf0-11e9-8a51-f332ca0f39d7
+  - sg_name
+  - ingress-access-control-list
+- kind: access-control-list
+  fq_name:
+  - default-domain
+  - 8e896740-9bf0-11e9-8a51-f332ca0f39d7
+  - sg_name
+  - egress-access-control-list
+- path: /security-group/9d0416ac-9caa-11e9-a635-079cc53fe7b5
 - path: /project/8e896740-9bf0-11e9-8a51-f332ca0f39d7
+
 test_data:
   project: &project
     uuid: 8e896740-9bf0-11e9-8a51-f332ca0f39d7
-    fq_name: ["default", "project_name"]
+    name: 8e896740-9bf0-11e9-8a51-f332ca0f39d7
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg
-    uuid: sg_uuid
+    uuid: 9d0416ac-9caa-11e9-a635-079cc53fe7b5
     name: sg_name
     parent_uuid: 8e896740-9bf0-11e9-8a51-f332ca0f39d7
     security_group_entries:
@@ -26,15 +39,15 @@ test_data:
             start_port: 0
           ethertype: "IPv4"
           src_addresses:
-          - security_group: "default:project_name:sg_name"
+          - security_group: "default-domain:8e896740-9bf0-11e9-8a51-f332ca0f39d7:sg_name"
           src_ports:
           - end_port: 65535
             start_port: 0
   ingress_acl: &ingress_acl
     name: ingress-access-control-list
     uuid: $uuid
-    parent_uuid: sg_uuid
-    fq_name: ["default","project_name","sg_name","ingress-access-control-list"]
+    parent_uuid: 9d0416ac-9caa-11e9-a635-079cc53fe7b5
+    fq_name: ["default-domain","8e896740-9bf0-11e9-8a51-f332ca0f39d7","sg_name","ingress-access-control-list"]
     access_control_list_entries:
       acl_rule:
         - action_list:
@@ -52,8 +65,9 @@ test_data:
   egress_acl: &egress_acl
     name: egress-access-control-list
     uuid: $uuid
-    parent_uuid: sg_uuid
-    fq_name: ["default","project_name","sg_name","egress-access-control-list"]
+    parent_uuid: 9d0416ac-9caa-11e9-a635-079cc53fe7b5
+    fq_name: ["default-domain","8e896740-9bf0-11e9-8a51-f332ca0f39d7","sg_name","egress-access-control-list"]
+
 clients:
   default:
     id: alice
@@ -62,6 +76,7 @@ clients:
     scope:
       project:
         name: admin
+
 workflow:
 # TODO(Michał): ensure that other ACLs are not deleted
 - name: create project
@@ -77,7 +92,8 @@ workflow:
   watchers:
     /contrail/project/8e896740-9bf0-11e9-8a51-f332ca0f39d7:
       - data: *project
-- name: create security group
+
+- name: create security group "sg_name"
   request:
     path: /security-groups
     method: POST
@@ -93,9 +109,10 @@ workflow:
     /contrail/access_control_list/:
       - data: *ingress_acl
       - data: *egress_acl
+
 - name: ensure ACL were created
   request:
-    path: /access-control-lists?parent_id=sg_uuid
+    path: /access-control-lists?parent_id=9d0416ac-9caa-11e9-a635-079cc53fe7b5
     method: GET
     expected:
     - 200
@@ -103,9 +120,10 @@ workflow:
     access-control-lists:
     - *ingress_acl
     - *egress_acl
+    -
 - name: delete security group
   request:
-    path: /security-group/sg_uuid
+    path: /security-group/9d0416ac-9caa-11e9-a635-079cc53fe7b5
     method: DELETE
     expected:
     - 200
@@ -116,9 +134,10 @@ workflow:
     /contrail/access_control_list/:
       - data: null
       - data: null
+
 - name: ensure ACL were deleted
   request:
-    path: /access-control-lists?parent_id=sg_uuid
+    path: /access-control-lists?parent_id=9d0416ac-9caa-11e9-a635-079cc53fe7b5
     method: GET
     expected:
     - 200
