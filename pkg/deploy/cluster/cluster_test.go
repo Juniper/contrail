@@ -8,17 +8,17 @@ import (
 	"os"
 	"testing"
 
-	"github.com/flosch/pongo2"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/flosch/pongo2"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -299,7 +299,7 @@ func createDummyCloudFiles(t *testing.T) func() {
 }
 
 // nolint: gocyclo
-func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
+func runClusterActionTest(t *testing.T, ts *integration.TestScenario,
 	config *Config, action, expectedInstance, expectedInventory string,
 	expectedPlaybooks string, expectedEndpoints map[string]string) {
 	// set action field in the contrail-cluster resource
@@ -346,7 +346,7 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 		cluster["provisioning_action"] = ""
 	}
 	data = map[string]interface{}{"contrail-cluster": cluster}
-	for _, client := range testScenario.Clients {
+	for _, client := range ts.Clients {
 		var response map[string]interface{}
 		url := fmt.Sprintf("/contrail-cluster/%s", clusterID)
 		_, err = client.Update(context.Background(), url, &data, &response)
@@ -377,7 +377,7 @@ func runClusterActionTest(t *testing.T, testScenario integration.TestScenario,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -396,24 +396,14 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	defer ksPrivate.Close()
 
 	// Create the cluster and related objects
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, allInOneClusterTemplatePath, pContext)
+	ts, err := integration.LoadTest(allInOneClusterTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load cluster test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -452,7 +442,7 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -491,33 +481,33 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
 
 	// UPGRADE test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		upgradeProvisioningAction, expectedInstance, expectedInventory,
 		upgradePlaybooks, expectedEndpoints)
 
 	// ADD_COMPUTE  test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		addComputeProvisioningAction, expectedInstance, expectedInventory,
 		addComputePlaybooks, expectedEndpoints)
 
 	// DELETE_COMPUTE  test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		deleteComputeProvisioningAction, expectedInstance, "",
 		deleteComputePlaybooks, expectedEndpoints)
 
 	// ADD_CSN  test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		addCSNProvisioningAction, expectedInstance, expectedInventory,
 		addCSNPlaybooks, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints without triggering playbooks)
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
 
 	// delete cluster
@@ -547,23 +537,6 @@ func getClusterDeployer(t *testing.T, config *Config) base.Deployer {
 	return deployer
 }
 
-func getConfig(apiserver *client.HTTP, klusterID string) *Config {
-	if klusterID == "" {
-		klusterID = clusterID
-	}
-
-	return &Config{
-		APIServer:    apiserver,
-		ClusterID:    klusterID,
-		Action:       "create",
-		LogLevel:     "debug",
-		TemplateRoot: "templates/",
-		WorkRoot:     workRoot,
-		Test:         true,
-		LogFile:      workRoot + "/deploy.log",
-	}
-}
-
 // nolint: gocyclo
 func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	pContext map[string]interface{}, expectedEndpoints map[string]string) {
@@ -577,24 +550,14 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	defer ksPrivate.Close()
 
 	// Create the cluster and related objects
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, allInOneClusterAppformixTemplatePath, pContext)
+	ts, err := integration.LoadTest(allInOneClusterAppformixTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load cluster test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -633,7 +596,7 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -672,33 +635,33 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
 
 	// UPGRADE test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		upgradeProvisioningAction, expectedInstance, expectedInventory,
 		upgradeAppformixPlaybooks, expectedEndpoints)
 
 	// ADD_COMPUTE  test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		addComputeProvisioningAction, expectedInstance, expectedInventory,
 		addAppformixComputePlaybooks, expectedEndpoints)
 
 	// DELETE_COMPUTE  test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		deleteComputeProvisioningAction, expectedInstance, "",
 		deleteAppformixComputePlaybooks, expectedEndpoints)
 
 	// ADD_CSN  test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		addCSNProvisioningAction, expectedInstance, expectedInventory,
 		addAppformixCSNPlaybooks, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints without triggering playbooks)
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
 
 	// delete cluster
@@ -779,9 +742,7 @@ func runAllInOneAppformixTest(t *testing.T, computeType string) {
 }
 
 func TestXflow(t *testing.T) {
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(
-		&testScenario,
+	ts, err := integration.LoadTest(
 		"test_data/test_xflow_cluster.tmpl",
 		map[string]interface{}{
 			"appformixFlowsUUID":     "f0151fa2-2db7-476f-b4a9-58fcda2130b7",
@@ -796,15 +757,22 @@ func TestXflow(t *testing.T) {
 		t.Error("Unable to load test scenario", err)
 	}
 
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
-	config := getConfig(testScenario.Clients["default"], "")
+	d, ok := getClusterDeployer(t, &Config{
+		APIServer:    ts.Clients["default"],
+		ClusterID:    clusterID,
+		Action:       "create",
+		LogLevel:     "debug",
+		TemplateRoot: "templates/",
+		WorkRoot:     workRoot,
+		Test:         true,
+		LogFile:      workRoot + "/deploy.log",
+	}).(*contrailAnsibleDeployer)
+	require.True(t, ok, "unable to cast deployer to contrailAnsibleDeployer")
 
-	contrailDeployer, ok := getClusterDeployer(t, config).(*contrailAnsibleDeployer)
-	assert.True(t, ok, "unable to cast deployer to contrailAnsibleDeployer")
-
-	err = contrailDeployer.createInventory()
+	err = d.createInventory()
 	assert.NoError(t, err, "unable to create inventory")
 
 	expectedInstance := "test_data/expected_xflow_instances.yaml"
@@ -932,24 +900,14 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, allInOneKubernetesClusterTemplatePath, pContext)
+	ts, err := integration.LoadTest(allInOneKubernetesClusterTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load cluster test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -981,7 +939,7 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -1013,28 +971,28 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
 
 	// UPGRADE test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		upgradeProvisioningAction, expectedOutput, "",
 		upgradePlaybooksKubernetes, expectedEndpoints)
 
 	// ADD_COMPUTE  test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		addComputeProvisioningAction, expectedOutput, "",
 		addComputePlaybooksKubernetes, expectedEndpoints)
 
 	// DELETE_COMPUTE  test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		deleteComputeProvisioningAction, expectedOutput, "",
 		deleteComputePlaybooksKubernetes, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		importProvisioningAction, expectedOutput, "", "", expectedEndpoints)
 
 	// delete cluster
@@ -1082,24 +1040,14 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, allInOnevcenterClusterTemplatePath, pContext)
+	ts, err := integration.LoadTest(allInOnevcenterClusterTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load cluster test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -1133,7 +1081,7 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are created
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
@@ -1165,18 +1113,18 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	// Wait for the in-memory endpoint cache to get updated
 	server.ForceProxyUpdate()
 	// make sure all endpoints are recreated as part of update
-	err = verifyEndpoints(t, &testScenario, expectedEndpoints)
+	err = verifyEndpoints(t, ts, expectedEndpoints)
 	if err != nil {
 		assert.NoError(t, err, err.Error())
 	}
 
 	// UPGRADE test
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		"UPGRADE", expectedOutput, "",
 		upgradePlaybooksvcenter, expectedEndpoints)
 
 	// IMPORT test (expected to create endpoints withtout triggering playbooks)
-	runClusterActionTest(t, testScenario, config,
+	runClusterActionTest(t, ts, config,
 		"IMPORT", expectedOutput, "", "", expectedEndpoints)
 
 	// delete cluster
@@ -1220,9 +1168,7 @@ func TestWindowsCompute(t *testing.T) {
 }
 
 // nolint: gocyclo
-func runMCClusterTest(t *testing.T, pContext map[string]interface{},
-	expectedEndpoints map[string]string) {
-
+func runMCClusterTest(t *testing.T, pContext map[string]interface{}) {
 	// mock keystone to let access server after cluster create
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	ksPublic := integration.MockServerWithKeystoneTestUser(
@@ -1232,25 +1178,14 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		"127.0.0.1:5000", keystoneAuthURL, defaultAdminUser, defaultAdminPassword)
 	defer ksPrivate.Close()
 	// Create the cluster and related objects
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, allInOneMCClusterTemplatePath, pContext)
+	ts, err := integration.LoadTest(allInOneMCClusterTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load mc cluster test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
-	// create cluster config
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -1288,10 +1223,9 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	assert.Error(t, err,
 		"mc deployment should fail because cloud provisioning has failed")
 
-	var updateCloudTestScenario integration.TestScenario
-	err = integration.LoadTestScenario(&updateCloudTestScenario, allInOneMCCloudUpdateTemplatePath, pContext)
+	ts, err = integration.LoadTest(allInOneMCCloudUpdateTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load mc pvt cloud update test data")
-	_ = integration.RunDirtyTestScenario(t, &updateCloudTestScenario, server)
+	_ = integration.RunDirtyTestScenario(t, ts, server)
 
 	// now get cluster data again
 	deployer, err = clusterDeployer.GetDeployer()
@@ -1360,10 +1294,9 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 		}
 	}
 
-	var updateTestScenario integration.TestScenario
-	err = integration.LoadTestScenario(&updateTestScenario, allInOneMCClusterUpdateTemplatePath, pContext)
+	ts, err = integration.LoadTest(allInOneMCClusterUpdateTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load mc cluster test data")
-	_ = integration.RunDirtyTestScenario(t, &updateTestScenario, server)
+	_ = integration.RunDirtyTestScenario(t, ts, server)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to update cluster")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -1402,10 +1335,10 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 			assert.NoError(t, err, "failed to delete executed ansible playbooks yaml")
 		}
 	}
-	var deleteTestScenario integration.TestScenario
-	err = integration.LoadTestScenario(&deleteTestScenario, allInOneMCClusterDeleteTemplatePath, pContext)
+
+	ts, err = integration.LoadTest(allInOneMCClusterDeleteTemplatePath, pContext)
 	assert.NoError(t, err, "failed to load mc cluster test data")
-	_ = integration.RunDirtyTestScenario(t, &deleteTestScenario, server)
+	_ = integration.RunDirtyTestScenario(t, ts, server)
 	clusterDeployer, err = NewCluster(config)
 	assert.NoError(t, err, "failed to create cluster manager to delete cloud")
 	deployer, err = clusterDeployer.GetDeployer()
@@ -1429,13 +1362,7 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 }
 
 func TestMCCluster(t *testing.T) {
-	context := pongo2.Context{
+	runMCClusterTest(t, pongo2.Context{
 		"CONTROL_NODES": "",
-	}
-	expectedEndpoints := map[string]string{
-		"config":    "http://1.1.1.1:8082",
-		"nodejs":    "https://1.1.1.1:8143",
-		"telemetry": "http://1.1.1.1:8081",
-	}
-	runMCClusterTest(t, context, expectedEndpoints)
+	})
 }

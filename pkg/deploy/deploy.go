@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 // Config represents Deploy configuration.
@@ -91,19 +92,19 @@ func NewDeploy(c *Config) (*Deploy, error) {
 		return nil, err
 	}
 
-	s := &client.HTTP{
+	s := client.NewHTTP(&client.HTTPConfig{
+		ID:       c.ID,
+		Password: c.Password,
 		Endpoint: c.Endpoint,
-		InSecure: c.InSecure,
-	}
-
-	if c.AuthURL != "" {
-		s.AuthURL = c.AuthURL
-		s.ID = c.ID
-		s.Password = c.Password
-		s.Scope = keystone.NewScope(c.DomainID, c.DomainName,
-			c.ProjectID, c.ProjectName)
-	}
-	s.Init()
+		AuthURL:  c.AuthURL,
+		Scope: keystone.NewScope(
+			c.DomainID,
+			c.DomainName,
+			c.ProjectID,
+			c.ProjectName,
+		),
+		Insecure: c.InSecure,
+	})
 
 	t := "daemon"
 	if c.ResourceID != "" && c.Action != "" {
@@ -127,12 +128,11 @@ func NewDeploy(c *Config) (*Deploy, error) {
 func (c *Deploy) Manage() error {
 	c.streamServer.Serve()
 	defer c.streamServer.Close()
+
 	c.log.Infof("start handling %s", c.config.ResourceType)
-	if c.config.AuthURL != "" {
-		_, err := c.APIServer.Login(context.Background())
-		if err != nil {
-			return fmt.Errorf("login to API Server failed: %s", err)
-		}
+	_, err := c.APIServer.Login(context.Background())
+	if err != nil {
+		return errors.Wrap(err, "login to API Server failed")
 	}
 
 	manager, err := newManager(c)

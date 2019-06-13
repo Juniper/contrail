@@ -73,23 +73,22 @@ func (h *vncAPIHandle) initialize() (err error) {
 }
 
 func (h *vncAPIHandle) initClient() error {
-	authURL := viper.GetString("keystone.authurl")
-	scope := keystone.NewScope(
-		viper.GetString("client.domain_id"),
-		viper.GetString("client.domain_name"),
-		viper.GetString("client.project_id"),
-		viper.GetString("client.project_name"),
-	)
-	h.APIServer = client.NewHTTP(
-		viper.GetString("client.endpoint"),
-		authURL,
-		viper.GetString("client.id"),
-		viper.GetString("client.password"),
-		viper.GetBool("insecure"),
-		scope,
-	)
+	h.APIServer = client.NewHTTP(&client.HTTPConfig{
+		ID:       viper.GetString("client.id"),
+		Password: viper.GetString("client.password"),
+		Endpoint: viper.GetString("client.endpoint"),
+		AuthURL:  viper.GetString("keystone.authurl"),
+		Scope: keystone.NewScope(
+			viper.GetString("client.domain_id"),
+			viper.GetString("client.domain_name"),
+			viper.GetString("client.project_id"),
+			viper.GetString("client.project_name"),
+		),
+		Insecure: viper.GetBool("insecure"),
+	})
+
 	var err error
-	if authURL != "" {
+	if viper.GetString("keystone.authurl") != "" {
 		_, err = h.APIServer.Login(context.Background())
 		if err != nil {
 			return err
@@ -99,7 +98,6 @@ func (h *vncAPIHandle) initClient() error {
 }
 
 func (h *vncAPIHandle) ListConfigEndpoints() (endpoints []*models.Endpoint, err error) {
-
 	request := &services.ListEndpointRequest{
 		Spec: &baseservices.ListSpec{
 			Fields: []string{"uuid", "parent_uuid", "prefix"},
@@ -150,7 +148,6 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 	var projectID string
 	ctx := auth.WithXClusterID(context.Background(), clusterID)
 	if apiClient.Scope.Project.Name == "" && apiClient.Scope.Project.ID == "" {
-		apiClient.Init()
 		projectID, err = apiClient.Keystone.GetProjectIDByName(
 			ctx, apiClient.ID, apiClient.Password, defaultProjectName,
 			apiClient.Scope.Project.Domain)
@@ -172,7 +169,7 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 	if ep.Prefix != configService {
 		return
 	}
-	// get all config data
+
 	var id, password string
 	var projectID, projectName string
 	var domainID, domainName string
@@ -197,29 +194,33 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 		id = authEndpoint.Username
 		password = authEndpoint.Password
 	}
-	// initialize client data
-	apiClient := &client.HTTP{
+
+	c := client.NewHTTP(&client.HTTPConfig{
+		ID:       id,
+		Password: password,
 		Endpoint: endpoint,
-		InSecure: inSecure,
-		Scope: keystone.NewScope(domainID, domainName,
-			projectID, projectName),
-	}
-	// default: create no auth context
+		AuthURL:  authURL,
+		Scope: keystone.NewScope(
+			domainID,
+			domainName,
+			projectID,
+			projectName,
+		),
+		Insecure: inSecure,
+	})
+
 	ctx := auth.NoAuth(context.Background())
 	if authURL != "" {
-		apiClient.AuthURL = authURL
-		apiClient.ID = id
-		apiClient.Password = password
-		ctx = h.getAuthContext(ep.ParentUUID, apiClient)
+		ctx = h.getAuthContext(ep.ParentUUID, c)
 	}
-	apiClient.Init()
-	_, err := apiClient.Login(ctx)
+
+	_, err := c.Login(ctx)
 	if err != nil {
 		h.log.Warnf("Login failed for: %s, %v", ep.ParentUUID, err)
 	}
 
 	h.clients[ep.ParentUUID] = &vncAPI{
-		client:     apiClient,
+		client:     c,
 		ctx:        ctx,
 		clusterID:  ep.ParentUUID,
 		endpointID: ep.UUID,
@@ -242,7 +243,6 @@ func (h *vncAPIHandle) updateClient(ep *models.Endpoint) {
 	h.clients[ep.ParentUUID].client.Password = ep.Password
 	// Login to get fetch auth token
 	vncAPI := h.clients[ep.ParentUUID]
-	vncAPI.client.Init()
 	_, err := vncAPI.client.Login(vncAPI.ctx)
 	if err != nil {
 		h.log.Warnf("Login failed for: %s, %v", ep.ParentUUID, err)
