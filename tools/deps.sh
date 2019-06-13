@@ -10,7 +10,7 @@ go install ./vendor/golang.org/x/tools/cmd/goimports
 go install ./vendor/github.com/gogo/protobuf/protoc-gen-gogofaster
 go install ./vendor/github.com/golang/mock/mockgen
 
-curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | \
+curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
 	bash -s -- -b $(go env GOPATH)/bin v1.10.2
 
 if [ "$(uname)" == 'Darwin' ]; then
