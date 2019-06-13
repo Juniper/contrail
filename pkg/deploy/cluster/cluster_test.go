@@ -8,17 +8,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/flosch/pongo2"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/deploy/base"
 	"github.com/Juniper/contrail/pkg/fileutil"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/flosch/pongo2"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -410,19 +409,10 @@ func runClusterTest(t *testing.T, expectedInstance, expectedInventory string,
 	assert.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -591,19 +581,10 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	assert.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -945,19 +926,10 @@ func runKubernetesClusterTest(t *testing.T, expectedOutput string,
 	assert.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -1095,19 +1067,10 @@ func runvcenterClusterTest(t *testing.T, expectedOutput, expectedVcentervars str
 	assert.NoError(t, err, "failed to load cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,
@@ -1245,20 +1208,10 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 	assert.NoError(t, err, "failed to load mc cluster test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
-	// create cluster config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
-	// create cluster config
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ClusterID:    clusterID,

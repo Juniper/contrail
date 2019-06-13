@@ -8,15 +8,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/flosch/pongo2"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
+	"github.com/flosch/pongo2"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -180,19 +178,10 @@ func runUnderCloudTest(t *testing.T, expectedSite string, pContext map[string]in
 	assert.NoError(t, err, "failed to load cloudManager test data")
 	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
 	defer cleanup()
-	// create cloudManager config
-	s := &client.HTTP{
-		Endpoint: server.URL(),
-		InSecure: true,
-		AuthURL:  server.URL() + "/keystone/v3",
-		ID:       "alice",
-		Password: "alice_password",
-		Scope: keystone.NewScope(
-			"default", "default", "admin", "admin"),
-	}
-	s.Init()
-	_, err = s.Login(context.Background())
-	assert.NoError(t, err, "failed to login")
+
+	s, err := integration.NewAdminHTTPClient(server.URL())
+	assert.NoError(t, err)
+
 	config := &Config{
 		APIServer:    s,
 		ResourceID:   cloudManagerID,

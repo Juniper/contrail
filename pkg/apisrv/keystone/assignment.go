@@ -106,10 +106,17 @@ func (assignment *VNCAPIAssignment) ListProjects() []*kscommon.Project {
 //Init the VNCAPI assignment with vnc api-server projects/domains
 func (assignment *VNCAPIAssignment) Init(configEndpoint string, staticUsers map[string]*kscommon.User) error {
 	if assignment.vncClient == nil {
-		assignment.vncClient = client.NewHTTP("", "", "", "", true, nil)
+		assignment.vncClient = client.NewHTTP(&client.HTTPConfig{
+			ID:       "",
+			Password: "",
+			Endpoint: "",
+			AuthURL:  "",
+			InSecure: true,
+		})
 	}
 	assignment.vncClient.Endpoint = configEndpoint
 	assignment.vncClient.Init()
+
 	domains, err := assignment.getVncDomains()
 	if err != nil {
 		logrus.Error(err)

@@ -29,14 +29,20 @@ func TestNewHTTP(t *testing.T) {
 	}}
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
-			h := NewHTTP(tt.url, tt.url, "fake_client", "fake_password", true, nil)
+			h := NewHTTP(&HTTPConfig{
+				ID:       "fake_client",
+				Password: "fake_password",
+				Endpoint: tt.url,
+				AuthURL:  tt.url,
+				InSecure: true,
+			})
 			h.Init()
+
 			assert.Equal(t, tt.url+"foo", h.getURL("foo"), "getURL failed")
 			assert.Equal(t, tt.url, h.AuthURL, "invalid auth URL")
 			assert.Equal(t, tt.protocol, h.getProtocol(), "getProtocol failed")
 		})
 	}
-
 }
 
 type httpResp struct {
@@ -118,8 +124,17 @@ func TestDoRequest(t *testing.T) {
 		t.Run(tt.desc, func(t *testing.T) {
 			ts := fakeHTTP(tt.resps)
 			defer ts.Close()
-			h := NewHTTP(ts.URL, ts.URL, "fake_client", "fake_password", true, tt.keystone)
+
+			h := NewHTTP(&HTTPConfig{
+				ID:       "fake_client",
+				Password: "fake_password",
+				Endpoint: ts.URL,
+				AuthURL:  ts.URL,
+				Scope:    tt.keystone,
+				InSecure: true,
+			})
 			h.Init()
+
 			var got testResp
 			if tt.req != nil {
 				tt.req.Output = &got

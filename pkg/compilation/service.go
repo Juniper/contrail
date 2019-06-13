@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
@@ -83,7 +84,7 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		return nil, err
 	}
 
-	apiClient := newAPIClient(c)
+	apiClient := newAPIClient(&c.APIClientConfig)
 
 	logicService, err := SetupService(apiClient, apiClient, apiClient)
 	if err != nil {
@@ -97,6 +98,25 @@ func NewIntentCompilationService() (*IntentCompilationService, error) {
 		config:    &c,
 		log:       logutil.NewLogger(serviceName),
 	}, nil
+}
+
+func newAPIClient(c *config.APIClientConfig) *client.HTTP {
+	client := client.NewHTTP(&client.HTTPConfig{
+		ID:       c.ID,
+		Password: c.Password,
+		Endpoint: c.URL,
+		AuthURL:  c.AuthURL,
+		Scope: keystone.NewScope(
+			c.DomainID,
+			c.DomainName,
+			c.ProjectID,
+			c.ProjectName,
+		),
+		InSecure: c.Insecure,
+	})
+	client.Init()
+
+	return client
 }
 
 // handleMessage handles message received from etcd pubsub.

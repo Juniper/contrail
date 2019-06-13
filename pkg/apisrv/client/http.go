@@ -33,14 +33,19 @@ type HTTP struct {
 	httpClient *http.Client
 	Keystone   *Keystone
 
-	ID        string          `yaml:"id"`
-	Password  string          `yaml:"password"`
-	AuthURL   string          `yaml:"authurl"`
-	Endpoint  string          `yaml:"endpoint"`
-	AuthToken string          `yaml:"-"`
-	InSecure  bool            `yaml:"insecure"`
-	Debug     bool            `yaml:"debug"`
-	Scope     *keystone.Scope `yaml:"scope"`
+	HTTPConfig `yaml:",inline"`
+
+	AuthToken string `yaml:"-"`
+}
+
+// HTTPConfig contains HTTP client configuration.
+type HTTPConfig struct {
+	ID       string          `yaml:"id"`
+	Password string          `yaml:"password"`
+	Endpoint string          `yaml:"endpoint"`
+	AuthURL  string          `yaml:"authurl"`
+	Scope    *keystone.Scope `yaml:"scope"`
+	InSecure bool            `yaml:"insecure"`
 }
 
 // Request represents API request to the server.
@@ -53,15 +58,9 @@ type Request struct {
 }
 
 // NewHTTP makes API Server HTTP client.
-func NewHTTP(endpoint, authURL, id, password string, insecure bool, scope *keystone.Scope) *HTTP {
-	h := &HTTP{
-		ID:       id,
-		Password: password,
-		AuthURL:  authURL,
-		Endpoint: endpoint,
-		Scope:    scope,
-		InSecure: insecure,
-	}
+// Init() needs to be called to fully initialize the client. TODO(Daniel): Fix that
+func NewHTTP(c *HTTPConfig) *HTTP {
+	h := &HTTP{HTTPConfig: *c}
 	h.Init()
 	return h
 }
@@ -85,7 +84,6 @@ func (h *HTTP) Init() {
 		URL:        h.AuthURL,
 	}
 	h.httpClient = &http.Client{}
-
 }
 
 // Login refreshes authentication token.
@@ -302,14 +300,13 @@ func (h *HTTP) getProtocol() string {
 // nolint: gocyclo
 func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
 	request *http.Request, data interface{}) (*http.Response, error) {
-	if h.Debug {
-		logrus.WithFields(logrus.Fields{
-			"method": request.Method,
-			"url":    request.URL,
-			"header": request.Header,
-			"data":   data,
-		}).Debug("Executing API Server request")
-	}
+	logrus.WithFields(logrus.Fields{
+		"method": request.Method,
+		"url":    request.URL,
+		"header": request.Header,
+		"data":   data,
+	}).Debug("Executing API Server request")
+
 	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {
