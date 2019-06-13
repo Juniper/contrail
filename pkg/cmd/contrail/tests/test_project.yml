@@ -4,13 +4,13 @@ description: |
 intent_compiler_enabled: true
 cleanup:
 - path: /project/my_custom_application_policy_set_uuid
-- path: /project/project_blue_project_uuid
+- path: /project/09af93e2-9cbc-11e9-8c57-474d1571f6a4
 - kind: application-policy-set
-  fq_name: [default-domain, project_blue_project, default-application-policy-set]
+  fq_name: [default-domain, 09af93e2-9cbc-11e9-8c57-474d1571f6a4, default-application-policy-set]
 test_data:
-  project_blue: &project_blue_project
-    uuid: project_blue_project_uuid
-    name: project_blue_project
+  project: &project
+    uuid: 09af93e2-9cbc-11e9-8c57-474d1571f6a4
+    name: 09af93e2-9cbc-11e9-8c57-474d1571f6a4
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -19,7 +19,7 @@ test_data:
     uuid: my_custom_application_policy_set_uuid
     fq_name:
     - default-domain
-    - project_blue_project
+    - 09af93e2-9cbc-11e9-8c57-474d1571f6a4
     - my-custom-aps
     parent_type: project
 
@@ -39,22 +39,22 @@ workflow:
     method: POST
     expected: [200]
     data:
-      project: *project_blue_project
+      project: *project
   expect:
-    project: *project_blue_project
+    project: *project
   watchers:
-    /contrail/project/project_blue_project_uuid:
+    /contrail/project/09af93e2-9cbc-11e9-8c57-474d1571f6a4:
       - data:
-          <<: *project_blue_project
+          <<: *project
 
     /contrail/application_policy_set/:
       - data:
-          fq_name: [default-domain, project_blue_project, default-application-policy-set]
+          fq_name: [default-domain, 09af93e2-9cbc-11e9-8c57-474d1571f6a4, default-application-policy-set]
           uuid: $uuid
 
 - name: check if default-application-policy-set was created
   request:
-    path: /application-policy-sets?parent_id=project_blue_project_uuid
+    path: /application-policy-sets?parent_id=09af93e2-9cbc-11e9-8c57-474d1571f6a4
     method: GET
     expected: [200]
   expect:
@@ -64,23 +64,23 @@ workflow:
       display_name: default-application-policy-set  # display_name matches default name
       fq_name:
       - default-domain
-      - project_blue_project
+      - 09af93e2-9cbc-11e9-8c57-474d1571f6a4
       - default-application-policy-set  # fqname extends project's fqname
       parent_type: project
-      parent_uuid: project_blue_project_uuid  # parent_uuid points to project
+      parent_uuid: 09af93e2-9cbc-11e9-8c57-474d1571f6a4  # parent_uuid points to project
 
 - name: check if the ref from the project to the set was created
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/09af93e2-9cbc-11e9-8c57-474d1571f6a4
     method: GET
     expected: [200]
   expect:
     project:
       application_policy_set_refs:
         - uuid: $uuid
-          to: [default-domain, project_blue_project, default-application-policy-set]
+          to: [default-domain, 09af93e2-9cbc-11e9-8c57-474d1571f6a4, default-application-policy-set]
       application_policy_sets:
-        - fq_name: [default-domain, project_blue_project, default-application-policy-set]
+        - fq_name: [default-domain, 09af93e2-9cbc-11e9-8c57-474d1571f6a4, default-application-policy-set]
 
 - name: create user made application-policy-set
   request:
@@ -99,7 +99,7 @@ workflow:
 
 - name: try to delete project with user made application-policy-set
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/09af93e2-9cbc-11e9-8c57-474d1571f6a4
     method: DELETE
     expected: [409]
   expect: null
@@ -113,14 +113,14 @@ workflow:
 
 - name: delete project
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/09af93e2-9cbc-11e9-8c57-474d1571f6a4
     method: DELETE
     expected: [200]
   expect: null
 
 - name: ensure default application policy set is deleted too
   request:
-    path: /application-policy-sets?parent_id=project_blue_project_uuid
+    path: /application-policy-sets?parent_id=09af93e2-9cbc-11e9-8c57-474d1571f6a4
     method: GET
     expected: [200]
   expect:
