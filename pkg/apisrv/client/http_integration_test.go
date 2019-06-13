@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -16,9 +15,7 @@ import (
 
 func TestCreateRefMethod(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		DBDriver:           basedb.DriverPostgreSQL,
-		RepoRootPath:       "../../..",
-		EnableEtcdNotifier: false,
+		RepoRootPath: "../../..",
 	})
 	defer s.CloseT(t)
 	hc := integration.NewTestingHTTPClient(t, s.URL(), integration.BobUserID)
@@ -108,9 +105,7 @@ func TestCreateRefMethod(t *testing.T) {
 
 func TestRemoteIntPoolMethods(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		DBDriver:           basedb.DriverPostgreSQL,
-		RepoRootPath:       "../../..",
-		EnableEtcdNotifier: false,
+		RepoRootPath: "../../..",
 	})
 	defer s.CloseT(t)
 	hc := integration.NewTestingHTTPClient(t, s.URL(), integration.AdminUserID)

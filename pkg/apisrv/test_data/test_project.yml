@@ -5,9 +5,9 @@ cleanup:
 - path: /project/my_custom_application_policy_set_uuid
 - path: /project/794dfa10-9bed-11e9-a497-ffb71b17054e
 test_data:
-  project_blue: &project_blue_project
+  project: &project
     uuid: 794dfa10-9bed-11e9-a497-ffb71b17054e
-    name: project_blue_project
+    name: 794dfa10-9bed-11e9-a497-ffb71b17054e
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -16,7 +16,7 @@ test_data:
     uuid: my_custom_application_policy_set_uuid
     fq_name:
     - default-domain
-    - project_blue_project
+    - 794dfa10-9bed-11e9-a497-ffb71b17054e
     - my-custom-aps
     parent_type: project
 
@@ -36,13 +36,13 @@ workflow:
     method: POST
     expected: [200]
     data:
-      project: *project_blue_project
+      project: *project
   expect:
-    project: *project_blue_project
+    project: *project
   watchers:
     /contrail/project/794dfa10-9bed-11e9-a497-ffb71b17054e:
       - data:
-          <<: *project_blue_project   # requested project was created with default-application-policy-set
+          <<: *project   # requested project was created with default-application-policy-set
 
 - name: check if default-application-policy-set was created
   request:
@@ -56,7 +56,7 @@ workflow:
       display_name: default-application-policy-set  # display_name matches default name
       fq_name:
       - default-domain
-      - project_blue_project
+      - 794dfa10-9bed-11e9-a497-ffb71b17054e
       - default-application-policy-set  # fqname extends project's fqname
       parent_type: project
       parent_uuid: 794dfa10-9bed-11e9-a497-ffb71b17054e  # parent_uuid points to project
@@ -71,7 +71,7 @@ workflow:
       application_policy_set_refs:
         - {}
       application_policy_sets:
-        - fq_name: [default-domain, project_blue_project, default-application-policy-set]
+        - fq_name: [default-domain, 794dfa10-9bed-11e9-a497-ffb71b17054e, default-application-policy-set]
 
 - name: create user made application-policy-set
   request:

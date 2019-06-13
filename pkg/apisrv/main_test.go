@@ -15,14 +15,13 @@ func TestMain(m *testing.M) {
 }
 
 func RunTest(t *testing.T, file string) {
-	testScenario, err := integration.LoadTest(file, nil)
-	assert.NoError(t, err, "failed to load test data")
-	integration.RunCleanTestScenario(t, testScenario, server)
+	ts, err := integration.LoadTest(file, nil)
+	assert.NoError(t, err)
+	integration.RunCleanTestScenario(t, ts, server)
 }
 
 func RunTestTemplate(t *testing.T, file string, context map[string]interface{}) {
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, file, context)
-	assert.NoError(t, err, "failed to load test data")
-	integration.RunCleanTestScenario(t, &testScenario, server)
+	ts, err := integration.LoadTest(file, context)
+	assert.NoError(t, err)
+	integration.RunCleanTestScenario(t, ts, server)
 }
