@@ -23,13 +23,6 @@ const (
 	funcPrefix = "$"
 )
 
-// AssertContainsStrings asserts that object contains all expected strings.
-func AssertContainsStrings(t *testing.T, expected []string, actual interface{}) {
-	for _, e := range expected {
-		assert.Contains(t, actual, e)
-	}
-}
-
 // NotNil matches any non-nil value.
 func NotNil() gomock.Matcher {
 	return gomock.Not(gomock.Nil())
@@ -125,7 +118,7 @@ func AssertEqual(t *testing.T, expected, actual interface{}, msg ...string) bool
 		t,
 		IsObjectSubsetOf(expected, actual),
 		fmt.Sprintf(
-			"%s: objects not equal:\nexpected: %+v\nactual: %+v",
+			"%s: objects not equal:\nexpected:\n%+v\nactual:\n%+v",
 			strings.Join(msg, ", "),
 			format.MustYAML(expected),
 			format.MustYAML(actual),
@@ -136,9 +129,11 @@ func AssertEqual(t *testing.T, expected, actual interface{}, msg ...string) bool
 // IsObjectSubsetOf verifies if "subset" structure contains all fields described
 // in "of" structure and throws an error in case if it doesn't.
 func IsObjectSubsetOf(subset, of interface{}) error {
-	subset = fileutil.YAMLtoJSONCompat(subset)
-	of = fileutil.YAMLtoJSONCompat(of)
-	return checkDiff("", subset, of)
+	return checkDiff(
+		"",
+		fileutil.YAMLtoJSONCompat(subset),
+		fileutil.YAMLtoJSONCompat(of),
+	)
 }
 
 // nolint: gocyclo

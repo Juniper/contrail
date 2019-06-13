@@ -7,20 +7,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
 
-	"github.com/labstack/echo"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/neutron/logic"
 	"github.com/Juniper/contrail/pkg/services"
+	"github.com/labstack/echo"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
 const (
@@ -33,14 +33,19 @@ type HTTP struct {
 	httpClient *http.Client
 	Keystone   *Keystone
 
-	ID        string          `yaml:"id"`
-	Password  string          `yaml:"password"`
-	AuthURL   string          `yaml:"authurl"`
-	Endpoint  string          `yaml:"endpoint"`
-	AuthToken string          `yaml:"-"`
-	InSecure  bool            `yaml:"insecure"`
-	Debug     bool            `yaml:"debug"`
-	Scope     *keystone.Scope `yaml:"scope"`
+	HTTPConfig `yaml:",inline"`
+
+	AuthToken string
+}
+
+// HTTPConfig contains HTTP client configuration.
+type HTTPConfig struct {
+	ID       string          `yaml:"id"`
+	Password string          `yaml:"password"`
+	Endpoint string          `yaml:"endpoint"`
+	AuthURL  string          `yaml:"authurl"`
+	Scope    *keystone.Scope `yaml:"scope"`
+	Insecure bool            `yaml:"insecure"`
 }
 
 // Request represents API request to the server.
@@ -53,39 +58,39 @@ type Request struct {
 }
 
 // NewHTTP makes API Server HTTP client.
-func NewHTTP(endpoint, authURL, id, password string, insecure bool, scope *keystone.Scope) *HTTP {
-	h := &HTTP{
-		ID:       id,
-		Password: password,
-		AuthURL:  authURL,
-		Endpoint: endpoint,
-		Scope:    scope,
-		InSecure: insecure,
+func NewHTTP(c *HTTPConfig) *HTTP {
+	hc := &http.Client{Transport: transport(c.Endpoint, c.Insecure)}
+	return &HTTP{
+		httpClient: hc,
+		Keystone: &Keystone{
+			HTTPClient: hc,
+			URL:        c.AuthURL,
+		},
+		HTTPConfig: *c,
 	}
-	h.Init()
-	return h
 }
 
-//Init is used to initialize a client.
-func (h *HTTP) Init() {
-	if h.getProtocol() == "https" {
-		tr := &http.Transport{
-			Dial:            (&net.Dialer{}).Dial,
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: h.InSecure},
-		}
-		h.Keystone = &Keystone{
-			HTTPClient: &http.Client{Transport: tr},
-			URL:        h.AuthURL,
-		}
-		h.httpClient = &http.Client{Transport: tr}
-		return
-	}
-	h.Keystone = &Keystone{
-		HTTPClient: &http.Client{},
-		URL:        h.AuthURL,
-	}
-	h.httpClient = &http.Client{}
+func transport(endpoint string, insecure bool) *http.Transport {
+	t := cleanhttp.DefaultPooledTransport()
 
+	p, err := urlScheme(endpoint)
+	if err != nil {
+		logrus.WithField("endpoint", endpoint).Error("Invalid API Server endpoint - ignoring")
+	}
+	if p == "https" {
+		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
+	}
+
+	return t
+}
+
+func urlScheme(endpoint string) (string, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return "", err
+	}
+
+	return u.Scheme, nil
 }
 
 // Login refreshes authentication token.
@@ -294,22 +299,16 @@ func (h *HTTP) getURL(path string) string {
 	return h.Endpoint + path
 }
 
-func (h *HTTP) getProtocol() string {
-	u, _ := url.Parse(h.Endpoint) // nolint: errcheck
-	return u.Scheme
-}
-
 // nolint: gocyclo
 func (h *HTTP) doHTTPRequestRetryingOn401(ctx context.Context,
 	request *http.Request, data interface{}) (*http.Response, error) {
-	if h.Debug {
-		logrus.WithFields(logrus.Fields{
-			"method": request.Method,
-			"url":    request.URL,
-			"header": request.Header,
-			"data":   data,
-		}).Debug("Executing API Server request")
-	}
+	logrus.WithFields(logrus.Fields{
+		"method": request.Method,
+		"url":    request.URL,
+		"header": request.Header,
+		"data":   data,
+	}).Debug("Executing API Server request")
+
 	request = auth.SetXClusterIDInHeader(ctx, request.WithContext(ctx))
 	var resp *http.Response
 	for i := 0; i < retryCount; i++ {

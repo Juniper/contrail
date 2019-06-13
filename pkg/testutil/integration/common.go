@@ -32,10 +32,10 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	yaml "gopkg.in/yaml.v2"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 	integrationetcd "github.com/Juniper/contrail/pkg/testutil/integration/etcd"
-	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -106,9 +106,7 @@ func WithTestDBs(f func(dbType string)) {
 		config := format.InterfaceToInterfaceMap(iConfig)
 		dbType, ok := config["type"].(string)
 		if !ok {
-			logrus.WithFields(logrus.Fields{
-				"db-type": dbType,
-			}).Error("Failed to read test_database.type value")
+			logutil.FatalWithStackTrace(errors.New("failed to read test_database.type value"))
 		}
 		viper.Set("database.type", dbType)
 		viper.Set("database.host", config["host"])
@@ -193,38 +191,41 @@ type CleanTask struct {
 	Kind   string   `yaml:"kind,omitempty"`
 }
 
-//TestScenario has a list of tasks.
+// TestScenario defines integration test scenario.
 type TestScenario struct {
-	Name                  string                  `yaml:"name,omitempty"`
-	Description           string                  `yaml:"description,omitempty"`
-	IntentCompilerEnabled bool                    `yaml:"intent_compiler_enabled,omitempty"`
-	Tables                []string                `yaml:"tables,omitempty"`
-	Clients               map[string]*client.HTTP `yaml:"clients,omitempty"`
-	CleanTasks            []CleanTask             `yaml:"cleanup,omitempty"`
-	Workflow              []*Task                 `yaml:"workflow,omitempty"`
-	Watchers              Watchers                `yaml:"watchers,omitempty"`
-	TestData              interface{}             `yaml:"test_data,omitempty"`
+	Name                  string                        `yaml:"name,omitempty"`
+	Description           string                        `yaml:"description,omitempty"`
+	IntentCompilerEnabled bool                          `yaml:"intent_compiler_enabled,omitempty"`
+	Tables                []string                      `yaml:"tables,omitempty"`
+	ClientConfigs         map[string]*client.HTTPConfig `yaml:"clients,omitempty"`
+	Clients               ClientsList                   `yaml:"-"`
+	CleanTasks            []CleanTask                   `yaml:"cleanup,omitempty"`
+	Workflow              []*Task                       `yaml:"workflow,omitempty"`
+	Watchers              Watchers                      `yaml:"watchers,omitempty"`
+	TestData              interface{}                   `yaml:"test_data,omitempty"`
 }
 
-//LoadTest load testscenario.
+// ClientsList is the list of clients used in test
+type ClientsList map[string]*client.HTTP
+
+// LoadTest loads test scenario from given file.
 func LoadTest(file string, ctx map[string]interface{}) (*TestScenario, error) {
-	var testScenario TestScenario
-	err := LoadTestScenario(&testScenario, file, ctx)
-	return &testScenario, err
-}
-
-//LoadTestScenario load testscenario.
-func LoadTestScenario(testScenario *TestScenario, file string, ctx map[string]interface{}) error {
 	template, err := pongo2.FromFile(file)
 	if err != nil {
-		return errors.Wrap(err, "failed to read test data template")
+		return nil, errors.Wrap(err, "failed to read test data template")
 	}
 
 	content, err := template.ExecuteBytes(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to apply test data template")
+		return nil, errors.Wrap(err, "failed to apply test data template")
 	}
-	return yaml.UnmarshalStrict(content, testScenario)
+
+	ts := TestScenario{Clients: ClientsList{}}
+	if err = yaml.UnmarshalStrict(content, &ts); err != nil {
+		return nil, errors.Wrapf(err, "failed to unmarshal test scenario %q", file)
+	}
+
+	return &ts, nil
 }
 
 type trackedResource struct {
@@ -232,34 +233,31 @@ type trackedResource struct {
 	Client string
 }
 
-// ClientsList is the list of clients used in test
-type ClientsList map[string]*client.HTTP
-
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
 func RunCleanTestScenario(
 	t *testing.T,
-	testScenario *TestScenario,
+	ts *TestScenario,
 	server *APIServer,
 ) {
-	logrus.WithField("test-scenario", testScenario.Name).Debug("Running clean test scenario")
-	ctx := context.Background()
-	checkWatchers := StartWatchers(t, testScenario.Name, testScenario.Watchers)
-	stopIC := startIntentCompiler(t, testScenario, server)
+	logrus.WithField("test-scenario", ts.Name).Debug("Running clean test scenario")
+	checkWatchers := StartWatchers(t, ts.Name, ts.Watchers)
+	stopIC := startIntentCompiler(t, ts, server)
 	defer stopIC()
 
-	clients := PrepareClients(ctx, t, testScenario, server)
-	tracked := runTestScenario(ctx, t, testScenario, clients, server.APIServer.DBService)
+	ctx := context.Background()
+	clients := PrepareClients(ctx, t, ts, server)
+	tracked := runTestScenario(ctx, t, ts, clients, server.APIServer.DBService)
 	cleanupTrackedResources(ctx, tracked, clients)
 
 	checkWatchers(t)
 }
 
 // RunDirtyTestScenario runs test scenario from loaded yaml file, leaves all resources after scenario
-func RunDirtyTestScenario(t *testing.T, testScenario *TestScenario, server *APIServer) func() {
-	logrus.WithField("test-scenario", testScenario.Name).Debug("Running dirty test scenario")
+func RunDirtyTestScenario(t *testing.T, ts *TestScenario, server *APIServer) func() {
+	logrus.WithField("test-scenario", ts.Name).Debug("Running dirty test scenario")
 	ctx := context.Background()
-	clients := PrepareClients(ctx, t, testScenario, server)
-	tracked := runTestScenario(ctx, t, testScenario, clients, server.APIServer.DBService)
+	clients := PrepareClients(ctx, t, ts, server)
+	tracked := runTestScenario(ctx, t, ts, clients, server.APIServer.DBService)
 	cleanupFunc := func() {
 		cleanupTrackedResources(ctx, tracked, clients)
 	}
@@ -273,7 +271,7 @@ func cleanupTrackedResources(ctx context.Context, tracked []trackedResource, cli
 			logrus.WithError(err).WithFields(logrus.Fields{
 				"url-path":    tr.Path,
 				"http-client": tr.Client,
-			}).Error("Deleting dirty resource failed - ignoring")
+			}).Warn("Deleting dirty resource failed - ignoring")
 		}
 		if response.StatusCode == http.StatusOK {
 			logrus.WithFields(logrus.Fields{
@@ -378,67 +376,67 @@ func createWatchChecker(task string, collect func() []string, key string, events
 
 func startIntentCompiler(
 	t *testing.T,
-	testScenario *TestScenario,
+	ts *TestScenario,
 	server *APIServer,
 ) context.CancelFunc {
-	if testScenario.IntentCompilerEnabled {
+	if ts.IntentCompilerEnabled {
 		etcdClient := integrationetcd.NewEtcdClient(t)
 		etcdClient.Clear(t)
 
-		return RunIntentCompilationService(t, server.TestServer.URL)
+		return RunIntentCompilationService(t, server.URL())
 	}
 	return func() {}
 }
 
-// PrepareClients logins to the server
-func PrepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) ClientsList {
-	clients := ClientsList{}
+// PrepareClients creates HTTP clients based on given configurations and logs them in if needed.
+// It assigns created clients to given test scenario.
+func PrepareClients(ctx context.Context, t *testing.T, ts *TestScenario, server *APIServer) ClientsList {
+	for k, c := range ts.ClientConfigs {
+		ts.Clients[k] = client.NewHTTP(&client.HTTPConfig{
+			ID:       c.ID,
+			Password: c.Password,
+			Endpoint: server.URL(),
+			AuthURL:  server.URL() + keystone.AuthEndpointSuffix,
+			Scope:    c.Scope,
+			Insecure: c.Insecure,
+		})
 
-	for key, client := range testScenario.Clients {
-		client.AuthURL = server.TestServer.URL + "/keystone/v3"
-		client.Endpoint = server.TestServer.URL
-		client.InSecure = true
-		client.Debug = true
-
-		client.Init()
-
-		clients[key] = client
-
-		if client.ID != "" {
-			_, err := clients[key].Login(ctx)
-			assert.NoError(t, err, fmt.Sprintf("client %q failed to login", client.ID))
+		if c.ID != "" {
+			_, err := ts.Clients[k].Login(ctx)
+			assert.NoError(t, err, fmt.Sprintf("client %q failed to login", c.ID))
 		}
 	}
-	return clients
+
+	return ts.Clients
 }
 
 func runTestScenario(
 	ctx context.Context,
 	t *testing.T,
-	testScenario *TestScenario,
+	ts *TestScenario,
 	clients ClientsList,
 	m baseservices.MetadataGetter,
 ) (tracked []trackedResource) {
-	for _, cleanTask := range testScenario.CleanTasks {
+	for _, cleanTask := range ts.CleanTasks {
 		logrus.WithFields(logrus.Fields{
-			"test-scenario": testScenario.Name,
+			"test-scenario": ts.Name,
 			"clean-task":    cleanTask,
 		}).Debug("Deleting existing resources before test scenario workflow")
 		err := performCleanup(ctx, cleanTask, getClientByID(cleanTask.Client, clients), m)
 		if err != nil {
 			logrus.WithError(err).WithFields(logrus.Fields{
-				"test-scenario": testScenario.Name,
+				"test-scenario": ts.Name,
 				"clean-task":    cleanTask,
-			}).Error("Failed to delete existing resource before running workflow - ignoring")
+			}).Warn("Failed to delete existing resource before running workflow - ignoring")
 		}
 	}
-	for _, task := range testScenario.Workflow {
+	for _, task := range ts.Workflow {
 		logrus.WithFields(logrus.Fields{
-			"test-scenario": testScenario.Name,
+			"test-scenario": ts.Name,
 			"task":          task.Name,
 		}).Info("Starting task")
 		checkWatchers := StartWatchers(t, task.Name, task.Watchers)
-		checkWaiters := StartWaiters(t, testScenario.Name, task.Waiters)
+		checkWaiters := StartWaiters(t, ts.Name, task.Waiters)
 		task.Request.Data = fileutil.YAMLtoJSONCompat(task.Request.Data)
 		clientID := defaultClientID
 		if task.Client != "" {
@@ -446,14 +444,14 @@ func runTestScenario(
 		}
 		client, ok := clients[clientID]
 		if !assert.True(t, ok,
-			"Client %q not defined in task %q of scenario %q", clientID, task.Name, testScenario.Name) {
+			"Client %q not defined in task %q of scenario %q", clientID, task.Name, ts.Name) {
 			break
 		}
 		response, err := client.DoRequest(ctx, task.Request)
 		assert.NoError(
 			t,
 			err,
-			fmt.Sprintf("HTTP request failed in task %q of scenario %q", task.Name, testScenario.Name),
+			fmt.Sprintf("HTTP request failed in task %q of scenario %q", task.Name, ts.Name),
 		)
 		tracked = handleTestResponse(task, response.StatusCode, err, tracked)
 
@@ -462,7 +460,7 @@ func runTestScenario(
 			t,
 			task.Expect,
 			task.Request.Output,
-			fmt.Sprintf("Invalid response body in task %q of scenario %q", task.Name, testScenario.Name),
+			fmt.Sprintf("Invalid response body in task %q of scenario %q", task.Name, ts.Name),
 		)
 		checkWatchers(t)
 		checkWaiters(t)
@@ -489,7 +487,7 @@ func performCleanup(
 		return fmt.Errorf("failed to delete resource, got nil http client")
 	case cleanTask.Path != "":
 		return cleanPath(ctx, cleanTask.Path, client)
-	case cleanTask.Kind != "" && cleanTask.FQName != nil:
+	case cleanTask.Kind != "" && len(cleanTask.FQName) > 0:
 		return cleanByFQNameAndKind(ctx, cleanTask.FQName, cleanTask.Kind, client, m)
 	default:
 		return fmt.Errorf("invalid clean task %v", cleanTask)
@@ -584,7 +582,7 @@ func handleTestResponse(task *Task, code int, rerr error, tracked []trackedResou
 func trackResponse(respDataIf interface{}, clientID string, tracked []trackedResource) []trackedResource {
 	switch respData := respDataIf.(type) {
 	case []interface{}:
-		logrus.Warn("Not handled SYNC request - yet!")
+		logrus.Warn("After-workflow Sync request cleanup is not supported")
 		for _, syncOpIf := range respData {
 			if syncOp, ok := syncOpIf.(map[string]interface{}); ok {
 				tracked = append(tracked, extractSyncOperation(syncOp, clientID)...)
