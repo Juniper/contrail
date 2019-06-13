@@ -2,18 +2,18 @@ name: Test RBAC
 description: API level and object level RBAC tests
 
 test_data:
-  project_blue: &project_blue_project
+  project_blue: &project_blue
     uuid: 6f5fe0fe-9bed-11e9-aae8-eb51fd1fd16b
-    name: project_blue_project
+    name: 6f5fe0fe-9bed-11e9-aae8-eb51fd1fd16b
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     perms2:
         owner_access: 7
         global_access: 0
     quota: {}
-  project_red: &project_red_project
-    uuid: project_red_uuid
-    name: project_red_project
+  project_red: &project_red
+    uuid: 2da67a50-9cbb-11e9-816c-cb2351950b1d
+    name: 2da67a50-9cbb-11e9-816c-cb2351950b1d
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     perms2:
@@ -22,33 +22,18 @@ test_data:
         share:
         - tenant: "tenant:demo"
           tenant_access: 7
-
-  project_red1: &project_red_project1
-    uuid: project_red_uuid
-    name: project_red_project
-    display_name: project_red_project
-    parent_type: domain
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
-    perms2:
-        owner_access: 7
-        global_access: 0
-        share:
-        - tenant: "tenant:demo"
-          tenant_access: 7
-    quota: {}
-  project_default: &project_default_project
-    uuid: default-project
-    name: project_default_project
+  project_default: &project_default
+    uuid: 45036942-9cbb-11e9-b980-8f2af4b7be92
+    name: 45036942-9cbb-11e9-b980-8f2af4b7be92
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     perms2:
         owner_access: 7
         global_access: 0
     quota: {}
-
-  project_red: &project_demo_project
+  project_demo: &project_demo
     uuid: demo
-    name: project_demo_project
+    name: demo
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     perms2:
@@ -56,36 +41,29 @@ test_data:
         global_access: 0
     quota: {}
   default-api-access-list8: &default-api-access-list8
-      display_name: default-api-access-list8
-      uuid: default-api-access-list8_uuid
-      parent_type: global-system-config
-      perms2:
-       owner_access: 7
-       global_access: 0
-       share:
-        - tenant: "tenant:demo"
-          tenant_access: 7
-      api_access_list_entries:
-       rbac_rule:
-         - rule_object: projects
-           rule_perms:
-              - role_crud: CRUD
-                role_name: Member
-         - rule_object: application-policy-sets
-           rule_perms:
-              - role_crud: CRUD
-                role_name: Member
-      fq_name:
-          - default-global-system-config
-          - default-api-access-list8
-      name: default-api-access-list8
-  user_made_application_policy_set: &user_made_application_policy_set_project
-    uuid: my_custom_application_policy_set_uuid
+    display_name: default-api-access-list8
+    uuid: default-api-access-list8_uuid
+    parent_type: global-system-config
+    perms2:
+      owner_access: 7
+      global_access: 0
+      share:
+      - tenant: "tenant:demo"
+        tenant_access: 7
+    api_access_list_entries:
+      rbac_rule:
+      - rule_object: projects
+        rule_perms:
+        - role_crud: CRUD
+          role_name: Member
+      - rule_object: application-policy-sets
+        rule_perms:
+        - role_crud: CRUD
+          role_name: Member
     fq_name:
-    - default-domain
-    - project_blue_project
-    - my-custom-aps
-    parent_type: project
+    - default-global-system-config
+    - default-api-access-list8
+    name: default-api-access-list8
 
 clients:
   default:
@@ -110,7 +88,7 @@ workflow:
     method: POST
     expected: [200]
     data:
-      project: *project_blue_project
+      project: *project_blue
 
 - name: delete project as admin (cleanup)
   request:
@@ -125,7 +103,7 @@ workflow:
     method: POST
     expected: [200]
     data:
-      project: *project_demo_project
+      project: *project_demo
 
 - name: create project (Not RBAC rule to allow)
   client: bob
@@ -134,7 +112,7 @@ workflow:
     method: POST
     expected: [403]
     data:
-      project: *project_blue_project
+      project: *project_blue
 
 - name: create api access rule
   request:
@@ -152,7 +130,7 @@ workflow:
     method: POST
     expected: [200]
     data:
-      project: *project_blue_project
+      project: *project_blue
 
 - name: delete project
   client: bob
@@ -176,7 +154,7 @@ workflow:
     method: POST
     expected: [403]
     data:
-      project: *project_blue_project
+      project: *project_blue
 
 - name: delete project as non-admin
   client: bob
@@ -192,7 +170,7 @@ workflow:
     method: POST
     expected: [200]
     data:
-      project: *project_default_project
+      project: *project_default
 
 - name: create project red as admin
   request:
@@ -200,7 +178,7 @@ workflow:
     method: POST
     expected: [200]
     data:
-      project: *project_red_project
+      project: *project_red
 
 - name: create api access rule
   request:
@@ -214,7 +192,7 @@ workflow:
 - name: read project red as bob
   client: bob
   request:
-    path: /project/project_red_uuid
+    path: /project/2da67a50-9cbb-11e9-816c-cb2351950b1d
     method: GET
     expected: [200]
   expect: null
@@ -227,5 +205,3 @@ workflow:
 #    method: GET
 #    expected: [403]
 #  expect: null
-
-
