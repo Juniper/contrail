@@ -116,22 +116,22 @@ agent:
     - template:
         src: "{{ src_dir }}/contrail-cluster-config.tmpl"
         dest: "{{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT creating cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
-    - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+    - debug: "AGENT creating cluster(contrailgo deploy -c {{ dir }}/contrail-cluster-config.yml)"
+    - command: "contrailgo deploy -c {{ dir }}/contrail-cluster-config.yml"
     - debug: "AGENT cluster create complete"
     on_update:
     - template:
         src: "{{ src_dir }}/contrail-cluster-config.tmpl"
         dest: "{{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT updating cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
-    - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+    - debug: "AGENT updating cluster(contrailgo deploy -c {{ dir }}/contrail-cluster-config.yml)"
+    - command: "contrailgo deploy -c {{ dir }}/contrail-cluster-config.yml"
     - debug: "AGENT cluster update complete"
     on_delete:
     - template:
         src: "{{ src_dir }}/contrail-cluster-config.tmpl"
         dest: "{{ dir }}/contrail-cluster-config.yml"
-    - debug: "AGENT deleting cluster(contrail cluster -c {{ dir }}/contrail-cluster-config.yml)"
-    - command: "contrail cluster -c {{ dir }}/contrail-cluster-config.yml"
+    - debug: "AGENT deleting cluster(contrailgo deploy -c {{ dir }}/contrail-cluster-config.yml)"
+    - command: "contrailgo deploy -c {{ dir }}/contrail-cluster-config.yml"
     - debug: "AGENT deleting {{ dir }}"
     - command: "rm -rf  {{ dir }}"
     - debug: "AGENT deleted {{ dir }}"
