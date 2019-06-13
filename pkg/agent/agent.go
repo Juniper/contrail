@@ -2,21 +2,20 @@ package agent
 
 import (
 	"context"
-	"fmt"
 	"path"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/config"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/schema"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Agent constants.
@@ -100,19 +99,20 @@ func NewAgent(c *Config) (*Agent, error) {
 		return nil, err
 	}
 
-	s := &client.HTTP{
+	s := client.NewHTTP(&client.HTTPConfig{
+		ID:       c.ID,
+		Password: c.Password,
 		Endpoint: c.Endpoint,
-		InSecure: c.InSecure,
-	}
-	// auth enabled
-	if c.AuthURL != "" {
-		s.AuthURL = c.AuthURL
-		s.ID = c.ID
-		s.Password = c.Password
-		s.Scope = keystone.NewScope(c.DomainID, c.DomainName,
-			c.ProjectID, c.ProjectName)
-	}
-	s.Init()
+		AuthURL:  c.AuthURL,
+		Scope: keystone.NewScope(
+			c.DomainID,
+			c.DomainName,
+			c.ProjectID,
+			c.ProjectName,
+		),
+		Insecure: c.InSecure,
+	})
+
 	serverSchema := filepath.Join(serverSchemaRoot, serverSchemaFile)
 	if c.SchemaRoot != "" {
 		serverSchema = filepath.Join(c.SchemaRoot, serverSchemaFile)
@@ -165,11 +165,9 @@ func buildSchemaMapping(schemas []*schema.Schema) map[string]*schema.Schema {
 // Watch starts watching for events on API Server resources.
 func (a *Agent) Watch(ctx context.Context) error {
 	a.log.Info("Starting watching for events")
-	if a.config.AuthURL != "" {
-		_, err := a.APIServer.Login(ctx)
-		if err != nil {
-			return fmt.Errorf("login to API Server failed: %s", err)
-		}
+	_, err := a.APIServer.Login(ctx)
+	if err != nil {
+		return errors.Wrap(err, "login to API Server failed")
 	}
 
 	var wg sync.WaitGroup

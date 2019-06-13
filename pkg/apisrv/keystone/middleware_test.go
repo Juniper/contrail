@@ -40,16 +40,15 @@ func TestRemoteAuthenticate(t *testing.T) {
 		"admin_user":      clusterXUser,
 	}
 
-	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, testEndpointFile, pContext)
+	ts, err := integration.LoadTest(testEndpointFile, pContext)
 	assert.NoError(t, err, "failed to load endpoint create test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 	defer cleanup()
 
 	server.ForceProxyUpdate()
 
 	// Delete the clusterX's keystone endpoint
-	for _, client := range testScenario.Clients {
+	for _, client := range ts.Clients {
 		ctx := context.Background()
 		var response map[string]interface{}
 		url := fmt.Sprintf("/endpoint/endpoint_%s_keystone_uuid", clusterXName)

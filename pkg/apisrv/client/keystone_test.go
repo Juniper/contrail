@@ -10,15 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 )
 
 func TestGetProject(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		DBDriver:           basedb.DriverPostgreSQL,
-		RepoRootPath:       "../../..",
-		EnableEtcdNotifier: false,
+		RepoRootPath: "../../..",
 	})
 	defer s.CloseT(t)
 

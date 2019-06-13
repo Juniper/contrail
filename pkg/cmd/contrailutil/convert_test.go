@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Juniper/contrail/pkg/convert"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
@@ -58,9 +57,7 @@ func TestConvertYAMLToRDBMSWithRefs(t *testing.T) {
 	rtUUID := "a544fde6-4bc1-4d68-99cf-e20c8e1c0768"
 
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		DBDriver:           basedb.DriverPostgreSQL,
-		RepoRootPath:       "../../..",
-		EnableEtcdNotifier: false,
+		RepoRootPath: "../../..",
 	})
 	defer s.CloseT(t)
 	hc := integration.NewTestingHTTPClient(t, s.URL(), integration.AdminUserID)
