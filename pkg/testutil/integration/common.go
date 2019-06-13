@@ -193,28 +193,32 @@ type CleanTask struct {
 	Kind   string   `yaml:"kind,omitempty"`
 }
 
-//TestScenario has a list of tasks.
+// TestScenario defines integration test scenario.
 type TestScenario struct {
-	Name                  string                  `yaml:"name,omitempty"`
-	Description           string                  `yaml:"description,omitempty"`
-	IntentCompilerEnabled bool                    `yaml:"intent_compiler_enabled,omitempty"`
-	Tables                []string                `yaml:"tables,omitempty"`
-	Clients               map[string]*client.HTTP `yaml:"clients,omitempty"`
-	CleanTasks            []CleanTask             `yaml:"cleanup,omitempty"`
-	Workflow              []*Task                 `yaml:"workflow,omitempty"`
-	Watchers              Watchers                `yaml:"watchers,omitempty"`
-	TestData              interface{}             `yaml:"test_data,omitempty"`
+	Name                  string                        `yaml:"name,omitempty"`
+	Description           string                        `yaml:"description,omitempty"`
+	IntentCompilerEnabled bool                          `yaml:"intent_compiler_enabled,omitempty"`
+	Tables                []string                      `yaml:"tables,omitempty"`
+	ClientConfigs         map[string]*client.HTTPConfig `yaml:"clients,omitempty"`
+	Clients               clientsList                   `yaml:"-"`
+	CleanTasks            []CleanTask                   `yaml:"cleanup,omitempty"`
+	Workflow              []*Task                       `yaml:"workflow,omitempty"`
+	Watchers              Watchers                      `yaml:"watchers,omitempty"`
+	TestData              interface{}                   `yaml:"test_data,omitempty"`
 }
 
-//LoadTest load testscenario.
+// clientsList is the list of clients used in test
+type clientsList map[string]*client.HTTP
+
+// LoadTest loads test scenario from given file.
 func LoadTest(file string, ctx map[string]interface{}) (*TestScenario, error) {
-	var testScenario TestScenario
-	err := LoadTestScenario(&testScenario, file, ctx)
-	return &testScenario, err
+	ts := TestScenario{Clients: clientsList{}}
+	err := loadTestScenario(&ts, file, ctx)
+	return &ts, err
 }
 
-//LoadTestScenario load testscenario.
-func LoadTestScenario(testScenario *TestScenario, file string, ctx map[string]interface{}) error {
+// loadTestScenario loads fills given test scenario from given file.
+func loadTestScenario(testScenario *TestScenario, file string, ctx map[string]interface{}) error {
 	template, err := pongo2.FromFile(file)
 	if err != nil {
 		return errors.Wrap(err, "failed to read test data template")
@@ -231,9 +235,6 @@ type trackedResource struct {
 	Path   string
 	Client string
 }
-
-// ClientsList is the list of clients used in test
-type ClientsList map[string]*client.HTTP
 
 // RunCleanTestScenario runs test scenario from loaded yaml file, expects no resources leftovers
 func RunCleanTestScenario(
@@ -385,38 +386,38 @@ func startIntentCompiler(
 		etcdClient := integrationetcd.NewEtcdClient(t)
 		etcdClient.Clear(t)
 
-		return RunIntentCompilationService(t, server.TestServer.URL)
+		return RunIntentCompilationService(t, server.URL())
 	}
 	return func() {}
 }
 
-// PrepareClients logins to the server
-func PrepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) ClientsList {
-	clients := ClientsList{}
+// PrepareClients creates HTTP clients based on given configurations and logs them in if needed.
+// It assigns created clients to given test scenario.
+func PrepareClients(ctx context.Context, t *testing.T, testScenario *TestScenario, server *APIServer) clientsList {
+	for k, c := range testScenario.ClientConfigs {
+		testScenario.Clients[k] = client.NewHTTP(&client.HTTPConfig{
+			ID:       c.ID,
+			Password: c.Password,
+			Endpoint: server.URL(),
+			AuthURL:  server.URL() + keystone.AuthEndpointSuffix,
+			Scope:    c.Scope,
+			Insecure: c.Insecure,
+		})
 
-	for key, client := range testScenario.Clients {
-		client.AuthURL = server.TestServer.URL + "/keystone/v3"
-		client.Endpoint = server.TestServer.URL
-		client.InSecure = true
-		client.Debug = true
-
-		client.Init()
-
-		clients[key] = client
-
-		if client.ID != "" {
-			_, err := clients[key].Login(ctx)
-			assert.NoError(t, err, fmt.Sprintf("client %q failed to login", client.ID))
+		if c.ID != "" {
+			_, err := testScenario.Clients[k].Login(ctx)
+			assert.NoError(t, err, fmt.Sprintf("client %q failed to login", c.ID))
 		}
 	}
-	return clients
+
+	return testScenario.Clients
 }
 
 func runTestScenario(
 	ctx context.Context,
 	t *testing.T,
 	testScenario *TestScenario,
-	clients ClientsList,
+	clients clientsList,
 	m baseservices.MetadataGetter,
 ) (tracked []trackedResource) {
 	for _, cleanTask := range testScenario.CleanTasks {
@@ -496,7 +497,7 @@ func performCleanup(
 	}
 }
 
-func getClientByID(clientID string, clients ClientsList) *client.HTTP {
+func getClientByID(clientID string, clients clientsList) *client.HTTP {
 	if clientID == "" {
 		clientID = defaultClientID
 	}

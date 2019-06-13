@@ -6,7 +6,6 @@ import (
 
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -141,8 +140,6 @@ func getErrorMessage(err error) string {
 
 // ToHTTPError translates grpc error to error.
 func ToHTTPError(err error) error {
-	logrus.WithError(err).Debug("Translating to HTTP error") // error translation might lose error description
-
 	cause := errors.Cause(err)
 	return echo.NewHTTPError(
 		httpStatusFromCode(grpc.Code(cause)),

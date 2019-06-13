@@ -16,7 +16,10 @@ import (
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
+// Keystone constants.
 const (
+	AuthEndpointSuffix = "/keystone/v3" // TODO(Daniel) use this constant where possible
+
 	configService = "config"
 	xClusterIDKey = "X-Cluster-ID"
 )

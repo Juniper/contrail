@@ -419,19 +419,19 @@ func addKeystoneProjectAndUser(s *apisrv.Server, testID string) {
 }
 
 func restLogin(ctx context.Context, t *testing.T, projectName string) (authToken string) {
-	restClient := client.NewHTTP(
-		server.URL(),
-		server.URL()+"/keystone/v3",
-		projectName,
-		projectName,
-		true,
-		pkgkeystone.NewScope("", "default", "", projectName),
-	)
-	restClient.InSecure = true
-	restClient.Init()
-	_, err := restClient.Login(ctx)
+	c := client.NewHTTP(&client.HTTPConfig{
+		ID:       projectName,
+		Password: projectName,
+		Endpoint: server.URL(),
+		AuthURL:  server.URL() + keystone.AuthEndpointSuffix,
+		Scope:    pkgkeystone.NewScope("", "default", "", projectName),
+		Insecure: true,
+	})
+
+	_, err := c.Login(ctx)
 	require.NoError(t, err)
-	return restClient.AuthToken
+
+	return c.AuthToken
 }
 
 // nolint: golint

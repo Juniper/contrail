@@ -1,12 +1,14 @@
 resources:
 - kind: virtual_network
   data:
+    display_name: updated
     fq_name:
     - vn-blue
+    parent_type: project
+    parent_uuid: project-cli-test-uuid
     perms2:
       owner: TestCLI
     uuid: first-uuid
-    display_name: updated
 - kind: virtual_network
   data:
     external_ipam: true
@@ -17,6 +19,8 @@ resources:
     layer2_control_word: true
     mac_learning_enabled: true
     multi_policy_service_chains_enabled: true
+    parent_type: project
+    parent_uuid: project-cli-test-uuid
     pbb_etree_enable: true
     pbb_evpn_enable: true
     perms2:
