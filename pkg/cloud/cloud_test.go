@@ -112,10 +112,9 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 	defer ksPrivate.Close()
 
 	// create cloud related objects
-	var cloudTestScenario integration.TestScenario
-	err := integration.LoadTestScenario(&cloudTestScenario, allInOneCloudTemplatePath, context)
+	ts, err := integration.LoadTest(allInOneCloudTemplatePath, context)
 	assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudTemplatePath)
-	cleanup := integration.RunDirtyTestScenario(t, &cloudTestScenario, server)
+	cleanup := integration.RunDirtyTestScenario(t, ts, server)
 
 	defer cleanup()
 
@@ -158,7 +157,7 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 	if context["CLOUD_TYPE"] != onPrem {
 
 		assert.True(t, verifyNodeType(cloud.ctx, t,
-			cloud.APIServer, &cloudTestScenario),
+			cloud.APIServer, ts),
 			"public cloud nodes are not updated as type private")
 
 		assert.True(t, compareGeneratedSecret(t, expectedSecret),
@@ -175,10 +174,9 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 		//update cloud
 		config.Action = updateAction
 
-		var cloudUpdateTestScenario integration.TestScenario
-		err = integration.LoadTestScenario(&cloudUpdateTestScenario, allInOneCloudUpdateTemplatePath, context)
+		ts, err = integration.LoadTest(allInOneCloudUpdateTemplatePath, context)
 		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudUpdateTemplatePath)
-		updateCleanup := integration.RunDirtyTestScenario(t, &cloudUpdateTestScenario, server)
+		updateCleanup := integration.RunDirtyTestScenario(t, ts, server)
 		defer updateCleanup()
 
 		// delete previously created files
@@ -215,12 +213,9 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 			"Expected list of update commands are not executed")
 
 		// delete vpc and compare topology
-		var cloudDeleteVPVTestScenario integration.TestScenario
-		err = integration.LoadTestScenario(&cloudDeleteVPVTestScenario,
-			deleteVPCTemplatePath, context)
-		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s",
-			deleteVPCTemplatePath)
-		deleteVPC := integration.RunDirtyTestScenario(t, &cloudDeleteVPVTestScenario, server)
+		ts, err = integration.LoadTest(deleteVPCTemplatePath, context)
+		assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", deleteVPCTemplatePath)
+		deleteVPC := integration.RunDirtyTestScenario(t, ts, server)
 		deleteVPC()
 
 		// delete previously created files
@@ -257,10 +252,9 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 	}
 
 	// delete cloud
-	var cloudDeleteTestScenario integration.TestScenario
-	err = integration.LoadTestScenario(&cloudDeleteTestScenario, allInOneCloudDeleteTemplatePath, context)
+	ts, err = integration.LoadTest(allInOneCloudDeleteTemplatePath, context)
 	assert.NoErrorf(t, err, "failed to load cloud test data from file: %s", allInOneCloudDeleteTemplatePath)
-	_ = integration.RunDirtyTestScenario(t, &cloudDeleteTestScenario, server)
+	_ = integration.RunDirtyTestScenario(t, ts, server)
 
 	// delete previously created
 	if _, err = os.Stat(executedCommandsPath()); err == nil {
@@ -281,10 +275,9 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 
 		// updates p_a of cluster to DELETE_CLOUD
 		// sets p_s of cluster to UPDATE_FAILED
-		var updateClusterFailedScenario integration.TestScenario
-		err = integration.LoadTestScenario(&updateClusterFailedScenario, clusterUpdateFailedTemplatePath, context)
+		ts, err = integration.LoadTest(clusterUpdateFailedTemplatePath, context)
 		assert.NoError(t, err, "failed to load cluster update failed test data")
-		_ = integration.RunDirtyTestScenario(t, &updateClusterFailedScenario, server)
+		_ = integration.RunDirtyTestScenario(t, ts, server)
 
 		// now delete the cloud again with update failed cluster status
 		cloud, err = NewCloud(config)
@@ -297,10 +290,9 @@ func runCloudTest(t *testing.T, expectedTopologies []string,
 
 		// updates p_a of cluster to DELETE_CLOUD
 		// sets p_s of cluster to UPDATED
-		var updatedClusterScenario integration.TestScenario
-		err = integration.LoadTestScenario(&updatedClusterScenario, clusterUpdatedTemplatePath, context)
+		ts, err = integration.LoadTest(clusterUpdatedTemplatePath, context)
 		assert.NoError(t, err, "failed to load updated cluster test data")
-		_ = integration.RunDirtyTestScenario(t, &updatedClusterScenario, server)
+		_ = integration.RunDirtyTestScenario(t, ts, server)
 
 		// now delete the cloud again with updated cluster status
 		cloud, err = NewCloud(config)
