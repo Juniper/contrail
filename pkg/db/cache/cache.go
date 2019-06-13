@@ -192,8 +192,6 @@ func (db *DB) update(event *services.Event) {
 
 	db.updateDependentNodes(event, backRefs, children)
 	db.handleNode(n)
-
-	logrus.Debugf("node %v updated", n.version)
 }
 
 func (db *DB) updateDBVersion(n *node) {

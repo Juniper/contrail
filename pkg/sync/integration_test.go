@@ -19,7 +19,6 @@ import (
 
 	"github.com/Juniper/contrail/pkg/constants"
 	"github.com/Juniper/contrail/pkg/db"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/models/basemodels"
 	"github.com/Juniper/contrail/pkg/services"
@@ -416,9 +415,7 @@ func TestSyncService(t *testing.T) {
 
 func TestSyncSynchronizesExistingPostgresDataToEtcd(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		DBDriver:           basedb.DriverPostgreSQL,
-		RepoRootPath:       "../../..",
-		EnableEtcdNotifier: false,
+		RepoRootPath: "../../..",
 	})
 	defer s.CloseT(t)
 	hc := integration.NewTestingHTTPClient(t, s.URL(), integration.AdminUserID)
