@@ -48,16 +48,14 @@ func recordTest() {
 
 	testScenario, err := integration.LoadTest(inputPath, vars)
 	assertError(err, "failed to load test scenario")
+
 	clients := map[string]*client.HTTP{}
-
-	for key, client := range testScenario.Clients {
-		//Rewrite endpoint for test server
-		client.Endpoint = endpoint
-		client.AuthURL = authURL
-		client.InSecure = true
-		client.Init()
-
-		clients[key] = client
+	for key := range testScenario.Clients {
+		clients[key] = client.NewHTTP(&client.HTTPConfig{
+			Endpoint: endpoint,
+			AuthURL:  authURL,
+			InSecure: true,
+		})
 
 		_, err = clients[key].Login(ctx)
 		assertError(err, "client can't login")
@@ -70,8 +68,8 @@ func recordTest() {
 		if task.Client != "" {
 			clientID = task.Client
 		}
-		client := clients[clientID]
-		_, err = client.DoRequest(ctx, task.Request)
+
+		_, err = clients[clientID].DoRequest(ctx, task.Request)
 		assertError(err, fmt.Sprintf("Task %s failed", task.Name))
 		task.Expect = task.Request.Output
 		task.Request.Output = nil

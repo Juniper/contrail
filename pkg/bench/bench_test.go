@@ -8,14 +8,15 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+
+	apisrvkeystone "github.com/Juniper/contrail/pkg/apisrv/keystone"
 )
 
 // We haven't used standard Go benchmark because we need more
@@ -31,18 +32,17 @@ func TestBenchAPI(t *testing.T) {
 		t.Skip("BENCH_HOST isn't set. skipping")
 		return
 	}
-	restClient := client.NewHTTP(
-		host,
-		host+"/keystone/v3",
-		testName,
-		testName,
-		true,
-		keystone.NewScope("", "default", "", testName),
-	)
-	restClient.InSecure = true
-	restClient.Init()
-	var err error
 
+	c := client.NewHTTP(&client.HTTPConfig{
+		ID:       testName,
+		Password: testName,
+		Endpoint: host,
+		AuthURL:  host + apisrvkeystone.AuthEndpointSuffix,
+		Scope:    keystone.NewScope("", "default", "", testName),
+		InSecure: true,
+	})
+
+	var err error
 	logrus.Info("Benchmark create:")
 	Benchmark(workerCount, loopCount, func(w, l int) error {
 		// Contact the server and print out its response.
@@ -51,7 +51,7 @@ func TestBenchAPI(t *testing.T) {
 		project.ParentType = "domain"
 		project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
 		project.ConfigurationVersion = 1
-		_, err = restClient.CreateProject(ctx, &services.CreateProjectRequest{
+		_, err = c.CreateProject(ctx, &services.CreateProjectRequest{
 			Project: project,
 		})
 		return err
@@ -59,7 +59,7 @@ func TestBenchAPI(t *testing.T) {
 
 	logrus.Info("Benchmark list:")
 	Benchmark(workerCount, loopCount, func(w, l int) error {
-		_, err := restClient.ListProject(ctx, &services.ListProjectRequest{
+		_, err := c.ListProject(ctx, &services.ListProjectRequest{
 			Spec: &baseservices.ListSpec{},
 		})
 		return err
@@ -69,7 +69,7 @@ func TestBenchAPI(t *testing.T) {
 	if os.Getenv("CLEAN_UP") != "true" {
 		return
 	}
-	cleanup(ctx, t, restClient)
+	cleanup(ctx, t, c)
 }
 
 func cleanup(ctx context.Context, t *testing.T, restClient *client.HTTP) {

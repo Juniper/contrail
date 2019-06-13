@@ -153,11 +153,17 @@ func writeHTTP(events *services.EventList, url string) (err error) {
 	}
 	events = &services.EventList{Events: e}
 
-	s := client.NewHTTP(url, "", "", "", true, nil)
+	c := client.NewHTTP(&client.HTTPConfig{
+		ID:       "",
+		Password: "",
+		Endpoint: url,
+		AuthURL:  "",
+		InSecure: true,
+	})
 
 	failed := 0
 	for _, event := range events.Events {
-		_, err = event.Process(context.Background(), s)
+		_, err = event.Process(context.Background(), c)
 		if err != nil {
 			logrus.Error(err)
 			failed++

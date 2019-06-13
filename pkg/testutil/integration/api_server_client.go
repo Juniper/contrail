@@ -5,15 +5,16 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/keystone"
+	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Juniper/contrail/pkg/apisrv/client"
-	"github.com/Juniper/contrail/pkg/keystone"
-	"github.com/Juniper/contrail/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/services"
+	apisrvkeystone "github.com/Juniper/contrail/pkg/apisrv/keystone"
 )
 
 // Resource constants
@@ -68,20 +69,19 @@ func NewTestingHTTPClient(t *testing.T, apiServerURL string, userID string) *HTT
 
 // NewAdminHTTPClient creates HTTP client of API Server using Alice user (admin) credentials.
 func NewAdminHTTPClient(apiServerURL string) (*client.HTTP, error) {
-	c := client.NewHTTP(
-		apiServerURL,
-		apiServerURL+authEndpointSuffix,
-		AdminUserID,
-		AdminUserPassword,
-		true,
-		keystone.NewScope(
+	c := client.NewHTTP(&client.HTTPConfig{
+		ID:       AdminUserID,
+		Password: AdminUserPassword,
+		Endpoint: apiServerURL,
+		AuthURL:  apiServerURL + apisrvkeystone.AuthEndpointSuffix,
+		Scope: keystone.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
 			AdminProjectID,
 			AdminProjectName,
 		),
-	)
-	c.Debug = true
+		InSecure: true,
+	})
 
 	_, err := c.Login(context.Background())
 	return c, err
@@ -89,20 +89,19 @@ func NewAdminHTTPClient(apiServerURL string) (*client.HTTP, error) {
 
 // NewHTTPClient creates HTTP client of API Server using Bob user credentials.
 func NewHTTPClient(apiServerURL string) (*client.HTTP, error) {
-	c := client.NewHTTP(
-		apiServerURL,
-		apiServerURL+authEndpointSuffix,
-		BobUserID,
-		BobUserPassword,
-		true,
-		keystone.NewScope(
+	c := client.NewHTTP(&client.HTTPConfig{
+		ID:       BobUserID,
+		Password: BobUserPassword,
+		Endpoint: apiServerURL,
+		AuthURL:  apiServerURL + apisrvkeystone.AuthEndpointSuffix,
+		Scope: keystone.NewScope(
 			DefaultDomainID,
 			DefaultDomainName,
 			DemoProjectID,
 			DemoProjectName,
 		),
-	)
-	c.Debug = true
+		InSecure: true,
+	})
 
 	_, err := c.Login(context.Background())
 	return c, err
