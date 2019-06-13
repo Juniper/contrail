@@ -5,6 +5,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -57,7 +58,7 @@ const (
 // APIServer is embedded API Server for testing purposes.
 type APIServer struct {
 	APIServer  *apisrv.Server
-	TestServer *httptest.Server
+	testServer *httptest.Server
 	log        *logrus.Entry
 }
 
@@ -85,9 +86,9 @@ func NewRunningAPIServer(t *testing.T, c *APIServerConfig) *APIServer {
 // NewRunningServer creates new running API server with default testing configuration.
 // Call Close() method to release its resources.
 func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
-	setDefaultViperConfig(c)
+	setViperConfig(c)
 
-	if err := logutil.Configure(viper.GetString("log_level")); err != nil {
+	if err := logutil.Configure(c.LogLevel); err != nil {
 		return nil, err
 	}
 
@@ -107,16 +108,21 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 
 	return &APIServer{
 		APIServer:  s,
-		TestServer: ts,
+		testServer: ts,
 		log:        logutil.NewLogger("api-server"),
 	}, nil
 }
 
-func setDefaultViperConfig(c *APIServerConfig) {
+func setViperConfig(c *APIServerConfig) {
 	if c.AuthType == "" {
 		c.AuthType = defaultAuthType
 	}
-	setViperConfig(map[string]interface{}{
+	if c.DBDriver == "" {
+		c.DBDriver = basedb.DriverPostgreSQL
+	}
+	setViper(map[string]interface{}{
+		"aaa_mode":                    rbacConfig(c.EnableRBAC),
+		"auth_type":                   c.AuthType,
 		"database.type":               c.DBDriver,
 		"database.host":               "localhost",
 		"database.user":               dbUser,
@@ -135,16 +141,14 @@ func setDefaultViperConfig(c *APIServerConfig) {
 		"keystone.store.expire":       3600,
 		"keystone.insecure":           true,
 		"log_level":                   c.LogLevel,
-		"auth_type":                   c.AuthType,
 		"server.notify_etcd":          c.EnableEtcdNotifier,
 		"server.read_timeout":         10,
 		"server.write_timeout":        5,
 		"server.log_api":              !c.DisableLogAPI,
 		"server.log_body":             !c.DisableLogAPI,
-		"static_files.public":         path.Join(c.RepoRootPath, "public"),
+		"server.static_files.public":  path.Join(c.RepoRootPath, "public"),
 		"server.enable_vnc_neutron":   true,
 		"tls.enabled":                 false,
-		"aaa_mode":                    rbacConfig(c.EnableRBAC),
 	})
 }
 
@@ -215,7 +219,7 @@ func keystoneAssignment() *keystone.StaticAssignment {
 	return &a
 }
 
-func setViperConfig(config map[string]interface{}) {
+func setViper(config map[string]interface{}) {
 	for k, v := range config {
 		viper.SetDefault(k, v)
 	}
@@ -223,7 +227,7 @@ func setViperConfig(config map[string]interface{}) {
 
 // URL returns server base URL.
 func (s *APIServer) URL() string {
-	return s.TestServer.URL
+	return s.testServer.URL
 }
 
 // CloseT closes server.
@@ -236,7 +240,7 @@ func (s *APIServer) CloseT(t *testing.T) {
 
 // Close closes server.
 func (s *APIServer) Close() error {
-	s.TestServer.Close()
+	s.testServer.Close()
 	return s.APIServer.Close()
 }
 

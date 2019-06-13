@@ -20,7 +20,6 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/db/basedb"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 
@@ -296,10 +295,8 @@ func verifyBasicAuthProjects(
 }
 func TestBasicAuth(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
-		DBDriver:           basedb.DriverPostgreSQL,
-		RepoRootPath:       "../../..",
-		EnableEtcdNotifier: false,
-		AuthType:           "basic-auth",
+		RepoRootPath: "../../..",
+		AuthType:     "basic-auth",
 	})
 	defer s.CloseT(t)
 

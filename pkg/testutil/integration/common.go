@@ -385,7 +385,7 @@ func startIntentCompiler(
 		etcdClient := integrationetcd.NewEtcdClient(t)
 		etcdClient.Clear(t)
 
-		return RunIntentCompilationService(t, server.TestServer.URL)
+		return RunIntentCompilationService(t, server.URL())
 	}
 	return func() {}
 }
@@ -395,8 +395,8 @@ func PrepareClients(ctx context.Context, t *testing.T, testScenario *TestScenari
 	clients := ClientsList{}
 
 	for key, client := range testScenario.Clients {
-		client.AuthURL = server.TestServer.URL + "/keystone/v3"
-		client.Endpoint = server.TestServer.URL
+		client.AuthURL = server.URL() + "/keystone/v3"
+		client.Endpoint = server.URL()
 		client.InSecure = true
 		client.Debug = true
 

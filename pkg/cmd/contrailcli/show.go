@@ -1,26 +1,17 @@
 package contrailcli
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/Juniper/contrail/pkg/logutil"
-	"github.com/Juniper/contrail/pkg/services"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	ContrailCLI.AddCommand(ShowCmd)
+	ContrailCLI.AddCommand(showCmd)
 }
 
-const showHelpTemplate = `Show command possible usages:
-{% for schema in schemas %}contrail show {{ schema.ID }} $UUID
-{% endfor %}`
-
-// ShowCmd defines show command.
-var ShowCmd = &cobra.Command{
+var showCmd = &cobra.Command{
 	Use:   "show [SchemaID] [UUID]",
 	Short: "Show data of specified resource",
 	Long:  "Invoke command with empty SchemaID in order to show possible usages",
@@ -31,39 +22,17 @@ var ShowCmd = &cobra.Command{
 			schemaID = args[0]
 			uuid = args[1]
 		}
-		output, err := showResource(schemaID, uuid)
+
+		cli, err := NewCLI()
 		if err != nil {
 			logutil.FatalWithStackTrace(err)
 		}
-		fmt.Println(output)
-	},
-}
 
-func showResource(schemaID, uuid string) (string, error) {
-	if schemaID == "" || uuid == "" {
-		return showHelp(schemaID, showHelpTemplate)
-	}
-	client, err := getClient()
-	if err != nil {
-		return "", nil
-	}
-	var response map[string]interface{}
-	_, err = client.Read(context.Background(), path(schemaID, uuid), &response)
-	if err != nil {
-		return "", err
-	}
-	data, _ := response[dashedCase(schemaID)].(map[string]interface{}) //nolint: errcheck
-	event, err := services.NewEvent(services.EventOption{
-		Kind: schemaID,
-		Data: data,
-	})
-	if err != nil {
-		return "", err
-	}
-	eventList := &services.EventList{Events: []*services.Event{event}}
-	output, err := yaml.Marshal(eventList)
-	if err != nil {
-		return "", err
-	}
-	return string(output), nil
+		r, err := cli.ShowResource(schemaID, uuid)
+		if err != nil {
+			logutil.FatalWithStackTrace(err)
+		}
+
+		fmt.Println(r)
+	},
 }
