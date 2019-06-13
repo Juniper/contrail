@@ -1,0 +1,10 @@
+resources:
+- kind: project
+  data:
+    fq_name:
+    - project-cli-test
+    parent_type: domain
+    parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
+    perms2:
+      owner: TestCLI
+    uuid: project-cli-test-uuid

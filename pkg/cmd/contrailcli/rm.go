@@ -1,25 +1,18 @@
 package contrailcli
 
 import (
-	"context"
 	"fmt"
-	"net/http"
 
-	"github.com/spf13/cobra"
-
+	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/logutil"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	ContrailCLI.AddCommand(RmCmd)
+	ContrailCLI.AddCommand(rmCmd)
 }
 
-const removeHelpTemplate = `Remove command possible usages:
-{% for schema in schemas %}contrail rm {{ schema.ID }} $UUID
-{% endfor %}`
-
-// RmCmd defines rm command.
-var RmCmd = &cobra.Command{
+var rmCmd = &cobra.Command{
 	Use:   "rm [SchemaID] [UUID]",
 	Short: "Remove a resource with specified UUID",
 	Long:  "Invoke command with empty SchemaID in order to show possible usages",
@@ -28,25 +21,17 @@ var RmCmd = &cobra.Command{
 		if len(args) >= 2 {
 			schemaID, uuid = args[0], args[1]
 		}
-		output, err := deleteResource(schemaID, uuid)
+
+		cli, err := client.NewCLIByViper()
 		if err != nil {
 			logutil.FatalWithStackTrace(err)
 		}
-		fmt.Println(output)
-	},
-}
 
-func deleteResource(schemaID, uuid string) (string, error) {
-	if schemaID == "" || uuid == "" {
-		return showHelp(schemaID, removeHelpTemplate)
-	}
-	client, err := getClient()
-	if err != nil {
-		return "", nil
-	}
-	response, err := client.Delete(context.Background(), path(schemaID, uuid), nil)
-	if response.StatusCode != http.StatusNotFound && err != nil {
-		return "", err
-	}
-	return "", nil
+		r, err := cli.DeleteResource(schemaID, uuid)
+		if err != nil {
+			logutil.FatalWithStackTrace(err)
+		}
+
+		fmt.Println(r)
+	},
 }

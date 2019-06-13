@@ -83,29 +83,35 @@ func NewCloud(c *Config) (*Cloud, error) {
 		return nil, err
 	}
 
-	s := &client.HTTP{
+	s := client.NewHTTP(&client.HTTPConfig{
+		ID:       c.ID,
+		Password: c.Password,
 		Endpoint: c.Endpoint,
-		InSecure: c.InSecure,
-	}
+		AuthURL:  c.AuthURL,
+		Scope: keystone.NewScope(
+			c.DomainID,
+			c.DomainName,
+			c.ProjectID,
+			c.ProjectName,
+		),
+		Insecure: c.InSecure,
+	})
 
-	// by default create no auth context
 	ctx := auth.NoAuth(context.Background())
-
-	// when auth is enabled
 	if c.AuthURL != "" {
-		s.AuthURL = c.AuthURL
-		s.ID = c.ID
-		s.Password = c.Password
-		s.Scope = keystone.NewScope(c.DomainID, c.DomainName,
-			c.ProjectID, c.ProjectName)
-
-		// as auth is enabled, create ctx with auth
-		varCtx := auth.NewContext(c.DomainID, c.ProjectID,
-			c.ID, []string{c.ProjectName}, "", auth.NewObjPerms(nil))
 		var authKey interface{} = "auth"
-		ctx = context.WithValue(context.Background(), authKey, varCtx)
+		ctx = context.WithValue(
+			context.Background(),
+			authKey,
+			auth.NewContext(
+				c.DomainID,
+				c.ProjectID,
+				c.ID,
+				[]string{c.ProjectName},
+				"", auth.NewObjPerms(nil),
+			),
+		)
 	}
-	s.Init()
 
 	if c.CloudID != "" && c.Action == "" {
 		return nil, fmt.Errorf("action not specified in the config")

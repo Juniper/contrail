@@ -9,7 +9,7 @@ import (
 
 // SetDefaultSyncConfig sets config options required by sync.
 func SetDefaultSyncConfig(shouldDump bool) {
-	setViperConfig(map[string]interface{}{
+	setViper(map[string]interface{}{
 		constants.ETCDEndpointsVK:     []string{integrationetcd.Endpoint},
 		"sync.storage":                models.JSONCodec.Key(),
 		"sync.dump":                   shouldDump,

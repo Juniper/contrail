@@ -21,7 +21,7 @@ const (
 
 // RunIntentCompilationService runs Intent Compilation process and returns function closing it.
 func RunIntentCompilationService(t *testing.T, apiURL string) context.CancelFunc {
-	setViperConfig(map[string]interface{}{
+	setViper(map[string]interface{}{
 		"compilation.plugin_directory":    pluginDirectory,
 		"compilation.number_of_workers":   4,
 		"compilation.max_job_queue_len":   5,
