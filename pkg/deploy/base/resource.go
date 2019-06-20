@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
@@ -75,6 +76,7 @@ func (r *ResourceManager) getEndpoints(parentUUIDs []string) (endpointIDs []stri
 	values := url.Values{
 		baseservices.ParentUUIDsKey: parentUUIDs,
 		baseservices.ParentTypeKey:  []string{defaultResource},
+		"prefix":                    format.GetKeys(portMap),
 	}
 	var endpointList map[string][]interface{}
 	resURI := fmt.Sprintf("%ss?%s", defaultEndpointResPath, values.Encode())

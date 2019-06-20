@@ -101,6 +101,7 @@ test_data:
     node_refs:
       - uuid: all_in_one_node_uuid
   all_in_one_cluster: &all_in_one_cluster
+    name: "all_in_one_cluster"
     uuid: test_cluster_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
@@ -236,6 +237,13 @@ test_data:
       sriov_physical_interface: enp129s0f1
       sriov_physical_net: physnet1
     {%endif%}
+  endpoint_user_created: &endpoint_user_created
+    uuid: endpoint_user_created_uuid
+    fq_name: ["default-global-system-config", "all_in_one_cluster", "endpoint_user_created"]
+    parent_type: contrail-cluster
+    name: "endpoint_user_created"
+    prefix: "endpoint_user_created"
+    public_url: "http://127.0.0.1:8082"
 clients:
   default:
     id: alice
@@ -621,3 +629,20 @@ workflow:
       parent_uuid: test_openstack_cluster_uuid
       node_refs:
         - uuid: all_in_one_node_uuid
+
+- name: create an user endpoint for all in one cluster
+  request:
+    path: /endpoints
+    method: POST
+    expected:
+    - 200
+    data:
+      endpoint: *endpoint_user_created
+  expect:
+    endpoint:
+      uuid: endpoint_user_created_uuid
+      fq_name: ["default-global-system-config", "all_in_one_cluster", "endpoint_user_created"]
+      parent_type: contrail-cluster
+      parent_uuid: test_cluster_uuid
+      perms2:
+        owner: admin
