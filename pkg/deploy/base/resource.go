@@ -3,7 +3,6 @@ package base
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -11,8 +10,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
 )
 
@@ -72,20 +73,27 @@ func (r *ResourceManager) getDefaultCredential() (user, password, keypair string
 }
 
 func (r *ResourceManager) getEndpoints(parentUUIDs []string) (endpointIDs []string, err error) {
-	values := url.Values{
-		baseservices.ParentUUIDsKey: parentUUIDs,
-		baseservices.ParentTypeKey:  []string{defaultResource},
+	request := &services.ListEndpointRequest{
+		Spec: &baseservices.ListSpec{
+			Fields: []string{"uuid"},
+			Filters: []*baseservices.Filter{
+				{
+					Key:    "prefix",
+					Values: format.GetKeys(portMap),
+				},
+			},
+			ParentUUIDs: parentUUIDs,
+			ParentType:  defaultResource,
+		},
 	}
-	var endpointList map[string][]interface{}
-	resURI := fmt.Sprintf("%ss?%s", defaultEndpointResPath, values.Encode())
-	r.Log.Infof("Reading endpoints: %s", resURI)
-	_, err = r.APIServer.Read(context.Background(), resURI, &endpointList)
+	var resp *services.ListEndpointResponse
+	resp, err = r.APIServer.ListEndpoint(context.Background(), request)
 	if err != nil {
 		return nil, err
 	}
-	for _, rawEndpoint := range endpointList[defaultEndpointRes+"s"] {
-		endpointID := rawEndpoint.(map[string]interface{})["uuid"].(string) // nolint: errcheck
-		endpointIDs = append(endpointIDs, endpointID)
+
+	for _, ep := range resp.GetEndpoints() {
+		endpointIDs = append(endpointIDs, ep.UUID)
 	}
 	return endpointIDs, nil
 }
