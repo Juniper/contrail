@@ -212,3 +212,12 @@ func BoolMap(ss []string) map[string]bool {
 	}
 	return r
 }
+
+// GetKeys creates a slice of keys from map
+func GetKeys(m map[string]string) []string {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
