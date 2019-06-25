@@ -28,6 +28,7 @@ const (
 	workRoot                              = "/tmp/contrail_cluster"
 	allInOneClusterTemplatePath           = "./test_data/test_all_in_one_cluster.tmpl"
 	createPlaybooks                       = "./test_data/expected_ansible_create_playbook.yml"
+	destroyPlaybooks                      = "./test_data/expected_ansible_destroy_playbook.yml"
 	createAppformixPlaybooks              = "./test_data/expected_ansible_create_appformix_playbook.yml"
 	updatePlaybooks                       = "./test_data/expected_ansible_update_playbook.yml"
 	updateAppformixPlaybooks              = "./test_data/expected_ansible_update_appformix_playbook.yml"
@@ -692,6 +693,10 @@ func runAppformixClusterTest(t *testing.T, expectedInstance, expectedInventory s
 	// IMPORT test (expected to create endpoints without triggering playbooks)
 	runClusterActionTest(t, ts, config,
 		importProvisioningAction, expectedInstance, "", "", expectedEndpoints)
+
+	// DESTROY test
+	runClusterActionTest(t, testScenario, config,
+		destroyAction, expectedInstance, "", destroyPlaybooks, expectedEndpoints)
 
 	// delete cluster
 	config.Action = deleteAction

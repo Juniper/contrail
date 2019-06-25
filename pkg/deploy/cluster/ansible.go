@@ -35,6 +35,7 @@ const (
 	deleteComputeProvisioningAction = "DELETE_COMPUTE"
 	addCSNProvisioningAction        = "ADD_CSN"
 	addCVFMProvisioningAction       = "ADD_CVFM"
+	destroyAction                   = "DESTROY"
 
 	enable  = "yes"
 	disable = "no"
@@ -424,9 +425,24 @@ func (a *contrailAnsibleDeployer) playOrchestratorProvision(ansibleArgs []string
 	return a.play(ansibleArgs)
 }
 
+func (a *contrailAnsibleDeployer) playOrchestratorDestroy(ansibleArgs []string) error {
+	destroyAnsibleArgs := ansibleArgs[:2]
+	switch a.clusterData.ClusterInfo.Orchestrator {
+	case orchestratorOpenstack:
+		destroyAnsibleArgs = append(destroyAnsibleArgs, defaultOpenstackDestoryPlay)
+	}
+	return a.play(destroyAnsibleArgs)
+}
+
 func (a *contrailAnsibleDeployer) playContrailProvision(ansibleArgs []string) error {
 	ansibleArgs = append(ansibleArgs, defaultContrailProvPlay)
 	return a.play(ansibleArgs)
+}
+
+func (a *contrailAnsibleDeployer) playContrailDestroy(ansibleArgs []string) error {
+	destroyAnsibleArgs := ansibleArgs[:2]
+	destroyAnsibleArgs = append(destroyAnsibleArgs, defaultContrailDestoryPlay)
+	return a.play(destroyAnsibleArgs)
 }
 
 func (a *contrailAnsibleDeployer) playContrailDatapathEncryption() error {
@@ -615,6 +631,18 @@ func (a *contrailAnsibleDeployer) playBook() error {
 		if err := a.playAppformixProvision(); err != nil {
 			return err
 		}
+	case destroyAction:
+		if err := a.playOrchestratorDestroy(args); err != nil {
+			return err
+		}
+		if err := a.playContrailDestroy(args); err != nil {
+			return err
+		}
+		/*
+			if err := a.cleanupResources(args); err != nil {
+				return err
+			}
+		*/
 	}
 	return nil
 }
