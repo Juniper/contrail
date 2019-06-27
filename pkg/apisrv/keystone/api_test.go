@@ -30,8 +30,8 @@ import (
 const (
 	defaultUser             = "admin"
 	defaultPassword         = "contrail123"
-	testClusterTokenAPIFile = "./test_data/test_cluster_token_method.yml"
-	testBasicAuthFile       = "./test_data/test_basic_auth.yml"
+	testClusterTokenAPIFile = "./test_data/test_cluster_token_method.tmpl"
+	testBasicAuthFile       = "./test_data/test_basic_auth.tmpl"
 )
 
 var server *integration.APIServer

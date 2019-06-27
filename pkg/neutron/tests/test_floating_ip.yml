@@ -7,11 +7,11 @@ cleanup:
   - path: /floating-ip/2aef7c74-e375-4c49-8efe-cb5ade65a07f
   - path: /instance-ip/a3734c5d-489b-4784-8975-da1fe0350522
   - path: /instance-ip/1bfb839d-754c-4b95-be33-6a9bedc9cfcc
-  - path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+  - path: /virtual-machine-interface/072cb50c-9bed-11e9-8b1b-73078e0adc48
   - path: /virtual-machine-interface/d2048e39-e03e-4b96-835d-be2e9d04cf22
-  - path: /floating-ip-pool/beefbeef-beef-beef-beef-beefbeef1003
-  - path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1002
-  - path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1001
+  - path: /floating-ip-pool/88a1e49e-9be4-11e9-aca1-bbeb92eea976
+  - path: /virtual-network/b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
+  - path: /network-ipam/a79f48be-9be4-11e9-b991-6305b63af80a
   - path: /project/29a7f614-45a8-11e9-b210-d663bd873d93
 
 clients:
@@ -32,10 +32,10 @@ test_data:
     quota: {}
   floating_ip_pool: &floating_ip_pool
     fq_name: ["default", "floating_ip_project", "vn_floating_blue", "test_floating_ip_pool"]
-    uuid: beefbeef-beef-beef-beef-beefbeef1003
+    uuid: 88a1e49e-9be4-11e9-aca1-bbeb92eea976
     display_name: "test_floating_ip_pool"
     parent_type: "virtual-network"
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef1002
+    parent_uuid: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
     floating_ip_pool_subnets:
       subnet_uuid:
         - "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
@@ -45,21 +45,21 @@ test_data:
         route:
           - prefix: "test_prefix"
             next_hop: "1.2.3.5"
-    uuid: beefbeef-beef-beef-beef-beefbeef1001
+    uuid: a79f48be-9be4-11e9-b991-6305b63af80a
     display_name: test_ipam_floating_blue
     ipam_subnet_method: "user-defined-subnet"
     parent_type: project
     fq_name: ["default","floating_ip_project","test_ipam_floating_blue"]
   vn_floating_blue: &vn_floating_blue
     fq_name: ["default", "floating_ip_project", "vn_floating_blue"]
-    uuid: beefbeef-beef-beef-beef-beefbeef1002
+    uuid: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
     display_name: blue
     parent_type: project
     address_allocation_mode: user-defined-subnet-only
     route_target_list:
       route_target: ["100:200"]
     network_ipam_refs:
-      - uuid: beefbeef-beef-beef-beef-beefbeef1001
+      - uuid: a79f48be-9be4-11e9-b991-6305b63af80a
         attr:
           ipam_subnets:
             - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
@@ -72,15 +72,15 @@ test_data:
   virtual_machine_interface: &port
     parent_type: project
     parent_uuid: 29a7f614-45a8-11e9-b210-d663bd873d93
-    uuid: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    uuid: 072cb50c-9bed-11e9-8b1b-73078e0adc48
     virtual_network_refs:
       - to: ["default", "floating_ip_project", "vn_floating_blue"]
   instance-ip: &instance_ip
     uuid: a3734c5d-489b-4784-8975-da1fe0350522
-    fq_name: ["test_instance_ip"]
+    fq_name: ["dbd22eb0-9beb-11e9-b15e-077b0b3bc4e5"]
     instance_ip_address: "10.0.0.2"
     virtual_machine_interface_refs:
-      - uuid: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      - uuid: 072cb50c-9bed-11e9-8b1b-73078e0adc48
   request_context: &request_context
     user_id: c8a48c44a047493995f29af752ce6ece
     roles: [admin]
@@ -92,14 +92,14 @@ test_data:
   readall_filters: &readall_filters
     id: [29a7f9e8-45a8-11e9-b210-d663bd873d93]
     floating_ip_address : [10.0.0.0]
-    port_id : [f57aa10d-9c8d-424f-b88b-e64e08b71f8c]
+    port_id : [072cb50c-9bed-11e9-8b1b-73078e0adc48]
     tenant_id: [29a7f61445a811e9b210d663bd873d93]
   floating_ip_active: &floating_ip_active
     router_id:
     status: ACTIVE
     description: ''
     tenant_id: 29a7f61445a811e9b210d663bd873d93
-    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    floating_network_id: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
     fixed_ip_address: 10.0.0.2
     floating_ip_address: 10.0.0.0
     id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
@@ -177,7 +177,7 @@ workflow:
         resource:
           id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
           tenant_id: 29a7f614-45a8-11e9-b210-d663bd873d93
-          floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+          floating_network_id: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
           project_id: 29a7f614-45a8-11e9-b210-d663bd873d93
         filters:
       context:
@@ -186,7 +186,7 @@ workflow:
   expect:
     status: DOWN
     tenant_id: 29a7f61445a811e9b210d663bd873d93
-    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    floating_network_id: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
     floating_ip_address: 10.0.0.0
 
 - name: get floating ip
@@ -219,7 +219,7 @@ workflow:
     status: DOWN
     description: ''
     tenant_id: 29a7f61445a811e9b210d663bd873d93
-    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    floating_network_id: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
     floating_ip_address: 10.0.0.0
     id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
 
@@ -232,7 +232,7 @@ workflow:
       data:
         fields:
         resource:
-          port_id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+          port_id: 072cb50c-9bed-11e9-8b1b-73078e0adc48
         id: 29a7f9e8-45a8-11e9-b210-d663bd873d93
         filters:
       context:
@@ -280,7 +280,7 @@ workflow:
         resource:
           id: 2aef7c74-e375-4c49-8efe-cb5ade65a07f
           tenant_id: 29a7f614-45a8-11e9-b210-d663bd873d93
-          floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+          floating_network_id: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
           project_id: 29a7f614-45a8-11e9-b210-d663bd873d93
         filters:
       context:
@@ -289,7 +289,7 @@ workflow:
   expect:
     status: DOWN
     tenant_id: 29a7f61445a811e9b210d663bd873d93
-    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    floating_network_id: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
     #floating_ip_address: 10.0.0.1
 
 - name: readall floating ip all filters
@@ -344,7 +344,7 @@ workflow:
     data:
       data:
         filters:
-          port_id : [f57aa10d-9c8d-424f-b88b-e64e08b71f8c]
+          port_id : [072cb50c-9bed-11e9-8b1b-73078e0adc48]
       context:
         <<: *request_context
         operation: READALL
@@ -367,7 +367,7 @@ workflow:
   - *floating_ip_active
   - status: DOWN
     tenant_id: 29a7f61445a811e9b210d663bd873d93
-    floating_network_id: beefbeef-beef-beef-beef-beefbeef1002
+    floating_network_id: b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
 
 - name: readall floating ip id filter out
   request:
@@ -476,28 +476,28 @@ workflow:
 
 - name: delete port
   request:
-    path: /virtual-machine-interface/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    path: /virtual-machine-interface/072cb50c-9bed-11e9-8b1b-73078e0adc48
     method: DELETE
     expected: [200]
   expect: null
 
 - name: delete floating-ip-pool
   request:
-    path: /floating-ip-pool/beefbeef-beef-beef-beef-beefbeef1003
+    path: /floating-ip-pool/88a1e49e-9be4-11e9-aca1-bbeb92eea976
     method: DELETE
     expected: [200]
   expect: null
 
 - name: delete virtual-network
   request:
-    path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1002
+    path: /virtual-network/b5d25ae8-9be4-11e9-8d08-ff9a4a72f830
     method: DELETE
     expected: [200]
   expect: null
 
 - name: delete network-ipam
   request:
-    path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1001
+    path: /network-ipam/a79f48be-9be4-11e9-b991-6305b63af80a
     method: DELETE
     expected: [200]
   expect: null

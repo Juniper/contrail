@@ -30,7 +30,7 @@ cleanup:
   fq_name:
   - default
   - neutron_port_admin_project
-  - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+  - 1890381e-9bed-11e9-8d75-f799f60a28a8
 
 - kind: virtual-network
   fq_name:
@@ -145,7 +145,7 @@ workflow:
       data:
         fields:
         resource:
-          id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+          id: 1890381e-9bed-11e9-8d75-f799f60a28a8
           description: ''
           admin_state_up: true
           network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
@@ -163,7 +163,7 @@ workflow:
         type: port
   expect:
     status: DOWN
-    id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    id: 1890381e-9bed-11e9-8d75-f799f60a28a8
     mac_address: $mac_address
     name: $uuid
     network_id: d9ff46fc-e193-4d40-80ba-0d55c8aed9f2
@@ -178,7 +178,7 @@ workflow:
     fq_name:
     - default
     - neutron_network_reffered_admin_project
-    - f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+    - 1890381e-9bed-11e9-8d75-f799f60a28a8
     fixed_ips:
     - subnet_id: $uuid
       ip_address: $ip_address
@@ -210,7 +210,7 @@ workflow:
     data:
       data:
         fields:
-        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        id: 1890381e-9bed-11e9-8d75-f799f60a28a8
         filters:
       context:
         <<: *network_context

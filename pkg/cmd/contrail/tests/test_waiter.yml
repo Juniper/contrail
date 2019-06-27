@@ -6,9 +6,9 @@ description: |
   routing instance will already have route target ref.
 intent_compiler_enabled: true
 cleanup:
-- path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1001
-- path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1010
-- path: /project/project_uuid
+- path: /virtual-network/1d3d93b6-9bf2-11e9-a653-bba4d2ff4284
+- path: /network-ipam/25031cec-9bf2-11e9-8f8e-ebe6dc8c785e
+- path: /project/77124b4a-9bf0-11e9-8dce-57e0ef681bdc
 - kind: routing-instance
   fq_name:
   - default
@@ -17,7 +17,7 @@ cleanup:
   - vn1
 test_data:
   project: &project
-    uuid: project_uuid
+    uuid: 77124b4a-9bf0-11e9-8dce-57e0ef681bdc
     fq_name: ["default", "default-project"]
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -28,7 +28,7 @@ test_data:
         route:
           - prefix: "test_prefix"
             next_hop: "1.2.3.5"
-    uuid: beefbeef-beef-beef-beef-beefbeef1000
+    uuid: 3b479118-9bf2-11e9-8e63-8f098e5a1321
     parent_type: project
     fq_name:
     - default
@@ -36,7 +36,7 @@ test_data:
     - net_ipam_blue
 
   virtual_network_a: &virtual_network_a
-    uuid: beefbeef-beef-beef-beef-beefbeef1001
+    uuid: 1d3d93b6-9bf2-11e9-a653-bba4d2ff4284
     address_allocation_mode: flat-subnet-only
     parent_type: project
     network_ipam_refs:
@@ -105,7 +105,7 @@ workflow:
 
 - name: check if routing instance has route target ref already
   request:
-    path: /routing-instances?parent_id=beefbeef-beef-beef-beef-beefbeef1001&detail=true
+    path: /routing-instances?parent_id=1d3d93b6-9bf2-11e9-a653-bba4d2ff4284&detail=true
     method: GET
     expected:
     - 200
@@ -118,7 +118,7 @@ workflow:
 
 - name: delete virtual network a
   request:
-    path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1001
+    path: /virtual-network/1d3d93b6-9bf2-11e9-a653-bba4d2ff4284
     method: DELETE
     expected:
     - 200
@@ -128,7 +128,7 @@ workflow:
 
 - name: delete network ipam blue
   request:
-    path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1000
+    path: /network-ipam/3b479118-9bf2-11e9-8e63-8f098e5a1321
     method: DELETE
     expected:
     - 200
@@ -138,7 +138,7 @@ workflow:
 
 - name: delete project
   request:
-    path: /project/project_uuid
+    path: /project/77124b4a-9bf0-11e9-8dce-57e0ef681bdc
     method: DELETE
     expected:
     - 200
