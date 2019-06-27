@@ -3,24 +3,25 @@ description: |
     Integration test for ref-relax-for-delete endpoint which allows to prepare
     some references which are originally not possible to be deleted for deletion.
 cleanup:
-- path: /virtual-network/vn_blue
-- path: /network-policy/network_policy_uuid
+- path: /virtual-network/033c2688-9bf4-11e9-b2da-abc8ed86c141
+- path: /network-policy/bb98ccac-9be2-11e9-a209-3fccf7f095f0
+
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
-    uuid: admin_project_uuid
+    fq_name: ["default", "f831f0ae-9bf0-11e9-879d-6b75ebfbd3ce"]
+    uuid: f831f0ae-9bf0-11e9-879d-6b75ebfbd3ce
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
   network_policy: &network_policy
-    fq_name: ["default", "admin_project_uuid", "policy"]
-    uuid: network_policy_uuid
+    fq_name: ["default", "f831f0ae-9bf0-11e9-879d-6b75ebfbd3ce", "policy"]
+    uuid: bb98ccac-9be2-11e9-a209-3fccf7f095f0
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: f831f0ae-9bf0-11e9-879d-6b75ebfbd3ce
   vn_blue: &vn_blue
-    fq_name: ["default", "admin_project_uuid", "vn_blue"]
-    uuid: vn_blue
+    fq_name: ["default", "f831f0ae-9bf0-11e9-879d-6b75ebfbd3ce", "033c2688-9bf4-11e9-b2da-abc8ed86c141"]
+    uuid: 033c2688-9bf4-11e9-b2da-abc8ed86c141
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: f831f0ae-9bf0-11e9-879d-6b75ebfbd3ce
 
 clients:
   default:
@@ -69,10 +70,10 @@ workflow:
     method: POST
     expected: [200]
     data:
-      uuid: vn_blue
-      ref-uuid: network_policy_uuid
+      uuid: 033c2688-9bf4-11e9-b2da-abc8ed86c141
+      ref-uuid: bb98ccac-9be2-11e9-a209-3fccf7f095f0
   expect:
-    uuid: vn_blue
+    uuid: 033c2688-9bf4-11e9-b2da-abc8ed86c141
 
 - name: create ref from vn_blue to policy
   request:
@@ -82,11 +83,11 @@ workflow:
     data:
       operation: ADD
       type: virtual-network
-      uuid: vn_blue
+      uuid: 033c2688-9bf4-11e9-b2da-abc8ed86c141
       ref-type: network-policy
-      ref-uuid: network_policy_uuid
+      ref-uuid: bb98ccac-9be2-11e9-a209-3fccf7f095f0
   expect:
-    uuid: vn_blue
+    uuid: 033c2688-9bf4-11e9-b2da-abc8ed86c141
 
 - name: try without specifying anything
   request:
@@ -104,10 +105,10 @@ workflow:
     method: POST
     expected: [400]
     data:
-      ref-uuid: network_policy_uuid
+      ref-uuid: bb98ccac-9be2-11e9-a209-3fccf7f095f0
   expect:
     message:
-      $contains: 'bad request: both uuid and ref-uuid should be specified: , network_policy_uuid'
+      $contains: 'bad request: both uuid and ref-uuid should be specified: , bb98ccac-9be2-11e9-a209-3fccf7f095f0'
 
 - name: try without specifying ref-uuid
   request:
@@ -115,10 +116,10 @@ workflow:
     method: POST
     expected: [400]
     data:
-      uuid: vn_blue
+      uuid: 033c2688-9bf4-11e9-b2da-abc8ed86c141
   expect:
     message:
-      $contains: 'bad request: both uuid and ref-uuid should be specified: vn_blue, '
+      $contains: 'bad request: both uuid and ref-uuid should be specified: 033c2688-9bf4-11e9-b2da-abc8ed86c141, '
 
 - name: try with a nonexistent uuid
   request:
@@ -127,7 +128,7 @@ workflow:
     expected: [404]
     data:
       uuid: does_not_exist
-      ref-uuid: network_policy_uuid
+      ref-uuid: bb98ccac-9be2-11e9-a209-3fccf7f095f0
   expect:
     null
 
@@ -137,28 +138,28 @@ workflow:
     method: POST
     expected: [404]
     data:
-      uuid: vn_blue
+      uuid: 033c2688-9bf4-11e9-b2da-abc8ed86c141
       ref-uuid: does_not_exist
   expect:
     null
 
 - name: delete virtual network blue
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/033c2688-9bf4-11e9-b2da-abc8ed86c141
     method: DELETE
     expected:
     - 200
   expect: null
 - name: delete network policy
   request:
-    path: /network-policy/network_policy_uuid
+    path: /network-policy/bb98ccac-9be2-11e9-a209-3fccf7f095f0
     method: DELETE
     expected:
     - 200
   expect: null
 - name: delete project
   request:
-    path: /project/admin_project_uuid
+    path: /project/f831f0ae-9bf0-11e9-879d-6b75ebfbd3ce
     method: DELETE
     expected: [200]
   expect: null
