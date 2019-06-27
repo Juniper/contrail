@@ -14,7 +14,7 @@ test_data:
   - target:334:334
 
   network_ipam: &network_ipam
-    uuid: uuid_ipam_magic_blue1
+    uuid: 4db45a22-9beb-11e9-8167-ef2f31b39cfa
     fq_name: ["default-domain", "default-project", "ipam"]
 
   route_target_test_a: &route_target_test_a
@@ -99,7 +99,7 @@ workflow:
         - virtual-network-with-no-route-targets
         multi_policy_service_chains_enabled: true
         network_ipam_refs:
-        - uuid: uuid_ipam_magic_blue1
+        - uuid: 4db45a22-9beb-11e9-8167-ef2f31b39cfa
 
 - name: create Virtual Network with different Route Targets
   request:

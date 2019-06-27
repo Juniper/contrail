@@ -4,17 +4,17 @@ intent_compiler_enabled: true
 cleanup:
 # TODO(Michał): implement cleanup by fq_name for ACLs
 - path: /security-group/sg_uuid
-- path: /project/project_uuid
+- path: /project/8e896740-9bf0-11e9-8a51-f332ca0f39d7
 test_data:
   project: &project
-    uuid: project_uuid
+    uuid: 8e896740-9bf0-11e9-8a51-f332ca0f39d7
     fq_name: ["default", "project_name"]
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg
     uuid: sg_uuid
     name: sg_name
-    parent_uuid: project_uuid
+    parent_uuid: 8e896740-9bf0-11e9-8a51-f332ca0f39d7
     security_group_entries:
       policy_rule:
         - direction: ">"
@@ -75,7 +75,7 @@ workflow:
   expect:
     project: *project
   watchers:
-    /contrail/project/project_uuid:
+    /contrail/project/8e896740-9bf0-11e9-8a51-f332ca0f39d7:
       - data: *project
 - name: create security group
   request:
@@ -127,7 +127,7 @@ workflow:
 
 - name: delete project
   request:
-    path: /project/project_uuid
+    path: /project/8e896740-9bf0-11e9-8a51-f332ca0f39d7
     method: DELETE
     expected:
     - 200

@@ -1,7 +1,7 @@
 name: Firewall Policy Test
 description: basic firewall policy test
 cleanup:
-- path: /project/admin_project_uuid
+- path: /project/f1b58d1c-9bf0-11e9-9b23-3ba766fa5e92
 - path: /firewall-rule/fw_rule_test_firewall_policy_uuid
 - path: /firewall-rule/global_fw_rule_test_firewall_policy_uuid
 - path: /firewall-policy/test_firewall_policy_uuid
@@ -10,7 +10,7 @@ test_data:
     fq_name:
       - default-domain
       - admin_project
-    uuid: admin_project_uuid
+    uuid: f1b58d1c-9bf0-11e9-9b23-3ba766fa5e92
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
@@ -213,7 +213,7 @@ workflow:
 
 - name: delete admin project
   request:
-    path: /project/admin_project_uuid
+    path: /project/f1b58d1c-9bf0-11e9-9b23-3ba766fa5e92
     method: DELETE
     expected:
     - 200

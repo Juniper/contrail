@@ -6,18 +6,18 @@ cleanup:
   fq_name: ["default-domain", "blue", "sg_referring", "ingress-access-control-list"]
 - kind:  access-control-list
   fq_name: ["default-domain", "blue", "sg_referring", "egress-access-control-list"]
-- path: /security-group/beefbeef-beef-beef-beef-beefbeef1001
-- path: /security-group/beefbeef-beef-beef-beef-beefbeef1002
-- path: /project/beefbeef-beef-beef-beef-beefbeef1000
+- path: /security-group/dd2fe27e-9bec-11e9-a098-ffa8f87266f5
+- path: /security-group/d1961d0c-9bec-11e9-8401-cf38a6f73cf4
+- path: /project/e6c621c2-9bec-11e9-a388-872a56dc754f
 test_data:
   project: &project
-    uuid: beefbeef-beef-beef-beef-beefbeef1000
+    uuid: e6c621c2-9bec-11e9-a388-872a56dc754f
     name: blue
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   sg: &sg
-    uuid: beefbeef-beef-beef-beef-beefbeef1001
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef1000
+    uuid: dd2fe27e-9bec-11e9-a098-ffa8f87266f5
+    parent_uuid: e6c621c2-9bec-11e9-a388-872a56dc754f
     name: sg
     security_group_entries:
       policy_rule:
@@ -35,8 +35,8 @@ test_data:
         - end_port: 65535
           start_port: 0
   sg_referring: &sg_referring
-    uuid: beefbeef-beef-beef-beef-beefbeef1002
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef1000
+    uuid: d1961d0c-9bec-11e9-8401-cf38a6f73cf4
+    parent_uuid: e6c621c2-9bec-11e9-a388-872a56dc754f
     name: sg_referring
     security_group_entries:
       policy_rule:
@@ -55,7 +55,7 @@ test_data:
           start_port: 0
   ingress_acl: &ingress_acl
     name: ingress-access-control-list
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef1001
+    parent_uuid: dd2fe27e-9bec-11e9-a098-ffa8f87266f5
     access_control_list_entries:
       acl_rule:
         - action_list:
@@ -71,10 +71,10 @@ test_data:
               end_port: 65535
   egress_acl: &egress_acl
     name: egress-access-control-list
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef1001
+    parent_uuid: dd2fe27e-9bec-11e9-a098-ffa8f87266f5
   ingress_acl_referring: &ingress_acl_referring
     name: ingress-access-control-list
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef1002
+    parent_uuid: d1961d0c-9bec-11e9-8401-cf38a6f73cf4
     access_control_list_entries:
       acl_rule:
       - action_list:
@@ -90,7 +90,7 @@ test_data:
             end_port: 65535
   egress_acl_referring: &egress_acl_referring
     name: egress-access-control-list
-    parent_uuid: beefbeef-beef-beef-beef-beefbeef1002
+    parent_uuid: d1961d0c-9bec-11e9-8401-cf38a6f73cf4
   ingress_acl_referring_update: &ingress_acl_referring_update
     <<: *ingress_acl_referring
     access_control_list_entries:
@@ -138,7 +138,7 @@ workflow:
 
 - name: delete referred security group
   request:
-    path: /security-group/beefbeef-beef-beef-beef-beefbeef1001
+    path: /security-group/dd2fe27e-9bec-11e9-a098-ffa8f87266f5
     method: DELETE
     expected:
     - 200
@@ -149,7 +149,7 @@ workflow:
 
 - name: check whether ingress acl in sg_referring was updated
   request:
-    path: /access-control-lists?parent_id=beefbeef-beef-beef-beef-beefbeef1002
+    path: /access-control-lists?parent_id=d1961d0c-9bec-11e9-8401-cf38a6f73cf4
     method: GET
     expected:
     - 200
@@ -158,7 +158,7 @@ workflow:
 
 - name: delete security group 2
   request:
-    path: /security-group/beefbeef-beef-beef-beef-beefbeef1002
+    path: /security-group/d1961d0c-9bec-11e9-8401-cf38a6f73cf4
     method: DELETE
     expected:
     - 200
@@ -168,7 +168,7 @@ workflow:
 
 - name: delete project
   request:
-    path: /project/beefbeef-beef-beef-beef-beefbeef1000
+    path: /project/e6c621c2-9bec-11e9-a388-872a56dc754f
     method: DELETE
     expected:
     - 200

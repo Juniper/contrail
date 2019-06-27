@@ -1,8 +1,8 @@
 name: Network Ipam Test
 description:  basic network ipam test
 cleanup:
-- path: /floating-ip/test_floating_ip
-- path: /floating-ip-pool/test_floating_ip_pool
+- path: /floating-ip/8d0a7db8-9bec-11e9-bc33-132c02c8fb6f
+- path: /floating-ip-pool/cad88d3e-9bf0-11e9-8315-efe2e75d9793
 - path: /virtual-network/virtual_network_blue
 - path: /network-ipam/test_ipam_netipam_blue
 - path: /project/admin_project_network_ipam_uuid
@@ -105,19 +105,19 @@ test_data:
             ip_prefix_len: 24
 
   floating_ip_pool: &floating_ip_pool
-    fq_name: ["default", "admin", "virtual_network_blue", "test_floating_ip_pool"]
-    uuid: "test_floating_ip_pool"
+    fq_name: ["default", "admin", "virtual_network_blue", "cad88d3e-9bf0-11e9-8315-efe2e75d9793"]
+    uuid: "cad88d3e-9bf0-11e9-8315-efe2e75d9793"
     display_name: "test_floating_ip_pool"
     parent_type: "virtual-network"
     parent_uuid: "virtual_network_blue"
 
 
   floating_ip: &floating_ip
-    fq_name: ["default", "admin", "virtual_network_blue", "test_floating_ip_pool", "test_floating_ip"]
-    uuid: "test_floating_ip"
+    fq_name: ["default", "admin", "virtual_network_blue", "cad88d3e-9bf0-11e9-8315-efe2e75d9793", "8d0a7db8-9bec-11e9-bc33-132c02c8fb6f"]
+    uuid: "8d0a7db8-9bec-11e9-bc33-132c02c8fb6f"
     display_name: "floating_ip_pool"
     parent_type: "floating-ip-pool"
-    parent_uuid: "test_floating_ip_pool"
+    parent_uuid: "cad88d3e-9bf0-11e9-8315-efe2e75d9793"
     floating_ip_address: "10.0.0.2"
     project_refs:
     - uuid: admin_project_network_ipam_uuid
@@ -206,7 +206,7 @@ workflow:
 
 - name: delete floating ip
   request:
-    path: /floating-ip/test_floating_ip
+    path: /floating-ip/8d0a7db8-9bec-11e9-bc33-132c02c8fb6f
     method: DELETE
     expected:
     - 200
@@ -214,7 +214,7 @@ workflow:
 
 - name: delete floating ip pool
   request:
-    path: /floating-ip-pool/test_floating_ip_pool
+    path: /floating-ip-pool/cad88d3e-9bf0-11e9-8315-efe2e75d9793
     method: DELETE
     expected:
     - 200

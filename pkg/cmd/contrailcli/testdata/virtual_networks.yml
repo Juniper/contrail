@@ -9,7 +9,7 @@ resources:
     uuid: test_ipam
     display_name: test_ipam
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 58704da8-9bf1-11e9-8356-fb04b4cedd11
     fq_name:
     - test_ipam
 - kind: virtual_network

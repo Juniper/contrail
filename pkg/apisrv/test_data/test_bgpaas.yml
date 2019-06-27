@@ -1,39 +1,39 @@
 name: BGP As a Service test
 
 cleanup:
-  - path: /virtual-network/vn_vmi_blue
-  - path: /network-ipam/test_ipam_vmi_blue
-  - path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
+  - path: /virtual-network/00b09ff8-9bf3-11e9-bcdd-bfd596bec12f
+  - path: /network-ipam/72993538-9beb-11e9-9bf7-1ff530fc8184
+  - path: /virtual-machine-interface/aaa287fa-9bef-11e9-9644-67d5626300ab
   - path: /bgp-as-a-service/dd51ee96-6778-4690-bde6-023ae87dfc67
 
 test_data:
   admin_project: &admin_project_vmi
-    uuid: admin_vmi_project_uuid
+    uuid: 3a3bcb0a-9bec-11e9-acfd-ebe2e1753aea
     name: admin_vmi_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
 
   network_ipam_blue: &network_ipam_blue
-    uuid: test_ipam_vmi_blue
-    display_name: test_ipam_vmi_blue
+    uuid: 72993538-9beb-11e9-9bf7-1ff530fc8184
+    display_name: network_ipam_blue
     parent_type: project
-    parent_uuid: admin_vmi_project_uuid
+    parent_uuid: 3a3bcb0a-9bec-11e9-acfd-ebe2e1753aea
 
   vn_vmi_blue: &vn_vmi_blue
-    uuid: vn_vmi_blue
+    uuid: 00b09ff8-9bf3-11e9-bcdd-bfd596bec12f
     name: vn_blue
     parent_type: project
-    parent_uuid: admin_vmi_project_uuid
+    parent_uuid: 3a3bcb0a-9bec-11e9-acfd-ebe2e1753aea
     network_ipam_refs:
-      - uuid: test_ipam_vmi_blue
+      - uuid: 72993538-9beb-11e9-9bf7-1ff530fc8184
 
   virtual-machine-interface: &vmi
-    uuid: e844a53b-9113-4b28-b484-3a7bce34320a
+    uuid: aaa287fa-9bef-11e9-9644-67d5626300ab
     fq_name: ["default-domain", "admin_vmi_project", "vmi_blue"]
     parent_type: project
     virtual_network_refs:
-      - uuid: vn_vmi_blue
+      - uuid: 00b09ff8-9bf3-11e9-bcdd-bfd596bec12f
         to: ["default-domain", "admin_vmi_project", "vn_blue"]
     port_security_enabled: true
     display_name: vmi_blue
@@ -68,7 +68,7 @@ test_data:
       - default-domain
       - admin_vmi_project
       - vmi_blue
-      uuid: e844a53b-9113-4b28-b484-3a7bce34320a
+      uuid: aaa287fa-9bef-11e9-9644-67d5626300ab
 
 clients:
   default:
@@ -139,7 +139,7 @@ workflow:
 
 - name: delete virtual machine interface
   request:
-    path: /virtual-machine-interface/e844a53b-9113-4b28-b484-3a7bce34320a
+    path: /virtual-machine-interface/aaa287fa-9bef-11e9-9644-67d5626300ab
     method: DELETE
     expected:
     - 200

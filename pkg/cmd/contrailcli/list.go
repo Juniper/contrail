@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 var (

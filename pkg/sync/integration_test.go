@@ -43,7 +43,7 @@ func TestSyncService(t *testing.T) {
 					{
 						Data: map[string]interface{}{
 							"uuid":        "5720afd0-d5a6-46ef-bd81-3be7f715cd27",
-							"parent_uuid": "beefbeef-beef-beef-beef-beefbeef0003",
+							"parent_uuid": integration.DefaultProjectUUID,
 							"parent_type": "project",
 							"fq_name":     []interface{}{"default-domain", "default-project", "default-virtual-network"},
 							"id_perms": map[string]interface{}{

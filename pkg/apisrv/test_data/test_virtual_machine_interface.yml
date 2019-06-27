@@ -1,6 +1,6 @@
 name: Virtual Machine Interface test
 cleanup:
-- path: /virtual-network/vn_vmi_blue
+- path: /virtual-network/11437ed0-9bf3-11e9-8490-639a5c2aa320
 - path: /network-ipam/test_ipam_vmi_blue
 - path: /service-health-check/test_service_health_check_local
 - path: /service-health-check/test_service_health_check_segment
@@ -21,7 +21,7 @@ test_data:
     parent_uuid: admin_vmi_project_uuid
 
   vn_vmi_blue: &vn_vmi_blue
-    uuid: vn_vmi_blue
+    uuid: 11437ed0-9bf3-11e9-8490-639a5c2aa320
     name: vn_blue
     parent_type: project
     parent_uuid: admin_vmi_project_uuid
@@ -33,14 +33,14 @@ test_data:
     fq_name: ["default-domain", "admin_vmi_project", "vmi_test"]
     parent_type: project
     virtual_network_refs:
-      - uuid: vn_vmi_blue
+      - uuid: 11437ed0-9bf3-11e9-8490-639a5c2aa320
         to: ["default-domain", "admin_vmi_project", "vn_blue"]
     port_security_enabled: true
     display_name: vmi_test
 
   virtual_router_blue: &virtual_router_blue
     virtual-router:
-      uuid: test_virtual_router_uuid
+      uuid: 0ba4e394-9bec-11e9-bc6a-1bf8acafc90b
       parent_type: global-system-config
       fq_name:
         - default-global-system-config
@@ -169,7 +169,7 @@ workflow:
         fq_name: ["default-domain", "admin_vmi_project", "vmi_blue"]
         parent_type: project
         virtual_network_refs:
-          - uuid: vn_vmi_blue
+          - uuid: 11437ed0-9bf3-11e9-8490-639a5c2aa320
             to: ["default-domain", "admin_vmi_project", "vn_blue"]
         port_security_enabled: true
         display_name: vmi_blue
@@ -179,7 +179,7 @@ workflow:
       fq_name: ["default-domain", "admin_vmi_project", "vmi_blue"]
       parent_type: project
       virtual_network_refs:
-        - uuid: vn_vmi_blue
+        - uuid: 11437ed0-9bf3-11e9-8490-639a5c2aa320
           to: ["default-domain", "admin_vmi_project", "vn_blue"]
       virtual_machine_interface_mac_addresses:
         mac_address: ["02:e8:44:a5:3b:91"]
@@ -337,7 +337,7 @@ workflow:
 
 - name: check if previous operation have not overwritten ref between virtual router and virtual machine
   request:
-    path: /virtual-router/test_virtual_router_uuid
+    path: /virtual-router/0ba4e394-9bec-11e9-bc6a-1bf8acafc90b
     method: GET
     expected: [200]
   expect:
@@ -368,7 +368,7 @@ workflow:
 
 - name: check if previous operation (vmi update) have deleted ref between virtual router and virtual machine
   request:
-    path: /virtual-router/test_virtual_router_uuid
+    path: /virtual-router/0ba4e394-9bec-11e9-bc6a-1bf8acafc90b
     method: GET
     expected: [200]
   expect:
@@ -400,7 +400,7 @@ workflow:
 
 - name: check if previous operation (vmi delete) have deleted ref between virtual router and virtual machine
   request:
-    path: /virtual-router/test_virtual_router_uuid
+    path: /virtual-router/0ba4e394-9bec-11e9-bc6a-1bf8acafc90b
     method: GET
     expected: [200]
   expect:
@@ -442,13 +442,13 @@ workflow:
 
 - name: delete virtual router blue
   request:
-    path: /virtual-router/test_virtual_router_uuid
+    path: /virtual-router/0ba4e394-9bec-11e9-bc6a-1bf8acafc90b
     method: DELETE
     expected: [200]
 
 - name: delete virtual network
   request:
-    path: /virtual-network/vn_vmi_blue
+    path: /virtual-network/11437ed0-9bf3-11e9-8490-639a5c2aa320
     method: DELETE
     expected: [200]
 
