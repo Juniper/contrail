@@ -123,3 +123,19 @@ func AppendToFile(path string, content []byte, perm os.FileMode) error {
 	_, err = f.Write(content)
 	return err
 }
+
+// ListFiles returns names of all files in given directory.
+func ListFiles(directoryPath string) ([]string, error) {
+	d, err := os.Open(directoryPath)
+	if err != nil {
+		return nil, err
+	}
+	defer d.Close()
+
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	return names, nil
+}

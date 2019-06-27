@@ -75,7 +75,6 @@ workflow:
         - default-domain
         - k8s-default
         - default
-        uuid:
         security_group_entries:
           policy_rule:
           - direction: ">"
