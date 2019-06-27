@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -122,4 +124,24 @@ func AppendToFile(path string, content []byte, perm os.FileMode) error {
 	}
 	_, err = f.Write(content)
 	return err
+}
+
+// ListFiles returns all files in given directory.
+func ListFiles(directoryPath string) ([]os.FileInfo, error) {
+	d, err := os.Open(directoryPath)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if cErr := d.Close(); cErr != nil {
+			logrus.WithError(cErr).Error("Failed to close directory handle")
+		}
+	}()
+
+	files, err := d.Readdir(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
 }
