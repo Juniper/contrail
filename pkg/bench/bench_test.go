@@ -8,6 +8,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
@@ -49,7 +50,7 @@ func TestBenchAPI(t *testing.T) {
 		project := models.MakeProject()
 		project.FQName = []string{"default-domain", "project", fmt.Sprintf("%d_%d", w, l)}
 		project.ParentType = "domain"
-		project.ParentUUID = "beefbeef-beef-beef-beef-beefbeef0002"
+		project.ParentUUID = integration.DefaultDomainUUID
 		project.ConfigurationVersion = 1
 		_, err = restClient.CreateProject(ctx, &services.CreateProjectRequest{
 			Project: project,

@@ -3,10 +3,10 @@ description: |
   Integration test for project creation.
 cleanup:
 - path: /project/my_custom_application_policy_set_uuid
-- path: /project/project_blue_project_uuid
+- path: /project/794dfa10-9bed-11e9-a497-ffb71b17054e
 test_data:
   project_blue: &project_blue_project
-    uuid: project_blue_project_uuid
+    uuid: 794dfa10-9bed-11e9-a497-ffb71b17054e
     name: project_blue_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
@@ -40,13 +40,13 @@ workflow:
   expect:
     project: *project_blue_project
   watchers:
-    /contrail/project/project_blue_project_uuid:
+    /contrail/project/794dfa10-9bed-11e9-a497-ffb71b17054e:
       - data:
           <<: *project_blue_project   # requested project was created with default-application-policy-set
 
 - name: check if default-application-policy-set was created
   request:
-    path: /application-policy-sets?parent_id=project_blue_project_uuid
+    path: /application-policy-sets?parent_id=794dfa10-9bed-11e9-a497-ffb71b17054e
     method: GET
     expected: [200]
   expect:
@@ -59,11 +59,11 @@ workflow:
       - project_blue_project
       - default-application-policy-set  # fqname extends project's fqname
       parent_type: project
-      parent_uuid: project_blue_project_uuid  # parent_uuid points to project
+      parent_uuid: 794dfa10-9bed-11e9-a497-ffb71b17054e  # parent_uuid points to project
 
 - name: check if the ref from the project to the set was created
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/794dfa10-9bed-11e9-a497-ffb71b17054e
     method: GET
     expected: [200]
   expect:
@@ -85,7 +85,7 @@ workflow:
 
 - name: try to delete project with user made application-policy-set
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/794dfa10-9bed-11e9-a497-ffb71b17054e
     method: DELETE
     expected: [409]
   expect: null
@@ -99,14 +99,14 @@ workflow:
 
 - name: delete project
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/794dfa10-9bed-11e9-a497-ffb71b17054e
     method: DELETE
     expected: [200]
   expect: null
 
 - name: ensure default application policy set is deleted too
   request:
-    path: /application-policy-sets?parent_id=project_blue_project_uuid
+    path: /application-policy-sets?parent_id=794dfa10-9bed-11e9-a497-ffb71b17054e
     method: GET
     expected: [200]
   expect:

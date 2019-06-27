@@ -29,7 +29,7 @@ test_data:
     parent_uuid: physical_interface_project_uuid
 
   virtual-machine-interface: &virtual_machine_interface
-    uuid: default-vmi-uuid
+    uuid: ec2a0fa6-9bf2-11e9-a17c-6b84d0afebc8
     display_name: default-vmi-k8
     parent_type: project
     parent_uuid: physical_interface_project_uuid
@@ -60,7 +60,7 @@ test_data:
     logical_interface_vlan_tag: 1024
     virtual_machine_interface_refs:
     - to: ["default-domain", "k8s-default", "default-vmi-k8"]
-      uuid: default-vmi-uuid
+      uuid: ec2a0fa6-9bf2-11e9-a17c-6b84d0afebc8
 
   physical-interface: &physical_interface2
     uuid: physical_interface_blue_uuid2
@@ -295,7 +295,7 @@ workflow:
 
 - name: delete virtual machine interface
   request:
-    path: /virtual-machine-interface/default-vmi-uuid
+    path: /virtual-machine-interface/ec2a0fa6-9bf2-11e9-a17c-6b84d0afebc8
     method: DELETE
     expected:
     - 200

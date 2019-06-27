@@ -1,25 +1,25 @@
 name: Logical Router Ping
 intent_compiler_enabled: true
 cleanup:
-- path: /logical-router/beefbeef-beef-beef-beef-beefbeef1005
-- path: /instance-ip/beefbeef-beef-beef-beef-beefbeef1004
-- path: /instance-ip/beefbeef-beef-beef-beef-beefbeef1003
-- path: /virtual-machine-interface/beefbeef-beef-beef-beef-beefbeef1002
-- path: /virtual-machine-interface/beefbeef-beef-beef-beef-beefbeef1001
-- path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1014
-- path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1013
-- path: /network-ipam/beefbeef-beef-beef-beef-
-- path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1011
-- path: /project/project_uuid
+- path: /logical-router/abc0afca-9bf1-11e9-964b-f75312d887c5
+- path: /instance-ip/c07b2f8a-9bf1-11e9-a675-6f203715565c
+- path: /instance-ip/c687e4b8-9bf1-11e9-a267-673f5ee0eeab
+- path: /virtual-machine-interface/cf841d34-9bf1-11e9-b00a-abb8a7aed8be
+- path: /virtual-machine-interface/d853cfc2-9bf1-11e9-942c-4315a0d19d0d
+- path: /virtual-network/e3b324b2-9bf1-11e9-82ae-d7abf72a72bd
+- path: /virtual-network/f6ac5f48-9bf1-11e9-9bdb-6bfdebc27dfd
+- path: /network-ipam/fc38578c-9bf1-11e9-828a-079af8f8d2e6
+- path: /network-ipam/05ccc382-9bf2-11e9-93e5-9b4bc5eacc2e
+- path: /project/5dbe9d9c-9bf0-11e9-b8d3-a3de1388112b
 test_data:
   project: &project
-    uuid: project_uuid
+    uuid: 5dbe9d9c-9bf0-11e9-b8d3-a3de1388112b
     fq_name: ["default", "default-project"]
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
 
   network_ipam_blue: &network_ipam_blue
-    uuid: beefbeef-beef-beef-beef-beefbeef1011
+    uuid: 05ccc382-9bf2-11e9-93e5-9b4bc5eacc2e
     parent_type: project
     fq_name:
     - default
@@ -39,7 +39,7 @@ test_data:
           ip_prefix_len: 12
 
   network_ipam_red: &network_ipam_red
-    uuid: beefbeef-beef-beef-beef-beefbeef1012
+    uuid: fc38578c-9bf1-11e9-828a-079af8f8d2e6
     parent_type: project
     fq_name:
     - default
@@ -59,7 +59,7 @@ test_data:
           ip_prefix_len: 12
 
   virtual_network_blue: &virtual_network_blue
-    uuid: beefbeef-beef-beef-beef-beefbeef1013
+    uuid: f6ac5f48-9bf1-11e9-9bdb-6bfdebc27dfd
     address_allocation_mode: flat-subnet-only
     parent_type: project
     virtual_network_properties:
@@ -76,7 +76,7 @@ test_data:
     - vn1
 
   virtual_network_red: &virtual_network_red
-    uuid: beefbeef-beef-beef-beef-beefbeef1014
+    uuid: e3b324b2-9bf1-11e9-82ae-d7abf72a72bd
     address_allocation_mode: flat-subnet-only
     parent_type: project
     virtual_network_properties:
@@ -97,45 +97,45 @@ test_data:
     fq_name:
     - default
     - default-project
-    - beefbeef-beef-beef-beef-beefbeef1001
+    - d853cfc2-9bf1-11e9-942c-4315a0d19d0d
     virtual_network_refs:
     - to:
       - default
       - default-project
       - vn1
     virtual_machine_interface_device_owner: network:router_interface
-    display_name: beefbeef-beef-beef-beef-beefbeef1001
-    uuid: beefbeef-beef-beef-beef-beefbeef1001
-    name: beefbeef-beef-beef-beef-beefbeef1001
+    display_name: d853cfc2-9bf1-11e9-942c-4315a0d19d0d
+    uuid: d853cfc2-9bf1-11e9-942c-4315a0d19d0d
+    name: d853cfc2-9bf1-11e9-942c-4315a0d19d0d
 
   virtual_machine_interface_red: &virtual_machine_interface_red
     parent_type: project
     fq_name:
     - default
     - default-project
-    - beefbeef-beef-beef-beef-beefbeef1002
+    - cf841d34-9bf1-11e9-b00a-abb8a7aed8be
     virtual_network_refs:
     - to:
       - default
       - default-project
       - vn2
     virtual_machine_interface_device_owner: network:router_interface
-    display_name: beefbeef-beef-beef-beef-beefbeef1002
-    uuid: beefbeef-beef-beef-beef-beefbeef1002
-    name: beefbeef-beef-beef-beef-beefbeef1002
+    display_name: cf841d34-9bf1-11e9-b00a-abb8a7aed8be
+    uuid: cf841d34-9bf1-11e9-b00a-abb8a7aed8be
+    name: cf841d34-9bf1-11e9-b00a-abb8a7aed8be
 
   instance_ip_blue: &instance_ip_blue
     fq_name:
-    - beefbeef-beef-beef-beef-beefbeef1003
-    display_name: beefbeef-beef-beef-beef-beefbeef1003
-    name: beefbeef-beef-beef-beef-beefbeef1003
-    uuid: beefbeef-beef-beef-beef-beefbeef1003
+    - c687e4b8-9bf1-11e9-a267-673f5ee0eeab
+    display_name: c687e4b8-9bf1-11e9-a267-673f5ee0eeab
+    name: c687e4b8-9bf1-11e9-a267-673f5ee0eeab
+    uuid: c687e4b8-9bf1-11e9-a267-673f5ee0eeab
     virtual_machine_interface_refs:
     - to:
       - default
       - default-project
-      - beefbeef-beef-beef-beef-beefbeef1001
-      uuid: beefbeef-beef-beef-beef-beefbeef1001
+      - d853cfc2-9bf1-11e9-942c-4315a0d19d0d
+      uuid: d853cfc2-9bf1-11e9-942c-4315a0d19d0d
     virtual_network_refs:
     - to:
       - default
@@ -144,16 +144,16 @@ test_data:
 
   instance_ip_red: &instance_ip_red
     fq_name:
-    - beefbeef-beef-beef-beef-beefbeef1004
-    display_name: beefbeef-beef-beef-beef-beefbeef1004
-    name: beefbeef-beef-beef-beef-beefbeef1004
-    uuid: beefbeef-beef-beef-beef-beefbeef1004
+    - c07b2f8a-9bf1-11e9-a675-6f203715565c
+    display_name: c07b2f8a-9bf1-11e9-a675-6f203715565c
+    name: c07b2f8a-9bf1-11e9-a675-6f203715565c
+    uuid: c07b2f8a-9bf1-11e9-a675-6f203715565c
     virtual_machine_interface_refs:
     - to:
       - default
       - default-project
-      - beefbeef-beef-beef-beef-beefbeef1002
-      uuid: beefbeef-beef-beef-beef-beefbeef1002
+      - cf841d34-9bf1-11e9-b00a-abb8a7aed8be
+      uuid: cf841d34-9bf1-11e9-b00a-abb8a7aed8be
     virtual_network_refs:
     - to:
       - default
@@ -161,7 +161,7 @@ test_data:
       - vn2
 
   logical_router: &logical_router
-    uuid: beefbeef-beef-beef-beef-beefbeef1005
+    uuid: abc0afca-9bf1-11e9-964b-f75312d887c5
     name: logical_router_1
     fq_name:
     - default
@@ -172,13 +172,13 @@ test_data:
     - to:
       - default
       - default-project
-      - beefbeef-beef-beef-beef-beefbeef1001
-      uuid: beefbeef-beef-beef-beef-beefbeef1001
+      - d853cfc2-9bf1-11e9-942c-4315a0d19d0d
+      uuid: d853cfc2-9bf1-11e9-942c-4315a0d19d0d
     - to:
       - default
       - default-project
-      - beefbeef-beef-beef-beef-beefbeef1002
-      uuid: beefbeef-beef-beef-beef-beefbeef1002
+      - cf841d34-9bf1-11e9-b00a-abb8a7aed8be
+      uuid: cf841d34-9bf1-11e9-b00a-abb8a7aed8be
     id_perms:
       enable: true
 
@@ -233,7 +233,7 @@ workflow:
     - 200
     data:
       virtual-network:
-        uuid: beefbeef-beef-beef-beef-beefbeef1013
+        uuid: f6ac5f48-9bf1-11e9-9bdb-6bfdebc27dfd
         address_allocation_mode: flat-subnet-only
         parent_type: project
         virtual_network_properties:
@@ -261,7 +261,7 @@ workflow:
     - 200
     data:
       virtual-network:
-        uuid: beefbeef-beef-beef-beef-beefbeef1014
+        uuid: e3b324b2-9bf1-11e9-82ae-d7abf72a72bd
         address_allocation_mode: flat-subnet-only
         parent_type: project
         virtual_network_properties:
@@ -349,7 +349,7 @@ workflow:
 
 - name: check if routing instance has 2 target refs
   request:
-    path: /routing-instances?parent_id=beefbeef-beef-beef-beef-beefbeef1013&detail=true
+    path: /routing-instances?parent_id=f6ac5f48-9bf1-11e9-9bdb-6bfdebc27dfd&detail=true
     method: GET
     expected:
     - 200
@@ -362,7 +362,7 @@ workflow:
 
 - name: delete logical router
   request:
-    path: /logical-router/beefbeef-beef-beef-beef-beefbeef1005
+    path: /logical-router/abc0afca-9bf1-11e9-964b-f75312d887c5
     method: DELETE
     expected:
     - 200
@@ -370,7 +370,7 @@ workflow:
 
 - name: delete instance ip
   request:
-    path: /instance-ip/beefbeef-beef-beef-beef-beefbeef1004
+    path: /instance-ip/c07b2f8a-9bf1-11e9-a675-6f203715565c
     method: DELETE
     expected:
     - 200
@@ -378,7 +378,7 @@ workflow:
 
 - name: delete instance ip
   request:
-    path: /instance-ip/beefbeef-beef-beef-beef-beefbeef1003
+    path: /instance-ip/c687e4b8-9bf1-11e9-a267-673f5ee0eeab
     method: DELETE
     expected:
     - 200
@@ -386,7 +386,7 @@ workflow:
 
 - name: delete vmi
   request:
-    path: /virtual-machine-interface/beefbeef-beef-beef-beef-beefbeef1002
+    path: /virtual-machine-interface/cf841d34-9bf1-11e9-b00a-abb8a7aed8be
     method: DELETE
     expected:
     - 200
@@ -394,7 +394,7 @@ workflow:
 
 - name: delete vmi
   request:
-    path: /virtual-machine-interface/beefbeef-beef-beef-beef-beefbeef1001
+    path: /virtual-machine-interface/d853cfc2-9bf1-11e9-942c-4315a0d19d0d
     method: DELETE
     expected:
     - 200
@@ -402,7 +402,7 @@ workflow:
 
 - name: delete vn
   request:
-    path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1014
+    path: /virtual-network/e3b324b2-9bf1-11e9-82ae-d7abf72a72bd
     method: DELETE
     expected:
     - 200
@@ -410,7 +410,7 @@ workflow:
 
 - name: delete vn
   request:
-    path: /virtual-network/beefbeef-beef-beef-beef-beefbeef1013
+    path: /virtual-network/f6ac5f48-9bf1-11e9-9bdb-6bfdebc27dfd
     method: DELETE
     expected:
     - 200
@@ -418,7 +418,7 @@ workflow:
 
 - name: delete ipam
   request:
-    path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1012
+    path: /network-ipam/fc38578c-9bf1-11e9-828a-079af8f8d2e6
     method: DELETE
     expected:
     - 200
@@ -426,7 +426,7 @@ workflow:
 
 - name: delete ipam
   request:
-    path: /network-ipam/beefbeef-beef-beef-beef-beefbeef1011
+    path: /network-ipam/05ccc382-9bf2-11e9-93e5-9b4bc5eacc2e
     method: DELETE
     expected:
     - 200
@@ -434,7 +434,7 @@ workflow:
 
 - name: delete project
   request:
-    path: /project/project_uuid
+    path: /project/5dbe9d9c-9bf0-11e9-b8d3-a3de1388112b
     method: DELETE
     expected:
     - 200

@@ -12,7 +12,7 @@ cleanup:
 - path: /rhospd-cloud-manager/test_rhospd_cloud_manager_uuid
 - path: /virtual-network/virtual_network_external_uuid
 - path: /network-ipam/ipam_external_uuid
-- path: /project/admin_project_uuid
+- path: /project/5e6cc254-9bf1-11e9-a913-07014a869e52
 - path: /tag/external_tag_uuid
 
 test_data:
@@ -22,7 +22,7 @@ test_data:
     tag_type_name: label
     tag_value: external
   admin_project: &admin_project
-    uuid: admin_project_uuid
+    uuid: 5e6cc254-9bf1-11e9-a913-07014a869e52
     name: admin_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
@@ -32,7 +32,7 @@ test_data:
     uuid: ipam_external_uuid
     display_name: ipam_external
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 5e6cc254-9bf1-11e9-a913-07014a869e52
     fq_name: ["domain","admin","ipam_external"]
 
   virtual_network_external: &virtual_network_external
@@ -40,7 +40,7 @@ test_data:
     uuid: virtual_network_external_uuid
     display_name: "virtual_network_external"
     parent_type: "project"
-    parent_uuid: admin_project_uuid
+    parent_uuid: 5e6cc254-9bf1-11e9-a913-07014a869e52
     network_ipam_refs:
       - uuid: "ipam_external_uuid"
         to: ["domain","admin","ipam_external"]
@@ -221,7 +221,7 @@ workflow:
     project:
       perms2:
         owner: admin
-      uuid: admin_project_uuid
+      uuid: 5e6cc254-9bf1-11e9-a913-07014a869e52
 - name: create rhospd cloud manager
   request:
     path: /rhospd-cloud-managers
@@ -251,7 +251,7 @@ workflow:
         owner: admin
       uuid: ipam_external_uuid
       parent_type: "project"
-      parent_uuid: admin_project_uuid
+      parent_uuid: 5e6cc254-9bf1-11e9-a913-07014a869e52
 - name: create external virtual network
   request:
     path: /virtual-networks
@@ -266,7 +266,7 @@ workflow:
         owner: admin
       uuid: virtual_network_external_uuid
       parent_type: "project"
-      parent_uuid: admin_project_uuid
+      parent_uuid: 5e6cc254-9bf1-11e9-a913-07014a869e52
 - name: create node
   request:
     path: /nodes

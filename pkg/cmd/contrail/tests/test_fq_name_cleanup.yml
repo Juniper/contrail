@@ -19,7 +19,7 @@ clients:
 
 test_data:
   project_blue: &project_blue_project
-    uuid: beefbeef-beef-beef-beef-beefbeef1000
+    uuid: 7f2cdce2-9bef-11e9-95fd-ff6ba1f29a62
     name: project_blue_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002

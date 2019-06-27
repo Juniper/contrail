@@ -4,12 +4,12 @@ cleanup:
 - path: /firewall-rule/test_firewall_rule_blue_uuid
 - path: /firewall-rule/test_firewall_rule_red_uuid
 - path: /tag/test_tag_blue_uuid
-- path: /tag-type/tag_type_uuid
+- path: /tag-type/105ddb2c-9bef-11e9-910b-bb1ae72b7cc9
 - path: /service-group/test_service_group_uuid
 
 test_data:
   tag_type: &tag_type
-    uuid: tag_type_uuid
+    uuid: 105ddb2c-9bef-11e9-910b-bb1ae72b7cc9
     display_name: namespace
     fq_name:
       - namespace
@@ -84,7 +84,7 @@ workflow:
       fq_name:
       - namespace
       tag_type_id: "0x00ff"
-      uuid: tag_type_uuid
+      uuid: 105ddb2c-9bef-11e9-910b-bb1ae72b7cc9
 
 - name: create tag blue
   request:

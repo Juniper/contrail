@@ -2,8 +2,8 @@ name: Base poperties tests for logical interface which has 2 parents
 cleanup:
 - path: /logical_interface/logical_interface_blue
 - path: /logical_interface/logical_interface_blue2
-- path: /physical-router/physical_router_blue_uuid
-- path: /physical-interface/physical_interface_blue_uuid
+- path: /physical-router/21be3ef2-9bef-11e9-ac21-1fa32803cf0c
+- path: /physical-interface/a2841a24-9beb-11e9-b5b6-b7fa979ddb56
 test_data:
   logical_interface_minimal: &logical_interface_minimal_base_props
     uuid: logical_interface_blue
@@ -25,7 +25,7 @@ workflow:
     expected: [200]
     data:
       physical-router:
-        uuid: physical_router_blue_uuid
+        uuid: 21be3ef2-9bef-11e9-ac21-1fa32803cf0c
         name: physical_router_blue_name
         physical_router_device_family: juniper
         physical_router_vendor_name: juniper
@@ -40,9 +40,9 @@ workflow:
     expected: [200]
     data:
       physical-interface:
-        uuid: physical_interface_blue_uuid
+        uuid: a2841a24-9beb-11e9-b5b6-b7fa979ddb56
         name: physical_interface_blue_name
-        parent_uuid: physical_router_blue_uuid
+        parent_uuid: 21be3ef2-9bef-11e9-ac21-1fa32803cf0c
 
 - name: create logical_interface w/o parent_type
   request:
@@ -52,7 +52,7 @@ workflow:
     data:
       logical-interface:
         <<: *logical_interface_minimal_base_props
-        parent_uuid: physical_interface_blue_uuid
+        parent_uuid: a2841a24-9beb-11e9-b5b6-b7fa979ddb56
         fq_name: [default-global-system-config, physical_router_blue_name, physical_interface_blue_name]
   expect: null
 
@@ -65,7 +65,7 @@ workflow:
       logical-interface:
         <<: *logical_interface_minimal_base_props
         parent_type: physical-interface
-        parent_uuid: physical_interface_blue_uuid
+        parent_uuid: a2841a24-9beb-11e9-b5b6-b7fa979ddb56
   expect:
     logical-interface:
       <<: *logical_interface_minimal_base_props
@@ -90,7 +90,7 @@ workflow:
       logical-interface:
         <<: *logical_interface_minimal_base_props
         parent_type: physical-interface
-        parent_uuid: physical_interface_blue_uuid
+        parent_uuid: a2841a24-9beb-11e9-b5b6-b7fa979ddb56
   expect:
     logical-interface:
       <<: *logical_interface_minimal_base_props
@@ -108,7 +108,7 @@ workflow:
       logical-interface:
         uuid: logical_interface_blue2
         parent_type: physical-router
-        parent_uuid: physical_router_blue_uuid
+        parent_uuid: 21be3ef2-9bef-11e9-ac21-1fa32803cf0c
   expect:
     logical-interface:
       uuid: logical_interface_blue2

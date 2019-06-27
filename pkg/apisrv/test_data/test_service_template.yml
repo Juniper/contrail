@@ -2,12 +2,12 @@ name: Service Template Test
 description: |
   Basic Service Template Test
 cleanup:
-  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0011
-  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0012
-  - path: /service-template/beefbeef-beef-beef-beef-beefbeef0013
+  - path: /service-template/5a121ac8-9bf2-11e9-806a-23708815e454
+  - path: /service-template/610e977a-9bf2-11e9-81f5-cfd968bee391
+  - path: /service-template/67af4b92-9bf2-11e9-b4c9-3b04ac9848ec
 test_data:
   service_template: &st_correct_svc_template
-    uuid: beefbeef-beef-beef-beef-beefbeef0011
+    uuid: 5a121ac8-9bf2-11e9-806a-23708815e454
     parent_type: domain
     fq_name:
       - default-domain
@@ -27,13 +27,13 @@ test_data:
 
   service_template: &st_with_parent_uuid
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
-    uuid: beefbeef-beef-beef-beef-beefbeef0012
+    uuid: 610e977a-9bf2-11e9-81f5-cfd968bee391
     name: with-parent-uuid
     parent_type: domain
     service_template_properties: *template_properties
 
   service_template: &st_from_dump
-    uuid: beefbeef-beef-beef-beef-beefbeef0013
+    uuid: 67af4b92-9bf2-11e9-b4c9-3b04ac9848ec
     name: service_template_test_1
     fq_name:
       - default-domain
@@ -124,18 +124,18 @@ workflow:
 
 - name: delete service template v2 VM
   request:
-    path: /service-template/beefbeef-beef-beef-beef-beefbeef0011
+    path: /service-template/5a121ac8-9bf2-11e9-806a-23708815e454
     method: DELETE
     expected: [200]
 
 - name: delete service template with parent uuid
   request:
-    path: /service-template/beefbeef-beef-beef-beef-beefbeef0012
+    path: /service-template/610e977a-9bf2-11e9-81f5-cfd968bee391
     method: DELETE
     expected: [200]
 
 - name: delete service template with parent uuid
   request:
-    path: /service-template/beefbeef-beef-beef-beef-beefbeef0013
+    path: /service-template/67af4b92-9bf2-11e9-b4c9-3b04ac9848ec
     method: DELETE
     expected: [200]

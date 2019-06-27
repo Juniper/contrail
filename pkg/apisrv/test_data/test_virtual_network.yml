@@ -2,38 +2,38 @@ name: Virtual Network Test
 description:  basic virtual network test
 cleanup:
 - path: /routing-instance/ri_uuid
-- path: /virtual-network/vn_blue
+- path: /virtual-network/26dcb940-9bf4-11e9-bbb6-5f489dbffcea
 - path: /virtual-network/vn_red
 - path: /virtual-network/vn_test_ref
 - path: /network-ipam/test_ipam_blue
 - path: /network-ipam/test_ipam_red
 - path: /network-ipam/test_ipam1
 - path: /network-ipam/test_ipam2
-- path: /instance-ip/test_instance_ip
+- path: /instance-ip/cfcbdc1a-9beb-11e9-a45a-478dc6829a36
 - path: /network-policy/network_policy_uuid
 - path: /network-policy/network_policy_uuid2
   client: bob
-- path: /project/admin_project_uuid
-- path: /project/demo_project_uuid
+- path: /project/47dd9220-9bf1-11e9-b422-538349e2da80
+- path: /project/5038dd12-9bf1-11e9-95a1-df91d98ff557
   client: bob
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
-    uuid: admin_project_uuid
+    fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80"]
+    uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   demo_project: &demo_project
-    fq_name: ["default", "demo_project_uuid"]
-    uuid: demo_project_uuid
+    fq_name: ["default", "5038dd12-9bf1-11e9-95a1-df91d98ff557"]
+    uuid: 5038dd12-9bf1-11e9-95a1-df91d98ff557
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   network_policy1: &network_policy1
-    fq_name: ["default", "admin_project_uuid", "policy1"]
+    fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "policy1"]
     uuid: network_policy_uuid
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
     network_policy_entries:
       policy_rule:
         - direction: ">"
@@ -53,10 +53,10 @@ test_data:
     network_policys:
     - <<: *network_policy1
   network_policy2: &network_policy2
-    fq_name: ["default", "demo_project_uuid", "policy2"]
+    fq_name: ["default", "5038dd12-9bf1-11e9-95a1-df91d98ff557", "policy2"]
     uuid: network_policy_uuid2
     parent_type: project
-    parent_uuid: demo_project_uuid
+    parent_uuid: 5038dd12-9bf1-11e9-95a1-df91d98ff557
     network_policy_entries:
       policy_rule:
         - direction: ">"
@@ -80,8 +80,8 @@ test_data:
     uuid: test_ipam_blue
     display_name: test_ipam_blue
     parent_type: project
-    parent_uuid: admin_project_uuid
-    fq_name: ["domain","admin_project_uuid","test_ipam_blue"]
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
+    fq_name: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam_blue"]
   network_ipam_red: &network_ipam_red
     network_ipam_mgmt:
       host_routes:
@@ -91,35 +91,35 @@ test_data:
     uuid: test_ipam_red
     display_name: test_ipam_red
     parent_type: project
-    parent_uuid: admin_project_uuid
-    fq_name: ["domain","admin_project_uuid","test_ipam_red"]
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
+    fq_name: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam_red"]
   vn_blue: &vn_blue
-    fq_name: ["default", "admin_project_uuid", "vn_blue"]
-    uuid: vn_blue
+    fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"]
+    uuid: 26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     display_name: blue
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
     route_target_list:
        route_target: ["100:200"]
     network_policy_refs:
     - uuid: network_policy_uuid
-      to: ["default", "admin_project_uuid", "policy1"]
+      to: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "policy1"]
     network_ipam_refs:
     - uuid: test_ipam_blue
   vn_blue_ri1: &vn_blue_ri1
     uuid: ri_uuid
-    fq_name: ["default", "admin_project_uuid", "ri1"]
+    fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "ri1"]
     parent_type: virtual-network
-    parent_uuid: vn_blue
+    parent_uuid: 26dcb940-9bf4-11e9-bbb6-5f489dbffcea
   vn_blue_ri_default: &vn_blue_ri_default
-    fq_name: ["default", "admin_project_uuid", "vn_blue", "vn_blue"]
+    fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "26dcb940-9bf4-11e9-bbb6-5f489dbffcea", "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"]
     parent_type: virtual-network
-    parent_uuid: vn_blue
+    parent_uuid: 26dcb940-9bf4-11e9-bbb6-5f489dbffcea
   vn_blue_with_detail: &vn_blue_with_detail
-    uuid: vn_blue
+    uuid: 26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     display_name: blue
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
     network_policy_refs:
     - uuid: network_policy_uuid
     network_ipam_refs:
@@ -130,9 +130,9 @@ test_data:
   vn_red: &vn_red
     uuid: vn_red
     display_name: red
-    fq_name: ["default", "admin_project_uuid", "vn_red"]
+    fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "vn_red"]
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
     network_policy_refs:
     - uuid: network_policy_uuid
     network_ipam_refs:
@@ -141,22 +141,22 @@ test_data:
     uuid: vn_red
     display_name: red
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
     network_policy_refs:
     - uuid: network_policy_uuid
     network_ipam_refs:
     - uuid: test_ipam_red
   vn_blue_simple: &vn_blue_simple
-    uuid: vn_blue
+    uuid: 26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     display_name: blue
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
   vn_red_simple: &vn_red_simple
     uuid: vn_red
     display_name: red
-    fq_name: ["default", "admin_project_uuid", "vn_red"]
+    fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "vn_red"]
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
 clients:
   default:
     id: alice
@@ -206,7 +206,7 @@ workflow:
     network-policy: *network_policy1
 - name: get project with network policy 1
   request:
-    path: /project/admin_project_uuid
+    path: /project/47dd9220-9bf1-11e9-b422-538349e2da80
     method: GET
     expected:
     - 200
@@ -224,9 +224,9 @@ workflow:
   expect:
     network-policy:
       uuid: network_policy_uuid2
-      fq_name: ["default", "demo_project_uuid", "policy2"]
+      fq_name: ["default", "5038dd12-9bf1-11e9-95a1-df91d98ff557", "policy2"]
       parent_type: project
-      parent_uuid: demo_project_uuid
+      parent_uuid: 5038dd12-9bf1-11e9-95a1-df91d98ff557
       perms2:
         owner: demo
 - name: create network ipam blue
@@ -265,15 +265,15 @@ workflow:
         uuid: test_ipam1
         display_name: test_ipam1
         parent_type: project
-        parent_uuid: admin_project_uuid
-        fq_name: ["domain","admin_project_uuid","test_ipam1"]
+        parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
+        fq_name: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam1"]
   expect:
     network-ipam:
       uuid: test_ipam1
       display_name: test_ipam1
       parent_type: project
-      parent_uuid: admin_project_uuid
-      fq_name: ["domain","admin_project_uuid","test_ipam1"]
+      parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
+      fq_name: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam1"]
 - name: create network ipam2
   request:
     path: /network-ipams
@@ -290,15 +290,15 @@ workflow:
         uuid: test_ipam2
         display_name: test_ipam2
         parent_type: project
-        parent_uuid: admin_project_uuid
-        fq_name: ["domain","admin_project_uuid","test_ipam2"]
+        parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
+        fq_name: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam2"]
   expect:
     network-ipam:
       uuid: test_ipam2
       display_name: test_ipam2
       parent_type: project
-      parent_uuid: admin_project_uuid
-      fq_name: ["domain","admin_project_uuid","test_ipam2"]
+      parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
+      fq_name: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam2"]
 - name: create virtual network ref
   request:
     path: /virtual-networks
@@ -307,13 +307,13 @@ workflow:
     - 200
     data:
       virtual-network:
-        fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
+        fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "vn_test_ref"]
         uuid: "vn_test_ref"
         display_name: "vn_test_ref"
         parent_type: "project"
-        parent_uuid: "admin_project_uuid"
+        parent_uuid: "47dd9220-9bf1-11e9-b422-538349e2da80"
         network_ipam_refs:
-          - to: ["domain","admin_project_uuid","test_ipam1"]
+          - to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam1"]
             attr:
               host_routes:
                 route:
@@ -321,14 +321,14 @@ workflow:
                   next_hop: "1.2.3.5"
   expect:
     virtual-network:
-      fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
+      fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "vn_test_ref"]
       uuid: vn_test_ref
       display_name: vn_test_ref
       parent_type: project
-      parent_uuid: admin_project_uuid
+      parent_uuid: 47dd9220-9bf1-11e9-b422-538349e2da80
       network_ipam_refs:
         - uuid: "test_ipam1"
-          to: ["domain","admin_project_uuid","test_ipam1"]
+          to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam1"]
 - name: update virtual network ref
   request:
     path: /virtual-network/vn_test_ref
@@ -337,19 +337,19 @@ workflow:
     - 200
     data:
       virtual-network:
-        fq_name: ["default", "admin_project_uuid", "vn_test_ref"]
+        fq_name: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "vn_test_ref"]
         uuid: "vn_test_ref"
         display_name: "vn_test_ref"
         parent_type: "project"
-        parent_uuid: "admin_project_uuid"
+        parent_uuid: "47dd9220-9bf1-11e9-b422-538349e2da80"
         perms2:
           share:
             - tenant: "default:demo"
               tenant_access: 7
         network_ipam_refs:
-          - to: ["domain","admin_project_uuid","test_ipam1"]
+          - to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam1"]
           - uuid: "test_ipam2"
-            to: ["domain","admin_project_uuid","test_ipam2"]
+            to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam2"]
             attr:
               host_routes:
                 route:
@@ -360,9 +360,9 @@ workflow:
       uuid: vn_test_ref
       network_ipam_refs:
         - uuid: "test_ipam1"
-          to: ["domain","admin_project_uuid","test_ipam1"]
+          to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam1"]
         - uuid: "test_ipam2"
-          to: ["domain","admin_project_uuid","test_ipam2"]
+          to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam2"]
           attr:
             host_routes:
               route:
@@ -433,7 +433,7 @@ workflow:
 - name: list virtual networks with detail
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
-    path: /virtual-networks?detail=true&parent_id=admin_project_uuid
+    path: /virtual-networks?detail=true&parent_id=47dd9220-9bf1-11e9-b422-538349e2da80
     method: GET
     expected:
     - 200
@@ -446,7 +446,7 @@ workflow:
 - name: list virtual networks with share
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
-    path: /virtual-networks?shared=true&parent_id=admin_project_uuid
+    path: /virtual-networks?shared=true&parent_id=47dd9220-9bf1-11e9-b422-538349e2da80
     method: GET
     expected:
     - 200
@@ -465,7 +465,7 @@ workflow:
     - *vn_blue_simple
 - name: list network ipams with back_ref_id filter
   request:
-    path: "/network-ipams?back_ref_id=vn_blue"
+    path: "/network-ipams?back_ref_id=26dcb940-9bf4-11e9-bbb6-5f489dbffcea"
     method: GET
     expected:
     - 200
@@ -482,7 +482,7 @@ workflow:
     network-ipams: null
 - name: list virtual networks with parent_id
   request:
-    path: "/virtual-networks?parent_id=admin_project_uuid"
+    path: "/virtual-networks?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80"
     method: GET
     expected:
     - 200
@@ -492,7 +492,7 @@ workflow:
     - *vn_red_simple
 - name: list virtual networks with parent_id and start marker
   request:
-    path: "/virtual-networks?parent_id=admin_project_uuid&page_marker=vn_blue"
+    path: "/virtual-networks?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&page_marker=26dcb940-9bf4-11e9-bbb6-5f489dbffcea"
     method: GET
     expected:
     - 200
@@ -502,7 +502,7 @@ workflow:
 # TODO enable when ParentFQName filter is implemented (pkg/db/basedb/query_builder.go:244)
 #- name: list virtual networks with parent_fq_name_str
 #  request:
-#    path: "/virtual-networks?parent_fq_name_str=default:admin_project_uuid"
+#    path: "/virtual-networks?parent_fq_name_str=default:47dd9220-9bf1-11e9-b422-538349e2da80"
 #    method: GET
 #    expected:
 #    - 200
@@ -514,7 +514,7 @@ workflow:
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
     # Display name is needed as adding parent_id constraint is changing order.
-    path: /virtual-networks?page_limit=1&detail=true&parent_id=admin_project_uuid&filters=display_name==blue
+    path: /virtual-networks?page_limit=1&detail=true&parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&filters=display_name==blue
     method: GET
     expected:
     - 200
@@ -524,7 +524,7 @@ workflow:
         *vn_blue_with_detail
 - name: list virtual networks with page limit and marker
   request:
-    path: /virtual-networks?page_limit=1&detail=true&parent_id=admin_project_uuid&page_marker=vn_blue
+    path: /virtual-networks?page_limit=1&detail=true&parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&page_marker=26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: GET
     expected:
     - 200
@@ -534,7 +534,7 @@ workflow:
         *vn_red_with_detail
 - name: list virtual networks with obj_uuids
   request:
-    path: "/virtual-networks?obj_uuids=vn_blue&detail=true"
+    path: "/virtual-networks?obj_uuids=26dcb940-9bf4-11e9-bbb6-5f489dbffcea&detail=true"
     method: GET
     expected:
     - 200
@@ -544,7 +544,7 @@ workflow:
         *vn_blue_with_detail
 - name: count virtual networks
   request:
-    path: "/virtual-networks?parent_id=admin_project_uuid&count=true"
+    path: "/virtual-networks?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&count=true"
     method: GET
     expected:
     - 200
@@ -563,7 +563,7 @@ workflow:
 - name: count virtual networks with share
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
-    path: "/virtual-networks?shared=true&parent_id=admin_project_uuid&count=true"
+    path: "/virtual-networks?shared=true&parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&count=true"
     method: GET
     expected:
     - 200
@@ -572,7 +572,7 @@ workflow:
       count: 2
 - name: count network ipams with back_ref_id filter
   request:
-    path: "/network-ipams?back_ref_id=vn_blue&count=true"
+    path: "/network-ipams?back_ref_id=26dcb940-9bf4-11e9-bbb6-5f489dbffcea&count=true"
     method: GET
     expected:
     - 200
@@ -591,7 +591,7 @@ workflow:
 - name: list network policy
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
-    path: /network-policys?parent_id=admin_project_uuid
+    path: /network-policys?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80
     method: GET
     expected:
     - 200
@@ -611,7 +611,7 @@ workflow:
 - name: count network policies
   request:
     # TODO: parent_id is temporary fix as tests in gen_db_test.go are not cleaning database.
-    path: "/network-policys?parent_id=admin_project_uuid&count=true"
+    path: "/network-policys?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&count=true"
     method: GET
     expected:
     - 200
@@ -621,15 +621,15 @@ workflow:
 
 - name: update vn_blue with user-defined subnet
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: PUT
     expected:
     - 200
     data:
       virtual-network:
-        uuid: "vn_blue"
+        uuid: "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"
         network_ipam_refs:
-          - to: ["domain","admin_project_uuid","test_ipam_blue"]
+          - to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam_blue"]
             attr:
               ipam_subnets:
                 - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
@@ -640,7 +640,7 @@ workflow:
     virtual-network:
       network_ipam_refs:
         - uuid: test_ipam_blue
-          to: ["domain","admin_project_uuid","test_ipam_blue"]
+          to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam_blue"]
           attr:
             ipam_subnets:
               - subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
@@ -650,7 +650,7 @@ workflow:
 
 - name: update virtual network properties it shouldn't affect subnets in address manager
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: PUT
     expected:
     - 200
@@ -671,32 +671,32 @@ workflow:
     - 200
     data:
       instance-ip:
-        uuid: "test_instance_ip"
+        uuid: "cfcbdc1a-9beb-11e9-a45a-478dc6829a36"
         subnet_uuid: "054ca01e-cef3-444e-b4d5-4ac16554ac3d"
         instance_ip_address: "10.0.0.2"
         network_ipam_refs:
-        - to: ["domain","admin_project_uuid","test_ipam_blue"]
+        - to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam_blue"]
         virtual_network_refs:
-        - to: ["default", "admin_project_uuid", "vn_blue"]
+        - to: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"]
   expect:
     instance-ip:
       network_ipam_refs:
       - uuid: test_ipam_blue
-        to: ["domain","admin_project_uuid","test_ipam_blue"]
+        to: ["domain","47dd9220-9bf1-11e9-b422-538349e2da80","test_ipam_blue"]
       virtual_network_refs:
-      - uuid: vn_blue
-        to: ["default", "admin_project_uuid", "vn_blue"]
+      - uuid: 26dcb940-9bf4-11e9-bbb6-5f489dbffcea
+        to: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"]
 
 # Virtual Network can't be updated since there is an instance IP attached to it
 - name: try update vn_blue with different subnet
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: PUT
     expected:
     - 409
     data:
       virtual-network:
-        uuid: "vn_blue"
+        uuid: "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"
         network_ipam_refs:
           - uuid: test_ipam_blue
             attr:
@@ -708,7 +708,7 @@ workflow:
 
 - name: delete instance ip
   request:
-    path: /instance-ip/test_instance_ip
+    path: /instance-ip/cfcbdc1a-9beb-11e9-a45a-478dc6829a36
     method: DELETE
     expected:
     - 200
@@ -716,13 +716,13 @@ workflow:
 
 - name: update vn_blue with different subnet
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: PUT
     expected:
     - 200
     data:
       virtual-network:
-        uuid: "vn_blue"
+        uuid: "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"
         network_ipam_refs:
           - uuid: test_ipam_blue
             attr:
@@ -734,26 +734,26 @@ workflow:
 
 - name: try to update vn_blue by changing is_provider_network
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: PUT
     expected:
     - 400
     data:
       virtual-network:
-        uuid: "vn_blue"
+        uuid: "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"
         is_provider_network: true
 - name: try to update vn_blue by linking it with non-provider network
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: PUT
     expected:
     - 400
     data:
       virtual-network:
-        uuid: "vn_blue"
+        uuid: "26dcb940-9bf4-11e9-bbb6-5f489dbffcea"
         virtual_network_refs:
           - uuid: "vn_red"
-          - to: ["default", "admin_project_uuid", "vn_red"]
+          - to: ["default", "47dd9220-9bf1-11e9-b422-538349e2da80", "vn_red"]
 - name: delete routing instance
   request:
     path: /routing-instance/ri_uuid
@@ -763,7 +763,7 @@ workflow:
   expect: null
 - name: show default routing instance for vn_blue
   request:
-    path: /routing-instances?parent_id=vn_blue
+    path: /routing-instances?parent_id=26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: GET
     expected:
     - 200
@@ -772,14 +772,14 @@ workflow:
     - &vn_blue_ri_default
 - name: delete virtual network
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: DELETE
     expected:
     - 200
   expect: null
 - name: show routing instances for vn_blue after deleting vn_blue
   request:
-    path: /routing-instances?parent_id=vn_blue
+    path: /routing-instances?parent_id=26dcb940-9bf4-11e9-bbb6-5f489dbffcea
     method: GET
     expected:
     - 200
@@ -815,7 +815,7 @@ workflow:
   expect: null
 - name: list virtual networks after deletes
   request:
-    path: "/virtual-networks?parent_id=admin_project_uuid"
+    path: "/virtual-networks?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80"
     method: GET
     expected:
     - 200
@@ -823,7 +823,7 @@ workflow:
     virtual-networks: []
 - name: count virtual networks after deletes
   request:
-    path: "/virtual-networks?parent_id=admin_project_uuid&count=true"
+    path: "/virtual-networks?parent_id=47dd9220-9bf1-11e9-b422-538349e2da80&count=true"
     method: GET
     expected:
     - 200

@@ -5,7 +5,7 @@ resources:
     parent_type: project
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     display_name: sample_network_ipam
-    fq_name: ["default", "admin_project_uuid", "sample_network_ipam1"]
+    fq_name: ["default", "6843e7b2-9bf1-11e9-b794-6b74c426270a", "sample_network_ipam1"]
     network_ipam_mgmt:
       host_routes:
         route:
@@ -14,7 +14,7 @@ resources:
 - kind: network_policy
   data:
     uuid: sample_network_policy
-    fq_name: ["default", "admin_project_uuid", "sample_network_policy"]
+    fq_name: ["default", "6843e7b2-9bf1-11e9-b794-6b74c426270a", "sample_network_policy"]
     parent_type: project
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
     display_name: sample_network_policy
@@ -37,7 +37,7 @@ resources:
     uuid: sample_virtual_network
     parent_type: project
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0003
-    fq_name: ["default", "admin_project_uuid", "sample_virtual_network"]
+    fq_name: ["default", "6843e7b2-9bf1-11e9-b794-6b74c426270a", "sample_virtual_network"]
     display_name: sample_virtual_network
     route_target_list:
       route_target: ["100:200"]

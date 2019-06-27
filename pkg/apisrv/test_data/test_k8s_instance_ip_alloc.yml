@@ -3,8 +3,8 @@ description: |
   Integration test for k8s address allocation during instance ip creation
 cleanup:
 - path: /instance-ip/default-iip-uuid
-- path: /virtual-machine-interface/default-vmi-uuid
-- path: /virtual-machine/default-vm-uuid
+- path: /virtual-machine-interface/dee7b4f6-9bf2-11e9-80aa-4fee22bd0fe9
+- path: /virtual-machine/f662cadc-9beb-11e9-926b-cfc05c6731e4
 - path: /network-ipam/k8s-ip-fabric-ipam-uuid
 - path: /network-ipam/k8s-pod-ipam-uuid
 - path: /network-ipam/k8s-service-ipam-uuid
@@ -75,7 +75,6 @@ workflow:
         - default-domain
         - k8s-default
         - default
-        uuid:
         security_group_entries:
           policy_rule:
           - direction: ">"
@@ -464,7 +463,7 @@ workflow:
         - default-domain
         - k8s-default
         - default-vm-k8
-        uuid: default-vm-uuid
+        uuid: f662cadc-9beb-11e9-926b-cfc05c6731e4
 
 - name: create virtual machine interface
   request:
@@ -477,7 +476,7 @@ workflow:
         - default-domain
         - k8s-default
         - default-vmi-k8
-        uuid: default-vmi-uuid
+        uuid: dee7b4f6-9bf2-11e9-80aa-4fee22bd0fe9
         display_name: default-vmi-k8
         security_group_refs:
         - to: ["default-domain", "k8s-default", "default"]
@@ -487,7 +486,7 @@ workflow:
           uuid: k8s-default-pod-network-uuid
         virtual_machine_refs:
         - to: ["default-domain", "k8s-default", "default-vm-k8"]
-          uuid: default-vm-uuid
+          uuid: f662cadc-9beb-11e9-926b-cfc05c6731e4
         port_security_enabled: true
 
 - name: create instance ip
@@ -506,7 +505,7 @@ workflow:
           uuid: k8s-default-pod-network-uuid
         virtual_machine_interface_refs:
         - to: ["default-domain", "k8s-default", "default-vmi-k8"]
-          uuid: default-vmi-uuid
+          uuid: dee7b4f6-9bf2-11e9-80aa-4fee22bd0fe9
 
 - name: delete instance ip
   request:
@@ -517,14 +516,14 @@ workflow:
 
 - name: delete virtual machine interface
   request:
-    path: /virtual-machine-interface/default-vmi-uuid
+    path: /virtual-machine-interface/dee7b4f6-9bf2-11e9-80aa-4fee22bd0fe9
     method: DELETE
     expected: [200]
   expect: null
 
 - name: delete virtual machine
   request:
-    path: /virtual-machine/default-vm-uuid
+    path: /virtual-machine/f662cadc-9beb-11e9-926b-cfc05c6731e4
     method: DELETE
     expected: [200]
   expect: null
