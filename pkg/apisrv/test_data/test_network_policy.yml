@@ -1,12 +1,12 @@
 name: Network Policy Rules
 description:  Test Network Policy Rules Validation
 cleanup:
-- path: /network-policy/beefbeef-beef-beef-beef-beefbeef1002
-- path: /security-group/beefbeef-beef-beef-beef-beefbeef1001
+- path: /network-policy/d047ef4a-9be5-11e9-ad93-8386ee088dee
+- path: /security-group/cac2649c-9be5-11e9-838e-e347e4c43852
 
 test_data:
   security_group: &security_group
-    uuid: beefbeef-beef-beef-beef-beefbeef1001
+    uuid: cac2649c-9be5-11e9-838e-e347e4c43852
     fq_name:
       - default-domain
       - default-project
@@ -80,7 +80,7 @@ test_data:
         protocol: non-valid
 
   network_policy_valid: &network_policy_valid
-    uuid: beefbeef-beef-beef-beef-beefbeef1002
+    uuid: d047ef4a-9be5-11e9-ad93-8386ee088dee
     <<: *network_policy_base
     network_policy_entries:
       policy_rule:
@@ -165,7 +165,7 @@ workflow:
 
 - name: delete valid network policy
   request:
-    path: /network-policy/beefbeef-beef-beef-beef-beefbeef1002
+    path: /network-policy/d047ef4a-9be5-11e9-ad93-8386ee088dee
     method: DELETE
     expected:
     - 200
@@ -173,7 +173,7 @@ workflow:
 
 - name: delete security group
   request:
-    path: /security-group/beefbeef-beef-beef-beef-beefbeef1001
+    path: /security-group/cac2649c-9be5-11e9-838e-e347e4c43852
     method: DELETE
     expected:
     - 200

@@ -4,26 +4,26 @@ description: >
   Such relations make it possible to delete parent while leaving derived children.
 test_data:
   admin_project: &admin_project
-    fq_name: ["default", "admin_project_uuid"]
-    uuid: admin_project_uuid
+    fq_name: ["default", "e6618d9e-9bf0-11e9-83d4-0f603b749511"]
+    uuid: e6618d9e-9bf0-11e9-83d4-0f603b749511
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
     quota: {}
   vn_blue: &vn_blue
-    fq_name: ["default", "admin_project_uuid", "vn_blue"]
-    uuid: vn_blue
+    fq_name: ["default", "e6618d9e-9bf0-11e9-83d4-0f603b749511", "efa05194-9bf3-11e9-be75-cf64177a7a0b"]
+    uuid: efa05194-9bf3-11e9-be75-cf64177a7a0b
     display_name: blue
     parent_type: project
-    parent_uuid: admin_project_uuid
+    parent_uuid: e6618d9e-9bf0-11e9-83d4-0f603b749511
     route_target_list:
        route_target: ["100:200"]
   vn_blue_ri1: &vn_blue_ri1
-    uuid: ri_uuid
-    fq_name: ["default", "admin_project_uuid", "ri1"]
+    uuid: b999ed96-9bec-11e9-985a-eb9e42ed8f9f
+    fq_name: ["default", "e6618d9e-9bf0-11e9-83d4-0f603b749511", "ri1"]
     parent_type: virtual-network
-    parent_uuid: vn_blue
+    parent_uuid: efa05194-9bf3-11e9-be75-cf64177a7a0b
   service_instance: &service_instance
-    parent_uuid: admin_project_uuid
+    parent_uuid: e6618d9e-9bf0-11e9-83d4-0f603b749511
     uuid: si_uuid
     service_instance_properties: {}
   virtual_machine: &virtual_machine
@@ -71,14 +71,14 @@ workflow:
     routing-instance: *vn_blue_ri1
 - name: delete virtual network blue
   request:
-    path: /virtual-network/vn_blue
+    path: /virtual-network/efa05194-9bf3-11e9-be75-cf64177a7a0b
     method: DELETE
     expected:
     - 200
   expect: null
 - name: delete routing instance blue
   request:
-    path: /routing-instance/ri_uuid
+    path: /routing-instance/b999ed96-9bec-11e9-985a-eb9e42ed8f9f
     method: DELETE
     expected:
     - 200
@@ -119,7 +119,7 @@ workflow:
   expect: null
 - name: delete admin project
   request:
-    path: /project/admin_project_uuid
+    path: /project/e6618d9e-9bf0-11e9-83d4-0f603b749511
     method: DELETE
     expected:
     - 200

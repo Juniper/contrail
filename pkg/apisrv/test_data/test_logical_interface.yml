@@ -3,9 +3,9 @@ description:  basic physical interface test
 cleanup:
 - path: /network-ipam/network-ipam-uuid
 - path: /virtual-network/default-network-uuid
-- path: /virtual-machine-interface/default-vmi-uuid
-- path: /physical-router/physical_router_blue_uuid
-- path: /physical-interface/physical_interface_blue_uuid
+- path: /virtual-machine-interface/e5160f94-9bf2-11e9-9304-8b69eef1b0d4
+- path: /physical-router/613d7804-9bef-11e9-911e-cb33d0375d1b
+- path: /physical-interface/b2edd332-9beb-11e9-829b-6f6e9b6c4a13
 - path: /physical-interface/physical_interface_red_uuid
 - path: /logical-interface/logical_interface_blue_uuid
 - path: /logical-interface/logical_interface_red_uuid
@@ -29,7 +29,7 @@ test_data:
     parent_uuid: physical_interface_project_uuid
 
   virtual-machine-interface: &virtual_machine_interface
-    uuid: default-vmi-uuid
+    uuid: e5160f94-9bf2-11e9-9304-8b69eef1b0d4
     display_name: default-vmi-k8
     parent_type: project
     parent_uuid: physical_interface_project_uuid
@@ -38,7 +38,7 @@ test_data:
       uuid: default-network-uuid
 
   physical_router: &physical_router
-    uuid: physical_router_blue_uuid
+    uuid: 613d7804-9bef-11e9-911e-cb33d0375d1b
     name: physical_router_blue_name
     physical_router_device_family: juniper
     physical_router_vendor_name: juniper
@@ -47,27 +47,27 @@ test_data:
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001  # default global-system-config uuid
 
   physical-interface: &physical_interface
-    uuid: physical_interface_blue_uuid
+    uuid: b2edd332-9beb-11e9-829b-6f6e9b6c4a13
     name: physical_interface_blue_name
     display_name: interface_blue
     ethernet_segment_identifier: 01:02:03:04:05:06:07:08:09:10
-    parent_uuid: physical_router_blue_uuid
+    parent_uuid: 613d7804-9bef-11e9-911e-cb33d0375d1b
 
   logical-interface: &logical_interface
     uuid: logical_interface_blue_uuid
     parent_type: physical-interface
-    parent_uuid: physical_interface_blue_uuid
+    parent_uuid: b2edd332-9beb-11e9-829b-6f6e9b6c4a13
     logical_interface_vlan_tag: 1024
     virtual_machine_interface_refs:
     - to: ["default-domain", "k8s-default", "default-vmi-k8"]
-      uuid: default-vmi-uuid
+      uuid: e5160f94-9bf2-11e9-9304-8b69eef1b0d4
 
   physical-interface: &physical_interface_red
     uuid: physical_interface_red_uuid
     name: physical_interface_red_name
     display_name: interface_red
     ethernet_segment_identifier: 01:02:03:04:05:06:07:08:09:10
-    parent_uuid: physical_router_blue_uuid
+    parent_uuid: 613d7804-9bef-11e9-911e-cb33d0375d1b
 
   logical-interface: &logical_interface_red
     uuid: logical_interface_red_uuid
@@ -76,7 +76,7 @@ test_data:
     logical_interface_vlan_tag: 1024
     virtual_machine_interface_refs:
     - to: ["default-domain", "k8s-default", "default-vmi-red"]
-      uuid: default-vmi-uuid
+      uuid: e5160f94-9bf2-11e9-9304-8b69eef1b0d4
 
 clients:
   default:
@@ -157,7 +157,7 @@ workflow:
       logical-interface:
         uuid: logical_interface_red_uuid0
         parent_type: physical-interface
-        parent_uuid: physical_interface_blue_uuid
+        parent_uuid: b2edd332-9beb-11e9-829b-6f6e9b6c4a13
         logical_interface_vlan_tag: 9999
 
 - name: create logical interface
@@ -179,7 +179,7 @@ workflow:
       logical-interface:
         uuid: logical_interface_blue_uuid
         parent_type: physical-interface
-        parent_uuid: physical_interface_blue_uuid
+        parent_uuid: b2edd332-9beb-11e9-829b-6f6e9b6c4a13
         logical_interface_vlan_tag: 9999
 
 - name: update logical interface to change vlan tag
@@ -191,7 +191,7 @@ workflow:
       logical-interface:
         uuid: logical_interface_blue_uuid
         parent_type: physical-interface
-        parent_uuid: physical_interface_blue_uuid
+        parent_uuid: b2edd332-9beb-11e9-829b-6f6e9b6c4a13
         logical_interface_vlan_tag: 1025
 
 - name: update logical interface to change display name
@@ -203,7 +203,7 @@ workflow:
       logical-interface:
         uuid: logical_interface_blue_uuid
         parent_type: physical-interface
-        parent_uuid: physical_interface_blue_uuid
+        parent_uuid: b2edd332-9beb-11e9-829b-6f6e9b6c4a13
         display_name: other_name
         logical_interface_vlan_tag: 1024
 
@@ -275,7 +275,7 @@ workflow:
 
 - name: delete physical interface
   request:
-    path: /physical-interface/physical_interface_blue_uuid
+    path: /physical-interface/b2edd332-9beb-11e9-829b-6f6e9b6c4a13
     method: DELETE
     expected:
     - 200
@@ -291,7 +291,7 @@ workflow:
 
 - name: delete physical router
   request:
-    path: /physical-router/physical_router_blue_uuid
+    path: /physical-router/613d7804-9bef-11e9-911e-cb33d0375d1b
     method: DELETE
     expected:
     - 200
@@ -299,7 +299,7 @@ workflow:
 
 - name: delete virtual machine interface
   request:
-    path: /virtual-machine-interface/default-vmi-uuid
+    path: /virtual-machine-interface/e5160f94-9bf2-11e9-9304-8b69eef1b0d4
     method: DELETE
     expected:
     - 200

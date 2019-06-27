@@ -1,8 +1,8 @@
 name: Security Group Test
 description: security group test
 cleanup:
-  - path: /port/f57aa10d-9c8d-424f-b88b-e64e08b71f8c
-  - path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
+  - path: /port/f982aa4c-9bec-11e9-8a92-273ced2d41d7
+  - path: /virtual-network/4c63bd8c-9bed-11e9-94c2-b783666fc7a1
   - path: /security-group/277d4371-03a6-4915-8918-8bbc369538d4
   - kind: security-group
     fq_name: [default-domain, neutron_security_group_admin_project, default]
@@ -18,7 +18,7 @@ test_data:
 
   vn_blue: &vn_blue
     fq_name: ["default", "neutron_security_group_admin_project", "vn_blue"]
-    uuid: c8012c97-5e6a-41f8-8e43-97427d836b0d
+    uuid: 4c63bd8c-9bed-11e9-94c2-b783666fc7a1
     display_name: blue
     parent_type: project
     port_security_enabled: true
@@ -215,10 +215,10 @@ test_data:
     data:
       fields:
       resource:
-        id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+        id: f982aa4c-9bec-11e9-8a92-273ced2d41d7
         description: ''
         admin_state_up: true
-        network_id: c8012c97-5e6a-41f8-8e43-97427d836b0d
+        network_id: 4c63bd8c-9bed-11e9-94c2-b783666fc7a1
         tenant_id: 92882ca8f99342f286430c05c96e12dd
         extra_dhcp_opts:
         name: ''
@@ -246,7 +246,7 @@ test_data:
   port_refered_to_sg_delete_request: &port_refered_to_sg_delete_request
     data:
       fields:
-      id: f57aa10d-9c8d-424f-b88b-e64e08b71f8c
+      id: f982aa4c-9bec-11e9-8a92-273ced2d41d7
       filters:
     context:
       user_id: 32fc3e2bf6e94e0daa21090e493e7aef
@@ -417,7 +417,7 @@ workflow:
 
   - name: delete virtual network
     request:
-      path: /virtual-network/c8012c97-5e6a-41f8-8e43-97427d836b0d
+      path: /virtual-network/4c63bd8c-9bed-11e9-94c2-b783666fc7a1
       method: DELETE
       expected:
         - 200

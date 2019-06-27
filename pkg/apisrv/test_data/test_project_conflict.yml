@@ -3,10 +3,10 @@ description: |
   Test that creating the same project twice fails with the expected code
   and no extra information is returned.
 cleanup:
-- path: /project/project_blue_project_uuid
+- path: /project/91cbc2fc-9bed-11e9-8098-6ff104056dc6
 test_data:
   project_blue: &project_blue_project
-    uuid: project_blue_project_uuid
+    uuid: 91cbc2fc-9bed-11e9-8098-6ff104056dc6
     name: project_blue_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
@@ -45,7 +45,7 @@ workflow:
 
 - name: delete project
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/91cbc2fc-9bed-11e9-8098-6ff104056dc6
     method: DELETE
     expected: [200]
   expect: null

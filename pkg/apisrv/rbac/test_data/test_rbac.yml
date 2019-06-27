@@ -3,7 +3,7 @@ description: API level and object level RBAC tests
 
 test_data:
   project_blue: &project_blue_project
-    uuid: project_blue_project_uuid
+    uuid: 6f5fe0fe-9bed-11e9-aae8-eb51fd1fd16b
     name: project_blue_project
     parent_type: domain
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0002
@@ -114,7 +114,7 @@ workflow:
 
 - name: delete project as admin (cleanup)
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/6f5fe0fe-9bed-11e9-aae8-eb51fd1fd16b
     method: DELETE
     expected: [200]
   expect: null
@@ -157,7 +157,7 @@ workflow:
 - name: delete project
   client: bob
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/6f5fe0fe-9bed-11e9-aae8-eb51fd1fd16b
     method: DELETE
     expected: [200]
   expect: null
@@ -181,7 +181,7 @@ workflow:
 - name: delete project as non-admin
   client: bob
   request:
-    path: /project/project_blue_project_uuid
+    path: /project/6f5fe0fe-9bed-11e9-aae8-eb51fd1fd16b
     method: DELETE
     expected: [404]
   expect: null
