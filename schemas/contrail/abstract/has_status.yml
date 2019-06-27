@@ -94,6 +94,7 @@ schema:
       - "ADD_CLOUD"
       - "UPDATE_CLOUD"
       - "DELETE_CLOUD"
+      - "DESTROY"
       permission:
       - create
       - update
