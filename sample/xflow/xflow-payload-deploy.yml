@@ -279,9 +279,6 @@ resources:
     docker_images_tar: /opt/software/xflow/xflow-dev-latest.tar.gz
     xflow_license: /opt/software/xflow/xflow_license.sig
     keepalived_shared_ip: 10.84.5.23
-    xflow:
-      iface_public:
-      iface_internal:
     clickhouse:
       retention_period_secs: 7200
       retention_size_bytes: 0

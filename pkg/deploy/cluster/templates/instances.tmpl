@@ -209,8 +209,6 @@ xflow_configuration:
   docker_images_tar: {{ x.DockerImagesTar }}
   {% if x.XflowLicense %}xflow_license: {{ x.XflowLicense }}{% endif %}
   {% if x.KeepalivedSharedIP %}keepalived_shared_ip: {{ x.KeepalivedSharedIP }}{% endif %}
-  {% if x.Xflow.IfacePublic %}xflow_iface_public: {{ x.Xflow.IfacePublic }}{% endif %}
-  {% if x.Xflow.IfaceInternal %}xflow_iface_internal: {{ x.Xflow.IfaceInternal }}{% endif %}
   {% if x.Clickhouse.RetentionPeriodSecs %}clickhouse_retention_period_secs: {{ x.Clickhouse.RetentionPeriodSecs }}{% endif %}
   {% if x.Clickhouse.RetentionSizeBytes %}clickhouse_retention_size_bytes: {{ x.Clickhouse.RetentionSizeBytes }}{% endif %}
   {% for kv in x.AppformixFlowsConfiguration.KeyValuePair %}
