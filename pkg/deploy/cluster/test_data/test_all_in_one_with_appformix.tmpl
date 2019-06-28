@@ -115,17 +115,7 @@ test_data:
     parent_type: global-system-config
     fq_name: ["default-global-system-config", "all_in_one_appformix_cluster"]
     appformix_license: /opt/software/configs/contrail.sig
-    appformix_image_dir: /opt/software/appformix/
     appformix_version: 2.18.1
-    appformix_kvm_instance_discovery: true
-    appformix_network_device_monitoring_enabled: true
-    appformix_jti_network_device_monitoring_enabled: true
-    appformix_remote_host_monitoring_enabled: true
-    contrail_analytics_url: 'http://10.84.24.44:8081'
-    contrail_config_url: 'http://10.84.24.44:8082'
-    contrail_cluster_name: 'ContrailCluster1'
-    network_device_discovery_enabled: true
-    openstack_platform_enabled: true
     openstack_cluster_refs:
     - uuid: test_openstack_cluster_uuid
 
@@ -336,18 +326,8 @@ workflow:
       parent_type: global-system-config
       parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
       uuid: test_appformix_cluster_uuid
-      appformix_image_dir: /opt/software/appformix/
       appformix_license: /opt/software/configs/contrail.sig
       appformix_version: 2.18.1
-      appformix_kvm_instance_discovery: true
-      appformix_network_device_monitoring_enabled: true
-      appformix_jti_network_device_monitoring_enabled: true
-      appformix_remote_host_monitoring_enabled: true
-      contrail_analytics_url: 'http://10.84.24.44:8081'
-      contrail_config_url: 'http://10.84.24.44:8082'
-      contrail_cluster_name: 'ContrailCluster1'
-      network_device_discovery_enabled: true
-      openstack_platform_enabled: true
       openstack_cluster_refs:
       - uuid: test_openstack_cluster_uuid
 
