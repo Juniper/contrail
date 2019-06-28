@@ -77,11 +77,11 @@ instances:
       {% for appformix_bare_host_node in appformixCluster.AppformixBareHostNodes %}{% for node_ref in appformix_bare_host_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_bare_host:
           {%if appformix_bare_host_node.AnsibleConnection %} connection: {{ appformix_bare_host_node.AnsibleConnection }} {%endif%}
       {%endif%}{%endfor%}{%endfor%}
-      {% for appformix_openstack_node in appformixCluster.AppformixOpenstackNodes %}{% for node_ref in appformix_openstack_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_openstack_controller:
-          {%if appformix_openstack_node.AnsibleConnection %} connection: {{ appformix_openstack_node.AnsibleConnection }} {%endif%}
-      {%endif%}{%endfor%}{%endfor%}
-      {% for appformix_compute_node in appformixCluster.AppformixComputeNodes %}{% for node_ref in appformix_compute_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_compute:
-          {%if appformix_compute_node.AnsibleConnection %} connection: {{ appformix_compute_node.AnsibleConnection }} {%endif%}
+      {% for openstack_control_node in openstackCluster.OpenstackControlNodes %}{% for node_ref in openstack_control_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_openstack_controller:
+          {%if openstack_control_node.AnsibleConnection %} connection: {{ openstack_control_node.AnsibleConnection }} {%endif%}
+      {%endif%}{%endfor %}{%endfor%}
+      {% for openstack_compute_node in openstackCluster.OpenstackComputeNodes %}{% for node_ref in openstack_compute_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_compute:
+          {%if openstack_compute_node.AnsibleConnection %} connection: {{ openstack_compute_node.AnsibleConnection }} {%endif%}
       {%endif%}{%endfor%}{%endfor%}
       {% for appformix_network_agents_node in appformixCluster.AppformixNetworkAgentsNodes %}{% for node_ref in appformix_network_agents_node.NodeRefs %}{%if node_ref.UUID == node.UUID %}appformix_network_agents:
           {%if appformix_network_agents_node.AnsibleConnection %} connection: {{ appformix_network_agents_node.AnsibleConnection }} {%endif%}
@@ -141,45 +141,14 @@ appformix_configuration:
     {% if appformixCluster.AppformixVip %}
     appformix_vip: {{ appformixCluster.AppformixVip }}
     {%endif%}
-    {% if appformixCluster.AppformixImageDir %}
-    appformix_docker_images:
-      {{ appformixCluster.AppformixImageDir }}appformix-platform-images-{{ appformixCluster.AppformixVersion }}.tar.gz
-      {{ appformixCluster.AppformixImageDir }}appformix-dependencies-images-{{ appformixCluster.AppformixVersion }}.tar.gz
-      {{ appformixCluster.AppformixImageDir }}appformix-network_device-images-{{ appformixCluster.AppformixVersion }}.tar.gz
-      {{ appformixCluster.AppformixImageDir }}appformix-openstack-images-{{ appformixCluster.AppformixVersion }}.tar.gz
-    {%endif%}
+    {% if appformixCluster.AppformixVersion %}
     appformix_version:  {{ appformixCluster.AppformixVersion }}
-    appformix_license:  {{ appformixCluster.AppformixLicense }}
-    {% if appformixCluster.AppformixDockerRegistry %}
-    appformix_docker_registry: {{ appformixCluster.AppformixDockerRegistry }}
-    {%endif%}
-    {% if appformixCluster.AppformixUsername %}
-    appformix_username: {{ appformixCluster.AppformixUsername }}
-    {%endif%}
-    {% if appformixCluster.AppformixPassword %}
-    appformix_password: {{ appformixCluster.AppformixPassword }}
-    {%endif%}
-    contrail_analytics_url: '{{ appformixCluster.ContrailAnalyticsURL }}'
-    contrail_config_url: '{{ appformixCluster.ContrailConfigURL }}'
-    contrail_cluster_name: '{{ appformixCluster.ContrailClusterName }}'
-    appformix_jti_network_device_monitoring_enabled: {{ appformixCluster.AppformixJtiNetworkDeviceMonitoringEnabled }}
-    appformix_kvm_instance_discovery: {{ appformixCluster.AppformixKVMInstanceDiscovery }}
-    network_device_discovery_enabled: {{ appformixCluster.NetworkDeviceDiscoveryEnabled }}
-    appformix_network_device_monitoring_enabled: {{ appformixCluster.AppformixNetworkDeviceMonitoringEnabled }}
-    openstack_platform_enabled: {{ appformixCluster.OpenstackPlatformEnabled }}
-    appformix_remote_host_monitoring_enabled: {{ appformixCluster.AppformixRemoteHostMonitoringEnabled }}
-    {% for key_value in appformixCluster.AppformixConfiguration.KeyValuePair %}
-    {% if key_value.Key && key_value.Value%}
-    {%if key_value.Key == "appformix_plugins" %}
-    {{key_value.Key}}: '{{key_value.Value}}'
-    {%elif key_value.Key == "appformix_datamanager_port_http" %}
-    {{key_value.Key}}: "{{key_value.Value}}"
-    {%elif key_value.Key == "appformix_datamanager_port_https" %}
-    {{key_value.Key}}: "{{key_value.Value}}"
     {%else%}
-    {{key_value.Key}}: {{key_value.Value}}
+    appformix_version: 2.19.10
     {%endif%}
-    {%endif%}
+    appformix_license:  {{ appformixCluster.AppformixLicense }}
+    {% for key_value in appformixCluster.AppformixConfiguration.KeyValuePair %}
+    {{ key_value.Key }}: {{ key_value.Value }}
     {%endfor%}
 {%endif%}
 {%endif%}

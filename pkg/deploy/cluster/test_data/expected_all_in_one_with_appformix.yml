@@ -31,9 +31,7 @@ instances:
       appformix_bare_host:
           connection: ssh
       appformix_openstack_controller:
-          connection: ssh
       appformix_compute:
-          connection: ssh
       appformix_network_agents:
           connection: ssh
 contrail_configuration:
@@ -52,19 +50,5 @@ kolla_config:
   kolla_passwords:
     keystone_admin_password: contrail123
 appformix_configuration:
-    appformix_docker_images:
-      /opt/software/appformix/appformix-platform-images-2.18.1.tar.gz
-      /opt/software/appformix/appformix-dependencies-images-2.18.1.tar.gz
-      /opt/software/appformix/appformix-network_device-images-2.18.1.tar.gz
-      /opt/software/appformix/appformix-openstack-images-2.18.1.tar.gz
     appformix_version:  2.18.1
     appformix_license:  /opt/software/configs/contrail.sig
-    contrail_analytics_url: 'http://10.84.24.44:8081'
-    contrail_config_url: 'http://10.84.24.44:8082'
-    contrail_cluster_name: 'ContrailCluster1'
-    appformix_jti_network_device_monitoring_enabled: True
-    appformix_kvm_instance_discovery: True
-    network_device_discovery_enabled: True
-    appformix_network_device_monitoring_enabled: True
-    openstack_platform_enabled: True
-    appformix_remote_host_monitoring_enabled: True
