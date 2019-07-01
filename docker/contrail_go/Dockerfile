@@ -6,7 +6,7 @@ FROM ${BASE_IMAGE_REGISTRY}/${BASE_IMAGE_REPOSITORY}:${BASE_IMAGE_TAG}
 ARG GOPATH
 MAINTAINER Nachi Ueno nueno@juniper.net
 
-COPY ./src/ $GOPATH/src/github.com/Juniper/
+COPY ./src/ $GOPATH/src/github.com/Juniper/contrail/..
 ADD ./contrail /bin/contrailgo
 ADD ./contrailcli /bin/contrailcli
 ADD ./contrailutil /bin/contrailutil
