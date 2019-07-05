@@ -3,23 +3,28 @@ package client_test
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/testutil"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	yaml "gopkg.in/yaml.v2"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 const (
+	projectName              = "project-cli-test"
 	projectUUID              = "project-cli-test-uuid"
 	resourcesPath            = "testdata/resources.yml"
 	vnBlueUUID               = "efb6aa60-9d8e-11e9-b056-13df9df3688a"
 	vnRedName                = "vn-red"
+	vnRedUUID                = "0ce792b6-9d8f-11e9-a76a-5b775b6d8012"
 	vnSchemaID               = "virtual_network"
 	vnsPath                  = "testdata/vns.yml"
 	vnsWithExternalIPAMsPath = "testdata/vns-with-external-ipams.yml"
@@ -113,6 +118,15 @@ func testHelpMessageIsDisplayedGivenEmptySchemaID(cli *client.CLI) func(t *testi
 func testCRUD(cli *client.CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("show", testShow(cli))
+		t.Run("list with filters", testListWithFilters(cli))
+		t.Run("list with page limit", testListWithPageLimit(cli))
+		t.Run("list with parent UUID and page marker", testListWithParentUUIDAndPageMarker(cli))
+		t.Run("list with parent UUID", testListWithParentUUID(cli))
+		t.Run("list with parent UUID and detail", testListWithParentUUIDsAndDetail(cli))
+		t.Run("list with parent UUID and count", testListWithParentUUIDsAndCount(cli))
+		t.Run("list with parent UUID and shared", testListWithParentUUIDsAndShared(cli))
+		t.Run("list with parent UUID and exclude hrefs", testListWithParentUUIDsAndExcludeHRefs(cli))
+		t.Run("list with parent FQ Name", testListWithParentFQName(cli))
 		t.Run("set boolean field", testSetBooleanField(cli))
 		t.Run("update boolean fields via sync", testUpdateBooleanFieldsViaSync(cli))
 		t.Run("delete single (rm)", testDeleteSingle(cli))
@@ -126,13 +140,144 @@ func testShow(cli *client.CLI) func(t *testing.T) {
 
 		o, err := cli.ShowResource(vnSchemaID, vnBlueUUID)
 		assert.NoError(t, err, fmt.Sprintf("VN %q should be retrieved", vnBlueUUID))
-		assertEqual(
-			t,
-			resources(vnBlue(t)),
-			o,
-		)
+		assertEqual(t, resources(vnBlue(t)), o)
 	}
 }
+
+func testListWithFilters(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Skip("Broken implementation") // TODO(Daniel): fix implementation
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			Filters: fmt.Sprintf("uuid=%s", vnBlueUUID),
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnBlue(t)), o)
+	}
+}
+
+func testListWithPageLimit(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			PageLimit: 1,
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnRed(t)), o)
+	}
+}
+
+func testListWithParentUUIDAndPageMarker(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+			PageMarker:  vnRedUUID,
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnBlue(t)), o)
+	}
+}
+
+func testListWithParentUUIDsAndDetail(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+			Detail:      true,
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
+	}
+}
+
+func testListWithParentUUIDsAndCount(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Skip("Broken implementation") // TODO(Daniel): fix implementation
+		createTestVirtualNetworks(t, cli)
+
+		_, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+			Count:       true,
+		})
+
+		require.NoError(t, err)
+		// TODO(Daniel): check response body as well
+	}
+}
+
+func testListWithParentUUIDsAndShared(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+			Shared:      true,
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
+	}
+}
+
+func testListWithParentUUIDsAndExcludeHRefs(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Skip("Broken implementation") // TODO(Daniel): fix implementation
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs:  projectUUID,
+			ExcludeHRefs: true,
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
+		for _, e := range unmarshalEventList(t, o).Events {
+			assert.Equal(t, "", e.GetCreateVirtualNetworkRequest().GetVirtualNetwork().GetHref())
+		}
+	}
+}
+
+func testListWithParentFQName(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Skip("Broken implementation") // TODO(Daniel): fix implementation
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentFQName: strings.Join([]string{integration.DefaultDomainUUID, projectName}, ":"),
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
+	}
+}
+
+// TODO(Daniel): test ParentTypeKey
+
+func testListWithParentUUID(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
+	}
+}
+
+// TODO(Daniel): test BackrefUUIDsKey
+// TODO(Daniel): test ObjectUUIDsKey
+// TODO(Daniel): test FieldsKey
 
 func testSetBooleanField(cli *client.CLI) func(t *testing.T) {
 	return func(t *testing.T) {
@@ -145,24 +290,13 @@ func testSetBooleanField(cli *client.CLI) func(t *testing.T) {
 		)
 
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(withExternalIPAM(t, vnBlue(t), true)),
-			o,
-		)
+		assertEqual(t, resources(withExternalIPAM(t, vnBlue(t), true)), o)
 
 		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(
-				vnRed(t),
-				withExternalIPAM(t, vnBlue(t), true),
-			),
-			o,
-		)
+		assertEqual(t, resources(vnRed(t), withExternalIPAM(t, vnBlue(t), true)), o)
 	}
 }
 
@@ -173,27 +307,13 @@ func testUpdateBooleanFieldsViaSync(cli *client.CLI) func(t *testing.T) {
 		o, err := cli.SyncResources(vnsWithExternalIPAMsPath)
 
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(
-				withExternalIPAM(t, vnRed(t), true),
-				withExternalIPAM(t, vnBlue(t), true),
-			),
-			o,
-		)
+		assertEqual(t, resources(withExternalIPAM(t, vnRed(t), true), withExternalIPAM(t, vnBlue(t), true)), o)
 
 		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(
-				withExternalIPAM(t, vnRed(t), true),
-				withExternalIPAM(t, vnBlue(t), true),
-			),
-			o,
-		)
+		assertEqual(t, resources(withExternalIPAM(t, vnRed(t), true), withExternalIPAM(t, vnBlue(t), true)), o)
 	}
 }
 
@@ -210,14 +330,8 @@ func testDeleteSingle(cli *client.CLI) func(t *testing.T) {
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(
-				vnRed(t),
-				vnBlue(t),
-			),
-			o,
-		) // TODO(Daniel): only vn-blue should be left, fix implementation
+		// TODO(Daniel): only vn-blue should be left, fix implementation
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
 	}
 }
 
@@ -243,19 +357,6 @@ func createTestVirtualNetworks(t *testing.T, cli *client.CLI) {
 
 	require.NoError(t, err)
 	assertEqualByFile(t, resourcesPath, o)
-
-	o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
-		ParentUUIDs: projectUUID,
-	})
-	require.NoError(t, err)
-	assertEqual(
-		t,
-		resources(
-			vnRed(t),
-			vnBlue(t),
-		),
-		o,
-	)
 }
 
 func withExternalIPAM(t *testing.T, resource map[string]interface{}, ei bool) map[string]interface{} {
@@ -330,32 +431,35 @@ func assertEqual(t *testing.T, expected interface{}, actualYAML string) {
 	testutil.AssertEqual(
 		t,
 		expected,
-		actualData(t, actualYAML),
+		unmarshalData(t, actualYAML),
 	)
 }
 
 func assertEqualByFile(t *testing.T, expectedYAMLFile, actualYAML string) {
 	testutil.AssertEqual(
 		t,
-		expectedData(t, expectedYAMLFile),
-		actualData(t, actualYAML),
+		unmarshalDataFromFile(t, expectedYAMLFile),
+		unmarshalData(t, actualYAML),
 	)
 }
 
-func expectedData(t *testing.T, expectedYAMLFile string) interface{} {
+func unmarshalDataFromFile(t *testing.T, expectedYAMLFile string) interface{} {
 	expectedBytes, err := ioutil.ReadFile(expectedYAMLFile)
 	require.NoError(t, err, "cannot read expected data file")
 
-	var expected interface{}
-	err = yaml.Unmarshal(expectedBytes, &expected)
-	require.NoError(t, err, "cannot parse expected data file")
-
-	return expected
+	return unmarshalData(t, string(expectedBytes))
 }
 
-func actualData(t *testing.T, actualYAML string) interface{} {
-	var actual interface{}
-	err := yaml.Unmarshal([]byte(actualYAML), &actual)
+func unmarshalData(t *testing.T, yamlData string) interface{} {
+	var d interface{}
+	err := yaml.Unmarshal([]byte(yamlData), &d)
+	require.NoError(t, err, "cannot parse data")
+	return d
+}
+
+func unmarshalEventList(t *testing.T, yamlEL string) *services.EventList {
+	var el services.EventList
+	err := yaml.Unmarshal([]byte(yamlEL), &el)
 	require.NoError(t, err, "cannot parse actual data")
-	return actual
+	return &el
 }

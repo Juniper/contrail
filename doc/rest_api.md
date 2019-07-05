@@ -249,20 +249,23 @@ BODY: None
 RESPONSE: JSON list of UUID and href of collection if detail not specified, else JSON list of collection dicts
 ```
 
-## Query parameters
+Available query parameters:
 
-- parent_id  parent_uuid
-- parent_fq_name_str parent’s fully-qualified name delimited by ‘:’
-- obj_uuids Commna separated object uuids <example1_uuid>,<example2_uuid>
-- detail  True if you need detailed data
-- back_ref_id  back_ref_uuid
-- page_marker Pagenation start marker
-- page_limit  Pagenation limit
-- count       Return only resource counts
-- fields      Comma separated object field list you are interested in
-- shared      Included shared object in reponse.
-- filters     Comma separated fileter list. Example check==a,check==b,name==Bob becomes {'check': [u'a', u'b'], 'name': [u'Bob']}
-- exclude_hrefs True if you don't need hrefs
+| Query parameter | Description |
+| --- | --- |
+| filters | Comma-separated filter parameters (e.g. 'check==a,check==b,name==Bob') |
+| page_limit | Limit number of returned resources |
+| page_marker | Return only the resources with UUIDs lexically greater than given value |
+| detail | Detailed data in response if 'true' provided |
+| count | Return only resource count in response if 'true' provided |
+| shared | Include shared object in response if 'true' provided |
+| exclude_hrefs | Exclude hrefs from response if 'true' provided |
+| parent_fq_name_str | Parent's fully-qualified name as colon-separated list of names (e.g. 'default-domain:project-red:vn-red') |
+| parent_type | Parent's type |
+| parent_id | Comma-separated list of parents' UUIDs |
+| back_ref_id | Comma-separated list of back references' UUIDs |
+| obj_uuids | Comma-separated list of objects' UUIDs |
+| fields | Comma-separated list of object fields returned in response |
 
 Example Request
 
