@@ -1,11 +1,11 @@
 required = [
-    "github.com/mitchellh/gox",
-    "github.com/mattn/goveralls",
+    "github.com/gogo/protobuf/protoc-gen-gogofaster",
     "github.com/golang/dep/cmd/dep",
-    "github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc",
     "github.com/golang/mock/mockgen",
+    "github.com/mattn/goveralls",
+    "github.com/mitchellh/gox",
+    "github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc",
     "golang.org/x/tools/cmd/goimports",
-    "github.com/gogo/protobuf/gogoproto",
 ]
 
 [[constraint]]
