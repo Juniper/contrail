@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -79,11 +80,19 @@ func (c *CLI) ShowResource(schemaID, uuid string) (string, error) {
 	}
 
 	var response map[string]interface{}
-	_, err := c.Read(context.Background(), path(schemaID, uuid), &response)
+	_, err := c.Read(context.Background(), urlPath(schemaID, uuid), &response)
 	if err != nil {
 		return "", err
 	}
-	data, _ := response[dashedCase(schemaID)].(map[string]interface{}) //nolint: errcheck
+
+	data, ok := response[dashedCase(schemaID)].(map[string]interface{})
+	if !ok {
+		return "", errors.Errorf(
+			"type assertion to map[string]interface{} failed on response data: %v",
+			response[dashedCase(schemaID)],
+		)
+	}
+
 	event, err := services.NewEvent(services.EventOption{
 		Kind: schemaID,
 		Data: data,
@@ -103,6 +112,24 @@ const showHelpTemplate = `Show command possible usages:
 {% for schema in schemas %}contrail show {{ schema.ID }} $UUID
 {% endfor %}`
 
+// ListParameters contains parameters for list command.
+type ListParameters struct {
+	Filters      string
+	PageLimit    int64
+	PageMarker   string
+	Detail       bool
+	Count        bool
+	Shared       bool
+	ExcludeHrefs bool
+	ParentFQName string
+	ParentType   string
+	ParentUUIDs  string
+	BackRefUUIDs string
+	// TODO(Daniel): handle RefUUIDs
+	ObjectUUIDs string
+	Fields      string
+}
+
 // ListResources lists resources with given schemaID using filters.
 func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error) {
 	if schemaID == "" {
@@ -119,49 +146,16 @@ func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error)
 		return "", err
 	}
 
-	var events services.EventList
-	for _, list := range response {
-		for _, d := range list {
-			m, ok := d.(map[string]interface{})
-			if !ok {
-				return "", errors.New("type assertion on response value failed")
-			}
-
-			event, neErr := services.NewEvent(services.EventOption{
-				Kind: schemaID,
-				Data: m,
-			})
-			if neErr != nil {
-				logrus.Errorf("failed to create event - skipping: %v", neErr)
-				continue
-			}
-
-			events.Events = append(events.Events, event)
-		}
+	el, err := makeEventList(schemaID, response)
+	if err != nil {
+		return "", nil
 	}
 
-	output, err := yaml.Marshal(&events)
+	output, err := yaml.Marshal(el)
 	if err != nil {
 		return "", err
 	}
 	return string(output), nil
-}
-
-// ListParameters contains parameters for list command.
-type ListParameters struct {
-	Filters      string
-	PageMarker   string
-	PageLimit    int
-	Detail       bool
-	Count        bool
-	Shared       bool
-	ExcludeHRefs bool
-	ParentType   string
-	ParentFQName string
-	ParentUUIDs  string
-	BackrefUUIDs string
-	ObjectUUIDs  string
-	Fields       string
 }
 
 const listHelpTemplate = `List command possible usages:
@@ -173,26 +167,25 @@ func pluralPath(schemaID string) string {
 }
 
 func queryParameters(lp *ListParameters) url.Values {
-	m := map[string]interface{}{
+	values := url.Values{}
+	for k, v := range map[string]string{
 		baseservices.FiltersKey:      lp.Filters,
+		baseservices.PageLimitKey:    strconv.FormatInt(lp.PageLimit, 10),
 		baseservices.PageMarkerKey:   lp.PageMarker,
-		baseservices.PageLimitKey:    lp.PageLimit,
-		baseservices.DetailKey:       lp.Detail,
-		baseservices.CountKey:        lp.Count,
-		baseservices.SharedKey:       lp.Shared,
-		baseservices.ExcludeHRefsKey: lp.ExcludeHRefs,
-		baseservices.ParentTypeKey:   lp.ParentType,
+		baseservices.DetailKey:       strconv.FormatBool(lp.Detail),
+		baseservices.CountKey:        strconv.FormatBool(lp.Count),
+		baseservices.SharedKey:       strconv.FormatBool(lp.Shared),
+		baseservices.ExcludeHRefsKey: strconv.FormatBool(lp.ExcludeHrefs),
 		baseservices.ParentFQNameKey: lp.ParentFQName,
+		baseservices.ParentTypeKey:   lp.ParentType,
 		baseservices.ParentUUIDsKey:  lp.ParentUUIDs,
 		baseservices.BackrefUUIDsKey: lp.ObjectUUIDs,
-		baseservices.FieldsKey:       lp.Fields,
-	}
-
-	values := url.Values{}
-	for k, v := range m {
-		value := fmt.Sprint(v)
-		if !isZeroValue(value) {
-			values.Set(k, value)
+		// TODO(Daniel): handle RefUUIDs
+		baseservices.ObjectUUIDsKey: lp.ObjectUUIDs,
+		baseservices.FieldsKey:      lp.Fields,
+	} {
+		if !isZeroValue(v) {
+			values.Set(k, v)
 		}
 	}
 	return values
@@ -200,6 +193,35 @@ func queryParameters(lp *ListParameters) url.Values {
 
 func isZeroValue(value interface{}) bool {
 	return value == "" || value == 0 || value == false
+}
+
+func makeEventList(schemaID string, response map[string][]interface{}) (*services.EventList, error) {
+	var el services.EventList
+	for _, list := range response {
+		for _, d := range list {
+			m, ok := d.(map[string]interface{})
+			if !ok {
+				return nil, errors.New("type assertion on response value failed")
+			}
+
+			listYAML, _ := yaml.Marshal(list)
+			fmt.Printf("HOGE response: %#v ; listYAML: \n %v \n", response, string(listYAML))
+			event, neErr := services.NewEvent(services.EventOption{
+				Kind: schemaID,
+				Data: m,
+			})
+			if neErr != nil {
+				logrus.Errorf("failed to create event - skipping: %v", neErr)
+				continue
+			}
+
+			el.Events = append(el.Events, event)
+
+			eventYAML, _ := yaml.Marshal(event)
+			fmt.Printf("HOGE eventYAML: \n %v ; el: %#v \n", string(eventYAML), el)
+		}
+	}
+	return &el, nil
 }
 
 // SyncResources synchronizes state of resources specified in given file.
@@ -234,7 +256,7 @@ func (c *CLI) SetResourceParameter(schemaID, uuid, yamlString string) (string, e
 	}
 
 	data["uuid"] = uuid
-	_, err := c.Update(context.Background(), path(schemaID, uuid), map[string]interface{}{
+	_, err := c.Update(context.Background(), urlPath(schemaID, uuid), map[string]interface{}{
 		dashedCase(schemaID): fileutil.YAMLtoJSONCompat(data),
 	}, nil)
 	if err != nil {
@@ -254,12 +276,12 @@ func (c *CLI) DeleteResource(schemaID, uuid string) (string, error) {
 		return c.showHelp(schemaID, removeHelpTemplate)
 	}
 
-	response, err := c.EnsureDeleted(context.Background(), path(schemaID, uuid), nil)
+	response, err := c.EnsureDeleted(context.Background(), urlPath(schemaID, uuid), nil)
 	if err != nil {
 		return "", err
 	}
 	if response.StatusCode == http.StatusNotFound {
-		c.log.WithField("path", path(schemaID, uuid)).Debug("Not found")
+		c.log.WithField("path", urlPath(schemaID, uuid)).Debug("Not found")
 	}
 
 	return "", nil
@@ -280,7 +302,7 @@ func (c *CLI) DeleteResources(filePath string) (string, error) {
 	for i := len(request.Events) - 1; i >= 0; i-- {
 		response, dErr := c.EnsureDeleted(
 			ctx,
-			path(request.Events[i].GetResource().Kind(), request.Events[i].GetResource().GetUUID()),
+			urlPath(request.Events[i].GetResource().Kind(), request.Events[i].GetResource().GetUUID()),
 			nil,
 		)
 		if dErr != nil {
@@ -288,7 +310,7 @@ func (c *CLI) DeleteResources(filePath string) (string, error) {
 		}
 		if response.StatusCode == http.StatusNotFound {
 			c.log.WithField(
-				"path", path(
+				"path", urlPath(
 					request.Events[i].GetResource().Kind(),
 					request.Events[i].GetResource().GetUUID(),
 				),
@@ -306,7 +328,7 @@ func readResources(file string) (*services.EventList, error) {
 	return request, err
 }
 
-func path(schemaID, uuid string) string {
+func urlPath(schemaID, uuid string) string {
 	return "/" + dashedCase(schemaID) + "/" + uuid
 }
 

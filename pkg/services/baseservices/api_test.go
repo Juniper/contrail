@@ -7,7 +7,7 @@ import (
 )
 
 func TestParseFilter(t *testing.T) {
-	filter := ParseFilter("check==a,check==b,name==Bob")
+	filter := parseFilter("check==a,check==b,name==Bob")
 	assert.Equal(t, []*Filter{
 		{
 			Key:    "check",
@@ -21,7 +21,7 @@ func TestParseFilter(t *testing.T) {
 }
 
 func TestEncodeFilter(t *testing.T) {
-	filterString := EncodeFilter([]*Filter{
+	filterString := encodeFilter([]*Filter{
 		{
 			Key:    "check",
 			Values: []string{"a", "b"},
@@ -35,7 +35,7 @@ func TestEncodeFilter(t *testing.T) {
 }
 
 func TestEncodeNilFilter(t *testing.T) {
-	filterString := EncodeFilter(nil)
+	filterString := encodeFilter(nil)
 	assert.Equal(t, "", filterString)
 }
 
