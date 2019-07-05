@@ -40,3 +40,15 @@ resources:
     perms2:
       owner: TestCLI
     uuid: efb6aa60-9d8e-11e9-b056-13df9df3688a
+- kind: virtual_machine_interface
+  data:
+    fq_name:
+    - default-domain
+    - project-cli-test
+    - vmi
+    parent_type: project
+    parent_uuid: project-cli-test-uuid
+    uuid: 91611dcc-a7cc-11e9-ad85-27cb7a03275b
+    virtual_network_refs:
+    - uuid: 0ce792b6-9d8f-11e9-a76a-5b775b6d8012
+    - uuid: efb6aa60-9d8e-11e9-b056-13df9df3688a
