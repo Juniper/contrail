@@ -114,9 +114,17 @@ func TestLockDelta(t *testing.T) {
 			lt:    dup.rmProject("foo.com/bar"),
 			delta: ProjectRemoved,
 		},
+		"remove last project": {
+			lt:    dup.rmProject("transitive.com/dependency"),
+			delta: ProjectRemoved,
+		},
 		"all": {
 			lt:    dup.addII("other.org").rmII("baz.com/qux").addDumbProject("zebrafun.org").rmProject("foo.com/bar"),
 			delta: InputImportsChanged | ProjectRemoved | ProjectAdded,
+		},
+		"remove all projects and imports": {
+			lt:    dup.rmII("baz.com/qux").rmII("foo.com/bar").rmProject("baz.com/qux").rmProject("foo.com/bar").rmProject("transitive.com/dependency"),
+			delta: InputImportsChanged | ProjectRemoved,
 		},
 	}
 
