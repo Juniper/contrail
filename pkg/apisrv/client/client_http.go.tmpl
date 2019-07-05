@@ -34,7 +34,6 @@ func (h *HTTP) Get{{ schema.JSONSchema.GoName }}(ctx context.Context, request *s
 }
 
 func (h *HTTP) List{{ schema.JSONSchema.GoName }}(ctx context.Context, request *services.List{{ schema.JSONSchema.GoName }}Request) (*services.List{{ schema.JSONSchema.GoName }}Response, error) {
-    //TODO(nati) support encoding list spec for query param.
     response := &services.List{{ schema.JSONSchema.GoName }}Response{}
     _, err := h.ReadWithQuery(ctx, "{{ schema.Prefix }}{{ schema.PluralPath }}", request.GetSpec().URLQuery(), response)
     return response, err
