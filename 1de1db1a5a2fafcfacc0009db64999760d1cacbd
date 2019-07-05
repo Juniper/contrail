@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c5b4fcc6_4d8e91cf",
+        "filename": "pkg/apisrv/keystone/test_data/test_basic_auth.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-05T17:25:47Z",
+      "side": 1,
+      "message": "Does the duplication test verify values like these as well?",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6a09b4ef_4ca1272e",
+        "filename": "pkg/apisrv/replication/test_config.yml",
+        "patchSetId": 4
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-05T17:25:47Z",
+      "side": 1,
+      "message": "Why are these options left if the rest of the DB options are removed?",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cccfc056_2fb103ed",
+        "filename": "pkg/testutil/integration/meta_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-05T17:25:47Z",
+      "side": 1,
+      "message": "Just `return ok`?",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d984ebc4_875e6aad",
+        "filename": "pkg/testutil/integration/meta_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-05T17:25:47Z",
+      "side": 1,
+      "message": "Move this to be just before line 58.",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c1a6fdb_88419253",
+        "filename": "pkg/testutil/integration/meta_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-05T17:25:47Z",
+      "side": 1,
+      "message": "Why is this file ignored?",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
