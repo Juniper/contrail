@@ -1,4 +1,64 @@
-# (next version)
+# v0.5.4
+
+Released on June 13, 2019. We are [looking for
+sponsors!](https://github.com/golang/dep/issues/2165)
+
+- Fix an error in the TOML example for the Gopkg.toml documentation.
+  ([#2174][2174])
+
+- Fix error when cleaning up git submodules with newer versions of git. Thanks
+  @geearu for the fix. ([#2168][2168], [#2176][2176])
+
+[2168]: https://github.com/golang/dep/pull/2168
+[2174]: https://github.com/golang/dep/pull/2174
+[2176]: https://github.com/golang/dep/pull/2176
+
+# v0.5.3
+
+Released on May 13, 2019
+
+0.5.2 was released without a "v" prefix on the tag. The contents of this release
+are identical to 0.5.2.
+
+# 0.5.2
+
+Released on May 8, 2019
+
+IMPROVEMENTS:
+
+* Dep will read a netrc file now, which should allow you to authenticate against
+  Gitlab and other private repositories that require basic auth. ([#2155][2155])
+
+* Ignore "mod" VCS type in parseMetaGoImports ([#2152][2152])
+
+* Use correct filename for ARM releases.
+
+# v0.5.1
+
+Released on February 16, 2019
+
+IMPROVEMENTS:
+
+* Add CI tests against go1.11.
+* Fix indefinite hang cloning Git repositories that failed fsck checks. ([#2070][2070])
+* The `noverify` field in `Gopkg.toml` allows for the preservation of excess files under `vendor`. ([#2002](https://github.com/golang/dep/issue/2002))
+* Add releases for `arm`, `armv6` ([#2102][2102]), `s390x` ([#2070][2070]), and `ppc` architectures.
+* Fix handling of cyclic import graphs ([#2003][2003]).
+* Fix error in preservation of vendor/.git ([#2000][2000]).
+* Fix an edge case in lockdiff where all the projects may be removed from the lock file ([#1972][1972]).
+* Fix panic related to projects. ([#1945][1945])
+
+[2102]: https://github.com/golang/dep/pull/2102
+[2070]: https://github.com/golang/dep/pull/2070
+[2000]: https://github.com/golang/dep/pull/2000
+[1981]: https://github.com/golang/dep/pull/1981
+[2003]: https://github.com/golang/dep/pull/2003
+[1972]: https://github.com/golang/dep/pull/1972
+[1945]: https://github.com/golang/dep/pull/1945
+
+BUG FIXES:
+
+* Correctly handle certain cases where `dep ensure` removed projects from Gopkg.lock. ([#1945](https://github.com/golang/dep/issue/1945)).
 
 # v0.5.0
 

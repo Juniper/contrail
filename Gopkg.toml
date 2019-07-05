@@ -1,45 +1,19 @@
 required = [
-    "github.com/mitchellh/gox",
-    "github.com/mattn/goveralls",
+    "github.com/gogo/protobuf/gogoproto", # required only to satisfy "dep check"
+    "github.com/gogo/protobuf/protoc-gen-gogofaster",
+    "github.com/gogo/protobuf/sortkeys", # required only to satisfy "dep check"
     "github.com/golang/dep/cmd/dep",
-    "github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc",
     "github.com/golang/mock/mockgen",
+    "github.com/mattn/goveralls",
+    "github.com/mitchellh/gox",
+    "github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc",
     "golang.org/x/tools/cmd/goimports",
-    "github.com/gogo/protobuf/gogoproto",
 ]
 
 [[constraint]]
-  name = "github.com/go-sql-driver/mysql"
-  version = "1.3.0"
-
-[[constraint]]
-  name = "github.com/pkg/errors"
-  version = "0.8.0"
-
-[[constraint]]
-  name = "github.com/sirupsen/logrus"
-  version = "1.0.4"
-
-[[constraint]]
-  name = "github.com/spf13/cobra"
-  version = "0.0.1"
-
-[[constraint]]
-  name = "github.com/spf13/viper"
-  version = "1.0.0"
-
-[[constraint]]
-  name = "github.com/volatiletech/sqlboiler"
-  version = "2.6.0"
-
-[[constraint]]
-  name = "gopkg.in/yaml.v2"
-  branch = "v2"
+  name = "github.com/coreos/etcd"
+  version = "v3.3.2"
 
 [[constraint]]
   name = "github.com/hashicorp/terraform"
   version = "0.11.11"
-
-[[constraint]]
-  branch = "master"
-  name = "golang.org/x/crypto"
