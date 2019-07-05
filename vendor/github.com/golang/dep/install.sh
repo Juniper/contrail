@@ -96,6 +96,10 @@ initArch() {
         i386) ARCH="386";;
         ppc64) ARCH="ppc64";;
         ppc64le) ARCH="ppc64le";;
+        s390x) ARCH="s390x";;
+        armv6*) ARCH="arm";;
+        armv7*) ARCH="arm";;
+        aarch64) ARCH="arm64";;
         *) echo "Architecture ${ARCH} is not supported by this installation script"; exit 1;;
     esac
     echo "ARCH = $ARCH"

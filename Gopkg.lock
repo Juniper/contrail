@@ -339,7 +339,7 @@
   version = "v1.2.1"
 
 [[projects]]
-  digest = "1:86384944152bd08c9e30c8f21447276b8b0e52800e88aefe54ff86ae033bf586"
+  digest = "1:a24758413e4f660af066e3730033d1f0ef28b5e4751a72865193310557a3253b"
   name = "github.com/golang/dep"
   packages = [
     ".",
@@ -362,8 +362,8 @@
     "internal/importers/vndr"
   ]
   pruneopts = ""
-  revision = "224a564abe296670b692fe08bb63a3e4c4ad7978"
-  version = "v0.5.0"
+  revision = "1f7c19e5f52f49ffb9f956f64c010be14683468b"
+  version = "v0.5.4"
 
 [[projects]]
   digest = "1:73a7106c799f98af4f3da7552906efc6a2570329f4cd2d2f5fb8f9d6c053ff2f"
@@ -826,12 +826,12 @@
   revision = "0ad87eef1443f64d3d8c50da647e2b1552851124"
 
 [[projects]]
-  digest = "1:d60cfeee185019d4fcd35e8c89c83aff576e4723b6100300bf67b05be961388f"
+  digest = "1:3d2c33720d4255686b9f4a7e4d3b94938ee36063f14705c5eb0f73347ed4c496"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   pruneopts = ""
-  revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
-  version = "v1.1.0"
+  revision = "728039f679cbcd4f6a54e080d2219a4c4928c546"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
@@ -1292,6 +1292,7 @@
     "github.com/gogo/protobuf/codec",
     "github.com/gogo/protobuf/gogoproto",
     "github.com/gogo/protobuf/proto",
+    "github.com/gogo/protobuf/sortkeys",
     "github.com/gogo/protobuf/types",
     "github.com/golang/dep/cmd/dep",
     "github.com/golang/mock/gomock",
