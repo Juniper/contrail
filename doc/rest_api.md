@@ -249,20 +249,23 @@ BODY: None
 RESPONSE: JSON list of UUID and href of collection if detail not specified, else JSON list of collection dicts
 ```
 
-## Query parameters
+Available query parameters:
 
-- parent_id  parent_uuid
-- parent_fq_name_str parent’s fully-qualified name delimited by ‘:’
-- obj_uuids Commna separated object uuids <example1_uuid>,<example2_uuid>
-- detail  True if you need detailed data
-- back_ref_id  back_ref_uuid
-- page_marker Pagenation start marker
-- page_limit  Pagenation limit
-- count       Return only resource counts
-- fields      Comma separated object field list you are interested in
-- shared      Included shared object in reponse.
-- filters     Comma separated fileter list. Example check==a,check==b,name==Bob becomes {'check': [u'a', u'b'], 'name': [u'Bob']}
-- exclude_hrefs True if you don't need hrefs
+| Query parameter | Description |
+| --- | --- |
+| filters | Comma-separated filter parameters (e.g. 'check==a,check==b,name==Bob'; default '') |
+| page_limit | Limit number of returned resources (e.g. '50'; default '100') |
+| page_marker | Return only the resources with UUIDs lexically greater than the given value (e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022'; default '') |
+| detail | Detailed response data if 'true' provided (default 'false') |
+| count | Return response with only resource count if 'true' provided (default 'false') [implementation broken] |
+| shared | Include shared object in response if 'true' provided (default 'false') |
+| exclude_hrefs | Exclude hrefs from response if 'true' provided (default 'false') [implementation broken] |
+| parent_fq_name_str | Parent's fully-qualified name as colon-separated list of names (e.g. 'default-domain:project-red:vn-red'; default '') [implementation broken] |
+| parent_type | Parent's type (e.g. 'project'; default '') |
+| parent_id | Comma-separated list of parents' UUIDs (e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022,5195c19a-a7d4-11e9-a7b7-a3e25e96617a'; default '') |
+| back_ref_id | Comma-separated list of back references' UUIDs (e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022,5195c19a-a7d4-11e9-a7b7-a3e25e96617a'; default '') |
+| obj_uuids | Comma-separated list of objects' UUIDs (e.g. '27e80fa2-a7d3-11e9-803e-abba7e65c022,5195c19a-a7d4-11e9-a7b7-a3e25e96617a'; default '') |
+| fields | Comma-separated list of object fields returned in response (e.g. 'name,uuid'; default '' does not limit the output) [implementation broken] |
 
 Example Request
 
