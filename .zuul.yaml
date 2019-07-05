@@ -24,7 +24,7 @@
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
-        - image: circleci/golang:1.11
+        - image: circleci/golang:1.12
         - image: circleci/mysql:5.7
           name: contrail_mysql
           environment:
@@ -59,7 +59,7 @@
       setup_docker_registry: true
       enable_tpc_repo: false
       docker:
-        - image: circleci/golang:1.11
+        - image: circleci/golang:1.12
         - image: circleci/mysql:5.7
           name: contrail_mysql
           environment:
