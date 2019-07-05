@@ -20,6 +20,7 @@ import (
 const (
 	projectUUID              = "project-cli-test-uuid"
 	resourcesPath            = "testdata/resources.yml"
+	vnRedName                = "vn-red"
 	vnSchemaID               = "virtual_network"
 	vnsPath                  = "testdata/vns.yml"
 	vnsWithExternalIPAMsPath = "testdata/vns-with-external-ipams.yml"
@@ -126,6 +127,8 @@ func testHelpMessageIsDisplayedGivenEmptySchemaID(cli *client.CLI) func(t *testi
 func testCRUD(cli *client.CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("show", testShow(cli))
+		t.Run("list", testList(cli))
+		t.Run("list detail", testListDetail(cli))
 		t.Run("set boolean field", testSetBooleanField(cli))
 		t.Run("update boolean fields via sync", testUpdateBooleanFieldsViaSync(cli))
 		t.Run("delete single (rm)", testDeleteSingle(cli))
@@ -142,6 +145,48 @@ func testShow(cli *client.CLI) func(t *testing.T) {
 		assertEqual(
 			t,
 			resources(vnBlue(t)),
+			o,
+		)
+	}
+}
+
+func testList(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+		})
+
+		require.NoError(t, err)
+		assertEqual(
+			t,
+			resources(
+				vnRed(t),
+				vnBlue(t),
+			),
+			o,
+		)
+	}
+}
+
+func testListDetail(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		t.Skip("hoge")
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+			Detail:      true,
+		})
+
+		require.NoError(t, err)
+		assertEqual(
+			t,
+			resources(
+				vnRed(t),
+				vnBlue(t),
+			),
 			o,
 		)
 	}
@@ -165,7 +210,7 @@ func testSetBooleanField(cli *client.CLI) func(t *testing.T) {
 		)
 
 		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
-			ParentUUIDs: "project-cli-test-uuid",
+			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
 		assertEqual(
@@ -196,7 +241,7 @@ func testUpdateBooleanFieldsViaSync(cli *client.CLI) func(t *testing.T) {
 		)
 
 		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
-			ParentUUIDs: "project-cli-test-uuid",
+			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
 		assertEqual(
@@ -214,13 +259,13 @@ func testDeleteSingle(cli *client.CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		createTestVirtualNetworks(t, cli)
 
-		o, err := cli.DeleteResource(vnSchemaID, "vn-red")
+		o, err := cli.DeleteResource(vnSchemaID, vnRedName)
 
 		assert.NoError(t, err)
 		require.Equal(t, "", o)
 
 		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
-			ParentUUIDs: "project-cli-test-uuid",
+			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
 		assertEqual(
@@ -244,7 +289,7 @@ func testDeleteMultiple(cli *client.CLI) func(t *testing.T) {
 		require.Equal(t, "", o)
 
 		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
-			ParentUUIDs: "project-cli-test-uuid",
+			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
 		assertEqual(t, resources(), o)
@@ -256,19 +301,6 @@ func createTestVirtualNetworks(t *testing.T, cli *client.CLI) {
 
 	require.NoError(t, err)
 	assertEqualByFile(t, resourcesPath, o)
-
-	o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
-		ParentUUIDs: projectUUID,
-	})
-	require.NoError(t, err)
-	assertEqual(
-		t,
-		resources(
-			vnRed(t),
-			vnBlue(t),
-		),
-		o,
-	)
 }
 
 func withExternalIPAM(t *testing.T, resource map[string]interface{}, ei bool) map[string]interface{} {

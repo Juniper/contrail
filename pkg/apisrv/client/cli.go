@@ -83,7 +83,15 @@ func (c *CLI) ShowResource(schemaID, uuid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, _ := response[dashedCase(schemaID)].(map[string]interface{}) //nolint: errcheck
+
+	data, ok := response[dashedCase(schemaID)].(map[string]interface{})
+	if !ok {
+		return "", errors.Errorf(
+			"type assertion to map[string]interface{} failed on response data: %v",
+			response[dashedCase(schemaID)],
+		)
+	}
+
 	event, err := services.NewEvent(services.EventOption{
 		Kind: schemaID,
 		Data: data,
@@ -150,18 +158,19 @@ func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error)
 // ListParameters contains parameters for list command.
 type ListParameters struct {
 	Filters      string
-	PageMarker   string
 	PageLimit    int
+	PageMarker   string
 	Detail       bool
 	Count        bool
 	Shared       bool
 	ExcludeHRefs bool
-	ParentType   string
 	ParentFQName string
+	ParentType   string
 	ParentUUIDs  string
 	BackrefUUIDs string
-	ObjectUUIDs  string
-	Fields       string
+	// TODO(Daniel): handle RefUUIDs
+	ObjectUUIDs string
+	Fields      string
 }
 
 const listHelpTemplate = `List command possible usages:
@@ -175,17 +184,19 @@ func pluralPath(schemaID string) string {
 func queryParameters(lp *ListParameters) url.Values {
 	m := map[string]interface{}{
 		baseservices.FiltersKey:      lp.Filters,
-		baseservices.PageMarkerKey:   lp.PageMarker,
 		baseservices.PageLimitKey:    lp.PageLimit,
+		baseservices.PageMarkerKey:   lp.PageMarker,
 		baseservices.DetailKey:       lp.Detail,
 		baseservices.CountKey:        lp.Count,
 		baseservices.SharedKey:       lp.Shared,
 		baseservices.ExcludeHRefsKey: lp.ExcludeHRefs,
-		baseservices.ParentTypeKey:   lp.ParentType,
 		baseservices.ParentFQNameKey: lp.ParentFQName,
+		baseservices.ParentTypeKey:   lp.ParentType,
 		baseservices.ParentUUIDsKey:  lp.ParentUUIDs,
 		baseservices.BackrefUUIDsKey: lp.ObjectUUIDs,
-		baseservices.FieldsKey:       lp.Fields,
+		// TODO(Daniel): handle RefUUIDs
+		baseservices.ObjectUUIDsKey: lp.ObjectUUIDs,
+		baseservices.FieldsKey:      lp.Fields,
 	}
 
 	values := url.Values{}
