@@ -242,27 +242,18 @@ Response None
 
 To list a set of resources, a GET has to be issued on the collection URL with an optional query parameter mentioning the parent resource that contains this collection. If parent resource is not mentioned, a resource named `default-<parent-type>` is assumed.
 
+For detail on available query parameters, such as _filters_ and _fields_ see:
+
+- Output of `contrailcli list -h` command   
+- Query parameter keys in block of constants in [api.go file](../pkg/services/baseservices/api.go)
+- Definitions of `contrailcli list` command flags using query parameters underneath [contrailcli/list.go file](../pkg/cmd/contrailcli/list.go)
+
 ```text
 METHOD: GET
 URL: http://<ip>:<port>/example_resources
 BODY: None
 RESPONSE: JSON list of UUID and href of collection if detail not specified, else JSON list of collection dicts
 ```
-
-## Query parameters
-
-- parent_id  parent_uuid
-- parent_fq_name_str parent’s fully-qualified name delimited by ‘:’
-- obj_uuids Commna separated object uuids <example1_uuid>,<example2_uuid>
-- detail  True if you need detailed data
-- back_ref_id  back_ref_uuid
-- page_marker Pagenation start marker
-- page_limit  Pagenation limit
-- count       Return only resource counts
-- fields      Comma separated object field list you are interested in
-- shared      Included shared object in reponse.
-- filters     Comma separated fileter list. Example check==a,check==b,name==Bob becomes {'check': [u'a', u'b'], 'name': [u'Bob']}
-- exclude_hrefs True if you don't need hrefs
 
 Example Request
 
