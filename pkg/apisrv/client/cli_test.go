@@ -10,6 +10,7 @@ import (
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	yaml "gopkg.in/yaml.v2"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -113,6 +114,8 @@ func testHelpMessageIsDisplayedGivenEmptySchemaID(cli *client.CLI) func(t *testi
 func testCRUD(cli *client.CLI) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Run("show", testShow(cli))
+		t.Run("list", testList(cli))
+		t.Run("list with detail", testListWithDetail(cli))
 		t.Run("set boolean field", testSetBooleanField(cli))
 		t.Run("update boolean fields via sync", testUpdateBooleanFieldsViaSync(cli))
 		t.Run("delete single (rm)", testDeleteSingle(cli))
@@ -126,11 +129,34 @@ func testShow(cli *client.CLI) func(t *testing.T) {
 
 		o, err := cli.ShowResource(vnSchemaID, vnBlueUUID)
 		assert.NoError(t, err, fmt.Sprintf("VN %q should be retrieved", vnBlueUUID))
-		assertEqual(
-			t,
-			resources(vnBlue(t)),
-			o,
-		)
+		assertEqual(t, resources(vnBlue(t)), o)
+	}
+}
+
+func testList(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
+	}
+}
+
+func testListWithDetail(cli *client.CLI) func(t *testing.T) {
+	return func(t *testing.T) {
+		createTestVirtualNetworks(t, cli)
+
+		o, err := cli.ListResources(vnSchemaID, &client.ListParameters{
+			ParentUUIDs: projectUUID,
+			Detail:      true,
+		})
+
+		require.NoError(t, err)
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
 	}
 }
 
@@ -145,24 +171,13 @@ func testSetBooleanField(cli *client.CLI) func(t *testing.T) {
 		)
 
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(withExternalIPAM(t, vnBlue(t), true)),
-			o,
-		)
+		assertEqual(t, resources(withExternalIPAM(t, vnBlue(t), true)), o)
 
 		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(
-				vnRed(t),
-				withExternalIPAM(t, vnBlue(t), true),
-			),
-			o,
-		)
+		assertEqual(t, resources(vnRed(t), withExternalIPAM(t, vnBlue(t), true)), o)
 	}
 }
 
@@ -173,27 +188,13 @@ func testUpdateBooleanFieldsViaSync(cli *client.CLI) func(t *testing.T) {
 		o, err := cli.SyncResources(vnsWithExternalIPAMsPath)
 
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(
-				withExternalIPAM(t, vnRed(t), true),
-				withExternalIPAM(t, vnBlue(t), true),
-			),
-			o,
-		)
+		assertEqual(t, resources(withExternalIPAM(t, vnRed(t), true), withExternalIPAM(t, vnBlue(t), true)), o)
 
 		o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(
-				withExternalIPAM(t, vnRed(t), true),
-				withExternalIPAM(t, vnBlue(t), true),
-			),
-			o,
-		)
+		assertEqual(t, resources(withExternalIPAM(t, vnRed(t), true), withExternalIPAM(t, vnBlue(t), true)), o)
 	}
 }
 
@@ -210,14 +211,8 @@ func testDeleteSingle(cli *client.CLI) func(t *testing.T) {
 			ParentUUIDs: projectUUID,
 		})
 		assert.NoError(t, err)
-		assertEqual(
-			t,
-			resources(
-				vnRed(t),
-				vnBlue(t),
-			),
-			o,
-		) // TODO(Daniel): only vn-blue should be left, fix implementation
+		// TODO(Daniel): only vn-blue should be left, fix implementation
+		assertEqual(t, resources(vnRed(t), vnBlue(t)), o)
 	}
 }
 
@@ -243,19 +238,6 @@ func createTestVirtualNetworks(t *testing.T, cli *client.CLI) {
 
 	require.NoError(t, err)
 	assertEqualByFile(t, resourcesPath, o)
-
-	o, err = cli.ListResources(vnSchemaID, &client.ListParameters{
-		ParentUUIDs: projectUUID,
-	})
-	require.NoError(t, err)
-	assertEqual(
-		t,
-		resources(
-			vnRed(t),
-			vnBlue(t),
-		),
-		o,
-	)
 }
 
 func withExternalIPAM(t *testing.T, resource map[string]interface{}, ei bool) map[string]interface{} {
