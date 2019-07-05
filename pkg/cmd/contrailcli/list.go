@@ -28,32 +28,94 @@ var (
 func init() {
 	ContrailCLI.AddCommand(listCmd)
 
-	listCmd.Flags().StringVarP(&filters, baseservices.FiltersKey, "f", "",
-		"Comma-separated filter parameters (e.g. check==a,check==b,name==Bob)")
-	listCmd.Flags().StringVarP(&pageMarker, baseservices.PageMarkerKey, "m", "",
-		"Page marker: return only the resources with UUIDs lexically greater than this value")
-	listCmd.Flags().IntVarP(&pageLimit, baseservices.PageLimitKey, "l", 100,
-		"Limit number of returned resources")
-	listCmd.Flags().BoolVarP(&detail, baseservices.DetailKey, "d", false,
-		"Detailed data in response")
-	listCmd.Flags().BoolVar(&count, baseservices.CountKey, false,
-		"Return only resource count in response")
-	listCmd.Flags().BoolVarP(&shared, baseservices.SharedKey, "s", false,
-		"Include shared object in response")
-	listCmd.Flags().BoolVarP(&excludeHRefs, baseservices.ExcludeHRefsKey, "e", false,
-		"Exclude hrefs from response")
-	listCmd.Flags().StringVarP(&parentType, baseservices.ParentTypeKey, "t", "",
-		"Parent's type")
-	listCmd.Flags().StringVarP(&parentFQName, baseservices.ParentFQNameKey, "n", "",
-		"Colon-separated list of parents' fully-qualified names")
-	listCmd.Flags().StringVarP(&parentUUIDs, baseservices.ParentUUIDsKey, "u", "",
-		"Comma-separated list of parents' UUIDs")
-	listCmd.Flags().StringVar(&backrefUUIDs, baseservices.BackrefUUIDsKey, "",
-		"Comma-separated list of back references' UUIDs")
-	listCmd.Flags().StringVar(&objectUUIDs, baseservices.ObjectUUIDsKey, "",
-		"Comma-separated list of objects' UUIDs")
-	listCmd.Flags().StringVar(&fields, baseservices.FieldsKey, "",
-		"Comma-separated list of object fields returned in response")
+	listCmd.Flags().StringVarP(
+		&filters,
+		baseservices.FiltersKey,
+		"f",
+		"",
+		"Comma-separated filter parameters (e.g. check==a,check==b,name==Bob)",
+	)
+	listCmd.Flags().IntVarP(
+		&pageLimit,
+		baseservices.PageLimitKey,
+		"l",
+		100,
+		"Limit number of returned resources",
+	)
+	listCmd.Flags().StringVarP(
+		&pageMarker,
+		baseservices.PageMarkerKey,
+		"m",
+		"",
+		"Page marker: return only the resources with UUIDs lexically greater than this value",
+	)
+	listCmd.Flags().BoolVarP(
+		&detail,
+		baseservices.DetailKey,
+		"d",
+		false,
+		"Detailed data in response",
+	)
+	listCmd.Flags().BoolVar(
+		&count,
+		baseservices.CountKey,
+		false,
+		"Return only resource count in response",
+	)
+	listCmd.Flags().BoolVarP(
+		&shared,
+		baseservices.SharedKey,
+		"s",
+		false,
+		"Include shared object in response",
+	)
+	listCmd.Flags().BoolVarP(
+		&excludeHRefs,
+		baseservices.ExcludeHRefsKey,
+		"e",
+		false,
+		"Exclude hrefs from response",
+	)
+	listCmd.Flags().StringVarP(
+		&parentFQName,
+		baseservices.ParentFQNameKey,
+		"n",
+		"",
+		"Colon-separated list of parents' fully-qualified names",
+	)
+	listCmd.Flags().StringVarP(
+		&parentType,
+		baseservices.ParentTypeKey,
+		"t",
+		"",
+		"Parent's type",
+	)
+	listCmd.Flags().StringVarP(
+		&parentUUIDs,
+		baseservices.ParentUUIDsKey,
+		"u",
+		"",
+		"Comma-separated list of parents' UUIDs",
+	)
+	listCmd.Flags().StringVar(
+		&backrefUUIDs,
+		baseservices.BackrefUUIDsKey,
+		"",
+		"Comma-separated list of back references' UUIDs",
+	)
+	// TODO(Daniel): handle RefUUIDs
+	listCmd.Flags().StringVar(
+		&objectUUIDs,
+		baseservices.ObjectUUIDsKey,
+		"",
+		"Comma-separated list of objects' UUIDs",
+	)
+	listCmd.Flags().StringVar(
+		&fields,
+		baseservices.FieldsKey,
+		"",
+		"Comma-separated list of object fields returned in response",
+	)
 }
 
 var listCmd = &cobra.Command{
@@ -74,19 +136,22 @@ var listCmd = &cobra.Command{
 		r, err := cli.ListResources(
 			schemaID,
 			&client.ListParameters{
-				Filters:      filters,
-				PageMarker:   pageMarker,
-				PageLimit:    pageLimit,
-				Detail:       detail,
-				Count:        count,
-				Shared:       shared,
-				ExcludeHRefs: excludeHRefs,
-				ParentType:   parentType,
-				ParentFQName: parentFQName,
-				ParentUUIDs:  parentUUIDs,
-				BackrefUUIDs: backrefUUIDs,
-				ObjectUUIDs:  objectUUIDs,
-				Fields:       fields,
+				ListSpec: baseservices.ListSpec{
+					Filters:      filters,   // TODO: ogarnąć
+					Limit:        pageLimit, // TODO: ogarnąć
+					Marker:       pageMarker,
+					Detail:       detail,
+					Count:        count,
+					Shared:       shared,
+					ExcludeHrefs: excludeHRefs,
+					ParentFQName: parentFQName, // TODO: ogarnąć
+					ParentType:   parentType,
+					ParentUUIDs:  parentUUIDs,  // TODO: ogarnąć
+					BackRefUUIDs: backrefUUIDs, // TODO: ogarnąć
+					// TODO(Daniel): handle RefUUIDs,
+					ObjectUUIDs: objectUUIDs, // TODO: ogarnąć
+					Fields:      fields,      // TODO: ogarnąć
+				},
 			},
 		)
 		if err != nil {

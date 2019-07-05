@@ -3,23 +3,13 @@
 API Server CLI is contained in `contrailcli` executable.
 It consists of following commands:
 
-- delete
-- list
-- rm
-- schema
-- set
 - show
+- list
 - sync
-
-## Schema command
-
-Schema command shows schema for specified resource.
-
-```bash
-contrailcli schema virtual_network
-```
-
-[Schema command output](../pkg/cmd/contrailcli/testdata/virtual_network_schema.yml)
+- set
+- rm
+- delete
+- schema
 
 ## Show command
 
@@ -28,8 +18,6 @@ Show command shows data of specified resource.
 ```bash
 contrailcli show virtual_network first-uuid
 ```
-
-[Show command output](../pkg/cmd/contrailcli/testdata/virtual_network_showed.yml)
 
 Invoke command with empty schema identifier in order to show possible usages:
 
@@ -41,14 +29,11 @@ contrailcli show
 
 List command lists data of specified resources.
 
-There are also multiple parameters available, such as filters.
-Display them with `contrailcli list -h` command.
+There are also multiple parameters available, such as _--filters_ and _--fields_. Display them with `contrailcli list -h` command.
 
 ```bash
 contrailcli list virtual_network
 ```
-
-[List command output](../pkg/cmd/contrailcli/testdata/virtual_networks_listed.yml)
 
 Invoke command with empty schema identifier in order to show possible usages:
 
@@ -62,10 +47,10 @@ Sync command creates or updates resources with data defined in given YAML file.
 It creates new resource for every not already existing resource.
 
 ```bash
-contrailcli sync pkg/cmd/contrailcli/testdata/virtual_networks_update.yml
+contrailcli sync pkg/apisrv/client/testdata/vns.yml
 ```
 
-[Input file content](../pkg/cmd/contrailcli/testdata/virtual_networks_update.yml)
+[Input file content](../pkg/apisrv/client/testdata/vns.yml)
 
 ## Set command
 
@@ -74,8 +59,6 @@ Set updates properties of specified resource.
 ```bash
 contrailcli set virtual_network first-uuid "external_ipam: true" -c integration/contrailcli.yml
 ```
-
-[Set command output](../pkg/cmd/contrailcli/testdata/virtual_networks_set_output.yml)
 
 Invoke command with empty schema identifier in order to show possible usages:
 
@@ -104,9 +87,17 @@ contrailcli rm
 Delete removes resources specified in given YAML file.
 
 ```bash
-contrailcli delete pkg/cmd/contrailcli/testdata/virtual_networks.yml
+contrailcli delete pkg/apisrv/client/testdata/vns.yml
 ```
 
-[Input file content](../pkg/cmd/contrailcli/testdata/virtual_networks.yml)
+[Input file content](../pkg/apisrv/client/testdata/vns.yml)
 
 Delete command returns no output.
+
+## Schema command
+
+Schema command shows schema for specified resource.
+
+```bash
+contrailcli schema virtual_network
+```

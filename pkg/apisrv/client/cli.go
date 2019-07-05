@@ -83,7 +83,15 @@ func (c *CLI) ShowResource(schemaID, uuid string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, _ := response[dashedCase(schemaID)].(map[string]interface{}) //nolint: errcheck
+
+	data, ok := response[dashedCase(schemaID)].(map[string]interface{})
+	if !ok {
+		return "", errors.Errorf(
+			"type assertion to map[string]interface{} failed on response data: %v",
+			response[dashedCase(schemaID)],
+		)
+	}
+
 	event, err := services.NewEvent(services.EventOption{
 		Kind: schemaID,
 		Data: data,
@@ -103,8 +111,14 @@ const showHelpTemplate = `Show command possible usages:
 {% for schema in schemas %}contrail show {{ schema.ID }} $UUID
 {% endfor %}`
 
+// ListParameters contains parameters for list command.
+// TODO(Daniel): Remove this struct and use ListSpec directly
+type ListParameters struct {
+	baseservices.ListSpec
+}
+
 // ListResources lists resources with given schemaID using filters.
-func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error) {
+func (c *CLI) ListResources(schemaID string, ls *ListParameters) (string, error) {
 	if schemaID == "" {
 		return c.showHelp("", listHelpTemplate)
 	}
@@ -113,55 +127,22 @@ func (c *CLI) ListResources(schemaID string, lp *ListParameters) (string, error)
 	if _, err := c.ReadWithQuery(
 		context.Background(),
 		pluralPath(schemaID),
-		queryParameters(lp),
+		queryParameters(ls),
 		&response,
 	); err != nil {
 		return "", err
 	}
 
-	var events services.EventList
-	for _, list := range response {
-		for _, d := range list {
-			m, ok := d.(map[string]interface{})
-			if !ok {
-				return "", errors.New("type assertion on response value failed")
-			}
-
-			event, neErr := services.NewEvent(services.EventOption{
-				Kind: schemaID,
-				Data: m,
-			})
-			if neErr != nil {
-				logrus.Errorf("failed to create event - skipping: %v", neErr)
-				continue
-			}
-
-			events.Events = append(events.Events, event)
-		}
+	el, err := makeEventList(schemaID, response)
+	if err != nil {
+		return "", nil
 	}
 
-	output, err := yaml.Marshal(&events)
+	output, err := yaml.Marshal(el)
 	if err != nil {
 		return "", err
 	}
 	return string(output), nil
-}
-
-// ListParameters contains parameters for list command.
-type ListParameters struct {
-	Filters      string
-	PageMarker   string
-	PageLimit    int
-	Detail       bool
-	Count        bool
-	Shared       bool
-	ExcludeHRefs bool
-	ParentType   string
-	ParentFQName string
-	ParentUUIDs  string
-	BackrefUUIDs string
-	ObjectUUIDs  string
-	Fields       string
 }
 
 const listHelpTemplate = `List command possible usages:
@@ -172,20 +153,22 @@ func pluralPath(schemaID string) string {
 	return "/" + dashedCase(schemaID) + "s"
 }
 
-func queryParameters(lp *ListParameters) url.Values {
+func queryParameters(ls *ListParameters) url.Values {
 	m := map[string]interface{}{
-		baseservices.FiltersKey:      lp.Filters,
-		baseservices.PageMarkerKey:   lp.PageMarker,
-		baseservices.PageLimitKey:    lp.PageLimit,
-		baseservices.DetailKey:       lp.Detail,
-		baseservices.CountKey:        lp.Count,
-		baseservices.SharedKey:       lp.Shared,
-		baseservices.ExcludeHRefsKey: lp.ExcludeHRefs,
-		baseservices.ParentTypeKey:   lp.ParentType,
-		baseservices.ParentFQNameKey: lp.ParentFQName,
-		baseservices.ParentUUIDsKey:  lp.ParentUUIDs,
-		baseservices.BackrefUUIDsKey: lp.ObjectUUIDs,
-		baseservices.FieldsKey:       lp.Fields,
+		baseservices.FiltersKey:      ls.Filters,
+		baseservices.PageLimitKey:    ls.Limit,
+		baseservices.PageMarkerKey:   ls.Marker,
+		baseservices.DetailKey:       ls.Detail,
+		baseservices.CountKey:        ls.Count,
+		baseservices.SharedKey:       ls.Shared,
+		baseservices.ExcludeHRefsKey: ls.ExcludeHrefs,
+		baseservices.ParentFQNameKey: ls.ParentFQName,
+		baseservices.ParentTypeKey:   ls.ParentType,
+		baseservices.ParentUUIDsKey:  ls.ParentUUIDs,
+		baseservices.BackrefUUIDsKey: ls.ObjectUUIDs,
+		// TODO(Daniel): handle RefUUIDs
+		baseservices.ObjectUUIDsKey: ls.ObjectUUIDs,
+		baseservices.FieldsKey:      ls.Fields,
 	}
 
 	values := url.Values{}
@@ -200,6 +183,35 @@ func queryParameters(lp *ListParameters) url.Values {
 
 func isZeroValue(value interface{}) bool {
 	return value == "" || value == 0 || value == false
+}
+
+func makeEventList(schemaID string, response map[string][]interface{}) (*services.EventList, error) {
+	var el services.EventList
+	for _, list := range response {
+		for _, d := range list {
+			m, ok := d.(map[string]interface{})
+			if !ok {
+				return nil, errors.New("type assertion on response value failed")
+			}
+
+			listYAML, _ := yaml.Marshal(list)
+			fmt.Printf("HOGE response: %#v ; listYAML: \n %v \n", response, string(listYAML))
+			event, neErr := services.NewEvent(services.EventOption{
+				Kind: schemaID,
+				Data: m,
+			})
+			if neErr != nil {
+				logrus.Errorf("failed to create event - skipping: %v", neErr)
+				continue
+			}
+
+			el.Events = append(el.Events, event)
+
+			eventYAML, _ := yaml.Marshal(event)
+			fmt.Printf("HOGE eventYAML: \n %v ; el: %#v \n", string(eventYAML), el)
+		}
+	}
+	return &el, nil
 }
 
 // SyncResources synchronizes state of resources specified in given file.
