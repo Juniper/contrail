@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "ba04c1f7_b6f45b24",
+        "filename": "pkg/apisrv/keystone/test_data/test_basic_auth.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-08T10:51:27Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "153d22dd_40303211",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6a09b4ef_4ca1272e",
         "filename": "pkg/apisrv/replication/test_config.yml",
         "patchSetId": 4
@@ -69,6 +87,24 @@
       "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "daf736c5_83eb7b8b",
+        "filename": "pkg/apisrv/replication/test_config.yml",
+        "patchSetId": 4
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-08T10:51:27Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "0292026f_ab1c7039",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -139,6 +175,24 @@
       "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "531e24a6_f57dd227",
+        "filename": "pkg/testutil/integration/meta_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-08T10:51:27Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "11f66af1_d03d3a3e",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
