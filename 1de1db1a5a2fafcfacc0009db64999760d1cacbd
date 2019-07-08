@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "153d22dd_40303211",
+        "filename": "pkg/apisrv/keystone/test_data/test_basic_auth.tmpl",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-08T09:15:01Z",
+      "side": 1,
+      "message": "No. It would be non-trivial to do it",
+      "parentUuid": "c5b4fcc6_4d8e91cf",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6a09b4ef_4ca1272e",
         "filename": "pkg/apisrv/replication/test_config.yml",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2019-07-05T17:25:47Z",
       "side": 1,
       "message": "Why are these options left if the rest of the DB options are removed?",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0292026f_ab1c7039",
+        "filename": "pkg/apisrv/replication/test_config.yml",
+        "patchSetId": 4
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-08T09:15:01Z",
+      "side": 1,
+      "message": "I removed all unused fields in this file. Those 3 (max_open_conn) are used - this is how integration/common.go loads configuration. I didn\u0027t modify it.\n\nIt will be cleaned up when we remove mysql support and use only postgres. We won\u0027t use test_database object then. Just \"database\" object.",
+      "parentUuid": "6a09b4ef_4ca1272e",
       "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "bddcaf97_f2613feb",
+        "filename": "pkg/testutil/integration/meta_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-08T09:15:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cccfc056_2fb103ed",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d984ebc4_875e6aad",
         "filename": "pkg/testutil/integration/meta_test.go",
         "patchSetId": 4
@@ -64,6 +118,24 @@
       "writtenOn": "2019-07-05T17:25:47Z",
       "side": 1,
       "message": "Move this to be just before line 58.",
+      "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "11f66af1_d03d3a3e",
+        "filename": "pkg/testutil/integration/meta_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-08T09:15:01Z",
+      "side": 1,
+      "message": "It turned out not to be needed, beacuse only top-level uuid field is used  below.",
+      "parentUuid": "d984ebc4_875e6aad",
       "revId": "1de1db1a5a2fafcfacc0009db64999760d1cacbd",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
