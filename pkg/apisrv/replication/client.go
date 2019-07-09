@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/apisrv/cluster"
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	"github.com/Juniper/contrail/pkg/auth"
 	"github.com/Juniper/contrail/pkg/keystone"
@@ -176,7 +177,11 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 	endpoint := viper.GetString("client.endpoint")
 	inSecure := viper.GetBool("insecure")
 	authURL := viper.GetString("keystone.authurl")
-	if viper.GetString("auth_type") == basicAuth {
+	authType, err := cluster.GetAuthType(ep.ParentUUID)
+	if err != nil {
+		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
+	}
+	if authType == basicAuth {
 		id = viper.GetString("client.id")
 		password = viper.GetString("client.password")
 		domainID = viper.GetString("client.domain_id")
@@ -214,7 +219,7 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 		ctx = h.getAuthContext(ep.ParentUUID, c)
 	}
 
-	_, err := c.Login(ctx)
+	_, err = c.Login(ctx)
 	if err != nil {
 		h.log.Warnf("Login failed for: %s, %v", ep.ParentUUID, err)
 	}

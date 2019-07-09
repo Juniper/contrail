@@ -115,7 +115,6 @@ func setViperConfig(c *APIServerConfig) {
 	}
 	setViper(map[string]interface{}{
 		"aaa_mode":                    rbacConfig(c.EnableRBAC),
-		"auth_type":                   c.AuthType,
 		"database.host":               "localhost",
 		"database.user":               dbUser,
 		"database.name":               dbName,
