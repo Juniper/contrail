@@ -99,25 +99,14 @@ func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Projec
 	return nil, nil
 }
 
-func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint string, err error) {
-	endpoint, err := endpoints.GetEndpoint(configService)
-	if endpoint != nil {
-		return endpoint.URL, err
-	}
-	return "", nil
-}
-
-func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
+func (keystone *Keystone) setAssignment(clusterID string) (configEndpoint string, err error) {
 	authType := viper.GetString("auth_type")
 	if authType != "basic-auth" {
 		return "", nil
 	}
-	configEndpoint, err = getVncConfigEndpoint(keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	if configEndpoint != "" {
+	e := keystone.Endpoints.GetEndpoint(clusterID, configService)
+	if e != nil {
+		configEndpoint = e.URL
 		apiAssignment := &VNCAPIAssignment{}
 		err := apiAssignment.Init(
 			configEndpoint, keystone.staticAssignment.ListUsers())
@@ -186,7 +175,7 @@ func (keystone *Keystone) ListDomainsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = keystone.setAssignment()
+	_, err = keystone.setAssignment(clusterID)
 	if err != nil {
 		return err
 	}
@@ -210,7 +199,7 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	configEndpoint, err := keystone.setAssignment()
+	configEndpoint, err := keystone.setAssignment(clusterID)
 	if err != nil {
 		return err
 	}
@@ -355,7 +344,8 @@ func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthR
 		}
 		user = token.User
 	} else {
-		_, err = keystone.setAssignment()
+		clusterID := c.Request().Header.Get(xClusterIDKey)
+		_, err = keystone.setAssignment(clusterID)
 		if err != nil {
 			return err
 		}
