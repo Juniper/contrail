@@ -46,7 +46,6 @@ server:
     - http://localhost:8081
   notify_etcd: false
 
-auth_type: no-auth
 no_auth: false
 insecure: true
 
