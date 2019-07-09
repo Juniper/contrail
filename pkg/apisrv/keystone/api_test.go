@@ -36,9 +36,39 @@ const (
 
 var server *integration.APIServer
 
-func mockServer(routes map[string]interface{}) *httptest.Server {
+func mockConfigServer(clusterName, clusterID string) *httptest.Server {
 	// Echo instance
 	e := echo.New()
+
+	routes := map[string]interface{}{
+		"/domains": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&keystone.VncDomainListResponse{
+					Domains: []*keystone.VncDomain{{
+						Domain: &keystone.ConfigDomain{
+							Name: clusterName,
+							UUID: clusterID,
+						},
+					},
+					},
+				},
+			)
+		}),
+		"/projects": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&keystone.VncProjectListResponse{
+					Projects: []*keystone.VncProject{{
+						Project: &keystone.ConfigProject{
+							Name:   clusterName,
+							UUID:   clusterID,
+							FQName: []string{clusterName},
+						},
+					},
+					},
+				},
+			)
+		}),
+	}
 
 	// Routes
 	for route, handler := range routes {
@@ -303,58 +333,38 @@ func TestBasicAuth(t *testing.T) {
 	})
 	defer s.CloseT(t)
 
-	clusterName := "clusterBasicAuth"
-	routes := map[string]interface{}{
-		"/domains": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&keystone.VncDomainListResponse{
-					Domains: []*keystone.VncDomain{{
-						Domain: &keystone.ConfigDomain{
-							Name: clusterName,
-							UUID: clusterName + "_uuid",
-						},
-					},
-					},
-				},
-			)
-		}),
-		"/projects": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&keystone.VncProjectListResponse{
-					Projects: []*keystone.VncProject{{
-						Project: &keystone.ConfigProject{
-							Name:   clusterName,
-							UUID:   clusterName + "_uuid",
-							FQName: []string{clusterName},
-						},
-					},
-					},
-				},
-			)
-		}),
+	clusters := map[string]string{
+		"clusterABasicAuth": "clusterABasicAuth_uuid",
+		"clusterBBasicAuth": "clusterBBasicAuth_uuid",
 	}
-	configService := mockServer(routes)
 
-	pContext := pongo2.Context{
-		"cluster_name":  clusterName,
-		"endpoint_name": clusterName + "_config",
-		"private_url":   configService.URL,
-		"public_url":    configService.URL,
-	}
 	var testScenario integration.TestScenario
-	err := integration.LoadTestScenario(&testScenario, testBasicAuthFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
-	cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
-	defer cleanup()
+	// Create clusterA, clusterB and their config endpoint
+	for clusterName, clusterID := range clusters {
+		configService := mockConfigServer(clusterName, clusterID)
+		pContext := pongo2.Context{
+			"cluster_name":  clusterName,
+			"endpoint_name": clusterName + "_config",
+			"private_url":   configService.URL,
+			"public_url":    configService.URL,
+		}
+		err := integration.LoadTestScenario(&testScenario, testBasicAuthFile, pContext)
+		assert.NoError(t, err, "failed to load endpoint create test data")
+		cleanup := integration.RunDirtyTestScenario(t, &testScenario, server)
+		defer cleanup()
+	}
 
 	server.ForceProxyUpdate()
 
-	ctx := context.Background()
-	url := "/keystone/v3/auth/projects"
-	ok := verifyBasicAuthProjects(ctx, t, &testScenario, url, clusterName)
-	assert.True(t, ok, "failed to get project list from config %s", url)
+	// verify basic auth
+	for clusterName, clusterID := range clusters {
+		ctx := auth.WithXClusterID(context.Background(), clusterID)
+		url := "/keystone/v3/auth/projects"
+		ok := verifyBasicAuthProjects(ctx, t, &testScenario, url, clusterName)
+		assert.True(t, ok, "failed to get project list from config %s", url)
 
-	url = "/keystone/v3/auth/domains"
-	ok = verifyBasicAuthDomains(ctx, t, &testScenario, url, clusterName)
-	assert.True(t, ok, "failed to get domain list from config %s", url)
+		url = "/keystone/v3/auth/domains"
+		ok = verifyBasicAuthDomains(ctx, t, &testScenario, url, clusterName)
+		assert.True(t, ok, "failed to get domain list from config %s", url)
+	}
 }
