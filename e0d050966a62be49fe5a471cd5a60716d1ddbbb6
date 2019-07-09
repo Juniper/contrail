@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "036aee3b_b55df35c",
+        "filename": "Gopkg.toml",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-09T12:07:53Z",
+      "side": 0,
+      "message": "Why are these constraints removed?\n\nWould this make `dep ensure` install a newer version when one is released? We probably don\u0027t want that.",
+      "revId": "e0d050966a62be49fe5a471cd5a60716d1ddbbb6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
