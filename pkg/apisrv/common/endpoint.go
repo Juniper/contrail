@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 
@@ -164,25 +163,15 @@ func (e *EndpointStore) Remove(prefix string) {
 }
 
 //GetEndpoint by prefix
-func (e *EndpointStore) GetEndpoint(prefix string) (endpoint *Endpoint, err error) {
-	endpointCount := 0
-	e.Data.Range(func(key, targets interface{}) bool {
-		keyString, _ := key.(string) // nolint: errcheck
-		keyParts := strings.Split(keyString, pathSep)
-		if keyParts[3] == prefix && keyParts[4] == Private {
-			endpoints, _ := targets.(*TargetStore) // nolint: errcheck
-			endpoint = endpoints.Next(Private)
-			if endpoint != nil {
-				endpointCount++
-			}
+func (e *EndpointStore) GetEndpoint(clusterID, prefix string) (endpoint *Endpoint) {
+	if clusterID != "" {
+		targets := e.Read(
+			strings.Join(
+				[]string{"/proxy", clusterID, prefix, Private}, "/"))
+		if targets == nil {
+			return nil
 		}
-		if endpointCount > 1 {
-			err = fmt.Errorf("multiple clusters found; use X-Cluster-ID header to select a cluster")
-			return false
-		}
-		return true
-
-	})
-
-	return endpoint, err
+		return targets.Next(scope)
+	}
+	return endpoint
 }

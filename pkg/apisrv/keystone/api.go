@@ -99,25 +99,14 @@ func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Projec
 	return nil, nil
 }
 
-func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint string, err error) {
-	endpoint, err := endpoints.GetEndpoint(configService)
-	if endpoint != nil {
-		return endpoint.URL, err
-	}
-	return "", nil
-}
-
-func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
+func (keystone *Keystone) setAssignment(clusterID string) (configEndpoint string, err error) {
 	authType := viper.GetString("auth_type")
 	if authType != "basic-auth" {
 		return "", nil
 	}
-	configEndpoint, err = getVncConfigEndpoint(keystone.Endpoints)
-	if err != nil {
-		logrus.Error(err)
-		return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
-	if configEndpoint != "" {
+	e := keystone.Endpoints.GetEndpoint(clusterID, configService)
+	if e != nil {
+		configEndpoint = e.URL
 		apiAssignment := &VNCAPIAssignment{}
 		err := apiAssignment.Init(
 			configEndpoint, keystone.staticAssignment.ListUsers())
@@ -147,8 +136,9 @@ func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error
 
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
-	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoint := getKeystoneEndpoint(
+		c.Request().Header.Get(xClusterIDKey),
+		keystone.Endpoints)
 
 	id := c.Param("id")
 	if keystoneEndpoint != nil {
@@ -186,7 +176,7 @@ func (keystone *Keystone) ListDomainsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = keystone.setAssignment()
+	_, err = keystone.setAssignment(clusterID)
 	if err != nil {
 		return err
 	}
@@ -210,7 +200,7 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	configEndpoint, err := keystone.setAssignment()
+	configEndpoint, err := keystone.setAssignment(clusterID)
 	if err != nil {
 		return err
 	}
@@ -261,8 +251,8 @@ func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
 
 func (keystone *Keystone) fetchServerTokenWithClusterToken(
 	c echo.Context, identity *kscommon.Identity) error {
-	clusterID := identity.Cluster.ID
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoint := getKeystoneEndpoint(
+		identity.Cluster.ID, keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		tokenURL := keystoneEndpoint.URL + "/v3/auth/tokens"
 		request, err := http.NewRequest(echo.GET, tokenURL, nil)
@@ -331,8 +321,9 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 	if identity.Cluster != nil {
 		return keystone.fetchServerTokenWithClusterToken(c, identity)
 	}
-	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoint := getKeystoneEndpoint(
+		c.Request().Header.Get(xClusterIDKey),
+		keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		return keystone.fetchClusterToken(c, identity, authRequest, keystoneEndpoint)
 	}
@@ -355,7 +346,7 @@ func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthR
 		}
 		user = token.User
 	} else {
-		_, err = keystone.setAssignment()
+		_, err = keystone.setAssignment(c.Request().Header.Get(xClusterIDKey))
 		if err != nil {
 			return err
 		}
@@ -388,8 +379,9 @@ func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthR
 
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
-	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoint := getKeystoneEndpoint(
+		c.Request().Header.Get(xClusterIDKey),
+		keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
 		return keystone.Client.ValidateToken(c)
