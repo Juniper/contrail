@@ -112,6 +112,7 @@ keystone:
   insecure: true
   authurl: https://localhost:9091/keystone/v3
 
+no_auth: true
 insecure: true
 
 cache:

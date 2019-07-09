@@ -44,7 +44,7 @@ server:
     - http://localhost:8082
   notify_etcd: true
 
-auth_type: no-auth
+no_auth: true
 insecure: true
 
 sync:

@@ -57,6 +57,9 @@ sync:
 homepage:
   enabled: true
 
+no_auth: true
+insecure: true
+
 keystone:
   local: true # Enable local keystone v3. This is only for testing now.
   assignment:

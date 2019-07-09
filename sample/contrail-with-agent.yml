@@ -81,7 +81,7 @@ keystone:
   auth_url: https://localhost:9091/keystone/v3
   authurl: https://localhost:9091/keystone/v3
 
-no_auth: false
+no_auth: true
 insecure: true
 domain_id: default
 
