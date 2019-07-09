@@ -173,31 +173,33 @@ func (s *Server) Init() (err error) {
 	endpointStore := apicommon.MakeEndpointStore()
 	s.serveDynamicProxy(endpointStore)
 
-	if viper.GetBool("server.enable_vnc_replication") {
-		if err = s.startVNCReplicator(endpointStore); err != nil {
-			return err
-		}
-	}
-
 	keystoneAuthURL := viper.GetString("keystone.authurl")
 	var keystoneClient *keystone.Client
 	if keystoneAuthURL != "" {
+		var skipPaths []string
 		keystoneClient = keystone.NewKeystoneClient(keystoneAuthURL, viper.GetBool("keystone.insecure"))
-		skipPaths, err := keystone.GetAuthSkipPaths()
+		skipPaths, err = keystone.GetAuthSkipPaths()
 		if err != nil {
 			return errors.Wrap(err, "failed to setup paths skipped from authentication")
 		}
 		s.Echo.Use(keystone.AuthMiddleware(keystoneClient, skipPaths, endpointStore))
-	} else if viper.GetString("auth_type") == "no-auth" {
+	} else if viper.GetBool("no_auth") {
 		s.Echo.Use(noAuthMiddleware())
 	}
 	localKeystone := viper.GetBool("keystone.local")
 	if localKeystone {
-		k, err := keystone.Init(s.Echo, endpointStore, keystoneClient)
+		var k *keystone.Keystone
+		k, err = keystone.Init(s.Echo, endpointStore, keystoneClient)
 		if err != nil {
 			return errors.Wrap(err, "Failed to init local keystone server")
 		}
 		s.Keystone = k
+	}
+
+	if viper.GetBool("server.enable_vnc_replication") {
+		if err = s.startVNCReplicator(endpointStore, s.Keystone); err != nil {
+			return err
+		}
 	}
 
 	if viper.GetBool("server.enable_grpc") {
@@ -428,8 +430,9 @@ func (s *Server) serveDynamicProxy(endpointStore *apicommon.EndpointStore) {
 	s.Proxy.serve()
 }
 
-func (s *Server) startVNCReplicator(endpointStore *apicommon.EndpointStore) (err error) {
-	s.VNCReplicator, err = replication.New(endpointStore)
+func (s *Server) startVNCReplicator(
+	endpointStore *apicommon.EndpointStore, auth *keystone.Keystone) (err error) {
+	s.VNCReplicator, err = replication.New(endpointStore, auth)
 	if err != nil {
 		return err
 	}
