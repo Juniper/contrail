@@ -9,6 +9,7 @@ test_data:
     uuid: {{ cluster_name }}_uuid
     parent_type: global-system-config
     parent_uuid: beefbeef-beef-beef-beef-beefbeef0001
+    orchestrator: {{ orchestrator }}
   endpoint_{{ endpoint_name }}: &endpoint_{{ endpoint_name }}
     uuid: endpoint_{{ endpoint_name }}_uuid
     fq_name: ["default-global-system-config", {{ cluster_name }}, {{ endpoint_name }}]

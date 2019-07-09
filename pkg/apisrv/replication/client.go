@@ -7,19 +7,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/labstack/echo"
-	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-
 	"github.com/Juniper/contrail/pkg/apisrv/client"
-	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/keystone"
 	"github.com/Juniper/contrail/pkg/logutil"
 	"github.com/Juniper/contrail/pkg/models"
 	"github.com/Juniper/contrail/pkg/retry"
 	"github.com/Juniper/contrail/pkg/services"
 	"github.com/Juniper/contrail/pkg/services/baseservices"
+	"github.com/labstack/echo"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+
+	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
+	kscommon "github.com/Juniper/contrail/pkg/keystone"
 )
 
 const (
@@ -47,13 +48,16 @@ type vncAPIHandle struct {
 	clients       map[string]*vncAPI
 	endpointStore *apicommon.EndpointStore
 	log           *logrus.Entry
+	auth          *keystone.Keystone
 }
 
-func newVncAPIHandle(epStore *apicommon.EndpointStore) *vncAPIHandle {
+func newVncAPIHandle(
+	epStore *apicommon.EndpointStore, auth *keystone.Keystone) *vncAPIHandle {
 	handle := &vncAPIHandle{
 		clients:       make(map[string]*vncAPI),
 		endpointStore: epStore,
 		log:           logutil.NewLogger("vnc_replication_client"),
+		auth:          auth,
 	}
 	return handle
 }
@@ -78,7 +82,7 @@ func (h *vncAPIHandle) initClient() error {
 		Password: viper.GetString("client.password"),
 		Endpoint: viper.GetString("client.endpoint"),
 		AuthURL:  viper.GetString("keystone.authurl"),
-		Scope: keystone.NewScope(
+		Scope: kscommon.NewScope(
 			viper.GetString("client.domain_id"),
 			viper.GetString("client.domain_name"),
 			viper.GetString("client.project_id"),
@@ -152,7 +156,7 @@ func (h *vncAPIHandle) getAuthContext(clusterID string, apiClient *client.HTTP) 
 			ctx, apiClient.ID, apiClient.Password, defaultProjectName,
 			apiClient.Scope.Project.Domain)
 		if err == nil {
-			apiClient.Scope = keystone.NewScope(
+			apiClient.Scope = kscommon.NewScope(
 				defaultDomainID, defaultDomainName,
 				projectID, defaultProjectName)
 		}
@@ -176,7 +180,11 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 	endpoint := viper.GetString("client.endpoint")
 	inSecure := viper.GetBool("insecure")
 	authURL := viper.GetString("keystone.authurl")
-	if viper.GetString("auth_type") == basicAuth {
+	authType, err := h.auth.GetAuthType(ep.ParentUUID)
+	if err != nil {
+		h.log.Errorf("Not able to find auth type for cluster %s, %v", ep.ParentUUID, err)
+	}
+	if authType == basicAuth {
 		id = viper.GetString("client.id")
 		password = viper.GetString("client.password")
 		domainID = viper.GetString("client.domain_id")
@@ -187,7 +195,8 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 		domainID = defaultDomainID
 		domainName = defaultDomainName
 		// get keystone endpoint
-		authEndpoint, err := h.readAuthEndpoint(ep.ParentUUID)
+		var authEndpoint *apicommon.Endpoint
+		authEndpoint, err = h.readAuthEndpoint(ep.ParentUUID)
 		if err != nil {
 			h.log.Warnf("vncAPI client not prepared for %s, %v", ep.ParentUUID, err)
 		}
@@ -200,7 +209,7 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 		Password: password,
 		Endpoint: endpoint,
 		AuthURL:  authURL,
-		Scope: keystone.NewScope(
+		Scope: kscommon.NewScope(
 			domainID,
 			domainName,
 			projectID,
@@ -214,7 +223,7 @@ func (h *vncAPIHandle) createClient(ep *models.Endpoint) {
 		ctx = h.getAuthContext(ep.ParentUUID, c)
 	}
 
-	_, err := c.Login(ctx)
+	_, err = c.Login(ctx)
 	if err != nil {
 		h.log.Warnf("Login failed for: %s, %v", ep.ParentUUID, err)
 	}

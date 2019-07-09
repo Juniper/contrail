@@ -102,8 +102,7 @@ config:
     #        type: memory
     #        expire: 3600
     #    authurl: http://localhost:9091/v3
-    auth_type: no-auth
-    no_auth: false
+    no_auth: true
     insecure: true
     sync:
         enabled: false
