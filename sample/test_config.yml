@@ -51,7 +51,7 @@ server:
   notify_etcd: false
 
 auth_type:
-no_auth: false
+no_auth: true
 insecure: true
 
 keystone:

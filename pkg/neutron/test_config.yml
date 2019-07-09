@@ -50,8 +50,7 @@ server:
     - http://localhost:8082
   notify_etcd: false
 
-auth_type: no-auth
-no_auth: false
+no_auth: true
 insecure: true
 
 keystone:
