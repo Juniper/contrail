@@ -43,7 +43,7 @@ server:
     public: public
   notify_etcd: false
 
-auth_type: no-auth
+no_auth: false
 insecure: true
 
 sync:

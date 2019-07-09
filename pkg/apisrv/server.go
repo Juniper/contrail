@@ -188,7 +188,7 @@ func (s *Server) Init() (err error) {
 			return errors.Wrap(err, "failed to setup paths skipped from authentication")
 		}
 		s.Echo.Use(keystone.AuthMiddleware(keystoneClient, skipPaths, endpointStore))
-	} else if viper.GetString("auth_type") == "no-auth" {
+	} else if viper.GetBool("no_auth") {
 		s.Echo.Use(noAuthMiddleware())
 	}
 	localKeystone := viper.GetBool("keystone.local")

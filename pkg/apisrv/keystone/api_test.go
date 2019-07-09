@@ -20,7 +20,7 @@ import (
 	"github.com/Juniper/contrail/pkg/apisrv/client"
 	"github.com/Juniper/contrail/pkg/apisrv/keystone"
 	"github.com/Juniper/contrail/pkg/auth"
-	"github.com/Juniper/contrail/pkg/testutil"
+	"github.com/Juniper/contrail/pkg/format"
 	"github.com/Juniper/contrail/pkg/testutil/integration"
 
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
@@ -35,12 +35,41 @@ const (
 
 var server *integration.APIServer
 
-func mockServer(routes map[string]interface{}) *httptest.Server {
+func mockConfigServer(clusterName, clusterID string) *httptest.Server {
 	// Echo instance
 	e := echo.New()
 
 	// Routes
-	for route, handler := range routes {
+	for route, handler := range map[string]interface{}{
+		"/domains": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&keystone.VncDomainListResponse{
+					Domains: []*keystone.VncDomain{{
+						Domain: &keystone.ConfigDomain{
+							Name: clusterName,
+							UUID: clusterID,
+						},
+					},
+					},
+				},
+			)
+		}),
+		"/projects": echo.HandlerFunc(func(c echo.Context) error {
+			return c.JSON(http.StatusOK,
+				&keystone.VncProjectListResponse{
+					Projects: []*keystone.VncProject{{
+						Project: &keystone.ConfigProject{
+							Name:   clusterName,
+							UUID:   clusterID,
+							FQName: []string{clusterName},
+						},
+					},
+					},
+				},
+			)
+		}),
+	} {
+
 		e.GET(route, handler.(echo.HandlerFunc))
 	}
 	mockServer := httptest.NewServer(e)
@@ -227,7 +256,7 @@ func TestClusterLogin(t *testing.T) {
 
 func verifyBasicAuthDomains(
 	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
-	url string, clusterName string) bool {
+	url string, domains []string) bool {
 	for _, client := range testScenario.Clients {
 		domainList := keystone.DomainListResponse{}
 		_, err := client.Read(ctx, url, &domainList)
@@ -235,21 +264,17 @@ func verifyBasicAuthDomains(
 			fmt.Printf("Reading: %s, Response: %s", url, err)
 			return false
 		}
-		if len(domainList.Domains) != 1 {
+		if len(domainList.Domains) != len(domains) {
 			fmt.Printf("Unexpected domains: %v", domainList)
 			return false
 		}
-		ok := testutil.AssertEqual(
-			t, clusterName, domainList.Domains[0].Name,
-			fmt.Sprintf("Unexpected name in domain: %v", domainList))
-		if !ok {
-			return ok
-		}
-		ok = testutil.AssertEqual(
-			t, clusterName+"_uuid", domainList.Domains[0].ID,
-			fmt.Sprintf("Unexpected uuid in domain: %v", domainList))
-		if !ok {
-			return ok
+		for _, domain := range domainList.Domains {
+			ok := assert.True(
+				t, format.ContainsString(domains, domain.ID),
+				fmt.Sprintf("Unexpected domain: %v", domain))
+			if !ok {
+				return ok
+			}
 		}
 	}
 	return true
@@ -257,7 +282,7 @@ func verifyBasicAuthDomains(
 
 func verifyBasicAuthProjects(
 	ctx context.Context, t *testing.T, testScenario *integration.TestScenario,
-	url string, clusterName string) bool {
+	url string, projects []string) bool {
 	for _, client := range testScenario.Clients {
 		projectList := keystone.ProjectListResponse{}
 		_, err := client.Read(ctx, url, &projectList)
@@ -265,89 +290,84 @@ func verifyBasicAuthProjects(
 			fmt.Printf("Reading: %s, Response: %v", url, err)
 			return false
 		}
-		if len(projectList.Projects) != 1 {
+		if len(projectList.Projects) != len(projects) {
 			fmt.Printf("Unexpected projects: %v", projectList)
 			return false
 		}
-		ok := testutil.AssertEqual(
-			t, clusterName, projectList.Projects[0].Name,
-			fmt.Sprintf("Unexpected name in project: %v", projectList))
-		if !ok {
-			return ok
-		}
-		ok = testutil.AssertEqual(
-			t, clusterName+"_uuid", projectList.Projects[0].ID,
-			fmt.Sprintf("Unexpected uuid in project: %v", projectList))
-		if !ok {
-			return ok
-		}
-		ok = testutil.AssertEqual(
-			t, clusterName+"_uuid", projectList.Projects[0].ParentID,
-			fmt.Sprintf("Unexpected parent_id in project: %v", projectList))
-		if !ok {
-			return ok
+		for _, project := range projectList.Projects {
+			ok := assert.True(
+				t, format.ContainsString(projects, project.ID),
+				fmt.Sprintf("Unexpected project: %v", project))
+			if !ok {
+				return ok
+			}
 		}
 	}
 	return true
 }
-func TestBasicAuth(t *testing.T) {
+func TestMultiClusterAuth(t *testing.T) {
 	s := integration.NewRunningAPIServer(t, &integration.APIServerConfig{
 		RepoRootPath: "../../..",
-		AuthType:     "basic-auth",
 	})
 	defer s.CloseT(t)
 
-	clusterName := "clusterBasicAuth"
-	routes := map[string]interface{}{
-		"/domains": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&keystone.VncDomainListResponse{
-					Domains: []*keystone.VncDomain{{
-						Domain: &keystone.ConfigDomain{
-							Name: clusterName,
-							UUID: clusterName + "_uuid",
-						},
-					},
-					},
-				},
-			)
-		}),
-		"/projects": echo.HandlerFunc(func(c echo.Context) error {
-			return c.JSON(http.StatusOK,
-				&keystone.VncProjectListResponse{
-					Projects: []*keystone.VncProject{{
-						Project: &keystone.ConfigProject{
-							Name:   clusterName,
-							UUID:   clusterName + "_uuid",
-							FQName: []string{clusterName},
-						},
-					},
-					},
-				},
-			)
-		}),
+	clusterPrefix := t.Name() + "_cluster"
+	clusters := map[string]string{
+		clusterPrefix + "_openstack":  clusterPrefix + "_openstack_uuid",
+		clusterPrefix + "_kubernetes": clusterPrefix + "_kubernetes_uuid",
 	}
-	configService := mockServer(routes)
 
-	pContext := pongo2.Context{
-		"cluster_name":  clusterName,
-		"endpoint_name": clusterName + "_config",
-		"private_url":   configService.URL,
-		"public_url":    configService.URL,
+	var err error
+	var ts *integration.TestScenario
+	// Create clusterA, clusterB and their config endpoint
+	for clusterName, clusterID := range clusters {
+		configService := mockConfigServer(clusterName, clusterID)
+		pContext := pongo2.Context{
+			"cluster_name":  clusterName,
+			"endpoint_name": clusterName + "_config",
+			"private_url":   configService.URL,
+			"public_url":    configService.URL,
+			"orchestrator":  "openstack",
+		}
+		if clusterName == clusterPrefix+"_kubernetes" {
+			pContext["orchestrator"] = "kubernetes"
+		} else {
+			// mock keystone for cluster with openstack orchestrator
+			keystoneAuthURL := viper.GetString("keystone.authurl")
+			ksPublic := integration.MockServerWithKeystoneTestUser(
+				"127.0.0.1:35357", keystoneAuthURL, defaultUser, defaultPassword)
+			defer ksPublic.Close()
+			ksPrivate := integration.MockServerWithKeystoneTestUser(
+				"127.0.0.1:5000", keystoneAuthURL, defaultUser, defaultPassword)
+			defer ksPrivate.Close()
+		}
+		ts, err = integration.LoadTest(testBasicAuthFile, pContext)
+		require.NoError(t, err, "failed to load endpoint create test data")
+		cleanup := integration.RunDirtyTestScenario(t, ts, server)
+		defer cleanup()
 	}
-	ts, err := integration.LoadTest(testBasicAuthFile, pContext)
-	assert.NoError(t, err, "failed to load endpoint create test data")
-	cleanup := integration.RunDirtyTestScenario(t, ts, server)
-	defer cleanup()
 
 	server.ForceProxyUpdate()
 
-	ctx := context.Background()
-	url := "/keystone/v3/auth/projects"
-	ok := verifyBasicAuthProjects(ctx, t, ts, url, clusterName)
-	assert.True(t, ok, "failed to get project list from config %s", url)
+	// verify basic auth
+	for clusterName, clusterID := range clusters {
+		var projects []string
+		var domains []string
+		if clusterName == clusterPrefix+"_kubernetes" {
+			projects = []string{clusterName + "_uuid"}
+			domains = []string{clusterName + "_uuid"}
+		} else {
+			projects = []string{
+				integration.AdminProjectID, integration.NeutronProjectID}
+			domains = []string{integration.DefaultDomainID}
+		}
+		ctx := auth.WithXClusterID(context.Background(), clusterID)
+		url := "/keystone/v3/auth/projects"
+		ok := verifyBasicAuthProjects(ctx, t, ts, url, projects)
+		assert.True(t, ok, "failed to get project list from cluster: %s", clusterName)
 
-	url = "/keystone/v3/auth/domains"
-	ok = verifyBasicAuthDomains(ctx, t, ts, url, clusterName)
-	assert.True(t, ok, "failed to get domain list from config %s", url)
+		url = "/keystone/v3/auth/domains"
+		ok = verifyBasicAuthDomains(ctx, t, ts, url, domains)
+		assert.True(t, ok, "failed to get domain list from cluster: %s", clusterName)
+	}
 }

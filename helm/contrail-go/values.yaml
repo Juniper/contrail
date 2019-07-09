@@ -132,8 +132,7 @@ config:
     #        expire: 3600
     #    authurl: http://localhost:9091/v3
 
-    # disable authentication with auth_type set to no-auth and comment out keystone configuraion.
-    auth_type: no-auth
+    no_auth: false
     insecure: true
 
     sync:
