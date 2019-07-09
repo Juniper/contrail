@@ -35,3 +35,54 @@ proxy:
     - http://localhost:8082
     /telemetry:
     - http://localhost:8081
+  notify_etcd: false
+
+no_auth: true
+insecure: true
+
+sync:
+  enabled: true
+  storage: json
+  dump: true
+
+client:
+  id: alice
+  password: alice_password
+  project_id: admin
+  domain_id: default
+  schema_root: /public
+  endpoint: http://localhost:9091
+
+agent:
+  enabled: false
+
+compilation:
+  enabled: true
+  plugin_directory: 'etc/plugins/'
+  number_of_workers: 4
+  max_job_queue_len: 5
+  msg_queue_lock_time: 30
+  msg_index_string: 'MsgIndex'
+  read_lock_string: "MsgReadLock"
+  master_election: true
+  plugin:
+    handlers:
+      create_handler: 'HandleCreate'
+      update_handler: 'HandleUpdate'
+      delete_handler: 'HandleDelete'
+
+cache:
+  enabled: true
+  timeout: 10s
+  max_history: 100000
+  cassandra:
+    enabled: false
+  etcd:
+    enabled: true
+
+replication:
+  cassandra:
+    enabled: false
+  amqp:
+    enabled: false
+>>>>>>> b09eb2cf... Determine config endpoint and authtype dynamically

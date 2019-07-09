@@ -23,10 +23,9 @@ import (
 )
 
 const (
-	defaultAuthType = "keystone"
-	dbUser          = "root"
-	dbPassword      = "contrail123"
-	dbName          = "contrail_test"
+	dbUser     = "root"
+	dbPassword = "contrail123"
+	dbName     = "contrail_test"
 )
 
 // Keystone credentials.
@@ -69,7 +68,6 @@ type APIServerConfig struct {
 	EnableEtcdNotifier bool
 	DisableLogAPI      bool
 	EnableRBAC         bool
-	AuthType           string
 }
 
 // NewRunningAPIServer creates new running test API Server for testing purposes.
@@ -112,15 +110,11 @@ func NewRunningServer(c *APIServerConfig) (*APIServer, error) {
 }
 
 func setViperConfig(c *APIServerConfig) {
-	if c.AuthType == "" {
-		c.AuthType = defaultAuthType
-	}
 	if c.DBDriver == "" {
 		c.DBDriver = basedb.DriverPostgreSQL
 	}
 	setViper(map[string]interface{}{
 		"aaa_mode":                    rbacConfig(c.EnableRBAC),
-		"auth_type":                   c.AuthType,
 		"database.type":               c.DBDriver,
 		"database.host":               "localhost",
 		"database.user":               dbUser,

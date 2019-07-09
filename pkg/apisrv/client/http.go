@@ -19,6 +19,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
@@ -68,6 +69,23 @@ func NewHTTP(c *HTTPConfig) *HTTP {
 		},
 		HTTPConfig: *c,
 	}
+}
+
+// NewHTTPByViper makes API Server HTTP client with viper config
+func NewHTTPByViper() *HTTP {
+	return NewHTTP(&HTTPConfig{
+		ID:       viper.GetString("client.id"),
+		Password: viper.GetString("client.password"),
+		Endpoint: viper.GetString("client.endpoint"),
+		AuthURL:  viper.GetString("keystone.authurl"),
+		Scope: keystone.NewScope(
+			viper.GetString("client.domain_id"),
+			viper.GetString("client.domain_name"),
+			viper.GetString("client.project_id"),
+			viper.GetString("client.project_name"),
+		),
+		Insecure: viper.GetBool("insecure"),
+	})
 }
 
 func transport(endpoint string, insecure bool) *http.Transport {

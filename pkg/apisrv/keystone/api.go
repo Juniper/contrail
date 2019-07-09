@@ -1,16 +1,18 @@
 package keystone
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/Juniper/contrail/pkg/apisrv/client"
+	"github.com/Juniper/contrail/pkg/config"
+	"github.com/Juniper/contrail/pkg/services"
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-
-	"github.com/Juniper/contrail/pkg/config"
 
 	apicommon "github.com/Juniper/contrail/pkg/apisrv/common"
 	kscommon "github.com/Juniper/contrail/pkg/keystone"
@@ -22,6 +24,9 @@ const (
 
 	configService = "config"
 	xClusterIDKey = "X-Cluster-ID"
+	basicAuth     = "basic-auth"
+	openstack     = "openstack"
+	keystoneAuth  = "keystone"
 )
 
 //Keystone is used to represents Keystone Controller.
@@ -30,6 +35,7 @@ type Keystone struct {
 	Assignment Assignment
 	Endpoints  *apicommon.EndpointStore
 	Client     *Client
+	APIClient  *client.HTTP
 
 	staticAssignment *StaticAssignment
 }
@@ -41,6 +47,7 @@ func Init(e *echo.Echo, endpoints *apicommon.EndpointStore,
 	keystone := &Keystone{
 		Endpoints: endpoints,
 		Client:    keystoneClient,
+		APIClient: client.NewHTTPByViper(),
 	}
 	assignmentType := viper.GetString("keystone.assignment.type")
 	if assignmentType == "static" {
@@ -99,36 +106,50 @@ func filterProject(user *kscommon.User, scope *kscommon.Scope) (*kscommon.Projec
 	return nil, nil
 }
 
-func getVncConfigEndpoint(endpoints *apicommon.EndpointStore) (configEndpoint string, err error) {
-	endpoint, err := endpoints.GetEndpoint(configService)
-	if endpoint != nil {
-		return endpoint.URL, err
+// GetAuthType from the cluster configuration
+func (keystone *Keystone) GetAuthType(clusterID string) (authType string, err error) {
+	resp, err := keystone.APIClient.GetContrailCluster(
+		context.Background(),
+		&services.GetContrailClusterRequest{
+			ID: clusterID,
+		})
+	if err != nil {
+		return "", err
 	}
-	return "", nil
+
+	authType = keystoneAuth
+	if resp.GetContrailCluster().GetOrchestrator() != openstack {
+		authType = basicAuth
+	}
+	return authType, nil
 }
 
-func (keystone *Keystone) setAssignment() (configEndpoint string, err error) {
-	authType := viper.GetString("auth_type")
-	if authType != "basic-auth" {
+func (keystone *Keystone) setAssignment(clusterID string) (configEndpoint string, err error) {
+	if clusterID == "" {
 		return "", nil
 	}
-	configEndpoint, err = getVncConfigEndpoint(keystone.Endpoints)
+	authType, err := keystone.GetAuthType(clusterID)
+	if err != nil {
+		logrus.Errorf("Not able to find auth type for cluster %s, %v", clusterID, err)
+		return "", err
+	}
+	if authType != basicAuth {
+		return "", nil
+	}
+	e := keystone.Endpoints.GetEndpoint(clusterID, configService)
+	if e == nil {
+		keystone.Assignment = keystone.staticAssignment
+		return "", nil
+	}
+	configEndpoint = e.URL
+	apiAssignment := &VNCAPIAssignment{}
+	err = apiAssignment.Init(
+		configEndpoint, keystone.staticAssignment.ListUsers())
 	if err != nil {
 		logrus.Error(err)
 		return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	if configEndpoint != "" {
-		apiAssignment := &VNCAPIAssignment{}
-		err := apiAssignment.Init(
-			configEndpoint, keystone.staticAssignment.ListUsers())
-		if err != nil {
-			logrus.Error(err)
-			return configEndpoint, echo.NewHTTPError(http.StatusInternalServerError, err)
-		}
-		keystone.Assignment = apiAssignment
-	} else {
-		keystone.Assignment = keystone.staticAssignment
-	}
+	keystone.Assignment = apiAssignment
 	return configEndpoint, nil
 }
 
@@ -147,8 +168,9 @@ func (keystone *Keystone) validateToken(r *http.Request) (*kscommon.Token, error
 
 //GetProjectAPI is an API handler to list projects.
 func (keystone *Keystone) GetProjectAPI(c echo.Context) error {
-	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoint := getKeystoneEndpoint(
+		c.Request().Header.Get(xClusterIDKey),
+		keystone.Endpoints)
 
 	id := c.Param("id")
 	if keystoneEndpoint != nil {
@@ -186,7 +208,7 @@ func (keystone *Keystone) ListDomainsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	_, err = keystone.setAssignment()
+	_, err = keystone.setAssignment(clusterID)
 	if err != nil {
 		return err
 	}
@@ -210,7 +232,7 @@ func (keystone *Keystone) ListProjectsAPI(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	configEndpoint, err := keystone.setAssignment()
+	configEndpoint, err := keystone.setAssignment(clusterID)
 	if err != nil {
 		return err
 	}
@@ -261,8 +283,8 @@ func (keystone *Keystone) newLocalAuthRequest() kscommon.AuthRequest {
 
 func (keystone *Keystone) fetchServerTokenWithClusterToken(
 	c echo.Context, identity *kscommon.Identity) error {
-	clusterID := identity.Cluster.ID
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoint := getKeystoneEndpoint(
+		identity.Cluster.ID, keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		tokenURL := keystoneEndpoint.URL + "/v3/auth/tokens"
 		request, err := http.NewRequest(echo.GET, tokenURL, nil)
@@ -331,8 +353,9 @@ func (keystone *Keystone) CreateTokenAPI(c echo.Context) error {
 	if identity.Cluster != nil {
 		return keystone.fetchServerTokenWithClusterToken(c, identity)
 	}
-	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoint := getKeystoneEndpoint(
+		c.Request().Header.Get(xClusterIDKey),
+		keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		return keystone.fetchClusterToken(c, identity, authRequest, keystoneEndpoint)
 	}
@@ -355,10 +378,6 @@ func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthR
 		}
 		user = token.User
 	} else {
-		_, err = keystone.setAssignment()
-		if err != nil {
-			return err
-		}
 		user, err = keystone.Assignment.FetchUser(
 			identity.Password.User.Name,
 			identity.Password.User.Password,
@@ -388,8 +407,9 @@ func (keystone *Keystone) createToken(c echo.Context, authRequest kscommon.AuthR
 
 //ValidateTokenAPI is an API token for validating Token.
 func (keystone *Keystone) ValidateTokenAPI(c echo.Context) error {
-	clusterID := c.Request().Header.Get(xClusterIDKey)
-	keystoneEndpoint := getKeystoneEndpoint(clusterID, keystone.Endpoints)
+	keystoneEndpoint := getKeystoneEndpoint(
+		c.Request().Header.Get(xClusterIDKey),
+		keystone.Endpoints)
 	if keystoneEndpoint != nil {
 		keystone.Client.SetAuthURL(keystoneEndpoint.URL)
 		return keystone.Client.ValidateToken(c)
