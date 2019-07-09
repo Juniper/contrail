@@ -32,7 +32,6 @@ const (
 	defaultContrailCommonTemplate  = "contrail_common.tmpl"
 	defaultGatewayCommonTemplate   = "gateway_common.tmpl"
 	defaultTORCommonTemplate       = "tor_common.tmpl"
-	defaultTORScriptTemplate       = "tor.sh.tmpl"
 	defaultOpenstackConfigTemplate = "openstack_config.tmpl"
 	defaultAuthRegistryTemplate    = "authorized_registries.tmpl"
 
@@ -43,7 +42,6 @@ const (
 	defaultTORCommonFile      = "ansible/tor/common.yml"
 	defaultGatewayCommonFile  = "ansible/gateway/common.yml"
 	defaultMCInventoryFile    = "inventories/inventory.yml"
-	defaultMCTORScriptFile    = "tor.sh"
 	defaultTopologyFile       = "topology.yml"
 	defaultSecretFile         = "secret.yml"
 	defaultSSHAgentFile       = "ssh-agent-config.yml"
@@ -444,7 +442,7 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 			return err
 		}
 		if torExists {
-			if err := m.runTORScript(); err != nil {
+			if err := m.playTORConfig(args); err != nil {
 				return err
 			}
 		}
@@ -519,7 +517,7 @@ func (m *multiCloudProvisioner) mcPlayBook() error {
 			return err
 		}
 		if torExists {
-			if err := m.runTORScript(); err != nil {
+			if err := m.playTORConfig(args); err != nil {
 				return err
 			}
 		}
@@ -1011,23 +1009,6 @@ func (m *multiCloudProvisioner) appendOpenStackConfigToInventory(destination str
 	return nil
 }
 
-func createTORScript(destination string, torTemplate string,
-	inventoryFile string, torPlayFile string) error {
-
-	context := pongo2.Context{
-		"inventoryFile": inventoryFile,
-		"torPlayFile":   torPlayFile,
-	}
-
-	content, err := template.Apply(torTemplate, context)
-	if err != nil {
-		return err
-	}
-
-	return fileutil.WriteToFile(destination, content, defaultWriteExecFilePerm)
-
-}
-
 func (m *multiCloudProvisioner) checkIfTORExists() (bool, error) {
 
 	_, pvtCloudID, err := m.getPubPvtCloudID()
@@ -1102,25 +1083,9 @@ func getTagOfPvtCloud(ctx context.Context,
 	return nil, fmt.Errorf("tag not found in cloud %s", cloudID)
 }
 
-func (m *multiCloudProvisioner) runTORScript() error {
-
-	torScriptExecFile := m.getTorScriptFile(m.workDir)
-	err := createTORScript(torScriptExecFile, m.getTORScriptTemplate(),
-		m.getMCInventoryFile(m.workDir), defaultMCTORPlay)
-	if err != nil {
-		return err
-	}
-	m.Log.Debug("created tor script")
-
-	args := []string{}
-	workDir := m.getMCDeployerRepoDir()
-	m.Log.Debugf("Executing command: %s", torScriptExecFile)
-
-	if m.cluster.config.Test {
-		return cloud.TestCmdHelper(torScriptExecFile, args, m.workDir, testTemplate)
-	}
-
-	return osutil.ExecCmdAndWait(m.Reporter, torScriptExecFile, args, workDir)
+func (m *multiCloudProvisioner) playTORConfig(ansibleArgs []string) error {
+	ansibleArgs = append(ansibleArgs, defaultMCTORPlay)
+	return m.play(ansibleArgs)
 
 }
 
@@ -1138,10 +1103,6 @@ func (m *multiCloudProvisioner) getGatewayCommonTemplate() string {
 
 func (m *multiCloudProvisioner) getTORCommonTemplate() string {
 	return filepath.Join(m.getTemplateRoot(), defaultTORCommonTemplate)
-}
-
-func (m *multiCloudProvisioner) getTORScriptTemplate() string {
-	return filepath.Join(m.getTemplateRoot(), defaultTORScriptTemplate)
 }
 
 func (m *multiCloudProvisioner) getOpenstackConfigTemplate() string {
@@ -1162,10 +1123,6 @@ func (m *multiCloudProvisioner) getTFStateFile() string {
 
 func (m *multiCloudProvisioner) getMCInventoryFile(workDir string) string {
 	return filepath.Join(workDir, defaultMCInventoryFile)
-}
-
-func (m *multiCloudProvisioner) getTorScriptFile(workDir string) string {
-	return filepath.Join(workDir, defaultMCTORScriptFile)
 }
 
 // use topology constant from cloud pkg
