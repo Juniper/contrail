@@ -461,12 +461,8 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 			"--skip-tags=install_docker"}
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
-		imageDir := a.clusterData.GetAppformixClusterInfo().AppformixImageDir
-		if _, err := os.Stat(imageDir); os.IsNotExist(err) {
-			a.Log.Errorf("imageDir %s does not exist, %s", imageDir, err)
-		}
-		srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
-		err := a.untar(imageDir+srcFile, imageDir)
+		srcFile := "appformix-" + AppformixVersion + ".tar.gz"
+		err := a.untar(defaultAppformixImageDir+srcFile, defaultAppformixImageDir)
 		if err != nil {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
