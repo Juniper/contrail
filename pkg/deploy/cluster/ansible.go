@@ -46,6 +46,47 @@ type contrailAnsibleDeployer struct {
 	ansibleClient *ansible.CLIClient
 }
 
+func (a *contrailAnsibleDeployer) installVenv(installDir string) error {
+	a.Log.Info("installing virtualenv for ", installDir)
+
+	args := []string{"install",  "virtualenv==16.4.3"}
+	err := osutil.ExecCmdAndWait(a.Reporter, "pip", args, "/usr/bin/")
+	if err != nil {
+		a.Log.Errorf("Error: pip install virtualenv: %s", err)
+		return err
+	}
+	a.Log.Info("pip install virtualenv successful")
+
+	args = []string{"-m", "virtualenv",
+	                defaultAppformixAnsibleRepoDir +
+			"appformix-ansible-deployer/" +
+			installDir +
+			"/venv"}
+	err = osutil.ExecCmdAndWait(a.Reporter, "python", args, "/usr/bin")
+	if err != nil {
+		a.Log.Errorf("Error: virtualenv creation: %s", err)
+		return err
+	}
+	a.Log.Info("virtualenv created")
+
+	args = []string{"install",
+		        "-r",
+	                defaultAppformixAnsibleRepoDir +
+			"appformix-ansible-deployer/" +
+			installDir +
+			"/requirements.txt"}
+	err = osutil.ExecCmdAndWait(a.Reporter, 
+		    defaultAppformixAnsibleRepoDir + "appformix-ansible-deployer/" + installDir + "/venv/bin/pip",
+		    args, "")
+	if err != nil {
+		a.Log.Errorf("Error: pip install requirements.txt: %s", err)
+		return err
+	}
+	a.Log.Info("pip install requirements.txt successful")
+
+	return nil
+}
+
 // nolint: gocyclo
 func (a *contrailAnsibleDeployer) untar(src, dst string) error {
 	f, err := os.Open(src)
@@ -441,6 +482,11 @@ func (a *contrailAnsibleDeployer) xflowVenvDir() string {
 
 func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 	if a.clusterData.GetAppformixClusterInfo() != nil {
+		err := a.installVenv("appformix")
+		if err != nil {
+			a.Log.Errorf("Error in installVenv: %s", err)
+			return err
+		}
 		AppformixUsername := a.clusterData.GetAppformixClusterInfo().AppformixUsername
 		AppformixPassword := a.clusterData.GetAppformixClusterInfo().AppformixPassword
 		if AppformixUsername != "" {
@@ -462,7 +508,7 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
 		srcFile := "appformix-" + AppformixVersion + ".tar.gz"
-		err := a.untar(defaultAppformixImageDir+srcFile, defaultAppformixImageDir)
+		err = a.untar(defaultAppformixImageDir+srcFile, defaultAppformixImageDir)
 		if err != nil {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
@@ -474,6 +520,11 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 
 func (a *contrailAnsibleDeployer) playXflowProvision() error {
 	if a.clusterData.GetXflowData() != nil && a.clusterData.GetXflowData().ClusterInfo != nil {
+		err := a.installVenv("xflow")
+		if err != nil {
+			a.Log.Errorf("Error in installVenv: %s", err)
+			return err
+		}
 		venvDir := a.xflowVenvDir()
 
 		xflowDir := a.getXflowDeployerDir()
@@ -510,6 +561,10 @@ func (a *contrailAnsibleDeployer) playBook() error {
 		sudoArg := "-e ansible_sudo_pass=" + a.cluster.config.AnsibleSudoPass
 		args = append(args, sudoArg)
 	}
+	if err := a.playAppformixProvision(); err != nil {
+		return err
+	}
+	return nil
 
 	switch a.clusterData.ClusterInfo.ProvisioningAction {
 	case provisionProvisioningAction, "":
