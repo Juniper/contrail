@@ -46,6 +46,47 @@ type contrailAnsibleDeployer struct {
 	deployCluster
 }
 
+func (a *contrailAnsibleDeployer) installVenv(installDir string) error {
+	a.Log.Info("installing virtualenv for ", installDir)
+
+	args := []string{"install",  "virtualenv==16.4.3"}
+	err := osutil.ExecCmdAndWait(a.Reporter, "pip", args, "/usr/bin/")
+	if err != nil {
+		a.Log.Errorf("Error: pip install virtualenv: %s", err)
+		return err
+	}
+	a.Log.Info("pip install virtualenv successful")
+
+	args = []string{"-m", "virtualenv",
+	                defaultAppformixAnsibleRepoDir +
+			"appformix-ansible-deployer/" +
+			installDir +
+			"/venv"}
+	err = osutil.ExecCmdAndWait(a.Reporter, "python", args, "/usr/bin")
+	if err != nil {
+		a.Log.Errorf("Error: virtualenv creation: %s", err)
+		return err
+	}
+	a.Log.Info("virtualenv created")
+
+	args = []string{"install",
+		        "-r",
+	                defaultAppformixAnsibleRepoDir +
+			"appformix-ansible-deployer/" +
+			installDir +
+			"/requirements.txt"}
+	err = osutil.ExecCmdAndWait(a.Reporter,
+		    defaultAppformixAnsibleRepoDir + "appformix-ansible-deployer/" + installDir + "/venv/bin/pip",
+		    args, "")
+	if err != nil {
+		a.Log.Errorf("Error: pip install requirements.txt: %s", err)
+		return err
+	}
+	a.Log.Info("pip install requirements.txt successful")
+
+	return nil
+}
+
 // nolint: gocyclo
 func (a *contrailAnsibleDeployer) untar(src, dst string) error {
 	f, err := os.Open(src)
@@ -506,6 +547,11 @@ func (a *contrailAnsibleDeployer) xflowVenvDir() string {
 
 func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 	if a.clusterData.GetAppformixClusterInfo() != nil {
+		err := a.installVenv("appformix")
+		if err != nil {
+			a.Log.Errorf("Error in installVenv: %s", err)
+			return err
+		}
 		AppformixUsername := a.clusterData.GetAppformixClusterInfo().AppformixUsername
 		AppformixPassword := a.clusterData.GetAppformixClusterInfo().AppformixPassword
 		if AppformixUsername != "" {
@@ -526,12 +572,17 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 			"--skip-tags=install_docker"}
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
+<<<<<<< HEAD   (ec3b68 Removing the use of multicloud_tor_config virtual)
 		imageDir := a.clusterData.GetAppformixClusterInfo().AppformixImageDir
 		if _, err := os.Stat(imageDir); os.IsNotExist(err) {
 			a.Log.Errorf("imageDir %s does not exist, %s", imageDir, err)
 		}
 		srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
 		err := a.untar(imageDir+srcFile, imageDir)
+=======
+		srcFile := "appformix-" + AppformixVersion + ".tar.gz"
+		err = a.untar(defaultAppformixImageDir+srcFile, defaultAppformixImageDir)
+>>>>>>> CHANGE (99e701 Install virtualenv at runtime inside docker)
 		if err != nil {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
@@ -543,6 +594,11 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 
 func (a *contrailAnsibleDeployer) playXflowProvision() error {
 	if a.clusterData.GetXflowData() != nil && a.clusterData.GetXflowData().ClusterInfo != nil {
+		err := a.installVenv("xflow")
+		if err != nil {
+			a.Log.Errorf("Error in installVenv: %s", err)
+			return err
+		}
 		venvDir := a.xflowVenvDir()
 
 		xflowDir := a.getXflowDeployerDir()
