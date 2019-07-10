@@ -79,6 +79,17 @@ func (c *CLIClient) Play(repositoryPath string, ansibleArgs []string, virtualenv
 	return nil
 }
 
+// GetWorkingDirectory returns working directory.
+func (c *CLIClient) GetWorkingDirectory() string {
+	return c.workingDirectory
+}
+
+// IsTest returns true for testing instance.
+// TODO: move test logic to separate Mock type and use dependency injection using ansible.Player interface.
+func (c *CLIClient) IsTest() bool {
+	return c.isTestInstance
+}
+
 func prepareCmd(repositoryPath string, ansibleArgs []string, virtualenvPath string) (*exec.Cmd, error) {
 	var cmd *exec.Cmd
 	if virtualenvPath != "" {
@@ -110,4 +121,14 @@ func (c *CLIClient) mockPlay(ansibleArgs []string) error {
 		content,
 		filePermRWOnly,
 	)
+}
+
+// PlayViaDeployer runs Python CLI with passed arguments.
+func (c *CLIClient) PlayViaDeployer(args ...string) error {
+	result, err := exec.Command("deployer", args...).CombinedOutput()
+	if err != nil {
+		// m.Log.Errorf("MultiCloud CLI deployer failed: %s, output: %s", err, string(result))
+		return errors.Wrap(err, string(result))
+	}
+	return nil
 }
