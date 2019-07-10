@@ -34,6 +34,24 @@
       "revId": "e0d050966a62be49fe5a471cd5a60716d1ddbbb6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6ed32446_7907c876",
+        "filename": "Gopkg.toml",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-10T11:18:38Z",
+      "side": 0,
+      "message": "Ack",
+      "parentUuid": "d2e7b9c5_c0f8a34d",
+      "revId": "e0d050966a62be49fe5a471cd5a60716d1ddbbb6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
