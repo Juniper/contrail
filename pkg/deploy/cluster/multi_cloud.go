@@ -70,8 +70,7 @@ const (
 	defaultMCGatewayCleanup      = "ansible/gateway/playbooks/cleanup.yml"
 	testTemplate                 = "./../../cloud/test_data/test_cmd.tmpl"
 
-	openstack            = "openstack"
-	setupRoutesPlayRetry = 3
+	openstack = "openstack"
 
 	addCloud    = "ADD_CLOUD"
 	updateCloud = "UPDATE_CLOUD"
@@ -106,7 +105,6 @@ type PubKeyConfig struct {
 
 // nolint: gocyclo
 func (m *multiCloudProvisioner) Deploy() error {
-
 	m.updateMCWorkDir()
 	switch m.clusterData.ClusterInfo.ProvisioningAction {
 	case addCloud:
@@ -218,23 +216,50 @@ func (m *multiCloudProvisioner) createMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir, addCloud)
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err = m.multiCloudCLIRunAll(); err != nil {
 		return err
 	}
 
-	err = m.mcPlayBook()
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-		return err
-	}
 	status[statusField] = statusUpdated
 	if m.action == createAction {
 		status[statusField] = statusCreated
 	}
 	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	return nil
+}
+
+func (m *multiCloudProvisioner) multiCloudCLIRunAll() error {
+	topology := m.getClusterTopoFile(m.workDir)
+	secret := m.getClusterSecretFile(m.workDir)
+
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI("deployer all run --topology " + topology + " --secret " + secret + " --retry 10")
+	}
+
+	result, err := exec.Command(
+		"deployer", "all", "run", "--topology",	topology, "--secret", secret,  "--retry", "10",
+	).CombinedOutput()
+	if err != nil {
+		m.Log.Errorf("MultiCloud CLI deployer failed: %s, output: %s", err, string(result))
+		return errors.Wrap(err, string(result))
+	}
+	return nil
+}
+
+func (m *multiCloudProvisioner) mockCLI(cliCommand string) error {
+	content, err := template.Apply("./test_data/test_mc_cli_command.tmpl", pongo2.Context{
+		"command": cliCommand,
+	})
+	if err != nil {
+		return err
+	}
+
+	return fileutil.AppendToFile(
+		filepath.Join(m.contrailAnsibleDeployer.ansibleClient.GetWorkingDirectory(), "executed_ansible_playbook.yml"),
+		content,
+		// TODO: use const
+		0600,
+	)
 }
 
 func (m *multiCloudProvisioner) updateMCCluster() error {
@@ -245,13 +270,12 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	status[statusField] = statusUpdateFailed
 
-	err := m.verifyCloudStatus()
-	if err != nil {
+	if err := m.verifyCloudStatus(); err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
 	}
 
-	err = m.createFiles(m.workDir)
+	err := m.createFiles(m.workDir)
 	if err != nil {
 		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 		return err
@@ -263,24 +287,17 @@ func (m *multiCloudProvisioner) updateMCCluster() error {
 		return err
 	}
 
-	err = m.runGenerateInventory(m.workDir, updateCloud)
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	// TODO: Ensure playMCSetupControllerGWRoutes ordering isn't important
+	if err = m.multiCloudCLIRunAll(); err != nil {
 		return err
 	}
 
-	err = m.mcPlayBook()
-	if err != nil {
-		m.Reporter.ReportStatus(context.Background(), status, defaultResource)
-		return err
-	}
 	status[statusField] = statusUpdated
 	m.Reporter.ReportStatus(context.Background(), status, defaultResource)
 	return nil
 }
 
 func (m *multiCloudProvisioner) deleteMCCluster() error {
-
 	// best effort cleaning of nodes
 	// need to export ssh-agent variables before killing the process
 	err := m.manageSSHAgent(m.workDir, updateAction)
@@ -288,9 +305,11 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 		return err
 	}
 
-	// nolint: errcheck
-	_ = m.mcPlayBook()
+	if err = m.multiCloudCLICleanup(); err != nil {
+		return err
+	}
 
+	// TODO: Check this action.
 	if m.action != deleteAction {
 		err = m.removeCloudRefFromCluster()
 		if err != nil {
@@ -302,7 +321,23 @@ func (m *multiCloudProvisioner) deleteMCCluster() error {
 	// nolint: errcheck
 	defer os.RemoveAll(m.workDir)
 	return nil
+}
 
+func (m *multiCloudProvisioner) multiCloudCLICleanup() error {
+	invPath := m.getMCInventoryFile(m.workDir)
+
+	if m.contrailAnsibleDeployer.ansibleClient.IsTest() {
+		return m.mockCLI(fmt.Sprintf("deployer all clean --inventory %v --retry %v", invPath, 5))
+	}
+
+	result, err := exec.Command(
+		"deployer", "all", "clean", "--inventory",	invPath, "--retry", "5",
+	).CombinedOutput()
+	if err != nil {
+		m.Log.Errorf("MultiCloud CLI deployer failed: %s, output: %s", err, string(result))
+		return errors.Wrap(err, string(result))
+	}
+	return nil
 }
 
 func (m *multiCloudProvisioner) isMCDeleteRequest() bool {
@@ -355,8 +390,7 @@ func (m *multiCloudProvisioner) compareClusterTopologyFile() (bool, error) {
 	defer os.RemoveAll(tmpDir)
 	m.Log.Debugf("Creating temperory topology at dir %s", tmpDir)
 
-	err = m.createClusterTopologyFile(tmpDir)
-	if err != nil {
+	if err := m.createClusterTopologyFile(tmpDir); err != nil {
 		return false, err
 	}
 
@@ -372,9 +406,7 @@ func (m *multiCloudProvisioner) compareClusterTopologyFile() (bool, error) {
 	return bytes.Equal(oldTopology, newTopology), nil
 }
 
-func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
-	cloudAction string) error {
-
+func (m *multiCloudProvisioner) runGenerateInventory(workDir string, cloudAction string) error {
 	cmd := cloud.GetGenInventoryCmd(cloud.GetMultiCloudRepodir())
 	var args []string
 
@@ -400,8 +432,7 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
 		return cloud.TestCmdHelper(cmd, args, workDir, testTemplate)
 	}
 
-	err := osutil.ExecCmdAndWait(m.Reporter, cmd, args, workDir)
-	if err != nil {
+	if err := osutil.ExecCmdAndWait(m.Reporter, cmd, args, workDir); err != nil {
 		return err
 	}
 
@@ -419,184 +450,26 @@ func (m *multiCloudProvisioner) runGenerateInventory(workDir string,
 	return nil
 }
 
-// nolint: gocyclo
-func (m *multiCloudProvisioner) mcPlayBook() error {
-	args := []string{"-i", m.getMCInventoryFile(m.workDir)}
-	if m.cluster.config.AnsibleSudoPass != "" {
-		sudoArg := "-e ansible_sudo_pass=" + m.cluster.config.AnsibleSudoPass
-		args = append(args, sudoArg)
-	}
-
-	switch m.clusterData.ClusterInfo.ProvisioningAction {
-	case addCloud:
-		if err := m.playDeployMCGW(args); err != nil {
-			return err
-		}
-		if err := m.playMCInstancesConfig(args); err != nil {
-			return err
-		}
-
-		torExists, err := m.checkIfTORExists()
-		if err != nil {
-			return err
-		}
-		if torExists {
-			if err := m.playTORConfig(args); err != nil {
-				return err
-			}
-		}
-
-		k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
-			orchestratorKubernetes))
-		if err := m.playMCK8SProvision(k8sArgs); err != nil {
-			return err
-		}
-
-		contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
-		skipRoles := []string{"vrouter"}
-		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
-			return err
-		}
-
-		skipRoles = []string{"config_database", "config,control", "webui",
-			"analytics", "analytics_database", "k8s"}
-		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
-			return err
-		}
-
-		for i := 0; i < setupRoutesPlayRetry; i++ {
-			m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
-			if err := m.playMCSetupControllerGWRoutes(args); err != nil {
-				if i == setupRoutesPlayRetry-1 {
-					return err
-				}
-				continue
-			} else {
-				break
-			}
-		}
-		for i := 0; i < setupRoutesPlayRetry; i++ {
-			m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
-			if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
-				if i == setupRoutesPlayRetry-1 {
-					return err
-				}
-				continue
-			} else {
-				break
-			}
-		}
-
-		return m.playMCFixComputeDNS(args)
-
-	case updateCloud:
-
-		if err := m.playDeployMCGW(args); err != nil {
-			return err
-		}
-
-		for i := 0; i < setupRoutesPlayRetry; i++ {
-			m.Log.Debugf("TRY %d of running setup controller gw route play", i+1)
-			if err := m.playMCSetupControllerGWRoutes(args); err != nil {
-				if i == setupRoutesPlayRetry-1 {
-					return err
-				}
-				continue
-			} else {
-				break
-			}
-		}
-
-		if err := m.playMCInstancesConfig(args); err != nil {
-			return err
-		}
-
-		torExists, err := m.checkIfTORExists()
-		if err != nil {
-			return err
-		}
-		if torExists {
-			if err := m.playTORConfig(args); err != nil {
-				return err
-			}
-		}
-
-		k8sArgs := append(args, fmt.Sprintf("-e orchestrator=%s",
-			orchestratorKubernetes))
-		if err := m.playMCK8SProvision(k8sArgs); err != nil {
-			return err
-		}
-
-		contrailArgs := append(args, strings.Split("--limit all:!tors", " ")...)
-		skipRoles := []string{"vrouter"}
-		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
-			return err
-		}
-
-		skipRoles = []string{"config_database", "config,control", "webui",
-			"analytics", "analytics_database", "k8s"}
-		if err := m.playMCDeployContrail(contrailArgs, skipRoles); err != nil {
-			return err
-		}
-
-		for i := 0; i < setupRoutesPlayRetry; i++ {
-			m.Log.Debugf("TRY %d of running setup remote gw route play", i+1)
-			if err := m.playMCSetupRemoteGWRoutes(args); err != nil {
-				if i == setupRoutesPlayRetry-1 {
-					return err
-				}
-				continue
-			} else {
-				break
-			}
-		}
-
-		return m.playMCFixComputeDNS(args)
-
-	case deleteCloud:
-
-		//best effort cleaning up
-		// nolint: errcheck
-		_ = m.playMCContrailCleanup(args)
-		// nolint: errcheck
-		_ = m.playMCGatewayCleanup(args)
-
-		return nil
-	}
-
-	return nil
-}
-
 func (m *multiCloudProvisioner) createFiles(workDir string) error {
-
-	err := m.createClusterTopologyFile(workDir)
-	if err != nil {
+	if err := m.createClusterTopologyFile(workDir); err != nil {
 		return err
 	}
-
-	err = m.manageClusterSecret(workDir)
-	if err != nil {
+	if err := m.manageClusterSecret(workDir); err != nil {
 		return err
 	}
-
 	if err := m.createContrailCommonFile(m.getContrailCommonFile(workDir)); err != nil {
 		return err
 	}
-
 	if err := m.createGatewayCommonFile(m.getGatewayCommonFile(workDir)); err != nil {
 		return err
 	}
-
-	//tor file
 	if err := m.createTORCommonFile(m.getTORCommonFile(workDir)); err != nil {
 		return err
 	}
 	return nil
-
 }
 
 func (m *multiCloudProvisioner) removeCloudRefFromCluster() error {
-
 	for _, cloudRef := range m.clusterData.ClusterInfo.CloudRefs {
 		_, err := m.cluster.APIServer.DeleteContrailClusterCloudRef(
 			context.Background(), &services.DeleteContrailClusterCloudRefRequest{
@@ -625,7 +498,6 @@ func readSSHAgentConfig(path string) (*SSHAgentConfig, error) {
 }
 
 func (m *multiCloudProvisioner) readPubKeyConfig() (*PubKeyConfig, error) {
-
 	secretFilePath := m.getClusterSecretFile(m.workDir)
 	data, err := ioutil.ReadFile(secretFilePath)
 	if err != nil {
@@ -633,28 +505,21 @@ func (m *multiCloudProvisioner) readPubKeyConfig() (*PubKeyConfig, error) {
 	}
 
 	pubKeyConfig := &PubKeyConfig{}
-	err = yaml.Unmarshal(data, pubKeyConfig)
-	if err != nil {
+	if err = yaml.Unmarshal(data, pubKeyConfig); err != nil {
 		return nil, err
 	}
 	return pubKeyConfig, nil
-
 }
 
-func (m *multiCloudProvisioner) writeSSHAgentConfig(conf *SSHAgentConfig,
-	dest string) error {
-
+func (m *multiCloudProvisioner) writeSSHAgentConfig(conf *SSHAgentConfig, dest string) error {
 	data, err := yaml.Marshal(conf)
 	if err != nil {
 		return err
 	}
-
 	return fileutil.WriteToFile(dest, data, defaultFilePermRWOnly)
-
 }
 
 func (m *multiCloudProvisioner) runSSHAgent(workDir string, sshAgentPath string) (*SSHAgentConfig, error) {
-
 	cmd := "ssh-agent"
 	args := []string{"-s"}
 	cmdline := exec.Command(cmd, args...)
@@ -679,17 +544,14 @@ func (m *multiCloudProvisioner) runSSHAgent(workDir string, sshAgentPath string)
 		PID:      strings.TrimSuffix(pidList[0], ";"),
 	}
 
-	err := m.writeSSHAgentConfig(sshAgentConf, sshAgentPath)
-	if err != nil {
+	if err := m.writeSSHAgentConfig(sshAgentConf, sshAgentPath); err != nil {
 		return nil, err
 	}
 	return sshAgentConf, nil
 }
 
 // nolint: gocyclo
-func (m *multiCloudProvisioner) manageSSHAgent(workDir string,
-	action string) error {
-
+func (m *multiCloudProvisioner) manageSSHAgent(workDir string, action string) error {
 	// To-Do: to use ssh/agent library to create agent unix process
 	sshAgentPath := m.getSSHAgentFile(workDir)
 	_, err := os.Stat(sshAgentPath)
@@ -725,8 +587,7 @@ func (m *multiCloudProvisioner) manageSSHAgent(workDir string,
 		return err
 	}
 
-	err = os.Setenv("SSH_AUTH_SOCK", sshAgentConf.AuthSock)
-	if err != nil {
+	if err = os.Setenv("SSH_AUTH_SOCK", sshAgentConf.AuthSock); err != nil {
 		return err
 	}
 

@@ -79,6 +79,16 @@ func (c *CLIClient) Play(repositoryPath string, ansibleArgs []string, virtualenv
 	return nil
 }
 
+// GetWorkingDirectory returns working directory.
+func (c *CLIClient) GetWorkingDirectory() string {
+	return c.workingDirectory
+}
+
+// IsTest returns true for testing instance.
+func (c *CLIClient) IsTest() bool {
+	return c.isTestInstance
+}
+
 func prepareCmd(repositoryPath string, ansibleArgs []string, virtualenvPath string) (*exec.Cmd, error) {
 	var cmd *exec.Cmd
 	if virtualenvPath != "" {
