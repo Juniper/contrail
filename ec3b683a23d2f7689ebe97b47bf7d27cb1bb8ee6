@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "31ba1ac8_54a597bf",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 2
+      },
+      "lineNbr": 1086,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-10T06:39:53Z",
+      "side": 1,
+      "message": "Redundant variable",
+      "range": {
+        "startLine": 1086,
+        "startChar": 1,
+        "endLine": 1086,
+        "endChar": 12
+      },
+      "revId": "ec3b683a23d2f7689ebe97b47bf7d27cb1bb8ee6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
