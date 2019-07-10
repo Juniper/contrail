@@ -16,6 +16,24 @@
       "revId": "e0d050966a62be49fe5a471cd5a60716d1ddbbb6",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2e7b9c5_c0f8a34d",
+        "filename": "Gopkg.toml",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-10T05:47:24Z",
+      "side": 0,
+      "message": "I removed them, because they do not make sense. We do not want any of the constraints that I removed. They are here, because Dep tool added them automatically in the past.\n\nDep ensure will not update any dependencies. \"dep ensure --update github.com/sirupsen/logrus\" will and there is no reason not to update above 1.0.4 then.\n\nOn the other hand it is worth to constraint etcd, because we use etcd server with this version.",
+      "parentUuid": "036aee3b_b55df35c",
+      "revId": "e0d050966a62be49fe5a471cd5a60716d1ddbbb6",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
