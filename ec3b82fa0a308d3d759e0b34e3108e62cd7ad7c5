@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f045c7d9_4d878c8d",
+        "filename": ".golangci.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-10T12:05:12Z",
+      "side": 1,
+      "message": "What does this do? I couldn\u0027t google any documentation on this.",
+      "revId": "ec3b82fa0a308d3d759e0b34e3108e62cd7ad7c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
