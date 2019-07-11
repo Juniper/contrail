@@ -16,6 +16,24 @@
       "revId": "ec3b82fa0a308d3d759e0b34e3108e62cd7ad7c5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0b7470f1_b160198f",
+        "filename": ".golangci.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-11T08:25:38Z",
+      "side": 1,
+      "message": "It suppresses errors in Go standard library which started to pop out after Go toolchain update: http://logs.opencontrail.org/84/52284/1/check/contrail-go-docker/d9648c2/unittests-logs/linter.log",
+      "parentUuid": "f045c7d9_4d878c8d",
+      "revId": "ec3b82fa0a308d3d759e0b34e3108e62cd7ad7c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
