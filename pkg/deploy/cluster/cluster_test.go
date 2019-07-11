@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/flosch/pongo2"
@@ -1406,6 +1407,17 @@ func runMCClusterTest(t *testing.T, pContext map[string]interface{},
 }
 
 func TestMCCluster(t *testing.T) {
+	// TODO: Delete this
+	// deployerCommand := "deployer all run --topology " + topology + " --secret " + secret + " --retry 10"
+
+	result, err := exec.Command("deployer", "all", "run", "--topology", "/home/ignacy/Documents/contrail-multi-cloud/lef.yml",
+		"--secret", "/home/ignacy/Documents/contrail-multi-cloud/secret.yml").CombinedOutput()
+	fmt.Println(string(result))
+	fmt.Println(err)
+
+	assert.True(t, false)
+	return
+
 	context := pongo2.Context{
 		"CONTROL_NODES": "",
 	}
