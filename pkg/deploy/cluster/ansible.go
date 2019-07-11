@@ -46,6 +46,47 @@ type contrailAnsibleDeployer struct {
 	deployCluster
 }
 
+func (a *contrailAnsibleDeployer) installVenv(installDir string) error {
+	a.Log.Info("installing virtualenv for ", installDir)
+
+	args := []string{"install",  "virtualenv==16.4.3"}
+	err := osutil.ExecCmdAndWait(a.Reporter, "pip", args, "/usr/bin/")
+	if err != nil {
+		a.Log.Errorf("Error: pip install virtualenv: %s", err)
+		return err
+	}
+	a.Log.Info("pip install virtualenv successful")
+
+	args = []string{"-m", "virtualenv",
+	                defaultAppformixAnsibleRepoDir +
+			"appformix-ansible-deployer/" +
+			installDir +
+			"/venv"}
+	err = osutil.ExecCmdAndWait(a.Reporter, "python", args, "/usr/bin")
+	if err != nil {
+		a.Log.Errorf("Error: virtualenv creation: %s", err)
+		return err
+	}
+	a.Log.Info("virtualenv created")
+
+	args = []string{"install",
+		        "-r",
+	                defaultAppformixAnsibleRepoDir +
+			"appformix-ansible-deployer/" +
+			installDir +
+			"/requirements.txt"}
+	err = osutil.ExecCmdAndWait(a.Reporter,
+		    defaultAppformixAnsibleRepoDir + "appformix-ansible-deployer/" + installDir + "/venv/bin/pip",
+		    args, "")
+	if err != nil {
+		a.Log.Errorf("Error: pip install requirements.txt: %s", err)
+		return err
+	}
+	a.Log.Info("pip install requirements.txt successful")
+
+	return nil
+}
+
 // nolint: gocyclo
 func (a *contrailAnsibleDeployer) untar(src, dst string) error {
 	f, err := os.Open(src)
@@ -506,16 +547,21 @@ func (a *contrailAnsibleDeployer) xflowVenvDir() string {
 
 func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 	if a.clusterData.GetAppformixClusterInfo() != nil {
+		err := a.installVenv("appformix")
+		if err != nil {
+			a.Log.Errorf("Error in installVenv: %s", err)
+			return err
+		}
 		AppformixUsername := a.clusterData.GetAppformixClusterInfo().AppformixUsername
 		AppformixPassword := a.clusterData.GetAppformixClusterInfo().AppformixPassword
 		if AppformixUsername != "" {
-			err := os.Setenv("APPFORMIX_USERNAME", AppformixUsername)
+			err = os.Setenv("APPFORMIX_USERNAME", AppformixUsername)
 			if err != nil {
 				return err
 			}
 		}
 		if AppformixPassword != "" {
-			err := os.Setenv("APPFORMIX_PASSWORD", AppformixPassword)
+			err = os.Setenv("APPFORMIX_PASSWORD", AppformixPassword)
 			if err != nil {
 				return err
 			}
@@ -527,11 +573,11 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 		ansibleArgs = append(ansibleArgs, defaultAppformixProvPlay)
 
 		imageDir := a.clusterData.GetAppformixClusterInfo().AppformixImageDir
-		if _, err := os.Stat(imageDir); os.IsNotExist(err) {
+		if _, err = os.Stat(imageDir); os.IsNotExist(err) {
 			a.Log.Errorf("imageDir %s does not exist, %s", imageDir, err)
 		}
 		srcFile := "/appformix-" + AppformixVersion + ".tar.gz"
-		err := a.untar(imageDir+srcFile, imageDir)
+		err = a.untar(imageDir+srcFile, imageDir)
 		if err != nil {
 			a.Log.Errorf("Error while untar file: %s", err)
 		}
@@ -543,27 +589,32 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 
 func (a *contrailAnsibleDeployer) playXflowProvision() error {
 	if a.clusterData.GetXflowData() != nil && a.clusterData.GetXflowData().ClusterInfo != nil {
+		err := a.installVenv("xflow")
+		if err != nil {
+			a.Log.Errorf("Error in installVenv: %s", err)
+			return err
+		}
 		venvDir := a.xflowVenvDir()
 
 		xflowDir := a.getXflowDeployerDir()
-		if _, err := os.Stat(xflowDir); os.IsNotExist(err) {
+		if _, err = os.Stat(xflowDir); os.IsNotExist(err) {
 			return err
 		}
 
 		cmd := "bash"
 		cmdArgs := []string{"deploy_xflow.sh", a.getInstanceFile()}
 		a.Log.Infof("provisioning xflow: %s %s", cmd, strings.Join(cmdArgs, " "))
-		command, err := osutil.VenvCommand(venvDir, cmd, cmdArgs...)
-		if err != nil {
-			a.Log.Errorf("Error when creating preparing command to run in venv %s: %s", venvDir, err)
-			return err
+		command, err2 := osutil.VenvCommand(venvDir, cmd, cmdArgs...)
+		if err2 != nil {
+			a.Log.Errorf("Error when creating preparing command to run in venv %s: %s", venvDir, err2)
+			return err2
 		}
 
 		command.Dir = xflowDir
 
-		if err := osutil.ExecAndWait(a.Reporter, command); err != nil {
-			a.Log.Errorf("Error when running command in venv %s: %s", venvDir, err)
-			return err
+		if err2 = osutil.ExecAndWait(a.Reporter, command); err != nil {
+			a.Log.Errorf("Error when running command in venv %s: %s", venvDir, err2)
+			return err2
 		}
 		a.Log.Infof("Finished provisioning xflow")
 	}
