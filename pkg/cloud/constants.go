@@ -17,7 +17,6 @@ const (
 	defaultMultiCloudRepo          = "contrail-multi-cloud"
 	defaultGCPCredentialFile       = "/var/tmp/cloud/google-account.json"
 
-	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"
 	statusCreated        = "CREATED"
 	statusCreateProgress = "CREATE_IN_PROGRESS"

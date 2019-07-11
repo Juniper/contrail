@@ -184,13 +184,10 @@ func (c *Cloud) isCloudDeleteRequest() (bool, error) {
 }
 
 func (c *Cloud) create() error {
-	status := map[string]interface{}{statusField: statusCreateProgress}
-
 	// Run pre-install steps
 	topo, secret, data, err := c.initialize()
 	if err != nil {
-		status[statusField] = statusCreateFailed
-		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+		c.reporter.ReportStatus(c.ctx, statusCreateFailed, defaultCloudResource)
 		return err
 	}
 
@@ -200,25 +197,24 @@ func (c *Cloud) create() error {
 
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
 
-	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-	status[statusField] = statusCreateFailed
+	c.reporter.ReportStatus(c.ctx, statusCreateProgress, defaultCloudResource)
 
 	err = topo.createTopologyFile(GetTopoFile(c.config.CloudID))
 	if err != nil {
-		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+		c.reporter.ReportStatus(c.ctx, statusCreateFailed, defaultCloudResource)
 		return err
 	}
 
 	if !data.isCloudPrivate() {
 		err = secret.createSecretFile()
 		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			c.reporter.ReportStatus(c.ctx, statusCreateFailed, defaultCloudResource)
 			return err
 		}
 		// depending upon the config action, it takes respective terraform action
 		err = createTopology(c, c.reporter)
 		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			c.reporter.ReportStatus(c.ctx, statusCreateFailed, defaultCloudResource)
 			return err
 		}
 	}
@@ -228,26 +224,21 @@ func (c *Cloud) create() error {
 	if !data.isCloudPrivate() && (!c.config.Test) {
 		err = updateIPDetails(c.ctx, c.config.CloudID, data)
 		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			c.reporter.ReportStatus(c.ctx, statusCreateFailed, defaultCloudResource)
 			return err
 		}
 	}
 
-	status[statusField] = statusCreated
-	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-
+	c.reporter.ReportStatus(c.ctx, statusCreated, defaultCloudResource)
 	return nil
 }
 
 // nolint: gocyclo
 func (c *Cloud) update() error {
-	status := map[string]interface{}{statusField: statusUpdateProgress}
-
 	// Run pre-install steps
 	topo, secret, data, err := c.initialize()
 	if err != nil {
-		status[statusField] = statusUpdateFailed
-		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+		c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 		return err
 	}
 
@@ -255,8 +246,7 @@ func (c *Cloud) update() error {
 		var topoIsAlreadyUpdated bool
 		topoIsAlreadyUpdated, err = topo.isUpdated(defaultCloudResource)
 		if err != nil {
-			status[statusField] = statusUpdateFailed
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 			return err
 		}
 		if topoIsAlreadyUpdated {
@@ -265,13 +255,11 @@ func (c *Cloud) update() error {
 	}
 
 	c.log.Infof("Starting %s of cloud: %s", c.config.Action, data.info.FQName)
-
-	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
-	status[statusField] = statusUpdateFailed
+	c.reporter.ReportStatus(c.ctx, statusUpdateProgress, defaultCloudResource)
 
 	err = topo.createTopologyFile(GetTopoFile(topo.cloud.config.CloudID))
 	if err != nil {
-		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+		c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 		return err
 	}
 
@@ -280,14 +268,14 @@ func (c *Cloud) update() error {
 	if !data.isCloudPrivate() {
 		err = secret.createSecretFile()
 		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 			return err
 		}
 
 		// depending upon the config action, it takes respective terraform action
 		err = createTopology(c, c.reporter)
 		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 			return err
 		}
 	}
@@ -296,13 +284,12 @@ func (c *Cloud) update() error {
 	if !data.isCloudPrivate() && (!c.config.Test) {
 		err = updateIPDetails(c.ctx, c.config.CloudID, data)
 		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 			return err
 		}
 	}
 
-	status[statusField] = statusUpdated
-	c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+	c.reporter.ReportStatus(c.ctx, statusUpdated, defaultCloudResource)
 	return nil
 }
 
@@ -341,12 +328,10 @@ func (c *Cloud) delete() error {
 		return err
 	}
 
-	status := map[string]interface{}{statusField: statusUpdateFailed}
-
 	if data.isCloudPrivate() {
 		err = c.verifyContrailClusterStatus(data)
 		if err != nil {
-			c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+			c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 			return err
 		}
 	}
@@ -355,7 +340,7 @@ func (c *Cloud) delete() error {
 		if tfStateOutputExists(c.config.CloudID) {
 			err = destroyTopology(c, c.reporter)
 			if err != nil {
-				c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+				c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 				return err
 			}
 		}
@@ -364,7 +349,7 @@ func (c *Cloud) delete() error {
 	// delete all the objects referred/in-tree of this cloud object
 	err = c.deleteAPIObjects(data)
 	if err != nil {
-		c.reporter.ReportStatus(c.ctx, status, defaultCloudResource)
+		c.reporter.ReportStatus(c.ctx, statusUpdateFailed, defaultCloudResource)
 		return err
 	}
 

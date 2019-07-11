@@ -53,29 +53,25 @@ func (p *deployCluster) isCreated() bool {
 }
 
 func (p *deployCluster) getTemplateRoot() string {
-	templateRoot := p.cluster.config.TemplateRoot
-	if templateRoot == "" {
-		templateRoot = defaultTemplateRoot
+	if p.cluster.config.TemplateRoot == "" {
+		return defaultTemplateRoot
 	}
-	return templateRoot
+	return p.cluster.config.TemplateRoot
 }
 
 func (p *deployCluster) getWorkRoot() string {
-	workRoot := p.cluster.config.WorkRoot
-	if workRoot == "" {
-		workRoot = defaultWorkRoot
+	if p.cluster.config.WorkRoot == "" {
+		return defaultWorkRoot
 	}
-	return workRoot
+	return p.cluster.config.WorkRoot
 }
 
 func (p *deployCluster) getClusterHomeDir() string {
-	dir := filepath.Join(p.getWorkRoot(), p.clusterID)
-	return dir
+	return filepath.Join(p.getWorkRoot(), p.clusterID)
 }
 
 func (p *deployCluster) getWorkingDir() string {
-	dir := filepath.Join(p.getClusterHomeDir())
-	return dir
+	return filepath.Join(p.getClusterHomeDir())
 }
 
 func (p *deployCluster) createWorkingDir() error {
