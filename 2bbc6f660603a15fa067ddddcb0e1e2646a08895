@@ -1,0 +1,400 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1c487ff1_12c05c92",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "errors.Errorf(\"response contains a resource that is not a JSON object: %v\", d)",
+      "range": {
+        "startLine": 127,
+        "startChar": 15,
+        "endLine": 127,
+        "endChar": 68
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b10724ce_18f08569",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "I see that this wasn\u0027t changed here, but is this intended?\nAlso, lp.BackrefUUIDs is not used.",
+      "range": {
+        "startLine": 187,
+        "startChar": 2,
+        "endLine": 187,
+        "endChar": 47
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b23f3cd4_541df936",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "`basemodels.SchemaIDToKind` (same in the rest of the file)",
+      "range": {
+        "startLine": 238,
+        "startChar": 2,
+        "endLine": 238,
+        "endChar": 12
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d24cc9fa_9c57e6c1",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "This can also be a variable, as it\u0027s used below again.",
+      "range": {
+        "startLine": 283,
+        "startChar": 3,
+        "endLine": 283,
+        "endChar": 90
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "602a71a7_5812dcce",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "I\u0027d make this a variable.",
+      "range": {
+        "startLine": 283,
+        "startChar": 8,
+        "endLine": 283,
+        "endChar": 39
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "08f3b764_07e836dc",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "This can be joined with the previous line.",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "59180944_d3a51ed9",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "Extract `integration.AdminHTTPConfig()`?",
+      "range": {
+        "startLine": 36,
+        "startChar": 2,
+        "endLine": 48,
+        "endChar": 3
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9944be8a_0c5fae2d",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "Extract a `vnBlueUUID` variable.",
+      "range": {
+        "startLine": 140,
+        "startChar": 41,
+        "endLine": 140,
+        "endChar": 79
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d760dea4_e5f9b502",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "Extract a variable.",
+      "range": {
+        "startLine": 168,
+        "startChar": 16,
+        "endLine": 168,
+        "endChar": 39
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5aa2ae3b_f7361b46",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "Extract a variable.",
+      "range": {
+        "startLine": 217,
+        "startChar": 43,
+        "endLine": 217,
+        "endChar": 51
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4f7883b_6c36b991",
+        "filename": "pkg/apisrv/client/http.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "Is this still needed?",
+      "range": {
+        "startLine": 38,
+        "startChar": 17,
+        "endLine": 38,
+        "endChar": 28
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5b0d1b67_c44006c7",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "This can be on one line.",
+      "range": {
+        "startLine": 417,
+        "startChar": 31,
+        "endLine": 420,
+        "endChar": 2
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "06182419_bc8131b7",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 462,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "I\u0027d move the `url :\u003d` line to be above `var response` instead of adding this empty line.",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "47ec69d2_187c6eb0",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "`_`?",
+      "range": {
+        "startLine": 13,
+        "startChar": 1,
+        "endLine": 13,
+        "endChar": 8
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f20d999b_10ba61f6",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "`ts`",
+      "range": {
+        "startLine": 19,
+        "startChar": 1,
+        "endLine": 19,
+        "endChar": 13
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d4720419_39d3ab9a",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "`The test scenario or the implementation is buggy`",
+      "range": {
+        "startLine": 29,
+        "startChar": 9,
+        "endLine": 29,
+        "endChar": 49
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b4a82b41_70e4e433",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "52aecf35_495314b6",
+        "filename": "pkg/compilation/service.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-11T15:56:53Z",
+      "side": 1,
+      "message": "merge these groups of imports",
+      "range": {
+        "startLine": 18,
+        "startChar": 1,
+        "endLine": 20,
+        "endChar": 48
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
