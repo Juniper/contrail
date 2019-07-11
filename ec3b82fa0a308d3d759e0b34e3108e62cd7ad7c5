@@ -52,6 +52,24 @@
       "revId": "ec3b82fa0a308d3d759e0b34e3108e62cd7ad7c5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "df1e0fbe_848b9756",
+        "filename": ".golangci.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-11T12:45:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1c351dec_a9a12adf",
+      "revId": "ec3b82fa0a308d3d759e0b34e3108e62cd7ad7c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
