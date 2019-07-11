@@ -17,7 +17,6 @@ const (
 	defaultMultiCloudDir           = "/usr/share/contrail/"
 	defaultMultiCloudRepo          = "contrail-multi-cloud"
 
-	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"
 	statusCreated        = "CREATED"
 	statusCreateProgress = "CREATE_IN_PROGRESS"

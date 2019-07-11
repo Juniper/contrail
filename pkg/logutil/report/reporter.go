@@ -28,15 +28,16 @@ func NewReporter(apiServer *client.HTTP, resource string, logger *logrus.Entry) 
 }
 
 // ReportStatus reports status to a particular resource
-func (r *Reporter) ReportStatus(ctx context.Context, status map[string]interface{}, resource string) {
-	data := map[string]map[string]interface{}{resource: status}
+func (r *Reporter) ReportStatus(ctx context.Context, status string, resource string) {
+	wrappedStatus := map[string]interface{}{"provisioning_state": status}
+	data := map[string]map[string]interface{}{resource: wrappedStatus}
 	var response interface{}
 	//TODO(nati) fixed context
-	_, err := r.api.Update(ctx, r.resource, data, &response)
-	if err != nil {
+	if _, err := r.api.Update(ctx, r.resource, data, &response); err != nil {
 		r.log.Infof("update %s status failed: %s", resource, err)
+	} else {
+		r.log.Infof("%s status updated: %s", resource, wrappedStatus)
 	}
-	r.log.Infof("%s status updated: %s", resource, status)
 }
 
 // ReportLog reports log
