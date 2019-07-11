@@ -18,7 +18,6 @@ const (
 	installContrailCloudCmd = "sudo " + defaultContrailCloudScriptsDir + "install_contrail_cloud_manager.sh"
 	inventoryAssignCmd      = "sudo " + defaultContrailCloudScriptsDir + "inventory-assign.sh"
 
-	statusField          = "provisioning_state"
 	statusNoState        = "NOSTATE"
 	statusCreated        = "CREATED"
 	statusCreateProgress = "CREATE_IN_PROGRESS"

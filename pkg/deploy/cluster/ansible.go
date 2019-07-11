@@ -611,53 +611,44 @@ func (a *contrailAnsibleDeployer) playBook() error {
 // nolint: gocyclo
 func (a *contrailAnsibleDeployer) createCluster() error {
 	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.ClusterInfo.FQName)
-	status := map[string]interface{}{statusField: statusCreateProgress}
-	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	a.Reporter.ReportStatus(context.Background(), statusCreateProgress, defaultResource)
 
-	status[statusField] = statusCreateFailed
-	err := a.createWorkingDir()
-	if err != nil {
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := a.createWorkingDir(); err != nil {
+		a.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 		return err
 	}
 
 	if !a.cluster.config.Test {
 		if a.cluster.config.AnsibleFetchURL != "" {
-			err = a.fetchAnsibleDeployer()
-			if err != nil {
-				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			if err := a.fetchAnsibleDeployer(); err != nil {
+				a.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleCherryPickRevision != "" {
-			err = a.cherryPickAnsibleDeployer()
-			if err != nil {
-				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			if err := a.cherryPickAnsibleDeployer(); err != nil {
+				a.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 				return err
 			}
 		}
 		if a.cluster.config.AnsibleRevision != "" {
-			err = a.resetAnsibleDeployer()
-			if err != nil {
-				a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			if err := a.resetAnsibleDeployer(); err != nil {
+				a.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 				return err
 			}
 		}
 	}
-	err = a.createInventory()
-	if err != nil {
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := a.createInventory(); err != nil {
+		a.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 		return err
 	}
 
-	err = a.playBook()
-	if err != nil {
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := a.playBook(); err != nil {
+		a.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 		return err
 	}
 
-	status[statusField] = statusCreated
-	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	a.Reporter.ReportStatus(context.Background(), statusCreated, defaultResource)
 	return nil
 }
 
@@ -665,12 +656,10 @@ func (a *contrailAnsibleDeployer) isUpdated() (updated bool, err error) {
 	if a.clusterData.ClusterInfo.ProvisioningState == statusNoState {
 		return false, nil
 	}
-	status := map[string]interface{}{}
 	if _, err := os.Stat(a.getInstanceFile()); err == nil {
 		ok, err := a.compareInventory()
 		if err != nil {
-			status[statusField] = statusUpdateFailed
-			a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			a.Reporter.ReportStatus(context.Background(), statusUpdateFailed, defaultResource)
 			return false, err
 		}
 		if ok {
@@ -683,24 +672,20 @@ func (a *contrailAnsibleDeployer) isUpdated() (updated bool, err error) {
 
 func (a *contrailAnsibleDeployer) updateCluster() error {
 	a.Log.Infof("Starting %s of contrail cluster: %s", a.action, a.clusterData.ClusterInfo.FQName)
-	status := map[string]interface{}{}
-	status[statusField] = statusUpdateProgress
-	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	a.Reporter.ReportStatus(context.Background(), statusUpdateProgress, defaultResource)
 
 	err := a.createInventory()
 	if err != nil {
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		a.Reporter.ReportStatus(context.Background(), statusUpdateFailed, defaultResource)
 		return err
 	}
 	err = a.playBook()
 	if err != nil {
-		status[statusField] = statusUpdateFailed
-		a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		a.Reporter.ReportStatus(context.Background(), statusUpdateFailed, defaultResource)
 		return err
 	}
 
-	status[statusField] = statusUpdated
-	a.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	a.Reporter.ReportStatus(context.Background(), statusUpdated, defaultResource)
 	return nil
 }
 
