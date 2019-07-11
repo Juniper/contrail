@@ -212,36 +212,29 @@ func (c *contrailCloudDeployer) playBook(args []string) error {
 func (c *contrailCloudDeployer) createUndercloud() error {
 	c.Log.Infof("Starting %s of contrail undercloud: %s", c.action,
 		c.undercloudData.cloudManagerInfo.RhospdUndercloudNodes[0].FQName)
-	status := map[string]interface{}{statusField: statusCreateProgress}
-	c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	c.Reporter.ReportStatus(context.Background(), statusCreateProgress, defaultResource)
 
-	status[statusField] = statusCreateFailed
-	err := c.createWorkingDir()
-	if err != nil {
-		c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := c.createWorkingDir(); err != nil {
+		c.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 		return err
 	}
 
-	err = c.createInventoryFile(c.getInventoryFile())
-	if err != nil {
-		c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := c.createInventoryFile(c.getInventoryFile()); err != nil {
+		c.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 		return err
 	}
 
-	err = c.createSiteFile(c.getSiteFile())
-	if err != nil {
-		c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := c.createSiteFile(c.getSiteFile()); err != nil {
+		c.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 		return err
 	}
 
-	err = c.playBook([]string{})
-	if err != nil {
-		c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	if err := c.playBook([]string{}); err != nil {
+		c.Reporter.ReportStatus(context.Background(), statusCreateFailed, defaultResource)
 		return err
 	}
 
-	status[statusField] = statusCreated
-	c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	c.Reporter.ReportStatus(context.Background(), statusCreated, defaultResource)
 	return nil
 }
 
@@ -249,12 +242,10 @@ func (c *contrailCloudDeployer) isUpdated() (updated bool, err error) {
 	if c.undercloudData.cloudManagerInfo.ProvisioningState == statusNoState {
 		return false, nil
 	}
-	status := map[string]interface{}{}
 	if _, err := os.Stat(c.getSiteFile()); err == nil {
 		ok, err := c.compareSite()
 		if err != nil {
-			status[statusField] = statusUpdateFailed
-			c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+			c.Reporter.ReportStatus(context.Background(), statusUpdateFailed, defaultResource)
 			return false, err
 		}
 		if ok {
@@ -269,31 +260,27 @@ func (c *contrailCloudDeployer) isUpdated() (updated bool, err error) {
 func (c *contrailCloudDeployer) updateUndercloud() error {
 	c.Log.Infof("Starting %s of contrail undercloud: %s", c.action,
 		c.undercloudData.cloudManagerInfo.RhospdUndercloudNodes[0].FQName)
-	status := map[string]interface{}{}
-	status[statusField] = statusUpdateProgress
-	c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	c.Reporter.ReportStatus(context.Background(), statusUpdateProgress, defaultResource)
 
-	status[statusField] = statusUpdateFailed
 	err := c.createInventoryFile(c.getInventoryFile())
 	if err != nil {
-		c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		c.Reporter.ReportStatus(context.Background(), statusUpdateFailed, defaultResource)
 		return err
 	}
 
 	err = c.createSiteFile(c.getSiteFile())
 	if err != nil {
-		c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		c.Reporter.ReportStatus(context.Background(), statusUpdateFailed, defaultResource)
 		return err
 	}
 
 	err = c.playBook([]string{})
 	if err != nil {
-		c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+		c.Reporter.ReportStatus(context.Background(), statusUpdateFailed, defaultResource)
 		return err
 	}
 
-	status[statusField] = statusUpdated
-	c.Reporter.ReportStatus(context.Background(), status, defaultResource)
+	c.Reporter.ReportStatus(context.Background(), statusUpdated, defaultResource)
 	return nil
 }
 
