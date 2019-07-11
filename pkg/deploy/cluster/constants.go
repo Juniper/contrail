@@ -30,6 +30,7 @@ const (
 	defaultAppformixAnsibleRepo    = "appformix-ansible-deployer"
 	defaultAppformixProvPlay       = "playbooks/install_appformix.yml"
 	defaultAppformixDir            = "appformix/"
+	AppformixVersion	       = "3.0.0"
 	defaultXflowDir                = "xflow/"
 
 	// TODO (ijohnson): Fix LP#1756958 and remove the status constants
