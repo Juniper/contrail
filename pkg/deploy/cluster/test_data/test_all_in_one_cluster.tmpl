@@ -128,9 +128,11 @@ test_data:
     {%endif%}
     openstack_cluster_refs:
       - uuid: test_openstack_cluster_uuid
-    {% if CONTROL_NODES %}
     contrail_configuration:
       key_value_pair:
+        - key: CONTRAIL_CONTAINER_TAG
+          value: "master.100"
+        {% if CONTROL_NODES %}
         - key: CONTROL_NODES
           value: {{CONTROL_NODES}}
         {% if WEBUI_NODES %}
