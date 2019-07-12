@@ -2,7 +2,14 @@ run:
   # Concurrency is reduced in order to reduce RAM consumption
   concurrency: 2
   deadline: 20m
-  skip-dirs: []
+  skip-files:
+  # Entries below is a workaround for "typecheck" linter. TODO(Daniel): remove when linter fixed/updated
+  - .*/go/src/crypto/.*
+  - .*/go/src/internal/syscall/unix/.*
+  - .*/go/src/net/.*
+  - .*/go/src/os/.*
+  - .*/go/src/runtime/.*
+  - .*/go/src/syscall/.*
 
 issues:
   exclude:

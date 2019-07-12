@@ -3,7 +3,7 @@
 install_golang()
 {
 	pushd /tmp
-	curl -o go.tar.gz https://dl.google.com/go/go1.11.1.linux-amd64.tar.gz
+	curl -o go.tar.gz https://dl.google.com/go/go1.12.6.linux-amd64.tar.gz
 	sudo tar --overwrite -C /usr -xzf go.tar.gz
 	sudo yum install -y wget unzip
 	export PATH="$PATH:/usr/go/bin"
