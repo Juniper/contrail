@@ -333,6 +333,30 @@
     },
     {
       "key": {
+        "uuid": "dc7b0cdc_103e2ac5",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T10:42:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "602a71a7_5812dcce",
+      "range": {
+        "startLine": 283,
+        "startChar": 8,
+        "endLine": 283,
+        "endChar": 39
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "08f3b764_07e836dc",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 13
