@@ -106,7 +106,11 @@ contrail_configuration:
   KEYSTONE_AUTH_URL_VERSION: {%if cluster.KeystoneVersion %}/{{cluster.KeystoneVersion}}{%else%}/v3{%endif%}
   {% for key_value in cluster.ContrailConfiguration.KeyValuePair %}
   {% if key_value.Key && key_value.Value%}
+  {% if key_value.Key == "CONTRAIL_CONTAINER_TAG" %}
+  {{key_value.Key}}: "{{key_value.Value}}"
+  {%else%}
   {{key_value.Key}}: {{key_value.Value}}
+  {%endif%}
   {%endif%}
   {%endfor%}
   {%if cluster.EnableZTP %}
