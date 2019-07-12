@@ -104,6 +104,30 @@
       "revId": "5cbd594cc5cdb54836b40a665cb9873ea1907d68",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b884a77f_ee3b034a",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 339,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T15:30:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d74b3bca_11c15263",
+      "range": {
+        "startLine": 329,
+        "startChar": 1,
+        "endLine": 339,
+        "endChar": 2
+      },
+      "revId": "5cbd594cc5cdb54836b40a665cb9873ea1907d68",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
