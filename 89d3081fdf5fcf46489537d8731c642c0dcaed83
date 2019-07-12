@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c1be437d_4d0db937",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 1312,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-07-12T05:29:38Z",
+      "side": 0,
+      "message": "We need to make sure that the mc CLI is called with correct arguments",
+      "revId": "89d3081fdf5fcf46489537d8731c642c0dcaed83",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
