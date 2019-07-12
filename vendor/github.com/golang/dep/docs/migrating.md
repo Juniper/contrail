@@ -31,7 +31,7 @@ The behavior of `dep init` varies depending on what's in your existing codebase,
 The inference phase is where `dep init`'s behavior varies. By default, `dep init` will look in your codebase for metadata files from [other Go package management tools that it understands](https://github.com/golang/dep/tree/master/internal/importers), and attempt to automatically migrate the data in these files into concepts that make sense in a dep. Depending on the tool and the particular values dep finds, metadata from the tool may be treated as either:
 
 * A hint: information that dep will try to honor in the solving phase, but will discard if it cannot find a solution that respects the hint.
-* A rule: information that must obeyed in the solving phase, and will ultimately appear in `Gopkg.toml` as a `[[constraint]]`. If the solving phase cannot find a solution that satisfies the rules, it will fail with an informative message.
+* A rule: information that must be obeyed in the solving phase, and will ultimately appear in `Gopkg.toml` as a `[[constraint]]`. If the solving phase cannot find a solution that satisfies the rules, it will fail with an informative message.
 
 There are three circumstances that can lead dep not to make any tool-based inferences:
 
@@ -61,7 +61,7 @@ First and foremost, make sure that you're running `dep init` with the `-v` flag.
 
 `dep init`, like dep in general, has both hard and soft failure modes. Hard failures result in the process hanging or aborting entirely, without anything being written to disk. Soft failures may or may not include warnings, but do ultimately write out a `Gopkg.toml`, `Gopkg.lock`, and `vendor/` - just, not the ones you wanted. Before we dig into those, though, let's set some context.
 
-While dep contributors have invested enormous effort into creating automated migration paths into dep, these paths will always best-effort and imprecise. It's simply not always possible to convert from other tools or GOPATH with full fidelity. dep is an opinionated tool, with a correspondingly opinionated model, and that model does sometimes fundamentally differ from that of other tools. Sometimes these model mismatches result in hard failures, sometimes soft, and sometimes there's no harm at all.
+While dep contributors have invested enormous effort into creating automated migration paths into dep, these paths will always be best-effort and imprecise. It's simply not always possible to convert from other tools or GOPATH with full fidelity. dep is an opinionated tool, with a correspondingly opinionated model, and that model does sometimes fundamentally differ from that of other tools. Sometimes these model mismatches result in hard failures, sometimes soft, and sometimes there's no harm at all.
 
 Because these are deep assumptions, their symptoms can be varied and surprising. Keeping these assumptions in mind could save you some hair-pulling later on.
 
@@ -72,7 +72,7 @@ Because these are deep assumptions, their symptoms can be varied and surprising.
 * dep generally prefers semantic versioning-tagged releases to branches (when not given any additional rules). This is a significant shift from the "default branch" model of `go get` and some other tools. It can result in dep making surprising choices for dependencies for which it could not infer a rule.
 * dep assumes that all generated code exists, and has been committed to the source.
 
-A small number of projects that have reported being unable, thus far, to find a reasonable way of adapting to these requirements. If you can't figure out how to make your project fit, please file an issue - while dep necessarily cannot accommodate every single existing approach, it is dep's goal is define rules to which all Go projects can reasonably adapt.
+Thus far, only a small number of projects have reported being unable to find a reasonable way of adapting to these requirements. If you can't figure out how to make your project fit, please file an issue - while dep necessarily cannot accommodate every single existing approach, it is dep's goal is define rules to which all Go projects can reasonably adapt.
 
 ### Hard failures
 

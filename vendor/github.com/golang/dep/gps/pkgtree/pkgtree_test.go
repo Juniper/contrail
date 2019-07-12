@@ -21,6 +21,7 @@ import (
 	"github.com/golang/dep/gps/paths"
 	"github.com/golang/dep/internal/fs"
 	_ "github.com/golang/dep/internal/test" // DO NOT REMOVE, allows go test ./... -update to work
+	"github.com/google/go-cmp/cmp"
 )
 
 // PackageTree.ToReachMap() uses an easily separable algorithm, wmToReach(),
@@ -435,6 +436,103 @@ func TestWorkmapToReach(t *testing.T) {
 				},
 			},
 		},
+		"self cycle": {
+			workmap: map[string]wm{
+				"A": {in: map[string]bool{"A": true}},
+			},
+			rm: ReachMap{
+				"A": {Internal: []string{"A"}},
+			},
+		},
+		"simple cycle": {
+			workmap: map[string]wm{
+				"A": {in: map[string]bool{"B": true}},
+				"B": {in: map[string]bool{"A": true}},
+			},
+			rm: ReachMap{
+				"A": {Internal: []string{"A", "B"}},
+				"B": {Internal: []string{"A", "B"}},
+			},
+		},
+		"cycle with external dependency": {
+			workmap: map[string]wm{
+				"A": {
+					in: map[string]bool{"B": true},
+				},
+				"B": {
+					ex: map[string]bool{"C": true},
+					in: map[string]bool{"A": true},
+				},
+			},
+			rm: ReachMap{
+				"A": {
+					External: []string{"C"},
+					Internal: []string{"A", "B"},
+				},
+				"B": {
+					External: []string{"C"},
+					Internal: []string{"A", "B"},
+				},
+			},
+		},
+		"cycle with transitive external dependency": {
+			workmap: map[string]wm{
+				"A": {
+					in: map[string]bool{"B": true},
+				},
+				"B": {
+					in: map[string]bool{"A": true, "C": true},
+				},
+				"C": {
+					ex: map[string]bool{"D": true},
+				},
+			},
+			rm: ReachMap{
+				"A": {
+					External: []string{"D"},
+					Internal: []string{"A", "B", "C"},
+				},
+				"B": {
+					External: []string{"D"},
+					Internal: []string{"A", "B", "C"},
+				},
+				"C": {
+					External: []string{"D"},
+				},
+			},
+		},
+		"internal cycle": {
+			workmap: map[string]wm{
+				"A": {
+					ex: map[string]bool{"B": true},
+					in: map[string]bool{"C": true},
+				},
+				"C": {
+					in: map[string]bool{"D": true},
+				},
+				"D": {
+					in: map[string]bool{"E": true},
+				},
+				"E": {
+					in: map[string]bool{"C": true},
+				},
+			},
+			rm: ReachMap{
+				"A": {
+					External: []string{"B"},
+					Internal: []string{"C", "D", "E"},
+				},
+				"C": {
+					Internal: []string{"C", "D", "E"},
+				},
+				"D": {
+					Internal: []string{"C", "D", "E"},
+				},
+				"E": {
+					Internal: []string{"C", "D", "E"},
+				},
+			},
+		},
 	}
 
 	for name, fix := range table {
@@ -449,11 +547,13 @@ func TestWorkmapToReach(t *testing.T) {
 			}
 
 			rm, em := wmToReach(fix.workmap, fix.backprop)
-			if !reflect.DeepEqual(rm, fix.rm) {
+			if diff := cmp.Diff(rm, fix.rm); diff != "" {
 				//t.Error(pretty.Sprintf("wmToReach(%q): Did not get expected reach map:\n\t(GOT): %s\n\t(WNT): %s", name, rm, fix.rm))
 				t.Errorf("Did not get expected reach map:\n\t(GOT): %s\n\t(WNT): %s", rm, fix.rm)
 			}
-			if !reflect.DeepEqual(em, fix.em) {
+			if diff := cmp.Diff(em, fix.em, cmp.Comparer(func(x error, y error) bool {
+				return x.Error() == y.Error()
+			})); diff != "" {
 				//t.Error(pretty.Sprintf("wmToReach(%q): Did not get expected error map:\n\t(GOT): %# v\n\t(WNT): %# v", name, em, fix.em))
 				t.Errorf("Did not get expected error map:\n\t(GOT): %v\n\t(WNT): %v", em, fix.em)
 			}
@@ -1437,6 +1537,24 @@ func TestListPackages(t *testing.T) {
 						Err: &NonCanonicalImportRoot{
 							ImportRoot: "noncanonical",
 							Canonical:  "canonical/subpackage",
+						},
+					},
+				},
+			},
+		},
+		"slash-star": {
+			fileRoot:   j("slash-star_confl"),
+			importRoot: "slash-star_confl",
+			out: PackageTree{
+				ImportRoot: "slash-star_confl",
+				Packages: map[string]PackageOrErr{
+					"slash-star_confl": {
+						Err: &ConflictingImportComments{
+							ImportPath: "slash-star_confl",
+							ConflictingImportComments: []string{
+								"vanity1",
+								"vanity2",
+							},
 						},
 					},
 				},

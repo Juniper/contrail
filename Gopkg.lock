@@ -134,7 +134,7 @@
     "private/protocol/restxml",
     "private/protocol/xml/xmlutil",
     "service/s3",
-    "service/sts"
+    "service/sts",
   ]
   pruneopts = ""
   revision = "5f1ca23f3ded773a9ba214e6fac36acd9a965a53"
@@ -193,7 +193,7 @@
     "mvcc/mvccpb",
     "pkg/tlsutil",
     "pkg/transport",
-    "pkg/types"
+    "pkg/types",
   ]
   pruneopts = ""
   revision = "c9d46ab3799b7f2174268e75f72d01e6d6aac953"
@@ -318,7 +318,7 @@
     ".",
     "internal/lru",
     "internal/murmur",
-    "internal/streams"
+    "internal/streams",
   ]
   pruneopts = ""
   revision = "4ba1af8a026b230ce3c646e594865c07ce01b541"
@@ -329,17 +329,40 @@
   packages = [
     "codec",
     "gogoproto",
+    "plugin/compare",
+    "plugin/defaultcheck",
+    "plugin/description",
+    "plugin/embedcheck",
+    "plugin/enumstringer",
+    "plugin/equal",
+    "plugin/face",
+    "plugin/gostring",
+    "plugin/marshalto",
+    "plugin/oneofcheck",
+    "plugin/populate",
+    "plugin/size",
+    "plugin/stringer",
+    "plugin/testgen",
+    "plugin/union",
+    "plugin/unmarshal",
     "proto",
     "protoc-gen-gogo/descriptor",
+    "protoc-gen-gogo/generator",
+    "protoc-gen-gogo/generator/internal/remap",
+    "protoc-gen-gogo/grpc",
+    "protoc-gen-gogo/plugin",
+    "protoc-gen-gogofaster",
     "sortkeys",
-    "types"
+    "types",
+    "vanity",
+    "vanity/command",
   ]
   pruneopts = ""
   revision = "ba06b47c162d49f2af050fb4c75bcbc86a159d5c"
   version = "v1.2.1"
 
 [[projects]]
-  digest = "1:86384944152bd08c9e30c8f21447276b8b0e52800e88aefe54ff86ae033bf586"
+  digest = "1:a24758413e4f660af066e3730033d1f0ef28b5e4751a72865193310557a3253b"
   name = "github.com/golang/dep"
   packages = [
     ".",
@@ -359,11 +382,11 @@
     "internal/importers/govend",
     "internal/importers/govendor",
     "internal/importers/gvt",
-    "internal/importers/vndr"
+    "internal/importers/vndr",
   ]
   pruneopts = ""
-  revision = "224a564abe296670b692fe08bb63a3e4c4ad7978"
-  version = "v0.5.0"
+  revision = "1f7c19e5f52f49ffb9f956f64c010be14683468b"
+  version = "v0.5.4"
 
 [[projects]]
   digest = "1:73a7106c799f98af4f3da7552906efc6a2570329f4cd2d2f5fb8f9d6c053ff2f"
@@ -371,15 +394,14 @@
   packages = [
     "gomock",
     "mockgen",
-    "mockgen/model"
+    "mockgen/model",
   ]
   pruneopts = ""
   revision = "c34cdb4725f4c3844d095133c6e40e448b86589b"
   version = "v1.1.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:bcb38c8fc9b21bb8682ce2d605a7d4aeb618abc7f827e3ac0b27c0371fdb23fb"
+  digest = "1:529d738b7976c3848cae5cf3a8036440166835e389c1f617af701eeb12a0518d"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -388,10 +410,11 @@
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
-    "ptypes/timestamp"
+    "ptypes/timestamp",
   ]
   pruneopts = ""
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+  revision = "b5d812f8a3706043e23a9cd5babf2e5423744d30"
+  version = "v1.3.1"
 
 [[projects]]
   branch = "master"
@@ -408,7 +431,7 @@
     "cmp",
     "cmp/internal/diff",
     "cmp/internal/function",
-    "cmp/internal/value"
+    "cmp/internal/value",
   ]
   pruneopts = ""
   revision = "3af367b6b30c263d47e8895973edcca9a49cf029"
@@ -452,7 +475,7 @@
   name = "github.com/hashicorp/go-getter"
   packages = [
     ".",
-    "helper/url"
+    "helper/url",
   ]
   pruneopts = ""
   revision = "be39683deade1b3613258f751a2fad316d7b5e7c"
@@ -502,7 +525,7 @@
     "hcl/token",
     "json/parser",
     "json/scanner",
-    "json/token"
+    "json/token",
   ]
   pruneopts = ""
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
@@ -518,7 +541,7 @@
     "hcl/json",
     "hcldec",
     "hclparse",
-    "hclwrite"
+    "hclwrite",
   ]
   pruneopts = ""
   revision = "253da47fd604c8c6c857af9826021d65e50d9b4c"
@@ -531,7 +554,7 @@
     ".",
     "ast",
     "parser",
-    "scanner"
+    "scanner",
   ]
   pruneopts = ""
   revision = "fa9f258a92500514cc8e9c67020487709df92432"
@@ -558,7 +581,7 @@
     "svchost/disco",
     "terraform",
     "tfdiags",
-    "version"
+    "version",
   ]
   pruneopts = ""
   revision = "ac4fff416318bf0915a0ab80e062a99ef3724334"
@@ -581,7 +604,7 @@
     "internal/sanitize",
     "pgio",
     "pgproto3",
-    "pgtype"
+    "pgtype",
   ]
   pruneopts = ""
   revision = "da3231b0b66e2e74cdb779f1d46c5e958ba8be27"
@@ -655,7 +678,7 @@
   name = "github.com/labstack/echo"
   packages = [
     ".",
-    "middleware"
+    "middleware",
   ]
   pruneopts = ""
   revision = "b338075a0fc6e1a0683dbf03d09b4957a289e26f"
@@ -668,7 +691,7 @@
     "bytes",
     "color",
     "log",
-    "random"
+    "random",
   ]
   pruneopts = ""
   revision = "57409ada9da0f2afad6664c49502f8c50fbd8476"
@@ -680,7 +703,7 @@
   name = "github.com/lib/pq"
   packages = [
     ".",
-    "oid"
+    "oid",
   ]
   pruneopts = ""
   revision = "b2004221932bd6b13167ef654c81cffac36f7537"
@@ -700,7 +723,7 @@
   packages = [
     "buffer",
     "jlexer",
-    "jwriter"
+    "jwriter",
   ]
   pruneopts = ""
   revision = "32fa128f234d041f196a9f3e0fea5ac9772c08e1"
@@ -826,12 +849,12 @@
   revision = "0ad87eef1443f64d3d8c50da647e2b1552851124"
 
 [[projects]]
-  digest = "1:d60cfeee185019d4fcd35e8c89c83aff576e4723b6100300bf67b05be961388f"
+  digest = "1:3d2c33720d4255686b9f4a7e4d3b94938ee36063f14705c5eb0f73347ed4c496"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   pruneopts = ""
-  revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
-  version = "v1.1.0"
+  revision = "728039f679cbcd4f6a54e080d2219a4c4928c546"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
@@ -856,7 +879,7 @@
     ".",
     "cmd",
     "cmd/install",
-    "match"
+    "match",
   ]
   pruneopts = ""
   revision = "3ef9b31a6a0613ae832e7ecf208374027c3b2343"
@@ -868,7 +891,7 @@
   packages = [
     ".",
     "cmd/protoc-gen-doc",
-    "parser"
+    "parser",
   ]
   pruneopts = ""
   revision = "728a624b38e5ae90bb3e5da5f406e05138f1517c"
@@ -917,7 +940,7 @@
     "mysql",
     "packet",
     "replication",
-    "schema"
+    "schema",
   ]
   pruneopts = ""
   revision = "5b24def0560e05198f0cd7a7e6abd35b5a13187b"
@@ -935,7 +958,7 @@
   name = "github.com/spf13/afero"
   packages = [
     ".",
-    "mem"
+    "mem",
   ]
   pruneopts = ""
   revision = "bb8f1927f2a9d3ab41c9340aa034f6b803f4359c"
@@ -1003,7 +1026,7 @@
   packages = [
     "assert",
     "mock",
-    "require"
+    "require",
   ]
   pruneopts = ""
   revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
@@ -1024,7 +1047,7 @@
     ".",
     "internal/hash",
     "internal/xlog",
-    "lzma"
+    "lzma",
   ]
   pruneopts = ""
   revision = "590df8077fbcb06ad62d7714da06c00e5dd2316d"
@@ -1071,7 +1094,7 @@
     "pkg/randomstring",
     "server",
     "utils",
-    "webtty"
+    "webtty",
   ]
   pruneopts = ""
   revision = "a080c85cbc59226c94c6941ad8c395232d72d517"
@@ -1084,7 +1107,7 @@
   packages = [
     ".",
     "hcl",
-    "json"
+    "json",
   ]
   pruneopts = ""
   revision = "5fa2393b3552119bf33a69adb1402a1160cba23d"
@@ -1100,7 +1123,7 @@
     "cty/function/stdlib",
     "cty/gocty",
     "cty/json",
-    "cty/set"
+    "cty/set",
   ]
   pruneopts = ""
   revision = "3a13afc1279233ce3efad28cffaf1d20e7008118"
@@ -1127,7 +1150,7 @@
     "openpgp/s2k",
     "poly1305",
     "ssh",
-    "ssh/terminal"
+    "ssh/terminal",
   ]
   pruneopts = ""
   revision = "39efaea5da11abd5e2b90a435b1f338cdb94619c"
@@ -1146,7 +1169,7 @@
     "internal/timeseries",
     "lex/httplex",
     "trace",
-    "websocket"
+    "websocket",
   ]
   pruneopts = ""
   revision = "136a25c244d3019482a795d728110278d6ba09a4"
@@ -1165,7 +1188,7 @@
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
   pruneopts = ""
   revision = "af50095a40f9041b3b38960738837185c26e9419"
@@ -1189,7 +1212,7 @@
     "unicode/cldr",
     "unicode/norm",
     "unicode/rangetable",
-    "width"
+    "width",
   ]
   pruneopts = ""
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
@@ -1211,7 +1234,7 @@
     "imports",
     "internal/fastwalk",
     "internal/gopathwalk",
-    "internal/semver"
+    "internal/semver",
   ]
   pruneopts = ""
   revision = "2e4132e53b93d8d81f7a076566396511238b89b0"
@@ -1251,7 +1274,7 @@
     "stats",
     "status",
     "tap",
-    "transport"
+    "transport",
   ]
   pruneopts = ""
   revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
@@ -1292,6 +1315,8 @@
     "github.com/gogo/protobuf/codec",
     "github.com/gogo/protobuf/gogoproto",
     "github.com/gogo/protobuf/proto",
+    "github.com/gogo/protobuf/protoc-gen-gogofaster",
+    "github.com/gogo/protobuf/sortkeys",
     "github.com/gogo/protobuf/types",
     "github.com/golang/dep/cmd/dep",
     "github.com/golang/mock/gomock",
@@ -1336,7 +1361,7 @@
     "google.golang.org/grpc/grpclog",
     "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/status",
-    "gopkg.in/yaml.v2"
+    "gopkg.in/yaml.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
