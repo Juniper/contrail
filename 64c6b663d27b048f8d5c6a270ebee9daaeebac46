@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "4e631808_1042f5c9",
+        "filename": "pkg/ansible/client.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-07-12T15:27:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "be0bcc8b_7fb57d2e",
+      "revId": "64c6b663d27b048f8d5c6a270ebee9daaeebac46",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fd0e0d82_b448e84c",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 5
@@ -42,6 +60,30 @@
     },
     {
       "key": {
+        "uuid": "24ff6771_a6a1b516",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-07-12T15:27:34Z",
+      "side": 1,
+      "message": "This will be handled after refactoring tests.",
+      "parentUuid": "fd0e0d82_b448e84c",
+      "range": {
+        "startLine": 235,
+        "startChar": 1,
+        "endLine": 237,
+        "endChar": 2
+      },
+      "revId": "64c6b663d27b048f8d5c6a270ebee9daaeebac46",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "be25b5c0_e71b9d65",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 5
@@ -56,6 +98,24 @@
       "revId": "64c6b663d27b048f8d5c6a270ebee9daaeebac46",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8391d730_5f70b1d1",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 241,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-07-12T15:27:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "be25b5c0_e71b9d65",
+      "revId": "64c6b663d27b048f8d5c6a270ebee9daaeebac46",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -82,6 +142,30 @@
     },
     {
       "key": {
+        "uuid": "d1a592b1_39cc1033",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 329,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-07-12T15:27:34Z",
+      "side": 1,
+      "message": "This will be handled after refactoring tests.",
+      "parentUuid": "20cde1e2_14ec9b52",
+      "range": {
+        "startLine": 327,
+        "startChar": 1,
+        "endLine": 329,
+        "endChar": 2
+      },
+      "revId": "64c6b663d27b048f8d5c6a270ebee9daaeebac46",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1076b5ea_b6dfd6b1",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 5
@@ -96,6 +180,24 @@
       "revId": "64c6b663d27b048f8d5c6a270ebee9daaeebac46",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b320180c_08aa441e",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 331,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-07-12T15:27:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1076b5ea_b6dfd6b1",
+      "revId": "64c6b663d27b048f8d5c6a270ebee9daaeebac46",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
