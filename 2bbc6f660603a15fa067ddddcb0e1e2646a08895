@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "6e694f91_c08a9d88",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "71807c72_7de438b5",
+      "range": {
+        "startLine": 127,
+        "startChar": 15,
+        "endLine": 127,
+        "endChar": 68
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b10724ce_18f08569",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 13
@@ -96,6 +120,30 @@
     },
     {
       "key": {
+        "uuid": "be297783_5d6a2227",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "743646d2_57e0fa4a",
+      "range": {
+        "startLine": 187,
+        "startChar": 2,
+        "endLine": 187,
+        "endChar": 47
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b23f3cd4_541df936",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 13
@@ -140,6 +188,30 @@
       "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "efd55d53_92fec734",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6fc10d52_f0e053af",
+      "range": {
+        "startLine": 238,
+        "startChar": 2,
+        "endLine": 238,
+        "endChar": 12
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -213,6 +285,30 @@
     },
     {
       "key": {
+        "uuid": "5cbd5412_a7e49a28",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "`resource` can be considered a loop variable (similar to one created by `range`), and duplicating `request.Events[i].GetResource()` makes it hard to read (and it can\u0027t be extracted into a function meaningfully).",
+      "parentUuid": "56bfa486_65e7145a",
+      "range": {
+        "startLine": 283,
+        "startChar": 3,
+        "endLine": 283,
+        "endChar": 90
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "08f3b764_07e836dc",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 13
@@ -245,6 +341,24 @@
       "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "895b4416_a07a083b",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c6b8e948_b42c8140",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -295,6 +409,30 @@
     },
     {
       "key": {
+        "uuid": "2921ce8d_9a834e16",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "08215106_f649c359",
+      "range": {
+        "startLine": 36,
+        "startChar": 2,
+        "endLine": 48,
+        "endChar": 3
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9944be8a_0c5fae2d",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 13
@@ -339,6 +477,30 @@
       "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a0e11ed1_154ee2e4",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e8dce40d_8375f3ce",
+      "range": {
+        "startLine": 140,
+        "startChar": 41,
+        "endLine": 140,
+        "endChar": 79
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -389,6 +551,30 @@
     },
     {
       "key": {
+        "uuid": "9cffd440_990052fd",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "80126c79_24ff402b",
+      "range": {
+        "startLine": 168,
+        "startChar": 16,
+        "endLine": 168,
+        "endChar": 39
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5aa2ae3b_f7361b46",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 13
@@ -433,6 +619,30 @@
       "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2b6aec6e_3aaae77d",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f1af7f59_88ca5e06",
+      "range": {
+        "startLine": 217,
+        "startChar": 43,
+        "endLine": 217,
+        "endChar": 51
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -483,6 +693,30 @@
     },
     {
       "key": {
+        "uuid": "85ffcef5_f8b5cb5c",
+        "filename": "pkg/apisrv/client/http.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "44e7effe_1c22e52a",
+      "range": {
+        "startLine": 38,
+        "startChar": 17,
+        "endLine": 38,
+        "endChar": 28
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5b0d1b67_c44006c7",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 13
@@ -530,6 +764,30 @@
     },
     {
       "key": {
+        "uuid": "02e4a130_aa004542",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5499fb83_dc0da720",
+      "range": {
+        "startLine": 417,
+        "startChar": 31,
+        "endLine": 420,
+        "endChar": 2
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "06182419_bc8131b7",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 13
@@ -562,6 +820,24 @@
       "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0530974e_0f78f42f",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 462,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "28c26dd3_f44aac2a",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -612,6 +888,30 @@
     },
     {
       "key": {
+        "uuid": "87416099_b26448de",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "08990401_aed15b00",
+      "range": {
+        "startLine": 13,
+        "startChar": 1,
+        "endLine": 13,
+        "endChar": 8
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f20d999b_10ba61f6",
         "filename": "pkg/cmd/contrail/integration_test.go",
         "patchSetId": 13
@@ -656,6 +956,30 @@
       "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b6999240_bc8776ec",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5aa6c25c_832ede56",
+      "range": {
+        "startLine": 19,
+        "startChar": 1,
+        "endLine": 19,
+        "endChar": 13
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -706,6 +1030,30 @@
     },
     {
       "key": {
+        "uuid": "79f9facc_31ed161e",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2f158292_bb9dfd85",
+      "range": {
+        "startLine": 29,
+        "startChar": 9,
+        "endLine": 29,
+        "endChar": 49
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b4a82b41_70e4e433",
         "filename": "pkg/cmd/contrail/integration_test.go",
         "patchSetId": 13
@@ -738,6 +1086,24 @@
       "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1a7be486_86fe553d",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1e9f4d29_2df1b82e",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
@@ -785,6 +1151,30 @@
       "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ef5e7424_abb5fa9b",
+        "filename": "pkg/compilation/service.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-12T10:19:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e4158aff_e2d598d1",
+      "range": {
+        "startLine": 18,
+        "startChar": 1,
+        "endLine": 20,
+        "endChar": 48
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
