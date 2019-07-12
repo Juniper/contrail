@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "8613edf6_2ae79f3d",
+        "filename": "pkg/apisrv/client/http.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 0,
+      "message": "There is no client.debug entry in configs.\nThere is database.debug entry, but it is different and is used.",
+      "parentUuid": "aab2fb09_33472e48",
+      "revId": "fa557764fb925288f63875b98520da995888d40f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "02dba913_7a5e17cc",
         "filename": "pkg/db/cache/cache.go",
         "patchSetId": 13
@@ -30,6 +48,24 @@
       "writtenOn": "2019-07-11T15:56:53Z",
       "side": 0,
       "message": "Why was this removed?",
+      "revId": "fa557764fb925288f63875b98520da995888d40f",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f628e7b0_1d8eaf49",
+        "filename": "pkg/db/cache/cache.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 0,
+      "message": "It spams logs and IMO it gives no valueable information",
+      "parentUuid": "02dba913_7a5e17cc",
       "revId": "fa557764fb925288f63875b98520da995888d40f",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true

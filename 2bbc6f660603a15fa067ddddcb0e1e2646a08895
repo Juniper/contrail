@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "71807c72_7de438b5",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1c487ff1_12c05c92",
+      "range": {
+        "startLine": 127,
+        "startChar": 15,
+        "endLine": 127,
+        "endChar": 68
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b10724ce_18f08569",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 13
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "743646d2_57e0fa4a",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b10724ce_18f08569",
+      "range": {
+        "startLine": 187,
+        "startChar": 2,
+        "endLine": 187,
+        "endChar": 47
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b23f3cd4_541df936",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 13
@@ -59,6 +107,30 @@
       "writtenOn": "2019-07-11T15:56:53Z",
       "side": 1,
       "message": "`basemodels.SchemaIDToKind` (same in the rest of the file)",
+      "range": {
+        "startLine": 238,
+        "startChar": 2,
+        "endLine": 238,
+        "endChar": 12
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6fc10d52_f0e053af",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 238,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b23f3cd4_541df936",
       "range": {
         "startLine": 238,
         "startChar": 2,
@@ -117,6 +189,30 @@
     },
     {
       "key": {
+        "uuid": "56bfa486_65e7145a",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Frankly I like the way it is now. I avoid using variables when it is not needed.\nI like following refactoring: https://refactoring.guru/replace-temp-with-query",
+      "parentUuid": "d24cc9fa_9c57e6c1",
+      "range": {
+        "startLine": 283,
+        "startChar": 3,
+        "endLine": 283,
+        "endChar": 90
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "08f3b764_07e836dc",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 13
@@ -134,6 +230,24 @@
     },
     {
       "key": {
+        "uuid": "c6b8e948_b42c8140",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "08f3b764_07e836dc",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "59180944_d3a51ed9",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 13
@@ -145,6 +259,30 @@
       "writtenOn": "2019-07-11T15:56:53Z",
       "side": 1,
       "message": "Extract `integration.AdminHTTPConfig()`?",
+      "range": {
+        "startLine": 36,
+        "startChar": 2,
+        "endLine": 48,
+        "endChar": 3
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "08215106_f649c359",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Good notion. Done.",
+      "parentUuid": "59180944_d3a51ed9",
       "range": {
         "startLine": 36,
         "startChar": 2,
@@ -180,6 +318,30 @@
     },
     {
       "key": {
+        "uuid": "e8dce40d_8375f3ce",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9944be8a_0c5fae2d",
+      "range": {
+        "startLine": 140,
+        "startChar": 41,
+        "endLine": 140,
+        "endChar": 79
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d760dea4_e5f9b502",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 13
@@ -191,6 +353,30 @@
       "writtenOn": "2019-07-11T15:56:53Z",
       "side": 1,
       "message": "Extract a variable.",
+      "range": {
+        "startLine": 168,
+        "startChar": 16,
+        "endLine": 168,
+        "endChar": 39
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "80126c79_24ff402b",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d760dea4_e5f9b502",
       "range": {
         "startLine": 168,
         "startChar": 16,
@@ -226,6 +412,30 @@
     },
     {
       "key": {
+        "uuid": "f1af7f59_88ca5e06",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 217,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5aa2ae3b_f7361b46",
+      "range": {
+        "startLine": 217,
+        "startChar": 43,
+        "endLine": 217,
+        "endChar": 51
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f4f7883b_6c36b991",
         "filename": "pkg/apisrv/client/http.go",
         "patchSetId": 13
@@ -237,6 +447,30 @@
       "writtenOn": "2019-07-11T15:56:53Z",
       "side": 1,
       "message": "Is this still needed?",
+      "range": {
+        "startLine": 38,
+        "startChar": 17,
+        "endLine": 38,
+        "endChar": 28
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "44e7effe_1c22e52a",
+        "filename": "pkg/apisrv/client/http.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f4f7883b_6c36b991",
       "range": {
         "startLine": 38,
         "startChar": 17,
@@ -272,6 +506,30 @@
     },
     {
       "key": {
+        "uuid": "5499fb83_dc0da720",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5b0d1b67_c44006c7",
+      "range": {
+        "startLine": 417,
+        "startChar": 31,
+        "endLine": 420,
+        "endChar": 2
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "06182419_bc8131b7",
         "filename": "pkg/apisrv/proxy_test.go",
         "patchSetId": 13
@@ -289,6 +547,24 @@
     },
     {
       "key": {
+        "uuid": "28c26dd3_f44aac2a",
+        "filename": "pkg/apisrv/proxy_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 462,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "06182419_bc8131b7",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "47ec69d2_187c6eb0",
         "filename": "pkg/cmd/contrail/integration_test.go",
         "patchSetId": 13
@@ -300,6 +576,30 @@
       "writtenOn": "2019-07-11T15:56:53Z",
       "side": 1,
       "message": "`_`?",
+      "range": {
+        "startLine": 13,
+        "startChar": 1,
+        "endLine": 13,
+        "endChar": 8
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "08990401_aed15b00",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "47ec69d2_187c6eb0",
       "range": {
         "startLine": 13,
         "startChar": 1,
@@ -335,6 +635,30 @@
     },
     {
       "key": {
+        "uuid": "5aa6c25c_832ede56",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f20d999b_10ba61f6",
+      "range": {
+        "startLine": 19,
+        "startChar": 1,
+        "endLine": 19,
+        "endChar": 13
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d4720419_39d3ab9a",
         "filename": "pkg/cmd/contrail/integration_test.go",
         "patchSetId": 13
@@ -346,6 +670,30 @@
       "writtenOn": "2019-07-11T15:56:53Z",
       "side": 1,
       "message": "`The test scenario or the implementation is buggy`",
+      "range": {
+        "startLine": 29,
+        "startChar": 9,
+        "endLine": 29,
+        "endChar": 49
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2f158292_bb9dfd85",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d4720419_39d3ab9a",
       "range": {
         "startLine": 29,
         "startChar": 9,
@@ -375,6 +723,24 @@
     },
     {
       "key": {
+        "uuid": "1e9f4d29_2df1b82e",
+        "filename": "pkg/cmd/contrail/integration_test.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b4a82b41_70e4e433",
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "52aecf35_495314b6",
         "filename": "pkg/compilation/service.go",
         "patchSetId": 13
@@ -386,6 +752,30 @@
       "writtenOn": "2019-07-11T15:56:53Z",
       "side": 1,
       "message": "merge these groups of imports",
+      "range": {
+        "startLine": 18,
+        "startChar": 1,
+        "endLine": 20,
+        "endChar": 48
+      },
+      "revId": "2bbc6f660603a15fa067ddddcb0e1e2646a08895",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e4158aff_e2d598d1",
+        "filename": "pkg/compilation/service.go",
+        "patchSetId": 13
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T09:26:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "52aecf35_495314b6",
       "range": {
         "startLine": 18,
         "startChar": 1,
