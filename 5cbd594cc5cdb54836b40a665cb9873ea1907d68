@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "3495f0f1_6edc6d52",
+        "filename": "pkg/ansible/client.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T15:11:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "70051a4d_831901f7",
+      "revId": "5cbd594cc5cdb54836b40a665cb9873ea1907d68",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0793f798_074b7de9",
         "filename": "pkg/deploy/cluster/multi_cloud.go",
         "patchSetId": 4
@@ -39,6 +57,30 @@
       "revId": "5cbd594cc5cdb54836b40a665cb9873ea1907d68",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d3b2e847_06635b84",
+        "filename": "pkg/deploy/cluster/multi_cloud.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-12T15:11:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0793f798_074b7de9",
+      "range": {
+        "startLine": 235,
+        "startChar": 1,
+        "endLine": 245,
+        "endChar": 2
+      },
+      "revId": "5cbd594cc5cdb54836b40a665cb9873ea1907d68",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
