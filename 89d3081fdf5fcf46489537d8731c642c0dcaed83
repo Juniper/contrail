@@ -16,6 +16,24 @@
       "revId": "89d3081fdf5fcf46489537d8731c642c0dcaed83",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d33b3049_478aacf4",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 4
+      },
+      "lineNbr": 1312,
+      "author": {
+        "id": 633
+      },
+      "writtenOn": "2019-07-12T15:04:30Z",
+      "side": 0,
+      "message": "We are checking if MC CLI is called with the valid arguments by comparing this with expected_ansible_create_mc_playbook.yml a few lines under this part.\n\nSome of these functions are called within MC CLI and we have no possibility of checking if it\u0027s called properly inside Python CLI.",
+      "parentUuid": "c1be437d_4d0db937",
+      "revId": "89d3081fdf5fcf46489537d8731c642c0dcaed83",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
