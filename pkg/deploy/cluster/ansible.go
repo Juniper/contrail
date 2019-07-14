@@ -455,7 +455,7 @@ func (a *contrailAnsibleDeployer) playAppformixProvision() error {
 				return err
 			}
 		}
-		AppformixVersion := a.clusterData.GetAppformixClusterInfo().AppformixVersion
+		AppformixVersion := "3.0.0"
 		ansibleArgs := []string{"-e", "config_file=" + a.getInstanceFile(),
 			"-e", "appformix_version=" + AppformixVersion,
 			"--skip-tags=install_docker"}
