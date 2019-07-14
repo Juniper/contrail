@@ -50,5 +50,5 @@ kolla_config:
   kolla_passwords:
     keystone_admin_password: contrail123
 appformix_configuration:
-    appformix_version:  2.18.1
+    appformix_version:  3.0.0
     appformix_license:  /opt/software/configs/contrail.sig
