@@ -25,9 +25,7 @@ const (
 	defaultInventoryTemplate              = "inventory.tmpl"
 	defaultInventoryFile                  = "inventory.yml"
 
-	defaultAppformixAnsibleRepoDir = "/usr/share/contrail/"
 	defaultAppformixImageDir       = "/opt/software/appformix/"
-	defaultAppformixAnsibleRepo    = "appformix-ansible-deployer"
 	defaultAppformixProvPlay       = "playbooks/install_appformix.yml"
 	defaultAppformixDir            = "appformix/"
 	defaultXflowDir                = "xflow/"

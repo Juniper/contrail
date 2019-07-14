@@ -2,6 +2,9 @@ package base
 
 import (
 	"context"
+	"io/ioutil"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/Juniper/contrail/pkg/cloud"
 	"github.com/Juniper/contrail/pkg/format"
@@ -234,14 +237,33 @@ func (a *AppformixData) updateNodeDetails(r *ResourceManager) error {
 	return nil
 }
 
+// AppFormix Config
+type AppformixConfig struct {
+	// AppFormix Version
+	AppformixVersion string `yaml:"appformix_version"`
+}
+
 // nolint: gocyclo
 func (a *AppformixData) updateClusterDetails(clusterID string, r *ResourceManager) error {
+	configFile := DefaultAppformixAnsibleRepoDir+DefaultAppformixAnsibleRepo+"/appformix/config.yml"
+	data, ioerr := ioutil.ReadFile(configFile)
+	if ioerr != nil {
+		return ioerr
+	}
+
+	var config AppformixConfig
+	ioerr = yaml.UnmarshalStrict(data, &config)
+	if ioerr != nil {
+		return ioerr
+	}
+
 	ctx := context.Background()
 	resp, err := r.APIServer.GetAppformixCluster(ctx, &services.GetAppformixClusterRequest{ID: clusterID})
 	if err != nil {
 		return err
 	}
 	a.ClusterInfo = resp.AppformixCluster
+	a.ClusterInfo.AppformixVersion = config.AppformixVersion
 
 	// Expand appformix_controller back ref
 

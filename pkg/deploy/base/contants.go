@@ -75,4 +75,6 @@ const (
 	defaultAppformixComputeNodeResPath          = "/" + defaultAppformixComputeNodeRes
 	defaultAppformixNetworkAgentsNodeRes        = "appformix-network-agents-node"
 	defaultAppformixNetworkAgentsNodeResPath    = "/" + defaultAppformixNetworkAgentsNodeRes
+	DefaultAppformixAnsibleRepoDir		    = "/usr/share/contrail/"
+	DefaultAppformixAnsibleRepo		    = "appformix-ansible-deployer"
 )
