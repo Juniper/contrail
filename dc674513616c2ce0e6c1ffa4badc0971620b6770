@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "709b3e58_18bd5825",
+        "filename": "pkg/apisrv/client/http.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T08:45:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5770f7f0_fa0fe7d5",
+      "revId": "dc674513616c2ce0e6c1ffa4badc0971620b6770",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1e03edbf_cfaa9aea",
         "filename": "pkg/apisrv/client/http.go",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "3e4ca6a5_e389c91d",
+        "filename": "pkg/apisrv/client/http.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T08:45:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1e03edbf_cfaa9aea",
+      "revId": "dc674513616c2ce0e6c1ffa4badc0971620b6770",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6549590c_4c8613f7",
         "filename": "pkg/services/service.go.tmpl",
         "patchSetId": 1
@@ -47,6 +83,30 @@
       "writtenOn": "2019-07-12T17:50:19Z",
       "side": 1,
       "message": "I\u0027d call this `requestIDHeader`.",
+      "range": {
+        "startLine": 21,
+        "startChar": 6,
+        "endLine": 21,
+        "endChar": 16
+      },
+      "revId": "dc674513616c2ce0e6c1ffa4badc0971620b6770",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dae51232_7fd5bf8f",
+        "filename": "pkg/services/service.go.tmpl",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T08:45:36Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6549590c_4c8613f7",
       "range": {
         "startLine": 21,
         "startChar": 6,
