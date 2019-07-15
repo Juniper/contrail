@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "a283ab3a_d5c45b06",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 460,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-07-15T17:03:55Z",
+      "side": 1,
+      "message": "Why is appformix_version passed as env variable to ansible playbook, when it is already present in instances.yml",
+      "revId": "04aa9e65de0a57ccdafeb5c422fad78750915ce2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f3c485b9_544d11c2",
         "filename": "pkg/deploy/cluster/templates/instances.tmpl",
         "patchSetId": 5
