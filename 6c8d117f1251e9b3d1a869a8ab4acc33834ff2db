@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "29ecefdd_d2fcfa2c",
+        "filename": "doc/rest_api.md",
+        "patchSetId": 6
+      },
+      "lineNbr": 259,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-15T10:27:06Z",
+      "side": 1,
+      "message": "Mention `true` (or whatever format the HTTP API accepts)",
+      "range": {
+        "startLine": 259,
+        "startChar": 11,
+        "endLine": 259,
+        "endChar": 36
+      },
+      "revId": "6c8d117f1251e9b3d1a869a8ab4acc33834ff2db",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "293546e4_c25bcb9e",
+        "filename": "doc/rest_api.md",
+        "patchSetId": 6
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 618
+      },
+      "writtenOn": "2019-07-15T10:27:06Z",
+      "side": 1,
+      "message": "Is that a list of FQNames or a single FQName with its elements separated with colons?\n\nI see that this is repeated in other places. What about changing this everywhere now?",
+      "range": {
+        "startLine": 263,
+        "startChar": 23,
+        "endLine": 263,
+        "endChar": 43
+      },
+      "revId": "6c8d117f1251e9b3d1a869a8ab4acc33834ff2db",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
