@@ -71,8 +71,6 @@ func (c *Cluster) GetDeployer() (base.Deployer, error) {
 		return newAnsibleDeployer(c, cData), nil
 	case mCProvisioner:
 		return newMCProvisioner(c, cData), nil
-	case "helm":
-		return newHelmDeployer(c, cData), nil
 	}
 	return nil, errors.New("unsupported deployer type")
 }
@@ -160,11 +158,5 @@ func newMCProvisioner(c *Cluster, cData *base.Data) *multiCloudProvisioner {
 			),
 		},
 		workDir: "",
-	}
-}
-
-func newHelmDeployer(c *Cluster, cData *base.Data) *helmDeployer {
-	return &helmDeployer{
-		deployCluster: *newDeployCluster(c, cData, "helm-deployer"),
 	}
 }
