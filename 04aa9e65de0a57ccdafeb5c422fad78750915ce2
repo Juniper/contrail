@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "18047c47_3f4f5369",
+        "filename": "pkg/deploy/cluster/ansible.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 460,
+      "author": {
+        "id": 257
+      },
+      "writtenOn": "2019-07-15T17:16:35Z",
+      "side": 1,
+      "message": "Contrail-command calls this file.\nhttps://github.com/Juniper/appformix-ansible-deployer/blob/master/appformix/playbooks/install_appformix.yml\n\nIt parses instances.yml file to get appformix config params.\nBut even before the tasks are executed, ansible “pre-parses” the below lines in install_appformix.yml file, pasting in case above link is not accessible due to perms.\nSo “appformix_version” has to be passed as param while calling the playbook at https://github.com/Juniper/contrail/blob/master/pkg/deploy/cluster/ansible.go#L458\n\n```\n- include: \"/opt/software/appformix/appformix-{{ appformix_version }}/appformix_openstack.yml\"\n  when: groups[\u0027appformix_controller\u0027]|count \u003d\u003d 1\n\n- include: \"/opt/software/appformix/appformix-{{ appformix_version }}/appformix_openstack_ha.yml\"\n  when: groups[\u0027appformix_controller\u0027]|count \u003e 1\n```",
+      "parentUuid": "a283ab3a_d5c45b06",
+      "revId": "04aa9e65de0a57ccdafeb5c422fad78750915ce2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f3c485b9_544d11c2",
         "filename": "pkg/deploy/cluster/templates/instances.tmpl",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2019-07-15T16:55:09Z",
       "side": 1,
       "message": "We decided to use the user provided value, if not default to a version",
+      "revId": "04aa9e65de0a57ccdafeb5c422fad78750915ce2",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3cf50d44_fc8b4470",
+        "filename": "pkg/deploy/cluster/templates/instances.tmpl",
+        "patchSetId": 5
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 257
+      },
+      "writtenOn": "2019-07-15T17:16:35Z",
+      "side": 1,
+      "message": "UI has changed to NOT let user specify contrail-version.\nShould we still support the API in case we post payload with the param?",
+      "parentUuid": "f3c485b9_544d11c2",
       "revId": "04aa9e65de0a57ccdafeb5c422fad78750915ce2",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
