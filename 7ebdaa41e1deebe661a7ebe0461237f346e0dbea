@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "0c88d159_646cd214",
+        "filename": "doc/cli.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "87e80f78_fd14e1b6",
+      "range": {
+        "startLine": 6,
+        "startChar": 2,
+        "endLine": 6,
+        "endChar": 6
+      },
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "58fe6194_c4e212c3",
         "filename": "doc/cli.md",
         "patchSetId": 5
@@ -36,6 +60,30 @@
       "writtenOn": "2019-07-12T17:24:31Z",
       "side": 1,
       "message": "I\u0027d use ` instead of _ for code-like strings.",
+      "range": {
+        "startLine": 32,
+        "startChar": 54,
+        "endLine": 32,
+        "endChar": 55
+      },
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e25e35bc_26fbf025",
+        "filename": "doc/cli.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "58fe6194_c4e212c3",
       "range": {
         "startLine": 32,
         "startChar": 54,
@@ -65,6 +113,24 @@
     },
     {
       "key": {
+        "uuid": "a392a4a1_35410192",
+        "filename": "doc/rest_api.md",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ee588a5b_54532f0b",
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1a66f470_c54f1785",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 5
@@ -76,6 +142,30 @@
       "writtenOn": "2019-07-12T17:24:31Z",
       "side": 1,
       "message": "`resource in response is not a JSON object`",
+      "range": {
+        "startLine": 91,
+        "startChar": 4,
+        "endLine": 91,
+        "endChar": 68
+      },
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24823da1_f39419f4",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a66f470_c54f1785",
       "range": {
         "startLine": 91,
         "startChar": 4,
@@ -111,6 +201,30 @@
     },
     {
       "key": {
+        "uuid": "17848862_e7ed3d31",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 201,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a40447d2_d0d17529",
+      "range": {
+        "startLine": 201,
+        "startChar": 2,
+        "endLine": 201,
+        "endChar": 11
+      },
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e288e8ac_e956cf80",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 5
@@ -122,6 +236,30 @@
       "writtenOn": "2019-07-12T17:24:31Z",
       "side": 1,
       "message": "I prefer a `raw\u003cname\u003e` naming scheme to `\u003cname\u003eIf` or `\u003cname\u003eInterface`.",
+      "range": {
+        "startLine": 212,
+        "startChar": 23,
+        "endLine": 212,
+        "endChar": 25
+      },
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cde0604c_e086059c",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 212,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e288e8ac_e956cf80",
       "range": {
         "startLine": 212,
         "startChar": 23,
@@ -157,6 +295,30 @@
     },
     {
       "key": {
+        "uuid": "d86b135c_cf56d43f",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ccb22b2e_8e4df126",
+      "range": {
+        "startLine": 213,
+        "startChar": 3,
+        "endLine": 213,
+        "endChar": 17
+      },
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "295327ee_c46cf000",
         "filename": "pkg/apisrv/client/cli.go",
         "patchSetId": 5
@@ -180,6 +342,30 @@
     },
     {
       "key": {
+        "uuid": "11ec9cd0_678b373e",
+        "filename": "pkg/apisrv/client/cli.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "295327ee_c46cf000",
+      "range": {
+        "startLine": 257,
+        "startChar": 54,
+        "endLine": 257,
+        "endChar": 62
+      },
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6ddb517c_10ade40b",
         "filename": "pkg/apisrv/client/cli_test.go",
         "patchSetId": 5
@@ -191,6 +377,30 @@
       "writtenOn": "2019-07-12T17:24:31Z",
       "side": 1,
       "message": "`with detail`?",
+      "range": {
+        "startLine": 118,
+        "startChar": 14,
+        "endLine": 118,
+        "endChar": 20
+      },
+      "revId": "7ebdaa41e1deebe661a7ebe0461237f346e0dbea",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "70e50878_c543c7e2",
+        "filename": "pkg/apisrv/client/cli_test.go",
+        "patchSetId": 5
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-15T09:54:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6ddb517c_10ade40b",
       "range": {
         "startLine": 118,
         "startChar": 14,
