@@ -803,6 +803,30 @@
     },
     {
       "key": {
+        "uuid": "0362cb71_7ae0724f",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-07-16T09:33:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f91cf9dd_89ae3fa9",
+      "range": {
+        "startLine": 246,
+        "startChar": 1,
+        "endLine": 247,
+        "endChar": 40
+      },
+      "revId": "52412ef0bbc6ae8f6486bb2848d06af431cec1f5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "466db1ce_56f6725e",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 1
@@ -908,6 +932,30 @@
       "writtenOn": "2019-07-12T12:38:42Z",
       "side": 1,
       "message": "I don\u0027t think it should be a loop if we do that only for the first client.",
+      "range": {
+        "startLine": 271,
+        "startChar": 2,
+        "endLine": 271,
+        "endChar": 7
+      },
+      "revId": "52412ef0bbc6ae8f6486bb2848d06af431cec1f5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7dbff87a_827bb5af",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 271,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-07-16T09:33:01Z",
+      "side": 1,
+      "message": "Since we don\u0027t know the key of client we cannot retrieve element from map by key. I don\u0027t have idea how to change that and since it isn\u0027t a performance issue I think we can keep it.",
+      "parentUuid": "ccbf1578_3fc75681",
       "range": {
         "startLine": 271,
         "startChar": 2,
