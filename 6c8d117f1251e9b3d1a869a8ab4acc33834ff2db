@@ -93,6 +93,30 @@
       "revId": "6c8d117f1251e9b3d1a869a8ab4acc33834ff2db",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "836dce66_bb16c7b2",
+        "filename": "doc/rest_api.md",
+        "patchSetId": 6
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 558
+      },
+      "writtenOn": "2019-07-16T14:27:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e8b1d321_8a504d8b",
+      "range": {
+        "startLine": 263,
+        "startChar": 23,
+        "endLine": 263,
+        "endChar": 43
+      },
+      "revId": "6c8d117f1251e9b3d1a869a8ab4acc33834ff2db",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
     }
   ]
 }
