@@ -73,6 +73,30 @@
     },
     {
       "key": {
+        "uuid": "c83fa87a_e3881e5d",
+        "filename": "pkg/deploy/cluster/cluster_test.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 710
+      },
+      "writtenOn": "2019-07-16T09:23:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cc165c0b_9c3b74e0",
+      "range": {
+        "startLine": 71,
+        "startChar": 0,
+        "endLine": 71,
+        "endChar": 119
+      },
+      "revId": "52412ef0bbc6ae8f6486bb2848d06af431cec1f5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dc1caa53_056b9514",
         "filename": "pkg/deploy/cluster/cluster_test.go",
         "patchSetId": 1
